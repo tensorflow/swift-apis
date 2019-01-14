@@ -5,7 +5,8 @@ High-level machine learning APIs for [Swift for TensorFlow](https://github.com/t
 ### Requirements
 
 * Swift for TensorFlow toolchain
-  Note: For now, you need to build a Swift for TensorFlow toolchain from
+
+Note: For now, you need to build a Swift for TensorFlow toolchain from
 [HEAD](https://github.com/apple/swift/tree/tensorflow).
 
 ### Build instructions
