@@ -22,7 +22,7 @@ public protocol Optimizer : AnyObject {
 }
 
 public class RiemannSGD<Model: Layer, Scalar: FloatingPoint> : Optimizer
-    where Model.CotangentVector : VectorNumeric, Model.CotangentVector.Scalar == Scalar {
+    where Model.CotangentVector: VectorNumeric, Model.CotangentVector.Scalar == Scalar {
     public var learningRate: Scalar
 
     public init(learningRate: Scalar) {

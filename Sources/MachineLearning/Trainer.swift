@@ -14,6 +14,7 @@
 
 import TensorFlow
 
+// FIXME: Need to flesh out this thing!
 public protocol Trainer {
     associatedtype Model: Layer
     associatedtype Scalar: FloatingPoint

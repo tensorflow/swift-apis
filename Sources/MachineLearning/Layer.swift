@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import TensorFlow
+@_exported import TensorFlow
 
 /// A neural network layer.
 ///
@@ -42,3 +42,16 @@ public extension Layer {
         return (out, pullback)
     }
 }
+
+// public struct Dense: Layer {
+//     // FIXME(SR-9657): TBDGen does not handle @differentiable vars yet.
+//     public var weight: Tensor<Float>
+//     public var bias: Tensor<Float>
+//
+//     // FIXME(SR-9658): Functions that implement @differentiable protocol requirements should be
+//     // enforced to write the attribute
+//     @differentiable(wrt: (self, .0))
+//     public func applied(to input: Tensor<Float>) -> Tensor<Float> {
+//         return matmul(input, weight) + bias
+//     }
+// }
