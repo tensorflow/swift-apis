@@ -106,9 +106,8 @@ public class RMSProp<Model: Layer, Scalar: BinaryFloatingPoint & TensorFlowScala
                        .recursivelyAllWritableKeyPaths(to: Tensor<Scalar>.self) {
             alpha[keyPath: kp] =
                 rho * alpha[keyPath: kp] + (1 - rho) * pow(gradients[keyPath: kp], 2)
-            model.allDifferentiableVariables[keyPath: kp] =
-                model.allDifferentiableVariables[keyPath: kp] -
-                learningRate * gradients[keyPath: kp] / sqrt(alpha[keyPath: kp]) + epsilon
+            model.allDifferentiableVariables[keyPath: kp] -=
+                learningRate * gradients[keyPath: kp] / (sqrt(alpha[keyPath: kp]) + epsilon)
         }
     }
 }
@@ -146,10 +145,10 @@ public class SGD<Model: Layer, Scalar: BinaryFloatingPoint & TensorFlowScalar>: 
                 momentum * velocity[keyPath: kp] - learningRate * gradients[keyPath: kp]
             let modelKP = (\Model.allDifferentiableVariables).appending(path: kp)
             if nesterov {
-                model[keyPath: modelKP] += velocity[keyPath: kp]
+                model[keyPath: modelKP] +=
+                    momentum * velocity[keyPath: kp] - learningRate * gradients[keyPath: kp]
             } else {
-                model[keyPath: modelKP] = model[keyPath: modelKP] + momentum *
-                    velocity[keyPath: kp] - learningRate * gradients[keyPath: kp]
+                model[keyPath: modelKP] += velocity[keyPath: kp]
             }
         }
     }
