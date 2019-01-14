@@ -25,7 +25,7 @@ public protocol Optimizer: AnyObject {
 
 public class Adam<Model: Layer, Scalar: BinaryFloatingPoint & TensorFlowScalar>: Optimizer
     where Model.AllDifferentiableVariables: AdditiveArithmetic,
-          Model.CotangentVector == Model.AllDifferentiableVariables {
+          Model.AllDifferentiableVariables == Model.CotangentVector {
     public let learningRate: Scalar
     public var beta1: Scalar
     public var beta2: Scalar
@@ -75,9 +75,47 @@ public class Adam<Model: Layer, Scalar: BinaryFloatingPoint & TensorFlowScalar>:
     }
 }
 
+public class RMSProp<Model: Layer, Scalar: BinaryFloatingPoint & TensorFlowScalar>: Optimizer
+    where Model.AllDifferentiableVariables: AdditiveArithmetic,
+          Model.AllDifferentiableVariables == Model.CotangentVector {
+    public let learningRate: Scalar
+    public let rho: Scalar
+    public let epsilon: Scalar
+    public let decay: Scalar
+
+    public init(
+        learningRate: Scalar = 0.001,
+        rho: Scalar = 0.9,
+        epsilon: Scalar = 1e-8,
+        decay: Scalar = 0
+    ) {
+        precondition(learningRate >= 0, "Learning rate must be non-negative")
+        precondition(rho >= 0, "Rho must be non-negative")
+        precondition(decay >= 0, "Weight decay must be non-negative")
+
+        self.learningRate = learningRate
+        self.rho = rho
+        self.epsilon = epsilon
+        self.decay = decay
+    }
+
+    var alpha = Model.AllDifferentiableVariables.zero
+
+    public func fit(_ model: inout Model, along gradients: Model.CotangentVector) {
+        for kp in model.allDifferentiableVariables
+                       .recursivelyAllWritableKeyPaths(to: Tensor<Scalar>.self) {
+            alpha[keyPath: kp] =
+                rho * alpha[keyPath: kp] + (1 - rho) * pow(gradients[keyPath: kp], 2)
+            model.allDifferentiableVariables[keyPath: kp] =
+                model.allDifferentiableVariables[keyPath: kp] -
+                learningRate * gradients[keyPath: kp] / sqrt(alpha[keyPath: kp]) + epsilon
+        }
+    }
+}
+
 public class SGD<Model: Layer, Scalar: BinaryFloatingPoint & TensorFlowScalar>: Optimizer
     where Model.AllDifferentiableVariables: AdditiveArithmetic,
-          Model.CotangentVector == Model.AllDifferentiableVariables {
+          Model.AllDifferentiableVariables == Model.CotangentVector {
     public let learningRate: Scalar
     public let momentum: Scalar
     public let decay: Scalar
