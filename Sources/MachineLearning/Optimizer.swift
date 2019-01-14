@@ -21,50 +21,7 @@ public protocol Optimizer : AnyObject {
     func fit(_ model: inout Model, along gradient: Model.CotangentVector)
 }
 
-public class SGDOptimizer<Model : Layer, Scalar: BinaryFloatingPoint & TensorFlowScalar>: Optimizer
-    where Model.AllDifferentiableVariables : KeyPathIterable & VectorNumeric,
-          Model.AllDifferentiableVariables == Model.CotangentVector,
-          Model.AllDifferentiableVariables.Scalar == Scalar
-{
-    public let learningRate: Scalar
-    public let momentum: Scalar
-    public let decay: Scalar
-    public let nesterov: Bool
-
-    public init(
-        learningRate: Scalar = 0.01,
-        momentum: Scalar = 0,
-        decay: Scalar = 0,
-        nesterov: Bool = false
-    ) {
-        precondition(learningRate >= 0, "Learning rate must be non-negative")
-        precondition(momentum >= 0, "Momentum must be non-negative")
-        precondition(decay >= 0, "Weight decay must be non-negative")
-
-        self.learningRate = learningRate
-        self.momentum = momentum
-        self.decay = decay
-        self.nesterov = nesterov
-    }
-
-    var velocity = Model.AllDifferentiableVariables.zero
-
-    public func fit(_ model: inout Model, along gradients: Model.CotangentVector) {
-        for kp in model.allDifferentiableVariables
-                       .recursivelyAllWritableKeyPaths(to: Tensor<Scalar>.self) {
-            velocity[keyPath: kp] =
-                momentum * velocity[keyPath: kp] - learningRate * gradients[keyPath: kp]
-            if nesterov {
-                model.allDifferentiableVariables[keyPath: kp] += velocity[keyPath: kp]
-            } else {
-                model.allDifferentiableVariables[keyPath: kp] =
-                    model.allDifferentiableVariables[keyPath: kp] +
-                    momentum * velocity[keyPath: kp] -
-                    learningRate * gradients[keyPath: kp]
-            }
-        }
-    }
-}
+// MARK: - Key-path based optimizers
 
 public class Adam<Model : Layer, Scalar: BinaryFloatingPoint & TensorFlowScalar>: Optimizer
     where Model.AllDifferentiableVariables : KeyPathIterable & VectorNumeric,
@@ -119,6 +76,53 @@ public class Adam<Model : Layer, Scalar: BinaryFloatingPoint & TensorFlowScalar>
         }
     }
 }
+
+public class SGD<Model : Layer, Scalar: BinaryFloatingPoint & TensorFlowScalar>: Optimizer
+    where Model.AllDifferentiableVariables : KeyPathIterable & VectorNumeric,
+          Model.AllDifferentiableVariables == Model.CotangentVector,
+          Model.AllDifferentiableVariables.Scalar == Scalar
+{
+    public let learningRate: Scalar
+    public let momentum: Scalar
+    public let decay: Scalar
+    public let nesterov: Bool
+
+    public init(
+        learningRate: Scalar = 0.01,
+        momentum: Scalar = 0,
+        decay: Scalar = 0,
+        nesterov: Bool = false
+    ) {
+        precondition(learningRate >= 0, "Learning rate must be non-negative")
+        precondition(momentum >= 0, "Momentum must be non-negative")
+        precondition(decay >= 0, "Weight decay must be non-negative")
+
+        self.learningRate = learningRate
+        self.momentum = momentum
+        self.decay = decay
+        self.nesterov = nesterov
+    }
+
+    var velocity = Model.AllDifferentiableVariables.zero
+
+    public func fit(_ model: inout Model, along gradients: Model.CotangentVector) {
+        for kp in model.allDifferentiableVariables
+                       .recursivelyAllWritableKeyPaths(to: Tensor<Scalar>.self) {
+            velocity[keyPath: kp] =
+                momentum * velocity[keyPath: kp] - learningRate * gradients[keyPath: kp]
+            if nesterov {
+                model.allDifferentiableVariables[keyPath: kp] += velocity[keyPath: kp]
+            } else {
+                model.allDifferentiableVariables[keyPath: kp] =
+                    model.allDifferentiableVariables[keyPath: kp] +
+                    momentum * velocity[keyPath: kp] -
+                    learningRate * gradients[keyPath: kp]
+            }
+        }
+    }
+}
+
+// MARK: - Manifold optimizers
 
 public class RiemannSGD<Model: Layer, Scalar: FloatingPoint>: Optimizer
     where Model.CotangentVector : VectorNumeric, Model.CotangentVector.Scalar == Scalar {
