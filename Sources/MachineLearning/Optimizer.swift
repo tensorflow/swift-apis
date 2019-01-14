@@ -51,9 +51,9 @@ public class Adam<Model: Layer, Scalar: BinaryFloatingPoint & TensorFlowScalar>:
         self.decay = decay
     }
 
-    var step: Scalar = 0
-    var firstMoments = Model.AllDifferentiableVariables.zero
-    var secondMoments = Model.AllDifferentiableVariables.zero
+    private var step: Scalar = 0
+    private var firstMoments = Model.AllDifferentiableVariables.zero
+    private var secondMoments = Model.AllDifferentiableVariables.zero
 
     public func fit(_ model: inout Model, along gradients: Model.CotangentVector) {
         for kp in model.allDifferentiableVariables
@@ -99,7 +99,7 @@ public class RMSProp<Model: Layer, Scalar: BinaryFloatingPoint & TensorFlowScala
         self.decay = decay
     }
 
-    var alpha = Model.AllDifferentiableVariables.zero
+    private var alpha = Model.AllDifferentiableVariables.zero
 
     public func fit(_ model: inout Model, along gradients: Model.CotangentVector) {
         for kp in model.allDifferentiableVariables
