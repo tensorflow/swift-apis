@@ -21,23 +21,9 @@ public protocol Optimizer : AnyObject {
     func fit(_ model: inout Model, along gradient: Model.CotangentVector)
 }
 
-public class RiemannSGD<Model: Layer, Scalar: FloatingPoint> : Optimizer
-    where Model.CotangentVector: VectorNumeric, Model.CotangentVector.Scalar == Scalar {
-    public var learningRate: Scalar
-
-    public init(learningRate: Scalar) {
-        self.learningRate = learningRate
-    }
-
-    public func fit(_ model: inout Model, along gradient: Model.CotangentVector) {
-        model = model.moved(along: model.tangentVector(from: Model.CotangentVector.zero - gradient))
-    }
-}
-
 public class SGD<Model: Layer, Scalar: BinaryFloatingPoint & TensorFlowScalar>: Optimizer
-    where Model.AllDifferentiableVariables : KeyPathIterable & VectorNumeric,
-          Model.AllDifferentiableVariables == Model.CotangentVector,
-          Model.AllDifferentiableVariables.Scalar == Scalar {
+    where Model.AllDifferentiableVariables: AdditiveArithmetic,
+          Model.CotangentVector == Model.AllDifferentiableVariables {
     public let learningRate: Scalar
     public let momentum: Scalar
     public let decay: Scalar
@@ -59,21 +45,33 @@ public class SGD<Model: Layer, Scalar: BinaryFloatingPoint & TensorFlowScalar>: 
         self.nesterov = nesterov
     }
 
-    var velocity = Model.AllDifferentiableVariables.zero
+    private var velocity = Model.AllDifferentiableVariables.zero
 
     public func fit(_ model: inout Model, along gradients: Model.CotangentVector) {
         for kp in model.allDifferentiableVariables
                        .recursivelyAllWritableKeyPaths(to: Tensor<Scalar>.self) {
             velocity[keyPath: kp] =
                 momentum * velocity[keyPath: kp] - learningRate * gradients[keyPath: kp]
+            let modelKP = (\Model.allDifferentiableVariables).appending(path: kp)
             if nesterov {
-                model.allDifferentiableVariables[keyPath: kp] += velocity[keyPath: kp]
+                model[keyPath: modelKP] += velocity[keyPath: kp]
             } else {
-                model.allDifferentiableVariables[keyPath: kp] =
-                    model.allDifferentiableVariables[keyPath: kp] +
-                    momentum * velocity[keyPath: kp] -
-                    learningRate * gradients[keyPath: kp]
+                model[keyPath: modelKP] = model[keyPath: modelKP] + momentum *
+                    velocity[keyPath: kp] - learningRate * gradients[keyPath: kp]
             }
         }
+    }
+}
+
+public class RiemannSGD<Model: Layer, Scalar: FloatingPoint> : Optimizer
+    where Model.TangentVector: VectorNumeric, Model.TangentVector.Scalar == Scalar {
+    public var learningRate: Scalar
+
+    public init(learningRate: Scalar) {
+        self.learningRate = learningRate
+    }
+
+    public func fit(_ model: inout Model, along gradient: Model.CotangentVector) {
+        model = model.moved(along: learningRate * (.zero - model.tangentVector(from: gradient)))
     }
 }

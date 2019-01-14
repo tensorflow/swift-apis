@@ -22,7 +22,8 @@
 ///
 /// `Layer` instances define a differentiable `applied(to:)` method for mapping
 /// inputs to outputs.
-public protocol Layer: Differentiable {
+public protocol Layer: Differentiable
+    where AllDifferentiableVariables: KeyPathIterable {
     /// The input type of the layer.
     associatedtype Input: TensorGroup & Differentiable
     /// The output type of the layer.
