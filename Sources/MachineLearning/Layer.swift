@@ -25,9 +25,9 @@
 public protocol Layer: Differentiable & KeyPathIterable
     where AllDifferentiableVariables: KeyPathIterable {
     /// The input type of the layer.
-    associatedtype Input: TensorGroup & Differentiable
+    associatedtype Input: Differentiable
     /// The output type of the layer.
-    associatedtype Output: TensorGroup & Differentiable
+    associatedtype Output: Differentiable
 
     /// Returns the output obtained from applying to an input.
     @differentiable(wrt: (self, .0))
