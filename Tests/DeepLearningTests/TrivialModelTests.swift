@@ -28,8 +28,18 @@ final class TrivialModelTests: XCTestCase {
         }
         let optimizer = SGD<Classifier, Float>()
         var classifier = Classifier()
+        let inputData = Dataset(elements: Tensor<Float>([[0, 0], [0, 1], [1, 0], [1, 1]]))
+        let outputData = Dataset(elements: Tensor<Float>([0, 1, 1, 0]))
         for _ in 0..<10 {
-            optimizer.update(&classifier.allDifferentiableVariables, along: .zero)
+            for pair in zip(inputData, outputData) {
+                let (x, y) = (pair.first, pair.second)
+                let (loss, grad) = classifier.valueWithGradient(at: x) {
+                    model, x -> Tensor<Float> in
+                    let ŷ = classifier.applied(to: x)
+                    return meanSquaredError(predicted: y, expected: ŷ)
+                }
+                optimizer.update(&classifier.allDifferentiableVariables, along: .zero)
+            }
         }
     }
 
