@@ -44,26 +44,25 @@ public extension Layer {
     }
 }
 
-// FIXME(SR-9666): @differentiable attribute deserialization failure.
-// public struct Dense<Scalar>: VectorNumeric, Layer
-//     where Scalar : FloatingPoint & Differentiable & TensorFlowScalar {
-//     public var weight: Tensor<Scalar>
-//     public var bias: Tensor<Scalar>
-//
-//     @differentiable(wrt: (self, .0), vjp: _vjpApplied(to:))
-//     public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
-//         return matmul(input, weight) + bias
-//     }
-//
-//     @usableFromInline
-//     func _vjpApplied(to input: Tensor<Scalar>)
-//         -> (Tensor<Scalar>, (Tensor<Scalar>) -> (Dense, Tensor<Scalar>)) {
-//       let r0 = matmul(input, weight)
-//       let r1 = r0 + bias
-//       func pullback(_ v: Tensor<Scalar>) -> (Dense, Tensor<Scalar>) {
-//         return (Dense(weight: matmul(input.transposed(), v), bias: v),
-//                 matmul(v, weight.transposed()))
-//       }
-//       return (r1, pullback)
-//     }
-// }
+public struct Dense<Scalar>: VectorNumeric, Layer
+    where Scalar : FloatingPoint & Differentiable & TensorFlowScalar {
+    public var weight: Tensor<Scalar>
+    public var bias: Tensor<Scalar>
+
+    @differentiable(wrt: (self, .0), vjp: _vjpApplied(to:))
+    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+        return matmul(input, weight) + bias
+    }
+
+    @usableFromInline
+    func _vjpApplied(to input: Tensor<Scalar>)
+        -> (Tensor<Scalar>, (Tensor<Scalar>) -> (Dense, Tensor<Scalar>)) {
+      let r0 = matmul(input, weight)
+      let r1 = r0 + bias
+      func pullback(_ v: Tensor<Scalar>) -> (Dense, Tensor<Scalar>) {
+        return (Dense(weight: matmul(input.transposed(), v), bias: v),
+                matmul(v, weight.transposed()))
+      }
+      return (r1, pullback)
+    }
+}

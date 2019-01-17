@@ -155,7 +155,7 @@ public class SGD<Model: Layer, Scalar: BinaryFloatingPoint & TensorFlowScalar>: 
 
 // MARK: - Manifold optimizers
 
-public class RiemannSGD<Model: Layer, Scalar: FloatingPoint> : Optimizer
+public class RiemannSGD<Model: Layer, Scalar: FloatingPoint>: Optimizer
     where Model.TangentVector: VectorNumeric, Model.TangentVector.Scalar == Scalar {
     public var learningRate: Scalar
 

@@ -13,22 +13,22 @@
 // limitations under the License.
 
 import XCTest
-@testable import MachineLearning
+@testable import DeepLearning
 
 final class TrivialModelTests: XCTestCase {
     func testXOR() {
         // NOTE: Blocked by https://bugs.swift.org/browse/SR-9656.
-        // struct Classifier : Layer {
-        //     private static var rng = ARC4RandomNumberGenerator(seed: 42)
-        //     var w1 = Tensor<Float>(randomUniform: [2, 4], generator: &rng)
-        //     var w2 = Tensor<Float>(randomUniform: [4, 1], generator: &rng)
-        //     var b1 = Tensor<Float>(zeros: [1, 4])
-        //     var b2 = Tensor<Float>(zeros: [1, 1])
-        //     func applied(to input: Tensor<Float>) -> Tensor<Float> {
-        //         let o1 = sigmoid(matmul(input, w1) + b1)
-        //         return sigmoid(matmul(o1, w2) + b2)
-        //     }
-        // }
+        struct Classifier : Layer {
+            private static var rng = ARC4RandomNumberGenerator(seed: 42)
+            var w1 = Tensor<Float>(randomUniform: [2, 4], generator: &rng)
+            var w2 = Tensor<Float>(randomUniform: [4, 1], generator: &rng)
+            var b1 = Tensor<Float>(zeros: [1, 4])
+            var b2 = Tensor<Float>(zeros: [1, 1])
+            func applied(to input: Tensor<Float>) -> Tensor<Float> {
+                let o1 = sigmoid(matmul(input, w1) + b1)
+                return sigmoid(matmul(o1, w2) + b2)
+            }
+        }
     }
 
     static var allTests = [
