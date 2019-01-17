@@ -17,17 +17,19 @@ import XCTest
 
 final class TrivialModelTests: XCTestCase {
     func testXOR() {
-        // NOTE: Blocked by https://bugs.swift.org/browse/SR-9656.
-        struct Classifier : Layer {
+        struct Classifier: Layer {
             private static var rng = ARC4RandomNumberGenerator(seed: 42)
-            var w1 = Tensor<Float>(randomUniform: [2, 4], generator: &rng)
-            var w2 = Tensor<Float>(randomUniform: [4, 1], generator: &rng)
-            var b1 = Tensor<Float>(zeros: [1, 4])
-            var b2 = Tensor<Float>(zeros: [1, 1])
+            var l1 = Dense<Float>(inputSize: 2, outputSize: 4)
+            var l2 = Dense<Float>(inputSize: 4, outputSize: 1)
             func applied(to input: Tensor<Float>) -> Tensor<Float> {
-                let o1 = sigmoid(matmul(input, w1) + b1)
-                return sigmoid(matmul(o1, w2) + b2)
+                let h1 = l1.applied(to: input)
+                return l2.applied(to: h1)
             }
+        }
+        let optimizer = SGD<Classifier, Float>()
+        var classifier = Classifier()
+        for _ in 0..<10 {
+            optimizer.update(&classifier.allDifferentiableVariables, along: .zero)
         }
     }
 

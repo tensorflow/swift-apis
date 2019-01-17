@@ -60,9 +60,17 @@ public struct Dense<Scalar>: VectorNumeric, Layer
       let r0 = matmul(input, weight)
       let r1 = r0 + bias
       func pullback(_ v: Tensor<Scalar>) -> (Dense, Tensor<Scalar>) {
-        return (Dense(weight: matmul(input.transposed(), v), bias: v),
-                matmul(v, weight.transposed()))
+          return (Dense(weight: matmul(input.transposed(), v), bias: v),
+                  matmul(v, weight.transposed()))
       }
       return (r1, pullback)
+    }
+}
+
+public extension Dense where Scalar : BinaryFloatingPoint,
+                             Scalar.RawSignificand : FixedWidthInteger {
+    init(inputSize: Int, outputSize: Int) {
+        weight = Tensor(randomNormal: [Int32(inputSize), Int32(outputSize)])
+        bias = Tensor(randomNormal: [Int32(outputSize)])
     }
 }
