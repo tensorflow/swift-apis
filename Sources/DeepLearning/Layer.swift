@@ -30,7 +30,7 @@ public protocol Layer: Differentiable & KeyPathIterable
     associatedtype Output: Differentiable
 
     /// Returns the output obtained from applying to an input.
-    @differentiable(wrt: (self, .0))
+    @differentiable(wrt: (self, input))
     func applied(to input: Input) -> Output
 }
 
@@ -49,7 +49,7 @@ public struct Dense<Scalar>: VectorNumeric, Layer
     public var weight: Tensor<Scalar>
     public var bias: Tensor<Scalar>
 
-    @differentiable(wrt: (self, .0), vjp: _vjpApplied(to:))
+    @differentiable(wrt: (self, input), vjp: _vjpApplied(to:))
     public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         return matmul(input, weight) + bias
     }
@@ -59,8 +59,10 @@ public struct Dense<Scalar>: VectorNumeric, Layer
         -> (Tensor<Scalar>, (Tensor<Scalar>) -> (Dense, Tensor<Scalar>)) {
       let r0 = matmul(input, weight)
       let r1 = r0 + bias
+      let biasShape = bias.shapeTensor
       func pullback(_ v: Tensor<Scalar>) -> (Dense, Tensor<Scalar>) {
-          return (Dense(weight: matmul(input.transposed(), v), bias: v),
+          return (Dense(weight: matmul(input.transposed(), v),
+                        bias: v.unbroadcast(toShape: biasShape)),
                   matmul(v, weight.transposed()))
       }
       return (r1, pullback)
