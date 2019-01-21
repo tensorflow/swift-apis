@@ -16,7 +16,7 @@
 
 /// A neural network layer.
 ///
-/// Types that conform to `Module` represent functions that map inputs to
+/// Types that conform to `Layer` represent functions that map inputs to
 /// outputs. They may have an internal state represented by parameters, such as
 /// weight tensors.
 ///
@@ -60,5 +60,26 @@ public extension Dense where Scalar : BinaryFloatingPoint,
     init(inputSize: Int, outputSize: Int) {
         self.init(weight: Tensor(randomNormal: [Int32(inputSize), Int32(outputSize)]),
                   bias: Tensor(randomNormal: [Int32(outputSize)]))
+    }
+}
+
+public struct Conv2D<Scalar>: Layer
+    where Scalar : FloatingPoint & Differentiable & TensorFlowScalar {
+    public var filter: Tensor<Scalar>
+    @noDerivative public let strides: (Int32, Int32)
+    @noDerivative public let padding: Padding
+
+    @differentiable(wrt: (self, input))
+    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+        return input.convolved2D(withFilter: filter,
+                                 strides: (1, strides.0, strides.1, 1),
+                                 padding: padding)
+    }
+}
+
+public extension Conv2D where Scalar : BinaryFloatingPoint,
+                              Scalar.RawSignificand : FixedWidthInteger {
+    init(filterShape: TensorShape, strides: (Int32, Int32), padding: Padding) {
+        self.init(filter: Tensor(randomNormal: filterShape), strides: strides, padding: padding)
     }
 }
