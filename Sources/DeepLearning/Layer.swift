@@ -44,35 +44,21 @@ public extension Layer {
     }
 }
 
-public struct Dense<Scalar>: VectorNumeric, Layer
+public struct Dense<Scalar>: Layer
     where Scalar : FloatingPoint & Differentiable & TensorFlowScalar {
     public var weight: Tensor<Scalar>
     public var bias: Tensor<Scalar>
 
-    @differentiable(wrt: (self, input), vjp: _vjpApplied(to:))
+    @differentiable(wrt: (self, input))
     public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         return matmul(input, weight) + bias
-    }
-
-    @usableFromInline
-    func _vjpApplied(to input: Tensor<Scalar>)
-        -> (Tensor<Scalar>, (Tensor<Scalar>) -> (Dense, Tensor<Scalar>)) {
-      let r0 = matmul(input, weight)
-      let r1 = r0 + bias
-      let biasShape = bias.shapeTensor
-      func pullback(_ v: Tensor<Scalar>) -> (Dense, Tensor<Scalar>) {
-          return (Dense(weight: matmul(input.transposed(), v),
-                        bias: v.unbroadcast(toShape: biasShape)),
-                  matmul(v, weight.transposed()))
-      }
-      return (r1, pullback)
     }
 }
 
 public extension Dense where Scalar : BinaryFloatingPoint,
                              Scalar.RawSignificand : FixedWidthInteger {
     init(inputSize: Int, outputSize: Int) {
-        weight = Tensor(randomNormal: [Int32(inputSize), Int32(outputSize)])
-        bias = Tensor(randomNormal: [Int32(outputSize)])
+        self.init(weight: Tensor(randomNormal: [Int32(inputSize), Int32(outputSize)]),
+                  bias: Tensor(randomNormal: [Int32(outputSize)]))
     }
 }

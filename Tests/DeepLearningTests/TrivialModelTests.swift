@@ -18,28 +18,30 @@ import XCTest
 final class TrivialModelTests: XCTestCase {
     func testXOR() {
         struct Classifier: Layer {
-            private static var rng = ARC4RandomNumberGenerator(seed: 42)
-            var l1 = Dense<Float>(inputSize: 2, outputSize: 4)
-            var l2 = Dense<Float>(inputSize: 4, outputSize: 1)
+            var l1, l2: Dense<Float>
+            init(hiddenSize: Int) {
+                l1 = Dense<Float>(inputSize: 2, outputSize: hiddenSize)
+                l2 = Dense<Float>(inputSize: hiddenSize, outputSize: 1)
+            }
             func applied(to input: Tensor<Float>) -> Tensor<Float> {
-                let h1 = l1.applied(to: input)
-                return l2.applied(to: h1)
+                let h1 = sigmoid(l1.applied(to: input))
+                return sigmoid(l2.applied(to: h1))
             }
         }
-        let optimizer = SGD<Classifier, Float>()
-        var classifier = Classifier()
+        let optimizer = SGD<Classifier, Float>(learningRate: 0.02)
+        var classifier = Classifier(hiddenSize: 4)
         let x: Tensor<Float> = [[0, 0], [0, 1], [1, 0], [1, 1]]
         let y: Tensor<Float> = [0, 1, 1, 0]
         for _ in 0..<1000 {
-            let (loss, 𝛁model) = classifier.valueWithGradient { model -> Tensor<Float> in
+            let (loss, 𝛁model) = classifier.valueWithGradient { classifier -> Tensor<Float> in
                 let ŷ = classifier.applied(to: x)
                 return (y - ŷ).squared().mean()
             }
             print(loss)
-            print(𝛁model)
             optimizer.update(&classifier.allDifferentiableVariables,
                              along: 𝛁model)
         }
+        print(classifier.applied(to: [[0, 0], [0, 1], [1, 0], [1, 1]]))
     }
 
     static var allTests = [
