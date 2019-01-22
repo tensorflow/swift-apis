@@ -97,10 +97,13 @@ public class RMSProp<Model: Layer, Scalar: BinaryFloatingPoint & TensorFlowScala
         self.decay = decay
     }
 
+    private var step: Scalar = 0
     private var alpha = Model.AllDifferentiableVariables.zero
 
     public func update(_ model: inout Model.AllDifferentiableVariables,
                        along gradient: Model.CotangentVector) {
+        step += 1
+        let learningRate = self.learningRate * 1 / (1 + decay * step)
         for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Scalar>.self) {
             alpha[keyPath: kp] =
                 rho * alpha[keyPath: kp] + (1 - rho) * pow(gradient[keyPath: kp], 2)
@@ -134,10 +137,13 @@ public class SGD<Model: Layer, Scalar: BinaryFloatingPoint & TensorFlowScalar>: 
         self.nesterov = nesterov
     }
 
+    private var step: Scalar = 0
     private var velocity = Model.AllDifferentiableVariables.zero
 
     public func update(_ model: inout Model.AllDifferentiableVariables,
                        along gradients: Model.CotangentVector) {
+        step += 1
+        let learningRate = self.learningRate * 1 / (1 + decay * step)
         for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Scalar>.self) {
             velocity[keyPath: kp] =
                 momentum * velocity[keyPath: kp] - learningRate * gradients[keyPath: kp]
