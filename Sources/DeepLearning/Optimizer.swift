@@ -58,19 +58,17 @@ public class Adam<Model: Layer, Scalar: BinaryFloatingPoint & TensorFlowScalar>:
 
     public func update(_ model: inout Model.AllDifferentiableVariables,
                        along gradient: Model.AllDifferentiableVariables) {
+        step += 1
+        let learningRate = self.learningRate * 1 / (1 + decay * step)
+        let stepSize = learningRate * (sqrt(1 - pow(beta2, step)) / (1 - pow(beta1, step)))
         for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Scalar>.self) {
             firstMoments[keyPath: kp] =
                 firstMoments[keyPath: kp] * beta1 + (1 - beta1) * gradient[keyPath: kp]
             secondMoments[keyPath: kp] =
-                firstMoments[keyPath: kp] * beta2 + (1 - beta2) *
-                gradient[keyPath: kp] * gradient[keyPath: kp]
-
-            let denominator = sqrt(secondMoments[keyPath: kp]) + epsilon
-            step += 1
-            let biasCorrection1 = 1 - pow(beta1, step)
-            let biasCorrection2 = 1 - pow(beta2, step)
-            let stepSize = learningRate * sqrt(biasCorrection2) / biasCorrection1
-            model[keyPath: kp] -= stepSize * firstMoments[keyPath: kp] / denominator
+                secondMoments[keyPath: kp] * beta2 + (1 - beta2) *
+                     gradient[keyPath: kp] * gradient[keyPath: kp]
+            model[keyPath: kp] -=
+                stepSize * firstMoments[keyPath: kp] / (sqrt(secondMoments[keyPath: kp]) + epsilon)
         }
     }
 }
