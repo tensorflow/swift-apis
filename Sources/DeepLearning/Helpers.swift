@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#if !COMPILING_TENSORFLOW_MODULE
 import TensorFlow
+#endif
 
 // `pow` is defined in Darwin/Glibc on `Float` and `Double`, but there doesn't exist a generic
 // version for `FloatingPoint`.

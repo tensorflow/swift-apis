@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#if !COMPILING_TENSORFLOW_MODULE
 @_exported import TensorFlow
+#endif
 
 /// A neural network layer.
 ///
@@ -44,6 +46,7 @@ public extension Layer {
     }
 }
 
+@_fixed_layout
 public struct Dense<Scalar>: Layer
     where Scalar : FloatingPoint & Differentiable & TensorFlowScalar {
     public var weight: Tensor<Scalar>
@@ -63,6 +66,7 @@ public extension Dense where Scalar : BinaryFloatingPoint,
     }
 }
 
+@_fixed_layout
 public struct Conv2D<Scalar>: Layer
     where Scalar : FloatingPoint & Differentiable & TensorFlowScalar {
     public var filter: Tensor<Scalar>

@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#if !COMPILING_TENSORFLOW_MODULE
 import TensorFlow
+#endif
 
 @differentiable(vjp: _vjpMSE)
 public func meanSquaredError<Scalar: FloatingPoint>(predicted: Tensor<Scalar>,
