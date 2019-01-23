@@ -24,8 +24,8 @@ final class TrivialModelTests: XCTestCase {
                 l2 = Dense<Float>(inputSize: hiddenSize, outputSize: 1)
             }
             func applied(to input: Tensor<Float>) -> Tensor<Float> {
-                let h1 = sigmoid(l1.applied(to: input))
-                return sigmoid(l2.applied(to: h1))
+                let h1 = relu(l1.applied(to: input))
+                return relu(l2.applied(to: h1))
             }
         }
         let optimizer = SGD<Classifier, Float>(learningRate: 0.02)
@@ -35,11 +35,9 @@ final class TrivialModelTests: XCTestCase {
         for _ in 0..<1000 {
             let (loss, 𝛁model) = classifier.valueWithGradient { classifier -> Tensor<Float> in
                 let ŷ = classifier.applied(to: x)
-                return (y - ŷ).squared().mean()
+                return meanSquaredError(predicted: ŷ, expected: y)
             }
-            print(loss)
-            optimizer.update(&classifier.allDifferentiableVariables,
-                             along: 𝛁model)
+            optimizer.update(&classifier.allDifferentiableVariables, along: 𝛁model)
         }
         print(classifier.applied(to: [[0, 0], [0, 1], [1, 0], [1, 1]]))
     }
