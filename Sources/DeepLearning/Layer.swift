@@ -121,7 +121,7 @@ public struct BatchNorm<Scalar>: Layer
     public init(axis: Int32,
                 momentum: Tensor<Scalar> = Tensor(0.99),
                 offset: Tensor<Scalar> = Tensor(0),
-                scale: Tensor<Scalar> = Tensor(0),
+                scale: Tensor<Scalar> = Tensor(1),
                 epsilon: Tensor<Scalar> = Tensor(0.001)) {
       self.axis = axis
       self.momentum = momentum
