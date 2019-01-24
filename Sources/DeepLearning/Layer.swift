@@ -87,3 +87,49 @@ public extension Conv2D where Scalar : BinaryFloatingPoint,
         self.init(filter: Tensor(randomNormal: filterShape), strides: strides, padding: padding)
     }
 }
+
+@_fixed_layout
+public struct BatchNorm<Scalar>: Layer
+    where Scalar : BinaryFloatingPoint & Differentiable & TensorFlowScalar {
+    /// The batch dimension.
+    @noDerivative public let axis: Int32
+
+    /// The momentum for the running mean and running variance.
+    @noDerivative public let momentum: Tensor<Scalar>
+
+    /// The offset value, also known as beta.
+    public var offset: Tensor<Scalar>
+
+    /// The scale value, also known as gamma.
+    public var scale: Tensor<Scalar>
+
+    /// The variance epsilon value.
+    @noDerivative public let epsilon: Tensor<Scalar>
+
+    /// The running mean.
+    @noDerivative public var runningMean: Tensor<Scalar>
+
+    /// The running variance.
+    @noDerivative public var runningVariance: Tensor<Scalar>
+
+    @differentiable(wrt: (self, input))
+    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+        return input.batchNormalized(alongAxis: axis, offset: offset,
+                                     scale: scale, epsilon: epsilon)
+    }
+
+    public init(axis: Int32,
+                momentum: Tensor<Scalar> = Tensor(0.99),
+                offset: Tensor<Scalar> = Tensor(0),
+                scale: Tensor<Scalar> = Tensor(0),
+                epsilon: Tensor<Scalar> = Tensor(0.001)) {
+      self.axis = axis
+      self.momentum = momentum
+      self.offset = offset
+      self.scale = scale
+      self.epsilon = epsilon
+      /// Initialize running mean and variance to zero.
+      self.runningMean = Tensor(0)
+      self.runningVariance = Tensor(1)
+    }
+}
