@@ -235,7 +235,7 @@ public struct MaxPool2D<Scalar>: Layer
         self.padding = padding
     }
 
-    @differentiable(wrt: (input))
+    @differentiable(wrt: (self, input))
     public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input.maxPooled(
           kernelSize: poolSize, strides: strides, padding: padding)
@@ -262,7 +262,7 @@ public struct AvgPool2D<Scalar>: Layer
         self.padding = padding
     }
 
-    @differentiable(wrt: (input))
+    @differentiable(wrt: (self, input))
     public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input.averagePooled(
           kernelSize: poolSize, strides: strides, padding: padding)
