@@ -17,7 +17,12 @@ import TensorFlow
 #endif
 
 @differentiable
-public func meanSquaredError<Scalar: FloatingPoint>(predicted: Tensor<Scalar>,
-                                                    expected: Tensor<Scalar>) -> Tensor<Scalar> {
+public func meanSquaredError<Scalar: FloatingPoint>(
+    predicted: Tensor<Scalar>, expected: Tensor<Scalar>) -> Tensor<Scalar> {
     return (expected - predicted).squared().mean()
+}
+
+public func softmaxCrossEntropy<Scalar: FloatingPoint>(
+    logits: Tensor<Scalar>, labels: Tensor<Scalar>) -> Tensor<Scalar> {
+    return -(labels * logSoftmax(logits)).sum()
 }
