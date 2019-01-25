@@ -53,6 +53,9 @@ public extension Layer {
 /// need to be toggled or threaded through in more than one place.
 public class ModeRef {
     var training: Bool = true
+    public init(_ training: Bool = true) {
+        self.training = training
+    }
 }
 
 /// A mutable, shareable reference to a tensor
