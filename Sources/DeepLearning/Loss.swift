@@ -17,7 +17,7 @@ import TensorFlow
 #endif
 
 @differentiable
-public func meanSquaredError<Scalar: FloatingPoint>(
+public func meanSquaredError<Scalar: Differentiable & FloatingPoint>(
     predicted: Tensor<Scalar>, expected: Tensor<Scalar>) -> Tensor<Scalar> {
     return (expected - predicted).squared().mean()
 }
