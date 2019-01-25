@@ -115,7 +115,8 @@ public struct BatchNorm<Scalar>: Layer
     @differentiable(wrt: (self, input))
     public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input.batchNormalized(alongAxis: axis, offset: offset,
-                                     scale: scale, epsilon: epsilon)
+                                     scale: scale,
+                                     epsilon: epsilon.scalarized())
     }
 
     public init(axis: Int32,

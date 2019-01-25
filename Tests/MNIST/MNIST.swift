@@ -36,16 +36,16 @@ func readLabelsFile(_ filename: String) -> [Int32] {
 /// Reads MNIST images and labels from specified file paths.
 func readMNIST(imagesFile: String, labelsFile: String)
     -> (images: Tensor<Float>, labels: Tensor<Int32>) {
-        print("Reading data.")
-        let images = readImagesFile(imagesFile)
-        let labels = readLabelsFile(labelsFile)
-        let rowCount = Int32(labels.count)
-        let columnCount = Int32(images.count) / rowCount
+    print("Reading data.")
+    let images = readImagesFile(imagesFile)
+    let labels = readLabelsFile(labelsFile)
+    let rowCount = Int32(labels.count)
+    let columnCount = Int32(images.count) / rowCount
 
-        print("Constructing data tensors.")
-        let imagesTensor = Tensor(shape: [rowCount, columnCount], scalars: images) / 255
-        let labelsTensor = Tensor(labels)
-        return (imagesTensor, labelsTensor)
+    print("Constructing data tensors.")
+    let imagesTensor = Tensor(shape: [rowCount, columnCount], scalars: images) / 255
+    let labelsTensor = Tensor(labels)
+    return (imagesTensor, labelsTensor)
 }
 
 struct MNISTClassifier: Layer {
