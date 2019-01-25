@@ -61,8 +61,9 @@ public struct Dense<Scalar>: Layer
 public extension Dense where Scalar : BinaryFloatingPoint,
                              Scalar.RawSignificand : FixedWidthInteger {
     init(inputSize: Int, outputSize: Int) {
-        self.init(weight: Tensor(randomNormal: [Int32(inputSize), Int32(outputSize)]),
-                  bias: Tensor(randomNormal: [Int32(outputSize)]))
+        self.init(weight: Tensor(
+            glorotUniform: [Int32(inputSize), Int32(outputSize)]),
+            bias: Tensor(zeros: [Int32(outputSize)]))
     }
 }
 
@@ -83,8 +84,17 @@ public struct Conv2D<Scalar>: Layer
 
 public extension Conv2D where Scalar : BinaryFloatingPoint,
                               Scalar.RawSignificand : FixedWidthInteger {
-    init(filterShape: TensorShape, strides: (Int32, Int32), padding: Padding) {
-        self.init(filter: Tensor(randomNormal: filterShape), strides: strides, padding: padding)
+    init(
+        filterShape: (Int, Int, Int, Int),
+        strides: (Int, Int) = (1, 1),
+        padding: Padding
+    ) {
+        let filterTensorShape = TensorShape([
+            Int32(filterShape.0), Int32(filterShape.1),
+            Int32(filterShape.2), Int32(filterShape.3)])
+        self.init(
+            filter: Tensor(glorotUniform: filterTensorShape),
+            strides: (Int32(strides.0), Int32(strides.1)), padding: padding)
     }
 }
 
