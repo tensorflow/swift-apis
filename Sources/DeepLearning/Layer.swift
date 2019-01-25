@@ -46,6 +46,23 @@ public extension Layer {
     }
 }
 
+/// A mutable, shareable flag that denotes training vs. inference
+///
+/// In typical uses, every layer in a model that has behavior which differs
+/// between training and inference shares an instance of ModeRef so it doesn't
+/// need to be toggled or threaded through in more than one place.
+public class ModeRef {
+    var training: Bool = true
+}
+
+/// A mutable, shareable reference to a tensor
+public class Parameter<T : TensorFlowScalar> {
+    var value: Tensor<T>
+    public init(_ value: Tensor<T>) {
+        self.value = value
+    }
+}
+
 @_fixed_layout
 public struct Dense<Scalar>: Layer
     where Scalar : FloatingPoint & Differentiable & TensorFlowScalar {
@@ -117,30 +134,77 @@ public struct BatchNorm<Scalar>: Layer
     @noDerivative public let epsilon: Tensor<Scalar>
 
     /// The running mean.
-    @noDerivative public var runningMean: Tensor<Scalar>
+    @noDerivative public let runningMean: Parameter<Scalar>
 
     /// The running variance.
-    @noDerivative public var runningVariance: Tensor<Scalar>
+    @noDerivative public let runningVariance: Parameter<Scalar>
+
+    @noDerivative public let mode: ModeRef
 
     @differentiable(wrt: (self, input))
-    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return input.batchNormalized(alongAxis: axis, offset: offset,
-                                     scale: scale, epsilon: epsilon)
+    private func applyTraining(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+        let mean = input.mean(alongAxes: axis)
+        let variance = input.variance(alongAxes: axis)
+        runningMean.value += (mean - runningMean.value) * (1 - momentum)
+        runningVariance.value += (
+            variance - runningVariance.value) * (1 - momentum)
+        let inv = rsqrt(variance + epsilon) * scale
+        return (input - mean) * inv + offset
     }
 
-    public init(axis: Int32,
+    @differentiable(wrt: (self, input))
+    private func applyInference(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+        let inv = rsqrt(runningVariance.value + epsilon) * scale
+        return (input - runningMean.value) * inv + offset
+    }
+
+    // TODO fix crasher in the below to enable behavior that differs between
+    // training and inference
+    //
+    // @differentiable(wrt: (self, input), vjp: _vjpApplied(to:))
+    // public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+    //     if mode.training {
+    //         return applyTraining(to: input)
+    //     } else {
+    //         return applyInference(to: input)
+    //     }
+    // }
+    //
+    // public func _vjpApplied(to input: Tensor<Scalar>) ->
+    //     (Tensor<Scalar>, (Tensor<Scalar>) ->
+    //         (BatchNorm<Scalar>.CotangentVector, Tensor<Scalar>)) {
+    //     if mode.training {
+    //         return Swift.valueWithPullback(at: self, input) {
+    //             $0.applyTraining(to: $1)
+    //         }
+    //     } else {
+    //         return Swift.valueWithPullback(at: self, input) {
+    //             $0.applyInference(to: $1)
+    //         }
+    //     }
+    // }
+    //
+    // Work around for now by always using training mode
+    @differentiable(wrt: (self, input))
+    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+        return applyTraining(to: input)
+    }
+
+    public init(featureCount: Int,
+                modeRef: ModeRef,
+                axis: Int = 0,
                 momentum: Tensor<Scalar> = Tensor(0.99),
-                offset: Tensor<Scalar> = Tensor(0),
-                scale: Tensor<Scalar> = Tensor(1),
                 epsilon: Tensor<Scalar> = Tensor(0.001)) {
-      self.axis = axis
-      self.momentum = momentum
-      self.offset = offset
-      self.scale = scale
-      self.epsilon = epsilon
-      /// Initialize running mean and variance to zero.
-      self.runningMean = Tensor(0)
-      self.runningVariance = Tensor(1)
+        self.axis = Int32(axis)
+        self.momentum = momentum
+        self.scale = Tensor<Scalar>(ones: [Int32(featureCount)])
+        self.offset = Tensor<Scalar>(zeros: [Int32(featureCount)])
+        self.epsilon = epsilon
+        self.runningMean = Parameter(Tensor(0))
+        self.runningVariance = Parameter(Tensor(1))
+        self.mode = modeRef
+    }
+}
 
 @_fixed_layout
 public struct MaxPool2D<Scalar>: Layer
