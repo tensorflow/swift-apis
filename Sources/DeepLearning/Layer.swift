@@ -65,28 +65,37 @@ public class Parameter<T : TensorFlowScalar> {
 
 @_fixed_layout
 public struct Dense<Scalar>: Layer
-    where Scalar : FloatingPoint & Differentiable & TensorFlowScalar {
+    where Scalar: FloatingPoint & Differentiable & TensorFlowScalar {
+
     public var weight: Tensor<Scalar>
     public var bias: Tensor<Scalar>
+    public typealias Activation = @autodiff (Tensor<Scalar>) -> Tensor<Scalar>
+    @noDerivative public let activation: Activation
+
+    // FIXME(SR-9716): Remove this once the bug is fixed or worked around.
+    public var allKeyPaths: [PartialKeyPath<Dense>] {
+        return [\Dense.weight, \Dense.bias]
+    }
 
     @differentiable(wrt: (self, input))
     public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return matmul(input, weight) + bias
+        return activation(matmul(input, weight) + bias)
     }
 }
 
 public extension Dense where Scalar : BinaryFloatingPoint,
                              Scalar.RawSignificand : FixedWidthInteger {
-    init(inputSize: Int, outputSize: Int) {
+    init(inputSize: Int, outputSize: Int, activation: @escaping Activation) {
         self.init(weight: Tensor(
-            glorotUniform: [Int32(inputSize), Int32(outputSize)]),
-            bias: Tensor(zeros: [Int32(outputSize)]))
+                  glorotUniform: [Int32(inputSize), Int32(outputSize)]),
+                  bias: Tensor(zeros: [Int32(outputSize)]),
+                  activation: activation)
     }
 }
 
 @_fixed_layout
 public struct Conv2D<Scalar>: Layer
-    where Scalar : FloatingPoint & Differentiable & TensorFlowScalar {
+    where Scalar: FloatingPoint & Differentiable & TensorFlowScalar {
     public var filter: Tensor<Scalar>
     @noDerivative public let strides: (Int32, Int32)
     @noDerivative public let padding: Padding
@@ -117,7 +126,7 @@ public extension Conv2D where Scalar : BinaryFloatingPoint,
 
 @_fixed_layout
 public struct BatchNorm<Scalar>: Layer
-    where Scalar : BinaryFloatingPoint & Differentiable & TensorFlowScalar {
+    where Scalar: BinaryFloatingPoint & Differentiable & TensorFlowScalar {
     /// The batch dimension.
     @noDerivative public let axis: Int32
 
