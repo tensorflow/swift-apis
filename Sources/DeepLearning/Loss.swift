@@ -31,3 +31,8 @@ public func meanSquaredError<Scalar: FloatingPoint>(predicted: Tensor<Scalar>,
       return (d, -d)
     })
 }
+
+public func softmaxCrossEntropy<Scalar: FloatingPoint>(
+    logits: Tensor<Scalar>, labels: Tensor<Scalar>) -> Tensor<Scalar> {
+    return -(labels * logSoftmax(logits)).sum()
+}
