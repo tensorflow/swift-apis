@@ -16,18 +16,8 @@
 import TensorFlow
 #endif
 
-@differentiable(vjp: _vjpMSE)
+@differentiable
 public func meanSquaredError<Scalar: FloatingPoint>(predicted: Tensor<Scalar>,
                                                     expected: Tensor<Scalar>) -> Tensor<Scalar> {
     return (expected - predicted).squared().mean()
-}
-
-@usableFromInline func _vjpMSE<Scalar: FloatingPoint>(
-    predicted: Tensor<Scalar>, expected: Tensor<Scalar>
-) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
-    let result = meanSquaredError(predicted: predicted, expected: expected)
-    return (result, { [n = predicted.scalarCountTensor] v in
-      let d = 2 * v / Tensor(n)
-      return (d, -d)
-    })
 }
