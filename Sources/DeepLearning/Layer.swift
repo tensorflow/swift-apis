@@ -141,5 +141,57 @@ public struct BatchNorm<Scalar>: Layer
       /// Initialize running mean and variance to zero.
       self.runningMean = Tensor(0)
       self.runningVariance = Tensor(1)
+
+@_fixed_layout
+public struct MaxPool2D<Scalar>: Layer
+    where Scalar : BinaryFloatingPoint & Differentiable & TensorFlowScalar {
+    /// The size of the sliding reduction window for pooling.
+    @noDerivative let poolSize: (Int32, Int32, Int32, Int32)
+
+    /// The strides of the sliding window for each dimension of a 4-D input.
+    /// Strides in non-spatial dimensions must be 1.
+    @noDerivative let strides: (Int32, Int32, Int32, Int32)
+
+    /// The padding algorithm for pooling.
+    @noDerivative let padding: Padding
+
+    // strides are just for the spatial dimensions (H and W)
+    public init(poolSize: (Int, Int), strides: (Int, Int), padding: Padding) {
+        self.poolSize = (1, Int32(poolSize.0), Int32(poolSize.1), 1)
+        self.strides = (1, Int32(strides.0), Int32(strides.1), 1)
+        self.padding = padding
+    }
+
+    @differentiable(wrt: (input))
+    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+        return input.maxPooled(
+          kernelSize: poolSize, strides: strides, padding: padding)
+    }
+}
+
+@_fixed_layout
+public struct AvgPool2D<Scalar>: Layer
+    where Scalar : BinaryFloatingPoint & Differentiable & TensorFlowScalar {
+    /// The size of the sliding reduction window for pooling.
+    @noDerivative let poolSize: (Int32, Int32, Int32, Int32)
+
+    /// The strides of the sliding window for each dimension of a 4-D input.
+    /// Strides in non-spatial dimensions must be 1.
+    @noDerivative let strides: (Int32, Int32, Int32, Int32)
+
+    /// The padding algorithm for pooling.
+    @noDerivative let padding: Padding
+
+    // strides are just for the spatial dimensions (H and W)
+    public init(poolSize: (Int, Int), strides: (Int, Int), padding: Padding) {
+        self.poolSize = (1, Int32(poolSize.0), Int32(poolSize.1), 1)
+        self.strides = (1, Int32(strides.0), Int32(strides.1), 1)
+        self.padding = padding
+    }
+
+    @differentiable(wrt: (input))
+    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+        return input.averagePooled(
+          kernelSize: poolSize, strides: strides, padding: padding)
     }
 }
