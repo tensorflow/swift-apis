@@ -51,12 +51,14 @@ func readMNIST(imagesFile: String, labelsFile: String)
 struct MNISTClassifier: Layer {
     var l1, l2: Dense<Float>
     init(hiddenSize: Int) {
-        l1 = Dense<Float>(inputSize: 784, outputSize: hiddenSize)
-        l2 = Dense<Float>(inputSize: hiddenSize, outputSize: 10)
+        l1 = Dense<Float>(inputSize: 784, outputSize: hiddenSize,
+                          activation: sigmoid)
+        l2 = Dense<Float>(inputSize: hiddenSize, outputSize: 10,
+                          activation: logSoftmax)
     }
     func applied(to input: Tensor<Float>) -> Tensor<Float> {
-        let h1 = sigmoid(l1.applied(to: input))
-        return logSoftmax(l2.applied(to: h1))
+        let h1 = l1.applied(to: input)
+        return l2.applied(to: h1)
     }
 }
 
