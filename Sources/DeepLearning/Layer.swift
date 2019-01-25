@@ -52,7 +52,7 @@ public extension Layer {
 /// between training and inference shares an instance of ModeRef so it doesn't
 /// need to be toggled or threaded through in more than one place.
 public class ModeRef {
-    var training: Bool = true
+    var training: Bool
     public init(_ training: Bool = true) {
         self.training = training
     }
