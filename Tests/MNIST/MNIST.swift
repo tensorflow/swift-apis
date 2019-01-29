@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+infix operator .== : ComparisonPrecedence
+
 import XCTest
 import Python
 @testable import DeepLearning
@@ -23,14 +25,14 @@ func readImagesFile(_ filename: String) -> [Float] {
     let file = gzip.open(filename, "rb").read()
     let data = np.frombuffer(file, dtype: np.uint8, offset: 16)
     let array = data.astype(np.float32) / 255
-    return Array(numpyArray: array)!
+    return Array(numpy: array)!
 }
 
 func readLabelsFile(_ filename: String) -> [Int32] {
     let file = gzip.open(filename, "rb").read()
     let data = np.frombuffer(file, dtype: np.uint8, offset: 8)
     let array = data.astype(np.int32)
-    return Array(numpyArray: array)!
+    return Array(numpy: array)!
 }
 
 /// Reads MNIST images and labels from specified file paths.
@@ -56,6 +58,7 @@ struct MNISTClassifier: Layer {
         l2 = Dense<Float>(inputSize: hiddenSize, outputSize: 10,
                           activation: logSoftmax)
     }
+    @differentiable(wrt: (self, input))
     func applied(to input: Tensor<Float>) -> Tensor<Float> {
         let h1 = l1.applied(to: input)
         return l2.applied(to: h1)
