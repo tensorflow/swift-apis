@@ -271,6 +271,38 @@ public struct AvgPool2D<Scalar>: Layer
     }
 }
 
+@_fixed_layout
+public struct LayerNorm<Scalar>: Layer
+    where Scalar : BinaryFloatingPoint & Differentiable & TensorFlowScalar {
+    /// The offset value, also known as beta.
+    public var offset: Tensor<Scalar>
+
+    /// The scale value, also known as gamma.
+    public var scale: Tensor<Scalar>
+
+    @noDerivative public let axis: Int32
+
+    /// The variance epsilon value.
+    @noDerivative public let epsilon: Tensor<Scalar>
+
+    public init(featureCount: Int,
+                axis: Int,
+                epsilon: Tensor<Scalar> = Tensor(0.001)) {
+        self.scale = Tensor<Scalar>(ones: [Int32(featureCount)])
+        self.offset = Tensor<Scalar>(zeros: [Int32(featureCount)])
+        self.axis = Int32(axis)
+        self.epsilon = epsilon
+    }
+
+    @differentiable(wrt: (self, input))
+    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+        let mean = input.mean(alongAxes: axis)
+        let variance = input.variance(alongAxes: axis)
+        let inv = rsqrt(variance + epsilon) * scale
+        return (input - mean) * inv + offset
+    }
+}
+
 public extension Tensor where Scalar : BinaryFloatingPoint,
                        Scalar.RawSignificand : FixedWidthInteger {
     @differentiable(wrt: (self) where Scalar : Differentiable)
