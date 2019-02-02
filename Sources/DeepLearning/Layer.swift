@@ -270,3 +270,62 @@ public struct AvgPool2D<Scalar>: Layer
           kernelSize: poolSize, strides: strides, padding: padding)
     }
 }
+
+public extension Tensor where Scalar : BinaryFloatingPoint,
+                       Scalar.RawSignificand : FixedWidthInteger {
+    @differentiable(wrt: (self) where Scalar : Differentiable)
+    func droppedOut(withProbability dropProbability: Double) -> Tensor {
+        let noise = Tensor(randomUniform: shape)
+        let keepMask = noise .>= Scalar(dropProbability)
+        let keepProbability = Scalar(1.0 - dropProbability)
+        return self * Tensor(keepMask) / Tensor(keepProbability)
+    }
+}
+
+@_fixed_layout
+public struct Dropout<Scalar>: Layer
+    where Scalar: BinaryFloatingPoint & Differentiable & TensorFlowScalar,
+          Scalar.RawSignificand : FixedWidthInteger {
+    @noDerivative public let dropProb: Double
+    @noDerivative public let mode: ModeRef
+    var _unused: Tensor<Scalar>
+
+    public init(dropProbability: Double, modeRef: ModeRef) {
+        self.dropProb = dropProbability
+        self.mode = modeRef
+        self._unused = Tensor<Scalar>(Scalar(0))
+    }
+
+    @differentiable(wrt: (self, input))
+    public func applyTraining(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+        return input.droppedOut(withProbability: dropProb)
+    }
+
+    @differentiable(wrt: (self, input))
+    public func applyInference(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+        return input
+    }
+
+    @differentiable(wrt: (self, input), vjp: _vjpApplied(to:))
+    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+        if mode.training {
+            return applyTraining(to: input)
+        } else {
+            return applyInference(to: input)
+        }
+    }
+
+    public func _vjpApplied(to input: Tensor<Scalar>) ->
+        (Tensor<Scalar>, (Tensor<Scalar>) ->
+            (Dropout<Scalar>.CotangentVector, Tensor<Scalar>)) {
+        if mode.training {
+            return Swift.valueWithPullback(at: self, input) {
+                $0.applyTraining(to: $1)
+            }
+        } else {
+            return Swift.valueWithPullback(at: self, input) {
+                $0.applyInference(to: $1)
+            }
+        }
+    }
+}
