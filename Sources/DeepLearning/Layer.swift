@@ -97,6 +97,7 @@ public extension Dense where Scalar : BinaryFloatingPoint,
 public struct Conv2D<Scalar>: Layer
     where Scalar: FloatingPoint & Differentiable & TensorFlowScalar {
     public var filter: Tensor<Scalar>
+    public var bias: Tensor<Scalar>
     @noDerivative public let strides: (Int32, Int32)
     @noDerivative public let padding: Padding
 
@@ -104,7 +105,7 @@ public struct Conv2D<Scalar>: Layer
     public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input.convolved2D(withFilter: filter,
                                  strides: (1, strides.0, strides.1, 1),
-                                 padding: padding)
+                                 padding: padding) + bias
     }
 }
 
@@ -120,6 +121,7 @@ public extension Conv2D where Scalar : BinaryFloatingPoint,
             Int32(filterShape.2), Int32(filterShape.3)])
         self.init(
             filter: Tensor(glorotUniform: filterTensorShape),
+            bias: Tensor(zeros: TensorShape([Int32(filterShape.3)])),
             strides: (Int32(strides.0), Int32(strides.1)), padding: padding)
     }
 }
