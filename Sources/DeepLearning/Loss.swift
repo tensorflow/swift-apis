@@ -25,5 +25,5 @@ public func meanSquaredError<Scalar: Differentiable & FloatingPoint>(
 @differentiable
 public func softmaxCrossEntropy<Scalar: Differentiable & FloatingPoint>(
     logits: Tensor<Scalar>, labels: Tensor<Scalar>) -> Tensor<Scalar> {
-    return -(labels * logSoftmax(logits)).sum()
+    return -(labels * logSoftmax(logits)).mean(alongAxes: 0).sum()
 }
