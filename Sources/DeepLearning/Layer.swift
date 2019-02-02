@@ -52,15 +52,12 @@ public extension Layer {
 /// between training and inference shares an instance of ModeRef so it doesn't
 /// need to be toggled or threaded through in more than one place.
 public class ModeRef {
-    var training: Bool
-    public init(_ training: Bool = true) {
-        self.training = training
-    }
+    public var training: Bool = true
 }
 
 /// A mutable, shareable reference to a tensor
 public class Parameter<T : TensorFlowScalar> {
-    var value: Tensor<T>
+    public var value: Tensor<T>
     public init(_ value: Tensor<T>) {
         self.value = value
     }
