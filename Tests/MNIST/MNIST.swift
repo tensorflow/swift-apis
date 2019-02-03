@@ -18,10 +18,13 @@ import XCTest
 import Python
 @testable import DeepLearning
 
+let os = Python.import("os")
 let gzip = Python.import("gzip")
 let np = Python.import("numpy")
 
 func readImagesFile(_ filename: String) -> [Float] {
+    let directory = os.path.dirname(#file)
+    let filename = os.path.join(directory, filename)
     let file = gzip.open(filename, "rb").read()
     let data = np.frombuffer(file, dtype: np.uint8, offset: 16)
     let array = data.astype(np.float32) / 255
@@ -29,6 +32,8 @@ func readImagesFile(_ filename: String) -> [Float] {
 }
 
 func readLabelsFile(_ filename: String) -> [Int32] {
+    let directory = os.path.dirname(#file)
+    let filename = os.path.join(directory, filename)
     let file = gzip.open(filename, "rb").read()
     let data = np.frombuffer(file, dtype: np.uint8, offset: 8)
     let array = data.astype(np.int32)
