@@ -53,11 +53,11 @@ public extension Layer {
 /// need to be toggled or threaded through in more than one place.
 public class LearningPhaseIndicator {
     public var training: Bool = true
-    public init() { }
+    public init() {}
 }
 
 /// A mutable, shareable reference to a tensor
-public class Parameter<T : TensorFlowScalar> {
+public class Parameter<T: TensorFlowScalar> {
     public var value: Tensor<T>
     public init(_ value: Tensor<T>) {
         self.value = value
