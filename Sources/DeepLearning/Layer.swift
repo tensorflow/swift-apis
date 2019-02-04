@@ -51,7 +51,7 @@ public extension Layer {
 /// In typical uses, every layer in a model that has behavior which differs
 /// between training and inference shares an instance of ModeRef so it doesn't
 /// need to be toggled or threaded through in more than one place.
-public class ModeRef {
+public class LearningPhaseIndicator {
     public var training: Bool = true
 }
 
@@ -150,7 +150,7 @@ public struct BatchNorm<Scalar>: Layer
     /// The running variance.
     @noDerivative public let runningVariance: Parameter<Scalar>
 
-    @noDerivative public let mode: ModeRef
+    @noDerivative public let learningPhaseIndicator: LearningPhaseIndicator
 
     @differentiable(wrt: (self, input))
     private func applyTraining(to input: Tensor<Scalar>) -> Tensor<Scalar> {
@@ -174,7 +174,7 @@ public struct BatchNorm<Scalar>: Layer
     //
     // @differentiable(wrt: (self, input), vjp: _vjpApplied(to:))
     // public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
-    //     if mode.training {
+    //     if learningPhaseIndicator.training {
     //         return applyTraining(to: input)
     //     } else {
     //         return applyInference(to: input)
@@ -184,12 +184,12 @@ public struct BatchNorm<Scalar>: Layer
     // public func _vjpApplied(to input: Tensor<Scalar>) ->
     //     (Tensor<Scalar>, (Tensor<Scalar>) ->
     //         (BatchNorm<Scalar>.CotangentVector, Tensor<Scalar>)) {
-    //     if mode.training {
-    //         return Swift.valueWithPullback(at: self, input) {
+    //     if learningPhaseIndicator.training {
+    //         return self.valueWithPullback(at: input) {
     //             $0.applyTraining(to: $1)
     //         }
     //     } else {
-    //         return Swift.valueWithPullback(at: self, input) {
+    //         return self.valueWithPullback(at: input) {
     //             $0.applyInference(to: $1)
     //         }
     //     }
@@ -202,7 +202,7 @@ public struct BatchNorm<Scalar>: Layer
     }
 
     public init(featureCount: Int,
-                modeRef: ModeRef,
+                learningPhaseIndicator: LearningPhaseIndicator,
                 axis: Int = 0,
                 momentum: Tensor<Scalar> = Tensor(0.99),
                 epsilon: Tensor<Scalar> = Tensor(0.001)) {
@@ -213,7 +213,7 @@ public struct BatchNorm<Scalar>: Layer
         self.epsilon = epsilon
         self.runningMean = Parameter(Tensor(0))
         self.runningVariance = Parameter(Tensor(1))
-        self.mode = modeRef
+        self.learningPhaseIndicator = learningPhaseIndicator
     }
 }
 
@@ -306,10 +306,10 @@ public struct LayerNorm<Scalar>: Layer
 public extension Tensor where Scalar : BinaryFloatingPoint,
                        Scalar.RawSignificand : FixedWidthInteger {
     @differentiable(wrt: (self) where Scalar : Differentiable)
-    func droppedOut(withProbability dropProbability: Double) -> Tensor {
+    func droppedOut(withProbability probability: Double) -> Tensor {
         let noise = Tensor(randomUniform: shape)
-        let keepMask = noise .>= Scalar(dropProbability)
-        let keepProbability = Scalar(1.0 - dropProbability)
+        let keepMask = noise .>= Scalar(probability)
+        let keepProbability = Scalar(1.0 - probability)
         return self * Tensor(keepMask) / Tensor(keepProbability)
     }
 }
@@ -318,29 +318,34 @@ public extension Tensor where Scalar : BinaryFloatingPoint,
 public struct Dropout<Scalar>: Layer
     where Scalar: BinaryFloatingPoint & Differentiable & TensorFlowScalar,
           Scalar.RawSignificand : FixedWidthInteger {
-    @noDerivative public let dropProb: Double
-    @noDerivative public let mode: ModeRef
+    @noDerivative public let probability: Double
+    @noDerivative public let learningPhaseIndicator: LearningPhaseIndicator
+    // Workaround for TF-8
     var _unused: Tensor<Scalar>
 
-    public init(dropProbability: Double, modeRef: ModeRef) {
-        self.dropProb = dropProbability
-        self.mode = modeRef
-        self._unused = Tensor<Scalar>(Scalar(0))
+    public init(
+        probability: Double,
+        learningPhaseIndicator: LearningPhaseIndicator
+    ) {
+        self.probability = probability
+        self.learningPhaseIndicator = learningPhaseIndicator
+        // Workaround for TF-8
+        self._unused = Tensor<Scalar>(0)
     }
 
     @differentiable(wrt: (self, input))
-    public func applyTraining(to input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return input.droppedOut(withProbability: dropProb)
+    func applyTraining(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+        return input.droppedOut(withProbability: probability)
     }
 
     @differentiable(wrt: (self, input))
-    public func applyInference(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+    func applyInference(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input
     }
 
     @differentiable(wrt: (self, input), vjp: _vjpApplied(to:))
     public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
-        if mode.training {
+        if learningPhaseIndicator.training {
             return applyTraining(to: input)
         } else {
             return applyInference(to: input)
@@ -350,12 +355,12 @@ public struct Dropout<Scalar>: Layer
     public func _vjpApplied(to input: Tensor<Scalar>) ->
         (Tensor<Scalar>, (Tensor<Scalar>) ->
             (Dropout<Scalar>.CotangentVector, Tensor<Scalar>)) {
-        if mode.training {
-            return Swift.valueWithPullback(at: self, input) {
+        if learningPhaseIndicator.training {
+            return self.valueWithPullback(at: input) {
                 $0.applyTraining(to: $1)
             }
         } else {
-            return Swift.valueWithPullback(at: self, input) {
+            return self.valueWithPullback(at: input) {
                 $0.applyInference(to: $1)
             }
         }
