@@ -53,6 +53,7 @@ public extension Layer {
 /// need to be toggled or threaded through in more than one place.
 public class LearningPhaseIndicator {
     public var training: Bool = true
+    public init() { }
 }
 
 /// A mutable, shareable reference to a tensor
@@ -304,9 +305,9 @@ public struct LayerNorm<Scalar>: Layer
 }
 
 public extension Tensor where Scalar : BinaryFloatingPoint,
-                       Scalar.RawSignificand : FixedWidthInteger {
-    @differentiable(wrt: (self) where Scalar : Differentiable)
-    func droppedOut(withProbability probability: Double) -> Tensor {
+                              Scalar.RawSignificand : FixedWidthInteger {
+    @differentiable(wrt: self where Scalar : Differentiable)
+    func droppingOut(probability: Double) -> Tensor {
         let noise = Tensor(randomUniform: shape)
         let keepMask = noise .>= Scalar(probability)
         let keepProbability = Scalar(1.0 - probability)
@@ -334,12 +335,12 @@ public struct Dropout<Scalar>: Layer
     }
 
     @differentiable(wrt: (self, input))
-    func applyTraining(to input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return input.droppedOut(withProbability: probability)
+    private func applyTraining(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+        return input.droppingOut(probability: probability)
     }
 
     @differentiable(wrt: (self, input))
-    func applyInference(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+    private func applyInference(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input
     }
 
