@@ -1,9 +1,9 @@
 # TODO: We should have a job that creates a S4TF base image so that
 #we don't have to duplicate the installation everywhere.
-FROM nvidia/cuda:9.2-cudnn7-devel-ubuntu18.04
+FROM nvidia/cuda:10.0-cudnn7-devel-ubuntu18.04
 
 # Allows the caller to specify the toolchain to use.
-ARG swift_tf_url=https://storage.googleapis.com/s4tf-kokoro-artifact-testing/latest/swift-tensorflow-DEVELOPMENT-ubuntu18.04.tar.gz
+ARG swift_tf_url=https://storage.googleapis.com/s4tf-kokoro-artifact-testing/latest/swift-tensorflow-DEVELOPMENT-cuda10.0-cudnn7-ubuntu18.04.tar.gz
 
 # Install Swift deps.
 ENV DEBIAN_FRONTEND=noninteractive
@@ -33,7 +33,7 @@ WORKDIR /swift-apis
 COPY . .
 
 # Configure cuda
-RUN echo "/usr/local/cuda-9.2/targets/x86_64-linux/lib/stubs" > /etc/ld.so.conf.d/cuda-9.2-stubs.conf && \
+RUN echo "/usr/local/cuda-10.0/targets/x86_64-linux/lib/stubs" > /etc/ld.so.conf.d/cuda-10.0-stubs.conf && \
     ldconfig
 
 # Run SwiftPM tests
