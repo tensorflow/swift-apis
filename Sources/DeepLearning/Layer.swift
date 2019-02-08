@@ -367,3 +367,36 @@ public struct Dropout<Scalar>: Layer
         }
     }
 }
+
+@_fixed_layout
+public struct UpSampling2D<Scalar>: Layer
+    where Scalar: BinaryFloatingPoint & Differentiable & TensorFlowScalar {
+
+    @noDerivative public let scale: Int32
+
+    public init(scaleBy: Int32) {
+        scale = scaleBy
+    }
+
+    @differentiable(wrt: (self, input))
+    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+        let batchSize = input.shape[0]
+        let height = input.shape[1]
+        let width = input.shape[2]
+        let channels = input.shape[3]
+        let upSampling = input.reshaped(
+          toShape: Tensor<Int32>([batchSize,
+                                  height, 1,
+                                  width, 1,
+                                  channels])) *
+                                  Tensor<Scalar>(
+                                  ones: [1, 1, scale, 1, scale, 1])
+        let upSampled = upSampling.reshaped(
+          toShape: Tensor<Int32>([batchSize,
+                                  height * scale,
+                                  width * scale,
+                                  channels]))
+        return upSampled
+    }
+
+}
