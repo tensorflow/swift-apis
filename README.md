@@ -27,8 +27,8 @@ struct Classifier: Layer {
     var l1, l2: Dense<Float>
 
     func applied(to input: Tensor<Float>) -> Tensor<Float> {
-        let h1 = sigmoid(l1.applied(to: input))
-        return sigmoid(l2.applied(to: h1))
+        let h1 = l1.applied(to: input)
+        return l2.applied(to: h1)
     }
 }
 
