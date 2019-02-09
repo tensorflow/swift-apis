@@ -380,20 +380,16 @@ public struct UpSampling2D<Scalar>: Layer
 
     @differentiable(wrt: (self, input))
     public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
-        let batchSize = input.shape[0]
-        let height = input.shape[1]
-        let width = input.shape[2]
-        let channels = input.shape[3]
-        let reshapeSize = Tensor<Int32>([batchSize,
-                                         height, 1,
-                                         width, 1,
-                                         channels])
+        let reshapeSize = Tensor<Int32>([input.shape[0],
+                                         input.shape[1], 1,
+                                         input.shape[2], 1,
+                                         input.shape[3]])
         let scaleOnes = Tensor<Scalar>(ones: [1, 1, size, 1, size, 1])
         let upSampling = input.reshaped(toShape: reshapeSize) *
                          scaleOnes
-        let upSampledShape = Tensor<Int32>([batchSize,
-                                           height * size,
-                                           width * size,
+        let upSampledShape = Tensor<Int32>([input.shape[0],
+                                           input.shape[1] * size,
+                                           input.shape[2] * size,
                                            channels])
         let upSampled = upSampling.reshaped(toShape: upSampledShape)
         return upSampled
