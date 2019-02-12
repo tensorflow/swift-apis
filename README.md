@@ -1,10 +1,10 @@
-# [Swift for TensorFlow](https://github.com/tensorflow/swift) APIs
+# Swift for TensorFlow APIs
 
-Deep learning library for Swift for TensorFlow.
+This repository hosts [Swift for TensorFlow](https://github.com/tensorflow/swift)'s deep learning library, available both as a part of the Swift for TensorFlow toolchain and as a Swift package.
 
 ## Requirements
 
-* A latest Swift for TensorFlow toolchain.
+* A latest [Swift for TensorFlow toolchain](https://github.com/tensorflow/swift/blob/master/Installation.md).
 
 ## Usage
 
@@ -13,7 +13,7 @@ is required to use this package. Add the following to your Swift package manifes
 
 ```swift
 packages: [
-  .package(url: "https://github.com/tensorflow/swift-apis.git")
+    .package(url: "https://github.com/tensorflow/swift-apis.git")
 ]
 ```
 
@@ -22,27 +22,32 @@ To get started, simply import `TensorFlow` in your Swift code.
 ```swift
 import TensorFlow
 
-// Define a model.
-struct Classifier: Layer {
+struct Model: Layer {
     var l1, l2: Dense<Float>
-
+    init(hiddenSize: Int) {
+        l1 = Dense<Float>(inputSize: 2, outputSize: hiddenSize, activation: relu)
+        l2 = Dense<Float>(inputSize: hiddenSize, outputSize: 1, activation: relu)
+    }
+    @differentiable(wrt: (self, input))
     func applied(to input: Tensor<Float>) -> Tensor<Float> {
         let h1 = l1.applied(to: input)
         return l2.applied(to: h1)
     }
 }
 
-var model = Classifier(...)
 let optimizer = SGD<Classifier, Float>(learningRate: 0.02)
+var classifier = Model(hiddenSize: 4)
+let x: Tensor<Float> = ...
+let y: Tensor<Float> = ...
+
 for _ in 0..<1000 {
-    let (loss, 𝛁model) = model.valueWithGradient { model in
-        let ŷ = model.applied(to: x)
-        print("Prediction: \(ŷ)")
-        return (y - ŷ).squared().mean()
+    let 𝛁model = classifier.gradient { classifier -> Tensor<Float> in
+        let ŷ = classifier.applied(to: x)
+        let loss = meanSquaredError(predicted: ŷ, expected: y)
+        print("Loss: \(loss)")
+        return loss
     }
-    print("Loss: \(loss)")
-    optimizer.update(&model.allDifferentiableVariables,
-                     along: 𝛁model)
+    optimizer.update(&classifier.allDifferentiableVariables, along: 𝛁model)
 }
 ```
 
