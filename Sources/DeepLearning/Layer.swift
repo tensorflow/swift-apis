@@ -155,8 +155,9 @@ public struct BatchNorm<Scalar>: Layer
 
     @differentiable(wrt: (self, input))
     private func applyTraining(to input: Tensor<Scalar>) -> Tensor<Scalar> {
-        let mean = input.mean(alongAxes: axis)
-        let variance = input.variance(alongAxes: axis)
+        let positiveAxis = (input.rank + axis) % input.rank
+        let mean = input.mean(alongAxes: [0, positiveAxis])
+        let variance = input.variance(alongAxes: [0, positiveAxis])
         runningMean.value += (mean - runningMean.value) * (1 - momentum)
         runningVariance.value += (
             variance - runningVariance.value) * (1 - momentum)
@@ -170,41 +171,33 @@ public struct BatchNorm<Scalar>: Layer
         return (input - runningMean.value) * inv + offset
     }
 
-    // TODO fix crasher in the below to enable behavior that differs between
-    // training and inference
-    //
-    // @differentiable(wrt: (self, input), vjp: _vjpApplied(to:))
-    // public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
-    //     if learningPhaseIndicator.training {
-    //         return applyTraining(to: input)
-    //     } else {
-    //         return applyInference(to: input)
-    //     }
-    // }
-    //
-    // public func _vjpApplied(to input: Tensor<Scalar>) ->
-    //     (Tensor<Scalar>, (Tensor<Scalar>) ->
-    //         (BatchNorm<Scalar>.CotangentVector, Tensor<Scalar>)) {
-    //     if learningPhaseIndicator.training {
-    //         return self.valueWithPullback(at: input) {
-    //             $0.applyTraining(to: $1)
-    //         }
-    //     } else {
-    //         return self.valueWithPullback(at: input) {
-    //             $0.applyInference(to: $1)
-    //         }
-    //     }
-    // }
-    //
-    // Work around for now by always using training mode
-    @differentiable(wrt: (self, input))
+    @differentiable(wrt: (self, input), vjp: _vjpApplied(to:))
     public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return applyTraining(to: input)
+        if learningPhaseIndicator.training {
+            return applyTraining(to: input)
+        } else {
+            return applyInference(to: input)
+        }
+    }
+
+    @usableFromInline
+    func _vjpApplied(to input: Tensor<Scalar>) ->
+        (Tensor<Scalar>, (Tensor<Scalar>) ->
+            (BatchNorm<Scalar>.CotangentVector, Tensor<Scalar>)) {
+        if learningPhaseIndicator.training {
+            return self.valueWithPullback(at: input) {
+                $0.applyTraining(to: $1)
+            }
+        } else {
+            return self.valueWithPullback(at: input) {
+                $0.applyInference(to: $1)
+            }
+        }
     }
 
     public init(featureCount: Int,
                 learningPhaseIndicator: LearningPhaseIndicator,
-                axis: Int = 0,
+                axis: Int = -1,
                 momentum: Tensor<Scalar> = Tensor(0.99),
                 epsilon: Tensor<Scalar> = Tensor(0.001)) {
         self.axis = Int32(axis)
