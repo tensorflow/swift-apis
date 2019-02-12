@@ -162,7 +162,7 @@ public struct ThreefryRandomNumberGenerator: SeedableRandomNumberGenerator {
         return (X0, X1)
     }
 
-    private init(uint64Seed seed: UInt64) {
+    internal init(uint64Seed seed: UInt64) {
         key = ThreefryRandomNumberGenerator.split(seed)
     }
 
@@ -173,7 +173,7 @@ public struct ThreefryRandomNumberGenerator: SeedableRandomNumberGenerator {
         for i in 0..<seed.count {
             combinedSeed += UInt64(seed[i]) << UInt64(8 * i)
         }
-        self.init(uint64seed: combinedSeed)
+        self.init(uint64Seed: combinedSeed)
     }
 
     public mutating func next() -> UInt64 {
