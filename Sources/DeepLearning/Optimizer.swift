@@ -25,7 +25,7 @@ public protocol Optimizer {
 
 // MARK: - Key-path based optimizers
 
-public class Adam<Model: Layer, Scalar: BinaryFloatingPoint & TensorFlowScalar>: Optimizer
+public class Adam<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
     where Model.AllDifferentiableVariables: AdditiveArithmetic,
           Model.AllDifferentiableVariables == Model.CotangentVector {
     public let learningRate: Scalar
@@ -74,7 +74,7 @@ public class Adam<Model: Layer, Scalar: BinaryFloatingPoint & TensorFlowScalar>:
     }
 }
 
-public class RMSProp<Model: Layer, Scalar: BinaryFloatingPoint & TensorFlowScalar>: Optimizer
+public class RMSProp<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
     where Model.AllDifferentiableVariables: AdditiveArithmetic,
           Model.AllDifferentiableVariables == Model.CotangentVector {
     public let learningRate: Scalar
@@ -114,7 +114,7 @@ public class RMSProp<Model: Layer, Scalar: BinaryFloatingPoint & TensorFlowScala
     }
 }
 
-public class SGD<Model: Layer, Scalar: BinaryFloatingPoint & TensorFlowScalar>: Optimizer
+public class SGD<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
     where Model.AllDifferentiableVariables: AdditiveArithmetic,
           Model.AllDifferentiableVariables == Model.CotangentVector {
     public let learningRate: Scalar
