@@ -20,7 +20,7 @@ final class ThreefryTests: XCTestCase {
         // Check the PRNG output given different seeds against reference values.
         // This guards against accidental changes to the generator which should
         // result in changes to its output.
-        var generator = ThreefryRandomNumberGenerator(uint64seed: 123159812)
+        var generator = ThreefryRandomNumberGenerator(uint64Seed: 123159812)
         XCTAssertEqual(generator.next(), 9411952874433594703)
         XCTAssertEqual(generator.next(), 6992100569504761807)
         XCTAssertEqual(generator.next(), 6249442510280393663)
@@ -30,7 +30,7 @@ final class ThreefryTests: XCTestCase {
         XCTAssertEqual(generator.next(), 14104268727839198528)
         XCTAssertEqual(generator.next(), 2729105059420396781)
 
-        generator = ThreefryRandomNumberGenerator(uint64seed: 58172950819076)
+        generator = ThreefryRandomNumberGenerator(uint64Seed: 58172950819076)
         XCTAssertEqual(generator.next(), 8181320043134006362)
         XCTAssertEqual(generator.next(), 14375459274817572790)
         XCTAssertEqual(generator.next(), 1051151592956420496)
