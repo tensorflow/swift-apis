@@ -24,10 +24,12 @@ import TensorFlow
 
 struct Model: Layer {
     var l1, l2: Dense<Float>
+
     init(hiddenSize: Int) {
         l1 = Dense<Float>(inputSize: 2, outputSize: hiddenSize, activation: relu)
         l2 = Dense<Float>(inputSize: hiddenSize, outputSize: 1, activation: relu)
     }
+
     @differentiable(wrt: (self, input))
     func applied(to input: Tensor<Float>) -> Tensor<Float> {
         let h1 = l1.applied(to: input)
