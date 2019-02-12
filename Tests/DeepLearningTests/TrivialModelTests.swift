@@ -34,7 +34,7 @@ final class TrivialModelTests: XCTestCase {
         let x: Tensor<Float> = [[0, 0], [0, 1], [1, 0], [1, 1]]
         let y: Tensor<Float> = [0, 1, 1, 0]
         for _ in 0..<1000 {
-            let (loss, 𝛁model) = classifier.valueWithGradient { classifier -> Tensor<Float> in
+            let (_, 𝛁model) = classifier.valueWithGradient { classifier -> Tensor<Float> in
                 let ŷ = classifier.applied(to: x)
                 return meanSquaredError(predicted: ŷ, expected: y)
             }

@@ -70,7 +70,7 @@ public struct Dense<Scalar>: Layer
 
     public var weight: Tensor<Scalar>
     public var bias: Tensor<Scalar>
-    public typealias Activation = @autodiff (Tensor<Scalar>) -> Tensor<Scalar>
+    public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
     @noDerivative public let activation: Activation
 
     // FIXME(SR-9716): Remove this once the bug is fixed or worked around.
@@ -321,7 +321,8 @@ public struct Dropout<Scalar>: Layer
           Scalar.RawSignificand : FixedWidthInteger {
     @noDerivative public let probability: Double
     @noDerivative public let learningPhaseIndicator: LearningPhaseIndicator
-    // Workaround for TF-8
+    // Workaround for TF-189, making `Dropout` have a non-trivial parameter
+    // convention.
     var _unused: Tensor<Scalar>
 
     public init(
@@ -374,9 +375,10 @@ public struct UpSampling2D<Scalar>: Layer
 
     @noDerivative public let size: Int32
 
-    public init(size: Int32) {
-        self.size = size
-    }
+    // FIXME(TF-25): Uncomment when the derived conformances bug is fixed.
+    // public init(size: Int32) {
+    //    self.size = size
+    // }
 
     @differentiable(wrt: (self, input))
     public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
