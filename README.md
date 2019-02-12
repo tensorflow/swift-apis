@@ -37,7 +37,7 @@ struct Model: Layer {
     }
 }
 
-let optimizer = SGD<Classifier, Float>(learningRate: 0.02)
+let optimizer = SGD<Model, Float>(learningRate: 0.02)
 var classifier = Model(hiddenSize: 4)
 let x: Tensor<Float> = ...
 let y: Tensor<Float> = ...
