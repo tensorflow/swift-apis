@@ -41,3 +41,30 @@ final class ThreefryTests: XCTestCase {
         XCTAssertEqual(generator.next(), 10604176710283101491)
     }
 }
+
+final class PhiloxTests: XCTestCase {
+    func testPhilox() {
+        // Check the PRNG output given different seeds against reference values.
+        // This guards against accidental changes to the generator which should
+        // result in changes to its output.
+        var generator = PhiloxRandomNumberGenerator(uint64Seed: 971626482267121)
+        XCTAssertEqual(generator.next(), 13938684859108683724)
+        XCTAssertEqual(generator.next(), 14733436676625682935)
+        XCTAssertEqual(generator.next(), 6775200690501958369)
+        XCTAssertEqual(generator.next(), 4888384230122468581)
+        XCTAssertEqual(generator.next(), 9929469809262837771)
+        XCTAssertEqual(generator.next(), 4887275522116356711)
+        XCTAssertEqual(generator.next(), 10098896320274145012)
+        XCTAssertEqual(generator.next(), 8966522427706988112)
+
+        generator = PhiloxRandomNumberGenerator(uint64Seed: 708165273787)
+        XCTAssertEqual(generator.next(), 17296679597944579603)
+        XCTAssertEqual(generator.next(), 16698752516857890287)
+        XCTAssertEqual(generator.next(), 8389709598422976467)
+        XCTAssertEqual(generator.next(), 11475723713423213818)
+        XCTAssertEqual(generator.next(), 11475016682221315199)
+        XCTAssertEqual(generator.next(), 15780739321597004611)
+        XCTAssertEqual(generator.next(), 1610199061186607604)
+        XCTAssertEqual(generator.next(), 5793355800212150215)
+    }
+}

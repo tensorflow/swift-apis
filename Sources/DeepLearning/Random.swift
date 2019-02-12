@@ -16,41 +16,32 @@
 import TensorFlow
 #endif
 
+private typealias Vector2 = (UInt32, UInt32)
+private typealias Vector4 = (UInt32, UInt32, UInt32, UInt32)
+
 /// An implementation of `SeedableRandomNumberGenerator` using Threefry.
 /// Salmon et al. SC 2011. Parallel random numbers: as easy as 1, 2, 3.
 /// http://www.thesalmons.org/john/random123/papers/random123sc11.pdf
 ///
-/// This struct implements a 20-rotation Threefry32x2 PRNG. It must be seeded
-/// with a 64-bit value.
+/// This struct implements a 20-round Threefry2x32 PRNG. It must be seeded with
+/// a 64-bit value.
 ///
 /// An individual generator is not thread-safe, but distinct generators do not
 /// share state. The random data generated is of high-quality, but is not
 /// suitable for cryptographic applications.
 public struct ThreefryRandomNumberGenerator: SeedableRandomNumberGenerator {
-    private typealias ThreefryArray = (UInt32, UInt32)
-
-    private static let rot:
+    private let rot:
         (UInt32, UInt32, UInt32, UInt32, UInt32, UInt32, UInt32, UInt32)
         = (13, 15, 26, 6, 17, 29, 16, 24)
 
-    private static func rotl32(value: UInt32, n: UInt32) -> UInt32 {
+    private func rotl32(value: UInt32, n: UInt32) -> UInt32 {
         return (value << (n & 31)) | (value >> ((32 - n) & 31))
     }
 
     private var ctr: UInt64 = 0
-    private let key: ThreefryArray
+    private let key: Vector2
 
-    private static func split(_ value: UInt64) -> ThreefryArray {
-        let msb = UInt32(truncatingIfNeeded: (value & 0xFFFF_FFFF_0000_0000) >> 32)
-        let lsb = UInt32(truncatingIfNeeded: value & 0x0000_0000_FFFF_FFFF)
-        return (msb, lsb)
-    }
-
-    private static func combine(_ value: ThreefryArray) -> UInt64 {
-        return (UInt64(value.0) << 32) + UInt64(value.1)
-    }
-
-    private static func calculateRandom(ctr: ThreefryArray, key: ThreefryArray) -> ThreefryArray {
+    private func calculateRandom(ctr: Vector2, key: Vector2) -> Vector2 {
         let skeinKsParity32: UInt32 = 0x1BD11BDA
 
         let ks0 = key.0
@@ -163,7 +154,7 @@ public struct ThreefryRandomNumberGenerator: SeedableRandomNumberGenerator {
     }
 
     internal init(uint64Seed seed: UInt64) {
-        key = ThreefryRandomNumberGenerator.split(seed)
+        key = seed.asVector2
     }
 
     public init(seed: [UInt8]) {
@@ -178,11 +169,138 @@ public struct ThreefryRandomNumberGenerator: SeedableRandomNumberGenerator {
 
     public mutating func next() -> UInt64 {
         defer { ctr += 1 }
-        return ThreefryRandomNumberGenerator.combine(
-            ThreefryRandomNumberGenerator.calculateRandom(
-                ctr: ThreefryRandomNumberGenerator.split(ctr),
-                key: key
-            )
-        )
+        return UInt64(fromVector: calculateRandom(ctr: ctr.asVector2, key: key))
     }
+}
+
+/// An implementation of `SeedableRandomNumberGenerator` using Philox.
+/// Salmon et al. SC 2011. Parallel random numbers: as easy as 1, 2, 3.
+/// http://www.thesalmons.org/john/random123/papers/random123sc11.pdf
+///
+/// This struct implements a 10-round Philox4x32 PRNG. It must be seeded with
+/// a 64-bit value.
+///
+/// An individual generator is not thread-safe, but distinct generators do not
+/// share state. The random data generated is of high-quality, but is not
+/// suitable for cryptographic applications.
+public struct PhiloxRandomNumberGenerator: SeedableRandomNumberGenerator {
+    private var ctr: UInt64 = 0
+    private let key: Vector2
+
+    // Since we generate two 64-bit values at a time, we only need to run the
+    // generator every other invocation.
+    private var useNextValue = false
+    private var nextValue: UInt64 = 0
+
+    private func bump(key: Vector2) -> Vector2 {
+        let bumpConstantHi: UInt32 = 0x9E3779B9
+        let bumpConstantLo: UInt32 = 0xBB67AE85
+        return (key.0 &+ bumpConstantHi, key.1 &+ bumpConstantLo)
+    }
+
+    private func round(ctr: Vector4, key: Vector2) -> Vector4 {
+        let roundConstant0: UInt64 = 0xD2511F53
+        let roundConstant1: UInt64 = 0xCD9E8D57
+
+        let product0: UInt64 = roundConstant0 &* UInt64(ctr.0)
+        let hi0 = UInt32(truncatingIfNeeded: product0 >> 32)
+        let lo0 = UInt32(truncatingIfNeeded: (product0 & 0x0000_0000_FFFF_FFFF))
+
+        let product1: UInt64 = roundConstant1 &* UInt64(ctr.2)
+        let hi1 = UInt32(truncatingIfNeeded: product1 >> 32)
+        let lo1 = UInt32(truncatingIfNeeded: (product1 & 0x0000_0000_FFFF_FFFF))
+
+        return (hi1 ^ ctr.1 ^ key.0, lo1, hi0 ^ ctr.3 ^ key.1, lo0)
+    }
+
+    private func calculateRandom(ctr initialCtr: Vector4, key initialKey: Vector2) -> Vector4 {
+        var ctr = initialCtr
+        var key = initialKey
+        // 10 rounds
+        // R1
+        ctr = round(ctr: ctr, key: key)
+        // R2
+        key = bump(key: key)
+        ctr = round(ctr: ctr, key: key)
+        // R3
+        key = bump(key: key)
+        ctr = round(ctr: ctr, key: key)
+        // R4
+        key = bump(key: key)
+        ctr = round(ctr: ctr, key: key)
+        // R5
+        key = bump(key: key)
+        ctr = round(ctr: ctr, key: key)
+        // R6
+        key = bump(key: key)
+        ctr = round(ctr: ctr, key: key)
+        // R7
+        key = bump(key: key)
+        ctr = round(ctr: ctr, key: key)
+        // R8
+        key = bump(key: key)
+        ctr = round(ctr: ctr, key: key)
+        // R9
+        key = bump(key: key)
+        ctr = round(ctr: ctr, key: key)
+        // R10
+        key = bump(key: key)
+        ctr = round(ctr: ctr, key: key)
+
+        return ctr
+    }
+
+    internal init(uint64Seed seed: UInt64) {
+        key = seed.asVector2
+    }
+
+    public init(seed: [UInt8]) {
+        precondition(seed.count > 0, "Length of seed must be positive")
+        precondition(seed.count <= 8, "Length of seed must be at most 8")
+        var combinedSeed: UInt64 = 0
+        for i in 0..<seed.count {
+            combinedSeed += UInt64(seed[i]) << UInt64(8 * i)
+        }
+        self.init(uint64Seed: combinedSeed)
+    }
+
+    public mutating func next() -> UInt64 {
+        if useNextValue {
+            useNextValue = false
+            return nextValue
+        } else {
+            let (this, next) = makeUInt64Pair(
+                from: calculateRandom(ctr: ctr.asVector4, key: key)
+            )
+            useNextValue = true
+            nextValue = next
+            ctr += 1
+            return this
+        }
+    }
+}
+
+/// Private helpers.
+fileprivate extension UInt64 {
+    var asVector2: Vector2 {
+        let msb = UInt32(truncatingIfNeeded: self >> 32)
+        let lsb = UInt32(truncatingIfNeeded: self & 0x0000_0000_FFFF_FFFF)
+        return (msb, lsb)
+    }
+
+    var asVector4: Vector4 {
+        let msb = UInt32(truncatingIfNeeded: self >> 32)
+        let lsb = UInt32(truncatingIfNeeded: self & 0x0000_0000_FFFF_FFFF)
+        return (0, 0, msb, lsb)
+    }
+
+    init(fromVector vector: Vector2) {
+        self = (UInt64(vector.0) << 32) + UInt64(vector.1)
+    }
+}
+
+private func makeUInt64Pair(from vector: Vector4) -> (UInt64, UInt64) {
+    let a = (UInt64(vector.0) << 32) + UInt64(vector.1)
+    let b = (UInt64(vector.2) << 32) + UInt64(vector.3)
+    return (a, b)
 }
