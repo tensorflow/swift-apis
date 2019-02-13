@@ -46,18 +46,18 @@ public extension Layer {
     }
 }
 
-/// A mutable, shareable flag that denotes training vs. inference
+/// A mutable, shareable flag that denotes training vs. inference.
 ///
 /// In typical uses, every layer in a model that has behavior which differs
 /// between training and inference shares an instance of ModeRef so it doesn't
 /// need to be toggled or threaded through in more than one place.
-public class LearningPhaseIndicator {
+public final class LearningPhaseIndicator {
     public var training: Bool = true
     public init() {}
 }
 
 /// A mutable, shareable reference to a tensor
-public class Parameter<T: TensorFlowScalar> {
+public final class Parameter<T: TensorFlowScalar> {
     public var value: Tensor<T>
     public init(_ value: Tensor<T>) {
         self.value = value
@@ -338,7 +338,8 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: Layer
         }
     }
 
-    public func _vjpApplied(to input: Tensor<Scalar>) ->
+    @usableFromInline
+    func _vjpApplied(to input: Tensor<Scalar>) ->
         (Tensor<Scalar>, (Tensor<Scalar>) ->
             (Dropout<Scalar>.CotangentVector, Tensor<Scalar>)) {
         if learningPhaseIndicator.training {
@@ -375,5 +376,4 @@ public struct UpSampling2D<Scalar: TensorFlowFloatingPoint>: Layer {
         let upSampled = upSampling.reshaped(toShape: upSampledShape)
         return upSampled
     }
-
 }
