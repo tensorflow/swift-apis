@@ -65,8 +65,7 @@ public class Parameter<T: TensorFlowScalar> {
 }
 
 @_fixed_layout
-public struct Dense<Scalar>: Layer
-    where Scalar: FloatingPoint & Differentiable & TensorFlowScalar {
+public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
 
     public var weight: Tensor<Scalar>
     public var bias: Tensor<Scalar>
@@ -84,8 +83,7 @@ public struct Dense<Scalar>: Layer
     }
 }
 
-public extension Dense where Scalar : BinaryFloatingPoint,
-                             Scalar.RawSignificand : FixedWidthInteger {
+public extension Dense where Scalar.RawSignificand: FixedWidthInteger {
     init(inputSize: Int, outputSize: Int, activation: @escaping Activation) {
         self.init(weight: Tensor(
                   glorotUniform: [Int32(inputSize), Int32(outputSize)]),
@@ -95,8 +93,7 @@ public extension Dense where Scalar : BinaryFloatingPoint,
 }
 
 @_fixed_layout
-public struct Conv2D<Scalar>: Layer
-    where Scalar: FloatingPoint & Differentiable & TensorFlowScalar {
+public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     public var filter: Tensor<Scalar>
     public var bias: Tensor<Scalar>
     @noDerivative public let strides: (Int32, Int32)
@@ -110,8 +107,7 @@ public struct Conv2D<Scalar>: Layer
     }
 }
 
-public extension Conv2D where Scalar : BinaryFloatingPoint,
-                              Scalar.RawSignificand : FixedWidthInteger {
+public extension Conv2D where Scalar.RawSignificand: FixedWidthInteger {
     init(
         filterShape: (Int, Int, Int, Int),
         strides: (Int, Int) = (1, 1),
@@ -128,8 +124,7 @@ public extension Conv2D where Scalar : BinaryFloatingPoint,
 }
 
 @_fixed_layout
-public struct BatchNorm<Scalar>: Layer
-    where Scalar: BinaryFloatingPoint & Differentiable & TensorFlowScalar {
+public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The batch dimension.
     @noDerivative public let axis: Int32
 
@@ -212,8 +207,7 @@ public struct BatchNorm<Scalar>: Layer
 }
 
 @_fixed_layout
-public struct MaxPool2D<Scalar>: Layer
-    where Scalar : BinaryFloatingPoint & Differentiable & TensorFlowScalar {
+public struct MaxPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The size of the sliding reduction window for pooling.
     @noDerivative let poolSize: (Int32, Int32, Int32, Int32)
 
@@ -239,8 +233,7 @@ public struct MaxPool2D<Scalar>: Layer
 }
 
 @_fixed_layout
-public struct AvgPool2D<Scalar>: Layer
-    where Scalar : BinaryFloatingPoint & Differentiable & TensorFlowScalar {
+public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The size of the sliding reduction window for pooling.
     @noDerivative let poolSize: (Int32, Int32, Int32, Int32)
 
@@ -266,8 +259,7 @@ public struct AvgPool2D<Scalar>: Layer
 }
 
 @_fixed_layout
-public struct LayerNorm<Scalar>: Layer
-    where Scalar : BinaryFloatingPoint & Differentiable & TensorFlowScalar {
+public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The offset value, also known as beta.
     public var offset: Tensor<Scalar>
 
@@ -297,9 +289,8 @@ public struct LayerNorm<Scalar>: Layer
     }
 }
 
-public extension Tensor where Scalar : BinaryFloatingPoint,
-                              Scalar.RawSignificand : FixedWidthInteger {
-    @differentiable(wrt: self where Scalar : Differentiable)
+public extension Tensor where Scalar.RawSignificand: FixedWidthInteger {
+    @differentiable(wrt: self where Scalar: Differentiable)
     func droppingOut(probability: Double) -> Tensor {
         let noise = Tensor(randomUniform: shape)
         let keepMask = noise .>= Scalar(probability)
@@ -309,9 +300,8 @@ public extension Tensor where Scalar : BinaryFloatingPoint,
 }
 
 @_fixed_layout
-public struct Dropout<Scalar>: Layer
-    where Scalar: BinaryFloatingPoint & Differentiable & TensorFlowScalar,
-          Scalar.RawSignificand : FixedWidthInteger {
+public struct Dropout<Scalar: TensorFlowFloatingPoint>: Layer
+    where Scalar.RawSignificand: FixedWidthInteger {
     @noDerivative public let probability: Double
     @noDerivative public let learningPhaseIndicator: LearningPhaseIndicator
     // Workaround for TF-189, making `Dropout` have a non-trivial parameter
@@ -363,9 +353,7 @@ public struct Dropout<Scalar>: Layer
 }
 
 @_fixed_layout
-public struct UpSampling2D<Scalar>: Layer
-    where Scalar: BinaryFloatingPoint & Differentiable & TensorFlowScalar {
-
+public struct UpSampling2D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let size: Int32
 
     // FIXME(TF-25): Uncomment when the derived conformances bug is fixed.
