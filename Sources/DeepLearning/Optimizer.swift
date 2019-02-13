@@ -20,8 +20,7 @@ public protocol Optimizer {
     associatedtype Model: Layer
     associatedtype Scalar: FloatingPoint
     var learningRate: Scalar { get }
-    mutating func update(_ variables: inout Model.AllDifferentiableVariables,
-                         along gradient: Model.CotangentVector)
+    mutating func update(_ model: inout Model, along gradient: Model.CotangentVector)
 }
 
 // MARK: - Key-path based optimizers
@@ -58,18 +57,18 @@ public class Adam<Model: Layer, Scalar: BinaryFloatingPoint & TensorFlowScalar>:
     private var firstMoments = Model.AllDifferentiableVariables.zero
     private var secondMoments = Model.AllDifferentiableVariables.zero
 
-    public func update(_ model: inout Model.AllDifferentiableVariables,
-                       along gradient: Model.AllDifferentiableVariables) {
+    public func update(_ model: inout Model, along gradient: Model.AllDifferentiableVariables) {
         step += 1
         let learningRate = self.learningRate * 1 / (1 + decay * step)
         let stepSize = learningRate * (sqrt(1 - pow(beta2, step)) / (1 - pow(beta1, step)))
-        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Scalar>.self) {
+        for kp in model.allDifferentiableVariables
+                       .recursivelyAllWritableKeyPaths(to: Tensor<Scalar>.self) {
             firstMoments[keyPath: kp] =
                 firstMoments[keyPath: kp] * beta1 + (1 - beta1) * gradient[keyPath: kp]
             secondMoments[keyPath: kp] =
                 secondMoments[keyPath: kp] * beta2 + (1 - beta2) *
                      gradient[keyPath: kp] * gradient[keyPath: kp]
-            model[keyPath: kp] -=
+            model.allDifferentiableVariables[keyPath: kp] -=
                 stepSize * firstMoments[keyPath: kp] / (sqrt(secondMoments[keyPath: kp]) + epsilon)
         }
     }
@@ -102,14 +101,14 @@ public class RMSProp<Model: Layer, Scalar: BinaryFloatingPoint & TensorFlowScala
     private var step: Scalar = 0
     private var alpha = Model.AllDifferentiableVariables.zero
 
-    public func update(_ model: inout Model.AllDifferentiableVariables,
-                       along gradient: Model.CotangentVector) {
+    public func update(_ model: inout Model, along gradient: Model.CotangentVector) {
         step += 1
         let learningRate = self.learningRate * 1 / (1 + decay * step)
-        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Scalar>.self) {
+        for kp in model.allDifferentiableVariables
+                       .recursivelyAllWritableKeyPaths(to: Tensor<Scalar>.self) {
             alpha[keyPath: kp] =
                 rho * alpha[keyPath: kp] + (1 - rho) * pow(gradient[keyPath: kp], 2)
-            model[keyPath: kp] -=
+            model.allDifferentiableVariables[keyPath: kp] -=
                 learningRate * gradient[keyPath: kp] / (sqrt(alpha[keyPath: kp]) + epsilon)
         }
     }
@@ -142,18 +141,18 @@ public class SGD<Model: Layer, Scalar: BinaryFloatingPoint & TensorFlowScalar>: 
     private var step: Scalar = 0
     private var velocity = Model.AllDifferentiableVariables.zero
 
-    public func update(_ model: inout Model.AllDifferentiableVariables,
-                       along gradients: Model.CotangentVector) {
+    public func update(_ model: inout Model, along gradients: Model.CotangentVector) {
         step += 1
         let learningRate = self.learningRate * 1 / (1 + decay * step)
-        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Scalar>.self) {
+        for kp in model.allDifferentiableVariables
+                       .recursivelyAllWritableKeyPaths(to: Tensor<Scalar>.self) {
             velocity[keyPath: kp] =
                 momentum * velocity[keyPath: kp] - learningRate * gradients[keyPath: kp]
             if nesterov {
-                model[keyPath: kp] +=
+                model.allDifferentiableVariables[keyPath: kp] +=
                     momentum * velocity[keyPath: kp] - learningRate * gradients[keyPath: kp]
             } else {
-                model[keyPath: kp] += velocity[keyPath: kp]
+                model.allDifferentiableVariables[keyPath: kp] += velocity[keyPath: kp]
             }
         }
     }
@@ -169,8 +168,7 @@ public class RiemannSGD<Model: Layer, Scalar: FloatingPoint>: Optimizer
         self.learningRate = learningRate
     }
 
-    public func update(_ model: inout Model.AllDifferentiableVariables,
-                       along gradient: Model.CotangentVector) {
+    public func update(_ model: inout Model, along gradient: Model.CotangentVector) {
         model = model.moved(along: learningRate * (.zero - model.tangentVector(from: gradient)))
     }
 }
