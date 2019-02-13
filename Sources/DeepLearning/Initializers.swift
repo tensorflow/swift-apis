@@ -138,8 +138,6 @@ public extension Tensor where Scalar : BinaryFloatingPoint,
     }
 }
 
-
-
 public extension Tensor where Scalar : BinaryFloatingPoint,
                               Scalar.RawSignificand : FixedWidthInteger {
     /// Performs Glorot uniform initialization for the specified shape,
