@@ -1,7 +1,7 @@
 import XCTest
 
-import MachineLearningTests
+import DeepLearningTests
 
 var tests = [XCTestCaseEntry]()
-tests += MachineLearningTests.allTests()
+tests += DeepLearningTests.allTests()
 XCTMain(tests)
