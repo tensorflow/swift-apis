@@ -15,7 +15,147 @@
 import XCTest
 @testable import DeepLearning
 
-final class ThreefryTests: XCTestCase {
+final class PRNGTests: XCTestCase {
+    func testARC4() {
+        do {
+            let _ = ARC4RandomNumberGenerator(seed: [0])
+            let _ = ARC4RandomNumberGenerator(seed: [1, 2, 3, 4, 5, 6, 7])
+            let _ = ARC4RandomNumberGenerator(seed: Array(repeating: 255, count: 256))
+            var rng = ARC4RandomNumberGenerator(seed: [1, 2, 3, 4, 5, 6, 7, 8])
+            XCTAssertEqual(rng.next(), 0x97ab8a1bf0afb961)
+        }
+        do {
+            var rng = ARC4RandomNumberGenerator(
+                seed: [0x1a, 0xda, 0x31, 0xd5, 0xcf, 0x68, 0x82, 0x21,
+                       0xc1, 0x09, 0x16, 0x39, 0x08, 0xeb, 0xe5, 0x1d,
+                       0xeb, 0xb4, 0x62, 0x27, 0xc6, 0xcc, 0x8b, 0x37,
+                       0x64, 0x19, 0x10, 0x83, 0x32, 0x22, 0x77, 0x2a])
+            for _ in 0..<512 {
+                _ = rng.next()
+            }
+            XCTAssertEqual(rng.next(), 0x370b1c1fe655916d)
+        }
+        do {
+            // Copy should not break original.
+            var rng1 = ARC4RandomNumberGenerator(
+                seed: [0x1a, 0xda, 0x31, 0xd5, 0xcf, 0x68, 0x82, 0x21,
+                       0xc1, 0x09, 0x16, 0x39, 0x08, 0xeb, 0xe5, 0x1d,
+                       0xeb, 0xb4, 0x62, 0x27, 0xc6, 0xcc, 0x8b, 0x37,
+                       0x64, 0x19, 0x10, 0x83, 0x32, 0x22, 0x77, 0x2a])
+            for _ in 0 ..< 256 {
+                _ = rng1.next()
+            }
+            var rng2 = rng1
+            for _ in 0 ..< 1000 {
+                _ = rng1.next()
+            }
+            for _ in 0 ..< 256 {
+                _ = rng2.next()
+            }
+            XCTAssertEqual(rng2.next(), 0x370b1c1fe655916d)
+        }
+    }
+
+    func testUniformDistribution() {
+        do {
+            // Uniform distribution is in range.
+            var rng = ARC4RandomNumberGenerator(seed: UInt64(42))
+            let dist = UniformFloatingPointDistribution<Double>(lowerBound: 10, upperBound: 42)
+            for _ in 0 ..< 1000 {
+                let r = dist.next(using: &rng)
+                XCTAssertGreaterThan(r, 10)
+                XCTAssertLessThan(r, 42)
+            }
+        }
+        do {
+            var rng = ARC4RandomNumberGenerator(seed: UInt64(42))
+            let dist = UniformFloatingPointDistribution<Double>(lowerBound: 10, upperBound: 50)
+            let count = 100000
+            var mean: Double = 0
+            for _ in 0 ..< count {
+                mean += dist.next(using: &rng)
+            }
+            mean /= Double(count)
+            XCTAssertEqual(mean, 30, accuracy: 0.25)
+        }
+        do {
+            var rng = ARC4RandomNumberGenerator(seed: UInt64(42))
+            let dist = UniformFloatingPointDistribution<Double>(lowerBound: 10, upperBound: 50)
+            let count = 100000
+            var mean: Double = 0
+            var meanSquare: Double = 0
+            for _ in 0 ..< count {
+                let r = dist.next(using: &rng)
+                mean += r
+                meanSquare += r * r
+            }
+            mean /= Double(count)
+            meanSquare /= Double(count)
+            let stdDev = (meanSquare - mean * mean).squareRoot()
+            XCTAssertEqual(stdDev, (50 - 10) / 12.squareRoot(), accuracy: 0.25)
+        }
+    }
+
+    func testNormalDistribution() {
+        do {
+            var rng = ARC4RandomNumberGenerator(seed: UInt64(42))
+            let dist = NormalDistribution<Double>(mean: 10, standardDeviation: 50)
+            let count = 100000
+            var mean: Double = 0
+            for _ in 0 ..< count {
+                mean += dist.next(using: &rng)
+            }
+            mean /= Double(count)
+            XCTAssertEqual(mean, 10, accuracy: 0.25)
+        }
+        do {
+            var rng = ARC4RandomNumberGenerator(seed: UInt64(42))
+            let dist = NormalDistribution<Double>(mean: 10, standardDeviation: 50)
+            let count = 100000
+            var mean: Double = 0
+            var meanSquare: Double = 0
+            for _ in 0 ..< count {
+                let r = dist.next(using: &rng)
+                mean += r
+                meanSquare += r * r
+            }
+            mean /= Double(count)
+            meanSquare /= Double(count)
+            let stdDev = (meanSquare - mean * mean).squareRoot()
+            XCTAssertEqual(stdDev, 50, accuracy: 0.25)
+        }
+    }
+
+    func testUniformIntegerDistribution() {
+        do {
+            var rng = ARC4RandomNumberGenerator(seed: UInt64(42))
+            let dist = UniformIntegerDistribution<UInt16>()
+            let count = 100000
+            var mean: Double = 0
+            for _ in 0 ..< count {
+                mean += Double(dist.next(using: &rng))
+            }
+            mean /= Double(count)
+            XCTAssertEqual(mean, pow(2.0, 15.0), accuracy: 1000)
+        }
+        do {
+            var rng = ARC4RandomNumberGenerator(seed: UInt64(42))
+            let dist = UniformIntegerDistribution<UInt16>()
+            let count = 100000
+            var mean: Double = 0
+            var meanSquare: Double = 0
+            for _ in 0 ..< count {
+                let r = dist.next(using: &rng)
+                mean += Double(r)
+                meanSquare += Double(r) * Double(r)
+            }
+            mean /= Double(count)
+            meanSquare /= Double(count)
+            let stdDev = (meanSquare - mean * mean).squareRoot()
+            XCTAssertEqual(stdDev, pow(2.0, 16.0) / 12.squareRoot(), accuracy: 1000)
+        }
+    }
+
     func testThreefry() {
         // Check the PRNG output given different seeds against reference values.
         // This guards against accidental changes to the generator which should
@@ -40,9 +180,7 @@ final class ThreefryTests: XCTestCase {
         XCTAssertEqual(generator.next(), 4068621515934625604)
         XCTAssertEqual(generator.next(), 10604176710283101491)
     }
-}
 
-final class PhiloxTests: XCTestCase {
     func testPhilox() {
         // Check the PRNG output given different seeds against reference values.
         // This guards against accidental changes to the generator which should
@@ -67,4 +205,13 @@ final class PhiloxTests: XCTestCase {
         XCTAssertEqual(generator.next(), 1610199061186607604)
         XCTAssertEqual(generator.next(), 5793355800212150215)
     }
+
+    static var allTests = [
+        ("testARC4", testARC4),
+        ("testUniformDistribution", testUniformDistribution),
+        ("testNormalDistribution", testNormalDistribution),
+        ("testUniformIntegerDistribution", testUniformIntegerDistribution),
+        ("testThreefry", testThreefry),
+        ("testPhilox", testPhilox),
+    ]
 }
