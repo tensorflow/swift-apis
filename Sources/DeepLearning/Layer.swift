@@ -289,7 +289,8 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     }
 }
 
-public extension Tensor where Scalar.RawSignificand: FixedWidthInteger {
+public extension Tensor
+    where Scalar : TensorFlowFloatingPoint, Scalar.RawSignificand: FixedWidthInteger {
     @differentiable(wrt: self where Scalar: Differentiable)
     func droppingOut(probability: Double) -> Tensor {
         let noise = Tensor(randomUniform: shape)
