@@ -17,14 +17,13 @@
 #endif
 
 public extension Tensor where Scalar == Int32 {
-  /// Creates a tensor with the specified shape, randomly sampling scalar values
-  /// from a discrete uniform distribution.
-  ///
-  /// - Parameters:
-  ///   - shape: The dimensions of the tensor.
-  ///   - generator: Random number generator to use.
-  ///
-    @inlinable @inline(__always)
+    /// Creates a tensor with the specified shape, randomly sampling scalar values
+    /// from a discrete uniform distribution.
+    ///
+    /// - Parameters:
+    ///   - shape: The dimensions of the tensor.
+    ///   - generator: Random number generator to use.
+    ///
     init<G: RandomNumberGenerator>(randomStandardUniform shape: TensorShape,
                                    generator: inout G) {
         let dist = UniformIntegerDistribution<Scalar>()
@@ -42,9 +41,6 @@ public extension Tensor where Scalar == Int32 {
     /// - Parameters:
     ///   - shape: The dimensions of the tensor.
     ///
-    // FIXME: Simply call above init() function when Hoistable closures capture
-    // mutating references correctly
-    @inlinable @inline(__always)
     init(randomStandardUniform shape: TensorShape) {
         let dist = UniformIntegerDistribution<Scalar>()
         var scalars: [Scalar] = []
@@ -53,7 +49,6 @@ public extension Tensor where Scalar == Int32 {
         }
         self.init(shape: shape, scalars: scalars)
     }
-
 }
 
 public extension Tensor where Scalar : BinaryFloatingPoint,
@@ -65,7 +60,6 @@ public extension Tensor where Scalar : BinaryFloatingPoint,
     ///   - shape: The dimensions of the tensor.
     ///   - generator: Random number generator to use.
     ///
-    @inlinable @inline(__always)
     init<G: RandomNumberGenerator>(randomUniform shape: TensorShape,
                                    generator: inout G) {
         let dist = UniformFloatingPointDistribution<Scalar>()
@@ -83,9 +77,6 @@ public extension Tensor where Scalar : BinaryFloatingPoint,
     /// - Parameters:
     ///   - shape: The dimensions of the tensor.
     ///
-    // FIXME: Simply call above init() function when Hoistable closures capture
-    // mutating references correctly
-    @inlinable @inline(__always)
     init(randomUniform shape: TensorShape) {
         let dist = UniformFloatingPointDistribution<Scalar>()
         var scalars: [Scalar] = []
@@ -104,7 +95,6 @@ public extension Tensor where Scalar : BinaryFloatingPoint,
     ///   - stddev: The standard deviation of the distribution.
     ///   - generator: Random number generator to use.
     ///
-    @inlinable @inline(__always)
     init<G: RandomNumberGenerator>(randomNormal shape: TensorShape,
                                    mean: Scalar = 0,
                                    stddev: Scalar = 1,
@@ -125,9 +115,6 @@ public extension Tensor where Scalar : BinaryFloatingPoint,
     ///   - mean: The mean of the distribution.
     ///   - stddev: The standard deviation of the distribution.
     ///
-    // FIXME: Simply call above init() function when Hoistable closures capture
-    // mutating references correctly
-    @inlinable @inline(__always)
     init(randomNormal shape: TensorShape, mean: Scalar = 0, stddev: Scalar = 1) {
         let dist = NormalDistribution<Scalar>(mean: mean, standardDeviation: stddev)
         var scalars: [Scalar] = []
@@ -140,10 +127,9 @@ public extension Tensor where Scalar : BinaryFloatingPoint,
 
 public extension Tensor where Scalar : BinaryFloatingPoint,
                               Scalar.RawSignificand : FixedWidthInteger {
-    /// Performs Glorot uniform initialization for the specified shape,
-    /// creating a tensor by randomly sampling scalar values from a uniform
-    /// distribution between -limit and limit, where limit is
-    /// sqrt(6 / (fanIn + fanOut)), using the default RNG
+    /// Performs Glorot uniform initialization for the specified shape, creating a tensor by
+    /// randomly sampling scalar values from a uniform distribution between `-limit` and `limit`,
+    /// where limit is `sqrt(6 / (fanIn + fanOut))`, using the default random number generator.
     ///
     /// - Parameters:
     ///   - shape: The dimensions of the tensor.
