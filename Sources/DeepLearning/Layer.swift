@@ -36,12 +36,17 @@ public protocol Layer: Differentiable & KeyPathIterable
     func applied(to input: Input) -> Output
 }
 
-public extension Layer {
+// FIXME: Extra where clause is a workaround for: SR-9595
+public extension Layer
+    where TangentVector : AdditiveArithmetic, CotangentVector : AdditiveArithmetic,
+          Input.TangentVector : AdditiveArithmetic, Input.CotangentVector : AdditiveArithmetic {
     func valueWithPullback(at input: Input)
         -> (output: Output,
             pullback: (Output.CotangentVector)
                 -> (layerGradient: CotangentVector, inputGradient: Input.CotangentVector)) {
-        let (out, pullback) = _valueWithPullback(at: self, input, in: Self.applied(to:))
+        let (out, pullback) = valueWithPullback(at: input) { layer, input in
+            return layer.applied(to: input)
+        }
         return (out, pullback)
     }
 }
