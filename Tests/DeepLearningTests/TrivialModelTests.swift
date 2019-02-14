@@ -40,7 +40,13 @@ final class TrivialModelTests: XCTestCase {
             }
             optimizer.update(&classifier.allDifferentiableVariables, along: 𝛁model)
         }
-        print(classifier.applied(to: [[0, 0], [0, 1], [1, 0], [1, 1]]))
+
+        let predicted = classifier.applied(to: [[0, 0], [0, 1], [1, 0], [1, 1]])
+
+        XCTAssertLessThanOrEqual(predicted[0][0], 0.3)
+        XCTAssertGreaterThanOrEqual(predicted[1][0], 0.8)
+        XCTAssertGreaterThanOrEqual(predicted[2][0], 0.8)
+        XCTAssertLessThanOrEqual(predicted[3][0], 0.3)
     }
 
     static var allTests = [
