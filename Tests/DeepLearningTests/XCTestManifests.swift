@@ -19,6 +19,7 @@ public func allTests() -> [XCTestCaseEntry] {
     return [
         testCase(PRNGTests.allTests),
         testCase(TrivialModelTests.allTests),
+        testCase(MNISTTests.allTests),
     ]
 }
 #endif
