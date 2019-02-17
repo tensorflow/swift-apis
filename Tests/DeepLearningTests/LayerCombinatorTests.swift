@@ -23,7 +23,7 @@ final class LayerCombinatorTests: XCTestCase {
             Dense<Float>(inputSize: inputSize, outputSize: hiddenSize, activation: relu) >>
             Dense<Float>(inputSize: hiddenSize, outputSize: 1, activation: relu)
         
-        let optimizer = SGD<model.type, Float>(learningRate: 0.02)  // Doesn't compile... :-(
+        let optimizer = SGD<model.Type, Float>(learningRate: 0.02)  // Doesn't compile... :-(
         let x: Tensor<Float> = [[0, 0], [0, 1], [1, 0], [1, 1]]
         let y: Tensor<Float> = [0, 1, 1, 0]
         

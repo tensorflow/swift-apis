@@ -82,15 +82,46 @@ public struct Sequential<LHS: Layer, RHS: Layer>: Layer
     }
 }
 
+/// Sequencing two layers to form a chain.
+///
+/// The sequential combinator composes two layers sequentially, feeding the
+/// output of the first layer as input to the second layer.
 public func >> <LHS: Layer, RHS: Layer>(_ lhs: LHS, _ rhs: RHS) -> Sequential<LHS, RHS> {
     return Sequential(lhs, rhs)
 }
 
+/// A sequencing of a Layer and an activation function.
+public struct SequentialFunction<LHS: Layer, OutputType: Differentiable>: Layer
+    where LHS.TangentVector: AdditiveArithmetic,
+          LHS.CotangentVector: AdditiveArithmetic,
+          LHS.Input.CotangentVector: AdditiveArithmetic,
+          LHS.Output.CotangentVector: AdditiveArithmetic {
+    let lhs: LHS
+
+    @noDerivative
+    let rhs: @differentiable (LHS.Output) -> OutputType
+
+     init(_ lhs: LHS, _ rhs: @escaping @differentiable (LHS.Output) -> OutputType) {
+        self.lhs = lhs
+        self.rhs = rhs
+    }
+
+    @differentiable(wrt: (self, input))
+    public func applied(to input: LHS.Input) -> OutputType {
+        return rhs(lhs.applied(to: input))
+    }
+}
+
+/// Sequence a Layer with a differentiable activation function.
+public func >> <LHS: Layer, OutputType>(
+        _ lhs: LHS,
+        _ rhs: @escaping @differentiable (LHS.Output) -> OutputType) -> SequentialFunction<LHS, OutputType> {
+    return SequentialFunction(lhs, rhs)
+}
+
 // TODO(TF-244): Uncomment once TF-244 is resolved.
-//public struct Parallel<LHS: Layer, RHS: Layer, LHSOutput, RHSOutput, AggregateOutput: Differentiable>: Layer
-//    where LHS.Output == LHSOutput,
-//          RHS.Output == RHSOutput,
-//          LHS.Input == RHS.Input,
+//public struct Parallel<LHS: Layer, RHS: Layer, AggregateOutput: Differentiable>: Layer
+//    where LHS.Input == RHS.Input,
 //          LHS.TangentVector: AdditiveArithmetic,
 //          RHS.TangentVector: AdditiveArithmetic,
 //          LHS.CotangentVector: AdditiveArithmetic,
@@ -99,12 +130,13 @@ public func >> <LHS: Layer, RHS: Layer>(_ lhs: LHS, _ rhs: RHS) -> Sequential<LH
 //          LHS.Output.CotangentVector: AdditiveArithmetic,
 //          RHS.Output.CotangentVector: AdditiveArithmetic,
 //          RHS.Output.TangentVector: AdditiveArithmetic {
+//    typealias CombinerFunction = @differentiable (LHS.Output, RHS.Output) -> AggregateOutput
 //    let lhs: LHS
 //    let rhs: RHS
 //    @noDerivative
-//    let combiner: @differentiable (LHSOutput, RHSOutput) -> AggregateOutput
+//    let combiner: CombinerFunction
 //
-//     init(_ lhs: LHS, _ rhs: RHS, combinedWith combiner: @escaping @differentiable (LHSOutput, RHSOutput) -> AggregateOutput) {
+//     init(_ lhs: LHS, _ rhs: RHS, combinedWith combiner: @escaping CombinerFunction) {
 //        self.lhs = lhs
 //        self.rhs = rhs
 //        self.combiner = combiner
