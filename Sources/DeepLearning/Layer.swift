@@ -51,6 +51,71 @@ public extension Layer
     }
 }
 
+/// A sequencing of two Layers to form a chain.
+///
+/// The sequential combinator composes two layers sequentially, feeding the
+/// output of the first layer as input to the second layer.
+///
+/// It is normally constructed via the >> operator.
+public struct Sequential<LHS: Layer, RHS: Layer>: Layer
+    where LHS.Output == RHS.Input,
+          LHS.TangentVector: AdditiveArithmetic,
+          RHS.TangentVector: AdditiveArithmetic,
+          LHS.CotangentVector: AdditiveArithmetic,
+          RHS.CotangentVector: AdditiveArithmetic,
+          LHS.Input.CotangentVector: AdditiveArithmetic,
+          LHS.Output.CotangentVector: AdditiveArithmetic,
+          RHS.Output.CotangentVector: AdditiveArithmetic,
+          RHS.Output.TangentVector: AdditiveArithmetic {
+    let lhs: LHS
+    let rhs: RHS
+
+     init(_ lhs: LHS, _ rhs: RHS) {
+        self.lhs = lhs
+        self.rhs = rhs
+    }
+
+    @differentiable(wrt: (self, input))
+    public func applied(to input: LHS.Input) -> RHS.Output {
+        let intermediateValue = lhs.applied(to: input)
+        return rhs.applied(to: intermediateValue)
+    }
+}
+
+public func >> <LHS: Layer, RHS: Layer>(_ lhs: LHS, _ rhs: RHS) -> Sequential<LHS, RHS> {
+    return Sequential(lhs, rhs)
+}
+
+// TODO(TF-244): Uncomment once TF-244 is resolved.
+//public struct Parallel<LHS: Layer, RHS: Layer, LHSOutput, RHSOutput, AggregateOutput: Differentiable>: Layer
+//    where LHS.Output == LHSOutput,
+//          RHS.Output == RHSOutput,
+//          LHS.Input == RHS.Input,
+//          LHS.TangentVector: AdditiveArithmetic,
+//          RHS.TangentVector: AdditiveArithmetic,
+//          LHS.CotangentVector: AdditiveArithmetic,
+//          RHS.CotangentVector: AdditiveArithmetic,
+//          LHS.Input.CotangentVector: AdditiveArithmetic,
+//          LHS.Output.CotangentVector: AdditiveArithmetic,
+//          RHS.Output.CotangentVector: AdditiveArithmetic,
+//          RHS.Output.TangentVector: AdditiveArithmetic {
+//    let lhs: LHS
+//    let rhs: RHS
+//    @noDerivative
+//    let combiner: @differentiable (LHSOutput, RHSOutput) -> AggregateOutput
+//
+//     init(_ lhs: LHS, _ rhs: RHS, combinedWith combiner: @escaping @differentiable (LHSOutput, RHSOutput) -> AggregateOutput) {
+//        self.lhs = lhs
+//        self.rhs = rhs
+//        self.combiner = combiner
+//    }
+//
+//    @differentiable(wrt: (self, input))
+//    public func applied(to input: LHS.Input) -> AggregateOutput {
+//        return combiner(lhs.applied(to: input), rhs.applied(to: input))
+//    }
+//}
+
 /// A mutable, shareable flag that denotes training vs. inference.
 ///
 /// In typical uses, every layer in a model that has behavior which differs
