@@ -32,7 +32,7 @@ final class TrivialModelTests: XCTestCase {
         let optimizer = SGD<Classifier, Float>(learningRate: 0.02)
         var classifier = Classifier(hiddenSize: 4)
         let x: Tensor<Float> = [[0, 0], [0, 1], [1, 0], [1, 1]]
-        let y: Tensor<Float> = [0, 1, 1, 0]
+        let y: Tensor<Float> = [[0], [1], [1], [0]]
         for _ in 0..<1000 {
             let (_, 𝛁model) = classifier.valueWithGradient { classifier -> Tensor<Float> in
                 let ŷ = classifier.applied(to: x)
@@ -40,7 +40,9 @@ final class TrivialModelTests: XCTestCase {
             }
             optimizer.update(&classifier.allDifferentiableVariables, along: 𝛁model)
         }
-        print(classifier.applied(to: [[0, 0], [0, 1], [1, 0], [1, 1]]))
+
+        let ŷ = classifier.applied(to: x)
+        XCTAssertEqual(round(ŷ), y)
     }
 
     static var allTests = [
