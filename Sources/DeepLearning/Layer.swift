@@ -320,7 +320,7 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: Layer
     ) {
         self.probability = probability
         self.learningPhaseIndicator = learningPhaseIndicator
-        // Workaround for TF-8
+        // Workaround for TF-189.
         self._unused = Tensor<Scalar>(0)
     }
 
@@ -363,10 +363,9 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: Layer
 public struct UpSampling2D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let size: Int32
 
-    // FIXME(TF-25): Uncomment when the derived conformances bug is fixed.
-    // public init(size: Int32) {
-    //    self.size = size
-    // }
+    public init(size: Int32) {
+       self.size = size
+    }
 
     @differentiable(wrt: (self, input))
     public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
