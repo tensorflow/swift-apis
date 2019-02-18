@@ -42,7 +42,7 @@ final class TrivialModelTests: XCTestCase {
         }
 
         let ŷ = classifier.applied(to: x)
-        XCTAssertEqual(ceil(ŷ), y)
+        XCTAssertEqual(round(ŷ), y)
     }
 
     static var allTests = [
