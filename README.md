@@ -24,9 +24,9 @@ import TensorFlow
 let hiddenSize: Int = 10
 
 struct Model: Layer {
-    var layer1 = Dense(inputSize: 4, outputSize: hiddenSize, activation: relu)
-    var layer2 = Dense(inputSize: hiddenSize, outputSize: hiddenSize, activation: relu)
-    var layer3 = Dense(inputSize: hiddenSize, outputSize: 3, activation: {$0})
+    var layer1 = Dense<Float>(inputSize: 4, outputSize: hiddenSize, activation: relu)
+    var layer2 = Dense<Float>(inputSize: hiddenSize, outputSize: hiddenSize, activation: relu)
+    var layer3 = Dense<Float>(inputSize: hiddenSize, outputSize: 3, activation: {$0})
     
     @differentiable(wrt: (self, input))
     func applied(to input: Tensor<Float>) -> Tensor<Float> {
@@ -37,14 +37,20 @@ struct Model: Layer {
 }
 ```
 
-#### Run a training loop
+#### Initialize a model and an optimizer
 
 ```swift
 let optimizer = SGD<Model, Float>(learningRate: 0.02)
 var classifier = Model()
 let x: Tensor<Float> = ...
 let y: Tensor<Float> = ...
+```
 
+#### Run a training loop
+
+One way to define a training epoch is to use the [`Differentiable.gradient(in:)`](https://github.com/apple/swift/blob/652523f49581a42986ef2b6b04a593ed47496122/stdlib/public/core/AutoDiff.swift#L214) method.
+
+```swift
 for _ in 0..<1000 {
     let 𝛁model = classifier.gradient { classifier -> Tensor<Float> in
         let ŷ = classifier.applied(to: x)
@@ -52,6 +58,18 @@ for _ in 0..<1000 {
         print("Loss: \(loss)")
         return loss
     }
+    optimizer.update(&classifier.allDifferentiableVariables, along: 𝛁model)
+}
+```
+
+Another way is to make use of methods on `Differentiable` or `Layer` that produce a pullback (i.e. a backpropagation function). Pullbacks allow you to compose your derivative computation with great flexibility.
+
+```swift
+for _ in 0..<1000 {
+    let (ŷ, backprop) = classifier.valueWithPullback(at: x)
+    let (loss, 𝛁ŷ) = ŷ.valueWithGradient { ŷ in softmaxCrossEntropy(logits: ŷ, labels: y) }
+    print("Model output: \(ŷ), Loss: \(loss)")
+    let 𝛁model = backprop(𝛁ŷ)
     optimizer.update(&classifier.allDifferentiableVariables, along: 𝛁model)
 }
 ```
