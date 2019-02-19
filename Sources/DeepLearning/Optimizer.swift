@@ -21,14 +21,13 @@ public protocol Optimizer {
     associatedtype Scalar: FloatingPoint
     var learningRate: Scalar { get }
     mutating func update(_ variables: inout Model.AllDifferentiableVariables,
-                         along gradient: Model.CotangentVector)
+                         along vector: Model.CotangentVector)
 }
 
 // MARK: - Key-path based optimizers
 
 public class Adam<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
-    where Model.AllDifferentiableVariables: AdditiveArithmetic,
-          Model.AllDifferentiableVariables == Model.CotangentVector {
+    where Model.AllDifferentiableVariables == Model.CotangentVector {
     public let learningRate: Scalar
     public var beta1: Scalar
     public var beta2: Scalar
@@ -59,7 +58,7 @@ public class Adam<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
     private var secondMoments = Model.AllDifferentiableVariables.zero
 
     public func update(_ model: inout Model.AllDifferentiableVariables,
-                       along gradient: Model.AllDifferentiableVariables) {
+                       along vector: Model.AllDifferentiableVariables) {
         step += 1
         let learningRate = self.learningRate * 1 / (1 + decay * step)
         let stepSize = learningRate * (sqrt(1 - pow(beta2, step)) / (1 - pow(beta1, step)))
@@ -76,8 +75,7 @@ public class Adam<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
 }
 
 public class RMSProp<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
-    where Model.AllDifferentiableVariables: AdditiveArithmetic,
-          Model.AllDifferentiableVariables == Model.CotangentVector {
+    where Model.AllDifferentiableVariables == Model.CotangentVector {
     public let learningRate: Scalar
     public let rho: Scalar
     public let epsilon: Scalar
@@ -103,7 +101,7 @@ public class RMSProp<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
     private var alpha = Model.AllDifferentiableVariables.zero
 
     public func update(_ model: inout Model.AllDifferentiableVariables,
-                       along gradient: Model.CotangentVector) {
+                       along vector: Model.CotangentVector) {
         step += 1
         let learningRate = self.learningRate * 1 / (1 + decay * step)
         for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Scalar>.self) {
@@ -116,8 +114,7 @@ public class RMSProp<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
 }
 
 public class SGD<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
-    where Model.AllDifferentiableVariables: AdditiveArithmetic,
-          Model.AllDifferentiableVariables == Model.CotangentVector {
+    where Model.AllDifferentiableVariables == Model.CotangentVector {
     public let learningRate: Scalar
     public let momentum: Scalar
     public let decay: Scalar
@@ -143,7 +140,7 @@ public class SGD<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
     private var velocity = Model.AllDifferentiableVariables.zero
 
     public func update(_ model: inout Model.AllDifferentiableVariables,
-                       along gradients: Model.CotangentVector) {
+                       along vectors: Model.CotangentVector) {
         step += 1
         let learningRate = self.learningRate * 1 / (1 + decay * step)
         for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Scalar>.self) {
@@ -170,7 +167,7 @@ public class RiemannSGD<Model: Layer, Scalar: FloatingPoint>: Optimizer
     }
 
     public func update(_ model: inout Model.AllDifferentiableVariables,
-                       along gradient: Model.CotangentVector) {
+                       along vector: Model.CotangentVector) {
         model = model.moved(along: learningRate * (.zero - model.tangentVector(from: gradient)))
     }
 }
