@@ -39,7 +39,9 @@ public class Adam<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
         beta1: Scalar = 0.9,
         beta2: Scalar = 0.999,
         epsilon: Scalar = 1e-8,
-        decay: Scalar = 0
+        decay: Scalar = 0,
+        modelType: Model.Type = Model.self,
+        scalarType: Scalar.Type = Scalar.self
     ) {
         precondition(learningRate >= 0, "Learning rate must be non-negative")
         precondition(0 <= beta1 && beta1 <= 1, "Beta parameter must be between 0 and 1")
@@ -85,7 +87,9 @@ public class RMSProp<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
         learningRate: Scalar = 0.001,
         rho: Scalar = 0.9,
         epsilon: Scalar = 1e-8,
-        decay: Scalar = 0
+        decay: Scalar = 0,
+        modelType: Model.Type = Model.self,
+        scalarType: Scalar.Type = Scalar.self
     ) {
         precondition(learningRate >= 0, "Learning rate must be non-negative")
         precondition(rho >= 0, "Rho must be non-negative")
@@ -124,7 +128,9 @@ public class SGD<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
         learningRate: Scalar = 0.01,
         momentum: Scalar = 0,
         decay: Scalar = 0,
-        nesterov: Bool = false
+        nesterov: Bool = false,
+        modelType: Model.Type = Model.self,
+        scalarType: Scalar.Type = Scalar.self
     ) {
         precondition(learningRate >= 0, "Learning rate must be non-negative")
         precondition(momentum >= 0, "Momentum must be non-negative")
@@ -162,7 +168,11 @@ public class RiemannSGD<Model: Layer, Scalar: FloatingPoint>: Optimizer
     where Model.TangentVector: VectorNumeric, Model.TangentVector.Scalar == Scalar {
     public var learningRate: Scalar
 
-    public init(learningRate: Scalar) {
+    public init(
+        learningRate: Scalar,
+        modelType: Model.Type = Model.self,
+        scalarType: Scalar.Type = Scalar.self
+    ) {
         self.learningRate = learningRate
     }
 
