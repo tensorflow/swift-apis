@@ -45,7 +45,7 @@ public extension Tensor where Scalar == Int32 {
         let dist = UniformIntegerDistribution<Scalar>()
         var scalars: [Scalar] = []
         for _ in 0 ..< shape.contiguousSize {
-            scalars.append(dist.next(using: &ARC4RandomNumberGenerator.global))
+            scalars.append(dist.next(using: &PhiloxRandomNumberGenerator.global))
         }
         self.init(shape: shape, scalars: scalars)
     }
@@ -81,7 +81,7 @@ public extension Tensor where Scalar : BinaryFloatingPoint,
         let dist = UniformFloatingPointDistribution<Scalar>()
         var scalars: [Scalar] = []
         for _ in 0 ..< shape.contiguousSize {
-            scalars.append(dist.next(using: &ARC4RandomNumberGenerator.global))
+            scalars.append(dist.next(using: &PhiloxRandomNumberGenerator.global))
         }
         self.init(shape: shape, scalars: scalars)
     }
@@ -119,7 +119,7 @@ public extension Tensor where Scalar : BinaryFloatingPoint,
         let dist = NormalDistribution<Scalar>(mean: mean, standardDeviation: stddev)
         var scalars: [Scalar] = []
         for _ in 0 ..< shape.contiguousSize {
-            scalars.append(dist.next(using:&ARC4RandomNumberGenerator.global))
+            scalars.append(dist.next(using:&PhiloxRandomNumberGenerator.global))
         }
         self.init(shape: shape, scalars: scalars)
     }
