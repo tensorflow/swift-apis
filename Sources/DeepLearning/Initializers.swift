@@ -129,6 +129,21 @@ public extension Tensor where Scalar : BinaryFloatingPoint,
                               Scalar.RawSignificand : FixedWidthInteger {
     /// Performs Glorot uniform initialization for the specified shape, creating a tensor by
     /// randomly sampling scalar values from a uniform distribution between `-limit` and `limit`,
+    /// where limit is `sqrt(6 / (fanIn + fanOut))`.
+    ///
+    /// - Parameters:
+    ///   - shape: The dimensions of the tensor.
+    ///   - generator: Random number generator to use.
+    ///
+    init<G: RandomNumberGenerator>(glorotUniform shape: TensorShape, generator: inout G) {
+        let fanIn = shape[shape.count - 2]
+        let fanOut = shape[shape.count - 1]
+        let minusOneToOne = 2 * Tensor(randomUniform: shape, generator: &generator) - 1
+        self = sqrt(Scalar(6) / Scalar(fanIn + fanOut)) * minusOneToOne
+    }
+
+    /// Performs Glorot uniform initialization for the specified shape, creating a tensor by
+    /// randomly sampling scalar values from a uniform distribution between `-limit` and `limit`,
     /// where limit is `sqrt(6 / (fanIn + fanOut))`, using the default random number generator.
     ///
     /// - Parameters:

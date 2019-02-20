@@ -95,6 +95,19 @@ public extension Dense where Scalar.RawSignificand: FixedWidthInteger {
                   bias: Tensor(zeros: [Int32(outputSize)]),
                   activation: activation)
     }
+
+    init<G: RandomNumberGenerator>(
+        inputSize: Int,
+        outputSize: Int,
+        generator: inout G,
+        activation: @escaping Activation
+    ) {
+        self.init(weight: Tensor(
+                  glorotUniform: [Int32(inputSize), Int32(outputSize)],
+                  generator: &generator),
+                  bias: Tensor(zeros: [Int32(outputSize)]),
+                  activation: activation)
+    }
 }
 
 @_fixed_layout
