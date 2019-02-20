@@ -126,7 +126,7 @@ private typealias UInt32x4 = (UInt32, UInt32, UInt32, UInt32)
 /// suitable for cryptographic applications.
 public struct ThreefryRandomNumberGenerator: SeedableRandomNumberGenerator {
     public static var global = ThreefryRandomNumberGenerator(
-        uint64Seed: ARC4RandomNumberGenerator.global.next()
+        uint64Seed: UInt64(time(nil))
     )
 
     private let rot: (UInt32, UInt32, UInt32, UInt32, UInt32, UInt32, UInt32, UInt32)
@@ -283,7 +283,7 @@ public struct ThreefryRandomNumberGenerator: SeedableRandomNumberGenerator {
 /// suitable for cryptographic applications.
 public struct PhiloxRandomNumberGenerator: SeedableRandomNumberGenerator {
     public static var global = PhiloxRandomNumberGenerator(
-        uint64Seed: ARC4RandomNumberGenerator.global.next()
+        uint64Seed: UInt64(time(nil))
     )
 
     private var ctr: UInt64 = 0
