@@ -90,7 +90,22 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
 public extension Dense where Scalar.RawSignificand: FixedWidthInteger {
     init(inputSize: Int, outputSize: Int, activation: @escaping Activation) {
         self.init(weight: Tensor(
-                  glorotUniform: [Int32(inputSize), Int32(outputSize)]),
+                      glorotUniform: [Int32(inputSize), Int32(outputSize)]
+                  ),
+                  bias: Tensor(zeros: [Int32(outputSize)]),
+                  activation: activation)
+    }
+
+    init<G: RandomNumberGenerator>(
+        inputSize: Int,
+        outputSize: Int,
+        generator: inout G,
+        activation: @escaping Activation
+    ) {
+        self.init(weight: Tensor(
+                      glorotUniform: [Int32(inputSize), Int32(outputSize)],
+                      generator: &generator
+                  ),
                   bias: Tensor(zeros: [Int32(outputSize)]),
                   activation: activation)
     }
