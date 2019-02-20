@@ -44,9 +44,11 @@ final class TrivialModelTests: XCTestCase {
         var classifier = Classifier(hiddenSize: 4)
         let x: Tensor<Float> = [[0, 0], [0, 1], [1, 0], [1, 1]]
         let y: Tensor<Float> = [[0], [1], [1], [0]]
-        for _ in 0..<2000 {
+
+        let context = Context(learningPhase: .training)
+        for _ in 0..<1000 {
             let (_, 𝛁model) = classifier.valueWithGradient { classifier -> Tensor<Float> in
-                let ŷ = classifier.applied(to: x)
+                let ŷ = classifier.applied(to: x, in: context)
                 return meanSquaredError(predicted: ŷ, expected: y)
             }
             optimizer.update(&classifier.allDifferentiableVariables, along: 𝛁model)

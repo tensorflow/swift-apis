@@ -16,14 +16,26 @@
 @_exported import TensorFlow
 #endif
 
+public enum LearningPhase {
+    case training
+    case inference
+}
+
+open class Context {
+    public var learningPhase: LearningPhase
+
+    public init(learningPhase: LearningPhase) {
+        self.learningPhase = learningPhase
+    }
+}
+
 /// A neural network layer.
 ///
-/// Types that conform to `Layer` represent functions that map inputs to
-/// outputs. They may have an internal state represented by parameters, such as
-/// weight tensors.
+/// Types that conform to `Layer` represent functions that map inputs to outputs. They may have an
+/// internal state represented by parameters, such as weight tensors.
 ///
-/// `Layer` instances define a differentiable `applied(to:)` method for mapping
-/// inputs to outputs.
+/// `Layer` instances define a differentiable `applied(to:in:)` method for mapping inputs to
+/// outputs.
 public protocol Layer: Differentiable & KeyPathIterable
     where AllDifferentiableVariables: KeyPathIterable {
     /// The input type of the layer.
@@ -31,34 +43,22 @@ public protocol Layer: Differentiable & KeyPathIterable
     /// The output type of the layer.
     associatedtype Output: Differentiable
 
-    /// Returns the output obtained from applying to an input.
+    /// Returns the output obtained from applying the layer to an input.
     @differentiable(wrt: (self, input))
-    func applied(to input: Input) -> Output
+    func applied(to input: Input, in context: Context) -> Output
 }
 
-// FIXME: Extra where clause is a workaround for: SR-9595
 public extension Layer
-    where TangentVector : AdditiveArithmetic, CotangentVector : AdditiveArithmetic,
-          Input.TangentVector : AdditiveArithmetic, Input.CotangentVector : AdditiveArithmetic {
-    func valueWithPullback(at input: Input)
+    where TangentVector : AdditiveArithmetic, CotangentVector : AdditiveArithmetic {
+    func valueWithPullback(at input: Input, in context: Context)
         -> (output: Output,
             pullback: (Output.CotangentVector)
                 -> (layerGradient: CotangentVector, inputGradient: Input.CotangentVector)) {
         let (out, pullback) = valueWithPullback(at: input) { layer, input in
-            return layer.applied(to: input)
+            return layer.applied(to: input, in: context)
         }
         return (out, pullback)
     }
-}
-
-/// A mutable, shareable flag that denotes training vs. inference.
-///
-/// In typical uses, every layer in a model that has behavior which differs
-/// between training and inference shares an instance of ModeRef so it doesn't
-/// need to be toggled or threaded through in more than one place.
-public final class LearningPhaseIndicator {
-    public var training: Bool = true
-    public init() {}
 }
 
 /// A mutable, shareable reference to a tensor
@@ -71,7 +71,6 @@ public final class Parameter<T: TensorFlowScalar> {
 
 @_fixed_layout
 public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
-
     public var weight: Tensor<Scalar>
     public var bias: Tensor<Scalar>
     public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
@@ -83,7 +82,7 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
     }
 
     @differentiable(wrt: (self, input))
-    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
         return activation(matmul(input, weight) + bias)
     }
 }
@@ -120,7 +119,7 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let padding: Padding
 
     @differentiable(wrt: (self, input))
-    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
         return input.convolved2D(withFilter: filter,
                                  strides: (1, strides.0, strides.1, 1),
                                  padding: padding) + bias
@@ -166,10 +165,8 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The running variance.
     @noDerivative public let runningVariance: Parameter<Scalar>
 
-    @noDerivative public let learningPhaseIndicator: LearningPhaseIndicator
-
     @differentiable(wrt: (self, input))
-    private func applyTraining(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+    private func applyingTraining(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         let positiveAxis = (input.rank + axis) % input.rank
         let mean = input.mean(alongAxes: [0, positiveAxis])
         let variance = input.variance(alongAxes: [0, positiveAxis])
@@ -181,37 +178,38 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     }
 
     @differentiable(wrt: (self, input))
-    private func applyInference(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+    private func applyingInference(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         let inv = rsqrt(runningVariance.value + epsilon) * scale
         return (input - runningMean.value) * inv + offset
     }
 
-    @differentiable(wrt: (self, input), vjp: _vjpApplied(to:))
-    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
-        if learningPhaseIndicator.training {
-            return applyTraining(to: input)
-        } else {
-            return applyInference(to: input)
+    @differentiable(wrt: (self, input), vjp: _vjpApplied(to:in:))
+    public func applied(to input: Tensor<Scalar>, in context: Context) -> Tensor<Scalar> {
+        switch context.learningPhase {
+        case .training:
+            return applyingTraining(to: input)
+        case .inference:
+            return applyingInference(to: input)
         }
     }
 
     @usableFromInline
-    func _vjpApplied(to input: Tensor<Scalar>) ->
+    func _vjpApplied(to input: Tensor<Scalar>, in context: Context) ->
         (Tensor<Scalar>, (Tensor<Scalar>) ->
             (BatchNorm<Scalar>.CotangentVector, Tensor<Scalar>)) {
-        if learningPhaseIndicator.training {
+        switch context.learningPhase {
+        case .training:
             return self.valueWithPullback(at: input) {
-                $0.applyTraining(to: $1)
+                $0.applyingTraining(to: $1)
             }
-        } else {
+        case .inference:
             return self.valueWithPullback(at: input) {
-                $0.applyInference(to: $1)
+                $0.applyingInference(to: $1)
             }
         }
     }
 
     public init(featureCount: Int,
-                learningPhaseIndicator: LearningPhaseIndicator,
                 axis: Int = -1,
                 momentum: Tensor<Scalar> = Tensor(0.99),
                 epsilon: Tensor<Scalar> = Tensor(0.001)) {
@@ -222,7 +220,6 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
         self.epsilon = epsilon
         self.runningMean = Parameter(Tensor(0))
         self.runningVariance = Parameter(Tensor(1))
-        self.learningPhaseIndicator = learningPhaseIndicator
     }
 }
 
@@ -246,7 +243,7 @@ public struct MaxPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     }
 
     @differentiable(wrt: (self, input))
-    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
         return input.maxPooled(
           kernelSize: poolSize, strides: strides, padding: padding)
     }
@@ -272,7 +269,7 @@ public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     }
 
     @differentiable(wrt: (self, input))
-    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
         return input.averagePooled(
           kernelSize: poolSize, strides: strides, padding: padding)
     }
@@ -301,7 +298,7 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     }
 
     @differentiable(wrt: (self, input))
-    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
         let mean = input.mean(alongAxes: axis)
         let variance = input.variance(alongAxes: axis)
         let inv = rsqrt(variance + epsilon) * scale
@@ -324,51 +321,48 @@ public extension Tensor
 public struct Dropout<Scalar: TensorFlowFloatingPoint>: Layer
     where Scalar.RawSignificand: FixedWidthInteger {
     @noDerivative public let probability: Double
-    @noDerivative public let learningPhaseIndicator: LearningPhaseIndicator
     // Workaround for TF-189, making `Dropout` have a non-trivial parameter
     // convention.
     var _unused: Tensor<Scalar>
 
-    public init(
-        probability: Double,
-        learningPhaseIndicator: LearningPhaseIndicator
-    ) {
+    public init(probability: Double) {
         self.probability = probability
-        self.learningPhaseIndicator = learningPhaseIndicator
         // Workaround for TF-189.
         self._unused = Tensor<Scalar>(0)
     }
 
     @differentiable(wrt: (self, input))
-    private func applyTraining(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+    private func applyingTraining(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input.droppingOut(probability: probability)
     }
 
     @differentiable(wrt: (self, input))
-    private func applyInference(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+    private func applyingInference(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input
     }
 
-    @differentiable(wrt: (self, input), vjp: _vjpApplied(to:))
-    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
-        if learningPhaseIndicator.training {
-            return applyTraining(to: input)
-        } else {
-            return applyInference(to: input)
+    @differentiable(wrt: (self, input), vjp: _vjpApplied(to:in:))
+    public func applied(to input: Tensor<Scalar>, in context: Context) -> Tensor<Scalar> {
+        switch context.learningPhase {
+        case .training:
+            return applyingTraining(to: input)
+        case .inference:
+            return applyingInference(to: input)
         }
     }
 
     @usableFromInline
-    func _vjpApplied(to input: Tensor<Scalar>) ->
+    func _vjpApplied(to input: Tensor<Scalar>, in context: Context) ->
         (Tensor<Scalar>, (Tensor<Scalar>) ->
             (Dropout<Scalar>.CotangentVector, Tensor<Scalar>)) {
-        if learningPhaseIndicator.training {
+        switch context.learningPhase {
+        case .training:
             return self.valueWithPullback(at: input) {
-                $0.applyTraining(to: $1)
+                $0.applyingTraining(to: $1)
             }
-        } else {
+        case .inference:
             return self.valueWithPullback(at: input) {
-                $0.applyInference(to: $1)
+                $0.applyingInference(to: $1)
             }
         }
     }
@@ -383,7 +377,7 @@ public struct UpSampling2D<Scalar: TensorFlowFloatingPoint>: Layer {
     }
 
     @differentiable(wrt: (self, input))
-    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
         let batchSize = input.shape[0]
         let height = input.shape[1]
         let width = input.shape[2]
