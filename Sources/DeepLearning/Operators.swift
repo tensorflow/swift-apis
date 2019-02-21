@@ -16,8 +16,12 @@
 import TensorFlow
 #endif
 
-// `round` Tensor Float or Double values to the to closest integral values with greater magnitude
-// This is a manual definition.
-func round<T : BinaryFloatingPoint>(_ t: Tensor<T>) -> Tensor<T> {
-    return Raw.round(t)
+// Rounds the values of a tensor to the nearest integer, element-wise.
+func round<Scalar: BinaryFloatingPoint>(_ x: Tensor<Scalar>) -> Tensor<Scalar> {
+    return Raw.round(x)
+}
+
+// Return a tensor with the same shape and contents as input.
+func identity<Scalar>(_ x: Tensor<Scalar>) -> Tensor<Scalar> {
+    return x
 }
