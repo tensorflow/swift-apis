@@ -30,18 +30,19 @@ final class TrivialModelTests: XCTestCase {
                 return l2.applied(in: context, to: h1)
             }
         }
+        let context = ExecutionContext(executionMode: .training)
         let optimizer = SGD<Classifier, Float>(learningRate: 0.02)
         var classifier = Classifier(hiddenSize: 4)
         let x: Tensor<Float> = [[0, 0], [0, 1], [1, 0], [1, 1]]
         let y: Tensor<Float> = [0, 1, 1, 0]
         for _ in 0..<1000 {
             let (_, 𝛁model) = classifier.valueWithGradient { classifier -> Tensor<Float> in
-                let ŷ = classifier.applied(to: x)
+                let ŷ = classifier.applied(in: context, to: x)
                 return meanSquaredError(predicted: ŷ, expected: y)
             }
             optimizer.update(&classifier.allDifferentiableVariables, along: 𝛁model)
         }
-        print(classifier.applied(to: [[0, 0], [0, 1], [1, 0], [1, 1]]))
+        print(classifier.applied(in: context, to: [[0, 0], [0, 1], [1, 0], [1, 1]]))
     }
 
     static var allTests = [

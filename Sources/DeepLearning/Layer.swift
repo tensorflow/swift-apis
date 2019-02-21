@@ -66,17 +66,6 @@ public protocol Layer: Differentiable & KeyPathIterable
     func applied(in context: ExecutionContext, to input: Input) -> Output
 }
 
-public extension Layer {
-    func valueWithPullback(at input: Input)
-        -> (output: Output,
-        pullback: (Output.CotangentVector)
-        -> (layerGradient: CotangentVector, inputGradient: Input.CotangentVector)) {
-            let (out, pullback) = _valueWithPullback(at: self, input,
-                                                     in: Self.applied(to:))
-            return (out, pullback)
-    }
-}
-
 /// A mutable, shareable reference to a tensor
 public final class Parameter<T: TensorFlowScalar> {
     public var value: Tensor<T>
