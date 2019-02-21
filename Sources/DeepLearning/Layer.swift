@@ -27,6 +27,10 @@ open class Context {
     public init(learningPhase: LearningPhase) {
         self.learningPhase = learningPhase
     }
+
+    public init(_ other: Context) {
+        self.learningPhase = other.learningPhase
+    }
 }
 
 /// A neural network layer.
