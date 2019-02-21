@@ -99,8 +99,8 @@ public extension Dense where Scalar.RawSignificand: FixedWidthInteger {
     init<G: RandomNumberGenerator>(
         inputSize: Int,
         outputSize: Int,
-        generator: inout G,
-        activation: @escaping Activation
+        activation: @escaping Activation,
+        generator: inout G
     ) {
         self.init(weight: Tensor(
                       glorotUniform: [Int32(inputSize), Int32(outputSize)],
@@ -127,10 +127,11 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
 }
 
 public extension Conv2D where Scalar.RawSignificand: FixedWidthInteger {
-    init(
+    init<G : RandomNumberGenerator>(
         filterShape: (Int, Int, Int, Int),
         strides: (Int, Int) = (1, 1),
-        padding: Padding
+        padding: Padding,
+        generator: inout G
     ) {
         let filterTensorShape = TensorShape([
             Int32(filterShape.0), Int32(filterShape.1),
@@ -139,6 +140,15 @@ public extension Conv2D where Scalar.RawSignificand: FixedWidthInteger {
             filter: Tensor(glorotUniform: filterTensorShape),
             bias: Tensor(zeros: TensorShape([Int32(filterShape.3)])),
             strides: (Int32(strides.0), Int32(strides.1)), padding: padding)
+    }
+
+    init(
+        filterShape: (Int, Int, Int, Int),
+        strides: (Int, Int) = (1, 1),
+        padding: Padding
+    ) {
+      self.init(filterShape: filterShape, strides: strides, padding: padding,
+                generator: &PhiloxRandomNumberGenerator.global)
     }
 }
 
@@ -321,14 +331,9 @@ public extension Tensor
 public struct Dropout<Scalar: TensorFlowFloatingPoint>: Layer
     where Scalar.RawSignificand: FixedWidthInteger {
     @noDerivative public let probability: Double
-    // Workaround for TF-189, making `Dropout` have a non-trivial parameter
-    // convention.
-    var _unused: Tensor<Scalar>
 
     public init(probability: Double) {
         self.probability = probability
-        // Workaround for TF-189.
-        self._unused = Tensor<Scalar>(0)
     }
 
     @differentiable(wrt: (self, input))
