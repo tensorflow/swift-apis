@@ -21,7 +21,7 @@ public protocol Optimizer {
     associatedtype Scalar: FloatingPoint
     var learningRate: Scalar { get }
     mutating func update(_ variables: inout Model.AllDifferentiableVariables,
-                         along vector: Model.CotangentVector)
+                         along direction: Model.CotangentVector)
 }
 
 // MARK: - Key-path based optimizers
@@ -60,16 +60,16 @@ public class Adam<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
     private var secondMoments = Model.AllDifferentiableVariables.zero
 
     public func update(_ model: inout Model.AllDifferentiableVariables,
-                       along vector: Model.AllDifferentiableVariables) {
+                       along direction: Model.AllDifferentiableVariables) {
         step += 1
         let learningRate = self.learningRate * 1 / (1 + decay * step)
         let stepSize = learningRate * (sqrt(1 - pow(beta2, step)) / (1 - pow(beta1, step)))
         for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Scalar>.self) {
             firstMoments[keyPath: kp] =
-                firstMoments[keyPath: kp] * beta1 + (1 - beta1) * vector[keyPath: kp]
+                firstMoments[keyPath: kp] * beta1 + (1 - beta1) * direction[keyPath: kp]
             secondMoments[keyPath: kp] =
                 secondMoments[keyPath: kp] * beta2 + (1 - beta2) *
-                     vector[keyPath: kp] * vector[keyPath: kp]
+                     direction[keyPath: kp] * direction[keyPath: kp]
             model[keyPath: kp] -=
                 stepSize * firstMoments[keyPath: kp] / (sqrt(secondMoments[keyPath: kp]) + epsilon)
         }
@@ -105,14 +105,14 @@ public class RMSProp<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
     private var alpha = Model.AllDifferentiableVariables.zero
 
     public func update(_ model: inout Model.AllDifferentiableVariables,
-                       along vector: Model.CotangentVector) {
+                       along direction: Model.CotangentVector) {
         step += 1
         let learningRate = self.learningRate * 1 / (1 + decay * step)
         for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Scalar>.self) {
             alpha[keyPath: kp] =
-                rho * alpha[keyPath: kp] + (1 - rho) * pow(vector[keyPath: kp], 2)
+                rho * alpha[keyPath: kp] + (1 - rho) * pow(direction[keyPath: kp], 2)
             model[keyPath: kp] -=
-                learningRate * vector[keyPath: kp] / (sqrt(alpha[keyPath: kp]) + epsilon)
+                learningRate * direction[keyPath: kp] / (sqrt(alpha[keyPath: kp]) + epsilon)
         }
     }
 }
@@ -146,15 +146,15 @@ public class SGD<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
     private var velocity = Model.AllDifferentiableVariables.zero
 
     public func update(_ model: inout Model.AllDifferentiableVariables,
-                       along vector: Model.CotangentVector) {
+                       along direction: Model.CotangentVector) {
         step += 1
         let learningRate = self.learningRate * 1 / (1 + decay * step)
         for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Scalar>.self) {
             velocity[keyPath: kp] =
-                momentum * velocity[keyPath: kp] - learningRate * vector[keyPath: kp]
+                momentum * velocity[keyPath: kp] - learningRate * direction[keyPath: kp]
             if nesterov {
                 model[keyPath: kp] +=
-                    momentum * velocity[keyPath: kp] - learningRate * vector[keyPath: kp]
+                    momentum * velocity[keyPath: kp] - learningRate * direction[keyPath: kp]
             } else {
                 model[keyPath: kp] += velocity[keyPath: kp]
             }
@@ -177,7 +177,7 @@ public class RiemannSGD<Model: Layer, Scalar: FloatingPoint>: Optimizer
     }
 
     public func update(_ model: inout Model.AllDifferentiableVariables,
-                       along vector: Model.CotangentVector) {
-        model = model.moved(along: learningRate * (.zero - model.tangentVector(from: vector)))
+                       along direction: Model.CotangentVector) {
+        model = model.moved(along: learningRate * (.zero - model.tangentVector(from: direction)))
     }
 }
