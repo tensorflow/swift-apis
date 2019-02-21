@@ -30,22 +30,6 @@ open class ExecutionContext {
     }
 }
 
-/// TODO: move this to wherever TensorShape is defined
-public extension TensorShape {
-    func flattened(axis: Int = 0) -> TensorShape {
-        precondition(axis < self.count)
-        var dims: [Int32]
-        switch axis {
-        case 0: dims = [self.indices.reduce(1, *)]
-        case 1: dims = [self[0], self.indices.suffix(axis).reduce(1, *)]
-        default: dims =
-            [Int32](self.indices.prefix(upTo: Int32(axis))) +
-            [self.indices.suffix(axis).reduce(1, *)]
-        }
-        return TensorShape(dims)
-    }
-}
-
 /// A neural network layer.
 ///
 /// Types that conform to `Layer` represent functions that map inputs to
