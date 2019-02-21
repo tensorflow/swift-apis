@@ -51,8 +51,8 @@ public extension Tensor where Scalar == Int32 {
     }
 }
 
-public extension Tensor where Scalar : BinaryFloatingPoint,
-                              Scalar.RawSignificand : FixedWidthInteger {
+public extension Tensor where Scalar: BinaryFloatingPoint,
+                              Scalar.RawSignificand: FixedWidthInteger {
     /// Creates a tensor with the specified shape, randomly sampling scalar values
     /// from a uniform distribution between 0 and 1.
     ///
@@ -125,8 +125,8 @@ public extension Tensor where Scalar : BinaryFloatingPoint,
     }
 }
 
-public extension Tensor where Scalar : BinaryFloatingPoint,
-                              Scalar.RawSignificand : FixedWidthInteger {
+public extension Tensor where Scalar: TensorFlowFloatingPoint,
+                              Scalar.RawSignificand: FixedWidthInteger {
     /// Performs Glorot uniform initialization for the specified shape, creating a tensor by
     /// randomly sampling scalar values from a uniform distribution between `-limit` and `limit`,
     /// where limit is `sqrt(6 / (fanIn + fanOut))`.
@@ -142,7 +142,7 @@ public extension Tensor where Scalar : BinaryFloatingPoint,
         self = sqrt(Scalar(6) / Scalar(fanIn + fanOut)) * minusOneToOne
     }
 
-    /// Performs Glorot uniform initialization for the specified shape, creating a tensor by
+    /// Creates a tensor by performing Glorot uniform initialization for the specified shape,
     /// randomly sampling scalar values from a uniform distribution between `-limit` and `limit`,
     /// where limit is `sqrt(6 / (fanIn + fanOut))`, using the default random number generator.
     ///
@@ -150,9 +150,6 @@ public extension Tensor where Scalar : BinaryFloatingPoint,
     ///   - shape: The dimensions of the tensor.
     ///
     init(glorotUniform shape: TensorShape) {
-        let fanIn = shape[shape.count - 2]
-        let fanOut = shape[shape.count - 1]
-        let minusOneToOne = 2 * Tensor(randomUniform: shape) - 1
-        self = sqrt(Scalar(6) / Scalar(fanIn + fanOut)) * minusOneToOne
+        self.init(glorotUniform: shape, generator: &PhiloxRandomNumberGenerator.global)
     }
 }
