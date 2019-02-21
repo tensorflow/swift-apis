@@ -16,10 +16,10 @@
 @_exported import TensorFlow
 #endif
 
-/// Specifies whether applied(in:to: should perform inference or training
+/// Specifies whether `applied(in:to:` should perform inference or training
 public enum ExecutionMode { case inference, training }
 
-/// The ExecutionContext is a base class used to configure
+/// The `ExecutionContext` is a base class used to configure
 /// model resources for execution in different environments such as
 /// CPU, GPU, Google Cloud, AWS, Azure, etc..
 open class ExecutionContext {
