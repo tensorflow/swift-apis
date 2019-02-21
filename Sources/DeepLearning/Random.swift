@@ -18,9 +18,9 @@ import Darwin
 import Glibc
 #endif
 
-//===----------------------------------------------------------------------===//
+//===------------------------------------------------------------------------------------------===//
 // Random number generators
-//===----------------------------------------------------------------------===//
+//===------------------------------------------------------------------------------------------===//
 
 /// A type that provides seedable deterministic pseudo-random data.
 ///
@@ -404,12 +404,17 @@ private func makeUInt64Pair(_ vector: UInt32x4) -> (UInt64, UInt64) {
     return (a, b)
 }
 
-//===----------------------------------------------------------------------===//
+//===------------------------------------------------------------------------------------------===//
 // Distributions
-//===----------------------------------------------------------------------===//
+//===------------------------------------------------------------------------------------------===//
+
+public protocol RandomDistribution {
+  associatedtype Sample
+  func next<G: RandomNumberGenerator>(using generator: inout G) -> Sample
+}
 
 @_fixed_layout
-public final class UniformIntegerDistribution<T: FixedWidthInteger> {
+public final class UniformIntegerDistribution<T: FixedWidthInteger>: RandomDistribution {
     public let lowerBound: T
     public let upperBound: T
 
@@ -424,7 +429,7 @@ public final class UniformIntegerDistribution<T: FixedWidthInteger> {
 }
 
 @_fixed_layout
-public final class UniformFloatingPointDistribution<T : BinaryFloatingPoint>
+public final class UniformFloatingPointDistribution<T : BinaryFloatingPoint>: RandomDistribution
   where T.RawSignificand : FixedWidthInteger {
     public let lowerBound: T
     public let upperBound: T
@@ -440,7 +445,7 @@ public final class UniformFloatingPointDistribution<T : BinaryFloatingPoint>
 }
 
 @_fixed_layout
-public final class NormalDistribution<T : BinaryFloatingPoint>
+public final class NormalDistribution<T : BinaryFloatingPoint>: RandomDistribution
   where T.RawSignificand : FixedWidthInteger {
     public let mean: T
     public let standardDeviation: T
@@ -464,7 +469,7 @@ public final class NormalDistribution<T : BinaryFloatingPoint>
 }
 
 @_fixed_layout
-public final class BetaDistribution {
+public final class BetaDistribution: RandomDistribution {
     public let alpha: Float
     public let beta: Float
     private let uniformDistribution = UniformFloatingPointDistribution<Float>()
