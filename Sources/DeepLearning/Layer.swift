@@ -56,16 +56,43 @@ public protocol Layer: Differentiable & KeyPathIterable
     /// The output type of the layer.
     associatedtype Output: Differentiable
 
-    /// Returns the output obtained from applying the layer to an input.
+    /// Returns the output obtained from applying the layer to the given input.
+    ///
+    /// - Parameters
+    ///   - input: The input to the layer.
+    ///   - context: The contextual informance for the layer application, e.g. the current learning
+    ///     phase.
+    /// - Returns: The output.
     @differentiable(wrt: (self, input))
     func applied(to input: Input, in context: Context) -> Output
 }
 
-public extension Layer
-    where TangentVector : AdditiveArithmetic, CotangentVector : AdditiveArithmetic {
-    func valueWithPullback(at input: Input, in context: Context)
+public extension Layer {
+    @available(*, deprecated,
+               message: "Switch to 'applied(to:in:)' for training, or 'inferring(from:)' for inference")
+    func applied(to input: Input) -> Output {
+        return inferring(from: input)
+    }
+
+    /// Returns the inference output obtained from applying the layer to the given input.
+    ///
+    /// - Parameter input: The input to the layer.
+    /// - Returns: The inference output.
+    func inferring(from input: Input) -> Output {
+        let context = Context(learningPhase: .inference)
+        return applied(to: input, in: context)
+    }
+
+    /// Returns the inference output and the backpropagation function obtained from applying the
+    /// layer to the given input. 
+    ///
+    /// - Parameter input: The input to the layer.
+    /// - Returns: A tuple containing the output and the backpropagation function. The
+    ///   backpropagation function (a.k.a. backpropagator) takes a direction vector and returns the
+    ///   gradients at the layer and at the input, respectively.
+    func appliedForBackpropagation(to input: Input, in context: Context)
         -> (output: Output,
-            pullback: (Output.CotangentVector)
+            backpropagator: (_ direction: Output.CotangentVector)
                 -> (layerGradient: CotangentVector, inputGradient: Input.CotangentVector)) {
         let (out, pullback) = valueWithPullback(at: input) { layer, input in
             return layer.applied(to: input, in: context)
