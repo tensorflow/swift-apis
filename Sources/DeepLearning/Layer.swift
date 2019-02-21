@@ -16,19 +16,28 @@
 @_exported import TensorFlow
 #endif
 
+/// A value that indicates either a training phase or an inference phase for a layer.
 public enum LearningPhase {
     case training
     case inference
 }
 
+/// A context that stores contextual information used for the application of layers.
 open class Context {
+    /// The current learning phase.
     public var learningPhase: LearningPhase
 
-    public init(learningPhase: LearningPhase) {
+    /// Creates a context.
+    ///
+    /// - Parameter learningPhase: The current learning phase.
+    public required init(learningPhase: LearningPhase) {
         self.learningPhase = learningPhase
     }
 
-    public init(_ other: Context) {
+    /// Creates a context by copying all information from an existing context.
+    ///
+    /// - Parameter context: The existing context to copy from.
+    public required init(_ other: Context) {
         self.learningPhase = other.learningPhase
     }
 }
