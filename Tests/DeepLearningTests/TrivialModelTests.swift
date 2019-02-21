@@ -24,9 +24,10 @@ final class TrivialModelTests: XCTestCase {
                 l2 = Dense<Float>(inputSize: hiddenSize, outputSize: 1, activation: relu)
             }
             @differentiable(wrt: (self, input))
-            func applied(to input: Tensor<Float>) -> Tensor<Float> {
-                let h1 = l1.applied(to: input)
-                return l2.applied(to: h1)
+            func applied(in context: ExecutionContext,
+                         to input: Tensor<Float>) -> Tensor<Float> {
+                let h1 = l1.applied(in: context, to: input)
+                return l2.applied(in: context, to: h1)
             }
         }
         let optimizer = SGD<Classifier, Float>(learningRate: 0.02)
