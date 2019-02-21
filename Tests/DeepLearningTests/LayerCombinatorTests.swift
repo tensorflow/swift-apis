@@ -19,24 +19,23 @@ final class LayerCombinatorTests: XCTestCase {
     func testSequential() {
         let inputSize = 2
         let hiddenSize = 4
-        let model =
-            Dense<Float>(inputSize: inputSize, outputSize: hiddenSize, activation: relu) >>
-            Dense<Float>(inputSize: hiddenSize, outputSize: 1, activation: relu)
-        
-        let optimizer = SGD<model.Type, Float>(learningRate: 0.02)  // Doesn't compile... :-(
+        let dense1 = Dense<Float>(inputSize: inputSize, outputSize: hiddenSize, activation: relu)
+        let dense2 = Dense<Float>(inputSize: hiddenSize, outputSize: 1, activation: relu)
+        let model = dense1 >>> dense2
+        let optimizer = SGD(learningRate: 0.02, modelType: type(of: model), scalarType: Float.self)
         let x: Tensor<Float> = [[0, 0], [0, 1], [1, 0], [1, 1]]
         let y: Tensor<Float> = [0, 1, 1, 0]
-        
+        let context = Context(learningPhase: .training)
         for _ in 0..<1000 {
-            let (_, 𝛁model) = model.valueWithGradient { model -> Tensor<Float> in
-                let ŷ = model.applied(to: x)
+            let 𝛁model = model.gradient { model -> Tensor<Float> in
+                let ŷ = model.applied(to: x, in: context)
                 return meanSquaredError(predicted: ŷ, expected: y)
             }
             optimizer.update(&model.allDifferentiableVariables, along: 𝛁model)
         }
-        print(model.applied(to: [[0, 0], [0, 1], [1, 0], [1, 1]]))
+        print(model.inferring(from: [[0, 0], [0, 1], [1, 0], [1, 1]]))
     }
-    
+
     static var allTests = [
         ("testSequential", testSequential)
     ]

@@ -18,29 +18,45 @@ import XCTest
 final class TrivialModelTests: XCTestCase {
     func testXOR() {
         struct Classifier: Layer {
+            static var generator = PhiloxRandomNumberGenerator(uint64Seed: 51243124)
             var l1, l2: Dense<Float>
             init(hiddenSize: Int) {
-                l1 = Dense<Float>(inputSize: 2, outputSize: hiddenSize, activation: relu)
-                l2 = Dense<Float>(inputSize: hiddenSize, outputSize: 1, activation: relu)
+                l1 = Dense<Float>(
+                    inputSize: 2,
+                    outputSize: hiddenSize,
+                    activation: relu,
+                    generator: &Classifier.generator
+                )
+                l2 = Dense<Float>(
+                    inputSize: hiddenSize,
+                    outputSize: 1,
+                    activation: relu,
+                    generator: &Classifier.generator
+                )
             }
             @differentiable(wrt: (self, input))
-            func applied(to input: Tensor<Float>) -> Tensor<Float> {
-                let h1 = l1.applied(to: input)
-                return l2.applied(to: h1)
+            func applied(to input: Tensor<Float>, in context: Context) -> Tensor<Float> {
+                let h1 = l1.applied(to: input, in: context)
+                return l2.applied(to: h1, in: context)
             }
         }
         let optimizer = SGD<Classifier, Float>(learningRate: 0.02)
         var classifier = Classifier(hiddenSize: 4)
         let x: Tensor<Float> = [[0, 0], [0, 1], [1, 0], [1, 1]]
-        let y: Tensor<Float> = [0, 1, 1, 0]
+        let y: Tensor<Float> = [[0], [1], [1], [0]]
+
+        let trainingContext = Context(learningPhase: .training)
         for _ in 0..<1000 {
             let (_, 𝛁model) = classifier.valueWithGradient { classifier -> Tensor<Float> in
-                let ŷ = classifier.applied(to: x)
+                let ŷ = classifier.applied(to: x, in: trainingContext)
                 return meanSquaredError(predicted: ŷ, expected: y)
             }
             optimizer.update(&classifier.allDifferentiableVariables, along: 𝛁model)
         }
-        print(classifier.applied(to: [[0, 0], [0, 1], [1, 0], [1, 1]]))
+
+        let inferenceContext = Context(learningPhase: .inference)
+        let ŷ = classifier.applied(to: x, in: inferenceContext)
+        XCTAssertEqual(round(ŷ), y)
     }
 
     static var allTests = [

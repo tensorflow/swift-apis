@@ -54,6 +54,15 @@ final class PRNGTests: XCTestCase {
             }
             XCTAssertEqual(rng2.next(), 0x370b1c1fe655916d)
         }
+        // Performance test.
+        do {
+            var arc4 = ARC4RandomNumberGenerator(seed: 971626482267121)
+            measure {
+                for _ in 0..<1000 {
+                    _ = arc4.next()
+                }
+            }
+        }
     }
 
     func testUniformDistribution() {
@@ -179,6 +188,16 @@ final class PRNGTests: XCTestCase {
         XCTAssertEqual(generator.next(), 54584659268457468)
         XCTAssertEqual(generator.next(), 4068621515934625604)
         XCTAssertEqual(generator.next(), 10604176710283101491)
+
+        // Performance test.
+        do {
+            var philox = PhiloxRandomNumberGenerator(uint64Seed: 971626482267121)
+            measure {
+                for _ in 0..<1000 {
+                    _ = philox.next()
+                }
+            }
+        }
     }
 
     func testPhilox() {
@@ -204,6 +223,16 @@ final class PRNGTests: XCTestCase {
         XCTAssertEqual(generator.next(), 15780739321597004611)
         XCTAssertEqual(generator.next(), 1610199061186607604)
         XCTAssertEqual(generator.next(), 5793355800212150215)
+
+        // Performance test.
+        do {
+            var threefry = ThreefryRandomNumberGenerator(uint64Seed: 971626482267121)
+            measure {
+                for _ in 0..<1000 {
+                    _ = threefry.next()
+                }
+            }
+        }
     }
 
     static var allTests = [
