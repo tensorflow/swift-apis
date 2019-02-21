@@ -101,14 +101,19 @@ public extension Layer {
     }
 }
 
-/// A mutable, shareable reference to a tensor
-public final class Parameter<T: TensorFlowScalar> {
-    public var value: Tensor<T>
-    public init(_ value: Tensor<T>) {
+/// A mutable, shareable, owning reference to a tensor.
+public final class Parameter<Scalar: TensorFlowScalar> {
+    public var value: Tensor<Scalar>
+    public init(_ value: Tensor<Scalar>) {
         self.value = value
     }
 }
 
+/// A densely-connected neural network layer.
+///
+/// `Dense` implements the operation `activation(matmul(input, weight) + bias)` where `activation`
+/// is the element-wise activation function passed as the activation argument. `weight` is a weight
+/// matrix created by the layer, and `bias` is a bias vector created by the layer.
 @_fixed_layout
 public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
     public var weight: Tensor<Scalar>
@@ -128,26 +133,21 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
 }
 
 public extension Dense where Scalar.RawSignificand: FixedWidthInteger {
-    init(inputSize: Int, outputSize: Int, activation: @escaping Activation) {
-        self.init(weight: Tensor(
-                      glorotUniform: [Int32(inputSize), Int32(outputSize)]
-                  ),
-                  bias: Tensor(zeros: [Int32(outputSize)]),
-                  activation: activation)
-    }
-
     init<G: RandomNumberGenerator>(
         inputSize: Int,
         outputSize: Int,
         activation: @escaping Activation,
         generator: inout G
     ) {
-        self.init(weight: Tensor(
-                      glorotUniform: [Int32(inputSize), Int32(outputSize)],
-                      generator: &generator
-                  ),
+        self.init(weight: Tensor(glorotUniform: [Int32(inputSize), Int32(outputSize)],
+                                 generator: &generator),
                   bias: Tensor(zeros: [Int32(outputSize)]),
                   activation: activation)
+    }
+
+    init(inputSize: Int, outputSize: Int, activation: @escaping Activation) {
+      self.init(inputSize: inputSize, outputSize: outputSize, activation: activation,
+                generator: &PhiloxRandomNumberGenerator.global)
     }
 }
 
@@ -167,7 +167,7 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
 }
 
 public extension Conv2D where Scalar.RawSignificand: FixedWidthInteger {
-    init<G : RandomNumberGenerator>(
+    init<G: RandomNumberGenerator>(
         filterShape: (Int, Int, Int, Int),
         strides: (Int, Int) = (1, 1),
         padding: Padding,
@@ -196,22 +196,16 @@ public extension Conv2D where Scalar.RawSignificand: FixedWidthInteger {
 public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The batch dimension.
     @noDerivative public let axis: Int32
-
     /// The momentum for the running mean and running variance.
     @noDerivative public let momentum: Tensor<Scalar>
-
     /// The offset value, also known as beta.
     public var offset: Tensor<Scalar>
-
     /// The scale value, also known as gamma.
     public var scale: Tensor<Scalar>
-
     /// The variance epsilon value.
     @noDerivative public let epsilon: Tensor<Scalar>
-
     /// The running mean.
     @noDerivative public let runningMean: Parameter<Scalar>
-
     /// The running variance.
     @noDerivative public let runningVariance: Parameter<Scalar>
 
@@ -249,11 +243,11 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
             (BatchNorm<Scalar>.CotangentVector, Tensor<Scalar>)) {
         switch context.learningPhase {
         case .training:
-            return self.valueWithPullback(at: input) {
+            return valueWithPullback(at: input) {
                 $0.applyingTraining(to: $1)
             }
         case .inference:
-            return self.valueWithPullback(at: input) {
+            return valueWithPullback(at: input) {
                 $0.applyingInference(to: $1)
             }
         }
@@ -277,15 +271,12 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
 public struct MaxPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The size of the sliding reduction window for pooling.
     @noDerivative let poolSize: (Int32, Int32, Int32, Int32)
-
     /// The strides of the sliding window for each dimension of a 4-D input.
-    /// Strides in non-spatial dimensions must be 1.
+    /// Strides in non-spatial dimensions must be `1`.
     @noDerivative let strides: (Int32, Int32, Int32, Int32)
-
     /// The padding algorithm for pooling.
     @noDerivative let padding: Padding
 
-    // strides are just for the spatial dimensions (H and W)
     public init(poolSize: (Int, Int), strides: (Int, Int), padding: Padding) {
         self.poolSize = (1, Int32(poolSize.0), Int32(poolSize.1), 1)
         self.strides = (1, Int32(strides.0), Int32(strides.1), 1)
@@ -303,15 +294,12 @@ public struct MaxPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
 public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The size of the sliding reduction window for pooling.
     @noDerivative let poolSize: (Int32, Int32, Int32, Int32)
-
     /// The strides of the sliding window for each dimension of a 4-D input.
-    /// Strides in non-spatial dimensions must be 1.
+    /// Strides in non-spatial dimensions must be `1`.
     @noDerivative let strides: (Int32, Int32, Int32, Int32)
-
     /// The padding algorithm for pooling.
     @noDerivative let padding: Padding
 
-    // strides are just for the spatial dimensions (H and W)
     public init(poolSize: (Int, Int), strides: (Int, Int), padding: Padding) {
         self.poolSize = (1, Int32(poolSize.0), Int32(poolSize.1), 1)
         self.strides = (1, Int32(strides.0), Int32(strides.1), 1)
@@ -329,12 +317,10 @@ public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
 public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The offset value, also known as beta.
     public var offset: Tensor<Scalar>
-
     /// The scale value, also known as gamma.
     public var scale: Tensor<Scalar>
-
+    /// The axis.
     @noDerivative public let axis: Int32
-
     /// The variance epsilon value.
     @noDerivative public let epsilon: Tensor<Scalar>
 
@@ -357,7 +343,7 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
 }
 
 public extension Tensor
-    where Scalar : TensorFlowFloatingPoint, Scalar.RawSignificand: FixedWidthInteger {
+    where Scalar: TensorFlowFloatingPoint, Scalar.RawSignificand: FixedWidthInteger {
     @differentiable(wrt: self where Scalar: Differentiable)
     func droppingOut(probability: Double) -> Tensor {
         let noise = Tensor(randomUniform: shape)
@@ -402,11 +388,11 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: Layer
             (Dropout<Scalar>.CotangentVector, Tensor<Scalar>)) {
         switch context.learningPhase {
         case .training:
-            return self.valueWithPullback(at: input) {
+            return valueWithPullback(at: input) {
                 $0.applyingTraining(to: $1)
             }
         case .inference:
-            return self.valueWithPullback(at: input) {
+            return valueWithPullback(at: input) {
                 $0.applyingInference(to: $1)
             }
         }
@@ -423,15 +409,12 @@ public struct UpSampling2D<Scalar: TensorFlowFloatingPoint>: Layer {
 
     @differentiable(wrt: (self, input))
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
-        let batchSize = input.shape[0]
-        let height = input.shape[1]
-        let width = input.shape[2]
-        let channels = input.shape[3]
+        let shape = input.shape
+        let (batchSize, height, width, channels) = (shape[0], shape[1], shape[2], shape[3])
         let reshapeSize = Tensor<Int32>([batchSize, height, 1, width, 1, channels])
         let scaleOnes = Tensor<Scalar>(ones: [1, 1, size, 1, size, 1])
         let upSampling = input.reshaped(toShape: reshapeSize) * scaleOnes
         let upSampledShape = Tensor<Int32>([batchSize, height * size, width * size, channels])
-        let upSampled = upSampling.reshaped(toShape: upSampledShape)
-        return upSampled
+        return upSampling.reshaped(toShape: upSampledShape)
     }
 }
