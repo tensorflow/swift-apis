@@ -307,7 +307,7 @@ public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The padding algorithm for pooling.
     @noDerivative let padding: Padding
 
-    public init(poolSize: (Int, Int), strides: (Int, Int), padding: Padding) {
+    public init(poolSize: (Int, Int), strides: (Int, Int), padding: Padding = .valid) {
         self.poolSize = (1, Int32(poolSize.0), Int32(poolSize.1), 1)
         self.strides = (1, Int32(strides.0), Int32(strides.1), 1)
         self.padding = padding
