@@ -4,3 +4,4 @@ Packages
 xcuserdata
 DerivedData/
 *.xcodeproj
+*~
