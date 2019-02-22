@@ -101,10 +101,10 @@ public extension Layer {
     }
 }
 
-extension Differentiable {
+public extension Differentiable {
 
     @differentiable(wrt: (self, l1, l2))
-    public func sequenced<L1: Layer, L2: Layer>(
+    func sequenced<L1: Layer, L2: Layer>(
         in context: Context, through l1: L1, _ l2: L2)
         -> L2.Output
             where L1.Input == Self,
@@ -114,7 +114,7 @@ extension Differentiable {
     }
 
     @differentiable(wrt: (self, l1, l2, l3))
-    public func sequenced<L1: Layer, L2: Layer, L3: Layer>(
+    func sequenced<L1: Layer, L2: Layer, L3: Layer>(
         in context: Context, through l1: L1, _ l2: L2, _ l3: L3)
         -> L3.Output
             where L1.Input == Self,
@@ -126,7 +126,7 @@ extension Differentiable {
     }
 
     @differentiable(wrt: (self, l1, l2, l3, l4))
-    public func sequenced<L1: Layer, L2: Layer, L3: Layer, L4: Layer>(
+    func sequenced<L1: Layer, L2: Layer, L3: Layer, L4: Layer>(
         in context: Context, through l1: L1, _ l2: L2, _ l3: L3, _ l4: L4)
         -> L4.Output
             where L1.Input == Self,
@@ -140,7 +140,7 @@ extension Differentiable {
     }
 
     @differentiable(wrt: (self, l1, l2, l3, l4, l5))
-    public func sequenced<L1: Layer, L2: Layer, L3: Layer, L4: Layer, L5: Layer>(
+    func sequenced<L1: Layer, L2: Layer, L3: Layer, L4: Layer, L5: Layer>(
         in context: Context, through l1: L1, _ l2: L2, _ l3: L3, _ l4: L4, _ l5: L5)
         -> L5.Output
             where L1.Input == Self,
@@ -156,7 +156,7 @@ extension Differentiable {
     }
 
     @differentiable(wrt: (self, l1, l2, l3, l4, l5, l6))
-    public func sequenced<L1: Layer, L2: Layer, L3: Layer, L4: Layer, L5: Layer, L6: Layer>(
+    func sequenced<L1: Layer, L2: Layer, L3: Layer, L4: Layer, L5: Layer, L6: Layer>(
         in context: Context, through l1: L1, _ l2: L2, _ l3: L3, _ l4: L4, _ l5: L5, _ l6: L6)
         -> L6.Output
             where L1.Input == Self,
