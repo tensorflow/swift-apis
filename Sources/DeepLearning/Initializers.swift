@@ -129,7 +129,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint,
                               Scalar.RawSignificand: FixedWidthInteger {
     /// Performs Glorot uniform initialization for the specified shape, creating a tensor by
     /// randomly sampling scalar values from a uniform distribution between `-limit` and `limit`,
-    /// where limit is `sqrt(6 / (fanIn + fanOut))` and `fanIn` / `fanOut` represent the number of
+    /// where limit is `sqrt(6 / (fanIn + fanOut))` and `fanIn`/`fanOut` represent the number of
     /// input and output features multiplied by the receptive field if present.
     ///
     /// - Parameters:
