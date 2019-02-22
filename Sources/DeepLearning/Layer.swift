@@ -78,6 +78,7 @@ public extension Layer {
     ///
     /// - Parameter input: The input to the layer.
     /// - Returns: The inference output.
+    @differentiable(wrt: (self, input))
     func inferring(from input: Input) -> Output {
         let context = Context(learningPhase: .inference)
         return applied(to: input, in: context)
