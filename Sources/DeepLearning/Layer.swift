@@ -172,7 +172,7 @@ public extension Conv2D where Scalar.RawSignificand: FixedWidthInteger {
     init<G: RandomNumberGenerator>(
         filterShape: (Int, Int, Int, Int),
         strides: (Int, Int) = (1, 1),
-        padding: Padding,
+        padding: Padding = .valid,
         activation: @escaping Activation = identity,
         generator: inout G
     ) {
@@ -190,7 +190,7 @@ public extension Conv2D where Scalar.RawSignificand: FixedWidthInteger {
     init(
         filterShape: (Int, Int, Int, Int),
         strides: (Int, Int) = (1, 1),
-        padding: Padding,
+        padding: Padding = .valid,
         activation: @escaping Activation = identity
     ) {
       self.init(filterShape: filterShape, strides: strides, padding: padding,
@@ -284,7 +284,7 @@ public struct MaxPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The padding algorithm for pooling.
     @noDerivative let padding: Padding
 
-    public init(poolSize: (Int, Int), strides: (Int, Int), padding: Padding) {
+    public init(poolSize: (Int, Int), strides: (Int, Int), padding: Padding = .valid) {
         self.poolSize = (1, Int32(poolSize.0), Int32(poolSize.1), 1)
         self.strides = (1, Int32(strides.0), Int32(strides.1), 1)
         self.padding = padding
