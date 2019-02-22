@@ -24,7 +24,7 @@ final class SequentialTests: XCTestCase {
 
             @differentiable(wrt: (self, input))
             func applied(to input: Tensor<Float>, in context: Context) -> Tensor<Float> {
-              return Layer.sequential(in: context, from: input, dense1, dense2)
+              return input.sequenced(in: context, through: dense1, dense2)
             }
         }
         var model = Model()
