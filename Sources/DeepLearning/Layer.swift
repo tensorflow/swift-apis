@@ -101,6 +101,37 @@ public extension Layer {
     }
 }
 
+@differentiable(wrt: (input, l1, l2))
+public func Sequential<L1: Layer, L2: Layer>(in context: Context, from input: L1.Input, _ l1: L1, _ l2: L2) -> L2.Output where L1.Output == L2.Input {
+  let o1 = l1.applied(to: input, in: context)
+  return l2.applied(to: o1, in: context)
+}
+
+@differentiable(wrt: (input, l1, l2, l3))
+public func Sequential<L1: Layer, L2: Layer, L3: Layer>(in context: Context, from input: L1.Input, _ l1: L1, _ l2: L2, _ l3: L3) -> L3.Output where L1.Output == L2.Input, L2.Output == L3.Input {
+  let o1 = l1.applied(to: input, in: context)
+  let o2 = l2.applied(to: o1, in: context)
+  return l3.applied(to: o2, in: context)
+}
+
+@differentiable(wrt: (input, l1, l2, l3, l4))
+public func Sequential<L1: Layer, L2: Layer, L3: Layer, L4: Layer>(in context: Context, from input: L1.Input, _ l1: L1, _ l2: L2, _ l3: L3, _ l4: L4) -> L4.Output where L1.Output == L2.Input, L2.Output == L3.Input, L3.Output == L4.Input {
+  let o1 = l1.applied(to: input, in: context)
+  let o2 = l2.applied(to: o1, in: context)
+  let o3 = l3.applied(to: o2, in: context)
+  return l4.applied(to: o3, in: context)
+}
+
+@differentiable(wrt: (input, l1, l2, l3, l4, l5))
+public func Sequential<L1: Layer, L2: Layer, L3: Layer, L4: Layer, L5: Layer>(in context: Context, from input: L1.Input, _ l1: L1, _ l2: L2, _ l3: L3, _ l4: L4, _ l5: L5) -> L5.Output where L1.Output == L2.Input, L2.Output == L3.Input, L3.Output == L4.Input, L4.Output == L5.Input {
+  let o1 = l1.applied(to: input, in: context)
+  let o2 = l2.applied(to: o1, in: context)
+  let o3 = l3.applied(to: o2, in: context)
+  let o4 = l4.applied(to: o3, in: context)
+  return l5.applied(to: o4, in: context)
+}
+
+
 /// A mutable, shareable, owning reference to a tensor.
 public final class Parameter<Scalar: TensorFlowScalar> {
     public var value: Tensor<Scalar>
