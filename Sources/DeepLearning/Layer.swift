@@ -155,14 +155,16 @@ public extension Dense where Scalar.RawSignificand: FixedWidthInteger {
 public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     public var filter: Tensor<Scalar>
     public var bias: Tensor<Scalar>
+    public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
+    @noDerivative public let activation: Activation
     @noDerivative public let strides: (Int32, Int32)
     @noDerivative public let padding: Padding
 
     @differentiable(wrt: (self, input))
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
-        return input.convolved2D(withFilter: filter,
-                                 strides: (1, strides.0, strides.1, 1),
-                                 padding: padding) + bias
+        return activation(input.convolved2D(withFilter: filter,
+                                            strides: (1, strides.0, strides.1, 1),
+                                            padding: padding) + bias)
     }
 }
 
@@ -171,6 +173,7 @@ public extension Conv2D where Scalar.RawSignificand: FixedWidthInteger {
         filterShape: (Int, Int, Int, Int),
         strides: (Int, Int) = (1, 1),
         padding: Padding,
+        activation: @escaping Activation = identity,
         generator: inout G
     ) {
         let filterTensorShape = TensorShape([
@@ -179,15 +182,19 @@ public extension Conv2D where Scalar.RawSignificand: FixedWidthInteger {
         self.init(
             filter: Tensor(glorotUniform: filterTensorShape),
             bias: Tensor(zeros: TensorShape([Int32(filterShape.3)])),
-            strides: (Int32(strides.0), Int32(strides.1)), padding: padding)
+            activation: activation,
+            strides: (Int32(strides.0), Int32(strides.1)),
+            padding: padding)
     }
 
     init(
         filterShape: (Int, Int, Int, Int),
         strides: (Int, Int) = (1, 1),
-        padding: Padding
+        padding: Padding,
+        activation: @escaping Activation = identity
     ) {
       self.init(filterShape: filterShape, strides: strides, padding: padding,
+                activation: activation,
                 generator: &PhiloxRandomNumberGenerator.global)
     }
 }
