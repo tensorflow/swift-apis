@@ -16,7 +16,7 @@
 import TensorFlow
 #endif
 
-/// Computes the Mean Squared Error loss between logits and labels
+/// Computes the mean squared error between logits and labels
 ///
 /// - Parameters
 ///   - logits: one-hot encoded outputs from a neural network.
@@ -27,7 +27,7 @@ public func meanSquaredError<Scalar: TensorFlowFloatingPoint>(
     return (expected - predicted).squared().mean()
 }
 
-/// Computes the Softmax Cross Entropy (Categorical Cross Entropy) loss between logits and labels
+/// Computes the softmax cross entropy (categorical cross entropy) between logits and labels
 ///
 /// - Parameters
 ///   - logits: one-hot encoded outputs from a neural network.
@@ -38,7 +38,7 @@ public func softmaxCrossEntropy<Scalar: TensorFlowFloatingPoint>(
     return -(labels * logSoftmax(logits)).mean(alongAxes: 0).sum()
 }
 
-/// Computes the Sigmoid Cross Entropy (Binary Cross Entropy) loss between logits and labels
+/// Computes the sigmoid cross entropy (binary cross entropy) between logits and labels
 ///
 /// - Parameters
 ///   - logits: single continuous values from 0 to 1.
