@@ -19,8 +19,8 @@ import TensorFlow
 /// Computes the Mean Squared Error loss between logits and labels
 ///
 /// - Parameters
-///     - logits: one-hot encoded outputs from a neural network.
-///     - labels: one-hot encoded values that correspond to the correct output.
+///   - logits: one-hot encoded outputs from a neural network.
+///   - labels: one-hot encoded values that correspond to the correct output.
 @differentiable
 public func meanSquaredError<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>, expected: Tensor<Scalar>) -> Tensor<Scalar> {
@@ -30,8 +30,8 @@ public func meanSquaredError<Scalar: TensorFlowFloatingPoint>(
 /// Computes the Softmax Cross Entropy (Categorical Cross Entropy) loss between logits and labels
 ///
 /// - Parameters
-///     - logits: one-hot encoded outputs from a neural network.
-///     - labels: one-hot encoded values that correspond to the correct output.
+///   - logits: one-hot encoded outputs from a neural network.
+///   - labels: one-hot encoded values that correspond to the correct output.
 @differentiable
 public func softmaxCrossEntropy<Scalar: TensorFlowFloatingPoint>(
     logits: Tensor<Scalar>, labels: Tensor<Scalar>) -> Tensor<Scalar> {
@@ -41,8 +41,8 @@ public func softmaxCrossEntropy<Scalar: TensorFlowFloatingPoint>(
 /// Computes the Sigmoid Cross Entropy (Binary Cross Entropy) loss between logits and labels
 ///
 /// - Parameters
-///     - logits: single continuous values from 0 to 1.
-///     - labels: integer values that correspond to the correct output.
+///   - logits: single continuous values from 0 to 1.
+///   - labels: integer values that correspond to the correct output.
 @differentiable
 public func sigmoidCrossEntropy<Scalar: TensorFlowFloatingPoint>(
     logits: Tensor<Scalar>, labels: Tensor<Scalar>) -> Tensor<Scalar> {
