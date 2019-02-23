@@ -27,3 +27,12 @@ public func softmaxCrossEntropy<Scalar: TensorFlowFloatingPoint>(
     logits: Tensor<Scalar>, labels: Tensor<Scalar>) -> Tensor<Scalar> {
     return -(labels * logSoftmax(logits)).mean(alongAxes: 0).sum()
 }
+
+@differentiable
+public func sigmoidCrossEntropy<Scalar: TensorFlowFloatingPoint>(
+    logits: Tensor<Scalar>, labels: Tensor<Scalar>) -> Tensor<Scalar> {
+    let loss = labels * log(logits) +
+               (Tensor<Scalar>(ones: labels.shape) - labels) *
+               log(Tensor<Scalar>(ones: logits.shape) - logits)
+    return -loss.mean(alongAxes: 0).sum()
+}
