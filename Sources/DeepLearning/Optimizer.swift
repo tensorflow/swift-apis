@@ -129,8 +129,7 @@ public class SGD<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
         momentum: Scalar = 0,
         decay: Scalar = 0,
         nesterov: Bool = false,
-        modelType: Model.Type = Model.self,
-        scalarType: Scalar.Type = Scalar.self
+        for model: Model
     ) {
         precondition(learningRate >= 0, "Learning rate must be non-negative")
         precondition(momentum >= 0, "Momentum must be non-negative")
