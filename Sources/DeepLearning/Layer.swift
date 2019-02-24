@@ -211,7 +211,7 @@ public extension Dense where Scalar.RawSignificand: FixedWidthInteger {
     init<G: RandomNumberGenerator>(
         inputSize: Int,
         outputSize: Int,
-        activation: @escaping Activation,
+        activation: @escaping Activation = identity,
         generator: inout G
     ) {
         self.init(weight: Tensor(glorotUniform: [Int32(inputSize), Int32(outputSize)],
@@ -220,7 +220,7 @@ public extension Dense where Scalar.RawSignificand: FixedWidthInteger {
                   activation: activation)
     }
 
-    init(inputSize: Int, outputSize: Int, activation: @escaping Activation) {
+    init(inputSize: Int, outputSize: Int, activation: @escaping Activation = identity) {
       self.init(inputSize: inputSize, outputSize: outputSize, activation: activation,
                 generator: &PhiloxRandomNumberGenerator.global)
     }
