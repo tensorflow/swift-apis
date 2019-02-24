@@ -40,8 +40,8 @@ struct Model: Layer {
 #### Initialize a model and an optimizer
 
 ```swift
-let optimizer = SGD<Model, Float>(learningRate: 0.02)
 var classifier = Model()
+let optimizer = SGD(learningRate: 0.02, for: classifier)
 let context = Context(learningPhase: .training)
 let x: Tensor<Float> = ...
 let y: Tensor<Float> = ...
