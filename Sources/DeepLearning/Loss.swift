@@ -48,7 +48,6 @@ public func sigmoidCrossEntropy<Scalar: TensorFlowFloatingPoint>(
     logits: Tensor<Scalar>, labels: Tensor<Scalar>
 ) -> Tensor<Scalar> {
     let loss = labels * log(logits) +
-        (Tensor<Scalar>(ones: labels.shape) - labels) *
-        log(Tensor<Scalar>(ones: logits.shape) - logits)
+        (Tensor<Scalar>(1) - labels) * log(Tensor<Scalar>(1) - logits)
     return -loss.mean(alongAxes: 0).sum()
 }
