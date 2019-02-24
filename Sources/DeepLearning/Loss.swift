@@ -46,7 +46,7 @@ public func softmaxCrossEntropy<Scalar: TensorFlowFloatingPoint>(
 @differentiable
 public func sigmoidCrossEntropy<Scalar: TensorFlowFloatingPoint>(
     logits: Tensor<Scalar>, labels: Tensor<Scalar>
-    ) -> Tensor<Scalar> {
+) -> Tensor<Scalar> {
     let loss = labels * log(logits) +
         (Tensor<Scalar>(ones: labels.shape) - labels) *
         log(Tensor<Scalar>(ones: logits.shape) - logits)
