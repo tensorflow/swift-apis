@@ -17,7 +17,6 @@ import XCTest
 
 final class SequentialTests: XCTestCase {
     func testSequential() {
-
         struct Model: Layer {
             var dense1 = Dense<Float>(inputSize: 2, outputSize: 4, activation: relu)
             var dense2 = Dense<Float>(inputSize: 4, outputSize: 1, activation: relu)
@@ -42,7 +41,7 @@ final class SequentialTests: XCTestCase {
         print(model.inferring(from: [[0, 0], [0, 1], [1, 0], [1, 1]]))
     }
 
-     static var allTests = [
+    static var allTests = [
         ("testSequential", testSequential)
     ]
 }

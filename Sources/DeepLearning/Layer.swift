@@ -101,8 +101,8 @@ public extension Layer {
     }
 }
 
+/// Adds helpers for standard feed-forward, sequential models.
 public extension Differentiable {
-
     @differentiable(wrt: (self, l1, l2))
     func sequenced<L1: Layer, L2: Layer>(
         in context: Context, through l1: L1, _ l2: L2)
