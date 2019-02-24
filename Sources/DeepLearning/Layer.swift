@@ -102,6 +102,80 @@ public extension Layer {
     }
 }
 
+/// Adds helpers for standard feed-forward, sequential models.
+public extension Differentiable {
+    @differentiable(wrt: (self, l1, l2))
+    func sequenced<L1: Layer, L2: Layer>(
+        in context: Context, through l1: L1, _ l2: L2)
+        -> L2.Output
+            where L1.Input == Self,
+                  L1.Output == L2.Input {
+        let o1 = l1.applied(to: self, in: context)
+        return l2.applied(to: o1, in: context)
+    }
+
+    @differentiable(wrt: (self, l1, l2, l3))
+    func sequenced<L1: Layer, L2: Layer, L3: Layer>(
+        in context: Context, through l1: L1, _ l2: L2, _ l3: L3)
+        -> L3.Output
+            where L1.Input == Self,
+                  L1.Output == L2.Input,
+                  L2.Output == L3.Input {
+        let o1 = l1.applied(to: self, in: context)
+        let o2 = l2.applied(to: o1, in: context)
+        return l3.applied(to: o2, in: context)
+    }
+
+    @differentiable(wrt: (self, l1, l2, l3, l4))
+    func sequenced<L1: Layer, L2: Layer, L3: Layer, L4: Layer>(
+        in context: Context, through l1: L1, _ l2: L2, _ l3: L3, _ l4: L4)
+        -> L4.Output
+            where L1.Input == Self,
+                  L1.Output == L2.Input,
+                  L2.Output == L3.Input,
+                  L3.Output == L4.Input {
+        let o1 = l1.applied(to: self, in: context)
+        let o2 = l2.applied(to: o1, in: context)
+        let o3 = l3.applied(to: o2, in: context)
+        return l4.applied(to: o3, in: context)
+    }
+
+    @differentiable(wrt: (self, l1, l2, l3, l4, l5))
+    func sequenced<L1: Layer, L2: Layer, L3: Layer, L4: Layer, L5: Layer>(
+        in context: Context, through l1: L1, _ l2: L2, _ l3: L3, _ l4: L4, _ l5: L5)
+        -> L5.Output
+            where L1.Input == Self,
+                  L1.Output == L2.Input,
+                  L2.Output == L3.Input,
+                  L3.Output == L4.Input,
+                  L4.Output == L5.Input {
+        let o1 = l1.applied(to: self, in: context)
+        let o2 = l2.applied(to: o1, in: context)
+        let o3 = l3.applied(to: o2, in: context)
+        let o4 = l4.applied(to: o3, in: context)
+        return l5.applied(to: o4, in: context)
+    }
+
+    @differentiable(wrt: (self, l1, l2, l3, l4, l5, l6))
+    func sequenced<L1: Layer, L2: Layer, L3: Layer, L4: Layer, L5: Layer, L6: Layer>(
+        in context: Context, through l1: L1, _ l2: L2, _ l3: L3, _ l4: L4, _ l5: L5, _ l6: L6)
+        -> L6.Output
+            where L1.Input == Self,
+                  L1.Output == L2.Input,
+                  L2.Output == L3.Input,
+                  L3.Output == L4.Input,
+                  L4.Output == L5.Input,
+                  L5.Output == L6.Input {
+        let o1 = l1.applied(to: self, in: context)
+        let o2 = l2.applied(to: o1, in: context)
+        let o3 = l3.applied(to: o2, in: context)
+        let o4 = l4.applied(to: o3, in: context)
+        let o5 = l5.applied(to: o4, in: context)
+        return l6.applied(to: o5, in: context)
+    }
+}
+
+
 /// A mutable, shareable, owning reference to a tensor.
 public final class Parameter<Scalar: TensorFlowScalar> {
     public var value: Tensor<Scalar>
@@ -137,7 +211,7 @@ public extension Dense where Scalar.RawSignificand: FixedWidthInteger {
     init<G: RandomNumberGenerator>(
         inputSize: Int,
         outputSize: Int,
-        activation: @escaping Activation,
+        activation: @escaping Activation = identity,
         generator: inout G
     ) {
         self.init(weight: Tensor(glorotUniform: [Int32(inputSize), Int32(outputSize)],
@@ -146,7 +220,7 @@ public extension Dense where Scalar.RawSignificand: FixedWidthInteger {
                   activation: activation)
     }
 
-    init(inputSize: Int, outputSize: Int, activation: @escaping Activation) {
+    init(inputSize: Int, outputSize: Int, activation: @escaping Activation = identity) {
       self.init(inputSize: inputSize, outputSize: outputSize, activation: activation,
                 generator: &PhiloxRandomNumberGenerator.global)
     }
