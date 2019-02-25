@@ -520,6 +520,10 @@ public struct Reshape<Scalar: TensorFlowFloatingPoint>: Layer {
         self.shape = shape
     }
     
+    public init(_ shape: TensorShape) {
+        self.init(shape: Tensor(shape.dimensions))
+    }
+    
     @differentiable(wrt: (self, input))
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
         return input.reshaped(toShape: shape)
