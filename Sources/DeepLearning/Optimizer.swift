@@ -40,7 +40,7 @@ public class Adam<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
         beta2: Scalar = 0.999,
         epsilon: Scalar = 1e-8,
         decay: Scalar = 0,
-        modelType: Model.Type = Model.self,
+        for _: __shared Model,
         scalarType: Scalar.Type = Scalar.self
     ) {
         precondition(learningRate >= 0, "Learning rate must be non-negative")
@@ -88,7 +88,7 @@ public class RMSProp<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
         rho: Scalar = 0.9,
         epsilon: Scalar = 1e-8,
         decay: Scalar = 0,
-        modelType: Model.Type = Model.self,
+        for _: __shared Model,
         scalarType: Scalar.Type = Scalar.self
     ) {
         precondition(learningRate >= 0, "Learning rate must be non-negative")
@@ -129,7 +129,8 @@ public class SGD<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
         momentum: Scalar = 0,
         decay: Scalar = 0,
         nesterov: Bool = false,
-        for _: __shared Model
+        for _: __shared Model,
+        scalarType: Scalar.Type = Scalar.self
     ) {
         precondition(learningRate >= 0, "Learning rate must be non-negative")
         precondition(momentum >= 0, "Momentum must be non-negative")
