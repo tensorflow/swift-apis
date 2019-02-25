@@ -41,7 +41,7 @@ final class TrivialModelTests: XCTestCase {
             }
         }
         var classifier = Classifier(hiddenSize: 4)
-        let optimizer = SGD(learningRate: 0.02, for: classifier, scalarType: Float.self)
+        let optimizer = SGD(for: classifier, learningRate: 0.02, scalarType: Float.self)
         let x: Tensor<Float> = [[0, 0], [0, 1], [1, 0], [1, 1]]
         let y: Tensor<Float> = [[0], [1], [1], [0]]
 

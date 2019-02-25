@@ -35,12 +35,12 @@ public class Adam<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
     public let decay: Scalar
 
     public init(
+        for _: __shared Model,
         learningRate: Scalar = 1e-3,
         beta1: Scalar = 0.9,
         beta2: Scalar = 0.999,
         epsilon: Scalar = 1e-8,
         decay: Scalar = 0,
-        for _: __shared Model,
         scalarType: Scalar.Type = Scalar.self
     ) {
         precondition(learningRate >= 0, "Learning rate must be non-negative")
@@ -84,11 +84,11 @@ public class RMSProp<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
     public let decay: Scalar
 
     public init(
+        for _: __shared Model,
         learningRate: Scalar = 0.001,
         rho: Scalar = 0.9,
         epsilon: Scalar = 1e-8,
         decay: Scalar = 0,
-        for _: __shared Model,
         scalarType: Scalar.Type = Scalar.self
     ) {
         precondition(learningRate >= 0, "Learning rate must be non-negative")
@@ -125,11 +125,11 @@ public class SGD<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
     public let nesterov: Bool
 
     public init(
+        for _: __shared Model,
         learningRate: Scalar = 0.01,
         momentum: Scalar = 0,
         decay: Scalar = 0,
         nesterov: Bool = false,
-        for _: __shared Model,
         scalarType: Scalar.Type = Scalar.self
     ) {
         precondition(learningRate >= 0, "Learning rate must be non-negative")
