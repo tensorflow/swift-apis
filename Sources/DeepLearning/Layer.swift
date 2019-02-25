@@ -500,3 +500,28 @@ public struct UpSampling2D<Scalar: TensorFlowFloatingPoint>: Layer {
         return upSampling.reshaped(toShape: upSampledShape)
     }
 }
+
+@_fixed_layout
+public struct Flatten<Scalar: TensorFlowFloatingPoint>: Layer {
+    @differentiable(wrt: (self, input))
+    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
+        let batchSize = input.shape[0]
+        let flattened = input.reshaped(toShape: Tensor<Int32>([-1]))
+        let newShape = [batchSize, Int32(flattened.shape[0] / batchSize)]
+        return flattened.reshaped(toShape: Tensor<Int32>(newShape))
+    }
+}
+
+@_fixed_layout
+public struct Reshape<Scalar: TensorFlowFloatingPoint>: Layer {
+    @noDerivative public let shape: Tensor<Int32>
+    
+    public init(shape: Tensor<Int32>) {
+        self.shape = shape
+    }
+    
+    @differentiable(wrt: (self, input))
+    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
+        return input.reshaped(toShape: shape)
+    }
+}
