@@ -53,21 +53,3 @@ public func sigmoidCrossEntropy<Scalar: TensorFlowFloatingPoint>(
         (Tensor<Scalar>(1) - labels) * log(Tensor<Scalar>(1) - logits)
     return -loss.mean(alongAxes: 0).sum()
 }
-
-/// Computes the triplet loss.
-///
-/// - Parameters:
-///   - anchor: Encoding for the anchor data.
-///   - positive: Encoding for the positive data.
-///   - negative: Encoding for the negative data.
-///   - margin: Contrastive margin.
-@differentiable
-public func triplet<Scalar: TensorFlowFloatingPoint>(
-    anchor: Tensor<Scalar>, positive: Tensor<Scalar>,
-    negative: Tensor<Scalar>, margin: Tensor<Scalar>
-) -> Tensor<Scalar> {
-    let positiveDistance = (anchor - positive).squared().sum(alongAxes: 1)
-    let negativeDistance = (anchor - negative).squared().sum(alongAxes: 1)
-    let loss = positiveDistance - negativeDistance + margin
-    return max(loss.mean(), Tensor<Scalar>(0))
-}
