@@ -17,7 +17,6 @@ public struct SupervisedTrainer<Model, Opt: Optimizer, Loss: Differentiable>
     where Opt.Model == Model,
           Loss: FloatingPoint,
           Loss == Loss.CotangentVector {
-    // TODO: Convert to protocol to take advantage of argument labels to disambiguate.
     typealias LossFn = @differentiable (Model.Output, Model.Output) -> Loss
 
     var model: Model
