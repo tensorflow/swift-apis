@@ -30,7 +30,7 @@ struct Model: Layer {
     
     @differentiable(wrt: (self, input))
     func applied(to input: Tensor<Float>, in context: Context) -> Tensor<Float> {
-        return l1.sequenced(in: context, through: layer1, layer2, layer3)
+        return input.sequenced(in: context, through: layer1, layer2, layer3)
     }
 }
 ```
