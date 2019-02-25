@@ -46,16 +46,14 @@ final class TrivialModelTests: XCTestCase {
         let y: Tensor<Float> = [[0], [1], [1], [0]]
 
         let trainingContext = Context(learningPhase: .training)
-        for _ in 0..<1000 {
-            let (_, 𝛁model) = classifier.valueWithGradient { classifier -> Tensor<Float> in
+        for _ in 0..<2000 {
+            let 𝛁model = classifier.gradient { classifier -> Tensor<Float> in
                 let ŷ = classifier.applied(to: x, in: trainingContext)
                 return meanSquaredError(predicted: ŷ, expected: y)
             }
             optimizer.update(&classifier.allDifferentiableVariables, along: 𝛁model)
         }
-
-        let inferenceContext = Context(learningPhase: .inference)
-        let ŷ = classifier.applied(to: x, in: inferenceContext)
+        let ŷ = classifier.inferring(from: x)
         XCTAssertEqual(round(ŷ), y)
     }
 

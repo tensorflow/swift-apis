@@ -41,8 +41,8 @@ public protocol SeedableRandomNumberGenerator: RandomNumberGenerator {
     init<T: BinaryInteger>(seed: T)
 }
 
-extension SeedableRandomNumberGenerator {
-    public init<T: BinaryInteger>(seed: T) {
+public extension SeedableRandomNumberGenerator {
+    init<T: BinaryInteger>(seed: T) {
         var newSeed: [UInt8] = []
         for i in 0..<seed.bitWidth / UInt8.bitWidth {
             newSeed.append(UInt8(truncatingIfNeeded: seed >> (UInt8.bitWidth * i)))
@@ -414,7 +414,7 @@ public protocol RandomDistribution {
 }
 
 @_fixed_layout
-public final class UniformIntegerDistribution<T: FixedWidthInteger>: RandomDistribution {
+public struct UniformIntegerDistribution<T: FixedWidthInteger>: RandomDistribution {
     public let lowerBound: T
     public let upperBound: T
 
@@ -429,7 +429,7 @@ public final class UniformIntegerDistribution<T: FixedWidthInteger>: RandomDistr
 }
 
 @_fixed_layout
-public final class UniformFloatingPointDistribution<T : BinaryFloatingPoint>: RandomDistribution
+public struct UniformFloatingPointDistribution<T : BinaryFloatingPoint>: RandomDistribution
   where T.RawSignificand : FixedWidthInteger {
     public let lowerBound: T
     public let upperBound: T
@@ -445,7 +445,7 @@ public final class UniformFloatingPointDistribution<T : BinaryFloatingPoint>: Ra
 }
 
 @_fixed_layout
-public final class NormalDistribution<T : BinaryFloatingPoint>: RandomDistribution
+public struct NormalDistribution<T : BinaryFloatingPoint>: RandomDistribution
   where T.RawSignificand : FixedWidthInteger {
     public let mean: T
     public let standardDeviation: T
@@ -469,7 +469,7 @@ public final class NormalDistribution<T : BinaryFloatingPoint>: RandomDistributi
 }
 
 @_fixed_layout
-public final class BetaDistribution: RandomDistribution {
+public struct BetaDistribution: RandomDistribution {
     public let alpha: Float
     public let beta: Float
     private let uniformDistribution = UniformFloatingPointDistribution<Float>()
