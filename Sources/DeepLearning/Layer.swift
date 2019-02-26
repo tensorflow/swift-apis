@@ -63,7 +63,7 @@ public protocol Layer: Differentiable & KeyPathIterable
     ///   - context: The contextual informance for the layer application, e.g. the current learning
     ///     phase.
     /// - Returns: The output.
-    @differentiable(wrt: (self, input))
+    @differentiable
     func applied(to input: Input, in context: Context) -> Output
 }
 
@@ -78,7 +78,7 @@ public extension Layer {
     ///
     /// - Parameter input: The input to the layer.
     /// - Returns: The inference output.
-    @differentiable(wrt: (self, input))
+    @differentiable
     func inferring(from input: Input) -> Output {
         let context = Context(learningPhase: .inference)
         return applied(to: input, in: context)
@@ -104,7 +104,7 @@ public extension Layer {
 
 /// Adds helpers for standard feed-forward, sequential models.
 public extension Differentiable {
-    @differentiable(wrt: (self, l1, l2))
+    @differentiable
     func sequenced<L1: Layer, L2: Layer>(
         in context: Context, through l1: L1, _ l2: L2)
         -> L2.Output
@@ -114,7 +114,7 @@ public extension Differentiable {
         return l2.applied(to: o1, in: context)
     }
 
-    @differentiable(wrt: (self, l1, l2, l3))
+    @differentiable
     func sequenced<L1: Layer, L2: Layer, L3: Layer>(
         in context: Context, through l1: L1, _ l2: L2, _ l3: L3)
         -> L3.Output
@@ -126,7 +126,7 @@ public extension Differentiable {
         return l3.applied(to: o2, in: context)
     }
 
-    @differentiable(wrt: (self, l1, l2, l3, l4))
+    @differentiable
     func sequenced<L1: Layer, L2: Layer, L3: Layer, L4: Layer>(
         in context: Context, through l1: L1, _ l2: L2, _ l3: L3, _ l4: L4)
         -> L4.Output
@@ -140,7 +140,7 @@ public extension Differentiable {
         return l4.applied(to: o3, in: context)
     }
 
-    @differentiable(wrt: (self, l1, l2, l3, l4, l5))
+    @differentiable
     func sequenced<L1: Layer, L2: Layer, L3: Layer, L4: Layer, L5: Layer>(
         in context: Context, through l1: L1, _ l2: L2, _ l3: L3, _ l4: L4, _ l5: L5)
         -> L5.Output
@@ -156,7 +156,7 @@ public extension Differentiable {
         return l5.applied(to: o4, in: context)
     }
 
-    @differentiable(wrt: (self, l1, l2, l3, l4, l5, l6))
+    @differentiable
     func sequenced<L1: Layer, L2: Layer, L3: Layer, L4: Layer, L5: Layer, L6: Layer>(
         in context: Context, through l1: L1, _ l2: L2, _ l3: L3, _ l4: L4, _ l5: L5, _ l6: L6)
         -> L6.Output
@@ -206,7 +206,7 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
         self.activation = activation
     }
 
-    @differentiable(wrt: (self, input))
+    @differentiable
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
         return activation(matmul(input, weight) + bias)
     }
@@ -254,7 +254,7 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
         self.padding = padding
     }
 
-    @differentiable(wrt: (self, input))
+    @differentiable
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
         return activation(input.convolved2D(withFilter: filter,
                                             strides: (1, strides.0, strides.1, 1),
@@ -329,7 +329,7 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
         self.runningVariance = Parameter(runningVariance)
     }
 
-    @differentiable(wrt: (self, input))
+    @differentiable
     private func applyingTraining(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         let positiveAxis = (input.rank + axis) % input.rank
         let mean = input.mean(alongAxes: [0, positiveAxis])
@@ -341,13 +341,13 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
         return (input - mean) * inv + offset
     }
 
-    @differentiable(wrt: (self, input))
+    @differentiable
     private func applyingInference(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         let inv = rsqrt(runningVariance.value + epsilon) * scale
         return (input - runningMean.value) * inv + offset
     }
 
-    @differentiable(wrt: (self, input), vjp: _vjpApplied(to:in:))
+    @differentiable(vjp: _vjpApplied(to:in:))
     public func applied(to input: Tensor<Scalar>, in context: Context) -> Tensor<Scalar> {
         switch context.learningPhase {
         case .training:
@@ -415,7 +415,7 @@ public struct MaxPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
         self.padding = padding
     }
 
-    @differentiable(wrt: (self, input))
+    @differentiable
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
         return input.maxPooled(
           kernelSize: poolSize, strides: strides, padding: padding)
@@ -450,7 +450,7 @@ public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
         self.padding = padding
     }
 
-    @differentiable(wrt: (self, input))
+    @differentiable
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
         return input.averagePooled(
           kernelSize: poolSize, strides: strides, padding: padding)
@@ -491,7 +491,7 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
         )
     }
 
-    @differentiable(wrt: (self, input))
+    @differentiable
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
         let mean = input.mean(alongAxes: axis)
         let variance = input.variance(alongAxes: axis)
@@ -520,17 +520,17 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: Layer
         self.probability = probability
     }
 
-    @differentiable(wrt: (self, input))
+    @differentiable
     private func applyingTraining(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input.droppingOut(probability: probability)
     }
 
-    @differentiable(wrt: (self, input))
+    @differentiable
     private func applyingInference(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input
     }
 
-    @differentiable(wrt: (self, input), vjp: _vjpApplied(to:in:))
+    @differentiable(vjp: _vjpApplied(to:in:))
     public func applied(to input: Tensor<Scalar>, in context: Context) -> Tensor<Scalar> {
         switch context.learningPhase {
         case .training:
@@ -565,7 +565,7 @@ public struct UpSampling2D<Scalar: TensorFlowFloatingPoint>: Layer {
        self.size = size
     }
 
-    @differentiable(wrt: (self, input))
+    @differentiable
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
         let shape = input.shape
         let (batchSize, height, width, channels) = (shape[0], shape[1], shape[2], shape[3])
