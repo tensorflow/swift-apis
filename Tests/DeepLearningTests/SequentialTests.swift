@@ -21,7 +21,7 @@ final class SequentialTests: XCTestCase {
             var dense1 = Dense<Float>(inputSize: 2, outputSize: 4, activation: relu)
             var dense2 = Dense<Float>(inputSize: 4, outputSize: 1, activation: relu)
 
-            @differentiable(wrt: (self, input))
+            @differentiable
             func applied(to input: Tensor<Float>, in context: Context) -> Tensor<Float> {
               return input.sequenced(in: context, through: dense1, dense2)
             }

@@ -34,7 +34,7 @@ final class TrivialModelTests: XCTestCase {
                     generator: &Classifier.generator
                 )
             }
-            @differentiable(wrt: (self, input))
+            @differentiable
             func applied(to input: Tensor<Float>, in context: Context) -> Tensor<Float> {
                 let h1 = l1.applied(to: input, in: context)
                 return l2.applied(to: h1, in: context)
