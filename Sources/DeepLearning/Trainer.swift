@@ -13,26 +13,18 @@
 // limitations under the License.
 
 /// SupervisedTrainer implements a standard training loop for a model.
-public struct SupervisedTrainer<Model, Opt: Optimizer, Loss: Differentiable>
-    where Opt.Model == Model,
-          Loss: FloatingPoint,
-          Loss == Loss.CotangentVector {
-    typealias LossFn = @differentiable (Model.Output, Model.Output) -> Loss
-
-    var model: Model
-    var optimizer: Opt
-    var lossFn: LossFn
-
-    init(model: Model, with optimizer: Opt, loss: @escaping LossFn) {
-        self.model = model
-        self.optimizer = optimizer
-        self.lossFn = loss
-    }
-
-    mutating func fit(x: Model.Input, y: Model.Output, forSteps numSteps: Int) {
+public struct SupervisedTrainer {
+    static func fit<Model, Opt: Optimizer, Loss: Differentiable>(
+        model: inout Model,
+        with optimizer: Opt,
+        loss lossFn: @escaping @differentiable (Model.Output, Model.Output) -> Loss,
+        x: Model.Input,
+        y: Model.Output,
+        stepCount numSteps: Int)
+        where Opt.Model == Model, Loss: FloatingPoint, Loss == Loss.CotangentVector {
         // TODO: Rewrite training loop with callbacks.
         let context = Context(learningPhase: .training)
-
+    
         // TODO: Implement shuffling, randomization, etc!
         for _ in 0..<numSteps {
             let (_, 𝛁model) = model.valueWithGradient { model -> Loss in

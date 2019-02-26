@@ -16,11 +16,11 @@
 import TensorFlow
 #endif
 
-public protocol Optimizer {
+public protocol Optimizer: AnyObject {
     associatedtype Model: Layer
     associatedtype Scalar: FloatingPoint
     var learningRate: Scalar { get }
-    mutating func update(_ variables: inout Model.AllDifferentiableVariables,
+    func update(_ variables: inout Model.AllDifferentiableVariables,
                          along direction: Model.CotangentVector)
 }
 
