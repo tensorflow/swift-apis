@@ -196,11 +196,6 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
     public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
     @noDerivative public let activation: Activation
 
-    // FIXME(SR-9716): Remove this once the bug is fixed or worked around.
-    public var allKeyPaths: [PartialKeyPath<Dense>] {
-        return [\Dense.weight, \Dense.bias]
-    }
-
     @differentiable(wrt: (self, input))
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
         return activation(matmul(input, weight) + bias)
