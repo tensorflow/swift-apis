@@ -28,7 +28,7 @@ struct Model: Layer {
     var layer2 = Dense<Float>(inputSize: hiddenSize, outputSize: hiddenSize, activation: relu)
     var layer3 = Dense<Float>(inputSize: hiddenSize, outputSize: 3, activation: identity)
     
-    @differentiable(wrt: (self, input))
+    @differentiable
     func applied(to input: Tensor<Float>, in context: Context) -> Tensor<Float> {
         return input.sequenced(in: context, through: layer1, layer2, layer3)
     }
