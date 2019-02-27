@@ -20,6 +20,8 @@
 /// Note: the current implementation lacks important features, and is currently most useful as a
 /// starting point to develop your own training loops.
 public struct SupervisedLearningTrainer {
+    private init() {}  // Users should not instantiate SupervisedLearningTrainer
+
     static func fit<Opt: Optimizer, LossScalar: TensorFlowFloatingPoint>(
         model: inout Opt.Model,
         using optimizer: Opt,
