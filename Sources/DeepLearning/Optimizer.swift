@@ -21,7 +21,7 @@ public protocol Optimizer: AnyObject {
     associatedtype Scalar: FloatingPoint
     var learningRate: Scalar { get }
     func update(_ variables: inout Model.AllDifferentiableVariables,
-                         along direction: Model.CotangentVector)
+                along direction: Model.CotangentVector)
 }
 
 // MARK: - Key-path based optimizers
