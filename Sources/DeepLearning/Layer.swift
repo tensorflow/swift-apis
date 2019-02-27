@@ -221,6 +221,21 @@ public extension Dense where Scalar.RawSignificand: FixedWidthInteger {
     }
 }
 
+public extension Dense {
+    init(
+        inputSize: Int,
+        outputSize: Int,
+        activation: @escaping Activation = identity,
+        seed: (Int64, Int64) = (Int64.random(in: Int64.min..<Int64.max),
+                                Int64.random(in: Int64.min..<Int64.max))
+    ) {
+        self.init(weight: Tensor(glorotUniform: [Int32(inputSize), Int32(outputSize)],
+                                 seed: seed),
+                  bias: Tensor(zeros: [Int32(outputSize)]),
+                  activation: activation)
+    }
+}
+
 @_fixed_layout
 public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     public var filter: Tensor<Scalar>
@@ -266,6 +281,27 @@ public extension Conv2D where Scalar.RawSignificand: FixedWidthInteger {
       self.init(filterShape: filterShape, strides: strides, padding: padding,
                 activation: activation,
                 generator: &PhiloxRandomNumberGenerator.global)
+    }
+}
+
+public extension Conv2D {
+    init(
+        filterShape: (Int, Int, Int, Int),
+        strides: (Int, Int) = (1, 1),
+        padding: Padding = .valid,
+        activation: @escaping Activation = identity,
+        seed: (Int64, Int64) = (Int64.random(in: Int64.min..<Int64.max),
+                                Int64.random(in: Int64.min..<Int64.max))
+    ) {
+        let filterTensorShape = TensorShape([
+            Int32(filterShape.0), Int32(filterShape.1),
+            Int32(filterShape.2), Int32(filterShape.3)])
+        self.init(
+          filter: Tensor(glorotUniform: filterTensorShape, seed: seed),
+          bias: Tensor(zeros: TensorShape([Int32(filterShape.3)])),
+          activation: activation,
+          strides: (Int32(strides.0), Int32(strides.1)),
+          padding: padding)
     }
 }
 
