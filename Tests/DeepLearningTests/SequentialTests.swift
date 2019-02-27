@@ -18,16 +18,18 @@ import XCTest
 final class SequentialTests: XCTestCase {
     func testSequential() {
         struct Model: Layer {
-            var dense1 = Dense<Float>(inputSize: 2, outputSize: 4, activation: relu)
-            var dense2 = Dense<Float>(inputSize: 4, outputSize: 1, activation: relu)
+            var dense1 = Dense<Float>(inputSize: 2, outputSize: 4, activation: relu,
+                                      seed: (0xfffffff, 0xfeeff))
+            var dense2 = Dense<Float>(inputSize: 4, outputSize: 1, activation: relu,
+                                      seed: (0xfeffeffe, 0xfffe))
 
-            @differentiable(wrt: (self, input))
+            @differentiable
             func applied(to input: Tensor<Float>, in context: Context) -> Tensor<Float> {
               return input.sequenced(in: context, through: dense1, dense2)
             }
         }
         var model = Model()
-        let optimizer = SGD(learningRate: 0.02, modelType: type(of: model), scalarType: Float.self)
+        let optimizer = SGD(for: model, learningRate: 0.02, scalarType: Float.self)
         let x: Tensor<Float> = [[0, 0], [0, 1], [1, 0], [1, 1]]
         let y: Tensor<Float> = [0, 1, 1, 0]
         let context = Context(learningPhase: .training)
