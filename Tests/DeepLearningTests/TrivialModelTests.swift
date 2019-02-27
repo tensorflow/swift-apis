@@ -18,20 +18,19 @@ import XCTest
 final class TrivialModelTests: XCTestCase {
     func testXOR() {
         struct Classifier: Layer {
-            static var generator = PhiloxRandomNumberGenerator(uint64Seed: 51243124)
             var l1, l2: Dense<Float>
             init(hiddenSize: Int) {
                 l1 = Dense<Float>(
                     inputSize: 2,
                     outputSize: hiddenSize,
                     activation: relu,
-                    generator: &Classifier.generator
+                    seed: (42, 42)
                 )
                 l2 = Dense<Float>(
                     inputSize: hiddenSize,
                     outputSize: 1,
                     activation: relu,
-                    generator: &Classifier.generator
+                    seed: (43, 43)
                 )
             }
             @differentiable
