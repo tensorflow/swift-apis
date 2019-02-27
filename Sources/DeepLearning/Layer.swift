@@ -196,6 +196,16 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
     public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
     @noDerivative public let activation: Activation
 
+    public init(
+        weight: Tensor<Scalar>,
+        bias: Tensor<Scalar>,
+        activation: @escaping Activation
+    ) {
+        self.weight = weight
+        self.bias = bias
+        self.activation = activation
+    }
+
     @differentiable
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
         return activation(matmul(input, weight) + bias)
@@ -245,6 +255,20 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let strides: (Int32, Int32)
     @noDerivative public let padding: Padding
 
+    public init(
+        filter: Tensor<Scalar>,
+        bias: Tensor<Scalar>,
+        activation: @escaping Activation,
+        strides: (Int, Int),
+        padding: Padding
+    ) {
+        self.filter = filter
+        self.bias = bias
+        self.activation = activation
+        (self.strides.0, self.strides.1) = (Int32(strides.0), Int32(strides.1))
+        self.padding = padding
+    }
+
     @differentiable
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
         return activation(input.convolved2D(withFilter: filter,
@@ -268,7 +292,7 @@ public extension Conv2D where Scalar.RawSignificand: FixedWidthInteger {
             filter: Tensor(glorotUniform: filterTensorShape),
             bias: Tensor(zeros: TensorShape([Int32(filterShape.3)])),
             activation: activation,
-            strides: (Int32(strides.0), Int32(strides.1)),
+            strides: strides,
             padding: padding)
     }
 
@@ -321,6 +345,25 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let runningMean: Parameter<Scalar>
     /// The running variance.
     @noDerivative public let runningVariance: Parameter<Scalar>
+
+    /// The batch dimension.
+    public init(
+        axis: Int,
+        momentum: Tensor<Scalar>,
+        offset: Tensor<Scalar>,
+        scale: Tensor<Scalar>,
+        epsilon: Tensor<Scalar>,
+        runningMean: Tensor<Scalar>,
+        runningVariance: Tensor<Scalar>
+    ) {
+        self.axis = Int32(axis)
+        self.momentum = momentum
+        self.offset = offset
+        self.scale = scale
+        self.epsilon = epsilon
+        self.runningMean = Parameter(runningMean)
+        self.runningVariance = Parameter(runningVariance)
+    }
 
     @differentiable
     private func applyingTraining(to input: Tensor<Scalar>) -> Tensor<Scalar> {
@@ -390,6 +433,18 @@ public struct MaxPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The padding algorithm for pooling.
     @noDerivative let padding: Padding
 
+    public init(
+        poolSize: (Int, Int, Int, Int),
+        strides: (Int, Int, Int, Int),
+        padding: Padding
+    ) {
+        (self.poolSize.0, self.poolSize.1, self.poolSize.2, self.poolSize.3)
+            = (Int32(poolSize.0), Int32(poolSize.1), Int32(poolSize.2), Int32(poolSize.3))
+        (self.strides.0, self.strides.1, self.strides.2, self.strides.3)
+            = (Int32(strides.0), Int32(strides.1), Int32(strides.2), Int32(strides.3))
+        self.padding = padding
+    }
+
     public init(poolSize: (Int, Int), strides: (Int, Int), padding: Padding = .valid) {
         self.poolSize = (1, Int32(poolSize.0), Int32(poolSize.1), 1)
         self.strides = (1, Int32(strides.0), Int32(strides.1), 1)
@@ -412,6 +467,18 @@ public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative let strides: (Int32, Int32, Int32, Int32)
     /// The padding algorithm for pooling.
     @noDerivative let padding: Padding
+
+    public init(
+        poolSize: (Int, Int, Int, Int),
+        strides: (Int, Int, Int, Int),
+        padding: Padding
+    ) {
+        (self.poolSize.0, self.poolSize.1, self.poolSize.2, self.poolSize.3)
+            = (Int32(poolSize.0), Int32(poolSize.1), Int32(poolSize.2), Int32(poolSize.3))
+        (self.strides.0, self.strides.1, self.strides.2, self.strides.3)
+            = (Int32(strides.0), Int32(strides.1), Int32(strides.2), Int32(strides.3))
+        self.padding = padding
+    }
 
     public init(poolSize: (Int, Int), strides: (Int, Int), padding: Padding = .valid) {
         self.poolSize = (1, Int32(poolSize.0), Int32(poolSize.1), 1)
@@ -437,13 +504,27 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The variance epsilon value.
     @noDerivative public let epsilon: Tensor<Scalar>
 
+    public init(
+        offset: Tensor<Scalar>,
+        scale: Tensor<Scalar>,
+        axis: Int,
+        epsilon: Tensor<Scalar>
+    ) {
+        self.offset = offset
+        self.scale = scale
+        self.axis = Int32(axis)
+        self.epsilon = epsilon
+    }
+
     public init(featureCount: Int,
                 axis: Int,
                 epsilon: Tensor<Scalar> = Tensor(0.001)) {
-        self.scale = Tensor<Scalar>(ones: [Int32(featureCount)])
-        self.offset = Tensor<Scalar>(zeros: [Int32(featureCount)])
-        self.axis = Int32(axis)
-        self.epsilon = epsilon
+        self.init(
+            offset: Tensor(zeros: [Int32(featureCount)]),
+            scale: Tensor(ones: [Int32(featureCount)]),
+            axis: axis,
+            epsilon: epsilon
+        )
     }
 
     @differentiable
