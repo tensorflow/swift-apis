@@ -1,4 +1,4 @@
-// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,21 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// SupervisedTrainer implements a standard training loop for a model.
-public struct SupervisedTrainer {
+/// SupervisedLearningTrainer implements a standard training loop for a supervised learning model.
+///
+/// Use the fit function to optimize a model with the provided optimizer and loss function against
+/// the input features `input` attempting to predict the `output` values.
+///
+/// Note: the current implementation lacks important features, and is currently most useful as a
+/// starting point to develop your own training loops.
+public struct SupervisedLearningTrainer {
     static func fit<Opt: Optimizer, LossScalar: TensorFlowFloatingPoint>(
         model: inout Opt.Model,
-        with optimizer: Opt,
+        using optimizer: Opt,
         loss lossFn: @escaping @differentiable (Opt.Model.Output, Opt.Model.Output) -> LossScalar,
-        x: Opt.Model.Input,
-        y: Opt.Model.Output,
-        stepCount numSteps: Int)
+        input x: Opt.Model.Input,
+        output y: Opt.Model.Output,
+        stepCount: Int)
         where Opt.Model.AllDifferentiableVariables == Opt.Model.CotangentVector {
-        // TODO: Rewrite training loop with callbacks.
+        // TODO: Rewrite training loop to be more flexible by using callbacks.
         let context = Context(learningPhase: .training)
 
         // TODO: Implement shuffling, randomization, etc!
-        for _ in 0..<numSteps {
+        for _ in 0..<stepCount {
             let (𝛁model, _) = model.gradient(at: y) { model, y -> LossScalar in
                 let ŷ = model.applied(to: x, in: context)
                 return lossFn(ŷ, y)
