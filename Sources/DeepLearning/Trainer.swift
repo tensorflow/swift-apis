@@ -23,9 +23,10 @@ public struct SupervisedLearningTrainer {
     private init() {}  // Users should not instantiate SupervisedLearningTrainer
 
     static func fit<Opt: Optimizer, LossScalar: TensorFlowFloatingPoint>(
-        model: inout Opt.Model,
+        model: Opt.Model,
+        parameters: inout Opt.Model.AllDifferentiableVariables,
         using optimizer: Opt,
-        loss lossFn: @escaping @differentiable (Opt.Model.Output, Opt.Model.Output) -> LossScalar,
+        loss lossFn: @escaping @differentiable (Opt.Model.Output, Opt.Model.Output) -> Tensor<LossScalar>,
         input x: Opt.Model.Input,
         output y: Opt.Model.Output,
         stepCount: Int)
@@ -35,12 +36,12 @@ public struct SupervisedLearningTrainer {
 
         // TODO: Implement shuffling, randomization, etc!
         for _ in 0..<stepCount {
-            let (𝛁model, _) = model.gradient(at: y) { model, y -> LossScalar in
+            let (𝛁model, _) = model.gradient(at: y) { model, y -> Tensor<LossScalar> in
                 let ŷ = model.applied(to: x, in: context)
                 return lossFn(ŷ, y)
             }
             // TODO: Accumulate loss & print out status updates.
-            optimizer.update(&model.allDifferentiableVariables, along: 𝛁model)
+            optimizer.update(&parameters, along: 𝛁model)
         }
     }
 }

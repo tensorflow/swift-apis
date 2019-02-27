@@ -33,7 +33,8 @@ final class TrainerTests: XCTestCase {
         let x: Tensor<Float> = [[0, 0], [0, 1], [1, 0], [1, 1]]
         let y: Tensor<Float> = [0, 1, 1, 0]
         SupervisedLearningTrainer.fit(
-            model: &model, using: optimizer, loss: meanSquaredError,
+            model: model, parameters: &model.allDifferentiableVariables,
+            using: optimizer, loss: meanSquaredError,
             input: x, output: y, stepCount: 1000)
         let ŷ = model.inferring(from: x)
         XCTAssertEqual(round(ŷ), y)
