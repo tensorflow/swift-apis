@@ -23,7 +23,7 @@ public struct SupervisedLearningTrainer {
     private init() {}  // Users should not instantiate SupervisedLearningTrainer
 
     static func fit<Opt: Optimizer, LossScalar: TensorFlowFloatingPoint>(
-        model: Opt.Model,
+        model: __shared Opt.Model,  // Must be shared in order for parameters to update.
         parameters: inout Opt.Model.AllDifferentiableVariables,
         using optimizer: Opt,
         loss lossFn: @escaping @differentiable (Opt.Model.Output, Opt.Model.Output) -> Tensor<LossScalar>,
