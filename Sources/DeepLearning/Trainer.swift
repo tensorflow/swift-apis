@@ -14,22 +14,22 @@
 
 /// SupervisedTrainer implements a standard training loop for a model.
 public struct SupervisedTrainer {
-    static func fit<Model, Opt: Optimizer, Loss: Differentiable>(
+    static func fit<Model, Opt: Optimizer, LossScalar: TensorFlowFloatingPoint>(
         model: inout Model,
         with optimizer: Opt,
-        loss lossFn: @escaping @differentiable (Model.Output, Model.Output) -> Loss,
+        loss lossFn: @escaping @differentiable (Model.Output, Model.Output) -> LossScalar,
         x: Model.Input,
         y: Model.Output,
         stepCount numSteps: Int)
-        where Opt.Model == Model, Loss: FloatingPoint, Loss == Loss.CotangentVector {
+        where Opt.Model == Model {
         // TODO: Rewrite training loop with callbacks.
         let context = Context(learningPhase: .training)
-    
+
         // TODO: Implement shuffling, randomization, etc!
         for _ in 0..<numSteps {
-            let (_, 𝛁model) = model.valueWithGradient { model -> Loss in
+            let (_, 𝛁model) = model.valueWithGradient { model -> LossScalar in
                 let ŷ = model.applied(to: x, in: context)
-                return lossFn( ŷ, y)
+                return lossFn(ŷ, y)
             }
             // TODO: Accumulate loss & print out status updates.
             optimizer.update(&model.allDifferentiableVariables, along: 𝛁model)
