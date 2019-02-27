@@ -24,13 +24,13 @@ final class TrivialModelTests: XCTestCase {
                     inputSize: 2,
                     outputSize: hiddenSize,
                     activation: relu,
-                    seed: (42, 42)
+                    seed: (0xfffffff, 0xfeeff)
                 )
                 l2 = Dense<Float>(
                     inputSize: hiddenSize,
                     outputSize: 1,
                     activation: relu,
-                    seed: (43, 43)
+                    seed: (0xfeffeffe, 0xfffe)
                 )
             }
             @differentiable
@@ -45,7 +45,7 @@ final class TrivialModelTests: XCTestCase {
         let y: Tensor<Float> = [[0], [1], [1], [0]]
 
         let trainingContext = Context(learningPhase: .training)
-        for _ in 0..<2000 {
+        for _ in 0..<3000 {
             let 𝛁model = classifier.gradient { classifier -> Tensor<Float> in
                 let ŷ = classifier.applied(to: x, in: trainingContext)
                 return meanSquaredError(predicted: ŷ, expected: y)
