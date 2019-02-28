@@ -606,7 +606,7 @@ public struct UpSampling2D<Scalar: TensorFlowFloatingPoint>: Layer {
         let shape = input.shape
         let (batchSize, height, width, channels) = (shape[0], shape[1], shape[2], shape[3])
         let scaleOnes = Tensor<Scalar>(ones: [1, 1, size, 1, size, 1])
-        let upSampling = input.reshaped(toShape: [batchSize, height, 1, width, 1, channels]) * scaleOnes
+        let upSampling = input.reshaped(to: [batchSize, height, 1, width, 1, channels]) * scaleOnes
         return upSampling.reshaped(to: [batchSize, height * size, width * size, channels])
     }
 }
