@@ -613,6 +613,8 @@ public struct UpSampling2D<Scalar: TensorFlowFloatingPoint>: Layer {
 
 @_fixed_layout
 public struct Flatten<Scalar: TensorFlowFloatingPoint>: Layer {
+    public init() {}
+
     @differentiable
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
         let batchSize = input.shape[0]
