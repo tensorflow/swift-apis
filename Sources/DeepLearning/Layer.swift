@@ -605,10 +605,36 @@ public struct UpSampling2D<Scalar: TensorFlowFloatingPoint>: Layer {
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
         let shape = input.shape
         let (batchSize, height, width, channels) = (shape[0], shape[1], shape[2], shape[3])
-        let reshapeSize = Tensor<Int32>([batchSize, height, 1, width, 1, channels])
         let scaleOnes = Tensor<Scalar>(ones: [1, 1, size, 1, size, 1])
-        let upSampling = input.reshaped(toShape: reshapeSize) * scaleOnes
-        let upSampledShape = Tensor<Int32>([batchSize, height * size, width * size, channels])
-        return upSampling.reshaped(toShape: upSampledShape)
+        let upSampling = input.reshaped(to: [batchSize, height, 1, width, 1, channels]) * scaleOnes
+        return upSampling.reshaped(to: [batchSize, height * size, width * size, channels])
+    }
+}
+
+@_fixed_layout
+public struct Flatten<Scalar: TensorFlowFloatingPoint>: Layer {
+    @differentiable
+    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
+        let batchSize = input.shape[0]
+        let remaining = input.shape[1..<input.rank].contiguousSize
+        return input.reshaped(to: [batchSize, remaining])
+    }
+}
+
+@_fixed_layout
+public struct Reshape<Scalar: TensorFlowFloatingPoint>: Layer {
+    @noDerivative public let shape: Tensor<Int32>
+    
+    public init(shape: Tensor<Int32>) {
+        self.shape = shape
+    }
+    
+    public init(_ shape: TensorShape) {
+        self.init(shape: Tensor(shape.dimensions))
+    }
+    
+    @differentiable
+    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
+        return input.reshaped(toShape: shape)
     }
 }
