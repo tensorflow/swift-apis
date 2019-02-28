@@ -536,8 +536,7 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     }
 }
 
-public extension Tensor
-    where Scalar: TensorFlowFloatingPoint, Scalar.RawSignificand: FixedWidthInteger {
+public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @differentiable(wrt: self where Scalar: Differentiable)
     func droppingOut(probability: Double) -> Tensor {
         let noise = Tensor(randomUniform: shape)
@@ -548,8 +547,7 @@ public extension Tensor
 }
 
 @_fixed_layout
-public struct Dropout<Scalar: TensorFlowFloatingPoint>: Layer
-    where Scalar.RawSignificand: FixedWidthInteger {
+public struct Dropout<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let probability: Double
 
     public init(probability: Double) {
