@@ -39,9 +39,7 @@ public class Adam<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
         beta1: Scalar = 0.9,
         beta2: Scalar = 0.999,
         epsilon: Scalar = 1e-8,
-        decay: Scalar = 0,
-        modelType: Model.Type = Model.self,
-        scalarType: Scalar.Type = Scalar.self
+        decay: Scalar = 0
     ) {
         precondition(learningRate >= 0, "Learning rate must be non-negative")
         precondition(0 <= beta1 && beta1 <= 1, "Beta parameter must be between 0 and 1")
@@ -53,6 +51,23 @@ public class Adam<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
         self.beta2 = beta2
         self.epsilon = epsilon
         self.decay = decay
+    }
+
+    public convenience init(
+        for _: __shared Model,
+        learningRate: Scalar = 1e-3,
+        beta1: Scalar = 0.9,
+        beta2: Scalar = 0.999,
+        epsilon: Scalar = 1e-8,
+        decay: Scalar = 0,
+        scalarType: Scalar.Type
+    ) {
+        self.init(
+            learningRate: learningRate,
+            beta1: beta1,
+            beta2: beta2,
+            epsilon: epsilon,
+            decay: decay)
     }
 
     private var step: Scalar = 0
@@ -87,9 +102,7 @@ public class RMSProp<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
         learningRate: Scalar = 0.001,
         rho: Scalar = 0.9,
         epsilon: Scalar = 1e-8,
-        decay: Scalar = 0,
-        modelType: Model.Type = Model.self,
-        scalarType: Scalar.Type = Scalar.self
+        decay: Scalar = 0
     ) {
         precondition(learningRate >= 0, "Learning rate must be non-negative")
         precondition(rho >= 0, "Rho must be non-negative")
@@ -99,6 +112,17 @@ public class RMSProp<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
         self.rho = rho
         self.epsilon = epsilon
         self.decay = decay
+    }
+
+    public convenience init(
+        for _: __shared Model,
+        learningRate: Scalar = 0.001,
+        rho: Scalar = 0.9,
+        epsilon: Scalar = 1e-8,
+        decay: Scalar = 0,
+        scalarType: Scalar.Type
+    ) {
+        self.init(learningRate: learningRate, rho: rho, epsilon: epsilon, decay: decay)
     }
 
     private var step: Scalar = 0
@@ -128,9 +152,7 @@ public class SGD<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
         learningRate: Scalar = 0.01,
         momentum: Scalar = 0,
         decay: Scalar = 0,
-        nesterov: Bool = false,
-        modelType: Model.Type = Model.self,
-        scalarType: Scalar.Type = Scalar.self
+        nesterov: Bool = false
     ) {
         precondition(learningRate >= 0, "Learning rate must be non-negative")
         precondition(momentum >= 0, "Momentum must be non-negative")
@@ -140,6 +162,17 @@ public class SGD<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
         self.momentum = momentum
         self.decay = decay
         self.nesterov = nesterov
+    }
+
+    public convenience init(
+        for _: __shared Model,
+        learningRate: Scalar = 0.01,
+        momentum: Scalar = 0,
+        decay: Scalar = 0,
+        nesterov: Bool = false,
+        scalarType: Scalar.Type
+    ) {
+        self.init(learningRate: learningRate, momentum: momentum, decay: decay, nesterov: nesterov)
     }
 
     private var step: Scalar = 0
@@ -171,7 +204,7 @@ public class RiemannSGD<Model: Layer, Scalar: FloatingPoint>: Optimizer
     public init(
         learningRate: Scalar,
         modelType: Model.Type = Model.self,
-        scalarType: Scalar.Type = Scalar.self
+        scalarType: Scalar.Type
     ) {
         self.learningRate = learningRate
     }

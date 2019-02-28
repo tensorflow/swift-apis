@@ -18,35 +18,34 @@ import XCTest
 final class TrivialModelTests: XCTestCase {
     func testXOR() {
         struct Classifier: Layer {
-            static var generator = PhiloxRandomNumberGenerator(uint64Seed: 51243124)
             var l1, l2: Dense<Float>
             init(hiddenSize: Int) {
                 l1 = Dense<Float>(
                     inputSize: 2,
                     outputSize: hiddenSize,
                     activation: relu,
-                    generator: &Classifier.generator
+                    seed: (0xfffffff, 0xfeeff)
                 )
                 l2 = Dense<Float>(
                     inputSize: hiddenSize,
                     outputSize: 1,
                     activation: relu,
-                    generator: &Classifier.generator
+                    seed: (0xfeffeffe, 0xfffe)
                 )
             }
-            @differentiable(wrt: (self, input))
+            @differentiable
             func applied(to input: Tensor<Float>, in context: Context) -> Tensor<Float> {
                 let h1 = l1.applied(to: input, in: context)
                 return l2.applied(to: h1, in: context)
             }
         }
-        let optimizer = SGD<Classifier, Float>(learningRate: 0.02)
         var classifier = Classifier(hiddenSize: 4)
+        let optimizer = SGD(for: classifier, learningRate: 0.02, scalarType: Float.self)
         let x: Tensor<Float> = [[0, 0], [0, 1], [1, 0], [1, 1]]
         let y: Tensor<Float> = [[0], [1], [1], [0]]
 
         let trainingContext = Context(learningPhase: .training)
-        for _ in 0..<2000 {
+        for _ in 0..<3000 {
             let 𝛁model = classifier.gradient { classifier -> Tensor<Float> in
                 let ŷ = classifier.applied(to: x, in: trainingContext)
                 return meanSquaredError(predicted: ŷ, expected: y)
