@@ -493,11 +493,9 @@ public struct UpSampling2D<Scalar: TensorFlowFloatingPoint>: Layer {
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
         let shape = input.shape
         let (batchSize, height, width, channels) = (shape[0], shape[1], shape[2], shape[3])
-        let reshapeSize = Tensor<Int32>([batchSize, height, 1, width, 1, channels])
         let scaleOnes = Tensor<Scalar>(ones: [1, 1, size, 1, size, 1])
-        let upSampling = input.reshaped(toShape: reshapeSize) * scaleOnes
-        let upSampledShape = Tensor<Int32>([batchSize, height * size, width * size, channels])
-        return upSampling.reshaped(toShape: upSampledShape)
+        let upSampling = input.reshaped(toShape: [batchSize, height, 1, width, 1, channels]) * scaleOnes
+        return upSampling.reshaped(to: [batchSize, height * size, width * size, channels])
     }
 }
 
@@ -506,9 +504,8 @@ public struct Flatten<Scalar: TensorFlowFloatingPoint>: Layer {
     @differentiable(wrt: (self, input))
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
         let batchSize = input.shape[0]
-        let flattened = input.reshaped(toShape: Tensor<Int32>([-1]))
-        let newShape = [batchSize, Int32(flattened.shape[0] / batchSize)]
-        return flattened.reshaped(toShape: Tensor<Int32>(newShape))
+        let remaining = input.shape[1..<input.rank].contiguousSize
+        return input.reshaped(to: [batchSize, remaining])
     }
 }
 
