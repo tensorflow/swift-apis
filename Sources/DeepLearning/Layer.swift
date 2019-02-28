@@ -621,18 +621,19 @@ public struct Flatten<Scalar: TensorFlowFloatingPoint>: Layer {
 
 @_fixed_layout
 public struct Reshape<Scalar: TensorFlowFloatingPoint>: Layer {
-    @noDerivative public let shape: Tensor<Int32>
+    @noDerivative public let shape: [Int32]
     
-    public init(shape: Tensor<Int32>) {
+    public init(shape: [Int32]) {
         self.shape = shape
     }
     
     public init(_ shape: TensorShape) {
-        self.init(shape: Tensor(shape.dimensions))
+        self.init(shape: shape.dimensions)
     }
     
     @differentiable
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
-        return input.reshaped(toShape: shape)
+        let batchSize = [input.shape[0]]
+        return input.reshaped(to: batchSize + shape)
     }
 }
