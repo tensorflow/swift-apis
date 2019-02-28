@@ -613,7 +613,7 @@ public struct UpSampling2D<Scalar: TensorFlowFloatingPoint>: Layer {
 
 @_fixed_layout
 public struct Flatten<Scalar: TensorFlowFloatingPoint>: Layer {
-    @differentiable(wrt: (self, input))
+    @differentiable
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
         let batchSize = input.shape[0]
         let remaining = input.shape[1..<input.rank].contiguousSize
@@ -633,7 +633,7 @@ public struct Reshape<Scalar: TensorFlowFloatingPoint>: Layer {
         self.init(shape: Tensor(shape.dimensions))
     }
     
-    @differentiable(wrt: (self, input))
+    @differentiable
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
         return input.reshaped(toShape: shape)
     }
