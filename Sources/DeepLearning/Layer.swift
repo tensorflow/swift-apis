@@ -212,7 +212,7 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
     }
 }
 
-public extension Dense where Scalar.RawSignificand: FixedWidthInteger {
+public extension Dense {
     init<G: RandomNumberGenerator>(
         inputSize: Int,
         outputSize: Int,
@@ -277,7 +277,7 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     }
 }
 
-public extension Conv2D where Scalar.RawSignificand: FixedWidthInteger {
+public extension Conv2D {
     init<G: RandomNumberGenerator>(
         filterShape: (Int, Int, Int, Int),
         strides: (Int, Int) = (1, 1),
