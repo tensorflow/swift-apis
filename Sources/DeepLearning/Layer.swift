@@ -651,6 +651,9 @@ public struct Flatten<Scalar: TensorFlowFloatingPoint>: Layer {
 @_fixed_layout
 public struct Reshape<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let shape: Tensor<Int32>
+
+    // TF-331 workaround:
+    @noDerivative private let _nontrivial = Tensor<Int32>(0)
     
     public init(shape: Tensor<Int32>) {
         self.shape = shape
