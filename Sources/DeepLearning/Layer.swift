@@ -85,7 +85,7 @@ public extension Layer {
     }
 
     /// Returns the inference output and the backpropagation function obtained from applying the
-    /// layer to the given input. 
+    /// layer to the given input.
     ///
     /// - Parameter input: The input to the layer.
     /// - Returns: A tuple containing the output and the backpropagation function. The
@@ -653,16 +653,16 @@ public struct Reshape<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let shape: Tensor<Int32>
 
     // TF-331 workaround:
-    @noDerivative private let _nontrivial = Tensor<Int32>(0)
-    
+    private var _nontrivial = Tensor<Float>(0)
+
     public init(shape: Tensor<Int32>) {
         self.shape = shape
     }
-    
+
     public init(_ shape: TensorShape) {
         self.init(shape: Tensor(shape.dimensions))
     }
-    
+
     @differentiable
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
         return input.reshaped(toShape: shape)
