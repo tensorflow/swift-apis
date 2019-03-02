@@ -186,14 +186,17 @@ public final class Parameter<Scalar: TensorFlowScalar> {
 
 /// A densely-connected neural network layer.
 ///
-/// `Dense` implements the operation `activation(matmul(input, weight) + bias)` where `activation`
-/// is the element-wise activation function passed as the activation argument. `weight` is a weight
-/// matrix created by the layer, and `bias` is a bias vector created by the layer.
+/// `Dense` implements the operation `activation(matmul(input, weight) + bias)`, where `weight` is
+/// a weight matrix, `bias` is a bias vector, and `activation` is an element-wise activation
+/// function.
 @_fixed_layout
 public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
+    /// The weight matrix.
     public var weight: Tensor<Scalar>
+    /// The bias vector.
     public var bias: Tensor<Scalar>
     public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
+    /// The element-wise activation function.
     @noDerivative public let activation: Activation
 
     public init(
@@ -213,6 +216,10 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
 }
 
 public extension Dense {
+    /// Creates a `Dense` layer with the specified input size, output size, and element-wise
+    /// activation function. The weight matrix is created with shape `[inputSize, outputSize]` and
+    /// is initialized using Glorot uniform initialization with the specified generator. The bias
+    /// vector is created with shape `[outputSize]` and is initialized with zeros.
     init<G: RandomNumberGenerator>(
         inputSize: Int,
         outputSize: Int,
@@ -232,6 +239,10 @@ public extension Dense {
 }
 
 public extension Dense {
+    /// Creates a `Dense` layer with the specified input size, output size, and element-wise
+    /// activation function. The weight matrix is created with shape `[inputSize, outputSize]` and
+    /// is initialized using Glorot uniform initialization with the specified seed. The bias vector
+    /// is created with shape `[outputSize]` and is initialized with zeros.
     init(
         inputSize: Int,
         outputSize: Int,
@@ -246,13 +257,20 @@ public extension Dense {
     }
 }
 
+/// A convolutional neural network layer.
 @_fixed_layout
 public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
+    /// The 4-D convolution kernel.
     public var filter: Tensor<Scalar>
+    /// The bias vector.
     public var bias: Tensor<Scalar>
     public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
+    /// The element-wise activation function.
     @noDerivative public let activation: Activation
+    /// The strides of the sliding window for each dimension of a 4-D input.
+    /// Strides in non-spatial dimensions must be `1`.
     @noDerivative public let strides: (Int32, Int32)
+    /// The padding algorithm for convolution.
     @noDerivative public let padding: Padding
 
     public init(
@@ -278,6 +296,9 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
 }
 
 public extension Conv2D {
+    /// Creates a `Conv2D` layer with the specified filter shape, strides, padding, and
+    /// element-wise activation function. The filter tensor is initialized using Glorot uniform
+    /// initialization with the specified generator. The bias vector is initialized with zeros.
     init<G: RandomNumberGenerator>(
         filterShape: (Int, Int, Int, Int),
         strides: (Int, Int) = (1, 1),
@@ -289,13 +310,16 @@ public extension Conv2D {
             Int32(filterShape.0), Int32(filterShape.1),
             Int32(filterShape.2), Int32(filterShape.3)])
         self.init(
-            filter: Tensor(glorotUniform: filterTensorShape),
+            filter: Tensor(glorotUniform: filterTensorShape, generator: &generator),
             bias: Tensor(zeros: TensorShape([Int32(filterShape.3)])),
             activation: activation,
             strides: strides,
             padding: padding)
     }
 
+    /// Creates a `Conv2D` layer with the specified filter shape, strides, padding, and
+    /// element-wise activation function. The filter tensor is initialized using Glorot uniform
+    /// initialization. The bias vector is initialized with zeros.
     init(
         filterShape: (Int, Int, Int, Int),
         strides: (Int, Int) = (1, 1),
@@ -309,6 +333,9 @@ public extension Conv2D {
 }
 
 public extension Conv2D {
+    /// Creates a `Conv2D` layer with the specified filter shape, strides, padding, and
+    /// element-wise activation function. The filter tensor is initialized using Glorot uniform
+    /// initialization with the specified seed. The bias vector is initialized with zeros.
     init(
         filterShape: (Int, Int, Int, Int),
         strides: (Int, Int) = (1, 1),
