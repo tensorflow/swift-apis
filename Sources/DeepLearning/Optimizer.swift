@@ -201,12 +201,16 @@ public class RiemannSGD<Model: Layer, Scalar: FloatingPoint>: Optimizer
     where Model.TangentVector: VectorNumeric, Model.TangentVector.Scalar == Scalar {
     public var learningRate: Scalar
 
-    public init(
-        learningRate: Scalar,
-        modelType: Model.Type = Model.self,
-        scalarType: Scalar.Type
-    ) {
+    public init(learningRate: Scalar) {
         self.learningRate = learningRate
+    }
+
+    public convenience init(
+        for _: __shared Model,
+        learningRate: Scalar,
+        scalarType _: Scalar.Type
+    ) {
+        self.init(learningRate: learningRate)
     }
 
     public func update(_ model: inout Model.AllDifferentiableVariables,
