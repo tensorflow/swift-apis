@@ -108,7 +108,7 @@ public extension Differentiable {
     ///
     /// - Parameter:
     ///   - context: The context that stores contextual information used for the application of
-    /// layers.
+    ///     layers.
     ///   - l1: The first layer.
     ///   - l2: The second layer.
     /// - Returns: The final layer's output after sequential application.
@@ -127,7 +127,7 @@ public extension Differentiable {
     ///
     /// - Parameter:
     ///   - context: The context that stores contextual information used for the application of
-    /// layers.
+    ///     layers.
     ///   - l1: The first layer.
     ///   - l2: The second layer.
     ///   - l3: The third layer.
@@ -149,7 +149,7 @@ public extension Differentiable {
     ///
     /// - Parameter:
     ///   - context: The context that stores contextual information used for the application of
-    /// layers.
+    ///     layers.
     ///   - l1: The first layer.
     ///   - l2: The second layer.
     ///   - l3: The third layer.
@@ -174,7 +174,7 @@ public extension Differentiable {
     ///
     /// - Parameter:
     ///   - context: The context that stores contextual information used for the application of
-    /// layers.
+    ///     layers.
     ///   - l1: The first layer.
     ///   - l2: The second layer.
     ///   - l3: The third layer.
@@ -202,7 +202,7 @@ public extension Differentiable {
     ///
     /// - Parameter:
     ///   - context: The context that stores contextual information used for the application of
-    /// layers.
+    ///     layers.
     ///   - l1: The first layer.
     ///   - l2: The second layer.
     ///   - l3: The third layer.
