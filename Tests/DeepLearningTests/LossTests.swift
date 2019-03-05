@@ -53,7 +53,7 @@ final class LossTests: XCTestCase {
         assertAllClose(expected: expectedGradients, got: gradients)
     }
 
-    func assertAllClose(expected a: Tensor<Float>, got b: Tensor<Float>, tol: Float = 1e-6) {
+    func assertAllClose(expected: Tensor<Float>, actual: Tensor<Float>, tolerance: Float = 1e-6) {
         XCTAssertEqual(a.shape, b.shape)
         for (index, elementInA) in a.scalars.enumerated() {
             let elementInB = b.scalars[index]
