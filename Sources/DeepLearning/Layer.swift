@@ -58,7 +58,7 @@ public protocol Layer: Differentiable & KeyPathIterable
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters
+    /// - Parameters:
     ///   - input: The input to the layer.
     ///   - context: The contextual informance for the layer application, e.g. the current learning
     ///     phase.
@@ -265,7 +265,7 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters
+    /// - Parameters:
     ///   - input: The input to the layer.
     ///   - context: The contextual informance for the layer application, e.g. the current learning
     ///     phase.
@@ -332,16 +332,17 @@ public extension Dense {
     }
 }
 
-/// A 2D convolution layer (e.g. spatial convolution over images).
+/// A 2-D convolution layer (e.g. spatial convolution over images).
 ///
-/// This layer creates a convolution kernel that is convolved with the layer input to produce a
-/// tensor of outputs. If activation is not `nil`, it is applied to the outputs as well.
+/// This layer creates a convolution filter that is convolved with the layer input to produce a
+/// tensor of outputs.
 @_fixed_layout
 public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The 4-D convolution kernel.
     public var filter: Tensor<Scalar>
     /// The bias vector.
     public var bias: Tensor<Scalar>
+    /// An activation function.
     public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
     /// The element-wise activation function.
     @noDerivative public let activation: Activation
@@ -376,7 +377,7 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters
+    /// - Parameters:
     ///   - input: The input to the layer.
     ///   - context: The contextual informance for the layer application, e.g. the current learning
     ///     phase.
@@ -529,7 +530,7 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters
+    /// - Parameters:
     ///   - input: The input to the layer.
     ///   - context: The contextual informance for the layer application, e.g. the current learning
     ///     phase.
@@ -619,7 +620,7 @@ public struct MaxPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters
+    /// - Parameters:
     ///   - input: The input to the layer.
     ///   - context: The contextual informance for the layer application, e.g. the current learning
     ///     phase.
@@ -669,15 +670,14 @@ public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters
+    /// - Parameters:
     ///   - input: The input to the layer.
     ///   - context: The contextual informance for the layer application, e.g. the current learning
     ///     phase.
     /// - Returns: The output.
     @differentiable
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
-        return input.averagePooled(
-          kernelSize: poolSize, strides: strides, padding: padding)
+        return input.averagePooled(kernelSize: poolSize, strides: strides, padding: padding)
     }
 }
 
@@ -779,7 +779,7 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters
+    /// - Parameters:
     ///   - input: The input to the layer.
     ///   - context: The contextual informance for the layer application, e.g. the current learning
     ///     phase.
@@ -825,7 +825,7 @@ public struct UpSampling2D<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters
+    /// - Parameters:
     ///   - input: The input to the layer.
     ///   - context: The contextual informance for the layer application, e.g. the current learning
     ///     phase.
@@ -850,7 +850,7 @@ public struct Flatten<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters
+    /// - Parameters:
     ///   - input: The input to the layer.
     ///   - context: The contextual informance for the layer application, e.g. the current learning
     ///     phase.
@@ -888,7 +888,7 @@ public struct Reshape<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters
+    /// - Parameters:
     ///   - input: The input to the layer.
     ///   - context: The contextual informance for the layer application, e.g. the current learning
     ///     phase.
