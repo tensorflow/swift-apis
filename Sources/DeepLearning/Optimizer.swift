@@ -37,8 +37,8 @@ public protocol Optimizer {
 
 /// Adam optimizer.
 ///
-/// - Reference: ["Adam - A Method for Stochastic Optimization"](
-///   https://arxiv.org/abs/1412.6980v8)
+/// Reference: ["Adam - A Method for Stochastic Optimization"](
+/// https://arxiv.org/abs/1412.6980v8)
 public class Adam<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
     where Model.AllDifferentiableVariables == Model.CotangentVector {
     /// The learning rate.
@@ -117,8 +117,8 @@ public class Adam<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
 /// learning rate, which can be freely tuned). This optimizer is usually a good choice for recurrent
 /// neural networks.
 ///
-/// - Reference: ["rmsprop: Divide the gradient by a running average of its recent magnitude"](
-///   http://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf)
+/// Reference: ["rmsprop: Divide the gradient by a running average of its recent magnitude"](
+/// http://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf)
 public class RMSProp<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
     where Model.AllDifferentiableVariables == Model.CotangentVector {
     /// The learning rate.
