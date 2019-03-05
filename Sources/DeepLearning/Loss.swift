@@ -66,7 +66,7 @@ func _vjpSoftmaxCrossEntropy<Scalar: TensorFlowFloatingPoint>(
 ) -> (Tensor<Scalar>, (Tensor<Scalar>) -> Tensor<Scalar>) {
     let (loss, grad) = Raw.softmaxCrossEntropyWithLogits(features: logits, labels: oneHotLabels)
     let batchSize = Tensor<Scalar>(logits.shapeTensor[0])
-    return (loss.mean(), { v in (v / batchSize) * grad })
+    return (loss.mean(), { v in v / batchSize * grad })
 }
 
 /// Computes the sigmoid cross entropy (binary cross entropy) between logits and labels.
