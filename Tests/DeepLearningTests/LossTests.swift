@@ -57,8 +57,8 @@ final class LossTests: XCTestCase {
         XCTAssertEqual(a.shape, b.shape)
         for (index, elementInA) in a.scalars.enumerated() {
             let elementInB = b.scalars[index]
-            XCTAssertTrue(
-                abs(elementInA - elementInB) < tol,
+            XCTAssertLessThan(
+                abs(elementInA - elementInB), tol,
                 "Found difference at \(index), expected: \(elementInA), got: \(elementInB).")
         }
     }
