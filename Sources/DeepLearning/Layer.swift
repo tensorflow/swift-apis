@@ -456,11 +456,14 @@ public extension Conv2D {
     }
 }
 
-/// A batch normalization layer (Ioffe and Szegedy, 2014).
+/// A batch normalization layer.
 ///
 /// Normalizes the activations of the previous layer at each batch, i.e. applies a transformation
-/// that maintains the mean activation close to 0 and the activation standard deviation close to
+/// that maintains the mean activation close to `0` and the activation standard deviation close to
 /// `1`.
+///
+/// Reference: [Batch Normalization: Accelerating Deep Network Training by Reducing Internal
+/// Covariate Shift](https://arxiv.org/abs/1502.03167).
 @_fixed_layout
 public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The batch dimension.
@@ -678,8 +681,9 @@ public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     }
 }
 
-/// A layer that applies layer normalization over a mini-batch of inputs (Ba, Kiros and Hinton,
-/// 2016).
+/// A layer that applies layer normalization over a mini-batch of inputs.
+///
+/// Reference: [Layer Normalization](https://arxiv.org/abs/1607.06450).
 @_fixed_layout
 public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The offset value, also known as beta.
