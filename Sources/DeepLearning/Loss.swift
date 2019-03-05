@@ -16,7 +16,7 @@
 import TensorFlow
 #endif
 
-/// Computes the mean squared error between preditions and labels.
+/// Computes the mean squared error between predictions and labels.
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
