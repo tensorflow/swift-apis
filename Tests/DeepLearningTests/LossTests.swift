@@ -25,7 +25,7 @@ final class LossTests: XCTestCase {
         let loss = softmaxCrossEntropy(logits: logits, oneHotLabels: labels)
         // Loss for two rows are 1.44019 and 2.44019 respectively.
         let expectedLoss: Float = (1.44019 + 2.44019) / 2.0
-        assertAllClose(expected: Tensor(expectedLoss), got: loss)
+        assertElementsEqual(expected: Tensor(expectedLoss), actual: loss)
     }
 
     func testSoftmaxCrossEntropyWithOneHotLabelsGrad() {
@@ -50,16 +50,21 @@ final class LossTests: XCTestCase {
         let gradients = gradient(
             at: logits,
             in: { softmaxCrossEntropy(logits: $0, oneHotLabels: labels) })
-        assertAllClose(expected: expectedGradients, got: gradients)
+        assertElementsEqual(expected: expectedGradients, actual: gradients)
     }
 
-    func assertAllClose(expected: Tensor<Float>, actual: Tensor<Float>, tolerance: Float = 1e-6) {
-        XCTAssertEqual(a.shape, b.shape)
-        for (index, elementInA) in a.scalars.enumerated() {
-            let elementInB = b.scalars[index]
+    func assertElementsEqual(
+        expected: Tensor<Float>,
+        actual: Tensor<Float>,
+        tolerance: Float = 1e-6
+    ) {
+        XCTAssertEqual(expected.shape, actual.shape, "Shape mismatch.")
+        for (index, expectedElement) in expected.scalars.enumerated() {
+            let actualElement = actual.scalars[index]
             XCTAssertLessThan(
-                abs(elementInA - elementInB), tol,
-                "Found difference at \(index), expected: \(elementInA), got: \(elementInB).")
+                abs(expectedElement - actualElement), tolerance,
+                "Found difference at \(index), " +
+                "expected: \(expectedElement), actual: \(actualElement).")
         }
     }
 
