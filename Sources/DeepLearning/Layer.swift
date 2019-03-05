@@ -60,7 +60,7 @@ public protocol Layer: Differentiable & KeyPathIterable
     ///
     /// - Parameters:
     ///   - input: The input to the layer.
-    ///   - context: The contextual informance for the layer application, e.g. the current learning
+    ///   - context: The contextual information for the layer application, e.g. the current learning
     ///     phase.
     /// - Returns: The output.
     @differentiable
@@ -267,7 +267,7 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameters:
     ///   - input: The input to the layer.
-    ///   - context: The contextual informance for the layer application, e.g. the current learning
+    ///   - context: The contextual information for the layer application, e.g. the current learning
     ///     phase.
     /// - Returns: The output.
     @differentiable
@@ -379,7 +379,7 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameters:
     ///   - input: The input to the layer.
-    ///   - context: The contextual informance for the layer application, e.g. the current learning
+    ///   - context: The contextual information for the layer application, e.g. the current learning
     ///     phase.
     /// - Returns: The output.
     @differentiable
@@ -532,7 +532,7 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameters:
     ///   - input: The input to the layer.
-    ///   - context: The contextual informance for the layer application, e.g. the current learning
+    ///   - context: The contextual information for the layer application, e.g. the current learning
     ///     phase.
     /// - Returns: The output.
     @differentiable(vjp: _vjpApplied(to:in:))
@@ -622,7 +622,7 @@ public struct MaxPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameters:
     ///   - input: The input to the layer.
-    ///   - context: The contextual informance for the layer application, e.g. the current learning
+    ///   - context: The contextual information for the layer application, e.g. the current learning
     ///     phase.
     /// - Returns: The output.
     @differentiable
@@ -672,7 +672,7 @@ public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameters:
     ///   - input: The input to the layer.
-    ///   - context: The contextual informance for the layer application, e.g. the current learning
+    ///   - context: The contextual information for the layer application, e.g. the current learning
     ///     phase.
     /// - Returns: The output.
     @differentiable
@@ -729,7 +729,7 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameters:
     ///   - input: The input to the layer.
-    ///   - context: The contextual informance for the layer application, e.g. the current learning
+    ///   - context: The contextual information for the layer application, e.g. the current learning
     ///     phase.
     /// - Returns: The output.
     @differentiable
@@ -781,7 +781,7 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameters:
     ///   - input: The input to the layer.
-    ///   - context: The contextual informance for the layer application, e.g. the current learning
+    ///   - context: The contextual information for the layer application, e.g. the current learning
     ///     phase.
     /// - Returns: The output.
     @differentiable(vjp: _vjpApplied(to:in:))
@@ -827,7 +827,7 @@ public struct UpSampling2D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameters:
     ///   - input: The input to the layer.
-    ///   - context: The contextual informance for the layer application, e.g. the current learning
+    ///   - context: The contextual information for the layer application, e.g. the current learning
     ///     phase.
     /// - Returns: The output.
     @differentiable
@@ -852,7 +852,7 @@ public struct Flatten<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameters:
     ///   - input: The input to the layer.
-    ///   - context: The contextual informance for the layer application, e.g. the current learning
+    ///   - context: The contextual information for the layer application, e.g. the current learning
     ///     phase.
     /// - Returns: The output.
     @differentiable
@@ -890,7 +890,7 @@ public struct Reshape<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameters:
     ///   - input: The input to the layer.
-    ///   - context: The contextual informance for the layer application, e.g. the current learning
+    ///   - context: The contextual information for the layer application, e.g. the current learning
     ///     phase.
     /// - Returns: The output.
     @differentiable
