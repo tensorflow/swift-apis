@@ -21,7 +21,7 @@ public func round<Scalar: BinaryFloatingPoint>(_ x: Tensor<Scalar>) -> Tensor<Sc
     return Raw.round(x)
 }
 
-/// Returns a tensor with the same shape and scalars as specified tensor.
+/// Returns a tensor with the same shape and scalars as the specified tensor.
 @differentiable
 public func identity<Scalar>(_ x: Tensor<Scalar>) -> Tensor<Scalar> {
     return x
