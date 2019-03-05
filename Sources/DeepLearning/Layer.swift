@@ -489,7 +489,7 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - momentum: The momentum for the moving average.
     ///   - offset: The offset to be added to the normalized tensor.
     ///   - scale: The scale to multiply the normalized tensor by.
-    ///   - epsilon: The small scalar added to variance to avoid dividing by zero.
+    ///   - epsilon: A small scalar added to the denominator to improve numerical stability.
     ///   - runningMean: The running mean.
     ///   - runningVariance: The running variance.
     public init(
@@ -567,7 +567,7 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - featureCount: The number of features.
     ///   - axis: The axis that should be normalized (typically the features axis).
     ///   - momentum: The momentum for the moving average.
-    ///   - epsilon: The small scalar added to variance to avoid dividing by zero.
+    ///   - epsilon: A small scalar added to the denominator to improve numerical stability.
     public init(featureCount: Int,
                 axis: Int = -1,
                 momentum: Tensor<Scalar> = Tensor(0.99),
