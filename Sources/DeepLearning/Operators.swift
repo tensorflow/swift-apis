@@ -16,12 +16,12 @@
 import TensorFlow
 #endif
 
-/// Rounds the values of a tensor to the nearest integer, element-wise.
+/// Returns the values of the specified tensor to the nearest integer, element-wise.
 public func round<Scalar: BinaryFloatingPoint>(_ x: Tensor<Scalar>) -> Tensor<Scalar> {
     return Raw.round(x)
 }
 
-/// Returns a tensor with the same shape and contents as the input.
+/// Returns a tensor with the same shape and scalars as specified tensor.
 @differentiable
 public func identity<Scalar>(_ x: Tensor<Scalar>) -> Tensor<Scalar> {
     return x

@@ -125,7 +125,7 @@ public class RMSProp<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
     where Model.AllDifferentiableVariables == Model.CotangentVector {
     /// The learning rate.
     public let learningRate: Scalar
-    /// A term added to the denominator to improve numerical stability.
+    // TODO: Document `rho`. Keras doesn't document `rho`.
     public let rho: Scalar
     /// A term added to the denominator to improve numerical stability.
     public let epsilon: Scalar
