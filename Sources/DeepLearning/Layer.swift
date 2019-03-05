@@ -106,7 +106,7 @@ public extension Differentiable {
     /// Returns the output computed by applying a sequence of layers to the previous layer's output,
     /// except that the first layer's input is `self`.
     ///
-    /// - Parameter:
+    /// - Parameters:
     ///   - context: The context that stores contextual information used for the application of
     ///     layers.
     ///   - l1: The first layer.
@@ -125,7 +125,7 @@ public extension Differentiable {
     /// Returns the output computed by applying a sequence of layers to the previous layer's output,
     /// except that the first layer's input is `self`.
     ///
-    /// - Parameter:
+    /// - Parameters:
     ///   - context: The context that stores contextual information used for the application of
     ///     layers.
     ///   - l1: The first layer.
@@ -147,7 +147,7 @@ public extension Differentiable {
     /// Returns the output computed by applying a sequence of layers to the previous layer's output,
     /// except that the first layer's input is `self`.
     ///
-    /// - Parameter:
+    /// - Parameters:
     ///   - context: The context that stores contextual information used for the application of
     ///     layers.
     ///   - l1: The first layer.
@@ -172,7 +172,7 @@ public extension Differentiable {
     /// Returns the output computed by applying a sequence of layers to the previous layer's output,
     /// except that the first layer's input is `self`.
     ///
-    /// - Parameter:
+    /// - Parameters:
     ///   - context: The context that stores contextual information used for the application of
     ///     layers.
     ///   - l1: The first layer.
@@ -200,7 +200,7 @@ public extension Differentiable {
     /// Returns the output computed by applying a sequence of layers to the previous layer's output,
     /// except that the first layer's input is `self`.
     ///
-    /// - Parameter:
+    /// - Parameters:
     ///   - context: The context that stores contextual information used for the application of
     ///     layers.
     ///   - l1: The first layer.
@@ -727,7 +727,7 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters
+    /// - Parameters:
     ///   - input: The input to the layer.
     ///   - context: The contextual informance for the layer application, e.g. the current learning
     ///     phase.
