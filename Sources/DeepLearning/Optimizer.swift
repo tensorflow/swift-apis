@@ -37,8 +37,7 @@ public protocol Optimizer {
 
 /// Adam optimizer.
 ///
-/// References:
-/// - [Adam - A Method for Stochastic Optimization](
+/// - Reference: ["Adam - A Method for Stochastic Optimization"](
 ///   https://arxiv.org/abs/1412.6980v8)
 public class Adam<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
     where Model.AllDifferentiableVariables == Model.CotangentVector {
@@ -50,7 +49,7 @@ public class Adam<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
     /// A coefficient used to calculate the first and second moments of
     /// gradients.
     public var beta2: Scalar
-    /// A term added to the denominator to improve numerical stability.
+    /// A small scalar added to the denominator to improve numerical stability.
     public let epsilon: Scalar
     /// The weight decay.
     public let decay: Scalar
@@ -118,8 +117,7 @@ public class Adam<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
 /// learning rate, which can be freely tuned). This optimizer is usually a good choice for recurrent
 /// neural networks.
 ///
-/// References:
-/// - [rmsprop: Divide the gradient by a running average of its recent magnitude](
+/// - Reference: ["rmsprop: Divide the gradient by a running average of its recent magnitude"](
 ///   http://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf)
 public class RMSProp<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
     where Model.AllDifferentiableVariables == Model.CotangentVector {
@@ -127,7 +125,7 @@ public class RMSProp<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
     public let learningRate: Scalar
     // TODO: Document `rho`. Keras doesn't document `rho`.
     public let rho: Scalar
-    /// A term added to the denominator to improve numerical stability.
+    /// A small scalar added to the denominator to improve numerical stability.
     public let epsilon: Scalar
     /// The weight decay.
     public let decay: Scalar
@@ -179,10 +177,6 @@ public class RMSProp<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
 ///
 /// An optimizer that implements stochastic gradient descent, with support for momentum, learning
 /// rate decay, and Nesterov momentum.
-///
-/// References:
-/// - [rmsprop: Divide the gradient by a running average of its recent magnitude](
-///     http://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf)
 public class SGD<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
     where Model.AllDifferentiableVariables == Model.CotangentVector {
     /// The learning rate.
