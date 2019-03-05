@@ -17,6 +17,7 @@ import XCTest
 #if !os(macOS)
 public func allTests() -> [XCTestCaseEntry] {
     return [
+        testCase(LossTests.allTests),
         testCase(PRNGTests.allTests),
         testCase(TrivialModelTests.allTests),
         testCase(SequentialTests.allTests),

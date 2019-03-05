@@ -53,11 +53,20 @@ func _vjpSoftmaxCrossEntropy<Scalar: TensorFlowFloatingPoint>(
 /// - Parameters:
 ///   - logits: One-hot encoded outputs from a neural network.
 ///   - oneHotLabels: One-hot encoded values that correspond to the correct output.
-@differentiable
+@differentiable(wrt: logits, vjp: _vjpSoftmaxCrossEntropy)
 public func softmaxCrossEntropy<Scalar: TensorFlowFloatingPoint>(
     logits: Tensor<Scalar>, oneHotLabels: Tensor<Scalar>
 ) -> Tensor<Scalar> {
-    return -(oneHotLabels * logSoftmax(logits)).mean(alongAxes: 0).sum()
+    return Raw.softmaxCrossEntropyWithLogits(features: logits, labels: oneHotLabels).loss.mean()
+}
+
+@usableFromInline
+func _vjpSoftmaxCrossEntropy<Scalar: TensorFlowFloatingPoint>(
+    logits: Tensor<Scalar>, oneHotLabels: Tensor<Scalar>
+) -> (Tensor<Scalar>, (Tensor<Scalar>) -> Tensor<Scalar>) {
+    let (loss, grad) = Raw.softmaxCrossEntropyWithLogits(features: logits, labels: oneHotLabels)
+    let batchSize = Tensor<Scalar>(logits.shapeTensor[0])
+    return (loss.mean(), { v in (v / batchSize) * grad })
 }
 
 /// Computes the sigmoid cross entropy (binary cross entropy) between logits and labels.
