@@ -16,22 +16,42 @@
 import TensorFlow
 #endif
 
+/// A machine learning optimizer.
+///
+/// Optimizers apply an optimization algorithm to update the differentiable variables of a machine
+/// learning model.
 public protocol Optimizer {
+    /// The type of the model whose parameters are optimized.
     associatedtype Model: Layer
+    /// The scalar parameter type.
     associatedtype Scalar: FloatingPoint
+    /// The learning rate.
     var learningRate: Scalar { get }
+    /// Updates the specified differentiable variables along the specified
+    /// direction.
     mutating func update(_ variables: inout Model.AllDifferentiableVariables,
                          along direction: Model.CotangentVector)
 }
 
 // MARK: - Key-path based optimizers
 
+/// Adam optimizer.
+///
+/// - Reference: ["Adam - A Method for Stochastic Optimization"](
+///   https://arxiv.org/abs/1412.6980v8)
 public class Adam<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
     where Model.AllDifferentiableVariables == Model.CotangentVector {
+    /// The learning rate.
     public let learningRate: Scalar
+    /// A coefficient used to calculate the first and second moments of
+    /// gradients.
     public var beta1: Scalar
+    /// A coefficient used to calculate the first and second moments of
+    /// gradients.
     public var beta2: Scalar
+    /// A small scalar added to the denominator to improve numerical stability.
     public let epsilon: Scalar
+    /// The weight decay.
     public let decay: Scalar
 
     public init(
@@ -91,11 +111,23 @@ public class Adam<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
     }
 }
 
+/// RMSProp optimizer.
+///
+/// It is recommended to leave the parameters of this optimizer at their default values (except the
+/// learning rate, which can be freely tuned). This optimizer is usually a good choice for recurrent
+/// neural networks.
+///
+/// - Reference: ["rmsprop: Divide the gradient by a running average of its recent magnitude"](
+///   http://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf)
 public class RMSProp<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
     where Model.AllDifferentiableVariables == Model.CotangentVector {
+    /// The learning rate.
     public let learningRate: Scalar
+    // TODO: Document `rho`. Keras doesn't document `rho`.
     public let rho: Scalar
+    /// A small scalar added to the denominator to improve numerical stability.
     public let epsilon: Scalar
+    /// The weight decay.
     public let decay: Scalar
 
     public init(
@@ -141,11 +173,20 @@ public class RMSProp<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
     }
 }
 
+/// Stochastic gradient descent (SGD) optimizer.
+///
+/// An optimizer that implements stochastic gradient descent, with support for momentum, learning
+/// rate decay, and Nesterov momentum.
 public class SGD<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
     where Model.AllDifferentiableVariables == Model.CotangentVector {
+    /// The learning rate.
     public let learningRate: Scalar
+    /// The momentum factor. It accelerates stochastic gradient descent in the relevant direction
+    /// and dampens oscillations.
     public let momentum: Scalar
+    /// The weight decay.
     public let decay: Scalar
+    /// Use Neseterov momentum if true.
     public let nesterov: Bool
 
     public init(
@@ -197,8 +238,10 @@ public class SGD<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
 
 // MARK: - Manifold optimizers
 
+/// A Riemann manifold stochastic gradient descent (SGD) optimizer.
 public class RiemannSGD<Model: Layer, Scalar: FloatingPoint>: Optimizer
     where Model.TangentVector: VectorNumeric, Model.TangentVector.Scalar == Scalar {
+    /// The learning rate.
     public var learningRate: Scalar
 
     public init(learningRate: Scalar) {
