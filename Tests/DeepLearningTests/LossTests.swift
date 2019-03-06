@@ -53,32 +53,6 @@ final class LossTests: XCTestCase {
         assertElementsEqual(expected: expectedGradients, actual: gradients)
     }
 
-    func testSoftmaxCrossEntropyWithOneHotLabelsGrad() {
-        let logits = Tensor<Float>(shape: [2, 4], scalars: [1, 2, 3, 4, 5, 6, 7, 8])
-        let labels = Tensor<Float>(
-            shape: [2, 4],
-            scalars: [0.1, 0.2, 0.3, 0.4, 0.4, 0.3, 0.2, 0.1])
-
-        // For the logits and labels above, the gradients below are the golden values. To calcuate
-        // them by hand, you can do
-        //
-        //  D Loss / D logits_i = p_i - labels_i
-        //
-        //  where p_i is softmax(logits_i).
-        let expectedGradientsBeforeMean = Tensor<Float>(
-            shape: [2, 4],
-            scalars: [-0.067941, -0.112856, -0.063117, 0.243914,
-                      -0.367941, -0.212856, 0.036883, 0.543914])
-
-        // As the loss is mean loss, we should scale the golden loss numbers.
-        let expectedGradients = expectedGradientsBeforeMean / Float(logits.shape[0])
-        let gradients = gradient(
-            at: logits,
-            in: { softmaxCrossEntropy(logits: $0, oneHotLabels: labels) })
-        assertElementsEqual(expected: expectedGradients, actual: gradients)
-    }
-
-
     func assertElementsEqual(
         expected: Tensor<Float>,
         actual: Tensor<Float>,
@@ -99,7 +73,5 @@ final class LossTests: XCTestCase {
          testSoftmaxCrossEntropyWithProbabilitiesLoss),
         ("testSoftmaxCrossEntropyWithProbabilitiesGrad",
          testSoftmaxCrossEntropyWithProbabilitiesGrad),
-        ("testSoftmaxCrossEntropyWithOneHotLabelsGrad",
-         testSoftmaxCrossEntropyWithOneHotLabelsGrad),
     ]
 }
