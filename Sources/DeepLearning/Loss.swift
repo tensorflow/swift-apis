@@ -52,28 +52,15 @@ func _vjpSoftmaxCrossEntropy<Scalar: TensorFlowFloatingPoint>(
 /// Computes the softmax cross entropy (categorical cross entropy) between logits and labels.
 ///
 /// - Parameters:
-///   - logits: One-hot encoded outputs from a neural network.
-///   - oneHotLabels: One-hot encoded values that correspond to the correct output.
-@available(*, deprecated, renamed: "softmaxCrossEntropy(logits:probabilities:)")
-@differentiable(wrt: logits)
-public func softmaxCrossEntropy<Scalar: TensorFlowFloatingPoint>(
-    logits: Tensor<Scalar>, oneHotLabels: Tensor<Scalar>
-) -> Tensor<Scalar> {
-    return softmaxCrossEntropy(logits: logits, probabilities: oneHotLabels)
-}
-
-/// Computes the softmax cross entropy (categorical cross entropy) between logits and labels.
-///
-/// - Parameters:
-///   - logits: One-hot encoded outputs from a neural network.
-///   - oneHotLabels: One-hot encoded values that correspond to the correct output.
+///   - logits: Unscaled log probabilities from a neural network.
+///   - probabilities: Probability values that correspond to the correct output. Each row must be a
+///                    valid probability distribution.
 @differentiable(wrt: logits, vjp: _vjpSoftmaxCrossEntropy)
 public func softmaxCrossEntropy<Scalar: TensorFlowFloatingPoint>(
     logits: Tensor<Scalar>, probabilities: Tensor<Scalar>
 ) -> Tensor<Scalar> {
     return Raw.softmaxCrossEntropyWithLogits(features: logits, labels: probabilities).loss.mean()
 }
-
 
 @usableFromInline
 func _vjpSoftmaxCrossEntropy<Scalar: TensorFlowFloatingPoint>(
