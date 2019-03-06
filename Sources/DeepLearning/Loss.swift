@@ -20,7 +20,7 @@ import TensorFlow
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
-///   - labels: Expected values, i.e., targets, that correspond to the correct output.
+///   - labels: Expected values, i.e. targets, that correspond to the correct output.
 @differentiable(wrt: predicted)
 public func meanSquaredError<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>, expected: Tensor<Scalar>
