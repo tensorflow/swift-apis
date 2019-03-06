@@ -16,12 +16,12 @@
 import TensorFlow
 #endif
 
-/// Computes the mean squared error between logits and labels.
+/// Computes the mean squared error between predictions and labels.
 ///
 /// - Parameters:
-///   - logits: One-hot encoded outputs from a neural network.
-///   - labels: One-hot encoded values that correspond to the correct output.
-@differentiable
+///   - predicted: Predicted outputs from a neural network.
+///   - labels: Expected values, i.e. targets, that correspond to the correct output.
+@differentiable(wrt: predicted)
 public func meanSquaredError<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>, expected: Tensor<Scalar>
 ) -> Tensor<Scalar> {
