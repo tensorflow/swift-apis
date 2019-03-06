@@ -16,19 +16,19 @@ import XCTest
 @testable import DeepLearning
 
 final class LossTests: XCTestCase {
-    func testSoftmaxCrossEntropyWithOneHotLabelsLoss() {
+    func testSoftmaxCrossEntropyWithProbabilitiesLoss() {
         let logits = Tensor<Float>(shape: [2, 4], scalars: [1, 2, 3, 4, 5, 6, 7, 8])
         let labels = Tensor<Float>(
             shape: [2, 4],
             scalars: [0.1, 0.2, 0.3, 0.4, 0.4, 0.3, 0.2, 0.1])
 
-        let loss = softmaxCrossEntropy(logits: logits, oneHotLabels: labels)
+        let loss = softmaxCrossEntropy(logits: logits, probabilities: labels)
         // Loss for two rows are 1.44019 and 2.44019 respectively.
         let expectedLoss: Float = (1.44019 + 2.44019) / 2.0
         assertElementsEqual(expected: Tensor(expectedLoss), actual: loss)
     }
 
-    func testSoftmaxCrossEntropyWithOneHotLabelsGrad() {
+    func testSoftmaxCrossEntropyWithProbabilitiesGrad() {
         let logits = Tensor<Float>(shape: [2, 4], scalars: [1, 2, 3, 4, 5, 6, 7, 8])
         let labels = Tensor<Float>(
             shape: [2, 4],
@@ -49,7 +49,7 @@ final class LossTests: XCTestCase {
         let expectedGradients = expectedGradientsBeforeMean / Float(logits.shape[0])
         let gradients = gradient(
             at: logits,
-            in: { softmaxCrossEntropy(logits: $0, oneHotLabels: labels) })
+            in: { softmaxCrossEntropy(logits: $0, probabilities: labels) })
         assertElementsEqual(expected: expectedGradients, actual: gradients)
     }
 
@@ -69,9 +69,9 @@ final class LossTests: XCTestCase {
     }
 
     static var allTests = [
-        ("testSoftmaxCrossEntropyWithOneHotLabelsLoss",
-         testSoftmaxCrossEntropyWithOneHotLabelsLoss),
-        ("testSoftmaxCrossEntropyWithOneHotLabelsGrad",
-         testSoftmaxCrossEntropyWithOneHotLabelsGrad),
+        ("testSoftmaxCrossEntropyWithProbabilitiesLoss",
+         testSoftmaxCrossEntropyWithProbabilitiesLoss),
+        ("testSoftmaxCrossEntropyWithProbabilitiesGrad",
+         testSoftmaxCrossEntropyWithProbabilitiesGrad),
     ]
 }
