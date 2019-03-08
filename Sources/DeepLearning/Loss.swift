@@ -74,13 +74,17 @@ func _vjpSoftmaxCrossEntropy<Scalar: TensorFlowFloatingPoint>(
 /// Computes the sigmoid cross entropy (binary cross entropy) between logits and labels.
 ///
 /// - Parameters:
-///   - logits: Single continuous values from `0` to `1`.
+///   - logits: Unscaled value from a neural network.
 ///   - labels: Integer values that correspond to the correct output.
-@differentiable
+@differentiable(wrt: logits)
 public func sigmoidCrossEntropy<Scalar: TensorFlowFloatingPoint>(
     logits: Tensor<Scalar>, labels: Tensor<Scalar>
 ) -> Tensor<Scalar> {
-    let loss = labels * log(logits) +
-        (Tensor<Scalar>(1) - labels) * log(Tensor<Scalar>(1) - logits)
-    return -loss.mean(alongAxes: 0).sum()
+    // This numerical stable implementation is based on tf.nn.sigmoid_cross_entropy_with_logits.
+
+    let maxLogitsWithZero = max(logits, Tensor(0))
+    // TODO(SR-10061): Use abs directly once abc is differentiable.
+    let absOfLogitsbsl = max(logits, -logits)
+    let loss =  maxLogitsWithZero - logits * labels + log(1 + exp(-absOfLogitsbsl))
+    return loss.mean()
 }
