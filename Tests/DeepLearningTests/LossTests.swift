@@ -83,6 +83,43 @@ final class LossTests: XCTestCase {
         assertElementsEqual(expected: expectedGradients, actual: gradients)
     }
 
+    func testSigmoidCrossEntropyLoss() {
+        let logits = Tensor<Float>(
+            shape: [2, 4],
+            scalars: [-100, -2, -2, 0, 2, 2, 2, 100])
+
+        let labels = Tensor<Float>(
+            shape: [2, 4],
+            scalars: [0, 0, 1, 0, 0, 1, 0.5, 1])
+
+        let loss = sigmoidCrossEntropy(logits: logits, labels: labels)
+        let expectedLoss: Float = 0.7909734
+        assertElementsEqual(expected: Tensor(expectedLoss), actual: loss)
+    }
+
+    func testSigmoidCrossEntropyGrad() {
+        let logits = Tensor<Float>(
+            shape: [2, 4],
+            scalars: [-100, -2, -2, 0, 2, 2, 2, 100])
+
+        let labels = Tensor<Float>(
+            shape: [2, 4],
+            scalars: [0, 0, 1, 0, 0, 1, 0.5, 1])
+
+        // For each element x in logits and y in labels, the gradient is sigmoid(x) - y.
+        let expectedGradientsBeforeMean = Tensor<Float>(
+            shape: [2, 4],
+            scalars: [0.00,  0.11920291, -0.8807971,  0.5,
+                      0.8807971, -0.11920291,  0.3807971 , 0.0])
+
+        // As the loss is mean loss, we should scale the golden gradient numbers.
+        let expectedGradients = expectedGradientsBeforeMean / Float(logits.scalars.count)
+        let gradients = gradient(
+            at: logits,
+            in: { sigmoidCrossEntropy(logits: $0, labels: labels) })
+        assertElementsEqual(expected: expectedGradients, actual: gradients)
+    }
+
     func assertElementsEqual(
         expected: Tensor<Float>,
         actual: Tensor<Float>,
@@ -105,5 +142,7 @@ final class LossTests: XCTestCase {
          testSoftmaxCrossEntropyWithProbabilitiesLoss),
         ("testSoftmaxCrossEntropyWithProbabilitiesGrad",
          testSoftmaxCrossEntropyWithProbabilitiesGrad),
+        ("testSigmoidCrossEntropyLoss", testSigmoidCrossEntropyLoss),
+        ("testSigmoidCrossEntropyGrad", testSigmoidCrossEntropyGrad),
     ]
 }
