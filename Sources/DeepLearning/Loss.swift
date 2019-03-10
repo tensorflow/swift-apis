@@ -83,7 +83,7 @@ public func sigmoidCrossEntropy<Scalar: TensorFlowFloatingPoint>(
     // This numerical stable implementation is based on tf.nn.sigmoid_cross_entropy_with_logits.
 
     let maxLogitsWithZero = max(logits, Tensor(0))
-    // TODO(SR-10061): Use abs directly once abc is differentiable.
+    // TODO(TF-349): Use abs directly once abc is differentiable.
     let absOfLogitsbsl = max(logits, -logits)
     let loss =  maxLogitsWithZero - logits * labels + log(1 + exp(-absOfLogitsbsl))
     return loss.mean()
