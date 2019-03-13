@@ -57,7 +57,7 @@ func downloadAndExtract(){
             print("Extracting \(extractedFile)")
             fin = gzip.open(helperFiles[counter], "rb")
             fout = Python.open(extractedFiles[counter], "wb")
-            sh.copyfileobj(f_in, f_out)
+            sh.copyfileobj(fin, fout)
             print("Extraction Completed: \(extractedFile)")
         } else {
             print("File \(extractedFile): already exists")
