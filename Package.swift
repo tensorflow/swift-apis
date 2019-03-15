@@ -23,12 +23,18 @@ let package = Package(
         .library(
             name: "DeepLearning",
             targets: ["DeepLearning"]),
+        .library(
+            name: "DeepLearningContrib"
+            targets: ["DeepLearningContrib"]),
     ],
     dependencies: [],
     targets: [
         .target(
             name: "DeepLearning",
             dependencies: []),
+        .target(
+            name: "DeepLearningContrib",
+            dependencies: ["GzipSwift"]),
         .testTarget(
             name: "DeepLearningTests",
             dependencies: ["DeepLearning"]),

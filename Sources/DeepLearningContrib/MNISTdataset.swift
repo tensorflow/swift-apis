@@ -1,8 +1,9 @@
 import Foundation
 import TensorFlow
+import Gzip
 
-/// MNIST constants
-fileprivate enum constants {
+/// MNIST Constants
+fileprivate enum Constants {
     static let URL = "http://yann.lecun.com/exdb/mnist/"
     static let trainImagesFile = "train-images-idx3-ubyte.gz"
     static let trainLabelsFile = "train-labels-idx1-ubyte.gz"
@@ -11,49 +12,77 @@ fileprivate enum constants {
     static let trainImages = "train-images-idx3-ubyte"
     static let trainLabels = "train-labels-idx1-ubyte"
     static let testImages = "t10k-images-idx3-ubyte"
-    static let testLabels = "t10k-label-idx1-ubyte" 
+    static let testLabels = "t10k-labels-idx1-ubyte"
 }
 
 /// To download and extract files from the URL
 fileprivate func downloadAndExtract() {
-    let helperFiles = [constants.trainImagesFile,
-                       constants.trainLabelsFile,
-                       constants.testImagesFile,
-                       constants.testLabelsFile]
-    let extractedFiles = [constants.trainImages,
-                          constants.trainLabels,
-                          constants.testImages,
-                          constants.testLabels]
-    var counter = 0
-    let path = FileManager.default.currentDirectoryPath
-    for helperFile in helperFiles {
-        let url = NSURL(fileURLWithPath: path)
-        if let pathComponent = url.appendingPathComponent(helperFile) {
-            let filePath = pathComponent.path
-            let fileManager = FileManager.default
-            if fileManager.fileExists(atPath: filePath) {
-                print("Not downloading \(helperFile): already exists")
+    let helperFiles = [
+        Constants.trainImagesFile,
+        Constants.trainLabelsFile,
+        Constants.testImagesFile,
+        Constants.testLabelsFile
+    ]
+    let extractedFiles = [
+        Constants.trainImages,
+        Constants.trainLabels,
+        Constants.testImages,
+        Constants.testLabels
+    ]
+    let localDownloadsUrl = FileManager.default.urls(
+            for: .downloadsDirectory, in: .userDomainMask
+        ).first as URL?
+    let sessionConfig = URLSessionConfiguration.default
+    let session = URLSession(configuration: sessionConfig)
+
+    for (index, helperFile) in helperFiles.enumerated() {
+        let fileURL = URL(string: Constants.URL+helperFile)
+        let request = URLRequest(url:fileURL!)
+        var destinationFileUrl = localDownloadsUrl!.appendingPathComponent(helperFile)
+        var filePath = destinationFileUrl.path
+        let fileManager = FileManager.default
+        if fileManager.fileExists(atPath: filePath) {
+            print("Not downloading \(helperFile): already exists")
+            var extractedFileUrl = localDownloadsUrl!.appendingPathComponent(extractedFiles[index])
+            filePath = extractedFileUrl.path
+            if fileManager.fileExists(atPath: filePath){
+                print("File \(extractedFiles[index]): already exists")
             } else {
-                print("Downloading \(helperFile)")
-                /// TODO: Add Swift Implementation for downloading files.
-                print("Downloaded \(helperFile)")
+                do{
+                    try Data(contentsOf: extractedFileUrl).gunzipped().write(to: destinationFileUrl)
+                } catch {
+                    print("Error Extracting File: \(extractedFiles[index]) ")
+                }
+                print(extractedFiles[index])
             }
-        }    
-    }
-    for extractedFile in extractedFiles {
-        let url = NSURL(fileURLWithPath: path)
-        if let pathComponent = url.appendingPathComponent(extractedFile) {
-            let filePath = pathComponent.path
-            let fileManager = FileManager.default
-            if fileManager.fileExists(atPath: filePath) {
-                print("File \(extractedFile): already exists")
-            } else {
-                print("Extracting \(extractedFile)")
-                /// TODO: Add Swift Implementation for extracting downloaded files.
-                print("Extraction Completed: \(extractedFile)")
+        } else {
+            print("Downloading \(helperFile)")
+            let task = session.downloadTask(with: request) { (tempLocalUrl, response, error) in
+                if let tempLocalUrl = tempLocalUrl, error == nil {
+                    if let statusCode = (response as? HTTPURLResponse)?.statusCode {
+                        print("Successfully downloaded. Status code: \(statusCode)")
+                    }
+                    do {
+                        try FileManager.default.copyItem(at: tempLocalUrl, to: destinationFileUrl)
+                    } catch (let writeError) {
+                        print("Error creating a file \(destinationFileUrl) : \(writeError)")
+                    }
+                } else {
+                    print("Error took place while downloading a file.");
+                }
             }
-            counter = counter + 1
-        }    
+            task.resume()
+            print("Downloaded \(helperFile)")
+            print("Extracting \(extractedFiles[index])")
+            var extractedFileUrl = localDownloadsUrl!.appendingPathComponent(extractedFiles[index])
+            filePath = extractedFileUrl.path
+            do{
+                try Data(contentsOf: extractedFileUrl).gunzipped().write(to: destinationFileUrl)
+            } catch {
+                print("Error Extracting File: \(extractedFiles[index]) ")
+            }
+            print("Extraction Completed: \(extractedFiles[index])")
+        }
     }
 }
 
@@ -66,21 +95,31 @@ func readMNIST() -> (
     trainLabels: Tensor<Int32>,
     testImages: Tensor<Float>,
     testLabels: Tensor<Int32>
-) {
-    downloadAndExtract()
-    print("Reading data.")
-    let trainImages = try! Data(contentsOf: URL(fileURLWithPath: constants.trainImages)).dropFirst(16).map { Float($0) }
-    let trainLabels = try! Data(contentsOf: URL(fileURLWithPath: constants.trainLabels)).dropFirst(8).map { Int32($0) }
-    let testImages = try! Data(contentsOf: URL(fileURLWithPath: constants.testImages)).dropFirst(16).map { Float($0) }
-    let testLabels = try! Data(contentsOf: URL(fileURLWithPath: constants.testLabels)).dropFirst(8).map { Int32($0) }
-    let trainrowCount = Int32(trainLabels.count)
-    let testrowCount = Int32(testLabels.count)
-    let columnCount = Int32(testImages.count) / testrowCount
-    print("Constructing data tensors.")
-    return (
-        trainImages: Tensor(shape: [trainrowCount, columnCount], scalars: trainImages) / 255,
-        trainLabels: Tensor(trainLabels),
-        testImages: Tensor(shape: [testrowCount, columnCount], scalars: testImages) / 255,
-        testLabels: Tensor(testLabels)
-    )
+    ) {
+        downloadAndExtract()
+        print("Reading data.")
+        let localDownloadsUrl = FileManager.default.urls(
+            for: .downloadsDirectory, in: .userDomainMask).first as URL?
+        let trainImages = try! Data(
+            contentsOf: URL(fileURLWithPath: localDownloadsUrl!.path + "/" + Constants.trainImages)
+        ).dropFirst(16).map { Float($0) }
+        let trainLabels = try! Data(
+            contentsOf: URL(fileURLWithPath: localDownloadsUrl!.path + "/" + Constants.trainLabels)
+        ).dropFirst(8).map { Int32($0) }
+        let testImages = try! Data(
+            contentsOf: URL(fileURLWithPath: localDownloadsUrl!.path + "/" + Constants.testImages)
+        ).dropFirst(16).map { Float($0) }
+        let testLabels = try! Data(
+            contentsOf: URL(fileURLWithPath: localDownloadsUrl!.path + "/" + Constants.testLabels)
+        ).dropFirst(8).map { Int32($0) }
+        let trainRowCount = Int32(trainLabels.count)
+        let testRowCount = Int32(testLabels.count)
+        let columnCount = Int32(testImages.count) / testRowCount
+        print("Constructing data tensors.")
+        return (
+            trainImages: Tensor(shape: [trainRowCount, columnCount], scalars: trainImages) / 255,
+            trainLabels: Tensor(trainLabels),
+            testImages: Tensor(shape: [testRowCount, columnCount], scalars: testImages) / 255,
+            testLabels: Tensor(testLabels)
+        )
 }
