@@ -383,7 +383,7 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Returns: The output.
     @differentiable
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
-        let conv2D = input.convolved2D(withFilter: filter.expandingShape(at: 1),
+        let conv2D = input.expandingShape(at: 1).convolved2D(withFilter: filter.expandingShape(at: 1),
                 strides: (1, 1, stride, 1), padding: padding)
         return activation(conv2D.squeezingShape(at: 1) + bias)
     }
@@ -428,7 +428,7 @@ public extension Conv1D {
     ///
     /// - Parameters:
     ///   - filterShape: The shape of the filter, represented by a tuple of `4` integers.
-    ///   - strides: The strides.
+    ///   - stride: The stride.
     ///   - padding: The padding.
     ///   - activation: The activation function.
     ///   - seed: The random seed for initialization. The default value is random.
