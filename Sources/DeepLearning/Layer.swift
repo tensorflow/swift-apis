@@ -357,7 +357,7 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Parameters:
     ///   - filter: The filter (width, inputChannels, outputChannels).
     ///   - bias: The bias (dimensions: output channels).
-    ///   - activation: The activation activation.
+    ///   - activation: The element-wise activation function.
     ///   - stride: The stride.
     ///   - padding: The padding.
     public init(
