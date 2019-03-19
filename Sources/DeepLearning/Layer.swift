@@ -84,6 +84,9 @@ public extension Layer {
         return applied(to: input, in: context)
     }
 
+    typealias Backpropagator = (_ direction: Output.CotangentVector)
+        -> (layerGradient: CotangentVector, inputGradient: Input.CotangentVector)
+
     /// Returns the inference output and the backpropagation function obtained from applying the
     /// layer to the given input.
     ///
@@ -92,9 +95,7 @@ public extension Layer {
     ///   backpropagation function (a.k.a. backpropagator) takes a direction vector and returns the
     ///   gradients at the layer and at the input, respectively.
     func appliedForBackpropagation(to input: Input, in context: Context)
-        -> (output: Output,
-            backpropagator: (_ direction: Output.CotangentVector)
-                -> (layerGradient: CotangentVector, inputGradient: Input.CotangentVector)) {
+        -> (output: Output, backpropagator: Backpropagator) {
         let (out, pullback) = valueWithPullback(at: input) { layer, input in
             return layer.applied(to: input, in: context)
         }
