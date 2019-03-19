@@ -355,8 +355,8 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// padding.
     ///
     /// - Parameters:
-    ///   - filter: The filter.
-    ///   - bias: The bias.
+    ///   - filter: The filter (width, inputChannels, outputChannels).
+    ///   - bias: The bias (dimensions: output channels).
     ///   - activation: The activation activation.
     ///   - stride: The stride.
     ///   - padding: The padding.
@@ -377,13 +377,13 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// Returns the output obtained from applying the layer to the given input.
     ///
     /// - Parameters:
-    ///   - input: The input to the layer.
+    ///   - input: The input to the layer (batchCount, width, inputChannels).
     ///   - context: The contextual information for the layer application, e.g. the current learning
     ///     phase.
-    /// - Returns: The output.
+    /// - Returns: The output (batchCount, newWidth, outputChannels).
     @differentiable
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
-        let conv2D = input.expandingShape(at: 1).convolved2D(withFilter: filter.expandingShape(at: 1),
+        let conv2D = input.expandingShape(at: 1).convolved2D(withFilter: filter.expandingShape(at: 0),
                 strides: (1, 1, stride, 1), padding: padding)
         return activation(conv2D.squeezingShape(at: 1) + bias)
     }
@@ -395,7 +395,7 @@ public extension Conv1D where Scalar.RawSignificand: FixedWidthInteger {
     /// initialization with the specified generator. The bias vector is initialized with zeros.
     ///
     /// - Parameters:
-    ///   - filterShape: The shape of the filter, represented by a tuple of `3` integers.
+    ///   - filterShape: The shape of the filter (width, inputChannels, outputChannels).
     ///   - stride: The stride.
     ///   - padding: The padding.
     ///   - activation: The activation function.
@@ -422,12 +422,12 @@ public extension Conv1D where Scalar.RawSignificand: FixedWidthInteger {
 }
 
 public extension Conv1D {
-    /// Creates a `Conv2D` layer with the specified filter shape, strides, padding, and
+    /// Creates a `Conv1D` layer with the specified filter shape, strides, padding, and
     /// element-wise activation function. The filter tensor is initialized using Glorot uniform
     /// initialization with the specified seed. The bias vector is initialized with zeros.
     ///
     /// - Parameters:
-    ///   - filterShape: The shape of the filter, represented by a tuple of `4` integers.
+    ///   - filterShape: The shape of the filter (width, inputChannels, outputChannels).
     ///   - stride: The stride.
     ///   - padding: The padding.
     ///   - activation: The activation function.
