@@ -338,9 +338,9 @@ public extension Dense {
 /// tensor of outputs.
 @_fixed_layout
 public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
-    /// The 3-D convolution kernel.
+    /// The 3-D convolution kernel `[width, inputChannels, outputChannels]`.
     public var filter: Tensor<Scalar>
-    /// The bias vector.
+    /// The bias vector `[outputChannels]`.
     public var bias: Tensor<Scalar>
     /// An activation function.
     public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
@@ -355,11 +355,11 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// padding.
     ///
     /// - Parameters:
-    ///   - filter: The filter (width, inputChannels, outputChannels).
-    ///   - bias: The bias (dimensions: output channels).
+    ///   - filter: The 3-D convolution kernel `[width, inputChannels, outputChannels]`.
+    ///   - bias: The bias vector `[outputChannels]`.
     ///   - activation: The element-wise activation function.
-    ///   - stride: The stride.
-    ///   - padding: The padding.
+    ///   - stride: The stride of the sliding window for temporal dimension.
+    ///   - padding: The padding algorithm for convolution.
     public init(
         filter: Tensor<Scalar>,
         bias: Tensor<Scalar>,
@@ -377,14 +377,14 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// Returns the output obtained from applying the layer to the given input.
     ///
     /// - Parameters:
-    ///   - input: The input to the layer (batchCount, width, inputChannels).
+    ///   - input: The input to the layer `[batchCount, width, inputChannels]`.
     ///   - context: The contextual information for the layer application, e.g. the current learning
     ///     phase.
-    /// - Returns: The output (batchCount, newWidth, outputChannels).
+    /// - Returns: The output `[batchCount, newWidth, outputChannels]`.
     @differentiable
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
-        let conv2D = input.expandingShape(at: 1).convolved2D(withFilter: filter.expandingShape(at: 0),
-                strides: (1, 1, stride, 1), padding: padding)
+        let conv2D = input.expandingShape(at: 1).convolved2D(
+            withFilter: filter.expandingShape(at: 0), strides: (1, 1, stride, 1), padding: padding)
         return activation(conv2D.squeezingShape(at: 1) + bias)
     }
 }
@@ -395,10 +395,11 @@ public extension Conv1D where Scalar.RawSignificand: FixedWidthInteger {
     /// initialization with the specified generator. The bias vector is initialized with zeros.
     ///
     /// - Parameters:
-    ///   - filterShape: The shape of the filter (width, inputChannels, outputChannels).
-    ///   - stride: The stride.
-    ///   - padding: The padding.
-    ///   - activation: The activation function.
+    ///   - filterShape: The 3-D shape of the filter, representing
+    ///     `[width, inputChannels, outputChannels]`.
+    ///   - stride: The stride of the sliding window for temporal dimension.
+    ///   - padding: The padding algorithm for convolution.
+    ///   - activation: The element-wise activation function.
     ///   - generator: The random number generator for initialization.
     ///
     /// - Note: Use `init(filterShape:stride:padding:activation:seed:)` for faster random
@@ -427,10 +428,11 @@ public extension Conv1D {
     /// initialization with the specified seed. The bias vector is initialized with zeros.
     ///
     /// - Parameters:
-    ///   - filterShape: The shape of the filter (width, inputChannels, outputChannels).
-    ///   - stride: The stride.
-    ///   - padding: The padding.
-    ///   - activation: The activation function.
+    ///   - filterShape: The 3-D shape of the filter, representing
+    ///     `[width, inputChannels, outputChannels]`.
+    ///   - stride: The stride of the sliding window for temporal dimension.
+    ///   - padding: The padding algorithm for convolution.
+    ///   - activation: The element-wise activation function.
     ///   - seed: The random seed for initialization. The default value is random.
     init(
         filterShape: (Int, Int, Int),
@@ -474,11 +476,11 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// padding.
     ///
     /// - Parameters:
-    ///   - filter: The filter.
-    ///   - bias: The bias.
-    ///   - activation: The activation activation.
-    ///   - strides: The strides.
-    ///   - padding: The padding.
+    ///   - filter: The 4-D convolution kernel.
+    ///   - bias: The bias vector.
+    ///   - activation: The element-wise activation function.
+    ///   - strides: The strides of the sliding window for spatial dimensions.
+    ///   - padding: The padding algorithm for convolution.
     public init(
         filter: Tensor<Scalar>,
         bias: Tensor<Scalar>,
@@ -514,10 +516,10 @@ public extension Conv2D {
     /// initialization with the specified generator. The bias vector is initialized with zeros.
     ///
     /// - Parameters:
-    ///   - filterShape: The shape of the filter, represented by a tuple of `4` integers.
-    ///   - strides: The strides.
-    ///   - padding: The padding.
-    ///   - activation: The activation function.
+    ///   - filterShape: The shape of the 4-D convolution kernel.
+    ///   - strides: The strides of the sliding window for spatial dimensions.
+    ///   - padding: The padding algorithm for convolution.
+    ///   - activation: The element-wise activation function.
     ///   - generator: The random number generator for initialization.
     ///
     /// - Note: Use `init(filterShape:strides:padding:activation:seed:)` for faster random
@@ -547,10 +549,10 @@ public extension Conv2D {
     /// initialization with the specified seed. The bias vector is initialized with zeros.
     ///
     /// - Parameters:
-    ///   - filterShape: The shape of the filter, represented by a tuple of `4` integers.
-    ///   - strides: The strides.
-    ///   - padding: The padding.
-    ///   - activation: The activation function.
+    ///   - filterShape: The shape of the 4-D convolution kernel.
+    ///   - strides: The strides of the sliding window for spatial dimensions.
+    ///   - padding: The padding algorithm for convolution.
+    ///   - activation: The element-wise activation function.
     ///   - seed: The random seed for initialization. The default value is random.
     init(
         filterShape: (Int, Int, Int, Int),
@@ -710,9 +712,9 @@ public struct MaxPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// Creates a max pooling layer.
     ///
     /// - Parameters:
-    ///   - poolSize: Factor by which to downscale.
-    ///   - stride: The stride.
-    ///   - padding: The padding.
+    ///   - poolSize: The size of the sliding reduction window for pooling.
+    ///   - stride: The stride of the sliding window for temporal dimension.
+    ///   - padding: The padding algorithm for pooling.
     public init(
         poolSize: Int,
         stride: Int,
@@ -733,7 +735,7 @@ public struct MaxPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
     @differentiable
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
         return input.expandingShape(at: 1).maxPooled(
-          kernelSize: (1, 1, poolSize, 1), strides: (1, 1, stride, 1), padding: padding
+            kernelSize: (1, 1, poolSize, 1), strides: (1, 1, stride, 1), padding: padding
         ).squeezingShape(at: 1)
     }
 }
@@ -801,9 +803,9 @@ public struct AvgPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// Creates an average pooling layer.
     ///
     /// - Parameters:
-    ///   - poolSize: Factor by which to downscale.
-    ///   - stride: The stride.
-    ///   - padding: The padding.
+    ///   - poolSize: The size of the sliding reduction window for pooling.
+    ///   - stride: The stride of the sliding window for temporal dimension.
+    ///   - padding: The padding algorithm for pooling.
     public init(
         poolSize: Int,
         stride: Int,
@@ -824,7 +826,7 @@ public struct AvgPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
     @differentiable
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
         return input.expandingShape(at: 1).averagePooled(
-          kernelSize: (1, 1, poolSize, 1), strides: (1, 1, stride, 1), padding: padding
+            kernelSize: (1, 1, poolSize, 1), strides: (1, 1, stride, 1), padding: padding
         ).squeezingShape(at: 1)
     }
 }
