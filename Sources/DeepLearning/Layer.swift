@@ -450,7 +450,7 @@ public extension Conv1D {
             activation: activation,
             stride: Int32(stride),
             padding: padding)
-        }
+    }
 }
 
 /// A 2-D convolution layer (e.g. spatial convolution over images).
