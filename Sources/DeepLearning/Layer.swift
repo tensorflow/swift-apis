@@ -445,12 +445,12 @@ public extension Conv1D {
         let filterTensorShape = TensorShape([
             Int32(filterShape.0), Int32(filterShape.1), Int32(filterShape.2)])
         self.init(
-          filter: Tensor(glorotUniform: filterTensorShape, seed: seed),
-          bias: Tensor(zeros: TensorShape([Int32(filterShape.2)])),
-          activation: activation,
-          stride: Int32(stride),
-          padding: padding)
-    }
+            filter: Tensor(glorotUniform: filterTensorShape, seed: seed),
+            bias: Tensor(zeros: TensorShape([Int32(filterShape.2)])),
+            activation: activation,
+            stride: Int32(stride),
+            padding: padding)
+        }
 }
 
 /// A 2-D convolution layer (e.g. spatial convolution over images).
@@ -566,11 +566,11 @@ public extension Conv2D {
             Int32(filterShape.0), Int32(filterShape.1),
             Int32(filterShape.2), Int32(filterShape.3)])
         self.init(
-          filter: Tensor(glorotUniform: filterTensorShape, seed: seed),
-          bias: Tensor(zeros: TensorShape([Int32(filterShape.3)])),
-          activation: activation,
-          strides: (Int32(strides.0), Int32(strides.1)),
-          padding: padding)
+            filter: Tensor(glorotUniform: filterTensorShape, seed: seed),
+            bias: Tensor(zeros: TensorShape([Int32(filterShape.3)])),
+            activation: activation,
+            strides: (Int32(strides.0), Int32(strides.1)),
+            padding: padding)
     }
 }
 
@@ -786,7 +786,7 @@ public struct MaxPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     @differentiable
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
         return input.maxPooled(
-          kernelSize: poolSize, strides: strides, padding: padding)
+            kernelSize: poolSize, strides: strides, padding: padding)
     }
 }
 
