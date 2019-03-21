@@ -871,7 +871,8 @@ public struct Reshape<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let shape: Tensor<Int32>
 
     // TF-331 workaround:
-    private var _nontrivial = Tensor<Float>(0)
+    @usableFromInline
+    internal var _nontrivial = Tensor<Float>(0)
 
     /// Creates a reshape layer.
     ///
