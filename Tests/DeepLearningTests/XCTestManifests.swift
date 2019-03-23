@@ -21,6 +21,7 @@ public func allTests() -> [XCTestCaseEntry] {
         testCase(PRNGTests.allTests),
         testCase(TrivialModelTests.allTests),
         testCase(SequentialTests.allTests),
+        testCase(LayerTests.allTests),
     ]
 }
 #endif
