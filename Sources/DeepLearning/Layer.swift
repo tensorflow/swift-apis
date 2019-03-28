@@ -1102,33 +1102,6 @@ public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: Layer {
     }
 }
 
-public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: Layer {
-    @noDerivative public let size: Int32
-
-    /// Creates an upsampling layer.
-    ///
-    /// - Parameter size: The upsampling factor for rows and columns.
-    public init(size: Int32) {
-       self.size = size
-    }
-
-    /// Returns the output obtained from applying the layer to the given input.
-    ///
-    /// - Parameters:
-    ///   - input: The input to the layer.
-    ///   - context: The contextual information for the layer application, e.g. the current learning
-    ///     phase.
-    /// - Returns: The output.
-    @differentiable
-    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
-        let shape = input.shape
-        let (batchSize, height, width, depth, channels) = (shape[0], shape[1], shape[2], shape[3], shape[4])
-        let scaleOnes = Tensor<Scalar>(ones: [1, 1, size, 1, size, 1, size, 1])
-        let upSampling = input.reshaped(to: [batchSize, height, 1, width, 1, depth, 1, channels]) * scaleOnes
-        return upSampling.reshaped(to: [batchSize, height * size, width * size, depth * size, channels])
-    }
-}
-
 /// A flatten layer.
 ///
 /// A flatten layer flattens the input when applied without affecting the batch size.
