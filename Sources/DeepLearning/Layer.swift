@@ -1091,13 +1091,21 @@ public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: Layer {
     @differentiable
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
         let shape = input.shape
-        let (batchSize, height, width, depth, channels) = (shape[0], shape[1], shape[2], shape[3], shape[4])
+        let (batchSize, height, width, depth, channels) = (shape[0], shape[1],
+                                                           shape[2], shape[3],
+                                                           shape[4])
         let scaleOnes2D = Tensor<Scalar>(ones: [1, 1, size, 1, size, 1, 1])
-        var upSampling2D = input.reshaped(to: [batchSize, height, 1, width, 1, depth, channels]) * scaleOnes2D
-        upSampling2D = upSampling2D.reshaped(to: [batchSize, height * size, width * size, depth, channels])
+        var upSampling2D = input.reshaped(to: [batchSize, height, 1, width, 1,
+                                               depth, channels]) * scaleOnes2D
+        upSampling2D = upSampling2D.reshaped(to: [batchSize,
+                                                  height * size, width * size,
+                                                  depth, channels])
         let scaleOnes3D = Tensor<Scalar>(ones: [1, 1, 1, 1, size, 1])
-        let upSampling3D = upSampling2D.reshaped(to: [batchSize, height * size, width * size, depth, 1, channels]) * scaleOnes3D
-        return upSampling3D.reshaped(to: [batchSize, height * size, width * size, depth * size, channels])
+        let upSampling3D = upSampling2D.reshaped(to: [batchSize, height * size,
+                                                      width * size, depth, 1,
+                                                      channels]) * scaleOnes3D
+        return upSampling3D.reshaped(to: [batchSize, height * size,
+                                          width * size, depth * size, channels])
     }
 }
 
