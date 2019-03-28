@@ -1011,6 +1011,35 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: Layer {
     }
 }
 
+/// An upsampling layer for 1-D inputs.
+@_fixed_layout
+public struct UpSampling1D<Scalar: TensorFlowFloatingPoint>: Layer {
+    @noDerivative public let size: Int32
+
+    /// Creates an upsampling layer.
+    ///
+    /// - Parameter size: The upsampling factor for timesteps.
+    public init(size: Int32) {
+       self.size = size
+    }
+
+    /// Returns the output obtained from applying the layer to the given input.
+    ///
+    /// - Parameters:
+    ///   - input: The input to the layer.
+    ///   - context: The contextual information for the layer application, e.g. the current learning
+    ///     phase.
+    /// - Returns: The output.
+    @differentiable
+    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
+        let shape = input.shape
+        let (batchSize, timesteps, channels) = (shape[0], shape[1], shape[2])
+        let scaleOnes = Tensor<Scalar>(ones: [1, 1, size, 1])
+        let upSampling = input.reshaped(to: [batchSize, timesteps, 1, channels]) * scaleOnes
+        return upSampling.reshaped(to: [batchSize, timesteps * size, channels])
+    }
+}
+
 /// An upsampling layer for 2-D inputs.
 @_fixed_layout
 public struct UpSampling2D<Scalar: TensorFlowFloatingPoint>: Layer {
