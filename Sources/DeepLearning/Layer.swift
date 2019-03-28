@@ -1070,7 +1070,6 @@ public struct UpSampling2D<Scalar: TensorFlowFloatingPoint>: Layer {
 }
 
 /// An upsampling layer for 3-D inputs.
-@_fixed_layout/// An upsampling layer for 3-D inputs.
 @_fixed_layout
 public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let size: Int32
