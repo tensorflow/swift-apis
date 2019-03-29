@@ -124,7 +124,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// TensorFlow builtin conv2d gradient helper for the input.
     @inlinable
     @differentiable(wrt: (self, filter), vjp: _vjpConv2DBackpropInput)
-    func conv2DBackpropInput(
+    internal func conv2DBackpropInput(
         shape: Tensor<Int32>,
         filter: Tensor,
         strides: (Int32, Int32, Int32, Int32),
@@ -141,7 +141,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// TensorFlow builtin conv2d gradient helper for the filter.
     @inlinable
     @differentiable(wrt: (self, input), vjp: _vjpConv2DBackpropFilter)
-    func conv2DBackpropFilter(
+    internal func conv2DBackpropFilter(
         input: Tensor,
         filterSizes: Tensor<Int32>,
         strides: (Int32, Int32, Int32, Int32),
