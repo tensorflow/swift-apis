@@ -633,7 +633,7 @@ public struct TransposedConv2D: Layer {
         let h = (input.shape[2] - (1 * paddingIndex)) * strides.1 + (filter.shape[1] * paddingIndex)
         let c = filter.shape[2]
         let newShape = Tensor<Int32>([batchSize, w, h, c])
-        return activation(input.convolved2DBackpropInput(shape: newShape, filter: filter,
+        return activation(input.conv2DBackpropInput(shape: newShape, filter: filter,
                                                          strides: (1, strides.0, strides.1, 1),
                                                          padding: padding) + bias)
     }
@@ -698,7 +698,7 @@ public extension TransposedConv2D {
             filter: Tensor(glorotUniform: filterTensorShape, seed: seed),
             bias: Tensor(zeros: TensorShape([Int32(filterShape.3)])),
             activation: activation,
-            strides: (Int32(strides.0), Int32(strides.1)),
+            strides: strides,
             padding: padding)
     }
 }
