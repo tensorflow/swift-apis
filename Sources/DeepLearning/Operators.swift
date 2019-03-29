@@ -41,7 +41,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         epsilon: Scalar
     ) -> (Tensor, (Tensor) -> (Tensor, Tensor, Tensor)) {
         let value = batchNormalized(alongAxis: axis, offset: offset, scale: scale,
-                                                                epsilon: epsilon)
+                                    epsilon: epsilon)
         return (value, { v in
             let mean = self.mean(alongAxes: axis)
             let squaredDiff: Tensor = Raw.squaredDifference(self, mean)
@@ -172,13 +172,13 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
         _ padding: Padding
     ) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
         let value = _TFConv2DBackpropInput(shape: shape, filter: filter,
-                                                                             backpropOutput: backpropOutput,
-                                                                             strides: strides, padding: padding)
+                                           backpropOutput: backpropOutput,
+                                           strides: strides, padding: padding)
         return (value, { v in
             return (
                 self._TFConv2DBackpropFilter(input: v, filterSizes: shape,
-                                                                         backpropOutput: backpropOutput,
-                                                                         strides: strides, padding: padding),
+                                             backpropOutput: backpropOutput,
+                                             strides: strides, padding: padding),
                 v.convolved2D(withFilter: filter, strides: strides, padding: padding)
             )
         })
@@ -193,13 +193,13 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
         _ padding: Padding
     ) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
         let value = _TFConv2DBackpropFilter(input: input, filterSizes: filterSizes,
-                                                                                backpropOutput: backpropOutput,
-                                                                                strides: strides, padding: padding)
+                                            backpropOutput: backpropOutput,
+                                            strides: strides, padding: padding)
         return (value, { v in
             return (
                 self._TFConv2DBackpropInput(shape: filterSizes, filter: v,
-                                                                        backpropOutput: backpropOutput,
-                                                                        strides: strides, padding: padding),
+                                            backpropOutput: backpropOutput,
+                                            strides: strides, padding: padding),
                 input.convolved2D(withFilter: v, strides: strides, padding: padding)
             )
         })
@@ -212,7 +212,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
         padding: Padding
     ) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
         let value = convolved2D(withFilter: filter, strides: strides,
-                                                        padding: padding)
+                                padding: padding)
         return (value, { v in
             return (
                 self._TFConv2DBackpropInput(
@@ -236,7 +236,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
         // TODO: Currently this is not higher order differentiable. Redefine in
         // closed form.
         let value = maxPooled(kernelSize: kernelSize, strides: strides,
-                                                    padding: padding)
+                              padding: padding)
         return (value, { v in
             return Raw.maxPoolGradV2(
                 origInput: self,
@@ -258,7 +258,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
         // TODO: Currently this is not higher order differentiable. Redefine in
         // closed form.
         let value = averagePooled(kernelSize: kernelSize, strides: strides,
-                                                            padding: padding)
+                                  padding: padding)
         return (value, { v in
             return Raw.avgPoolGrad(
                 origInputShape: self.shapeTensor,
