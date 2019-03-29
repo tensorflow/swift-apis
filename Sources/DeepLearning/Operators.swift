@@ -120,7 +120,7 @@ public extension Padding {
     }
 }
 
-extension Tensor where Scalar: TensorFlowFloatingPoint {
+public extension Tensor where Scalar: TensorFlowFloatingPoint {
     
     /// TensorFlow builtin conv2d gradient helper for the input.
     @inlinable
@@ -259,7 +259,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
     
 }
 
-extension Tensor where Scalar: FloatingPoint {
+public extension Tensor where Scalar: FloatingPoint {
     
     /// Computes a 2-D convolution using `self` as input, with the specified
     /// filter, strides, and padding.
