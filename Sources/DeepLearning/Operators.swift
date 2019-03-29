@@ -284,7 +284,7 @@ public extension Tensor where Scalar: FloatingPoint {
             strides: [strides.0, strides.1, strides.2, strides.3],
             padding: padding.raw)
     }
-    
+
     /// Computes a 2-D max pooling, with the specified kernel sizes, strides, and
     /// padding.
     ///
