@@ -31,7 +31,7 @@ public func identity<Scalar>(_ x: Tensor<Scalar>) -> Tensor<Scalar> {
 // Normalization
 //===----------------------------------------------------------------------===//
 
-public extension Tensor where Scalar : TensorFlowFloatingPoint {
+public extension Tensor where Scalar: TensorFlowFloatingPoint {
     // TODO: Verify that these calculations are correct.
     @inlinable
     func _vjpBatchNormalized(
@@ -39,7 +39,7 @@ public extension Tensor where Scalar : TensorFlowFloatingPoint {
         offset: Tensor,
         scale: Tensor,
         epsilon: Scalar
-    ) -> (Tensor, (Tensor) -> (Tensor, Tensor, Tensor)) {
+        ) -> (Tensor, (Tensor) -> (Tensor, Tensor, Tensor)) {
         let value = batchNormalized(alongAxis: axis, offset: offset, scale: scale,
                                                                 epsilon: epsilon)
         return (value, { v in
@@ -65,7 +65,7 @@ public extension Tensor where Scalar : TensorFlowFloatingPoint {
     }
 }
 
-public extension Tensor where Scalar : BinaryFloatingPoint {
+public extension Tensor where Scalar: BinaryFloatingPoint {
     /// Computes the batch normalized tensor along the specified axis.
     ///
     /// Specifically, returns `(self - mu)/(var + epsilon) * gamma + beta` where
@@ -120,7 +120,7 @@ public extension Padding {
     }
 }
 
-extension Tensor where Scalar : TensorFlowFloatingPoint {
+extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// TensorFlow builtin conv2d gradient helper for the input.
     @inlinable
     @differentiable(
@@ -271,7 +271,7 @@ extension Tensor where Scalar : TensorFlowFloatingPoint {
     }
 }
 
-public extension Tensor where Scalar : FloatingPoint {
+public extension Tensor where Scalar: FloatingPoint {
     /// Computes a 2-D convolution using `self` as input, with the specified
     /// filter, strides, and padding.
     ///
