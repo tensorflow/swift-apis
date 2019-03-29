@@ -34,7 +34,7 @@ public func identity<Scalar>(_ x: Tensor<Scalar>) -> Tensor<Scalar> {
 public extension Tensor where Scalar: TensorFlowFloatingPoint {
     // TODO: Verify that these calculations are correct.
     @inlinable
-    func _vjpBatchNormalized(
+    internal func _vjpBatchNormalized(
         alongAxis axis: Int32,
         offset: Tensor,
         scale: Tensor,
@@ -120,93 +120,79 @@ public extension Padding {
     }
 }
 
-extension Tensor where Scalar: TensorFlowFloatingPoint {
+public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// TensorFlow builtin conv2d gradient helper for the input.
     @inlinable
-    @differentiable(
-        wrt: (filter, backpropOutput),
-        vjp: _vjpTFConv2DBackpropInput(_:_:_:_:_:)
-    )
-    func _TFConv2DBackpropInput(
+    @differentiable(wrt: (self, filter), vjp: _vjpConv2DBackpropInput)
+    internal func conv2DBackpropInput(
         shape: Tensor<Int32>,
         filter: Tensor,
-        backpropOutput: Tensor,
         strides: (Int32, Int32, Int32, Int32),
         padding: Padding
     ) -> Tensor {
         return Raw.conv2DBackpropInput(
             inputSizes: shape,
             filter: filter,
-            outBackprop: backpropOutput,
+            outBackprop: self,
             strides: [strides.0, strides.1, strides.2, strides.3],
             padding: padding.raw)
     }
 
-     /// TensorFlow builtin conv2d gradient helper for the filter.
+    /// TensorFlow builtin conv2d gradient helper for the filter.
     @inlinable
-    @differentiable(
-        wrt: (input, backpropOutput),
-        vjp: _vjpTFConv2DBackpropFilter(_:_:_:_:_:)
-        )
-    func _TFConv2DBackpropFilter(
+    @differentiable(wrt: (self, input), vjp: _vjpConv2DBackpropFilter)
+    internal func conv2DBackpropFilter(
         input: Tensor,
         filterSizes: Tensor<Int32>,
-        backpropOutput: Tensor,
         strides: (Int32, Int32, Int32, Int32),
         padding: Padding
     ) -> Tensor {
         return Raw.conv2DBackpropFilter(
             input,
             filterSizes: filterSizes,
-            outBackprop: backpropOutput,
+            outBackprop: self,
             strides: [strides.0, strides.1, strides.2, strides.3],
             padding: padding.raw)
     }
 
     @inlinable
-    func _vjpTFConv2DBackpropInput(
+    internal func _vjpConv2DBackpropInput(
         _ shape: Tensor<Int32>,
         _ filter: Tensor,
-        _ backpropOutput: Tensor,
         _ strides: (Int32, Int32, Int32, Int32),
         _ padding: Padding
     ) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
-        let value = _TFConv2DBackpropInput(shape: shape, filter: filter,
-                                           backpropOutput: backpropOutput,
-                                           strides: strides, padding: padding)
+        let value = conv2DBackpropInput(shape: shape, filter: filter, strides: strides,
+                                        padding: padding)
         return (value, { v in
             return (
-                self._TFConv2DBackpropFilter(input: v, filterSizes: shape,
-                                             backpropOutput: backpropOutput,
-                                             strides: strides, padding: padding),
+                self.conv2DBackpropFilter(input: v, filterSizes: shape, strides: strides,
+                                          padding: padding),
                 v.convolved2D(withFilter: filter, strides: strides, padding: padding)
             )
         })
     }
 
     @inlinable
-    func _vjpTFConv2DBackpropFilter(
+    internal func _vjpConv2DBackpropFilter(
         _ input: Tensor,
         _ filterSizes: Tensor<Int32>,
-        _ backpropOutput: Tensor,
         _ strides: (Int32, Int32, Int32, Int32),
         _ padding: Padding
     ) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
-        let value = _TFConv2DBackpropFilter(input: input, filterSizes: filterSizes,
-                                            backpropOutput: backpropOutput,
-                                            strides: strides, padding: padding)
+        let value = conv2DBackpropFilter(input: input, filterSizes: filterSizes,
+                                         strides: strides, padding: padding)
         return (value, { v in
             return (
-                self._TFConv2DBackpropInput(shape: filterSizes, filter: v,
-                                            backpropOutput: backpropOutput,
-                                            strides: strides, padding: padding),
+                self.conv2DBackpropInput(shape: filterSizes, filter: v, strides: strides,
+                                         padding: padding),
                 input.convolved2D(withFilter: v, strides: strides, padding: padding)
             )
         })
     }
 
     @inlinable
-    func _vjpConvolved2D(
+    internal func _vjpConvolved2D(
         filter: Tensor,
         strides: (Int32, Int32, Int32, Int32),
         padding: Padding
@@ -215,12 +201,12 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
                                 padding: padding)
         return (value, { v in
             return (
-                self._TFConv2DBackpropInput(
-                    shape: self.shapeTensor, filter: filter, backpropOutput: v,
+                v.conv2DBackpropInput(
+                    shape: self.shapeTensor, filter: filter,
                     strides: strides, padding: padding
                 ),
-                self._TFConv2DBackpropFilter(
-                    input: self, filterSizes: filter.shapeTensor, backpropOutput: v,
+                v.conv2DBackpropFilter(
+                    input: self, filterSizes: filter.shapeTensor,
                     strides: strides, padding: padding
                 )
             )
@@ -228,7 +214,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 
     @inlinable
-    func _vjpMaxPooled(
+    internal func _vjpMaxPooled(
         kernelSize: (Int32, Int32, Int32, Int32),
         strides: (Int32, Int32, Int32, Int32),
         padding: Padding
@@ -250,7 +236,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 
     @inlinable
-    func _vjpAveragePooled(
+    internal func _vjpAveragePooled(
         kernelSize: (Int32, Int32, Int32, Int32),
         strides: (Int32, Int32, Int32, Int32),
         padding: Padding
@@ -284,8 +270,8 @@ public extension Tensor where Scalar: FloatingPoint {
     /// - Precondition: `filter` must have rank 4.
     @inlinable @inline(__always)
     @differentiable(
-        wrt: (self, filter), vjp: _vjpConvolved2D(filter:strides:padding:)
-        where Scalar : TensorFlowFloatingPoint
+        wrt: (self, filter), vjp: _vjpConvolved2D
+        where Scalar: TensorFlowFloatingPoint
     )
     func convolved2D(
         withFilter filter: Tensor,
