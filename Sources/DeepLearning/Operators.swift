@@ -163,11 +163,11 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         _ padding: Padding
     ) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
         let value = conv2DBackpropInput(shape: shape, filter: filter, strides: strides,
-                                             padding: padding)
+                                        padding: padding)
         return (value, { v in
             return (
                 self.conv2DBackpropFilter(input: v, filterSizes: shape, strides: strides,
-                                               padding: padding),
+                                          padding: padding),
                 v.convolved2D(withFilter: filter, strides: strides, padding: padding)
             )
         })
@@ -181,11 +181,11 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         _ padding: Padding
     ) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
         let value = conv2DBackpropFilter(input: input, filterSizes: filterSizes,
-                                              strides: strides, padding: padding)
+                                         strides: strides, padding: padding)
         return (value, { v in
             return (
                 self.conv2DBackpropInput(shape: filterSizes, filter: v, strides: strides,
-                                              padding: padding),
+                                         padding: padding),
                 input.convolved2D(withFilter: v, strides: strides, padding: padding)
             )
         })
