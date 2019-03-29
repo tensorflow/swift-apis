@@ -47,11 +47,11 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
             let squaredDiff: Tensor = Raw.squaredDifference(self, mean)
             let variance = squaredDiff.mean(alongAxes: axis)
 
-            let diff = self - mean
+             let diff = self - mean
             let inv = rsqrt(variance + epsilon)
             let norm = diff * inv
 
-            let dNorm = v * scale
+             let dNorm = v * scale
             let dVariance = -(dNorm * diff).sum(alongAxes: axis) / 2 * pow(inv, -3)
             let dMean = (-dNorm * inv).sum(alongAxes: axis) +
                 dVariance * (-diff * 2).mean(alongAxes: axis)
@@ -142,7 +142,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
             padding: padding.raw)
     }
 
-    /// TensorFlow builtin conv2d gradient helper for the filter.
+     /// TensorFlow builtin conv2d gradient helper for the filter.
     @inlinable
     @differentiable(
         wrt: (input, backpropOutput),
@@ -242,8 +242,8 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
                 origInput: self,
                 origOutput: value,
                 grad: v,
-                ksize: Tensor<Int32>(kernelSize),
-                strides: Tensor<Int32>(strides),
+                ksize: Tensor<Int32>([kernelSize.0, kernelSize.1, kernelSize.2, kernelSize.3]),
+                strides: Tensor<Int32>([strides.0, strides.1, strides.2, strides.3]),
                 padding: padding.raw
             )
         })
@@ -319,8 +319,8 @@ public extension Tensor where Scalar: FloatingPoint {
     ) -> Tensor {
         return Raw.maxPoolV2(
             self,
-            ksize: Tensor<Int32>(kernelSize),
-            strides: Tensor<Int32>(strides),
+            ksize: Tensor<Int32>([kernelSize.0, kernelSize.1, kernelSize.2, kernelSize.3]),
+            strides: Tensor<Int32>([strides.0, strides.1, strides.2, strides.3]),
             padding: padding.raw)
     }
 
