@@ -319,8 +319,10 @@ public extension Tensor where Scalar: FloatingPoint {
     ) -> Tensor {
         return Raw.maxPoolV2(
             self,
-            ksize: Tensor<Int32>([kernelSize.0, kernelSize.1, kernelSize.2, kernelSize.3]),
-            strides: Tensor<Int32>([strides.0, strides.1, strides.2, strides.3]),
+            ksize: Tensor<Int32>([kernelSize.0, kernelSize.1,
+                                 kernelSize.2, kernelSize.3]),
+            strides: Tensor<Int32>([strides.0, strides.1,
+                                   strides.2, strides.3]),
             padding: padding.raw)
     }
 
