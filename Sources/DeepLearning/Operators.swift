@@ -121,7 +121,6 @@ public extension Padding {
 }
 
 public extension Tensor where Scalar: TensorFlowFloatingPoint {
-    
     /// TensorFlow builtin conv2d gradient helper for the input.
     @inlinable
     @differentiable(wrt: (self, filter), vjp: _vjpConv2DBackpropInput)
@@ -138,7 +137,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
             strides: [strides.0, strides.1, strides.2, strides.3],
             padding: padding.raw)
     }
-    
+
     /// TensorFlow builtin conv2d gradient helper for the filter.
     @inlinable
     @differentiable(wrt: (self, input), vjp: _vjpConv2DBackpropFilter)
@@ -155,7 +154,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
             strides: [strides.0, strides.1, strides.2, strides.3],
             padding: padding.raw)
     }
-    
+
     @inlinable
     internal func _vjpConv2DBackpropInput(
         _ shape: Tensor<Int32>,
@@ -173,7 +172,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
             )
         })
     }
-    
+
     @inlinable
     internal func _vjpConv2DBackpropFilter(
         _ input: Tensor,
@@ -191,7 +190,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
             )
         })
     }
-    
+
     @inlinable
     internal func _vjpConvolved2D(
         filter: Tensor,
@@ -213,7 +212,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
             )
         })
     }
-    
+
     @inlinable
     internal func _vjpMaxPooled(
         kernelSize: (Int32, Int32, Int32, Int32),
@@ -256,11 +255,9 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
             )
         })
     }
-    
 }
 
 public extension Tensor where Scalar: FloatingPoint {
-    
     /// Computes a 2-D convolution using `self` as input, with the specified
     /// filter, strides, and padding.
     ///
@@ -339,5 +336,4 @@ public extension Tensor where Scalar: FloatingPoint {
             strides: [strides.0, strides.1, strides.2, strides.3],
             padding: padding.raw)
     }
-    
 }
