@@ -1009,6 +1009,25 @@ public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     }
 }
 
+/// A global average pooling layer for spatial data.
+@_fixed_layout
+public struct GlobalAveragePooling2D<Scalar: TensorFlowFloatingPoint>: Layer {
+    /// Creates a global average pooling layer.
+    public init() {}
+    
+    /// Returns the output obtained from applying the layer to the given input.
+    ///
+    /// - Parameters:
+    ///   - input: The input to the layer.
+    ///   - context: The contextual information for the layer application, e.g. the current learning
+    ///     phase.
+    /// - Returns: The output.
+    @differentiable
+    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
+        return input.mean(alongAxes: [1, 2]).reshaped(to: [input.shape[0], input.shape[3]])
+    }
+}
+
 /// A layer that applies layer normalization over a mini-batch of inputs.
 ///
 /// Reference: [Layer Normalization](https://arxiv.org/abs/1607.06450).
