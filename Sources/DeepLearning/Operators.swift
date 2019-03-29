@@ -34,7 +34,7 @@ public func identity<Scalar>(_ x: Tensor<Scalar>) -> Tensor<Scalar> {
 public extension Tensor where Scalar: TensorFlowFloatingPoint {
     // TODO: Verify that these calculations are correct.
     @inlinable
-    func _vjpBatchNormalized(
+    internal func _vjpBatchNormalized(
         alongAxis axis: Int32,
         offset: Tensor,
         scale: Tensor,
@@ -157,7 +157,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
     
     @inlinable
-    func _vjpConv2DBackpropInput(
+    internal func _vjpConv2DBackpropInput(
         _ shape: Tensor<Int32>,
         _ filter: Tensor,
         _ strides: (Int32, Int32, Int32, Int32),
@@ -175,7 +175,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
     
     @inlinable
-    func _vjpConv2DBackpropFilter(
+    internal func _vjpConv2DBackpropFilter(
         _ input: Tensor,
         _ filterSizes: Tensor<Int32>,
         _ strides: (Int32, Int32, Int32, Int32),
@@ -193,7 +193,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
     
     @inlinable
-    func _vjpConvolved2D(
+    internal func _vjpConvolved2D(
         filter: Tensor,
         strides: (Int32, Int32, Int32, Int32),
         padding: Padding
@@ -215,7 +215,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
     
     @inlinable
-    func _vjpMaxPooled(
+    internal func _vjpMaxPooled(
         kernelSize: (Int32, Int32, Int32, Int32),
         strides: (Int32, Int32, Int32, Int32),
         padding: Padding
@@ -237,7 +237,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 
     @inlinable
-    func _vjpAveragePooled(
+    internal func _vjpAveragePooled(
         kernelSize: (Int32, Int32, Int32, Int32),
         strides: (Int32, Int32, Int32, Int32),
         padding: Padding
