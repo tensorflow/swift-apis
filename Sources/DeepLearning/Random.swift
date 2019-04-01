@@ -19,7 +19,7 @@ import Glibc
 #endif
 
 //===------------------------------------------------------------------------------------------===//
-// Random number generators
+// Random Number Generators
 //===------------------------------------------------------------------------------------------===//
 
 /// A type that provides seedable deterministic pseudo-random data.

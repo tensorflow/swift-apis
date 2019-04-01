@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #if !COMPILING_TENSORFLOW_MODULE
-import TensorFlow
+@_exported import TensorFlow
 #endif
 
 /// Computes the mean squared error between predictions and labels.

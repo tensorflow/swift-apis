@@ -16,6 +16,10 @@
 @_exported import TensorFlow
 #endif
 
+//===------------------------------------------------------------------------------------------===//
+// Random
+//===------------------------------------------------------------------------------------------===//
+
 public extension Tensor where Scalar == Int32 {
     /// Creates a tensor with the specified shape, randomly sampling scalar values
     /// from a discrete uniform distribution.
