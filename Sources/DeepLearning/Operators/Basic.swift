@@ -267,6 +267,40 @@ public extension Tensor where Scalar: TensorFlowScalar {
     }
 }
 
+public extension Tensor where Scalar: TensorFlowScalar {
+    /// Returns the locations of non-zero / true values in this tensor.
+    ///
+    /// The coordinates are returned in a 2-D tensor where the first dimension (rows) represents the 
+    /// number of non-zero elements, and the second dimension (columns) represents the coordinates 
+    /// of the non-zero elements. Keep in mind that the shape of the output tensor can vary 
+    /// depending on how many true values there are in this tensor. Indices are output in row-major 
+    /// order.
+    ///
+    /// For example:
+    /// ```
+    /// // 'input' is [[true, false], [true, false]]
+    /// // 'input' has 2 true values and so the output has 2 rows.
+    /// // 'input' has rank of 2, and so the second dimension of the output has size 2.
+    /// input.nonZeroIndices() // is [[0, 0], [1, 0]]
+    ///
+    /// // 'input' is [[[ true, false], [ true, false]],
+    /// //             [[false,  true], [false,  true]],
+    /// //             [[false, false], [false,  true]]]
+    /// // 'input' has 5 true values and so the output has 5 rows.
+    /// // 'input' has rank 3, and so the second dimension of the output has size 3.
+    /// input.nonZeroIndices() // is [[0, 0, 0],
+    ///                        //     [0, 1, 0],
+    ///                        //     [1, 0, 1],
+    ///                        //     [1, 1, 1],
+    ///                        //     [2, 1, 1]]
+    /// ```
+    ///
+    /// - Returns: A tensor with shape `(num_true, rank(condition))`.
+    func nonZeroIndices() -> Tensor<Int64> {
+        return Raw.where_(self)
+    }
+}
+
 public extension Tensor where Scalar == Bool {
     /// Returns the elements of either `x` or `y`, depending on the values in stored in this tensor.
     /// 
