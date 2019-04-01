@@ -21,64 +21,64 @@
 //===------------------------------------------------------------------------------------------===//
 
 public extension Tensor where Scalar: BinaryFloatingPoint {
-  /// Computes the batch normalized tensor along the specified axis.
-  ///
-  /// Specifically, returns `(self - mu) / (var + epsilon) * gamma + beta` where `mu` and `var` are 
-  /// respectively the mean and variance of `self` along `axis`.
-  ///
-  /// - Parameters:
-  ///   - axis: The batch dimension.
-  ///   - offset: The offset, also known as beta.
-  ///   - scale: The scale, also known as gamma.
-  ///   - epsilon: A small value added to the denominator for numerical stability.
-  @inlinable
-  @differentiable(
-    wrt: (self, offset, scale),
-    vjp: _vjpBatchNormalized where Scalar: TensorFlowFloatingPoint)
-  func batchNormalized(
-    alongAxis axis: Int32,
-    offset: Tensor = Tensor(0),
-    scale: Tensor = Tensor(1),
-    epsilon: Scalar = 0.001
-  ) -> Tensor {
-    let mean = self.mean(alongAxes: axis)
-    let squaredDiff: Tensor = Raw.squaredDifference(self, mean)
-    let variance = squaredDiff.mean(alongAxes: axis)
-    let inv = rsqrt(variance + epsilon) * scale
-    return self * inv + offset - mean * inv
-  }
+    /// Computes the batch normalized tensor along the specified axis.
+    ///
+    /// Specifically, returns `(self - mu) / (var + epsilon) * gamma + beta` where `mu` and `var` are 
+    /// respectively the mean and variance of `self` along `axis`.
+    ///
+    /// - Parameters:
+    ///   - axis: The batch dimension.
+    ///   - offset: The offset, also known as beta.
+    ///   - scale: The scale, also known as gamma.
+    ///   - epsilon: A small value added to the denominator for numerical stability.
+    @inlinable
+    @differentiable(
+        wrt: (self, offset, scale),
+        vjp: _vjpBatchNormalized where Scalar: TensorFlowFloatingPoint)
+    func batchNormalized(
+        alongAxis axis: Int32,
+        offset: Tensor = Tensor(0),
+        scale: Tensor = Tensor(1),
+        epsilon: Scalar = 0.001
+    ) -> Tensor {
+        let mean = self.mean(alongAxes: axis)
+        let squaredDiff: Tensor = Raw.squaredDifference(self, mean)
+        let variance = squaredDiff.mean(alongAxes: axis)
+        let inv = rsqrt(variance + epsilon) * scale
+        return self * inv + offset - mean * inv
+    }
 }
 
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
-  // TODO: Verify that these calculations are correct.
-  @inlinable
-  func _vjpBatchNormalized(
-    alongAxis axis: Int32,
-    offset: Tensor,
-    scale: Tensor,
-    epsilon: Scalar
-  ) -> (Tensor, (Tensor) -> (Tensor, Tensor, Tensor)) {
-    let value = batchNormalized(
-      alongAxis: axis, offset: offset, scale: scale, epsilon: epsilon)
-    return (value, { v in
-      let mean = self.mean(alongAxes: axis)
-      let squaredDiff: Tensor = Raw.squaredDifference(self, mean)
-      let variance = squaredDiff.mean(alongAxes: axis)
-      let diff = self - mean
-      let inv = rsqrt(variance + epsilon)
-      let norm = diff * inv
-      let dNorm = v * scale
-      let dVariance = -(dNorm * diff).sum(alongAxes: axis) / 2 * pow(inv, -3)
-      let dMean = (-dNorm * inv).sum(alongAxes: axis) +
-        dVariance * (-diff * 2).mean(alongAxes: axis)
-      let dOffset = v.sum(alongAxes: axis)
-      let dScale = (norm * v).sum(alongAxes: axis)
-      let dim = Tensor(Tensor<Int32>(self.shapeTensor[axis]))
-      let tmp = (dNorm * inv) + (dVariance * 2 * dMean / dim)
-      let dSelf = tmp + (dMean / dim)
-      return (dSelf, dOffset, dScale)
-    })
-  }
+    // TODO: Verify that these calculations are correct.
+    @inlinable
+    func _vjpBatchNormalized(
+        alongAxis axis: Int32,
+        offset: Tensor,
+        scale: Tensor,
+        epsilon: Scalar
+    ) -> (Tensor, (Tensor) -> (Tensor, Tensor, Tensor)) {
+        let value = batchNormalized(
+            alongAxis: axis, offset: offset, scale: scale, epsilon: epsilon)
+        return (value, { v in
+            let mean = self.mean(alongAxes: axis)
+            let squaredDiff: Tensor = Raw.squaredDifference(self, mean)
+            let variance = squaredDiff.mean(alongAxes: axis)
+            let diff = self - mean
+            let inv = rsqrt(variance + epsilon)
+            let norm = diff * inv
+            let dNorm = v * scale
+            let dVariance = -(dNorm * diff).sum(alongAxes: axis) / 2 * pow(inv, -3)
+            let dMean = (-dNorm * inv).sum(alongAxes: axis) +
+                dVariance * (-diff * 2).mean(alongAxes: axis)
+            let dOffset = v.sum(alongAxes: axis)
+            let dScale = (norm * v).sum(alongAxes: axis)
+            let dim = Tensor(Tensor<Int32>(self.shapeTensor[axis]))
+            let tmp = (dNorm * inv) + (dVariance * 2 * dMean / dim)
+            let dSelf = tmp + (dMean / dim)
+            return (dSelf, dOffset, dScale)
+        })
+    }
 }
 
 //===------------------------------------------------------------------------------------------===//
@@ -88,20 +88,20 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 /// A padding scheme. Used by padding, convolution, and pooling ops.
 // @_frozen // SR-9739
 public enum Padding {
-  /// The "valid" padding scheme.
-  case valid
-  /// The "same" padding scheme.
-  case same
+    /// The "valid" padding scheme.
+    case valid
+    /// The "same" padding scheme.
+    case same
 }
 
 public extension Padding {
-  @inlinable
-  var raw: Raw.Padding {
-    switch self {
-    case .same: return .same
-    case .valid: return .valid
+    @inlinable
+    var raw: Raw.Padding {
+        switch self {
+        case .same: return .same
+        case .valid: return .valid
+        }
     }
-  }
 }
 
 public extension Tensor where Scalar: TensorFlowFloatingPoint {

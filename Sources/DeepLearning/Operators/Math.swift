@@ -18,5 +18,5 @@
 
 /// Returns the values of the specified tensor rounded to the nearest integer, element-wise.
 public func round<Scalar: BinaryFloatingPoint>(_ x: Tensor<Scalar>) -> Tensor<Scalar> {
-  return Raw.round(x)
+    return Raw.round(x)
 }
