@@ -20,7 +20,7 @@
 // Normalization
 //===------------------------------------------------------------------------------------------===//
 
-public extension Tensor where Scalar: BinaryFloatingPoint {
+public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// Computes the batch normalized tensor along the specified axis.
     ///
     /// Specifically, returns `(self - mu) / (var + epsilon) * gamma + beta` where `mu` and `var` are 
@@ -34,7 +34,7 @@ public extension Tensor where Scalar: BinaryFloatingPoint {
     @inlinable
     @differentiable(
         wrt: (self, offset, scale),
-        vjp: _vjpBatchNormalized where Scalar: TensorFlowFloatingPoint)
+        vjp: _vjpBatchNormalized)
     func batchNormalized(
         alongAxis axis: Int32,
         offset: Tensor = Tensor(0),
@@ -47,12 +47,10 @@ public extension Tensor where Scalar: BinaryFloatingPoint {
         let inv = rsqrt(variance + epsilon) * scale
         return self * inv + offset - mean * inv
     }
-}
-
-internal extension Tensor where Scalar: TensorFlowFloatingPoint {
+    
     // TODO: Verify that these calculations are correct.
     @inlinable
-    func _vjpBatchNormalized(
+    internal func _vjpBatchNormalized(
         alongAxis axis: Int32,
         offset: Tensor,
         scale: Tensor,
