@@ -254,7 +254,7 @@ public extension Tensor where Scalar: TensorFlowScalar {
     /// 
     /// - Returns: `(self.rank - K + 1)`-dimensional tensor populated by entries in this tensor 
     ///   corresponding to `true` values in `mask`.
-    @inlinable @inline(__always)
+    @inlinable
     func masked(with mask: Tensor<Bool>, alongAxis axis: Int32 = 0) -> Tensor {
         precondition(mask.rank != 0, "The boolean mask cannot be a scalar.")
         let posAxis = axis < 0 ? axis + rank : axis
@@ -296,6 +296,7 @@ public extension Tensor where Scalar: TensorFlowScalar {
     /// ```
     ///
     /// - Returns: A tensor with shape `(num_true, rank(condition))`.
+    @inlinable
     func nonZeroIndices() -> Tensor<Int64> {
         return Raw.where_(self)
     }
@@ -320,6 +321,7 @@ public extension Tensor where Scalar == Bool {
     /// - Precondition: `x` and `y` must have the same shape.
     /// 
     /// - Returns: A tensor with the same type and shape as `x` and `y`.
+    @inlinable
     @differentiable(
         wrt: (x, y),
         vjp: _vjpSelecting(ifTrue:else:) where T: TensorFlowFloatingPoint)
@@ -332,7 +334,7 @@ public extension Tensor where Scalar == Bool {
 }
 
 internal extension Tensor where Scalar == Bool {
-    @inlinable @inline(__always)
+    @inlinable
     func _vjpSelecting<T: TensorFlowFloatingPoint>(
         ifTrue x: Tensor<T>,
         else y: Tensor<T>
