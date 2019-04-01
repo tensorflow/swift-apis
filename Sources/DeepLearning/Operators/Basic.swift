@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #if !COMPILING_TENSORFLOW_MODULE
-@_exported import TensorFlow
+import TensorFlow
 #endif
 
 public extension Tensor where Scalar: TensorFlowScalar {
@@ -30,8 +30,8 @@ public extension Tensor where Scalar: TensorFlowScalar {
     /// // 'x' is [1, 4]
     /// // 'y' is [2, 5]
     /// // 'z' is [3, 6]
-    /// x.packed(with: [y, z]) // is [[1, 4], [2, 5], [3, 6]]
-    /// x.packed(with: [y, z], alongAxis: 1) // is [[1, 2, 3], [4, 5, 6]]
+    /// x.stacked(with: [y, z]) // is [[1, 4], [2, 5], [3, 6]]
+    /// x.stacked(with: [y, z], alongAxis: 1) // is [[1, 2, 3], [4, 5, 6]]
     /// ```
     ///
     /// This is the opposite of `unstacked`.
@@ -43,9 +43,9 @@ public extension Tensor where Scalar: TensorFlowScalar {
     /// - Precondition: All tensors must have the same shape as the current tensor.
     /// - Precondition: `axis` must be in the range `[-rank, rank)`.
     /// 
-    /// - Returns: The packed tensor.
+    /// - Returns: The stacked tensor.
     @inlinable
-    // @differentiable(vjp: _vjpPacked where Scalar: TensorFlowFloatingPoint)
+    // @differentiable(vjp: _vjpStacked where Scalar: TensorFlowFloatingPoint)
     func stacked(with tensors: [Tensor], alongAxis axis: Int64 = 0) -> Tensor {
         return Raw.pack([self] + tensors, axis: axis)
     }
@@ -133,8 +133,8 @@ public extension Tensor where Scalar: TensorFlowScalar {
     /// 
     /// - Returns: The gathered tensor.
     @inlinable
-    // @differentiable(vjp: _vjpGathered where Scalar: TensorFlowFloatingPoint)
-    func gathered<I: TensorFlowInteger>(
+    // @differentiable(vjp: _vjpGathering where Scalar: TensorFlowFloatingPoint)
+    func gathering<I: TensorFlowInteger>(
         atIndices indices: Tensor<I>, 
         alongAxis axis: Int32 = 0
     ) -> Tensor {
@@ -144,7 +144,7 @@ public extension Tensor where Scalar: TensorFlowScalar {
     /// Gathers slices of this tensor at `indices` along the `axis` dimension, while ignoring the 
     /// first `batchDims` dimensions that correspond to batch dimensions.
     /// 
-    /// Performs similar functionality to `gathered`, except that the resulting tensor shape is now:
+    /// Performs similar functionality to `gathering`, except that the resulting tensor shape is now:
     /// `self.shape[..<axis] + indices.shape[batchDims...] + self.shape[(axis + 1)...]`.
     ///
     /// - Parameters:
@@ -158,7 +158,7 @@ public extension Tensor where Scalar: TensorFlowScalar {
     /// 
     /// - Returns: The gathered tensor.
     @inlinable
-    func batchGathered<I: TensorFlowInteger>(
+    func batchGathering<I: TensorFlowInteger>(
         atIndices indices: Tensor<I>, 
         alongAxis axis: Int32,
         numBatchDims batchDims: Int32
@@ -183,7 +183,7 @@ public extension Tensor where Scalar: TensorFlowScalar {
                 Tensor<Int32>(rangeFrom: batchDims, to: posAxis, stride: 1),
                 Tensor<Int32>(rangeFrom: axis + 1, to: rank, stride: 1)])
             let tensor = transposed(withPermutations: permutation)
-            let result = tensor.batchGathered(
+            let result = tensor.batchGathering(
                 atIndices: indices, alongAxis: batchDims, numBatchDims: batchDims)
             
             // Move the result dimensions corresponding to self[batchDims ..< axis] to just before 
@@ -199,25 +199,25 @@ public extension Tensor where Scalar: TensorFlowScalar {
         let castedShape = Tensor<I>(shapeTensor)
         var batchIndices = indices
         var accumulated = Tensor<I>(ones: [])
-        for d in (1 ... batchDims).reversed() {
-        accumulated *= castedShape[d]
-        let dValue = castedShape[d - 1]
-        let dIndices = Tensor<I>(
-            rangeFrom: Tensor<I>(zeros: []),
-            to: dValue,
-            stride: Tensor<I>(ones: [])
-        ) * accumulated
-        let dShape = Tensor<Int32>(d - 1).packed(with: [
-            Tensor<Int32>(dValue), 
-            Tensor<Int32>(indices.rank - 1)])
-        batchIndices += dIndices.reshaped(toShape: dShape)
+        for d in (1...batchDims).reversed() {
+            accumulated *= castedShape[d]
+            let dValue = castedShape[d - 1]
+            let dIndices = Tensor<I>(
+                rangeFrom: Tensor<I>(zeros: []),
+                to: dValue,
+                stride: Tensor<I>(ones: [])
+            ) * accumulated
+            let dShape = Tensor<Int32>(d - 1).stacked(with: [
+                Tensor<Int32>(dValue), 
+                Tensor<Int32>(indices.rank - 1)])
+            batchIndices += dIndices.reshaped(toShape: dShape)
         }
 
         let flatIndices = batchIndices.flattened()
         let outerShape = shapeTensor[Int(batchDims + 1)...]
         let innerShape = shapeTensor[..<Int(batchDims + 1)].product(squeezingAxes: [0])
         let flatTensor = reshaped(toShape: innerShape.rankLifted().concatenated(with: outerShape))
-        let flatResult = flatTensor.gathered(atIndices: flatIndices)
+        let flatResult = flatTensor.gathering(atIndices: flatIndices)
         return flatResult.reshaped(toShape: indices.shapeTensor.concatenated(with: outerShape))
     }
 
@@ -260,14 +260,14 @@ public extension Tensor where Scalar: TensorFlowScalar {
         let posAxis = axis < 0 ? axis + rank : axis
         let leadingSize = shapeTensor[posAxis ..< posAxis + mask.rank].product().rankLifted()
         let reshapedTensor = reshaped(
-        toShape: shapeTensor[..<Int(posAxis)].concatenated(
-            with: [leadingSize, shapeTensor[Int(posAxis + mask.rank)...]]))
+            toShape: shapeTensor[..<Int(posAxis)].concatenated(
+                with: [leadingSize, shapeTensor[Int(posAxis + mask.rank)...]]))
         let indices = mask.flattened().whereTrue().squeezingShape(at: 1)
-        return reshapedTensor.gathered(atIndices: indices, alongAxis: posAxis)
+        return reshapedTensor.gathering(atIndices: indices, alongAxis: posAxis)
     }
 }
 
-public extension Tensor where Scalar: TensorFlowScalar {
+public extension Tensor {
     /// Returns the locations of non-zero / true values in this tensor.
     ///
     /// The coordinates are returned in a 2-D tensor where the first dimension (rows) represents the 
