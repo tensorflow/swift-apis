@@ -1025,7 +1025,7 @@ public struct GlobalAveragePooling1D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Returns: The output 
     @differentiable
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
-        return input.mean(alongAxes: axis)
+        return input.mean(alongAxes: 1).reshaped(to: [input.shape[0], input.shape[2]])
     }
 }
 
