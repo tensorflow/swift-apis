@@ -1298,19 +1298,19 @@ public struct Reshape<Scalar: TensorFlowFloatingPoint>: Layer {
 
 struct LSTMCell<Scalar: TensorFlowFloatingPoint>: Layer {
 
-    var inputW: Tensor<Scalar>
-    var updateW: Tensor<Scalar>
-    var forgetW: Tensor<Scalar>
-    var forgetB: Tensor<Scalar>
-    var outputW: Tensor<Scalar>
+    var inputWeight: Tensor<Scalar>
+    var updateWeight: Tensor<Scalar>
+    var forgetWeight: Tensor<Scalar>
+    var forgetBias: Tensor<Scalar>
+    var outputWeight: Tensor<Scalar>
 
     init(inputSize: Int32, hiddenSize: Int32) {
         let concatenatedInputSize = inputSize + hiddenSize
-        self.inputW = Tensor<Scalar>(glorotUniform: [concatenatedInputSize, hiddenSize])
-        self.updateW = Tensor<Scalar>(glorotUniform: [concatenatedInputSize, hiddenSize])
-        self.forgetW = Tensor<Scalar>(glorotUniform: [concatenatedInputSize, hiddenSize])
-        self.forgetB = Tensor<Scalar>(zeros: [hiddenSize])
-        self.outputW = Tensor<Scalar>(glorotUniform: [concatenatedInputSize, hiddenSize])
+        self.inputWeight = Tensor<Scalar>(glorotUniform: [concatenatedInputSize, hiddenSize])
+        self.updateWeight = Tensor<Scalar>(glorotUniform: [concatenatedInputSize, hiddenSize])
+        self.forgetWeight = Tensor<Scalar>(glorotUniform: [concatenatedInputSize, hiddenSize])
+        self.forgetBias = Tensor<Scalar>(zeros: [hiddenSize])
+        self.outputWeight = Tensor<Scalar>(glorotUniform: [concatenatedInputSize, hiddenSize])
     }
 
     struct HiddenState: Differentiable {
@@ -1339,10 +1339,10 @@ struct LSTMCell<Scalar: TensorFlowFloatingPoint>: Layer {
     func applied(to input: Input, in _: Context) -> HiddenState {
         let gateInput = input.inputs.concatenated(with: input.hidden.hiddenState, alongAxis: 1)
 
-        let inputGate = sigmoid(matmul(gateInput, inputW))
-        let updateGate = tanh(matmul(gateInput, updateW))
-        let forgetGate = sigmoid(matmul(gateInput, forgetW) + forgetB)
-        let outputGate = sigmoid(matmul(gateInput, outputW))
+        let inputGate = sigmoid(matmul(gateInput, inputWeight))
+        let updateGate = tanh(matmul(gateInput, updateWeight))
+        let forgetGate = sigmoid(matmul(gateInput, forgetWeight) + forgetBias)
+        let outputGate = sigmoid(matmul(gateInput, outputWeight))
 
         let newCellState = (input.hidden.cellState * forgetGate + inputGate * updateGate)
         let newHiddenState = tanh(newCellState) * outputGate
