@@ -16,6 +16,22 @@
 import TensorFlow
 #endif
 
+public extension Tensor where Scalar: TensorFlowScalar & Numeric {
+  /// Creates a 1-D tensor representing a sequence from a starting value to, but not including, an 
+  /// end value, stepping by the specified amount.
+  ///
+  /// - Parameters:
+  ///   - start: The starting value to use for the sequence. If the sequence contains any values, 
+  ///     the first one is `start`.
+  ///   - end: An end value to limit the sequence. `end` is never an element of the resulting 
+  ///     sequence.
+  ///   - stride: The amount to step by with each iteration. `stride` must be positive.
+  @inlinable @inline(__always)
+  init(rangeFrom start: Tensor<Scalar>, to end: Tensor<Scalar>, stride: Tensor<Scalar>) {
+    self = Raw.range(start: start, limit: end, delta: stride)
+  }
+}
+
 //===------------------------------------------------------------------------------------------===//
 // Random
 //===------------------------------------------------------------------------------------------===//
