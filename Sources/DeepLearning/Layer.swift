@@ -1301,7 +1301,7 @@ struct LSTMCell<Scalar: TensorFlowFloatingPoint>: Layer {
     var inputW: Tensor<Scalar>
     var updateW: Tensor<Scalar>
     var forgetW: Tensor<Scalar>
-    var forgetBias: Tensor<Scalar>
+    var forgetB: Tensor<Scalar>
     var outputW: Tensor<Scalar>
 
     init(inputSize: Int32, hiddenSize: Int32) {
@@ -1309,7 +1309,7 @@ struct LSTMCell<Scalar: TensorFlowFloatingPoint>: Layer {
         self.inputW = Tensor<Scalar>(glorotUniform: [concatenatedInputSize, hiddenSize])
         self.updateW = Tensor<Scalar>(glorotUniform: [concatenatedInputSize, hiddenSize])
         self.forgetW = Tensor<Scalar>(glorotUniform: [concatenatedInputSize, hiddenSize])
-        self.forgetBias = Tensor<Scalar>(zeros: [hiddenSize])
+        self.forgetB = Tensor<Scalar>(zeros: [hiddenSize])
         self.outputW = Tensor<Scalar>(glorotUniform: [concatenatedInputSize, hiddenSize])
     }
 
@@ -1341,7 +1341,7 @@ struct LSTMCell<Scalar: TensorFlowFloatingPoint>: Layer {
 
         let inputGate = sigmoid(matmul(gateInput, inputW))
         let updateGate = tanh(matmul(gateInput, updateW))
-        let forgetGate = sigmoid(matmul(gateInput, forgetW) + forgetBias)
+        let forgetGate = sigmoid(matmul(gateInput, forgetW) + forgetB)
         let outputGate = sigmoid(matmul(gateInput, outputW))
 
         let newCellState = (input.hidden.cellState * forgetGate + inputGate * updateGate)
