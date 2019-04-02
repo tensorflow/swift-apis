@@ -1323,8 +1323,8 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: Layer {
     }
 
     public struct State: Differentiable {
-        var cell: Tensor<Scalar>
-        var hidden: Tensor<Scalar>
+        public var cell: Tensor<Scalar>
+        public var hidden: Tensor<Scalar>
 
         @differentiable
         public init(cell: Tensor<Scalar>, hidden: Tensor<Scalar>) {
