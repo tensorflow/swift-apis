@@ -87,7 +87,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
 // @_frozen // SR-9739
 public enum Padding {
     /// The "explicit" padding scheme.
-    case explicit(paddings: [Int32])
+    case explicit(_ paddings: [Int32])
     /// The "valid" padding scheme.
     case valid
     /// The "same" padding scheme.
@@ -105,7 +105,7 @@ public extension Padding {
     }
 
     @inlinable
-    var explicitPaddings: [Int32] {
+    internal var explicitPaddings: [Int32] {
         switch self {
         case .explicit(let paddings): return paddings
         case .same: return []
