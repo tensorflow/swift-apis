@@ -104,7 +104,8 @@ public extension Tensor where Scalar: BinaryFloatingPoint {
 /// A padding scheme. Used by padding, convolution, and pooling ops.
 // @_frozen // SR-9739
 public enum Padding {
-    /// The "explicit" padding scheme.
+    /// The "explicit" padding scheme, which is defined by an array indicating the explicit padding 
+    /// sizes at the start and end of each dimension.
     case explicit([Int32])
     /// The "valid" padding scheme.
     case valid
