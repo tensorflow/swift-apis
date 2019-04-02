@@ -134,8 +134,8 @@ public extension Tensor where Scalar: TensorFlowScalar {
     /// - Returns: The gathered tensor.
     @inlinable
     // @differentiable(vjp: _vjpGathering where Scalar: TensorFlowFloatingPoint)
-    func gathering<I: TensorFlowInteger>(
-        atIndices indices: Tensor<I>, 
+    func gathering(
+        atIndices indices: Tensor<Int32>, 
         alongAxis axis: Int32 = 0
     ) -> Tensor {
         return Raw.gatherV2(params: self, indices: indices, axis: Tensor<Int32>(axis))
@@ -158,8 +158,8 @@ public extension Tensor where Scalar: TensorFlowScalar {
     /// 
     /// - Returns: The gathered tensor.
     @inlinable
-    func batchGathering<I: TensorFlowInteger>(
-        atIndices indices: Tensor<I>, 
+    func batchGathering(
+        atIndices indices: Tensor<Int32>, 
         alongAxis axis: Int32,
         numBatchDims batchDims: Int32
     ) -> Tensor {
@@ -196,16 +196,16 @@ public extension Tensor where Scalar: TensorFlowScalar {
             return result.transposed(withPermutations: resultPermutation)
         }
 
-        let castedShape = Tensor<I>(shapeTensor)
+        let castedShape = Tensor<Int32>(shapeTensor)
         var batchIndices = indices
-        var accumulated = Tensor<I>(ones: [])
+        var accumulated = Tensor<Int32>(ones: [])
         for d in (1...batchDims).reversed() {
             accumulated *= castedShape[d]
             let dValue = castedShape[d - 1]
-            let dIndices = Tensor<I>(
-                rangeFrom: Tensor<I>(zeros: []),
+            let dIndices = Tensor<Int32>(
+                rangeFrom: Tensor<Int32>(zeros: []),
                 to: dValue,
-                stride: Tensor<I>(ones: [])
+                stride: Tensor<Int32>(ones: [])
             ) * accumulated
             let dShape = Tensor<Int32>(d - 1).stacked(with: [
                 Tensor<Int32>(dValue), 
@@ -221,24 +221,24 @@ public extension Tensor where Scalar: TensorFlowScalar {
         return flatResult.reshaped(toShape: indices.shapeTensor.concatenated(with: outerShape))
     }
 
-    /// Applies the provided boolean mask to this tensor.
+    /// Gathers values from this tensor according to the provided boolean mask.
     ///
     /// For example:
     /// ```
     /// // 1-D example
     /// // tensor is [0, 1, 2, 3]
     /// // mask is [true, false, true, false]
-    /// tensor.masked(with: mask) // is [0, 2]
+    /// tensor.gathering(where: mask) // is [0, 2]
     /// 
     /// // 2-D example
     /// // tensor is [[1, 2], [3, 4], [5, 6]]
     /// // mask is [true, false, true]
-    /// tensor.masked(with: mask) // is [[1, 2], [5, 6]]
+    /// tensor.gathering(where: mask) // is [[1, 2], [5, 6]]
     /// ```
     ///
     /// In general, `0 < mask.rank = K <= tensor.rank`, and the `mask`'s shape must match the first 
     /// K dimensions of the `tensor`'s shape. We then have:
-    /// `tensor.masked(with: mask)[i, j1, ..., jd] = tensor[i1, ..., iK, j1, ..., jd]`, where 
+    /// `tensor.gathering(where: mask)[i, j1, ..., jd] = tensor[i1, ..., iK, j1, ..., jd]`, where 
     /// `[i1, ..., iK]` is the `i`th `true` entry of `mask` (row-major order).
     /// 
     /// The `axis` could be used with `mask` to indicate the axis to mask from. In that case, 
@@ -255,7 +255,7 @@ public extension Tensor where Scalar: TensorFlowScalar {
     /// - Returns: `(self.rank - K + 1)`-dimensional tensor populated by entries in this tensor 
     ///   corresponding to `true` values in `mask`.
     @inlinable
-    func masked(with mask: Tensor<Bool>, alongAxis axis: Int32 = 0) -> Tensor {
+    func gathering(where mask: Tensor<Bool>, alongAxis axis: Int32 = 0) -> Tensor {
         precondition(mask.rank != 0, "The boolean mask cannot be a scalar.")
         let posAxis = axis < 0 ? axis + rank : axis
         let leadingSize = shapeTensor[posAxis ..< posAxis + mask.rank].product().rankLifted()
