@@ -86,6 +86,8 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
 /// A padding scheme. Used by padding, convolution, and pooling ops.
 // @_frozen // SR-9739
 public enum Padding {
+    /// The "explicit" padding scheme.
+    case explicit(paddings: [Int32])
     /// The "valid" padding scheme.
     case valid
     /// The "same" padding scheme.
@@ -94,10 +96,20 @@ public enum Padding {
 
 public extension Padding {
     @inlinable
-    var raw: Raw.Padding {
+    var raw: Raw.Padding2 {
         switch self {
+        case .explicit: return .explicit
         case .same: return .same
         case .valid: return .valid
+        }
+    }
+
+    @inlinable
+    var explicitPaddings: [Int32] {
+        switch self {
+        case .explicit(let paddings): return paddings
+        case .same: return []
+        case .valid: return []
         }
     }
 }
@@ -117,7 +129,8 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
             filter: filter,
             outBackprop: self,
             strides: [strides.0, strides.1, strides.2, strides.3],
-            padding: padding.raw)
+            padding: padding.raw,
+            explicitPaddings: padding.explicitPaddings)
     }
 
     /// TensorFlow builtin conv2d gradient helper for the filter.
@@ -134,7 +147,8 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
             filterSizes: filterSizes,
             outBackprop: self,
             strides: [strides.0, strides.1, strides.2, strides.3],
-            padding: padding.raw)
+            padding: padding.raw,
+            explicitPaddings: padding.explicitPaddings)
     }
 
     @inlinable
@@ -264,7 +278,8 @@ public extension Tensor where Scalar: FloatingPoint {
             self,
             filter: filter,
             strides: [strides.0, strides.1, strides.2, strides.3],
-            padding: padding.raw)
+            padding: padding.raw,
+            explicitPaddings: padding.explicitPaddings)
     }
 
     /// Computes a 2-D max pooling, with the specified kernel sizes, strides, and
