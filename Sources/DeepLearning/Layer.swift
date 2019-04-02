@@ -1410,7 +1410,7 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: Layer {
         let newCellState = (input.state.cell * forgetGate + inputGate * updateGate)
         let newHiddenState = tanh(newCellState) * outputGate
 
-        return State(cellState: newCellState, hiddenState: newHiddenState)
+        return State(cell: newCellState, hidden: newHiddenState)
     }
     
     public func zeroState() -> State {
