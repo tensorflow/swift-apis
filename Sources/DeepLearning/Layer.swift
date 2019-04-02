@@ -1296,15 +1296,20 @@ public struct Reshape<Scalar: TensorFlowFloatingPoint>: Layer {
     }
 }
 
-struct LSTMCell<Scalar: TensorFlowFloatingPoint>: Layer {
+/// An LSTM Cell.
+public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: Layer {
+    public var inputWeight: Tensor<Scalar>
+    public var updateWeight: Tensor<Scalar>
+    public var forgetWeight: Tensor<Scalar>
+    public var forgetBias: Tensor<Scalar>
+    public var outputWeight: Tensor<Scalar>
 
-    var inputWeight: Tensor<Scalar>
-    var updateWeight: Tensor<Scalar>
-    var forgetWeight: Tensor<Scalar>
-    var forgetBias: Tensor<Scalar>
-    var outputWeight: Tensor<Scalar>
-
-    init(inputSize: Int32, hiddenSize: Int32) {
+    /// Creates a `LSTMCell` with the specified input size and hidden state size.
+    ///
+    /// - Parameters:
+    ///   - inputSize: The number of features in 2-D input tensors.
+    ///   - hiddenSize: The number of features in 2-D hidden states.
+    public init(inputSize: Int32, hiddenSize: Int32) {
         let concatenatedInputSize = inputSize + hiddenSize
         self.inputWeight = Tensor<Scalar>(glorotUniform: [concatenatedInputSize, hiddenSize])
         self.updateWeight = Tensor<Scalar>(glorotUniform: [concatenatedInputSize, hiddenSize])
@@ -1313,7 +1318,7 @@ struct LSTMCell<Scalar: TensorFlowFloatingPoint>: Layer {
         self.outputWeight = Tensor<Scalar>(glorotUniform: [concatenatedInputSize, hiddenSize])
     }
 
-    struct HiddenState: Differentiable {
+    public struct HiddenState: Differentiable {
         var cellState: Tensor<Scalar>
         var hiddenState: Tensor<Scalar>
 
@@ -1324,7 +1329,7 @@ struct LSTMCell<Scalar: TensorFlowFloatingPoint>: Layer {
         }
     }
 
-    struct Input: Differentiable {
+    public struct Input: Differentiable {
         var inputs: Tensor<Scalar>
         var hidden: HiddenState
 
@@ -1335,8 +1340,15 @@ struct LSTMCell<Scalar: TensorFlowFloatingPoint>: Layer {
         }
     }
 
+    /// Returns the output obtained from applying the layer to the given input.
+    ///
+    /// - Parameters:
+    ///   - input: The input to the layer.
+    ///   - context: The contextual information for the layer application, e.g. the current learning
+    ///     phase.
+    /// - Returns: The hidden state.
     @differentiable
-    func applied(to input: Input, in _: Context) -> HiddenState {
+    public func applied(to input: Input, in _: Context) -> HiddenState {
         let gateInput = input.inputs.concatenated(with: input.hidden.hiddenState, alongAxis: 1)
 
         let inputGate = sigmoid(matmul(gateInput, inputWeight))
@@ -1349,5 +1361,4 @@ struct LSTMCell<Scalar: TensorFlowFloatingPoint>: Layer {
 
         return HiddenState(cellState: newCellState, hiddenState: newHiddenState)
     }
-
 }
