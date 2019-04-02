@@ -1022,7 +1022,7 @@ public struct GlobalAveragePooling1D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - input: The input to the layer.
     ///   - context: The contextual information for the layer application, e.g. the current learning
     ///     phase.
-    /// - Returns: The output
+    /// - Returns: The output.
     @differentiable
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
         return input.mean(alongAxes: 1).reshaped(to: [input.shape[0], input.shape[2]])
@@ -1060,10 +1060,10 @@ public struct GlobalAveragePooling3D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - input: The input to the layer.
     ///   - context: The contextual information for the layer application, e.g. the current learning
     ///     phase.
-    /// - Returns: The output
+    /// - Returns: The output.
     @differentiable
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
-        return input.mean(alongAxes: [1,2,3]).reshaped(to: [input.shape[0], input.shape[4]])
+        return input.mean(alongAxes: [1, 2, 3]).reshaped(to: [input.shape[0], input.shape[4]])
     }
 }
 
