@@ -1296,6 +1296,53 @@ public struct Reshape<Scalar: TensorFlowFloatingPoint>: Layer {
     }
 }
 
+/// A Simple RNN Cell.
+public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: Layer {
+    public var weight: Tensor<Scalar>
+    public var bias: Tensor<Scalar>
+    
+    @noDerivative var stateShape: TensorShape
+
+    /// Creates a `SimpleRNNCell` with the specified input size and hidden state size.
+    ///
+    /// - Parameters:
+    ///   - inputSize: The number of features in 2-D input tensors.
+    ///   - hiddenSize: The number of features in 2-D hidden states.
+    public init(inputSize: Int, hiddenSize: Int) {
+        let concatenatedInputSize = Int32(inputSize + hiddenSize)
+        self.weight = Tensor(glorotUniform: [concatenatedInputSize, Int32(hiddenSize)])
+        self.bias = Tensor(zeros: [Int32(hiddenSize)])
+        self.stateShape = TensorShape([1, Int32(hiddenSize)])
+    }
+
+    public struct Input: Differentiable {
+        public var stepInput: Tensor<Scalar>
+        public var state: Tensor<Scalar>
+
+        init(stepInput: Tensor<Scalar>, state: Tensor<Scalar>) {
+            self.stepInput = stepInput
+            self.state = state
+        }
+    }
+    
+    /// Returns the output obtained from applying the layer to the given input.
+    ///
+    /// - Parameters:
+    ///   - input: The input to the layer.
+    ///   - context: The contextual information for the layer application, e.g. the current learning
+    ///     phase.
+    /// - Returns: The hidden state.
+    @differentiable
+    public func applied(to input: Input, in _: Context) -> Tensor<Scalar> {
+        let concatenatedInput =  input.stepInput.concatenated(with: input.state)
+        return matmul(concatenatedInput, weight) + bias
+    }
+    
+    public func zeroState() -> Tensor<Scalar> {
+        return Tensor(zeros: stateShape)
+    }
+}
+
 /// An LSTM Cell.
 public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: Layer {
     public var inputWeight: Tensor<Scalar>
