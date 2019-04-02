@@ -1295,3 +1295,59 @@ public struct Reshape<Scalar: TensorFlowFloatingPoint>: Layer {
         return input.reshaped(toShape: shape)
     }
 }
+
+struct LSTMCell<Scalar: TensorFlowFloatingPoint>: Layer {
+
+    var inputW: Tensor<Scalar>
+    var updateW: Tensor<Scalar>
+    var forgetW: Tensor<Scalar>
+    var forgetBias: Tensor<Scalar>
+    var outputW: Tensor<Scalar>
+
+    init(inputSize: Int32, hiddenSize: Int32) {
+        let concatenatedInputSize = inputSize + hiddenSize
+        self.inputW = Tensor<Scalar>(glorotUniform: [concatenatedInputSize, hiddenSize])
+        self.updateW = Tensor<Scalar>(glorotUniform: [concatenatedInputSize, hiddenSize])
+        self.forgetW = Tensor<Scalar>(glorotUniform: [concatenatedInputSize, hiddenSize])
+        self.forgetBias = Tensor<Scalar>(zeros: [hiddenSize])
+        self.outputW = Tensor<Scalar>(glorotUniform: [concatenatedInputSize, hiddenSize])
+    }
+
+    struct HiddenState: Differentiable {
+        var cellState: Tensor<Scalar>
+        var hiddenState: Tensor<Scalar>
+
+        @differentiable
+        init(cellState: Tensor<Scalar>, hiddenState: Tensor<Scalar>) {
+            self.cellState = cellState
+            self.hiddenState = hiddenState
+        }
+    }
+
+    struct Input: Differentiable {
+        var inputs: Tensor<Scalar>
+        var hidden: HiddenState
+
+        @differentiable
+        init(inputs: Tensor<Scalar>, hidden: HiddenState) {
+            self.inputs = inputs
+            self.hidden = hidden
+        }
+    }
+
+    @differentiable
+    func applied(to input: Input, in _: Context) -> HiddenState {
+        let gateInput = input.inputs.concatenated(with: input.hidden.hiddenState, alongAxis: 1)
+
+        let inputGate = sigmoid(matmul(gateInput, inputW))
+        let updateGate = tanh(matmul(gateInput, updateW))
+        let forgetGate = sigmoid(matmul(gateInput, forgetW) + forgetBias)
+        let outputGate = sigmoid(matmul(gateInput, outputW))
+
+        let newCellState = (input.hidden.cellState * forgetGate + inputGate * updateGate)
+        let newHiddenState = tanh(newCellState) * outputGate
+
+        return HiddenState(cellState: newCellState, hiddenState: newHiddenState)
+    }
+
+}
