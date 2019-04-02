@@ -1303,40 +1303,44 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: Layer {
     public var forgetWeight: Tensor<Scalar>
     public var forgetBias: Tensor<Scalar>
     public var outputWeight: Tensor<Scalar>
+    
+    @noDerivative var stateShape: TensorShape
 
     /// Creates a `LSTMCell` with the specified input size and hidden state size.
     ///
     /// - Parameters:
     ///   - inputSize: The number of features in 2-D input tensors.
     ///   - hiddenSize: The number of features in 2-D hidden states.
-    public init(inputSize: Int32, hiddenSize: Int32) {
-        let concatenatedInputSize = inputSize + hiddenSize
-        self.inputWeight = Tensor<Scalar>(glorotUniform: [concatenatedInputSize, hiddenSize])
-        self.updateWeight = Tensor<Scalar>(glorotUniform: [concatenatedInputSize, hiddenSize])
-        self.forgetWeight = Tensor<Scalar>(glorotUniform: [concatenatedInputSize, hiddenSize])
-        self.forgetBias = Tensor<Scalar>(zeros: [hiddenSize])
-        self.outputWeight = Tensor<Scalar>(glorotUniform: [concatenatedInputSize, hiddenSize])
+    public init(inputSize: Int, hiddenSize: Int) {
+        let concatenatedInputSize = Int32(inputSize + hiddenSize)
+        let gateWeightShape = [concatenatedInputSize, Int32(hiddenSize)]
+        self.inputWeight = Tensor(glorotUniform: gateWeightShape)
+        self.updateWeight = Tensor(glorotUniform: gateWeightShape)
+        self.forgetWeight = Tensor(glorotUniform: gateWeightShape)
+        self.forgetBias = Tensor(zeros: [Int32(hiddenSize)])
+        self.outputWeight = Tensor(glorotUniform: gateWeightShape)
+        self.stateShape = TensorShape([1, concatenatedInputSize])
     }
 
-    public struct HiddenState: Differentiable {
-        var cellState: Tensor<Scalar>
-        var hiddenState: Tensor<Scalar>
+    public struct State: Differentiable {
+        var cell: Tensor<Scalar>
+        var hidden: Tensor<Scalar>
 
         @differentiable
-        init(cellState: Tensor<Scalar>, hiddenState: Tensor<Scalar>) {
-            self.cellState = cellState
-            self.hiddenState = hiddenState
+        public init(cell: Tensor<Scalar>, hidden: Tensor<Scalar>) {
+            self.cell = cell
+            self.hidden = hidden
         }
     }
 
     public struct Input: Differentiable {
-        var inputs: Tensor<Scalar>
-        var hidden: HiddenState
-
+        public var stepInput: Tensor<Scalar>
+        public var state: State
+        
         @differentiable
-        init(inputs: Tensor<Scalar>, hidden: HiddenState) {
-            self.inputs = inputs
-            self.hidden = hidden
+        public init(stepInput: Tensor<Scalar>, state: State) {
+            self.stepInput = stepInput
+            self.state = state
         }
     }
 
@@ -1348,17 +1352,21 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: Layer {
     ///     phase.
     /// - Returns: The hidden state.
     @differentiable
-    public func applied(to input: Input, in _: Context) -> HiddenState {
-        let gateInput = input.inputs.concatenated(with: input.hidden.hiddenState, alongAxis: 1)
+    public func applied(to input: Input, in _: Context) -> State {
+        let gateInput = input.stepInput.concatenated(with: input.state.hidden, alongAxis: 1)
 
         let inputGate = sigmoid(matmul(gateInput, inputWeight))
         let updateGate = tanh(matmul(gateInput, updateWeight))
         let forgetGate = sigmoid(matmul(gateInput, forgetWeight) + forgetBias)
         let outputGate = sigmoid(matmul(gateInput, outputWeight))
 
-        let newCellState = (input.hidden.cellState * forgetGate + inputGate * updateGate)
+        let newCellState = (input.state.cell * forgetGate + inputGate * updateGate)
         let newHiddenState = tanh(newCellState) * outputGate
 
         return HiddenState(cellState: newCellState, hiddenState: newHiddenState)
+    }
+    
+    public func zeroState() -> State {
+        return State(cell: Tensor(zeros: stateShape), hidden: Tensor(zeros: stateShape))
     }
 }
