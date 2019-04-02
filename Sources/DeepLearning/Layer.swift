@@ -1360,7 +1360,7 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - hiddenSize: The number of features in 2-D hidden states.
     public init(inputSize: Int, hiddenSize: Int) {
         let concatenatedInputSize = Int32(inputSize + hiddenSize)
-        let gateWeightShape = [concatenatedInputSize, Int32(hiddenSize)]
+        let gateWeightShape = TensorShape([concatenatedInputSize, Int32(hiddenSize)])
         self.inputWeight = Tensor(glorotUniform: gateWeightShape)
         self.updateWeight = Tensor(glorotUniform: gateWeightShape)
         self.forgetWeight = Tensor(glorotUniform: gateWeightShape)
@@ -1410,7 +1410,7 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: Layer {
         let newCellState = (input.state.cell * forgetGate + inputGate * updateGate)
         let newHiddenState = tanh(newCellState) * outputGate
 
-        return HiddenState(cellState: newCellState, hiddenState: newHiddenState)
+        return State(cellState: newCellState, hiddenState: newHiddenState)
     }
     
     public func zeroState() -> State {
