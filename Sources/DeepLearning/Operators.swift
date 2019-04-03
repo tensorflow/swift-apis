@@ -112,7 +112,15 @@ public enum Padding {
 
 public extension Padding {
     @inlinable
-    var raw: Raw.Padding {
+    internal var raw: Raw.Padding {
+        switch self {
+        case .same: return .same
+        case .valid: return .valid
+        }
+    }
+
+    @inlinable
+    internal var raw2: Raw.Padding2 {
         switch self {
         case .same: return .same
         case .valid: return .valid
@@ -135,7 +143,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
             filter: filter,
             outBackprop: self,
             strides: [strides.0, strides.1, strides.2, strides.3],
-            padding: padding.raw,
+            padding: padding.raw2,
             explicitPaddings: [])
     }
 
@@ -153,7 +161,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
             filterSizes: filterSizes,
             outBackprop: self,
             strides: [strides.0, strides.1, strides.2, strides.3],
-            padding: padding.raw,
+            padding: padding.raw2,
             explicitPaddings: [])
     }
 
@@ -284,7 +292,7 @@ public extension Tensor where Scalar: FloatingPoint {
             self,
             filter: filter,
             strides: [strides.0, strides.1, strides.2, strides.3],
-            padding: padding.raw,
+            padding: padding.raw2,
             explicitPaddings: [])
     }
 
