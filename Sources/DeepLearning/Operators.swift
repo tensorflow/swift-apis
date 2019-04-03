@@ -251,7 +251,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     internal func _vjpMaxPooled(
         kernelSize: (Int32, Int32, Int32, Int32),
         strides: (Int32, Int32, Int32, Int32),
-        padding: Padding
+        padding: PaddingV1
     ) -> (Tensor, (Tensor) -> Tensor) {
         // TODO: Currently this is not higher order differentiable. Redefine in
         // closed form.
@@ -273,7 +273,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     internal func _vjpAveragePooled(
         kernelSize: (Int32, Int32, Int32, Int32),
         strides: (Int32, Int32, Int32, Int32),
-        padding: Padding
+        padding: PaddingV1
     ) -> (Tensor, (Tensor) -> Tensor) {
         // TODO: Currently this is not higher order differentiable. Redefine in
         // closed form.
