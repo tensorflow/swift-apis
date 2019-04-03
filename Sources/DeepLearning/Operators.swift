@@ -146,18 +146,8 @@ public extension PaddingV1 {
     @inlinable
     var raw: Raw.Padding {
         switch self {
-        case .explicit: return .explicit
         case .same: return .same
         case .valid: return .valid
-        }
-    }
-
-    @inlinable
-    internal var explicitPaddings: [Int32] {
-        switch self {
-        case .explicit(let paddings): return paddings
-        case .same: return []
-        case .valid: return []
         }
     }
 }
