@@ -86,7 +86,8 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
 /// A padding scheme. Used by padding, convolution, and pooling ops.
 // @_frozen // SR-9739
 public enum Padding {
-    /// The "explicit" padding scheme.
+    /// The "explicit" padding scheme, which is defined by an array indicating the explicit padding 
+    /// sizes at the start and end of each dimension.
     case explicit([Int32])
     /// The "valid" padding scheme.
     case valid
@@ -110,6 +111,25 @@ public extension Padding {
         case .explicit(let paddings): return paddings
         case .same: return []
         case .valid: return []
+        }
+    }
+}
+
+/// An older padding scheme. Used by padding, convolution, and pooling ops.
+// @_frozen // SR-9739
+public enum PaddingV1 {
+    /// The "valid" padding scheme.
+    case valid
+    /// The "same" padding scheme.
+    case same
+}
+
+public extension PaddingV1 {
+    @inlinable
+    var raw: Raw.Padding {
+        switch self {
+        case .same: return .same
+        case .valid: return .valid
         }
     }
 }
@@ -298,7 +318,7 @@ public extension Tensor where Scalar: FloatingPoint {
     func maxPooled(
         kernelSize: (Int32, Int32, Int32, Int32),
         strides: (Int32, Int32, Int32, Int32),
-        padding: Padding
+        padding: PaddingV1
     ) -> Tensor {
         return Raw.maxPoolV2(
             self,
@@ -325,7 +345,7 @@ public extension Tensor where Scalar: FloatingPoint {
     func averagePooled(
         kernelSize: (Int32, Int32, Int32, Int32),
         strides: (Int32, Int32, Int32, Int32),
-        padding: Padding
+        padding: PaddingV1
     ) -> Tensor {
         return Raw.avgPool(
             value: self,

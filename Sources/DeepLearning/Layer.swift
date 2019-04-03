@@ -836,7 +836,7 @@ public struct MaxPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The stride of the sliding window for temporal dimension.
     @noDerivative let stride: Int32
     /// The padding algorithm for pooling.
-    @noDerivative let padding: Padding
+    @noDerivative let padding: PaddingV1
 
     /// Creates a max pooling layer.
     ///
@@ -847,7 +847,7 @@ public struct MaxPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
     public init(
         poolSize: Int,
         stride: Int,
-        padding: Padding
+        padding: PaddingV1
     ) {
         self.poolSize = Int32(poolSize)
         self.stride = Int32(stride)
@@ -878,13 +878,13 @@ public struct MaxPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// Strides in non-spatial dimensions must be `1`.
     @noDerivative let strides: (Int32, Int32, Int32, Int32)
     /// The padding algorithm for pooling.
-    @noDerivative let padding: Padding
+    @noDerivative let padding: PaddingV1
 
     /// Creates a max pooling layer.
     public init(
         poolSize: (Int, Int, Int, Int),
         strides: (Int, Int, Int, Int),
-        padding: Padding
+        padding: PaddingV1
     ) {
         (self.poolSize.0, self.poolSize.1, self.poolSize.2, self.poolSize.3)
             = (Int32(poolSize.0), Int32(poolSize.1), Int32(poolSize.2), Int32(poolSize.3))
@@ -899,7 +899,7 @@ public struct MaxPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - poolSize: Vertical and horizontal factors by which to downscale.
     ///   - strides: The strides.
     ///   - padding: The padding.
-    public init(poolSize: (Int, Int), strides: (Int, Int), padding: Padding = .valid) {
+    public init(poolSize: (Int, Int), strides: (Int, Int), padding: PaddingV1 = .valid) {
         self.poolSize = (1, Int32(poolSize.0), Int32(poolSize.1), 1)
         self.strides = (1, Int32(strides.0), Int32(strides.1), 1)
         self.padding = padding
@@ -927,7 +927,7 @@ public struct AvgPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The stride of the sliding window for temporal dimension.
     @noDerivative let stride: Int32
     /// The padding algorithm for pooling.
-    @noDerivative let padding: Padding
+    @noDerivative let padding: PaddingV1
 
     /// Creates an average pooling layer.
     ///
@@ -938,7 +938,7 @@ public struct AvgPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
     public init(
         poolSize: Int,
         stride: Int,
-        padding: Padding
+        padding: PaddingV1
     ) {
         self.poolSize = Int32(poolSize)
         self.stride = Int32(stride)
@@ -969,13 +969,13 @@ public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// Strides in non-spatial dimensions must be `1`.
     @noDerivative let strides: (Int32, Int32, Int32, Int32)
     /// The padding algorithm for pooling.
-    @noDerivative let padding: Padding
+    @noDerivative let padding: PaddingV1
 
     /// Creates a average pooling layer.
     public init(
         poolSize: (Int, Int, Int, Int),
         strides: (Int, Int, Int, Int),
-        padding: Padding
+        padding: PaddingV1
     ) {
         (self.poolSize.0, self.poolSize.1, self.poolSize.2, self.poolSize.3)
             = (Int32(poolSize.0), Int32(poolSize.1), Int32(poolSize.2), Int32(poolSize.3))
@@ -990,7 +990,7 @@ public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - poolSize: Vertical and horizontal factors by which to downscale.
     ///   - strides: The strides.
     ///   - padding: The padding.
-    public init(poolSize: (Int, Int), strides: (Int, Int), padding: Padding = .valid) {
+    public init(poolSize: (Int, Int), strides: (Int, Int), padding: PaddingV1 = .valid) {
         self.poolSize = (1, Int32(poolSize.0), Int32(poolSize.1), 1)
         self.strides = (1, Int32(strides.0), Int32(strides.1), 1)
         self.padding = padding
@@ -1022,7 +1022,7 @@ public struct GlobalAveragePooling1D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - input: The input to the layer.
     ///   - context: The contextual information for the layer application, e.g. the current learning
     ///     phase.
-    /// - Returns: The output 
+    /// - Returns: The output.
     @differentiable
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
         return input.mean(alongAxes: 1).reshaped(to: [input.shape[0], input.shape[2]])
@@ -1045,6 +1045,25 @@ public struct GlobalAveragePooling2D<Scalar: TensorFlowFloatingPoint>: Layer {
     @differentiable
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
         return input.mean(alongAxes: [1, 2]).reshaped(to: [input.shape[0], input.shape[3]])
+    }
+}
+
+/// A global average pooling layer for spatial and spatio-temporal data.
+@_fixed_layout
+public struct GlobalAveragePooling3D<Scalar: TensorFlowFloatingPoint>: Layer {
+    /// Creates a global average pooling layer.
+    public init() {}
+
+    /// Returns the output obtained from applying the layer to the given input.
+    ///
+    /// - Parameters:
+    ///   - input: The input to the layer.
+    ///   - context: The contextual information for the layer application, e.g. the current learning
+    ///     phase.
+    /// - Returns: The output.
+    @differentiable
+    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
+        return input.mean(alongAxes: [1, 2, 3]).reshaped(to: [input.shape[0], input.shape[4]])
     }
 }
 
