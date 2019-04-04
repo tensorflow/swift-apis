@@ -186,7 +186,7 @@ public class SGD<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
     public let momentum: Scalar
     /// The weight decay.
     public let decay: Scalar
-    /// Use Neseterov momentum if true.
+    /// Use Nesterov momentum if true.
     public let nesterov: Bool
 
     public init(
