@@ -1009,6 +1009,63 @@ public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     }
 }
 
+/// A global max pooling layer for temporal data.
+@_fixed_layout
+public struct GlobalmaxPooling1D<Scalar: TensorFlowFloatingPoint>: Layer {
+    /// Creates a global max pooling layer.
+    public init() {}
+
+    /// Returns the output obtained from applying the layer to the given input.
+    ///
+    /// - Parameters:
+    ///   - input: The input to the layer.
+    ///   - context: The contextual information for the layer application, e.g. the current learning
+    ///     phase.
+    /// - Returns: The output.
+    @differentiable
+    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
+        return input.max(alongAxes: 1).reshaped(to: [input.shape[0], input.shape[2]])
+    }
+}
+
+/// A global max pooling layer for spatial data.
+@_fixed_layout
+public struct GlobalMaxPooling2D<Scalar: TensorFlowFloatingPoint>: Layer {
+    /// Creates a global max pooling layer.
+    public init() {}
+
+    /// Returns the output obtained from applying the layer to the given input.
+    ///
+    /// - Parameters:
+    ///   - input: The input to the layer.
+    ///   - context: The contextual information for the layer application, e.g. the current learning
+    ///     phase.
+    /// - Returns: The output.
+    @differentiable
+    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
+        return input.max(alongAxes: [1, 2]).reshaped(to: [input.shape[0], input.shape[3]])
+    }
+}
+
+/// A global max pooling layer for spatial and spatio-temporal data.
+@_fixed_layout
+public struct GlobalMaxPooling3D<Scalar: TensorFlowFloatingPoint>: Layer {
+    /// Creates a global max pooling layer.
+    public init() {}
+
+    /// Returns the output obtained from applying the layer to the given input.
+    ///
+    /// - Parameters:
+    ///   - input: The input to the layer.
+    ///   - context: The contextual information for the layer application, e.g. the current learning
+    ///     phase.
+    /// - Returns: The output.
+    @differentiable
+    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
+        return input.max(alongAxes: [1, 2, 3]).reshaped(to: [input.shape[0], input.shape[4]])
+    }
+}
+
 
 /// A global average pooling layer for temporal data.
 @_fixed_layout
