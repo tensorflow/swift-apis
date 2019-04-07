@@ -1351,7 +1351,7 @@ public extension RNNCell {
     /// - Returns: The output.
     @differentiable
     func applied(to timeStepInput: StepInput, previous: State, in context: Context) -> State {
-        return applied(to: Input(timeStepInput: timeStepInput, previousState: previousState),
+        return applied(to: Input(timeStepInput: timeStepInput, previousState: previous),
                        in: context)
     }
 }
