@@ -1323,7 +1323,7 @@ public struct RNNInput<TimeStepInput: Differentiable, State: Differentiable>: Di
     public var previousState: State
 
     @differentiable
-    public init(timeStepInput: StepInput, previousState: State) {
+    public init(timeStepInput: TimeStepInput, previousState: State) {
         self.timeStepInput = timeStepInput
         self.previousState = previousState
     }
