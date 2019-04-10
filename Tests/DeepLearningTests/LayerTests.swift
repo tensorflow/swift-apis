@@ -45,12 +45,15 @@ final class LayerTests: XCTestCase {
     func testGlobalAvgPool1D() {
         let layer = GlobalAveragePooling1D<Float>()
         let input = Tensor<Float>([[0, 1, 2, 3, 4], [10, 11, 12, 13, 14]])
-        let output = layer.inferring(from : input)
-        let expected = Tensor<Float>([2, 10])
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>([[2, 10]])
         XCTAssertEqual(round(output, expected))
     }
 
     static var allTests = [
-        ("testConv1D", testConv1D), ("testMaxPool1D", testMaxPool1D), ("testAvgPool1D", testAvgPool1D), ("testGlobalAvgPool1D", testGlobalAvgPool1D)
+        ("testConv1D", testConv1D),
+        ("testMaxPool1D", testMaxPool1D),
+        ("testAvgPool1D", testAvgPool1D),
+        ("testGlobalAvgPool1D", testGlobalAvgPool1D)
     ]
 }
