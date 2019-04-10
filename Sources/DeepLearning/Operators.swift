@@ -44,7 +44,6 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
                                     epsilon: epsilon)
         return (value, { v in
             let mean = self.mean(alongAxes: axis)
-            let max = self.max(alongAxes: axis)
             let squaredDiff: Tensor = Raw.squaredDifference(self, mean)
             let variance = squaredDiff.mean(alongAxes: axis)
 
