@@ -46,8 +46,8 @@ final class LayerTests: XCTestCase {
         let layer = GlobalAveragePooling1D<Float>()
         let input = Tensor<Float>([[0, 1, 2, 3, 4], [10, 11, 12, 13, 14]])
         let output = layer.inferring(from: input)
-        let expected = Tensor<Float>([[2, 10]])
-        XCTAssertEqual(round(output, expected))
+        let expected = Tensor<Float>([2, 12])
+        XCTAssertEqual(round(output), expected)
     }
 
     static var allTests = [
