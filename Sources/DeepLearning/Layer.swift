@@ -760,7 +760,7 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     private func applyingTraining(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         let positiveAxis = (input.rank + axis) % input.rank
         var normalizedAxes = Array(0..<input.rank)
-        normalizedAxes.delete(at: positiveAxis)
+        normalizedAxes.remove(at: positiveAxis)
         let mean = input.mean(alongAxes: normalizedAxes)
         let variance = input.variance(alongAxes: normalizedAxes)
         runningMean.value += (mean - runningMean.value) * (1 - momentum)
