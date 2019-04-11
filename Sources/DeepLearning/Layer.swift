@@ -713,7 +713,7 @@ public extension TransposedConv2D {
 /// Covariate Shift](https://arxiv.org/abs/1502.03167).
 @_fixed_layout
 public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
-    /// The batch dimension.
+    /// The feature dimension.
     @noDerivative public let axis: Int32
     /// The momentum for the running mean and running variance.
     @noDerivative public let momentum: Tensor<Scalar>
@@ -731,7 +731,7 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     /// Creates a batch normalization layer.
     ///
     /// - Parameters:
-    ///   - axis: The axis that should be normalized (typically the features axis).
+    ///   - axis: The axis that should not be normalized (typically the feature axis).
     ///   - momentum: The momentum for the moving average.
     ///   - offset: The offset to be added to the normalized tensor.
     ///   - scale: The scale to multiply the normalized tensor by.
@@ -759,8 +759,10 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     @differentiable
     private func applyingTraining(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         let positiveAxis = (input.rank + axis) % input.rank
-        let mean = input.mean(alongAxes: [0, positiveAxis])
-        let variance = input.variance(alongAxes: [0, positiveAxis])
+        var normalizedAxes = Array(0..<input.rank)
+        normalizedAxes.remove(at: Int(positiveAxis))
+        let mean = input.mean(alongAxes: normalizedAxes)
+        let variance = input.variance(alongAxes: normalizedAxes)
         runningMean.value += (mean - runningMean.value) * (1 - momentum)
         runningVariance.value += (
             variance - runningVariance.value) * (1 - momentum)
