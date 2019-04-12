@@ -16,7 +16,25 @@
 import TensorFlow
 #endif
 
-public extension Tensor where Scalar: TensorFlowScalar & Numeric {
+public extension Tensor where Scalar : Numeric {
+  /// Creates a tensor with all scalars set to zero that has the same shape and type as the provided 
+  /// tensor.
+  ///
+  /// - Parameter other: Tensor whose shape and data type to use.
+  @inlinable @inline(__always)
+  init(zerosLike other: Tensor) {
+    self = Raw.zerosLike(other)
+  }
+
+  /// Creates a tensor with all scalars set to one that has the same shape and type as the provided 
+  /// tensor.
+  ///
+  /// - Parameter other: Tensor whose shape and data type to use.
+  @inlinable @inline(__always)
+  init(onesLike other: Tensor) {
+    self = Raw.onesLike(other)
+  }
+
   /// Creates a 1-D tensor representing a sequence from a starting value to, but not including, an 
   /// end value, stepping by the specified amount.
   ///
@@ -31,10 +49,6 @@ public extension Tensor where Scalar: TensorFlowScalar & Numeric {
     self = Raw.range(start: start, limit: end, delta: stride)
   }
 }
-
-//===------------------------------------------------------------------------------------------===//
-// Random
-//===------------------------------------------------------------------------------------------===//
 
 public extension Tensor where Scalar == Int32 {
     /// Creates a tensor with the specified shape, randomly sampling scalar values
