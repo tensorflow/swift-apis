@@ -247,9 +247,9 @@ public extension Dense {
         activation: @escaping Activation = identity,
         generator: inout G
     ) {
-        self.init(weight: Tensor(glorotUniform: [Int32(inputSize), Int32(outputSize)],
+        self.init(weight: Tensor(glorotUniform: [inputSize, outputSize],
                                  generator: &generator),
-                  bias: Tensor(zeros: [Int32(outputSize)]),
+                  bias: Tensor(zeros: [outputSize]),
                   activation: activation)
     }
 
@@ -277,9 +277,9 @@ public extension Dense {
         seed: (Int64, Int64) = (Int64.random(in: Int64.min..<Int64.max),
                                 Int64.random(in: Int64.min..<Int64.max))
     ) {
-        self.init(weight: Tensor(glorotUniform: [Int32(inputSize), Int32(outputSize)],
+        self.init(weight: Tensor(glorotUniform: [inputSize, outputSize],
                                  seed: seed),
-                  bias: Tensor(zeros: [Int32(outputSize)]),
+                  bias: Tensor(zeros: [outputSize]),
                   activation: activation)
     }
 }
@@ -299,7 +299,7 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The element-wise activation function.
     @noDerivative public let activation: Activation
     /// The stride of the sliding window for temporal dimension.
-    @noDerivative public let stride: Int32
+    @noDerivative public let stride: Int
     /// The padding algorithm for convolution.
     @noDerivative public let padding: Padding
 
@@ -322,7 +322,7 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
         self.filter = filter
         self.bias = bias
         self.activation = activation
-        self.stride = Int32(stride)
+        self.stride = stride
         self.padding = padding
     }
 
@@ -362,10 +362,10 @@ public extension Conv1D where Scalar.RawSignificand: FixedWidthInteger {
         generator: inout G
     ) {
         let filterTensorShape = TensorShape([
-            Int32(filterShape.0), Int32(filterShape.1), Int32(filterShape.2)])
+            filterShape.0, filterShape.1, filterShape.2])
         self.init(
             filter: Tensor(glorotUniform: filterTensorShape),
-            bias: Tensor(zeros: TensorShape([Int32(filterShape.2)])),
+            bias: Tensor(zeros: TensorShape([filterShape.2])),
             activation: activation,
             stride: stride,
             padding: padding)
@@ -393,12 +393,12 @@ public extension Conv1D {
                                 Int64.random(in: Int64.min..<Int64.max))
     ) {
         let filterTensorShape = TensorShape([
-            Int32(filterShape.0), Int32(filterShape.1), Int32(filterShape.2)])
+            filterShape.0, filterShape.1, filterShape.2])
         self.init(
             filter: Tensor(glorotUniform: filterTensorShape, seed: seed),
-            bias: Tensor(zeros: TensorShape([Int32(filterShape.2)])),
+            bias: Tensor(zeros: TensorShape([filterShape.2])),
             activation: activation,
-            stride: Int32(stride),
+            stride: stride,
             padding: padding)
     }
 }
@@ -418,7 +418,7 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The element-wise activation function.
     @noDerivative public let activation: Activation
     /// The strides of the sliding window for spatial dimensions.
-    @noDerivative public let strides: (Int32, Int32)
+    @noDerivative public let strides: (Int, Int)
     /// The padding algorithm for convolution.
     @noDerivative public let padding: Padding
 
@@ -441,7 +441,7 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
         self.filter = filter
         self.bias = bias
         self.activation = activation
-        (self.strides.0, self.strides.1) = (Int32(strides.0), Int32(strides.1))
+        self.strides = strides
         self.padding = padding
     }
 
@@ -480,11 +480,10 @@ public extension Conv2D {
         generator: inout G
     ) {
         let filterTensorShape = TensorShape([
-            Int32(filterShape.0), Int32(filterShape.1),
-            Int32(filterShape.2), Int32(filterShape.3)])
+            filterShape.0, filterShape.1, filterShape.2, filterShape.3])
         self.init(
             filter: Tensor(glorotUniform: filterTensorShape, generator: &generator),
-            bias: Tensor(zeros: TensorShape([Int32(filterShape.3)])),
+            bias: Tensor(zeros: TensorShape([filterShape.3])),
             activation: activation,
             strides: strides,
             padding: padding)
@@ -511,13 +510,12 @@ public extension Conv2D {
                                 Int64.random(in: Int64.min..<Int64.max))
     ) {
         let filterTensorShape = TensorShape([
-            Int32(filterShape.0), Int32(filterShape.1),
-            Int32(filterShape.2), Int32(filterShape.3)])
+            filterShape.0, filterShape.1, filterShape.2, filterShape.3])
         self.init(
             filter: Tensor(glorotUniform: filterTensorShape, seed: seed),
-            bias: Tensor(zeros: TensorShape([Int32(filterShape.3)])),
+            bias: Tensor(zeros: TensorShape([filterShape.3])),
             activation: activation,
-            strides: (Int32(strides.0), Int32(strides.1)),
+            strides: strides,
             padding: padding)
     }
 }
@@ -537,10 +535,10 @@ public struct TransposedConv2D: Layer {
     /// The element-wise activation function.
     @noDerivative public let activation: Activation
     /// The strides of the sliding window for spatial dimensions.
-    @noDerivative public let strides: (Int32, Int32)
+    @noDerivative public let strides: (Int, Int)
     /// The padding algorithm for convolution.
     @noDerivative public let padding: Padding
-    @noDerivative public let paddingIndex: Int32
+    @noDerivative public let paddingIndex: Int
 
     /// Creates a `TransposedConv2D` layer with the specified filter, bias,
     /// activation function, strides, and padding.
@@ -561,7 +559,7 @@ public struct TransposedConv2D: Layer {
         self.filter = filter
         self.bias = bias
         self.activation = activation
-        (self.strides.0, self.strides.1) = (Int32(strides.0), Int32(strides.1))
+        self.strides = strides
         self.padding = padding
         self.paddingIndex = padding == .same ? 0 : 1
     }
@@ -574,13 +572,15 @@ public struct TransposedConv2D: Layer {
     @differentiable
     public func applied(to input: Tensor<Float>) -> Tensor<Float> {
         let batchSize = input.shape[0]
-        let w = (input.shape[1] - (1 * paddingIndex)) * strides.0 + (filter.shape[0] * paddingIndex)
-        let h = (input.shape[2] - (1 * paddingIndex)) * strides.1 + (filter.shape[1] * paddingIndex)
+        let w = (input.shape[1] - (1 * paddingIndex)) *
+          strides.0 + (filter.shape[0] * paddingIndex)
+        let h = (input.shape[2] - (1 * paddingIndex)) *
+          strides.1 + (filter.shape[1] * paddingIndex)
         let c = filter.shape[2]
-        let newShape = Tensor<Int32>([batchSize, w, h, c])
+        let newShape = Tensor<Int32>([Int32(batchSize), Int32(w), Int32(h), Int32(c)])
         return activation(input.conv2DBackpropInput(shape: newShape, filter: filter,
-                                                         strides: (1, strides.0, strides.1, 1),
-                                                         padding: padding) + bias)
+                                                    strides: (1, strides.0, strides.1, 1),
+                                                    padding: padding) + bias)
     }
 }
 
@@ -606,11 +606,10 @@ public extension TransposedConv2D {
         generator: inout G
     ) {
         let filterTensorShape = TensorShape([
-            Int32(filterShape.0), Int32(filterShape.1),
-            Int32(filterShape.2), Int32(filterShape.3)])
+            filterShape.0, filterShape.1, filterShape.2, filterShape.3])
         self.init(
             filter: Tensor(glorotUniform: filterTensorShape, generator: &generator),
-            bias: Tensor(zeros: TensorShape([Int32(filterShape.3)])),
+            bias: Tensor(zeros: TensorShape([filterShape.3])),
             activation: activation,
             strides: strides,
             padding: padding)
@@ -637,11 +636,10 @@ public extension TransposedConv2D {
                                 Int64.random(in: Int64.min..<Int64.max))
     ) {
         let filterTensorShape = TensorShape([
-            Int32(filterShape.0), Int32(filterShape.1),
-            Int32(filterShape.2), Int32(filterShape.3)])
+            filterShape.0, filterShape.1, filterShape.2, filterShape.3])
         self.init(
             filter: Tensor(glorotUniform: filterTensorShape, seed: seed),
-            bias: Tensor(zeros: TensorShape([Int32(filterShape.3)])),
+            bias: Tensor(zeros: TensorShape([filterShape.3])),
             activation: activation,
             strides: strides,
             padding: padding)
@@ -659,7 +657,7 @@ public extension TransposedConv2D {
 @_fixed_layout
 public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The feature dimension.
-    @noDerivative public let axis: Int32
+    @noDerivative public let axis: Int
     /// The momentum for the running mean and running variance.
     @noDerivative public let momentum: Tensor<Scalar>
     /// The offset value, also known as beta.
@@ -692,7 +690,7 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
         runningMean: Tensor<Scalar>,
         runningVariance: Tensor<Scalar>
     ) {
-        self.axis = Int32(axis)
+        self.axis = axis
         self.momentum = momentum
         self.offset = offset
         self.scale = scale
@@ -705,7 +703,7 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     private func applyingTraining(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         let positiveAxis = (input.rank + axis) % input.rank
         var normalizedAxes = Array(0..<input.rank)
-        normalizedAxes.remove(at: Int(positiveAxis))
+        normalizedAxes.remove(at: positiveAxis)
         let mean = input.mean(alongAxes: normalizedAxes)
         let variance = input.variance(alongAxes: normalizedAxes)
         runningMean.value += (mean - runningMean.value) * (1 - momentum)
@@ -763,10 +761,10 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
                 axis: Int = -1,
                 momentum: Tensor<Scalar> = Tensor(0.99),
                 epsilon: Tensor<Scalar> = Tensor(0.001)) {
-        self.axis = Int32(axis)
+        self.axis = axis
         self.momentum = momentum
-        self.scale = Tensor<Scalar>(ones: [Int32(featureCount)])
-        self.offset = Tensor<Scalar>(zeros: [Int32(featureCount)])
+        self.scale = Tensor<Scalar>(ones: [featureCount])
+        self.offset = Tensor<Scalar>(zeros: [featureCount])
         self.epsilon = epsilon
         self.runningMean = Parameter(Tensor(0))
         self.runningVariance = Parameter(Tensor(1))
@@ -777,9 +775,9 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
 @_fixed_layout
 public struct MaxPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The size of the sliding reduction window for pooling.
-    @noDerivative let poolSize: Int32
+    @noDerivative let poolSize: Int
     /// The stride of the sliding window for temporal dimension.
-    @noDerivative let stride: Int32
+    @noDerivative let stride: Int
     /// The padding algorithm for pooling.
     @noDerivative let padding: Padding
 
@@ -794,8 +792,8 @@ public struct MaxPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
         stride: Int,
         padding: Padding
     ) {
-        self.poolSize = Int32(poolSize)
-        self.stride = Int32(stride)
+        self.poolSize = poolSize
+        self.stride = stride
         self.padding = padding
     }
 
@@ -816,10 +814,10 @@ public struct MaxPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
 @_fixed_layout
 public struct MaxPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The size of the sliding reduction window for pooling.
-    @noDerivative let poolSize: (Int32, Int32, Int32, Int32)
+    @noDerivative let poolSize: (Int, Int, Int, Int)
     /// The strides of the sliding window for each dimension of a 4-D input.
     /// Strides in non-spatial dimensions must be `1`.
-    @noDerivative let strides: (Int32, Int32, Int32, Int32)
+    @noDerivative let strides: (Int, Int, Int, Int)
     /// The padding algorithm for pooling.
     @noDerivative let padding: Padding
 
@@ -829,10 +827,8 @@ public struct MaxPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
         strides: (Int, Int, Int, Int),
         padding: Padding
     ) {
-        (self.poolSize.0, self.poolSize.1, self.poolSize.2, self.poolSize.3)
-            = (Int32(poolSize.0), Int32(poolSize.1), Int32(poolSize.2), Int32(poolSize.3))
-        (self.strides.0, self.strides.1, self.strides.2, self.strides.3)
-            = (Int32(strides.0), Int32(strides.1), Int32(strides.2), Int32(strides.3))
+        self.poolSize = poolSize
+        self.strides = strides
         self.padding = padding
     }
 
@@ -843,8 +839,8 @@ public struct MaxPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - strides: The strides.
     ///   - padding: The padding.
     public init(poolSize: (Int, Int), strides: (Int, Int), padding: Padding = .valid) {
-        self.poolSize = (1, Int32(poolSize.0), Int32(poolSize.1), 1)
-        self.strides = (1, Int32(strides.0), Int32(strides.1), 1)
+        self.poolSize = (1, poolSize.0, poolSize.1, 1)
+        self.strides = (1, strides.0, strides.1, 1)
         self.padding = padding
     }
 
@@ -864,9 +860,9 @@ public struct MaxPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
 @_fixed_layout
 public struct AvgPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The size of the sliding reduction window for pooling.
-    @noDerivative let poolSize: Int32
+    @noDerivative let poolSize: Int
     /// The stride of the sliding window for temporal dimension.
-    @noDerivative let stride: Int32
+    @noDerivative let stride: Int
     /// The padding algorithm for pooling.
     @noDerivative let padding: Padding
 
@@ -881,8 +877,8 @@ public struct AvgPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
         stride: Int,
         padding: Padding
     ) {
-        self.poolSize = Int32(poolSize)
-        self.stride = Int32(stride)
+        self.poolSize = poolSize
+        self.stride = stride
         self.padding = padding
     }
 
@@ -903,10 +899,10 @@ public struct AvgPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
 @_fixed_layout
 public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The size of the sliding reduction window for pooling.
-    @noDerivative let poolSize: (Int32, Int32, Int32, Int32)
+    @noDerivative let poolSize: (Int, Int, Int, Int)
     /// The strides of the sliding window for each dimension of a 4-D input.
     /// Strides in non-spatial dimensions must be `1`.
-    @noDerivative let strides: (Int32, Int32, Int32, Int32)
+    @noDerivative let strides: (Int, Int, Int, Int)
     /// The padding algorithm for pooling.
     @noDerivative let padding: Padding
 
@@ -916,10 +912,8 @@ public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
         strides: (Int, Int, Int, Int),
         padding: Padding
     ) {
-        (self.poolSize.0, self.poolSize.1, self.poolSize.2, self.poolSize.3)
-            = (Int32(poolSize.0), Int32(poolSize.1), Int32(poolSize.2), Int32(poolSize.3))
-        (self.strides.0, self.strides.1, self.strides.2, self.strides.3)
-            = (Int32(strides.0), Int32(strides.1), Int32(strides.2), Int32(strides.3))
+        self.poolSize = poolSize
+        self.strides = strides
         self.padding = padding
     }
 
@@ -930,8 +924,8 @@ public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - strides: The strides.
     ///   - padding: The padding.
     public init(poolSize: (Int, Int), strides: (Int, Int), padding: Padding = .valid) {
-        self.poolSize = (1, Int32(poolSize.0), Int32(poolSize.1), 1)
-        self.strides = (1, Int32(strides.0), Int32(strides.1), 1)
+        self.poolSize = (1, poolSize.0, poolSize.1, 1)
+        self.strides = (1, strides.0, strides.1, 1)
         self.padding = padding
     }
 
@@ -1008,7 +1002,7 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The scale value, also known as gamma.
     public var scale: Tensor<Scalar>
     /// The axis.
-    @noDerivative public let axis: Int32
+    @noDerivative public let axis: Int
     /// The variance epsilon value.
     @noDerivative public let epsilon: Tensor<Scalar>
 
@@ -1021,7 +1015,7 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     ) {
         self.offset = offset
         self.scale = scale
-        self.axis = Int32(axis)
+        self.axis = axis
         self.epsilon = epsilon
     }
 
@@ -1035,8 +1029,8 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
                 axis: Int,
                 epsilon: Tensor<Scalar> = Tensor(0.001)) {
         self.init(
-            offset: Tensor(zeros: [Int32(featureCount)]),
-            scale: Tensor(ones: [Int32(featureCount)]),
+            offset: Tensor(zeros: [featureCount]),
+            scale: Tensor(ones: [featureCount]),
             axis: axis,
             epsilon: epsilon
         )
@@ -1127,12 +1121,12 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: Layer {
 /// An upsampling layer for 1-D inputs.
 @_fixed_layout
 public struct UpSampling1D<Scalar: TensorFlowFloatingPoint>: Layer {
-    @noDerivative public let size: Int32
+    @noDerivative public let size: Int
 
     /// Creates an upsampling layer.
     ///
     /// - Parameter size: The upsampling factor for timesteps.
-    public init(size: Int32) {
+    public init(size: Int) {
        self.size = size
     }
 
@@ -1154,12 +1148,12 @@ public struct UpSampling1D<Scalar: TensorFlowFloatingPoint>: Layer {
 /// An upsampling layer for 2-D inputs.
 @_fixed_layout
 public struct UpSampling2D<Scalar: TensorFlowFloatingPoint>: Layer {
-    @noDerivative public let size: Int32
+    @noDerivative public let size: Int
 
     /// Creates an upsampling layer.
     ///
     /// - Parameter size: The upsampling factor for rows and columns.
-    public init(size: Int32) {
+    public init(size: Int) {
        self.size = size
     }
 
@@ -1220,7 +1214,7 @@ public struct Reshape<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameter shape: The target shape.
     public init(_ shape: TensorShape) {
-        self.init(shape: Tensor(shape.dimensions))
+      self.init(shape: Tensor(shape.dimensions.map(Int32.init)))
     }
 
     /// Returns the output obtained from applying the layer to the given input.
