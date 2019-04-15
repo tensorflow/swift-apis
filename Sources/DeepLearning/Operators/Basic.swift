@@ -139,10 +139,10 @@ public extension Tensor {
                 to: dValue,
                 stride: Tensor<Int32>(ones: [])
             ) * accumulated
-            let dShape = Tensor<Int32>(stacking: [
-                Tensor<Int32>(d - 1),
-                Tensor<Int32>(dValue), 
-                Tensor<Int32>(indices.rank - 1)])
+            let dShape = Tensor<Int32>(concatenating: [
+                Tensor<Int32>([Int32](repeating: 1, count: Int(d - 1))),
+                Tensor<Int32>([dValue]),
+                Tensor<Int32>([Int32](repeating: 1, count: Int(indices.rank - 1)))])
             batchIndices += dIndices.reshaped(toShape: dShape)
         }
 
