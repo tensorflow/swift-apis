@@ -46,8 +46,8 @@ public extension Tensor where Scalar: TensorFlowScalar {
     /// - Returns: The stacked tensor.
     @inlinable
     // @differentiable(vjp: _vjpStacked where Scalar: TensorFlowFloatingPoint)
-    func stacked(with tensors: [Tensor], alongAxis axis: Int64 = 0) -> Tensor {
-        return Raw.pack([self] + tensors, axis: axis)
+    func stacked(with tensors: [Tensor], alongAxis axis: Int32 = 0) -> Tensor {
+        return Raw.pack([self] + tensors, axis: Int64(axis))
     }
 
     /// Concatenates the current tensor with `tensors` along the `axis` dimension.
@@ -257,13 +257,13 @@ public extension Tensor where Scalar: TensorFlowScalar {
     @inlinable
     func gathering(where mask: Tensor<Bool>, alongAxis axis: Int32 = 0) -> Tensor {
         precondition(mask.rank != 0, "The boolean mask cannot be a scalar.")
-        let posAxis = axis < 0 ? axis + rank : axis
-        let leadingSize = shapeTensor[posAxis ..< posAxis + mask.rank].product().rankLifted()
+        let posAxis = Int(axis < 0 ? axis + rank : axis)
+        let leadingSize = shapeTensor[posAxis ..< posAxis + Int(mask.rank)].product().rankLifted()
         let reshapedTensor = reshaped(
-            toShape: shapeTensor[..<Int(posAxis)].concatenated(
-                with: [leadingSize, shapeTensor[Int(posAxis + mask.rank)...]]))
-        let indices = mask.flattened().whereTrue().squeezingShape(at: 1)
-        return reshapedTensor.gathering(atIndices: indices, alongAxis: posAxis)
+            toShape: shapeTensor[..<posAxis].concatenated(
+                with: [leadingSize, shapeTensor[(posAxis + Int(mask.rank))...]]))
+        let indices = Tensor<Int32>(mask.flattened().nonZeroIndices().squeezingShape(at: 1))
+        return reshapedTensor.gathering(atIndices: indices, alongAxis: Int32(posAxis))
     }
 }
 

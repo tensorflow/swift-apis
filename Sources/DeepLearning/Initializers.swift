@@ -48,6 +48,15 @@ public extension Tensor where Scalar : Numeric {
   init(rangeFrom start: Tensor<Scalar>, to end: Tensor<Scalar>, stride: Tensor<Scalar>) {
     self = Raw.range(start: start, limit: end, delta: stride)
   }
+
+  /// Returns a stacked tensor, constructed by stacking the provided tensors along 
+  /// the specified axis.
+  /// - Precondition: The tensors must have the same dimensions,.
+  /// - Precondition: The axis must be in the range `-rank..<rank`.
+  @inlinable @inline(__always)
+  init(stacking tensors: [Tensor<Scalar>], alongAxis axis: Int32 = 0) {
+    self = Raw.pack(tensors, axis: Int64(axis))
+  }
 }
 
 public extension Tensor where Scalar == Int32 {
