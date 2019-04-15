@@ -17,46 +17,59 @@ import TensorFlow
 #endif
 
 public extension Tensor where Scalar : Numeric {
-  /// Creates a tensor with all scalars set to zero that has the same shape and type as the provided 
-  /// tensor.
-  ///
-  /// - Parameter other: Tensor whose shape and data type to use.
-  @inlinable @inline(__always)
-  init(zerosLike other: Tensor) {
-    self = Raw.zerosLike(other)
-  }
+    /// Creates a tensor with all scalars set to zero that has the same shape and type as the provided 
+    /// tensor.
+    ///
+    /// - Parameter other: Tensor whose shape and data type to use.
+    @inlinable @inline(__always)
+    init(zerosLike other: Tensor) {
+        self = Raw.zerosLike(other)
+    }
 
-  /// Creates a tensor with all scalars set to one that has the same shape and type as the provided 
-  /// tensor.
-  ///
-  /// - Parameter other: Tensor whose shape and data type to use.
-  @inlinable @inline(__always)
-  init(onesLike other: Tensor) {
-    self = Raw.onesLike(other)
-  }
+    /// Creates a tensor with all scalars set to one that has the same shape and type as the provided 
+    /// tensor.
+    ///
+    /// - Parameter other: Tensor whose shape and data type to use.
+    @inlinable @inline(__always)
+    init(onesLike other: Tensor) {
+        self = Raw.onesLike(other)
+    }
 
-  /// Creates a 1-D tensor representing a sequence from a starting value to, but not including, an 
-  /// end value, stepping by the specified amount.
-  ///
-  /// - Parameters:
-  ///   - start: The starting value to use for the sequence. If the sequence contains any values, 
-  ///     the first one is `start`.
-  ///   - end: An end value to limit the sequence. `end` is never an element of the resulting 
-  ///     sequence.
-  ///   - stride: The amount to step by with each iteration. `stride` must be positive.
-  @inlinable @inline(__always)
-  init(rangeFrom start: Tensor<Scalar>, to end: Tensor<Scalar>, stride: Tensor<Scalar>) {
-    self = Raw.range(start: start, limit: end, delta: stride)
-  }
+    /// Creates a 1-D tensor representing a sequence from a starting value to, but not including, an 
+    /// end value, stepping by the specified amount.
+    ///
+    /// - Parameters:
+    ///   - start: The starting value to use for the sequence. If the sequence contains any values, 
+    ///     the first one is `start`.
+    ///   - end: An end value to limit the sequence. `end` is never an element of the resulting 
+    ///     sequence.
+    ///   - stride: The amount to step by with each iteration. `stride` must be positive.
+    @inlinable @inline(__always)
+    init(rangeFrom start: Tensor<Scalar>, to end: Tensor<Scalar>, stride: Tensor<Scalar>) {
+        self = Raw.range(start: start, limit: end, delta: stride)
+    }
 
-  /// Returns a stacked tensor, constructed by stacking the provided tensors along 
-  /// the specified axis.
-  /// - Precondition: The tensors must have the same dimensions,.
-  /// - Precondition: The axis must be in the range `-rank..<rank`.
-  @inlinable @inline(__always)
-  init(stacking tensors: [Tensor<Scalar>], alongAxis axis: Int32 = 0) {
-    self = Raw.pack(tensors, axis: Int64(axis))
-  }
+    /// Returns a stacked tensor, constructed by stacking the provided tensors along 
+    /// the specified axis.
+    /// - Precondition: The tensors must have the same dimensions,.
+    /// - Precondition: The axis must be in the range `-rank..<rank`.
+    @inlinable @inline(__always)
+    init(stacking tensors: [Tensor<Scalar>], alongAxis axis: Int32 = 0) {
+        self = Raw.pack(tensors, axis: Int64(axis))
+    }
+
+    /// Returns a tiled tensor, constructed by tiling the provided tensor.
+    ///
+    /// This constructor creates a new tensor by replicating `tensor` `multiples` times. The
+    /// constructed tensor's `i`'th dimension has `tensor.shape[i] * multiples[i]` elements, and the
+    /// values of `tensor` are replicated `multiples[i]` times along the `i`'th dimension. For 
+    /// example, tiling `[a b c d]` by `[2]` produces `[a b c d a b c d]`.
+    /// 
+    /// - Precondition: The shape of `multiples` must be `[tensor.rank]`.
+    @inlinable @inline(__always)
+    init(tiling tensor: Tensor<Scalar>, multiples: Tensor<Int32>) {
+        self = Raw.tile(tensor, multiples: multiples)
+    }
 }
 
 public extension Tensor where Scalar == Int32 {
