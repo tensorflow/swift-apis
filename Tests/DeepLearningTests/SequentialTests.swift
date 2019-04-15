@@ -24,23 +24,24 @@ final class SequentialTests: XCTestCase {
                                       seed: (0xfeffeffe, 0xfffe))
 
             @differentiable
-            func applied(to input: Tensor<Float>, in context: Context) -> Tensor<Float> {
-              return input.sequenced(in: context, through: dense1, dense2)
+            func applied(to input: Tensor<Float>) -> Tensor<Float> {
+              return input.sequenced(through: dense1, dense2)
             }
         }
         var model = Model()
         let optimizer = SGD(for: model, learningRate: 0.02, scalarType: Float.self)
         let x: Tensor<Float> = [[0, 0], [0, 1], [1, 0], [1, 1]]
         let y: Tensor<Float> = [0, 1, 1, 0]
-        let context = Context(learningPhase: .training)
+        Context.local.learningPhase = .training
         for _ in 0..<1000 {
             let 𝛁model = model.gradient { model -> Tensor<Float> in
-                let ŷ = model.applied(to: x, in: context)
+                let ŷ = model.applied(to: x)
                 return meanSquaredError(predicted: ŷ, expected: y)
             }
             optimizer.update(&model.allDifferentiableVariables, along: 𝛁model)
         }
-        print(model.inferring(from: [[0, 0], [0, 1], [1, 0], [1, 1]]))
+        XCTAssertEqual(model.inferring(from: [[0, 0], [0, 1], [1, 0], [1, 1]]),
+                       [[  0.491493], [ 0.5063815], [0.49968663], [0.50133944]])
     }
 
     static var allTests = [
