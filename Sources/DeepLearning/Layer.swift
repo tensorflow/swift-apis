@@ -16,38 +16,12 @@
 @_exported import TensorFlow
 #endif
 
-/// A value that indicates either a training phase or an inference phase for a layer.
-public enum LearningPhase {
-    case training
-    case inference
-}
-
-/// A context that stores contextual information used for the application of layers.
-open class Context {
-    /// The current learning phase.
-    public var learningPhase: LearningPhase
-
-    /// Creates a context.
-    ///
-    /// - Parameter learningPhase: The current learning phase.
-    public required init(learningPhase: LearningPhase) {
-        self.learningPhase = learningPhase
-    }
-
-    /// Creates a context by copying all information from an existing context.
-    ///
-    /// - Parameter context: The existing context to copy from.
-    public required init(_ other: Context) {
-        self.learningPhase = other.learningPhase
-    }
-}
-
 /// A neural network layer.
 ///
 /// Types that conform to `Layer` represent functions that map inputs to outputs. They may have an
 /// internal state represented by parameters, such as weight tensors.
 ///
-/// `Layer` instances define a differentiable `applied(to:in:)` method for mapping inputs to
+/// `Layer` instances define a differentiable `applied(to:)` method for mapping inputs to
 /// outputs.
 public protocol Layer: Differentiable & KeyPathIterable
     where AllDifferentiableVariables: KeyPathIterable {
@@ -60,28 +34,33 @@ public protocol Layer: Differentiable & KeyPathIterable
     ///
     /// - Parameters:
     ///   - input: The input to the layer.
-    ///   - context: The contextual information for the layer application, e.g. the current learning
-    ///     phase.
     /// - Returns: The output.
     @differentiable
-    func applied(to input: Input, in context: Context) -> Output
+    func applied(to input: Input) -> Output
 }
 
 public extension Layer {
-    @available(*, deprecated,
-               message: "Switch to 'applied(to:in:)' for training, or 'inferring(from:)' for inference")
-    func applied(to input: Input) -> Output {
-        return inferring(from: input)
-    }
-
     /// Returns the inference output obtained from applying the layer to the given input.
     ///
     /// - Parameter input: The input to the layer.
     /// - Returns: The inference output.
     @differentiable
     func inferring(from input: Input) -> Output {
-        let context = Context(learningPhase: .inference)
-        return applied(to: input, in: context)
+        return withLearningPhase(.inference) {
+            applied(to: input)
+        }
+    }
+
+    // TODO(rxwei): Remove this custom VJP once differentiation supports currying.
+    @differentiating(inferring(from:))
+    @usableFromInline
+    internal func _vjpInferring(from input: Input)
+        -> (value: Output, pullback: (Output.CotangentVector)
+            -> (CotangentVector, Input.CotangentVector)) {
+        return withLearningPhase(.inference) {
+            let (output, pullback) = appliedForBackpropagation(to: input)
+            return (output, { v in pullback(v) })
+        }
     }
 
     typealias Backpropagator = (_ direction: Output.CotangentVector)
@@ -94,10 +73,10 @@ public extension Layer {
     /// - Returns: A tuple containing the output and the backpropagation function. The
     ///   backpropagation function (a.k.a. backpropagator) takes a direction vector and returns the
     ///   gradients at the layer and at the input, respectively.
-    func appliedForBackpropagation(to input: Input, in context: Context)
+    func appliedForBackpropagation(to input: Input)
         -> (output: Output, backpropagator: Backpropagator) {
         let (out, pullback) = valueWithPullback(at: input) { layer, input in
-            return layer.applied(to: input, in: context)
+            return layer.applied(to: input)
         }
         return (out, pullback)
     }
@@ -108,49 +87,36 @@ public extension Differentiable {
     /// except that the first layer's input is `self`.
     ///
     /// - Parameters:
-    ///   - context: The context that stores contextual information used for the application of
-    ///     layers.
     ///   - l1: The first layer.
     ///   - l2: The second layer.
     /// - Returns: The final layer's output after sequential application.
     @differentiable
-    func sequenced<L1: Layer, L2: Layer>(
-        in context: Context, through l1: L1, _ l2: L2)
-        -> L2.Output
-            where L1.Input == Self,
-                  L1.Output == L2.Input {
-        let o1 = l1.applied(to: self, in: context)
-        return l2.applied(to: o1, in: context)
+    func sequenced<L1: Layer, L2: Layer>(through l1: L1, _ l2: L2) -> L2.Output
+        where L1.Input == Self, L1.Output == L2.Input {
+        let o1 = l1.applied(to: self)
+        return l2.applied(to: o1)
     }
 
     /// Returns the output computed by applying a sequence of layers to the previous layer's output,
     /// except that the first layer's input is `self`.
     ///
     /// - Parameters:
-    ///   - context: The context that stores contextual information used for the application of
-    ///     layers.
     ///   - l1: The first layer.
     ///   - l2: The second layer.
     ///   - l3: The third layer.
     /// - Returns: The final layer's output after sequential application.
     @differentiable
-    func sequenced<L1: Layer, L2: Layer, L3: Layer>(
-        in context: Context, through l1: L1, _ l2: L2, _ l3: L3)
-        -> L3.Output
-            where L1.Input == Self,
-                  L1.Output == L2.Input,
-                  L2.Output == L3.Input {
-        let o1 = l1.applied(to: self, in: context)
-        let o2 = l2.applied(to: o1, in: context)
-        return l3.applied(to: o2, in: context)
+    func sequenced<L1: Layer, L2: Layer, L3: Layer>(through l1: L1, _ l2: L2, _ l3: L3) -> L3.Output
+        where L1.Input == Self, L1.Output == L2.Input, L2.Output == L3.Input {
+        let o1 = l1.applied(to: self)
+        let o2 = l2.applied(to: o1)
+        return l3.applied(to: o2)
     }
 
     /// Returns the output computed by applying a sequence of layers to the previous layer's output,
     /// except that the first layer's input is `self`.
     ///
     /// - Parameters:
-    ///   - context: The context that stores contextual information used for the application of
-    ///     layers.
     ///   - l1: The first layer.
     ///   - l2: The second layer.
     ///   - l3: The third layer.
@@ -158,24 +124,20 @@ public extension Differentiable {
     /// - Returns: The final layer's output after sequential application.
     @differentiable
     func sequenced<L1: Layer, L2: Layer, L3: Layer, L4: Layer>(
-        in context: Context, through l1: L1, _ l2: L2, _ l3: L3, _ l4: L4)
-        -> L4.Output
-            where L1.Input == Self,
-                  L1.Output == L2.Input,
-                  L2.Output == L3.Input,
-                  L3.Output == L4.Input {
-        let o1 = l1.applied(to: self, in: context)
-        let o2 = l2.applied(to: o1, in: context)
-        let o3 = l3.applied(to: o2, in: context)
-        return l4.applied(to: o3, in: context)
+        through l1: L1, _ l2: L2, _ l3: L3, _ l4: L4
+    ) -> L4.Output
+        where L1.Input == Self, L1.Output == L2.Input, L2.Output == L3.Input,
+              L3.Output == L4.Input {
+        let o1 = l1.applied(to: self)
+        let o2 = l2.applied(to: o1)
+        let o3 = l3.applied(to: o2)
+        return l4.applied(to: o3)
     }
 
     /// Returns the output computed by applying a sequence of layers to the previous layer's output,
     /// except that the first layer's input is `self`.
     ///
     /// - Parameters:
-    ///   - context: The context that stores contextual information used for the application of
-    ///     layers.
     ///   - l1: The first layer.
     ///   - l2: The second layer.
     ///   - l3: The third layer.
@@ -184,26 +146,21 @@ public extension Differentiable {
     /// - Returns: The final layer's output after sequential application.
     @differentiable
     func sequenced<L1: Layer, L2: Layer, L3: Layer, L4: Layer, L5: Layer>(
-        in context: Context, through l1: L1, _ l2: L2, _ l3: L3, _ l4: L4, _ l5: L5)
-        -> L5.Output
-            where L1.Input == Self,
-                  L1.Output == L2.Input,
-                  L2.Output == L3.Input,
-                  L3.Output == L4.Input,
-                  L4.Output == L5.Input {
-        let o1 = l1.applied(to: self, in: context)
-        let o2 = l2.applied(to: o1, in: context)
-        let o3 = l3.applied(to: o2, in: context)
-        let o4 = l4.applied(to: o3, in: context)
-        return l5.applied(to: o4, in: context)
+        through l1: L1, _ l2: L2, _ l3: L3, _ l4: L4, _ l5: L5
+    ) -> L5.Output
+        where L1.Input == Self, L1.Output == L2.Input, L2.Output == L3.Input, L3.Output == L4.Input,
+              L4.Output == L5.Input {
+        let o1 = l1.applied(to: self)
+        let o2 = l2.applied(to: o1)
+        let o3 = l3.applied(to: o2)
+        let o4 = l4.applied(to: o3)
+        return l5.applied(to: o4)
     }
 
     /// Returns the output computed by applying a sequence of layers to the previous layer's output,
     /// except that the first layer's input is `self`.
     ///
     /// - Parameters:
-    ///   - context: The context that stores contextual information used for the application of
-    ///     layers.
     ///   - l1: The first layer.
     ///   - l2: The second layer.
     ///   - l3: The third layer.
@@ -213,20 +170,16 @@ public extension Differentiable {
     /// - Returns: The final layer's output after sequential application.
     @differentiable
     func sequenced<L1: Layer, L2: Layer, L3: Layer, L4: Layer, L5: Layer, L6: Layer>(
-        in context: Context, through l1: L1, _ l2: L2, _ l3: L3, _ l4: L4, _ l5: L5, _ l6: L6)
-        -> L6.Output
-            where L1.Input == Self,
-                  L1.Output == L2.Input,
-                  L2.Output == L3.Input,
-                  L3.Output == L4.Input,
-                  L4.Output == L5.Input,
-                  L5.Output == L6.Input {
-        let o1 = l1.applied(to: self, in: context)
-        let o2 = l2.applied(to: o1, in: context)
-        let o3 = l3.applied(to: o2, in: context)
-        let o4 = l4.applied(to: o3, in: context)
-        let o5 = l5.applied(to: o4, in: context)
-        return l6.applied(to: o5, in: context)
+        through l1: L1, _ l2: L2, _ l3: L3, _ l4: L4, _ l5: L5, _ l6: L6
+    ) -> L6.Output
+        where L1.Input == Self, L1.Output == L2.Input, L2.Output == L3.Input, L3.Output == L4.Input,
+              L4.Output == L5.Input, L5.Output == L6.Input {
+        let o1 = l1.applied(to: self)
+        let o2 = l2.applied(to: o1)
+        let o3 = l3.applied(to: o2)
+        let o4 = l4.applied(to: o3)
+        let o5 = l5.applied(to: o4)
+        return l6.applied(to: o5)
     }
 }
 
@@ -268,11 +221,9 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameters:
     ///   - input: The input to the layer.
-    ///   - context: The contextual information for the layer application, e.g. the current learning
-    ///     phase.
     /// - Returns: The output.
     @differentiable
-    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
+    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         return activation(matmul(input, weight) + bias)
     }
 }
@@ -379,11 +330,9 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameters:
     ///   - input: The input to the layer `[batchCount, width, inputChannels]`.
-    ///   - context: The contextual information for the layer application, e.g. the current learning
-    ///     phase.
     /// - Returns: The output `[batchCount, newWidth, outputChannels]`.
     @differentiable
-    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
+    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         let conv2D = input.expandingShape(at: 1).convolved2D(
             withFilter: filter.expandingShape(at: 0), strides: (1, 1, stride, 1), padding: padding)
         return activation(conv2D.squeezingShape(at: 1) + bias)
@@ -500,11 +449,9 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameters:
     ///   - input: The input to the layer.
-    ///   - context: The contextual information for the layer application, e.g. the current learning
-    ///     phase.
     /// - Returns: The output.
     @differentiable
-    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
+    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         return activation(input.convolved2D(withFilter: filter,
                                             strides: (1, strides.0, strides.1, 1),
                                             padding: padding) + bias)
@@ -623,11 +570,9 @@ public struct TransposedConv2D: Layer {
     ///
     /// - Parameters:
     ///   - input: The input to the layer.
-    ///   - context: The contextual information for the layer application, e.g. the current learning
-    ///     phase.
     /// - Returns: The output.
     @differentiable
-    public func applied(to input: Tensor<Float>, in _: Context) -> Tensor<Float> {
+    public func applied(to input: Tensor<Float>) -> Tensor<Float> {
         let batchSize = input.shape[0]
         let w = (input.shape[1] - (1 * paddingIndex)) * strides.0 + (filter.shape[0] * paddingIndex)
         let h = (input.shape[2] - (1 * paddingIndex)) * strides.1 + (filter.shape[1] * paddingIndex)
@@ -713,7 +658,7 @@ public extension TransposedConv2D {
 /// Covariate Shift](https://arxiv.org/abs/1502.03167).
 @_fixed_layout
 public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
-    /// The batch dimension.
+    /// The feature dimension.
     @noDerivative public let axis: Int32
     /// The momentum for the running mean and running variance.
     @noDerivative public let momentum: Tensor<Scalar>
@@ -731,7 +676,7 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     /// Creates a batch normalization layer.
     ///
     /// - Parameters:
-    ///   - axis: The axis that should be normalized (typically the features axis).
+    ///   - axis: The axis that should not be normalized (typically the feature axis).
     ///   - momentum: The momentum for the moving average.
     ///   - offset: The offset to be added to the normalized tensor.
     ///   - scale: The scale to multiply the normalized tensor by.
@@ -759,8 +704,10 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     @differentiable
     private func applyingTraining(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         let positiveAxis = (input.rank + axis) % input.rank
-        let mean = input.mean(alongAxes: [0, positiveAxis])
-        let variance = input.variance(alongAxes: [0, positiveAxis])
+        var normalizedAxes = Array(0..<input.rank)
+        normalizedAxes.remove(at: Int(positiveAxis))
+        let mean = input.mean(alongAxes: normalizedAxes)
+        let variance = input.variance(alongAxes: normalizedAxes)
         runningMean.value += (mean - runningMean.value) * (1 - momentum)
         runningVariance.value += (
             variance - runningVariance.value) * (1 - momentum)
@@ -778,12 +725,10 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameters:
     ///   - input: The input to the layer.
-    ///   - context: The contextual information for the layer application, e.g. the current learning
-    ///     phase.
     /// - Returns: The output.
-    @differentiable(vjp: _vjpApplied(to:in:))
-    public func applied(to input: Tensor<Scalar>, in context: Context) -> Tensor<Scalar> {
-        switch context.learningPhase {
+    @differentiable(vjp: _vjpApplied(to:))
+    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+        switch Context.local.learningPhase {
         case .training:
             return applyingTraining(to: input)
         case .inference:
@@ -792,10 +737,10 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     }
 
     @usableFromInline
-    func _vjpApplied(to input: Tensor<Scalar>, in context: Context) ->
+    func _vjpApplied(to input: Tensor<Scalar>) ->
         (Tensor<Scalar>, (Tensor<Scalar>) ->
             (BatchNorm<Scalar>.CotangentVector, Tensor<Scalar>)) {
-        switch context.learningPhase {
+        switch Context.local.learningPhase {
         case .training:
             return valueWithPullback(at: input) {
                 $0.applyingTraining(to: $1)
@@ -858,11 +803,9 @@ public struct MaxPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameters:
     ///   - input: The input to the layer.
-    ///   - context: The contextual information for the layer application, e.g. the current learning
-    ///     phase.
     /// - Returns: The output.
     @differentiable
-    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
+    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input.expandingShape(at: 1).maxPooled(
             kernelSize: (1, 1, poolSize, 1), strides: (1, 1, stride, 1), padding: padding
         ).squeezingShape(at: 1)
@@ -909,11 +852,9 @@ public struct MaxPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameters:
     ///   - input: The input to the layer.
-    ///   - context: The contextual information for the layer application, e.g. the current learning
-    ///     phase.
     /// - Returns: The output.
     @differentiable
-    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
+    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input.maxPooled(
             kernelSize: poolSize, strides: strides, padding: padding)
     }
@@ -949,11 +890,9 @@ public struct AvgPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameters:
     ///   - input: The input to the layer.
-    ///   - context: The contextual information for the layer application, e.g. the current learning
-    ///     phase.
     /// - Returns: The output.
     @differentiable
-    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
+    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input.expandingShape(at: 1).averagePooled(
             kernelSize: (1, 1, poolSize, 1), strides: (1, 1, stride, 1), padding: padding
         ).squeezingShape(at: 1)
@@ -1000,11 +939,9 @@ public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameters:
     ///   - input: The input to the layer.
-    ///   - context: The contextual information for the layer application, e.g. the current learning
-    ///     phase.
     /// - Returns: The output.
     @differentiable
-    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
+    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input.averagePooled(kernelSize: poolSize, strides: strides, padding: padding)
     }
 }
@@ -1020,11 +957,9 @@ public struct GlobalAveragePooling1D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameters:
     ///   - input: The input to the layer.
-    ///   - context: The contextual information for the layer application, e.g. the current learning
-    ///     phase.
     /// - Returns: The output.
     @differentiable
-    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
+    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input.mean(alongAxes: 1).reshaped(to: [input.shape[0], input.shape[2]])
     }
 }
@@ -1039,11 +974,9 @@ public struct GlobalAveragePooling2D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameters:
     ///   - input: The input to the layer.
-    ///   - context: The contextual information for the layer application, e.g. the current learning
-    ///     phase.
     /// - Returns: The output.
     @differentiable
-    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
+    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input.mean(alongAxes: [1, 2]).reshaped(to: [input.shape[0], input.shape[3]])
     }
 }
@@ -1058,11 +991,9 @@ public struct GlobalAveragePooling3D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameters:
     ///   - input: The input to the layer.
-    ///   - context: The contextual information for the layer application, e.g. the current learning
-    ///     phase.
     /// - Returns: The output.
     @differentiable
-    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
+    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input.mean(alongAxes: [1, 2, 3]).reshaped(to: [input.shape[0], input.shape[4]])
     }
 }
@@ -1115,11 +1046,9 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameters:
     ///   - input: The input to the layer.
-    ///   - context: The contextual information for the layer application, e.g. the current learning
-    ///     phase.
     /// - Returns: The output.
     @differentiable
-    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
+    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         let mean = input.mean(alongAxes: axis)
         let variance = input.variance(alongAxes: axis)
         let inv = rsqrt(variance + epsilon) * scale
@@ -1167,12 +1096,10 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameters:
     ///   - input: The input to the layer.
-    ///   - context: The contextual information for the layer application, e.g. the current learning
-    ///     phase.
     /// - Returns: The output.
-    @differentiable(vjp: _vjpApplied(to:in:))
-    public func applied(to input: Tensor<Scalar>, in context: Context) -> Tensor<Scalar> {
-        switch context.learningPhase {
+    @differentiable(vjp: _vjpApplied(to:))
+    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+        switch Context.local.learningPhase {
         case .training:
             return applyingTraining(to: input)
         case .inference:
@@ -1181,10 +1108,10 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: Layer {
     }
 
     @usableFromInline
-    func _vjpApplied(to input: Tensor<Scalar>, in context: Context) ->
+    func _vjpApplied(to input: Tensor<Scalar>) ->
         (Tensor<Scalar>, (Tensor<Scalar>) ->
             (Dropout<Scalar>.CotangentVector, Tensor<Scalar>)) {
-        switch context.learningPhase {
+        switch Context.local.learningPhase {
         case .training:
             return valueWithPullback(at: input) {
                 $0.applyingTraining(to: $1)
@@ -1213,11 +1140,9 @@ public struct UpSampling1D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameters:
     ///   - input: The input to the layer.
-    ///   - context: The contextual information for the layer application, e.g. the current learning
-    ///     phase.
     /// - Returns: The output.
     @differentiable
-    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
+    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         let shape = input.shape
         let (batchSize, timesteps, channels) = (shape[0], shape[1], shape[2])
         let scaleOnes = Tensor<Scalar>(ones: [1, 1, size, 1])
@@ -1242,11 +1167,9 @@ public struct UpSampling2D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameters:
     ///   - input: The input to the layer.
-    ///   - context: The contextual information for the layer application, e.g. the current learning
-    ///     phase.
     /// - Returns: The output.
     @differentiable
-    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
+    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         let shape = input.shape
         let (batchSize, height, width, channels) = (shape[0], shape[1], shape[2], shape[3])
         let scaleOnes = Tensor<Scalar>(ones: [1, 1, size, 1, size, 1])
@@ -1267,11 +1190,9 @@ public struct Flatten<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameters:
     ///   - input: The input to the layer.
-    ///   - context: The contextual information for the layer application, e.g. the current learning
-    ///     phase.
     /// - Returns: The output.
     @differentiable
-    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
+    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         let batchSize = input.shape[0]
         let remaining = input.shape[1..<input.rank].contiguousSize
         return input.reshaped(to: [batchSize, remaining])
@@ -1306,36 +1227,52 @@ public struct Reshape<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameters:
     ///   - input: The input to the layer.
-    ///   - context: The contextual information for the layer application, e.g. the current learning
-    ///     phase.
     /// - Returns: The output.
     @differentiable
-    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
+    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input.reshaped(toShape: shape)
     }
 }
 
 /// An input to a recurrent neural network.
-public struct RNNInput<TimeStepInput: Differentiable, State: Differentiable>: Differentiable {
+public struct RNNCellInput<Input: Differentiable, State: Differentiable>: Differentiable {
     /// The input at the current time step.
-    public var timeStepInput: TimeStepInput
+    public var input: Input
     /// The previous state.
-    public var previousState: State
+    public var state: State
 
     @differentiable
-    public init(timeStepInput: TimeStepInput, previousState: State) {
-        self.timeStepInput = timeStepInput
-        self.previousState = previousState
+    public init(input: Input, state: State) {
+        self.input = input
+        self.state = state
+    }
+}
+
+/// An output to a recurrent neural network.
+public struct RNNCellOutput<Output: Differentiable, State: Differentiable>: Differentiable {
+    /// The output at the current time step.
+    public var output: Output
+    /// The current state.
+    public var state: State
+
+    @differentiable
+    public init(output: Output, state: State) {
+        self.output = output
+        self.state = state
     }
 }
 
 /// A recurrent neural network cell.
-public protocol RNNCell: Layer where Input == RNNInput<TimeStepInput, State> {
+public protocol RNNCell: Layer where Input == RNNCellInput<TimeStepInput, State>,
+                                     Output == RNNCellOutput<TimeStepOutput, State> {
     /// The input at a time step.
     associatedtype TimeStepInput: Differentiable
+    /// The output at a time step.
+    associatedtype TimeStepOutput: Differentiable
     /// The state that may be preserved across time steps.
-    typealias State = Output
+    associatedtype State: Differentiable
     /// The zero state.
+    @differentiable
     var zeroState: State { get }
 }
 
@@ -1346,12 +1283,9 @@ public extension RNNCell {
     /// - Parameters:
     ///   - timeStepInput: The input at the current time step.
     ///   - previousState: The previous state of the RNN cell.
-    ///   - context: The contextual information for the layer application, e.g. the current learning
-    ///     phase.
     /// - Returns: The output.
     @differentiable
-    func applied(to timeStepInput: TimeStepInput, previous: State, in context: Context) -> State {
-        return applied(to: Input(timeStepInput: timeStepInput, previousState: previous),
-                       in: context)
+    func applied(to input: TimeStepInput, state: State) -> RNNCellOutput<TimeStepOutput, State> {
+        return applied(to: RNNCellInput(input: input, state: state))
     }
 }

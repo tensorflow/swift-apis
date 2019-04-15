@@ -34,9 +34,9 @@ final class TrivialModelTests: XCTestCase {
                 )
             }
             @differentiable
-            func applied(to input: Tensor<Float>, in context: Context) -> Tensor<Float> {
-                let h1 = l1.applied(to: input, in: context)
-                return l2.applied(to: h1, in: context)
+            func applied(to input: Tensor<Float>) -> Tensor<Float> {
+                let h1 = l1.applied(to: input)
+                return l2.applied(to: h1)
             }
         }
         var classifier = Classifier(hiddenSize: 4)
@@ -44,10 +44,10 @@ final class TrivialModelTests: XCTestCase {
         let x: Tensor<Float> = [[0, 0], [0, 1], [1, 0], [1, 1]]
         let y: Tensor<Float> = [[0], [1], [1], [0]]
 
-        let trainingContext = Context(learningPhase: .training)
+        Context.local.learningPhase = .training
         for _ in 0..<3000 {
             let 𝛁model = classifier.gradient { classifier -> Tensor<Float> in
-                let ŷ = classifier.applied(to: x, in: trainingContext)
+                let ŷ = classifier.applied(to: x)
                 return meanSquaredError(predicted: ŷ, expected: y)
             }
             optimizer.update(&classifier.allDifferentiableVariables, along: 𝛁model)

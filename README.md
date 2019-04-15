@@ -73,7 +73,7 @@ for _ in 0..<1000 {
 }
 ```
 
-For more tutorials and models, go to [**tensorflow/swift-tutorials**](https://github.com/tensorflow/swift-tutorials) and [**tensorflow/swift-models**](https://github.com/tensorflow/swift-models).
+For more models, go to [**tensorflow/swift-models**](https://github.com/tensorflow/swift-models).
 
 ## Development
 
