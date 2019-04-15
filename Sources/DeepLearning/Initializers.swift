@@ -17,13 +17,76 @@ import TensorFlow
 #endif
 
 public extension Tensor {
-    /// Returns a stacked tensor, constructed by stacking the provided tensors along 
-    /// the specified axis.
-    /// - Precondition: The tensors must have the same dimensions,.
-    /// - Precondition: The axis must be in the range `-rank..<rank`.
-    @inlinable @inline(__always)
+    /// Stacks `tensors`, along the `axis` dimension, into a new tensor with rank one higher than
+    /// the current tensor and each tensor in `tensors`.
+    /// 
+    /// Given that `tensors` all have shape `[A, B, C]`, and `tensors.count = N`, then:
+    /// - if `axis == 0` then the resulting tensor will have the shape `[N, A, B, C]`.
+    /// - if `axis == 1` then the resulting tensor will have the shape `[A, N, B, C]`.
+    /// - etc.
+    ///
+    /// For example:
+    /// ```
+    /// // 'x' is [1, 4]
+    /// // 'y' is [2, 5]
+    /// // 'z' is [3, 6]
+    /// Tensor(stacking: [x, y, z]) // is [[1, 4], [2, 5], [3, 6]]
+    /// Tensor(stacking: [x, y, z], alongAxis: 1) // is [[1, 2, 3], [4, 5, 6]]
+    /// ```
+    ///
+    /// This is the opposite of `Tensor.unstacked`.
+    ///
+    /// - Parameters:
+    ///   - tensors: Tensors to stack.
+    ///   - axis: Dimension along which to stack. Negative values wrap around.
+    /// 
+    /// - Precondition: All tensors must have the same shape.
+    /// - Precondition: `axis` must be in the range `[-rank, rank)`, where `rank` is the rank of the
+    ///   provided tensors.
+    /// 
+    /// - Returns: The stacked tensor.
+    @inlinable
+    // @differentiable(vjp: _vjpStacking where Scalar: TensorFlowFloatingPoint)
     init(stacking tensors: [Tensor<Scalar>], alongAxis axis: Int32 = 0) {
         self = Raw.pack(tensors, axis: Int64(axis))
+    }
+
+    /// Concatenates `tensors` along the `axis` dimension.
+    ///
+    /// Given that `tensors[i].shape = [D0, D1, ... Daxis(i), ...Dn]`, then the concatenated result 
+    /// has shape `[D0, D1, ... Raxis, ...Dn]`, where `Raxis = sum(Daxis(i))`. That is, the data 
+    /// from the input tensors is joined along the `axis` dimension.
+    ///
+    /// For example:
+    /// ```
+    /// // t1 is [[1, 2, 3], [4, 5, 6]]
+    /// // t2 is [[7, 8, 9], [10, 11, 12]]
+    /// Tensor(concatenating: [t1, t2]) // is [[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]]
+    /// Tensor(concatenating: [t1, t2], alongAxis: 1) // is [[1, 2, 3, 7, 8, 9], [4, 5, 6, 10, 11, 12]]
+    /// 
+    /// // t3 has shape [2, 3]
+    /// // t4 has shape [2, 3]
+    /// Tensor(concatenating: [t3, t4]) // has shape [4, 3]
+    /// Tensor(concatenating: [t3, t4], alongAxis: 1) // has shape [2, 6]
+    /// ```
+    ///
+    /// - Note: If you are concatenating along a new axis consider using 
+    ///   `Tensor.init(stacking:alongAxis:)`.
+    ///
+    /// - Parameters:
+    ///   - tensors: Tensors to concatenate.
+    ///   - axis: Dimension along which to concatenate. Negative values wrap around.
+    ///
+    /// - Precondition: All tensors must have the same rank and all dimensions except `axis`
+    ///   must be equal.
+    /// - Precondition: `axis` must be in the range `[-rank, rank)`, where `rank` is the rank of the
+    ///   provided tensors.
+    /// 
+    /// - Returns: The concatenated tensor.
+    @inlinable
+    // @differentiable(vjp: _vjpConcatenating where Scalar : TensorFlowFloatingPoint)
+    init(concatenating tensors: [Tensor<Scalar>], alongAxis axis: Int32 = 0) {
+        self = Raw.concatV2(tensors, axis: Tensor<Int32>(axis))
     }
 
     /// Returns a tiled tensor, constructed by tiling the provided tensor.
@@ -34,7 +97,7 @@ public extension Tensor {
     /// example, tiling `[a b c d]` by `[2]` produces `[a b c d a b c d]`.
     /// 
     /// - Precondition: The shape of `multiples` must be `[tensor.rank]`.
-    @inlinable @inline(__always)
+    @inlinable
     init(tiling tensor: Tensor<Scalar>, multiples: Tensor<Int32>) {
         self = Raw.tile(tensor, multiples: multiples)
     }
@@ -45,7 +108,7 @@ public extension Tensor where Scalar : Numeric {
     /// tensor.
     ///
     /// - Parameter other: Tensor whose shape and data type to use.
-    @inlinable @inline(__always)
+    @inlinable
     init(zerosLike other: Tensor) {
         self = Raw.zerosLike(other)
     }
@@ -54,7 +117,7 @@ public extension Tensor where Scalar : Numeric {
     /// tensor.
     ///
     /// - Parameter other: Tensor whose shape and data type to use.
-    @inlinable @inline(__always)
+    @inlinable
     init(onesLike other: Tensor) {
         self = Raw.onesLike(other)
     }
@@ -68,7 +131,7 @@ public extension Tensor where Scalar : Numeric {
     ///   - end: An end value to limit the sequence. `end` is never an element of the resulting 
     ///     sequence.
     ///   - stride: The amount to step by with each iteration. `stride` must be positive.
-    @inlinable @inline(__always)
+    @inlinable
     init(rangeFrom start: Tensor<Scalar>, to end: Tensor<Scalar>, stride: Tensor<Scalar>) {
         self = Raw.range(start: start, limit: end, delta: stride)
     }

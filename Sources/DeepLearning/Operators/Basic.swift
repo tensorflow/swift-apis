@@ -16,77 +16,7 @@
 import TensorFlow
 #endif
 
-public extension Tensor where Scalar: TensorFlowScalar {
-    /// Stacks the current tensor with `tensors`, along the `axis` dimension, into a tensor with 
-    /// rank one higher than the current tensor and each tensor in `tensors`.
-    /// 
-    /// Given `self` and `tensors` all have shape `[A, B, C]`, and `tensors.count = N-1`, then:
-    /// - if `axis == 0` then the resulting tensor will have the shape `[N, A, B, C]`.
-    /// - if `axis == 1` then the resulting tensor will have the shape `[A, N, B, C]`.
-    /// - etc.
-    ///
-    /// For example:
-    /// ```
-    /// // 'x' is [1, 4]
-    /// // 'y' is [2, 5]
-    /// // 'z' is [3, 6]
-    /// x.stacked(with: [y, z]) // is [[1, 4], [2, 5], [3, 6]]
-    /// x.stacked(with: [y, z], alongAxis: 1) // is [[1, 2, 3], [4, 5, 6]]
-    /// ```
-    ///
-    /// This is the opposite of `unstacked`.
-    ///
-    /// - Parameters:
-    ///   - tensors: Tensors to stack with the current tensor.
-    ///   - axis: Dimension along which to stack. Negative values wrap around.
-    /// 
-    /// - Precondition: All tensors must have the same shape as the current tensor.
-    /// - Precondition: `axis` must be in the range `[-rank, rank)`.
-    /// 
-    /// - Returns: The stacked tensor.
-    @inlinable
-    // @differentiable(vjp: _vjpStacked where Scalar: TensorFlowFloatingPoint)
-    func stacked(with tensors: [Tensor], alongAxis axis: Int32 = 0) -> Tensor {
-        return Raw.pack([self] + tensors, axis: Int64(axis))
-    }
-
-    /// Concatenates the current tensor with `tensors` along the `axis` dimension.
-    ///
-    /// Given `self` and `tensors` are all put in a single array, `values`, and 
-    /// `values[i].shape = [D0, D1, ... Daxis(i), ...Dn]`, then the concatenated result has shape 
-    /// `[D0, D1, ... Raxis, ...Dn]`, where `Raxis = sum(Daxis(i))`. That is, the data from the 
-    /// input tensors is joined along the `axis` dimension.
-    ///
-    /// For example:
-    /// ```
-    /// // t1 is [[1, 2, 3], [4, 5, 6]]
-    /// // t2 is [[7, 8, 9], [10, 11, 12]]
-    /// t1.concatenated(with: [t2]) // is [[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]]
-    /// t1.concatenated(with: [t2], alongAxis: 1) // is [[1, 2, 3, 7, 8, 9], [4, 5, 6, 10, 11, 12]]
-    /// 
-    /// // t3 has shape [2, 3]
-    /// // t4 has shape [2, 3]
-    /// t3.concatenated(with: [t4]) // has shape [4, 3]
-    /// t3.concatenated(with: [t4], alongAxis: 1) // has shape [2, 6]
-    /// ```
-    ///
-    /// - Note: If you are concatenating along a new axis consider using `stacked`.
-    ///
-    /// - Parameters:
-    ///   - tensors: Tensors to concatenate with the current tensor.
-    ///   - axis: Dimension along which to concatenate. Negative values wrap around.
-    ///
-    /// - Precondition: All tensors must have the same rank as the current tensor and all dimensions 
-    ///     except `axis` must be equal.
-    /// - Precondition: `axis` must be in the range `[-rank, rank)`.
-    /// 
-    /// - Returns: The concatenated tensor.
-    @inlinable
-    // @differentiable(vjp: _vjpConcatenated where Scalar : TensorFlowFloatingPoint)
-    func concatenated(with tensors: [Tensor], alongAxis axis: Int32 = 0) -> Tensor {
-        return Raw.concatV2([self] + tensors, axis: Tensor<Int32>(axis))
-    }
-
+public extension Tensor {
     /// Gathers slices of this tensor at `indices` along the `axis` dimension.
     ///
     /// For 0-D (scalar) `indices`:
@@ -178,7 +108,8 @@ public extension Tensor where Scalar: TensorFlowScalar {
             precondition(batchDims <= posAxis, "'batchDims' must be less than or equal to 'axis'.")
 
             // Move self[axis] up to self[batchDims].
-            let permutation = Tensor<Int32>(0 ..< batchDims).concatenated(with: [
+            let permutation = Tensor<Int32>(concatenating: [
+                Tensor<Int32>(0 ..< batchDims),
                 Tensor<Int32>(axis).rankLifted(),
                 Tensor<Int32>(rangeFrom: batchDims, to: posAxis, stride: 1),
                 Tensor<Int32>(rangeFrom: axis + 1, to: rank, stride: 1)])
@@ -189,7 +120,8 @@ public extension Tensor where Scalar: TensorFlowScalar {
             // Move the result dimensions corresponding to self[batchDims ..< axis] to just before 
             // the dimensions corresponding to indices[batchDims ...].
             let start = indices.rank + posAxis - batchDims
-            let resultPermutation = Tensor<Int32>(0 ..< batchDims).concatenated(with: [
+            let resultPermutation = Tensor<Int32>(concatenating: [
+                Tensor<Int32>(0 ..< batchDims),
                 Tensor<Int32>(rangeFrom: indices.rank, to: start, stride: 1),
                 Tensor<Int32>(batchDims ..< indices.rank), 
                 Tensor<Int32>(rangeFrom: start, to: result.rank, stride: 1)])
@@ -207,7 +139,8 @@ public extension Tensor where Scalar: TensorFlowScalar {
                 to: dValue,
                 stride: Tensor<Int32>(ones: [])
             ) * accumulated
-            let dShape = Tensor<Int32>(d - 1).stacked(with: [
+            let dShape = Tensor<Int32>(stacking: [
+                Tensor<Int32>(d - 1),
                 Tensor<Int32>(dValue), 
                 Tensor<Int32>(indices.rank - 1)])
             batchIndices += dIndices.reshaped(toShape: dShape)
@@ -260,8 +193,8 @@ public extension Tensor where Scalar: TensorFlowScalar {
         let posAxis = Int(axis < 0 ? axis + rank : axis)
         let leadingSize = shapeTensor[posAxis ..< posAxis + Int(mask.rank)].product().rankLifted()
         let reshapedTensor = reshaped(
-            toShape: shapeTensor[..<posAxis].concatenated(
-                with: [leadingSize, shapeTensor[(posAxis + Int(mask.rank))...]]))
+            toShape: Tensor<Int32>(concatenating: [
+                shapeTensor[..<posAxis], leadingSize, shapeTensor[(posAxis + Int(mask.rank))...]]))
         let indices = Tensor<Int32>(mask.flattened().nonZeroIndices().squeezingShape(at: 1))
         return reshapedTensor.gathering(atIndices: indices, alongAxis: Int32(posAxis))
     }
