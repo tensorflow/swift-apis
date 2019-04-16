@@ -50,10 +50,28 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(round(output), expected)
     }
 
+    func testGlobalAvgPool2D() {
+        let layer = GlobalAveragePooling2D<Float>()
+        let input = Tensor<Float>([[[0, 1], [2, 3], [4, 5], [6, 7], [8, 9], [10, 11]], [[12, 13], [14, 15], [15, 16], [17, 18], [19, 20], [21, 22]]]).expandingShape(at: 3)
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>([[5.5], [16.833334]])
+        XCTAssertEqual(round(output), round(expected))
+    }
+
+    func testGlobalAvgPool3D() {
+        let layer = GlobalAveragePooling3D<Float>()
+        let input = Tensor<Float>([[[[0.5], [1.0]], [[1.5], [2.0]], [[2.5], [3.0]], [[3.5], [4.0]], [[4.5], [5.0]], [[5.5], [6.0]]], [[[6.5], [7.0]], [[7.5], [8.0]], [[8.5], [9.0]], [[9.5], [10.0]], [[10.5], [11.0]], [[11.5], [12.0]]]]).expandingShape(at: 4)
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>([[3.25], [9.25]])
+        XCTAssertEqual(round(output), round(expected))
+    }
+
     static var allTests = [
         ("testConv1D", testConv1D),
         ("testMaxPool1D", testMaxPool1D),
         ("testAvgPool1D", testAvgPool1D),
-        ("testGlobalAvgPool1D", testGlobalAvgPool1D)
+        ("testGlobalAvgPool1D", testGlobalAvgPool1D),
+        ("testGlobalAvgPool2D", testGlobalAvgPool2D),
+        ("testGlobalAvgPool3D", testGlobalAvgPool3D)
     ]
 }
