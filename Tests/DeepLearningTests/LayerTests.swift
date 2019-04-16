@@ -42,7 +42,27 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(round(output), expected)
     }
 
+    func testReshape() {
+        let layer = Reshape<Float>(shape: [10, 2, 1])
+        let input = Tensor(shape: [20, 1], scalars: (0..<20).map(Float.init))
+        let output = layer.inferring(from: input)
+        let expected = TensorShape([10, 2, 1])
+        XCTAssertEqual(output.shape, expected)
+    }
+
+    func testFlatten() {
+        let layer = Flatten<Float>()
+        let input = Tensor(shape: [10, 2, 2], scalars: (0..<40).map(Float.init))
+        let output = layer.inferring(from: input)
+        let expected = TensorShape([10, 4])
+        XCTAssertEqual(output.shape, expected)
+    }
+
     static var allTests = [
-        ("testConv1D", testConv1D), ("testMaxPool1D", testMaxPool1D), ("testAvgPool1D", testAvgPool1D)
+        ("testConv1D", testConv1D),
+        ("testMaxPool1D", testMaxPool1D),
+        ("testAvgPool1D", testAvgPool1D),
+        ("testReshape", testReshape),
+        ("testFlatten", testFlatten)
     ]
 }
