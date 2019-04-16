@@ -1324,7 +1324,7 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     ///     phase.
     /// - Returns: The hidden state.
     @differentiable
-    public func applied(to input: RNNCellInput, in _: Context) -> RNNCellOutput {
+    public func applied(to input: RNNCellInput) -> RNNCellOutput {
         let concatenatedInput = input.stepInput.concatenated(with: input.state)
         let newState = matmul(concatenatedInput, weight) + bias
         return RNNCellOutput(output: newState, state: newState)
@@ -1383,7 +1383,7 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     ///     phase.
     /// - Returns: The hidden state.
     @differentiable
-    public func applied(to input: RNNCellInput, in _: Context) -> RNNCellOutput {
+    public func applied(to input: RNNCellInput) -> RNNCellOutput {
         let gateInput = input.stepInput.concatenated(with: input.state.hidden, alongAxis: 1)
 
         let inputGate = sigmoid(matmul(gateInput, inputWeight))
