@@ -26,7 +26,7 @@ public protocol Optimizer {
     /// The scalar parameter type.
     associatedtype Scalar: FloatingPoint
     /// The learning rate.
-    var learningRate: Scalar { get }
+    var learningRate: Scalar { get set }
     /// Updates the specified differentiable variables along the specified
     /// direction.
     mutating func update(_ variables: inout Model.AllDifferentiableVariables,
@@ -42,7 +42,7 @@ public protocol Optimizer {
 public class Adam<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
     where Model.AllDifferentiableVariables == Model.CotangentVector {
     /// The learning rate.
-    public let learningRate: Scalar
+    public var learningRate: Scalar
     /// A coefficient used to calculate the first and second moments of
     /// gradients.
     public var beta1: Scalar
@@ -50,9 +50,9 @@ public class Adam<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
     /// gradients.
     public var beta2: Scalar
     /// A small scalar added to the denominator to improve numerical stability.
-    public let epsilon: Scalar
+    public var epsilon: Scalar
     /// The weight decay.
-    public let decay: Scalar
+    public var decay: Scalar
 
     public init(
         learningRate: Scalar = 1e-3,
@@ -122,13 +122,13 @@ public class Adam<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
 public class RMSProp<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
     where Model.AllDifferentiableVariables == Model.CotangentVector {
     /// The learning rate.
-    public let learningRate: Scalar
+    public var learningRate: Scalar
     // TODO: Document `rho`. Keras doesn't document `rho`.
-    public let rho: Scalar
+    public var rho: Scalar
     /// A small scalar added to the denominator to improve numerical stability.
-    public let epsilon: Scalar
+    public var epsilon: Scalar
     /// The weight decay.
-    public let decay: Scalar
+    public var decay: Scalar
 
     public init(
         learningRate: Scalar = 0.001,
@@ -180,14 +180,14 @@ public class RMSProp<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
 public class SGD<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
     where Model.AllDifferentiableVariables == Model.CotangentVector {
     /// The learning rate.
-    public let learningRate: Scalar
+    public var learningRate: Scalar
     /// The momentum factor. It accelerates stochastic gradient descent in the relevant direction
     /// and dampens oscillations.
-    public let momentum: Scalar
+    public var momentum: Scalar
     /// The weight decay.
-    public let decay: Scalar
-    /// Use Neseterov momentum if true.
-    public let nesterov: Bool
+    public var decay: Scalar
+    /// Use Nesterov momentum if true.
+    public var nesterov: Bool
 
     public init(
         learningRate: Scalar = 0.01,
