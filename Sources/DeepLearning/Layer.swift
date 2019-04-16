@@ -1297,12 +1297,12 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
 
     @noDerivative var stateShape: TensorShape
 
-	@differentiable
-	public var zeroState: Tensor<Scalar> {
-		get {
-			return Tensor(zeros: stateShape)
-		}
-	}
+    @differentiable
+    public var zeroState: Tensor<Scalar> {
+        get {
+            return Tensor(zeros: stateShape)
+        }
+    }
 
     /// Creates a `SimpleRNNCell` with the specified input size and hidden state size.
     ///
@@ -1326,7 +1326,7 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     @differentiable
     public func applied(to input: RNNCellInput, in _: Context) -> RNNCellOutput {
         let concatenatedInput = input.stepInput.concatenated(with: input.state)
-		let newState = matmul(concatenatedInput, weight) + bias
+        let newState = matmul(concatenatedInput, weight) + bias
         return RNNCellOutput(output: newState, state: newState)
     }
 }
@@ -1341,12 +1341,12 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
 
     @noDerivative var stateShape: TensorShape
 
-	@differentiable
-	public var zeroState: Tensor<Scalar> {
-		get {
-			return State(cell: Tensor(zeros: stateShape), hidden: Tensor(zeros: stateShape))
-		}
-	}
+    @differentiable
+    public var zeroState: Tensor<Scalar> {
+        get {
+            return State(cell: Tensor(zeros: stateShape), hidden: Tensor(zeros: stateShape))
+        }
+    }
 
     /// Creates a `LSTMCell` with the specified input size and hidden state size.
     ///
@@ -1394,7 +1394,7 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
         let newCellState = (input.state.cell * forgetGate + inputGate * updateGate)
         let newHiddenState = tanh(newCellState) * outputGate
 
-	let newState = State(cell: newCellState, hidden: newHiddenState)
+        let newState = State(cell: newCellState, hidden: newHiddenState)
 
         return RNNCellOutput(output: newState, state: newState)
     }
