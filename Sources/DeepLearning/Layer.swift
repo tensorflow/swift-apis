@@ -1391,7 +1391,7 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
         let forgetGate = sigmoid(matmul(gateInput, forgetWeight) + forgetBias)
         let outputGate = sigmoid(matmul(gateInput, outputWeight))
 
-        let newCellState = (input.state.cell * forgetGate + inputGate * updateGate)
+        let newCellState = input.state.cell * forgetGate + inputGate * updateGate
         let newHiddenState = tanh(newCellState) * outputGate
 
         let newState = State(cell: newCellState, hidden: newHiddenState)
