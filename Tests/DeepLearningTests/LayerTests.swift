@@ -91,7 +91,7 @@ final class LayerTests: XCTestCase {
         cell.bias = bias
         let simpleRNNState = Tensor<Float>(ones: [1, 5]) * Tensor<Float>([1, 0.2, 0.5, 2, 0.6])
         let simpleRNNInput = Tensor<Float>(ones: [1, 2]) * Tensor<Float>([0.3, 0.7])
-        let output = cell.inferring(from: .init(stepInput: simpleRNNInput, state: simpleRNNState)).state
+        let output = cell.inferring(from: .init(input: simpleRNNInput, state: simpleRNNState)).state
         let expected = Tensor<Float>([[2.766667, 6.2999997, 2.766667, 6.2999997, 2.766667]])
         XCTAssertEqual(output, expected)
     }
