@@ -82,6 +82,20 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(output.shape, expected)
     }
 
+    func testSimpleRNNCell() {
+        let weight = Tensor<Float>(ones: [7, 5]) *
+                        Tensor<Float>([0.33333333, 1, 0.33333333, 1, 0.33333333])
+        let bias = Tensor<Float>(ones: [5])
+        var cell = SimpleRNNCell<Float>(inputSize: 2, hiddenSize: 5)
+        cell.weight = weight
+        cell.bias = bias
+        let simpleRNNState = Tensor<Float>(ones: [1, 5]) * Tensor<Float>([1, 0.2, 0.5, 2, 0.6])
+        let simpleRNNInput = Tensor<Float>(ones: [1, 2]) * Tensor<Float>([0.3, 0.7])
+        let output = cell.inferring(from: .init(stepInput: simpleRNNInput, state: simpleRNNState)).state
+        let expected = Tensor<Float>([[2.766667, 6.2999997, 2.766667, 6.2999997, 2.766667]])
+        XCTAssertEqual(output, expected)
+    }
+
     static var allTests = [
         ("testConv1D", testConv1D),
         ("testMaxPool1D", testMaxPool1D),
@@ -90,6 +104,7 @@ final class LayerTests: XCTestCase {
         ("testGlobalAvgPool2D", testGlobalAvgPool2D),
         ("testGlobalAvgPool3D", testGlobalAvgPool3D),
         ("testReshape", testReshape),
-        ("testFlatten", testFlatten)
+        ("testFlatten", testFlatten),
+        ("testSimpleRNNCell", testSimpleRNNCell)
     ]
 }

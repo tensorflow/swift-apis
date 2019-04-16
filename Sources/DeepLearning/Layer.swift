@@ -1304,6 +1304,10 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
         }
     }
 
+    public typealias State = Tensor<Scalar>
+    public typealias Input = RNNCellInput<Tensor<Scalar>, State>
+    public typealias Output = RNNCellOutput<State, State>
+
     /// Creates a `SimpleRNNCell` with the specified input size and hidden state size.
     ///
     /// - Parameters:
@@ -1324,10 +1328,10 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     ///     phase.
     /// - Returns: The hidden state.
     @differentiable
-    public func applied(to input: RNNCellInput) -> RNNCellOutput {
+    public func applied(to input: Input) -> Output {
         let concatenatedInput = input.stepInput.concatenated(with: input.state)
         let newState = matmul(concatenatedInput, weight) + bias
-        return RNNCellOutput(output: newState, state: newState)
+        return Output(output: newState, state: newState)
     }
 }
 
@@ -1342,11 +1346,14 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     @noDerivative var stateShape: TensorShape
 
     @differentiable
-    public var zeroState: Tensor<Scalar> {
+    public var zeroState: State {
         get {
             return State(cell: Tensor(zeros: stateShape), hidden: Tensor(zeros: stateShape))
         }
     }
+
+    public typealias Input = RNNCellInput<Tensor<Scalar>, State>
+    public typealias Output = RNNCellOutput<State, State>
 
     /// Creates a `LSTMCell` with the specified input size and hidden state size.
     ///
@@ -1383,7 +1390,7 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     ///     phase.
     /// - Returns: The hidden state.
     @differentiable
-    public func applied(to input: RNNCellInput) -> RNNCellOutput {
+    public func applied(to input: Input) -> Output {
         let gateInput = input.stepInput.concatenated(with: input.state.hidden, alongAxis: 1)
 
         let inputGate = sigmoid(matmul(gateInput, inputWeight))
@@ -1396,6 +1403,6 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
 
         let newState = State(cell: newCellState, hidden: newHiddenState)
 
-        return RNNCellOutput(output: newState, state: newState)
+        return Output(output: newState, state: newState)
     }
 }
