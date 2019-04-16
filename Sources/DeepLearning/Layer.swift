@@ -1299,9 +1299,7 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
 
     @differentiable
     public var zeroState: Tensor<Scalar> {
-        get {
-            return Tensor(zeros: stateShape)
-        }
+        return Tensor(zeros: stateShape)
     }
 
     public typealias State = Tensor<Scalar>
@@ -1347,9 +1345,7 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
 
     @differentiable
     public var zeroState: State {
-        get {
-            return State(cell: Tensor(zeros: stateShape), hidden: Tensor(zeros: stateShape))
-        }
+        return State(cell: Tensor(zeros: stateShape), hidden: Tensor(zeros: stateShape))
     }
 
     public typealias Input = RNNCellInput<Tensor<Scalar>, State>
