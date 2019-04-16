@@ -89,7 +89,7 @@ final class LayerTests: XCTestCase {
         ("testGlobalAvgPool1D", testGlobalAvgPool1D),
         ("testGlobalAvgPool2D", testGlobalAvgPool2D),
         ("testGlobalAvgPool3D", testGlobalAvgPool3D),
-        ("testReshape", testReshape)
+        ("testReshape", testReshape),
         ("testFlatten", testFlatten)
     ]
 }
