@@ -44,26 +44,26 @@ final class LayerTests: XCTestCase {
 
     func testGlobalAvgPool1D() {
         let layer = GlobalAveragePooling1D<Float>()
-        let input = Tensor<Float>([[0, 1, 2, 3, 4], [10, 11, 12, 13, 14]]).expandingShape(at: 2)
+        let input = Tensor(shape: [2, 5, 1], scalars: (0..<10).map(Float.init))
         let output = layer.inferring(from: input)
-        let expected = Tensor<Float>([[2.0], [12.0]])
-        XCTAssertEqual(round(output), expected)
+        let expected = Tensor<Float>([[2], [7]])
+        XCTAssertEqual(output, expected)
     }
 
     func testGlobalAvgPool2D() {
         let layer = GlobalAveragePooling2D<Float>()
-        let input = Tensor<Float>([[[0, 1], [2, 3], [4, 5], [6, 7], [8, 9], [10, 11]], [[12, 13], [14, 15], [15, 16], [17, 18], [19, 20], [21, 22]]]).expandingShape(at: 3)
+        let input = Tensor(shape: [2, 6, 2, 1], scalars: (0..<24).map(Float.init))
         let output = layer.inferring(from: input)
-        let expected = Tensor<Float>([[5.5], [16.833334]])
-        XCTAssertEqual(round(output), round(expected))
+        let expected = Tensor<Float>([[5.5], [17.5]])
+        XCTAssertEqual(output, expected)
     }
 
     func testGlobalAvgPool3D() {
         let layer = GlobalAveragePooling3D<Float>()
-        let input = Tensor<Float>([[[[0.5], [1.0]], [[1.5], [2.0]], [[2.5], [3.0]], [[3.5], [4.0]], [[4.5], [5.0]], [[5.5], [6.0]]], [[[6.5], [7.0]], [[7.5], [8.0]], [[8.5], [9.0]], [[9.5], [10.0]], [[10.5], [11.0]], [[11.5], [12.0]]]]).expandingShape(at: 4)
+        let input = Tensor<Float>(shape: [2, 6, 2, 1, 1], scalars: (0..<24).map(Float.init))
         let output = layer.inferring(from: input)
-        let expected = Tensor<Float>([[3.25], [9.25]])
-        XCTAssertEqual(round(output), round(expected))
+        let expected = Tensor<Float>([[5.5], [17.5]])
+        XCTAssertEqual(output, expected)
     }
 
     static var allTests = [
