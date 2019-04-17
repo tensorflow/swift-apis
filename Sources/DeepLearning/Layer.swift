@@ -1303,8 +1303,10 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     }
 
     public typealias State = Tensor<Scalar>
-    public typealias Input = RNNCellInput<Tensor<Scalar>, State>
-    public typealias Output = RNNCellOutput<State, State>
+    public typealias TimeStepInput = Tensor<Float>
+    public typealias TimeStepOutput = State
+    public typealias Input = RNNCellInput<TimeStepInput, State>
+    public typealias Output = RNNCellOutput<TimeStepOutput, State>
 
     /// Creates a `SimpleRNNCell` with the specified input size and hidden state size.
     ///
@@ -1348,8 +1350,10 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
         return State(cell: Tensor(zeros: stateShape), hidden: Tensor(zeros: stateShape))
     }
 
-    public typealias Input = RNNCellInput<Tensor<Scalar>, State>
-    public typealias Output = RNNCellOutput<State, State>
+    public typealias TimeStepInput = Tensor<Scalar>
+    public typealias TimeStepOutput = State
+    public typealias Input = RNNCellInput<TimeStepInput, State>
+    public typealias Output = RNNCellOutput<TimeStepOutput, State>
 
     /// Creates a `LSTMCell` with the specified input size and hidden state size.
     ///
