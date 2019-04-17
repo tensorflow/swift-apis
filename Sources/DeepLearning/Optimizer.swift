@@ -33,33 +33,46 @@ public protocol Optimizer {
                          along direction: Model.CotangentVector)
 }
 
+fileprivate extension Tensor where Scalar: Numeric {
+    mutating func resetToZero() {
+        self = Tensor(zeros: shape)
+    }
+}
+
 // MARK: - Key-path based optimizers
 
 /// Adam optimizer.
 ///
 /// Reference: ["Adam - A Method for Stochastic Optimization"](
 /// https://arxiv.org/abs/1412.6980v8)
-public class Adam<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
+public class Adam<Model: Layer>: Optimizer
     where Model.AllDifferentiableVariables == Model.CotangentVector {
     /// The learning rate.
-    public var learningRate: Scalar
+    public var learningRate: Float
     /// A coefficient used to calculate the first and second moments of
     /// gradients.
-    public var beta1: Scalar
+    public var beta1: Float
     /// A coefficient used to calculate the first and second moments of
     /// gradients.
-    public var beta2: Scalar
+    public var beta2: Float
     /// A small scalar added to the denominator to improve numerical stability.
-    public var epsilon: Scalar
+    public var epsilon: Float
     /// The weight decay.
-    public var decay: Scalar
+    public var decay: Float
+    /// The current step.
+    public var step: Int = 0
+    /// The first moments of the weights.
+    public var firstMoments: Model.AllDifferentiableVariables
+    /// The second moments of the weights.
+    public var secondMoments: Model.AllDifferentiableVariables
 
     public init(
-        learningRate: Scalar = 1e-3,
-        beta1: Scalar = 0.9,
-        beta2: Scalar = 0.999,
-        epsilon: Scalar = 1e-8,
-        decay: Scalar = 0
+        for model: __shared Model,
+        learningRate: Float = 1e-3,
+        beta1: Float = 0.9,
+        beta2: Float = 0.999,
+        epsilon: Float = 1e-8,
+        decay: Float = 0
     ) {
         precondition(learningRate >= 0, "Learning rate must be non-negative")
         precondition(0 <= beta1 && beta1 <= 1, "Beta parameter must be between 0 and 1")
@@ -71,42 +84,49 @@ public class Adam<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
         self.beta2 = beta2
         self.epsilon = epsilon
         self.decay = decay
+
+        // Initialize first & second moments to be zeros of the same shape.
+        // We can't use `Model.AllDifferentiableVariables.zero` due to the
+        // interaction between Key Paths and Differentiable Arrays.
+        firstMoments = model.allDifferentiableVariables
+        secondMoments = model.allDifferentiableVariables
+        for kp in firstMoments.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
+            firstMoments[keyPath: kp].resetToZero()
+            secondMoments[keyPath: kp].resetToZero()
+        }
+        for kp in firstMoments.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
+            firstMoments[keyPath: kp].resetToZero()
+            secondMoments[keyPath: kp].resetToZero()
+        }
     }
 
-    public convenience init(
-        for _: __shared Model,
-        learningRate: Scalar = 1e-3,
-        beta1: Scalar = 0.9,
-        beta2: Scalar = 0.999,
-        epsilon: Scalar = 1e-8,
-        decay: Scalar = 0,
-        scalarType: Scalar.Type
-    ) {
-        self.init(
-            learningRate: learningRate,
-            beta1: beta1,
-            beta2: beta2,
-            epsilon: epsilon,
-            decay: decay)
-    }
-
-    private var step: Scalar = 0
-    private var firstMoments = Model.AllDifferentiableVariables.zero
-    private var secondMoments = Model.AllDifferentiableVariables.zero
 
     public func update(_ model: inout Model.AllDifferentiableVariables,
                        along direction: Model.AllDifferentiableVariables) {
         step += 1
-        let learningRate = self.learningRate * 1 / (1 + decay * step)
-        let stepSize = learningRate * (sqrt(1 - pow(beta2, step)) / (1 - pow(beta1, step)))
-        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Scalar>.self) {
+        let learningRate = self.learningRate * 1 / (1 + decay * Float(step))
+        let stepSize = learningRate * (sqrt(1 - pow(beta2, Float(step))) /
+            (1 - pow(beta1, Float(step))))
+        // Update Float & Double Tensor variables.
+        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
             firstMoments[keyPath: kp] =
                 firstMoments[keyPath: kp] * beta1 + (1 - beta1) * direction[keyPath: kp]
             secondMoments[keyPath: kp] =
                 secondMoments[keyPath: kp] * beta2 + (1 - beta2) *
-                     direction[keyPath: kp] * direction[keyPath: kp]
+                direction[keyPath: kp] * direction[keyPath: kp]
             model[keyPath: kp] -=
                 stepSize * firstMoments[keyPath: kp] / (sqrt(secondMoments[keyPath: kp]) + epsilon)
+        }
+        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
+            firstMoments[keyPath: kp] =
+                firstMoments[keyPath: kp] * Double(beta1) +
+                Double((1 - beta1)) * direction[keyPath: kp]
+            secondMoments[keyPath: kp] =
+                secondMoments[keyPath: kp] * Double(beta2) + Double(1 - beta2) *
+                direction[keyPath: kp] * direction[keyPath: kp]
+            model[keyPath: kp] -=
+                Double(stepSize) * firstMoments[keyPath: kp] /
+                sqrt(secondMoments[keyPath: kp]) + Double(epsilon)
         }
     }
 }
@@ -119,22 +139,27 @@ public class Adam<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
 ///
 /// Reference: ["rmsprop: Divide the gradient by a running average of its recent magnitude"](
 /// http://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf)
-public class RMSProp<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
+public class RMSProp<Model: Layer>: Optimizer
     where Model.AllDifferentiableVariables == Model.CotangentVector {
     /// The learning rate.
-    public var learningRate: Scalar
+    public var learningRate: Float
     // TODO: Document `rho`. Keras doesn't document `rho`.
-    public var rho: Scalar
+    public var rho: Float
     /// A small scalar added to the denominator to improve numerical stability.
-    public var epsilon: Scalar
+    public var epsilon: Float
     /// The weight decay.
-    public var decay: Scalar
+    public var decay: Float
+    /// The step count.
+    public var step: Float = 0
+    /// The alpha values for all model differentiable variables.
+    public var alpha: Model.AllDifferentiableVariables
 
     public init(
-        learningRate: Scalar = 0.001,
-        rho: Scalar = 0.9,
-        epsilon: Scalar = 1e-8,
-        decay: Scalar = 0
+        for model: __shared Model,
+        learningRate: Float = 0.001,
+        rho: Float = 0.9,
+        epsilon: Float = 1e-8,
+        decay: Float = 0
     ) {
         precondition(learningRate >= 0, "Learning rate must be non-negative")
         precondition(rho >= 0, "Rho must be non-negative")
@@ -144,31 +169,32 @@ public class RMSProp<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
         self.rho = rho
         self.epsilon = epsilon
         self.decay = decay
+        alpha = model.allDifferentiableVariables
+        for kp in alpha.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
+            alpha[keyPath: kp].resetToZero()
+        }
+        for kp in alpha.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
+            alpha[keyPath: kp].resetToZero()
+        }
     }
 
-    public convenience init(
-        for _: __shared Model,
-        learningRate: Scalar = 0.001,
-        rho: Scalar = 0.9,
-        epsilon: Scalar = 1e-8,
-        decay: Scalar = 0,
-        scalarType: Scalar.Type
-    ) {
-        self.init(learningRate: learningRate, rho: rho, epsilon: epsilon, decay: decay)
-    }
-
-    private var step: Scalar = 0
-    private var alpha = Model.AllDifferentiableVariables.zero
 
     public func update(_ model: inout Model.AllDifferentiableVariables,
                        along direction: Model.CotangentVector) {
         step += 1
-        let learningRate = self.learningRate * 1 / (1 + decay * step)
-        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Scalar>.self) {
+        let learningRate = self.learningRate * 1 / (1 + decay * Float(step))
+        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
             alpha[keyPath: kp] =
                 rho * alpha[keyPath: kp] + (1 - rho) * pow(direction[keyPath: kp], 2)
             model[keyPath: kp] -=
                 learningRate * direction[keyPath: kp] / (sqrt(alpha[keyPath: kp]) + epsilon)
+        }
+        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
+            alpha[keyPath: kp] =
+                Double(rho) * alpha[keyPath: kp] + Double(1 - rho) * pow(direction[keyPath: kp], 2)
+            model[keyPath: kp] -=
+                Double(learningRate) * direction[keyPath: kp] /
+                (sqrt(alpha[keyPath: kp]) + Double(epsilon))
         }
     }
 }
@@ -177,22 +203,27 @@ public class RMSProp<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
 ///
 /// An optimizer that implements stochastic gradient descent, with support for momentum, learning
 /// rate decay, and Nesterov momentum.
-public class SGD<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
+public class SGD<Model: Layer>: Optimizer
     where Model.AllDifferentiableVariables == Model.CotangentVector {
     /// The learning rate.
-    public var learningRate: Scalar
+    public var learningRate: Float
     /// The momentum factor. It accelerates stochastic gradient descent in the relevant direction
     /// and dampens oscillations.
-    public var momentum: Scalar
+    public var momentum: Float
     /// The weight decay.
-    public var decay: Scalar
+    public var decay: Float
     /// Use Nesterov momentum if true.
     public var nesterov: Bool
-
+    /// The velocity state of the model
+    public var velocity: Model.AllDifferentiableVariables
+    /// The set of steps taken.
+    public var step: Int = 0
+    
     public init(
-        learningRate: Scalar = 0.01,
-        momentum: Scalar = 0,
-        decay: Scalar = 0,
+        for model: __shared Model,
+        learningRate: Float = 0.01,
+        momentum: Float = 0,
+        decay: Float = 0,
         nesterov: Bool = false
     ) {
         precondition(learningRate >= 0, "Learning rate must be non-negative")
@@ -203,32 +234,37 @@ public class SGD<Model: Layer, Scalar: TensorFlowFloatingPoint>: Optimizer
         self.momentum = momentum
         self.decay = decay
         self.nesterov = nesterov
+        velocity = model.allDifferentiableVariables
+        for kp in velocity.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
+            velocity[keyPath: kp].resetToZero()
+        }
+        for kp in velocity.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
+            velocity[keyPath: kp].resetToZero()
+        }
     }
-
-    public convenience init(
-        for _: __shared Model,
-        learningRate: Scalar = 0.01,
-        momentum: Scalar = 0,
-        decay: Scalar = 0,
-        nesterov: Bool = false,
-        scalarType: Scalar.Type
-    ) {
-        self.init(learningRate: learningRate, momentum: momentum, decay: decay, nesterov: nesterov)
-    }
-
-    private var step: Scalar = 0
-    private var velocity = Model.AllDifferentiableVariables.zero
 
     public func update(_ model: inout Model.AllDifferentiableVariables,
                        along direction: Model.CotangentVector) {
         step += 1
-        let learningRate = self.learningRate * 1 / (1 + decay * step)
-        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Scalar>.self) {
+        let learningRate = self.learningRate * 1 / (1 + decay * Float(step))
+        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
             velocity[keyPath: kp] =
                 momentum * velocity[keyPath: kp] - learningRate * direction[keyPath: kp]
             if nesterov {
                 model[keyPath: kp] +=
                     momentum * velocity[keyPath: kp] - learningRate * direction[keyPath: kp]
+            } else {
+                model[keyPath: kp] += velocity[keyPath: kp]
+            }
+        }
+        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
+            velocity[keyPath: kp] =
+                Double(momentum) * velocity[keyPath: kp] -
+                Double(learningRate) * direction[keyPath: kp]
+            if nesterov {
+                model[keyPath: kp] +=
+                    Double(momentum) * velocity[keyPath: kp] - Double(learningRate) *
+                    direction[keyPath: kp]
             } else {
                 model[keyPath: kp] += velocity[keyPath: kp]
             }
@@ -250,8 +286,7 @@ public class RiemannSGD<Model: Layer, Scalar: FloatingPoint>: Optimizer
 
     public convenience init(
         for _: __shared Model,
-        learningRate: Scalar,
-        scalarType _: Scalar.Type
+        learningRate: Scalar
     ) {
         self.init(learningRate: learningRate)
     }
