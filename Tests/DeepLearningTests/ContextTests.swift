@@ -22,9 +22,9 @@ final class ContextTests: XCTestCase {
         let dropout = Dropout<Float>(probability: 0.5)
         let x = Tensor<Float>(repeating: 1.0, shape: [5, 5])
         XCTAssertEqual(dropout.applied(to: x), x)
-        withLearningPhase(.inference) {
+        withLearningPhase(LearningPhase.inference) {
             XCTAssertEqual(dropout.applied(to: x), x)
-            withLearningPhase(.training) {
+            withLearningPhase(LearningPhase.training) {
                 XCTAssertNotEqual(dropout.applied(to: x), x)
             }
             XCTAssertEqual(dropout.applied(to: x), x)
@@ -39,7 +39,7 @@ final class ContextTests: XCTestCase {
         DispatchQueue.concurrentPerform(iterations: 10) { i in
             if i.isMultiple(of: 2) {
                 XCTAssertEqual(dropout.applied(to: x), x)
-                withLearningPhase(.training) {
+                withLearningPhase(LearningPhase.training) {
                     XCTAssertNotEqual(dropout.applied(to: x), x)
                 }
                 XCTAssertEqual(dropout.applied(to: x), x)

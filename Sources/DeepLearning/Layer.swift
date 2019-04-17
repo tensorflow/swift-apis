@@ -46,7 +46,7 @@ public extension Layer {
     /// - Returns: The inference output.
     @differentiable
     func inferring(from input: Input) -> Output {
-        return withLearningPhase(.inference) {
+        return withLearningPhase(LearningPhase.inference) {
             applied(to: input)
         }
     }
@@ -57,7 +57,7 @@ public extension Layer {
     internal func _vjpInferring(from input: Input)
         -> (value: Output, pullback: (Output.CotangentVector)
             -> (CotangentVector, Input.CotangentVector)) {
-        return withLearningPhase(.inference) {
+        return withLearningPhase(LearningPhase.inference) {
             let (output, pullback) = appliedForBackpropagation(to: input)
             return (output, { v in pullback(v) })
         }
