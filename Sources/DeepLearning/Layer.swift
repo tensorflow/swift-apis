@@ -943,7 +943,7 @@ public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
 
 /// A global average pooling layer for temporal data.
 @_fixed_layout
-public struct GlobalAveragePooling1D<Scalar: TensorFlowFloatingPoint>: Layer {
+public struct GlobalAvgPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// Creates a global average pooling layer.
     public init() {}
 
@@ -954,13 +954,13 @@ public struct GlobalAveragePooling1D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Returns: The output.
     @differentiable
     public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return input.mean(alongAxes: 1).reshaped(to: [input.shape[0], input.shape[2]])
+        return input.mean(squeezingAxes: 1)
     }
 }
 
 /// A global average pooling layer for spatial data.
 @_fixed_layout
-public struct GlobalAveragePooling2D<Scalar: TensorFlowFloatingPoint>: Layer {
+public struct GlobalAvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// Creates a global average pooling layer.
     public init() {}
 
@@ -971,13 +971,13 @@ public struct GlobalAveragePooling2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Returns: The output.
     @differentiable
     public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return input.mean(alongAxes: [1, 2]).reshaped(to: [input.shape[0], input.shape[3]])
+        return input.mean(squeezingAxes: [1, 2])
     }
 }
 
 /// A global average pooling layer for spatial and spatio-temporal data.
 @_fixed_layout
-public struct GlobalAveragePooling3D<Scalar: TensorFlowFloatingPoint>: Layer {
+public struct GlobalAvgPool3D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// Creates a global average pooling layer.
     public init() {}
 
@@ -988,7 +988,7 @@ public struct GlobalAveragePooling3D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Returns: The output.
     @differentiable
     public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return input.mean(alongAxes: [1, 2, 3]).reshaped(to: [input.shape[0], input.shape[4]])
+        return input.mean(squeezingAxes: [1, 2, 3])
     }
 }
 
