@@ -29,7 +29,7 @@ final class SequentialTests: XCTestCase {
             }
         }
         var model = Model()
-        let optimizer = SGD(for: model, learningRate: 0.02, scalarType: Float.self)
+        let optimizer = SGD(for: model, learningRate: 0.02)
         let x: Tensor<Float> = [[0, 0], [0, 1], [1, 0], [1, 1]]
         let y: Tensor<Float> = [0, 1, 1, 0]
         Context.local.learningPhase = .training
