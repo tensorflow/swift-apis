@@ -47,7 +47,7 @@ final class TrivialModelTests: XCTestCase {
         Context.local.learningPhase = .training
         for _ in 0..<3000 {
             let 𝛁model = classifier.gradient { classifier -> Tensor<Float> in
-                let ŷ = classifier.applied(to: x)
+                let ŷ = classifier(x)
                 return meanSquaredError(predicted: ŷ, expected: y)
             }
             optimizer.update(&classifier.allDifferentiableVariables, along: 𝛁model)

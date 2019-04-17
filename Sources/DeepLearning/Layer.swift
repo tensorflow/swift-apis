@@ -40,6 +40,16 @@ public protocol Layer: Differentiable & KeyPathIterable
 }
 
 public extension Layer {
+    /// Returns the output obtained from applying the layer to the given input.
+    ///
+    /// - Parameters:
+    ///   - input: The input to the layer.
+    /// - Returns: The output.
+    @differentiable
+    call func(_ input: Input) -> Output {
+      return applied(to: input)
+    }
+
     /// Returns the inference output obtained from applying the layer to the given input.
     ///
     /// - Parameter input: The input to the layer.
