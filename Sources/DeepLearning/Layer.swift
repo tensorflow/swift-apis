@@ -1295,7 +1295,7 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     public var weight: Tensor<Scalar>
     public var bias: Tensor<Scalar>
 
-    @noDerivative var stateShape: TensorShape
+    @noDerivative public var stateShape: TensorShape
 
     @differentiable
     public var zeroState: Tensor<Scalar> {
@@ -1340,7 +1340,7 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     public var inputWeight, updateWeight, forgetWeight, outputWeight: Tensor<Scalar>
     public var inputBias, updateBias, forgetBias, outputBias: Tensor<Scalar>
 
-    @noDerivative var stateShape: TensorShape
+    @noDerivative public var stateShape: TensorShape
 
     @differentiable
     public var zeroState: State {
