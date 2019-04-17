@@ -1303,7 +1303,7 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     }
 
     public typealias State = Tensor<Scalar>
-    public typealias TimeStepInput = Tensor<Float>
+    public typealias TimeStepInput = Tensor<Scalar>
     public typealias TimeStepOutput = State
     public typealias Input = RNNCellInput<TimeStepInput, State>
     public typealias Output = RNNCellOutput<TimeStepOutput, State>
@@ -1314,10 +1314,10 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     ///   - inputSize: The number of features in 2-D input tensors.
     ///   - hiddenSize: The number of features in 2-D hidden states.
     public init(inputSize: Int, hiddenSize: Int) {
-        let concatenatedInputSize = Int32(inputSize + hiddenSize)
-        self.weight = Tensor(glorotUniform: [concatenatedInputSize, Int32(hiddenSize)])
-        self.bias = Tensor(zeros: [Int32(hiddenSize)])
-        self.stateShape = TensorShape([1, Int32(hiddenSize)])
+        let concatenatedInputSize = inputSize + hiddenSize
+        self.weight = Tensor(glorotUniform: [concatenatedInputSize, hiddenSize])
+        self.bias = Tensor(zeros: [hiddenSize])
+        self.stateShape = TensorShape([1, hiddenSize])
     }
 
     /// Returns the output obtained from applying the layer to the given input.
@@ -1361,12 +1361,12 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     ///   - inputSize: The number of features in 2-D input tensors.
     ///   - hiddenSize: The number of features in 2-D hidden states.
     public init(inputSize: Int, hiddenSize: Int) {
-        let concatenatedInputSize = Int32(inputSize + hiddenSize)
-        let gateWeightShape = TensorShape([concatenatedInputSize, Int32(hiddenSize)])
+        let concatenatedInputSize = inputSize + hiddenSize
+        let gateWeightShape = TensorShape([concatenatedInputSize, hiddenSize])
         self.inputWeight = Tensor(glorotUniform: gateWeightShape)
         self.updateWeight = Tensor(glorotUniform: gateWeightShape)
         self.forgetWeight = Tensor(glorotUniform: gateWeightShape)
-        self.forgetBias = Tensor(zeros: [Int32(hiddenSize)])
+        self.forgetBias = Tensor(zeros: [hiddenSize])
         self.outputWeight = Tensor(glorotUniform: gateWeightShape)
         self.stateShape = TensorShape([1, concatenatedInputSize])
     }
