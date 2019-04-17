@@ -43,7 +43,7 @@ final class LayerTests: XCTestCase {
     }
 
     func testGlobalAvgPool1D() {
-        let layer = GlobalAveragePooling1D<Float>()
+        let layer = GlobalAvgPool1D<Float>()
         let input = Tensor(shape: [2, 5, 1], scalars: (0..<10).map(Float.init))
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>([[2], [7]])
@@ -51,7 +51,7 @@ final class LayerTests: XCTestCase {
     }
 
     func testGlobalAvgPool2D() {
-        let layer = GlobalAveragePooling2D<Float>()
+        let layer = GlobalAvgPool2D<Float>()
         let input = Tensor(shape: [2, 6, 2, 1], scalars: (0..<24).map(Float.init))
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>([[5.5], [17.5]])
@@ -59,7 +59,7 @@ final class LayerTests: XCTestCase {
     }
 
     func testGlobalAvgPool3D() {
-        let layer = GlobalAveragePooling3D<Float>()
+        let layer = GlobalAvgPool3D<Float>()
         let input = Tensor<Float>(shape: [2, 6, 2, 1, 1], scalars: (0..<24).map(Float.init))
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>([[5.5], [17.5]])
