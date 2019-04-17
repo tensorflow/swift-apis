@@ -23,12 +23,20 @@ import TensorFlow
 public protocol Optimizer {
     /// The type of the model whose parameters are optimized.
     associatedtype Model: Layer
+    /// The scalar parameter type.
+    associatedtype Scalar: FloatingPoint
     /// The learning rate.
-    var learningRate: Float { get set }
+    var learningRate: Scalar { get set }
     /// Updates the specified differentiable variables along the specified
     /// direction.
     mutating func update(_ variables: inout Model.AllDifferentiableVariables,
                          along direction: Model.CotangentVector)
+}
+
+fileprivate extension Tensor where Scalar: Numeric {
+    mutating func resetToZero() {
+        self = Tensor(zeros: shape)
+    }
 }
 
 // MARK: - Key-path based optimizers
@@ -47,11 +55,11 @@ public class Adam<Model: Layer>: Optimizer
     /// A coefficient used to calculate the first and second moments of
     /// gradients.
     public var beta2: Float
-    /// A small Float added to the denominator to improve numerical stability.
+    /// A small scalar added to the denominator to improve numerical stability.
     public var epsilon: Float
     /// The weight decay.
     public var decay: Float
-    /// The current step
+    /// The current step.
     public var step: Int = 0
     /// The first moments of the weights.
     public var firstMoments: Model.AllDifferentiableVariables
@@ -83,12 +91,12 @@ public class Adam<Model: Layer>: Optimizer
         firstMoments = model.allDifferentiableVariables
         secondMoments = model.allDifferentiableVariables
         for kp in firstMoments.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
-          firstMoments[keyPath: kp] = Tensor(zeros: firstMoments[keyPath: kp].shape)
-          secondMoments[keyPath: kp] = Tensor(zeros: secondMoments[keyPath: kp].shape)
+            firstMoments[keyPath: kp].resetToZero()
+            secondMoments[keyPath: kp].resetToZero()
         }
         for kp in firstMoments.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
-          firstMoments[keyPath: kp] = Tensor(zeros: firstMoments[keyPath: kp].shape)
-          secondMoments[keyPath: kp] = Tensor(zeros: secondMoments[keyPath: kp].shape)
+            firstMoments[keyPath: kp].resetToZero()
+            secondMoments[keyPath: kp].resetToZero()
         }
     }
 
@@ -97,24 +105,28 @@ public class Adam<Model: Layer>: Optimizer
                        along direction: Model.AllDifferentiableVariables) {
         step += 1
         let learningRate = self.learningRate * 1 / (1 + decay * Float(step))
-        let stepSize = learningRate * (sqrt(1 - pow(beta2, Float(step))) / (1 - pow(beta1, Float(step))))
+        let stepSize = learningRate * (sqrt(1 - pow(beta2, Float(step))) /
+            (1 - pow(beta1, Float(step))))
+        // Update Float & Double Tensor variables.
         for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
             firstMoments[keyPath: kp] =
                 firstMoments[keyPath: kp] * beta1 + (1 - beta1) * direction[keyPath: kp]
             secondMoments[keyPath: kp] =
                 secondMoments[keyPath: kp] * beta2 + (1 - beta2) *
-                     direction[keyPath: kp] * direction[keyPath: kp]
+                direction[keyPath: kp] * direction[keyPath: kp]
             model[keyPath: kp] -=
                 stepSize * firstMoments[keyPath: kp] / (sqrt(secondMoments[keyPath: kp]) + epsilon)
         }
         for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
             firstMoments[keyPath: kp] =
-                firstMoments[keyPath: kp] * Double(beta1) + Double((1 - beta1)) * direction[keyPath: kp]
+                firstMoments[keyPath: kp] * Double(beta1) +
+                Double((1 - beta1)) * direction[keyPath: kp]
             secondMoments[keyPath: kp] =
                 secondMoments[keyPath: kp] * Double(beta2) + Double(1 - beta2) *
-                     direction[keyPath: kp] * direction[keyPath: kp]
+                direction[keyPath: kp] * direction[keyPath: kp]
             model[keyPath: kp] -=
-                Double(stepSize) * firstMoments[keyPath: kp] / (sqrt(secondMoments[keyPath: kp]) + Double(epsilon))
+                Double(stepSize) * firstMoments[keyPath: kp] /
+                sqrt(secondMoments[keyPath: kp]) + Double(epsilon)
         }
     }
 }
@@ -133,12 +145,13 @@ public class RMSProp<Model: Layer>: Optimizer
     public var learningRate: Float
     // TODO: Document `rho`. Keras doesn't document `rho`.
     public var rho: Float
-    /// A small Float added to the denominator to improve numerical stability.
+    /// A small scalar added to the denominator to improve numerical stability.
     public var epsilon: Float
     /// The weight decay.
     public var decay: Float
-    /// The step count
+    /// The step count.
     public var step: Float = 0
+    /// The alpha values for all model differentiable variables.
     public var alpha: Model.AllDifferentiableVariables
 
     public init(
@@ -158,10 +171,10 @@ public class RMSProp<Model: Layer>: Optimizer
         self.decay = decay
         alpha = model.allDifferentiableVariables
         for kp in alpha.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
-          alpha[keyPath: kp] = Tensor(zeros: alpha[keyPath: kp].shape)
+            alpha[keyPath: kp].resetToZero()
         }
         for kp in alpha.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
-          alpha[keyPath: kp] = Tensor(zeros: alpha[keyPath: kp].shape)
+            alpha[keyPath: kp].resetToZero()
         }
     }
 
@@ -180,7 +193,8 @@ public class RMSProp<Model: Layer>: Optimizer
             alpha[keyPath: kp] =
                 Double(rho) * alpha[keyPath: kp] + Double(1 - rho) * pow(direction[keyPath: kp], 2)
             model[keyPath: kp] -=
-                Double(learningRate) * direction[keyPath: kp] / (sqrt(alpha[keyPath: kp]) + Double(epsilon))
+                Double(learningRate) * direction[keyPath: kp] /
+                (sqrt(alpha[keyPath: kp]) + Double(epsilon))
         }
     }
 }
@@ -222,10 +236,10 @@ public class SGD<Model: Layer>: Optimizer
         self.nesterov = nesterov
         velocity = model.allDifferentiableVariables
         for kp in velocity.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
-          velocity[keyPath: kp] = Tensor(zeros: velocity[keyPath: kp].shape)
+            velocity[keyPath: kp].resetToZero()
         }
         for kp in velocity.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
-          velocity[keyPath: kp] = Tensor(zeros: velocity[keyPath: kp].shape)
+            velocity[keyPath: kp].resetToZero()
         }
     }
 
@@ -245,10 +259,12 @@ public class SGD<Model: Layer>: Optimizer
         }
         for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
             velocity[keyPath: kp] =
-                Double(momentum) * velocity[keyPath: kp] - Double(learningRate) * direction[keyPath: kp]
+                Double(momentum) * velocity[keyPath: kp] -
+                Double(learningRate) * direction[keyPath: kp]
             if nesterov {
                 model[keyPath: kp] +=
-                    Double(momentum) * velocity[keyPath: kp] - Double(learningRate) * direction[keyPath: kp]
+                    Double(momentum) * velocity[keyPath: kp] - Double(learningRate) *
+                    direction[keyPath: kp]
             } else {
                 model[keyPath: kp] += velocity[keyPath: kp]
             }
@@ -259,18 +275,18 @@ public class SGD<Model: Layer>: Optimizer
 // MARK: - Manifold optimizers
 
 /// A Riemann manifold stochastic gradient descent (SGD) optimizer.
-public class RiemannSGD<Model: Layer>: Optimizer
-    where Model.TangentVector: VectorNumeric, Model.TangentVector.Scalar == Float {
+public class RiemannSGD<Model: Layer, Scalar: FloatingPoint>: Optimizer
+    where Model.TangentVector: VectorNumeric, Model.TangentVector.Scalar == Scalar {
     /// The learning rate.
-    public var learningRate: Float
+    public var learningRate: Scalar
 
-    public init(learningRate: Float) {
+    public init(learningRate: Scalar) {
         self.learningRate = learningRate
     }
 
     public convenience init(
         for _: __shared Model,
-        learningRate: Float
+        learningRate: Scalar
     ) {
         self.init(learningRate: learningRate)
     }
