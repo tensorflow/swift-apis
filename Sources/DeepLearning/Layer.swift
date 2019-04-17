@@ -1337,14 +1337,8 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
 
 /// An LSTM Cell.
 public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
-    public var inputWeight: Tensor<Scalar>
-    public var inputBias: Tensor<Scalar>
-    public var updateWeight: Tensor<Scalar>
-    public var updateBias: Tensor<Scalar>
-    public var forgetWeight: Tensor<Scalar>
-    public var forgetBias: Tensor<Scalar>
-    public var outputWeight: Tensor<Scalar>
-    public var outputBias: Tensor<Scalar>
+    public var inputWeight, updateWeight, forgetWeight, outputWeight: Tensor<Scalar>
+    public var inputBias, updateBias, forgetBias, outputBias: Tensor<Scalar>
 
     @noDerivative var stateShape: TensorShape
 
