@@ -1295,7 +1295,9 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     public var weight: Tensor<Scalar>
     public var bias: Tensor<Scalar>
 
-    @noDerivative public var stateShape: TensorShape
+    @noDerivative public var stateShape: TensorShape {
+        return TensorShape([1, weight.shape[1]])
+    }
 
     @differentiable
     public var zeroState: Tensor<Scalar> {
@@ -1317,7 +1319,6 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
         let concatenatedInputSize = inputSize + hiddenSize
         self.weight = Tensor(glorotUniform: [concatenatedInputSize, hiddenSize])
         self.bias = Tensor(zeros: [hiddenSize])
-        self.stateShape = TensorShape([1, hiddenSize])
     }
 
     /// Returns the output obtained from applying the layer to the given input.
@@ -1340,7 +1341,9 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     public var inputWeight, updateWeight, forgetWeight, outputWeight: Tensor<Scalar>
     public var inputBias, updateBias, forgetBias, outputBias: Tensor<Scalar>
 
-    @noDerivative public var stateShape: TensorShape
+    @noDerivative public var stateShape: TensorShape {
+        return TensorShape([1, inputWeight.shape[1]])
+    }
 
     @differentiable
     public var zeroState: State {
@@ -1369,7 +1372,6 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
         self.forgetBias = Tensor(ones: gateBiasShape)
         self.outputWeight = Tensor(glorotUniform: gateWeightShape)
         self.outputBias = Tensor(zeros: gateBiasShape)
-        self.stateShape = TensorShape([1, concatenatedInputSize])
     }
 
     public struct State: Differentiable {
