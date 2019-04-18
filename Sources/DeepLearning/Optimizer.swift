@@ -22,7 +22,7 @@ import TensorFlow
 /// learning model.
 public protocol Optimizer {
     /// The type of the model whose parameters are optimized.
-    associatedtype Model: Layer
+    associatedtype Model: Differentiable
     /// The scalar parameter type.
     associatedtype Scalar: FloatingPoint
     /// The learning rate.
