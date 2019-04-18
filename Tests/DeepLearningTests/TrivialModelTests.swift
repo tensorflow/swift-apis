@@ -40,14 +40,14 @@ final class TrivialModelTests: XCTestCase {
             }
         }
         var classifier = Classifier(hiddenSize: 4)
-        let optimizer = SGD(for: classifier, learningRate: 0.02, scalarType: Float.self)
+        let optimizer = SGD(for: classifier, learningRate: 0.02)
         let x: Tensor<Float> = [[0, 0], [0, 1], [1, 0], [1, 1]]
         let y: Tensor<Float> = [[0], [1], [1], [0]]
 
         Context.local.learningPhase = .training
         for _ in 0..<3000 {
             let 𝛁model = classifier.gradient { classifier -> Tensor<Float> in
-                let ŷ = classifier.applied(to: x)
+                let ŷ = classifier(x)
                 return meanSquaredError(predicted: ŷ, expected: y)
             }
             optimizer.update(&classifier.allDifferentiableVariables, along: 𝛁model)

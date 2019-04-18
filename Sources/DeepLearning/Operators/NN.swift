@@ -51,7 +51,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     // TODO: Verify that these calculations are correct.
     @inlinable
     internal func _vjpBatchNormalized(
-        alongAxis axis: Int32,
+        alongAxis axis: Int,
         offset: Tensor,
         scale: Tensor,
         epsilon: Scalar
@@ -76,6 +76,38 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
             let dSelf = tmp + (dMean / dim)
             return (dSelf, dOffset, dScale)
         })
+    }
+}
+
+public extension Tensor where Scalar: BinaryFloatingPoint {
+    /// Computes the batch normalized tensor along the specified axis.
+    ///
+    /// Specifically, returns `(self - mu)/(var + epsilon) * gamma + beta` where
+    /// `mu` and `var` are respectively the mean and variance of `self` along
+    /// `axis`.
+    ///
+    /// - Parameters:
+    ///     - axis: The batch dimension.
+    ///     - offset: The offset, also known as beta.
+    ///     - scale: The scale, also known as gamma.
+    ///     - epsilon: A small value added to the denominator for numerical
+    ///         stability.
+    @inlinable
+    @differentiable(
+        wrt: (self, offset, scale), vjp: _vjpBatchNormalized
+        where Scalar : TensorFlowFloatingPoint
+    )
+    func batchNormalized(
+        alongAxis axis: Int,
+        offset: Tensor = Tensor(0),
+        scale: Tensor = Tensor(1),
+        epsilon: Scalar = 0.001
+    ) -> Tensor {
+        let mean = self.mean(alongAxes: axis)
+        let squaredDiff: Tensor = Raw.squaredDifference(self, mean)
+        let variance = squaredDiff.mean(alongAxes: axis)
+        let inv = rsqrt(variance + epsilon) * scale
+        return self * inv + offset - mean * inv
     }
 }
 
@@ -117,14 +149,14 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     internal func conv2DBackpropInput(
         shape: Tensor<Int32>,
         filter: Tensor,
-        strides: (Int32, Int32, Int32, Int32),
+        strides: (Int, Int, Int, Int),
         padding: Padding
     ) -> Tensor {
         return Raw.conv2DBackpropInput(
             inputSizes: shape,
             filter: filter,
             outBackprop: self,
-            strides: [strides.0, strides.1, strides.2, strides.3],
+            strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2), Int32(strides.3)],
             padding: padding.raw2,
             explicitPaddings: [])
     }
@@ -135,14 +167,14 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     internal func conv2DBackpropFilter(
         input: Tensor,
         filterSizes: Tensor<Int32>,
-        strides: (Int32, Int32, Int32, Int32),
+        strides: (Int, Int, Int, Int),
         padding: Padding
     ) -> Tensor {
         return Raw.conv2DBackpropFilter(
             input,
             filterSizes: filterSizes,
             outBackprop: self,
-            strides: [strides.0, strides.1, strides.2, strides.3],
+            strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2), Int32(strides.3)],
             padding: padding.raw2,
             explicitPaddings: [])
     }
@@ -151,7 +183,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     internal func _vjpConv2DBackpropInput(
         _ shape: Tensor<Int32>,
         _ filter: Tensor,
-        _ strides: (Int32, Int32, Int32, Int32),
+        _ strides: (Int, Int, Int, Int),
         _ padding: Padding
     ) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
         let value = conv2DBackpropInput(shape: shape, filter: filter, strides: strides,
@@ -169,7 +201,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     internal func _vjpConv2DBackpropFilter(
         _ input: Tensor,
         _ filterSizes: Tensor<Int32>,
-        _ strides: (Int32, Int32, Int32, Int32),
+        _ strides: (Int, Int, Int, Int),
         _ padding: Padding
     ) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
         let value = conv2DBackpropFilter(input: input, filterSizes: filterSizes,
@@ -186,7 +218,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     internal func _vjpConvolved2D(
         filter: Tensor,
-        strides: (Int32, Int32, Int32, Int32),
+        strides: (Int, Int, Int, Int),
         padding: Padding
     ) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
         let value = convolved2D(withFilter: filter, strides: strides,
@@ -207,8 +239,8 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
 
     @inlinable
     internal func _vjpMaxPooled(
-        kernelSize: (Int32, Int32, Int32, Int32),
-        strides: (Int32, Int32, Int32, Int32),
+        kernelSize: (Int, Int, Int, Int),
+        strides: (Int, Int, Int, Int),
         padding: Padding
     ) -> (Tensor, (Tensor) -> Tensor) {
         // TODO: Currently this is not higher order differentiable. Redefine in
@@ -220,8 +252,10 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
                 origInput: self,
                 origOutput: value,
                 grad: v,
-                ksize: Tensor<Int32>([kernelSize.0, kernelSize.1, kernelSize.2, kernelSize.3]),
-                strides: Tensor<Int32>([strides.0, strides.1, strides.2, strides.3]),
+                ksize: Tensor<Int32>([Int32(kernelSize.0), Int32(kernelSize.1),
+                                      Int32(kernelSize.2), Int32(kernelSize.3)]),
+                strides: Tensor<Int32>([Int32(strides.0), Int32(strides.1),
+                                        Int32(strides.2), Int32(strides.3)]),
                 padding: padding.raw
             )
         })
@@ -229,8 +263,8 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
 
     @inlinable
     internal func _vjpAveragePooled(
-        kernelSize: (Int32, Int32, Int32, Int32),
-        strides: (Int32, Int32, Int32, Int32),
+        kernelSize: (Int, Int, Int, Int),
+        strides: (Int, Int, Int, Int),
         padding: Padding
     ) -> (Tensor, (Tensor) -> Tensor) {
         // TODO: Currently this is not higher order differentiable. Redefine in
@@ -241,8 +275,9 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
             return Raw.avgPoolGrad(
                 origInputShape: self.shapeTensor,
                 grad: v,
-                ksize: [kernelSize.0, kernelSize.1, kernelSize.2, kernelSize.3],
-                strides: [strides.0, strides.1, strides.2, strides.3],
+                ksize: [Int32(kernelSize.0), Int32(kernelSize.1),
+                        Int32(kernelSize.2), Int32(kernelSize.3)],
+                strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2), Int32(strides.3)],
                 padding: padding.raw
             )
         })
@@ -267,13 +302,13 @@ public extension Tensor where Scalar: FloatingPoint {
     )
     func convolved2D(
         withFilter filter: Tensor,
-        strides: (Int32, Int32, Int32, Int32),
+        strides: (Int, Int, Int, Int),
         padding: Padding
     ) -> Tensor {
         return Raw.conv2D(
             self,
             filter: filter,
-            strides: [strides.0, strides.1, strides.2, strides.3],
+            strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2), Int32(strides.3)],
             padding: padding.raw2,
             explicitPaddings: [])
     }
@@ -292,16 +327,16 @@ public extension Tensor where Scalar: FloatingPoint {
         where Scalar : TensorFlowFloatingPoint
     )
     func maxPooled(
-        kernelSize: (Int32, Int32, Int32, Int32),
-        strides: (Int32, Int32, Int32, Int32),
+        kernelSize: (Int, Int, Int, Int),
+        strides: (Int, Int, Int, Int),
         padding: Padding
     ) -> Tensor {
         return Raw.maxPoolV2(
             self,
-            ksize: Tensor<Int32>([kernelSize.0, kernelSize.1,
-                                 kernelSize.2, kernelSize.3]),
-            strides: Tensor<Int32>([strides.0, strides.1,
-                                   strides.2, strides.3]),
+            ksize: Tensor<Int32>([Int32(kernelSize.0), Int32(kernelSize.1),
+                                  Int32(kernelSize.2), Int32(kernelSize.3)]),
+            strides: Tensor<Int32>([Int32(strides.0), Int32(strides.1),
+                                    Int32(strides.2), Int32(strides.3)]),
             padding: padding.raw)
     }
 
@@ -319,14 +354,15 @@ public extension Tensor where Scalar: FloatingPoint {
         where Scalar : TensorFlowFloatingPoint
     )
     func averagePooled(
-        kernelSize: (Int32, Int32, Int32, Int32),
-        strides: (Int32, Int32, Int32, Int32),
+        kernelSize: (Int, Int, Int, Int),
+        strides: (Int, Int, Int, Int),
         padding: Padding
     ) -> Tensor {
         return Raw.avgPool(
             value: self,
-            ksize: [kernelSize.0, kernelSize.1, kernelSize.2, kernelSize.3],
-            strides: [strides.0, strides.1, strides.2, strides.3],
+            ksize: [Int32(kernelSize.0), Int32(kernelSize.1),
+                    Int32(kernelSize.2), Int32(kernelSize.3)],
+            strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2), Int32(strides.3)],
             padding: padding.raw)
     }
 }

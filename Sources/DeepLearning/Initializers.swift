@@ -182,7 +182,7 @@ public extension Tensor where Scalar: BinaryFloatingPoint {
                                 Int64.random(in: Int64.min..<Int64.max))
     ) {
         self = Raw.statelessRandomUniform(
-          shape: Tensor<Int32>((0..<shape.rank).map{shape[$0]}),
+          shape: Tensor<Int32>((0..<shape.rank).map { Int32(shape[$0]) }),
           seed: Tensor<Int64>([seed.0, seed.1])
         )
     }
@@ -200,7 +200,7 @@ public extension Tensor where Scalar: BinaryFloatingPoint {
                                 Int64.random(in: Int64.min..<Int64.max))
     ) {
         self = Raw.statelessRandomNormal(
-            shape: Tensor<Int32>((0..<shape.rank).map{shape[$0]}),
+            shape: Tensor<Int32>((0..<shape.rank).map { Int32(shape[$0]) }),
             seed: Tensor<Int64>([seed.0, seed.1])
         )
     }
