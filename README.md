@@ -29,8 +29,8 @@ struct Model: Layer {
     var layer3 = Dense<Float>(inputSize: hiddenSize, outputSize: 3, activation: identity)
     
     @differentiable
-    func applied(to input: Tensor<Float>, in context: Context) -> Tensor<Float> {
-        return input.sequenced(in: context, through: layer1, layer2, layer3)
+    call func(to input: Tensor<Float>) -> Tensor<Float> {
+        return input.sequenced(through: layer1, layer2, layer3)
     }
 }
 ```
@@ -38,9 +38,9 @@ struct Model: Layer {
 #### Initialize a model and an optimizer
 
 ```swift
-let optimizer = SGD<Model, Float>(learningRate: 0.02)
+let optimizer = SGD(for: model, learningRate: 0.02)
 var classifier = Model()
-let context = Context(learningPhase: .training)
+Context.local.learningPhase = .training
 let x: Tensor<Float> = ...
 let y: Tensor<Float> = ...
 ```
@@ -52,7 +52,7 @@ One way to define a training epoch is to use the [`Differentiable.gradient(in:)`
 ```swift
 for _ in 0..<1000 {
     let 𝛁model = classifier.gradient { classifier -> Tensor<Float> in
-        let ŷ = classifier.applied(to: x, in: context)
+        let ŷ = classifier.applied(to: x)
         let loss = softmaxCrossEntropy(logits: ŷ, labels: y)
         print("Loss: \(loss)")
         return loss
@@ -65,7 +65,7 @@ Another way is to make use of methods on `Differentiable` or `Layer` that produc
 
 ```swift
 for _ in 0..<1000 {
-    let (ŷ, backprop) = classifier.appliedForBackpropagation(to: x, in: context)
+    let (ŷ, backprop) = classifier.appliedForBackpropagation(to: x)
     let (loss, 𝛁ŷ) = ŷ.valueWithGradient { ŷ in softmaxCrossEntropy(logits: ŷ, labels: y) }
     print("Model output: \(ŷ), Loss: \(loss)")
     let 𝛁model = backprop(𝛁ŷ)
