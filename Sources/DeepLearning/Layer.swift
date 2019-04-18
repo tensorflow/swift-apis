@@ -1332,7 +1332,7 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     /// - Returns: The hidden state.
     @differentiable
     public func applied(to input: Input) -> Output {
-        let concatenatedInput = input.input.concatenated(with: input.state)
+        let concatenatedInput = input.input.concatenated(with: input.state, alongAxis: 1)
         let newState = matmul(concatenatedInput, weight) + bias
         return Output(output: newState, state: newState)
     }
