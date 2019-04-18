@@ -1401,16 +1401,16 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
 public struct RNN<Cell: RNNCell>: Layer {
     public var cell: Cell
     
-    init(_ cell: () -> Cell) {
+    public init(_ cell: @autoclosure () -> Cell) {
         self.cell = cell()
     }
 
     @differentiable
-    public func applied(to input: [Cell.TimeStepInput]) -> [Cell.Output] {
+    public func call(_ input: [Cell.TimeStepInput]) -> [Cell.Output] {
         var currentHiddenState = cell.zeroState
         var outputs: [Cell.Output] = []
         for timestep in input {
-            let timestepOutput = cell.applied(to: .init(input: timestep, state: currentHiddenState))
+            let timestepOutput = cell(input: timestep, state: currentHiddenState)
             currentHiddenState = timestepOutput.state
             outputs.append(timestepOutput)
         }
