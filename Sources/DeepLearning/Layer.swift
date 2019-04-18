@@ -1397,3 +1397,23 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
         return Output(output: newState, state: newState)
     }
 }
+
+public struct RNN<Cell: RNNCell>: Layer {
+    public var cell: Cell
+    
+    init(_ cell: () -> Cell) {
+        self.cell = cell()
+    }
+
+    @differentiable
+    public func applied(to input: [Cell.TimeStepInput]) -> [Cell.Output] {
+        var currentHiddenState = cell.zeroState
+        var outputs: [Cell.Output] = []
+        for timestep in input {
+            let timestepOutput = cell.applied(to: .init(input: timestep, state: currentHiddenState))
+            currentHiddenState = timestepOutput.state
+            outputs.append(timestepOutput)
+        }
+        return outputs
+    }
+}
