@@ -1276,7 +1276,6 @@ public protocol RNNCell: Layer where Input == RNNCellInput<TimeStepInput, State>
     /// The state that may be preserved across time steps.
     associatedtype State: Differentiable
     /// The zero state.
-    @differentiable
     var zeroState: State { get }
 }
 
@@ -1303,7 +1302,6 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
         return TensorShape([1, weight.shape[1]])
     }
 
-    @differentiable
     public var zeroState: Tensor<Scalar> {
         return Tensor(zeros: stateShape)
     }
@@ -1349,7 +1347,6 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
         return TensorShape([1, inputWeight.shape[1]])
     }
 
-    @differentiable
     public var zeroState: State {
         return State(cell: Tensor(zeros: stateShape), hidden: Tensor(zeros: stateShape))
     }
