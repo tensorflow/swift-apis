@@ -35,8 +35,8 @@ final class TrivialModelTests: XCTestCase {
             }
             @differentiable
             call func(_ input: Tensor<Float>) -> Tensor<Float> {
-                let h1 = l1.applied(to: input)
-                return l2.applied(to: h1)
+                let h1 = l1(input)
+                return l2(h1)
             }
         }
         var classifier = Classifier(hiddenSize: 4)

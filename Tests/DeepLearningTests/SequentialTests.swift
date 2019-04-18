@@ -35,7 +35,7 @@ final class SequentialTests: XCTestCase {
         Context.local.learningPhase = .training
         for _ in 0..<1000 {
             let 𝛁model = model.gradient { model -> Tensor<Float> in
-                let ŷ = model.applied(to: x)
+                let ŷ = model(x)
                 return meanSquaredError(predicted: ŷ, expected: y)
             }
             optimizer.update(&model.allDifferentiableVariables, along: 𝛁model)

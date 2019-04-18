@@ -45,9 +45,7 @@ public extension Layer {
     /// - Returns: The inference output.
     @differentiable
     func inferring(from input: Input) -> Output {
-        return withLearningPhase(LearningPhase.inference) {
-            applied(to: input)
-        }
+        return withLearningPhase(LearningPhase.inference) { self(input) }
     }
 
     // TODO(rxwei): Remove this custom VJP once differentiation supports currying.
@@ -75,7 +73,7 @@ public extension Layer {
     func appliedForBackpropagation(to input: Input)
         -> (output: Output, backpropagator: Backpropagator) {
         let (out, pullback) = valueWithPullback(at: input) { layer, input in
-            return layer.applied(to: input)
+            return layer(input)
         }
         return (out, pullback)
     }
@@ -92,8 +90,8 @@ public extension Differentiable {
     @differentiable
     func sequenced<L1: Layer, L2: Layer>(through l1: L1, _ l2: L2) -> L2.Output
         where L1.Input == Self, L1.Output == L2.Input {
-        let o1 = l1.applied(to: self)
-        return l2.applied(to: o1)
+        let o1 = l1(self)
+        return l2(o1)
     }
 
     /// Returns the output computed by applying a sequence of layers to the previous layer's output,
@@ -107,9 +105,9 @@ public extension Differentiable {
     @differentiable
     func sequenced<L1: Layer, L2: Layer, L3: Layer>(through l1: L1, _ l2: L2, _ l3: L3) -> L3.Output
         where L1.Input == Self, L1.Output == L2.Input, L2.Output == L3.Input {
-        let o1 = l1.applied(to: self)
-        let o2 = l2.applied(to: o1)
-        return l3.applied(to: o2)
+        let o1 = l1(self)
+        let o2 = l2(o1)
+        return l3(o2)
     }
 
     /// Returns the output computed by applying a sequence of layers to the previous layer's output,
@@ -127,10 +125,10 @@ public extension Differentiable {
     ) -> L4.Output
         where L1.Input == Self, L1.Output == L2.Input, L2.Output == L3.Input,
               L3.Output == L4.Input {
-        let o1 = l1.applied(to: self)
-        let o2 = l2.applied(to: o1)
-        let o3 = l3.applied(to: o2)
-        return l4.applied(to: o3)
+        let o1 = l1(self)
+        let o2 = l2(o1)
+        let o3 = l3(o2)
+        return l4(o3)
     }
 
     /// Returns the output computed by applying a sequence of layers to the previous layer's output,
@@ -149,11 +147,11 @@ public extension Differentiable {
     ) -> L5.Output
         where L1.Input == Self, L1.Output == L2.Input, L2.Output == L3.Input, L3.Output == L4.Input,
               L4.Output == L5.Input {
-        let o1 = l1.applied(to: self)
-        let o2 = l2.applied(to: o1)
-        let o3 = l3.applied(to: o2)
-        let o4 = l4.applied(to: o3)
-        return l5.applied(to: o4)
+        let o1 = l1(self)
+        let o2 = l2(o1)
+        let o3 = l3(o2)
+        let o4 = l4(o3)
+        return l5(o4)
     }
 
     /// Returns the output computed by applying a sequence of layers to the previous layer's output,
@@ -173,12 +171,12 @@ public extension Differentiable {
     ) -> L6.Output
         where L1.Input == Self, L1.Output == L2.Input, L2.Output == L3.Input, L3.Output == L4.Input,
               L4.Output == L5.Input, L5.Output == L6.Input {
-        let o1 = l1.applied(to: self)
-        let o2 = l2.applied(to: o1)
-        let o3 = l3.applied(to: o2)
-        let o4 = l4.applied(to: o3)
-        let o5 = l5.applied(to: o4)
-        return l6.applied(to: o5)
+        let o1 = l1(self)
+        let o2 = l2(o1)
+        let o3 = l3(o2)
+        let o4 = l4(o3)
+        let o5 = l5(o4)
+        return l6(o5)
     }
 }
 
@@ -1279,6 +1277,6 @@ public extension RNNCell {
     /// - Returns: The output.
     @differentiable
     call func(_ input: TimeStepInput, state: State) -> RNNCellOutput<TimeStepOutput, State> {
-        return applied(to: RNNCellInput(input: input, state: state))
+        return(RNNCellInput(input: input, state: state))
     }
 }
