@@ -21,15 +21,15 @@ final class ContextTests: XCTestCase {
         Context.local.learningPhase = .inference
         let dropout = Dropout<Float>(probability: 0.5)
         let x = Tensor<Float>(repeating: 1.0, shape: [5, 5])
-        XCTAssertEqual(dropout.applied(to: x), x)
+        XCTAssertEqual(dropout(x), x)
         withLearningPhase(LearningPhase.inference) {
-            XCTAssertEqual(dropout.applied(to: x), x)
+            XCTAssertEqual(dropout(x), x)
             withLearningPhase(LearningPhase.training) {
-                XCTAssertNotEqual(dropout.applied(to: x), x)
+                XCTAssertNotEqual(dropout(x), x)
             }
-            XCTAssertEqual(dropout.applied(to: x), x)
+            XCTAssertEqual(dropout(x), x)
         }
-        XCTAssertEqual(dropout.applied(to: x), x)
+        XCTAssertEqual(dropout(x), x)
     }
 
     func testMultithreadedDropout() {
@@ -38,13 +38,13 @@ final class ContextTests: XCTestCase {
         Context.local.learningPhase = .inference
         DispatchQueue.concurrentPerform(iterations: 10) { i in
             if i.isMultiple(of: 2) {
-                XCTAssertEqual(dropout.applied(to: x), x)
+                XCTAssertEqual(dropout(x), x)
                 withLearningPhase(LearningPhase.training) {
-                    XCTAssertNotEqual(dropout.applied(to: x), x)
+                    XCTAssertNotEqual(dropout(x), x)
                 }
-                XCTAssertEqual(dropout.applied(to: x), x)
+                XCTAssertEqual(dropout(x), x)
             } else {
-                XCTAssertEqual(dropout.applied(to: x), x)
+                XCTAssertEqual(dropout(x), x)
             }
         }
     }
