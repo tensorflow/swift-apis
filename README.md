@@ -29,7 +29,7 @@ struct Model: Layer {
     var layer3 = Dense<Float>(inputSize: hiddenSize, outputSize: 3, activation: identity)
     
     @differentiable
-    call func(_ input: Tensor<Float>) -> Tensor<Float> {
+    func applied(to input: Tensor<Float>) -> Tensor<Float> {
         return input.sequenced(through: layer1, layer2, layer3)
     }
 }
@@ -52,7 +52,7 @@ One way to define a training epoch is to use the [`Differentiable.gradient(in:)`
 ```swift
 for _ in 0..<1000 {
     let 𝛁model = classifier.gradient { classifier -> Tensor<Float> in
-        let ŷ = classifier(x)
+        let ŷ = classifier.applied(to: x)
         let loss = softmaxCrossEntropy(logits: ŷ, labels: y)
         print("Loss: \(loss)")
         return loss
