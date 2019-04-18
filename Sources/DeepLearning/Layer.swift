@@ -1276,7 +1276,7 @@ public extension RNNCell {
     ///   - previousState: The previous state of the RNN cell.
     /// - Returns: The output.
     @differentiable
-    call func(_ input: TimeStepInput, state: State) -> RNNCellOutput<TimeStepOutput, State> {
-        return(RNNCellInput(input: input, state: state))
+    call func(input: TimeStepInput, state: State) -> RNNCellOutput<TimeStepOutput, State> {
+        return self(RNNCellInput(input: input, state: state))
     }
 }
