@@ -1320,7 +1320,7 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     @differentiable
     public func call(_ input: Input) -> Output {
         let concatenatedInput = input.input.concatenated(with: input.state, alongAxis: 1)
-        let newState = matmul(concatenatedInput, weight) + bias
+        let newState = tanh(matmul(concatenatedInput, weight) + bias)
         return Output(output: newState, state: newState)
     }
 }
