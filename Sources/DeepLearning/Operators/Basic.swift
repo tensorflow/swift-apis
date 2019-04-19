@@ -24,8 +24,7 @@ public extension Tensor {
     }
 
     @inlinable
-    @differentiable(
-        vjp: _vjpSplit(numSplits:alongAxis:) where Scalar : TensorFlowFloatingPoint)
+    @differentiable(vjp: _vjpSplit(numSplits:alongAxis:) where Scalar : TensorFlowFloatingPoint)
     func split(numSplits: Int, alongAxis axis: Int = 0) -> [Tensor] {
         return Raw.split(
             splitDim: Tensor<Int32>(Int32(axis)), value: self, numSplit: Int64(numSplits))
@@ -114,7 +113,7 @@ public extension Tensor {
     /// 
     /// - Returns: The gathered tensor.
     @inlinable
-    @differentiable(wrt: self where Scalar : TensorFlowFloatingPoint)
+    // TODO: @differentiable(wrt: self where Scalar : TensorFlowFloatingPoint)
     func batchGathering(
         atIndices indices: Tensor<Int32>,
         alongAxis axis: Int,
@@ -136,7 +135,7 @@ public extension Tensor {
 
             // Move self[axis] up to self[batchDims].
             let permutation = Tensor<Int32>(concatenating: [
-                Tensor<Int32>(0 ..< Int32(batchDims)),
+                Tensor<Int32>(rangeFrom: 0, to: Int32(batchDims), stride: 1),
                 Tensor<Int32>(Int32(axis)).rankLifted(),
                 Tensor<Int32>(rangeFrom: Int32(batchDims), to: Int32(posAxis), stride: 1),
                 Tensor<Int32>(rangeFrom: Int32(axis) + 1, to: Int32(rank), stride: 1)])
@@ -148,28 +147,27 @@ public extension Tensor {
             // the dimensions corresponding to indices[batchDims ...].
             let start = indices.rank + posAxis - batchDims
             let resultPermutation = Tensor<Int32>(concatenating: [
-                Tensor<Int32>(0 ..< Int32(batchDims)),
+                Tensor<Int32>(rangeFrom: 0, to: Int32(batchDims), stride: 1),
                 Tensor<Int32>(rangeFrom: Int32(indices.rank), to: Int32(start), stride: 1),
-                Tensor<Int32>(Int32(batchDims) ..< Int32(indices.rank)),
+                Tensor<Int32>(rangeFrom: Int32(batchDims), to: Int32(indices.rank), stride: 1),
                 Tensor<Int32>(rangeFrom: Int32(start), to: Int32(result.rank), stride: 1)])
             return result.transposed(withPermutations: resultPermutation)
         }
 
-        let castedShape = Tensor<Int32>(shapeTensor)
         var batchIndices = indices
         var accumulated = Tensor<Int32>(ones: [])
         for d in (1...batchDims).reversed() {
-            accumulated *= castedShape[d]
-            let dValue = castedShape[d - 1]
+            accumulated *= shapeTensor[d]
+            let dValue = shapeTensor[d - 1]
             let dIndices = Tensor<Int32>(
                 rangeFrom: Tensor<Int32>(zeros: []),
                 to: dValue,
                 stride: Tensor<Int32>(ones: [])
             ) * accumulated
             let dShape = Tensor<Int32>(concatenating: [
-                Tensor<Int32>([Int32](repeating: 1, count: Int(d - 1))),
-                Tensor<Int32>([dValue]),
-                Tensor<Int32>([Int32](repeating: 1, count: Int(indices.rank - 1)))])
+                Tensor<Int32>([Int32](repeating: 1, count: d - 1)),
+                dValue.rankLifted(),
+                Tensor<Int32>([Int32](repeating: 1, count: indices.rank - 1))])
             batchIndices += dIndices.reshaped(toShape: dShape)
         }
 
@@ -215,7 +213,7 @@ public extension Tensor {
     /// - Returns: `(self.rank - K + 1)`-dimensional tensor populated by entries in this tensor 
     ///   corresponding to `true` values in `mask`.
     @inlinable
-    @differentiable(wrt: self where Scalar : TensorFlowFloatingPoint)
+    // TODO: @differentiable(wrt: self where Scalar : TensorFlowFloatingPoint)
     func gathering(where mask: Tensor<Bool>, alongAxis axis: Int = 0) -> Tensor {
         precondition(mask.rank != 0, "The boolean mask cannot be a scalar.")
         let posAxis = axis < 0 ? axis + rank : axis
@@ -264,25 +262,25 @@ public extension Tensor {
 }
 
 internal extension Tensor where Scalar : TensorFlowFloatingPoint {
-    @inlinable
+    @usableFromInline
     func _vjpSplit(
         numSplits: Int,
         alongAxis axis: Int = 0
-    ) -> ([Tensor], (Array<Tensor>.DifferentiableView) -> Tensor) {
+    ) -> ([Tensor], (Array<Tensor>.CotangentVector) -> Tensor) {
         let result = split(numSplits: numSplits, alongAxis: axis)
         return (result, { v in Tensor(concatenating: v.base, alongAxis: axis) })
     }
 
-    @inlinable
+    @usableFromInline
     func _vjpSplit(
         sizes: Tensor<Int32>,
         alongAxis axis: Int = 0
-    ) -> ([Tensor], (Array<Tensor>.DifferentiableView) -> Tensor) {
+    ) -> ([Tensor], (Array<Tensor>.CotangentVector) -> Tensor) {
         let result = split(sizes: sizes, alongAxis: axis)
         return (result, { v in Tensor(concatenating: v.base, alongAxis: axis) })
     }
 
-    @inlinable
+    @usableFromInline
     func _vjpGathering(
         atIndices indices: Tensor<Int32>, 
         alongAxis axis: Int = 0
@@ -316,7 +314,7 @@ internal extension Tensor where Scalar : TensorFlowFloatingPoint {
                 data: transposedValues,
                 segmentIds: valueIndices,
                 numSegments: shape[posAxis])
-            
+    
             // Finally, we invert the above transpose operation by moving dimension 0 back to its
             // original position.
             let inversePermutations = Tensor<Int32>(concatenating: [

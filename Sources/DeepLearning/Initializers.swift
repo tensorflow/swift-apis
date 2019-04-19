@@ -113,18 +113,18 @@ public extension Tensor {
 }
 
 internal extension Tensor where Scalar : TensorFlowFloatingPoint {
-    @inlinable
+    @usableFromInline
     static func _vjpStacking(
         stacking tensors: [Tensor],
         alongAxis axis: Int = 0
     ) -> (Tensor, (Tensor) -> Array<Tensor>.DifferentiableView) {
-        let result = Tensor<Scalar>(stacking: tensors, alongAxis: axis)
+        let result = Tensor(stacking: tensors, alongAxis: axis)
         return (result, { v in
             return Array<Tensor>.DifferentiableView(v.unstack(alongAxis: axis))
         })
     }
 
-    @inlinable
+    @usableFromInline
     static func _vjpConcatenating(
         concatenating tensors: [Tensor],
         alongAxis axis: Int = 0
@@ -139,7 +139,7 @@ internal extension Tensor where Scalar : TensorFlowFloatingPoint {
         })
     }
 
-    @inlinable
+    @usableFromInline
     static func _vjpTiling(
         tiling tensor: Tensor<Scalar>,
         multiples: Tensor<Int32>
