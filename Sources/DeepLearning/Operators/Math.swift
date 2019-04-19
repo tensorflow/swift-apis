@@ -106,6 +106,16 @@ public func logSoftmax<T : FloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
     return Raw.logSoftmax(logits: x)
 }
 
+@inlinable
+func _vjpLogSoftmax<T : TensorFlowFloatingPoint>(
+  _ x: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+  let value = logSoftmax(x)
+  return (value, { v in
+    v - v.sum(alongAxes: -1) * exp(value)
+  })
+}
+
 /// Computes `relu` of the specified tensor element-wise.
 /// Specifically, computes `max(0, x)`.
 @inlinable
