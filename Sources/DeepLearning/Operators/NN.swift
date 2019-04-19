@@ -36,7 +36,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         wrt: (self, offset, scale),
         vjp: _vjpBatchNormalized)
     func batchNormalized(
-        alongAxis axis: Int32,
+        alongAxis axis: Int,
         offset: Tensor = Tensor(0),
         scale: Tensor = Tensor(1),
         epsilon: Scalar = 0.001

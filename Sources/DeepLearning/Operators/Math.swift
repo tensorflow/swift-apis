@@ -17,6 +17,52 @@ import TensorFlow
 #endif
 
 /// Returns the values of the specified tensor rounded to the nearest integer, element-wise.
-public func round<Scalar: BinaryFloatingPoint>(_ x: Tensor<Scalar>) -> Tensor<Scalar> {
+@inlinable
+@differentiable(vjp: _vjpRound)
+public func round<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
     return Raw.round(x)
+}
+
+@inlinable
+internal func _vjpRound<T: TensorFlowFloatingPoint>(
+  _ x: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+  return (round(x), { v in Tensor<T>(zerosLike: v) })
+}
+
+/// Computes the sigmoid of the specified tensor element-wise.
+@inlinable
+@differentiable(vjp: _vjpSigmoid)
+public func sigmoid<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+  return Raw.sigmoid(x)
+}
+
+@inlinable
+internal func _vjpSigmoid<T: TensorFlowFloatingPoint>(
+  _ x: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+  return (sigmoid(x), { v in Raw.sigmoidGrad(x, dy: v) })
+}
+
+/// Computes the log-sigmoid of the specified tensor element-wise. Specifically, 
+/// `y = log(1 / (1 + exp(-x)))`. For numerical stability, we use `y = -softplus(-x)`.
+@inlinable
+@differentiable
+public func logSigmoid<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+  return -softplus(-x)
+}
+
+/// Computes the softplus function for the specified tensor element-wise. The softplus function is 
+/// defined as `log(exp(x) + 1)`.
+@inlinable
+@differentiable(vjp: _vjpSoftplus)
+public func softplus<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+  return Raw.softplus(features: x)
+}
+
+@inlinable
+internal func _vjpSoftplus<T: TensorFlowFloatingPoint>(
+  _ x: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+  return (softplus(x), { v in v * sigmoid(x) })
 }

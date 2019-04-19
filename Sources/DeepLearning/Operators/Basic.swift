@@ -17,6 +17,32 @@ import TensorFlow
 #endif
 
 public extension Tensor {
+    @inlinable
+    @differentiable(wrt: self where Scalar : TensorFlowFloatingPoint)
+    func unstack(alongAxis axis: Int = 0) -> [Tensor] {
+        return split(numSplits: shape[axis], alongAxis: axis)
+    }
+
+    @inlinable
+    @differentiable(
+        vjp: _vjpSplit(numSplits:alongAxis:) where Scalar : TensorFlowFloatingPoint)
+    func split(numSplits: Int, alongAxis axis: Int = 0) -> [Tensor] {
+        return Raw.split(
+            splitDim: Tensor<Int32>(Int32(axis)), value: self, numSplit: Int64(numSplits))
+    }
+
+    @inlinable
+    @differentiable(
+        wrt: self,
+        vjp: _vjpSplit(splitSizes:alongAxis:) where Scalar : TensorFlowFloatingPoint)
+    func split(splitSizes: Tensor<Int32>, alongAxis axis: Int = 0) -> [Tensor] {
+        return Raw.splitV(
+            value: self,
+            sizeSplits: splitSizes,
+            splitDim: Tensor<Int32>(Int32(axis)),
+            numSplit: Int64(splitSizes.shape[0]))
+    }
+
     /// Gathers slices of this tensor at `indices` along the `axis` dimension.
     ///
     /// For 0-D (scalar) `indices`:
@@ -66,9 +92,9 @@ public extension Tensor {
     // @differentiable(vjp: _vjpGathering where Scalar: TensorFlowFloatingPoint)
     func gathering(
         atIndices indices: Tensor<Int32>, 
-        alongAxis axis: Int32 = 0
+        alongAxis axis: Int = 0
     ) -> Tensor {
-        return Raw.gatherV2(params: self, indices: indices, axis: Tensor<Int32>(axis))
+        return Raw.gatherV2(params: self, indices: indices, axis: Tensor<Int32>(Int32(axis)))
     }
 
     /// Gathers slices of this tensor at `indices` along the `axis` dimension, while ignoring the 
@@ -89,16 +115,16 @@ public extension Tensor {
     /// - Returns: The gathered tensor.
     @inlinable
     func batchGathering(
-        atIndices indices: Tensor<Int32>, 
-        alongAxis axis: Int32,
-        numBatchDims batchDims: Int32
+        atIndices indices: Tensor<Int32>,
+        alongAxis axis: Int,
+        numBatchDims batchDims: Int
     ) -> Tensor {
-        precondition(batchDims >= 0 && batchDims < indices.rank, 
+        precondition(batchDims >= 0 && batchDims < indices.rank,
                      "'numBatchDims' must be non-negative and less than 'indices.rank'.")
         precondition(batchDims < rank, "'numBatchDims' must be less than the tensor's rank.")
 
-        // Handle the axis argument by transposing the axis dimension so that it is the first 
-        // non-batch dimension, recursively calling `batchGathering` with `axis = 0`, and then 
+        // Handle the axis argument by transposing the axis dimension so that it is the first
+        // non-batch dimension, recursively calling `batchGathering` with `axis = 0`, and then
         // transposing the result to put the pre-axis dimensions before the indices dimensions.
         if axis != batchDims {
             // Adjust axis to be positive.
@@ -109,22 +135,22 @@ public extension Tensor {
 
             // Move self[axis] up to self[batchDims].
             let permutation = Tensor<Int32>(concatenating: [
-                Tensor<Int32>(0 ..< batchDims),
-                Tensor<Int32>(axis).rankLifted(),
-                Tensor<Int32>(rangeFrom: batchDims, to: posAxis, stride: 1),
-                Tensor<Int32>(rangeFrom: axis + 1, to: rank, stride: 1)])
+                Tensor<Int32>(0 ..< Int32(batchDims)),
+                Tensor<Int32>(Int32(axis)).rankLifted(),
+                Tensor<Int32>(rangeFrom: Int32(batchDims), to: Int32(posAxis), stride: 1),
+                Tensor<Int32>(rangeFrom: Int32(axis) + 1, to: Int32(rank), stride: 1)])
             let tensor = transposed(withPermutations: permutation)
             let result = tensor.batchGathering(
                 atIndices: indices, alongAxis: batchDims, numBatchDims: batchDims)
-            
-            // Move the result dimensions corresponding to self[batchDims ..< axis] to just before 
+
+            // Move the result dimensions corresponding to self[batchDims ..< axis] to just before
             // the dimensions corresponding to indices[batchDims ...].
             let start = indices.rank + posAxis - batchDims
             let resultPermutation = Tensor<Int32>(concatenating: [
-                Tensor<Int32>(0 ..< batchDims),
-                Tensor<Int32>(rangeFrom: indices.rank, to: start, stride: 1),
-                Tensor<Int32>(batchDims ..< indices.rank), 
-                Tensor<Int32>(rangeFrom: start, to: result.rank, stride: 1)])
+                Tensor<Int32>(0 ..< Int32(batchDims)),
+                Tensor<Int32>(rangeFrom: Int32(indices.rank), to: Int32(start), stride: 1),
+                Tensor<Int32>(Int32(batchDims) ..< Int32(indices.rank)),
+                Tensor<Int32>(rangeFrom: Int32(start), to: Int32(result.rank), stride: 1)])
             return result.transposed(withPermutations: resultPermutation)
         }
 
@@ -188,15 +214,15 @@ public extension Tensor {
     /// - Returns: `(self.rank - K + 1)`-dimensional tensor populated by entries in this tensor 
     ///   corresponding to `true` values in `mask`.
     @inlinable
-    func gathering(where mask: Tensor<Bool>, alongAxis axis: Int32 = 0) -> Tensor {
+    func gathering(where mask: Tensor<Bool>, alongAxis axis: Int = 0) -> Tensor {
         precondition(mask.rank != 0, "The boolean mask cannot be a scalar.")
-        let posAxis = Int(axis < 0 ? axis + rank : axis)
-        let leadingSize = shapeTensor[posAxis ..< posAxis + Int(mask.rank)].product().rankLifted()
+        let posAxis = axis < 0 ? axis + rank : axis
+        let leadingSize = shapeTensor[posAxis ..< posAxis + mask.rank].product().rankLifted()
         let reshapedTensor = reshaped(
             toShape: Tensor<Int32>(concatenating: [
-                shapeTensor[..<posAxis], leadingSize, shapeTensor[(posAxis + Int(mask.rank))...]]))
+                shapeTensor[..<posAxis], leadingSize, shapeTensor[(posAxis + mask.rank)...]]))
         let indices = Tensor<Int32>(mask.flattened().nonZeroIndices().squeezingShape(at: 1))
-        return reshapedTensor.gathering(atIndices: indices, alongAxis: Int32(posAxis))
+        return reshapedTensor.gathering(atIndices: indices, alongAxis: posAxis)
     }
 }
 
@@ -232,5 +258,25 @@ public extension Tensor {
     @inlinable
     func nonZeroIndices() -> Tensor<Int64> {
         return Raw.where_(self)
+    }
+}
+
+public extension Tensor where Scalar : TensorFlowFloatingPoint {
+    @inlinable
+    internal func _vjpSplit(
+        numSplits: Int,
+        alongAxis axis: Int = 0
+    ) -> ([Tensor], (Array<Tensor>.DifferentiableView) -> Tensor) {
+        let result = split(numSplits: numSplits, alongAxis: axis)
+        return (result, { v in Tensor(concatenating: v.base, alongAxis: axis) })
+    }
+
+    @inlinable
+    internal func _vjpSplit(
+        splitSizes: Tensor<Int32>,
+        alongAxis axis: Int = 0
+    ) -> ([Tensor], (Array<Tensor>.DifferentiableView) -> Tensor) {
+        let result = split(splitSizes: splitSizes, alongAxis: axis)
+        return (result, { v in Tensor(concatenating: v.base, alongAxis: axis) })
     }
 }
