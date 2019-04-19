@@ -34,13 +34,13 @@ public extension Tensor {
     @inlinable
     @differentiable(
         wrt: self,
-        vjp: _vjpSplit(splitSizes:alongAxis:) where Scalar : TensorFlowFloatingPoint)
-    func split(splitSizes: Tensor<Int32>, alongAxis axis: Int = 0) -> [Tensor] {
+        vjp: _vjpSplit(sizes:alongAxis:) where Scalar : TensorFlowFloatingPoint)
+    func split(sizes: Tensor<Int32>, alongAxis axis: Int = 0) -> [Tensor] {
         return Raw.splitV(
             value: self,
-            sizeSplits: splitSizes,
+            sizeSplits: sizes,
             splitDim: Tensor<Int32>(Int32(axis)),
-            numSplit: Int64(splitSizes.shape[0]))
+            numSplit: Int64(sizes.shape[0]))
     }
 
     /// Gathers slices of this tensor at `indices` along the `axis` dimension.
@@ -89,7 +89,7 @@ public extension Tensor {
     /// 
     /// - Returns: The gathered tensor.
     @inlinable
-    // @differentiable(vjp: _vjpGathering where Scalar: TensorFlowFloatingPoint)
+    @differentiable(wrt: self, vjp: _vjpGathering where Scalar : TensorFlowFloatingPoint)
     func gathering(
         atIndices indices: Tensor<Int32>, 
         alongAxis axis: Int = 0
@@ -114,6 +114,7 @@ public extension Tensor {
     /// 
     /// - Returns: The gathered tensor.
     @inlinable
+    @differentiable(wrt: self where Scalar : TensorFlowFloatingPoint)
     func batchGathering(
         atIndices indices: Tensor<Int32>,
         alongAxis axis: Int,
@@ -214,6 +215,7 @@ public extension Tensor {
     /// - Returns: `(self.rank - K + 1)`-dimensional tensor populated by entries in this tensor 
     ///   corresponding to `true` values in `mask`.
     @inlinable
+    @differentiable(wrt: self where Scalar : TensorFlowFloatingPoint)
     func gathering(where mask: Tensor<Bool>, alongAxis axis: Int = 0) -> Tensor {
         precondition(mask.rank != 0, "The boolean mask cannot be a scalar.")
         let posAxis = axis < 0 ? axis + rank : axis
@@ -261,9 +263,9 @@ public extension Tensor {
     }
 }
 
-public extension Tensor where Scalar : TensorFlowFloatingPoint {
+internal extension Tensor where Scalar : TensorFlowFloatingPoint {
     @inlinable
-    internal func _vjpSplit(
+    func _vjpSplit(
         numSplits: Int,
         alongAxis axis: Int = 0
     ) -> ([Tensor], (Array<Tensor>.DifferentiableView) -> Tensor) {
@@ -272,11 +274,54 @@ public extension Tensor where Scalar : TensorFlowFloatingPoint {
     }
 
     @inlinable
-    internal func _vjpSplit(
-        splitSizes: Tensor<Int32>,
+    func _vjpSplit(
+        sizes: Tensor<Int32>,
         alongAxis axis: Int = 0
     ) -> ([Tensor], (Array<Tensor>.DifferentiableView) -> Tensor) {
-        let result = split(splitSizes: splitSizes, alongAxis: axis)
+        let result = split(sizes: sizes, alongAxis: axis)
         return (result, { v in Tensor(concatenating: v.base, alongAxis: axis) })
+    }
+
+    @inlinable
+    func _vjpGathering(
+        atIndices indices: Tensor<Int32>, 
+        alongAxis axis: Int = 0
+    ) -> (Tensor, (Tensor) -> Tensor) {
+        let result = gathering(atIndices: indices, alongAxis: axis)
+        let posAxis = axis < 0 ? axis + rank : axis
+        return (result, { [shape = shapeTensor] v in
+            let indicesSize = Tensor<Int32>(Int32(indices.scalarCount))
+            let outerShape = shape[..<posAxis]
+            let outerSize = outerShape.scalarCount
+            let innerShape = shape[(posAxis + 1)...]
+            let innerSize = innerShape.scalarCount
+            let outerIndices = Tensor<Int32>(rangeFrom: 0, to: Int32(outerSize), stride: 1)
+            let innerIndices = Tensor<Int32>(
+                rangeFrom: Int32(outerSize) + 1,
+                to: Int32(outerSize) + 1 + Int32(innerSize),
+                stride: 1)
+            let valuesShape = Tensor<Int32>(concatenating: [outerShape, indicesSize, innerShape])
+            let values = v.reshaped(toShape: valuesShape)
+            let valueIndices = indices.reshaped(toShape: indicesSize)
+
+            // We need to sum up every slice `values[..., i, ....]` corresponding to
+            // `tensor[..., indices[i], ...]`. Since `unsortedSegmentSum` does not support an axis 
+            // parameter, we transpose the gather dimension to the front, then use 
+            // `unsortedSegmentSum` to build a `[gatherAxis, outerAxes, innerAxes]` tensor with all
+            // the gradients affecting each index in `gatherAxis` summed up.
+            let permutations = Tensor<Int32>(concatenating: [
+                Tensor<Int32>([Int32(outerSize)]), outerIndices, innerIndices])
+            let transposedValues = values.transposed(withPermutations: permutations)
+            let gradient = Raw.unsortedSegmentSum(
+                data: transposedValues,
+                segmentIds: valueIndices,
+                numSegments: shape[posAxis])
+            
+            // Finally, we invert the above transpose operation by moving dimension 0 back to its
+            // original position.
+            let inversePermutations = Tensor<Int32>(concatenating: [
+                outerIndices + 1, Tensor<Int32>([0]), innerIndices])
+            return gradient.transposed(withPermutations: inversePermutations)
+        })
     }
 }

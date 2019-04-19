@@ -148,7 +148,7 @@ internal extension Tensor where Scalar : TensorFlowFloatingPoint {
         return (result, { [shape = tensor.shapeTensor] v in
             let splitShape = Tensor<Int32>(stacking: [multiples, shape]).transposed().flattened()
             let axes = Tensor<Int32>(
-                rangeFrom: 0, to: Int32(splitShape.shape.contiguousSize), stride: 2)
+                rangeFrom: 0, to: Int32(splitShape.scalarCount), stride: 2)
             return v.reshaped(toShape: splitShape).sum(squeezingAxes: axes)
         })
     }
