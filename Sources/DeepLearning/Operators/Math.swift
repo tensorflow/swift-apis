@@ -19,50 +19,104 @@ import TensorFlow
 /// Returns the values of the specified tensor rounded to the nearest integer, element-wise.
 @inlinable
 @differentiable(vjp: _vjpRound)
-public func round<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+public func round<T : TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
     return Raw.round(x)
 }
 
 @inlinable
-internal func _vjpRound<T: TensorFlowFloatingPoint>(
+internal func _vjpRound<T : TensorFlowFloatingPoint>(
   _ x: Tensor<T>
 ) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
-  return (round(x), { v in Tensor<T>(zerosLike: v) })
+    return (round(x), { v in Tensor<T>(zerosLike: v) })
 }
 
 /// Computes the sigmoid of the specified tensor element-wise.
+/// Specifically, computes `1 / (1 + exp(-x))`.
 @inlinable
 @differentiable(vjp: _vjpSigmoid)
-public func sigmoid<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
-  return Raw.sigmoid(x)
+public func sigmoid<T : TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    return Raw.sigmoid(x)
 }
 
 @inlinable
-internal func _vjpSigmoid<T: TensorFlowFloatingPoint>(
-  _ x: Tensor<T>
+internal func _vjpSigmoid<T : TensorFlowFloatingPoint>(
+    _ x: Tensor<T>
 ) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
-  return (sigmoid(x), { v in Raw.sigmoidGrad(x, dy: v) })
+    return (sigmoid(x), { v in Raw.sigmoidGrad(x, dy: v) })
 }
 
 /// Computes the log-sigmoid of the specified tensor element-wise. Specifically, 
 /// `y = log(1 / (1 + exp(-x)))`. For numerical stability, we use `y = -softplus(-x)`.
 @inlinable
 @differentiable
-public func logSigmoid<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
-  return -softplus(-x)
+public func logSigmoid<T : TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    return -softplus(-x)
 }
 
 /// Computes the softplus function for the specified tensor element-wise. The softplus function is 
 /// defined as `log(exp(x) + 1)`.
 @inlinable
 @differentiable(vjp: _vjpSoftplus)
-public func softplus<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
-  return Raw.softplus(features: x)
+public func softplus<T : TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    return Raw.softplus(features: x)
 }
 
 @inlinable
-internal func _vjpSoftplus<T: TensorFlowFloatingPoint>(
-  _ x: Tensor<T>
+internal func _vjpSoftplus<T : TensorFlowFloatingPoint>(
+    _ x: Tensor<T>
 ) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
-  return (softplus(x), { v in v * sigmoid(x) })
+    return (softplus(x), { v in v * sigmoid(x) })
+}
+
+
+/// Computes the softmax of the specified tensor along the last axis.
+/// Specifically, computes `exp(x) / exp(x).sum(alongAxes: -1)`.
+@inlinable
+@differentiable(vjp: _vjpSoftmax(_:) where T : TensorFlowFloatingPoint)
+public func softmax<T : FloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    return Raw.softmax(logits: x)
+}
+
+/// Computes the softmax of the specified tensor along the specified axis.
+/// Specifically, computes `exp(x) / exp(x).sum(alongAxes: axis)`.
+@inlinable
+public func softmax<T : TensorFlowFloatingPoint>(
+    _ x: Tensor<T>,
+    alongAxis axis: Int
+) -> Tensor<T> {
+    let expx = exp(x)
+    return expx / expx.sum(alongAxes: axis)
+}
+
+@inlinable
+func _vjpSoftmax<T : TensorFlowFloatingPoint>(
+    _ x: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+    let value = softmax(x)
+    return (value, { v in
+        let sumChannels = (v * value).sum(alongAxes: -1)
+        return (v - sumChannels) * value
+    })
+}
+
+/// Computes the log-softmax of the specified tensor element-wise.
+@inlinable
+@differentiable(vjp: _vjpLogSoftmax(_:) where T : TensorFlowFloatingPoint)
+public func logSoftmax<T : FloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    return Raw.logSoftmax(logits: x)
+}
+
+/// Computes `relu` of the specified tensor element-wise.
+/// Specifically, computes `max(0, x)`.
+@inlinable
+@differentiable(vjp: _vjpRelu(_:) where T : TensorFlowFloatingPoint)
+public func relu<T : FloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    return max(0, x)
+}
+
+@inlinable
+func _vjpRelu<T : TensorFlowFloatingPoint>(
+    _ x: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+    return (relu(x), { v in Tensor(x .> 0) * v })
 }
