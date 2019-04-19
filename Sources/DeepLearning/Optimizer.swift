@@ -16,13 +16,16 @@
 import TensorFlow
 #endif
 
+public protocol Optimizable: Differentiable & KeyPathIterable
+    where AllDifferentiableVariables: KeyPathIterable { }
+
 /// A machine learning optimizer.
 ///
 /// Optimizers apply an optimization algorithm to update the differentiable variables of a machine
 /// learning model.
 public protocol Optimizer {
     /// The type of the model whose parameters are optimized.
-    associatedtype Model: Differentiable
+    associatedtype Model: Optimizable
     /// The scalar parameter type.
     associatedtype Scalar: FloatingPoint
     /// The learning rate.
@@ -45,7 +48,7 @@ fileprivate extension Tensor where Scalar: Numeric {
 ///
 /// Reference: ["Adam - A Method for Stochastic Optimization"](
 /// https://arxiv.org/abs/1412.6980v8)
-public class Adam<Model: Layer>: Optimizer
+public class Adam<Model: Optimizable>: Optimizer
     where Model.AllDifferentiableVariables == Model.CotangentVector {
     /// The learning rate.
     public var learningRate: Float
@@ -139,7 +142,7 @@ public class Adam<Model: Layer>: Optimizer
 ///
 /// Reference: ["rmsprop: Divide the gradient by a running average of its recent magnitude"](
 /// http://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf)
-public class RMSProp<Model: Layer>: Optimizer
+public class RMSProp<Model: Optimizable>: Optimizer
     where Model.AllDifferentiableVariables == Model.CotangentVector {
     /// The learning rate.
     public var learningRate: Float
@@ -203,7 +206,7 @@ public class RMSProp<Model: Layer>: Optimizer
 ///
 /// An optimizer that implements stochastic gradient descent, with support for momentum, learning
 /// rate decay, and Nesterov momentum.
-public class SGD<Model: Layer>: Optimizer
+public class SGD<Model: Optimizable>: Optimizer
     where Model.AllDifferentiableVariables == Model.CotangentVector {
     /// The learning rate.
     public var learningRate: Float
@@ -275,7 +278,7 @@ public class SGD<Model: Layer>: Optimizer
 // MARK: - Manifold optimizers
 
 /// A Riemann manifold stochastic gradient descent (SGD) optimizer.
-public class RiemannSGD<Model: Layer, Scalar: FloatingPoint>: Optimizer
+public class RiemannSGD<Model: Optimizable, Scalar: FloatingPoint>: Optimizer
     where Model.TangentVector: VectorNumeric, Model.TangentVector.Scalar == Scalar {
     /// The learning rate.
     public var learningRate: Scalar
