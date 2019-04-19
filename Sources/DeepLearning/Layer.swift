@@ -35,29 +35,17 @@ public protocol Layer: Optimizable {
     ///   - input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    func applied(to input: Input) -> Output
+    func call(_ input: Input) -> Output
 }
 
 public extension Layer {
-    /// Returns the output obtained from applying the layer to the given input.
-    ///
-    /// - Parameters:
-    ///   - input: The input to the layer.
-    /// - Returns: The output.
-    @differentiable
-    call func(_ input: Input) -> Output {
-      return applied(to: input)
-    }
-
     /// Returns the inference output obtained from applying the layer to the given input.
     ///
     /// - Parameter input: The input to the layer.
     /// - Returns: The inference output.
     @differentiable
     func inferring(from input: Input) -> Output {
-        return withLearningPhase(LearningPhase.inference) {
-            applied(to: input)
-        }
+        return withLearningPhase(LearningPhase.inference) { self(input) }
     }
 
     // TODO(rxwei): Remove this custom VJP once differentiation supports currying.
@@ -85,7 +73,7 @@ public extension Layer {
     func appliedForBackpropagation(to input: Input)
         -> (output: Output, backpropagator: Backpropagator) {
         let (out, pullback) = valueWithPullback(at: input) { layer, input in
-            return layer.applied(to: input)
+            return layer(input)
         }
         return (out, pullback)
     }
@@ -102,8 +90,8 @@ public extension Differentiable {
     @differentiable
     func sequenced<L1: Layer, L2: Layer>(through l1: L1, _ l2: L2) -> L2.Output
         where L1.Input == Self, L1.Output == L2.Input {
-        let o1 = l1.applied(to: self)
-        return l2.applied(to: o1)
+        let o1 = l1(self)
+        return l2(o1)
     }
 
     /// Returns the output computed by applying a sequence of layers to the previous layer's output,
@@ -117,9 +105,9 @@ public extension Differentiable {
     @differentiable
     func sequenced<L1: Layer, L2: Layer, L3: Layer>(through l1: L1, _ l2: L2, _ l3: L3) -> L3.Output
         where L1.Input == Self, L1.Output == L2.Input, L2.Output == L3.Input {
-        let o1 = l1.applied(to: self)
-        let o2 = l2.applied(to: o1)
-        return l3.applied(to: o2)
+        let o1 = l1(self)
+        let o2 = l2(o1)
+        return l3(o2)
     }
 
     /// Returns the output computed by applying a sequence of layers to the previous layer's output,
@@ -137,10 +125,10 @@ public extension Differentiable {
     ) -> L4.Output
         where L1.Input == Self, L1.Output == L2.Input, L2.Output == L3.Input,
               L3.Output == L4.Input {
-        let o1 = l1.applied(to: self)
-        let o2 = l2.applied(to: o1)
-        let o3 = l3.applied(to: o2)
-        return l4.applied(to: o3)
+        let o1 = l1(self)
+        let o2 = l2(o1)
+        let o3 = l3(o2)
+        return l4(o3)
     }
 
     /// Returns the output computed by applying a sequence of layers to the previous layer's output,
@@ -159,11 +147,11 @@ public extension Differentiable {
     ) -> L5.Output
         where L1.Input == Self, L1.Output == L2.Input, L2.Output == L3.Input, L3.Output == L4.Input,
               L4.Output == L5.Input {
-        let o1 = l1.applied(to: self)
-        let o2 = l2.applied(to: o1)
-        let o3 = l3.applied(to: o2)
-        let o4 = l4.applied(to: o3)
-        return l5.applied(to: o4)
+        let o1 = l1(self)
+        let o2 = l2(o1)
+        let o3 = l3(o2)
+        let o4 = l4(o3)
+        return l5(o4)
     }
 
     /// Returns the output computed by applying a sequence of layers to the previous layer's output,
@@ -183,12 +171,12 @@ public extension Differentiable {
     ) -> L6.Output
         where L1.Input == Self, L1.Output == L2.Input, L2.Output == L3.Input, L3.Output == L4.Input,
               L4.Output == L5.Input, L5.Output == L6.Input {
-        let o1 = l1.applied(to: self)
-        let o2 = l2.applied(to: o1)
-        let o3 = l3.applied(to: o2)
-        let o4 = l4.applied(to: o3)
-        let o5 = l5.applied(to: o4)
-        return l6.applied(to: o5)
+        let o1 = l1(self)
+        let o2 = l2(o1)
+        let o3 = l3(o2)
+        let o4 = l4(o3)
+        let o5 = l5(o4)
+        return l6(o5)
     }
 }
 
@@ -232,7 +220,7 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         return activation(matmul(input, weight) + bias)
     }
 }
@@ -341,7 +329,7 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - input: The input to the layer `[batchCount, width, inputChannels]`.
     /// - Returns: The output `[batchCount, newWidth, outputChannels]`.
     @differentiable
-    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         let conv2D = input.expandingShape(at: 1).convolved2D(
             withFilter: filter.expandingShape(at: 0), strides: (1, 1, stride, 1), padding: padding)
         return activation(conv2D.squeezingShape(at: 1) + bias)
@@ -460,7 +448,7 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         return activation(input.convolved2D(withFilter: filter,
                                             strides: (1, strides.0, strides.1, 1),
                                             padding: padding) + bias)
@@ -579,7 +567,7 @@ public struct TransposedConv2D: Layer {
     ///   - input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func applied(to input: Tensor<Float>) -> Tensor<Float> {
+    public func call(_ input: Tensor<Float>) -> Tensor<Float> {
         let batchSize = input.shape[0]
         let w = (input.shape[1] - (1 * paddingIndex)) *
           strides.0 + (filter.shape[0] * paddingIndex)
@@ -734,7 +722,7 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - input: The input to the layer.
     /// - Returns: The output.
     @differentiable(vjp: _vjpApplied(to:))
-    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         switch Context.local.learningPhase {
         case .training:
             return applyingTraining(to: input)
@@ -812,7 +800,7 @@ public struct MaxPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input.expandingShape(at: 1).maxPooled(
             kernelSize: (1, 1, poolSize, 1), strides: (1, 1, stride, 1), padding: padding
         ).squeezingShape(at: 1)
@@ -859,7 +847,7 @@ public struct MaxPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input.maxPooled(
             kernelSize: poolSize, strides: strides, padding: padding)
     }
@@ -897,7 +885,7 @@ public struct AvgPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input.expandingShape(at: 1).averagePooled(
             kernelSize: (1, 1, poolSize, 1), strides: (1, 1, stride, 1), padding: padding
         ).squeezingShape(at: 1)
@@ -944,7 +932,7 @@ public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input.averagePooled(kernelSize: poolSize, strides: strides, padding: padding)
     }
 }
@@ -962,7 +950,7 @@ public struct GlobalAvgPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input.mean(squeezingAxes: 1)
     }
 }
@@ -979,7 +967,7 @@ public struct GlobalAvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input.mean(squeezingAxes: [1, 2])
     }
 }
@@ -996,7 +984,7 @@ public struct GlobalAvgPool3D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input.mean(squeezingAxes: [1, 2, 3])
     }
 }
@@ -1051,7 +1039,7 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         let mean = input.mean(alongAxes: axis)
         let variance = input.variance(alongAxes: axis)
         let inv = rsqrt(variance + epsilon) * scale
@@ -1101,7 +1089,7 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - input: The input to the layer.
     /// - Returns: The output.
     @differentiable(vjp: _vjpApplied(to:))
-    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         switch Context.local.learningPhase {
         case .training:
             return applyingTraining(to: input)
@@ -1145,7 +1133,7 @@ public struct UpSampling1D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         let shape = input.shape
         let (batchSize, timesteps, channels) = (shape[0], shape[1], shape[2])
         let scaleOnes = Tensor<Scalar>(ones: [1, 1, size, 1])
@@ -1172,7 +1160,7 @@ public struct UpSampling2D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         let shape = input.shape
         let (batchSize, height, width, channels) = (shape[0], shape[1], shape[2], shape[3])
         let scaleOnes = Tensor<Scalar>(ones: [1, 1, size, 1, size, 1])
@@ -1195,7 +1183,7 @@ public struct Flatten<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         let batchSize = input.shape[0]
         let remaining = input.shape[1..<input.rank].contiguousSize
         return input.reshaped(to: [batchSize, remaining])
@@ -1232,7 +1220,7 @@ public struct Reshape<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func applied(to input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input.reshaped(toShape: shape)
     }
 }
@@ -1287,8 +1275,8 @@ public extension RNNCell {
     ///   - previousState: The previous state of the RNN cell.
     /// - Returns: The output.
     @differentiable
-    func applied(to input: TimeStepInput, state: State) -> RNNCellOutput<TimeStepOutput, State> {
-        return applied(to: RNNCellInput(input: input, state: state))
+    func call(input: TimeStepInput, state: State) -> RNNCellOutput<TimeStepOutput, State> {
+        return self(RNNCellInput(input: input, state: state))
     }
 }
 
@@ -1330,9 +1318,9 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     ///     phase.
     /// - Returns: The hidden state.
     @differentiable
-    public func applied(to input: Input) -> Output {
+    public func call(_ input: Input) -> Output {
         let concatenatedInput = input.input.concatenated(with: input.state, alongAxis: 1)
-        let newState = matmul(concatenatedInput, weight) + bias
+        let newState = tanh(matmul(concatenatedInput, weight) + bias)
         return Output(output: newState, state: newState)
     }
 }
@@ -1393,7 +1381,7 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     ///     phase.
     /// - Returns: The hidden state.
     @differentiable
-    public func applied(to input: Input) -> Output {
+    public func call(_ input: Input) -> Output {
         let gateInput = input.input.concatenated(with: input.state.hidden, alongAxis: 1)
 
         let inputGate = sigmoid(matmul(gateInput, inputWeight) + inputBias)

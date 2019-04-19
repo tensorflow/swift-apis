@@ -90,7 +90,7 @@ final class LayerTests: XCTestCase {
         cell.bias = bias
         let state = Tensor<Float>(ones: [1, 5]) * Tensor<Float>([1, 0.2, 0.5, 2, 0.6])
         let input = Tensor<Float>(ones: [1, 2]) * Tensor<Float>([0.3, 0.7])
-        let output = cell.applied(to: input, state: state).state
+        let output = cell(input: input, state: state).state
         let expected = Tensor<Float>([[2.76649, 6.2999997, 2.76649, 6.2999997, 2.76649]])
         XCTAssertEqual(output, expected)
     }
