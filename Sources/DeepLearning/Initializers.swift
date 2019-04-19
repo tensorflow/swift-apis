@@ -19,7 +19,7 @@ import TensorFlow
 public extension Tensor {
     /// Creates a tensor from an array of tensors (which may themselves be scalars).
     @inlinable
-    @differentiable(where Scalar: TensorFlowFloatingPoint)
+    @differentiable(where Scalar : TensorFlowFloatingPoint)
     init(_ elements: [Tensor]) {
         self = Tensor(stacking: elements)
     }
@@ -53,7 +53,7 @@ public extension Tensor {
     /// 
     /// - Returns: The stacked tensor.
     @inlinable
-    @differentiable(vjp: _vjpStacking where Scalar: TensorFlowFloatingPoint)
+    @differentiable(vjp: _vjpStacking where Scalar : TensorFlowFloatingPoint)
     init(stacking tensors: [Tensor], alongAxis axis: Int = 0) {
         self = Raw.pack(tensors, axis: Int64(axis))
     }
@@ -90,11 +90,12 @@ public extension Tensor {
     ///   provided tensors.
     /// 
     /// - Returns: The concatenated tensor.
-    // @inlinable
-    // // @differentiable(vjp: _vjpConcatenating where Scalar : TensorFlowFloatingPoint)
-    // init(concatenating tensors: [Tensor<Scalar>], alongAxis axis: Int = 0) {
-    //     self = Raw.concatV2(tensors, axis: Tensor<Int32>(Int32(axis)))
-    // }
+    @inlinable
+    @differentiable(wrt: tensors, vjp: _vjpConcatenating where Scalar : TensorFlowFloatingPoint)
+    init(concatenating tensors: [Tensor], alongAxis axis: Int = 0) {
+        precondition(tensors.count > 0)
+        self = Raw.concatV2(tensors, axis: Tensor<Int32>(Int32(axis)))
+    }
 
     /// Returns a tiled tensor, constructed by tiling the provided tensor.
     ///
@@ -105,8 +106,8 @@ public extension Tensor {
     /// 
     /// - Precondition: The shape of `multiples` must be `[tensor.rank]`.
     @inlinable
-    @differentiable(wrt: tensor, vjp: _vjpTiling where Scalar: TensorFlowFloatingPoint)
-    init(tiling tensor: Tensor<Scalar>, multiples: Tensor<Int32>) {
+    @differentiable(wrt: tensor, vjp: _vjpTiling where Scalar : TensorFlowFloatingPoint)
+    init(tiling tensor: Tensor, multiples: Tensor<Int32>) {
         self = Raw.tile(tensor, multiples: multiples)
     }
 }
@@ -120,6 +121,21 @@ internal extension Tensor where Scalar : TensorFlowFloatingPoint {
         let result = Tensor<Scalar>(stacking: tensors, alongAxis: axis)
         return (result, { v in
             return Array<Tensor>.DifferentiableView(v.unstack(alongAxis: axis))
+        })
+    }
+
+    @inlinable
+    static func _vjpConcatenating(
+        concatenating tensors: [Tensor],
+        alongAxis axis: Int = 0
+    ) -> (Tensor, (Tensor) -> Array<Tensor>.DifferentiableView) {
+        let result = Tensor<Scalar>(concatenating: tensors, alongAxis: axis)
+        let posAxis = axis < 0 ? axis + tensors[0].rank : axis
+        let sizes = Tensor<Int32>(stacking: tensors.map { $0.shapeTensor[posAxis] })
+        return (result, { [count = tensors.count] v in
+            if count == 1 { return Array<Tensor>.DifferentiableView([v]) }
+            let splits = v.split(sizes: sizes, alongAxis: posAxis)
+            return Array<Tensor>.DifferentiableView(splits)
         })
     }
 
@@ -180,8 +196,10 @@ public extension Tensor where Scalar == Int32 {
     ///   - shape: The dimensions of the tensor.
     ///   - generator: Random number generator to use.
     ///
-    init<G: RandomNumberGenerator>(randomStandardUniform shape: TensorShape,
-                                   generator: inout G) {
+    init<G: RandomNumberGenerator>(
+        randomStandardUniform shape: TensorShape,
+        generator: inout G
+    ) {
         let dist = UniformIntegerDistribution<Scalar>()
         var scalars: [Scalar] = []
         for _ in 0 ..< shape.contiguousSize {
@@ -250,8 +268,10 @@ public extension Tensor where Scalar: BinaryFloatingPoint,
     ///   - shape: The dimensions of the tensor.
     ///   - generator: Random number generator to use.
     ///
-    init<G: RandomNumberGenerator>(randomUniform shape: TensorShape,
-                                   generator: inout G) {
+    init<G: RandomNumberGenerator>(
+        randomUniform shape: TensorShape,
+        generator: inout G
+    ) {
         let dist = UniformFloatingPointDistribution<Scalar>()
         var scalars: [Scalar] = []
         for _ in 0 ..< shape.contiguousSize {
@@ -269,10 +289,12 @@ public extension Tensor where Scalar: BinaryFloatingPoint,
     ///   - stddev: The standard deviation of the distribution.
     ///   - generator: Random number generator to use.
     ///
-    init<G: RandomNumberGenerator>(randomNormal shape: TensorShape,
-                                   mean: Scalar = 0,
-                                   stddev: Scalar = 1,
-                                   generator: inout G) {
+    init<G: RandomNumberGenerator>(
+        randomNormal shape: TensorShape,
+        mean: Scalar = 0,
+        stddev: Scalar = 1,
+        generator: inout G
+    ) {
         let dist = NormalDistribution<Scalar>(mean: mean, standardDeviation: stddev)
         var scalars: [Scalar] = []
         for _ in 0 ..< shape.contiguousSize {
@@ -306,9 +328,11 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// - Parameters:
     ///   - shape: The dimensions of the tensor.
     ///
-    init(glorotUniform shape: TensorShape,
-         seed: (Int64, Int64) = (Int64.random(in: Int64.min..<Int64.max),
-                                 Int64.random(in: Int64.min..<Int64.max))) {
+    init(
+        glorotUniform shape: TensorShape,
+        seed: (Int64, Int64) = (Int64.random(in: Int64.min..<Int64.max),
+                                Int64.random(in: Int64.min..<Int64.max))
+    ) {
         let uniform = Tensor(randomUniform: shape, seed: seed)
         self = Tensor.glorot(fromStandardUniform: uniform, shape: shape)
     }
