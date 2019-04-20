@@ -20,3 +20,22 @@ with their name as the keyword argument.
 
 Inputs and outputs must be of TensorHandle, ResourceHandle, or VariantHandle
 type. These are magic types known to the compiler.
+
+## Auto-Differentiation Support
+
+We also provide vector-Jacobian product (VJP) definitions for some of the
+convenience methods.
+
+Terminology:
+- originalValue (f): The function being differentiated, or the result of that
+  function.
+- VJP (f'): The function as the result of differentiation, computing
+  the vector-Jacobian products with respect to all arguments, or the result
+  of that function.
+
+For more information, visit:
+https://en.wikipedia.org/wiki/Automatic_differentiation
+
+The attribute '@differentiable(vjp: ...)' is used to register a function's VJP.
+The automatic differentiation pass identifies these VJPs and chains them
+together to produce arbitrary differentiable programs.
