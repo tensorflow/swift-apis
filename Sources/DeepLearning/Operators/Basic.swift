@@ -117,6 +117,8 @@ internal extension Tensor where Scalar : TensorFlowFloatingPoint {
 // Other Tensor Transformations
 //===------------------------------------------------------------------------------------------===//
 
+infix operator ++ : AdditionPrecedence
+
 public extension Tensor {
     /// Returns a transposed tensor, with dimensions permuted in the specified order.
     @inlinable
