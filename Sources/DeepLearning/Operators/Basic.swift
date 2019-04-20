@@ -112,3 +112,93 @@ internal extension Tensor where Scalar : TensorFlowFloatingPoint {
         return (value, { [shape = shapeTensor] v in v.reshaped(toShape: shape) })
     }
 }
+
+//===------------------------------------------------------------------------------------------===//
+// Other Tensor Transformations
+//===------------------------------------------------------------------------------------------===//
+
+public extension Tensor {
+    /// Returns a transposed tensor, with dimensions permuted in the specified order.
+    @inlinable
+    @differentiable(
+        wrt: self,
+        vjp: _vjpTransposed(withPermutations:) where Scalar : TensorFlowFloatingPoint)
+    func transposed(withPermutations permutations: Tensor<Int32>) -> Tensor {
+        return Raw.transpose(self, perm: permutations)
+    }
+
+    /// Returns a transposed tensor, with dimensions permuted in the specified order.
+    @inlinable
+    @differentiable(
+        wrt: self,
+        vjp: _vjpTransposed(withPermutations:) where Scalar : TensorFlowFloatingPoint)
+    func transposed(withPermutations permutations: [Int]) -> Tensor {
+        let permutations = permutations.map(Int32.init)
+        return transposed(withPermutations: Tensor<Int32>(permutations))
+    }
+
+    /// Returns a transposed tensor, with dimensions permuted in the specified order.
+    @inlinable
+    @differentiable(
+        wrt: self, vjp: _vjpTransposed(withPermutations:) where Scalar : TensorFlowFloatingPoint)
+    func transposed(withPermutations permutations: Int...) -> Tensor {
+        return transposed(withPermutations: permutations)
+    }
+
+    /// Returns a transposed tensor, with dimensions permuted in reverse order.
+    @inlinable
+    @differentiable(wrt: self, vjp: _vjpTransposed() where Scalar : TensorFlowFloatingPoint)
+    func transposed() -> Tensor {
+        let defaultPermutations = rankTensor - 1 - Tensor<Int32>(
+            rangeFrom: 0, to: Int32(rank), stride: 1)
+        return transposed(withPermutations: Tensor<Int32>(defaultPermutations))
+    }
+
+    /// Concatenates tensors along the specified axis.
+    /// - Precondition: The tensors must have the same dimensions, except for the
+    ///   specified axis.
+    /// - Precondition: The axis must be in the range `-rank..<rank`.
+    @inlinable
+    @differentiable(where Scalar : TensorFlowFloatingPoint)
+    func concatenated(with other: Tensor, alongAxis axis: Int = 0) -> Tensor {
+        return Tensor(concatenating: [self, other], alongAxis: axis)
+    }
+
+    /// Concatenation operator.
+    /// - Note: `++` is a custom operator that does not exist in Swift, but does
+    ///   in Haskell/Scala. Its addition is not an insignificant language change
+    ///   and may be controversial. The existence/naming of `++` will be discussed
+    ///   during a later API design phase.
+    @inlinable
+    @differentiable(where Scalar : TensorFlowFloatingPoint)
+    static func ++ (lhs: Tensor, rhs: Tensor) -> Tensor {
+        return lhs.concatenated(with: rhs)
+    }
+}
+
+internal extension Tensor where Scalar : TensorFlowFloatingPoint {
+    @inlinable
+    func _vjpTransposed(
+        withPermutations permutations: Tensor<Int32>
+    ) -> (Tensor, (Tensor) -> Tensor) {
+        let value = transposed(withPermutations: permutations)
+        return (value, { $0.transposed(withPermutations: permutations) })
+    }
+
+    @inlinable
+    func _vjpTransposed(withPermutations permutations: [Int]) -> (Tensor, (Tensor) -> Tensor) {
+        let value = transposed(withPermutations: permutations)
+        return (value, { $0.transposed(withPermutations: permutations) })
+    }
+
+    @inlinable
+    func _vjpTransposed(withPermutations permutations: Int...) -> (Tensor, (Tensor) -> Tensor) {
+        let value = transposed(withPermutations: permutations)
+        return (value, { $0.transposed(withPermutations: permutations) })
+    }
+
+    @inlinable
+    func _vjpTransposed() -> (Tensor, (Tensor) -> Tensor) {
+        return (transposed(), { $0.transposed() })
+    }
+}
