@@ -658,8 +658,7 @@ public func softmax<T : FloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
 // TODO: [AD].
 public func softmax<T : TensorFlowFloatingPoint>(_ x: Tensor<T>, alongAxis axis: Int) -> Tensor<T> {
     let xExp = exp(x)
-    let xExpSum = Raw.sum(xExp, reductionIndices: Tensor<Int32>(Int32(axis)), keepDims: true)
-    return xExp / xExpSum
+    return xExp / xExp.sum(alongAxes: Tensor<Int32>(Int32(axis)))
 }
 
 @inlinable
@@ -1340,7 +1339,13 @@ internal extension Tensor where Scalar : TensorFlowFloatingPoint {
     @inlinable
     func _vjpSum(squeezingAxes axes: Tensor<Int32>) -> (Tensor, (Tensor) -> Tensor) {
         let value = sum(squeezingAxes: axes)
-        return (value, { [shape = shapeTensor] in $0.broadcast(toShape: shape) })
+        return (value, { [shape = shapeTensor] in
+            var result = $0
+	        for i in axes.array.scalars {
+                result = result.expandingShape(at: Int(i))
+            }
+	        return result.broadcast(toShape: shape)
+        })
     }
 
     @inlinable
@@ -1351,20 +1356,16 @@ internal extension Tensor where Scalar : TensorFlowFloatingPoint {
     }
 
     @inlinable
-    func _vjpMean(squeezingAxes axes: [Int]) -> (Tensor, (Tensor) -> Tensor) {
-        let value = mean(squeezingAxes: axes)
-        return (value, { [shape = shapeTensor, count = axes.map { shape[$0] }.reduce(1, *)] in
-            $0.broadcast(toShape: shape) / Tensor(Scalar(count))
-        })
-    }
-
-    @inlinable
-    func _vjpMean(
-        squeezingAxes axes: Tensor<Int32>
-    ) -> (Tensor, (Tensor) -> Tensor) {
+    func _vjpMean(squeezingAxes axes: Tensor<Int32>) -> (Tensor, (Tensor) -> Tensor) {
         let value = mean(squeezingAxes: axes)
         let count = Raw.gather(params: shapeTensor, indices: axes).product()
-        return (value, { [shape = shapeTensor] in $0.broadcast(toShape: shape) / Tensor(count) })
+        return (value, { [shape = shapeTensor] in 
+            var result = $0
+	        for i in axes.array.scalars {
+                result = result.expandingShape(at: Int(i))
+            }
+	        return result.broadcast(toShape: shape) / Tensor(count)
+        })
     }
 }
 
