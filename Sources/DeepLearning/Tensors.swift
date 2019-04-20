@@ -21,6 +21,36 @@ infix operator .== : ComparisonPrecedence
 #endif
 
 //===------------------------------------------------------------------------------------------===//
+// Tensor Properties
+//===------------------------------------------------------------------------------------------===//
+
+public extension Tensor {
+  /// The rank of the tensor, represented as a `Tensor<Int32>`.
+  @inlinable
+  var rankTensor: Tensor<Int32> {
+    get {
+      return Raw.rank(self)
+    }
+  }
+
+  /// The dimensions of the tensor, represented as a `Tensor<Int32>`.
+  @inlinable
+  var shapeTensor: Tensor<Int32> {
+    get {
+      return Raw.shape(self)
+    }
+  }
+
+  /// The number of scalars in the tensor, represented as a `Tensor<Int32>`.
+  @inlinable
+  var scalarCountTensor: Tensor<Int32> {
+    get {
+      return Raw.size(self)
+    }
+  }
+}
+
+//===------------------------------------------------------------------------------------------===//
 // Description and Visualization
 //===------------------------------------------------------------------------------------------===//
 
