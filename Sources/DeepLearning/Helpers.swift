@@ -30,3 +30,7 @@ public func identity<Scalar>(_ x: Tensor<Scalar>) -> Tensor<Scalar> {
 func pow<T: BinaryFloatingPoint>(_ x: T, _ y: T) -> T {
     return T(pow(Double(x), Double(y)))
 }
+
+extension Array where Element : Differentiable {
+    
+}

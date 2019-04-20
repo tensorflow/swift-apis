@@ -1,4 +1,4 @@
-// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,19 +13,18 @@
 // limitations under the License.
 
 import XCTest
+@testable import DeepLearning
 
-#if !os(macOS)
-public func allTests() -> [XCTestCaseEntry] {
-    return [
-        testCase(LossTests.allTests),
-        testCase(PRNGTests.allTests),
-        testCase(TrivialModelTests.allTests),
-        testCase(SequentialTests.allTests),
-        testCase(LayerTests.allTests),
-        testCase(TensorTests.allTests),
-        testCase(BasicOperatorTests.allTests),
-        testCase(ComparisonOperatorTests.allTests),
-        testCase(MathOperatorTests.allTests),
-    ]
+final class ComparisonOperatorTests: XCTestCase {
+    func testElementwiseComparison() {
+        let x = Tensor<Float>([0, 1, 2])
+        let y = Tensor<Float>([2, 1, 3])
+        XCTAssertEqual((x .< y).scalars, [true, false, true])
+    }
+
+    func testLexicographicalComparison() {
+        let x = Tensor<Float>([0, 1, 2, 3, 4])
+        let y = Tensor<Float>([2, 3, 4, 5, 6])
+        XCTAssertTrue(x < y)
+    }
 }
-#endif

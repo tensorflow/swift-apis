@@ -163,7 +163,7 @@ public extension Tensor {
     ///   specified axis.
     /// - Precondition: The axis must be in the range `-rank..<rank`.
     @inlinable
-    @differentiable(where Scalar : TensorFlowFloatingPoint)
+    @differentiable(vjp: _vjpConcatenated where Scalar : TensorFlowFloatingPoint)
     func concatenated(with other: Tensor, alongAxis axis: Int = 0) -> Tensor {
         return Tensor(concatenating: [self, other], alongAxis: axis)
     }
@@ -204,6 +204,23 @@ internal extension Tensor where Scalar : TensorFlowFloatingPoint {
     @inlinable
     func _vjpTransposed() -> (Tensor, (Tensor) -> Tensor) {
         return (transposed(), { $0.transposed() })
+    }
+
+    @inlinable
+    func _vjpConcatenated(
+        with other: Tensor,
+        alongAxis axis: Int
+    ) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
+        let idx = axis < 0 ? axis + rank : axis
+        let splits = Tensor<Int32>([shapeTensor[idx], other.shapeTensor[idx]])
+        return (concatenated(with: other, alongAxis: axis), { result in
+            let gradients = Raw.splitV(
+                value: result,
+                sizeSplits: splits,
+                splitDim: Tensor<Int32>(Int32(axis)),
+                numSplit: Int64(2))
+            return (gradients[0], gradients[1])
+        })
     }
 }
 

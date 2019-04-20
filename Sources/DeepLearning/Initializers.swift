@@ -109,7 +109,7 @@ internal extension Tensor where Scalar : TensorFlowFloatingPoint {
 public extension Tensor {
     /// Creates a tensor from an array of tensors (which may themselves be scalars).
     @inlinable
-    @differentiable(where Scalar : TensorFlowFloatingPoint)
+    // @differentiable(where Scalar : TensorFlowFloatingPoint)
     init(_ elements: [Tensor]) {
         self = Tensor(stacking: elements)
     }
@@ -196,7 +196,7 @@ public extension Tensor {
 //     ) -> (Tensor, (Tensor) -> Array<Tensor>.DifferentiableView) {
 //         let result = Tensor(stacking: tensors, alongAxis: axis)
 //         return (result, { v in
-//             return Array<Tensor>.DifferentiableView(v.unstack(alongAxis: axis))
+//             Array<Tensor>.DifferentiableView(v.unstack(alongAxis: axis))
 //         })
 //     }
 
