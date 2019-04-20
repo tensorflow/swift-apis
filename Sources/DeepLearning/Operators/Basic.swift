@@ -33,11 +33,11 @@ public extension Tensor {
     /// `N` tensors from this tensor by chipping it along the `axis` dimension, where `N` is
     /// inferred from this tensor's shape. For example, given a tensor with shape `[A, B, C, D]`:
     /// 
-    ///   - If `axis == 0` then the `i`th tensor in the returned array is the slice 
+    ///   - If `axis == 0` then the `i`-th tensor in the returned array is the slice 
     ///     `self[i, :, :, :]` and each tensor in that array will have shape `[B, C, D]`. 
     ///     (Note that the dimension unpacked along is gone, unlike
     ///     `Tensor.split(numSplits:alongAxis)`, or `Tensor.split(sizes:alongAxis)`).
-    ///   - If `axis == 1` then the `i`th tensor in the returned array is the slice 
+    ///   - If `axis == 1` then the `i`-th tensor in the returned array is the slice 
     ///     `value[:, i, :, :]` and each tensor in that array will have shape `[A, C, D]`.
     ///   - Etc.
     ///
@@ -51,9 +51,73 @@ public extension Tensor {
     /// 
     /// - Returns: Array containing the unstacked tensors.
     @inlinable
-    // @differentiable(vjp: _vjpUnstack(alongAxis:) wrt: self where Scalar : TensorFlowFloatingPoint)
+    @differentiable(vjp: _vjpUnstack(alongAxis:) where Scalar: TensorFlowFloatingPoint)
     func unstack(alongAxis axis: Int = 0) -> [Tensor] {
-        return Raw.unpack(value: self, num: shape[axis], axis: Int64(axis))
+        return Raw.unpack(value: self, num: Int64(shape[axis]), axis: Int64(axis))
+    }
+
+    /// Splits a tensor into multiple tensors. The tensor is split along dimension `axis` into
+    /// `numSplits` smaller tensors. This requires that `numSplits` evenly divides `shape[axis]`.
+    ///
+    /// For example:
+    /// ```
+    /// // 'value' is a tensor with shape [5, 30]
+    /// // Split 'value' into 3 tensors along dimension 1:
+    /// let parts = value.split(numSplits: 3, alongAxis: 1)
+    /// parts[0] // has shape [5, 10]
+    /// parts[1] // has shape [5, 10]
+    /// parts[2] // has shape [5, 10]
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - numSplits: Number of splits to create.
+    ///   - axis: Dimension along which to split this tensor. Negative values wrap around.
+    ///
+    /// - Precondition: `numSplits` must divide the size of dimension `axis` evenly.
+    /// - Precondition: `axis` must be in the range `[-rank, rank)`, where `rank` is the rank of the
+    ///   provided tensors.
+    ///
+    /// - Returns: Array containing the tensors parts.
+    @inlinable
+    @differentiable(vjp: _vjpSplit(numSplits:alongAxis:) where Scalar: TensorFlowFloatingPoint)
+    func split(numSplits: Int, alongAxis axis: Int = 0) -> [Tensor] {
+        return Raw.split(
+            splitDim: Tensor<Int32>(Int32(axis)), value: self, numSplit: Int64(numSplits))
+    }
+
+    /// Splits a tensor into multiple tensors. The tensor is split  into `sizes.shape[0]` pieces. 
+    /// The shape of the `i`-th piece has the same shape as this tensor except along dimension 
+    /// `axis` where the size is `sizes[i]`.
+    ///
+    /// For example:
+    /// ```
+    /// // 'value' is a tensor with shape [5, 30]
+    /// // Split 'value' into 3 tensors with sizes [4, 15, 11] along dimension 1:
+    /// let parts = value.split(sizes: Tensor<Int32>([4, 15, 11]), alongAxis: 1)
+    /// parts[0] // has shape [5, 4]
+    /// parts[1] // has shape [5, 15]
+    /// parts[2] // has shape [5, 11]
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - sizes: 1-D tensor containing the size of each split.
+    ///   - axis: Dimension along which to split this tensor. Negative values wrap around.
+    ///
+    /// - Precondition: The values in `sizes` must add up to the size of dimension `axis`.
+    /// - Precondition: `axis` must be in the range `[-rank, rank)`, where `rank` is the rank of the
+    ///   provided tensors.
+    ///
+    /// - Returns: Array containing the tensors parts.
+    @inlinable
+    @differentiable(
+        wrt: self,
+        vjp: _vjpSplit(sizes:alongAxis:) where Scalar: TensorFlowFloatingPoint)
+    func split(sizes: Tensor<Int32>, alongAxis axis: Int = 0) -> [Tensor] {
+        return Raw.splitV(
+            value: self,
+            sizeSplits: sizes,
+            splitDim: Tensor<Int32>(Int32(axis)),
+            numSplit: Int64(sizes.shape[0]))
     }
 
     /// Reshape to the shape of the specified `Tensor`.
@@ -123,6 +187,32 @@ public extension Tensor {
 }
 
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
+    @inlinable
+    func _vjpUnstack(
+        alongAxis axis: Int = 0
+    ) -> ([Tensor], (Array<Tensor>.CotangentVector) -> Tensor) {
+        let result = unstack(alongAxis: axis)
+        return (result, { v in Tensor(stacking: v.base, alongAxis: axis) })
+    }
+
+    @inlinable
+    func _vjpSplit(
+        numSplits: Int,
+        alongAxis axis: Int = 0
+    ) -> ([Tensor], (Array<Tensor>.CotangentVector) -> Tensor) {
+        let result = split(numSplits: numSplits, alongAxis: axis)
+        return (result, { v in Tensor(concatenating: v.base, alongAxis: axis) })
+    }
+
+    @inlinable
+    func _vjpSplit(
+        sizes: Tensor<Int32>,
+        alongAxis axis: Int = 0
+    ) -> ([Tensor], (Array<Tensor>.CotangentVector) -> Tensor) {
+        let result = split(sizes: sizes, alongAxis: axis)
+        return (result, { v in Tensor(concatenating: v.base, alongAxis: axis) })
+    }
+
     @inlinable
     func _vjpReshaped(toShape newShape: Tensor<Int32>) -> (Tensor, (Tensor) -> Tensor) {
         let value = reshaped(toShape: newShape)
@@ -241,11 +331,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
         let idx = axis < 0 ? axis + rank: axis
         let splits = Tensor<Int32>([shapeTensor[idx], other.shapeTensor[idx]])
         return (concatenated(with: other, alongAxis: axis), { result in
-            let gradients = Raw.splitV(
-                value: result,
-                sizeSplits: splits,
-                splitDim: Tensor<Int32>(Int32(axis)),
-                numSplit: Int64(2))
+            let gradients = result.split(sizes: splits, alongAxis: axis)
             return (gradients[0], gradients[1])
         })
     }

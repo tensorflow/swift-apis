@@ -23,7 +23,8 @@ import TensorFlow
 ///
 /// `Layer` instances define a differentiable `applied(to:)` method for mapping inputs to
 /// outputs.
-public protocol Layer: Optimizable {
+public protocol Layer: Differentiable & KeyPathIterable 
+    where AllDifferentiableVariables: KeyPathIterable {
     /// The input type of the layer.
     associatedtype Input: Differentiable
     /// The output type of the layer.
