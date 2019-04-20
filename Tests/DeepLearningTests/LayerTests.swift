@@ -95,6 +95,31 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(output, expected)
     }
 
+    func testRNN() {
+        let x = Tensor<Float>(rangeFrom: 0.0, to: 0.4, stride: 0.1).rankLifted()
+        let inputs: [Tensor<Float>] = Array(repeating: x, count: 4)
+        let rnn = RNN(SimpleRNNCell<Float>(inputSize: 4, hiddenSize: 4,
+                                           seed: (0xFeedBeef, 0xDeadBeef)))
+        let (outputs, pullback) = rnn.valueWithPullback(at: inputs) { rnn, inputs in
+            return rnn(inputs)
+        }
+        XCTAssertEqual(outputs, [[[-0.0026294366, -0.0058668107,  0.04495003,  0.20311214]],
+                                 [[ 0.06788494,    0.050665878,   0.02415526,  0.09249911]],
+                                 [[ 0.06621192,    0.009049267,   0.065047316, 0.11534518]],
+                                 [[ 0.05612204,    0.00022032857, 0.05407162,  0.09784105]]])
+        let (𝛁rnn, 𝛁inputs) = pullback(.init(inputs))
+        XCTAssertEqual(𝛁rnn.cell.weight,
+                       [[          0.0,           0.0,           0.0,           0.0],
+                        [-0.0051278225,  0.0013102926,    0.00740262,   0.018119661],
+                        [ -0.010255645,  0.0026205853,    0.01480524,   0.036239322],
+                        [ -0.015383467,   0.003930878,    0.02220786,   0.054358985],
+                        [          0.0,           0.0,           0.0,           0.0],
+                        [          0.0,           0.0,           0.0,           0.0],
+                        [          0.0,           0.0,           0.0,           0.0],
+                        [          0.0,           0.0,           0.0,           0.0]])
+        XCTAssertEqual(𝛁rnn.cell.bias, [-0.051278222,  0.013102926,    0.0740262,   0.18119662])
+    }
+
     static var allTests = [
         ("testConv1D", testConv1D),
         ("testMaxPool1D", testMaxPool1D),
@@ -104,6 +129,7 @@ final class LayerTests: XCTestCase {
         ("testGlobalAvgPool3D", testGlobalAvgPool3D),
         ("testReshape", testReshape),
         ("testFlatten", testFlatten),
-        ("testSimpleRNNCell", testSimpleRNNCell)
+        ("testSimpleRNNCell", testSimpleRNNCell),
+        ("testRNN", testRNN)
     ]
 }
