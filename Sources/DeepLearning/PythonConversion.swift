@@ -28,8 +28,8 @@ private func debugLogNumpyError(_ message: String) {
   debugLog("NumPy conversion error: " + message)
 }
 
-extension ShapedArray : ConvertibleFromNumpyArray
-  where Scalar : NumpyScalarCompatible {
+extension ShapedArray: ConvertibleFromNumpyArray
+  where Scalar: NumpyScalarCompatible {
   /// Creates a `ShapedArray` with the same shape and scalars as the specified
   /// `numpy.ndarray` instance.
   ///
@@ -75,7 +75,7 @@ extension ShapedArray : ConvertibleFromNumpyArray
     guard let ptr = UnsafePointer<Scalar>(bitPattern: ptrVal) else {
       fatalError("'numpy.ndarray' data pointer was nil")
     }
-    // This code avoids calling `init<S : Sequence>(shape: [Int], scalars: S)`,
+    // This code avoids calling `init<S: Sequence>(shape: [Int], scalars: S)`,
     // which inefficiently copies scalars one by one. Instead,
     // `init(shape: [Int], scalars: [Scalar])` is called, which efficiently
     // does a `memcpy` of the entire `scalars` array.
@@ -92,8 +92,8 @@ extension ShapedArray : ConvertibleFromNumpyArray
   }
 }
 
-extension Tensor : ConvertibleFromNumpyArray
-  where Scalar : NumpyScalarCompatible {
+extension Tensor: ConvertibleFromNumpyArray
+  where Scalar: NumpyScalarCompatible {
   /// Creates a tensor with the same shape and scalars as the specified
   /// `numpy.ndarray` instance.
   ///
@@ -147,7 +147,7 @@ extension Tensor : ConvertibleFromNumpyArray
   }
 }
 
-extension ShapedArray where Scalar : NumpyScalarCompatible {
+extension ShapedArray where Scalar: NumpyScalarCompatible {
   /// Creates a `numpy.ndarray` instance with the same shape and scalars as
   /// this `ShapedArray`.
   ///
@@ -157,7 +157,7 @@ extension ShapedArray where Scalar : NumpyScalarCompatible {
   }
 }
 
-extension Tensor where Scalar : NumpyScalarCompatible {
+extension Tensor where Scalar: NumpyScalarCompatible {
   /// Creates a `numpy.ndarray` instance with the same shape and scalars as
   /// this tensor.
   ///
@@ -165,7 +165,7 @@ extension Tensor where Scalar : NumpyScalarCompatible {
   public func makeNumpyArray() -> PythonObject { return array.makeNumpyArray() }
 }
 
-extension TensorShape : PythonConvertible {
+extension TensorShape: PythonConvertible {
   public var pythonObject: PythonObject {
     return dimensions.pythonObject
   }

@@ -29,10 +29,37 @@ public extension TensorFlowScalar {
 }
 
 public extension Tensor {
+    /// Unpacks the given dimension of a rank-`R` tensor into multiple rank-`(R-1)` tensors. Unpacks 
+    /// `N` tensors from this tensor by chipping it along the `axis` dimension, where `N` is
+    /// inferred from this tensor's shape. For example, given a tensor with shape `[A, B, C, D]`:
+    /// 
+    ///   - If `axis == 0` then the `i`th tensor in the returned array is the slice 
+    ///     `self[i, :, :, :]` and each tensor in that array will have shape `[B, C, D]`. 
+    ///     (Note that the dimension unpacked along is gone, unlike
+    ///     `Tensor.split(numSplits:alongAxis)`, or `Tensor.split(sizes:alongAxis)`).
+    ///   - If `axis == 1` then the `i`th tensor in the returned array is the slice 
+    ///     `value[:, i, :, :]` and each tensor in that array will have shape `[A, C, D]`.
+    ///   - Etc.
+    ///
+    /// This is the opposite of `Tensor.init(stacking:alongAxis:)`.
+    ///
+    /// - Parameters:
+    ///   - axis: Dimension along which to unstack. Negative values wrap around.
+    /// 
+    /// - Precondition: `axis` must be in the range `[-rank, rank)`, where `rank` is the rank of the
+    ///   provided tensors.
+    /// 
+    /// - Returns: Array containing the unstacked tensors.
+    @inlinable
+    // @differentiable(vjp: _vjpUnstack(alongAxis:) wrt: self where Scalar : TensorFlowFloatingPoint)
+    func unstack(alongAxis axis: Int = 0) -> [Tensor] {
+        return Raw.unpack(value: self, num: shape[axis], axis: Int64(axis))
+    }
+
     /// Reshape to the shape of the specified `Tensor`.
     /// - Precondition: The number of scalars matches the new shape.
     @inlinable
-    @differentiable(wrt: self where Scalar : TensorFlowFloatingPoint)
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func reshaped<T>(like other: Tensor<T>) -> Tensor {
         return reshaped(toShape: other.shapeTensor)
     }
@@ -40,7 +67,7 @@ public extension Tensor {
     /// Reshape to the specified shape.
     /// - Precondition: The number of scalars matches the new shape.
     @inlinable
-    @differentiable(wrt: self where Scalar : TensorFlowFloatingPoint)
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func reshaped(to newShape: TensorShape) -> Tensor {
         // TODO(TF-433): Remove workaround for differentiating `map`.
         return reshaped(toShape: Tensor<Int32>({newShape.dimensions.map(Int32.init)}()))
@@ -51,14 +78,14 @@ public extension Tensor {
     @inlinable
     @differentiable(
         wrt: self,
-        vjp: _vjpReshaped(toShape:) where Scalar : TensorFlowFloatingPoint)
+        vjp: _vjpReshaped(toShape:) where Scalar: TensorFlowFloatingPoint)
     func reshaped(toShape newShape: Tensor<Int32>) -> Tensor {
         return Raw.reshape(self, shape: newShape)
     }
 
     /// Return a copy of the tensor collapsed into a 1-D `Tensor`, in row-major order.
     @inlinable
-    @differentiable(wrt: self where Scalar : TensorFlowFloatingPoint)
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func flattened() -> Tensor {
         return reshaped(to: [-1])
     }
@@ -66,14 +93,14 @@ public extension Tensor {
     /// Returns a shape-expanded `Tensor`, with a dimension of 1 inserted at the
     /// specified shape index.
     @inlinable
-    @differentiable(wrt: self, vjp: _vjpExpandingShape(at:) where Scalar : TensorFlowFloatingPoint)
+    @differentiable(wrt: self, vjp: _vjpExpandingShape(at:) where Scalar: TensorFlowFloatingPoint)
     func expandingShape(at shapeIndex: Int) -> Tensor {
         return Raw.expandDims(self, dim: Tensor<Int32>(Int32(shapeIndex)))
     }
 
     /// Returns a rank-lifted `Tensor` with a leading dimension of 1.
     @inlinable
-    @differentiable(wrt: self where Scalar : TensorFlowFloatingPoint)
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func rankLifted() -> Tensor {
         return expandingShape(at: 0)
     }
@@ -81,7 +108,7 @@ public extension Tensor {
     /// Remove the specified dimensions of size 1 from the shape of a tensor. If no dimensions are
     /// specified, then all dimensions of size 1 will be removed.
     @inlinable
-    @differentiable(wrt: self where Scalar : TensorFlowFloatingPoint)
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func squeezingShape(at axes: Int...) -> Tensor {
         return squeezingShape(at: axes)
     }
@@ -89,13 +116,13 @@ public extension Tensor {
     /// Remove the specified dimensions of size 1 from the shape of a tensor. If no dimensions are
     /// specified, then all dimensions of size 1 will be removed.
     @inlinable
-    @differentiable(wrt: self, vjp: _vjpSqueezingShape(at:) where Scalar : TensorFlowFloatingPoint)
+    @differentiable(wrt: self, vjp: _vjpSqueezingShape(at:) where Scalar: TensorFlowFloatingPoint)
     func squeezingShape(at axes: [Int]) -> Tensor {
         return Raw.squeeze(self, squeezeDims: axes.map(Int32.init))
     }
 }
 
-internal extension Tensor where Scalar : TensorFlowFloatingPoint {
+internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     func _vjpReshaped(toShape newShape: Tensor<Int32>) -> (Tensor, (Tensor) -> Tensor) {
         let value = reshaped(toShape: newShape)
@@ -119,14 +146,14 @@ internal extension Tensor where Scalar : TensorFlowFloatingPoint {
 // Other Tensor Transformations
 //===------------------------------------------------------------------------------------------===//
 
-infix operator ++ : AdditionPrecedence
+infix operator ++: AdditionPrecedence
 
 public extension Tensor {
     /// Returns a transposed tensor, with dimensions permuted in the specified order.
     @inlinable
     @differentiable(
         wrt: self,
-        vjp: _vjpTransposed(withPermutations:) where Scalar : TensorFlowFloatingPoint)
+        vjp: _vjpTransposed(withPermutations:) where Scalar: TensorFlowFloatingPoint)
     func transposed(withPermutations permutations: Tensor<Int32>) -> Tensor {
         return Raw.transpose(self, perm: permutations)
     }
@@ -135,7 +162,7 @@ public extension Tensor {
     @inlinable
     @differentiable(
         wrt: self,
-        vjp: _vjpTransposed(withPermutations:) where Scalar : TensorFlowFloatingPoint)
+        vjp: _vjpTransposed(withPermutations:) where Scalar: TensorFlowFloatingPoint)
     func transposed(withPermutations permutations: [Int]) -> Tensor {
         let permutations = permutations.map(Int32.init)
         return transposed(withPermutations: Tensor<Int32>(permutations))
@@ -144,14 +171,14 @@ public extension Tensor {
     /// Returns a transposed tensor, with dimensions permuted in the specified order.
     @inlinable
     @differentiable(
-        wrt: self, vjp: _vjpTransposed(withPermutations:) where Scalar : TensorFlowFloatingPoint)
+        wrt: self, vjp: _vjpTransposed(withPermutations:) where Scalar: TensorFlowFloatingPoint)
     func transposed(withPermutations permutations: Int...) -> Tensor {
         return transposed(withPermutations: permutations)
     }
 
     /// Returns a transposed tensor, with dimensions permuted in reverse order.
     @inlinable
-    @differentiable(wrt: self, vjp: _vjpTransposed() where Scalar : TensorFlowFloatingPoint)
+    @differentiable(wrt: self, vjp: _vjpTransposed() where Scalar: TensorFlowFloatingPoint)
     func transposed() -> Tensor {
         let defaultPermutations = rankTensor - 1 - Tensor<Int32>(
             rangeFrom: 0, to: Int32(rank), stride: 1)
@@ -163,7 +190,7 @@ public extension Tensor {
     ///   specified axis.
     /// - Precondition: The axis must be in the range `-rank..<rank`.
     @inlinable
-    @differentiable(vjp: _vjpConcatenated where Scalar : TensorFlowFloatingPoint)
+    @differentiable(vjp: _vjpConcatenated where Scalar: TensorFlowFloatingPoint)
     func concatenated(with other: Tensor, alongAxis axis: Int = 0) -> Tensor {
         return Tensor(concatenating: [self, other], alongAxis: axis)
     }
@@ -174,13 +201,13 @@ public extension Tensor {
     ///   and may be controversial. The existence/naming of `++` will be discussed
     ///   during a later API design phase.
     @inlinable
-    @differentiable(where Scalar : TensorFlowFloatingPoint)
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
     static func ++ (lhs: Tensor, rhs: Tensor) -> Tensor {
         return lhs.concatenated(with: rhs)
     }
 }
 
-internal extension Tensor where Scalar : TensorFlowFloatingPoint {
+internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     func _vjpTransposed(
         withPermutations permutations: Tensor<Int32>
@@ -211,7 +238,7 @@ internal extension Tensor where Scalar : TensorFlowFloatingPoint {
         with other: Tensor,
         alongAxis axis: Int
     ) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
-        let idx = axis < 0 ? axis + rank : axis
+        let idx = axis < 0 ? axis + rank: axis
         let splits = Tensor<Int32>([shapeTensor[idx], other.shapeTensor[idx]])
         return (concatenated(with: other, alongAxis: axis), { result in
             let gradients = Raw.splitV(
@@ -256,7 +283,7 @@ public extension Tensor {
 }
 
 // TODO: Why is this limited only to numeric data types whereas `broadcast` is not?
-public extension Tensor where Scalar : Numeric {
+public extension Tensor where Scalar: Numeric {
     @inlinable
     func unbroadcast(toShape otherShape: Tensor<Int32>) -> Tensor {
         let rankDiff = (rankTensor - otherShape.scalarCountTensor).rankLifted()
@@ -284,7 +311,7 @@ public extension Tensor where Scalar : Numeric {
 // Padding
 //===------------------------------------------------------------------------------------------===//
 
-public extension Tensor where Scalar : Numeric {
+public extension Tensor where Scalar: Numeric {
     /// Returns a padded tensor according to the specified padding sizes.
     @inlinable
     func padded(forSizes sizes: [(before: Int, after: Int)], with value: Scalar = 0) -> Tensor {
@@ -341,7 +368,7 @@ public extension Tensor {
     }
 }
 
-public enum TensorRange : TensorRangeExpression {
+public enum TensorRange: TensorRangeExpression {
     case ellipsis
     case newAxis
     case squeezeAxis
@@ -355,7 +382,7 @@ public enum TensorRange : TensorRangeExpression {
     public var tensorRange: TensorRange { return self }
 }
 
-extension TensorRange : Equatable {
+extension TensorRange: Equatable {
     public static func == (lhs: TensorRange, rhs: TensorRange) -> Bool {
         switch (lhs, rhs) {
         case (.ellipsis, .ellipsis),
@@ -382,45 +409,45 @@ public protocol TensorRangeExpression {
 }
 
 // TODO: Cannot extend non-nominal type 'UnboundedRange'.
-// extension UnboundedRange : TensorRangeExpression {
+// extension UnboundedRange: TensorRangeExpression {
 //     public var tensorRange: TensorRange { return .ellipsis }
 // }
 
-extension Int : TensorRangeExpression {
+extension Int: TensorRangeExpression {
     public var tensorRange: TensorRange { return .index(self) }
 }
 
-extension Range : TensorRangeExpression where Bound == Int {
+extension Range: TensorRangeExpression where Bound == Int {
     public var tensorRange: TensorRange {
         return .range(self, stride: 1)
     }
 }
 
-extension ClosedRange : TensorRangeExpression where Bound == Int {
+extension ClosedRange: TensorRangeExpression where Bound == Int {
     public var tensorRange: TensorRange {
         return .closedRange(self, stride: 1)
     }
 }
 
-extension PartialRangeFrom : TensorRangeExpression where Bound == Int {
+extension PartialRangeFrom: TensorRangeExpression where Bound == Int {
     public var tensorRange: TensorRange {
         return .partialRangeFrom(self, stride: 1)
     }
 }
 
-extension PartialRangeUpTo : TensorRangeExpression where Bound == Int {
+extension PartialRangeUpTo: TensorRangeExpression where Bound == Int {
     public var tensorRange: TensorRange {
         return .partialRangeUpTo(self, stride: 1)
     }
 }
 
-extension PartialRangeThrough : TensorRangeExpression where Bound == Int {
+extension PartialRangeThrough: TensorRangeExpression where Bound == Int {
     public var tensorRange: TensorRange {
         return .partialRangeThrough(self, stride: 1)
     }
 }
 
-infix operator .. : StridedRangeFormationPrecedence
+infix operator ..: StridedRangeFormationPrecedence
 precedencegroup StridedRangeFormationPrecedence {
     associativity: left
     higherThan: CastingPrecedence

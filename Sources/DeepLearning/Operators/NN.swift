@@ -20,7 +20,7 @@ import TensorFlow
 // Normalization
 //===------------------------------------------------------------------------------------------===//
 
-public extension Tensor where Scalar : TensorFlowFloatingPoint {
+public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// Computes the batch normalized tensor along the specified axis.
     ///
     /// Specifically, returns `(self - mu) / (var + epsilon) * gamma + beta` where `mu` and `var` are 
@@ -76,7 +76,7 @@ public extension Tensor where Scalar : TensorFlowFloatingPoint {
     }
 }
 
-public extension Tensor where Scalar : BinaryFloatingPoint {
+public extension Tensor where Scalar: BinaryFloatingPoint {
     /// Computes the batch normalized tensor along the specified axis.
     ///
     /// Specifically, returns `(self - mu)/(var + epsilon) * gamma + beta` where
@@ -92,7 +92,7 @@ public extension Tensor where Scalar : BinaryFloatingPoint {
     @inlinable
     @differentiable(
         wrt: (self, offset, scale),
-        vjp: _vjpBatchNormalized where Scalar : TensorFlowFloatingPoint)
+        vjp: _vjpBatchNormalized where Scalar: TensorFlowFloatingPoint)
     func batchNormalized(
         alongAxis axis: Int,
         offset: Tensor = Tensor(0),
@@ -138,7 +138,7 @@ public extension Padding {
     }
 }
 
-public extension Tensor where Scalar : TensorFlowFloatingPoint {
+public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// TensorFlow builtin conv2d gradient helper for the input.
     @inlinable
     @differentiable(wrt: (self, filter), vjp: _vjpConv2DBackpropInput)
@@ -185,10 +185,9 @@ public extension Tensor where Scalar : TensorFlowFloatingPoint {
         let value = conv2DBackpropInput(
             shape: shape, filter: filter, strides: strides, padding: padding)
         return (value, { v in
-            (
-                self.conv2DBackpropFilter(
-                    input: v, filterSizes: shape, strides: strides, padding: padding),
-                v.convolved2D(withFilter: filter, strides: strides, padding: padding))
+            (self.conv2DBackpropFilter(
+                input: v, filterSizes: shape, strides: strides, padding: padding),
+             v.convolved2D(withFilter: filter, strides: strides, padding: padding))
         })
     }
 
@@ -202,10 +201,9 @@ public extension Tensor where Scalar : TensorFlowFloatingPoint {
         let value = conv2DBackpropFilter(
             input: input, filterSizes: filterSizes, strides: strides, padding: padding)
         return (value, { v in
-            (
-                self.conv2DBackpropInput(
-                    shape: filterSizes, filter: v, strides: strides, padding: padding),
-                input.convolved2D(withFilter: v, strides: strides, padding: padding))
+            (self.conv2DBackpropInput(
+                shape: filterSizes, filter: v, strides: strides, padding: padding),
+             input.convolved2D(withFilter: v, strides: strides, padding: padding))
         })
     }
 
@@ -217,13 +215,10 @@ public extension Tensor where Scalar : TensorFlowFloatingPoint {
     ) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
         let value = convolved2D(withFilter: filter, strides: strides, padding: padding)
         return (value, { v in
-            (
-                v.conv2DBackpropInput(
-                    shape: self.shapeTensor, filter: filter,
-                    strides: strides, padding: padding),
-                v.conv2DBackpropFilter(
-                    input: self, filterSizes: filter.shapeTensor,
-                    strides: strides, padding: padding))
+            (v.conv2DBackpropInput(
+                shape: self.shapeTensor, filter: filter, strides: strides, padding: padding),
+             v.conv2DBackpropFilter(
+                input: self, filterSizes: filter.shapeTensor, strides: strides, padding: padding))
         })
     }
 
@@ -270,7 +265,7 @@ public extension Tensor where Scalar : TensorFlowFloatingPoint {
     }
 }
 
-public extension Tensor where Scalar : FloatingPoint {
+public extension Tensor where Scalar: FloatingPoint {
     /// Computes a 2-D convolution using `self` as input, with the specified
     /// filter, strides, and padding.
     ///
@@ -309,7 +304,7 @@ public extension Tensor where Scalar : FloatingPoint {
     @inlinable
     @differentiable(
         wrt: self,
-        vjp: _vjpMaxPooled(kernelSize:strides:padding:) where Scalar : TensorFlowFloatingPoint)
+        vjp: _vjpMaxPooled(kernelSize:strides:padding:) where Scalar: TensorFlowFloatingPoint)
     func maxPooled(
         kernelSize: (Int, Int, Int, Int),
         strides: (Int, Int, Int, Int),
@@ -335,7 +330,7 @@ public extension Tensor where Scalar : FloatingPoint {
     @inlinable
     @differentiable(
         wrt: self,
-        vjp: _vjpAveragePooled(kernelSize:strides:padding:) where Scalar : TensorFlowFloatingPoint)
+        vjp: _vjpAveragePooled(kernelSize:strides:padding:) where Scalar: TensorFlowFloatingPoint)
     func averagePooled(
         kernelSize: (Int, Int, Int, Int),
         strides: (Int, Int, Int, Int),

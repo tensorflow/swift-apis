@@ -36,7 +36,7 @@ public extension Tensor {
     ///   - shape: The dimensions of the tensor.
     @inlinable
     @differentiable(
-        vjp: _vjpInit(repeating:shape:) where Scalar : TensorFlowFloatingPoint)
+        vjp: _vjpInit(repeating:shape:) where Scalar: TensorFlowFloatingPoint)
     init(repeating repeatedValue: Scalar, shape: TensorShape) {
         self = Raw.fill(
             dims: Tensor<Int32>(shape.dimensions.map(Int32.init)),
@@ -46,7 +46,7 @@ public extension Tensor {
     /// Creates a tensor by broadcasting the given scalar to a given rank with
     /// all dimensions being 1.
     @inlinable
-    // @differentiable(where Scalar : TensorFlowFloatingPoint)
+    // @differentiable(where Scalar: TensorFlowFloatingPoint)
     init(broadcasting scalar: Scalar, rank: Int) {
         self = Tensor(scalar).reshaped(to: TensorShape(repeating: 1, count: rank))
     }
@@ -60,7 +60,7 @@ public extension Tensor {
     }
 }
 
-internal extension Tensor where Scalar : TensorFlowFloatingPoint {
+internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     static func _vjpInit(
         repeating repeatedValue: Scalar,
@@ -76,7 +76,7 @@ internal extension Tensor where Scalar : TensorFlowFloatingPoint {
 // Casting
 //===------------------------------------------------------------------------------------------===//
 
-public extension Tensor where Scalar : Numeric {
+public extension Tensor where Scalar: Numeric {
     /// Perform an element-wise type conversion from a `Bool` tensor.
     @inlinable
     init(_ other: Tensor<Bool>) {
@@ -86,16 +86,16 @@ public extension Tensor where Scalar : Numeric {
     /// Perform an element-wise conversion from another `Tensor`.
     @inlinable
     @differentiable(
-        vjp: _vjpCast where Scalar : TensorFlowFloatingPoint,
+        vjp: _vjpCast where Scalar: TensorFlowFloatingPoint,
                             OtherScalar: TensorFlowFloatingPoint)
-    init<OtherScalar : Numeric>(_ other: Tensor<OtherScalar>) {
+    init<OtherScalar: Numeric>(_ other: Tensor<OtherScalar>) {
         self = Raw.cast(other)
     }
 }
 
-internal extension Tensor where Scalar : TensorFlowFloatingPoint {
+internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
-    static func _vjpCast<OtherScalar : TensorFlowFloatingPoint>(
+    static func _vjpCast<OtherScalar: TensorFlowFloatingPoint>(
         _ other: Tensor<OtherScalar>
     ) -> (Tensor, (Tensor) -> Tensor<OtherScalar>) {
         return (Tensor(other), { v in Tensor<OtherScalar>(v) })
@@ -109,7 +109,7 @@ internal extension Tensor where Scalar : TensorFlowFloatingPoint {
 public extension Tensor {
     /// Creates a tensor from an array of tensors (which may themselves be scalars).
     @inlinable
-    // @differentiable(where Scalar : TensorFlowFloatingPoint)
+    // @differentiable(where Scalar: TensorFlowFloatingPoint)
     init(_ elements: [Tensor]) {
         self = Tensor(stacking: elements)
     }
@@ -131,7 +131,7 @@ public extension Tensor {
     /// Tensor(stacking: [x, y, z], alongAxis: 1) // is [[1, 2, 3], [4, 5, 6]]
     /// ```
     ///
-    /// This is the opposite of `Tensor.unstacked`.
+    /// This is the opposite of `Tensor.unstack(alongAxis:)`.
     ///
     /// - Parameters:
     ///   - tensors: Tensors to stack.
@@ -143,7 +143,7 @@ public extension Tensor {
     /// 
     /// - Returns: The stacked tensor.
     @inlinable
-    // @differentiable(vjp: _vjpStacking where Scalar : TensorFlowFloatingPoint)
+    // @differentiable(vjp: _vjpStacking where Scalar: TensorFlowFloatingPoint)
     init(stacking tensors: [Tensor], alongAxis axis: Int = 0) {
         self = Raw.pack(tensors, axis: Int64(axis))
     }
@@ -181,14 +181,14 @@ public extension Tensor {
     /// 
     /// - Returns: The concatenated tensor.
     @inlinable
-    // @differentiable(wrt: tensors, vjp: _vjpConcatenating where Scalar : TensorFlowFloatingPoint)
+    // @differentiable(wrt: tensors, vjp: _vjpConcatenating where Scalar: TensorFlowFloatingPoint)
     init(concatenating tensors: [Tensor], alongAxis axis: Int = 0) {
         precondition(tensors.count > 0)
         self = Raw.concatV2(tensors, axis: Tensor<Int32>(Int32(axis)))
     }
 }
 
-// internal extension Tensor where Scalar : TensorFlowFloatingPoint {
+// internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 //     @inlinable
 //     static func _vjpStacking(
 //         stacking tensors: [Tensor],
@@ -206,7 +206,7 @@ public extension Tensor {
 //         alongAxis axis: Int = 0
 //     ) -> (Tensor, (Tensor) -> Array<Tensor>.DifferentiableView) {
 //         let result = Tensor<Scalar>(concatenating: tensors, alongAxis: axis)
-//         let posAxis = axis < 0 ? axis + tensors[0].rank : axis
+//         let posAxis = axis < 0 ? axis + tensors[0].rank: axis
 //         let sizes = Tensor<Int32>(stacking: tensors.map { $0.shapeTensor[posAxis] })
 //         return (result, { [count = tensors.count] v in
 //             if count == 1 { return Array<Tensor>.DifferentiableView([v]) }
@@ -220,7 +220,7 @@ public extension Tensor {
 // Numeric
 //===------------------------------------------------------------------------------------------===//
 
-public extension Tensor where Scalar : Numeric {
+public extension Tensor where Scalar: Numeric {
     /// Creates a tensor with all scalars set to zero.
     ///
     /// - Parameter shape: Shape of the tensor.
@@ -418,7 +418,7 @@ public extension Tensor where Scalar: BinaryFloatingPoint,
     }
 }
 
-fileprivate extension Tensor where Scalar : BinaryFloatingPoint {
+fileprivate extension Tensor where Scalar: BinaryFloatingPoint {
     private static func glorot(
         fromStandardUniform randomUniform: __shared Tensor<Scalar>,
         shape: __shared TensorShape

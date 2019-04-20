@@ -16,14 +16,14 @@
 import TensorFlow
 #endif
 
-infix operator .< : ComparisonPrecedence
-infix operator .<= : ComparisonPrecedence
-infix operator .>= : ComparisonPrecedence
-infix operator .> : ComparisonPrecedence
-infix operator .== : ComparisonPrecedence
-infix operator .!= : ComparisonPrecedence
+infix operator .<: ComparisonPrecedence
+infix operator .<=: ComparisonPrecedence
+infix operator .>=: ComparisonPrecedence
+infix operator .>: ComparisonPrecedence
+infix operator .==: ComparisonPrecedence
+infix operator .!=: ComparisonPrecedence
 
-public extension Tensor where Scalar : Numeric & Comparable {
+public extension Tensor where Scalar: Numeric & Comparable {
     /// Computes `lhs < rhs` element-wise and returns a `Tensor` of Boolean /// scalars.
     @inlinable
     static func .< (lhs: Tensor, rhs: Tensor) -> Tensor<Bool> {
@@ -105,7 +105,7 @@ public extension Tensor where Scalar : Numeric & Comparable {
     }
 }
 
-extension Tensor : Equatable where Scalar : Equatable {
+extension Tensor: Equatable where Scalar: Equatable {
     @inlinable
     public static func == (lhs: Tensor, rhs: Tensor) -> Bool {
         return (lhs .== rhs).all()
@@ -117,7 +117,7 @@ extension Tensor : Equatable where Scalar : Equatable {
     }
 }
 
-extension Tensor : Comparable where Scalar : Numeric & Comparable {
+extension Tensor: Comparable where Scalar: Numeric & Comparable {
     /// Returns a Boolean value indicating whether the value of the first argument is
     /// lexicographically less than that of the second argument.
     @inlinable
@@ -147,7 +147,7 @@ extension Tensor : Comparable where Scalar : Numeric & Comparable {
     }
 }
 
-public extension Tensor where Scalar : Numeric & Comparable {
+public extension Tensor where Scalar: Numeric & Comparable {
     /// Returns a Boolean value indicating whether the value of the first argument is
     /// lexicographically less than that of the second argument.
     @inlinable
@@ -177,7 +177,7 @@ public extension Tensor where Scalar : Numeric & Comparable {
     }
 }
 
-public extension Tensor where Scalar : Equatable {
+public extension Tensor where Scalar: Equatable {
     /// Computes `lhs != rhs` element-wise and returns a `Tensor` of Boolean scalars.
     /// - Note: `.==` supports broadcasting.
     @inlinable
@@ -222,9 +222,9 @@ public extension Tensor where Scalar : Equatable {
     }
 }
 
-// TODO: infix operator ≈ : ComparisonPrecedence
+// TODO: infix operator ≈: ComparisonPrecedence
 
-public extension Tensor where Scalar : FloatingPoint & Equatable {
+public extension Tensor where Scalar: FloatingPoint & Equatable {
     /// Returns a `Tensor` of Boolean values indicating whether the elements of `self` are
     /// approximately equal to those of `other`.
     @inlinable

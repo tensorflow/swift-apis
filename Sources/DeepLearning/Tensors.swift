@@ -17,7 +17,7 @@ import TensorFlow
 #endif
 
 #if COMPILING_TENSORFLOW_MODULE
-infix operator .== : ComparisonPrecedence
+infix operator .==: ComparisonPrecedence
 #endif
 
 //===------------------------------------------------------------------------------------------===//
@@ -28,25 +28,19 @@ public extension Tensor {
   /// The rank of the tensor, represented as a `Tensor<Int32>`.
   @inlinable
   var rankTensor: Tensor<Int32> {
-    get {
-      return Raw.rank(self)
-    }
+    return Raw.rank(self)
   }
 
   /// The dimensions of the tensor, represented as a `Tensor<Int32>`.
   @inlinable
   var shapeTensor: Tensor<Int32> {
-    get {
-      return Raw.shape(self)
-    }
+    return Raw.shape(self)
   }
 
   /// The number of scalars in the tensor, represented as a `Tensor<Int32>`.
   @inlinable
   var scalarCountTensor: Tensor<Int32> {
-    get {
-      return Raw.size(self)
-    }
+    return Raw.size(self)
   }
 }
 
@@ -55,7 +49,7 @@ public extension Tensor {
 //===------------------------------------------------------------------------------------------===//
 
 // String conversion.
-extension Tensor : CustomStringConvertible {
+extension Tensor: CustomStringConvertible {
     /// A textual representation of the tensor.
     ///
     /// - Note: use `fullDescription` for a non-pretty-printed description showing all scalars.
@@ -94,14 +88,14 @@ public extension Tensor {
 }
 
 // Xcode Playground display conversion.
-extension Tensor : CustomPlaygroundDisplayConvertible {
+extension Tensor: CustomPlaygroundDisplayConvertible {
     public var playgroundDescription: Any {
         return description
     }
 }
 
 // Mirror representation, used by debugger/REPL.
-extension Tensor : CustomReflectable {
+extension Tensor: CustomReflectable {
     public var customMirror: Mirror {
         return Mirror(self, children: [], displayStyle: .struct)
     }
@@ -111,7 +105,7 @@ extension Tensor : CustomReflectable {
 // Codable Conformance
 //===------------------------------------------------------------------------------------------===//
 
-extension Tensor : Codable where Scalar : Codable {
+extension Tensor: Codable where Scalar: Codable {
     @inlinable
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()

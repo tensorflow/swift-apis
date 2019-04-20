@@ -429,8 +429,8 @@ public struct UniformIntegerDistribution<T: FixedWidthInteger>: RandomDistributi
 }
 
 @_fixed_layout
-public struct UniformFloatingPointDistribution<T : BinaryFloatingPoint>: RandomDistribution
-  where T.RawSignificand : FixedWidthInteger {
+public struct UniformFloatingPointDistribution<T: BinaryFloatingPoint>: RandomDistribution
+  where T.RawSignificand: FixedWidthInteger {
     public let lowerBound: T
     public let upperBound: T
 
@@ -445,8 +445,8 @@ public struct UniformFloatingPointDistribution<T : BinaryFloatingPoint>: RandomD
 }
 
 @_fixed_layout
-public struct NormalDistribution<T : BinaryFloatingPoint>: RandomDistribution
-  where T.RawSignificand : FixedWidthInteger {
+public struct NormalDistribution<T: BinaryFloatingPoint>: RandomDistribution
+  where T.RawSignificand: FixedWidthInteger {
     public let mean: T
     public let standardDeviation: T
     private let uniformDist = UniformFloatingPointDistribution<T>()
@@ -536,7 +536,7 @@ public struct BetaDistribution: RandomDistribution {
         } while r + alpha * (log(alpha) - log(b + w)) < t
 
         w = min(w, Float.greatestFiniteMagnitude)
-        return a == alpha0 ? w / (b + w) : b / (b + w)
+        return a == alpha0 ? w / (b + w): b / (b + w)
     }
 
     /// Returns one sample from a Beta(alpha, beta) distribution using Cheng's BC
@@ -592,6 +592,6 @@ public struct BetaDistribution: RandomDistribution {
         }
 
         w = min(w, Float.greatestFiniteMagnitude)
-        return a == alpha0 ? w / (b + w) : b / (b + w)
+        return a == alpha0 ? w / (b + w): b / (b + w)
     }
 }
