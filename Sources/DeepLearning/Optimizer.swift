@@ -45,9 +45,8 @@ fileprivate extension Tensor where Scalar: Numeric {
 ///
 /// Reference: ["Adam - A Method for Stochastic Optimization"](
 /// https://arxiv.org/abs/1412.6980v8)
-public class Adam<Model: Differentiable & KeyPathIterable>: Optimizer
-    where AllDifferentiableVariables: KeyPathIterable,
-          Model.AllDifferentiableVariables == Model.CotangentVector {
+public class Adam<Model: Layer>: Optimizer
+    where Model.AllDifferentiableVariables == Model.CotangentVector {
     /// The learning rate.
     public var learningRate: Float
     /// A coefficient used to calculate the first and second moments of
@@ -140,9 +139,8 @@ public class Adam<Model: Differentiable & KeyPathIterable>: Optimizer
 ///
 /// Reference: ["rmsprop: Divide the gradient by a running average of its recent magnitude"](
 /// http://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf)
-public class RMSProp<Model: Differentiable & KeyPathIterable>: Optimizer
-    where AllDifferentiableVariables: KeyPathIterable,
-          Model.AllDifferentiableVariables == Model.CotangentVector {
+public class RMSProp<Model: Layer>: Optimizer
+    where Model.AllDifferentiableVariables == Model.CotangentVector {
     /// The learning rate.
     public var learningRate: Float
     // TODO: Document `rho`. Keras doesn't document `rho`.
@@ -205,9 +203,8 @@ public class RMSProp<Model: Differentiable & KeyPathIterable>: Optimizer
 ///
 /// An optimizer that implements stochastic gradient descent, with support for momentum, learning
 /// rate decay, and Nesterov momentum.
-public class SGD<Model: Differentiable & KeyPathIterable>: Optimizer
-    where AllDifferentiableVariables: KeyPathIterable,
-          Model.AllDifferentiableVariables == Model.CotangentVector {
+public class SGD<Model: Layer>: Optimizer
+    where Model.AllDifferentiableVariables == Model.CotangentVector {
     /// The learning rate.
     public var learningRate: Float
     /// The momentum factor. It accelerates stochastic gradient descent in the relevant direction
@@ -278,7 +275,7 @@ public class SGD<Model: Differentiable & KeyPathIterable>: Optimizer
 // MARK: - Manifold optimizers
 
 /// A Riemann manifold stochastic gradient descent (SGD) optimizer.
-public class RiemannSGD<Model: Differentiable, Scalar: FloatingPoint>: Optimizer
+public class RiemannSGD<Model: Layer, Scalar: FloatingPoint>: Optimizer
     where Model.TangentVector: VectorNumeric, Model.TangentVector.Scalar == Scalar {
     /// The learning rate.
     public var learningRate: Scalar
