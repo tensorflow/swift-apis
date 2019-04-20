@@ -20,6 +20,338 @@ import TensorFlow
 infix operator .> : ComparisonPrecedence
 #endif
 
+// TODO:
+// - Consider explicit broadcasting for elementwise binary ops when
+//   scalarization and rank getter are implemented.
+
+//===------------------------------------------------------------------------------------------===//
+// Additive Group
+//===------------------------------------------------------------------------------------------===//
+
+extension Tensor : AdditiveArithmetic where Scalar : Numeric {
+    /// A scalar zero tensor.
+    @inlinable
+    public static var zero: Tensor {
+        get {
+        return Tensor(zeros: [])
+        }
+    }
+
+    /// Adds two tensors and produces their sum.
+    /// - Note: `+` supports broadcasting.
+    @inlinable
+    @differentiable(vjp: _vjpAdd(lhs:rhs:) where Scalar : TensorFlowFloatingPoint)
+    public static func + (lhs: Tensor, rhs: Tensor) -> Tensor {
+        return Raw.add(lhs, rhs)
+    }
+
+    /// Subtracts one tensor from another and produces their difference.
+    /// - Note: `-` supports broadcasting.
+    @inlinable
+    @differentiable(vjp: _vjpSubtract(lhs:rhs:) where Scalar : TensorFlowFloatingPoint)
+    public static func - (lhs: Tensor, rhs: Tensor) -> Tensor {
+        return Raw.sub(lhs, rhs)
+    }
+}
+
+internal extension Tensor where Scalar : TensorFlowFloatingPoint {
+    @inlinable
+    static func _vjpAdd(lhs: Tensor, rhs: Tensor) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
+        return (lhs + rhs, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
+            (v.unbroadcast(toShape: lhsShape), v.unbroadcast(toShape: rhsShape))
+        })
+    }
+
+    @inlinable
+    static func _vjpSubtract(lhs: Tensor, rhs: Tensor) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
+        return (lhs - rhs, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
+            (v.unbroadcast(toShape: lhsShape), -v.unbroadcast(toShape: rhsShape))
+        })
+    }
+}
+
+//===------------------------------------------------------------------------------------------===//
+// Vector Space
+//===------------------------------------------------------------------------------------------===//
+
+extension Tensor : VectorNumeric where Scalar : Numeric {
+    /// Multiplies the scalar with every scalar of the tensor and produces the product.
+    @inlinable
+    @differentiable(vjp: _vjpMultiply(lhs:rhs:) where Scalar : TensorFlowFloatingPoint)
+    public static func * (lhs: Scalar, rhs: Tensor) -> Tensor {
+        return Tensor(lhs) * rhs
+    }
+}
+
+internal extension Tensor where Scalar : TensorFlowFloatingPoint {
+    @inlinable
+    static func _vjpMultiply(lhs: Tensor, rhs: Tensor) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
+        return (lhs * rhs, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
+            ((rhs * v).unbroadcast(toShape: lhsShape), (lhs * v).unbroadcast(toShape: rhsShape))
+        })
+    }
+}
+
+extension Tensor : ShapedVectorNumeric where Scalar : Numeric {}
+
+extension Tensor : Differentiable where Scalar : TensorFlowFloatingPoint {
+    public typealias TangentVector = Tensor
+    public typealias CotangentVector = Tensor
+    public typealias AllDifferentiableVariables = Tensor
+
+    @inlinable
+    public func tangentVector(from cotangent: CotangentVector) -> TangentVector {
+        return cotangent
+    }
+}
+
+//===------------------------------------------------------------------------------------------===//
+// Additional Element-wise Operators
+//===------------------------------------------------------------------------------------------===//
+
+public extension Tensor where Scalar : Numeric {
+    /// Adds the scalar to every scalar of the tensor and produces the sum.
+    @inlinable
+    @differentiable(vjp: _vjpAdd(lhs:rhs:) where Scalar : TensorFlowFloatingPoint)
+    static func + (lhs: Scalar, rhs: Tensor) -> Tensor {
+        return Tensor(lhs) + rhs
+    }
+
+    /// Adds the scalar to every scalar of the tensor and produces the sum.
+    @inlinable
+    @differentiable(vjp: _vjpAdd(lhs:rhs:) where Scalar : TensorFlowFloatingPoint)
+    static func + (lhs: Tensor, rhs: Scalar) -> Tensor {
+        return lhs + Tensor(rhs)
+    }
+
+    /// Subtracts the scalar from every scalar of the tensor and produces the difference.
+    @inlinable
+    @differentiable(vjp: _vjpSubtract(lhs:rhs:) where Scalar : TensorFlowFloatingPoint)
+    static func - (lhs: Scalar, rhs: Tensor) -> Tensor {
+        return Tensor(lhs) - rhs
+    }
+
+    /// Subtracts the scalar from every scalar of the tensor and produces the difference
+    @inlinable
+    @differentiable(vjp: _vjpSubtract(lhs:rhs:) where Scalar : TensorFlowFloatingPoint)
+    static func - (lhs: Tensor, rhs: Scalar) -> Tensor {
+        return lhs - Tensor(rhs)
+    }
+
+    /// Adds two tensors and stores the result in the left-hand-side variable.
+    /// - Note: `+=` supports broadcasting.
+    @inlinable
+    static func += (lhs: inout Tensor, rhs: Tensor) {
+        lhs = lhs + rhs
+    }
+
+    /// Adds the scalar to every scalar of the tensor and stores the result in the left-hand-side
+    /// variable.
+    @inlinable
+    static func += (lhs: inout Tensor, rhs: Scalar) {
+        lhs = lhs + rhs
+    }
+
+    /// Subtracts the second tensor from the first and stores the result in the left-hand-side
+    /// variable.
+    /// - Note: `-=` supports broadcasting.
+    @inlinable
+    static func -= (lhs: inout Tensor, rhs: Tensor) {
+        lhs = lhs - rhs
+    }
+
+    /// Subtracts the scalar from every scalar of the tensor and stores the result in the
+    /// left-hand-side variable.
+    @inlinable
+    static func -= (lhs: inout Tensor, rhs: Scalar) {
+        lhs = lhs - rhs
+    }
+
+    /// Multiplies two tensors and produces their product.
+    /// - Note: `*` supports broadcasting.
+    @inlinable
+    @differentiable(vjp: _vjpMultiply(lhs:rhs:) where Scalar : TensorFlowFloatingPoint)
+    static func * (lhs: Tensor, rhs: Tensor) -> Tensor {
+        return Raw.mul(lhs, rhs)
+    }
+
+    /// Multiplies the scalar with every scalar of the tensor and produces the product.
+    @inlinable
+    @differentiable(vjp: _vjpMultiply(lhs:rhs:) where Scalar : TensorFlowFloatingPoint)
+    static func * (lhs: Tensor, rhs: Scalar) -> Tensor {
+        return lhs * Tensor(rhs)
+    }
+
+    /// Multiplies two tensors and stores the result in the left-hand-side variable.
+    /// - Note: `*=` supports broadcasting.
+    @inlinable
+    static func *= (lhs: inout Tensor, rhs: Tensor) {
+        lhs = lhs * rhs
+    }
+
+    @inlinable
+    static func *= (lhs: inout Tensor, rhs: Scalar) {
+        lhs = lhs * rhs
+    }
+
+    /// Returns the quotient of dividing the first tensor by the second.
+    /// - Note: `/` supports broadcasting.
+    @inlinable
+    @differentiable(vjp: _vjpDivide(lhs:rhs:) where Scalar : TensorFlowFloatingPoint)
+    static func / (lhs: Tensor, rhs: Tensor) -> Tensor {
+        return Raw.div(lhs, rhs)
+    }
+
+    /// Returns the quotient of dividing the scalar by the tensor, broadcasting the scalar.
+    @inlinable
+    @differentiable(vjp: _vjpDivide(lhs:rhs:) where Scalar : TensorFlowFloatingPoint)
+    static func / (lhs: Scalar, rhs: Tensor) -> Tensor {
+        return Tensor(lhs) / rhs
+    }
+
+    /// Returns the quotient of dividing the tensor by the scalar, broadcasting the scalar.
+    @inlinable
+    @differentiable(vjp: _vjpDivide(lhs:rhs:) where Scalar : TensorFlowFloatingPoint)
+    static func / (lhs: Tensor, rhs: Scalar) -> Tensor {
+        return lhs / Tensor(rhs)
+    }
+
+    /// Divides the first tensor by the second and stores the quotient in the left-hand-side
+    /// variable.
+    @inlinable
+    static func /= (lhs: inout Tensor, rhs: Tensor) {
+        lhs = lhs / rhs
+    }
+
+    /// Divides the tensor by the scalar, broadcasting the scalar, and stores the quotient in the
+    /// left-hand-side variable.
+    @inlinable
+    static func /= (lhs: inout Tensor, rhs: Scalar) {
+        lhs = lhs / rhs
+    }
+
+    /// Returns the remainder of dividing the first tensor by the second.
+    /// - Note: `%` supports broadcasting.
+    @inlinable
+    static func % (lhs: Tensor, rhs: Tensor) -> Tensor {
+        return Raw.mod(lhs, rhs)
+    }
+
+    /// Returns the remainder of dividing the tensor by the scalar, broadcasting the scalar.
+    @inlinable
+    static func % (lhs: Tensor, rhs: Scalar) -> Tensor {
+        return lhs % Tensor(rhs)
+    }
+
+    /// Returns the remainder of dividing the scalar by the tensor, broadcasting the scalar.
+    @inlinable
+    static func % (lhs: Scalar, rhs: Tensor) -> Tensor {
+        return Tensor(lhs) % rhs
+    }
+
+    /// Divides the first tensor by the second and stores the remainder in the left-hand-side
+    /// variable.
+    @inlinable
+    static func %= (lhs: inout Tensor, rhs: Tensor) {
+        lhs = lhs % rhs
+    }
+
+    /// Divides the tensor by the scalar and stores the remainder in the left-hand-side variable.
+    @inlinable
+    static func %= (lhs: inout Tensor, rhs: Scalar) {
+        lhs = lhs % rhs
+    }
+}
+
+internal extension Tensor where Scalar : TensorFlowFloatingPoint {
+    @inlinable
+    static func _vjpAdd(lhs: Tensor, rhs: Scalar) -> (Tensor, (Tensor) -> (Tensor, Scalar)) {
+        return (lhs + rhs, { v in (v, v.sum().scalarized()) })
+    }
+
+    @inlinable
+    static func _vjpAdd(lhs: Scalar, rhs: Tensor) -> (Tensor, (Tensor) -> (Scalar, Tensor)) {
+        return (lhs + rhs, { v in (v.sum().scalarized(), v) })
+    }
+
+    @inlinable
+    static func _vjpSubtract(lhs: Tensor, rhs: Scalar) -> (Tensor, (Tensor) -> (Tensor, Scalar)) {
+        return (lhs - rhs, { v in (v, 0 - v.sum().scalarized()) })
+    }
+
+    @inlinable
+    static func _vjpSubtract(lhs: Scalar, rhs: Tensor) -> (Tensor, (Tensor) -> (Scalar, Tensor)) {
+        return (lhs - rhs, { v in (v.sum().scalarized(), 0 - v) })
+    }
+
+    @inlinable
+    static func _vjpMultiply(lhs: Tensor, rhs: Scalar) -> (Tensor, (Tensor) -> (Tensor, Scalar)) {
+        return (lhs * rhs, { v in (v * rhs, (v * lhs).sum().scalarized()) })
+    }
+
+    @inlinable
+    static func _vjpMultiply(lhs: Scalar, rhs: Tensor) -> (Tensor, (Tensor) -> (Scalar, Tensor)) {
+        return (lhs * rhs, { v in ((v * rhs).sum().scalarized(), v * lhs) })
+    }
+
+    @inlinable
+    static func _vjpDivide(lhs: Tensor, rhs: Tensor) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
+        return (lhs / rhs, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
+            ((v / rhs).unbroadcast(toShape: lhsShape),
+             ((-lhs) / rhs.squared() * v).unbroadcast(toShape: rhsShape))
+        })
+    }
+
+    @inlinable
+    static func _vjpDivide(lhs: Tensor, rhs: Scalar) -> (Tensor, (Tensor) -> (Tensor, Scalar)) {
+        return (lhs / rhs, { v in 
+            (v / rhs, (v * (0 - lhs) / Tensor(rhs).squared()).sum().scalarized())
+        })
+    }
+
+    @inlinable
+    static func _vjpDivide(lhs: Scalar, rhs: Tensor) -> (Tensor, (Tensor) -> (Scalar, Tensor)) {
+        return (lhs / rhs, { v in ((v / rhs).sum().scalarized(), v * -lhs / rhs.squared()) })
+    }
+}
+
+public extension Tensor where Scalar == Bool {
+    /// Computes `!self` element-wise.
+    @inlinable
+    func elementsLogicalNot() -> Tensor {
+        return Raw.logicalNot(self)
+    }
+
+    /// Computes `self && other` element-wise.
+    /// - Note: `&&` supports broadcasting.
+    @inlinable
+    func elementsLogicalAnd(_ other: Tensor) -> Tensor {
+        return Raw.logicalAnd(self, other)
+    }
+
+    /// Computes `self && other` element-wise, broadcasting `other`.
+    @inlinable
+    func elementsLogicalAnd(_ other: Scalar) -> Tensor {
+        return elementsLogicalAnd(Tensor(other))
+    }
+
+    /// Computes `self || other` element-wise.
+    @inlinable
+    func elementsLogicalOr(_ other: Tensor) -> Tensor {
+        return Raw.logicalOr(self, other)
+    }
+
+    /// Computes `self || other` element-wise, broadcasting `other`.
+    @inlinable
+    func elementsLogicalOr(_ other: Scalar) -> Tensor {
+        return elementsLogicalOr(Tensor(other))
+    }
+}
+
+//===------------------------------------------------------------------------------------------===//
+// Universal Functions
+//===------------------------------------------------------------------------------------------===//
+
 /// Returns the values of the specified tensor rounded to the nearest integer, element-wise.
 @inlinable
 @differentiable(vjp: _vjpRound)

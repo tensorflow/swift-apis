@@ -95,19 +95,3 @@ extension Tensor : Codable where Scalar : Codable {
         self.init(array)
     }
 }
-
-//===------------------------------------------------------------------------------------------===//
-// Equality
-//===------------------------------------------------------------------------------------------===//
-
-extension Tensor : Equatable where Scalar : Equatable {
-    @inlinable
-    public static func == (lhs: Tensor, rhs: Tensor) -> Bool {
-        return (lhs .== rhs).all()
-    }
-
-    @inlinable
-    public static func != (lhs: Tensor, rhs: Tensor) -> Bool {
-        return (lhs .== rhs).any()
-    }
-}
