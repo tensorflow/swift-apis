@@ -108,7 +108,6 @@ final class LayerTests: XCTestCase {
                                  [[ 0.06621192,    0.009049267,   0.065047316, 0.11534518]],
                                  [[ 0.05612204,    0.00022032857, 0.05407162,  0.09784105]]])
         let (𝛁rnn, 𝛁inputs) = pullback(.init(inputs))
-        print(𝛁rnn, 𝛁inputs)
         XCTAssertEqual(𝛁rnn.cell.weight,
                        [[          0.0,           0.0,           0.0,           0.0],
                         [-0.0051278225,  0.0013102926,    0.00740262,   0.018119661],

@@ -1432,11 +1432,13 @@ public struct RNN<Cell: RNNCell>: Layer {
         _ inputs: [Cell.TimeStepInput], initialState: Cell.State
     ) -> ([Cell.TimeStepOutput],
           (Array<Cell.TimeStepOutput>.CotangentVector)
-              -> (RNN<Cell>.CotangentVector, Array<Cell.TimeStepInput>.CotangentVector)) {
+              -> (CotangentVector, Array<Cell.TimeStepInput>.CotangentVector)) {
         let timeStepCount = inputs.count
         var currentHiddenState = cell.zeroState
         var timeStepOutputs: [Cell.TimeStepOutput] = []
+        timeStepOutputs.reserveCapacity(timeStepCount)
         var backpropagators: [Cell.Backpropagator] = []
+        backpropagators.reserveCapacity(timeStepCount)
         for timestep in inputs {
             let (output, backpropagator) =
                 cell.appliedForBackpropagation(to: .init(input: timestep,
@@ -1445,8 +1447,7 @@ public struct RNN<Cell: RNNCell>: Layer {
             timeStepOutputs.append(output.output)
             backpropagators.append(backpropagator)
         }
-        func pullback(𝛁outputs: Array<Cell.TimeStepOutput>.CotangentVector)
-            -> (RNN<Cell>.CotangentVector, Array<Cell.TimeStepInput>.CotangentVector) {
+        return (timeStepOutputs, { 𝛁outputs in
             assert(𝛁outputs.base.count == timeStepCount,
                    "The number of output gradients must equal the number of input gradients")
             var 𝛁cell = Cell.CotangentVector.zero
@@ -1459,10 +1460,8 @@ public struct RNN<Cell: RNNCell>: Layer {
                 𝛁state = 𝛁input.state
                 reversed𝛁inputs.append(𝛁input.input)
             }
-            return (RNN<Cell>.CotangentVector(cell: 𝛁cell),
-                    Array<Cell.TimeStepInput>.CotangentVector(Array(reversed𝛁inputs.reversed())))
-        }
-        return (timeStepOutputs, pullback)
+            return (.init(cell: 𝛁cell), .init(Array(reversed𝛁inputs.reversed())))
+        })
     }
 
     @differentiable(wrt: (self, inputs))
