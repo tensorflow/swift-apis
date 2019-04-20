@@ -16,6 +16,10 @@
 import TensorFlow
 #endif
 
+#if COMPILING_TENSORFLOW_MODULE
+infix operator .== : ComparisonPrecedence
+#endif
+
 //===------------------------------------------------------------------------------------------===//
 // Description and Visualization
 //===------------------------------------------------------------------------------------------===//
