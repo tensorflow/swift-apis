@@ -102,6 +102,10 @@ internal extension Tensor where Scalar : TensorFlowFloatingPoint {
     }
 }
 
+//===------------------------------------------------------------------------------------------===//
+// Stacking / Concatenating / Tiling
+//===------------------------------------------------------------------------------------------===//
+
 public extension Tensor {
     /// Creates a tensor from an array of tensors (which may themselves be scalars).
     @inlinable
@@ -240,9 +244,8 @@ public extension Tensor {
 //     }
 // }
 
-
 //===------------------------------------------------------------------------------------------===//
-// Numeric Initialization
+// Numeric
 //===------------------------------------------------------------------------------------------===//
 
 public extension Tensor where Scalar : Numeric {
@@ -355,6 +358,10 @@ public extension Tensor where Scalar : Numeric {
             axis: Int64(axis))
     }
 }
+
+//===------------------------------------------------------------------------------------------===//
+// Random
+//===------------------------------------------------------------------------------------------===//
 
 public extension Tensor where Scalar == Int32 {
     /// Creates a tensor with the specified shape, randomly sampling scalar values
