@@ -1448,8 +1448,8 @@ public struct RNN<Cell: RNNCell>: Layer {
             backpropagators.append(backpropagator)
         }
         return (timeStepOutputs, { 𝛁outputs in
-            assert(𝛁outputs.base.count == timeStepCount,
-                   "The number of output gradients must equal the number of time steps")
+            precondition(𝛁outputs.base.count == timeStepCount,
+                         "The number of output gradients must equal the number of time steps")
             var 𝛁cell = Cell.CotangentVector.zero
             var 𝛁state = Cell.State.CotangentVector.zero
             var reversed𝛁inputs: [Cell.TimeStepInput.CotangentVector] = []
