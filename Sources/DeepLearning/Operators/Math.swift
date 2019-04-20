@@ -16,6 +16,10 @@
 import TensorFlow
 #endif
 
+#if COMPILING_TENSORFLOW_MODULE
+infix operator .> : ComparisonPrecedence
+#endif
+
 /// Returns the values of the specified tensor rounded to the nearest integer, element-wise.
 @inlinable
 @differentiable(vjp: _vjpRound)
