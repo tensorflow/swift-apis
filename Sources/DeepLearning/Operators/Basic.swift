@@ -20,13 +20,15 @@ import TensorFlow
 // Shape Transformations
 //===------------------------------------------------------------------------------------------===//
 
-public extension Tensor {
+public extension TensorFlowScalar {
     /// Convert to a tensor with the specified rank, with all dimensions equal to 1.
     @inlinable
     func makeTensor(rank: Int) -> Tensor<Self> {
         return Tensor(repeating: self, shape: TensorShape(rank))
     }
+}
 
+public extension Tensor {
     /// Reshape to the shape of the specified `Tensor`.
     /// - Precondition: The number of scalars matches the new shape.
     @inlinable

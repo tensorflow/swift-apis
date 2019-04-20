@@ -18,6 +18,7 @@ import TensorFlow
 
 #if COMPILING_TENSORFLOW_MODULE
 infix operator .> : ComparisonPrecedence
+infix operator .== : ComparisonPrecedence
 #endif
 
 // TODO:
@@ -657,7 +658,7 @@ public func softmax<T : FloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
 // TODO: [AD].
 public func softmax<T : TensorFlowFloatingPoint>(_ x: Tensor<T>, alongAxis axis: Int) -> Tensor<T> {
     let xExp = exp(x)
-    let xExpSum = Raw.sum(xExp, reductionIndices: Tensor<Int32>(axis), keepDims: true)
+    let xExpSum = Raw.sum(xExp, reductionIndices: Tensor<Int32>(Int32(axis)), keepDims: true)
     return xExp / xExpSum
 }
 

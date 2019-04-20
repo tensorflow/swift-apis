@@ -143,7 +143,7 @@ public extension Tensor {
     /// 
     /// - Returns: The stacked tensor.
     @inlinable
-    @differentiable(vjp: _vjpStacking where Scalar : TensorFlowFloatingPoint)
+    // @differentiable(vjp: _vjpStacking where Scalar : TensorFlowFloatingPoint)
     init(stacking tensors: [Tensor], alongAxis axis: Int = 0) {
         self = Raw.pack(tensors, axis: Int64(axis))
     }
@@ -181,40 +181,40 @@ public extension Tensor {
     /// 
     /// - Returns: The concatenated tensor.
     @inlinable
-    @differentiable(wrt: tensors, vjp: _vjpConcatenating where Scalar : TensorFlowFloatingPoint)
+    // @differentiable(wrt: tensors, vjp: _vjpConcatenating where Scalar : TensorFlowFloatingPoint)
     init(concatenating tensors: [Tensor], alongAxis axis: Int = 0) {
         precondition(tensors.count > 0)
         self = Raw.concatV2(tensors, axis: Tensor<Int32>(Int32(axis)))
     }
 }
 
-internal extension Tensor where Scalar : TensorFlowFloatingPoint {
-    @inlinable
-    static func _vjpStacking(
-        stacking tensors: [Tensor],
-        alongAxis axis: Int = 0
-    ) -> (Tensor, (Tensor) -> Array<Tensor>.DifferentiableView) {
-        let result = Tensor(stacking: tensors, alongAxis: axis)
-        return (result, { v in
-            return Array<Tensor>.DifferentiableView(v.unstack(alongAxis: axis))
-        })
-    }
+// internal extension Tensor where Scalar : TensorFlowFloatingPoint {
+//     @inlinable
+//     static func _vjpStacking(
+//         stacking tensors: [Tensor],
+//         alongAxis axis: Int = 0
+//     ) -> (Tensor, (Tensor) -> Array<Tensor>.DifferentiableView) {
+//         let result = Tensor(stacking: tensors, alongAxis: axis)
+//         return (result, { v in
+//             return Array<Tensor>.DifferentiableView(v.unstack(alongAxis: axis))
+//         })
+//     }
 
-    @inlinable
-    static func _vjpConcatenating(
-        concatenating tensors: [Tensor],
-        alongAxis axis: Int = 0
-    ) -> (Tensor, (Tensor) -> Array<Tensor>.DifferentiableView) {
-        let result = Tensor<Scalar>(concatenating: tensors, alongAxis: axis)
-        let posAxis = axis < 0 ? axis + tensors[0].rank : axis
-        let sizes = Tensor<Int32>(stacking: tensors.map { $0.shapeTensor[posAxis] })
-        return (result, { [count = tensors.count] v in
-            if count == 1 { return Array<Tensor>.DifferentiableView([v]) }
-            let splits = v.split(sizes: sizes, alongAxis: posAxis)
-            return Array<Tensor>.DifferentiableView(splits)
-        })
-    }
-}
+//     @inlinable
+//     static func _vjpConcatenating(
+//         concatenating tensors: [Tensor],
+//         alongAxis axis: Int = 0
+//     ) -> (Tensor, (Tensor) -> Array<Tensor>.DifferentiableView) {
+//         let result = Tensor<Scalar>(concatenating: tensors, alongAxis: axis)
+//         let posAxis = axis < 0 ? axis + tensors[0].rank : axis
+//         let sizes = Tensor<Int32>(stacking: tensors.map { $0.shapeTensor[posAxis] })
+//         return (result, { [count = tensors.count] v in
+//             if count == 1 { return Array<Tensor>.DifferentiableView([v]) }
+//             let splits = v.split(sizes: sizes, alongAxis: posAxis)
+//             return Array<Tensor>.DifferentiableView(splits)
+//         })
+//     }
+// }
 
 //===------------------------------------------------------------------------------------------===//
 // Numeric
