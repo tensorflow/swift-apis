@@ -22,8 +22,7 @@ import TensorFlow
 /// learning model.
 public protocol Optimizer {
     /// The type of the model whose parameters are optimized.
-    associatedtype Model: Differentiable & KeyPathIterable
-        where AllDifferentiableVariables: KeyPathIterable
+    associatedtype Model: Differentiable
     /// The scalar parameter type.
     associatedtype Scalar: FloatingPoint
     /// The learning rate.
@@ -279,10 +278,8 @@ public class SGD<Model: Differentiable & KeyPathIterable>: Optimizer
 // MARK: - Manifold optimizers
 
 /// A Riemann manifold stochastic gradient descent (SGD) optimizer.
-public class RiemannSGD<Model: Differentiable & KeyPathIterable, Scalar: FloatingPoint>: Optimizer
-    where AllDifferentiableVariables: KeyPathIterable,
-          Model.TangentVector: VectorNumeric,
-          Model.TangentVector.Scalar == Scalar {
+public class RiemannSGD<Model: Differentiable, Scalar: FloatingPoint>: Optimizer
+    where Model.TangentVector: VectorNumeric, Model.TangentVector.Scalar == Scalar {
     /// The learning rate.
     public var learningRate: Scalar
 
