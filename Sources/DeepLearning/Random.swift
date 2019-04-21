@@ -409,8 +409,8 @@ private func makeUInt64Pair(_ vector: UInt32x4) -> (UInt64, UInt64) {
 //===------------------------------------------------------------------------------------------===//
 
 public protocol RandomDistribution {
-  associatedtype Sample
-  func next<G: RandomNumberGenerator>(using generator: inout G) -> Sample
+    associatedtype Sample
+    func next<G: RandomNumberGenerator>(using generator: inout G) -> Sample
 }
 
 @_fixed_layout
@@ -446,7 +446,7 @@ public struct UniformFloatingPointDistribution<T: BinaryFloatingPoint>: RandomDi
 
 @_fixed_layout
 public struct NormalDistribution<T: BinaryFloatingPoint>: RandomDistribution
-  where T.RawSignificand: FixedWidthInteger {
+    where T.RawSignificand: FixedWidthInteger {
     public let mean: T
     public let standardDeviation: T
     private let uniformDist = UniformFloatingPointDistribution<T>()
@@ -503,10 +503,10 @@ public struct BetaDistribution: RandomDistribution {
     ///
     /// - Returns: Sample obtained using Cheng's BB algorithm.
     private static func chengsAlgorithmBB<G: RandomNumberGenerator>(
-      _ alpha0: Float,
-      _ a: Float,
-      _ b: Float,
-      using rng: inout G
+        _ alpha0: Float,
+        _ a: Float,
+        _ b: Float,
+        using rng: inout G
     ) -> Float {
         let alpha = a + b
         let beta  = sqrt((alpha - 2) / (2 * a * b - alpha))
@@ -550,10 +550,10 @@ public struct BetaDistribution: RandomDistribution {
     ///
     /// - Returns: Sample obtained using Cheng's BB algorithm.
     private static func chengsAlgorithmBC<G: RandomNumberGenerator>(
-      _ alpha0: Float,
-      _ a: Float,
-      _ b: Float,
-      using rng: inout G
+        _ alpha0: Float,
+        _ a: Float,
+        _ b: Float,
+        using rng: inout G
     ) -> Float {
         let alpha = a + b
         let beta  = 1 / b
