@@ -949,9 +949,17 @@ public extension Tensor where Scalar: Numeric & Comparable {
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
+    func max(squeezingAxes axes: Tensor<Int32>) -> Tensor {
+        return Raw.max(self, reductionIndices: axes, keepDims: false)
+    }
+
+    /// Returns the maximum values along the specified axes. The reduced dimensions are removed.
+    /// - Parameter axes: The dimensions to reduce.
+    /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
+    @inlinable
     func max(squeezingAxes axes: [Int]) -> Tensor {
         let axes = axes.map(Int32.init)
-        return Raw.max(self, reductionIndices: Tensor<Int32>(axes), keepDims: false)
+        return max(squeezingAxes: Tensor<Int32>(axes))
     }
 
     /// Returns the maximum values along the specified axes. The reduced dimensions are removed.
@@ -966,9 +974,17 @@ public extension Tensor where Scalar: Numeric & Comparable {
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
+    func min(squeezingAxes axes: Tensor<Int32>) -> Tensor {
+        return Raw.min(self, reductionIndices: axes, keepDims: false)
+    }
+
+    /// Returns the minimum values along the specified axes. The reduced dimensions are removed.
+    /// - Parameter axes: The dimensions to reduce.
+    /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
+    @inlinable
     func min(squeezingAxes axes: [Int]) -> Tensor {
         let axes = axes.map(Int32.init)
-        return Raw.min(self, reductionIndices: Tensor<Int32>(axes), keepDims: false)
+        return min(squeezingAxes: Tensor<Int32>(axes))
     }
 
     /// Returns the minimum values along the specified axes. The reduced dimensions are removed.
@@ -1002,9 +1018,18 @@ public extension Tensor where Scalar: Numeric & Comparable {
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
+    func min(alongAxes axes: Tensor<Int32>) -> Tensor {
+        return Raw.min(self, reductionIndices: axes, keepDims: true)
+    }
+
+    /// Returns the minimum along the specified axes. The reduced dimensions are retained with
+    /// value 1.
+    /// - Parameter axes: The dimensions to reduce.
+    /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
+    @inlinable
     func min(alongAxes axes: [Int]) -> Tensor {
         let axes = axes.map(Int32.init)
-        return Raw.min(self, reductionIndices: Tensor<Int32>(axes), keepDims: true)
+        return min(alongAxes: Tensor<Int32>(axes))
     }
 
     /// Returns the minimum along the specified axes. The reduced dimensions are retained with
@@ -1021,9 +1046,18 @@ public extension Tensor where Scalar: Numeric & Comparable {
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
+    func max(alongAxes axes: Tensor<Int32>) -> Tensor {
+        return Raw.max(self, reductionIndices: axes, keepDims: true)
+    }
+
+    /// Returns the minimum along the specified axes. The reduced dimensions are retained with
+    /// value 1.
+    /// - Parameter axes: The dimensions to reduce.
+    /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
+    @inlinable
     func max(alongAxes axes: [Int]) -> Tensor {
         let axes = axes.map(Int32.init)
-        return Raw.max(self, reductionIndices: Tensor<Int32>(axes), keepDims: true)
+        return max(alongAxes: axes)
     }
 
     /// Returns the minimum along the specified axes. The reduced dimensions are retained with
