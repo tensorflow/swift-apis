@@ -27,23 +27,29 @@ infix operator .==: ComparisonPrecedence
 public extension Tensor {
   /// The rank of the tensor, represented as a `Tensor<Int32>`.
   @inlinable
-  @_semantics("autodiff.nonvarying")
   var rankTensor: Tensor<Int32> {
-    return Raw.rank(self)
+    @_semantics("autodiff.nonvarying")
+    get {
+        return Raw.rank(self)
+    }
   }
 
   /// The dimensions of the tensor, represented as a `Tensor<Int32>`.
   @inlinable
-  @_semantics("autodiff.nonvarying")
   var shapeTensor: Tensor<Int32> {
-    return Raw.shape(self)
+    @_semantics("autodiff.nonvarying")
+    get {
+        return Raw.shape(self)
+    }
   }
 
   /// The number of scalars in the tensor, represented as a `Tensor<Int32>`.
   @inlinable
-  @_semantics("autodiff.nonvarying")
   var scalarCountTensor: Tensor<Int32> {
-    return Raw.size(self)
+    @_semantics("autodiff.nonvarying")
+    get {
+        return Raw.size(self)
+    }
   }
 }
 
@@ -56,9 +62,11 @@ extension Tensor: CustomStringConvertible {
     /// A textual representation of the tensor.
     ///
     /// - Note: use `fullDescription` for a non-pretty-printed description showing all scalars.
-    @_semantics("autodiff.nonvarying")
     public var description: String {
-        return array.description
+        @_semantics("autodiff.nonvarying")
+        get {
+            return array.description
+        }
     }
 }
 
@@ -87,25 +95,31 @@ public extension Tensor {
 
     /// A full, non-pretty-printed textual representation of the tensor, showing
     /// all scalars.
-    @_semantics("autodiff.nonvarying")
     var fullDescription: String {
-        return array.fullDescription
+        @_semantics("autodiff.nonvarying")
+        get {
+            return array.fullDescription
+        }
     }
 }
 
 // Xcode Playground display conversion.
 extension Tensor: CustomPlaygroundDisplayConvertible {
-    @_semantics("autodiff.nonvarying")
     public var playgroundDescription: Any {
-        return description
+        @_semantics("autodiff.nonvarying")
+        get {
+            return description
+        }
     }
 }
 
 // Mirror representation, used by debugger/REPL.
 extension Tensor: CustomReflectable {
-    @_semantics("autodiff.nonvarying")
     public var customMirror: Mirror {
-        return Mirror(self, children: [], displayStyle: .struct)
+        @_semantics("autodiff.nonvarying")
+        get {
+            return Mirror(self, children: [], displayStyle: .struct)
+        }
     }
 }
 

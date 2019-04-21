@@ -24,9 +24,9 @@ import Python
 // a Python import error until it is first used.
 private let np = Python.import("numpy")
 
-private func debugLogNumpyError(_ message: String) {
-    debugLog("NumPy conversion error: " + message)
-}
+// private func debugLogNumpyError(_ message: String) {
+//     debugLog("NumPy conversion error: " + message)
+// }
 
 extension ShapedArray: ConvertibleFromNumpyArray
     where Scalar: NumpyScalarCompatible {
@@ -39,25 +39,25 @@ extension ShapedArray: ConvertibleFromNumpyArray
     public init?(numpy numpyArray: PythonObject) {
         // Check if input is a `numpy.ndarray` instance.
         guard Python.isinstance(numpyArray, np.ndarray) == true else {
-            debugLogNumpyError("""
-                PythonObject input has type '\(Python.type(numpyArray))' and is not \
-                an instance of 'numpy.ndarray'.
-                """)
+            // debugLogNumpyError("""
+            //     PythonObject input has type '\(Python.type(numpyArray))' and is not \
+            //     an instance of 'numpy.ndarray'.
+            //     """)
             return nil
         }
         // Check if the dtype of the `ndarray` is compatible with the `Scalar`
         // type.
         guard Scalar.numpyScalarTypes.contains(numpyArray.dtype) else {
-            debugLogNumpyError("""
-                'numpy.ndarray' dtype '\(numpyArray.dtype)' is incompatible with \
-                Swift type '\(Scalar.self)'.
-                """)
+            // debugLogNumpyError("""
+            //     'numpy.ndarray' dtype '\(numpyArray.dtype)' is incompatible with \
+            //     Swift type '\(Scalar.self)'.
+            //     """)
             return nil
         }
 
         let pyShape = numpyArray.__array_interface__["shape"]
         guard let shape = [Int](pyShape) else {
-            debugLogNumpyError("cannot access shape of 'numpy.ndarray' instance.")
+            // debugLogNumpyError("cannot access shape of 'numpy.ndarray' instance.")
             return nil
         }
 
@@ -67,7 +67,7 @@ extension ShapedArray: ConvertibleFromNumpyArray
 
         guard let ptrVal =
             UInt(contiguousNumpyArray.__array_interface__["data"].tuple2.0) else {
-            debugLogNumpyError("cannot access data of 'numpy.ndarray' instance.")
+            // debugLogNumpyError("cannot access data of 'numpy.ndarray' instance.")
             return nil
         }
         // Note: `ptr` is not nil even if the `ndarray` is empty (i.e. has a shape
@@ -103,25 +103,25 @@ extension Tensor: ConvertibleFromNumpyArray
     public init?(numpy numpyArray: PythonObject) {
         // Check if input is a `numpy.ndarray` instance.
         guard Python.isinstance(numpyArray, np.ndarray) == true else {
-            debugLogNumpyError("""
-                PythonObject input has type '\(Python.type(numpyArray))' and is not \
-                an instance of 'numpy.ndarray'.
-                """)
+            // debugLogNumpyError("""
+            //     PythonObject input has type '\(Python.type(numpyArray))' and is not \
+            //     an instance of 'numpy.ndarray'.
+            //     """)
             return nil
         }
         // Check if the dtype of the `ndarray` is compatible with the `Scalar`
         // type.
         guard Scalar.numpyScalarTypes.contains(numpyArray.dtype) else {
-            debugLogNumpyError("""
-                'numpy.ndarray' dtype '\(numpyArray.dtype)' is incompatible with \
-                Swift type '\(Scalar.self)'.
-                """)
+            // debugLogNumpyError("""
+            //     'numpy.ndarray' dtype '\(numpyArray.dtype)' is incompatible with \
+            //     Swift type '\(Scalar.self)'.
+            //     """)
             return nil
         }
 
         let pyShape = numpyArray.__array_interface__["shape"]
         guard let dimensions = [Int](pyShape) else {
-            debugLogNumpyError("cannot access shape of 'numpy.ndarray' instance.")
+            // debugLogNumpyError("cannot access shape of 'numpy.ndarray' instance.")
             return nil
         }
         let shape = TensorShape(dimensions)
@@ -131,7 +131,7 @@ extension Tensor: ConvertibleFromNumpyArray
         let contiguousNumpyArray = np.ascontiguousarray(numpyArray)
 
         guard let ptrVal = UInt(contiguousNumpyArray.__array_interface__["data"].tuple2.0) else {
-            debugLogNumpyError("cannot access data of 'numpy.ndarray' instance.")
+            // debugLogNumpyError("cannot access data of 'numpy.ndarray' instance.")
             return nil
         }
         // Note: `ptr` is not nil even if the `ndarray` is empty (i.e. has a shape

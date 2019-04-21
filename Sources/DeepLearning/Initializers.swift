@@ -205,7 +205,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
         alongAxis axis: Int = 0
     ) -> (Tensor, (Tensor) -> Array<Tensor>.DifferentiableView) {
         let result = Tensor<Scalar>(concatenating: tensors, alongAxis: axis)
-        let posAxis = axis < 0 ? axis + tensors[0].rank: axis
+        let posAxis = axis < 0 ? axis + tensors[0].rank : axis
         let sizes = Tensor<Int32>(stacking: tensors.map { $0.shapeTensor[posAxis] })
         return (result, { [count = tensors.count] v in
             if count == 1 { return Array<Tensor>.DifferentiableView([v]) }
