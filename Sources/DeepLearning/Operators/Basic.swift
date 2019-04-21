@@ -167,9 +167,9 @@ public extension Tensor {
     @inlinable
     @differentiable(wrt: self, vjp: _vjpExpandingShape(at:) where Scalar: TensorFlowFloatingPoint)
     func expandingShape(at axes: [Int]) -> Tensor {
-	    var result = self
-	    for i in axes { result = Raw.expandDims(result, dim: Tensor<Int32>(Int32(i))) }
-	    return result
+        var result = self
+        for i in axes { result = Raw.expandDims(result, dim: Tensor<Int32>(Int32(i))) }
+        return result
     }
 
     /// Returns a rank-lifted `Tensor` with a leading dimension of 1.
@@ -231,7 +231,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 
     @inlinable
     func _vjpExpandingShape(at axes: [Int]) -> (Tensor, (Tensor) -> Tensor) {
-	    let value = self.expandingShape(at: axes)
+        let value = self.expandingShape(at: axes)
         return (value, { v in v.squeezingShape(at: axes) })
     }
 
