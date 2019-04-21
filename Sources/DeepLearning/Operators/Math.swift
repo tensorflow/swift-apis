@@ -1057,7 +1057,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     @inlinable
     func max(alongAxes axes: [Int]) -> Tensor {
         let axes = axes.map(Int32.init)
-        return max(alongAxes: axes)
+        return max(alongAxes: Tensor<Int32>(axes))
     }
 
     /// Returns the minimum along the specified axes. The reduced dimensions are retained with
