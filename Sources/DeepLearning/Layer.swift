@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #if !COMPILING_TENSORFLOW_MODULE
-@_exported import TensorFlow
+import TensorFlow
 #endif
 
 /// A neural network layer.
@@ -21,8 +21,9 @@
 /// Types that conform to `Layer` represent functions that map inputs to outputs. They may have an
 /// internal state represented by parameters, such as weight tensors.
 ///
-/// `Layer` instances define a differentiable call method for mapping inputs to outputs.
-public protocol Layer: Differentiable & KeyPathIterable
+/// `Layer` instances define a differentiable `applied(to:)` method for mapping inputs to
+/// outputs.
+public protocol Layer: Differentiable & KeyPathIterable 
     where AllDifferentiableVariables: KeyPathIterable {
     /// The input type of the layer.
     associatedtype Input: Differentiable
@@ -558,7 +559,7 @@ public struct TransposedConv2D: Layer {
         self.activation = activation
         self.strides = strides
         self.padding = padding
-        self.paddingIndex = padding == .same ? 0 : 1
+        self.paddingIndex = padding == .same ? 0: 1
     }
 
     /// Returns the output obtained from applying the layer to the given input.

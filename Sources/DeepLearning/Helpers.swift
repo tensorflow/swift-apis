@@ -13,12 +13,20 @@
 // limitations under the License.
 
 #if !COMPILING_TENSORFLOW_MODULE
-import TensorFlow
+@_exported import TensorFlow
 #endif
+
+/// Returns a tensor with the same shape and scalars as the specified tensor.
+@inlinable
+@differentiable
+public func identity<Scalar>(_ x: Tensor<Scalar>) -> Tensor<Scalar> {
+    return x
+}
 
 // `pow` is defined in Darwin/Glibc on `Float` and `Double`, but there doesn't exist a generic
 // version for `FloatingPoint`.
 // This is a manual definition.
-func pow<T : BinaryFloatingPoint>(_ x: T, _ y: T) -> T {
+@inlinable
+func pow<T: BinaryFloatingPoint>(_ x: T, _ y: T) -> T {
     return T(pow(Double(x), Double(y)))
 }

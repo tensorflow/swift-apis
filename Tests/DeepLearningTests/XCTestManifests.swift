@@ -22,6 +22,10 @@ public func allTests() -> [XCTestCaseEntry] {
         testCase(TrivialModelTests.allTests),
         testCase(SequentialTests.allTests),
         testCase(LayerTests.allTests),
+        testCase(TensorTests.allTests),
+        testCase(BasicOperatorTests.allTests),
+        testCase(ComparisonOperatorTests.allTests),
+        testCase(MathOperatorTests.allTests),
     ]
 }
 #endif
