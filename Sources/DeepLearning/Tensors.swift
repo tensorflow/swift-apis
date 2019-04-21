@@ -27,18 +27,21 @@ infix operator .==: ComparisonPrecedence
 public extension Tensor {
   /// The rank of the tensor, represented as a `Tensor<Int32>`.
   @inlinable
+  @_semantics("autodiff.nonvarying")
   var rankTensor: Tensor<Int32> {
     return Raw.rank(self)
   }
 
   /// The dimensions of the tensor, represented as a `Tensor<Int32>`.
   @inlinable
+  @_semantics("autodiff.nonvarying")
   var shapeTensor: Tensor<Int32> {
     return Raw.shape(self)
   }
 
   /// The number of scalars in the tensor, represented as a `Tensor<Int32>`.
   @inlinable
+  @_semantics("autodiff.nonvarying")
   var scalarCountTensor: Tensor<Int32> {
     return Raw.size(self)
   }
@@ -53,6 +56,7 @@ extension Tensor: CustomStringConvertible {
     /// A textual representation of the tensor.
     ///
     /// - Note: use `fullDescription` for a non-pretty-printed description showing all scalars.
+    @_semantics("autodiff.nonvarying")
     public var description: String {
         return array.description
     }
@@ -69,6 +73,7 @@ public extension Tensor {
     ///     via ellipses (`...`).
     ///   - summarizing: If true, summarize description if element count exceeds twice
     ///     `edgeElementCount`.
+    @_semantics("autodiff.nonvarying")
     func description(
         lineWidth: Int = 80,
         edgeElementCount: Int = 3,
@@ -82,6 +87,7 @@ public extension Tensor {
 
     /// A full, non-pretty-printed textual representation of the tensor, showing
     /// all scalars.
+    @_semantics("autodiff.nonvarying")
     var fullDescription: String {
         return array.fullDescription
     }
@@ -89,6 +95,7 @@ public extension Tensor {
 
 // Xcode Playground display conversion.
 extension Tensor: CustomPlaygroundDisplayConvertible {
+    @_semantics("autodiff.nonvarying")
     public var playgroundDescription: Any {
         return description
     }
@@ -96,6 +103,7 @@ extension Tensor: CustomPlaygroundDisplayConvertible {
 
 // Mirror representation, used by debugger/REPL.
 extension Tensor: CustomReflectable {
+    @_semantics("autodiff.nonvarying")
     public var customMirror: Mirror {
         return Mirror(self, children: [], displayStyle: .struct)
     }
