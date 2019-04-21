@@ -154,12 +154,22 @@ public extension Tensor {
         return reshaped(to: [-1])
     }
 
+    /// Returns a shape-expanded `Tensor`, with a dimension of 1 inserted at the specified shape
+    /// indices.
+    @inlinable
+    @differentiable(wrt: self where Scalar : TensorFlowFloatingPoint)
+    func expandingShape(at axes: Int...) -> Tensor {
+        return expandingShape(at: axes)
+    }
+
     /// Returns a shape-expanded `Tensor`, with a dimension of 1 inserted at the
-    /// specified shape index.
+    /// specified shape indices.
     @inlinable
     @differentiable(wrt: self, vjp: _vjpExpandingShape(at:) where Scalar: TensorFlowFloatingPoint)
-    func expandingShape(at shapeIndex: Int) -> Tensor {
-        return Raw.expandDims(self, dim: Tensor<Int32>(Int32(shapeIndex)))
+    func expandingShape(at axes: [Int]) -> Tensor {
+	    var result = self
+	    for i in axes { result = Raw.expandDims(result, dim: Tensor<Int32>(Int32(i))) }
+	    return result
     }
 
     /// Returns a rank-lifted `Tensor` with a leading dimension of 1.
@@ -220,9 +230,9 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 
     @inlinable
-    func _vjpExpandingShape(at shapeIndex: Int) -> (Tensor, (Tensor) -> Tensor) {
-        let value = expandingShape(at: shapeIndex)
-        return (value, { v in v.squeezingShape(at: shapeIndex) })
+    func _vjpExpandingShape(at axes: [Int]) -> (Tensor, (Tensor) -> Tensor) {
+	    let value = self.expandingShape(at: axes)
+        return (value, { v in v.squeezingShape(at: axes) })
     }
 
     @inlinable
