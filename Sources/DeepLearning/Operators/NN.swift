@@ -23,8 +23,8 @@ import TensorFlow
 public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// Computes the batch normalized tensor along the specified axis.
     ///
-    /// Specifically, returns `(self - mu) / (var + epsilon) * gamma + beta` where `mu` and `var` are 
-    /// respectively the mean and variance of `self` along `axis`.
+    /// Specifically, returns `(self - mu) / (var + epsilon) * gamma + beta` where `mu` and `var`
+    /// are respectively the mean and variance of `self` along `axis`.
     ///
     /// - Parameters:
     ///   - axis: The batch dimension.
