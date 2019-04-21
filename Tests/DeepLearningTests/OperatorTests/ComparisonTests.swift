@@ -27,4 +27,9 @@ final class ComparisonOperatorTests: XCTestCase {
         let y = Tensor<Float>([2, 3, 4, 5, 6])
         XCTAssertTrue(x < y)
     }
+
+    static var allTests = [
+        ("testElementwiseComparison", testElementwiseComparison),
+        ("testLexicographicalComparison", testLexicographicalComparison)
+    ]
 }

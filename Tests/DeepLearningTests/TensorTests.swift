@@ -29,53 +29,31 @@ final class TensorTests: XCTestCase {
         XCTAssertEqual(0, selectValue(true).scalar)
     }
 
-    @inline(never)
     func testRankGetter() {
+        let vector = Tensor<Int32>([1])
+        let matrix = Tensor<Float>([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
+        let ones = Tensor<Int32>(ones: [1, 2, 2, 2, 2, 2, 1])
         let tensor = Tensor<Int32>(shape: [3, 4, 5], scalars: Array(0..<60))
+        XCTAssertEqual(1, vector.rank)
+        XCTAssertEqual(2, matrix.rank)
+        XCTAssertEqual(7, ones.rank)
         XCTAssertEqual(3, tensor.rank)
     }
 
-    // TODO: Merge all rank/shape getter tests into one when we support code motion to avoid sends.
-
-    @inline(never)
-    func testRankGetter2() {
-        let vector = Tensor<Int32>([1])
-        XCTAssertEqual(1, vector.rank)
-    }
-
-    @inline(never)
-    func testRankGetter3() {
-        let matrix = Tensor<Float>([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
-        XCTAssertEqual(2, matrix.rank)
-    }
-
-    @inline(never)
-    func testRankGetter4() {
-        let ones = Tensor<Int32>(ones: [1, 2, 2, 2, 2, 2, 1])
-        XCTAssertEqual(7, ones.rank)
-    }
-
-    @inline(never)
     func testShapeGetter() {
+        let vector = Tensor<Int32>([1])
+        let matrix = Tensor<Float>([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
+        let ones = Tensor<Int32>(ones: [1, 2, 2, 2, 2, 2, 1])
         let tensor = Tensor<Int32>(shape: [3, 4, 5], scalars: Array(0..<60))
+        XCTAssertEqual([1], vector.shape)
+        XCTAssertEqual([2, 3], matrix.shape)
+        XCTAssertEqual([1, 2, 2, 2, 2, 2, 1], ones.shape)
         XCTAssertEqual([3, 4, 5], tensor.shape)
     }
 
-    @inline(never)
-    func testShapeGetter2() {
-        let vector = Tensor<Int32>([1])
-        XCTAssertEqual([1], vector.shape)
-    }
-
-    @inline(never)
-    func testShapeGetter3() {
-        let matrix = Tensor<Float>([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
-        XCTAssertEqual([2, 3], matrix.shape)
-    }
-
-    @inline(never)
-    func testShapeGetter4() {
-        let ones = Tensor<Int32>(ones: [1, 2, 2, 2, 2, 2, 1])
-        XCTAssertEqual([1, 2, 2, 2, 2, 2, 1], ones.shape)
-    }
+    static var allTests = [
+        ("testSimpleCond", testSimpleCond),
+        ("testRankGetter", testRankGetter),
+        ("testShapeGetter", testShapeGetter)
+    ]
 }

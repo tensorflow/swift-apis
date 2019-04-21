@@ -147,7 +147,6 @@ final class MathOperatorTests: XCTestCase {
         XCTAssertEqual([12.5, 6.5], result.scalars)
     }
 
-    @inline(never)
     func testXORInference() {
         func xor(_ x: Float, _ y: Float) -> Float {
             let x = Tensor<Float>([x, y]).reshaped(to: [1, 2])
@@ -196,4 +195,17 @@ final class MathOperatorTests: XCTestCase {
         let prediction = classifier.prediction(for: input)
         XCTAssertEqual([0.816997], prediction.scalars, accuracy: 0.001)
     }
+
+    static var allTests = [
+        ("testReduction", testReduction),
+        ("testArgmax", testArgmax),
+        ("testCeilAndFloor", testCeilAndFloor),
+        ("testSimpleMath", testSimpleMath),
+        ("testStandardDeviation", testStandardDeviation),
+        ("test3Adds", test3Adds),
+        ("testMultiOpMath", testMultiOpMath),
+        ("testXWPlusB", testXWPlusB),
+        ("testXORInference", testXORInference),
+        ("testMLPClassifierStruct", testMLPClassifierStruct)
+    ]
 }

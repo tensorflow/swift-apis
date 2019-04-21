@@ -94,4 +94,15 @@ final class InitializerTests: XCTestCase {
         XCTAssertEqual(ShapedArray(shape: [2, 2], scalars: [1, 0, 1, 0]), floats.array)
         XCTAssertEqual(ShapedArray(shape: [2, 2], scalars: [1, 0, 1, 0]), i8s.array)
     }
+
+    static var allTests = [
+        ("testInitializers", testInitializers),
+        ("testFactoryInitializers", testFactoryInitializers),
+        ("testNumericInitializers", testNumericInitializers),
+        ("testScalarToTensorConversion", testScalarToTensorConversion),
+        ("testArrayConversion", testArrayConversion),
+        ("testNonTPUDataTypeCast", testNonTPUDataTypeCast),
+        ("testTPUDataTypeCast", testTPUDataTypeCast),
+        ("testNonTPUBoolToNumericCast", testNonTPUBoolToNumericCast)
+    ]
 }

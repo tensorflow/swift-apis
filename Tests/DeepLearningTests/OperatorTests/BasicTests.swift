@@ -449,4 +449,31 @@ final class BasicOperatorTests: XCTestCase {
         target .= Tensor(repeating: 1, shape: [1, 3, 1])
         XCTAssertEqual(Tensor(repeating: 1, shape: [2, 3, 4]), target)
     }
+
+    static var allTests = [
+        ("testElementIndexing", testElementIndexing),
+        ("testElementIndexingAssignment", testElementIndexingAssignment),
+        ("testNestedElementIndexing", testNestedElementIndexing),
+        ("testSliceIndexing", testSliceIndexing),
+        ("testSliceIndexingAssignment", testSliceIndexingAssignment),
+        ("testEllipsisIndexing", testEllipsisIndexing),
+        ("testNewAxisIndexing", testNewAxisIndexing),
+        ("testSqueezeAxisIndexing", testSqueezeAxisIndexing),
+        ("testStridedSliceIndexing", testStridedSliceIndexing),
+        ("testStridedSliceIndexingAssignment", testStridedSliceIndexingAssignment),
+        ("testWholeTensorSlicing", testWholeTensorSlicing),
+        ("testAdvancedIndexing", testAdvancedIndexing),
+        ("testConcatenation", testConcatenation),
+        ("testVJPConcatenation", testVJPConcatenation),
+        ("testTranspose", testTranspose),
+        ("testReshape", testReshape),
+        ("testFlatten", testFlatten),
+        ("testFlatten0D", testFlatten0D),
+        ("testReshapeToScalar", testReshapeToScalar),
+        ("testReshapeTensor", testReshapeTensor),
+        ("testUnbroadcast1", testUnbroadcast1),
+        ("testUnbroadcast2", testUnbroadcast2),
+        ("testSliceUpdate", testSliceUpdate),
+        ("testBroadcastTensor", testBroadcastTensor)
+    ]
 }
