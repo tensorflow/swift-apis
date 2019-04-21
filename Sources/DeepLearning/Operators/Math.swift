@@ -934,7 +934,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     @inlinable
     func min() -> Tensor {
         let axes = Tensor<Int32>(rangeFrom: 0, to: Int32(rank), stride: 1)
-        return Raw.min(self, reductionIndices: axes)
+        return min(squeezingAxes: axes)
     }
 
     // NOTE: This overload is necessary, otherwise `max()` would refer to the variadic method
@@ -942,13 +942,14 @@ public extension Tensor where Scalar: Numeric & Comparable {
     @inlinable
     func max() -> Tensor {
         let axes = Tensor<Int32>(rangeFrom: 0, to: Int32(rank), stride: 1)
-        return Raw.max(self, reductionIndices: axes)
+        return max(squeezingAxes: axes)
     }
 
     /// Returns the maximum values along the specified axes. The reduced dimensions are removed.
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
+    @differentiable(wrt: self, vjp: _vjpMinOrMax(squeezingAxes:) where Scalar: TensorFlowFloatingPoint)
     func max(squeezingAxes axes: Tensor<Int32>) -> Tensor {
         return Raw.max(self, reductionIndices: axes, keepDims: false)
     }
@@ -974,6 +975,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
+    @differentiable(wrt: self, vjp: _vjpMinOrMax(squeezing:) where Scalar: TensorFlowFloatingPoint)
     func min(squeezingAxes axes: Tensor<Int32>) -> Tensor {
         return Raw.min(self, reductionIndices: axes, keepDims: false)
     }
@@ -1018,6 +1020,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
+    @differentiable(wrt: self, vjp: _vjpMinOrMax(alongAxes:) where Scalar: TensorFlowFloatingPoint)
     func min(alongAxes axes: Tensor<Int32>) -> Tensor {
         return Raw.min(self, reductionIndices: axes, keepDims: true)
     }
@@ -1046,6 +1049,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
+    @differentiable(wrt: self, vjp: _vjpMinOrMax(alongAxes:) where Scalar: TensorFlowFloatingPoint)
     func max(alongAxes axes: Tensor<Int32>) -> Tensor {
         return Raw.max(self, reductionIndices: axes, keepDims: true)
     }
@@ -1080,6 +1084,42 @@ public extension Tensor where Scalar: Numeric & Comparable {
     func argmin() -> Tensor<Int32> {
         return flattened().argmin(squeezingAxis: 0)
     }
+}
+
+internal extension Tensor where Scalar: TensorFlowFloatingPoint {
+  @inlinable
+  func _vjpMinOrMax(squeezingAxes axes: Tensor<Int32>) -> (Tensor, (Tensor) -> Tensor) {
+    let result = max(squeezingAxes: axes)
+    return (result, { v in
+      var y = result
+      var gradient = v
+      for i in axes.array.scalars {
+        y = y.expandingShape(at: Int(i))
+        gradient = gradient.expandingShape(at: Int(i))
+      }
+
+      // Compute the number of selected (maximum or minimum) elements in each reduction dimension.
+      // If there are multiple minimum or maximum elements then the gradient will be divided between
+      // them.
+      let indicators = Tensor(y .== self)
+      let selectedCount = indicators.sum(alongAxes: axes)
+
+      return gradient.broadcast(toShape: self.shapeTensor) * indicators / selectedCount
+    })
+  }
+
+  @inlinable
+  func _vjpMinOrMax(alongAxes axes: Tensor<Int32>) -> (Tensor, (Tensor) -> Tensor) {
+    let result = max(squeezingAxes: axes)
+    return (result, { v in
+      // Compute the number of selected (maximum or minimum) elements in each reduction dimension.
+      // If there are multiple minimum or maximum elements then the gradient will be divided between
+      // them.
+      let indicators = Tensor(result .== self)
+      let selectedCount = indicators.sum(alongAxes: axes)
+      return v.broadcast(toShape: self.shapeTensor) * indicators / selectedCount
+    })
+  }
 }
 
 // MARK: - Numeric Reductions
