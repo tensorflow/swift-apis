@@ -16,7 +16,6 @@
 @_exported import TensorFlow
 #endif
 
-
 /// An average pooling layer for temporal data.
 @_fixed_layout
 public struct AvgPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
@@ -101,7 +100,6 @@ public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     }
 }
 
-
 /// A global average pooling layer for temporal data.
 @_fixed_layout
 public struct GlobalAvgPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
@@ -152,7 +150,6 @@ public struct GlobalAvgPool3D<Scalar: TensorFlowFloatingPoint>: Layer {
         return input.mean(squeezingAxes: [1, 2, 3])
     }
 }
-
 
 /// A max pooling layer for temporal data.
 @_fixed_layout

@@ -16,7 +16,6 @@
 @_exported import TensorFlow
 #endif
 
-
 /// An upsampling layer for 1-D inputs.
 @_fixed_layout
 public struct UpSampling1D<Scalar: TensorFlowFloatingPoint>: Layer {

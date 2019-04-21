@@ -16,7 +16,6 @@
 @_exported import TensorFlow
 #endif
 
-
 /// A batch normalization layer.
 ///
 /// Normalizes the activations of the previous layer at each batch, i.e. applies a transformation
@@ -141,7 +140,6 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
         self.runningVariance = Parameter(Tensor(1))
     }
 }
-
 
 /// A layer that applies layer normalization over a mini-batch of inputs.
 ///

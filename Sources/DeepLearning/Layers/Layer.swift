@@ -16,8 +16,6 @@
 @_exported import TensorFlow
 #endif
 
-
-
 /// A neural network layer.
 ///
 /// Types that conform to `Layer` represent functions that map inputs to outputs. They may have an
@@ -181,7 +179,6 @@ public extension Differentiable {
         return l6(o5)
     }
 }
-
 
 /// A mutable, shareable, owning reference to a tensor.
 public final class Parameter<Scalar: TensorFlowScalar> {

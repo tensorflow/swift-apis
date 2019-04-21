@@ -16,8 +16,6 @@
 @_exported import TensorFlow
 #endif
 
-
-
 /// An input to a recurrent neural network.
 public struct RNNCellInput<Input: Differentiable, State: Differentiable>: Differentiable {
     /// The input at the current time step.
@@ -113,7 +111,7 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     @differentiable
     public func call(_ input: Input) -> Output {
         let concatenatedInput = input.input.concatenated(with: input.state, alongAxis: 1)
-        let newState = matmul(concatenatedInput, weight) + bias
+        let newState = tanh(matmul(concatenatedInput, weight) + bias)
         return Output(output: newState, state: newState)
     }
 }
@@ -190,3 +188,91 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
         return Output(output: newState, state: newState)
     }
 }
+
+public struct RNN<Cell: RNNCell>: Layer {
+    public typealias Input = [Cell.TimeStepInput]
+    public typealias Output = [Cell.TimeStepOutput]
+
+    public var cell: Cell
+
+    public init(_ cell: @autoclosure () -> Cell) {
+        self.cell = cell()
+    }
+
+    @differentiable(wrt: (self, input), vjp: _vjpCall(_:initialState:))
+    public func call(_ input: [Cell.TimeStepInput],
+                     initialState: Cell.State) -> [Cell.TimeStepOutput] {
+        var currentHiddenState = initialState
+        var timeStepOutputs: [Cell.TimeStepOutput] = []
+        for timestep in input {
+            let output = cell(input: timestep, state: currentHiddenState)
+            currentHiddenState = output.state
+            timeStepOutputs.append(output.output)
+        }
+        return timeStepOutputs
+    }
+
+    @usableFromInline
+    internal func _vjpCall(
+        _ inputs: [Cell.TimeStepInput], initialState: Cell.State
+    ) -> ([Cell.TimeStepOutput],
+          (Array<Cell.TimeStepOutput>.CotangentVector)
+              -> (CotangentVector, Array<Cell.TimeStepInput>.CotangentVector)) {
+        let timeStepCount = inputs.count
+        var currentHiddenState = cell.zeroState
+        var timeStepOutputs: [Cell.TimeStepOutput] = []
+        timeStepOutputs.reserveCapacity(timeStepCount)
+        var backpropagators: [Cell.Backpropagator] = []
+        backpropagators.reserveCapacity(timeStepCount)
+        for timestep in inputs {
+            let (output, backpropagator) =
+                cell.appliedForBackpropagation(to: .init(input: timestep,
+                                                         state: currentHiddenState))
+            currentHiddenState = output.state
+            timeStepOutputs.append(output.output)
+            backpropagators.append(backpropagator)
+        }
+        return (timeStepOutputs, { 𝛁outputs in
+            precondition(𝛁outputs.base.count == timeStepCount,
+                         "The number of output gradients must equal the number of time steps")
+            var 𝛁cell = Cell.CotangentVector.zero
+            var 𝛁state = Cell.State.CotangentVector.zero
+            var reversed𝛁inputs: [Cell.TimeStepInput.CotangentVector] = []
+            reversed𝛁inputs.reserveCapacity(timeStepCount)
+            for (𝛁output, backpropagator) in zip(𝛁outputs.base, backpropagators).reversed() {
+                let (new𝛁cell, 𝛁input) = backpropagator(.init(output: 𝛁output, state: 𝛁state))
+                𝛁cell = new𝛁cell
+                𝛁state = 𝛁input.state
+                reversed𝛁inputs.append(𝛁input.input)
+            }
+            return (.init(cell: 𝛁cell), .init(Array(reversed𝛁inputs.reversed())))
+        })
+    }
+
+    @differentiable(wrt: (self, inputs))
+    public func call(_ inputs: [Cell.TimeStepInput]) -> [Cell.TimeStepOutput] {
+        return self(inputs, initialState: cell.zeroState.withoutDerivative())
+    }
+
+    /* TODO: Uncomment once control flow and differentiation through force unwrapping is supported.
+    @differentiable(wrt: (self, inputs))
+    public func lastOutput(from inputs: [Cell.TimeStepInput],
+                           initialState: Cell.State) -> Cell.TimeStepOutput {
+        precondition(!inputs.isEmpty, "inputs cannot be empty")
+        return self(inputs, initialState: initialState).last!
+    }
+
+    @differentiable(wrt: (self, inputs))
+    public func lastOutput(from inputs: [Cell.TimeStepInput]) -> Cell.TimeStepOutput {
+        precondition(!inputs.isEmpty, "inputs cannot be empty")
+        return self(inputs, initialState: cell.zeroState).last!
+    }
+    */
+}
+
+extension RNN: Equatable where Cell: Equatable {}
+extension RNN: AdditiveArithmetic where Cell: AdditiveArithmetic {}
+extension RNN: VectorNumeric where Cell: VectorNumeric {}
+
+public typealias SimpleRNN<Scalar: TensorFlowFloatingPoint> = RNN<SimpleRNNCell<Scalar>>
+public typealias LSTM<Scalar: TensorFlowFloatingPoint> = RNN<LSTMCell<Scalar>>

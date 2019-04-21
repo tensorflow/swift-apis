@@ -16,7 +16,6 @@
 @_exported import TensorFlow
 #endif
 
-
 /// A 1-D convolution layer (e.g. temporal convolution over a time-series).
 ///
 /// This layer creates a convolution filter that is convolved with the layer input to produce a

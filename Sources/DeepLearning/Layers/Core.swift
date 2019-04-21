@@ -16,7 +16,6 @@
 @_exported import TensorFlow
 #endif
 
-
 public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// Computes dropout given a probability.
     @differentiable(wrt: self where Scalar: Differentiable)
@@ -27,7 +26,6 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         return self * Tensor(keepMask) / Tensor(keepProbability)
     }
 }
-
 
 /// A dropout layer.
 ///
@@ -86,8 +84,6 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: Layer {
     }
 }
 
-
-
 /// A flatten layer.
 ///
 /// A flatten layer flattens the input when applied without affecting the batch size.
@@ -143,8 +139,6 @@ public struct Reshape<Scalar: TensorFlowFloatingPoint>: Layer {
         return input.reshaped(toShape: shape)
     }
 }
-
-
 
 /// A densely-connected neural network layer.
 ///
