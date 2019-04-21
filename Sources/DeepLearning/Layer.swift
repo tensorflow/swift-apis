@@ -237,29 +237,7 @@ public extension Dense {
     ///   - activation: The activation function to use. The default value is `identity(_:)`.
     ///   - generator: The random number generator for initialization.
     ///
-    /// - Note: Use `init(inputSize:outputSize:activation:seed:)` for faster random initialization.
-    init<G: RandomNumberGenerator>(
-        inputSize: Int,
-        outputSize: Int,
-        activation: @escaping Activation = identity,
-        generator: inout G
-    ) {
-        self.init(weight: Tensor(glorotUniform: [inputSize, outputSize],
-                                 generator: &generator),
-                  bias: Tensor(zeros: [outputSize]),
-                  activation: activation)
-    }
-
-    init(inputSize: Int, outputSize: Int, activation: @escaping Activation = identity) {
-      self.init(inputSize: inputSize, outputSize: outputSize, activation: activation,
-                generator: &PhiloxRandomNumberGenerator.global)
-    }
-}
-
-public extension Dense {
-    /// Creates a `Dense` layer with the specified input size, output size, and element-wise
-    /// activation function. The weight matrix is created with shape `[inputSize, outputSize]` and
-    /// is initialized using Glorot uniform initialization with the specified seed. The bias vector
+    /// - Note: Use `init(inputSize:outputSize:activation:seed. The bias vector
     /// is created with shape `[outputSize]` and is initialized with zeros.
     ///
     /// - Parameters:
@@ -1226,6 +1204,7 @@ public struct Reshape<Scalar: TensorFlowFloatingPoint>: Layer {
 }
 
 /// An input to a recurrent neural network.
+@_fixed_layout
 public struct RNNCellInput<Input: Differentiable, State: Differentiable>: Differentiable {
     /// The input at the current time step.
     public var input: Input
@@ -1240,6 +1219,7 @@ public struct RNNCellInput<Input: Differentiable, State: Differentiable>: Differ
 }
 
 /// An output to a recurrent neural network.
+@_fixed_layout
 public struct RNNCellOutput<Output: Differentiable, State: Differentiable>: Differentiable {
     /// The output at the current time step.
     public var output: Output
@@ -1280,7 +1260,10 @@ public extension RNNCell {
     }
 }
 
-/// A Simple RNN Cell.
+/// A simple recurrent neural network (RNN) cell.
+///
+/// Reference: [Recurrent neural network](https://en.wikipedia.org/wiki/Recurrent_neural_network).
+@_fixed_layout
 public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     public var weight: Tensor<Scalar>
     public var bias: Tensor<Scalar>
@@ -1314,8 +1297,6 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     ///
     /// - Parameters:
     ///   - input: The input to the layer.
-    ///   - context: The contextual information for the layer application, e.g. the current learning
-    ///     phase.
     /// - Returns: The hidden state.
     @differentiable
     public func call(_ input: Input) -> Output {
@@ -1325,12 +1306,16 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     }
 }
 
-/// An LSTM Cell.
+/// A long short-term memory (LSTM) cell.
+///
+/// Reference: [Long short-term memory](https://en.wikipedia.org/wiki/Long_short-term_memory).
+@_fixed_layout
 public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     public var inputWeight, updateWeight, forgetWeight, outputWeight: Tensor<Scalar>
     public var inputBias, updateBias, forgetBias, outputBias: Tensor<Scalar>
 
-    @noDerivative public var stateShape: TensorShape {
+    @noDerivative
+    public var stateShape: TensorShape {
         return TensorShape([1, inputWeight.shape[1]])
     }
 
@@ -1377,8 +1362,6 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     ///
     /// - Parameters:
     ///   - input: The input to the layer.
-    ///   - context: The contextual information for the layer application, e.g. the current learning
-    ///     phase.
     /// - Returns: The hidden state.
     @differentiable
     public func call(_ input: Input) -> Output {
@@ -1394,6 +1377,68 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
 
         let newState = State(cell: newCellState, hidden: newHiddenState)
 
+        return Output(output: newState, state: newState)
+    }
+}
+
+/// A gated recurrent unit (GRU) cell.
+///
+/// Reference: [Gated recurrent unit](https://en.wikipedia.org/wiki/Gated_recurrent_unit).
+@_fixed_layout
+public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
+    public var resetWeight, updateWeight, inputHiddenWeight, hiddenHiddenWeight: Tensor<Scalar>
+    public var resetBias, updateBias, inputHiddenBias, hiddenHiddenBias: Tensor<Scalar>
+
+    public typealias TimeStepInput = Tensor<Scalar>
+    public typealias TimeStepOutput = Tensor<Scalar>
+    public typealias State = Tensor<Scalar>
+    public typealias Input = RNNCellInput<TimeStepInput, State>
+    public typealias Output = RNNCellOutput<TimeStepOutput, State>
+
+    @noDerivative
+    public var stateShape: TensorShape {
+        return TensorShape([1, resetWeight.shape[1]])
+    }
+
+    public var zeroState: State {
+        return Tensor(zeros: stateShape)
+    }
+
+    /// Creates a `LSTMCell` with the specified input size and hidden state size.
+    ///
+    /// - Parameters:
+    ///   - inputSize: The number of features in 2-D input tensors.
+    ///   - hiddenSize: The number of features in 2-D hidden states.
+    ///   - seed: The random seed for initialization. The default value is random.
+    public init(inputSize: Int, hiddenSize: Int,
+                seed: (Int64, Int64) = (Int64.random(in: Int64.min..<Int64.max),
+                                        Int64.random(in: Int64.min..<Int64.max))) {
+        let concatenatedHiddenSize = inputSize + hiddenSize
+        let weightShape: TensorShape = [concatenatedHiddenSize, hiddenSize]
+        let biasShape: TensorShape = [hiddenSize]
+        self.resetWeight = Tensor(glorotUniform: weightShape, seed: seed)
+        self.resetBias = Tensor(zeros: biasShape)
+        self.updateWeight = Tensor(glorotUniform: weightShape, seed: seed)
+        self.updateBias = Tensor(repeating: -1, shape: biasShape)
+        self.inputHiddenWeight = Tensor(glorotUniform: [inputSize, hiddenSize], seed: seed)
+        self.inputHiddenBias = Tensor(zeros: biasShape)
+        self.hiddenHiddenWeight = Tensor(glorotUniform: [hiddenSize, hiddenSize], seed: seed)
+        self.hiddenHiddenBias = Tensor(zeros: biasShape)
+    }
+
+    /// Returns the output obtained from applying the layer to the given input.
+    ///
+    /// - Parameters:
+    ///   - input: The input to the layer.
+    /// - Returns: The hidden state.
+    @differentiable
+    public func call(_ input: Input) -> Output {
+        let gateInput = input.input.concatenated(with: input.state, alongAxis: 1)
+        let 𝒓 = sigmoid(matmul(resetWeight, gateInput) + resetBias)
+        let 𝒛 = sigmoid(matmul(updateWeight, gateInput) + updateBias)
+        let 𝒏 = matmul(inputHiddenWeight, input.input) + inputHiddenBias
+            + 𝒓 * (matmul(hiddenHiddenWeight, input.state) + hiddenHiddenBias)
+        let newState = (1 - 𝒛) * 𝒏 + 𝒛 * input.state
         return Output(output: newState, state: newState)
     }
 }
