@@ -16,36 +16,22 @@
 import TensorFlow
 #endif
 
+/// Returns the values of the specified tensor rounded to the nearest integer, element-wise.
+public func round<Scalar: BinaryFloatingPoint>(_ x: Tensor<Scalar>) -> Tensor<Scalar> {
+    return Raw.round(x)
+}
+
+/// Returns a tensor with the same shape and scalars as the specified tensor.
+@differentiable
+public func identity<Scalar>(_ x: Tensor<Scalar>) -> Tensor<Scalar> {
+    return x
+}
+
 //===------------------------------------------------------------------------------------------===//
 // Normalization
 //===------------------------------------------------------------------------------------------===//
 
 public extension Tensor where Scalar: TensorFlowFloatingPoint {
-    /// Computes the batch normalized tensor along the specified axis.
-    ///
-    /// Specifically, returns `(self - mu) / (var + epsilon) * gamma + beta` where `mu` and `var`
-    /// are respectively the mean and variance of `self` along `axis`.
-    ///
-    /// - Parameters:
-    ///   - axis: The batch dimension.
-    ///   - offset: The offset, also known as beta.
-    ///   - scale: The scale, also known as gamma.
-    ///   - epsilon: A small value added to the denominator for numerical stability.
-    @inlinable
-    @differentiable(wrt: (self, offset, scale), vjp: _vjpBatchNormalized)
-    func batchNormalized(
-        alongAxis axis: Int,
-        offset: Tensor = Tensor(0),
-        scale: Tensor = Tensor(1),
-        epsilon: Scalar = 0.001
-    ) -> Tensor {
-        let mean = self.mean(alongAxes: axis)
-        let squaredDiff: Tensor = Raw.squaredDifference(self, mean)
-        let variance = squaredDiff.mean(alongAxes: axis)
-        let inv = rsqrt(variance + epsilon) * scale
-        return self * inv + offset - mean * inv
-    }
-    
     // TODO: Verify that these calculations are correct.
     @inlinable
     internal func _vjpBatchNormalized(
@@ -54,15 +40,18 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         scale: Tensor,
         epsilon: Scalar
     ) -> (Tensor, (Tensor) -> (Tensor, Tensor, Tensor)) {
-        let value = batchNormalized(alongAxis: axis, offset: offset, scale: scale, epsilon: epsilon)
+        let value = batchNormalized(alongAxis: axis, offset: offset, scale: scale,
+                                    epsilon: epsilon)
         return (value, { v in
             let mean = self.mean(alongAxes: axis)
             let squaredDiff: Tensor = Raw.squaredDifference(self, mean)
             let variance = squaredDiff.mean(alongAxes: axis)
-            let diff = self - mean
+
+             let diff = self - mean
             let inv = rsqrt(variance + epsilon)
             let norm = diff * inv
-            let dNorm = v * scale
+
+             let dNorm = v * scale
             let dVariance = -(dNorm * diff).sum(alongAxes: axis) / 2 * pow(inv, -3)
             let dMean = (-dNorm * inv).sum(alongAxes: axis) +
                 dVariance * (-diff * 2).mean(alongAxes: axis)
@@ -91,8 +80,9 @@ public extension Tensor where Scalar: BinaryFloatingPoint {
     ///         stability.
     @inlinable
     @differentiable(
-        wrt: (self, offset, scale),
-        vjp: _vjpBatchNormalized where Scalar: TensorFlowFloatingPoint)
+        wrt: (self, offset, scale), vjp: _vjpBatchNormalized
+        where Scalar : TensorFlowFloatingPoint
+    )
     func batchNormalized(
         alongAxis axis: Int,
         offset: Tensor = Tensor(0),
@@ -182,12 +172,14 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         _ strides: (Int, Int, Int, Int),
         _ padding: Padding
     ) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
-        let value = conv2DBackpropInput(
-            shape: shape, filter: filter, strides: strides, padding: padding)
+        let value = conv2DBackpropInput(shape: shape, filter: filter, strides: strides,
+                                        padding: padding)
         return (value, { v in
-            (self.conv2DBackpropFilter(
-                input: v, filterSizes: shape, strides: strides, padding: padding),
-             v.convolved2D(withFilter: filter, strides: strides, padding: padding))
+            return (
+                self.conv2DBackpropFilter(input: v, filterSizes: shape, strides: strides,
+                                          padding: padding),
+                v.convolved2D(withFilter: filter, strides: strides, padding: padding)
+            )
         })
     }
 
@@ -198,12 +190,14 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         _ strides: (Int, Int, Int, Int),
         _ padding: Padding
     ) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
-        let value = conv2DBackpropFilter(
-            input: input, filterSizes: filterSizes, strides: strides, padding: padding)
+        let value = conv2DBackpropFilter(input: input, filterSizes: filterSizes,
+                                         strides: strides, padding: padding)
         return (value, { v in
-            (self.conv2DBackpropInput(
-                shape: filterSizes, filter: v, strides: strides, padding: padding),
-             input.convolved2D(withFilter: v, strides: strides, padding: padding))
+            return (
+                self.conv2DBackpropInput(shape: filterSizes, filter: v, strides: strides,
+                                         padding: padding),
+                input.convolved2D(withFilter: v, strides: strides, padding: padding)
+            )
         })
     }
 
@@ -213,12 +207,19 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         strides: (Int, Int, Int, Int),
         padding: Padding
     ) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
-        let value = convolved2D(withFilter: filter, strides: strides, padding: padding)
+        let value = convolved2D(withFilter: filter, strides: strides,
+                                padding: padding)
         return (value, { v in
-            (v.conv2DBackpropInput(
-                shape: self.shapeTensor, filter: filter, strides: strides, padding: padding),
-             v.conv2DBackpropFilter(
-                input: self, filterSizes: filter.shapeTensor, strides: strides, padding: padding))
+            return (
+                v.conv2DBackpropInput(
+                    shape: self.shapeTensor, filter: filter,
+                    strides: strides, padding: padding
+                ),
+                v.conv2DBackpropFilter(
+                    input: self, filterSizes: filter.shapeTensor,
+                    strides: strides, padding: padding
+                )
+            )
         })
     }
 
@@ -230,9 +231,10 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     ) -> (Tensor, (Tensor) -> Tensor) {
         // TODO: Currently this is not higher order differentiable. Redefine in
         // closed form.
-        let value = maxPooled(kernelSize: kernelSize, strides: strides, padding: padding)
+        let value = maxPooled(kernelSize: kernelSize, strides: strides,
+                              padding: padding)
         return (value, { v in
-            Raw.maxPoolGradV2(
+            return Raw.maxPoolGradV2(
                 origInput: self,
                 origOutput: value,
                 grad: v,
@@ -240,7 +242,8 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
                                       Int32(kernelSize.2), Int32(kernelSize.3)]),
                 strides: Tensor<Int32>([Int32(strides.0), Int32(strides.1),
                                         Int32(strides.2), Int32(strides.3)]),
-                padding: padding.raw)
+                padding: padding.raw
+            )
         })
     }
 
@@ -252,15 +255,17 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     ) -> (Tensor, (Tensor) -> Tensor) {
         // TODO: Currently this is not higher order differentiable. Redefine in
         // closed form.
-        let value = averagePooled(kernelSize: kernelSize, strides: strides, padding: padding)
+        let value = averagePooled(kernelSize: kernelSize, strides: strides,
+                                  padding: padding)
         return (value, { v in
-            Raw.avgPoolGrad(
+            return Raw.avgPoolGrad(
                 origInputShape: self.shapeTensor,
                 grad: v,
                 ksize: [Int32(kernelSize.0), Int32(kernelSize.1),
                         Int32(kernelSize.2), Int32(kernelSize.3)],
                 strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2), Int32(strides.3)],
-                padding: padding.raw)
+                padding: padding.raw
+            )
         })
     }
 }
@@ -276,10 +281,11 @@ public extension Tensor where Scalar: FloatingPoint {
     ///     - padding: The padding for the operation.
     /// - Precondition: `self` must have rank 4.
     /// - Precondition: `filter` must have rank 4.
-    @inlinable
+    @inlinable @inline(__always)
     @differentiable(
-        wrt: (self, filter),
-        vjp: _vjpConvolved2D where Scalar: TensorFlowFloatingPoint)
+        wrt: (self, filter), vjp: _vjpConvolved2D
+        where Scalar: TensorFlowFloatingPoint
+    )
     func convolved2D(
         withFilter filter: Tensor,
         strides: (Int, Int, Int, Int),
@@ -301,10 +307,11 @@ public extension Tensor where Scalar: FloatingPoint {
     ///     - strides: The strides of the sliding filter for each dimension of the
     ///         input.
     ///     - padding: The padding for the operation.
-    @inlinable
+    @inlinable @inline(__always)
     @differentiable(
-        wrt: self,
-        vjp: _vjpMaxPooled(kernelSize:strides:padding:) where Scalar: TensorFlowFloatingPoint)
+        wrt: self, vjp: _vjpMaxPooled(kernelSize:strides:padding:)
+        where Scalar : TensorFlowFloatingPoint
+    )
     func maxPooled(
         kernelSize: (Int, Int, Int, Int),
         strides: (Int, Int, Int, Int),
@@ -327,10 +334,11 @@ public extension Tensor where Scalar: FloatingPoint {
     ///     - strides: The strides of the sliding filter for each dimension of the
     ///         input.
     ///     - padding: The padding for the operation.
-    @inlinable
+    @inlinable @inline(__always)
     @differentiable(
-        wrt: self,
-        vjp: _vjpAveragePooled(kernelSize:strides:padding:) where Scalar: TensorFlowFloatingPoint)
+        wrt: self, vjp: _vjpAveragePooled(kernelSize:strides:padding:)
+        where Scalar : TensorFlowFloatingPoint
+    )
     func averagePooled(
         kernelSize: (Int, Int, Int, Int),
         strides: (Int, Int, Int, Int),
