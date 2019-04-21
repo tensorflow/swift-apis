@@ -875,7 +875,7 @@ public extension Tensor where Scalar == Bool {
     @inlinable
     func all() -> Bool {
         let axes = Tensor<Int32>(rangeFrom: 0, to: Int32(rank), stride: 1)
-        return _TFGetScalarOrDie(Raw.all(self, reductionIndices: axes).handle)
+        return Raw.all(self, reductionIndices: axes).scalarized()
     }
 
     /// Returns `true` if any scalars are equal to `true`. Otherwise, returns `false`.
@@ -884,7 +884,7 @@ public extension Tensor where Scalar == Bool {
     @inlinable
     func any() -> Bool {
         let axes = Tensor<Int32>(rangeFrom: 0, to: Int32(rank), stride: 1)
-        return _TFGetScalarOrDie(Raw.any(self, reductionIndices: axes).handle)
+        return Raw.any(self, reductionIndices: axes).scalarized()
     }
 
     /// Performs a logical AND operation along the specified axes. The reduced dimensions are
