@@ -66,6 +66,15 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(output, expected)
     }
 
+    func TestUpSampling3D(){
+      let size = 6
+      let layer = UpSampling3D<Float>(size: size)
+      let input = Tensor<Float>(shape: [1, 4, 3, 2, 1], scalars: (0..<24).map(Float.init))
+      let output = layer.inferring(from: input)
+      let expected = TensorShape([input.shape[1] * size, input.shape[2] * size, input.shape[3] * size])
+      XCTAssertEqual(output.shape, expected)
+    }
+
     func testReshape() {
         let layer = Reshape<Float>(shape: [10, 2, 1])
         let input = Tensor(shape: [20, 1], scalars: (0..<20).map(Float.init))
