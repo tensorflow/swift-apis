@@ -1183,7 +1183,7 @@ public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters:
+    /// - Parameter input: The input to the layer.
     ///   - input: The input to the layer.
     /// - Returns: The output.
     @differentiable
