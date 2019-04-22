@@ -1114,7 +1114,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 
   @inlinable
   func _vjpMinOrMax(alongAxes axes: Tensor<Int32>) -> (Tensor, (Tensor) -> Tensor) {
-    let result = max(squeezingAxes: axes)
+    let result = max(alongAxes: axes)
     return (result, { v in
       // Compute the number of selected (maximum or minimum) elements in each reduction dimension.
       // If there are multiple minimum or maximum elements then the gradient will be divided between
