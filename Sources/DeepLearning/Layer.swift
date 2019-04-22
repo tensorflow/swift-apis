@@ -1184,7 +1184,7 @@ public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// Returns the output obtained from applying the layer to the given input.
     ///
     /// - Parameter input: The input to the layer.
-    ///   - input: The input to the layer.
+    ///   
     /// - Returns: The output.
     @differentiable
     public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
