@@ -237,7 +237,29 @@ public extension Dense {
     ///   - activation: The activation function to use. The default value is `identity(_:)`.
     ///   - generator: The random number generator for initialization.
     ///
-    /// - Note: Use `init(inputSize:outputSize:activation:seed. The bias vector
+    /// - Note: Use `init(inputSize:outputSize:activation:seed:)` for faster random initialization.
+    init<G: RandomNumberGenerator>(
+        inputSize: Int,
+        outputSize: Int,
+        activation: @escaping Activation = identity,
+        generator: inout G
+    ) {
+        self.init(weight: Tensor(glorotUniform: [inputSize, outputSize],
+                                 generator: &generator),
+                  bias: Tensor(zeros: [outputSize]),
+                  activation: activation)
+    }
+
+    init(inputSize: Int, outputSize: Int, activation: @escaping Activation = identity) {
+      self.init(inputSize: inputSize, outputSize: outputSize, activation: activation,
+                generator: &PhiloxRandomNumberGenerator.global)
+    }
+}
+
+public extension Dense {
+    /// Creates a `Dense` layer with the specified input size, output size, and element-wise
+    /// activation function. The weight matrix is created with shape `[inputSize, outputSize]` and
+    /// is initialized using Glorot uniform initialization with the specified seed. The bias vector
     /// is created with shape `[outputSize]` and is initialized with zeros.
     ///
     /// - Parameters:
