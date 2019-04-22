@@ -1470,13 +1470,14 @@ public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
         return Output(output: newState, state: newState)
     }
 }
-=======
+
+// TODO: Doc comment.
 public struct RNN<Cell: RNNCell>: Layer {
     public typealias Input = [Cell.TimeStepInput]
     public typealias Output = [Cell.TimeStepOutput]
 
     public var cell: Cell
-    
+
     public init(_ cell: @autoclosure () -> Cell) {
         self.cell = cell()
     }
