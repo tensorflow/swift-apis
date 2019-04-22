@@ -1464,8 +1464,8 @@ public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
         let gateInput = input.input.concatenated(with: input.state, alongAxis: 1)
         let 𝒓 = sigmoid(matmul(resetWeight, gateInput) + resetBias)
         let 𝒛 = sigmoid(matmul(updateWeight, gateInput) + updateBias)
-        let 𝒏 = matmul(inputHiddenWeight, input.input) + inputHiddenBias
-            + 𝒓 * (matmul(hiddenHiddenWeight, input.state) + hiddenHiddenBias)
+        let 𝒏 = tanh(matmul(inputHiddenWeight, input.input) + inputHiddenBias
+            + 𝒓 * (matmul(hiddenHiddenWeight, input.state) + hiddenHiddenBias))
         let newState = (1 - 𝒛) * 𝒏 + 𝒛 * input.state
         return Output(output: newState, state: newState)
     }
