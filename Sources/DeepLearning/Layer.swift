@@ -1432,7 +1432,7 @@ public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
         return Tensor(zeros: stateShape)
     }
 
-    /// Creates a `LSTMCell` with the specified input size and hidden state size.
+    /// Creates a `GRUCell` with the specified input size and hidden state size.
     ///
     /// - Parameters:
     ///   - inputSize: The number of features in 2-D input tensors.
@@ -1559,3 +1559,4 @@ extension RNN: VectorNumeric where Cell: VectorNumeric {}
 
 public typealias SimpleRNN<Scalar: TensorFlowFloatingPoint> = RNN<SimpleRNNCell<Scalar>>
 public typealias LSTM<Scalar: TensorFlowFloatingPoint> = RNN<LSTMCell<Scalar>>
+public typealias GRU<Scalar: TensorFlowFloatingPoint> = RNN<GRUCell<Scalar>>
