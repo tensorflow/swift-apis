@@ -1170,7 +1170,7 @@ public extension Tensor where Scalar: Numeric {
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
-    @differentiable(wrt: self, vjp: _vjpSum(squeezingAxes:) where Scalar: TensorFlowFloatingPoint)
+    @differentiable(wrt: self, vjp: _vjpSum(alongAxes:) where Scalar: TensorFlowFloatingPoint)
     func sum(alongAxes axes: Tensor<Int32>) -> Tensor {
         return Raw.sum(self, reductionIndices: axes, keepDims: true)
     }
