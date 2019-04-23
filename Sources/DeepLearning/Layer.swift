@@ -1282,8 +1282,8 @@ public extension RNNCell {
 
 /// A Simple RNN Cell.
 public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNumeric {
-    public var weight: Tensor<Scalar>
-    public var bias: Tensor<Scalar>
+    public var h_W: Tensor<Scalar>
+    public var h_b: Tensor<Scalar>
 
     @noDerivative public var stateShape: TensorShape {
         return TensorShape([1, weight.shape[1]])
@@ -1309,9 +1309,9 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNum
                 seed: (Int64, Int64) = (Int64.random(in: Int64.min..<Int64.max),
                                         Int64.random(in: Int64.min..<Int64.max))) {
         let concatenatedInputSize = inputSize + hiddenSize
-        self.weight = Tensor(glorotUniform: [concatenatedInputSize, hiddenSize],
+        self.h_W = Tensor(glorotUniform: [concatenatedInputSize, hiddenSize],
                              seed: seed)
-        self.bias = Tensor(zeros: [hiddenSize])
+        self.h_b = Tensor(zeros: [hiddenSize])
     }
 
     /// Returns the output obtained from applying the layer to the given input.
@@ -1324,15 +1324,15 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNum
     @differentiable
     public func call(_ input: Input) -> Output {
         let concatenatedInput = input.input.concatenated(with: input.state, alongAxis: 1)
-        let newState = tanh(matmul(concatenatedInput, weight) + bias)
+        let newState = tanh(matmul(concatenatedInput, h_W) + h_b)
         return Output(output: newState, state: newState)
     }
 }
 
 /// An LSTM Cell.
 public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNumeric {
-    public var inputWeight, updateWeight, forgetWeight, outputWeight: Tensor<Scalar>
-    public var inputBias, updateBias, forgetBias, outputBias: Tensor<Scalar>
+    public var i_W, u_W, f_W, o_W: Tensor<Scalar>
+    public var i_b, u_b, f_b, o_b: Tensor<Scalar>
 
     @noDerivative public var stateShape: TensorShape {
         return TensorShape([1, inputWeight.shape[1]])
@@ -1358,14 +1358,14 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNumeric 
         let concatenatedInputSize = inputSize + hiddenSize
         let gateWeightShape = TensorShape([concatenatedInputSize, hiddenSize])
         let gateBiasShape = TensorShape([hiddenSize])
-        self.inputWeight = Tensor(glorotUniform: gateWeightShape, seed: seed)
-        self.inputBias = Tensor(zeros: gateBiasShape)
-        self.updateWeight = Tensor(glorotUniform: gateWeightShape, seed: seed)
-        self.updateBias = Tensor(zeros: gateBiasShape)
-        self.forgetWeight = Tensor(glorotUniform: gateWeightShape, seed: seed)
-        self.forgetBias = Tensor(ones: gateBiasShape)
-        self.outputWeight = Tensor(glorotUniform: gateWeightShape, seed: seed)
-        self.outputBias = Tensor(zeros: gateBiasShape)
+        self.i_W = Tensor(glorotUniform: gateWeightShape, seed: seed)
+        self.i_b = Tensor(zeros: gateBiasShape)
+        self.u_W = Tensor(glorotUniform: gateWeightShape, seed: seed)
+        self.u_b = Tensor(zeros: gateBiasShape)
+        self.f_W = Tensor(glorotUniform: gateWeightShape, seed: seed)
+        self.f_b = Tensor(ones: gateBiasShape)
+        self.o_W = Tensor(glorotUniform: gateWeightShape, seed: seed)
+        self.o_b = Tensor(zeros: gateBiasShape)
     }
 
     public struct State: Differentiable {
@@ -1390,13 +1390,13 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNumeric 
     public func call(_ input: Input) -> Output {
         let gateInput = input.input.concatenated(with: input.state.hidden, alongAxis: 1)
 
-        let inputGate = sigmoid(matmul(gateInput, inputWeight) + inputBias)
-        let updateGate = tanh(matmul(gateInput, updateWeight) + updateBias)
-        let forgetGate = sigmoid(matmul(gateInput, forgetWeight) + forgetBias)
-        let outputGate = sigmoid(matmul(gateInput, outputWeight) + outputBias)
+        let inputGate = sigmoid(matmul(gateInput, i_W) + i_b)
+        let u = tanh(matmul(gateInput, u_W) + u_b)
+        let f = sigmoid(matmul(gateInput, f_W) + f_b)
+        let o = sigmoid(matmul(gateInput, o_W) + o_b)
 
-        let newCellState = input.state.cell * forgetGate + inputGate * updateGate
-        let newHiddenState = tanh(newCellState) * outputGate
+        let newCellState = input.state.cell * f + inputGate * u
+        let newHiddenState = tanh(newCellState) * o
 
         let newState = State(cell: newCellState, hidden: newHiddenState)
 
@@ -1409,7 +1409,7 @@ public struct RNN<Cell: RNNCell>: Layer {
     public typealias Output = [Cell.TimeStepOutput]
 
     public var cell: Cell
-    
+
     public init(_ cell: @autoclosure () -> Cell) {
         self.cell = cell()
     }
