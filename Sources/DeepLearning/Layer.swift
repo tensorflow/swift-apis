@@ -1184,14 +1184,15 @@ public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// Returns the output obtained from applying the layer to the given input.
     ///
     /// - Parameter input: The input to the layer.
-    ///   
     /// - Returns: The output.
     @differentiable
     public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         let shape = input.shape
-        let (batchSize, height, width, breadth, channels) = (shape[0], shape[1], shape[2], shape[3], shape[4])
+        let (batchSize, height, width, breadth, channels) = (shape[0], shape[1], shape[2]
+                                                            , shape[3], shape[4])
         let scaleOnes = Tensor<Scalar>(ones: [1, 1, size, 1, size, 1, size, 1])
-        let upSampling = input.reshaped(to: [batchSize, height, 1, width, 1, breadth, 1, channels]) * scaleOnes
+        let upSampling = input.reshaped(to: [batchSize, height, 1, width, 1,
+                                            breadth, 1, channels]) * scaleOnes
         return upSampling.reshaped(to: [batchSize, height * size, width * size, breadth * size, channels])
     }
 }
