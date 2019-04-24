@@ -31,8 +31,7 @@ public protocol Layer: Differentiable & KeyPathIterable
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters:
-    ///   - input: The input to the layer.
+    /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
     func call(_ input: Input) -> Output
@@ -216,8 +215,7 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters:
-    ///   - input: The input to the layer.
+    /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
     public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
@@ -325,8 +323,7 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters:
-    ///   - input: The input to the layer `[batchCount, width, inputChannels]`.
+    /// - Parameter input: The input to the layer `[batchCount, width, inputChannels]`.
     /// - Returns: The output `[batchCount, newWidth, outputChannels]`.
     @differentiable
     public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
@@ -444,8 +441,7 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters:
-    ///   - input: The input to the layer.
+    /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
     public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
@@ -563,8 +559,7 @@ public struct TransposedConv2D: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters:
-    ///   - input: The input to the layer.
+    /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
     public func call(_ input: Tensor<Float>) -> Tensor<Float> {
@@ -718,8 +713,7 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters:
-    ///   - input: The input to the layer.
+    /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable(vjp: _vjpApplied(to:))
     public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
@@ -796,8 +790,7 @@ public struct MaxPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters:
-    ///   - input: The input to the layer.
+    /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
     public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
@@ -843,8 +836,7 @@ public struct MaxPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters:
-    ///   - input: The input to the layer.
+    /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
     public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
@@ -881,8 +873,7 @@ public struct AvgPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters:
-    ///   - input: The input to the layer.
+    /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
     public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
@@ -928,8 +919,7 @@ public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters:
-    ///   - input: The input to the layer.
+    /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
     public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
@@ -946,8 +936,7 @@ public struct GlobalAvgPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters:
-    ///   - input: The input to the layer.
+    /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
     public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
@@ -963,8 +952,7 @@ public struct GlobalAvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters:
-    ///   - input: The input to the layer.
+    /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
     public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
@@ -980,8 +968,7 @@ public struct GlobalAvgPool3D<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters:
-    ///   - input: The input to the layer.
+    /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
     public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
@@ -1035,8 +1022,7 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters:
-    ///   - input: The input to the layer.
+    /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
     public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
@@ -1085,8 +1071,7 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters:
-    ///   - input: The input to the layer.
+    /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable(vjp: _vjpApplied(to:))
     public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
@@ -1129,8 +1114,7 @@ public struct UpSampling1D<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters:
-    ///   - input: The input to the layer.
+    /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
     public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
@@ -1156,8 +1140,7 @@ public struct UpSampling2D<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters:
-    ///   - input: The input to the layer.
+    /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
     public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
@@ -1179,8 +1162,7 @@ public struct Flatten<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters:
-    ///   - input: The input to the layer.
+    /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
     public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
@@ -1216,8 +1198,7 @@ public struct Reshape<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters:
-    ///   - input: The input to the layer.
+    /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
     public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
@@ -1280,7 +1261,7 @@ public extension RNNCell {
     }
 }
 
-/// A Simple RNN Cell.
+/// A simple RNN cell.
 public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNumeric {
     public var weight: Tensor<Scalar>
     public var bias: Tensor<Scalar>
@@ -1316,10 +1297,7 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNum
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters:
-    ///   - input: The input to the layer.
-    ///   - context: The contextual information for the layer application, e.g. the current learning
-    ///     phase.
+    /// - Parameter input: The input to the layer.
     /// - Returns: The hidden state.
     @differentiable
     public func call(_ input: Input) -> Output {
@@ -1329,7 +1307,7 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNum
     }
 }
 
-/// An LSTM Cell.
+/// An LSTM cell.
 public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNumeric {
     public var inputWeight, updateWeight, forgetWeight, outputWeight: Tensor<Scalar>
     public var inputBias, updateBias, forgetBias, outputBias: Tensor<Scalar>
@@ -1381,10 +1359,7 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNumeric 
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters:
-    ///   - input: The input to the layer.
-    ///   - context: The contextual information for the layer application, e.g. the current learning
-    ///     phase.
+    /// - Parameter input: The input to the layer.
     /// - Returns: The hidden state.
     @differentiable
     public func call(_ input: Input) -> Output {
