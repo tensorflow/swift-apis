@@ -1189,12 +1189,12 @@ public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: Layer {
     public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         let shape = input.shape
         let (batchSize, height, width, depth, channels) =
-                                      (shape[0], shape[1], shape[2], shape[3], shape[4])
+                (shape[0], shape[1], shape[2], shape[3], shape[4])
         let scaleOnes = Tensor<Scalar>(ones: [1, 1, size, 1, size, 1, size, 1])
         let upSampling = input.reshaped(
-        to: [batchSize, height, 1, width, 1, depth, 1, channels]) * scaleOnes
+                to: [batchSize, height, 1, width, 1, depth, 1, channels]) * scaleOnes
         return upSampling.reshaped(
-        to: [batchSize, height * size, width * size, depth * size, channels])
+                to: [batchSize, height * size, width * size, depth * size, channels])
     }
 }
 
