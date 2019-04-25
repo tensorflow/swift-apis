@@ -1194,7 +1194,7 @@ public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: Layer {
         let upSampling = input.reshaped(
                 to: [batchSize, height, 1, width, 1, depth, 1, channels]) * scaleOnes
         return upSampling.reshaped(
-                to: [batchSize, height * size, width * size, depth * size, channels])
+            to: [batchSize, height * size, width * size, depth * size, channels])
     }
 }
 
