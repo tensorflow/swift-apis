@@ -845,6 +845,50 @@ public struct MaxPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     }
 }
 
+/// A max pooling layer for spatial or spatio-temporal data.
+@_fixed_layout
+public struct MaxPool3D<Scalar: TensorFlowFloatingPoint>: Layer {
+    /// The size of the sliding reduction window for pooling.
+    @noDerivative let poolSize: (Int, Int, Int, Int, Int)
+    /// The strides of the sliding window for each dimension of a 5-D input.
+    /// Strides in non-spatial dimensions must be `1`.
+    @noDerivative let strides: (Int, Int, Int, Int, Int)
+    /// The padding algorithm for pooling.
+    @noDerivative let padding: Padding
+
+    /// Creates a max pooling layer.
+    public init(
+        poolSize: (Int, Int, Int, Int, Int),
+        strides: (Int, Int, Int, Int, Int),
+        padding: Padding
+    ) {
+        self.poolSize = poolSize
+        self.strides = strides
+        self.padding = padding
+    }
+
+    /// Creates a max pooling layer.
+    ///
+    /// - Parameters:
+    ///   - poolSize: Vertical and horizontal factors by which to downscale.
+    ///   - strides: The strides.
+    ///   - padding: The padding.
+    public init(poolSize: (Int, Int, Int), strides: (Int, Int, Int), padding: Padding = .valid) {
+        self.poolSize = (1, poolSize.0, poolSize.1, poolSize.2, 1)
+        self.strides = (1, strides.0, strides.1, strides.2, 1)
+        self.padding = padding
+    }
+
+    /// Returns the output obtained from applying the layer to the given input.
+    ///
+    /// - Parameter input: The input to the layer.
+    /// - Returns: The output.
+    @differentiable
+    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+        return input.maxPooled(kernelSize: poolSize, strides: strides, padding: padding)
+    }
+}
+
 /// An average pooling layer for temporal data.
 @_fixed_layout
 public struct AvgPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
@@ -894,7 +938,7 @@ public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The padding algorithm for pooling.
     @noDerivative let padding: Padding
 
-    /// Creates a average pooling layer.
+    /// Creates an average pooling layer.
     public init(
         poolSize: (Int, Int, Int, Int),
         strides: (Int, Int, Int, Int),
@@ -905,7 +949,7 @@ public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
         self.padding = padding
     }
 
-    /// Creates a average pooling layer.
+    /// Creates an average pooling layer.
     ///
     /// - Parameters:
     ///   - poolSize: Vertical and horizontal factors by which to downscale.
@@ -914,6 +958,50 @@ public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     public init(poolSize: (Int, Int), strides: (Int, Int), padding: Padding = .valid) {
         self.poolSize = (1, poolSize.0, poolSize.1, 1)
         self.strides = (1, strides.0, strides.1, 1)
+        self.padding = padding
+    }
+
+    /// Returns the output obtained from applying the layer to the given input.
+    ///
+    /// - Parameter input: The input to the layer.
+    /// - Returns: The output.
+    @differentiable
+    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+        return input.averagePooled(kernelSize: poolSize, strides: strides, padding: padding)
+    }
+}
+
+/// An average pooling layer for spatial or spatio-temporal data.
+@_fixed_layout
+public struct AvgPool3D<Scalar: TensorFlowFloatingPoint>: Layer {
+    /// The size of the sliding reduction window for pooling.
+    @noDerivative let poolSize: (Int, Int, Int, Int, Int)
+    /// The strides of the sliding window for each dimension of a 5-D input.
+    /// Strides in non-spatial dimensions must be `1`.
+    @noDerivative let strides: (Int, Int, Int, Int, Int)
+    /// The padding algorithm for pooling.
+    @noDerivative let padding: Padding
+
+    /// Creates an average pooling layer.
+    public init(
+        poolSize: (Int, Int, Int, Int, Int),
+        strides: (Int, Int, Int, Int, Int),
+        padding: Padding
+    ) {
+        self.poolSize = poolSize
+        self.strides = strides
+        self.padding = padding
+    }
+
+    /// Creates an average pooling layer.
+    ///
+    /// - Parameters:
+    ///   - poolSize: Vertical and horizontal factors by which to downscale.
+    ///   - strides: The strides.
+    ///   - padding: The padding.
+    public init(poolSize: (Int, Int, Int), strides: (Int, Int, Int), padding: Padding = .valid) {
+        self.poolSize = (1, poolSize.0, poolSize.1, poolSize.2, 1)
+        self.strides = (1, strides.0, strides.1, strides.2, 1)
         self.padding = padding
     }
 
