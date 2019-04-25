@@ -12,9 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#if !COMPILING_TENSORFLOW_MODULE
-@_exported import TensorFlow
-#endif
+@_exported import TensorFlowCore
 
 /// Returns a tensor with the same shape and scalars as the specified tensor.
 @inlinable

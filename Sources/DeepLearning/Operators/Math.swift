@@ -12,62 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#if !COMPILING_TENSORFLOW_MODULE
-import TensorFlow
-#endif
+import TensorFlowCore
 
-#if COMPILING_TENSORFLOW_MODULE
+// #if COMPILING_TENSORFLOW_MODULE
 infix operator .>: ComparisonPrecedence
 infix operator .==: ComparisonPrecedence
-#endif
+// #endif
 
 // TODO:
 // - Consider explicit broadcasting for elementwise binary ops when
 //   scalarization and rank getter are implemented.
-
-//===------------------------------------------------------------------------------------------===//
-// Additive Group
-//===------------------------------------------------------------------------------------------===//
-
-extension Tensor: AdditiveArithmetic where Scalar: Numeric {
-    /// A scalar zero tensor.
-    @inlinable
-    public static var zero: Tensor {
-        return Tensor(zeros: [])
-    }
-
-    /// Adds two tensors and produces their sum.
-    /// - Note: `+` supports broadcasting.
-    @inlinable
-    @differentiable(vjp: _vjpAdd(lhs:rhs:) where Scalar: TensorFlowFloatingPoint)
-    public static func + (lhs: Tensor, rhs: Tensor) -> Tensor {
-        return Raw.add(lhs, rhs)
-    }
-
-    /// Subtracts one tensor from another and produces their difference.
-    /// - Note: `-` supports broadcasting.
-    @inlinable
-    @differentiable(vjp: _vjpSubtract(lhs:rhs:) where Scalar: TensorFlowFloatingPoint)
-    public static func - (lhs: Tensor, rhs: Tensor) -> Tensor {
-        return Raw.sub(lhs, rhs)
-    }
-}
-
-internal extension Tensor where Scalar: TensorFlowFloatingPoint {
-    @inlinable
-    static func _vjpAdd(lhs: Tensor, rhs: Tensor) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
-        return (lhs + rhs, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
-            (v.unbroadcast(toShape: lhsShape), v.unbroadcast(toShape: rhsShape))
-        })
-    }
-
-    @inlinable
-    static func _vjpSubtract(lhs: Tensor, rhs: Tensor) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
-        return (lhs - rhs, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
-            (v.unbroadcast(toShape: lhsShape), -v.unbroadcast(toShape: rhsShape))
-        })
-    }
-}
 
 //===------------------------------------------------------------------------------------------===//
 // Vector Space
@@ -93,45 +47,34 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 
 extension Tensor: ShapedVectorNumeric where Scalar: Numeric {}
 
-extension Tensor: Differentiable where Scalar: TensorFlowFloatingPoint {
-    public typealias TangentVector = Tensor
-    public typealias CotangentVector = Tensor
-    public typealias AllDifferentiableVariables = Tensor
-
-    @inlinable
-    public func tangentVector(from cotangent: CotangentVector) -> TangentVector {
-        return cotangent
-    }
-}
-
 //===------------------------------------------------------------------------------------------===//
 // Additional Element-wise Operators
 //===------------------------------------------------------------------------------------------===//
 
 public extension Tensor where Scalar: Numeric {
     /// Adds the scalar to every scalar of the tensor and produces the sum.
-    @inlinable
+    @inlinable @inline(__always)
     @differentiable(vjp: _vjpAdd(lhs:rhs:) where Scalar: TensorFlowFloatingPoint)
     static func + (lhs: Scalar, rhs: Tensor) -> Tensor {
         return Tensor(lhs) + rhs
     }
 
     /// Adds the scalar to every scalar of the tensor and produces the sum.
-    @inlinable
+    @inlinable @inline(__always)
     @differentiable(vjp: _vjpAdd(lhs:rhs:) where Scalar: TensorFlowFloatingPoint)
     static func + (lhs: Tensor, rhs: Scalar) -> Tensor {
         return lhs + Tensor(rhs)
     }
 
     /// Subtracts the scalar from every scalar of the tensor and produces the difference.
-    @inlinable
+    @inlinable @inline(__always)
     @differentiable(vjp: _vjpSubtract(lhs:rhs:) where Scalar: TensorFlowFloatingPoint)
     static func - (lhs: Scalar, rhs: Tensor) -> Tensor {
         return Tensor(lhs) - rhs
     }
 
     /// Subtracts the scalar from every scalar of the tensor and produces the difference
-    @inlinable
+    @inlinable @inline(__always)
     @differentiable(vjp: _vjpSubtract(lhs:rhs:) where Scalar: TensorFlowFloatingPoint)
     static func - (lhs: Tensor, rhs: Scalar) -> Tensor {
         return lhs - Tensor(rhs)
@@ -139,14 +82,14 @@ public extension Tensor where Scalar: Numeric {
 
     /// Adds two tensors and stores the result in the left-hand-side variable.
     /// - Note: `+=` supports broadcasting.
-    @inlinable
+    @inlinable @inline(__always)
     static func += (lhs: inout Tensor, rhs: Tensor) {
         lhs = lhs + rhs
     }
 
     /// Adds the scalar to every scalar of the tensor and stores the result in the left-hand-side
     /// variable.
-    @inlinable
+    @inlinable @inline(__always)
     static func += (lhs: inout Tensor, rhs: Scalar) {
         lhs = lhs + rhs
     }
@@ -154,14 +97,14 @@ public extension Tensor where Scalar: Numeric {
     /// Subtracts the second tensor from the first and stores the result in the left-hand-side
     /// variable.
     /// - Note: `-=` supports broadcasting.
-    @inlinable
+    @inlinable @inline(__always)
     static func -= (lhs: inout Tensor, rhs: Tensor) {
         lhs = lhs - rhs
     }
 
     /// Subtracts the scalar from every scalar of the tensor and stores the result in the
     /// left-hand-side variable.
-    @inlinable
+    @inlinable @inline(__always)
     static func -= (lhs: inout Tensor, rhs: Scalar) {
         lhs = lhs - rhs
     }
@@ -872,7 +815,7 @@ public extension Tensor where Scalar == Bool {
     /// Returns `true` if all scalars are equal to `true`. Otherwise, returns `false`.
     // NOTE: This overload is necessary, otherwise `all()` would refer to the variadic method
     // `all(squeezingAxes:)` with zero indices.
-    @inlinable
+    @inlinable @inline(__always)
     func all() -> Bool {
         let axes = Tensor<Int32>(rangeFrom: 0, to: Int32(rank), stride: 1)
         return Raw.all(self, reductionIndices: axes).scalarized()
@@ -881,7 +824,7 @@ public extension Tensor where Scalar == Bool {
     /// Returns `true` if any scalars are equal to `true`. Otherwise, returns `false`.
     // NOTE: This overload is necessary, otherwise `any()` would refer to the variadic method
     // `any(squeezingAxes:)` with zero indices.
-    @inlinable
+    @inlinable @inline(__always)
     func any() -> Bool {
         let axes = Tensor<Int32>(rangeFrom: 0, to: Int32(rank), stride: 1)
         return Raw.any(self, reductionIndices: axes).scalarized()
@@ -891,7 +834,7 @@ public extension Tensor where Scalar == Bool {
     /// removed.
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
-    @inlinable
+    @inlinable @inline(__always)
     func all(squeezingAxes axes: Int...) -> Tensor {
         let axes = axes.map(Int32.init)
         return Raw.all(self, reductionIndices: Tensor<Int32>(axes), keepDims: false)
@@ -901,7 +844,7 @@ public extension Tensor where Scalar == Bool {
     /// removed.
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
-    @inlinable
+    @inlinable @inline(__always)
     func any(squeezingAxes axes: Int...) -> Tensor {
         let axes = axes.map(Int32.init)
         return Raw.any(self, reductionIndices: Tensor<Int32>(axes), keepDims: false)
@@ -911,7 +854,7 @@ public extension Tensor where Scalar == Bool {
     /// retained with value 1.
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
-    @inlinable
+    @inlinable @inline(__always)
     func all(alongAxes axes: Int...) -> Tensor {
         let axes = axes.map(Int32.init)
         return Raw.all(self, reductionIndices: Tensor<Int32>(axes), keepDims: true)
@@ -921,7 +864,7 @@ public extension Tensor where Scalar == Bool {
     /// dimensions are retained with value 1.
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
-    @inlinable
+    @inlinable @inline(__always)
     func any(alongAxes axes: Int...) -> Tensor {
         let axes = axes.map(Int32.init)
         return Raw.any(self, reductionIndices: Tensor<Int32>(axes), keepDims: true)
@@ -1095,20 +1038,16 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
   func _vjpMinOrMax(squeezingAxes axes: Tensor<Int32>) -> (Tensor, (Tensor) -> Tensor) {
     let result = max(squeezingAxes: axes)
     return (result, { v in
-      var y = result
-      var gradient = v
-      for i in axes.array.scalars {
-        y = y.expandingShape(at: Int(i))
-        gradient = gradient.expandingShape(at: Int(i))
-      }
+      let yUnsqueezed = result.expandingShape(at: axes.scalars.map { Int($0) })
+      let gradientUnsqueezed = v.expandingShape(at: axes.scalars.map { Int($0) })
 
       // Compute the number of selected (maximum or minimum) elements in each reduction dimension.
       // If there are multiple minimum or maximum elements then the gradient will be divided between
       // them.
-      let indicators = Tensor(y .== self)
+      let indicators = Tensor(yUnsqueezed .== self)
       let selectedCount = indicators.sum(alongAxes: axes)
 
-      return gradient.broadcast(toShape: self.shapeTensor) * indicators / selectedCount
+      return gradientUnsqueezed.broadcast(toShape: self.shapeTensor) * indicators / selectedCount
     })
   }
 
@@ -1417,11 +1356,10 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     func _vjpSum(squeezingAxes axes: Tensor<Int32>) -> (Tensor, (Tensor) -> Tensor) {
         let value = sum(squeezingAxes: axes)
-        return (value, { [shape = shapeTensor] in
-            var result = $0
-            for i in axes.array.scalars { result = result.expandingShape(at: Int(i)) }
-            return result.broadcast(toShape: shape)
-        })
+        return (value, { [shape = shapeTensor] v in
+	      let unsqueezed = v.expandingShape(at: axes.scalars.map { Int($0) })
+	      return unsqueezed.broadcast(toShape: shape)
+	    })
     }
 
     @inlinable
@@ -1435,11 +1373,10 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     func _vjpMean(squeezingAxes axes: Tensor<Int32>) -> (Tensor, (Tensor) -> Tensor) {
         let value = mean(squeezingAxes: axes)
         let count = Raw.gather(params: shapeTensor, indices: axes).product()
-        return (value, { [shape = shapeTensor] in 
-            var result = $0
-            for i in axes.array.scalars { result = result.expandingShape(at: Int(i)) }
-            return result.broadcast(toShape: shape) / Tensor(count)
-        })
+        return (value, { [shape = shapeTensor] v in
+	      let unsqueezed = v.expandingShape(at: axes.scalars.map { Int($0) })
+	      return unsqueezed.broadcast(toShape: shape) / Tensor(count)
+	    })
     }
 }
 
@@ -1532,7 +1469,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
 //===------------------------------------------------------------------------------------------===//
 
 /// Performs matrix multiplication with another tensor and produces the result.
-@inlinable
+@inlinable @inline(__always)
 @differentiable(vjp: _vjpMatmul(_:_:) where Scalar: TensorFlowFloatingPoint)
 public func matmul<Scalar: Numeric>(
     _ lhs: Tensor<Scalar>,
@@ -1562,7 +1499,7 @@ public extension Tensor where Scalar: Numeric {
     // After AD can differentiate generic methods, remove the custom VJP.
 
     /// Performs matrix multiplication between two tensors and produces the result.
-    @inlinable
+    @inlinable @inline(__always)
     @differentiable(vjp: _vjpMatmulOperator(lhs:rhs:) where Scalar: TensorFlowFloatingPoint)
     static func • (lhs: Tensor, rhs: Tensor) -> Tensor {
         return matmul(lhs, rhs)

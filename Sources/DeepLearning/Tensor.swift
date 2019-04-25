@@ -12,46 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#if !COMPILING_TENSORFLOW_MODULE
-import TensorFlow
-#endif
+import TensorFlowCore
 
-#if COMPILING_TENSORFLOW_MODULE
+// #if COMPILING_TENSORFLOW_MODULE
 infix operator .==: ComparisonPrecedence
-#endif
-
-//===------------------------------------------------------------------------------------------===//
-// Tensor Properties
-//===------------------------------------------------------------------------------------------===//
-
-public extension Tensor {
-  /// The rank of the tensor, represented as a `Tensor<Int32>`.
-  @inlinable
-  var rankTensor: Tensor<Int32> {
-    @_semantics("autodiff.nonvarying")
-    get {
-        return Raw.rank(self)
-    }
-  }
-
-  /// The dimensions of the tensor, represented as a `Tensor<Int32>`.
-  @inlinable
-  var shapeTensor: Tensor<Int32> {
-    @_semantics("autodiff.nonvarying")
-    get {
-        return Raw.shape(self)
-    }
-  }
-
-  /// The number of scalars in the tensor, represented as a `Tensor<Int32>`.
-  @inlinable
-  var scalarCountTensor: Tensor<Int32> {
-    @_semantics("autodiff.nonvarying")
-    get {
-        return Raw.size(self)
-    }
-  }
-}
+// #endif
 
 //===------------------------------------------------------------------------------------------===//
 // Description and Visualization

@@ -12,9 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#if !COMPILING_TENSORFLOW_MODULE
-import TensorFlow
-#endif
+import TensorFlowCore
 
 public extension Tensor {
     /// Creates a tensor with the specified shape and a single, repeated scalar
@@ -23,7 +21,7 @@ public extension Tensor {
     /// - Parameters:
     ///   - shape: The dimensions of the tensor.
     ///   - repeatedValue: The scalar value to repeat.
-    @inlinable
+    @inlinable @inline(__always)
     @available(*, deprecated, renamed: "init(repeating:shape:)")
     init(shape: TensorShape, repeating repeatedValue: Scalar) {
         self.init(repeating: repeatedValue, shape: shape)
@@ -34,7 +32,7 @@ public extension Tensor {
     /// - Parameters:
     ///   - repeatedValue: The scalar value to repeat.
     ///   - shape: The dimensions of the tensor.
-    @inlinable
+    @inlinable @inline(__always)
     @differentiable(
         vjp: _vjpInit(repeating:shape:) where Scalar: TensorFlowFloatingPoint)
     init(repeating repeatedValue: Scalar, shape: TensorShape) {
@@ -45,7 +43,7 @@ public extension Tensor {
 
     /// Creates a tensor by broadcasting the given scalar to a given rank with
     /// all dimensions being 1.
-    @inlinable
+    @inlinable @inline(__always)
     // @differentiable(where Scalar: TensorFlowFloatingPoint)
     init(broadcasting scalar: Scalar, rank: Int) {
         self = Tensor(scalar).reshaped(to: TensorShape(repeating: 1, count: rank))
@@ -54,7 +52,7 @@ public extension Tensor {
     /// Creates a tensor of shape `[4]` from a 4-tuple.
     /// - Note: This is intended for internal use, for example, to initialize a
     ///   tensor attribute from `convolved2D`'s `strides` argument.
-    @inlinable
+    @inlinable @inline(__always)
     internal init(_ scalars: (Scalar, Scalar, Scalar, Scalar)) {
         self.init([scalars.0, scalars.1, scalars.2, scalars.3])
     }
@@ -78,13 +76,13 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 
 public extension Tensor where Scalar: Numeric {
     /// Perform an element-wise type conversion from a `Bool` tensor.
-    @inlinable
+    @inlinable @inline(__always)
     init(_ other: Tensor<Bool>) {
         self = Raw.cast(other)
     }
 
     /// Perform an element-wise conversion from another `Tensor`.
-    @inlinable
+    @inlinable @inline(__always)
     @differentiable(
         vjp: _vjpCast where Scalar: TensorFlowFloatingPoint, OtherScalar: TensorFlowFloatingPoint)
     init<OtherScalar: Numeric>(_ other: Tensor<OtherScalar>) {
@@ -107,10 +105,10 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 
 public extension Tensor {
     /// Creates a tensor from an array of tensors (which may themselves be scalars).
-    @inlinable
-    @differentiable(where Scalar: TensorFlowFloatingPoint)
+    @inlinable @inline(__always)
+    @differentiable(vjp: _vjpInitElements where Scalar: TensorFlowFloatingPoint)
     init(_ elements: [Tensor]) {
-        self = Tensor(stacking: elements)
+        self = Raw.pack(elements)
     }
 
     /// Stacks `tensors`, along the `axis` dimension, into a new tensor with rank one higher than
@@ -141,7 +139,7 @@ public extension Tensor {
     ///   provided tensors.
     /// 
     /// - Returns: The stacked tensor.
-    @inlinable
+    @inlinable @inline(__always)
     @differentiable(vjp: _vjpStacking where Scalar: TensorFlowFloatingPoint)
     init(stacking tensors: [Tensor], alongAxis axis: Int = 0) {
         self = Raw.pack(tensors, axis: Int64(axis))
@@ -179,7 +177,7 @@ public extension Tensor {
     ///   provided tensors.
     /// 
     /// - Returns: The concatenated tensor.
-    @inlinable
+    @inlinable @inline(__always)
     @differentiable(vjp: _vjpConcatenating where Scalar: TensorFlowFloatingPoint)
     init(concatenating tensors: [Tensor], alongAxis axis: Int = 0) {
         precondition(tensors.count > 0)
@@ -188,6 +186,13 @@ public extension Tensor {
 }
 
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
+    @inlinable
+    static func _vjpInitElements(
+        _ elements: [Tensor]
+    ) -> (Tensor, (Tensor) -> Array<Tensor>.DifferentiableView) {
+        return _vjpStacking(stacking: elements)
+    }
+
     @inlinable
     static func _vjpStacking(
         stacking tensors: [Tensor],
@@ -223,7 +228,7 @@ public extension Tensor where Scalar: Numeric {
     /// Creates a tensor with all scalars set to zero.
     ///
     /// - Parameter shape: Shape of the tensor.
-    @inlinable
+    @inlinable @inline(__always)
     init(zeros shape: TensorShape) {
         self.init(repeating: 0, shape: shape)
     }
@@ -231,7 +236,7 @@ public extension Tensor where Scalar: Numeric {
     /// Creates a tensor with all scalars set to one.
     ///
     /// - Parameter shape: Shape of the tensor.
-    @inlinable
+    @inlinable @inline(__always)
     init(ones shape: TensorShape) {
         self.init(repeating: 1, shape: shape)
     }
@@ -246,8 +251,7 @@ public extension Tensor where Scalar: Numeric {
     ///     the resulting sequence.
     ///   - stride: The amount to step by with each iteration. `stride` must be
     ///     positive.
-    ///
-    @inlinable
+    @inlinable @inline(__always)
     init(rangeFrom start: Scalar, to end: Scalar, stride: Scalar) {
         self = Raw.range(start: Tensor(start), limit: Tensor(end), delta: Tensor(stride))
     }
@@ -279,8 +283,7 @@ public extension Tensor where Scalar: Numeric {
     ///   - offValue: A scalar defining the value at a location that is not
     ///     referred to by any index in `indices`.
     ///   - axis: The axis to fill. The default is `-1`, a new inner-most axis.
-    ///
-    @inlinable
+    @inlinable @inline(__always)
     init(
         oneHotAtIndices indices: Tensor<Int32>,
         depth: Int,

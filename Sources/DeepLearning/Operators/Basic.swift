@@ -12,9 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#if !COMPILING_TENSORFLOW_MODULE
-import TensorFlow
-#endif
+import TensorFlowCore
 
 //===------------------------------------------------------------------------------------------===//
 // Shape Transformations
@@ -157,7 +155,7 @@ public extension Tensor {
     /// Returns a shape-expanded `Tensor`, with a dimension of 1 inserted at the specified shape
     /// indices.
     @inlinable
-    @differentiable(wrt: self where Scalar : TensorFlowFloatingPoint)
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func expandingShape(at axes: Int...) -> Tensor {
         return expandingShape(at: axes)
     }
@@ -351,7 +349,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 // Broadcasting
 //===------------------------------------------------------------------------------------------===//
 
-// TODO: What about precedence? Also, why is this operator meaningful for broadcasting?
+// TODO: What about precedence? Why is this operator used for broadcasting?
 infix operator .=
 
 public extension Tensor {
@@ -378,18 +376,14 @@ public extension Tensor {
     }
 }
 
-// TODO: Why is this limited only to numeric data types whereas `broadcast` is not?
 public extension Tensor where Scalar: Numeric {
     @inlinable
-    func unbroadcast(toShape otherShape: Tensor<Int32>) -> Tensor {
+    func unbroadcast(toShape otherShape: Tensor<Int32>) -> Tensor<Scalar> {
         let rankDiff = (rankTensor - otherShape.scalarCountTensor).rankLifted()
-        let ones: Tensor<Int32> = Raw.fill(dims: rankDiff, value: Tensor<Int32>(1))
-        let paddedShape = ones ++ otherShape
-        let nonEqualIndices = paddedShape .!= shapeTensor
-        let broadcastIndices = Raw.where_(nonEqualIndices).flattened()
-        let unbroadcasted: Tensor = Raw.sum(
-            self, reductionIndices: Tensor<Int32>(broadcastIndices), keepDims: false)
-        return Raw.reshape(unbroadcasted, shape: otherShape)
+        let ones = Raw.fill(dims: rankDiff, value: Tensor<Int32>(1))
+        let paddedShape = Tensor<Int32>(concatenating: [ones, otherShape], alongAxis: 0)
+        let broadcastIndices = Tensor<Int32>(Raw.where_(paddedShape .!= shapeTensor).flattened())
+        return sum(squeezingAxes: broadcastIndices).reshaped(toShape: otherShape)
     }
 
     @inlinable

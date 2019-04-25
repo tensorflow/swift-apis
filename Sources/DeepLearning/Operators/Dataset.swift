@@ -12,9 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#if !COMPILING_TENSORFLOW_MODULE
-import TensorFlow
-#endif
+import TensorFlowCore
 
 /// The default graph seed.
 ///
@@ -74,7 +72,7 @@ public extension Dataset {
   init(elements: Element) {
     // A dataset creation op only runs on TF CPU.
     self.init(_handle: Raw.tensorSliceDataset(
-      components: elements,
+      components: [elements],
       outputShapes: Element._unknownShapeList))
   }
 }
