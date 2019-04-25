@@ -1309,8 +1309,7 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNum
                 seed: (Int64, Int64) = (Int64.random(in: Int64.min..<Int64.max),
                                         Int64.random(in: Int64.min..<Int64.max))) {
         let concatenatedInputSize = inputSize + hiddenSize
-        self.W_h = Tensor(glorotUniform: [concatenatedInputSize, hiddenSize],
-                             seed: seed)
+        self.W_h = Tensor(glorotUniform: [concatenatedInputSize, hiddenSize], seed: seed)
         self.b_h = Tensor(zeros: [hiddenSize])
     }
 
