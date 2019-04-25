@@ -66,6 +66,33 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(output, expected)
     }
 
+    func testUpSampling1D() {
+      let size = 6
+      let layer = UpSampling1D<Float>(size: size)
+      let input = Tensor<Float>(shape: [1, 10, 1], scalars: (0..<10).map(Float.init))
+      let output = layer.inferring(from: input)
+      let expected = TensorShape([1, input.shape[1] * size, 1])
+      XCTAssertEqual(output.shape, expected)
+    }
+
+    func testUpSampling2D() {
+      let size = 6
+      let layer = UpSampling2D<Float>(size: size)
+      let input = Tensor<Float>(shape: [1, 3, 5, 1], scalars: (0..<15).map(Float.init))
+      let output = layer.inferring(from: input)
+      let expected = TensorShape([1, input.shape[1] * size, input.shape[2] * size, 1])
+      XCTAssertEqual(output.shape, expected)
+    }
+
+    func testUpSampling3D() {
+      let size = 6
+      let layer = UpSampling3D<Float>(size: size)
+      let input = Tensor<Float>(shape: [1, 4, 3, 2, 1], scalars: (0..<24).map(Float.init))
+      let output = layer.inferring(from: input)
+      let expected = TensorShape([1, input.shape[1] * size, input.shape[2] * size, input.shape[3] * size, 1])
+      XCTAssertEqual(output.shape, expected)
+    }
+
     func testReshape() {
         let layer = Reshape<Float>(shape: [10, 2, 1])
         let input = Tensor(shape: [20, 1], scalars: (0..<20).map(Float.init))
@@ -127,6 +154,9 @@ final class LayerTests: XCTestCase {
         ("testGlobalAvgPool1D", testGlobalAvgPool1D),
         ("testGlobalAvgPool2D", testGlobalAvgPool2D),
         ("testGlobalAvgPool3D", testGlobalAvgPool3D),
+        ("testUpSampling1D", testUpSampling1D),
+        ("testUpSampling2D", testUpSampling2D),
+        ("testUpSampling3D", testUpSampling3D),
         ("testReshape", testReshape),
         ("testFlatten", testFlatten),
         ("testSimpleRNNCell", testSimpleRNNCell),
