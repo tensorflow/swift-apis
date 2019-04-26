@@ -86,8 +86,8 @@ final class LayerTests: XCTestCase {
         let weight = Tensor<Float>(ones: [7, 5]) * Tensor<Float>([0.3333, 1, 0.3333, 1, 0.3333])
         let bias = Tensor<Float>(ones: [5])
         var cell = SimpleRNNCell<Float>(inputSize: 2, hiddenSize: 5)
-        cell.weight = weight
-        cell.bias = bias
+        cell.W_h = weigth
+        cell.b_h = bias
         let state = Tensor<Float>(ones: [1, 5]) * Tensor<Float>([1, 0.2, 0.5, 2, 0.6])
         let input = Tensor<Float>(ones: [1, 2]) * Tensor<Float>([0.3, 0.7])
         let output = cell(input: input, state: state).state
@@ -108,7 +108,7 @@ final class LayerTests: XCTestCase {
                                  [[ 0.06621192,    0.009049267,   0.065047316, 0.11534518]],
                                  [[ 0.05612204,    0.00022032857, 0.05407162,  0.09784105]]])
         let (𝛁rnn, 𝛁inputs) = pullback(.init(inputs))
-        XCTAssertEqual(𝛁rnn.cell.weight,
+        XCTAssertEqual(𝛁rnn.cell.W_h,
                        [[          0.0,           0.0,           0.0,           0.0],
                         [-0.0051278225,  0.0013102926,    0.00740262,   0.018119661],
                         [ -0.010255645,  0.0026205853,    0.01480524,   0.036239322],
@@ -117,7 +117,7 @@ final class LayerTests: XCTestCase {
                         [          0.0,           0.0,           0.0,           0.0],
                         [          0.0,           0.0,           0.0,           0.0],
                         [          0.0,           0.0,           0.0,           0.0]])
-        XCTAssertEqual(𝛁rnn.cell.bias, [-0.051278222,  0.013102926,    0.0740262,   0.18119662])
+        XCTAssertEqual(𝛁rnn.cell.b_h, [-0.051278222,  0.013102926,    0.0740262,   0.18119662])
     }
 
     static var allTests = [
