@@ -1341,7 +1341,7 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNumeric 
     public var b_i, b_u, b_f, b_o: Tensor<Scalar>
 
     @noDerivative public var stateShape: TensorShape {
-        return TensorShape([1, inputWeight.shape[1]])
+        return TensorShape([1, W_i.shape[1]])
     }
 
     public var zeroState: State {
