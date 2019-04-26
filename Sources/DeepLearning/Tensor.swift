@@ -44,7 +44,6 @@ public extension Tensor {
     ///     via ellipses (`...`).
     ///   - summarizing: If true, summarize description if element count exceeds twice
     ///     `edgeElementCount`.
-    @_semantics("autodiff.nonvarying")
     func description(
         lineWidth: Int = 80,
         edgeElementCount: Int = 3,

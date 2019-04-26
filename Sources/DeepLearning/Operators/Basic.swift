@@ -19,7 +19,7 @@ import TensorFlowCore
 //===------------------------------------------------------------------------------------------===//
 
 public extension TensorFlowScalar {
-    /// Convert to a tensor with the specified rank, with all dimensions equal to 1.
+    /// Convert to a tensor with the specified rank, with all dimensions equal to `1`.
     @inlinable
     func makeTensor(rank: Int) -> Tensor<Self> {
         return Tensor(repeating: self, shape: TensorShape(rank))
@@ -49,38 +49,38 @@ public extension Tensor {
     /// 
     /// - Returns: Array containing the unstacked tensors.
     @inlinable
-    @differentiable(vjp: _vjpUnstack(alongAxis:) where Scalar: TensorFlowFloatingPoint)
-    func unstack(alongAxis axis: Int = 0) -> [Tensor] {
+    @differentiable(vjp: _vjpUnstacked(alongAxis:) where Scalar: TensorFlowFloatingPoint)
+    func unstacked(alongAxis axis: Int = 0) -> [Tensor] {
         return Raw.unpack(value: self, num: Int64(shape[axis]), axis: Int64(axis))
     }
 
     /// Splits a tensor into multiple tensors. The tensor is split along dimension `axis` into
-    /// `numSplits` smaller tensors. This requires that `numSplits` evenly divides `shape[axis]`.
+    /// `count` smaller tensors. This requires that `count` evenly divides `shape[axis]`.
     ///
     /// For example:
     /// ```
     /// // 'value' is a tensor with shape [5, 30]
     /// // Split 'value' into 3 tensors along dimension 1:
-    /// let parts = value.split(numSplits: 3, alongAxis: 1)
+    /// let parts = value.split(count: 3, alongAxis: 1)
     /// parts[0] // has shape [5, 10]
     /// parts[1] // has shape [5, 10]
     /// parts[2] // has shape [5, 10]
     /// ```
     ///
     /// - Parameters:
-    ///   - numSplits: Number of splits to create.
-    ///   - axis: Dimension along which to split this tensor. Negative values wrap around.
+    ///   - count: Number of splits to create.
+    ///   - axis: The dimension along which to split this tensor. Negative values wrap around.
     ///
-    /// - Precondition: `numSplits` must divide the size of dimension `axis` evenly.
+    /// - Precondition: `count` must divide the size of dimension `axis` evenly.
     /// - Precondition: `axis` must be in the range `[-rank, rank)`, where `rank` is the rank of the
     ///   provided tensors.
     ///
-    /// - Returns: Array containing the tensors parts.
+    /// - Returns: An array containing the tensors parts.
     @inlinable
-    @differentiable(vjp: _vjpSplit(numSplits:alongAxis:) where Scalar: TensorFlowFloatingPoint)
-    func split(numSplits: Int, alongAxis axis: Int = 0) -> [Tensor] {
+    @differentiable(vjp: _vjpSplit(count:alongAxis:) where Scalar: TensorFlowFloatingPoint)
+    func split(count: Int, alongAxis axis: Int = 0) -> [Tensor] {
         return Raw.split(
-            splitDim: Tensor<Int32>(Int32(axis)), value: self, numSplit: Int64(numSplits))
+            splitDim: Tensor<Int32>(Int32(axis)), value: self, numSplit: Int64(count))
     }
 
     /// Splits a tensor into multiple tensors. The tensor is split  into `sizes.shape[0]` pieces. 
@@ -177,7 +177,7 @@ public extension Tensor {
         return expandingShape(at: 0)
     }
 
-    /// Remove the specified dimensions of size 1 from the shape of a tensor. If no dimensions are
+    /// Removes the specified dimensions of size 1 from the shape of a tensor. If no dimensions are
     /// specified, then all dimensions of size 1 will be removed.
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
@@ -185,7 +185,7 @@ public extension Tensor {
         return squeezingShape(at: axes)
     }
 
-    /// Remove the specified dimensions of size 1 from the shape of a tensor. If no dimensions are
+    /// Removes the specified dimensions of size 1 from the shape of a tensor. If no dimensions are
     /// specified, then all dimensions of size 1 will be removed.
     @inlinable
     @differentiable(wrt: self, vjp: _vjpSqueezingShape(at:) where Scalar: TensorFlowFloatingPoint)
@@ -196,19 +196,19 @@ public extension Tensor {
 
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
-    func _vjpUnstack(
+    func _vjpUnstacked(
         alongAxis axis: Int = 0
     ) -> ([Tensor], (Array<Tensor>.CotangentVector) -> Tensor) {
-        let result = unstack(alongAxis: axis)
+        let result = unstacked(alongAxis: axis)
         return (result, { v in Tensor(stacking: v.base, alongAxis: axis) })
     }
 
     @inlinable
     func _vjpSplit(
-        numSplits: Int,
+        count: Int,
         alongAxis axis: Int = 0
     ) -> ([Tensor], (Array<Tensor>.CotangentVector) -> Tensor) {
-        let result = split(numSplits: numSplits, alongAxis: axis)
+        let result = split(count: count, alongAxis: axis)
         return (result, { v in Tensor(concatenating: v.base, alongAxis: axis) })
     }
 
@@ -354,25 +354,25 @@ infix operator .=
 
 public extension Tensor {
     @inlinable
-    func broadcast(toShape shape: Tensor<Int32>) -> Tensor {
+    func broadcasted(toShape shape: Tensor<Int32>) -> Tensor {
         return Raw.broadcastTo(self, shape: shape)
     }
 
     @inlinable
-    func broadcast(to shape: TensorShape) -> Tensor {
-        return broadcast(toShape: Tensor<Int32>(shape.dimensions.map(Int32.init)))
+    func broadcasted(to shape: TensorShape) -> Tensor {
+        return broadcasted(toShape: Tensor<Int32>(shape.dimensions.map(Int32.init)))
     }
 
     /// Broadcast to the same shape as the specified `Tensor`.
     /// - Precondition: The specified shape must be compatible for broadcasting.
     @inlinable
-    func broadcast<OtherScalar>(like other: Tensor<OtherScalar>) -> Tensor {
-        return broadcast(toShape: other.shapeTensor)
+    func broadcasted<OtherScalar>(like other: Tensor<OtherScalar>) -> Tensor {
+        return broadcasted(toShape: other.shapeTensor)
     }
 
     @inlinable
     static func .= (lhs: inout Tensor, rhs: Tensor) {
-        lhs = rhs.broadcast(like: lhs)
+        lhs = rhs.broadcasted(like: lhs)
     }
 }
 

@@ -567,7 +567,7 @@ public func ceil<T: FloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
 internal func _vjpCeil<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>
 ) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
-    return (ceil(x), { _ in Tensor(0).broadcast(like: x) })
+    return (ceil(x), { _ in Tensor(0).broadcasted(like: x) })
 }
 
 /// Computes the floor of the specified tensor element-wise.
@@ -581,7 +581,7 @@ public func floor<T: FloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
 internal func _vjpFloor<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>
 ) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
-    return (floor(x), { _ in Tensor(0).broadcast(like: x) })
+    return (floor(x), { _ in Tensor(0).broadcasted(like: x) })
 }
 
 /// Computes the sigmoid of the specified tensor element-wise.
@@ -1059,7 +1059,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
       let indicators = Tensor(yUnsqueezed .== self)
       let selectedCount = indicators.sum(alongAxes: axes)
 
-      return gradientUnsqueezed.broadcast(toShape: self.shapeTensor) * indicators / selectedCount
+      return gradientUnsqueezed.broadcasted(toShape: self.shapeTensor) * indicators / selectedCount
     })
   }
 
@@ -1072,7 +1072,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
       // them.
       let indicators = Tensor(result .== self)
       let selectedCount = indicators.sum(alongAxes: axes)
-      return v.broadcast(toShape: self.shapeTensor) * indicators / selectedCount
+      return v.broadcasted(toShape: self.shapeTensor) * indicators / selectedCount
     })
   }
 }
@@ -1362,7 +1362,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     func _vjpSum(alongAxes axes: Tensor<Int32>) -> (Tensor, (Tensor) -> Tensor) {
         let value = sum(alongAxes: axes)
-        return (value, { [shape = shapeTensor] in $0.broadcast(toShape: shape) })
+        return (value, { [shape = shapeTensor] in $0.broadcasted(toShape: shape) })
     }
 
     @inlinable
@@ -1370,7 +1370,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
         let value = sum(squeezingAxes: axes)
         return (value, { [shape = shapeTensor] v in
 	      let unsqueezed = v.expandingShape(at: axes.scalars.map { Int($0) })
-	      return unsqueezed.broadcast(toShape: shape)
+	      return unsqueezed.broadcasted(toShape: shape)
 	    })
     }
 
@@ -1378,7 +1378,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     func _vjpMean(alongAxes axes: Tensor<Int32>) -> (Tensor, (Tensor) -> Tensor) {
         let value = mean(alongAxes: axes)
         let count = Raw.gather(params: shapeTensor, indices: axes).product()
-        return (value, { [shape = shapeTensor] in $0.broadcast(toShape: shape) / Tensor(count) })
+        return (value, { [shape = shapeTensor] in $0.broadcasted(toShape: shape) / Tensor(count) })
     }
 
     @inlinable
@@ -1387,7 +1387,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
         let count = Raw.gather(params: shapeTensor, indices: axes).product()
         return (value, { [shape = shapeTensor] v in
 	      let unsqueezed = v.expandingShape(at: axes.scalars.map { Int($0) })
-	      return unsqueezed.broadcast(toShape: shape) / Tensor(count)
+	      return unsqueezed.broadcasted(toShape: shape) / Tensor(count)
 	    })
     }
 }

@@ -557,7 +557,7 @@ public struct TransposedConv2D: Layer {
         self.activation = activation
         self.strides = strides
         self.padding = padding
-        self.paddingIndex = padding == .same ? 0: 1
+        self.paddingIndex = padding == .same ? 0 : 1
     }
 
     /// Returns the output obtained from applying the layer to the given input.

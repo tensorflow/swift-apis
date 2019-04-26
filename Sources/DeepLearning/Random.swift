@@ -536,7 +536,7 @@ public struct BetaDistribution: RandomDistribution {
         } while r + alpha * (log(alpha) - log(b + w)) < t
 
         w = min(w, Float.greatestFiniteMagnitude)
-        return a == alpha0 ? w / (b + w): b / (b + w)
+        return a == alpha0 ? w / (b + w) : b / (b + w)
     }
 
     /// Returns one sample from a Beta(alpha, beta) distribution using Cheng's BC

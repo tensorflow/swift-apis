@@ -424,7 +424,6 @@ final class BasicOperatorTests: XCTestCase {
     }
 
     func testSliceUpdate() {
-        guard !_RuntimeConfig.executionMode.isTPU else { return }
         var t1 = Tensor<Float>([[1, 2, 3], [4, 5, 6]])
         t1[0] = Tensor(zeros: [3])
         XCTAssertEqual(ShapedArray(shape:[2, 3], scalars: [0, 0, 0, 4, 5, 6]), t1.array)
@@ -444,7 +443,7 @@ final class BasicOperatorTests: XCTestCase {
         // 1 -> 2 x 3 x 4
         let one = Tensor<Float>(1)
         var target = Tensor<Float>(repeating: 0.0, shape: [2, 3, 4])
-        let broadcasted = one.broadcast(like: target)
+        let broadcasted = one.broadcasted(like: target)
         XCTAssertEqual(Tensor(repeating: 1, shape: [2, 3, 4]), broadcasted)
         target .= Tensor(repeating: 1, shape: [1, 3, 1])
         XCTAssertEqual(Tensor(repeating: 1, shape: [2, 3, 4]), target)

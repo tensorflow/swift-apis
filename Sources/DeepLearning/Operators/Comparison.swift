@@ -167,28 +167,28 @@ public extension Tensor where Scalar: Equatable {
     /// Computes `lhs != rhs` element-wise and returns a `Tensor` of Boolean scalars.
     /// - Note: `.==` supports broadcasting.
     @inlinable @inline(__always)
-    static func .==(lhs: Tensor, rhs: Tensor) -> Tensor<Bool> {
+    static func .== (lhs: Tensor, rhs: Tensor) -> Tensor<Bool> {
         return Raw.equal(lhs, rhs)
     }
 
     /// Computes `lhs != rhs` element-wise and returns a `Tensor` of Boolean scalars.
     /// - Note: `.!=` supports broadcasting.
     @inlinable @inline(__always)
-    static func .!=(lhs: Tensor, rhs: Tensor) -> Tensor<Bool> {
+    static func .!= (lhs: Tensor, rhs: Tensor) -> Tensor<Bool> {
         return Raw.notEqual(lhs, rhs)
     }
 
     /// Computes `lhs == rhs` element-wise and returns a `Tensor` of Boolean scalars.
     /// - Note: `.==` supports broadcasting.
     @inlinable @inline(__always)
-    static func .==(lhs: Scalar, rhs: Tensor) -> Tensor<Bool> {
+    static func .== (lhs: Scalar, rhs: Tensor) -> Tensor<Bool> {
         return Tensor(lhs) .== rhs
     }
 
     /// Computes `lhs != rhs` element-wise and returns a `Tensor` of Boolean scalars.
     /// - Note: `.!=` supports broadcasting.
     @inlinable @inline(__always)
-    static func .!=(lhs: Scalar, rhs: Tensor) -> Tensor<Bool> {
+    static func .!= (lhs: Scalar, rhs: Tensor) -> Tensor<Bool> {
         return Tensor(lhs) .!= rhs
     }
 
@@ -196,14 +196,14 @@ public extension Tensor where Scalar: Equatable {
     /// scalars.
     /// - Note: `.==` supports broadcasting.
     @inlinable @inline(__always)
-    static func .==(lhs: Tensor, rhs: Scalar) -> Tensor<Bool> {
+    static func .== (lhs: Tensor, rhs: Scalar) -> Tensor<Bool> {
         return lhs .== Tensor(rhs)
     }
 
     /// Computes `lhs != rhs` element-wise and returns a `Tensor` of Boolean scalars.
     /// - Note: `.!=` supports broadcasting.
     @inlinable @inline(__always)
-    static func .!=(lhs: Tensor, rhs: Scalar) -> Tensor<Bool> {
+    static func .!= (lhs: Tensor, rhs: Scalar) -> Tensor<Bool> {
         return lhs .!= Tensor(rhs)
     }
 }
@@ -223,10 +223,10 @@ public extension Tensor where Scalar: FloatingPoint & Equatable {
 }
 
 public extension StringTensor {
-  /// Computes `self == other` element-wise.
-  /// - Note: `elementsEqual` supports broadcasting.
-  @inlinable @inline(__always)
-  func elementsEqual(_ other: StringTensor) -> Tensor<Bool> {
-    return Raw.equal(self, other)
-  }
+    /// Computes `self == other` element-wise.
+    /// - Note: `elementsEqual` supports broadcasting.
+    @inlinable @inline(__always)
+    func elementsEqual(_ other: StringTensor) -> Tensor<Bool> {
+        return Raw.equal(self, other)
+    }
 }

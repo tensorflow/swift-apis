@@ -127,7 +127,7 @@ public extension Tensor {
     /// Tensor(stacking: [x, y, z], alongAxis: 1) // is [[1, 2, 3], [4, 5, 6]]
     /// ```
     ///
-    /// This is the opposite of `Tensor.unstack(alongAxis:)`.
+    /// This is the opposite of `Tensor.unstacked(alongAxis:)`.
     ///
     /// - Parameters:
     ///   - tensors: Tensors to stack.
@@ -199,7 +199,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     ) -> (Tensor, (Tensor) -> Array<Tensor>.DifferentiableView) {
         let result = Tensor(stacking: tensors, alongAxis: axis)
         return (result, { v in
-            Array<Tensor>.DifferentiableView(v.unstack(alongAxis: axis))
+            Array<Tensor>.DifferentiableView(v.unstacked(alongAxis: axis))
         })
     }
 

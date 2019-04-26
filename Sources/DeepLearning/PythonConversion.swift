@@ -89,8 +89,7 @@ extension ShapedArray: ConvertibleFromNumpyArray
     }
 }
 
-extension Tensor: ConvertibleFromNumpyArray
-    where Scalar: NumpyScalarCompatible {
+extension Tensor: ConvertibleFromNumpyArray where Scalar: NumpyScalarCompatible {
     /// Creates a tensor with the same shape and scalars as the specified
     /// `numpy.ndarray` instance.
     ///
