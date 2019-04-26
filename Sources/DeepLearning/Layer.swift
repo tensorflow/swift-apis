@@ -889,6 +889,18 @@ public struct MaxPool3D<Scalar: TensorFlowFloatingPoint>: Layer {
     }
 }
 
+public extension MaxPool3D {
+  /// Creates a MaxPool3D Layer with the specified poolsize and strides. The poolsize
+  /// and strides are square windows.
+  init(poolSize: Int, stride: Int, padding: Padding = .valid)
+  { let poolsize = poolSize
+    let stride = stride
+    self.init(
+      poolsize: (poolsize, poolsize, poolsize), strides: (stride, stride, stride), padding: padding
+    )
+  }
+}
+
 /// An average pooling layer for temporal data.
 @_fixed_layout
 public struct AvgPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
@@ -1013,6 +1025,18 @@ public struct AvgPool3D<Scalar: TensorFlowFloatingPoint>: Layer {
     public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input.averagePooled(kernelSize: poolSize, strides: strides, padding: padding)
     }
+}
+
+public extension AvgPool3D {
+  /// Creates a AvgPool3D Layer with the specified poolsize and strides. The poolsize
+  /// and strides are square windows.
+  init(poolSize: Int, stride: Int, padding: Padding = .valid)
+  { let poolsize = poolSize
+    let stride = stride
+    self.init(
+      poolsize: (poolsize, poolsize, poolsize), strides: (stride, stride, stride), padding: padding
+    )
+  }
 }
 
 
