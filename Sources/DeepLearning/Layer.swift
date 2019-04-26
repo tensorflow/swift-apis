@@ -1296,7 +1296,7 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNum
     public var b_h: Tensor<Scalar>
 
     @noDerivative public var stateShape: TensorShape {
-        return TensorShape([1, weight.shape[1]])
+        return TensorShape([1, W_h.shape[1]])
     }
 
     public var zeroState: Tensor<Scalar> {
