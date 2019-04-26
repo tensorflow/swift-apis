@@ -35,7 +35,7 @@ final class LayerTests: XCTestCase {
     }
 
     func testMaxPool2D() {
-        let layer = MaxPool2D<Float>(poolSize:(2, 2), strides:(1, 1), padding:.valid)
+        let layer = MaxPool2D<Float>(poolSize: (2, 2), strides: (1, 1), padding:.valid)
         let input = Tensor(shape: [1, 2, 2, 1], scalars: (0..<4).map(Float.init))
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>([[[[3]]]])
@@ -43,7 +43,7 @@ final class LayerTests: XCTestCase {
     }
 
     func testMaxPool3D() {
-        let layer = MaxPool3D<Float>(poolSize:(2 ,2, 2), strides:(1, 1, 1), padding:.valid)
+        let layer = MaxPool3D<Float>(poolSize: (2 ,2, 2), strides: (1, 1, 1), padding:.valid)
         let input = Tensor(shape: [1, 2, 2, 2, 1], scalars: (0..<8).map(Float.init))
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>([[[[[7]]]]])
@@ -59,7 +59,7 @@ final class LayerTests: XCTestCase {
     }
 
     func testAvgPool2D() {
-        let layer = AvgPool2D<Float>(poolSize:(2, 5), strides:(1, 1), padding:.valid)
+        let layer = AvgPool2D<Float>(poolSize: (2, 5), strides: (1, 1), padding:.valid)
         let input = Tensor(shape: [1, 2, 5, 1], scalars: (0..<10).map(Float.init))
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>([[[[4.5]]]])
