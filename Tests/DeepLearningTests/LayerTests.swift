@@ -182,7 +182,11 @@ final class LayerTests: XCTestCase {
     static var allTests = [
         ("testConv1D", testConv1D),
         ("testMaxPool1D", testMaxPool1D),
+        ("testMaxPool2D", testMaxPool2D),
+        ("testMaxPool3D", testMaxPool3D),
         ("testAvgPool1D", testAvgPool1D),
+        ("testAvgPool2D", testAvgPool2D),
+        ("testAvgPool3D", testAvgPool3D),
         ("testGlobalAvgPool1D", testGlobalAvgPool1D),
         ("testGlobalAvgPool2D", testGlobalAvgPool2D),
         ("testGlobalAvgPool3D", testGlobalAvgPool3D),
