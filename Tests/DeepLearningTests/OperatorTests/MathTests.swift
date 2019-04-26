@@ -88,7 +88,8 @@ final class MathOperatorTests: XCTestCase {
         let y = tanh(x)
         let array = y.array
         XCTAssertEqual([2], array.shape)
-        XCTAssertEqual([0.833655, 0.833655], array.scalars, accuracy: 0.0001)
+        XCTAssertEqual(0.833655, Double(array.scalars[0]))
+        XCTAssertEqual(0.833655, Double(array.scalars[1]))
     }
 
     func testStandardDeviation() {
@@ -101,10 +102,9 @@ final class MathOperatorTests: XCTestCase {
             accuracy: 0.001)
         let matrix = Tensor<Float>(rangeFrom: 0, to: 10, stride: 1).reshaped(to: [2, 5])
         XCTAssertEqual(2.87228132, matrix.standardDeviation().scalarized(), accuracy: 0.001)
-        XCTAssertEqual(
-            [1.4142, 1.4142],
-            matrix.standardDeviation(alongAxes: 1).array.scalars,
-            accuracy: 0.001)
+        let values = matrix.standardDeviation(alongAxes: 1).array.scalars
+        XCTAssertEqual(1.4142, Double(values[0]), accuracy: 0.0001)
+        XCTAssertEqual(1.4142, Double(values[1]), accuracy: 0.0001)
     }
 
     func test3Adds() {
@@ -129,9 +129,12 @@ final class MathOperatorTests: XCTestCase {
         XCTAssertEqual([2], array1.shape)
         XCTAssertEqual([2], array2.shape)
         XCTAssertEqual([2], array3.shape)
-        XCTAssertEqual([3.6, 3.6], array1.scalars, accuracy: 0.001)
-        XCTAssertEqual([12.96, 12.96], array2.scalars, accuracy: 0.001)
-        XCTAssertEqual([3.6, 3.6], array3.scalars, accuracy: 0.001)
+        XCTAssertEqual(3.6, Double(array1.scalars[0]), accuracy: 0.0001)
+        XCTAssertEqual(3.6, Double(array1.scalars[1]), accuracy: 0.0001)
+        XCTAssertEqual(12.96, Double(array2.scalars[0]), accuracy: 0.0001)
+        XCTAssertEqual(12.96, Double(array2.scalars[1]), accuracy: 0.0001)
+        XCTAssertEqual(3.6, Double(array3.scalars[0]), accuracy: 0.0001)
+        XCTAssertEqual(3.6, Double(array3.scalars[1]), accuracy: 0.0001)
     }
 
     func testXWPlusB() {
@@ -193,7 +196,7 @@ final class MathOperatorTests: XCTestCase {
         let input = Tensor<Float>([[1, 0.5]])
         let classifier = MLPClassifier()
         let prediction = classifier.prediction(for: input)
-        XCTAssertEqual([0.816997], prediction.scalars, accuracy: 0.001)
+        XCTAssertEqual(0.816997, Double(prediction.scalars[0]), accuracy: 0.0001)
     }
 
     static var allTests = [

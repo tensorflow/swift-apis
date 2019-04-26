@@ -14,10 +14,8 @@
 
 import TensorFlowCore
 
-// #if COMPILING_TENSORFLOW_MODULE
 infix operator .>: ComparisonPrecedence
 infix operator .==: ComparisonPrecedence
-// #endif
 
 // TODO:
 // - Consider explicit broadcasting for elementwise binary ops when
@@ -542,6 +540,20 @@ internal func _vjpExp<T: TensorFlowFloatingPoint>(
 ) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
     let value = exp(x)
     return (value, { v in value * v })
+}
+
+/// Returns the values of the specified tensor rounded to the nearest integer, element-wise.
+@inlinable
+@differentiable(vjp: _vjpRound)
+public func round<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+  return Raw.round(x)
+}
+
+@inlinable
+internal func _vjpRound<T: TensorFlowFloatingPoint>(
+  _ x: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+  return (round(x), { v in Tensor<T>(zerosLike: v) })
 }
 
 /// Computes the ceiling of the specified tensor element-wise.
@@ -1076,7 +1088,7 @@ public extension Tensor where Scalar: Numeric {
     @inlinable
     @differentiable(wrt: self, vjp: _vjpSum(squeezingAxes:) where Scalar: TensorFlowFloatingPoint)
     func sum(squeezingAxes axes: Tensor<Int32>) -> Tensor {
-        return Raw.sum(self, reductionIndices: Tensor<Int32>(axes), keepDims: false)
+        return Raw.sum(self, reductionIndices: axes, keepDims: false)
     }
 
     /// Returns the sum along the specified axes. The reduced dimensions are removed.
@@ -1304,8 +1316,8 @@ public extension Tensor where Scalar: Numeric {
         return variance(squeezingAxes: axes)
     }
 
-    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func variance() -> Tensor {
         let mean = self.mean()
         let squaredDiff = (self - mean).squared()
@@ -1482,7 +1494,7 @@ public func matmul<Scalar: Numeric>(
 }
 
 @inlinable
-internal  func _vjpMatmul<Scalar: TensorFlowFloatingPoint>(
+internal func _vjpMatmul<Scalar: TensorFlowFloatingPoint>(
     _ lhs: Tensor<Scalar>,
     _ rhs: Tensor<Scalar>
 ) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {

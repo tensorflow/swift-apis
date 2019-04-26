@@ -378,11 +378,11 @@ public extension Tensor {
 
 public extension Tensor where Scalar: Numeric {
     @inlinable
-    func unbroadcast(toShape otherShape: Tensor<Int32>) -> Tensor<Scalar> {
-        let rankDiff = (rankTensor - otherShape.scalarCountTensor).rankLifted()
-        let ones = Raw.fill(dims: rankDiff, value: Tensor<Int32>(1))
+    func unbroadcast(toShape otherShape: Tensor<Int32>) -> Tensor {
+        let rankDiff: Tensor<Int32> = (rankTensor - otherShape.scalarCountTensor).rankLifted()
+        let ones: Tensor<Int32> = Raw.fill(dims: rankDiff, value: Tensor<Int32>(1))
         let paddedShape = Tensor<Int32>(concatenating: [ones, otherShape], alongAxis: 0)
-        let broadcastIndices = Tensor<Int32>(Raw.where_(paddedShape .!= shapeTensor).flattened())
+        let broadcastIndices = Tensor<Int32>(Raw.where_(paddedShape .!= shapeTensor))
         return sum(squeezingAxes: broadcastIndices).reshaped(toShape: otherShape)
     }
 

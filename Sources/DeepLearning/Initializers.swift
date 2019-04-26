@@ -33,8 +33,7 @@ public extension Tensor {
     ///   - repeatedValue: The scalar value to repeat.
     ///   - shape: The dimensions of the tensor.
     @inlinable @inline(__always)
-    @differentiable(
-        vjp: _vjpInit(repeating:shape:) where Scalar: TensorFlowFloatingPoint)
+    @differentiable(vjp: _vjpInit(repeating:shape:) where Scalar: TensorFlowFloatingPoint)
     init(repeating repeatedValue: Scalar, shape: TensorShape) {
         self = Raw.fill(
             dims: Tensor<Int32>(shape.dimensions.map(Int32.init)),
@@ -241,6 +240,24 @@ public extension Tensor where Scalar: Numeric {
         self.init(repeating: 1, shape: shape)
     }
 
+    /// Creates a tensor with all scalars set to zero that has the same shape and type as the provided
+    /// tensor.
+    ///
+    /// - Parameter other: Tensor whose shape and data type to use.
+    @inlinable @inline(__always)
+    init(zerosLike other: Tensor) {
+        self = Raw.zerosLike(other)
+    }
+
+    /// Creates a tensor with all scalars set to one that has the same shape and type as the provided
+    /// tensor.
+    ///
+    /// - Parameter other: Tensor whose shape and data type to use.
+    @inlinable @inline(__always)
+    init(onesLike other: Tensor) {
+        self = Raw.onesLike(other)
+    }
+
     /// Creates a 1-D tensor representing a sequence from a starting value to, but not including, 
     /// an end value, stepping by the specified amount.
     ///
@@ -254,6 +271,20 @@ public extension Tensor where Scalar: Numeric {
     @inlinable @inline(__always)
     init(rangeFrom start: Scalar, to end: Scalar, stride: Scalar) {
         self = Raw.range(start: Tensor(start), limit: Tensor(end), delta: Tensor(stride))
+    }
+
+    /// Creates a 1-D tensor representing a sequence from a starting value to, but not including, an
+    /// end value, stepping by the specified amount.
+    ///
+    /// - Parameters:
+    ///   - start: The starting value to use for the sequence. If the sequence contains any values,
+    ///     the first one is `start`.
+    ///   - end: An end value to limit the sequence. `end` is never an element of the resulting
+    ///     sequence.
+    ///   - stride: The amount to step by with each iteration. `stride` must be positive.
+    @inlinable @inline(__always)
+    init(rangeFrom start: Tensor<Scalar>, to end: Tensor<Scalar>, stride: Tensor<Scalar>) {
+        self = Raw.range(start: start, limit: end, delta: stride)
     }
 
     /// Creates a one-hot tensor at given indices. The locations represented by

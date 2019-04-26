@@ -51,9 +51,15 @@ final class TensorTests: XCTestCase {
         XCTAssertEqual([3, 4, 5], tensor.shape)
     }
 
+    func testTensorShapeDescription() {
+        XCTAssertEqual("[2, 2]", Tensor<Int32>(ones: [2, 2]).shape.description)
+        XCTAssertEqual("[]", Tensor(1).shape.description)
+    }
+
     static var allTests = [
         ("testSimpleCond", testSimpleCond),
         ("testRankGetter", testRankGetter),
-        ("testShapeGetter", testShapeGetter)
+        ("testShapeGetter", testShapeGetter),
+        ("testTensorShapeDescription", testTensorShapeDescription)
     ]
 }
