@@ -113,7 +113,7 @@ final class LayerTests: XCTestCase {
         let weight = Tensor<Float>(ones: [7, 5]) * Tensor<Float>([0.3333, 1, 0.3333, 1, 0.3333])
         let bias = Tensor<Float>(ones: [5])
         var cell = SimpleRNNCell<Float>(inputSize: 2, hiddenSize: 5)
-        cell.W_h = weigth
+        cell.W_h = weight
         cell.b_h = bias
         let state = Tensor<Float>(ones: [1, 5]) * Tensor<Float>([1, 0.2, 0.5, 2, 0.6])
         let input = Tensor<Float>(ones: [1, 2]) * Tensor<Float>([0.3, 0.7])
