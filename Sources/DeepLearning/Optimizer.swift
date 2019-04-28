@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import TensorFlowCore
-
 /// A machine learning optimizer.
 ///
 /// Optimizers apply an optimization algorithm to update the differentiable variables of a machine

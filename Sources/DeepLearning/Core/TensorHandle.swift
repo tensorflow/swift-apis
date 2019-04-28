@@ -12,17 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// Returns a tensor with the same shape and scalars as the specified tensor.
-@inlinable
-@differentiable
-public func identity<Scalar>(_ x: Tensor<Scalar>) -> Tensor<Scalar> {
-    return x
-}
-
-// `pow` is defined in Darwin/Glibc on `Float` and `Double`, but there doesn't exist a generic
-// version for `FloatingPoint`.
-// This is a manual definition.
-@inlinable
-func pow<T: BinaryFloatingPoint>(_ x: T, _ y: T) -> T {
-    return T(pow(Double(x), Double(y)))
+internal extension TensorHandle {
+    /// Create a `ShapedArray` with contents of the underlying `TensorHandle`. If
+    /// the `TensorHandle` is on the accelerator, it will be copied to the host.
+    /// - Returns: A `ShapedArray`.
+    @usableFromInline
+    @inline(never)
+    func makeHostCopy() -> ShapedArray<Scalar> {
+        internalConsistencyCheck(isConcrete)
+        debugLog("Calling makeHostCopy() with c handle \(_cTensorHandle)")
+        return ShapedArray(cTensorHandle: _cTensorHandle)
+    }
 }

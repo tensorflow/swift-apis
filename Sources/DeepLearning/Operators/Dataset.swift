@@ -21,29 +21,26 @@ import TensorFlowCore
 
 /// Returns the local seeds an operation should use given an op-specific seed.
 ///
-/// Given operation-specific seed, `seed`, this helper function returns two
-/// seeds derived from graph-level and op-level seeds. Many random operations
-/// internally use the two seeds to allow user to change the seed globally for a
-/// graph, or for only specific operations.
+/// Given operation-specific seed, `seed`, this helper function returns two seeds derived from 
+/// graph-level and op-level seeds. Many random operations internally use the two seeds to allow 
+/// user to change the seed globally for a graph, or for only specific operations.
 ///
 /// - Note: See TensorFlow's `python.framework.random_seed.get_seed`.
 ///
-// TODO: There's no support for TF's "global seed" yet, so we always use the
-// default graph seed as the first seed. Need to investigate the best way to
-// model TF's "global seed".
+// TODO: There's no support for TF's "global seed" yet, so we always use the default graph seed as 
+// the first seed. Need to investigate the best way to model TF's "global seed".
 @usableFromInline @inline(__always)
 func _tensorSeeds(_ seed: Tensor<Int64>) -> (Tensor<Int64>, Tensor<Int64>) {
     return (Tensor(_defaultGraphSeed), seed)
 }
 
-//===----------------------------------------------------------------------===//
-// Single value dataset
-//===----------------------------------------------------------------------===//
+//===------------------------------------------------------------------------------------------===//
+// Single Value Dataset
+//===------------------------------------------------------------------------------------------===//
 
 /// Represents a potentially large set of elements.
 ///
-/// A `Dataset` can be used to represent an input pipeline as a collection of
-/// element tensors.
+/// A `Dataset` can be used to represent an input pipeline as a collection of element tensors.
 @_fixed_layout
 public struct Dataset<Element: TensorGroup> {
     public let _handle: VariantHandle
@@ -92,8 +89,8 @@ extension Dataset: Sequence {
 }
 
 public extension Dataset {
-    // Note that this Dataset API implementation uses an experimental tracing
-    // feature, which is not robust and does not have great diagnostics yet.
+    // Note that this Dataset API implementation uses an experimental tracing feature, which is not 
+    // robust and does not have great diagnostics yet.
     @inlinable @inline(__always)
     func map<ResultElement: TensorGroup>(
         _ transform: (Element) -> ResultElement
@@ -179,8 +176,7 @@ public struct DatasetIterator<Element: TensorGroup> {
 }
 
 extension DatasetIterator: IteratorProtocol {
-    /// Advances to the next element and returns it, or `nil` if no next element
-    /// exists.
+    /// Advances to the next element and returns it, or `nil` if no next element exists.
     @inlinable @inline(__always)
     public mutating func next() -> Element? {
         let optional = Raw.iteratorGetNextAsOptional(
@@ -196,8 +192,8 @@ extension DatasetIterator: IteratorProtocol {
     }
 }
 
-/// A 2-tuple-like struct that conforms to TensorGroup that represents a tuple 
-/// of 2 types conforming to TensorGroup.
+/// A 2-tuple-like struct that conforms to TensorGroup that represents a tuple of 2 types conforming 
+/// to `TensorGroup`.
 @_fixed_layout
 public struct Zip2TensorGroup<T: TensorGroup, U: TensorGroup>: TensorGroup {
     public var first: T

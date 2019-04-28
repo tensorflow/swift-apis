@@ -1,0 +1,645 @@
+// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import TensorFlowCore
+
+infix operator .==: ComparisonPrecedence
+infix operator .!=: ComparisonPrecedence
+
+/// `Tensor` is a multi-dimensional array used for computation. It is a wrapper around a 
+/// `TensorHandle`.
+@_fixed_layout
+public struct Tensor<Scalar: TensorFlowScalar>: TensorProtocol {
+    /// The underlying `TensorHandle`.
+    /// - Note: `handle` is public to allow user defined ops, but should not normally be used.
+    public let handle: TensorHandle<Scalar>
+
+    @inlinable
+    public init(handle: TensorHandle<Scalar>) {
+        self.handle = handle
+    }
+}
+
+extension Tensor: AnyTensor {
+    public var _rawTensorHandle: CTensorHandle { return handle._cTensorHandle }
+    public var _tensorFlowDataType: TensorDataType { return Scalar.tensorFlowDataType }
+}
+
+//===------------------------------------------------------------------------------------------===//
+// Tensor Properties
+//===------------------------------------------------------------------------------------------===//
+
+public extension Tensor {
+    /// The number of dimensions of the `Tensor`.
+    @inlinable
+    var rank: Int {
+        @inline(__always)
+        @_semantics("autodiff.nonvarying")
+        get {
+            return Int(_TFGetScalarOrDie(rankTensor.handle))
+        }
+    }
+
+    /// The dimensions of the `Tensor`.
+    @inlinable
+    var shape: TensorShape {
+        @inline(__always)
+        @_semantics("autodiff.nonvarying")
+        get {
+            return TensorShape(shapeTensor.scalars.map(Int.init))
+        }
+    }
+
+    /// The number of scalars in the `Tensor`.
+    @inlinable
+    var scalarCount: Int {
+        @inline(__always)
+        get {
+            return Int(_TFGetScalarOrDie(scalarCountTensor.handle))
+        }
+    }
+
+    /// The rank of the tensor, represented as a `Tensor<Int32>`.
+    @inlinable
+    var rankTensor: Tensor<Int32> {
+        @_semantics("autodiff.nonvarying")
+        get {
+            return Raw.rank(self)
+        }
+    }
+
+    /// The dimensions of the tensor, represented as a `Tensor<Int32>`.
+    @inlinable
+    var shapeTensor: Tensor<Int32> {
+        @_semantics("autodiff.nonvarying")
+        get {
+            return Raw.shape(self)
+        }
+    }
+
+    /// The number of scalars in the tensor, represented as a `Tensor<Int32>`.
+    @inlinable
+    var scalarCountTensor: Tensor<Int32> {
+        @_semantics("autodiff.nonvarying")
+        get {
+            return Raw.size(self)
+        }
+    }
+}
+
+//===------------------------------------------------------------------------------------------===//
+// Scalar Conversion
+//===------------------------------------------------------------------------------------------===//
+
+public extension Tensor {
+    /// Returns `true` if `rank` is equal to 0 and `false` otherwise.
+    @inlinable
+    var isScalar: Bool {
+        @inline(__always)
+        get {
+            return rank == 0
+        }
+    }
+
+    /// Returns the single scalar element if `rank` is equal to 0 and `nil`
+    /// otherwise.
+    @inlinable
+    var scalar: Scalar? {
+        @inline(__always)
+        get {
+            return Scalar(self)
+        }
+    }
+
+    /// Reshape to scalar.
+    /// - Precondition: The tensor has exactly one scalar.
+    @inlinable
+    @differentiable(wrt: self, vjp: _vjpScalarized where Scalar: TensorFlowFloatingPoint)
+    func scalarized() -> Scalar {
+        return _TFGetScalarOrDie(reshaped(to: []).handle)
+    }
+}
+
+internal extension Tensor where Scalar: TensorFlowFloatingPoint {
+    @inlinable
+    func _vjpScalarized() -> (Scalar, (Scalar) -> Tensor) {
+        return (scalarized(), { v in Tensor(v) })
+    }
+}
+
+public extension TensorFlowScalar {
+    @inlinable @inline(__always)
+    init?(_ tensor: Tensor<Self>) {
+        guard let scalar = _TFGetScalar(tensor.handle) else {
+            return nil
+        }
+        self = scalar
+    }
+}
+
+//===------------------------------------------------------------------------------------------===//
+// Array Conversion
+//===------------------------------------------------------------------------------------------===//
+
+public extension Tensor {
+    @inlinable
+    var array: ShapedArray<Scalar> {
+        @inline(__always)
+        get {
+            debugLog("Returning a host copy of array.")
+            internalConsistencyCheck(toHost().handle.isConcrete)
+
+            // This is considered to be a well known way to produce a copy to the host, so an 
+            // "implicit copy to host" warning should not be produced.
+            return toHost().handle.makeHostCopy()
+        }
+    }
+
+    @inlinable
+    var scalars: [Scalar] {
+        return array.scalars
+    }
+}
+
+//===------------------------------------------------------------------------------------------===//
+// Memory Transfer Markers
+//===------------------------------------------------------------------------------------------===//
+
+public extension Tensor {
+    /// Mark memory transfer to accelerator.
+    /// - Parameters:
+    ///   - shape: When sending the tensor to a TF XLA device (including TPU), must specify the 
+    ///     tensor shape as required by XLA compilation.
+    @inlinable @inline(__always)
+    func toAccelerator(shape: TensorShape) -> Tensor {
+        let tensor = toAccelerator()
+        // If the tensor is to be sent from host to TPU, the shape is specified on TF CPU first, 
+        // before TF CPU sends the tensor to TPU.
+        let ret: TensorHandle<Scalar> = #tfop(
+            "Identity",
+            tensor,
+            T$dtype: Scalar.tensorFlowDataType,
+            __shapes: [shape],
+            __device: "/job:localhost/replica:0/task:0/device:CPU:0")
+        return Tensor(handle: ret)
+    }
+
+    /// Mark memory transfer to accelerator.
+    @inlinable @inline(__always)
+    func toAccelerator() -> Tensor {
+        return Tensor(handle: _TFToAccelerator(handle))
+    }
+
+    /// Mark memory transfer to host.
+    /// - Parameters:
+    ///   - shape: When sending the tensor to a TF XLA device (including TPU), must specify the 
+    ///     tensor shape as required by XLA compilation.
+    @inlinable @inline(__always)
+    func toHost(shape: TensorShape) -> Tensor {
+        // If the `self` tensor resides on TPU, the shape is specified on that device first, before 
+        // outfeeding the tensor to CPU, a required step for sending the tensor to the host.
+        let tensor: TensorHandle<Scalar> = #tfop(
+            "Identity", self, T$dtype: Scalar.tensorFlowDataType, __shapes: [shape])
+        return Tensor(handle: tensor).toHost()
+    }
+
+    /// Mark memory transfer to host.
+    @inlinable @inline(__always)
+    func toHost() -> Tensor {
+        return Tensor(handle: _TFToHost(handle))
+    }
+}
+
+//===------------------------------------------------------------------------------------------===//
+// Initialization
+//===------------------------------------------------------------------------------------------===//
+
+public extension Tensor {
+    /// Creates a tensor from a scalar value.
+    @inlinable @inline(__always)
+    @differentiable(vjp: _vjpScalarInit where Scalar: TensorFlowFloatingPoint)
+    init(_ value: Scalar) {
+        self.init(handle: _TFTensorFromScalar(value))
+    }
+}
+
+internal extension Tensor where Scalar: TensorFlowFloatingPoint {
+    @inlinable
+    static func _vjpScalarInit(_ value: Scalar) -> (Tensor, (Tensor) -> Scalar) {
+        return (Tensor(value), { $0.scalarized() })
+    }
+}
+
+public extension Tensor {
+    /// Creates a 1D tensor from contiguous scalars.
+    ///
+    /// - Parameters:
+    ///   - vector: The scalar contents of the tensor.
+    @inlinable @inline(__always)
+    init(_ vector: [Scalar]) {
+        self.init(handle: _TFTensorFromScalars1D(vector))
+    }
+
+    /// Creates a 1D tensor from contiguous scalars.
+    ///
+    /// - Parameters:
+    ///   - vector: The scalar contents of the tensor.
+    @inlinable @inline(__always)
+    init<C: RandomAccessCollection>(_ vector: C) where C.Element == Scalar {
+        let handle = _TFHoistable {
+        TensorHandle<Scalar>(
+            shape: [vector.count],
+            scalarsInitializer: { addr in
+                var currentAddr = addr
+                for scalar in vector {
+                    currentAddr.initialize(to: scalar)
+                    currentAddr = currentAddr.advanced(by: 1)
+                }
+            })
+        }
+        self.init(handle: handle)
+    }
+
+    /// Creates a tensor with the specified shape and contiguous scalars in row-major order.
+    ///
+    /// - Parameters:
+    ///   - shape: The shape of the tensor.
+    ///   - scalars: The scalar contents of the tensor.
+    /// - Precondition: The number of scalars must equal the product of the dimensions of the shape.
+    @inlinable @inline(__always)
+    init(shape: TensorShape, scalars: [Scalar]) {
+        // NOTE: We use `_TFTensorFromScalars` here so the compiler can try to promote constants and
+        // avoid copies.
+        self.init(handle: _TFTensorFromScalars(scalars, shape: shape.dimensions))
+    }
+
+    /// Creates a tensor with the specified shape and contiguous scalars in row-major order.
+    ///
+    /// - Parameters:
+    ///   - shape: The shape of the tensor.
+    ///   - scalars: The scalar contents of the tensor.
+    /// - Precondition: The number of scalars must equal the product of the
+    ///   dimensions of the shape.
+    @inlinable @inline(__always)
+    init(shape: TensorShape, scalars: UnsafeBufferPointer<Scalar>) {
+        let handle: TensorHandle<Scalar> = _TFHoistable {
+            precondition(scalars.count == shape.contiguousSize)
+            return TensorHandle<Scalar>(
+                shape: shape.dimensions,
+                scalarsInitializer: { address in
+                    address.initialize(from: scalars.baseAddress!, count: shape.contiguousSize)
+                })
+        }
+        self.init(handle: handle)
+    }
+
+    /// Creates a tensor with the specified shape and contiguous scalars in row-major order.
+    ///
+    /// - Parameters:
+    ///   - shape: The shape of the tensor.
+    ///   - scalars: The scalar contents of the tensor.
+    /// - Precondition: The number of scalars must equal the product of the
+    ///   dimensions of the shape.
+    @inlinable @inline(__always)
+    init<C: RandomAccessCollection>(shape: TensorShape, scalars: C) where C.Element == Scalar {
+        let handle: TensorHandle<Scalar> = _TFHoistable {
+            precondition(scalars.count == shape.contiguousSize)
+            return TensorHandle<Scalar>(
+                shape: shape.dimensions,
+                scalarsInitializer: { addr in
+                    var currentAddr = addr
+                    for scalar in scalars {
+                        currentAddr.initialize(to: scalar)
+                        currentAddr = currentAddr.advanced(by: 1)
+                    }
+                })
+        }
+        self.init(handle: handle)
+    }
+}
+
+// Background story on `TensorElementLiteral` and why it's necessary:
+//
+// Very importantly, we want users to be able to implicitly convert an array
+// literal to a tensor. At first glance, a straightfoward implementation would
+// be conforming `Tensor` to `ExpressibleByArrayLiteral` with
+// `ExpressibleBy(Float|Int|Bool)Literal` as a base case. However, it is not
+// that simple. We have binary operators that take `(Tensor, Scalar)`, `(Scalar,
+// Tensor)` as well as `(Tensor, Tensor)`. When `Tensor`s are convertible from
+// both a scalar and an array literal, a scalar-tensor binary operator like `+`
+// will not type check.
+//
+// One way to work around it is to define all tensor-tensor operators in a
+// protocol extension, and all tensor-scalar and scalar-tensor operators on
+// concrete `Tensor`. Protocol extensions are less favorable than concrete
+// implementations, so the compiler will prefer the concrete implementation for
+// a scalar-tensor operation. However, this would cause enormous code bloat and
+// is entirely a hack.
+//
+// To resolve ambiguity, `Tensor` should not be expressible by scalar literal.
+// There's already a lightweight syntax for converting a scalar to a tensor:
+// `Tensor(x)`, so there is no strong need for implicit conversion. But we need
+// to find a way to give `ExpressibleByArrayLiteral` a base case: what would the
+// `ArrayLiteralElement` be if we want to support both `[1,2,3]` and `[[[1,2],
+// [1,2]]]`? In the first case the array literal element is an interger, while
+// in the second case the array literal itself should be a tensor. Based on this
+// observation, we come up with an intermediate type: `TensorElementLiteral` as
+// the `ArrayLiteralElement` of `Tensor`. By making `TensorElementLiteral`
+// expressible by both array literal and scalar literal, `Tensor` can now be
+// converted from an arbitrary-dimensional array literal.
+//
+// Due to protocol requirements, `TensorElementLiteral` has to be
+// public. It is never supposed to be used directly by any user, so the library
+// convention is to prepend an underscore to its name, making it
+// `_TensorElementLiteral`.
+//
+// It would be nice to be able to remove this type when we can systematically
+// resolve tensor-scalar/scalar-tensor op ambiguity someday, either through an
+// improved `Expressible` model, or by introducing an attribute to tell the type
+// checker which function to prefer when ambiguity occurs.
+
+/// Represents a literal element for conversion to a `Tensor`.
+///
+/// - Note: Do not ever use this API directly. This is implicitly created
+///   during the conversion from an array literal to a `Tensor`, and is purely
+///   for implementation purposes.
+@_fixed_layout
+public struct _TensorElementLiteral<Scalar>: TensorProtocol where Scalar: TensorFlowScalar {
+    @usableFromInline let tensor: Tensor<Scalar>
+
+    @inlinable
+    public var handle: TensorHandle<Scalar> {
+        return tensor.handle
+    }
+
+    @inlinable
+    public init(handle: TensorHandle<Scalar>) {
+        tensor = Tensor(handle: handle)
+    }
+}
+
+extension _TensorElementLiteral: ExpressibleByBooleanLiteral
+    where Scalar: ExpressibleByBooleanLiteral {
+    public typealias BooleanLiteralType = Scalar.BooleanLiteralType
+    @inlinable @inline(__always)
+    public init(booleanLiteral: BooleanLiteralType) {
+        tensor = Tensor(Scalar(booleanLiteral: booleanLiteral))
+    }
+}
+
+extension _TensorElementLiteral: ExpressibleByIntegerLiteral
+    where Scalar: ExpressibleByIntegerLiteral {
+    public typealias IntegerLiteralType = Scalar.IntegerLiteralType
+    @inlinable @inline(__always)
+    public init(integerLiteral: IntegerLiteralType) {
+        tensor = Tensor(Scalar(integerLiteral: integerLiteral))
+    }
+}
+
+extension _TensorElementLiteral: ExpressibleByFloatLiteral
+    where Scalar: ExpressibleByFloatLiteral {
+    public typealias FloatLiteralType = Scalar.FloatLiteralType
+    @inlinable @inline(__always)
+    public init(floatLiteral: FloatLiteralType) {
+        tensor = Tensor(Scalar(floatLiteral: floatLiteral))
+    }
+}
+
+extension _TensorElementLiteral: ExpressibleByArrayLiteral {
+    public typealias ArrayLiteralElement = _TensorElementLiteral<Scalar>
+    @inlinable @inline(__always)
+    public init(arrayLiteral elements: _TensorElementLiteral<Scalar>...) {
+        // FIXME: We cannot use Raw.pack here because _TensorElementLiteral does not
+        // conform to tensor group and if we do, several partitioning tests fail.
+        self.init(handle: #tfop("Pack", elements, T$dtype: Scalar.tensorFlowDataType))
+    }
+}
+
+extension Tensor: ExpressibleByArrayLiteral {
+    /// The type of the elements of an array literal.
+    public typealias ArrayLiteralElement = _TensorElementLiteral<Scalar>
+
+    /// Creates a tensor initialized with the given elements.
+    /// - Note: This is for conversion from tensor element literals. This is a
+    /// separate method because `ShapedArray` initializers need to call it.
+    @inlinable @inline(__always)
+    internal init(_tensorElementLiterals elements: [_TensorElementLiteral<Scalar>]) {
+        // FIXME: We cannot use Raw.pack here because _TensorElementLiteral does not
+        // conform to tensor group and if we do, several partitioning tests fail.
+        self.init(handle: #tfop("Pack", elements, T$dtype: Scalar.tensorFlowDataType))
+    }
+
+    /// Creates a tensor initialized with the given elements.
+    @inlinable @inline(__always)
+    public init(arrayLiteral elements: _TensorElementLiteral<Scalar>...) {
+        self.init(_tensorElementLiterals: elements)
+    }
+}
+
+//===------------------------------------------------------------------------------------------===//
+// Equatable
+//===------------------------------------------------------------------------------------------===//
+
+extension Tensor: Equatable where Scalar: Equatable {
+    @inlinable
+    public static func == (lhs: Tensor, rhs: Tensor) -> Bool {
+        // TODO: This is not correct due to broadcasting.
+        return (lhs .== rhs).all()
+    }
+
+    @inlinable
+    public static func != (lhs: Tensor, rhs: Tensor) -> Bool {
+        // TODO: This is not correct due to broadcasting.
+        return (lhs .!= rhs).any()
+    }
+}
+
+//===------------------------------------------------------------------------------------------===//
+// Description and Visualization
+//===------------------------------------------------------------------------------------------===//
+
+// String conversion.
+extension Tensor: CustomStringConvertible {
+    /// A textual representation of the tensor.
+    ///
+    /// - Note: use `fullDescription` for a non-pretty-printed description showing all scalars.
+    public var description: String {
+        @_semantics("autodiff.nonvarying")
+        get {
+            return array.description
+        }
+    }
+}
+
+public extension Tensor {
+    /// A textual representation of the tensor. Returns a summarized description if `summarize` is
+    /// true and the element count exceeds twice the `edgeElementCount`.
+    ///
+    /// - Parameters:
+    ///   - lineWidth: The max line width for printing. Used to determine number of scalars to print
+    ///     per line.
+    ///   - edgeElementCount: The maximum number of elements to print before and after summarization
+    ///     via ellipses (`...`).
+    ///   - summarizing: If true, summarize description if element count exceeds twice
+    ///     `edgeElementCount`.
+    func description(
+        lineWidth: Int = 80,
+        edgeElementCount: Int = 3,
+        summarizing: Bool = false
+    ) -> String {
+        return array.description(
+            lineWidth: lineWidth,
+            edgeElementCount: edgeElementCount,
+            summarizing: summarizing)
+    }
+
+    /// A full, non-pretty-printed textual representation of the tensor, showing
+    /// all scalars.
+    var fullDescription: String {
+        @_semantics("autodiff.nonvarying")
+        get {
+            return array.fullDescription
+        }
+    }
+}
+
+// Xcode Playground display conversion.
+extension Tensor: CustomPlaygroundDisplayConvertible {
+    public var playgroundDescription: Any {
+        @_semantics("autodiff.nonvarying")
+        get {
+            return description
+        }
+    }
+}
+
+// Mirror representation, used by debugger/REPL.
+extension Tensor: CustomReflectable {
+    public var customMirror: Mirror {
+        @_semantics("autodiff.nonvarying")
+        get {
+            return Mirror(self, children: [], displayStyle: .struct)
+        }
+    }
+}
+
+//===------------------------------------------------------------------------------------------===//
+// Codable Conformance
+//===------------------------------------------------------------------------------------------===//
+
+extension Tensor: Codable where Scalar: Codable {
+    @inlinable
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(array)
+    }
+
+    @inlinable
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let array = try container.decode(ShapedArray<Scalar>.self)
+        self.init(array)
+    }
+}
+
+//===-------------------------------------------------------------------------------------------===//
+// Additive Group
+//===-------------------------------------------------------------------------------------------===//
+
+extension Tensor: AdditiveArithmetic where Scalar: Numeric {
+    /// A scalar zero tensor.
+    @inlinable
+    public static var zero: Tensor {
+        return Tensor(0)
+    }
+
+    /// Adds two tensors and produces their sum.
+    /// - Note: `+` supports broadcasting.
+    @inlinable @inline(__always)
+    @differentiable(vjp: _vjpAdd(lhs:rhs:) where Scalar: TensorFlowFloatingPoint)
+    public static func + (lhs: Tensor, rhs: Tensor) -> Tensor {
+        return Raw.add(lhs, rhs)
+    }
+
+    /// Subtracts one tensor from another and produces their difference.
+    /// - Note: `-` supports broadcasting.
+    @inlinable @inline(__always)
+    @differentiable(vjp: _vjpSubtract(lhs:rhs:) where Scalar: TensorFlowFloatingPoint)
+    public static func - (lhs: Tensor, rhs: Tensor) -> Tensor {
+        return Raw.sub(lhs, rhs)
+    }
+}
+
+internal extension Tensor where Scalar: TensorFlowFloatingPoint {
+    @inlinable
+    static func _vjpAdd(
+        lhs: Tensor,
+        rhs: Tensor
+    ) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
+        return (lhs + rhs, { [
+            lhsShape = lhs.shape,
+            rhsShape = rhs.shape,
+            lhsShapeTensor = lhs.shapeTensor,
+            rhsShapeTensor = rhs.shapeTensor] v in
+            var lhsGrad = v
+            var rhsGrad = v
+            if lhsGrad.shape != lhsShape {
+                lhsGrad = lhsGrad.unbroadcasted(toShape: lhsShapeTensor)
+            }
+            if rhsGrad.shape != rhsShape {
+                rhsGrad = rhsGrad.unbroadcasted(toShape: rhsShapeTensor)
+            }
+            return (lhsGrad, rhsGrad)
+        })
+    }
+
+    @inlinable
+    static func _vjpSubtract(
+        lhs: Tensor,
+        rhs: Tensor
+    ) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
+        return (lhs - rhs, { [
+            lhsShape = lhs.shape,
+            rhsShape = rhs.shape,
+            lhsShapeTensor = lhs.shapeTensor,
+            rhsShapeTensor = rhs.shapeTensor] v in
+            var lhsGrad = v
+            var rhsGrad = -v
+            if lhsGrad.shape != lhsShape {
+                lhsGrad = lhsGrad.unbroadcasted(toShape: lhsShapeTensor)
+            }
+            if rhsGrad.shape != rhsShape {
+                rhsGrad = rhsGrad.unbroadcasted(toShape: rhsShapeTensor)
+            }
+            return (lhsGrad, rhsGrad)
+        })
+    }
+}
+
+//===-------------------------------------------------------------------------------------------===//
+// Differentiable
+//===-------------------------------------------------------------------------------------------===//
+
+extension Tensor: Differentiable where Scalar: TensorFlowFloatingPoint {
+    public typealias TangentVector = Tensor
+    public typealias CotangentVector = Tensor
+    public typealias AllDifferentiableVariables = Tensor
+
+    @inlinable
+    public func tangentVector(
+        from cotangent: CotangentVector
+    ) -> TangentVector {
+        return cotangent
+    }
+}

@@ -37,8 +37,20 @@ extension Tensor: VectorNumeric where Scalar: Numeric {
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     static func _vjpMultiply(lhs: Tensor, rhs: Tensor) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
-        return (lhs * rhs, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
-            ((rhs * v).unbroadcast(toShape: lhsShape), (lhs * v).unbroadcast(toShape: rhsShape))
+        return (lhs * rhs, { [
+            lhsShape = lhs.shape,
+            rhsShape = rhs.shape,
+            lhsShapeTensor = lhs.shapeTensor,
+            rhsShapeTensor = rhs.shapeTensor] v in
+            var lhsGrad = rhs * v
+            var rhsGrad = lhs * v
+            if lhsGrad.shape != lhsShape {
+                lhsGrad = lhsGrad.unbroadcasted(toShape: lhsShapeTensor)
+            }
+            if rhsGrad.shape != rhsShape {
+                rhsGrad = rhsGrad.unbroadcasted(toShape: rhsShapeTensor)
+            }
+            return (lhsGrad, rhsGrad)
         })
     }
 }
@@ -238,9 +250,20 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 
     @inlinable
     static func _vjpDivide(lhs: Tensor, rhs: Tensor) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
-        return (lhs / rhs, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
-            ((v / rhs).unbroadcast(toShape: lhsShape),
-             ((-lhs) / rhs.squared() * v).unbroadcast(toShape: rhsShape))
+        return (lhs / rhs, { [
+            lhsShape = lhs.shape,
+            rhsShape = rhs.shape,
+            lhsShapeTensor = lhs.shapeTensor,
+            rhsShapeTensor = rhs.shapeTensor] v in
+            var lhsGrad = v / rhs
+            var rhsGrad = (-lhs) / rhs.squared() * v
+            if lhsGrad.shape != lhsShape {
+                lhsGrad = lhsGrad.unbroadcasted(toShape: lhsShapeTensor)
+            }
+            if rhsGrad.shape != rhsShape {
+                rhsGrad = rhsGrad.unbroadcasted(toShape: rhsShapeTensor)
+            }
+            return (lhsGrad, rhsGrad)
         })
     }
 
@@ -674,8 +697,16 @@ internal func _vjpPow<T: TensorFlowFloatingPoint>(
 ) -> (Tensor<T>, (Tensor<T>) -> (Tensor<T>, Tensor<T>)) {
     let value = pow(x, y)
     return (value, { v in
-        ((v * y * pow(x, y-1)).unbroadcast(like: x),
-        (v * log(x) * value).unbroadcast(like: y))
+        let safeX = x.replacing(with: Tensor<T>(onesLike: x), where: x .<= 0)
+        var gradX = v * y * pow(x, y - 1)
+        var gradY = value * v * log(safeX)
+        if gradX.shape != x.shape {
+            gradX = gradX.unbroadcasted(like: x)
+        }
+        if gradY.shape != y.shape {
+            gradY = gradY.unbroadcasted(like: y)
+        }
+        return (gradX, gradY)
     })
 }
 
@@ -706,7 +737,7 @@ internal func _vjpMax<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>, _ y: Tensor<T>
 ) -> (Tensor<T>, (Tensor<T>) -> (Tensor<T>, Tensor<T>)) {
     let value = max(x, y)
-    return (value, { v in _vjpMinMaxHelper(x, y, originalValue: value, vector: v) })
+    return (value, { v in _vjpMinMaxHelper(x, y, originalValue: value, seed: v) })
 }
 
 /// Computes the element-wise maximum of the scalar and the tensor, broadcasting the scalar.
@@ -736,7 +767,7 @@ internal func _vjpMin<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>, _ y: Tensor<T>
 ) -> (Tensor<T>, (Tensor<T>) -> (Tensor<T>, Tensor<T>)) {
     let value = min(x, y)
-    return (value, { v in _vjpMinMaxHelper(x, y, originalValue: value, vector: v) })
+    return (value, { v in _vjpMinMaxHelper(x, y, originalValue: value, seed: v) })
 }
 
 /// Computes the element-wise minimum of the scalar and the tensor, broadcasting the scalar.
@@ -758,12 +789,18 @@ internal func _vjpMinMaxHelper<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>,
     _ y: Tensor<T>,
     originalValue: Tensor<T>,
-    vector: Tensor<T>
+    seed: Tensor<T>
 ) -> (Tensor<T>, Tensor<T>) {
-    let denom = 1 + Tensor<T>(x .== y)
-    let dfdx = vector * Tensor<T>(x .== originalValue) / denom
-    let dfdy = vector * Tensor<T>(y .== originalValue) / denom
-    return (dfdx.unbroadcast(like: x), dfdy.unbroadcast(like: y))
+    let denominator = 1 + Tensor<T>(x .== y)
+    var gradX = seed * Tensor<T>(x .== originalValue) / denominator
+    var gradY = seed * Tensor<T>(y .== originalValue) / denominator
+    if gradX.shape != x.shape {
+        gradX = gradX.unbroadcasted(like: x)
+    }
+    if gradY.shape != y.shape {
+        gradY = gradY.unbroadcasted(like: y)
+    }
+    return (gradX, gradY)
 }
 
 //===------------------------------------------------------------------------------------------===//

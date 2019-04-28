@@ -14,6 +14,8 @@
 
 import TensorFlowCore
 
+infix operator .!=: ComparisonPrecedence
+
 //===------------------------------------------------------------------------------------------===//
 // Shape Transformations
 //===------------------------------------------------------------------------------------------===//
@@ -336,8 +338,8 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
         with other: Tensor,
         alongAxis axis: Int
     ) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
-        let idx = axis < 0 ? axis + rank: axis
-        let splits = Tensor<Int32>([shapeTensor[idx], other.shapeTensor[idx]])
+        let posAxis = axis < 0 ? axis + rank: axis
+        let splits = Tensor<Int32>([shapeTensor[posAxis], other.shapeTensor[posAxis]])
         return (concatenated(with: other, alongAxis: axis), { result in
             let gradients = result.split(sizes: splits, alongAxis: axis)
             return (gradients[0], gradients[1])
@@ -378,22 +380,22 @@ public extension Tensor {
 
 public extension Tensor where Scalar: Numeric {
     @inlinable
-    func unbroadcast(toShape otherShape: Tensor<Int32>) -> Tensor {
-        let rankDiff: Tensor<Int32> = (rankTensor - otherShape.scalarCountTensor).rankLifted()
-        let ones: Tensor<Int32> = Raw.fill(dims: rankDiff, value: Tensor<Int32>(1))
+    func unbroadcasted(toShape otherShape: Tensor<Int32>) -> Tensor {
+        let rankDiff = (rankTensor - otherShape.scalarCountTensor).rankLifted()
+        let ones = Raw.fill(dims: rankDiff, value: Tensor<Int32>(1))
         let paddedShape = Tensor<Int32>(concatenating: [ones, otherShape], alongAxis: 0)
         let broadcastIndices = Tensor<Int32>(Raw.where_(paddedShape .!= shapeTensor))
         return sum(squeezingAxes: broadcastIndices).reshaped(toShape: otherShape)
     }
 
     @inlinable
-    func unbroadcast<OtherScalar>(like other: Tensor<OtherScalar>) -> Tensor {
-        return unbroadcast(toShape: other.shapeTensor)
+    func unbroadcasted<OtherScalar>(like other: Tensor<OtherScalar>) -> Tensor {
+        return unbroadcasted(toShape: other.shapeTensor)
     }
 
     @inlinable
-    func unbroadcast(to shape: TensorShape) -> Tensor {
-        return unbroadcast(toShape: Tensor<Int32>(shape.dimensions.map(Int32.init)))
+    func unbroadcasted(to shape: TensorShape) -> Tensor {
+        return unbroadcasted(toShape: Tensor<Int32>(shape.dimensions.map(Int32.init)))
     }
 }
 
