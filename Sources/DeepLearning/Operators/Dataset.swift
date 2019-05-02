@@ -67,7 +67,6 @@ public extension Dataset {
     /// Creates a dataset from a batch of elements as a tensor.
     @inlinable @inline(__always)
     init(elements: Element) {
-        // A dataset creation op only runs on TF CPU.
         self.init(_handle: Raw.tensorSliceDataset(
             components: [elements],
             outputShapes: Element._unknownShapeList))
@@ -102,6 +101,23 @@ public extension Dataset {
             outputTypes: ResultElement._typeList,
             outputShapes: ResultElement._unknownShapeList,
             useInterOpParallelism: true,
+            preserveCardinality: false))
+    }
+
+    @inlinable @inline(__always)
+    func map<ResultElement : TensorGroup>(
+        parallelCallCount: Int,
+        _ transform: (Element) -> ResultElement
+    ) -> Dataset<ResultElement> {
+        return Dataset<ResultElement>(_handle: Raw.parallelMapDataset(
+            inputDataset: _handle,
+            otherArguments: Tensor<Int32>(0),
+            numParallelCalls: Tensor<Int32>(Int32(parallelCallCount)),
+            f: transform,
+            outputTypes: ResultElement._typeList,
+            outputShapes: ResultElement._unknownShapeList,
+            useInterOpParallelism: true,
+            sloppy: false,
             preserveCardinality: false))
     }
 
