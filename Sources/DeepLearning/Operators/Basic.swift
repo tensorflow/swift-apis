@@ -578,12 +578,12 @@ public extension PartialRangeThrough where Bound == Int {
 
 public extension Tensor {
     @_fixed_layout @usableFromInline
-    internal struct IndexPath {
+    internal struct IndexPath: Differentiable {
         @usableFromInline
-        let begin, end, strides: Tensor<Int32>
+        @noDerivative let begin, end, strides: Tensor<Int32>
 
         @usableFromInline
-        let beginMask, endMask, ellipsisMask, newAxisMask, squeezeAxisMask: Int64
+        @noDerivative let beginMask, endMask, ellipsisMask, newAxisMask, squeezeAxisMask: Int64
 
         @inlinable
         public init(
@@ -625,13 +625,13 @@ public extension Tensor {
     }
 
     @inlinable
-    // TODO: @differentiable(wrt: self)
+    @differentiable(wrt: self)
     subscript(_ ranges: TensorRangeExpression...) -> Tensor {
         get {
-            return self[IndexPath(ranges.map { $0.tensorRange })]
+            return self[IndexPath({ranges.map { $0.tensorRange }}()).withoutDerivative()]
         }
         set {
-            self[IndexPath(ranges.map { $0.tensorRange })] = newValue
+            self[IndexPath({ranges.map { $0.tensorRange }}()).withoutDerivative()] = newValue
         }
     }
 
