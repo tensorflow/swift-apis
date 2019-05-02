@@ -18,19 +18,19 @@
 import PackageDescription
 
 let package = Package(
-    name: "DeepLearning",
+    name: "TensorFlow",
     products: [
         .library(
-            name: "DeepLearning",
-            targets: ["DeepLearning"]),
+            name: "TensorFlow",
+            targets: ["TensorFlow"]),
     ],
     dependencies: [],
     targets: [
         .target(
-            name: "DeepLearning",
+            name: "TensorFlow",
             dependencies: []),
         .testTarget(
-            name: "DeepLearningTests",
-            dependencies: ["DeepLearning"]),
+            name: "TensorFlowTests",
+            dependencies: ["TensorFlow"]),
     ]
 )
