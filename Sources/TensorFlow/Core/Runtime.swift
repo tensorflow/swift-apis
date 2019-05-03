@@ -1617,9 +1617,9 @@ public func _TFCEagerExecute(_ op: CTFEOp,
 ///   - tensorArgumentCount: The number of tensor arguments to pass in.
 ///   - helperFunctionCount: The number of helper functions to run.
 ///   - resultCount: The number of output tensors.
-@inlinable
+@usableFromInline
 @_silgen_name("_swift_tfc_StartTensorComputation")
-public func _TFCStartTensorComputation(
+internal func _TFCStartTensorComputation(
   _ programByteAddress: UnsafeRawPointer,
   _ programByteCount: Int,
   _ entryFunctionBaseNameAddress: UnsafePointer<Int8>,
@@ -1660,9 +1660,9 @@ public func _TFCStartTensorComputation(
 /// - Note: The result address as passed in is pointing to uninitialized memory,
 ///   this must initialize the memory, transferring ownership of the tensor
 ///   handles to the caller.
-@inlinable
+@usableFromInline
 @_silgen_name("_swift_tfc_FinishTensorComputation")
-public func _TFCFinishTensorComputation(
+internal func _TFCFinishTensorComputation(
   _ computation: _TensorComputation,
   _ tensorResultAddress: UnsafeMutablePointer<CTensorHandle>,
   _ tensorResultCount: Int
@@ -1679,9 +1679,9 @@ public func _TFCFinishTensorComputation(
 /// - Parameters:
 ///   - program: The tensor program to terminate.
 /// - Note: If the execution was synchronous, then this function does nothing.
-@inlinable
+@usableFromInline
 @_silgen_name("_swift_tfc_TerminateTensorComputation")
-public func _TFCTerminateTensorComputation(_ computation: _TensorComputation) {
+internal func _TFCTerminateTensorComputation(_ computation: _TensorComputation) {
   computation.terminate()
 }
 
@@ -1690,9 +1690,9 @@ public func _TFCTerminateTensorComputation(_ computation: _TensorComputation) {
 /// - Parameters:
 ///   - programByteAddress: The address of the raw program.
 ///   - programByteCount: The number of bytes in the program.
-@inlinable
+@usableFromInline
 @_silgen_name("_swift_tfc_RegisterTensorFunctions")
-public func _TFCRegisterTensorFunctions(
+internal func _TFCRegisterTensorFunctions(
   _ programByteAddress: UnsafeRawPointer,
   _ programByteCount: Int
 ) {
@@ -1711,10 +1711,10 @@ public func _TFCRegisterTensorFunctions(
 /// - TODO(rxwei): Constrain T to _TensorFlowDataTypeCompatible and remove the
 ///   precondition. This requires the compiler to emit a call to the generic
 ///   function.
-@inlinable
+@usableFromInline
 @_silgen_name("_swift_tfc_CreateCTensorHandle")
-public func _TFCCreateCTensorHandle<T>(_ value: T,
-                                       _ dtype: TF_DataType) -> CTensorHandle {
+internal func _TFCCreateCTensorHandle<T>(_ value: T,
+                                         _ dtype: TF_DataType) -> CTensorHandle {
   // Create a new CTensor and initialize it to the scalar value.
   let tensor = TF_AllocateTensor(dtype, nil, 0, MemoryLayout<T>.stride)
   TF_TensorData(tensor).assumingMemoryBound(to: T.self).initialize(to: value)
@@ -1817,16 +1817,17 @@ func _TFCDeallocateCHandleBuffer(
 }
 
 /// Returns the number of CTensorHandles in a TensorGroup of type T.
+@usableFromInline
 @_silgen_name("_swift_tfc_GetTensorGroupCHandleCount")
-public func _TFCGetTensorGroupCHandleCount<T : TensorGroup>(
+internal func _TFCGetTensorGroupCHandleCount<T : TensorGroup>(
     _ type: T.Type
 ) -> Int32 {
   return T._tensorHandleCount
 }
 
-@inlinable
+@usableFromInline
 @_silgen_name("_swift_tfc_CreateTensorHandleFromC")
-public func _TFCCreateTensorHandleFromC(
+internal func _TFCCreateTensorHandleFromC(
   _ cHandle: CTensorHandle
 ) -> _AnyTensorHandle {
   let dtype = TFE_TensorHandleDataType(cHandle)
