@@ -41,8 +41,8 @@ public final class TensorHandle<Scalar>: _AnyTensorHandle
         super.init(base: cTensorHandle)
     }
 
-    @inlinable
-    public convenience init(copyingFromCTensor cTensor: CTensor) {
+    @usableFromInline
+    internal convenience init(copyingFromCTensor cTensor: CTensor) {
         let status = TF_NewStatus()
         let cTensorHandle = TFE_NewTensorHandle(cTensor, status)
         checkOk(status)

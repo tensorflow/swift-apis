@@ -633,7 +633,8 @@ public final class _ExecutionContext {
   public let tensorFlowConfig: UnsafeMutablePointer<TF_Buffer>
 
   /// The TFE_Context object.
-  public let eagerContext: CTFEContext
+  @usableFromInline
+  internal let eagerContext: CTFEContext
 
   // NOTE: the following properties are intentionally not implemented as an enum
   // due to high churn, *please do not refactor for Swiftiness*.
@@ -1536,7 +1537,7 @@ private extension _TensorComputation {
   }
 }
 
-public extension _TensorComputation {
+internal extension _TensorComputation {
   /// Terminates the computation, and clean up the state.
   func terminate() {
     for pthread in pthreads {
@@ -1575,10 +1576,10 @@ public extension _TensorComputation {
 
 @inlinable
 @_cdecl("_swift_tfc_EagerExecute")
-public func _TFCEagerExecute(_ op: CTFEOp,
-                             _ retvals: UnsafeMutablePointer<OpaquePointer?>,
-                             _ retvalCount: UnsafeMutablePointer<Int32>,
-                             _ status: CTFStatus) {
+internal func _TFCEagerExecute(_ op: CTFEOp,
+                               _ retvals: UnsafeMutablePointer<OpaquePointer?>,
+                               _ retvalCount: UnsafeMutablePointer<Int32>,
+                               _ status: CTFStatus) {
   if _RuntimeConfig.printsDebugLog {
     debugLog("Calling _TFCEagerExecute() over: ")
     TFE_OpPrintDebugString(op)

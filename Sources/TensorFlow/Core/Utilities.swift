@@ -83,8 +83,7 @@ internal typealias CTensor = OpaquePointer
 ///
 /// - Note: This is public so that compiler generated code can read/write tensor handles when
 ///   calling runtime APIs.
-@usableFromInline
-internal typealias CTensorHandle = OpaquePointer
+public typealias CTensorHandle = OpaquePointer
 
 /// The `TFE_Context *` type.
 @usableFromInline
