@@ -47,14 +47,16 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
             let squaredDiff: Tensor = Raw.squaredDifference(self, mean)
             let variance = squaredDiff.mean(alongAxes: axis)
 
-             let diff = self - mean
+            let diff = self - mean
             let inv = rsqrt(variance + epsilon)
             let norm = diff * inv
 
-             let dNorm = v * scale
+            let dNorm = v * scale
             let dVariance = -(dNorm * diff).sum(alongAxes: axis) / 2 * pow(inv, -3)
-            let dMean = (-dNorm * inv).sum(alongAxes: axis) +
-                dVariance * (-diff * 2).mean(alongAxes: axis)
+            // Note: `dMean` is split into two lines to avoid the "compiler is unable to type-check
+            // this expression in reasonable time" error.
+            var dMean = (-dNorm * inv).sum(alongAxes: axis)
+            dMean = dMean + dVariance * (-diff * 2).mean(alongAxes: axis)
             let dOffset = v.sum(alongAxes: axis)
             let dScale = (norm * v).sum(alongAxes: axis)
             let dim = Tensor(Tensor<Int32>(self.shapeTensor[axis]))
