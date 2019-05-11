@@ -659,7 +659,7 @@ internal extension Tensor.IndexPath {
     @inlinable
     init(_ ranges: [TensorRange]) {
         precondition(!ranges.isEmpty, "The tensor range collection cannot be empty.")
-        precondition(ranges.count { $0 == TensorRange.ellipsis } < 2,
+        precondition(ranges.lazy.filter { $0 == TensorRange.ellipsis }.count < 2,
                      "Only one ellipsis is allowed per tensor range collection.")
 
         var begin = [Int32](repeating: 0, count: ranges.count)
