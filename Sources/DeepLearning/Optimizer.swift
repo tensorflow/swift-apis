@@ -105,8 +105,10 @@ public class Adam<Model: Layer>: Optimizer
                        along direction: Model.AllDifferentiableVariables) {
         step += 1
         let learningRate = self.learningRate * 1 / (1 + decay * Float(step))
-        let stepSize = learningRate * (sqrt(1 - pow(beta2, Float(step))) /
-            (1 - pow(beta1, Float(step))))
+        // Note: `stepSize` is split into two lines to avoid the "compiler is unable to type-check
+        // this expression in reasonable time" error.
+        var stepSize = learningRate * sqrt(1 - pow(beta2, Float(step)))
+        stepSize = stepSize / (1 - pow(beta1, Float(step)))
         // Update Float & Double Tensor variables.
         for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
             firstMoments[keyPath: kp] =
