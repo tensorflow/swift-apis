@@ -158,17 +158,17 @@ internal func writeContents(of buffer: UnsafePointer<TF_Buffer>, toFile path: St
 /// This is a generic host-only op that hides the details of its impl in the SIL code. This makes 
 /// reading/writing SIL based compiler unit tests simple.
 @usableFromInline @inline(never)
-internal func _hostOp<T>(_ x: T) {
+public func _hostOp<T>(_ x: T) {
     print(x)
 }
 
 @usableFromInline @inline(never)
-internal func _hostOp<Scalar>(_ x: Tensor<Scalar>) {
+public func _hostOp<Scalar>(_ x: Tensor<Scalar>) {
     print(x)
 }
 
 @usableFromInline @inline(never)
-internal func _hostOp<Scalar : TensorFlowScalar>(_ x: TensorHandle<Scalar>) {
+public func _hostOp<Scalar : TensorFlowScalar>(_ x: TensorHandle<Scalar>) {
     print(Tensor(handle: x))
 }
 
@@ -176,14 +176,14 @@ internal func _hostOp<Scalar : TensorFlowScalar>(_ x: TensorHandle<Scalar>) {
 ///
 /// TODO: Remove these helper APIs, when we have a better shape inference/propagation design.
 @usableFromInline @inline(__always)
-internal func _scalarTensorWithShape<Scalar: TensorFlowScalar>(
+public func _scalarTensorWithShape<Scalar: TensorFlowScalar>(
     _ x: Tensor<Scalar>
 ) -> Tensor<Scalar> {
     return Raw.identity(x)
 }
 
 @usableFromInline @inline(__always)
-internal func _addScalarTensorsWithShape<Scalar: TensorFlowNumeric>(
+public func _addScalarTensorsWithShape<Scalar: TensorFlowNumeric>(
     _ x: Tensor<Scalar>,
     _ y: Tensor<Scalar>
 ) -> Tensor<Scalar> {
