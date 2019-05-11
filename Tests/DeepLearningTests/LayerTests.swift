@@ -31,7 +31,7 @@ final class LayerTests: XCTestCase {
         let input = Tensor<Float>([[0, 1, 2, 3, 4], [10, 11, 12, 13, 14]]).expandingShape(at: 2)
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>([[[2], [3], [4]], [[12], [13], [14]]])
-        XCTAssertEqual(round(output), expected)
+        XCTAssertEqual(output, expected)
     }
 
     func testMaxPool2D() {
@@ -39,7 +39,7 @@ final class LayerTests: XCTestCase {
         let input = Tensor(shape: [1, 2, 2, 1], scalars: (0..<4).map(Float.init))
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>([[[[3]]]])
-        XCTAssertEqual(round(output), expected)
+        XCTAssertEqual(output, expected)
     }
 
     func testMaxPool3D() {
@@ -47,7 +47,7 @@ final class LayerTests: XCTestCase {
         let input = Tensor(shape: [1, 2, 2, 2, 1], scalars: (0..<8).map(Float.init))
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>([[[[[7]]]]])
-        XCTAssertEqual(round(output), expected)
+        XCTAssertEqual(output, expected)
     }
 
     func testAvgPool1D() {
@@ -55,7 +55,7 @@ final class LayerTests: XCTestCase {
         let input = Tensor<Float>([[0, 1, 2, 3, 4], [10, 11, 12, 13, 14]]).expandingShape(at: 2)
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>([[[1], [2], [3]], [[11], [12], [13]]])
-        XCTAssertEqual(round(output), expected)
+        XCTAssertEqual(output, expected)
     }
 
     func testAvgPool2D() {

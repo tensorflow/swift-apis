@@ -821,7 +821,7 @@ public struct MaxPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
         self.strides = strides
         self.padding = padding
     }
-    
+
     /// Returns the output obtained from applying the layer to the given input.
     ///
     /// - Parameter input: The input to the layer.
@@ -834,7 +834,7 @@ public struct MaxPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
 }
 
 public extension MaxPool2D {
-  /// Creates a average pooling layer.
+  /// Creates a max pooling layer.
   ///
   /// - Parameters:
   ///   - poolSize: Vertical and horizontal factors by which to downscale.
@@ -974,7 +974,7 @@ public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
 }
 
 public extension AvgPool2D {
-  /// Creates a average pooling layer.
+  /// Creates an average pooling layer.
   ///
   /// - Parameters:
   ///   - poolSize: Vertical and horizontal factors by which to downscale.
@@ -1020,7 +1020,7 @@ public struct AvgPool3D<Scalar: TensorFlowFloatingPoint>: Layer {
 }
 
 public extension AvgPool3D {
-  /// Creates a average pooling layer.
+  /// Creates an average pooling layer.
   ///
   /// - Parameters:
   ///   - poolSize: Vertical and horizontal factors by which to downscale.
