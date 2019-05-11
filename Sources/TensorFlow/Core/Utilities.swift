@@ -157,17 +157,17 @@ internal func writeContents(of buffer: UnsafePointer<TF_Buffer>, toFile path: St
 
 /// This is a generic host-only op that hides the details of its impl in the SIL code. This makes 
 /// reading/writing SIL based compiler unit tests simple.
-@usableFromInline @inline(never)
+@inlinable @inline(never)
 public func _hostOp<T>(_ x: T) {
     print(x)
 }
 
-@usableFromInline @inline(never)
+@inlinable @inline(never)
 public func _hostOp<Scalar>(_ x: Tensor<Scalar>) {
     print(x)
 }
 
-@usableFromInline @inline(never)
+@inlinable @inline(never)
 public func _hostOp<Scalar : TensorFlowScalar>(_ x: TensorHandle<Scalar>) {
     print(Tensor(handle: x))
 }
@@ -175,14 +175,14 @@ public func _hostOp<Scalar : TensorFlowScalar>(_ x: TensorHandle<Scalar>) {
 /// Some TPU ops (e.g. infeed/outfeed) require tensor shape info, which the APIs below can provide.
 ///
 /// TODO: Remove these helper APIs, when we have a better shape inference/propagation design.
-@usableFromInline @inline(__always)
+@inlinable @inline(__always)
 public func _scalarTensorWithShape<Scalar: TensorFlowScalar>(
     _ x: Tensor<Scalar>
 ) -> Tensor<Scalar> {
     return Raw.identity(x)
 }
 
-@usableFromInline @inline(__always)
+@inlinable @inline(__always)
 public func _addScalarTensorsWithShape<Scalar: TensorFlowNumeric>(
     _ x: Tensor<Scalar>,
     _ y: Tensor<Scalar>
