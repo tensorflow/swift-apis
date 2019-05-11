@@ -1826,9 +1826,9 @@ internal func _TFCGetTensorGroupCHandleCount<T : TensorGroup>(
   return T._tensorHandleCount
 }
 
-@usableFromInline
+@inlinable
 @_silgen_name("_swift_tfc_CreateTensorHandleFromC")
-internal func _TFCCreateTensorHandleFromC(
+public func _TFCCreateTensorHandleFromC(
   _ cHandle: CTensorHandle
 ) -> _AnyTensorHandle {
   let dtype = TFE_TensorHandleDataType(cHandle)
