@@ -108,7 +108,7 @@ public extension Tensor {
     /// otherwise.
     @inlinable
     var scalar: Scalar? {
-        return Scalar(self)
+        return handle.makeHostCopy().scalar
     }
 
     /// Reshape to scalar.
