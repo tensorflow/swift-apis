@@ -170,7 +170,7 @@ class Op(object):
 
   def swift_function(self):
     return '''
-{documentation}@inlinable @inline(__always)
+{documentation}@inlinable
 public static func {name}{generics}({input_args}
 ){return_type} {{
   {body}
@@ -613,7 +613,6 @@ class EnumStore(object):
           '\n\n' +
           '  @inlinable\n' +
           '  var cName: String {\n' +
-          '    @inline(__always)\n' +
           '    get {\n' +
           '      switch self {\n' +
           '\n'.join(['      case .{}: return "{}"'.format(

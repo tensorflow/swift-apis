@@ -546,7 +546,7 @@ public extension ShapedArray {
     /// - Parameters:
     ///   - shape: The shape of the `ShapedArray`.
     ///   - repeatedValue: The scalar value to repeat.
-    @inlinable @inline(__always)
+    @inlinable
     @available(*, deprecated, renamed: "init(repeating:shape:)")
     init(shape: __owned [Int], repeating repeatedValue: __owned Scalar) {
         self.init(repeating: repeatedValue, shape: shape)
@@ -701,7 +701,7 @@ public extension Tensor {
 // Array literal conversion.
 extension ShapedArray: ExpressibleByArrayLiteral where Scalar: TensorFlowScalar {
     public typealias ArrayLiteralElement = _TensorElementLiteral<Scalar>
-    @inlinable @inline(__always)
+    @inlinable
     public init(arrayLiteral elements: _TensorElementLiteral<Scalar>...) {
         self = Tensor<Scalar>(_tensorElementLiterals: elements).array
     }
@@ -896,7 +896,7 @@ public extension ShapedArraySlice {
     /// - Parameters:
     ///   - repeatedValue: The scalar value to repeat.
     ///   - shape: The shape of the `ShapedArraySlice`.
-    @inlinable @inline(__always)
+    @inlinable
     @available(*, deprecated, renamed: "init(repeating:shape:)")
     init(shape: __owned [Int], repeating repeatedValue: __owned Scalar) {
         self.init(repeating: repeatedValue, shape: shape)
@@ -1063,7 +1063,7 @@ public extension ShapedArraySlice where Scalar: TensorFlowScalar {
 // Array literal conversion.
 extension ShapedArraySlice: ExpressibleByArrayLiteral where Scalar: TensorFlowScalar {
     public typealias ArrayLiteralElement = _TensorElementLiteral<Scalar>
-    @inlinable @inline(__always)
+    @inlinable
     public init(arrayLiteral elements: _TensorElementLiteral<Scalar>...) {
         self.init(base: Tensor(_tensorElementLiterals: elements).array)
     }

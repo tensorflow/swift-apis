@@ -19,7 +19,7 @@ public extension Tensor {
     /// - Parameters:
     ///   - shape: The dimensions of the tensor.
     ///   - repeatedValue: The scalar value to repeat.
-    @inlinable @inline(__always)
+    @inlinable
     @available(*, deprecated, renamed: "init(repeating:shape:)")
     init(shape: TensorShape, repeating repeatedValue: Scalar) {
         self.init(repeating: repeatedValue, shape: shape)
@@ -30,7 +30,7 @@ public extension Tensor {
     /// - Parameters:
     ///   - repeatedValue: The scalar value to repeat.
     ///   - shape: The dimensions of the tensor.
-    @inlinable @inline(__always)
+    @inlinable
     @differentiable(vjp: _vjpInit(repeating:shape:) where Scalar: TensorFlowFloatingPoint)
     init(repeating repeatedValue: Scalar, shape: TensorShape) {
         self = Raw.fill(
@@ -40,7 +40,7 @@ public extension Tensor {
 
     /// Creates a tensor by broadcasting the given scalar to a given rank with
     /// all dimensions being 1.
-    @inlinable @inline(__always)
+    @inlinable
     // @differentiable(where Scalar: TensorFlowFloatingPoint)
     init(broadcasting scalar: Scalar, rank: Int) {
         self = Tensor(scalar).reshaped(to: TensorShape(repeating: 1, count: rank))
@@ -49,7 +49,7 @@ public extension Tensor {
     /// Creates a tensor of shape `[4]` from a 4-tuple.
     /// - Note: This is intended for internal use, for example, to initialize a
     ///   tensor attribute from `convolved2D`'s `strides` argument.
-    @inlinable @inline(__always)
+    @inlinable
     internal init(_ scalars: (Scalar, Scalar, Scalar, Scalar)) {
         self.init([scalars.0, scalars.1, scalars.2, scalars.3])
     }
@@ -73,13 +73,13 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 
 public extension Tensor where Scalar: Numeric {
     /// Perform an element-wise type conversion from a `Bool` tensor.
-    @inlinable @inline(__always)
+    @inlinable
     init(_ other: Tensor<Bool>) {
         self = Raw.cast(other)
     }
 
     /// Perform an element-wise conversion from another `Tensor`.
-    @inlinable @inline(__always)
+    @inlinable
     @differentiable(
         vjp: _vjpCast where Scalar: TensorFlowFloatingPoint, OtherScalar: TensorFlowFloatingPoint)
     init<OtherScalar: Numeric>(_ other: Tensor<OtherScalar>) {
@@ -102,7 +102,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 
 public extension Tensor {
     /// Creates a tensor from an array of tensors (which may themselves be scalars).
-    @inlinable @inline(__always)
+    @inlinable
     @differentiable(vjp: _vjpInitElements where Scalar: TensorFlowFloatingPoint)
     init(_ elements: [Tensor]) {
         self = Raw.pack(elements)
@@ -136,7 +136,7 @@ public extension Tensor {
     ///   provided tensors.
     /// 
     /// - Returns: The stacked tensor.
-    @inlinable @inline(__always)
+    @inlinable
     @differentiable(vjp: _vjpStacking where Scalar: TensorFlowFloatingPoint)
     init(stacking tensors: [Tensor], alongAxis axis: Int = 0) {
         self = Raw.pack(tensors, axis: Int64(axis))
@@ -174,7 +174,7 @@ public extension Tensor {
     ///   provided tensors.
     /// 
     /// - Returns: The concatenated tensor.
-    @inlinable @inline(__always)
+    @inlinable
     @differentiable(vjp: _vjpConcatenating where Scalar: TensorFlowFloatingPoint)
     init(concatenating tensors: [Tensor], alongAxis axis: Int = 0) {
         precondition(tensors.count > 0)
@@ -225,7 +225,7 @@ public extension Tensor where Scalar: Numeric {
     /// Creates a tensor with all scalars set to zero.
     ///
     /// - Parameter shape: Shape of the tensor.
-    @inlinable @inline(__always)
+    @inlinable
     init(zeros shape: TensorShape) {
         self.init(repeating: 0, shape: shape)
     }
@@ -233,7 +233,7 @@ public extension Tensor where Scalar: Numeric {
     /// Creates a tensor with all scalars set to one.
     ///
     /// - Parameter shape: Shape of the tensor.
-    @inlinable @inline(__always)
+    @inlinable
     init(ones shape: TensorShape) {
         self.init(repeating: 1, shape: shape)
     }
@@ -242,7 +242,7 @@ public extension Tensor where Scalar: Numeric {
     /// tensor.
     ///
     /// - Parameter other: Tensor whose shape and data type to use.
-    @inlinable @inline(__always)
+    @inlinable
     init(zerosLike other: Tensor) {
         self = Raw.zerosLike(other)
     }
@@ -251,7 +251,7 @@ public extension Tensor where Scalar: Numeric {
     /// tensor.
     ///
     /// - Parameter other: Tensor whose shape and data type to use.
-    @inlinable @inline(__always)
+    @inlinable
     init(onesLike other: Tensor) {
         self = Raw.onesLike(other)
     }
@@ -266,7 +266,7 @@ public extension Tensor where Scalar: Numeric {
     ///     the resulting sequence.
     ///   - stride: The amount to step by with each iteration. `stride` must be
     ///     positive.
-    @inlinable @inline(__always)
+    @inlinable
     init(rangeFrom start: Scalar, to end: Scalar, stride: Scalar) {
         self = Raw.range(start: Tensor(start), limit: Tensor(end), delta: Tensor(stride))
     }
@@ -280,7 +280,7 @@ public extension Tensor where Scalar: Numeric {
     ///   - end: An end value to limit the sequence. `end` is never an element of the resulting
     ///     sequence.
     ///   - stride: The amount to step by with each iteration. `stride` must be positive.
-    @inlinable @inline(__always)
+    @inlinable
     init(rangeFrom start: Tensor<Scalar>, to end: Tensor<Scalar>, stride: Tensor<Scalar>) {
         self = Raw.range(start: start, limit: end, delta: stride)
     }
@@ -312,7 +312,7 @@ public extension Tensor where Scalar: Numeric {
     ///   - offValue: A scalar defining the value at a location that is not
     ///     referred to by any index in `indices`.
     ///   - axis: The axis to fill. The default is `-1`, a new inner-most axis.
-    @inlinable @inline(__always)
+    @inlinable
     init(
         oneHotAtIndices indices: Tensor<Int32>,
         depth: Int,

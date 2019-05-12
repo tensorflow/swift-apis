@@ -29,7 +29,6 @@ public enum A {
 
   @inlinable
   var cName: String {
-    @inline(__always)
     get {
       switch self {
       case .apples: return "apples"
@@ -46,7 +45,6 @@ public enum DataFormat {
 
   @inlinable
   var cName: String {
-    @inline(__always)
     get {
       switch self {
       case .nchw: return "NCHW"
@@ -63,7 +61,6 @@ public enum DataFormat1 {
 
   @inlinable
   var cName: String {
-    @inline(__always)
     get {
       switch self {
       case .ncdhw: return "NCDHW"
@@ -81,7 +78,6 @@ public enum DataFormat4 {
 
   @inlinable
   var cName: String {
-    @inline(__always)
     get {
       switch self {
       case .nchw: return "NCHW"
@@ -99,7 +95,6 @@ public enum DensityUnit {
 
   @inlinable
   var cName: String {
-    @inline(__always)
     get {
       switch self {
       case .cm: return "cm"
@@ -116,7 +111,6 @@ public enum Direction {
 
   @inlinable
   var cName: String {
-    @inline(__always)
     get {
       switch self {
       case .bidirectional: return "bidirectional"
@@ -134,7 +128,6 @@ public enum Errors {
 
   @inlinable
   var cName: String {
-    @inline(__always)
     get {
       switch self {
       case .ignore: return "ignore"
@@ -152,7 +145,6 @@ public enum FinalOp {
 
   @inlinable
   var cName: String {
-    @inline(__always)
     get {
       switch self {
       case .div: return "Div"
@@ -170,7 +162,6 @@ public enum Format {
 
   @inlinable
   var cName: String {
-    @inline(__always)
     get {
       switch self {
       case .empty: return ""
@@ -189,7 +180,6 @@ public enum InputMode {
 
   @inlinable
   var cName: String {
-    @inline(__always)
     get {
       switch self {
       case .autoSelect: return "auto_select"
@@ -210,7 +200,6 @@ public enum LossType {
 
   @inlinable
   var cName: String {
-    @inline(__always)
     get {
       switch self {
       case .hingeLoss: return "hinge_loss"
@@ -232,7 +221,6 @@ public enum MergeOp {
 
   @inlinable
   var cName: String {
-    @inline(__always)
     get {
       switch self {
       case .add: return "Add"
@@ -251,7 +239,6 @@ public enum Method {
 
   @inlinable
   var cName: String {
-    @inline(__always)
     get {
       switch self {
       case .bilinear: return "bilinear"
@@ -267,7 +254,6 @@ public enum Method3 {
 
   @inlinable
   var cName: String {
-    @inline(__always)
     get {
       switch self {
       case .bilinear: return "bilinear"
@@ -284,7 +270,6 @@ public enum Mode {
 
   @inlinable
   var cName: String {
-    @inline(__always)
     get {
       switch self {
       case .minCombined: return "MIN_COMBINED"
@@ -302,7 +287,6 @@ public enum Mode5 {
 
   @inlinable
   var cName: String {
-    @inline(__always)
     get {
       switch self {
       case .reflect: return "REFLECT"
@@ -320,7 +304,6 @@ public enum OutputEncoding {
 
   @inlinable
   var cName: String {
-    @inline(__always)
     get {
       switch self {
       case .utf16Be: return "UTF-16-BE"
@@ -338,7 +321,6 @@ public enum Padding {
 
   @inlinable
   var cName: String {
-    @inline(__always)
     get {
       switch self {
       case .same: return "SAME"
@@ -356,7 +338,6 @@ public enum Padding2 {
 
   @inlinable
   var cName: String {
-    @inline(__always)
     get {
       switch self {
       case .explicit: return "EXPLICIT"
@@ -376,7 +357,6 @@ public enum Reduction {
 
   @inlinable
   var cName: String {
-    @inline(__always)
     get {
       switch self {
       case .max: return "max"
@@ -397,7 +377,6 @@ public enum RnnMode {
 
   @inlinable
   var cName: String {
-    @inline(__always)
     get {
       switch self {
       case .gru: return "gru"
@@ -416,7 +395,6 @@ public enum RoundMode {
 
   @inlinable
   var cName: String {
-    @inline(__always)
     get {
       switch self {
       case .halfToEven: return "HALF_TO_EVEN"
@@ -433,7 +411,6 @@ public enum RoundMode6 {
 
   @inlinable
   var cName: String {
-    @inline(__always)
     get {
       switch self {
       case .halfAwayFromZero: return "HALF_AWAY_FROM_ZERO"
@@ -449,7 +426,6 @@ public enum SplitType {
 
   @inlinable
   var cName: String {
-    @inline(__always)
     get {
       switch self {
       case .inequality: return "inequality"
@@ -465,7 +441,6 @@ public enum Unit {
 
   @inlinable
   var cName: String {
-    @inline(__always)
     get {
       switch self {
       case .byte: return "BYTE"
@@ -476,7 +451,7 @@ public enum Unit {
 }
 
 
-@inlinable @inline(__always)
+@inlinable
 public static func a(
 ) -> Tensor<Float> {
   let op = TFE_Op("A")
@@ -492,7 +467,7 @@ public static func a(
 /// Returns nothing but an exception.
 ///
 /// - Attr error_msg: A string which is the message associated with the exception.
-@inlinable @inline(__always)
+@inlinable
 public static func abort(
   errorMsg: String,
   exitWithoutError: Bool = false
@@ -508,7 +483,7 @@ public static func abort(
 /// Given a tensor `x`, this operation returns a tensor containing the absolute
 /// value of each element in `x`. For example, if x is an input element and y is
 /// an output element, this operation computes \\(y = |x|\\).
-@inlinable @inline(__always)
+@inlinable
 public static func abs<T: Numeric & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -532,7 +507,7 @@ public static func abs<T: Numeric & TensorFlowScalar>(
 /// - Parameter inputs: A list of `Tensor` objects, each with same shape and type.
 ///
 /// - Attr shape: Shape of elements of `inputs`.
-@inlinable @inline(__always)
+@inlinable
 public static func accumulateNV2<T: Numeric & TensorFlowScalar>(
   inputs: [Tensor<T>],
   shape: TensorShape?
@@ -546,7 +521,7 @@ public static func accumulateNV2<T: Numeric & TensorFlowScalar>(
 }
 
 /// Computes acos of x element-wise.
-@inlinable @inline(__always)
+@inlinable
 public static func acos<T: Numeric & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -557,7 +532,7 @@ public static func acos<T: Numeric & TensorFlowScalar>(
 }
 
 /// Computes inverse hyperbolic cosine of x element-wise.
-@inlinable @inline(__always)
+@inlinable
 public static func acosh<T: FloatingPoint & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -571,7 +546,7 @@ public static func acosh<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// *NOTE*: `Add` supports broadcasting. `AddN` does not. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-@inlinable @inline(__always)
+@inlinable
 public static func add<T: Numeric & TensorFlowScalar>(
   _ x: Tensor<T>,
   _ y: Tensor<T>
@@ -587,7 +562,7 @@ public static func add<T: Numeric & TensorFlowScalar>(
 ///
 /// *NOTE*: `Add` supports broadcasting. `AddN` does not. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-@inlinable @inline(__always)
+@inlinable
 public static func add(
   _ x: StringTensor,
   _ y: StringTensor
@@ -638,7 +613,7 @@ public static func add(
 ///
 /// - Output sparse_handles: 1-D.  The handles of the `SparseTensor` now stored in the
 ///   `SparseTensorsMap`.  Shape: `[N]`.
-@inlinable @inline(__always)
+@inlinable
 public static func addManySparseToTensorsMap<T: TensorFlowScalar>(
   sparseIndices: Tensor<Int64>,
   sparseValues: Tensor<T>,
@@ -659,7 +634,7 @@ public static func addManySparseToTensorsMap<T: TensorFlowScalar>(
 /// Add all input tensors element wise.
 ///
 /// - Parameter inputs: Must all be the same size and shape.
-@inlinable @inline(__always)
+@inlinable
 public static func addN<T: Numeric & TensorFlowScalar>(
   inputs: [Tensor<T>]
 ) -> Tensor<T> {
@@ -699,7 +674,7 @@ public static func addN<T: Numeric & TensorFlowScalar>(
 ///
 /// - Output sparse_handle: 0-D.  The handle of the `SparseTensor` now stored in the
 ///   `SparseTensorsMap`.
-@inlinable @inline(__always)
+@inlinable
 public static func addSparseToTensorsMap<T: TensorFlowScalar>(
   sparseIndices: Tensor<Int64>,
   sparseValues: Tensor<T>,
@@ -721,7 +696,7 @@ public static func addSparseToTensorsMap<T: TensorFlowScalar>(
 ///
 /// *NOTE*: `Add` supports broadcasting. `AddN` does not. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-@inlinable @inline(__always)
+@inlinable
 public static func addV2<T: Numeric & TensorFlowScalar>(
   _ x: Tensor<T>,
   _ y: Tensor<T>
@@ -734,7 +709,7 @@ public static func addV2<T: Numeric & TensorFlowScalar>(
 }
 
 /// Deprecated. Disallowed in GraphDef version >= 2.
-@inlinable @inline(__always)
+@inlinable
 public static func adjustContrast<T: Numeric & TensorFlowScalar>(
   images: Tensor<T>,
   contrastFactor: Tensor<Float>,
@@ -767,7 +742,7 @@ public static func adjustContrast<T: Numeric & TensorFlowScalar>(
 ///   - contrast_factor: A float multiplier for adjusting contrast.
 ///
 /// - Output output: The contrast-adjusted image or images.
-@inlinable @inline(__always)
+@inlinable
 public static func adjustContrastv2<T: FloatingPoint & TensorFlowScalar>(
   images: Tensor<T>,
   contrastFactor: Tensor<Float>
@@ -793,7 +768,7 @@ public static func adjustContrastv2<T: FloatingPoint & TensorFlowScalar>(
 ///   - delta: A float delta to add to the hue.
 ///
 /// - Output output: The hue-adjusted image or images.
-@inlinable @inline(__always)
+@inlinable
 public static func adjustHue<T: FloatingPoint & TensorFlowScalar>(
   images: Tensor<T>,
   delta: Tensor<Float>
@@ -819,7 +794,7 @@ public static func adjustHue<T: FloatingPoint & TensorFlowScalar>(
 ///   - scale: A float scale to add to the saturation.
 ///
 /// - Output output: The hue-adjusted image or images.
-@inlinable @inline(__always)
+@inlinable
 public static func adjustSaturation<T: FloatingPoint & TensorFlowScalar>(
   images: Tensor<T>,
   scale: Tensor<Float>
@@ -846,7 +821,7 @@ public static func adjustSaturation<T: FloatingPoint & TensorFlowScalar>(
 /// - Attr keep_dims: If true, retain reduced dimensions with length 1.
 ///
 /// - Output output: The reduced tensor.
-@inlinable @inline(__always)
+@inlinable
 public static func all<Tidx: BinaryInteger & TensorFlowScalar>(
   _ input: Tensor<Bool>,
   reductionIndices: Tensor<Tidx>,
@@ -896,7 +871,7 @@ public static func all<Tidx: BinaryInteger & TensorFlowScalar>(
 ///     candidate representing the number of times the candidate is expected
 ///     to occur in a batch of sampled candidates.  If unique=true, then this is a
 ///     probability.
-@inlinable @inline(__always)
+@inlinable
 public static func allCandidateSampler(
   trueClasses: Tensor<Int64>,
   numTrue: Int64,
@@ -948,7 +923,7 @@ public static func allCandidateSampler(
 ///     size(group_assignment.get_shape()[1])
 ///
 /// - Output output: The exchanged result.
-@inlinable @inline(__always)
+@inlinable
 public static func allToAll<T: TensorFlowScalar>(
   _ input: Tensor<T>,
   groupAssignment: Tensor<Int32>,
@@ -985,7 +960,7 @@ public static func allToAll<T: TensorFlowScalar>(
 /// @compatibility(numpy)
 /// Equivalent to np.angle.
 /// @end_compatibility
-@inlinable @inline(__always)
+@inlinable
 public static func angle<
     T: TensorFlowScalar,
     Tout: FloatingPoint & TensorFlowScalar
@@ -1005,7 +980,7 @@ public static func angle<
 ///   "IteratorGetNext" op. In contrast to Iterator, AnonymousIterator prevents
 ///   resource sharing by name, and does not keep a reference to the resource
 ///   container.
-@inlinable @inline(__always)
+@inlinable
 public static func anonymousIterator(
   outputTypes: [TensorDataType],
   outputShapes: [TensorShape?]
@@ -1024,7 +999,7 @@ public static func anonymousIterator(
 ///     resource sharing by name, and does not keep a reference to the resource
 ///     container.
 ///   - deleter: A variant deleter that should be passed into the op that deletes the iterator.
-@inlinable @inline(__always)
+@inlinable
 public static func anonymousIteratorV2(
   outputTypes: [TensorDataType],
   outputShapes: [TensorShape?]
@@ -1050,7 +1025,7 @@ public static func anonymousIteratorV2(
 /// - Attr keep_dims: If true, retain reduced dimensions with length 1.
 ///
 /// - Output output: The reduced tensor.
-@inlinable @inline(__always)
+@inlinable
 public static func any<Tidx: BinaryInteger & TensorFlowScalar>(
   _ input: Tensor<Bool>,
   reductionIndices: Tensor<Tidx>,
@@ -1065,7 +1040,7 @@ public static func any<Tidx: BinaryInteger & TensorFlowScalar>(
 }
 
 /// Returns the truth value of abs(x-y) < tolerance element-wise.
-@inlinable @inline(__always)
+@inlinable
 public static func approximateEqual<T: Numeric & TensorFlowScalar>(
   _ x: Tensor<T>,
   _ y: Tensor<T>,
@@ -1096,7 +1071,7 @@ public static func approximateEqual<T: Numeric & TensorFlowScalar>(
 /// - Parameter dimension: int32 or int64, must be in the range `[-rank(input), rank(input))`.
 ///   Describes which dimension of the input Tensor to reduce across. For vectors,
 ///   use dimension = 0.
-@inlinable @inline(__always)
+@inlinable
 public static func argMax<
     T: Numeric & TensorFlowScalar,
     Tidx: BinaryInteger & TensorFlowScalar,
@@ -1131,7 +1106,7 @@ public static func argMax<
 /// - Parameter dimension: int32 or int64, must be in the range `[-rank(input), rank(input))`.
 ///   Describes which dimension of the input Tensor to reduce across. For vectors,
 ///   use dimension = 0.
-@inlinable @inline(__always)
+@inlinable
 public static func argMin<
     T: Numeric & TensorFlowScalar,
     Tidx: BinaryInteger & TensorFlowScalar,
@@ -1164,7 +1139,7 @@ public static func argMin<
 ///     Only used if width > -1.
 ///   - fill: The value to pad if width > -1.  If empty, pads with spaces.
 ///     Another typical value is '0'.  String cannot be longer than 1 character.
-@inlinable @inline(__always)
+@inlinable
 public static func asString<T: TensorFlowScalar>(
   _ input: Tensor<T>,
   precision: Int64 = -1,
@@ -1202,7 +1177,7 @@ public static func asString<T: TensorFlowScalar>(
 /// tf.math.asin(y) # [1.047, 0.785] = x
 /// ```
 ///
-@inlinable @inline(__always)
+@inlinable
 public static func asin<T: Numeric & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -1213,7 +1188,7 @@ public static func asin<T: Numeric & TensorFlowScalar>(
 }
 
 /// Computes inverse hyperbolic sine of x element-wise.
-@inlinable @inline(__always)
+@inlinable
 public static func asinh<T: FloatingPoint & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -1233,7 +1208,7 @@ public static func asinh<T: FloatingPoint & TensorFlowScalar>(
 ///   - data: The tensors to print out when condition is false.
 ///
 /// - Attr summarize: Print this many entries of each tensor.
-@inlinable @inline(__always)
+@inlinable
 public static func assert<T: TensorArrayProtocol>(
   condition: Tensor<Bool>,
   data: T,
@@ -1257,7 +1232,7 @@ public static func assert<T: TensorArrayProtocol>(
 ///   - value: the value by which the variable will be incremented.
 ///
 /// - Attr dtype: the dtype of the value.
-@inlinable @inline(__always)
+@inlinable
 public static func assignAddVariableOp<Dtype: TensorFlowScalar>(
   resource: ResourceHandle,
   value: Tensor<Dtype>
@@ -1279,7 +1254,7 @@ public static func assignAddVariableOp<Dtype: TensorFlowScalar>(
 ///   - value: the value by which the variable will be incremented.
 ///
 /// - Attr dtype: the dtype of the value.
-@inlinable @inline(__always)
+@inlinable
 public static func assignSubVariableOp<Dtype: TensorFlowScalar>(
   resource: ResourceHandle,
   value: Tensor<Dtype>
@@ -1301,7 +1276,7 @@ public static func assignSubVariableOp<Dtype: TensorFlowScalar>(
 ///   - value: the value to set the new tensor to use.
 ///
 /// - Attr dtype: the dtype of the value.
-@inlinable @inline(__always)
+@inlinable
 public static func assignVariableOp<Dtype: TensorFlowScalar>(
   resource: ResourceHandle,
   value: Tensor<Dtype>
@@ -1331,7 +1306,7 @@ public static func assignVariableOp<Dtype: TensorFlowScalar>(
 /// tf.math.atan(y) # [1.047, 0.785] = x
 /// ```
 ///
-@inlinable @inline(__always)
+@inlinable
 public static func atan<T: Numeric & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -1348,7 +1323,7 @@ public static func atan<T: Numeric & TensorFlowScalar>(
 /// and
 /// \[ y = r \sin(\theta) \]
 /// where \(r = \sqrt(x^2 + y^2) \).
-@inlinable @inline(__always)
+@inlinable
 public static func atan2<T: FloatingPoint & TensorFlowScalar>(
   _ y: Tensor<T>,
   _ x: Tensor<T>
@@ -1361,7 +1336,7 @@ public static func atan2<T: FloatingPoint & TensorFlowScalar>(
 }
 
 /// Computes inverse hyperbolic tangent of x element-wise.
-@inlinable @inline(__always)
+@inlinable
 public static func atanh<T: FloatingPoint & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -1371,7 +1346,7 @@ public static func atanh<T: FloatingPoint & TensorFlowScalar>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func attr(
   _ a: Int64
 ) {
@@ -1380,7 +1355,7 @@ public static func attr(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func attrBool(
   _ a: Bool
 ) {
@@ -1389,7 +1364,7 @@ public static func attrBool(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func attrBoolList(
   _ a: [Bool]
 ) {
@@ -1398,7 +1373,7 @@ public static func attrBoolList(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func attrDefault(
   _ a: String = "banana"
 ) {
@@ -1407,7 +1382,7 @@ public static func attrDefault(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func attrEmptyListDefault(
   _ a: [Double]
 ) {
@@ -1416,7 +1391,7 @@ public static func attrEmptyListDefault(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func attrEnum(
   _ a: A
 ) {
@@ -1425,7 +1400,7 @@ public static func attrEnum(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func attrEnumList(
   _ a: [String]
 ) {
@@ -1434,7 +1409,7 @@ public static func attrEnumList(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func attrFloat(
   _ a: Double
 ) {
@@ -1443,7 +1418,7 @@ public static func attrFloat(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func attrListDefault(
   _ a: [Int32] = [5, 15]
 ) {
@@ -1452,7 +1427,7 @@ public static func attrListDefault(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func attrListMin(
   _ a: [Int32]
 ) {
@@ -1461,7 +1436,7 @@ public static func attrListMin(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func attrListTypeDefault<T: TensorFlowScalar>(
   _ a: [Tensor<T>],
   _ b: [Tensor<T>]
@@ -1474,7 +1449,7 @@ public static func attrListTypeDefault<T: TensorFlowScalar>(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func attrMin(
   _ a: Int64
 ) {
@@ -1483,7 +1458,7 @@ public static func attrMin(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func attrPartialShape(
   _ a: TensorShape?
 ) {
@@ -1492,7 +1467,7 @@ public static func attrPartialShape(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func attrPartialShapeList(
   _ a: [TensorShape?]
 ) {
@@ -1501,7 +1476,7 @@ public static func attrPartialShapeList(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func attrShape(
   _ a: TensorShape?
 ) {
@@ -1510,7 +1485,7 @@ public static func attrShape(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func attrShapeList(
   _ a: [TensorShape?]
 ) {
@@ -1519,7 +1494,7 @@ public static func attrShapeList(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func attrTypeDefault<T: TensorFlowScalar>(
   _ a: Tensor<T>
 ) {
@@ -1567,7 +1542,7 @@ public static func attrTypeDefault<T: TensorFlowScalar>(
 ///     magnitude. Using squared magnitude can avoid extra calculations.
 ///
 /// - Output spectrogram: 3D representation of the audio frequencies as an image.
-@inlinable @inline(__always)
+@inlinable
 public static func audioSpectrogram(
   _ input: Tensor<Float>,
   windowSize: Int64,
@@ -1605,7 +1580,7 @@ public static func audioSpectrogram(
 ///   - max_outputs: Max number of batch elements to generate audio for.
 ///
 /// - Output summary: Scalar. Serialized `Summary` protocol buffer.
-@inlinable @inline(__always)
+@inlinable
 public static func audioSummary(
   tag: StringTensor,
   _ tensor: Tensor<Float>,
@@ -1642,7 +1617,7 @@ public static func audioSummary(
 /// - Attr max_outputs: Max number of batch elements to generate audio for.
 ///
 /// - Output summary: Scalar. Serialized `Summary` protocol buffer.
-@inlinable @inline(__always)
+@inlinable
 public static func audioSummaryV2(
   tag: StringTensor,
   _ tensor: Tensor<Float>,
@@ -1675,7 +1650,7 @@ public static func audioSummaryV2(
 ///         [batch, in_channels, in_height, in_width].
 ///
 /// - Output output: The average pooled output tensor.
-@inlinable @inline(__always)
+@inlinable
 public static func avgPool<T: FloatingPoint & TensorFlowScalar>(
   value: Tensor<T>,
   ksize: [Int32],
@@ -1710,7 +1685,7 @@ public static func avgPool<T: FloatingPoint & TensorFlowScalar>(
 ///         [batch, in_channels, in_depth, in_height, in_width].
 ///
 /// - Output output: The average pooled output tensor.
-@inlinable @inline(__always)
+@inlinable
 public static func avgPool3D<T: FloatingPoint & TensorFlowScalar>(
   _ input: Tensor<T>,
   ksize: [Int32],
@@ -1747,7 +1722,7 @@ public static func avgPool3D<T: FloatingPoint & TensorFlowScalar>(
 ///         [batch, in_channels, in_depth, in_height, in_width].
 ///
 /// - Output output: The backprop for input.
-@inlinable @inline(__always)
+@inlinable
 public static func avgPool3DGrad<T: FloatingPoint & TensorFlowScalar>(
   origInputShape: Tensor<Int32>,
   grad: Tensor<T>,
@@ -1785,7 +1760,7 @@ public static func avgPool3DGrad<T: FloatingPoint & TensorFlowScalar>(
 ///         [batch, in_channels, in_height, in_width].
 ///
 /// - Output output: 4-D.  Gradients w.r.t. the input of `avg_pool`.
-@inlinable @inline(__always)
+@inlinable
 public static func avgPoolGrad<T: FloatingPoint & TensorFlowScalar>(
   origInputShape: Tensor<Int32>,
   grad: Tensor<T>,
@@ -1805,7 +1780,7 @@ public static func avgPoolGrad<T: FloatingPoint & TensorFlowScalar>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func b(
 ) -> Tensor<Float> {
   let op = TFE_Op("B")
@@ -1851,7 +1826,7 @@ public static func b(
 ///  same container and shared_name will batch their elements together. If left
 ///  empty, the op name will be used as the shared name.
 /// T: the types of tensors to be batched.
-@inlinable @inline(__always)
+@inlinable
 public static func batch<T: TensorArrayProtocol>(
   inTensors: T,
   numBatchThreads: Int64,
@@ -1879,7 +1854,7 @@ public static func batch<T: TensorArrayProtocol>(
   return op.execute(Int(inTensors._typeList.count), Int(1), Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func batchCholesky<T: FloatingPoint & TensorFlowScalar>(
   _ input: Tensor<T>
 ) -> Tensor<T> {
@@ -1889,7 +1864,7 @@ public static func batchCholesky<T: FloatingPoint & TensorFlowScalar>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func batchCholeskyGrad<T: FloatingPoint & TensorFlowScalar>(
   l: Tensor<T>,
   grad: Tensor<T>
@@ -1905,7 +1880,7 @@ public static func batchCholeskyGrad<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// - Parameter batch_size: A scalar representing the number of elements to accumulate in a
 ///   batch.
-@inlinable @inline(__always)
+@inlinable
 public static func batchDataset(
   inputDataset: VariantHandle,
   batchSize: Tensor<Int64>,
@@ -1926,7 +1901,7 @@ public static func batchDataset(
 ///   - batch_size: A scalar representing the number of elements to accumulate in a batch.
 ///   - drop_remainder: A scalar representing whether the last batch should be dropped in case its size
 ///     is smaller than desired.
-@inlinable @inline(__always)
+@inlinable
 public static func batchDatasetV2(
   inputDataset: VariantHandle,
   batchSize: Tensor<Int64>,
@@ -2009,7 +1984,7 @@ public static func batchDatasetV2(
 ///   - Tout: the types of the output tensors.
 ///
 /// - Output out_tensors: The output tensors.
-@inlinable @inline(__always)
+@inlinable
 public static func batchFunction<
     FIn: TensorGroup,
     FOut: TensorGroup,
@@ -2077,7 +2052,7 @@ public static func batchFunction<
 ///   - adj_y: If `True`, adjoint the slices of `y`. Defaults to `False`.
 ///
 /// - Output output: 3-D or higher with shape `[..., r_o, c_o]`
-@inlinable @inline(__always)
+@inlinable
 public static func batchMatMul<T: Numeric & TensorFlowScalar>(
   _ x: Tensor<T>,
   _ y: Tensor<T>,
@@ -2128,7 +2103,7 @@ public static func batchMatMul<T: Numeric & TensorFlowScalar>(
 ///   - adj_y: If `True`, adjoint the slices of `y`. Defaults to `False`.
 ///
 /// - Output output: 3-D or higher with shape `[..., r_o, c_o]`
-@inlinable @inline(__always)
+@inlinable
 public static func batchMatMulV2<T: Numeric & TensorFlowScalar>(
   _ x: Tensor<T>,
   _ y: Tensor<T>,
@@ -2144,7 +2119,7 @@ public static func batchMatMulV2<T: Numeric & TensorFlowScalar>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func batchMatrixBandPart<T: TensorFlowScalar>(
   _ input: Tensor<T>,
   numLower: Tensor<Int64>,
@@ -2158,7 +2133,7 @@ public static func batchMatrixBandPart<T: TensorFlowScalar>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func batchMatrixDeterminant<T: FloatingPoint & TensorFlowScalar>(
   _ input: Tensor<T>
 ) -> Tensor<T> {
@@ -2168,7 +2143,7 @@ public static func batchMatrixDeterminant<T: FloatingPoint & TensorFlowScalar>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func batchMatrixDiag<T: TensorFlowScalar>(
   diagonal: Tensor<T>
 ) -> Tensor<T> {
@@ -2178,7 +2153,7 @@ public static func batchMatrixDiag<T: TensorFlowScalar>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func batchMatrixDiagPart<T: TensorFlowScalar>(
   _ input: Tensor<T>
 ) -> Tensor<T> {
@@ -2188,7 +2163,7 @@ public static func batchMatrixDiagPart<T: TensorFlowScalar>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func batchMatrixInverse<T: FloatingPoint & TensorFlowScalar>(
   _ input: Tensor<T>,
   adjoint: Bool = false
@@ -2200,7 +2175,7 @@ public static func batchMatrixInverse<T: FloatingPoint & TensorFlowScalar>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func batchMatrixSetDiag<T: TensorFlowScalar>(
   _ input: Tensor<T>,
   diagonal: Tensor<T>
@@ -2212,7 +2187,7 @@ public static func batchMatrixSetDiag<T: TensorFlowScalar>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func batchMatrixSolve<T: FloatingPoint & TensorFlowScalar>(
   matrix: Tensor<T>,
   rhs: Tensor<T>,
@@ -2226,7 +2201,7 @@ public static func batchMatrixSolve<T: FloatingPoint & TensorFlowScalar>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func batchMatrixSolveLs<T: FloatingPoint & TensorFlowScalar>(
   matrix: Tensor<T>,
   rhs: Tensor<T>,
@@ -2242,7 +2217,7 @@ public static func batchMatrixSolveLs<T: FloatingPoint & TensorFlowScalar>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func batchMatrixTriangularSolve<T: FloatingPoint & TensorFlowScalar>(
   matrix: Tensor<T>,
   rhs: Tensor<T>,
@@ -2280,7 +2255,7 @@ public static func batchMatrixTriangularSolve<T: FloatingPoint & TensorFlowScala
 ///   - variance_epsilon: A small float number to avoid dividing by 0.
 ///   - scale_after_normalization: A bool indicating whether the resulted tensor
 ///     needs to be multiplied with gamma.
-@inlinable @inline(__always)
+@inlinable
 public static func batchNormWithGlobalNormalization<T: Numeric & TensorFlowScalar>(
   t: Tensor<T>,
   m: Tensor<T>,
@@ -2330,7 +2305,7 @@ public static func batchNormWithGlobalNormalization<T: Numeric & TensorFlowScala
 ///   - dv: 1D backprop tensor for variance.
 ///   - db: 1D backprop tensor for beta.
 ///   - dg: 1D backprop tensor for gamma.
-@inlinable @inline(__always)
+@inlinable
 public static func batchNormWithGlobalNormalizationGrad<T: Numeric & TensorFlowScalar>(
   t: Tensor<T>,
   m: Tensor<T>,
@@ -2352,7 +2327,7 @@ public static func batchNormWithGlobalNormalizationGrad<T: Numeric & TensorFlowS
   return op.execute(Int(1), Int(1), Int(1), Int(1), Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func batchSelfAdjointEig<T: FloatingPoint & TensorFlowScalar>(
   _ input: Tensor<T>
 ) -> Tensor<T> {
@@ -2362,7 +2337,7 @@ public static func batchSelfAdjointEig<T: FloatingPoint & TensorFlowScalar>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func batchSelfAdjointEigV2<T: FloatingPoint & TensorFlowScalar>(
   _ input: Tensor<T>,
   computeV: Bool = true
@@ -2374,7 +2349,7 @@ public static func batchSelfAdjointEigV2<T: FloatingPoint & TensorFlowScalar>(
   return op.execute(Int(1), Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func batchSvd<T: FloatingPoint & TensorFlowScalar>(
   _ input: Tensor<T>,
   computeUv: Bool = true,
@@ -2476,7 +2451,7 @@ public static func batchSvd<T: FloatingPoint & TensorFlowScalar>(
 ///        [[[5], [7]], [[13], [15]]],
 ///        [[[6], [8]], [[14], [16]]]]
 ///   ```
-@inlinable @inline(__always)
+@inlinable
 public static func batchToSpace<
     T: TensorFlowScalar,
     Tidx: BinaryInteger & TensorFlowScalar
@@ -2616,7 +2591,7 @@ public static func batchToSpace<
 ///          [[[9],  [10], [11],  [12]],
 ///           [[13], [14], [15],  [16]]]]
 ///     ```
-@inlinable @inline(__always)
+@inlinable
 public static func batchToSpaceND<
     T: TensorFlowScalar,
     TblockShape: BinaryInteger & TensorFlowScalar,
@@ -2642,7 +2617,7 @@ public static func batchToSpaceND<
 /// `bessel_i0e(x) = exp(-abs(x)) bessel_i0(x)`.
 ///
 /// This function is faster and numerically stabler than `bessel_i0(x)`.
-@inlinable @inline(__always)
+@inlinable
 public static func besselI0e<T: FloatingPoint & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -2658,7 +2633,7 @@ public static func besselI0e<T: FloatingPoint & TensorFlowScalar>(
 /// `bessel_i1e(x) = exp(-abs(x)) bessel_i1(x)`.
 ///
 /// This function is faster and numerically stabler than `bessel_i1(x)`.
-@inlinable @inline(__always)
+@inlinable
 public static func besselI1e<T: FloatingPoint & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -2683,7 +2658,7 @@ public static func besselI1e<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// is the incomplete beta function and \\(B(a, b)\\) is the *complete*
 /// beta function.
-@inlinable @inline(__always)
+@inlinable
 public static func betainc<T: FloatingPoint & TensorFlowScalar>(
   _ a: Tensor<T>,
   _ b: Tensor<T>,
@@ -2715,7 +2690,7 @@ public static func betainc<T: FloatingPoint & TensorFlowScalar>(
 ///       dimension.
 ///
 /// - Output output: Broadcasted sum of `value` and `bias`.
-@inlinable @inline(__always)
+@inlinable
 public static func biasAdd<T: Numeric & TensorFlowScalar>(
   value: Tensor<T>,
   bias: Tensor<T>,
@@ -2746,7 +2721,7 @@ public static func biasAdd<T: Numeric & TensorFlowScalar>(
 ///       dimension.
 ///
 /// - Output output: 1-D with size the feature dimension of `out_backprop`.
-@inlinable @inline(__always)
+@inlinable
 public static func biasAddGrad<T: Numeric & TensorFlowScalar>(
   outBackprop: Tensor<T>,
   dataFormat: DataFormat = .nhwc
@@ -2770,7 +2745,7 @@ public static func biasAddGrad<T: Numeric & TensorFlowScalar>(
 ///   - bias: 1-D with size the last dimension of `value`.
 ///
 /// - Output output: Broadcasted sum of `value` and `bias`.
-@inlinable @inline(__always)
+@inlinable
 public static func biasAddV1<T: Numeric & TensorFlowScalar>(
   value: Tensor<T>,
   bias: Tensor<T>
@@ -2782,7 +2757,7 @@ public static func biasAddV1<T: Numeric & TensorFlowScalar>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func binary<T: TensorFlowScalar>(
   _ a: Tensor<T>,
   _ b: Tensor<T>
@@ -2813,7 +2788,7 @@ public static func binary<T: TensorFlowScalar>(
 ///
 /// - Output bins: 1D `Tensor` with length equal to `size`. The counts or summed weights for
 ///   each value in the range [0, size).
-@inlinable @inline(__always)
+@inlinable
 public static func bincount<T: Numeric & TensorFlowScalar>(
   arr: Tensor<Int32>,
   size: Tensor<Int32>,
@@ -2878,7 +2853,7 @@ public static func bincount<T: Numeric & TensorFlowScalar>(
 ///
 /// *NOTE*: Bitcast is implemented as a low-level cast, so machines with different
 /// endian orderings will give different results.
-@inlinable @inline(__always)
+@inlinable
 public static func bitcast<
     T: Numeric & TensorFlowScalar,
     Type: Numeric & TensorFlowScalar
@@ -2896,7 +2871,7 @@ public static func bitcast<
 ///
 /// The result will have those bits set, that are set in both `x` and `y`. The
 /// computation is performed on the underlying representations of `x` and `y`.
-@inlinable @inline(__always)
+@inlinable
 public static func bitwiseAnd<T: BinaryInteger & TensorFlowScalar>(
   _ x: Tensor<T>,
   _ y: Tensor<T>
@@ -2912,7 +2887,7 @@ public static func bitwiseAnd<T: BinaryInteger & TensorFlowScalar>(
 ///
 /// The result will have those bits set, that are set in `x`, `y` or both. The
 /// computation is performed on the underlying representations of `x` and `y`.
-@inlinable @inline(__always)
+@inlinable
 public static func bitwiseOr<T: BinaryInteger & TensorFlowScalar>(
   _ x: Tensor<T>,
   _ y: Tensor<T>
@@ -2928,7 +2903,7 @@ public static func bitwiseOr<T: BinaryInteger & TensorFlowScalar>(
 ///
 /// The result will have those bits set, that are different in `x` and `y`. The
 /// computation is performed on the underlying representations of `x` and `y`.
-@inlinable @inline(__always)
+@inlinable
 public static func bitwiseXor<T: BinaryInteger & TensorFlowScalar>(
   _ x: Tensor<T>,
   _ y: Tensor<T>
@@ -2985,7 +2960,7 @@ public static func bitwiseXor<T: BinaryInteger & TensorFlowScalar>(
 ///   - ci: The cell input over the whole time sequence.
 ///   - co: The cell after the tanh over the whole time sequence.
 ///   - h: The output h vector over the whole time sequence.
-@inlinable @inline(__always)
+@inlinable
 public static func blockLSTM<T: FloatingPoint & TensorFlowScalar>(
   seqLenMax: Tensor<Int64>,
   _ x: Tensor<T>,
@@ -3053,7 +3028,7 @@ public static func blockLSTM<T: FloatingPoint & TensorFlowScalar>(
 ///   - wcf_grad: The gradient for wcf to be back-propped.
 ///   - wco_grad: The gradient for wco to be back-propped.
 ///   - b_grad: The gradient for w to be back-propped.
-@inlinable @inline(__always)
+@inlinable
 public static func blockLSTMGrad<T: FloatingPoint & TensorFlowScalar>(
   seqLenMax: Tensor<Int64>,
   _ x: Tensor<T>,
@@ -3115,7 +3090,7 @@ public static func blockLSTMGrad<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// - Output stats_summary: output Rank 4 Tensor (shape=[splits, feature_dimension, buckets, logits_dimension + hessian_dimension])
 ///   containing accumulated stats for each node, feature dimension and bucket.
-@inlinable @inline(__always)
+@inlinable
 public static func boostedTreesAggregateStats(
   nodeIds: Tensor<Int32>,
   gradients: Tensor<Float>,
@@ -3147,7 +3122,7 @@ public static func boostedTreesAggregateStats(
 /// - Attr num_features: inferred int; number of features.
 ///
 /// - Output buckets: int; List of Rank 1 Tensors each containing the bucketized values for a single feature.
-@inlinable @inline(__always)
+@inlinable
 public static func boostedTreesBucketize(
   floatValues: [Tensor<Float>],
   bucketBoundaries: [Tensor<Float>]
@@ -3190,7 +3165,7 @@ public static func boostedTreesBucketize(
 ///   - left_node_contribs: A Rank 2 tensors indicating the contribution of the left nodes when branching from parent nodes (given by the tensor element in the output node_ids_list) to the left direction by the given threshold for each feature. This value will be used to make the left node value by adding to the parent node value. Second dimension size is 1 for 1-dimensional logits, but would be larger for multi-class problems. See above for details like shapes and sizes.
 ///   - right_node_contribs: A Rank 2 tensors, with the same shape/conditions as left_node_contribs_list, but just that the value is for the right node.
 ///   - split_with_default_directions: A Rank 1 tensors indicating the which direction to go if data is missing. See above for details like shapes and sizes.
-@inlinable @inline(__always)
+@inlinable
 public static func boostedTreesCalculateBestFeatureSplit(
   nodeIdRange: Tensor<Int32>,
   statsSummary: Tensor<Float>,
@@ -3242,7 +3217,7 @@ public static func boostedTreesCalculateBestFeatureSplit(
 ///   - thresholds_list: An output list of Rank 1 tensors indicating the bucket id to compare with (as a threshold) for split in each node. See above for details like shapes and sizes.
 ///   - left_node_contribs_list: A list of Rank 2 tensors indicating the contribution of the left nodes when branching from parent nodes (given by the tensor element in the output node_ids_list) to the left direction by the given threshold for each feature. This value will be used to make the left node value by adding to the parent node value. Second dimension size is 1 for 1-dimensional logits, but would be larger for multi-class problems. See above for details like shapes and sizes.
 ///   - right_node_contribs_list: A list of Rank 2 tensors, with the same shape/conditions as left_node_contribs_list, but just that the value is for the right node.
-@inlinable @inline(__always)
+@inlinable
 public static func boostedTreesCalculateBestGainsPerFeature(
   nodeIdRange: Tensor<Int32>,
   statsSummaryList: [Tensor<Float>],
@@ -3274,7 +3249,7 @@ public static func boostedTreesCalculateBestGainsPerFeature(
 ///   - l2: l2 regularization factor on leaf weights, per instance based.
 ///
 /// - Output continue_centering: Bool, whether to continue bias centering.
-@inlinable @inline(__always)
+@inlinable
 public static func boostedTreesCenterBias(
   treeEnsembleHandle: ResourceHandle,
   meanGradients: Tensor<Float>,
@@ -3297,7 +3272,7 @@ public static func boostedTreesCenterBias(
 ///   - tree_ensemble_handle: Handle to the tree ensemble resource to be created.
 ///   - stamp_token: Token to use as the initial value of the resource stamp.
 ///   - tree_ensemble_serialized: Serialized proto of the tree ensemble.
-@inlinable @inline(__always)
+@inlinable
 public static func boostedTreesCreateEnsemble(
   treeEnsembleHandle: ResourceHandle,
   stampToken: Tensor<Int64>,
@@ -3318,7 +3293,7 @@ public static func boostedTreesCreateEnsemble(
 ///   - num_streams: int; The number of streams managed by the resource that shares the same epsilon.
 ///
 /// - Attr max_elements: int; The maximum number of data points that can be fed to the stream.
-@inlinable @inline(__always)
+@inlinable
 public static func boostedTreesCreateQuantileStreamResource(
   quantileStreamResourceHandle: ResourceHandle,
   epsilon: Tensor<Float>,
@@ -3341,7 +3316,7 @@ public static func boostedTreesCreateQuantileStreamResource(
 ///   - tree_ensemble_handle: Handle to the tree ensemble.
 ///   - stamp_token: Token to use as the new value of the resource stamp.
 ///   - tree_ensemble_serialized: Serialized proto of the ensemble.
-@inlinable @inline(__always)
+@inlinable
 public static func boostedTreesDeserializeEnsemble(
   treeEnsembleHandle: ResourceHandle,
   stampToken: Tensor<Int64>,
@@ -3355,7 +3330,7 @@ public static func boostedTreesDeserializeEnsemble(
 }
 
 /// Creates a handle to a BoostedTreesEnsembleResource
-@inlinable @inline(__always)
+@inlinable
 public static func boostedTreesEnsembleResourceHandleOp(
   container: String,
   sharedName: String
@@ -3381,7 +3356,7 @@ public static func boostedTreesEnsembleResourceHandleOp(
 ///     examples_debug_outputs_serialized.
 ///
 /// - Output examples_debug_outputs_serialized: Output rank 1 Tensor containing a proto serialized as a string for each example.
-@inlinable @inline(__always)
+@inlinable
 public static func boostedTreesExampleDebugOutputs(
   treeEnsembleHandle: ResourceHandle,
   bucketizedFeatures: [Tensor<Int32>],
@@ -3406,7 +3381,7 @@ public static func boostedTreesExampleDebugOutputs(
 ///   - num_attempted_layers: The number of layers we attempted to build (but not necessarily succeeded).
 ///   - last_layer_nodes_range: Rank size 2 tensor that contains start and end ids of the nodes in the latest
 ///     layer.
-@inlinable @inline(__always)
+@inlinable
 public static func boostedTreesGetEnsembleStates(
   treeEnsembleHandle: ResourceHandle
 ) -> (stampToken: Tensor<Int64>, numTrees: Tensor<Int32>, numFinalizedTrees: Tensor<Int32>, numAttemptedLayers: Tensor<Int32>, lastLayerNodesRange: Tensor<Int32>) {
@@ -3430,7 +3405,7 @@ public static func boostedTreesGetEnsembleStates(
 ///
 /// - Output summaries: float; List of Rank 2 Tensors each containing the quantile summary
 ///   (value, weight, min_rank, max_rank) of a single feature.
-@inlinable @inline(__always)
+@inlinable
 public static func boostedTreesMakeQuantileSummaries(
   floatValues: [Tensor<Float>],
   exampleWeights: Tensor<Float>,
@@ -3460,7 +3435,7 @@ public static func boostedTreesMakeQuantileSummaries(
 ///   - num_features: int; inferred from the size of bucketized_features_list; the number of features.
 ///
 /// - Output stats_summary: output Rank 4 Tensor (shape=[#features, #splits, #buckets, 2]) containing accumulated stats put into the corresponding node and bucket. The first index of 4th dimension refers to gradients, and the second to hessians.
-@inlinable @inline(__always)
+@inlinable
 public static func boostedTreesMakeStatsSummary(
   nodeIds: Tensor<Int32>,
   gradients: Tensor<Float>,
@@ -3494,7 +3469,7 @@ public static func boostedTreesMakeStatsSummary(
 ///     shape.
 ///
 /// - Output logits: Output rank 2 Tensor containing logits for each example.
-@inlinable @inline(__always)
+@inlinable
 public static func boostedTreesPredict(
   treeEnsembleHandle: ResourceHandle,
   bucketizedFeatures: [Tensor<Int32>],
@@ -3517,7 +3492,7 @@ public static func boostedTreesPredict(
 /// - Parameters:
 ///   - quantile_stream_resource_handle: resource handle referring to a QuantileStreamResource.
 ///   - summaries: string; List of Rank 2 Tensor each containing the summaries for a single feature.
-@inlinable @inline(__always)
+@inlinable
 public static func boostedTreesQuantileStreamResourceAddSummaries(
   quantileStreamResourceHandle: ResourceHandle,
   summaries: [Tensor<Float>]
@@ -3538,7 +3513,7 @@ public static func boostedTreesQuantileStreamResourceAddSummaries(
 ///   - bucket_boundaries: float; List of Rank 1 Tensors each containing the bucket boundaries for a feature.
 ///
 /// - Attr num_streams: inferred int; number of features to get bucket boundaries for.
-@inlinable @inline(__always)
+@inlinable
 public static func boostedTreesQuantileStreamResourceDeserialize(
   quantileStreamResourceHandle: ResourceHandle,
   bucketBoundaries: [Tensor<Float>]
@@ -3564,7 +3539,7 @@ public static func boostedTreesQuantileStreamResourceDeserialize(
 ///   If False, the output will be the points in the histogram that we got which roughly
 ///   translates to 1/epsilon boundaries and without any duplicates.
 ///   Default to False.
-@inlinable @inline(__always)
+@inlinable
 public static func boostedTreesQuantileStreamResourceFlush(
   quantileStreamResourceHandle: ResourceHandle,
   numBuckets: Tensor<Int64>,
@@ -3587,7 +3562,7 @@ public static func boostedTreesQuantileStreamResourceFlush(
 /// - Attr num_features: inferred int; number of features to get bucket boundaries for.
 ///
 /// - Output bucket_boundaries: float; List of Rank 1 Tensors each containing the bucket boundaries for a feature.
-@inlinable @inline(__always)
+@inlinable
 public static func boostedTreesQuantileStreamResourceGetBucketBoundaries(
   quantileStreamResourceHandle: ResourceHandle,
   numFeatures: Int64
@@ -3599,7 +3574,7 @@ public static func boostedTreesQuantileStreamResourceGetBucketBoundaries(
 }
 
 /// Creates a handle to a BoostedTreesQuantileStreamResource.
-@inlinable @inline(__always)
+@inlinable
 public static func boostedTreesQuantileStreamResourceHandleOp(
   container: String,
   sharedName: String
@@ -3617,7 +3592,7 @@ public static func boostedTreesQuantileStreamResourceHandleOp(
 /// - Outputs:
 ///   - stamp_token: Stamp token of the tree ensemble resource.
 ///   - tree_ensemble_serialized: Serialized proto of the ensemble.
-@inlinable @inline(__always)
+@inlinable
 public static func boostedTreesSerializeEnsemble(
   treeEnsembleHandle: ResourceHandle
 ) -> (stampToken: Tensor<Int64>, treeEnsembleSerialized: StringTensor) {
@@ -3650,7 +3625,7 @@ public static func boostedTreesSerializeEnsemble(
 ///     values stored) for each example.
 ///   - tree_ids: Rank 1 Tensor containing new tree ids for each example.
 ///   - node_ids: Rank 1 Tensor containing new node ids in the new tree_ids.
-@inlinable @inline(__always)
+@inlinable
 public static func boostedTreesTrainingPredict(
   treeEnsembleHandle: ResourceHandle,
   cachedTreeIds: Tensor<Int32>,
@@ -3694,7 +3669,7 @@ public static func boostedTreesTrainingPredict(
 /// - Attrs:
 ///   - pruning_mode: 0-No pruning, 1-Pre-pruning, 2-Post-pruning.
 ///   - num_features: Number of features that have best splits returned. INFERRED.
-@inlinable @inline(__always)
+@inlinable
 public static func boostedTreesUpdateEnsemble(
   treeEnsembleHandle: ResourceHandle,
   featureIds: Tensor<Int32>,
@@ -3726,7 +3701,7 @@ public static func boostedTreesUpdateEnsemble(
 ///
 /// Given `s0` and `s1`, tensors that represent shapes, compute `r0`, the
 /// broadcasted shape. `s0`, `s1` and `r0` are all integer vectors.
-@inlinable @inline(__always)
+@inlinable
 public static func broadcastArgs<T: BinaryInteger & TensorFlowScalar>(
   s0: Tensor<T>,
   s1: Tensor<T>
@@ -3741,7 +3716,7 @@ public static func broadcastArgs<T: BinaryInteger & TensorFlowScalar>(
 /// Return the reduction indices for computing gradients of s0 op s1 with broadcast.
 ///
 /// This is typically used by gradient computations for a broadcasting operation.
-@inlinable @inline(__always)
+@inlinable
 public static func broadcastGradientArgs<T: BinaryInteger & TensorFlowScalar>(
   s0: Tensor<T>,
   s1: Tensor<T>
@@ -3778,7 +3753,7 @@ public static func broadcastGradientArgs<T: BinaryInteger & TensorFlowScalar>(
 ///   - shape: An 1-D `int` Tensor. The shape of the desired output.
 ///
 /// - Output output: A Tensor.
-@inlinable @inline(__always)
+@inlinable
 public static func broadcastTo<
     T: TensorFlowScalar,
     Tidx: BinaryInteger & TensorFlowScalar
@@ -3816,7 +3791,7 @@ public static func broadcastTo<
 ///   @compatibility(numpy)
 ///   Equivalent to np.digitize.
 ///   @end_compatibility
-@inlinable @inline(__always)
+@inlinable
 public static func bucketize<T: Numeric & TensorFlowScalar>(
   _ input: Tensor<T>,
   boundaries: [Double]
@@ -3857,7 +3832,7 @@ public static func bucketize<T: Numeric & TensorFlowScalar>(
 ///     Its values are: `[batch_size, max_decoded_length[j]]`.
 ///   - log_probability: A matrix, shaped: `(batch_size x top_paths)`.  The
 ///     sequence log-probabilities.
-@inlinable @inline(__always)
+@inlinable
 public static func cTCBeamSearchDecoder(
   inputs: Tensor<Float>,
   sequenceLength: Tensor<Int32>,
@@ -3901,7 +3876,7 @@ public static func cTCBeamSearchDecoder(
 ///     Values are: `[batch_size, max_decoded_length]`.
 ///   - log_probability: Matrix, size `(batch_size x 1)`, containing sequence
 ///     log-probabilities.
-@inlinable @inline(__always)
+@inlinable
 public static func cTCGreedyDecoder(
   inputs: Tensor<Float>,
   sequenceLength: Tensor<Int32>,
@@ -3941,7 +3916,7 @@ public static func cTCGreedyDecoder(
 ///   - loss: A vector (batch) containing log-probabilities.
 ///   - gradient: The gradient of `loss`.  3-D, shape:
 ///     `(max_time x batch_size x num_classes)`.
-@inlinable @inline(__always)
+@inlinable
 public static func cTCLoss(
   inputs: Tensor<Float>,
   labelsIndices: Tensor<Int64>,
@@ -3971,7 +3946,7 @@ public static func cTCLoss(
 ///
 /// - Parameter filename: A path on the filesystem where we should cache the dataset. Note: this
 ///   will be a directory.
-@inlinable @inline(__always)
+@inlinable
 public static func cacheDataset(
   inputDataset: VariantHandle,
   filename: StringTensor,
@@ -3987,7 +3962,7 @@ public static func cacheDataset(
 }
 
 /// Cast x of type SrcT to y of DstT.
-@inlinable @inline(__always)
+@inlinable
 public static func cast<
     Srct: TensorFlowScalar,
     Dstt: TensorFlowScalar
@@ -4004,7 +3979,7 @@ public static func cast<
 }
 
 /// Returns element-wise smallest integer not less than x.
-@inlinable @inline(__always)
+@inlinable
 public static func ceil<T: FloatingPoint & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -4020,7 +3995,7 @@ public static func ceil<T: FloatingPoint & TensorFlowScalar>(
 /// that are not a number (NaN) or infinity (Inf). Otherwise, passes `tensor` as-is.
 ///
 /// - Attr message: Prefix of the error message.
-@inlinable @inline(__always)
+@inlinable
 public static func checkNumerics<T: FloatingPoint & TensorFlowScalar>(
   _ tensor: Tensor<T>,
   message: String
@@ -4051,7 +4026,7 @@ public static func checkNumerics<T: FloatingPoint & TensorFlowScalar>(
 /// - Parameter input: Shape is `[..., M, M]`.
 ///
 /// - Output output: Shape is `[..., M, M]`.
-@inlinable @inline(__always)
+@inlinable
 public static func cholesky<T: FloatingPoint & TensorFlowScalar>(
   _ input: Tensor<T>
 ) -> Tensor<T> {
@@ -4075,7 +4050,7 @@ public static func cholesky<T: FloatingPoint & TensorFlowScalar>(
 ///     this tensor.
 ///
 /// - Output output: Symmetrized version of df/dA . Shape is `[..., M, M]`
-@inlinable @inline(__always)
+@inlinable
 public static func choleskyGrad<T: FloatingPoint & TensorFlowScalar>(
   l: Tensor<T>,
   grad: Tensor<T>
@@ -4102,7 +4077,7 @@ public static func choleskyGrad<T: FloatingPoint & TensorFlowScalar>(
 ///     as `t`. The maximum value to clip by.
 ///
 /// - Output output: A clipped `Tensor` with the same shape as input 't'.
-@inlinable @inline(__always)
+@inlinable
 public static func clipByValue<T: Numeric & TensorFlowScalar>(
   t: Tensor<T>,
   clipValueMin: Tensor<T>,
@@ -4116,7 +4091,7 @@ public static func clipByValue<T: Numeric & TensorFlowScalar>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func closeSummaryWriter(
   writer: ResourceHandle
 ) {
@@ -4126,7 +4101,7 @@ public static func closeSummaryWriter(
 }
 
 /// Receives a tensor value broadcast from another device.
-@inlinable @inline(__always)
+@inlinable
 public static func collectiveBcastRecv<T: Numeric & TensorFlowScalar>(
   groupSize: Int64,
   groupKey: Int64,
@@ -4143,7 +4118,7 @@ public static func collectiveBcastRecv<T: Numeric & TensorFlowScalar>(
 }
 
 /// Broadcasts a tensor value to one or more other devices.
-@inlinable @inline(__always)
+@inlinable
 public static func collectiveBcastSend<T: Numeric & TensorFlowScalar>(
   _ input: Tensor<T>,
   groupSize: Int64,
@@ -4162,7 +4137,7 @@ public static func collectiveBcastSend<T: Numeric & TensorFlowScalar>(
 }
 
 /// Mutually accumulates multiple tensors of identical type and shape.
-@inlinable @inline(__always)
+@inlinable
 public static func collectiveGather<T: Numeric & TensorFlowScalar>(
   _ input: Tensor<T>,
   groupSize: Int64,
@@ -4196,7 +4171,7 @@ public static func collectiveGather<T: Numeric & TensorFlowScalar>(
 /// - Attr T: The type of elements to be exchanged.
 ///
 /// - Output output: The permuted input.
-@inlinable @inline(__always)
+@inlinable
 public static func collectivePermute<T: Numeric & TensorFlowScalar>(
   _ input: Tensor<T>,
   sourceTargetPairs: Tensor<Int32>
@@ -4209,7 +4184,7 @@ public static func collectivePermute<T: Numeric & TensorFlowScalar>(
 }
 
 /// Mutually reduces multiple tensors of identical type and shape.
-@inlinable @inline(__always)
+@inlinable
 public static func collectiveReduce<T: Numeric & TensorFlowScalar>(
   _ input: Tensor<T>,
   groupSize: Int64,
@@ -4284,7 +4259,7 @@ public static func collectiveReduce<T: Numeric & TensorFlowScalar>(
 ///     valid detections per batch item. Only the top num_detections[i] entries in
 ///     nms_boxes[i], nms_scores[i] and nms_class[i] are valid. The rest of the
 ///     entries are zero paddings.
-@inlinable @inline(__always)
+@inlinable
 public static func combinedNonMaxSuppression(
   boxes: Tensor<Float>,
   scores: Tensor<Float>,
@@ -4340,7 +4315,7 @@ public static func combinedNonMaxSuppression(
 /// - Attr T: The type of the input and threshold.
 ///
 /// - Output output: The bitpacked comparisons.
-@inlinable @inline(__always)
+@inlinable
 public static func compareAndBitpack<T: TensorFlowScalar>(
   _ input: Tensor<T>,
   threshold: Tensor<T>
@@ -4368,7 +4343,7 @@ public static func compareAndBitpack<T: TensorFlowScalar>(
 /// # tensor `imag` is [4.75, 5.75]
 /// tf.complex(real, imag) ==> [[2.25 + 4.75j], [3.25 + 5.75j]]
 /// ```
-@inlinable @inline(__always)
+@inlinable
 public static func complex<
     T: FloatingPoint & TensorFlowScalar,
     Tout: TensorFlowScalar
@@ -4390,7 +4365,7 @@ public static func complex<
 /// `float` or `double` that is the absolute value of each element in `x`. All
 /// elements in `x` must be complex numbers of the form \\(a + bj\\). The absolute
 /// value is computed as \\( \sqrt{a^2 + b^2}\\).
-@inlinable @inline(__always)
+@inlinable
 public static func complexAbs<
     T: TensorFlowScalar,
     Tout: FloatingPoint & TensorFlowScalar
@@ -4404,7 +4379,7 @@ public static func complexAbs<
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func complexStruct<TC: TensorGroup>(
   nA: Int64,
   nB: Int64
@@ -4440,7 +4415,7 @@ public static func complexStruct<TC: TensorGroup>(
 ///     for the row with the corresponding index in indices.
 ///   - weights: A vector of the same length as indices and ids, in which each element
 ///     is -FLOAT_MAX.
-@inlinable @inline(__always)
+@inlinable
 public static func computeAccidentalHits(
   trueClasses: Tensor<Int64>,
   sampledCandidates: Tensor<Int64>,
@@ -4468,7 +4443,7 @@ public static func computeAccidentalHits(
 /// - Output output: A `Tensor` with the concatenation of values stacked along the
 ///   `concat_dim` dimension.  This tensor's shape matches that of `values` except
 ///   in `concat_dim` where it has the sum of the sizes.
-@inlinable @inline(__always)
+@inlinable
 public static func concat<T: TensorFlowScalar>(
   concatDim: Tensor<Int32>,
   _ values: [Tensor<T>]
@@ -4500,7 +4475,7 @@ public static func concat<T: TensorFlowScalar>(
 ///
 /// - Output offset: The `N` int32 vectors representing the starting offset
 ///   of input tensors within the concatenated output.
-@inlinable @inline(__always)
+@inlinable
 public static func concatOffset(
   concatDim: Tensor<Int32>,
   shape: [Tensor<Int32>]
@@ -4523,7 +4498,7 @@ public static func concatOffset(
 /// - Output output: A `Tensor` with the concatenation of values stacked along the
 ///   `concat_dim` dimension.  This tensor's shape matches that of `values` except
 ///   in `concat_dim` where it has the sum of the sizes.
-@inlinable @inline(__always)
+@inlinable
 public static func concatV2<
     T: TensorFlowScalar,
     Tidx: BinaryInteger & TensorFlowScalar
@@ -4541,7 +4516,7 @@ public static func concatV2<
 }
 
 /// Creates a dataset that concatenates `input_dataset` with `another_dataset`.
-@inlinable @inline(__always)
+@inlinable
 public static func concatenateDataset(
   inputDataset: VariantHandle,
   anotherDataset: VariantHandle,
@@ -4566,7 +4541,7 @@ public static func concatenateDataset(
 ///
 /// - Output topology: A serialized tensorflow.tpu.TopologyProto that describes the TPU
 ///   topology.
-@inlinable @inline(__always)
+@inlinable
 public static func configureDistributedTPU(
   embeddingConfig: String,
   tpuEmbeddingConfig: String,
@@ -4594,7 +4569,7 @@ public static func configureDistributedTPU(
 /// # tensor 'input' is [-2.25 + 4.75j, 3.25 + 5.75j]
 /// tf.conj(input) ==> [-2.25 - 4.75j, 3.25 - 5.75j]
 /// ```
-@inlinable @inline(__always)
+@inlinable
 public static func conj<T: TensorFlowScalar>(
   _ input: Tensor<T>
 ) -> Tensor<T> {
@@ -4609,7 +4584,7 @@ public static func conj<T: TensorFlowScalar>(
 /// The output `y` has the same rank as `x`. The shapes of `x` and `y` satisfy:
 ///   `y.shape[i] == x.shape[perm[i]] for i in [0, 1, ..., rank(x) - 1]`
 ///   `y[i,j,k,...,s,t,u] == conj(x[perm[i], perm[j], perm[k],...,perm[s], perm[t], perm[u]])`
-@inlinable @inline(__always)
+@inlinable
 public static func conjugateTranspose<
     T: TensorFlowScalar,
     Tperm: BinaryInteger & TensorFlowScalar
@@ -4625,7 +4600,7 @@ public static func conjugateTranspose<
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func constructionFails(
 ) {
   let op = TFE_Op("ConstructionFails")
@@ -4644,7 +4619,7 @@ public static func constructionFails(
 /// be enforced via the `colocate_with` mechanism.
 ///
 /// - Parameter mutex_lock: A tensor returned by `MutexLock`.
-@inlinable @inline(__always)
+@inlinable
 public static func consumeMutexLock(
   mutexLock: VariantHandle
 ) {
@@ -4656,7 +4631,7 @@ public static func consumeMutexLock(
 /// Does nothing. Serves as a control trigger for scheduling.
 ///
 /// Only useful as a placeholder for control edges.
-@inlinable @inline(__always)
+@inlinable
 public static func controlTrigger(
 ) {
   let op = TFE_Op("ControlTrigger")
@@ -4716,7 +4691,7 @@ public static func controlTrigger(
 ///
 /// - Output output: A 4-D tensor. The dimension order is determined by the value of
 ///   `data_format`, see below for details.
-@inlinable @inline(__always)
+@inlinable
 public static func conv2D<T: FloatingPoint & TensorFlowScalar>(
   _ input: Tensor<T>,
   filter: Tensor<T>,
@@ -4773,7 +4748,7 @@ public static func conv2D<T: FloatingPoint & TensorFlowScalar>(
 /// - Output output: 4-D with shape
 ///   `[filter_height, filter_width, in_channels, out_channels]`.  Gradient w.r.t.
 ///   the `filter` input of the convolution.
-@inlinable @inline(__always)
+@inlinable
 public static func conv2DBackpropFilter<T: FloatingPoint & TensorFlowScalar>(
   _ input: Tensor<T>,
   filterSizes: Tensor<Int32>,
@@ -4831,7 +4806,7 @@ public static func conv2DBackpropFilter<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// - Output output: 4-D with shape `[batch, in_height, in_width, in_channels]`.  Gradient
 ///   w.r.t. the input of the convolution.
-@inlinable @inline(__always)
+@inlinable
 public static func conv2DBackpropInput<T: FloatingPoint & TensorFlowScalar>(
   inputSizes: Tensor<Int32>,
   filter: Tensor<T>,
@@ -4884,7 +4859,7 @@ public static func conv2DBackpropInput<T: FloatingPoint & TensorFlowScalar>(
 ///     filter element on that dimension. The dimension order is determined by the
 ///     value of `data_format`, see above for details. Dilations in the batch and
 ///     depth dimensions must be 1.
-@inlinable @inline(__always)
+@inlinable
 public static func conv3D<T: FloatingPoint & TensorFlowScalar>(
   _ input: Tensor<T>,
   filter: Tensor<T>,
@@ -4917,7 +4892,7 @@ public static func conv3D<T: FloatingPoint & TensorFlowScalar>(
 ///   - strides: 1-D tensor of length 5. The stride of the sliding window for each
 ///     dimension of `input`. Must have `strides[0] = strides[4] = 1`.
 ///   - padding: The type of padding algorithm to use.
-@inlinable @inline(__always)
+@inlinable
 public static func conv3DBackpropFilter<T: FloatingPoint & TensorFlowScalar>(
   _ input: Tensor<T>,
   filter: Tensor<T>,
@@ -4962,7 +4937,7 @@ public static func conv3DBackpropFilter<T: FloatingPoint & TensorFlowScalar>(
 ///     filter element on that dimension. The dimension order is determined by the
 ///     value of `data_format`, see above for details. Dilations in the batch and
 ///     depth dimensions must be 1.
-@inlinable @inline(__always)
+@inlinable
 public static func conv3DBackpropFilterV2<T: FloatingPoint & TensorFlowScalar>(
   _ input: Tensor<T>,
   filterSizes: Tensor<Int32>,
@@ -4997,7 +4972,7 @@ public static func conv3DBackpropFilterV2<T: FloatingPoint & TensorFlowScalar>(
 ///   - strides: 1-D tensor of length 5. The stride of the sliding window for each
 ///     dimension of `input`. Must have `strides[0] = strides[4] = 1`.
 ///   - padding: The type of padding algorithm to use.
-@inlinable @inline(__always)
+@inlinable
 public static func conv3DBackpropInput<T: FloatingPoint & TensorFlowScalar>(
   _ input: Tensor<T>,
   filter: Tensor<T>,
@@ -5042,7 +5017,7 @@ public static func conv3DBackpropInput<T: FloatingPoint & TensorFlowScalar>(
 ///     filter element on that dimension. The dimension order is determined by the
 ///     value of `data_format`, see above for details. Dilations in the batch and
 ///     depth dimensions must be 1.
-@inlinable @inline(__always)
+@inlinable
 public static func conv3DBackpropInputV2<
     T: FloatingPoint & TensorFlowScalar,
     Tshape: BinaryInteger & TensorFlowScalar
@@ -5090,7 +5065,7 @@ public static func conv3DBackpropInputV2<
 ///     "DebugIdentity;file:///tmp/tfdbg_1;0".
 ///
 /// - Output output: Output tensor, deep-copied from input.
-@inlinable @inline(__always)
+@inlinable
 public static func copy<T: TensorFlowScalar>(
   _ input: Tensor<T>,
   tensorName: String,
@@ -5124,7 +5099,7 @@ public static func copy<T: TensorFlowScalar>(
 ///     "DebugIdentity;file:///tmp/tfdbg_1;0".
 ///
 /// - Output output: Output tensor, deep-copied from input.
-@inlinable @inline(__always)
+@inlinable
 public static func copyHost<T: TensorFlowScalar>(
   _ input: Tensor<T>,
   tensorName: String,
@@ -5138,7 +5113,7 @@ public static func copyHost<T: TensorFlowScalar>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func copyOp<T: TensorFlowScalar>(
   _ a: Tensor<T>
 ) -> Tensor<T> {
@@ -5149,7 +5124,7 @@ public static func copyOp<T: TensorFlowScalar>(
 }
 
 /// Computes cos of x element-wise.
-@inlinable @inline(__always)
+@inlinable
 public static func cos<T: FloatingPoint & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -5160,7 +5135,7 @@ public static func cos<T: FloatingPoint & TensorFlowScalar>(
 }
 
 /// Computes hyperbolic cosine of x element-wise.
-@inlinable @inline(__always)
+@inlinable
 public static func cosh<T: FloatingPoint & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -5170,7 +5145,7 @@ public static func cosh<T: FloatingPoint & TensorFlowScalar>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func createSummaryDbWriter(
   writer: ResourceHandle,
   dbUri: StringTensor,
@@ -5187,7 +5162,7 @@ public static func createSummaryDbWriter(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func createSummaryFileWriter(
   writer: ResourceHandle,
   logdir: StringTensor,
@@ -5249,7 +5224,7 @@ public static func createSummaryFileWriter(
 ///   - extrapolation_value: Value used for extrapolation, when applicable.
 ///
 /// - Output crops: A 4-D tensor of shape `[num_boxes, crop_height, crop_width, depth]`.
-@inlinable @inline(__always)
+@inlinable
 public static func cropAndResize<T: Numeric & TensorFlowScalar>(
   image: Tensor<T>,
   boxes: Tensor<Float>,
@@ -5292,7 +5267,7 @@ public static func cropAndResize<T: Numeric & TensorFlowScalar>(
 ///   supported for now.
 ///
 /// - Output output: A 2-D tensor of shape `[num_boxes, 4]`.
-@inlinable @inline(__always)
+@inlinable
 public static func cropAndResizeGradBoxes<T: Numeric & TensorFlowScalar>(
   grads: Tensor<Float>,
   image: Tensor<T>,
@@ -5334,7 +5309,7 @@ public static func cropAndResizeGradBoxes<T: Numeric & TensorFlowScalar>(
 ///   supported for now.
 ///
 /// - Output output: A 4-D tensor of shape `[batch, image_height, image_width, depth]`.
-@inlinable @inline(__always)
+@inlinable
 public static func cropAndResizeGradImage<T: FloatingPoint & TensorFlowScalar>(
   grads: Tensor<Float>,
   boxes: Tensor<Float>,
@@ -5363,7 +5338,7 @@ public static func cropAndResizeGradImage<T: FloatingPoint & TensorFlowScalar>(
 ///   - b: Another tensor, of same type and shape as `a`.
 ///
 /// - Output product: Pairwise cross product of the vectors in `a` and `b`.
-@inlinable @inline(__always)
+@inlinable
 public static func cross<T: Numeric & TensorFlowScalar>(
   _ a: Tensor<T>,
   _ b: Tensor<T>
@@ -5393,7 +5368,7 @@ public static func cross<T: Numeric & TensorFlowScalar>(
 /// - Attr T: The type of elements to be summed.
 ///
 /// - Output output: The sum of all the distributed inputs.
-@inlinable @inline(__always)
+@inlinable
 public static func crossReplicaSum<T: Numeric & TensorFlowScalar>(
   _ input: Tensor<T>,
   groupAssignment: Tensor<Int32>
@@ -5437,7 +5412,7 @@ public static func crossReplicaSum<T: Numeric & TensorFlowScalar>(
 ///   training.
 /// reserve_space: An opaque tensor that can be used in backprop calculation. It
 ///   is only produced if is_training is false.
-@inlinable @inline(__always)
+@inlinable
 public static func cudnnRNN<T: FloatingPoint & TensorFlowScalar>(
   _ input: Tensor<T>,
   inputH: Tensor<T>,
@@ -5508,7 +5483,7 @@ public static func cudnnRNN<T: FloatingPoint & TensorFlowScalar>(
 ///     shape as input_c.
 /// params_backprop: The backprop to the params buffer in the forward pass. Has the
 ///     same shape as params.
-@inlinable @inline(__always)
+@inlinable
 public static func cudnnRNNBackprop<T: FloatingPoint & TensorFlowScalar>(
   _ input: Tensor<T>,
   inputH: Tensor<T>,
@@ -5594,7 +5569,7 @@ public static func cudnnRNNBackprop<T: FloatingPoint & TensorFlowScalar>(
 ///     shape as input_c.
 /// params_backprop: The backprop to the params buffer in the forward pass. Has the
 ///     same shape as params.
-@inlinable @inline(__always)
+@inlinable
 public static func cudnnRNNBackpropV2<T: FloatingPoint & TensorFlowScalar>(
   _ input: Tensor<T>,
   inputH: Tensor<T>,
@@ -5687,7 +5662,7 @@ public static func cudnnRNNBackpropV2<T: FloatingPoint & TensorFlowScalar>(
 ///     shape as input_c.
 /// params_backprop: The backprop to the params buffer in the forward pass. Has the
 ///     same shape as params.
-@inlinable @inline(__always)
+@inlinable
 public static func cudnnRNNBackpropV3<T: FloatingPoint & TensorFlowScalar>(
   _ input: Tensor<T>,
   inputH: Tensor<T>,
@@ -5766,7 +5741,7 @@ public static func cudnnRNNBackpropV3<T: FloatingPoint & TensorFlowScalar>(
 /// dropout: dropout probability. When set to 0., dropout is disabled.
 /// seed: the 1st part of a seed to initialize dropout.
 /// seed2: the 2nd part of a seed to initialize dropout.
-@inlinable @inline(__always)
+@inlinable
 public static func cudnnRNNCanonicalToParams<T: FloatingPoint & TensorFlowScalar>(
   numLayers: Tensor<Int32>,
   numUnits: Tensor<Int32>,
@@ -5820,7 +5795,7 @@ public static func cudnnRNNCanonicalToParams<T: FloatingPoint & TensorFlowScalar
 ///   compatible across GPUs. Please use CudnnRNNParamsWeights and
 ///   CudnnRNNParamsBiases to save and restore them in a way that is compatible
 ///   across different runs.
-@inlinable @inline(__always)
+@inlinable
 public static func cudnnRNNParamsSize<S: BinaryInteger & TensorFlowScalar>(
   numLayers: Tensor<Int32>,
   numUnits: Tensor<Int32>,
@@ -5879,7 +5854,7 @@ public static func cudnnRNNParamsSize<S: BinaryInteger & TensorFlowScalar>(
 /// dropout: dropout probability. When set to 0., dropout is disabled.
 /// seed: the 1st part of a seed to initialize dropout.
 /// seed2: the 2nd part of a seed to initialize dropout.
-@inlinable @inline(__always)
+@inlinable
 public static func cudnnRNNParamsToCanonical<T: FloatingPoint & TensorFlowScalar>(
   numLayers: Tensor<Int32>,
   numUnits: Tensor<Int32>,
@@ -5944,7 +5919,7 @@ public static func cudnnRNNParamsToCanonical<T: FloatingPoint & TensorFlowScalar
 /// host_reserved: An opaque tensor that can be used in backprop calculation. It is
 ///   only produced if is_training is true. It is output on host memory rather than
 ///   device memory.
-@inlinable @inline(__always)
+@inlinable
 public static func cudnnRNNV2<T: FloatingPoint & TensorFlowScalar>(
   _ input: Tensor<T>,
   inputH: Tensor<T>,
@@ -6013,7 +5988,7 @@ public static func cudnnRNNV2<T: FloatingPoint & TensorFlowScalar>(
 ///     major.
 /// reserve_space: An opaque tensor that can be used in backprop calculation. It
 ///   is only produced if is_training is true.
-@inlinable @inline(__always)
+@inlinable
 public static func cudnnRNNV3<T: FloatingPoint & TensorFlowScalar>(
   _ input: Tensor<T>,
   inputH: Tensor<T>,
@@ -6088,7 +6063,7 @@ public static func cudnnRNNV3<T: FloatingPoint & TensorFlowScalar>(
 /// - Attrs:
 ///   - exclusive: If `True`, perform exclusive cumprod.
 ///   - reverse: A `bool` (default: False).
-@inlinable @inline(__always)
+@inlinable
 public static func cumprod<
     T: Numeric & TensorFlowScalar,
     Tidx: BinaryInteger & TensorFlowScalar
@@ -6149,7 +6124,7 @@ public static func cumprod<
 /// - Attrs:
 ///   - exclusive: If `True`, perform exclusive cumsum.
 ///   - reverse: A `bool` (default: False).
-@inlinable @inline(__always)
+@inlinable
 public static func cumsum<
     T: Numeric & TensorFlowScalar,
     Tidx: BinaryInteger & TensorFlowScalar
@@ -6181,7 +6156,7 @@ public static func cumsum<
 ///   - dst_format: destination data format.
 ///
 /// - Output y: A Tensor with each element as a dimension index in destination data format.
-@inlinable @inline(__always)
+@inlinable
 public static func dataFormatDimMap<T: BinaryInteger & TensorFlowScalar>(
   _ x: Tensor<T>,
   srcFormat: String = "NHWC",
@@ -6206,7 +6181,7 @@ public static func dataFormatDimMap<T: BinaryInteger & TensorFlowScalar>(
 ///   - dst_format: destination data format.
 ///
 /// - Output y: Vector of size 4 or Tensor of shape (4, 2) in destination data format.
-@inlinable @inline(__always)
+@inlinable
 public static func dataFormatVecPermute<T: BinaryInteger & TensorFlowScalar>(
   _ x: Tensor<T>,
   srcFormat: String = "NHWC",
@@ -6227,7 +6202,7 @@ public static func dataFormatVecPermute<T: BinaryInteger & TensorFlowScalar>(
 /// - Parameter input_dataset: A variant tensor representing the dataset to return the graph representation for.
 ///
 /// - Output graph: The graph representation of the dataset (as serialized GraphDef).
-@inlinable @inline(__always)
+@inlinable
 public static func datasetToGraph(
   inputDataset: VariantHandle
 ) -> StringTensor {
@@ -6241,7 +6216,7 @@ public static func datasetToGraph(
 /// - Parameter dataset: A handle to a dataset that contains a single element.
 ///
 /// - Output components: The components of the single element of `input`.
-@inlinable @inline(__always)
+@inlinable
 public static func datasetToSingleElement<OutputTypes: TensorGroup>(
   dataset: VariantHandle,
   outputShapes: [TensorShape?]
@@ -6258,7 +6233,7 @@ public static func datasetToSingleElement<OutputTypes: TensorGroup>(
 /// This op is hidden from public in Python. It is used by TensorFlow Debugger to
 /// register gradient tensors for gradient debugging.
 /// This op operates on non-reference-type tensors.
-@inlinable @inline(__always)
+@inlinable
 public static func debugGradientIdentity<T: TensorFlowScalar>(
   _ input: Tensor<T>
 ) -> Tensor<T> {
@@ -6286,7 +6261,7 @@ public static func debugGradientIdentity<T: TensorFlowScalar>(
 ///     them, the output will be an empty Tensor.
 ///
 /// - Output output: Output tensor that equals the input tensor.
-@inlinable @inline(__always)
+@inlinable
 public static func debugIdentity<T: TensorFlowScalar>(
   _ input: Tensor<T>,
   deviceName: String,
@@ -6322,7 +6297,7 @@ public static func debugIdentity<T: TensorFlowScalar>(
 ///     them, the output will be an empty Tensor.
 ///
 /// - Output output: An integer output tensor that is the number of NaNs in the input.
-@inlinable @inline(__always)
+@inlinable
 public static func debugNanCount<T: TensorFlowScalar>(
   _ input: Tensor<T>,
   deviceName: String,
@@ -6391,7 +6366,7 @@ public static func debugNanCount<T: TensorFlowScalar>(
 ///           proto for more details.
 ///     [13]: Number of dimensions of the tensor (ndims).
 ///     [14+]: Sizes of the dimensions.
-@inlinable @inline(__always)
+@inlinable
 public static func debugNumericSummary<T: TensorFlowScalar>(
   _ input: Tensor<T>,
   deviceName: String,
@@ -6457,7 +6432,7 @@ public static func debugNumericSummary<T: TensorFlowScalar>(
 ///     option.)
 ///
 /// - Output image: 3-D with shape `[height, width, channels]`..
-@inlinable @inline(__always)
+@inlinable
 public static func decodeAndCropJpeg(
   contents: StringTensor,
   cropWindow: Tensor<Int32>,
@@ -6488,7 +6463,7 @@ public static func decodeAndCropJpeg(
 /// - Parameter input: Base64 strings to decode.
 ///
 /// - Output output: Decoded strings.
-@inlinable @inline(__always)
+@inlinable
 public static func decodeBase64(
   _ input: StringTensor
 ) -> StringTensor {
@@ -6511,7 +6486,7 @@ public static func decodeBase64(
 /// - Parameter contents: 0-D.  The BMP-encoded image.
 ///
 /// - Output image: 3-D with shape `[height, width, channels]`. RGB order
-@inlinable @inline(__always)
+@inlinable
 public static func decodeBmp(
   contents: StringTensor,
   channels: Int64 = 0
@@ -6543,7 +6518,7 @@ public static func decodeBmp(
 ///   - na_value: Additional string to recognize as NA/NaN.
 ///
 /// - Output output: Each tensor will have the same shape as records.
-@inlinable @inline(__always)
+@inlinable
 public static func decodeCSV<OutType: TensorArrayProtocol>(
   records: StringTensor,
   recordDefaults: OutType,
@@ -6579,7 +6554,7 @@ public static func decodeCSV<OutType: TensorArrayProtocol>(
 ///
 /// - Output output: A Tensor with the same shape as input `bytes`, uncompressed
 ///   from bytes.
-@inlinable @inline(__always)
+@inlinable
 public static func decodeCompressed(
   bytes: StringTensor,
   compressionType: String
@@ -6604,7 +6579,7 @@ public static func decodeCompressed(
 /// - Parameter contents: 0-D.  The GIF-encoded image.
 ///
 /// - Output image: 4-D with shape `[num_frames, height, width, 3]`. RGB channel order.
-@inlinable @inline(__always)
+@inlinable
 public static func decodeGif(
   contents: StringTensor
 ) -> Tensor<UInt8> {
@@ -6627,7 +6602,7 @@ public static func decodeGif(
 ///
 /// - Output binary_examples: Each string is a binary Example protocol buffer corresponding
 ///   to the respective element of `json_examples`.
-@inlinable @inline(__always)
+@inlinable
 public static func decodeJSONExample(
   jsonExamples: StringTensor
 ) -> StringTensor {
@@ -6676,7 +6651,7 @@ public static func decodeJSONExample(
 ///     option.)
 ///
 /// - Output image: 3-D with shape `[height, width, channels]`..
-@inlinable @inline(__always)
+@inlinable
 public static func decodeJpeg(
   contents: StringTensor,
   channels: Int64 = 0,
@@ -6697,7 +6672,7 @@ public static func decodeJpeg(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func decodePaddedRaw<OutType: Numeric & TensorFlowScalar>(
   inputBytes: StringTensor,
   fixedLength: Tensor<Int32>,
@@ -6734,7 +6709,7 @@ public static func decodePaddedRaw<OutType: Numeric & TensorFlowScalar>(
 /// - Attr channels: Number of color channels for the decoded image.
 ///
 /// - Output image: 3-D with shape `[height, width, channels]`.
-@inlinable @inline(__always)
+@inlinable
 public static func decodePng<Dtype: UnsignedInteger & TensorFlowScalar>(
   contents: StringTensor,
   channels: Int64 = 0
@@ -6817,7 +6792,7 @@ public static func decodePng<Dtype: UnsignedInteger & TensorFlowScalar>(
 ///   - values: List of tensors containing values for the corresponding field.
 ///     `values[i]` has datatype `output_types[i]`
 ///     and shape `[batch_shape, max(sizes[...,i])]`.
-@inlinable @inline(__always)
+@inlinable
 public static func decodeProtoV2<OutputTypes: TensorGroup>(
   bytes: StringTensor,
   messageType: String,
@@ -6848,7 +6823,7 @@ public static func decodeProtoV2<OutputTypes: TensorGroup>(
 /// - Output output: A Tensor with one more dimension than the input `bytes`.  The
 ///   added dimension will have size equal to the length of the elements
 ///   of `bytes` divided by the number of bytes to represent `out_type`.
-@inlinable @inline(__always)
+@inlinable
 public static func decodeRaw<OutType: TensorFlowScalar>(
   bytes: StringTensor,
   littleEndian: Bool = true
@@ -6886,7 +6861,7 @@ public static func decodeRaw<OutType: TensorFlowScalar>(
 /// - Outputs:
 ///   - audio: 2-D with shape `[length, channels]`.
 ///   - sample_rate: Scalar holding the sample rate found in the WAV header.
-@inlinable @inline(__always)
+@inlinable
 public static func decodeWav(
   contents: StringTensor,
   desiredChannels: Int64 = -1,
@@ -6905,7 +6880,7 @@ public static func decodeWav(
 ///
 /// - Output y:     y: A `Tensor` of type `T`. A copy of `x`. Guaranteed that `y`
 ///         is not an alias of `x`.
-@inlinable @inline(__always)
+@inlinable
 public static func deepCopy<T: TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -6920,7 +6895,7 @@ public static func deepCopy<T: TensorFlowScalar>(
 /// - Parameters:
 ///   - handle: A handle to the iterator to delete.
 ///   - deleter: A variant deleter.
-@inlinable @inline(__always)
+@inlinable
 public static func deleteIterator(
   handle: ResourceHandle,
   deleter: VariantHandle
@@ -6934,7 +6909,7 @@ public static func deleteIterator(
 /// Delete the tensor specified by its handle in the session.
 ///
 /// - Parameter handle: The handle for a tensor stored in the session state.
-@inlinable @inline(__always)
+@inlinable
 public static func deleteSessionTensor(
   handle: StringTensor
 ) {
@@ -6965,7 +6940,7 @@ public static func deleteSessionTensor(
 ///   - result_shape: 1D `Tensor` shape of a `SparseTensor`. `result_shape[0...n-1]` is
 ///     the same as the 1st `n-1` dimensions of `set1` and `set2`, `result_shape[n]`
 ///     is the max result set size across all `0...n-1` dimensions.
-@inlinable @inline(__always)
+@inlinable
 public static func denseToDenseSetOperation<T: BinaryInteger & TensorFlowScalar>(
   set1: Tensor<T>,
   set2: Tensor<T>,
@@ -7003,7 +6978,7 @@ public static func denseToDenseSetOperation<T: BinaryInteger & TensorFlowScalar>
 ///   - result_shape: 1D `Tensor` shape of a `SparseTensor`. `result_shape[0...n-1]` is
 ///     the same as the 1st `n-1` dimensions of `set1` and `set2`, `result_shape[n]`
 ///     is the max result set size across all `0...n-1` dimensions.
-@inlinable @inline(__always)
+@inlinable
 public static func denseToDenseSetOperation(
   set1: StringTensor,
   set2: StringTensor,
@@ -7054,7 +7029,7 @@ public static func denseToDenseSetOperation(
 ///   - result_shape: 1D `Tensor` shape of a `SparseTensor`. `result_shape[0...n-1]` is
 ///     the same as the 1st `n-1` dimensions of `set1` and `set2`, `result_shape[n]`
 ///     is the max result set size across all `0...n-1` dimensions.
-@inlinable @inline(__always)
+@inlinable
 public static func denseToSparseSetOperation<T: BinaryInteger & TensorFlowScalar>(
   set1: Tensor<T>,
   set2Indices: Tensor<Int64>,
@@ -7109,7 +7084,7 @@ public static func denseToSparseSetOperation<T: BinaryInteger & TensorFlowScalar
 ///   - result_shape: 1D `Tensor` shape of a `SparseTensor`. `result_shape[0...n-1]` is
 ///     the same as the 1st `n-1` dimensions of `set1` and `set2`, `result_shape[n]`
 ///     is the max result set size across all `0...n-1` dimensions.
-@inlinable @inline(__always)
+@inlinable
 public static func denseToSparseSetOperation(
   set1: StringTensor,
   set2Indices: Tensor<Int64>,
@@ -7222,7 +7197,7 @@ public static func denseToSparseSetOperation(
 /// ```
 ///
 /// - Attr block_size: The size of the spatial block, same as in Space2Depth.
-@inlinable @inline(__always)
+@inlinable
 public static func depthToSpace<T: TensorFlowScalar>(
   _ input: Tensor<T>,
   blockSize: Int64,
@@ -7271,7 +7246,7 @@ public static func depthToSpace<T: TensorFlowScalar>(
 ///     element on that dimension. The dimension order is determined by the value of
 ///     `data_format`, see above for details. Dilations in the batch and depth
 ///     dimensions must be 1.
-@inlinable @inline(__always)
+@inlinable
 public static func depthwiseConv2dNative<T: FloatingPoint & TensorFlowScalar>(
   _ input: Tensor<T>,
   filter: Tensor<T>,
@@ -7323,7 +7298,7 @@ public static func depthwiseConv2dNative<T: FloatingPoint & TensorFlowScalar>(
 /// - Output output: 4-D with shape
 ///   `[filter_height, filter_width, in_channels, out_channels]`.  Gradient w.r.t.
 ///   the `filter` input of the convolution.
-@inlinable @inline(__always)
+@inlinable
 public static func depthwiseConv2dNativeBackpropFilter<T: FloatingPoint & TensorFlowScalar>(
   _ input: Tensor<T>,
   filterSizes: Tensor<Int32>,
@@ -7377,7 +7352,7 @@ public static func depthwiseConv2dNativeBackpropFilter<T: FloatingPoint & Tensor
 ///   `data_format` is 'NHWC', output shape is `[batch, in_height,
 ///   in_width, in_channels]`.  Gradient w.r.t. the input of the
 ///   convolution.
-@inlinable @inline(__always)
+@inlinable
 public static func depthwiseConv2dNativeBackpropInput<T: FloatingPoint & TensorFlowScalar>(
   inputSizes: Tensor<Int32>,
   filter: Tensor<T>,
@@ -7478,7 +7453,7 @@ public static func depthwiseConv2dNativeBackpropInput<T: FloatingPoint & TensorF
 /// - Parameters:
 ///   - min_range: The minimum scalar value possibly produced for the input.
 ///   - max_range: The maximum scalar value possibly produced for the input.
-@inlinable @inline(__always)
+@inlinable
 public static func dequantize<T: TensorFlowScalar>(
   _ input: Tensor<T>,
   minRange: Tensor<Float>,
@@ -7500,7 +7475,7 @@ public static func dequantize<T: TensorFlowScalar>(
 ///   - resource_handle: A handle to an iterator resource.
 ///   - serialized: A variant tensor storing the state of the iterator contained in the
 ///     resource.
-@inlinable @inline(__always)
+@inlinable
 public static func deserializeIterator(
   resourceHandle: ResourceHandle,
   serialized: VariantHandle
@@ -7559,7 +7534,7 @@ public static func deserializeIterator(
 ///   Must have 3 columns.
 ///
 /// - Attr dtype: The `dtype` of the serialized `SparseTensor` objects.
-@inlinable @inline(__always)
+@inlinable
 public static func deserializeManySparse<Dtype: TensorFlowScalar>(
   serializedSparse: StringTensor
 ) -> (sparseIndices: Tensor<Int64>, sparseValues: Tensor<Dtype>, sparseShape: Tensor<Int64>) {
@@ -7617,7 +7592,7 @@ public static func deserializeManySparse<Dtype: TensorFlowScalar>(
 ///   must have 3 columns.
 ///
 /// - Attr dtype: The `dtype` of the serialized `SparseTensor` objects.
-@inlinable @inline(__always)
+@inlinable
 public static func deserializeSparse<
     Dtype: TensorFlowScalar,
     Tserialized: TensorFlowScalar
@@ -7679,7 +7654,7 @@ public static func deserializeSparse<
 ///   must have 3 columns.
 ///
 /// - Attr dtype: The `dtype` of the serialized `SparseTensor` objects.
-@inlinable @inline(__always)
+@inlinable
 public static func deserializeSparse<Dtype: TensorFlowScalar>(
   serializedSparse: StringTensor
 ) -> (sparseIndices: Tensor<Int64>, sparseValues: Tensor<Dtype>, sparseShape: Tensor<Int64>) {
@@ -7699,7 +7674,7 @@ public static func deserializeSparse<Dtype: TensorFlowScalar>(
 ///
 /// - Attr ignore_lookup_error: whether to ignore the error when the resource
 ///   doesn't exist.
-@inlinable @inline(__always)
+@inlinable
 public static func destroyResourceOp(
   resource: ResourceHandle,
   ignoreLookupError: Bool = true
@@ -7710,7 +7685,7 @@ public static func destroyResourceOp(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func devicePlacementOp(
 ) -> StringTensor {
   let op = TFE_Op("DevicePlacementOp")
@@ -7739,7 +7714,7 @@ public static func devicePlacementOp(
 /// ```
 ///
 /// - Parameter diagonal: Rank k tensor where k is at most 1.
-@inlinable @inline(__always)
+@inlinable
 public static func diag<T: Numeric & TensorFlowScalar>(
   diagonal: Tensor<T>
 ) -> Tensor<T> {
@@ -7773,7 +7748,7 @@ public static func diag<T: Numeric & TensorFlowScalar>(
 /// - Parameter input: Rank k tensor where k is even and not zero.
 ///
 /// - Output diagonal: The extracted diagonal.
-@inlinable @inline(__always)
+@inlinable
 public static func diagPart<T: Numeric & TensorFlowScalar>(
   _ input: Tensor<T>
 ) -> Tensor<T> {
@@ -7786,7 +7761,7 @@ public static func diagPart<T: Numeric & TensorFlowScalar>(
 /// Computes Psi, the derivative of Lgamma (the log of the absolute value of
 ///
 /// `Gamma(x)`), element-wise.
-@inlinable @inline(__always)
+@inlinable
 public static func digamma<T: FloatingPoint & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -7834,7 +7809,7 @@ public static func digamma<T: FloatingPoint & TensorFlowScalar>(
 ///   - padding: The type of padding algorithm to use.
 ///
 /// - Output output: 4-D with shape `[batch, out_height, out_width, depth]`.
-@inlinable @inline(__always)
+@inlinable
 public static func dilation2D<T: Numeric & TensorFlowScalar>(
   _ input: Tensor<T>,
   filter: Tensor<T>,
@@ -7867,7 +7842,7 @@ public static func dilation2D<T: Numeric & TensorFlowScalar>(
 ///   - padding: The type of padding algorithm to use.
 ///
 /// - Output filter_backprop: 3-D with shape `[filter_height, filter_width, depth]`.
-@inlinable @inline(__always)
+@inlinable
 public static func dilation2DBackpropFilter<T: Numeric & TensorFlowScalar>(
   _ input: Tensor<T>,
   filter: Tensor<T>,
@@ -7902,7 +7877,7 @@ public static func dilation2DBackpropFilter<T: Numeric & TensorFlowScalar>(
 ///   - padding: The type of padding algorithm to use.
 ///
 /// - Output in_backprop: 4-D with shape `[batch, in_height, in_width, depth]`.
-@inlinable @inline(__always)
+@inlinable
 public static func dilation2DBackpropInput<T: Numeric & TensorFlowScalar>(
   _ input: Tensor<T>,
   filter: Tensor<T>,
@@ -7926,7 +7901,7 @@ public static func dilation2DBackpropInput<T: Numeric & TensorFlowScalar>(
 ///
 /// *NOTE*: `Div` supports broadcasting. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-@inlinable @inline(__always)
+@inlinable
 public static func div<T: Numeric & TensorFlowScalar>(
   _ x: Tensor<T>,
   _ y: Tensor<T>
@@ -7943,7 +7918,7 @@ public static func div<T: Numeric & TensorFlowScalar>(
 ///
 /// *NOTE*: `DivNoNan` supports broadcasting. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-@inlinable @inline(__always)
+@inlinable
 public static func divNoNan<T: FloatingPoint & TensorFlowScalar>(
   _ x: Tensor<T>,
   _ y: Tensor<T>
@@ -7976,7 +7951,7 @@ public static func divNoNan<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// - Output output: 4-D with the same shape as `images`. The batch of input images with
 ///   bounding boxes drawn on the images.
-@inlinable @inline(__always)
+@inlinable
 public static func drawBoundingBoxes<T: FloatingPoint & TensorFlowScalar>(
   images: Tensor<T>,
   boxes: Tensor<Float>
@@ -8010,7 +7985,7 @@ public static func drawBoundingBoxes<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// - Output output: 4-D with the same shape as `images`. The batch of input images with
 ///   bounding boxes drawn on the images.
-@inlinable @inline(__always)
+@inlinable
 public static func drawBoundingBoxesV2<T: FloatingPoint & TensorFlowScalar>(
   images: Tensor<T>,
   boxes: Tensor<Float>,
@@ -8067,7 +8042,7 @@ public static func drawBoundingBoxesV2<T: FloatingPoint & TensorFlowScalar>(
 /// - Parameter partitions: Any shape.  Indices in the range `[0, num_partitions)`.
 ///
 /// - Attr num_partitions: The number of partitions to output.
-@inlinable @inline(__always)
+@inlinable
 public static func dynamicPartition<T: TensorFlowScalar>(
   data: Tensor<T>,
   partitions: Tensor<Int32>,
@@ -8145,7 +8120,7 @@ public static func dynamicPartition<T: TensorFlowScalar>(
 /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
 /// <img style="width:100%" src="https://www.tensorflow.org/images/DynamicStitch.png" alt>
 /// </div>
-@inlinable @inline(__always)
+@inlinable
 public static func dynamicStitch<T: TensorFlowScalar>(
   indices: [Tensor<Int32>],
   data: [Tensor<T>]
@@ -8162,7 +8137,7 @@ public static func dynamicStitch<T: TensorFlowScalar>(
 ///
 /// semantics of the input, output, and attributes are the same as those for
 /// PyFunc.
-@inlinable @inline(__always)
+@inlinable
 public static func eagerPyFunc<
     Tin: TensorArrayProtocol,
     Tout: TensorGroup
@@ -8234,7 +8209,7 @@ public static func eagerPyFunc<
 ///       // output is a 2x2 matrix with edit distances normalized by truth lengths.
 ///       output = [[inf, 1.0],  // (0,0): no truth, (0,1): no hypothesis
 ///                 [0.5, 1.0]]  // (1,0): addition, (1,1): no hypothesis
-@inlinable @inline(__always)
+@inlinable
 public static func editDistance<T: TensorFlowScalar>(
   hypothesisIndices: Tensor<Int64>,
   hypothesisValues: Tensor<T>,
@@ -8260,7 +8235,7 @@ public static func editDistance<T: TensorFlowScalar>(
 ///
 /// See [Fast and Accurate Deep Network Learning by Exponential Linear Units (ELUs)
 /// ](http://arxiv.org/abs/1511.07289)
-@inlinable @inline(__always)
+@inlinable
 public static func elu<T: FloatingPoint & TensorFlowScalar>(
   features: Tensor<T>
 ) -> Tensor<T> {
@@ -8278,7 +8253,7 @@ public static func elu<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// - Output backprops: The gradients: `gradients * (outputs + 1)` if outputs < 0,
 ///   `gradients` otherwise.
-@inlinable @inline(__always)
+@inlinable
 public static func eluGrad<T: FloatingPoint & TensorFlowScalar>(
   gradients: Tensor<T>,
   outputs: Tensor<T>
@@ -8299,7 +8274,7 @@ public static func eluGrad<T: FloatingPoint & TensorFlowScalar>(
 /// - Attr init: If True, initialize the returned tensor with the default value of dtype.  Otherwise, the implementation is free not to initializethe tensor's content.
 ///
 /// - Output output: A `Tensor` of type `T`.
-@inlinable @inline(__always)
+@inlinable
 public static func empty<Dtype: TensorFlowScalar>(
   shape: Tensor<Int32>,
   init_: Bool = false
@@ -8319,7 +8294,7 @@ public static func empty<Dtype: TensorFlowScalar>(
 /// handle: an empty tensor list.
 /// element_dtype: the type of elements in the list.
 /// element_shape: a shape compatible with that of elements in the list.
-@inlinable @inline(__always)
+@inlinable
 public static func emptyTensorList<ShapeType: BinaryInteger & TensorFlowScalar>(
   elementShape: Tensor<ShapeType>,
   maxNumElements: Tensor<Int32>,
@@ -8347,7 +8322,7 @@ public static func emptyTensorList<ShapeType: BinaryInteger & TensorFlowScalar>(
 /// - Attr pad: Bool whether padding is applied at the ends.
 ///
 /// - Output output: Input strings encoded in base64.
-@inlinable @inline(__always)
+@inlinable
 public static func encodeBase64(
   _ input: StringTensor,
   pad: Bool = false
@@ -8392,7 +8367,7 @@ public static func encodeBase64(
 ///   - xmp_metadata: If not empty, embed this XMP metadata in the image header.
 ///
 /// - Output contents: 0-D. JPEG-encoded image.
-@inlinable @inline(__always)
+@inlinable
 public static func encodeJpeg(
   image: Tensor<UInt8>,
   format: Format,
@@ -8430,7 +8405,7 @@ public static func encodeJpeg(
 ///   - quality: An int quality to encode to.
 ///
 /// - Output contents: 0-D. JPEG-encoded image.
-@inlinable @inline(__always)
+@inlinable
 public static func encodeJpegVariableQuality(
   images: Tensor<UInt8>,
   quality: Tensor<Int32>
@@ -8460,7 +8435,7 @@ public static func encodeJpegVariableQuality(
 /// - Attr compression: Compression level.
 ///
 /// - Output contents: 0-D. PNG-encoded image.
-@inlinable @inline(__always)
+@inlinable
 public static func encodePng<T: UnsignedInteger & TensorFlowScalar>(
   image: Tensor<T>,
   compression: Int64 = -1
@@ -8522,7 +8497,7 @@ public static func encodePng<T: UnsignedInteger & TensorFlowScalar>(
 ///   - Tinput_types: The input types.
 ///
 /// - Output bytes: Tensor of serialized protos with shape `batch_shape`.
-@inlinable @inline(__always)
+@inlinable
 public static func encodeProto<TinputTypes: TensorArrayProtocol>(
   sizes: Tensor<Int32>,
   _ values: TinputTypes,
@@ -8555,7 +8530,7 @@ public static func encodeProto<TinputTypes: TensorArrayProtocol>(
 ///   - sample_rate: Scalar containing the sample frequency.
 ///
 /// - Output contents: 0-D. WAV-encoded file contents.
-@inlinable @inline(__always)
+@inlinable
 public static func encodeWav(
   audio: Tensor<Float>,
   sampleRate: Tensor<Int32>
@@ -8578,7 +8553,7 @@ public static func encodeWav(
 ///
 /// - Attr device_ordinal: The TPU device to use. Should be >= 0 and less than the number
 ///   of TPU cores in the task on which the node is placed.
-@inlinable @inline(__always)
+@inlinable
 public static func enqueueTPUEmbeddingIntegerBatch(
   batch: [Tensor<Int32>],
   modeOverride: StringTensor,
@@ -8627,7 +8602,7 @@ public static func enqueueTPUEmbeddingIntegerBatch(
 ///     the sum of the weights be 0 for 'mean' or the sum of the squared weights be
 ///     0 for 'sqrtn'. If combiners isn't passed, the default is to use 'sum' for
 ///     all tables.
-@inlinable @inline(__always)
+@inlinable
 public static func enqueueTPUEmbeddingSparseBatch<
     T1: BinaryInteger & TensorFlowScalar,
     T2: BinaryInteger & TensorFlowScalar,
@@ -8693,7 +8668,7 @@ public static func enqueueTPUEmbeddingSparseBatch<
 ///     corresponding input. The ith input is looked up using table_ids[i]. The size
 ///     of the table_ids list must be equal to that of sample_indices,
 ///     embedding_indices and aggregation_weights.
-@inlinable @inline(__always)
+@inlinable
 public static func enqueueTPUEmbeddingSparseTensorBatch<
     T1: BinaryInteger & TensorFlowScalar,
     T2: BinaryInteger & TensorFlowScalar,
@@ -8734,7 +8709,7 @@ public static func enqueueTPUEmbeddingSparseTensorBatch<
 /// - Attr shape: The expected (possibly partially specified) shape of the input tensor.
 ///
 /// - Output output: A tensor with the same shape and contents as the input tensor or value.
-@inlinable @inline(__always)
+@inlinable
 public static func ensureShape<T: TensorFlowScalar>(
   _ input: Tensor<T>,
   shape: TensorShape?
@@ -8762,7 +8737,7 @@ public static func ensureShape<T: TensorFlowScalar>(
 ///   - parallel_iterations: The number of iterations allowed to run in parallel.
 ///
 /// - Output output: The same tensor as `data`.
-@inlinable @inline(__always)
+@inlinable
 public static func enter<T: TensorFlowScalar>(
   data: Tensor<T>,
   frameName: String,
@@ -8782,7 +8757,7 @@ public static func enter<T: TensorFlowScalar>(
 ///
 /// *NOTE*: `Equal` supports broadcasting. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-@inlinable @inline(__always)
+@inlinable
 public static func equal<T: TensorFlowScalar>(
   _ x: Tensor<T>,
   _ y: Tensor<T>
@@ -8798,7 +8773,7 @@ public static func equal<T: TensorFlowScalar>(
 ///
 /// *NOTE*: `Equal` supports broadcasting. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-@inlinable @inline(__always)
+@inlinable
 public static func equal(
   _ x: StringTensor,
   _ y: StringTensor
@@ -8811,7 +8786,7 @@ public static func equal(
 }
 
 /// Computes the Gauss error function of `x` element-wise.
-@inlinable @inline(__always)
+@inlinable
 public static func erf<T: FloatingPoint & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -8822,7 +8797,7 @@ public static func erf<T: FloatingPoint & TensorFlowScalar>(
 }
 
 /// Computes the complementary error function of `x` element-wise.
-@inlinable @inline(__always)
+@inlinable
 public static func erfc<T: FloatingPoint & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -8847,7 +8822,7 @@ public static func erfc<T: FloatingPoint & TensorFlowScalar>(
 /// - Attr keep_dims: If true, retain reduced dimensions with length 1.
 ///
 /// - Output output: The reduced tensor.
-@inlinable @inline(__always)
+@inlinable
 public static func euclideanNorm<
     T: Numeric & TensorFlowScalar,
     Tidx: BinaryInteger & TensorFlowScalar
@@ -8872,7 +8847,7 @@ public static func euclideanNorm<
 /// - Parameter data: The tensor to be made available to the parent frame.
 ///
 /// - Output output: The same tensor as `data`.
-@inlinable @inline(__always)
+@inlinable
 public static func exit<T: TensorFlowScalar>(
   data: Tensor<T>
 ) -> Tensor<T> {
@@ -8883,7 +8858,7 @@ public static func exit<T: TensorFlowScalar>(
 }
 
 /// Computes exponential of x element-wise.  \\(y = e^x\\).
-@inlinable @inline(__always)
+@inlinable
 public static func exp<T: FloatingPoint & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -8932,7 +8907,7 @@ public static func exp<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// - Output output: Contains the same data as `input`, but its shape has an additional
 ///   dimension of size 1 added.
-@inlinable @inline(__always)
+@inlinable
 public static func expandDims<
     T: TensorFlowScalar,
     Tdim: BinaryInteger & TensorFlowScalar
@@ -8948,7 +8923,7 @@ public static func expandDims<
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalAssertNextDataset(
   inputDataset: VariantHandle,
   transformations: StringTensor,
@@ -8977,7 +8952,7 @@ public static func experimentalAssertNextDataset(
 ///   - input_dataset: A variant tensor representing the input dataset.
 ///   - num_workers: A scalar representing the number of workers to distribute this dataset across.
 ///   - index: A scalar representing the index of the current worker out of num_workers.
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalAutoShardDataset(
   inputDataset: VariantHandle,
   numWorkers: Tensor<Int64>,
@@ -8995,7 +8970,7 @@ public static func experimentalAutoShardDataset(
 }
 
 /// Records the bytes size of each element of `input_dataset` in a StatsAggregator.
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalBytesProducedStatsDataset(
   inputDataset: VariantHandle,
   tag: StringTensor,
@@ -9010,7 +8985,7 @@ public static func experimentalBytesProducedStatsDataset(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalCSVDataset<OutputTypes: TensorArrayProtocol>(
   filenames: StringTensor,
   compressionType: StringTensor,
@@ -9038,7 +9013,7 @@ public static func experimentalCSVDataset<OutputTypes: TensorArrayProtocol>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalChooseFastestDataset(
   inputDatasets: [VariantHandle],
   numExperiments: Int64,
@@ -9062,7 +9037,7 @@ public static func experimentalChooseFastestDataset(
 ///
 /// - Output cardinality: The cardinality of `input_dataset`. Named constants are used to represent
 ///   infinite and unknown cardinality.
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalDatasetCardinality(
   inputDataset: VariantHandle
 ) -> Tensor<Int64> {
@@ -9078,7 +9053,7 @@ public static func experimentalDatasetCardinality(
 ///   - filename: A scalar string tensor representing the filename to use.
 ///   - compression_type: A scalar string tensor containing either (i) the empty string (no
 ///     compression), (ii) "ZLIB", or (iii) "GZIP".
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalDatasetToTFRecord(
   inputDataset: VariantHandle,
   filename: StringTensor,
@@ -9100,7 +9075,7 @@ public static func experimentalDatasetToTFRecord(
 ///   - row_shape: A vector representing the dense shape of each row in the produced
 ///     SparseTensor. The shape may be partially specified, using `-1` to indicate
 ///     that a particular dimension should use the maximum size of all batch elements.
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalDenseToSparseBatchDataset(
   inputDataset: VariantHandle,
   batchSize: Tensor<Int64>,
@@ -9124,7 +9099,7 @@ public static func experimentalDenseToSparseBatchDataset(
 ///     `N` data inputs should produce the next output element.
 ///   - data_input_datasets: `N` datasets with the same type that will be interleaved according to
 ///     the values of `selector_input_dataset`.
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalDirectedInterleaveDataset(
   selectorInputDataset: VariantHandle,
   dataInputDatasets: [VariantHandle],
@@ -9163,7 +9138,7 @@ public static func experimentalDirectedInterleaveDataset(
 ///   - reduce_func: A function mapping the current reducer state and an element of `input_dataset`,
 ///     concatenated with `reduce_func_other_arguments` to a new reducer state.
 ///   - finalize_func: A function mapping the final reducer state to an output element.
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalGroupByReducerDataset<
     KeyfuncIn: TensorGroup,
     KeyfuncOut: TensorGroup,
@@ -9215,7 +9190,7 @@ public static func experimentalGroupByReducerDataset<
 ///
 /// - Attr key_func: A function mapping an element of `input_dataset`, concatenated
 ///   with `key_func_other_arguments` to a scalar value of type DT_INT64.
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalGroupByWindowDataset<
     KeyfuncIn: TensorGroup,
     KeyfuncOut: TensorGroup,
@@ -9253,7 +9228,7 @@ public static func experimentalGroupByWindowDataset<
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalIdentityIndexedDataset(
   size: Tensor<UInt64>
 ) -> VariantHandle {
@@ -9263,7 +9238,7 @@ public static func experimentalIdentityIndexedDataset(
 }
 
 /// Creates a dataset that contains the elements of `input_dataset` ignoring errors.
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalIgnoreErrorsDataset(
   inputDataset: VariantHandle,
   outputTypes: [TensorDataType],
@@ -9276,7 +9251,7 @@ public static func experimentalIgnoreErrorsDataset(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalIndexedDatasetGet<OutputTypes: TensorGroup>(
   materialized: ResourceHandle,
   index: Tensor<UInt64>,
@@ -9290,7 +9265,7 @@ public static func experimentalIndexedDatasetGet<OutputTypes: TensorGroup>(
   return op.execute(Int(OutputTypes._typeList.count))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalIndexedDatasetMaterialize(
   dataset: VariantHandle,
   materialized: ResourceHandle
@@ -9302,7 +9277,7 @@ public static func experimentalIndexedDatasetMaterialize(
 }
 
 /// Returns the name of the device on which `resource` has been placed.
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalIteratorGetDevice(
   resource: ResourceHandle
 ) -> StringTensor {
@@ -9311,7 +9286,7 @@ public static func experimentalIteratorGetDevice(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalLMDBDataset(
   filenames: StringTensor,
   outputTypes: [TensorDataType],
@@ -9325,7 +9300,7 @@ public static func experimentalLMDBDataset(
 }
 
 /// Records the latency of producing `input_dataset` elements in a StatsAggregator.
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalLatencyStatsDataset(
   inputDataset: VariantHandle,
   tag: StringTensor,
@@ -9362,7 +9337,7 @@ public static func experimentalLatencyStatsDataset(
 ///     is smaller than desired.
 ///
 /// - Attr f: A function to apply to the outputs of `input_dataset`.
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalMapAndBatchDataset<
     FIn: TensorGroup,
     FOut: TensorGroup,
@@ -9393,7 +9368,7 @@ public static func experimentalMapAndBatchDataset<
 }
 
 /// Creates a dataset that applies `f` to the outputs of `input_dataset`.
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalMapDataset<
     FIn: TensorGroup,
     FOut: TensorGroup,
@@ -9419,7 +9394,7 @@ public static func experimentalMapDataset<
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalMatchingFilesDataset(
   patterns: StringTensor
 ) -> VariantHandle {
@@ -9428,7 +9403,7 @@ public static func experimentalMatchingFilesDataset(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalMaterializedIndexDatasetHandle(
   container: String,
   sharedName: String,
@@ -9446,7 +9421,7 @@ public static func experimentalMaterializedIndexDatasetHandle(
 /// Creates a dataset that overrides the maximum intra-op parallelism.
 ///
 /// - Parameter max_intra_op_parallelism: Identifies the maximum intra-op parallelism to use.
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalMaxIntraOpParallelismDataset(
   inputDataset: VariantHandle,
   maxIntraOpParallelism: Tensor<Int64>,
@@ -9461,7 +9436,7 @@ public static func experimentalMaxIntraOpParallelismDataset(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalNonSerializableDataset(
   inputDataset: VariantHandle,
   outputTypes: [TensorDataType],
@@ -9500,7 +9475,7 @@ public static func experimentalNonSerializableDataset(
 ///     is smaller than desired.
 ///
 /// - Attr f: A function to apply to the outputs of `input_dataset`.
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalNumaMapAndBatchDataset<
     FIn: TensorGroup,
     FOut: TensorGroup,
@@ -9543,7 +9518,7 @@ public static func experimentalNumaMapAndBatchDataset<
 /// - Attr f: A function mapping elements of `input_dataset`, concatenated with
 ///   `other_arguments`, to a Dataset variant that contains elements matching
 ///   `output_types` and `output_shapes`.
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalParallelInterleaveDataset<
     FIn: TensorGroup,
     FOut: TensorGroup,
@@ -9603,7 +9578,7 @@ public static func experimentalParallelInterleaveDataset<
 ///     given feature along this dimension.
 ///   - output_types: The type list for the return values.
 ///   - output_shapes: The list of shapes being produced.
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalParseExampleDataset<Tdense: TensorArrayProtocol>(
   inputDataset: VariantHandle,
   numParallelCalls: Tensor<Int64>,
@@ -9634,7 +9609,7 @@ public static func experimentalParseExampleDataset<Tdense: TensorArrayProtocol>(
 /// Creates a dataset that uses a custom thread pool to compute `input_dataset`.
 ///
 /// - Parameter num_threads: Identifies the number of threads to use for the private threadpool.
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalPrivateThreadPoolDataset(
   inputDataset: VariantHandle,
   numThreads: Tensor<Int64>,
@@ -9656,7 +9631,7 @@ public static func experimentalPrivateThreadPoolDataset(
 ///     seed2 is set to be non-zero, the random number generator is seeded
 ///     by the given seed.  Otherwise, a random seed is used.
 ///   - seed2: A second scalar seed to avoid seed collision.
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalRandomDataset(
   seed: Tensor<Int64>,
   seed2: Tensor<Int64>,
@@ -9681,7 +9656,7 @@ public static func experimentalRandomDataset(
 ///   - num_workers: A scalar representing the number of workers to distribute this batch across. As
 ///     a result of this transformation the current batch size would end up being
 ///     divided  by this parameter.
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalRebatchDataset(
   inputDataset: VariantHandle,
   numWorkers: Tensor<Int64>,
@@ -9697,7 +9672,7 @@ public static func experimentalRebatchDataset(
 }
 
 /// Creates a dataset successively reduces `f` over the elements of `input_dataset`.
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalScanDataset<
     FIn: TensorGroup,
     FOut: TensorGroup,
@@ -9725,7 +9700,7 @@ public static func experimentalScanDataset<
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalSetStatsAggregatorDataset(
   inputDataset: VariantHandle,
   statsAggregator: ResourceHandle,
@@ -9744,7 +9719,7 @@ public static func experimentalSetStatsAggregatorDataset(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalSleepDataset(
   inputDataset: VariantHandle,
   sleepMicroseconds: Tensor<Int64>,
@@ -9768,7 +9743,7 @@ public static func experimentalSleepDataset(
 ///     forward in one iteration. It must be positive.
 ///   - window_stride: A scalar representing the stride of the input elements of the sliding window.
 ///     It must be positive.
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalSlidingWindowDataset(
   inputDataset: VariantHandle,
   windowSize: Tensor<Int64>,
@@ -9793,7 +9768,7 @@ public static func experimentalSlidingWindowDataset(
 ///   - driver_name: The database type. Currently, the only supported type is 'sqlite'.
 ///   - data_source_name: A connection string to connect to the database.
 ///   - query: A SQL query to execute.
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalSqlDataset(
   driverName: StringTensor,
   dataSourceName: StringTensor,
@@ -9811,7 +9786,7 @@ public static func experimentalSqlDataset(
 }
 
 /// Creates a statistics manager resource.
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalStatsAggregatorHandle(
   container: String,
   sharedName: String
@@ -9823,7 +9798,7 @@ public static func experimentalStatsAggregatorHandle(
 }
 
 /// Produces a summary of any statistics recorded by the given statistics manager.
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalStatsAggregatorSummary(
   iterator: ResourceHandle
 ) -> StringTensor {
@@ -9844,7 +9819,7 @@ public static func experimentalStatsAggregatorSummary(
 ///   building a closure for `predicate`.
 ///
 /// - Attr predicate: A function returning a scalar boolean.
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalTakeWhileDataset<
     PredicateIn: TensorGroup,
     PredicateOut: TensorGroup,
@@ -9869,7 +9844,7 @@ public static func experimentalTakeWhileDataset<
 /// Creates a dataset that uses a custom thread pool to compute `input_dataset`.
 ///
 /// - Parameter thread_pool: A resource produced by the ThreadPoolHandle op.
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalThreadPoolDataset(
   inputDataset: VariantHandle,
   threadPool: ResourceHandle,
@@ -9896,7 +9871,7 @@ public static func experimentalThreadPoolDataset(
 ///
 /// - Output handle: A resource that can be consumed by one or more ExperimentalThreadPoolDataset
 ///   ops.
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalThreadPoolHandle(
   numThreads: Int64,
   maxIntraOpParallelism: Int64 = 1,
@@ -9914,7 +9889,7 @@ public static func experimentalThreadPoolHandle(
 }
 
 /// A dataset that splits the elements of its input into multiple elements.
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalUnbatchDataset(
   inputDataset: VariantHandle,
   outputTypes: [TensorDataType],
@@ -9928,7 +9903,7 @@ public static func experimentalUnbatchDataset(
 }
 
 /// Creates a dataset that contains the unique elements of `input_dataset`.
-@inlinable @inline(__always)
+@inlinable
 public static func experimentalUniqueDataset(
   inputDataset: VariantHandle,
   outputTypes: [TensorDataType],
@@ -9944,7 +9919,7 @@ public static func experimentalUniqueDataset(
 /// Computes exponential of x - 1 element-wise.
 ///
 /// I.e., \\(y = (\exp x) - 1\\).
-@inlinable @inline(__always)
+@inlinable
 public static func expm1<T: FloatingPoint & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -10000,7 +9975,7 @@ public static func expm1<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// - Output glimpse: A tensor representing the glimpses `[batch_size,
 ///   glimpse_height, glimpse_width, channels]`.
-@inlinable @inline(__always)
+@inlinable
 public static func extractGlimpse(
   _ input: Tensor<Float>,
   size: Tensor<Int32>,
@@ -10049,7 +10024,7 @@ public static func extractGlimpse(
 ///   ksize_cols * depth]` containing image patches with size
 ///   `ksize_rows x ksize_cols x depth` vectorized in the "depth" dimension. Note
 ///   `out_rows` and `out_cols` are the dimensions of the output patches.
-@inlinable @inline(__always)
+@inlinable
 public static func extractImagePatches<T: Numeric & TensorFlowScalar>(
   images: Tensor<T>,
   ksizes: [Int32],
@@ -10077,7 +10052,7 @@ public static func extractImagePatches<T: Numeric & TensorFlowScalar>(
 ///   Defaults to int32.
 ///
 /// - Output image_shape: 1-D. The image shape with format [height, width, channels].
-@inlinable @inline(__always)
+@inlinable
 public static func extractJpegShape<OutputType: BinaryInteger & TensorFlowScalar>(
   contents: StringTensor
 ) -> Tensor<OutputType> {
@@ -10109,7 +10084,7 @@ public static func extractJpegShape<OutputType: BinaryInteger & TensorFlowScalar
 ///   with size `ksize_planes x ksize_rows x ksize_cols x depth` vectorized
 ///   in the "depth" dimension. Note `out_planes`, `out_rows` and `out_cols`
 ///   are the dimensions of the output patches.
-@inlinable @inline(__always)
+@inlinable
 public static func extractVolumePatches<T: Numeric & TensorFlowScalar>(
   _ input: Tensor<T>,
   ksizes: [Int32],
@@ -10138,7 +10113,7 @@ public static func extractVolumePatches<T: Numeric & TensorFlowScalar>(
 ///   @compatibility(numpy)
 ///   Equivalent to np.fft.fft
 ///   @end_compatibility
-@inlinable @inline(__always)
+@inlinable
 public static func fFT<Tcomplex: TensorFlowScalar>(
   _ input: Tensor<Tcomplex>
 ) -> Tensor<Tcomplex> {
@@ -10161,7 +10136,7 @@ public static func fFT<Tcomplex: TensorFlowScalar>(
 ///   @compatibility(numpy)
 ///   Equivalent to np.fft.fft2
 ///   @end_compatibility
-@inlinable @inline(__always)
+@inlinable
 public static func fFT2D<Tcomplex: TensorFlowScalar>(
   _ input: Tensor<Tcomplex>
 ) -> Tensor<Tcomplex> {
@@ -10184,7 +10159,7 @@ public static func fFT2D<Tcomplex: TensorFlowScalar>(
 ///   @compatibility(numpy)
 ///   Equivalent to np.fft.fftn with 3 dimensions.
 ///   @end_compatibility
-@inlinable @inline(__always)
+@inlinable
 public static func fFT3D<Tcomplex: TensorFlowScalar>(
   _ input: Tensor<Tcomplex>
 ) -> Tensor<Tcomplex> {
@@ -10210,7 +10185,7 @@ public static func fFT3D<Tcomplex: TensorFlowScalar>(
 ///     across multiple sessions.
 ///
 /// - Output handle: The handle to the queue.
-@inlinable @inline(__always)
+@inlinable
 public static func fIFOQueueV2(
   componentTypes: [TensorDataType],
   shapes: [TensorShape?],
@@ -10228,7 +10203,7 @@ public static func fIFOQueueV2(
 }
 
 /// Output a fact about factorials.
-@inlinable @inline(__always)
+@inlinable
 public static func fact(
 ) -> StringTensor {
   let op = TFE_Op("Fact")
@@ -10247,7 +10222,7 @@ public static func fact(
 ///         the output will not necessarily have this shape. Can be a partial shape.
 ///
 /// - Output output:     \"Fake\" output value. This should not be consumed by another op.
-@inlinable @inline(__always)
+@inlinable
 public static func fakeParam<Dtype: TensorFlowScalar>(
   shape: TensorShape?
 ) -> Tensor<Dtype> {
@@ -10275,7 +10250,7 @@ public static func fakeParam<Dtype: TensorFlowScalar>(
 /// `min_adj = scale * round(min / scale)` and `max_adj = max + min_adj - min`.
 ///
 /// Quantization is called fake since the output is still in floating point.
-@inlinable @inline(__always)
+@inlinable
 public static func fakeQuantWithMinMaxArgs(
   inputs: Tensor<Float>,
   min: Double = -6,
@@ -10300,7 +10275,7 @@ public static func fakeQuantWithMinMaxArgs(
 ///
 /// - Output backprops: Backpropagated gradients below the FakeQuantWithMinMaxArgs operation:
 ///   `gradients * (inputs >= min && inputs <= max)`.
-@inlinable @inline(__always)
+@inlinable
 public static func fakeQuantWithMinMaxArgsGradient(
   gradients: Tensor<Float>,
   inputs: Tensor<Float>,
@@ -10340,7 +10315,7 @@ public static func fakeQuantWithMinMaxArgsGradient(
 ///
 /// This operation has a gradient and thus allows for training `min` and `max`
 /// values.
-@inlinable @inline(__always)
+@inlinable
 public static func fakeQuantWithMinMaxVars(
   inputs: Tensor<Float>,
   min: Tensor<Float>,
@@ -10375,7 +10350,7 @@ public static func fakeQuantWithMinMaxVars(
 ///     `sum(gradients * (inputs < min))`.
 ///   - backprop_wrt_max: Backpropagated gradients w.r.t. max parameter:
 ///     `sum(gradients * (inputs > max))`.
-@inlinable @inline(__always)
+@inlinable
 public static func fakeQuantWithMinMaxVarsGradient(
   gradients: Tensor<Float>,
   inputs: Tensor<Float>,
@@ -10416,7 +10391,7 @@ public static func fakeQuantWithMinMaxVarsGradient(
 ///
 /// This operation has a gradient and thus allows for training `min` and `max`
 /// values.
-@inlinable @inline(__always)
+@inlinable
 public static func fakeQuantWithMinMaxVarsPerChannel(
   inputs: Tensor<Float>,
   min: Tensor<Float>,
@@ -10454,7 +10429,7 @@ public static func fakeQuantWithMinMaxVarsPerChannel(
 ///     `sum_per_d(gradients * (inputs < min))`.
 ///   - backprop_wrt_max: Backpropagated gradients w.r.t. max parameter, shape `[d]`:
 ///     `sum_per_d(gradients * (inputs > max))`.
-@inlinable @inline(__always)
+@inlinable
 public static func fakeQuantWithMinMaxVarsPerChannelGradient(
   gradients: Tensor<Float>,
   inputs: Tensor<Float>,
@@ -10502,7 +10477,7 @@ public static func fakeQuantWithMinMaxVarsPerChannelGradient(
 ///     @compatibility(numpy)
 ///     Equivalent to np.full
 ///     @end_compatibility
-@inlinable @inline(__always)
+@inlinable
 public static func fill<
     T: TensorFlowScalar,
     IndexType: BinaryInteger & TensorFlowScalar
@@ -10519,7 +10494,7 @@ public static func fill<
 }
 
 /// Creates a dataset containing elements of first component of `input_dataset` having true in the last component.
-@inlinable @inline(__always)
+@inlinable
 public static func filterByLastComponentDataset(
   inputDataset: VariantHandle,
   outputTypes: [TensorDataType],
@@ -10544,7 +10519,7 @@ public static func filterByLastComponentDataset(
 ///   building a closure for `predicate`.
 ///
 /// - Attr predicate: A function returning a scalar boolean.
-@inlinable @inline(__always)
+@inlinable
 public static func filterDataset<
     PredicateIn: TensorGroup,
     PredicateOut: TensorGroup,
@@ -10566,7 +10541,7 @@ public static func filterDataset<
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func fiveFloatOutputs(
 ) -> (a: Tensor<Float>, b: Tensor<Float>, c: Tensor<Float>, d: Tensor<Float>, e: Tensor<Float>) {
   let op = TFE_Op("FiveFloatOutputs")
@@ -10585,7 +10560,7 @@ public static func fiveFloatOutputs(
 ///   - footer_bytes: A scalar representing the number of bytes to skip at the end
 ///     of a file.
 ///   - buffer_size: A scalar representing the number of bytes to buffer. Must be > 0.
-@inlinable @inline(__always)
+@inlinable
 public static func fixedLengthRecordDataset(
   filenames: StringTensor,
   headerBytes: Tensor<Int64>,
@@ -10602,7 +10577,7 @@ public static func fixedLengthRecordDataset(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func fixedLengthRecordDatasetV2(
   filenames: StringTensor,
   headerBytes: Tensor<Int64>,
@@ -10637,7 +10612,7 @@ public static func fixedLengthRecordDatasetV2(
 ///     are supported. Defaults to none.
 ///
 /// - Output reader_handle: The handle to reference the Reader.
-@inlinable @inline(__always)
+@inlinable
 public static func fixedLengthRecordReaderV2(
   headerBytes: Int64 = 0,
   recordBytes: Int64,
@@ -10723,7 +10698,7 @@ public static func fixedLengthRecordReaderV2(
 ///     candidate representing the number of times the candidate is expected
 ///     to occur in a batch of sampled candidates.  If unique=true, then this is a
 ///     probability.
-@inlinable @inline(__always)
+@inlinable
 public static func fixedUnigramCandidateSampler(
   trueClasses: Tensor<Int64>,
   numTrue: Int64,
@@ -10765,7 +10740,7 @@ public static func fixedUnigramCandidateSampler(
 /// - Attr f: A function mapping elements of `input_dataset`, concatenated with
 ///   `other_arguments`, to a Dataset variant that contains elements matching
 ///   `output_types` and `output_shapes`.
-@inlinable @inline(__always)
+@inlinable
 public static func flatMapDataset<
     FIn: TensorGroup,
     FOut: TensorGroup,
@@ -10787,7 +10762,7 @@ public static func flatMapDataset<
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func floatInput(
   _ a: Tensor<Float>
 ) {
@@ -10796,7 +10771,7 @@ public static func floatInput(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func floatOutput(
 ) -> Tensor<Float> {
   let op = TFE_Op("FloatOutput")
@@ -10804,7 +10779,7 @@ public static func floatOutput(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func floatOutputStringOutput(
 ) -> (a: Tensor<Float>, b: StringTensor) {
   let op = TFE_Op("FloatOutputStringOutput")
@@ -10813,7 +10788,7 @@ public static func floatOutputStringOutput(
 }
 
 /// Returns element-wise largest integer not greater than x.
-@inlinable @inline(__always)
+@inlinable
 public static func floor<T: FloatingPoint & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -10827,7 +10802,7 @@ public static func floor<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// *NOTE*: `FloorDiv` supports broadcasting. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-@inlinable @inline(__always)
+@inlinable
 public static func floorDiv<T: Numeric & TensorFlowScalar>(
   _ x: Tensor<T>,
   _ y: Tensor<T>
@@ -10846,7 +10821,7 @@ public static func floorDiv<T: Numeric & TensorFlowScalar>(
 ///
 /// *NOTE*: `FloorMod` supports broadcasting. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-@inlinable @inline(__always)
+@inlinable
 public static func floorMod<T: Numeric & TensorFlowScalar>(
   _ x: Tensor<T>,
   _ y: Tensor<T>
@@ -10858,7 +10833,7 @@ public static func floorMod<T: Numeric & TensorFlowScalar>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func flushSummaryWriter(
   writer: ResourceHandle
 ) {
@@ -10867,7 +10842,7 @@ public static func flushSummaryWriter(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func foo1(
   _ a: Tensor<Float>,
   _ b: Tensor<Int32>,
@@ -10880,7 +10855,7 @@ public static func foo1(
   return op.execute(Int(1), Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func foo2(
   _ a: Tensor<Float>,
   _ b: StringTensor,
@@ -10893,7 +10868,7 @@ public static func foo2(
   return op.execute(Int(1), Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func foo3(
   _ a: Tensor<Float>,
   _ b: StringTensor,
@@ -10924,7 +10899,7 @@ public static func foo3(
 ///         list of tensors (T).
 ///
 /// - Output output: A list of output tensors whose types are T.
-@inlinable @inline(__always)
+@inlinable
 public static func for_<
     T: TensorArrayProtocol,
     BodyIn: TensorGroup,
@@ -10987,7 +10962,7 @@ public static func for_<
 ///   - output: output tensor after fractional avg pooling.
 ///   - row_pooling_sequence: row pooling sequence, needed to calculate gradient.
 ///   - col_pooling_sequence: column pooling sequence, needed to calculate gradient.
-@inlinable @inline(__always)
+@inlinable
 public static func fractionalAvgPool<T: Numeric & TensorFlowScalar>(
   value: Tensor<T>,
   poolingRatio: [Double],
@@ -11037,7 +11012,7 @@ public static func fractionalAvgPool<T: Numeric & TensorFlowScalar>(
 ///   The result would be [41/3, 26/3] for fractional avg pooling.
 ///
 /// - Output output: 4-D.  Gradients w.r.t. the input of `fractional_avg_pool`.
-@inlinable @inline(__always)
+@inlinable
 public static func fractionalAvgPoolGrad<T: Numeric & TensorFlowScalar>(
   origInputTensorShape: Tensor<Int64>,
   outBackprop: Tensor<T>,
@@ -11120,7 +11095,7 @@ public static func fractionalAvgPoolGrad<T: Numeric & TensorFlowScalar>(
 ///   - output: output tensor after fractional max pooling.
 ///   - row_pooling_sequence: row pooling sequence, needed to calculate gradient.
 ///   - col_pooling_sequence: column pooling sequence, needed to calculate gradient.
-@inlinable @inline(__always)
+@inlinable
 public static func fractionalMaxPool<T: Numeric & TensorFlowScalar>(
   value: Tensor<T>,
   poolingRatio: [Double],
@@ -11165,7 +11140,7 @@ public static func fractionalMaxPool<T: Numeric & TensorFlowScalar>(
 ///   The result would be [20, 16] for fractional max pooling.
 ///
 /// - Output output: 4-D.  Gradients w.r.t. the input of `fractional_max_pool`.
-@inlinable @inline(__always)
+@inlinable
 public static func fractionalMaxPoolGrad<T: Numeric & TensorFlowScalar>(
   origInput: Tensor<T>,
   origOutput: Tensor<T>,
@@ -11185,7 +11160,7 @@ public static func fractionalMaxPoolGrad<T: Numeric & TensorFlowScalar>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func funcAttr<FIn: TensorGroup,
     FOut: TensorGroup>(
   f: (FIn) -> FOut
@@ -11226,7 +11201,7 @@ public static func funcAttr<FIn: TensorGroup,
 ///     in the gradient computation.
 ///   - reserve_space_2: A 1D Tensor for the computed batch variance (inverted variance
 ///     in the cuDNN case), to be reused in the gradient computation.
-@inlinable @inline(__always)
+@inlinable
 public static func fusedBatchNorm<T: FloatingPoint & TensorFlowScalar>(
   _ x: Tensor<T>,
   scale: Tensor<T>,
@@ -11284,7 +11259,7 @@ public static func fusedBatchNorm<T: FloatingPoint & TensorFlowScalar>(
 ///   - reserve_space_3: Unused placeholder to match the mean input in FusedBatchNorm.
 ///   - reserve_space_4: Unused placeholder to match the variance input
 ///     in FusedBatchNorm.
-@inlinable @inline(__always)
+@inlinable
 public static func fusedBatchNormGrad<T: FloatingPoint & TensorFlowScalar>(
   yBackprop: Tensor<T>,
   _ x: Tensor<T>,
@@ -11343,7 +11318,7 @@ public static func fusedBatchNormGrad<T: FloatingPoint & TensorFlowScalar>(
 ///   - reserve_space_3: Unused placeholder to match the mean input in FusedBatchNorm.
 ///   - reserve_space_4: Unused placeholder to match the variance input
 ///     in FusedBatchNorm.
-@inlinable @inline(__always)
+@inlinable
 public static func fusedBatchNormGradV2<
     T: FloatingPoint & TensorFlowScalar,
     U: FloatingPoint & TensorFlowScalar
@@ -11403,7 +11378,7 @@ public static func fusedBatchNormGradV2<
 ///     in the gradient computation.
 ///   - reserve_space_2: A 1D Tensor for the computed batch variance (inverted variance
 ///     in the cuDNN case), to be reused in the gradient computation.
-@inlinable @inline(__always)
+@inlinable
 public static func fusedBatchNormV2<
     T: FloatingPoint & TensorFlowScalar,
     U: FloatingPoint & TensorFlowScalar
@@ -11456,7 +11431,7 @@ public static func fusedBatchNormV2<
 ///   - strides: 1-D of length 4.  The stride of the sliding window for each dimension
 ///     of `input`. Must be in the same order as the dimension specified with format.
 ///   - padding: The type of padding algorithm to use.
-@inlinable @inline(__always)
+@inlinable
 public static func fusedPadConv2D<T: FloatingPoint & TensorFlowScalar>(
   _ input: Tensor<T>,
   paddings: Tensor<Int32>,
@@ -11504,7 +11479,7 @@ public static func fusedPadConv2D<T: FloatingPoint & TensorFlowScalar>(
 ///   - strides: 1-D of length 4.  The stride of the sliding window for each dimension
 ///     of `input`. Must be in the same order as the dimension specified with format.
 ///   - padding: The type of padding algorithm to use.
-@inlinable @inline(__always)
+@inlinable
 public static func fusedResizeAndPadConv2D<T: FloatingPoint & TensorFlowScalar>(
   _ input: Tensor<T>,
   size: Tensor<Int32>,
@@ -11574,7 +11549,7 @@ public static func fusedResizeAndPadConv2D<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// h = (1-u) \circ c + u \circ h_prev
 /// ```
-@inlinable @inline(__always)
+@inlinable
 public static func gRUBlockCell<T: FloatingPoint & TensorFlowScalar>(
   _ x: Tensor<T>,
   hPrev: Tensor<T>,
@@ -11676,7 +11651,7 @@ public static func gRUBlockCell<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// d_b_c = sum of d_c_bar along axis = 0
 /// ```
-@inlinable @inline(__always)
+@inlinable
 public static func gRUBlockCellGrad<T: FloatingPoint & TensorFlowScalar>(
   _ x: Tensor<T>,
   hPrev: Tensor<T>,
@@ -11731,7 +11706,7 @@ public static func gRUBlockCellGrad<T: FloatingPoint & TensorFlowScalar>(
 /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
 /// <img style="width:100%" src="https://www.tensorflow.org/images/Gather.png" alt>
 /// </div>
-@inlinable @inline(__always)
+@inlinable
 public static func gather<
     Tparams: TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -11862,7 +11837,7 @@ public static func gather<
 ///
 /// - Output output: Values from `params` gathered from indices given by `indices`, with
 ///   shape `indices.shape[:-1] + params.shape[indices.shape[-1]:]`.
-@inlinable @inline(__always)
+@inlinable
 public static func gatherNd<
     Tparams: TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -11917,7 +11892,7 @@ public static func gatherNd<
 ///
 /// - Output output: Values from `params` gathered from indices given by `indices`, with
 ///   shape `params.shape[:axis] + indices.shape + params.shape[axis + 1:]`.
-@inlinable @inline(__always)
+@inlinable
 public static func gatherV2<
     Tparams: TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar,
@@ -11942,7 +11917,7 @@ public static func gatherV2<
 /// If the values are the same as already configured values, this op is a no-op. If
 /// they are different, the current contents of the block cache is dropped, and a
 /// new block cache is created fresh.
-@inlinable @inline(__always)
+@inlinable
 public static func gcsConfigureBlockCache(
   maxCacheSize: Tensor<UInt64>,
   blockSize: Tensor<UInt64>,
@@ -11984,7 +11959,7 @@ public static func gcsConfigureBlockCache(
 /// Note be sure to feed the inputs to this op to ensure the credentials are not
 /// stored in a constant op within the graph that might accidentally be checkpointed
 /// or in other ways be persisted or exfiltrated.
-@inlinable @inline(__always)
+@inlinable
 public static func gcsConfigureCredentials(
   json: StringTensor
 ) {
@@ -12010,7 +11985,7 @@ public static func gcsConfigureCredentials(
 ///   - test_end_point: Do not use. For testing purposes only.
 ///
 /// - Output partitions: Serialized table partitions.
-@inlinable @inline(__always)
+@inlinable
 public static func generateBigQueryReaderPartitions(
   projectId: String,
   datasetId: String,
@@ -12077,7 +12052,7 @@ public static func generateBigQueryReaderPartitions(
 ///     is equal to the old ID that maps to the new ID i.  This element is -1 for any
 ///     new ID that is not found in the old vocabulary.
 ///   - num_present: Number of new vocab entries found in old vocab.
-@inlinable @inline(__always)
+@inlinable
 public static func generateVocabRemapping(
   newVocabFile: StringTensor,
   oldVocabFile: StringTensor,
@@ -12095,7 +12070,7 @@ public static func generateVocabRemapping(
 }
 
 /// Creates a dataset that invokes a function to generate elements.
-@inlinable @inline(__always)
+@inlinable
 public static func generatorDataset<
     InitfuncIn: TensorGroup,
     InitfuncOut: TensorGroup,
@@ -12137,7 +12112,7 @@ public static func generatorDataset<
 ///
 /// - Output handle: The handle for the tensor stored in the session state, represented
 ///   as a string.
-@inlinable @inline(__always)
+@inlinable
 public static func getSessionHandle<T: TensorFlowScalar>(
   value: Tensor<T>
 ) -> StringTensor {
@@ -12153,7 +12128,7 @@ public static func getSessionHandle<T: TensorFlowScalar>(
 ///
 /// - Output handle: The handle for the tensor stored in the session state, represented
 ///   as a ResourceHandle object.
-@inlinable @inline(__always)
+@inlinable
 public static func getSessionHandleV2<T: TensorFlowScalar>(
   value: Tensor<T>
 ) -> ResourceHandle {
@@ -12170,7 +12145,7 @@ public static func getSessionHandleV2<T: TensorFlowScalar>(
 /// - Attr dtype: The type of the output value.
 ///
 /// - Output value: The tensor for the given handle.
-@inlinable @inline(__always)
+@inlinable
 public static func getSessionTensor<Dtype: TensorFlowScalar>(
   handle: StringTensor
 ) -> Tensor<Dtype> {
@@ -12180,7 +12155,7 @@ public static func getSessionTensor<Dtype: TensorFlowScalar>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func graphDefVersion(
 ) -> Tensor<Int32> {
   let op = TFE_Op("GraphDefVersion")
@@ -12192,7 +12167,7 @@ public static func graphDefVersion(
 ///
 /// *NOTE*: `Greater` supports broadcasting. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-@inlinable @inline(__always)
+@inlinable
 public static func greater<T: Numeric & TensorFlowScalar>(
   _ x: Tensor<T>,
   _ y: Tensor<T>
@@ -12208,7 +12183,7 @@ public static func greater<T: Numeric & TensorFlowScalar>(
 ///
 /// *NOTE*: `GreaterEqual` supports broadcasting. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-@inlinable @inline(__always)
+@inlinable
 public static func greaterEqual<T: Numeric & TensorFlowScalar>(
   _ x: Tensor<T>,
   _ y: Tensor<T>
@@ -12228,7 +12203,7 @@ public static func greaterEqual<T: Numeric & TensorFlowScalar>(
 /// as input.
 ///
 /// Returns the input tensor without modification.
-@inlinable @inline(__always)
+@inlinable
 public static func guaranteeConst<T: TensorFlowScalar>(
   _ input: Tensor<T>
 ) -> Tensor<T> {
@@ -12249,7 +12224,7 @@ public static func guaranteeConst<T: TensorFlowScalar>(
 /// - Parameter images: 1-D or higher rank. HSV data to convert. Last dimension must be size 3.
 ///
 /// - Output output: `images` converted to RGB.
-@inlinable @inline(__always)
+@inlinable
 public static func hSVToRGB<T: FloatingPoint & TensorFlowScalar>(
   images: Tensor<T>
 ) -> Tensor<T> {
@@ -12276,7 +12251,7 @@ public static func hSVToRGB<T: FloatingPoint & TensorFlowScalar>(
 ///   - value_dtype: Type of the table values.
 ///
 /// - Output table_handle: Handle to a table.
-@inlinable @inline(__always)
+@inlinable
 public static func hashTableV2(
   container: String,
   sharedName: String,
@@ -12319,7 +12294,7 @@ public static func hashTableV2(
 ///   - nbins: Scalar `int32 Tensor`.  Number of histogram bins.
 ///
 /// - Output out: A 1-D `Tensor` holding histogram of values.
-@inlinable @inline(__always)
+@inlinable
 public static func histogramFixedWidth<
     T: Numeric & TensorFlowScalar,
     Dtype: BinaryInteger & TensorFlowScalar
@@ -12350,7 +12325,7 @@ public static func histogramFixedWidth<
 ///   - values: Any shape. Values to use to build the histogram.
 ///
 /// - Output summary: Scalar. Serialized `Summary` protocol buffer.
-@inlinable @inline(__always)
+@inlinable
 public static func histogramSummary<T: Numeric & TensorFlowScalar>(
   tag: StringTensor,
   _ values: Tensor<T>
@@ -12375,7 +12350,7 @@ public static func histogramSummary<T: Numeric & TensorFlowScalar>(
 ///   @compatibility(numpy)
 ///   Equivalent to np.fft.ifft
 ///   @end_compatibility
-@inlinable @inline(__always)
+@inlinable
 public static func iFFT<Tcomplex: TensorFlowScalar>(
   _ input: Tensor<Tcomplex>
 ) -> Tensor<Tcomplex> {
@@ -12398,7 +12373,7 @@ public static func iFFT<Tcomplex: TensorFlowScalar>(
 ///   @compatibility(numpy)
 ///   Equivalent to np.fft.ifft2
 ///   @end_compatibility
-@inlinable @inline(__always)
+@inlinable
 public static func iFFT2D<Tcomplex: TensorFlowScalar>(
   _ input: Tensor<Tcomplex>
 ) -> Tensor<Tcomplex> {
@@ -12421,7 +12396,7 @@ public static func iFFT2D<Tcomplex: TensorFlowScalar>(
 ///   @compatibility(numpy)
 ///   Equivalent to np.fft.ifftn with 3 dimensions.
 ///   @end_compatibility
-@inlinable @inline(__always)
+@inlinable
 public static func iFFT3D<Tcomplex: TensorFlowScalar>(
   _ input: Tensor<Tcomplex>
 ) -> Tensor<Tcomplex> {
@@ -12432,7 +12407,7 @@ public static func iFFT3D<Tcomplex: TensorFlowScalar>(
 }
 
 /// Return a tensor with the same shape and contents as the input tensor or value.
-@inlinable @inline(__always)
+@inlinable
 public static func identity<T: TensorFlowScalar>(
   _ input: Tensor<T>
 ) -> Tensor<T> {
@@ -12459,7 +12434,7 @@ public static func identity<T: TensorFlowScalar>(
 /// def ApplyG(op, dy, _):
 ///   return [None, g(dy)]  # Do not backprop to f(x).
 /// ```
-@inlinable @inline(__always)
+@inlinable
 public static func identityN<T: TensorArrayProtocol>(
   _ input: T
 ) -> T {
@@ -12481,7 +12456,7 @@ public static func identityN<T: TensorArrayProtocol>(
 ///     with this shared_name. Otherwise, the node name is used instead.
 ///
 /// - Output reader_handle: The handle to reference the Reader.
-@inlinable @inline(__always)
+@inlinable
 public static func identityReaderV2(
   container: String,
   sharedName: String
@@ -12512,7 +12487,7 @@ public static func identityReaderV2(
 ///         types are the same as what then_branch returns.
 ///
 /// - Output output: A list of return values.
-@inlinable @inline(__always)
+@inlinable
 public static func if_<
     Tcond: TensorFlowScalar,
     Tin: TensorArrayProtocol,
@@ -12555,7 +12530,7 @@ public static func if_<
 ///
 /// Note, above `Q(a, x)` (`Igammac`) is the upper regularized complete
 /// Gamma function.
-@inlinable @inline(__always)
+@inlinable
 public static func igamma<T: FloatingPoint & TensorFlowScalar>(
   _ a: Tensor<T>,
   _ x: Tensor<T>
@@ -12568,7 +12543,7 @@ public static func igamma<T: FloatingPoint & TensorFlowScalar>(
 }
 
 /// Computes the gradient of `igamma(a, x)` wrt `a`.
-@inlinable @inline(__always)
+@inlinable
 public static func igammaGradA<T: FloatingPoint & TensorFlowScalar>(
   _ a: Tensor<T>,
   _ x: Tensor<T>
@@ -12594,7 +12569,7 @@ public static func igammaGradA<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// Note, above `P(a, x)` (`Igamma`) is the lower regularized complete
 /// Gamma function.
-@inlinable @inline(__always)
+@inlinable
 public static func igammac<T: FloatingPoint & TensorFlowScalar>(
   _ a: Tensor<T>,
   _ x: Tensor<T>
@@ -12619,7 +12594,7 @@ public static func igammac<T: FloatingPoint & TensorFlowScalar>(
 /// # tensor 'input' is [-2.25 + 4.75j, 3.25 + 5.75j]
 /// tf.imag(input) ==> [4.75, 5.75]
 /// ```
-@inlinable @inline(__always)
+@inlinable
 public static func imag<
     T: TensorFlowScalar,
     Tout: FloatingPoint & TensorFlowScalar
@@ -12642,7 +12617,7 @@ public static func imag<
 ///   - shape: Shape of the returned tensor.
 ///   - memory_region_name: Name of readonly memory region used by the tensor, see
 ///     NewReadOnlyMemoryRegionFromFile in tensorflow::Env.
-@inlinable @inline(__always)
+@inlinable
 public static func immutableConst<Dtype: TensorFlowScalar>(
   shape: TensorShape?,
   memoryRegionName: String
@@ -12654,7 +12629,7 @@ public static func immutableConst<Dtype: TensorFlowScalar>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func importEvent(
   writer: ResourceHandle,
   event: StringTensor
@@ -12665,7 +12640,7 @@ public static func importEvent(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func inPolymorphicTwice<T: TensorFlowScalar>(
   _ a: [Tensor<T>],
   _ b: [Tensor<T>]
@@ -12703,7 +12678,7 @@ public static func inPolymorphicTwice<T: TensorFlowScalar>(
 /// - Attr k: Number of top elements to look at for computing precision.
 ///
 /// - Output precision: Computed Precision at `k` as a `bool Tensor`.
-@inlinable @inline(__always)
+@inlinable
 public static func inTopK<T: BinaryInteger & TensorFlowScalar>(
   predictions: Tensor<Float>,
   targets: Tensor<T>,
@@ -12740,7 +12715,7 @@ public static func inTopK<T: BinaryInteger & TensorFlowScalar>(
 ///   - k: Number of top elements to look at for computing precision.
 ///
 /// - Output precision: Computed precision at `k` as a `bool Tensor`.
-@inlinable @inline(__always)
+@inlinable
 public static func inTopKV2<T: BinaryInteger & TensorFlowScalar>(
   predictions: Tensor<Float>,
   targets: Tensor<T>,
@@ -12761,7 +12736,7 @@ public static func inTopKV2<T: BinaryInteger & TensorFlowScalar>(
 ///   - shape: The shape of the tensor.
 ///
 /// - Output output: A tensor that will be provided using the infeed mechanism.
-@inlinable @inline(__always)
+@inlinable
 public static func infeedDequeue<Dtype: TensorFlowScalar>(
   shape: TensorShape?
 ) -> Tensor<Dtype> {
@@ -12778,7 +12753,7 @@ public static func infeedDequeue<Dtype: TensorFlowScalar>(
 ///   - shapes: The shapes of each tensor in `outputs`.
 ///
 /// - Output outputs: A list of tensors that will be provided using the infeed mechanism.
-@inlinable @inline(__always)
+@inlinable
 public static func infeedDequeueTuple<Dtypes: TensorGroup>(
   shapes: [TensorShape?]
 ) -> Dtypes {
@@ -12801,7 +12776,7 @@ public static func infeedDequeueTuple<Dtypes: TensorGroup>(
 ///   - device_ordinal: The TPU device to use. This should be -1 when the Op
 ///     is running on a TPU device, and >= 0 when the Op is running on the CPU
 ///     device.
-@inlinable @inline(__always)
+@inlinable
 public static func infeedEnqueue<Dtype: TensorFlowScalar>(
   _ input: Tensor<Dtype>,
   shape: TensorShape?,
@@ -12823,7 +12798,7 @@ public static func infeedEnqueue<Dtype: TensorFlowScalar>(
 ///
 /// - Attr device_ordinal: The TPU device to use. This should be -1 when the Op is running on a TPU device
 ///   and = 0 when the Op is running on the CPU device.
-@inlinable @inline(__always)
+@inlinable
 public static func infeedEnqueuePrelinearizedBuffer(
   _ input: VariantHandle,
   deviceOrdinal: Int64 = -1
@@ -12848,7 +12823,7 @@ public static func infeedEnqueuePrelinearizedBuffer(
 ///   - device_ordinal: The TPU device to use. This should be -1 when the Op
 ///     is running on a TPU device, and >= 0 when the Op is running on the CPU
 ///     device.
-@inlinable @inline(__always)
+@inlinable
 public static func infeedEnqueueTuple<Dtypes: TensorArrayProtocol>(
   inputs: Dtypes,
   shapes: [TensorShape?],
@@ -12887,7 +12862,7 @@ public static func infeedEnqueueTuple<Dtypes: TensorArrayProtocol>(
 ///     `value` values from.
 ///   - vocab_size: Number of elements of the file, use -1 if unknown.
 ///   - delimiter: Delimiter to separate fields in a line.
-@inlinable @inline(__always)
+@inlinable
 public static func initializeTableFromTextFileV2(
   tableHandle: ResourceHandle,
   filename: StringTensor,
@@ -12912,7 +12887,7 @@ public static func initializeTableFromTextFileV2(
 ///   - table_handle: Handle to a table which will be initialized.
 ///   - keys: Keys of type Tkey.
 ///   - values: Values of type Tval.
-@inlinable @inline(__always)
+@inlinable
 public static func initializeTableV2<
     Tkey: TensorFlowScalar,
     Tval: TensorFlowScalar
@@ -12940,7 +12915,7 @@ public static func initializeTableV2<
 ///   - v: A `Tensor` of type T. Same dimension sizes as x except the first dimension, which must be the same as i's size.
 ///
 /// - Output y: A `Tensor` of type T. An alias of `x`. The content of `y` is undefined if there are duplicates in `i`.
-@inlinable @inline(__always)
+@inlinable
 public static func inplaceAdd<T: TensorFlowScalar>(
   _ x: Tensor<T>,
   i: Tensor<Int32>,
@@ -12964,7 +12939,7 @@ public static func inplaceAdd<T: TensorFlowScalar>(
 ///   - v: A `Tensor` of type T. Same dimension sizes as x except the first dimension, which must be the same as i's size.
 ///
 /// - Output y: A `Tensor` of type T. An alias of `x`. The content of `y` is undefined if there are duplicates in `i`.
-@inlinable @inline(__always)
+@inlinable
 public static func inplaceSub<T: TensorFlowScalar>(
   _ x: Tensor<T>,
   i: Tensor<Int32>,
@@ -12988,7 +12963,7 @@ public static func inplaceSub<T: TensorFlowScalar>(
 ///   - v: A `Tensor` of type T. Same dimension sizes as x except the first dimension, which must be the same as i's size.
 ///
 /// - Output y: A `Tensor` of type T. An alias of `x`. The content of `y` is undefined if there are duplicates in `i`.
-@inlinable @inline(__always)
+@inlinable
 public static func inplaceUpdate<T: TensorFlowScalar>(
   _ x: Tensor<T>,
   i: Tensor<Int32>,
@@ -13002,7 +12977,7 @@ public static func inplaceUpdate<T: TensorFlowScalar>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func int64Output(
 ) -> Tensor<Int64> {
   let op = TFE_Op("Int64Output")
@@ -13010,7 +12985,7 @@ public static func int64Output(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func intAttr(
   foo: Int64 = 1
 ) -> Tensor<Int64> {
@@ -13019,7 +12994,7 @@ public static func intAttr(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func intInput(
   _ a: Tensor<Int32>
 ) {
@@ -13028,7 +13003,7 @@ public static func intInput(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func intInputFloatInput(
   _ a: Tensor<Int32>,
   _ b: Tensor<Float>
@@ -13039,7 +13014,7 @@ public static func intInputFloatInput(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func intInputIntOutput(
   _ a: Tensor<Int32>
 ) -> Tensor<Int32> {
@@ -13048,7 +13023,7 @@ public static func intInputIntOutput(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func intOutput(
 ) -> Tensor<Int32> {
   let op = TFE_Op("IntOutput")
@@ -13056,7 +13031,7 @@ public static func intOutput(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func intOutputFloatOutput(
 ) -> (a: Tensor<Int32>, b: Tensor<Float>) {
   let op = TFE_Op("IntOutputFloatOutput")
@@ -13075,7 +13050,7 @@ public static func intOutputFloatOutput(
 /// - Attr f: A function mapping elements of `input_dataset`, concatenated with
 ///   `other_arguments`, to a Dataset variant that contains elements matching
 ///   `output_types` and `output_shapes`.
-@inlinable @inline(__always)
+@inlinable
 public static func interleaveDataset<
     FIn: TensorGroup,
     FOut: TensorGroup,
@@ -13104,7 +13079,7 @@ public static func interleaveDataset<
 /// Computes the reciprocal of x element-wise.
 ///
 /// I.e., \\(y = 1 / x\\).
-@inlinable @inline(__always)
+@inlinable
 public static func inv<T: Numeric & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -13118,7 +13093,7 @@ public static func inv<T: Numeric & TensorFlowScalar>(
 ///
 /// Specifically, `grad = -dy * y*y`, where `y = 1/x`, and `dy`
 /// is the corresponding input gradient.
-@inlinable @inline(__always)
+@inlinable
 public static func invGrad<T: FloatingPoint & TensorFlowScalar>(
   _ y: Tensor<T>,
   dy: Tensor<T>
@@ -13134,7 +13109,7 @@ public static func invGrad<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// The result will have exactly those bits set, that are not set in `x`. The
 /// computation is performed on the underlying representation of x.
-@inlinable @inline(__always)
+@inlinable
 public static func invert<T: BinaryInteger & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -13165,7 +13140,7 @@ public static func invert<T: BinaryInteger & TensorFlowScalar>(
 /// - Parameter x: 1-D.
 ///
 /// - Output y: 1-D.
-@inlinable @inline(__always)
+@inlinable
 public static func invertPermutation<T: BinaryInteger & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -13180,7 +13155,7 @@ public static func invertPermutation<T: BinaryInteger & TensorFlowScalar>(
 /// - Parameter tree_ensemble_handle: Handle to the tree ensemble resouce.
 ///
 /// - Output is_initialized: output boolean on whether it is initialized or not.
-@inlinable @inline(__always)
+@inlinable
 public static func isBoostedTreesEnsembleInitialized(
   treeEnsembleHandle: ResourceHandle
 ) -> Tensor<Bool> {
@@ -13196,7 +13171,7 @@ public static func isBoostedTreesEnsembleInitialized(
 /// - Parameter quantile_stream_resource_handle: resource; The reference to quantile stream resource handle.
 ///
 /// - Output is_initialized: bool; True if the resource is initialized, False otherwise.
-@inlinable @inline(__always)
+@inlinable
 public static func isBoostedTreesQuantileStreamResourceInitialized(
   quantileStreamResourceHandle: ResourceHandle
 ) -> Tensor<Bool> {
@@ -13210,7 +13185,7 @@ public static func isBoostedTreesQuantileStreamResourceInitialized(
 /// @compatibility(numpy)
 /// Equivalent to np.isfinite
 /// @end_compatibility
-@inlinable @inline(__always)
+@inlinable
 public static func isFinite<T: FloatingPoint & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<Bool> {
@@ -13225,7 +13200,7 @@ public static func isFinite<T: FloatingPoint & TensorFlowScalar>(
 /// @compatibility(numpy)
 /// Equivalent to np.isinf
 /// @end_compatibility
-@inlinable @inline(__always)
+@inlinable
 public static func isInf<T: FloatingPoint & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<Bool> {
@@ -13240,7 +13215,7 @@ public static func isInf<T: FloatingPoint & TensorFlowScalar>(
 /// @compatibility(numpy)
 /// Equivalent to np.isnan
 /// @end_compatibility
-@inlinable @inline(__always)
+@inlinable
 public static func isNan<T: FloatingPoint & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<Bool> {
@@ -13254,7 +13229,7 @@ public static func isNan<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// - Output handle: A handle to the iterator that can be passed to a "MakeIterator"
 ///   or "IteratorGetNext" op.
-@inlinable @inline(__always)
+@inlinable
 public static func iterator(
   sharedName: String,
   container: String,
@@ -13280,7 +13255,7 @@ public static func iterator(
 ///     element produced by the resulting iterator.
 ///
 /// - Output resource_handle: A handle to an iterator resource.
-@inlinable @inline(__always)
+@inlinable
 public static func iteratorFromStringHandle(
   stringHandle: StringTensor,
   outputTypes: [TensorDataType],
@@ -13293,7 +13268,7 @@ public static func iteratorFromStringHandle(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func iteratorFromStringHandleV2(
   stringHandle: StringTensor,
   outputTypes: [TensorDataType],
@@ -13307,7 +13282,7 @@ public static func iteratorFromStringHandleV2(
 }
 
 /// Gets the next output from the given iterator .
-@inlinable @inline(__always)
+@inlinable
 public static func iteratorGetNext<OutputTypes: TensorGroup>(
   iterator: ResourceHandle,
   outputShapes: [TensorShape?]
@@ -13320,7 +13295,7 @@ public static func iteratorGetNext<OutputTypes: TensorGroup>(
 }
 
 /// Gets the next output from the given iterator as an Optional variant.
-@inlinable @inline(__always)
+@inlinable
 public static func iteratorGetNextAsOptional(
   iterator: ResourceHandle,
   outputTypes: [TensorDataType],
@@ -13339,7 +13314,7 @@ public static func iteratorGetNextAsOptional(
 /// in situations where the iterator does not block the calling thread, or where
 /// the calling thread is not a member of the thread pool used to execute parallel
 /// operations (e.g. in eager mode).
-@inlinable @inline(__always)
+@inlinable
 public static func iteratorGetNextSync<OutputTypes: TensorGroup>(
   iterator: ResourceHandle,
   outputShapes: [TensorShape?]
@@ -13356,7 +13331,7 @@ public static func iteratorGetNextSync<OutputTypes: TensorGroup>(
 /// - Parameter resource_handle: A handle to an iterator resource.
 ///
 /// - Output string_handle: A string representation of the given handle.
-@inlinable @inline(__always)
+@inlinable
 public static func iteratorToStringHandle(
   resourceHandle: ResourceHandle
 ) -> StringTensor {
@@ -13365,7 +13340,7 @@ public static func iteratorToStringHandle(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func iteratorV2(
   sharedName: String,
   container: String,
@@ -13393,7 +13368,7 @@ public static func iteratorV2(
 ///   - seed: Scalar. Seed for initializing the random number generator.
 ///
 /// - Output index: Scalar with the index of the sampled point.
-@inlinable @inline(__always)
+@inlinable
 public static func kMC2ChainInitialization(
   distances: Tensor<Float>,
   seed: Tensor<Int64>
@@ -13404,7 +13379,7 @@ public static func kMC2ChainInitialization(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func kernelLabel(
 ) -> StringTensor {
   let op = TFE_Op("KernelLabel")
@@ -13412,7 +13387,7 @@ public static func kernelLabel(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func kernelLabelRequired(
   _ input: Tensor<Int32>
 ) -> StringTensor {
@@ -13438,7 +13413,7 @@ public static func kernelLabelRequired(
 ///     heuristic is used to sample O(log(num_to_sample)) additional points.
 ///
 /// - Output samples: Matrix of shape (num_to_sample, d). The sampled rows.
-@inlinable @inline(__always)
+@inlinable
 public static func kmeansPlusPlusInitialization(
   points: Tensor<Float>,
   numToSample: Tensor<Int64>,
@@ -13462,7 +13437,7 @@ public static func kmeansPlusPlusInitialization(
 /// - Parameter t: Typically 2-D, but may have any dimensions.
 ///
 /// - Output output: 0-D.
-@inlinable @inline(__always)
+@inlinable
 public static func l2Loss<T: FloatingPoint & TensorFlowScalar>(
   t: Tensor<T>
 ) -> Tensor<T> {
@@ -13493,7 +13468,7 @@ public static func l2Loss<T: FloatingPoint & TensorFlowScalar>(
 ///   - bias: An offset (usually positive to avoid dividing by 0).
 ///   - alpha: A scale factor, usually positive.
 ///   - beta: An exponent.
-@inlinable @inline(__always)
+@inlinable
 public static func lRN<T: FloatingPoint & TensorFlowScalar>(
   _ input: Tensor<T>,
   depthRadius: Int64 = 5,
@@ -13525,7 +13500,7 @@ public static func lRN<T: FloatingPoint & TensorFlowScalar>(
 ///   - beta: An exponent.
 ///
 /// - Output output: The gradients for LRN.
-@inlinable @inline(__always)
+@inlinable
 public static func lRNGrad<T: FloatingPoint & TensorFlowScalar>(
   inputGrads: Tensor<T>,
   inputImage: Tensor<T>,
@@ -13597,7 +13572,7 @@ public static func lRNGrad<T: FloatingPoint & TensorFlowScalar>(
 ///   - ci: The cell input.
 ///   - co: The cell after the tanh.
 ///   - h: The output h vector.
-@inlinable @inline(__always)
+@inlinable
 public static func lSTMBlockCell<T: FloatingPoint & TensorFlowScalar>(
   _ x: Tensor<T>,
   csPrev: Tensor<T>,
@@ -13657,7 +13632,7 @@ public static func lSTMBlockCell<T: FloatingPoint & TensorFlowScalar>(
 ///   - wci_grad: The gradient for wci to be back-propped.
 ///   - wcf_grad: The gradient for wcf to be back-propped.
 ///   - wco_grad: The gradient for wco to be back-propped.
-@inlinable @inline(__always)
+@inlinable
 public static func lSTMBlockCellGrad<T: FloatingPoint & TensorFlowScalar>(
   _ x: Tensor<T>,
   csPrev: Tensor<T>,
@@ -13700,7 +13675,7 @@ public static func lSTMBlockCellGrad<T: FloatingPoint & TensorFlowScalar>(
 }
 
 /// Computes rectified linear: `max(features, features * alpha)`.
-@inlinable @inline(__always)
+@inlinable
 public static func leakyRelu<T: FloatingPoint & TensorFlowScalar>(
   features: Tensor<T>,
   alpha: Double = 0.2
@@ -13720,7 +13695,7 @@ public static func leakyRelu<T: FloatingPoint & TensorFlowScalar>(
 ///     OR the outputs of that operation (both work equivalently).
 ///
 /// - Output backprops: `gradients * (features > 0) + alpha * gradients * (featurs <= 0)`.
-@inlinable @inline(__always)
+@inlinable
 public static func leakyReluGrad<T: FloatingPoint & TensorFlowScalar>(
   gradients: Tensor<T>,
   features: Tensor<T>,
@@ -13771,7 +13746,7 @@ public static func leakyReluGrad<T: FloatingPoint & TensorFlowScalar>(
 ///     candidate representing the number of times the candidate is expected
 ///     to occur in a batch of sampled candidates.  If unique=true, then this is a
 ///     probability.
-@inlinable @inline(__always)
+@inlinable
 public static func learnedUnigramCandidateSampler(
   trueClasses: Tensor<Int64>,
   numTrue: Int64,
@@ -13796,7 +13771,7 @@ public static func learnedUnigramCandidateSampler(
 ///
 /// If `y` is negative, or greater than or equal to the width of `x` in bits the
 /// result is implementation defined.
-@inlinable @inline(__always)
+@inlinable
 public static func leftShift<T: BinaryInteger & TensorFlowScalar>(
   _ x: Tensor<T>,
   _ y: Tensor<T>
@@ -13812,7 +13787,7 @@ public static func leftShift<T: BinaryInteger & TensorFlowScalar>(
 ///
 /// *NOTE*: `Less` supports broadcasting. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-@inlinable @inline(__always)
+@inlinable
 public static func less<T: Numeric & TensorFlowScalar>(
   _ x: Tensor<T>,
   _ y: Tensor<T>
@@ -13828,7 +13803,7 @@ public static func less<T: Numeric & TensorFlowScalar>(
 ///
 /// *NOTE*: `LessEqual` supports broadcasting. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-@inlinable @inline(__always)
+@inlinable
 public static func lessEqual<T: Numeric & TensorFlowScalar>(
   _ x: Tensor<T>,
   _ y: Tensor<T>
@@ -13841,7 +13816,7 @@ public static func lessEqual<T: Numeric & TensorFlowScalar>(
 }
 
 /// Computes the log of the absolute value of `Gamma(x)` element-wise.
-@inlinable @inline(__always)
+@inlinable
 public static func lgamma<T: FloatingPoint & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -13869,7 +13844,7 @@ public static func lgamma<T: FloatingPoint & TensorFlowScalar>(
 ///   - num: 0-D tensor. Number of values to generate.
 ///
 /// - Output output: 1-D. The generated values.
-@inlinable @inline(__always)
+@inlinable
 public static func linSpace<
     T: FloatingPoint & TensorFlowScalar,
     Tidx: BinaryInteger & TensorFlowScalar
@@ -13918,7 +13893,7 @@ public static func linSpace<
 /// - Outputs:
 ///   - out: 1-D. Values present in `x` but not in `y`.
 ///   - idx: 1-D. Positions of `x` values preserved in `out`.
-@inlinable @inline(__always)
+@inlinable
 public static func listDiff<
     T: TensorFlowScalar,
     OutIdx: BinaryInteger & TensorFlowScalar
@@ -13934,7 +13909,7 @@ public static func listDiff<
   return op.execute(Int(1), Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func listInput<T: TensorFlowScalar>(
   _ a: [Tensor<T>]
 ) {
@@ -13945,7 +13920,7 @@ public static func listInput<T: TensorFlowScalar>(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func listOutput<T: TensorGroup>(
 ) -> T {
   let op = TFE_Op("ListOutput")
@@ -14014,7 +13989,7 @@ public static func listOutput<T: TensorGroup>(
 ///
 /// - Output output_matrix: Output matrix containing existing values loaded from the
 ///   checkpoint, and with any missing values filled in from initializing_values.
-@inlinable @inline(__always)
+@inlinable
 public static func loadAndRemapMatrix(
   ckptPath: StringTensor,
   oldTensorName: StringTensor,
@@ -14049,7 +14024,7 @@ public static func loadAndRemapMatrix(
 ///   - parameters: Value of parameters used in the ADAM optimization algorithm.
 ///   - momenta: Value of momenta used in the ADAM optimization algorithm.
 ///   - velocities: Value of velocities used in the ADAM optimization algorithm.
-@inlinable @inline(__always)
+@inlinable
 public static func loadTPUEmbeddingADAMParameters(
   parameters: Tensor<Float>,
   momenta: Tensor<Float>,
@@ -14083,7 +14058,7 @@ public static func loadTPUEmbeddingADAMParameters(
 ///   - momenta: Value of momenta used in the ADAM optimization algorithm.
 ///   - velocities: Value of velocities used in the ADAM optimization algorithm.
 ///   - gradient_accumulators: Value of gradient_accumulators used in the ADAM optimization algorithm.
-@inlinable @inline(__always)
+@inlinable
 public static func loadTPUEmbeddingADAMParametersGradAccumDebug(
   parameters: Tensor<Float>,
   momenta: Tensor<Float>,
@@ -14118,7 +14093,7 @@ public static func loadTPUEmbeddingADAMParametersGradAccumDebug(
 ///   - parameters: Value of parameters used in the Adadelta optimization algorithm.
 ///   - accumulators: Value of accumulators used in the Adadelta optimization algorithm.
 ///   - updates: Value of updates used in the Adadelta optimization algorithm.
-@inlinable @inline(__always)
+@inlinable
 public static func loadTPUEmbeddingAdadeltaParameters(
   parameters: Tensor<Float>,
   accumulators: Tensor<Float>,
@@ -14152,7 +14127,7 @@ public static func loadTPUEmbeddingAdadeltaParameters(
 ///   - accumulators: Value of accumulators used in the Adadelta optimization algorithm.
 ///   - updates: Value of updates used in the Adadelta optimization algorithm.
 ///   - gradient_accumulators: Value of gradient_accumulators used in the Adadelta optimization algorithm.
-@inlinable @inline(__always)
+@inlinable
 public static func loadTPUEmbeddingAdadeltaParametersGradAccumDebug(
   parameters: Tensor<Float>,
   accumulators: Tensor<Float>,
@@ -14186,7 +14161,7 @@ public static func loadTPUEmbeddingAdadeltaParametersGradAccumDebug(
 /// - Parameters:
 ///   - parameters: Value of parameters used in the Adagrad optimization algorithm.
 ///   - accumulators: Value of accumulators used in the Adagrad optimization algorithm.
-@inlinable @inline(__always)
+@inlinable
 public static func loadTPUEmbeddingAdagradParameters(
   parameters: Tensor<Float>,
   accumulators: Tensor<Float>,
@@ -14217,7 +14192,7 @@ public static func loadTPUEmbeddingAdagradParameters(
 ///   - parameters: Value of parameters used in the Adagrad optimization algorithm.
 ///   - accumulators: Value of accumulators used in the Adagrad optimization algorithm.
 ///   - gradient_accumulators: Value of gradient_accumulators used in the Adagrad optimization algorithm.
-@inlinable @inline(__always)
+@inlinable
 public static func loadTPUEmbeddingAdagradParametersGradAccumDebug(
   parameters: Tensor<Float>,
   accumulators: Tensor<Float>,
@@ -14251,7 +14226,7 @@ public static func loadTPUEmbeddingAdagradParametersGradAccumDebug(
 ///   - ms: Value of ms used in the centered RMSProp optimization algorithm.
 ///   - mom: Value of mom used in the centered RMSProp optimization algorithm.
 ///   - mg: Value of mg used in the centered RMSProp optimization algorithm.
-@inlinable @inline(__always)
+@inlinable
 public static func loadTPUEmbeddingCenteredRMSPropParameters(
   parameters: Tensor<Float>,
   ms: Tensor<Float>,
@@ -14286,7 +14261,7 @@ public static func loadTPUEmbeddingCenteredRMSPropParameters(
 ///   - parameters: Value of parameters used in the FTRL optimization algorithm.
 ///   - accumulators: Value of accumulators used in the FTRL optimization algorithm.
 ///   - linears: Value of linears used in the FTRL optimization algorithm.
-@inlinable @inline(__always)
+@inlinable
 public static func loadTPUEmbeddingFTRLParameters(
   parameters: Tensor<Float>,
   accumulators: Tensor<Float>,
@@ -14320,7 +14295,7 @@ public static func loadTPUEmbeddingFTRLParameters(
 ///   - accumulators: Value of accumulators used in the FTRL optimization algorithm.
 ///   - linears: Value of linears used in the FTRL optimization algorithm.
 ///   - gradient_accumulators: Value of gradient_accumulators used in the FTRL optimization algorithm.
-@inlinable @inline(__always)
+@inlinable
 public static func loadTPUEmbeddingFTRLParametersGradAccumDebug(
   parameters: Tensor<Float>,
   accumulators: Tensor<Float>,
@@ -14356,7 +14331,7 @@ public static func loadTPUEmbeddingFTRLParametersGradAccumDebug(
 ///   - accumulators: Value of accumulators used in the MDL Adagrad Light optimization algorithm.
 ///   - weights: Value of weights used in the MDL Adagrad Light optimization algorithm.
 ///   - benefits: Value of benefits used in the MDL Adagrad Light optimization algorithm.
-@inlinable @inline(__always)
+@inlinable
 public static func loadTPUEmbeddingMDLAdagradLightParameters(
   parameters: Tensor<Float>,
   accumulators: Tensor<Float>,
@@ -14390,7 +14365,7 @@ public static func loadTPUEmbeddingMDLAdagradLightParameters(
 /// - Parameters:
 ///   - parameters: Value of parameters used in the Momentum optimization algorithm.
 ///   - momenta: Value of momenta used in the Momentum optimization algorithm.
-@inlinable @inline(__always)
+@inlinable
 public static func loadTPUEmbeddingMomentumParameters(
   parameters: Tensor<Float>,
   momenta: Tensor<Float>,
@@ -14421,7 +14396,7 @@ public static func loadTPUEmbeddingMomentumParameters(
 ///   - parameters: Value of parameters used in the Momentum optimization algorithm.
 ///   - momenta: Value of momenta used in the Momentum optimization algorithm.
 ///   - gradient_accumulators: Value of gradient_accumulators used in the Momentum optimization algorithm.
-@inlinable @inline(__always)
+@inlinable
 public static func loadTPUEmbeddingMomentumParametersGradAccumDebug(
   parameters: Tensor<Float>,
   momenta: Tensor<Float>,
@@ -14453,7 +14428,7 @@ public static func loadTPUEmbeddingMomentumParametersGradAccumDebug(
 /// - Parameters:
 ///   - parameters: Value of parameters used in the proximal Adagrad optimization algorithm.
 ///   - accumulators: Value of accumulators used in the proximal Adagrad optimization algorithm.
-@inlinable @inline(__always)
+@inlinable
 public static func loadTPUEmbeddingProximalAdagradParameters(
   parameters: Tensor<Float>,
   accumulators: Tensor<Float>,
@@ -14484,7 +14459,7 @@ public static func loadTPUEmbeddingProximalAdagradParameters(
 ///   - parameters: Value of parameters used in the proximal Adagrad optimization algorithm.
 ///   - accumulators: Value of accumulators used in the proximal Adagrad optimization algorithm.
 ///   - gradient_accumulators: Value of gradient_accumulators used in the proximal Adagrad optimization algorithm.
-@inlinable @inline(__always)
+@inlinable
 public static func loadTPUEmbeddingProximalAdagradParametersGradAccumDebug(
   parameters: Tensor<Float>,
   accumulators: Tensor<Float>,
@@ -14517,7 +14492,7 @@ public static func loadTPUEmbeddingProximalAdagradParametersGradAccumDebug(
 ///   - parameters: Value of parameters used in the RMSProp optimization algorithm.
 ///   - ms: Value of ms used in the RMSProp optimization algorithm.
 ///   - mom: Value of mom used in the RMSProp optimization algorithm.
-@inlinable @inline(__always)
+@inlinable
 public static func loadTPUEmbeddingRMSPropParameters(
   parameters: Tensor<Float>,
   ms: Tensor<Float>,
@@ -14551,7 +14526,7 @@ public static func loadTPUEmbeddingRMSPropParameters(
 ///   - ms: Value of ms used in the RMSProp optimization algorithm.
 ///   - mom: Value of mom used in the RMSProp optimization algorithm.
 ///   - gradient_accumulators: Value of gradient_accumulators used in the RMSProp optimization algorithm.
-@inlinable @inline(__always)
+@inlinable
 public static func loadTPUEmbeddingRMSPropParametersGradAccumDebug(
   parameters: Tensor<Float>,
   ms: Tensor<Float>,
@@ -14583,7 +14558,7 @@ public static func loadTPUEmbeddingRMSPropParametersGradAccumDebug(
 /// executed.
 ///
 /// - Parameter parameters: Value of parameters used in the stochastic gradient descent optimization algorithm.
-@inlinable @inline(__always)
+@inlinable
 public static func loadTPUEmbeddingStochasticGradientDescentParameters(
   parameters: Tensor<Float>,
   tableId: Int64 = -1,
@@ -14603,7 +14578,7 @@ public static func loadTPUEmbeddingStochasticGradientDescentParameters(
 /// Computes natural logarithm of x element-wise.
 ///
 /// I.e., \\(y = \log_e x\\).
-@inlinable @inline(__always)
+@inlinable
 public static func log<T: FloatingPoint & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -14616,7 +14591,7 @@ public static func log<T: FloatingPoint & TensorFlowScalar>(
 /// Computes natural logarithm of (1 + x) element-wise.
 ///
 /// I.e., \\(y = \log_e (1 + x)\\).
-@inlinable @inline(__always)
+@inlinable
 public static func log1p<T: FloatingPoint & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -14644,7 +14619,7 @@ public static func log1p<T: FloatingPoint & TensorFlowScalar>(
 ///   - sign: The signs of the log determinants of the inputs. Shape is `[N]`.
 ///   - log_abs_determinant: The logs of the absolute values of the determinants
 ///     of the N input matrices.  Shape is `[N]`.
-@inlinable @inline(__always)
+@inlinable
 public static func logMatrixDeterminant<T: FloatingPoint & TensorFlowScalar>(
   _ input: Tensor<T>
 ) -> (sign: Tensor<T>, logAbsDeterminant: Tensor<T>) {
@@ -14663,7 +14638,7 @@ public static func logMatrixDeterminant<T: FloatingPoint & TensorFlowScalar>(
 /// - Parameter logits: 2-D with shape `[batch_size, num_classes]`.
 ///
 /// - Output logsoftmax: Same shape as `logits`.
-@inlinable @inline(__always)
+@inlinable
 public static func logSoftmax<T: FloatingPoint & TensorFlowScalar>(
   logits: Tensor<T>
 ) -> Tensor<T> {
@@ -14710,7 +14685,7 @@ public static func logSoftmax<T: FloatingPoint & TensorFlowScalar>(
 ///     candidate representing the number of times the candidate is expected
 ///     to occur in a batch of sampled candidates.  If unique=true, then this is a
 ///     probability.
-@inlinable @inline(__always)
+@inlinable
 public static func logUniformCandidateSampler(
   trueClasses: Tensor<Int64>,
   numTrue: Int64,
@@ -14735,7 +14710,7 @@ public static func logUniformCandidateSampler(
 ///
 /// *NOTE*: `LogicalAnd` supports broadcasting. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-@inlinable @inline(__always)
+@inlinable
 public static func logicalAnd(
   _ x: Tensor<Bool>,
   _ y: Tensor<Bool>
@@ -14747,7 +14722,7 @@ public static func logicalAnd(
 }
 
 /// Returns the truth value of NOT x element-wise.
-@inlinable @inline(__always)
+@inlinable
 public static func logicalNot(
   _ x: Tensor<Bool>
 ) -> Tensor<Bool> {
@@ -14760,7 +14735,7 @@ public static func logicalNot(
 ///
 /// *NOTE*: `LogicalOr` supports broadcasting. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-@inlinable @inline(__always)
+@inlinable
 public static func logicalOr(
   _ x: Tensor<Bool>,
   _ y: Tensor<Bool>
@@ -14778,7 +14753,7 @@ public static func logicalOr(
 /// - Outputs:
 ///   - keys: Vector of all keys present in the table.
 ///   - values: Tensor of all values in the table. Indexed in parallel with `keys`.
-@inlinable @inline(__always)
+@inlinable
 public static func lookupTableExportV2<
     Tkeys: TensorFlowScalar,
     Tvalues: TensorFlowScalar
@@ -14806,7 +14781,7 @@ public static func lookupTableExportV2<
 ///
 /// - Output values: Same shape as `keys`.  Values found in the table, or `default_values`
 ///   for missing keys.
-@inlinable @inline(__always)
+@inlinable
 public static func lookupTableFindV2<
     Tin: TensorFlowScalar,
     Tout: TensorFlowScalar
@@ -14833,7 +14808,7 @@ public static func lookupTableFindV2<
 ///   - table_handle: Handle to the table.
 ///   - keys: Any shape.  Keys to look up.
 ///   - values: Values to associate with keys.
-@inlinable @inline(__always)
+@inlinable
 public static func lookupTableImportV2<
     Tin: TensorFlowScalar,
     Tout: TensorFlowScalar
@@ -14860,7 +14835,7 @@ public static func lookupTableImportV2<
 ///   - table_handle: Handle to the table.
 ///   - keys: Any shape.  Keys to look up.
 ///   - values: Values to associate with keys.
-@inlinable @inline(__always)
+@inlinable
 public static func lookupTableInsertV2<
     Tin: TensorFlowScalar,
     Tout: TensorFlowScalar
@@ -14886,7 +14861,7 @@ public static func lookupTableInsertV2<
 /// - Parameters:
 ///   - table_handle: Handle to the table.
 ///   - keys: Any shape.  Keys of the elements to remove.
-@inlinable @inline(__always)
+@inlinable
 public static func lookupTableRemoveV2<Tin: TensorFlowScalar>(
   tableHandle: ResourceHandle,
   keys: Tensor<Tin>
@@ -14903,7 +14878,7 @@ public static func lookupTableRemoveV2<Tin: TensorFlowScalar>(
 /// - Parameter table_handle: Handle to the table.
 ///
 /// - Output size: Scalar that contains number of elements in the table.
-@inlinable @inline(__always)
+@inlinable
 public static func lookupTableSizeV2(
   tableHandle: ResourceHandle
 ) -> Tensor<Int64> {
@@ -14920,7 +14895,7 @@ public static func lookupTableSizeV2(
 /// - Parameter input: A boolean scalar, representing the branch predicate of the Switch op.
 ///
 /// - Output output: The same tensor as `input`.
-@inlinable @inline(__always)
+@inlinable
 public static func loopCond(
   _ input: Tensor<Bool>
 ) -> Tensor<Bool> {
@@ -14957,7 +14932,7 @@ public static func loopCond(
 /// - Output output: A `Tensor` with the same shape as `values`.  It contains the first scalar index
 ///   into the last dimension where values can be inserted without changing the
 ///   ordered property.
-@inlinable @inline(__always)
+@inlinable
 public static func lowerBound<
     T: TensorFlowScalar,
     OutType: BinaryInteger & TensorFlowScalar
@@ -15008,7 +14983,7 @@ public static func lowerBound<
 ///     the right hand side and the permutation `P` is returned as a list of indices
 ///     instead of a permutation matrix.
 ///     @end_compatibility
-@inlinable @inline(__always)
+@inlinable
 public static func lu<
     T: FloatingPoint & TensorFlowScalar,
     OutputIdxType: BinaryInteger & TensorFlowScalar
@@ -15026,7 +15001,7 @@ public static func lu<
 ///
 /// This operation may be executed multiple times. Each execution will reset the
 /// iterator in `iterator` to the first element of `dataset`.
-@inlinable @inline(__always)
+@inlinable
 public static func makeIterator(
   dataset: VariantHandle,
   iterator: ResourceHandle
@@ -15038,7 +15013,7 @@ public static func makeIterator(
 }
 
 /// Op removes all elements in the underlying container.
-@inlinable @inline(__always)
+@inlinable
 public static func mapClear(
   capacity: Int64 = 0,
   memoryLimit: Int64 = 0,
@@ -15056,7 +15031,7 @@ public static func mapClear(
 }
 
 /// Creates a dataset that applies `f` to the outputs of `input_dataset`.
-@inlinable @inline(__always)
+@inlinable
 public static func mapDataset<
     FIn: TensorGroup,
     FOut: TensorGroup,
@@ -15110,7 +15085,7 @@ public static func mapDataset<
 /// - Output output:     A list of output tensors whose types are `output_types` and whose dimensions
 ///       0 are the same as the dimensions 0 of the tensors in `arguments`, and whose
 ///       remaining dimensions correspond to those in `output_shapes`.
-@inlinable @inline(__always)
+@inlinable
 public static func mapDefun<
     Targuments: TensorArrayProtocol,
     Tcaptured: TensorArrayProtocol,
@@ -15137,7 +15112,7 @@ public static func mapDefun<
 }
 
 /// Op returns the number of incomplete elements in the underlying container.
-@inlinable @inline(__always)
+@inlinable
 public static func mapIncompleteSize(
   capacity: Int64 = 0,
   memoryLimit: Int64 = 0,
@@ -15158,7 +15133,7 @@ public static func mapIncompleteSize(
 ///
 /// underlying container does not contain this key
 /// this op will block until it does.
-@inlinable @inline(__always)
+@inlinable
 public static func mapPeek<Dtypes: TensorGroup>(
   key: Tensor<Int64>,
   indices: Tensor<Int32>,
@@ -15179,7 +15154,7 @@ public static func mapPeek<Dtypes: TensorGroup>(
 }
 
 /// Op returns the number of elements in the underlying container.
-@inlinable @inline(__always)
+@inlinable
 public static func mapSize(
   capacity: Int64 = 0,
   memoryLimit: Int64 = 0,
@@ -15209,7 +15184,7 @@ public static func mapSize(
 ///   - container: If non-empty, this queue is placed in the given container. Otherwise,
 ///     a default container is used.
 ///   - shared_name: It is necessary to match this name to the matching Unstage Op.
-@inlinable @inline(__always)
+@inlinable
 public static func mapStage<FakeDtypes: TensorArrayProtocol>(
   key: Tensor<Int64>,
   indices: Tensor<Int32>,
@@ -15237,7 +15212,7 @@ public static func mapStage<FakeDtypes: TensorArrayProtocol>(
 ///
 /// from the underlying container.   If the underlying container
 /// does not contain this key, the op will block until it does.
-@inlinable @inline(__always)
+@inlinable
 public static func mapUnstage<Dtypes: TensorGroup>(
   key: Tensor<Int64>,
   indices: Tensor<Int32>,
@@ -15261,7 +15236,7 @@ public static func mapUnstage<Dtypes: TensorGroup>(
 ///
 /// from the underlying container.   If the underlying container
 /// does not contain elements, the op will block until it does.
-@inlinable @inline(__always)
+@inlinable
 public static func mapUnstageNoKey<Dtypes: TensorGroup>(
   indices: Tensor<Int32>,
   capacity: Int64 = 0,
@@ -15292,7 +15267,7 @@ public static func mapUnstageNoKey<Dtypes: TensorGroup>(
 /// - Attrs:
 ///   - transpose_a: If true, "a" is transposed before multiplication.
 ///   - transpose_b: If true, "b" is transposed before multiplication.
-@inlinable @inline(__always)
+@inlinable
 public static func matMul<T: Numeric & TensorFlowScalar>(
   _ a: Tensor<T>,
   _ b: Tensor<T>,
@@ -15317,7 +15292,7 @@ public static func matMul<T: Numeric & TensorFlowScalar>(
 /// - Parameter pattern: Shell wildcard pattern(s). Scalar or vector of type string.
 ///
 /// - Output filenames: A vector of matching filenames.
-@inlinable @inline(__always)
+@inlinable
 public static func matchingFiles(
   pattern: StringTensor
 ) -> StringTensor {
@@ -15376,7 +15351,7 @@ public static func matchingFiles(
 ///     entire upper triangle.
 ///
 /// - Output band: Rank `k` tensor of the same shape as input. The extracted banded tensor.
-@inlinable @inline(__always)
+@inlinable
 public static func matrixBandPart<
     T: TensorFlowScalar,
     Tindex: BinaryInteger & TensorFlowScalar
@@ -15403,7 +15378,7 @@ public static func matrixBandPart<
 /// - Parameter input: Shape is `[..., M, M]`.
 ///
 /// - Output output: Shape is `[...]`.
-@inlinable @inline(__always)
+@inlinable
 public static func matrixDeterminant<T: FloatingPoint & TensorFlowScalar>(
   _ input: Tensor<T>
 ) -> Tensor<T> {
@@ -15445,7 +15420,7 @@ public static func matrixDeterminant<T: FloatingPoint & TensorFlowScalar>(
 /// - Parameter diagonal: Rank `k`, where `k >= 1`.
 ///
 /// - Output output: Rank `k+1`, with `output.shape = diagonal.shape + [diagonal.shape[-1]]`.
-@inlinable @inline(__always)
+@inlinable
 public static func matrixDiag<T: TensorFlowScalar>(
   diagonal: Tensor<T>
 ) -> Tensor<T> {
@@ -15490,7 +15465,7 @@ public static func matrixDiag<T: TensorFlowScalar>(
 ///
 /// - Output diagonal: The extracted diagonal(s) having shape
 ///   `diagonal.shape = input.shape[:-2] + [min(input.shape[-2:])]`.
-@inlinable @inline(__always)
+@inlinable
 public static func matrixDiagPart<T: TensorFlowScalar>(
   _ input: Tensor<T>
 ) -> Tensor<T> {
@@ -15501,7 +15476,7 @@ public static func matrixDiagPart<T: TensorFlowScalar>(
 }
 
 /// Deprecated, use python implementation tf.linalg.matrix_exponential.
-@inlinable @inline(__always)
+@inlinable
 public static func matrixExponential<T: FloatingPoint & TensorFlowScalar>(
   _ input: Tensor<T>
 ) -> Tensor<T> {
@@ -15532,7 +15507,7 @@ public static func matrixExponential<T: FloatingPoint & TensorFlowScalar>(
 ///   @compatibility(numpy)
 ///   Equivalent to np.linalg.inv
 ///   @end_compatibility
-@inlinable @inline(__always)
+@inlinable
 public static func matrixInverse<T: FloatingPoint & TensorFlowScalar>(
   _ input: Tensor<T>,
   adjoint: Bool = false
@@ -15569,7 +15544,7 @@ public static func matrixInverse<T: FloatingPoint & TensorFlowScalar>(
 ///   @compatibility(scipy)
 ///   Equivalent to scipy.linalg.logm
 ///   @end_compatibility
-@inlinable @inline(__always)
+@inlinable
 public static func matrixLogarithm<T: TensorFlowScalar>(
   _ input: Tensor<T>
 ) -> Tensor<T> {
@@ -15599,7 +15574,7 @@ public static func matrixLogarithm<T: TensorFlowScalar>(
 ///   - diagonal: Rank `k`, where `k >= 1`.
 ///
 /// - Output output: Rank `k+1`, with `output.shape = input.shape`.
-@inlinable @inline(__always)
+@inlinable
 public static func matrixSetDiag<T: TensorFlowScalar>(
   _ input: Tensor<T>,
   diagonal: Tensor<T>
@@ -15628,7 +15603,7 @@ public static func matrixSetDiag<T: TensorFlowScalar>(
 ///   adjoint.
 ///
 /// - Output output: Shape is `[..., M, K]`.
-@inlinable @inline(__always)
+@inlinable
 public static func matrixSolve<T: FloatingPoint & TensorFlowScalar>(
   matrix: Tensor<T>,
   rhs: Tensor<T>,
@@ -15689,7 +15664,7 @@ public static func matrixSolve<T: FloatingPoint & TensorFlowScalar>(
 ///     @end_compatibility
 ///
 /// - Output output: Shape is `[..., N, K]`.
-@inlinable @inline(__always)
+@inlinable
 public static func matrixSolveLs<T: FloatingPoint & TensorFlowScalar>(
   matrix: Tensor<T>,
   rhs: Tensor<T>,
@@ -15730,7 +15705,7 @@ public static func matrixSolveLs<T: FloatingPoint & TensorFlowScalar>(
 ///   @compatibility(scipy)
 ///   Equivalent to scipy.linalg.sqrtm
 ///   @end_compatibility
-@inlinable @inline(__always)
+@inlinable
 public static func matrixSquareRoot<T: FloatingPoint & TensorFlowScalar>(
   _ input: Tensor<T>
 ) -> Tensor<T> {
@@ -15773,7 +15748,7 @@ public static func matrixSquareRoot<T: FloatingPoint & TensorFlowScalar>(
 ///     @end_compatibility
 ///
 /// - Output output: Shape is `[..., M, K]`.
-@inlinable @inline(__always)
+@inlinable
 public static func matrixTriangularSolve<T: FloatingPoint & TensorFlowScalar>(
   matrix: Tensor<T>,
   rhs: Tensor<T>,
@@ -15804,7 +15779,7 @@ public static func matrixTriangularSolve<T: FloatingPoint & TensorFlowScalar>(
 /// - Attr keep_dims: If true, retain reduced dimensions with length 1.
 ///
 /// - Output output: The reduced tensor.
-@inlinable @inline(__always)
+@inlinable
 public static func max<
     T: Numeric & TensorFlowScalar,
     Tidx: BinaryInteger & TensorFlowScalar
@@ -15838,7 +15813,7 @@ public static func max<
 ///         [batch, in_channels, in_height, in_width].
 ///
 /// - Output output: The max pooled output tensor.
-@inlinable @inline(__always)
+@inlinable
 public static func maxPool<T: Numeric & TensorFlowScalar>(
   _ input: Tensor<T>,
   ksize: [Int32],
@@ -15873,7 +15848,7 @@ public static func maxPool<T: Numeric & TensorFlowScalar>(
 ///         [batch, in_channels, in_depth, in_height, in_width].
 ///
 /// - Output output: The max pooled output tensor.
-@inlinable @inline(__always)
+@inlinable
 public static func maxPool3D<T: FloatingPoint & TensorFlowScalar>(
   _ input: Tensor<T>,
   ksize: [Int32],
@@ -15909,7 +15884,7 @@ public static func maxPool3D<T: FloatingPoint & TensorFlowScalar>(
 ///         [batch, in_depth, in_height, in_width, in_channels].
 ///     Alternatively, the format could be "NCDHW", the data storage order is:
 ///         [batch, in_channels, in_depth, in_height, in_width].
-@inlinable @inline(__always)
+@inlinable
 public static func maxPool3DGrad<
     T: FloatingPoint & TensorFlowScalar,
     Tinput: FloatingPoint & TensorFlowScalar
@@ -15955,7 +15930,7 @@ public static func maxPool3DGrad<
 ///         [batch, in_channels, in_depth, in_height, in_width].
 ///
 /// - Output output: Gradients of gradients w.r.t. the input to `max_pool`.
-@inlinable @inline(__always)
+@inlinable
 public static func maxPool3DGradGrad<T: Numeric & TensorFlowScalar>(
   origInput: Tensor<T>,
   origOutput: Tensor<T>,
@@ -15996,7 +15971,7 @@ public static func maxPool3DGradGrad<T: Numeric & TensorFlowScalar>(
 ///         [batch, in_channels, in_height, in_width].
 ///
 /// - Output output: Gradients w.r.t. the input to `max_pool`.
-@inlinable @inline(__always)
+@inlinable
 public static func maxPoolGrad<T: Numeric & TensorFlowScalar>(
   origInput: Tensor<T>,
   origOutput: Tensor<T>,
@@ -16037,7 +16012,7 @@ public static func maxPoolGrad<T: Numeric & TensorFlowScalar>(
 ///         [batch, in_channels, in_height, in_width].
 ///
 /// - Output output: Gradients of gradients w.r.t. the input to `max_pool`.
-@inlinable @inline(__always)
+@inlinable
 public static func maxPoolGradGrad<T: Numeric & TensorFlowScalar>(
   origInput: Tensor<T>,
   origOutput: Tensor<T>,
@@ -16078,7 +16053,7 @@ public static func maxPoolGradGrad<T: Numeric & TensorFlowScalar>(
 ///         [batch, in_channels, in_height, in_width].
 ///
 /// - Output output: Gradients of gradients w.r.t. the input to `max_pool`.
-@inlinable @inline(__always)
+@inlinable
 public static func maxPoolGradGradV2<T: Numeric & TensorFlowScalar>(
   origInput: Tensor<T>,
   origOutput: Tensor<T>,
@@ -16116,7 +16091,7 @@ public static func maxPoolGradGradV2<T: Numeric & TensorFlowScalar>(
 ///   - include_batch_in_index: Whether to include batch dimension in flattened index of `argmax`.
 ///
 /// - Output output: Gradients of gradients w.r.t. the input of `max_pool`.
-@inlinable @inline(__always)
+@inlinable
 public static func maxPoolGradGradWithArgmax<
     Targmax: BinaryInteger & TensorFlowScalar,
     T: Numeric & TensorFlowScalar
@@ -16161,7 +16136,7 @@ public static func maxPoolGradGradWithArgmax<
 ///         [batch, in_channels, in_height, in_width].
 ///
 /// - Output output: Gradients w.r.t. the input to `max_pool`.
-@inlinable @inline(__always)
+@inlinable
 public static func maxPoolGradV2<T: Numeric & TensorFlowScalar>(
   origInput: Tensor<T>,
   origOutput: Tensor<T>,
@@ -16199,7 +16174,7 @@ public static func maxPoolGradV2<T: Numeric & TensorFlowScalar>(
 ///   - include_batch_in_index: Whether to include batch dimension in flattened index of `argmax`.
 ///
 /// - Output output: Gradients w.r.t. the input of `max_pool`.
-@inlinable @inline(__always)
+@inlinable
 public static func maxPoolGradWithArgmax<
     Targmax: BinaryInteger & TensorFlowScalar,
     T: Numeric & TensorFlowScalar
@@ -16242,7 +16217,7 @@ public static func maxPoolGradWithArgmax<
 ///         [batch, in_channels, in_height, in_width].
 ///
 /// - Output output: The max pooled output tensor.
-@inlinable @inline(__always)
+@inlinable
 public static func maxPoolV2<T: Numeric & TensorFlowScalar>(
   _ input: Tensor<T>,
   ksize: Tensor<Int32>,
@@ -16284,7 +16259,7 @@ public static func maxPoolV2<T: Numeric & TensorFlowScalar>(
 /// - Outputs:
 ///   - output: The max pooled output tensor.
 ///   - argmax: 4-D.  The flattened indices of the max values chosen for each output.
-@inlinable @inline(__always)
+@inlinable
 public static func maxPoolWithArgmax<
     Targmax: BinaryInteger & TensorFlowScalar,
     T: Numeric & TensorFlowScalar
@@ -16310,7 +16285,7 @@ public static func maxPoolWithArgmax<
 ///
 /// *NOTE*: `Maximum` supports broadcasting. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-@inlinable @inline(__always)
+@inlinable
 public static func maximum<T: Numeric & TensorFlowScalar>(
   _ x: Tensor<T>,
   _ y: Tensor<T>
@@ -16337,7 +16312,7 @@ public static func maximum<T: Numeric & TensorFlowScalar>(
 /// - Attr keep_dims: If true, retain reduced dimensions with length 1.
 ///
 /// - Output output: The reduced tensor.
-@inlinable @inline(__always)
+@inlinable
 public static func mean<
     T: Numeric & TensorFlowScalar,
     Tidx: BinaryInteger & TensorFlowScalar
@@ -16368,7 +16343,7 @@ public static func mean<
 /// - Outputs:
 ///   - output: Will be set to the available input tensor.
 ///   - value_index: The index of the chosen input tensor in `inputs`.
-@inlinable @inline(__always)
+@inlinable
 public static func merge<T: TensorFlowScalar>(
   inputs: [Tensor<T>]
 ) -> (output: Tensor<T>, valueIndex: Tensor<Int32>) {
@@ -16393,7 +16368,7 @@ public static func merge<T: TensorFlowScalar>(
 ///   buffers.
 ///
 /// - Output summary: Scalar. Serialized `Summary` protocol buffer.
-@inlinable @inline(__always)
+@inlinable
 public static func mergeSummary(
   inputs: [StringTensor]
 ) -> StringTensor {
@@ -16420,7 +16395,7 @@ public static func mergeSummary(
 ///     as one of the checkpoint_prefixes.
 ///
 /// - Attr delete_old_dirs: see above.
-@inlinable @inline(__always)
+@inlinable
 public static func mergeV2Checkpoints(
   checkpointPrefixes: StringTensor,
   destinationPrefix: StringTensor,
@@ -16454,7 +16429,7 @@ public static func mergeV2Checkpoints(
 ///     ceptstrum.
 ///   - filterbank_channel_count: Resolution of the Mel bank used internally.
 ///   - dct_coefficient_count: How many output channels to produce per time slice.
-@inlinable @inline(__always)
+@inlinable
 public static func mfcc(
   spectrogram: Tensor<Float>,
   sampleRate: Tensor<Int32>,
@@ -16488,7 +16463,7 @@ public static func mfcc(
 /// - Attr keep_dims: If true, retain reduced dimensions with length 1.
 ///
 /// - Output output: The reduced tensor.
-@inlinable @inline(__always)
+@inlinable
 public static func min<
     T: Numeric & TensorFlowScalar,
     Tidx: BinaryInteger & TensorFlowScalar
@@ -16510,7 +16485,7 @@ public static func min<
 ///
 /// *NOTE*: `Minimum` supports broadcasting. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-@inlinable @inline(__always)
+@inlinable
 public static func minimum<T: Numeric & TensorFlowScalar>(
   _ x: Tensor<T>,
   _ y: Tensor<T>
@@ -16562,7 +16537,7 @@ public static func minimum<T: Numeric & TensorFlowScalar>(
 ///   it is `[1, 2, 3, 3, 2]` in symmetric mode.
 ///
 /// - Output output: The padded tensor.
-@inlinable @inline(__always)
+@inlinable
 public static func mirrorPad<
     T: TensorFlowScalar,
     Tpaddings: BinaryInteger & TensorFlowScalar
@@ -16609,7 +16584,7 @@ public static func mirrorPad<
 /// - Attr mode: The mode used in the `MirrorPad` op.
 ///
 /// - Output output: The folded tensor.
-@inlinable @inline(__always)
+@inlinable
 public static func mirrorPadGrad<
     T: TensorFlowScalar,
     Tpaddings: BinaryInteger & TensorFlowScalar
@@ -16627,7 +16602,7 @@ public static func mirrorPadGrad<
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func mixedStruct(
   nA: Int64
 ) -> (a: [Tensor<Int32>], b: Tensor<Float>) {
@@ -16643,7 +16618,7 @@ public static func mixedStruct(
 ///
 /// *NOTE*: `Mod` supports broadcasting. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-@inlinable @inline(__always)
+@inlinable
 public static func mod<T: Numeric & TensorFlowScalar>(
   _ x: Tensor<T>,
   _ y: Tensor<T>
@@ -16660,7 +16635,7 @@ public static func mod<T: Numeric & TensorFlowScalar>(
 /// Identity transformation that models performance.
 ///
 /// - Parameter input_dataset: A variant tensor representing the input dataset.
-@inlinable @inline(__always)
+@inlinable
 public static func modelDataset(
   inputDataset: VariantHandle,
   cpuBudget: Int64 = 0,
@@ -16679,7 +16654,7 @@ public static func modelDataset(
 ///
 /// *NOTE*: `Multiply` supports broadcasting. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-@inlinable @inline(__always)
+@inlinable
 public static func mul<T: Numeric & TensorFlowScalar>(
   _ x: Tensor<T>,
   _ y: Tensor<T>
@@ -16695,7 +16670,7 @@ public static func mul<T: Numeric & TensorFlowScalar>(
 ///
 /// *NOTE*: `Mul` supports broadcasting. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-@inlinable @inline(__always)
+@inlinable
 public static func mulNoNan<T: FloatingPoint & TensorFlowScalar>(
   _ x: Tensor<T>,
   _ y: Tensor<T>
@@ -16719,7 +16694,7 @@ public static func mulNoNan<T: FloatingPoint & TensorFlowScalar>(
 ///   - output_shapes: The list of shapes being produced.
 ///
 /// - Output handle: Handle to the resource created.
-@inlinable @inline(__always)
+@inlinable
 public static func multiDeviceIterator(
   devices: [String],
   sharedName: String,
@@ -16745,7 +16720,7 @@ public static func multiDeviceIterator(
 ///   - output_shapes: The list of shapes being produced.
 ///
 /// - Output multi_device_iterator: A MultiDeviceIterator resource.
-@inlinable @inline(__always)
+@inlinable
 public static func multiDeviceIteratorFromStringHandle(
   stringHandle: StringTensor,
   outputTypes: [TensorDataType],
@@ -16770,7 +16745,7 @@ public static func multiDeviceIteratorFromStringHandle(
 ///   - output_shapes: The list of shapes being produced.
 ///
 /// - Output components: Result of the get_next on the dataset.
-@inlinable @inline(__always)
+@inlinable
 public static func multiDeviceIteratorGetNextFromShard<OutputTypes: TensorGroup>(
   multiDeviceIterator: ResourceHandle,
   shardNum: Tensor<Int32>,
@@ -16795,7 +16770,7 @@ public static func multiDeviceIteratorGetNextFromShard<OutputTypes: TensorGroup>
 ///
 /// - Output incarnation_id: An int64 indicating which incarnation of the MultiDeviceIterator
 ///   is running.
-@inlinable @inline(__always)
+@inlinable
 public static func multiDeviceIteratorInit(
   dataset: VariantHandle,
   multiDeviceIterator: ResourceHandle,
@@ -16813,7 +16788,7 @@ public static func multiDeviceIteratorInit(
 /// - Parameter multi_device_iterator: A MultiDeviceIterator resource.
 ///
 /// - Output string_handle: A string representing the resource.
-@inlinable @inline(__always)
+@inlinable
 public static func multiDeviceIteratorToStringHandle(
   multiDeviceIterator: ResourceHandle
 ) -> StringTensor {
@@ -16836,7 +16811,7 @@ public static func multiDeviceIteratorToStringHandle(
 ///
 /// - Output output: 2-D Tensor with shape `[batch_size, num_samples]`.  Each slice `[i, :]`
 ///   contains the drawn class labels with range `[0, num_classes)`.
-@inlinable @inline(__always)
+@inlinable
 public static func multinomial<
     T: Numeric & TensorFlowScalar,
     OutputDtype: BinaryInteger & TensorFlowScalar
@@ -16882,7 +16857,7 @@ public static func multinomial<
 ///     buckets before growing the table. Must be between 0 and 1.
 ///
 /// - Output table_handle: Handle to a table.
-@inlinable @inline(__always)
+@inlinable
 public static func mutableDenseHashTableV2<KeyDtype: TensorFlowScalar>(
   emptyKey: Tensor<KeyDtype>,
   deletedKey: Tensor<KeyDtype>,
@@ -16923,7 +16898,7 @@ public static func mutableDenseHashTableV2<KeyDtype: TensorFlowScalar>(
 ///   - value_dtype: Type of the table values.
 ///
 /// - Output table_handle: Handle to a table.
-@inlinable @inline(__always)
+@inlinable
 public static func mutableHashTableOfTensorsV2(
   container: String,
   sharedName: String,
@@ -16959,7 +16934,7 @@ public static func mutableHashTableOfTensorsV2(
 ///   - value_dtype: Type of the table values.
 ///
 /// - Output table_handle: Handle to a table.
-@inlinable @inline(__always)
+@inlinable
 public static func mutableHashTableV2(
   container: String,
   sharedName: String,
@@ -17022,7 +16997,7 @@ public static func mutableHashTableV2(
 /// - Output mutex_lock: A tensor that keeps a shared pointer to a lock on the mutex;
 ///   when the Tensor is destroyed, the use count on the shared pointer is decreased
 ///   by 1.  When it reaches 0, the lock is released.
-@inlinable @inline(__always)
+@inlinable
 public static func mutexLock(
   mutex: ResourceHandle
 ) -> VariantHandle {
@@ -17040,7 +17015,7 @@ public static func mutexLock(
 ///     with this shared_name. Otherwise, the node name is used instead.
 ///
 /// - Output resource: The mutex resource.
-@inlinable @inline(__always)
+@inlinable
 public static func mutexV2(
   container: String,
   sharedName: String
@@ -17051,7 +17026,7 @@ public static func mutexV2(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func nInPolymorphicTwice<T: TensorFlowScalar>(
   _ a: [Tensor<T>],
   _ b: [Tensor<T>]
@@ -17064,7 +17039,7 @@ public static func nInPolymorphicTwice<T: TensorFlowScalar>(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func nInTwice(
   _ a: [Tensor<Int32>],
   _ b: [StringTensor]
@@ -17076,7 +17051,7 @@ public static func nInTwice(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func nInTwoTypeVariables<
     S: TensorFlowScalar,
     T: TensorFlowScalar
@@ -17093,7 +17068,7 @@ public static func nInTwoTypeVariables<
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func nIntsIn(
   _ a: [Tensor<Int32>]
 ) {
@@ -17103,7 +17078,7 @@ public static func nIntsIn(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func nIntsOut(
   n: Int64
 ) -> [Tensor<Int32>] {
@@ -17112,7 +17087,7 @@ public static func nIntsOut(
   return op.execute(Int(n))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func nIntsOutDefault(
   n: Int64 = 3
 ) -> [Tensor<Int32>] {
@@ -17121,7 +17096,7 @@ public static func nIntsOutDefault(
   return op.execute(Int(n))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func nPolymorphicIn<T: TensorFlowScalar>(
   _ a: [Tensor<T>]
 ) {
@@ -17132,7 +17107,7 @@ public static func nPolymorphicIn<T: TensorFlowScalar>(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func nPolymorphicOut<T: TensorFlowScalar>(
   n: Int64
 ) -> [Tensor<T>] {
@@ -17142,7 +17117,7 @@ public static func nPolymorphicOut<T: TensorFlowScalar>(
   return op.execute(Int(n))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func nPolymorphicOutDefault<T: TensorFlowScalar>(
   n: Int64 = 2
 ) -> [Tensor<T>] {
@@ -17152,7 +17127,7 @@ public static func nPolymorphicOutDefault<T: TensorFlowScalar>(
   return op.execute(Int(n))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func nPolymorphicRestrictIn<T: TensorFlowScalar>(
   _ a: [Tensor<T>]
 ) {
@@ -17163,7 +17138,7 @@ public static func nPolymorphicRestrictIn<T: TensorFlowScalar>(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func nPolymorphicRestrictIn(
   _ a: [StringTensor]
 ) {
@@ -17174,7 +17149,7 @@ public static func nPolymorphicRestrictIn(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func nPolymorphicRestrictOut<T: TensorFlowScalar>(
   n: Int64
 ) -> [Tensor<T>] {
@@ -17184,7 +17159,7 @@ public static func nPolymorphicRestrictOut<T: TensorFlowScalar>(
   return op.execute(Int(n))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func nPolymorphicRestrictOut(
   n: Int64
 ) -> [StringTensor] {
@@ -17208,7 +17183,7 @@ public static func nPolymorphicRestrictOut(
 /// reduction: the reduction operation to perform.
 /// num_devices: The number of devices participating in this reduction.
 /// shared_name: Identifier that shared between ops of the same reduction.
-@inlinable @inline(__always)
+@inlinable
 public static func ncclAllReduce<T: Numeric & TensorFlowScalar>(
   _ input: Tensor<T>,
   reduction: Reduction,
@@ -17235,7 +17210,7 @@ public static func ncclAllReduce<T: Numeric & TensorFlowScalar>(
 /// output: The same as input.
 /// shape: The shape of the input tensor.
 ///
-@inlinable @inline(__always)
+@inlinable
 public static func ncclBroadcast<T: Numeric & TensorFlowScalar>(
   _ input: Tensor<T>,
   shape: TensorShape?
@@ -17257,7 +17232,7 @@ public static func ncclBroadcast<T: Numeric & TensorFlowScalar>(
 /// input: The input to the reduction.
 /// data: the value of the reduction across all `num_devices` devices.
 /// reduction: the reduction operation to perform.
-@inlinable @inline(__always)
+@inlinable
 public static func ncclReduce<T: Numeric & TensorFlowScalar>(
   _ input: [Tensor<T>],
   reduction: Reduction
@@ -17287,7 +17262,7 @@ public static func ncclReduce<T: Numeric & TensorFlowScalar>(
 ///     closest to the corresponding point, ordered by increasing distance.
 ///   - nearest_center_distances: Matrix of shape (n, min(m, k)). Each row contains the squared L2 distance to the
 ///     corresponding center in nearest_center_indices.
-@inlinable @inline(__always)
+@inlinable
 public static func nearestNeighbors(
   points: Tensor<Float>,
   centers: Tensor<Float>,
@@ -17303,7 +17278,7 @@ public static func nearestNeighbors(
 /// Computes numerical negative value element-wise.
 ///
 /// I.e., \\(y = -x\\).
-@inlinable @inline(__always)
+@inlinable
 public static func neg<T: Numeric & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -17322,7 +17297,7 @@ public static func neg<T: Numeric & TensorFlowScalar>(
 /// @compatibility(cpp)
 /// Equivalent to C++ std::nextafter function.
 /// @end_compatibility
-@inlinable @inline(__always)
+@inlinable
 public static func nextAfter<T: FloatingPoint & TensorFlowScalar>(
   x1: Tensor<T>,
   x2: Tensor<T>
@@ -17339,7 +17314,7 @@ public static func nextAfter<T: FloatingPoint & TensorFlowScalar>(
 /// - Parameter data: The tensor to be made available to the next iteration.
 ///
 /// - Output output: The same tensor as `data`.
-@inlinable @inline(__always)
+@inlinable
 public static func nextIteration<T: TensorFlowScalar>(
   data: Tensor<T>
 ) -> Tensor<T> {
@@ -17350,7 +17325,7 @@ public static func nextIteration<T: TensorFlowScalar>(
 }
 
 /// Does nothing. Only useful as a placeholder for control edges.
-@inlinable @inline(__always)
+@inlinable
 public static func noOp(
 ) {
   let op = TFE_Op("NoOp")
@@ -17367,7 +17342,7 @@ public static func noOp(
 /// - Attr dtype: The type of the output.
 ///
 /// - Output output: Non-deterministic integer values with specified shape.
-@inlinable @inline(__always)
+@inlinable
 public static func nonDeterministicInts<
     Dtype: TensorFlowScalar,
     ShapeDtype: TensorFlowScalar
@@ -17412,7 +17387,7 @@ public static func nonDeterministicInts<
 ///
 /// - Output selected_indices: A 1-D integer tensor of shape `[M]` representing the selected
 ///   indices from the boxes tensor, where `M <= max_output_size`.
-@inlinable @inline(__always)
+@inlinable
 public static func nonMaxSuppression(
   boxes: Tensor<Float>,
   scores: Tensor<Float>,
@@ -17459,7 +17434,7 @@ public static func nonMaxSuppression(
 ///
 /// - Output selected_indices: A 1-D integer tensor of shape `[M]` representing the selected
 ///   indices from the boxes tensor, where `M <= max_output_size`.
-@inlinable @inline(__always)
+@inlinable
 public static func nonMaxSuppressionV2<T: FloatingPoint & TensorFlowScalar>(
   boxes: Tensor<T>,
   scores: Tensor<T>,
@@ -17508,7 +17483,7 @@ public static func nonMaxSuppressionV2<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// - Output selected_indices: A 1-D integer tensor of shape `[M]` representing the selected
 ///   indices from the boxes tensor, where `M <= max_output_size`.
-@inlinable @inline(__always)
+@inlinable
 public static func nonMaxSuppressionV3<T: FloatingPoint & TensorFlowScalar>(
   boxes: Tensor<T>,
   scores: Tensor<T>,
@@ -17565,7 +17540,7 @@ public static func nonMaxSuppressionV3<T: FloatingPoint & TensorFlowScalar>(
 ///     indices from the boxes tensor, where `M <= max_output_size`.
 ///   - valid_outputs: A 0-D integer tensor representing the number of valid elements in
 ///     `selected_indices`, with the valid elements appearing first.
-@inlinable @inline(__always)
+@inlinable
 public static func nonMaxSuppressionV4<T: FloatingPoint & TensorFlowScalar>(
   boxes: Tensor<T>,
   scores: Tensor<T>,
@@ -17616,7 +17591,7 @@ public static func nonMaxSuppressionV4<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// - Output selected_indices: A 1-D integer tensor of shape `[M]` representing the selected
 ///   indices from the boxes tensor, where `M <= max_output_size`.
-@inlinable @inline(__always)
+@inlinable
 public static func nonMaxSuppressionWithOverlaps(
   overlaps: Tensor<Float>,
   scores: Tensor<Float>,
@@ -17633,7 +17608,7 @@ public static func nonMaxSuppressionWithOverlaps(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func none(
 ) {
   let op = TFE_Op("None")
@@ -17645,7 +17620,7 @@ public static func none(
 ///
 /// *NOTE*: `NotEqual` supports broadcasting. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-@inlinable @inline(__always)
+@inlinable
 public static func notEqual<T: TensorFlowScalar>(
   _ x: Tensor<T>,
   _ y: Tensor<T>
@@ -17661,7 +17636,7 @@ public static func notEqual<T: TensorFlowScalar>(
 ///
 /// *NOTE*: `NotEqual` supports broadcasting. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-@inlinable @inline(__always)
+@inlinable
 public static func notEqual(
   _ x: StringTensor,
   _ y: StringTensor
@@ -17692,7 +17667,7 @@ public static func notEqual(
 ///   versa.
 ///
 /// - Output values: The `n`-th order statistic along each last dimensional slice.
-@inlinable @inline(__always)
+@inlinable
 public static func nthElement<T: Numeric & TensorFlowScalar>(
   _ input: Tensor<T>,
   n: Tensor<Int32>,
@@ -17706,7 +17681,7 @@ public static func nthElement<T: Numeric & TensorFlowScalar>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func old(
 ) {
   let op = TFE_Op("Old")
@@ -17813,7 +17788,7 @@ public static func old(
 /// - Attr axis: The axis to fill (default: -1, a new inner-most axis).
 ///
 /// - Output output: The one-hot tensor.
-@inlinable @inline(__always)
+@inlinable
 public static func oneHot<
     T: TensorFlowScalar,
     Ti: BinaryInteger & TensorFlowScalar
@@ -17860,7 +17835,7 @@ public static func oneHot<
 ///
 /// - Output handle: A handle to the iterator that can be passed to an "IteratorGetNext"
 ///   op.
-@inlinable @inline(__always)
+@inlinable
 public static func oneShotIterator<DatasetfactoryIn: TensorGroup,
     DatasetfactoryOut: TensorGroup>(
   datasetFactory: (DatasetfactoryIn) -> DatasetfactoryOut,
@@ -17883,7 +17858,7 @@ public static func oneShotIterator<DatasetfactoryIn: TensorGroup,
 /// - Parameter x: a tensor of type T.
 ///
 /// - Output y: a tensor of the same shape and type as x but filled with ones.
-@inlinable @inline(__always)
+@inlinable
 public static func onesLike<T: TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -17893,7 +17868,7 @@ public static func onesLike<T: TensorFlowScalar>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func opWithDefaultAttr(
   defaultFloat: Double = 123
 ) -> Tensor<Int32> {
@@ -17902,7 +17877,7 @@ public static func opWithDefaultAttr(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func opWithFutureDefaultAttr(
 ) {
   let op = TFE_Op("OpWithFutureDefaultAttr")
@@ -17917,7 +17892,7 @@ public static func opWithFutureDefaultAttr(
 /// - Parameters:
 ///   - input_dataset: A variant tensor representing the input dataset.
 ///   - optimizations: A `tf.string` vector `tf.Tensor` identifying optimizations to use.
-@inlinable @inline(__always)
+@inlinable
 public static func optimizeDataset(
   inputDataset: VariantHandle,
   optimizations: StringTensor,
@@ -17935,7 +17910,7 @@ public static func optimizeDataset(
 }
 
 /// Constructs an Optional variant from a tuple of tensors.
-@inlinable @inline(__always)
+@inlinable
 public static func optionalFromValue<ToutputTypes: TensorArrayProtocol>(
   components: ToutputTypes
 ) -> VariantHandle {
@@ -17946,7 +17921,7 @@ public static func optionalFromValue<ToutputTypes: TensorArrayProtocol>(
 }
 
 /// Returns the value stored in an Optional variant or raises an error if none exists.
-@inlinable @inline(__always)
+@inlinable
 public static func optionalGetValue<OutputTypes: TensorGroup>(
   optional: VariantHandle,
   outputShapes: [TensorShape?]
@@ -17959,7 +17934,7 @@ public static func optionalGetValue<OutputTypes: TensorGroup>(
 }
 
 /// Returns true if and only if the given Optional variant has a value.
-@inlinable @inline(__always)
+@inlinable
 public static func optionalHasValue(
   optional: VariantHandle
 ) -> Tensor<Bool> {
@@ -17969,7 +17944,7 @@ public static func optionalHasValue(
 }
 
 /// Creates an Optional variant with no value.
-@inlinable @inline(__always)
+@inlinable
 public static func optionalNone(
 ) -> VariantHandle {
   let op = TFE_Op("OptionalNone")
@@ -17978,7 +17953,7 @@ public static func optionalNone(
 }
 
 /// Op removes all elements in the underlying container.
-@inlinable @inline(__always)
+@inlinable
 public static func orderedMapClear(
   capacity: Int64 = 0,
   memoryLimit: Int64 = 0,
@@ -17996,7 +17971,7 @@ public static func orderedMapClear(
 }
 
 /// Op returns the number of incomplete elements in the underlying container.
-@inlinable @inline(__always)
+@inlinable
 public static func orderedMapIncompleteSize(
   capacity: Int64 = 0,
   memoryLimit: Int64 = 0,
@@ -18018,7 +17993,7 @@ public static func orderedMapIncompleteSize(
 /// underlying container does not contain this key
 /// this op will block until it does.   This Op is optimized for
 /// performance.
-@inlinable @inline(__always)
+@inlinable
 public static func orderedMapPeek<Dtypes: TensorGroup>(
   key: Tensor<Int64>,
   indices: Tensor<Int32>,
@@ -18039,7 +18014,7 @@ public static func orderedMapPeek<Dtypes: TensorGroup>(
 }
 
 /// Op returns the number of elements in the underlying container.
-@inlinable @inline(__always)
+@inlinable
 public static func orderedMapSize(
   capacity: Int64 = 0,
   memoryLimit: Int64 = 0,
@@ -18071,7 +18046,7 @@ public static func orderedMapSize(
 ///   - container: If non-empty, this queue is placed in the given container. Otherwise,
 ///     a default container is used.
 ///   - shared_name: It is necessary to match this name to the matching Unstage Op.
-@inlinable @inline(__always)
+@inlinable
 public static func orderedMapStage<FakeDtypes: TensorArrayProtocol>(
   key: Tensor<Int64>,
   indices: Tensor<Int32>,
@@ -18099,7 +18074,7 @@ public static func orderedMapStage<FakeDtypes: TensorArrayProtocol>(
 ///
 /// from the underlying container.   If the underlying container
 /// does not contain this key, the op will block until it does.
-@inlinable @inline(__always)
+@inlinable
 public static func orderedMapUnstage<Dtypes: TensorGroup>(
   key: Tensor<Int64>,
   indices: Tensor<Int32>,
@@ -18123,7 +18098,7 @@ public static func orderedMapUnstage<Dtypes: TensorGroup>(
 ///
 /// key from the underlying container.   If the underlying container
 /// does not contain elements, the op will block until it does.
-@inlinable @inline(__always)
+@inlinable
 public static func orderedMapUnstageNoKey<Dtypes: TensorGroup>(
   indices: Tensor<Int32>,
   capacity: Int64 = 0,
@@ -18141,7 +18116,7 @@ public static func orderedMapUnstageNoKey<Dtypes: TensorGroup>(
   return op.execute(Int(1), Int(Dtypes._typeList.count))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func outT<T: TensorFlowScalar>(
 ) -> Tensor<T> {
   let op = TFE_Op("OutT")
@@ -18149,7 +18124,7 @@ public static func outT<T: TensorFlowScalar>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func outTypeList<T: TensorGroup>(
 ) -> T {
   let op = TFE_Op("OutTypeList")
@@ -18157,7 +18132,7 @@ public static func outTypeList<T: TensorGroup>(
   return op.execute(Int(T._typeList.count))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func outTypeListRestrict<T: TensorGroup>(
 ) -> T {
   let op = TFE_Op("OutTypeListRestrict")
@@ -18177,7 +18152,7 @@ public static func outTypeListRestrict<T: TensorGroup>(
 ///     device.
 ///
 /// - Output output: A tensor that will be read from the device outfeed.
-@inlinable @inline(__always)
+@inlinable
 public static func outfeedDequeue<Dtype: TensorFlowScalar>(
   shape: TensorShape?,
   deviceOrdinal: Int64 = -1
@@ -18202,7 +18177,7 @@ public static func outfeedDequeue<Dtype: TensorFlowScalar>(
 ///     device.
 ///
 /// - Output outputs: A list of tensors that will be read from the outfeed.
-@inlinable @inline(__always)
+@inlinable
 public static func outfeedDequeueTuple<Dtypes: TensorGroup>(
   shapes: [TensorShape?],
   deviceOrdinal: Int64 = -1
@@ -18217,7 +18192,7 @@ public static func outfeedDequeueTuple<Dtypes: TensorGroup>(
 /// Enqueue a Tensor on the computation outfeed.
 ///
 /// - Parameter input: A tensor that will be inserted into the outfeed queue.
-@inlinable @inline(__always)
+@inlinable
 public static func outfeedEnqueue<Dtype: TensorFlowScalar>(
   _ input: Tensor<Dtype>
 ) {
@@ -18231,7 +18206,7 @@ public static func outfeedEnqueue<Dtype: TensorFlowScalar>(
 ///
 /// - Parameter inputs: A list of tensors that will be inserted into the outfeed queue as an
 ///   XLA tuple.
-@inlinable @inline(__always)
+@inlinable
 public static func outfeedEnqueueTuple<Dtypes: TensorArrayProtocol>(
   inputs: Dtypes
 ) {
@@ -18269,7 +18244,7 @@ public static func outfeedEnqueueTuple<Dtypes: TensorArrayProtocol>(
 ///   valid range is `[-(R+1), R+1)`.
 ///
 /// - Output output: The packed tensor.
-@inlinable @inline(__always)
+@inlinable
 public static func pack<T: TensorFlowScalar>(
   _ values: [Tensor<T>],
   axis: Int64 = 0
@@ -18307,7 +18282,7 @@ public static func pack<T: TensorFlowScalar>(
 ///                       [0, 0, 0, 0, 0, 0]]
 /// ```
 ///
-@inlinable @inline(__always)
+@inlinable
 public static func pad<
     T: TensorFlowScalar,
     Tpaddings: BinaryInteger & TensorFlowScalar
@@ -18349,7 +18324,7 @@ public static func pad<
 ///                       [0, 0, 2, 2, 0, 0]
 ///                       [0, 0, 0, 0, 0, 0]]
 /// ```
-@inlinable @inline(__always)
+@inlinable
 public static func padV2<
     T: TensorFlowScalar,
     Tpaddings: BinaryInteger & TensorFlowScalar
@@ -18378,7 +18353,7 @@ public static func padV2<
 ///     padded to the maximum size of all batch elements.
 ///   - padding_values: A list of scalars containing the padding value to use for
 ///     each of the outputs.
-@inlinable @inline(__always)
+@inlinable
 public static func paddedBatchDataset<ToutputTypes: TensorArrayProtocol>(
   inputDataset: VariantHandle,
   batchSize: Tensor<Int64>,
@@ -18410,7 +18385,7 @@ public static func paddedBatchDataset<ToutputTypes: TensorArrayProtocol>(
 ///     each of the outputs.
 ///   - drop_remainder: A scalar representing whether the last batch should be dropped in case its size
 ///     is smaller than desired.
-@inlinable @inline(__always)
+@inlinable
 public static func paddedBatchDatasetV2<ToutputTypes: TensorArrayProtocol>(
   inputDataset: VariantHandle,
   batchSize: Tensor<Int64>,
@@ -18457,7 +18432,7 @@ public static func paddedBatchDatasetV2<ToutputTypes: TensorArrayProtocol>(
 ///     across multiple sessions.
 ///
 /// - Output handle: The handle to the queue.
-@inlinable @inline(__always)
+@inlinable
 public static func paddingFIFOQueueV2(
   componentTypes: [TensorDataType],
   shapes: [TensorShape?],
@@ -18500,7 +18475,7 @@ public static func paddingFIFOQueueV2(
 ///   but with the number of input values in the first dimension.
 ///
 /// - Output output: The concatenated tensor.
-@inlinable @inline(__always)
+@inlinable
 public static func parallelConcat<T: TensorFlowScalar>(
   _ values: [Tensor<T>],
   shape: TensorShape?
@@ -18576,7 +18551,7 @@ public static func parallelConcat<T: TensorFlowScalar>(
 /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
 /// <img style="width:100%" src="https://www.tensorflow.org/images/DynamicStitch.png" alt>
 /// </div>
-@inlinable @inline(__always)
+@inlinable
 public static func parallelDynamicStitch<T: TensorFlowScalar>(
   indices: [Tensor<Int32>],
   data: [Tensor<T>]
@@ -18594,7 +18569,7 @@ public static func parallelDynamicStitch<T: TensorFlowScalar>(
 /// - Attr f: A function mapping elements of `input_dataset`, concatenated with
 ///   `other_arguments`, to a Dataset variant that contains elements matching
 ///   `output_types` and `output_shapes`.
-@inlinable @inline(__always)
+@inlinable
 public static func parallelInterleaveDatasetV2<
     FIn: TensorGroup,
     FOut: TensorGroup,
@@ -18631,7 +18606,7 @@ public static func parallelInterleaveDatasetV2<
 ///
 /// - Parameter num_parallel_calls: The number of concurrent invocations of `f` that process
 ///   elements from `input_dataset` in parallel.
-@inlinable @inline(__always)
+@inlinable
 public static func parallelMapDataset<
     FIn: TensorGroup,
     FOut: TensorGroup,
@@ -18683,7 +18658,7 @@ public static func parallelMapDataset<
 ///
 /// - Output output: A matrix of shape num_batches x samples_per_batch, filled with random
 ///   truncated normal values using the parameters for each row.
-@inlinable @inline(__always)
+@inlinable
 public static func parameterizedTruncatedNormal<
     Dtype: FloatingPoint & TensorFlowScalar,
     T: BinaryInteger & TensorFlowScalar
@@ -18753,7 +18728,7 @@ public static func parameterizedTruncatedNormal<
 ///     in the input.  Any minibatch entry with less than M blocks of elements of
 ///     length D1 * ... * DN will be padded with the corresponding default_value
 ///     scalar element along the second dimension.
-@inlinable @inline(__always)
+@inlinable
 public static func parseExample<
     SparseTypes: TensorGroup,
     Tdense: TensorArrayProtocol
@@ -18832,7 +18807,7 @@ public static func parseExample<
 ///     The shape of each Feature in the FeatureList corresponding to
 ///     feature_list_dense_key[j] must always equal
 ///     feature_list_dense_shapes[j].NumEntries().
-@inlinable @inline(__always)
+@inlinable
 public static func parseSequenceExample<
     ContextSparseTypes: TensorGroup,
     TcontextDense: TensorArrayProtocol,
@@ -18915,7 +18890,7 @@ public static func parseSequenceExample<
 ///     ..., DN), the shape of the output Tensor dense_values[j] will be (M,
 ///     D1, .., DN), where M is the number of blocks of elements of length
 ///     D1 * .... * DN, in the input.
-@inlinable @inline(__always)
+@inlinable
 public static func parseSingleExample<
     SparseTypes: TensorGroup,
     Tdense: TensorArrayProtocol
@@ -18992,7 +18967,7 @@ public static func parseSingleExample<
 ///     The shape of each Feature in the FeatureList corresponding to
 ///     feature_list_dense_key[j] must always equal
 ///     feature_list_dense_shapes[j].NumEntries().
-@inlinable @inline(__always)
+@inlinable
 public static func parseSingleSequenceExample<
     ContextSparseTypes: TensorGroup,
     TcontextDense: TensorArrayProtocol,
@@ -19040,7 +19015,7 @@ public static func parseSingleSequenceExample<
 ///   type of the serialized tensor and no implicit conversion will take place.
 ///
 /// - Output output: A Tensor of type `out_type`.
-@inlinable @inline(__always)
+@inlinable
 public static func parseTensor<OutType: TensorFlowScalar>(
   serialized: StringTensor
 ) -> Tensor<OutType> {
@@ -19063,7 +19038,7 @@ public static func parseTensor<OutType: TensorFlowScalar>(
 ///           devices, setting this op apart from the regular Call op.
 ///
 /// - Output output: A list of return values.
-@inlinable @inline(__always)
+@inlinable
 public static func partitionedCall<
     Tin: TensorArrayProtocol,
     Tout: TensorGroup,
@@ -19099,7 +19074,7 @@ public static func partitionedCall<
 ///     shape is unconstrained.
 ///
 /// - Output output: A placeholder tensor that must be replaced using the feed mechanism.
-@inlinable @inline(__always)
+@inlinable
 public static func placeholder<Dtype: TensorFlowScalar>(
   shape: TensorShape?
 ) -> Tensor<Dtype> {
@@ -19121,7 +19096,7 @@ public static func placeholder<Dtype: TensorFlowScalar>(
 ///     shape.  To be unconstrained, pass in a shape with unknown rank.
 ///
 /// - Output output: A placeholder tensor that must be replaced using the feed mechanism.
-@inlinable @inline(__always)
+@inlinable
 public static func placeholderV2<Dtype: TensorFlowScalar>(
   shape: TensorShape?
 ) -> Tensor<Dtype> {
@@ -19140,7 +19115,7 @@ public static func placeholderV2<Dtype: TensorFlowScalar>(
 ///   - shape: The (possibly partial) shape of the tensor.
 ///
 /// - Output output: A placeholder tensor that defaults to `input` if it is not fed.
-@inlinable @inline(__always)
+@inlinable
 public static func placeholderWithDefault<Dtype: TensorFlowScalar>(
   _ input: Tensor<Dtype>,
   shape: TensorShape?
@@ -19161,7 +19136,7 @@ public static func placeholderWithDefault<Dtype: TensorFlowScalar>(
 ///
 /// where \\(\psi(x)\\) is the digamma function.
 /// The polygamma function is defined only for non-negative integer orders \\a\\.
-@inlinable @inline(__always)
+@inlinable
 public static func polygamma<T: FloatingPoint & TensorFlowScalar>(
   _ a: Tensor<T>,
   _ x: Tensor<T>
@@ -19173,7 +19148,7 @@ public static func polygamma<T: FloatingPoint & TensorFlowScalar>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func polymorphic<T: TensorFlowScalar>(
   _ a: Tensor<T>
 ) -> Tensor<T> {
@@ -19183,7 +19158,7 @@ public static func polymorphic<T: TensorFlowScalar>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func polymorphicDefaultOut<T: TensorFlowScalar>(
 ) -> Tensor<T> {
   let op = TFE_Op("PolymorphicDefaultOut")
@@ -19191,7 +19166,7 @@ public static func polymorphicDefaultOut<T: TensorFlowScalar>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func polymorphicOut<T: TensorFlowScalar>(
 ) -> Tensor<T> {
   let op = TFE_Op("PolymorphicOut")
@@ -19207,7 +19182,7 @@ public static func polymorphicOut<T: TensorFlowScalar>(
 /// **NOTE**: It is more efficient to first `tf.bitcast` your tensors into
 /// `int32` or `int64` and perform the bitcount on the result, than to feed in
 /// 8- or 16-bit inputs and then aggregate the resulting counts.
-@inlinable @inline(__always)
+@inlinable
 public static func populationCount<T: BinaryInteger & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<UInt8> {
@@ -19227,7 +19202,7 @@ public static func populationCount<T: BinaryInteger & TensorFlowScalar>(
 /// # tensor 'y' is [[8, 16], [2, 3]]
 /// tf.pow(x, y) ==> [[256, 65536], [9, 27]]
 /// ```
-@inlinable @inline(__always)
+@inlinable
 public static func pow<T: Numeric & TensorFlowScalar>(
   _ x: Tensor<T>,
   _ y: Tensor<T>
@@ -19243,7 +19218,7 @@ public static func pow<T: Numeric & TensorFlowScalar>(
 ///
 /// - Parameter buffer_size: The maximum number of elements to buffer in an iterator over
 ///   this dataset.
-@inlinable @inline(__always)
+@inlinable
 public static func prefetchDataset(
   inputDataset: VariantHandle,
   bufferSize: Tensor<Int64>,
@@ -19268,7 +19243,7 @@ public static func prefetchDataset(
 ///   - layout: A vector holding the requested layout in minor-to-major sequence. If a layout
 ///     attribute is passed but its values are all -1 the layout will be computed by
 ///     the infeed operation.
-@inlinable @inline(__always)
+@inlinable
 public static func prelinearize<Dtype: TensorFlowScalar>(
   _ input: Tensor<Dtype>,
   shape: TensorShape?,
@@ -19293,7 +19268,7 @@ public static func prelinearize<Dtype: TensorFlowScalar>(
 ///     tuple shapes in the order the shapes appear in the "shapes" input. The layout
 ///     elements for a sub-shape can be set to -1 in which case the corresponding layout
 ///     will be computed by the infeed operation.
-@inlinable @inline(__always)
+@inlinable
 public static func prelinearizeTuple<Dtypes: TensorArrayProtocol>(
   inputs: Dtypes,
   shapes: [TensorShape?],
@@ -19323,7 +19298,7 @@ public static func prelinearizeTuple<Dtypes: TensorArrayProtocol>(
 ///   this operation.
 ///
 /// - Output output: the same input tensor.
-@inlinable @inline(__always)
+@inlinable
 public static func preventGradient<T: TensorFlowScalar>(
   _ input: Tensor<T>,
   message: String
@@ -19349,7 +19324,7 @@ public static func preventGradient<T: TensorFlowScalar>(
 ///   - summarize: Only print this many entries of each tensor.
 ///
 /// - Output output: = The unmodified `input` tensor
-@inlinable @inline(__always)
+@inlinable
 public static func print<
     T: TensorFlowScalar,
     U: TensorArrayProtocol
@@ -19378,7 +19353,7 @@ public static func print<
 /// - Parameter input: The string scalar to print.
 ///
 /// - Attr output_stream: A string specifying the output stream or logging level to print to.
-@inlinable @inline(__always)
+@inlinable
 public static func printV2(
   _ input: StringTensor,
   outputStream: String = "stderr"
@@ -19411,7 +19386,7 @@ public static func printV2(
 ///     across multiple sessions.
 ///
 /// - Output handle: The handle to the queue.
-@inlinable @inline(__always)
+@inlinable
 public static func priorityQueueV2(
   componentTypes: [TensorDataType],
   shapes: [TensorShape?],
@@ -19443,7 +19418,7 @@ public static func priorityQueueV2(
 /// - Attr keep_dims: If true, retain reduced dimensions with length 1.
 ///
 /// - Output output: The reduced tensor.
-@inlinable @inline(__always)
+@inlinable
 public static func prod<
     T: Numeric & TensorFlowScalar,
     Tidx: BinaryInteger & TensorFlowScalar
@@ -19475,7 +19450,7 @@ public static func prod<
 ///     The length of the list specifies the number of outputs.
 ///
 /// - Output output: The outputs from the Op.
-@inlinable @inline(__always)
+@inlinable
 public static func pyFunc<
     Tin: TensorArrayProtocol,
     Tout: TensorGroup
@@ -19492,7 +19467,7 @@ public static func pyFunc<
 }
 
 /// A stateless version of PyFunc.
-@inlinable @inline(__always)
+@inlinable
 public static func pyFuncStateless<
     Tin: TensorArrayProtocol,
     Tout: TensorGroup
@@ -19533,7 +19508,7 @@ public static func pyFuncStateless<
 ///     `[..., M, M]`.
 ///   - r: Triangular factor. If `full_matrices` is `False` then shape is
 ///     `[..., P, N]`. If `full_matrices` is `True` then shape is `[..., M, N]`.
-@inlinable @inline(__always)
+@inlinable
 public static func qr<T: FloatingPoint & TensorFlowScalar>(
   _ input: Tensor<T>,
   fullMatrices: Bool = false
@@ -19546,7 +19521,7 @@ public static func qr<T: FloatingPoint & TensorFlowScalar>(
 }
 
 /// Use QuantizeAndDequantizeV2 instead.
-@inlinable @inline(__always)
+@inlinable
 public static func quantizeAndDequantize<T: FloatingPoint & TensorFlowScalar>(
   _ input: Tensor<T>,
   signedInput: Bool = true,
@@ -19643,7 +19618,7 @@ public static func quantizeAndDequantize<T: FloatingPoint & TensorFlowScalar>(
 ///     *   HALF_UP: round towards positive. In this mode 7.5 rounds up to 8 and -7.5
 ///         rounds up to -7.
 ///
-@inlinable @inline(__always)
+@inlinable
 public static func quantizeAndDequantizeV2<T: FloatingPoint & TensorFlowScalar>(
   _ input: Tensor<T>,
   inputMin: Tensor<T>,
@@ -19669,7 +19644,7 @@ public static func quantizeAndDequantizeV2<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// This is almost identical to QuantizeAndDequantizeV2, except that num_bits is a
 /// tensor, so its value can change during training.
-@inlinable @inline(__always)
+@inlinable
 public static func quantizeAndDequantizeV3<T: FloatingPoint & TensorFlowScalar>(
   _ input: Tensor<T>,
   inputMin: Tensor<T>,
@@ -19725,7 +19700,7 @@ public static func quantizeAndDequantizeV3<T: FloatingPoint & TensorFlowScalar>(
 /// - Outputs:
 ///   - output_min: The float value that the minimum quantized output value represents.
 ///   - output_max: The float value that the maximum quantized output value represents.
-@inlinable @inline(__always)
+@inlinable
 public static func quantizeDownAndShrinkRange<
     Tinput: TensorFlowScalar,
     OutType: TensorFlowScalar
@@ -19852,7 +19827,7 @@ public static func quantizeDownAndShrinkRange<
 ///   - output: The quantized data produced from the float input.
 ///   - output_min: The actual minimum scalar value used for the output.
 ///   - output_max: The actual maximum scalar value used for the output.
-@inlinable @inline(__always)
+@inlinable
 public static func quantizeV2<T: TensorFlowScalar>(
   _ input: Tensor<Float>,
   minRange: Tensor<Float>,
@@ -19884,7 +19859,7 @@ public static func quantizeV2<T: TensorFlowScalar>(
 ///
 ///     *NOTE*: `QuantizedAdd` supports limited forms of broadcasting. More about
 ///     broadcasting [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-@inlinable @inline(__always)
+@inlinable
 public static func quantizedAdd<
     T1: TensorFlowScalar,
     T2: TensorFlowScalar,
@@ -19927,7 +19902,7 @@ public static func quantizedAdd<
 /// - Outputs:
 ///   - min_output: The float value that the lowest quantized output value represents.
 ///   - max_output: The float value that the highest quantized output value represents.
-@inlinable @inline(__always)
+@inlinable
 public static func quantizedAvgPool<T: TensorFlowScalar>(
   _ input: Tensor<T>,
   minInput: Tensor<Float>,
@@ -19980,7 +19955,7 @@ public static func quantizedAvgPool<T: TensorFlowScalar>(
 ///   - variance_epsilon: A small float number to avoid dividing by 0.
 ///   - scale_after_normalization: A bool indicating whether the resulted tensor
 ///     needs to be multiplied with gamma.
-@inlinable @inline(__always)
+@inlinable
 public static func quantizedBatchNormWithGlobalNormalization<
     Tinput: TensorFlowScalar,
     OutType: TensorFlowScalar
@@ -20040,7 +20015,7 @@ public static func quantizedBatchNormWithGlobalNormalization<
 /// - Outputs:
 ///   - min_out: The float value that the lowest quantized output value represents.
 ///   - max_out: The float value that the highest quantized output value represents.
-@inlinable @inline(__always)
+@inlinable
 public static func quantizedBiasAdd<
     T1: TensorFlowScalar,
     T2: TensorFlowScalar,
@@ -20082,7 +20057,7 @@ public static func quantizedBiasAdd<
 ///     in `concat_dim` where it has the sum of the sizes.
 ///   - output_min: The float value that the minimum quantized output value represents.
 ///   - output_max: The float value that the maximum quantized output value represents.
-@inlinable @inline(__always)
+@inlinable
 public static func quantizedConcat<T: TensorFlowScalar>(
   concatDim: Tensor<Int32>,
   _ values: [Tensor<T>],
@@ -20126,7 +20101,7 @@ public static func quantizedConcat<T: TensorFlowScalar>(
 /// - Outputs:
 ///   - min_output: The float value that the lowest quantized output value represents.
 ///   - max_output: The float value that the highest quantized output value represents.
-@inlinable @inline(__always)
+@inlinable
 public static func quantizedConv2D<
     Tinput: TensorFlowScalar,
     Tfilter: TensorFlowScalar,
@@ -20158,7 +20133,7 @@ public static func quantizedConv2D<
   return op.execute(Int(1), Int(1), Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func quantizedConv2DAndRelu<
     Tinput: TensorFlowScalar,
     Tfilter: TensorFlowScalar,
@@ -20192,7 +20167,7 @@ public static func quantizedConv2DAndRelu<
   return op.execute(Int(1), Int(1), Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func quantizedConv2DAndReluAndRequantize<
     Tinput: TensorFlowScalar,
     Tfilter: TensorFlowScalar,
@@ -20230,7 +20205,7 @@ public static func quantizedConv2DAndReluAndRequantize<
   return op.execute(Int(1), Int(1), Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func quantizedConv2DAndRequantize<
     Tinput: TensorFlowScalar,
     Tfilter: TensorFlowScalar,
@@ -20289,7 +20264,7 @@ public static func quantizedConv2DAndRequantize<
 ///   - output: The output tensor.
 ///   - min_output: The minimum value of the final output tensor.
 ///   - max_output: The maximum value of the final output tensor.
-@inlinable @inline(__always)
+@inlinable
 public static func quantizedConv2DPerChannel<
     Tinput: TensorFlowScalar,
     Tfilter: TensorFlowScalar,
@@ -20321,7 +20296,7 @@ public static func quantizedConv2DPerChannel<
   return op.execute(Int(1), Int(1), Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func quantizedConv2DWithBias<
     Tinput: TensorFlowScalar,
     Tfilter: TensorFlowScalar,
@@ -20357,7 +20332,7 @@ public static func quantizedConv2DWithBias<
   return op.execute(Int(1), Int(1), Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func quantizedConv2DWithBiasAndRelu<
     Tinput: TensorFlowScalar,
     Tfilter: TensorFlowScalar,
@@ -20393,7 +20368,7 @@ public static func quantizedConv2DWithBiasAndRelu<
   return op.execute(Int(1), Int(1), Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func quantizedConv2DWithBiasAndReluAndRequantize<
     Tinput: TensorFlowScalar,
     Tfilter: TensorFlowScalar,
@@ -20435,7 +20410,7 @@ public static func quantizedConv2DWithBiasAndReluAndRequantize<
   return op.execute(Int(1), Int(1), Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func quantizedConv2DWithBiasAndRequantize<
     Tinput: TensorFlowScalar,
     Tfilter: TensorFlowScalar,
@@ -20477,7 +20452,7 @@ public static func quantizedConv2DWithBiasAndRequantize<
   return op.execute(Int(1), Int(1), Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func quantizedConv2DWithBiasSignedSumAndReluAndRequantize<
     Tinput: TensorFlowScalar,
     Tfilter: TensorFlowScalar,
@@ -20527,7 +20502,7 @@ public static func quantizedConv2DWithBiasSignedSumAndReluAndRequantize<
   return op.execute(Int(1), Int(1), Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func quantizedConv2DWithBiasSumAndRelu<
     Tinput: TensorFlowScalar,
     Tfilter: TensorFlowScalar,
@@ -20565,7 +20540,7 @@ public static func quantizedConv2DWithBiasSumAndRelu<
   return op.execute(Int(1), Int(1), Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func quantizedConv2DWithBiasSumAndReluAndRequantize<
     Tinput: TensorFlowScalar,
     Tfilter: TensorFlowScalar,
@@ -20615,7 +20590,7 @@ public static func quantizedConv2DWithBiasSumAndReluAndRequantize<
   return op.execute(Int(1), Int(1), Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func quantizedDepthwiseConv2D<
     Tinput: TensorFlowScalar,
     Tfilter: TensorFlowScalar,
@@ -20647,7 +20622,7 @@ public static func quantizedDepthwiseConv2D<
   return op.execute(Int(1), Int(1), Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func quantizedDepthwiseConv2DWithBias<
     Tinput: TensorFlowScalar,
     Tfilter: TensorFlowScalar,
@@ -20681,7 +20656,7 @@ public static func quantizedDepthwiseConv2DWithBias<
   return op.execute(Int(1), Int(1), Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func quantizedDepthwiseConv2DWithBiasAndRelu<
     Tinput: TensorFlowScalar,
     Tfilter: TensorFlowScalar,
@@ -20715,7 +20690,7 @@ public static func quantizedDepthwiseConv2DWithBiasAndRelu<
   return op.execute(Int(1), Int(1), Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func quantizedDepthwiseConv2DWithBiasAndReluAndRequantize<
     Tinput: TensorFlowScalar,
     Tfilter: TensorFlowScalar,
@@ -20775,7 +20750,7 @@ public static func quantizedDepthwiseConv2DWithBiasAndReluAndRequantize<
 ///   - y: A 4D Tensor.
 ///   - y_min: The value represented by the lowest quantized output.
 ///   - y_max: The value represented by the highest quantized output.
-@inlinable @inline(__always)
+@inlinable
 public static func quantizedInstanceNorm<T: TensorFlowScalar>(
   _ x: Tensor<T>,
   xMin: Tensor<Float>,
@@ -20823,7 +20798,7 @@ public static func quantizedInstanceNorm<T: TensorFlowScalar>(
 /// - Outputs:
 ///   - min_out: The float value that the lowest quantized output value represents.
 ///   - max_out: The float value that the highest quantized output value represents.
-@inlinable @inline(__always)
+@inlinable
 public static func quantizedMatMul<
     T1: TensorFlowScalar,
     T2: TensorFlowScalar,
@@ -20872,7 +20847,7 @@ public static func quantizedMatMul<
 /// - Outputs:
 ///   - min_output: The float value that the lowest quantized output value represents.
 ///   - max_output: The float value that the highest quantized output value represents.
-@inlinable @inline(__always)
+@inlinable
 public static func quantizedMaxPool<T: TensorFlowScalar>(
   _ input: Tensor<T>,
   minInput: Tensor<Float>,
@@ -20906,7 +20881,7 @@ public static func quantizedMaxPool<T: TensorFlowScalar>(
 ///
 ///     *NOTE*: `QuantizedMul` supports limited forms of broadcasting. More about
 ///     broadcasting [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-@inlinable @inline(__always)
+@inlinable
 public static func quantizedMul<
     T1: TensorFlowScalar,
     T2: TensorFlowScalar,
@@ -20942,7 +20917,7 @@ public static func quantizedMul<
 ///   - activations: Has the same output shape as "features".
 ///   - min_activations: The float value that the lowest quantized value represents.
 ///   - max_activations: The float value that the highest quantized value represents.
-@inlinable @inline(__always)
+@inlinable
 public static func quantizedRelu<
     Tinput: TensorFlowScalar,
     OutType: TensorFlowScalar
@@ -20970,7 +20945,7 @@ public static func quantizedRelu<
 ///   - activations: Has the same output shape as "features".
 ///   - min_activations: The float value that the lowest quantized value represents.
 ///   - max_activations: The float value that the highest quantized value represents.
-@inlinable @inline(__always)
+@inlinable
 public static func quantizedRelu6<
     Tinput: TensorFlowScalar,
     OutType: TensorFlowScalar
@@ -20998,7 +20973,7 @@ public static func quantizedRelu6<
 ///   - activations: Has the same output shape as "features".
 ///   - min_activations: The float value that the lowest quantized value represents.
 ///   - max_activations: The float value that the highest quantized value represents.
-@inlinable @inline(__always)
+@inlinable
 public static func quantizedReluX<
     Tinput: TensorFlowScalar,
     OutType: TensorFlowScalar
@@ -21030,7 +21005,7 @@ public static func quantizedReluX<
 /// - Outputs:
 ///   - output_min: This value is copied from input_min.
 ///   - output_max: This value is copied from input_max.
-@inlinable @inline(__always)
+@inlinable
 public static func quantizedReshape<
     T: TensorFlowScalar,
     Tshape: BinaryInteger & TensorFlowScalar
@@ -21064,7 +21039,7 @@ public static func quantizedReshape<
 ///
 /// - Output resized_images: 4-D with shape
 ///   `[batch, new_height, new_width, channels]`.
-@inlinable @inline(__always)
+@inlinable
 public static func quantizedResizeBilinear<T: FloatingPoint & TensorFlowScalar>(
   images: Tensor<T>,
   size: Tensor<Int32>,
@@ -21096,7 +21071,7 @@ public static func quantizedResizeBilinear<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// - Attr cancel_pending_enqueues: If true, all pending enqueue requests that are
 ///   blocked on the given queue will be canceled.
-@inlinable @inline(__always)
+@inlinable
 public static func queueCloseV2(
   handle: ResourceHandle,
   cancelPendingEnqueues: Bool = false
@@ -21134,7 +21109,7 @@ public static func queueCloseV2(
 ///     Note: This option is not supported yet.
 ///
 /// - Output components: One or more tensors that were dequeued as a tuple.
-@inlinable @inline(__always)
+@inlinable
 public static func queueDequeueManyV2<ComponentTypes: TensorGroup>(
   handle: ResourceHandle,
   n: Tensor<Int32>,
@@ -21179,7 +21154,7 @@ public static func queueDequeueManyV2<ComponentTypes: TensorGroup>(
 ///     Note: This option is not supported yet.
 ///
 /// - Output components: One or more tensors that were dequeued as a tuple.
-@inlinable @inline(__always)
+@inlinable
 public static func queueDequeueUpToV2<ComponentTypes: TensorGroup>(
   handle: ResourceHandle,
   n: Tensor<Int32>,
@@ -21211,7 +21186,7 @@ public static func queueDequeueUpToV2<ComponentTypes: TensorGroup>(
 ///     Note: This option is not supported yet.
 ///
 /// - Output components: One or more tensors that were dequeued as a tuple.
-@inlinable @inline(__always)
+@inlinable
 public static func queueDequeueV2<ComponentTypes: TensorGroup>(
   handle: ResourceHandle,
   timeoutMs: Int64 = -1
@@ -21243,7 +21218,7 @@ public static func queueDequeueV2<ComponentTypes: TensorGroup>(
 /// - Attr timeout_ms: If the queue is too full, this operation will block for up
 ///   to timeout_ms milliseconds.
 ///   Note: This option is not supported yet.
-@inlinable @inline(__always)
+@inlinable
 public static func queueEnqueueManyV2<Tcomponents: TensorArrayProtocol>(
   handle: ResourceHandle,
   components: Tcomponents,
@@ -21272,7 +21247,7 @@ public static func queueEnqueueManyV2<Tcomponents: TensorArrayProtocol>(
 /// - Attr timeout_ms: If the queue is full, this operation will block for up to
 ///   timeout_ms milliseconds.
 ///   Note: This option is not supported yet.
-@inlinable @inline(__always)
+@inlinable
 public static func queueEnqueueV2<Tcomponents: TensorArrayProtocol>(
   handle: ResourceHandle,
   components: Tcomponents,
@@ -21292,7 +21267,7 @@ public static func queueEnqueueV2<Tcomponents: TensorArrayProtocol>(
 /// is open.
 ///
 /// - Parameter handle: The handle to a queue.
-@inlinable @inline(__always)
+@inlinable
 public static func queueIsClosedV2(
   handle: ResourceHandle
 ) -> Tensor<Bool> {
@@ -21306,7 +21281,7 @@ public static func queueIsClosedV2(
 /// - Parameter handle: The handle to a queue.
 ///
 /// - Output size: The number of elements in the given queue.
-@inlinable @inline(__always)
+@inlinable
 public static func queueSizeV2(
   handle: ResourceHandle
 ) -> Tensor<Int32> {
@@ -21328,7 +21303,7 @@ public static func queueSizeV2(
 /// - Parameter images: 1-D or higher rank. RGB data to convert. Last dimension must be size 3.
 ///
 /// - Output output: `images` converted to HSV.
-@inlinable @inline(__always)
+@inlinable
 public static func rGBToHSV<T: FloatingPoint & TensorFlowScalar>(
   images: Tensor<T>
 ) -> Tensor<T> {
@@ -21385,7 +21360,7 @@ public static func rGBToHSV<T: FloatingPoint & TensorFlowScalar>(
 ///   - output_nested_splits: The `nested_row_splits` tensors that define the row-partitioning for the
 ///     returned RaggedTensor.
 ///   - output_dense_values: The `flat_values` for the returned RaggedTensor.
-@inlinable @inline(__always)
+@inlinable
 public static func raggedGather<
     Tvalues: TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -21435,7 +21410,7 @@ public static func raggedGather<
 /// - Outputs:
 ///   - rt_nested_splits: The `row_splits` for the returned `RaggedTensor`.
 ///   - rt_dense_values: The `flat_values` for the returned `RaggedTensor`.
-@inlinable @inline(__always)
+@inlinable
 public static func raggedRange<T: Numeric & TensorFlowScalar>(
   starts: Tensor<T>,
   limits: Tensor<T>,
@@ -21467,7 +21442,7 @@ public static func raggedRange<T: Numeric & TensorFlowScalar>(
 ///   - sparse_indices: The indices for the `SparseTensor`.
 ///   - sparse_values: The values of the `SparseTensor`.
 ///   - sparse_dense_shape: `sparse_dense_shape` is a tight bounding box of the input `RaggedTensor`.
-@inlinable @inline(__always)
+@inlinable
 public static func raggedTensorToSparse<T: TensorFlowScalar>(
   rtNestedSplits: [Tensor<Int64>],
   rtDenseValues: Tensor<T>
@@ -21500,7 +21475,7 @@ public static func raggedTensorToSparse<T: TensorFlowScalar>(
 ///   - seed2: An second seed to avoid seed collision.
 ///
 /// - Output output: 3-D of shape `[crop_height, crop_width, channels].`
-@inlinable @inline(__always)
+@inlinable
 public static func randomCrop<T: Numeric & TensorFlowScalar>(
   image: Tensor<T>,
   size: Tensor<Int64>,
@@ -21537,7 +21512,7 @@ public static func randomCrop<T: Numeric & TensorFlowScalar>(
 /// - Output output: A tensor with shape `shape + shape(alpha)`. Each slice
 ///   `[:, ..., :, i0, i1, ...iN]` contains the samples drawn for
 ///   `alpha[i0, i1, ...iN]`. The dtype of the output matches the dtype of alpha.
-@inlinable @inline(__always)
+@inlinable
 public static func randomGamma<
     S: BinaryInteger & TensorFlowScalar,
     T: FloatingPoint & TensorFlowScalar
@@ -21558,7 +21533,7 @@ public static func randomGamma<
 }
 
 /// Computes the derivative of a Gamma random sample w.r.t. `alpha`.
-@inlinable @inline(__always)
+@inlinable
 public static func randomGammaGrad<T: FloatingPoint & TensorFlowScalar>(
   alpha: Tensor<T>,
   sample: Tensor<T>
@@ -21571,7 +21546,7 @@ public static func randomGammaGrad<T: FloatingPoint & TensorFlowScalar>(
 }
 
 /// Use RandomPoissonV2 instead.
-@inlinable @inline(__always)
+@inlinable
 public static func randomPoisson<
     S: BinaryInteger & TensorFlowScalar,
     Dtype: FloatingPoint & TensorFlowScalar
@@ -21618,7 +21593,7 @@ public static func randomPoisson<
 /// - Output output: A tensor with shape `shape + shape(rate)`. Each slice
 ///   `[:, ..., :, i0, i1, ...iN]` contains the samples drawn for
 ///   `rate[i0, i1, ...iN]`.
-@inlinable @inline(__always)
+@inlinable
 public static func randomPoissonV2<
     S: BinaryInteger & TensorFlowScalar,
     R: Numeric & TensorFlowScalar,
@@ -21662,7 +21637,7 @@ public static func randomPoissonV2<
 ///
 /// - Output output: A tensor of same shape and type as `value`, shuffled along its first
 ///   dimension.
-@inlinable @inline(__always)
+@inlinable
 public static func randomShuffle<T: TensorFlowScalar>(
   value: Tensor<T>,
   seed: Int64 = 0,
@@ -21698,7 +21673,7 @@ public static func randomShuffle<T: TensorFlowScalar>(
 ///     across multiple sessions.
 ///
 /// - Output handle: The handle to the queue.
-@inlinable @inline(__always)
+@inlinable
 public static func randomShuffleQueueV2(
   componentTypes: [TensorDataType],
   shapes: [TensorShape?],
@@ -21735,7 +21710,7 @@ public static func randomShuffleQueueV2(
 ///   - dtype: The type of the output.
 ///
 /// - Output output: A tensor of the specified shape filled with random normal values.
-@inlinable @inline(__always)
+@inlinable
 public static func randomStandardNormal<
     Dtype: FloatingPoint & TensorFlowScalar,
     T: BinaryInteger & TensorFlowScalar
@@ -21768,7 +21743,7 @@ public static func randomStandardNormal<
 ///   - dtype: The type of the output.
 ///
 /// - Output output: A tensor of the specified shape filled with uniform random values.
-@inlinable @inline(__always)
+@inlinable
 public static func randomUniform<
     Dtype: FloatingPoint & TensorFlowScalar,
     T: BinaryInteger & TensorFlowScalar
@@ -21808,7 +21783,7 @@ public static func randomUniform<
 ///   - seed2: A second seed to avoid seed collision.
 ///
 /// - Output output: A tensor of the specified shape filled with uniform random integers.
-@inlinable @inline(__always)
+@inlinable
 public static func randomUniformInt<
     Tout: BinaryInteger & TensorFlowScalar,
     T: BinaryInteger & TensorFlowScalar
@@ -21850,7 +21825,7 @@ public static func randomUniformInt<
 ///   - delta: 0-D (scalar). Optional. Default is 1. Number that increments `start`.
 ///
 /// - Output output: 1-D.
-@inlinable @inline(__always)
+@inlinable
 public static func range<Tidx: Numeric & TensorFlowScalar>(
   start: Tensor<Tidx>,
   limit: Tensor<Tidx>,
@@ -21870,7 +21845,7 @@ public static func range<Tidx: Numeric & TensorFlowScalar>(
 ///   - start: corresponds to start in python's xrange().
 ///   - stop: corresponds to stop in python's xrange().
 ///   - step: corresponds to step in python's xrange().
-@inlinable @inline(__always)
+@inlinable
 public static func rangeDataset(
   start: Tensor<Int64>,
   stop: Tensor<Int64>,
@@ -21902,7 +21877,7 @@ public static func rangeDataset(
 /// **Note**: The rank of a tensor is not the same as the rank of a matrix. The rank
 /// of a tensor is the number of indices required to uniquely select each element
 /// of the tensor. Rank is also known as "order", "degree", or "ndims."
-@inlinable @inline(__always)
+@inlinable
 public static func rank<T: TensorFlowScalar>(
   _ input: Tensor<T>
 ) -> Tensor<Int32> {
@@ -21913,7 +21888,7 @@ public static func rank<T: TensorFlowScalar>(
 }
 
 /// Reads and outputs the entire contents of the input filename.
-@inlinable @inline(__always)
+@inlinable
 public static func readFile(
   filename: StringTensor
 ) -> StringTensor {
@@ -21934,7 +21909,7 @@ public static func readFile(
 /// - Parameter resource: handle to the resource in which to store the variable.
 ///
 /// - Attr dtype: the dtype of the value.
-@inlinable @inline(__always)
+@inlinable
 public static func readVariableOp<Dtype: TensorFlowScalar>(
   resource: ResourceHandle
 ) -> Tensor<Dtype> {
@@ -21950,7 +21925,7 @@ public static func readVariableOp<Dtype: TensorFlowScalar>(
 /// succeeded.
 ///
 /// - Parameter reader_handle: Handle to a Reader.
-@inlinable @inline(__always)
+@inlinable
 public static func readerNumRecordsProducedV2(
   readerHandle: ResourceHandle
 ) -> Tensor<Int64> {
@@ -21962,7 +21937,7 @@ public static func readerNumRecordsProducedV2(
 /// Returns the number of work units this Reader has finished processing.
 ///
 /// - Parameter reader_handle: Handle to a Reader.
-@inlinable @inline(__always)
+@inlinable
 public static func readerNumWorkUnitsCompletedV2(
   readerHandle: ResourceHandle
 ) -> Tensor<Int64> {
@@ -21986,7 +21961,7 @@ public static func readerNumWorkUnitsCompletedV2(
 /// - Outputs:
 ///   - keys: A 1-D tensor.
 ///   - values: A 1-D tensor.
-@inlinable @inline(__always)
+@inlinable
 public static func readerReadUpToV2(
   readerHandle: ResourceHandle,
   queueHandle: ResourceHandle,
@@ -22012,7 +21987,7 @@ public static func readerReadUpToV2(
 /// - Outputs:
 ///   - key: A scalar.
 ///   - value: A scalar.
-@inlinable @inline(__always)
+@inlinable
 public static func readerReadV2(
   readerHandle: ResourceHandle,
   queueHandle: ResourceHandle
@@ -22026,7 +22001,7 @@ public static func readerReadV2(
 /// Restore a Reader to its initial clean state.
 ///
 /// - Parameter reader_handle: Handle to a Reader.
-@inlinable @inline(__always)
+@inlinable
 public static func readerResetV2(
   readerHandle: ResourceHandle
 ) {
@@ -22044,7 +22019,7 @@ public static func readerResetV2(
 ///   - reader_handle: Handle to a Reader.
 ///   - state: Result of a ReaderSerializeState of a Reader with type
 ///     matching reader_handle.
-@inlinable @inline(__always)
+@inlinable
 public static func readerRestoreStateV2(
   readerHandle: ResourceHandle,
   state: StringTensor
@@ -22061,7 +22036,7 @@ public static func readerRestoreStateV2(
 /// Unimplemented error.
 ///
 /// - Parameter reader_handle: Handle to a Reader.
-@inlinable @inline(__always)
+@inlinable
 public static func readerSerializeStateV2(
   readerHandle: ResourceHandle
 ) -> StringTensor {
@@ -22083,7 +22058,7 @@ public static func readerSerializeStateV2(
 /// # tensor 'input' is [-2.25 + 4.75j, 3.25 + 5.75j]
 /// tf.real(input) ==> [-2.25, 3.25]
 /// ```
-@inlinable @inline(__always)
+@inlinable
 public static func real<
     T: TensorFlowScalar,
     Tout: FloatingPoint & TensorFlowScalar
@@ -22103,7 +22078,7 @@ public static func real<
 ///
 /// *NOTE*: `Div` supports broadcasting. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-@inlinable @inline(__always)
+@inlinable
 public static func realDiv<T: Numeric & TensorFlowScalar>(
   _ x: Tensor<T>,
   _ y: Tensor<T>
@@ -22118,7 +22093,7 @@ public static func realDiv<T: Numeric & TensorFlowScalar>(
 /// Computes the reciprocal of x element-wise.
 ///
 /// I.e., \\(y = 1 / x\\).
-@inlinable @inline(__always)
+@inlinable
 public static func reciprocal<T: Numeric & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -22132,7 +22107,7 @@ public static func reciprocal<T: Numeric & TensorFlowScalar>(
 ///
 /// Specifically, `grad = -dy * y*y`, where `y = 1/x`, and `dy`
 /// is the corresponding input gradient.
-@inlinable @inline(__always)
+@inlinable
 public static func reciprocalGrad<T: FloatingPoint & TensorFlowScalar>(
   _ y: Tensor<T>,
   dy: Tensor<T>
@@ -22158,7 +22133,7 @@ public static func reciprocalGrad<T: FloatingPoint & TensorFlowScalar>(
 ///     GZIP are supported. Defaults to none.
 ///
 /// - Output records: A tensor of shape [batch_size].
-@inlinable @inline(__always)
+@inlinable
 public static func recordInput(
   filePattern: String,
   fileRandomSeed: Int64 = 301,
@@ -22195,7 +22170,7 @@ public static func recordInput(
 ///
 /// - Output outputs: A TensorList of embedding activations containing one Tensor per
 ///   embedding table in the model.
-@inlinable @inline(__always)
+@inlinable
 public static func recvTPUEmbeddingActivations(
   numOutputs: Int64,
   config: String
@@ -22216,7 +22191,7 @@ public static func recvTPUEmbeddingActivations(
 /// - Attr f: A function that maps `(old_state, input_element)` to `new_state`. It must take
 ///   two arguments and return a nested structures of tensors. The structure of
 ///   `new_state` must match the structure of `initial_state`.
-@inlinable @inline(__always)
+@inlinable
 public static func reduceDataset<
     FIn: TensorGroup,
     FOut: TensorGroup,
@@ -22282,7 +22257,7 @@ public static func reduceDataset<
 ///
 /// - Output output: Has shape equal to that of the input with reduced dimensions removed or
 ///   set to `1` depending on `keep_dims`.
-@inlinable @inline(__always)
+@inlinable
 public static func reduceJoin(
   inputs: StringTensor,
   reductionIndices: Tensor<Int32>,
@@ -22311,7 +22286,7 @@ public static func reduceJoin(
 ///   - pattern: A scalar string tensor containing the regular expression to match the input.
 ///
 /// - Output output: A bool tensor with the same shape as `input`.
-@inlinable @inline(__always)
+@inlinable
 public static func regexFullMatch(
   _ input: StringTensor,
   pattern: StringTensor
@@ -22338,7 +22313,7 @@ public static func regexFullMatch(
 ///   substitution is only made for the first `pattern` match.
 ///
 /// - Output output: The text after applying pattern match and rewrite substitution.
-@inlinable @inline(__always)
+@inlinable
 public static func regexReplace(
   _ input: StringTensor,
   pattern: StringTensor,
@@ -22354,7 +22329,7 @@ public static func regexReplace(
 }
 
 /// Computes rectified linear: `max(features, 0)`.
-@inlinable @inline(__always)
+@inlinable
 public static func relu<T: Numeric & TensorFlowScalar>(
   features: Tensor<T>
 ) -> Tensor<T> {
@@ -22365,7 +22340,7 @@ public static func relu<T: Numeric & TensorFlowScalar>(
 }
 
 /// Computes rectified linear 6: `min(max(features, 0), 6)`.
-@inlinable @inline(__always)
+@inlinable
 public static func relu6<T: Numeric & TensorFlowScalar>(
   features: Tensor<T>
 ) -> Tensor<T> {
@@ -22384,7 +22359,7 @@ public static func relu6<T: Numeric & TensorFlowScalar>(
 ///
 /// - Output backprops: The gradients:
 ///   `gradients * (features > 0) * (features < 6)`.
-@inlinable @inline(__always)
+@inlinable
 public static func relu6Grad<T: Numeric & TensorFlowScalar>(
   gradients: Tensor<T>,
   features: Tensor<T>
@@ -22404,7 +22379,7 @@ public static func relu6Grad<T: Numeric & TensorFlowScalar>(
 ///     the outputs of that operation (both work equivalently).
 ///
 /// - Output backprops: `gradients * (features > 0)`.
-@inlinable @inline(__always)
+@inlinable
 public static func reluGrad<T: Numeric & TensorFlowScalar>(
   gradients: Tensor<T>,
   features: Tensor<T>
@@ -22428,7 +22403,7 @@ public static func reluGrad<T: Numeric & TensorFlowScalar>(
 ///   - f: The function to run remotely.
 ///
 /// - Output output: A list of return values.
-@inlinable @inline(__always)
+@inlinable
 public static func remoteCall<
     Tin: TensorArrayProtocol,
     Tout: TensorGroup,
@@ -22464,7 +22439,7 @@ public static func remoteCall<
 ///   of RemoteFusedGraphExecuteInfo which contains graph specifications.
 ///
 /// - Output outputs: Arbitrary number of tensors with arbitrary data types
-@inlinable @inline(__always)
+@inlinable
 public static func remoteFusedGraphExecute<
     Tinputs: TensorArrayProtocol,
     Toutputs: TensorGroup
@@ -22484,7 +22459,7 @@ public static func remoteFusedGraphExecute<
 ///
 /// - Parameter count: A scalar representing the number of times that `input_dataset` should
 ///   be repeated. A value of `-1` indicates that it should be repeated infinitely.
-@inlinable @inline(__always)
+@inlinable
 public static func repeatDataset(
   inputDataset: VariantHandle,
   count: Tensor<Int64>,
@@ -22515,7 +22490,7 @@ public static func repeatDataset(
 /// - Outputs:
 ///   - output_min: The computed min output.
 ///   - output_max: the computed max output.
-@inlinable @inline(__always)
+@inlinable
 public static func requantizationRange<Tinput: TensorFlowScalar>(
   _ input: Tensor<Tinput>,
   inputMin: Tensor<Float>,
@@ -22544,7 +22519,7 @@ public static func requantizationRange<Tinput: TensorFlowScalar>(
 /// - Outputs:
 ///   - output_min: The minimum value of the final output tensor
 ///   - output_max: The maximum value of the final output tensor.
-@inlinable @inline(__always)
+@inlinable
 public static func requantizationRangePerChannel<T: TensorFlowScalar>(
   _ input: Tensor<T>,
   inputMin: Tensor<Float>,
@@ -22583,7 +22558,7 @@ public static func requantizationRangePerChannel<T: TensorFlowScalar>(
 /// - Outputs:
 ///   - output_min: The requested_output_min value is copied into this output.
 ///   - output_max: The requested_output_max value is copied into this output.
-@inlinable @inline(__always)
+@inlinable
 public static func requantize<
     Tinput: TensorFlowScalar,
     OutType: TensorFlowScalar
@@ -22622,7 +22597,7 @@ public static func requantize<
 ///   - output: Output tensor.
 ///   - output_min: The minimum value of the final output tensor
 ///   - output_max: The maximum value of the final output tensor.
-@inlinable @inline(__always)
+@inlinable
 public static func requantizePerChannel<
     T: TensorFlowScalar,
     OutType: TensorFlowScalar
@@ -22644,7 +22619,7 @@ public static func requantizePerChannel<
   return op.execute(Int(1), Int(1), Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func requiresOlderGraphVersion(
 ) -> Tensor<Int32> {
   let op = TFE_Op("RequiresOlderGraphVersion")
@@ -22652,7 +22627,7 @@ public static func requiresOlderGraphVersion(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func reservedAttr(
   range: Int64
 ) {
@@ -22661,7 +22636,7 @@ public static func reservedAttr(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func reservedInput(
   _ input: Tensor<Int32>
 ) {
@@ -22730,7 +22705,7 @@ public static func reservedInput(
 /// ```
 ///
 /// - Parameter shape: Defines the shape of the output tensor.
-@inlinable @inline(__always)
+@inlinable
 public static func reshape<
     T: TensorFlowScalar,
     Tshape: BinaryInteger & TensorFlowScalar
@@ -22770,7 +22745,7 @@ public static func reshape<
 ///
 /// - Output resized_images: 4-D with shape
 ///   `[batch, new_height, new_width, channels]`.
-@inlinable @inline(__always)
+@inlinable
 public static func resizeArea<T: Numeric & TensorFlowScalar>(
   images: Tensor<T>,
   size: Tensor<Int32>,
@@ -22798,7 +22773,7 @@ public static func resizeArea<T: Numeric & TensorFlowScalar>(
 ///
 /// - Output resized_images: 4-D with shape
 ///   `[batch, new_height, new_width, channels]`.
-@inlinable @inline(__always)
+@inlinable
 public static func resizeBicubic<T: Numeric & TensorFlowScalar>(
   images: Tensor<T>,
   size: Tensor<Int32>,
@@ -22827,7 +22802,7 @@ public static func resizeBicubic<T: Numeric & TensorFlowScalar>(
 /// - Output output: 4-D with shape `[batch, orig_height, orig_width, channels]`.
 ///   Gradients with respect to the input image. Input image must have been
 ///   float or double.
-@inlinable @inline(__always)
+@inlinable
 public static func resizeBicubicGrad<T: FloatingPoint & TensorFlowScalar>(
   grads: Tensor<Float>,
   originalImage: Tensor<T>,
@@ -22857,7 +22832,7 @@ public static func resizeBicubicGrad<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// - Output resized_images: 4-D with shape
 ///   `[batch, new_height, new_width, channels]`.
-@inlinable @inline(__always)
+@inlinable
 public static func resizeBilinear<T: Numeric & TensorFlowScalar>(
   images: Tensor<T>,
   size: Tensor<Int32>,
@@ -22886,7 +22861,7 @@ public static func resizeBilinear<T: Numeric & TensorFlowScalar>(
 /// - Output output: 4-D with shape `[batch, orig_height, orig_width, channels]`.
 ///   Gradients with respect to the input image. Input image must have been
 ///   float or double.
-@inlinable @inline(__always)
+@inlinable
 public static func resizeBilinearGrad<T: FloatingPoint & TensorFlowScalar>(
   grads: Tensor<Float>,
   originalImage: Tensor<T>,
@@ -22914,7 +22889,7 @@ public static func resizeBilinearGrad<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// - Output resized_images: 4-D with shape
 ///   `[batch, new_height, new_width, channels]`.
-@inlinable @inline(__always)
+@inlinable
 public static func resizeNearestNeighbor<T: Numeric & TensorFlowScalar>(
   images: Tensor<T>,
   size: Tensor<Int32>,
@@ -22942,7 +22917,7 @@ public static func resizeNearestNeighbor<T: Numeric & TensorFlowScalar>(
 ///
 /// - Output output: 4-D with shape `[batch, orig_height, orig_width, channels]`. Gradients
 ///   with respect to the input image.
-@inlinable @inline(__always)
+@inlinable
 public static func resizeNearestNeighborGrad<T: Numeric & TensorFlowScalar>(
   grads: Tensor<T>,
   size: Tensor<Int32>,
@@ -22978,7 +22953,7 @@ public static func resizeNearestNeighborGrad<T: Numeric & TensorFlowScalar>(
 /// - Attr use_locking: If `True`, updating of the var, m, and v tensors will be protected
 ///   by a lock; otherwise the behavior is undefined, but may exhibit less
 ///   contention.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceApplyAdaMax<T: Numeric & TensorFlowScalar>(
   var_: ResourceHandle,
   m: ResourceHandle,
@@ -23024,7 +22999,7 @@ public static func resourceApplyAdaMax<T: Numeric & TensorFlowScalar>(
 ///
 /// - Attr use_locking: If True, updating of the var, accum and update_accum tensors will be protected by
 ///   a lock; otherwise the behavior is undefined, but may exhibit less contention.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceApplyAdadelta<T: Numeric & TensorFlowScalar>(
   var_: ResourceHandle,
   accum: ResourceHandle,
@@ -23062,7 +23037,7 @@ public static func resourceApplyAdadelta<T: Numeric & TensorFlowScalar>(
 /// - Attr use_locking: If `True`, updating of the var and accum tensors will be protected
 ///   by a lock; otherwise the behavior is undefined, but may exhibit less
 ///   contention.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceApplyAdagrad<T: Numeric & TensorFlowScalar>(
   var_: ResourceHandle,
   accum: ResourceHandle,
@@ -23096,7 +23071,7 @@ public static func resourceApplyAdagrad<T: Numeric & TensorFlowScalar>(
 ///
 /// - Attr use_locking: If True, updating of the var and accum tensors will be protected by
 ///   a lock; otherwise the behavior is undefined, but may exhibit less contention.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceApplyAdagradDA<T: Numeric & TensorFlowScalar>(
   var_: ResourceHandle,
   gradientAccumulator: ResourceHandle,
@@ -23146,7 +23121,7 @@ public static func resourceApplyAdagradDA<T: Numeric & TensorFlowScalar>(
 ///     by a lock; otherwise the behavior is undefined, but may exhibit less
 ///     contention.
 ///   - use_nesterov: If `True`, uses the nesterov update.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceApplyAdam<T: Numeric & TensorFlowScalar>(
   var_: ResourceHandle,
   m: ResourceHandle,
@@ -23202,7 +23177,7 @@ public static func resourceApplyAdam<T: Numeric & TensorFlowScalar>(
 /// - Attr use_locking: If `True`, updating of the var, m, and v tensors will be protected
 ///   by a lock; otherwise the behavior is undefined, but may exhibit less
 ///   contention.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceApplyAdamWithAmsgrad<T: Numeric & TensorFlowScalar>(
   var_: ResourceHandle,
   m: ResourceHandle,
@@ -23252,7 +23227,7 @@ public static func resourceApplyAdamWithAmsgrad<T: Numeric & TensorFlowScalar>(
 /// - Attr use_locking: If `True`, updating of the var and m tensors is
 ///   protected by a lock; otherwise the behavior is undefined, but may exhibit less
 ///   contention.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceApplyAddSign<T: Numeric & TensorFlowScalar>(
   var_: ResourceHandle,
   m: ResourceHandle,
@@ -23310,7 +23285,7 @@ public static func resourceApplyAddSign<T: Numeric & TensorFlowScalar>(
 /// - Attr use_locking: If `True`, updating of the var, mg, ms, and mom tensors is
 ///   protected by a lock; otherwise the behavior is undefined, but may exhibit less
 ///   contention.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceApplyCenteredRMSProp<T: Numeric & TensorFlowScalar>(
   var_: ResourceHandle,
   mg: ResourceHandle,
@@ -23359,7 +23334,7 @@ public static func resourceApplyCenteredRMSProp<T: Numeric & TensorFlowScalar>(
 /// - Attr use_locking: If `True`, updating of the var and accum tensors will be protected
 ///   by a lock; otherwise the behavior is undefined, but may exhibit less
 ///   contention.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceApplyFtrl<T: Numeric & TensorFlowScalar>(
   var_: ResourceHandle,
   accum: ResourceHandle,
@@ -23408,7 +23383,7 @@ public static func resourceApplyFtrl<T: Numeric & TensorFlowScalar>(
 /// - Attr use_locking: If `True`, updating of the var and accum tensors will be protected
 ///   by a lock; otherwise the behavior is undefined, but may exhibit less
 ///   contention.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceApplyFtrlV2<T: Numeric & TensorFlowScalar>(
   var_: ResourceHandle,
   accum: ResourceHandle,
@@ -23445,7 +23420,7 @@ public static func resourceApplyFtrlV2<T: Numeric & TensorFlowScalar>(
 ///
 /// - Attr use_locking: If `True`, the subtraction will be protected by a lock;
 ///   otherwise the behavior is undefined, but may exhibit less contention.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceApplyGradientDescent<T: Numeric & TensorFlowScalar>(
   var_: ResourceHandle,
   alpha: Tensor<T>,
@@ -23482,7 +23457,7 @@ public static func resourceApplyGradientDescent<T: Numeric & TensorFlowScalar>(
 ///   - use_nesterov: If `True`, the tensor passed to compute grad will be
 ///     var + momentum * accum, so in the end, the var you get is actually
 ///     var + momentum * accum.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceApplyKerasMomentum<T: Numeric & TensorFlowScalar>(
   var_: ResourceHandle,
   accum: ResourceHandle,
@@ -23525,7 +23500,7 @@ public static func resourceApplyKerasMomentum<T: Numeric & TensorFlowScalar>(
 ///   - use_nesterov: If `True`, the tensor passed to compute grad will be
 ///     var - lr * momentum * accum, so in the end, the var you get is actually
 ///     var - lr * momentum * accum.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceApplyMomentum<T: Numeric & TensorFlowScalar>(
   var_: ResourceHandle,
   accum: ResourceHandle,
@@ -23565,7 +23540,7 @@ public static func resourceApplyMomentum<T: Numeric & TensorFlowScalar>(
 /// - Attr use_locking: If `True`, updating of the var and m tensors is
 ///   protected by a lock; otherwise the behavior is undefined, but may exhibit less
 ///   contention.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceApplyPowerSign<T: Numeric & TensorFlowScalar>(
   var_: ResourceHandle,
   m: ResourceHandle,
@@ -23605,7 +23580,7 @@ public static func resourceApplyPowerSign<T: Numeric & TensorFlowScalar>(
 ///
 /// - Attr use_locking: If True, updating of the var and accum tensors will be protected by
 ///   a lock; otherwise the behavior is undefined, but may exhibit less contention.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceApplyProximalAdagrad<T: Numeric & TensorFlowScalar>(
   var_: ResourceHandle,
   accum: ResourceHandle,
@@ -23641,7 +23616,7 @@ public static func resourceApplyProximalAdagrad<T: Numeric & TensorFlowScalar>(
 ///
 /// - Attr use_locking: If True, the subtraction will be protected by a lock;
 ///   otherwise the behavior is undefined, but may exhibit less contention.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceApplyProximalGradientDescent<T: Numeric & TensorFlowScalar>(
   var_: ResourceHandle,
   alpha: Tensor<T>,
@@ -23686,7 +23661,7 @@ public static func resourceApplyProximalGradientDescent<T: Numeric & TensorFlowS
 /// - Attr use_locking: If `True`, updating of the var, ms, and mom tensors is protected
 ///   by a lock; otherwise the behavior is undefined, but may exhibit less
 ///   contention.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceApplyRMSProp<T: Numeric & TensorFlowScalar>(
   var_: ResourceHandle,
   ms: ResourceHandle,
@@ -23721,7 +23696,7 @@ public static func resourceApplyRMSProp<T: Numeric & TensorFlowScalar>(
 ///
 /// - Output output: A copy of the input before increment. If nothing else modifies the
 ///   input, the values produced will all be distinct.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceCountUpTo<T: BinaryInteger & TensorFlowScalar>(
   resource: ResourceHandle,
   limit: Int64
@@ -23733,7 +23708,7 @@ public static func resourceCountUpTo<T: BinaryInteger & TensorFlowScalar>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func resourceCreateOp(
   resource: ResourceHandle
 ) {
@@ -23757,7 +23732,7 @@ public static func resourceCreateOp(
 ///     # Higher rank indices
 ///     output[i, ..., j, :, ... :] = params[indices[i, ..., j], :, ..., :]
 /// ```
-@inlinable @inline(__always)
+@inlinable
 public static func resourceGather<
     Dtype: TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -23777,7 +23752,7 @@ public static func resourceGather<
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func resourceGatherNd<
     Dtype: TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -23793,7 +23768,7 @@ public static func resourceGatherNd<
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func resourceInitializedOp(
   resource: ResourceHandle
 ) -> Tensor<Bool> {
@@ -23828,7 +23803,7 @@ public static func resourceInitializedOp(
 ///   - resource: Should be from a `Variable` node.
 ///   - indices: A tensor of indices into the first dimension of `ref`.
 ///   - updates: A tensor of updated values to add to `ref`.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceScatterAdd<
     Dtype: Numeric & TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -23872,7 +23847,7 @@ public static func resourceScatterAdd<
 ///   - resource: Should be from a `Variable` node.
 ///   - indices: A tensor of indices into the first dimension of `ref`.
 ///   - updates: A tensor of updated values to add to `ref`.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceScatterDiv<
     Dtype: Numeric & TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -23916,7 +23891,7 @@ public static func resourceScatterDiv<
 ///   - resource: Should be from a `Variable` node.
 ///   - indices: A tensor of indices into the first dimension of `ref`.
 ///   - updates: A tensor of updated values to add to `ref`.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceScatterMax<
     Dtype: Numeric & TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -23960,7 +23935,7 @@ public static func resourceScatterMax<
 ///   - resource: Should be from a `Variable` node.
 ///   - indices: A tensor of indices into the first dimension of `ref`.
 ///   - updates: A tensor of updated values to add to `ref`.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceScatterMin<
     Dtype: Numeric & TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -24004,7 +23979,7 @@ public static func resourceScatterMin<
 ///   - resource: Should be from a `Variable` node.
 ///   - indices: A tensor of indices into the first dimension of `ref`.
 ///   - updates: A tensor of updated values to add to `ref`.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceScatterMul<
     Dtype: Numeric & TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -24068,7 +24043,7 @@ public static func resourceScatterMul<
 /// - Attr use_locking: An optional bool. Defaults to True. If True, the assignment will
 ///   be protected by a lock; otherwise the behavior is undefined,
 ///   but may exhibit less contention.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceScatterNdAdd<
     T: TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -24134,7 +24109,7 @@ public static func resourceScatterNdAdd<
 /// - Attr use_locking: An optional bool. Defaults to True. If True, the assignment will
 ///   be protected by a lock; otherwise the behavior is undefined,
 ///   but may exhibit less contention.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceScatterNdSub<
     T: TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -24202,7 +24177,7 @@ public static func resourceScatterNdSub<
 /// - Attr use_locking: An optional bool. Defaults to True. If True, the assignment will
 ///   be protected by a lock; otherwise the behavior is undefined,
 ///   but may exhibit less contention.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceScatterNdUpdate<
     T: TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -24248,7 +24223,7 @@ public static func resourceScatterNdUpdate<
 ///   - resource: Should be from a `Variable` node.
 ///   - indices: A tensor of indices into the first dimension of `ref`.
 ///   - updates: A tensor of updated values to add to `ref`.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceScatterSub<
     Dtype: Numeric & TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -24283,7 +24258,7 @@ public static func resourceScatterSub<
 ///   - resource: Should be from a `Variable` node.
 ///   - indices: A tensor of indices into the first dimension of `ref`.
 ///   - updates: A tensor of updated values to add to `ref`.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceScatterUpdate<
     Dtype: TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -24314,7 +24289,7 @@ public static func resourceScatterUpdate<
 ///
 /// - Attr use_locking: If True, updating of the var and accum tensors will be protected by
 ///   a lock; otherwise the behavior is undefined, but may exhibit less contention.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceSparseApplyAdadelta<
     T: Numeric & TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -24360,7 +24335,7 @@ public static func resourceSparseApplyAdadelta<
 /// - Attr use_locking: If `True`, updating of the var and accum tensors will be protected
 ///   by a lock; otherwise the behavior is undefined, but may exhibit less
 ///   contention.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceSparseApplyAdagrad<
     T: Numeric & TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -24401,7 +24376,7 @@ public static func resourceSparseApplyAdagrad<
 ///
 /// - Attr use_locking: If True, updating of the var and accum tensors will be protected by
 ///   a lock; otherwise the behavior is undefined, but may exhibit less contention.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceSparseApplyAdagradDA<
     T: Numeric & TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -24466,7 +24441,7 @@ public static func resourceSparseApplyAdagradDA<
 /// - Attr use_locking: If `True`, updating of the var, mg, ms, and mom tensors is
 ///   protected by a lock; otherwise the behavior is undefined, but may exhibit less
 ///   contention.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceSparseApplyCenteredRMSProp<
     T: Numeric & TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -24523,7 +24498,7 @@ public static func resourceSparseApplyCenteredRMSProp<
 /// - Attr use_locking: If `True`, updating of the var and accum tensors will be protected
 ///   by a lock; otherwise the behavior is undefined, but may exhibit less
 ///   contention.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceSparseApplyFtrl<
     T: Numeric & TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -24580,7 +24555,7 @@ public static func resourceSparseApplyFtrl<
 /// - Attr use_locking: If `True`, updating of the var and accum tensors will be protected
 ///   by a lock; otherwise the behavior is undefined, but may exhibit less
 ///   contention.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceSparseApplyFtrlV2<
     T: Numeric & TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -24638,7 +24613,7 @@ public static func resourceSparseApplyFtrlV2<
 ///   - use_nesterov: If `True`, the tensor passed to compute grad will be
 ///     var + momentum * accum, so in the end, the var you get is actually
 ///     var + momentum * accum.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceSparseApplyKerasMomentum<
     T: Numeric & TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -24690,7 +24665,7 @@ public static func resourceSparseApplyKerasMomentum<
 ///   - use_nesterov: If `True`, the tensor passed to compute grad will be
 ///     var - lr * momentum * accum, so in the end, the var you get is actually
 ///     var - lr * momentum * accum.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceSparseApplyMomentum<
     T: Numeric & TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -24737,7 +24712,7 @@ public static func resourceSparseApplyMomentum<
 ///
 /// - Attr use_locking: If True, updating of the var and accum tensors will be protected by
 ///   a lock; otherwise the behavior is undefined, but may exhibit less contention.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceSparseApplyProximalAdagrad<
     T: Numeric & TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -24781,7 +24756,7 @@ public static func resourceSparseApplyProximalAdagrad<
 ///
 /// - Attr use_locking: If True, the subtraction will be protected by a lock;
 ///   otherwise the behavior is undefined, but may exhibit less contention.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceSparseApplyProximalGradientDescent<
     T: Numeric & TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -24833,7 +24808,7 @@ public static func resourceSparseApplyProximalGradientDescent<
 /// - Attr use_locking: If `True`, updating of the var, ms, and mom tensors is protected
 ///   by a lock; otherwise the behavior is undefined, but may exhibit less
 ///   contention.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceSparseApplyRMSProp<
     T: Numeric & TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -24873,7 +24848,7 @@ public static func resourceSparseApplyRMSProp<
 ///
 /// NOTE this op currently does not support broadcasting and so `value`'s
 /// shape must be exactly the shape produced by the slice of `ref`.
-@inlinable @inline(__always)
+@inlinable
 public static func resourceStridedSliceAssign<
     T: TensorFlowScalar,
     Index: BinaryInteger & TensorFlowScalar
@@ -24905,7 +24880,7 @@ public static func resourceStridedSliceAssign<
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func resourceUsingOp(
   resource: ResourceHandle
 ) {
@@ -24945,7 +24920,7 @@ public static func resourceUsingOp(
 ///     `file_pattern`.
 ///
 /// - Output tensor: The restored tensor.
-@inlinable @inline(__always)
+@inlinable
 public static func restore<Dt: TensorFlowScalar>(
   filePattern: StringTensor,
   tensorName: StringTensor,
@@ -24982,7 +24957,7 @@ public static func restore<Dt: TensorFlowScalar>(
 ///     `file_pattern`. See the documentation for `Restore`.
 ///
 /// - Output tensor: The restored tensor.
-@inlinable @inline(__always)
+@inlinable
 public static func restoreSlice<Dt: TensorFlowScalar>(
   filePattern: StringTensor,
   tensorName: StringTensor,
@@ -25025,7 +25000,7 @@ public static func restoreSlice<Dt: TensorFlowScalar>(
 ///
 /// - Output tensors: shape {N}.  The restored tensors, whose shapes are read from the
 ///   checkpoint directly.
-@inlinable @inline(__always)
+@inlinable
 public static func restoreV2<Dtypes: TensorGroup>(
   prefix: StringTensor,
   tensorNames: StringTensor,
@@ -25039,7 +25014,7 @@ public static func restoreV2<Dtypes: TensorGroup>(
   return op.execute(Int(Dtypes._typeList.count))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func restrict<T: TensorFlowScalar>(
   _ a: Tensor<T>
 ) -> Tensor<T> {
@@ -25049,7 +25024,7 @@ public static func restrict<T: TensorFlowScalar>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func restrict(
   _ a: StringTensor
 ) -> StringTensor {
@@ -25070,7 +25045,7 @@ public static func restrict(
 ///   - parameters: Parameter parameters updated by the ADAM optimization algorithm.
 ///   - momenta: Parameter momenta updated by the ADAM optimization algorithm.
 ///   - velocities: Parameter velocities updated by the ADAM optimization algorithm.
-@inlinable @inline(__always)
+@inlinable
 public static func retrieveTPUEmbeddingADAMParameters(
   tableId: Int64 = -1,
   tableName: String,
@@ -25097,7 +25072,7 @@ public static func retrieveTPUEmbeddingADAMParameters(
 ///   - momenta: Parameter momenta updated by the ADAM optimization algorithm.
 ///   - velocities: Parameter velocities updated by the ADAM optimization algorithm.
 ///   - gradient_accumulators: Parameter gradient_accumulators updated by the ADAM optimization algorithm.
-@inlinable @inline(__always)
+@inlinable
 public static func retrieveTPUEmbeddingADAMParametersGradAccumDebug(
   tableId: Int64 = -1,
   tableName: String,
@@ -25123,7 +25098,7 @@ public static func retrieveTPUEmbeddingADAMParametersGradAccumDebug(
 ///   - parameters: Parameter parameters updated by the Adadelta optimization algorithm.
 ///   - accumulators: Parameter accumulators updated by the Adadelta optimization algorithm.
 ///   - updates: Parameter updates updated by the Adadelta optimization algorithm.
-@inlinable @inline(__always)
+@inlinable
 public static func retrieveTPUEmbeddingAdadeltaParameters(
   tableId: Int64 = -1,
   tableName: String,
@@ -25150,7 +25125,7 @@ public static func retrieveTPUEmbeddingAdadeltaParameters(
 ///   - accumulators: Parameter accumulators updated by the Adadelta optimization algorithm.
 ///   - updates: Parameter updates updated by the Adadelta optimization algorithm.
 ///   - gradient_accumulators: Parameter gradient_accumulators updated by the Adadelta optimization algorithm.
-@inlinable @inline(__always)
+@inlinable
 public static func retrieveTPUEmbeddingAdadeltaParametersGradAccumDebug(
   tableId: Int64 = -1,
   tableName: String,
@@ -25175,7 +25150,7 @@ public static func retrieveTPUEmbeddingAdadeltaParametersGradAccumDebug(
 /// - Outputs:
 ///   - parameters: Parameter parameters updated by the Adagrad optimization algorithm.
 ///   - accumulators: Parameter accumulators updated by the Adagrad optimization algorithm.
-@inlinable @inline(__always)
+@inlinable
 public static func retrieveTPUEmbeddingAdagradParameters(
   tableId: Int64 = -1,
   tableName: String,
@@ -25201,7 +25176,7 @@ public static func retrieveTPUEmbeddingAdagradParameters(
 ///   - parameters: Parameter parameters updated by the Adagrad optimization algorithm.
 ///   - accumulators: Parameter accumulators updated by the Adagrad optimization algorithm.
 ///   - gradient_accumulators: Parameter gradient_accumulators updated by the Adagrad optimization algorithm.
-@inlinable @inline(__always)
+@inlinable
 public static func retrieveTPUEmbeddingAdagradParametersGradAccumDebug(
   tableId: Int64 = -1,
   tableName: String,
@@ -25228,7 +25203,7 @@ public static func retrieveTPUEmbeddingAdagradParametersGradAccumDebug(
 ///   - ms: Parameter ms updated by the centered RMSProp optimization algorithm.
 ///   - mom: Parameter mom updated by the centered RMSProp optimization algorithm.
 ///   - mg: Parameter mg updated by the centered RMSProp optimization algorithm.
-@inlinable @inline(__always)
+@inlinable
 public static func retrieveTPUEmbeddingCenteredRMSPropParameters(
   tableId: Int64 = -1,
   tableName: String,
@@ -25254,7 +25229,7 @@ public static func retrieveTPUEmbeddingCenteredRMSPropParameters(
 ///   - parameters: Parameter parameters updated by the FTRL optimization algorithm.
 ///   - accumulators: Parameter accumulators updated by the FTRL optimization algorithm.
 ///   - linears: Parameter linears updated by the FTRL optimization algorithm.
-@inlinable @inline(__always)
+@inlinable
 public static func retrieveTPUEmbeddingFTRLParameters(
   tableId: Int64 = -1,
   tableName: String,
@@ -25281,7 +25256,7 @@ public static func retrieveTPUEmbeddingFTRLParameters(
 ///   - accumulators: Parameter accumulators updated by the FTRL optimization algorithm.
 ///   - linears: Parameter linears updated by the FTRL optimization algorithm.
 ///   - gradient_accumulators: Parameter gradient_accumulators updated by the FTRL optimization algorithm.
-@inlinable @inline(__always)
+@inlinable
 public static func retrieveTPUEmbeddingFTRLParametersGradAccumDebug(
   tableId: Int64 = -1,
   tableName: String,
@@ -25308,7 +25283,7 @@ public static func retrieveTPUEmbeddingFTRLParametersGradAccumDebug(
 ///   - accumulators: Parameter accumulators updated by the MDL Adagrad Light optimization algorithm.
 ///   - weights: Parameter weights updated by the MDL Adagrad Light optimization algorithm.
 ///   - benefits: Parameter benefits updated by the MDL Adagrad Light optimization algorithm.
-@inlinable @inline(__always)
+@inlinable
 public static func retrieveTPUEmbeddingMDLAdagradLightParameters(
   tableId: Int64 = -1,
   tableName: String,
@@ -25333,7 +25308,7 @@ public static func retrieveTPUEmbeddingMDLAdagradLightParameters(
 /// - Outputs:
 ///   - parameters: Parameter parameters updated by the Momentum optimization algorithm.
 ///   - momenta: Parameter momenta updated by the Momentum optimization algorithm.
-@inlinable @inline(__always)
+@inlinable
 public static func retrieveTPUEmbeddingMomentumParameters(
   tableId: Int64 = -1,
   tableName: String,
@@ -25359,7 +25334,7 @@ public static func retrieveTPUEmbeddingMomentumParameters(
 ///   - parameters: Parameter parameters updated by the Momentum optimization algorithm.
 ///   - momenta: Parameter momenta updated by the Momentum optimization algorithm.
 ///   - gradient_accumulators: Parameter gradient_accumulators updated by the Momentum optimization algorithm.
-@inlinable @inline(__always)
+@inlinable
 public static func retrieveTPUEmbeddingMomentumParametersGradAccumDebug(
   tableId: Int64 = -1,
   tableName: String,
@@ -25384,7 +25359,7 @@ public static func retrieveTPUEmbeddingMomentumParametersGradAccumDebug(
 /// - Outputs:
 ///   - parameters: Parameter parameters updated by the proximal Adagrad optimization algorithm.
 ///   - accumulators: Parameter accumulators updated by the proximal Adagrad optimization algorithm.
-@inlinable @inline(__always)
+@inlinable
 public static func retrieveTPUEmbeddingProximalAdagradParameters(
   tableId: Int64 = -1,
   tableName: String,
@@ -25410,7 +25385,7 @@ public static func retrieveTPUEmbeddingProximalAdagradParameters(
 ///   - parameters: Parameter parameters updated by the proximal Adagrad optimization algorithm.
 ///   - accumulators: Parameter accumulators updated by the proximal Adagrad optimization algorithm.
 ///   - gradient_accumulators: Parameter gradient_accumulators updated by the proximal Adagrad optimization algorithm.
-@inlinable @inline(__always)
+@inlinable
 public static func retrieveTPUEmbeddingProximalAdagradParametersGradAccumDebug(
   tableId: Int64 = -1,
   tableName: String,
@@ -25436,7 +25411,7 @@ public static func retrieveTPUEmbeddingProximalAdagradParametersGradAccumDebug(
 ///   - parameters: Parameter parameters updated by the RMSProp optimization algorithm.
 ///   - ms: Parameter ms updated by the RMSProp optimization algorithm.
 ///   - mom: Parameter mom updated by the RMSProp optimization algorithm.
-@inlinable @inline(__always)
+@inlinable
 public static func retrieveTPUEmbeddingRMSPropParameters(
   tableId: Int64 = -1,
   tableName: String,
@@ -25463,7 +25438,7 @@ public static func retrieveTPUEmbeddingRMSPropParameters(
 ///   - ms: Parameter ms updated by the RMSProp optimization algorithm.
 ///   - mom: Parameter mom updated by the RMSProp optimization algorithm.
 ///   - gradient_accumulators: Parameter gradient_accumulators updated by the RMSProp optimization algorithm.
-@inlinable @inline(__always)
+@inlinable
 public static func retrieveTPUEmbeddingRMSPropParametersGradAccumDebug(
   tableId: Int64 = -1,
   tableName: String,
@@ -25486,7 +25461,7 @@ public static func retrieveTPUEmbeddingRMSPropParametersGradAccumDebug(
 /// used to retrieve updated parameters before saving a checkpoint.
 ///
 /// - Output parameters: Parameter parameters updated by the stochastic gradient descent optimization algorithm.
-@inlinable @inline(__always)
+@inlinable
 public static func retrieveTPUEmbeddingStochasticGradientDescentParameters(
   tableId: Int64 = -1,
   tableName: String,
@@ -25553,7 +25528,7 @@ public static func retrieveTPUEmbeddingStochasticGradientDescentParameters(
 ///   - dims: 1-D. The dimensions to reverse.
 ///
 /// - Output output: The same shape as `tensor`.
-@inlinable @inline(__always)
+@inlinable
 public static func reverse<T: TensorFlowScalar>(
   _ tensor: Tensor<T>,
   dims: Tensor<Bool>
@@ -25617,7 +25592,7 @@ public static func reverse<T: TensorFlowScalar>(
 ///   - dims: 1-D. The dimensions to reverse.
 ///
 /// - Output output: The same shape as `tensor`.
-@inlinable @inline(__always)
+@inlinable
 public static func reverse(
   _ tensor: StringTensor,
   dims: Tensor<Bool>
@@ -25696,7 +25671,7 @@ public static func reverse(
 ///   - batch_dim: The dimension along which reversal is performed.
 ///
 /// - Output output: The partially reversed input. It has the same shape as `input`.
-@inlinable @inline(__always)
+@inlinable
 public static func reverseSequence<
     T: TensorFlowScalar,
     Tlen: BinaryInteger & TensorFlowScalar
@@ -25771,7 +25746,7 @@ public static func reverseSequence<
 ///     `[-rank(tensor), rank(tensor))`.
 ///
 /// - Output output: The same shape as `tensor`.
-@inlinable @inline(__always)
+@inlinable
 public static func reverseV2<
     Tidx: BinaryInteger & TensorFlowScalar,
     T: TensorFlowScalar
@@ -25842,7 +25817,7 @@ public static func reverseV2<
 ///     `[-rank(tensor), rank(tensor))`.
 ///
 /// - Output output: The same shape as `tensor`.
-@inlinable @inline(__always)
+@inlinable
 public static func reverseV2<Tidx: BinaryInteger & TensorFlowScalar>(
   _ tensor: StringTensor,
   axis: Tensor<Tidx>
@@ -25862,7 +25837,7 @@ public static func reverseV2<Tidx: BinaryInteger & TensorFlowScalar>(
 ///
 /// If `y` is negative, or greater than or equal to than the width of `x` in bits
 /// the result is implementation defined.
-@inlinable @inline(__always)
+@inlinable
 public static func rightShift<T: BinaryInteger & TensorFlowScalar>(
   _ x: Tensor<T>,
   _ y: Tensor<T>
@@ -25885,7 +25860,7 @@ public static func rightShift<T: BinaryInteger & TensorFlowScalar>(
 /// rint(0.5000001) ==> 1.0
 /// rint([-1.7, -1.5, -0.2, 0.2, 1.5, 1.7, 2.0]) ==> [-2., -2., -0., 0., 2., 2., 2.]
 /// ```
-@inlinable @inline(__always)
+@inlinable
 public static func rint<T: FloatingPoint & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -25931,7 +25906,7 @@ public static func rint<T: FloatingPoint & TensorFlowScalar>(
 /// - Output output: Has the same shape and size as the input. The elements are shifted
 ///   positively (towards larger indices) by the offsets of `shift` along the
 ///   dimensions of `axis`.
-@inlinable @inline(__always)
+@inlinable
 public static func roll<
     T: TensorFlowScalar,
     Tshift: BinaryInteger & TensorFlowScalar,
@@ -25955,7 +25930,7 @@ public static func roll<
 ///
 /// Rounds half to even.  Also known as bankers rounding. If you want to round
 /// according to the current system rounding mode use std::cint.
-@inlinable @inline(__always)
+@inlinable
 public static func round<T: Numeric & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -26037,7 +26012,7 @@ public static func round<T: Numeric & TensorFlowScalar>(
 ///     the RPC takes longer than `timeout_in_ms`.
 ///
 /// - Output response: Same shape as `request`. Serialized proto strings: the rpc responses.
-@inlinable @inline(__always)
+@inlinable
 public static func rpc(
   address: StringTensor,
   method: StringTensor,
@@ -26059,7 +26034,7 @@ public static func rpc(
 /// Computes reciprocal of square root of x element-wise.
 ///
 /// I.e., \\(y = 1 / \sqrt{x}\\).
-@inlinable @inline(__always)
+@inlinable
 public static func rsqrt<T: FloatingPoint & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -26073,7 +26048,7 @@ public static func rsqrt<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// Specifically, `grad = dy * -0.5 * y^3`, where `y = rsqrt(x)`, and `dy`
 /// is the corresponding input gradient.
-@inlinable @inline(__always)
+@inlinable
 public static func rsqrtGrad<T: FloatingPoint & TensorFlowScalar>(
   _ y: Tensor<T>,
   dy: Tensor<T>
@@ -26158,7 +26133,7 @@ public static func rsqrtGrad<T: FloatingPoint & TensorFlowScalar>(
 ///     `tf.slice`.
 ///   - bboxes: 3-D with shape `[1, 1, 4]` containing the distorted bounding box.
 ///     Provide as input to `tf.image.draw_bounding_boxes`.
-@inlinable @inline(__always)
+@inlinable
 public static func sampleDistortedBoundingBox<T: BinaryInteger & TensorFlowScalar>(
   imageSize: Tensor<T>,
   boundingBoxes: Tensor<Float>,
@@ -26257,7 +26232,7 @@ public static func sampleDistortedBoundingBox<T: BinaryInteger & TensorFlowScala
 ///     `tf.slice`.
 ///   - bboxes: 3-D with shape `[1, 1, 4]` containing the distorted bounding box.
 ///     Provide as input to `tf.image.draw_bounding_boxes`.
-@inlinable @inline(__always)
+@inlinable
 public static func sampleDistortedBoundingBoxV2<T: BinaryInteger & TensorFlowScalar>(
   imageSize: Tensor<T>,
   boundingBoxes: Tensor<Float>,
@@ -26290,7 +26265,7 @@ public static func sampleDistortedBoundingBoxV2<T: BinaryInteger & TensorFlowSca
 ///     that should be taken.
 ///   - seed: A scalar representing seed of random number generator.
 ///   - seed2: A scalar representing seed2 of random number generator.
-@inlinable @inline(__always)
+@inlinable
 public static func samplingDataset(
   inputDataset: VariantHandle,
   rate: Tensor<Float>,
@@ -26321,7 +26296,7 @@ public static func samplingDataset(
 ///     the tensor.
 ///   - tensor_names: Shape `[N]`. The names of the tensors to be saved.
 ///   - data: `N` tensors to save.
-@inlinable @inline(__always)
+@inlinable
 public static func save<T: TensorArrayProtocol>(
   filename: StringTensor,
   tensorNames: StringTensor,
@@ -26366,7 +26341,7 @@ public static func save<T: TensorArrayProtocol>(
 ///   - shapes_and_slices: Shape `[N]`.  The shapes and slice specifications to use when
 ///     saving the tensors.
 ///   - data: `N` tensors to save.
-@inlinable @inline(__always)
+@inlinable
 public static func saveSlices<T: TensorArrayProtocol>(
   filename: StringTensor,
   tensorNames: StringTensor,
@@ -26395,7 +26370,7 @@ public static func saveSlices<T: TensorArrayProtocol>(
 ///   - shape_and_slices: shape {N}.  The slice specs of the tensors to be saved.
 ///     Empty strings indicate that they are non-partitioned tensors.
 ///   - tensors: `N` tensors to save.
-@inlinable @inline(__always)
+@inlinable
 public static func saveV2<Dtypes: TensorArrayProtocol>(
   prefix: StringTensor,
   tensorNames: StringTensor,
@@ -26421,7 +26396,7 @@ public static func saveV2<Dtypes: TensorArrayProtocol>(
 ///   - values: Same shape as `tags.  Values for the summary.
 ///
 /// - Output summary: Scalar.  Serialized `Summary` protocol buffer.
-@inlinable @inline(__always)
+@inlinable
 public static func scalarSummary<T: Numeric & TensorFlowScalar>(
   tags: StringTensor,
   _ values: Tensor<T>
@@ -26433,7 +26408,7 @@ public static func scalarSummary<T: Numeric & TensorFlowScalar>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func scaleAndTranslate<T: Numeric & TensorFlowScalar>(
   images: Tensor<T>,
   size: Tensor<Int32>,
@@ -26453,7 +26428,7 @@ public static func scaleAndTranslate<T: Numeric & TensorFlowScalar>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func scaleAndTranslateGrad<T: FloatingPoint & TensorFlowScalar>(
   grads: Tensor<T>,
   originalImage: Tensor<T>,
@@ -26565,7 +26540,7 @@ public static func scaleAndTranslateGrad<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// - Output output: A new tensor with the given shape and updates applied according
 ///   to the indices.
-@inlinable @inline(__always)
+@inlinable
 public static func scatterNd<
     T: TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -26628,7 +26603,7 @@ public static func scatterNd<
 ///
 /// - Output output: A `Tensor` with the same shape as `input`, containing values of `input`
 ///   updated with `updates`.
-@inlinable @inline(__always)
+@inlinable
 public static func scatterNdNonAliasingAdd<
     T: TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -26652,7 +26627,7 @@ public static func scatterNdNonAliasingAdd<
 ///
 /// - Output output: a (N,2) shaped matrix where N is the number of elements in the input
 ///   vector. Each row contains the low and high parts of the fingerprint.
-@inlinable @inline(__always)
+@inlinable
 public static func sdcaFprint(
   _ input: StringTensor
 ) -> Tensor<Int64> {
@@ -26720,7 +26695,7 @@ public static func sdcaFprint(
 ///     weights associated with a sparse feature group.
 ///   - out_delta_dense_weights: a list of vectors where the values are the delta
 ///     weights associated with a dense feature group.
-@inlinable @inline(__always)
+@inlinable
 public static func sdcaOptimizer(
   sparseExampleIndices: [Tensor<Int64>],
   sparseFeatureIndices: [Tensor<Int64>],
@@ -26821,7 +26796,7 @@ public static func sdcaOptimizer(
 ///     weights associated with a sparse feature group.
 ///   - out_delta_dense_weights: a list of vectors where the values are the delta
 ///     weights associated with a dense feature group.
-@inlinable @inline(__always)
+@inlinable
 public static func sdcaOptimizerV2(
   sparseExampleIndices: [Tensor<Int64>],
   sparseFeatureIndices: [Tensor<Int64>],
@@ -26894,7 +26869,7 @@ public static func sdcaOptimizerV2(
 ///
 /// - Output output: Has same shape as data, except for dimension 0 which
 ///   has size `k`, the number of segments.
-@inlinable @inline(__always)
+@inlinable
 public static func segmentMax<
     T: Numeric & TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -26942,7 +26917,7 @@ public static func segmentMax<
 ///
 /// - Output output: Has same shape as data, except for dimension 0 which
 ///   has size `k`, the number of segments.
-@inlinable @inline(__always)
+@inlinable
 public static func segmentMean<
     T: Numeric & TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -26988,7 +26963,7 @@ public static func segmentMean<
 ///
 /// - Output output: Has same shape as data, except for dimension 0 which
 ///   has size `k`, the number of segments.
-@inlinable @inline(__always)
+@inlinable
 public static func segmentMin<
     T: Numeric & TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -27035,7 +27010,7 @@ public static func segmentMin<
 ///
 /// - Output output: Has same shape as data, except for dimension 0 which
 ///   has size `k`, the number of segments.
-@inlinable @inline(__always)
+@inlinable
 public static func segmentProd<
     T: Numeric & TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -27082,7 +27057,7 @@ public static func segmentProd<
 ///
 /// - Output output: Has same shape as data, except for dimension 0 which
 ///   has size `k`, the number of segments.
-@inlinable @inline(__always)
+@inlinable
 public static func segmentSum<
     T: Numeric & TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -27146,7 +27121,7 @@ public static func segmentSum<
 ///   - e: = A `Tensor` with the same type and shape as `x`.
 ///
 /// - Output output: = A `Tensor` with the same type and shape as `x` and `y`.
-@inlinable @inline(__always)
+@inlinable
 public static func select<T: TensorFlowScalar>(
   condition: Tensor<Bool>,
   t: Tensor<T>,
@@ -27173,7 +27148,7 @@ public static func select<T: TensorFlowScalar>(
 /// - Parameter input: Shape is `[..., M, M]`.
 ///
 /// - Output output: Shape is `[..., M+1, M]`.
-@inlinable @inline(__always)
+@inlinable
 public static func selfAdjointEig<T: FloatingPoint & TensorFlowScalar>(
   _ input: Tensor<T>
 ) -> Tensor<T> {
@@ -27205,7 +27180,7 @@ public static func selfAdjointEig<T: FloatingPoint & TensorFlowScalar>(
 /// - Outputs:
 ///   - e: Eigenvalues. Shape is `[N]`.
 ///   - v: Eigenvectors. Shape is `[N, N]`.
-@inlinable @inline(__always)
+@inlinable
 public static func selfAdjointEigV2<T: FloatingPoint & TensorFlowScalar>(
   _ input: Tensor<T>,
   computeV: Bool = true
@@ -27226,7 +27201,7 @@ public static func selfAdjointEigV2<T: FloatingPoint & TensorFlowScalar>(
 /// For correct dropout, use `tf.contrib.nn.alpha_dropout`.
 ///
 /// See [Self-Normalizing Neural Networks](https://arxiv.org/abs/1706.02515)
-@inlinable @inline(__always)
+@inlinable
 public static func selu<T: FloatingPoint & TensorFlowScalar>(
   features: Tensor<T>
 ) -> Tensor<T> {
@@ -27244,7 +27219,7 @@ public static func selu<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// - Output backprops: The gradients: `gradients * (outputs + scale * alpha)`
 ///   if outputs < 0, `scale * gradients` otherwise.
-@inlinable @inline(__always)
+@inlinable
 public static func seluGrad<T: FloatingPoint & TensorFlowScalar>(
   gradients: Tensor<T>,
   outputs: Tensor<T>
@@ -27273,7 +27248,7 @@ public static func seluGrad<T: FloatingPoint & TensorFlowScalar>(
 ///     this list should be empty.
 ///
 /// - Attr config: Serialized TPUEmbeddingConfiguration proto.
-@inlinable @inline(__always)
+@inlinable
 public static func sendTPUEmbeddingGradients(
   inputs: [Tensor<Float>],
   learningRates: [Tensor<Float>],
@@ -27294,7 +27269,7 @@ public static func sendTPUEmbeddingGradients(
 ///
 /// - Output serialized: A variant tensor storing the state of the iterator contained in the
 ///   resource.
-@inlinable @inline(__always)
+@inlinable
 public static func serializeIterator(
   resourceHandle: ResourceHandle
 ) -> VariantHandle {
@@ -27320,7 +27295,7 @@ public static func serializeIterator(
 ///
 /// - Attr out_type: The `dtype` to use for serialization; the supported types are `string`
 ///   (default) and `variant`.
-@inlinable @inline(__always)
+@inlinable
 public static func serializeManySparse<
     T: TensorFlowScalar,
     OutType: TensorFlowScalar
@@ -27355,7 +27330,7 @@ public static func serializeManySparse<
 ///
 /// - Attr out_type: The `dtype` to use for serialization; the supported types are `string`
 ///   (default) and `variant`.
-@inlinable @inline(__always)
+@inlinable
 public static func serializeManySparse<T: TensorFlowScalar>(
   sparseIndices: Tensor<Int64>,
   sparseValues: Tensor<T>,
@@ -27379,7 +27354,7 @@ public static func serializeManySparse<T: TensorFlowScalar>(
 ///
 /// - Attr out_type: The `dtype` to use for serialization; the supported types are `string`
 ///   (default) and `variant`.
-@inlinable @inline(__always)
+@inlinable
 public static func serializeSparse<
     T: TensorFlowScalar,
     OutType: TensorFlowScalar
@@ -27406,7 +27381,7 @@ public static func serializeSparse<
 ///
 /// - Attr out_type: The `dtype` to use for serialization; the supported types are `string`
 ///   (default) and `variant`.
-@inlinable @inline(__always)
+@inlinable
 public static func serializeSparse<T: TensorFlowScalar>(
   sparseIndices: Tensor<Int64>,
   sparseValues: Tensor<T>,
@@ -27428,7 +27403,7 @@ public static func serializeSparse<T: TensorFlowScalar>(
 /// - Attr T: The type of the input tensor.
 ///
 /// - Output serialized: A serialized TensorProto proto of the input tensor.
-@inlinable @inline(__always)
+@inlinable
 public static func serializeTensor<T: TensorFlowScalar>(
   _ tensor: Tensor<T>
 ) -> StringTensor {
@@ -27455,7 +27430,7 @@ public static func serializeTensor<T: TensorFlowScalar>(
 /// - Output size: For `set` ranked `n`, this is a `Tensor` with rank `n-1`, and the same 1st
 ///   `n-1` dimensions as `set`. Each value is the number of unique elements in
 ///   the corresponding `[0...n-1]` dimension of `set`.
-@inlinable @inline(__always)
+@inlinable
 public static func setSize<T: BinaryInteger & TensorFlowScalar>(
   setIndices: Tensor<Int64>,
   setValues: Tensor<T>,
@@ -27488,7 +27463,7 @@ public static func setSize<T: BinaryInteger & TensorFlowScalar>(
 /// - Output size: For `set` ranked `n`, this is a `Tensor` with rank `n-1`, and the same 1st
 ///   `n-1` dimensions as `set`. Each value is the number of unique elements in
 ///   the corresponding `[0...n-1]` dimension of `set`.
-@inlinable @inline(__always)
+@inlinable
 public static func setSize(
   setIndices: Tensor<Int64>,
   setValues: StringTensor,
@@ -27514,7 +27489,7 @@ public static func setSize(
 /// # 't' is [[[1, 1, 1], [2, 2, 2]], [[3, 3, 3], [4, 4, 4]]]
 /// shape(t) ==> [2, 2, 3]
 /// ```
-@inlinable @inline(__always)
+@inlinable
 public static func shape<
     T: TensorFlowScalar,
     OutType: BinaryInteger & TensorFlowScalar
@@ -27531,7 +27506,7 @@ public static func shape<
 /// Returns shape of tensors.
 ///
 /// This operation returns N 1-D integer tensors representing shape of `input[i]s`.
-@inlinable @inline(__always)
+@inlinable
 public static func shapeN<
     T: TensorFlowScalar,
     OutType: BinaryInteger & TensorFlowScalar
@@ -27551,7 +27526,7 @@ public static func shapeN<
 /// - Parameters:
 ///   - num_shards: An integer representing the number of shards operating in parallel.
 ///   - index: An integer representing the current worker index.
-@inlinable @inline(__always)
+@inlinable
 public static func shardDataset(
   inputDataset: VariantHandle,
   numShards: Tensor<Int64>,
@@ -27571,7 +27546,7 @@ public static func shardDataset(
 /// Generate a sharded filename. The filename is printf formatted as
 ///
 ///    %s-%05d-of-%05d, basename, shard, num_shards.
-@inlinable @inline(__always)
+@inlinable
 public static func shardedFilename(
   basename: StringTensor,
   shard: Tensor<Int32>,
@@ -27585,7 +27560,7 @@ public static func shardedFilename(
 }
 
 /// Generate a glob pattern matching all sharded file names.
-@inlinable @inline(__always)
+@inlinable
 public static func shardedFilespec(
   basename: StringTensor,
   numShards: Tensor<Int32>
@@ -27610,7 +27585,7 @@ public static func shardedFilespec(
 ///   - seed2: A second scalar seed to avoid seed collision.
 ///   - count: A scalar representing the number of times the underlying dataset
 ///     should be repeated. The default is `-1`, which results in infinite repetition.
-@inlinable @inline(__always)
+@inlinable
 public static func shuffleAndRepeatDataset(
   inputDataset: VariantHandle,
   bufferSize: Tensor<Int64>,
@@ -27647,7 +27622,7 @@ public static func shuffleAndRepeatDataset(
 ///   `seed` and `seed2` inputs. If false, each iterator will be given the same
 ///   seed, and repeated iteration over this dataset will yield the exact same
 ///   sequence of results.
-@inlinable @inline(__always)
+@inlinable
 public static func shuffleDataset(
   inputDataset: VariantHandle,
   bufferSize: Tensor<Int64>,
@@ -27671,7 +27646,7 @@ public static func shuffleDataset(
 /// Shuts down a running distributed TPU system.
 ///
 /// The op returns an error if no system is running.
-@inlinable @inline(__always)
+@inlinable
 public static func shutdownDistributedTPU(
 ) {
   let op = TFE_Op("ShutdownDistributedTPU")
@@ -27682,7 +27657,7 @@ public static func shutdownDistributedTPU(
 /// Computes sigmoid of `x` element-wise.
 ///
 /// Specifically, `y = 1 / (1 + exp(-x))`.
-@inlinable @inline(__always)
+@inlinable
 public static func sigmoid<T: FloatingPoint & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -27696,7 +27671,7 @@ public static func sigmoid<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// Specifically, `grad = dy * y * (1 - y)`, where `y = sigmoid(x)`, and
 /// `dy` is the corresponding input gradient.
-@inlinable @inline(__always)
+@inlinable
 public static func sigmoidGrad<T: FloatingPoint & TensorFlowScalar>(
   _ y: Tensor<T>,
   dy: Tensor<T>
@@ -27713,7 +27688,7 @@ public static func sigmoidGrad<T: FloatingPoint & TensorFlowScalar>(
 /// `y = sign(x) = -1` if `x < 0`; 0 if `x == 0`; 1 if `x > 0`.
 ///
 /// For complex numbers, `y = sign(x) = x / |x|` if `x != 0`, otherwise `y = 0`.
-@inlinable @inline(__always)
+@inlinable
 public static func sign<T: Numeric & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -27723,7 +27698,7 @@ public static func sign<T: Numeric & TensorFlowScalar>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func simple(
   _ a: Tensor<Int32>
 ) -> Tensor<Float> {
@@ -27732,7 +27707,7 @@ public static func simple(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func simpleStruct(
   nA: Int64
 ) -> [Tensor<Int32>] {
@@ -27742,7 +27717,7 @@ public static func simpleStruct(
 }
 
 /// Computes sin of x element-wise.
-@inlinable @inline(__always)
+@inlinable
 public static func sin<T: FloatingPoint & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -27753,7 +27728,7 @@ public static func sin<T: FloatingPoint & TensorFlowScalar>(
 }
 
 /// Computes hyperbolic sine of x element-wise.
-@inlinable @inline(__always)
+@inlinable
 public static func sinh<T: FloatingPoint & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -27774,7 +27749,7 @@ public static func sinh<T: FloatingPoint & TensorFlowScalar>(
 /// # 't' is [[[1, 1,, 1], [2, 2, 2]], [[3, 3, 3], [4, 4, 4]]]]
 /// size(t) ==> 12
 /// ```
-@inlinable @inline(__always)
+@inlinable
 public static func size<
     T: TensorFlowScalar,
     OutType: BinaryInteger & TensorFlowScalar
@@ -27792,7 +27767,7 @@ public static func size<
 ///
 /// - Parameter count: A scalar representing the number of elements from the `input_dataset`
 ///   that should be skipped.  If count is -1, skips everything.
-@inlinable @inline(__always)
+@inlinable
 public static func skipDataset(
   inputDataset: VariantHandle,
   count: Tensor<Int64>,
@@ -27826,7 +27801,7 @@ public static func skipDataset(
 ///   - total_words_processed: The total number of words processed so far.
 ///   - examples: A vector of word ids.
 ///   - labels: A vector of word ids.
-@inlinable @inline(__always)
+@inlinable
 public static func skipgram(
   filename: String,
   batchSize: Int64,
@@ -27859,7 +27834,7 @@ public static func skipgram(
 ///     of 'input' to slice. If size[i] is -1, all remaining elements in dimension
 ///     i are included in the slice (i.e. this is equivalent to setting
 ///     size[i] = input.dim_size(i) - begin[i]).
-@inlinable @inline(__always)
+@inlinable
 public static func slice<
     T: TensorFlowScalar,
     Index: BinaryInteger & TensorFlowScalar
@@ -27878,7 +27853,7 @@ public static func slice<
 }
 
 /// Returns a copy of the input tensor.
-@inlinable @inline(__always)
+@inlinable
 public static func snapshot<T: TensorFlowScalar>(
   _ input: Tensor<T>
 ) -> Tensor<T> {
@@ -27897,7 +27872,7 @@ public static func snapshot<T: TensorFlowScalar>(
 /// - Parameter logits: 2-D with shape `[batch_size, num_classes]`.
 ///
 /// - Output softmax: Same shape as `logits`.
-@inlinable @inline(__always)
+@inlinable
 public static func softmax<T: FloatingPoint & TensorFlowScalar>(
   logits: Tensor<T>
 ) -> Tensor<T> {
@@ -27920,7 +27895,7 @@ public static func softmax<T: FloatingPoint & TensorFlowScalar>(
 /// - Outputs:
 ///   - loss: Per example loss (batch_size vector).
 ///   - backprop: backpropagated gradients (batch_size x num_classes matrix).
-@inlinable @inline(__always)
+@inlinable
 public static func softmaxCrossEntropyWithLogits<T: FloatingPoint & TensorFlowScalar>(
   features: Tensor<T>,
   labels: Tensor<T>
@@ -27933,7 +27908,7 @@ public static func softmaxCrossEntropyWithLogits<T: FloatingPoint & TensorFlowSc
 }
 
 /// Computes softplus: `log(exp(features) + 1)`.
-@inlinable @inline(__always)
+@inlinable
 public static func softplus<T: FloatingPoint & TensorFlowScalar>(
   features: Tensor<T>
 ) -> Tensor<T> {
@@ -27950,7 +27925,7 @@ public static func softplus<T: FloatingPoint & TensorFlowScalar>(
 ///   - features: The features passed as input to the corresponding softplus operation.
 ///
 /// - Output backprops: The gradients: `gradients / (1 + exp(-features))`.
-@inlinable @inline(__always)
+@inlinable
 public static func softplusGrad<T: FloatingPoint & TensorFlowScalar>(
   gradients: Tensor<T>,
   features: Tensor<T>
@@ -27963,7 +27938,7 @@ public static func softplusGrad<T: FloatingPoint & TensorFlowScalar>(
 }
 
 /// Computes softsign: `features / (abs(features) + 1)`.
-@inlinable @inline(__always)
+@inlinable
 public static func softsign<T: FloatingPoint & TensorFlowScalar>(
   features: Tensor<T>
 ) -> Tensor<T> {
@@ -27980,7 +27955,7 @@ public static func softsign<T: FloatingPoint & TensorFlowScalar>(
 ///   - features: The features passed as input to the corresponding softsign operation.
 ///
 /// - Output backprops: The gradients: `gradients / (1 + abs(features)) ** 2`.
-@inlinable @inline(__always)
+@inlinable
 public static func softsignGrad<T: FloatingPoint & TensorFlowScalar>(
   gradients: Tensor<T>,
   features: Tensor<T>
@@ -28089,7 +28064,7 @@ public static func softsignGrad<T: FloatingPoint & TensorFlowScalar>(
 ///
 ///     Among others, this operation is useful for reducing atrous convolution into
 ///     regular convolution.
-@inlinable @inline(__always)
+@inlinable
 public static func spaceToBatch<
     T: TensorFlowScalar,
     Tpaddings: BinaryInteger & TensorFlowScalar
@@ -28230,7 +28205,7 @@ public static func spaceToBatch<
 ///
 ///     Among others, this operation is useful for reducing atrous convolution into
 ///     regular convolution.
-@inlinable @inline(__always)
+@inlinable
 public static func spaceToBatchND<
     T: TensorFlowScalar,
     TblockShape: BinaryInteger & TensorFlowScalar,
@@ -28337,7 +28312,7 @@ public static func spaceToBatchND<
 /// ```
 ///
 /// - Attr block_size: The size of the spatial block.
-@inlinable @inline(__always)
+@inlinable
 public static func spaceToDepth<T: TensorFlowScalar>(
   _ input: Tensor<T>,
   blockSize: Int64,
@@ -28376,7 +28351,7 @@ public static func spaceToDepth<T: TensorFlowScalar>(
 ///   - b_shape: 1-D.  The `shape` of the second `SparseTensor`, size `[ndims]` Vector.
 ///   - thresh: 0-D.  The magnitude threshold that determines if an output value/index
 ///     pair takes space.
-@inlinable @inline(__always)
+@inlinable
 public static func sparseAdd<
     T: Numeric & TensorFlowScalar,
     Treal: Numeric & TensorFlowScalar
@@ -28422,7 +28397,7 @@ public static func sparseAdd<
 ///     non-empty values of A.
 ///   - b_val_grad: 1-D with shape `[nnz(B)]`. The gradient with respect to the
 ///     non-empty values of B.
-@inlinable @inline(__always)
+@inlinable
 public static func sparseAddGrad<T: Numeric & TensorFlowScalar>(
   backpropValGrad: Tensor<T>,
   aIndices: Tensor<Int64>,
@@ -28494,7 +28469,7 @@ public static func sparseAddGrad<T: Numeric & TensorFlowScalar>(
 ///   - output_indices: 2-D.  Indices of the concatenated `SparseTensor`.
 ///   - output_values: 1-D.  Non-empty values of the concatenated `SparseTensor`.
 ///   - output_shape: 1-D.  Shape of the concatenated `SparseTensor`.
-@inlinable @inline(__always)
+@inlinable
 public static func sparseConcat<T: TensorFlowScalar>(
   indices: [Tensor<Int64>],
   _ values: [Tensor<T>],
@@ -28569,7 +28544,7 @@ public static func sparseConcat<T: TensorFlowScalar>(
 ///   - output_values: 1-D.  Non-empty values of the concatenated or hashed
 ///     `SparseTensor`.
 ///   - output_shape: 1-D.  Shape of the concatenated `SparseTensor`.
-@inlinable @inline(__always)
+@inlinable
 public static func sparseCross<
     SparseTypes: TensorArrayProtocol,
     DenseTypes: TensorArrayProtocol,
@@ -28658,7 +28633,7 @@ public static func sparseCross<
 ///   - output_values: 1-D.  Non-empty values of the concatenated or hashed
 ///     `SparseTensor`.
 ///   - output_shape: 1-D.  Shape of the concatenated `SparseTensor`.
-@inlinable @inline(__always)
+@inlinable
 public static func sparseCross<
     SparseTypes: TensorArrayProtocol,
     DenseTypes: TensorArrayProtocol
@@ -28707,7 +28682,7 @@ public static func sparseCross<
 ///   - dense: `R`-D.  The dense Tensor operand.
 ///
 /// - Output output: 1-D.  The `N` values that are operated on.
-@inlinable @inline(__always)
+@inlinable
 public static func sparseDenseCwiseAdd<T: Numeric & TensorFlowScalar>(
   spIndices: Tensor<Int64>,
   spValues: Tensor<T>,
@@ -28736,7 +28711,7 @@ public static func sparseDenseCwiseAdd<T: Numeric & TensorFlowScalar>(
 ///   - dense: `R`-D.  The dense Tensor operand.
 ///
 /// - Output output: 1-D.  The `N` values that are operated on.
-@inlinable @inline(__always)
+@inlinable
 public static func sparseDenseCwiseDiv<T: Numeric & TensorFlowScalar>(
   spIndices: Tensor<Int64>,
   spValues: Tensor<T>,
@@ -28769,7 +28744,7 @@ public static func sparseDenseCwiseDiv<T: Numeric & TensorFlowScalar>(
 ///   - dense: `R`-D.  The dense Tensor operand.
 ///
 /// - Output output: 1-D.  The `N` values that are operated on.
-@inlinable @inline(__always)
+@inlinable
 public static func sparseDenseCwiseMul<T: Numeric & TensorFlowScalar>(
   spIndices: Tensor<Int64>,
   spValues: Tensor<T>,
@@ -28837,7 +28812,7 @@ public static func sparseDenseCwiseMul<T: Numeric & TensorFlowScalar>(
 ///   - empty_row_indicator: 1-D. whether the dense row was missing in the
 ///     input sparse tensor.
 ///   - reverse_index_map: 1-D. a map from the input indices to the output indices.
-@inlinable @inline(__always)
+@inlinable
 public static func sparseFillEmptyRows<T: TensorFlowScalar>(
   indices: Tensor<Int64>,
   _ values: Tensor<T>,
@@ -28871,7 +28846,7 @@ public static func sparseFillEmptyRows<T: TensorFlowScalar>(
 /// - Outputs:
 ///   - d_values: 1-D.  The backprop into values.
 ///   - d_default_value: 0-D.  The backprop into default_value.
-@inlinable @inline(__always)
+@inlinable
 public static func sparseFillEmptyRowsGrad<T: TensorFlowScalar>(
   reverseIndexMap: Tensor<Int64>,
   gradValues: Tensor<T>
@@ -28894,7 +28869,7 @@ public static func sparseFillEmptyRowsGrad<T: TensorFlowScalar>(
 ///
 /// The gradient computation of this operation will only take advantage of sparsity
 /// in the input gradient when that gradient comes from a Relu.
-@inlinable @inline(__always)
+@inlinable
 public static func sparseMatMul<
     Ta: FloatingPoint & TensorFlowScalar,
     Tb: FloatingPoint & TensorFlowScalar
@@ -28943,7 +28918,7 @@ public static func sparseMatMul<
 /// - Attr keep_dims: If true, retain reduced dimensions with length 1.
 ///
 /// - Output output: `R-K`-D.  The reduced Tensor.
-@inlinable @inline(__always)
+@inlinable
 public static func sparseReduceMax<T: Numeric & TensorFlowScalar>(
   inputIndices: Tensor<Int64>,
   inputValues: Tensor<T>,
@@ -28984,7 +28959,7 @@ public static func sparseReduceMax<T: Numeric & TensorFlowScalar>(
 ///   - reduction_axes: 1-D.  Length-`K` vector containing the reduction axes.
 ///
 /// - Attr keep_dims: If true, retain reduced dimensions with length 1.
-@inlinable @inline(__always)
+@inlinable
 public static func sparseReduceMaxSparse<T: Numeric & TensorFlowScalar>(
   inputIndices: Tensor<Int64>,
   inputValues: Tensor<T>,
@@ -29027,7 +29002,7 @@ public static func sparseReduceMaxSparse<T: Numeric & TensorFlowScalar>(
 /// - Attr keep_dims: If true, retain reduced dimensions with length 1.
 ///
 /// - Output output: `R-K`-D.  The reduced Tensor.
-@inlinable @inline(__always)
+@inlinable
 public static func sparseReduceSum<T: Numeric & TensorFlowScalar>(
   inputIndices: Tensor<Int64>,
   inputValues: Tensor<T>,
@@ -29068,7 +29043,7 @@ public static func sparseReduceSum<T: Numeric & TensorFlowScalar>(
 ///   - reduction_axes: 1-D.  Length-`K` vector containing the reduction axes.
 ///
 /// - Attr keep_dims: If true, retain reduced dimensions with length 1.
-@inlinable @inline(__always)
+@inlinable
 public static func sparseReduceSumSparse<T: Numeric & TensorFlowScalar>(
   inputIndices: Tensor<Int64>,
   inputValues: Tensor<T>,
@@ -29107,7 +29082,7 @@ public static func sparseReduceSumSparse<T: Numeric & TensorFlowScalar>(
 ///   - output_indices: 2-D.  `N x R` matrix with the same indices as input_indices, but
 ///     in canonical row-major ordering.
 ///   - output_values: 1-D.  `N` non-empty values corresponding to `output_indices`.
-@inlinable @inline(__always)
+@inlinable
 public static func sparseReorder<T: TensorFlowScalar>(
   inputIndices: Tensor<Int64>,
   inputValues: Tensor<T>,
@@ -29151,7 +29126,7 @@ public static func sparseReorder<T: TensorFlowScalar>(
 ///   - output_shape: 1-D.  `R_out` vector with the full dense shape of the output
 ///     SparseTensor.  This is the same as `new_shape` but with any -1 dimensions
 ///     filled in.
-@inlinable @inline(__always)
+@inlinable
 public static func sparseReshape(
   inputIndices: Tensor<Int64>,
   inputShape: Tensor<Int64>,
@@ -29177,7 +29152,7 @@ public static func sparseReshape(
 ///
 /// - Output output: Has same shape as data, except for dimension 0 which
 ///   has size `k`, the number of segments.
-@inlinable @inline(__always)
+@inlinable
 public static func sparseSegmentMean<
     T: FloatingPoint & TensorFlowScalar,
     Tidx: BinaryInteger & TensorFlowScalar
@@ -29205,7 +29180,7 @@ public static func sparseSegmentMean<
 ///   - indices: indices passed to the corresponding SparseSegmentMean op.
 ///   - segment_ids: segment_ids passed to the corresponding SparseSegmentMean op.
 ///   - output_dim0: dimension 0 of "data" passed to SparseSegmentMean op.
-@inlinable @inline(__always)
+@inlinable
 public static func sparseSegmentMeanGrad<
     T: FloatingPoint & TensorFlowScalar,
     Tidx: BinaryInteger & TensorFlowScalar
@@ -29241,7 +29216,7 @@ public static func sparseSegmentMeanGrad<
 ///
 /// - Output output: Has same shape as data, except for dimension 0 which has size
 ///   `num_segments`.
-@inlinable @inline(__always)
+@inlinable
 public static func sparseSegmentMeanWithNumSegments<
     T: FloatingPoint & TensorFlowScalar,
     Tidx: BinaryInteger & TensorFlowScalar,
@@ -29276,7 +29251,7 @@ public static func sparseSegmentMeanWithNumSegments<
 ///
 /// - Output output: Has same shape as data, except for dimension 0 which
 ///   has size `k`, the number of segments.
-@inlinable @inline(__always)
+@inlinable
 public static func sparseSegmentSqrtN<
     T: FloatingPoint & TensorFlowScalar,
     Tidx: BinaryInteger & TensorFlowScalar
@@ -29304,7 +29279,7 @@ public static func sparseSegmentSqrtN<
 ///   - indices: indices passed to the corresponding SparseSegmentSqrtN op.
 ///   - segment_ids: segment_ids passed to the corresponding SparseSegmentSqrtN op.
 ///   - output_dim0: dimension 0 of "data" passed to SparseSegmentSqrtN op.
-@inlinable @inline(__always)
+@inlinable
 public static func sparseSegmentSqrtNGrad<
     T: FloatingPoint & TensorFlowScalar,
     Tidx: BinaryInteger & TensorFlowScalar
@@ -29342,7 +29317,7 @@ public static func sparseSegmentSqrtNGrad<
 ///
 /// - Output output: Has same shape as data, except for dimension 0 which
 ///   has size `k`, the number of segments.
-@inlinable @inline(__always)
+@inlinable
 public static func sparseSegmentSqrtNWithNumSegments<
     T: FloatingPoint & TensorFlowScalar,
     Tidx: BinaryInteger & TensorFlowScalar,
@@ -29402,7 +29377,7 @@ public static func sparseSegmentSqrtNWithNumSegments<
 ///
 /// - Output output: Has same shape as data, except for dimension 0 which
 ///   has size `k`, the number of segments.
-@inlinable @inline(__always)
+@inlinable
 public static func sparseSegmentSum<
     T: Numeric & TensorFlowScalar,
     Tidx: BinaryInteger & TensorFlowScalar
@@ -29457,7 +29432,7 @@ public static func sparseSegmentSum<
 ///
 /// - Output output: Has same shape as data, except for dimension 0 which
 ///   has size `num_segments`.
-@inlinable @inline(__always)
+@inlinable
 public static func sparseSegmentSumWithNumSegments<
     T: Numeric & TensorFlowScalar,
     Tidx: BinaryInteger & TensorFlowScalar,
@@ -29511,7 +29486,7 @@ public static func sparseSegmentSumWithNumSegments<
 ///     tensors.
 ///   - output_shape: A list of 1-D tensors represents the shape of the output sparse
 ///     tensors.
-@inlinable @inline(__always)
+@inlinable
 public static func sparseSlice<T: TensorFlowScalar>(
   indices: Tensor<Int64>,
   _ values: Tensor<T>,
@@ -29543,7 +29518,7 @@ public static func sparseSlice<T: TensorFlowScalar>(
 ///   - output_indices: 2-D.  The `indices` of the sliced `SparseTensor`.
 ///
 /// - Output val_grad: 1-D. The gradient with respect to the non-empty values of input `SparseTensor`.
-@inlinable @inline(__always)
+@inlinable
 public static func sparseSliceGrad<T: Numeric & TensorFlowScalar>(
   backpropValGrad: Tensor<T>,
   inputIndices: Tensor<Int64>,
@@ -29584,7 +29559,7 @@ public static func sparseSliceGrad<T: Numeric & TensorFlowScalar>(
 ///   - sp_shape: 1-D.  Shape of the input SparseTensor.
 ///
 /// - Output output: 1-D.  The `NNZ` values for the result `SparseTensor`.
-@inlinable @inline(__always)
+@inlinable
 public static func sparseSoftmax<T: FloatingPoint & TensorFlowScalar>(
   spIndices: Tensor<Int64>,
   spValues: Tensor<T>,
@@ -29615,7 +29590,7 @@ public static func sparseSoftmax<T: FloatingPoint & TensorFlowScalar>(
 /// - Outputs:
 ///   - loss: Per example loss (batch_size vector).
 ///   - backprop: backpropagated gradients (batch_size x num_classes matrix).
-@inlinable @inline(__always)
+@inlinable
 public static func sparseSoftmaxCrossEntropyWithLogits<
     T: FloatingPoint & TensorFlowScalar,
     Tlabels: BinaryInteger & TensorFlowScalar
@@ -29647,7 +29622,7 @@ public static func sparseSoftmaxCrossEntropyWithLogits<
 /// - Outputs:
 ///   - output_indices: 2-D.  The indices of the output SparseTensor.
 ///   - output_values: 1-D.  The values of the output SparseTensor.
-@inlinable @inline(__always)
+@inlinable
 public static func sparseSparseMaximum<T: Numeric & TensorFlowScalar>(
   aIndices: Tensor<Int64>,
   aValues: Tensor<T>,
@@ -29683,7 +29658,7 @@ public static func sparseSparseMaximum<T: Numeric & TensorFlowScalar>(
 /// - Outputs:
 ///   - output_indices: 2-D.  The indices of the output SparseTensor.
 ///   - output_values: 1-D.  The values of the output SparseTensor.
-@inlinable @inline(__always)
+@inlinable
 public static func sparseSparseMinimum<T: Numeric & TensorFlowScalar>(
   aIndices: Tensor<Int64>,
   aValues: Tensor<T>,
@@ -29739,7 +29714,7 @@ public static func sparseSparseMinimum<T: Numeric & TensorFlowScalar>(
 ///     tensors.
 ///   - output_shape: A list of 1-D tensors represents the shape of the output sparse
 ///     tensors.
-@inlinable @inline(__always)
+@inlinable
 public static func sparseSplit<T: TensorFlowScalar>(
   splitDim: Tensor<Int64>,
   indices: Tensor<Int64>,
@@ -29766,7 +29741,7 @@ public static func sparseSplit<T: TensorFlowScalar>(
 ///   - a_values: 1-D.  The `values` of the `SparseTensor`, with shape `[nnz]`.
 ///   - a_shape: 1-D.  The `shape` of the `SparseTensor`, with shape `[ndims]`.
 ///   - b: `ndims`-D Tensor.  With shape `a_shape`.
-@inlinable @inline(__always)
+@inlinable
 public static func sparseTensorDenseAdd<
     T: Numeric & TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -29809,7 +29784,7 @@ public static func sparseTensorDenseAdd<
 ///     is transpose(conj(A)).  Otherwise it's transpose(A).
 ///   - adjoint_b: Use the adjoint of B in the matrix multiply.  If B is complex, this
 ///     is transpose(conj(B)).  Otherwise it's transpose(B).
-@inlinable @inline(__always)
+@inlinable
 public static func sparseTensorDenseMatMul<
     T: TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -29834,7 +29809,7 @@ public static func sparseTensorDenseMatMul<
 }
 
 /// Creates a dataset that splits a SparseTensor into elements row-wise.
-@inlinable @inline(__always)
+@inlinable
 public static func sparseTensorSliceDataset<Tvalues: TensorFlowScalar>(
   indices: Tensor<Int64>,
   _ values: Tensor<Tvalues>,
@@ -29883,7 +29858,7 @@ public static func sparseTensorSliceDataset<Tvalues: TensorFlowScalar>(
 ///   lexicographic order and that there are no repeats.
 ///
 /// - Output dense: Dense output tensor of shape `output_shape`.
-@inlinable @inline(__always)
+@inlinable
 public static func sparseToDense<
     T: TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -29953,7 +29928,7 @@ public static func sparseToDense<
 ///   - result_shape: 1D `Tensor` shape of a `SparseTensor`. `result_shape[0...n-1]` is
 ///     the same as the 1st `n-1` dimensions of `set1` and `set2`, `result_shape[n]`
 ///     is the max result set size across all `0...n-1` dimensions.
-@inlinable @inline(__always)
+@inlinable
 public static func sparseToSparseSetOperation<T: BinaryInteger & TensorFlowScalar>(
   set1Indices: Tensor<Int64>,
   set1Values: Tensor<T>,
@@ -30025,7 +30000,7 @@ public static func sparseToSparseSetOperation<T: BinaryInteger & TensorFlowScala
 ///   - result_shape: 1D `Tensor` shape of a `SparseTensor`. `result_shape[0...n-1]` is
 ///     the same as the 1st `n-1` dimensions of `set1` and `set2`, `result_shape[n]`
 ///     is the max result set size across all `0...n-1` dimensions.
-@inlinable @inline(__always)
+@inlinable
 public static func sparseToSparseSetOperation(
   set1Indices: Tensor<Int64>,
   set1Values: StringTensor,
@@ -30062,7 +30037,7 @@ public static func sparseToSparseSetOperation(
 /// - Output output: They are identically shaped tensors, whose shape matches that of `value`
 ///   except along `axis`, where their sizes are
 ///   `values.shape[split_dim] / num_split`.
-@inlinable @inline(__always)
+@inlinable
 public static func split<T: TensorFlowScalar>(
   splitDim: Tensor<Int32>,
   value: Tensor<T>,
@@ -30089,7 +30064,7 @@ public static func split<T: TensorFlowScalar>(
 /// - Output output: Tensors whose shape matches that of `value`
 ///   except along `axis`, where their sizes are
 ///   `size_splits[i]`.
-@inlinable @inline(__always)
+@inlinable
 public static func splitV<
     T: TensorFlowScalar,
     Tlen: BinaryInteger & TensorFlowScalar
@@ -30112,7 +30087,7 @@ public static func splitV<
 /// Computes square root of x element-wise.
 ///
 /// I.e., \\(y = \sqrt{x} = x^{1/2}\\).
-@inlinable @inline(__always)
+@inlinable
 public static func sqrt<T: FloatingPoint & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -30126,7 +30101,7 @@ public static func sqrt<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// Specifically, `grad = dy * 0.5 / y`, where `y = sqrt(x)`, and `dy`
 /// is the corresponding input gradient.
-@inlinable @inline(__always)
+@inlinable
 public static func sqrtGrad<T: FloatingPoint & TensorFlowScalar>(
   _ y: Tensor<T>,
   dy: Tensor<T>
@@ -30141,7 +30116,7 @@ public static func sqrtGrad<T: FloatingPoint & TensorFlowScalar>(
 /// Computes square of x element-wise.
 ///
 /// I.e., \\(y = x * x = x^2\\).
-@inlinable @inline(__always)
+@inlinable
 public static func square<T: Numeric & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -30155,7 +30130,7 @@ public static func square<T: Numeric & TensorFlowScalar>(
 ///
 /// *NOTE*: `SquaredDifference` supports broadcasting. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-@inlinable @inline(__always)
+@inlinable
 public static func squaredDifference<T: Numeric & TensorFlowScalar>(
   _ x: Tensor<T>,
   _ y: Tensor<T>
@@ -30196,7 +30171,7 @@ public static func squaredDifference<T: Numeric & TensorFlowScalar>(
 ///
 /// - Output output: Contains the same data as `input`, but has one or more dimensions of
 ///   size 1 removed.
-@inlinable @inline(__always)
+@inlinable
 public static func squeeze<T: TensorFlowScalar>(
   _ input: Tensor<T>,
   squeezeDims: [Int32]
@@ -30211,7 +30186,7 @@ public static func squeeze<T: TensorFlowScalar>(
 /// Delete the stack from its resource container.
 ///
 /// - Parameter handle: The handle to a stack.
-@inlinable @inline(__always)
+@inlinable
 public static func stackCloseV2(
   handle: ResourceHandle
 ) {
@@ -30227,7 +30202,7 @@ public static func stackCloseV2(
 /// - Attr elem_type: The type of the elem that is popped.
 ///
 /// - Output elem: The tensor that is popped from the top of the stack.
-@inlinable @inline(__always)
+@inlinable
 public static func stackPopV2<ElemType: TensorFlowScalar>(
   handle: ResourceHandle
 ) -> Tensor<ElemType> {
@@ -30246,7 +30221,7 @@ public static func stackPopV2<ElemType: TensorFlowScalar>(
 /// - Attr swap_memory: Swap `elem` to CPU. Default to false.
 ///
 /// - Output output: The same tensor as the input 'elem'.
-@inlinable @inline(__always)
+@inlinable
 public static func stackPushV2<T: TensorFlowScalar>(
   handle: ResourceHandle,
   elem: Tensor<T>,
@@ -30271,7 +30246,7 @@ public static func stackPushV2<T: TensorFlowScalar>(
 ///     value is the name of the 'Stack' op (which is guaranteed unique).
 ///
 /// - Output handle: The handle to the stack.
-@inlinable @inline(__always)
+@inlinable
 public static func stackV2(
   maxSize: Tensor<Int32>,
   elemType: TensorDataType,
@@ -30300,7 +30275,7 @@ public static func stackV2(
 ///   - container: If non-empty, this queue is placed in the given container. Otherwise,
 ///     a default container is used.
 ///   - shared_name: It is necessary to match this name to the matching Unstage Op.
-@inlinable @inline(__always)
+@inlinable
 public static func stage<Dtypes: TensorArrayProtocol>(
   _ values: Dtypes,
   capacity: Int64 = 0,
@@ -30319,7 +30294,7 @@ public static func stage<Dtypes: TensorArrayProtocol>(
 }
 
 /// Op removes all elements in the underlying container.
-@inlinable @inline(__always)
+@inlinable
 public static func stageClear(
   capacity: Int64 = 0,
   memoryLimit: Int64 = 0,
@@ -30341,7 +30316,7 @@ public static func stageClear(
 /// underlying container does not contain sufficient elements
 /// this op will block until it does.   This Op is optimized for
 /// performance.
-@inlinable @inline(__always)
+@inlinable
 public static func stagePeek<Dtypes: TensorGroup>(
   index: Tensor<Int32>,
   capacity: Int64 = 0,
@@ -30360,7 +30335,7 @@ public static func stagePeek<Dtypes: TensorGroup>(
 }
 
 /// Op returns the number of elements in the underlying container.
-@inlinable @inline(__always)
+@inlinable
 public static func stageSize(
   capacity: Int64 = 0,
   memoryLimit: Int64 = 0,
@@ -30391,7 +30366,7 @@ public static func stageSize(
 ///           stateful.
 ///
 /// - Output output: A list of return values.
-@inlinable @inline(__always)
+@inlinable
 public static func statefulPartitionedCall<
     Tin: TensorArrayProtocol,
     Tout: TensorGroup,
@@ -30415,7 +30390,7 @@ public static func statefulPartitionedCall<
   return op.execute(Int(Tout._typeList.count))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func statefulRandomBinomial<
     S: BinaryInteger & TensorFlowScalar,
     T: Numeric & TensorFlowScalar,
@@ -30450,7 +30425,7 @@ public static func statefulRandomBinomial<
 /// - Attr dtype: The type of the output.
 ///
 /// - Output output: A tensor of the specified shape filled with random normal values.
-@inlinable @inline(__always)
+@inlinable
 public static func statefulStandardNormal<
     Dtype: TensorFlowScalar,
     ShapeDtype: TensorFlowScalar
@@ -30478,7 +30453,7 @@ public static func statefulStandardNormal<
 /// - Attr dtype: The type of the output.
 ///
 /// - Output output: A tensor of the specified shape filled with random normal values.
-@inlinable @inline(__always)
+@inlinable
 public static func statefulStandardNormalV2<
     Dtype: TensorFlowScalar,
     ShapeDtype: TensorFlowScalar
@@ -30510,7 +30485,7 @@ public static func statefulStandardNormalV2<
 /// - Attr dtype: The type of the output.
 ///
 /// - Output output: Random values with specified shape.
-@inlinable @inline(__always)
+@inlinable
 public static func statefulTruncatedNormal<
     Dtype: TensorFlowScalar,
     ShapeDtype: TensorFlowScalar
@@ -30541,7 +30516,7 @@ public static func statefulTruncatedNormal<
 /// - Attr dtype: The type of the output.
 ///
 /// - Output output: Random values with specified shape.
-@inlinable @inline(__always)
+@inlinable
 public static func statefulUniform<
     Dtype: TensorFlowScalar,
     ShapeDtype: TensorFlowScalar
@@ -30571,7 +30546,7 @@ public static func statefulUniform<
 /// - Attr dtype: The type of the output.
 ///
 /// - Output output: Random values with specified shape.
-@inlinable @inline(__always)
+@inlinable
 public static func statefulUniformFullInt<
     Dtype: TensorFlowScalar,
     ShapeDtype: TensorFlowScalar
@@ -30609,7 +30584,7 @@ public static func statefulUniformFullInt<
 /// - Attr dtype: The type of the output.
 ///
 /// - Output output: Random values with specified shape.
-@inlinable @inline(__always)
+@inlinable
 public static func statefulUniformInt<
     Dtype: TensorFlowScalar,
     ShapeDtype: TensorFlowScalar
@@ -30654,7 +30629,7 @@ public static func statefulUniformInt<
 ///         types are the same as what then_branch returns.
 ///
 /// - Output output: A list of return values.
-@inlinable @inline(__always)
+@inlinable
 public static func statelessIf<
     Tcond: TensorFlowScalar,
     Tin: TensorArrayProtocol,
@@ -30690,7 +30665,7 @@ public static func statelessIf<
 ///
 /// - Output output: 2-D Tensor with shape `[batch_size, num_samples]`.  Each slice `[i, :]`
 ///   contains the drawn class labels with range `[0, num_classes)`.
-@inlinable @inline(__always)
+@inlinable
 public static func statelessMultinomial<
     T: Numeric & TensorFlowScalar,
     Tseed: BinaryInteger & TensorFlowScalar,
@@ -30723,7 +30698,7 @@ public static func statelessMultinomial<
 /// - Attr dtype: The type of the output.
 ///
 /// - Output output: Random values with specified shape.
-@inlinable @inline(__always)
+@inlinable
 public static func statelessRandomNormal<
     Dtype: FloatingPoint & TensorFlowScalar,
     T: BinaryInteger & TensorFlowScalar,
@@ -30755,7 +30730,7 @@ public static func statelessRandomNormal<
 /// - Attr dtype: The type of the output.
 ///
 /// - Output output: Random values with specified shape.
-@inlinable @inline(__always)
+@inlinable
 public static func statelessRandomUniform<
     Dtype: FloatingPoint & TensorFlowScalar,
     T: BinaryInteger & TensorFlowScalar,
@@ -30788,7 +30763,7 @@ public static func statelessRandomUniform<
 /// - Attr dtype: The type of the output.
 ///
 /// - Output output: Random values with specified shape.
-@inlinable @inline(__always)
+@inlinable
 public static func statelessRandomUniformInt<
     Dtype: BinaryInteger & TensorFlowScalar,
     T: BinaryInteger & TensorFlowScalar,
@@ -30825,7 +30800,7 @@ public static func statelessRandomUniformInt<
 /// - Attr dtype: The type of the output.
 ///
 /// - Output output: Random values with specified shape.
-@inlinable @inline(__always)
+@inlinable
 public static func statelessTruncatedNormal<
     Dtype: FloatingPoint & TensorFlowScalar,
     T: BinaryInteger & TensorFlowScalar,
@@ -30864,7 +30839,7 @@ public static func statelessTruncatedNormal<
 ///           by T.
 ///
 /// - Output output: A list of output tensors whose types are T.
-@inlinable @inline(__always)
+@inlinable
 public static func statelessWhile<
     T: TensorArrayProtocol,
     CondIn: TensorGroup,
@@ -30898,7 +30873,7 @@ public static func statelessWhile<
 /// - Attr pattern: The regular expression to match the input.
 ///
 /// - Output output: A bool tensor with the same shape as `input`.
-@inlinable @inline(__always)
+@inlinable
 public static func staticRegexFullMatch(
   _ input: StringTensor,
   pattern: String
@@ -30922,7 +30897,7 @@ public static func staticRegexFullMatch(
 ///     is done only on the first match.
 ///
 /// - Output output: The text after applying pattern and rewrite.
-@inlinable @inline(__always)
+@inlinable
 public static func staticRegexReplace(
   _ input: StringTensor,
   pattern: String,
@@ -30937,7 +30912,7 @@ public static func staticRegexReplace(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func statsAggregatorHandleV2(
   container: String,
   sharedName: String
@@ -30949,7 +30924,7 @@ public static func statsAggregatorHandleV2(
 }
 
 /// Set a summary_writer_interface to record statistics using given stats_aggregator.
-@inlinable @inline(__always)
+@inlinable
 public static func statsAggregatorSetSummaryWriter(
   statsAggregator: ResourceHandle,
   summary: ResourceHandle
@@ -30981,7 +30956,7 @@ public static func statsAggregatorSetSummaryWriter(
 ///    through the graph that generated the samples from the model.
 /// *  Adversarial training, where no backprop should happen through the adversarial
 ///    example generation process.
-@inlinable @inline(__always)
+@inlinable
 public static func stopGradient<T: TensorFlowScalar>(
   _ input: Tensor<T>
 ) -> Tensor<T> {
@@ -31118,7 +31093,7 @@ public static func stopGradient<T: TensorFlowScalar>(
 ///     must imply a slice of size 1 in the dimension. For example in
 ///     python one might do `foo[:, 3, :]` which would result in
 ///     `shrink_axis_mask` being 2.
-@inlinable @inline(__always)
+@inlinable
 public static func stridedSlice<
     T: TensorFlowScalar,
     Index: BinaryInteger & TensorFlowScalar
@@ -31158,7 +31133,7 @@ public static func stridedSlice<
 /// Arguments are the same as StridedSliceGrad with the exception that
 /// `dy` is the input gradient to be propagated and `shape` is the
 /// shape of `StridedSlice`'s `input`.
-@inlinable @inline(__always)
+@inlinable
 public static func stridedSliceGrad<
     T: TensorFlowScalar,
     Index: BinaryInteger & TensorFlowScalar
@@ -31202,7 +31177,7 @@ public static func stridedSliceGrad<
 ///   - summarize: When formatting the tensor summaries print the first and last summarize entries of each tensor dimension.
 ///
 /// - Output output: = The resulting string scalar.
-@inlinable @inline(__always)
+@inlinable
 public static func stringFormat<T: TensorArrayProtocol>(
   inputs: T,
   template: String = "%s",
@@ -31227,7 +31202,7 @@ public static func stringFormat<T: TensorArrayProtocol>(
 ///   of non-scalar inputs.
 ///
 /// - Attr separator: string, an optional join separator.
-@inlinable @inline(__always)
+@inlinable
 public static func stringJoin(
   inputs: [StringTensor],
   separator: String
@@ -31253,7 +31228,7 @@ public static func stringJoin(
 ///
 /// - Output output: Integer tensor that has the same shape as `input`. The output contains the
 ///   element-wise string lengths of `input`.
-@inlinable @inline(__always)
+@inlinable
 public static func stringLength(
   _ input: StringTensor,
   unit: Unit = .byte
@@ -31264,7 +31239,7 @@ public static func stringLength(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func stringListAttr(
   _ a: [String],
   _ b: String
@@ -31310,7 +31285,7 @@ public static func stringListAttr(
 ///   - shape: a length-2 vector of int64 representing the shape of the sparse
 ///     tensor, where the first value is N and the second value is the maximum number
 ///     of tokens in a single input entry.
-@inlinable @inline(__always)
+@inlinable
 public static func stringSplit(
   _ input: StringTensor,
   delimiter: StringTensor,
@@ -31355,7 +31330,7 @@ public static func stringSplit(
 ///   - sep: `0-D` string `Tensor`, the delimiter character.
 ///
 /// - Attr maxsplit: An `int`. If `maxsplit > 0`, limit of the split of the result.
-@inlinable @inline(__always)
+@inlinable
 public static func stringSplitV2(
   _ input: StringTensor,
   sep: StringTensor,
@@ -31373,7 +31348,7 @@ public static func stringSplitV2(
 /// - Parameter input: A string `Tensor` of any shape.
 ///
 /// - Output output: A string `Tensor` of the same shape as the input.
-@inlinable @inline(__always)
+@inlinable
 public static func stringStrip(
   _ input: StringTensor
 ) -> StringTensor {
@@ -31394,7 +31369,7 @@ public static func stringStrip(
 /// - Attr num_buckets: The number of buckets.
 ///
 /// - Output output: A Tensor of the same shape as the input `string_tensor`.
-@inlinable @inline(__always)
+@inlinable
 public static func stringToHashBucket(
   stringTensor: StringTensor,
   numBuckets: Int64
@@ -31419,7 +31394,7 @@ public static func stringToHashBucket(
 /// - Attr num_buckets: The number of buckets.
 ///
 /// - Output output: A Tensor of the same shape as the input `string_tensor`.
-@inlinable @inline(__always)
+@inlinable
 public static func stringToHashBucketFast(
   _ input: StringTensor,
   numBuckets: Int64
@@ -31451,7 +31426,7 @@ public static func stringToHashBucketFast(
 ///     elements.
 ///
 /// - Output output: A Tensor of the same shape as the input `string_tensor`.
-@inlinable @inline(__always)
+@inlinable
 public static func stringToHashBucketStrong(
   _ input: StringTensor,
   numBuckets: Int64,
@@ -31472,7 +31447,7 @@ public static func stringToHashBucketStrong(
 /// - Attr out_type: The numeric type to interpret each string in `string_tensor` as.
 ///
 /// - Output output: A Tensor of the same shape as the input `string_tensor`.
-@inlinable @inline(__always)
+@inlinable
 public static func stringToNumber<OutType: Numeric & TensorFlowScalar>(
   stringTensor: StringTensor
 ) -> Tensor<OutType> {
@@ -31482,7 +31457,7 @@ public static func stringToNumber<OutType: Numeric & TensorFlowScalar>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func stubResourceHandleOp(
   container: String,
   sharedName: String
@@ -31497,7 +31472,7 @@ public static func stubResourceHandleOp(
 ///
 /// *NOTE*: `Subtract` supports broadcasting. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-@inlinable @inline(__always)
+@inlinable
 public static func sub<T: Numeric & TensorFlowScalar>(
   _ x: Tensor<T>,
   _ y: Tensor<T>
@@ -31599,7 +31574,7 @@ public static func sub<T: Numeric & TensorFlowScalar>(
 ///   UTF-8.
 ///
 /// - Output output: Tensor of substrings
-@inlinable @inline(__always)
+@inlinable
 public static func substr<T: BinaryInteger & TensorFlowScalar>(
   _ input: StringTensor,
   pos: Tensor<T>,
@@ -31630,7 +31605,7 @@ public static func substr<T: BinaryInteger & TensorFlowScalar>(
 /// - Attr keep_dims: If true, retain reduced dimensions with length 1.
 ///
 /// - Output output: The reduced tensor.
-@inlinable @inline(__always)
+@inlinable
 public static func sum<
     T: Numeric & TensorFlowScalar,
     Tidx: BinaryInteger & TensorFlowScalar
@@ -31648,7 +31623,7 @@ public static func sum<
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func summaryWriter(
   sharedName: String,
   container: String
@@ -31692,7 +31667,7 @@ public static func summaryWriter(
 ///   - v: Left singular vectors. If `full_matrices` is `False` then shape is
 ///     `[..., N, P]`. If `full_matrices` is `True` then shape is `[..., N, N]`.
 ///     Undefined if `compute_uv` is false.
-@inlinable @inline(__always)
+@inlinable
 public static func svd<T: FloatingPoint & TensorFlowScalar>(
   _ input: Tensor<T>,
   computeUv: Bool = true,
@@ -31720,7 +31695,7 @@ public static func svd<T: FloatingPoint & TensorFlowScalar>(
 /// - Outputs:
 ///   - output_false: If `pred` is false, data will be forwarded to this output.
 ///   - output_true: If `pred` is true, data will be forwarded to this output.
-@inlinable @inline(__always)
+@inlinable
 public static func switch_<T: TensorFlowScalar>(
   data: Tensor<T>,
   pred: Tensor<Bool>
@@ -31759,7 +31734,7 @@ public static func switch_<T: TensorFlowScalar>(
 ///     (Needs some math expert to say the comment above better.)
 ///
 /// - Output output: a list of output tensors of size N;
-@inlinable @inline(__always)
+@inlinable
 public static func symbolicGradient<
     Tin: TensorArrayProtocol,
     Tout: TensorGroup,
@@ -31786,7 +31761,7 @@ public static func symbolicGradient<
 ///     compression), (ii) "ZLIB", or (iii) "GZIP".
 ///   - buffer_size: A scalar representing the number of bytes to buffer. A value of
 ///     0 means no buffering will be performed.
-@inlinable @inline(__always)
+@inlinable
 public static func tFRecordDataset(
   filenames: StringTensor,
   compressionType: StringTensor,
@@ -31808,7 +31783,7 @@ public static func tFRecordDataset(
 ///     with this shared_name. Otherwise, the node name is used instead.
 ///
 /// - Output reader_handle: The handle to reference the Reader.
-@inlinable @inline(__always)
+@inlinable
 public static func tFRecordReaderV2(
   container: String,
   sharedName: String,
@@ -31822,7 +31797,7 @@ public static func tFRecordReaderV2(
 }
 
 /// CompilationResultProto indicating the status of the TPU compilation.
-@inlinable @inline(__always)
+@inlinable
 public static func tPUCompilationResult(
 ) -> StringTensor {
   let op = TFE_Op("TPUCompilationResult")
@@ -31847,7 +31822,7 @@ public static func tPUCompilationResult(
 ///     these activations were computed.
 ///   - lookup_id: Identifier of the set of embedding indices which produced these
 ///     activations.
-@inlinable @inline(__always)
+@inlinable
 public static func tPUEmbeddingActivations(
   embeddingVariable: Tensor<Float>,
   slicedActivations: Tensor<Float>,
@@ -31869,7 +31844,7 @@ public static func tPUEmbeddingActivations(
 /// consumed by TPUPartitionedCall.
 ///
 /// - Output device_ordinals: A vector 1 or more TPU cores.
-@inlinable @inline(__always)
+@inlinable
 public static func tPUOrdinalSelector(
 ) -> Tensor<Int32> {
   let op = TFE_Op("TPUOrdinalSelector")
@@ -31889,7 +31864,7 @@ public static func tPUOrdinalSelector(
 ///   - f: The function to call.
 ///
 /// - Output output: The output of the function call.
-@inlinable @inline(__always)
+@inlinable
 public static func tPUPartitionedCall<
     Tin: TensorArrayProtocol,
     Tout: TensorGroup,
@@ -31940,7 +31915,7 @@ public static func tPUPartitionedCall<
 ///   - output_types: the types of the outputs of 'computation'.
 ///
 /// - Output outputs: the outputs of 'computation'.
-@inlinable @inline(__always)
+@inlinable
 public static func tPUReplicate<
     ComputationIn: TensorGroup,
     ComputationOut: TensorGroup,
@@ -31994,7 +31969,7 @@ public static func tPUReplicate<
 ///   - use_tpu: Whether to place the computation on the TPU.
 ///   - device_assignment: The assignment of devices for the computation.
 ///   - computation_shape: DEPRECATED. Use num_cores_per_replica instead.
-@inlinable @inline(__always)
+@inlinable
 public static func tPUReplicateMetadata(
   numReplicas: Int64,
   numCoresPerReplica: Int64 = 1,
@@ -32020,7 +31995,7 @@ public static func tPUReplicateMetadata(
 }
 
 /// Connects N inputs to an N-way replicated TPU computation.
-@inlinable @inline(__always)
+@inlinable
 public static func tPUReplicatedInput<T: TensorFlowScalar>(
   inputs: [Tensor<T>]
 ) -> Tensor<T> {
@@ -32032,7 +32007,7 @@ public static func tPUReplicatedInput<T: TensorFlowScalar>(
 }
 
 /// Connects outputs of an N-way replicated computation to N outputs.
-@inlinable @inline(__always)
+@inlinable
 public static func tPUReplicatedOutput<T: TensorFlowScalar>(
   _ input: Tensor<T>,
   numReplicas: Int64
@@ -32049,7 +32024,7 @@ public static func tPUReplicatedOutput<T: TensorFlowScalar>(
 /// - Parameter count: A scalar representing the number of elements from the `input_dataset`
 ///   that should be taken. A value of `-1` indicates that all of `input_dataset`
 ///   is taken.
-@inlinable @inline(__always)
+@inlinable
 public static func takeDataset(
   inputDataset: VariantHandle,
   count: Tensor<Int64>,
@@ -32130,7 +32105,7 @@ public static func takeDataset(
 ///   - sparse_indices: 2-D.  The `indices` of the minibatch `SparseTensor`.
 ///   - sparse_values: 1-D.  The `values` of the minibatch `SparseTensor`.
 ///   - sparse_shape: 1-D.  The `shape` of the minibatch `SparseTensor`.
-@inlinable @inline(__always)
+@inlinable
 public static func takeManySparseFromTensorsMap<Dtype: TensorFlowScalar>(
   sparseHandles: Tensor<Int64>,
   container: String,
@@ -32145,7 +32120,7 @@ public static func takeManySparseFromTensorsMap<Dtype: TensorFlowScalar>(
 }
 
 /// Computes tan of x element-wise.
-@inlinable @inline(__always)
+@inlinable
 public static func tan<T: Numeric & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -32156,7 +32131,7 @@ public static func tan<T: Numeric & TensorFlowScalar>(
 }
 
 /// Computes hyperbolic tangent of `x` element-wise.
-@inlinable @inline(__always)
+@inlinable
 public static func tanh<T: FloatingPoint & TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -32170,7 +32145,7 @@ public static func tanh<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// Specifically, `grad = dy * (1 - y*y)`, where `y = tanh(x)`, and `dy`
 /// is the corresponding input gradient.
-@inlinable @inline(__always)
+@inlinable
 public static func tanhGrad<T: FloatingPoint & TensorFlowScalar>(
   _ y: Tensor<T>,
   dy: Tensor<T>
@@ -32183,7 +32158,7 @@ public static func tanhGrad<T: FloatingPoint & TensorFlowScalar>(
 }
 
 /// Deprecated. Use TensorArrayCloseV3
-@inlinable @inline(__always)
+@inlinable
 public static func tensorArrayCloseV2(
   handle: StringTensor
 ) {
@@ -32198,7 +32173,7 @@ public static func tensorArrayCloseV2(
 /// of a step/run.
 ///
 /// - Parameter handle: The handle to a TensorArray (output of TensorArray or TensorArrayGrad).
-@inlinable @inline(__always)
+@inlinable
 public static func tensorArrayCloseV3(
   handle: ResourceHandle
 ) {
@@ -32208,7 +32183,7 @@ public static func tensorArrayCloseV3(
 }
 
 /// Deprecated. Use TensorArrayConcatV3
-@inlinable @inline(__always)
+@inlinable
 public static func tensorArrayConcatV2<Dtype: TensorFlowScalar>(
   handle: StringTensor,
   flowIn: Tensor<Float>,
@@ -32253,7 +32228,7 @@ public static func tensorArrayConcatV2<Dtype: TensorFlowScalar>(
 ///   - lengths: A vector of the row sizes of the original T elements in the
 ///     value output.  In the example above, this would be the values:
 ///     `(n1, n2, ..., n(T-1))`.
-@inlinable @inline(__always)
+@inlinable
 public static func tensorArrayConcatV3<Dtype: TensorFlowScalar>(
   handle: ResourceHandle,
   flowIn: Tensor<Float>,
@@ -32268,7 +32243,7 @@ public static func tensorArrayConcatV3<Dtype: TensorFlowScalar>(
 }
 
 /// Deprecated. Use TensorArrayGatherV3
-@inlinable @inline(__always)
+@inlinable
 public static func tensorArrayGatherV2<Dtype: TensorFlowScalar>(
   handle: StringTensor,
   indices: Tensor<Int32>,
@@ -32301,7 +32276,7 @@ public static func tensorArrayGatherV2<Dtype: TensorFlowScalar>(
 ///
 /// - Output value: All of the elements in the TensorArray, concatenated along a new
 ///   axis (the new dimension 0).
-@inlinable @inline(__always)
+@inlinable
 public static func tensorArrayGatherV3<Dtype: TensorFlowScalar>(
   handle: ResourceHandle,
   indices: Tensor<Int32>,
@@ -32318,7 +32293,7 @@ public static func tensorArrayGatherV3<Dtype: TensorFlowScalar>(
 }
 
 /// Deprecated. Use TensorArrayGradV3
-@inlinable @inline(__always)
+@inlinable
 public static func tensorArrayGradV2(
   handle: StringTensor,
   flowIn: Tensor<Float>,
@@ -32376,7 +32351,7 @@ public static func tensorArrayGradV2(
 ///
 /// - Attr source: The gradient source string, used to decide which gradient TensorArray
 ///   to return.
-@inlinable @inline(__always)
+@inlinable
 public static func tensorArrayGradV3(
   handle: ResourceHandle,
   flowIn: Tensor<Float>,
@@ -32405,7 +32380,7 @@ public static func tensorArrayGradV3(
 ///
 /// - Attr source: The gradient source string, used to decide which gradient TensorArray
 ///   to return.
-@inlinable @inline(__always)
+@inlinable
 public static func tensorArrayGradWithShape(
   handle: ResourceHandle,
   flowIn: Tensor<Float>,
@@ -32421,7 +32396,7 @@ public static func tensorArrayGradWithShape(
 }
 
 /// Deprecated. Use TensorArrayReadV3
-@inlinable @inline(__always)
+@inlinable
 public static func tensorArrayReadV2<Dtype: TensorFlowScalar>(
   handle: StringTensor,
   index: Tensor<Int32>,
@@ -32444,7 +32419,7 @@ public static func tensorArrayReadV2<Dtype: TensorFlowScalar>(
 /// - Attr dtype: The type of the elem that is returned.
 ///
 /// - Output value: The tensor that is read from the TensorArray.
-@inlinable @inline(__always)
+@inlinable
 public static func tensorArrayReadV3<Dtype: TensorFlowScalar>(
   handle: ResourceHandle,
   index: Tensor<Int32>,
@@ -32459,7 +32434,7 @@ public static func tensorArrayReadV3<Dtype: TensorFlowScalar>(
 }
 
 /// Deprecated. Use TensorArrayScatterV3
-@inlinable @inline(__always)
+@inlinable
 public static func tensorArrayScatterV2<T: TensorFlowScalar>(
   handle: StringTensor,
   indices: Tensor<Int32>,
@@ -32486,7 +32461,7 @@ public static func tensorArrayScatterV2<T: TensorFlowScalar>(
 ///   - flow_in: A float scalar that enforces proper chaining of operations.
 ///
 /// - Output flow_out: A float scalar that enforces proper chaining of operations.
-@inlinable @inline(__always)
+@inlinable
 public static func tensorArrayScatterV3<T: TensorFlowScalar>(
   handle: ResourceHandle,
   indices: Tensor<Int32>,
@@ -32503,7 +32478,7 @@ public static func tensorArrayScatterV3<T: TensorFlowScalar>(
 }
 
 /// Deprecated. Use TensorArraySizeV3
-@inlinable @inline(__always)
+@inlinable
 public static func tensorArraySizeV2(
   handle: StringTensor,
   flowIn: Tensor<Float>
@@ -32521,7 +32496,7 @@ public static func tensorArraySizeV2(
 ///   - flow_in: A float scalar that enforces proper chaining of operations.
 ///
 /// - Output size: The current size of the TensorArray.
-@inlinable @inline(__always)
+@inlinable
 public static func tensorArraySizeV3(
   handle: ResourceHandle,
   flowIn: Tensor<Float>
@@ -32533,7 +32508,7 @@ public static func tensorArraySizeV3(
 }
 
 /// Deprecated. Use TensorArraySplitV3
-@inlinable @inline(__always)
+@inlinable
 public static func tensorArraySplitV2<T: TensorFlowScalar>(
   handle: StringTensor,
   value: Tensor<T>,
@@ -32577,7 +32552,7 @@ public static func tensorArraySplitV2<T: TensorFlowScalar>(
 ///   - flow_in: A float scalar that enforces proper chaining of operations.
 ///
 /// - Output flow_out: A float scalar that enforces proper chaining of operations.
-@inlinable @inline(__always)
+@inlinable
 public static func tensorArraySplitV3<T: TensorFlowScalar>(
   handle: ResourceHandle,
   value: Tensor<T>,
@@ -32594,7 +32569,7 @@ public static func tensorArraySplitV3<T: TensorFlowScalar>(
 }
 
 /// Deprecated. Use TensorArrayV3
-@inlinable @inline(__always)
+@inlinable
 public static func tensorArrayV2(
   size: Tensor<Int32>,
   dtype: TensorDataType,
@@ -32642,7 +32617,7 @@ public static func tensorArrayV2(
 /// - Outputs:
 ///   - handle: The handle to the TensorArray.
 ///   - flow: A scalar used to control gradient flow.
-@inlinable @inline(__always)
+@inlinable
 public static func tensorArrayV3(
   size: Tensor<Int32>,
   dtype: TensorDataType,
@@ -32664,7 +32639,7 @@ public static func tensorArrayV3(
 }
 
 /// Deprecated. Use TensorArrayGradV3
-@inlinable @inline(__always)
+@inlinable
 public static func tensorArrayWriteV2<T: TensorFlowScalar>(
   handle: StringTensor,
   index: Tensor<Int32>,
@@ -32689,7 +32664,7 @@ public static func tensorArrayWriteV2<T: TensorFlowScalar>(
 ///   - flow_in: A float scalar that enforces proper chaining of operations.
 ///
 /// - Output flow_out: A float scalar that enforces proper chaining of operations.
-@inlinable @inline(__always)
+@inlinable
 public static func tensorArrayWriteV3<T: TensorFlowScalar>(
   handle: ResourceHandle,
   index: Tensor<Int32>,
@@ -32706,7 +32681,7 @@ public static func tensorArrayWriteV3<T: TensorFlowScalar>(
 }
 
 /// Creates a dataset that emits `components` as a tuple of tensors once.
-@inlinable @inline(__always)
+@inlinable
 public static func tensorDataset<ToutputTypes: TensorArrayProtocol>(
   components: ToutputTypes,
   outputShapes: [TensorShape?]
@@ -32723,7 +32698,7 @@ public static func tensorDataset<ToutputTypes: TensorArrayProtocol>(
 /// - Parameters:
 ///   - tree_handle: Handle to the tree resource to be created.
 ///   - tree_config: Serialized proto string of the boosted_trees.Tree.
-@inlinable @inline(__always)
+@inlinable
 public static func tensorForestCreateTreeVariable(
   treeHandle: ResourceHandle,
   treeConfig: StringTensor
@@ -32739,7 +32714,7 @@ public static func tensorForestCreateTreeVariable(
 /// - Parameters:
 ///   - tree_handle: Handle to the tree resource to be restored.
 ///   - tree_config: Serialied proto string of the boosted_trees.Tree proto.
-@inlinable @inline(__always)
+@inlinable
 public static func tensorForestTreeDeserialize(
   treeHandle: ResourceHandle,
   treeConfig: StringTensor
@@ -32755,7 +32730,7 @@ public static func tensorForestTreeDeserialize(
 /// - Parameter tree_handle: Handle to the tree.
 ///
 /// - Output is_initialized: Whether the tree is initialized.
-@inlinable @inline(__always)
+@inlinable
 public static func tensorForestTreeIsInitializedOp(
   treeHandle: ResourceHandle
 ) -> Tensor<Bool> {
@@ -32773,7 +32748,7 @@ public static func tensorForestTreeIsInitializedOp(
 /// - Attr logits_dimension: Scalar, dimension of the logits.
 ///
 /// - Output logits: The logits predictions from the tree for each instance in the batch.
-@inlinable @inline(__always)
+@inlinable
 public static func tensorForestTreePredict(
   treeHandle: ResourceHandle,
   denseFeatures: Tensor<Float>,
@@ -32787,7 +32762,7 @@ public static func tensorForestTreePredict(
 }
 
 /// Creates a handle to a TensorForestTreeResource
-@inlinable @inline(__always)
+@inlinable
 public static func tensorForestTreeResourceHandleOp(
   container: String,
   sharedName: String
@@ -32803,7 +32778,7 @@ public static func tensorForestTreeResourceHandleOp(
 /// - Parameter tree_handle: Handle to the tree resource to be serialized.
 ///
 /// - Output tree_config: Serialied proto string of the tree resource.
-@inlinable @inline(__always)
+@inlinable
 public static func tensorForestTreeSerialize(
   treeHandle: ResourceHandle
 ) -> StringTensor {
@@ -32817,7 +32792,7 @@ public static func tensorForestTreeSerialize(
 /// - Parameter tree_handle: Handle to the tree resource.
 ///
 /// - Output tree_size: The size of the tree.
-@inlinable @inline(__always)
+@inlinable
 public static func tensorForestTreeSize(
   treeHandle: ResourceHandle
 ) -> Tensor<Int32> {
@@ -32834,7 +32809,7 @@ public static func tensorForestTreeSize(
 /// tensor: The concated result.
 /// lengths: Output tensor containing sizes of the 0th dimension of tensors in the list, used for computing the gradient.
 ///
-@inlinable @inline(__always)
+@inlinable
 public static func tensorListConcat<ElementDtype: TensorFlowScalar>(
   inputHandle: VariantHandle,
   elementShape: TensorShape?
@@ -32846,7 +32821,7 @@ public static func tensorListConcat<ElementDtype: TensorFlowScalar>(
   return op.execute(Int(1), Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func tensorListConcatLists(
   inputA: VariantHandle,
   inputB: VariantHandle,
@@ -32873,7 +32848,7 @@ public static func tensorListConcatLists(
 /// tensor: The concated result.
 /// lengths: Output tensor containing sizes of the 0th dimension of tensors in the list, used for computing the gradient.
 ///
-@inlinable @inline(__always)
+@inlinable
 public static func tensorListConcatV2<
     ElementDtype: TensorFlowScalar,
     ShapeType: BinaryInteger & TensorFlowScalar
@@ -32895,7 +32870,7 @@ public static func tensorListConcatV2<
 ///
 ///   input_handle: the list
 ///   element_shape: the shape of elements of the list
-@inlinable @inline(__always)
+@inlinable
 public static func tensorListElementShape<ShapeType: BinaryInteger & TensorFlowScalar>(
   inputHandle: VariantHandle
 ) -> Tensor<ShapeType> {
@@ -32911,7 +32886,7 @@ public static func tensorListElementShape<ShapeType: BinaryInteger & TensorFlowS
 ///
 /// tensor: The input tensor.
 /// output_handle: The list.
-@inlinable @inline(__always)
+@inlinable
 public static func tensorListFromTensor<
     ElementDtype: TensorFlowScalar,
     ShapeType: BinaryInteger & TensorFlowScalar
@@ -32935,7 +32910,7 @@ public static func tensorListFromTensor<
 /// input_handle: The input tensor list.
 /// indices: The indices used to index into the list.
 /// values: The tensor.
-@inlinable @inline(__always)
+@inlinable
 public static func tensorListGather<ElementDtype: TensorFlowScalar>(
   inputHandle: VariantHandle,
   indices: Tensor<Int32>,
@@ -32949,7 +32924,7 @@ public static func tensorListGather<ElementDtype: TensorFlowScalar>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func tensorListGetItem<ElementDtype: TensorFlowScalar>(
   inputHandle: VariantHandle,
   index: Tensor<Int32>,
@@ -32967,7 +32942,7 @@ public static func tensorListGetItem<ElementDtype: TensorFlowScalar>(
 ///
 /// input_handle: the input list
 /// length: the number of tensors in the list
-@inlinable @inline(__always)
+@inlinable
 public static func tensorListLength(
   inputHandle: VariantHandle
 ) -> Tensor<Int32> {
@@ -32984,7 +32959,7 @@ public static func tensorListLength(
 /// tensor: the withdrawn last element of the list
 /// element_dtype: the type of elements in the list
 /// element_shape: the shape of the output tensor
-@inlinable @inline(__always)
+@inlinable
 public static func tensorListPopBack<ElementDtype: TensorFlowScalar>(
   inputHandle: VariantHandle,
   elementShape: Tensor<Int32>
@@ -33003,7 +32978,7 @@ public static func tensorListPopBack<ElementDtype: TensorFlowScalar>(
 /// output_handle: A list with the elements of the old list followed by tensor.
 /// element_dtype: the type of elements in the list.
 /// element_shape: a shape compatible with that of elements in the list.
-@inlinable @inline(__always)
+@inlinable
 public static func tensorListPushBack<ElementDtype: TensorFlowScalar>(
   inputHandle: VariantHandle,
   _ tensor: Tensor<ElementDtype>
@@ -33015,7 +32990,7 @@ public static func tensorListPushBack<ElementDtype: TensorFlowScalar>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func tensorListPushBackBatch<ElementDtype: TensorFlowScalar>(
   inputHandles: VariantHandle,
   _ tensor: Tensor<ElementDtype>
@@ -33033,7 +33008,7 @@ public static func tensorListPushBackBatch<ElementDtype: TensorFlowScalar>(
 /// num_elements: the number of elements to reserve
 /// handle: the output list
 /// element_dtype: the desired type of elements in the list.
-@inlinable @inline(__always)
+@inlinable
 public static func tensorListReserve<ShapeType: BinaryInteger & TensorFlowScalar>(
   elementShape: Tensor<ShapeType>,
   numElements: Tensor<Int32>,
@@ -33053,7 +33028,7 @@ public static func tensorListReserve<ShapeType: BinaryInteger & TensorFlowScalar
 /// input_handle: the input list
 /// size: size of the output list
 ///
-@inlinable @inline(__always)
+@inlinable
 public static func tensorListResize(
   inputHandle: VariantHandle,
   size: Tensor<Int32>
@@ -33074,7 +33049,7 @@ public static func tensorListResize(
 /// element_shape: The shape of the elements in the list (can be less specified than
 ///   the shape of the tensor).  
 /// output_handle: The TensorList.
-@inlinable @inline(__always)
+@inlinable
 public static func tensorListScatter<
     ElementDtype: TensorFlowScalar,
     ShapeType: BinaryInteger & TensorFlowScalar
@@ -33101,7 +33076,7 @@ public static func tensorListScatter<
 /// tensor: The input tensor.
 /// indices: The indices used to index into the list.
 /// output_handle: The TensorList.
-@inlinable @inline(__always)
+@inlinable
 public static func tensorListScatterIntoExistingList<ElementDtype: TensorFlowScalar>(
   inputHandle: VariantHandle,
   _ tensor: Tensor<ElementDtype>,
@@ -33128,7 +33103,7 @@ public static func tensorListScatterIntoExistingList<ElementDtype: TensorFlowSca
 ///   the largest index in indices. If -1, the list is just large enough to include
 ///   the largest index in indices.
 /// output_handle: The TensorList.
-@inlinable @inline(__always)
+@inlinable
 public static func tensorListScatterV2<
     ElementDtype: TensorFlowScalar,
     ShapeType: BinaryInteger & TensorFlowScalar
@@ -33148,7 +33123,7 @@ public static func tensorListScatterV2<
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func tensorListSetItem<ElementDtype: TensorFlowScalar>(
   inputHandle: VariantHandle,
   index: Tensor<Int32>,
@@ -33171,7 +33146,7 @@ public static func tensorListSetItem<ElementDtype: TensorFlowScalar>(
 /// element_shape: A shape compatible with that of elements in the tensor.
 /// lengths: Vector of sizes of the 0th dimension of tensors in the list.
 /// output_handle: The list.
-@inlinable @inline(__always)
+@inlinable
 public static func tensorListSplit<
     ElementDtype: TensorFlowScalar,
     ShapeType: BinaryInteger & TensorFlowScalar
@@ -33197,7 +33172,7 @@ public static func tensorListSplit<
 /// tensor: the gathered result
 /// num_elements: optional. If not -1, the number of elements in the list.
 ///
-@inlinable @inline(__always)
+@inlinable
 public static func tensorListStack<ElementDtype: TensorFlowScalar>(
   inputHandle: VariantHandle,
   elementShape: Tensor<Int32>,
@@ -33284,7 +33259,7 @@ public static func tensorListStack<ElementDtype: TensorFlowScalar>(
 ///   - updates: Updates to scatter into output.
 ///
 /// - Output output: A new tensor copied from tensor and updates added according to the indices.
-@inlinable @inline(__always)
+@inlinable
 public static func tensorScatterAdd<
     T: TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -33375,7 +33350,7 @@ public static func tensorScatterAdd<
 ///   - updates: Updates to scatter into output.
 ///
 /// - Output output: A new tensor copied from tensor and updates subtracted according to the indices.
-@inlinable @inline(__always)
+@inlinable
 public static func tensorScatterSub<
     T: TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -33478,7 +33453,7 @@ public static func tensorScatterSub<
 ///
 /// - Output output: A new tensor with the given shape and updates applied according
 ///   to the indices.
-@inlinable @inline(__always)
+@inlinable
 public static func tensorScatterUpdate<
     T: TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar
@@ -33497,7 +33472,7 @@ public static func tensorScatterUpdate<
 }
 
 /// Creates a dataset that emits each dim-0 slice of `components` once.
-@inlinable @inline(__always)
+@inlinable
 public static func tensorSliceDataset<ToutputTypes: TensorArrayProtocol>(
   components: ToutputTypes,
   outputShapes: [TensorShape?]
@@ -33517,7 +33492,7 @@ public static func tensorSliceDataset<ToutputTypes: TensorArrayProtocol>(
 ///
 /// NOTE this op currently does not support broadcasting and so `value`'s shape
 /// must be exactly the shape produced by the slice of `input`.
-@inlinable @inline(__always)
+@inlinable
 public static func tensorStridedSliceUpdate<
     T: TensorFlowScalar,
     Index: BinaryInteger & TensorFlowScalar
@@ -33561,7 +33536,7 @@ public static func tensorStridedSliceUpdate<
 ///   - description: A json-encoded SummaryDescription proto.
 ///   - labels: An unused list of strings.
 ///   - display_name: An unused string.
-@inlinable @inline(__always)
+@inlinable
 public static func tensorSummary<T: TensorFlowScalar>(
   _ tensor: Tensor<T>,
   description: String,
@@ -33584,7 +33559,7 @@ public static func tensorSummary<T: TensorFlowScalar>(
 ///   - tensor: A tensor to serialize.
 ///   - serialized_summary_metadata: A serialized SummaryMetadata proto. Contains plugin
 ///     data.
-@inlinable @inline(__always)
+@inlinable
 public static func tensorSummaryV2<T: TensorFlowScalar>(
   tag: StringTensor,
   _ tensor: Tensor<T>,
@@ -33598,7 +33573,7 @@ public static func tensorSummaryV2<T: TensorFlowScalar>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func testAttr<T: FloatingPoint & TensorFlowScalar>(
 ) -> Tensor<T> {
   let op = TFE_Op("TestAttr")
@@ -33606,7 +33581,7 @@ public static func testAttr<T: FloatingPoint & TensorFlowScalar>(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func testStringOutput(
   _ input: Tensor<Float>
 ) -> (output1: Tensor<Float>, output2: StringTensor) {
@@ -33623,7 +33598,7 @@ public static func testStringOutput(
 ///   - compression_type: A scalar containing either (i) the empty string (no
 ///     compression), (ii) "ZLIB", or (iii) "GZIP".
 ///   - buffer_size: A scalar containing the number of bytes to buffer.
-@inlinable @inline(__always)
+@inlinable
 public static func textLineDataset(
   filenames: StringTensor,
   compressionType: StringTensor,
@@ -33646,7 +33621,7 @@ public static func textLineDataset(
 ///     with this shared_name. Otherwise, the node name is used instead.
 ///
 /// - Output reader_handle: The handle to reference the Reader.
-@inlinable @inline(__always)
+@inlinable
 public static func textLineReaderV2(
   skipHeaderLines: Int64 = 0,
   container: String,
@@ -33696,7 +33671,7 @@ public static func textLineReaderV2(
 ///     candidate representing the number of times the candidate is expected
 ///     to occur in a batch of sampled candidates.  If unique=true, then this is a
 ///     probability.
-@inlinable @inline(__always)
+@inlinable
 public static func threadUnsafeUnigramCandidateSampler(
   trueClasses: Tensor<Int64>,
   numTrue: Int64,
@@ -33728,7 +33703,7 @@ public static func threadUnsafeUnigramCandidateSampler(
 /// - Parameters:
 ///   - input: 1-D or higher.
 ///   - multiples: 1-D. Length must be the same as the number of dimensions in `input`
-@inlinable @inline(__always)
+@inlinable
 public static func tile<
     T: TensorFlowScalar,
     Tmultiples: BinaryInteger & TensorFlowScalar
@@ -33749,7 +33724,7 @@ public static func tile<
 /// Since `Tile` takes an input and repeats the input `multiples` times
 /// along each dimension, `TileGrad` takes in `multiples` and aggregates
 /// each repeated tile of `input` into `output`.
-@inlinable @inline(__always)
+@inlinable
 public static func tileGrad<T: TensorFlowScalar>(
   _ input: Tensor<T>,
   multiples: Tensor<Int32>
@@ -33767,7 +33742,7 @@ public static func tileGrad<T: TensorFlowScalar>(
 ///
 /// Note: the timestamp is computed when the op is executed, not when it is added
 /// to the graph.
-@inlinable @inline(__always)
+@inlinable
 public static func timestamp(
 ) -> Tensor<Double> {
   let op = TFE_Op("Timestamp")
@@ -33801,7 +33776,7 @@ public static func timestamp(
 /// - Outputs:
 ///   - values: The `k` largest elements along each last dimensional slice.
 ///   - indices: The indices of `values` within the last dimension of `input`.
-@inlinable @inline(__always)
+@inlinable
 public static func topK<T: Numeric & TensorFlowScalar>(
   _ input: Tensor<T>,
   k: Int64,
@@ -33839,7 +33814,7 @@ public static func topK<T: Numeric & TensorFlowScalar>(
 /// - Outputs:
 ///   - values: The `k` largest elements along each last dimensional slice.
 ///   - indices: The indices of `values` within the last dimension of `input`.
-@inlinable @inline(__always)
+@inlinable
 public static func topKV2<T: Numeric & TensorFlowScalar>(
   _ input: Tensor<T>,
   k: Tensor<Int32>,
@@ -33857,7 +33832,7 @@ public static func topKV2<T: Numeric & TensorFlowScalar>(
 ///
 /// The output `y` has the same rank as `x`. The shapes of `x` and `y` satisfy:
 ///   `y.shape[i] == x.shape[perm[i]] for i in [0, 1, ..., rank(x) - 1]`
-@inlinable @inline(__always)
+@inlinable
 public static func transpose<
     T: TensorFlowScalar,
     Tperm: BinaryInteger & TensorFlowScalar
@@ -33888,7 +33863,7 @@ public static func transpose<
 ///   - rhs: Shape is `[..., M, K]`.
 ///
 /// - Output output: Shape is `[..., M, K]`.
-@inlinable @inline(__always)
+@inlinable
 public static func tridiagonalSolve<T: FloatingPoint & TensorFlowScalar>(
   diagonals: Tensor<T>,
   rhs: Tensor<T>
@@ -33909,7 +33884,7 @@ public static func tridiagonalSolve<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// *NOTE*: `TruncateDiv` supports broadcasting. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-@inlinable @inline(__always)
+@inlinable
 public static func truncateDiv<T: Numeric & TensorFlowScalar>(
   _ x: Tensor<T>,
   _ y: Tensor<T>
@@ -33928,7 +33903,7 @@ public static func truncateDiv<T: Numeric & TensorFlowScalar>(
 ///
 /// *NOTE*: `TruncateMod` supports broadcasting. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-@inlinable @inline(__always)
+@inlinable
 public static func truncateMod<T: Numeric & TensorFlowScalar>(
   _ x: Tensor<T>,
   _ y: Tensor<T>
@@ -33957,7 +33932,7 @@ public static func truncateMod<T: Numeric & TensorFlowScalar>(
 ///
 /// - Output output: A tensor of the specified shape filled with random truncated normal
 ///   values.
-@inlinable @inline(__always)
+@inlinable
 public static func truncatedNormal<
     Dtype: FloatingPoint & TensorFlowScalar,
     T: BinaryInteger & TensorFlowScalar
@@ -34053,7 +34028,7 @@ public static func truncatedNormal<
 ///   - status_code: Same shape as `request`.  Values correspond to tensorflow Status enum codes.
 ///   - status_message: Same shape as `request`.  Values correspond to Status messages
 ///     returned from the RPC calls.
-@inlinable @inline(__always)
+@inlinable
 public static func tryRpc(
   address: StringTensor,
   method: StringTensor,
@@ -34072,7 +34047,7 @@ public static func tryRpc(
   return op.execute(Int(1), Int(1), Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func twoFloatInputs(
   _ a: Tensor<Float>,
   _ b: Tensor<Float>
@@ -34083,7 +34058,7 @@ public static func twoFloatInputs(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func twoFloatInputsFloatOutput(
   _ a: Tensor<Float>,
   _ b: Tensor<Float>
@@ -34094,7 +34069,7 @@ public static func twoFloatInputsFloatOutput(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func twoFloatInputsIntOutput(
   _ a: Tensor<Float>,
   _ b: Tensor<Float>
@@ -34105,7 +34080,7 @@ public static func twoFloatInputsIntOutput(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func twoFloatOutputs(
 ) -> (a: Tensor<Float>, b: Tensor<Float>) {
   let op = TFE_Op("TwoFloatOutputs")
@@ -34113,7 +34088,7 @@ public static func twoFloatOutputs(
   return op.execute(Int(1), Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func twoIntInputs(
   _ a: Tensor<Int32>,
   _ b: Tensor<Int32>
@@ -34124,7 +34099,7 @@ public static func twoIntInputs(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func twoIntOutputs(
 ) -> (a: Tensor<Int32>, b: Tensor<Int32>) {
   let op = TFE_Op("TwoIntOutputs")
@@ -34132,7 +34107,7 @@ public static func twoIntOutputs(
   return op.execute(Int(1), Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func typeList<T: TensorArrayProtocol>(
   _ a: T
 ) {
@@ -34142,7 +34117,7 @@ public static func typeList<T: TensorArrayProtocol>(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func typeListRestrict<T: TensorArrayProtocol>(
   _ a: T
 ) {
@@ -34152,7 +34127,7 @@ public static func typeListRestrict<T: TensorArrayProtocol>(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func typeListTwice<T: TensorArrayProtocol>(
   _ a: T,
   _ b: T
@@ -34164,7 +34139,7 @@ public static func typeListTwice<T: TensorArrayProtocol>(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func unary<T: TensorFlowScalar>(
   _ a: Tensor<T>
 ) -> Tensor<T> {
@@ -34194,7 +34169,7 @@ public static func unary<T: TensorFlowScalar>(
 /// shared_name: Instances of Unbatch with the same container and shared_name are
 ///  assumed to possibly belong to the same batch. If left empty, the op name will
 ///  be used as the shared name.
-@inlinable @inline(__always)
+@inlinable
 public static func unbatch<T: TensorFlowScalar>(
   batchedTensor: Tensor<T>,
   batchIndex: Tensor<Int64>,
@@ -34230,7 +34205,7 @@ public static func unbatch<T: TensorFlowScalar>(
 /// shared_name: Instances of UnbatchGrad with the same container and shared_name
 ///  are assumed to possibly belong to the same batch. If left empty, the op name
 ///  will be used as the shared name.
-@inlinable @inline(__always)
+@inlinable
 public static func unbatchGrad<T: TensorFlowScalar>(
   originalInput: Tensor<T>,
   batchIndex: Tensor<Int64>,
@@ -34289,7 +34264,7 @@ public static func unbatchGrad<T: TensorFlowScalar>(
 /// - Outputs:
 ///   - row_splits: A 1D int32 tensor containing the row splits.
 ///   - char_values: A 1D int32 Tensor containing the decoded codepoints.
-@inlinable @inline(__always)
+@inlinable
 public static func unicodeDecode(
   _ input: StringTensor,
   inputEncoding: String,
@@ -34351,7 +34326,7 @@ public static func unicodeDecode(
 ///   - char_values: A 1D int32 Tensor containing the decoded codepoints.
 ///   - char_to_byte_starts: A 1D int32 Tensor containing the byte index in the input string where each
 ///     character in `char_values` starts.
-@inlinable @inline(__always)
+@inlinable
 public static func unicodeDecodeWithOffsets(
   _ input: StringTensor,
   inputEncoding: String,
@@ -34408,7 +34383,7 @@ public static func unicodeDecodeWithOffsets(
 ///     0xFFFD (U+65533).
 ///
 /// - Output output: The 1-D Tensor of strings encoded from the provided unicode codepoints.
-@inlinable @inline(__always)
+@inlinable
 public static func unicodeEncode(
   inputValues: Tensor<Int32>,
   inputSplits: Tensor<Int64>,
@@ -34436,7 +34411,7 @@ public static func unicodeEncode(
 /// - Parameter input: A Tensor of int32 Unicode code points.
 ///
 /// - Output output: A Tensor of int32 script codes corresponding to each input code point.
-@inlinable @inline(__always)
+@inlinable
 public static func unicodeScript(
   _ input: Tensor<Int32>
 ) -> Tensor<Int32> {
@@ -34499,7 +34474,7 @@ public static func unicodeScript(
 ///     `replacement_char`. Default is false.
 ///
 /// - Output output: A string tensor containing unicode text encoded using `output_encoding`.
-@inlinable @inline(__always)
+@inlinable
 public static func unicodeTranscode(
   _ input: StringTensor,
   inputEncoding: String,
@@ -34555,7 +34530,7 @@ public static func unicodeTranscode(
 ///     candidate representing the number of times the candidate is expected
 ///     to occur in a batch of sampled candidates.  If unique=true, then this is a
 ///     probability.
-@inlinable @inline(__always)
+@inlinable
 public static func uniformCandidateSampler(
   trueClasses: Tensor<Int64>,
   numTrue: Int64,
@@ -34599,7 +34574,7 @@ public static func uniformCandidateSampler(
 /// - Outputs:
 ///   - y: 1-D.
 ///   - idx: 1-D.
-@inlinable @inline(__always)
+@inlinable
 public static func unique<
     T: TensorFlowScalar,
     OutIdx: BinaryInteger & TensorFlowScalar
@@ -34668,7 +34643,7 @@ public static func unique<
 ///   - y: A `Tensor`. Unique elements along the `axis` of `Tensor` x.
 ///   - idx: A 1-D Tensor. Has the same type as x that contains the index of each
 ///     value of x in the output y.
-@inlinable @inline(__always)
+@inlinable
 public static func uniqueV2<
     T: TensorFlowScalar,
     Taxis: BinaryInteger & TensorFlowScalar,
@@ -34712,7 +34687,7 @@ public static func uniqueV2<
 ///   - y: 1-D.
 ///   - idx: 1-D.
 ///   - count: 1-D.
-@inlinable @inline(__always)
+@inlinable
 public static func uniqueWithCounts<
     T: TensorFlowScalar,
     OutIdx: BinaryInteger & TensorFlowScalar
@@ -34786,7 +34761,7 @@ public static func uniqueWithCounts<
 ///   - idx: A 1-D Tensor. Has the same type as x that contains the index of each
 ///     value of x in the output y.
 ///   - count: A 1-D Tensor. The count of each value of x in the output y.
-@inlinable @inline(__always)
+@inlinable
 public static func uniqueWithCountsV2<
     T: TensorFlowScalar,
     Taxis: BinaryInteger & TensorFlowScalar,
@@ -34825,7 +34800,7 @@ public static func uniqueWithCountsV2<
 ///   valid range is `[-R, R)`.
 ///
 /// - Output output: The list of tensors unpacked from `value`.
-@inlinable @inline(__always)
+@inlinable
 public static func unpack<T: TensorFlowScalar>(
   value: Tensor<T>,
   num: Int64,
@@ -34855,7 +34830,7 @@ public static func unpack<T: TensorFlowScalar>(
 ///
 /// - Output output: An 2-D (or 1-D if indices is 0-D) tensor where each row has the
 ///   same shape as the indices array.
-@inlinable @inline(__always)
+@inlinable
 public static func unravelIndex<Tidx: BinaryInteger & TensorFlowScalar>(
   indices: Tensor<Tidx>,
   dims: Tensor<Tidx>
@@ -34906,7 +34881,7 @@ public static func unravelIndex<Tidx: BinaryInteger & TensorFlowScalar>(
 /// - Output output: Has same shape as data, except for the first `segment_ids.rank`
 ///   dimensions, which are replaced with a single dimension which has size
 ///   `num_segments`.
-@inlinable @inline(__always)
+@inlinable
 public static func unsortedSegmentMax<
     T: Numeric & TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar,
@@ -34960,7 +34935,7 @@ public static func unsortedSegmentMax<
 /// - Output output: Has same shape as data, except for the first `segment_ids.rank`
 ///   dimensions, which are replaced with a single dimension which has size
 ///   `num_segments`.
-@inlinable @inline(__always)
+@inlinable
 public static func unsortedSegmentMin<
     T: Numeric & TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar,
@@ -35013,7 +34988,7 @@ public static func unsortedSegmentMin<
 /// - Output output: Has same shape as data, except for the first `segment_ids.rank`
 ///   dimensions, which are replaced with a single dimension which has size
 ///   `num_segments`.
-@inlinable @inline(__always)
+@inlinable
 public static func unsortedSegmentProd<
     T: Numeric & TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar,
@@ -35068,7 +35043,7 @@ public static func unsortedSegmentProd<
 /// - Output output: Has same shape as data, except for the first `segment_ids.rank`
 ///   dimensions, which are replaced with a single dimension which has size
 ///   `num_segments`.
-@inlinable @inline(__always)
+@inlinable
 public static func unsortedSegmentSum<
     T: Numeric & TensorFlowScalar,
     Tindices: BinaryInteger & TensorFlowScalar,
@@ -35092,7 +35067,7 @@ public static func unsortedSegmentSum<
 ///
 /// The basic functionality is similar to dequeue with many fewer
 /// capabilities and options.  This Op is optimized for performance.
-@inlinable @inline(__always)
+@inlinable
 public static func unstage<Dtypes: TensorGroup>(
   capacity: Int64 = 0,
   memoryLimit: Int64 = 0,
@@ -35108,7 +35083,7 @@ public static func unstage<Dtypes: TensorGroup>(
   return op.execute(Int(Dtypes._typeList.count))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func unwrapDatasetVariant(
   inputHandle: VariantHandle
 ) -> VariantHandle {
@@ -35145,7 +35120,7 @@ public static func unwrapDatasetVariant(
 /// - Output output: A `Tensor` with the same shape as `values`.  It contains the last scalar index
 ///   into the last dimension where values can be inserted without changing the
 ///   ordered property.
-@inlinable @inline(__always)
+@inlinable
 public static func upperBound<
     T: TensorFlowScalar,
     OutType: BinaryInteger & TensorFlowScalar
@@ -35169,7 +35144,7 @@ public static func upperBound<
 ///   - dtype: the type of this variable. Must agree with the dtypes
 ///     of all ops using this variable.
 ///   - shape: The (possibly partially specified) shape of this variable.
-@inlinable @inline(__always)
+@inlinable
 public static func varHandleOp(
   container: String,
   sharedName: String,
@@ -35190,7 +35165,7 @@ public static func varHandleOp(
 ///
 /// - Output is_initialized: a scalar boolean which is true if the variable has been
 ///   initialized.
-@inlinable @inline(__always)
+@inlinable
 public static func varIsInitializedOp(
   resource: ResourceHandle
 ) -> Tensor<Bool> {
@@ -35209,7 +35184,7 @@ public static func varIsInitializedOp(
 /// # 't' is [[[1, 1, 1], [2, 2, 2]], [[3, 3, 3], [4, 4, 4]]]
 /// shape(t) ==> [2, 2, 3]
 /// ```
-@inlinable @inline(__always)
+@inlinable
 public static func variableShape<OutType: BinaryInteger & TensorFlowScalar>(
   _ input: ResourceHandle
 ) -> Tensor<OutType> {
@@ -35280,7 +35255,7 @@ public static func variableShape<OutType: BinaryInteger & TensorFlowScalar>(
 ///                   [1, 1, 1],
 ///                   [2, 1, 1]]
 /// ```
-@inlinable @inline(__always)
+@inlinable
 public static func where_<T: TensorFlowScalar>(
   _ input: Tensor<T>
 ) -> Tensor<Int64> {
@@ -35308,7 +35283,7 @@ public static func where_<T: TensorFlowScalar>(
 ///           by T.
 ///
 /// - Output output: A list of output tensors whose types are T.
-@inlinable @inline(__always)
+@inlinable
 public static func while_<
     T: TensorArrayProtocol,
     CondIn: TensorGroup,
@@ -35344,7 +35319,7 @@ public static func while_<
 ///     with this shared_name. Otherwise, the node name is used instead.
 ///
 /// - Output reader_handle: The handle to reference the Reader.
-@inlinable @inline(__always)
+@inlinable
 public static func wholeFileReaderV2(
   container: String,
   sharedName: String
@@ -35365,7 +35340,7 @@ public static func wholeFileReaderV2(
 ///     It must be positive.
 ///   - drop_remainder: A scalar representing whether a window should be dropped in case its size is
 ///     smaller than desired.
-@inlinable @inline(__always)
+@inlinable
 public static func windowDataset(
   inputDataset: VariantHandle,
   size: Tensor<Int64>,
@@ -35394,7 +35369,7 @@ public static func windowDataset(
 /// - Parameter request: A string tensor containing a serialized WorkerHeartbeatRequest
 ///
 /// - Output response: A string tensor containing a serialized WorkerHeartbeatResponse
-@inlinable @inline(__always)
+@inlinable
 public static func workerHeartbeat(
   request: StringTensor
 ) -> StringTensor {
@@ -35403,7 +35378,7 @@ public static func workerHeartbeat(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func wrapDatasetVariant(
   inputHandle: VariantHandle
 ) -> VariantHandle {
@@ -35412,7 +35387,7 @@ public static func wrapDatasetVariant(
   return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func writeAudioSummary(
   writer: ResourceHandle,
   step: Tensor<Int64>,
@@ -35438,7 +35413,7 @@ public static func writeAudioSummary(
 /// - Parameters:
 ///   - filename: scalar. The name of the file to which we write the contents.
 ///   - contents: scalar. The content to be written to the output file.
-@inlinable @inline(__always)
+@inlinable
 public static func writeFile(
   filename: StringTensor,
   contents: StringTensor
@@ -35449,7 +35424,7 @@ public static func writeFile(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func writeGraphSummary(
   writer: ResourceHandle,
   step: Tensor<Int64>,
@@ -35462,7 +35437,7 @@ public static func writeGraphSummary(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func writeHistogramSummary<T: Numeric & TensorFlowScalar>(
   writer: ResourceHandle,
   step: Tensor<Int64>,
@@ -35478,7 +35453,7 @@ public static func writeHistogramSummary<T: Numeric & TensorFlowScalar>(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func writeImageSummary<T: Numeric & TensorFlowScalar>(
   writer: ResourceHandle,
   step: Tensor<Int64>,
@@ -35498,7 +35473,7 @@ public static func writeImageSummary<T: Numeric & TensorFlowScalar>(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func writeRawProtoSummary(
   writer: ResourceHandle,
   step: Tensor<Int64>,
@@ -35511,7 +35486,7 @@ public static func writeRawProtoSummary(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func writeScalarSummary<T: Numeric & TensorFlowScalar>(
   writer: ResourceHandle,
   step: Tensor<Int64>,
@@ -35527,7 +35502,7 @@ public static func writeScalarSummary<T: Numeric & TensorFlowScalar>(
   op.execute()
 }
 
-@inlinable @inline(__always)
+@inlinable
 public static func writeSummary<T: TensorFlowScalar>(
   writer: ResourceHandle,
   step: Tensor<Int64>,
@@ -35546,7 +35521,7 @@ public static func writeSummary<T: TensorFlowScalar>(
 }
 
 /// Returns 0 if x == 0, and x / y otherwise, elementwise.
-@inlinable @inline(__always)
+@inlinable
 public static func xdivy<T: FloatingPoint & TensorFlowScalar>(
   _ x: Tensor<T>,
   _ y: Tensor<T>
@@ -35559,7 +35534,7 @@ public static func xdivy<T: FloatingPoint & TensorFlowScalar>(
 }
 
 /// Returns 0 if x == 0, and x * log(y) otherwise, elementwise.
-@inlinable @inline(__always)
+@inlinable
 public static func xlogy<T: FloatingPoint & TensorFlowScalar>(
   _ x: Tensor<T>,
   _ y: Tensor<T>
@@ -35576,7 +35551,7 @@ public static func xlogy<T: FloatingPoint & TensorFlowScalar>(
 /// - Parameter x: a tensor of type T.
 ///
 /// - Output y: a tensor of the same shape and type as x but filled with zeros.
-@inlinable @inline(__always)
+@inlinable
 public static func zerosLike<T: TensorFlowScalar>(
   _ x: Tensor<T>
 ) -> Tensor<T> {
@@ -35592,7 +35567,7 @@ public static func zerosLike<T: TensorFlowScalar>(
 ///
 ///
 /// \\(\zeta(x, q) = \sum_{n=0}^{\infty} (q + n)^{-x}\\)
-@inlinable @inline(__always)
+@inlinable
 public static func zeta<T: FloatingPoint & TensorFlowScalar>(
   _ x: Tensor<T>,
   q: Tensor<T>
@@ -35605,7 +35580,7 @@ public static func zeta<T: FloatingPoint & TensorFlowScalar>(
 }
 
 /// Creates a dataset that zips together `input_datasets`.
-@inlinable @inline(__always)
+@inlinable
 public static func zipDataset(
   inputDatasets: [VariantHandle],
   outputTypes: [TensorDataType],

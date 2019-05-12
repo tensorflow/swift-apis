@@ -42,17 +42,15 @@ public extension Tensor {
     /// The number of dimensions of the `Tensor`.
     @inlinable
     var rank: Int {
-        @inline(__always)
         @_semantics("autodiff.nonvarying")
         get {
-            return Int(_TFGetScalarOrDie(rankTensor.handle))
+            return Int(rankTensor.scalar!)
         }
     }
 
-    /// The dimensions of the `Tensor`.
+    /// The shape of the `Tensor`.
     @inlinable
     var shape: TensorShape {
-        @inline(__always)
         @_semantics("autodiff.nonvarying")
         get {
             return TensorShape(shapeTensor.scalars.map(Int.init))
@@ -62,9 +60,8 @@ public extension Tensor {
     /// The number of scalars in the `Tensor`.
     @inlinable
     var scalarCount: Int {
-        @inline(__always)
         get {
-            return Int(_TFGetScalarOrDie(scalarCountTensor.handle))
+            return Int(scalarCountTensor.scalar!)
         }
     }
 
@@ -104,20 +101,14 @@ public extension Tensor {
     /// Returns `true` if `rank` is equal to 0 and `false` otherwise.
     @inlinable
     var isScalar: Bool {
-        @inline(__always)
-        get {
-            return rank == 0
-        }
+        return rank == 0
     }
 
     /// Returns the single scalar element if `rank` is equal to 0 and `nil`
     /// otherwise.
     @inlinable
     var scalar: Scalar? {
-        @inline(__always)
-        get {
-            return Scalar(self)
-        }
+        return Scalar(self)
     }
 
     /// Reshape to scalar.
@@ -125,7 +116,7 @@ public extension Tensor {
     @inlinable
     @differentiable(wrt: self, vjp: _vjpScalarized where Scalar: TensorFlowFloatingPoint)
     func scalarized() -> Scalar {
-        return _TFGetScalarOrDie(reshaped(to: []).handle)
+        return reshaped(to: []).scalar!
     }
 }
 
@@ -137,9 +128,9 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 }
 
 public extension TensorFlowScalar {
-    @inlinable @inline(__always)
+    @inlinable
     init?(_ tensor: Tensor<Self>) {
-        guard let scalar = _TFGetScalar(tensor.handle) else {
+        guard let scalar = tensor.scalar else {
             return nil
         }
         self = scalar
@@ -153,12 +144,9 @@ public extension TensorFlowScalar {
 public extension Tensor {
     @inlinable
     var array: ShapedArray<Scalar> {
-        @inline(__always)
-        get {
-            debugLog("Returning a host copy of array.")
-            internalConsistencyCheck(handle.isConcrete)
-	        return handle.makeHostCopy()
-        }
+        debugLog("Returning a host copy of array.")
+        internalConsistencyCheck(handle.isConcrete)
+	    return handle.makeHostCopy()
     }
 
     @inlinable
@@ -172,11 +160,11 @@ public extension Tensor {
 //===------------------------------------------------------------------------------------------===//
 
 public extension Tensor {
-    /// Creates a tensor from a scalar value.
-    @inlinable @inline(__always)
+    /// Creates a 0-D tensor from a scalar value.
+    @inlinable
     @differentiable(vjp: _vjpScalarInit where Scalar: TensorFlowFloatingPoint)
     init(_ value: Scalar) {
-        self.init(handle: _TFTensorFromScalar(value))
+        self.init(shape: [], scalars: [value])
     }
 }
 
@@ -188,23 +176,16 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 }
 
 public extension Tensor {
-    /// Creates a 1D tensor from contiguous scalars.
-    ///
-    /// - Parameters:
-    ///   - vector: The scalar contents of the tensor.
-    @inlinable @inline(__always)
-    init(_ vector: [Scalar]) {
-        self.init(handle: _TFTensorFromScalars1D(vector))
+    /// Creates a 1D tensor from scalars.
+    @inlinable
+    init(_ scalars: [Scalar]) {
+        self.init(shape: [scalars.count], scalars: scalars)
     }
 
-    /// Creates a 1D tensor from contiguous scalars.
-    ///
-    /// - Parameters:
-    ///   - vector: The scalar contents of the tensor.
-    @inlinable @inline(__always)
+    /// Creates a 1D tensor from scalars.
+    @inlinable
     init<C: RandomAccessCollection>(_ vector: C) where C.Element == Scalar {
-        let handle = _TFHoistable {
-        TensorHandle<Scalar>(
+        let handle = TensorHandle<Scalar>(
             shape: [vector.count],
             scalarsInitializer: { addr in
                 var currentAddr = addr
@@ -213,7 +194,6 @@ public extension Tensor {
                     currentAddr = currentAddr.advanced(by: 1)
                 }
             })
-        }
         self.init(handle: handle)
     }
 
@@ -223,11 +203,11 @@ public extension Tensor {
     ///   - shape: The shape of the tensor.
     ///   - scalars: The scalar contents of the tensor.
     /// - Precondition: The number of scalars must equal the product of the dimensions of the shape.
-    @inlinable @inline(__always)
+    @inlinable
     init(shape: TensorShape, scalars: [Scalar]) {
-        // NOTE: We use `_TFTensorFromScalars` here so the compiler can try to promote constants and
-        // avoid copies.
-        self.init(handle: _TFTensorFromScalars(scalars, shape: shape.dimensions))
+        self = scalars.withUnsafeBufferPointer { bufferPointer in
+	        Tensor(shape: shape, scalars: bufferPointer)
+	    }
     }
 
     /// Creates a tensor with the specified shape and contiguous scalars in row-major order.
@@ -237,16 +217,14 @@ public extension Tensor {
     ///   - scalars: The scalar contents of the tensor.
     /// - Precondition: The number of scalars must equal the product of the
     ///   dimensions of the shape.
-    @inlinable @inline(__always)
+    @inlinable
     init(shape: TensorShape, scalars: UnsafeBufferPointer<Scalar>) {
-        let handle: TensorHandle<Scalar> = _TFHoistable {
-            precondition(scalars.count == shape.contiguousSize)
-            return TensorHandle<Scalar>(
-                shape: shape.dimensions,
-                scalarsInitializer: { address in
-                    address.initialize(from: scalars.baseAddress!, count: shape.contiguousSize)
-                })
-        }
+        precondition(scalars.count == shape.contiguousSize)
+        let handle = TensorHandle<Scalar>(
+            shape: shape.dimensions,
+            scalarsInitializer: { address in
+                address.initialize(from: scalars.baseAddress!, count: shape.contiguousSize)
+            })
         self.init(handle: handle)
     }
 
@@ -257,20 +235,18 @@ public extension Tensor {
     ///   - scalars: The scalar contents of the tensor.
     /// - Precondition: The number of scalars must equal the product of the
     ///   dimensions of the shape.
-    @inlinable @inline(__always)
+    @inlinable
     init<C: RandomAccessCollection>(shape: TensorShape, scalars: C) where C.Element == Scalar {
-        let handle: TensorHandle<Scalar> = _TFHoistable {
-            precondition(scalars.count == shape.contiguousSize)
-            return TensorHandle<Scalar>(
-                shape: shape.dimensions,
-                scalarsInitializer: { addr in
-                    var currentAddr = addr
-                    for scalar in scalars {
-                        currentAddr.initialize(to: scalar)
-                        currentAddr = currentAddr.advanced(by: 1)
-                    }
-                })
-        }
+        precondition(scalars.count == shape.contiguousSize)
+        let handle = TensorHandle<Scalar>(
+            shape: shape.dimensions,
+            scalarsInitializer: { addr in
+                var currentAddr = addr
+                for scalar in scalars {
+                    currentAddr.initialize(to: scalar)
+                    currentAddr = currentAddr.advanced(by: 1)
+                }
+            })
         self.init(handle: handle)
     }
 }
@@ -338,7 +314,7 @@ public struct _TensorElementLiteral<Scalar>: TensorProtocol where Scalar: Tensor
 extension _TensorElementLiteral: ExpressibleByBooleanLiteral
     where Scalar: ExpressibleByBooleanLiteral {
     public typealias BooleanLiteralType = Scalar.BooleanLiteralType
-    @inlinable @inline(__always)
+    @inlinable
     public init(booleanLiteral: BooleanLiteralType) {
         tensor = Tensor(Scalar(booleanLiteral: booleanLiteral))
     }
@@ -347,7 +323,7 @@ extension _TensorElementLiteral: ExpressibleByBooleanLiteral
 extension _TensorElementLiteral: ExpressibleByIntegerLiteral
     where Scalar: ExpressibleByIntegerLiteral {
     public typealias IntegerLiteralType = Scalar.IntegerLiteralType
-    @inlinable @inline(__always)
+    @inlinable
     public init(integerLiteral: IntegerLiteralType) {
         tensor = Tensor(Scalar(integerLiteral: integerLiteral))
     }
@@ -356,7 +332,7 @@ extension _TensorElementLiteral: ExpressibleByIntegerLiteral
 extension _TensorElementLiteral: ExpressibleByFloatLiteral
     where Scalar: ExpressibleByFloatLiteral {
     public typealias FloatLiteralType = Scalar.FloatLiteralType
-    @inlinable @inline(__always)
+    @inlinable
     public init(floatLiteral: FloatLiteralType) {
         tensor = Tensor(Scalar(floatLiteral: floatLiteral))
     }
@@ -364,7 +340,7 @@ extension _TensorElementLiteral: ExpressibleByFloatLiteral
 
 extension _TensorElementLiteral: ExpressibleByArrayLiteral {
     public typealias ArrayLiteralElement = _TensorElementLiteral<Scalar>
-    @inlinable @inline(__always)
+    @inlinable
     public init(arrayLiteral elements: _TensorElementLiteral<Scalar>...) {
         tensor = Raw.pack(elements.map { $0.tensor })
     }
@@ -377,13 +353,13 @@ extension Tensor: ExpressibleByArrayLiteral {
     /// Creates a tensor initialized with the given elements.
     /// - Note: This is for conversion from tensor element literals. This is a
     ///   separate method because `ShapedArray` initializers need to call it.
-    @inlinable @inline(__always)
+    @inlinable
     internal init(_tensorElementLiterals elements: [_TensorElementLiteral<Scalar>]) {
         self = Raw.pack(elements.map { $0.tensor })
     }
 
     /// Creates a tensor initialized with the given elements.
-    @inlinable @inline(__always)
+    @inlinable
     public init(arrayLiteral elements: _TensorElementLiteral<Scalar>...) {
         self.init(_tensorElementLiterals: elements)
     }
@@ -508,7 +484,7 @@ extension Tensor: AdditiveArithmetic where Scalar: Numeric {
 
     /// Adds two tensors and produces their sum.
     /// - Note: `+` supports broadcasting.
-    @inlinable @inline(__always)
+    @inlinable
     @differentiable(vjp: _vjpAdd(lhs:rhs:) where Scalar: TensorFlowFloatingPoint)
     public static func + (lhs: Tensor, rhs: Tensor) -> Tensor {
         return Raw.add(lhs, rhs)
@@ -516,7 +492,7 @@ extension Tensor: AdditiveArithmetic where Scalar: Numeric {
 
     /// Subtracts one tensor from another and produces their difference.
     /// - Note: `-` supports broadcasting.
-    @inlinable @inline(__always)
+    @inlinable
     @differentiable(vjp: _vjpSubtract(lhs:rhs:) where Scalar: TensorFlowFloatingPoint)
     public static func - (lhs: Tensor, rhs: Tensor) -> Tensor {
         return Raw.sub(lhs, rhs)

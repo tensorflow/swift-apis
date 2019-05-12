@@ -28,7 +28,7 @@ public extension Raw {
     ///   - shape_and_slices: shape {N}.  The slice specs of the tensors to be saved. Empty strings 
     ///     indicate that they are non-partitioned tensors.
     ///   - tensors: `N` tensors to save.
-    @inlinable @inline(__always)
+    @inlinable
     static func saveV2(
         prefix: StringTensor,
         tensorNames: StringTensor,
@@ -83,7 +83,7 @@ public extension Raw {
     ///
     /// - Output tensors: shape {N}.  The restored tensors, whose shapes are read from the 
     ///   checkpoint directly.
-    @inlinable @inline(__always)
+    @inlinable
     static func restoreV2(
         prefix: StringTensor,
         tensorNames: StringTensor,
