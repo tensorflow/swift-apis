@@ -284,7 +284,7 @@ internal struct TFE_Op {
 
 %for n in range(1, 10 + 1):
   @inlinable
-  internal func execute<${", ".join(["T" + str(i) + " : TensorArrayProtocol" for i in range(n)])}>(
+  internal func execute<${", ".join(["T" + str(i) + ": TensorArrayProtocol" for i in range(n)])}>(
     ${",\n    ".join(["_ count" + str(i) + ": Int" for i in range(n)])}
   ) -> (${", ".join(["T" + str(i) for i in range(n)])}) {
     var count = ${" + ".join(["Int32(count" + str(i) + ")" for i in range(n)])}

@@ -283,7 +283,7 @@ internal struct TFE_Op {
   }
 
   @inlinable
-  internal func execute<T0 : TensorArrayProtocol>(
+  internal func execute<T0: TensorArrayProtocol>(
     _ count0: Int
   ) -> (T0) {
     var count = Int32(count0)
@@ -303,7 +303,7 @@ internal struct TFE_Op {
   }
 
   @inlinable
-  internal func execute<T0 : TensorArrayProtocol, T1 : TensorArrayProtocol>(
+  internal func execute<T0: TensorArrayProtocol, T1: TensorArrayProtocol>(
     _ count0: Int,
     _ count1: Int
   ) -> (T0, T1) {
@@ -326,7 +326,7 @@ internal struct TFE_Op {
   }
 
   @inlinable
-  internal func execute<T0 : TensorArrayProtocol, T1 : TensorArrayProtocol, T2 : TensorArrayProtocol>(
+  internal func execute<T0: TensorArrayProtocol, T1: TensorArrayProtocol, T2: TensorArrayProtocol>(
     _ count0: Int,
     _ count1: Int,
     _ count2: Int
@@ -352,7 +352,7 @@ internal struct TFE_Op {
   }
 
   @inlinable
-  internal func execute<T0 : TensorArrayProtocol, T1 : TensorArrayProtocol, T2 : TensorArrayProtocol, T3 : TensorArrayProtocol>(
+  internal func execute<T0: TensorArrayProtocol, T1: TensorArrayProtocol, T2: TensorArrayProtocol, T3: TensorArrayProtocol>(
     _ count0: Int,
     _ count1: Int,
     _ count2: Int,
@@ -381,7 +381,7 @@ internal struct TFE_Op {
   }
 
   @inlinable
-  internal func execute<T0 : TensorArrayProtocol, T1 : TensorArrayProtocol, T2 : TensorArrayProtocol, T3 : TensorArrayProtocol, T4 : TensorArrayProtocol>(
+  internal func execute<T0: TensorArrayProtocol, T1: TensorArrayProtocol, T2: TensorArrayProtocol, T3: TensorArrayProtocol, T4: TensorArrayProtocol>(
     _ count0: Int,
     _ count1: Int,
     _ count2: Int,
@@ -413,7 +413,7 @@ internal struct TFE_Op {
   }
 
   @inlinable
-  internal func execute<T0 : TensorArrayProtocol, T1 : TensorArrayProtocol, T2 : TensorArrayProtocol, T3 : TensorArrayProtocol, T4 : TensorArrayProtocol, T5 : TensorArrayProtocol>(
+  internal func execute<T0: TensorArrayProtocol, T1: TensorArrayProtocol, T2: TensorArrayProtocol, T3: TensorArrayProtocol, T4: TensorArrayProtocol, T5: TensorArrayProtocol>(
     _ count0: Int,
     _ count1: Int,
     _ count2: Int,
@@ -448,7 +448,7 @@ internal struct TFE_Op {
   }
 
   @inlinable
-  internal func execute<T0 : TensorArrayProtocol, T1 : TensorArrayProtocol, T2 : TensorArrayProtocol, T3 : TensorArrayProtocol, T4 : TensorArrayProtocol, T5 : TensorArrayProtocol, T6 : TensorArrayProtocol>(
+  internal func execute<T0: TensorArrayProtocol, T1: TensorArrayProtocol, T2: TensorArrayProtocol, T3: TensorArrayProtocol, T4: TensorArrayProtocol, T5: TensorArrayProtocol, T6: TensorArrayProtocol>(
     _ count0: Int,
     _ count1: Int,
     _ count2: Int,
@@ -486,7 +486,7 @@ internal struct TFE_Op {
   }
 
   @inlinable
-  internal func execute<T0 : TensorArrayProtocol, T1 : TensorArrayProtocol, T2 : TensorArrayProtocol, T3 : TensorArrayProtocol, T4 : TensorArrayProtocol, T5 : TensorArrayProtocol, T6 : TensorArrayProtocol, T7 : TensorArrayProtocol>(
+  internal func execute<T0: TensorArrayProtocol, T1: TensorArrayProtocol, T2: TensorArrayProtocol, T3: TensorArrayProtocol, T4: TensorArrayProtocol, T5: TensorArrayProtocol, T6: TensorArrayProtocol, T7: TensorArrayProtocol>(
     _ count0: Int,
     _ count1: Int,
     _ count2: Int,
@@ -527,7 +527,7 @@ internal struct TFE_Op {
   }
 
   @inlinable
-  internal func execute<T0 : TensorArrayProtocol, T1 : TensorArrayProtocol, T2 : TensorArrayProtocol, T3 : TensorArrayProtocol, T4 : TensorArrayProtocol, T5 : TensorArrayProtocol, T6 : TensorArrayProtocol, T7 : TensorArrayProtocol, T8 : TensorArrayProtocol>(
+  internal func execute<T0: TensorArrayProtocol, T1: TensorArrayProtocol, T2: TensorArrayProtocol, T3: TensorArrayProtocol, T4: TensorArrayProtocol, T5: TensorArrayProtocol, T6: TensorArrayProtocol, T7: TensorArrayProtocol, T8: TensorArrayProtocol>(
     _ count0: Int,
     _ count1: Int,
     _ count2: Int,
@@ -571,7 +571,7 @@ internal struct TFE_Op {
   }
 
   @inlinable
-  internal func execute<T0 : TensorArrayProtocol, T1 : TensorArrayProtocol, T2 : TensorArrayProtocol, T3 : TensorArrayProtocol, T4 : TensorArrayProtocol, T5 : TensorArrayProtocol, T6 : TensorArrayProtocol, T7 : TensorArrayProtocol, T8 : TensorArrayProtocol, T9 : TensorArrayProtocol>(
+  internal func execute<T0: TensorArrayProtocol, T1: TensorArrayProtocol, T2: TensorArrayProtocol, T3: TensorArrayProtocol, T4: TensorArrayProtocol, T5: TensorArrayProtocol, T6: TensorArrayProtocol, T7: TensorArrayProtocol, T8: TensorArrayProtocol, T9: TensorArrayProtocol>(
     _ count0: Int,
     _ count1: Int,
     _ count2: Int,
