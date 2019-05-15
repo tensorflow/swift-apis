@@ -226,14 +226,14 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 
     @inlinable
-    internal func _vjpMaxPooled(
+    internal func _vjpMaxPooled2D(
         kernelSize: (Int, Int, Int, Int),
         strides: (Int, Int, Int, Int),
         padding: Padding
     ) -> (Tensor, (Tensor) -> Tensor) {
         // TODO: Currently this is not higher order differentiable. Redefine in
         // closed form.
-        let value = maxPooled(kernelSize: kernelSize, strides: strides,
+        let value = maxPooled2D(kernelSize: kernelSize, strides: strides,
                               padding: padding)
         return (value, { v in
             return Raw.maxPoolGradV2(
@@ -250,14 +250,40 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 
     @inlinable
-    internal func _vjpAveragePooled(
+    internal func _vjpMaxPooled3D(
+        kernelSize: (Int, Int, Int, Int, Int),
+        strides: (Int, Int, Int, Int, Int),
+        padding: Padding
+    ) -> (Tensor, (Tensor) -> Tensor) {
+        // TODO: Currently this is not higher order differentiable. Redefine in
+        // closed form.
+        let value = maxPooled3D(kernelSize: kernelSize, strides: strides,
+                              padding: padding)
+        return (value, { v in
+            return Raw.maxPool3DGrad(
+                origInput: self,
+                origOutput: value,
+                grad: v,
+                ksize: Tensor<Int32>([Int32(kernelSize.0), Int32(kernelSize.1),
+                                      Int32(kernelSize.2), Int32(kernelSize.3),
+                                      Int32(kernelSize.4)]),
+                strides: Tensor<Int32>([Int32(strides.0), Int32(strides.1),
+                                        Int32(strides.2), Int32(strides.3),
+                                        Int32(strides.4)]),
+                padding: padding.raw
+            )
+        })
+    }
+
+    @inlinable
+    internal func _vjpAveragePooled2D(
         kernelSize: (Int, Int, Int, Int),
         strides: (Int, Int, Int, Int),
         padding: Padding
     ) -> (Tensor, (Tensor) -> Tensor) {
         // TODO: Currently this is not higher order differentiable. Redefine in
         // closed form.
-        let value = averagePooled(kernelSize: kernelSize, strides: strides,
+        let value = averagePooled2D(kernelSize: kernelSize, strides: strides,
                                   padding: padding)
         return (value, { v in
             return Raw.avgPoolGrad(
@@ -265,7 +291,33 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
                 grad: v,
                 ksize: [Int32(kernelSize.0), Int32(kernelSize.1),
                         Int32(kernelSize.2), Int32(kernelSize.3)],
-                strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2), Int32(strides.3)],
+                strides: [Int32(strides.0), Int32(strides.1),
+                          Int32(strides.2), Int32(strides.3)],
+                padding: padding.raw
+            )
+        })
+    }
+
+    @inlinable
+    internal func _vjpAveragePooled3D(
+        kernelSize: (Int, Int, Int, Int, Int),
+        strides: (Int, Int, Int, Int, Int),
+        padding: Padding
+    ) -> (Tensor, (Tensor) -> Tensor) {
+        // TODO: Currently this is not higher order differentiable. Redefine in
+        // closed form.
+        let value = averagePooled3D(kernelSize: kernelSize, strides: strides,
+                              padding: padding)
+        return (value, { v in
+            return Raw.avgPool3DGrad(
+                origInputShape: self.shapeTensor,
+                grad: v,
+                ksize: Tensor<Int32>([Int32(kernelSize.0), Int32(kernelSize.1),
+                                      Int32(kernelSize.2), Int32(kernelSize.3),
+                                      Int32(kernelSize.4)]),
+                strides: Tensor<Int32>([Int32(strides.0), Int32(strides.1),
+                                        Int32(strides.2), Int32(strides.3),
+                                        Int32(strides.4)]),
                 padding: padding.raw
             )
         })

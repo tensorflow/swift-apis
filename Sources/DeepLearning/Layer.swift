@@ -828,7 +828,7 @@ public struct MaxPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Returns: The output.
     @differentiable
     public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return input.maxPooled(
+        return input.maxPooled2D(
             kernelSize: poolSize, strides: strides, padding: padding)
     }
 }
@@ -875,7 +875,7 @@ public struct MaxPool3D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Returns: The output.
     @differentiable
     public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return input.maxPooled(kernelSize: poolSize, strides: strides, padding: padding)
+        return input.maxPooled3D(kernelSize: poolSize, strides: strides, padding: padding)
     }
 }
 
@@ -969,7 +969,7 @@ public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Returns: The output.
     @differentiable
     public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return input.averagePooled(kernelSize: poolSize, strides: strides, padding: padding)
+        return input.averagePooled2D(kernelSize: poolSize, strides: strides, padding: padding)
     }
 }
 
@@ -1015,7 +1015,7 @@ public struct AvgPool3D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Returns: The output.
     @differentiable
     public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return input.averagePooled(kernelSize: poolSize, strides: strides, padding: padding)
+        return input.averagePooled3D(kernelSize: poolSize, strides: strides, padding: padding)
     }
 }
 
