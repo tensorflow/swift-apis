@@ -897,7 +897,7 @@ public extension MaxPool3D {
   /// Creates a max pooling layer with the specified pooling window size and stride. All
   /// pooling sizes and strides are the same.
   init(poolSize: Int, stride: Int, padding: Padding = .valid) {
-       self.init(poolsize: (poolSize, poolSize, poolSize),
+       self.init(poolSize: (poolSize, poolSize, poolSize),
                  strides: (stride, stride, stride),
                  padding: padding)
   }

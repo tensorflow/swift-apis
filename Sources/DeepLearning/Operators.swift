@@ -390,16 +390,16 @@ public extension Tensor where Scalar: FloatingPoint {
         where Scalar : TensorFlowFloatingPoint
     )
     func maxPooled3D(
-        kernelSize: (Int, Int, Int, Int),
-        strides: (Int, Int, Int, Int),
+        kernelSize: (Int, Int, Int, Int, Int),
+        strides: (Int, Int, Int, Int, Int),
         padding: Padding
     ) -> Tensor {
         return Raw.maxPool3D(
             self,
-            ksize: Tensor<Int32>([Int32(kernelSize.0), Int32(kernelSize.1),
-                                  Int32(kernelSize.2), Int32(kernelSize.3), Int32(kernelSize.4)]),
-            strides: Tensor<Int32>([Int32(strides.0), Int32(strides.1),
-                                    Int32(strides.2), Int32(strides.3), Int32(strides.4)]),
+            ksize: [Int32(kernelSize.0), Int32(kernelSize.1),
+                    Int32(kernelSize.2), Int32(kernelSize.3), Int32(kernelSize.4)],
+            strides: [Int32(strides.0), Int32(strides.1),
+                      Int32(strides.2), Int32(strides.3), Int32(strides.4)],
             padding: padding.raw)
     }
 
@@ -448,7 +448,7 @@ public extension Tensor where Scalar: FloatingPoint {
         padding: Padding
     ) -> Tensor {
         return Raw.avgPool3D(
-            value: self,
+	    self,
             ksize: [Int32(kernelSize.0), Int32(kernelSize.1),
                     Int32(kernelSize.2), Int32(kernelSize.3), Int32(kernelSize.4)],
             strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2), Int32(strides.3),
