@@ -1299,11 +1299,16 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNum
         return TensorShape([1, weight.shape[1]])
     }
 
-    public var zeroState: Tensor<Scalar> {
-        return Tensor(zeros: stateShape)
+    public var zeroState: State {
+        return State(state: Tensor(zeros: stateShape))
     }
 
-    public typealias State = Tensor<Scalar>
+    // TODO(TF-507): Revert to `typealias State = Tensor<Scalar>` after
+    // SR-10697 is fixed.
+    public struct State: Differentiable {
+        let state: Tensor<Scalar>
+    }
+
     public typealias TimeStepInput = Tensor<Scalar>
     public typealias TimeStepOutput = State
     public typealias Input = RNNCellInput<TimeStepInput, State>
@@ -1319,8 +1324,7 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNum
                 seed: (Int64, Int64) = (Int64.random(in: Int64.min..<Int64.max),
                                         Int64.random(in: Int64.min..<Int64.max))) {
         let concatenatedInputSize = inputSize + hiddenSize
-        self.weight = Tensor(glorotUniform: [concatenatedInputSize, hiddenSize],
-                             seed: seed)
+        self.weight = Tensor(glorotUniform: [concatenatedInputSize, hiddenSize], seed: seed)
         self.bias = Tensor(zeros: [hiddenSize])
     }
 
@@ -1330,8 +1334,8 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNum
     /// - Returns: The hidden state.
     @differentiable
     public func call(_ input: Input) -> Output {
-        let concatenatedInput = input.input.concatenated(with: input.state, alongAxis: 1)
-        let newState = tanh(matmul(concatenatedInput, weight) + bias)
+        let concatenatedInput = input.input.concatenated(with: input.state.state, alongAxis: 1)
+        let newState = State(state: tanh(matmul(concatenatedInput, weight) + bias))
         return Output(output: newState, state: newState)
     }
 }
