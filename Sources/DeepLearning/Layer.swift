@@ -1300,13 +1300,16 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNum
     }
 
     public var zeroState: State {
-        return State(state: Tensor(zeros: stateShape))
+        return State(Tensor(zeros: stateShape))
     }
 
     // TODO(TF-507): Revert to `typealias State = Tensor<Scalar>` after
     // SR-10697 is fixed.
     public struct State: Differentiable {
-        let state: Tensor<Scalar>
+        public let value: Tensor<Scalar>
+        public init(_ value: Tensor<Scalar>) {
+            self.value = value
+        }
     }
 
     public typealias TimeStepInput = Tensor<Scalar>
@@ -1334,8 +1337,8 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNum
     /// - Returns: The hidden state.
     @differentiable
     public func call(_ input: Input) -> Output {
-        let concatenatedInput = input.input.concatenated(with: input.state.state, alongAxis: 1)
-        let newState = State(state: tanh(matmul(concatenatedInput, weight) + bias))
+        let concatenatedInput = input.input.concatenated(with: input.state.value, alongAxis: 1)
+        let newState = State(tanh(matmul(concatenatedInput, weight) + bias))
         return Output(output: newState, state: newState)
     }
 }
