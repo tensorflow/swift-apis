@@ -26,7 +26,7 @@ public protocol Optimizer {
     /// Updates the specified differentiable variables along the specified
     /// direction.
     mutating func update(_ variables: inout Model.AllDifferentiableVariables,
-                         along direction: Model.CotangentVector)
+                         along direction: Model.TangentVector)
 }
 
 fileprivate extension Tensor where Scalar: Numeric {
@@ -42,7 +42,7 @@ fileprivate extension Tensor where Scalar: Numeric {
 /// Reference: ["Adam - A Method for Stochastic Optimization"](
 /// https://arxiv.org/abs/1412.6980v8)
 public class Adam<Model: Layer>: Optimizer
-    where Model.AllDifferentiableVariables == Model.CotangentVector {
+    where Model.AllDifferentiableVariables == Model.TangentVector {
     /// The learning rate.
     public var learningRate: Float
     /// A coefficient used to calculate the first and second moments of
@@ -138,7 +138,7 @@ public class Adam<Model: Layer>: Optimizer
 /// Reference: ["rmsprop: Divide the gradient by a running average of its recent magnitude"](
 /// http://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf)
 public class RMSProp<Model: Layer>: Optimizer
-    where Model.AllDifferentiableVariables == Model.CotangentVector {
+    where Model.AllDifferentiableVariables == Model.TangentVector {
     /// The learning rate.
     public var learningRate: Float
     // TODO: Document `rho`. Keras doesn't document `rho`.
@@ -178,7 +178,7 @@ public class RMSProp<Model: Layer>: Optimizer
 
 
     public func update(_ model: inout Model.AllDifferentiableVariables,
-                       along direction: Model.CotangentVector) {
+                       along direction: Model.TangentVector) {
         step += 1
         let learningRate = self.learningRate * 1 / (1 + decay * Float(step))
         for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
@@ -202,7 +202,7 @@ public class RMSProp<Model: Layer>: Optimizer
 /// An optimizer that implements stochastic gradient descent, with support for momentum, learning
 /// rate decay, and Nesterov momentum.
 public class SGD<Model: Layer>: Optimizer
-    where Model.AllDifferentiableVariables == Model.CotangentVector {
+    where Model.AllDifferentiableVariables == Model.TangentVector {
     /// The learning rate.
     public var learningRate: Float
     /// The momentum factor. It accelerates stochastic gradient descent in the relevant direction
@@ -242,7 +242,7 @@ public class SGD<Model: Layer>: Optimizer
     }
 
     public func update(_ model: inout Model.AllDifferentiableVariables,
-                       along direction: Model.CotangentVector) {
+                       along direction: Model.TangentVector) {
         step += 1
         let learningRate = self.learningRate * 1 / (1 + decay * Float(step))
         for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
@@ -290,7 +290,7 @@ public class RiemannSGD<Model: Layer, Scalar: FloatingPoint>: Optimizer
     }
 
     public func update(_ model: inout Model.AllDifferentiableVariables,
-                       along direction: Model.CotangentVector) {
-        model = model.moved(along: learningRate * (.zero - model.tangentVector(from: direction)))
+                       along direction: Model.TangentVector) {
+        model = model.moved(along: learningRate * (.zero - direction))
     }
 }

@@ -122,7 +122,7 @@ public enum Padding {
 
 public extension Padding {
     @inlinable
-    internal var raw: Raw.Padding {
+    var raw: Raw.Padding {
         switch self {
         case .same: return .same
         case .valid: return .valid
