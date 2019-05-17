@@ -205,7 +205,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     func _vjpUnstacked(
         alongAxis axis: Int = 0
-    ) -> ([Tensor], (Array<Tensor>.CotangentVector) -> Tensor) {
+    ) -> ([Tensor], (Array<Tensor>.TangentVector) -> Tensor) {
         let result = unstacked(alongAxis: axis)
         return (result, { v in Tensor(stacking: v.base, alongAxis: axis) })
     }
@@ -214,7 +214,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     func _vjpSplit(
         count: Int,
         alongAxis axis: Int = 0
-    ) -> ([Tensor], (Array<Tensor>.CotangentVector) -> Tensor) {
+    ) -> ([Tensor], (Array<Tensor>.TangentVector) -> Tensor) {
         let result = split(count: count, alongAxis: axis)
         return (result, { v in Tensor(concatenating: v.base, alongAxis: axis) })
     }
@@ -223,7 +223,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     func _vjpSplit(
         sizes: Tensor<Int32>,
         alongAxis axis: Int = 0
-    ) -> ([Tensor], (Array<Tensor>.CotangentVector) -> Tensor) {
+    ) -> ([Tensor], (Array<Tensor>.TangentVector) -> Tensor) {
         let result = split(sizes: sizes, alongAxis: axis)
         return (result, { v in Tensor(concatenating: v.base, alongAxis: axis) })
     }
