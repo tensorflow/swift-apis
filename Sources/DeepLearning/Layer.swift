@@ -51,16 +51,16 @@ public extension Layer {
     @differentiating(inferring(from:))
     @usableFromInline
     internal func _vjpInferring(from input: Input)
-        -> (value: Output, pullback: (Output.CotangentVector)
-            -> (CotangentVector, Input.CotangentVector)) {
+        -> (value: Output, pullback: (Output.TangentVector)
+            -> (TangentVector, Input.TangentVector)) {
         return withLearningPhase(LearningPhase.inference) {
             let (output, pullback) = appliedForBackpropagation(to: input)
             return (output, { v in pullback(v) })
         }
     }
 
-    typealias Backpropagator = (_ direction: Output.CotangentVector)
-        -> (layerGradient: CotangentVector, inputGradient: Input.CotangentVector)
+    typealias Backpropagator = (_ direction: Output.TangentVector)
+        -> (layerGradient: TangentVector, inputGradient: Input.TangentVector)
 
     /// Returns the inference output and the backpropagation function obtained from applying the
     /// layer to the given input.
@@ -728,7 +728,7 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     @usableFromInline
     func _vjpApplied(to input: Tensor<Scalar>) ->
         (Tensor<Scalar>, (Tensor<Scalar>) ->
-            (BatchNorm<Scalar>.CotangentVector, Tensor<Scalar>)) {
+            (BatchNorm<Scalar>.TangentVector, Tensor<Scalar>)) {
         switch Context.local.learningPhase {
         case .training:
             return valueWithPullback(at: input) {
@@ -1201,7 +1201,7 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: Layer {
     @usableFromInline
     func _vjpApplied(to input: Tensor<Scalar>) ->
         (Tensor<Scalar>, (Tensor<Scalar>) ->
-            (Dropout<Scalar>.CotangentVector, Tensor<Scalar>)) {
+            (Dropout<Scalar>.TangentVector, Tensor<Scalar>)) {
         switch Context.local.learningPhase {
         case .training:
             return valueWithPullback(at: input) {
@@ -1414,11 +1414,19 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNum
         return TensorShape([1, weight.shape[1]])
     }
 
-    public var zeroState: Tensor<Scalar> {
-        return Tensor(zeros: stateShape)
+    public var zeroState: State {
+        return State(Tensor(zeros: stateShape))
     }
 
-    public typealias State = Tensor<Scalar>
+    // TODO(TF-507): Revert to `typealias State = Tensor<Scalar>` after
+    // SR-10697 is fixed.
+    public struct State: Differentiable {
+        public let value: Tensor<Scalar>
+        public init(_ value: Tensor<Scalar>) {
+            self.value = value
+        }
+    }
+
     public typealias TimeStepInput = Tensor<Scalar>
     public typealias TimeStepOutput = State
     public typealias Input = RNNCellInput<TimeStepInput, State>
@@ -1434,8 +1442,7 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNum
                 seed: (Int64, Int64) = (Int64.random(in: Int64.min..<Int64.max),
                                         Int64.random(in: Int64.min..<Int64.max))) {
         let concatenatedInputSize = inputSize + hiddenSize
-        self.weight = Tensor(glorotUniform: [concatenatedInputSize, hiddenSize],
-                             seed: seed)
+        self.weight = Tensor(glorotUniform: [concatenatedInputSize, hiddenSize], seed: seed)
         self.bias = Tensor(zeros: [hiddenSize])
     }
 
@@ -1445,8 +1452,8 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNum
     /// - Returns: The hidden state.
     @differentiable
     public func call(_ input: Input) -> Output {
-        let concatenatedInput = input.input.concatenated(with: input.state, alongAxis: 1)
-        let newState = tanh(matmul(concatenatedInput, weight) + bias)
+        let concatenatedInput = input.input.concatenated(with: input.state.value, alongAxis: 1)
+        let newState = State(tanh(matmul(concatenatedInput, weight) + bias))
         return Output(output: newState, state: newState)
     }
 }
@@ -1550,8 +1557,8 @@ public struct RNN<Cell: RNNCell>: Layer {
     internal func _vjpCall(
         _ inputs: [Cell.TimeStepInput], initialState: Cell.State
     ) -> ([Cell.TimeStepOutput],
-          (Array<Cell.TimeStepOutput>.CotangentVector)
-              -> (CotangentVector, Array<Cell.TimeStepInput>.CotangentVector)) {
+          (Array<Cell.TimeStepOutput>.TangentVector)
+              -> (TangentVector, Array<Cell.TimeStepInput>.TangentVector)) {
         let timeStepCount = inputs.count
         var currentHiddenState = cell.zeroState
         var timeStepOutputs: [Cell.TimeStepOutput] = []
@@ -1569,9 +1576,9 @@ public struct RNN<Cell: RNNCell>: Layer {
         return (timeStepOutputs, { 𝛁outputs in
             precondition(𝛁outputs.base.count == timeStepCount,
                          "The number of output gradients must equal the number of time steps")
-            var 𝛁cell = Cell.CotangentVector.zero
-            var 𝛁state = Cell.State.CotangentVector.zero
-            var reversed𝛁inputs: [Cell.TimeStepInput.CotangentVector] = []
+            var 𝛁cell = Cell.TangentVector.zero
+            var 𝛁state = Cell.State.TangentVector.zero
+            var reversed𝛁inputs: [Cell.TimeStepInput.TangentVector] = []
             reversed𝛁inputs.reserveCapacity(timeStepCount)
             for (𝛁output, backpropagator) in zip(𝛁outputs.base, backpropagators).reversed() {
                 let (new𝛁cell, 𝛁input) = backpropagator(.init(output: 𝛁output, state: 𝛁state))
