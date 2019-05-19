@@ -67,7 +67,7 @@ final class LayerTests: XCTestCase {
     }
 
     func testAvgPool3D() {
-        let layer = AvgPool3D<Float>(poolSize: (2, 4, 5), stride: (1, 1, 1), padding: .valid)
+        let layer = AvgPool3D<Float>(poolSize: (2, 4, 5), strides: (1, 1, 1), padding: .valid)
         let input = Tensor(shape: [1, 2, 4, 5, 1], scalars: (0..<20).map(Float.init))
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>([[[[[9.5]]]]])
@@ -147,13 +147,18 @@ final class LayerTests: XCTestCase {
         var cell = SimpleRNNCell<Float>(inputSize: 2, hiddenSize: 5)
         cell.weight = weight
         cell.bias = bias
-        let state = Tensor<Float>(ones: [1, 5]) * Tensor<Float>([1, 0.2, 0.5, 2, 0.6])
+        let state = SimpleRNNCell.State(
+            Tensor<Float>(ones: [1, 5]) * Tensor<Float>([1, 0.2, 0.5, 2, 0.6])
+        )
         let input = Tensor<Float>(ones: [1, 2]) * Tensor<Float>([0.3, 0.7])
         let output = cell(input: input, state: state).state
-        let expected = Tensor<Float>([[2.76649, 6.2999997, 2.76649, 6.2999997, 2.76649]])
+        let expected = SimpleRNNCell.State(
+            Tensor<Float>([[2.76649, 6.2999997, 2.76649, 6.2999997, 2.76649]])
+        )
         XCTAssertEqual(output, expected)
     }
 
+    // TODO(TF-507): Remove references to `SimpleRNNCell.State` after SR-10697 is fixed.
     func testRNN() {
         let x = Tensor<Float>(rangeFrom: 0.0, to: 0.4, stride: 0.1).rankLifted()
         let inputs: [Tensor<Float>] = Array(repeating: x, count: 4)
@@ -162,11 +167,12 @@ final class LayerTests: XCTestCase {
         let (outputs, pullback) = rnn.valueWithPullback(at: inputs) { rnn, inputs in
             return rnn(inputs)
         }
-        XCTAssertEqual(outputs, [[[-0.0026294366, -0.0058668107,  0.04495003,  0.20311214]],
-                                 [[ 0.06788494,    0.050665878,   0.02415526,  0.09249911]],
-                                 [[ 0.06621192,    0.009049267,   0.065047316, 0.11534518]],
-                                 [[ 0.05612204,    0.00022032857, 0.05407162,  0.09784105]]])
-        let (𝛁rnn, 𝛁inputs) = pullback(.init(inputs))
+        XCTAssertEqual(outputs.map { $0.value },
+                       [[[-0.0026294366, -0.0058668107,  0.04495003,  0.20311214]],
+                        [[ 0.06788494,    0.050665878,   0.02415526,  0.09249911]],
+                        [[ 0.06621192,    0.009049267,   0.065047316, 0.11534518]],
+                        [[ 0.05612204,    0.00022032857, 0.05407162,  0.09784105]]])
+        let (𝛁rnn, 𝛁inputs) = pullback(.init(inputs.map { SimpleRNNCell<Float>.State($0) }))
         XCTAssertEqual(𝛁rnn.cell.weight,
                        [[          0.0,           0.0,           0.0,           0.0],
                         [-0.0051278225,  0.0013102926,    0.00740262,   0.018119661],

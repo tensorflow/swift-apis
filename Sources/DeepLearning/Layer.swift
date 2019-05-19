@@ -1420,7 +1420,7 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNum
 
     // TODO(TF-507): Revert to `typealias State = Tensor<Scalar>` after
     // SR-10697 is fixed.
-    public struct State: Differentiable {
+    public struct State: Equatable, Differentiable, VectorNumeric, KeyPathIterable {
         public let value: Tensor<Scalar>
         public init(_ value: Tensor<Scalar>) {
             self.value = value

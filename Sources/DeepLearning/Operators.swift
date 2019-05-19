@@ -262,12 +262,10 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
                 origInput: self,
                 origOutput: value,
                 grad: v,
-                ksize: Tensor<Int32>([Int32(kernelSize.0), Int32(kernelSize.1),
-                                      Int32(kernelSize.2), Int32(kernelSize.3),
-                                      Int32(kernelSize.4)]),
-                strides: Tensor<Int32>([Int32(strides.0), Int32(strides.1),
-                                        Int32(strides.2), Int32(strides.3),
-                                        Int32(strides.4)]),
+                ksize: [Int32(kernelSize.0), Int32(kernelSize.1), Int32(kernelSize.2),
+                        Int32(kernelSize.3), Int32(kernelSize.4)],
+                strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2), Int32(strides.3),
+                          Int32(strides.4)],
                 padding: padding.raw
             )
         })
@@ -308,12 +306,10 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
             return Raw.avgPool3DGrad(
                 origInputShape: self.shapeTensor,
                 grad: v,
-                ksize: Tensor<Int32>([Int32(kernelSize.0), Int32(kernelSize.1),
-                                      Int32(kernelSize.2), Int32(kernelSize.3),
-                                      Int32(kernelSize.4)]),
-                strides: Tensor<Int32>([Int32(strides.0), Int32(strides.1),
-                                        Int32(strides.2), Int32(strides.3),
-                                        Int32(strides.4)]),
+                ksize: [Int32(kernelSize.0), Int32(kernelSize.1), Int32(kernelSize.2),
+                        Int32(kernelSize.3), Int32(kernelSize.4)],
+                strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2), Int32(strides.3),
+                          Int32(strides.4)],
                 padding: padding.raw
             )
         })
