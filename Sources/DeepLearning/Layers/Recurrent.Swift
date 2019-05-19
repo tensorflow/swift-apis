@@ -71,8 +71,8 @@ public extension RNNCell {
     }
 }
 
-/// A Simple RNN Cell.
-public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
+/// A simple RNN cell.
+public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNumeric {
     public var weight: Tensor<Scalar>
     public var bias: Tensor<Scalar>
 
@@ -80,11 +80,19 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
         return TensorShape([1, weight.shape[1]])
     }
 
-    public var zeroState: Tensor<Scalar> {
-        return Tensor(zeros: stateShape)
+    public var zeroState: State {
+        return State(Tensor(zeros: stateShape))
     }
 
-    public typealias State = Tensor<Scalar>
+    // TODO(TF-507): Revert to `typealias State = Tensor<Scalar>` after
+    // SR-10697 is fixed.
+    public struct State: Equatable, Differentiable, VectorNumeric, KeyPathIterable {
+        public let value: Tensor<Scalar>
+        public init(_ value: Tensor<Scalar>) {
+            self.value = value
+        }
+    }
+
     public typealias TimeStepInput = Tensor<Scalar>
     public typealias TimeStepOutput = State
     public typealias Input = RNNCellInput<TimeStepInput, State>
@@ -95,29 +103,29 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     /// - Parameters:
     ///   - inputSize: The number of features in 2-D input tensors.
     ///   - hiddenSize: The number of features in 2-D hidden states.
-    public init(inputSize: Int, hiddenSize: Int) {
+    ///   - seed: The random seed for initialization. The default value is random.
+    public init(inputSize: Int, hiddenSize: Int,
+                seed: (Int64, Int64) = (Int64.random(in: Int64.min..<Int64.max),
+                                        Int64.random(in: Int64.min..<Int64.max))) {
         let concatenatedInputSize = inputSize + hiddenSize
-        self.weight = Tensor(glorotUniform: [concatenatedInputSize, hiddenSize])
+        self.weight = Tensor(glorotUniform: [concatenatedInputSize, hiddenSize], seed: seed)
         self.bias = Tensor(zeros: [hiddenSize])
     }
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters:
-    ///   - input: The input to the layer.
-    ///   - context: The contextual information for the layer application, e.g. the current learning
-    ///     phase.
+    /// - Parameter input: The input to the layer.
     /// - Returns: The hidden state.
     @differentiable
     public func call(_ input: Input) -> Output {
-        let concatenatedInput = input.input.concatenated(with: input.state, alongAxis: 1)
-        let newState = tanh(matmul(concatenatedInput, weight) + bias)
+        let concatenatedInput = input.input.concatenated(with: input.state.value, alongAxis: 1)
+        let newState = State(tanh(matmul(concatenatedInput, weight) + bias))
         return Output(output: newState, state: newState)
     }
 }
 
-/// An LSTM Cell.
-public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
+/// An LSTM cell.
+public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNumeric {
     public var inputWeight, updateWeight, forgetWeight, outputWeight: Tensor<Scalar>
     public var inputBias, updateBias, forgetBias, outputBias: Tensor<Scalar>
 
@@ -139,17 +147,19 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     /// - Parameters:
     ///   - inputSize: The number of features in 2-D input tensors.
     ///   - hiddenSize: The number of features in 2-D hidden states.
-    public init(inputSize: Int, hiddenSize: Int) {
+    public init(inputSize: Int, hiddenSize: Int,
+                seed: (Int64, Int64) = (Int64.random(in: Int64.min..<Int64.max),
+                                        Int64.random(in: Int64.min..<Int64.max))) {
         let concatenatedInputSize = inputSize + hiddenSize
         let gateWeightShape = TensorShape([concatenatedInputSize, hiddenSize])
         let gateBiasShape = TensorShape([hiddenSize])
-        self.inputWeight = Tensor(glorotUniform: gateWeightShape)
+        self.inputWeight = Tensor(glorotUniform: gateWeightShape, seed: seed)
         self.inputBias = Tensor(zeros: gateBiasShape)
-        self.updateWeight = Tensor(glorotUniform: gateWeightShape)
+        self.updateWeight = Tensor(glorotUniform: gateWeightShape, seed: seed)
         self.updateBias = Tensor(zeros: gateBiasShape)
-        self.forgetWeight = Tensor(glorotUniform: gateWeightShape)
+        self.forgetWeight = Tensor(glorotUniform: gateWeightShape, seed: seed)
         self.forgetBias = Tensor(ones: gateBiasShape)
-        self.outputWeight = Tensor(glorotUniform: gateWeightShape)
+        self.outputWeight = Tensor(glorotUniform: gateWeightShape, seed: seed)
         self.outputBias = Tensor(zeros: gateBiasShape)
     }
 
@@ -166,10 +176,7 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters:
-    ///   - input: The input to the layer.
-    ///   - context: The contextual information for the layer application, e.g. the current learning
-    ///     phase.
+    /// - Parameter input: The input to the layer.
     /// - Returns: The hidden state.
     @differentiable
     public func call(_ input: Input) -> Output {
@@ -216,8 +223,8 @@ public struct RNN<Cell: RNNCell>: Layer {
     internal func _vjpCall(
         _ inputs: [Cell.TimeStepInput], initialState: Cell.State
     ) -> ([Cell.TimeStepOutput],
-          (Array<Cell.TimeStepOutput>.CotangentVector)
-              -> (CotangentVector, Array<Cell.TimeStepInput>.CotangentVector)) {
+          (Array<Cell.TimeStepOutput>.TangentVector)
+              -> (TangentVector, Array<Cell.TimeStepInput>.TangentVector)) {
         let timeStepCount = inputs.count
         var currentHiddenState = cell.zeroState
         var timeStepOutputs: [Cell.TimeStepOutput] = []
@@ -235,9 +242,9 @@ public struct RNN<Cell: RNNCell>: Layer {
         return (timeStepOutputs, { 𝛁outputs in
             precondition(𝛁outputs.base.count == timeStepCount,
                          "The number of output gradients must equal the number of time steps")
-            var 𝛁cell = Cell.CotangentVector.zero
-            var 𝛁state = Cell.State.CotangentVector.zero
-            var reversed𝛁inputs: [Cell.TimeStepInput.CotangentVector] = []
+            var 𝛁cell = Cell.TangentVector.zero
+            var 𝛁state = Cell.State.TangentVector.zero
+            var reversed𝛁inputs: [Cell.TimeStepInput.TangentVector] = []
             reversed𝛁inputs.reserveCapacity(timeStepCount)
             for (𝛁output, backpropagator) in zip(𝛁outputs.base, backpropagators).reversed() {
                 let (new𝛁cell, 𝛁input) = backpropagator(.init(output: 𝛁output, state: 𝛁state))

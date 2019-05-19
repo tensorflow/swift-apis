@@ -54,8 +54,7 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters:
-    ///   - input: The input to the layer.
+    /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable(vjp: _vjpApplied(to:))
     public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
@@ -70,7 +69,7 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: Layer {
     @usableFromInline
     func _vjpApplied(to input: Tensor<Scalar>) ->
         (Tensor<Scalar>, (Tensor<Scalar>) ->
-            (Dropout<Scalar>.CotangentVector, Tensor<Scalar>)) {
+            (Dropout<Scalar>.TangentVector, Tensor<Scalar>)) {
         switch Context.local.learningPhase {
         case .training:
             return valueWithPullback(at: input) {
@@ -94,8 +93,7 @@ public struct Flatten<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters:
-    ///   - input: The input to the layer.
+    /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
     public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
@@ -131,8 +129,7 @@ public struct Reshape<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters:
-    ///   - input: The input to the layer.
+    /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
     public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
@@ -167,8 +164,7 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters:
-    ///   - input: The input to the layer.
+    /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
     public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {

@@ -31,8 +31,7 @@ public protocol Layer: Differentiable & KeyPathIterable
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters:
-    ///   - input: The input to the layer.
+    /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
     func call(_ input: Input) -> Output
@@ -52,16 +51,16 @@ public extension Layer {
     @differentiating(inferring(from:))
     @usableFromInline
     internal func _vjpInferring(from input: Input)
-        -> (value: Output, pullback: (Output.CotangentVector)
-            -> (CotangentVector, Input.CotangentVector)) {
+        -> (value: Output, pullback: (Output.TangentVector)
+            -> (TangentVector, Input.TangentVector)) {
         return withLearningPhase(LearningPhase.inference) {
             let (output, pullback) = appliedForBackpropagation(to: input)
             return (output, { v in pullback(v) })
         }
     }
 
-    typealias Backpropagator = (_ direction: Output.CotangentVector)
-        -> (layerGradient: CotangentVector, inputGradient: Input.CotangentVector)
+    typealias Backpropagator = (_ direction: Output.TangentVector)
+        -> (layerGradient: TangentVector, inputGradient: Input.TangentVector)
 
     /// Returns the inference output and the backpropagation function obtained from applying the
     /// layer to the given input.
@@ -179,6 +178,7 @@ public extension Differentiable {
         return l6(o5)
     }
 }
+
 
 /// A mutable, shareable, owning reference to a tensor.
 public final class Parameter<Scalar: TensorFlowScalar> {

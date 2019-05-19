@@ -60,8 +60,7 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters:
-    ///   - input: The input to the layer `[batchCount, width, inputChannels]`.
+    /// - Parameter input: The input to the layer `[batchCount, width, inputChannels]`.
     /// - Returns: The output `[batchCount, newWidth, outputChannels]`.
     @differentiable
     public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
@@ -179,8 +178,7 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters:
-    ///   - input: The input to the layer.
+    /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
     public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
@@ -298,8 +296,7 @@ public struct TransposedConv2D: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters:
-    ///   - input: The input to the layer.
+    /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
     public func call(_ input: Tensor<Float>) -> Tensor<Float> {
