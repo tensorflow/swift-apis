@@ -985,42 +985,6 @@ public extension AvgPool2D {
             strides: (1, strides.0, strides.1, 1),
             padding: padding)
   }
-
-/// A global max pooling layer for temporal data.
-@_fixed_layout
-public struct GlobalMaxPooling1D<Scalar: TensorFlowFloatingPoint>: Layer {
-    /// Creates a global max pooling layer.
-    public init() {}
-
-    /// Returns the output obtained from applying the layer to the given input.
-    ///
-    /// - Parameters:
-    ///   - input: The input to the layer.
-    ///   - context: The contextual information for the layer application, e.g. the current learning
-    ///     phase.
-    /// - Returns: The output.
-    @differentiable
-    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
-        return input.max(alongAxes: 1).reshaped(to: [input.shape[0], input.shape[2]])
-    }
-
-/// A global max pooling layer for temporal data.
-@_fixed_layout
-public struct GlobalMaxPooling1D<Scalar: TensorFlowFloatingPoint>: Layer {
-    /// Creates a global max pooling layer.
-    public init() {}
-
-    /// Returns the output obtained from applying the layer to the given input.
-    ///
-    /// - Parameters:
-    ///   - input: The input to the layer.
-    ///   - context: The contextual information for the layer application, e.g. the current learning
-    ///     phase.
-    /// - Returns: The output.
-    @differentiable
-    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
-        return input.max(squeezingAxes: 1)
-    }
 }
 
 /// An average pooling layer for spatial or spatio-temporal data.
@@ -1052,12 +1016,6 @@ public struct AvgPool3D<Scalar: TensorFlowFloatingPoint>: Layer {
     @differentiable
     public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input.averagePooled3D(kernelSize: poolSize, strides: strides, padding: padding)
-
-    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
-        return input.max(alongAxes: [1, 2]).reshaped(to: [input.shape[0], input.shape[3]])
-
-    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
-        return input.max(squeezingAxes: [1, 2])
     }
 }
 
@@ -1082,6 +1040,14 @@ public extension AvgPool3D {
         self.init(poolSize: (poolSize, poolSize, poolSize),
                   strides: (strides, strides, strides),
                   padding: padding)
+    }
+}
+
+/// A global max pooling layer for temporal data.
+@_fixed_layout
+public struct GlobalMaxPooling1D<Scalar: TensorFlowFloatingPoint>: Layer {
+    /// Creates a global max pooling layer.
+    public init() {}
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
@@ -1092,17 +1058,38 @@ public extension AvgPool3D {
     /// - Returns: The output.
     @differentiable
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
-        return input.max(alongAxes: [1, 2, 3]).reshaped(to: [input.shape[0], input.shape[4]])
+        return input.max(squeezingAxes: 1)
+    }
+}
+
+/// A global max pooling layer for spatial data.
+@_fixed_layout
+public struct GlobalMaxPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
+    /// Creates a global max pooling layer.
+    public init() {}
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameters:
-    ///   - input: The input to the layer.
-    ///   - context: The contextual information for the layer application, e.g. the current learning
-    ///     phase.
+    /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
+    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+        return input.max(squeezingAxes: [1, 2])
+    }
+}
+
+/// A global max pooling layer for spatial and spatio-temporal data.
+@_fixed_layout
+public struct GlobalMaxPool3D<Scalar: TensorFlowFloatingPoint>: Layer {
+    /// Creates a global max pooling layer.
+    public init() {}
+
+    /// Returns the output obtained from applying the layer to the given input.
+    ///
+    /// - Parameter input: The input to the layer.
+    /// - Returns: The output.
+    @differentiable
+    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input.max(squeezingAxes: [1, 2, 3])
     }
 }
