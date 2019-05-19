@@ -1057,7 +1057,7 @@ public struct GlobalMaxPooling1D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///     phase.
     /// - Returns: The output.
     @differentiable
-    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
+    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input.max(squeezingAxes: 1)
     }
 }
