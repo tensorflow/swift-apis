@@ -973,7 +973,6 @@ public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     }
 }
 
-<<<<<<< HEAD
 public extension AvgPool2D {
   /// Creates an average pooling layer.
   ///
@@ -986,7 +985,7 @@ public extension AvgPool2D {
             strides: (1, strides.0, strides.1, 1),
             padding: padding)
   }
-||||||| merged common ancestors
+
 /// A global max pooling layer for temporal data.
 @_fixed_layout
 public struct GlobalMaxPooling1D<Scalar: TensorFlowFloatingPoint>: Layer {
@@ -1004,7 +1003,7 @@ public struct GlobalMaxPooling1D<Scalar: TensorFlowFloatingPoint>: Layer {
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
         return input.max(alongAxes: 1).reshaped(to: [input.shape[0], input.shape[2]])
     }
-=======
+
 /// A global max pooling layer for temporal data.
 @_fixed_layout
 public struct GlobalMaxPooling1D<Scalar: TensorFlowFloatingPoint>: Layer {
@@ -1022,7 +1021,6 @@ public struct GlobalMaxPooling1D<Scalar: TensorFlowFloatingPoint>: Layer {
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
         return input.max(squeezingAxes: 1)
     }
->>>>>>> Changing along axes to squeezing axes
 }
 
 /// An average pooling layer for spatial or spatio-temporal data.
@@ -1052,16 +1050,14 @@ public struct AvgPool3D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-<<<<<<< HEAD
     public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input.averagePooled3D(kernelSize: poolSize, strides: strides, padding: padding)
-||||||| merged common ancestors
+
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
         return input.max(alongAxes: [1, 2]).reshaped(to: [input.shape[0], input.shape[3]])
-=======
+
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
         return input.max(squeezingAxes: [1, 2])
->>>>>>> Changing along axes to squeezing axes
     }
 }
 
@@ -1079,7 +1075,6 @@ public extension AvgPool3D {
   }
 }
 
-<<<<<<< HEAD
 public extension AvgPool3D {
     /// Creates an average pooling layer with the specified pooling window size and stride. All
     /// pooling sizes and strides are the same.
@@ -1087,7 +1082,7 @@ public extension AvgPool3D {
         self.init(poolSize: (poolSize, poolSize, poolSize),
                   strides: (strides, strides, strides),
                   padding: padding)
-||||||| merged common ancestors
+
     /// Returns the output obtained from applying the layer to the given input.
     ///
     /// - Parameters:
@@ -1098,7 +1093,7 @@ public extension AvgPool3D {
     @differentiable
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
         return input.max(alongAxes: [1, 2, 3]).reshaped(to: [input.shape[0], input.shape[4]])
-=======
+
     /// Returns the output obtained from applying the layer to the given input.
     ///
     /// - Parameters:
@@ -1109,7 +1104,6 @@ public extension AvgPool3D {
     @differentiable
     public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
         return input.max(squeezingAxes: [1, 2, 3])
->>>>>>> Changing along axes to squeezing axes
     }
 }
 
