@@ -37,15 +37,17 @@ import TensorFlow
 /// [dfn]: http://mathworld.wolfram.com/BranchCut.html
 /// [std]: http://www.open-std.org/JTC1/SC22/WG14/www/standards.html#9899
 @_fixed_layout
-public struct Complex<T : TensorFlowFloatingPoint> {
+public struct Complex<T : TensorFlowFloatingPoint> : Differentiable {
   // ---------------------------------------------------------------------------
   // MARK: Stored Properties
   // ---------------------------------------------------------------------------
 
   /// The real component of the complex value.
+  // @differentiable(vjp: _vjpReal)
   public var real: T
 
   /// The imaginary component of the complex value.
+  // @differentiable(vjp: _vjpImaginary)
   public var imaginary: T
 
   // ---------------------------------------------------------------------------
@@ -55,6 +57,13 @@ public struct Complex<T : TensorFlowFloatingPoint> {
   public init(real: T = 0, imaginary: T = 0) {
 	self.real = real
 	self.imaginary = imaginary
+  }
+
+  public typealias TangentVector = Complex
+  public typealias CotangentVector = Complex
+  public typealias AllDifferentiableVariables = Complex
+  public func tangentVector(from cotangent: CotangentVector) -> TangentVector {
+    return cotangent
   }
 }
 
@@ -345,17 +354,37 @@ public func abs<T>(_ z: Complex<T>) -> Complex<T> {
   return Complex(real: z.magnitude)
 }
 
-extension Complex : Differentiable where T : Differentiable {
-  public typealias TangentVector = Complex
-  public typealias CotangentVector = Complex
-  public typealias AllDifferentiableVariables = Complex
-  public func tangentVector(from cotangent: CotangentVector) -> TangentVector {
-    return cotangent
+extension Complex {
+  @differentiable(vjp: _vjpAdding(real:))
+  public func adding(real: T) -> Complex {
+    var c = self
+    c.real += real
+    return c
+  }
+
+  @differentiable(vjp: _vjpSubtracting(real:))
+  public func subtracting(real: T) -> Complex {
+    var c = self
+    c.real -= real
+    return c
+  }
+
+  @differentiable(vjp: _vjpAdding(imaginary:))
+  public func adding(imaginary: T) -> Complex {
+    var c = self
+    c.imaginary += imaginary
+    return c
+  }
+
+  @differentiable(vjp: _vjpSubtracting(imaginary:))
+  public func subtracting(imaginary: T) -> Complex {
+    var c = self
+    c.imaginary -= imaginary
+    return c
   }
 }
 
 extension Complex {
-
   @inlinable
   static func _vjpInit(real: T, imaginary: T) -> (Complex<T>, (Complex<T>) -> (T, T)) {
     // let orig: Complex<T> = Complex(real: real, imaginary: imaginary)
@@ -392,8 +421,28 @@ extension Complex {
   }
 
   @inlinable
-  static func _vjpNegate (operand: Complex)
+  static func _vjpNegate(operand: Complex)
   -> (Complex, (Complex) -> Complex) {
     return (-operand, { v in -v})
+  }
+
+  @inlinable
+  func _vjpAdding(real: T) -> (Complex, (Complex) -> (Complex, T)) {
+    return (self.adding(real: real), { ($0, $0.real) })
+  }
+
+  @inlinable
+  func _vjpSubtracting(real: T) -> (Complex, (Complex) -> (Complex, T)) {
+    return (self.subtracting(real: real), { ($0, -$0.real) })
+  }
+
+  @inlinable
+  func _vjpAdding(imaginary: T) -> (Complex, (Complex) -> (Complex, T)) {
+    return (self.adding(real: real), { ($0, $0.imaginary) })
+  }
+
+  @inlinable
+  func _vjpSubtracting(imaginary: T) -> (Complex, (Complex) -> (Complex, T)) {
+    return (self.subtracting(real: real), { ($0, -$0.imaginary) })
   }
 }
