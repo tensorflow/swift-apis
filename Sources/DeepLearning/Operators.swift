@@ -225,6 +225,100 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         })
     }
 
+    /// TensorFlow builtin conv3d gradient helper for the input.
+    @inlinable
+    @differentiable(wrt: (self, filter), vjp: _vjpConv3DBackpropInput)
+    internal func conv3DBackpropInput(
+        input: Tensor,
+        filter: Tensor,
+        strides: (Int, Int, Int, Int, Int),
+        padding: Padding
+    ) -> Tensor {
+        return Raw.conv3DBackpropInput(
+            self,
+            filter: filter,
+            outBackprop: self,
+            strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2),
+                      Int32(strides.3), Int32(strides.4)],
+            padding: padding.raw)
+    }
+
+    /// TensorFlow builtin conv3d gradient helper for the filter.
+    @inlinable
+    @differentiable(wrt: (self, input), vjp: _vjpConv3DBackpropFilter)
+    internal func conv3DBackpropFilter(
+        input: Tensor,
+        filter: Tensor,
+        strides: (Int, Int, Int, Int, Int),
+        padding: Padding
+    ) -> Tensor {
+        return Raw.conv3DBackpropFilter(
+            self,
+            filter: filter,
+            outBackprop: self,
+            strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2),
+                      Int32(strides.3), Int32(strides.4)],
+            padding: padding.raw)
+    }
+
+    @inlinable
+    internal func _vjpConv3DBackpropInput(
+        _ input: Tensor,
+        _ filter: Tensor,
+        _ strides: (Int, Int, Int, Int, Int),
+        _ padding: Padding
+    ) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
+        let value = conv3DBackpropInput(input: input, filter: filter, strides: strides,
+                                        padding: padding)
+        return (value, { v in
+            return (
+                self.conv3DBackpropFilter(input: v, filter: filter, strides: strides,
+                                          padding: padding),
+                v.convolved3D(withFilter: filter, strides: strides, padding: padding)
+            )
+        })
+    }
+
+    @inlinable
+    internal func _vjpConv3DBackpropFilter(
+        _ input: Tensor,
+        _ filter: Tensor,
+        _ strides: (Int, Int, Int, Int, Int),
+        _ padding: Padding
+    ) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
+        let value = conv3DBackpropFilter(input: input, filter: filter,
+                                         strides: strides, padding: padding)
+        return (value, { v in
+            return (
+                self.conv3DBackpropInput(input: input, filter: v, strides: strides,
+                                         padding: padding),
+                input.convolved3D(withFilter: filter, strides: strides, padding: padding)
+            )
+        })
+    }
+
+    @inlinable
+    internal func _vjpConvolved3D(
+        filter: Tensor,
+        strides: (Int, Int, Int, Int, Int),
+        padding: Padding
+    ) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
+        let value = convolved3D(withFilter: filter, strides: strides,
+                                padding: padding)
+        return (value, { v in
+            return (
+                v.conv3DBackpropInput(
+                    input: self, filter: filter,
+                    strides: strides, padding: padding
+                ),
+                v.conv3DBackpropFilter(
+                    input: self, filter: filter,
+                    strides: strides, padding: padding
+                )
+            )
+        })
+    }
+
     @inlinable
     internal func _vjpMaxPooled2D(
         kernelSize: (Int, Int, Int, Int),
@@ -343,6 +437,34 @@ public extension Tensor where Scalar: FloatingPoint {
             strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2), Int32(strides.3)],
             padding: padding.raw2,
             explicitPaddings: [])
+    }
+
+    /// Computes a 3-D convolution using `self` as input, with the specified
+    /// filter, strides, and padding.
+    ///
+    /// - Parameters:
+    ///     - filter: The convolution filter.
+    ///     - strides: The strides of the sliding filter for each dimension of the
+    ///         input.
+    ///     - padding: The padding for the operation.
+    /// - Precondition: `self` must have rank 5.
+    /// - Precondition: `filter` must have rank 5.
+    @inlinable @inline(__always)
+    @differentiable(
+        wrt: (self, filter), vjp: _vjpConvolved3D
+        where Scalar: TensorFlowFloatingPoint
+    )
+    func convolved3D(
+        withFilter filter: Tensor,
+        strides: (Int, Int, Int, Int, Int),
+        padding: Padding
+    ) -> Tensor {
+        return Raw.conv3D(
+            self,
+            filter: filter,
+            strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2),
+                      Int32(strides.3), Int32(strides.4)],
+            padding: padding.raw)
     }
 
     /// Computes a 2-D max pooling, with the specified kernel sizes, strides, and
