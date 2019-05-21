@@ -545,7 +545,7 @@ public struct Conv3D<Scalar: TensorFlowFloatingPoint>: Layer {
         filter: Tensor<Scalar>,
         bias: Tensor<Scalar>,
         activation: @escaping Activation,
-        strides: (Int, Int),
+        strides: (Int, Int, Int),
         padding: Padding
     ) {
         self.filter = filter
