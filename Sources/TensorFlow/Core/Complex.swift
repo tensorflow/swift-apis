@@ -37,24 +37,26 @@ import TensorFlow
 /// [dfn]: http://mathworld.wolfram.com/BranchCut.html
 /// [std]: http://www.open-std.org/JTC1/SC22/WG14/www/standards.html#9899
 @_fixed_layout
-public struct Complex<T : TensorFlowFloatingPoint> {
+public struct Complex<T : FloatingPoint> {
   // ---------------------------------------------------------------------------
   // MARK: Stored Properties
   // ---------------------------------------------------------------------------
 
   /// The real component of the complex value.
+  @differentiable
   public var real: T
 
   /// The imaginary component of the complex value.
+  @differentiable
   public var imaginary: T
 
   // ---------------------------------------------------------------------------
   // MARK: Initializers
   // ---------------------------------------------------------------------------
-  @differentiable(wrt: (real, imaginary), vjp: _vjpInit)
-  public init(real: T = 0, imaginary: T = 0) {
-	self.real = real
-	self.imaginary = imaginary
+  @differentiable(vjp: _vjpInit where T : Differentiable, T.TangentVector == T)
+  public init(real: T, imaginary: T) {
+	  self.real = real
+	  self.imaginary = imaginary
   }
 }
 
@@ -165,7 +167,7 @@ extension Complex : AdditiveArithmetic {
   // ---------------------------------------------------------------------------
 
   @_transparent // @_inlineable
-  @differentiable(vjp: _vjpAdd(lhs:rhs:) where T : Differentiable)
+  @differentiable(vjp: _vjpAdd(lhs:rhs:))
   public static func + (lhs: Complex, rhs: Complex) -> Complex {
     var lhs = lhs
     lhs += rhs
@@ -179,7 +181,7 @@ extension Complex : AdditiveArithmetic {
   }
 
   @_transparent // @_inlineable
-  @differentiable(vjp: _vjpSubtract(lhs:rhs:) where T : Differentiable)
+  @differentiable(vjp: _vjpSubtract(lhs:rhs:))
   public static func - (lhs: Complex, rhs: Complex) -> Complex {
     var lhs = lhs
     lhs -= rhs
@@ -205,7 +207,7 @@ extension Complex : Numeric {
   }
 
   @_transparent // @_inlineable
-  @differentiable(vjp: _vjpMultiply(lhs:rhs:) where T : Differentiable)
+  @differentiable(vjp: _vjpMultiply(lhs:rhs:))
   public static func * (lhs: Complex, rhs: Complex) -> Complex {
     var a = lhs.real, b = lhs.imaginary, c = rhs.real, d = rhs.imaginary
     let ac = a * c, bd = b * d, ad = a * d, bc = b * c
@@ -274,7 +276,7 @@ extension Complex : SignedNumeric {
   // ---------------------------------------------------------------------------
 
   @_transparent // @_inlineable
-  @differentiable(vjp: _vjpNegate where T : Differentiable)
+  @differentiable(vjp: _vjpNegate)
   public static prefix func - (operand: Complex) -> Complex {
     return Complex(real: -operand.real, imaginary: -operand.imaginary)
   }
@@ -289,7 +291,7 @@ extension Complex : SignedNumeric {
 extension Complex {
 
   @_transparent // @_inlineable
-  @differentiable(vjp: _vjpDivide(lhs:rhs:) where T : Differentiable)
+  @differentiable(vjp: _vjpDivide(lhs:rhs:))
   public static func / (lhs: Complex, rhs: Complex) -> Complex {
     var a = lhs.real, b = lhs.imaginary, c = rhs.real, d = rhs.imaginary
     var x: T
@@ -342,7 +344,7 @@ extension Complex {
 /// Returns the absolute value (magnitude, modulus) of `z`.
 @_transparent
 public func abs<T>(_ z: Complex<T>) -> Complex<T> {
-  return Complex(real: z.magnitude)
+  return Complex(real: z.magnitude, imaginary: 0)
 }
 
 extension Complex : Differentiable where T : Differentiable {
@@ -354,19 +356,16 @@ extension Complex : Differentiable where T : Differentiable {
   }
 }
 
-extension Complex {
-
+extension Complex where T : Differentiable, T.TangentVector == T {
   @inlinable
-  static func _vjpInit(real: T, imaginary: T) -> (Complex<T>, (Complex<T>) -> (T, T)) {
-    // let orig: Complex<T> = Complex(real: real, imaginary: imaginary)
-    // let pb: (Complex) -> (T, T) = { v in
-    //   return (v.real, v.imaginary) 
-    // }
+  static func _vjpInit(real: T, imaginary: T) -> (Complex, (Complex) -> (T, T)) {
     return (Complex(real: real, imaginary: imaginary), { v in
       return (v.real, v.imaginary) 
     })
   }
+}
 
+extension Complex {
   @inlinable
   static func _vjpAdd(lhs: Complex, rhs: Complex) 
   -> (Complex, (Complex) -> (Complex, Complex)) {
@@ -397,3 +396,27 @@ extension Complex {
     return (-operand, { v in -v})
   }
 }
+
+// var pb = pullback(at: Complex(real: 5, imaginary: 5)) { x in
+//   return x + Complex(real: 1, imaginary: 1)
+// }
+// print(pb(Complex(real: 2, imaginary: 2)))
+
+// pb = pullback(at: Complex(real: 5, imaginary: 5)) { x in
+//   return x * Complex(real: 1, imaginary: 1)
+// }
+// print(pb(Complex(real: 2, imaginary: 2)))
+
+// pb = pullback(at: Complex(real: 5, imaginary: 5)) { x in
+//   return x / Complex(real: 1, imaginary: 1)
+// }
+// print(pb(Complex(real: 2, imaginary: 2)))
+
+// pb = pullback(at: Complex(real: 5, imaginary: 5)) { x in
+//   return -x
+// }
+// print(pb(Complex(real: 2, imaginary: 2)))
+
+// pb = pullback(at: Complex(real: 5, imaginary: 5)) { x in
+//   return Complex(real: x.real + 1.0, imaginary: x.imaginary + 2.0)
+// }
