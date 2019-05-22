@@ -223,14 +223,14 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 
     @inlinable
-    internal func _vjpMaxPooled(
+    internal func _vjpMaxPooled2D(
         kernelSize: (Int, Int, Int, Int),
         strides: (Int, Int, Int, Int),
         padding: Padding
     ) -> (Tensor, (Tensor) -> Tensor) {
         // TODO: Currently this is not higher order differentiable. Redefine in
         // closed form.
-        let value = maxPooled(kernelSize: kernelSize, strides: strides, padding: padding)
+        let value = maxPooled2D(kernelSize: kernelSize, strides: strides, padding: padding)
         return (value, { v in
             Raw.maxPoolGradV2(
                 origInput: self,
@@ -245,22 +245,69 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 
     @inlinable
-    internal func _vjpAveragePooled(
+    internal func _vjpMaxPooled3D(
+        kernelSize: (Int, Int, Int, Int, Int),
+        strides: (Int, Int, Int, Int, Int),
+        padding: Padding
+    ) -> (Tensor, (Tensor) -> Tensor) {
+        // TODO: Currently this is not higher order differentiable. Redefine in
+        // closed form.
+        let value = maxPooled3D(kernelSize: kernelSize, strides: strides, padding: padding)
+        return (value, { v in
+            return Raw.maxPool3DGrad(
+                origInput: self,
+                origOutput: value,
+                grad: v,
+                ksize: [Int32(kernelSize.0), Int32(kernelSize.1), Int32(kernelSize.2),
+                        Int32(kernelSize.3), Int32(kernelSize.4)],
+                strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2), Int32(strides.3),
+                          Int32(strides.4)],
+                padding: padding.raw
+            )
+        })
+    }
+
+    @inlinable
+    internal func _vjpAveragePooled2D(
         kernelSize: (Int, Int, Int, Int),
         strides: (Int, Int, Int, Int),
         padding: Padding
     ) -> (Tensor, (Tensor) -> Tensor) {
         // TODO: Currently this is not higher order differentiable. Redefine in
         // closed form.
-        let value = averagePooled(kernelSize: kernelSize, strides: strides, padding: padding)
+        let value = averagePooled2D(kernelSize: kernelSize, strides: strides, padding: padding)
         return (value, { v in
             Raw.avgPoolGrad(
                 origInputShape: self.shapeTensor,
                 grad: v,
                 ksize: [Int32(kernelSize.0), Int32(kernelSize.1),
                         Int32(kernelSize.2), Int32(kernelSize.3)],
-                strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2), Int32(strides.3)],
-                padding: padding.raw)
+                strides: [Int32(strides.0), Int32(strides.1),
+                          Int32(strides.2), Int32(strides.3)],
+                padding: padding.raw
+            )
+        })
+    }
+
+    @inlinable
+    internal func _vjpAveragePooled3D(
+        kernelSize: (Int, Int, Int, Int, Int),
+        strides: (Int, Int, Int, Int, Int),
+        padding: Padding
+    ) -> (Tensor, (Tensor) -> Tensor) {
+        // TODO: Currently this is not higher order differentiable. Redefine in
+        // closed form.
+        let value = averagePooled3D(kernelSize: kernelSize, strides: strides, padding: padding)
+        return (value, { v in
+            return Raw.avgPool3DGrad(
+                origInputShape: self.shapeTensor,
+                grad: v,
+                ksize: [Int32(kernelSize.0), Int32(kernelSize.1), Int32(kernelSize.2),
+                        Int32(kernelSize.3), Int32(kernelSize.4)],
+                strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2), Int32(strides.3),
+                          Int32(strides.4)],
+                padding: padding.raw
+            )
         })
     }
 }
@@ -303,9 +350,10 @@ public extension Tensor where Scalar: FloatingPoint {
     ///     - padding: The padding for the operation.
     @inlinable
     @differentiable(
-        wrt: self,
-        vjp: _vjpMaxPooled(kernelSize:strides:padding:) where Scalar: TensorFlowFloatingPoint)
-    func maxPooled(
+        wrt: self, vjp: _vjpMaxPooled2D(kernelSize:strides:padding:)
+        where Scalar : TensorFlowFloatingPoint
+    )
+    func maxPooled2D(
         kernelSize: (Int, Int, Int, Int),
         strides: (Int, Int, Int, Int),
         padding: Padding
@@ -319,6 +367,33 @@ public extension Tensor where Scalar: FloatingPoint {
             padding: padding.raw)
     }
 
+    /// Computes a 3-D max pooling, with the specified kernel sizes, strides, and
+    /// padding.
+    ///
+    /// - Parameters:
+    ///     - kernelSize: The dimensions of the pooling kernel.
+    ///     - strides: The strides of the sliding filter for each dimension of the
+    ///         input.
+    ///     - padding: The padding for the operation.
+    @inlinable @inline(__always)
+    @differentiable(
+        wrt: self, vjp: _vjpMaxPooled3D(kernelSize:strides:padding:)
+        where Scalar : TensorFlowFloatingPoint
+    )
+    func maxPooled3D(
+        kernelSize: (Int, Int, Int, Int, Int),
+        strides: (Int, Int, Int, Int, Int),
+        padding: Padding
+    ) -> Tensor {
+        return Raw.maxPool3D(
+            self,
+            ksize: [Int32(kernelSize.0), Int32(kernelSize.1),
+                    Int32(kernelSize.2), Int32(kernelSize.3), Int32(kernelSize.4)],
+            strides: [Int32(strides.0), Int32(strides.1),
+                      Int32(strides.2), Int32(strides.3), Int32(strides.4)],
+            padding: padding.raw)
+    }
+
     /// Computes a 2-D average pooling, with the specified kernel sizes, strides,
     /// and padding.
     ///
@@ -329,9 +404,10 @@ public extension Tensor where Scalar: FloatingPoint {
     ///     - padding: The padding for the operation.
     @inlinable
     @differentiable(
-        wrt: self,
-        vjp: _vjpAveragePooled(kernelSize:strides:padding:) where Scalar: TensorFlowFloatingPoint)
-    func averagePooled(
+        wrt: self, vjp: _vjpAveragePooled2D(kernelSize:strides:padding:)
+        where Scalar : TensorFlowFloatingPoint
+    )
+    func averagePooled2D(
         kernelSize: (Int, Int, Int, Int),
         strides: (Int, Int, Int, Int),
         padding: Padding
@@ -341,6 +417,33 @@ public extension Tensor where Scalar: FloatingPoint {
             ksize: [Int32(kernelSize.0), Int32(kernelSize.1),
                     Int32(kernelSize.2), Int32(kernelSize.3)],
             strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2), Int32(strides.3)],
+            padding: padding.raw)
+    }
+
+    /// Computes a 3-D average pooling, with the specified kernel sizes, strides,
+    /// and padding.
+    ///
+    /// - Parameters:
+    ///     - kernelSize: The dimensions of the pooling kernel.
+    ///     - strides: The strides of the sliding filter for each dimension of the
+    ///         input.
+    ///     - padding: The padding for the operation.
+    @inlinable @inline(__always)
+    @differentiable(
+        wrt: self, vjp: _vjpAveragePooled3D(kernelSize:strides:padding:)
+        where Scalar : TensorFlowFloatingPoint
+    )
+    func averagePooled3D(
+        kernelSize: (Int, Int, Int, Int, Int),
+        strides: (Int, Int, Int, Int, Int),
+        padding: Padding
+    ) -> Tensor {
+        return Raw.avgPool3D(
+	    self,
+            ksize: [Int32(kernelSize.0), Int32(kernelSize.1),
+                    Int32(kernelSize.2), Int32(kernelSize.3), Int32(kernelSize.4)],
+            strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2), Int32(strides.3),
+                      Int32(strides.4)],
             padding: padding.raw)
     }
 }

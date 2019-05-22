@@ -31,7 +31,23 @@ final class LayerTests: XCTestCase {
         let input = Tensor<Float>([[0, 1, 2, 3, 4], [10, 11, 12, 13, 14]]).expandingShape(at: 2)
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>([[[2], [3], [4]], [[12], [13], [14]]])
-        XCTAssertEqual(round(output), expected)
+        XCTAssertEqual(output, expected)
+    }
+
+    func testMaxPool2D() {
+        let layer = MaxPool2D<Float>(poolSize: (2, 2), strides: (1, 1), padding: .valid)
+        let input = Tensor(shape: [1, 2, 2, 1], scalars: (0..<4).map(Float.init))
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>([[[[3]]]])
+        XCTAssertEqual(output, expected)
+    }
+
+    func testMaxPool3D() {
+        let layer = MaxPool3D<Float>(poolSize: (2, 2, 2), strides: (1, 1, 1), padding: .valid)
+        let input = Tensor(shape: [1, 2, 2, 2, 1], scalars: (0..<8).map(Float.init))
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>([[[[[7]]]]])
+        XCTAssertEqual(output, expected)
     }
 
     func testAvgPool1D() {
@@ -39,7 +55,23 @@ final class LayerTests: XCTestCase {
         let input = Tensor<Float>([[0, 1, 2, 3, 4], [10, 11, 12, 13, 14]]).expandingShape(at: 2)
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>([[[1], [2], [3]], [[11], [12], [13]]])
-        XCTAssertEqual(round(output), expected)
+        XCTAssertEqual(output, expected)
+    }
+
+    func testAvgPool2D() {
+        let layer = AvgPool2D<Float>(poolSize: (2, 5), strides: (1, 1), padding: .valid)
+        let input = Tensor(shape: [1, 2, 5, 1], scalars: (0..<10).map(Float.init))
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>([[[[4.5]]]])
+        XCTAssertEqual(output, expected)
+    }
+
+    func testAvgPool3D() {
+        let layer = AvgPool3D<Float>(poolSize: (2, 4, 5), strides: (1, 1, 1), padding: .valid)
+        let input = Tensor(shape: [1, 2, 4, 5, 1], scalars: (0..<20).map(Float.init))
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>([[[[[9.5]]]]])
+        XCTAssertEqual(output, expected)
     }
 
     func testGlobalAvgPool1D() {
@@ -115,13 +147,18 @@ final class LayerTests: XCTestCase {
         var cell = SimpleRNNCell<Float>(inputSize: 2, hiddenSize: 5)
         cell.weight = weight
         cell.bias = bias
-        let state = Tensor<Float>(ones: [1, 5]) * Tensor<Float>([1, 0.2, 0.5, 2, 0.6])
+        let state = SimpleRNNCell.State(
+            Tensor<Float>(ones: [1, 5]) * Tensor<Float>([1, 0.2, 0.5, 2, 0.6])
+        )
         let input = Tensor<Float>(ones: [1, 2]) * Tensor<Float>([0.3, 0.7])
         let output = cell(input: input, state: state).state
-        let expected = Tensor<Float>([[2.76649, 6.2999997, 2.76649, 6.2999997, 2.76649]])
+        let expected = SimpleRNNCell.State(
+            Tensor<Float>([[2.76649, 6.2999997, 2.76649, 6.2999997, 2.76649]])
+        )
         XCTAssertEqual(output, expected)
     }
 
+    // TODO(TF-507): Remove references to `SimpleRNNCell.State` after SR-10697 is fixed.
     func testRNN() {
         let x = Tensor<Float>(rangeFrom: 0.0, to: 0.4, stride: 0.1).rankLifted()
         let inputs: [Tensor<Float>] = Array(repeating: x, count: 4)
@@ -130,29 +167,32 @@ final class LayerTests: XCTestCase {
         let (outputs, pullback) = rnn.valueWithPullback(at: inputs) { rnn, inputs in
             return rnn(inputs)
         }
-        XCTAssertEqual(Tensor<Int32>(Tensor<Float>(outputs).elementsApproximatelyEqual(
-            [[[-0.0026294366, -0.0058668107,  0.04495003,  0.20311214]],
-             [[ 0.06788494,    0.050665878,   0.02415526,  0.09249911]],
-             [[ 0.06621192,    0.009049267,   0.065047316, 0.11534518]],
-             [[ 0.05612204,    0.00022032857, 0.05407162,  0.09784105]]])).sum().scalarized(), 16)
-        let (𝛁rnn, _) = pullback(.init(inputs))
-        XCTAssertEqual(Tensor<Int32>(Tensor<Float>(𝛁rnn.cell.weight).elementsApproximatelyEqual(
-            [[          0.0,           0.0,           0.0,           0.0],
-             [-0.0051278225,  0.0013102926,    0.00740262,   0.018119661],
-             [ -0.010255645,  0.0026205853,    0.01480524,   0.036239322],
-             [ -0.015383467,   0.003930878,    0.02220786,   0.054358985],
-             [          0.0,           0.0,           0.0,           0.0],
-             [          0.0,           0.0,           0.0,           0.0],
-             [          0.0,           0.0,           0.0,           0.0],
-             [          0.0,           0.0,           0.0,           0.0]])).sum().scalarized(), 32)
-        XCTAssertEqual(Tensor<Int32>(Tensor<Float>(𝛁rnn.cell.bias).elementsApproximatelyEqual(
-            [-0.051278222,  0.013102926,    0.0740262,   0.18119662])).sum().scalarized(), 4)
+        XCTAssertEqual(outputs.map { $0.value },
+                       [[[-0.0026294366, -0.0058668107,  0.04495003,  0.20311214]],
+                        [[ 0.06788494,    0.050665878,   0.02415526,  0.09249911]],
+                        [[ 0.06621192,    0.009049267,   0.065047316, 0.11534518]],
+                        [[ 0.05612204,    0.00022032857, 0.05407162,  0.09784105]]])
+        let (𝛁rnn, 𝛁inputs) = pullback(.init(inputs.map { SimpleRNNCell<Float>.State($0) }))
+        XCTAssertEqual(𝛁rnn.cell.weight,
+                       [[          0.0,           0.0,           0.0,           0.0],
+                        [-0.0051278225,  0.0013102926,    0.00740262,   0.018119661],
+                        [ -0.010255645,  0.0026205853,    0.01480524,   0.036239322],
+                        [ -0.015383467,   0.003930878,    0.02220786,   0.054358985],
+                        [          0.0,           0.0,           0.0,           0.0],
+                        [          0.0,           0.0,           0.0,           0.0],
+                        [          0.0,           0.0,           0.0,           0.0],
+                        [          0.0,           0.0,           0.0,           0.0]])
+        XCTAssertEqual(𝛁rnn.cell.bias, [-0.051278222,  0.013102926,    0.0740262,   0.18119662])
     }
 
     static var allTests = [
         ("testConv1D", testConv1D),
         ("testMaxPool1D", testMaxPool1D),
+        ("testMaxPool2D", testMaxPool2D),
+        ("testMaxPool3D", testMaxPool3D),
         ("testAvgPool1D", testAvgPool1D),
+        ("testAvgPool2D", testAvgPool2D),
+        ("testAvgPool3D", testAvgPool3D),
         ("testGlobalAvgPool1D", testGlobalAvgPool1D),
         ("testGlobalAvgPool2D", testGlobalAvgPool2D),
         ("testGlobalAvgPool3D", testGlobalAvgPool3D),
