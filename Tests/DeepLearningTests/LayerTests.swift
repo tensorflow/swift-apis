@@ -23,19 +23,19 @@ final class LayerTests: XCTestCase {
         let input = Tensor<Float>([[0, 1, 2, 3, 4], [10, 11, 12, 13, 14]]).expandingShape(at: 2)
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>([[[1, 4], [2, 7], [3, 10]], [[11, 34], [12, 37], [13, 40]]])
-        XCTAssertEqual(round(output), expected)
+        XCTAssertEqual(output, expected)
     }
 
     func testConv3D() {
         let filter =  Tensor(shape: [1, 2, 2, 2, 1], scalars: (0..<8).map(Float.init))
-        let bias = Tensor<Float>([0, 0])
+        let bias = Tensor<Float>([-1, 1])
         let layer = Conv3D<Float>(filter: filter, bias: bias, activation: identity,
                                   strides: (1, 2, 1), padding: .valid)
         let input = Tensor(shape: [2, 2, 2, 2, 2], scalars: (0..<32).map(Float.init))
         let output = layer.inferring(from: input)
-        let expected = Tensor<Float>([[[[[140],[62]]],[[[364],[142]]]],[[[[588],[222]]],
-                                     [[[812],[302]]]]])
-        XCTAssertEqual(round(output), expected)
+        let expected = Tensor<Float>(shape: [2, 2, 1, 1, 2],
+                                     scalars: [139, 141, 363, 365, 587, 589, 811, 813])
+        XCTAssertEqual(output, expected)
     }
 
     func testMaxPool1D() {
@@ -80,7 +80,7 @@ final class LayerTests: XCTestCase {
 
     func testAvgPool3D() {
         let layer = AvgPool3D<Float>(poolSize: (2, 4, 5), strides: (1, 1, 1), padding: .valid)
-        let input = Tensor(shape: [1, 2, 4, 5, 1], scalars: (0..<20).map(Float.init))
+        let input = Tensor(shape: [1, 2, 4, 5, 1], scalars: (0..<40).map(Float.init))
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>([[[[[9.5]]]]])
         XCTAssertEqual(output, expected)
