@@ -26,6 +26,18 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(round(output), expected)
     }
 
+    func testConv3D() {
+        let filter =  Tensor(shape: [1, 2, 2, 2, 1], scalars: (0..<8).map(Float.init))
+        let bias = Tensor<Float>([0, 0])
+        let layer = Conv3D<Float>(filter: filter, bias: bias, activation: identity,
+                                  strides: (1, 2, 1), padding: .valid)
+        let input = Tensor(shape: [2, 2, 2, 2, 2], scalars: (0..<32).map(Float.init))
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>([[[[[140],[62]]],[[[364],[142]]]],[[[[588],[222]]],
+                                     [[[812],[302]]]]])
+        XCTAssertEqual(round(output), expected)
+    }
+
     func testMaxPool1D() {
         let layer = MaxPool1D<Float>(poolSize: 3, stride: 1, padding: .valid)
         let input = Tensor<Float>([[0, 1, 2, 3, 4], [10, 11, 12, 13, 14]]).expandingShape(at: 2)
@@ -187,6 +199,7 @@ final class LayerTests: XCTestCase {
 
     static var allTests = [
         ("testConv1D", testConv1D),
+        ("testConv3D", testConv3D),
         ("testMaxPool1D", testMaxPool1D),
         ("testMaxPool2D", testMaxPool2D),
         ("testMaxPool3D", testMaxPool3D),
