@@ -524,6 +524,17 @@ private func configureRuntimeFromEnvironment() {
         protocol: "\(`protocol`)"
         """)
       debugLog("Setting TF server address to \(address) from env.")
+
+      // At the moment, without TF_EAGER_REMOTE_USE_SEND_TENSOR_RPC=1,
+      // running on TPUs freezes. Therefore, we set this environment variable
+      // to 1 unless it's set explicitly.
+      if let value = getenv("TF_EAGER_REMOTE_USE_SEND_TENSOR_RPC") {
+        debugLog("TF_EAGER_REMOTE_USE_SEND_TENSOR_RPC already set:")
+        debugLog(String(cString: value))
+      } else {
+        setenv("TF_EAGER_REMOTE_USE_SEND_TENSOR_RPC", "1", /*override*/ 0)
+        debugLog("Setting TF_EAGER_REMOTE_USE_SEND_TENSOR_RPC to 1")
+      }
     }
   }
 
@@ -555,6 +566,9 @@ public final class _ExecutionContext {
 
   /// Only set when there is some usable GPU.
   fileprivate let gpuDeviceNamePrefix: String?
+
+  /// Only set when there is some usable GPU.
+	fileprivate let tpuDeviceNamePrefix: String?
 
   /// The buffer storing a serialized TensorFlow config proto.
   public let tensorFlowConfig: UnsafeMutablePointer<TF_Buffer>
@@ -636,6 +650,7 @@ public final class _ExecutionContext {
     debugLog("There are \(deviceCount) devices.")
     var foundCPU = false
     var gpuCount = 0
+    var tpuCount = 0
     for deviceId in 0..<deviceCount {
       let cDeviceName = TF_DeviceListName(devices, deviceId, status)
       checkOk(status)
@@ -652,6 +667,9 @@ public final class _ExecutionContext {
       if deviceType == "GPU" {
         gpuCount += 1
       }
+      if deviceType == "TPU" {
+        tpuCount += 1
+      }
     }
     guard foundCPU else {
       fatalError("CPU should always be an available device.")
@@ -663,6 +681,14 @@ public final class _ExecutionContext {
       self.gpuDeviceNamePrefix = "/job:localhost/replica:0/task:0/device:GPU:"
     } else {
       self.gpuDeviceNamePrefix = nil
+    }
+
+    if tpuCount > 0 {
+      // According to server def generated when you set
+      // SWIFT_TENSORFLOW_SERVER_ADDRESS, the TPUs will all be on task 1.
+      self.tpuDeviceNamePrefix = "/job:localhost/replica:0/task:1/device:TPU:"
+    } else {
+      self.tpuDeviceNamePrefix = nil
     }
 
     // Initialize the mutex.
@@ -1007,6 +1033,8 @@ internal extension _ExecutionContext {
         return "\(cpuDeviceNamePrefix)\(index)"
       case .gpu:
         return "\(gpuDeviceNamePrefix!)\(index)"
+      case .tpu:
+        return "\(tpuDeviceNamePrefix!)\(index)"
       }
     }
     return nil
@@ -1083,7 +1111,12 @@ internal func _TFCEagerExecute(_ op: CTFEOp,
                                _ status: CTFStatus) {
   if _RuntimeConfig.printsDebugLog {
     debugLog("Calling _TFCEagerExecute() over: ")
-    TFE_OpPrintDebugString(op)
+    if let value = getenv("TF_CPP_MIN_LOG_LEVEL"),
+      String(cString: value) == "0" {
+      TFE_OpPrintDebugString(op)
+    } else {
+      debugLog("[Run with TF_CPP_MIN_LOG_LEVEL=0 to have TFEOps printed out]")
+    }
   }
   if let traceContext = _RuntimeConfig.traceState.context {
     // convert this eager op into a trace graph node
