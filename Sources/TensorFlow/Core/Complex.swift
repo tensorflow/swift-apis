@@ -20,7 +20,7 @@ public struct Complex<T : FloatingPoint> {
   }
 }
 
-extension Complex : Differentiable where T : Differentiable, T.TangentVector == T {
+extension Complex : Differentiable where T : Differentiable/*, T.TangentVector == T*/ {
   // ---------------------------------------------------------------------------
   // MARK: Differentiability
   // ---------------------------------------------------------------------------
@@ -135,7 +135,7 @@ extension Complex : AdditiveArithmetic {
   // ---------------------------------------------------------------------------
 
   @inlinable
-  @differentiable(vjp: _vjpAdd(lhs:rhs:) where T : Differentiable, T.TangentVector == T)
+  @differentiable(vjp: _vjpAdd(lhs:rhs:) where T : Differentiable)
   public static func + (lhs: Complex, rhs: Complex) -> Complex {
     var lhs = lhs
     lhs += rhs
@@ -149,7 +149,7 @@ extension Complex : AdditiveArithmetic {
   }
 
   @inlinable
-  @differentiable(vjp: _vjpSubtract(lhs:rhs:) where T : Differentiable, T.TangentVector == T)
+  @differentiable(vjp: _vjpSubtract(lhs:rhs:) where T : Differentiable)
   public static func - (lhs: Complex, rhs: Complex) -> Complex {
     var lhs = lhs
     lhs -= rhs
@@ -175,7 +175,7 @@ extension Complex : Numeric {
   }
 
   @inlinable
-  @differentiable(vjp: _vjpMultiply(lhs:rhs:) where T : Differentiable, T.TangentVector == T)
+  @differentiable(vjp: _vjpMultiply(lhs:rhs:) where T : Differentiable)
   public static func * (lhs: Complex, rhs: Complex) -> Complex {
     var a = lhs.real, b = lhs.imaginary, c = rhs.real, d = rhs.imaginary
     let ac = a * c, bd = b * d, ad = a * d, bc = b * c
@@ -244,7 +244,7 @@ extension Complex : SignedNumeric {
   // ---------------------------------------------------------------------------
 
   @inlinable
-  @differentiable(vjp: _vjpNegate where T : Differentiable, T.TangentVector == T)
+  @differentiable(vjp: _vjpNegate where T : Differentiable)
   public static prefix func - (operand: Complex) -> Complex {
     return Complex(real: -operand.real, imaginary: -operand.imaginary)
   }
@@ -262,7 +262,7 @@ extension Complex {
   // ---------------------------------------------------------------------------
 
   @inlinable
-  @differentiable(vjp: _vjpDivide(lhs:rhs:) where T : Differentiable, T.TangentVector == T)
+  @differentiable(vjp: _vjpDivide(lhs:rhs:) where T : Differentiable)
   public static func / (lhs: Complex, rhs: Complex) -> Complex {
     var a = lhs.real, b = lhs.imaginary, c = rhs.real, d = rhs.imaginary
     var x: T
@@ -353,7 +353,7 @@ extension Complex {
   }
 }
 
-extension Complex where T : Differentiable, T.TangentVector == T {
+extension Complex where T : Differentiable/*, T.TangentVector == T*/ {
   @inlinable
   static func _vjpAdd(lhs: Complex, rhs: Complex) 
   -> (Complex, (Complex) -> (Complex, Complex)) {
@@ -383,7 +383,9 @@ extension Complex where T : Differentiable, T.TangentVector == T {
   -> (Complex, (Complex) -> Complex) {
     return (-operand, { v in -v})
   }
+}
 
+extension Complex where T : Differentiable, T.TangentVector == T {
   @inlinable
   func _vjpAdding(real: T) -> (Complex, (Complex) -> (Complex, T)) {
     return (self.adding(real: real), { ($0, $0.real) })
