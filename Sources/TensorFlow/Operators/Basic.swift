@@ -361,23 +361,27 @@ infix operator .=
 
 public extension Tensor {
     @inlinable
+    @differentiable(wrt: self, vjp: _vjpBroadcasted(toShape:) where Scalar: TensorFlowFloatingPoint)
     func broadcasted(toShape shape: Tensor<Int32>) -> Tensor {
         return Raw.broadcastTo(self, shape: shape)
     }
 
     @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func broadcasted(to shape: TensorShape) -> Tensor {
-        return broadcasted(toShape: Tensor<Int32>(shape.dimensions.map(Int32.init)))
+        return broadcasted(toShape: Tensor<Int32>({ shape.dimensions.map(Int32.init) }()))
     }
 
     /// Broadcast to the same shape as the specified `Tensor`.
     /// - Precondition: The specified shape must be compatible for broadcasting.
     @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func broadcasted<OtherScalar>(like other: Tensor<OtherScalar>) -> Tensor {
         return broadcasted(toShape: other.shapeTensor)
     }
 
     @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     static func .= (lhs: inout Tensor, rhs: Tensor) {
         lhs = rhs.broadcasted(like: lhs)
     }
@@ -385,6 +389,9 @@ public extension Tensor {
 
 public extension Tensor where Scalar: Numeric {
     @inlinable
+    @differentiable(
+        wrt: self,
+        vjp: _vjpUnbroadcasted(toShape:) where Scalar: TensorFlowFloatingPoint)
     func unbroadcasted(toShape otherShape: Tensor<Int32>) -> Tensor {
         let rankDiff = (rankTensor - otherShape.scalarCountTensor).rankLifted()
         let ones = Raw.fill(dims: rankDiff, value: Tensor<Int32>(1))
@@ -394,13 +401,31 @@ public extension Tensor where Scalar: Numeric {
     }
 
     @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func unbroadcasted<OtherScalar>(like other: Tensor<OtherScalar>) -> Tensor {
         return unbroadcasted(toShape: other.shapeTensor)
     }
 
     @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func unbroadcasted(to shape: TensorShape) -> Tensor {
-        return unbroadcasted(toShape: Tensor<Int32>(shape.dimensions.map(Int32.init)))
+        return unbroadcasted(toShape: Tensor<Int32>({ shape.dimensions.map(Int32.init) }()))
+    }
+}
+
+extension Tensor where Scalar: TensorFlowFloatingPoint {
+    @inlinable
+    func _vjpBroadcasted(toShape shape: Tensor<Int32>) -> (Tensor, (Tensor) -> Tensor) {
+        return (broadcasted(toShape: shape), { [originalShape = self.shapeTensor] v in
+            v.unbroadcasted(toShape: originalShape)
+        })
+    }
+
+    @inlinable
+    func _vjpUnbroadcasted(toShape shape: Tensor<Int32>) -> (Tensor, (Tensor) -> Tensor) {
+        return (unbroadcasted(toShape: shape), { [originalShape = self.shapeTensor] v in
+            v.broadcasted(toShape: originalShape)
+        })
     }
 }
 
