@@ -606,9 +606,6 @@ public final class _ExecutionContext {
     }
 
     // Create TF config object.
-    if _RuntimeConfig.executionMode == .xla {
-      debugLog("Enable XLA execution.")
-    }
     if _RuntimeConfig.gpuMemoryAllowGrowth {
       debugLog("Allowing growth for GPU memory allocator.")
     }

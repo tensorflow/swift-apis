@@ -381,7 +381,6 @@ public extension Tensor {
     }
 
     @inlinable
-    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     static func .= (lhs: inout Tensor, rhs: Tensor) {
         lhs = rhs.broadcasted(like: lhs)
     }
@@ -392,7 +391,7 @@ public extension Tensor where Scalar: Numeric {
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func unbroadcasted(toShape otherShape: Tensor<Int32>) -> Tensor {
         // TODO: Simplify this once differentiating control flow is supported.
-	    return unbroadcast(to: {
+	    return unbroadcasted(to: {
 	      precondition(otherShape.rank == 1)
 	      return TensorShape(otherShape.scalars.map(Int.init))
 	    }())
