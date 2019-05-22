@@ -1,70 +1,31 @@
 import TensorFlow
-
-//
-//  Complex.swift
-//  NumericAnnex
-//
-//  Created by Xiaodi Wu on 3/25/17.
-//
-//  Note
-//  ====
-//
-//  For maximum consistency with corresponding functions in C/C++, checks for
-//  special values in `naturalExponential()`, `squareRoot()`, trigonometric
-//  functions, and hyperbolic functions are adapted from libc++.
-//
-//  Code in libc++ is dual-licensed under the MIT and UIUC/NCSA licenses.
-//  Copyright © 2009-2017 contributors to the LLVM/libc++ project.
-
-/// A type to represent a complex value in Cartesian form.
-///
-/// Additional Considerations
-/// -------------------------
-///
-/// Floating-point types have special values that represent infinity or NaN
-/// ("not a number"). Complex functions in different languages may return
-/// different results when working with special values.
-///
-/// Implementations in `Complex<T>` adhere to the [C standard][std] (Annex G) as
-/// closely as possible with respect to special values and branch cuts.
-///
-/// To users unfamiliar with complex functions, the principal value returned by
-/// some complex functions may be unexpected. For example,
-/// `Double.cbrt(-8) == -2`, which is the __real root__, while
-/// `Complex.cbrt(-8) == 2 * Complex.exp(.i * .pi / 3)`, which is the
-/// __principal root__.
-///
-/// [dfn]: http://mathworld.wolfram.com/BranchCut.html
-/// [std]: http://www.open-std.org/JTC1/SC22/WG14/www/standards.html#9899
-@_fixed_layout
-public struct Complex<T : TensorFlowFloatingPoint> : Differentiable {
+// T : FloatingPoint & Differentiable
+public struct Complex<T : FloatingPoint> {
   // ---------------------------------------------------------------------------
   // MARK: Stored Properties
   // ---------------------------------------------------------------------------
 
   /// The real component of the complex value.
-  // @differentiable(vjp: _vjpReal)
   public var real: T
 
   /// The imaginary component of the complex value.
-  // @differentiable(vjp: _vjpImaginary)
   public var imaginary: T
 
   // ---------------------------------------------------------------------------
   // MARK: Initializers
   // ---------------------------------------------------------------------------
-  @differentiable(wrt: (real, imaginary), vjp: _vjpInit)
   public init(real: T = 0, imaginary: T = 0) {
 	self.real = real
 	self.imaginary = imaginary
   }
+}
 
+extension Complex : Differentiable where T : Differentiable, T.TangentVector == T {
+  // ---------------------------------------------------------------------------
+  // MARK: Differentiability
+  // ---------------------------------------------------------------------------
   public typealias TangentVector = Complex
-  public typealias CotangentVector = Complex
   public typealias AllDifferentiableVariables = Complex
-  public func tangentVector(from cotangent: CotangentVector) -> TangentVector {
-    return cotangent
-  }
 }
 
 extension Complex {
@@ -73,7 +34,7 @@ extension Complex {
   // ---------------------------------------------------------------------------
 
   /// The imaginary unit _i_.
-  @_transparent // @_inlineable
+  @inlinable
   public static var i: Complex {
     return Complex(real: 0, imaginary: 1)
   }
@@ -82,7 +43,7 @@ extension Complex {
   ///
   /// A complex value is finite if its real and imaginary components are both
   /// finite. A component is finite if it is not infinity or NaN.
-  @_transparent // @_inlineable
+  @inlinable
   public var isFinite: Bool {
     return real.isFinite && imaginary.isFinite
   }
@@ -94,7 +55,7 @@ extension Complex {
   ///
   /// Note that `isFinite` and `isInfinite` do not form a dichotomy because NaN
   /// is neither finite nor infinite.
-  @_transparent // @_inlineable
+  @inlinable
   public var isInfinite: Bool {
     return real.isInfinite || imaginary.isInfinite
   }
@@ -109,7 +70,7 @@ extension Complex {
   /// test whether a value is or is not NaN.
   ///
   /// This property is `true` for both quiet and signaling NaNs.
-  @_transparent // @_inlineable
+  @inlinable
   public var isNaN: Bool {
     return (real.isNaN && !imaginary.isInfinite) ||
       (imaginary.isNaN && !real.isInfinite)
@@ -119,7 +80,7 @@ extension Complex {
   ///
   /// A complex value is equal to zero if its real and imaginary components both
   /// represent either `-0.0` or `+0.0`.
-  @_transparent // @_inlineable
+  @inlinable
   public var isZero: Bool {
     return real.isZero && imaginary.isZero
   }
@@ -130,7 +91,7 @@ extension Complex : ExpressibleByIntegerLiteral {
   // MARK: ExpressibleByIntegerLiteral
   // ---------------------------------------------------------------------------
 
-  @_transparent // @_inlineable
+  @inlinable
   public init(integerLiteral value: Int) {
     self.real = T(value)
     self.imaginary = 0
@@ -142,7 +103,7 @@ extension Complex : CustomStringConvertible {
   // MARK: CustomStringConvertible
   // ---------------------------------------------------------------------------
 
-  @_transparent // @_inlineable
+  @inlinable
   public var description: String {
     return real.isNaN && real.sign == .minus
       // At present, -NaN is described as "nan", which is acceptable for real
@@ -162,7 +123,7 @@ extension Complex : Equatable {
   // MARK: Equatable
   // ---------------------------------------------------------------------------
 
-  @_transparent // @_inlineable
+  @inlinable
   public static func == (lhs: Complex, rhs: Complex) -> Bool {
     return lhs.real == rhs.real && lhs.imaginary == rhs.imaginary
   }
@@ -173,29 +134,29 @@ extension Complex : AdditiveArithmetic {
   // MARK: AdditiveArithmetic
   // ---------------------------------------------------------------------------
 
-  @_transparent // @_inlineable
-  @differentiable(vjp: _vjpAdd(lhs:rhs:) where T : Differentiable)
+  @inlinable
+  @differentiable(vjp: _vjpAdd(lhs:rhs:) where T : Differentiable, T.TangentVector == T)
   public static func + (lhs: Complex, rhs: Complex) -> Complex {
     var lhs = lhs
     lhs += rhs
     return lhs
   }
 
-  @_transparent // @_inlineable
+  @inlinable
   public static func += (lhs: inout Complex, rhs: Complex) {
     lhs.real += rhs.real
     lhs.imaginary += rhs.imaginary
   }
 
-  @_transparent // @_inlineable
-  @differentiable(vjp: _vjpSubtract(lhs:rhs:) where T : Differentiable)
+  @inlinable
+  @differentiable(vjp: _vjpSubtract(lhs:rhs:) where T : Differentiable, T.TangentVector == T)
   public static func - (lhs: Complex, rhs: Complex) -> Complex {
     var lhs = lhs
     lhs -= rhs
     return lhs
   }
 
-  @_transparent // @_inlineable
+  @inlinable
   public static func -= (lhs: inout Complex, rhs: Complex) {
     lhs.real -= rhs.real
     lhs.imaginary -= rhs.imaginary
@@ -213,8 +174,8 @@ extension Complex : Numeric {
     self.imaginary = 0
   }
 
-  @_transparent // @_inlineable
-  @differentiable(vjp: _vjpMultiply(lhs:rhs:) where T : Differentiable)
+  @inlinable
+  @differentiable(vjp: _vjpMultiply(lhs:rhs:) where T : Differentiable, T.TangentVector == T)
   public static func * (lhs: Complex, rhs: Complex) -> Complex {
     var a = lhs.real, b = lhs.imaginary, c = rhs.real, d = rhs.imaginary
     let ac = a * c, bd = b * d, ad = a * d, bc = b * c
@@ -259,12 +220,12 @@ extension Complex : Numeric {
     return Complex(real: x, imaginary: y)
   }
 
-  @_transparent // @_inlineable
+  @inlinable
   public static func *= (lhs: inout Complex, rhs: Complex) {
     lhs = lhs * rhs
   }
 
-  @_transparent // @_inlineable
+  @inlinable
   public var magnitude: T {
     var x = abs(real)
     var y = abs(imaginary)
@@ -282,13 +243,13 @@ extension Complex : SignedNumeric {
   // MARK: SignedNumeric
   // ---------------------------------------------------------------------------
 
-  @_transparent // @_inlineable
-  @differentiable(vjp: _vjpNegate where T : Differentiable)
+  @inlinable
+  @differentiable(vjp: _vjpNegate where T : Differentiable, T.TangentVector == T)
   public static prefix func - (operand: Complex) -> Complex {
     return Complex(real: -operand.real, imaginary: -operand.imaginary)
   }
 
-  @_transparent // @_inlineable
+  @inlinable
   public mutating func negate() {
     real.negate()
     imaginary.negate()
@@ -296,9 +257,12 @@ extension Complex : SignedNumeric {
 }
 
 extension Complex {
+  // ---------------------------------------------------------------------------
+  // MARK: Division
+  // ---------------------------------------------------------------------------
 
-  @_transparent // @_inlineable
-  @differentiable(vjp: _vjpDivide(lhs:rhs:) where T : Differentiable)
+  @inlinable
+  @differentiable(vjp: _vjpDivide(lhs:rhs:) where T : Differentiable, T.TangentVector == T)
   public static func / (lhs: Complex, rhs: Complex) -> Complex {
     var a = lhs.real, b = lhs.imaginary, c = rhs.real, d = rhs.imaginary
     var x: T
@@ -336,47 +300,52 @@ extension Complex {
     return Complex(real: x, imaginary: y)
   }
 
-  @_transparent // @_inlineable
+  @inlinable
   public static func /= (lhs: inout Complex, rhs: Complex) {
     lhs = lhs / rhs
   }
 }
 
 extension Complex {
-  func complexConjugate() -> Complex {
+  @inlinable
+  public func complexConjugate() -> Complex {
     return Complex(real: real, imaginary: -imaginary)
   }
 }
 
 /// Returns the absolute value (magnitude, modulus) of `z`.
-@_transparent
+@inlinable
 public func abs<T>(_ z: Complex<T>) -> Complex<T> {
   return Complex(real: z.magnitude)
 }
 
 extension Complex {
-  @differentiable(vjp: _vjpAdding(real:))
+  @inlinable
+  @differentiable(vjp: _vjpAdding(real:) where T : Differentiable, T.TangentVector == T)
   public func adding(real: T) -> Complex {
     var c = self
     c.real += real
     return c
   }
 
-  @differentiable(vjp: _vjpSubtracting(real:))
+  @inlinable
+  @differentiable(vjp: _vjpSubtracting(real:) where T : Differentiable, T.TangentVector == T)
   public func subtracting(real: T) -> Complex {
     var c = self
     c.real -= real
     return c
   }
 
-  @differentiable(vjp: _vjpAdding(imaginary:))
+  @inlinable
+  @differentiable(vjp: _vjpAdding(imaginary:) where T : Differentiable, T.TangentVector == T)
   public func adding(imaginary: T) -> Complex {
     var c = self
     c.imaginary += imaginary
     return c
   }
-
-  @differentiable(vjp: _vjpSubtracting(imaginary:))
+  
+  @inlinable
+  @differentiable(vjp: _vjpSubtracting(imaginary:) where T : Differentiable, T.TangentVector == T)
   public func subtracting(imaginary: T) -> Complex {
     var c = self
     c.imaginary -= imaginary
@@ -384,18 +353,7 @@ extension Complex {
   }
 }
 
-extension Complex {
-  @inlinable
-  static func _vjpInit(real: T, imaginary: T) -> (Complex<T>, (Complex<T>) -> (T, T)) {
-    // let orig: Complex<T> = Complex(real: real, imaginary: imaginary)
-    // let pb: (Complex) -> (T, T) = { v in
-    //   return (v.real, v.imaginary) 
-    // }
-    return (Complex(real: real, imaginary: imaginary), { v in
-      return (v.real, v.imaginary) 
-    })
-  }
-
+extension Complex where T : Differentiable, T.TangentVector == T {
   @inlinable
   static func _vjpAdd(lhs: Complex, rhs: Complex) 
   -> (Complex, (Complex) -> (Complex, Complex)) {
