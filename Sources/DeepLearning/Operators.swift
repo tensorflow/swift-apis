@@ -240,7 +240,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
             outBackprop: self,
             strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2),
                       Int32(strides.3), Int32(strides.4)],
-            padding: padding.raw2)
+            padding: padding.raw)
     }
 
     /// TensorFlow builtin conv3d gradient helper for the filter.
@@ -292,7 +292,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
             return (
                 self.conv3DBackpropInput(shape: filterSizes, filter: v, strides: strides,
                                          padding: padding),
-                input.convolved3D(withFilter: filter, strides: strides, padding: padding)
+                input.convolved3D(withFilter: v, strides: strides, padding: padding)
             )
         })
     }
