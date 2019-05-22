@@ -229,18 +229,18 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: (self, filter), vjp: _vjpConv3DBackpropInput)
     internal func conv3DBackpropInput(
-        input: Tensor,
+        shape: Tensor<Int32>,
         filter: Tensor,
         strides: (Int, Int, Int, Int, Int),
         padding: Padding
     ) -> Tensor {
-        return Raw.conv3DBackpropInput(
-            self,
+        return Raw.conv3DBackpropInputV2(
+            inputSizes: shape,
             filter: filter,
             outBackprop: self,
             strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2),
                       Int32(strides.3), Int32(strides.4)],
-            padding: padding.raw)
+            padding: padding.raw2)
     }
 
     /// TensorFlow builtin conv3d gradient helper for the filter.
@@ -248,13 +248,13 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @differentiable(wrt: (self, input), vjp: _vjpConv3DBackpropFilter)
     internal func conv3DBackpropFilter(
         input: Tensor,
-        filter: Tensor,
+        filterSizes: Tensor<Int32>,
         strides: (Int, Int, Int, Int, Int),
         padding: Padding
     ) -> Tensor {
-        return Raw.conv3DBackpropFilter(
+        return Raw.conv3DBackpropFilterV2(
             self,
-            filter: filter,
+            filterSizes: filterSizes,
             outBackprop: self,
             strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2),
                       Int32(strides.3), Int32(strides.4)],
@@ -263,16 +263,16 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
 
     @inlinable
     internal func _vjpConv3DBackpropInput(
-        _ input: Tensor,
+        _ shape: Tensor<Int32>,
         _ filter: Tensor,
         _ strides: (Int, Int, Int, Int, Int),
         _ padding: Padding
     ) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
-        let value = conv3DBackpropInput(input: input, filter: filter, strides: strides,
+        let value = conv3DBackpropInput(shape: shape, filter: filter, strides: strides,
                                         padding: padding)
         return (value, { v in
             return (
-                self.conv3DBackpropFilter(input: v, filter: filter, strides: strides,
+                self.conv3DBackpropFilter(input: v, filterSizes: shape, strides: strides,
                                           padding: padding),
                 v.convolved3D(withFilter: filter, strides: strides, padding: padding)
             )
@@ -282,15 +282,15 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     internal func _vjpConv3DBackpropFilter(
         _ input: Tensor,
-        _ filter: Tensor,
+        _ filterSizes: Tensor<Int32>,
         _ strides: (Int, Int, Int, Int, Int),
         _ padding: Padding
     ) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
-        let value = conv3DBackpropFilter(input: input, filter: filter,
+        let value = conv3DBackpropFilter(input: input, filterSizes: filterSizes,
                                          strides: strides, padding: padding)
         return (value, { v in
             return (
-                self.conv3DBackpropInput(input: input, filter: v, strides: strides,
+                self.conv3DBackpropInput(shape: filterSizes, filter: v, strides: strides,
                                          padding: padding),
                 input.convolved3D(withFilter: filter, strides: strides, padding: padding)
             )
@@ -308,11 +308,11 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         return (value, { v in
             return (
                 v.conv3DBackpropInput(
-                    input: self, filter: filter,
+                    shape: self.shapeTensor, filter: filter,
                     strides: strides, padding: padding
                 ),
                 v.conv3DBackpropFilter(
-                    input: self, filter: filter,
+                    input: self, filterSizes: filter.shapeTensor,
                     strides: strides, padding: padding
                 )
             )
