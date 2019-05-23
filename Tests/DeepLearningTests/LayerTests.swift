@@ -31,7 +31,7 @@ final class LayerTests: XCTestCase {
     func testConv2D() {
         let filter =  Tensor(shape: [1, 2, 2, 1], scalars: (0..<4).map(Float.init))
         let bias = Tensor<Float>([1, 2])
-        let layer = Conv3D<Float>(filter: filter, bias: bias, activation: identity,
+        let layer = Conv2D<Float>(filter: filter, bias: bias, activation: identity,
                                   strides: (2, 2), padding: .valid)
         let input = Tensor(shape: [2, 2, 2, 2], scalars: (0..<16).map(Float.init))
         let output = layer.inferring(from: input)
@@ -219,6 +219,7 @@ final class LayerTests: XCTestCase {
 
     static var allTests = [
         ("testConv1D", testConv1D),
+        ("testConv2D", testConv2D),
         ("testConv3D", testConv3D),
         ("testMaxPool1D", testMaxPool1D),
         ("testMaxPool2D", testMaxPool2D),
