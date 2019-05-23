@@ -1430,9 +1430,9 @@ public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: Layer {
         let shape = input.shape
         let (batchSize, height, width, depth, channels) =
             (shape[0], shape[1], shape[2], shape[3], shape[4])
-        var result = repeatingElements(input, alongAxis: 1, count: height * size)
-        result = repeatingElements(result, alongAxis: 2, count: width * size)
-        result = repeatingElements(result, alongAxis: 3, count: depth * size)
+        var result = repeatingElements(input, alongAxis: 1, count: size)
+        result = repeatingElements(result, alongAxis: 2, count: size)
+        result = repeatingElements(result, alongAxis: 3, count: size)
         return result
     }
 }
