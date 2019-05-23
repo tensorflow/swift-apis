@@ -1340,7 +1340,7 @@ public struct UpSampling1D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameter size: The upsampling factor for timesteps.
     public init(size: Int) {
-       self.size = size
+        self.size = size
     }
 
     /// Returns the output obtained from applying the layer to the given input.
@@ -1366,7 +1366,7 @@ public struct UpSampling2D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameter size: The upsampling factor for rows and columns.
     public init(size: Int) {
-       self.size = size
+        self.size = size
     }
 
     /// Returns the output obtained from applying the layer to the given input.
@@ -1392,7 +1392,7 @@ public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameter size: The upsampling factor for rows and columns.
     public init(size: Int) {
-       self.size = size
+        self.size = size
     }
 
     /// Returns the output obtained from applying the layer to the given input.
