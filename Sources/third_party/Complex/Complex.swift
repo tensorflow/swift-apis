@@ -1,54 +1,54 @@
 // A major part of the Complex number implementation comes from
 // [@xwu](https://github.com/xwu)'s project, [NumericAnnex](https://github.com/xwu/NumericAnnex).
 
-public struct Complex<T : FloatingPoint> {
-    public var real: T
-    public var imaginary: T
+struct Complex<T : FloatingPoint> {
+    var real: T
+    var imaginary: T
 
     @differentiable(vjp: _vjpInit where T : Differentiable, T.TangentVector == T)
-    public init(real: T = 0, imaginary: T = 0) {
+    init(real: T = 0, imaginary: T = 0) {
         self.real = real
         self.imaginary = imaginary
     }
 }
 
 extension Complex : Differentiable where T : Differentiable {
-    public typealias TangentVector = Complex
-    public typealias AllDifferentiableVariables = Complex
+    typealias TangentVector = Complex
+    typealias AllDifferentiableVariables = Complex
 }
 
 extension Complex {
-    public static var i: Complex {
+    static var i: Complex {
         return Complex(real: 0, imaginary: 1)
     }
 
-    public var isFinite: Bool {
+    var isFinite: Bool {
         return real.isFinite && imaginary.isFinite
     }
 
-    public var isInfinite: Bool {
+    var isInfinite: Bool {
         return real.isInfinite || imaginary.isInfinite
     }
 
-    public var isNaN: Bool {
+    var isNaN: Bool {
         return (real.isNaN && !imaginary.isInfinite) ||
         (imaginary.isNaN && !real.isInfinite)
     }
 
-    public var isZero: Bool {
+    var isZero: Bool {
         return real.isZero && imaginary.isZero
     }
 }
 
 extension Complex : ExpressibleByIntegerLiteral {
-    public init(integerLiteral value: Int) {
+    init(integerLiteral value: Int) {
         self.real = T(value)
         self.imaginary = 0
     }
 }
 
 extension Complex : CustomStringConvertible {
-    public var description: String {
+    var description: String {
         return real.isNaN && real.sign == .minus
             ? imaginary.sign == .minus
                 ? "-\(-real) - \(-imaginary)i"
@@ -60,46 +60,46 @@ extension Complex : CustomStringConvertible {
 }
 
 extension Complex : Equatable {
-    public static func == (lhs: Complex, rhs: Complex) -> Bool {
+    c static func == (lhs: Complex, rhs: Complex) -> Bool {
         return lhs.real == rhs.real && lhs.imaginary == rhs.imaginary
     }
 }
 
 extension Complex : AdditiveArithmetic {
     @differentiable(vjp: _vjpAdd(lhs:rhs:) where T : Differentiable)
-    public static func + (lhs: Complex, rhs: Complex) -> Complex {
+    static func + (lhs: Complex, rhs: Complex) -> Complex {
         var temp = lhs
         temp += rhs
         return temp
     }
 
-    public static func += (lhs: inout Complex, rhs: Complex) {
+    static func += (lhs: inout Complex, rhs: Complex) {
         lhs.real += rhs.real
         lhs.imaginary += rhs.imaginary
     }
 
     @differentiable(vjp: _vjpSubtract(lhs:rhs:) where T : Differentiable)
-    public static func - (lhs: Complex, rhs: Complex) -> Complex {
+    static func - (lhs: Complex, rhs: Complex) -> Complex {
         var temp = lhs
         temp -= rhs
         return temp
     }
 
-    public static func -= (lhs: inout Complex, rhs: Complex) {
+    static func -= (lhs: inout Complex, rhs: Complex) {
         lhs.real -= rhs.real
         lhs.imaginary -= rhs.imaginary
     }
 }
 
 extension Complex : Numeric {
-    public init?<U>(exactly source: U) where U : BinaryInteger {
+    init?<U>(exactly source: U) where U : BinaryInteger {
         guard let t = T(exactly: source) else { return nil }
         self.real = t
         self.imaginary = 0
     }
 
     @differentiable(vjp: _vjpMultiply(lhs:rhs:) where T : Differentiable)
-    public static func * (lhs: Complex, rhs: Complex) -> Complex {
+    static func * (lhs: Complex, rhs: Complex) -> Complex {
         var a = lhs.real, b = lhs.imaginary, c = rhs.real, d = rhs.imaginary
         let ac = a * c, bd = b * d, ad = a * d, bc = b * c
         let x = ac - bd
@@ -139,11 +139,11 @@ extension Complex : Numeric {
         return Complex(real: x, imaginary: y)
     }
 
-    public static func *= (lhs: inout Complex, rhs: Complex) {
+    static func *= (lhs: inout Complex, rhs: Complex) {
         lhs = lhs * rhs
     }
 
-    public var magnitude: T {
+    var magnitude: T {
         var x = abs(real)
         var y = abs(imaginary)
         if x.isInfinite { return x }
@@ -157,11 +157,11 @@ extension Complex : Numeric {
 
 extension Complex : SignedNumeric {
     @differentiable(vjp: _vjpNegate where T : Differentiable)
-    public static prefix func - (operand: Complex) -> Complex {
+    static prefix func - (operand: Complex) -> Complex {
         return Complex(real: -operand.real, imaginary: -operand.imaginary)
     }
 
-    public mutating func negate() {
+    mutating func negate() {
         real.negate()
         imaginary.negate()
     }
@@ -169,7 +169,7 @@ extension Complex : SignedNumeric {
 
 extension Complex {
     @differentiable(vjp: _vjpDivide(lhs:rhs:) where T : Differentiable)
-    public static func / (lhs: Complex, rhs: Complex) -> Complex {
+    static func / (lhs: Complex, rhs: Complex) -> Complex {
         var a = lhs.real, b = lhs.imaginary, c = rhs.real, d = rhs.imaginary
         var x: T
         var y: T
@@ -204,19 +204,19 @@ extension Complex {
     }
 
 
-    public static func /= (lhs: inout Complex, rhs: Complex) {
+    static func /= (lhs: inout Complex, rhs: Complex) {
         lhs = lhs / rhs
     }
 }
 
 extension Complex {
     @differentiable(vjp: _vjpComplexConjugate where T : Differentiable)
-    public func complexConjugate() -> Complex {
+    func complexConjugate() -> Complex {
         return Complex(real: real, imaginary: -imaginary)
     }
 }
 
-public func abs<T>(_ z: Complex<T>) -> Complex<T> {
+func abs<T>(_ z: Complex<T>) -> Complex<T> {
     return Complex(real: z.magnitude)
 }
 
@@ -224,7 +224,7 @@ extension Complex {
     @differentiable(vjp: _vjpAdding(real:)
         where T : Differentiable,
               T.TangentVector == T)
-    public func adding(real: T) -> Complex {
+    func adding(real: T) -> Complex {
         var c = self
         c.real += real
         return c
@@ -233,7 +233,7 @@ extension Complex {
     @differentiable(vjp: _vjpSubtracting(real:)
         where T : Differentiable,
               T.TangentVector == T)
-    public func subtracting(real: T) -> Complex {
+    func subtracting(real: T) -> Complex {
         var c = self
         c.real -= real
         return c
@@ -242,7 +242,7 @@ extension Complex {
     @differentiable(vjp: _vjpAdding(imaginary:)
         where T : Differentiable,
               T.TangentVector == T)
-    public func adding(imaginary: T) -> Complex {
+    func adding(imaginary: T) -> Complex {
         var c = self
         c.imaginary += imaginary
         return c
@@ -251,7 +251,7 @@ extension Complex {
     @differentiable(vjp: _vjpSubtracting(imaginary:)
         where T : Differentiable,
               T.TangentVector == T)
-    public func subtracting(imaginary: T) -> Complex {
+    func subtracting(imaginary: T) -> Complex {
         var c = self
         c.imaginary -= imaginary
         return c
