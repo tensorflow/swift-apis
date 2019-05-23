@@ -228,6 +228,3 @@ final class ComplexTests: XCTestCase {
     expectEqual(pb(Complex(real: 1, imaginary: 1)), Complex<Float>(real: 1, imaginary: 1))
   }
 }
-
-
-runAllTests()
