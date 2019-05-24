@@ -1,18 +1,18 @@
 // A major part of the Complex number implementation comes from
 // [@xwu](https://github.com/xwu)'s project, [NumericAnnex](https://github.com/xwu/NumericAnnex).
 
-struct Complex<T : FloatingPoint> {
+struct Complex<T: FloatingPoint> {
     var real: T
     var imaginary: T
 
-    @differentiable(vjp: _vjpInit where T : Differentiable, T.TangentVector == T)
+    @differentiable(vjp: _vjpInit where T: Differentiable, T.TangentVector == T)
     init(real: T = 0, imaginary: T = 0) {
         self.real = real
         self.imaginary = imaginary
     }
 }
 
-extension Complex : Differentiable where T : Differentiable {
+extension Complex: Differentiable where T: Differentiable {
     typealias TangentVector = Complex
     typealias AllDifferentiableVariables = Complex
 }
@@ -40,14 +40,14 @@ extension Complex {
     }
 }
 
-extension Complex : ExpressibleByIntegerLiteral {
+extension Complex: ExpressibleByIntegerLiteral {
     init(integerLiteral value: Int) {
         self.real = T(value)
         self.imaginary = 0
     }
 }
 
-extension Complex : CustomStringConvertible {
+extension Complex: CustomStringConvertible {
     var description: String {
         return real.isNaN && real.sign == .minus
             ? imaginary.sign == .minus
@@ -59,14 +59,14 @@ extension Complex : CustomStringConvertible {
     }
 }
 
-extension Complex : Equatable {
+extension Complex: Equatable {
     static func == (lhs: Complex, rhs: Complex) -> Bool {
         return lhs.real == rhs.real && lhs.imaginary == rhs.imaginary
     }
 }
 
-extension Complex : AdditiveArithmetic {
-    @differentiable(vjp: _vjpAdd(lhs:rhs:) where T : Differentiable)
+extension Complex: AdditiveArithmetic {
+    @differentiable(vjp: _vjpAdd(lhs:rhs:) where T: Differentiable)
     static func + (lhs: Complex, rhs: Complex) -> Complex {
         var temp = lhs
         temp += rhs
@@ -78,7 +78,7 @@ extension Complex : AdditiveArithmetic {
         lhs.imaginary += rhs.imaginary
     }
 
-    @differentiable(vjp: _vjpSubtract(lhs:rhs:) where T : Differentiable)
+    @differentiable(vjp: _vjpSubtract(lhs:rhs:) where T: Differentiable)
     static func - (lhs: Complex, rhs: Complex) -> Complex {
         var temp = lhs
         temp -= rhs
@@ -91,14 +91,14 @@ extension Complex : AdditiveArithmetic {
     }
 }
 
-extension Complex : Numeric {
-    init?<U>(exactly source: U) where U : BinaryInteger {
+extension Complex: Numeric {
+    init?<U>(exactly source: U) where U: BinaryInteger {
         guard let t = T(exactly: source) else { return nil }
         self.real = t
         self.imaginary = 0
     }
 
-    @differentiable(vjp: _vjpMultiply(lhs:rhs:) where T : Differentiable)
+    @differentiable(vjp: _vjpMultiply(lhs:rhs:) where T: Differentiable)
     static func * (lhs: Complex, rhs: Complex) -> Complex {
         var a = lhs.real, b = lhs.imaginary, c = rhs.real, d = rhs.imaginary
         let ac = a * c, bd = b * d, ad = a * d, bc = b * c
@@ -155,8 +155,8 @@ extension Complex : Numeric {
     }
 }
 
-extension Complex : SignedNumeric {
-    @differentiable(vjp: _vjpNegate where T : Differentiable)
+extension Complex: SignedNumeric {
+    @differentiable(vjp: _vjpNegate where T: Differentiable)
     static prefix func - (operand: Complex) -> Complex {
         return Complex(real: -operand.real, imaginary: -operand.imaginary)
     }
@@ -168,7 +168,7 @@ extension Complex : SignedNumeric {
 }
 
 extension Complex {
-    @differentiable(vjp: _vjpDivide(lhs:rhs:) where T : Differentiable)
+    @differentiable(vjp: _vjpDivide(lhs:rhs:) where T: Differentiable)
     static func / (lhs: Complex, rhs: Complex) -> Complex {
         var a = lhs.real, b = lhs.imaginary, c = rhs.real, d = rhs.imaginary
         var x: T
@@ -210,7 +210,7 @@ extension Complex {
 }
 
 extension Complex {
-    @differentiable(vjp: _vjpComplexConjugate where T : Differentiable)
+    @differentiable(vjp: _vjpComplexConjugate where T: Differentiable)
     func complexConjugate() -> Complex {
         return Complex(real: real, imaginary: -imaginary)
     }
@@ -222,7 +222,7 @@ func abs<T>(_ z: Complex<T>) -> Complex<T> {
 
 extension Complex {
     @differentiable(vjp: _vjpAdding(real:)
-        where T : Differentiable,
+        where T: Differentiable,
               T.TangentVector == T)
     func adding(real: T) -> Complex {
         var c = self
@@ -231,7 +231,7 @@ extension Complex {
     }
 
     @differentiable(vjp: _vjpSubtracting(real:)
-        where T : Differentiable,
+        where T: Differentiable,
               T.TangentVector == T)
     func subtracting(real: T) -> Complex {
         var c = self
@@ -240,7 +240,7 @@ extension Complex {
     }
 
     @differentiable(vjp: _vjpAdding(imaginary:)
-        where T : Differentiable,
+        where T: Differentiable,
               T.TangentVector == T)
     func adding(imaginary: T) -> Complex {
         var c = self
@@ -249,7 +249,7 @@ extension Complex {
     }
 
     @differentiable(vjp: _vjpSubtracting(imaginary:)
-        where T : Differentiable,
+        where T: Differentiable,
               T.TangentVector == T)
     func subtracting(imaginary: T) -> Complex {
         var c = self
@@ -258,14 +258,14 @@ extension Complex {
     }
 }
 
-extension Complex where T : Differentiable, T.TangentVector == T {
+extension Complex where T: Differentiable, T.TangentVector == T {
     @usableFromInline
     static func _vjpInit(real: T, imaginary: T) -> (Complex, (Complex) -> (T, T)) {
         return (Complex(real: real, imaginary: imaginary), { ($0.real, $0.imaginary) })
     }
 }
 
-extension Complex where T : Differentiable {
+extension Complex where T: Differentiable {
     @usableFromInline
     static func _vjpAdd(lhs: Complex, rhs: Complex)
     -> (Complex, (Complex) -> (Complex, Complex)) {
@@ -302,7 +302,7 @@ extension Complex where T : Differentiable {
     }
 }
 
-extension Complex where T : Differentiable, T.TangentVector == T {
+extension Complex where T: Differentiable, T.TangentVector == T {
     @usableFromInline
     func _vjpAdding(real: T) -> (Complex, (Complex) -> (Complex, T)) {
         return (self.adding(real: real), { ($0, $0.real) })

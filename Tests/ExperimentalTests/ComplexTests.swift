@@ -285,4 +285,33 @@ final class ComplexTests: XCTestCase {
         XCTAssertEqual(Complex(real: 1, imaginary: -5), result)
         XCTAssertEqual(expectedVector, pbComplex(Complex(real: 1, imaginary: 1)))
     }
+    
+    static var allTests = [
+        ("testInitializer", testInitializer),
+        ("testStaticImaginary", testStaticImaginary),
+        ("testIsFinite", testIsFinite),
+        ("testIsInfinite", testIsInfinite),
+        ("testIsNaN", testIsNaN),
+        ("testIsZero", testIsZero),
+        ("testEquals", testEquals),
+        ("testPlus", testPlus),
+        ("testMinus", testMinus),
+        ("testTimes", testTimes),
+        ("testNegate", testNegate),
+        ("testDivide", testDivide),
+        ("testComplexConjugate", testComplexConjugate),
+        ("testAdding", testAdding),
+        ("testSubtracting", testSubtracting),
+        ("testVjpAdd", testVjpAdd),
+        ("testVjpSubtract", testVjpSubtract),
+        ("testVjpMultiply", testVjpMultiply),
+        ("testVjpDivide", testVjpDivide),
+        ("testVjpNegate", testVjpNegate),
+        ("testVjpComplexConjugate", testVjpComplexConjugate),
+        ("testVjpAddingReal", testVjpAddingReal),
+        ("testVjpAddingImaginary", testVjpAddingImaginary),
+        ("testVjpSubtractingReal", testVjpSubtractingReal),
+        ("testVjpSubtractingImaginary", testVjpSubtractingImaginary),
+        ("testJvpDotProduct", testJvpDotProduct)
+    ]
 }
