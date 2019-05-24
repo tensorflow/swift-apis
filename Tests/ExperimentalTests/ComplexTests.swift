@@ -196,9 +196,9 @@ final class ComplexTests: XCTestCase {
         let pb: (Complex<Float>) -> Complex<Float> = pullback(at: Complex<Float>(real: 20, imaginary: -4)) { x in
             return x.complexConjugate()
         }
-        XCTAssertEqual(pb(Complex(real: 1, imaginary: 0)), Complex<Float>(real: -1, imaginary: 0))
+        XCTAssertEqual(pb(Complex(real: 1, imaginary: 0)), Complex<Float>(real: 1, imaginary: 0))
         XCTAssertEqual(pb(Complex(real: 0, imaginary: 1)), Complex<Float>(real: 0, imaginary: -1))
-        XCTAssertEqual(pb(Complex(real: 1, imaginary: 1)), Complex<Float>(real: -1, imaginary: -1))
+        XCTAssertEqual(pb(Complex(real: -1, imaginary: 1)), Complex<Float>(real: -1, imaginary: -1))
     }
     
     func testVjpAddingReal() {
