@@ -1,5 +1,55 @@
-// A major part of the Complex number implementation comes from
-// [@xwu](https://github.com/xwu)'s project, [NumericAnnex](https://github.com/xwu/NumericAnnex).
+//
+//  Complex.swift
+//  NumericAnnex
+//
+//  Created by Xiaodi Wu on 3/25/17.
+//
+//  Note
+//  ====
+//
+//  For maximum consistency with corresponding functions in C/C++, checks for
+//  special values in `naturalExponential()`, `squareRoot()`, trigonometric
+//  functions, and hyperbolic functions are adapted from libc++.
+//
+//  Code in libc++ is dual-licensed under the MIT and UIUC/NCSA licenses.
+//  Copyright © 2009-2017 contributors to the LLVM/libc++ project, Google LLC.
+/// A type to represent a complex value in Cartesian form.
+///
+/// - Note: `Complex64` is a type alias for `Complex<Float>` and `Complex128` is
+///   a type alias for `Complex<Double>`.
+///
+/// Create new instances of `Complex<T>` using integer or floating-point
+/// literals and the imaginary unit `Complex<T>.i`. For example:
+///
+/// ```swift
+/// let x = 2 + 4 * .i // `x` is of type `Complex<Double>`
+/// let y = 3.5 + 7 * .i // `y` is of type `Complex<Double>`
+///
+/// let z: Complex64 = .e + .pi * .i // `z` is of type `Complex<Float>`
+/// ```
+///
+/// Additional Considerations
+/// -------------------------
+///
+/// Floating-point types have special values that represent infinity or NaN
+/// ("not a number"). Complex functions in different languages may return
+/// different results when working with special values.
+///
+/// Many complex functions have [branch cuts][dfn], which are curves in the
+/// complex plane across which a function is discontinuous. Different languages
+/// may adopt different branch cut structures for the same complex function.
+///
+/// Implementations in `Complex<T>` adhere to the [C standard][std] (Annex G) as
+/// closely as possible with respect to special values and branch cuts.
+///
+/// To users unfamiliar with complex functions, the principal value returned by
+/// some complex functions may be unexpected. For example,
+/// `Double.cbrt(-8) == -2`, which is the __real root__, while
+/// `Complex.cbrt(-8) == 2 * Complex.exp(.i * .pi / 3)`, which is the
+/// __principal root__.
+///
+/// [dfn]: http://mathworld.wolfram.com/BranchCut.html
+/// [std]: http://www.open-std.org/JTC1/SC22/WG14/www/standards.html#9899
 
 struct Complex<T: FloatingPoint> {
     var real: T
@@ -131,8 +181,8 @@ extension Complex: Numeric {
             }
             if recalculate {
                 return Complex(
-                real: .infinity * (a * c - b * d),
-                imaginary: .infinity * (a * d + b * c)
+                    real: .infinity * (a * c - b * d),
+                    imaginary: .infinity * (a * d + b * c)
                 )
             }
         }
@@ -221,36 +271,28 @@ func abs<T>(_ z: Complex<T>) -> Complex<T> {
 }
 
 extension Complex {
-    @differentiable(vjp: _vjpAdding(real:)
-        where T: Differentiable,
-              T.TangentVector == T)
+    @differentiable(vjp: _vjpAdding(real:) where T: Differentiable, T.TangentVector == T)
     func adding(real: T) -> Complex {
         var c = self
         c.real += real
         return c
     }
 
-    @differentiable(vjp: _vjpSubtracting(real:)
-        where T: Differentiable,
-              T.TangentVector == T)
+    @differentiable(vjp: _vjpSubtracting(real:) where T: Differentiable, T.TangentVector == T)
     func subtracting(real: T) -> Complex {
         var c = self
         c.real -= real
         return c
     }
 
-    @differentiable(vjp: _vjpAdding(imaginary:)
-        where T: Differentiable,
-              T.TangentVector == T)
+    @differentiable(vjp: _vjpAdding(imaginary:) where T: Differentiable, T.TangentVector == T)
     func adding(imaginary: T) -> Complex {
         var c = self
         c.imaginary += imaginary
         return c
     }
 
-    @differentiable(vjp: _vjpSubtracting(imaginary:)
-        where T: Differentiable,
-              T.TangentVector == T)
+    @differentiable(vjp: _vjpSubtracting(imaginary:) where T: Differentiable, T.TangentVector == T)
     func subtracting(imaginary: T) -> Complex {
         var c = self
         c.imaginary -= imaginary
@@ -259,66 +301,55 @@ extension Complex {
 }
 
 extension Complex where T: Differentiable, T.TangentVector == T {
-    @usableFromInline
     static func _vjpInit(real: T, imaginary: T) -> (Complex, (Complex) -> (T, T)) {
         return (Complex(real: real, imaginary: imaginary), { ($0.real, $0.imaginary) })
     }
 }
 
 extension Complex where T: Differentiable {
-    @usableFromInline
     static func _vjpAdd(lhs: Complex, rhs: Complex)
-    -> (Complex, (Complex) -> (Complex, Complex)) {
+        -> (Complex, (Complex) -> (Complex, Complex)) {
         return (lhs + rhs, { v in (v, v) })
     }
 
-    @usableFromInline
     static func _vjpSubtract(lhs: Complex, rhs: Complex)
-    -> (Complex, (Complex) -> (Complex, Complex)) {
+        -> (Complex, (Complex) -> (Complex, Complex)) {
         return (lhs - rhs, { v in (v, -v) })
     }
 
-    @usableFromInline
     static func _vjpMultiply(lhs: Complex, rhs: Complex)
-    -> (Complex, (Complex) -> (Complex, Complex)) {
+        -> (Complex, (Complex) -> (Complex, Complex)) {
         return (lhs * rhs, { v in (rhs * v, lhs * v) })
     }
 
-    @usableFromInline
     static func _vjpDivide(lhs: Complex, rhs: Complex)
-    -> (Complex, (Complex) -> (Complex, Complex)) {
+        -> (Complex, (Complex) -> (Complex, Complex)) {
         return (lhs / rhs, { v in (v / rhs, -lhs / (rhs * rhs) * v) })
     }
 
-    @usableFromInline
     static func _vjpNegate(operand: Complex)
-    -> (Complex, (Complex) -> Complex) {
+        -> (Complex, (Complex) -> Complex) {
         return (-operand, { -$0 })
     }
 
-    @usableFromInline
     func _vjpComplexConjugate() -> (Complex, (Complex) -> Complex) {
         return (complexConjugate(), { v in v.complexConjugate() })
     }
 }
 
 extension Complex where T: Differentiable, T.TangentVector == T {
-    @usableFromInline
     func _vjpAdding(real: T) -> (Complex, (Complex) -> (Complex, T)) {
         return (self.adding(real: real), { ($0, $0.real) })
     }
 
-    @usableFromInline
     func _vjpSubtracting(real: T) -> (Complex, (Complex) -> (Complex, T)) {
         return (self.subtracting(real: real), { ($0, -$0.real) })
     }
 
-    @usableFromInline
     func _vjpAdding(imaginary: T) -> (Complex, (Complex) -> (Complex, T)) {
         return (self.adding(real: real), { ($0, $0.imaginary) })
     }
 
-    @usableFromInline
     func _vjpSubtracting(imaginary: T) -> (Complex, (Complex) -> (Complex, T)) {
         return (self.subtracting(real: real), { ($0, -$0.imaginary) })
     }
