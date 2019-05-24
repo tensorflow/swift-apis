@@ -147,84 +147,84 @@ final class ComplexTests: XCTestCase {
     let pb: (Complex<Float>) -> Complex<Float> = pullback(at: Complex<Float>(real: 2, imaginary: 3)) { x in
       return x + Complex<Float>(real: 5, imaginary: 6)
     }
-    expectEqual(pb(Complex(real: 1, imaginary: 1)), Complex<Float>(real: 1, imaginary: 1))
+    XCTAssertEqual(pb(Complex(real: 1, imaginary: 1)), Complex<Float>(real: 1, imaginary: 1))
   }
 
   func testVjpSubtract() {
     let pb: (Complex<Float>) -> Complex<Float> = pullback(at: Complex<Float>(real: 2, imaginary: 3)) { x in
       return Complex<Float>(real: 5, imaginary: 6) - x
     }
-    expectEqual(pb(Complex(real: 1, imaginary: 1)), Complex<Float>(real: -1, imaginary: -1))
+    XCTAssertEqual(pb(Complex(real: 1, imaginary: 1)), Complex<Float>(real: -1, imaginary: -1))
   }
 
   func testVjpMultiply() {
     let pb: (Complex<Float>) -> Complex<Float> = pullback(at: Complex<Float>(real: 2, imaginary: 3)) { x in
       return x * x
     }
-    expectEqual(pb(Complex(real: 1, imaginary: 0)), Complex<Float>(real: 4, imaginary: 6))
-    expectEqual(pb(Complex(real: 0, imaginary: 1)), Complex<Float>(real: -6, imaginary: 4))
-    expectEqual(pb(Complex(real: 1, imaginary: 1)), Complex<Float>(real: -2, imaginary: 10))
+    XCTAssertEqual(pb(Complex(real: 1, imaginary: 0)), Complex<Float>(real: 4, imaginary: 6))
+    XCTAssertEqual(pb(Complex(real: 0, imaginary: 1)), Complex<Float>(real: -6, imaginary: 4))
+    XCTAssertEqual(pb(Complex(real: 1, imaginary: 1)), Complex<Float>(real: -2, imaginary: 10))
   }
 
   func testVjpDivide() {
     let pb: (Complex<Float>) -> Complex<Float> = pullback(at: Complex<Float>(real: 20, imaginary: -4)) { x in
       return x / Complex<Float>(real: 2, imaginary: 2)
     }
-    expectEqual(pb(Complex(real: 1, imaginary: 0)), Complex<Float>(real: 0.25, imaginary: -0.25))
-    expectEqual(pb(Complex(real: 0, imaginary: 1)), Complex<Float>(real: 0.25, imaginary: 0.25))
+    XCTAssertEqual(pb(Complex(real: 1, imaginary: 0)), Complex<Float>(real: 0.25, imaginary: -0.25))
+    XCTAssertEqual(pb(Complex(real: 0, imaginary: 1)), Complex<Float>(real: 0.25, imaginary: 0.25))
   }
 
   func testVjpNegate() {
     let pb: (Complex<Float>) -> Complex<Float> = pullback(at: Complex<Float>(real: 20, imaginary: -4)) { x in
       return -x
     }
-    expectEqual(pb(Complex(real: 1, imaginary: 0)), Complex<Float>(real: -1, imaginary: 0))
-    expectEqual(pb(Complex(real: 0, imaginary: 1)), Complex<Float>(real: 0, imaginary: -1))
-    expectEqual(pb(Complex(real: 1, imaginary: 1)), Complex<Float>(real: -1, imaginary: -1))
+    XCTAssertEqual(pb(Complex(real: 1, imaginary: 0)), Complex<Float>(real: -1, imaginary: 0))
+    XCTAssertEqual(pb(Complex(real: 0, imaginary: 1)), Complex<Float>(real: 0, imaginary: -1))
+    XCTAssertEqual(pb(Complex(real: 1, imaginary: 1)), Complex<Float>(real: -1, imaginary: -1))
   }
 
   func testVjpComplexConjugate() {
     let pb: (Complex<Float>) -> Complex<Float> = pullback(at: Complex<Float>(real: 20, imaginary: -4)) { x in
       return x.complexConjugate()
     }
-    expectEqual(pb(Complex(real: 1, imaginary: 0)), Complex<Float>(real: -1, imaginary: 0))
-    expectEqual(pb(Complex(real: 0, imaginary: 1)), Complex<Float>(real: 0, imaginary: -1))
-    expectEqual(pb(Complex(real: 1, imaginary: 1)), Complex<Float>(real: -1, imaginary: -1))
+    XCTAssertEqual(pb(Complex(real: 1, imaginary: 0)), Complex<Float>(real: -1, imaginary: 0))
+    XCTAssertEqual(pb(Complex(real: 0, imaginary: 1)), Complex<Float>(real: 0, imaginary: -1))
+    XCTAssertEqual(pb(Complex(real: 1, imaginary: 1)), Complex<Float>(real: -1, imaginary: -1))
   }
 
   func testVjpAdding() {
     let pb: (Complex<Float>) -> Complex<Float> = pullback(at: Complex<Float>(real: 20, imaginary: -4)) { x in
       return x.adding(real: 5)
     }
-    expectEqual(pb(Complex(real: 1, imaginary: 0)), Complex<Float>(real: 1, imaginary: 0))
-    expectEqual(pb(Complex(real: 0, imaginary: 1)), Complex<Float>(real: 0, imaginary: 1))
-    expectEqual(pb(Complex(real: 1, imaginary: 1)), Complex<Float>(real: 1, imaginary: 1))
+    XCTAssertEqual(pb(Complex(real: 1, imaginary: 0)), Complex<Float>(real: 1, imaginary: 0))
+    XCTAssertEqual(pb(Complex(real: 0, imaginary: 1)), Complex<Float>(real: 0, imaginary: 1))
+    XCTAssertEqual(pb(Complex(real: 1, imaginary: 1)), Complex<Float>(real: 1, imaginary: 1))
   }
 
   func testVjpAdding() {
     let pb: (Complex<Float>) -> Complex<Float> = pullback(at: Complex<Float>(real: 20, imaginary: -4)) { x in
       return x.adding(imaginary: 5)
     }
-    expectEqual(pb(Complex(real: 1, imaginary: 0)), Complex<Float>(real: 1, imaginary: 0))
-    expectEqual(pb(Complex(real: 0, imaginary: 1)), Complex<Float>(real: 0, imaginary: 1))
-    expectEqual(pb(Complex(real: 1, imaginary: 1)), Complex<Float>(real: 1, imaginary: 1))
+    XCTAssertEqual(pb(Complex(real: 1, imaginary: 0)), Complex<Float>(real: 1, imaginary: 0))
+    XCTAssertEqual(pb(Complex(real: 0, imaginary: 1)), Complex<Float>(real: 0, imaginary: 1))
+    XCTAssertEqual(pb(Complex(real: 1, imaginary: 1)), Complex<Float>(real: 1, imaginary: 1))
   }
 
   func testVjpSubtracting() {
     let pb: (Complex<Float>) -> Complex<Float> = pullback(at: Complex<Float>(real: 20, imaginary: -4)) { x in
       return x.subtracting(real: 5)
     }
-    expectEqual(pb(Complex(real: 1, imaginary: 0)), Complex<Float>(real: 1, imaginary: 0))
-    expectEqual(pb(Complex(real: 0, imaginary: 1)), Complex<Float>(real: 0, imaginary: 1))
-    expectEqual(pb(Complex(real: 1, imaginary: 1)), Complex<Float>(real: 1, imaginary: 1))
+    XCTAssertEqual(pb(Complex(real: 1, imaginary: 0)), Complex<Float>(real: 1, imaginary: 0))
+    XCTAssertEqual(pb(Complex(real: 0, imaginary: 1)), Complex<Float>(real: 0, imaginary: 1))
+    XCTAssertEqual(pb(Complex(real: 1, imaginary: 1)), Complex<Float>(real: 1, imaginary: 1))
   }
 
   func testVjpSubtracting() {
     let pb: (Complex<Float>) -> Complex<Float> = pullback(at: Complex<Float>(real: 20, imaginary: -4)) { x in
       return x.subtracting(imaginary: 5)
     }
-    expectEqual(pb(Complex(real: 1, imaginary: 0)), Complex<Float>(real: 1, imaginary: 0))
-    expectEqual(pb(Complex(real: 0, imaginary: 1)), Complex<Float>(real: 0, imaginary: 1))
-    expectEqual(pb(Complex(real: 1, imaginary: 1)), Complex<Float>(real: 1, imaginary: 1))
+    XCTAssertEqual(pb(Complex(real: 1, imaginary: 0)), Complex<Float>(real: 1, imaginary: 0))
+    XCTAssertEqual(pb(Complex(real: 0, imaginary: 1)), Complex<Float>(real: 0, imaginary: 1))
+    XCTAssertEqual(pb(Complex(real: 1, imaginary: 1)), Complex<Float>(real: 1, imaginary: 1))
   }
 }

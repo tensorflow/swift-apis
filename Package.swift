@@ -22,12 +22,15 @@ let package = Package(
     products: [
         .library(
             name: "DeepLearning",
-            targets: ["DeepLearning"]),
+            targets: ["DeepLearning", "third_party"]),
     ],
     dependencies: [],
     targets: [
         .target(
             name: "DeepLearning",
+            dependencies: []),
+        .target(
+            name: "third_party",
             dependencies: []),
         .testTarget(
             name: "DeepLearningTests",

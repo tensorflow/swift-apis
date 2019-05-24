@@ -60,7 +60,7 @@ extension Complex : CustomStringConvertible {
 }
 
 extension Complex : Equatable {
-    c static func == (lhs: Complex, rhs: Complex) -> Bool {
+    static func == (lhs: Complex, rhs: Complex) -> Bool {
         return lhs.real == rhs.real && lhs.imaginary == rhs.imaginary
     }
 }
