@@ -22,10 +22,7 @@ let package = Package(
     products: [
         .library(
             name: "DeepLearning",
-            targets: ["DeepLearning"]),
-        .library(
-            name: "third_party",
-            targets: ["third_party"])
+            targets: ["DeepLearning"])
     ],
     dependencies: [],
     targets: [
@@ -33,11 +30,14 @@ let package = Package(
             name: "DeepLearning",
             dependencies: []),
         .target(
-            name: "third_party",
+            name: "Experimental",
             dependencies: [],
-            path: "Sources/third_party"),
+            path: "Sources/third_party/Experimental"),
+        .testTarget(
+            name: "ExperimentalTests",
+            dependencies: ["Experimental"]),
         .testTarget(
             name: "DeepLearningTests",
-            dependencies: ["DeepLearning", "third_party"]),
+            dependencies: ["DeepLearning"]),
     ]
 )

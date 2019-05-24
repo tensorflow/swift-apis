@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import XCTest
-@testable import third_party
+@testable import Experimental
 
 final class ComplexTests: XCTestCase {
     func testInitializer() {
@@ -237,52 +237,52 @@ final class ComplexTests: XCTestCase {
         XCTAssertEqual(pb(Complex(real: 1, imaginary: 1)), Complex<Float>(real: 1, imaginary: 1))
     }
     
-//    func testJvpDotProduct() {
-//        struct ComplexVector : Differentiable & AdditiveArithmetic {
-//            @differentiable
-//            var w: Complex<Float>
-//            var x: Complex<Float>
-//            var y: Complex<Float>
-//            var z: Complex<Float>
-//
-//            init(w: Complex<Float>, x: Complex<Float>, y: Complex<Float>, z: Complex<Float>) {
-//                self.w = w
-//                self.x = x
-//                self.y = y
-//                self.z = z
-//            }
-//        }
-//
-//        func dot(lhs: ComplexVector, rhs: ComplexVector) -> Complex<Float> {
-//            var result: Complex<Float> = Complex(real: 0, imaginary: 0)
-//            result = result + lhs.w.complexConjugate() * rhs.w
-//            result = result + lhs.x.complexConjugate() * rhs.x
-//            result = result + lhs.y.complexConjugate() * rhs.y
-//            result = result + lhs.z.complexConjugate() * rhs.z
-//            return result
-//        }
-//
-//        let atVector = ComplexVector(
-//            w: Complex(real: 1, imaginary: 1),
-//            x: Complex(real: 1, imaginary: -1),
-//            y: Complex(real: -1, imaginary: 1),
-//            z: Complex(real: -1, imaginary: -1))
-//        let rhsVector = ComplexVector(
-//            w: Complex(real: 3, imaginary: -4),
-//            x: Complex(real: 6, imaginary: -2),
-//            y: Complex(real: 1, imaginary: 2),
-//            z: Complex(real: 4, imaginary: 3))
-//        let expectedVector = ComplexVector(
-//            w: Complex(real: 7, imaginary: 1),
-//            x: Complex(real: 8, imaginary: -4),
-//            y: Complex(real: -1, imaginary: -3),
-//            z: Complex(real: 1, imaginary: -7))
-//
-//        let (result, pbComplex) = valueWithPullback(at: atVector) { x in
-//            return dot(lhs: x, rhs: rhsVector)
-//        }
-//
-//        XCTAssertEqual(Complex(real: 1, imaginary: -5), result)
-//        XCTAssertEqual(expectedVector, pbComplex(Complex(real: 1, imaginary: 1)))
-//    }
+    func testJvpDotProduct() {
+        struct ComplexVector : Differentiable & AdditiveArithmetic {
+            @differentiable
+            var w: Complex<Float>
+            var x: Complex<Float>
+            var y: Complex<Float>
+            var z: Complex<Float>
+
+            init(w: Complex<Float>, x: Complex<Float>, y: Complex<Float>, z: Complex<Float>) {
+                self.w = w
+                self.x = x
+                self.y = y
+                self.z = z
+            }
+        }
+
+        func dot(lhs: ComplexVector, rhs: ComplexVector) -> Complex<Float> {
+            var result: Complex<Float> = Complex(real: 0, imaginary: 0)
+            result = result + lhs.w.complexConjugate() * rhs.w
+            result = result + lhs.x.complexConjugate() * rhs.x
+            result = result + lhs.y.complexConjugate() * rhs.y
+            result = result + lhs.z.complexConjugate() * rhs.z
+            return result
+        }
+
+        let atVector = ComplexVector(
+            w: Complex(real: 1, imaginary: 1),
+            x: Complex(real: 1, imaginary: -1),
+            y: Complex(real: -1, imaginary: 1),
+            z: Complex(real: -1, imaginary: -1))
+        let rhsVector = ComplexVector(
+            w: Complex(real: 3, imaginary: -4),
+            x: Complex(real: 6, imaginary: -2),
+            y: Complex(real: 1, imaginary: 2),
+            z: Complex(real: 4, imaginary: 3))
+        let expectedVector = ComplexVector(
+            w: Complex(real: 7, imaginary: 1),
+            x: Complex(real: 8, imaginary: -4),
+            y: Complex(real: -1, imaginary: -3),
+            z: Complex(real: 1, imaginary: -7))
+
+        let (result, pbComplex) = valueWithPullback(at: atVector) { x in
+            return dot(lhs: x, rhs: rhsVector)
+        }
+
+        XCTAssertEqual(Complex(real: 1, imaginary: -5), result)
+        XCTAssertEqual(expectedVector, pbComplex(Complex(real: 1, imaginary: 1)))
+    }
 }

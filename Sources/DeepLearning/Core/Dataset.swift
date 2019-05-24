@@ -1,7 +1,3 @@
-#if !COMPILING_TENSORFLOW_MODULE
-import TensorFlow
-#endif
-
 //===-- Dataset.swift -----------------------------------------*- swift -*-===//
 //
 // This source file is part of the Swift.org open source project
