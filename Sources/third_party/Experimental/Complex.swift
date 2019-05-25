@@ -89,8 +89,7 @@ extension Complex {
     }
 
     var isNaN: Bool {
-        return (real.isNaN && !imaginary.isInfinite) ||
-        (imaginary.isNaN && !real.isInfinite)
+        return (real.isNaN && !imaginary.isInfinite) || (imaginary.isNaN && !real.isInfinite)
     }
 
     var isZero: Bool {
