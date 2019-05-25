@@ -1,8 +1,16 @@
+// Copyright 2017-2019 Xiaodi Wu and The TensorFlow Authors. All Rights Reserved.
 //
-//  Complex.swift
-//  NumericAnnex
+// Licensed under the MIT License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
-//  Created by Xiaodi Wu on 3/25/17.
+//     https://opensource.org/licenses/MIT
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 //
 //  Note
 //  ====
@@ -12,7 +20,7 @@
 //  functions, and hyperbolic functions are adapted from libc++.
 //
 //  Code in libc++ is dual-licensed under the MIT and UIUC/NCSA licenses.
-//  Copyright © 2009-2017 contributors to the LLVM/libc++ project, Google LLC.
+//  Copyright © 2009-2017 contributors to the LLVM/libc++ project.
 /// A type to represent a complex value in Cartesian form.
 ///
 /// - Note: `Complex64` is a type alias for `Complex<Float>` and `Complex128` is
@@ -252,7 +260,6 @@ extension Complex {
         }
         return Complex(real: x, imaginary: y)
     }
-
 
     static func /= (lhs: inout Complex, rhs: Complex) {
         lhs = lhs / rhs
