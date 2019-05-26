@@ -14,18 +14,14 @@
 
 import CTensorFlow
 
-/// A TensorFlow dynamic type value that can be created from types that conform to 
-/// `TensorFlowScalar`.
-// This simply wraps a `TF_DataType` and allows user code to handle `TF_DataType` without importing
-// CTensorFlow, which pollutes the namespace with TensorFlow C API declarations.
-@_fixed_layout
-public struct TensorDataType {
-    public var _cDataType: TF_DataType
-
-    @inlinable
-    public init(_ cDataType: TF_DataType) {
-        self._cDataType = cDataType
+public extension TensorDataType {
+    public var _cDataType: TF_DataType {
+        return TF_DataType(rawValue: _internalStorageType)
     }
+
+    public init(_ cDataType: TF_DataType) {
+	    self.init(rawValue: cDataType.rawValue)
+	}
 }
 
 @usableFromInline
