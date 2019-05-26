@@ -1395,6 +1395,32 @@ public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: Layer {
         self.size = size
     }
 
+    /// Repeats the elements of a tensor along an axis, like `np.repeat`.
+    /// Function adapted from `def repeat_elements`:
+    /// https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/keras/backend.py
+    @differentiable(vjp: _vjpRepeatingElements)
+    private func repeatingElements(
+        _ input: Tensor<Scalar>, alongAxis axis: Int, count: Int
+    ) -> Tensor<Scalar> {
+        let splits = Raw.split(splitDim: Tensor<Int32>(Int32(axis)),
+                               value: input, numSplit: Int64(input.shape[axis]))
+        let repeated = splits.flatMap { x in Array(repeating: x, count: count) }
+        return Tensor<Scalar>(concatenating: repeated, alongAxis: axis)
+    }
+
+    private func _vjpRepeatingElements(
+        _ input: Tensor<Scalar>, alongAxis axis: Int, count: Int
+    ) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (AllDifferentiableVariables, Tensor<Scalar>)) {
+        let value = repeatingElements(input, alongAxis: axis, count: count)
+        return (value, { v in
+            let splits = Raw.split(splitDim: Tensor<Int32>(Int32(axis)),
+                                   value: v, numSplit: Int64(input.shape[axis]))
+            let summed = splits.map { x in x.sum(alongAxes: axis) }
+            let concatenated = Tensor<Scalar>(concatenating: summed, alongAxis: axis)
+            return (.zero, concatenated)
+        })
+    }
+
     /// Returns the output obtained from applying the layer to the given input.
     ///
     /// - Parameter input: The input to the layer.
@@ -1404,11 +1430,10 @@ public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: Layer {
         let shape = input.shape
         let (batchSize, height, width, depth, channels) =
             (shape[0], shape[1], shape[2], shape[3], shape[4])
-        let scaleOnes = Tensor<Scalar>(ones: [1, 1, size, 1, size, 1, size, 1])
-        let upSampling = input.reshaped(
-            to: [batchSize, height, 1, width, 1, depth, 1, channels]) * scaleOnes
-        return upSampling.reshaped(
-            to: [batchSize, height * size, width * size, depth * size, channels])
+        var result = repeatingElements(input, alongAxis: 1, count: size)
+        result = repeatingElements(result, alongAxis: 2, count: size)
+        result = repeatingElements(result, alongAxis: 3, count: size)
+        return result
     }
 }
 

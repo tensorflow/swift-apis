@@ -146,15 +146,10 @@ final class LayerTests: XCTestCase {
       let size = 6
       let layer = UpSampling3D<Float>(size: size)
       let input = Tensor<Float>(shape: [1, 4, 3, 2, 1], scalars: (0..<24).map(Float.init))
-      // TODO(TF-525): Fix `UpSampling3D.call`.
-      // Broadcasting does not support tensors with high rank:
-      // Broadcast between [1,4,1,3,1,2,1,1] and [1,1,6,1,6,1,6,1] is not supported yet.
-      /*
       let output = layer.inferring(from: input)
       let expected = TensorShape([1, input.shape[1] * size, input.shape[2] * size, input.shape[3] * size, 1])
       XCTAssertEqual(output.shape, expected)
       XCTAssertEqual(output.shape, expected)
-      */
     }
 
     func testReshape() {
