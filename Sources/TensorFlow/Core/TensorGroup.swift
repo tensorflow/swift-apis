@@ -53,7 +53,7 @@ extension TensorHandle: TensorGroup {
         address!.initialize(to: _cTensorHandle)
     }
 
-    public convenience init(_owning tensorHandles: UnsafePointer<CTensorHandle>?) {
+    public init(_owning tensorHandles: UnsafePointer<CTensorHandle>?) {
         self.init(_owning: tensorHandles!.pointee)
     }
 }
@@ -73,7 +73,7 @@ extension ResourceHandle: TensorGroup {
         address!.initialize(to: _cTensorHandle)
     }
 
-    public convenience init(_owning tensorHandles: UnsafePointer<CTensorHandle>?) {
+    public init(_owning tensorHandles: UnsafePointer<CTensorHandle>?) {
         self.init(owning: tensorHandles!.pointee)
     }
 }
@@ -93,7 +93,7 @@ extension VariantHandle: TensorGroup {
         address!.initialize(to: _cTensorHandle)
     }
 
-    public convenience init(_owning tensorHandles: UnsafePointer<CTensorHandle>?) {
+    public init(_owning tensorHandles: UnsafePointer<CTensorHandle>?) {
         self.init(owning: tensorHandles!.pointee)
     }
 }
