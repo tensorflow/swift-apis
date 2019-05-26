@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import XCTest
-@testable import TensorFlow
+import TensorFlow
 
 final class TensorTests: XCTestCase {
     func testSimpleCond() {
