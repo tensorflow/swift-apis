@@ -135,26 +135,26 @@ public struct MaxPool3D<Scalar: TensorFlowFloatingPoint>: Layer {
 }
 
 public extension MaxPool3D {
-  /// Creates a max pooling layer.
-  ///
-  /// - Parameters:
-  ///   - poolSize: Vertical and horizontal factors by which to downscale.
-  ///   - strides: The strides.
-  ///   - padding: The padding.
-  init(poolSize: (Int, Int, Int), strides: (Int, Int, Int), padding: Padding = .valid) {
-  self.init(poolSize: (1, poolSize.0, poolSize.1, poolSize.2, 1),
-            strides: (1, strides.0, strides.1, strides.2, 1),
-            padding: padding)
+    /// Creates a max pooling layer.
+    ///
+    /// - Parameters:
+    ///   - poolSize: Vertical and horizontal factors by which to downscale.
+    ///   - strides: The strides.
+    ///   - padding: The padding.
+    init(poolSize: (Int, Int, Int), strides: (Int, Int, Int), padding: Padding = .valid) {
+         self.init(poolSize: (1, poolSize.0, poolSize.1, poolSize.2, 1),
+                  strides: (1, strides.0, strides.1, strides.2, 1),
+                  padding: padding)
   }
 }
 
 public extension MaxPool3D {
-  /// Creates a max pooling layer with the specified pooling window size and stride. All
-  /// pooling sizes and strides are the same.
-  init(poolSize: Int, stride: Int, padding: Padding = .valid) {
-       self.init(poolSize: (poolSize, poolSize, poolSize),
-                 strides: (stride, stride, stride),
-                 padding: padding)
+    /// Creates a max pooling layer with the specified pooling window size and stride. All
+    /// pooling sizes and strides are the same.
+    init(poolSize: Int, stride: Int, padding: Padding = .valid) {
+         self.init(poolSize: (poolSize, poolSize, poolSize),
+                  strides: (stride, stride, stride),
+                  padding: padding)
   }
 }
 
@@ -229,16 +229,16 @@ public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
 }
 
 public extension AvgPool2D {
-  /// Creates an average pooling layer.
-  ///
-  /// - Parameters:
-  ///   - poolSize: Vertical and horizontal factors by which to downscale.
-  ///   - strides: The strides.
-  ///   - padding: The padding.
-  init(poolSize: (Int, Int), strides: (Int, Int), padding: Padding = .valid) {
-  self.init(poolSize: (1, poolSize.0, poolSize.1, 1),
-            strides: (1, strides.0, strides.1, 1),
-            padding: padding)
+    /// Creates an average pooling layer.
+    ///
+    /// - Parameters:
+    ///   - poolSize: Vertical and horizontal factors by which to downscale.
+    ///   - strides: The strides.
+    ///   - padding: The padding.
+    init(poolSize: (Int, Int), strides: (Int, Int), padding: Padding = .valid) {
+        self.init(poolSize: (1, poolSize.0, poolSize.1, 1),
+                  strides: (1, strides.0, strides.1, 1),
+                  padding: padding)
   }
 }
 
@@ -275,16 +275,16 @@ public struct AvgPool3D<Scalar: TensorFlowFloatingPoint>: Layer {
 }
 
 public extension AvgPool3D {
-  /// Creates an average pooling layer.
-  ///
-  /// - Parameters:
-  ///   - poolSize: Vertical and horizontal factors by which to downscale.
-  ///   - strides: The strides.
-  ///   - padding: The padding.
-  init(poolSize: (Int, Int, Int), strides: (Int, Int, Int), padding: Padding = .valid) {
-  self.init(poolSize: (1, poolSize.0, poolSize.1, poolSize.2, 1),
-            strides: (1, strides.0, strides.1, strides.2, 1),
-            padding: padding)
+    /// Creates an average pooling layer.
+    ///
+    /// - Parameters:
+    ///   - poolSize: Vertical and horizontal factors by which to downscale.
+    ///   - strides: The strides.
+    ///   - padding: The padding.
+    init(poolSize: (Int, Int, Int), strides: (Int, Int, Int), padding: Padding = .valid) {
+        self.init(poolSize: (1, poolSize.0, poolSize.1, poolSize.2, 1),
+                  strides: (1, strides.0, strides.1, strides.2, 1),
+                  padding: padding)
   }
 }
 
