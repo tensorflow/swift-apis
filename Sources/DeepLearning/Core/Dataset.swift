@@ -94,7 +94,7 @@ public extension Dataset {
     @inlinable
     func map<ResultElement : TensorGroup>(
         _ transform: (Element) -> ResultElement
-        ) -> Dataset<ResultElement> {
+    ) -> Dataset<ResultElement> {
         return Dataset<ResultElement>(_handle: Raw.mapDataset(
             inputDataset: _handle,
             otherArguments: Tensor<Int32>(0),
@@ -109,7 +109,7 @@ public extension Dataset {
     func map<ResultElement : TensorGroup>(
         parallelCallCount: Int,
         _ transform: (Element) -> ResultElement
-        ) -> Dataset<ResultElement> {
+    ) -> Dataset<ResultElement> {
         return Dataset<ResultElement>(_handle: Raw.parallelMapDataset(
             inputDataset: _handle,
             otherArguments: Tensor<Int32>(0),
@@ -125,7 +125,7 @@ public extension Dataset {
     @inlinable
     func filter(
         _ isIncluded: (Element) -> Tensor<Bool>
-        ) -> Dataset {
+    ) -> Dataset {
         return Dataset(_handle: Raw.filterDataset(
             inputDataset: _handle,
             otherArguments: Tensor<Int32>(0),
@@ -139,7 +139,7 @@ public extension Dataset {
     @inlinable
     func shuffled(
         sampleCount: Int, randomSeed: Int64
-        ) -> Dataset {
+    ) -> Dataset {
         let (seed1, seed2) = _tensorSeeds(Tensor(randomSeed))
         return Dataset(_handle: Raw.shuffleDataset(
             inputDataset: _handle,
