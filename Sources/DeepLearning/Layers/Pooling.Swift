@@ -345,3 +345,54 @@ public struct GlobalAvgPool3D<Scalar: TensorFlowFloatingPoint>: Layer {
         return input.mean(squeezingAxes: [1, 2, 3])
     }
 }
+
+/// A global max pooling layer for temporal data.
+@_fixed_layout
+public struct GlobalMaxPooling1D<Scalar: TensorFlowFloatingPoint>: Layer {
+    /// Creates a global max pooling layer.
+    public init() {}
+
+    /// Returns the output obtained from applying the layer to the given input.
+    ///
+    /// - Parameters:
+    ///   - input: The input to the layer.
+    ///   - context: The contextual information for the layer application, e.g. the current learning
+    ///     phase.
+    /// - Returns: The output.
+    @differentiable
+    public func applied(to input: Tensor<Scalar>, in _: Context) -> Tensor<Scalar> {
+        return input.max(squeezingAxes: 1)
+    }
+}
+
+/// A global max pooling layer for spatial data.
+@_fixed_layout
+public struct GlobalMaxPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
+    /// Creates a global max pooling layer.
+    public init() {}
+
+    /// Returns the output obtained from applying the layer to the given input.
+    ///
+    /// - Parameter input: The input to the layer.
+    /// - Returns: The output.
+    @differentiable
+    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+        return input.max(squeezingAxes: [1, 2])
+    }
+}
+
+/// A global max pooling layer for spatial and spatio-temporal data.
+@_fixed_layout
+public struct GlobalMaxPool3D<Scalar: TensorFlowFloatingPoint>: Layer {
+    /// Creates a global max pooling layer.
+    public init() {}
+
+    /// Returns the output obtained from applying the layer to the given input.
+    ///
+    /// - Parameter input: The input to the layer.
+    /// - Returns: The output.
+    @differentiable
+    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+        return input.max(squeezingAxes: [1, 2, 3])
+    }
+}
