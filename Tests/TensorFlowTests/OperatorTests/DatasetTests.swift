@@ -13,9 +13,9 @@
 // limitations under the License.
 
 import XCTest
-import DeepLearning
+import TensorFlow
 
-struct SimpleOutput : TensorGroup {
+struct SimpleOutput: TensorGroup {
     let a: TensorHandle<Int32>
     let b: TensorHandle<Int32>
 }
