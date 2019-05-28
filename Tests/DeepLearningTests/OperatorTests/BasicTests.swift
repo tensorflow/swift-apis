@@ -419,17 +419,17 @@ final class BasicOperatorTests: XCTestCase {
         XCTAssertEqual([1, 3, 1, 2, 1], result.shape)
     }
 
-    func testUnbroadcasted1() {
+    func testUnbroadcast1() {
         let x = Tensor<Float>(repeating: 1, shape: [2, 3, 4, 5])
         let y = Tensor<Float>(repeating: 1, shape: [4, 5])
-        let z = x.unbroadcasted(like: y)
+        let z = x.unbroadcast(like: y)
         XCTAssertEqual(ShapedArray<Float>(repeating: 6, shape: [4, 5]), z.array)
     }
 
-    func testUnbroadcasted2() {
+    func testUnbroadcast2() {
         let x = Tensor<Float>(repeating: 1, shape: [2, 3, 4, 5])
         let y = Tensor<Float>(repeating: 1, shape: [3, 1, 5])
-        let z = x.unbroadcasted(like: y)
+        let z = x.unbroadcast(like: y)
         XCTAssertEqual(ShapedArray<Float>(repeating: 8, shape: [3, 1, 5]), z.array)
     }
 
@@ -453,7 +453,7 @@ final class BasicOperatorTests: XCTestCase {
         // 1 -> 2 x 3 x 4
         let one = Tensor<Float>(1)
         var target = Tensor<Float>(repeating: 0.0, shape: [2, 3, 4])
-        let broadcasted = one.broadcasted(like: target)
+        let broadcasted = one.broadcast(like: target)
         XCTAssertEqual(Tensor(repeating: 1, shape: [2, 3, 4]), broadcasted)
         target .= Tensor(repeating: 1, shape: [1, 3, 1])
         XCTAssertEqual(Tensor(repeating: 1, shape: [2, 3, 4]), target)
@@ -480,8 +480,8 @@ final class BasicOperatorTests: XCTestCase {
         ("testFlatten0D", testFlatten0D),
         ("testReshapeToScalar", testReshapeToScalar),
         ("testReshapeTensor", testReshapeTensor),
-        ("testUnbroadcasted1", testUnbroadcasted1),
-        ("testUnbroadcasted2", testUnbroadcasted2),
+        ("testUnbroadcast1", testUnbroadcast1),
+        ("testUnbroadcast2", testUnbroadcast2),
         ("testSliceUpdate", testSliceUpdate),
         ("testBroadcastTensor", testBroadcastTensor)
     ]
