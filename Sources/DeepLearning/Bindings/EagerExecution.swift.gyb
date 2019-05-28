@@ -1,0 +1,318 @@
+// !!! THIS CODE IS AUTOMATICALLY GENERATED, DO NOT EDIT BY HAND !!!
+//
+// Copyright 2018-19 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import CTensorFlow
+
+/// **WARNING:** After constructing a `TFE_Op`, any one of its `execute` methods must be called
+/// *exactly once*. If not called, then a memory leak is introduced due to the underlying TensorFlow
+/// eager op object not being freed. If called more than once, then a SEGFAULT may occur due to
+/// trying to execute a TensorFlow eager op that has already been freed.
+@usableFromInline
+internal struct TFE_Op : TFTensorOperation {
+  @usableFromInline internal let status: CTFStatus
+  @usableFromInline internal let op: CTFEOp
+  @usableFromInline internal let outputCount: Int
+
+  @usableFromInline
+  internal init(_ name: String, _ outputCount: Int) {
+    self.status = TF_NewStatus()
+    self.op = TFE_NewOp(_ExecutionContext.global.eagerContext, name, status)
+    self.outputCount = outputCount
+  }
+
+  @inlinable @inline(__always)
+  internal func addInput(_ input: _AnyTensorHandle) {
+    TFE_OpAddInput(op, input._cTensorHandle, status)
+    checkOk(status)
+  }
+
+  @inlinable @inline(__always)
+  internal func addInput<Scalar: TensorFlowScalar>(_ input: Tensor<Scalar>) {
+    TFE_OpAddInput(op, input.handle._cTensorHandle, status)
+    checkOk(status)
+  }
+
+  @inlinable @inline(__always)
+  internal func addInput(_ input: StringTensor) {
+    TFE_OpAddInput(op, input.handle._cTensorHandle, status)
+    checkOk(status)
+  }
+
+  @inlinable @inline(__always)
+  internal func addInput(_ input: ResourceHandle) {
+    TFE_OpAddInput(op, input._cTensorHandle, status)
+    checkOk(status)
+  }
+
+  @inlinable @inline(__always)
+  internal func addInput(_ input: VariantHandle) {
+    TFE_OpAddInput(op, input._cTensorHandle, status)
+    checkOk(status)
+  }
+
+  @inlinable @inline(__always)
+  internal func addInputList<T: TensorArrayProtocol>(_ input: T) {
+    let count = input._tensorHandleCount
+    var buffer = UnsafeMutableBufferPointer<CTensorHandle>.allocate(capacity: Int(count))
+    defer { buffer.deallocate() }
+    let pointer = UnsafeMutablePointer<OpaquePointer?>(buffer.baseAddress)
+    input._unpackTensorHandles(into: buffer.baseAddress)
+    TFE_OpAddInputList(op, pointer, count, status)
+    // TODO: checkOk(status)
+  }
+
+  @inlinable @inline(__always)
+  internal func updateAttribute(_ name: String, _ value: Bool) {
+    TFE_OpSetAttrBool(op, name, value ? 1 : 0)
+  }
+
+  @inlinable @inline(__always)
+  internal func updateAttribute(_ name: String, _ value: Int) {
+    TFE_OpSetAttrInt(op, name, Int64(value))
+  }
+
+  @inlinable @inline(__always)
+  internal func updateAttribute(_ name: String, _ value: Int32) {
+    TFE_OpSetAttrInt(op, name, Int64(value))
+  }
+
+  @inlinable @inline(__always)
+  internal func updateAttribute(_ name: String, _ value: Int64) {
+    TFE_OpSetAttrInt(op, name, value)
+  }
+
+  @inlinable @inline(__always)
+  internal func updateAttribute(_ name: String, _ value: Float) {
+    TFE_OpSetAttrFloat(op, name, value)
+  }
+
+  @inlinable @inline(__always)
+  internal func updateAttribute(_ name: String, _ value: Double) {
+    TFE_OpSetAttrFloat(op, name, Float(value))
+  }
+
+  @inlinable @inline(__always)
+  internal func updateAttribute(_ name: String, _ value: String) {
+    value.utf8CString.withUnsafeBufferPointer { buffer in
+      // utf8CString is null-terminated; TFE_OpSetAttrString wants
+      // non-null-terminated.
+      TFE_OpSetAttrString(op, name, buffer.baseAddress, buffer.count - 1)
+    }
+  }
+
+  @inlinable @inline(__always)
+  internal func updateAttribute(_ name: String, _ value: TensorDataType) {
+    TFE_OpSetAttrType(op, name, value._cDataType)
+  }
+
+  @inlinable @inline(__always)
+  internal func updateAttribute(_ name: String, _ value: TensorShape) {
+    let dimensions: [Int64] = value.dimensions.map(Int64.init)
+    dimensions.withUnsafeBufferPointer { buffer in
+      TFE_OpSetAttrShape(op, name, buffer.baseAddress, Int32(buffer.count), status)
+    }
+  }
+
+  @inlinable @inline(__always)
+  internal func updateAttribute(_ name: String, _ value: TensorShape?) {
+    guard let shape = value else {
+      TFE_OpSetAttrShape(op, name, nil, -1, status)
+      return
+    }
+    updateAttribute(name, shape)
+  }
+
+  @inlinable @inline(__always)
+  internal func updateAttribute(_ name: String, _ value: [Bool]) {
+    value.map({ $0 ? UInt8(1) : UInt8(0) }).withUnsafeBufferPointer { buffer in
+      TFE_OpSetAttrBoolList(op, name, buffer.baseAddress, Int32(buffer.count))
+    }
+  }
+
+  @inlinable @inline(__always)
+  internal func updateAttribute(_ name: String, _ value: [Int]) {
+    updateAttribute(name, value.map(Int64.init))
+  }
+
+  @inlinable @inline(__always)
+  internal func updateAttribute(_ name: String, _ value: [Int32]) {
+    updateAttribute(name, value.map(Int64.init))
+  }
+
+  @inlinable @inline(__always)
+  internal func updateAttribute(_ name: String, _ value: [Int64]) {
+    value.withUnsafeBufferPointer { buffer in
+      TFE_OpSetAttrIntList(op, name, buffer.baseAddress, Int32(buffer.count))
+    }
+  }
+
+  @inlinable @inline(__always)
+  internal func updateAttribute(_ name: String, _ value: [Float]) {
+    value.withUnsafeBufferPointer { buffer in
+      TFE_OpSetAttrFloatList(op, name, buffer.baseAddress, Int32(buffer.count))
+    }
+  }
+
+  @inlinable @inline(__always)
+  internal func updateAttribute(_ name: String, _ value: [Double]) {
+    updateAttribute(name, value.map(Float.init))
+  }
+
+  @inlinable @inline(__always)
+  internal func updateAttribute(_ name: String, _ value: [String]) {
+    // Collect all the strings' utf8 bytes into a single array so that we can
+    // address all the strings with a single
+    // `flattenedStringBytes.withUnsafeBufferPointer`.
+    var flattenedStringBytes: [CChar] = []
+    var lengths: [Int] = []
+    for string in value {
+      // Don't include the null-terminator because TFE_OpSetAttrStringList uses
+      // lengths instead of null-terminators.
+      let stringBytes = string.utf8CString.dropLast()
+      flattenedStringBytes.append(contentsOf: stringBytes)
+      lengths.append(stringBytes.count)
+    }
+
+    // Calculate the addresses of all the strings within our single buffer, and
+    // then call TFE_OpSetAttrStringList.
+    flattenedStringBytes.withUnsafeBufferPointer { flattenedStringBytesBuffer in
+      var stringAddrs: [UnsafeRawPointer?] = []
+      var currentStringAddr =
+        flattenedStringBytesBuffer.baseAddress.map(UnsafeRawPointer.init)
+      for length in lengths {
+        stringAddrs.append(currentStringAddr)
+        currentStringAddr = currentStringAddr?.advanced(by: length)
+      }
+
+      stringAddrs.withUnsafeBufferPointer { stringAddrsBuffer in
+        lengths.withUnsafeBufferPointer { lengthsBuffer in
+          TFE_OpSetAttrStringList(op, name, stringAddrsBuffer.baseAddress,
+            lengthsBuffer.baseAddress, Int32(value.count))
+        }
+      }
+    }
+  }
+
+  @inlinable @inline(__always)
+  internal func updateAttribute(_ name: String, _ value: [TensorDataType]) {
+    value.withUnsafeBufferPointer { buffer in
+      buffer.withMemoryRebound(to: TF_DataType.self) { reboundBuffer in
+        TFE_OpSetAttrTypeList(op, name, reboundBuffer.baseAddress, Int32(reboundBuffer.count))
+      }
+    }
+  }
+
+  @inlinable @inline(__always)
+  internal func updateAttribute(_ name: String, _ value: [TensorShape]) {
+    let flattenedDims = value.flatMap { $0.dimensions.map(Int64.init) }
+    let ranks = value.map { Int32($0.rank) }
+    flattenedDims.withUnsafeBufferPointer { flattenedDimsBuffer in
+      var dimsPtr: UnsafePointer<Int64>? = flattenedDimsBuffer.baseAddress
+      var dims: [UnsafePointer<Int64>?] = []
+      for rank in ranks {
+        dims.append(dimsPtr)
+        if rank >= 0 {
+          dimsPtr = dimsPtr.map { $0.advanced(by: Int(rank)) }
+        }
+      }
+      dims.withUnsafeMutableBufferPointer { dimsBuffer in
+        ranks.withUnsafeBufferPointer { ranksBuffer in
+          TFE_OpSetAttrShapeList(
+            op, name, dimsBuffer.baseAddress, ranksBuffer.baseAddress,
+            Int32(ranksBuffer.count), status)
+        }
+      }
+    }
+  }
+
+  @inlinable @inline(__always)
+  internal func updateAttribute(_ name: String, _ value: [TensorShape?]) {
+    let flattenedDims = value.flatMap { (tensorShapeOpt) -> [Int64] in
+      if let tensorShape = tensorShapeOpt {
+        return tensorShape.dimensions.map(Int64.init)
+      }
+      return []
+    }
+    let ranks = value.map { shape in (shape?.rank).map(Int32.init) ?? -1 }
+    flattenedDims.withUnsafeBufferPointer { flattenedDimsBuffer in
+      var dimsPtr: UnsafePointer<Int64>? = flattenedDimsBuffer.baseAddress
+      var dims: [UnsafePointer<Int64>?] = []
+      for rank in ranks {
+        dims.append(dimsPtr)
+        if rank >= 0 {
+          dimsPtr = dimsPtr.map { $0.advanced(by: Int(rank)) }
+        }
+      }
+      dims.withUnsafeMutableBufferPointer { dimsBuffer in
+        ranks.withUnsafeBufferPointer { ranksBuffer in
+          TFE_OpSetAttrShapeList(
+            op, name, dimsBuffer.baseAddress, ranksBuffer.baseAddress,
+            Int32(ranksBuffer.count), status)
+        }
+      }
+    }
+  }
+
+  @inlinable @inline(__always)
+  internal func updateAttribute<In: TensorGroup, Out: TensorGroup>(_ name: String, _ value: (In) -> Out) {
+    _tffunc(value).utf8CString.withUnsafeBufferPointer { buffer in
+      // utf8CString is null-terminated; TFE_OpSetAttrFunctionName wants
+      // non-null-terminated.
+      TFE_OpSetAttrFunctionName(op, name, buffer.baseAddress, buffer.count - 1)
+    }
+  }
+
+  /// **WARNING:** After constructing a `TFE_Op`, any one of its `execute` methods must be called
+  /// *exactly once*. If not called, then a memory leak is introduced due to the underlying
+  /// TensorFlow eager op object not being freed. If called more than once, then a SEGFAULT may
+  /// occur due to trying to execute a TensorFlow eager op that has already been freed.
+
+  @inlinable @inline(__always)
+  internal func evaluateUnsafe() -> UnsafeMutablePointer<CTensorHandle> {
+    var count: Int32 = Int32(self.outputCount)
+    let buffer: UnsafeMutablePointer<CTensorHandle> =
+    UnsafeMutablePointer.allocate(capacity: Int(count))
+    _TFCOpSetDeviceFromScope(op, status)
+    checkOk(status)
+    _TFCEagerExecute(op, UnsafeMutablePointer<CTensorHandle?>(buffer), &count, status)
+    checkOk(status)
+    TFE_DeleteOp(op)
+    TF_DeleteStatus(status)
+    return buffer
+  }
+
+  @inlinable @inline(__always)
+  internal func execute() {
+    let _ = evaluateUnsafe()
+  }
+
+%for n in range(1, 10 + 1):
+  @inlinable @inline(__always)
+  internal func execute<${", ".join(["T" + str(i) + " : TensorArrayProtocol" for i in range(n)])}>(
+    ${",\n    ".join(["_ count" + str(i) + ": Int" for i in range(n)])}
+  ) -> (${", ".join(["T" + str(i) for i in range(n)])}) {
+    let buffer = evaluateUnsafe()
+%for i in range(n):
+    let offset${i} = ${"Int32(0)" if i == 0 else "offset" + str(i - 1) + " + Int32(count" + str(i - 1) + ")"}
+%end
+    let result = (
+      ${",\n      ".join(["T" + str(i) + ".init(_owning: buffer.advanced(by: Int(offset" + str(i) + ")), count: count" + str(i) + ")" for i in range(n)])})
+    buffer.deallocate()
+    return result
+  }
+
+%end
+}
