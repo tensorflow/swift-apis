@@ -15,25 +15,15 @@
 //  Note
 //  ====
 //
-//  For maximum consistency with corresponding functions in C/C++, checks for
-//  special values in `naturalExponential()`, `squareRoot()`, trigonometric
-//  functions, and hyperbolic functions are adapted from libc++.
-//
 //  Code in libc++ is dual-licensed under the MIT and UIUC/NCSA licenses.
 //  Copyright © 2009-2017 contributors to the LLVM/libc++ project.
 /// A type to represent a complex value in Cartesian form.
-///
-/// - Note: `Complex64` is a type alias for `Complex<Float>` and `Complex128` is
-///   a type alias for `Complex<Double>`.
 ///
 /// Create new instances of `Complex<T>` using integer or floating-point
 /// literals and the imaginary unit `Complex<T>.i`. For example:
 ///
 /// ```swift
-/// let x = 2 + 4 * .i // `x` is of type `Complex<Double>`
-/// let y = 3.5 + 7 * .i // `y` is of type `Complex<Double>`
-///
-/// let z: Complex64 = .e + .pi * .i // `z` is of type `Complex<Float>`
+/// let x: Complex<Double> = 2 + 4 * .i
 /// ```
 ///
 /// Additional Considerations
@@ -42,22 +32,6 @@
 /// Floating-point types have special values that represent infinity or NaN
 /// ("not a number"). Complex functions in different languages may return
 /// different results when working with special values.
-///
-/// Many complex functions have [branch cuts][dfn], which are curves in the
-/// complex plane across which a function is discontinuous. Different languages
-/// may adopt different branch cut structures for the same complex function.
-///
-/// Implementations in `Complex<T>` adhere to the [C standard][std] (Annex G) as
-/// closely as possible with respect to special values and branch cuts.
-///
-/// To users unfamiliar with complex functions, the principal value returned by
-/// some complex functions may be unexpected. For example,
-/// `Double.cbrt(-8) == -2`, which is the __real root__, while
-/// `Complex.cbrt(-8) == 2 * Complex.exp(.i * .pi / 3)`, which is the
-/// __principal root__.
-///
-/// [dfn]: http://mathworld.wolfram.com/BranchCut.html
-/// [std]: http://www.open-std.org/JTC1/SC22/WG14/www/standards.html#9899
 
 struct Complex<T: FloatingPoint> {
     var real: T
@@ -170,16 +144,13 @@ extension Complex: Numeric {
                 if c.isNaN { c = T(signOf: c, magnitudeOf: 0) }
                 if d.isNaN { d = T(signOf: d, magnitudeOf: 0) }
                 recalculate = true
-            }
-            if c.isInfinite || d.isInfinite {
-                if a.isNaN { a = T(signOf: a, magnitudeOf: 0) }
-                if b.isNaN { b = T(signOf: b, magnitudeOf: 0) }
+            } else if c.isInfinite || d.isInfinite {
                 c = T(signOf: c, magnitudeOf: c.isInfinite ? 1 : 0)
                 d = T(signOf: d, magnitudeOf: d.isInfinite ? 1 : 0)
+                if a.isNaN { a = T(signOf: a, magnitudeOf: 0) }
+                if b.isNaN { b = T(signOf: b, magnitudeOf: 0) }
                 recalculate = true
-            }
-            if !recalculate &&
-                (ac.isInfinite || bd.isInfinite || ad.isInfinite || bc.isInfinite) {
+            } else if ac.isInfinite || bd.isInfinite || ad.isInfinite || bc.isInfinite {
                 if a.isNaN { a = T(signOf: a, magnitudeOf: 0) }
                 if b.isNaN { b = T(signOf: b, magnitudeOf: 0) }
                 if c.isNaN { c = T(signOf: c, magnitudeOf: 0) }
