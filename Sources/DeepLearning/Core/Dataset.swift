@@ -205,7 +205,7 @@ public struct Zip2TensorGroup<T : TensorGroup, U : TensorGroup> : TensorGroup {
 @inlinable
 public func zip<T : TensorGroup, U : TensorGroup>(
     _ dataset1: Dataset<T>, _ dataset2: Dataset<U>
-    ) -> Dataset<Zip2TensorGroup<T, U>> {
+) -> Dataset<Zip2TensorGroup<T, U>> {
     let handle = Raw.zipDataset(
         inputDatasets: [dataset1._handle, dataset2._handle],
         outputTypes: Zip2TensorGroup<T, U>._typeList,
