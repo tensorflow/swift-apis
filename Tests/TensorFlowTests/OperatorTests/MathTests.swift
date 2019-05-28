@@ -19,49 +19,49 @@ final class MathOperatorTests: XCTestCase {
     func testReduction() {
         // 2 x 5
         let x = Tensor<Float>([[1, 2, 3, 4, 5], [1, 2, 3, 4, 5]])
-        XCTAssertEqual(Tensor(30), x.sum().toHost(shape: []))
+        XCTAssertEqual(Tensor(30), x.sum())
         XCTAssertEqual(
             Tensor(shape: [5], scalars: [2, 4, 6, 8, 10]),
-            x.sum(squeezingAxes: 0).toHost(shape: []))
+            x.sum(squeezingAxes: 0))
         XCTAssertEqual(
             Tensor(shape: [1, 5], scalars: [2, 4, 6, 8, 10]),
-            x.sum(alongAxes: 0).toHost(shape: []))
+            x.sum(alongAxes: 0))
 
-        XCTAssertEqual(Tensor(14400), x.product().toHost(shape: []))
+        XCTAssertEqual(Tensor(14400), x.product())
         XCTAssertEqual(
             Tensor(shape: [5], scalars: [1, 4, 9, 16, 25]),
-            x.product(squeezingAxes: 0).toHost(shape: []))
+            x.product(squeezingAxes: 0))
         XCTAssertEqual(
             Tensor(shape: [1, 5], scalars: [1, 4, 9, 16, 25]),
-            x.product(alongAxes: 0).toHost(shape: []))
+            x.product(alongAxes: 0))
 
-        XCTAssertEqual(Tensor(3), x.mean().toHost(shape: []))
+        XCTAssertEqual(Tensor(3), x.mean())
         XCTAssertEqual(
             Tensor(shape: [5], scalars: [1, 2, 3, 4, 5]),
-            x.mean(squeezingAxes: 0).toHost(shape: []))
+            x.mean(squeezingAxes: 0))
         XCTAssertEqual(
             Tensor(shape: [5], scalars: [1, 2, 3, 4, 5]),
-            x.mean(alongAxes: 0).toHost(shape: []))
+            x.mean(alongAxes: 0))
         XCTAssertEqual(
             Tensor(shape: [2], scalars: [3, 3]),
-            x.mean(squeezingAxes: 1).toHost(shape: []))
+            x.mean(squeezingAxes: 1))
         XCTAssertEqual(
             Tensor(shape: [1, 2], scalars: [3, 3]),
-            x.mean(alongAxes: 1).toHost(shape: []))
+            x.mean(alongAxes: 1))
 
-        XCTAssertEqual(Tensor(2), x.variance().toHost(shape: []))
+        XCTAssertEqual(Tensor(2), x.variance())
         XCTAssertEqual(
             Tensor(shape: [5], scalars: [0, 0, 0, 0, 0]),
-            x.variance(squeezingAxes: 0).toHost(shape: []))
+            x.variance(squeezingAxes: 0))
         XCTAssertEqual(
             Tensor(shape: [5], scalars: [0, 0, 0, 0, 0]),
-            x.variance(alongAxes: 0).toHost(shape: []))
+            x.variance(alongAxes: 0))
         XCTAssertEqual(
             Tensor(shape: [2], scalars: [2, 2]),
-            x.variance(squeezingAxes: 1).toHost(shape: []))
+            x.variance(squeezingAxes: 1))
         XCTAssertEqual(
             Tensor(shape: [1, 2], scalars: [2, 2]),
-            x.variance(alongAxes: 1).toHost(shape: []))
+            x.variance(alongAxes: 1))
     }
 
     func testArgmax() {
