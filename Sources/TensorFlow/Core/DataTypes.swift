@@ -15,11 +15,11 @@
 import CTensorFlow
 
 public extension TensorDataType {
-    public var _cDataType: TF_DataType {
+    var _cDataType: TF_DataType {
         return TF_DataType(rawValue: _internalStorageType)
     }
 
-    public init(_ cDataType: TF_DataType) {
+    init(_ cDataType: TF_DataType) {
 	    self.init(rawValue: cDataType.rawValue)
 	}
 }

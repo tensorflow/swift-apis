@@ -26,7 +26,7 @@ public protocol _AnyTensorHandle: class {
 
 extension _AnyTensorHandle {
     /// The underlying `TFE_TensorHandle *`.
-    public let _cTensorHandle: CTensorHandle {
+    public var _cTensorHandle: CTensorHandle {
         return _tfeTensorHandle._cTensorHandle
     }
 }

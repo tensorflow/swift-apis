@@ -647,14 +647,6 @@ public final class _ExecutionContext {
       deviceNames.append(deviceName)
     }
 
-    if tpuCount > 0 {
-      // According to server def generated when you set
-      // SWIFT_TENSORFLOW_SERVER_ADDRESS, the TPUs will all be on task 1.
-      self.tpuDeviceNamePrefix = "/job:localhost/replica:0/task:1/device:TPU:"
-    } else {
-      self.tpuDeviceNamePrefix = nil
-    }
-
     pthread_mutex_init(&mutex, nil)
   }
 
