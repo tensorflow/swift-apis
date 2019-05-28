@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #if !COMPILING_TENSORFLOW_MODULE
-@_exported import TensorFlow
+import TensorFlow
 #endif
 
 /// A 1-D convolution layer (e.g. temporal convolution over a time-series).

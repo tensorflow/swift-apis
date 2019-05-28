@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #if !COMPILING_TENSORFLOW_MODULE
-@_exported import TensorFlow
+import TensorFlow
 #endif
 
 /// An upsampling layer for 1-D inputs.
