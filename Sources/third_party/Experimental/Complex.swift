@@ -128,6 +128,24 @@ extension Complex: Numeric {
         self.real = t
         self.imaginary = 0
     }
+    
+    static private func handleMultiplyNaN(infiniteA: T, infiniteB: T, nanA: T, nanB: T) -> Complex {
+        var a = infiniteA
+        var b = infiniteB
+        var c = nanA
+        var d = nanB
+        
+        a = T(signOf: infiniteA, magnitudeOf: infiniteA.isInfinite ? 1 : 0)
+        b = T(signOf: infiniteB, magnitudeOf: infiniteB.isInfinite ? 1 : 0)
+        
+        if nanA.isNaN { c = T(signOf: nanA, magnitudeOf: 0) }
+        if nanB.isNaN { d = T(signOf: nanB, magnitudeOf: 0) }
+        
+        return Complex(
+            real: .infinity * (a * c - b * d),
+            imaginary: .infinity * (a * d + b * c)
+        )
+    }
 
     @differentiable(vjp: _vjpMultiply(lhs:rhs:) where T: Differentiable)
     static func * (lhs: Complex, rhs: Complex) -> Complex {
@@ -137,27 +155,15 @@ extension Complex: Numeric {
         let y = ad + bc
 
         if x.isNaN && y.isNaN {
-            var recalculate = false
             if a.isInfinite || b.isInfinite {
-                a = T(signOf: a, magnitudeOf: a.isInfinite ? 1 : 0)
-                b = T(signOf: b, magnitudeOf: b.isInfinite ? 1 : 0)
-                if c.isNaN { c = T(signOf: c, magnitudeOf: 0) }
-                if d.isNaN { d = T(signOf: d, magnitudeOf: 0) }
-                recalculate = true
+                return handleMultiplyNaN(infiniteA: a, infiniteB: b, nanA: c, nanB: d)
             } else if c.isInfinite || d.isInfinite {
-                c = T(signOf: c, magnitudeOf: c.isInfinite ? 1 : 0)
-                d = T(signOf: d, magnitudeOf: d.isInfinite ? 1 : 0)
-                if a.isNaN { a = T(signOf: a, magnitudeOf: 0) }
-                if b.isNaN { b = T(signOf: b, magnitudeOf: 0) }
-                recalculate = true
+                return handleMultiplyNaN(infiniteA: c, infiniteB: d, nanA: a, nanB: b)
             } else if ac.isInfinite || bd.isInfinite || ad.isInfinite || bc.isInfinite {
                 if a.isNaN { a = T(signOf: a, magnitudeOf: 0) }
                 if b.isNaN { b = T(signOf: b, magnitudeOf: 0) }
                 if c.isNaN { c = T(signOf: c, magnitudeOf: 0) }
                 if d.isNaN { d = T(signOf: d, magnitudeOf: 0) }
-                recalculate = true
-            }
-            if recalculate {
                 return Complex(
                     real: .infinity * (a * c - b * d),
                     imaginary: .infinity * (a * d + b * c)
