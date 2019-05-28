@@ -5,3 +5,7 @@ xcuserdata
 DerivedData/
 *.xcodeproj
 *~
+Sources/TensorFlow/Bindings
+
+### MacOS ###
+.DS_Store
