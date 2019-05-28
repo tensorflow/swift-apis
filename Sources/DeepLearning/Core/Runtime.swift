@@ -1050,48 +1050,48 @@ internal extension _ExecutionContext {
     }
 }
 
-@usableFromInline
-internal func dumpTensorContent<Scalar: _TensorFlowDataTypeCompatible>(
-  _ inputTensor: CTensorHandle,
-  _: Scalar.Type
-) {
-    assert(TFE_TensorHandleIsConcrete(inputTensor) != 0)
+// @usableFromInline
+// internal func dumpTensorContent<Scalar: _TensorFlowDataTypeCompatible>(
+//   _ inputTensor: CTensorHandle,
+//   _: Scalar.Type
+// ) {
+//     assert(TFE_TensorHandleIsConcrete(inputTensor) != 0)
 
-    let array = ShapedArray<Scalar>(cTensorHandle: inputTensor)
-    debugLog("Rank is \(array.rank), shape is \(array.shape).")
-    debugLog("""
-             The content of the \(array.scalars.count) scalars are: \
-             \(array.scalars).
-             """)
-}
+//     let array = ShapedArray<Scalar>(cTensorHandle: inputTensor)
+//     debugLog("Rank is \(array.rank), shape is \(array.shape).")
+//     debugLog("""
+//              The content of the \(array.scalars.count) scalars are: \
+//              \(array.scalars).
+//              """)
+// }
 
-@usableFromInline
-internal func dumpCTensorHandleContent(_ idx: Int, _ inputTensorHandle: CTensorHandle) {
-    if TFE_TensorHandleIsConcrete(inputTensorHandle) == 0 {
-        debugLog("Skip dumpping a symbolic tensor handle.")
-        return
-    }
+// @usableFromInline
+// internal func dumpCTensorHandleContent(_ idx: Int, _ inputTensorHandle: CTensorHandle) {
+//     if TFE_TensorHandleIsConcrete(inputTensorHandle) == 0 {
+//         debugLog("Skip dumpping a symbolic tensor handle.")
+//         return
+//     }
 
-    let dType: TF_DataType = TFE_TensorHandleDataType(inputTensorHandle)
-    debugLog("Tensor \(idx) has TF data type \(dType).")
-    switch dType {
-    case TF_UINT8: dumpTensorContent(inputTensorHandle, UInt8.self)
-    case TF_INT8: dumpTensorContent(inputTensorHandle, Int8.self)
-    case TF_UINT16: dumpTensorContent(inputTensorHandle, UInt16.self)
-    case TF_INT16: dumpTensorContent(inputTensorHandle, Int16.self)
-    case TF_UINT32: dumpTensorContent(inputTensorHandle, UInt32.self)
-    case TF_INT32: dumpTensorContent(inputTensorHandle, Int32.self)
-    case TF_UINT64: dumpTensorContent(inputTensorHandle, UInt64.self)
-    case TF_INT64: dumpTensorContent(inputTensorHandle, Int64.self)
-    case TF_FLOAT: dumpTensorContent(inputTensorHandle, Float.self)
-    case TF_DOUBLE: dumpTensorContent(inputTensorHandle, Double.self)
-    case TF_BOOL: dumpTensorContent(inputTensorHandle, Bool.self)
-    // TODO: Handle `TF_BFloat16`? BFloat16 does not have a host-side
-    // representation and cannot be printed directly. Consider calling into TF
-    // runtime.
-    default: fatalError("Unsupported dtype \(dType)")
-    }
-}
+//     let dType: TF_DataType = TFE_TensorHandleDataType(inputTensorHandle)
+//     debugLog("Tensor \(idx) has TF data type \(dType).")
+//     switch dType {
+//     case TF_UINT8: dumpTensorContent(inputTensorHandle, UInt8.self)
+//     case TF_INT8: dumpTensorContent(inputTensorHandle, Int8.self)
+//     case TF_UINT16: dumpTensorContent(inputTensorHandle, UInt16.self)
+//     case TF_INT16: dumpTensorContent(inputTensorHandle, Int16.self)
+//     case TF_UINT32: dumpTensorContent(inputTensorHandle, UInt32.self)
+//     case TF_INT32: dumpTensorContent(inputTensorHandle, Int32.self)
+//     case TF_UINT64: dumpTensorContent(inputTensorHandle, UInt64.self)
+//     case TF_INT64: dumpTensorContent(inputTensorHandle, Int64.self)
+//     case TF_FLOAT: dumpTensorContent(inputTensorHandle, Float.self)
+//     case TF_DOUBLE: dumpTensorContent(inputTensorHandle, Double.self)
+//     case TF_BOOL: dumpTensorContent(inputTensorHandle, Bool.self)
+//     // TODO: Handle `TF_BFloat16`? BFloat16 does not have a host-side
+//     // representation and cannot be printed directly. Consider calling into TF
+//     // runtime.
+//     default: fatalError("Unsupported dtype \(dType)")
+//     }
+// }
 
 @inlinable
 @_cdecl("_swift_tfc_EagerExecute")
