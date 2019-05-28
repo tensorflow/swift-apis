@@ -189,8 +189,8 @@ public static func {name}{generics}({input_args}
         if indent_level == 0:
           return ''
         if line_index:
-          return '  ' * indent_level
-        return '  ' * (indent_level - 1) + '- '
+          return '    ' * indent_level
+        return '    ' * (indent_level - 1) + '- '
 
       return ''.join([
         (_START_COMMENT + ' ' + indent(line_index) + line + '\n'
@@ -243,10 +243,10 @@ public static func {name}{generics}({input_args}
   def _swift_input_args(self):
     args = ''
     for arg in self.input_args:
-      args += '\n  %s: %s,' % (arg.swift_arg_name, str(arg.swift_type(self.string_valued)))
+      args += '\n    %s: %s,' % (arg.swift_arg_name, str(arg.swift_type(self.string_valued)))
     for attr in self.attrs:
       if not attr.is_inferred_type_attr and not attr.is_inferred_number_attr:
-        args += '\n  %s: %s%s,' % (attr.swift_arg_name, attr.swift_type, attr.swift_default)
+        args += '\n    %s: %s%s,' % (attr.swift_arg_name, attr.swift_type, attr.swift_default)
     if args != '':
       args = args[:-1]
     return args
@@ -273,11 +273,11 @@ public static func {name}{generics}({input_args}
       body = 'let nOutputs = 0'
     else:
       body = 'let nOutputs = {}'.format(' + '.join(counts))
-    body += '\n  let op = makeOp("{}", nOutputs)\n  '.format(self.op_def.name)
-    body += '\n  '.join(setters)
+    body += '\n    let op = makeOp("{}", nOutputs)\n    '.format(self.op_def.name)
+    body += '\n    '.join(setters)
     if len(self.output_args) == 0:
-      return body + '\n  op.execute()'
-    body += '\n  return op.execute({})'.format(', '.join(counts))
+      return body + '\n    op.execute()'
+    body += '\n    return op.execute({})'.format(', '.join(counts))
     return body
 
 
@@ -611,22 +611,22 @@ class EnumStore(object):
           # '@_frozen\n' +
           '// @_frozen // SR-9739\n' +
           'public enum {} {{\n'.format(type_name) +
-          '\n'.join(['  case {}'.format(
+          '\n'.join(['    case {}'.format(
             swift_compatible_identifier(a.lower()))
             for a in allowed_values]) +
           '\n\n' +
-          '  @inlinable\n' +
-          '  var cName: String {\n' +
-          '    @inline(__always)\n' +
-          '    get {\n' +
-          '      switch self {\n' +
-          '\n'.join(['      case .{}: return "{}"'.format(
+          '    @inlinable\n' +
+          '    var cName: String {\n' +
+          '        @inline(__always)\n' +
+          '        get {\n' +
+          '            switch self {\n' +
+          '\n'.join(['            case .{}: return "{}"'.format(
             swift_compatible_identifier(a.lower()), a)
             for a in allowed_values]) +
           '\n' +
-          '      }\n' +
+          '            }\n' +
+          '        }\n' +
           '    }\n' +
-          '  }\n' +
           '}')
     return codes
 
@@ -698,9 +698,8 @@ def main(argv):
       _HEADER +
       'import CTensorFlow\n\n' +
       '@inlinable @inline(__always)\n' +
-      'func makeOp(_ name: String, _ nOutputs: Int)'+
-      ' -> TFTensorOperation {\n' +
-      '  _ExecutionContext.makeOp(name, nOutputs)\n' +
+      'func makeOp(_ name: String, _ nOutputs: Int) -> TFTensorOperation {\n' +
+      '    _ExecutionContext.makeOp(name, nOutputs)\n' +
       '}\n'+
       '\npublic enum Raw {\n\n' +
       '\n'.join(version_codes) +
