@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import XCTest
-import TensorFlow
+@testable import TensorFlow
 
 struct SimpleOutput: TensorGroup {
     let a: TensorHandle<Int32>
