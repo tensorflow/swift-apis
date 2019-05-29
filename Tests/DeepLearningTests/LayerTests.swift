@@ -199,7 +199,7 @@ final class LayerTests: XCTestCase {
                         [[ 0.066890605,   0.049586136, 0.024610005,  0.09341654]],
                         [[ 0.065792546,   0.009325638, 0.06439907,  0.114802904]],
                         [[ 0.055909205, 0.00035158166, 0.054020774,  0.09812111]]])
-        let (𝛁rnn, 𝛁inputs) = pullback(.init(inputs.map { SimpleRNNCell<Float>.State($0) }))
+        let (𝛁rnn, _) = pullback(.init(inputs.map { SimpleRNNCell<Float>.State($0) }))
         XCTAssertEqual(𝛁rnn.cell.weight,
                        [[          0.0,           0.0,           0.0,           0.0],
                         [-0.0051169936,  0.0014167001,  0.0074189613,   0.017496519],
