@@ -88,8 +88,8 @@ final class MathOperatorTests: XCTestCase {
         let y = tanh(x)
         let array = y.array
         XCTAssertEqual([2], array.shape)
-        XCTAssertEqual(0.833655, Double(array.scalars[0]))
-        XCTAssertEqual(0.833655, Double(array.scalars[1]))
+        XCTAssertEqual(0.833655, Double(array.scalars[0]), accuracy: 0.0001)
+        XCTAssertEqual(0.833655, Double(array.scalars[1]), accuracy: 0.0001)
     }
 
     func testStandardDeviation() {
