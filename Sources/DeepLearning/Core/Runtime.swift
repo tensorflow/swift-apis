@@ -138,7 +138,7 @@ internal class TraceContext {
         }
 
         let traceeInputCount = symbolicInputs.count
-        // Append concrete tensors created within the tracee as symbolic inputs to the generated 
+        // Append concrete tensors created within the tracee as symbolic inputs to the generated
         // trace graph function.
         additionalInputTensorCount = TFE_FinalizeInputTensorsFromTraceContext(cTraceContext)
         for i in 0..<additionalInputTensorCount {
@@ -180,12 +180,9 @@ internal class TraceContext {
         checkOk(status)
     }
 
-    /// Execute the trace graph function, and return the list of output tensors from the trace
+    /// Execute the trace graph function, and return the list of output tensors from the trace 
     /// execution. These output tensors are owned by the caller.
-    func execute(
-        traceeInputs: [_AnyTensorHandle],
-        useXLA: Bool = false
-    ) -> [CTensorHandle] {
+    func execute(traceeInputs: [_AnyTensorHandle], useXLA: Bool = false) -> [CTensorHandle] {
         // We must be in the `notTracing` enum mode.
         internalConsistencyCheck(_RuntimeConfig.traceState.context == nil)
         internalConsistencyCheck(traceGraphFn != nil)
@@ -551,8 +548,7 @@ public final class _ExecutionContext {
     public let tensorFlowConfig: UnsafeMutablePointer<TF_Buffer>
 
     /// The TFE_Context object.
-    @usableFromInline
-    internal let eagerContext: CTFEContext
+    @usableFromInline let eagerContext: CTFEContext
 
     /// The status for checking TensorFlow errors.
     private let status: CTFStatus = TF_NewStatus()
@@ -791,8 +787,8 @@ private func _trace(
     in fn: ([CTensorHandle]) -> [CTensorHandle]
 ) -> TraceContext {
     debugLog("""
-            Tracing over a function with \(dtypes.count) inputs.
-            """)
+             Tracing over a function with \(dtypes.count) inputs.
+             """)
 
     // Verify that we are not already tracing.
     internalConsistencyCheck(_RuntimeConfig.traceState.context == nil,
@@ -820,9 +816,11 @@ private func _trace(
     return finalizeTraceFunction(opType)
 }
 
-private func _graphInternal<State: _TensorArrayProtocolEnhanced,
-                            Data: TensorGroup,
-                            Result: TensorGroup>(
+private func _graphInternal<
+    State: _TensorArrayProtocolEnhanced,
+    Data: TensorGroup,
+    Result: TensorGroup
+>(
     with state: State,
     in fn: (State, Data) -> (State, Result?)
 ) -> (State, Data) -> (State, Result?) {
@@ -871,9 +869,7 @@ private func _graphInternal<State: _TensorArrayProtocolEnhanced,
 }
 
 // TODO: rename this to `graph` when it's ready for end users.
-public func _graph<State: _TensorArrayProtocolEnhanced,
-                   Data: TensorGroup,
-                   Result: TensorGroup>(
+public func _graph<State: _TensorArrayProtocolEnhanced, Data: TensorGroup, Result: TensorGroup>(
     with state: State,
     in fn: (State, Data) -> (State, Result)
 ) -> (State, Data) -> (State, Result) {
@@ -886,16 +882,16 @@ public func _graph<State: _TensorArrayProtocolEnhanced,
 }
 
 // TODO: rename this to `graph` when it's ready for end users.
-public func _graph<State : _TensorArrayProtocolEnhanced, Data : TensorGroup>(
+public func _graph<State: _TensorArrayProtocolEnhanced, Data: TensorGroup>(
     with state: State,
     in fn: (State, Data) -> State
 ) -> (State, Data) -> State {
-    let graphFunction: (State, Data) -> (State, TensorHandle<Float>?) =
+    let graphFunction: (State, Data) -> (State, Tensor<Float>?) =
         withoutActuallyEscaping(fn) { escapableFn in
             let wrappedFn = {
                 // The result argument needs to a type that conforms to TensorGroup.
-                // We are arbitrarily picking TensorHandle<Float> here.
-                (s: State, d: Data) -> (State, TensorHandle<Float>?) in
+                // We are arbitrarily picking Tensor<Float> here.
+                (s: State, d: Data) -> (State, Tensor<Float>?) in
                 (escapableFn(s, d), nil)
             }
             return _graphInternal(with: state, in: wrappedFn)
@@ -1095,7 +1091,7 @@ internal func dumpCTensorHandleContent(_ idx: Int, _ inputTensorHandle: CTensorH
 
 @inlinable
 @_cdecl("_swift_tfc_EagerExecute")
-internal func _TFCEagerExecute(
+func _TFCEagerExecute(
     _ op: CTFEOp,
     _ retvals: UnsafeMutablePointer<OpaquePointer?>,
     _ retvalCount: UnsafeMutablePointer<Int32>,
@@ -1168,6 +1164,11 @@ func _TFCOpAddInputFromTensorGroup<T: TensorArrayProtocol>(
 public protocol AnyTensor {
     var _rawTensorHandle: CTensorHandle { get }
     var _tensorFlowDataType: TensorDataType { get }
+}
+
+extension Tensor: AnyTensor {
+    public var _rawTensorHandle: CTensorHandle { return handle._cTensorHandle }
+    public var _tensorFlowDataType: TensorDataType { return Scalar.tensorFlowDataType }
 }
 
 @usableFromInline
