@@ -1114,7 +1114,6 @@ func _TFCEagerExecute(
     } else {
         debugLog("Executing eager op \(op).")
         TFE_Execute(op, retvals, retvalCount, status)
-        checkOk(status)
     }
 }
 
