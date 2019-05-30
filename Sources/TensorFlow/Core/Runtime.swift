@@ -35,7 +35,7 @@ import Darwin
 import Glibc
 #endif
 import CTensorFlow
-import Foundation
+import Dispatch
 
 /// TraceContext contains the state needed to build a trace graph function (TF_Function). As eager 
 /// ops are executed in tracing mode, their corresponding nodes are added to the trace graph (via
