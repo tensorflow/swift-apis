@@ -191,7 +191,7 @@ final class LayerTests: XCTestCase {
         let inputs: [Tensor<Float>] = Array(repeating: x, count: 4)
         let rnn = RNN(SimpleRNNCell<Float>(inputSize: 4, hiddenSize: 4,
                                            seed: (0xFeedBeef, 0xDeadBeef)))
-        let (outputs, pullback) = rnn.valueWithPullback(at: inputs) { rnn, inputs in
+        let (outputs, _) = rnn.valueWithPullback(at: inputs) { rnn, inputs in
             return rnn(inputs)
         }
         XCTAssertEqual(outputs.map { $0.value },
