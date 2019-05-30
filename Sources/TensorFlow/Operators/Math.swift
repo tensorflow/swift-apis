@@ -571,6 +571,21 @@ internal func _vjpExp<T: TensorFlowFloatingPoint>(
     return (value, { v in value * v })
 }
 
+/// Computes the exponential of `x - 1` element-wise.
+@inlinable
+@differentiable(vjp: _vjpExpm1)
+public func expm1<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    return Raw.expm1(x)
+}
+
+@inlinable
+internal func _vjpExpm1<T: TensorFlowFloatingPoint>(
+    _ x: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+    let y = expm1(x)
+    return (y, { v in v * y })
+}
+
 /// Returns the values of the specified tensor rounded to the nearest integer, element-wise.
 @inlinable
 @differentiable(vjp: _vjpRound)
