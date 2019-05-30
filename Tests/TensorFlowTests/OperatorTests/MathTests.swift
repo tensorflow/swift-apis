@@ -199,6 +199,12 @@ final class MathOperatorTests: XCTestCase {
         XCTAssertEqual(0.816997, Double(prediction.scalars[0]), accuracy: 0.0001)
     }
 
+    func testLog1mexp() {
+        let x = Tensor<Float>(-0.05)
+        let y = logm1exp(x)
+        XCTAssertEqual(-1.3118, Double(prediction.scalars[0]), accuracy: 0.0001)
+    }
+
     static var allTests = [
         ("testReduction", testReduction),
         ("testArgmax", testArgmax),
