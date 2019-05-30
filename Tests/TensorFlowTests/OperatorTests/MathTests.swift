@@ -199,6 +199,17 @@ final class MathOperatorTests: XCTestCase {
         XCTAssertEqual(0.816997, Double(prediction.scalars[0]), accuracy: 0.0001)
     }
 
+    func testBroadcastedAddGradient() {
+	  func foo(_ x: Tensor<Float>, _ y: Tensor<Float>) -> Tensor<Float> {
+	    return x + y
+	  }
+	  let x = Tensor<Float>(ones: [1, 2, 1, 4])
+	  let y = Tensor<Float>(ones: [4, 1, 3, 1])
+	  let (dx, dy) = gradient(at: x, y, in: foo)
+	  XCTAssertEqual(x.shape, dx.shape)
+	  XCTAssertEqual(y.shape, dy.shape)
+	}
+
     static var allTests = [
         ("testReduction", testReduction),
         ("testArgmax", testArgmax),
@@ -209,6 +220,7 @@ final class MathOperatorTests: XCTestCase {
         ("testMultiOpMath", testMultiOpMath),
         ("testXWPlusB", testXWPlusB),
         ("testXORInference", testXORInference),
-        ("testMLPClassifierStruct", testMLPClassifierStruct)
+        ("testMLPClassifierStruct", testMLPClassifierStruct),
+        ("testBroadcastedAddGradient", testBroadcastedAddGradient)
     ]
 }
