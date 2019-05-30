@@ -15,6 +15,16 @@
 import XCTest
 @testable import TensorFlow
 
+infix operator ++: AdditionPrecedence
+infix operator .=
+
+infix operator ..: StridedRangeFormationPrecedence
+precedencegroup StridedRangeFormationPrecedence {
+    associativity: left
+    higherThan: CastingPrecedence
+    lowerThan: RangeFormationPrecedence
+}
+
 final class BasicOperatorTests: XCTestCase {
     func testElementIndexing() {
         // NOTE: cannot test multiple `Tensor.shape` or `Tensor.scalars` directly
@@ -409,14 +419,14 @@ final class BasicOperatorTests: XCTestCase {
         XCTAssertEqual([1, 3, 1, 2, 1], result.shape)
     }
 
-    func testUnbroadcasted1() {
+    func testUnbroadcast1() {
         let x = Tensor<Float>(repeating: 1, shape: [2, 3, 4, 5])
         let y = Tensor<Float>(repeating: 1, shape: [4, 5])
         let z = x.unbroadcasted(like: y)
         XCTAssertEqual(ShapedArray<Float>(repeating: 6, shape: [4, 5]), z.array)
     }
 
-    func testUnbroadcasted2() {
+    func testUnbroadcast2() {
         let x = Tensor<Float>(repeating: 1, shape: [2, 3, 4, 5])
         let y = Tensor<Float>(repeating: 1, shape: [3, 1, 5])
         let z = x.unbroadcasted(like: y)
@@ -470,8 +480,8 @@ final class BasicOperatorTests: XCTestCase {
         ("testFlatten0D", testFlatten0D),
         ("testReshapeToScalar", testReshapeToScalar),
         ("testReshapeTensor", testReshapeTensor),
-        ("testUnbroadcasted1", testUnbroadcasted1),
-        ("testUnbroadcasted2", testUnbroadcasted2),
+        ("testUnbroadcast1", testUnbroadcast1),
+        ("testUnbroadcast2", testUnbroadcast2),
         ("testSliceUpdate", testSliceUpdate),
         ("testBroadcastTensor", testBroadcastTensor)
     ]

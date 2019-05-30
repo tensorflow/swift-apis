@@ -15,6 +15,12 @@
 infix operator .==: ComparisonPrecedence
 infix operator .!=: ComparisonPrecedence
 
+/// Special protocol for calling tensorflow operations that take heterogeneous arrays as input.
+public protocol AnyTensor {
+    var _rawTensorHandle: CTensorHandle { get }
+    var _tensorFlowDataType: TensorDataType { get }
+}
+
 /// `Tensor` is a multi-dimensional array used for computation. It is a wrapper around a 
 /// `TensorHandle`.
 @_fixed_layout
