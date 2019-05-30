@@ -613,6 +613,19 @@ internal func _vjpFloor<T: TensorFlowFloatingPoint>(
     return (floor(x), { _ in Tensor(0).broadcasted(like: x) })
 }
 
+@inlinable
+@differentiable(vjp: _vjpSign(_:))
+public func sign<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    return Raw.sign(x)
+}
+
+@inlinable
+internal func _vjpSign<T: TensorFlowFloatingPoint>(
+    _ x: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+    return (sign(x), { v in Tensor<T>(zerosLike: x) })
+}
+
 /// Computes the sigmoid of the specified tensor element-wise.
 /// Specifically, computes `1 / (1 + exp(-x))`.
 @inlinable
