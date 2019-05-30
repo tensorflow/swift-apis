@@ -559,9 +559,3 @@ extension Tensor: Differentiable where Scalar: TensorFlowFloatingPoint {
     public typealias TangentVector = Tensor
     public typealias AllDifferentiableVariables = Tensor
 }
-
-extension Tensor {
-    @inlinable
-    @_semantics("autodiff.nonvarying")
-    public func withoutDerivative() -> Tensor { return self }
-}

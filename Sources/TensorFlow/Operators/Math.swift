@@ -431,7 +431,7 @@ internal func _vjpLog<T: TensorFlowFloatingPoint>(
 @inlinable
 @differentiable
 public func log1mexp<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
-    let isTooSmall = (-x.withoutDerivative() .< T(log(2.0)))
+    let isTooSmall = (-x .< T(log(2.0))).withoutDerivative()
     // This `replacing` will ultimately be a no-op because we will not select this code-path 
     // whenever we use the surrogate `-Tensor(onesLike: x)`.
     let xSafe = x.replacing(with: -Tensor(onesLike: x), where: isTooSmall)
