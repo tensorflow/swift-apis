@@ -35,7 +35,6 @@ import Darwin
 import Glibc
 #endif
 import CTensorFlow
-import Dispatch
 
 /// TraceContext contains the state needed to build a trace graph function (TF_Function). As eager 
 /// ops are executed in tracing mode, their corresponding nodes are added to the trace graph (via
@@ -571,13 +570,10 @@ public final class _ExecutionContext {
         // (when _RuntimeConfig.tensorFlowServer is set to "").
         if !_RuntimeConfig.tensorFlowRuntimeInitialized {
             // Install a signal handler to ensure we exit when interrupted.
-            signal(SIGINT, SIG_IGN)
-            let sigintSrc = DispatchSource.makeSignalSource(signal: SIGINT, queue: .main)
-            sigintSrc.setEventHandler {
+            signal(SIGINT) { _ in
                 print("Caught interrupt signal, exiting...")
                 exit(1)
             }
-            sigintSrc.resume()
             
             var args = ["dummyProgramName"]
             if _RuntimeConfig.printsDebugLog {
