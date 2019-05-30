@@ -43,9 +43,14 @@ extension Tensor: VectorNumeric where Scalar: Numeric {
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     static func _vjpMultiply(lhs: Tensor, rhs: Tensor) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
-        return (lhs * rhs, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
-            let lhsGrad = rhs * v
-            let rhsGrad = lhs * v
+        let result = lhs * rhs
+        return (result, { [
+            lhsShape = lhs.shapeTensor,
+            rhsShape = rhs.shapeTensor,
+            resultShape = result.shapeTensor] v in
+            let broadcastedV = v.broadcasted(toShape: resultShape)
+            let lhsGrad = rhs * broadcastedV
+            let rhsGrad = lhs * broadcastedV
             let (lhsAxes, rhsAxes) = Raw.broadcastGradientArgs(s0: lhsShape, s1: rhsShape)
             return (lhsGrad.sum(squeezingAxes: lhsAxes).reshaped(toShape: lhsShape),
                     rhsGrad.sum(squeezingAxes: rhsAxes).reshaped(toShape: rhsShape))
@@ -248,9 +253,14 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 
     @inlinable
     static func _vjpDivide(lhs: Tensor, rhs: Tensor) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
-        return (lhs / rhs, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
-            let lhsGrad = v / rhs
-            let rhsGrad = -lhs / rhs.squared() * v
+        let result = lhs / rhs
+        return (result, { [
+            lhsShape = lhs.shapeTensor,
+            rhsShape = rhs.shapeTensor,
+            resultShape = result.shapeTensor] v in
+            let broadcastedV = v.broadcasted(toShape: resultShape)
+            let lhsGrad = broadcastedV / rhs
+            let rhsGrad = -lhs / rhs.squared() * broadcastedV
             let (lhsAxes, rhsAxes) = Raw.broadcastGradientArgs(s0: lhsShape, s1: rhsShape)
             return (lhsGrad.sum(squeezingAxes: lhsAxes).reshaped(toShape: lhsShape),
                     rhsGrad.sum(squeezingAxes: rhsAxes).reshaped(toShape: rhsShape))
@@ -688,8 +698,9 @@ internal func _vjpPow<T: TensorFlowFloatingPoint>(
     let value = pow(x, y)
     return (value, { v in
         let safeX = x.replacing(with: Tensor<T>(onesLike: x), where: x .<= 0)
-        let lhsGrad = v * y * pow(x, y - 1)
-        let rhsGrad = value * v * log(safeX)
+        let broadcastedV = v.broadcasted(toShape: value.shapeTensor)
+        let lhsGrad = broadcastedV * y * pow(x, y - 1)
+        let rhsGrad = value * broadcastedV * log(safeX)
         let (lhsShape, rhsShape) = (x.shapeTensor, y.shapeTensor)
         let (lhsAxes, rhsAxes) = Raw.broadcastGradientArgs(s0: lhsShape, s1: rhsShape)
         return (lhsGrad.sum(squeezingAxes: lhsAxes).reshaped(toShape: lhsShape),
@@ -779,8 +790,9 @@ internal func _vjpMinMaxHelper<T: TensorFlowFloatingPoint>(
     seed: Tensor<T>
 ) -> (Tensor<T>, Tensor<T>) {
     let denominator = 1 + Tensor<T>(x .== y)
-    let lhsGrad = seed * Tensor<T>(x .== originalValue) / denominator
-    let rhsGrad = seed * Tensor<T>(y .== originalValue) / denominator
+    let broadcastedSeed = seed.broadcasted(toShape: originalValue.shapeTensor)
+    let lhsGrad = broadcastedSeed * Tensor<T>(x .== originalValue) / denominator
+    let rhsGrad = broadcastedSeed * Tensor<T>(y .== originalValue) / denominator
     let (lhsShape, rhsShape) = (x.shapeTensor, y.shapeTensor)
     let (lhsAxes, rhsAxes) = Raw.broadcastGradientArgs(s0: lhsShape, s1: rhsShape)
     return (lhsGrad.sum(squeezingAxes: lhsAxes).reshaped(toShape: lhsShape),
