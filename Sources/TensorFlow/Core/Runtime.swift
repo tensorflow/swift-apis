@@ -608,12 +608,9 @@ public final class _ExecutionContext {
                 }
 
                 stringAddrs.withUnsafeMutableBufferPointer { stringAddrsBuffer in
-                    var cArgs = [stringAddrsBuffer.baseAddress.map(UnsafeMutablePointer.init)]
                     var cArgsCount = Int32(args.count)
-
-                    cArgs.withUnsafeMutableBufferPointer { cArgsBuffer in
-                        TF_InitMain(nil, &cArgsCount, cArgsBuffer.baseAddress)
-                    }
+                    var cArgs = stringAddrsBuffer.baseAddress.map(UnsafeMutablePointer.init)
+                    TF_InitMain(nil, &cArgsCount, &cArgs)
                 }
             }
             _RuntimeConfig.tensorFlowRuntimeInitialized = true
