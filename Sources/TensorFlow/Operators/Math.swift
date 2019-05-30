@@ -424,6 +424,20 @@ internal func _vjpLog<T: TensorFlowFloatingPoint>(
     return (log(x), { v in v / x })
 }
 
+/// Computes `log(1 - exp(x))` using a numerically stable approach.
+///
+/// The approach is shown in Equation 7 of:
+/// https://cran.r-project.org/web/packages/Rmpfr/vignettes/log1mexp-note.pdf.
+@inlinable
+@differentiable
+public func log1mexp<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    let isTooSmall = (-x .< T(log(2.0))).withoutDerivative()
+    // This `replacing` will ultimately be a no-op because we will not select this code-path 
+    // whenever we use the surrogate `-Tensor(onesLike: x)`.
+    let xSafe = x.replacing(with: -Tensor(onesLike: x), where: isTooSmall)
+    return log1p(-exp(xSafe)).replacing(with: log(-expm1(x)), where: isTooSmall)
+}
+
 /// Computes `sin` of the specified tensor element-wise.
 @inlinable
 @differentiable(vjp: _vjpSin(_:) where T: TensorFlowFloatingPoint)
