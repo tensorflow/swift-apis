@@ -1,6 +1,3 @@
-// swift-tools-version:4.2
-// The swift-tools-version declares the minimum version of Swift required to build this package.
-//
 // Copyright 2018 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,22 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import PackageDescription
+public protocol TensorProtocol {
+    /// Scalar type.
+    associatedtype Scalar: TensorFlowScalar
 
-let package = Package(
-    name: "TensorFlow",
-    products: [
-        .library(
-            name: "TensorFlow",
-            targets: ["TensorFlow"]),
-    ],
-    dependencies: [],
-    targets: [
-        .target(
-            name: "TensorFlow",
-            dependencies: []),
-        .testTarget(
-            name: "TensorFlowTests",
-            dependencies: ["TensorFlow"]),
-    ]
-)
+    /// The underlying `TensorHandle`.
+    /// - Note: Do NOT remove this. This is a compiler requirement.
+    var handle: TensorHandle<Scalar> { get }
+
+    /// Initialize from a `TensorHandle`.
+    /// - Note: Do NOT remove this. This is a compiler requirement.
+    init(handle: TensorHandle<Scalar>)
+}
