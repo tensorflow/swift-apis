@@ -1,6 +1,3 @@
-// swift-tools-version:4.2
-// The swift-tools-version declares the minimum version of Swift required to build this package.
-//
 // Copyright 2018 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,22 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import PackageDescription
+import XCTest
 
-let package = Package(
-    name: "TensorFlow",
-    products: [
-        .library(
-            name: "TensorFlow",
-            targets: ["TensorFlow"]),
-    ],
-    dependencies: [],
-    targets: [
-        .target(
-            name: "TensorFlow",
-            dependencies: []),
-        .testTarget(
-            name: "TensorFlowTests",
-            dependencies: ["TensorFlow"]),
+#if !os(macOS)
+public func allTests() -> [XCTestCaseEntry] {
+    return [
+        testCase(LossTests.allTests),
+        testCase(PRNGTests.allTests),
+        testCase(TrivialModelTests.allTests),
+        testCase(SequentialTests.allTests),
+        testCase(LayerTests.allTests),
+        testCase(TensorTests.allTests),
+        testCase(BasicOperatorTests.allTests),
+        testCase(ComparisonOperatorTests.allTests),
+        testCase(DatasetTests.allTests),
+        testCase(MathOperatorTests.allTests),
     ]
-)
+}
+#endif
