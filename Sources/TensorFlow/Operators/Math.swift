@@ -408,6 +408,20 @@ internal func _vjpLog<T: TensorFlowFloatingPoint>(
     return (log(x), { v in v / x })
 }
 
+/// Computes the logarithm of `1 + x` element-wise.
+@inlinable
+@differentiable(vjp: _vjpLog1p)
+public func log1p<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    Raw.log1p(x)
+}
+
+@inlinable
+func _vjpLog1p<T: TensorFlowFloatingPoint>(
+    _ x: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+    (log1p(x), { v in Raw.xdivy(v, 1 + x) })
+}
+
 /// Computes `sin` of the specified tensor element-wise.
 @inlinable
 @differentiable(vjp: _vjpSin(_:) where T: TensorFlowFloatingPoint)
@@ -555,6 +569,21 @@ internal func _vjpExp<T: TensorFlowFloatingPoint>(
     return (value, { v in value * v })
 }
 
+/// Computes the exponential of `x - 1` element-wise.
+@inlinable
+@differentiable(vjp: _vjpExpm1)
+public func expm1<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    Raw.expm1(x)
+}
+
+@inlinable
+internal func _vjpExpm1<T: TensorFlowFloatingPoint>(
+    _ x: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+    let y = expm1(x)
+    return (y, { v in v * y })
+}
+
 /// Returns the values of the specified tensor rounded to the nearest integer, element-wise.
 @inlinable
 @differentiable(vjp: _vjpRound)
@@ -595,6 +624,19 @@ internal func _vjpFloor<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>
 ) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
     return (floor(x), { _ in Tensor(0).broadcasted(like: x) })
+}
+
+@inlinable
+@differentiable(vjp: _vjpSign(_:) where T: TensorFlowFloatingPoint)
+public func sign<T: Numeric>(_ x: Tensor<T>) -> Tensor<T> {
+    return Raw.sign(x)
+}
+
+@inlinable
+internal func _vjpSign<T: TensorFlowFloatingPoint>(
+    _ x: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+    return (sign(x), { v in Tensor<T>(zerosLike: x) })
 }
 
 /// Computes the sigmoid of the specified tensor element-wise.
@@ -888,6 +930,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     // NOTE: This overload is necessary, otherwise `min()` would refer to the variadic method
     // `min(squeezingAxes:)` with zero indices.
     @inlinable
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
     func min() -> Tensor {
         let axes = Tensor<Int32>(rangeFrom: 0, to: Int32(rank), stride: 1)
         return min(squeezingAxes: axes)
@@ -896,6 +939,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     // NOTE: This overload is necessary, otherwise `max()` would refer to the variadic method
     // `max(squeezingAxes:)` with zero indices.
     @inlinable
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
     func max() -> Tensor {
         let axes = Tensor<Int32>(rangeFrom: 0, to: Int32(rank), stride: 1)
         return max(squeezingAxes: axes)
@@ -916,8 +960,10 @@ public extension Tensor where Scalar: Numeric & Comparable {
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func max(squeezingAxes axes: [Int]) -> Tensor {
-        let axes = axes.map(Int32.init)
+        // TODO(TF-433): Remove workaround for differentiating `map`.
+        let axes = {axes.map(Int32.init)}()
         return max(squeezingAxes: Tensor<Int32>(axes))
     }
 
@@ -925,6 +971,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func max(squeezingAxes axes: Int...) -> Tensor {
         return max(squeezingAxes: axes)
     }
@@ -944,8 +991,10 @@ public extension Tensor where Scalar: Numeric & Comparable {
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func min(squeezingAxes axes: [Int]) -> Tensor {
-        let axes = axes.map(Int32.init)
+        // TODO(TF-433): Remove workaround for differentiating `map`.
+        let axes = {axes.map(Int32.init)}()
         return min(squeezingAxes: Tensor<Int32>(axes))
     }
 
@@ -953,6 +1002,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func min(squeezingAxes axes: Int...) -> Tensor {
         return min(squeezingAxes: axes)
     }
