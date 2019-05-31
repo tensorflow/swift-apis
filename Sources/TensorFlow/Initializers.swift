@@ -180,20 +180,6 @@ public extension Tensor {
         precondition(tensors.count > 0)
         self = Raw.concatV2(tensors, axis: Tensor<Int32>(Int32(axis)))
     }
-
-    /// Returns a tiled tensor, constructed by tiling the provided tensor.
-    ///
-    /// This constructor creates a new tensor by replicating `tensor` `multiples` times. The
-    /// constructed tensor's `i`'th dimension has `tensor.shape[i] * multiples[i]` elements, and the
-    /// values of `tensor` are replicated `multiples[i]` times along the `i`'th dimension. For
-    /// example, tiling `[a b c d]` by `[2]` produces `[a b c d a b c d]`.
-    ///
-    /// - Precondition: The shape of `multiples` must be `[tensor.rank]`.
-    @inlinable
-    @differentiable(wrt: tensor, vjp: _vjpTiling where Scalar: TensorFlowFloatingPoint)
-    init(tiling tensor: Tensor, multiples: Tensor<Int32>) {
-        self = Raw.tile(tensor, multiples: multiples)
-    }
 }
 
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
@@ -227,19 +213,6 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
             if count == 1 { return Array<Tensor>.DifferentiableView([v]) }
             let splits = v.split(sizes: sizes, alongAxis: posAxis)
             return Array<Tensor>.DifferentiableView(splits)
-        })
-    }
-
-    @inlinable
-    static func _vjpTiling(
-        tiling tensor: Tensor<Scalar>,
-        multiples: Tensor<Int32>
-    ) -> (Tensor, (Tensor) -> Tensor) {
-        let result = Tensor(tiling: tensor, multiples: multiples)
-        return (result, { [shape = tensor.shapeTensor] v in
-            let splitShape = Tensor<Int32>(stacking: [multiples, shape]).transposed().flattened()
-            let axes = Tensor<Int32>(rangeFrom: 0, to: Int32(splitShape.scalarCount), stride: 2)
-            return v.reshaped(toShape: splitShape).sum(squeezingAxes: axes)
         })
     }
 }
