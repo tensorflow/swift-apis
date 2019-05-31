@@ -575,7 +575,7 @@ internal func _vjpExp<T: TensorFlowFloatingPoint>(
 @inlinable
 @differentiable(vjp: _vjpExpm1)
 public func expm1<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
-    return Raw.expm1(x)
+    Raw.expm1(x)
 }
 
 @inlinable
