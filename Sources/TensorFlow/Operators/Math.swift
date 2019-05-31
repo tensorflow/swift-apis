@@ -686,22 +686,15 @@ func _vjpRelu<T: TensorFlowFloatingPoint>(
     return (relu(x), { v in Tensor(x .> 0) * v })
 }
 
-/// Checks which elements of `x` are finite.
-@inlinable
-public func isFinite<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<Bool> {
-    Raw.isFinite(x)
-}
+public extension Tensor where Scalar: TensorFlowFloatingPoint {
+    /// Returns a boolean tensor indicating which elements of `x` are finite.
+    @inlinable var isFinite: Tensor<Bool> { Raw.isFinite(self) }
 
-/// Checks which elements of `x` are infinite.
-@inlinable
-public func isInfinite<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<Bool> {
-    Raw.isInf(x)
-}
+    /// Returns a boolean tensor indicating which elements of `x` are infinite.
+    @inlinable var isInfinite: Tensor<Bool> { Raw.isInf(self) }
 
-/// Checks which elements of `x` are NaN.
-@inlinable
-public func isNaN<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<Bool> {
-    Raw.isNan(x)
+    /// Returns a boolean tensor indicating which elements of `x` are NaN-valued.
+    @inlinable var isNaN: Tensor<Bool> { Raw.isNan(self) }
 }
 
 //===------------------------------------------------------------------------------------------===//

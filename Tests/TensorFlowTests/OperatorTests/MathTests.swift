@@ -18,19 +18,19 @@ import XCTest
 final class MathOperatorTests: XCTestCase {
     func testIsFinite() {
         let x = Tensor<Float>([1, 2, 3, 4, -Float.infinity])
-        let y = isFinite(x)
+        let y = x.isFinite
         assertEqual(y, Tensor([true, true, true, true, false]))
     }
 
     func testIsInfinite() {
         let x = Tensor<Float>([1, 2, 3, 4, log(0.0)])
-        let y = isInfinite(x)
+        let y = x.isInfinite
         assertEqual(y, Tensor([false, false, false, false, true]))
     }
 
     func testIsNaN() {
         let x = Tensor<Float>([1, 2, 3, 4, log(-5.0)])
-        let y = isNaN(x)
+        let y = x.isNaN
         assertEqual(y, Tensor([false, false, false, false, true]))
     }
 
