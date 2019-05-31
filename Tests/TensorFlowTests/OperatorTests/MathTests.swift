@@ -17,21 +17,24 @@ import XCTest
 
 final class MathOperatorTests: XCTestCase {
     func testLog1p() {
-        let x = Tensor<Float>([[1, 2, 3, 4, 5], [1, 2, 3, 4, 5]])
+        let x = Tensor<Float>([1, 2, 3, 4, 5])
         let y = log1p(x)
-        assertEqual(y, log(1 + x), accuracy: 0.0001)
+        let expectedY = Tensor<Float>([0.69315, 1.09861, 1.38629, 1.60944, 1.79176])
+        assertEqual(y, expectedY, accuracy: 0.0001)
     }
 
     func testLog1mexp() {
-        let x = Tensor<Float>([[-1, -2, -3, -4, -5], [-1, -2, -3, -4, -5]])
+        let x = Tensor<Float>([-1, -2, -3, -4, -5])
         let y = log1mexp(x)
-        assertEqual(y, log(1 - exp(x)), accuracy: 0.0001)
+        let expectedY = Tensor<Float>([-0.45868, -0.14541, -0.05107, -0.01849, -0.00676])
+        assertEqual(y, expectedY, accuracy: 0.0001)
     }
 
     func testExpm1() {
-        let x = Tensor<Float>([[1, 2, 3, 4, 5], [1, 2, 3, 4, 5]])
+        let x = Tensor<Float>([1, 2, 3, 4, 5])
         let y = expm1(x)
-        assertEqual(y, exp(x - 1), accuracy: 0.0001)
+        let expectedY = Tensor<Float>([1.71828, 6.38906, 19.08554, 53.59815, 147.41316])
+        assertEqual(y, expectedY, accuracy: 0.0001)
     }
 
     func testSign() {
