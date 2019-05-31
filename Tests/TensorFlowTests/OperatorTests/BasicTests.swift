@@ -263,7 +263,8 @@ final class BasicOperatorTests: XCTestCase {
 
         /// Test scalars
         XCTAssertEqual(array3D.scalars, Array(stride(from: 40.0, to: 60, by: 1)))
-        XCTAssertEqual(array2D.scalars,
+        XCTAssertEqual(
+            array2D.scalars,
             Array(stride(from: 20.0, to: 25, by: 1)) + 
             Array(stride(from: 30.0, to: 35, by: 1)))
         XCTAssertEqual(array1D.scalars, Array(stride(from: 1.0, to: 5, by: 2)))
@@ -292,7 +293,8 @@ final class BasicOperatorTests: XCTestCase {
         XCTAssertEqual(array1D.shape, [2])
 
         /// Test scalars
-        XCTAssertEqual(array3D.shape,
+        XCTAssertEqual(
+            array3D.shape,
             Array(stride(from: 20.0, to: 30, by: 2)) + 
             Array(stride(from: 45.0, to: 50, by: 1)) + 
             Array(stride(from: 30.0, to: 40, by: 2)) + 
@@ -336,7 +338,8 @@ final class BasicOperatorTests: XCTestCase {
         let concatenated1 = t1.concatenated(with: t2, alongAxis: 1)
         XCTAssertEqual(concatenated.array, ShapedArray(shape: [4, 3], scalars: Array(0..<12)))
         XCTAssertEqual(concatenated0.array, ShapedArray(shape: [4, 3], scalars: Array(0..<12)))
-        XCTAssertEqual(concatenated1.array, 
+        XCTAssertEqual(
+            concatenated1.array, 
             ShapedArray(shape: [2, 6], scalars: [0, 1, 2, 6, 7, 8, 3, 4, 5, 9, 10, 11]))
     }
 
@@ -376,7 +379,7 @@ final class BasicOperatorTests: XCTestCase {
         let xTArray = xT.array
         XCTAssertEqual(xTArray.rank, 2)
         XCTAssertEqual(xTArray.shape, [2, 3])
-        XCTAssertEqual( xTArray.scalars, [1, 3, 5, 2, 4, 6])
+        XCTAssertEqual(xTArray.scalars, [1, 3, 5, 2, 4, 6])
     }
 
     func testReshape() {

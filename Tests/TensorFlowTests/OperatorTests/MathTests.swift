@@ -32,35 +32,47 @@ final class MathOperatorTests: XCTestCase {
         // 2 x 5
         let x = Tensor<Float>([[1, 2, 3, 4, 5], [1, 2, 3, 4, 5]])
         XCTAssertEqual(x.sum(), Tensor(30))
-        XCTAssertEqual(x.sum(squeezingAxes: 0),
+        XCTAssertEqual(
+            x.sum(squeezingAxes: 0),
             Tensor(shape: [5], scalars: [2, 4, 6, 8, 10]))
-        XCTAssertEqual(x.sum(alongAxes: 0),
+        XCTAssertEqual(
+            x.sum(alongAxes: 0),
             Tensor(shape: [1, 5], scalars: [2, 4, 6, 8, 10]))
 
         XCTAssertEqual(x.product(), Tensor(14400))
-        XCTAssertEqual(x.product(squeezingAxes: 0),
+        XCTAssertEqual(
+            x.product(squeezingAxes: 0),
             Tensor(shape: [5], scalars: [1, 4, 9, 16, 25]))
-        XCTAssertEqual(x.product(alongAxes: 0),
+        XCTAssertEqual(
+            x.product(alongAxes: 0),
             Tensor(shape: [1, 5], scalars: [1, 4, 9, 16, 25]))
 
         XCTAssertEqual(x.mean(), Tensor(3))
-        XCTAssertEqual(x.mean(squeezingAxes: 0),
+        XCTAssertEqual(
+            x.mean(squeezingAxes: 0),
             Tensor(shape: [5], scalars: [1, 2, 3, 4, 5]))
-        XCTAssertEqual(x.mean(alongAxes: 0),
+        XCTAssertEqual(
+            x.mean(alongAxes: 0),
             Tensor(shape: [5], scalars: [1, 2, 3, 4, 5]))
-        XCTAssertEqual(x.mean(squeezingAxes: 1),
+        XCTAssertEqual(
+            x.mean(squeezingAxes: 1),
             Tensor(shape: [2], scalars: [3, 3]))
-        XCTAssertEqual(x.mean(alongAxes: 1),
+        XCTAssertEqual(
+            x.mean(alongAxes: 1),
             Tensor(shape: [1, 2], scalars: [3, 3]))
 
         XCTAssertEqual(x.variance(), Tensor(2))
-        XCTAssertEqual(x.variance(squeezingAxes: 0),
+        XCTAssertEqual(
+            x.variance(squeezingAxes: 0),
             Tensor(shape: [5], scalars: [0, 0, 0, 0, 0]))
-        XCTAssertEqual(x.variance(alongAxes: 0), 
+        XCTAssertEqual(
+            x.variance(alongAxes: 0), 
             Tensor(shape: [5], scalars: [0, 0, 0, 0, 0]))
-        XCTAssertEqual(x.variance(squeezingAxes: 1),
+        XCTAssertEqual(
+            x.variance(squeezingAxes: 1),
             Tensor(shape: [2], scalars: [2, 2]))
-        XCTAssertEqual(x.variance(alongAxes: 1),
+        XCTAssertEqual(
+            x.variance(alongAxes: 1),
             Tensor(shape: [1, 2], scalars: [2, 2]))
     }
 
