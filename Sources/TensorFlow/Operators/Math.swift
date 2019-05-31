@@ -43,20 +43,12 @@ extension Tensor: VectorNumeric where Scalar: Numeric {
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     static func _vjpMultiply(lhs: Tensor, rhs: Tensor) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
-        return (lhs * rhs, { [
-            lhsShape = lhs.shape,
-            rhsShape = rhs.shape,
-            lhsShapeTensor = lhs.shapeTensor,
-            rhsShapeTensor = rhs.shapeTensor] v in
-            var lhsGrad = rhs * v
-            var rhsGrad = lhs * v
-            if lhsGrad.shape != lhsShape {
-                lhsGrad = lhsGrad.unbroadcasted(toShape: lhsShapeTensor)
-            }
-            if rhsGrad.shape != rhsShape {
-                rhsGrad = rhsGrad.unbroadcasted(toShape: rhsShapeTensor)
-            }
-            return (lhsGrad, rhsGrad)
+        return (lhs * rhs, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
+            let lhsGrad = rhs * v
+            let rhsGrad = lhs * v
+            let (lhsAxes, rhsAxes) = Raw.broadcastGradientArgs(s0: lhsShape, s1: rhsShape)
+            return (lhsGrad.sum(squeezingAxes: lhsAxes).reshaped(toShape: lhsShape),
+                    rhsGrad.sum(squeezingAxes: rhsAxes).reshaped(toShape: rhsShape))
         })
     }
 }
@@ -236,12 +228,12 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 
     @inlinable
     static func _vjpSubtract(lhs: Tensor, rhs: Scalar) -> (Tensor, (Tensor) -> (Tensor, Scalar)) {
-        return (lhs - rhs, { v in (v, 0 - v.sum().scalarized()) })
+        return (lhs - rhs, { v in (v, -v.sum().scalarized()) })
     }
 
     @inlinable
     static func _vjpSubtract(lhs: Scalar, rhs: Tensor) -> (Tensor, (Tensor) -> (Scalar, Tensor)) {
-        return (lhs - rhs, { v in (v.sum().scalarized(), 0 - v) })
+        return (lhs - rhs, { v in (v.sum().scalarized(), -v) })
     }
 
     @inlinable
@@ -256,27 +248,19 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 
     @inlinable
     static func _vjpDivide(lhs: Tensor, rhs: Tensor) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
-        return (lhs / rhs, { [
-            lhsShape = lhs.shape,
-            rhsShape = rhs.shape,
-            lhsShapeTensor = lhs.shapeTensor,
-            rhsShapeTensor = rhs.shapeTensor] v in
-            var lhsGrad = v / rhs
-            var rhsGrad = (-lhs) / rhs.squared() * v
-            if lhsGrad.shape != lhsShape {
-                lhsGrad = lhsGrad.unbroadcasted(toShape: lhsShapeTensor)
-            }
-            if rhsGrad.shape != rhsShape {
-                rhsGrad = rhsGrad.unbroadcasted(toShape: rhsShapeTensor)
-            }
-            return (lhsGrad, rhsGrad)
+        return (lhs / rhs, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
+            let lhsGrad = v / rhs
+            let rhsGrad = -lhs / rhs.squared() * v
+            let (lhsAxes, rhsAxes) = Raw.broadcastGradientArgs(s0: lhsShape, s1: rhsShape)
+            return (lhsGrad.sum(squeezingAxes: lhsAxes).reshaped(toShape: lhsShape),
+                    rhsGrad.sum(squeezingAxes: rhsAxes).reshaped(toShape: rhsShape))
         })
     }
 
     @inlinable
     static func _vjpDivide(lhs: Tensor, rhs: Scalar) -> (Tensor, (Tensor) -> (Tensor, Scalar)) {
         return (lhs / rhs, { v in 
-            (v / rhs, (v * (0 - lhs) / Tensor(rhs).squared()).sum().scalarized())
+            (v / rhs, (v * -lhs / Tensor(rhs).squared()).sum().scalarized())
         })
     }
 
@@ -422,6 +406,20 @@ internal func _vjpLog<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>
 ) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
     return (log(x), { v in v / x })
+}
+
+/// Computes the logarithm of `1 + x` element-wise.
+@inlinable
+@differentiable(vjp: _vjpLog1p)
+public func log1p<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    Raw.log1p(x)
+}
+
+@inlinable
+func _vjpLog1p<T: TensorFlowFloatingPoint>(
+    _ x: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+    (log1p(x), { v in Raw.xdivy(v, 1 + x) })
 }
 
 /// Computes `sin` of the specified tensor element-wise.
@@ -613,6 +611,19 @@ internal func _vjpFloor<T: TensorFlowFloatingPoint>(
     return (floor(x), { _ in Tensor(0).broadcasted(like: x) })
 }
 
+@inlinable
+@differentiable(vjp: _vjpSign(_:) where T: TensorFlowFloatingPoint)
+public func sign<T: Numeric>(_ x: Tensor<T>) -> Tensor<T> {
+    return Raw.sign(x)
+}
+
+@inlinable
+internal func _vjpSign<T: TensorFlowFloatingPoint>(
+    _ x: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+    return (sign(x), { v in Tensor<T>(zerosLike: x) })
+}
+
 /// Computes the sigmoid of the specified tensor element-wise.
 /// Specifically, computes `1 / (1 + exp(-x))`.
 @inlinable
@@ -704,15 +715,12 @@ internal func _vjpPow<T: TensorFlowFloatingPoint>(
     let value = pow(x, y)
     return (value, { v in
         let safeX = x.replacing(with: Tensor<T>(onesLike: x), where: x .<= 0)
-        var gradX = v * y * pow(x, y - 1)
-        var gradY = value * v * log(safeX)
-        if gradX.shape != x.shape {
-            gradX = gradX.unbroadcasted(like: x)
-        }
-        if gradY.shape != y.shape {
-            gradY = gradY.unbroadcasted(like: y)
-        }
-        return (gradX, gradY)
+        let lhsGrad = v * y * pow(x, y - 1)
+        let rhsGrad = value * v * log(safeX)
+        let (lhsShape, rhsShape) = (x.shapeTensor, y.shapeTensor)
+        let (lhsAxes, rhsAxes) = Raw.broadcastGradientArgs(s0: lhsShape, s1: rhsShape)
+        return (lhsGrad.sum(squeezingAxes: lhsAxes).reshaped(toShape: lhsShape),
+                rhsGrad.sum(squeezingAxes: rhsAxes).reshaped(toShape: rhsShape))
     })
 }
 
@@ -798,15 +806,12 @@ internal func _vjpMinMaxHelper<T: TensorFlowFloatingPoint>(
     seed: Tensor<T>
 ) -> (Tensor<T>, Tensor<T>) {
     let denominator = 1 + Tensor<T>(x .== y)
-    var gradX = seed * Tensor<T>(x .== originalValue) / denominator
-    var gradY = seed * Tensor<T>(y .== originalValue) / denominator
-    if gradX.shape != x.shape {
-        gradX = gradX.unbroadcasted(like: x)
-    }
-    if gradY.shape != y.shape {
-        gradY = gradY.unbroadcasted(like: y)
-    }
-    return (gradX, gradY)
+    let lhsGrad = seed * Tensor<T>(x .== originalValue) / denominator
+    let rhsGrad = seed * Tensor<T>(y .== originalValue) / denominator
+    let (lhsShape, rhsShape) = (x.shapeTensor, y.shapeTensor)
+    let (lhsAxes, rhsAxes) = Raw.broadcastGradientArgs(s0: lhsShape, s1: rhsShape)
+    return (lhsGrad.sum(squeezingAxes: lhsAxes).reshaped(toShape: lhsShape),
+            rhsGrad.sum(squeezingAxes: rhsAxes).reshaped(toShape: rhsShape))
 }
 
 //===------------------------------------------------------------------------------------------===//
