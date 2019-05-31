@@ -350,7 +350,7 @@ public extension Tensor {
     /// out-of-range index is found, a 0 is stored in the corresponding output values.
     ///
     /// - Parameters:
-    ///   - indices: Contains the indices to gather.
+    ///   - indices: Contains the indices to gather at.
     ///   - axis: Dimension along which to gather. Negative values wrap around.
     ///
     /// - Precondition: `axis` must be in the range `[-rank, rank)`.
