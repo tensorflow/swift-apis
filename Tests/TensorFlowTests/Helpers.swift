@@ -15,12 +15,6 @@
 import XCTest
 @testable import TensorFlow
 
-internal func assertEqual<T: TensorFlowScalar & Equatable>(_ x: Tensor<T>, _ y: Tensor<T>) {
-    zip(x.scalars, y.scalars).forEach { (x, y) in
-        XCTAssertEqual(x, y)
-    }
-}
-
 internal func assertEqual<T: TensorFlowFloatingPoint>(_ x: Tensor<T>, _ y: Tensor<T>, accuracy: T) {
     zip(x.scalars, y.scalars).forEach { (x, y) in
         XCTAssertEqual(x, y, accuracy: accuracy)
