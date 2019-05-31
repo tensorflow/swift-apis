@@ -1497,6 +1497,63 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     func standardDeviation(alongAxes axes: Int...) -> Tensor {
         return sqrt(variance(alongAxes: axes))
     }
+
+    @inlinable
+    @differentiable(wrt: self)
+    func logSumExp(squeezingAxes axes: Tensor<Int32>) -> Tensor {
+        let rawMax = max(alongAxes: axes)
+        let offset = rawMax.replacing(
+            with: Tensor<Scalar>(zerosLike: rawMax),
+            where: rawMax.isFinite
+        ).withoutDerivative()
+        let result = log(exp(self - offset).sum(squeezingAxes: axes))
+        return result + offset.reshaped(toShape: result.shapeTensor.withoutDerivative())
+    }
+
+    @inlinable
+    @differentiable(wrt: self)
+    func logSumExp(squeezingAxes axes: [Int]) -> Tensor {
+        // TODO(TF-433): Remove workaround for differentiating `map`.
+        let axes = {axes.map(Int32.init)}()
+        return logSumExp(squeezingAxes: Tensor<Int32>(axes))
+    }
+
+    @inlinable
+    @differentiable(wrt: self)
+    func logSumExp(squeezingAxes axes: Int...) -> Tensor {
+        return logSumExp(squeezingAxes: axes)
+    }
+
+    @inlinable
+    @differentiable(wrt: self)
+    func logSumExp() -> Tensor {
+        return flattened().logSumExp(squeezingAxes: 0)
+    }
+
+    @inlinable
+    @differentiable(wrt: self)
+    func logSumExp(alongAxes axes: Tensor<Int32>) -> Tensor {
+        let offset = max(alongAxes: axes)
+        // TODO:
+        // let offset = rawMax.replacing(
+        //   with: Tensor<Scalar>(zerosLike: rawMax), where: isFinite(rawMax))
+        let result = log(exp(self - offset).sum(alongAxes: axes))
+        return result + offset
+    }
+
+    @inlinable
+    @differentiable(wrt: self)
+    func logSumExp(alongAxes axes: [Int]) -> Tensor {
+        // TODO(TF-433): Remove workaround for differentiating `map`.
+        let axes = {axes.map(Int32.init)}()
+        return logSumExp(alongAxes: Tensor<Int32>(axes))
+    }
+
+    @inlinable
+    @differentiable(wrt: self)
+    func logSumExp(alongAxes axes: Int...) -> Tensor {
+        return logSumExp(alongAxes: axes)
+    }
 }
 
 //===------------------------------------------------------------------------------------------===//
