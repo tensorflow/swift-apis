@@ -286,6 +286,7 @@ final class BasicOperatorTests: XCTestCase {
         let array3D = slice3D.array
         let array2D = slice2D.array
         let array1D = slice1D.array
+		
 
         /// Test shapes
         XCTAssertEqual(array3D.shape, [1, 4, 5])
@@ -294,7 +295,7 @@ final class BasicOperatorTests: XCTestCase {
 
         /// Test scalars
         XCTAssertEqual(
-            array3D.shape,
+            array3D.scalars,
             Array(stride(from: 20.0, to: 30, by: 2)) + 
             Array(stride(from: 45.0, to: 50, by: 1)) + 
             Array(stride(from: 30.0, to: 40, by: 2)) + 
