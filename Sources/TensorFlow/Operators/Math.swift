@@ -1518,25 +1518,57 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
 
 /// Performs matrix multiplication with another tensor and produces the result.
 @inlinable
-@differentiable(vjp: _vjpMatmul(_:_:) where Scalar: TensorFlowFloatingPoint)
+@differentiable(vjp: _vjpMatmul(_:transposed:_:transposed:) where Scalar: TensorFlowFloatingPoint)
 public func matmul<Scalar: Numeric>(
     _ lhs: Tensor<Scalar>,
-    _ rhs: Tensor<Scalar>
+    transposed transposeA: Bool = false,
+    _ rhs: Tensor<Scalar>,
+    transposed transposeB: Bool = false
 ) -> Tensor<Scalar> {
-    // Default arguments specified explicitly to avoid "external declarations of SILFunctions with
-    // shared visibility is not allowed" SILVerifier error in
-    // "tests/AutoDiff/tensor_autodiff_runtime.swift".
-    return Raw.matMul(lhs, rhs, transposeA: false, transposeB: false)
+    if lhs.rank > 2 && rhs.rank > 2 {
+      return Raw.batchMatMulV2(lhs, rhs, adjX: transposeA, adjY: transposeB)
+    } else if lhs.rank == 2 && rhs.rank > 2 {
+      return Raw.batchMatMulV2(lhs.expandingShape(at: 1), rhs, adjX: transposeA, adjY: transposeB)
+    } else if lhs.rank > 2 && rhs.rank == 2 {
+      return Raw.batchMatMulV2(lhs, rhs.expandingShape(at: 1), adjX: transposeA, adjY: transposeB)
+    }
+    return Raw.matMul(lhs, rhs, transposeA: transposeA, transposeB: transposeB)
 }
 
 @inlinable
 internal func _vjpMatmul<Scalar: TensorFlowFloatingPoint>(
     _ lhs: Tensor<Scalar>,
-    _ rhs: Tensor<Scalar>
+    transposed transposeA: Bool = false,
+    _ rhs: Tensor<Scalar>,
+    transposed transposeB: Bool = false
 ) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
-    let value = matmul(lhs, rhs)
-    return (value, { v in 
-        (matmul(v, rhs.transposed()), matmul(lhs.transposed(), v))
+    let value = matmul(lhs, transposed: transposeA, rhs, transposed: transposeB)
+    return (value, { v in
+      let (lhsGrad, rhsGrad) = { () -> (Tensor<Scalar>, Tensor<Scalar>) in
+        switch (transposeA, transposeB) {
+        case (false, false):
+          return (
+            matmul(v, transposed: false, rhs, transposed: true),
+            matmul(lhs, transposed: true, v, transposed: false))
+        case (false, true):
+          return (
+            matmul(v, rhs),
+            matmul(lhs, transposed: true, v, transposed: false))
+        case (true, false):
+          return (
+            matmul(v, transposed: false, rhs, transposed: true),
+            matmul(lhs, v))
+        case (true, true):
+          return (
+            matmul(v, transposed: true, rhs, transposed: true),
+            matmul(lhs, transposed: true, v, transposed: true))
+        }
+      }()
+      switch (lhs.rank, rhs.rank) {
+      case (3..., 3...): return (lhsGrad.sum(squeezingAxes: 1), rhsGrad)
+      case (3..., 2): return (lhsGrad, rhsGrad.sum(squeezingAxes: 1))
+      default: return (lhsGrad, rhsGrad)
+      }
     })
 }
 
