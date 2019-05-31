@@ -511,12 +511,8 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
         lhs: Tensor,
         rhs: Tensor
     ) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
-        let result = lhs + rhs
-        return (result, { [
-            lhsShape = lhs.shapeTensor,
-            rhsShape = rhs.shapeTensor,
-            resultShape = result.shapeTensor] v in
-            let lhsGrad = v.broadcasted(toShape: resultShape)
+        return (lhs + rhs, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
+            let lhsGrad = v
             let rhsGrad = lhsGrad
             let (lhsAxes, rhsAxes) = Raw.broadcastGradientArgs(s0: lhsShape, s1: rhsShape)
             return (lhsGrad.sum(squeezingAxes: lhsAxes).reshaped(toShape: lhsShape),
@@ -529,12 +525,8 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
         lhs: Tensor,
         rhs: Tensor
     ) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
-        let result = lhs - rhs
-        return (result, { [
-            lhsShape = lhs.shapeTensor,
-            rhsShape = rhs.shapeTensor,
-            resultShape = result.shapeTensor] v in
-            let lhsGrad = v.broadcasted(toShape: resultShape)
+        return (lhs - rhs, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
+            let lhsGrad = v
             let rhsGrad = -lhsGrad
             let (lhsAxes, rhsAxes) = Raw.broadcastGradientArgs(s0: lhsShape, s1: rhsShape)
             return (lhsGrad.sum(squeezingAxes: lhsAxes).reshaped(toShape: lhsShape),

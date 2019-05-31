@@ -201,7 +201,7 @@ final class MathOperatorTests: XCTestCase {
 
     func testBroadcastedAddGradient() {
 	  func foo(_ x: Tensor<Float>, _ y: Tensor<Float>) -> Tensor<Float> {
-	    return x + y
+	    return (x + y).sum()
 	  }
 	  let x = Tensor<Float>(ones: [1, 2, 1, 4])
 	  let y = Tensor<Float>(ones: [4, 1, 3, 1])
