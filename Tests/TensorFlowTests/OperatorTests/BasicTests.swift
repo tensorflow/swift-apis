@@ -26,6 +26,12 @@ precedencegroup StridedRangeFormationPrecedence {
 }
 
 final class BasicOperatorTests: XCTestCase {
+    func testGathering() {
+        let x = Tensor<Float>([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
+        let y = x.gathering(atIndices: Tensor<Int32>(2), alongAxis: 1)
+        XCTAssertEqual(y, Tensor<Float>([3.0, 6.0]))
+    }
+
     func testElementIndexing() {
         // NOTE: cannot test multiple `Tensor.shape` or `Tensor.scalars` directly
         // until send and receive are implemented (without writing a bunch of mini
@@ -460,6 +466,7 @@ final class BasicOperatorTests: XCTestCase {
     }
 
     static var allTests = [
+        ("testGathering", testGathering),
         ("testElementIndexing", testElementIndexing),
         ("testElementIndexingAssignment", testElementIndexingAssignment),
         ("testNestedElementIndexing", testNestedElementIndexing),

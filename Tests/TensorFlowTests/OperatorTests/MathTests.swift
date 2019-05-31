@@ -16,10 +16,28 @@ import XCTest
 @testable import TensorFlow
 
 final class MathOperatorTests: XCTestCase {
+    func testLog1p() {
+        let x = Tensor<Float>([[1, 2, 3, 4, 5], [1, 2, 3, 4, 5]])
+        let y = log1p(x)
+        assertEqual(y, log(1 + x), accuracy: 0.0001)
+    }
+
     func testLog1mexp() {
         let x = Tensor<Float>([[-1, -2, -3, -4, -5], [-1, -2, -3, -4, -5]])
         let y = log1mexp(x)
         assertEqual(y, log(1 - exp(x)), accuracy: 0.0001)
+    }
+
+    func testExpm1() {
+        let x = Tensor<Float>([[1, 2, 3, 4, 5], [1, 2, 3, 4, 5]])
+        let y = expm1(x)
+        assertEqual(y, exp(x - 1), accuracy: 0.0001)
+    }
+
+    func testSign() {
+        let x = Tensor<Float>([[1, 2, -3, 4, 5], [1, 2, 3, 4, -5]])
+        let y = sign(x)
+        XCTAssertEqual(y, Tensor<Float>([[1, 1, -1, 1, 1], [1, 1, 1, 1, -1]]))
     }
 
     func testReduction() {
@@ -204,14 +222,22 @@ final class MathOperatorTests: XCTestCase {
         let prediction = classifier.prediction(for: input)
         XCTAssertEqual(0.816997, Double(prediction.scalars[0]), accuracy: 0.0001)
     }
-
-    func testLog1mexp() {
-        let x = Tensor<Float>(-0.05)
-        let y = logm1exp(x)
-        XCTAssertEqual(-1.3118, Double(prediction.scalars[0]), accuracy: 0.0001)
-    }
+    
+    func testBroadcastedAddGradient() {
+	  func foo(_ x: Tensor<Float>, _ y: Tensor<Float>) -> Tensor<Float> {
+	    return (x + y).sum()
+	  }
+	  let x = Tensor<Float>(ones: [1, 2, 1, 4])
+	  let y = Tensor<Float>(ones: [4, 1, 3, 1])
+	  let (dx, dy) = gradient(at: x, y, in: foo)
+	  XCTAssertEqual(x.shape, dx.shape)
+	  XCTAssertEqual(y.shape, dy.shape)
+	}
 
     static var allTests = [
+        ("testLog1p", testLog1p),
+        ("testExpm1", testExpm1),
+        ("testSign", testSign),
         ("testReduction", testReduction),
         ("testArgmax", testArgmax),
         ("testCeilAndFloor", testCeilAndFloor),
@@ -221,6 +247,7 @@ final class MathOperatorTests: XCTestCase {
         ("testMultiOpMath", testMultiOpMath),
         ("testXWPlusB", testXWPlusB),
         ("testXORInference", testXORInference),
-        ("testMLPClassifierStruct", testMLPClassifierStruct)
+        ("testMLPClassifierStruct", testMLPClassifierStruct),
+        ("testBroadcastedAddGradient", testBroadcastedAddGradient)
     ]
 }

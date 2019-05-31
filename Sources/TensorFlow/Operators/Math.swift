@@ -43,20 +43,12 @@ extension Tensor: VectorNumeric where Scalar: Numeric {
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     static func _vjpMultiply(lhs: Tensor, rhs: Tensor) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
-        return (lhs * rhs, { [
-            lhsShape = lhs.shape,
-            rhsShape = rhs.shape,
-            lhsShapeTensor = lhs.shapeTensor,
-            rhsShapeTensor = rhs.shapeTensor] v in
-            var lhsGrad = rhs * v
-            var rhsGrad = lhs * v
-            if lhsGrad.shape != lhsShape {
-                lhsGrad = lhsGrad.unbroadcasted(toShape: lhsShapeTensor)
-            }
-            if rhsGrad.shape != rhsShape {
-                rhsGrad = rhsGrad.unbroadcasted(toShape: rhsShapeTensor)
-            }
-            return (lhsGrad, rhsGrad)
+        return (lhs * rhs, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
+            let lhsGrad = rhs * v
+            let rhsGrad = lhs * v
+            let (lhsAxes, rhsAxes) = Raw.broadcastGradientArgs(s0: lhsShape, s1: rhsShape)
+            return (lhsGrad.sum(squeezingAxes: lhsAxes).reshaped(toShape: lhsShape),
+                    rhsGrad.sum(squeezingAxes: rhsAxes).reshaped(toShape: rhsShape))
         })
     }
 }
@@ -236,12 +228,12 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 
     @inlinable
     static func _vjpSubtract(lhs: Tensor, rhs: Scalar) -> (Tensor, (Tensor) -> (Tensor, Scalar)) {
-        return (lhs - rhs, { v in (v, 0 - v.sum().scalarized()) })
+        return (lhs - rhs, { v in (v, -v.sum().scalarized()) })
     }
 
     @inlinable
     static func _vjpSubtract(lhs: Scalar, rhs: Tensor) -> (Tensor, (Tensor) -> (Scalar, Tensor)) {
-        return (lhs - rhs, { v in (v.sum().scalarized(), 0 - v) })
+        return (lhs - rhs, { v in (v.sum().scalarized(), -v) })
     }
 
     @inlinable
@@ -256,27 +248,19 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 
     @inlinable
     static func _vjpDivide(lhs: Tensor, rhs: Tensor) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
-        return (lhs / rhs, { [
-            lhsShape = lhs.shape,
-            rhsShape = rhs.shape,
-            lhsShapeTensor = lhs.shapeTensor,
-            rhsShapeTensor = rhs.shapeTensor] v in
-            var lhsGrad = v / rhs
-            var rhsGrad = (-lhs) / rhs.squared() * v
-            if lhsGrad.shape != lhsShape {
-                lhsGrad = lhsGrad.unbroadcasted(toShape: lhsShapeTensor)
-            }
-            if rhsGrad.shape != rhsShape {
-                rhsGrad = rhsGrad.unbroadcasted(toShape: rhsShapeTensor)
-            }
-            return (lhsGrad, rhsGrad)
+        return (lhs / rhs, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
+            let lhsGrad = v / rhs
+            let rhsGrad = -lhs / rhs.squared() * v
+            let (lhsAxes, rhsAxes) = Raw.broadcastGradientArgs(s0: lhsShape, s1: rhsShape)
+            return (lhsGrad.sum(squeezingAxes: lhsAxes).reshaped(toShape: lhsShape),
+                    rhsGrad.sum(squeezingAxes: rhsAxes).reshaped(toShape: rhsShape))
         })
     }
 
     @inlinable
     static func _vjpDivide(lhs: Tensor, rhs: Scalar) -> (Tensor, (Tensor) -> (Tensor, Scalar)) {
         return (lhs / rhs, { v in 
-            (v / rhs, (v * (0 - lhs) / Tensor(rhs).squared()).sum().scalarized())
+            (v / rhs, (v * -lhs / Tensor(rhs).squared()).sum().scalarized())
         })
     }
 
@@ -422,6 +406,20 @@ internal func _vjpLog<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>
 ) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
     return (log(x), { v in v / x })
+}
+
+/// Computes the logarithm of `1 + x` element-wise.
+@inlinable
+@differentiable(vjp: _vjpLog1p)
+public func log1p<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    Raw.log1p(x)
+}
+
+@inlinable
+func _vjpLog1p<T: TensorFlowFloatingPoint>(
+    _ x: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+    (log1p(x), { v in Raw.xdivy(v, 1 + x) })
 }
 
 /// Computes `log(1 - exp(x))` using a numerically stable approach.
@@ -585,6 +583,21 @@ internal func _vjpExp<T: TensorFlowFloatingPoint>(
     return (value, { v in value * v })
 }
 
+/// Computes the exponential of `x - 1` element-wise.
+@inlinable
+@differentiable(vjp: _vjpExpm1)
+public func expm1<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    Raw.expm1(x)
+}
+
+@inlinable
+internal func _vjpExpm1<T: TensorFlowFloatingPoint>(
+    _ x: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+    let y = expm1(x)
+    return (y, { v in v * y })
+}
+
 /// Returns the values of the specified tensor rounded to the nearest integer, element-wise.
 @inlinable
 @differentiable(vjp: _vjpRound)
@@ -625,6 +638,19 @@ internal func _vjpFloor<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>
 ) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
     return (floor(x), { _ in Tensor(0).broadcasted(like: x) })
+}
+
+@inlinable
+@differentiable(vjp: _vjpSign(_:) where T: TensorFlowFloatingPoint)
+public func sign<T: Numeric>(_ x: Tensor<T>) -> Tensor<T> {
+    return Raw.sign(x)
+}
+
+@inlinable
+internal func _vjpSign<T: TensorFlowFloatingPoint>(
+    _ x: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+    return (sign(x), { v in Tensor<T>(zerosLike: x) })
 }
 
 /// Computes the sigmoid of the specified tensor element-wise.
@@ -718,15 +744,12 @@ internal func _vjpPow<T: TensorFlowFloatingPoint>(
     let value = pow(x, y)
     return (value, { v in
         let safeX = x.replacing(with: Tensor<T>(onesLike: x), where: x .<= 0)
-        var gradX = v * y * pow(x, y - 1)
-        var gradY = value * v * log(safeX)
-        if gradX.shape != x.shape {
-            gradX = gradX.unbroadcasted(like: x)
-        }
-        if gradY.shape != y.shape {
-            gradY = gradY.unbroadcasted(like: y)
-        }
-        return (gradX, gradY)
+        let lhsGrad = v * y * pow(x, y - 1)
+        let rhsGrad = value * v * log(safeX)
+        let (lhsShape, rhsShape) = (x.shapeTensor, y.shapeTensor)
+        let (lhsAxes, rhsAxes) = Raw.broadcastGradientArgs(s0: lhsShape, s1: rhsShape)
+        return (lhsGrad.sum(squeezingAxes: lhsAxes).reshaped(toShape: lhsShape),
+                rhsGrad.sum(squeezingAxes: rhsAxes).reshaped(toShape: rhsShape))
     })
 }
 
@@ -812,15 +835,12 @@ internal func _vjpMinMaxHelper<T: TensorFlowFloatingPoint>(
     seed: Tensor<T>
 ) -> (Tensor<T>, Tensor<T>) {
     let denominator = 1 + Tensor<T>(x .== y)
-    var gradX = seed * Tensor<T>(x .== originalValue) / denominator
-    var gradY = seed * Tensor<T>(y .== originalValue) / denominator
-    if gradX.shape != x.shape {
-        gradX = gradX.unbroadcasted(like: x)
-    }
-    if gradY.shape != y.shape {
-        gradY = gradY.unbroadcasted(like: y)
-    }
-    return (gradX, gradY)
+    let lhsGrad = seed * Tensor<T>(x .== originalValue) / denominator
+    let rhsGrad = seed * Tensor<T>(y .== originalValue) / denominator
+    let (lhsShape, rhsShape) = (x.shapeTensor, y.shapeTensor)
+    let (lhsAxes, rhsAxes) = Raw.broadcastGradientArgs(s0: lhsShape, s1: rhsShape)
+    return (lhsGrad.sum(squeezingAxes: lhsAxes).reshaped(toShape: lhsShape),
+            rhsGrad.sum(squeezingAxes: rhsAxes).reshaped(toShape: rhsShape))
 }
 
 //===------------------------------------------------------------------------------------------===//
@@ -924,6 +944,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     // NOTE: This overload is necessary, otherwise `min()` would refer to the variadic method
     // `min(squeezingAxes:)` with zero indices.
     @inlinable
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
     func min() -> Tensor {
         let axes = Tensor<Int32>(rangeFrom: 0, to: Int32(rank), stride: 1)
         return min(squeezingAxes: axes)
@@ -932,6 +953,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     // NOTE: This overload is necessary, otherwise `max()` would refer to the variadic method
     // `max(squeezingAxes:)` with zero indices.
     @inlinable
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
     func max() -> Tensor {
         let axes = Tensor<Int32>(rangeFrom: 0, to: Int32(rank), stride: 1)
         return max(squeezingAxes: axes)
@@ -952,8 +974,10 @@ public extension Tensor where Scalar: Numeric & Comparable {
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func max(squeezingAxes axes: [Int]) -> Tensor {
-        let axes = axes.map(Int32.init)
+        // TODO(TF-433): Remove workaround for differentiating `map`.
+        let axes = {axes.map(Int32.init)}()
         return max(squeezingAxes: Tensor<Int32>(axes))
     }
 
@@ -961,6 +985,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func max(squeezingAxes axes: Int...) -> Tensor {
         return max(squeezingAxes: axes)
     }
@@ -980,8 +1005,10 @@ public extension Tensor where Scalar: Numeric & Comparable {
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func min(squeezingAxes axes: [Int]) -> Tensor {
-        let axes = axes.map(Int32.init)
+        // TODO(TF-433): Remove workaround for differentiating `map`.
+        let axes = {axes.map(Int32.init)}()
         return min(squeezingAxes: Tensor<Int32>(axes))
     }
 
@@ -989,6 +1016,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func min(squeezingAxes axes: Int...) -> Tensor {
         return min(squeezingAxes: axes)
     }
@@ -1526,14 +1554,16 @@ public func matmul<Scalar: Numeric>(
     _ rhs: Tensor<Scalar>,
     transposed transposeB: Bool = false
 ) -> Tensor<Scalar> {
-    if lhs.rank > 2 && rhs.rank > 2 {
-      return Raw.batchMatMulV2(lhs, rhs, adjX: transposeA, adjY: transposeB)
-    } else if lhs.rank == 2 && rhs.rank > 2 {
-      return Raw.batchMatMulV2(lhs.expandingShape(at: 1), rhs, adjX: transposeA, adjY: transposeB)
-    } else if lhs.rank > 2 && rhs.rank == 2 {
-      return Raw.batchMatMulV2(lhs, rhs.expandingShape(at: 1), adjX: transposeA, adjY: transposeB)
+    switch (lhs.rank, rhs.rank) {
+    case (3..., 3...):
+        return Raw.batchMatMulV2(lhs, rhs, adjX: transposeA, adjY: transposeB)
+    case (2, 3...):
+        return Raw.batchMatMulV2(lhs.expandingShape(at: 1), rhs, adjX: transposeA, adjY: transposeB)
+    case (3..., 2):
+        return Raw.batchMatMulV2(lhs, rhs.expandingShape(at: 1), adjX: transposeA, adjY: transposeB)
+    default:
+        return Raw.matMul(lhs, rhs, transposeA: transposeA, transposeB: transposeB)
     }
-    return Raw.matMul(lhs, rhs, transposeA: transposeA, transposeB: transposeB)
 }
 
 @inlinable
@@ -1545,31 +1575,26 @@ internal func _vjpMatmul<Scalar: TensorFlowFloatingPoint>(
 ) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
     let value = matmul(lhs, transposed: transposeA, rhs, transposed: transposeB)
     return (value, { v in
-      let (lhsGrad, rhsGrad) = { () -> (Tensor<Scalar>, Tensor<Scalar>) in
+        let (lhsGrad, rhsGrad): (Tensor<Scalar>, Tensor<Scalar>)
         switch (transposeA, transposeB) {
         case (false, false):
-          return (
-            matmul(v, transposed: false, rhs, transposed: true),
-            matmul(lhs, transposed: true, v, transposed: false))
+            lhsGrad = matmul(v, transposed: false, rhs, transposed: true)
+            rhsGrad = matmul(lhs, transposed: true, v, transposed: false)
         case (false, true):
-          return (
-            matmul(v, rhs),
-            matmul(lhs, transposed: true, v, transposed: false))
+            lhsGrad = matmul(v, rhs)
+            rhsGrad = matmul(lhs, transposed: true, v, transposed: false)
         case (true, false):
-          return (
-            matmul(v, transposed: false, rhs, transposed: true),
-            matmul(lhs, v))
+            lhsGrad = matmul(v, transposed: false, rhs, transposed: true)
+            rhsGrad = matmul(lhs, v)
         case (true, true):
-          return (
-            matmul(v, transposed: true, rhs, transposed: true),
-            matmul(lhs, transposed: true, v, transposed: true))
+            lhsGrad = matmul(v, transposed: true, rhs, transposed: true)
+            rhsGrad = matmul(lhs, transposed: true, v, transposed: true)
         }
-      }()
-      switch (lhs.rank, rhs.rank) {
-      case (3..., 3...): return (lhsGrad.sum(squeezingAxes: 1), rhsGrad)
-      case (3..., 2): return (lhsGrad, rhsGrad.sum(squeezingAxes: 1))
-      default: return (lhsGrad, rhsGrad)
-      }
+        switch (lhs.rank, rhs.rank) {
+        case (3..., 3...): return (lhsGrad.sum(squeezingAxes: 1), rhsGrad)
+        case (3..., 2): return (lhsGrad, rhsGrad.sum(squeezingAxes: 1))
+        default: return (lhsGrad, rhsGrad)
+        }
     })
 }
 
