@@ -343,7 +343,7 @@ public struct GlobalAvgPool3D<Scalar: TensorFlowFloatingPoint>: Layer {
 
 /// A global max pooling layer for temporal data.
 @_fixed_layout
-public struct GlobalMaxPooling1D<Scalar: TensorFlowFloatingPoint>: Layer {
+public struct GlobalMaxPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// Creates a global max pooling layer.
     public init() {}
 
