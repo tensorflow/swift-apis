@@ -304,7 +304,6 @@ final class BasicOperatorTests: XCTestCase {
                        [Float](stride(from: 45.0, to: 50, by: 1)) +
                        [Float](stride(from: 30.0, to: 40, by: 2)) +
                        [Float](stride(from: 55.0, to: 60, by: 1)))
-        XCTAssertEqual(array3D.scalars, expected)
         XCTAssertEqual(array2D.scalars, Array(stride(from: 20.0, to: 30, by: 1)))
         XCTAssertEqual(array1D.scalars, Array(stride(from: 3.0, to: 5, by: 1)))
     }
