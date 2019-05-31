@@ -915,6 +915,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     // NOTE: This overload is necessary, otherwise `min()` would refer to the variadic method
     // `min(squeezingAxes:)` with zero indices.
     @inlinable
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
     func min() -> Tensor {
         let axes = Tensor<Int32>(rangeFrom: 0, to: Int32(rank), stride: 1)
         return min(squeezingAxes: axes)
@@ -923,6 +924,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     // NOTE: This overload is necessary, otherwise `max()` would refer to the variadic method
     // `max(squeezingAxes:)` with zero indices.
     @inlinable
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
     func max() -> Tensor {
         let axes = Tensor<Int32>(rangeFrom: 0, to: Int32(rank), stride: 1)
         return max(squeezingAxes: axes)
@@ -943,8 +945,10 @@ public extension Tensor where Scalar: Numeric & Comparable {
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func max(squeezingAxes axes: [Int]) -> Tensor {
-        let axes = axes.map(Int32.init)
+        // TODO(TF-433): Remove workaround for differentiating `map`.
+        let axes = {axes.map(Int32.init)}()
         return max(squeezingAxes: Tensor<Int32>(axes))
     }
 
@@ -952,6 +956,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func max(squeezingAxes axes: Int...) -> Tensor {
         return max(squeezingAxes: axes)
     }
@@ -971,8 +976,10 @@ public extension Tensor where Scalar: Numeric & Comparable {
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func min(squeezingAxes axes: [Int]) -> Tensor {
-        let axes = axes.map(Int32.init)
+        // TODO(TF-433): Remove workaround for differentiating `map`.
+        let axes = {axes.map(Int32.init)}()
         return min(squeezingAxes: Tensor<Int32>(axes))
     }
 
@@ -980,6 +987,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func min(squeezingAxes axes: Int...) -> Tensor {
         return min(squeezingAxes: axes)
     }
