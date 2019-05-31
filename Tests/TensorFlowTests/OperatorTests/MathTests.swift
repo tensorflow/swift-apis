@@ -19,7 +19,7 @@ final class MathOperatorTests: XCTestCase {
     func testSign() {
         let x = Tensor<Float>([[1, 2, -3, 4, 5], [1, 2, 3, 4, -5]])
         let y = sign(x)
-        assertEqual(y, Tensor<Float>([[1, 1, -1, 1, 1], [1, 1, 1, 1, -1]]))
+        XCTAssertEqual(y, Tensor<Float>([[1, 1, -1, 1, 1], [1, 1, 1, 1, -1]]))
     }
 
     func testReduction() {
