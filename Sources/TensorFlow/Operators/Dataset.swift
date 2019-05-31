@@ -215,6 +215,16 @@ public struct Zip2TensorGroup<T: TensorGroup, U: TensorGroup>: TensorGroup {
         self.first = first
         self.second = second
     }
+
+    public var  _tensorHandles: [_AnyTensorHandle] {
+        first._tensorHandles + second._tensorHandles
+    }
+
+    public init(handles: [_AnyTensorHandle]) {
+        let firstEnd = Int(T._tensorHandleCount)
+        self.first = T.init(handles: Array(handles[0..<firstEnd]))
+        self.second = U.init(handles: Array(handles[firstEnd..<handles.count]))
+    }
 }
 
 // TODO(SR-9156): This does not work in graph mode.
