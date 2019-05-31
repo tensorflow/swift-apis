@@ -16,6 +16,12 @@ import XCTest
 @testable import TensorFlow
 
 final class MathOperatorTests: XCTestCase {
+    func testSign() {
+        let x = Tensor<Float>([[1, 2, -3, 4, 5], [1, 2, 3, 4, -5]])
+        let y = sign(x)
+        assertEqual(y, Tensor<Float>([[1, 1, -1, 1, 1], [1, 1, 1, 1, -1]]))
+    }
+
     func testReduction() {
         // 2 x 5
         let x = Tensor<Float>([[1, 2, 3, 4, 5], [1, 2, 3, 4, 5]])
@@ -200,6 +206,7 @@ final class MathOperatorTests: XCTestCase {
     }
 
     static var allTests = [
+        ("testSign", testSign),
         ("testReduction", testReduction),
         ("testArgmax", testArgmax),
         ("testCeilAndFloor", testCeilAndFloor),
