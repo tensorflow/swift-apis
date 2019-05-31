@@ -428,14 +428,14 @@ internal func _vjpLog<T: TensorFlowFloatingPoint>(
 @inlinable
 @differentiable(vjp: _vjpLog1p)
 public func log1p<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
-    return Raw.log1p(x)
+    Raw.log1p(x)
 }
 
 @inlinable
 func _vjpLog1p<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>
 ) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
-    return (log1p(x), { v in Raw.xdivy(v, 1 + x) })
+    (log1p(x), { v in Raw.xdivy(v, 1 + x) })
 }
 
 /// Computes `sin` of the specified tensor element-wise.
