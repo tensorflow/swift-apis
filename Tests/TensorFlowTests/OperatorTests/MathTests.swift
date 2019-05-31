@@ -16,6 +16,24 @@ import XCTest
 @testable import TensorFlow
 
 final class MathOperatorTests: XCTestCase {
+    func testIsFinite() {
+        let x = Tensor<Float>([1, 2, 3, 4, -Float.infinity])
+        let y = isFinite(x)
+        assertEqual(y, Tensor([true, true, true, true, false]))
+    }
+
+    func testIsInfinite() {
+        let x = Tensor<Float>([1, 2, 3, 4, log(0.0)])
+        let y = isInfinite(x)
+        assertEqual(y, Tensor([false, false, false, false, true]))
+    }
+
+    func testIsNaN() {
+        let x = Tensor<Float>([1, 2, 3, 4, log(-5.0)])
+        let y = isNaN(x)
+        assertEqual(y, Tensor([false, false, false, false, true]))
+    }
+
     func testReduction() {
         // 2 x 5
         let x = Tensor<Float>([[1, 2, 3, 4, 5], [1, 2, 3, 4, 5]])
