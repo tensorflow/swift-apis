@@ -361,6 +361,54 @@ public extension Tensor {
     func gathering(atIndices indices: Tensor<Int32>, alongAxis axis: Int = 0) -> Tensor {
         return Raw.gatherV2(params: self, indices: indices, axis: Tensor<Int32>(Int32(axis)))
     }
+
+    /// Gathers values from this tensor according to the provided boolean mask.
+    ///
+    /// For example:
+    /// ```
+    /// // 1-D example
+    /// // tensor is [0, 1, 2, 3]
+    /// // mask is [true, false, true, false]
+    /// tensor.gathering(where: mask) // is [0, 2]
+    ///
+    /// // 2-D example
+    /// // tensor is [[1, 2], [3, 4], [5, 6]]
+    /// // mask is [true, false, true]
+    /// tensor.gathering(where: mask) // is [[1, 2], [5, 6]]
+    /// ```
+    ///
+    /// In general, `0 < mask.rank = K <= tensor.rank`, and the `mask`'s shape must match the first
+    /// K dimensions of the `tensor`'s shape. We then have:
+    /// `tensor.gathering(where: mask)[i, j1, ..., jd] = tensor[i1, ..., iK, j1, ..., jd]`, where
+    /// `[i1, ..., iK]` is the `i`th `true` entry of `mask` (row-major order).
+    ///
+    /// The `axis` could be used with `mask` to indicate the axis to mask from. In that case,
+    /// `axis + mask.rank <= tensor.rank` and the `mask``'s shape must match the first
+    /// `axis + mask.rank` dimensions of the `tensor`'s shape.
+    ///
+    /// - Parameters:
+    ///   - mask: K-D boolean tensor, where `K <= self.rank`.
+    ///   - axis: 0-D integer tensor representing the axis in `self` to mask from, where
+    ///     `K + axis <= self.rank`.
+    ///
+    /// - Precondition: The `mask` cannot be a scalar: `mask.rank != 0`.
+    ///
+    /// - Returns: `(self.rank - K + 1)`-dimensional tensor populated by entries in this tensor
+    ///   corresponding to `true` values in `mask`.
+    @inlinable
+    // @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+    func gathering(where mask: Tensor<Bool>, alongAxis axis: Int = 0) -> Tensor {
+        precondition(mask.rank != 0, "The boolean mask cannot be a scalar.")
+        let posAxis = axis < 0 ? axis + rank : axis
+        let leadingSize = shapeTensor[posAxis ..< posAxis + mask.rank].product().rankLifted()
+        let reshapedTensor = reshaped(
+            toShape: Tensor<Int32>(concatenating: [
+                shapeTensor[..<posAxis],
+                leadingSize,
+                shapeTensor[(posAxis + mask.rank)...]]))
+        let indices = Tensor<Int32>(mask.flattened().nonZeroIndices().squeezingShape(at: 1))
+        return reshapedTensor.gathering(atIndices: indices, alongAxis: posAxis)
+    }
 }
 
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
