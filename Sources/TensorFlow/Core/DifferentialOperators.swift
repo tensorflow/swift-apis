@@ -21,7 +21,7 @@ public extension Differentiable {
     func gradient<R: TensorFlowFloatingPoint>(
         in f: @differentiable (Self) -> Tensor<R>
     ) -> TangentVector {
-        return self.pullback(in: f)(Tensor<R>(1))
+        return self.valueWithGradient(in: f).1
     }
 
     @inlinable
@@ -29,6 +29,7 @@ public extension Differentiable {
         in f: @differentiable (Self) -> Tensor<R>
     ) -> (value: Tensor<R>, gradient: TangentVector) {
         let (y, pb) = self.valueWithPullback(in: f)
+        precondition(y.rank == 0)
         return (y, pb(Tensor<R>(1)))
     }
 
@@ -37,7 +38,7 @@ public extension Differentiable {
         at x: T,
         in f: @differentiable (Self, T) -> Tensor<R>
     ) -> (TangentVector, T.TangentVector) {
-        return self.pullback(at: x, in: f)(Tensor<R>(1))
+        return self.valueWithGradient(at: x, in: f).1
     }
 
     @inlinable
@@ -46,6 +47,7 @@ public extension Differentiable {
         in f: @differentiable (Self, T) -> Tensor<R>
     ) -> (value: Tensor<R>, gradient: (TangentVector, T.TangentVector)) {
         let (y, pb) = self.valueWithPullback(at: x, in: f)
+        precondition(y.rank == 0)
         return (y, pb(Tensor<R>(1)))
     }
 }
@@ -127,7 +129,7 @@ public func gradient<T, R>(
     at x: T,
     in f: @differentiable (T) -> Tensor<R>
 ) -> T.TangentVector where T: Differentiable, R: TensorFlowFloatingPoint {
-    return pullback(at: x, in: f)(Tensor<R>(1))
+    return valueWithGradient(at: x, in: f).1
 }
 
 @inlinable
@@ -137,7 +139,7 @@ public func gradient<T, U, R>(
     in f: @differentiable (T, U) -> Tensor<R>
 ) -> (T.TangentVector, U.TangentVector)
     where T: Differentiable, U: Differentiable, R: TensorFlowFloatingPoint {
-    return pullback(at: x, y, in: f)(Tensor<R>(1))
+    return valueWithGradient(at: x, y, in: f).1
 }
 
 // @inlinable
@@ -148,7 +150,7 @@ public func gradient<T, U, R>(
 //     in f: @differentiable (T, U, V) -> Tensor<R>
 // ) -> (T.TangentVector, U.TangentVector, V.TangentVector)
 //     where T: Differentiable, U: Differentiable, V: Differentiable, R: TensorFlowFloatingPoint {
-//     return pullback(at: x, y, z, in: f)(Tensor<R>(1))
+//     return valueWithGradient(at: x, y, z, in: f).1
 // }
 
 // Gradient (curried)
