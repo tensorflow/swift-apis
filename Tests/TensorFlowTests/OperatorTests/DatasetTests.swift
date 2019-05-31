@@ -80,7 +80,7 @@ final class DatasetTests: XCTestCase {
         let scalars = Tensor<Float>(rangeFrom: 0, to: 5, stride: 1)
         let dataset = Dataset(elements: scalars)
         let shuffled = dataset.shuffled(sampleCount: 5, randomSeed: 42)
-        XCTAssertEqual(shuffled.map{ $0.scalar! }, [0, 4, 1, 3, 2])
+        XCTAssertEqual([0, 4, 1, 3, 2], shuffled.map{ $0.scalar! })
     }
 
     func testSingleValueHOFs() {
@@ -91,27 +91,27 @@ final class DatasetTests: XCTestCase {
         // Use '.==' in the following closure to avoid any conversions to
         // host data types, which is not handled correctly in tracing.
         let evens: Dataset = dataset.filter { Tensor($0 % 2) .== Tensor(0) }
-        XCTAssertEqual(evens.flatMap{ $0.scalars }, [0, 2, 4])
+        XCTAssertEqual([0, 2, 4], evens.flatMap{ $0.scalars })
     }
 
     func testParallelMap() {
         let scalars = Tensor<Float>(rangeFrom: 0, to: 5, stride: 1)
         let dataset = Dataset(elements: scalars)
         let addedOne: Dataset = dataset.map(parallelCallCount: 5) { $0 + 1 }
-        XCTAssertEqual(addedOne.flatMap { $0.scalars }, [1, 2, 3, 4, 5])
+        XCTAssertEqual([1, 2, 3, 4, 5], addedOne.flatMap{ $0.scalars })
         // Use '.==' in the following closure to avoid any conversions to
         // host data types, which is not handled correctly in tracing.
         let evens: Dataset = dataset.filter { Tensor($0 % 2) .== Tensor(0) }
-        XCTAssertEqual(evens.flatMap { $0.scalars }, [0, 2, 4])
+        XCTAssertEqual([0, 2, 4], evens.flatMap{ $0.scalars })
     }
 
     func testMapToDifferentType() {
         let scalars = Tensor<Float>(rangeFrom: 0, to: 5, stride: 1)
         let dataset = Dataset(elements: scalars)
         let shuffled = dataset.shuffled(sampleCount: 5, randomSeed: 42)
-        XCTAssertEqual(shuffled.map { $0.scalar! }, [0, 4, 1, 3, 2])
+        XCTAssertEqual([0, 4, 1, 3, 2], shuffled.map { $0.scalar! })
         let evens = shuffled.map { Tensor($0 % 2) .== Tensor(0) }
-        XCTAssertEqual(evens.map { $0.scalar! }, [true, true, false, false, true])
+        XCTAssertEqual([true, true, false, false, true], evens.map { $0.scalar! } )
     }
 
     func testSingleValueBatched() {
