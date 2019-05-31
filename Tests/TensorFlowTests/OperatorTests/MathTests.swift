@@ -22,6 +22,12 @@ final class MathOperatorTests: XCTestCase {
         assertEqual(y, log(1 + x), accuracy: 0.0001)
     }
 
+    func testSign() {
+        let x = Tensor<Float>([[1, 2, -3, 4, 5], [1, 2, 3, 4, -5]])
+        let y = sign(x)
+        XCTAssertEqual(y, Tensor<Float>([[1, 1, -1, 1, 1], [1, 1, 1, 1, -1]]))
+    }
+
     func testReduction() {
         // 2 x 5
         let x = Tensor<Float>([[1, 2, 3, 4, 5], [1, 2, 3, 4, 5]])
@@ -205,7 +211,20 @@ final class MathOperatorTests: XCTestCase {
         XCTAssertEqual(0.816997, Double(prediction.scalars[0]), accuracy: 0.0001)
     }
 
+    func testBroadcastedAddGradient() {
+	  func foo(_ x: Tensor<Float>, _ y: Tensor<Float>) -> Tensor<Float> {
+	    return (x + y).sum()
+	  }
+	  let x = Tensor<Float>(ones: [1, 2, 1, 4])
+	  let y = Tensor<Float>(ones: [4, 1, 3, 1])
+	  let (dx, dy) = gradient(at: x, y, in: foo)
+	  XCTAssertEqual(x.shape, dx.shape)
+	  XCTAssertEqual(y.shape, dy.shape)
+	}
+
     static var allTests = [
+        ("testLog1p", testLog1p),
+        ("testSign", testSign),
         ("testReduction", testReduction),
         ("testArgmax", testArgmax),
         ("testCeilAndFloor", testCeilAndFloor),
@@ -215,6 +234,7 @@ final class MathOperatorTests: XCTestCase {
         ("testMultiOpMath", testMultiOpMath),
         ("testXWPlusB", testXWPlusB),
         ("testXORInference", testXORInference),
-        ("testMLPClassifierStruct", testMLPClassifierStruct)
+        ("testMLPClassifierStruct", testMLPClassifierStruct),
+        ("testBroadcastedAddGradient", testBroadcastedAddGradient)
     ]
 }
