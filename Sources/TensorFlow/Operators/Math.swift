@@ -633,7 +633,7 @@ internal func _vjpSigmoid<T: TensorFlowFloatingPoint>(
 @inlinable
 @differentiable
 public func logSigmoid<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
-    return -softplus(-x)
+    -softplus(-x)
 }
 
 /// Computes the softplus function for the specified tensor element-wise. The softplus function is
@@ -641,14 +641,14 @@ public func logSigmoid<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> 
 @inlinable
 @differentiable(vjp: _vjpSoftplus)
 public func softplus<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
-    return Raw.softplus(features: x)
+    Raw.softplus(features: x)
 }
 
 @inlinable
 internal func _vjpSoftplus<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>
 ) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
-    return (softplus(x), { v in v * sigmoid(x) })
+    (softplus(x), { v in v * sigmoid(x) })
 }
 
 /// Computes the softmax of the specified tensor along the last axis.
