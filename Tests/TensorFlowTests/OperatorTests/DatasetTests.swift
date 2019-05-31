@@ -18,6 +18,14 @@ import XCTest
 struct SimpleOutput: TensorGroup {
     let a: TensorHandle<Int32>
     let b: TensorHandle<Int32>
+
+    init(handles: [_AnyTensorHandle]) {
+        precondition(handles.count == 2)
+        a = TensorHandle<Int32>(handle: handles[0])
+        b = TensorHandle<Int32>(handle: handles[1])
+    }
+
+    public var _tensorHandles: [_AnyTensorHandle] { [a.handle, b.handle] }
 }
 
 final class DatasetTests: XCTestCase {

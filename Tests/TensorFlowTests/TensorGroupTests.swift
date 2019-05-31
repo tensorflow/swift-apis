@@ -22,10 +22,27 @@ extension TensorDataType : Equatable {
     }
 }
 
-struct Empty : TensorGroup {}
+struct Empty : TensorGroup {
+    init() {}
+    init(handles: [_AnyTensorHandle]) {}
+    public var _tensorHandles: [_AnyTensorHandle] { [] }
+}
 
 struct Simple : TensorGroup, Equatable {
     var w, b: Tensor<Float>
+
+    init(w: Tensor<Float>, b: Tensor<Float>) {
+        self.w = w
+        self.b = b
+    }
+
+    init(handles: [_AnyTensorHandle]) {
+        precondition(handles.count == 2)
+        w = Tensor<Float>(handle: TensorHandle<Float>(handle: handles[0]))
+        b = Tensor<Float>(handle: TensorHandle<Float>(handle: handles[1]))
+    }
+
+    public var _tensorHandles: [_AnyTensorHandle] { [w.handle.handle, b.handle.handle] }
 }
 
 struct Mixed : TensorGroup, Equatable {
@@ -33,6 +50,21 @@ struct Mixed : TensorGroup, Equatable {
     var float: Tensor<Float>
     // Immutable.
     let int: Tensor<Int32>
+
+    init(float: Tensor<Float>, int: Tensor<Int32>) {
+        self.float = float
+        self.int = int
+    }
+
+    public init(handles: [_AnyTensorHandle]) {
+        precondition(handles.count == 2)
+        float = Tensor<Float>(handle: TensorHandle<Float>(handle: handles[0]))
+        int = Tensor<Int32>(handle: TensorHandle<Int32>(handle: handles[1]))
+    }
+
+    public var _tensorHandles: [_AnyTensorHandle] {
+        [float.handle.handle, int.handle.handle]
+    }
 }
 
 struct Nested : TensorGroup, Equatable {
@@ -40,16 +72,70 @@ struct Nested : TensorGroup, Equatable {
     let simple: Simple
     // Mutable.
     var mixed: Mixed
+
+    init(simple: Simple, mixed: Mixed) {
+        self.simple = simple
+        self.mixed = mixed
+    }
+
+    public init(handles: [_AnyTensorHandle]) {
+        let simpleEnd = Int(Simple._tensorHandleCount)
+        simple = Simple(handles: Array(handles[0..<simpleEnd]))
+        mixed = Mixed(handles: Array(handles[simpleEnd..<handles.count]))
+    }
+
+    public var _tensorHandles: [_AnyTensorHandle] {
+        simple._tensorHandles + mixed._tensorHandles
+    }
 }
 
 struct Generic<T: TensorGroup & Equatable, U: TensorGroup & Equatable> : TensorGroup, Equatable {
     var t: T
     var u: U
+
+    public init(t: T, u: U) {
+        self.t = t
+        self.u = u
+    }
+
+    public init(handles: [_AnyTensorHandle]) {
+        let tEnd = Int(T._tensorHandleCount)
+        t = T.init(handles: Array(handles[0..<tEnd]))
+        u = U.init(handles: Array(handles[tEnd..<handles.count]))
+    }
+
+    public var _tensorHandles: [_AnyTensorHandle] {
+        t._tensorHandles + u._tensorHandles
+    }
+}
+
+struct UltraNested<T: TensorGroup & Equatable, V: TensorGroup & Equatable>
+    : TensorGroup, Equatable {
+    var a: Generic<T, V>
+    var b: Generic<V, T>
+
+    init(a: Generic<T, V>, b: Generic<V,T>) {
+        self.a = a
+        self.b = b
+    }
+
+    init(handles: [_AnyTensorHandle]) {
+        let firstEnd = Int(Generic<T,V>._tensorHandleCount)
+        a = Generic<T,V>.init(
+            handles: Array(handles[0..<firstEnd]))
+        b = Generic<V,T>.init(
+            handles: Array(handles[firstEnd..<handles.count]))
+    }
+
+    public var _tensorHandles: [_AnyTensorHandle] {
+        return a._tensorHandles + b._tensorHandles
+    }
 }
 
 final class TensorGroupTests: XCTestCase {
     func testEmptyList() {
         XCTAssertEqual([], Empty._typeList)
+        XCTAssertEqual(Empty()._tensorHandles.count, 0)
     }
 
     func testSimpleTypeList() {
@@ -179,12 +265,6 @@ final class TensorGroupTests: XCTestCase {
     func testNestedGenericTypeList() {
         struct NestedGeneric {
             func function() {
-                struct UltraNested<
-                    T: TensorGroup & Equatable, V: TensorGroup & Equatable>
-                : TensorGroup, Equatable {
-                    var a: Generic<T, V>
-                    var b: Generic<V, T>
-                }
                 let float = Float.tensorFlowDataType
                 let int = Int32.tensorFlowDataType
                 XCTAssertEqual([float, float, float, int, float, int, float, float],
@@ -198,13 +278,6 @@ final class TensorGroupTests: XCTestCase {
     func testNestedGenericInit() {
         struct NestedGeneric {
             func function() {
-                struct UltraNested<
-                    T: TensorGroup & Equatable, V: TensorGroup & Equatable>
-                : TensorGroup, Equatable {
-                    var a: Generic<T, V>
-                    var b: Generic<V, T>
-                }
-
                 let w = Tensor<Float>(0.1)
                 let b = Tensor<Float>(0.1)
                 let simple = Simple(w: w, b: b)
