@@ -628,6 +628,29 @@ internal func _vjpSigmoid<T: TensorFlowFloatingPoint>(
     return (sigmoid(x), { v in Raw.sigmoidGrad(x, dy: v) })
 }
 
+/// Computes the log-sigmoid of the specified tensor element-wise. Specifically,
+/// `y = log(1 / (1 + exp(-x)))`. For numerical stability, we use `y = -softplus(-x)`.
+@inlinable
+@differentiable
+public func logSigmoid<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    return -softplus(-x)
+}
+
+/// Computes the softplus function for the specified tensor element-wise. The softplus function is
+/// defined as `log(exp(x) + 1)`.
+@inlinable
+@differentiable(vjp: _vjpSoftplus)
+public func softplus<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    return Raw.softplus(features: x)
+}
+
+@inlinable
+internal func _vjpSoftplus<T: TensorFlowFloatingPoint>(
+    _ x: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+    return (softplus(x), { v in v * sigmoid(x) })
+}
+
 /// Computes the softmax of the specified tensor along the last axis.
 /// Specifically, computes `exp(x) / exp(x).sum(alongAxes: -1)`.
 @inlinable

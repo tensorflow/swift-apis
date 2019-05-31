@@ -16,6 +16,18 @@ import XCTest
 @testable import TensorFlow
 
 final class MathOperatorTests: XCTestCase {
+    func testLogSigmoid() {
+        let x = Tensor<Float>([[1, 2, 3, 4, 5], [1, 2, 3, 4, 5]])
+        let y = logSigmoid(x)
+        assertEqual(y, log(sigmoid(x)), accuracy: 0.0001)
+    }
+
+    func testSoftplus() {
+        let x = Tensor<Float>([[1, 2, 3, 4, 5], [1, 2, 3, 4, 5]])
+        let y = softplus(x)
+        assertEqual(y, log(exp(x) + 1), accuracy: 0.0001)
+    }
+
     func testReduction() {
         // 2 x 5
         let x = Tensor<Float>([[1, 2, 3, 4, 5], [1, 2, 3, 4, 5]])
