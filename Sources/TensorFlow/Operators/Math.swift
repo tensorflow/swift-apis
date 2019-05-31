@@ -614,8 +614,8 @@ internal func _vjpFloor<T: TensorFlowFloatingPoint>(
 }
 
 @inlinable
-@differentiable(vjp: _vjpSign(_:))
-public func sign<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+@differentiable(vjp: _vjpSign(_:) where T: TensorFlowFloatingPoint)
+public func sign<T: TensorFlowNumeric>(_ x: Tensor<T>) -> Tensor<T> {
     return Raw.sign(x)
 }
 
