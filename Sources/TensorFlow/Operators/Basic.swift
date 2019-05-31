@@ -399,7 +399,9 @@ public extension Tensor {
     // @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func gathering(where mask: Tensor<Bool>, alongAxis axis: Int = 0) -> Tensor {
         precondition(mask.rank != 0, "The boolean mask cannot be a scalar.")
-        let posAxis = axis < 0 ? axis + rank : axis
+        // TODO: Remove once control flow AD is supported.
+        let rank = self.rank
+        let posAxis = { axis < 0 ? axis + rank : axis }()
         let leadingSize = shapeTensor[posAxis ..< posAxis + mask.rank].product().rankLifted()
         let reshapedTensor = reshaped(
             toShape: Tensor<Int32>(concatenating: [
