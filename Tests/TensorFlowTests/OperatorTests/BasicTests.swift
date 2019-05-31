@@ -29,7 +29,7 @@ final class BasicOperatorTests: XCTestCase {
     func testGathering() {
         let x = Tensor<Float>([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
         let y = x.gathering(atIndices: Tensor<Int32>(2), alongAxis: 1)
-        assertEqual(y, Tensor<Float>([3.0, 6.0]))
+        XCTAssertEqual(y, Tensor<Float>([3.0, 6.0]))
     }
 
     func testElementIndexing() {
