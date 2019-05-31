@@ -1505,12 +1505,12 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
 
 /// Performs matrix multiplication with another tensor and produces the result.
 @inlinable
-@differentiable(vjp: _vjpMatmul(_:_:transposeA:transposeB:) where Scalar: TensorFlowFloatingPoint)
+@differentiable(vjp: _vjpMatmul(_:transposed:_:transposed:) where Scalar: TensorFlowFloatingPoint)
 public func matmul<Scalar: Numeric>(
     _ lhs: Tensor<Scalar>,
+    transposed transposeA: Bool = false,
     _ rhs: Tensor<Scalar>,
-    transposeA: Bool = false,
-    transposeB: Bool = false
+    transposed transposeB: Bool = false
 ) -> Tensor<Scalar> {
     if lhs.rank > 2 && rhs.rank > 2 {
       return Raw.batchMatMulV2(lhs, rhs, adjX: transposeA, adjY: transposeB)
@@ -1525,30 +1525,30 @@ public func matmul<Scalar: Numeric>(
 @inlinable
 internal func _vjpMatmul<Scalar: TensorFlowFloatingPoint>(
     _ lhs: Tensor<Scalar>,
+    transposed transposeA: Bool = false,
     _ rhs: Tensor<Scalar>,
-    transposeA: Bool = false,
-    transposeB: Bool = false
+    transposed transposeB: Bool = false
 ) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
-    let value = matmul(lhs, rhs, transposeA: transposeA, transposeB: transposeB)
+    let value = matmul(lhs, transposed: transposeA, rhs, transposed: transposeB)
     return (value, { v in
       let (lhsGrad, rhsGrad) = { () -> (Tensor<Scalar>, Tensor<Scalar>) in
         switch (transposeA, transposeB) {
         case (false, false):
           return (
-            matmul(v, rhs, transposeB: true),
-            matmul(lhs, v, transposeA: true))
+            matmul(v, transposed: false, rhs, transposed: true),
+            matmul(lhs, transposed: true, v, transposed: false))
         case (false, true):
           return (
             matmul(v, rhs),
-            matmul(lhs, v, transposeA: true))
+            matmul(lhs, transposed: true, v, transposed: false))
         case (true, false):
           return (
-            matmul(v, rhs, transposeB: true),
+            matmul(v, transposed: false, rhs, transposed: true),
             matmul(lhs, v))
         case (true, true):
           return (
-            matmul(v, rhs, transposeA: true, transposeB: true),
-            matmul(lhs, v, transposeA: true, transposeB: true))
+            matmul(v, transposed: true, rhs, transposed: true),
+            matmul(lhs, transposed: true, v, transposed: true))
         }
       }()
       switch (lhs.rank, rhs.rank) {
