@@ -293,17 +293,17 @@ final class BasicOperatorTests: XCTestCase {
         let array2D = slice2D.array
         let array1D = slice1D.array
 		
-		let expected = Array(stride(from: 20.0, to: 30, by: 2)) + 
-		               Array(stride(from: 45.0, to: 50, by: 1)) + 
-                       Array(stride(from: 30.0, to: 40, by: 2)) + 
-                       Array(stride(from: 55.0, to: 60, by: 1))
-
         /// Test shapes
         XCTAssertEqual(array3D.shape, [1, 4, 5])
         XCTAssertEqual(array2D.shape, [2, 5])
         XCTAssertEqual(array1D.shape, [2])
 
         /// Test scalars
+        XCTAssertEqual(array3D.scalars,
+                       [Float](stride(from: 20.0, to: 30, by: 2)) +
+                       [Float](stride(from: 45.0, to: 50, by: 1)) +
+                       [Float](stride(from: 30.0, to: 40, by: 2)) +
+                       [Float](stride(from: 55.0, to: 60, by: 1)))
         XCTAssertEqual(array3D.scalars, expected)
         XCTAssertEqual(array2D.scalars, Array(stride(from: 20.0, to: 30, by: 1)))
         XCTAssertEqual(array1D.scalars, Array(stride(from: 3.0, to: 5, by: 1)))
