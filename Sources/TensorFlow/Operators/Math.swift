@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import Foundation
+
 infix operator .>: ComparisonPrecedence
 infix operator .==: ComparisonPrecedence
 
@@ -1887,18 +1889,15 @@ func einsumReduction<T: Numeric>(
         let t0Broadcast = totalSize(t0Shape.dimensions
                 .prefix(through: preservedAxes.count)
                 .prefix(broadcastAxes[0]!.count))
-        let t0Sum = totalSize(t0Shape.dimensions.suffix(axesToSum.count))
+        let numberOfSummedElements = totalSize(t0Shape.dimensions.suffix(axesToSum.count))
         let t0NewShape = TensorShape(
-                t0Shape[0..<preservedAxes.count].dimensions + [t0Broadcast, t0Sum]
+                t0Shape[0..<preservedAxes.count].dimensions + [t0Broadcast, numberOfSummedElements]
         )
         t0New = reshapeIfNecessary(t0New, t0NewShape)
         let t1Shape = t1New.shape
         let t1Broadcast = totalSize(t1Shape.dimensions.suffix(broadcastAxes[1]!.count))
-        let t1Sum = totalSize(t1Shape.dimensions
-                .prefix(through: preservedAxes.count)
-                .prefix(axesToSum.count))
         let t1NewShape = TensorShape(
-                t1Shape[0..<preservedAxes.count].dimensions + [t1Sum, t1Broadcast]
+                t1Shape[0..<preservedAxes.count].dimensions + [numberOfSummedElements, t1Broadcast]
         )
         t1New = reshapeIfNecessary(t1New, t1NewShape)
 
