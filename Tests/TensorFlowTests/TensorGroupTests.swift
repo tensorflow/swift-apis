@@ -132,6 +132,15 @@ struct UltraNested<T: TensorGroup & Equatable, V: TensorGroup & Equatable>
     }
 }
 
+func copyOf<T>(handle: TensorHandle<T>) -> _AnyTensorHandle {
+    let status = TF_NewStatus()
+    let result = TFETensorHandle(_owning: TFE_TensorHandleCopySharingTensor(
+            handle._cTensorHandle, status)!)
+    XCTAssertEqual(TF_GetCode(status), TF_OK)
+    TF_DeleteStatus(status)
+    return result
+}
+
 final class TensorGroupTests: XCTestCase {
     func testEmptyList() {
         XCTAssertEqual([], Empty._typeList)
@@ -148,17 +157,10 @@ final class TensorGroupTests: XCTestCase {
         let b = Tensor<Float>(0.1)
         let simple = Simple(w: w, b: b)
 
-        let status = TF_NewStatus()
-        let wHandle = TFE_TensorHandleCopySharingTensor(
-            w.handle._cTensorHandle, status)!
-        let bHandle = TFE_TensorHandleCopySharingTensor(
-            b.handle._cTensorHandle, status)!
-        TF_DeleteStatus(status)
+        let wHandle = copyOf(handle: w.handle)
+        let bHandle = copyOf(handle: b.handle)
 
-        let buffer = UnsafeMutableBufferPointer<CTensorHandle>.allocate(
-            capacity: 2)
-        let _ = buffer.initialize(from: [wHandle, bHandle])
-        let expectedSimple = Simple(_owning: UnsafePointer(buffer.baseAddress))
+        let expectedSimple = Simple(handles: [wHandle, bHandle])
 
         XCTAssertEqual(expectedSimple, simple)
     }
@@ -174,17 +176,10 @@ final class TensorGroupTests: XCTestCase {
         let int = Tensor<Int32>(1)
         let mixed = Mixed(float: float, int: int)
 
-        let status = TF_NewStatus()
-        let floatHandle = TFE_TensorHandleCopySharingTensor(
-            float.handle._cTensorHandle, status)!
-        let intHandle = TFE_TensorHandleCopySharingTensor(
-            int.handle._cTensorHandle, status)!
-        TF_DeleteStatus(status)
+        let floatHandle = copyOf(handle: float.handle)
+        let intHandle = copyOf(handle: int.handle)
 
-        let buffer = UnsafeMutableBufferPointer<CTensorHandle>.allocate(
-            capacity: 2)
-        let _ = buffer.initialize(from: [floatHandle, intHandle])
-        let expectedMixed = Mixed(_owning: UnsafePointer(buffer.baseAddress))
+        let expectedMixed = Mixed(handles: [floatHandle, intHandle])
 
         XCTAssertEqual(expectedMixed, mixed)
     }
@@ -204,24 +199,14 @@ final class TensorGroupTests: XCTestCase {
         let mixed = Mixed(float: float, int: int)
         let nested = Nested(simple: simple, mixed: mixed)
 
-        let status = TF_NewStatus()
-        let wHandle = TFE_TensorHandleCopySharingTensor(
-            w.handle._cTensorHandle, status)!
-        let bHandle = TFE_TensorHandleCopySharingTensor(
-            b.handle._cTensorHandle, status)!
-        let floatHandle = TFE_TensorHandleCopySharingTensor(
-            float.handle._cTensorHandle, status)!
-        let intHandle = TFE_TensorHandleCopySharingTensor(
-            int.handle._cTensorHandle, status)!
-        TF_DeleteStatus(status)
+        let wHandle = copyOf(handle: w.handle)
+        let bHandle = copyOf(handle: b.handle)
+        let floatHandle = copyOf(handle: float.handle)
+        let intHandle = copyOf(handle: int.handle)
 
-        let buffer = UnsafeMutableBufferPointer<CTensorHandle>.allocate(
-            capacity: 4)
-        let _ = buffer.initialize(
-            from: [wHandle, bHandle, floatHandle, intHandle])
         let expectedNested = Nested(
-            _owning: UnsafePointer(buffer.baseAddress))
-
+            handles: [wHandle, bHandle, floatHandle, intHandle])
+        
         XCTAssertEqual(expectedNested, nested)
     }
 
@@ -241,23 +226,13 @@ final class TensorGroupTests: XCTestCase {
         let mixed = Mixed(float: float, int: int)
         let generic = Generic(t: simple, u: mixed)
 
-        let status = TF_NewStatus()
-        let wHandle = TFE_TensorHandleCopySharingTensor(
-            w.handle._cTensorHandle, status)!
-        let bHandle = TFE_TensorHandleCopySharingTensor(
-            b.handle._cTensorHandle, status)!
-        let floatHandle = TFE_TensorHandleCopySharingTensor(
-            float.handle._cTensorHandle, status)!
-        let intHandle = TFE_TensorHandleCopySharingTensor(
-            int.handle._cTensorHandle, status)!
-        TF_DeleteStatus(status)
+        let wHandle = copyOf(handle: w.handle)
+        let bHandle = copyOf(handle: b.handle)
+        let floatHandle = copyOf(handle: float.handle)
+        let intHandle = copyOf(handle: int.handle)
 
-        let buffer = UnsafeMutableBufferPointer<CTensorHandle>.allocate(
-            capacity: 4)
-        let _ = buffer.initialize(
-            from: [wHandle, bHandle, floatHandle, intHandle])
         let expectedGeneric = Generic<Simple, Mixed>(
-            _owning: UnsafePointer(buffer.baseAddress))
+            handles: [wHandle, bHandle, floatHandle, intHandle])
 
         XCTAssertEqual(expectedGeneric, generic)
     }
@@ -288,32 +263,18 @@ final class TensorGroupTests: XCTestCase {
                 let genericMS = Generic<Mixed, Simple>(t: mixed, u: simple)
                 let generic = UltraNested(a: genericSM, b: genericMS)
 
-                let status = TF_NewStatus()
-                let wHandle1 = TFE_TensorHandleCopySharingTensor(
-                    w.handle._cTensorHandle, status)!
-                let wHandle2 = TFE_TensorHandleCopySharingTensor(
-                    w.handle._cTensorHandle, status)!
-                let bHandle1 = TFE_TensorHandleCopySharingTensor(
-                    b.handle._cTensorHandle, status)!
-                let bHandle2 = TFE_TensorHandleCopySharingTensor(
-                    b.handle._cTensorHandle, status)!
-                let floatHandle1 = TFE_TensorHandleCopySharingTensor(
-                    float.handle._cTensorHandle, status)!
-                let floatHandle2 = TFE_TensorHandleCopySharingTensor(
-                    float.handle._cTensorHandle, status)!
-                let intHandle1 = TFE_TensorHandleCopySharingTensor(
-                    int.handle._cTensorHandle, status)!
-                let intHandle2 = TFE_TensorHandleCopySharingTensor(
-                    int.handle._cTensorHandle, status)!
-                TF_DeleteStatus(status)
+                let wHandle1 = copyOf(handle: w.handle)
+                let wHandle2 = copyOf(handle: w.handle)
+                let bHandle1 = copyOf(handle: b.handle)
+                let bHandle2 = copyOf(handle: b.handle)
+                let floatHandle1 = copyOf(handle: float.handle)
+                let floatHandle2 = copyOf(handle: float.handle)
+                let intHandle1 = copyOf(handle: int.handle)
+                let intHandle2 = copyOf(handle: int.handle)
 
-                let buffer = UnsafeMutableBufferPointer<CTensorHandle>.allocate(
-                    capacity: 8)
-                let _ = buffer.initialize(
-                    from: [wHandle1, bHandle1, floatHandle1,  intHandle1,
-                        floatHandle2, intHandle2, wHandle2, bHandle2])
                 let expectedGeneric = UltraNested<Simple, Mixed>(
-                    _owning: UnsafePointer(buffer.baseAddress))
+                    handles: [wHandle1, bHandle1, floatHandle1,  intHandle1,
+                        floatHandle2, intHandle2, wHandle2, bHandle2])
 
                 XCTAssertEqual(expectedGeneric, generic)
             }
