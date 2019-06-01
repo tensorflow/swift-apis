@@ -228,6 +228,26 @@ final class MathOperatorTests: XCTestCase {
 	  XCTAssertEqual(y.shape, dy.shape)
 	}
 
+    func testEinsum() {
+        let a = Tensor<Float>([[1, 2, 3],[1, 2, 3]])
+        let b = Tensor<Float>([[2, 3, 4],[2, 3, 4]])
+        let c = Tensor<Float>([[3, 4], [3, 4], [3, 4]])
+
+        let w = einsum("ab,ac,ka->ck", [a, b, c])
+        let x = einsum("ij->ji",[a])
+        let y = einsum("jk,jk",[a,b])
+        let z = einsum("ij,ik",[a,b])
+
+        XCTAssertEqual(w, Tensor<Float>([[ 84,  84,  84],
+                                         [126, 126, 126],
+                                         [168, 168, 168]]))
+        XCTAssertEqual(x, Tensor<Float>([[1, 1],[2, 2],[3, 3]]))
+        XCTAssertEqual(y, Tensor<Float>([40]))
+        XCTAssertEqual(z, Tensor<Float>([[ 4,  6,  8],
+                                         [ 8, 12, 16],
+                                         [12, 18, 24]]))
+    }
+
     static var allTests = [
         ("testLog1p", testLog1p),
         ("testExpm1", testExpm1),
@@ -242,6 +262,7 @@ final class MathOperatorTests: XCTestCase {
         ("testXWPlusB", testXWPlusB),
         ("testXORInference", testXORInference),
         ("testMLPClassifierStruct", testMLPClassifierStruct),
-        ("testBroadcastedAddGradient", testBroadcastedAddGradient)
+        ("testBroadcastedAddGradient", testBroadcastedAddGradient),
+        ("testEinsum", testEinsum)
     ]
 }
