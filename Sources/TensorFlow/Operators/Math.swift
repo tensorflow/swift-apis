@@ -1610,3 +1610,368 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
         return _vjpMatmul(lhs, rhs)
     }
 }
+
+
+// einsum and helper functions
+// The code is based on
+// https://github.com/tensorflow/tensorflow/blob/r1.13/tensorflow/python/ops/special_math_ops.py
+
+func sortedPred(
+        _ inputIndex: Int,
+        _ a: Character,
+        _ prAxes: Set<Character>,
+        _ brAxes: [Int: String],
+        _ sumAxes: Set<Character>
+) -> (Int, Character) {
+    if prAxes.contains(a) {
+        return (-1, a)
+    } else if (inputIndex == 0 && brAxes[0]!.contains(a)) || (inputIndex == 1 && sumAxes.contains(a)) {
+        return (0, a)
+    } else {
+        return (1, a)
+    }
+}
+
+func _transposeIfNecessary<T>(
+        _ tensor: Tensor<T>,
+        _ perm: [Int]
+) -> Tensor<T> {
+
+    if Array(0..<perm.count) != perm {
+        return tensor.transposed(withPermutations: perm)
+    }
+    return tensor
+}
+
+func _reshapeIfNecessary<T>(
+        _ tensor: Tensor<T>,
+        _ newShape: TensorShape
+) -> Tensor<T> {
+    let curShape = tensor.shape
+    if (newShape.count == curShape.count) &&
+               (Array(zip(curShape.dimensions, newShape.dimensions))
+                       .allSatisfy({ $0.0 == $0.1 })) {
+        return tensor
+    } else {
+        return tensor.reshaped(to: newShape)
+    }
+}
+
+func _totalSize(
+        _ shapeValues: ArraySlice<Int>
+) -> Int {
+    var result = 1
+    for i in shapeValues.startIndex..<shapeValues.endIndex {
+        result *= shapeValues[i]
+    }
+    return result
+}
+
+func _einsum_reduction<T: Numeric>(
+        _ t0: Tensor<T>,
+        _ t0Axislabels: String,
+        _ t1: Tensor<T>,
+        _ t1Axislabels: String,
+        _ axesToSum: Set<Character>
+) -> (Tensor<T>, String) {
+
+    guard t0Axislabels.count == t0.shape.count else {
+        fatalError("Tensor t0 of rank \(t0.shape.count) does not match einsum reduction of length \(t0Axislabels.count)")
+    }
+    guard t1Axislabels.count == t1.shape.count else {
+        fatalError("Tensor t1 of rank \(t1.shape.count) does not match einsum reduction of length \(t1Axislabels.count)")
+    }
+
+
+    assert(axesToSum.allSatisfy({ t0Axislabels.contains($0) && t1Axislabels.contains($0) }))
+    let inputAxes = [t0Axislabels, t1Axislabels]
+    let preservedAxes = Set(t0Axislabels).intersection(Set(t1Axislabels)).subtracting(axesToSum)
+    var broadcastAxes = [Int: String]()
+    for (i, symList) in inputAxes.enumerated() {
+        broadcastAxes[i] = String(Set(symList).subtracting(preservedAxes).subtracting(axesToSum))
+    }
+    var sortedAxes = [[Character]]()
+    for (i, symList) in inputAxes.enumerated() {
+        let tmp = symList
+                .enumerated()
+                .map {
+                    sortedPred(i, $0.element, preservedAxes, broadcastAxes, axesToSum)
+                }
+                .sorted(by: { $0.0 < $1.0 })
+                .map {
+                    $0.1
+                }
+        sortedAxes.append(tmp)
+    }
+
+    var inputs = [t0, t1]
+    for (i, axesStr) in inputAxes.enumerated() {
+        let perm = sortedAxes[i].filter {
+            axesStr.contains($0)
+        }.map {
+            axesStr.firstIndex(of: $0)!.encodedOffset
+        }
+        inputs[i] = _transposeIfNecessary(inputs[i], perm)
+    }
+    var t0_new = inputs[0], t1_new = inputs[1]
+
+
+    if axesToSum.isEmpty {
+
+        if let tmp = broadcastAxes[1] {
+            for _ in 0..<tmp.count {
+                t0_new = t0_new.expandingShape(at: -1)
+            }
+        }
+        if let tmp = broadcastAxes[0] {
+            for _ in 0..<tmp.count {
+                t1_new = t1_new.expandingShape(at: preservedAxes.count)
+            }
+        }
+
+        let product = (t0_new * t1_new)
+        let productAxes = String(sortedAxes[0] + Array(sortedAxes[1][...preservedAxes.count]))
+
+        return (product, productAxes)
+    } else {
+        let t0Shape = t0_new.shape
+        let t0Broadcast = _totalSize(t0Shape.dimensions
+                .prefix(through: preservedAxes.count)
+                .prefix(broadcastAxes[0]!.count))
+        let t0Sum = _totalSize(t0Shape.dimensions.suffix(axesToSum.count))
+        let t0NewShape = TensorShape(t0Shape[0..<preservedAxes.count].dimensions + [t0Broadcast, t0Sum])
+        t0_new = _reshapeIfNecessary(t0_new, t0NewShape)
+        let t1Shape = t1_new.shape
+        let t1Broadcast = _totalSize(t1Shape.dimensions.suffix(broadcastAxes[1]!.count))
+        let t1Sum = _totalSize(t1Shape.dimensions
+                .prefix(through: preservedAxes.count)
+                .prefix(axesToSum.count))
+        let t1NewShape = TensorShape(t1Shape[0..<preservedAxes.count].dimensions + [t1Sum, t1Broadcast])
+        t1_new = _reshapeIfNecessary(t1_new, t1NewShape)
+
+        var product = Raw.batchMatMulV2(t0_new, t1_new)
+
+        let uncompactedShape = TensorShape(t0Shape.dimensions.prefix(preservedAxes.count + broadcastAxes[0]!.count) +
+                t1Shape.dimensions.suffix(broadcastAxes[1]!.count))
+        product = _reshapeIfNecessary(product, uncompactedShape)
+
+        let productAxes = String(sortedAxes[0].prefix(preservedAxes.count + broadcastAxes[0]!.count) +
+                sortedAxes[1].suffix(broadcastAxes[1]!.count))
+        return (product, productAxes)
+    }
+}
+
+func _exponentialSpaceEinsum<T: Numeric>(
+        _ equationString: String,
+        _ inputs: [Tensor<T>]
+) -> Tensor<T> {
+    var inputs_ = inputs
+    guard !equationString.contains("...") else {
+        fatalError("Subscripts with ellipses are not yet supported. ")
+    }
+    let regex = try! NSRegularExpression(
+            pattern: "^([a-zA-Z,]+)(->[a-zA-Z]*)?$",
+            options: []
+    )
+    guard let match = regex.firstMatch(in: equationString, range: NSMakeRange(0, equationString.utf16.count)) else {
+        fatalError("Indices have incorrect format: \(equationString) ")
+    }
+    let inputRange = Range(match.range(at: 1), in: equationString)!
+
+    let inputAxes = String(equationString[inputRange])
+    var idxIn = inputAxes.components(separatedBy: ",")
+    let idxAll = Set(idxIn.joined())
+    let indices = idxAll.sorted()
+
+    guard inputs_.count == idxIn.count else {
+        fatalError("Expected \(idxAll.count) inputs but got \(inputs_.count)")
+    }
+
+    var idxOut: String
+    if let outputRange = Range(match.range(at: 2), in: equationString) {
+        idxOut = String(equationString[outputRange].dropFirst(2))
+    } else {
+        let indices = indices.sorted()
+        var counts = indices.reduce(into: [Character: Int]()) {
+            $0[$1] = 0
+        }
+        for axes_ in idxIn {
+            for ax in axes_ {
+                if let count = counts[ax] {
+                    counts[ax] = count + 1
+                }
+            }
+
+        }
+        counts = counts.filter { (key, value) -> Bool in
+            value == 1
+        }
+        idxOut = String(counts.keys.sorted())
+    }
+    let missingIdx = Set(idxOut).subtracting(idxAll)
+    guard missingIdx.isEmpty else {
+        fatalError("Unknown output axes: \(missingIdx)")
+    }
+    var axisOrder = [Character: Int]()
+    indices.filter {
+        !idxOut.contains($0)
+    }.forEach({ ax in
+        axisOrder[ax] = axisOrder.count
+    })
+    idxOut.forEach({ ax in
+        axisOrder[ax] = axisOrder.count
+    })
+
+    for (i, (input_, axes_)) in zip(inputs_, idxIn).enumerated(){
+        guard  input_.rank == axes_.count else {
+            fatalError("""
+                       Input \(i) with axes \(axes_) has incorrect
+                       number of dimensions (expected \(axes_), got \(input_.rank))
+                       """)
+        }
+        let sortedIdx = axes_.sorted(by: { axisOrder[$0]! < axisOrder[$1]! })
+        guard Set(axes_).count == axes_.count else {
+            fatalError("Subscript not supported: an axis appears more than once: \(axes_)")
+        }
+
+        if Array(axes_) != sortedIdx {
+            let perm = sortedIdx.filter {
+                axes_.contains($0)
+            }.map {
+                axes_.firstIndex(of: $0)!.encodedOffset
+            }
+            inputs_[i] = _transposeIfNecessary(inputs_[i], perm)
+            idxIn[i] = String(sortedIdx)
+        }
+    }
+    var reductionIdx = [Int]()
+    var shapes = [[Int]]()
+    inputs_.forEach({ tensor in
+        shapes.append(tensor.shape.dimensions)
+    })
+
+    for (j, ax) in idxAll.sorted(by: { axisOrder[$0]! < axisOrder[$1]! }).enumerated(){
+        var dims = [Int]()
+        for (i, idx) in idxIn.enumerated() {
+            if !idx.contains(ax) {
+                shapes[i].insert(1, at: j)
+            } else {
+                let dim = shapes[i][j]
+                if dim > 1 {
+                    dims.append(dim)
+                }
+            }
+        }
+        guard Set(dims).count <= 1 else {
+            fatalError("Dimension mismatch on axis: \(ax)")
+        }
+        if !idxOut.contains(ax) {
+            reductionIdx.append(j)
+        }
+    }
+    var expandedInputs = [Tensor<T>]()
+    for (tensor, newShape) in zip(inputs_, shapes) {
+        expandedInputs.append(tensor.reshaped(to: TensorShape(newShape)))
+    }
+    var expandedOutputs = Tensor<T>(ones: [1])
+    expandedInputs.forEach({ tensor in
+        expandedOutputs = expandedOutputs * tensor
+    })
+    return expandedOutputs.sum(squeezingAxes: reductionIdx)
+}
+
+func einsum<T: Numeric>(
+        _ equation: String,
+        _ inputs: [Tensor<T>]
+) -> Tensor<T> {
+    let equationString = equation.replacingOccurrences(of: " ", with: "")
+    guard !equationString.contains("...") else {
+        fatalError("Subscripts with ellipses are not yet supported. ")
+    }
+    let regex = try! NSRegularExpression(
+            pattern: "^([a-zA-Z,]+)(->[a-zA-Z]*)?$",
+            options: []
+    )
+    guard let match = regex.firstMatch(in: equationString, range: NSMakeRange(0, equationString.utf16.count)) else {
+        fatalError("Indices have incorrect format: \(equationString) ")
+    }
+    let inputRange = Range(match.range(at: 1), in: equationString)!
+
+    let inputAxes = String(equationString[inputRange])
+    let inputAxisLabels = inputAxes.components(separatedBy: ",")
+
+    guard inputs.count == inputAxisLabels.count else {
+        fatalError("Got \(inputs.count) arguments for equation '\(equation)', expecting \(inputAxisLabels.count) ")
+    }
+
+    let axisLabels = Set(inputAxisLabels.joined())
+
+    var outputAxes: String
+    if let outputRange = Range(match.range(at: 2), in: equationString) {
+        outputAxes = String(equationString[outputRange].dropFirst(2))
+    } else {
+        let indices = axisLabels.sorted()
+        var counts = indices.reduce(into: [Character: Int]()) {
+            $0[$1] = 0
+        }
+        for axes_ in inputAxisLabels {
+            for ax in axes_ {
+                if let count = counts[ax] {
+                    counts[ax] = count + 1
+                }
+            }
+
+        }
+        counts = counts.filter { (key, value) -> Bool in
+            value == 1
+        }
+        outputAxes = String(counts.keys.sorted())
+    }
+
+    for a in axisLabels {
+        for inputLabels in inputAxisLabels {
+            if inputLabels.filter({ $0 == a }).count > 1 {
+                fatalError("Subscript not supported: an axis appears more than once: \(inputLabels) ")
+            }
+        }
+    }
+
+    for a in axisLabels {
+        let inputCount = inputAxisLabels.filter({ $0.contains(a) }).count
+        guard !(inputCount > 2 && !outputAxes.contains(a)) else {
+            print("""
+                  Falling back to exponential-space implementation of einsum()
+                  because index \(a) is summed over more than two inputs.
+                  """)
+            return _exponentialSpaceEinsum(equationString, inputs)
+        }
+    }
+
+    var temp = inputs[0]
+    var tempAxisLabels = inputAxisLabels[0]
+
+    for i in 1..<inputs.count {
+        let tempInputAxes = Set(tempAxisLabels).intersection(Set(inputAxisLabels[i]))
+        let tempOutputAxes = Set(outputAxes)
+        let axesToSum = tempInputAxes.subtracting(tempOutputAxes)
+        (temp, tempAxisLabels) = _einsum_reduction(temp, tempAxisLabels,
+                inputs[i], inputAxisLabels[i], axesToSum)
+    }
+    let missingIndices = Set(tempAxisLabels).subtracting(Set(outputAxes))
+    if !missingIndices.isEmpty {
+        let q = tempAxisLabels.enumerated()
+                .filter({ !outputAxes.contains($0.element) })
+                .map({ $0.offset })
+        temp = temp.sum(squeezingAxes: q)
+        tempAxisLabels = tempAxisLabels.filter({ outputAxes.contains($0) })
+        if tempAxisLabels.sorted() != outputAxes.sorted() {
+            fatalError("Invalid equation: \(equation)")
+        }
+    }
+
+    let perm = outputAxes.filter({ tempAxisLabels.contains($0) })
+            .map {
+                tempAxisLabels.firstIndex(of: $0)!.encodedOffset
+            }
+    return _transposeIfNecessary(temp, perm)
+}
