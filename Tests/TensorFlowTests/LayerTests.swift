@@ -124,6 +124,30 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(output, expected)
     }
 
+    func testGlobalMaxPool1D() {
+        let layer = GlobalMaxPool1D<Float>()
+        let input = Tensor(shape: [1, 10, 1], scalars: (0..<10).map(Float.init))
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>([9])
+        XCTAssertEqual(output, expected)
+    }
+
+    func testGlobalMaxPool2D() {
+        let layer = GlobalMaxPool2D<Float>()
+        let input = Tensor(shape: [1, 2, 10, 1], scalars: (0..<20).map(Float.init))
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>([19])
+        XCTAssertEqual(output, expected)
+    }
+
+    func testGlobalMaxPool3D() {
+        let layer = GlobalMaxPool3D<Float>()
+        let input = Tensor<Float>(shape: [1, 2, 3, 5, 1], scalars: (0..<30).map(Float.init))
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>([29])
+        XCTAssertEqual(output, expected)
+    }
+
     func testUpSampling1D() {
       let size = 6
       let layer = UpSampling1D<Float>(size: size)
@@ -226,6 +250,9 @@ final class LayerTests: XCTestCase {
         ("testGlobalAvgPool1D", testGlobalAvgPool1D),
         ("testGlobalAvgPool2D", testGlobalAvgPool2D),
         ("testGlobalAvgPool3D", testGlobalAvgPool3D),
+        ("testGlobalMaxPool1D", testGlobalMaxPool1D),
+        ("testGlobalMaxPool2D", testGlobalMaxPool2D),
+        ("testGlobalMaxPool3D", testGlobalMaxPool3D),
         ("testUpSampling1D", testUpSampling1D),
         ("testUpSampling2D", testUpSampling2D),
         ("testUpSampling3D", testUpSampling3D),
