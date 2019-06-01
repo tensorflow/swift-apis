@@ -1632,7 +1632,7 @@ func sortedPred(
     }
 }
 
-func _transposeIfNecessary<T>(
+func transposeIfNecessary<T>(
         _ tensor: Tensor<T>,
         _ perm: [Int]
 ) -> Tensor<T> {
@@ -1643,7 +1643,7 @@ func _transposeIfNecessary<T>(
     return tensor
 }
 
-func _reshapeIfNecessary<T>(
+func reshapeIfNecessary<T>(
         _ tensor: Tensor<T>,
         _ newShape: TensorShape
 ) -> Tensor<T> {
@@ -1657,7 +1657,7 @@ func _reshapeIfNecessary<T>(
     }
 }
 
-func _totalSize(
+func totalSize(
         _ shapeValues: ArraySlice<Int>
 ) -> Int {
     var result = 1
@@ -1667,7 +1667,7 @@ func _totalSize(
     return result
 }
 
-func _einsum_reduction<T: Numeric>(
+func einsumReduction<T: Numeric>(
         _ t0: Tensor<T>,
         _ t0Axislabels: String,
         _ t1: Tensor<T>,
@@ -1711,49 +1711,49 @@ func _einsum_reduction<T: Numeric>(
         }.map {
             axesStr.firstIndex(of: $0)!.encodedOffset
         }
-        inputs[i] = _transposeIfNecessary(inputs[i], perm)
+        inputs[i] = transposeIfNecessary(inputs[i], perm)
     }
-    var t0_new = inputs[0], t1_new = inputs[1]
+    var t0New = inputs[0], t1New = inputs[1]
 
 
     if axesToSum.isEmpty {
 
         if let tmp = broadcastAxes[1] {
             for _ in 0..<tmp.count {
-                t0_new = t0_new.expandingShape(at: -1)
+                t0New = t0New.expandingShape(at: -1)
             }
         }
         if let tmp = broadcastAxes[0] {
             for _ in 0..<tmp.count {
-                t1_new = t1_new.expandingShape(at: preservedAxes.count)
+                t1New = t1New.expandingShape(at: preservedAxes.count)
             }
         }
 
-        let product = (t0_new * t1_new)
+        let product = (t0New * t1New)
         let productAxes = String(sortedAxes[0] + Array(sortedAxes[1][...preservedAxes.count]))
 
         return (product, productAxes)
     } else {
-        let t0Shape = t0_new.shape
-        let t0Broadcast = _totalSize(t0Shape.dimensions
+        let t0Shape = t0New.shape
+        let t0Broadcast = totalSize(t0Shape.dimensions
                 .prefix(through: preservedAxes.count)
                 .prefix(broadcastAxes[0]!.count))
-        let t0Sum = _totalSize(t0Shape.dimensions.suffix(axesToSum.count))
+        let t0Sum = totalSize(t0Shape.dimensions.suffix(axesToSum.count))
         let t0NewShape = TensorShape(t0Shape[0..<preservedAxes.count].dimensions + [t0Broadcast, t0Sum])
-        t0_new = _reshapeIfNecessary(t0_new, t0NewShape)
-        let t1Shape = t1_new.shape
-        let t1Broadcast = _totalSize(t1Shape.dimensions.suffix(broadcastAxes[1]!.count))
-        let t1Sum = _totalSize(t1Shape.dimensions
+        t0New = reshapeIfNecessary(t0New, t0NewShape)
+        let t1Shape = t1New.shape
+        let t1Broadcast = totalSize(t1Shape.dimensions.suffix(broadcastAxes[1]!.count))
+        let t1Sum = totalSize(t1Shape.dimensions
                 .prefix(through: preservedAxes.count)
                 .prefix(axesToSum.count))
         let t1NewShape = TensorShape(t1Shape[0..<preservedAxes.count].dimensions + [t1Sum, t1Broadcast])
-        t1_new = _reshapeIfNecessary(t1_new, t1NewShape)
+        t1New = reshapeIfNecessary(t1New, t1NewShape)
 
-        var product = Raw.batchMatMulV2(t0_new, t1_new)
+        var product = Raw.batchMatMulV2(t0New, t1New)
 
         let uncompactedShape = TensorShape(t0Shape.dimensions.prefix(preservedAxes.count + broadcastAxes[0]!.count) +
                 t1Shape.dimensions.suffix(broadcastAxes[1]!.count))
-        product = _reshapeIfNecessary(product, uncompactedShape)
+        product = reshapeIfNecessary(product, uncompactedShape)
 
         let productAxes = String(sortedAxes[0].prefix(preservedAxes.count + broadcastAxes[0]!.count) +
                 sortedAxes[1].suffix(broadcastAxes[1]!.count))
@@ -1761,7 +1761,7 @@ func _einsum_reduction<T: Numeric>(
     }
 }
 
-func _exponentialSpaceEinsum<T: Numeric>(
+func exponentialSpaceEinsum<T: Numeric>(
         _ equationString: String,
         _ inputs: [Tensor<T>]
 ) -> Tensor<T> {
@@ -1840,7 +1840,7 @@ func _exponentialSpaceEinsum<T: Numeric>(
             }.map {
                 axes_.firstIndex(of: $0)!.encodedOffset
             }
-            inputs_[i] = _transposeIfNecessary(inputs_[i], perm)
+            inputs_[i] = transposeIfNecessary(inputs_[i], perm)
             idxIn[i] = String(sortedIdx)
         }
     }
@@ -1943,7 +1943,7 @@ func einsum<T: Numeric>(
                   Falling back to exponential-space implementation of einsum()
                   because index \(a) is summed over more than two inputs.
                   """)
-            return _exponentialSpaceEinsum(equationString, inputs)
+            return exponentialSpaceEinsum(equationString, inputs)
         }
     }
 
@@ -1954,7 +1954,7 @@ func einsum<T: Numeric>(
         let tempInputAxes = Set(tempAxisLabels).intersection(Set(inputAxisLabels[i]))
         let tempOutputAxes = Set(outputAxes)
         let axesToSum = tempInputAxes.subtracting(tempOutputAxes)
-        (temp, tempAxisLabels) = _einsum_reduction(temp, tempAxisLabels,
+        (temp, tempAxisLabels) = einsumReduction(temp, tempAxisLabels,
                 inputs[i], inputAxisLabels[i], axesToSum)
     }
     let missingIndices = Set(tempAxisLabels).subtracting(Set(outputAxes))
@@ -1973,5 +1973,5 @@ func einsum<T: Numeric>(
             .map {
                 tempAxisLabels.firstIndex(of: $0)!.encodedOffset
             }
-    return _transposeIfNecessary(temp, perm)
+    return transposeIfNecessary(temp, perm)
 }
