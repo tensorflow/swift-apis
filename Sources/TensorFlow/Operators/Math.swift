@@ -1740,7 +1740,7 @@ public func einsum<T: Numeric>(
 
     let perm = outputAxes.filter({ tempAxisLabels.contains($0) })
             .map {
-                tempAxisLabels.firstIndex(of: $0)!.encodedOffset
+                tempAxisLabels.firstIndex(of: $0)!.utf16Offset(in: self)
             }
     return transposeIfNecessary(temp, perm)
 }
@@ -1856,7 +1856,7 @@ func einsumReduction<T: Numeric>(
         let perm = sortedAxes[i].filter {
             axesStr.contains($0)
         }.map {
-            axesStr.firstIndex(of: $0)!.encodedOffset
+            axesStr.firstIndex(of: $0)!.utf16Offset(in: self)
         }
         inputs[i] = transposeIfNecessary(inputs[i], perm)
     }
@@ -2001,7 +2001,7 @@ func exponentialSpaceEinsum<T: Numeric>(
             let perm = sortedIdx.filter {
                 axes_.contains($0)
             }.map {
-                axes_.firstIndex(of: $0)!.encodedOffset
+                axes_.firstIndex(of: $0)!.utf16Offset(in: self)
             }
             inputs_[i] = transposeIfNecessary(inputs_[i], perm)
             idxIn[i] = String(sortedIdx)
