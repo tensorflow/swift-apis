@@ -37,18 +37,18 @@ final class DatasetTests: XCTestCase {
         var next: SimpleOutput = Raw.iteratorGetNext(
             iterator: iterator, outputShapes: outputShapes
         )
-        XCTAssertEqual(0, Tensor(handle: next.a).scalarized())
-        XCTAssertEqual(10, Tensor(handle: next.b).scalarized())
+        XCTAssertEqual(Tensor(handle: next.a).scalarized(), 0)
+        XCTAssertEqual(Tensor(handle: next.b).scalarized(), 10)
         next = Raw.iteratorGetNext(
             iterator: iterator, outputShapes: outputShapes
         )
-        XCTAssertEqual(1, Tensor(handle: next.a).scalarized())
-        XCTAssertEqual(11, Tensor(handle: next.b).scalarized())
+        XCTAssertEqual(Tensor(handle: next.a).scalarized(), 1)
+        XCTAssertEqual(Tensor(handle: next.b).scalarized(), 11)
         next = Raw.iteratorGetNext(
             iterator: iterator, outputShapes: outputShapes
         )
-        XCTAssertEqual(2, Tensor(handle: next.a).scalarized())
-        XCTAssertEqual(12, Tensor(handle: next.b).scalarized())
+        XCTAssertEqual(Tensor(handle: next.a).scalarized(), 2)
+        XCTAssertEqual(Tensor(handle: next.b).scalarized(), 12)
     }
 
     func testSingleValueManualIterator() {
@@ -59,7 +59,7 @@ final class DatasetTests: XCTestCase {
       var iterator = dataset.makeIterator()
       var i: Int = 0
       while let item = iterator.next() {
-          XCTAssertEqual(scalars[i].array, item.array)
+          XCTAssertEqual(item.array, scalars[i].array)
           i += 1
       }
     }
@@ -71,7 +71,7 @@ final class DatasetTests: XCTestCase {
         let dataset = Dataset(elements: scalars)
         var i: Int = 0
         for item in dataset {
-            XCTAssertEqual(scalars[i].array, item.array)
+            XCTAssertEqual(item.array, scalars[i].array)
             i += 1
         }
     }
@@ -80,7 +80,7 @@ final class DatasetTests: XCTestCase {
         let scalars = Tensor<Float>(rangeFrom: 0, to: 5, stride: 1)
         let dataset = Dataset(elements: scalars)
         let shuffled = dataset.shuffled(sampleCount: 5, randomSeed: 42)
-        XCTAssertEqual([0, 4, 1, 3, 2], shuffled.map { $0.scalar! })
+        XCTAssertEqual(shuffled.map { $0.scalar! }, [0, 4, 1, 3, 2])
     }
 
     func testSingleValueHOFs() {
@@ -91,18 +91,18 @@ final class DatasetTests: XCTestCase {
         // Use '.==' in the following closure to avoid any conversions to
         // host data types, which is not handled correctly in tracing.
         let evens: Dataset = dataset.filter { Tensor($0 % 2) .== Tensor(0) }
-        XCTAssertEqual([0, 2, 4], evens.flatMap { $0.scalars })
+        XCTAssertEqual(evens.flatMap { $0.scalars }, [0, 2, 4])
     }
 
     func testParallelMap() {
         let scalars = Tensor<Float>(rangeFrom: 0, to: 5, stride: 1)
         let dataset = Dataset(elements: scalars)
         let addedOne: Dataset = dataset.map(parallelCallCount: 5) { $0 + 1 }
-        XCTAssertEqual([1, 2, 3, 4, 5], addedOne.flatMap { $0.scalars })
+        XCTAssertEqual(addedOne.flatMap { $0.scalars }, [1, 2, 3, 4, 5])
         // Use '.==' in the following closure to avoid any conversions to
         // host data types, which is not handled correctly in tracing.
         let evens: Dataset = dataset.filter { Tensor($0 % 2) .== Tensor(0) }
-        XCTAssertEqual([0, 2, 4], evens.flatMap { $0.scalars })
+        XCTAssertEqual(evens.flatMap { $0.scalars }, [0, 2, 4])
     }
 
     func testMapToDifferentType() {
@@ -111,7 +111,7 @@ final class DatasetTests: XCTestCase {
         let shuffled = dataset.shuffled(sampleCount: 5, randomSeed: 42)
         XCTAssertEqual([0, 4, 1, 3, 2], shuffled.map { $0.scalar! })
         let evens = shuffled.map { Tensor($0 % 2) .== Tensor(0) }
-        XCTAssertEqual([true, true, false, false, true], evens.map { $0.scalar! })
+        XCTAssertEqual(evens.map { $0.scalar! }, [true, true, false, false, true])
     }
 
     func testSingleValueBatched() {
@@ -120,9 +120,9 @@ final class DatasetTests: XCTestCase {
         let batched = dataset.batched(2)
 
         var iterator = batched.makeIterator()
-        XCTAssertEqual([0, 1], iterator.next()!.scalars)
-        XCTAssertEqual([2, 3], iterator.next()!.scalars)
-        XCTAssertEqual([4], iterator.next()!.scalars)
+        XCTAssertEqual(iterator.next()!.scalars, [0, 1])
+        XCTAssertEqual(iterator.next()!.scalars, [2, 3])
+        XCTAssertEqual(iterator.next()!.scalars, [4])
     }
 
 /*
@@ -133,8 +133,8 @@ final class DatasetTests: XCTestCase {
         let datasetRight = Dataset(elements: scalars2)
         var i: Int = 0
         for pair in zip(datasetLeft, datasetRight) {
-            XCTAssertEqual(scalars1[i].array, pair.first.array)
-            XCTAssertEqual(scalars2[i].array, pair.second.array)
+            XCTAssertEqual(pair.first.array, scalars1[i].array)
+            XCTAssertEqual(pair.second.array, scalars2[i].array)
             i += 1
         }
     }
