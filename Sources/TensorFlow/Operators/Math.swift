@@ -427,12 +427,13 @@ func _vjpLog1p<T: TensorFlowFloatingPoint>(
 /// The approach is shown in Equation 7 of:
 /// https://cran.r-project.org/web/packages/Rmpfr/vignettes/log1mexp-note.pdf.
 @inlinable
-// TODO: @differentiable
+@differentiable
 public func log1mexp<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
-    let isTooSmall = (-x .< T(log(2.0)))
+    let isTooSmall = withoutDerivative(at: -x .< T(log(2.0)))
     // This `replacing` will ultimately be a no-op because we will not select this code-path 
     // whenever we use the surrogate `-Tensor(onesLike: x)`.
-    let xSafe = x.replacing(with: -Tensor(onesLike: x), where: isTooSmall)
+    let ones = withoutDerivative(at: Tensor(onesLike: x))
+    let xSafe = x.replacing(with: -ones, where: isTooSmall)
     return log1p(-exp(xSafe)).replacing(with: log(-expm1(x)), where: isTooSmall)
 }
 

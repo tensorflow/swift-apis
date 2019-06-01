@@ -243,7 +243,6 @@ public extension Tensor where Scalar: Numeric {
     ///
     /// - Parameter other: Tensor whose shape and data type to use.
     @inlinable
-    @_semantics("autodiff.nonvarying")
     init(zerosLike other: Tensor) {
         self = Raw.zerosLike(other)
     }
@@ -253,7 +252,6 @@ public extension Tensor where Scalar: Numeric {
     ///
     /// - Parameter other: Tensor whose shape and data type to use.
     @inlinable
-    @_semantics("autodiff.nonvarying")
     init(onesLike other: Tensor) {
         self = Raw.onesLike(other)
     }
