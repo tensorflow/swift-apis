@@ -80,7 +80,7 @@ final class DatasetTests: XCTestCase {
         let scalars = Tensor<Float>(rangeFrom: 0, to: 5, stride: 1)
         let dataset = Dataset(elements: scalars)
         let shuffled = dataset.shuffled(sampleCount: 5, randomSeed: 42)
-        XCTAssertEqual([0, 4, 1, 3, 2], shuffled.map{ $0.scalar! })
+        XCTAssertEqual(shuffled.map { $0.scalar! }, [0, 4, 1, 3, 2])
     }
 
     func testSingleValueHOFs() {
@@ -91,18 +91,18 @@ final class DatasetTests: XCTestCase {
         // Use '.==' in the following closure to avoid any conversions to
         // host data types, which is not handled correctly in tracing.
         let evens: Dataset = dataset.filter { Tensor($0 % 2) .== Tensor(0) }
-        XCTAssertEqual([0, 2, 4], evens.flatMap{ $0.scalars })
+        XCTAssertEqual(evens.flatMap { $0.scalars }, [0, 2, 4])
     }
 
     func testParallelMap() {
         let scalars = Tensor<Float>(rangeFrom: 0, to: 5, stride: 1)
         let dataset = Dataset(elements: scalars)
         let addedOne: Dataset = dataset.map(parallelCallCount: 5) { $0 + 1 }
-        XCTAssertEqual([1, 2, 3, 4, 5], addedOne.flatMap{ $0.scalars })
+        XCTAssertEqual(addedOne.flatMap { $0.scalars }, [1, 2, 3, 4, 5])
         // Use '.==' in the following closure to avoid any conversions to
         // host data types, which is not handled correctly in tracing.
         let evens: Dataset = dataset.filter { Tensor($0 % 2) .== Tensor(0) }
-        XCTAssertEqual([0, 2, 4], evens.flatMap{ $0.scalars })
+        XCTAssertEqual(evens.flatMap { $0.scalars }, [0, 2, 4])
     }
 
     func testMapToDifferentType() {
@@ -111,7 +111,7 @@ final class DatasetTests: XCTestCase {
         let shuffled = dataset.shuffled(sampleCount: 5, randomSeed: 42)
         XCTAssertEqual([0, 4, 1, 3, 2], shuffled.map { $0.scalar! })
         let evens = shuffled.map { Tensor($0 % 2) .== Tensor(0) }
-        XCTAssertEqual([true, true, false, false, true], evens.map { $0.scalar! } )
+        XCTAssertEqual(evens.map { $0.scalar! }, [true, true, false, false, true])
     }
 
     func testSingleValueBatched() {
