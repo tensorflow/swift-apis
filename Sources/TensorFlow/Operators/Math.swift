@@ -1614,9 +1614,9 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 }
 
 
-//===------------------------------------------------------------------------------------------===//
+//===--------------------------------------------------------------------===//
 // einsum and helper functions
-//===------------------------------------------------------------------------------------------===//
+//===--------------------------------------------------------------------===//
 
 
 ///  A generalized contraction between tensors of arbitrary dimension.
@@ -1640,7 +1640,8 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 ///
 ///
 /// - Parameters:
-///   - equation: a `String` describing the contraction, in the same format as `numpy.einsum`.
+///   - equation: a `String` describing the contraction,
+///                             in the same format as `numpy.einsum`.
 ///   - inputs: list of the inputs to contract (each one a `Tensor`).
 /// - Precondition: shape of each tensor should be consistent with `equation`.
 
@@ -1702,7 +1703,10 @@ public func einsum<T: Numeric>(
     for a in axisLabels {
         for inputLabels in inputAxisLabels {
             if inputLabels.filter({ $0 == a }).count > 1 {
-                fatalError("Subscript not supported: an axis appears more than once: \(inputLabels) ")
+                fatalError("""
+                           Subscript not supported: 
+                           an axis appears more than once: \(inputLabels) 
+                           """)
             }
         }
     }
@@ -1862,7 +1866,8 @@ func einsumReduction<T: Numeric>(
         }
         inputs[i] = transposeIfNecessary(inputs[i], perm)
     }
-    var t0New = inputs[0], t1New = inputs[1]
+    var t0New = inputs[0]
+    var t1New = inputs[1]
 
 
     if axesToSum.isEmpty {
@@ -1891,13 +1896,15 @@ func einsumReduction<T: Numeric>(
                 .prefix(broadcastAxes[0]!.count))
         let numberOfSummedElements = totalSize(t0Shape.dimensions.suffix(axesToSum.count))
         let t0NewShape = TensorShape(
-                t0Shape[0..<preservedAxes.count].dimensions + [t0Broadcast, numberOfSummedElements]
+                t0Shape[0..<preservedAxes.count].dimensions + [t0Broadcast,
+                                                               numberOfSummedElements]
         )
         t0New = reshapeIfNecessary(t0New, t0NewShape)
         let t1Shape = t1New.shape
         let t1Broadcast = totalSize(t1Shape.dimensions.suffix(broadcastAxes[1]!.count))
         let t1NewShape = TensorShape(
-                t1Shape[0..<preservedAxes.count].dimensions + [numberOfSummedElements, t1Broadcast]
+                t1Shape[0..<preservedAxes.count].dimensions + [numberOfSummedElements,
+                                                               t1Broadcast]
         )
         t1New = reshapeIfNecessary(t1New, t1NewShape)
 
