@@ -26,7 +26,7 @@ struct Empty : TensorGroup {
     init() {}
     public init<C: RandomAccessCollection>(
         _handles: C
-    ) where C.Element == _AnyTensorHandle {}
+    ) where C.Element: _AnyTensorHandle {}
     public var _tensorHandles: [_AnyTensorHandle] { [] }
 }
 
@@ -40,7 +40,7 @@ struct Simple : TensorGroup, Equatable {
 
     public init<C: RandomAccessCollection>(
         _handles: C
-    ) where C.Element == _AnyTensorHandle {
+    ) where C.Element: _AnyTensorHandle {
         precondition(_handles.count == 2)
         let wIndex = _handles.startIndex
         let bIndex = _handles.index(wIndex, offsetBy: 1)
@@ -64,7 +64,7 @@ struct Mixed : TensorGroup, Equatable {
 
     public init<C: RandomAccessCollection>(
         _handles: C
-    ) where C.Element == _AnyTensorHandle {
+    ) where C.Element: _AnyTensorHandle {
         precondition(_handles.count == 2)
         let floatIndex = _handles.startIndex
         let intIndex = _handles.index(floatIndex, offsetBy: 1)
@@ -92,7 +92,7 @@ struct Nested : TensorGroup, Equatable {
 
     public init<C: RandomAccessCollection>(
         _handles: C
-    ) where C.Element == _AnyTensorHandle {
+    ) where C.Element: _AnyTensorHandle {
         let simpleStart = _handles.startIndex
         let simpleEnd = _handles.index(
             simpleStart, offsetBy: Int(Simple._tensorHandleCount))
@@ -116,7 +116,7 @@ struct Generic<T: TensorGroup & Equatable, U: TensorGroup & Equatable> : TensorG
 
     public init<C: RandomAccessCollection>(
         _handles: C
-    ) where C.Element == _AnyTensorHandle {
+    ) where C.Element: _AnyTensorHandle {
         let tStart = _handles.startIndex
         let tEnd = _handles.index(tStart, offsetBy: Int(T._tensorHandleCount))
         t = T.init(_handles: _handles[tStart..<tEnd])
@@ -140,7 +140,7 @@ struct UltraNested<T: TensorGroup & Equatable, V: TensorGroup & Equatable>
 
     public init<C: RandomAccessCollection>(
         _handles: C
-    ) where C.Element == _AnyTensorHandle {
+    ) where C.Element: _AnyTensorHandle {
         let firstStart = _handles.startIndex
         let firstEnd = _handles.index(
             firstStart, offsetBy: Int(Generic<T,V>._tensorHandleCount))
@@ -153,7 +153,7 @@ struct UltraNested<T: TensorGroup & Equatable, V: TensorGroup & Equatable>
     }
 }
 
-func copy<T>(of handle: TensorHandle<T>) -> _AnyTensorHandle {
+func copy<T>(of handle: TensorHandle<T>) -> TFETensorHandle {
     let status = TF_NewStatus()
     let result = TFETensorHandle(_owning: TFE_TensorHandleCopySharingTensor(
             handle._cTensorHandle, status)!)
