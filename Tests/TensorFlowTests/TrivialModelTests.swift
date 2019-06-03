@@ -30,7 +30,7 @@ final class TrivialModelTests: XCTestCase {
                     inputSize: hiddenSize,
                     outputSize: 1,
                     activation: relu,
-                    seed: (0xfeffeffe, 0xfffe)
+                    seed: (0xffeffe, 0xfffe)
                 )
             }
             @differentiable
