@@ -53,8 +53,6 @@ public protocol TensorGroup: TensorArrayProtocol {
     /// Initializes a value of this type, taking ownership of the `_tensorHandleCount` tensors
     /// starting at address `tensorHandles`.
     init(_owning tensorHandles: UnsafePointer<CTensorHandle>?)
-
-    init(handles: [_AnyTensorHandle])
 }
 
 public extension TensorGroup {
