@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     https://opensource.org/licenses/MIT
+//   https://opensource.org/licenses/MIT
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,12 +29,22 @@
 /// Additional Considerations
 /// -------------------------
 ///
+/// Our implementation of complex number differentiation follows the same
+/// convention as Autograd. In short, we can get the derivative of a
+/// holomorphic function, functions whose codomain are the Reals, and
+/// functions whose codomain and domain are the Reals. You can read more about
+/// Autograd at
+///
+///   https://github.com/HIPS/autograd/blob/master/docs/tutorial.md#complex-numbers
+///
 /// Floating-point types have special values that represent infinity or NaN
 /// ("not a number"). Complex functions in different languages may return
 /// different results when working with special values.
 
 struct Complex<T: FloatingPoint> {
+    @differentiable
     var real: T
+    @differentiable
     var imaginary: T
 
     @differentiable(vjp: _vjpInit where T: Differentiable, T.TangentVector == T)

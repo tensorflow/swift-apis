@@ -300,6 +300,19 @@ final class ComplexTests: XCTestCase {
         XCTAssertEqual(expectedVector, pbComplex(Complex(real: 1, imaginary: 1)))
     }
     
+    func testImplicitDifferentiation() {
+        func addRealComponents(lhs: Complex<Float>, rhs: Complex<Float>) -> Float {
+            return lhs.real + rhs.real
+        }
+        
+        let (result, pbComplex) = valueWithPullback(at: Complex(real: 2, imaginary: -3)) { x in
+            return addRealComponents(lhs: x, rhs: Complex(real: -4, imaginary: 1))
+        }
+        
+        XCTAssertEqual(-2, result)
+        XCTAssertEqual(Complex(real: 1, imaginary: 1), pbComplex(1))
+    }
+    
     static var allTests = [
         ("testInitializer", testInitializer),
         ("testStaticImaginary", testStaticImaginary),
@@ -326,6 +339,7 @@ final class ComplexTests: XCTestCase {
         ("testVjpAddingImaginary", testVjpAddingImaginary),
         ("testVjpSubtractingReal", testVjpSubtractingReal),
         ("testVjpSubtractingImaginary", testVjpSubtractingImaginary),
-        ("testJvpDotProduct", testJvpDotProduct)
+        ("testJvpDotProduct", testJvpDotProduct),
+        ("testImplicitDifferentiation", testImplicitDifferentiation)
     ]
 }
