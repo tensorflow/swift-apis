@@ -1,10 +1,10 @@
-// Copyright 2017-2019 Xiaodi Wu and The TensorFlow Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
-// Licensed under the MIT License (the "License");
+// Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//   https://opensource.org/licenses/MIT
+//     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,12 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-//  Note
-//  ====
-//
-//  Code in libc++ is dual-licensed under the MIT and UIUC/NCSA licenses.
-//  Copyright © 2009-2017 contributors to the LLVM/libc++ project.
-/// A type to represent a complex value in Cartesian form.
+/// Note
+/// ----
+///
+/// This implementation uses a modified implementation from the
+/// xwu/NumericAnnex Swift numeric library repo vy Xiaodi Wu. To view the
+/// original code, see the implementation here
+///
+///    https://github.com/xwu/NumericAnnex/blob/master/Sources/Complex.swift
 ///
 /// Create new instances of `Complex<T>` using integer or floating-point
 /// literals and the imaginary unit `Complex<T>.i`. For example:
@@ -35,7 +37,7 @@
 /// functions whose codomain and domain are the Reals. You can read more about
 /// Autograd at
 ///
-///   https://github.com/HIPS/autograd/blob/master/docs/tutorial.md#complex-numbers
+///    https://github.com/HIPS/autograd/blob/master/docs/tutorial.md#complex-numbers
 ///
 /// Floating-point types have special values that represent infinity or NaN
 /// ("not a number"). Complex functions in different languages may return
