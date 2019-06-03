@@ -35,7 +35,7 @@ public protocol TensorArrayProtocol {
     var _tensorHandles: [_AnyTensorHandle] { get }
 
     init(_owning tensorHandles: UnsafePointer<CTensorHandle>?, count: Int)
-    init<C: RandomAccessCollection>(_handles: C) where C.Element : _AnyTensorHandle
+    init<C: RandomAccessCollection>(_handles: C) where C.Element: _AnyTensorHandle
 }
 
 /// A protocol representing types that can be mapped to and from `Array<CTensorHandle>`.
@@ -102,7 +102,7 @@ extension TensorHandle: TensorGroup {
 
     public init<C: RandomAccessCollection>(
         _handles: C
-    ) where C.Element : _AnyTensorHandle {
+    ) where C.Element: _AnyTensorHandle {
         precondition(_handles.count == 1)
         self.init(handle: _handles[_handles.startIndex])
     }
@@ -131,7 +131,7 @@ extension ResourceHandle: TensorGroup {
 
     public init<C: RandomAccessCollection>(
         _handles: C
-    ) where C.Element : _AnyTensorHandle {
+    ) where C.Element: _AnyTensorHandle {
         precondition(_handles.count == 1)
         self.init(handle: _handles[_handles.startIndex])
     }
@@ -160,7 +160,7 @@ extension VariantHandle: TensorGroup {
 
     public init<C: RandomAccessCollection>(
         _handles: C
-    ) where C.Element : _AnyTensorHandle {
+    ) where C.Element: _AnyTensorHandle {
         precondition(_handles.count == 1)
         self.init(handle: _handles[_handles.startIndex])
     }
@@ -189,7 +189,7 @@ extension Tensor: TensorGroup {
 
     public init<C: RandomAccessCollection>(
         _handles: C
-    ) where C.Element : _AnyTensorHandle {
+    ) where C.Element: _AnyTensorHandle {
         precondition(_handles.count == 1)
         self.init(handle: TensorHandle(handle: _handles[_handles.startIndex]))
     }
@@ -218,7 +218,7 @@ extension _TensorElementLiteral: TensorGroup {
 
     public init<C: RandomAccessCollection>(
         _handles: C
-    ) where C.Element : _AnyTensorHandle {
+    ) where C.Element: _AnyTensorHandle {
         precondition(_handles.count == 1)
         self.init(handle: TensorHandle(handle: _handles[_handles.startIndex]))
     }
@@ -247,7 +247,7 @@ extension StringTensor: TensorGroup {
 
     public init<C: RandomAccessCollection>(
         _handles: C
-    ) where C.Element : _AnyTensorHandle {
+    ) where C.Element: _AnyTensorHandle {
         precondition(_handles.count == 1)
         self.init(handle: TensorHandle(handle: _handles[_handles.startIndex]))
     }
@@ -290,7 +290,7 @@ extension Array: TensorArrayProtocol where Element: TensorGroup {
 
     public init<C: RandomAccessCollection>(
         _handles: C
-    ) where C.Element : _AnyTensorHandle {
+    ) where C.Element: _AnyTensorHandle {
 
         let size = _handles.count / Int(Element._tensorHandleCount)
         self = (0..<size).map {

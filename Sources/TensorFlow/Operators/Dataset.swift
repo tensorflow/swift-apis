@@ -222,7 +222,7 @@ public struct Zip2TensorGroup<T: TensorGroup, U: TensorGroup>: TensorGroup {
 
     public init<C: RandomAccessCollection>(
         _handles: C
-    ) where C.Element : _AnyTensorHandle {
+    ) where C.Element: _AnyTensorHandle {
         let firstStart = _handles.startIndex
         let firstEnd = _handles.index(
             firstStart, offsetBy: Int(T._tensorHandleCount))

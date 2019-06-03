@@ -21,7 +21,7 @@ struct SimpleOutput: TensorGroup {
 
     public init<C: RandomAccessCollection>(
         _handles: C
-    ) where C.Element : _AnyTensorHandle {
+    ) where C.Element: _AnyTensorHandle {
         precondition(_handles.count == 2)
         let aIndex = _handles.startIndex
         let bIndex = _handles.index(aIndex, offsetBy: 1)
