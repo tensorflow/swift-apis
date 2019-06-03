@@ -291,7 +291,6 @@ extension Array: TensorArrayProtocol where Element: TensorGroup {
     public init<C: RandomAccessCollection>(
         _handles: C
     ) where C.Element: _AnyTensorHandle {
-
         let size = _handles.count / Int(Element._tensorHandleCount)
         self = (0..<size).map {
             let start = _handles.index(
