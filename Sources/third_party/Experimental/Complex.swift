@@ -44,9 +44,7 @@
 /// different results when working with special values.
 
 struct Complex<T: FloatingPoint> {
-    @differentiable
     var real: T
-    @differentiable
     var imaginary: T
 
     @differentiable(vjp: _vjpInit where T: Differentiable, T.TangentVector == T)
