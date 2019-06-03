@@ -116,8 +116,8 @@ public extension Conv1D {
         stride: Int = 1,
         padding: Padding = .valid,
         activation: @escaping Activation = identity,
-        seed: (Int64, Int64) = (Int64.random(in: Int64.min..<Int64.max),
-                                Int64.random(in: Int64.min..<Int64.max))
+        seed: (Int32, Int32) = (Int32.random(in: Int32.min..<Int32.max),
+                                Int32.random(in: Int32.min..<Int32.max))
     ) {
         let filterTensorShape = TensorShape([
             filterShape.0, filterShape.1, filterShape.2])
@@ -232,8 +232,8 @@ public extension Conv2D {
         strides: (Int, Int) = (1, 1),
         padding: Padding = .valid,
         activation: @escaping Activation = identity,
-        seed: (Int64, Int64) = (Int64.random(in: Int64.min..<Int64.max),
-                                Int64.random(in: Int64.min..<Int64.max))
+        seed: (Int32, Int32) = (Int32.random(in: Int32.min..<Int32.max),
+                                Int32.random(in: Int32.min..<Int32.max))
     ) {
         let filterTensorShape = TensorShape([
             filterShape.0, filterShape.1, filterShape.2, filterShape.3])
@@ -348,8 +348,8 @@ public extension Conv3D {
         strides: (Int, Int, Int) = (1, 1, 1),
         padding: Padding = .valid,
         activation: @escaping Activation = identity,
-        seed: (Int64, Int64) = (Int64.random(in: Int64.min..<Int64.max),
-                                Int64.random(in: Int64.min..<Int64.max))
+        seed: (Int32, Int32) = (Int32.random(in: Int32.min..<Int32.max),
+                                Int32.random(in: Int32.min..<Int32.max))
     ) {
         let filterTensorShape = TensorShape([
             filterShape.0, filterShape.1, filterShape.2, filterShape.3, filterShape.4])
@@ -473,8 +473,8 @@ public extension TransposedConv2D {
         strides: (Int, Int) = (1, 1),
         padding: Padding = .valid,
         activation: @escaping Activation = identity,
-        seed: (Int64, Int64) = (Int64.random(in: Int64.min..<Int64.max),
-                                Int64.random(in: Int64.min..<Int64.max))
+        seed: (Int32, Int32) = (Int32.random(in: Int32.min..<Int32.max),
+                                Int32.random(in: Int32.min..<Int32.max))
     ) {
         let filterTensorShape = TensorShape([
             filterShape.0, filterShape.1, filterShape.2, filterShape.3])
