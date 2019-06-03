@@ -24,7 +24,8 @@ extension TensorDataType : Equatable {
 
 struct Empty : TensorGroup {
     init() {}
-    init(handles: [_AnyTensorHandle]) {}
+    public init<C: RandomAccessCollection>(
+        _handles: C) where C.Element == _AnyTensorHandle {}
     public var _tensorHandles: [_AnyTensorHandle] { [] }
 }
 
@@ -36,10 +37,13 @@ struct Simple : TensorGroup, Equatable {
         self.b = b
     }
 
-    init(handles: [_AnyTensorHandle]) {
-        precondition(handles.count == 2)
-        w = Tensor<Float>(handle: TensorHandle<Float>(handle: handles[0]))
-        b = Tensor<Float>(handle: TensorHandle<Float>(handle: handles[1]))
+    public init<C: RandomAccessCollection>(
+        _handles: C) where C.Element == _AnyTensorHandle {
+        precondition(_handles.count == 2)
+        let wIndex = _handles.startIndex
+        let bIndex = _handles.index(wIndex, offsetBy: 1)
+        w = Tensor<Float>(handle: TensorHandle<Float>(handle: _handles[wIndex]))
+        b = Tensor<Float>(handle: TensorHandle<Float>(handle: _handles[bIndex]))
     }
 
     public var _tensorHandles: [_AnyTensorHandle] { [w.handle.handle, b.handle.handle] }
@@ -56,10 +60,15 @@ struct Mixed : TensorGroup, Equatable {
         self.int = int
     }
 
-    public init(handles: [_AnyTensorHandle]) {
-        precondition(handles.count == 2)
-        float = Tensor<Float>(handle: TensorHandle<Float>(handle: handles[0]))
-        int = Tensor<Int32>(handle: TensorHandle<Int32>(handle: handles[1]))
+    public init<C: RandomAccessCollection>(
+        _handles: C) where C.Element == _AnyTensorHandle {
+        precondition(_handles.count == 2)
+        let floatIndex = _handles.startIndex
+        let intIndex = _handles.index(floatIndex, offsetBy: 1)
+        float = Tensor<Float>(
+            handle: TensorHandle<Float>(handle: _handles[floatIndex]))
+        int = Tensor<Int32>(
+            handle: TensorHandle<Int32>(handle: _handles[intIndex]))
     }
 
     public var _tensorHandles: [_AnyTensorHandle] {
@@ -78,10 +87,13 @@ struct Nested : TensorGroup, Equatable {
         self.mixed = mixed
     }
 
-    public init(handles: [_AnyTensorHandle]) {
-        let simpleEnd = Int(Simple._tensorHandleCount)
-        simple = Simple(handles: Array(handles[0..<simpleEnd]))
-        mixed = Mixed(handles: Array(handles[simpleEnd..<handles.count]))
+    public init<C: RandomAccessCollection>(
+        _handles: C) where C.Element == _AnyTensorHandle {
+        let simpleStart = _handles.startIndex
+        let simpleEnd = _handles.index(
+            simpleStart, offsetBy: Int(Simple._tensorHandleCount))
+        simple = Simple(_handles: _handles[simpleStart..<simpleEnd])
+        mixed = Mixed(_handles: _handles[simpleEnd..<_handles.endIndex])
     }
 
     public var _tensorHandles: [_AnyTensorHandle] {
@@ -98,10 +110,12 @@ struct Generic<T: TensorGroup & Equatable, U: TensorGroup & Equatable> : TensorG
         self.u = u
     }
 
-    public init(handles: [_AnyTensorHandle]) {
-        let tEnd = Int(T._tensorHandleCount)
-        t = T.init(handles: Array(handles[0..<tEnd]))
-        u = U.init(handles: Array(handles[tEnd..<handles.count]))
+    public init<C: RandomAccessCollection>(
+        _handles: C) where C.Element == _AnyTensorHandle {
+        let tStart = _handles.startIndex
+        let tEnd = _handles.index(tStart, offsetBy: Int(T._tensorHandleCount))
+        t = T.init(_handles: _handles[tStart..<tEnd])
+        u = U.init(_handles: _handles[tEnd..<_handles.endIndex])
     }
 
     public var _tensorHandles: [_AnyTensorHandle] {
@@ -119,12 +133,13 @@ struct UltraNested<T: TensorGroup & Equatable, V: TensorGroup & Equatable>
         self.b = b
     }
 
-    init(handles: [_AnyTensorHandle]) {
-        let firstEnd = Int(Generic<T,V>._tensorHandleCount)
-        a = Generic<T,V>.init(
-            handles: Array(handles[0..<firstEnd]))
-        b = Generic<V,T>.init(
-            handles: Array(handles[firstEnd..<handles.count]))
+    public init<C: RandomAccessCollection>(
+        _handles: C) where C.Element == _AnyTensorHandle {
+        let firstStart = _handles.startIndex
+        let firstEnd = _handles.index(
+            firstStart, offsetBy: Int(Generic<T,V>._tensorHandleCount))
+        a = Generic<T,V>.init(_handles: _handles[firstStart..<firstEnd])
+        b = Generic<V,T>.init(_handles: _handles[firstEnd..<_handles.endIndex])
     }
 
     public var _tensorHandles: [_AnyTensorHandle] {
@@ -160,7 +175,7 @@ final class TensorGroupTests: XCTestCase {
         let wHandle = copyOf(handle: w.handle)
         let bHandle = copyOf(handle: b.handle)
 
-        let expectedSimple = Simple(handles: [wHandle, bHandle])
+        let expectedSimple = Simple(_handles: [wHandle, bHandle])
 
         XCTAssertEqual(expectedSimple, simple)
     }
@@ -179,7 +194,7 @@ final class TensorGroupTests: XCTestCase {
         let floatHandle = copyOf(handle: float.handle)
         let intHandle = copyOf(handle: int.handle)
 
-        let expectedMixed = Mixed(handles: [floatHandle, intHandle])
+        let expectedMixed = Mixed(_handles: [floatHandle, intHandle])
 
         XCTAssertEqual(expectedMixed, mixed)
     }
@@ -205,7 +220,7 @@ final class TensorGroupTests: XCTestCase {
         let intHandle = copyOf(handle: int.handle)
 
         let expectedNested = Nested(
-            handles: [wHandle, bHandle, floatHandle, intHandle])
+            _handles: [wHandle, bHandle, floatHandle, intHandle])
         
         XCTAssertEqual(expectedNested, nested)
     }
@@ -232,7 +247,7 @@ final class TensorGroupTests: XCTestCase {
         let intHandle = copyOf(handle: int.handle)
 
         let expectedGeneric = Generic<Simple, Mixed>(
-            handles: [wHandle, bHandle, floatHandle, intHandle])
+            _handles: [wHandle, bHandle, floatHandle, intHandle])
 
         XCTAssertEqual(expectedGeneric, generic)
     }
@@ -273,7 +288,7 @@ final class TensorGroupTests: XCTestCase {
                 let intHandle2 = copyOf(handle: int.handle)
 
                 let expectedGeneric = UltraNested<Simple, Mixed>(
-                    handles: [wHandle1, bHandle1, floatHandle1,  intHandle1,
+                    _handles: [wHandle1, bHandle1, floatHandle1,  intHandle1,
                         floatHandle2, intHandle2, wHandle2, bHandle2])
 
                 XCTAssertEqual(expectedGeneric, generic)

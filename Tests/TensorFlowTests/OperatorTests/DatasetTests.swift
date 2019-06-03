@@ -19,10 +19,13 @@ struct SimpleOutput: TensorGroup {
     let a: TensorHandle<Int32>
     let b: TensorHandle<Int32>
 
-    init(handles: [_AnyTensorHandle]) {
-        precondition(handles.count == 2)
-        a = TensorHandle<Int32>(handle: handles[0])
-        b = TensorHandle<Int32>(handle: handles[1])
+    public init<C: RandomAccessCollection>(
+        _handles: C) where C.Element == _AnyTensorHandle {
+        precondition(_handles.count == 2)
+        let aIndex = _handles.startIndex
+        let bIndex = _handles.index(aIndex, offsetBy: 1)
+        a = TensorHandle<Int32>(handle: _handles[aIndex])
+        b = TensorHandle<Int32>(handle: _handles[bIndex])
     }
 
     public var _tensorHandles: [_AnyTensorHandle] { [a.handle, b.handle] }
