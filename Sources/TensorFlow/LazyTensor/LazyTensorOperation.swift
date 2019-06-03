@@ -36,12 +36,83 @@ class LazyTensor: _AnyTensorHandle {
         precondition(
             index < op.outputCount, "Symbolic Tensor Index is out-of-bounds")
         handle = Handle.symbolic(op, index: index, isLive: false)
+        LazyTensor.incrementRefCount(op, isLive: false)
     }
 
     init(_lazyLive op: LazyTensorOperation, index: Int) {
         precondition(
             index < op.outputCount, "Symbolic Tensor Index is out-of-bounds")
         handle = Handle.symbolic(op, index: index, isLive: true)
+        LazyTensor.incrementRefCount(op, isLive: true)
+    }
+
+    deinit {
+        if case let .symbolic(op, _, isLive) = handle {
+            LazyTensor.decrementRefCount(op, isLive: isLive)
+        }
+    }
+
+    // Liveness tracking for LazyTensorOperations
+    //
+    struct LazyTensorOperationRefCounts {
+        let op: LazyTensorOperation
+        let live: Int
+        let all: Int
+    }
+
+    private static var operationRefCounts: [
+        ObjectIdentifier: LazyTensorOperationRefCounts] = [:]
+
+    static func incrementRefCount(_ op: LazyTensorOperation, isLive: Bool) {
+        let opId = ObjectIdentifier(op)
+        if let counts = operationRefCounts[opId] {
+            operationRefCounts[opId] = LazyTensorOperationRefCounts(
+                op: op,
+                live: isLive ? counts.live + 1 : counts.live,
+                all: counts.all + 1)
+        } else {
+            operationRefCounts[opId] = LazyTensorOperationRefCounts(
+                op: op, live: isLive ? 1 : 0, all: 1)
+        }
+    }
+
+    static func decrementRefCount(_ op: LazyTensorOperation, isLive: Bool) {
+        let opId = ObjectIdentifier(op)
+        if let counts = operationRefCounts[opId] {
+            if counts.all > 1 {
+                operationRefCounts[opId] = LazyTensorOperationRefCounts(
+                    op: op,
+                    live: isLive ? counts.live - 1 : counts.live,
+                    all: counts.all - 1)
+            } else {
+                operationRefCounts.removeValue(forKey: opId)
+            }
+        }
+    }
+
+    static func isLive(_ op: LazyTensorOperation) -> Bool {
+        let opId = ObjectIdentifier(op)
+        if let counts = operationRefCounts[opId] {
+            return counts.live > 0
+        }
+        return false
+    }
+
+    static func onLiveOperations(_ perform: (LazyTensorOperation) -> ()) {
+        for (_, counts) in operationRefCounts {
+            if (counts.live > 0) { perform(counts.op) }
+        }
+    }
+
+    static func onAllOperations(_ perform: (LazyTensorOperation) -> ()) {
+        for (_, counts) in operationRefCounts { perform(counts.op) }
+    }
+
+    public static func printRefCounts() {
+        let live = operationRefCounts.values.reduce(0, { (sum, element) in
+                return sum + (element.live > 0 ? 1 : 0)
+            })
+        print("LazyTensorOperations: \(operationRefCounts.count) (\(live) live)")
     }
 
     static var _materializationCallback: (String) -> () = { _ in }
@@ -85,6 +156,8 @@ class LazyTensorOperation: TensorOperation {
         }
     }
 
+    public static var liveOperations: Int = 0
+
     init(_id id: String?, name: String, outputCount: Int) {
         self.name = name
         self.inputs = []
@@ -92,10 +165,15 @@ class LazyTensorOperation: TensorOperation {
         self.outputCount = outputCount
         self.outputs = nil
         self.id = id
+        LazyTensorOperation.liveOperations += 1
     }
 
     required convenience init(_ name: String, _ outputCount: Int) {
         self.init(_id: nil, name: name, outputCount: outputCount)
+    }
+
+    deinit {
+        LazyTensorOperation.liveOperations -= 1
     }
 
     func evaluate() -> [LazyTensor] {
