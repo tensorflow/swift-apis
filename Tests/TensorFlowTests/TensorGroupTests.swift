@@ -147,7 +147,7 @@ struct UltraNested<T: TensorGroup & Equatable, V: TensorGroup & Equatable>
     }
 }
 
-func copyOf<T>(handle: TensorHandle<T>) -> _AnyTensorHandle {
+func copy<T>(of handle: TensorHandle<T>) -> _AnyTensorHandle {
     let status = TF_NewStatus()
     let result = TFETensorHandle(_owning: TFE_TensorHandleCopySharingTensor(
             handle._cTensorHandle, status)!)
@@ -172,8 +172,8 @@ final class TensorGroupTests: XCTestCase {
         let b = Tensor<Float>(0.1)
         let simple = Simple(w: w, b: b)
 
-        let wHandle = copyOf(handle: w.handle)
-        let bHandle = copyOf(handle: b.handle)
+        let wHandle = copy(of: w.handle)
+        let bHandle = copy(of: b.handle)
 
         let expectedSimple = Simple(_handles: [wHandle, bHandle])
 
@@ -191,8 +191,8 @@ final class TensorGroupTests: XCTestCase {
         let int = Tensor<Int32>(1)
         let mixed = Mixed(float: float, int: int)
 
-        let floatHandle = copyOf(handle: float.handle)
-        let intHandle = copyOf(handle: int.handle)
+        let floatHandle = copy(of: float.handle)
+        let intHandle = copy(of: int.handle)
 
         let expectedMixed = Mixed(_handles: [floatHandle, intHandle])
 
@@ -214,10 +214,10 @@ final class TensorGroupTests: XCTestCase {
         let mixed = Mixed(float: float, int: int)
         let nested = Nested(simple: simple, mixed: mixed)
 
-        let wHandle = copyOf(handle: w.handle)
-        let bHandle = copyOf(handle: b.handle)
-        let floatHandle = copyOf(handle: float.handle)
-        let intHandle = copyOf(handle: int.handle)
+        let wHandle = copy(of: w.handle)
+        let bHandle = copy(of: b.handle)
+        let floatHandle = copy(of: float.handle)
+        let intHandle = copy(of: int.handle)
 
         let expectedNested = Nested(
             _handles: [wHandle, bHandle, floatHandle, intHandle])
@@ -241,10 +241,10 @@ final class TensorGroupTests: XCTestCase {
         let mixed = Mixed(float: float, int: int)
         let generic = Generic(t: simple, u: mixed)
 
-        let wHandle = copyOf(handle: w.handle)
-        let bHandle = copyOf(handle: b.handle)
-        let floatHandle = copyOf(handle: float.handle)
-        let intHandle = copyOf(handle: int.handle)
+        let wHandle = copy(of: w.handle)
+        let bHandle = copy(of: b.handle)
+        let floatHandle = copy(of: float.handle)
+        let intHandle = copy(of: int.handle)
 
         let expectedGeneric = Generic<Simple, Mixed>(
             _handles: [wHandle, bHandle, floatHandle, intHandle])
@@ -278,14 +278,14 @@ final class TensorGroupTests: XCTestCase {
                 let genericMS = Generic<Mixed, Simple>(t: mixed, u: simple)
                 let generic = UltraNested(a: genericSM, b: genericMS)
 
-                let wHandle1 = copyOf(handle: w.handle)
-                let wHandle2 = copyOf(handle: w.handle)
-                let bHandle1 = copyOf(handle: b.handle)
-                let bHandle2 = copyOf(handle: b.handle)
-                let floatHandle1 = copyOf(handle: float.handle)
-                let floatHandle2 = copyOf(handle: float.handle)
-                let intHandle1 = copyOf(handle: int.handle)
-                let intHandle2 = copyOf(handle: int.handle)
+                let wHandle1 = copy(of: w.handle)
+                let wHandle2 = copy(of: w.handle)
+                let bHandle1 = copy(of: b.handle)
+                let bHandle2 = copy(of: b.handle)
+                let floatHandle1 = copy(of: float.handle)
+                let floatHandle2 = copy(of: float.handle)
+                let intHandle1 = copy(of: int.handle)
+                let intHandle2 = copy(of: int.handle)
 
                 let expectedGeneric = UltraNested<Simple, Mixed>(
                     _handles: [wHandle1, bHandle1, floatHandle1,  intHandle1,
