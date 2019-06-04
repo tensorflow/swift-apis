@@ -535,7 +535,7 @@ public struct TransposedConv3D: Layer {
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func call(_ input: Tensor<Float>) -> Tensor<Float> {
+    public func callAsFunction(_ input: Tensor<Float>) -> Tensor<Float> {
         let batchSize = input.shape[0]
         let w = (input.shape[1] - (1 * paddingIndex)) *
           strides.0 + (filter.shape[0] * paddingIndex)
