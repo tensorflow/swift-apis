@@ -414,7 +414,6 @@ func _vjpAvgPool3D<Scalar: TensorFlowFloatingPoint>(
     })
 }
 
-
 /// Computes a 2-D convolution using `self` as input, with the specified
 /// filter, strides, and padding.
 ///
@@ -559,4 +558,3 @@ public func avgPool3D<Scalar: TensorFlowFloatingPoint>(
                   Int32(strides.4)],
         padding: padding.raw)
 }
-

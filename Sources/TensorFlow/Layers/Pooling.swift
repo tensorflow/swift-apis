@@ -45,7 +45,7 @@ public struct MaxPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         return maxPool2D(input.expandingShape(at: 1), filterSize: (1, 1, poolSize, 1),
-                         strides: (1, 1, stride, 1), padding: padding)
+                         strides: (1, 1, stride, 1), padding: padding).squeezingShape(at: 1)
     }
 }
 
@@ -184,7 +184,7 @@ public struct AvgPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         return avgPool2D(input.expandingShape(at: 1), filterSize: (1, 1, poolSize, 1),
-                         strides: (1, 1, stride, 1), padding: padding)
+                         strides: (1, 1, stride, 1), padding: padding).squeezingShape(at: 1)
     }
 }
 
