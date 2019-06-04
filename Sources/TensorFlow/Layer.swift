@@ -32,6 +32,16 @@ public protocol Layer: Differentiable & KeyPathIterable
     /// - Returns: The output.
     @differentiable
     func callAsFunction(_ input: Input) -> Output
+
+    @differentiable
+    func call(_  input: Input) -> Output
+}
+
+public extension Layer {
+    @differentiable
+    func call(_  input: Input) -> Output {
+        return callAsFunction(input)
+    }
 }
 
 public extension Layer {
