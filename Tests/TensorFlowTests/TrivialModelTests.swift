@@ -30,11 +30,11 @@ final class TrivialModelTests: XCTestCase {
                     inputSize: hiddenSize,
                     outputSize: 1,
                     activation: relu,
-                    seed: (0xfeffeffe, 0xfffe)
+                    seed: (0xffeffe, 0xfffe)
                 )
             }
             @differentiable
-            func call(_ input: Tensor<Float>) -> Tensor<Float> {
+            func callAsFunction(_ input: Tensor<Float>) -> Tensor<Float> {
                 let h1 = l1(input)
                 return l2(h1)
             }

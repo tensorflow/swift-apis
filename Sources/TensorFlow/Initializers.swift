@@ -376,12 +376,12 @@ public extension Tensor where Scalar: BinaryFloatingPoint {
     ///
     init(
         randomUniform shape: TensorShape,
-        seed: (Int64, Int64) = (Int64.random(in: Int64.min..<Int64.max),
-                                Int64.random(in: Int64.min..<Int64.max))
+        seed: (Int32, Int32) = (Int32.random(in: Int32.min..<Int32.max),
+                                Int32.random(in: Int32.min..<Int32.max))
     ) {
         self = Raw.statelessRandomUniform(
           shape: Tensor<Int32>((0..<shape.rank).map { Int32(shape[$0]) }),
-          seed: Tensor<Int64>([seed.0, seed.1])
+          seed: Tensor<Int32>([seed.0, seed.1])
         )
     }
 
@@ -394,12 +394,12 @@ public extension Tensor where Scalar: BinaryFloatingPoint {
     ///
     init(
         randomNormal shape: TensorShape,
-        seed: (Int64, Int64) = (Int64.random(in: Int64.min..<Int64.max),
-                                Int64.random(in: Int64.min..<Int64.max))
+        seed: (Int32, Int32) = (Int32.random(in: Int32.min..<Int32.max),
+                                Int32.random(in: Int32.min..<Int32.max))
     ) {
         self = Raw.statelessRandomNormal(
             shape: Tensor<Int32>((0..<shape.rank).map { Int32(shape[$0]) }),
-            seed: Tensor<Int64>([seed.0, seed.1])
+            seed: Tensor<Int32>([seed.0, seed.1])
         )
     }
 }
@@ -475,8 +475,8 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     ///
     init(
         glorotUniform shape: TensorShape,
-        seed: (Int64, Int64) = (Int64.random(in: Int64.min..<Int64.max),
-                                Int64.random(in: Int64.min..<Int64.max))
+        seed: (Int32, Int32) = (Int32.random(in: Int32.min..<Int32.max),
+                                Int32.random(in: Int32.min..<Int32.max))
     ) {
         let uniform = Tensor(randomUniform: shape, seed: seed)
         self = Tensor.glorot(fromStandardUniform: uniform, shape: shape)

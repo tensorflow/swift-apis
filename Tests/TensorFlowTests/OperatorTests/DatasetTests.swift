@@ -18,6 +18,18 @@ import XCTest
 struct SimpleOutput: TensorGroup {
     let a: TensorHandle<Int32>
     let b: TensorHandle<Int32>
+
+    public init<C: RandomAccessCollection>(
+        _handles: C
+    ) where C.Element: _AnyTensorHandle {
+        precondition(_handles.count == 2)
+        let aIndex = _handles.startIndex
+        let bIndex = _handles.index(aIndex, offsetBy: 1)
+        a = TensorHandle<Int32>(handle: _handles[aIndex])
+        b = TensorHandle<Int32>(handle: _handles[bIndex])
+    }
+
+    public var _tensorHandles: [_AnyTensorHandle] { [a.handle, b.handle] }
 }
 
 final class DatasetTests: XCTestCase {
