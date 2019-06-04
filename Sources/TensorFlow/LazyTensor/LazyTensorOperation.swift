@@ -3,7 +3,7 @@ import CTensorFlow
 /// The `TF_Tensor *` type.
 typealias CTFTensor = OpaquePointer
 
-public class LazyTensor {
+public class LazyTensor : _AnyTensorHandle {
     enum Handle {
         // Bool indicates if this was a result of materialization.
        case conc(TFETensorHandle, Bool)
@@ -13,6 +13,16 @@ public class LazyTensor {
     }
 
     let handle: Handle
+
+    public var _tfeTensorHandle: TFETensorHandle {
+        switch (handle) {
+        case Handle.conc(let h, _):
+            return h
+        case Handle.sym(let op, let index, _):
+            assert(false, "TODO: to be send out in a separate PR.")
+            // return op.materialized(index: index)
+        }
+    }
 
     init(_ base: TFETensorHandle) {
         handle = Handle.conc(base, false)
