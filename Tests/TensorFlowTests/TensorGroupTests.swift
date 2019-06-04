@@ -153,13 +153,15 @@ struct UltraNested<T: TensorGroup & Equatable, V: TensorGroup & Equatable>
     }
 }
 
-func copy<T>(of handle: TensorHandle<T>) -> TFETensorHandle {
-    let status = TF_NewStatus()
-    let result = TFETensorHandle(_owning: TFE_TensorHandleCopySharingTensor(
-            handle._cTensorHandle, status)!)
-    XCTAssertEqual(TF_GetCode(status), TF_OK)
-    TF_DeleteStatus(status)
-    return result
+extension TensorHandle {
+    func makeCopy() -> TFETensorHandle {
+        let status = TF_NewStatus()
+        let result = TFETensorHandle(
+          _owning: TFE_TensorHandleCopySharingTensor(handle._cTensorHandle, status)!)
+        XCTAssertEqual(TF_GetCode(status), TF_OK)
+        TF_DeleteStatus(status)
+        return result
+    }
 }
 
 final class TensorGroupTests: XCTestCase {
@@ -178,8 +180,8 @@ final class TensorGroupTests: XCTestCase {
         let b = Tensor<Float>(0.1)
         let simple = Simple(w: w, b: b)
 
-        let wHandle = copy(of: w.handle)
-        let bHandle = copy(of: b.handle)
+        let wHandle = w.handle.makeCopy()
+        let bHandle = b.handle.makeCopy()
 
         let expectedSimple = Simple(_handles: [wHandle, bHandle])
 
@@ -197,8 +199,8 @@ final class TensorGroupTests: XCTestCase {
         let int = Tensor<Int32>(1)
         let mixed = Mixed(float: float, int: int)
 
-        let floatHandle = copy(of: float.handle)
-        let intHandle = copy(of: int.handle)
+        let floatHandle = float.handle.makeCopy()
+        let intHandle = int.handle.makeCopy()
 
         let expectedMixed = Mixed(_handles: [floatHandle, intHandle])
 
@@ -220,10 +222,10 @@ final class TensorGroupTests: XCTestCase {
         let mixed = Mixed(float: float, int: int)
         let nested = Nested(simple: simple, mixed: mixed)
 
-        let wHandle = copy(of: w.handle)
-        let bHandle = copy(of: b.handle)
-        let floatHandle = copy(of: float.handle)
-        let intHandle = copy(of: int.handle)
+        let wHandle = w.handle.makeCopy()
+        let bHandle = b.handle.makeCopy()
+        let floatHandle = float.handle.makeCopy()
+        let intHandle = int.handle.makeCopy()
 
         let expectedNested = Nested(
             _handles: [wHandle, bHandle, floatHandle, intHandle])
@@ -247,10 +249,10 @@ final class TensorGroupTests: XCTestCase {
         let mixed = Mixed(float: float, int: int)
         let generic = Generic(t: simple, u: mixed)
 
-        let wHandle = copy(of: w.handle)
-        let bHandle = copy(of: b.handle)
-        let floatHandle = copy(of: float.handle)
-        let intHandle = copy(of: int.handle)
+        let wHandle = w.handle.makeCopy()
+        let bHandle = b.handle.makeCopy()
+        let floatHandle = float.handle.makeCopy()
+        let intHandle = int.handle.makeCopy()
 
         let expectedGeneric = Generic<Simple, Mixed>(
             _handles: [wHandle, bHandle, floatHandle, intHandle])
@@ -284,14 +286,14 @@ final class TensorGroupTests: XCTestCase {
                 let genericMS = Generic<Mixed, Simple>(t: mixed, u: simple)
                 let generic = UltraNested(a: genericSM, b: genericMS)
 
-                let wHandle1 = copy(of: w.handle)
-                let wHandle2 = copy(of: w.handle)
-                let bHandle1 = copy(of: b.handle)
-                let bHandle2 = copy(of: b.handle)
-                let floatHandle1 = copy(of: float.handle)
-                let floatHandle2 = copy(of: float.handle)
-                let intHandle1 = copy(of: int.handle)
-                let intHandle2 = copy(of: int.handle)
+                let wHandle1 = w.handle.makeCopy()
+                let wHandle2 = w.handle.makeCopy()
+                let bHandle1 = b.handle.makeCopy()
+                let bHandle2 = b.handle.makeCopy()
+                let floatHandle1 = float.handle.makeCopy()
+                let floatHandle2 = float.handle.makeCopy()
+                let intHandle1 = int.handle.makeCopy()
+                let intHandle2 = int.handle.makeCopy()
 
                 let expectedGeneric = UltraNested<Simple, Mixed>(
                     _handles: [wHandle1, bHandle1, floatHandle1,  intHandle1,
