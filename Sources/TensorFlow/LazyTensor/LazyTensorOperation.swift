@@ -5,10 +5,11 @@ typealias CTFTensor = OpaquePointer
 
 public class LazyTensor : _AnyTensorHandle {
     enum Handle {
-        // Bool indicates if this was a result of materialization.
+        /// Bool indicates if this concrete TFETensorhandle was a result of
+        /// materialization.
        case conc(TFETensorHandle, Bool)
-        // Bool indicates whether this is a live tensor. i.e.,
-        // is this held by a swift variable.
+        /// Bool indicates whether this is held by a swift variable,
+        /// i.e., is this a live tensor?
        case sym(LazyTensorOperation, Int, Bool)
     }
 
@@ -33,10 +34,12 @@ public class LazyTensor : _AnyTensorHandle {
     }
 
     init(_lazy op: LazyTensorOperation, index: Int) {
+        precondition(index < op.outputCount, "Symbolic Tensor Index is out-of-bounds")
         handle = Handle.sym(op, index, false)
     }
 
     init(_lazyLive op: LazyTensorOperation, index: Int) {
+        precondition(index < op.outputCount, "Symbolic Tensor Index is out-of-bounds")
         handle = Handle.sym(op, index, true)
     }
 }
@@ -510,8 +513,9 @@ extension LazyTensorOperation.Attribute : CustomStringConvertible {
 extension LazyTensor: CustomStringConvertible {
     public var description: String {
         switch self.handle {
-        case LazyTensor.Handle.conc(_):
-            return "conc"
+        case LazyTensor.Handle.conc(_, let isMaterialized):
+            // TODO: Print the actual concrete value.
+            return isMaterialized ? "conc*" : "conc"
         case LazyTensor.Handle.sym(let op, let index, let isLive):
             return isLive
                 ? "\(op.nameWithID):\(index)*"
