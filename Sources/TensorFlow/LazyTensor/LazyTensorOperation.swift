@@ -158,9 +158,11 @@ public class LazyTensorOperation : TensorOperation {
 }
 
 extension LazyTensorOperation : TFTensorOperation {
-    public func lazyTensorHandle(_ input: _AnyTensorHandle) -> LazyTensor {
+    private func lazyTensorHandle(_ input: _AnyTensorHandle) -> LazyTensor {
         if let lazyHandle = input as? LazyTensor {
             if case let LazyTensor.Handle.sym(op, index, true) = lazyHandle.handle {
+                // We turn off liveness here because the constructed LazyTensor
+                // is not held by any swift variable.
                 return LazyTensor(_lazy: op, index: index)
             } else {
                 return lazyHandle
@@ -464,19 +466,19 @@ extension LazyTensorOperation.Attribute : CustomStringConvertible {
         case .IntValue(let v): return "Int(\(v))"
         case .FloatValue(let v): return "Float(\(v))"
         case .DoubleValue(let v): return "Double(\(v))"
-        case .StringValue(let v): return v
+        case .StringValue(let v): return "\"\(v)\""
         case .BoolArray(let values): return arrayAsString("", values)
         case .IntArray(let values): return arrayAsString("Int", values)
         case .FloatArray(let values): return arrayAsString("Float", values)
         case .DoubleArray(let values): return arrayAsString("Double", values)
-        case .StringArray(let values): return arrayAsString("", values)
+        case .StringArray(let values): return arrayAsString("String", values)
         case .ConstTensor(let v): return "Const(\(v))"
         case .TensorDataTypeValue(let v): return dataTypeAsString(v)
         }
     }
 
     private func arrayAsString<T>(_ desc: String, _ values: [T]) -> String {
-        let arrayDesc = (values.map { "\($0)" }).joined(separator: ",")
+        let arrayDesc = (values.map { "\($0)" }).joined(separator: ", ")
         return "\(desc)[\(arrayDesc)]"
     }
 
