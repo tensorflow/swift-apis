@@ -28,6 +28,7 @@ public func allTests() -> [XCTestCaseEntry] {
         testCase(ComparisonOperatorTests.allTests),
         testCase(DatasetTests.allTests),
         testCase(MathOperatorTests.allTests),
+        testCase(LazyTensorTests.allTests),
     ]
 }
 #endif
