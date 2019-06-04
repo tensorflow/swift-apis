@@ -507,24 +507,29 @@ extension LazyTensorOperation.Attribute : CustomStringConvertible {
     }
 }
 
-extension LazyTensorOperation : CustomStringConvertible {
-    func lazyTensorDescription(_ lazyTensor: LazyTensor) -> String {
-        switch lazyTensor.handle {
+extension LazyTensor: CustomStringConvertible {
+    public var description: String {
+        switch self.handle {
         case LazyTensor.Handle.conc(_):
             return "conc"
         case LazyTensor.Handle.sym(let op, let index, let isLive):
-            return "(\(op.nameWithID), \(index), \(isLive))"
+            return isLive
+                ? "\(op.nameWithID):\(index)*"
+                : "\(op.nameWithID):\(index)"
         }
     }
+}
+
+extension LazyTensorOperation : CustomStringConvertible {
 
     public var description: String {
         let attrsDesc = attrs.map { (name, value) in "\(name): \(value)" }
         let inputsDesc = inputs.map { (input: Input) -> String in
             switch input {
             case Input.single(let lazyTensor):
-                return lazyTensorDescription(lazyTensor)
+                return "\(lazyTensor)"
             case Input.list(let lazyTensorList): do {
-                    let lazyTensors = lazyTensorList.map{ lazyTensorDescription($0) }
+                    let lazyTensors = lazyTensorList.map{ "\($0)" }
                     let lazyTensorsDesc = lazyTensors.joined(separator: ", ")
                     return "[\(lazyTensorsDesc)]"
                 }
