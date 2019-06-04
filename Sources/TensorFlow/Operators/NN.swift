@@ -55,11 +55,11 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
             let mean = self.mean(alongAxes: axis)
             let squaredDiff: Tensor = Raw.squaredDifference(self, mean)
             let variance = squaredDiff.mean(alongAxes: axis)
-            
+
             let diff = self - mean
             let inv = rsqrt(variance + epsilon)
             let norm = diff * inv
-            
+
             let dNorm = v * scale
             let dVariance = -(dNorm * diff).sum(alongAxes: axis) / 2 * pow(inv, -3)
             // Note: `dMean` is split into two lines to avoid the "compiler is unable to type-check
@@ -127,7 +127,7 @@ public extension Padding {
         case .valid: return .valid
         }
     }
-    
+
     @inlinable
     internal var raw2: Raw.Padding2 {
         switch self {
@@ -275,7 +275,7 @@ func _vjpConv3DBackpropInput<Scalar: TensorFlowFloatingPoint>(
     return (value, { v in
         return (
             conv3DBackpropFilter(x, input: v, filterSizes: shape, strides: strides,
-                                   padding: padding),
+                                 padding: padding),
             conv3D(v, filter: filter, strides: strides, padding: padding)
         )
     })
@@ -419,12 +419,12 @@ func _vjpAvgPool3D<Scalar: TensorFlowFloatingPoint>(
 /// filter, strides, and padding.
 ///
 /// - Parameters:
+///   - x: The input.
 ///   - filter: The convolution filter.
 ///   - strides: The strides of the sliding filter for each dimension of the input.
 ///   - padding: The padding for the operation.
 /// - Precondition: `self` must have rank 4.
 /// - Precondition: `filter` must have rank 4.
-
 @differentiable(wrt: (x, filter), vjp: _vjpConv2D)
 public func conv2D<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>,
@@ -444,6 +444,7 @@ public func conv2D<Scalar: TensorFlowFloatingPoint>(
 /// filter, strides, and padding.
 ///
 /// - Parameters:
+///   - x: The input.
 ///   - filter: The convolution filter.
 ///   - strides: The strides of the sliding filter for each dimension of the input.
 ///   - padding: The padding for the operation.
@@ -468,6 +469,7 @@ public func conv3D<Scalar: TensorFlowFloatingPoint>(
 /// padding.
 ///
 /// - Parameters:
+///   - x: The input.
 ///   - filterSize: The dimensions of the pooling kernel.
 ///   - strides: The strides of the sliding filter for each dimension of the input.
 ///   - padding: The padding for the operation.
@@ -491,6 +493,7 @@ public func maxPool2D<Scalar: TensorFlowFloatingPoint>(
 /// padding.
 ///
 /// - Parameters:
+///   - x: The input.
 ///   - filterSize: The dimensions of the pooling kernel.
 ///   - strides: The strides of the sliding filter for each dimension of the input.
 ///   - padding: The padding for the operation.
@@ -514,6 +517,7 @@ public func maxPool3D<Scalar: TensorFlowFloatingPoint>(
 /// and padding.
 ///
 /// - Parameters:
+///   - x: The input.
 ///   - filterSize: The dimensions of the pooling kernel.
 ///   - strides: The strides of the sliding filter for each dimension of the input.
 ///   - padding: The padding for the operation.
@@ -536,6 +540,7 @@ public func avgPool2D<Scalar: TensorFlowFloatingPoint>(
 /// and padding.
 ///
 /// - Parameters:
+///   - x: The input.
 ///   - filterSize: The dimensions of the pooling kernel.
 ///   - strides: The strides of the sliding filter for each dimension of the input.
 ///   - padding: The padding for the operation.
