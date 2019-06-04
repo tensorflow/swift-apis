@@ -485,3 +485,131 @@ public extension TransposedConv2D {
             padding: padding)
     }
 }
+
+/// A 3-D transposed convolution layer (e.g. spatial transposed convolution over images).
+///
+/// This layer creates a convolution filter that is transpose-convolved with the layer input
+/// to produce a tensor of outputs.
+@_fixed_layout
+public struct TransposedConv3D: Layer {
+    /// The 5-D convolution kernel.
+    public var filter: Tensor<Float>
+    /// The bias vector.
+    public var bias: Tensor<Float>
+    /// An activation function.
+    public typealias Activation = @differentiable (Tensor<Float>) -> Tensor<Float>
+    /// The element-wise activation function.
+    @noDerivative public let activation: Activation
+    /// The strides of the sliding window for spatial dimensions.
+    @noDerivative public let strides: (Int, Int, Int)
+    /// The padding algorithm for convolution.
+    @noDerivative public let padding: Padding
+    @noDerivative public let paddingIndex: Int
+
+    /// Creates a `TransposedConv3D` layer with the specified filter, bias,
+    /// activation function, strides, and padding.
+    ///
+    /// - Parameters:
+    ///   - filter: The 5-D convolution kernel.
+    ///   - bias: The bias vector.
+    ///   - activation: The element-wise activation function.
+    ///   - strides: The strides of the sliding window for spatial dimensions.
+    ///   - padding: The padding algorithm for convolution.
+    public init(
+        filter: Tensor<Float>,
+        bias: Tensor<Float>,
+        activation: @escaping Activation,
+        strides: (Int, Int, Int),
+        padding: Padding
+    ) {
+        self.filter = filter
+        self.bias = bias
+        self.activation = activation
+        self.strides = strides
+        self.padding = padding
+        self.paddingIndex = padding == .same ? 0 : 1
+    }
+
+    /// Returns the output obtained from applying the layer to the given input.
+    ///
+    /// - Parameter input: The input to the layer.
+    /// - Returns: The output.
+    @differentiable
+    public func call(_ input: Tensor<Float>) -> Tensor<Float> {
+        let batchSize = input.shape[0]
+        let w = (input.shape[1] - (1 * paddingIndex)) *
+          strides.0 + (filter.shape[0] * paddingIndex)
+        let h = (input.shape[2] - (1 * paddingIndex)) *
+          strides.1 + (filter.shape[1] * paddingIndex)
+        let d = (input.shape[3] - (1 * paddingIndex)) *
+          strides.2 + (filter.shape[2] * paddingIndex)
+        let c = filter.shape[3]
+        let newShape = Tensor<Int32>([Int32(batchSize), Int32(w), Int32(h), Int32(d), Int32(c)])
+        return activation(input.conv2DBackpropInput(shape: newShape, filter: filter,
+                                                    strides: (1, strides.0, strides.1,
+                                                             strides.2, 1),
+                                                    padding: padding) + bias)
+    }
+}
+
+public extension TransposedConv3D {
+    /// Creates a `TransposedConv3D` layer with the specified filter shape, strides, padding, and
+    /// element-wise activation function. The filter tensor is initialized using Glorot uniform
+    /// initialization with the specified generator. The bias vector is initialized with zeros.
+    ///
+    /// - Parameters:
+    ///   - filterShape: The shape of the 5-D convolution kernel.
+    ///   - strides: The strides of the sliding window for spatial dimensions.
+    ///   - padding: The padding algorithm for convolution.
+    ///   - activation: The element-wise activation function.
+    ///   - generator: The random number generator for initialization.
+    ///
+    /// - Note: Use `init(filterShape:strides:padding:activation:seed:)` for faster random
+    ///   initialization.
+    init<G: RandomNumberGenerator>(
+        filterShape: (Int, Int, Int, Int, Int),
+        strides: (Int, Int, Int) = (1, 1, 1),
+        padding: Padding = .valid,
+        activation: @escaping Activation = identity,
+        generator: inout G
+    ) {
+        let filterTensorShape = TensorShape([
+            filterShape.0, filterShape.1, filterShape.2, filterShape.3, filterShape.4])
+        self.init(
+            filter: Tensor(glorotUniform: filterTensorShape, generator: &generator),
+            bias: Tensor(zeros: TensorShape([filterShape.4])),
+            activation: activation,
+            strides: strides,
+            padding: padding)
+    }
+}
+
+public extension TransposedConv3D {
+    /// Creates a `TransposedConv3D` layer with the specified filter shape, strides, padding, and
+    /// element-wise activation function. The filter tensor is initialized using Glorot uniform
+    /// initialization with the specified seed. The bias vector is initialized with zeros.
+    ///
+    /// - Parameters:
+    ///   - filterShape: The shape of the 5-D convolution kernel.
+    ///   - strides: The strides of the sliding window for spatial dimensions.
+    ///   - padding: The padding algorithm for convolution.
+    ///   - activation: The element-wise activation function.
+    ///   - seed: The random seed for initialization. The default value is random.
+    init(
+        filterShape: (Int, Int, Int, Int, Int),
+        strides: (Int, Int, Int) = (1, 1, 1),
+        padding: Padding = .valid,
+        activation: @escaping Activation = identity,
+        seed: (Int64, Int64) = (Int64.random(in: Int64.min..<Int64.max),
+                                Int64.random(in: Int64.min..<Int64.max))
+    ) {
+        let filterTensorShape = TensorShape([
+            filterShape.0, filterShape.1, filterShape.2, filterShape.3, filterShape.4])
+        self.init(
+            filter: Tensor(glorotUniform: filterTensorShape, seed: seed),
+            bias: Tensor(zeros: TensorShape([filterShape.4])),
+            activation: activation,
+            strides: strides,
+            padding: padding)
+    }
+}
