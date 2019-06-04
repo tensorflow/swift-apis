@@ -62,7 +62,7 @@ public extension RNNCell {
     ///   - previousState: The previous state of the RNN cell.
     /// - Returns: The output.
     @differentiable
-    func call(input: TimeStepInput, state: State) -> RNNCellOutput<TimeStepOutput, State> {
+    func callAsFunction(input: TimeStepInput, state: State) -> RNNCellOutput<TimeStepOutput, State> {
         return self(RNNCellInput(input: input, state: state))
     }
 }
@@ -113,7 +113,7 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNum
     /// - Parameter input: The input to the layer.
     /// - Returns: The hidden state.
     @differentiable
-    public func call(_ input: Input) -> Output {
+    public func callAsFunction(_ input: Input) -> Output {
         let concatenatedInput = input.input.concatenated(with: input.state.value, alongAxis: 1)
         let newState = State(tanh(matmul(concatenatedInput, weight) + bias))
         return Output(output: newState, state: newState)
@@ -175,7 +175,7 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNumeric 
     /// - Parameter input: The input to the layer.
     /// - Returns: The hidden state.
     @differentiable
-    public func call(_ input: Input) -> Output {
+    public func callAsFunction(_ input: Input) -> Output {
         let gateInput = input.input.concatenated(with: input.state.hidden, alongAxis: 1)
 
         let inputGate = sigmoid(matmul(gateInput, inputWeight) + inputBias)
@@ -203,7 +203,7 @@ public struct RNN<Cell: RNNCell>: Layer {
     }
 
     @differentiable(wrt: (self, input), vjp: _vjpCall(_:initialState:))
-    public func call(_ input: [Cell.TimeStepInput],
+    public func callAsFunction(_ input: [Cell.TimeStepInput],
                      initialState: Cell.State) -> [Cell.TimeStepOutput] {
         var currentHiddenState = initialState
         var timeStepOutputs: [Cell.TimeStepOutput] = []
@@ -253,7 +253,7 @@ public struct RNN<Cell: RNNCell>: Layer {
     }
 
     @differentiable(wrt: (self, inputs))
-    public func call(_ inputs: [Cell.TimeStepInput]) -> [Cell.TimeStepOutput] {
+    public func callAsFunction(_ inputs: [Cell.TimeStepInput]) -> [Cell.TimeStepOutput] {
         return self(inputs, initialState: cell.zeroState.withoutDerivative())
     }
 

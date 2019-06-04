@@ -24,7 +24,7 @@ final class SequentialTests: XCTestCase {
                                       seed: (0xeffeffe, 0xfffe))
 
             @differentiable
-            func call(_ input: Tensor<Float>) -> Tensor<Float> {
+            func callAsFunction(_ input: Tensor<Float>) -> Tensor<Float> {
               return input.sequenced(through: dense1, dense2)
             }
         }

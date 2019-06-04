@@ -29,7 +29,7 @@ struct Model: Layer {
     var layer3 = Dense<Float>(inputSize: hiddenSize, outputSize: 3, activation: identity)
     
     @differentiable
-    func call(_ input: Tensor<Float>) -> Tensor<Float> {
+    func callAsFunction(_ input: Tensor<Float>) -> Tensor<Float> {
         return input.sequenced(through: layer1, layer2, layer3)
     }
 }
