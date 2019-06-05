@@ -11,7 +11,7 @@ public class LazyTensor : _AnyTensorHandle {
         /// Bool indicates whether this is a live tensor. This flag is used to
         /// heuristically determine whether this symbolic tensor should also be
         /// materialized whenever materialization of any other tensor is triggered.
-        case symbolic(LazyTensorOperation, index: Int, live: Bool)
+        case symbolic(LazyTensorOperation, index: Int, isLive: Bool)
     }
 
     let handle: Handle
@@ -37,13 +37,21 @@ public class LazyTensor : _AnyTensorHandle {
     init(_lazy op: LazyTensorOperation, index: Int) {
         precondition(
             index < op.outputCount, "Symbolic Tensor Index is out-of-bounds")
-        handle = Handle.symbolic(op, index: index, live: false)
+        handle = Handle.symbolic(op, index: index, isLive: false)
     }
 
     init(_lazyLive op: LazyTensorOperation, index: Int) {
         precondition(
             index < op.outputCount, "Symbolic Tensor Index is out-of-bounds")
-        handle = Handle.symbolic(op, index: index, live: true)
+        handle = Handle.symbolic(op, index: index, isLive: true)
+    }
+
+    static var materializationCallback: (String) -> () = {
+        (s: String) in return }
+    
+    public static func registerMaterializationCallback(
+        f: @escaping (String) -> ()) {
+        materializationCallback = f
     }
 }
 
@@ -76,14 +84,6 @@ class LazyTensorOperation : TensorOperation {
     var attrs: [String: Attribute]
     var outputs: [TFETensorHandle]?
     var id: String?
-
-    static var materializationCallback: (String) -> () = {
-        (s: String) in return }
-
-    public static func registerMaterializationCallback(
-        f: @escaping (String) -> ()) {
-        materializationCallback = f
-    }
 
     var nameWithID: String {
         if let id = self.id {
