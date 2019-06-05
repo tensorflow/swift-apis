@@ -7,45 +7,48 @@ public class LazyTensor : _AnyTensorHandle {
     enum Handle {
         /// Bool indicates if this concrete TFETensorhandle was a result of
         /// materialization.
-       case conc(TFETensorHandle, Bool)
-        /// Bool indicates whether this is held by a swift variable,
-        /// i.e., is this a live tensor?
-       case sym(LazyTensorOperation, Int, Bool)
+        case concrete(TFETensorHandle, materialized: Bool)
+        /// Bool indicates whether this is a live tensor. This flag is used to
+        /// heuristically determine whether this symbolic tensor should also be
+        /// materialized whenever materialization of any other tensor is triggered.
+        case symbolic(LazyTensorOperation, index: Int, live: Bool)
     }
 
     let handle: Handle
 
     public var _tfeTensorHandle: TFETensorHandle {
-        switch (handle) {
-        case Handle.conc(let h, _):
+        switch handle {
+        case .concrete(let h, _):
             return h
-        case Handle.sym(let op, let index, _):
+        case .symbolic(let op, let index, _):
             assert(false, "TODO: to be send out in a separate PR.")
             // return op.materialized(index: index)
         }
     }
 
     init(_ base: TFETensorHandle) {
-        handle = Handle.conc(base, false)
+        handle = Handle.concrete(base, materialized: false)
     }
 
     init(_materialized base: TFETensorHandle) {
-        handle = Handle.conc(base, true)
+        handle = Handle.concrete(base, materialized: true)
     }
 
     init(_lazy op: LazyTensorOperation, index: Int) {
-        precondition(index < op.outputCount, "Symbolic Tensor Index is out-of-bounds")
-        handle = Handle.sym(op, index, false)
+        precondition(
+            index < op.outputCount, "Symbolic Tensor Index is out-of-bounds")
+        handle = Handle.symbolic(op, index: index, live: false)
     }
 
     init(_lazyLive op: LazyTensorOperation, index: Int) {
-        precondition(index < op.outputCount, "Symbolic Tensor Index is out-of-bounds")
-        handle = Handle.sym(op, index, true)
+        precondition(
+            index < op.outputCount, "Symbolic Tensor Index is out-of-bounds")
+        handle = Handle.symbolic(op, index: index, live: true)
     }
 }
 
-public class LazyTensorOperation : TensorOperation {
-    public typealias TensorValueHandle = LazyTensor
+class LazyTensorOperation : TensorOperation {
+     typealias TensorValueHandle = LazyTensor
 
     enum Input {
         case single(LazyTensor)
@@ -160,9 +163,11 @@ public class LazyTensorOperation : TensorOperation {
 extension LazyTensorOperation : TFTensorOperation {
     private func lazyTensorHandle(_ input: _AnyTensorHandle) -> LazyTensor {
         if let lazyHandle = input as? LazyTensor {
-            if case let LazyTensor.Handle.sym(op, index, true) = lazyHandle.handle {
-                // We turn off liveness here because the constructed LazyTensor
-                // is not held by any swift variable.
+            if case let LazyTensor.Handle.symbolic(
+                op, index, true) = lazyHandle.handle {
+                // We turn off liveness for the constructed LazyTensor,
+                // because it is only referenced internally as a part
+                // of the LazyTensorOperation input.
                 return LazyTensor(_lazy: op, index: index)
             } else {
                 return lazyHandle
@@ -515,10 +520,10 @@ extension LazyTensorOperation.Attribute : CustomStringConvertible {
 extension LazyTensor: CustomStringConvertible {
     public var description: String {
         switch self.handle {
-        case LazyTensor.Handle.conc(_, let isMaterialized):
+        case LazyTensor.Handle.concrete(_, let isMaterialized):
             // TODO: Print the actual concrete value.
             return isMaterialized ? "conc*" : "conc"
-        case LazyTensor.Handle.sym(let op, let index, let isLive):
+        case LazyTensor.Handle.symbolic(let op, let index, let isLive):
             return isLive
                 ? "\(op.nameWithID):\(index)*"
                 : "\(op.nameWithID):\(index)"
