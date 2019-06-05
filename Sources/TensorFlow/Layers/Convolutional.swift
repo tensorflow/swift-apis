@@ -413,7 +413,7 @@ public struct TransposedConv1D: Layer {
     public func callAsFunction(_ input: Tensor<Float>) -> Tensor<Float> {
         let batchSize = input.shape[0]
         let w = (input.shape[1] - (1 * paddingIndex)) *
-          strides.0 + (filter.shape[0] * paddingIndex)
+          strides + (filter.shape[0] * paddingIndex)
         let c = filter.shape[2]
         let newShape = Tensor<Int32>([Int32(batchSize), Int32(w), Int32(c), 1])
         return activation(conv2DBackpropInput(input.expandingShape(at: 1), shape: newShape,
@@ -471,8 +471,8 @@ public extension TransposedConv1D {
         strides: Int = 1,
         padding: Padding = .valid,
         activation: @escaping Activation = identity,
-        seed: (Int64, Int64) = (Int64.random(in: Int64.min..<Int64.max),
-                                Int64.random(in: Int64.min..<Int64.max))
+        seed: (Int32, Int32) = (Int32.random(in: Int32.min..<Int32.max),
+                                Int32.random(in: Int32.min..<Int32.max))
     ) {
         let filterTensorShape = TensorShape([
             filterShape.0, filterShape.1, filterShape.2])
@@ -723,8 +723,8 @@ public extension TransposedConv3D {
         strides: (Int, Int, Int) = (1, 1, 1),
         padding: Padding = .valid,
         activation: @escaping Activation = identity,
-        seed: (Int64, Int64) = (Int64.random(in: Int64.min..<Int64.max),
-                                Int64.random(in: Int64.min..<Int64.max))
+        seed: (Int32, Int32) = (Int32.random(in: Int32.min..<Int32.max),
+                                Int32.random(in: Int32.min..<Int32.max))
     ) {
         let filterTensorShape = TensorShape([
             filterShape.0, filterShape.1, filterShape.2, filterShape.3, filterShape.4])
