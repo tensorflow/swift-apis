@@ -18,9 +18,11 @@ import CTensorFlow
 
 final class LazyTensorOperationTests: XCTestCase {
     func testNoInput() {
-        let placeholder = LazyTensorOperation(_withID: "V", "Placeholder", 1)
+        let placeholder = LazyTensorOperation(
+            _id: "V", name: "Placeholder", outputCount: 1)
         XCTAssertEqual("\(placeholder)", "Placeholder_V[]():1")
-        let placeholder2 = LazyTensorOperation(_withID: "W", "Placeholder", 2)
+        let placeholder2 = LazyTensorOperation(
+            _id: "W", name: "Placeholder", outputCount: 2)
         XCTAssertEqual("\(placeholder2)", "Placeholder_W[]():2")
     }
 
@@ -28,27 +30,34 @@ final class LazyTensorOperationTests: XCTestCase {
         let zero = Tensor<Float>(0.0)
         let zeroTFEHandle = zero.handle.handle._tfeTensorHandle
 
-        let op0 = LazyTensorOperation(_withID: "0", "Identity", 1)
+        let op0 = LazyTensorOperation(
+            _id: "0", name: "Identity", outputCount: 1)
         op0.addInput(zeroTFEHandle)
         XCTAssertEqual("\(op0)", "Identity_0[](conc):1")
 
-        let op1 = LazyTensorOperation(_withID: "1", "Identity", 1)
+        let op1 = LazyTensorOperation(
+            _id: "1", name: "Identity", outputCount: 1)
         op1.addInput(zero)
         XCTAssertEqual("\(op1)", "Identity_1[](conc):1")
 
-        let op2 = LazyTensorOperation(_withID: "2", "Identity", 1)
+        let op2 = LazyTensorOperation(
+            _id: "2", name: "Identity", outputCount: 1)
         op2.addInput(StringTensor("hello"))
         XCTAssertEqual("\(op2)", "Identity_2[](conc):1")
 
-        let op3 = LazyTensorOperation(_withID: "3", "Identity", 1)
-        let const = LazyTensorOperation(_withID: "0", "Const", 1)
+        let op3 = LazyTensorOperation(
+            _id: "3", name: "Identity", outputCount: 1)
+        let const = LazyTensorOperation(
+            _id: "0", name: "Const", outputCount: 1)
         op3.addInput(LazyTensor(_lazy: const, index: 0))
         XCTAssertEqual("\(op3)", "Identity_3[](Const_0:0):1")
     }
 
     func testMultipleInputs() {
-        let const = LazyTensorOperation(_withID: "0", "Const", 1)
-        let op0 = LazyTensorOperation(_withID: "0", "Identity", 1)
+        let const = LazyTensorOperation(
+            _id: "0", name: "Const", outputCount: 1)
+        let op0 = LazyTensorOperation(
+            _id: "0", name: "Identity", outputCount: 1)
         op0.addInput(LazyTensor(_lazyLive: const, index: 0))
         op0.addInput(StringTensor("hello"))
         XCTAssertEqual("\(op0)", "Identity_0[](Const_0:0*, conc):1")
@@ -57,8 +66,10 @@ final class LazyTensorOperationTests: XCTestCase {
 
     func testListInputs() {
         let zero = Tensor<Float>(0.0)
-        let tuple = LazyTensorOperation(_withID: "0", "Tuple", 3)
-        let op0 = LazyTensorOperation(_withID: "0", "IdentityN", 2)
+        let tuple = LazyTensorOperation(
+            _id: "0", name: "Tuple", outputCount: 3)
+        let op0 = LazyTensorOperation(
+            _id: "0", name: "IdentityN", outputCount: 2)
         let inputs: [TensorHandle<Float>] = [
             zero.handle,
             TensorHandle<Float>(handle: LazyTensor(_lazy: tuple, index: 0)),
@@ -72,7 +83,8 @@ final class LazyTensorOperationTests: XCTestCase {
     }
 
     func testBoolAttribute() {
-        let op0 = LazyTensorOperation(_withID: "0", "Nop", 2)
+        let op0 = LazyTensorOperation(
+            _id: "0", name: "Nop", outputCount: 2)
         op0.updateAttribute("b", true)
         XCTAssertEqual("\(op0)", "Nop_0[b: true]():2")
         op0.updateAttribute("b", false)
@@ -80,7 +92,8 @@ final class LazyTensorOperationTests: XCTestCase {
     }
 
     func testIntAttribute() {
-        let op0 = LazyTensorOperation(_withID: "0", "Nop", 2)
+        let op0 = LazyTensorOperation(
+            _id: "0", name: "Nop", outputCount: 2)
         op0.updateAttribute("i", 10)
         XCTAssertEqual("\(op0)", "Nop_0[i: Int(10)]():2")
         op0.updateAttribute("i", 20)
@@ -88,7 +101,8 @@ final class LazyTensorOperationTests: XCTestCase {
     }
 
     func testFloatAttribute() {
-        let op0 = LazyTensorOperation(_withID: "0", "Nop", 2)
+        let op0 = LazyTensorOperation(
+            _id: "0", name: "Nop", outputCount: 2)
         op0.updateAttribute("f", Float(10.0))
         XCTAssertEqual("\(op0)", "Nop_0[f: Float(10.0)]():2")
         op0.updateAttribute("f", Float(20.0))
@@ -96,7 +110,8 @@ final class LazyTensorOperationTests: XCTestCase {
     }
 
     func testDoubleAttribute() {
-        let op0 = LazyTensorOperation(_withID: "0", "Nop", 2)
+        let op0 = LazyTensorOperation(
+            _id: "0", name: "Nop", outputCount: 2)
         op0.updateAttribute("d", Double(10.0))
         XCTAssertEqual("\(op0)", "Nop_0[d: Double(10.0)]():2")
         op0.updateAttribute("d", Double(20.0))
@@ -104,7 +119,8 @@ final class LazyTensorOperationTests: XCTestCase {
     }
 
     func testStringAttribute() {
-        let op0 = LazyTensorOperation(_withID: "0", "Nop", 2)
+        let op0 = LazyTensorOperation(
+            _id: "0", name: "Nop", outputCount: 2)
         op0.updateAttribute("s", "hello")
         XCTAssertEqual("\(op0)", "Nop_0[s: \"hello\"]():2")
         op0.updateAttribute("s", "world")
@@ -112,7 +128,8 @@ final class LazyTensorOperationTests: XCTestCase {
     }
 
     func testTensorDataTypeAttribute() {
-        let op0 = LazyTensorOperation(_withID: "0", "Nop", 2)
+        let op0 = LazyTensorOperation(
+            _id: "0", name: "Nop", outputCount: 2)
         op0.updateAttribute("a", TensorDataType(TF_INT32))
         XCTAssertEqual("\(op0)", "Nop_0[a: int32]():2")
         op0.updateAttribute("a", TensorDataType(TF_FLOAT))
@@ -122,7 +139,8 @@ final class LazyTensorOperationTests: XCTestCase {
     }
 
     func testArrayAttributes() {
-        let op0 = LazyTensorOperation(_withID: "0", "Nop", 2)
+        let op0 = LazyTensorOperation(
+            _id: "0", name: "Nop", outputCount: 2)
         let bools: [Bool] = [true, false]
         op0.updateAttribute("a", bools)
         XCTAssertEqual("\(op0)", "Nop_0[a: [true, false]]():2")
@@ -145,7 +163,8 @@ final class LazyTensorOperationTests: XCTestCase {
     }
 
     func testMultipleAttributes() {
-        let op0 = LazyTensorOperation(_withID: "0", "Nop", 2)
+        let op0 = LazyTensorOperation(
+            _id: "0", name: "Nop", outputCount: 2)
         op0.updateAttribute("b", true)
         op0.updateAttribute("s", "hello")
         XCTAssert(

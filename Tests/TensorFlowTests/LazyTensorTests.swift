@@ -28,7 +28,8 @@ final class LazyTensorTests: XCTestCase {
             _materialized: zeroTFEHandle)
         XCTAssertEqual("\(materializedConcTensor)", "conc*")
 
-        let op = LazyTensorOperation(_withID: "0", "IdentityN", 3)
+        let op = LazyTensorOperation(
+            _id: "0", name: "IdentityN", outputCount: 3)
         let symTensor0 = LazyTensor(_lazy: op, index: 0)
         XCTAssertEqual("\(symTensor0)", "IdentityN_0:0")
 

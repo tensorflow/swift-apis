@@ -77,7 +77,7 @@ class LazyTensorOperation : TensorOperation {
     var outputs: [TFETensorHandle]?
     var id: String?
 
-    static public var materializationCallback: (String) -> () = {
+    static var materializationCallback: (String) -> () = {
         (s: String) in return }
 
     public static func registerMaterializationCallback(
@@ -85,7 +85,7 @@ class LazyTensorOperation : TensorOperation {
         materializationCallback = f
     }
 
-    public var nameWithID: String {
+    var nameWithID: String {
         if let id = self.id {
             return "\(name)_\(id)"
         } else {
@@ -93,7 +93,7 @@ class LazyTensorOperation : TensorOperation {
         }
     }
 
-    public init(_withID id: String?, _ name: String, _ outputCount: Int) {
+    init(_id id: String?, name: String, outputCount: Int) {
         self.name = name
         self.inputs = []
         self.attrs = [:]
@@ -102,60 +102,60 @@ class LazyTensorOperation : TensorOperation {
         self.id = id
     }
 
-    public required convenience init(_ name: String, _ outputCount: Int) {
-        self.init(_withID: nil, name, outputCount)
+    required convenience init(_ name: String, _ outputCount: Int) {
+        self.init(_id: nil, name: name, outputCount: outputCount)
     }
 
-    public func evaluate() -> [LazyTensor] {
-        return Array((0..<outputCount).map {
-                LazyTensor(_lazyLive: self, index: $0)
-            })
+    func evaluate() -> [LazyTensor] {
+        return (0..<outputCount).map {
+            LazyTensor(_lazyLive: self, index: $0)
+        }
     }
 
-    public func addInput(_ input : LazyTensor) {
+    func addInput(_ input : LazyTensor) {
         inputs.append(Input.single(input))
     }
 
-    public func updateAttribute(_ name: String, _ value: Bool) {
+    func updateAttribute(_ name: String, _ value: Bool) {
         attrs[name] = Attribute.BoolValue(value)
     }
-    public func updateAttribute(_ name: String, _ value: Int) {
+    func updateAttribute(_ name: String, _ value: Int) {
         attrs[name] = Attribute.IntValue(value)
     }
-    public func updateAttribute(_ name: String, _ value: Int32) {
+    func updateAttribute(_ name: String, _ value: Int32) {
         attrs[name] = Attribute.IntValue(Int(value))
     }
-    public func updateAttribute(_ name: String, _ value: Int64) {
-    attrs[name] = Attribute.IntValue(Int(value))
+    func updateAttribute(_ name: String, _ value: Int64) {
+        attrs[name] = Attribute.IntValue(Int(value))
     }
-    public func updateAttribute(_ name: String, _ value: Float) {
+    func updateAttribute(_ name: String, _ value: Float) {
         attrs[name] = Attribute.FloatValue(value)
     }
-    public func updateAttribute(_ name: String, _ value: Double) {
+    func updateAttribute(_ name: String, _ value: Double) {
         attrs[name] = Attribute.DoubleValue(value)
     }
-    public func updateAttribute(_ name: String, _ value: String) {
+    func updateAttribute(_ name: String, _ value: String) {
         attrs[name] = Attribute.StringValue(value)
     }
-    public func updateAttribute(_ name: String, _ value: [Bool]) {
+    func updateAttribute(_ name: String, _ value: [Bool]) {
         attrs[name] = Attribute.BoolArray(value)
     }
-    public func updateAttribute(_ name: String, _ value: [Int]) {
+    func updateAttribute(_ name: String, _ value: [Int]) {
         attrs[name] = Attribute.IntArray(value)
     }
-    public func updateAttribute(_ name: String, _ value: [Int32]) {
+    func updateAttribute(_ name: String, _ value: [Int32]) {
         attrs[name] = Attribute.IntArray(value.map { Int($0) })
     }
-    public func updateAttribute(_ name: String, _ value: [Int64]) {
+    func updateAttribute(_ name: String, _ value: [Int64]) {
         attrs[name] = Attribute.IntArray(value.map { Int($0) })
     }
-    public func updateAttribute(_ name: String, _ value: [Float]) {
+    func updateAttribute(_ name: String, _ value: [Float]) {
         attrs[name] = Attribute.FloatArray(value)
     }
-    public func updateAttribute(_ name: String, _ value: [Double]) {
+    func updateAttribute(_ name: String, _ value: [Double]) {
         attrs[name] = Attribute.DoubleArray(value)
     }
-    public func updateAttribute(_ name: String, _ value: [String]) {
+    func updateAttribute(_ name: String, _ value: [String]) {
         attrs[name] = Attribute.StringArray(value)
     }
 }
@@ -177,58 +177,58 @@ extension LazyTensorOperation : TFTensorOperation {
         }
     }
 
-    public func addInput(_ input: _AnyTensorHandle) {
+    func addInput(_ input: _AnyTensorHandle) {
         addInput(lazyTensorHandle(input))
     }
 
-    public func addInput<Scalar: TensorFlowScalar>(_ input: Tensor<Scalar>) {
+    func addInput<Scalar: TensorFlowScalar>(_ input: Tensor<Scalar>) {
         addInput(input.handle.handle)
     }
 
-    public func addInput(_ input: StringTensor) {
+    func addInput(_ input: StringTensor) {
         addInput(input.handle.handle)
     }
 
-    public func addInput(_ input: VariantHandle) {
+    func addInput(_ input: VariantHandle) {
         addInput(input.handle)
     }
 
-    public func addInput(_ input: ResourceHandle) {
+    func addInput(_ input: ResourceHandle) {
         addInput(input.handle)
     }
 
-    public func addInputList<T: TensorArrayProtocol>(_ input: T) {
+    func addInputList<T: TensorArrayProtocol>(_ input: T) {
         let lazyHandles = input._tensorHandles.map { lazyTensorHandle($0) }
         inputs.append(Input.list(lazyHandles))
     }
 
-    public func updateAttribute(_ name: String, _ value: TensorDataType) {
+    func updateAttribute(_ name: String, _ value: TensorDataType) {
         attrs[name] = Attribute.TensorDataTypeValue(value)
     }
-    public func updateAttribute(_ name: String, _ value: TensorShape) {
+    func updateAttribute(_ name: String, _ value: TensorShape) {
         assert(false, "Unimplemented TensorShape attribute.")
     }
-    public func updateAttribute(_ name: String, _ value: TensorShape?) {
+    func updateAttribute(_ name: String, _ value: TensorShape?) {
         assert(false, "Unimplemented TensorShape? attribute.")
     }
-    public func updateAttribute(_ name: String, _ value: [TensorDataType]) {
+    func updateAttribute(_ name: String, _ value: [TensorDataType]) {
         assert(false, "Unimplemented [TensorDataType] attribute.")
     }
-    public func updateAttribute(_ name: String, _ value: [TensorShape]) {
+    func updateAttribute(_ name: String, _ value: [TensorShape]) {
         assert(false, "Unimplemented [TensorShape] attribute.")
     }
-    public func updateAttribute(_ name: String, _ value: [TensorShape?]) {
+    func updateAttribute(_ name: String, _ value: [TensorShape?]) {
         assert(false, "Unimplemented [TensorShape?] attribute.")
     }
-    public func updateAttribute<In: TensorGroup, Out: TensorGroup>(
+    func updateAttribute<In: TensorGroup, Out: TensorGroup>(
         _ name: String, _ value: (In) -> Out) {
         // TODO:
         assert(false, "Unimplemented [TFFunction] attribute.")
     }
 
-  public func execute() {}
+    func execute() {}
 
-    public func execute<T0 : TensorArrayProtocol>(
+    func execute<T0 : TensorArrayProtocol>(
         _ count0: Int
     ) -> (T0) {
         let outputs = evaluate()
@@ -238,7 +238,7 @@ extension LazyTensorOperation : TFTensorOperation {
         return result
     }
 
-    public func execute<T0 : TensorArrayProtocol, T1 : TensorArrayProtocol>(
+    func execute<T0 : TensorArrayProtocol, T1 : TensorArrayProtocol>(
         _ count0: Int,
         _ count1: Int
     ) -> (T0, T1) {
@@ -251,7 +251,7 @@ extension LazyTensorOperation : TFTensorOperation {
         return result
     }
 
-    public func execute<T0 : TensorArrayProtocol, T1 : TensorArrayProtocol, T2 : TensorArrayProtocol>(
+    func execute<T0 : TensorArrayProtocol, T1 : TensorArrayProtocol, T2 : TensorArrayProtocol>(
         _ count0: Int,
         _ count1: Int,
         _ count2: Int
@@ -267,7 +267,7 @@ extension LazyTensorOperation : TFTensorOperation {
         return result
     }
 
-    public func execute<T0 : TensorArrayProtocol, T1 : TensorArrayProtocol, T2 : TensorArrayProtocol, T3 : TensorArrayProtocol>(
+    func execute<T0 : TensorArrayProtocol, T1 : TensorArrayProtocol, T2 : TensorArrayProtocol, T3 : TensorArrayProtocol>(
         _ count0: Int,
         _ count1: Int,
         _ count2: Int,
@@ -286,7 +286,7 @@ extension LazyTensorOperation : TFTensorOperation {
         return result
     }
 
-    public func execute<T0 : TensorArrayProtocol, T1 : TensorArrayProtocol, T2 : TensorArrayProtocol, T3 : TensorArrayProtocol, T4 : TensorArrayProtocol>(
+    func execute<T0 : TensorArrayProtocol, T1 : TensorArrayProtocol, T2 : TensorArrayProtocol, T3 : TensorArrayProtocol, T4 : TensorArrayProtocol>(
         _ count0: Int,
         _ count1: Int,
         _ count2: Int,
@@ -308,7 +308,7 @@ extension LazyTensorOperation : TFTensorOperation {
         return result
     }
 
-    public func execute<T0 : TensorArrayProtocol, T1 : TensorArrayProtocol, T2 : TensorArrayProtocol, T3 : TensorArrayProtocol, T4 : TensorArrayProtocol, T5 : TensorArrayProtocol>(
+    func execute<T0 : TensorArrayProtocol, T1 : TensorArrayProtocol, T2 : TensorArrayProtocol, T3 : TensorArrayProtocol, T4 : TensorArrayProtocol, T5 : TensorArrayProtocol>(
         _ count0: Int,
         _ count1: Int,
         _ count2: Int,
@@ -333,7 +333,7 @@ extension LazyTensorOperation : TFTensorOperation {
         return result
     }
 
-    public func execute<T0 : TensorArrayProtocol, T1 : TensorArrayProtocol, T2 : TensorArrayProtocol, T3 : TensorArrayProtocol, T4 : TensorArrayProtocol, T5 : TensorArrayProtocol, T6 : TensorArrayProtocol>(
+    func execute<T0 : TensorArrayProtocol, T1 : TensorArrayProtocol, T2 : TensorArrayProtocol, T3 : TensorArrayProtocol, T4 : TensorArrayProtocol, T5 : TensorArrayProtocol, T6 : TensorArrayProtocol>(
         _ count0: Int,
         _ count1: Int,
         _ count2: Int,
@@ -361,7 +361,7 @@ extension LazyTensorOperation : TFTensorOperation {
         return result
     }
 
-    public func execute<T0 : TensorArrayProtocol, T1 : TensorArrayProtocol, T2 : TensorArrayProtocol, T3 : TensorArrayProtocol, T4 : TensorArrayProtocol, T5 : TensorArrayProtocol, T6 : TensorArrayProtocol, T7 : TensorArrayProtocol>(
+    func execute<T0 : TensorArrayProtocol, T1 : TensorArrayProtocol, T2 : TensorArrayProtocol, T3 : TensorArrayProtocol, T4 : TensorArrayProtocol, T5 : TensorArrayProtocol, T6 : TensorArrayProtocol, T7 : TensorArrayProtocol>(
         _ count0: Int,
         _ count1: Int,
         _ count2: Int,
@@ -392,7 +392,7 @@ extension LazyTensorOperation : TFTensorOperation {
         return result
     }
 
-    public func execute<T0 : TensorArrayProtocol, T1 : TensorArrayProtocol, T2 : TensorArrayProtocol, T3 : TensorArrayProtocol, T4 : TensorArrayProtocol, T5 : TensorArrayProtocol, T6 : TensorArrayProtocol, T7 : TensorArrayProtocol, T8 : TensorArrayProtocol>(
+    func execute<T0 : TensorArrayProtocol, T1 : TensorArrayProtocol, T2 : TensorArrayProtocol, T3 : TensorArrayProtocol, T4 : TensorArrayProtocol, T5 : TensorArrayProtocol, T6 : TensorArrayProtocol, T7 : TensorArrayProtocol, T8 : TensorArrayProtocol>(
         _ count0: Int,
         _ count1: Int,
         _ count2: Int,
@@ -426,7 +426,7 @@ extension LazyTensorOperation : TFTensorOperation {
     return result
     }
 
-    public func execute<T0 : TensorArrayProtocol, T1 : TensorArrayProtocol, T2 : TensorArrayProtocol, T3 : TensorArrayProtocol, T4 : TensorArrayProtocol, T5 : TensorArrayProtocol, T6 : TensorArrayProtocol, T7 : TensorArrayProtocol, T8 : TensorArrayProtocol, T9 : TensorArrayProtocol>(
+    func execute<T0 : TensorArrayProtocol, T1 : TensorArrayProtocol, T2 : TensorArrayProtocol, T3 : TensorArrayProtocol, T4 : TensorArrayProtocol, T5 : TensorArrayProtocol, T6 : TensorArrayProtocol, T7 : TensorArrayProtocol, T8 : TensorArrayProtocol, T9 : TensorArrayProtocol>(
         _ count0: Int,
         _ count1: Int,
         _ count2: Int,
@@ -465,7 +465,7 @@ extension LazyTensorOperation : TFTensorOperation {
 }
 
 extension LazyTensorOperation.Attribute : CustomStringConvertible {
-    public var description: String {
+    var description: String {
         switch self {
         case .BoolValue(let v): return "\(v)"
         case .IntValue(let v): return "Int(\(v))"
@@ -532,7 +532,6 @@ extension LazyTensor: CustomStringConvertible {
 }
 
 extension LazyTensorOperation : CustomStringConvertible {
-
     public var description: String {
         let attrsDesc = attrs.map { (name, value) in "\(name): \(value)" }
         let inputsDesc = inputs.map { (input: Input) -> String in
