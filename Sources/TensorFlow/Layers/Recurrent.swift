@@ -65,6 +65,11 @@ public extension RNNCell {
     func callAsFunction(input: TimeStepInput, state: State) -> RNNCellOutput<TimeStepOutput, State> {
         return self(RNNCellInput(input: input, state: state))
     }
+
+    @differentiable
+    func call(input: TimeStepInput, state: State) -> RNNCellOutput<TimeStepOutput, State> {
+        return self(RNNCellInput(input: input, state: state))
+    }
 }
 
 /// A simple RNN cell.
@@ -213,6 +218,11 @@ public struct RNN<Cell: RNNCell>: Layer {
             timeStepOutputs.append(output.output)
         }
         return timeStepOutputs
+    }
+
+    @differentiable(wrt: (self, input))
+    public func call(_ input: [Cell.TimeStepInput], initialState: Cell.State) -> [Cell.TimeStepOutput] {
+        return callAsFunction(input, initialState: initialState)
     }
 
     @usableFromInline
