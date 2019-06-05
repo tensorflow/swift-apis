@@ -46,13 +46,8 @@ public class LazyTensor : _AnyTensorHandle {
         handle = Handle.symbolic(op, index: index, isLive: true)
     }
 
-    static var materializationCallback: (String) -> () = {
+    public static var _materializationCallback: (String) -> () = {
         (s: String) in return }
-    
-    public static func registerMaterializationCallback(
-        f: @escaping (String) -> ()) {
-        materializationCallback = f
-    }
 }
 
 class LazyTensorOperation : TensorOperation {
