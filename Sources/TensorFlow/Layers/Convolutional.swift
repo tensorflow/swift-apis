@@ -545,10 +545,9 @@ public struct TransposedConv3D: Layer {
           strides.2 + (filter.shape[2] * paddingIndex)
         let c = filter.shape[3]
         let newShape = Tensor<Int32>([Int32(batchSize), Int32(w), Int32(h), Int32(d), Int32(c)])
-        return activation(input.conv2DBackpropInput(shape: newShape, filter: filter,
-                                                    strides: (1, strides.0, strides.1,
-                                                             strides.2, 1),
-                                                    padding: padding) + bias)
+        return activation(conv3DBackpropInput(input, shape: newShape, filter: filter,
+                                             strides: (1, strides.0, strides.1,strides.2, 1),
+                                             padding: padding) + bias)
     }
 }
 
