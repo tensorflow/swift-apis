@@ -60,9 +60,9 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Returns: The output `[batchCount, newWidth, outputChannels]`.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        let conv2D = input.expandingShape(at: 1).convolved2D(
-            withFilter: filter.expandingShape(at: 0), strides: (1, 1, stride, 1), padding: padding)
-        return activation(conv2D.squeezingShape(at: 1) + bias)
+        let conv = conv2D(input.expandingShape(at: 1), filter: filter.expandingShape(at: 0),
+                          strides: (1, 1, stride, 1), padding: padding)
+        return activation(conv.squeezingShape(at: 1) + bias)
     }
 }
 
@@ -178,9 +178,8 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return activation(input.convolved2D(withFilter: filter,
-                                            strides: (1, strides.0, strides.1, 1),
-                                            padding: padding) + bias)
+        return activation(conv2D(input, filter: filter, strides: (1, strides.0, strides.1, 1),
+                                 padding: padding) + bias)
     }
 }
 
@@ -294,9 +293,9 @@ public struct Conv3D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return activation(input.convolved3D(withFilter: filter,
-                                            strides: (1, strides.0, strides.1, strides.2, 1),
-                                            padding: padding) + bias)
+        return activation(conv3D(input, filter: filter,
+                                 strides: (1, strides.0, strides.1, strides.2, 1),
+                                 padding: padding) + bias)
     }
 }
 
@@ -419,9 +418,9 @@ public struct TransposedConv2D: Layer {
           strides.1 + (filter.shape[1] * paddingIndex)
         let c = filter.shape[2]
         let newShape = Tensor<Int32>([Int32(batchSize), Int32(w), Int32(h), Int32(c)])
-        return activation(input.conv2DBackpropInput(shape: newShape, filter: filter,
-                                                    strides: (1, strides.0, strides.1, 1),
-                                                    padding: padding) + bias)
+        return activation(conv2DBackpropInput(input, shape: newShape, filter: filter,
+                                              strides: (1, strides.0, strides.1, 1),
+                                              padding: padding) + bias)
     }
 }
 

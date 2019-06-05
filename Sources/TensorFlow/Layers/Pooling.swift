@@ -44,9 +44,8 @@ public struct MaxPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return input.expandingShape(at: 1).maxPooled2D(
-            kernelSize: (1, 1, poolSize, 1), strides: (1, 1, stride, 1), padding: padding
-        ).squeezingShape(at: 1)
+        return maxPool2D(input.expandingShape(at: 1), filterSize: (1, 1, poolSize, 1),
+                         strides: (1, 1, stride, 1), padding: padding).squeezingShape(at: 1)
     }
 }
 
@@ -78,8 +77,7 @@ public struct MaxPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return input.maxPooled2D(
-            kernelSize: poolSize, strides: strides, padding: padding)
+        return maxPool2D(input, filterSize: poolSize, strides: strides, padding: padding)
     }
 }
 
@@ -125,7 +123,7 @@ public struct MaxPool3D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return input.maxPooled3D(kernelSize: poolSize, strides: strides, padding: padding)
+        return maxPool3D(input, filterSize: poolSize, strides: strides, padding: padding)
     }
 }
 
@@ -185,9 +183,8 @@ public struct AvgPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return input.expandingShape(at: 1).averagePooled2D(
-            kernelSize: (1, 1, poolSize, 1), strides: (1, 1, stride, 1), padding: padding
-        ).squeezingShape(at: 1)
+        return avgPool2D(input.expandingShape(at: 1), filterSize: (1, 1, poolSize, 1),
+                         strides: (1, 1, stride, 1), padding: padding).squeezingShape(at: 1)
     }
 }
 
@@ -219,7 +216,7 @@ public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return input.averagePooled2D(kernelSize: poolSize, strides: strides, padding: padding)
+        return avgPool2D(input, filterSize: poolSize, strides: strides, padding: padding)
     }
 }
 
@@ -265,7 +262,7 @@ public struct AvgPool3D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return input.averagePooled3D(kernelSize: poolSize, strides: strides, padding: padding)
+        return avgPool3D(input, filterSize: poolSize, strides: strides, padding: padding)
     }
 }
 
