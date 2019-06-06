@@ -1,10 +1,7 @@
 import CTensorFlow
 
-/// The `TF_Tensor *` type.
-typealias CTFTensor = OpaquePointer
-
 @usableFromInline
-class LazyTensor : _AnyTensorHandle {
+class LazyTensor: _AnyTensorHandle {
     enum Handle {
         /// Bool indicates if this concrete TFETensorhandle was a result of
         /// materialization.
@@ -48,10 +45,11 @@ class LazyTensor : _AnyTensorHandle {
     }
 
     public static var _materializationCallback: (String) -> () = {
-        (s: String) in return }
+        (s: String) in return
+    }
 }
 
-class LazyTensorOperation : TensorOperation {
+class LazyTensorOperation: TensorOperation {
      typealias TensorValueHandle = LazyTensor
 
     enum Input {
@@ -156,7 +154,7 @@ class LazyTensorOperation : TensorOperation {
     }
 }
 
-extension LazyTensorOperation : TFTensorOperation {
+extension LazyTensorOperation: TFTensorOperation {
     private func lazyTensorHandle(_ input: _AnyTensorHandle) -> LazyTensor {
         if let lazyHandle = input as? LazyTensor {
             if case let LazyTensor.Handle.symbolic(
@@ -460,7 +458,7 @@ extension LazyTensorOperation : TFTensorOperation {
     }
 }
 
-extension LazyTensorOperation.Attribute : CustomStringConvertible {
+extension LazyTensorOperation.Attribute: CustomStringConvertible {
     var description: String {
         switch self {
         case .BoolValue(let v): return "\(v)"
@@ -527,15 +525,16 @@ extension LazyTensor: CustomStringConvertible {
     }
 }
 
-extension LazyTensorOperation : CustomStringConvertible {
+extension LazyTensorOperation: CustomStringConvertible {
     public var description: String {
         let attrsDesc = attrs.map { (name, value) in "\(name): \(value)" }
         let inputsDesc = inputs.map { (input: Input) -> String in
             switch input {
             case Input.single(let lazyTensor):
                 return "\(lazyTensor)"
-            case Input.list(let lazyTensorList): do {
-                    let lazyTensors = lazyTensorList.map{ "\($0)" }
+            case Input.list(let lazyTensorList):
+                do {
+                    let lazyTensors = lazyTensorList.map { "\($0)" }
                     let lazyTensorsDesc = lazyTensors.joined(separator: ", ")
                     return "[\(lazyTensorsDesc)]"
                 }
