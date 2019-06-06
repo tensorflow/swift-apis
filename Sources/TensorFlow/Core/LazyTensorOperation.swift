@@ -345,7 +345,43 @@ extension LazyTensorOperation: TFTensorOperation {
         fatalError("Unimplemented [TFFunction] attribute.")
     }
 
-    func execute() {}
+    func execute() {
+        // Just run it now.
+        let op = TFE_Op(name, outputCount)
+        // TODO: Materialize en masse and not one-by-one.
+        for input in inputs {
+            switch input {
+            case .single(let v):
+                op.addInput(v._tfeTensorHandle)
+            case .list(let values): do {
+                    for v in values {
+                        op.addInput(v._tfeTensorHandle)
+                    }
+                }
+            }
+        }
+        for (name, value) in attributes {
+            switch value {
+            case .boolValue(let v): op.updateAttribute(name, v)
+            case .intValue(let v): op.updateAttribute(name, v)
+            case .floatValue(let v): op.updateAttribute(name, v)
+            case .doubleValue(let v): op.updateAttribute(name, v)
+            case .stringValue(let v): op.updateAttribute(name, v)
+            case .boolArray(let v): op.updateAttribute(name, v)
+            case .intArray(let v): op.updateAttribute(name, v)
+            case .floatArray(let v): op.updateAttribute(name, v)
+            case .doubleArray(let v): op.updateAttribute(name, v)
+            case .stringArray(let v): op.updateAttribute(name, v)
+            case .constTensor(_): assert(false, "Const Tensor cannot be eager attribute.")
+            case .tensorDataTypeValue(let v): op.updateAttribute(name, v)
+            case .tensorDataTypeArray(let v): op.updateAttribute(name, v)
+            case .optionalTensorShape(let v): op.updateAttribute(name, v)
+            case .optionalTensorShapeArray(let v): op.updateAttribute(name, v)
+            case .tensorFunctionPointer(_): assert(false, "Unimplemented")
+            }
+        }
+        op.execute()
+    }
 
     func execute<T0: TensorArrayProtocol>(
         _ count0: Int
