@@ -153,6 +153,7 @@ class LazyTensorOperation: TensorOperation {
         case ConstTensor(TFETensorHandle)
         case TensorDataTypeValue(TensorDataType)
         case TensorFunctionPointer(_TensorFunctionPointer)
+        case TensorDataTypeArray([TensorDataType])
     }
 
     let name: String
@@ -323,7 +324,7 @@ extension LazyTensorOperation: TFTensorOperation {
         assert(false, "Unimplemented TensorShape? attribute.")
     }
     func updateAttribute(_ name: String, _ value: [TensorDataType]) {
-        assert(false, "Unimplemented [TensorDataType] attribute.")
+        attrs[name] = Attribute.TensorDataTypeArray(value)
     }
     func updateAttribute(_ name: String, _ value: [TensorShape]) {
         assert(false, "Unimplemented [TensorShape] attribute.")
@@ -659,6 +660,11 @@ extension LazyTensorOperation.Attribute: CustomStringConvertible {
         case .ConstTensor(let v): return v.valueDescription
         case .TensorDataTypeValue(let v): return dataTypeAsString(v)
         case .TensorFunctionPointer(let v): return "TFFunction(\(v.name))"
+        case .TensorDataTypeArray(let values): do {
+                let descriptions = (values.map { dataTypeAsString($0) })
+                let descString = descriptions.joined(separator: ", ")
+                return "[\(descString)]"
+            }
         }
     }
 
