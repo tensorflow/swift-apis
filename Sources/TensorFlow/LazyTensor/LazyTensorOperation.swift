@@ -3,7 +3,8 @@ import CTensorFlow
 /// The `TF_Tensor *` type.
 typealias CTFTensor = OpaquePointer
 
-public class LazyTensor : _AnyTensorHandle {
+@usableFromInline
+class LazyTensor : _AnyTensorHandle {
     enum Handle {
         /// Bool indicates if this concrete TFETensorhandle was a result of
         /// materialization.
