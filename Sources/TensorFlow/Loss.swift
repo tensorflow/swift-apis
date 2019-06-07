@@ -24,6 +24,18 @@ public func meanSquaredError<Scalar: TensorFlowFloatingPoint>(
     return (expected - predicted).squared().mean()
 }
 
+/// Computes the absolute squared error between predictions and labels.
+///
+/// - Parameters:
+///   - predicted: Predicted outputs from a neural network.
+///   - labels: Expected values, i.e. targets, that correspond to the correct output.
+@differentiable(wrt: predicted)
+public func meanAbsoluteError<Scalar: TensorFlowFloatingPoint>(
+    predicted: Tensor<Scalar>, expected: Tensor<Scalar>
+) -> Tensor<Scalar> {
+    return abs(expected - predicted).mean()
+}
+
 /// Computes the softmax cross entropy (categorical cross entropy) between logits and labels.
 ///
 /// - Parameters:
