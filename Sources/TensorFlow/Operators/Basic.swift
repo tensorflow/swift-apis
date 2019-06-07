@@ -386,8 +386,8 @@ public extension Tensor {
     func batchGathering(atIndices indices: Tensor<Int32>) -> Tensor {
         var batchIndices = indices
         var accumulated = Tensor<Int32>(ones: [])
-        accumulated *= shapeTensor.withoutDerivative()[1]
-        let dValue = shapeTensor.withoutDerivative()[0]
+        accumulated *= noDerivative(at: shapeTensor)[1]
+        let dValue = noDerivative(at: shapeTensor)[0]
         let dIndices = Tensor<Int32>(
             rangeFrom: Tensor<Int32>(zeros: []),
             to: dValue,
@@ -398,8 +398,8 @@ public extension Tensor {
             Tensor<Int32>([Int32](repeating: 1, count: indices.rank - 1))])
         batchIndices += dIndices.reshaped(toShape: dShape)
         let flatIndices = batchIndices.flattened()
-        let outerShape = shapeTensor.withoutDerivative()[2...]
-        let innerShape = shapeTensor.withoutDerivative()[..<2].product(squeezingAxes: [0])
+        let outerShape = noDerivative(at: shapeTensor)[2...]
+        let innerShape = noDerivative(at: shapeTensor)[..<2].product(squeezingAxes: [0])
         let flatTensor = reshaped(toShape: innerShape.rankLifted().concatenated(with: outerShape))
         let flatResult = flatTensor.gathering(atIndices: flatIndices)
         return flatResult.reshaped(toShape: indices.shapeTensor.concatenated(with: outerShape))

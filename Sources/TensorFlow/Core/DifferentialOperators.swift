@@ -12,6 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+@_semantics("autodiff.nonvarying")
+public func noDerivative<T>(at x: T) -> T {
+    return x
+}
+
 //===------------------------------------------------------------------------------------------===//
 // Method-style Differential Operators
 //===------------------------------------------------------------------------------------------===//
