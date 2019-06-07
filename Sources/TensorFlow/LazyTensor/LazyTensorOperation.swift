@@ -44,9 +44,7 @@ class LazyTensor: _AnyTensorHandle {
         handle = Handle.symbolic(op, index: index, isLive: true)
     }
 
-    static var _materializationCallback: (String) -> () = {
-        (s: String) in return
-    }
+    static var _materializationCallback: (String) -> () = { _ in }
 }
 
 class LazyTensorOperation: TensorOperation {
