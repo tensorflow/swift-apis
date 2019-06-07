@@ -90,7 +90,7 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable(vjp: _vjpApplied(to:))
-    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         switch Context.local.learningPhase {
         case .training:
             return applyingTraining(to: input)
@@ -185,7 +185,7 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         let mean = input.mean(alongAxes: axis)
         let variance = input.variance(alongAxes: axis)
         let inv = rsqrt(variance + epsilon) * scale

@@ -53,7 +53,7 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable(vjp: _vjpApplied(to:))
-    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         switch Context.local.learningPhase {
         case .training:
             return applyingTraining(to: input)
@@ -92,7 +92,7 @@ public struct Flatten<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         let batchSize = input.shape[0]
         let remaining = input.shape[1..<input.rank].contiguousSize
         return input.reshaped(to: [batchSize, remaining])
@@ -128,7 +128,7 @@ public struct Reshape<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input.reshaped(toShape: shape)
     }
 }
@@ -163,7 +163,7 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         return activation(matmul(input, weight) + bias)
     }
 }
@@ -214,8 +214,8 @@ public extension Dense {
         inputSize: Int,
         outputSize: Int,
         activation: @escaping Activation = identity,
-        seed: (Int64, Int64) = (Int64.random(in: Int64.min..<Int64.max),
-                                Int64.random(in: Int64.min..<Int64.max))
+        seed: (Int32, Int32) = (Int32.random(in: Int32.min..<Int32.max),
+                                Int32.random(in: Int32.min..<Int32.max))
     ) {
         self.init(weight: Tensor(glorotUniform: [inputSize, outputSize],
                                  seed: seed),

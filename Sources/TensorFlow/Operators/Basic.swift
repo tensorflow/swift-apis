@@ -125,6 +125,20 @@ public extension Tensor {
             numSplit: Int64(sizes.shape[0]))
     }
 
+    /// Returns a tiled tensor, constructed by tiling this tensor.
+    ///
+    /// This constructor creates a new tensor by replicating this tensor `multiples` times. The
+    /// constructed tensor's `i`'th dimension has `self.shape[i] * multiples[i]` elements, and the
+    /// values of this tensor are replicated `multiples[i]` times along the `i`'th dimension. For
+    /// example, tiling `[a b c d]` by `[2]` produces `[a b c d a b c d]`.
+    ///
+    /// - Precondition: The shape of `multiples` must be `[tensor.rank]`.
+    @inlinable
+    @differentiable(wrt: self, vjp: _vjpTiled(multiples:) where Scalar: TensorFlowFloatingPoint)
+    func tiled(multiples: Tensor<Int32>) -> Tensor {
+        return Raw.tile(self, multiples: multiples)
+    }
+
     /// Reshape to the shape of the specified `Tensor`.
     /// - Precondition: The number of scalars matches the new shape.
     @inlinable
@@ -208,6 +222,17 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     ) -> ([Tensor], (Array<Tensor>.TangentVector) -> Tensor) {
         let result = unstacked(alongAxis: axis)
         return (result, { v in Tensor(stacking: v.base, alongAxis: axis) })
+    }
+
+    @inlinable
+    func _vjpTiled(
+        multiples: Tensor<Int32>
+    ) -> (Tensor, (Tensor) -> Tensor) {
+        return (tiled(multiples: multiples), { [shape = shapeTensor] v in
+            let splitShape = Tensor<Int32>(stacking: [multiples, shape]).transposed().flattened()
+            let axes = Tensor<Int32>(rangeFrom: 0, to: Int32(splitShape.scalarCount), stride: 2)
+            return v.reshaped(toShape: splitShape).sum(squeezingAxes: axes)
+        })
     }
 
     @inlinable
@@ -403,6 +428,56 @@ public extension Tensor {
         let flatTensor = reshaped(toShape: innerShape.rankLifted().concatenated(with: outerShape))
         let flatResult = flatTensor.gathering(atIndices: flatIndices)
         return flatResult.reshaped(toShape: indices.shapeTensor.concatenated(with: outerShape))
+    }
+
+    /// Gathers values from this tensor according to the provided boolean mask.
+    ///
+    /// For example:
+    /// ```
+    /// // 1-D example
+    /// // tensor is [0, 1, 2, 3]
+    /// // mask is [true, false, true, false]
+    /// tensor.gathering(where: mask) // is [0, 2]
+    ///
+    /// // 2-D example
+    /// // tensor is [[1, 2], [3, 4], [5, 6]]
+    /// // mask is [true, false, true]
+    /// tensor.gathering(where: mask) // is [[1, 2], [5, 6]]
+    /// ```
+    ///
+    /// In general, `0 < mask.rank = K <= tensor.rank`, and the `mask`'s shape must match the first
+    /// K dimensions of the `tensor`'s shape. We then have:
+    /// `tensor.gathering(where: mask)[i, j1, ..., jd] = tensor[i1, ..., iK, j1, ..., jd]`, where
+    /// `[i1, ..., iK]` is the `i`th `true` entry of `mask` (row-major order).
+    ///
+    /// The `axis` could be used with `mask` to indicate the axis to mask from. In that case,
+    /// `axis + mask.rank <= tensor.rank` and the `mask``'s shape must match the first
+    /// `axis + mask.rank` dimensions of the `tensor`'s shape.
+    ///
+    /// - Parameters:
+    ///   - mask: K-D boolean tensor, where `K <= self.rank`.
+    ///   - axis: 0-D integer tensor representing the axis in `self` to mask from, where
+    ///     `K + axis <= self.rank`.
+    ///
+    /// - Precondition: The `mask` cannot be a scalar: `mask.rank != 0`.
+    ///
+    /// - Returns: `(self.rank - K + 1)`-dimensional tensor populated by entries in this tensor
+    ///   corresponding to `true` values in `mask`.
+    @inlinable
+    // @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+    func gathering(where mask: Tensor<Bool>, alongAxis axis: Int = 0) -> Tensor {
+        precondition(mask.rank != 0, "The boolean mask cannot be a scalar.")
+        // TODO: Remove once control flow AD is supported.
+        let rank = self.rank
+        let posAxis = { axis < 0 ? axis + rank : axis }()
+        let leadingSize = shapeTensor[posAxis ..< posAxis + mask.rank].product().rankLifted()
+        let reshapedTensor = reshaped(
+            toShape: Tensor<Int32>(concatenating: [
+                shapeTensor[..<posAxis],
+                leadingSize,
+                shapeTensor[(posAxis + mask.rank)...]]))
+        let indices = Tensor<Int32>(mask.flattened().nonZeroIndices().squeezingShape(at: 1))
+        return reshapedTensor.gathering(atIndices: indices, alongAxis: posAxis)
     }
 }
 

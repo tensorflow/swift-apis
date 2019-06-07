@@ -48,14 +48,14 @@ final class BasicOperatorTests: XCTestCase {
         let array0D = element0D.array
 
         /// Test shapes
-        XCTAssertEqual([4, 5], array2D.shape)
-        XCTAssertEqual([5], array1D.shape)
-        XCTAssertEqual([], array0D.shape)
+        XCTAssertEqual(array2D.shape, [4, 5])
+        XCTAssertEqual(array1D.shape, [5])
+        XCTAssertEqual(array0D.shape, [])
 
         /// Test scalars
-        XCTAssertEqual(Array(stride(from: 40.0, to: 60, by: 1)), array2D.scalars)
-        XCTAssertEqual(Array(stride(from: 35.0, to: 40, by: 1)), array1D.scalars)
-        XCTAssertEqual([43], array0D.scalars)
+        XCTAssertEqual(array2D.scalars, Array(stride(from: 40.0, to: 60, by: 1)))
+        XCTAssertEqual(array1D.scalars, Array(stride(from: 35.0, to: 40, by: 1)))
+        XCTAssertEqual(array0D.scalars, [43])
     }
 
     func testElementIndexingAssignment() {
@@ -76,14 +76,14 @@ final class BasicOperatorTests: XCTestCase {
         let array0D = element0D.array
 
         /// Test shapes
-        XCTAssertEqual([4, 5], array2D.shape)
-        XCTAssertEqual([5], array1D.shape)
-        XCTAssertEqual([], array0D.shape)
+        XCTAssertEqual(array2D.shape, [4, 5])
+        XCTAssertEqual(array1D.shape, [5])
+        XCTAssertEqual(array0D.shape, [])
 
         /// Test scalars
-        XCTAssertEqual(Array(stride(from: 20.0, to: 40, by: 1)), array2D.scalars)
-        XCTAssertEqual(Array(stride(from: 35.0, to: 40, by: 1)), array1D.scalars)
-        XCTAssertEqual([23], array0D.scalars)
+        XCTAssertEqual(array2D.scalars, Array(stride(from: 20.0, to: 40, by: 1)))
+        XCTAssertEqual(array1D.scalars, Array(stride(from: 35.0, to: 40, by: 1)))
+        XCTAssertEqual(array0D.scalars, [23])
     }
 
     func testNestedElementIndexing() {
@@ -99,12 +99,12 @@ final class BasicOperatorTests: XCTestCase {
         let array0D = element0D.array
 
         /// Test shapes
-        XCTAssertEqual([5], array1D.shape)
-        XCTAssertEqual([], array0D.shape)
+        XCTAssertEqual(array1D.shape, [5])
+        XCTAssertEqual(array0D.shape, [])
 
         /// Test scalars
-        XCTAssertEqual(Array(stride(from: 35.0, to: 40, by: 1)), array1D.scalars)
-        XCTAssertEqual([43], array0D.scalars)
+        XCTAssertEqual(array1D.scalars, Array(stride(from: 35.0, to: 40, by: 1)))
+        XCTAssertEqual(array0D.scalars, [43])
     }
 
     func testSliceIndexing() {
@@ -123,14 +123,14 @@ final class BasicOperatorTests: XCTestCase {
         let array1D = slice1D.array
 
         /// Test shapes
-        XCTAssertEqual([1, 4, 5], array3D.shape)
-        XCTAssertEqual([2, 5], array2D.shape)
-        XCTAssertEqual([2], array1D.shape)
+        XCTAssertEqual(array3D.shape, [1, 4, 5])
+        XCTAssertEqual(array2D.shape, [2, 5])
+        XCTAssertEqual(array1D.shape, [2])
 
         /// Test scalars
-        XCTAssertEqual(Array(stride(from: 40.0, to: 60, by: 1)), array3D.scalars)
-        XCTAssertEqual(Array(stride(from: 20.0, to: 30, by: 1)), array2D.scalars)
-        XCTAssertEqual(Array(stride(from: 3.0, to: 5, by: 1)), array1D.scalars)
+        XCTAssertEqual(array3D.scalars, Array(stride(from: 40.0, to: 60, by: 1)))
+        XCTAssertEqual(array2D.scalars, Array(stride(from: 20.0, to: 30, by: 1)))
+        XCTAssertEqual(array1D.scalars, Array(stride(from: 3.0, to: 5, by: 1)))
     }
 
     func testSliceIndexingAssignment() {
@@ -151,14 +151,14 @@ final class BasicOperatorTests: XCTestCase {
         let array1D = slice1D.array
 
         /// Test shapes
-        XCTAssertEqual([1, 4, 5], array3D.shape)
-        XCTAssertEqual([2, 5], array2D.shape)
-        XCTAssertEqual([2], array1D.shape)
+        XCTAssertEqual(array3D.shape, [1, 4, 5])
+        XCTAssertEqual(array2D.shape, [2, 5])
+        XCTAssertEqual(array1D.shape, [2])
 
         /// Test scalars
-        XCTAssertEqual(Array(stride(from: 20.0, to: 40, by: 1)), array3D.scalars)
-        XCTAssertEqual(Array(stride(from: 20.0, to: 30, by: 1)), array2D.scalars)
-        XCTAssertEqual(Array(stride(from: 3.0, to: 5, by: 1)), array1D.scalars)
+        XCTAssertEqual(array3D.scalars, Array(stride(from: 20.0, to: 40, by: 1)))
+        XCTAssertEqual(array2D.scalars, Array(stride(from: 20.0, to: 30, by: 1)))
+        XCTAssertEqual(array1D.scalars, Array(stride(from: 3.0, to: 5, by: 1)))
     }
 
     func testEllipsisIndexing() {
@@ -179,14 +179,14 @@ final class BasicOperatorTests: XCTestCase {
         let array1D = slice1D.array
 
         /// Test shapes
-        XCTAssertEqual([1, 4, 5], array3D.shape)
-        XCTAssertEqual([2, 5], array2D.shape)
-        XCTAssertEqual([2], array1D.shape)
+        XCTAssertEqual(array3D.shape, [1, 4, 5])
+        XCTAssertEqual(array2D.shape, [2, 5])
+        XCTAssertEqual(array1D.shape, [2])
 
         /// Test scalars
-        XCTAssertEqual(Array(stride(from: 20.0, to: 40, by: 1)), array3D.scalars)
-        XCTAssertEqual(Array(stride(from: 20.0, to: 30, by: 1)), array2D.scalars)
-        XCTAssertEqual(Array(stride(from: 3.0, to: 5, by: 1)), array1D.scalars)
+        XCTAssertEqual(array3D.scalars, Array(stride(from: 20.0, to: 40, by: 1)))
+        XCTAssertEqual(array2D.scalars, Array(stride(from: 20.0, to: 30, by: 1)))
+        XCTAssertEqual(array1D.scalars, Array(stride(from: 3.0, to: 5, by: 1)))
     }
 
     func testNewAxisIndexing() {
@@ -207,14 +207,14 @@ final class BasicOperatorTests: XCTestCase {
         let array1D = slice1D.array
 
         /// Test shapes
-        XCTAssertEqual([1, 1, 4, 5], array3D.shape)
-        XCTAssertEqual([1, 2, 5], array2D.shape)
-        XCTAssertEqual([1, 2, 1], array1D.shape)
+        XCTAssertEqual(array3D.shape, [1, 1, 4, 5])
+        XCTAssertEqual(array2D.shape, [1, 2, 5])
+        XCTAssertEqual(array1D.shape, [1, 2, 1])
 
         /// Test scalars
-        XCTAssertEqual(Array(stride(from: 40.0, to: 60, by: 1)), array3D.scalars)
-        XCTAssertEqual(Array(stride(from: 20.0, to: 30, by: 1)), array2D.scalars)
-        XCTAssertEqual(Array(stride(from: 3.0, to: 5, by: 1)), array1D.scalars)
+        XCTAssertEqual(array3D.scalars, Array(stride(from: 40.0, to: 60, by: 1)))
+        XCTAssertEqual(array2D.scalars, Array(stride(from: 20.0, to: 30, by: 1)))
+        XCTAssertEqual(array1D.scalars, Array(stride(from: 3.0, to: 5, by: 1)))
     }
 
     func testSqueezeAxisIndexing() {
@@ -237,14 +237,14 @@ final class BasicOperatorTests: XCTestCase {
         let array1D = slice1D.array
 
         /// Test shapes
-        XCTAssertEqual([4, 5], array3D.shape)
-        XCTAssertEqual([2, 5], array2D.shape)
-        XCTAssertEqual([2], array1D.shape)
+        XCTAssertEqual(array3D.shape, [4, 5])
+        XCTAssertEqual(array2D.shape, [2, 5])
+        XCTAssertEqual(array1D.shape, [2])
 
         /// Test scalars
-        XCTAssertEqual(Array(stride(from: 40.0, to: 60, by: 1)), array3D.scalars)
-        XCTAssertEqual(Array(stride(from: 20.0, to: 30, by: 1)), array2D.scalars)
-        XCTAssertEqual(Array(stride(from: 3.0, to: 5, by: 1)), array1D.scalars)
+        XCTAssertEqual(array3D.scalars, Array(stride(from: 40.0, to: 60, by: 1)))
+        XCTAssertEqual(array2D.scalars, Array(stride(from: 20.0, to: 30, by: 1)))
+        XCTAssertEqual(array1D.scalars, Array(stride(from: 3.0, to: 5, by: 1)))
     }
 
     func testStridedSliceIndexing() {
@@ -263,16 +263,17 @@ final class BasicOperatorTests: XCTestCase {
         let array1D = slice1D.array
 
         /// Test shapes
-        XCTAssertEqual([1, 4, 5], array3D.shape)
-        XCTAssertEqual([2, 5], array2D.shape)
-        XCTAssertEqual([2], array1D.shape)
+        XCTAssertEqual(array3D.shape, [1, 4, 5])
+        XCTAssertEqual(array2D.shape, [2, 5])
+        XCTAssertEqual(array1D.shape, [2])
 
         /// Test scalars
-        XCTAssertEqual(Array(stride(from: 40.0, to: 60, by: 1)), array3D.scalars)
+        XCTAssertEqual(array3D.scalars, Array(stride(from: 40.0, to: 60, by: 1)))
         XCTAssertEqual(
+            array2D.scalars,
             Array(stride(from: 20.0, to: 25, by: 1)) + 
-            Array(stride(from: 30.0, to: 35, by: 1)), array2D.scalars)
-        XCTAssertEqual(Array(stride(from: 1.0, to: 5, by: 2)), array1D.scalars)
+            Array(stride(from: 30.0, to: 35, by: 1)))
+        XCTAssertEqual(array1D.scalars, Array(stride(from: 1.0, to: 5, by: 2)))
     }
 
     func testStridedSliceIndexingAssignment() {
@@ -291,20 +292,20 @@ final class BasicOperatorTests: XCTestCase {
         let array3D = slice3D.array
         let array2D = slice2D.array
         let array1D = slice1D.array
-
+		
         /// Test shapes
-        XCTAssertEqual([1, 4, 5], array3D.shape)
-        XCTAssertEqual([2, 5], array2D.shape)
-        XCTAssertEqual([2], array1D.shape)
+        XCTAssertEqual(array3D.shape, [1, 4, 5])
+        XCTAssertEqual(array2D.shape, [2, 5])
+        XCTAssertEqual(array1D.shape, [2])
 
         /// Test scalars
-        XCTAssertEqual(
-            Array(stride(from: 20.0, to: 30, by: 2)) + 
-            Array(stride(from: 45.0, to: 50, by: 1)) + 
-            Array(stride(from: 30.0, to: 40, by: 2)) + 
-            Array(stride(from: 55.0, to: 60, by: 1)), array3D.scalars)
-        XCTAssertEqual(Array(stride(from: 20.0, to: 30, by: 1)), array2D.scalars)
-        XCTAssertEqual(Array(stride(from: 3.0, to: 5, by: 1)), array1D.scalars)
+        XCTAssertEqual(array3D.scalars,
+                       [Float](stride(from: 20.0, to: 30, by: 2)) +
+                       [Float](stride(from: 45.0, to: 50, by: 1)) +
+                       [Float](stride(from: 30.0, to: 40, by: 2)) +
+                       [Float](stride(from: 55.0, to: 60, by: 1)))
+        XCTAssertEqual(array2D.scalars, Array(stride(from: 20.0, to: 30, by: 1)))
+        XCTAssertEqual(array1D.scalars, Array(stride(from: 3.0, to: 5, by: 1)))
     }
 
     func testWholeTensorSlicing() {
@@ -312,7 +313,7 @@ final class BasicOperatorTests: XCTestCase {
                                 [[3, 3, 3], [4, 4, 4]],
                                 [[5, 5, 5], [6, 6, 6]]]
         let slice2 = t.slice(lowerBounds: [1, 0, 0], upperBounds: [2, 1, 3])
-        XCTAssertEqual(ShapedArray(shape: [1, 1, 3], scalars: [3, 3, 3]), slice2.array)
+        XCTAssertEqual(slice2.array, ShapedArray(shape: [1, 1, 3], scalars: [3, 3, 3]))
     }
 
     func testAdvancedIndexing() {
@@ -326,10 +327,10 @@ final class BasicOperatorTests: XCTestCase {
         let array2D = element2D.array
 
         // Test shape
-        XCTAssertEqual([2, 2], array2D.shape)
+        XCTAssertEqual(array2D.shape, [2, 2])
 
         // Test scalars
-        XCTAssertEqual(Array([23.0, 24.0, 43.0, 44.0]), array2D.scalars)
+        XCTAssertEqual(array2D.scalars, Array([23.0, 24.0, 43.0, 44.0]))
     }
 
     func testConcatenation() {
@@ -340,11 +341,11 @@ final class BasicOperatorTests: XCTestCase {
         let concatenated = t1 ++ t2
         let concatenated0 = t1.concatenated(with: t2)
         let concatenated1 = t1.concatenated(with: t2, alongAxis: 1)
-        XCTAssertEqual(ShapedArray(shape: [4, 3], scalars: Array(0..<12)), concatenated.array)
-        XCTAssertEqual(ShapedArray(shape: [4, 3], scalars: Array(0..<12)), concatenated0.array)
+        XCTAssertEqual(concatenated.array, ShapedArray(shape: [4, 3], scalars: Array(0..<12)))
+        XCTAssertEqual(concatenated0.array, ShapedArray(shape: [4, 3], scalars: Array(0..<12)))
         XCTAssertEqual(
-            ShapedArray(shape: [2, 6], scalars: [0, 1, 2, 6, 7, 8, 3, 4, 5, 9, 10, 11]),
-            concatenated1.array)
+            concatenated1.array, 
+            ShapedArray(shape: [2, 6], scalars: [0, 1, 2, 6, 7, 8, 3, 4, 5, 9, 10, 11]))
     }
 
     func testVJPConcatenation() {
@@ -358,8 +359,8 @@ final class BasicOperatorTests: XCTestCase {
             return ((a1 * a) ++ (b1 * b)).sum()
         }
 
-        XCTAssertEqual(a1, grads.0)
-        XCTAssertEqual(b1, grads.1)
+        XCTAssertEqual(grads.0, a1)
+        XCTAssertEqual(grads.1, b1)
     }
 
     func testVJPConcatenationNegativeAxis() {
@@ -373,17 +374,17 @@ final class BasicOperatorTests: XCTestCase {
             return (a1 * a).concatenated(with: b1 * b, alongAxis: -1).sum()
         }
 
-        XCTAssertEqual(a1, grads.0)
-        XCTAssertEqual(b1, grads.1)
+        XCTAssertEqual(grads.0, a1)
+        XCTAssertEqual(grads.1, b1)
     }
 
     func testTranspose() {
         // 3 x 2 -> 2 x 3
         let xT = Tensor<Float>([[1, 2], [3, 4], [5, 6]]).transposed()
         let xTArray = xT.array
-        XCTAssertEqual(2, xTArray.rank)
-        XCTAssertEqual([2, 3], xTArray.shape)
-        XCTAssertEqual([1, 3, 5, 2, 4, 6], xTArray.scalars)
+        XCTAssertEqual(xTArray.rank, 2)
+        XCTAssertEqual(xTArray.shape, [2, 3])
+        XCTAssertEqual(xTArray.scalars, [1, 3, 5, 2, 4, 6])
     }
 
     func testReshape() {
@@ -391,8 +392,8 @@ final class BasicOperatorTests: XCTestCase {
         let matrix = Tensor<Int32>([[0, 1, 2], [3, 4, 5]])
         let reshaped = matrix.reshaped(to: [1, 3, 1, 2, 1])
 
-        XCTAssertEqual([1, 3, 1, 2, 1], reshaped.shape)
-        XCTAssertEqual(Array(0..<6), reshaped.scalars)
+        XCTAssertEqual(reshaped.shape, [1, 3, 1, 2, 1])
+        XCTAssertEqual(reshaped.scalars, Array(0..<6))
     }
 
     func testFlatten() {
@@ -400,21 +401,21 @@ final class BasicOperatorTests: XCTestCase {
         let matrix = Tensor<Int32>([[0, 1, 2], [3, 4, 5]])
         let flattened = matrix.flattened()
 
-        XCTAssertEqual([6], flattened.shape)
-        XCTAssertEqual(Array(0..<6), flattened.scalars)
+        XCTAssertEqual(flattened.shape, [6])
+        XCTAssertEqual(flattened.scalars, Array(0..<6))
     }
 
     func testFlatten0D() {
         let scalar = Tensor<Float>(5)
         let flattened = scalar.flattened()
-        XCTAssertEqual([1], flattened.shape)
-        XCTAssertEqual([5], flattened.scalars)
+        XCTAssertEqual(flattened.shape, [1])
+        XCTAssertEqual(flattened.scalars, [5])
     }
 
     func testReshapeToScalar() {
         // 1 x 1 -> scalar
         let z = Tensor<Float>([[10]]).reshaped(to: [])
-        XCTAssertEqual([], z.shape)
+        XCTAssertEqual(z.shape, [])
     }
 
     func testReshapeTensor() {
@@ -422,37 +423,37 @@ final class BasicOperatorTests: XCTestCase {
         let x = Tensor<Float>(repeating: 0.0, shape: [2, 3])
         let y = Tensor<Float>(repeating: 0.0, shape: [1, 3, 1, 2, 1])
         let result = x.reshaped(like: y)
-        XCTAssertEqual([1, 3, 1, 2, 1], result.shape)
+        XCTAssertEqual(result.shape, [1, 3, 1, 2, 1])
     }
 
     func testUnbroadcast1() {
         let x = Tensor<Float>(repeating: 1, shape: [2, 3, 4, 5])
         let y = Tensor<Float>(repeating: 1, shape: [4, 5])
         let z = x.unbroadcasted(like: y)
-        XCTAssertEqual(ShapedArray<Float>(repeating: 6, shape: [4, 5]), z.array)
+        XCTAssertEqual(z.array, ShapedArray<Float>(repeating: 6, shape: [4, 5]))
     }
 
     func testUnbroadcast2() {
         let x = Tensor<Float>(repeating: 1, shape: [2, 3, 4, 5])
         let y = Tensor<Float>(repeating: 1, shape: [3, 1, 5])
         let z = x.unbroadcasted(like: y)
-        XCTAssertEqual(ShapedArray<Float>(repeating: 8, shape: [3, 1, 5]), z.array)
+        XCTAssertEqual(z.array, ShapedArray<Float>(repeating: 8, shape: [3, 1, 5]))
     }
 
     func testSliceUpdate() {
         var t1 = Tensor<Float>([[1, 2, 3], [4, 5, 6]])
         t1[0] = Tensor(zeros: [3])
-        XCTAssertEqual(ShapedArray(shape:[2, 3], scalars: [0, 0, 0, 4, 5, 6]), t1.array)
+        XCTAssertEqual(t1.array, ShapedArray(shape:[2, 3], scalars: [0, 0, 0, 4, 5, 6]))
         var t2 = t1
         t2[0][2] = Tensor(3)
-        XCTAssertEqual(ShapedArray(shape:[2, 3], scalars: [0, 0, 3, 4, 5, 6]), t2.array)
+        XCTAssertEqual(t2.array, ShapedArray(shape:[2, 3], scalars: [0, 0, 3, 4, 5, 6]))
         var t3 = Tensor<Bool>([[true, true, true], [false, false, false]])
         t3[0][1] = Tensor(false)
-        XCTAssertEqual(ShapedArray(
-            shape:[2, 3], scalars: [true, false, true, false, false, false]), t3.array)
+        XCTAssertEqual(t3.array, ShapedArray(
+            shape:[2, 3], scalars: [true, false, true, false, false, false]))
         var t4 = Tensor<Bool>([[true, true, true], [false, false, false]])
         t4[0] = Tensor(repeating: false, shape: [3])
-        XCTAssertEqual(ShapedArray(repeating: false, shape: [2, 3]), t4.array)
+        XCTAssertEqual(t4.array, ShapedArray(repeating: false, shape: [2, 3]))
     }
 
     func testBroadcastTensor() {
@@ -460,9 +461,9 @@ final class BasicOperatorTests: XCTestCase {
         let one = Tensor<Float>(1)
         var target = Tensor<Float>(repeating: 0.0, shape: [2, 3, 4])
         let broadcasted = one.broadcasted(like: target)
-        XCTAssertEqual(Tensor(repeating: 1, shape: [2, 3, 4]), broadcasted)
+        XCTAssertEqual(broadcasted, Tensor(repeating: 1, shape: [2, 3, 4]))
         target .= Tensor(repeating: 1, shape: [1, 3, 1])
-        XCTAssertEqual(Tensor(repeating: 1, shape: [2, 3, 4]), target)
+        XCTAssertEqual(target, Tensor(repeating: 1, shape: [2, 3, 4]))
     }
 
     static var allTests = [

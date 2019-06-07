@@ -29,7 +29,7 @@ public struct UpSampling1D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         let shape = input.shape
         let (batchSize, timesteps, channels) = (shape[0], shape[1], shape[2])
         let scaleOnes = Tensor<Scalar>(ones: [1, 1, size, 1])
@@ -55,7 +55,7 @@ public struct UpSampling2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         let shape = input.shape
         let (batchSize, height, width, channels) = (shape[0], shape[1], shape[2], shape[3])
         let scaleOnes = Tensor<Scalar>(ones: [1, 1, size, 1, size, 1])
@@ -107,7 +107,7 @@ public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         var result = repeatingElements(input, alongAxis: 1, count: size)
         result = repeatingElements(result, alongAxis: 2, count: size)
         result = repeatingElements(result, alongAxis: 3, count: size)

@@ -124,6 +124,30 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(output, expected)
     }
 
+    func testGlobalMaxPool1D() {
+        let layer = GlobalMaxPool1D<Float>()
+        let input = Tensor(shape: [1, 10, 1], scalars: (0..<10).map(Float.init))
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>([9])
+        XCTAssertEqual(output, expected)
+    }
+
+    func testGlobalMaxPool2D() {
+        let layer = GlobalMaxPool2D<Float>()
+        let input = Tensor(shape: [1, 2, 10, 1], scalars: (0..<20).map(Float.init))
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>([19])
+        XCTAssertEqual(output, expected)
+    }
+
+    func testGlobalMaxPool3D() {
+        let layer = GlobalMaxPool3D<Float>()
+        let input = Tensor<Float>(shape: [1, 2, 3, 5, 1], scalars: (0..<30).map(Float.init))
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>([29])
+        XCTAssertEqual(output, expected)
+    }
+
     func testUpSampling1D() {
       let size = 6
       let layer = UpSampling1D<Float>(size: size)
@@ -190,15 +214,15 @@ final class LayerTests: XCTestCase {
         let x = Tensor<Float>(rangeFrom: 0.0, to: 0.4, stride: 0.1).rankLifted()
         let inputs: [Tensor<Float>] = Array(repeating: x, count: 4)
         let rnn = RNN(SimpleRNNCell<Float>(inputSize: 4, hiddenSize: 4,
-                                           seed: (0xFeedBeef, 0xDeadBeef)))
+                                           seed: (0xFeed, 0xBeef)))
         let (outputs, _) = rnn.valueWithPullback(at: inputs) { rnn, inputs in
             return rnn(inputs)
         }
         XCTAssertEqual(outputs.map { $0.value },
-                       [[[ -0.00262943,  -0.005866742, 0.044919778,  0.20036437]],
-                        [[ 0.066890605,   0.049586136, 0.024610005,  0.09341654]],
-                        [[ 0.065792546,   0.009325638, 0.06439907,  0.114802904]],
-                        [[ 0.055909205, 0.00035158166, 0.054020774,  0.09812111]]])
+                       [[[ 0.20775771,  0.20080023, -0.13768704, -0.18534681]],
+                        [[ 0.22666009,  0.30019346, -0.19720285, -0.14683801]],
+                        [[ 0.23758979,  0.32101023, -0.20359215,  -0.1787096]],
+                        [[ 0.24337786,   0.3389194, -0.21143384,  -0.1675081]]])
         // TODO: Figure out why the following is numerically unstable.
         // let (𝛁rnn, _) = pullback(.init(inputs.map { SimpleRNNCell<Float>.State($0) }))
         // XCTAssertEqual(𝛁rnn.cell.weight,
@@ -226,6 +250,9 @@ final class LayerTests: XCTestCase {
         ("testGlobalAvgPool1D", testGlobalAvgPool1D),
         ("testGlobalAvgPool2D", testGlobalAvgPool2D),
         ("testGlobalAvgPool3D", testGlobalAvgPool3D),
+        ("testGlobalMaxPool1D", testGlobalMaxPool1D),
+        ("testGlobalMaxPool2D", testGlobalMaxPool2D),
+        ("testGlobalMaxPool3D", testGlobalMaxPool3D),
         ("testUpSampling1D", testUpSampling1D),
         ("testUpSampling2D", testUpSampling2D),
         ("testUpSampling3D", testUpSampling3D),
