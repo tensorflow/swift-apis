@@ -24,11 +24,11 @@ public func meanSquaredError<Scalar: TensorFlowFloatingPoint>(
     return (expected - predicted).squared().mean()
 }
 
-/// Computes the absolute squared error between predictions and labels.
+/// Computes the mean absolute error between predictions and expectations.
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
-///   - labels: Expected values, i.e. targets, that correspond to the correct output.
+///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 @differentiable(wrt: predicted)
 public func meanAbsoluteError<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>, expected: Tensor<Scalar>
