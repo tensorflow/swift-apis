@@ -36,13 +36,13 @@ public func meanAbsoluteError<Scalar: TensorFlowFloatingPoint>(
     return abs(expected - predicted).mean()
 }
 
-/// Computes the hinge loss between predictions and expectations.
+/// Returns the hinge loss between predictions and expectations.
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 @differentiable(wrt: predicted)
-public func hinge<Scalar: TensorFlowFloatingPoint>(
+public func hingeLoss<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>, expected: Tensor<Scalar>
 ) -> Tensor<Scalar> {
     return max(Tensor(1) - expected * predicted, Tensor(0)).mean()
