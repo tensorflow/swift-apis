@@ -34,19 +34,19 @@ extension _AnyTensorHandle {
 /// Class wrapping a C pointer to a TensorHandle.  This class owns the
 /// TensorHandle and is responsible for destroying it.
 public class TFETensorHandle: _AnyTensorHandle {
-	public let _cTensorHandle: CTensorHandle
+    public let _cTensorHandle: CTensorHandle
 
     public var _tfeTensorHandle: TFETensorHandle { return self }
 
     public init(_owning base: CTensorHandle) {
-	    self._cTensorHandle = base
-	}
+        self._cTensorHandle = base
+    }
 
     deinit {
-	    debugLog("De-initializing TensorHandle.")
-	    TFE_DeleteTensorHandle(_cTensorHandle)
-	    debugLog("Returning from deinit of TensorHandle.")
-	}
+        debugLog("De-initializing TensorHandle.")
+        TFE_DeleteTensorHandle(_cTensorHandle)
+        debugLog("Returning from deinit of TensorHandle.")
+    }
 }
 
 
@@ -55,11 +55,15 @@ public class TFETensorHandle: _AnyTensorHandle {
 /// they are extracted into a tensor program.
 public struct TensorHandle<Scalar> where Scalar: _TensorFlowDataTypeCompatible {
     let handle: _AnyTensorHandle
-	
-	public var _cTensorHandle: CTensorHandle { handle._cTensorHandle }
+
+    public var _cTensorHandle: CTensorHandle { handle._cTensorHandle }
 
     public init(_owning cTensorHandle: CTensorHandle) {
         self.handle = TFETensorHandle(_owning: cTensorHandle)
+    }
+
+    public init(handle: _AnyTensorHandle) {
+        self.handle = handle
     }
 
     @usableFromInline
@@ -105,7 +109,7 @@ public struct TensorHandle<Scalar> where Scalar: _TensorFlowDataTypeCompatible {
 extension TensorHandle where Scalar: TensorFlowScalar {
     /// Create a `TensorHandle` with a closure that initializes the underlying buffer.
     ///
-    /// `scalarsInitializer` receives a buffer with exactly enough capacity to hold the scalars in a 
+    /// `scalarsInitializer` receives a buffer with exactly enough capacity to hold the scalars in a
     /// tensor with shape `shape`. `scalarsInitializer` must initialize the entire buffer, with
     /// contiguous scalars in row-major order.
     @inlinable
@@ -123,7 +127,7 @@ extension TensorHandle where Scalar: TensorFlowScalar {
 }
 
 internal extension TensorHandle {
-    /// Create a `ShapedArray` with contents of the underlying `TensorHandle`. If the `TensorHandle` 
+    /// Create a `ShapedArray` with contents of the underlying `TensorHandle`. If the `TensorHandle`
     /// is on the accelerator, it will be copied to the host.
     /// - Returns: A `ShapedArray`.
     @usableFromInline
@@ -140,10 +144,15 @@ public struct ResourceHandle {
 
     @usableFromInline
     var _cTensorHandle: CTensorHandle { handle._cTensorHandle }
-    
+
     @usableFromInline
     init(owning cTensorHandle: CTensorHandle) {
         self.handle = TFETensorHandle(_owning: cTensorHandle)
+    }
+
+    @usableFromInline
+    init(handle: _AnyTensorHandle) {
+        self.handle = handle
     }
 }
 
@@ -152,9 +161,14 @@ public struct VariantHandle {
 
     @usableFromInline
     var _cTensorHandle: CTensorHandle { handle._cTensorHandle }
-    
+
     @usableFromInline
     init(owning cTensorHandle: CTensorHandle) {
         self.handle = TFETensorHandle(_owning: cTensorHandle)
+    }
+
+    @usableFromInline
+    init(handle: _AnyTensorHandle) {
+        self.handle = handle
     }
 }
