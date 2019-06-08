@@ -685,28 +685,20 @@ public extension Tensor where Scalar: Numeric {
 
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
-      func _vjpPadded(
-        forSizes sizes: [(before: Int, after: Int)],
-        with value: Scalar = 0
-    ) -> (Tensor,(Tensor) -> Tensor) {
-        let result = padded(forSizes:sizes,with:value)
-        return (result, { [rank = rankTensor,shape=shapeTensor] v in
-            let paddings = Tensor<Int32>(shape: [sizes.count, 2],
-                                      scalars: sizes.flatMap {
-                                          [Int32($0.before), Int32($0.after)] 
-                                      })      
-            let padBefore = Raw.slice(
-                paddings,
-                begin: Tensor<Int32>([0,0]),
-                size: Tensor<Int32>(stacking:[rank,Tensor<Int32>(1)]))
-         let begin = Raw.reshape(padBefore,shape: Tensor<Int32>([-1]))
-                         
-         let padGrad = Raw.slice(
-                v,
-                begin: begin,
-                size: shape)
-                         
-        return padGrad
+    func _vjpPadded(
+            forSizes sizes: [(before: Int, after: Int)],
+            with value: Scalar = 0
+    ) -> (Tensor, (Tensor) -> Tensor) {
+        let result = padded(forSizes: sizes, with: value)
+        return (result, { [rank = rankTensor, shape = shapeTensor] v in
+            let paddings = Tensor<Int32>(
+                    shape: [sizes.count, 2],
+                    scalars: sizes.flatMap {[Int32($0.before), Int32($0.after)] })
+            let padBefore = Raw.slice(paddings,
+                    begin: Tensor<Int32>([0, 0]),
+                    size: Tensor<Int32>(stacking: [rank, Tensor<Int32>(1)]))
+            let begin = Raw.reshape(padBefore, shape: Tensor<Int32>([-1]))
+            return Raw.slice(v,begin: begin,size: shape)
         })
     }
 }
