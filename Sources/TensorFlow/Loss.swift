@@ -36,6 +36,18 @@ public func meanAbsoluteError<Scalar: TensorFlowFloatingPoint>(
     return abs(expected - predicted).mean()
 }
 
+/// Returns the hinge loss between predictions and expectations.
+///
+/// - Parameters:
+///   - predicted: Predicted outputs from a neural network.
+///   - expected: Expected values, i.e. targets, that correspond to the correct output.
+@differentiable(wrt: predicted)
+public func hingeLoss<Scalar: TensorFlowFloatingPoint>(
+    predicted: Tensor<Scalar>, expected: Tensor<Scalar>
+) -> Tensor<Scalar> {
+    return max(Tensor(1) - expected * predicted, Tensor(0)).mean()
+}
+
 /// Computes the softmax cross entropy (categorical cross entropy) between logits and labels.
 ///
 /// - Parameters:

@@ -57,6 +57,17 @@ final class LossTests: XCTestCase {
         assertElementsEqual(expected: expectedGradients, actual: gradients)
     }
 
+    func testHingeLoss() {
+        let predicted = Tensor<Float>(shape: [2, 4], scalars: [1, 2, 3, 4, 5, 6, 7, 8])
+        let expected = Tensor<Float>(
+            shape: [2, 4],
+            scalars: [0.1, 0.2, 0.3, 0.4, 0.4, 0.3, 0.2, 0.1])
+
+        let loss = hingeLoss(predicted: predicted, expected: expected)
+        let expectedLoss: Float = 0.225
+        assertElementsEqual(expected: Tensor(expectedLoss), actual: loss)
+    }
+
     func testSoftmaxCrossEntropyWithProbabilitiesLoss() {
         let logits = Tensor<Float>(shape: [2, 4], scalars: [1, 2, 3, 4, 5, 6, 7, 8])
         let labels = Tensor<Float>(
