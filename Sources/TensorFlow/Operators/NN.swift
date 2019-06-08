@@ -17,7 +17,7 @@
 //===------------------------------------------------------------------------------------------===//
 
 public extension Tensor where Scalar: TensorFlowFloatingPoint {
-    /// Computes the batch normalized tensor along the specified axis.
+    /// Returns the batch normalized tensor by computing it along the specified axis.
     ///
     /// Specifically, returns `(self - mu) / (var + epsilon) * gamma + beta` where `mu` and `var`
     /// are respectively the mean and variance of `self` along `axis`.
@@ -41,7 +41,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         let inv = rsqrt(variance + epsilon) * scale
         return self * inv + offset - mean * inv
     }
-    
+
     // TODO: Verify that these calculations are correct.
     @inlinable
     internal func _vjpBatchNormalized(
