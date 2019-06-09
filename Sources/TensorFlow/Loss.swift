@@ -48,16 +48,25 @@ public func hingeLoss<Scalar: TensorFlowFloatingPoint>(
     return max(Tensor(1) - expected * predicted, Tensor(0)).mean()
 }
 
-/// Returns the squared hinge loss between predictions and expectations.
-///
-/// - Parameters:
-///   - predicted: Predicted outputs from a neural network.
-///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 @differentiable(wrt: predicted)
 public func squaredHingeLoss<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>, expected: Tensor<Scalar>
 ) -> Tensor<Scalar> {
     return (max(Tensor(1) - expected * predicted, Tensor(0))).squared().mean()
+}
+
+/// Returns the hinge loss between predictions and expectations.
+///
+/// - Parameters:
+///   - predicted: Predicted outputs from a neural network.
+///   - expected: Expected values, i.e. targets, that correspond to the correct output.
+@differentiable(wrt: predicted)
+public func categoricalHingeLoss<Scalar: TensorFlowFloatingPoint>(
+    predicted: Tensor<Scalar>, expected: Tensor<Scalar>
+) -> Tensor<Scalar> {
+    let positive = (expected * predicted).sum()
+    let negative = ((Tensor(1) - expected) * predicted).max()
+    return max(Tensor(0), negative - positive + Tensor(1))
 }
 
 /// Computes the softmax cross entropy (categorical cross entropy) between logits and labels.
