@@ -169,6 +169,7 @@ final class LossTests: XCTestCase {
     static var allTests = [
         ("testMeanSquaredErrorLoss", testMeanSquaredErrorLoss),
         ("testMeanSquaredErrorGrad", testMeanSquaredErrorGrad),
+        ("testHingeLoss", testHingeLoss),
         ("testCategoricalHingeLoss", testCategoricalHingeLoss),
         ("testSoftmaxCrossEntropyWithProbabilitiesLoss",
          testSoftmaxCrossEntropyWithProbabilitiesLoss),
