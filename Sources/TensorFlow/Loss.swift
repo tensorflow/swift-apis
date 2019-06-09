@@ -48,6 +48,13 @@ public func hingeLoss<Scalar: TensorFlowFloatingPoint>(
     return max(Tensor(1) - expected * predicted, Tensor(0)).mean()
 }
 
+@differentiable(wrt: predicted)
+public func squaredHingeLoss<Scalar: TensorFlowFloatingPoint>(
+    predicted: Tensor<Scalar>, expected: Tensor<Scalar>
+) -> Tensor<Scalar> {
+    return (max(Tensor(1) - expected * predicted, Tensor(0))).squared().mean()
+}
+
 /// Returns the hinge loss between predictions and expectations.
 ///
 /// - Parameters:
