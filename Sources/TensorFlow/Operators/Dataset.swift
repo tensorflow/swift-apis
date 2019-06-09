@@ -62,7 +62,7 @@ public extension Dataset {
 }
 
 public extension Dataset {
-    /// Returns a tensor by creating a dataset from a batch of elements.
+    /// Creates a dataset from a batch of elements as a tensor.
     @inlinable
     init(elements: Element) {
         self.init(_handle: Raw.tensorSliceDataset(

@@ -315,7 +315,7 @@ public extension Tensor {
         return transposed(withPermutations: Tensor<Int32>(defaultPermutations))
     }
 
-    /// Returns a concatenated tensors along the specified axis.
+    /// Returns a concatenated tensor along the specified axis.
     /// - Precondition: The tensors must have the same dimensions, except for the
     ///   specified axis.
     /// - Precondition: The axis must be in the range `-rank..<rank`.
