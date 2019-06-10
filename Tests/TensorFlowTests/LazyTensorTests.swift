@@ -87,7 +87,7 @@ final class LazyTensorTests: XCTestCase {
             let t3 = LazyTensor(_lazyLive: op1, index: 0)
             XCTAssertTrue(LazyTensor.isLive(op1))
             assertLive([op0, op1])
-            // The following are here just to ensure t3 is live.
+            // The following is here just to ensure t3 is live.
             XCTAssertTrue(isSymbolic(t3))
         }
         XCTAssertFalse(LazyTensor.isLive(op1))
