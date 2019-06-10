@@ -687,7 +687,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     func _vjpPadded(
         forSizes sizes: [(before: Int, after: Int)],
-            with value: Scalar = 0
+        with value: Scalar
     ) -> (Tensor, (Tensor) -> Tensor) {
         let result = padded(forSizes: sizes, with: value)
         return (result, { [rank = rankTensor, shape = shapeTensor] v in
