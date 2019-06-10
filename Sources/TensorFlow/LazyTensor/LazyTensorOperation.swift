@@ -56,8 +56,8 @@ class LazyTensor: _AnyTensorHandle {
     //
     struct LazyTensorOperationRefCounts {
         let op: LazyTensorOperation
-        let live: Int
-        let all: Int
+        let liveRefCount: Int
+        let allRefCount: Int
     }
 
     private static var operationRefCounts: [
@@ -68,22 +68,22 @@ class LazyTensor: _AnyTensorHandle {
         if let counts = operationRefCounts[opId] {
             operationRefCounts[opId] = LazyTensorOperationRefCounts(
                 op: op,
-                live: isLive ? counts.live + 1 : counts.live,
-                all: counts.all + 1)
+                liveRefCount: counts.liveRefCount + (isLive ? 1 : 0),
+                allRefCount: counts.allRefCount + 1)
         } else {
             operationRefCounts[opId] = LazyTensorOperationRefCounts(
-                op: op, live: isLive ? 1 : 0, all: 1)
+                op: op, liveRefCount: isLive ? 1 : 0, allRefCount: 1)
         }
     }
 
     static func decrementRefCount(_ op: LazyTensorOperation, isLive: Bool) {
         let opId = ObjectIdentifier(op)
         if let counts = operationRefCounts[opId] {
-            if counts.all > 1 {
+            if counts.allRefCount > 1 {
                 operationRefCounts[opId] = LazyTensorOperationRefCounts(
                     op: op,
-                    live: isLive ? counts.live - 1 : counts.live,
-                    all: counts.all - 1)
+                    liveRefCount: counts.liveRefCount - (isLive ? 1 : 0),
+                    allRefCount: counts.allRefCount - 1)
             } else {
                 operationRefCounts.removeValue(forKey: opId)
             }
@@ -93,24 +93,20 @@ class LazyTensor: _AnyTensorHandle {
     static func isLive(_ op: LazyTensorOperation) -> Bool {
         let opId = ObjectIdentifier(op)
         if let counts = operationRefCounts[opId] {
-            return counts.live > 0
+            return counts.liveRefCount > 0
         }
         return false
     }
 
     static func onLiveOperations(_ perform: (LazyTensorOperation) -> ()) {
         for (_, counts) in operationRefCounts {
-            if (counts.live > 0) { perform(counts.op) }
+            if (counts.liveRefCount > 0) { perform(counts.op) }
         }
     }
 
-    static func onAllOperations(_ perform: (LazyTensorOperation) -> ()) {
-        for (_, counts) in operationRefCounts { perform(counts.op) }
-    }
-
-    public static func printRefCounts() {
+    static func printRefCounts() {
         let live = operationRefCounts.values.reduce(0, { (sum, element) in
-                return sum + (element.live > 0 ? 1 : 0)
+                return sum + (element.liveRefCount > 0 ? 1 : 0)
             })
         print("LazyTensorOperations: \(operationRefCounts.count) (\(live) live)")
     }
