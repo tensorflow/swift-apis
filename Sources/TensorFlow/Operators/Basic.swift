@@ -692,7 +692,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
         let result = padded(forSizes: sizes, with: value)
         return (result, { [rank = rankTensor, shape = shapeTensor] v in
             let paddings = Tensor<Int32>(
-                    shape: [sizes.count, 2],
+                shape: [sizes.count, 2],
                     scalars: sizes.flatMap { [Int32($0.before), Int32($0.after)] })
             let padBefore = Raw.slice(paddings,
                     begin: Tensor<Int32>([0, 0]),
