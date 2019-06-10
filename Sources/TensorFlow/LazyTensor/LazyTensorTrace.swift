@@ -1,5 +1,7 @@
 import CTensorFlow
 
+/// A class describing the tensor operations that need to be executed
+/// to evaluate a given `LazyTensorOperation`.
 class LazyTensorTrace {
     // inputs will be "placeholder" nodes.
     var inputs: [LazyTensorOperation] = []
@@ -33,28 +35,6 @@ class LazyTensorTrace {
         }
         let outputDesc = outputsDesc.joined(separator: ",")
         return "lazyTrace_\(operations.count)(\(inputDesc)) -> (\(outputDesc))"
-    }
-
-    func debugPrint() {
-        print("\(signature())")
-        print("Input Values (\(inputValues.count)):")
-        for input in inputValues {
-            print("  \(input)")
-        }
-        print("Inputs (\(inputs.count)):")
-        for input in inputs {
-            print("  \(input)")
-        }
-        print("Outputs (\(outputs.count)):")
-        for output in outputs {
-            for i in 0..<output.outputCount {
-                print("  \(output.nameWithID):\(i)")
-            }
-        }
-        print("Operations (\(operations.count)):")
-        for op in operations {
-            print("  \(op)")
-        }
     }
 
     private var lazyOpsCache: [ObjectIdentifier: LazyTensorOperation] = [:]
@@ -144,5 +124,15 @@ class LazyTensorTrace {
         }
 
         return newLazyOp
+    }
+}
+
+extension LazyTensorTrace: CustomStringConvertible {
+    var description: String {
+        var result = "\(signature()) {\n"
+        result += "  // operationsCount: \(operations.count)\n"
+        result += (operations.map { "  \($0)" }).joined(separator: "\n")
+        result += "\n}"
+        return result
     }
 }
