@@ -696,8 +696,8 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
                 scalars: sizes.flatMap { [Int32($0.before), Int32($0.after)] })
             let padBefore = Raw.slice(paddings,
                 begin: Tensor<Int32>([0, 0]),
-                    size: Tensor<Int32>(stacking: [rank, Tensor<Int32>(1)]))
-            let begin = Raw.reshape(padBefore, shape: Tensor<Int32>([-1]))
+                size: Tensor<Int32>(stacking: [rank, Tensor<Int32>(1)]))
+            let begin = padBefore.reshaped(to: [-1])
             return Raw.slice(v, begin: begin, size: shape)
         })
     }
