@@ -104,13 +104,6 @@ class LazyTensor: _AnyTensorHandle {
         }
     }
 
-    static func printRefCounts() {
-        let live = operationRefCounts.values.reduce(0, { (sum, element) in
-                return sum + (element.liveRefCount > 0 ? 1 : 0)
-            })
-        print("LazyTensorOperations: \(operationRefCounts.count) (\(live) live)")
-    }
-
     static var _materializationCallback: (String) -> () = { _ in }
 }
 
@@ -152,7 +145,7 @@ class LazyTensorOperation: TensorOperation {
         }
     }
 
-    public static var liveOperations: Int = 0
+    static var liveOperations: Int = 0
 
     init(_id id: String?, name: String, outputCount: Int) {
         self.name = name
