@@ -14,6 +14,7 @@ class LazyTensor: _AnyTensorHandle {
 
     let handle: Handle
 
+    @usableFromInline
     var _tfeTensorHandle: TFETensorHandle {
         switch handle {
         case .concrete(let h, _):
@@ -44,6 +45,7 @@ class LazyTensor: _AnyTensorHandle {
         handle = Handle.symbolic(op, index: index, isLive: true)
     }
 
+    @usableFromInline
     static var _materializationCallback: (String) -> () = { _ in }
 }
 
