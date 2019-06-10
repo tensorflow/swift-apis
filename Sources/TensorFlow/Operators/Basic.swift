@@ -686,7 +686,7 @@ public extension Tensor where Scalar: Numeric {
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     func _vjpPadded(
-            forSizes sizes: [(before: Int, after: Int)],
+        forSizes sizes: [(before: Int, after: Int)],
             with value: Scalar = 0
     ) -> (Tensor, (Tensor) -> Tensor) {
         let result = padded(forSizes: sizes, with: value)
