@@ -34,8 +34,8 @@ final class BasicOperatorTests: XCTestCase {
 
     func testPadded() {
         let x = Tensor<Float>(ones: [2, 2])
-        let target = Tensor<Float>([[3, 3, 3], [2, 2, 3], [2, 2, 3]])
-        let paddedTensor = a.padded(forSizes: [(1, 0), (0, 1)], with:3.0)
+        let target = Tensor<Float>([[3, 3, 3], [1, 1, 3], [1, 1, 3]])
+        let paddedTensor = x.padded(forSizes: [(1, 0), (0, 1)], with:3.0)
         XCTAssertEqual(paddedTensor, target)
     }
 
