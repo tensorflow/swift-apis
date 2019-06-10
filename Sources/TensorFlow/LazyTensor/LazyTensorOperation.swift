@@ -105,6 +105,10 @@ class LazyTensor: _AnyTensorHandle {
         }
     }
 
+    static func onAllOperations(_ perform: (LazyTensorOperation) -> ()) {
+        for (_, counts) in operationRefCounts { perform(counts.op) }
+    }
+
     @usableFromInline
     static var _materializationCallback: (String) -> () = { _ in }
 }
