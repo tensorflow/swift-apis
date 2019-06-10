@@ -674,11 +674,32 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
 public extension Tensor where Scalar: Numeric {
     /// Returns a padded tensor according to the specified padding sizes.
     @inlinable
+    @differentiable(wrt: self, vjp: _vjpPadded(forSizes:with:) where Scalar: TensorFlowFloatingPoint)
     func padded(forSizes sizes: [(before: Int, after: Int)], with value: Scalar = 0) -> Tensor {
         let paddings = Tensor<Int32>(
             shape: [sizes.count, 2],
             scalars: sizes.flatMap { [Int32($0.before), Int32($0.after)] })
         return Raw.padV2(self, paddings: paddings, constantValues: Tensor(value))
+    }
+}
+
+internal extension Tensor where Scalar: TensorFlowFloatingPoint {
+    @inlinable
+    func _vjpPadded(
+        forSizes sizes: [(before: Int, after: Int)],
+        with value: Scalar
+    ) -> (Tensor, (Tensor) -> Tensor) {
+        let result = padded(forSizes: sizes, with: value)
+        return (result, { [rank = rankTensor, shape = shapeTensor] v in
+            let paddings = Tensor<Int32>(
+                shape: [sizes.count, 2],
+                scalars: sizes.flatMap { [Int32($0.before), Int32($0.after)] })
+            let padBefore = Raw.slice(paddings,
+                begin: Tensor<Int32>([0, 0]),
+                size: Tensor<Int32>(stacking: [rank, Tensor<Int32>(1)]))
+            let begin = padBefore.reshaped(to: [-1])
+            return Raw.slice(v, begin: begin, size: shape)
+        })
     }
 }
 
