@@ -16,7 +16,7 @@ import XCTest
 @testable import TensorFlow
 import CTensorFlow
 
-struct LazyTensorOperationRef : Equatable, Hashable {
+struct LazyTensorOperationRef: Equatable, Hashable {
     let value: LazyTensorOperation
     init(_ value: LazyTensorOperation) { self.value = value }
     func hash(into hasher: inout Hasher) {
