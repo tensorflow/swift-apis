@@ -32,6 +32,23 @@ final class BasicOperatorTests: XCTestCase {
         XCTAssertEqual(y, Tensor<Float>([3.0, 6.0]))
     }
 
+    func testPadded() {
+        let x = Tensor<Float>(ones: [2, 2])
+        let target = Tensor<Float>([[3, 3, 3], [2, 2, 3], [2, 2, 3]])
+        let paddedTensor = a.padded(forSizes: [(1, 0), (0, 1)], with:3.0)
+        XCTAssertEqual(paddedTensor, target)
+    }
+
+    func testVJPPadded() {
+        let x = Tensor<Float>(ones: [3, 2])
+        let target = Tensor<Float>([[2, 2], [2, 2], [2, 2]])
+        let grads = x.gradient{ a -> Tensor<Float> in
+            let paddedTensor = a.padded(forSizes: [(1, 0), (0, 1)], with:3.0)
+            return (paddedTensor * paddedTensor).sum()
+        }
+        XCTAssertEqual(grads, target)
+    }
+
     func testElementIndexing() {
         // NOTE: cannot test multiple `Tensor.shape` or `Tensor.scalars` directly
         // until send and receive are implemented (without writing a bunch of mini
@@ -466,19 +483,10 @@ final class BasicOperatorTests: XCTestCase {
         XCTAssertEqual(target, Tensor(repeating: 1, shape: [2, 3, 4]))
     }
 
-    func testVJPPadded() {
-        // 1 -> 2 x 3 x 4
-        let x = Tensor<Float>(ones:[3,2])
-        let target = Tensor<Float>([[2, 2],[2, 2],[2, 2]])
-        let grads = x.gradient{ a -> Tensor<Float> in
-            let paddedTensor = a.padded(forSizes:[(1,0),(0,1)],with:3.0)
-            return (paddedTensor * paddedTensor).sum()
-        }
-        XCTAssertEqual(grads, target)
-    }
-
     static var allTests = [
         ("testGathering", testGathering),
+        ("testPadded", testPadded),
+        ("testVJPPadded", testVJPPadded),
         ("testElementIndexing", testElementIndexing),
         ("testElementIndexingAssignment", testElementIndexingAssignment),
         ("testNestedElementIndexing", testNestedElementIndexing),
@@ -502,7 +510,6 @@ final class BasicOperatorTests: XCTestCase {
         ("testUnbroadcast1", testUnbroadcast1),
         ("testUnbroadcast2", testUnbroadcast2),
         ("testSliceUpdate", testSliceUpdate),
-        ("testVJPPadded", testVJPPadded),
         ("testBroadcastTensor", testBroadcastTensor)
     ]
 }
