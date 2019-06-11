@@ -16,7 +16,7 @@ infix operator .!=: ComparisonPrecedence
 
 /// Returns a tensor with the same shape and scalars as the specified tensor.
 @inlinable
-@differentiable
+@differentiable(where Scalar: TensorFlowFloatingPoint)
 public func identity<Scalar>(_ x: Tensor<Scalar>) -> Tensor<Scalar> {
     return x
 }
@@ -716,7 +716,7 @@ public extension Tensor {
     /// - Parameter lowerBounds: The lower bounds at each dimension.
     /// - Parameter upperBounds: The upper bounds at each dimension.
     @inlinable
-    @differentiable(wrt: self)
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func slice(lowerBounds: [Int], upperBounds: [Int]) -> Tensor {
         // TODO: Precondition `lowerBounds.count == upperBounds.count`,
         // preferably in graph.
@@ -727,11 +727,13 @@ public extension Tensor {
     }
 
     @inlinable
-    @differentiable(wrt: self, vjp: _vjpSlice)
+    @differentiable(wrt: self, vjp: _vjpSlice where Scalar: TensorFlowFloatingPoint)
     func slice(lowerBounds: Tensor<Int32>, sizes: Tensor<Int32>) -> Tensor {
         return Raw.slice(self, begin: lowerBounds, size: sizes)
     }
+}
 
+public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     internal func _vjpSlice(
         lowerBounds: Tensor<Int32>,
@@ -892,7 +894,7 @@ public extension Tensor {
     }
 
     @inlinable
-    @differentiable(wrt: self, vjp: _vjpSubscript)
+    @differentiable(wrt: self, vjp: _vjpSubscript where Scalar : TensorFlowFloatingPoint)
     internal subscript(_ indexPath: IndexPath) -> Tensor {
         get {
             return Raw.stridedSlice(
@@ -914,7 +916,7 @@ public extension Tensor {
     }
 
     @inlinable
-    @differentiable(wrt: self)
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     subscript(_ ranges: TensorRangeExpression...) -> Tensor {
         get {
             return self[{IndexPath({ranges.map { $0.tensorRange }}())}()]
@@ -923,7 +925,9 @@ public extension Tensor {
             self[{IndexPath({ranges.map { $0.tensorRange }}())}()] = newValue
         }
     }
+}
 
+public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @usableFromInline
     internal func _vjpSubscript(
         _ indexPath: IndexPath
