@@ -294,3 +294,62 @@ public class RiemannSGD<Model: Layer, Scalar: FloatingPoint>: Optimizer
         model = model.moved(along: learningRate * (.zero - direction))
     }
 }
+
+/// AdaGrad optimizer.
+///
+/// Individually adapts the learning rates of all model parameters by scaling them inversely proportional to 
+/// the square root of the sum of all the historical squared values of the gradient.
+/// 
+/// Reference: ["Adaptive Subgradient Methods for Online Learning and Stochastic Optimization"](
+///  http://www.jmlr.org/papers/volume12/duchi11a/duchi11a.pdf)
+/// 
+public class AdaGrad<Model: Layer>: Optimizer
+    where Model.AllDifferentiableVariables == Model.TangentVector {
+    /// The learning rate.
+    public var learningRate: Float
+    /// The smoothing factor (ρ). Typical values are `0.5`, `0.9`, and `0.99`, for smoothing over 2,
+    /// 10, and 100 examples, respectively.
+    public var rho: Float
+    /// A small scalar added to the denominator to improve numerical stability.
+    public var epsilon: Float
+    /// The alpha values for all model differentiable variables.
+    public var alpha: Model.AllDifferentiableVariables
+
+    public init(
+        for model: __shared Model,
+        learningRate: Float = 0.001,
+        rho: Float = 0.9,
+        epsilon: Float = 1e-8
+    ) {
+        precondition(learningRate >= 0, "Learning rate must be non-negative")
+        precondition(rho >= 0, "Rho must be non-negative")
+
+        self.learningRate = learningRate
+        self.rho = rho
+        self.epsilon = epsilon
+
+        alpha = model.allDifferentiableVariables
+        for kp in alpha.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
+            alpha[keyPath: kp].resetToZero()
+        }
+        for kp in alpha.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
+            alpha[keyPath: kp].resetToZero()
+        }
+    }
+
+    public func update(_ model: inout Model.AllDifferentiableVariables,
+                       along direction: Model.TangentVector) {
+        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
+            alpha[keyPath: kp] = rho + direction[keyPath: kp].squared()
+            model[keyPath: kp] -=
+                learningRate * direction[keyPath: kp] / (sqrt(alpha[keyPath: kp] + epsilon))
+        }
+        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
+            alpha[keyPath: kp] = Double(rho) + direction[keyPath: kp].squared()
+            model[keyPath: kp] -=
+                Double(learningRate) * direction[keyPath: kp] /
+                (sqrt(alpha[keyPath: kp] + Double(epsilon)))
+        }
+    }
+}
+
