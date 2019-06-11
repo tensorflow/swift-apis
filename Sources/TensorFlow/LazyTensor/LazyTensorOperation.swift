@@ -525,34 +525,34 @@ extension LazyTensorOperation: TFTensorOperation {
     }
 }
 
-extension TFETensorHandle: CustomStringConvertible {
-    public var description: String {
+extension TFETensorHandle {
+    func valueAsString() -> String {
         let dtype = TFE_TensorHandleDataType(self._cTensorHandle)
         switch dtype {
         case TF_FLOAT:
-            return "\(Tensor(handle: TensorHandle<Float>(handle: self)))"
+            return Tensor(handle: TensorHandle<Float>(handle: self)).description
         case TF_DOUBLE:
-            return "\(Tensor(handle: TensorHandle<Double>(handle: self)))"
+            return Tensor(handle: TensorHandle<Double>(handle: self)).description
         case TF_BFLOAT16:
-            return "\(Tensor(handle: TensorHandle<BFloat16>(handle: self)))"
+            return Tensor(handle: TensorHandle<BFloat16>(handle: self)).description
         case TF_INT64:
-            return "\(Tensor(handle: TensorHandle<Int64>(handle: self)))"
+            return Tensor(handle: TensorHandle<Int64>(handle: self)).description
         case TF_INT32:
-            return "\(Tensor(handle: TensorHandle<Int32>(handle: self)))"
+            return Tensor(handle: TensorHandle<Int32>(handle: self)).description
         case TF_INT16:
-            return "\(Tensor(handle: TensorHandle<Int16>(handle: self)))"
+            return Tensor(handle: TensorHandle<Int16>(handle: self)).description
         case TF_INT8:
-            return "\(Tensor(handle: TensorHandle<Int8>(handle: self)))"
+            return Tensor(handle: TensorHandle<Int8>(handle: self)).description
         case TF_UINT64:
-            return "\(Tensor(handle: TensorHandle<UInt64>(handle: self)))"
+            return Tensor(handle: TensorHandle<UInt64>(handle: self)).description
         case TF_UINT32:
-            return "\(Tensor(handle: TensorHandle<UInt32>(handle: self)))"
+            return Tensor(handle: TensorHandle<UInt32>(handle: self)).description
         case TF_UINT16:
-            return "\(Tensor(handle: TensorHandle<UInt16>(handle: self)))"
+            return Tensor(handle: TensorHandle<UInt16>(handle: self)).description
         case TF_UINT8:
-            return "\(Tensor(handle: TensorHandle<UInt8>(handle: self)))"
+            return Tensor(handle: TensorHandle<UInt8>(handle: self)).description
         case TF_BOOL:
-            return "\(Tensor(handle: TensorHandle<Bool>(handle: self)))"
+            return Tensor(handle: TensorHandle<Bool>(handle: self)).description
         case TF_STRING:
             // TODO(https://bugs.swift.org/browse/TF-561): The current
             // implementation of ShapedArray<String> is not correct, which
@@ -591,7 +591,6 @@ extension TFETensorHandle: CustomStringConvertible {
         default: assert(false, "Unhandled type: \(cDataType)")
         }
     }
-
 }
 
 extension LazyTensorOperation.Attribute: CustomStringConvertible {
@@ -607,7 +606,7 @@ extension LazyTensorOperation.Attribute: CustomStringConvertible {
         case .FloatArray(let values): return arrayAsString("Float", values)
         case .DoubleArray(let values): return arrayAsString("Double", values)
         case .StringArray(let values): return arrayAsString("String", values)
-        case .ConstTensor(let v): return "\(v)"
+        case .ConstTensor(let v): return v.valueAsString()
         case .TensorDataTypeValue(let v): return dataTypeAsString(v)
         }
     }
@@ -620,14 +619,15 @@ extension LazyTensorOperation.Attribute: CustomStringConvertible {
     private func dataTypeAsString(_ dataType: TensorDataType) -> String {
         return TFETensorHandle.tfDataTypeAsString(dataType._cDataType)
     }
-
 }
 
 extension LazyTensor: CustomStringConvertible {
     public var description: String {
         switch self.handle {
         case LazyTensor.Handle.concrete(let h, let isMaterialized):
-            return isMaterialized ? "\(h)*" : "\(h)"
+            return isMaterialized
+                ? "\(h.valueAsString())*"
+                : "\(h.valueAsString())"
         case LazyTensor.Handle.symbolic(let op, let index, let isLive):
             return isLive
                 ? "\(op.nameWithID):\(index)*"
