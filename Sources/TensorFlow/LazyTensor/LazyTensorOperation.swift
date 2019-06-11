@@ -526,7 +526,7 @@ extension LazyTensorOperation: TFTensorOperation {
 }
 
 extension TFETensorHandle {
-    func valueAsString() -> String {
+    public var valueDescription: String {
         let dtype = TFE_TensorHandleDataType(self._cTensorHandle)
         switch dtype {
         case TF_FLOAT:
@@ -606,7 +606,7 @@ extension LazyTensorOperation.Attribute: CustomStringConvertible {
         case .FloatArray(let values): return arrayAsString("Float", values)
         case .DoubleArray(let values): return arrayAsString("Double", values)
         case .StringArray(let values): return arrayAsString("String", values)
-        case .ConstTensor(let v): return v.valueAsString()
+        case .ConstTensor(let v): return v.valueDescription
         case .TensorDataTypeValue(let v): return dataTypeAsString(v)
         }
     }
@@ -626,8 +626,8 @@ extension LazyTensor: CustomStringConvertible {
         switch self.handle {
         case LazyTensor.Handle.concrete(let h, let isMaterialized):
             return isMaterialized
-                ? "\(h.valueAsString())*"
-                : "\(h.valueAsString())"
+                ? "\(h.valueDescription)*"
+                : "\(h.valueDescription)"
         case LazyTensor.Handle.symbolic(let op, let index, let isLive):
             return isLive
                 ? "\(op.nameWithID):\(index)*"
