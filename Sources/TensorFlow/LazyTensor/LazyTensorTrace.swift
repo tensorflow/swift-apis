@@ -70,7 +70,7 @@ class LazyTensorTrace {
         return LazyTensor(_lazy: placeholder, index: 0)
     }
 
-    private func maybePromotedTensor(
+    private func constTensorOrPlaceholder(
         _ conc: TFETensorHandle, asConst: Bool) -> LazyTensor {
         let id = ObjectIdentifier(conc)
         if let lazyOp = lazyOpsCache[id] {
@@ -79,14 +79,16 @@ class LazyTensorTrace {
         return asConst ? newConstTensor(conc) : newPlaceholderTensor(conc)
     }
 
+    // Return the original tensor or a concret tensor that is promoted to a
+    // placeholder input.
     private func maybePromotedTensor(
         _ lazyHandle: LazyTensor) -> LazyTensor {
         switch lazyHandle.handle {
         case LazyTensor.Handle.concrete(let h, let materialized):
-            return maybePromotedTensor(h, asConst: !materialized)
+            return constTensorOrPlaceholder(h, asConst: !materialized)
         case LazyTensor.Handle.symbolic(let lazyOp, let index, _): do {
                 if let outputs = lazyOp.outputs {
-                    return maybePromotedTensor(outputs[index], asConst: false)
+                    return constTensorOrPlaceholder(outputs[index], asConst: false)
                 } else {
                     return LazyTensor(
                         _lazy: collectLazyOp(lazyOp), index: index)
@@ -122,7 +124,6 @@ class LazyTensorTrace {
             outputs.append(newLazyOp)
             originalOutputs.append(lazyOp)
         }
-
         return newLazyOp
     }
 }
