@@ -34,22 +34,22 @@ final class LazyTensorTests: XCTestCase {
         let zeroTFEHandle = zero.handle.handle._tfeTensorHandle
 
         let concTensor = LazyTensor(zeroTFEHandle)
-        XCTAssertEqual("\(concTensor)", "conc")
+        XCTAssertEqual(concTensor.description, "0.0")
 
         let materializedConcTensor = LazyTensor(
             _materialized: zeroTFEHandle)
-        XCTAssertEqual("\(materializedConcTensor)", "conc*")
+        XCTAssertEqual(materializedConcTensor.description, "0.0*")
 
         let op = LazyTensorOperation(
             _id: "0", name: "IdentityN", outputCount: 3)
         let symTensor0 = LazyTensor(_lazy: op, index: 0)
-        XCTAssertEqual("\(symTensor0)", "IdentityN_0:0")
+        XCTAssertEqual(symTensor0.description, "IdentityN_0:0")
 
         let symTensor1 = LazyTensor(_lazy: op, index: 2)
-        XCTAssertEqual("\(symTensor1)", "IdentityN_0:2")
+        XCTAssertEqual(symTensor1.description, "IdentityN_0:2")
 
         let liveSymTensor = LazyTensor(_lazyLive: op, index: 0)
-        XCTAssertEqual("\(liveSymTensor)", "IdentityN_0:0*")
+        XCTAssertEqual(liveSymTensor.description, "IdentityN_0:0*")
     }
 
     func testLivenessTracking() {

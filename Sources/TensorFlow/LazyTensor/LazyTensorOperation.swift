@@ -525,31 +525,46 @@ extension LazyTensorOperation: TFTensorOperation {
     }
 }
 
-extension LazyTensorOperation.Attribute: CustomStringConvertible {
-    var description: String {
-        switch self {
-        case .BoolValue(let v): return "\(v)"
-        case .IntValue(let v): return "Int(\(v))"
-        case .FloatValue(let v): return "Float(\(v))"
-        case .DoubleValue(let v): return "Double(\(v))"
-        case .StringValue(let v): return "\"\(v)\""
-        case .BoolArray(let values): return arrayAsString("", values)
-        case .IntArray(let values): return arrayAsString("Int", values)
-        case .FloatArray(let values): return arrayAsString("Float", values)
-        case .DoubleArray(let values): return arrayAsString("Double", values)
-        case .StringArray(let values): return arrayAsString("String", values)
-        case .ConstTensor(let v): return "Const(\(v))"
-        case .TensorDataTypeValue(let v): return dataTypeAsString(v)
+extension TFETensorHandle {
+    public var valueDescription: String {
+        let dtype = TFE_TensorHandleDataType(self._cTensorHandle)
+        switch dtype {
+        case TF_FLOAT:
+            return Tensor(handle: TensorHandle<Float>(handle: self)).description
+        case TF_DOUBLE:
+            return Tensor(handle: TensorHandle<Double>(handle: self)).description
+        case TF_BFLOAT16:
+            return Tensor(handle: TensorHandle<BFloat16>(handle: self)).description
+        case TF_INT64:
+            return Tensor(handle: TensorHandle<Int64>(handle: self)).description
+        case TF_INT32:
+            return Tensor(handle: TensorHandle<Int32>(handle: self)).description
+        case TF_INT16:
+            return Tensor(handle: TensorHandle<Int16>(handle: self)).description
+        case TF_INT8:
+            return Tensor(handle: TensorHandle<Int8>(handle: self)).description
+        case TF_UINT64:
+            return Tensor(handle: TensorHandle<UInt64>(handle: self)).description
+        case TF_UINT32:
+            return Tensor(handle: TensorHandle<UInt32>(handle: self)).description
+        case TF_UINT16:
+            return Tensor(handle: TensorHandle<UInt16>(handle: self)).description
+        case TF_UINT8:
+            return Tensor(handle: TensorHandle<UInt8>(handle: self)).description
+        case TF_BOOL:
+            return Tensor(handle: TensorHandle<Bool>(handle: self)).description
+        case TF_STRING:
+            // TODO(https://bugs.swift.org/browse/TF-561): The current
+            // implementation of ShapedArray<String> is not correct, which
+            // causes seg faults.
+            return "\"string\""
+        default:
+            return TFETensorHandle.tfDataTypeAsString(dtype)
         }
     }
 
-    private func arrayAsString<T>(_ desc: String, _ values: [T]) -> String {
-        let arrayDesc = (values.map { "\($0)" }).joined(separator: ", ")
-        return "\(desc)[\(arrayDesc)]"
-    }
-
-    private func dataTypeAsString(_ dataType: TensorDataType) -> String {
-        switch dataType._cDataType {
+    static func tfDataTypeAsString(_ cDataType: TF_DataType) -> String {
+        switch(cDataType) {
         case TF_FLOAT: return "float"
         case TF_DOUBLE: return "double"
         case TF_INT32: return "int32"
@@ -573,17 +588,46 @@ extension LazyTensorOperation.Attribute: CustomStringConvertible {
         case TF_VARIANT: return "variant"
         case TF_UINT32: return "uint32"
         case TF_UINT64: return "uint64"
-        default: assert(false, "Unhandled type: \(dataType._cDataType)")
+        default: assert(false, "Unhandled type: \(cDataType)")
         }
+    }
+}
+
+extension LazyTensorOperation.Attribute: CustomStringConvertible {
+    var description: String {
+        switch self {
+        case .BoolValue(let v): return "\(v)"
+        case .IntValue(let v): return "Int(\(v))"
+        case .FloatValue(let v): return "Float(\(v))"
+        case .DoubleValue(let v): return "Double(\(v))"
+        case .StringValue(let v): return "\"\(v)\""
+        case .BoolArray(let values): return arrayAsString("", values)
+        case .IntArray(let values): return arrayAsString("Int", values)
+        case .FloatArray(let values): return arrayAsString("Float", values)
+        case .DoubleArray(let values): return arrayAsString("Double", values)
+        case .StringArray(let values): return arrayAsString("String", values)
+        case .ConstTensor(let v): return v.valueDescription
+        case .TensorDataTypeValue(let v): return dataTypeAsString(v)
+        }
+    }
+
+    private func arrayAsString<T>(_ desc: String, _ values: [T]) -> String {
+        let arrayDesc = (values.map { "\($0)" }).joined(separator: ", ")
+        return "\(desc)[\(arrayDesc)]"
+    }
+
+    private func dataTypeAsString(_ dataType: TensorDataType) -> String {
+        return TFETensorHandle.tfDataTypeAsString(dataType._cDataType)
     }
 }
 
 extension LazyTensor: CustomStringConvertible {
     public var description: String {
         switch self.handle {
-        case LazyTensor.Handle.concrete(_, let isMaterialized):
-            // TODO: Print the actual concrete value.
-            return isMaterialized ? "conc*" : "conc"
+        case LazyTensor.Handle.concrete(let h, let isMaterialized):
+            return isMaterialized
+                ? "\(h.valueDescription)*"
+                : "\(h.valueDescription)"
         case LazyTensor.Handle.symbolic(let op, let index, let isLive):
             return isLive
                 ? "\(op.nameWithID):\(index)*"
