@@ -141,6 +141,39 @@ final class LazyTensorTraceTests: XCTestCase {
         XCTAssertEqual(w2Trace.inputValues[0].valueDescription, "10.0")
     }
 
+    func testConstPromotion() {
+        let a = Tensor<Float>(10.0)
+        let b = Tensor<Float>(2.0)
+        let concreteA = a.handle.handle._tfeTensorHandle
+
+        let lazyHandle = LazyTensor(concreteA)
+        let lazyA = Tensor(handle: TensorHandle<Float>(handle: lazyHandle))
+        // Since `lazyA` is not marked as a materialized concrete
+        // tensor, this will be burnt into the trace as a constant.
+        let w1 = lazyA * b
+        XCTAssertEqual("\(lazyTrace(w1)!)",
+            """
+            lazyTrace_3() -> (Mul_2) {
+              Const_0[dtype: float, value: 10.0]():1
+              Const_1[dtype: float, value: 2.0]():1
+              Mul_2[T: float](Const_0:0, Const_1:0):1
+            }
+            """)
+        let materializedHandle = LazyTensor(_materialized: concreteA)
+        let materializedLazyA = Tensor(
+            handle: TensorHandle<Float>(handle: materializedHandle))
+        // Since `materializedLazyA` is marked as a materialized concrete
+        // tensor, this will be promoted to an input for the trace.
+        let w2 = materializedLazyA * b
+        XCTAssertEqual("\(lazyTrace(w2)!)",
+            """
+            lazyTrace_3(Placeholder_0:float) -> (Mul_2) {
+              Const_1[dtype: float, value: 2.0]():1
+              Mul_2[T: float](Placeholder_0:0, Const_1:0):1
+            }
+            """)
+    }
+
     private func lazyTrace<T: TensorFlowScalar>(
         _ input: Tensor<T>
     ) -> LazyTensorTrace? {
