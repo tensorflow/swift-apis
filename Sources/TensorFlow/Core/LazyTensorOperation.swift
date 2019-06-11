@@ -328,7 +328,7 @@ extension LazyTensorOperation: TFTensorOperation {
         attrs[name] = Attribute.TensorDataTypeArray(value)
     }
     func updateAttribute(_ name: String, _ value: [TensorShape]) {
-        assert(false, "Unimplemented [TensorShape] attribute.")
+        attrs[name] = Attribute.OptionalTensorShapeArray(value)
     }
     func updateAttribute(_ name: String, _ value: [TensorShape?]) {
         attrs[name] = Attribute.OptionalTensorShapeArray(value)
@@ -666,7 +666,7 @@ extension LazyTensorOperation.Attribute: CustomStringConvertible {
                 let descString = descriptions.joined(separator: ", ")
                 return "[\(descString)]"
             }
-        case .OptionalTensorShapeArray(_):  return "[TensorShape?]" // TODO:
+        case .OptionalTensorShapeArray(let t):  return "\(t)"
         }
     }
 
