@@ -43,13 +43,13 @@ final class LazyTensorTests: XCTestCase {
         let op = LazyTensorOperation(
             _id: "0", name: "IdentityN", outputCount: 3)
         let symTensor0 = LazyTensor(_lazy: op, index: 0)
-        XCTAssertEqual(symTensor0.description, "IdentityN_0:0")
+        XCTAssertEqual(symTensor0.description, "%0.0")
 
         let symTensor1 = LazyTensor(_lazy: op, index: 2)
-        XCTAssertEqual(symTensor1.description, "IdentityN_0:2")
+        XCTAssertEqual(symTensor1.description, "%0.2")
 
         let liveSymTensor = LazyTensor(_lazyLive: op, index: 0)
-        XCTAssertEqual(liveSymTensor.description, "IdentityN_0:0*")
+        XCTAssertEqual(liveSymTensor.description, "%0.0*")
     }
 
     func testLivenessTracking() {
