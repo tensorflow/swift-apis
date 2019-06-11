@@ -16,22 +16,21 @@ import XCTest
 @testable import TensorFlow
 
 final class OptimizerTests: XCTestCase {
-
     func testAdaGrad() {
         struct Classifier: Layer {
             var l1, l2: Dense<Float>
             init(hiddenSize: Int) {
                 l1 = Dense<Float>(
-                        inputSize: 2,
-                        outputSize: hiddenSize,
-                        activation: relu,
-                        seed: (0xfffffff, 0xfeeff)
+                    inputSize: 2,
+                    outputSize: hiddenSize,
+                    activation: relu,
+                    seed: (0xfffffff, 0xfeeff)
                 )
                 l2 = Dense<Float>(
-                        inputSize: hiddenSize,
-                        outputSize: 1,
-                        activation: relu,
-                        seed: (0xffeffe, 0xfffe)
+                    inputSize: hiddenSize,
+                    outputSize: 1,
+                    activation: relu,
+                    seed: (0xffeffe, 0xfffe)
                 )
             }
             @differentiable
@@ -47,11 +46,11 @@ final class OptimizerTests: XCTestCase {
         let y: Tensor<Float> = [[0], [1], [1], [0]]
 
         Context.local.learningPhase = .training
-        
+
         // untrained classifier should not return valid values
         var ŷ = classifier.inferring(from: x)
         XCTAssertNotEqual(round(ŷ), y)
-        
+
         for _ in 0..<400 {
             let 𝛁model = classifier.gradient { classifier -> Tensor<Float> in
                 let ŷ = classifier(x)
