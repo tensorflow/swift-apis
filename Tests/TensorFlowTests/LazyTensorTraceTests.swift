@@ -17,7 +17,6 @@ final class LazyTensorTraceTests: XCTestCase {
         XCTAssertEqual("\(lazyTrace(w)!)",
             """
             lazyTrace_5() -> (Add_4) {
-              // operationsCount: 5
               Const_0[dtype: float, value: 10.0]():1
               Const_1[dtype: float, value: 2.0]():1
               Const_2[dtype: float, value: 3.0]():1
@@ -40,7 +39,6 @@ final class LazyTensorTraceTests: XCTestCase {
         XCTAssertEqual("\(lazyTrace(z)!)",
             """
             lazyTrace_8() -> (Add_4,Mul_5,Div_7) {
-              // operationsCount: 8
               Const_0[dtype: float, value: 10.0]():1
               Const_1[dtype: float, value: 2.0]():1
               Add_2[T: float](Const_0:0, Const_1:0):1
@@ -57,7 +55,6 @@ final class LazyTensorTraceTests: XCTestCase {
         XCTAssertEqual("\(lazyTrace(y)!)",
             """
             lazyTrace_6() -> (Add_4,Mul_5) {
-              // operationsCount: 6
               Const_0[dtype: float, value: 10.0]():1
               Const_1[dtype: float, value: 2.0]():1
               Add_2[T: float](Const_0:0, Const_1:0):1
@@ -77,7 +74,6 @@ final class LazyTensorTraceTests: XCTestCase {
         XCTAssertEqual("\(lazyTrace(add)!)",
             """
             lazyTrace_2() -> (Add_1) {
-              // operationsCount: 2
               Const_0[dtype: float, value: 5.0]():1
               Add_1[T: float](Const_0:0, Const_0:0):1
             }
@@ -86,7 +82,6 @@ final class LazyTensorTraceTests: XCTestCase {
         XCTAssertEqual("\(lazyTrace(mul)!)",
             """
             lazyTrace_2() -> (Mul_1) {
-              // operationsCount: 2
               Const_0[dtype: float, value: 5.0]():1
               Mul_1[T: float](Const_0:0, Const_0:0):1
             }
