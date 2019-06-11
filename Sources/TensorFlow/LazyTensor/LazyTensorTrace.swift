@@ -27,13 +27,11 @@ class LazyTensorTrace {
     func signature() -> String {
         let inputsDesc = inputs.map { input -> String in
             let dtypeAttr = input.attrs["dtype"]!
-            return "\(input.nameWithID):\(dtypeAttr)"
+            return "\(input.outputName): \(dtypeAttr)"
         }
-        let inputDesc = inputsDesc.joined(separator: ",")
-        let outputsDesc = outputs.map { output -> String in
-            return "\(output.nameWithID)"
-        }
-        let outputDesc = outputsDesc.joined(separator: ",")
+        let inputDesc = inputsDesc.joined(separator: ", ")
+        let outputsDesc = outputs.map { "\($0.outputName)" }
+        let outputDesc = outputsDesc.joined(separator: ", ")
         return "lazyTrace_\(operations.count)(\(inputDesc)) -> (\(outputDesc))"
     }
 
