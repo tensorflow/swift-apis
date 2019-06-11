@@ -16,12 +16,12 @@ final class LazyTensorTraceTests: XCTestCase {
         let w = a + b * c
         XCTAssertEqual(lazyTrace(w)!.description,
             """
-            lazyTrace_5() -> (Add_4) {
-              Const_0[dtype: float, value: 10.0]():1
-              Const_1[dtype: float, value: 2.0]():1
-              Const_2[dtype: float, value: 3.0]():1
-              Mul_3[T: float](Const_1:0, Const_2:0):1
-              Add_4[T: float](Const_0:0, Mul_3:0):1
+            lazyTrace_5() -> (%4) {
+              %0 = Const[dtype: float, value: 10.0]()
+              %1 = Const[dtype: float, value: 2.0]()
+              %2 = Const[dtype: float, value: 3.0]()
+              %3 = Mul[T: float](%1, %2)
+              %4 = Add[T: float](%0, %3)
             }
             """)
     }
@@ -38,15 +38,15 @@ final class LazyTensorTraceTests: XCTestCase {
         let z = y / (w - c)
         XCTAssertEqual(lazyTrace(z)!.description,
             """
-            lazyTrace_8() -> (Add_4,Mul_5,Div_7) {
-              Const_0[dtype: float, value: 10.0]():1
-              Const_1[dtype: float, value: 2.0]():1
-              Add_2[T: float](Const_0:0, Const_1:0):1
-              Const_3[dtype: float, value: 3.0]():1
-              Add_4[T: float](Add_2:0, Const_3:0):1
-              Mul_5[T: float](Add_4:0, Const_3:0):1
-              Sub_6[T: float](Add_4:0, Const_3:0):1
-              Div_7[T: float](Mul_5:0, Sub_6:0):1
+            lazyTrace_8() -> (%4, %5, %7) {
+              %0 = Const[dtype: float, value: 10.0]()
+              %1 = Const[dtype: float, value: 2.0]()
+              %2 = Add[T: float](%0, %1)
+              %3 = Const[dtype: float, value: 3.0]()
+              %4 = Add[T: float](%2, %3)
+              %5 = Mul[T: float](%4, %3)
+              %6 = Sub[T: float](%4, %3)
+              %7 = Div[T: float](%5, %6)
             }
             """)
 
@@ -54,13 +54,13 @@ final class LazyTensorTraceTests: XCTestCase {
         // question depends on.
         XCTAssertEqual(lazyTrace(y)!.description,
             """
-            lazyTrace_6() -> (Add_4,Mul_5) {
-              Const_0[dtype: float, value: 10.0]():1
-              Const_1[dtype: float, value: 2.0]():1
-              Add_2[T: float](Const_0:0, Const_1:0):1
-              Const_3[dtype: float, value: 3.0]():1
-              Add_4[T: float](Add_2:0, Const_3:0):1
-              Mul_5[T: float](Add_4:0, Const_3:0):1
+            lazyTrace_6() -> (%4, %5) {
+              %0 = Const[dtype: float, value: 10.0]()
+              %1 = Const[dtype: float, value: 2.0]()
+              %2 = Add[T: float](%0, %1)
+              %3 = Const[dtype: float, value: 3.0]()
+              %4 = Add[T: float](%2, %3)
+              %5 = Mul[T: float](%4, %3)
             }
             """)
     }
@@ -73,17 +73,17 @@ final class LazyTensorTraceTests: XCTestCase {
         let add = addOrMul(/*useAdd:*/true, a)
         XCTAssertEqual(lazyTrace(add)!.description,
             """
-            lazyTrace_2() -> (Add_1) {
-              Const_0[dtype: float, value: 5.0]():1
-              Add_1[T: float](Const_0:0, Const_0:0):1
+            lazyTrace_2() -> (%1) {
+              %0 = Const[dtype: float, value: 5.0]()
+              %1 = Add[T: float](%0, %0)
             }
             """)
         let mul = addOrMul(/*useAdd:*/false, a)
         XCTAssertEqual(lazyTrace(mul)!.description,
             """
-            lazyTrace_2() -> (Mul_1) {
-              Const_0[dtype: float, value: 5.0]():1
-              Mul_1[T: float](Const_0:0, Const_0:0):1
+            lazyTrace_2() -> (%1) {
+              %0 = Const[dtype: float, value: 5.0]()
+              %1 = Mul[T: float](%0, %0)
             }
             """)
     }
@@ -101,10 +101,10 @@ final class LazyTensorTraceTests: XCTestCase {
         let w1Trace = lazyTrace(w1)!
         XCTAssertEqual(w1Trace.description,
             """
-            lazyTrace_3() -> (Mul_2) {
-              Const_0[dtype: float, value: 10.0]():1
-              Const_1[dtype: float, value: 2.0]():1
-              Mul_2[T: float](Const_0:0, Const_1:0):1
+            lazyTrace_3() -> (%2) {
+              %0 = Const[dtype: float, value: 10.0]()
+              %1 = Const[dtype: float, value: 2.0]()
+              %2 = Mul[T: float](%0, %1)
             }
             """)
         XCTAssertEqual(w1Trace.inputValues.count, 0)
@@ -117,9 +117,9 @@ final class LazyTensorTraceTests: XCTestCase {
         let w2Trace = lazyTrace(w2)!
         XCTAssertEqual(w2Trace.description,
             """
-            lazyTrace_3(Placeholder_0:float) -> (Mul_2) {
-              Const_1[dtype: float, value: 2.0]():1
-              Mul_2[T: float](Placeholder_0:0, Const_1:0):1
+            lazyTrace_3(%0: float) -> (%2) {
+              %1 = Const[dtype: float, value: 2.0]()
+              %2 = Mul[T: float](%0, %1)
             }
             """)
         // Make sure that the promoted constants are gathered as `inputValues`.
