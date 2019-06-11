@@ -31,7 +31,7 @@ func pow<T: BinaryFloatingPoint>(_ x: T, _ y: T) -> T {
 // Vector Space
 //===------------------------------------------------------------------------------------------===//
 
-extension Tensor: VectorNumeric where Scalar: Numeric {
+extension Tensor: VectorProtocol where Scalar: Numeric {
     /// Multiplies the scalar with every scalar of the tensor and produces the product.
     @inlinable
     @differentiable(vjp: _vjpMultiply(lhs:rhs:) where Scalar: TensorFlowFloatingPoint)
@@ -52,8 +52,6 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
         })
     }
 }
-
-extension Tensor: ShapedVectorNumeric where Scalar: Numeric {}
 
 //===------------------------------------------------------------------------------------------===//
 // Additional Element-wise Operators
