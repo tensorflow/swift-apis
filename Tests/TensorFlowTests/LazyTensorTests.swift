@@ -55,7 +55,7 @@ final class LazyTensorTests: XCTestCase {
     func testLivenessTracking() {
         func assertLive(_ expectedLive: [LazyTensorOperation]) {
             var actualLiveOps: Set<LazyTensorOperationRef> = []
-            LazyTensor.onLiveOperations {
+            LazyTensor.forEachLiveOperation {
                 actualLiveOps.insert(LazyTensorOperationRef($0))
             }
             let expectedLiveOps = Set<LazyTensorOperationRef>(
@@ -66,7 +66,7 @@ final class LazyTensorTests: XCTestCase {
 
         func assertAll(_ expectedAll: [LazyTensorOperation]) {
             var actualAllOps: Set<LazyTensorOperationRef> = []
-            LazyTensor.onAllOperations {
+            LazyTensor.forEachOperation {
                 actualAllOps.insert(LazyTensorOperationRef($0))
             }
             let expectedAllOps = Set<LazyTensorOperationRef>(
