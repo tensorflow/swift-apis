@@ -33,17 +33,17 @@ final class LazyTensorOperationTests: XCTestCase {
         let op0 = LazyTensorOperation(
             _id: "0", name: "Identity", outputCount: 1)
         op0.addInput(zeroTFEHandle)
-        XCTAssertEqual("\(op0)", "Identity_0[](conc):1")
+        XCTAssertEqual("\(op0)", "Identity_0[](0.0):1")
 
         let op1 = LazyTensorOperation(
             _id: "1", name: "Identity", outputCount: 1)
         op1.addInput(zero)
-        XCTAssertEqual("\(op1)", "Identity_1[](conc):1")
+        XCTAssertEqual("\(op1)", "Identity_1[](0.0):1")
 
         let op2 = LazyTensorOperation(
             _id: "2", name: "Identity", outputCount: 1)
         op2.addInput(StringTensor("hello"))
-        XCTAssertEqual("\(op2)", "Identity_2[](conc):1")
+        XCTAssertEqual("\(op2)", "Identity_2[](\"string\"):1")
 
         let op3 = LazyTensorOperation(
             _id: "3", name: "Identity", outputCount: 1)
@@ -60,7 +60,7 @@ final class LazyTensorOperationTests: XCTestCase {
             _id: "0", name: "Identity", outputCount: 1)
         op0.addInput(LazyTensor(_lazyLive: const, index: 0))
         op0.addInput(StringTensor("hello"))
-        XCTAssertEqual("\(op0)", "Identity_0[](Const_0:0*, conc):1")
+        XCTAssertEqual("\(op0)", "Identity_0[](Const_0:0*, \"string\"):1")
     }
 
 

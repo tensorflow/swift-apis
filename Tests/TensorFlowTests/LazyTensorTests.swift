@@ -34,11 +34,11 @@ final class LazyTensorTests: XCTestCase {
         let zeroTFEHandle = zero.handle.handle._tfeTensorHandle
 
         let concTensor = LazyTensor(zeroTFEHandle)
-        XCTAssertEqual("\(concTensor)", "conc")
+        XCTAssertEqual("\(concTensor)", "0.0")
 
         let materializedConcTensor = LazyTensor(
             _materialized: zeroTFEHandle)
-        XCTAssertEqual("\(materializedConcTensor)", "conc*")
+        XCTAssertEqual("\(materializedConcTensor)", "0.0*")
 
         let op = LazyTensorOperation(
             _id: "0", name: "IdentityN", outputCount: 3)
