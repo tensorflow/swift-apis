@@ -73,7 +73,7 @@ public extension RNNCell {
 }
 
 /// A simple RNN cell.
-public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNumeric {
+public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorProtocol {
     public var weight: Tensor<Scalar>
     public var bias: Tensor<Scalar>
 
@@ -87,7 +87,7 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNum
 
     // TODO(TF-507): Revert to `typealias State = Tensor<Scalar>` after
     // SR-10697 is fixed.
-    public struct State: Equatable, Differentiable, VectorNumeric, KeyPathIterable {
+    public struct State: Equatable, Differentiable, VectorProtocol, KeyPathIterable {
         public let value: Tensor<Scalar>
         public init(_ value: Tensor<Scalar>) {
             self.value = value
@@ -126,7 +126,7 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNum
 }
 
 /// An LSTM cell.
-public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNumeric {
+public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorProtocol {
     public var inputWeight, updateWeight, forgetWeight, outputWeight: Tensor<Scalar>
     public var inputBias, updateBias, forgetBias, outputBias: Tensor<Scalar>
 
@@ -285,7 +285,7 @@ public struct RNN<Cell: RNNCell>: Layer {
 
 extension RNN: Equatable where Cell: Equatable {}
 extension RNN: AdditiveArithmetic where Cell: AdditiveArithmetic {}
-extension RNN: VectorNumeric where Cell: VectorNumeric {}
+extension RNN: VectorProtocol where Cell: VectorProtocol {}
 
 public typealias SimpleRNN<Scalar: TensorFlowFloatingPoint> = RNN<SimpleRNNCell<Scalar>>
 public typealias LSTM<Scalar: TensorFlowFloatingPoint> = RNN<LSTMCell<Scalar>>
