@@ -554,7 +554,10 @@ extension TFETensorHandle: CustomStringConvertible {
         case TF_BOOL:
             return "\(Tensor(handle: TensorHandle<Bool>(handle: self)))"
         case TF_STRING:
-            return "\(StringTensor(handle: TensorHandle<String>(handle: self)))"
+            // TODO(https://bugs.swift.org/browse/TF-561): The current
+            // implementation of ShapedArray<String> is not correct, which
+            // causes seg faults.
+            return "\"string\""
         default:
             return TFETensorHandle.tfDataTypeAsString(dtype)
         }
