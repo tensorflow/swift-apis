@@ -53,7 +53,7 @@ public class Adam<Model: Layer>: Optimizer
     public var beta2: Float
     /// A small scalar added to the denominator to improve numerical stability.
     public var epsilon: Float
-    /// The weight decay.
+    /// The learning rate decay.
     public var decay: Float
     /// The current step.
     public var step: Int = 0
@@ -73,7 +73,7 @@ public class Adam<Model: Layer>: Optimizer
         precondition(learningRate >= 0, "Learning rate must be non-negative")
         precondition(0 <= beta1 && beta1 <= 1, "Beta parameter must be between 0 and 1")
         precondition(0 <= beta2 && beta2 <= 1, "Beta parameter must be between 0 and 1")
-        precondition(decay >= 0, "Weight decay must be non-negative")
+        precondition(decay >= 0, "Learning rate decay must be non-negative")
 
         self.learningRate = learningRate
         self.beta1 = beta1
@@ -216,7 +216,7 @@ public class SGD<Model: Layer>: Optimizer
     public var velocity: Model.AllDifferentiableVariables
     /// The set of steps taken.
     public var step: Int = 0
-    
+
     public init(
         for model: __shared Model,
         learningRate: Float = 0.01,
