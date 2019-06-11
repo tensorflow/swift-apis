@@ -130,9 +130,10 @@ class LazyTensorTrace {
 extension LazyTensorTrace: CustomStringConvertible {
     var description: String {
         var result = "\(signature()) {\n"
-        result += "  // operationsCount: \(operations.count)\n"
-        result += (operations.map { "  \($0)" }).joined(separator: "\n")
-        result += "\n}"
+        for op in operations where op.name != "Placeholder" {
+            result += "  \(op)\n"
+        }
+        result += "}"
         return result
     }
 }
