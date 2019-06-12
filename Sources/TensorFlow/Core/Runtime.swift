@@ -689,6 +689,7 @@ extension _ExecutionContext {
     // The execution mode is effectively encoded in the TensorOperation.
     // We can use this to switch between different execution modes.
     // TODO: Can we interop between modes?
+    @usableFromInline
     static func makeOp(
         _ name: String, _ outputCount: Int
     ) -> TFTensorOperation {
