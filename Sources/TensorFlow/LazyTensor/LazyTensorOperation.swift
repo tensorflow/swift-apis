@@ -155,6 +155,30 @@ class LazyTensorOperation: TensorOperation {
         }
     }
 
+    func outputName(at index: Int) -> String {
+        precondition(index < outputCount,
+            "Output index out of bounds when getting outputName.")
+        let ssaID = id ?? "\(ObjectIdentifier(self))"
+        var ssaName = "%\(ssaID)"
+        if outputCount > 1 {
+            ssaName += ".\(index)"
+        }
+        return ssaName
+    }
+
+    var outputName: String {
+        switch outputCount {
+        case 0: return ""
+        case 1: return outputName(at: 0)
+        default:
+            let outputNames = (0..<outputCount).lazy.map {
+                self.outputName(at: $0)
+            }
+            let aggregateName = outputNames.joined(separator: ", ")
+            return "(\(aggregateName))"
+        }
+    }
+
     static var liveOperations: Int = 0
 
     init(_id id: String?, name: String, outputCount: Int) {
@@ -637,9 +661,7 @@ extension LazyTensor: CustomStringConvertible {
                 ? "\(h.valueDescription)*"
                 : "\(h.valueDescription)"
         case LazyTensor.Handle.symbolic(let op, let index, let isLive):
-            return isLive
-                ? "\(op.nameWithID):\(index)*"
-                : "\(op.nameWithID):\(index)"
+            return op.outputName(at: index) + (isLive ? "*" : "")
         }
     }
 }
@@ -659,11 +681,15 @@ extension LazyTensorOperation: CustomStringConvertible {
                 }
             }
         }
-        var desc = "\(nameWithID)["
-        desc += attrsDesc.joined(separator: ", ")
-        desc += "]("
+        var desc = "\(outputName) = \(name)"
+        if attrs.count > 0 {
+            desc += "["
+            desc += attrsDesc.joined(separator: ", ")
+            desc += "]"
+        }
+            desc += "("
         desc += inputsDesc.joined(separator: ", ")
-        desc += "):\(outputCount)"
+        desc += ")"
         return desc
     }
 }
