@@ -147,7 +147,7 @@ class LazyTensorOperation: TensorOperation {
         }
     }
 
-    func outputName(_ index: Int) -> String {
+    func outputName(at index: Int) -> String {
         precondition(index < outputCount,
             "Output index out of bounds when getting outputName.")
         var ssaName = ""
@@ -165,10 +165,12 @@ class LazyTensorOperation: TensorOperation {
     var outputName: String {
         switch outputCount {
         case 0: return ""
-        case 1: return "\(outputName(0))"
+        case 1: return "\(outputName(at: 0))"
         default:
             do {
-                let outputNames = (0..<outputCount).map { "\(outputName($0))" }
+                let outputNames = (0..<outputCount).map {
+                    "\(outputName(at: $0))"
+                }
                 let aggregateName = outputNames.joined(separator: ", ")
                 return "(\(aggregateName))"
             }
@@ -658,8 +660,8 @@ extension LazyTensor: CustomStringConvertible {
                 : "\(h.valueDescription)"
         case LazyTensor.Handle.symbolic(let op, let index, let isLive):
             return isLive
-                ? "\(op.outputName(index))*"
-                : "\(op.outputName(index))"
+                ? "\(op.outputName(at: index))*"
+                : "\(op.outputName(at: index))"
         }
     }
 }
