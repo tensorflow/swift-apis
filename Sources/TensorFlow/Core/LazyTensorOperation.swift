@@ -687,7 +687,7 @@ extension LazyTensor: CustomStringConvertible {
 
 extension LazyTensorOperation: CustomStringConvertible {
     public var description: String {
-        let attrsDesc = attrs.map { (name, value) in "\(name): \(value)" }
+        let attrsDesc = attrs.keys.sorted(by: <).map { "\($0): \(attrs[$0]!)" }
         let inputsDesc = inputs.map { (input: Input) -> String in
             switch input {
             case Input.single(let lazyTensor):

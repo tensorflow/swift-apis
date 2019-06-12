@@ -166,10 +166,7 @@ final class LazyTensorOperationTests: XCTestCase {
             _id: "0", name: "Nop", outputCount: 1)
         op0.updateAttribute("b", true)
         op0.updateAttribute("s", "hello")
-        XCTAssert(
-            (op0.description == "%0 = Nop[b: true, s: \"hello\"]()") ||
-            (op0.description == "%0 = Nop[s: \"hello\", b: true]()")
-        )
+        XCTAssertEqual(op0.description, "%0 = Nop[b: true, s: \"hello\"]()")
     }
 
     func testFunctionAttribute() {
