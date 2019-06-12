@@ -76,36 +76,6 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 }
 
-public extension Tensor where Scalar: BinaryFloatingPoint {
-    /// Computes the batch normalized tensor along the specified axis.
-    ///
-    /// Specifically, returns `(self - mu)/(var + epsilon) * gamma + beta` where
-    /// `mu` and `var` are respectively the mean and variance of `self` along
-    /// `axis`.
-    ///
-    /// - Parameters:
-    ///     - axis: The batch dimension.
-    ///     - offset: The offset, also known as beta.
-    ///     - scale: The scale, also known as gamma.
-    ///     - epsilon: A small value added to the denominator for numerical stability.
-    @inlinable
-    @differentiable(
-        wrt: (self, offset, scale),
-        vjp: _vjpBatchNormalized where Scalar: TensorFlowFloatingPoint)
-    func batchNormalized(
-        alongAxis axis: Int,
-        offset: Tensor = Tensor(0),
-        scale: Tensor = Tensor(1),
-        epsilon: Scalar = 0.001
-    ) -> Tensor {
-        let mean = self.mean(alongAxes: axis)
-        let squaredDiff: Tensor = Raw.squaredDifference(self, mean)
-        let variance = squaredDiff.mean(alongAxes: axis)
-        let inv = rsqrt(variance + epsilon) * scale
-        return self * inv + offset - mean * inv
-    }
-}
-
 //===------------------------------------------------------------------------------------------===//
 // Convolution and Pooling
 //===------------------------------------------------------------------------------------------===//
