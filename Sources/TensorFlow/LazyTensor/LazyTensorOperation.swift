@@ -99,10 +99,18 @@ class LazyTensor: _AnyTensorHandle {
         return false
     }
 
-    static func onLiveOperations(_ perform: (LazyTensorOperation) -> ()) {
+    static func forEachLiveOperation(
+        _ perform: (LazyTensorOperation) throws -> Void
+    ) rethrows -> Void {
         for (_, counts) in operationRefCounts where counts.liveRefCount > 0 {
-            perform(counts.op)
+            try perform(counts.op)
         }
+    }
+
+    static func forEachOperation(
+        _ perform: (LazyTensorOperation) throws -> Void
+    ) rethrows -> Void {
+        for (_, counts) in operationRefCounts { try perform(counts.op) }
     }
 
     @usableFromInline
