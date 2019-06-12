@@ -435,7 +435,7 @@ public enum _RuntimeConfig {
     }
     static public var session: RuntimeSession = .local
 
-    /// Use lazy evaluation if this is set to true.
+    /// When true, use lazy evaluation.
     static public var useLazyTensor: Bool = false
 
     /// When true, prints various debug messages on the runtime state.
@@ -464,7 +464,7 @@ private func configureRuntimeFromEnvironment() {
     }
 
     if let value = getenv("SWIFT_TENSORFLOW_ENABLE_LAZY_TENSOR"),
-       String(cString: value).lowercased() == "true" {
+        String(cString: value).lowercased() == "true" {
         _RuntimeConfig.useLazyTensor = true
         debugLog("Turning on lazy tensor from env.")
     }
@@ -689,12 +689,12 @@ extension _ExecutionContext {
     // The execution mode is effectively encoded in the TensorOperation.
     // We can use this to switch between different execution modes.
     // TODO: Can we interop between modes?
-    public static func makeOp(
-      _ name: String, _ outputCount: Int
+    static func makeOp(
+        _ name: String, _ outputCount: Int
     ) -> TFTensorOperation {
         return _RuntimeConfig.useLazyTensor
-          ? LazyTensorOperation(name, outputCount)
-          : TFE_Op(name, outputCount)
+            ? LazyTensorOperation(name, outputCount)
+            : TFE_Op(name, outputCount)
     }
 }
 
