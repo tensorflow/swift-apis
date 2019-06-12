@@ -58,7 +58,7 @@ class LazyTensorTrace {
         operations.append(node)
     }
 
-    private func newConstTensor(_ conc: TFETensorHandle) -> LazyTensor {
+    private func makeConstTensor(with conc: TFETensorHandle) -> LazyTensor {
         let cTensorHandle = conc._cTensorHandle
         let result = LazyTensorOperation("Const", 1)
         let dtype = TensorDataType(TFE_TensorHandleDataType(cTensorHandle))
@@ -70,7 +70,9 @@ class LazyTensorTrace {
         return LazyTensor(_lazy: result, index: 0)
     }
 
-    private func newPlaceholderTensor(_ conc: TFETensorHandle) -> LazyTensor {
+    private func makePlaceholderTensor(
+        with conc: TFETensorHandle
+    ) -> LazyTensor {
         let cTensorHandle = conc._cTensorHandle
         let dtype = TensorDataType(TFE_TensorHandleDataType(cTensorHandle))
         let dtypeAttr = LazyTensorOperation.Attribute.TensorDataTypeValue(dtype)
@@ -82,13 +84,16 @@ class LazyTensorTrace {
         return LazyTensor(_lazy: placeholder, index: 0)
     }
 
-    private func constTensorOrPlaceholder(
-        _ conc: TFETensorHandle, asConst: Bool) -> LazyTensor {
+    private func makeConstTensorOrPlaceholder(
+        with conc: TFETensorHandle, asConst: Bool
+    ) -> LazyTensor {
         let id = ObjectIdentifier(conc)
         if let lazyOp = lazyOpsCache[id] {
             return LazyTensor(_lazy: lazyOp, index: 0)
         }
-        return asConst ? newConstTensor(conc) : newPlaceholderTensor(conc)
+        return asConst
+            ? makeConstTensor(with: conc)
+            : makePlaceholderTensor(with: conc)
     }
 
     // Return the original tensor or a concret tensor that is promoted to a
@@ -97,10 +102,12 @@ class LazyTensorTrace {
         _ lazyHandle: LazyTensor) -> LazyTensor {
         switch lazyHandle.handle {
         case LazyTensor.Handle.concrete(let h, let materialized):
-            return constTensorOrPlaceholder(h, asConst: !materialized)
+            return makeConstTensorOrPlaceholder(
+                with: h, asConst: !materialized)
         case LazyTensor.Handle.symbolic(let lazyOp, let index, _): do {
                 if let outputs = lazyOp.outputs {
-                    return constTensorOrPlaceholder(outputs[index], asConst: false)
+                    return makeConstTensorOrPlaceholder(
+                        with: outputs[index], asConst: false)
                 } else {
                     return LazyTensor(
                         _lazy: collectLazyOp(lazyOp), index: index)
