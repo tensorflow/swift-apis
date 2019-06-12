@@ -86,7 +86,7 @@ public func categoricalHingeLoss<Scalar: TensorFlowFloatingPoint>(
     return max(Tensor(0), negative - positive + Tensor(1))
 }
 
-/// Returns the poisson loss between predictions and expectations.
+/// Returns the Poisson loss between predictions and expectations.
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
