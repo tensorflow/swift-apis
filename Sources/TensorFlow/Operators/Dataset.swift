@@ -39,7 +39,7 @@ func _tensorSeeds(_ seed: Tensor<Int64>) -> (Tensor<Int64>, Tensor<Int64>) {
 /// Represents a potentially large set of elements.
 ///
 /// A `Dataset` can be used to represent an input pipeline as a collection of element tensors.
-@_fixed_layout
+@frozen
 public struct Dataset<Element: TensorGroup> {
     public let _handle: VariantHandle
 
@@ -177,7 +177,7 @@ public extension Dataset {
 }
 
 /// The type that allows iteration over a dataset's elements.
-@_fixed_layout
+@frozen
 public struct DatasetIterator<Element: TensorGroup> {
     @usableFromInline let _handle: ResourceHandle
 
@@ -206,7 +206,7 @@ extension DatasetIterator: IteratorProtocol {
 
 /// A 2-tuple-like struct that conforms to TensorGroup that represents a tuple of 2 types conforming 
 /// to `TensorGroup`.
-@_fixed_layout
+@frozen
 public struct Zip2TensorGroup<T: TensorGroup, U: TensorGroup>: TensorGroup {
     public var first: T
     public var second: U
