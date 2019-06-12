@@ -33,26 +33,6 @@ func pow<T: BinaryFloatingPoint>(_ x: T, _ y: T) -> T {
 
 extension Tensor: VectorProtocol where Scalar: Numeric {
     public typealias VectorSpaceScalar = Scalar
-
-    /// Multiplies the scalar with every scalar of the tensor and produces the product.
-    @inlinable
-    @differentiable(vjp: _vjpMultiply(lhs:rhs:) where Scalar: TensorFlowFloatingPoint)
-    public static func * (lhs: Scalar, rhs: Tensor) -> Tensor {
-        return Tensor(lhs) * rhs
-    }
-}
-
-internal extension Tensor where Scalar: TensorFlowFloatingPoint {
-    @inlinable
-    static func _vjpMultiply(lhs: Tensor, rhs: Tensor) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
-        return (lhs * rhs, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
-            let lhsGrad = rhs * v
-            let rhsGrad = lhs * v
-            let (lhsAxes, rhsAxes) = Raw.broadcastGradientArgs(s0: lhsShape, s1: rhsShape)
-            return (lhsGrad.sum(squeezingAxes: lhsAxes).reshaped(toShape: lhsShape),
-                    rhsGrad.sum(squeezingAxes: rhsAxes).reshaped(toShape: rhsShape))
-        })
-    }
 }
 
 //===------------------------------------------------------------------------------------------===//
@@ -123,6 +103,13 @@ public extension Tensor where Scalar: Numeric {
     @differentiable(vjp: _vjpMultiply(lhs:rhs:) where Scalar: TensorFlowFloatingPoint)
     static func * (lhs: Tensor, rhs: Tensor) -> Tensor {
         return Raw.mul(lhs, rhs)
+    }
+
+    /// Multiplies the scalar with every scalar of the tensor and produces the product.
+    @inlinable
+    @differentiable(vjp: _vjpMultiply(lhs:rhs:) where Scalar: TensorFlowFloatingPoint)
+    static func * (lhs: Scalar, rhs: Tensor) -> Tensor {
+        return Tensor(lhs) * rhs
     }
 
     /// Multiplies the scalar with every scalar of the tensor and produces the product.
@@ -234,6 +221,17 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     static func _vjpSubtract(lhs: Scalar, rhs: Tensor) -> (Tensor, (Tensor) -> (Scalar, Tensor)) {
         return (lhs - rhs, { v in (v.sum().scalarized(), -v) })
+    }
+
+    @inlinable
+    static func _vjpMultiply(lhs: Tensor, rhs: Tensor) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
+        return (lhs * rhs, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
+            let lhsGrad = rhs * v
+            let rhsGrad = lhs * v
+            let (lhsAxes, rhsAxes) = Raw.broadcastGradientArgs(s0: lhsShape, s1: rhsShape)
+            return (lhsGrad.sum(squeezingAxes: lhsAxes).reshaped(toShape: lhsShape),
+                    rhsGrad.sum(squeezingAxes: rhsAxes).reshaped(toShape: rhsShape))
+        })
     }
 
     @inlinable
