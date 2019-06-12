@@ -86,6 +86,10 @@ internal extension Layer {
     mutating func += (lhs: inout Self, rhs: TangentVector) -> Self {
         lhs = lhs.moved(along: rhs)
     }
+
+    mutating func -= (lhs: inout Self, rhs: TangentVector) -> Self {
+        lhs = lhs.moved(along: .zero - rhs)
+    }
 }
 
 public extension Differentiable {
