@@ -1,4 +1,4 @@
-// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -110,7 +110,7 @@ public extension Tensor {
 
     /// Stacks `tensors`, along the `axis` dimension, into a new tensor with rank one higher than
     /// the current tensor and each tensor in `tensors`.
-    /// 
+    ///
     /// Given that `tensors` all have shape `[A, B, C]`, and `tensors.count = N`, then:
     /// - if `axis == 0` then the resulting tensor will have the shape `[N, A, B, C]`.
     /// - if `axis == 1` then the resulting tensor will have the shape `[A, N, B, C]`.
@@ -130,11 +130,11 @@ public extension Tensor {
     /// - Parameters:
     ///   - tensors: Tensors to stack.
     ///   - axis: Dimension along which to stack. Negative values wrap around.
-    /// 
+    ///
     /// - Precondition: All tensors must have the same shape.
     /// - Precondition: `axis` must be in the range `[-rank, rank)`, where `rank` is the rank of the
     ///   provided tensors.
-    /// 
+    ///
     /// - Returns: The stacked tensor.
     @inlinable
     @differentiable(vjp: _vjpStacking where Scalar: TensorFlowFloatingPoint)
@@ -144,8 +144,8 @@ public extension Tensor {
 
     /// Concatenates `tensors` along the `axis` dimension.
     ///
-    /// Given that `tensors[i].shape = [D0, D1, ... Daxis(i), ...Dn]`, then the concatenated result 
-    /// has shape `[D0, D1, ... Raxis, ...Dn]`, where `Raxis = sum(Daxis(i))`. That is, the data 
+    /// Given that `tensors[i].shape = [D0, D1, ... Daxis(i), ...Dn]`, then the concatenated result
+    /// has shape `[D0, D1, ... Raxis, ...Dn]`, where `Raxis = sum(Daxis(i))`. That is, the data
     /// from the input tensors is joined along the `axis` dimension.
     ///
     /// For example:
@@ -154,14 +154,14 @@ public extension Tensor {
     /// // t2 is [[7, 8, 9], [10, 11, 12]]
     /// Tensor(concatenating: [t1, t2]) // is [[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]]
     /// Tensor(concatenating: [t1, t2], alongAxis: 1) // is [[1, 2, 3, 7, 8, 9], [4, 5, 6, 10, 11, 12]]
-    /// 
+    ///
     /// // t3 has shape [2, 3]
     /// // t4 has shape [2, 3]
     /// Tensor(concatenating: [t3, t4]) // has shape [4, 3]
     /// Tensor(concatenating: [t3, t4], alongAxis: 1) // has shape [2, 6]
     /// ```
     ///
-    /// - Note: If you are concatenating along a new axis consider using 
+    /// - Note: If you are concatenating along a new axis consider using
     ///   `Tensor.init(stacking:alongAxis:)`.
     ///
     /// - Parameters:
@@ -172,7 +172,7 @@ public extension Tensor {
     ///   must be equal.
     /// - Precondition: `axis` must be in the range `[-rank, rank)`, where `rank` is the rank of the
     ///   provided tensors.
-    /// 
+    ///
     /// - Returns: The concatenated tensor.
     @inlinable
     @differentiable(vjp: _vjpConcatenating where Scalar: TensorFlowFloatingPoint)
@@ -256,7 +256,7 @@ public extension Tensor where Scalar: Numeric {
         self = Raw.onesLike(other)
     }
 
-    /// Creates a 1-D tensor representing a sequence from a starting value to, but not including, 
+    /// Creates a 1-D tensor representing a sequence from a starting value to, but not including,
     /// an end value, stepping by the specified amount.
     ///
     /// - Parameters:

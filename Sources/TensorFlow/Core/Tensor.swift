@@ -1,4 +1,4 @@
-// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ public protocol AnyTensor {
     var _tensorFlowDataType: TensorDataType { get }
 }
 
-/// `Tensor` is a multi-dimensional array used for computation. It is a wrapper around a 
+/// `Tensor` is a multi-dimensional array used for computation. It is a wrapper around a
 /// `TensorHandle`.
 @frozen
 public struct Tensor<Scalar: TensorFlowScalar>: TensorProtocol {

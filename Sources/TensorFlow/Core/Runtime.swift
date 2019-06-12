@@ -1,4 +1,4 @@
-// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -36,9 +36,9 @@ import Glibc
 #endif
 import CTensorFlow
 
-/// TraceContext contains the state needed to build a trace graph function (TF_Function). As eager 
+/// TraceContext contains the state needed to build a trace graph function (TF_Function). As eager
 /// ops are executed in tracing mode, their corresponding nodes are added to the trace graph (via
-/// `addEagerOpToGraph()`). When the trace is finalized (via `finalize()`), the trace graph function 
+/// `addEagerOpToGraph()`). When the trace is finalized (via `finalize()`), the trace graph function
 /// can then be executed (via `execute()`) by the eager runtime.
 @usableFromInline
 internal class TraceContext {
@@ -47,8 +47,8 @@ internal class TraceContext {
     /// The trace graph, which will be converted to a trace graph function upon finalizing.
     let graph = TF_NewGraph()
 
-    /// The list of inputs to the trace graph function. It starts with the inputs to the function 
-    /// that we trace (referred to as the "tracee function" or "tracee"), followed by possible 
+    /// The list of inputs to the trace graph function. It starts with the inputs to the function
+    /// that we trace (referred to as the "tracee function" or "tracee"), followed by possible
     /// additional inputs that correspond to concrete tensors produced within the trace function.
     ///
     /// For example, if the tracee is:
@@ -65,10 +65,10 @@ internal class TraceContext {
     ///
     /// Then the generated trace graph function has 3 input tensors: x.first, x.second, and y.
     ///
-    /// These symbolic tensors corresond to PlaceHolder nodes in the trace graph, and will be filled 
+    /// These symbolic tensors corresond to PlaceHolder nodes in the trace graph, and will be filled
     /// in when we execute the trace graph function.
     //
-    // TODO: If some tensors in `x` are not used within `foo()`, they can be pruned away in the 
+    // TODO: If some tensors in `x` are not used within `foo()`, they can be pruned away in the
     // inputs to the trace graph function.
     var symbolicInputs: [TF_Output] = []
 
@@ -82,7 +82,7 @@ internal class TraceContext {
     /// The trace graph function created by `finalize()`.
     var traceGraphFn: CTFFunction?
 
-    /// The number of additional input tensors to the trace graph function, created from concrete 
+    /// The number of additional input tensors to the trace graph function, created from concrete
     /// intermediate tensors in the tracee, such as `y` in the code snippet above.
     var additionalInputTensorCount: Int32 = -1
 
@@ -128,7 +128,7 @@ internal class TraceContext {
         //   }
         //
         // Here foo() returns 2 tensors, but only the first one (as computed by x + x) is symbolic.
-        // The second one for y is concrete, and is computed at trace creation time, not trace 
+        // The second one for y is concrete, and is computed at trace creation time, not trace
         // execution time. Also see the comment block above finalizeAndExecuteTraceFn().
         for (i, tracedOutput) in tracedOutputs.enumerated()
         where TFE_TensorHandleIsConcrete(tracedOutput) == 0 {
@@ -180,7 +180,7 @@ internal class TraceContext {
         checkOk(status)
     }
 
-    /// Execute the trace graph function, and return the list of output tensors from the trace 
+    /// Execute the trace graph function, and return the list of output tensors from the trace
     /// execution. These output tensors are owned by the caller.
     func execute(traceeInputs: [_AnyTensorHandle], useXLA: Bool = false) -> [CTensorHandle] {
         // We must be in the `notTracing` enum mode.
@@ -243,12 +243,12 @@ internal class TraceContext {
                  """)
         internalConsistencyCheck(outputReturnValueCount <= returnValues.count)
 
-        // Now that all the output elements have been filled in, remove a level of optional, and 
+        // Now that all the output elements have been filled in, remove a level of optional, and
         // also add concrete outputs.
         var traceGraphOutputs: [CTensorHandle] = []
         // Points to an element in `returnValues`.
         var returnValueIdx = 0
-        // See the comment block within finalize() below on why we handle concrete and symbolic 
+        // See the comment block within finalize() below on why we handle concrete and symbolic
         // output tensors differently.
         for tracedOutput in tracedOutputs {
             if TFE_TensorHandleIsConcrete(tracedOutput) != 0 {
@@ -258,7 +258,7 @@ internal class TraceContext {
                 internalConsistencyCheck(newOutput != nil)
                 traceGraphOutputs.append(newOutput!)
             } else {
-                // These symbolic tensors are produced by TFE_Execute() above, and we need not make 
+                // These symbolic tensors are produced by TFE_Execute() above, and we need not make
                 // an extra copy.
                 internalConsistencyCheck(returnValues[returnValueIdx] != nil)
                 traceGraphOutputs.append(returnValues[returnValueIdx]!)
@@ -411,22 +411,22 @@ public enum _RuntimeConfig {
     /// Used to create unique trace graph function names.
     fileprivate static var traceGraphFunctionCounter = 0
 
-    /// When false, tensorflow runtime will be initialized before running any tensor program in this 
+    /// When false, tensorflow runtime will be initialized before running any tensor program in this
     /// process.
     static public var tensorFlowRuntimeInitialized = false
 
-    /// When true, let TensorFlow GPU memory allocation start small and grow as needed. Otherwise, 
+    /// When true, let TensorFlow GPU memory allocation start small and grow as needed. Otherwise,
     /// The entire GPU memory region is pre-allocated.
     static public var gpuMemoryAllowGrowth = true
 
     /// The number of CPU devices.
     static public var cpuDeviceCount: UInt32 = 1
 
-    /// When non-nil, run metadata (with full trace) of each session execution will be dumped to the 
+    /// When non-nil, run metadata (with full trace) of each session execution will be dumped to the
     /// give path.
     static public var runMetadataOutputPath: String? = nil
 
-    /// Specifies whether the TensorFlow computation runs in a local (in-process) session, or a 
+    /// Specifies whether the TensorFlow computation runs in a local (in-process) session, or a
     /// remote session with the specified server definition.
     // @_frozen // SR-9739
     public enum RuntimeSession {
@@ -437,11 +437,11 @@ public enum _RuntimeConfig {
 
     /// When true, prints various debug messages on the runtime state.
     ///
-    /// If the value is true when running tensor computation for the first time in the process, INFO 
+    /// If the value is true when running tensor computation for the first time in the process, INFO
     /// log from TensorFlow will also get printed.
     static public var printsDebugLog = false
 
-    /// Specifies the verbose log level in TensorFlow; a higher level prints out more log. Only 
+    /// Specifies the verbose log level in TensorFlow; a higher level prints out more log. Only
     /// meaningful when `printsDebugLog` is true, and must be within [0, 4] in that case.
     static public var tensorflowVerboseLogLevel: Int32 = 0 {
         willSet {
@@ -573,7 +573,7 @@ public final class _ExecutionContext {
                 print("Caught interrupt signal, exiting...")
                 exit(1)
             }
-            
+
             var args = ["dummyProgramName"]
             if _RuntimeConfig.printsDebugLog {
                 args.append("--alsologtostderr")
@@ -640,7 +640,7 @@ public final class _ExecutionContext {
             let serverDef: UnsafeMutablePointer! = TFE_GetServerDef(serverDef, status)
             checkOk(status)
             TFE_ContextSetServerDef(
-                eagerContext, /*keep_alive_secs*/0, serverDef.pointee.data, 
+                eagerContext, /*keep_alive_secs*/0, serverDef.pointee.data,
                 serverDef.pointee.length, status)
             checkOk(status)
             TF_DeleteBuffer(serverDef)
@@ -738,7 +738,7 @@ private extension TensorGroup {
         // copy input to buffer
         for (i, inputTensorHandle) in input.enumerated() {
             let address = buffer.advanced(by: i)
-            // Each tensor can be symbolic (e.g. when using this API to create a symbolic input 
+            // Each tensor can be symbolic (e.g. when using this API to create a symbolic input
             // instance to tracee) or concrete (e.g. when creating the final output of the tracee).
             let newHandle = TFE_TensorHandleCopySharingTensor(inputTensorHandle, status)
             checkOk(status)
@@ -763,7 +763,7 @@ private extension TensorGroup {
 }
 
 // TODO: Fold this protocol into TensorArrayProtocol.
-// This requires that we move concrete implementation such as Tensor._makeInstance() to 
+// This requires that we move concrete implementation such as Tensor._makeInstance() to
 // TensorGroup.swift.
 public protocol _TensorArrayProtocolEnhanced: TensorArrayProtocol {
     // Create an instance based on `inputs`, which can be symbolic (e.g., when creating a symbolic
@@ -899,7 +899,7 @@ public func _graph<State: _TensorArrayProtocolEnhanced, Data: TensorGroup>(
     return { (state: State, data: Data) in graphFunction(state, data).0 }
 }
 
-/// Trace the given function `fn` and return a closure that can be used to create a 
+/// Trace the given function `fn` and return a closure that can be used to create a
 /// `TF_Function(State)` specialized for `data`.
 public func _tffunc<State: _TensorArrayProtocolEnhanced, Data: TensorGroup>(
     with state: State,
@@ -974,7 +974,7 @@ public func _tffunc<In: TensorGroup, Out: TensorGroup>(_ fn: (In) -> Out) -> Str
             let symbolicOut = escapableFn(symbolicIn)
             return symbolicOut.cTensorHandles
         }
-        
+
         let dtypes = In._typeList.map { $0._cDataType }
         return _trace(with: dtypes, in: wrappedFn)
     }
@@ -982,9 +982,9 @@ public func _tffunc<In: TensorGroup, Out: TensorGroup>(_ fn: (In) -> Out) -> Str
 }
 
 internal extension _ExecutionContext {
-    /// Returns a valid TensorFlow device name, which corresponds to the closest enclosing call to 
-    /// one of the overloads of withDevice. A return value of `nil` indicates the absence of a 
-    /// withDevice call on the call stack or the presence of an immediately enclosing 
+    /// Returns a valid TensorFlow device name, which corresponds to the closest enclosing call to
+    /// one of the overloads of withDevice. A return value of `nil` indicates the absence of a
+    /// withDevice call on the call stack or the presence of an immediately enclosing
     /// `withDefaultDevice(perform)` call.
     var currentDeviceName: String? {
         return _ThreadLocalState.local._currentDevice
@@ -1031,7 +1031,7 @@ internal extension _ExecutionContext {
 }
 
 internal extension _ExecutionContext {
-    /// Synchronously execute the body, preventing asynchronous computation from corrupting the 
+    /// Synchronously execute the body, preventing asynchronous computation from corrupting the
     /// context data.
     private func sync<Result>(execute body: () throws -> Result) rethrows -> Result {
         let lockStatus = pthread_mutex_lock(&mutex)
@@ -1187,7 +1187,7 @@ func _TFCOpSetAttrTypeArray(
     }
 }
 
-/// Given dimensions and ranks in the form described below, makes the appropriate call to 
+/// Given dimensions and ranks in the form described below, makes the appropriate call to
 /// `TFE_OpSetAttrShapeList(op, attrName, ..., status)`.
 ///
 /// - Parameters
@@ -1220,10 +1220,10 @@ fileprivate func setAttrShapeList(
 }
 
 /// Stack of devices that models nested calls to withDevice/withDefaultDevice. Devices are
-/// represented by their names in TensorFlow notation. See documentation for 
+/// represented by their names in TensorFlow notation. See documentation for
 /// `withDevice(named:perform:)` to learn about device names.
 ///
-/// All TensorFlow operations will be put on the topmost device on the stack. When the stack is 
+/// All TensorFlow operations will be put on the topmost device on the stack. When the stack is
 /// empty or the topmost device is `nil`, that allows TensorFlow to place operations on any device
 /// that it sees fit.
 @usableFromInline

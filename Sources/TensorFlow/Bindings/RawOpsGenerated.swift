@@ -1,6 +1,6 @@
 // !!! THIS CODE IS AUTOMATICALLY GENERATED, DO NOT EDIT BY HAND !!!
 //
-// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -485,7 +485,7 @@ public static func a(
 ) -> Tensor<Float> {
   let nOutputs = Int(1)
     let op = makeOp("A", nOutputs)
-    
+
     return op.execute(Int(1))
 }
 
@@ -1116,7 +1116,7 @@ public static func approximateEqual<T: Numeric & TensorFlowScalar>(
 ///   import tensorflow as tf
 ///   a = [1, 10, 26.9, 2.8, 166.32, 62.3]
 ///   b = tf.math.argmax(input = a)
-///   c = tf.keras.backend.eval(b)  
+///   c = tf.keras.backend.eval(b)
 ///   # c = 4
 ///   # here a[4] = 166.32 which is the largest element of a across axis 0
 ///   ```
@@ -1152,7 +1152,7 @@ public static func argMax<
 ///   import tensorflow as tf
 ///   a = [1, 10, 26.9, 2.8, 166.32, 62.3]
 ///   b = tf.math.argmin(input = a)
-///   c = tf.keras.backend.eval(b)  
+///   c = tf.keras.backend.eval(b)
 ///   # c = 0
 ///   # here a[0] = 1 which is the smallest element of a across axis 0
 ///   ```
@@ -1220,7 +1220,7 @@ public static func asString<T: TensorFlowScalar>(
 /// The `tf.math.asin` operation returns the inverse of `tf.math.sin`, such that
 /// if `y = tf.math.sin(x)` then, `x = tf.math.asin(y)`.
 ///
-/// **Note**: The output of `tf.math.asin` will lie within the invertible range 
+/// **Note**: The output of `tf.math.asin` will lie within the invertible range
 /// of sine, i.e [-pi/2, pi/2].
 ///
 /// For example:
@@ -1355,7 +1355,7 @@ public static func assignVariableOp<Dtype: TensorFlowScalar>(
 /// The `tf.math.atan` operation returns the inverse of `tf.math.tan`, such that
 /// if `y = tf.math.tan(x)` then, `x = tf.math.atan(y)`.
 ///
-/// **Note**: The output of `tf.math.atan` will lie within the invertible range 
+/// **Note**: The output of `tf.math.atan` will lie within the invertible range
 /// of tan, i.e (-pi/2, pi/2).
 ///
 /// For example:
@@ -1874,7 +1874,7 @@ public static func b(
 ) -> Tensor<Float> {
   let nOutputs = Int(1)
     let op = makeOp("B", nOutputs)
-    
+
     return op.execute(Int(1))
 }
 
@@ -3480,7 +3480,7 @@ public static func boostedTreesEnsembleResourceHandleOp(
 
 /// Debugging/model interpretability outputs for each example.
 ///
-/// It traverses all the trees and computes debug metrics for individual examples, 
+/// It traverses all the trees and computes debug metrics for individual examples,
 /// such as getting split feature ids and logits after each split along the decision
 /// path used to compute directional feature contributions.
 ///
@@ -4395,12 +4395,12 @@ public static func collectiveReduce<T: Numeric & TensorFlowScalar>(
 /// returned after performing non_max_suppression.
 ///
 /// - Parameters:
-///     - boxes: A 4-D float tensor of shape `[batch_size, num_boxes, q, 4]`. If `q` is 1 then 
-///         same boxes are used for all classes otherwise, if `q` is equal to number of 
+///     - boxes: A 4-D float tensor of shape `[batch_size, num_boxes, q, 4]`. If `q` is 1 then
+///         same boxes are used for all classes otherwise, if `q` is equal to number of
 ///         classes, class-specific boxes are used.
 ///     - scores: A 3-D float tensor of shape `[batch_size, num_boxes, num_classes]`
 ///         representing a single score corresponding to each box (each row of boxes).
-///     - max_output_size_per_class: A scalar integer tensor representing the maximum number of 
+///     - max_output_size_per_class: A scalar integer tensor representing the maximum number of
 ///         boxes to be selected by non max suppression per class
 ///     - max_total_size: A scalar representing maximum number of boxes retained over all classes.
 ///     - iou_threshold: A 0-D float tensor representing the threshold for deciding whether
@@ -4419,11 +4419,11 @@ public static func collectiveReduce<T: Numeric & TensorFlowScalar>(
 ///         coordinates as it is.
 ///
 /// - Outputs:
-///     - nmsed_boxes: A [batch_size, max_detections, 4] float32 tensor 
+///     - nmsed_boxes: A [batch_size, max_detections, 4] float32 tensor
 ///         containing the non-max suppressed boxes.
-///     - nmsed_scores: A [batch_size, max_detections] float32 tensor 
+///     - nmsed_scores: A [batch_size, max_detections] float32 tensor
 ///         containing the scores for the boxes.
-///     - nmsed_classes: A [batch_size, max_detections] float32 tensor 
+///     - nmsed_classes: A [batch_size, max_detections] float32 tensor
 ///         containing the classes for the boxes.
 ///     - valid_detections: A [batch_size] int32 tensor indicating the number of
 ///         valid detections per batch item. Only the top num_detections[i] entries in
@@ -4788,7 +4788,7 @@ public static func constructionFails(
 ) {
   let nOutputs = 0
     let op = makeOp("ConstructionFails", nOutputs)
-    
+
     op.execute()
 }
 
@@ -4821,7 +4821,7 @@ public static func controlTrigger(
 ) {
   let nOutputs = 0
     let op = makeOp("ControlTrigger", nOutputs)
-    
+
     op.execute()
 }
 
@@ -7945,7 +7945,7 @@ public static func devicePlacementOp(
 ) -> StringTensor {
   let nOutputs = Int(1)
     let op = makeOp("DevicePlacementOp", nOutputs)
-    
+
     return op.execute(Int(1))
 }
 
@@ -10552,7 +10552,7 @@ public static func fact(
 ) -> StringTensor {
   let nOutputs = Int(1)
     let op = makeOp("Fact", nOutputs)
-    
+
     return op.execute(Int(1))
 }
 
@@ -10901,7 +10901,7 @@ public static func fiveFloatOutputs(
 ) -> (a: Tensor<Float>, b: Tensor<Float>, c: Tensor<Float>, d: Tensor<Float>, e: Tensor<Float>) {
   let nOutputs = Int(1) + Int(1) + Int(1) + Int(1) + Int(1)
     let op = makeOp("FiveFloatOutputs", nOutputs)
-    
+
     return op.execute(Int(1), Int(1), Int(1), Int(1), Int(1))
 }
 
@@ -11138,7 +11138,7 @@ public static func floatOutput(
 ) -> Tensor<Float> {
   let nOutputs = Int(1)
     let op = makeOp("FloatOutput", nOutputs)
-    
+
     return op.execute(Int(1))
 }
 
@@ -11147,7 +11147,7 @@ public static func floatOutputStringOutput(
 ) -> (a: Tensor<Float>, b: StringTensor) {
   let nOutputs = Int(1) + Int(1)
     let op = makeOp("FloatOutputStringOutput", nOutputs)
-    
+
     return op.execute(Int(1), Int(1))
 }
 
@@ -12556,7 +12556,7 @@ public static func graphDefVersion(
 ) -> Tensor<Int32> {
   let nOutputs = Int(1)
     let op = makeOp("GraphDefVersion", nOutputs)
-    
+
     return op.execute(Int(1))
 }
 
@@ -13412,7 +13412,7 @@ public static func int64Output(
 ) -> Tensor<Int64> {
   let nOutputs = Int(1)
     let op = makeOp("Int64Output", nOutputs)
-    
+
     return op.execute(Int(1))
 }
 
@@ -13463,7 +13463,7 @@ public static func intOutput(
 ) -> Tensor<Int32> {
   let nOutputs = Int(1)
     let op = makeOp("IntOutput", nOutputs)
-    
+
     return op.execute(Int(1))
 }
 
@@ -13472,7 +13472,7 @@ public static func intOutputFloatOutput(
 ) -> (a: Tensor<Int32>, b: Tensor<Float>) {
   let nOutputs = Int(1) + Int(1)
     let op = makeOp("IntOutputFloatOutput", nOutputs)
-    
+
     return op.execute(Int(1), Int(1))
 }
 
@@ -13840,7 +13840,7 @@ public static func kernelLabel(
 ) -> StringTensor {
   let nOutputs = Int(1)
     let op = makeOp("KernelLabel", nOutputs)
-    
+
     return op.execute(Int(1))
 }
 
@@ -15418,7 +15418,7 @@ public static func loopCond(
 /// independently.  The resulting row is the equivalent of calling
 /// `np.searchsorted(sorted_inputs, values, side='left')`.
 ///
-/// The result is not a global index to the entire 
+/// The result is not a global index to the entire
 /// `Tensor`, but rather just the index in the last dimension.
 ///
 /// A 2-D example:
@@ -16169,7 +16169,7 @@ public static func matrixSolve<T: FloatingPoint & TensorFlowScalar>(
 /// If `fast` is `True`, then the solution is computed by solving the normal
 /// equations using Cholesky decomposition. Specifically, if \\(m \ge n\\) then
 /// \\(X = (A^H A + \lambda I)^{-1} A^H B\\), which solves the least-squares
-/// problem \\(X = \mathrm{argmin}_{Z \in \Re^{n \times k} } ||A Z - B||_F^2 + \lambda ||Z||_F^2\\). 
+/// problem \\(X = \mathrm{argmin}_{Z \in \Re^{n \times k} } ||A Z - B||_F^2 + \lambda ||Z||_F^2\\).
 /// If \\(m \lt n\\) then `output` is computed as
 /// \\(X = A^H (A A^H + \lambda I)^{-1} B\\), which (for \\(\lambda = 0\\)) is the
 /// minimum-norm solution to the under-determined linear system, i.e.
@@ -16220,10 +16220,10 @@ public static func matrixSolveLs<T: FloatingPoint & TensorFlowScalar>(
 /// have no eigenvalues which are real and negative (pairs of complex conjugate
 /// eigenvalues are allowed).
 ///
-/// The matrix square root is computed by first reducing the matrix to 
-/// quasi-triangular form with the real Schur decomposition. The square root 
-/// of the quasi-triangular matrix is then computed directly. Details of 
-/// the algorithm can be found in: Nicholas J. Higham, "Computing real 
+/// The matrix square root is computed by first reducing the matrix to
+/// quasi-triangular form with the real Schur decomposition. The square root
+/// of the quasi-triangular matrix is then computed directly. Details of
+/// the algorithm can be found in: Nicholas J. Higham, "Computing real
 /// square roots of a real matrix", Linear Algebra Appl., 1987.
 ///
 /// The input is a tensor of shape `[..., M, M]` whose inner-most 2 dimensions
@@ -17923,7 +17923,7 @@ public static func noOp(
 ) {
   let nOutputs = 0
     let op = makeOp("NoOp", nOutputs)
-    
+
     op.execute()
 }
 
@@ -18213,7 +18213,7 @@ public static func none(
 ) {
   let nOutputs = 0
     let op = makeOp("None", nOutputs)
-    
+
     op.execute()
 }
 
@@ -18290,7 +18290,7 @@ public static func old(
 ) {
   let nOutputs = 0
     let op = makeOp("Old", nOutputs)
-    
+
     op.execute()
 }
 
@@ -18491,7 +18491,7 @@ public static func opWithFutureDefaultAttr(
 ) {
   let nOutputs = 0
     let op = makeOp("OpWithFutureDefaultAttr", nOutputs)
-    
+
     op.execute()
 }
 
@@ -18563,7 +18563,7 @@ public static func optionalNone(
 ) -> VariantHandle {
   let nOutputs = Int(1)
     let op = makeOp("OptionalNone", nOutputs)
-    
+
     return op.execute(Int(1))
 }
 
@@ -20934,8 +20934,8 @@ public static func quantizedConv2DAndRequantize<
 ///     - max_filter: The maximum value of the filter tensor.
 ///
 /// - Attrs:
-///     - Tinput: The quantized type of input tensor that needs to be converted. 
-///     - Tfilter: The quantized type of filter tensor that needs to be converted. 
+///     - Tinput: The quantized type of input tensor that needs to be converted.
+///     - Tfilter: The quantized type of filter tensor that needs to be converted.
 ///     - out_type: The quantized type of output tensor that needs to be converted.
 ///     - strides: list of stride values.
 ///     - dilations: list of dilation values.
@@ -23265,9 +23265,9 @@ public static func requantizationRange<Tinput: TensorFlowScalar>(
 ///     - input_max: The maximum value of the input tensor.
 ///
 /// - Attrs:
-///     - T: The quantized type of input tensor that needs to be converted. 
+///     - T: The quantized type of input tensor that needs to be converted.
 ///     - clip_value_max: The maximum value of the output that needs to be clipped.
-///         Example: set this to 6 for Relu6. 
+///         Example: set this to 6 for Relu6.
 ///
 /// - Outputs:
 ///     - output_min: The minimum value of the final output tensor
@@ -23345,7 +23345,7 @@ public static func requantize<
 ///     - requested_output_max: The maximum value of the output tensor requested.
 ///
 /// - Attrs:
-///     - T: The quantized type of input tensor that needs to be converted. 
+///     - T: The quantized type of input tensor that needs to be converted.
 ///     - out_type: The quantized type of output tensor that needs to be converted.
 ///
 /// - Outputs:
@@ -23380,7 +23380,7 @@ public static func requiresOlderGraphVersion(
 ) -> Tensor<Int32> {
   let nOutputs = Int(1)
     let op = makeOp("RequiresOlderGraphVersion", nOutputs)
-    
+
     return op.execute(Int(1))
 }
 
@@ -28537,7 +28537,7 @@ public static func shutdownDistributedTPU(
 ) {
   let nOutputs = 0
     let op = makeOp("ShutdownDistributedTPU", nOutputs)
-    
+
     op.execute()
 }
 
@@ -31503,7 +31503,7 @@ public static func statefulUniform<
 
 /// Outputs random integers from a uniform distribution.
 ///
-/// The generated values are uniform integers covering the whole range of `dtype`. 
+/// The generated values are uniform integers covering the whole range of `dtype`.
 ///
 /// - Parameters:
 ///     - resource: The handle of the resource variable that stores the state of the RNG.
@@ -32806,7 +32806,7 @@ public static func tPUCompilationResult(
 ) -> StringTensor {
   let nOutputs = Int(1)
     let op = makeOp("TPUCompilationResult", nOutputs)
-    
+
     return op.execute(Int(1))
 }
 
@@ -32855,7 +32855,7 @@ public static func tPUOrdinalSelector(
 ) -> Tensor<Int32> {
   let nOutputs = Int(1)
     let op = makeOp("TPUOrdinalSelector", nOutputs)
-    
+
     return op.execute(Int(1))
 }
 
@@ -33956,7 +33956,7 @@ public static func tensorListFromTensor<
 /// Creates a Tensor by indexing into the TensorList.
 ///
 /// Each row in the produced Tensor corresponds to the element in the TensorList
-/// specified by the given index (see `tf.gather`).  
+/// specified by the given index (see `tf.gather`).
 ///
 /// input_handle: The input tensor list.
 /// indices: The indices used to index into the list.
@@ -34106,7 +34106,7 @@ public static func tensorListResize(
 /// tensor: The input tensor.
 /// indices: The indices used to index into the list.
 /// element_shape: The shape of the elements in the list (can be less specified than
-///   the shape of the tensor).  
+///   the shape of the tensor).
 /// output_handle: The TensorList.
 @inlinable @inline(__always)
 public static func tensorListScatter<
@@ -34826,7 +34826,7 @@ public static func timestamp(
 ) -> Tensor<Double> {
   let nOutputs = Int(1)
     let op = makeOp("Timestamp", nOutputs)
-    
+
     return op.execute(Int(1))
 }
 
@@ -35176,7 +35176,7 @@ public static func twoFloatOutputs(
 ) -> (a: Tensor<Float>, b: Tensor<Float>) {
   let nOutputs = Int(1) + Int(1)
     let op = makeOp("TwoFloatOutputs", nOutputs)
-    
+
     return op.execute(Int(1), Int(1))
 }
 
@@ -35197,7 +35197,7 @@ public static func twoIntOutputs(
 ) -> (a: Tensor<Int32>, b: Tensor<Int32>) {
   let nOutputs = Int(1) + Int(1)
     let op = makeOp("TwoIntOutputs", nOutputs)
-    
+
     return op.execute(Int(1), Int(1))
 }
 
@@ -36216,7 +36216,7 @@ public static func unwrapDatasetVariant(
 /// independently.  The resulting row is the equivalent of calling
 /// `np.searchsorted(sorted_inputs, values, side='right')`.
 ///
-/// The result is not a global index to the entire 
+/// The result is not a global index to the entire
 /// `Tensor`, but rather just the index in the last dimension.
 ///
 /// A 2-D example:
