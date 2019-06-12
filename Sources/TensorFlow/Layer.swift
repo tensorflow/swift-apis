@@ -82,7 +82,7 @@ public extension Layer {
     }
 }
 
-public extension Layer {
+internal extension Layer {
     mutating func += (lhs: inout Self, rhs: TangentVector) -> Self {
         lhs = lhs.moved(along: rhs)
     }
