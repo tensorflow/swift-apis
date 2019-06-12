@@ -167,13 +167,11 @@ class LazyTensorOperation: TensorOperation {
         case 0: return ""
         case 1: return "\(outputName(at: 0))"
         default:
-            do {
-                let outputNames = (0..<outputCount).map {
-                    "\(outputName(at: $0))"
-                }
-                let aggregateName = outputNames.joined(separator: ", ")
-                return "(\(aggregateName))"
+            let outputNames = (0..<outputCount).map {
+                "\(outputName(at: $0))"
             }
+            let aggregateName = outputNames.joined(separator: ", ")
+            return "(\(aggregateName))"
         }
     }
 
