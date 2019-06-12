@@ -201,7 +201,7 @@ public class RMSProp<Model: Layer>: Optimizer
 ///
 /// An optimizer that implements stochastic gradient descent, with support for momentum, learning
 /// rate decay, and Nesterov momentum.
-public class SGD<Model: Layer>: Optimizer where Model.TangentVector: VectorProtocol {
+public class SGD<Model: Differentiable>: Optimizer where Model.TangentVector: VectorProtocol {
     /// The learning rate.
     public var learningRate: Float
     /// The momentum factor. It accelerates stochastic gradient descent in the relevant direction
