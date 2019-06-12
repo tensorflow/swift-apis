@@ -16,6 +16,49 @@ import XCTest
 @testable import TensorFlow
 
 final class MathOperatorTests: XCTestCase {
+    func testElementaryFunction(
+        name: String,
+        _ tensorOperator: (Tensor<Float>) -> Tensor<Float>,
+        _ scalarOperator: (Float) -> Float,
+        accuracy: Float = 1e-4,
+        file: StaticString = #file, line: UInt = #line
+    ) {
+        let x = Tensor<Float>(randomNormal: [20], seed: (0, 0))
+        let actual = tensorOperator(x).scalars
+        let expected = x.scalars.map(scalarOperator)
+        assertEqual(actual, expected, accuracy: accuracy, name, file: file, line: line)
+    }
+
+    func testElementaryFunctions() {
+        testElementaryFunction(name: "sqrt", sqrt, Float.sqrt)
+        testElementaryFunction(name: "cos", cos, Float.cos)
+        testElementaryFunction(name: "sin", sin, Float.sin)
+        testElementaryFunction(name: "tan", tan, Float.tan)
+        testElementaryFunction(name: "cosh", cosh, Float.cosh)
+        testElementaryFunction(name: "sinh", sinh, Float.sinh)
+        testElementaryFunction(name: "tanh", tanh, Float.tanh)
+        testElementaryFunction(name: "acos", acos, Float.acos)
+        testElementaryFunction(name: "asin", asin, Float.asin)
+        testElementaryFunction(name: "atan", atan, Float.atan)
+        testElementaryFunction(name: "acosh", acosh, Float.acosh)
+        testElementaryFunction(name: "asinh", asinh, Float.asinh)
+        testElementaryFunction(name: "atanh", atanh, Float.atanh)
+        testElementaryFunction(name: "exp", exp, Float.exp)
+        testElementaryFunction(name: "exp2", exp2, Float.exp2)
+        testElementaryFunction(name: "exp10", exp10, Float.exp10)
+        testElementaryFunction(name: "expm1", expm1, Float.expm1)
+        testElementaryFunction(name: "log", log, Float.log)
+        testElementaryFunction(name: "log2", log2, Float.log2)
+        testElementaryFunction(name: "log10", log10, Float.log10)
+        testElementaryFunction(name: "log1p", log1p, Float.log1p)
+        testElementaryFunction(name: "pow",
+                               { x in pow(x, x) }, { x in Float.pow(x, x) })
+        testElementaryFunction(name: "pow",
+                               { x in pow(x, 3) }, { x in Float.pow(x, 3) })
+        testElementaryFunction(name: "root",
+                               { x in root(x, 3) }, { x in Float.root(x, 3) })
+    }
+
     func testLog1p() {
         let x = Tensor<Float>([[1, 2, 3, 4, 5], [1, 2, 3, 4, 5]])
         let y = log1p(x)

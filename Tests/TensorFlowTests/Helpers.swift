@@ -15,8 +15,22 @@
 import XCTest
 @testable import TensorFlow
 
-internal func assertEqual<T: TensorFlowFloatingPoint>(_ x: Tensor<T>, _ y: Tensor<T>, accuracy: T) {
-    zip(x.scalars, y.scalars).forEach { (x, y) in
-        XCTAssertEqual(x, y, accuracy: accuracy)
+internal func assertEqual<T: TensorFlowFloatingPoint>(
+    _ x: [T], _ y: [T], accuracy: T, _ message: String = "",
+    file: StaticString = #file, line: UInt = #line
+) {
+    for (x, y) in zip(x, y) {
+        if x.isNaN || y.isNaN {
+            XCTAssertTrue(x.isNaN && y.isNaN, message, file: file, line: line)
+            continue
+        }
+        XCTAssertEqual(x, y, accuracy: accuracy, message, file: file, line: line)
     }
+}
+
+internal func assertEqual<T: TensorFlowFloatingPoint>(
+    _ x: Tensor<T>, _ y: Tensor<T>, accuracy: T, _ message: String = "",
+    file: StaticString = #file, line: UInt = #line
+) {
+    assertEqual(x.scalars, y.scalars, accuracy: accuracy, message, file: file, line: line)
 }
