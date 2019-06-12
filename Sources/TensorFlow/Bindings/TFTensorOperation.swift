@@ -1,4 +1,4 @@
-// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -110,7 +110,7 @@ public protocol TFTensorOperation: TensorOperation {
         _ count5: Int,
         _ count6: Int
     ) -> (T0, T1, T2, T3, T4, T5, T6)
-        
+
     func execute<T0: TensorArrayProtocol, T1: TensorArrayProtocol, T2: TensorArrayProtocol, T3: TensorArrayProtocol, T4: TensorArrayProtocol, T5: TensorArrayProtocol, T6: TensorArrayProtocol, T7: TensorArrayProtocol>(
         _ count0: Int,
         _ count1: Int,
@@ -133,7 +133,7 @@ public protocol TFTensorOperation: TensorOperation {
         _ count7: Int,
         _ count8: Int
     ) -> (T0, T1, T2, T3, T4, T5, T6, T7, T8)
-    
+
     func execute<T0: TensorArrayProtocol, T1: TensorArrayProtocol, T2: TensorArrayProtocol, T3: TensorArrayProtocol, T4: TensorArrayProtocol, T5: TensorArrayProtocol, T6: TensorArrayProtocol, T7: TensorArrayProtocol, T8: TensorArrayProtocol, T9: TensorArrayProtocol>(
         _ count0: Int,
         _ count1: Int,

@@ -1,4 +1,4 @@
-// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import CTensorFlow
 // Runtime Checkers
 //===------------------------------------------------------------------------------------------===//
 
-/// These checks run in both debug and release modes (while assert() only runs in debug mode), to 
+/// These checks run in both debug and release modes (while assert() only runs in debug mode), to
 /// help shake out more bugs and facilitate debugging in the early project phases. It can be
 /// replaced with plain assert() later, when we have a more mature code base.
 @usableFromInline
@@ -56,7 +56,7 @@ internal func checkOk(
 // Type Aliases
 //===------------------------------------------------------------------------------------------===//
 
-// Before assigning a C pointer to one of the pointer type aliases below, caller should check that 
+// Before assigning a C pointer to one of the pointer type aliases below, caller should check that
 // the pointer is not NULL.
 
 /// The `TF_Session *` type.
@@ -153,7 +153,7 @@ internal func writeContents(of buffer: UnsafePointer<TF_Buffer>, toFile path: St
 // Unit Test Utilities
 //===------------------------------------------------------------------------------------------===//
 
-// TODO: Consider revising the call sites where this is necessary to only need UnsafeMutablePointer 
+// TODO: Consider revising the call sites where this is necessary to only need UnsafeMutablePointer
 // to optional when it is the actual c-api call site.
 extension UnsafeMutablePointer where Pointee == CTensorHandle? {
     @usableFromInline

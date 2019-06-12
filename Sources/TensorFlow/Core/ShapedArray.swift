@@ -1,4 +1,4 @@
-// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,18 +19,18 @@ import CTensorFlow
 // TensorBuffer
 //===------------------------------------------------------------------------------------------===//
 
-/// `TensorBuffer` is the internal storage of `ShapedArray`. This buffer has two modes of storage: 
-/// `native` and `tensorFlow`. In `native` mode, the buffer object stores a pointer to contiguous 
-/// scalars; in `tensorFlow` mode, the buffer object stores a `TF_Tensor*` and bridges to 
-/// TensorFlow. In either mode, the buffer object owns the memory and will deallocate it on 
+/// `TensorBuffer` is the internal storage of `ShapedArray`. This buffer has two modes of storage:
+/// `native` and `tensorFlow`. In `native` mode, the buffer object stores a pointer to contiguous
+/// scalars; in `tensorFlow` mode, the buffer object stores a `TF_Tensor*` and bridges to
+/// TensorFlow. In either mode, the buffer object owns the memory and will deallocate it on
 /// `deinit`.
 @usableFromInline
 internal final class TensorBuffer<Scalar> {
     typealias Shape = [Int]
 
     /// A reference type wrapping a Swift Array.
-    /// - Note: An array is used as the native storage for `TensorBuffer`. To make in-place mutation 
-    ///   possible when the array is stored in an enumeration value, the array must be wrapped in a 
+    /// - Note: An array is used as the native storage for `TensorBuffer`. To make in-place mutation
+    ///   possible when the array is stored in an enumeration value, the array must be wrapped in a
     ///   reference type.
     @usableFromInline
     final class BoxedArray {
@@ -151,18 +151,18 @@ public protocol _ShapedArrayProtocol: RandomAccessCollection, MutableCollection 
     init<S: Sequence>(shape: [Int], scalars: S) where S.Element == Scalar
 
     /// Calls a closure with a pointer to the array’s contiguous storage.
-    /// - Parameter body: A closure with an `UnsafeBufferPointer` parameter that points to the 
-    ///   contiguous storage for the array. If no such storage exists, it is created. If body has a 
-    ///   return value, that value is also used as the return value for the 
-    ///   `withUnsafeBufferPointer(_:)` method. The pointer argument is valid only for the duration 
+    /// - Parameter body: A closure with an `UnsafeBufferPointer` parameter that points to the
+    ///   contiguous storage for the array. If no such storage exists, it is created. If body has a
+    ///   return value, that value is also used as the return value for the
+    ///   `withUnsafeBufferPointer(_:)` method. The pointer argument is valid only for the duration
     ///   of the method's execution.
     func withUnsafeBufferPointer<R>(_ body: (UnsafeBufferPointer<Scalar>) throws -> R) rethrows -> R
 
     /// Calls the given closure with a pointer to the array’s mutable contiguous storage.
-    /// - Parameter body: A closure with an `UnsafeMutableBufferPointer` parameter that points to 
-    ///   the contiguous storage for the array. If no such storage exists, it is created. If body 
+    /// - Parameter body: A closure with an `UnsafeMutableBufferPointer` parameter that points to
+    ///   the contiguous storage for the array. If no such storage exists, it is created. If body
     ///   has a return value, that value is also used as the return value for the
-    ///   `withUnsafeMutableBufferPointer(_:)` method. The pointer argument is valid only for the 
+    ///   `withUnsafeMutableBufferPointer(_:)` method. The pointer argument is valid only for the
     ///   duration of the method's execution.
     mutating func withUnsafeMutableBufferPointer<R>(
         _ body: (inout UnsafeMutableBufferPointer<Scalar>) throws -> R
@@ -205,7 +205,7 @@ public extension _ShapedArrayProtocol {
 }
 
 public extension _ShapedArrayProtocol where Scalar: Equatable {
-    static func == <Other>(lhs: Self, rhs: Other) -> Bool 
+    static func == <Other>(lhs: Self, rhs: Other) -> Bool
         where Other: _ShapedArrayProtocol, Scalar == Other.Scalar {
         return lhs.shape == rhs.shape && lhs.scalars.elementsEqual(rhs.scalars)
     }
@@ -213,7 +213,7 @@ public extension _ShapedArrayProtocol where Scalar: Equatable {
 
 public extension _ShapedArrayProtocol {
     /// Returns the number of element arrays in an array (equivalent to the first dimension).
-    /// - Note: `count` is distinct from `scalarCount`, which represents the 
+    /// - Note: `count` is distinct from `scalarCount`, which represents the
     ///   total number of scalars.
     var count: Int {
         return shape.first ?? 0
@@ -233,7 +233,7 @@ internal extension _ShapedArrayProtocol {
 
     /// Returns the range of scalars corresponding to a range in the leading dimension of the array.
     func scalarSubrange(from arraySubrange: Range<Int>) -> Range<Int> {
-        return scalarIndex(fromIndex: arraySubrange.lowerBound) 
+        return scalarIndex(fromIndex: arraySubrange.lowerBound)
             ..< scalarIndex(fromIndex: arraySubrange.upperBound)
     }
 }
@@ -254,17 +254,17 @@ fileprivate extension _ShapedArrayProtocol
         if rank == 1 {
             return ", "
         }
-        return String(repeating: "\n", count: rank - 1) + 
+        return String(repeating: "\n", count: rank - 1) +
             String(repeating: " ", count: indentLevel + 1)
     }
 
-    /// A textual representation of the 1-D shaped array, starting at the given indent level. 
+    /// A textual representation of the 1-D shaped array, starting at the given indent level.
     /// Returns a summarized description if `summarizing` is true and the element count exceeds
     /// twice the `edgeElementCount`.
     ///
     /// - Parameters:
     ///   - indentLevel: The indentation level.
-    ///   - edgeElementCount: The maximum number of elements to print before and after summarization 
+    ///   - edgeElementCount: The maximum number of elements to print before and after summarization
     ///     via ellipses (`...`).
     ///   - maxScalarLength: The length of the longest scalar description in the entire original
     ///     array-to-print.
@@ -315,7 +315,7 @@ fileprivate extension _ShapedArrayProtocol
         } + "]"
     }
 
-    /// A textual representation of the shaped array, starting at the given indent level. Returns a 
+    /// A textual representation of the shaped array, starting at the given indent level. Returns a
     /// summarized description if `summarizing` is true and the element count exceeds twice the
     /// `edgeElementCount`.
     ///
@@ -325,7 +325,7 @@ fileprivate extension _ShapedArrayProtocol
     ///     via ellipses (`...`).
     ///   - maxScalarLength: The length of the longest scalar description in the entire original
     ///     array-to-print.
-    ///   - maxScalarCountPerLine: The maximum number of scalars to print per line, used when 
+    ///   - maxScalarCountPerLine: The maximum number of scalars to print per line, used when
     ///     printing 1-D vectors.
     ///   - summarizing: If true, summarizing description if element count exceeds twice
     ///     `edgeElementCount`.
@@ -390,7 +390,7 @@ public extension _ShapedArrayProtocol
     /// - Parameters:
     ///   - lineWidth: The max line width for printing. Used to determine number of scalars to print
     ///     per line.
-    ///   - edgeElementCount: The maximum number of elements to print before and after summarization 
+    ///   - edgeElementCount: The maximum number of elements to print before and after summarization
     ///     via ellipses (`...`).
     ///   - summarizing: If true, summarizing description if element count exceeds twice
     ///     `edgeElementCount`.
@@ -466,7 +466,7 @@ internal extension ShapedArray where Scalar: _TensorFlowDataTypeCompatible {
         debugLog("Initializing ShapedArray from CTensor.")
         shape = (0..<TF_NumDims(cTensor)).map { Int(TF_Dim(cTensor, $0)) }
         if _RuntimeConfig.printsDebugLog {
-            // Without this local variable, passing the string directly into debugLog() would not 
+            // Without this local variable, passing the string directly into debugLog() would not
             // work, because 'self' is captured by the auto closure param in debugLog().
             let shapeStr = "The shape is \(shape)."
             debugLog(shapeStr)
@@ -637,10 +637,10 @@ extension ShapedArray: RandomAccessCollection, MutableCollection {
 
 public extension ShapedArray {
     /// Calls a closure with a pointer to the array’s contiguous storage.
-    /// - Parameter body: A closure with an `UnsafeBufferPointer` parameter that points to the 
-    ///   contiguous storage for the array. If no such storage exists, it is created. If body has a 
-    ///   return value, that value is also used as the return value for the 
-    ///   `withUnsafeBufferPointer(_:)` method. The pointer argument is valid only for the duration 
+    /// - Parameter body: A closure with an `UnsafeBufferPointer` parameter that points to the
+    ///   contiguous storage for the array. If no such storage exists, it is created. If body has a
+    ///   return value, that value is also used as the return value for the
+    ///   `withUnsafeBufferPointer(_:)` method. The pointer argument is valid only for the duration
     ///   of the method's execution.
     func withUnsafeBufferPointer<Result>(
         _ body: (UnsafeBufferPointer<Scalar>) throws -> Result
@@ -649,10 +649,10 @@ public extension ShapedArray {
     }
 
     /// Calls the given closure with a pointer to the array’s mutable contiguous storage.
-    /// - Parameter body: A closure with an `UnsafeMutableBufferPointer` parameter that points to 
-    ///   the contiguous storage for the array. If no such storage exists, it is created. If body 
+    /// - Parameter body: A closure with an `UnsafeMutableBufferPointer` parameter that points to
+    ///   the contiguous storage for the array. If no such storage exists, it is created. If body
     ///   has a return value, that value is also used as the return value for the
-    ///   `withUnsafeMutableBufferPointer(_:)` method. The pointer argument is valid only for the 
+    ///   `withUnsafeMutableBufferPointer(_:)` method. The pointer argument is valid only for the
     ///   duration of the method's execution.
     mutating func withUnsafeMutableBufferPointer<Result>(
         _ body: (inout UnsafeMutableBufferPointer<Scalar>) throws -> Result
@@ -682,7 +682,7 @@ extension ShapedArray where Scalar: TensorFlowScalar {
                 "Conversion to TensorHandle is undefined when shape dimensions exceed `Int32.max`.")
             return TensorHandle<Scalar>(
                 shape: shape,
-                scalarsInitializer: { addr in 
+                scalarsInitializer: { addr in
                     addr.initialize(from: box.array, count: scalarCount)
                 })
         case let .tensorFlow(cTensor):
@@ -775,13 +775,13 @@ extension ShapedArray: Codable where Scalar: Codable {
 
 /// A contiguous slice of a `ShapedArray` or `ShapedArraySlice` instance.
 ///
-/// `ShapedArraySlice` enables fast, efficient operations on contiguous slices of `ShapedArray` 
-/// instances. `ShapedArraySlice` instances do not have their own storage. Instead, they provides a 
-/// view onto the storage of their base `ShapedArray`. `ShapedArraySlice` can represent two 
+/// `ShapedArraySlice` enables fast, efficient operations on contiguous slices of `ShapedArray`
+/// instances. `ShapedArraySlice` instances do not have their own storage. Instead, they provides a
+/// view onto the storage of their base `ShapedArray`. `ShapedArraySlice` can represent two
 /// different kinds of slices: element arrays and subarrays.
 ///
-/// Element arrays are subdimensional elements of a `ShapedArray`: their rank is one less than that 
-/// of their base. Element array slices are obtained by indexing a `ShapedArray` instance with a 
+/// Element arrays are subdimensional elements of a `ShapedArray`: their rank is one less than that
+/// of their base. Element array slices are obtained by indexing a `ShapedArray` instance with a
 /// singular `Int32` index.
 ///
 /// For example:
@@ -798,9 +798,9 @@ extension ShapedArray: Codable where Scalar: Codable {
 ///     // `matrix` now represents [[0, 1, 4, 8]].
 /// ```
 ///
-/// Subarrays are a contiguous range of the elements in a `ShapedArray`. The rank of a subarray is 
-/// the same as that of its base, but its leading dimension is the count of the slice range. 
-/// Subarray slices are obtained by indexing a `ShapedArray` with a `Range<Int32>` that represents a 
+/// Subarrays are a contiguous range of the elements in a `ShapedArray`. The rank of a subarray is
+/// the same as that of its base, but its leading dimension is the count of the slice range.
+/// Subarray slices are obtained by indexing a `ShapedArray` with a `Range<Int32>` that represents a
 /// range of elements (in the leading dimension). Methods like `prefix(:)` and `suffix(:)` that
 /// internally index with a range also produce subarray.
 ///
@@ -935,10 +935,10 @@ internal extension ShapedArraySlice {
 
 public extension ShapedArraySlice {
     /// Calls a closure with a pointer to the `ShapedArraySlice`’s contiguous storage.
-    /// - Parameter body: A closure with an `UnsafeBufferPointer` parameter that points to the 
+    /// - Parameter body: A closure with an `UnsafeBufferPointer` parameter that points to the
     ///   contiguous storage for the `ShapedArraySlice`. If no such storage exists, it is created.
     ///   If body has a return value, that value is also used as the return value for the
-    ///   `withUnsafeBufferPointer(_:)` method. The pointer argument is valid only for the duration 
+    ///   `withUnsafeBufferPointer(_:)` method. The pointer argument is valid only for the duration
     ///   of the method's execution.
     func withUnsafeBufferPointer<Result>(
         _ body: (UnsafeBufferPointer<Scalar>) throws -> Result
@@ -955,7 +955,7 @@ public extension ShapedArraySlice {
     /// Calls the given closure with a pointer to the `ShapedArraySlice`'s mutable contiguous
     /// storage.
     /// - Parameter body: A closure with an `UnsafeMutableBufferPointer` parameter that points to
-    ///   the contiguous storage for the `ShapedArraySlice`. If no such storage exists, it is 
+    ///   the contiguous storage for the `ShapedArraySlice`. If no such storage exists, it is
     ///   created. If body has a return value, that value is also used as the return value for the
     ///   `withUnsafeMutableBufferPointer(_:)` method. The pointer argument is valid only for the
     ///   duration of the method’s execution.

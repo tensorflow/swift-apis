@@ -1,4 +1,4 @@
-// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,13 +19,13 @@
 
 /// Returns the local seeds an operation should use given an op-specific seed.
 ///
-/// Given operation-specific seed, `seed`, this helper function returns two seeds derived from 
-/// graph-level and op-level seeds. Many random operations internally use the two seeds to allow 
+/// Given operation-specific seed, `seed`, this helper function returns two seeds derived from
+/// graph-level and op-level seeds. Many random operations internally use the two seeds to allow
 /// user to change the seed globally for a graph, or for only specific operations.
 ///
 /// - Note: See TensorFlow's `python.framework.random_seed.get_seed`.
 ///
-// TODO: There's no support for TF's "global seed" yet, so we always use the default graph seed as 
+// TODO: There's no support for TF's "global seed" yet, so we always use the default graph seed as
 // the first seed. Need to investigate the best way to model TF's "global seed".
 @usableFromInline
 func _tensorSeeds(_ seed: Tensor<Int64>) -> (Tensor<Int64>, Tensor<Int64>) {
@@ -86,7 +86,7 @@ extension Dataset: Sequence {
 }
 
 public extension Dataset {
-    // Note that this Dataset API implementation uses an experimental tracing feature, which is not 
+    // Note that this Dataset API implementation uses an experimental tracing feature, which is not
     // robust and does not have great diagnostics yet.
     @inlinable
     func map<ResultElement: TensorGroup>(
@@ -204,7 +204,7 @@ extension DatasetIterator: IteratorProtocol {
     }
 }
 
-/// A 2-tuple-like struct that conforms to TensorGroup that represents a tuple of 2 types conforming 
+/// A 2-tuple-like struct that conforms to TensorGroup that represents a tuple of 2 types conforming
 /// to `TensorGroup`.
 @frozen
 public struct Zip2TensorGroup<T: TensorGroup, U: TensorGroup>: TensorGroup {

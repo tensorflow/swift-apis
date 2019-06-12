@@ -1,4 +1,4 @@
-// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -297,12 +297,12 @@ public class RiemannSGD<Model: Layer, Scalar: FloatingPoint>: Optimizer
 
 /// AdaGrad optimizer.
 ///
-/// Individually adapts the learning rates of all model parameters by scaling them inversely proportional to 
+/// Individually adapts the learning rates of all model parameters by scaling them inversely proportional to
 /// the square root of the sum of all the historical squared values of the gradient.
-/// 
+///
 /// Reference: ["Adaptive Subgradient Methods for Online Learning and Stochastic Optimization"](
 ///  http://www.jmlr.org/papers/volume12/duchi11a/duchi11a.pdf)
-/// 
+///
 public class AdaGrad<Model: Layer>: Optimizer
     where Model.AllDifferentiableVariables == Model.TangentVector {
     /// The learning rate.
@@ -352,4 +352,3 @@ public class AdaGrad<Model: Layer>: Optimizer
         }
     }
 }
-

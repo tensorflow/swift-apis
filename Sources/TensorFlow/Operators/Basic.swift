@@ -1,4 +1,4 @@
-// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -34,15 +34,15 @@ public extension TensorFlowScalar {
 }
 
 public extension Tensor {
-    /// Unpacks the given dimension of a rank-`R` tensor into multiple rank-`(R-1)` tensors. Unpacks 
+    /// Unpacks the given dimension of a rank-`R` tensor into multiple rank-`(R-1)` tensors. Unpacks
     /// `N` tensors from this tensor by chipping it along the `axis` dimension, where `N` is
     /// inferred from this tensor's shape. For example, given a tensor with shape `[A, B, C, D]`:
-    /// 
-    ///   - If `axis == 0` then the `i`-th tensor in the returned array is the slice 
-    ///     `self[i, :, :, :]` and each tensor in that array will have shape `[B, C, D]`. 
+    ///
+    ///   - If `axis == 0` then the `i`-th tensor in the returned array is the slice
+    ///     `self[i, :, :, :]` and each tensor in that array will have shape `[B, C, D]`.
     ///     (Note that the dimension unpacked along is gone, unlike
     ///     `Tensor.split(numSplits:alongAxis)`, or `Tensor.split(sizes:alongAxis)`).
-    ///   - If `axis == 1` then the `i`-th tensor in the returned array is the slice 
+    ///   - If `axis == 1` then the `i`-th tensor in the returned array is the slice
     ///     `value[:, i, :, :]` and each tensor in that array will have shape `[A, C, D]`.
     ///   - Etc.
     ///
@@ -50,10 +50,10 @@ public extension Tensor {
     ///
     /// - Parameters:
     ///   - axis: Dimension along which to unstack. Negative values wrap around.
-    /// 
+    ///
     /// - Precondition: `axis` must be in the range `[-rank, rank)`, where `rank` is the rank of the
     ///   provided tensors.
-    /// 
+    ///
     /// - Returns: Array containing the unstacked tensors.
     @inlinable
     @differentiable(vjp: _vjpUnstacked(alongAxis:) where Scalar: TensorFlowFloatingPoint)
@@ -90,8 +90,8 @@ public extension Tensor {
             splitDim: Tensor<Int32>(Int32(axis)), value: self, numSplit: Int64(count))
     }
 
-    /// Splits a tensor into multiple tensors. The tensor is split  into `sizes.shape[0]` pieces. 
-    /// The shape of the `i`-th piece has the same shape as this tensor except along dimension 
+    /// Splits a tensor into multiple tensors. The tensor is split  into `sizes.shape[0]` pieces.
+    /// The shape of the `i`-th piece has the same shape as this tensor except along dimension
     /// `axis` where the size is `sizes[i]`.
     ///
     /// For example:
@@ -484,7 +484,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     ) -> (Tensor, (Tensor) -> Tensor) {
         let result = gathering(atIndices: indices, alongAxis: axis)
         let posAxis = axis < 0 ? axis + rank : axis
-        
+
         // We have a fast gradient implementation for the case when `posAxis == 0`.
         if posAxis == 0 {
             return (result, { [shape = shapeTensor] v in
@@ -498,7 +498,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
                     numSegments: shape[0])
             })
         }
-        
+
         return (result, { [shape = shapeTensor] v in
             let indicesSize = Tensor<Int32>(Int32(indices.scalarCount)).rankLifted()
             let outerShape = shape[..<posAxis]
@@ -900,7 +900,7 @@ public extension Tensor {
             return Raw.stridedSlice(
                 self, begin: indexPath.begin, end: indexPath.end,
                 strides: indexPath.strides, beginMask: indexPath.beginMask,
-                endMask: indexPath.endMask, ellipsisMask: indexPath.ellipsisMask, 
+                endMask: indexPath.endMask, ellipsisMask: indexPath.ellipsisMask,
                 newAxisMask: indexPath.newAxisMask,
                 shrinkAxisMask: indexPath.squeezeAxisMask)
         }
