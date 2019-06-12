@@ -33,6 +33,11 @@ func pow<T: BinaryFloatingPoint>(_ x: T, _ y: T) -> T {
 
 extension Tensor: VectorProtocol where Scalar: Numeric {
     public typealias VectorSpaceScalar = Scalar
+
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
+    public func scaled(by scalar: Scalar) -> Self {
+        self * scalar
+    }
 }
 
 //===------------------------------------------------------------------------------------------===//
