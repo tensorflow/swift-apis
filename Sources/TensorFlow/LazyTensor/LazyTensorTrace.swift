@@ -34,11 +34,11 @@ class LazyTensorTrace {
         // `y = x + c` into the trace so that we don't have the overhead of creating
         // another trace when we need to materialize `y`.
         //
-        let _ = collectLazyOp(lazyOp)
+        _ = collectLazyOp(lazyOp)
         lazyOpsCache.removeAll()
     }
 
-    func signature() -> String {
+    var signature:  String {
         let inputsDesc = inputs.map { input -> String in
             let dtypeAttr = input.attrs["dtype"]!
             return "\(input.outputName): \(dtypeAttr)"
@@ -142,7 +142,7 @@ class LazyTensorTrace {
 
 extension LazyTensorTrace: CustomStringConvertible {
     var description: String {
-        var result = "\(signature()) {\n"
+        var result = "\(signature) {\n"
         for op in operations where op.name != "Placeholder" {
             result += "  \(op)\n"
         }
