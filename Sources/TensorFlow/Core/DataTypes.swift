@@ -145,7 +145,7 @@ extension UInt64: TensorFlowScalar {
     }
 }
 
-@_fixed_layout
+@frozen
 public struct BFloat16 {
     @usableFromInline var data: Int16 = 0
     private init() {}

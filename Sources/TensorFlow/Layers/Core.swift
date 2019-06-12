@@ -27,7 +27,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
 ///
 /// Dropout consists in randomly setting a fraction of input units to `0` at each update during
 /// training time, which helps prevent overfitting.
-@_fixed_layout
+@frozen
 public struct Dropout<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let probability: Double
 
@@ -82,7 +82,7 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: Layer {
 /// A flatten layer.
 ///
 /// A flatten layer flattens the input when applied without affecting the batch size.
-@_fixed_layout
+@frozen
 public struct Flatten<Scalar: TensorFlowFloatingPoint>: Layer {
     /// Creates a flatten layer.
     public init() {}
@@ -100,7 +100,7 @@ public struct Flatten<Scalar: TensorFlowFloatingPoint>: Layer {
 }
 
 /// A reshape layer.
-@_fixed_layout
+@frozen
 public struct Reshape<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The target shape.
     @noDerivative public let shape: Tensor<Int32>
@@ -138,7 +138,7 @@ public struct Reshape<Scalar: TensorFlowFloatingPoint>: Layer {
 /// `Dense` implements the operation `activation(matmul(input, weight) + bias)`, where `weight` is
 /// a weight matrix, `bias` is a bias vector, and `activation` is an element-wise activation
 /// function.
-@_fixed_layout
+@frozen
 public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The weight matrix.
     public var weight: Tensor<Scalar>

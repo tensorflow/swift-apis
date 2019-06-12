@@ -868,7 +868,7 @@ public extension PartialRangeThrough where Bound == Int {
 }
 
 public extension Tensor {
-    @_fixed_layout @usableFromInline
+    @frozen @usableFromInline
     internal struct IndexPath {
         @usableFromInline
         let begin, end, strides: Tensor<Int32>
