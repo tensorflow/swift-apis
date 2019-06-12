@@ -274,7 +274,7 @@ public class SGD<Model: Layer>: Optimizer
 
 /// A Riemann manifold stochastic gradient descent (SGD) optimizer.
 public class RiemannSGD<Model: Layer, Scalar: FloatingPoint>: Optimizer
-    where Model.TangentVector: VectorProtocol, Model.TangentVector.Scalar == Scalar {
+    where Model.TangentVector: VectorProtocol, Model.TangentVector.VectorSpaceScalar == Scalar {
     /// The learning rate.
     public var learningRate: Scalar
 
