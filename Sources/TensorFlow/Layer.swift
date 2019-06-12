@@ -82,6 +82,12 @@ public extension Layer {
     }
 }
 
+public extension Layer {
+    mutating func += (lhs: inout Self, rhs: TangentVector) -> Self {
+        lhs = lhs.moved(along: rhs)
+    }
+}
+
 public extension Differentiable {
     /// Returns the output computed by applying a sequence of layers to the previous layer's output,
     /// except that the first layer's input is `self`.

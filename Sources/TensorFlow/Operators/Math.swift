@@ -31,8 +31,12 @@ func pow<T: BinaryFloatingPoint>(_ x: T, _ y: T) -> T {
 // Vector Space
 //===------------------------------------------------------------------------------------------===//
 
-extension Tensor: VectorProtocol where Scalar: Numeric {
-    public typealias VectorSpaceScalar = Scalar
+extension Tensor: VectorProtocol where Scalar: TensorFlowFloatingPoint {
+    public typealias VectorSpaceScalar = Float
+
+    public func scaled(by scale: Float) -> Self {
+        Scalar(scale) * self
+    }
 }
 
 //===------------------------------------------------------------------------------------------===//

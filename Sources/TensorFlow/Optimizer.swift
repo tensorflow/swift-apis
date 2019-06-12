@@ -201,8 +201,7 @@ public class RMSProp<Model: Layer>: Optimizer
 ///
 /// An optimizer that implements stochastic gradient descent, with support for momentum, learning
 /// rate decay, and Nesterov momentum.
-public class SGD<Model: Layer>: Optimizer
-    where Model.AllDifferentiableVariables == Model.TangentVector {
+public class SGD<Model: Layer>: Optimizer where Model.TangentVector: VectorProtocol {
     /// The learning rate.
     public var learningRate: Float
     /// The momentum factor. It accelerates stochastic gradient descent in the relevant direction
@@ -212,8 +211,8 @@ public class SGD<Model: Layer>: Optimizer
     public var decay: Float
     /// Use Nesterov momentum if true.
     public var nesterov: Bool
-    /// The velocity state of the model
-    public var velocity: Model.AllDifferentiableVariables
+    /// The velocity state of the model.
+    public var velocity: Model.TangentVector = .zero
     /// The set of steps taken.
     public var step: Int = 0
 
@@ -232,40 +231,17 @@ public class SGD<Model: Layer>: Optimizer
         self.momentum = momentum
         self.decay = decay
         self.nesterov = nesterov
-        velocity = model.allDifferentiableVariables
-        for kp in velocity.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
-            velocity[keyPath: kp].resetToZero()
-        }
-        for kp in velocity.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
-            velocity[keyPath: kp].resetToZero()
-        }
     }
 
     public func update(_ model: inout Model.AllDifferentiableVariables,
                        along direction: Model.TangentVector) {
         step += 1
         let learningRate = self.learningRate * 1 / (1 + decay * Float(step))
-        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
-            velocity[keyPath: kp] =
-                momentum * velocity[keyPath: kp] - learningRate * direction[keyPath: kp]
-            if nesterov {
-                model[keyPath: kp] +=
-                    momentum * velocity[keyPath: kp] - learningRate * direction[keyPath: kp]
-            } else {
-                model[keyPath: kp] += velocity[keyPath: kp]
-            }
-        }
-        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
-            velocity[keyPath: kp] =
-                Double(momentum) * velocity[keyPath: kp] -
-                Double(learningRate) * direction[keyPath: kp]
-            if nesterov {
-                model[keyPath: kp] +=
-                    Double(momentum) * velocity[keyPath: kp] - Double(learningRate) *
-                    direction[keyPath: kp]
-            } else {
-                model[keyPath: kp] += velocity[keyPath: kp]
-            }
+        velocity = momentum * velocity - direction.scaled(by: learningRate)
+        if nesterov {
+            model += momentum * velocity - direction.scaled(by: learningRate)
+        } else {
+            model += velocity
         }
     }
 }
