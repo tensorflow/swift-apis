@@ -214,12 +214,6 @@ public extension Tensor {
         return Raw.squeeze(self, squeezeDims: axes.map(Int32.init))
     }
 
-    /// Returns a `Tensor` by clipping tensor values to a specified min and max.
-    @inlinable
-    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
-    func clipped<T>(min minimum: Tensor<T>, max maximum: Tensor<T>) -> Tensor{
-      return Raw.clipByValue(t: self, clipValueMin: minimum, clipValueMax: maximum)
-    }
 }
 
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
@@ -617,6 +611,14 @@ public extension Tensor {
 }
 
 public extension Tensor where Scalar: Numeric {
+
+    /// Returns a `Tensor` by clipping tensor values to a specified min and max.
+    @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+    func clipped(min minimum: Tensor, max maximum: Tensor) -> Tensor{
+      return Raw.clipByValue(t: self, clipValueMin: minimum, clipValueMax: maximum)
+    }
+
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func unbroadcasted(toShape otherShape: Tensor<Int32>) -> Tensor {
