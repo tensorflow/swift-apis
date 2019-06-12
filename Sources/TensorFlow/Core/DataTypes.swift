@@ -74,7 +74,8 @@ public typealias TensorFlowInteger = TensorFlowScalar & BinaryInteger
 ///
 /// - Note: `Tensor` conditionally conforms to `Differentiable` when the `Scalar` associated type
 ///   conforms `TensorFlowFloatingPoint`.
-public protocol TensorFlowFloatingPoint: TensorFlowScalar & BinaryFloatingPoint & Differentiable
+public protocol TensorFlowFloatingPoint:
+    TensorFlowScalar & BinaryFloatingPoint & Differentiable & ElementaryFunctions
     where Self.RawSignificand: FixedWidthInteger,
           Self == Self.TangentVector,
           Self == Self.AllDifferentiableVariables {}
@@ -145,7 +146,7 @@ extension UInt64: TensorFlowScalar {
     }
 }
 
-@_fixed_layout
+@frozen
 public struct BFloat16 {
     @usableFromInline var data: Int16 = 0
     private init() {}

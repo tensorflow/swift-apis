@@ -32,6 +32,23 @@ final class BasicOperatorTests: XCTestCase {
         XCTAssertEqual(y, Tensor<Float>([3.0, 6.0]))
     }
 
+    func testPadded() {
+        let x = Tensor<Float>(ones: [2, 2])
+        let target = Tensor<Float>([[3, 3, 3], [1, 1, 3], [1, 1, 3]])
+        let paddedTensor = x.padded(forSizes: [(1, 0), (0, 1)], with: 3.0)
+        XCTAssertEqual(paddedTensor, target)
+    }
+
+    func testVJPPadded() {
+        let x = Tensor<Float>(ones: [3, 2])
+        let target = Tensor<Float>([[2, 2], [2, 2], [2, 2]])
+        let grads = x.gradient { a -> Tensor<Float> in
+            let paddedTensor = a.padded(forSizes: [(1, 0), (0, 1)], with: 3.0)
+            return (paddedTensor * paddedTensor).sum()
+        }
+        XCTAssertEqual(grads, target)
+    }
+
     func testElementIndexing() {
         // NOTE: cannot test multiple `Tensor.shape` or `Tensor.scalars` directly
         // until send and receive are implemented (without writing a bunch of mini
@@ -468,6 +485,8 @@ final class BasicOperatorTests: XCTestCase {
 
     static var allTests = [
         ("testGathering", testGathering),
+        ("testPadded", testPadded),
+        ("testVJPPadded", testVJPPadded),
         ("testElementIndexing", testElementIndexing),
         ("testElementIndexingAssignment", testElementIndexingAssignment),
         ("testNestedElementIndexing", testNestedElementIndexing),

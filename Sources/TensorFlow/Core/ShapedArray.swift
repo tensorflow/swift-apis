@@ -24,7 +24,7 @@ import CTensorFlow
 /// scalars; in `tensorFlow` mode, the buffer object stores a `TF_Tensor*` and bridges to 
 /// TensorFlow. In either mode, the buffer object owns the memory and will deallocate it on 
 /// `deinit`.
-@_fixed_layout @usableFromInline
+@usableFromInline
 internal final class TensorBuffer<Scalar> {
     typealias Shape = [Int]
 
@@ -32,7 +32,7 @@ internal final class TensorBuffer<Scalar> {
     /// - Note: An array is used as the native storage for `TensorBuffer`. To make in-place mutation 
     ///   possible when the array is stored in an enumeration value, the array must be wrapped in a 
     ///   reference type.
-    @_fixed_layout @usableFromInline
+    @usableFromInline
     final class BoxedArray {
         var array: [Scalar]
 
@@ -425,7 +425,7 @@ public extension _ShapedArrayProtocol
 
 /// `ShapedArray` is a multi-dimensional array. It has a shape, which has type `[Int]` and defines
 /// the array dimensions, and uses a `TensorBuffer` internally as storage.
-@_fixed_layout
+@frozen
 public struct ShapedArray<Scalar>: _ShapedArrayProtocol {
     /// Contiguous memory storing scalars.
     internal var buffer: TensorBuffer<Scalar>
@@ -819,7 +819,7 @@ extension ShapedArray: Codable where Scalar: Codable {
 ///     // The first 2 elements in `matrix` have been mutated.
 ///     // `matrix` now represents [[0, 0], [0, 0], [4, 5]].
 /// ```
-@_fixed_layout
+@frozen
 public struct ShapedArraySlice<Scalar>: _ShapedArrayProtocol {
     /// The underlying `ShapedArray` of the slice.
     @usableFromInline internal var base: ShapedArray<Scalar>

@@ -24,6 +24,68 @@ public func meanSquaredError<Scalar: TensorFlowFloatingPoint>(
     return (expected - predicted).squared().mean()
 }
 
+/// Returns the mean squared logarithmic error between predictions and expectations.
+///
+/// - Note: Negative tensor entries will be clamped at `0` to avoid undefined
+///   logarithmic behavior, as `log(_:)` is undefined for negative reals.
+///
+/// - Parameters:
+///   - predicted: Predicted outputs from a neural network.
+///   - expected: Expected values, i.e. targets, that correspond to the correct output.
+@differentiable(wrt: predicted)
+public func meanSquaredLogarithmicError<Scalar: TensorFlowFloatingPoint>(
+    predicted: Tensor<Scalar>, expected: Tensor<Scalar>
+) -> Tensor<Scalar> {
+    let logPredicted = log(max(predicted, Tensor(0)) + 1)
+    let logExpected = log(max(expected, Tensor(0)) + 1)
+    return (logPredicted - logExpected).squared().mean()
+}
+
+/// Computes the mean absolute error between predictions and expectations.
+///
+/// - Parameters:
+///   - predicted: Predicted outputs from a neural network.
+///   - expected: Expected values, i.e. targets, that correspond to the correct output.
+@differentiable(wrt: predicted)
+public func meanAbsoluteError<Scalar: TensorFlowFloatingPoint>(
+    predicted: Tensor<Scalar>, expected: Tensor<Scalar>
+) -> Tensor<Scalar> {
+    return abs(expected - predicted).mean()
+}
+
+/// Returns the hinge loss between predictions and expectations.
+///
+/// - Parameters:
+///   - predicted: Predicted outputs from a neural network.
+///   - expected: Expected values, i.e. targets, that correspond to the correct output.
+@differentiable(wrt: predicted)
+public func hingeLoss<Scalar: TensorFlowFloatingPoint>(
+    predicted: Tensor<Scalar>, expected: Tensor<Scalar>
+) -> Tensor<Scalar> {
+    return max(Tensor(1) - expected * predicted, Tensor(0)).mean()
+}
+
+@differentiable(wrt: predicted)
+public func squaredHingeLoss<Scalar: TensorFlowFloatingPoint>(
+    predicted: Tensor<Scalar>, expected: Tensor<Scalar>
+) -> Tensor<Scalar> {
+    return (max(Tensor(1) - expected * predicted, Tensor(0))).squared().mean()
+}
+
+/// Returns the hinge loss between predictions and expectations.
+///
+/// - Parameters:
+///   - predicted: Predicted outputs from a neural network.
+///   - expected: Expected values, i.e. targets, that correspond to the correct output.
+@differentiable(wrt: predicted)
+public func categoricalHingeLoss<Scalar: TensorFlowFloatingPoint>(
+    predicted: Tensor<Scalar>, expected: Tensor<Scalar>
+) -> Tensor<Scalar> {
+    let positive = (expected * predicted).sum()
+    let negative = ((Tensor(1) - expected) * predicted).max()
+    return max(Tensor(0), negative - positive + Tensor(1))
+}
+
 /// Computes the softmax cross entropy (categorical cross entropy) between logits and labels.
 ///
 /// - Parameters:

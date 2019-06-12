@@ -16,7 +16,7 @@ infix operator .!=: ComparisonPrecedence
 
 /// Returns a tensor with the same shape and scalars as the specified tensor.
 @inlinable
-@differentiable
+@differentiable(where Scalar: TensorFlowFloatingPoint)
 public func identity<Scalar>(_ x: Tensor<Scalar>) -> Tensor<Scalar> {
     return x
 }
@@ -674,11 +674,32 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
 public extension Tensor where Scalar: Numeric {
     /// Returns a padded tensor according to the specified padding sizes.
     @inlinable
+    @differentiable(wrt: self, vjp: _vjpPadded(forSizes:with:) where Scalar: TensorFlowFloatingPoint)
     func padded(forSizes sizes: [(before: Int, after: Int)], with value: Scalar = 0) -> Tensor {
         let paddings = Tensor<Int32>(
             shape: [sizes.count, 2],
             scalars: sizes.flatMap { [Int32($0.before), Int32($0.after)] })
         return Raw.padV2(self, paddings: paddings, constantValues: Tensor(value))
+    }
+}
+
+internal extension Tensor where Scalar: TensorFlowFloatingPoint {
+    @inlinable
+    func _vjpPadded(
+        forSizes sizes: [(before: Int, after: Int)],
+        with value: Scalar
+    ) -> (Tensor, (Tensor) -> Tensor) {
+        let result = padded(forSizes: sizes, with: value)
+        return (result, { [rank = rankTensor, shape = shapeTensor] v in
+            let paddings = Tensor<Int32>(
+                shape: [sizes.count, 2],
+                scalars: sizes.flatMap { [Int32($0.before), Int32($0.after)] })
+            let padBefore = Raw.slice(paddings,
+                begin: Tensor<Int32>([0, 0]),
+                size: Tensor<Int32>(stacking: [rank, Tensor<Int32>(1)]))
+            let begin = padBefore.reshaped(to: [-1])
+            return Raw.slice(v, begin: begin, size: shape)
+        })
     }
 }
 
@@ -695,7 +716,7 @@ public extension Tensor {
     /// - Parameter lowerBounds: The lower bounds at each dimension.
     /// - Parameter upperBounds: The upper bounds at each dimension.
     @inlinable
-    @differentiable(wrt: self)
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func slice(lowerBounds: [Int], upperBounds: [Int]) -> Tensor {
         // TODO: Precondition `lowerBounds.count == upperBounds.count`,
         // preferably in graph.
@@ -706,11 +727,13 @@ public extension Tensor {
     }
 
     @inlinable
-    @differentiable(wrt: self, vjp: _vjpSlice)
+    @differentiable(wrt: self, vjp: _vjpSlice where Scalar: TensorFlowFloatingPoint)
     func slice(lowerBounds: Tensor<Int32>, sizes: Tensor<Int32>) -> Tensor {
         return Raw.slice(self, begin: lowerBounds, size: sizes)
     }
+}
 
+public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     internal func _vjpSlice(
         lowerBounds: Tensor<Int32>,
@@ -845,7 +868,7 @@ public extension PartialRangeThrough where Bound == Int {
 }
 
 public extension Tensor {
-    @_fixed_layout @usableFromInline
+    @frozen @usableFromInline
     internal struct IndexPath {
         @usableFromInline
         let begin, end, strides: Tensor<Int32>
@@ -871,7 +894,7 @@ public extension Tensor {
     }
 
     @inlinable
-    @differentiable(wrt: self, vjp: _vjpSubscript)
+    @differentiable(wrt: self, vjp: _vjpSubscript where Scalar : TensorFlowFloatingPoint)
     internal subscript(_ indexPath: IndexPath) -> Tensor {
         get {
             return Raw.stridedSlice(
@@ -893,7 +916,7 @@ public extension Tensor {
     }
 
     @inlinable
-    @differentiable(wrt: self)
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     subscript(_ ranges: TensorRangeExpression...) -> Tensor {
         get {
             return self[{IndexPath({ranges.map { $0.tensorRange }}())}()]
@@ -902,7 +925,9 @@ public extension Tensor {
             self[{IndexPath({ranges.map { $0.tensorRange }}())}()] = newValue
         }
     }
+}
 
+public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @usableFromInline
     internal func _vjpSubscript(
         _ indexPath: IndexPath

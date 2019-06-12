@@ -20,7 +20,7 @@
 ///
 /// Reference: [Batch Normalization: Accelerating Deep Network Training by Reducing Internal
 /// Covariate Shift](https://arxiv.org/abs/1502.03167).
-@_fixed_layout
+@frozen
 public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The feature dimension.
     @noDerivative public let axis: Int
@@ -139,7 +139,7 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
 /// A layer that applies layer normalization over a mini-batch of inputs.
 ///
 /// Reference: [Layer Normalization](https://arxiv.org/abs/1607.06450).
-@_fixed_layout
+@frozen
 public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The offset value, also known as beta.
     public var offset: Tensor<Scalar>
