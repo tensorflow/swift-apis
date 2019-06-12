@@ -13,7 +13,7 @@
 // limitations under the License.
 
 /// An upsampling layer for 1-D inputs.
-@_fixed_layout
+@frozen
 public struct UpSampling1D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let size: Int
 
@@ -39,7 +39,7 @@ public struct UpSampling1D<Scalar: TensorFlowFloatingPoint>: Layer {
 }
 
 /// An upsampling layer for 2-D inputs.
-@_fixed_layout
+@frozen
 public struct UpSampling2D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let size: Int
 
@@ -65,7 +65,7 @@ public struct UpSampling2D<Scalar: TensorFlowFloatingPoint>: Layer {
 }
 
 /// An upsampling layer for 3-D inputs.
-@_fixed_layout
+@frozen
 public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let size: Int
 

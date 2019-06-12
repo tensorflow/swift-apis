@@ -19,7 +19,7 @@
 ///
 /// `TensorShape` is a thin wrapper around an array of integers that represent shape dimensions. All
 /// tensor types use `TensorShape` to represent their shape.
-@_fixed_layout
+@frozen
 public struct TensorShape: ExpressibleByArrayLiteral {
     /// The dimensions of the shape.
     public var dimensions: [Int]

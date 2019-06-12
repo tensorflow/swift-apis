@@ -24,6 +24,23 @@ public func meanSquaredError<Scalar: TensorFlowFloatingPoint>(
     return (expected - predicted).squared().mean()
 }
 
+/// Returns the mean squared logarithmic error between predictions and expectations.
+///
+/// - Note: Negative tensor entries will be clamped at `0` to avoid undefined
+///   logarithmic behavior, as `log(_:)` is undefined for negative reals.
+///
+/// - Parameters:
+///   - predicted: Predicted outputs from a neural network.
+///   - expected: Expected values, i.e. targets, that correspond to the correct output.
+@differentiable(wrt: predicted)
+public func meanSquaredLogarithmicError<Scalar: TensorFlowFloatingPoint>(
+    predicted: Tensor<Scalar>, expected: Tensor<Scalar>
+) -> Tensor<Scalar> {
+    let logPredicted = log(max(predicted, Tensor(0)) + 1)
+    let logExpected = log(max(expected, Tensor(0)) + 1)
+    return (logPredicted - logExpected).squared().mean()
+}
+
 /// Computes the mean absolute error between predictions and expectations.
 ///
 /// - Parameters:

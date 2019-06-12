@@ -16,7 +16,7 @@
 ///
 /// This layer creates a convolution filter that is convolved with the layer input to produce a
 /// tensor of outputs.
-@_fixed_layout
+@frozen
 public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The 3-D convolution kernel `[width, inputChannels, outputChannels]`.
     public var filter: Tensor<Scalar>
@@ -134,7 +134,7 @@ public extension Conv1D {
 ///
 /// This layer creates a convolution filter that is convolved with the layer input to produce a
 /// tensor of outputs.
-@_fixed_layout
+@frozen
 public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The 4-D convolution kernel.
     public var filter: Tensor<Scalar>
@@ -249,7 +249,7 @@ public extension Conv2D {
 ///
 /// This layer creates a convolution filter that is convolved with the layer input to produce a
 /// tensor of outputs.
-@_fixed_layout
+@frozen
 public struct Conv3D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The 5-D convolution kernel.
     public var filter: Tensor<Scalar>
@@ -365,7 +365,7 @@ public extension Conv3D {
 ///
 /// This layer creates a convolution filter that is transpose-convolved with the layer input
 /// to produce a tensor of outputs.
-@_fixed_layout
+@frozen
 public struct TransposedConv2D: Layer {
     /// The 4-D convolution kernel.
     public var filter: Tensor<Float>

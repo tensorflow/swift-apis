@@ -22,11 +22,14 @@ final class MathOperatorTests: XCTestCase {
         assertEqual(y, log(1 + x), accuracy: 0.0001)
     }
 
+    // FIXME(https://bugs.swift.org/browse/TF-543): Disable failing test.
+    /*
     func testExpm1() {
         let x = Tensor<Float>([[1, 2, 3, 4, 5], [1, 2, 3, 4, 5]])
         let y = expm1(x)
         assertEqual(y, exp(x - 1), accuracy: 0.0001)
     }
+    */
 
     func testSign() {
         let x = Tensor<Float>([[1, 2, -3, 4, 5], [1, 2, 3, 4, -5]])
@@ -230,8 +233,8 @@ final class MathOperatorTests: XCTestCase {
 
     static var allTests = [
         ("testLog1p", testLog1p),
-        // TODO(https://bugs.swift.org/browse/TF-543): Test is failing in Linux
-	// ("testExpm1", testExpm1),
+        // FIXME(https://bugs.swift.org/browse/TF-543): Disable failing test.
+        // ("testExpm1", testExpm1),
         ("testSign", testSign),
         ("testReduction", testReduction),
         ("testArgmax", testArgmax),

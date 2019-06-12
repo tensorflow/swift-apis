@@ -19,7 +19,7 @@ import CTensorFlow
 //===------------------------------------------------------------------------------------------===//
 
 /// `StringTensor` is a multi-dimensional array whose elements are `String`s.
-@_fixed_layout
+@frozen
 public struct StringTensor {
     /// The underlying `TensorHandle`.
     /// - Note: `handle` is public to allow user defined ops, but should not normally be used

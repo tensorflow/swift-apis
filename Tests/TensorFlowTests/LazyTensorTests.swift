@@ -34,34 +34,45 @@ final class LazyTensorTests: XCTestCase {
         let zeroTFEHandle = zero.handle.handle._tfeTensorHandle
 
         let concTensor = LazyTensor(zeroTFEHandle)
-        XCTAssertEqual("\(concTensor)", "conc")
+        XCTAssertEqual(concTensor.description, "0.0")
 
         let materializedConcTensor = LazyTensor(
             _materialized: zeroTFEHandle)
-        XCTAssertEqual("\(materializedConcTensor)", "conc*")
+        XCTAssertEqual(materializedConcTensor.description, "0.0*")
 
         let op = LazyTensorOperation(
             _id: "0", name: "IdentityN", outputCount: 3)
         let symTensor0 = LazyTensor(_lazy: op, index: 0)
-        XCTAssertEqual("\(symTensor0)", "IdentityN_0:0")
+        XCTAssertEqual(symTensor0.description, "%0.0")
 
         let symTensor1 = LazyTensor(_lazy: op, index: 2)
-        XCTAssertEqual("\(symTensor1)", "IdentityN_0:2")
+        XCTAssertEqual(symTensor1.description, "%0.2")
 
         let liveSymTensor = LazyTensor(_lazyLive: op, index: 0)
-        XCTAssertEqual("\(liveSymTensor)", "IdentityN_0:0*")
+        XCTAssertEqual(liveSymTensor.description, "%0.0*")
     }
 
     func testLivenessTracking() {
         func assertLive(_ expectedLive: [LazyTensorOperation]) {
             var actualLiveOps: Set<LazyTensorOperationRef> = []
-            LazyTensor.onLiveOperations {
+            LazyTensor.forEachLiveOperation {
                 actualLiveOps.insert(LazyTensorOperationRef($0))
             }
             let expectedLiveOps = Set<LazyTensorOperationRef>(
                 expectedLive.map { LazyTensorOperationRef($0) }
             )
             XCTAssertEqual(expectedLiveOps, actualLiveOps)
+        }
+
+        func assertAll(_ expectedAll: [LazyTensorOperation]) {
+            var actualAllOps: Set<LazyTensorOperationRef> = []
+            LazyTensor.forEachOperation {
+                actualAllOps.insert(LazyTensorOperationRef($0))
+            }
+            let expectedAllOps = Set<LazyTensorOperationRef>(
+                expectedAll.map { LazyTensorOperationRef($0) }
+            )
+            XCTAssertEqual(expectedAllOps, actualAllOps)
         }
 
         func isSymbolic(_ t: LazyTensor) -> Bool {
@@ -89,11 +100,13 @@ final class LazyTensorTests: XCTestCase {
             let t3 = LazyTensor(_lazyLive: op1, index: 0)
             XCTAssertTrue(LazyTensor.isLive(op1))
             assertLive([op0, op1])
+            assertAll([op0, op1])
             // The following is here just to ensure t3 is live.
             XCTAssertTrue(isSymbolic(t3))
         }
         XCTAssertFalse(LazyTensor.isLive(op1))
         assertLive([op0])
+        assertAll([op0, op1])
 
         // The following are here just to ensure t0 and t1 are live.
         XCTAssertTrue(isSymbolic(t1))
