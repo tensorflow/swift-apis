@@ -152,6 +152,7 @@ class LazyTensorOperation: TensorOperation {
         case StringArray([String])
         case ConstTensor(TFETensorHandle)
         case TensorDataTypeValue(TensorDataType)
+        case TensorFunctionPointer(_TensorFunctionPointer)
     }
 
     let name: String
@@ -264,6 +265,9 @@ class LazyTensorOperation: TensorOperation {
     }
     func updateAttribute(_ name: String, _ value: [String]) {
         attrs[name] = Attribute.StringArray(value)
+    }
+    func updateAttribute(_ name: String, _ value: _TensorFunctionPointer) {
+        attrs[name] = Attribute.TensorFunctionPointer(value)
     }
 }
 
@@ -654,6 +658,7 @@ extension LazyTensorOperation.Attribute: CustomStringConvertible {
         case .StringArray(let values): return arrayAsString("String", values)
         case .ConstTensor(let v): return v.valueDescription
         case .TensorDataTypeValue(let v): return dataTypeAsString(v)
+        case .TensorFunctionPointer(let v): return "TFFunction(\(v.name))"
         }
     }
 

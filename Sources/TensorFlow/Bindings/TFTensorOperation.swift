@@ -12,6 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/// Opaque reference to a function that has been made callable by loading it
+/// into the runtime.
+public struct _TensorFunctionPointer {
+    var name: String
+}
+
 // A protocol for a tensor operation.
 public protocol TensorOperation {
     // We use functions instead of fields to give freedom in the representation for the conforming
@@ -59,6 +65,7 @@ public protocol TFTensorOperation: TensorOperation {
     func updateAttribute(_ name: String, _ value: [TensorShape])
     func updateAttribute(_ name: String, _ value: [TensorShape?])
     func updateAttribute<In: TensorGroup, Out: TensorGroup>(_ name: String, _ value: (In) -> Out)
+    func updateAttribute(_ name: String, _ value: _TensorFunctionPointer)
 
     func execute()
 
