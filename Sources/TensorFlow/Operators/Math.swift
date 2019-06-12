@@ -403,6 +403,20 @@ internal func _vjpLog<T: TensorFlowFloatingPoint>(
     (log(x), { v in v / x })
 }
 
+/// Computes the base-two logarithm of the specified tensor element-wise.
+@inlinable
+@differentiable
+public func log2<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    log(x) / T.log(2)
+}
+
+/// Computes the base-ten logarithm of the specified tensor element-wise.
+@inlinable
+@differentiable
+public func log10<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    log(x) / T.log(10)
+}
+
 /// Computes the logarithm of `1 + x` element-wise.
 @inlinable
 @differentiable(vjp: _vjpLog1p)
@@ -503,6 +517,90 @@ internal func _vjpTanh<T: TensorFlowFloatingPoint>(
     return (value, { v in v * (1 - value.squared()) })
 }
 
+/// Computes `acos` of the specified tensor element-wise.
+@inlinable
+@differentiable(vjp: _vjpAcos(_:))
+public func acos<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    Raw.acos(x)
+}
+
+@inlinable
+internal func _vjpAcos<T: TensorFlowFloatingPoint>(
+    _ x: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+    (acos(x), { v in -v / sqrt(1 - x.squared()) })
+}
+
+/// Computes `asin` of the specified tensor element-wise.
+@inlinable
+@differentiable(vjp: _vjpAsin(_:))
+public func asin<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    Raw.asin(x)
+}
+
+@inlinable
+internal func _vjpAsin<T: TensorFlowFloatingPoint>(
+    _ x: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+    (asin(x), { v in v / sqrt(1 - x.squared()) })
+}
+
+/// Computes `atan` of the specified tensor element-wise.
+@inlinable
+@differentiable(vjp: _vjpAtan(_:))
+public func atan<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    Raw.atan(x)
+}
+
+@inlinable
+internal func _vjpAtan<T: TensorFlowFloatingPoint>(
+    _ x: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+    (atan(x), { v in v / (1 + x.squared()) })
+}
+
+/// Computes `acosh` of the specified tensor element-wise.
+@inlinable
+@differentiable(vjp: _vjpAcosh(_:))
+public func acosh<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    Raw.acosh(x)
+}
+
+@inlinable
+internal func _vjpAcosh<T: TensorFlowFloatingPoint>(
+    _ x: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+    (acosh(x), { v in v / asinh(x) })
+}
+
+/// Computes `asinh` of the specified tensor element-wise.
+@inlinable
+@differentiable(vjp: _vjpAsinh(_:))
+public func asinh<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    Raw.asinh(x)
+}
+
+@inlinable
+internal func _vjpAsinh<T: TensorFlowFloatingPoint>(
+    _ x: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+    (asinh(x), { v in v / acosh(x) })
+}
+
+/// Computes `atanh` of the specified tensor element-wise.
+@inlinable
+@differentiable(vjp: _vjpAtanh(_:))
+public func atanh<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    Raw.atanh(x)
+}
+
+@inlinable
+internal func _vjpAtanh<T: TensorFlowFloatingPoint>(
+    _ x: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+    (atanh(x), { v in v / (1 - x.squared()) })
+}
+
 /// Computes the square of the tensor.
 public extension Tensor where Scalar: Numeric {
     @inlinable
@@ -562,6 +660,20 @@ internal func _vjpExp<T: TensorFlowFloatingPoint>(
 ) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
     let value = exp(x)
     return (value, { v in value * v })
+}
+
+/// Computes two raised to the power of the specified tensor element-wise.
+@inlinable
+// @differentiable
+public func exp2<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    pow(2, x)
+}
+
+/// Computes ten raised to the power of the specified tensor element-wise.
+@inlinable
+// @differentiable
+public func exp10<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    pow(10, x)
 }
 
 /// Computes the exponential of `x - 1` element-wise.
@@ -746,6 +858,20 @@ public func pow<T: TensorFlowFloatingPoint>(_ lhs: T, _ rhs: Tensor<T>) -> Tenso
 // @differentiable
 public func pow<T: TensorFlowFloatingPoint>(_ lhs: Tensor<T>, _ rhs: T) -> Tensor<T> {
     pow(lhs, Tensor(rhs))
+}
+
+/// Computes the power of the tensor to the scalar, broadcasting the scalar.
+@inlinable
+// @differentiable
+public func pow<T: TensorFlowFloatingPoint>(_ x: Tensor<T>, _ n: Int) -> Tensor<T> {
+    pow(x, Tensor(T(n)))
+}
+
+/// Computes the element-wise `n`th root of the tensor.
+@inlinable
+// @differentiable
+public func root<T: TensorFlowFloatingPoint>(_ x: Tensor<T>, _ n: Int) -> Tensor<T> {
+    pow(x, Tensor(T(1) / T(n)))
 }
 
 /// Computes the element-wise maximum of two tensors.
