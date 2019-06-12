@@ -98,8 +98,7 @@ class LazyTensorTrace {
 
     // Return the original tensor or a concret tensor that is promoted to a
     // placeholder input.
-    private func maybePromotedTensor(
-        _ lazyHandle: LazyTensor) -> LazyTensor {
+    private func maybePromotedTensor(_ lazyHandle: LazyTensor) -> LazyTensor {
         switch lazyHandle.handle {
         case LazyTensor.Handle.concrete(let h, let materialized):
             return makeConstTensorOrPlaceholder(
@@ -117,7 +116,8 @@ class LazyTensorTrace {
     }
 
     private func maybePromotedInput(
-        _ input: LazyTensorOperation.Input) -> LazyTensorOperation.Input {
+        _ input: LazyTensorOperation.Input
+    ) -> LazyTensorOperation.Input {
         switch input {
         case LazyTensorOperation.Input.single(let h):
             return LazyTensorOperation.Input.single(maybePromotedTensor(h))
