@@ -128,7 +128,8 @@ class LazyTensorTrace {
     }
 
     private func collectLazyOp(
-        _ lazyOp: LazyTensorOperation) -> LazyTensorOperation {
+        _ lazyOp: LazyTensorOperation
+    ) -> LazyTensorOperation {
         let id = ObjectIdentifier(lazyOp)
         if let cachedLazyOp = lazyOpsCache[id] {
             return cachedLazyOp
