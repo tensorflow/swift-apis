@@ -315,7 +315,7 @@ public extension Tensor {
         return transposed(withPermutations: Tensor<Int32>(defaultPermutations))
     }
 
-    /// Concatenates tensors along the specified axis.
+    /// Returns a concatenated tensor along the specified axis.
     /// - Precondition: The tensors must have the same dimensions, except for the
     ///   specified axis.
     /// - Precondition: The axis must be in the range `-rank..<rank`.
@@ -336,7 +336,7 @@ public extension Tensor {
         return lhs.concatenated(with: rhs)
     }
 
-    /// Gathers slices of this tensor at `indices` along the `axis` dimension.
+    /// Returns a tensor by gathering slices of the input at `indices` along the `axis` dimension
     ///
     /// For 0-D (scalar) `indices`:
     /// ```
@@ -387,7 +387,7 @@ public extension Tensor {
         return Raw.gatherV2(params: self, indices: indices, axis: Tensor<Int32>(Int32(axis)))
     }
 
-    /// Gathers values from this tensor according to the provided boolean mask.
+    /// Returns a tensor by gathering the values after applying the provided boolean mask to the input.
     ///
     /// For example:
     /// ```

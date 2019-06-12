@@ -68,36 +68,33 @@ public extension Tensor where Scalar: Numeric {
         return lhs - Tensor(rhs)
     }
 
-    /// Adds two tensors and stores the result in the left-hand-side variable.
+    /// Returns the tensor produced by adding the two tensors.
     /// - Note: `+=` supports broadcasting.
     @inlinable
     static func += (lhs: inout Tensor, rhs: Tensor) {
         lhs = lhs + rhs
     }
 
-    /// Adds the scalar to every scalar of the tensor and stores the result in the left-hand-side
-    /// variable.
+    /// Returns the scalar by adding it to every scalar of the tensor.
     @inlinable
     static func += (lhs: inout Tensor, rhs: Scalar) {
         lhs = lhs + rhs
     }
 
-    /// Subtracts the second tensor from the first and stores the result in the left-hand-side
-    /// variable.
+    /// Returns the tensor by subracting the second tensor from the first.
     /// - Note: `-=` supports broadcasting.
     @inlinable
     static func -= (lhs: inout Tensor, rhs: Tensor) {
         lhs = lhs - rhs
     }
 
-    /// Subtracts the scalar from every scalar of the tensor and stores the result in the
-    /// left-hand-side variable.
+    /// Returns the scalar by subtracting every scalar of the tensor from it.
     @inlinable
     static func -= (lhs: inout Tensor, rhs: Scalar) {
         lhs = lhs - rhs
     }
 
-    /// Multiplies two tensors and produces their product.
+    /// Returns the tensor produced by multiplying the two tensors.
     /// - Note: `*` supports broadcasting.
     @inlinable
     @differentiable(vjp: _vjpMultiply(lhs:rhs:) where Scalar: TensorFlowFloatingPoint)
@@ -105,7 +102,7 @@ public extension Tensor where Scalar: Numeric {
         return Raw.mul(lhs, rhs)
     }
 
-    /// Multiplies the scalar with every scalar of the tensor and produces the product.
+    ///  Returns the scalar by multiplying it with every scalar of the tensor.
     @inlinable
     @differentiable(vjp: _vjpMultiply(lhs:rhs:) where Scalar: TensorFlowFloatingPoint)
     static func * (lhs: Scalar, rhs: Tensor) -> Tensor {
@@ -119,14 +116,14 @@ public extension Tensor where Scalar: Numeric {
         return lhs * Tensor(rhs)
     }
 
-    /// Multiplies two tensors and stores the result in the left-hand-side variable.
+    /// Returns the tensor produced by multiplying the two tensors.
     /// - Note: `*=` supports broadcasting.
     @inlinable
     static func *= (lhs: inout Tensor, rhs: Tensor) {
         lhs = lhs * rhs
     }
 
-    /// Multiplies the tensor with the scalar, broadcasting the scalar, and stores the result in the
+    /// Returns the tensor by multiplying it with the scalar, broadcasting the scalar.
     /// left-hand-side variable.
     @inlinable
     static func *= (lhs: inout Tensor, rhs: Scalar) {
