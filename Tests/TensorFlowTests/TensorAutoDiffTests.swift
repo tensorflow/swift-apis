@@ -387,4 +387,42 @@ final class TensorAutoDiffTests: XCTestCase {
         let expected: Tensor<Float> = inputTensor
         XCTAssertEqual(expected, pb(inputTensor))
     }
+    
+    static var allTests = [
+        ("testSimpleGrad", testSimpleGrad),
+        ("testGenericGrad", testGenericGrad),
+        ("testScalarGenericGrad", testScalarGenericGrad),
+        ("testScalarized", testScalarized),
+        ("testPlus", testPlus),
+        ("testSubtract", testSubtract),
+        ("testMultiply", testMultiply),
+        ("testDivide", testDivide),
+        ("testMatmul", testMatmul),
+        ("testDot", testDot),
+        ("testNegate ", testNegate),
+        ("testAbs", testAbs),
+        ("testSum", testSum),
+        ("testMean", testMean),
+        ("testVariance", testVariance),
+        ("testExpandingShape", testExpandingShape),
+        ("testSqueezingShape", testSqueezingShape),
+        ("testReshapedBackprop", testReshapedBackprop),
+        ("testReshaped", testReshaped),
+        ("testConcatenationPlusPlus", testConcatenationPlusPlus),
+        ("testConcatenated", testConcatenated),
+        ("testTransposed", testTransposed),
+        ("testRelu", testRelu),
+        ("testSoftmax", testSoftmax),
+        ("testLogSoftmax", testLogSoftmax),
+        ("testOwnedCheckpoints", testOwnedCheckpoints),
+        ("testADRefcounting", testADRefcounting),
+        ("testDifferentiateGlobal", testDifferentiateGlobal),
+        ("testSideEffects", testSideEffects),
+        ("testBroadcastToShape", testBroadcastToShape),
+        ("testBroadcastTo", testBroadcastTo),
+        ("testBroadcastLike", testBroadcastLike),
+        ("testUnbroadcastToShape", testUnbroadcastToShape),
+        ("testUnbroadcastTo", testUnbroadcastTo),
+        ("testUnbroadcastLike", testUnbroadcastLike)
+    ]
 }

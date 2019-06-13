@@ -636,7 +636,10 @@ final class BasicOperatorTests: XCTestCase {
         ("testReshapeTensor", testReshapeTensor),
         ("testUnbroadcast1", testUnbroadcast1),
         ("testUnbroadcast2", testUnbroadcast2),
+        ("testUnbroadcast3", testUnbroadcast3),
         ("testSliceUpdate", testSliceUpdate),
+        ("testBroadcast1", testBroadcast1),
+        ("testBroadcast2", testBroadcast2),
         ("testBroadcastTensor", testBroadcastTensor)
     ]
 }
