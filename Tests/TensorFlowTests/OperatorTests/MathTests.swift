@@ -118,7 +118,7 @@ final class MathOperatorTests: XCTestCase {
             x.variance(squeezingAxes: 0),
             Tensor(shape: [5], scalars: [0, 0, 0, 0, 0]))
         XCTAssertEqual(
-            x.variance(alongAxes: 0), 
+            x.variance(alongAxes: 0),
             Tensor(shape: [5], scalars: [0, 0, 0, 0, 0]))
         XCTAssertEqual(
             x.variance(squeezingAxes: 1),
@@ -214,6 +214,24 @@ final class MathOperatorTests: XCTestCase {
         XCTAssertEqual(result.scalars, [12.5, 6.5])
     }
 
+    func testSoftplus() {
+      let x = Tensor<Float>([1.0, 2.0, 3.0])
+      let y = softplus(x)
+      let expected = Tensor<Float>([[1.3132616,  2.126928, 3.0485873]])
+      XCTAssertEqual(x, expected)
+    }
+
+    func testSoftsign() {
+      let x = Tensor<Float>([1.0, 4.0, 3.0])
+      let y = softsign(x)
+      let expected = Tensor<Float>([0.5 , 0.8 , 0.75]])
+      XCTAssertEqual(x, expected)
+    }
+
+    func testSoftsign() {
+
+    }
+
     func testXORInference() {
         func xor(_ x: Float, _ y: Float) -> Float {
             let x = Tensor<Float>([x, y]).reshaped(to: [1, 2])
@@ -281,6 +299,8 @@ final class MathOperatorTests: XCTestCase {
         ("testSign", testSign),
         ("testReduction", testReduction),
         ("testArgmax", testArgmax),
+        ("testSoftplus", testSoftplus),
+        ("testSoftsign", testSoftsign),
         ("testCeilAndFloor", testCeilAndFloor),
         ("testSimpleMath", testSimpleMath),
         ("testStandardDeviation", testStandardDeviation),
