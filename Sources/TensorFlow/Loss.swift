@@ -74,7 +74,8 @@ public func hingeLoss<Scalar: TensorFlowFloatingPoint>(
 public func cosineProximityLoss<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>, expected: Tensor<Scalar>
 ) -> Tensor<Scalar> {
-    return -(expected * predicted).sum() / (sqrt(expected.squared().sum()) * sqrt(predicted.squared().sum()))
+    return -(expected * predicted).sum() /
+        (sqrt(expected.squared().sum()) * sqrt(predicted.squared().sum()))
 }
 
 /// Returns the squared hinge loss between predictions and expectations.
