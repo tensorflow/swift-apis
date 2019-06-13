@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// Computes the mean squared error between predictions and labels.
+/// Returns the mean squared error between predictions and labels.
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
@@ -41,7 +41,7 @@ public func meanSquaredLogarithmicError<Scalar: TensorFlowFloatingPoint>(
     return (logPredicted - logExpected).squared().mean()
 }
 
-/// Computes the mean absolute error between predictions and expectations.
+/// Returns the mean absolute error between predictions and expectations.
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
@@ -77,6 +77,11 @@ public func cosineProximityLoss<Scalar: TensorFlowFloatingPoint>(
     return -(expected * predicted).sum() / (sqrt(expected.squared().sum()) * sqrt(predicted.squared().sum()))
 }
 
+/// Returns the squared hinge loss between predictions and expectations.
+///
+/// - Parameters:
+///   - predicted: Predicted outputs from a neural network.
+///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 @differentiable(wrt: predicted)
 public func squaredHingeLoss<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>, expected: Tensor<Scalar>
@@ -98,7 +103,31 @@ public func categoricalHingeLoss<Scalar: TensorFlowFloatingPoint>(
     return max(Tensor(0), negative - positive + Tensor(1))
 }
 
-/// Computes the softmax cross entropy (categorical cross entropy) between logits and labels.
+/// Returns the Poisson loss between predictions and expectations.
+///
+/// - Parameters:
+///   - predicted: Predicted outputs from a neural network.
+///   - expected: Expected values, i.e. targets, that correspond to the correct output.
+@differentiable(wrt: predicted)
+public func poissonLoss<Scalar: TensorFlowFloatingPoint>(
+    predicted: Tensor<Scalar>, expected: Tensor<Scalar>
+) -> Tensor<Scalar> {
+    return (predicted - expected * log(predicted)).mean()
+}
+
+/// Returns the Kullback-Leibler divergence between predictions and expectations.
+///
+/// - Parameters:
+///   - predicted: Predicted outputs from a neural network.
+///   - expected: Expected values, i.e. targets, that correspond to the correct output.
+@differentiable(wrt: predicted)
+public func kullbackLeiblerDivergence<Scalar: TensorFlowFloatingPoint>(
+    predicted: Tensor<Scalar>, expected: Tensor<Scalar>
+) -> Tensor<Scalar> {
+    return (expected * log(expected / predicted)).sum()
+}
+
+/// Returns the softmax cross entropy (categorical cross entropy) between logits and labels.
 ///
 /// - Parameters:
 ///   - logits: One-hot encoded outputs from a neural network.
@@ -119,7 +148,7 @@ func _vjpSoftmaxCrossEntropy<Scalar: TensorFlowFloatingPoint>(
     return (loss.mean(), { v in (v / batchSize) * grad })
 }
 
-/// Computes the softmax cross entropy (categorical cross entropy) between logits and labels.
+/// Returns the softmax cross entropy (categorical cross entropy) between logits and labels.
 ///
 /// - Parameters:
 ///   - logits: Unscaled log probabilities from a neural network.
@@ -141,7 +170,7 @@ func _vjpSoftmaxCrossEntropy<Scalar: TensorFlowFloatingPoint>(
     return (loss.mean(), { v in v / batchSize * grad })
 }
 
-/// Computes the sigmoid cross entropy (binary cross entropy) between logits and labels.
+/// Returns the sigmoid cross entropy (binary cross entropy) between logits and labels.
 ///
 /// The reduction is reduced over all elements. If reduced over batch size is intended, please
 /// consider to scale the loss.
