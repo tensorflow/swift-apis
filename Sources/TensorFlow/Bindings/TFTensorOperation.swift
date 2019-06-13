@@ -15,7 +15,10 @@
 /// Opaque reference to a function that has been made callable by loading it
 /// into the runtime.
 public struct _TensorFunctionPointer {
-    var name: String
+    public var name: String
+    public init(name: String) {
+        self.name = name
+    }
 }
 
 // A protocol for a tensor operation.

@@ -266,6 +266,7 @@ internal struct TFE_Op: TFTensorOperation {
         }
     }
 
+    @inlinable @inline(__always)
     internal func updateAttribute<In: TensorGroup, Out: TensorGroup>(
         _ name: String,
         _ value: (In) -> Out
@@ -273,6 +274,7 @@ internal struct TFE_Op: TFTensorOperation {
         updateAttribute(name, _TensorFunctionPointer(name: _tffunc(value)))
     }
 
+    @inlinable @inline(__always)
     internal func updateAttribute(_ name: String, _ value: _TensorFunctionPointer) {
         value.name.utf8CString.withUnsafeBufferPointer { buffer in
             // utf8CString is null-terminated; TFE_OpSetAttrFunctionName wants
