@@ -896,8 +896,8 @@ internal func _vjpSigmoid<T: TensorFlowFloatingPoint>(
     (sigmoid(x), { v in Raw.sigmoidGrad(x, dy: v) })
 }
 
-/// Computes the softplus of the specified tensor.
-// Specifically, computes `log(exp(features) + 1)`.
+/// Computes the softplus of the specified tensor element-wise.
+/// Specifically, computes `log(exp(features) + 1)`.
 @inlinable
 @differentiable(vjp: _vjpSoftplus)
 public func softplus<T: TensorFlowFloatingPoint>(_ features: Tensor<T>) -> Tensor<T> {
@@ -911,10 +911,8 @@ internal func _vjpSoftplus<T: TensorFlowFloatingPoint>(
     (softplus(features), { v in Raw.softplusGrad(gradients: v, features: features)})
 }
 
-/// Computes the softsign of the specified tensor.
+/// Computes the softsign of the specified tensor element-wise.
 /// Specifically, computes `features/ (abs(features) + 1)`.
-/// Computes the softplus of the specified tensor.
-// Specifically, computes `log(exp(features) + 1)`.
 @inlinable
 @differentiable(vjp: _vjpSoftsign)
 public func softsign<T: TensorFlowFloatingPoint>(_ features: Tensor<T>) -> Tensor<T> {

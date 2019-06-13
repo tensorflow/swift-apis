@@ -228,10 +228,6 @@ final class MathOperatorTests: XCTestCase {
       XCTAssertEqual(x, expected)
     }
 
-    func testSoftsign() {
-
-    }
-
     func testXORInference() {
         func xor(_ x: Float, _ y: Float) -> Float {
             let x = Tensor<Float>([x, y]).reshaped(to: [1, 2])
