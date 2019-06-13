@@ -201,7 +201,7 @@ final class LossTests: XCTestCase {
         ("testHingeLoss", testHingeLoss),
         ("testCategoricalHingeLoss", testCategoricalHingeLoss),
         ("testSquaredHingeLoss", testSquaredHingeLoss),
-        ("testPoissonLoss",testPoissonLoss),
+        ("testPoissonLoss", testPoissonLoss),
         ("testSoftmaxCrossEntropyWithProbabilitiesLoss",
          testSoftmaxCrossEntropyWithProbabilitiesLoss),
         ("testSoftmaxCrossEntropyWithProbabilitiesGrad",
