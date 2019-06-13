@@ -103,6 +103,18 @@ public func poissonLoss<Scalar: TensorFlowFloatingPoint>(
     return (predicted - expected * log(predicted)).mean()
 }
 
+/// Returns the Kullback-Leibler divergence between predictions and expectations.
+///
+/// - Parameters:
+///   - predicted: Predicted outputs from a neural network.
+///   - expected: Expected values, i.e. targets, that correspond to the correct output.
+@differentiable(wrt: predicted)
+public func kullbackLeiblerDivergence<Scalar: TensorFlowFloatingPoint>(
+    predicted: Tensor<Scalar>, expected: Tensor<Scalar>
+) -> Tensor<Scalar> {
+    return (expected * log(expected / predicted)).sum()
+}
+
 /// Computes the softmax cross entropy (categorical cross entropy) between logits and labels.
 ///
 /// - Parameters:

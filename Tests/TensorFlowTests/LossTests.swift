@@ -104,6 +104,14 @@ final class LossTests: XCTestCase {
         assertElementsEqual(expected: Tensor(expectedLoss), actual: loss)
     }
 
+    func testKullbackLeiblerDivergence() {
+        let predicted = Tensor<Float>([0.2, 0.3, 0.4])
+        let expected = Tensor<Float>([1.0, 4.0, 3.0])
+        let loss = kullbackLeiblerDivergence(predicted: predicted, expected: expected)
+        let expectedLoss: Float = 18.015217
+        assertElementsEqual(expected: Tensor(expectedLoss), actual: loss)
+    }
+
     func testSoftmaxCrossEntropyWithProbabilitiesLoss() {
         let logits = Tensor<Float>(shape: [2, 4], scalars: [1, 2, 3, 4, 5, 6, 7, 8])
         let labels = Tensor<Float>(
@@ -199,6 +207,7 @@ final class LossTests: XCTestCase {
         ("testMeanSquaredLogarithmicError", testMeanSquaredLogarithmicError),
         ("testMeanAbsoluteError", testMeanAbsoluteError),
         ("testHingeLoss", testHingeLoss),
+        ("testKullbackLeiblerDivergence", testKullbackLeiblerDivergence),
         ("testCategoricalHingeLoss", testCategoricalHingeLoss),
         ("testSquaredHingeLoss", testSquaredHingeLoss),
         ("testPoissonLoss", testPoissonLoss),
