@@ -60,7 +60,7 @@ public func meanAbsoluteError<Scalar: TensorFlowFloatingPoint>(
 @differentiable(wrt: predicted)
 public func negativeLogLikelihood<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>
-    ) -> Tensor<Scalar> {
+) -> Tensor<Scalar> {
     return -log(predicted).mean()
 }
 
