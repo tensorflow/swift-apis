@@ -443,21 +443,21 @@ final class BasicOperatorTests: XCTestCase {
         XCTAssertEqual(result.shape, [1, 3, 1, 2, 1])
     }
 
-    func testUnbroadcast1() {
+    func testUnbroadcastRank4ToRank2() {
         let x = Tensor<Float>(repeating: 1, shape: [2, 3, 4, 5])
         let y = Tensor<Float>(repeating: 1, shape: [4, 5])
         let z = x.unbroadcasted(like: y)
         XCTAssertEqual(z.array, ShapedArray<Float>(repeating: 6, shape: [4, 5]))
     }
 
-    func testUnbroadcast2() {
+    func testUnbroadcastRank4ToRank3() {
         let x = Tensor<Float>(repeating: 1, shape: [2, 3, 4, 5])
         let y = Tensor<Float>(repeating: 1, shape: [3, 1, 5])
         let z = x.unbroadcasted(like: y)
         XCTAssertEqual(z.array, ShapedArray<Float>(repeating: 8, shape: [3, 1, 5]))
     }
     
-    func testUnbroadcast3() {
+    func testUnbroadcast3x3To1x3() {
         func foo(tensor: Tensor<Float>, shape: Tensor<Int32>) -> Tensor<Float> {
             tensor.unbroadcasted(toShape: shape)
         }
@@ -524,7 +524,7 @@ final class BasicOperatorTests: XCTestCase {
         XCTAssertEqual(target, Tensor(repeating: 1, shape: [2, 3, 4]))
     }
   
-    func testBroadcast1() {
+    func testBroadcast3x0To3x3() {
         func foo(tensor: Tensor<Float>, shape: Tensor<Int32>) -> Tensor<Float> {
             tensor.broadcasted(toShape: shape)
         }
@@ -567,7 +567,7 @@ final class BasicOperatorTests: XCTestCase {
         XCTAssertEqual(expected, pb(inputTensor))
     }
     
-    func testBroadcast2() {
+    func testBroadcast3x1To3x3() {
         func foo(tensor: Tensor<Float>, shape: Tensor<Int32>) -> Tensor<Float> {
             tensor.broadcasted(toShape: shape)
         }
@@ -634,12 +634,12 @@ final class BasicOperatorTests: XCTestCase {
         ("testFlatten0D", testFlatten0D),
         ("testReshapeToScalar", testReshapeToScalar),
         ("testReshapeTensor", testReshapeTensor),
-        ("testUnbroadcast1", testUnbroadcast1),
-        ("testUnbroadcast2", testUnbroadcast2),
-        ("testUnbroadcast3", testUnbroadcast3),
+        ("testUnbroadcastRank4ToRank2", testUnbroadcastRank4ToRank2),
+        ("testUnbroadcastRank4ToRank3", testUnbroadcastRank4ToRank3),
+        ("testUnbroadcast3x3To1x3", testUnbroadcast3x3To1x3),
         ("testSliceUpdate", testSliceUpdate),
-        ("testBroadcast1", testBroadcast1),
-        ("testBroadcast2", testBroadcast2),
+        ("testBroadcast3x0To3x3", testBroadcast3x0To3x3),
+        ("testBroadcast3x1To3x3", testBroadcast3x1To3x3),
         ("testBroadcastTensor", testBroadcastTensor)
     ]
 }
