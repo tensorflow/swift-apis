@@ -16,7 +16,6 @@ import XCTest
 @testable import TensorFlow
 
 final class LossTests: XCTestCase {
-
     func testL1Loss() {
         let predicted = Tensor<Float>([1, 2, 3, 4])
         let expected = Tensor<Float>([0.1, 0.2, 0.3, 0.4])
