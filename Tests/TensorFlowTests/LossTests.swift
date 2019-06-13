@@ -26,7 +26,7 @@ final class LossTests: XCTestCase {
     }
 
     func testL2Loss() {
-        let predicted = Tensor<Float>([1, 2, 3, 4]))
+        let predicted = Tensor<Float>([1, 2, 3, 4])
         let expected = Tensor<Float>([0.5, 1.5, 2.5, 3.5])
         let loss = l2Loss(predicted: predicted, expected: expected)
         let expectedLoss: Float = 1.0
