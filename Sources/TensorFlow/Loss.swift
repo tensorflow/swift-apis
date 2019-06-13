@@ -107,20 +107,6 @@ public func logcoshLoss<Scalar: TensorFlowFloatingPoint>(
     return (logcosh(x: predicted - expected)).mean()
 }
 
-
-/// Returns the Poisson loss between predictions and expectations.
-///
-/// - Parameters:
-///   - predicted: Predicted outputs from a neural network.
-///   - expected: Expected values, i.e. targets, that correspond to the correct output.
-@differentiable(wrt: predicted)
-public func poissonLoss<Scalar: TensorFlowFloatingPoint>(
-    predicted: Tensor<Scalar>, expected: Tensor<Scalar>
-) -> Tensor<Scalar> {
-    return (predicted - expected * log(predicted)).mean()
-}
-
-
 /// Returns the Poisson loss between predictions and expectations.
 ///
 /// - Parameters:
