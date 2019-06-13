@@ -87,7 +87,7 @@ public func categoricalHingeLoss<Scalar: TensorFlowFloatingPoint>(
 }
 
 // Helper function for `losCoshLoss(predicted:expected:)`.
-@differentiable(wrt: x)
+@differentiable
 fileprivate func logCosh<Scalar: TensorFlowFloatingPoint>(
     x: Tensor<Scalar>
 ) -> Tensor<Scalar> {
