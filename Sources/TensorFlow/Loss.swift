@@ -65,7 +65,7 @@ public func hingeLoss<Scalar: TensorFlowFloatingPoint>(
     return max(Tensor(1) - expected * predicted, Tensor(0)).mean()
 }
 
-/// Returns the cosine proximity loss between predictions and expectations.
+/// Returns the cosine similarity between predictions and expectations.
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
