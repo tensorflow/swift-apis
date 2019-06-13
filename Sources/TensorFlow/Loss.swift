@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// Computes the L1 loss between predictions and labels.
+/// Returns the L1 loss between predictions and labels.
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
@@ -24,7 +24,7 @@ public func l1Loss<Scalar: TensorFlowFloatingPoint>(
     return abs(expected - predicted).sum()
 }
 
-/// Computes the L2 loss between predictions and labels.
+/// Returns the L2 loss between predictions and labels.
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
