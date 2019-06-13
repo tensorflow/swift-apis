@@ -65,6 +65,11 @@ public func hingeLoss<Scalar: TensorFlowFloatingPoint>(
     return max(Tensor(1) - expected * predicted, Tensor(0)).mean()
 }
 
+/// Returns the squared hinge loss between predictions and expectations.
+///
+/// - Parameters:
+///   - predicted: Predicted outputs from a neural network.
+///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 @differentiable(wrt: predicted)
 public func squaredHingeLoss<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>, expected: Tensor<Scalar>
