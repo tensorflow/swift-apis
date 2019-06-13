@@ -576,6 +576,15 @@ public extension Tensor {
     }
 }
 
+public extension Tensor where Scalar: Numeric {
+  /// Returns a `Tensor` by clipping tensor values to a specified min and max.
+  @inlinable
+  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  func clipped(min minimum: Tensor, max maximum: Tensor) -> Tensor{
+    return Raw.clipByValue(t: self, clipValueMin: minimum, clipValueMax: maximum)
+  }
+}
+
 //===------------------------------------------------------------------------------------------===//
 // Broadcasting
 //===------------------------------------------------------------------------------------------===//
@@ -611,14 +620,6 @@ public extension Tensor {
 }
 
 public extension Tensor where Scalar: Numeric {
-
-    /// Returns a `Tensor` by clipping tensor values to a specified min and max.
-    @inlinable
-    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
-    func clipped(min minimum: Tensor, max maximum: Tensor) -> Tensor{
-      return Raw.clipByValue(t: self, clipValueMin: minimum, clipValueMax: maximum)
-    }
-
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func unbroadcasted(toShape otherShape: Tensor<Int32>) -> Tensor {
