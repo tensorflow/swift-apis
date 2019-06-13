@@ -63,7 +63,7 @@ public func meanAbsolutePercentageError<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>, expected: Tensor<Scalar>
 ) -> Tensor<Scalar> {
     let diff = abs((expected - predicted) / abs(expected))
-    return Tensor(100) * diff.mean()
+    return 100 * diff.mean()
 }
 
 /// Returns the hinge loss between predictions and expectations.
