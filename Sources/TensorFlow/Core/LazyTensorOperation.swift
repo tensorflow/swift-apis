@@ -162,6 +162,7 @@ class LazyTensorOperation: TensorOperation {
     let outputCount: Int
     var inputs: [Input]
     var attributes: [String: Attribute]
+    var device: String?
     var outputs: [TFETensorHandle]?
     var id: String?
 
@@ -203,6 +204,7 @@ class LazyTensorOperation: TensorOperation {
         self.name = name
         self.inputs = []
         self.attributes = [:]
+        self.device = _ExecutionContext.global.currentDeviceName
         self.outputCount = outputCount
         self.outputs = nil
         self.id = id
