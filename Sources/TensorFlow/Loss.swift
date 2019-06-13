@@ -53,6 +53,17 @@ public func meanAbsoluteError<Scalar: TensorFlowFloatingPoint>(
     return abs(expected - predicted).mean()
 }
 
+/// Returns the negative logarithmic likelihood of the predictions.
+///
+/// - Parameters:
+///   - predicted: Predicted outputs from a neural network.
+@differentiable(wrt: predicted)
+public func negativeLogLikelihood<Scalar: TensorFlowFloatingPoint>(
+    predicted: Tensor<Scalar>
+    ) -> Tensor<Scalar> {
+    return -log(predicted).mean()
+}
+
 /// Returns the hinge loss between predictions and expectations.
 ///
 /// - Parameters:

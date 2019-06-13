@@ -67,6 +67,18 @@ final class LossTests: XCTestCase {
 
         assertElementsEqual(expected: expectedGradients, actual: gradients)
     }
+    
+    func testNegativeLogLikelihood() {
+        let predicted = Tensor<Float>(shape: [2, 4], scalars: [1, 2, 3, 4, 5, 6, 7, 8])
+        let expectedGradients = Tensor<Float>(
+            shape: [2, 4],
+            scalars: [-0.125, -0.0625, -0.0416666, -0.03125, -0.025, -0.0208333, -0.017857, -0.015625])
+        let gradients = gradient(
+            at: predicted,
+            in: { negativeLogLikelihood(predicted: $0) })
+        
+        assertElementsEqual(expected: expectedGradients, actual: gradients)
+    }
 
     func testHingeLoss() {
         let predicted = Tensor<Float>(shape: [2, 4], scalars: [1, 2, 3, 4, 5, 6, 7, 8])
@@ -190,6 +202,7 @@ final class LossTests: XCTestCase {
         ("testMeanSquaredErrorGrad", testMeanSquaredErrorGrad),
         ("testMeanSquaredLogarithmicError", testMeanSquaredLogarithmicError),
         ("testMeanAbsoluteError", testMeanAbsoluteError),
+        ("testNegativeLogLikelihood",testNegativeLogLikelihood),
         ("testHingeLoss", testHingeLoss),
         ("testCategoricalHingeLoss", testCategoricalHingeLoss),
         ("testSquaredHingeLoss", testSquaredHingeLoss),
