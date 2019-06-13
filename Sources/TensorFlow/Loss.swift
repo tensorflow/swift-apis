@@ -70,8 +70,8 @@ public func hingeLoss<Scalar: TensorFlowFloatingPoint>(
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
-@differentiable(wrt: predicted)
-public func cosineProximityLoss<Scalar: TensorFlowFloatingPoint>(
+@differentiable(wrt: (predicted, expected))
+public func cosineSimilarity<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>, expected: Tensor<Scalar>
 ) -> Tensor<Scalar> {
     return -(expected * predicted).sum() /

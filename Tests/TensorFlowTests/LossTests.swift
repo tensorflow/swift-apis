@@ -79,10 +79,10 @@ final class LossTests: XCTestCase {
         assertElementsEqual(expected: Tensor(expectedLoss), actual: loss)
     }
     
-    func testCosineProximityLoss() {
+    func testCosineSimilarityLoss() {
         let predicted = Tensor<Float>([1, 2, 3, 4, 5, 6, 7, 8])
         let expected = Tensor<Float>([0.5, 1, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0])
-        let loss = cosineProximityLoss(predicted: predicted, expected: expected)
+        let loss = cosineSimilarity(predicted: predicted, expected: expected)
         let expectedLoss: Float = -1.0
         assertElementsEqual(expected: Tensor(expectedLoss), actual: loss)
     }
@@ -217,7 +217,7 @@ final class LossTests: XCTestCase {
         ("testHingeLoss", testHingeLoss),
         ("testKullbackLeiblerDivergence", testKullbackLeiblerDivergence),
         ("testCategoricalHingeLoss", testCategoricalHingeLoss),
-        ("testCosineProximityLoss", testCosineProximityLoss),
+        ("testCosineSimilarityLoss", testCosineSimilarityLoss),
         ("testSquaredHingeLoss", testSquaredHingeLoss),
         ("testPoissonLoss", testPoissonLoss),
         ("testSoftmaxCrossEntropyWithProbabilitiesLoss",
