@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// Computes the mean squared error between predictions and labels.
+/// Returns the mean squared error between predictions and labels.
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
@@ -41,7 +41,7 @@ public func meanSquaredLogarithmicError<Scalar: TensorFlowFloatingPoint>(
     return (logPredicted - logExpected).squared().mean()
 }
 
-/// Computes the mean absolute error between predictions and expectations.
+/// Returns the mean absolute error between predictions and expectations.
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
@@ -115,7 +115,7 @@ public func kullbackLeiblerDivergence<Scalar: TensorFlowFloatingPoint>(
     return (expected * log(expected / predicted)).sum()
 }
 
-/// Computes the softmax cross entropy (categorical cross entropy) between logits and labels.
+/// Returns the softmax cross entropy (categorical cross entropy) between logits and labels.
 ///
 /// - Parameters:
 ///   - logits: One-hot encoded outputs from a neural network.
@@ -136,7 +136,7 @@ func _vjpSoftmaxCrossEntropy<Scalar: TensorFlowFloatingPoint>(
     return (loss.mean(), { v in (v / batchSize) * grad })
 }
 
-/// Computes the softmax cross entropy (categorical cross entropy) between logits and labels.
+/// Returns the softmax cross entropy (categorical cross entropy) between logits and labels.
 ///
 /// - Parameters:
 ///   - logits: Unscaled log probabilities from a neural network.
@@ -158,7 +158,7 @@ func _vjpSoftmaxCrossEntropy<Scalar: TensorFlowFloatingPoint>(
     return (loss.mean(), { v in v / batchSize * grad })
 }
 
-/// Computes the sigmoid cross entropy (binary cross entropy) between logits and labels.
+/// Returns the sigmoid cross entropy (binary cross entropy) between logits and labels.
 ///
 /// The reduction is reduced over all elements. If reduced over batch size is intended, please
 /// consider to scale the loss.
