@@ -96,7 +96,7 @@ final class LossTests: XCTestCase {
         assertElementsEqual(expected: Tensor(expectedLoss), actual: loss)
     }
 
-    func testLogcoshLoss() {
+    func testLogCoshLoss() {
         let predicted = Tensor<Float>([0.2, 0.3, 0.4])
         let expected = Tensor<Float>([1.0, 4.0, 3.0])
         let loss = logcoshLoss(predicted: predicted, expected: expected)
