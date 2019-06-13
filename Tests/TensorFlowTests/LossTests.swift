@@ -58,7 +58,6 @@ final class LossTests: XCTestCase {
         assertElementsEqual(expected: Tensor(expectedLoss), actual: loss)
     }
 
-
     func testMeanSquaredErrorGrad() {
         let predicted = Tensor<Float>(shape: [2, 4], scalars: [1, 2, 3, 4, 5, 6, 7, 8])
         let expected = Tensor<Float>(

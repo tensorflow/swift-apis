@@ -53,7 +53,7 @@ public func meanAbsoluteError<Scalar: TensorFlowFloatingPoint>(
     return abs(expected - predicted).mean()
 }
 
-/// Computes the mean absolute percentage error between predictions and expectations.
+/// Returns the mean absolute percentage error between predictions and expectations.
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
