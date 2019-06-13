@@ -456,6 +456,47 @@ final class BasicOperatorTests: XCTestCase {
         let z = x.unbroadcasted(like: y)
         XCTAssertEqual(z.array, ShapedArray<Float>(repeating: 8, shape: [3, 1, 5]))
     }
+    
+    func testUnbroadcast3() {
+        func foo(tensor: Tensor<Float>, shape: Tensor<Int32>) -> Tensor<Float> {
+            tensor.unbroadcasted(toShape: shape)
+        }
+        var inputTensor: Tensor<Float>
+        var expected: Tensor<Float>
+        var pb: (Tensor<Float>) -> Tensor<Float>
+        
+        // [3,3] -> [1,3]
+        let atTensor: Tensor<Float> = Tensor([
+            [1, 2, 3],
+            [1, 2, 3],
+            [1, 2, 3]]
+        )
+        pb = pullback(at: atTensor) { x in
+            foo(tensor: x, shape: Tensor([1, 3]))
+        }
+        
+        // Same shape as parameter of pullback
+        inputTensor = Tensor([[1, 2, 3]])
+        expected = atTensor
+        XCTAssertEqual(expected, pb(inputTensor))
+        // Different shape than parameter of pullback
+        inputTensor = Tensor([2])
+        expected = Tensor([
+            [2, 2, 2],
+            [2, 2, 2],
+            [2, 2, 2]]
+        )
+        XCTAssertEqual(expected, pb(inputTensor))
+        
+        // Same shape as tensor we are differentiating at
+        inputTensor = Tensor([
+            [8, 1, 3],
+            [8, 1, 3],
+            [8, 1, 3]]
+        )
+        expected = inputTensor
+        XCTAssertEqual(expected, pb(inputTensor))
+    }
 
     func testSliceUpdate() {
         var t1 = Tensor<Float>([[1, 2, 3], [4, 5, 6]])
@@ -481,6 +522,92 @@ final class BasicOperatorTests: XCTestCase {
         XCTAssertEqual(broadcasted, Tensor(repeating: 1, shape: [2, 3, 4]))
         target .= Tensor(repeating: 1, shape: [1, 3, 1])
         XCTAssertEqual(target, Tensor(repeating: 1, shape: [2, 3, 4]))
+    }
+  
+    func testBroadcast1() {
+        func foo(tensor: Tensor<Float>, shape: Tensor<Int32>) -> Tensor<Float> {
+            tensor.broadcasted(toShape: shape)
+        }
+        var inputTensor: Tensor<Float>
+        var expected: Tensor<Float>
+        var pb: (Tensor<Float>) -> Tensor<Float>
+        
+        // [3,] -> [3,3]
+        pb = pullback(at: Tensor([99, 33, 55])) { x in
+            foo(tensor: x, shape: Tensor([3, 3]))
+        }
+        
+        // Same shape as parameter of pullback
+        inputTensor = Tensor([
+            [1, 2, 3],
+            [1, 2, 3],
+            [1, 2, 3]]
+        )
+        expected = Tensor([3, 6, 9])
+        XCTAssertEqual(expected, pb(inputTensor))
+        
+        // Different shape than parameter of pullback
+        inputTensor = Tensor([
+            [1, 2, 3],
+            [1, 2, 3],
+            [1, 2, 3],
+            [1, 2, 3]]
+        )
+        expected = Tensor([4, 8, 12])
+        XCTAssertEqual(expected, pb(inputTensor))
+        
+        // Same shape as tensor we are differentiating at
+        inputTensor = Tensor([1, 2, 3])
+        expected = Tensor([1, 2, 3])
+        XCTAssertEqual(expected, pb(inputTensor))
+        
+        // Extremely padded shape as tensor we are differentiating at
+        inputTensor = Tensor([[[[[[1, 2, 3]]]]]])
+        expected = Tensor([1, 2, 3])
+        XCTAssertEqual(expected, pb(inputTensor))
+    }
+    
+    func testBroadcast2() {
+        func foo(tensor: Tensor<Float>, shape: Tensor<Int32>) -> Tensor<Float> {
+            tensor.broadcasted(toShape: shape)
+        }
+        var inputTensor: Tensor<Float>
+        var expected: Tensor<Float>
+        var pb: (Tensor<Float>) -> Tensor<Float>
+    
+        // [3,1] -> [3x3]
+        pb = pullback(at: Tensor([[99, 33, 55]])) { x in
+            foo(tensor: x, shape: Tensor([3, 3]))
+        }
+        
+        // Same shape as parameter of pullback
+        inputTensor = Tensor([
+            [1, 2, 3],
+            [1, 2, 3],
+            [1, 2, 3]]
+        )
+        expected = Tensor([[3, 6, 9]])
+        XCTAssertEqual(expected, pb(inputTensor))
+        
+        // Different shape than parameter of pullback
+        inputTensor = Tensor([
+            [1, 2, 3],
+            [1, 2, 3],
+            [1, 2, 3],
+            [1, 2, 3]]
+        )
+        expected = Tensor([[4, 8, 12]])
+        XCTAssertEqual(expected, pb(inputTensor))
+        
+        // Same shape as tensor we are differentiating at
+        inputTensor = Tensor([[1, 2, 3]])
+        expected = Tensor([[1, 2, 3]])
+        XCTAssertEqual(expected, pb(inputTensor))
+        
+        // Extremely padded shape of tensor we are differentiating at
+        inputTensor = Tensor([[[[[[1, 2, 3]]]]]])
+        expected = Tensor([[1, 2, 3]])
+        XCTAssertEqual(expected, pb(inputTensor))
     }
 
     static var allTests = [
