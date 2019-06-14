@@ -644,6 +644,15 @@ public func rsqrt<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
     Raw.rsqrt(x)
 }
 
+/// Returns the cosine similarity between x and y.
+@differentiable(wrt: (predicted, expected))
+public func cosineSimilarity<Scalar: TensorFlowFloatingPoint>(
+    _ x: Tensor<Scalar>, _ y: Tensor<Scalar>
+) -> Tensor<Scalar> {
+    return -(x * y).sum() /
+        (sqrt(x.squared().sum()) * sqrt(y.squared().sum()))
+}
+
 @inlinable
 internal func _vjpRsqrt<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>
