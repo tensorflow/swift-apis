@@ -132,7 +132,7 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
         TensorFlow.log1p(x)
     }
 
-    /// `x**y` interpreted as `exp(y * log(x))`
+    /// `exp(y log(x))` computed without loss of intermediate precision.
     ///
     /// For real types, if `x` is negative the result is NaN, even if `y` has
     /// an integral value. For complex types, there is a branch cut on the
