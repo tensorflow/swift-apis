@@ -103,9 +103,13 @@ public func hingeLoss<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// Returns the cosine similarity between predictions and expectations.
+///
+/// - Parameters:
+///   - predicted: Predicted outputs from a neural network.
+///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 @differentiable(wrt: (predicted, expected))
 public func cosineSimilarity<Scalar: TensorFlowFloatingPoint>(
-    predicted: Tensor<Scalar>, expected: Tensor<Scalar>
+    _ predicted: Tensor<Scalar>, _ expected: Tensor<Scalar>
 ) -> Tensor<Scalar> {
     return -(expected * predicted).sum() /
         (sqrt(expected.squared().sum()) * sqrt(predicted.squared().sum()))
