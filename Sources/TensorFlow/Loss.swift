@@ -12,6 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/// Returns the L1 loss between predictions and labels.
+///
+/// - Parameters:
+///   - predicted: Predicted outputs from a neural network.
+///   - labels: Expected values, i.e. targets, that correspond to the correct output.
+@differentiable(wrt: predicted)
+public func l1Loss<Scalar: TensorFlowFloatingPoint>(
+    predicted: Tensor<Scalar>, expected: Tensor<Scalar>
+) -> Tensor<Scalar> {
+    return abs(expected - predicted).sum()
+}
+
+/// Returns the L2 loss between predictions and labels.
+///
+/// - Parameters:
+///   - predicted: Predicted outputs from a neural network.
+///   - labels: Expected values, i.e. targets, that correspond to the correct output.
+@differentiable(wrt: predicted)
+public func l2Loss<Scalar: TensorFlowFloatingPoint>(
+    predicted: Tensor<Scalar>, expected: Tensor<Scalar>
+) -> Tensor<Scalar> {
+    return (expected - predicted).squared().sum()
+}
+
 /// Returns the mean squared error between predictions and labels.
 ///
 /// - Parameters:
