@@ -133,7 +133,7 @@ final class LossTests: XCTestCase {
         let predicted = Tensor<Float>([0.1, 0.2, 0.3])
         let expected = Tensor<Float>([1, 2, 3])
         let loss = poissonLoss(predicted: predicted, expected: expected)
-        let expectedLoss: Float = 3.2444599
+        let expectedLoss: Float = 9.73338
         assertElementsEqual(expected: Tensor(expectedLoss), actual: loss)
     }
 

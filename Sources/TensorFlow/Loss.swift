@@ -150,7 +150,7 @@ public func categoricalHingeLoss<Scalar: TensorFlowFloatingPoint>(
 public func poissonLoss<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>, expected: Tensor<Scalar>
 ) -> Tensor<Scalar> {
-    return (predicted - expected * log(predicted)).mean()
+    return (predicted - expected * log(predicted)).sum()
 }
 
 /// Returns the Kullback-Leibler divergence between predictions and expectations.
