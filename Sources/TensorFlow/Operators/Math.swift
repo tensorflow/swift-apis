@@ -876,7 +876,7 @@ public func pow<T: TensorFlowFloatingPoint>(_ x: Tensor<T>, _ n: Int) -> Tensor<
 @inlinable
 // @differentiable
 public func root<T: TensorFlowFloatingPoint>(_ x: Tensor<T>, _ n: Int) -> Tensor<T> {
-    pow(x, Tensor(T(1) / T(n)))
+    sign(x) * pow(abs(x), Tensor(T(1) / T(n)))
 }
 
 /// Computes the element-wise maximum of two tensors.
