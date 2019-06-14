@@ -521,7 +521,7 @@ public struct DepthwiseConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
         strides: (Int, Int),
         padding: Padding
     ) {
-        self.depthwise_kernel = filter
+        self.depthwise_kernel = depthwise_kernel
         self.bias = bias
         self.activation = activation
         self.strides = strides
@@ -534,7 +534,7 @@ public struct DepthwiseConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return activation(depthwiseConv2D(input, depthwise_kernel: filter,
+        return activation(depthwiseConv2D(input, depthwise_kernel: depthwise_kernel,
                                  strides: (1, strides.0, strides.1, 1),
                                  padding: padding) + bias)
     }
@@ -561,11 +561,12 @@ public extension DepthwiseConv2D {
         activation: @escaping Activation = identity,
         generator: inout G
     ) {
-        let depthwiseKernelShape = TensorShape([
-            filterShape.0, filterShape.1, filterShape.2, filterShape.3])
+        let depthwiseKernelTensorShape = TensorShape([
+            depthwiseKernelShape.0, depthwiseKernelShape.1, depthwiseKernelShape.2,
+            depthwiseKernelShape.3])
         self.init(
-            depthwise_kernel: Tensor(glorotUniform: depthwiseKernelShape, generator: &generator),
-            bias: Tensor(zeros: TensorShape([filterShape.3])),
+            depthwise_kernel: Tensor(glorotUniform: depthwiseKernelTensorShape, generator: &generator),
+            bias: Tensor(zeros: TensorShape([depthwiseKernelShape.3])),
             activation: activation,
             strides: strides,
             padding: padding)
@@ -591,11 +592,12 @@ public extension DepthwiseConv2D {
         seed: (Int32, Int32) = (Int32.random(in: Int32.min..<Int32.max),
                                 Int32.random(in: Int32.min..<Int32.max))
     ) {
-        let depthwiseKernelShape = TensorShape([
-            filterShape.0, filterShape.1, filterShape.2, filterShape.3])
+        let depthwiseKernelTensorShape = TensorShape([
+            depthwiseKernelShape.0, depthwiseKernelShape.1, depthwiseKernelShape.2,
+            depthwiseKernelShape.3])
         self.init(
-            depthwise_kernel: Tensor(glorotUniform: depthwiseKernelShape, seed: seed),
-            bias: Tensor(zeros: TensorShape([filterShape.3])),
+            depthwise_kernel: Tensor(glorotUniform: depthwiseKernelTensorShape, seed: seed),
+            bias: Tensor(zeros: TensorShape([depthwiseKernelShape.3])),
             activation: activation,
             strides: strides,
             padding: padding)
