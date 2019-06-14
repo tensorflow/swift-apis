@@ -77,6 +77,19 @@ public func meanAbsoluteError<Scalar: TensorFlowFloatingPoint>(
     return abs(expected - predicted).mean()
 }
 
+/// Returns the mean absolute percentage error between predictions and expectations.
+///
+/// - Parameters:
+///   - predicted: Predicted outputs from a neural network.
+///   - expected: Expected values, i.e. targets, that correspond to the correct output.
+@differentiable(wrt: predicted)
+public func meanAbsolutePercentageError<Scalar: TensorFlowFloatingPoint>(
+    predicted: Tensor<Scalar>, expected: Tensor<Scalar>
+) -> Tensor<Scalar> {
+    let diff = abs((expected - predicted) / abs(expected))
+    return 100 * diff.mean()
+}
+
 /// Returns the hinge loss between predictions and expectations.
 ///
 /// - Parameters:
