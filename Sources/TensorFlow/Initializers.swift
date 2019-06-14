@@ -459,7 +459,12 @@ fileprivate extension Tensor where Scalar: BinaryFloatingPoint {
         let fanIn = shape[shape.count - 2] * receptiveField
         let fanOut = shape[shape.count - 1] * receptiveField
         let minusOneToOne = 2 * randomUniform - 1
-        return sqrt(Scalar(6) / Scalar(fanIn + fanOut)) * minusOneToOne
+#if os(macOS) || os(iOS) || os(watchOS) || os(tvOS)
+        let _sqrt = Darwin.sqrt as (Scalar) -> Scalar
+#else
+        let _sqrt = Glibc.sqrt as (Scalar) -> Scalar
+#endif
+        return _sqrt(Scalar(6) / Scalar(fanIn + fanOut)) * minusOneToOne
     }
 }
 
