@@ -502,7 +502,7 @@ public extension Tensor where Scalar: BinaryFloatingPoint,
 
 fileprivate extension Tensor where Scalar: BinaryFloatingPoint {
     private static func glorot(
-        fromStandardNormal normalUniform: __shared Tensor<Scalar>,
+        fromStandardNormalScaledBy varianceScalingFactor: __shared Tensor<Scalar>,
         shape: __shared TensorShape
     ) -> Tensor<Scalar> {
         let spatialDimCount = shape.count - 2
@@ -530,7 +530,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
                                 Int32.random(in: Int32.min..<Int32.max))
     ) {
         let normal = Tensor(normalUniform: shape, seed: seed)
-        self = Tensor.glorot(fromStandardNormal: normal, shape: shape)
+        self = Tensor.glorot(fromStandardNormalScaledBy: normal, shape: shape)
     }
 }
 
@@ -547,6 +547,6 @@ public extension Tensor where Scalar: BinaryFloatingPoint,
     ///
     init<G: RandomNumberGenerator>(glorotNormal shape: TensorShape, generator: inout G) {
         let normal = Tensor(randomNormal: shape, generator: &generator)
-        self = Tensor.glorot(fromStandardNormal: normal, shape: shape)
+        self = Tensor.glorot(fromStandardNormalScaledBy: normal, shape: shape)
     }
 }
