@@ -218,14 +218,14 @@ final class MathOperatorTests: XCTestCase {
       let x = Tensor<Float>([1.0, 2.0, 3.0])
       let y = softplus(x)
       let expected = Tensor<Float>([1.3132616,  2.126928, 3.0485873])
-      XCTAssertEqual(x, expected)
+      XCTAssertEqual(y, expected)
     }
 
     func testSoftsign() {
       let x = Tensor<Float>([1.0, 4.0, 3.0])
       let y = softsign(x)
       let expected = Tensor<Float>([0.5 , 0.8 , 0.75])
-      XCTAssertEqual(x, expected)
+      XCTAssertEqual(y, expected)
     }
 
     func testXORInference() {
