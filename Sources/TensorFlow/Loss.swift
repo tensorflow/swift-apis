@@ -140,9 +140,9 @@ public func poissonLoss<Scalar: TensorFlowFloatingPoint>(
     return (predicted - expected * log(predicted)).mean()
 }
 
-/// Returns the Kullback-Leibler divergence between between expectations and predictions.
-/// KL-Distance computes the following, given two distribution p & q:
-///  KL(p|q) =  sum(p * log(p/q))
+/// Returns the Kullback-Leibler divergence (KL divergence) between between expectations and predictions.
+/// Given two distributions `p` and `q`, KL divergence computes `(p * log(p / q)).sum()`.
+///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
