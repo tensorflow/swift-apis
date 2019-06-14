@@ -15,17 +15,147 @@
 infix operator .>: ComparisonPrecedence
 infix operator .==: ComparisonPrecedence
 
-// `pow` is defined in Darwin/Glibc on `Float` and `Double`, but there doesn't exist a generic
-// version for `FloatingPoint`.
-// This is a manual definition.
-@inlinable
-func pow<T: BinaryFloatingPoint>(_ x: T, _ y: T) -> T {
-    T(pow(Double(x), Double(y)))
-}
-
 // TODO:
 // - Consider explicit broadcasting for elementwise binary ops when
 //   scalarization and rank getter are implemented.
+
+//===------------------------------------------------------------------------------------------===//
+// Generic elementary functions
+//===------------------------------------------------------------------------------------------===//
+
+extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
+    /// The square root of `x`.
+    ///
+    /// For real types, if `x` is negative the result is `.nan`. For complex
+    /// types there is a branch cut on the negative real axis.
+    public static func sqrt(_ x: Self) -> Self {
+        TensorFlow.sqrt(x)
+    }
+
+    /// The cosine of `x`, interpreted as an angle in radians.
+    public static func cos(_ x: Self) -> Self {
+        TensorFlow.cos(x)
+    }
+
+    /// The sine of `x`, interpreted as an angle in radians.
+    public static func sin(_ x: Self) -> Self {
+        TensorFlow.sin(x)
+    }
+
+    /// The tangent of `x`, interpreted as an angle in radians.
+    public static func tan(_ x: Self) -> Self {
+        TensorFlow.tan(x)
+    }
+
+    /// The inverse cosine of `x` in radians.
+    public static func acos(_ x: Self) -> Self {
+        TensorFlow.acos(x)
+    }
+
+    /// The inverse sine of `x` in radians.
+    public static func asin(_ x: Self) -> Self {
+        TensorFlow.asin(x)
+    }
+
+    /// The inverse tangent of `x` in radians.
+    public static func atan(_ x: Self) -> Self {
+        TensorFlow.atan(x)
+    }
+
+    /// The hyperbolic cosine of `x`.
+    public static func cosh(_ x: Self) -> Self {
+        TensorFlow.cosh(x)
+    }
+
+    /// The hyperbolic sine of `x`.
+    public static func sinh(_ x: Self) -> Self {
+        TensorFlow.sinh(x)
+    }
+
+    /// The hyperbolic tangent of `x`.
+    public static func tanh(_ x: Self) -> Self {
+        TensorFlow.tanh(x)
+    }
+
+    /// The inverse hyperbolic cosine of `x`.
+    public static func acosh(_ x: Self) -> Self {
+        TensorFlow.acosh(x)
+    }
+
+    /// The inverse hyperbolic sine of `x`.
+    public static func asinh(_ x: Self) -> Self {
+        TensorFlow.asinh(x)
+    }
+
+    /// The inverse hyperbolic tangent of `x`.
+    public static func atanh(_ x: Self) -> Self {
+        TensorFlow.atanh(x)
+    }
+
+    /// The exponential function applied to `x`, or `e**x`.
+    public static func exp(_ x: Self) -> Self {
+        TensorFlow.exp(x)
+    }
+
+    /// Two raised to to power `x`.
+    public static func exp2(_ x: Self) -> Self {
+        TensorFlow.exp2(x)
+    }
+
+    /// Ten raised to to power `x`.
+    public static func exp10(_ x: Self) -> Self {
+        TensorFlow.exp10(x)
+    }
+
+    /// `exp(x) - 1` evaluated so as to preserve accuracy close to zero.
+    public static func expm1(_ x: Self) -> Self {
+        TensorFlow.expm1(x)
+    }
+
+    /// The natural logarithm of `x`.
+    public static func log(_ x: Self) -> Self {
+        TensorFlow.log(x)
+    }
+
+    /// The base-two logarithm of `x`.
+    public static func log2(_ x: Self) -> Self {
+        TensorFlow.log2(x)
+    }
+
+    /// The base-ten logarithm of `x`.
+    public static func log10(_ x: Self) -> Self {
+        TensorFlow.log10(x)
+    }
+
+    /// `log(1 + x)` evaluated so as to preserve accuracy close to zero.
+    public static func log1p(_ x: Self) -> Self {
+        TensorFlow.log1p(x)
+    }
+
+    /// `exp(y log(x))` computed without loss of intermediate precision.
+    ///
+    /// For real types, if `x` is negative the result is NaN, even if `y` has
+    /// an integral value. For complex types, there is a branch cut on the
+    /// negative real axis.
+    public static func pow(_ x: Self, _ y: Self) -> Self {
+        TensorFlow.pow(x, y)
+    }
+
+    /// `x` raised to the `n`th power.
+    ///
+    /// The product of `n` copies of `x`.
+    public static func pow(_ x: Self, _ n: Int) -> Self {
+        TensorFlow.pow(x, n)
+    }
+
+    /// The `n`th root of `x`.
+    ///
+    /// For real types, if `x` is negative and `n` is even, the result is NaN.
+    /// For complex types, there is a branch cut along the negative real axis.
+    public static func root(_ x: Self, _ n: Int) -> Self {
+        TensorFlow.root(x, n)
+    }
+}
 
 //===------------------------------------------------------------------------------------------===//
 // Vector Space
@@ -1580,7 +1710,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func standardDeviation(squeezingAxes axes: Tensor<Int32>) -> Tensor {
-        sqrt(variance(squeezingAxes: axes))
+        TensorFlow.sqrt(variance(squeezingAxes: axes))
     }
 
     /// Returns the standard deviation of the elements along the specified axes. The reduced
@@ -1591,7 +1721,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func standardDeviation(squeezingAxes axes: [Int]) -> Tensor {
-        sqrt(variance(squeezingAxes: axes))
+        TensorFlow.sqrt(variance(squeezingAxes: axes))
     }
 
     /// Returns the standard deviation of the elements along the specified axes. The reduced
@@ -1625,7 +1755,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func standardDeviation(alongAxes axes: Tensor<Int32>) -> Tensor {
-        sqrt(variance(alongAxes: axes))
+        TensorFlow.sqrt(variance(alongAxes: axes))
     }
 
     /// Returns the standard deviation of the elements along the specified axes. The reduced
@@ -1649,7 +1779,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func standardDeviation(alongAxes axes: Int...) -> Tensor {
-        sqrt(variance(alongAxes: axes))
+        TensorFlow.sqrt(variance(alongAxes: axes))
     }
 }
 
