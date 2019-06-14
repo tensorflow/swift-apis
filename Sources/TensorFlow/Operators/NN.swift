@@ -61,7 +61,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
             let norm = diff * inv
 
             let dNorm = v * scale
-            let dVariance = -(dNorm * diff).sum(alongAxes: axis) / 2 * pow(inv, -3)
+            let dVariance = -(dNorm * diff).sum(alongAxes: axis) / 2 * TensorFlow.pow(inv, -3)
             // Note: `dMean` is split into two lines to avoid the "compiler is unable to type-check
             // this expression in reasonable time" error.
             var dMean = (-dNorm * inv).sum(alongAxes: axis)

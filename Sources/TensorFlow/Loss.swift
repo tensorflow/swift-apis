@@ -12,6 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/// Returns the L1 loss between predictions and labels.
+///
+/// - Parameters:
+///   - predicted: Predicted outputs from a neural network.
+///   - labels: Expected values, i.e. targets, that correspond to the correct output.
+@differentiable(wrt: predicted)
+public func l1Loss<Scalar: TensorFlowFloatingPoint>(
+    predicted: Tensor<Scalar>, expected: Tensor<Scalar>
+) -> Tensor<Scalar> {
+    return abs(expected - predicted).sum()
+}
+
+/// Returns the L2 loss between predictions and labels.
+///
+/// - Parameters:
+///   - predicted: Predicted outputs from a neural network.
+///   - labels: Expected values, i.e. targets, that correspond to the correct output.
+@differentiable(wrt: predicted)
+public func l2Loss<Scalar: TensorFlowFloatingPoint>(
+    predicted: Tensor<Scalar>, expected: Tensor<Scalar>
+) -> Tensor<Scalar> {
+    return (expected - predicted).squared().sum()
+}
+
 /// Returns the mean squared error between predictions and labels.
 ///
 /// - Parameters:
@@ -51,6 +75,19 @@ public func meanAbsoluteError<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>, expected: Tensor<Scalar>
 ) -> Tensor<Scalar> {
     return abs(expected - predicted).mean()
+}
+
+/// Returns the mean absolute percentage error between predictions and expectations.
+///
+/// - Parameters:
+///   - predicted: Predicted outputs from a neural network.
+///   - expected: Expected values, i.e. targets, that correspond to the correct output.
+@differentiable(wrt: predicted)
+public func meanAbsolutePercentageError<Scalar: TensorFlowFloatingPoint>(
+    predicted: Tensor<Scalar>, expected: Tensor<Scalar>
+) -> Tensor<Scalar> {
+    let diff = abs((expected - predicted) / abs(expected))
+    return 100 * diff.mean()
 }
 
 /// Returns the hinge loss between predictions and expectations.
@@ -116,7 +153,8 @@ public func poissonLoss<Scalar: TensorFlowFloatingPoint>(
     return (predicted - expected * log(predicted)).mean()
 }
 
-/// Returns the Kullback-Leibler divergence between predictions and expectations.
+/// Returns the Kullback-Leibler divergence (KL divergence) between between expectations and predictions.
+/// Given two distributions `p` and `q`, KL divergence computes `(p * log(p / q)).sum()`.
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.

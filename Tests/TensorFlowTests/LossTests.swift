@@ -16,6 +16,22 @@ import XCTest
 @testable import TensorFlow
 
 final class LossTests: XCTestCase {
+    func testL1Loss() {
+        let predicted = Tensor<Float>([1, 2, 3, 4])
+        let expected = Tensor<Float>([0.1, 0.2, 0.3, 0.4])
+        let loss = l1Loss(predicted: predicted, expected: expected)
+        let expectedLoss: Float = 9.0
+        assertElementsEqual(expected: Tensor(expectedLoss), actual: loss)
+    }
+
+    func testL2Loss() {
+        let predicted = Tensor<Float>([1, 2, 3, 4])
+        let expected = Tensor<Float>([0.5, 1.5, 2.5, 3.5])
+        let loss = l2Loss(predicted: predicted, expected: expected)
+        let expectedLoss: Float = 1.0
+        assertElementsEqual(expected: Tensor(expectedLoss), actual: loss)
+    }
+
     func testMeanSquaredErrorLoss() {
         let predicted = Tensor<Float>(shape: [2, 4], scalars: [1, 2, 3, 4, 5, 6, 7, 8])
         let expected = Tensor<Float>(
@@ -46,6 +62,15 @@ final class LossTests: XCTestCase {
 
         let loss = meanAbsoluteError(predicted: predicted, expected: expected)
         let expectedLoss: Float = 4.25
+        assertElementsEqual(expected: Tensor(expectedLoss), actual: loss)
+    }
+
+    func testMeanAbsolutePercentageError() {
+        let predicted = Tensor<Float>([1, 2, 3, 4, 5, 6, 7, 8])
+        let expected = Tensor<Float>([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8])
+
+        let loss = meanAbsolutePercentageError(predicted: predicted, expected: expected)
+        let expectedLoss: Float = 900.0
         assertElementsEqual(expected: Tensor(expectedLoss), actual: loss)
     }
 
@@ -210,10 +235,13 @@ final class LossTests: XCTestCase {
     }
 
     static var allTests = [
+        ("testL1Loss", testL1Loss),
+        ("testL2Loss", testL2Loss),
         ("testMeanSquaredErrorLoss", testMeanSquaredErrorLoss),
         ("testMeanSquaredErrorGrad", testMeanSquaredErrorGrad),
         ("testMeanSquaredLogarithmicError", testMeanSquaredLogarithmicError),
         ("testMeanAbsoluteError", testMeanAbsoluteError),
+        ("testMeanAbsolutePercentageError", testMeanAbsolutePercentageError),
         ("testHingeLoss", testHingeLoss),
         ("testKullbackLeiblerDivergence", testKullbackLeiblerDivergence),
         ("testCategoricalHingeLoss", testCategoricalHingeLoss),

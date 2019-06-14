@@ -21,7 +21,9 @@ internal func assertEqual<T: TensorFlowFloatingPoint>(
 ) {
     for (x, y) in zip(x, y) {
         if x.isNaN || y.isNaN {
-            XCTAssertTrue(x.isNaN && y.isNaN, message, file: file, line: line)
+            XCTAssertTrue(x.isNaN && y.isNaN,
+                          "\(x) is not equal to \(y) - \(message)",
+                          file: file, line: line)
             continue
         }
         XCTAssertEqual(x, y, accuracy: accuracy, message, file: file, line: line)
