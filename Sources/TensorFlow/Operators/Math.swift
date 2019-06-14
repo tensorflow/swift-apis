@@ -645,7 +645,7 @@ public func rsqrt<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
 }
 
 /// Returns the cosine similarity between `x` and `y`.
-@differentiable(wrt: (x, y))
+@differentiable
 public func cosineSimilarity<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>, _ y: Tensor<Scalar>
 ) -> Tensor<Scalar> {

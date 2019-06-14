@@ -68,9 +68,8 @@ final class MathOperatorTests: XCTestCase {
     func testCosineSimilarity() {
         let x = Tensor<Float>([1, 2, 3, 4, 5, 6, 7, 8])
         let y = Tensor<Float>([0.5, 1, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0])
-        let loss = cosineSimilarity(x, y)
-        let expectedLoss: Float = -1.0
-        assertElementsEqual(expected: Tensor(expectedLoss), actual: loss)
+        let z = cosineSimilarity(x, y)
+        XCTAssertEqual(z, Tensor(1.0), accuracy: 0.0001)
     }
 
     // FIXME(https://bugs.swift.org/browse/TF-543): Disable failing test.
