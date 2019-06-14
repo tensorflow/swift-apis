@@ -82,13 +82,13 @@ public extension Layer {
     }
 }
 
-internal extension Layer where TangentVector: VectorProtocol {
+internal extension Differentiable where TangentVector: VectorProtocol {
     mutating func += (lhs: inout Self, rhs: TangentVector) -> Self {
         lhs = lhs.moved(along: rhs)
     }
 }
 
-internal extension Layer where TangentVector: VectorProtocol,
+internal extension Differentiable where TangentVector: VectorProtocol,
                                TangentVector.VectorSpaceScalar: SignedNumeric {
     mutating func -= (lhs: inout Self, rhs: TangentVector) -> Self {
         lhs = lhs.moved(along: -rhs)
