@@ -1,4 +1,4 @@
-// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 //===------------------------------------------------------------------------------------------===//
 
 public extension Tensor where Scalar: TensorFlowFloatingPoint {
-    /// Computes the batch normalized tensor along the specified axis.
+    /// Returns a tensor computed from batch-normalizing the input along the specified axis.
     ///
     /// Specifically, returns `(self - mu) / (var + epsilon) * gamma + beta` where `mu` and `var`
     /// are respectively the mean and variance of `self` along `axis`.
@@ -41,7 +41,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         let inv = rsqrt(variance + epsilon) * scale
         return self * inv + offset - mean * inv
     }
-    
+
     // TODO: Verify that these calculations are correct.
     @inlinable
     internal func _vjpBatchNormalized(
@@ -61,7 +61,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
             let norm = diff * inv
 
             let dNorm = v * scale
-            let dVariance = -(dNorm * diff).sum(alongAxes: axis) / 2 * pow(inv, -3)
+            let dVariance = -(dNorm * diff).sum(alongAxes: axis) / 2 * TensorFlow.pow(inv, -3)
             // Note: `dMean` is split into two lines to avoid the "compiler is unable to type-check
             // this expression in reasonable time" error.
             var dMean = (-dNorm * inv).sum(alongAxes: axis)

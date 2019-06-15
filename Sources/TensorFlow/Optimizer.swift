@@ -1,4 +1,4 @@
-// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -209,7 +209,7 @@ public class RiemannSGD<Model: Differentiable>: Optimizer
     }
 
     public func update(_ model: inout Model, along direction: Model.TangentVector) {
-        model = model.moved(along: learningRate * (.zero - direction))
+        model.move(along: -learningRate * direction)
     }
 }
 
@@ -248,6 +248,6 @@ public class AdaGrad<Model: Differentiable>: Optimizer where Model.TangentVector
 
     public func update(_ model: inout Model, along direction: Model.TangentVector) {
         alpha = rho + direction.squared()
-        model -= learningRate * direction / (sqrt(alpha + epsilon))
+        model.move(along: -learningRate * direction / (sqrt(alpha + epsilon)))
     }
 }

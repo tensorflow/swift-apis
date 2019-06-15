@@ -1,4 +1,4 @@
-// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ import CTensorFlow
 public extension Raw {
     /// Saves tensors in V2 checkpoint format.
     ///
-    /// By default, saves the named tensors in full.  If the caller wishes to save specific slices 
+    /// By default, saves the named tensors in full.  If the caller wishes to save specific slices
     /// of full tensors, "shape_and_slices" should be non-empty strings and correspondingly
     /// well-formed.
     ///
@@ -25,7 +25,7 @@ public extension Raw {
     ///   - prefix: Must have a single element. The prefix of the V2 checkpoint to which we write
     ///     the tensors.
     ///   - tensor_names: shape {N}. The names of the tensors to be saved.
-    ///   - shape_and_slices: shape {N}.  The slice specs of the tensors to be saved. Empty strings 
+    ///   - shape_and_slices: shape {N}.  The slice specs of the tensors to be saved. Empty strings
     ///     indicate that they are non-partitioned tensors.
     ///   - tensors: `N` tensors to save.
     @inlinable
@@ -58,16 +58,16 @@ public extension Raw {
 
     /// Restores tensors from a V2 checkpoint.
     ///
-    /// For backward compatibility with the V1 format, this Op currently allows restoring from a V1 
+    /// For backward compatibility with the V1 format, this Op currently allows restoring from a V1
     /// checkpoint as well:
-    ///   - This Op first attempts to find the V2 index file pointed to by "prefix", and if found 
+    ///   - This Op first attempts to find the V2 index file pointed to by "prefix", and if found
     ///     proceed to read it as a V2 checkpoint;
     ///   - Otherwise the V1 read path is invoked.
-    /// Relying on this behavior is not recommended, as the ability to fall back to read V1 might be 
+    /// Relying on this behavior is not recommended, as the ability to fall back to read V1 might be
     /// deprecated and eventually removed.
     ///
-    /// By default, restores the named tensors in full.  If the caller wishes to restore specific 
-    /// slices of stored tensors, "shape_and_slices" should be non-empty strings and correspondingly 
+    /// By default, restores the named tensors in full.  If the caller wishes to restore specific
+    /// slices of stored tensors, "shape_and_slices" should be non-empty strings and correspondingly
     /// well-formed.
     ///
     /// Callers must ensure all the named tensors are indeed stored in the checkpoint.
@@ -81,7 +81,7 @@ public extension Raw {
     /// - Attr dtypes: shape {N}.  The list of expected dtype for the tensors. Must match those
     ///   stored in the checkpoint.
     ///
-    /// - Output tensors: shape {N}.  The restored tensors, whose shapes are read from the 
+    /// - Output tensors: shape {N}.  The restored tensors, whose shapes are read from the
     ///   checkpoint directly.
     @inlinable
     static func restoreV2(
