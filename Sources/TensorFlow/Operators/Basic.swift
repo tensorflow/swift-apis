@@ -581,7 +581,7 @@ public extension Tensor where Scalar: Numeric {
     // @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     @inlinable
     func clipped(min: Tensor, max: Tensor) -> Tensor {
-      return Raw.clipByValue(t: self, clipValueMin: min, clipValueMax: max)
+        Raw.clipByValue(t: self, clipValueMin: min, clipValueMax: max)
     }
 }
 
