@@ -578,6 +578,7 @@ public extension Tensor {
 public extension Tensor where Scalar: Numeric {
     /// Returns a tensor by clipping scalars to a specified minimum and maximum.
     // FIXME: Define a derivative function.
+    // @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     @inlinable
     func clipped(min: Tensor, max: Tensor) -> Tensor {
       return Raw.clipByValue(t: self, clipValueMin: min, clipValueMax: max)
