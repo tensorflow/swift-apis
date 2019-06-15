@@ -384,15 +384,14 @@ func _vjpAvgPool3D<Scalar: TensorFlowFloatingPoint>(
     })
 }
 
-/// Computes a 2-D convolution using `self` as input, with the specified
-/// filter, strides, and padding.
+/// Computes a 2-D convolution with the specified input, filter, strides, and padding.
 ///
 /// - Parameters:
 ///   - x: The input.
 ///   - filter: The convolution filter.
 ///   - strides: The strides of the sliding filter for each dimension of the input.
 ///   - padding: The padding for the operation.
-/// - Precondition: `self` must have rank 4.
+/// - Precondition: `input` must have rank `4`.
 /// - Precondition: `filter` must have rank 4.
 @differentiable(wrt: (x, filter), vjp: _vjpConv2D)
 public func conv2D<Scalar: TensorFlowFloatingPoint>(
@@ -409,15 +408,14 @@ public func conv2D<Scalar: TensorFlowFloatingPoint>(
         explicitPaddings: [])
 }
 
-/// Computes a 3-D convolution using `self` as input, with the specified
-/// filter, strides, and padding.
+/// Computes a 3-D convolution with the specified input, filter, strides, and padding.
 ///
 /// - Parameters:
 ///   - x: The input.
 ///   - filter: The convolution filter.
 ///   - strides: The strides of the sliding filter for each dimension of the input.
 ///   - padding: The padding for the operation.
-/// - Precondition: `self` must have rank 5.
+/// - Precondition: `input` must have rank `5`.
 /// - Precondition: `filter` must have rank 5.
 @differentiable(wrt: (x, filter), vjp: _vjpConv3D)
 public func conv3D<Scalar: TensorFlowFloatingPoint>(
