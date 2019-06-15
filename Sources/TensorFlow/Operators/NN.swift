@@ -340,8 +340,8 @@ func _vjpdepthwiseConv2dBackpropInput<Scalar: TensorFlowFloatingPoint>(
     return (value, { v in
         return (
             depthwiseConv2dBackpropFilter(x, input: v, filterSizes: shape, strides: strides,
-                                 padding: padding),
-            depthwiseConv2D(v, depthwise_kernel: filter, strides: strides, padding: padding)
+                                          padding: padding),
+            depthwiseConv2D(v, kernel: filter, strides: strides, padding: padding)
         )
     })
 }
@@ -359,8 +359,8 @@ func _vjpdepthwiseConv2dBackpropFilter<Scalar: TensorFlowFloatingPoint>(
     return (value, { v in
         return (
             depthwiseConv2dBackpropInput(x, shape: filterSizes, filter: v, strides: strides,
-                                  padding: padding),
-            depthwiseConv2D(input, depthwise_kernel: v, strides: strides, padding: padding)
+                                         padding: padding),
+            depthwiseConv2D(input, kernel: v, strides: strides, padding: padding)
         )
     })
 }
@@ -368,19 +368,19 @@ func _vjpdepthwiseConv2dBackpropFilter<Scalar: TensorFlowFloatingPoint>(
 @usableFromInline
 func _vjpDepthwiseConv2D<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>,
-    depthwise_kernel: Tensor<Scalar>,
+    kernel: Tensor<Scalar>,
     strides: (Int, Int, Int, Int),
     padding: Padding
 ) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
-    let value = depthwiseConv2D(x, depthwise_kernel: depthwise_kernel, strides: strides,
-                       padding: padding)
+    let value = depthwiseConv2D(x, kernel: kernel, strides: strides,
+                                padding: padding)
     return (value, { v in
         return (
-            depthwiseConv2dBackpropInput(v, shape: x.shapeTensor, filter: depthwise_kernel,
-                                strides: strides, padding: padding
+            depthwiseConv2dBackpropInput(v, shape: x.shapeTensor, filter: kernel,
+                                         strides: strides, padding: padding
             ),
-            depthwiseConv2dBackpropFilter(v, input: x, filterSizes: depthwise_kernel.shapeTensor,
-                                 strides: strides, padding: padding
+            depthwiseConv2dBackpropFilter(v, input: x, filterSizes: kernel.shapeTensor,
+                                          strides: strides, padding: padding
             )
         )
     })
@@ -487,7 +487,7 @@ func _vjpAvgPool3D<Scalar: TensorFlowFloatingPoint>(
 ///   - filter: The convolution filter.
 ///   - strides: The strides of the sliding filter for each dimension of the input.
 ///   - padding: The padding for the operation.
-/// - Precondition: `self` must have rank 4.
+/// - Precondition: `self` must have rank `4`.
 /// - Precondition: `filter` must have rank 4.
 @differentiable(wrt: (x, filter), vjp: _vjpConv2D)
 public func conv2D<Scalar: TensorFlowFloatingPoint>(
@@ -529,30 +529,28 @@ public func conv3D<Scalar: TensorFlowFloatingPoint>(
         padding: padding.raw)
 }
 
-/// Computes a 2-D Depthwise convolution using `self` as input, with the specified
-/// filter, strides, and padding.
+/// Computes a 2-D depthwise convolution with the specified input, filter, strides, and padding.
 ///
 /// - Parameters:
 ///   - x: The input.
-///   - depthwise_kernel: The depthwise convolution filter.
+///   - kernel: The depthwise convolution filter.
 ///   - strides: The strides of the sliding filter for each dimension of the input.
 ///   - padding: The padding for the operation.
 /// - Precondition: `self` must have rank 4.
-/// - Precondition: `depthwise_kernel` must have rank 4.
-@differentiable(wrt: (x, depthwise_kernel), vjp: _vjpDepthwiseConv2D)
+/// - Precondition: `kernel` must have rank 4.
+@differentiable(wrt: (x, kernel), vjp: _vjpDepthwiseConv2D)
 public func depthwiseConv2D<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>,
-    depthwise_kernel: Tensor<Scalar>,
+    kernel: Tensor<Scalar>,
     strides: (Int, Int, Int, Int),
     padding: Padding
 ) -> Tensor<Scalar> {
     return Raw.depthwiseConv2dNative(
         x,
-        filter: depthwise_kernel,
+        filter: kernel,
         strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2),Int32(strides.3)],
         padding: padding.raw)
 }
-
 
 /// Computes a 2-D max pooling, with the specified filter sizes, strides, and
 /// padding.
