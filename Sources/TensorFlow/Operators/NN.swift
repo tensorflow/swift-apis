@@ -536,7 +536,7 @@ public func conv3D<Scalar: TensorFlowFloatingPoint>(
 ///   - kernel: The depthwise convolution filter.
 ///   - strides: The strides of the sliding filter for each dimension of the input.
 ///   - padding: The padding for the operation.
-/// - Precondition: `self` must have rank 4.
+/// - Precondition: `input` must have rank 4.
 /// - Precondition: `kernel` must have rank 4.
 @differentiable(wrt: (x, kernel), vjp: _vjpDepthwiseConv2D)
 public func depthwiseConv2D<Scalar: TensorFlowFloatingPoint>(
