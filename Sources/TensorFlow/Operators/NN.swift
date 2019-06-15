@@ -387,7 +387,7 @@ func _vjpAvgPool3D<Scalar: TensorFlowFloatingPoint>(
 /// Computes a 2-D convolution with the specified input, filter, strides, and padding.
 ///
 /// - Parameters:
-///   - input: The input
+///   - input: The input.
 ///   - filter: The convolution filter.
 ///   - strides: The strides of the sliding filter for each dimension of the input.
 ///   - padding: The padding for the operation.
@@ -411,7 +411,7 @@ public func conv2D<Scalar: TensorFlowFloatingPoint>(
 /// Computes a 3-D convolution with the specified input, filter, strides, and padding.
 ///
 /// - Parameters:
-///   - input: The input
+///   - input: The input.
 ///   - filter: The convolution filter.
 ///   - strides: The strides of the sliding filter for each dimension of the input.
 ///   - padding: The padding for the operation.
@@ -436,7 +436,7 @@ public func conv3D<Scalar: TensorFlowFloatingPoint>(
 /// padding.
 ///
 /// - Parameters:
-///   - input: The input
+///   - input: The input.
 ///   - filterSize: The dimensions of the pooling kernel.
 ///   - strides: The strides of the sliding filter for each dimension of the input.
 ///   - padding: The padding for the operation.
@@ -460,7 +460,7 @@ public func maxPool2D<Scalar: TensorFlowFloatingPoint>(
 /// padding.
 ///
 /// - Parameters:
-///   - input: The input
+///   - input: The input.
 ///   - filterSize: The dimensions of the pooling kernel.
 ///   - strides: The strides of the sliding filter for each dimension of the input.
 ///   - padding: The padding for the operation.
@@ -484,7 +484,7 @@ public func maxPool3D<Scalar: TensorFlowFloatingPoint>(
 /// and padding.
 ///
 /// - Parameters:
-///   - input: The input
+///   - input: The input.
 ///   - filterSize: The dimensions of the pooling kernel.
 ///   - strides: The strides of the sliding filter for each dimension of the input.
 ///   - padding: The padding for the operation.
@@ -507,7 +507,7 @@ public func avgPool2D<Scalar: TensorFlowFloatingPoint>(
 /// and padding.
 ///
 /// - Parameters:
-///   - input: The input
+///   - input: The input.
 ///   - filterSize: The dimensions of the pooling kernel.
 ///   - strides: The strides of the sliding filter for each dimension of the input.
 ///   - padding: The padding for the operation.
