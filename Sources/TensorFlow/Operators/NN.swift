@@ -384,50 +384,48 @@ func _vjpAvgPool3D<Scalar: TensorFlowFloatingPoint>(
     })
 }
 
-/// Computes a 2-D convolution using `self` as input, with the specified
-/// filter, strides, and padding.
+/// Computes a 2-D convolution with the specified input, filter, strides, and padding.
 ///
 /// - Parameters:
-///   - x: The input.
+///   - input: The input.
 ///   - filter: The convolution filter.
 ///   - strides: The strides of the sliding filter for each dimension of the input.
 ///   - padding: The padding for the operation.
-/// - Precondition: `self` must have rank 4.
+/// - Precondition: `input` must have rank `4`.
 /// - Precondition: `filter` must have rank 4.
-@differentiable(wrt: (x, filter), vjp: _vjpConv2D)
+@differentiable(wrt: (input, filter), vjp: _vjpConv2D)
 public func conv2D<Scalar: TensorFlowFloatingPoint>(
-    _ x: Tensor<Scalar>,
+    _ input: Tensor<Scalar>,
     filter: Tensor<Scalar>,
     strides: (Int, Int, Int, Int),
     padding: Padding
 ) -> Tensor<Scalar> {
     return Raw.conv2D(
-        x,
+        input,
         filter: filter,
         strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2), Int32(strides.3)],
         padding: padding.raw2,
         explicitPaddings: [])
 }
 
-/// Computes a 3-D convolution using `self` as input, with the specified
-/// filter, strides, and padding.
+/// Computes a 3-D convolution with the specified input, filter, strides, and padding.
 ///
 /// - Parameters:
-///   - x: The input.
+///   - input: The input.
 ///   - filter: The convolution filter.
 ///   - strides: The strides of the sliding filter for each dimension of the input.
 ///   - padding: The padding for the operation.
-/// - Precondition: `self` must have rank 5.
+/// - Precondition: `input` must have rank `5`.
 /// - Precondition: `filter` must have rank 5.
-@differentiable(wrt: (x, filter), vjp: _vjpConv3D)
+@differentiable(wrt: (input, filter), vjp: _vjpConv3D)
 public func conv3D<Scalar: TensorFlowFloatingPoint>(
-    _ x: Tensor<Scalar>,
+    _ input: Tensor<Scalar>,
     filter: Tensor<Scalar>,
     strides: (Int, Int, Int, Int, Int),
     padding: Padding
 ) -> Tensor<Scalar> {
     return Raw.conv3D(
-        x,
+        input,
         filter: filter,
         strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2),
                   Int32(strides.3), Int32(strides.4)],
@@ -438,19 +436,19 @@ public func conv3D<Scalar: TensorFlowFloatingPoint>(
 /// padding.
 ///
 /// - Parameters:
-///   - x: The input.
+///   - input: The input.
 ///   - filterSize: The dimensions of the pooling kernel.
 ///   - strides: The strides of the sliding filter for each dimension of the input.
 ///   - padding: The padding for the operation.
-@differentiable(wrt: x, vjp: _vjpMaxPool2D)
+@differentiable(wrt: input, vjp: _vjpMaxPool2D)
 public func maxPool2D<Scalar: TensorFlowFloatingPoint>(
-    _ x: Tensor<Scalar>,
+    _ input: Tensor<Scalar>,
     filterSize: (Int, Int, Int, Int),
     strides: (Int, Int, Int, Int),
     padding: Padding
 ) -> Tensor<Scalar> {
     return Raw.maxPoolV2(
-        x,
+        input,
         ksize: Tensor<Int32>([Int32(filterSize.0), Int32(filterSize.1),
                                    Int32(filterSize.2), Int32(filterSize.3)]),
         strides: Tensor<Int32>([Int32(strides.0), Int32(strides.1),
@@ -462,19 +460,19 @@ public func maxPool2D<Scalar: TensorFlowFloatingPoint>(
 /// padding.
 ///
 /// - Parameters:
-///   - x: The input.
+///   - input: The input.
 ///   - filterSize: The dimensions of the pooling kernel.
 ///   - strides: The strides of the sliding filter for each dimension of the input.
 ///   - padding: The padding for the operation.
-@differentiable(wrt: x, vjp: _vjpMaxPool3D)
+@differentiable(wrt: input, vjp: _vjpMaxPool3D)
 public func maxPool3D<Scalar: TensorFlowFloatingPoint>(
-    _ x: Tensor<Scalar>,
+    _ input: Tensor<Scalar>,
     filterSize: (Int, Int, Int, Int, Int),
     strides: (Int, Int, Int, Int, Int),
     padding: Padding
 ) -> Tensor<Scalar> {
     return Raw.maxPool3D(
-        x,
+        input,
         ksize: [Int32(filterSize.0), Int32(filterSize.1),
                      Int32(filterSize.2), Int32(filterSize.3), Int32(filterSize.4)],
         strides: [Int32(strides.0), Int32(strides.1),
@@ -486,19 +484,19 @@ public func maxPool3D<Scalar: TensorFlowFloatingPoint>(
 /// and padding.
 ///
 /// - Parameters:
-///   - x: The input.
+///   - input: The input.
 ///   - filterSize: The dimensions of the pooling kernel.
 ///   - strides: The strides of the sliding filter for each dimension of the input.
 ///   - padding: The padding for the operation.
-@differentiable(wrt: x, vjp: _vjpAvgPool2D)
+@differentiable(wrt: input, vjp: _vjpAvgPool2D)
 public func avgPool2D<Scalar: TensorFlowFloatingPoint>(
-    _ x: Tensor<Scalar>,
+    _ input: Tensor<Scalar>,
     filterSize: (Int, Int, Int, Int),
     strides: (Int, Int, Int, Int),
     padding: Padding
 ) -> Tensor<Scalar> {
     return Raw.avgPool(
-        value: x,
+        value: input,
         ksize: [Int32(filterSize.0), Int32(filterSize.1),
                 Int32(filterSize.2), Int32(filterSize.3)],
         strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2), Int32(strides.3)],
@@ -509,19 +507,19 @@ public func avgPool2D<Scalar: TensorFlowFloatingPoint>(
 /// and padding.
 ///
 /// - Parameters:
-///   - x: The input.
+///   - input: The input.
 ///   - filterSize: The dimensions of the pooling kernel.
 ///   - strides: The strides of the sliding filter for each dimension of the input.
 ///   - padding: The padding for the operation.
-@differentiable(wrt: x, vjp: _vjpAvgPool3D)
+@differentiable(wrt: input, vjp: _vjpAvgPool3D)
 public func avgPool3D<Scalar: TensorFlowFloatingPoint>(
-    _ x: Tensor<Scalar>,
+    _ input: Tensor<Scalar>,
     filterSize: (Int, Int, Int, Int, Int),
     strides: (Int, Int, Int, Int, Int),
     padding: Padding
 ) -> Tensor<Scalar> {
     return Raw.avgPool3D(
-        x,
+        input,
         ksize: [Int32(filterSize.0), Int32(filterSize.1),
                 Int32(filterSize.2), Int32(filterSize.3), Int32(filterSize.4)],
         strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2), Int32(strides.3),
