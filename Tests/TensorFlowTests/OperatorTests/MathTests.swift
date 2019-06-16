@@ -65,6 +65,14 @@ final class MathOperatorTests: XCTestCase {
         assertEqual(y, log(1 + x), accuracy: 0.0001)
     }
 
+    func testCosineSimilarity() {
+        let x = Tensor<Float>([1, 2, 3, 4, 5, 6, 7, 8])
+        let y = Tensor<Float>([0.5, 1, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0])
+        let z = cosineSimilarity(x, y)
+        let output: Float = 1.0
+        XCTAssertEqual(z, Tensor(output))
+    }
+
     // FIXME(https://bugs.swift.org/browse/TF-543): Disable failing test.
     /*
     func testExpm1() {
@@ -294,6 +302,7 @@ final class MathOperatorTests: XCTestCase {
         // ("testExpm1", testExpm1),
         ("testSign", testSign),
         ("testReduction", testReduction),
+        ("testCosineSimilarity", testCosineSimilarity),
         ("testArgmax", testArgmax),
         ("testSoftplus", testSoftplus),
         ("testSoftsign", testSoftsign),

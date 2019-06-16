@@ -774,6 +774,23 @@ public func rsqrt<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
     Raw.rsqrt(x)
 }
 
+/// Returns the cosine similarity between `x` and `y`.
+@differentiable
+public func cosineSimilarity<Scalar: TensorFlowFloatingPoint>(
+    _ x: Tensor<Scalar>, _ y: Tensor<Scalar>
+) -> Tensor<Scalar> {
+    (x * y).sum() / (sqrt(x.squared().sum()) * sqrt(y.squared().sum()))
+}
+
+/// Returns the cosine distance between `x` and `y`. Cosine distance is defined as
+/// `1 - cosineSimilarity(x, y)`.
+@differentiable
+public func cosineDistance<Scalar: TensorFlowFloatingPoint>(
+    _ x: Tensor<Scalar>, _ y: Tensor<Scalar>
+) -> Tensor<Scalar> {
+    1 - cosineSimilarity(x, y)
+}
+
 @inlinable
 internal func _vjpRsqrt<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>
