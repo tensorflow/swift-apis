@@ -131,7 +131,7 @@ public func categoricalHingeLoss<Scalar: TensorFlowFloatingPoint>(
 // Helper function for `losCoshLoss(predicted:expected:)`.
 @differentiable
 fileprivate func logCosh<Scalar: TensorFlowFloatingPoint>(
-    x: Tensor<Scalar>
+    _ x: Tensor<Scalar>
 ) -> Tensor<Scalar> {
     x + softplus(Tensor(-2) * x) - log(Tensor(y))
 }
@@ -145,7 +145,7 @@ fileprivate func logCosh<Scalar: TensorFlowFloatingPoint>(
 public func logCoshLoss<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>, expected: Tensor<Scalar>
 ) -> Tensor<Scalar> {
-    return (logCosh(x: predicted - expected)).mean()
+    (logCosh(predicted - expected)).mean()
 }
 
 /// Returns the Poisson loss between predictions and expectations.
