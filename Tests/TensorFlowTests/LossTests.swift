@@ -246,14 +246,8 @@ final class LossTests: XCTestCase {
         ("testKullbackLeiblerDivergence", testKullbackLeiblerDivergence),
         ("testCategoricalHingeLoss", testCategoricalHingeLoss),
         ("testSquaredHingeLoss", testSquaredHingeLoss),
-<<<<<<< HEAD
         ("testPoissonLoss",testPoissonLoss),
         ("testLogcoshLoss", testLogcoshLoss),
-||||||| merged common ancestors
-        ("testPoissonLoss",testPoissonLoss),
-=======
-        ("testPoissonLoss", testPoissonLoss),
->>>>>>> 20a0923fd8e4dec2aa7e8a856527f66612453c95
         ("testSoftmaxCrossEntropyWithProbabilitiesLoss",
          testSoftmaxCrossEntropyWithProbabilitiesLoss),
         ("testSoftmaxCrossEntropyWithProbabilitiesGrad",
