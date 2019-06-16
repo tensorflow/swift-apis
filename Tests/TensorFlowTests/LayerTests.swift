@@ -56,7 +56,7 @@ final class LayerTests: XCTestCase {
         let filter =  Tensor(shape: [2, 2, 2, 2], scalars: (0..<16).map(Float.init))
         let bias = Tensor<Float>([1, 2, 3, 4])
         let layer = DepthwiseConv2D<Float>(filter: filter, bias: bias, activation: identity,
-                                  strides: (1, 2, 2, 1), padding: .valid)
+                                  strides: (2, 2), padding: .valid)
         let input = Tensor(shape: [1, 1, 8, 2], scalars: (0..<16).map(Float.init))
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>(shape: [1, 1, 4, 4],
