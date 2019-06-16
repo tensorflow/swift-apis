@@ -486,13 +486,7 @@ func _vjpAvgPool3D<Scalar: TensorFlowFloatingPoint>(
 ///   - filter: The convolution filter.
 ///   - strides: The strides of the sliding filter for each dimension of the input.
 ///   - padding: The padding for the operation.
-<<<<<<< HEAD
-/// - Precondition: `self` must have rank `4`.
-||||||| merged common ancestors
-/// - Precondition: `self` must have rank 4.
-=======
 /// - Precondition: `input` must have rank `4`.
->>>>>>> c108a108f7398e13316f3873bf884b7c1d48c44f
 /// - Precondition: `filter` must have rank 4.
 @differentiable(wrt: (input, filter), vjp: _vjpConv2D)
 public func conv2D<Scalar: TensorFlowFloatingPoint>(
