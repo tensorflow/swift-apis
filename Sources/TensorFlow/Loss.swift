@@ -133,7 +133,7 @@ public func categoricalHingeLoss<Scalar: TensorFlowFloatingPoint>(
 fileprivate func logCosh<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>
 ) -> Tensor<Scalar> {
-    x + softplus(Tensor(-2) * x) - log(Tensor(y))
+    x + softplus(Tensor(-2) * x) - log(Tensor(2))
 }
 
 /// Returns the logarithm of the hyperbolic cosine of the error between predictions and expectations.
