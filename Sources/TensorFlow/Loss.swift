@@ -128,6 +128,26 @@ public func categoricalHingeLoss<Scalar: TensorFlowFloatingPoint>(
     return max(Tensor(0), negative - positive + Tensor(1))
 }
 
+// Helper function for `losCoshLoss(predicted:expected:)`.
+@differentiable
+fileprivate func logCosh<Scalar: TensorFlowFloatingPoint>(
+    _ x: Tensor<Scalar>
+) -> Tensor<Scalar> {
+    x + softplus(Tensor(-2) * x) - log(Tensor(2))
+}
+
+/// Returns the logarithm of the hyperbolic cosine of the error between predictions and expectations.
+///
+/// - Parameters:
+///   - predicted: Predicted outputs from a neural network.
+///   - expected: Expected values, i.e. targets, that correspond to the correct output.
+@differentiable(wrt: predicted)
+public func logCoshLoss<Scalar: TensorFlowFloatingPoint>(
+    predicted: Tensor<Scalar>, expected: Tensor<Scalar>
+) -> Tensor<Scalar> {
+    (logCosh(predicted - expected)).mean()
+}
+
 /// Returns the Poisson loss between predictions and expectations.
 ///
 /// - Parameters:
