@@ -774,6 +774,23 @@ public func rsqrt<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
     Raw.rsqrt(x)
 }
 
+/// Returns the cosine similarity between `x` and `y`.
+@differentiable
+public func cosineSimilarity<Scalar: TensorFlowFloatingPoint>(
+    _ x: Tensor<Scalar>, _ y: Tensor<Scalar>
+) -> Tensor<Scalar> {
+    (x * y).sum() / (sqrt(x.squared().sum()) * sqrt(y.squared().sum()))
+}
+
+/// Returns the cosine distance between `x` and `y`. Cosine distance is defined as
+/// `1 - cosineSimilarity(x, y)`.
+@differentiable
+public func cosineDistance<Scalar: TensorFlowFloatingPoint>(
+    _ x: Tensor<Scalar>, _ y: Tensor<Scalar>
+) -> Tensor<Scalar> {
+    1 - cosineSimilarity(x, y)
+}
+
 @inlinable
 internal func _vjpRsqrt<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>
@@ -894,6 +911,36 @@ internal func _vjpSigmoid<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>
 ) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
     (sigmoid(x), { v in Raw.sigmoidGrad(x, dy: v) })
+}
+
+/// Returns the softplus of the specified tensor element-wise.
+/// Specifically, computes `log(exp(features) + 1)`.
+@inlinable
+@differentiable(vjp: _vjpSoftplus)
+public func softplus<T: TensorFlowFloatingPoint>(_ features: Tensor<T>) -> Tensor<T> {
+    Raw.softplus(features: features)
+}
+
+@inlinable
+internal func _vjpSoftplus<T: TensorFlowFloatingPoint>(
+    _ features: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+    (softplus(features), { v in Raw.softplusGrad(gradients: v, features: features)})
+}
+
+/// Returns the softsign of the specified tensor element-wise.
+/// Specifically, computes `features/ (abs(features) + 1)`.
+@inlinable
+@differentiable(vjp: _vjpSoftsign)
+public func softsign<T: TensorFlowFloatingPoint>(_ features: Tensor<T>) -> Tensor<T> {
+    Raw.softsign(features: features)
+}
+
+@inlinable
+internal func _vjpSoftsign<T: TensorFlowFloatingPoint>(
+    _ features: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+    (softsign(features), { v in Raw.softsignGrad(gradients: v, features: features)})
 }
 
 /// Computes the softmax of the specified tensor along the last axis.
