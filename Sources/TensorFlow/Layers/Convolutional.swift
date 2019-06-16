@@ -492,8 +492,8 @@ public extension TransposedConv2D {
 /// tensor of outputs.
 @frozen
 public struct DepthwiseConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
-    /// The 4-D convolution kernel for the depthwise convolution.
-    public var kernel: Tensor<Scalar>
+    /// The 4-D convolution kernel.
+    public var filter: Tensor<Scalar>
     /// The bias vector.
     public var bias: Tensor<Scalar>
     /// An activation function.
@@ -509,19 +509,19 @@ public struct DepthwiseConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// padding.
     ///
     /// - Parameters:
-    ///   - kernel: The 4-D convolution kernel.
+    ///   - filter: The 4-D convolution kernel.
     ///   - bias: The bias vector.
     ///   - activation: The element-wise activation function.
     ///   - strides: The strides of the sliding window for spatial dimensions.
     ///   - padding: The padding algorithm for convolution.
     public init(
-        kernel: Tensor<Scalar>,
+        filter: Tensor<Scalar>,
         bias: Tensor<Scalar>,
         activation: @escaping Activation,
         strides: (Int, Int),
         padding: Padding
     ) {
-        self.kernel = kernel
+        self.filter = filter
         self.bias = bias
         self.activation = activation
         self.strides = strides
@@ -534,19 +534,19 @@ public struct DepthwiseConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return activation(depthwiseConv2D(input, kernel: kernel,
-                          strides: (1, strides.0, strides.1, 1),
-                          padding: padding) + bias)
+        return activation(depthwiseConv2D(input, filter: filter,
+                                          strides: (1, strides.0, strides.1, 1),
+                                          padding: padding) + bias)
     }
 }
 
 public extension DepthwiseConv2D {
-    /// Creates a `depthwiseConv2D` layer with the specified kernel shape, strides, padding, and
-    /// element-wise activation function. The kernel tensor is initialized using Glorot uniform
+    /// Creates a `DepthwiseConv2D` layer with the specified filter shape, strides, padding, and
+    /// element-wise activation function. The filter tensor is initialized using Glorot uniform
     /// initialization with the specified generator. The bias vector is initialized with zeros.
     ///
     /// - Parameters:
-    ///   - kernelShape: The shape of the 4-D convolution kernel.
+    ///   - filterShape: The shape of the 4-D convolution kernel.
     ///   - strides: The strides of the sliding window for spatial/spatio-temporal dimensions.
     ///   - padding: The padding algorithm for convolution.
     ///   - activation: The element-wise activation function.
@@ -555,17 +555,17 @@ public extension DepthwiseConv2D {
     /// - Note: Use `init(filterShape:strides:padding:activation:seed:)` for faster random
     ///   initialization.
     init<G: RandomNumberGenerator>(
-        kernelShape: (Int, Int, Int, Int),
+        filterShape: (Int, Int, Int, Int),
         strides: (Int, Int) = (1, 1),
         padding: Padding = .valid,
         activation: @escaping Activation = identity,
         generator: inout G
     ) {
-        let kernelTensorShape = TensorShape([
-            kernelShape.0, kernelShape.1, kernelShape.2, kernelShape.3])
+        let filterTensorShape = TensorShape([
+            filterShape.0, filterShape.1, filterShape.2, filterShape.3])
         self.init(
-            kernel: Tensor(glorotUniform: kernelTensorShape, generator: &generator),
-            bias: Tensor(zeros: TensorShape([kernelShape.3])),
+            filter: Tensor(glorotUniform: filterTensorShape, generator: &generator),
+            bias: Tensor(zeros: TensorShape([filterShape.3])),
             activation: activation,
             strides: strides,
             padding: padding)
@@ -573,29 +573,29 @@ public extension DepthwiseConv2D {
 }
 
 public extension DepthwiseConv2D {
-    /// Creates a `depthwiseConv2D` layer with the specified kernel shape, strides, padding, and
-    /// element-wise activation function. The kernel tensor is initialized using Glorot uniform
+    /// Creates a `depthwiseConv2D` layer with the specified filter shape, strides, padding, and
+    /// element-wise activation function. The filter tensor is initialized using Glorot uniform
     /// initialization with the specified seed. The bias vector is initialized with zeros.
     ///
     /// - Parameters:
-    ///   - kernelShape: The shape of the 4-D convolution kernel.
+    ///   - filterShape: The shape of the 4-D convolution kernel.
     ///   - strides: The strides of the sliding window for spatial/spatio-temporal dimensions.
     ///   - padding: The padding algorithm for convolution.
     ///   - activation: The element-wise activation function.
     ///   - seed: The random seed for initialization. The default value is random.
     init(
-        kernelShape: (Int, Int, Int, Int),
+        filterShape: (Int, Int, Int, Int),
         strides: (Int, Int) = (1, 1),
         padding: Padding = .valid,
         activation: @escaping Activation = identity,
         seed: (Int32, Int32) = (Int32.random(in: Int32.min..<Int32.max),
                                 Int32.random(in: Int32.min..<Int32.max))
     ) {
-        let kernelTensorShape = TensorShape([
-            kernelShape.0, kernelShape.1, kernelShape.2, kernelShape.3])
+        let filterTensorShape = TensorShape([
+            filterShape.0, filterShape.1, filterShape.2, filterShape.3])
         self.init(
-            kernel: Tensor(glorotUniform: kernelTensorShape, seed: seed),
-            bias: Tensor(zeros: TensorShape([kernelShape.3])),
+            filter: Tensor(glorotUniform: filterTensorShape, seed: seed),
+            bias: Tensor(zeros: TensorShape([filterShape.3])),
             activation: activation,
             strides: strides,
             padding: padding)

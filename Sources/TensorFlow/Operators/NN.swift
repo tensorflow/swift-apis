@@ -341,7 +341,7 @@ func _vjpdepthwiseConv2dBackpropInput<Scalar: TensorFlowFloatingPoint>(
         return (
             depthwiseConv2dBackpropFilter(x, input: v, filterSizes: shape, strides: strides,
                                           padding: padding),
-            depthwiseConv2D(v, kernel: filter, strides: strides, padding: padding)
+            depthwiseConv2D(v, filter: filter, strides: strides, padding: padding)
         )
     })
 }
@@ -360,7 +360,7 @@ func _vjpdepthwiseConv2dBackpropFilter<Scalar: TensorFlowFloatingPoint>(
         return (
             depthwiseConv2dBackpropInput(x, shape: filterSizes, filter: v, strides: strides,
                                          padding: padding),
-            depthwiseConv2D(input, kernel: v, strides: strides, padding: padding)
+            depthwiseConv2D(input, filter: v, strides: strides, padding: padding)
         )
     })
 }
@@ -368,18 +368,18 @@ func _vjpdepthwiseConv2dBackpropFilter<Scalar: TensorFlowFloatingPoint>(
 @usableFromInline
 func _vjpDepthwiseConv2D<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>,
-    kernel: Tensor<Scalar>,
+    filter: Tensor<Scalar>,
     strides: (Int, Int, Int, Int),
     padding: Padding
 ) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
-    let value = depthwiseConv2D(x, kernel: kernel, strides: strides,
+    let value = depthwiseConv2D(x, filter: filter, strides: strides,
                                 padding: padding)
     return (value, { v in
         return (
-            depthwiseConv2dBackpropInput(v, shape: x.shapeTensor, filter: kernel,
+            depthwiseConv2dBackpropInput(v, shape: x.shapeTensor, filter: filter,
                                          strides: strides, padding: padding
             ),
-            depthwiseConv2dBackpropFilter(v, input: x, filterSizes: kernel.shapeTensor,
+            depthwiseConv2dBackpropFilter(v, input: x, filterSizes: filter.shapeTensor,
                                           strides: strides, padding: padding
             )
         )
@@ -532,22 +532,22 @@ public func conv3D<Scalar: TensorFlowFloatingPoint>(
 /// Computes a 2-D depthwise convolution with the specified input, filter, strides, and padding.
 ///
 /// - Parameters:
-///   - x: The input.
-///   - kernel: The depthwise convolution filter.
+///   - input: The input.
+///   - filter: The depthwise convolution filter.
 ///   - strides: The strides of the sliding filter for each dimension of the input.
 ///   - padding: The padding for the operation.
 /// - Precondition: `input` must have rank 4.
-/// - Precondition: `kernel` must have rank 4.
-@differentiable(wrt: (x, kernel), vjp: _vjpDepthwiseConv2D)
+/// - Precondition: `filter` must have rank 4.
+@differentiable(wrt: (input, filter), vjp: _vjpDepthwiseConv2D)
 public func depthwiseConv2D<Scalar: TensorFlowFloatingPoint>(
-    _ x: Tensor<Scalar>,
-    kernel: Tensor<Scalar>,
+    _ input: Tensor<Scalar>,
+    filter: Tensor<Scalar>,
     strides: (Int, Int, Int, Int),
     padding: Padding
 ) -> Tensor<Scalar> {
     return Raw.depthwiseConv2dNative(
-        x,
-        filter: kernel,
+        input,
+        filter: filter,
         strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2),Int32(strides.3)],
         padding: padding.raw)
 }
