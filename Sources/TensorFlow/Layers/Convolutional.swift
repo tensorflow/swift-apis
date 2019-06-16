@@ -92,7 +92,7 @@ public extension Conv1D where Scalar.RawSignificand: FixedWidthInteger {
             filterShape.0, filterShape.1, filterShape.2])
         self.init(
             filter: Tensor(glorotUniform: filterTensorShape),
-            bias: Tensor(zeros: TensorShape([filterShape.2])),
+            bias: Tensor(zeros: [filterShape.2]),
             activation: activation,
             stride: stride,
             padding: padding)
@@ -123,7 +123,7 @@ public extension Conv1D {
             filterShape.0, filterShape.1, filterShape.2])
         self.init(
             filter: Tensor(glorotUniform: filterTensorShape, seed: seed),
-            bias: Tensor(zeros: TensorShape([filterShape.2])),
+            bias: Tensor(zeros: [filterShape.2]),
             activation: activation,
             stride: stride,
             padding: padding)
@@ -208,7 +208,7 @@ public extension Conv2D {
             filterShape.0, filterShape.1, filterShape.2, filterShape.3])
         self.init(
             filter: Tensor(glorotUniform: filterTensorShape, generator: &generator),
-            bias: Tensor(zeros: TensorShape([filterShape.3])),
+            bias: Tensor(zeros: [filterShape.3]),
             activation: activation,
             strides: strides,
             padding: padding)
@@ -238,7 +238,7 @@ public extension Conv2D {
             filterShape.0, filterShape.1, filterShape.2, filterShape.3])
         self.init(
             filter: Tensor(glorotUniform: filterTensorShape, seed: seed),
-            bias: Tensor(zeros: TensorShape([filterShape.3])),
+            bias: Tensor(zeros: [filterShape.3]),
             activation: activation,
             strides: strides,
             padding: padding)
@@ -324,7 +324,7 @@ public extension Conv3D {
             filterShape.0, filterShape.1, filterShape.2, filterShape.3, filterShape.4])
         self.init(
             filter: Tensor(glorotUniform: filterTensorShape, generator: &generator),
-            bias: Tensor(zeros: TensorShape([filterShape.4])),
+            bias: Tensor(zeros: [filterShape.4]),
             activation: activation,
             strides: strides,
             padding: padding)
@@ -354,7 +354,7 @@ public extension Conv3D {
             filterShape.0, filterShape.1, filterShape.2, filterShape.3, filterShape.4])
         self.init(
             filter: Tensor(glorotUniform: filterTensorShape, seed: seed),
-            bias: Tensor(zeros: TensorShape([filterShape.4])),
+            bias: Tensor(zeros: [filterShape.4]),
             activation: activation,
             strides: strides,
             padding: padding)
@@ -449,7 +449,7 @@ public extension TransposedConv2D {
             filterShape.0, filterShape.1, filterShape.2, filterShape.3])
         self.init(
             filter: Tensor(glorotUniform: filterTensorShape, generator: &generator),
-            bias: Tensor(zeros: TensorShape([filterShape.3])),
+            bias: Tensor(zeros: [filterShape.3]),
             activation: activation,
             strides: strides,
             padding: padding)
@@ -479,7 +479,7 @@ public extension TransposedConv2D {
             filterShape.0, filterShape.1, filterShape.2, filterShape.3])
         self.init(
             filter: Tensor(glorotUniform: filterTensorShape, seed: seed),
-            bias: Tensor(zeros: TensorShape([filterShape.3])),
+            bias: Tensor(zeros: [filterShape.3]),
             activation: activation,
             strides: strides,
             padding: padding)
