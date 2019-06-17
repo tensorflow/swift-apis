@@ -699,7 +699,7 @@ extension LazyTensorOperation: CustomStringConvertible {
             }
         }
         var desc = "\(outputName) = \(name)"
-        if !attributes.isEmpty {
+        if !attrs.isEmpty {
             desc += "["
             desc += attrsDesc.joined(separator: ", ")
             desc += "]"
