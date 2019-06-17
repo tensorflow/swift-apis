@@ -1,6 +1,6 @@
 // !!! THIS CODE IS AUTOMATICALLY GENERATED, DO NOT EDIT BY HAND !!!
 //
-// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -189,7 +189,7 @@ internal struct TFE_Op: TFTensorOperation {
         // TFE_OpSetAttrStringList.
         flattenedStringBytes.withUnsafeBufferPointer { flattenedStringBytesBuffer in
             var stringAddrs: [UnsafeRawPointer?] = []
-            var currentStringAddr = 
+            var currentStringAddr =
                 flattenedStringBytesBuffer.baseAddress.map(UnsafeRawPointer.init)
             for length in lengths {
                 stringAddrs.append(currentStringAddr)
@@ -271,7 +271,12 @@ internal struct TFE_Op: TFTensorOperation {
         _ name: String,
         _ value: (In) -> Out
     ) {
-        _tffunc(value).utf8CString.withUnsafeBufferPointer { buffer in
+        updateAttribute(name, _TensorFunctionPointer(name: _tffunc(value)))
+    }
+
+    @inlinable @inline(__always)
+    internal func updateAttribute(_ name: String, _ value: _TensorFunctionPointer) {
+        value.name.utf8CString.withUnsafeBufferPointer { buffer in
             // utf8CString is null-terminated; TFE_OpSetAttrFunctionName wants
             // non-null-terminated.
             TFE_OpSetAttrFunctionName(op, name, buffer.baseAddress, buffer.count - 1)

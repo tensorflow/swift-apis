@@ -1,4 +1,4 @@
-// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
 ///
 /// Dropout consists in randomly setting a fraction of input units to `0` at each update during
 /// training time, which helps prevent overfitting.
-@_fixed_layout
+@frozen
 public struct Dropout<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let probability: Double
 
@@ -53,7 +53,7 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable(vjp: _vjpApplied(to:))
-    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         switch Context.local.learningPhase {
         case .training:
             return applyingTraining(to: input)
@@ -82,7 +82,7 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: Layer {
 /// A flatten layer.
 ///
 /// A flatten layer flattens the input when applied without affecting the batch size.
-@_fixed_layout
+@frozen
 public struct Flatten<Scalar: TensorFlowFloatingPoint>: Layer {
     /// Creates a flatten layer.
     public init() {}
@@ -92,7 +92,7 @@ public struct Flatten<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         let batchSize = input.shape[0]
         let remaining = input.shape[1..<input.rank].contiguousSize
         return input.reshaped(to: [batchSize, remaining])
@@ -100,7 +100,7 @@ public struct Flatten<Scalar: TensorFlowFloatingPoint>: Layer {
 }
 
 /// A reshape layer.
-@_fixed_layout
+@frozen
 public struct Reshape<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The target shape.
     @noDerivative public let shape: Tensor<Int32>
@@ -128,7 +128,7 @@ public struct Reshape<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input.reshaped(toShape: shape)
     }
 }
@@ -138,7 +138,7 @@ public struct Reshape<Scalar: TensorFlowFloatingPoint>: Layer {
 /// `Dense` implements the operation `activation(matmul(input, weight) + bias)`, where `weight` is
 /// a weight matrix, `bias` is a bias vector, and `activation` is an element-wise activation
 /// function.
-@_fixed_layout
+@frozen
 public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The weight matrix.
     public var weight: Tensor<Scalar>
@@ -163,7 +163,7 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         return activation(matmul(input, weight) + bias)
     }
 }
@@ -214,8 +214,8 @@ public extension Dense {
         inputSize: Int,
         outputSize: Int,
         activation: @escaping Activation = identity,
-        seed: (Int64, Int64) = (Int64.random(in: Int64.min..<Int64.max),
-                                Int64.random(in: Int64.min..<Int64.max))
+        seed: (Int32, Int32) = (Int32.random(in: Int32.min..<Int32.max),
+                                Int32.random(in: Int32.min..<Int32.max))
     ) {
         self.init(weight: Tensor(glorotUniform: [inputSize, outputSize],
                                  seed: seed),

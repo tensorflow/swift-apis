@@ -1,4 +1,4 @@
-// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@
 ///
 /// `TensorShape` is a thin wrapper around an array of integers that represent shape dimensions. All
 /// tensor types use `TensorShape` to represent their shape.
-@_fixed_layout
+@frozen
 public struct TensorShape: ExpressibleByArrayLiteral {
     /// The dimensions of the shape.
     public var dimensions: [Int]

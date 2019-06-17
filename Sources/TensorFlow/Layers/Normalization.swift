@@ -1,4 +1,4 @@
-// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
 ///
 /// Reference: [Batch Normalization: Accelerating Deep Network Training by Reducing Internal
 /// Covariate Shift](https://arxiv.org/abs/1502.03167).
-@_fixed_layout
+@frozen
 public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The feature dimension.
     @noDerivative public let axis: Int
@@ -90,7 +90,7 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable(vjp: _vjpApplied(to:))
-    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         switch Context.local.learningPhase {
         case .training:
             return applyingTraining(to: input)
@@ -139,7 +139,7 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
 /// A layer that applies layer normalization over a mini-batch of inputs.
 ///
 /// Reference: [Layer Normalization](https://arxiv.org/abs/1607.06450).
-@_fixed_layout
+@frozen
 public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The offset value, also known as beta.
     public var offset: Tensor<Scalar>
@@ -185,7 +185,7 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         let mean = input.mean(alongAxes: axis)
         let variance = input.variance(alongAxes: axis)
         let inv = rsqrt(variance + epsilon) * scale
