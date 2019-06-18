@@ -666,6 +666,10 @@ extension LazyTensorOperation.Attribute: CustomStringConvertible {
                 let descString = descriptions.joined(separator: ", ")
                 return "[\(descString)]"
             }
+        case .TensorDataTypeArray(let values):
+            let descriptions = (values.map { dataTypeAsString($0) })
+            let descString = descriptions.joined(separator: ", ")
+            return "[\(descString)]"
         case .OptionalTensorShapeArray(let t):  return "\(t)"
         }
     }
