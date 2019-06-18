@@ -45,7 +45,7 @@ public struct Embedding<Scalar: TensorFlowFloatingPoint>: Layer {
     /// pretrained embeddings into a model.
     /// 
     /// - Parameter embeddings: The pretrained embeddings table.
-    public init(from embeddings: Tensor<Scalar>) {
+    public init(embeddings: Tensor<Scalar>) {
         self.embeddings = embeddings
     }
 
