@@ -509,7 +509,7 @@ fileprivate extension Tensor where Scalar: BinaryFloatingPoint {
         let receptiveField = shape[0..<spatialDimCount].contiguousSize
         let fanIn = shape[shape.count - 2] * receptiveField
         let fanOut = shape[shape.count - 1] * receptiveField
-        let minusOneToOne = 2 * normalUniform - 1
+        let minusOneToOne = 2 * varianceScalingFactor - 1
         return sqrt(Scalar(2) / Scalar(fanIn + fanOut)) * minusOneToOne
     }
 }
