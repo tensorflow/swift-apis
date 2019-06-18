@@ -40,7 +40,7 @@ class LazyTensorTrace {
 
     var signature: String {
         let inputsDesc: [String] = inputs.map { input in
-            let dtypeAttr = input.attrs["dtype"]!
+            let dtypeAttr = input.attributes["dtype"]!
             return "\(input.outputName): \(dtypeAttr)"
         }
         let inputDesc = inputsDesc.joined(separator: ", ")
@@ -64,7 +64,7 @@ class LazyTensorTrace {
         let result = LazyTensorOperation("Const", 1)
         let dtype = TensorDataType(TFE_TensorHandleDataType(cTensorHandle))
         let dtypeAttr = LazyTensorOperation.Attribute.TensorDataTypeValue(dtype)
-        result.attrs = [
+        result.attributes = [
             "dtype": dtypeAttr,
             "value": LazyTensorOperation.Attribute.ConstTensor(handle)]
         updateOperationAndCache(ObjectIdentifier(handle), result)
@@ -78,7 +78,7 @@ class LazyTensorTrace {
         let dtype = TensorDataType(TFE_TensorHandleDataType(cTensorHandle))
         let dtypeAttr = LazyTensorOperation.Attribute.TensorDataTypeValue(dtype)
         let placeholder = LazyTensorOperation("Placeholder", 1)
-        placeholder.attrs = ["dtype": dtypeAttr]
+        placeholder.attributes = ["dtype": dtypeAttr]
         updateOperationAndCache(ObjectIdentifier(handle), placeholder)
         inputs.append(placeholder)
         inputValues.append(handle)
@@ -134,7 +134,7 @@ class LazyTensorTrace {
         }
 
         let newLazyOp = LazyTensorOperation(lazyOp.name, lazyOp.outputCount)
-        newLazyOp.attrs = lazyOp.attrs
+        newLazyOp.attributes = lazyOp.attributes
         newLazyOp.inputs = lazyOp.inputs.map { maybePromotedInput($0) }
         updateOperationAndCache(id, newLazyOp)
 
