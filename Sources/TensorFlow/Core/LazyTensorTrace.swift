@@ -51,7 +51,7 @@ class LazyTensorTrace {
 
     private var lazyOpsCache: [ObjectIdentifier: LazyTensorOperation] = [:]
 
-    private func updateCacheAndOperations(
+    private func updateOperationAndCache(
         _ id: ObjectIdentifier, _ node: LazyTensorOperation
     ) {
         lazyOpsCache[id] = node
@@ -67,7 +67,7 @@ class LazyTensorTrace {
         result.attrs = [
             "dtype": dtypeAttr,
             "value": LazyTensorOperation.Attribute.ConstTensor(handle)]
-        updateCacheAndOperations(ObjectIdentifier(handle), result)
+        updateOperationAndCache(ObjectIdentifier(handle), result)
         return LazyTensor(_lazy: result, index: 0)
     }
 
@@ -79,7 +79,7 @@ class LazyTensorTrace {
         let dtypeAttr = LazyTensorOperation.Attribute.TensorDataTypeValue(dtype)
         let placeholder = LazyTensorOperation("Placeholder", 1)
         placeholder.attrs = ["dtype": dtypeAttr]
-        updateCacheAndOperations(ObjectIdentifier(handle), placeholder)
+        updateOperationAndCache(ObjectIdentifier(handle), placeholder)
         inputs.append(placeholder)
         inputValues.append(handle)
         return LazyTensor(_lazy: placeholder, index: 0)
@@ -136,7 +136,7 @@ class LazyTensorTrace {
         let newLazyOp = LazyTensorOperation(lazyOp.name, lazyOp.outputCount)
         newLazyOp.attrs = lazyOp.attrs
         newLazyOp.inputs = lazyOp.inputs.map { maybePromotedInput($0) }
-        updateCacheAndOperations(id, newLazyOp)
+        updateOperationAndCache(id, newLazyOp)
 
         if LazyTensor.isLive(lazyOp) {
             outputs.append(newLazyOp)
