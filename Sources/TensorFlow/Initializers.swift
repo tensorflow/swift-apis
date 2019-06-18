@@ -509,7 +509,7 @@ fileprivate extension Tensor where Scalar: BinaryFloatingPoint {
         let fanIn = shape[shape.count - 2] * receptiveField
         let fanOut = shape[shape.count - 1] * receptiveField
         let minusOneToOne = 2 * varianceScalingFactor - 1
-        return sqrt(Scalar(2) / Scalar(fanIn + fanOut)) * minusOneToOne
+        return Scalar.sqrt(Scalar(2) / Scalar(fanIn + fanOut)) * minusOneToOne
     }
 }
 
