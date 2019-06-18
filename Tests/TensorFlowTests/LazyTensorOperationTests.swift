@@ -166,10 +166,13 @@ final class LazyTensorOperationTests: XCTestCase {
             _id: "0", name: "Nop", outputCount: 1)
         op0.updateAttribute("b", true)
         op0.updateAttribute("s", "hello")
-        XCTAssert(
-            (op0.description == "%0 = Nop[b: true, s: \"hello\"]()") ||
-            (op0.description == "%0 = Nop[s: \"hello\", b: true]()")
-        )
+        XCTAssertEqual(op0.description, "%0 = Nop[b: true, s: \"hello\"]()")
+    }
+
+    func testFunctionAttribute() {
+        let op0 = LazyTensorOperation(_id: "0", name: "Nop", outputCount: 1)
+        op0.updateAttribute("fn", _TensorFunctionPointer(name: "ExampleFunction"))
+        XCTAssertEqual(op0.description, "%0 = Nop[fn: TFFunction(ExampleFunction)]()")
     }
 
     static var allTests = [
@@ -184,6 +187,7 @@ final class LazyTensorOperationTests: XCTestCase {
         ("testStringAttribute", testStringAttribute),
         ("testTensorDataTypeAttribute", testTensorDataTypeAttribute),
         ("testArrayAttributes", testArrayAttributes),
-        ("testMultipleAttributes", testMultipleAttributes)
+        ("testMultipleAttributes", testMultipleAttributes),
+        ("testFunctionAttribute", testFunctionAttribute)
     ]
 }

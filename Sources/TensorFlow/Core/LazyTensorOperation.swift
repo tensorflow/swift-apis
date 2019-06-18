@@ -33,7 +33,7 @@ class LazyTensor: _AnyTensorHandle {
         switch handle {
         case .concrete(let h, _):
             return h
-        case .symbolic(let op, let index, _):
+        case .symbolic(_, _, _):
             assert(false, "TODO: to be send out in a separate PR.")
             // return op.materialized(index: index)
         }
@@ -152,6 +152,7 @@ class LazyTensorOperation: TensorOperation {
         case StringArray([String])
         case ConstTensor(TFETensorHandle)
         case TensorDataTypeValue(TensorDataType)
+        case TensorFunctionPointer(_TensorFunctionPointer)
     }
 
     let name: String
@@ -264,6 +265,9 @@ class LazyTensorOperation: TensorOperation {
     }
     func updateAttribute(_ name: String, _ value: [String]) {
         attrs[name] = Attribute.StringArray(value)
+    }
+    func updateAttribute(_ name: String, _ value: _TensorFunctionPointer) {
+        attrs[name] = Attribute.TensorFunctionPointer(value)
     }
 }
 
@@ -654,6 +658,7 @@ extension LazyTensorOperation.Attribute: CustomStringConvertible {
         case .StringArray(let values): return arrayAsString("String", values)
         case .ConstTensor(let v): return v.valueDescription
         case .TensorDataTypeValue(let v): return dataTypeAsString(v)
+        case .TensorFunctionPointer(let v): return "TFFunction(\(v.name))"
         }
     }
 
@@ -682,26 +687,24 @@ extension LazyTensor: CustomStringConvertible {
 
 extension LazyTensorOperation: CustomStringConvertible {
     public var description: String {
-        let attrsDesc = attrs.map { (name, value) in "\(name): \(value)" }
-        let inputsDesc = inputs.map { (input: Input) -> String in
+        let attrsDesc = attrs.sorted(by: { $0.key < $1.key }).map { "\($0): \($1)" }
+        let inputsDesc = inputs.map { input -> String in
             switch input {
             case Input.single(let lazyTensor):
                 return "\(lazyTensor)"
             case Input.list(let lazyTensorList):
-                do {
-                    let lazyTensors = lazyTensorList.map { "\($0)" }
-                    let lazyTensorsDesc = lazyTensors.joined(separator: ", ")
-                    return "[\(lazyTensorsDesc)]"
-                }
+                let lazyTensors = lazyTensorList.map { "\($0)" }
+                let lazyTensorsDesc = lazyTensors.joined(separator: ", ")
+                return "[\(lazyTensorsDesc)]"
             }
         }
         var desc = "\(outputName) = \(name)"
-        if attrs.count > 0 {
+        if !attrs.isEmpty {
             desc += "["
             desc += attrsDesc.joined(separator: ", ")
             desc += "]"
         }
-            desc += "("
+        desc += "("
         desc += inputsDesc.joined(separator: ", ")
         desc += ")"
         return desc

@@ -16,10 +16,61 @@ import XCTest
 @testable import TensorFlow
 
 final class MathOperatorTests: XCTestCase {
+    func testElementaryFunction(
+        name: String,
+        _ tensorOperator: (Tensor<Float>) -> Tensor<Float>,
+        _ scalarOperator: (Float) -> Float,
+        accuracy: Float = 1e-4,
+        file: StaticString = #file, line: UInt = #line
+    ) {
+        let x = Tensor<Float>(randomNormal: [20], seed: (0, 0))
+        let actual = tensorOperator(x).scalars
+        let expected = x.scalars.map(scalarOperator)
+        assertEqual(actual, expected, accuracy: accuracy, name, file: file, line: line)
+    }
+
+    func testElementaryFunctions() {
+        testElementaryFunction(name: "sqrt", sqrt, Float.sqrt)
+        testElementaryFunction(name: "cos", cos, Float.cos)
+        testElementaryFunction(name: "sin", sin, Float.sin)
+        testElementaryFunction(name: "tan", tan, Float.tan)
+        testElementaryFunction(name: "cosh", cosh, Float.cosh)
+        testElementaryFunction(name: "sinh", sinh, Float.sinh)
+        testElementaryFunction(name: "tanh", tanh, Float.tanh)
+        testElementaryFunction(name: "acos", acos, Float.acos)
+        testElementaryFunction(name: "asin", asin, Float.asin)
+        testElementaryFunction(name: "atan", atan, Float.atan)
+        testElementaryFunction(name: "acosh", acosh, Float.acosh)
+        testElementaryFunction(name: "asinh", asinh, Float.asinh)
+        testElementaryFunction(name: "atanh", atanh, Float.atanh)
+        testElementaryFunction(name: "exp", exp, Float.exp)
+        testElementaryFunction(name: "exp2", exp2, Float.exp2)
+        testElementaryFunction(name: "exp10", exp10, Float.exp10)
+        testElementaryFunction(name: "expm1", expm1, Float.expm1)
+        testElementaryFunction(name: "log", log, Float.log)
+        testElementaryFunction(name: "log2", log2, Float.log2)
+        testElementaryFunction(name: "log10", log10, Float.log10)
+        testElementaryFunction(name: "log1p", log1p, Float.log1p)
+        testElementaryFunction(name: "pow",
+                               { x in pow(x, x) }, { x in Float.pow(x, x) })
+        testElementaryFunction(name: "pow",
+                               { x in pow(x, 3) }, { x in Float.pow(x, 3) })
+        testElementaryFunction(name: "root",
+                               { x in root(x, 3) }, { x in Float.root(x, 3) })
+    }
+
     func testLog1p() {
         let x = Tensor<Float>([[1, 2, 3, 4, 5], [1, 2, 3, 4, 5]])
         let y = log1p(x)
         assertEqual(y, log(1 + x), accuracy: 0.0001)
+    }
+
+    func testCosineSimilarity() {
+        let x = Tensor<Float>([1, 2, 3, 4, 5, 6, 7, 8])
+        let y = Tensor<Float>([0.5, 1, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0])
+        let z = cosineSimilarity(x, y)
+        let output: Float = 1.0
+        XCTAssertEqual(z, Tensor(output))
     }
 
     // FIXME(https://bugs.swift.org/browse/TF-543): Disable failing test.
@@ -75,7 +126,7 @@ final class MathOperatorTests: XCTestCase {
             x.variance(squeezingAxes: 0),
             Tensor(shape: [5], scalars: [0, 0, 0, 0, 0]))
         XCTAssertEqual(
-            x.variance(alongAxes: 0), 
+            x.variance(alongAxes: 0),
             Tensor(shape: [5], scalars: [0, 0, 0, 0, 0]))
         XCTAssertEqual(
             x.variance(squeezingAxes: 1),
@@ -171,6 +222,20 @@ final class MathOperatorTests: XCTestCase {
         XCTAssertEqual(result.scalars, [12.5, 6.5])
     }
 
+    func testSoftplus() {
+      let x = Tensor<Float>([1.0, 2.0, 3.0])
+      let y = softplus(x)
+      let expected = Tensor<Float>([1.3132616,  2.126928, 3.0485873])
+      XCTAssertEqual(y, expected)
+    }
+
+    func testSoftsign() {
+      let x = Tensor<Float>([1.0, 4.0, 3.0])
+      let y = softsign(x)
+      let expected = Tensor<Float>([0.5 , 0.8 , 0.75])
+      XCTAssertEqual(y, expected)
+    }
+
     func testXORInference() {
         func xor(_ x: Float, _ y: Float) -> Float {
             let x = Tensor<Float>([x, y]).reshaped(to: [1, 2])
@@ -237,7 +302,10 @@ final class MathOperatorTests: XCTestCase {
         // ("testExpm1", testExpm1),
         ("testSign", testSign),
         ("testReduction", testReduction),
+        ("testCosineSimilarity", testCosineSimilarity),
         ("testArgmax", testArgmax),
+        ("testSoftplus", testSoftplus),
+        ("testSoftsign", testSoftsign),
         ("testCeilAndFloor", testCeilAndFloor),
         ("testSimpleMath", testSimpleMath),
         ("testStandardDeviation", testStandardDeviation),
