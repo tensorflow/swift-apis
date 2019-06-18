@@ -144,6 +144,16 @@ final class LazyTensorOperationTests: XCTestCase {
         XCTAssertEqual(op0.description, "%0 = Nop[a: [int32, float]]()")
     }
 
+    func testOptionalTensorShapeAttribute() {
+        let op0 = LazyTensorOperation(
+            _id: "0", name: "Nop", outputCount: 1)
+        let shape1 = TensorShape([1, 2, 3])
+        op0.updateAttribute("shape", shape1)
+        XCTAssertEqual(op0.description, "%0 = Nop[shape: Optional([1, 2, 3])]()")
+        op0.updateAttribute("shape", nil)
+        XCTAssertEqual(op0.description, "%0 = Nop[shape: nil]()")
+    }
+
     func testOptionalTensorShapeArrayAttribute() {
         let op0 = LazyTensorOperation(
             _id: "0", name: "Nop", outputCount: 1)
@@ -208,6 +218,7 @@ final class LazyTensorOperationTests: XCTestCase {
         ("testTensorDataTypeArrayAttribute", testTensorDataTypeArrayAttribute),
         ("testOptionalTensorShapeArrayAttribute",
             testOptionalTensorShapeArrayAttribute),
+        ("testOptionalTensorShapeAttribute", testOptionalTensorShapeAttribute),
         ("testTensorShapeArrayAttribute",
             testOptionalTensorShapeArrayAttribute),
         ("testArrayAttributes", testArrayAttributes),
