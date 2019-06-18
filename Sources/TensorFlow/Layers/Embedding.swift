@@ -49,7 +49,7 @@ public struct Embedding<Scalar: TensorFlowFloatingPoint>: Layer {
         self.embeddings = embeddings
     }
 
-    /// Replaces each index in the input with corresponding dense vector representations.
+    /// Returns an output by replacing each index in the input with corresponding dense vector representation.
     ///
     /// - Parameter
     ///   - input: The indices that will be mapped to their vector representations.
