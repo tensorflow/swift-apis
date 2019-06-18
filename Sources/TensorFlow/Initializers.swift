@@ -528,7 +528,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         seed: (Int32, Int32) = (Int32.random(in: Int32.min..<Int32.max),
                                 Int32.random(in: Int32.min..<Int32.max))
     ) {
-        let normal = Tensor(normalUniform: shape, seed: seed)
+        let normal = Tensor(randomNormal: shape, seed: seed)
         self = Tensor.glorot(fromStandardNormalScaledBy: normal, shape: shape)
     }
 }
