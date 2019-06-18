@@ -53,7 +53,7 @@ public struct Embedding<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameter
     ///   - input: The indices that will be mapped to their vector representations.
-    /// - Returns:
+    /// - Returns: The tensor created by replacing input indices with their vector representations.
     ///   - output: The tensor created by replacing input indices with their vector representations.
     @differentiable
     public func callAsFunction(_ input: Input) -> Tensor<Scalar> {
