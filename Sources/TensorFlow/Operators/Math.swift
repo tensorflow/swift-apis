@@ -165,6 +165,16 @@ extension Tensor: VectorProtocol where Scalar: Numeric {
     public typealias VectorSpaceScalar = Scalar
 
     @differentiable(where Scalar: TensorFlowFloatingPoint)
+    public func adding(_ scalar: Scalar) -> Self {
+        self + scalar
+    }
+
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
+    public func subtracting(_ scalar: Scalar) -> Self {
+        self - scalar
+    }
+
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
     public func scaled(by scalar: Scalar) -> Self {
         self * scalar
     }
