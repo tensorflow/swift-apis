@@ -1,4 +1,4 @@
-// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -449,7 +449,7 @@ public extension Tensor where Scalar: BinaryFloatingPoint,
     }
 }
 
-fileprivate extension Tensor where Scalar: BinaryFloatingPoint {
+fileprivate extension Tensor where Scalar: TensorFlowFloatingPoint {
     private static func glorot(
         fromStandardUniform randomUniform: __shared Tensor<Scalar>,
         shape: __shared TensorShape
@@ -459,7 +459,7 @@ fileprivate extension Tensor where Scalar: BinaryFloatingPoint {
         let fanIn = shape[shape.count - 2] * receptiveField
         let fanOut = shape[shape.count - 1] * receptiveField
         let minusOneToOne = 2 * randomUniform - 1
-        return sqrt(Scalar(6) / Scalar(fanIn + fanOut)) * minusOneToOne
+        return Scalar.sqrt(Scalar(6) / Scalar(fanIn + fanOut)) * minusOneToOne
     }
 }
 
@@ -483,8 +483,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 }
 
-public extension Tensor where Scalar: BinaryFloatingPoint,
-                              Scalar.RawSignificand: FixedWidthInteger {
+public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// Performs Glorot uniform initialization for the specified shape, creating a tensor by
     /// randomly sampling scalar values from a uniform distribution between `-limit` and `limit`,
     /// where limit is `sqrt(6 / (fanIn + fanOut))` and `fanIn`/`fanOut` represent the number of

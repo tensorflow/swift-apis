@@ -15,8 +15,8 @@
 import XCTest
 @testable import TensorFlow
 
-final class TrivialModelTests: XCTestCase {
-    func testXOR() {
+final class OptimizerTests: XCTestCase {
+    func testAdaGrad() {
         struct Classifier: Layer {
             var l1, l2: Dense<Float>
             init(hiddenSize: Int) {
@@ -39,24 +39,33 @@ final class TrivialModelTests: XCTestCase {
                 return l2(h1)
             }
         }
+
         var classifier = Classifier(hiddenSize: 4)
-        let optimizer = SGD(for: classifier, learningRate: 0.02)
+        let optimizer = AdaGrad(for: classifier, learningRate: 0.02)
         let x: Tensor<Float> = [[0, 0], [0, 1], [1, 0], [1, 1]]
         let y: Tensor<Float> = [[0], [1], [1], [0]]
 
         Context.local.learningPhase = .training
-        for _ in 0..<3000 {
+
+        // untrained classifier should not return valid values
+        var ŷ = classifier.inferring(from: x)
+        XCTAssertNotEqual(round(ŷ), y)
+
+        for _ in 0..<400 {
             let 𝛁model = classifier.gradient { classifier -> Tensor<Float> in
                 let ŷ = classifier(x)
                 return meanSquaredError(predicted: ŷ, expected: y)
             }
             optimizer.update(&classifier.allDifferentiableVariables, along: 𝛁model)
         }
-        let ŷ = classifier.inferring(from: x)
+
+        // trained classifier should return valid values
+        ŷ = classifier.inferring(from: x)
         XCTAssertEqual(round(ŷ), y)
     }
 
+
     static var allTests = [
-        ("testXOR", testXOR),
+        ("testAdaGrad", testAdaGrad),
     ]
 }

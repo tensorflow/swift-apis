@@ -1,4 +1,4 @@
-// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,13 +19,13 @@
 
 /// Returns the local seeds an operation should use given an op-specific seed.
 ///
-/// Given operation-specific seed, `seed`, this helper function returns two seeds derived from 
-/// graph-level and op-level seeds. Many random operations internally use the two seeds to allow 
+/// Given operation-specific seed, `seed`, this helper function returns two seeds derived from
+/// graph-level and op-level seeds. Many random operations internally use the two seeds to allow
 /// user to change the seed globally for a graph, or for only specific operations.
 ///
 /// - Note: See TensorFlow's `python.framework.random_seed.get_seed`.
 ///
-// TODO: There's no support for TF's "global seed" yet, so we always use the default graph seed as 
+// TODO: There's no support for TF's "global seed" yet, so we always use the default graph seed as
 // the first seed. Need to investigate the best way to model TF's "global seed".
 @usableFromInline
 func _tensorSeeds(_ seed: Tensor<Int64>) -> (Tensor<Int64>, Tensor<Int64>) {
@@ -39,7 +39,7 @@ func _tensorSeeds(_ seed: Tensor<Int64>) -> (Tensor<Int64>, Tensor<Int64>) {
 /// Represents a potentially large set of elements.
 ///
 /// A `Dataset` can be used to represent an input pipeline as a collection of element tensors.
-@_fixed_layout
+@frozen
 public struct Dataset<Element: TensorGroup> {
     public let _handle: VariantHandle
 
@@ -86,7 +86,7 @@ extension Dataset: Sequence {
 }
 
 public extension Dataset {
-    // Note that this Dataset API implementation uses an experimental tracing feature, which is not 
+    // Note that this Dataset API implementation uses an experimental tracing feature, which is not
     // robust and does not have great diagnostics yet.
     @inlinable
     func map<ResultElement: TensorGroup>(
@@ -177,7 +177,7 @@ public extension Dataset {
 }
 
 /// The type that allows iteration over a dataset's elements.
-@_fixed_layout
+@frozen
 public struct DatasetIterator<Element: TensorGroup> {
     @usableFromInline let _handle: ResourceHandle
 
@@ -204,9 +204,9 @@ extension DatasetIterator: IteratorProtocol {
     }
 }
 
-/// A 2-tuple-like struct that conforms to TensorGroup that represents a tuple of 2 types conforming 
+/// A 2-tuple-like struct that conforms to TensorGroup that represents a tuple of 2 types conforming
 /// to `TensorGroup`.
-@_fixed_layout
+@frozen
 public struct Zip2TensorGroup<T: TensorGroup, U: TensorGroup>: TensorGroup {
     public var first: T
     public var second: U

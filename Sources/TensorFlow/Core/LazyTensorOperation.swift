@@ -1,3 +1,17 @@
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 import CTensorFlow
 
 @usableFromInline
@@ -19,7 +33,7 @@ class LazyTensor: _AnyTensorHandle {
         switch handle {
         case .concrete(let h, _):
             return h
-        case .symbolic(let op, let index, _):
+        case .symbolic(_, _, _):
             assert(false, "TODO: to be send out in a separate PR.")
             // return op.materialized(index: index)
         }
@@ -99,10 +113,18 @@ class LazyTensor: _AnyTensorHandle {
         return false
     }
 
-    static func onLiveOperations(_ perform: (LazyTensorOperation) -> ()) {
+    static func forEachLiveOperation(
+        _ perform: (LazyTensorOperation) throws -> Void
+    ) rethrows -> Void {
         for (_, counts) in operationRefCounts where counts.liveRefCount > 0 {
-            perform(counts.op)
+            try perform(counts.op)
         }
+    }
+
+    static func forEachOperation(
+        _ perform: (LazyTensorOperation) throws -> Void
+    ) rethrows -> Void {
+        for (_, counts) in operationRefCounts { try perform(counts.op) }
     }
 
     @usableFromInline
@@ -130,6 +152,7 @@ class LazyTensorOperation: TensorOperation {
         case StringArray([String])
         case ConstTensor(TFETensorHandle)
         case TensorDataTypeValue(TensorDataType)
+        case TensorFunctionPointer(_TensorFunctionPointer)
     }
 
     let name: String
@@ -144,6 +167,30 @@ class LazyTensorOperation: TensorOperation {
             return "\(name)_\(id)"
         } else {
             return "\(name)_\(ObjectIdentifier(self))"
+        }
+    }
+
+    func outputName(at index: Int) -> String {
+        precondition(index < outputCount,
+            "Output index out of bounds when getting outputName.")
+        let ssaID = id ?? "\(ObjectIdentifier(self))"
+        var ssaName = "%\(ssaID)"
+        if outputCount > 1 {
+            ssaName += ".\(index)"
+        }
+        return ssaName
+    }
+
+    var outputName: String {
+        switch outputCount {
+        case 0: return ""
+        case 1: return outputName(at: 0)
+        default:
+            let outputNames = (0..<outputCount).lazy.map {
+                self.outputName(at: $0)
+            }
+            let aggregateName = outputNames.joined(separator: ", ")
+            return "(\(aggregateName))"
         }
     }
 
@@ -218,6 +265,9 @@ class LazyTensorOperation: TensorOperation {
     }
     func updateAttribute(_ name: String, _ value: [String]) {
         attrs[name] = Attribute.StringArray(value)
+    }
+    func updateAttribute(_ name: String, _ value: _TensorFunctionPointer) {
+        attrs[name] = Attribute.TensorFunctionPointer(value)
     }
 }
 
@@ -525,31 +575,46 @@ extension LazyTensorOperation: TFTensorOperation {
     }
 }
 
-extension LazyTensorOperation.Attribute: CustomStringConvertible {
-    var description: String {
-        switch self {
-        case .BoolValue(let v): return "\(v)"
-        case .IntValue(let v): return "Int(\(v))"
-        case .FloatValue(let v): return "Float(\(v))"
-        case .DoubleValue(let v): return "Double(\(v))"
-        case .StringValue(let v): return "\"\(v)\""
-        case .BoolArray(let values): return arrayAsString("", values)
-        case .IntArray(let values): return arrayAsString("Int", values)
-        case .FloatArray(let values): return arrayAsString("Float", values)
-        case .DoubleArray(let values): return arrayAsString("Double", values)
-        case .StringArray(let values): return arrayAsString("String", values)
-        case .ConstTensor(let v): return "Const(\(v))"
-        case .TensorDataTypeValue(let v): return dataTypeAsString(v)
+extension TFETensorHandle {
+    public var valueDescription: String {
+        let dtype = TFE_TensorHandleDataType(self._cTensorHandle)
+        switch dtype {
+        case TF_FLOAT:
+            return Tensor(handle: TensorHandle<Float>(handle: self)).description
+        case TF_DOUBLE:
+            return Tensor(handle: TensorHandle<Double>(handle: self)).description
+        case TF_BFLOAT16:
+            return Tensor(handle: TensorHandle<BFloat16>(handle: self)).description
+        case TF_INT64:
+            return Tensor(handle: TensorHandle<Int64>(handle: self)).description
+        case TF_INT32:
+            return Tensor(handle: TensorHandle<Int32>(handle: self)).description
+        case TF_INT16:
+            return Tensor(handle: TensorHandle<Int16>(handle: self)).description
+        case TF_INT8:
+            return Tensor(handle: TensorHandle<Int8>(handle: self)).description
+        case TF_UINT64:
+            return Tensor(handle: TensorHandle<UInt64>(handle: self)).description
+        case TF_UINT32:
+            return Tensor(handle: TensorHandle<UInt32>(handle: self)).description
+        case TF_UINT16:
+            return Tensor(handle: TensorHandle<UInt16>(handle: self)).description
+        case TF_UINT8:
+            return Tensor(handle: TensorHandle<UInt8>(handle: self)).description
+        case TF_BOOL:
+            return Tensor(handle: TensorHandle<Bool>(handle: self)).description
+        case TF_STRING:
+            // TODO(https://bugs.swift.org/browse/TF-561): The current
+            // implementation of ShapedArray<String> is not correct, which
+            // causes seg faults.
+            return "\"string\""
+        default:
+            return TFETensorHandle.tfDataTypeAsString(dtype)
         }
     }
 
-    private func arrayAsString<T>(_ desc: String, _ values: [T]) -> String {
-        let arrayDesc = (values.map { "\($0)" }).joined(separator: ", ")
-        return "\(desc)[\(arrayDesc)]"
-    }
-
-    private func dataTypeAsString(_ dataType: TensorDataType) -> String {
-        switch dataType._cDataType {
+    static func tfDataTypeAsString(_ cDataType: TF_DataType) -> String {
+        switch(cDataType) {
         case TF_FLOAT: return "float"
         case TF_DOUBLE: return "double"
         case TF_INT32: return "int32"
@@ -573,45 +638,75 @@ extension LazyTensorOperation.Attribute: CustomStringConvertible {
         case TF_VARIANT: return "variant"
         case TF_UINT32: return "uint32"
         case TF_UINT64: return "uint64"
-        default: assert(false, "Unhandled type: \(dataType._cDataType)")
+        default: assert(false, "Unhandled type: \(cDataType)")
         }
+    }
+}
+
+extension LazyTensorOperation.Attribute: CustomStringConvertible {
+    var description: String {
+        switch self {
+        case .BoolValue(let v): return "\(v)"
+        case .IntValue(let v): return "Int(\(v))"
+        case .FloatValue(let v): return "Float(\(v))"
+        case .DoubleValue(let v): return "Double(\(v))"
+        case .StringValue(let v): return "\"\(v)\""
+        case .BoolArray(let values): return arrayAsString("", values)
+        case .IntArray(let values): return arrayAsString("Int", values)
+        case .FloatArray(let values): return arrayAsString("Float", values)
+        case .DoubleArray(let values): return arrayAsString("Double", values)
+        case .StringArray(let values): return arrayAsString("String", values)
+        case .ConstTensor(let v): return v.valueDescription
+        case .TensorDataTypeValue(let v): return dataTypeAsString(v)
+        case .TensorFunctionPointer(let v): return "TFFunction(\(v.name))"
+        }
+    }
+
+    private func arrayAsString<T>(_ desc: String, _ values: [T]) -> String {
+        let arrayDesc = (values.map { "\($0)" }).joined(separator: ", ")
+        return "\(desc)[\(arrayDesc)]"
+    }
+
+    private func dataTypeAsString(_ dataType: TensorDataType) -> String {
+        return TFETensorHandle.tfDataTypeAsString(dataType._cDataType)
     }
 }
 
 extension LazyTensor: CustomStringConvertible {
     public var description: String {
         switch self.handle {
-        case LazyTensor.Handle.concrete(_, let isMaterialized):
-            // TODO: Print the actual concrete value.
-            return isMaterialized ? "conc*" : "conc"
+        case LazyTensor.Handle.concrete(let h, let isMaterialized):
+            return isMaterialized
+                ? "\(h.valueDescription)*"
+                : "\(h.valueDescription)"
         case LazyTensor.Handle.symbolic(let op, let index, let isLive):
-            return isLive
-                ? "\(op.nameWithID):\(index)*"
-                : "\(op.nameWithID):\(index)"
+            return op.outputName(at: index) + (isLive ? "*" : "")
         }
     }
 }
 
 extension LazyTensorOperation: CustomStringConvertible {
     public var description: String {
-        let attrsDesc = attrs.map { (name, value) in "\(name): \(value)" }
-        let inputsDesc = inputs.map { (input: Input) -> String in
+        let attrsDesc = attrs.sorted(by: { $0.key < $1.key }).map { "\($0): \($1)" }
+        let inputsDesc = inputs.map { input -> String in
             switch input {
             case Input.single(let lazyTensor):
                 return "\(lazyTensor)"
             case Input.list(let lazyTensorList):
-                do {
-                    let lazyTensors = lazyTensorList.map { "\($0)" }
-                    let lazyTensorsDesc = lazyTensors.joined(separator: ", ")
-                    return "[\(lazyTensorsDesc)]"
-                }
+                let lazyTensors = lazyTensorList.map { "\($0)" }
+                let lazyTensorsDesc = lazyTensors.joined(separator: ", ")
+                return "[\(lazyTensorsDesc)]"
             }
         }
-        var desc = "\(nameWithID)["
-        desc += attrsDesc.joined(separator: ", ")
-        desc += "]("
+        var desc = "\(outputName) = \(name)"
+        if !attrs.isEmpty {
+            desc += "["
+            desc += attrsDesc.joined(separator: ", ")
+            desc += "]"
+        }
+        desc += "("
         desc += inputsDesc.joined(separator: ", ")
-        desc += "):\(outputCount)"
+        desc += ")"
         return desc
     }
 }
