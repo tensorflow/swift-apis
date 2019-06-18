@@ -35,7 +35,7 @@ public struct Embedding<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameters:
     ///   - vocabularySize: The number of distinct indices (words) in the vocabulary. This number
-    ///     should be the `largest integer index + 1`.
+    ///     should be the largest integer index plus one.
     ///   - embeddingSize: The number of entries in a single embedding vector representation.
     public init(vocabularySize: Int, embeddingSize: Int) {
         self.embeddings = Tensor(randomUniform: [vocabularySize, embeddingSize])
