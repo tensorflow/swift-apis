@@ -63,10 +63,10 @@ class LazyTensorTrace {
         let cTensorHandle = handle._cTensorHandle
         let result = LazyTensorOperation("Const", 1)
         let dtype = TensorDataType(TFE_TensorHandleDataType(cTensorHandle))
-        let dtypeAttr = LazyTensorOperation.Attribute.TensorDataTypeValue(dtype)
+        let dtypeAttr = LazyTensorOperation.Attribute.tensorDataTypeValue(dtype)
         result.attributes = [
             "dtype": dtypeAttr,
-            "value": LazyTensorOperation.Attribute.ConstTensor(handle)]
+            "value": LazyTensorOperation.Attribute.constTensor(handle)]
         updateOperationAndCache(ObjectIdentifier(handle), result)
         return LazyTensor(_lazy: result, index: 0)
     }
@@ -76,7 +76,7 @@ class LazyTensorTrace {
     ) -> LazyTensor {
         let cTensorHandle = handle._cTensorHandle
         let dtype = TensorDataType(TFE_TensorHandleDataType(cTensorHandle))
-        let dtypeAttr = LazyTensorOperation.Attribute.TensorDataTypeValue(dtype)
+        let dtypeAttr = LazyTensorOperation.Attribute.tensorDataTypeValue(dtype)
         let placeholder = LazyTensorOperation("Placeholder", 1)
         placeholder.attributes = ["dtype": dtypeAttr]
         updateOperationAndCache(ObjectIdentifier(handle), placeholder)
