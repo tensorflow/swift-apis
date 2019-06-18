@@ -23,7 +23,7 @@ public struct Embedding<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Note: Often times, `Embedding` is followed by a `Flatten` and a `Dense` layer. When this 
     ///   is the case, ensure that all input sequences of indices have the same dimension.
     /// - Note: This structure is needed to conform `Embedding` to the Layer protocol.
-    public struct Input:Differentiable {
+    public struct Input: Differentiable {
         /// Sequences of indices that will be passed into the layer.
         @noDerivative var indices: Tensor<Int32>
     }
