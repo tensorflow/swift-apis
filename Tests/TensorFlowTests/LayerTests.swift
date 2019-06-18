@@ -207,7 +207,7 @@ final class LayerTests: XCTestCase {
 
     func testEmbedding() {       
         var layer = Embedding<Float>(vocabularySize: 3, embeddingSize: 5)       
-        var data = Tensor<Int32>(shape: [2,3], scalars: [0, 1, 2, 1, 2, 2])
+        var data = Tensor<Int32>(shape: [2, 3], scalars: [0, 1, 2, 1, 2, 2])
         var input = Embedding<Float>.Input(indices: data)
         var output = layer.inferring(from: input)
         let expectedShape = TensorShape([2, 3, 5])
@@ -215,7 +215,7 @@ final class LayerTests: XCTestCase {
     
         let pretrained = Tensor<Float>(shape:[2, 2], scalars: [0.4, 0.3, 0.2, 0.1])
         layer = Embedding<Float>(from: pretrained)
-        data = Tensor<Int32>(shape: [2,2], scalars: [0, 1, 1, 1])
+        data = Tensor<Int32>(shape: [2, 2], scalars: [0, 1, 1, 1])
         input = Embedding<Float>.Input(indices: data)
         output = layer.inferring(from: input)
         let expected = Tensor<Float>([[[0.4, 0.3], [0.2, 0.1]], [[0.2, 0.1],[0.2, 0.1]]])
