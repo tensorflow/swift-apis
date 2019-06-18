@@ -18,7 +18,7 @@
 /// (dense) vector representations, e.g. `[[0], [3]] -> [[0.25, 0.1], [0.6, -0.2]]`.
 /// E.g. `[[0], [3]] -> [[0.25, 0.1], [0.6, -0.2]]`
 public struct Embedding<Scalar: TensorFlowFloatingPoint>: Layer {
-    /// A helper structure containing the indices to be passed into the `Embedding` layer.
+    /// A input structure containing the embedding indices.
     ///
     /// - Note: Often times, `Embedding` is followed by a `Flatten` and a `Dense` layer. When this 
     ///   is the case, ensure that all input sequences of indices have the same dimension.
