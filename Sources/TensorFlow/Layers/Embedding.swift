@@ -16,7 +16,6 @@
 ///
 /// `Embedding` is effectively a lookup table that maps indices from a fixed vocabulary to fixed-size
 /// (dense) vector representations, e.g. `[[0], [3]] -> [[0.25, 0.1], [0.6, -0.2]]`.
-/// E.g. `[[0], [3]] -> [[0.25, 0.1], [0.6, -0.2]]`
 public struct Embedding<Scalar: TensorFlowFloatingPoint>: Layer {
     /// A input structure containing the embedding indices.
     ///
