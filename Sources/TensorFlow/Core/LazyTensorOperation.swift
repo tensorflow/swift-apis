@@ -663,11 +663,11 @@ extension LazyTensorOperation.Attribute: CustomStringConvertible {
         case .TensorDataTypeValue(let v): return dataTypeAsString(v)
         case .TensorFunctionPointer(let v): return "TFFunction(\(v.name))"
         case .TensorDataTypeArray(let values):
-            let descriptions = (values.map { dataTypeAsString($0) })
+            let descriptions = values.map { dataTypeAsString($0) }
             let descString = descriptions.joined(separator: ", ")
             return "[\(descString)]"
-        case .OptionalTensorShape(let t):  return String(describing: t)
-        case .OptionalTensorShapeArray(let t):  return "\(t)"
+        case .OptionalTensorShape(let t): return String(describing: t)
+        case .OptionalTensorShapeArray(let t): return "\(t)"
         }
     }
 
