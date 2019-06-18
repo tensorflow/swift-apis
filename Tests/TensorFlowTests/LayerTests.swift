@@ -214,7 +214,7 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(output.shape, expectedShape)
     
         let pretrained = Tensor<Float>(shape:[2, 2], scalars: [0.4, 0.3, 0.2, 0.1])
-        layer = Embedding<Float>(from: pretrained)
+        layer = Embedding<Float>(embeddings: pretrained)
         data = Tensor<Int32>(shape: [2, 2], scalars: [0, 1, 1, 1])
         input = Embedding<Float>.Input(indices: data)
         output = layer.inferring(from: input)
