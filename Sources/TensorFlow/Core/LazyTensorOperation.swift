@@ -153,6 +153,9 @@ class LazyTensorOperation: TensorOperation {
         case ConstTensor(TFETensorHandle)
         case TensorDataTypeValue(TensorDataType)
         case TensorFunctionPointer(_TensorFunctionPointer)
+        case TensorDataTypeArray([TensorDataType])
+        case OptionalTensorShape(TensorShape?)
+        case OptionalTensorShapeArray([TensorShape?])
     }
 
     let name: String
@@ -317,19 +320,19 @@ extension LazyTensorOperation: TFTensorOperation {
         attributes[name] = Attribute.TensorDataTypeValue(value)
     }
     func updateAttribute(_ name: String, _ value: TensorShape) {
-        assert(false, "Unimplemented TensorShape attribute.")
+        attributes[name] = Attribute.OptionalTensorShape(value)
     }
     func updateAttribute(_ name: String, _ value: TensorShape?) {
-        assert(false, "Unimplemented TensorShape? attribute.")
+        attributes[name] = Attribute.OptionalTensorShape(value)
     }
     func updateAttribute(_ name: String, _ value: [TensorDataType]) {
-        assert(false, "Unimplemented [TensorDataType] attribute.")
+        attributes[name] = Attribute.TensorDataTypeArray(value)
     }
     func updateAttribute(_ name: String, _ value: [TensorShape]) {
-        assert(false, "Unimplemented [TensorShape] attribute.")
+        attributes[name] = Attribute.OptionalTensorShapeArray(value)
     }
     func updateAttribute(_ name: String, _ value: [TensorShape?]) {
-        assert(false, "Unimplemented [TensorShape?] attribute.")
+        attributes[name] = Attribute.OptionalTensorShapeArray(value)
     }
     func updateAttribute<In: TensorGroup, Out: TensorGroup>(
         _ name: String, _ value: (In) -> Out) {
@@ -659,6 +662,12 @@ extension LazyTensorOperation.Attribute: CustomStringConvertible {
         case .ConstTensor(let v): return v.valueDescription
         case .TensorDataTypeValue(let v): return dataTypeAsString(v)
         case .TensorFunctionPointer(let v): return "TFFunction(\(v.name))"
+        case .TensorDataTypeArray(let values):
+            let descriptions = values.map { dataTypeAsString($0) }
+            let descString = descriptions.joined(separator: ", ")
+            return "[\(descString)]"
+        case .OptionalTensorShape(let t): return String(describing: t)
+        case .OptionalTensorShapeArray(let t): return "\(t)"
         }
     }
 
