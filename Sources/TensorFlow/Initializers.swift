@@ -499,7 +499,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 }
 
-fileprivate extension Tensor where Scalar: BinaryFloatingPoint {
+fileprivate extension Tensor where Scalar: TensorFlowFloatingPoint {
     private static func glorot(
         fromStandardNormalScaledBy varianceScalingFactor: __shared Tensor<Scalar>,
         shape: __shared TensorShape
@@ -533,8 +533,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 }
 
-public extension Tensor where Scalar: BinaryFloatingPoint,
-                              Scalar.RawSignificand: FixedWidthInteger {
+public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// Performs Glorot normal initialization for the specified shape, creating a tensor by
     /// randomly sampling scalar values from a uniform distribution between `-limit` and `limit`,
     /// where limit is `sqrt(2 / (fanIn + fanOut))` and `fanIn`/`fanOut` represent the number of
