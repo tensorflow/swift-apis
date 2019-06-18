@@ -325,13 +325,13 @@ extension LazyTensorOperation: TFTensorOperation {
         assert(false, "Unimplemented TensorShape? attribute.")
     }
     func updateAttribute(_ name: String, _ value: [TensorDataType]) {
-        attrs[name] = Attribute.TensorDataTypeArray(value)
+        attributes[name] = Attribute.TensorDataTypeArray(value)
     }
     func updateAttribute(_ name: String, _ value: [TensorShape]) {
-        attrs[name] = Attribute.OptionalTensorShapeArray(value)
+        attributes[name] = Attribute.OptionalTensorShapeArray(value)
     }
     func updateAttribute(_ name: String, _ value: [TensorShape?]) {
-        attrs[name] = Attribute.OptionalTensorShapeArray(value)
+        attributes[name] = Attribute.OptionalTensorShapeArray(value)
     }
     func updateAttribute<In: TensorGroup, Out: TensorGroup>(
         _ name: String, _ value: (In) -> Out) {
