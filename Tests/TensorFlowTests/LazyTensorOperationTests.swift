@@ -137,6 +137,35 @@ final class LazyTensorOperationTests: XCTestCase {
         XCTAssertEqual(op0.description, "%0 = Nop[a: resource]()")
     }
 
+    func testTensorDataTypeArrayAttribute() {
+        let op0 = LazyTensorOperation(
+            _id: "0", name: "Nop", outputCount: 1)
+        op0.updateAttribute("a", [TensorDataType(TF_INT32), TensorDataType(TF_FLOAT)])
+        XCTAssertEqual(op0.description, "%0 = Nop[a: [int32, float]]()")
+    }
+
+    func testOptionalTensorShapeAttribute() {
+        let op0 = LazyTensorOperation(
+            _id: "0", name: "Nop", outputCount: 1)
+        let shape1 = TensorShape([1, 2, 3])
+        op0.updateAttribute("shape", shape1)
+        XCTAssertEqual(op0.description, "%0 = Nop[shape: Optional([1, 2, 3])]()")
+        op0.updateAttribute("shape", nil)
+        XCTAssertEqual(op0.description, "%0 = Nop[shape: nil]()")
+    }
+
+    func testOptionalTensorShapeArrayAttribute() {
+        let op0 = LazyTensorOperation(
+            _id: "0", name: "Nop", outputCount: 1)
+        let shape1 = TensorShape([1, 2, 3])
+        let shape2 = TensorShape([4, 5])
+        op0.updateAttribute("shapes", [shape1, shape2])
+        XCTAssertEqual(op0.description,
+            "%0 = Nop[shapes: [Optional([1, 2, 3]), Optional([4, 5])]]()")
+        op0.updateAttribute("shapes", [nil, shape2])
+        XCTAssertEqual(op0.description, "%0 = Nop[shapes: [nil, Optional([4, 5])]]()")
+    }
+
     func testArrayAttributes() {
         let op0 = LazyTensorOperation(
             _id: "0", name: "Nop", outputCount: 1)
@@ -186,6 +215,12 @@ final class LazyTensorOperationTests: XCTestCase {
         ("testDoubleAttribute", testDoubleAttribute),
         ("testStringAttribute", testStringAttribute),
         ("testTensorDataTypeAttribute", testTensorDataTypeAttribute),
+        ("testTensorDataTypeArrayAttribute", testTensorDataTypeArrayAttribute),
+        ("testOptionalTensorShapeArrayAttribute",
+            testOptionalTensorShapeArrayAttribute),
+        ("testOptionalTensorShapeAttribute", testOptionalTensorShapeAttribute),
+        ("testTensorShapeArrayAttribute",
+            testOptionalTensorShapeArrayAttribute),
         ("testArrayAttributes", testArrayAttributes),
         ("testMultipleAttributes", testMultipleAttributes),
         ("testFunctionAttribute", testFunctionAttribute)
