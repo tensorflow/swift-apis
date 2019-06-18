@@ -291,7 +291,7 @@ public class RiemannSGD<Model: Layer, Scalar: FloatingPoint>: Optimizer
 
     public func update(_ model: inout Model.AllDifferentiableVariables,
                        along direction: Model.TangentVector) {
-        model.move(along: learningRate * (.zero - direction))
+        model.move(along: (.zero - direction).scaled(by: learningRate))
     }
 }
 
