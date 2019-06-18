@@ -142,14 +142,14 @@ final class LazyTensorTraceTests: XCTestCase {
     }
 
     private func lazyTrace<T: TensorFlowScalar>(
-        _ input: Tensor<T>) -> LazyTensorTrace? {
+        _ input: Tensor<T>
+    ) -> LazyTensorTrace? {
         let tensor = input.handle.handle
         guard let lazyTensor = tensor as? LazyTensor else {
             XCTFail("Trying to get lazy trace for a non-lazy tensor.")
             return nil
         }
-        guard case let
-            LazyTensor.Handle.symbolic(lazyOp, _, _)  = lazyTensor.handle else {
+        guard case let .symbolic(lazyOp, _, _)  = lazyTensor.handle else {
             XCTFail("Cannot get lazy trace for a concrete tensor.")
             return nil
         }
