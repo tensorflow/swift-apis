@@ -52,6 +52,40 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(output, expected)
     }
 
+    func testTransposedConv1D() {
+        let filter =  Tensor(shape: [1, 4, 1, 1], scalars: (0..<4).map(Float.init))
+        let bias = Tensor<Float>([8])
+        let layer = Conv1D<Float>(filter: filter, bias: bias, activation: identity, stride: 1, padding: .valid)
+        let input = Tensor<Float>([0, 1, 2, 3]).expandingShape(at: 2)
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>([0, 1, 4, 10])
+        XCTAssertEqual(output, expected)
+    }
+
+    func testTransposedConv2D() {
+        let filter =  Tensor(shape: [1, 4, 2, 1], scalars: (0..<8).map(Float.init))
+        let bias = Tensor<Float>([8])
+        let layer = Conv2D<Float>(filter: filter, bias: bias, activation: identity,
+                                  strides: (1, 1), padding: .valid)
+        let input = Tensor(shape: [1, 4, 2, 2], scalars: (0..<8).map(Float.init))
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>(shape: [1, 4, 2, 1],
+                                     scalars: [0, 4, 4, 20, 16, 56, 40, 104])
+        XCTAssertEqual(output, expected)
+    }
+
+    func testTransposedConv3D() {
+        let filter =  Tensor(shape: [2, 2, 2, 1, 1], scalars: (0..<8).map(Float.init))
+        let bias = Tensor<Float>([8])
+        let layer = Conv3D<Float>(filter: filter, bias: bias, activation: identity,
+                                  strides: (1, 1, 1), padding: .valid)
+        let input = Tensor(shape: [1, 2, 2, 2, 1], scalars: (0..<8).map(Float.init))
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>(shape: [1, 2, 2, 2, 1],
+                                     scalars: [0, 0, 0, 4, 0, 8, 16, 56])
+        XCTAssertEqual(output, expected)
+    }
+
     func testDepthConv2D() {
         let filter =  Tensor(shape: [2, 2, 2, 2], scalars: (0..<16).map(Float.init))
         let bias = Tensor<Float>([1, 2, 3, 4])
