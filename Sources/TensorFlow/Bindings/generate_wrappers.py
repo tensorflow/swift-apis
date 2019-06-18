@@ -1,4 +1,4 @@
-# Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ _WARNING = """// !!! THIS CODE IS AUTOMATICALLY GENERATED, DO NOT EDIT BY HAND !
 //
 """
 
-_HEADER = """// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+_HEADER = """// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -523,7 +523,7 @@ class Attribute(object):
       # The following is used for inferring the lengths of output lists.
       self.op.inferred_counts[self.name] = self.input_arg.swift_name + '.count'
       return 'op.updateAttribute("{}", {}.count)'.format(self.name, self.input_arg.swift_name)
-    
+
     if self.attr_def.type == 'int':
       # The following is used for inferring the lengths of output lists.
       self.op.inferred_counts[self.name] = self.swift_name

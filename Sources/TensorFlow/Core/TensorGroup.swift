@@ -1,4 +1,4 @@
-// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,17 +16,17 @@ import CTensorFlow
 
 /// A protocol representing types that can be mapped to `Array<CTensorHandle>`.
 ///
-/// This protocol is defined separately from `TensorGroup` in order for the number of tensors to be 
-/// determined at runtime. For example, `[Tensor<Float>]` may have an unknown number of elements at 
+/// This protocol is defined separately from `TensorGroup` in order for the number of tensors to be
+/// determined at runtime. For example, `[Tensor<Float>]` may have an unknown number of elements at
 /// compile time.
 ///
-/// This protocol can be derived automatically for structs whose stored properties all conform to 
-/// the `TensorGroup` protocol. It cannot be derived automatically for structs whose properties all 
-/// conform to `TensorArrayProtocol` due to the constructor requirement (i.e., in such cases it 
+/// This protocol can be derived automatically for structs whose stored properties all conform to
+/// the `TensorGroup` protocol. It cannot be derived automatically for structs whose properties all
+/// conform to `TensorArrayProtocol` due to the constructor requirement (i.e., in such cases it
 /// would be impossible to know how to break down `count` among the stored properties).
 public protocol TensorArrayProtocol {
-    /// Writes the tensor handles to `address`, which must be allocated with enough capacity to hold 
-    /// `_tensorHandleCount` handles. The tensor handles written to `address` are borrowed: this 
+    /// Writes the tensor handles to `address`, which must be allocated with enough capacity to hold
+    /// `_tensorHandleCount` handles. The tensor handles written to `address` are borrowed: this
     /// container still owns them.
     func _unpackTensorHandles(into address: UnsafeMutablePointer<CTensorHandle>?)
 
@@ -43,7 +43,7 @@ public protocol TensorArrayProtocol {
 /// When a `TensorGroup` is used as an argument to a tensor operation, it is passed as an argument
 /// list whose elements are the tensor fields of the type.
 ///
-/// When a `TensorGroup` is returned as a result of a tensor operation, it is initialized with its 
+/// When a `TensorGroup` is returned as a result of a tensor operation, it is initialized with its
 /// tensor fields set to the tensor operation's tensor results.
 public protocol TensorGroup: TensorArrayProtocol {
 
@@ -64,7 +64,7 @@ public extension TensorGroup {
     static var _unknownShapeList: [TensorShape?] {
         return Array(repeating: nil, count: _typeList.count)
     }
-    
+
     // The following instance properties are from `TensorArrayProtocol`.
     var _tensorHandleCount: Int32 { return Int32(Self._typeList.count) }
     var _typeList: [TensorDataType] { return Self._typeList }
