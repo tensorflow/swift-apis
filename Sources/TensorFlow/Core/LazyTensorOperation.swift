@@ -158,7 +158,7 @@ class LazyTensorOperation: TensorOperation {
     let name: String
     let outputCount: Int
     var inputs: [Input]
-    var attrs: [String: Attribute]
+    var attributes: [String: Attribute]
     var outputs: [TFETensorHandle]?
     var id: String?
 
@@ -199,7 +199,7 @@ class LazyTensorOperation: TensorOperation {
     init(_id id: String?, name: String, outputCount: Int) {
         self.name = name
         self.inputs = []
-        self.attrs = [:]
+        self.attributes = [:]
         self.outputCount = outputCount
         self.outputs = nil
         self.id = id
@@ -225,49 +225,49 @@ class LazyTensorOperation: TensorOperation {
     }
 
     func updateAttribute(_ name: String, _ value: Bool) {
-        attrs[name] = Attribute.BoolValue(value)
+        attributes[name] = Attribute.BoolValue(value)
     }
     func updateAttribute(_ name: String, _ value: Int) {
-        attrs[name] = Attribute.IntValue(value)
+        attributes[name] = Attribute.IntValue(value)
     }
     func updateAttribute(_ name: String, _ value: Int32) {
-        attrs[name] = Attribute.IntValue(Int(value))
+        attributes[name] = Attribute.IntValue(Int(value))
     }
     func updateAttribute(_ name: String, _ value: Int64) {
-        attrs[name] = Attribute.IntValue(Int(value))
+        attributes[name] = Attribute.IntValue(Int(value))
     }
     func updateAttribute(_ name: String, _ value: Float) {
-        attrs[name] = Attribute.FloatValue(value)
+        attributes[name] = Attribute.FloatValue(value)
     }
     func updateAttribute(_ name: String, _ value: Double) {
-        attrs[name] = Attribute.DoubleValue(value)
+        attributes[name] = Attribute.DoubleValue(value)
     }
     func updateAttribute(_ name: String, _ value: String) {
-        attrs[name] = Attribute.StringValue(value)
+        attributes[name] = Attribute.StringValue(value)
     }
     func updateAttribute(_ name: String, _ value: [Bool]) {
-        attrs[name] = Attribute.BoolArray(value)
+        attributes[name] = Attribute.BoolArray(value)
     }
     func updateAttribute(_ name: String, _ value: [Int]) {
-        attrs[name] = Attribute.IntArray(value)
+        attributes[name] = Attribute.IntArray(value)
     }
     func updateAttribute(_ name: String, _ value: [Int32]) {
-        attrs[name] = Attribute.IntArray(value.map { Int($0) })
+        attributes[name] = Attribute.IntArray(value.map { Int($0) })
     }
     func updateAttribute(_ name: String, _ value: [Int64]) {
-        attrs[name] = Attribute.IntArray(value.map { Int($0) })
+        attributes[name] = Attribute.IntArray(value.map { Int($0) })
     }
     func updateAttribute(_ name: String, _ value: [Float]) {
-        attrs[name] = Attribute.FloatArray(value)
+        attributes[name] = Attribute.FloatArray(value)
     }
     func updateAttribute(_ name: String, _ value: [Double]) {
-        attrs[name] = Attribute.DoubleArray(value)
+        attributes[name] = Attribute.DoubleArray(value)
     }
     func updateAttribute(_ name: String, _ value: [String]) {
-        attrs[name] = Attribute.StringArray(value)
+        attributes[name] = Attribute.StringArray(value)
     }
     func updateAttribute(_ name: String, _ value: _TensorFunctionPointer) {
-        attrs[name] = Attribute.TensorFunctionPointer(value)
+        attributes[name] = Attribute.TensorFunctionPointer(value)
     }
 }
 
@@ -314,7 +314,7 @@ extension LazyTensorOperation: TFTensorOperation {
     }
 
     func updateAttribute(_ name: String, _ value: TensorDataType) {
-        attrs[name] = Attribute.TensorDataTypeValue(value)
+        attributes[name] = Attribute.TensorDataTypeValue(value)
     }
     func updateAttribute(_ name: String, _ value: TensorShape) {
         assert(false, "Unimplemented TensorShape attribute.")
@@ -687,7 +687,7 @@ extension LazyTensor: CustomStringConvertible {
 
 extension LazyTensorOperation: CustomStringConvertible {
     public var description: String {
-        let attrsDesc = attrs.sorted(by: { $0.key < $1.key }).map { "\($0): \($1)" }
+        let attributesDesc = attributes.sorted(by: { $0.key < $1.key }).map { "\($0): \($1)" }
         let inputsDesc = inputs.map { input -> String in
             switch input {
             case Input.single(let lazyTensor):
@@ -699,9 +699,9 @@ extension LazyTensorOperation: CustomStringConvertible {
             }
         }
         var desc = "\(outputName) = \(name)"
-        if !attrs.isEmpty {
+        if !attributes.isEmpty {
             desc += "["
-            desc += attrsDesc.joined(separator: ", ")
+            desc += attributesDesc.joined(separator: ", ")
             desc += "]"
         }
         desc += "("
