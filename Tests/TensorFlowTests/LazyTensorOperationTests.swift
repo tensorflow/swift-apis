@@ -17,12 +17,6 @@ import XCTest
 import CTensorFlow
 
 final class LazyTensorOperationTests: XCTestCase {
-    override class func setUp() {
-        super.setUp()
-        // Set multiple cpu devices so that we can test device tracking in
-        // LazyTensorOperation.
-        _RuntimeConfig.cpuDeviceCount = 2
-    }
 
     func testNoInput() {
         let placeholder = LazyTensorOperation(
@@ -217,12 +211,6 @@ final class LazyTensorOperationTests: XCTestCase {
         withDevice(named: "/job:localhost/replica:0/task:0/device:CPU:0") {
             let op1 = LazyTensorOperation(_id: "0", name: "Nop", outputCount: 1)
             XCTAssertEqual(op1.device ?? "", "/job:localhost/replica:0/task:0/device:CPU:0")
-            withDevice(.cpu, 1) {
-                let op2 = LazyTensorOperation(_id: "0", name: "Nop", outputCount: 1)
-                XCTAssertEqual(op2.device ?? "", "/job:localhost/replica:0/task:0/device:CPU:1")
-            }
-            let op3 = LazyTensorOperation(_id: "0", name: "Nop", outputCount: 1)
-            XCTAssertEqual(op3.device ?? "", "/job:localhost/replica:0/task:0/device:CPU:0")
         }
     }
 
