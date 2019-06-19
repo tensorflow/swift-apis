@@ -53,7 +53,7 @@ Include a license at the top of new files.
 
 #### Swift Coding Style
 
-Changes to Swift for Tensorflow code should conform to
+Changes should conform to
 [Google Swift Style Guide](https://google.github.io/swift/).
 
 ## Community
