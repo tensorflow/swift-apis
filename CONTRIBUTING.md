@@ -52,8 +52,12 @@ Include a license at the top of new files.
 
 #### Swift coding style
 
-Changes should conform to
-[Google Swift Style Guide](https://google.github.io/swift/).
+Changes should conform to:
+
+* [Google Swift Style Guide](https://google.github.io/swift/)
+* [Swift API Design Guidelines](https://swift.org/documentation/api-design-guidelines/)
+
+With the exception that 4-space indendation be used.
 
 ## Community
 
