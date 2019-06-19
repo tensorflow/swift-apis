@@ -35,8 +35,7 @@ information on using pull requests.
 
 Before sending your pull request for 
 [review](https://github.com/tensorflow/swift-apis/pulls), 
-make sure your changes are consistent with the guidelines and follow the
-TensorFlow coding style.
+make sure your changes are consistent with the guidelines.
 
 #### Testing
 
