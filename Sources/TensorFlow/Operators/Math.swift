@@ -996,12 +996,12 @@ func _vjpLogSoftmax<T: TensorFlowFloatingPoint>(
     return (value, { v in v - v.sum(alongAxes: -1) * exp(value) })
 }
 
-/// Computes `elu` of the specified tensor element-wise.
+/// Returns a tensor by applying an exponential linear unit.
 /// Specifically, computes `exp(features) - 1` if < 0, `features` otherwise.
 /// See [Fast and Accurate Deep Network Learning by Exponential Linear Units (ELUs)
 /// ](http://arxiv.org/abs/1511.07289)
 @inlinable
-@differentiable(vjp: _vjpElu(_:))
+@differentiable(vjp: _vjpElu)
 public func elu<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
     Raw.elu(features: x)
 }
@@ -1010,7 +1010,8 @@ public func elu<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
 func _vjpElu<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>
 ) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
-    (elu(x), { v in Raw.eluGrad(gradients: v, outputs: elu(x)) })
+    let y = elu(x)
+    return (y, { v in Raw.eluGrad(gradients: v, outputs: y) })
 }
 
 /// Computes `relu` of the specified tensor element-wise.
