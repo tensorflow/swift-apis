@@ -243,6 +243,13 @@ final class MathOperatorTests: XCTestCase {
         XCTAssertEqual(y, expected)
     }
 
+    func testLeakyRelu() {
+        let x = Tensor<Float>([[-1.0, 2.0, 3.0]])
+        let y = leakyRelu(x, alpha: 0.4)
+        let expected = Tensor<Float>([-0.4, 2, 3])
+        XCTAssertEqual(y, expected)
+    }
+
     func testXORInference() {
         func xor(_ x: Float, _ y: Float) -> Float {
             let x = Tensor<Float>([x, y]).reshaped(to: [1, 2])
@@ -314,6 +321,7 @@ final class MathOperatorTests: XCTestCase {
         ("testArgmax", testArgmax),
         ("testSoftplus", testSoftplus),
         ("testSoftsign", testSoftsign),
+        ("testLeakyRelu", testLeakyRelu),
         ("testCeilAndFloor", testCeilAndFloor),
         ("testSimpleMath", testSimpleMath),
         ("testStandardDeviation", testStandardDeviation),
