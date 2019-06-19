@@ -997,7 +997,7 @@ func _vjpLogSoftmax<T: TensorFlowFloatingPoint>(
 }
 
 /// Returns a tensor by applying an exponential linear unit.
-/// Specifically, computes `exp(features) - 1` if < 0, `features` otherwise.
+/// Specifically, computes `exp(x) - 1` if < 0, `x` otherwise.
 /// See [Fast and Accurate Deep Network Learning by Exponential Linear Units (ELUs)
 /// ](http://arxiv.org/abs/1511.07289)
 @inlinable
@@ -1014,13 +1014,14 @@ func _vjpElu<T: TensorFlowFloatingPoint>(
     return (y, { v in Raw.eluGrad(gradients: v, outputs: y) })
 }
 
-/// Returns a tensor by applying the leaky ReLU activation function to the specified tensor element-wise.
-/// Specifically, computes `max(features, features * alpha)`.
+/// Returns a tensor by applying the leaky ReLU activation function
+/// to the specified tensor element-wise.
+/// Specifically, computes `max(x, x * alpha)`.
 @inlinable
 @differentiable(wrt: x, vjp: _vjpLeakyRelu)
 public func leakyRelu<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>,
-    alpha: Double = 0.3
+    alpha: Double = 0.2
 ) -> Tensor<T> {
     Raw.leakyRelu(features: x, alpha: alpha)
 }
