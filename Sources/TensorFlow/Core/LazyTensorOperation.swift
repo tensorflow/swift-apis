@@ -271,9 +271,6 @@ class LazyTensorOperation: TensorOperation {
     func updateAttribute(_ name: String, _ value: [String]) {
         attributes[name] = Attribute.stringArray(value)
     }
-    func updateAttribute(_ name: String, _ value: _TensorFunctionPointer) {
-        attributes[name] = Attribute.tensorFunctionPointer(value)
-    }
 }
 
 extension LazyTensorOperation: TFTensorOperation {
@@ -336,6 +333,13 @@ extension LazyTensorOperation: TFTensorOperation {
     func updateAttribute(_ name: String, _ value: [TensorShape?]) {
         attributes[name] = Attribute.optionalTensorShapeArray(value)
     }
+    func updateAttribute(_ name: String, _ value: _TensorFunctionPointer) {
+        attributes[name] = Attribute.tensorFunctionPointer(value)
+    }
+    func updateAttribute(_ name: String, _ value: TFETensorHandle) {
+        attributes[name] = Attribute.constTensor(value)
+    }
+
     func updateAttribute<In: TensorGroup, Out: TensorGroup>(
         _ name: String, _ value: (In) -> Out) {
         // TODO:
