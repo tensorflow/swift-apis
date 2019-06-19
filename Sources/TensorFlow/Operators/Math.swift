@@ -1026,7 +1026,7 @@ public func leakyRelu<T: TensorFlowFloatingPoint>(_ x: Tensor<T>, alpha: Double 
 func _vjpLeakyRelu<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>,
     alpha: Double = 0.2
-) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+) -> (Tensor<T>, Double, (Tensor<T>) -> Tensor<T>) {
     return (leakyRelu(x), { v in Raw.leakyReluGrad(gradients: v, features: x, alpha: alpha) })
 }
 
