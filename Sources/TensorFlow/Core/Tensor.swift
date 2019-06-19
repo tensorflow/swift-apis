@@ -26,9 +26,8 @@ public protocol AnyTensor {
 /// A multidimensional array of elements that is a generalization of
 /// vectors and matrices to potentially higher dimensions.
 ///
-/// An associated data-type describes the format of each element in the 
-/// tensor (such as integer, a floating point number or something else,
-/// etc.).
+/// The generic parameter `Scalar` describes the type of scalars in
+/// the tensor (such as `Int32`, `Float`, etc). 
 @frozen
 public struct Tensor<Scalar: TensorFlowScalar>: TensorProtocol {
     /// The underlying `TensorHandle`.
