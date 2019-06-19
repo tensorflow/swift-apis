@@ -76,10 +76,9 @@ final class LazyTensorTests: XCTestCase {
         }
 
         func isSymbolic(_ t: LazyTensor) -> Bool {
-            if case let .symbolic(_) = t.handle {
-                return true
-            } else {
-                return false
+            switch t.handle {
+            case .symbolic(_): return true
+            case .concrete(_): return false
             }
         }
 

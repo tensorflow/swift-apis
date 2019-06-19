@@ -223,17 +223,24 @@ final class MathOperatorTests: XCTestCase {
     }
 
     func testSoftplus() {
-      let x = Tensor<Float>([1.0, 2.0, 3.0])
-      let y = softplus(x)
-      let expected = Tensor<Float>([1.3132616,  2.126928, 3.0485873])
-      XCTAssertEqual(y, expected)
+        let x = Tensor<Float>([1.0, 2.0, 3.0])
+        let y = softplus(x)
+        let expected = Tensor<Float>([1.3132616,  2.126928, 3.0485873])
+        XCTAssertEqual(y, expected)
     }
 
     func testSoftsign() {
-      let x = Tensor<Float>([1.0, 4.0, 3.0])
-      let y = softsign(x)
-      let expected = Tensor<Float>([0.5 , 0.8 , 0.75])
-      XCTAssertEqual(y, expected)
+        let x = Tensor<Float>([1.0, 4.0, 3.0])
+        let y = softsign(x)
+        let expected = Tensor<Float>([0.5 , 0.8 , 0.75])
+        XCTAssertEqual(y, expected)
+    }
+
+    func testElu() {
+        let x = Tensor<Float>([-1.0, 2.0, 3.0])
+        let y = elu(x)
+        let expected = Tensor<Float>([-0.63212055, 2, 3])
+        XCTAssertEqual(y, expected)
     }
 
     func testXORInference() {
@@ -303,6 +310,7 @@ final class MathOperatorTests: XCTestCase {
         ("testSign", testSign),
         ("testReduction", testReduction),
         ("testCosineSimilarity", testCosineSimilarity),
+        ("testElu",testElu),
         ("testArgmax", testArgmax),
         ("testSoftplus", testSoftplus),
         ("testSoftsign", testSoftsign),
