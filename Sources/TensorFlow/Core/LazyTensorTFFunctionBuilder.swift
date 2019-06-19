@@ -17,7 +17,7 @@ import CTensorFlow
 class TFGraph {
     /// The `TF_Operation *` type.
     typealias CTFOperation = OpaquePointer
-    
+
     enum Input {
         case single(TF_Output)
         case list([TF_Output])
@@ -34,7 +34,7 @@ class TFGraph {
     /// A status object to pass to TF graph building operations.
     private let status: CTFStatus = TF_NewStatus()
 
-    /// Counter that is used for number the generated graph nodes. 
+    /// Counter that is used for number the generated graph nodes.
     private var nodeCounter: Int = 0
 
     init(_ lazyTrace: LazyTensorTrace) {
@@ -93,68 +93,74 @@ class TFGraph {
             TF_SetAttrInt(desc, name, Int64(value))
         case LazyTensorOperation.Attribute.floatValue(let value):
             TF_SetAttrFloat(desc, name, value)
-        case LazyTensorOperation.Attribute.stringValue(let value): do {
-                value.utf8CString.withUnsafeBufferPointer { buffer in
-                    // utf8CString is null-terminated; TF_SetAttrString wants
-                    // non-null-terminated.
-                    TF_SetAttrString(
-                        desc, name, buffer.baseAddress, buffer.count - 1)
+        case LazyTensorOperation.Attribute.doubleValue(let value):
+            TF_SetAttrFloat(desc, name, Float(value))
+        case LazyTensorOperation.Attribute.stringValue(let value):
+            value.utf8CString.withUnsafeBufferPointer { buffer in
+                // utf8CString is null-terminated; TF_SetAttrString wants
+                // non-null-terminated.
+                TF_SetAttrString(
+                    desc, name, buffer.baseAddress, buffer.count - 1)
+            }
+        case LazyTensorOperation.Attribute.intArray(let values):
+            let values64 = values.map { Int64($0) }
+            values64.withUnsafeBufferPointer { buffer in
+                TF_SetAttrIntList(
+                    desc, name, buffer.baseAddress, Int32(buffer.count))
+            }
+        case LazyTensorOperation.Attribute.constTensor(let value):
+            let cTensor = TFE_TensorHandleResolve(
+                value._cTensorHandle, status)
+            checkOk(status)
+            TF_SetAttrTensor(desc, name, cTensor!, status)
+        case LazyTensorOperation.Attribute.tensorDataTypeArray(let values):
+            values.withUnsafeBufferPointer { buffer in
+                buffer.withMemoryRebound(to: TF_DataType.self) {
+                    reboundBuffer in
+                    TF_SetAttrTypeList(
+                        desc, name,
+                        reboundBuffer.baseAddress,
+                        Int32(reboundBuffer.count))
                 }
             }
-        case LazyTensorOperation.Attribute.intArray(let values): do {
-                let values64 = values.map { Int64($0) }
-                values64.withUnsafeBufferPointer { buffer in
-                    TF_SetAttrIntList(
-                        desc, name, buffer.baseAddress, Int32(buffer.count))
+        case LazyTensorOperation.Attribute.optionalTensorShape(let value):
+            if let shape = value  {
+                let dimensions: [Int64] = shape.dimensions.map(Int64.init)
+                dimensions.withUnsafeBufferPointer { buffer in
+                    TF_SetAttrShape(desc, name,
+                        buffer.baseAddress, Int32(buffer.count))
                 }
+            } else {
+                TF_SetAttrShape(desc, name, nil, -1)
             }
-        case LazyTensorOperation.Attribute.constTensor(let value): do {
-                let cTensor = TFE_TensorHandleResolve(
-                    value._cTensorHandle, status)
-                checkOk(status)
-                TF_SetAttrTensor(desc, name, cTensor!, status)
+        case LazyTensorOperation.Attribute.optionalTensorShapeArray(let values):
+            let flattenedDims = values.flatMap { (tensorShapeOpt) -> [Int64] in
+                if let tensorShape = tensorShapeOpt {
+                    return tensorShape.dimensions.map(Int64.init)
+                }
+                return []
             }
-        case LazyTensorOperation.Attribute.tensorDataTypeArray(let values): do {
-                values.withUnsafeBufferPointer { buffer in
-                    buffer.withMemoryRebound(to: TF_DataType.self) {
-                        reboundBuffer in
-                        TF_SetAttrTypeList(
+            let ranks = values.map { shape in (shape?.rank).map(Int32.init) ?? -1 }
+            flattenedDims.withUnsafeBufferPointer { flattenedDimsBuffer in
+                var dimsPtr: UnsafePointer<Int64>? = flattenedDimsBuffer.baseAddress
+                var dims: [UnsafePointer<Int64>?] = []
+                for rank in ranks {
+                    dims.append(dimsPtr)
+                    if rank >= 0 {
+                        dimsPtr = dimsPtr.map { $0.advanced(by: Int(rank)) }
+                    }
+                }
+                dims.withUnsafeMutableBufferPointer { dimsBuffer in
+                    ranks.withUnsafeBufferPointer { ranksBuffer in
+                        TF_SetAttrShapeList(
                             desc, name,
-                            reboundBuffer.baseAddress,
-                            Int32(reboundBuffer.count))
+                            dimsBuffer.baseAddress,
+                            ranksBuffer.baseAddress,
+                            Int32(ranksBuffer.count))
                     }
                 }
             }
-        case LazyTensorOperation.Attribute.optionalTensorShapeArray(let values): do {
-                let flattenedDims = values.flatMap { (tensorShapeOpt) -> [Int64] in
-                    if let tensorShape = tensorShapeOpt {
-                        return tensorShape.dimensions.map(Int64.init)
-                    }
-                    return []
-                }
-                let ranks = values.map { shape in (shape?.rank).map(Int32.init) ?? -1 }
-                flattenedDims.withUnsafeBufferPointer { flattenedDimsBuffer in
-                    var dimsPtr: UnsafePointer<Int64>? = flattenedDimsBuffer.baseAddress
-                    var dims: [UnsafePointer<Int64>?] = []
-                    for rank in ranks {
-                        dims.append(dimsPtr)
-                        if rank >= 0 {
-                            dimsPtr = dimsPtr.map { $0.advanced(by: Int(rank)) }
-                        }
-                    }
-                    dims.withUnsafeMutableBufferPointer { dimsBuffer in
-                        ranks.withUnsafeBufferPointer { ranksBuffer in
-                            TF_SetAttrShapeList(
-                                desc, name,
-                                dimsBuffer.baseAddress,
-                                ranksBuffer.baseAddress,
-                                Int32(ranksBuffer.count))
-                        }
-                    }
-                }
-            }
-        default:
-            assert(false, "Unhandled attribute \(name):\(attrValue)")
+        default: assert(false, "Unhandled attribute \(name):\(attrValue)")
         }
     }
 
@@ -184,9 +190,9 @@ class TFGraph {
                 }
             }
         }
-        
+
         if let device = device { TF_SetDevice(desc, device) }
-        
+
         // Finalize operation.
         let graphNode = TF_FinishOperation(desc, status)
         checkOk(status)
@@ -222,21 +228,22 @@ class TFFunction {
     let cTFFunction: CTFFunction
     let outputCount: Int
     let outputGroups: [Int]
-    
-    init(_ lazyTrace: LazyTensorTrace) {
+
+    init(_ lazyTrace: LazyTensorTrace, name: String? = nil) {
         let status: CTFStatus = TF_NewStatus()
         defer { TF_DeleteStatus(status) }
         let graph = TFGraph(lazyTrace)
         let cTFGraph = graph.cTFGraph
         let inputs = graph.inputs
         let outputs = graph.outputs
+        let tracedFnName = name ?? graph.name
         self.outputCount = outputs.count
         self.outputGroups = graph.outputGroups
         self.cTFFunction = graph.nodes.withUnsafeBufferPointer {
             operations -> CTFFunction in
             let base = operations.baseAddress
-            let tracedGraphFn = TF_GraphToFunction(cTFGraph, graph.name,
-                /*append_hash_to_fn_name*/ 1,
+            let tracedGraphFn = TF_GraphToFunction(cTFGraph, tracedFnName,
+                /*append_hash_to_fn_name*/ (name == nil ? 1 : 0),
                 /*num_opers*/ Int32(operations.count),
                 /*opers*/ base,
                 /*numinputs*/ Int32(inputs.count),
@@ -259,7 +266,7 @@ class TFFunction {
             }
             return tracedGraphFn!
         }
-        
+
         let eagerContext = _TFCGetGlobalEagerContext()
         TFE_ContextAddFunction(eagerContext, self.cTFFunction, status)
         checkOk(status)
@@ -268,7 +275,7 @@ class TFFunction {
     func execute(_ inputs: [TFETensorHandle]) -> [TFETensorHandle] {
         let status: CTFStatus = TF_NewStatus()
         defer { TF_DeleteStatus(status) }
-        
+
         let eagerContext = _TFCGetGlobalEagerContext()
         let fname = TF_FunctionName(cTFFunction)!
         let eagerOp: CTFEOp! = TFE_NewOp(eagerContext, fname, status)
