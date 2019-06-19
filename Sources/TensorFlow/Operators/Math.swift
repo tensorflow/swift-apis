@@ -619,7 +619,7 @@ internal func _vjpTan<T: TensorFlowFloatingPoint>(
     return (value, { v in v * (1 + value.squared()) })
 }
 
-/// Returns `sinh` of the specified tensor element-wise.
+/// Returns the hyperbolic sine of the specified tensor element-wise.
 @inlinable
 @differentiable(vjp: _vjpSinh(_:))
 public func sinh<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
