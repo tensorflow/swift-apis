@@ -479,7 +479,7 @@ func _vjpAvgPool3D<Scalar: TensorFlowFloatingPoint>(
     })
 }
 
-/// Computes a 2-D convolution with the specified input, filter, strides, and padding.
+/// Returns a 2-D convolution with the specified input, filter, strides, and padding.
 ///
 /// - Parameters:
 ///   - input: The input.
@@ -503,7 +503,7 @@ public func conv2D<Scalar: TensorFlowFloatingPoint>(
         explicitPaddings: [])
 }
 
-/// Computes a 3-D convolution with the specified input, filter, strides, and padding.
+/// Returns a 3-D convolution with the specified input, filter, strides, and padding.
 ///
 /// - Parameters:
 ///   - input: The input.
@@ -527,7 +527,7 @@ public func conv3D<Scalar: TensorFlowFloatingPoint>(
         padding: padding.raw)
 }
 
-/// Computes a 2-D depthwise convolution with the specified input, filter, strides, and padding.
+/// Returns a 2-D depthwise convolution with the specified input, filter, strides, and padding.
 ///
 /// - Parameters:
 ///   - input: The input.
@@ -550,7 +550,7 @@ public func depthwiseConv2D<Scalar: TensorFlowFloatingPoint>(
         padding: padding.raw)
 }
 
-/// Computes a 2-D max pooling, with the specified filter sizes, strides, and
+/// Returns a 2-D max pooling, with the specified filter sizes, strides, and
 /// padding.
 ///
 /// - Parameters:
@@ -574,7 +574,7 @@ public func maxPool2D<Scalar: TensorFlowFloatingPoint>(
         padding: padding.raw)
 }
 
-/// Computes a 3-D max pooling, with the specified filter sizes, strides, and
+/// Returns a 3-D max pooling, with the specified filter sizes, strides, and
 /// padding.
 ///
 /// - Parameters:
@@ -598,7 +598,7 @@ public func maxPool3D<Scalar: TensorFlowFloatingPoint>(
         padding: padding.raw)
 }
 
-/// Computes a 2-D average pooling, with the specified filter sizes, strides,
+/// Returns a 2-D average pooling, with the specified filter sizes, strides,
 /// and padding.
 ///
 /// - Parameters:
@@ -621,7 +621,7 @@ public func avgPool2D<Scalar: TensorFlowFloatingPoint>(
         padding: padding.raw)
 }
 
-/// Computes a 3-D average pooling, with the specified filter sizes, strides,
+/// Returns a 3-D average pooling, with the specified filter sizes, strides,
 /// and padding.
 ///
 /// - Parameters:
