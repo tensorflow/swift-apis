@@ -1017,7 +1017,7 @@ func _vjpElu<T: TensorFlowFloatingPoint>(
 /// Computes `leakyRelu` of the specified tensor element-wise.
 /// Specifically, computes `max(features, features * alpha)`.
 @inlinable
-@differentiable(vjp: _vjpLeakyRelu)
+@differentiable(wrt: x, vjp: _vjpLeakyRelu)
 public func leakyRelu<T: TensorFlowFloatingPoint>(_ x: Tensor<T>, alpha: Double = 0.2) -> Tensor<T> {
     Raw.leakyRelu(features: x, alpha: alpha)
 }
@@ -1026,8 +1026,8 @@ public func leakyRelu<T: TensorFlowFloatingPoint>(_ x: Tensor<T>, alpha: Double 
 func _vjpLeakyRelu<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>,
     alpha: Double = 0.2
-) -> (Tensor<T>, Double, (Tensor<T>) -> Tensor<T>) {
-    return (leakyRelu(x), { v in Raw.leakyReluGrad(gradients: v, features: x, alpha: alpha) })
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+    return (leakyRelu(x, alpha: alpha), { v in Raw.leakyReluGrad(gradients: v, features: x, alpha: alpha) })
 }
 
 
