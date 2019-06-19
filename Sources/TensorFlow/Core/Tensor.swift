@@ -23,8 +23,12 @@ public protocol AnyTensor {
     var _tensorFlowDataType: TensorDataType { get }
 }
 
-/// `Tensor` is a multi-dimensional array used for computation. It is a wrapper around a
-/// `TensorHandle`.
+/// A multidimensional array of elements that is a generalization of
+/// vectors and matrices to potentially higher dimensions.
+///
+/// An associated data-type describes the format of each element in the 
+/// tensor (such as integer, a floating point number or something else,
+/// etc.).
 @frozen
 public struct Tensor<Scalar: TensorFlowScalar>: TensorProtocol {
     /// The underlying `TensorHandle`.
