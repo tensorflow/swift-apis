@@ -51,7 +51,7 @@ TensorFlow coding style.
 Include a license at the top of new files.
 * [License example](https://github.com/tensorflow/swift-apis/blob/master/Sources/TensorFlow/Random.swift)
 
-#### Swift Coding Style
+#### Swift coding style
 
 Changes should conform to
 [Google Swift Style Guide](https://google.github.io/swift/).
