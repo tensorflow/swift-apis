@@ -17,6 +17,13 @@ import XCTest
 import CTensorFlow
 
 final class LazyTensorOperationTests: XCTestCase {
+    override class func setUp() {
+        super.setUp()
+        // Set multiple cpu devices so that we can test device tracking in
+        // LazyTensorOperation.
+        _RuntimeConfig.cpuDeviceCount = 2
+    }
+
     func testNoInput() {
         let placeholder = LazyTensorOperation(
             _id: "V", name: "Placeholder", outputCount: 1)
@@ -204,6 +211,21 @@ final class LazyTensorOperationTests: XCTestCase {
         XCTAssertEqual(op0.description, "%0 = Nop[fn: TFFunction(ExampleFunction)]()")
     }
 
+    func testDeviceTracking() {
+        let op0 = LazyTensorOperation(_id: "0", name: "Nop", outputCount: 1)
+        XCTAssertEqual(op0.device, nil)
+        withDevice(named: "/job:localhost/replica:0/task:0/device:CPU:0") {
+            let op1 = LazyTensorOperation(_id: "0", name: "Nop", outputCount: 1)
+            XCTAssertEqual(op1.device ?? "", "/job:localhost/replica:0/task:0/device:CPU:0")
+            withDevice(.cpu, 1) {
+                let op2 = LazyTensorOperation(_id: "0", name: "Nop", outputCount: 1)
+                XCTAssertEqual(op2.device ?? "", "/job:localhost/replica:0/task:0/device:CPU:1")
+            }
+            let op3 = LazyTensorOperation(_id: "0", name: "Nop", outputCount: 1)
+            XCTAssertEqual(op3.device ?? "", "/job:localhost/replica:0/task:0/device:CPU:0")
+        }
+    }
+
     static var allTests = [
         ("testNoInput", testNoInput),
         ("testSingleInput", testSingleInput),
@@ -223,6 +245,8 @@ final class LazyTensorOperationTests: XCTestCase {
             testOptionalTensorShapeArrayAttribute),
         ("testArrayAttributes", testArrayAttributes),
         ("testMultipleAttributes", testMultipleAttributes),
-        ("testFunctionAttribute", testFunctionAttribute)
+        ("testFunctionAttribute", testFunctionAttribute),
+        ("testDeviceTracking", testDeviceTracking)
+
     ]
 }
