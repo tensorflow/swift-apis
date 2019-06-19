@@ -274,6 +274,9 @@ class LazyTensorOperation: TensorOperation {
     func updateAttribute(_ name: String, _ value: _TensorFunctionPointer) {
         attributes[name] = Attribute.tensorFunctionPointer(value)
     }
+    func updateAttribute(_ name: String, _ value: TFETensorHandle) {
+        attributes[name] = Attribute.constTensor(value)
+    }
 }
 
 extension LazyTensorOperation: TFTensorOperation {
