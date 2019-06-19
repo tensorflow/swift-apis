@@ -207,10 +207,10 @@ final class LazyTensorOperationTests: XCTestCase {
 
     func testDeviceTracking() {
         let op0 = LazyTensorOperation(_id: "0", name: "Nop", outputCount: 1)
-        XCTAssertEqual(op0.device, nil)
+        XCTAssertEqual(op0.deviceName, nil)
         withDevice(named: "/job:localhost/replica:0/task:0/device:CPU:0") {
             let op1 = LazyTensorOperation(_id: "0", name: "Nop", outputCount: 1)
-            XCTAssertEqual(op1.device ?? "", "/job:localhost/replica:0/task:0/device:CPU:0")
+            XCTAssertEqual(op1.deviceName ?? "", "/job:localhost/replica:0/task:0/device:CPU:0")
         }
     }
 
