@@ -245,8 +245,8 @@ final class MathOperatorTests: XCTestCase {
 
     func testLeakyRelu() {
         let x = Tensor<Float>([[-1.0, 2.0, 3.0]])
-        let y = leakyRelu(x, alpha: 0.3)
-        let expected = Tensor<Float>([-0.3, 2, 3])
+        let y = leakyRelu(x, alpha: 0.4)
+        let expected = Tensor<Float>([-0.4, 2, 3])
         XCTAssertEqual(y, expected)
     }
 
