@@ -38,7 +38,7 @@ Before sending your pull request for
 make sure your changes are consistent with the guidelines and follow the
 TensorFlow coding style.
 
-#### General guidelines and philosophy for contribution
+#### Testing
 
 *   Include unit tests when you contribute new features, as they help to a)
     prove that your code works correctly, and b) guard against future breaking
