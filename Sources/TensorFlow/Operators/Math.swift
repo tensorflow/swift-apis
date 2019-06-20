@@ -1,4 +1,4 @@
-// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,45 +15,170 @@
 infix operator .>: ComparisonPrecedence
 infix operator .==: ComparisonPrecedence
 
-// `pow` is defined in Darwin/Glibc on `Float` and `Double`, but there doesn't exist a generic
-// version for `FloatingPoint`.
-// This is a manual definition.
-@inlinable
-func pow<T: BinaryFloatingPoint>(_ x: T, _ y: T) -> T {
-    return T(pow(Double(x), Double(y)))
-}
-
 // TODO:
 // - Consider explicit broadcasting for elementwise binary ops when
 //   scalarization and rank getter are implemented.
 
 //===------------------------------------------------------------------------------------------===//
+// Generic elementary functions
+//===------------------------------------------------------------------------------------------===//
+
+extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
+    /// The square root of `x`.
+    ///
+    /// For real types, if `x` is negative the result is `.nan`. For complex
+    /// types there is a branch cut on the negative real axis.
+    public static func sqrt(_ x: Self) -> Self {
+        TensorFlow.sqrt(x)
+    }
+
+    /// The cosine of `x`, interpreted as an angle in radians.
+    public static func cos(_ x: Self) -> Self {
+        TensorFlow.cos(x)
+    }
+
+    /// The sine of `x`, interpreted as an angle in radians.
+    public static func sin(_ x: Self) -> Self {
+        TensorFlow.sin(x)
+    }
+
+    /// The tangent of `x`, interpreted as an angle in radians.
+    public static func tan(_ x: Self) -> Self {
+        TensorFlow.tan(x)
+    }
+
+    /// The inverse cosine of `x` in radians.
+    public static func acos(_ x: Self) -> Self {
+        TensorFlow.acos(x)
+    }
+
+    /// The inverse sine of `x` in radians.
+    public static func asin(_ x: Self) -> Self {
+        TensorFlow.asin(x)
+    }
+
+    /// The inverse tangent of `x` in radians.
+    public static func atan(_ x: Self) -> Self {
+        TensorFlow.atan(x)
+    }
+
+    /// The hyperbolic cosine of `x`.
+    public static func cosh(_ x: Self) -> Self {
+        TensorFlow.cosh(x)
+    }
+
+    /// The hyperbolic sine of `x`.
+    public static func sinh(_ x: Self) -> Self {
+        TensorFlow.sinh(x)
+    }
+
+    /// The hyperbolic tangent of `x`.
+    public static func tanh(_ x: Self) -> Self {
+        TensorFlow.tanh(x)
+    }
+
+    /// The inverse hyperbolic cosine of `x`.
+    public static func acosh(_ x: Self) -> Self {
+        TensorFlow.acosh(x)
+    }
+
+    /// The inverse hyperbolic sine of `x`.
+    public static func asinh(_ x: Self) -> Self {
+        TensorFlow.asinh(x)
+    }
+
+    /// The inverse hyperbolic tangent of `x`.
+    public static func atanh(_ x: Self) -> Self {
+        TensorFlow.atanh(x)
+    }
+
+    /// The exponential function applied to `x`, or `e**x`.
+    public static func exp(_ x: Self) -> Self {
+        TensorFlow.exp(x)
+    }
+
+    /// Two raised to to power `x`.
+    public static func exp2(_ x: Self) -> Self {
+        TensorFlow.exp2(x)
+    }
+
+    /// Ten raised to to power `x`.
+    public static func exp10(_ x: Self) -> Self {
+        TensorFlow.exp10(x)
+    }
+
+    /// `exp(x) - 1` evaluated so as to preserve accuracy close to zero.
+    public static func expm1(_ x: Self) -> Self {
+        TensorFlow.expm1(x)
+    }
+
+    /// The natural logarithm of `x`.
+    public static func log(_ x: Self) -> Self {
+        TensorFlow.log(x)
+    }
+
+    /// The base-two logarithm of `x`.
+    public static func log2(_ x: Self) -> Self {
+        TensorFlow.log2(x)
+    }
+
+    /// The base-ten logarithm of `x`.
+    public static func log10(_ x: Self) -> Self {
+        TensorFlow.log10(x)
+    }
+
+    /// `log(1 + x)` evaluated so as to preserve accuracy close to zero.
+    public static func log1p(_ x: Self) -> Self {
+        TensorFlow.log1p(x)
+    }
+
+    /// `exp(y log(x))` computed without loss of intermediate precision.
+    ///
+    /// For real types, if `x` is negative the result is NaN, even if `y` has
+    /// an integral value. For complex types, there is a branch cut on the
+    /// negative real axis.
+    public static func pow(_ x: Self, _ y: Self) -> Self {
+        TensorFlow.pow(x, y)
+    }
+
+    /// `x` raised to the `n`th power.
+    ///
+    /// The product of `n` copies of `x`.
+    public static func pow(_ x: Self, _ n: Int) -> Self {
+        TensorFlow.pow(x, n)
+    }
+
+    /// The `n`th root of `x`.
+    ///
+    /// For real types, if `x` is negative and `n` is even, the result is NaN.
+    /// For complex types, there is a branch cut along the negative real axis.
+    public static func root(_ x: Self, _ n: Int) -> Self {
+        TensorFlow.root(x, n)
+    }
+}
+
+//===------------------------------------------------------------------------------------------===//
 // Vector Space
 //===------------------------------------------------------------------------------------------===//
 
-extension Tensor: VectorNumeric where Scalar: Numeric {
-    /// Multiplies the scalar with every scalar of the tensor and produces the product.
-    @inlinable
-    @differentiable(vjp: _vjpMultiply(lhs:rhs:) where Scalar: TensorFlowFloatingPoint)
-    public static func * (lhs: Scalar, rhs: Tensor) -> Tensor {
-        return Tensor(lhs) * rhs
+extension Tensor: VectorProtocol where Scalar: Numeric {
+    public typealias VectorSpaceScalar = Scalar
+
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
+    public func adding(_ scalar: Scalar) -> Self {
+        self + scalar
+    }
+
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
+    public func subtracting(_ scalar: Scalar) -> Self {
+        self - scalar
+    }
+
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
+    public func scaled(by scalar: Scalar) -> Self {
+        self * scalar
     }
 }
-
-internal extension Tensor where Scalar: TensorFlowFloatingPoint {
-    @inlinable
-    static func _vjpMultiply(lhs: Tensor, rhs: Tensor) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
-        return (lhs * rhs, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
-            let lhsGrad = rhs * v
-            let rhsGrad = lhs * v
-            let (lhsAxes, rhsAxes) = Raw.broadcastGradientArgs(s0: lhsShape, s1: rhsShape)
-            return (lhsGrad.sum(squeezingAxes: lhsAxes).reshaped(toShape: lhsShape),
-                    rhsGrad.sum(squeezingAxes: rhsAxes).reshaped(toShape: rhsShape))
-        })
-    }
-}
-
-extension Tensor: ShapedVectorNumeric where Scalar: Numeric {}
 
 //===------------------------------------------------------------------------------------------===//
 // Additional Element-wise Operators
@@ -88,41 +213,45 @@ public extension Tensor where Scalar: Numeric {
         return lhs - Tensor(rhs)
     }
 
-    /// Adds two tensors and stores the result in the left-hand-side variable.
+    /// Returns the tensor produced by adding the two tensors.
     /// - Note: `+=` supports broadcasting.
     @inlinable
     static func += (lhs: inout Tensor, rhs: Tensor) {
         lhs = lhs + rhs
     }
 
-    /// Adds the scalar to every scalar of the tensor and stores the result in the left-hand-side
-    /// variable.
+    /// Returns the scalar by adding it to every scalar of the tensor.
     @inlinable
     static func += (lhs: inout Tensor, rhs: Scalar) {
         lhs = lhs + rhs
     }
 
-    /// Subtracts the second tensor from the first and stores the result in the left-hand-side
-    /// variable.
+    /// Returns the tensor by subracting the second tensor from the first.
     /// - Note: `-=` supports broadcasting.
     @inlinable
     static func -= (lhs: inout Tensor, rhs: Tensor) {
         lhs = lhs - rhs
     }
 
-    /// Subtracts the scalar from every scalar of the tensor and stores the result in the
-    /// left-hand-side variable.
+    /// Returns the scalar by subtracting every scalar of the tensor from it.
     @inlinable
     static func -= (lhs: inout Tensor, rhs: Scalar) {
         lhs = lhs - rhs
     }
 
-    /// Multiplies two tensors and produces their product.
+    /// Returns the tensor produced by multiplying the two tensors.
     /// - Note: `*` supports broadcasting.
     @inlinable
     @differentiable(vjp: _vjpMultiply(lhs:rhs:) where Scalar: TensorFlowFloatingPoint)
     static func * (lhs: Tensor, rhs: Tensor) -> Tensor {
         return Raw.mul(lhs, rhs)
+    }
+
+    ///  Returns the scalar by multiplying it with every scalar of the tensor.
+    @inlinable
+    @differentiable(vjp: _vjpMultiply(lhs:rhs:) where Scalar: TensorFlowFloatingPoint)
+    static func * (lhs: Scalar, rhs: Tensor) -> Tensor {
+        return Tensor(lhs) * rhs
     }
 
     /// Multiplies the scalar with every scalar of the tensor and produces the product.
@@ -132,14 +261,14 @@ public extension Tensor where Scalar: Numeric {
         return lhs * Tensor(rhs)
     }
 
-    /// Multiplies two tensors and stores the result in the left-hand-side variable.
+    /// Returns the tensor produced by multiplying the two tensors.
     /// - Note: `*=` supports broadcasting.
     @inlinable
     static func *= (lhs: inout Tensor, rhs: Tensor) {
         lhs = lhs * rhs
     }
 
-    /// Multiplies the tensor with the scalar, broadcasting the scalar, and stores the result in the
+    /// Returns the tensor by multiplying it with the scalar, broadcasting the scalar.
     /// left-hand-side variable.
     @inlinable
     static func *= (lhs: inout Tensor, rhs: Scalar) {
@@ -237,6 +366,17 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 
     @inlinable
+    static func _vjpMultiply(lhs: Tensor, rhs: Tensor) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
+        return (lhs * rhs, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
+            let lhsGrad = rhs * v
+            let rhsGrad = lhs * v
+            let (lhsAxes, rhsAxes) = Raw.broadcastGradientArgs(s0: lhsShape, s1: rhsShape)
+            return (lhsGrad.sum(squeezingAxes: lhsAxes).reshaped(toShape: lhsShape),
+                    rhsGrad.sum(squeezingAxes: rhsAxes).reshaped(toShape: rhsShape))
+        })
+    }
+
+    @inlinable
     static func _vjpMultiply(lhs: Tensor, rhs: Scalar) -> (Tensor, (Tensor) -> (Tensor, Scalar)) {
         return (lhs * rhs, { v in (v * rhs, (v * lhs).sum().scalarized()) })
     }
@@ -259,7 +399,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 
     @inlinable
     static func _vjpDivide(lhs: Tensor, rhs: Scalar) -> (Tensor, (Tensor) -> (Tensor, Scalar)) {
-        return (lhs / rhs, { v in 
+        return (lhs / rhs, { v in
             (v / rhs, (v * -lhs / Tensor(rhs).squared()).sum().scalarized())
         })
     }
@@ -271,32 +411,32 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 }
 
 public extension Tensor where Scalar == Bool {
-    /// Computes `!self` element-wise.
+    /// Returns `!self` element-wise.
     @inlinable
     func elementsLogicalNot() -> Tensor {
         return Raw.logicalNot(self)
     }
 
-    /// Computes `self && other` element-wise.
+    /// Returns `self && other` element-wise.
     /// - Note: `&&` supports broadcasting.
     @inlinable
     func elementsLogicalAnd(_ other: Tensor) -> Tensor {
         return Raw.logicalAnd(self, other)
     }
 
-    /// Computes `self && other` element-wise, broadcasting `other`.
+    /// Returns `self && other` element-wise, broadcasting `other`.
     @inlinable
     func elementsLogicalAnd(_ other: Scalar) -> Tensor {
         return elementsLogicalAnd(Tensor(other))
     }
 
-    /// Computes `self || other` element-wise.
+    /// Returns `self || other` element-wise.
     @inlinable
     func elementsLogicalOr(_ other: Tensor) -> Tensor {
         return Raw.logicalOr(self, other)
     }
 
-    /// Computes `self || other` element-wise, broadcasting `other`.
+    /// Returns `self || other` element-wise, broadcasting `other`.
     @inlinable
     func elementsLogicalOr(_ other: Scalar) -> Tensor {
         return elementsLogicalOr(Tensor(other))
@@ -364,7 +504,7 @@ public extension Tensor where Scalar == Bool {
 // #endif
 
 public extension Tensor where Scalar: SignedNumeric {
-    /// Computes the negation of the specified tensor element-wise.
+    /// Returns the negation of the specified tensor element-wise.
     @inlinable
     @differentiable(vjp: _vjpNegate(_:) where Scalar: TensorFlowFloatingPoint)
     static prefix func - (rhs: Tensor) -> Tensor {
@@ -379,11 +519,11 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 }
 
-/// Computes the absolute value of the specified tensor element-wise.
+/// Returns the absolute value of the specified tensor element-wise.
 @inlinable
 @differentiable(vjp: _vjpAbs(_:) where T: TensorFlowFloatingPoint)
 public func abs<T: SignedNumeric>(_ x: Tensor<T>) -> Tensor<T> {
-    return Raw.abs(x)
+    Raw.abs(x)
 }
 
 @inlinable
@@ -394,21 +534,35 @@ internal func _vjpAbs<T: TensorFlowFloatingPoint>(
     return (abs(x), { v in v * sign })
 }
 
-/// Computes the natural logarithm of the specified tensor element-wise.
+/// Returns the natural logarithm of the specified tensor element-wise.
 @inlinable
-@differentiable(vjp: _vjpLog(_:) where T: TensorFlowFloatingPoint)
-public func log<T: FloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
-    return Raw.log(x)
+@differentiable(vjp: _vjpLog(_:))
+public func log<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    Raw.log(x)
 }
 
 @inlinable
 internal func _vjpLog<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>
 ) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
-    return (log(x), { v in v / x })
+    (log(x), { v in v / x })
 }
 
-/// Computes the logarithm of `1 + x` element-wise.
+/// Returns the base-two logarithm of the specified tensor element-wise.
+@inlinable
+@differentiable
+public func log2<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    log(x) / T.log(2)
+}
+
+/// Returns the base-ten logarithm of the specified tensor element-wise.
+@inlinable
+@differentiable
+public func log10<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    log(x) / T.log(10)
+}
+
+/// Returns the logarithm of `1 + x` element-wise.
 @inlinable
 @differentiable(vjp: _vjpLog1p)
 public func log1p<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
@@ -429,47 +583,47 @@ func _vjpLog1p<T: TensorFlowFloatingPoint>(
 @inlinable
 @differentiable
 public func log1mexp<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
-    let isTooSmall = withoutDerivative(at: -x .< T(log(2.0)))
+    let isTooSmall = withoutDerivative(at: x) { x in -x .< T(log(2.0)) }
     // This `replacing` will ultimately be a no-op because we will not select this code-path 
     // whenever we use the surrogate `-Tensor(onesLike: x)`.
-    let ones = withoutDerivative(at: Tensor(onesLike: x))
+    let ones = withoutDerivative(at: x) { x in Tensor(onesLike: x) }
     let xSafe = x.replacing(with: -ones, where: isTooSmall)
     return log1p(-exp(xSafe)).replacing(with: log(-expm1(x)), where: isTooSmall)
 }
 
-/// Computes `sin` of the specified tensor element-wise.
+/// Returns `sin` of the specified tensor element-wise.
 @inlinable
-@differentiable(vjp: _vjpSin(_:) where T: TensorFlowFloatingPoint)
-public func sin<T: FloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
-    return Raw.sin(x)
+@differentiable(vjp: _vjpSin(_:))
+public func sin<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    Raw.sin(x)
 }
 
 @inlinable
 internal func _vjpSin<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>
 ) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
-    return (sin(x), { v in v * cos(x) })
+    (sin(x), { v in v * cos(x) })
 }
 
-/// Computes `cos` of the specified tensor element-wise.
+/// Returns `cos` of the specified tensor element-wise.
 @inlinable
-@differentiable(vjp: _vjpCos(_:) where T: TensorFlowFloatingPoint)
-public func cos<T: FloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
-    return Raw.cos(x)
+@differentiable(vjp: _vjpCos(_:))
+public func cos<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    Raw.cos(x)
 }
 
 @inlinable
 internal func _vjpCos<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>
 ) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
-    return (cos(x), { v in -v * sin(x) })
+    (cos(x), { v in -v * sin(x) })
 }
 
-/// Computes `tan` of the specified tensor element-wise.
+/// Returns `tan` of the specified tensor element-wise.
 @inlinable
-@differentiable(vjp: _vjpTan(_:) where T: TensorFlowFloatingPoint)
-public func tan<T: FloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
-    return Raw.tan(x)
+@differentiable(vjp: _vjpTan(_:))
+public func tan<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    Raw.tan(x)
 }
 
 @inlinable
@@ -480,39 +634,39 @@ internal func _vjpTan<T: TensorFlowFloatingPoint>(
     return (value, { v in v * (1 + value.squared()) })
 }
 
-/// Computes `sinh` of the specified tensor element-wise.
+/// Returns the hyperbolic sine of the specified tensor element-wise.
 @inlinable
-@differentiable(vjp: _vjpSinh(_:) where T: TensorFlowFloatingPoint)
-public func sinh<T: FloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
-    return Raw.sinh(x)
+@differentiable(vjp: _vjpSinh(_:))
+public func sinh<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    Raw.sinh(x)
 }
 
 @inlinable
 internal func _vjpSinh<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>
 ) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
-    return (sinh(x), { v in v * cosh(x) })
+    (sinh(x), { v in v * cosh(x) })
 }
 
-/// Computes `cosh` of the specified tensor element-wise.
+/// Returns `cosh` of the specified tensor element-wise.
 @inlinable
-@differentiable(vjp: _vjpCosh(_:) where T: TensorFlowFloatingPoint)
-public func cosh<T: FloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
-    return Raw.cosh(x)
+@differentiable(vjp: _vjpCosh(_:))
+public func cosh<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    Raw.cosh(x)
 }
 
 @inlinable
 internal func _vjpCosh<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>
 ) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
-    return (cosh(x), { v in v * sinh(x) })
+    (cosh(x), { v in v * sinh(x) })
 }
 
-/// Computes `tanh` of the specified tensor element-wise.
+/// Returns `tanh` of the specified tensor element-wise.
 @inlinable
-@differentiable(vjp: _vjpTanh(_:) where T: TensorFlowFloatingPoint)
-public func tanh<T: FloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
-    return Raw.tanh(x)
+@differentiable(vjp: _vjpTanh(_:))
+public func tanh<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    Raw.tanh(x)
 }
 
 @inlinable
@@ -523,27 +677,111 @@ internal func _vjpTanh<T: TensorFlowFloatingPoint>(
     return (value, { v in v * (1 - value.squared()) })
 }
 
-/// Computes the square of the tensor.
+/// Returns `acos` of the specified tensor element-wise.
+@inlinable
+@differentiable(vjp: _vjpAcos(_:))
+public func acos<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    Raw.acos(x)
+}
+
+@inlinable
+internal func _vjpAcos<T: TensorFlowFloatingPoint>(
+    _ x: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+    (acos(x), { v in -v / sqrt(1 - x.squared()) })
+}
+
+/// Returns `asin` of the specified tensor element-wise.
+@inlinable
+@differentiable(vjp: _vjpAsin(_:))
+public func asin<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    Raw.asin(x)
+}
+
+@inlinable
+internal func _vjpAsin<T: TensorFlowFloatingPoint>(
+    _ x: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+    (asin(x), { v in v / sqrt(1 - x.squared()) })
+}
+
+/// Returns `atan` of the specified tensor element-wise.
+@inlinable
+@differentiable(vjp: _vjpAtan(_:))
+public func atan<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    Raw.atan(x)
+}
+
+@inlinable
+internal func _vjpAtan<T: TensorFlowFloatingPoint>(
+    _ x: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+    (atan(x), { v in v / (1 + x.squared()) })
+}
+
+/// Returns `acosh` of the specified tensor element-wise.
+@inlinable
+@differentiable(vjp: _vjpAcosh(_:))
+public func acosh<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    Raw.acosh(x)
+}
+
+@inlinable
+internal func _vjpAcosh<T: TensorFlowFloatingPoint>(
+    _ x: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+    (acosh(x), { v in v / asinh(x) })
+}
+
+/// Returns `asinh` of the specified tensor element-wise.
+@inlinable
+@differentiable(vjp: _vjpAsinh(_:))
+public func asinh<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    Raw.asinh(x)
+}
+
+@inlinable
+internal func _vjpAsinh<T: TensorFlowFloatingPoint>(
+    _ x: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+    (asinh(x), { v in v / acosh(x) })
+}
+
+/// Returns `atanh` of the specified tensor element-wise.
+@inlinable
+@differentiable(vjp: _vjpAtanh(_:))
+public func atanh<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    Raw.atanh(x)
+}
+
+@inlinable
+internal func _vjpAtanh<T: TensorFlowFloatingPoint>(
+    _ x: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+    (atanh(x), { v in v / (1 - x.squared()) })
+}
+
+/// Returns the square of the tensor.
 public extension Tensor where Scalar: Numeric {
     @inlinable
     @differentiable(wrt: self, vjp: _vjpSquared() where Scalar: TensorFlowFloatingPoint)
     func squared() -> Tensor {
-        return Raw.square(self)
+        Raw.square(self)
     }
 }
 
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     func _vjpSquared() -> (Tensor, (Tensor) -> Tensor) {
-        return (squared(), { 2 * self * $0 })
+        (squared(), { 2 * self * $0 })
     }
 }
 
-/// Computes the square root of the specified tensor element-wise.
+/// Returns the square root of the specified tensor element-wise.
 @inlinable
-@differentiable(vjp: _vjpSqrt(_:) where T: TensorFlowFloatingPoint)
-public func sqrt<T: FloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
-    return Raw.sqrt(x)
+@differentiable(vjp: _vjpSqrt(_:))
+public func sqrt<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    Raw.sqrt(x)
 }
 
 @inlinable
@@ -554,11 +792,11 @@ internal func _vjpSqrt<T: TensorFlowFloatingPoint>(
     return (value, { v in v / (2 * value) })
 }
 
-/// Computes the inverse square root of the specified tensor element-wise.
+/// Returns the inverse square root of the specified tensor element-wise.
 @inlinable
-@differentiable(vjp: _vjpRsqrt(_:) where T: TensorFlowFloatingPoint)
-public func rsqrt<T: FloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
-    return Raw.rsqrt(x)
+@differentiable(vjp: _vjpRsqrt(_:))
+public func rsqrt<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    Raw.rsqrt(x)
 }
 
 @inlinable
@@ -569,11 +807,11 @@ internal func _vjpRsqrt<T: TensorFlowFloatingPoint>(
     return (value, { v in -v / (2 * pow(x, 3 / 2)) })
 }
 
-/// Computes `exp` of the specified tensor element-wise.
+/// Returns `exp` of the specified tensor element-wise.
 @inlinable
-@differentiable(vjp: _vjpExp(_:) where T: TensorFlowFloatingPoint)
-public func exp<T: FloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
-    return Raw.exp(x)
+@differentiable(vjp: _vjpExp(_:))
+public func exp<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    Raw.exp(x)
 }
 
 @inlinable
@@ -584,7 +822,21 @@ internal func _vjpExp<T: TensorFlowFloatingPoint>(
     return (value, { v in value * v })
 }
 
-/// Computes the exponential of `x - 1` element-wise.
+/// Returns two raised to the power of the specified tensor element-wise.
+@inlinable
+// @differentiable
+public func exp2<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    pow(2, x)
+}
+
+/// Returns ten raised to the power of the specified tensor element-wise.
+@inlinable
+// @differentiable
+public func exp10<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    pow(10, x)
+}
+
+/// Returns the exponential of `x - 1` element-wise.
 @inlinable
 @differentiable(vjp: _vjpExpm1)
 public func expm1<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
@@ -603,84 +855,122 @@ internal func _vjpExpm1<T: TensorFlowFloatingPoint>(
 @inlinable
 @differentiable(vjp: _vjpRound)
 public func round<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
-  return Raw.round(x)
+    Raw.round(x)
 }
 
 @inlinable
 internal func _vjpRound<T: TensorFlowFloatingPoint>(
   _ x: Tensor<T>
 ) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
-  return (round(x), { v in Tensor<T>(zerosLike: v) })
+    (round(x), { v in Tensor<T>(zerosLike: v) })
 }
 
-/// Computes the ceiling of the specified tensor element-wise.
+/// Returns the ceiling of the specified tensor element-wise.
 @inlinable
-@differentiable(vjp: _vjpCeil(_:) where T: TensorFlowFloatingPoint)
-public func ceil<T: FloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
-    return Raw.ceil(x)
+@differentiable(vjp: _vjpCeil(_:))
+public func ceil<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    Raw.ceil(x)
 }
 
 @inlinable
 internal func _vjpCeil<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>
 ) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
-    return (ceil(x), { _ in Tensor(0).broadcasted(like: x) })
+    (ceil(x), { _ in Tensor(0).broadcasted(like: x) })
 }
 
-/// Computes the floor of the specified tensor element-wise.
+/// Returns the floor of the specified tensor element-wise.
 @inlinable
-@differentiable(vjp: _vjpFloor(_:) where T: TensorFlowFloatingPoint)
-public func floor<T: FloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
-    return Raw.floor(x)
+@differentiable(vjp: _vjpFloor(_:))
+public func floor<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    Raw.floor(x)
 }
 
 @inlinable
 internal func _vjpFloor<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>
 ) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
-    return (floor(x), { _ in Tensor(0).broadcasted(like: x) })
+    (floor(x), { _ in Tensor(0).broadcasted(like: x) })
 }
 
 @inlinable
 @differentiable(vjp: _vjpSign(_:) where T: TensorFlowFloatingPoint)
 public func sign<T: Numeric>(_ x: Tensor<T>) -> Tensor<T> {
-    return Raw.sign(x)
+    Raw.sign(x)
 }
 
 @inlinable
 internal func _vjpSign<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>
 ) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
-    return (sign(x), { v in Tensor<T>(zerosLike: x) })
+    (sign(x), { v in Tensor<T>(zerosLike: x) })
 }
 
-/// Computes the sigmoid of the specified tensor element-wise.
+/// Returns the sigmoid of the specified tensor element-wise.
 /// Specifically, computes `1 / (1 + exp(-x))`.
 @inlinable
 @differentiable(vjp: _vjpSigmoid)
 public func sigmoid<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
-    return Raw.sigmoid(x)
+    Raw.sigmoid(x)
 }
 
 @inlinable
 internal func _vjpSigmoid<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>
 ) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
-    return (sigmoid(x), { v in Raw.sigmoidGrad(x, dy: v) })
+    (sigmoid(x), { v in Raw.sigmoidGrad(x, dy: v) })
 }
 
-/// Computes the softmax of the specified tensor along the last axis.
+/// Returns the log-sigmoid of the specified tensor element-wise. Specifically,
+/// `y = log(1 / (1 + exp(-x)))`. For numerical stability, we use `y = -softplus(-x)`.
+@inlinable
+@differentiable
+public func logSigmoid<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    -softplus(-x)
+}
+
+/// Returns the softplus of the specified tensor element-wise.
+/// Specifically, computes `log(exp(features) + 1)`.
+@inlinable
+@differentiable(vjp: _vjpSoftplus)
+public func softplus<T: TensorFlowFloatingPoint>(_ features: Tensor<T>) -> Tensor<T> {
+    Raw.softplus(features: features)
+}
+
+@inlinable
+internal func _vjpSoftplus<T: TensorFlowFloatingPoint>(
+    _ features: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+    (softplus(features), { v in Raw.softplusGrad(gradients: v, features: features)})
+}
+
+/// Returns the softsign of the specified tensor element-wise.
+/// Specifically, computes `features/ (abs(features) + 1)`.
+@inlinable
+@differentiable(vjp: _vjpSoftsign)
+public func softsign<T: TensorFlowFloatingPoint>(_ features: Tensor<T>) -> Tensor<T> {
+    Raw.softsign(features: features)
+}
+
+@inlinable
+internal func _vjpSoftsign<T: TensorFlowFloatingPoint>(
+    _ features: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+    (softsign(features), { v in Raw.softsignGrad(gradients: v, features: features)})
+}
+
+/// Returns the softmax of the specified tensor along the last axis.
 /// Specifically, computes `exp(x) / exp(x).sum(alongAxes: -1)`.
 @inlinable
-@differentiable(vjp: _vjpSoftmax(_:) where T: TensorFlowFloatingPoint)
-public func softmax<T: FloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
-    return Raw.softmax(logits: x)
+@differentiable(vjp: _vjpSoftmax(_:))
+public func softmax<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    Raw.softmax(logits: x)
 }
 
-/// Computes the softmax of the specified tensor along the specified axis.
+/// Returns the softmax of the specified tensor along the specified axis.
 /// Specifically, computes `exp(x) / exp(x).sum(alongAxes: axis)`.
 @inlinable
-// TODO: [AD].
+@differentiable
 public func softmax<T: TensorFlowFloatingPoint>(_ x: Tensor<T>, alongAxis axis: Int) -> Tensor<T> {
     let xExp = exp(x)
     return xExp / xExp.sum(alongAxes: Tensor<Int32>(Int32(axis)))
@@ -697,11 +987,11 @@ func _vjpSoftmax<T: TensorFlowFloatingPoint>(
     })
 }
 
-/// Computes the log-softmax of the specified tensor element-wise.
+/// Returns the log-softmax of the specified tensor element-wise.
 @inlinable
-@differentiable(vjp: _vjpLogSoftmax(_:) where T: TensorFlowFloatingPoint)
-public func logSoftmax<T: FloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
-    return Raw.logSoftmax(logits: x)
+@differentiable(vjp: _vjpLogSoftmax(_:))
+public func logSoftmax<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    Raw.logSoftmax(logits: x)
 }
 
 @inlinable
@@ -712,30 +1002,70 @@ func _vjpLogSoftmax<T: TensorFlowFloatingPoint>(
     return (value, { v in v - v.sum(alongAxes: -1) * exp(value) })
 }
 
-/// Computes `relu` of the specified tensor element-wise.
+/// Returns a tensor by applying an exponential linear unit.
+/// Specifically, computes `exp(x) - 1` if < 0, `x` otherwise.
+/// See [Fast and Accurate Deep Network Learning by Exponential Linear Units (ELUs)
+/// ](http://arxiv.org/abs/1511.07289)
+@inlinable
+@differentiable(vjp: _vjpElu)
+public func elu<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    Raw.elu(features: x)
+}
+
+@inlinable
+func _vjpElu<T: TensorFlowFloatingPoint>(
+    _ x: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+    let y = elu(x)
+    return (y, { v in Raw.eluGrad(gradients: v, outputs: y) })
+}
+
+/// Returns a tensor by applying the leaky ReLU activation function
+/// to the specified tensor element-wise.
+/// Specifically, computes `max(x, x * alpha)`.
+@inlinable
+@differentiable(wrt: x, vjp: _vjpLeakyRelu)
+public func leakyRelu<T: TensorFlowFloatingPoint>(
+    _ x: Tensor<T>,
+    alpha: Double = 0.2
+) -> Tensor<T> {
+    Raw.leakyRelu(features: x, alpha: alpha)
+}
+
+@inlinable
+func _vjpLeakyRelu<T: TensorFlowFloatingPoint>(
+    _ x: Tensor<T>,
+    alpha: Double
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+    return (leakyRelu(x, alpha: alpha), { v in
+        Raw.leakyReluGrad(gradients: v, features: x, alpha: alpha)
+    })
+}
+
+/// Returns `relu` of the specified tensor element-wise.
 /// Specifically, computes `max(0, x)`.
 @inlinable
-@differentiable(vjp: _vjpRelu(_:) where T: TensorFlowFloatingPoint)
-public func relu<T: FloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
-    return max(0, x)
+@differentiable(vjp: _vjpRelu(_:))
+public func relu<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    max(0, x)
 }
 
 @inlinable
 func _vjpRelu<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>
 ) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
-    return (relu(x), { v in Tensor(x .> 0) * v })
+    (relu(x), { v in Tensor(x .> 0) * v })
 }
 
 //===------------------------------------------------------------------------------------------===//
 // Element-wise Binary Math Functions
 //===------------------------------------------------------------------------------------------===//
 
-/// Computes the power of the first tensor to the second tensor.
+/// Returns the power of the first tensor to the second tensor.
 @inlinable
-@differentiable(vjp: _vjpPow(_:_:) where T: TensorFlowFloatingPoint)
-public func pow<T>(_ lhs: Tensor<T>, _ rhs: Tensor<T>) -> Tensor<T> where T: FloatingPoint {
-    return Raw.pow(lhs, rhs)
+@differentiable(vjp: _vjpPow(_:_:))
+public func pow<T: TensorFlowFloatingPoint>(_ lhs: Tensor<T>, _ rhs: Tensor<T>) -> Tensor<T> {
+    Raw.pow(lhs, rhs)
 }
 
 @inlinable
@@ -754,26 +1084,40 @@ internal func _vjpPow<T: TensorFlowFloatingPoint>(
     })
 }
 
-/// Computes the power of the scalar to the tensor, broadcasting the scalar.
+/// Returns the power of the scalar to the tensor, broadcasting the scalar.
 @inlinable
-// @differentiable(where T: TensorFlowFloatingPoint)
-public func pow<T>(_ lhs: T, _ rhs: Tensor<T>) -> Tensor<T> where T: FloatingPoint {
-    return pow(Tensor(lhs), rhs)
+// @differentiable
+public func pow<T: TensorFlowFloatingPoint>(_ lhs: T, _ rhs: Tensor<T>) -> Tensor<T> {
+    pow(Tensor(lhs), rhs)
 }
 
-/// Computes the power of the tensor to the scalar, broadcasting the scalar.
+/// Returns the power of the tensor to the scalar, broadcasting the scalar.
 @inlinable
-// @differentiable(where T: TensorFlowFloatingPoint)
-public func pow<T>(_ lhs: Tensor<T>, _ rhs: T) -> Tensor<T> where T: FloatingPoint {
-    return pow(lhs, Tensor(rhs))
+// @differentiable
+public func pow<T: TensorFlowFloatingPoint>(_ lhs: Tensor<T>, _ rhs: T) -> Tensor<T> {
+    pow(lhs, Tensor(rhs))
 }
 
-/// Computes the element-wise maximum of two tensors.
+/// Returns the power of the tensor to the scalar, broadcasting the scalar.
+@inlinable
+// @differentiable
+public func pow<T: TensorFlowFloatingPoint>(_ x: Tensor<T>, _ n: Int) -> Tensor<T> {
+    pow(x, Tensor(T(n)))
+}
+
+/// Returns the element-wise `n`th root of the tensor.
+@inlinable
+// @differentiable
+public func root<T: TensorFlowFloatingPoint>(_ x: Tensor<T>, _ n: Int) -> Tensor<T> {
+    sign(x) * pow(abs(x), Tensor(T(1) / T(n)))
+}
+
+/// Returns the element-wise maximum of two tensors.
 /// - Note: `max` supports broadcasting.
 @inlinable
 @differentiable(vjp: _vjpMax(_:_:) where T: TensorFlowFloatingPoint)
 public func max<T>(_ lhs: Tensor<T>, _ rhs: Tensor<T>) -> Tensor<T> where T: Numeric & Comparable {
-    return Raw.maximum(lhs, rhs)
+    Raw.maximum(lhs, rhs)
 }
 
 @inlinable
@@ -784,26 +1128,26 @@ internal func _vjpMax<T: TensorFlowFloatingPoint>(
     return (value, { v in _vjpMinMaxHelper(x, y, originalValue: value, seed: v) })
 }
 
-/// Computes the element-wise maximum of the scalar and the tensor, broadcasting the scalar.
+/// Returns the element-wise maximum of the scalar and the tensor, broadcasting the scalar.
 @inlinable
 // @differentiable(where T: TensorFlowFloatingPoint)
 public func max<T>(_ lhs: T, _ rhs: Tensor<T>) -> Tensor<T> where T: Numeric & Comparable {
-    return max(Tensor(lhs), rhs)
+    max(Tensor(lhs), rhs)
 }
 
-/// Computes the element-wise maximum of the scalar and the tensor, broadcasting the scalar.
+/// Returns the element-wise maximum of the scalar and the tensor, broadcasting the scalar.
 @inlinable
 // @differentiable(where T: TensorFlowFloatingPoint)
 public func max<T>(_ lhs: Tensor<T>, _ rhs: T) -> Tensor<T> where T: Numeric & Comparable {
-    return max(lhs, Tensor(rhs))
+    max(lhs, Tensor(rhs))
 }
 
-/// Computes the element-wise minimum of two tensors.
+/// Returns the element-wise minimum of two tensors.
 /// - Note: `min` supports broadcasting.
 @inlinable
 @differentiable(vjp: _vjpMin(_:_:) where T: TensorFlowFloatingPoint)
 public func min<T>(_ lhs: Tensor<T>, _ rhs: Tensor<T>) -> Tensor<T> where T: Numeric & Comparable {
-    return Raw.minimum(lhs, rhs)
+    Raw.minimum(lhs, rhs)
 }
 
 @inlinable
@@ -814,18 +1158,18 @@ internal func _vjpMin<T: TensorFlowFloatingPoint>(
     return (value, { v in _vjpMinMaxHelper(x, y, originalValue: value, seed: v) })
 }
 
-/// Computes the element-wise minimum of the scalar and the tensor, broadcasting the scalar.
+/// Returns the element-wise minimum of the scalar and the tensor, broadcasting the scalar.
 @inlinable
 // @differentiable(where T: TensorFlowFloatingPoint)
 public func min<T>(_ lhs: T, _ rhs: Tensor<T>) -> Tensor<T> where T: Numeric & Comparable {
-    return min(Tensor(lhs), rhs)
+    min(Tensor(lhs), rhs)
 }
 
-/// Computes the element-wise minimum of the scalar and the tensor, broadcasting the scalar.
+/// Returns the element-wise minimum of the scalar and the tensor, broadcasting the scalar.
 @inlinable
 // @differentiable(where T: TensorFlowFloatingPoint)
 public func min<T>(_ lhs: Tensor<T>, _ rhs: T) -> Tensor<T> where T: Numeric & Comparable {
-    return min(lhs, Tensor(rhs))
+    min(lhs, Tensor(rhs))
 }
 
 @inlinable
@@ -844,6 +1188,23 @@ internal func _vjpMinMaxHelper<T: TensorFlowFloatingPoint>(
             rhsGrad.sum(squeezingAxes: rhsAxes).reshaped(toShape: rhsShape))
 }
 
+/// Returns the cosine similarity between `x` and `y`.
+@differentiable
+public func cosineSimilarity<Scalar: TensorFlowFloatingPoint>(
+    _ x: Tensor<Scalar>, _ y: Tensor<Scalar>
+) -> Tensor<Scalar> {
+    (x * y).sum() / (sqrt(x.squared().sum()) * sqrt(y.squared().sum()))
+}
+
+/// Returns the cosine distance between `x` and `y`. Cosine distance is defined as
+/// `1 - cosineSimilarity(x, y)`.
+@differentiable
+public func cosineDistance<Scalar: TensorFlowFloatingPoint>(
+    _ x: Tensor<Scalar>, _ y: Tensor<Scalar>
+) -> Tensor<Scalar> {
+    1 - cosineSimilarity(x, y)
+}
+
 //===------------------------------------------------------------------------------------------===//
 // Selection Functions
 //===------------------------------------------------------------------------------------------===//
@@ -860,7 +1221,7 @@ public extension Tensor {
     @inlinable
     @differentiable(wrt: (self, other), vjp: _vjpReplacing where Scalar: TensorFlowFloatingPoint)
     func replacing(with other: Tensor, where mask: Tensor<Bool>) -> Tensor {
-        return Raw.select(condition: mask, t: other, e: self)
+        Raw.select(condition: mask, t: other, e: self)
     }
 }
 
@@ -988,7 +1349,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func max(squeezingAxes axes: Int...) -> Tensor {
-        return max(squeezingAxes: axes)
+        max(squeezingAxes: axes)
     }
 
     /// Returns the minimum values along the specified axes. The reduced dimensions are removed.
@@ -999,7 +1360,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
         wrt: self,
         vjp: _vjpMinOrMax(squeezingAxes:) where Scalar: TensorFlowFloatingPoint)
     func min(squeezingAxes axes: Tensor<Int32>) -> Tensor {
-        return Raw.min(self, reductionIndices: axes, keepDims: false)
+        Raw.min(self, reductionIndices: axes, keepDims: false)
     }
 
     /// Returns the minimum values along the specified axes. The reduced dimensions are removed.
@@ -1019,7 +1380,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func min(squeezingAxes axes: Int...) -> Tensor {
-        return min(squeezingAxes: axes)
+        min(squeezingAxes: axes)
     }
 
     /// Returns the indices of the maximum values along the specified axes. The reduced dimensions
@@ -1028,7 +1389,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
     func argmax(squeezingAxis axis: Int) -> Tensor<Int32> {
-        return Raw.argMax(self, dimension: Tensor<Int32>(Int32(axis)))
+        Raw.argMax(self, dimension: Tensor<Int32>(Int32(axis)))
     }
 
     /// Returns the indices of the minimum values along the specified axes. The reduced dimensions
@@ -1037,7 +1398,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
     func argmin(squeezingAxis axis: Int) -> Tensor<Int32> {
-        return Raw.argMin(self, dimension: Tensor<Int32>(Int32(axis)))
+        Raw.argMin(self, dimension: Tensor<Int32>(Int32(axis)))
     }
 
     /// Returns the minimum along the specified axes. The reduced dimensions are retained with
@@ -1047,7 +1408,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     @inlinable
     @differentiable(wrt: self, vjp: _vjpMinOrMax(alongAxes:) where Scalar: TensorFlowFloatingPoint)
     func min(alongAxes axes: Tensor<Int32>) -> Tensor {
-        return Raw.min(self, reductionIndices: axes, keepDims: true)
+        Raw.min(self, reductionIndices: axes, keepDims: true)
     }
 
     /// Returns the minimum along the specified axes. The reduced dimensions are retained with
@@ -1066,7 +1427,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
     func min(alongAxes axes: Int...) -> Tensor {
-        return min(alongAxes: axes)
+        min(alongAxes: axes)
     }
 
     /// Returns the minimum along the specified axes. The reduced dimensions are retained with
@@ -1076,7 +1437,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     @inlinable
     @differentiable(wrt: self, vjp: _vjpMinOrMax(alongAxes:) where Scalar: TensorFlowFloatingPoint)
     func max(alongAxes axes: Tensor<Int32>) -> Tensor {
-        return Raw.max(self, reductionIndices: axes, keepDims: true)
+        Raw.max(self, reductionIndices: axes, keepDims: true)
     }
 
     /// Returns the minimum along the specified axes. The reduced dimensions are retained with
@@ -1095,19 +1456,19 @@ public extension Tensor where Scalar: Numeric & Comparable {
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
     func max(alongAxes axes: Int...) -> Tensor {
-        return max(alongAxes: axes)
+        max(alongAxes: axes)
     }
 
     /// Returns the index of the maximum value of the flattened scalars.
     @inlinable
     func argmax() -> Tensor<Int32> {
-        return flattened().argmax(squeezingAxis: 0)
+        flattened().argmax(squeezingAxis: 0)
     }
 
     /// Returns the index of the minimum value of the flattened scalars.
     @inlinable
     func argmin() -> Tensor<Int32> {
-        return flattened().argmin(squeezingAxis: 0)
+        flattened().argmin(squeezingAxis: 0)
     }
 }
 
@@ -1154,7 +1515,7 @@ public extension Tensor where Scalar: Numeric {
     @inlinable
     @differentiable(wrt: self, vjp: _vjpSum(squeezingAxes:) where Scalar: TensorFlowFloatingPoint)
     func sum(squeezingAxes axes: Tensor<Int32>) -> Tensor {
-        return Raw.sum(self, reductionIndices: axes, keepDims: false)
+        Raw.sum(self, reductionIndices: axes, keepDims: false)
     }
 
     /// Returns the sum along the specified axes. The reduced dimensions are removed.
@@ -1174,13 +1535,13 @@ public extension Tensor where Scalar: Numeric {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func sum(squeezingAxes axes: Int...) -> Tensor {
-        return sum(squeezingAxes: axes)
+        sum(squeezingAxes: axes)
     }
 
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func sum() -> Tensor {
-        return flattened().sum(squeezingAxes: 0)
+        flattened().sum(squeezingAxes: 0)
     }
 
     /// Returns the sum along the specified axes. The reduced dimensions are retained with value 1.
@@ -1189,7 +1550,7 @@ public extension Tensor where Scalar: Numeric {
     @inlinable
     @differentiable(wrt: self, vjp: _vjpSum(alongAxes:) where Scalar: TensorFlowFloatingPoint)
     func sum(alongAxes axes: Tensor<Int32>) -> Tensor {
-        return Raw.sum(self, reductionIndices: axes, keepDims: true)
+        Raw.sum(self, reductionIndices: axes, keepDims: true)
     }
 
     /// Returns the sum along the specified axes. The reduced dimensions are retained with value 1.
@@ -1209,7 +1570,7 @@ public extension Tensor where Scalar: Numeric {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func sum(alongAxes axes: Int...) -> Tensor {
-        return sum(alongAxes: axes)
+        sum(alongAxes: axes)
     }
 
     // MARK: - Product
@@ -1221,7 +1582,7 @@ public extension Tensor where Scalar: Numeric {
     // TODO: Make this @differentiable.
     @inlinable
     func product(squeezingAxes axes: Tensor<Int32>) -> Tensor {
-        return Raw.prod(self, reductionIndices: axes, keepDims: false)
+        Raw.prod(self, reductionIndices: axes, keepDims: false)
     }
 
     /// Returns the product along the specified axes. The reduced dimensions are removed.
@@ -1241,12 +1602,12 @@ public extension Tensor where Scalar: Numeric {
     /// - Precondition: Each value in `axes` must be in the range `-rank...rank`.
     @inlinable
     func product(squeezingAxes axes: Int...) -> Tensor {
-        return product(squeezingAxes: axes)
+        product(squeezingAxes: axes)
     }
 
     @inlinable
     func product() -> Tensor {
-        return flattened().product(squeezingAxes: 0)
+        flattened().product(squeezingAxes: 0)
     }
 
     /// Returns the product along the specified axes. The reduced dimensions are retained with
@@ -1255,7 +1616,7 @@ public extension Tensor where Scalar: Numeric {
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
     func product(alongAxes axes: Tensor<Int32>) -> Tensor {
-        return Raw.prod(self, reductionIndices: axes, keepDims: true)
+        Raw.prod(self, reductionIndices: axes, keepDims: true)
     }
 
     /// Returns the product along the specified axes. The reduced dimensions are retained with
@@ -1275,7 +1636,7 @@ public extension Tensor where Scalar: Numeric {
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
     func product(alongAxes axes: Int...) -> Tensor {
-        return product(alongAxes: axes)
+        product(alongAxes: axes)
     }
 
     // MARK: - Mean
@@ -1286,7 +1647,7 @@ public extension Tensor where Scalar: Numeric {
     @inlinable
     @differentiable(wrt: self, vjp: _vjpMean(squeezingAxes:) where Scalar: TensorFlowFloatingPoint)
     func mean(squeezingAxes axes: Tensor<Int32>) -> Tensor {
-        return Raw.mean(self, reductionIndices: axes, keepDims: false)
+        Raw.mean(self, reductionIndices: axes, keepDims: false)
     }
 
     /// Returns the arithmetic mean along the specified axes. The reduced dimensions are removed.
@@ -1306,13 +1667,13 @@ public extension Tensor where Scalar: Numeric {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func mean(squeezingAxes axes: Int...) -> Tensor {
-        return mean(squeezingAxes: axes)
+        mean(squeezingAxes: axes)
     }
 
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func mean() -> Tensor {
-        return flattened().mean(squeezingAxes: [0])
+        flattened().mean(squeezingAxes: [0])
     }
 
     /// Returns the arithmetic mean along the specified axes. The reduced dimensions are retained
@@ -1322,7 +1683,7 @@ public extension Tensor where Scalar: Numeric {
     @inlinable
     @differentiable(wrt: self, vjp: _vjpMean(alongAxes:) where Scalar: TensorFlowFloatingPoint)
     func mean(alongAxes axes: Tensor<Int32>) -> Tensor {
-        return Raw.mean(self, reductionIndices: axes, keepDims: true)
+        Raw.mean(self, reductionIndices: axes, keepDims: true)
     }
 
     /// Returns the arithmetic mean along the specified axes. The reduced dimensions are retained
@@ -1344,7 +1705,7 @@ public extension Tensor where Scalar: Numeric {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func mean(alongAxes axes: Int...) -> Tensor {
-        return mean(alongAxes: axes)
+        mean(alongAxes: axes)
     }
 
     // MARK: - Variance
@@ -1379,7 +1740,7 @@ public extension Tensor where Scalar: Numeric {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func variance(squeezingAxes axes: Int...) -> Tensor {
-        return variance(squeezingAxes: axes)
+        variance(squeezingAxes: axes)
     }
 
     @inlinable
@@ -1420,7 +1781,7 @@ public extension Tensor where Scalar: Numeric {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func variance(alongAxes axes: Int...) -> Tensor {
-        return variance(alongAxes: axes)
+        variance(alongAxes: axes)
     }
 }
 
@@ -1469,7 +1830,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func standardDeviation(squeezingAxes axes: Tensor<Int32>) -> Tensor {
-        return sqrt(variance(squeezingAxes: axes))
+        TensorFlow.sqrt(variance(squeezingAxes: axes))
     }
 
     /// Returns the standard deviation of the elements along the specified axes. The reduced
@@ -1480,7 +1841,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func standardDeviation(squeezingAxes axes: [Int]) -> Tensor {
-        return sqrt(variance(squeezingAxes: axes))
+        TensorFlow.sqrt(variance(squeezingAxes: axes))
     }
 
     /// Returns the standard deviation of the elements along the specified axes. The reduced
@@ -1491,7 +1852,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func standardDeviation(squeezingAxes axes: Int...) -> Tensor {
-        return standardDeviation(squeezingAxes: axes)
+        standardDeviation(squeezingAxes: axes)
     }
 
     /// Returns the standard deviation of the elements along the specified axes. The reduced
@@ -1503,7 +1864,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @differentiable(wrt: self)
     func standardDeviation() -> Tensor {
         // Reduce along all dimensions.
-        return standardDeviation(squeezingAxes: Array(0..<shape.rank))
+        standardDeviation(squeezingAxes: Array(0..<shape.rank))
     }
 
     /// Returns the standard deviation of the elements along the specified axes. The reduced
@@ -1514,7 +1875,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func standardDeviation(alongAxes axes: Tensor<Int32>) -> Tensor {
-        return sqrt(variance(alongAxes: axes))
+        TensorFlow.sqrt(variance(alongAxes: axes))
     }
 
     /// Returns the standard deviation of the elements along the specified axes. The reduced
@@ -1538,7 +1899,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func standardDeviation(alongAxes axes: Int...) -> Tensor {
-        return sqrt(variance(alongAxes: axes))
+        TensorFlow.sqrt(variance(alongAxes: axes))
     }
 }
 
@@ -1609,7 +1970,7 @@ public extension Tensor where Scalar: Numeric {
     @inlinable
     @differentiable(vjp: _vjpMatmulOperator(lhs:rhs:) where Scalar: TensorFlowFloatingPoint)
     static func • (lhs: Tensor, rhs: Tensor) -> Tensor {
-        return matmul(lhs, rhs)
+        matmul(lhs, rhs)
     }
 }
 
@@ -1622,6 +1983,6 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
         lhs: Tensor,
         rhs: Tensor
     ) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
-        return _vjpMatmul(lhs, rhs)
+        _vjpMatmul(lhs, rhs)
     }
 }

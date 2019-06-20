@@ -62,7 +62,7 @@ public extension SeedableRandomNumberGenerator {
 /// An individual generator is not thread-safe, but distinct generators do not
 /// share state. The random data generated is of high-quality, but is not
 /// suitable for cryptographic applications.
-@_fixed_layout
+@frozen
 public struct ARC4RandomNumberGenerator: SeedableRandomNumberGenerator {
     public static var global = ARC4RandomNumberGenerator(seed: UInt32(time(nil)))
     var state: [UInt8] = Array(0...255)
@@ -413,7 +413,7 @@ public protocol RandomDistribution {
     func next<G: RandomNumberGenerator>(using generator: inout G) -> Sample
 }
 
-@_fixed_layout
+@frozen
 public struct UniformIntegerDistribution<T: FixedWidthInteger>: RandomDistribution {
     public let lowerBound: T
     public let upperBound: T
@@ -428,7 +428,7 @@ public struct UniformIntegerDistribution<T: FixedWidthInteger>: RandomDistributi
     }
 }
 
-@_fixed_layout
+@frozen
 public struct UniformFloatingPointDistribution<T: BinaryFloatingPoint>: RandomDistribution
   where T.RawSignificand: FixedWidthInteger {
     public let lowerBound: T
@@ -444,7 +444,7 @@ public struct UniformFloatingPointDistribution<T: BinaryFloatingPoint>: RandomDi
     }
 }
 
-@_fixed_layout
+@frozen
 public struct NormalDistribution<T: BinaryFloatingPoint>: RandomDistribution
     where T.RawSignificand: FixedWidthInteger {
     public let mean: T
@@ -468,7 +468,7 @@ public struct NormalDistribution<T: BinaryFloatingPoint>: RandomDistribution
     }
 }
 
-@_fixed_layout
+@frozen
 public struct BetaDistribution: RandomDistribution {
     public let alpha: Float
     public let beta: Float
