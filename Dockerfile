@@ -36,5 +36,8 @@ COPY . .
 RUN echo "/usr/local/cuda-10.0/targets/x86_64-linux/lib/stubs" > /etc/ld.so.conf.d/cuda-10.0-stubs.conf && \
     ldconfig
 
+# Print out swift version for better debugging for toolchain problems
+RUN /swift-tensorflow-toolchain/usr/bin/swift --version
+
 # Run SwiftPM tests
 RUN /swift-tensorflow-toolchain/usr/bin/swift test
