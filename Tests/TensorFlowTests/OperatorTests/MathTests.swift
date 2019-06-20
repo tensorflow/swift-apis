@@ -325,6 +325,7 @@ final class MathOperatorTests: XCTestCase {
         ("testCosineSimilarity", testCosineSimilarity),
         ("testElu",testElu),
         ("testArgmax", testArgmax),
+        ("testLogSigmoid", testLogSigmoid),
         ("testSoftplus", testSoftplus),
         ("testSoftsign", testSoftsign),
         ("testLeakyRelu", testLeakyRelu),
