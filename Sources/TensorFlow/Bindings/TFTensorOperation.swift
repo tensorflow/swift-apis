@@ -1,4 +1,4 @@
-// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,6 +11,15 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+/// Opaque reference to a function that has been made callable by loading it
+/// into the runtime.
+public struct _TensorFunctionPointer {
+    public var name: String
+    public init(name: String) {
+        self.name = name
+    }
+}
 
 // A protocol for a tensor operation.
 public protocol TensorOperation {
@@ -59,6 +68,7 @@ public protocol TFTensorOperation: TensorOperation {
     func updateAttribute(_ name: String, _ value: [TensorShape])
     func updateAttribute(_ name: String, _ value: [TensorShape?])
     func updateAttribute<In: TensorGroup, Out: TensorGroup>(_ name: String, _ value: (In) -> Out)
+    func updateAttribute(_ name: String, _ value: _TensorFunctionPointer)
 
     func execute()
 
@@ -110,7 +120,7 @@ public protocol TFTensorOperation: TensorOperation {
         _ count5: Int,
         _ count6: Int
     ) -> (T0, T1, T2, T3, T4, T5, T6)
-        
+
     func execute<T0: TensorArrayProtocol, T1: TensorArrayProtocol, T2: TensorArrayProtocol, T3: TensorArrayProtocol, T4: TensorArrayProtocol, T5: TensorArrayProtocol, T6: TensorArrayProtocol, T7: TensorArrayProtocol>(
         _ count0: Int,
         _ count1: Int,
@@ -133,7 +143,7 @@ public protocol TFTensorOperation: TensorOperation {
         _ count7: Int,
         _ count8: Int
     ) -> (T0, T1, T2, T3, T4, T5, T6, T7, T8)
-    
+
     func execute<T0: TensorArrayProtocol, T1: TensorArrayProtocol, T2: TensorArrayProtocol, T3: TensorArrayProtocol, T4: TensorArrayProtocol, T5: TensorArrayProtocol, T6: TensorArrayProtocol, T7: TensorArrayProtocol, T8: TensorArrayProtocol, T9: TensorArrayProtocol>(
         _ count0: Int,
         _ count1: Int,

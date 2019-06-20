@@ -21,10 +21,10 @@ final class SequentialTests: XCTestCase {
             var dense1 = Dense<Float>(inputSize: 2, outputSize: 4, activation: relu,
                                       seed: (0xfffffff, 0xfeeff))
             var dense2 = Dense<Float>(inputSize: 4, outputSize: 1, activation: relu,
-                                      seed: (0xfeffeffe, 0xfffe))
+                                      seed: (0xeffeffe, 0xfffe))
 
             @differentiable
-            func call(_ input: Tensor<Float>) -> Tensor<Float> {
+            func callAsFunction(_ input: Tensor<Float>) -> Tensor<Float> {
               return input.sequenced(through: dense1, dense2)
             }
         }
@@ -41,7 +41,7 @@ final class SequentialTests: XCTestCase {
             optimizer.update(&model.allDifferentiableVariables, along: 𝛁model)
         }
         XCTAssertEqual(model.inferring(from: [[0, 0], [0, 1], [1, 0], [1, 1]]),
-                       [[  0.491493], [ 0.5063815], [0.49968663], [0.50133944]])
+                       [[ 0.4904838], [0.49942452], [0.49740878], [ 0.5106092]])
     }
 
     static var allTests = [

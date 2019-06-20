@@ -1,4 +1,4 @@
-// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
 // limitations under the License.
 
 /// A max pooling layer for temporal data.
-@_fixed_layout
+@frozen
 public struct MaxPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The size of the sliding reduction window for pooling.
     @noDerivative let poolSize: Int
@@ -43,15 +43,14 @@ public struct MaxPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return input.expandingShape(at: 1).maxPooled2D(
-            kernelSize: (1, 1, poolSize, 1), strides: (1, 1, stride, 1), padding: padding
-        ).squeezingShape(at: 1)
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+        return maxPool2D(input.expandingShape(at: 1), filterSize: (1, 1, poolSize, 1),
+                         strides: (1, 1, stride, 1), padding: padding).squeezingShape(at: 1)
     }
 }
 
 /// A max pooling layer for spatial data.
-@_fixed_layout
+@frozen
 public struct MaxPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The size of the sliding reduction window for pooling.
     @noDerivative let poolSize: (Int, Int, Int, Int)
@@ -77,9 +76,8 @@ public struct MaxPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return input.maxPooled2D(
-            kernelSize: poolSize, strides: strides, padding: padding)
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+        return maxPool2D(input, filterSize: poolSize, strides: strides, padding: padding)
     }
 }
 
@@ -98,7 +96,7 @@ public extension MaxPool2D {
 }
 
 /// A max pooling layer for spatial or spatio-temporal data.
-@_fixed_layout
+@frozen
 public struct MaxPool3D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The size of the sliding reduction window for pooling.
     @noDerivative let poolSize: (Int, Int, Int, Int, Int)
@@ -124,8 +122,8 @@ public struct MaxPool3D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return input.maxPooled3D(kernelSize: poolSize, strides: strides, padding: padding)
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+        return maxPool3D(input, filterSize: poolSize, strides: strides, padding: padding)
     }
 }
 
@@ -154,7 +152,7 @@ public extension MaxPool3D {
 }
 
 /// An average pooling layer for temporal data.
-@_fixed_layout
+@frozen
 public struct AvgPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The size of the sliding reduction window for pooling.
     @noDerivative let poolSize: Int
@@ -184,15 +182,14 @@ public struct AvgPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return input.expandingShape(at: 1).averagePooled2D(
-            kernelSize: (1, 1, poolSize, 1), strides: (1, 1, stride, 1), padding: padding
-        ).squeezingShape(at: 1)
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+        return avgPool2D(input.expandingShape(at: 1), filterSize: (1, 1, poolSize, 1),
+                         strides: (1, 1, stride, 1), padding: padding).squeezingShape(at: 1)
     }
 }
 
 /// An average pooling layer for spatial data.
-@_fixed_layout
+@frozen
 public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The size of the sliding reduction window for pooling.
     @noDerivative let poolSize: (Int, Int, Int, Int)
@@ -218,8 +215,8 @@ public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return input.averagePooled2D(kernelSize: poolSize, strides: strides, padding: padding)
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+        return avgPool2D(input, filterSize: poolSize, strides: strides, padding: padding)
     }
 }
 
@@ -238,7 +235,7 @@ public extension AvgPool2D {
 }
 
 /// An average pooling layer for spatial or spatio-temporal data.
-@_fixed_layout
+@frozen
 public struct AvgPool3D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The size of the sliding reduction window for pooling.
     @noDerivative let poolSize: (Int, Int, Int, Int, Int)
@@ -264,8 +261,8 @@ public struct AvgPool3D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return input.averagePooled3D(kernelSize: poolSize, strides: strides, padding: padding)
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+        return avgPool3D(input, filterSize: poolSize, strides: strides, padding: padding)
     }
 }
 
@@ -294,7 +291,7 @@ public extension AvgPool3D {
 }
 
 /// A global average pooling layer for temporal data.
-@_fixed_layout
+@frozen
 public struct GlobalAvgPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// Creates a global average pooling layer.
     public init() {}
@@ -304,13 +301,13 @@ public struct GlobalAvgPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input.mean(squeezingAxes: 1)
     }
 }
 
 /// A global average pooling layer for spatial data.
-@_fixed_layout
+@frozen
 public struct GlobalAvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// Creates a global average pooling layer.
     public init() {}
@@ -320,13 +317,13 @@ public struct GlobalAvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input.mean(squeezingAxes: [1, 2])
     }
 }
 
 /// A global average pooling layer for spatial and spatio-temporal data.
-@_fixed_layout
+@frozen
 public struct GlobalAvgPool3D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// Creates a global average pooling layer.
     public init() {}
@@ -336,7 +333,58 @@ public struct GlobalAvgPool3D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input.mean(squeezingAxes: [1, 2, 3])
+    }
+}
+
+/// A global max pooling layer for temporal data.
+@frozen
+public struct GlobalMaxPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
+    /// Creates a global max pooling layer.
+    public init() {}
+
+    /// Returns the output obtained from applying the layer to the given input.
+    ///
+    /// - Parameters:
+    ///   - input: The input to the layer.
+    ///   - context: The contextual information for the layer application, e.g. the current learning
+    ///     phase.
+    /// - Returns: The output.
+    @differentiable
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+        return input.max(squeezingAxes: 1)
+    }
+}
+
+/// A global max pooling layer for spatial data.
+@frozen
+public struct GlobalMaxPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
+    /// Creates a global max pooling layer.
+    public init() {}
+
+    /// Returns the output obtained from applying the layer to the given input.
+    ///
+    /// - Parameter input: The input to the layer.
+    /// - Returns: The output.
+    @differentiable
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+        return input.max(squeezingAxes: [1, 2])
+    }
+}
+
+/// A global max pooling layer for spatial and spatio-temporal data.
+@frozen
+public struct GlobalMaxPool3D<Scalar: TensorFlowFloatingPoint>: Layer {
+    /// Creates a global max pooling layer.
+    public init() {}
+
+    /// Returns the output obtained from applying the layer to the given input.
+    ///
+    /// - Parameter input: The input to the layer.
+    /// - Returns: The output.
+    @differentiable
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+        return input.max(squeezingAxes: [1, 2, 3])
     }
 }
