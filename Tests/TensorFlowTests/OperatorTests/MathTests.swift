@@ -16,22 +16,127 @@ import XCTest
 @testable import TensorFlow
 
 final class MathOperatorTests: XCTestCase {
+    func testElementaryFunction(
+        name: String,
+        _ tensorOperator: (Tensor<Float>) -> Tensor<Float>,
+        _ scalarOperator: (Float) -> Float,
+        accuracy: Float = 1e-4,
+        file: StaticString = #file, line: UInt = #line
+    ) {
+        let x = Tensor<Float>(randomNormal: [20], seed: (0, 0))
+        let actual = tensorOperator(x).scalars
+        let expected = x.scalars.map(scalarOperator)
+        assertEqual(actual, expected, accuracy: accuracy, name, file: file, line: line)
+    }
+
+    func testElementaryFunctions() {
+        testElementaryFunction(name: "sqrt", sqrt, Float.sqrt)
+        testElementaryFunction(name: "cos", cos, Float.cos)
+        testElementaryFunction(name: "sin", sin, Float.sin)
+        testElementaryFunction(name: "tan", tan, Float.tan)
+        testElementaryFunction(name: "cosh", cosh, Float.cosh)
+        testElementaryFunction(name: "sinh", sinh, Float.sinh)
+        testElementaryFunction(name: "tanh", tanh, Float.tanh)
+        testElementaryFunction(name: "acos", acos, Float.acos)
+        testElementaryFunction(name: "asin", asin, Float.asin)
+        testElementaryFunction(name: "atan", atan, Float.atan)
+        testElementaryFunction(name: "acosh", acosh, Float.acosh)
+        testElementaryFunction(name: "asinh", asinh, Float.asinh)
+        testElementaryFunction(name: "atanh", atanh, Float.atanh)
+        testElementaryFunction(name: "exp", exp, Float.exp)
+        testElementaryFunction(name: "exp2", exp2, Float.exp2)
+        testElementaryFunction(name: "exp10", exp10, Float.exp10)
+        testElementaryFunction(name: "expm1", expm1, Float.expm1)
+        testElementaryFunction(name: "log", log, Float.log)
+        testElementaryFunction(name: "log2", log2, Float.log2)
+        testElementaryFunction(name: "log10", log10, Float.log10)
+        testElementaryFunction(name: "log1p", log1p, Float.log1p)
+        testElementaryFunction(name: "pow",
+                               { x in pow(x, x) }, { x in Float.pow(x, x) })
+        testElementaryFunction(name: "pow",
+                               { x in pow(x, 3) }, { x in Float.pow(x, 3) })
+        testElementaryFunction(name: "root",
+                               { x in root(x, 3) }, { x in Float.root(x, 3) })
+    }
+
     func testLog1p() {
-        let x = Tensor<Float>([[1, 2, 3, 4, 5], [1, 2, 3, 4, 5]])
+        let x = Tensor<Float>([1, 2, 3, 4, 5])
         let y = log1p(x)
-        assertEqual(y, log(1 + x), accuracy: 0.0001)
+        let expectedY = Tensor<Float>([0.69315, 1.09861, 1.38629, 1.60944, 1.79176])
+        assertEqual(y, expectedY, accuracy: 0.0001)
     }
 
     func testExpm1() {
-        let x = Tensor<Float>([[1, 2, 3, 4, 5], [1, 2, 3, 4, 5]])
+        let x = Tensor<Float>([1, 2, 3, 4, 5])
         let y = expm1(x)
-        assertEqual(y, exp(x - 1), accuracy: 0.0001)
+        let expectedY = Tensor<Float>([1.71828, 6.38906, 19.08554, 53.59815, 147.41316])
+        assertEqual(y, expectedY, accuracy: 0.0001)
     }
 
     func testSign() {
         let x = Tensor<Float>([[1, 2, -3, 4, 5], [1, 2, 3, 4, -5]])
         let y = sign(x)
         XCTAssertEqual(y, Tensor<Float>([[1, 1, -1, 1, 1], [1, 1, 1, 1, -1]]))
+    }
+
+    func testLogSigmoid() {
+        let x = Tensor<Float>([[1, 2, 3, 4, 5], [1, 2, 3, 4, 5]])
+        let y = logSigmoid(x)
+        assertEqual(y, log(sigmoid(x)), accuracy: 0.0001)
+    }
+
+    func testSoftplus() {
+        let x = Tensor<Float>([1.0, 2.0, 3.0])
+        let y = softplus(x)
+        let expected = Tensor<Float>([1.3132616,  2.126928, 3.0485873])
+        XCTAssertEqual(y, expected)
+    }
+
+    func testSoftsign() {
+        let x = Tensor<Float>([1.0, 4.0, 3.0])
+        let y = softsign(x)
+        let expected = Tensor<Float>([0.5 , 0.8 , 0.75])
+        XCTAssertEqual(y, expected)
+    }
+
+    func testElu() {
+        let x = Tensor<Float>([-1.0, 2.0, 3.0])
+        let y = elu(x)
+        let expected = Tensor<Float>([-0.63212055, 2, 3])
+        XCTAssertEqual(y, expected)
+    }
+
+    func testLeakyRelu() {
+        let x = Tensor<Float>([[-1.0, 2.0, 3.0]])
+        let y = leakyRelu(x, alpha: 0.4)
+        let expected = Tensor<Float>([-0.4, 2, 3])
+        XCTAssertEqual(y, expected)
+    }
+
+    func testIsFinite() {
+        let x = Tensor<Float>([1, 2, 3, 4, -Float.infinity])
+        let y = x.isFinite
+        XCTAssertEqual(y, Tensor([true, true, true, true, false]))
+    }
+
+    func testIsInfinite() {
+        let x = Tensor<Float>([1, 2, 3, 4, log(0.0)])
+        let y = x.isInfinite
+        XCTAssertEqual(y, Tensor([false, false, false, false, true]))
+    }
+
+    func testIsNaN() {
+        let x = Tensor<Float>([1, 2, 3, 4, log(-5.0)])
+        let y = x.isNaN
+        XCTAssertEqual(y, Tensor([false, false, false, false, true]))
+    }
+
+    func testCosineSimilarity() {
+        let x = Tensor<Float>([1, 2, 3, 4, 5, 6, 7, 8])
+        let y = Tensor<Float>([0.5, 1, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0])
+        let z = cosineSimilarity(x, y)
+        let output: Float = 1.0
+        XCTAssertEqual(z, Tensor(output))
     }
 
     func testReduction() {
@@ -72,7 +177,7 @@ final class MathOperatorTests: XCTestCase {
             x.variance(squeezingAxes: 0),
             Tensor(shape: [5], scalars: [0, 0, 0, 0, 0]))
         XCTAssertEqual(
-            x.variance(alongAxes: 0), 
+            x.variance(alongAxes: 0),
             Tensor(shape: [5], scalars: [0, 0, 0, 0, 0]))
         XCTAssertEqual(
             x.variance(squeezingAxes: 1),
@@ -216,7 +321,7 @@ final class MathOperatorTests: XCTestCase {
         let prediction = classifier.prediction(for: input)
         XCTAssertEqual(Double(prediction.scalars[0]), 0.816997, accuracy: 0.0001)
     }
-
+    
     func testBroadcastedAddGradient() {
 	  func foo(_ x: Tensor<Float>, _ y: Tensor<Float>) -> Tensor<Float> {
 	    return (x + y).sum()
@@ -229,10 +334,19 @@ final class MathOperatorTests: XCTestCase {
 	}
 
     static var allTests = [
+        ("testElementaryFunctions", testElementaryFunctions),
         ("testLog1p", testLog1p),
-        // TODO(https://bugs.swift.org/browse/TF-543): Test is failing in Linux
-	// ("testExpm1", testExpm1),
+        ("testExpm1", testExpm1),
         ("testSign", testSign),
+        ("testLogSigmoid", testLogSigmoid),
+        ("testSoftplus", testSoftplus),
+        ("testSoftsign", testSoftsign),
+        ("testElu",testElu),
+        ("testLeakyRelu", testLeakyRelu),
+        ("testIsFinite", testIsFinite),
+        ("testIsInfinite", testIsInfinite),
+        ("testIsNaN", testIsNaN),
+        ("testCosineSimilarity", testCosineSimilarity),
         ("testReduction", testReduction),
         ("testArgmax", testArgmax),
         ("testCeilAndFloor", testCeilAndFloor),

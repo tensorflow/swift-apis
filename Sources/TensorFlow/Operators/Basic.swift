@@ -1,4 +1,4 @@
-// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ infix operator .!=: ComparisonPrecedence
 
 /// Returns a tensor with the same shape and scalars as the specified tensor.
 @inlinable
-@differentiable
+@differentiable(where Scalar: TensorFlowFloatingPoint)
 public func identity<Scalar>(_ x: Tensor<Scalar>) -> Tensor<Scalar> {
     return x
 }
@@ -34,15 +34,15 @@ public extension TensorFlowScalar {
 }
 
 public extension Tensor {
-    /// Unpacks the given dimension of a rank-`R` tensor into multiple rank-`(R-1)` tensors. Unpacks 
+    /// Unpacks the given dimension of a rank-`R` tensor into multiple rank-`(R-1)` tensors. Unpacks
     /// `N` tensors from this tensor by chipping it along the `axis` dimension, where `N` is
     /// inferred from this tensor's shape. For example, given a tensor with shape `[A, B, C, D]`:
-    /// 
-    ///   - If `axis == 0` then the `i`-th tensor in the returned array is the slice 
-    ///     `self[i, :, :, :]` and each tensor in that array will have shape `[B, C, D]`. 
+    ///
+    ///   - If `axis == 0` then the `i`-th tensor in the returned array is the slice
+    ///     `self[i, :, :, :]` and each tensor in that array will have shape `[B, C, D]`.
     ///     (Note that the dimension unpacked along is gone, unlike
     ///     `Tensor.split(numSplits:alongAxis)`, or `Tensor.split(sizes:alongAxis)`).
-    ///   - If `axis == 1` then the `i`-th tensor in the returned array is the slice 
+    ///   - If `axis == 1` then the `i`-th tensor in the returned array is the slice
     ///     `value[:, i, :, :]` and each tensor in that array will have shape `[A, C, D]`.
     ///   - Etc.
     ///
@@ -50,10 +50,10 @@ public extension Tensor {
     ///
     /// - Parameters:
     ///   - axis: Dimension along which to unstack. Negative values wrap around.
-    /// 
+    ///
     /// - Precondition: `axis` must be in the range `[-rank, rank)`, where `rank` is the rank of the
     ///   provided tensors.
-    /// 
+    ///
     /// - Returns: Array containing the unstacked tensors.
     @inlinable
     @differentiable(vjp: _vjpUnstacked(alongAxis:) where Scalar: TensorFlowFloatingPoint)
@@ -90,8 +90,8 @@ public extension Tensor {
             splitDim: Tensor<Int32>(Int32(axis)), value: self, numSplit: Int64(count))
     }
 
-    /// Splits a tensor into multiple tensors. The tensor is split  into `sizes.shape[0]` pieces. 
-    /// The shape of the `i`-th piece has the same shape as this tensor except along dimension 
+    /// Splits a tensor into multiple tensors. The tensor is split  into `sizes.shape[0]` pieces.
+    /// The shape of the `i`-th piece has the same shape as this tensor except along dimension
     /// `axis` where the size is `sizes[i]`.
     ///
     /// For example:
@@ -315,7 +315,7 @@ public extension Tensor {
         return transposed(withPermutations: Tensor<Int32>(defaultPermutations))
     }
 
-    /// Concatenates tensors along the specified axis.
+    /// Returns a concatenated tensor along the specified axis.
     /// - Precondition: The tensors must have the same dimensions, except for the
     ///   specified axis.
     /// - Precondition: The axis must be in the range `-rank..<rank`.
@@ -336,7 +336,7 @@ public extension Tensor {
         return lhs.concatenated(with: rhs)
     }
 
-    /// Gathers slices of this tensor at `indices` along the `axis` dimension.
+    /// Returns a tensor by gathering slices of the input at `indices` along the `axis` dimension
     ///
     /// For 0-D (scalar) `indices`:
     /// ```
@@ -387,7 +387,7 @@ public extension Tensor {
         return Raw.gatherV2(params: self, indices: indices, axis: Tensor<Int32>(Int32(axis)))
     }
 
-    /// Gathers slices of this tensor at `indices`, while ignoring the first `batchDims` dimensions
+    /// Returns slices of this tensor at `indices`, while ignoring the first `batchDims` dimensions
     /// that correspond to batch dimensions. The gather is performed along the first non-batch
     /// dimension.
     ///
@@ -411,8 +411,8 @@ public extension Tensor {
     func batchGathering(atIndices indices: Tensor<Int32>) -> Tensor {
         var batchIndices = indices
         var accumulated = Tensor<Int32>(ones: [])
-        accumulated *= noDerivative(at: shapeTensor)[1]
-        let dValue = noDerivative(at: shapeTensor)[0]
+        accumulated *= Swift.withoutDerivative(at: shapeTensor) { $0[1] }
+        let dValue = Swift.withoutDerivative(at: shapeTensor) { $0[0] }
         let dIndices = Tensor<Int32>(
             rangeFrom: Tensor<Int32>(zeros: []),
             to: dValue,
@@ -423,14 +423,14 @@ public extension Tensor {
             Tensor<Int32>([Int32](repeating: 1, count: indices.rank - 1))])
         batchIndices += dIndices.reshaped(toShape: dShape)
         let flatIndices = batchIndices.flattened()
-        let outerShape = noDerivative(at: shapeTensor)[2...]
-        let innerShape = noDerivative(at: shapeTensor)[..<2].product(squeezingAxes: [0])
+        let outerShape = Swift.withoutDerivative(at: shapeTensor) { $0[2...] }
+        let innerShape = Swift.withoutDerivative(at: shapeTensor) { $0[..<2] }.product(squeezingAxes: [0])
         let flatTensor = reshaped(toShape: innerShape.rankLifted().concatenated(with: outerShape))
         let flatResult = flatTensor.gathering(atIndices: flatIndices)
         return flatResult.reshaped(toShape: indices.shapeTensor.concatenated(with: outerShape))
     }
 
-    /// Gathers values from this tensor according to the provided boolean mask.
+    /// Returns a tensor by gathering the values after applying the provided boolean mask to the input.
     ///
     /// For example:
     /// ```
@@ -527,7 +527,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     ) -> (Tensor, (Tensor) -> Tensor) {
         let result = gathering(atIndices: indices, alongAxis: axis)
         let posAxis = axis < 0 ? axis + rank : axis
-        
+
         // We have a fast gradient implementation for the case when `posAxis == 0`.
         if posAxis == 0 {
             return (result, { [shape = shapeTensor] v in
@@ -541,7 +541,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
                     numSegments: shape[0])
             })
         }
-        
+
         return (result, { [shape = shapeTensor] v in
             let indicesSize = Tensor<Int32>(Int32(indices.scalarCount)).rankLifted()
             let outerShape = shape[..<posAxis]
@@ -615,6 +615,16 @@ public extension Tensor {
     @inlinable
     func nonZeroIndices() -> Tensor<Int64> {
         return Raw.where_(self)
+    }
+}
+
+public extension Tensor where Scalar: Numeric {
+    /// Returns a tensor by clipping scalars to a specified minimum and maximum.
+    // FIXME: Define a derivative function.
+    // @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+    @inlinable
+    func clipped(min: Tensor, max: Tensor) -> Tensor {
+        Raw.clipByValue(t: self, clipValueMin: min, clipValueMax: max)
     }
 }
 
@@ -717,11 +727,32 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
 public extension Tensor where Scalar: Numeric {
     /// Returns a padded tensor according to the specified padding sizes.
     @inlinable
+    @differentiable(wrt: self, vjp: _vjpPadded(forSizes:with:) where Scalar: TensorFlowFloatingPoint)
     func padded(forSizes sizes: [(before: Int, after: Int)], with value: Scalar = 0) -> Tensor {
         let paddings = Tensor<Int32>(
             shape: [sizes.count, 2],
             scalars: sizes.flatMap { [Int32($0.before), Int32($0.after)] })
         return Raw.padV2(self, paddings: paddings, constantValues: Tensor(value))
+    }
+}
+
+internal extension Tensor where Scalar: TensorFlowFloatingPoint {
+    @inlinable
+    func _vjpPadded(
+        forSizes sizes: [(before: Int, after: Int)],
+        with value: Scalar
+    ) -> (Tensor, (Tensor) -> Tensor) {
+        let result = padded(forSizes: sizes, with: value)
+        return (result, { [rank = rankTensor, shape = shapeTensor] v in
+            let paddings = Tensor<Int32>(
+                shape: [sizes.count, 2],
+                scalars: sizes.flatMap { [Int32($0.before), Int32($0.after)] })
+            let padBefore = Raw.slice(paddings,
+                begin: Tensor<Int32>([0, 0]),
+                size: Tensor<Int32>(stacking: [rank, Tensor<Int32>(1)]))
+            let begin = padBefore.reshaped(to: [-1])
+            return Raw.slice(v, begin: begin, size: shape)
+        })
     }
 }
 
@@ -738,7 +769,7 @@ public extension Tensor {
     /// - Parameter lowerBounds: The lower bounds at each dimension.
     /// - Parameter upperBounds: The upper bounds at each dimension.
     @inlinable
-    @differentiable(wrt: self)
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func slice(lowerBounds: [Int], upperBounds: [Int]) -> Tensor {
         // TODO: Precondition `lowerBounds.count == upperBounds.count`,
         // preferably in graph.
@@ -749,11 +780,13 @@ public extension Tensor {
     }
 
     @inlinable
-    @differentiable(wrt: self, vjp: _vjpSlice)
+    @differentiable(wrt: self, vjp: _vjpSlice where Scalar: TensorFlowFloatingPoint)
     func slice(lowerBounds: Tensor<Int32>, sizes: Tensor<Int32>) -> Tensor {
         return Raw.slice(self, begin: lowerBounds, size: sizes)
     }
+}
 
+public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     internal func _vjpSlice(
         lowerBounds: Tensor<Int32>,
@@ -888,7 +921,7 @@ public extension PartialRangeThrough where Bound == Int {
 }
 
 public extension Tensor {
-    @_fixed_layout @usableFromInline
+    @frozen @usableFromInline
     internal struct IndexPath {
         @usableFromInline
         let begin, end, strides: Tensor<Int32>
@@ -914,13 +947,13 @@ public extension Tensor {
     }
 
     @inlinable
-    @differentiable(wrt: self, vjp: _vjpSubscript)
+    @differentiable(wrt: self, vjp: _vjpSubscript where Scalar : TensorFlowFloatingPoint)
     internal subscript(_ indexPath: IndexPath) -> Tensor {
         get {
             return Raw.stridedSlice(
                 self, begin: indexPath.begin, end: indexPath.end,
                 strides: indexPath.strides, beginMask: indexPath.beginMask,
-                endMask: indexPath.endMask, ellipsisMask: indexPath.ellipsisMask, 
+                endMask: indexPath.endMask, ellipsisMask: indexPath.ellipsisMask,
                 newAxisMask: indexPath.newAxisMask,
                 shrinkAxisMask: indexPath.squeezeAxisMask)
         }
@@ -936,7 +969,7 @@ public extension Tensor {
     }
 
     @inlinable
-    @differentiable(wrt: self)
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     subscript(_ ranges: TensorRangeExpression...) -> Tensor {
         get {
             return self[{IndexPath({ranges.map { $0.tensorRange }}())}()]
@@ -945,7 +978,9 @@ public extension Tensor {
             self[{IndexPath({ranges.map { $0.tensorRange }}())}()] = newValue
         }
     }
+}
 
+public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @usableFromInline
     internal func _vjpSubscript(
         _ indexPath: IndexPath

@@ -52,6 +52,19 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(output, expected)
     }
 
+    func testDepthConv2D() {
+        let filter =  Tensor(shape: [2, 2, 2, 2], scalars: (0..<16).map(Float.init))
+        let bias = Tensor<Float>([1, 2, 3, 4])
+        let layer = DepthwiseConv2D<Float>(filter: filter, bias: bias, activation: identity,
+                                           strides: (2, 2), padding: .valid)
+        let input = Tensor(shape: [1, 1, 8, 2], scalars: (0..<16).map(Float.init))
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>(shape: [1, 1, 4, 4],
+                                     scalars: [9, 12, 23, 28, 25, 36, 55, 68, 41, 60, 87, 108,
+                                               57, 84, 119, 148])
+        XCTAssertEqual(output, expected)
+    }
+
     func testMaxPool1D() {
         let layer = MaxPool1D<Float>(poolSize: 3, stride: 1, padding: .valid)
         let input = Tensor<Float>([[0, 1, 2, 3, 4], [10, 11, 12, 13, 14]]).expandingShape(at: 2)
@@ -192,6 +205,23 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(output.shape, expected)
     }
 
+    func testEmbedding() {       
+        var layer = Embedding<Float>(vocabularySize: 3, embeddingSize: 5)       
+        var data = Tensor<Int32>(shape: [2, 3], scalars: [0, 1, 2, 1, 2, 2])
+        var input = EmbeddingInput(indices: data)
+        var output = layer.inferring(from: input)
+        let expectedShape = TensorShape([2, 3, 5])
+        XCTAssertEqual(output.shape, expectedShape)
+    
+        let pretrained = Tensor<Float>(shape:[2, 2], scalars: [0.4, 0.3, 0.2, 0.1])
+        layer = Embedding<Float>(embeddings: pretrained)
+        data = Tensor<Int32>(shape: [2, 2], scalars: [0, 1, 1, 1])
+        input = EmbeddingInput(indices: data)
+        output = layer.inferring(from: input)
+        let expected = Tensor<Float>([[[0.4, 0.3], [0.2, 0.1]], [[0.2, 0.1],[0.2, 0.1]]])
+        XCTAssertEqual(output, expected)
+    }
+
     func testSimpleRNNCell() {
         let weight = Tensor<Float>(ones: [7, 5]) * Tensor<Float>([0.3333, 1, 0.3333, 1, 0.3333])
         let bias = Tensor<Float>(ones: [5])
@@ -241,6 +271,7 @@ final class LayerTests: XCTestCase {
         ("testConv1D", testConv1D),
         ("testConv2D", testConv2D),
         ("testConv3D", testConv3D),
+        ("testDepthConv2D", testDepthConv2D),
         ("testMaxPool1D", testMaxPool1D),
         ("testMaxPool2D", testMaxPool2D),
         ("testMaxPool3D", testMaxPool3D),
@@ -258,6 +289,7 @@ final class LayerTests: XCTestCase {
         ("testUpSampling3D", testUpSampling3D),
         ("testReshape", testReshape),
         ("testFlatten", testFlatten),
+        ("testEmbedding", testEmbedding),
         ("testSimpleRNNCell", testSimpleRNNCell),
         ("testRNN", testRNN)
     ]
