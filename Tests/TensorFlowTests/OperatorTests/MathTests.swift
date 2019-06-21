@@ -328,7 +328,7 @@ final class MathOperatorTests: XCTestCase {
         let prediction = classifier.prediction(for: input)
         XCTAssertEqual(Double(prediction.scalars[0]), 0.816997, accuracy: 0.0001)
     }
-    
+
     func testBroadcastedAddGradient() {
 	  func foo(_ x: Tensor<Float>, _ y: Tensor<Float>) -> Tensor<Float> {
 	    return (x + y).sum()
