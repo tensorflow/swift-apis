@@ -76,7 +76,7 @@ _TYPE_PROTOCOLS = [
   ({types_pb2.DT_UINT8,
     types_pb2.DT_UINT16,
     types_pb2.DT_UINT32,
-    types_pb2.DT_UINT64}, 'TensorFlowUnsignedNumeric'),
+    types_pb2.DT_UINT64}, 'TensorFlowUnsignedInteger'),
   ({types_pb2.DT_INT32,
     types_pb2.DT_INT64}, 'TensorFlowIndex'),
   ({types_pb2.DT_UINT8,
