@@ -1051,6 +1051,24 @@ func _vjpRelu<T: TensorFlowFloatingPoint>(
     (relu(x), { v in Tensor(x .> 0) * v })
 }
 
+/// Returns the Gaussian Error Linear Unit (GELU) of the specified tensor element-wise.
+///
+/// Specifically, `gelu` approximates `xP(X <= x)`, where `P(X <= x)` is the Standard Gaussian
+/// cumulative distribution, by computing: x * [0.5 * (1 + tanh[√(2/π) * (x + 0.044715 * x^3)])].
+///
+/// See [Gaussian Error Linear Units](https://arxiv.org/abs/1606.08415).
+@inlinable
+@differentiable
+public func gelu<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    let ratio = Tensor<T>(0.7978845608) // An approximation of √(2/π).
+    // An approximation of the Gauss error function.
+    // NOTE: This is needed because the compiler otherwise gives an "unable to type-check this
+    // in reasonable time" error when the below expressions are written on a single line.
+    let approximateErf = tanh(ratio * (x + 0.044715 * pow(x, 3)))
+    let cdf = 0.5 * (1.0 + approximateErf)
+    return x * cdf
+}
+
 //===------------------------------------------------------------------------------------------===//
 // Element-wise Binary Math Functions
 //===------------------------------------------------------------------------------------------===//
