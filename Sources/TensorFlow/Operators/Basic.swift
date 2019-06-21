@@ -407,7 +407,7 @@ public extension Tensor {
     ///
     /// - Returns: The gathered tensor.
     @inlinable
-    @differentiable(wrt: self where Scalar : TensorFlowFloatingPoint)
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func batchGathering(atIndices indices: Tensor<Int32>) -> Tensor {
         var batchIndices = indices
         var accumulated = Tensor<Int32>(ones: [])
