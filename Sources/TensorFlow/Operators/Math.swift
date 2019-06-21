@@ -1956,9 +1956,6 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @differentiable(wrt: self)
     func logSumExp(alongAxes axes: Tensor<Int32>) -> Tensor {
         let rawMax = max(alongAxes: axes)
-        // TODO:
-        // let offset = rawMax.replacing(
-        //   with: Tensor<Scalar>(zerosLike: rawMax), where: isFinite(rawMax))
         let offset = Swift.withoutDerivative(at: rawMax) { rawMax in 
             rawMax.replacing(
                 with: Tensor<Scalar>(zerosLike: rawMax),
