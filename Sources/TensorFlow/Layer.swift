@@ -1,4 +1,4 @@
-// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@
 ///
 /// `Layer` instances define a differentiable `applied(to:)` method for mapping inputs to
 /// outputs.
-public protocol Layer: Differentiable & KeyPathIterable 
+public protocol Layer: Differentiable & KeyPathIterable
     where AllDifferentiableVariables: KeyPathIterable {
     /// The input type of the layer.
     associatedtype Input: Differentiable
@@ -31,7 +31,14 @@ public protocol Layer: Differentiable & KeyPathIterable
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    func call(_ input: Input) -> Output
+    func callAsFunction(_ input: Input) -> Output
+}
+
+public extension Layer {
+    @differentiable
+    func call(_  input: Input) -> Output {
+        return callAsFunction(input)
+    }
 }
 
 public extension Layer {

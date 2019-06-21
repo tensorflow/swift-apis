@@ -1,4 +1,4 @@
-// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -62,13 +62,18 @@ public extension RNNCell {
     ///   - previousState: The previous state of the RNN cell.
     /// - Returns: The output.
     @differentiable
+    func callAsFunction(input: TimeStepInput, state: State) -> RNNCellOutput<TimeStepOutput, State> {
+        return self(RNNCellInput(input: input, state: state))
+    }
+
+    @differentiable
     func call(input: TimeStepInput, state: State) -> RNNCellOutput<TimeStepOutput, State> {
         return self(RNNCellInput(input: input, state: state))
     }
 }
 
 /// A simple RNN cell.
-public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNumeric {
+public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorProtocol {
     public var weight: Tensor<Scalar>
     public var bias: Tensor<Scalar>
 
@@ -82,8 +87,8 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNum
 
     // TODO(TF-507): Revert to `typealias State = Tensor<Scalar>` after
     // SR-10697 is fixed.
-    public struct State: Equatable, Differentiable, VectorNumeric, KeyPathIterable {
-        public let value: Tensor<Scalar>
+    public struct State: Equatable, Differentiable, VectorProtocol, KeyPathIterable {
+        public var value: Tensor<Scalar>
         public init(_ value: Tensor<Scalar>) {
             self.value = value
         }
@@ -101,8 +106,8 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNum
     ///   - hiddenSize: The number of features in 2-D hidden states.
     ///   - seed: The random seed for initialization. The default value is random.
     public init(inputSize: Int, hiddenSize: Int,
-                seed: (Int64, Int64) = (Int64.random(in: Int64.min..<Int64.max),
-                                        Int64.random(in: Int64.min..<Int64.max))) {
+                seed: (Int32, Int32) = (Int32.random(in: Int32.min..<Int32.max),
+                                        Int32.random(in: Int32.min..<Int32.max))) {
         let concatenatedInputSize = inputSize + hiddenSize
         self.weight = Tensor(glorotUniform: [concatenatedInputSize, hiddenSize], seed: seed)
         self.bias = Tensor(zeros: [hiddenSize])
@@ -113,7 +118,7 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNum
     /// - Parameter input: The input to the layer.
     /// - Returns: The hidden state.
     @differentiable
-    public func call(_ input: Input) -> Output {
+    public func callAsFunction(_ input: Input) -> Output {
         let concatenatedInput = input.input.concatenated(with: input.state.value, alongAxis: 1)
         let newState = State(tanh(matmul(concatenatedInput, weight) + bias))
         return Output(output: newState, state: newState)
@@ -121,7 +126,7 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNum
 }
 
 /// An LSTM cell.
-public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNumeric {
+public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorProtocol {
     public var inputWeight, updateWeight, forgetWeight, outputWeight: Tensor<Scalar>
     public var inputBias, updateBias, forgetBias, outputBias: Tensor<Scalar>
 
@@ -144,8 +149,8 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNumeric 
     ///   - inputSize: The number of features in 2-D input tensors.
     ///   - hiddenSize: The number of features in 2-D hidden states.
     public init(inputSize: Int, hiddenSize: Int,
-                seed: (Int64, Int64) = (Int64.random(in: Int64.min..<Int64.max),
-                                        Int64.random(in: Int64.min..<Int64.max))) {
+                seed: (Int32, Int32) = (Int32.random(in: Int32.min..<Int32.max),
+                                        Int32.random(in: Int32.min..<Int32.max))) {
         let concatenatedInputSize = inputSize + hiddenSize
         let gateWeightShape = TensorShape([concatenatedInputSize, hiddenSize])
         let gateBiasShape = TensorShape([hiddenSize])
@@ -175,7 +180,7 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNumeric 
     /// - Parameter input: The input to the layer.
     /// - Returns: The hidden state.
     @differentiable
-    public func call(_ input: Input) -> Output {
+    public func callAsFunction(_ input: Input) -> Output {
         let gateInput = input.input.concatenated(with: input.state.hidden, alongAxis: 1)
 
         let inputGate = sigmoid(matmul(gateInput, inputWeight) + inputBias)
@@ -203,7 +208,7 @@ public struct RNN<Cell: RNNCell>: Layer {
     }
 
     @differentiable(wrt: (self, input), vjp: _vjpCall(_:initialState:))
-    public func call(_ input: [Cell.TimeStepInput],
+    public func callAsFunction(_ input: [Cell.TimeStepInput],
                      initialState: Cell.State) -> [Cell.TimeStepOutput] {
         var currentHiddenState = initialState
         var timeStepOutputs: [Cell.TimeStepOutput] = []
@@ -213,6 +218,11 @@ public struct RNN<Cell: RNNCell>: Layer {
             timeStepOutputs.append(output.output)
         }
         return timeStepOutputs
+    }
+
+    @differentiable(wrt: (self, input))
+    public func call(_ input: [Cell.TimeStepInput], initialState: Cell.State) -> [Cell.TimeStepOutput] {
+        return callAsFunction(input, initialState: initialState)
     }
 
     @usableFromInline
@@ -253,7 +263,7 @@ public struct RNN<Cell: RNNCell>: Layer {
     }
 
     @differentiable(wrt: (self, inputs))
-    public func call(_ inputs: [Cell.TimeStepInput]) -> [Cell.TimeStepOutput] {
+    public func callAsFunction(_ inputs: [Cell.TimeStepInput]) -> [Cell.TimeStepOutput] {
         return self(inputs, initialState: cell.zeroState.withoutDerivative())
     }
 
@@ -275,7 +285,7 @@ public struct RNN<Cell: RNNCell>: Layer {
 
 extension RNN: Equatable where Cell: Equatable {}
 extension RNN: AdditiveArithmetic where Cell: AdditiveArithmetic {}
-extension RNN: VectorNumeric where Cell: VectorNumeric {}
+extension RNN: VectorProtocol where Cell: VectorProtocol {}
 
 public typealias SimpleRNN<Scalar: TensorFlowFloatingPoint> = RNN<SimpleRNNCell<Scalar>>
 public typealias LSTM<Scalar: TensorFlowFloatingPoint> = RNN<LSTMCell<Scalar>>

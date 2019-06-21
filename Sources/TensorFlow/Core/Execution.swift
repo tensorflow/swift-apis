@@ -1,4 +1,4 @@
-// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ public func withDevice<R>(named name: String, perform body: () throws -> R) reth
 /// should restore the default placement behavior.
 ///
 /// - Parameters:
-///   - body: A closure whose TensorFlow operations are to be executed on the specified kind of 
+///   - body: A closure whose TensorFlow operations are to be executed on the specified kind of
 ///     device.
 public func withDefaultDevice<R>(perform body: () throws -> R) rethrows -> R {
     return try _ExecutionContext.global.withDefaultDevice(perform: body)

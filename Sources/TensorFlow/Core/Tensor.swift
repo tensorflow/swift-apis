@@ -1,4 +1,4 @@
-// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import CTensorFlow
+
 infix operator .==: ComparisonPrecedence
 infix operator .!=: ComparisonPrecedence
 
@@ -21,9 +23,12 @@ public protocol AnyTensor {
     var _tensorFlowDataType: TensorDataType { get }
 }
 
-/// `Tensor` is a multi-dimensional array used for computation. It is a wrapper around a 
-/// `TensorHandle`.
-@_fixed_layout
+/// A multidimensional array of elements that is a generalization of vectors and matrices to 
+/// potentially higher dimensions.
+///
+/// The generic parameter `Scalar` describes the type of scalars in the tensor (such as `Int32`,
+///  `Float`, etc).
+@frozen
 public struct Tensor<Scalar: TensorFlowScalar>: TensorProtocol {
     /// The underlying `TensorHandle`.
     /// - Note: `handle` is public to allow user defined ops, but should not normally be used.
@@ -50,7 +55,10 @@ public extension Tensor {
     var rank: Int {
         @_semantics("autodiff.nonvarying")
         get {
-            return Int(rankTensor.scalar!)
+            let status = _ExecutionContext.global.status
+            let rank = TFE_TensorHandleNumDims(handle._cTensorHandle, status)
+            checkOk(status)
+            return Int(rank)
         }
     }
 
@@ -59,15 +67,25 @@ public extension Tensor {
     var shape: TensorShape {
         @_semantics("autodiff.nonvarying")
         get {
-            return TensorShape(shapeTensor.scalars.map(Int.init))
+            let status = _ExecutionContext.global.status
+            let dims: [Int] = (0..<Int32(rank)).map { i in
+                let dim = TFE_TensorHandleDim(self.handle._cTensorHandle, i, status)
+                checkOk(status)
+                return Int(dim)
+            }
+            return TensorShape(dims)
         }
     }
 
     /// The number of scalars in the `Tensor`.
     @inlinable
     var scalarCount: Int {
+        @_semantics("autodiff.nonvarying")
         get {
-            return Int(scalarCountTensor.scalar!)
+            let status = _ExecutionContext.global.status
+            let size = TFE_TensorHandleNumElements(handle._cTensorHandle, status)
+            checkOk(status)
+            return Int(size)
         }
     }
 
@@ -302,7 +320,7 @@ public extension Tensor {
 /// - Note: Do not ever use this API directly. This is implicitly created
 ///   during the conversion from an array literal to a `Tensor`, and is purely
 ///   for implementation purposes.
-@_fixed_layout
+@frozen
 public struct _TensorElementLiteral<Scalar>: TensorProtocol where Scalar: TensorFlowScalar {
     @usableFromInline let tensor: Tensor<Scalar>
 
@@ -511,20 +529,12 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
         lhs: Tensor,
         rhs: Tensor
     ) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
-        return (lhs + rhs, { [
-            lhsShape = lhs.shape,
-            rhsShape = rhs.shape,
-            lhsShapeTensor = lhs.shapeTensor,
-            rhsShapeTensor = rhs.shapeTensor] v in
-            var lhsGrad = v
-            var rhsGrad = v
-            if lhsGrad.shape != lhsShape {
-                lhsGrad = lhsGrad.unbroadcasted(toShape: lhsShapeTensor)
-            }
-            if rhsGrad.shape != rhsShape {
-                rhsGrad = rhsGrad.unbroadcasted(toShape: rhsShapeTensor)
-            }
-            return (lhsGrad, rhsGrad)
+        return (lhs + rhs, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
+            let lhsGrad = v
+            let rhsGrad = lhsGrad
+            let (lhsAxes, rhsAxes) = Raw.broadcastGradientArgs(s0: lhsShape, s1: rhsShape)
+            return (lhsGrad.sum(squeezingAxes: lhsAxes).reshaped(toShape: lhsShape),
+                    rhsGrad.sum(squeezingAxes: rhsAxes).reshaped(toShape: rhsShape))
         })
     }
 
@@ -533,20 +543,12 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
         lhs: Tensor,
         rhs: Tensor
     ) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
-        return (lhs - rhs, { [
-            lhsShape = lhs.shape,
-            rhsShape = rhs.shape,
-            lhsShapeTensor = lhs.shapeTensor,
-            rhsShapeTensor = rhs.shapeTensor] v in
-            var lhsGrad = v
-            var rhsGrad = -v
-            if lhsGrad.shape != lhsShape {
-                lhsGrad = lhsGrad.unbroadcasted(toShape: lhsShapeTensor)
-            }
-            if rhsGrad.shape != rhsShape {
-                rhsGrad = rhsGrad.unbroadcasted(toShape: rhsShapeTensor)
-            }
-            return (lhsGrad, rhsGrad)
+        return (lhs - rhs, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
+            let lhsGrad = v
+            let rhsGrad = -lhsGrad
+            let (lhsAxes, rhsAxes) = Raw.broadcastGradientArgs(s0: lhsShape, s1: rhsShape)
+            return (lhsGrad.sum(squeezingAxes: lhsAxes).reshaped(toShape: lhsShape),
+                    rhsGrad.sum(squeezingAxes: rhsAxes).reshaped(toShape: rhsShape))
         })
     }
 }
