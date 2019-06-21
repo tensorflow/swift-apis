@@ -280,40 +280,6 @@ final class MathOperatorTests: XCTestCase {
         XCTAssertEqual(result.scalars, [12.5, 6.5])
     }
 
-    func testLogSigmoid() {
-        let x = Tensor<Float>([[1, 2, 3, 4, 5], [1, 2, 3, 4, 5]])
-        let y = logSigmoid(x)
-        assertEqual(y, log(sigmoid(x)), accuracy: 0.0001)
-    }
-
-    func testSoftplus() {
-        let x = Tensor<Float>([1.0, 2.0, 3.0])
-        let y = softplus(x)
-        let expected = Tensor<Float>([1.3132616,  2.126928, 3.0485873])
-        XCTAssertEqual(y, expected)
-    }
-
-    func testSoftsign() {
-        let x = Tensor<Float>([1.0, 4.0, 3.0])
-        let y = softsign(x)
-        let expected = Tensor<Float>([0.5 , 0.8 , 0.75])
-        XCTAssertEqual(y, expected)
-    }
-
-    func testElu() {
-        let x = Tensor<Float>([-1.0, 2.0, 3.0])
-        let y = elu(x)
-        let expected = Tensor<Float>([-0.63212055, 2, 3])
-        XCTAssertEqual(y, expected)
-    }
-
-    func testLeakyRelu() {
-        let x = Tensor<Float>([[-1.0, 2.0, 3.0]])
-        let y = leakyRelu(x, alpha: 0.4)
-        let expected = Tensor<Float>([-0.4, 2, 3])
-        XCTAssertEqual(y, expected)
-    }
-
     func testXORInference() {
         func xor(_ x: Float, _ y: Float) -> Float {
             let x = Tensor<Float>([x, y]).reshaped(to: [1, 2])
@@ -379,7 +345,6 @@ final class MathOperatorTests: XCTestCase {
         ("testLog1p", testLog1p),
         ("testExpm1", testExpm1),
         ("testSign", testSign),
-        ("testLogSigmoid", testLogSigmoid),
         ("testReduction", testReduction),
         ("testCosineSimilarity", testCosineSimilarity),
         ("testElu",testElu),
