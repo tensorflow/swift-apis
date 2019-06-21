@@ -784,23 +784,6 @@ public func rsqrt<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
     Raw.rsqrt(x)
 }
 
-/// Returns the cosine similarity between `x` and `y`.
-@differentiable
-public func cosineSimilarity<Scalar: TensorFlowFloatingPoint>(
-    _ x: Tensor<Scalar>, _ y: Tensor<Scalar>
-) -> Tensor<Scalar> {
-    (x * y).sum() / (sqrt(x.squared().sum()) * sqrt(y.squared().sum()))
-}
-
-/// Returns the cosine distance between `x` and `y`. Cosine distance is defined as
-/// `1 - cosineSimilarity(x, y)`.
-@differentiable
-public func cosineDistance<Scalar: TensorFlowFloatingPoint>(
-    _ x: Tensor<Scalar>, _ y: Tensor<Scalar>
-) -> Tensor<Scalar> {
-    1 - cosineSimilarity(x, y)
-}
-
 @inlinable
 internal func _vjpRsqrt<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>
@@ -925,6 +908,14 @@ internal func _vjpSigmoid<T: TensorFlowFloatingPoint>(
     (sigmoid(x), { v in Raw.sigmoidGrad(x, dy: v) })
 }
 
+/// Returns the log-sigmoid of the specified tensor element-wise. Specifically,
+/// `y = log(1 / (1 + exp(-x)))`. For numerical stability, we use `y = -softplus(-x)`.
+@inlinable
+@differentiable
+public func logSigmoid<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    -softplus(-x)
+}
+
 /// Returns the softplus of the specified tensor element-wise.
 /// Specifically, computes `log(exp(features) + 1)`.
 @inlinable
@@ -1016,6 +1007,24 @@ func _vjpElu<T: TensorFlowFloatingPoint>(
     return (y, { v in Raw.eluGrad(gradients: v, outputs: y) })
 }
 
+/// Returns the Gaussian Error Linear Unit (GELU) activations of the specified tensor element-wise.
+///
+/// Specifically, `gelu` approximates `xP(X <= x)`, where `P(X <= x)` is the Standard Gaussian
+/// cumulative distribution, by computing: x * [0.5 * (1 + tanh[√(2/π) * (x + 0.044715 * x^3)])].
+///
+/// See [Gaussian Error Linear Units](https://arxiv.org/abs/1606.08415).
+@inlinable
+@differentiable
+public func gelu<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    let ratio = Tensor<T>(0.7978845608) // An approximation of √(2/π).
+    // An approximation of the Gauss error function.
+    // NOTE: This is needed because the compiler otherwise gives an "unable to type-check this
+    // in reasonable time" error when the below expressions are written on a single line.
+    let approximateErf = tanh(ratio * (x + 0.044715 * pow(x, 3)))
+    let cdf = 0.5 * (1.0 + approximateErf)
+    return x * cdf
+}
+
 /// Returns a tensor by applying the leaky ReLU activation function
 /// to the specified tensor element-wise.
 /// Specifically, computes `max(x, x * alpha)`.
@@ -1053,22 +1062,15 @@ func _vjpRelu<T: TensorFlowFloatingPoint>(
     (relu(x), { v in Tensor(x .> 0) * v })
 }
 
-/// Returns the Gaussian Error Linear Unit (GELU) activations of the specified tensor element-wise.
-///
-/// Specifically, `gelu` approximates `xP(X <= x)`, where `P(X <= x)` is the Standard Gaussian
-/// cumulative distribution, by computing: x * [0.5 * (1 + tanh[√(2/π) * (x + 0.044715 * x^3)])].
-///
-/// See [Gaussian Error Linear Units](https://arxiv.org/abs/1606.08415).
-@inlinable
-@differentiable
-public func gelu<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
-    let ratio = Tensor<T>(0.7978845608) // An approximation of √(2/π).
-    // An approximation of the Gauss error function.
-    // NOTE: This is needed because the compiler otherwise gives an "unable to type-check this
-    // in reasonable time" error when the below expressions are written on a single line.
-    let approximateErf = tanh(ratio * (x + 0.044715 * pow(x, 3)))
-    let cdf = 0.5 * (1.0 + approximateErf)
-    return x * cdf
+public extension Tensor where Scalar: TensorFlowFloatingPoint {
+    /// Returns a boolean tensor indicating which elements of `x` are finite.
+    @inlinable var isFinite: Tensor<Bool> { Raw.isFinite(self) }
+
+    /// Returns a boolean tensor indicating which elements of `x` are infinite.
+    @inlinable var isInfinite: Tensor<Bool> { Raw.isInf(self) }
+
+    /// Returns a boolean tensor indicating which elements of `x` are NaN-valued.
+    @inlinable var isNaN: Tensor<Bool> { Raw.isNan(self) }
 }
 
 //===------------------------------------------------------------------------------------------===//
@@ -1200,6 +1202,23 @@ internal func _vjpMinMaxHelper<T: TensorFlowFloatingPoint>(
     let (lhsAxes, rhsAxes) = Raw.broadcastGradientArgs(s0: lhsShape, s1: rhsShape)
     return (lhsGrad.sum(squeezingAxes: lhsAxes).reshaped(toShape: lhsShape),
             rhsGrad.sum(squeezingAxes: rhsAxes).reshaped(toShape: rhsShape))
+}
+
+/// Returns the cosine similarity between `x` and `y`.
+@differentiable
+public func cosineSimilarity<Scalar: TensorFlowFloatingPoint>(
+    _ x: Tensor<Scalar>, _ y: Tensor<Scalar>
+) -> Tensor<Scalar> {
+    (x * y).sum() / (sqrt(x.squared().sum()) * sqrt(y.squared().sum()))
+}
+
+/// Returns the cosine distance between `x` and `y`. Cosine distance is defined as
+/// `1 - cosineSimilarity(x, y)`.
+@differentiable
+public func cosineDistance<Scalar: TensorFlowFloatingPoint>(
+    _ x: Tensor<Scalar>, _ y: Tensor<Scalar>
+) -> Tensor<Scalar> {
+    1 - cosineSimilarity(x, y)
 }
 
 //===------------------------------------------------------------------------------------------===//
