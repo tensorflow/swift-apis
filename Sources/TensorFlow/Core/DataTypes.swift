@@ -69,7 +69,6 @@ public protocol TensorFlowScalar: _TensorFlowDataTypeCompatible {}
 public typealias TensorFlowNumeric = TensorFlowScalar & Numeric
 public typealias TensorFlowSignedNumeric = TensorFlowScalar & SignedNumeric
 public typealias TensorFlowInteger = TensorFlowScalar & BinaryInteger
-public typealias TensorFlowUnsignedInteger = TensorFlowScalar & UnsignedInteger
 
 /// An integer data type that represents integer types which can be used as tensor indices in 
 /// TensorFlow.

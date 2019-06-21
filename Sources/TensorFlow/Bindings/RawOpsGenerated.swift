@@ -6944,7 +6944,7 @@ public static func decodePaddedRaw<OutType: TensorFlowNumeric>(
 ///
 /// - Output image: 3-D with shape `[height, width, channels]`.
 @inlinable @inline(__always)
-public static func decodePng<Dtype: TensorFlowUnsignedInteger>(
+public static func decodePng<Dtype: TensorFlowInteger>(
     contents: StringTensor,
     channels: Int64 = 0
 ) -> Tensor<Dtype> {
@@ -8713,7 +8713,7 @@ public static func encodeJpegVariableQuality(
 ///
 /// - Output contents: 0-D. PNG-encoded image.
 @inlinable @inline(__always)
-public static func encodePng<T: TensorFlowUnsignedInteger>(
+public static func encodePng<T: TensorFlowInteger>(
     image: Tensor<T>,
     compression: Int64 = -1
 ) -> StringTensor {
