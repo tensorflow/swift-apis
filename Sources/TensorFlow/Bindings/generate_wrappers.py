@@ -90,7 +90,7 @@ _TYPE_PROTOCOLS = [
   ({types_pb2.DT_FLOAT,
     types_pb2.DT_DOUBLE,
     types_pb2.DT_HALF,
-    types_pb2.DT_BFLOAT16}, 'TensorFlowFloatingPoint'),
+    types_pb2.DT_BFLOAT16}, 'TensorFlowScalar & BinaryFloatingPoint'),
   ({types_pb2.DT_UINT8,
     types_pb2.DT_UINT16,
     types_pb2.DT_UINT32,
