@@ -73,6 +73,10 @@ _RENAMED_KEYWORDS = {
 
 _TYPE_PROTOCOLS = [
   (set(), 'TensorFlowScalar'),
+  ({types_pb2.DT_UINT8,
+    types_pb2.DT_UINT16,
+    types_pb2.DT_UINT32,
+    types_pb2.DT_UINT64}, 'UnsignedInteger & TensorFlowScalar'),
   ({types_pb2.DT_INT32,
     types_pb2.DT_INT64}, 'TensorFlowIndex'),
   ({types_pb2.DT_UINT8,
