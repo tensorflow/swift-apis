@@ -895,7 +895,8 @@ internal func _vjpFloor<T: TensorFlowFloatingPoint>(
     (floor(x), { _ in Tensor(0).broadcasted(like: x) })
 }
 
-///Returns an indication of the sign of the specified tensor element-wise.
+/// Returns an indication of the sign of the specified tensor element-wise.
+/// Specifically, computes `y = sign(x) = -1` if `x < 0`; 0 if `x == 0`; 1 if `x > 0`.
 @inlinable
 @differentiable(vjp: _vjpSign(_:) where T: TensorFlowFloatingPoint)
 public func sign<T: Numeric>(_ x: Tensor<T>) -> Tensor<T> {
