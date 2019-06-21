@@ -280,7 +280,6 @@ final class MathOperatorTests: XCTestCase {
         XCTAssertEqual(result.scalars, [12.5, 6.5])
     }
 
-<<<<<<< HEAD
     func testLogSigmoid() {
         let x = Tensor<Float>([[1, 2, 3, 4, 5], [1, 2, 3, 4, 5]])
         let y = logSigmoid(x)
@@ -315,8 +314,6 @@ final class MathOperatorTests: XCTestCase {
         XCTAssertEqual(y, expected)
     }
 
-=======
->>>>>>> upstream/master
     func testXORInference() {
         func xor(_ x: Float, _ y: Float) -> Float {
             let x = Tensor<Float>([x, y]).reshaped(to: [1, 2])
