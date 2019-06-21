@@ -1922,19 +1922,21 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @differentiable(wrt: self)
     func logSumExp(squeezingAxes axes: Tensor<Int32>) -> Tensor {
         let rawMax = max(alongAxes: axes)
-        let offset = rawMax.replacing(
-            with: Tensor<Scalar>(zerosLike: rawMax),
-            where: rawMax.isFinite
-        ).withoutDerivative()
-        let result = log(exp(self - offset).sum(squeezingAxes: axes))
-        return result + offset.reshaped(toShape: result.shapeTensor.withoutDerivative())
+        let offset = Swift.withoutDerivative(at: rawMax) { rawMax in 
+            rawMax.replacing(
+                with: Tensor<Scalar>(zerosLike: rawMax),
+                where: rawMax.isFinite)
+        }
+        let result = TensorFlow.log(TensorFlow.exp(self - offset).sum(squeezingAxes: axes))
+        let resultShape = Swift.withoutDerivative(at: result.shapeTensor, in: identity)
+        return result + offset.reshaped(toShape: resultShape)
     }
 
     @inlinable
     @differentiable(wrt: self)
     func logSumExp(squeezingAxes axes: [Int]) -> Tensor {
         // TODO(TF-433): Remove workaround for differentiating `map`.
-        let axes = {axes.map(Int32.init)}()
+        let axes = Swift.withoutDerivative(at: axes) { $0.map(Int32.init) }
         return logSumExp(squeezingAxes: Tensor<Int32>(axes))
     }
 
@@ -1953,11 +1955,16 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func logSumExp(alongAxes axes: Tensor<Int32>) -> Tensor {
-        let offset = max(alongAxes: axes)
+        let rawMax = max(alongAxes: axes)
         // TODO:
         // let offset = rawMax.replacing(
         //   with: Tensor<Scalar>(zerosLike: rawMax), where: isFinite(rawMax))
-        let result = log(exp(self - offset).sum(alongAxes: axes))
+        let offset = Swift.withoutDerivative(at: rawMax) { rawMax in 
+            rawMax.replacing(
+                with: Tensor<Scalar>(zerosLike: rawMax),
+                where: rawMax.isFinite)
+        }
+        let result = TensorFlow.log(TensorFlow.exp(self - offset).sum(alongAxes: axes))
         return result + offset
     }
 
@@ -1965,7 +1972,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @differentiable(wrt: self)
     func logSumExp(alongAxes axes: [Int]) -> Tensor {
         // TODO(TF-433): Remove workaround for differentiating `map`.
-        let axes = {axes.map(Int32.init)}()
+        let axes = Swift.withoutDerivative(at: axes) { $0.map(Int32.init) }
         return logSumExp(alongAxes: Tensor<Int32>(axes))
     }
 
