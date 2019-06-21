@@ -387,6 +387,49 @@ public extension Tensor {
         return Raw.gatherV2(params: self, indices: indices, axis: Tensor<Int32>(Int32(axis)))
     }
 
+    /// Returns slices of this tensor at `indices`, while ignoring the first `batchDims` dimensions
+    /// that correspond to batch dimensions. The gather is performed along the first non-batch
+    /// dimension.
+    ///
+    /// Performs similar functionality to `gathering`, except that the resulting tensor shape is 
+    /// now:
+    /// ```
+    /// self.shape[..<batchDims] + 
+    ///   indices.shape[batchDims...] + 
+    ///   self.shape[(batchDims + indices.rank + 1)...]
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - indices: Contains the indices to gather.
+    ///   - batchDims: Number of leading batch dimensions to ignore.
+    ///
+    /// - Precondition: `batchDims` must be less than `indices.rank`.
+    ///
+    /// - Returns: The gathered tensor.
+    @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+    func batchGathering(atIndices indices: Tensor<Int32>) -> Tensor {
+        var batchIndices = indices
+        var accumulated = Tensor<Int32>(ones: [])
+        accumulated *= Swift.withoutDerivative(at: shapeTensor) { $0[1] }
+        let dValue = Swift.withoutDerivative(at: shapeTensor) { $0[0] }
+        let dIndices = Tensor<Int32>(
+            rangeFrom: Tensor<Int32>(zeros: []),
+            to: dValue,
+            stride: Tensor<Int32>(ones: [])
+        ) * accumulated
+        let dShape = Tensor<Int32>(concatenating: [
+            dValue.rankLifted(),
+            Tensor<Int32>([Int32](repeating: 1, count: indices.rank - 1))])
+        batchIndices += dIndices.reshaped(toShape: dShape)
+        let flatIndices = batchIndices.flattened()
+        let outerShape = Swift.withoutDerivative(at: shapeTensor) { $0[2...] }
+        let innerShape = Swift.withoutDerivative(at: shapeTensor) { $0[..<2] }.product(squeezingAxes: [0])
+        let flatTensor = reshaped(toShape: innerShape.rankLifted().concatenated(with: outerShape))
+        let flatResult = flatTensor.gathering(atIndices: flatIndices)
+        return flatResult.reshaped(toShape: indices.shapeTensor.concatenated(with: outerShape))
+    }
+
     /// Returns a tensor by gathering the values after applying the provided boolean mask to the input.
     ///
     /// For example:

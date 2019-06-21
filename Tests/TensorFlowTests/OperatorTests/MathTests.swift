@@ -113,11 +113,36 @@ final class MathOperatorTests: XCTestCase {
         XCTAssertEqual(y, expected)
     }
 
+    func testGelu() {
+        let x = Tensor<Float>([2.0, 1.0, 7.0])
+        let y = gelu(x)
+        let expected = Tensor<Float>([1.95459769, 0.84119199, 7.0])
+        XCTAssertEqual(y, expected)
+    }
+
     func testLeakyRelu() {
         let x = Tensor<Float>([[-1.0, 2.0, 3.0]])
         let y = leakyRelu(x, alpha: 0.4)
         let expected = Tensor<Float>([-0.4, 2, 3])
         XCTAssertEqual(y, expected)
+    }
+
+    func testIsFinite() {
+        let x = Tensor<Float>([1, 2, 3, 4, -Float.infinity])
+        let y = x.isFinite
+        XCTAssertEqual(y, Tensor([true, true, true, true, false]))
+    }
+
+    func testIsInfinite() {
+        let x = Tensor<Float>([1, 2, 3, 4, log(0.0)])
+        let y = x.isInfinite
+        XCTAssertEqual(y, Tensor([false, false, false, false, true]))
+    }
+
+    func testIsNaN() {
+        let x = Tensor<Float>([1, 2, 3, 4, log(-5.0)])
+        let y = x.isNaN
+        XCTAssertEqual(y, Tensor([false, false, false, false, true]))
     }
 
     func testCosineSimilarity() {
@@ -310,16 +335,16 @@ final class MathOperatorTests: XCTestCase {
         let prediction = classifier.prediction(for: input)
         XCTAssertEqual(Double(prediction.scalars[0]), 0.816997, accuracy: 0.0001)
     }
-    
+
     func testBroadcastedAddGradient() {
-	  func foo(_ x: Tensor<Float>, _ y: Tensor<Float>) -> Tensor<Float> {
-	    return (x + y).sum()
-	  }
-	  let x = Tensor<Float>(ones: [1, 2, 1, 4])
-	  let y = Tensor<Float>(ones: [4, 1, 3, 1])
-	  let (dx, dy) = gradient(at: x, y, in: foo)
-	  XCTAssertEqual(x.shape, dx.shape)
-	  XCTAssertEqual(y.shape, dy.shape)
+        func foo(_ x: Tensor<Float>, _ y: Tensor<Float>) -> Tensor<Float> {
+            return (x + y).sum()
+        }
+        let x = Tensor<Float>(ones: [1, 2, 1, 4])
+        let y = Tensor<Float>(ones: [4, 1, 3, 1])
+        let (dx, dy) = gradient(at: x, y, in: foo)
+        XCTAssertEqual(x.shape, dx.shape)
+        XCTAssertEqual(y.shape, dy.shape)
 	}
 
     static var allTests = [
@@ -332,7 +357,11 @@ final class MathOperatorTests: XCTestCase {
         ("testSoftplus", testSoftplus),
         ("testSoftsign", testSoftsign),
         ("testElu",testElu),
+        ("testGelu", testGelu),
         ("testLeakyRelu", testLeakyRelu),
+        ("testIsFinite", testIsFinite),
+        ("testIsInfinite", testIsInfinite),
+        ("testIsNaN", testIsNaN),
         ("testCosineSimilarity", testCosineSimilarity),
         ("testReduction", testReduction),
         ("testArgmax", testArgmax),
