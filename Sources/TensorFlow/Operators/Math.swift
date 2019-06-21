@@ -1051,7 +1051,7 @@ func _vjpRelu<T: TensorFlowFloatingPoint>(
     (relu(x), { v in Tensor(x .> 0) * v })
 }
 
-/// Returns the Gaussian Error Linear Unit (GELU) of the specified tensor element-wise.
+/// Returns the Gaussian Error Linear Unit (GELU) activations of the specified tensor element-wise.
 ///
 /// Specifically, `gelu` approximates `xP(X <= x)`, where `P(X <= x)` is the Standard Gaussian
 /// cumulative distribution, by computing: x * [0.5 * (1 + tanh[√(2/π) * (x + 0.044715 * x^3)])].
