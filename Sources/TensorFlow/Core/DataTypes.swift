@@ -78,6 +78,13 @@ public protocol TensorFlowIndex: TensorFlowInteger {}
 extension Int32: TensorFlowIndex {}
 extension Int64: TensorFlowIndex {}
 
+/// An integer data type that represents integer types which can be used as tensor indices in 
+/// TensorFlow.
+public protocol TensorFlowIndex: TensorFlowInteger {}
+
+extension Int32: TensorFlowIndex {}
+extension Int64: TensorFlowIndex {}
+
 /// A floating-point data type that conforms to `Differentiable` and is compatible with TensorFlow.
 ///
 /// - Note: `Tensor` conditionally conforms to `Differentiable` when the `Scalar` associated type
