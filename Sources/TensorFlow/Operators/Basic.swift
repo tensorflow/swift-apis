@@ -383,7 +383,7 @@ public extension Tensor {
     /// - Returns: The gathered tensor.
     @inlinable
     @differentiable(wrt: self, vjp: _vjpGathering where Scalar : TensorFlowFloatingPoint)
-    func gathering<Index: TensorFlowInteger>(
+    func gathering<Index: TensorFlowIndex>(
         atIndices indices: Tensor<Index>,
         alongAxis axis: Int = 0
     ) -> Tensor {
@@ -411,7 +411,7 @@ public extension Tensor {
     /// - Returns: The gathered tensor.
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
-    func batchGathering<Index: TensorFlowInteger>(atIndices indices: Tensor<Index>) -> Tensor {
+    func batchGathering<Index: TensorFlowIndex>(atIndices indices: Tensor<Index>) -> Tensor {
         var batchIndices = indices
         var accumulated = Tensor<Index>(ones: [])
         accumulated *= Swift.withoutDerivative(at: shapeTensor) { Tensor<Index>($0[1]) }
@@ -524,7 +524,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 
     @inlinable
-    func _vjpGathering<Index: TensorFlowInteger>(
+    func _vjpGathering<Index: TensorFlowIndex>(
         atIndices indices: Tensor<Index>,
         alongAxis axis: Int = 0
     ) -> (Tensor, (Tensor) -> Tensor) {
