@@ -591,7 +591,7 @@ public func log1mexp<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
     return log1p(-exp(xSafe)).replacing(with: log(-expm1(x)), where: isTooSmall)
 }
 
-/// Returns `sin` of the specified tensor element-wise.
+/// Returns the sine of the specified tensor element-wise.
 @inlinable
 @differentiable(vjp: _vjpSin(_:))
 public func sin<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {

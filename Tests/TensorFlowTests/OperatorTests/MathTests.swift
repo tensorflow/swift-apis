@@ -345,7 +345,7 @@ final class MathOperatorTests: XCTestCase {
         let (dx, dy) = gradient(at: x, y, in: foo)
         XCTAssertEqual(x.shape, dx.shape)
         XCTAssertEqual(y.shape, dy.shape)
-	}
+    }
 
     static var allTests = [
         ("testElementaryFunctions", testElementaryFunctions),
