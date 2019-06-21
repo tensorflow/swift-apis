@@ -247,7 +247,7 @@ public extension Tensor where Scalar: Numeric {
         return Raw.mul(lhs, rhs)
     }
 
-    ///  Returns the scalar by multiplying it with every scalar of the tensor.
+    /// Returns the tensor by multiplying it with every scalar of the tensor.
     @inlinable
     @differentiable(vjp: _vjpMultiply(lhs:rhs:) where Scalar: TensorFlowFloatingPoint)
     static func * (lhs: Scalar, rhs: Tensor) -> Tensor {
