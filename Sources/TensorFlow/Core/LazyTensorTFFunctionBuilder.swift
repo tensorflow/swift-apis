@@ -14,6 +14,8 @@
 
 import CTensorFlow
 
+/// Swift-side convenience wrapper for a `TF_Graph*`. It holds a pointer to the underlying
+/// TF_Graph and also exposes the some aspects of the TF_Graph as properties.
 class TFGraph {
     /// The `TF_Operation *` type.
     typealias CTFOperation = OpaquePointer
@@ -28,7 +30,9 @@ class TFGraph {
     var inputs: [TF_Output] = []
     var nodes: [CTFOperation?] = []
     var outputs: [TF_Output] = []
-    var outputGroups: [Int] = []
+    /// An array representing how the outputs are grouped. The grouping
+    /// corresponds to a higher-level notion like TensorGroup.
+    var outputGroupCounts: [Int] = []
     var name: String { "lazyTrace_\(nodeCounter)" }
 
     /// A status object to pass to TF graph building operations.
@@ -62,9 +66,10 @@ class TFGraph {
         }
         for output in lazyTrace.outputs {
             let graphNode = nodesCache[ObjectIdentifier(output)]!
-            outputGroups.append(output.outputCount)
+            outputGroupCounts.append(output.outputCount)
             outputs += Array((0..<output.outputCount).map {
-                    TF_Output(oper: graphNode, index: Int32($0)) })
+                    TF_Output(oper: graphNode, index: Int32($0))
+                })
         }
     }
 
@@ -99,26 +104,23 @@ class TFGraph {
             value.utf8CString.withUnsafeBufferPointer { buffer in
                 // utf8CString is null-terminated; TF_SetAttrString wants
                 // non-null-terminated.
-                TF_SetAttrString(
-                    desc, name, buffer.baseAddress, buffer.count - 1)
+                TF_SetAttrString(desc, name, buffer.baseAddress, buffer.count - 1)
             }
         case LazyTensorOperation.Attribute.intArray(let values):
             let values64 = values.map { Int64($0) }
             values64.withUnsafeBufferPointer { buffer in
-                TF_SetAttrIntList(
-                    desc, name, buffer.baseAddress, Int32(buffer.count))
+                TF_SetAttrIntList(desc, name, buffer.baseAddress, Int32(buffer.count))
             }
         case LazyTensorOperation.Attribute.constTensor(let value):
-            let cTensor = TFE_TensorHandleResolve(
-                value._cTensorHandle, status)
+            let cTensor = TFE_TensorHandleResolve(value._cTensorHandle, status)
             checkOk(status)
             TF_SetAttrTensor(desc, name, cTensor!, status)
         case LazyTensorOperation.Attribute.tensorDataTypeArray(let values):
             values.withUnsafeBufferPointer { buffer in
-                buffer.withMemoryRebound(to: TF_DataType.self) {
-                    reboundBuffer in
+                buffer.withMemoryRebound(to: TF_DataType.self) { reboundBuffer in
                     TF_SetAttrTypeList(
-                        desc, name,
+                        desc,
+                        name,
                         reboundBuffer.baseAddress,
                         Int32(reboundBuffer.count))
                 }
@@ -127,8 +129,7 @@ class TFGraph {
             if let shape = value  {
                 let dimensions: [Int64] = shape.dimensions.map(Int64.init)
                 dimensions.withUnsafeBufferPointer { buffer in
-                    TF_SetAttrShape(desc, name,
-                        buffer.baseAddress, Int32(buffer.count))
+                    TF_SetAttrShape(desc, name, buffer.baseAddress, Int32(buffer.count))
                 }
             } else {
                 TF_SetAttrShape(desc, name, nil, -1)
@@ -153,7 +154,8 @@ class TFGraph {
                 dims.withUnsafeMutableBufferPointer { dimsBuffer in
                     ranks.withUnsafeBufferPointer { ranksBuffer in
                         TF_SetAttrShapeList(
-                            desc, name,
+                            desc,
+                            name,
                             dimsBuffer.baseAddress,
                             ranksBuffer.baseAddress,
                             Int32(ranksBuffer.count))
@@ -172,7 +174,9 @@ class TFGraph {
     ) -> CTFOperation? {
         // Create a new graph node now.
         let desc: CTFOperationDescription! = TF_NewOperation(
-            cTFGraph, name, newNodeName(base: name))
+            cTFGraph,
+            name,
+            newNodeName(base: name))
 
         // Set Attributes
         for (name, value) in attrs {
@@ -214,9 +218,9 @@ class TFGraph {
 
     private func makeTFOutput(
         _ lazyHandle: LazyTensor,
-        _ nodesCache: [ObjectIdentifier: CTFOperation?]) -> TF_Output {
-        if case let LazyTensor.Handle.symbolic(
-            lazyOp, index, _) = lazyHandle.handle {
+        _ nodesCache: [ObjectIdentifier: CTFOperation?]
+    ) -> TF_Output {
+        if case let LazyTensor.Handle.symbolic(lazyOp, index, _) = lazyHandle.handle {
             let id = ObjectIdentifier(lazyOp)
             return TF_Output(oper: nodesCache[id]!, index: Int32(index))
         }
@@ -224,10 +228,12 @@ class TFGraph {
     }
 }
 
+
+/// Swift-side convenience wrapper for a `TF_Function*`.
 class TFFunction {
     let cTFFunction: CTFFunction
     let outputCount: Int
-    let outputGroups: [Int]
+    let outputGroupCounts: [Int]
 
     init(_ lazyTrace: LazyTensorTrace, name: String? = nil) {
         let status: CTFStatus = TF_NewStatus()
@@ -238,11 +244,13 @@ class TFFunction {
         let outputs = graph.outputs
         let tracedFnName = name ?? graph.name
         self.outputCount = outputs.count
-        self.outputGroups = graph.outputGroups
+        self.outputGroupCounts = graph.outputGroupCounts
         self.cTFFunction = graph.nodes.withUnsafeBufferPointer {
             operations -> CTFFunction in
             let base = operations.baseAddress
-            let tracedGraphFn = TF_GraphToFunction(cTFGraph, tracedFnName,
+            let tracedGraphFn = TF_GraphToFunction(
+                cTFGraph,
+                tracedFnName,
                 /*append_hash_to_fn_name*/ (name == nil ? 1 : 0),
                 /*num_opers*/ Int32(operations.count),
                 /*opers*/ base,
@@ -251,7 +259,8 @@ class TFFunction {
                 /*noutputs*/ Int32(outputs.count),
                 /*outputs*/ outputs,
                 /*outputnames*/ nil,
-                /*functionoptions*/ nil, "",
+                /*functionoptions*/ nil,
+                "",
                 status)
             checkOk(status)
             if _RuntimeConfig.printsDebugLog {

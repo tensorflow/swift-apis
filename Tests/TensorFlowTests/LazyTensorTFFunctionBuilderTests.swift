@@ -25,7 +25,8 @@ final class LazyTensorTFFunctionBuilderTests : XCTestCase {
     func testSingletonInputs() {
         let a = materializedLazyTensor(Tensor<Float>(10.0))
         let w = Raw.identity(a)
-        XCTAssertEqual(tfFunction(w, "testSingletonInputs")!.description,
+        XCTAssertEqual(
+            tfFunction(w, "testSingletonInputs")!.description,
             """
 
             testSingletonInputs(placeholder_0:float) -> (identity_1:float) {
@@ -40,7 +41,8 @@ final class LazyTensorTFFunctionBuilderTests : XCTestCase {
         let a = materializedLazyTensor(Tensor<Float>(10.0))
         let b = materializedLazyTensor(Tensor<Float>(2.0))
         let w = Raw.addN(inputs: [a, b])
-        XCTAssertEqual(tfFunction(w, "testListInputs")!.description,
+        XCTAssertEqual(
+            tfFunction(w, "testListInputs")!.description,
             """
 
             testListInputs(placeholder_0:float, placeholder_1:float) -> (addn_2:float) {
@@ -56,7 +58,8 @@ final class LazyTensorTFFunctionBuilderTests : XCTestCase {
         let b = materializedLazyTensor(Tensor<Float>(2.0))
         let c = materializedLazyTensor(Tensor<Float>(3.0))
         let w = a + b * c
-        XCTAssertEqual(tfFunction(w, "sequence")!.description,
+        XCTAssertEqual(
+            tfFunction(w, "sequence")!.description,
             """
 
             sequence(placeholder_0:float, placeholder_1:float, placeholder_2:float) -> (add_4:float) {
@@ -82,7 +85,8 @@ final class LazyTensorTFFunctionBuilderTests : XCTestCase {
         let boolAttr = LazyTensorOperation("MatrixInverse", 1)
         boolAttr.updateAttribute("adjoint", true)
         boolAttr.addInput(a)
-        XCTAssertEqual(tfFunction(boolAttr, "boolAttr").description,
+        XCTAssertEqual(
+            tfFunction(boolAttr, "boolAttr").description,
             """
 
             boolAttr(placeholder_0:float) -> () {
@@ -97,7 +101,8 @@ final class LazyTensorTFFunctionBuilderTests : XCTestCase {
         intAttr.updateAttribute("num", 1)
         intAttr.updateAttribute("T", Float.tensorFlowDataType)
         intAttr.addInput(a)
-        XCTAssertEqual(tfFunction(intAttr, "intAttr").description,
+        XCTAssertEqual(
+            tfFunction(intAttr, "intAttr").description,
             """
 
             intAttr(placeholder_0:float) -> () {
@@ -112,7 +117,8 @@ final class LazyTensorTFFunctionBuilderTests : XCTestCase {
         floatAttr.updateAttribute("tolerance", 0.01)
         floatAttr.addInput(a)
         floatAttr.addInput(b)
-        XCTAssertEqual(tfFunction(floatAttr, "floatAttr").description,
+        XCTAssertEqual(
+            tfFunction(floatAttr, "floatAttr").description,
             """
 
             floatAttr(placeholder_0:float, placeholder_1:float) -> () {
@@ -126,7 +132,8 @@ final class LazyTensorTFFunctionBuilderTests : XCTestCase {
         let tag = StringTensor("Hello!")
         stringAttr.updateAttribute("output_stream", "stream")
         stringAttr.addInput(tag)
-        XCTAssertEqual(tfFunction(stringAttr, "stringAttr").description,
+        XCTAssertEqual(
+            tfFunction(stringAttr, "stringAttr").description,
             """
 
             stringAttr() -> () {
@@ -142,7 +149,8 @@ final class LazyTensorTFFunctionBuilderTests : XCTestCase {
         shapeAttr.updateAttribute("shape", TensorShape([5, 6]))
         shapeAttr.updateAttribute("T", Float.tensorFlowDataType)
         shapeAttr.addInput(a)
-        XCTAssertEqual(tfFunction(shapeAttr, "shapeAttr").description,
+        XCTAssertEqual(
+            tfFunction(shapeAttr, "shapeAttr").description,
             """
 
             shapeAttr(placeholder_0:float) -> () {
@@ -160,7 +168,8 @@ final class LazyTensorTFFunctionBuilderTests : XCTestCase {
         arrayAttr1.updateAttribute("layouts", [3, 4]) // [Int]
         arrayAttr1.addInputList([a,b])
 
-        XCTAssertEqual(tfFunction(arrayAttr1, "arrayAttr1").description,
+        XCTAssertEqual(
+            tfFunction(arrayAttr1, "arrayAttr1").description,
             """
 
             arrayAttr1(placeholder_0:float, placeholder_1:float) -> () {
@@ -174,7 +183,8 @@ final class LazyTensorTFFunctionBuilderTests : XCTestCase {
         let x = Tensor<Float>(5.5)
         constTensorAttr.updateAttribute("dtype", Float.tensorFlowDataType)
         constTensorAttr.updateAttribute("value", x.handle.handle._tfeTensorHandle)
-        XCTAssertEqual(tfFunction(constTensorAttr, "constTensorAttr").description,
+        XCTAssertEqual(
+            tfFunction(constTensorAttr, "constTensorAttr").description,
             """
 
             constTensorAttr() -> () {
