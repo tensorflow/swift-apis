@@ -924,7 +924,7 @@ internal func _vjpSigmoid<T: TensorFlowFloatingPoint>(
 }
 
 /// Returns the log-sigmoid of the specified tensor element-wise. Specifically,
-/// `y = log(1 / (1 + exp(-x)))`. For numerical stability, we use `y = -softplus(-x)`.
+/// `log(1 / (1 + exp(-x)))`. For numerical stability, we use `-softplus(-x)`.
 @inlinable
 @differentiable
 public func logSigmoid<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
