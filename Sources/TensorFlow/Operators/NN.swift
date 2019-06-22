@@ -394,7 +394,7 @@ func _vjpDepthwiseConv2D<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// TensorFlow builtin depthwiseConv2D gradient helper for the input.
-@differentiable(wrt: (x, filter), vjp: _vjpdepthwiseConv2dBackpropInput)
+@differentiable(wrt: (x, filter), vjp: _vjpDepthwiseConv2dBackpropInput)
 @usableFromInline
 func depthwiseConv2dBackpropInput<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>,
@@ -412,7 +412,7 @@ func depthwiseConv2dBackpropInput<Scalar: TensorFlowFloatingPoint>(
 }
 
 @usableFromInline
-func _vjpdepthwiseConv2dBackpropInput<Scalar: TensorFlowFloatingPoint>(
+func _vjpDepthwiseConv2dBackpropInput<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>,
     _ shape: Tensor<Int32>,
     _ filter: Tensor<Scalar>,
@@ -431,7 +431,7 @@ func _vjpdepthwiseConv2dBackpropInput<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// TensorFlow builtin depthwiseConv2D gradient helper for the filter.
-@differentiable(wrt: (x, input), vjp: _vjpdepthwiseConv2dBackpropFilter)
+@differentiable(wrt: (x, input), vjp: _vjpDepthwiseConv2dBackpropFilter)
 @usableFromInline
 func depthwiseConv2dBackpropFilter<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>,
@@ -449,7 +449,7 @@ func depthwiseConv2dBackpropFilter<Scalar: TensorFlowFloatingPoint>(
 }
 
 @usableFromInline
-func _vjpdepthwiseConv2dBackpropFilter<Scalar: TensorFlowFloatingPoint>(
+func _vjpDepthwiseConv2dBackpropFilter<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>,
     _ input: Tensor<Scalar>,
     _ filterSizes: Tensor<Int32>,
