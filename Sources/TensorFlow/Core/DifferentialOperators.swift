@@ -30,7 +30,7 @@ public extension Differentiable {
     ) -> (value: Tensor<R>, gradient: TangentVector) {
         let (y, pb) = self.valueWithPullback(in: f)
         precondition(y.rank == 0, """
-            The function being differentiated produced a tensor with shape \(y.shape).
+            The function being differentiated produced a tensor with shape \(y.shape). \
             You can only compute the gradient of functions that return scalar values.
             """)
         return (y, pb(Tensor<R>(1)))
@@ -51,7 +51,7 @@ public extension Differentiable {
     ) -> (value: Tensor<R>, gradient: (TangentVector, T.TangentVector)) {
         let (y, pb) = self.valueWithPullback(at: x, in: f)
         precondition(y.rank == 0, """
-            The function being differentiated produced a tensor with shape \(y.shape).
+            The function being differentiated produced a tensor with shape \(y.shape). \
             You can only compute the gradient of functions that return scalar values.
             """)
         return (y, pb(Tensor<R>(1)))
@@ -71,10 +71,10 @@ public func valueWithGradient<T, R>(
 ) -> (value: Tensor<R>, gradient: T.TangentVector)
 where T: Differentiable, R: TensorFlowFloatingPoint {
     let (y, pullback) = valueWithPullback(at: x, in: f)
-        precondition(y.rank == 0, """
-            The function being differentiated produced a tensor with shape \(y.shape).
-            You can only compute the gradient of functions that return scalar values.
-            """)
+    precondition(y.rank == 0, """
+        The function being differentiated produced a tensor with shape \(y.shape). \
+        You can only compute the gradient of functions that return scalar values.
+        """)
     return (y, pullback(Tensor<R>(1)))
 }
 
@@ -86,10 +86,10 @@ public func valueWithGradient<T, U, R>(
 ) -> (value: Tensor<R>, gradient: (T.TangentVector, U.TangentVector))
     where T: Differentiable, U: Differentiable, R: TensorFlowFloatingPoint {
     let (y, pullback) = valueWithPullback(at: x, y, in: f)
-        precondition(y.rank == 0, """
-            The function being differentiated produced a tensor with shape \(y.shape).
-            You can only compute the gradient of functions that return scalar values.
-            """)
+    precondition(y.rank == 0, """
+        The function being differentiated produced a tensor with shape \(y.shape). \
+        You can only compute the gradient of functions that return scalar values.
+        """)
     return (y, pullback(Tensor<R>(1)))
 }
 
