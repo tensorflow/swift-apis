@@ -65,7 +65,7 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
         self.runningVariance = Parameter(runningVariance)
     }
 
-    @differentiable
+    @differentiable(wrt: self)
     private func applyingTraining(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         let positiveAxis = (input.rank + axis) % input.rank
         var normalizedAxes = Array(0..<input.rank)
@@ -79,7 +79,7 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
         return (input - mean) * inv + offset
     }
 
-    @differentiable
+    @differentiable(wrt: self)
     private func applyingInference(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         let inv = rsqrt(runningVariance.value + epsilon) * scale
         return (input - runningMean.value) * inv + offset
@@ -89,7 +89,7 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
-    @differentiable(vjp: _vjpApplied(to:))
+    @differentiable(wrt: self, vjp: _vjpApplied(to:))
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         switch Context.local.learningPhase {
         case .training:
@@ -100,18 +100,20 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     }
 
     @usableFromInline
-    func _vjpApplied(to input: Tensor<Scalar>) ->
-        (Tensor<Scalar>, (Tensor<Scalar>) ->
-            (BatchNorm<Scalar>.TangentVector, Tensor<Scalar>)) {
+    func _vjpApplied(
+        to input: Tensor<Scalar>
+    ) -> (Tensor<Scalar>, (Tensor<Scalar>) -> BatchNorm<Scalar>.TangentVector) {
         switch Context.local.learningPhase {
         case .training:
-            return valueWithPullback(at: input) {
+            let (value, pullback) = valueWithPullback(at: input) {
                 $0.applyingTraining(to: $1)
             }
+            return (value, { pullback($0).0 })
         case .inference:
-            return valueWithPullback(at: input) {
+            let (value, pullback) = valueWithPullback(at: input) {
                 $0.applyingInference(to: $1)
             }
+            return (value, { pullback($0).0 })
         }
     }
 
@@ -184,7 +186,7 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
-    @differentiable
+    @differentiable(wrt: self)
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         let mean = input.mean(alongAxes: axis)
         let variance = input.variance(alongAxes: axis)

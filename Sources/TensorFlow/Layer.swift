@@ -22,7 +22,7 @@
 public protocol Layer: Differentiable & KeyPathIterable
     where AllDifferentiableVariables: KeyPathIterable {
     /// The input type of the layer.
-    associatedtype Input: Differentiable
+    associatedtype Input
     /// The output type of the layer.
     associatedtype Output: Differentiable
 
@@ -30,57 +30,58 @@ public protocol Layer: Differentiable & KeyPathIterable
     ///
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
-    @differentiable
+    @differentiable(wrt: self)
     func callAsFunction(_ input: Input) -> Output
 }
 
 public extension Layer {
-    @differentiable
+    @differentiable(wrt: self)
     func call(_  input: Input) -> Output {
         return callAsFunction(input)
     }
 }
 
-public extension Layer {
-    /// Returns the inference output obtained from applying the layer to the given input.
-    ///
-    /// - Parameter input: The input to the layer.
-    /// - Returns: The inference output.
-    @differentiable
-    func inferring(from input: Input) -> Output {
-        return withLearningPhase(LearningPhase.inference) { self(input) }
-    }
+// public extension Layer where Input: Differentiable {
+//     /// Returns the inference output obtained from applying the layer to the given input.
+//     ///
+//     /// - Parameter input: The input to the layer.
+//     /// - Returns: The inference output.
+//     @differentiable
+//     func inferring(from input: Input) -> Output {
+//         return withLearningPhase(LearningPhase.inference) { self(input) }
+//     }
 
-    // TODO(rxwei): Remove this custom VJP once differentiation supports currying.
-    @differentiating(inferring(from:))
-    @usableFromInline
-    internal func _vjpInferring(from input: Input)
-        -> (value: Output, pullback: (Output.TangentVector)
-            -> (TangentVector, Input.TangentVector)) {
-        return withLearningPhase(LearningPhase.inference) {
-            let (output, pullback) = appliedForBackpropagation(to: input)
-            return (output, { v in pullback(v) })
-        }
-    }
+//     // TODO(rxwei): Remove this custom VJP once differentiation supports currying.
+//     @differentiating(inferring(from:))
+//     @usableFromInline
+//     internal func _vjpInferring(
+//         from input: Input
+//     ) -> (value: Output, pullback: (Output.TangentVector) -> (TangentVector, Input.TangentVector)) {
+//         return withLearningPhase(LearningPhase.inference) {
+//             let (output, pullback) = appliedForBackpropagation(to: input)
+//             return (output, { v in pullback(v) })
+//         }
+//     }
 
-    typealias Backpropagator = (_ direction: Output.TangentVector)
-        -> (layerGradient: TangentVector, inputGradient: Input.TangentVector)
+//     typealias Backpropagator = (_ direction: Output.TangentVector)
+//         -> (layerGradient: TangentVector, inputGradient: Input.TangentVector)
 
-    /// Returns the inference output and the backpropagation function obtained from applying the
-    /// layer to the given input.
-    ///
-    /// - Parameter input: The input to the layer.
-    /// - Returns: A tuple containing the output and the backpropagation function. The
-    ///   backpropagation function (a.k.a. backpropagator) takes a direction vector and returns the
-    ///   gradients at the layer and at the input, respectively.
-    func appliedForBackpropagation(to input: Input)
-        -> (output: Output, backpropagator: Backpropagator) {
-        let (out, pullback) = valueWithPullback(at: input) { layer, input in
-            return layer(input)
-        }
-        return (out, pullback)
-    }
-}
+//     /// Returns the inference output and the backpropagation function obtained from applying the
+//     /// layer to the given input.
+//     ///
+//     /// - Parameter input: The input to the layer.
+//     /// - Returns: A tuple containing the output and the backpropagation function. The
+//     ///   backpropagation function (a.k.a. backpropagator) takes a direction vector and returns the
+//     ///   gradients at the layer and at the input, respectively.
+//     func appliedForBackpropagation(
+//         to input: Input
+//     ) -> (output: Output, backpropagator: Backpropagator) {
+//         let (out, pullback) = valueWithPullback(at: input) { layer, input in
+//             return layer(input)
+//         }
+//         return (out, pullback)
+//     }
+// }
 
 public extension Differentiable {
     /// Returns the output computed by applying a sequence of layers to the previous layer's output,
@@ -90,7 +91,7 @@ public extension Differentiable {
     ///   - l1: The first layer.
     ///   - l2: The second layer.
     /// - Returns: The final layer's output after sequential application.
-    @differentiable
+    @differentiable(where L2.Input: Differentiable)
     func sequenced<L1: Layer, L2: Layer>(through l1: L1, _ l2: L2) -> L2.Output
         where L1.Input == Self, L1.Output == L2.Input {
         let o1 = l1(self)
@@ -105,7 +106,7 @@ public extension Differentiable {
     ///   - l2: The second layer.
     ///   - l3: The third layer.
     /// - Returns: The final layer's output after sequential application.
-    @differentiable
+    @differentiable(where L2.Input: Differentiable, L3.Input: Differentiable)
     func sequenced<L1: Layer, L2: Layer, L3: Layer>(through l1: L1, _ l2: L2, _ l3: L3) -> L3.Output
         where L1.Input == Self, L1.Output == L2.Input, L2.Output == L3.Input {
         let o1 = l1(self)
@@ -122,7 +123,10 @@ public extension Differentiable {
     ///   - l3: The third layer.
     ///   - l4: The fourth layer.
     /// - Returns: The final layer's output after sequential application.
-    @differentiable
+    @differentiable(where 
+        L2.Input: Differentiable,
+        L3.Input: Differentiable,
+        L4.Input: Differentiable)
     func sequenced<L1: Layer, L2: Layer, L3: Layer, L4: Layer>(
         through l1: L1, _ l2: L2, _ l3: L3, _ l4: L4
     ) -> L4.Output
@@ -144,7 +148,11 @@ public extension Differentiable {
     ///   - l4: The third layer.
     ///   - l5: The fifth layer.
     /// - Returns: The final layer's output after sequential application.
-    @differentiable
+    @differentiable(where 
+        L2.Input: Differentiable,
+        L3.Input: Differentiable,
+        L4.Input: Differentiable,
+        L5.Input: Differentiable)
     func sequenced<L1: Layer, L2: Layer, L3: Layer, L4: Layer, L5: Layer>(
         through l1: L1, _ l2: L2, _ l3: L3, _ l4: L4, _ l5: L5
     ) -> L5.Output
@@ -168,7 +176,12 @@ public extension Differentiable {
     ///   - l5: The fifth layer.
     ///   - l6: The sixth layer.
     /// - Returns: The final layer's output after sequential application.
-    @differentiable
+    @differentiable(where 
+        L2.Input: Differentiable,
+        L3.Input: Differentiable,
+        L4.Input: Differentiable,
+        L5.Input: Differentiable,
+        L6.Input: Differentiable)
     func sequenced<L1: Layer, L2: Layer, L3: Layer, L4: Layer, L5: Layer, L6: Layer>(
         through l1: L1, _ l2: L2, _ l3: L3, _ l4: L4, _ l5: L5, _ l6: L6
     ) -> L6.Output

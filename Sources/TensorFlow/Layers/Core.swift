@@ -38,12 +38,12 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: Layer {
         self.probability = probability
     }
 
-    @differentiable
+    @differentiable(wrt: self)
     private func applyingTraining(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input.droppingOut(probability: probability)
     }
 
-    @differentiable
+    @differentiable(wrt: self)
     private func applyingInference(to input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input
     }
@@ -52,7 +52,7 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
-    @differentiable(vjp: _vjpApplied(to:))
+    @differentiable(wrt: self, vjp: _vjpApplied(to:))
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         switch Context.local.learningPhase {
         case .training:
@@ -63,18 +63,20 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: Layer {
     }
 
     @usableFromInline
-    func _vjpApplied(to input: Tensor<Scalar>) ->
-        (Tensor<Scalar>, (Tensor<Scalar>) ->
-            (Dropout<Scalar>.TangentVector, Tensor<Scalar>)) {
+    func _vjpApplied(
+        to input: Tensor<Scalar>
+    ) -> (Tensor<Scalar>, (Tensor<Scalar>) -> Dropout<Scalar>.TangentVector) {
         switch Context.local.learningPhase {
         case .training:
-            return valueWithPullback(at: input) {
+            let (value, pullback) = valueWithPullback(at: input) {
                 $0.applyingTraining(to: $1)
             }
+            return (value, { pullback($0).0 })
         case .inference:
-            return valueWithPullback(at: input) {
+            let (value, pullback) = valueWithPullback(at: input) {
                 $0.applyingInference(to: $1)
             }
+            return (value, { pullback($0).0 })
         }
     }
 }
@@ -91,7 +93,7 @@ public struct Flatten<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
-    @differentiable
+    @differentiable(wrt: self)
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         let batchSize = input.shape[0]
         let remaining = input.shape[1..<input.rank].contiguousSize
@@ -127,7 +129,7 @@ public struct Reshape<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
-    @differentiable
+    @differentiable(wrt: self)
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         return input.reshaped(toShape: shape)
     }
@@ -162,7 +164,7 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
-    @differentiable
+    @differentiable(wrt: self)
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         return activation(matmul(input, weight) + bias)
     }

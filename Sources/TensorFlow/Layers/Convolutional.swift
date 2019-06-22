@@ -58,7 +58,7 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameter input: The input to the layer `[batchCount, width, inputChannels]`.
     /// - Returns: The output `[batchCount, newWidth, outputChannels]`.
-    @differentiable
+    @differentiable(wrt: self)
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         let conv = conv2D(input.expandingShape(at: 1), filter: filter.expandingShape(at: 0),
                           strides: (1, 1, stride, 1), padding: padding)
@@ -176,7 +176,7 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
-    @differentiable
+    @differentiable(wrt: self)
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         return activation(conv2D(input, filter: filter, strides: (1, strides.0, strides.1, 1),
                                  padding: padding) + bias)
@@ -291,7 +291,7 @@ public struct Conv3D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
-    @differentiable
+    @differentiable(wrt: self)
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         return activation(conv3D(input, filter: filter,
                                  strides: (1, strides.0, strides.1, strides.2, 1),
@@ -409,7 +409,7 @@ public struct TransposedConv2D: Layer {
     ///
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
-    @differentiable
+    @differentiable(wrt: self)
     public func callAsFunction(_ input: Tensor<Float>) -> Tensor<Float> {
         let batchSize = input.shape[0]
         let w = (input.shape[1] - (1 * paddingIndex)) *
@@ -532,7 +532,7 @@ public struct DepthwiseConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
-    @differentiable
+    @differentiable(wrt: self)
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         return activation(depthwiseConv2D(input, filter: filter,
                                           strides: (1, strides.0, strides.1, 1),
