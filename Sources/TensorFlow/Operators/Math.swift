@@ -1871,8 +1871,8 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         standardDeviation(squeezingAxes: axes)
     }
 
-    /// Returns the standard deviation of all elements along the specified axes. The reduced
-    /// dimensions are retained with value `1`. Does not apply Bessel's correction.
+    /// Returns the standard deviation of all elements in this tensor. 
+    /// Does not apply Bessel's correction.
     ///
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
