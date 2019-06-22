@@ -213,27 +213,30 @@ public extension Tensor where Scalar: Numeric {
         return lhs - Tensor(rhs)
     }
 
-    /// Returns the tensor produced by adding the two tensors.
+    /// Adds two tensors and stores the result in the left-hand-side variable.
     /// - Note: `+=` supports broadcasting.
     @inlinable
     static func += (lhs: inout Tensor, rhs: Tensor) {
         lhs = lhs + rhs
     }
 
-    /// Returns the scalar by adding it to every scalar of the tensor.
+    /// Adds the scalar to every scalar of the tensor and stores the result in the left-hand-side
+    /// variable.
     @inlinable
     static func += (lhs: inout Tensor, rhs: Scalar) {
         lhs = lhs + rhs
     }
 
-    /// Returns the tensor by subracting the second tensor from the first.
+    /// Subtracts the second tensor from the first and stores the result in the left-hand-side
+    /// variable.
     /// - Note: `-=` supports broadcasting.
     @inlinable
     static func -= (lhs: inout Tensor, rhs: Tensor) {
         lhs = lhs - rhs
     }
 
-    /// Returns the scalar by subtracting every scalar of the tensor from it.
+    /// Subtracts the scalar from every scalar of the tensor and stores the result in the
+    /// left-hand-side variable.
     @inlinable
     static func -= (lhs: inout Tensor, rhs: Scalar) {
         lhs = lhs - rhs
@@ -261,14 +264,14 @@ public extension Tensor where Scalar: Numeric {
         return lhs * Tensor(rhs)
     }
 
-    /// Returns the tensor produced by multiplying the two tensors.
+    /// Multiplies two tensors and stores the result in the left-hand-side variable.
     /// - Note: `*=` supports broadcasting.
     @inlinable
     static func *= (lhs: inout Tensor, rhs: Tensor) {
         lhs = lhs * rhs
     }
 
-    /// Returns the tensor by multiplying it with the scalar, broadcasting the scalar.
+    /// Multiplies the tensor with the scalar, broadcasting the scalar, and stores the result in the
     /// left-hand-side variable.
     @inlinable
     static func *= (lhs: inout Tensor, rhs: Scalar) {
