@@ -383,7 +383,10 @@ public extension Tensor {
     /// - Returns: The gathered tensor.
     @inlinable
     @differentiable(wrt: self, vjp: _vjpGathering where Scalar : TensorFlowFloatingPoint)
-    func gathering(atIndices indices: Tensor<Int32>, alongAxis axis: Int = 0) -> Tensor {
+    func gathering<Index: TensorFlowIndex>(
+        atIndices indices: Tensor<Index>,
+        alongAxis axis: Int = 0
+    ) -> Tensor {
         return Raw.gatherV2(params: self, indices: indices, axis: Tensor<Int32>(Int32(axis)))
     }
 
@@ -408,15 +411,15 @@ public extension Tensor {
     /// - Returns: The gathered tensor.
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
-    func batchGathering(atIndices indices: Tensor<Int32>) -> Tensor {
+    func batchGathering<Index: TensorFlowIndex>(atIndices indices: Tensor<Index>) -> Tensor {
         var batchIndices = indices
-        var accumulated = Tensor<Int32>(ones: [])
-        accumulated *= Swift.withoutDerivative(at: shapeTensor) { $0[1] }
+        var accumulated = Tensor<Index>(ones: [])
+        accumulated *= Swift.withoutDerivative(at: shapeTensor) { Tensor<Index>($0[1]) }
         let dValue = Swift.withoutDerivative(at: shapeTensor) { $0[0] }
-        let dIndices = Tensor<Int32>(
-            rangeFrom: Tensor<Int32>(zeros: []),
-            to: dValue,
-            stride: Tensor<Int32>(ones: [])
+        let dIndices = Tensor<Index>(
+            rangeFrom: Tensor<Index>(zeros: []),
+            to: Tensor<Index>(dValue),
+            stride: Tensor<Index>(ones: [])
         ) * accumulated
         let dShape = Tensor<Int32>(concatenating: [
             dValue.rankLifted(),
@@ -464,12 +467,10 @@ public extension Tensor {
     /// - Returns: `(self.rank - K + 1)`-dimensional tensor populated by entries in this tensor
     ///   corresponding to `true` values in `mask`.
     @inlinable
-    // @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func gathering(where mask: Tensor<Bool>, alongAxis axis: Int = 0) -> Tensor {
         precondition(mask.rank != 0, "The boolean mask cannot be a scalar.")
-        // TODO: Remove once control flow AD is supported.
-        let rank = self.rank
-        let posAxis = { axis < 0 ? axis + rank : axis }()
+        let posAxis = Swift.withoutDerivative(at: self.rank) { r in axis < 0 ? axis + r : axis }
         let leadingSize = shapeTensor[posAxis ..< posAxis + mask.rank].product().rankLifted()
         let reshapedTensor = reshaped(
             toShape: Tensor<Int32>(concatenating: [
@@ -521,8 +522,8 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 
     @inlinable
-    func _vjpGathering(
-        atIndices indices: Tensor<Int32>,
+    func _vjpGathering<Index: TensorFlowIndex>(
+        atIndices indices: Tensor<Index>,
         alongAxis axis: Int = 0
     ) -> (Tensor, (Tensor) -> Tensor) {
         let result = gathering(atIndices: indices, alongAxis: axis)
