@@ -1874,10 +1874,9 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         standardDeviation(squeezingAxes: axes)
     }
 
-    /// Returns the standard deviation of the elements along the specified axes. The reduced
-    /// dimensions are retained with value `1`. Does not apply Bessel's correction.
+    /// Returns the standard deviation of all elements in this tensor. 
+    /// Does not apply Bessel's correction.
     ///
-    /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
     @differentiable(wrt: self)
@@ -1919,6 +1918,123 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @differentiable(wrt: self)
     func standardDeviation(alongAxes axes: Int...) -> Tensor {
         TensorFlow.sqrt(variance(alongAxes: axes))
+    }
+
+    /// Returns `log(exp(self).sum(squeezingAxes: axes))`. The reduced dimensions are removed.
+    /// 
+    /// This function is more numerically stable than computing
+    /// `log(exp(self).sum(squeezingAxes: axes))` directly. It avoids overflows caused by computing 
+    /// the `exp` of large inputs and underflows caused by computing the `log` of small inputs.
+    ///
+    /// - Parameter axes: The dimensions to reduce.
+    /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
+    @inlinable
+    @differentiable(wrt: self)
+    func logSumExp(squeezingAxes axes: Tensor<Int32>) -> Tensor {
+        let rawMax = max(alongAxes: axes)
+        let offset = Swift.withoutDerivative(at: rawMax) { rawMax in 
+            rawMax.replacing(
+                with: Tensor<Scalar>(zerosLike: rawMax),
+                where: rawMax.isFinite)
+        }
+        let result = TensorFlow.log(TensorFlow.exp(self - offset).sum(squeezingAxes: axes))
+        let resultShape = Swift.withoutDerivative(at: result.shapeTensor, in: identity)
+        return result + offset.reshaped(toShape: resultShape)
+    }
+
+    /// Returns `log(exp(self).sum(squeezingAxes: axes))`. The reduced dimensions are removed.
+    /// 
+    /// This function is more numerically stable than computing
+    /// `log(exp(self).sum(squeezingAxes: axes))` directly. It avoids overflows caused by computing 
+    /// the `exp` of large inputs and underflows caused by computing the `log` of small inputs.
+    ///
+    /// - Parameter axes: The dimensions to reduce.
+    /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
+    @inlinable
+    @differentiable(wrt: self)
+    func logSumExp(squeezingAxes axes: [Int]) -> Tensor {
+        // TODO(TF-433): Remove workaround for differentiating `map`.
+        let axes = Swift.withoutDerivative(at: axes) { $0.map(Int32.init) }
+        return logSumExp(squeezingAxes: Tensor<Int32>(axes))
+    }
+
+    /// Returns `log(exp(self).sum(squeezingAxes: axes))`. The reduced dimensions are removed.
+    /// 
+    /// This function is more numerically stable than computing
+    /// `log(exp(self).sum(squeezingAxes: axes))` directly. It avoids overflows caused by computing 
+    /// the `exp` of large inputs and underflows caused by computing the `log` of small inputs.
+    ///
+    /// - Parameter axes: The dimensions to reduce.
+    /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
+    @inlinable
+    @differentiable(wrt: self)
+    func logSumExp(squeezingAxes axes: Int...) -> Tensor {
+        return logSumExp(squeezingAxes: axes)
+    }
+
+    /// Returns `log(exp(self).sum())`. The result is a scalar.
+    ///
+    /// This function is more numerically stable than computing `log(exp(self).sum())` directly. It
+    /// avoids overflows caused by computing the `exp` of large inputs and underflows caused by 
+    /// computing the `log` of small inputs.
+    @inlinable
+    @differentiable(wrt: self)
+    func logSumExp() -> Tensor {
+        return logSumExp(squeezingAxes: Array(0..<shape.rank))
+    }
+
+    /// Returns `log(exp(self).sum(alongAxes: axes))`. The reduced dimensions are retained with 
+    /// value `1`.
+    ///
+    /// This function is more numerically stable than computing
+    /// `log(exp(self).sum(alongAxes: axes))` directly. It avoids overflows caused by computing 
+    /// the `exp` of large inputs and underflows caused by computing the `log` of small inputs.
+    ///
+    /// - Parameter axes: The dimensions to reduce.
+    /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
+    @inlinable
+    @differentiable(wrt: self)
+    func logSumExp(alongAxes axes: Tensor<Int32>) -> Tensor {
+        let rawMax = max(alongAxes: axes)
+        let offset = Swift.withoutDerivative(at: rawMax) { rawMax in 
+            rawMax.replacing(
+                with: Tensor<Scalar>(zerosLike: rawMax),
+                where: rawMax.isFinite)
+        }
+        let result = TensorFlow.log(TensorFlow.exp(self - offset).sum(alongAxes: axes))
+        return result + offset
+    }
+
+    /// Returns `log(exp(self).sum(alongAxes: axes))`. The reduced dimensions are retained with 
+    /// value `1`.
+    ///
+    /// This function is more numerically stable than computing
+    /// `log(exp(self).sum(alongAxes: axes))` directly. It avoids overflows caused by computing 
+    /// the `exp` of large inputs and underflows caused by computing the `log` of small inputs.
+    ///
+    /// - Parameter axes: The dimensions to reduce.
+    /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
+    @inlinable
+    @differentiable(wrt: self)
+    func logSumExp(alongAxes axes: [Int]) -> Tensor {
+        // TODO(TF-433): Remove workaround for differentiating `map`.
+        let axes = Swift.withoutDerivative(at: axes) { $0.map(Int32.init) }
+        return logSumExp(alongAxes: Tensor<Int32>(axes))
+    }
+
+    /// Returns `log(exp(self).sum(alongAxes: axes))`. The reduced dimensions are retained with 
+    /// value `1`.
+    ///
+    /// This function is more numerically stable than computing
+    /// `log(exp(self).sum(alongAxes: axes))` directly. It avoids overflows caused by computing 
+    /// the `exp` of large inputs and underflows caused by computing the `log` of small inputs.
+    ///
+    /// - Parameter axes: The dimensions to reduce.
+    /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
+    @inlinable
+    @differentiable(wrt: self)
+    func logSumExp(alongAxes axes: Int...) -> Tensor {
+        return logSumExp(alongAxes: axes)
     }
 }
 
