@@ -1871,10 +1871,9 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         standardDeviation(squeezingAxes: axes)
     }
 
-    /// Returns the standard deviation of the elements along the specified axes. The reduced
+    /// Returns the standard deviation of all elements along the specified axes. The reduced
     /// dimensions are retained with value `1`. Does not apply Bessel's correction.
     ///
-    /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
     @differentiable(wrt: self)
@@ -1918,6 +1917,14 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         TensorFlow.sqrt(variance(alongAxes: axes))
     }
 
+    /// Returns `log(exp(self).sum(squeezingAxes: axes))`. The reduced dimensions are removed.
+    /// 
+    /// This function is more numerically stable than computing
+    /// `log(exp(self).sum(squeezingAxes: axes))` directly. It avoids overflows caused by computing 
+    /// the `exp` of large inputs and underflows caused by computing the `log` of small inputs.
+    ///
+    /// - Parameter axes: The dimensions to reduce.
+    /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
     @differentiable(wrt: self)
     func logSumExp(squeezingAxes axes: Tensor<Int32>) -> Tensor {
@@ -1932,6 +1939,14 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         return result + offset.reshaped(toShape: resultShape)
     }
 
+    /// Returns `log(exp(self).sum(squeezingAxes: axes))`. The reduced dimensions are removed.
+    /// 
+    /// This function is more numerically stable than computing
+    /// `log(exp(self).sum(squeezingAxes: axes))` directly. It avoids overflows caused by computing 
+    /// the `exp` of large inputs and underflows caused by computing the `log` of small inputs.
+    ///
+    /// - Parameter axes: The dimensions to reduce.
+    /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
     @differentiable(wrt: self)
     func logSumExp(squeezingAxes axes: [Int]) -> Tensor {
@@ -1940,18 +1955,40 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         return logSumExp(squeezingAxes: Tensor<Int32>(axes))
     }
 
+    /// Returns `log(exp(self).sum(squeezingAxes: axes))`. The reduced dimensions are removed.
+    /// 
+    /// This function is more numerically stable than computing
+    /// `log(exp(self).sum(squeezingAxes: axes))` directly. It avoids overflows caused by computing 
+    /// the `exp` of large inputs and underflows caused by computing the `log` of small inputs.
+    ///
+    /// - Parameter axes: The dimensions to reduce.
+    /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
     @differentiable(wrt: self)
     func logSumExp(squeezingAxes axes: Int...) -> Tensor {
         return logSumExp(squeezingAxes: axes)
     }
 
+    /// Returns `log(exp(self).sum())`. The result is a scalar.
+    ///
+    /// This function is more numerically stable than computing `log(exp(self).sum())` directly. It
+    /// avoids overflows caused by computing the `exp` of large inputs and underflows caused by 
+    /// computing the `log` of small inputs.
     @inlinable
     @differentiable(wrt: self)
     func logSumExp() -> Tensor {
-        return flattened().logSumExp(squeezingAxes: 0)
+        return logSumExp(squeezingAxes: Array(0..<shape.rank))
     }
 
+    /// Returns `log(exp(self).sum(alongAxes: axes))`. The reduced dimensions are retained with 
+    /// value `1`.
+    ///
+    /// This function is more numerically stable than computing
+    /// `log(exp(self).sum(alongAxes: axes))` directly. It avoids overflows caused by computing 
+    /// the `exp` of large inputs and underflows caused by computing the `log` of small inputs.
+    ///
+    /// - Parameter axes: The dimensions to reduce.
+    /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
     @differentiable(wrt: self)
     func logSumExp(alongAxes axes: Tensor<Int32>) -> Tensor {
@@ -1965,6 +2002,15 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         return result + offset
     }
 
+    /// Returns `log(exp(self).sum(alongAxes: axes))`. The reduced dimensions are retained with 
+    /// value `1`.
+    ///
+    /// This function is more numerically stable than computing
+    /// `log(exp(self).sum(alongAxes: axes))` directly. It avoids overflows caused by computing 
+    /// the `exp` of large inputs and underflows caused by computing the `log` of small inputs.
+    ///
+    /// - Parameter axes: The dimensions to reduce.
+    /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
     @differentiable(wrt: self)
     func logSumExp(alongAxes axes: [Int]) -> Tensor {
@@ -1973,6 +2019,15 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         return logSumExp(alongAxes: Tensor<Int32>(axes))
     }
 
+    /// Returns `log(exp(self).sum(alongAxes: axes))`. The reduced dimensions are retained with 
+    /// value `1`.
+    ///
+    /// This function is more numerically stable than computing
+    /// `log(exp(self).sum(alongAxes: axes))` directly. It avoids overflows caused by computing 
+    /// the `exp` of large inputs and underflows caused by computing the `log` of small inputs.
+    ///
+    /// - Parameter axes: The dimensions to reduce.
+    /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
     @differentiable(wrt: self)
     func logSumExp(alongAxes axes: Int...) -> Tensor {
