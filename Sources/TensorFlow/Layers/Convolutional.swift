@@ -28,7 +28,7 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let activation: Activation
     /// The stride of the sliding window for temporal dimension.
     @noDerivative public let stride: Int
-    /// The padding algorithm for convolution.    
+    /// The padding algorithm for convolution.
     @noDerivative public let padding: Padding
     /// The dilation factor for temporal dimension.
     @noDerivative public let dilation: Int
@@ -58,7 +58,7 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
         self.padding = padding
         self.dilation = dilation
     }
-    
+
     /// Returns the output obtained from applying the layer to the given input.
     ///
     /// - Parameter input: The input to the layer `[batchCount, width, inputChannels]`.
@@ -169,7 +169,7 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// padding.
     ///
     /// - Parameters:
-    ///   - filter: The 4-D convolution kernel. 
+    ///   - filter: The 4-D convolution kernel.
     ///   - bias: The bias vector.
     ///   - activation: The element-wise activation function.
     ///   - strides: The strides of the sliding window for spatial dimensions.

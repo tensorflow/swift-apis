@@ -123,7 +123,7 @@ func conv2DBackpropInput<Scalar: TensorFlowFloatingPoint>(
         inputSizes: shape,
         filter: filter,
         outBackprop: x,
-        strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2), Int32(strides.3)],        
+        strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2), Int32(strides.3)],
         padding: padding.raw2,
         explicitPaddings: [],
         dilations: [Int32(dilations.0), Int32(dilations.1), Int32(dilations.2), Int32(dilations.3)])
@@ -211,7 +211,7 @@ func conv3DBackpropInput<Scalar: TensorFlowFloatingPoint>(
     shape: Tensor<Int32>,
     filter: Tensor<Scalar>,
     strides: (Int, Int, Int, Int, Int),
-    padding: Padding    
+    padding: Padding
 ) -> Tensor<Scalar> {
     return Raw.conv3DBackpropInputV2(
         inputSizes: shape,
