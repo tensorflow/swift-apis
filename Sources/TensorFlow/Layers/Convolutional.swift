@@ -199,11 +199,11 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         return activation(conv2D(
-                            input,
-                            filter: filter,
-                            strides: (1, strides.0, strides.1, 1),
-                            padding: padding,
-                            dilations: (1, dilations.0, dilations.1, 1)) + bias)
+            input,
+            filter: filter,
+            strides: (1, strides.0, strides.1, 1),
+            padding: padding,
+            dilations: (1, dilations.0, dilations.1, 1)) + bias)
     }
 }
 
