@@ -65,11 +65,12 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Returns: The output `[batchCount, newWidth, outputChannels]`.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        let conv = conv2D(input.expandingShape(at: 1),
-                          filter: filter.expandingShape(at: 0),
-                          strides: (1, 1, stride, 1),
-                          padding: padding,
-                          dilations: (1, 1, dilation, 1))
+        let conv = conv2D(
+            input.expandingShape(at: 1),
+            filter: filter.expandingShape(at: 0),
+            strides: (1, 1, stride, 1),
+            padding: padding,
+            dilations: (1, 1, dilation, 1))
         return activation(conv.squeezingShape(at: 1) + bias)
     }
 }
@@ -197,11 +198,12 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return activation(conv2D(input,
-                                 filter: filter,
-                                 strides: (1, strides.0, strides.1, 1),
-                                 padding: padding,
-                                 dilations: (1, dilations.0, dilations.1, 1)) + bias)
+        return activation(conv2D(
+                            input,
+                            filter: filter,
+                            strides: (1, strides.0, strides.1, 1),
+                            padding: padding,
+                            dilations: (1, dilations.0, dilations.1, 1)) + bias)
     }
 }
 
