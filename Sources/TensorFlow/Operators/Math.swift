@@ -1938,7 +1938,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
                 where: rawMax.isFinite)
         }
         let result = TensorFlow.log(TensorFlow.exp(self - offset).sum(squeezingAxes: axes))
-        let resultShape = Swift.withoutDerivative(at: result.shapeTensor, in: identity)
+        let resultShape = Swift.withoutDerivative(at: result.shapeTensor)
         return result + offset.reshaped(toShape: resultShape)
     }
 

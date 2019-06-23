@@ -264,7 +264,7 @@ public struct RNN<Cell: RNNCell>: Layer {
 
     @differentiable(wrt: (self, inputs))
     public func callAsFunction(_ inputs: [Cell.TimeStepInput]) -> [Cell.TimeStepOutput] {
-        return self(inputs, initialState: cell.zeroState.withoutDerivative())
+        return self(inputs, initialState: Swift.withoutDerivative(at: cell.zeroState))
     }
 
     /* TODO: Uncomment once control flow and differentiation through force unwrapping is supported.
