@@ -417,8 +417,9 @@ public struct TransposedConv2D: Layer {
     /// activation function, strides, and padding.
     ///
     /// - Parameters:
-    ///   - filter: A 4-D tensor of shape [width, height, inputChannels, outputChannels].
-    ///   - bias: The bias tensor of shape [outputChannels].
+    ///   - filter: A 4-D tensor of shape
+    ///     `[width, height, input channel count, output channel count]`.
+    ///   - bias: The bias tensor of shape `[output channel count]``.
     ///   - activation: The element-wise activation function.
     ///   - strides: The strides of the sliding window for spatial dimensions.
     ///   - padding: The padding algorithm for convolution.
@@ -465,7 +466,8 @@ public extension TransposedConv2D {
     /// initialization with the specified generator. The bias vector is initialized with zeros.
     ///
     /// - Parameters:
-    ///   - filterShape: A 4-D tensor of shape [width, height, inputChannels, outputChannels].
+    ///   - filterShape: A 4-D tensor of shape
+    ///     `[width, height, input channel count, output channel count]`.
     ///   - strides: The strides of the sliding window for spatial dimensions.
     ///   - padding: The padding algorithm for convolution.
     ///   - activation: The element-wise activation function.
@@ -497,7 +499,8 @@ public extension TransposedConv2D {
     /// initialization with the specified seed. The bias vector is initialized with zeros.
     ///
     /// - Parameters:
-    ///   - filterShape: A 4-D tensor of shape [width, height, inputChannels, outputChannels].
+    ///   - filterShape: A 4-D tensor of shape
+    ///     `[width, height, input channel count, output channel count]`.
     ///   - strides: The strides of the sliding window for spatial dimensions.
     ///   - padding: The padding algorithm for convolution.
     ///   - activation: The element-wise activation function.
