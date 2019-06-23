@@ -32,9 +32,9 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let padding: Padding
     /// The dilation factor for the temporal dimension.
     @noDerivative public let dilation: Int
-    
-    /// Creates a `Conv1D` layer with the specified filter, bias, activation function, stride, and
-    /// padding.
+
+    /// Creates a `Conv1D` layer with the specified filter, bias, activation function, stride,
+    /// dilation and padding.
     ///
     /// - Parameters:
     ///   - filter: The 3-D convolution kernel `[width, inputChannels, outputChannels]`.
@@ -76,7 +76,7 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
 }
 
 public extension Conv1D where Scalar.RawSignificand: FixedWidthInteger {
-    /// Creates a `Conv1D` layer with the specified filter shape, stride, padding, and
+    /// Creates a `Conv1D` layer with the specified filter shape, stride, padding, dilation and
     /// element-wise activation function. The filter tensor is initialized using Glorot uniform
     /// initialization with the specified generator. The bias vector is initialized with zeros.
     ///
@@ -112,7 +112,7 @@ public extension Conv1D where Scalar.RawSignificand: FixedWidthInteger {
 }
 
 public extension Conv1D {
-    /// Creates a `Conv1D` layer with the specified filter shape, strides, padding, and
+    /// Creates a `Conv1D` layer with the specified filter shape, strides, padding, dilation and
     /// element-wise activation function. The filter tensor is initialized using Glorot uniform
     /// initialization with the specified seed. The bias vector is initialized with zeros.
     ///
@@ -163,11 +163,11 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let strides: (Int, Int)
     /// The padding algorithm for convolution.
     @noDerivative public let padding: Padding
-    /// The dilation factor for spatials dimensions.
+    /// The dilation factor for spatial dimensions.
     @noDerivative public let dilations: (Int, Int)
-    
-    /// Creates a `Conv2D` layer with the specified filter, bias, activation function, strides, and
-    /// padding.
+
+    /// Creates a `Conv2D` layer with the specified filter, bias, activation function, strides,
+    /// dilations and padding.
     ///
     /// - Parameters:
     ///   - filter: The 4-D convolution kernel.
@@ -175,7 +175,7 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - activation: The element-wise activation function.
     ///   - strides: The strides of the sliding window for spatial dimensions.
     ///   - padding: The padding algorithm for convolution.
-    ///   - dilations: The dilation factor for spatials dimensions.
+    ///   - dilations: The dilation factor for spatial dimensions.
     public init(
         filter: Tensor<Scalar>,
         bias: Tensor<Scalar>,
@@ -208,7 +208,7 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
 }
 
 public extension Conv2D {
-    /// Creates a `Conv2D` layer with the specified filter shape, strides, padding, and
+    /// Creates a `Conv2D` layer with the specified filter shape, strides, padding, dilations and
     /// element-wise activation function. The filter tensor is initialized using Glorot uniform
     /// initialization with the specified generator. The bias vector is initialized with zeros.
     ///
@@ -243,7 +243,7 @@ public extension Conv2D {
 }
 
 public extension Conv2D {
-    /// Creates a `Conv2D` layer with the specified filter shape, strides, padding, and
+    /// Creates a `Conv2D` layer with the specified filter shape, strides, padding, dilations and
     /// element-wise activation function. The filter tensor is initialized using Glorot uniform
     /// initialization with the specified seed. The bias vector is initialized with zeros.
     ///
