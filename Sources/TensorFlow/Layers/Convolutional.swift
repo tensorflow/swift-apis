@@ -32,7 +32,7 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let padding: Padding
     /// The dilation factor for the temporal dimension.
     @noDerivative public let dilation: Int
-    
+
     /// Creates a `Conv1D` layer with the specified filter, bias, activation function, stride, and
     /// padding.
     ///
@@ -165,7 +165,7 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let padding: Padding
     /// The dilation factor for spatials dimensions.
     @noDerivative public let dilations: (Int, Int)
-    
+
     /// Creates a `Conv2D` layer with the specified filter, bias, activation function, strides, and
     /// padding.
     ///
@@ -293,6 +293,8 @@ public struct Conv3D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let strides: (Int, Int, Int)
     /// The padding algorithm for convolution.
     @noDerivative public let padding: Padding
+    /// The dilation factor for spatial/spatio temporal dimensions.
+    @noDerivative public let dilations: (Int, Int, Int)
 
     /// Creates a `Conv3D` layer with the specified filter, bias, activation function, strides, and
     /// padding.
@@ -303,18 +305,21 @@ public struct Conv3D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - activation: The element-wise activation function.
     ///   - strides: The strides of the sliding window for spatial dimensions.
     ///   - padding: The padding algorithm for convolution.
+    ///   - dilations: The dilation factor for spatial/spatio-temporal dimensions.
     public init(
         filter: Tensor<Scalar>,
         bias: Tensor<Scalar>,
         activation: @escaping Activation = identity,
         strides: (Int, Int, Int) = (1, 1, 1),
-        padding: Padding = .valid
+        padding: Padding = .valid,
+        dilations: (Int, Int, Int) = (1, 1, 1)
     ) {
         self.filter = filter
         self.bias = bias
         self.activation = activation
         self.strides = strides
         self.padding = padding
+        self.dilations = dilations
     }
 
     /// Returns the output obtained from applying the layer to the given input.
@@ -327,12 +332,13 @@ public struct Conv3D<Scalar: TensorFlowFloatingPoint>: Layer {
             input,
             filter: filter,
             strides: (1, strides.0, strides.1, strides.2, 1),
-            padding: padding) + bias)
+            padding: padding,
+            dilations: (1, dilations.0, dilations.1, dilations.2, 1)) + bias)
     }
 }
 
 public extension Conv3D {
-    /// Creates a `Conv3D` layer with the specified filter shape, strides, padding, and
+    /// Creates a `Conv3D` layer with the specified filter shape, strides, padding, dilations and
     /// element-wise activation function. The filter tensor is initialized using Glorot uniform
     /// initialization with the specified generator. The bias vector is initialized with zeros.
     ///
@@ -340,6 +346,7 @@ public extension Conv3D {
     ///   - filterShape: The shape of the 5-D convolution kernel.
     ///   - strides: The strides of the sliding window for spatial/spatio-temporal dimensions.
     ///   - padding: The padding algorithm for convolution.
+    ///   - dilations: The dilation factor for spatial/spatio-temporal dimensions.
     ///   - activation: The element-wise activation function.
     ///   - generator: The random number generator for initialization.
     ///
@@ -349,6 +356,7 @@ public extension Conv3D {
         filterShape: (Int, Int, Int, Int, Int),
         strides: (Int, Int, Int) = (1, 1, 1),
         padding: Padding = .valid,
+        dilations: (Int, Int, Int) = (1, 1, 1),
         activation: @escaping Activation = identity,
         generator: inout G
     ) {
@@ -359,12 +367,13 @@ public extension Conv3D {
             bias: Tensor(zeros: [filterShape.4]),
             activation: activation,
             strides: strides,
-            padding: padding)
+            padding: padding,
+            dilations: dilations)
     }
 }
 
 public extension Conv3D {
-    /// Creates a `Conv3D` layer with the specified filter shape, strides, padding, and
+    /// Creates a `Conv3D` layer with the specified filter shape, strides, padding, dilations and
     /// element-wise activation function. The filter tensor is initialized using Glorot uniform
     /// initialization with the specified seed. The bias vector is initialized with zeros.
     ///
@@ -372,12 +381,14 @@ public extension Conv3D {
     ///   - filterShape: The shape of the 5-D convolution kernel.
     ///   - strides: The strides of the sliding window for spatial/spatio-temporal dimensions.
     ///   - padding: The padding algorithm for convolution.
+    ///   - dilations: The dilation factor for spatial/spatio-temporal dimensions.
     ///   - activation: The element-wise activation function.
     ///   - seed: The random seed for initialization. The default value is random.
     init(
         filterShape: (Int, Int, Int, Int, Int),
         strides: (Int, Int, Int) = (1, 1, 1),
         padding: Padding = .valid,
+        dilations: (Int, Int, Int) = (1, 1, 1),
         activation: @escaping Activation = identity,
         seed: (Int32, Int32) = (Int32.random(in: Int32.min..<Int32.max),
                                 Int32.random(in: Int32.min..<Int32.max))
@@ -389,7 +400,8 @@ public extension Conv3D {
             bias: Tensor(zeros: [filterShape.4]),
             activation: activation,
             strides: strides,
-            padding: padding)
+            padding: padding,
+            dilations: dilations)
     }
 }
 

@@ -230,13 +230,14 @@ func _vjpConv2DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
     })
 }
 
-/// Returns a 3-D convolution with the specified input, filter, strides, and padding.
+/// Returns a 3-D convolution with the specified input, filter, strides, padding and dilations.
 ///
 /// - Parameters:
 ///   - input: The input.
 ///   - filter: The convolution filter.
 ///   - strides: The strides of the sliding filter for each dimension of the input.
 ///   - padding: The padding for the operation.
+///   - dilations: The dilation factor for each dimension of the input.
 /// - Precondition: `input` must have rank `5`.
 /// - Precondition: `filter` must have rank 5.
 @differentiable(wrt: (input, filter), vjp: _vjpConv3D)
@@ -244,14 +245,18 @@ public func conv3D<Scalar: TensorFlowFloatingPoint>(
     _ input: Tensor<Scalar>,
     filter: Tensor<Scalar>,
     strides: (Int, Int, Int, Int, Int),
-    padding: Padding
+    padding: Padding,
+    dilations: (Int, Int, Int, Int, Int)
 ) -> Tensor<Scalar> {
     return Raw.conv3D(
         input,
         filter: filter,
         strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2),
                   Int32(strides.3), Int32(strides.4)],
-        padding: padding.raw)
+        padding: padding.raw,
+        dilations: [Int32(dilations.0), Int32(dilations.1), Int32(dilations.2),
+                    Int32(dilations.3), Int32(dilations.4)]
+    )
 }
 
 @usableFromInline
@@ -259,16 +264,17 @@ func _vjpConv3D<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>,
     filter: Tensor<Scalar>,
     strides: (Int, Int, Int, Int, Int),
-    padding: Padding
+    padding: Padding,
+    dilations: (Int, Int, Int, Int, Int)
 ) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
     let value = conv3D(x, filter: filter, strides: strides,
-                       padding: padding)
+                       padding: padding, dilations: dilations)
     return (value, { v in
         return (
             conv3DBackpropInput(v, shape: x.shapeTensor, filter: filter,
-                                strides: strides, padding: padding),
+                                strides: strides, padding: padding, dilations: dilations),
             conv3DBackpropFilter(v, input: x, filterSizes: filter.shapeTensor,
-                                 strides: strides, padding: padding)
+                                 strides: strides, padding: padding, dilations: dilations)
         )
     })
 }
@@ -281,7 +287,8 @@ func conv3DBackpropInput<Scalar: TensorFlowFloatingPoint>(
     shape: Tensor<Int32>,
     filter: Tensor<Scalar>,
     strides: (Int, Int, Int, Int, Int),
-    padding: Padding
+    padding: Padding,
+    dilations: (Int, Int, Int, Int, Int)
 ) -> Tensor<Scalar> {
     return Raw.conv3DBackpropInputV2(
         inputSizes: shape,
@@ -289,7 +296,10 @@ func conv3DBackpropInput<Scalar: TensorFlowFloatingPoint>(
         outBackprop: x,
         strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2),
                   Int32(strides.3), Int32(strides.4)],
-        padding: padding.raw)
+        padding: padding.raw,
+        dilations: [Int32(dilations.0), Int32(dilations.1), Int32(dilations.2),
+                    Int32(dilations.3), Int32(dilations.4)]
+    )
 }
 
 @usableFromInline
@@ -298,15 +308,16 @@ func _vjpConv3DBackpropInput<Scalar: TensorFlowFloatingPoint>(
     _ shape: Tensor<Int32>,
     _ filter: Tensor<Scalar>,
     _ strides: (Int, Int, Int, Int, Int),
-    _ padding: Padding
+    _ padding: Padding,
+    _ dilations: (Int, Int, Int, Int, Int)
 ) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
     let value = conv3DBackpropInput(x, shape: shape, filter: filter, strides: strides,
-                                    padding: padding)
+                                    padding: padding, dilations: dilations)
     return (value, { v in
         return (
             conv3DBackpropFilter(x, input: v, filterSizes: shape, strides: strides,
-                                 padding: padding),
-            conv3D(v, filter: filter, strides: strides, padding: padding)
+                                 padding: padding, dilations: dilations),
+            conv3D(v, filter: filter, strides: strides, padding: padding, dilations: dilations)
         )
     })
 }
@@ -319,7 +330,8 @@ func conv3DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
     input: Tensor<Scalar>,
     filterSizes: Tensor<Int32>,
     strides: (Int, Int, Int, Int, Int),
-    padding: Padding
+    padding: Padding,
+    dilations: (Int, Int, Int, Int, Int)
 ) -> Tensor<Scalar> {
     return Raw.conv3DBackpropFilterV2(
         x,
@@ -327,7 +339,10 @@ func conv3DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
         outBackprop: x,
         strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2),
                   Int32(strides.3), Int32(strides.4)],
-        padding: padding.raw)
+        padding: padding.raw,
+        dilations: [Int32(dilations.0), Int32(dilations.1), Int32(dilations.2),
+                    Int32(dilations.3), Int32(dilations.4)]
+    )
 }
 
 @usableFromInline
@@ -337,14 +352,15 @@ func _vjpConv3DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
     _ filterSizes: Tensor<Int32>,
     _ strides: (Int, Int, Int, Int, Int),
     _ padding: Padding
+    _ dilations: (Int, Int, Int, Int, Int)
 ) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
     let value = conv3DBackpropFilter(x, input: input, filterSizes: filterSizes,
-                                     strides: strides, padding: padding)
+                                     strides: strides, padding: padding, dilations: dilations)
     return (value, { v in
         return (
             conv3DBackpropInput(x, shape: filterSizes, filter: v, strides: strides,
-                                  padding: padding),
-            conv3D(input, filter: v, strides: strides, padding: padding)
+                                padding: padding, dilations: dilations),
+            conv3D(input, filter: v, strides: strides, padding: padding, dilations: dilations)
         )
     })
 }
