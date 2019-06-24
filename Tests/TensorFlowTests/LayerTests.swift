@@ -117,7 +117,7 @@ final class LayerTests: XCTestCase {
     }
 
     func testTransposedConv2D() {
-        let filter =  Tensor(shape: [2, 2, 2, 1], scalars: (0..<8).map(Float.init))
+        let filter =  Tensor(shape: [4, 2, 1, 1], scalars: (0..<8).map(Float.init))
         let bias = Tensor<Float>([8])
         let layer = Conv2D<Float>(filter: filter, bias: bias, activation: identity,
                                   strides: (1, 1), padding: .valid)
