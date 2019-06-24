@@ -38,7 +38,7 @@ final class LayerTests: XCTestCase {
         // Input shapes.
         let inputHeight = 2
         let inputWidth = 5
-        
+
         let filter = Tensor<Float>(shape: [width, inputChannels, outputChannels],
                                    scalars: [2, 3, 4, 1, 2, 3])
         let bias = Tensor<Float>([0])
@@ -110,18 +110,6 @@ final class LayerTests: XCTestCase {
         let input = Tensor<Float>([0, 1, 2, 3]).expandingShape(at: 2)
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>([0, 1, 4, 10])
-        XCTAssertEqual(output, expected)
-    }
-
-    func testTransposedConv2D() {
-        let filter =  Tensor(shape: [1, 4, 2, 1], scalars: (0..<8).map(Float.init))
-        let bias = Tensor<Float>([8])
-        let layer = Conv2D<Float>(filter: filter, bias: bias, activation: identity,
-                                  strides: (1, 1), padding: .valid)
-        let input = Tensor(shape: [1, 4, 2, 2], scalars: (0..<8).map(Float.init))
-        let output = layer.inferring(from: input)
-        let expected = Tensor<Float>(shape: [1, 4, 2, 1],
-                                     scalars: [0, 4, 4, 20, 16, 56, 40, 104])
         XCTAssertEqual(output, expected)
     }
 
@@ -290,14 +278,14 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(output.shape, expected)
     }
 
-    func testEmbedding() {       
-        var layer = Embedding<Float>(vocabularySize: 3, embeddingSize: 5)       
+    func testEmbedding() {
+        var layer = Embedding<Float>(vocabularySize: 3, embeddingSize: 5)
         var data = Tensor<Int32>(shape: [2, 3], scalars: [0, 1, 2, 1, 2, 2])
         var input = EmbeddingInput(indices: data)
         var output = layer.inferring(from: input)
         let expectedShape = TensorShape([2, 3, 5])
         XCTAssertEqual(output.shape, expectedShape)
-    
+
         let pretrained = Tensor<Float>(shape:[2, 2], scalars: [0.4, 0.3, 0.2, 0.1])
         layer = Embedding<Float>(embeddings: pretrained)
         data = Tensor<Int32>(shape: [2, 2], scalars: [0, 1, 1, 1])
@@ -359,7 +347,6 @@ final class LayerTests: XCTestCase {
         ("testConv2DDilation", testConv2DDilation),
         ("testConv3D", testConv3D),
         ("testTransposedConv1D",testTransposedConv1D),
-        ("testTransposedConv2D",testTransposedConv2D),
         ("testTransposedConv3D",testTransposedConv3D),
         ("testDepthConv2D", testDepthConv2D),
         ("testMaxPool1D", testMaxPool1D),
