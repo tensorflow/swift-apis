@@ -414,8 +414,8 @@ public extension Tensor {
     func batchGathering<Index: TensorFlowIndex>(atIndices indices: Tensor<Index>) -> Tensor {
         var batchIndices = indices
         var accumulated = Tensor<Index>(ones: [])
-        accumulated *= Swift.withoutDerivative(at: shapeTensor) { Tensor<Index>($0[1]) }
-        let dValue = Swift.withoutDerivative(at: shapeTensor) { $0[0] }
+        accumulated *= withoutDerivative(at: shapeTensor) { Tensor<Index>($0[1]) }
+        let dValue = withoutDerivative(at: shapeTensor) { $0[0] }
         let dIndices = Tensor<Index>(
             rangeFrom: Tensor<Index>(zeros: []),
             to: Tensor<Index>(dValue),
@@ -426,8 +426,8 @@ public extension Tensor {
             Tensor<Int32>([Int32](repeating: 1, count: indices.rank - 1))])
         batchIndices += dIndices.reshaped(toShape: dShape)
         let flatIndices = batchIndices.flattened()
-        let outerShape = Swift.withoutDerivative(at: shapeTensor) { $0[2...] }
-        let innerShape = Swift.withoutDerivative(at: shapeTensor) { $0[..<2] }.product(squeezingAxes: [0])
+        let outerShape = withoutDerivative(at: shapeTensor) { $0[2...] }
+        let innerShape = withoutDerivative(at: shapeTensor) { $0[..<2] }.product(squeezingAxes: [0])
         let flatTensor = reshaped(toShape: innerShape.rankLifted().concatenated(with: outerShape))
         let flatResult = flatTensor.gathering(atIndices: flatIndices)
         return flatResult.reshaped(toShape: indices.shapeTensor.concatenated(with: outerShape))
@@ -470,7 +470,7 @@ public extension Tensor {
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func gathering(where mask: Tensor<Bool>, alongAxis axis: Int = 0) -> Tensor {
         precondition(mask.rank != 0, "The boolean mask cannot be a scalar.")
-        let posAxis = Swift.withoutDerivative(at: self.rank) { r in axis < 0 ? axis + r : axis }
+        let posAxis = withoutDerivative(at: self.rank) { r in axis < 0 ? axis + r : axis }
         let leadingSize = shapeTensor[posAxis ..< posAxis + mask.rank].product().rankLifted()
         let reshapedTensor = reshaped(
             toShape: Tensor<Int32>(concatenating: [
