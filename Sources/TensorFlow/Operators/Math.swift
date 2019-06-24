@@ -579,6 +579,21 @@ func _vjpLog1p<T: TensorFlowFloatingPoint>(
     (log1p(x), { v in Raw.xdivy(v, 1 + x) })
 }
 
+/// Returns `log(1 - exp(x))` using a numerically stable approach.
+///
+/// - Note: The approach is shown in Equation 7 of:
+///   https://cran.r-project.org/web/packages/Rmpfr/vignettes/log1mexp-note.pdf.
+@inlinable
+@differentiable
+public func log1mexp<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    let isTooSmall = withoutDerivative(at: x) { x in -x .< T(log(2.0)) }
+    // This `replacing` will ultimately be a no-op because we will not select this code-path 
+    // whenever we use the surrogate `-Tensor(onesLike: x)`.
+    let ones = withoutDerivative(at: x) { x in Tensor(onesLike: x) }
+    let xSafe = x.replacing(with: -ones, where: isTooSmall)
+    return log1p(-exp(xSafe)).replacing(with: log(-expm1(x)), where: isTooSmall)
+}
+
 /// Returns the sine of the specified tensor element-wise.
 @inlinable
 @differentiable(vjp: _vjpSin(_:))
@@ -912,7 +927,7 @@ internal func _vjpSigmoid<T: TensorFlowFloatingPoint>(
 }
 
 /// Returns the log-sigmoid of the specified tensor element-wise. Specifically,
-/// `y = log(1 / (1 + exp(-x)))`. For numerical stability, we use `y = -softplus(-x)`.
+/// `log(1 / (1 + exp(-x)))`. For numerical stability, we use `-softplus(-x)`.
 @inlinable
 @differentiable
 public func logSigmoid<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {

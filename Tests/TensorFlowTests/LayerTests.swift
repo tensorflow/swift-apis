@@ -20,7 +20,7 @@ final class LayerTests: XCTestCase {
         let filter = Tensor<Float>(ones: [3, 1, 2]) * Tensor<Float>([[[0.5, 1]]])
         let bias = Tensor<Float>([0, 1])
         let layer = Conv1D<Float>(filter: filter, bias: bias, activation: identity, stride: 1,
-                                  padding: .valid, dilation: 1)
+                                  padding: .valid)
         let input = Tensor<Float>([[0, 1, 2, 3, 4], [10, 11, 12, 13, 14]]).expandingShape(at: 2)
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>(
@@ -55,7 +55,7 @@ final class LayerTests: XCTestCase {
         let filter =  Tensor(shape: [1, 2, 2, 1], scalars: (0..<4).map(Float.init))
         let bias = Tensor<Float>([1, 2])
         let layer = Conv2D<Float>(filter: filter, bias: bias, activation: identity,
-                                  strides: (2, 2), padding: .valid, dilations: (1, 1))
+                                  strides: (2, 2), padding: .valid)
         let input = Tensor(shape: [2, 2, 2, 2], scalars: (0..<16).map(Float.init))
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>(shape: [2, 1, 1, 2],
