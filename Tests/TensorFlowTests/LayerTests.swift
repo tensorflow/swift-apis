@@ -124,7 +124,7 @@ final class LayerTests: XCTestCase {
         let input = Tensor(shape: [1, 4, 2, 1], scalars: (0..<8).map(Float.init))
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>(shape: [1, 4, 2, 1],
-                                     scalars: [0, 4, 4, 20, 16, 56, 40, 104])
+                                     scalars: [8, 12, 12, 28, 24, 64, 48, 112])
         XCTAssertEqual(output, expected)
     }
 
