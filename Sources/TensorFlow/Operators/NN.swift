@@ -123,7 +123,7 @@ public func conv2D<Scalar: TensorFlowFloatingPoint>(
     filter: Tensor<Scalar>,
     strides: (Int, Int, Int, Int),
     padding: Padding,
-    dilations: (Int, Int, Int, Int)
+    dilations: (Int, Int, Int, Int) = (1, 1, 1, 1)
 ) -> Tensor<Scalar> {
     return Raw.conv2D(
         input,
@@ -200,7 +200,7 @@ func conv2DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
     filterSizes: Tensor<Int32>,
     strides: (Int, Int, Int, Int),
     padding: Padding,
-    dilations: (Int, Int, Int, Int)
+    dilations: (Int, Int, Int, Int) = (1, 1, 1, 1)
 ) -> Tensor<Scalar> {
     return Raw.conv2DBackpropFilter(
         input,
