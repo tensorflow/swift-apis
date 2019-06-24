@@ -17,6 +17,7 @@ import XCTest
 import CTensorFlow
 
 final class LazyTensorOperationTests: XCTestCase {
+
     func testNoInput() {
         let placeholder = LazyTensorOperation(
             _id: "V", name: "Placeholder", outputCount: 1)
@@ -137,6 +138,45 @@ final class LazyTensorOperationTests: XCTestCase {
         XCTAssertEqual(op0.description, "%0 = Nop[a: resource]()")
     }
 
+    func testTensorDataTypeArrayAttribute() {
+        let op0 = LazyTensorOperation(
+            _id: "0", name: "Nop", outputCount: 1)
+        op0.updateAttribute("a", [TensorDataType(TF_INT32), TensorDataType(TF_FLOAT)])
+        XCTAssertEqual(op0.description, "%0 = Nop[a: [int32, float]]()")
+    }
+
+    func testOptionalTensorShapeAttribute() {
+        let op0 = LazyTensorOperation(
+            _id: "0", name: "Nop", outputCount: 1)
+        let shape1 = TensorShape([1, 2, 3])
+        op0.updateAttribute("shape", shape1)
+        XCTAssertEqual(op0.description, "%0 = Nop[shape: Optional([1, 2, 3])]()")
+        op0.updateAttribute("shape", nil)
+        XCTAssertEqual(op0.description, "%0 = Nop[shape: nil]()")
+    }
+
+    func testOptionalTensorShapeArrayAttribute() {
+        let op0 = LazyTensorOperation(
+            _id: "0", name: "Nop", outputCount: 1)
+        let shape1 = TensorShape([1, 2, 3])
+        let shape2 = TensorShape([4, 5])
+        op0.updateAttribute("shapes", [shape1, shape2])
+        XCTAssertEqual(op0.description,
+            "%0 = Nop[shapes: [Optional([1, 2, 3]), Optional([4, 5])]]()")
+        op0.updateAttribute("shapes", [nil, shape2])
+        XCTAssertEqual(op0.description, "%0 = Nop[shapes: [nil, Optional([4, 5])]]()")
+    }
+
+    func testConstTensorAttribute() {
+        let op0 = LazyTensorOperation(
+            _id: "0", name: "Nop", outputCount: 1)
+        let a = Tensor<Float>(5.5)
+        let b = Tensor<Float>([1,2])
+        op0.updateAttribute("a", a.handle.handle._tfeTensorHandle)
+        op0.updateAttribute("b", b.handle.handle._tfeTensorHandle)
+        XCTAssertEqual(op0.description, "%0 = Nop[a: 5.5, b: [1.0, 2.0]]()")
+    }
+
     func testArrayAttributes() {
         let op0 = LazyTensorOperation(
             _id: "0", name: "Nop", outputCount: 1)
@@ -175,6 +215,15 @@ final class LazyTensorOperationTests: XCTestCase {
         XCTAssertEqual(op0.description, "%0 = Nop[fn: TFFunction(ExampleFunction)]()")
     }
 
+    func testDeviceTracking() {
+        let op0 = LazyTensorOperation(_id: "0", name: "Nop", outputCount: 1)
+        XCTAssertEqual(op0.deviceName, nil)
+        withDevice(named: "/job:localhost/replica:0/task:0/device:CPU:0") {
+            let op1 = LazyTensorOperation(_id: "0", name: "Nop", outputCount: 1)
+            XCTAssertEqual(op1.deviceName ?? "", "/job:localhost/replica:0/task:0/device:CPU:0")
+        }
+    }
+
     static var allTests = [
         ("testNoInput", testNoInput),
         ("testSingleInput", testSingleInput),
@@ -186,8 +235,17 @@ final class LazyTensorOperationTests: XCTestCase {
         ("testDoubleAttribute", testDoubleAttribute),
         ("testStringAttribute", testStringAttribute),
         ("testTensorDataTypeAttribute", testTensorDataTypeAttribute),
+        ("testTensorDataTypeArrayAttribute", testTensorDataTypeArrayAttribute),
+        ("testOptionalTensorShapeArrayAttribute",
+            testOptionalTensorShapeArrayAttribute),
+        ("testOptionalTensorShapeAttribute", testOptionalTensorShapeAttribute),
+        ("testTensorShapeArrayAttribute",
+            testOptionalTensorShapeArrayAttribute),
+        ("testConstTensorAttribute", testConstTensorAttribute),
         ("testArrayAttributes", testArrayAttributes),
         ("testMultipleAttributes", testMultipleAttributes),
-        ("testFunctionAttribute", testFunctionAttribute)
+        ("testFunctionAttribute", testFunctionAttribute),
+        ("testDeviceTracking", testDeviceTracking)
+
     ]
 }

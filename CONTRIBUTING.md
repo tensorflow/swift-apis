@@ -31,6 +31,34 @@ use GitHub pull requests for this purpose. Consult [GitHub
 Help](https://help.github.com/articles/about-pull-requests/) for more
 information on using pull requests.
 
+### Contribution guidelines and standards
+
+Before sending your pull request for 
+[review](https://github.com/tensorflow/swift-apis/pulls), 
+make sure your changes are consistent with the guidelines.
+
+#### Testing
+
+*   Include unit tests when you contribute new features, as they help to a)
+    prove that your code works correctly, and b) guard against future breaking
+    changes to lower the maintenance cost.
+*   Bug fixes also generally require unit tests, because the presence of bugs
+    usually indicates insufficient test coverage.
+
+#### License
+
+Include a license at the top of new files.
+* [License example](https://github.com/tensorflow/swift-apis/blob/master/Sources/TensorFlow/Random.swift)
+
+#### Swift coding style
+
+Changes should conform to:
+
+* [Google Swift Style Guide](https://google.github.io/swift/)
+* [Swift API Design Guidelines](https://swift.org/documentation/api-design-guidelines/)
+
+With the exception that 4-space indendation be used.
+
 ## Community
 
 It's a good idea to discuss any non-trivial submissions with the project

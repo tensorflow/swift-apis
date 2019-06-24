@@ -467,7 +467,7 @@ final class BasicOperatorTests: XCTestCase {
             [1, 2, 3],
             [1, 2, 3],
             [1, 2, 3]]
-        var pb: (Tensor<Float>) -> Tensor<Float> = pullback(at: atTensor) { x in
+        let pb: (Tensor<Float>) -> Tensor<Float> = pullback(at: atTensor) { x in
             foo(tensor: x, shape: [1, 3])
         }
         
@@ -524,7 +524,7 @@ final class BasicOperatorTests: XCTestCase {
         }
         
         // [3,] -> [3,3]
-        var pb: (Tensor<Float>) -> Tensor<Float> = pullback(at: [99, 33, 55]) { x in
+        let pb: (Tensor<Float>) -> Tensor<Float> = pullback(at: [99, 33, 55]) { x in
             foo(tensor: x, shape: [3, 3])
         }
         
@@ -562,7 +562,7 @@ final class BasicOperatorTests: XCTestCase {
         }
     
         // [3,1] -> [3x3]
-        var pb: (Tensor<Float>) -> Tensor<Float> = pullback(at: [[99, 33, 55]]) { x in
+        let pb: (Tensor<Float>) -> Tensor<Float> = pullback(at: [[99, 33, 55]]) { x in
             foo(tensor: x, shape: [3, 3])
         }
         

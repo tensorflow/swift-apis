@@ -19,7 +19,8 @@ final class LayerTests: XCTestCase {
     func testConv1D() {
         let filter = Tensor<Float>(ones: [3, 1, 2]) * Tensor<Float>([[[0.5, 1]]])
         let bias = Tensor<Float>([0, 1])
-        let layer = Conv1D<Float>(filter: filter, bias: bias, activation: identity, stride: 1, padding: .valid)
+        let layer = Conv1D<Float>(filter: filter, bias: bias, activation: identity, stride: 1,
+                                  padding: .valid, dilation: 1)
         let input = Tensor<Float>([[0, 1, 2, 3, 4], [10, 11, 12, 13, 14]]).expandingShape(at: 2)
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>(
@@ -28,15 +29,65 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(output, expected)
     }
 
+    func testConv1DDilation() {
+        // Filter shapes.
+        let width = 3
+        let inputChannels = 1
+        let outputChannels = 2
+
+        // Input shapes.
+        let inputHeight = 2
+        let inputWidth = 5
+        
+        let filter = Tensor<Float>(shape: [width, inputChannels, outputChannels],
+                                   scalars: [2, 3, 4, 1, 2, 3])
+        let bias = Tensor<Float>([0])
+        let layer = Conv1D<Float>(filter: filter, bias: bias, activation: identity, stride: 1,
+                                  padding: .valid, dilation: 2)
+        let input = Tensor<Float>(shape: [inputHeight, inputWidth, 1],
+                                  scalars: [0, 1, 2, 3, 4, 10, 11, 12, 13, 14])
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>(shape: [2, 1, 2], scalars: [16, 14, 96, 84])
+        XCTAssertEqual(output, expected)
+    }
+
     func testConv2D() {
         let filter =  Tensor(shape: [1, 2, 2, 1], scalars: (0..<4).map(Float.init))
         let bias = Tensor<Float>([1, 2])
         let layer = Conv2D<Float>(filter: filter, bias: bias, activation: identity,
-                                  strides: (2, 2), padding: .valid)
+                                  strides: (2, 2), padding: .valid, dilations: (1, 1))
         let input = Tensor(shape: [2, 2, 2, 2], scalars: (0..<16).map(Float.init))
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>(shape: [2, 1, 1, 2],
                                      scalars: [15, 16, 63, 64])
+        XCTAssertEqual(output, expected)
+    }
+
+    func testConv2DDilation() {
+        // Input shapes. (Data format = NHWC)
+        let batchSize = 2
+        let inputHeight = 4
+        let inputWidth = 4
+        let inputChannels = 1
+        let inputSize = batchSize * inputHeight * inputWidth * inputChannels
+
+        // Filter shapes.
+        let filterHeight = 2
+        let filterWidth = 2
+        let outputChannels = 1
+        let filterSize = filterHeight * filterWidth * inputChannels * outputChannels
+
+        // Testing.
+        let filter = Tensor<Float>(shape: [filterHeight, filterWidth, inputChannels, outputChannels],
+                                   scalars: (0..<filterSize).map(Float.init))
+        let bias = Tensor<Float>([0])
+        let layer = Conv2D<Float>(filter: filter, bias: bias, activation: identity, strides: (1, 1),
+                                  padding: .valid, dilations: (2, 2))
+        let input = Tensor<Float>(shape: [batchSize, inputHeight, inputWidth, inputChannels],
+                                  scalars: (0..<inputSize).map(Float.init))
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>(shape: [2, 2, 2, 1],
+                                     scalars: [48, 54, 72, 78, 144, 150, 168, 174])
         XCTAssertEqual(output, expected)
     }
 
@@ -239,6 +290,23 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(output.shape, expected)
     }
 
+    func testEmbedding() {       
+        var layer = Embedding<Float>(vocabularySize: 3, embeddingSize: 5)       
+        var data = Tensor<Int32>(shape: [2, 3], scalars: [0, 1, 2, 1, 2, 2])
+        var input = EmbeddingInput(indices: data)
+        var output = layer.inferring(from: input)
+        let expectedShape = TensorShape([2, 3, 5])
+        XCTAssertEqual(output.shape, expectedShape)
+    
+        let pretrained = Tensor<Float>(shape:[2, 2], scalars: [0.4, 0.3, 0.2, 0.1])
+        layer = Embedding<Float>(embeddings: pretrained)
+        data = Tensor<Int32>(shape: [2, 2], scalars: [0, 1, 1, 1])
+        input = EmbeddingInput(indices: data)
+        output = layer.inferring(from: input)
+        let expected = Tensor<Float>([[[0.4, 0.3], [0.2, 0.1]], [[0.2, 0.1],[0.2, 0.1]]])
+        XCTAssertEqual(output, expected)
+    }
+
     func testSimpleRNNCell() {
         let weight = Tensor<Float>(ones: [7, 5]) * Tensor<Float>([0.3333, 1, 0.3333, 1, 0.3333])
         let bias = Tensor<Float>(ones: [5])
@@ -286,7 +354,9 @@ final class LayerTests: XCTestCase {
 
     static var allTests = [
         ("testConv1D", testConv1D),
+        ("testConv1DDilation", testConv1DDilation),
         ("testConv2D", testConv2D),
+        ("testConv2DDilation", testConv2DDilation),
         ("testConv3D", testConv3D),
         ("testTransposedConv1D",testTransposedConv1D),
         ("testTransposedConv2D",testTransposedConv2D),
@@ -309,6 +379,7 @@ final class LayerTests: XCTestCase {
         ("testUpSampling3D", testUpSampling3D),
         ("testReshape", testReshape),
         ("testFlatten", testFlatten),
+        ("testEmbedding", testEmbedding),
         ("testSimpleRNNCell", testSimpleRNNCell),
         ("testRNN", testRNN)
     ]

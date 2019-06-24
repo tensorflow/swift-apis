@@ -60,9 +60,82 @@ final class MathOperatorTests: XCTestCase {
     }
 
     func testLog1p() {
-        let x = Tensor<Float>([[1, 2, 3, 4, 5], [1, 2, 3, 4, 5]])
+        let x = Tensor<Float>([1, 2, 3, 4, 5])
         let y = log1p(x)
-        assertEqual(y, log(1 + x), accuracy: 0.0001)
+        let expectedY = Tensor<Float>([0.69315, 1.09861, 1.38629, 1.60944, 1.79176])
+        assertEqual(y, expectedY, accuracy: 0.0001)
+    }
+
+    func testExpm1() {
+        let x = Tensor<Float>([1, 2, 3, 4, 5])
+        let y = expm1(x)
+        let expectedY = Tensor<Float>([1.71828, 6.38906, 19.08554, 53.59815, 147.41316])
+        assertEqual(y, expectedY, accuracy: 0.0001)
+    }
+
+    func testSign() {
+        let x = Tensor<Float>([[1, 2, -3, 4, 5], [1, 2, 3, 4, -5]])
+        let y = sign(x)
+        XCTAssertEqual(y, Tensor<Float>([[1, 1, -1, 1, 1], [1, 1, 1, 1, -1]]))
+    }
+
+    func testLogSigmoid() {
+        let x = Tensor<Float>([[1, 2, 3, 4, 5], [1, 2, 3, 4, 5]])
+        let y = logSigmoid(x)
+        assertEqual(y, log(sigmoid(x)), accuracy: 0.0001)
+    }
+
+    func testSoftplus() {
+        let x = Tensor<Float>([1.0, 2.0, 3.0])
+        let y = softplus(x)
+        let expected = Tensor<Float>([1.3132616,  2.126928, 3.0485873])
+        XCTAssertEqual(y, expected)
+    }
+
+    func testSoftsign() {
+        let x = Tensor<Float>([1.0, 4.0, 3.0])
+        let y = softsign(x)
+        let expected = Tensor<Float>([0.5 , 0.8 , 0.75])
+        XCTAssertEqual(y, expected)
+    }
+
+    func testElu() {
+        let x = Tensor<Float>([-1.0, 2.0, 3.0])
+        let y = elu(x)
+        let expected = Tensor<Float>([-0.63212055, 2, 3])
+        XCTAssertEqual(y, expected)
+    }
+
+    func testGelu() {
+        let x = Tensor<Float>([2.0, 1.0, 7.0])
+        let y = gelu(x)
+        let expected = Tensor<Float>([1.95459769, 0.84119199, 7.0])
+        XCTAssertEqual(y, expected)
+    }
+
+    func testLeakyRelu() {
+        let x = Tensor<Float>([[-1.0, 2.0, 3.0]])
+        let y = leakyRelu(x, alpha: 0.4)
+        let expected = Tensor<Float>([-0.4, 2, 3])
+        XCTAssertEqual(y, expected)
+    }
+
+    func testIsFinite() {
+        let x = Tensor<Float>([1, 2, 3, 4, -Float.infinity])
+        let y = x.isFinite
+        XCTAssertEqual(y, Tensor([true, true, true, true, false]))
+    }
+
+    func testIsInfinite() {
+        let x = Tensor<Float>([1, 2, 3, 4, log(0.0)])
+        let y = x.isInfinite
+        XCTAssertEqual(y, Tensor([false, false, false, false, true]))
+    }
+
+    func testIsNaN() {
+        let x = Tensor<Float>([1, 2, 3, 4, log(-5.0)])
+        let y = x.isNaN
+        XCTAssertEqual(y, Tensor([false, false, false, false, true]))
     }
 
     func testCosineSimilarity() {
@@ -71,21 +144,6 @@ final class MathOperatorTests: XCTestCase {
         let z = cosineSimilarity(x, y)
         let output: Float = 1.0
         XCTAssertEqual(z, Tensor(output))
-    }
-
-    // FIXME(https://bugs.swift.org/browse/TF-543): Disable failing test.
-    /*
-    func testExpm1() {
-        let x = Tensor<Float>([[1, 2, 3, 4, 5], [1, 2, 3, 4, 5]])
-        let y = expm1(x)
-        assertEqual(y, exp(x - 1), accuracy: 0.0001)
-    }
-    */
-
-    func testSign() {
-        let x = Tensor<Float>([[1, 2, -3, 4, 5], [1, 2, 3, 4, -5]])
-        let y = sign(x)
-        XCTAssertEqual(y, Tensor<Float>([[1, 1, -1, 1, 1], [1, 1, 1, 1, -1]]))
     }
 
     func testReduction() {
@@ -145,6 +203,26 @@ final class MathOperatorTests: XCTestCase {
         XCTAssertEqual(argmax0.array, ShapedArray(shape: [3], scalars: [1, 1, 1]))
         XCTAssertEqual(argmax1.array, ShapedArray(shape: [2], scalars: [2, 2]))
         XCTAssertEqual(scalarsArgmax.array, ShapedArray(shape: [], scalars: [5]))
+    }
+
+    func testLogSumExp() {
+        let x = Tensor<Float>([
+            [0.45031791, 0.41123222, 0.53928467, 0.47167023, 0.15483777],
+            [0.49975705, 0.71807549, 0.30396056, 0.2690469 , 0.01404393],
+            [0.16950939, 0.41085612, 0.79503016, 0.11977817, 0.99728241],
+            [0.62510073, 0.17344792, 0.1540605 , 0.40758517, 0.93683817],
+            [0.15653343, 0.50502756, 0.99365925, 0.84617581, 0.17422509]])
+        let y0 = x.logSumExp()
+        let y1 = x.logSumExp(squeezingAxes: 1)
+        let y2 = x.logSumExp(alongAxes: 1)
+        let expectedY0 = Tensor<Float>(3.713885997817954)
+        let expectedY1 = Tensor<Float>(
+            [2.02318908, 1.99835067, 2.16853826, 2.1137799, 2.20261244])
+        let expectedY2 = Tensor<Float>(
+            [[2.02318908], [1.99835067], [2.16853826], [2.1137799], [2.20261244]])
+        assertEqual(y0, expectedY0, accuracy: 0.0001)
+        assertEqual(y1, expectedY1, accuracy: 0.0001)
+        assertEqual(y2, expectedY2, accuracy: 0.0001)
     }
 
     func testCeilAndFloor() {
@@ -222,20 +300,6 @@ final class MathOperatorTests: XCTestCase {
         XCTAssertEqual(result.scalars, [12.5, 6.5])
     }
 
-    func testSoftplus() {
-      let x = Tensor<Float>([1.0, 2.0, 3.0])
-      let y = softplus(x)
-      let expected = Tensor<Float>([1.3132616,  2.126928, 3.0485873])
-      XCTAssertEqual(y, expected)
-    }
-
-    func testSoftsign() {
-      let x = Tensor<Float>([1.0, 4.0, 3.0])
-      let y = softsign(x)
-      let expected = Tensor<Float>([0.5 , 0.8 , 0.75])
-      XCTAssertEqual(y, expected)
-    }
-
     func testXORInference() {
         func xor(_ x: Float, _ y: Float) -> Float {
             let x = Tensor<Float>([x, y]).reshaped(to: [1, 2])
@@ -297,15 +361,23 @@ final class MathOperatorTests: XCTestCase {
 	}
 
     static var allTests = [
+        ("testElementaryFunctions", testElementaryFunctions),
         ("testLog1p", testLog1p),
-        // FIXME(https://bugs.swift.org/browse/TF-543): Disable failing test.
-        // ("testExpm1", testExpm1),
+        ("testExpm1", testExpm1),
         ("testSign", testSign),
-        ("testReduction", testReduction),
-        ("testCosineSimilarity", testCosineSimilarity),
-        ("testArgmax", testArgmax),
+        ("testLogSigmoid", testLogSigmoid),
         ("testSoftplus", testSoftplus),
         ("testSoftsign", testSoftsign),
+        ("testElu",testElu),
+        ("testGelu", testGelu),
+        ("testLeakyRelu", testLeakyRelu),
+        ("testIsFinite", testIsFinite),
+        ("testIsInfinite", testIsInfinite),
+        ("testIsNaN", testIsNaN),
+        ("testCosineSimilarity", testCosineSimilarity),
+        ("testReduction", testReduction),
+        ("testArgmax", testArgmax),
+        ("testLogSumExp", testLogSumExp),
         ("testCeilAndFloor", testCeilAndFloor),
         ("testSimpleMath", testSimpleMath),
         ("testStandardDeviation", testStandardDeviation),
