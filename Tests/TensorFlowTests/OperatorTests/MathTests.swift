@@ -212,6 +212,26 @@ final class MathOperatorTests: XCTestCase {
         XCTAssertEqual(scalarsArgmax.array, ShapedArray(shape: [], scalars: [5]))
     }
 
+    func testLogSumExp() {
+        let x = Tensor<Float>([
+            [0.45031791, 0.41123222, 0.53928467, 0.47167023, 0.15483777],
+            [0.49975705, 0.71807549, 0.30396056, 0.2690469 , 0.01404393],
+            [0.16950939, 0.41085612, 0.79503016, 0.11977817, 0.99728241],
+            [0.62510073, 0.17344792, 0.1540605 , 0.40758517, 0.93683817],
+            [0.15653343, 0.50502756, 0.99365925, 0.84617581, 0.17422509]])
+        let y0 = x.logSumExp()
+        let y1 = x.logSumExp(squeezingAxes: 1)
+        let y2 = x.logSumExp(alongAxes: 1)
+        let expectedY0 = Tensor<Float>(3.713885997817954)
+        let expectedY1 = Tensor<Float>(
+            [2.02318908, 1.99835067, 2.16853826, 2.1137799, 2.20261244])
+        let expectedY2 = Tensor<Float>(
+            [[2.02318908], [1.99835067], [2.16853826], [2.1137799], [2.20261244]])
+        assertEqual(y0, expectedY0, accuracy: 0.0001)
+        assertEqual(y1, expectedY1, accuracy: 0.0001)
+        assertEqual(y2, expectedY2, accuracy: 0.0001)
+    }
+
     func testCeilAndFloor() {
         let x = Tensor<Float>([-1.3, -0.4, 0.5, 1.6])
         let xFloor = floor(x)
@@ -365,6 +385,7 @@ final class MathOperatorTests: XCTestCase {
         ("testCosineSimilarity", testCosineSimilarity),
         ("testReduction", testReduction),
         ("testArgmax", testArgmax),
+        ("testLogSumExp", testLogSumExp),
         ("testCeilAndFloor", testCeilAndFloor),
         ("testSimpleMath", testSimpleMath),
         ("testStandardDeviation", testStandardDeviation),
