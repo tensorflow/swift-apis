@@ -32,7 +32,7 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let padding: Padding
     /// The dilation factor for the temporal dimension.
     @noDerivative public let dilation: Int
-    
+
     /// Creates a `Conv1D` layer with the specified filter, bias, activation function, stride, and
     /// padding.
     ///
@@ -165,7 +165,7 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let padding: Padding
     /// The dilation factor for spatials dimensions.
     @noDerivative public let dilations: (Int, Int)
-    
+
     /// Creates a `Conv2D` layer with the specified filter, bias, activation function, strides, and
     /// padding.
     ///
@@ -445,9 +445,9 @@ public struct TransposedConv2D: Layer {
     @differentiable
     public func callAsFunction(_ input: Tensor<Float>) -> Tensor<Float> {
         let batchSize = input.shape[0]
-        let w = (input.shape[1] - (1 * paddingIndex)) *
+        let w = (input.shape[1] - 1) *
           strides.0 + (filter.shape[0] * paddingIndex)
-        let h = (input.shape[2] - (1 * paddingIndex)) *
+        let h = (input.shape[2] - 1) *
           strides.1 + (filter.shape[1] * paddingIndex)
         let c = filter.shape[2]
         let newShape = Tensor<Int32>([Int32(batchSize), Int32(w), Int32(h), Int32(c)])
