@@ -449,7 +449,7 @@ public struct TransposedConv2D: Layer {
           strides.0 + (filter.shape[0] * paddingIndex)
         let h = (input.shape[2] - 1) *
           strides.1 + (filter.shape[1] * paddingIndex)
-        let c = filter.shape[2]
+        let c = filter.shape[3]
         let newShape = Tensor<Int32>([Int32(batchSize), Int32(w), Int32(h), Int32(c)])
         return activation(conv2DBackpropInput(
             input,
