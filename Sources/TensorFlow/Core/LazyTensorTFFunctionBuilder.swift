@@ -14,8 +14,9 @@
 
 import CTensorFlow
 
-/// Swift-side convenience wrapper for a `TF_Graph*`. It holds a pointer to the underlying
-/// TF_Graph and also exposes the some aspects of the TF_Graph as properties.
+/// Swift-side convenience wrapper for a `TF_Graph`. It holds a pointer to the
+/// underlying TF_Graph and also exposes some aspects of the TF_Graph as
+/// properties.
 class TFGraph {
     /// The `TF_Operation *` type.
     typealias CTFOperation = OpaquePointer
@@ -67,9 +68,9 @@ class TFGraph {
         for output in lazyTrace.outputs {
             let graphNode = nodesCache[ObjectIdentifier(output)]!
             outputGroupCounts.append(output.outputCount)
-            outputs += Array((0..<output.outputCount).map {
-                    TF_Output(oper: graphNode, index: Int32($0))
-                })
+            outputs += (0..<output.outputCount).map {
+                TF_Output(oper: graphNode, index: Int32($0))
+            }
         }
     }
 
@@ -228,8 +229,7 @@ class TFGraph {
     }
 }
 
-
-/// Swift-side convenience wrapper for a `TF_Function*`.
+/// Swift-side convenience wrapper for a `TF_Function`.
 class TFFunction {
     let cTFFunction: CTFFunction
     let outputCount: Int
