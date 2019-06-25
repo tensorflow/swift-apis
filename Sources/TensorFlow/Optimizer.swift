@@ -194,11 +194,12 @@ public class SGD<Model: Differentiable>: Optimizer where Model.TangentVector: Ve
 /// A Riemann manifold stochastic gradient descent (SGD) optimizer.
 public class RiemannSGD<Model: Differentiable>: Optimizer
     where Model.TangentVector: VectorProtocol,
-          Model.TangentVector.Scalar: SignedNumeric {
+          Model.TangentVector.VectorSpaceScalar: FloatingPoint {
+    public typealias Scalar = Model.TangentVector.VectorSpaceScalar
     /// The learning rate.
-    public var learningRate: Model.TangentVector.Scalar
+    public var learningRate: Model.TangentVector.VectorSpaceScalar
 
-    public init(learningRate: Model.TangentVector.Scalar) {
+    public init(learningRate: Model.TangentVector.VectorSpaceScalar) {
         self.learningRate = learningRate
     }
 

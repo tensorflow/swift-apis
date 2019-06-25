@@ -164,23 +164,51 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
 extension Tensor: VectorProtocol where Scalar: TensorFlowFloatingPoint {
     public typealias VectorSpaceScalar = Float
 
+    // @differentiable(where Scalar: TensorFlowFloatingPoint)
     public func scaled(by scale: Float) -> Self {
         Scalar(scale) * self
     }
 
-    @differentiable(where Scalar: TensorFlowFloatingPoint)
-    public func adding(_ scalar: Scalar) -> Self {
-        self + scalar
+    // @differentiable(where Scalar: TensorFlowFloatingPoint)
+    public func adding(_ scalar: Float) -> Self {
+        self + Scalar(scalar)
     }
 
-    @differentiable(where Scalar: TensorFlowFloatingPoint)
-    public func subtracting(_ scalar: Scalar) -> Self {
-        self - scalar
+    // @differentiable(where Scalar: TensorFlowFloatingPoint)
+    public func subtracting(_ scalar: Float) -> Self {
+        self - Scalar(scalar)
+    }
+}
+
+extension VectorProtocol {
+    static func + (lhs: VectorSpaceScalar, rhs: Self) -> Self {
+        rhs.adding(lhs)
     }
 
-    @differentiable(where Scalar: TensorFlowFloatingPoint)
-    public func scaled(by scalar: Scalar) -> Self {
-        self * scalar
+    static func + (lhs: Self, rhs: VectorSpaceScalar) -> Self {
+        lhs.adding(rhs)
+    }
+
+    static func - (lhs: Self, rhs: VectorSpaceScalar) -> Self {
+        lhs.subtracting(rhs)
+    }
+
+    static func * (lhs: VectorSpaceScalar, rhs: Self) -> Self {
+        rhs.scaled(by: lhs)
+    }
+
+    static func * (lhs: Self, rhs: VectorSpaceScalar) -> Self {
+        lhs.scaled(by: rhs)
+    }
+}
+
+extension VectorProtocol where VectorSpaceScalar: SignedNumeric {
+    static prefix func - (x: Self) -> Self {
+        .zero - x
+    }
+
+    static func - (lhs: VectorSpaceScalar, rhs: Self) -> Self {
+        (-rhs).adding(lhs)
     }
 }
 
