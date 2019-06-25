@@ -334,7 +334,7 @@ public struct Conv3D<Scalar: TensorFlowFloatingPoint>: Layer {
             strides: (1, strides.0, strides.1, strides.2, 1),
             padding: padding,
             dilations: (1, dilations.0, dilations.1, dilations.2, 1)
-          ) + bias)
+        ) + bias)
     }
 }
 
