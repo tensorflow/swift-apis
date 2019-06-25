@@ -728,6 +728,7 @@ extension LazyTensorOperation: CustomStringConvertible {
 extension LazyTensorOperation {
     /// Returns the materialized value at the given output `index`.
     func materialized(index: Int) -> TFETensorHandle {
+        precondition(index < outputCount)
         return materialized()[index]
     }
 
