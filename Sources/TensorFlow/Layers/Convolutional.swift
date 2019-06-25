@@ -32,19 +32,9 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let padding: Padding
     /// The dilation factor for the temporal dimension.
     @noDerivative public let dilation: Int
-<<<<<<< HEAD
-
-    /// Creates a `Conv1D` layer with the specified filter, bias, activation function, stride, and
-    /// padding.
-||||||| merged common ancestors
-    
-    /// Creates a `Conv1D` layer with the specified filter, bias, activation function, stride, and
-    /// padding.
-=======
 
     /// Creates a `Conv1D` layer with the specified filter, bias, activation function, stride,
     /// dilation and padding.
->>>>>>> 380a95c3689bcd2d55df00a28b4640a7a4937c17
     ///
     /// - Parameters:
     ///   - filter: The 3-D convolution kernel `[width, inputChannels, outputChannels]`.
@@ -175,19 +165,9 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let padding: Padding
     /// The dilation factor for spatial dimensions.
     @noDerivative public let dilations: (Int, Int)
-<<<<<<< HEAD
-
-    /// Creates a `Conv2D` layer with the specified filter, bias, activation function, strides, and
-    /// padding.
-||||||| merged common ancestors
-    
-    /// Creates a `Conv2D` layer with the specified filter, bias, activation function, strides, and
-    /// padding.
-=======
 
     /// Creates a `Conv2D` layer with the specified filter, bias, activation function, strides,
     /// dilations and padding.
->>>>>>> 380a95c3689bcd2d55df00a28b4640a7a4937c17
     ///
     /// - Parameters:
     ///   - filter: The 4-D convolution kernel.
@@ -418,7 +398,7 @@ public extension Conv3D {
 /// This layer creates a convolution filter that is transpose-convolved with the layer input
 /// to produce a tensor of outputs.
 @frozen
-public struct TransposedConv2D: Layer {
+public struct TransposedConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The 4-D convolution kernel.
     public var filter: Tensor<Float>
     /// The bias vector.
