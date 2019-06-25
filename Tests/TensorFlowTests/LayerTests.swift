@@ -116,6 +116,26 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(output, expected)
     }
 
+    func testCropping1D() {
+        let (begin, end) = (1, 1)
+        let layer = Cropping1D<Float>(cropping: (begin, end))
+        let input = Tensor<Float>(shape: [2, 3, 3], scalars: (0..<18).map(Float.init))
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>([[[3, 4, 5]], [[12, 13, 14]]])
+        XCTAssertEqual(output, expected)
+    }
+
+    func testCropping2D() {
+        let (top, bottom) = (0, 1)
+        let (left, right) = (1, 0)
+        let layer = Cropping2D<Float>(cropping: ((top, bottom), (left, right)))
+        let input = Tensor<Float>(shape: [2, 3, 3, 2], scalars: (0..<36).map(Float.init))
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>(shape: [2, 2, 2, 2],
+            scalars: [2, 3, 4, 5, 8, 9, 10, 11, 20, 21, 22, 23, 26, 27, 28, 29])
+        XCTAssertEqual(output, expected)
+    }
+
     func testMaxPool1D() {
         let layer = MaxPool1D<Float>(poolSize: 3, stride: 1, padding: .valid)
         let input = Tensor<Float>([[0, 1, 2, 3, 4], [10, 11, 12, 13, 14]]).expandingShape(at: 2)
@@ -256,14 +276,14 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(output.shape, expected)
     }
 
-    func testEmbedding() {       
-        var layer = Embedding<Float>(vocabularySize: 3, embeddingSize: 5)       
+    func testEmbedding() {
+        var layer = Embedding<Float>(vocabularySize: 3, embeddingSize: 5)
         var data = Tensor<Int32>(shape: [2, 3], scalars: [0, 1, 2, 1, 2, 2])
         var input = EmbeddingInput(indices: data)
         var output = layer.inferring(from: input)
         let expectedShape = TensorShape([2, 3, 5])
         XCTAssertEqual(output.shape, expectedShape)
-    
+
         let pretrained = Tensor<Float>(shape:[2, 2], scalars: [0.4, 0.3, 0.2, 0.1])
         layer = Embedding<Float>(embeddings: pretrained)
         data = Tensor<Int32>(shape: [2, 2], scalars: [0, 1, 1, 1])
@@ -325,6 +345,8 @@ final class LayerTests: XCTestCase {
         ("testConv2DDilation", testConv2DDilation),
         ("testConv3D", testConv3D),
         ("testDepthConv2D", testDepthConv2D),
+        ("testCropping1D", testCropping1D),
+        ("testCropping2D", testCropping2D),
         ("testMaxPool1D", testMaxPool1D),
         ("testMaxPool2D", testMaxPool2D),
         ("testMaxPool3D", testMaxPool3D),
