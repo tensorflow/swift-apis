@@ -383,8 +383,54 @@ public extension Tensor {
     /// - Returns: The gathered tensor.
     @inlinable
     @differentiable(wrt: self, vjp: _vjpGathering where Scalar : TensorFlowFloatingPoint)
-    func gathering(atIndices indices: Tensor<Int32>, alongAxis axis: Int = 0) -> Tensor {
+    func gathering<Index: TensorFlowIndex>(
+        atIndices indices: Tensor<Index>,
+        alongAxis axis: Int = 0
+    ) -> Tensor {
         return Raw.gatherV2(params: self, indices: indices, axis: Tensor<Int32>(Int32(axis)))
+    }
+
+    /// Returns slices of this tensor at `indices`, while ignoring the first `batchDims` dimensions
+    /// that correspond to batch dimensions. The gather is performed along the first non-batch
+    /// dimension.
+    ///
+    /// Performs similar functionality to `gathering`, except that the resulting tensor shape is 
+    /// now:
+    /// ```
+    /// self.shape[..<batchDims] + 
+    ///   indices.shape[batchDims...] + 
+    ///   self.shape[(batchDims + indices.rank + 1)...]
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - indices: Contains the indices to gather.
+    ///   - batchDims: Number of leading batch dimensions to ignore.
+    ///
+    /// - Precondition: `batchDims` must be less than `indices.rank`.
+    ///
+    /// - Returns: The gathered tensor.
+    @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+    func batchGathering<Index: TensorFlowIndex>(atIndices indices: Tensor<Index>) -> Tensor {
+        var batchIndices = indices
+        var accumulated = Tensor<Index>(ones: [])
+        accumulated *= withoutDerivative(at: shapeTensor) { Tensor<Index>($0[1]) }
+        let dValue = withoutDerivative(at: shapeTensor) { $0[0] }
+        let dIndices = Tensor<Index>(
+            rangeFrom: Tensor<Index>(zeros: []),
+            to: Tensor<Index>(dValue),
+            stride: Tensor<Index>(ones: [])
+        ) * accumulated
+        let dShape = Tensor<Int32>(concatenating: [
+            dValue.rankLifted(),
+            Tensor<Int32>([Int32](repeating: 1, count: indices.rank - 1))])
+        batchIndices += dIndices.reshaped(toShape: dShape)
+        let flatIndices = batchIndices.flattened()
+        let outerShape = withoutDerivative(at: shapeTensor) { $0[2...] }
+        let innerShape = withoutDerivative(at: shapeTensor) { $0[..<2] }.product(squeezingAxes: [0])
+        let flatTensor = reshaped(toShape: innerShape.rankLifted().concatenated(with: outerShape))
+        let flatResult = flatTensor.gathering(atIndices: flatIndices)
+        return flatResult.reshaped(toShape: indices.shapeTensor.concatenated(with: outerShape))
     }
 
     /// Returns a tensor by gathering the values after applying the provided boolean mask to the input.
@@ -421,12 +467,10 @@ public extension Tensor {
     /// - Returns: `(self.rank - K + 1)`-dimensional tensor populated by entries in this tensor
     ///   corresponding to `true` values in `mask`.
     @inlinable
-    // @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func gathering(where mask: Tensor<Bool>, alongAxis axis: Int = 0) -> Tensor {
         precondition(mask.rank != 0, "The boolean mask cannot be a scalar.")
-        // TODO: Remove once control flow AD is supported.
-        let rank = self.rank
-        let posAxis = { axis < 0 ? axis + rank : axis }()
+        let posAxis = withoutDerivative(at: self.rank) { r in axis < 0 ? axis + r : axis }
         let leadingSize = shapeTensor[posAxis ..< posAxis + mask.rank].product().rankLifted()
         let reshapedTensor = reshaped(
             toShape: Tensor<Int32>(concatenating: [
@@ -478,8 +522,8 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 
     @inlinable
-    func _vjpGathering(
-        atIndices indices: Tensor<Int32>,
+    func _vjpGathering<Index: TensorFlowIndex>(
+        atIndices indices: Tensor<Index>,
         alongAxis axis: Int = 0
     ) -> (Tensor, (Tensor) -> Tensor) {
         let result = gathering(atIndices: indices, alongAxis: axis)
@@ -572,6 +616,16 @@ public extension Tensor {
     @inlinable
     func nonZeroIndices() -> Tensor<Int64> {
         return Raw.where_(self)
+    }
+}
+
+public extension Tensor where Scalar: Numeric {
+    /// Returns a tensor by clipping scalars to a specified minimum and maximum.
+    // FIXME: Define a derivative function.
+    // @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+    @inlinable
+    func clipped(min: Tensor, max: Tensor) -> Tensor {
+        Raw.clipByValue(t: self, clipValueMin: min, clipValueMax: max)
     }
 }
 

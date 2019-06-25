@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// Returns the L1 loss between predictions and labels.
+/// Returns the L1 loss between predictions and expectations.
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
-///   - labels: Expected values, i.e. targets, that correspond to the correct output.
+///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 @differentiable(wrt: predicted)
 public func l1Loss<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>, expected: Tensor<Scalar>
@@ -24,11 +24,11 @@ public func l1Loss<Scalar: TensorFlowFloatingPoint>(
     return abs(expected - predicted).sum()
 }
 
-/// Returns the L2 loss between predictions and labels.
+/// Returns the L2 loss between predictions and expectations.
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
-///   - labels: Expected values, i.e. targets, that correspond to the correct output.
+///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 @differentiable(wrt: predicted)
 public func l2Loss<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>, expected: Tensor<Scalar>
@@ -36,11 +36,11 @@ public func l2Loss<Scalar: TensorFlowFloatingPoint>(
     return (expected - predicted).squared().sum()
 }
 
-/// Returns the mean squared error between predictions and labels.
+/// Returns the mean squared error between predictions and expectations.
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
-///   - labels: Expected values, i.e. targets, that correspond to the correct output.
+///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 @differentiable(wrt: predicted)
 public func meanSquaredError<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>, expected: Tensor<Scalar>
@@ -102,19 +102,6 @@ public func hingeLoss<Scalar: TensorFlowFloatingPoint>(
     return max(Tensor(1) - expected * predicted, Tensor(0)).mean()
 }
 
-/// Returns the cosine similarity between predictions and expectations.
-///
-/// - Parameters:
-///   - predicted: Predicted outputs from a neural network.
-///   - expected: Expected values, i.e. targets, that correspond to the correct output.
-@differentiable(wrt: (predicted, expected))
-public func cosineSimilarity<Scalar: TensorFlowFloatingPoint>(
-    predicted: Tensor<Scalar>, expected: Tensor<Scalar>
-) -> Tensor<Scalar> {
-    return -(expected * predicted).sum() /
-        (sqrt(expected.squared().sum()) * sqrt(predicted.squared().sum()))
-}
-
 /// Returns the squared hinge loss between predictions and expectations.
 ///
 /// - Parameters:
@@ -139,6 +126,26 @@ public func categoricalHingeLoss<Scalar: TensorFlowFloatingPoint>(
     let positive = (expected * predicted).sum()
     let negative = ((Tensor(1) - expected) * predicted).max()
     return max(Tensor(0), negative - positive + Tensor(1))
+}
+
+// Helper function for `losCoshLoss(predicted:expected:)`.
+@differentiable
+fileprivate func logCosh<Scalar: TensorFlowFloatingPoint>(
+    _ x: Tensor<Scalar>
+) -> Tensor<Scalar> {
+    x + softplus(Tensor(-2) * x) - log(Tensor(2))
+}
+
+/// Returns the logarithm of the hyperbolic cosine of the error between predictions and expectations.
+///
+/// - Parameters:
+///   - predicted: Predicted outputs from a neural network.
+///   - expected: Expected values, i.e. targets, that correspond to the correct output.
+@differentiable(wrt: predicted)
+public func logCoshLoss<Scalar: TensorFlowFloatingPoint>(
+    predicted: Tensor<Scalar>, expected: Tensor<Scalar>
+) -> Tensor<Scalar> {
+    (logCosh(predicted - expected)).mean()
 }
 
 /// Returns the Poisson loss between predictions and expectations.

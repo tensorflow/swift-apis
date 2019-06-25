@@ -140,25 +140,29 @@ class LazyTensorOperation: TensorOperation {
     }
 
     enum Attribute {
-        case BoolValue(Bool)
-        case IntValue(Int)
-        case FloatValue(Float)
-        case DoubleValue(Double)
-        case StringValue(String)
-        case BoolArray([Bool])
-        case IntArray([Int])
-        case FloatArray([Float])
-        case DoubleArray([Double])
-        case StringArray([String])
-        case ConstTensor(TFETensorHandle)
-        case TensorDataTypeValue(TensorDataType)
-        case TensorFunctionPointer(_TensorFunctionPointer)
+        case boolValue(Bool)
+        case intValue(Int)
+        case floatValue(Float)
+        case doubleValue(Double)
+        case stringValue(String)
+        case boolArray([Bool])
+        case intArray([Int])
+        case floatArray([Float])
+        case doubleArray([Double])
+        case stringArray([String])
+        case constTensor(TFETensorHandle)
+        case tensorDataTypeValue(TensorDataType)
+        case tensorFunctionPointer(_TensorFunctionPointer)
+        case tensorDataTypeArray([TensorDataType])
+        case optionalTensorShape(TensorShape?)
+        case optionalTensorShapeArray([TensorShape?])
     }
 
     let name: String
     let outputCount: Int
     var inputs: [Input]
-    var attrs: [String: Attribute]
+    var attributes: [String: Attribute]
+    var deviceName: String?
     var outputs: [TFETensorHandle]?
     var id: String?
 
@@ -199,7 +203,8 @@ class LazyTensorOperation: TensorOperation {
     init(_id id: String?, name: String, outputCount: Int) {
         self.name = name
         self.inputs = []
-        self.attrs = [:]
+        self.attributes = [:]
+        self.deviceName = _ExecutionContext.global.currentDeviceName
         self.outputCount = outputCount
         self.outputs = nil
         self.id = id
@@ -225,49 +230,46 @@ class LazyTensorOperation: TensorOperation {
     }
 
     func updateAttribute(_ name: String, _ value: Bool) {
-        attrs[name] = Attribute.BoolValue(value)
+        attributes[name] = Attribute.boolValue(value)
     }
     func updateAttribute(_ name: String, _ value: Int) {
-        attrs[name] = Attribute.IntValue(value)
+        attributes[name] = Attribute.intValue(value)
     }
     func updateAttribute(_ name: String, _ value: Int32) {
-        attrs[name] = Attribute.IntValue(Int(value))
+        attributes[name] = Attribute.intValue(Int(value))
     }
     func updateAttribute(_ name: String, _ value: Int64) {
-        attrs[name] = Attribute.IntValue(Int(value))
+        attributes[name] = Attribute.intValue(Int(value))
     }
     func updateAttribute(_ name: String, _ value: Float) {
-        attrs[name] = Attribute.FloatValue(value)
+        attributes[name] = Attribute.floatValue(value)
     }
     func updateAttribute(_ name: String, _ value: Double) {
-        attrs[name] = Attribute.DoubleValue(value)
+        attributes[name] = Attribute.doubleValue(value)
     }
     func updateAttribute(_ name: String, _ value: String) {
-        attrs[name] = Attribute.StringValue(value)
+        attributes[name] = Attribute.stringValue(value)
     }
     func updateAttribute(_ name: String, _ value: [Bool]) {
-        attrs[name] = Attribute.BoolArray(value)
+        attributes[name] = Attribute.boolArray(value)
     }
     func updateAttribute(_ name: String, _ value: [Int]) {
-        attrs[name] = Attribute.IntArray(value)
+        attributes[name] = Attribute.intArray(value)
     }
     func updateAttribute(_ name: String, _ value: [Int32]) {
-        attrs[name] = Attribute.IntArray(value.map { Int($0) })
+        attributes[name] = Attribute.intArray(value.map { Int($0) })
     }
     func updateAttribute(_ name: String, _ value: [Int64]) {
-        attrs[name] = Attribute.IntArray(value.map { Int($0) })
+        attributes[name] = Attribute.intArray(value.map { Int($0) })
     }
     func updateAttribute(_ name: String, _ value: [Float]) {
-        attrs[name] = Attribute.FloatArray(value)
+        attributes[name] = Attribute.floatArray(value)
     }
     func updateAttribute(_ name: String, _ value: [Double]) {
-        attrs[name] = Attribute.DoubleArray(value)
+        attributes[name] = Attribute.doubleArray(value)
     }
     func updateAttribute(_ name: String, _ value: [String]) {
-        attrs[name] = Attribute.StringArray(value)
-    }
-    func updateAttribute(_ name: String, _ value: _TensorFunctionPointer) {
-        attrs[name] = Attribute.TensorFunctionPointer(value)
+        attributes[name] = Attribute.stringArray(value)
     }
 }
 
@@ -314,23 +316,30 @@ extension LazyTensorOperation: TFTensorOperation {
     }
 
     func updateAttribute(_ name: String, _ value: TensorDataType) {
-        attrs[name] = Attribute.TensorDataTypeValue(value)
+        attributes[name] = Attribute.tensorDataTypeValue(value)
     }
     func updateAttribute(_ name: String, _ value: TensorShape) {
-        assert(false, "Unimplemented TensorShape attribute.")
+        attributes[name] = Attribute.optionalTensorShape(value)
     }
     func updateAttribute(_ name: String, _ value: TensorShape?) {
-        assert(false, "Unimplemented TensorShape? attribute.")
+        attributes[name] = Attribute.optionalTensorShape(value)
     }
     func updateAttribute(_ name: String, _ value: [TensorDataType]) {
-        assert(false, "Unimplemented [TensorDataType] attribute.")
+        attributes[name] = Attribute.tensorDataTypeArray(value)
     }
     func updateAttribute(_ name: String, _ value: [TensorShape]) {
-        assert(false, "Unimplemented [TensorShape] attribute.")
+        attributes[name] = Attribute.optionalTensorShapeArray(value)
     }
     func updateAttribute(_ name: String, _ value: [TensorShape?]) {
-        assert(false, "Unimplemented [TensorShape?] attribute.")
+        attributes[name] = Attribute.optionalTensorShapeArray(value)
     }
+    func updateAttribute(_ name: String, _ value: _TensorFunctionPointer) {
+        attributes[name] = Attribute.tensorFunctionPointer(value)
+    }
+    func updateAttribute(_ name: String, _ value: TFETensorHandle) {
+        attributes[name] = Attribute.constTensor(value)
+    }
+
     func updateAttribute<In: TensorGroup, Out: TensorGroup>(
         _ name: String, _ value: (In) -> Out) {
         // TODO:
@@ -646,19 +655,25 @@ extension TFETensorHandle {
 extension LazyTensorOperation.Attribute: CustomStringConvertible {
     var description: String {
         switch self {
-        case .BoolValue(let v): return "\(v)"
-        case .IntValue(let v): return "Int(\(v))"
-        case .FloatValue(let v): return "Float(\(v))"
-        case .DoubleValue(let v): return "Double(\(v))"
-        case .StringValue(let v): return "\"\(v)\""
-        case .BoolArray(let values): return arrayAsString("", values)
-        case .IntArray(let values): return arrayAsString("Int", values)
-        case .FloatArray(let values): return arrayAsString("Float", values)
-        case .DoubleArray(let values): return arrayAsString("Double", values)
-        case .StringArray(let values): return arrayAsString("String", values)
-        case .ConstTensor(let v): return v.valueDescription
-        case .TensorDataTypeValue(let v): return dataTypeAsString(v)
-        case .TensorFunctionPointer(let v): return "TFFunction(\(v.name))"
+        case .boolValue(let v): return "\(v)"
+        case .intValue(let v): return "Int(\(v))"
+        case .floatValue(let v): return "Float(\(v))"
+        case .doubleValue(let v): return "Double(\(v))"
+        case .stringValue(let v): return "\"\(v)\""
+        case .boolArray(let values): return arrayAsString("", values)
+        case .intArray(let values): return arrayAsString("Int", values)
+        case .floatArray(let values): return arrayAsString("Float", values)
+        case .doubleArray(let values): return arrayAsString("Double", values)
+        case .stringArray(let values): return arrayAsString("String", values)
+        case .constTensor(let v): return v.valueDescription
+        case .tensorDataTypeValue(let v): return dataTypeAsString(v)
+        case .tensorFunctionPointer(let v): return "TFFunction(\(v.name))"
+        case .tensorDataTypeArray(let values):
+            let descriptions = values.map { dataTypeAsString($0) }
+            let descString = descriptions.joined(separator: ", ")
+            return "[\(descString)]"
+        case .optionalTensorShape(let t): return String(describing: t)
+        case .optionalTensorShapeArray(let t): return "\(t)"
         }
     }
 
@@ -687,26 +702,24 @@ extension LazyTensor: CustomStringConvertible {
 
 extension LazyTensorOperation: CustomStringConvertible {
     public var description: String {
-        let attrsDesc = attrs.map { (name, value) in "\(name): \(value)" }
-        let inputsDesc = inputs.map { (input: Input) -> String in
+        let attributesDesc = attributes.sorted(by: { $0.key < $1.key }).map { "\($0): \($1)" }
+        let inputsDesc = inputs.map { input -> String in
             switch input {
             case Input.single(let lazyTensor):
                 return "\(lazyTensor)"
             case Input.list(let lazyTensorList):
-                do {
-                    let lazyTensors = lazyTensorList.map { "\($0)" }
-                    let lazyTensorsDesc = lazyTensors.joined(separator: ", ")
-                    return "[\(lazyTensorsDesc)]"
-                }
+                let lazyTensors = lazyTensorList.map { "\($0)" }
+                let lazyTensorsDesc = lazyTensors.joined(separator: ", ")
+                return "[\(lazyTensorsDesc)]"
             }
         }
         var desc = "\(outputName) = \(name)"
-        if attrs.count > 0 {
+        if !attributes.isEmpty {
             desc += "["
-            desc += attrsDesc.joined(separator: ", ")
+            desc += attributesDesc.joined(separator: ", ")
             desc += "]"
         }
-            desc += "("
+        desc += "("
         desc += inputsDesc.joined(separator: ", ")
         desc += ")"
         return desc
