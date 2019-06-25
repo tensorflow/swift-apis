@@ -404,7 +404,7 @@ public struct TransposedConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The bias vector.
     public var bias: Tensor<Scalar>
     /// An activation function.
-    public typealias Activation = @differentiable (Tensor<Float>) -> Tensor<Scalar>
+    public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
     /// The element-wise activation function.
     @noDerivative public let activation: Activation
     /// The strides of the sliding window for spatial dimensions.
@@ -443,7 +443,7 @@ public struct TransposedConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func callAsFunction(_ input: Tensor<Float>) -> Tensor<Float> {
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         let batchSize = input.shape[0]
         let w = (input.shape[1] - 1) *
           strides.0 + (filter.shape[0] * paddingIndex)
