@@ -244,9 +244,9 @@ func _vjpConv2DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
 public func conv3D<Scalar: TensorFlowFloatingPoint>(
     _ input: Tensor<Scalar>,
     filter: Tensor<Scalar>,
-    strides: (Int, Int, Int, Int, Int),
-    padding: Padding,
-    dilations: (Int, Int, Int, Int, Int)
+    strides: (Int, Int, Int, Int, Int) = (1, 1, 1, 1, 1),
+    padding: Padding = .valid,
+    dilations: (Int, Int, Int, Int, Int) = (1, 1, 1, 1, 1)
 ) -> Tensor<Scalar> {
     return Raw.conv3D(
         input,
@@ -286,9 +286,9 @@ func conv3DBackpropInput<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>,
     shape: Tensor<Int32>,
     filter: Tensor<Scalar>,
-    strides: (Int, Int, Int, Int, Int),
-    padding: Padding,
-    dilations: (Int, Int, Int, Int, Int)
+    strides: (Int, Int, Int, Int, Int) = (1, 1, 1, 1, 1),
+    padding: Padding = .valid,
+    dilations: (Int, Int, Int, Int, Int) = (1, 1, 1, 1, 1)
 ) -> Tensor<Scalar> {
     return Raw.conv3DBackpropInputV2(
         inputSizes: shape,
@@ -329,9 +329,9 @@ func conv3DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>,
     input: Tensor<Scalar>,
     filterSizes: Tensor<Int32>,
-    strides: (Int, Int, Int, Int, Int),
-    padding: Padding,
-    dilations: (Int, Int, Int, Int, Int)
+    strides: (Int, Int, Int, Int, Int) = (1, 1, 1, 1, 1),
+    padding: Padding = .valid,
+    dilations: (Int, Int, Int, Int, Int) = (1, 1, 1, 1, 1)
 ) -> Tensor<Scalar> {
     return Raw.conv3DBackpropFilterV2(
         x,
@@ -351,7 +351,7 @@ func _vjpConv3DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
     _ input: Tensor<Scalar>,
     _ filterSizes: Tensor<Int32>,
     _ strides: (Int, Int, Int, Int, Int),
-    _ padding: Padding
+    _ padding: Padding,
     _ dilations: (Int, Int, Int, Int, Int)
 ) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
     let value = conv3DBackpropFilter(x, input: input, filterSizes: filterSizes,
