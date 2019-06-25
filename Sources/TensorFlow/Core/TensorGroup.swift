@@ -38,6 +38,42 @@ public protocol TensorArrayProtocol {
     init<C: RandomAccessCollection>(_handles: C) where C.Element: _AnyTensorHandle
 }
 
+extension TensorArrayProtocol {
+    init<C: RandomAccessCollection>(_handles: C) where C.Element: _AnyTensorHandle {
+        let status = TF_NewStatus()
+        defer { TF_DeleteStatus(status) }
+        let buffer: UnsafeMutablePointer<CTensorHandle> =
+            UnsafeMutablePointer.allocate(capacity: _handles.count)
+        defer { buffer.deallocate() }
+        for handle in _handles {
+            // Increment the reference count in TF.
+            let handleCopy = TFE_TensorHandleCopySharingTensor(handle._cTensorHandle, status)
+            checkOk(status)
+            buffer.initialize(to: handleCopy!)
+        }
+        self.init(_owning: buffer, count: _handles.count)
+    }
+
+    var _tensorHandles : [_AnyTensorHandle] {
+        let status = TF_NewStatus()
+        defer { TF_DeleteStatus(status) }
+        let count = Int(_tensorHandleCount)
+        var buffer = UnsafeMutableBufferPointer<CTensorHandle>.allocate(capacity: count)
+        defer { buffer.deallocate() }
+        let pointer = UnsafeMutablePointer<OpaquePointer?>(buffer.baseAddress)
+        self._unpackTensorHandles(into: buffer.baseAddress)
+        let result: [TFETensorHandle] = (0..<count).map {
+            let current = pointer!.advanced(by: $0)
+            let cTensorHandle = current.pointee
+            // Increment the reference count in TF.
+            let handleCopy = TFE_TensorHandleCopySharingTensor(cTensorHandle, status)
+            checkOk(status)
+            return TFETensorHandle(_owning: handleCopy!)
+        }
+        return result
+    }
+}
+
 /// A protocol representing types that can be mapped to and from `Array<CTensorHandle>`.
 ///
 /// When a `TensorGroup` is used as an argument to a tensor operation, it is passed as an argument
