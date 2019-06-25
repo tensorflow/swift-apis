@@ -22,6 +22,11 @@ final class LazyTensorTFFunctionBuilderTests : XCTestCase {
         _RuntimeConfig.useLazyTensor = true
     }
 
+    override class func tearDown() {
+        super.tearDown()
+        _RuntimeConfig.useLazyTensor = false
+    }
+
     func testSingletonInputs() {
         let a = materializedLazyTensor(Tensor<Float>(10.0))
         let w = Raw.identity(a)
