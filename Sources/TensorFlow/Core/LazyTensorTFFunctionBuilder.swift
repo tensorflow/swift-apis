@@ -34,13 +34,13 @@ class TFGraph {
     /// An array representing how the outputs are grouped. The grouping
     /// corresponds to a higher-level notion like TensorGroup.
     var outputGroupCounts: [Int] = []
-    var name: String { "lazyTrace_\(nodeCounter)" }
+    var name: String { "lazyTrace_\(nodeCount)" }
 
     /// A status object to pass to TF graph building operations.
     private let status: CTFStatus = TF_NewStatus()
 
     /// Counter that is used for number the generated graph nodes.
-    private var nodeCounter: Int = 0
+    private var nodeCount: Int = 0
 
     init(trace: LazyTensorTrace) {
         var nodesCache: [ObjectIdentifier: CTFOperation?] = [:]
@@ -80,8 +80,8 @@ class TFGraph {
     }
 
     private func newNodeName(base: String) -> String {
-        let name = "\(base)_\(nodeCounter)"
-        nodeCounter += 1
+        let name = "\(base)_\(nodeCount)"
+        nodeCount += 1
         return name
     }
 
