@@ -66,6 +66,13 @@ final class MathOperatorTests: XCTestCase {
         assertEqual(y, expectedY, accuracy: 0.0001)
     }
 
+    func testLog1mexp() {
+        let x = Tensor<Float>([-1, -2, -3, -4, -5])
+        let y = log1mexp(x)
+        let expectedY = Tensor<Float>([-0.45868, -0.14541, -0.05107, -0.01849, -0.00676])
+        assertEqual(y, expectedY, accuracy: 0.0001)
+    }
+
     func testExpm1() {
         let x = Tensor<Float>([1, 2, 3, 4, 5])
         let y = expm1(x)
@@ -350,19 +357,20 @@ final class MathOperatorTests: XCTestCase {
     }
 
     func testBroadcastedAddGradient() {
-	  func foo(_ x: Tensor<Float>, _ y: Tensor<Float>) -> Tensor<Float> {
-	    return (x + y).sum()
-	  }
-	  let x = Tensor<Float>(ones: [1, 2, 1, 4])
-	  let y = Tensor<Float>(ones: [4, 1, 3, 1])
-	  let (dx, dy) = gradient(at: x, y, in: foo)
-	  XCTAssertEqual(x.shape, dx.shape)
-	  XCTAssertEqual(y.shape, dy.shape)
-	}
+        func foo(_ x: Tensor<Float>, _ y: Tensor<Float>) -> Tensor<Float> {
+            return (x + y).sum()
+        }
+        let x = Tensor<Float>(ones: [1, 2, 1, 4])
+        let y = Tensor<Float>(ones: [4, 1, 3, 1])
+        let (dx, dy) = gradient(at: x, y, in: foo)
+        XCTAssertEqual(x.shape, dx.shape)
+        XCTAssertEqual(y.shape, dy.shape)
+    }
 
     static var allTests = [
         ("testElementaryFunctions", testElementaryFunctions),
         ("testLog1p", testLog1p),
+        ("testLog1mexp", testLog1mexp),
         ("testExpm1", testExpm1),
         ("testSign", testSign),
         ("testLogSigmoid", testLogSigmoid),

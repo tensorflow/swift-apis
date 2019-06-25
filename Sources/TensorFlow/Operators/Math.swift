@@ -579,6 +579,21 @@ func _vjpLog1p<T: TensorFlowFloatingPoint>(
     (log1p(x), { v in Raw.xdivy(v, 1 + x) })
 }
 
+/// Returns `log(1 - exp(x))` using a numerically stable approach.
+///
+/// - Note: The approach is shown in Equation 7 of:
+///   https://cran.r-project.org/web/packages/Rmpfr/vignettes/log1mexp-note.pdf.
+@inlinable
+@differentiable
+public func log1mexp<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    let isTooSmall = withoutDerivative(at: x) { x in -x .< T(log(2.0)) }
+    // This `replacing` will ultimately be a no-op because we will not select this code-path 
+    // whenever we use the surrogate `-Tensor(onesLike: x)`.
+    let ones = withoutDerivative(at: x) { x in Tensor(onesLike: x) }
+    let xSafe = x.replacing(with: -ones, where: isTooSmall)
+    return log1p(-exp(xSafe)).replacing(with: log(-expm1(x)), where: isTooSmall)
+}
+
 /// Returns the sine of the specified tensor element-wise.
 @inlinable
 @differentiable(vjp: _vjpSin(_:))
@@ -912,7 +927,7 @@ internal func _vjpSigmoid<T: TensorFlowFloatingPoint>(
 }
 
 /// Returns the log-sigmoid of the specified tensor element-wise. Specifically,
-/// `y = log(1 / (1 + exp(-x)))`. For numerical stability, we use `y = -softplus(-x)`.
+/// `log(1 / (1 + exp(-x)))`. For numerical stability, we use `-softplus(-x)`.
 @inlinable
 @differentiable
 public func logSigmoid<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
@@ -1932,13 +1947,13 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @differentiable(wrt: self)
     func logSumExp(squeezingAxes axes: Tensor<Int32>) -> Tensor {
         let rawMax = max(alongAxes: axes)
-        let offset = Swift.withoutDerivative(at: rawMax) { rawMax in 
+        let offset = withoutDerivative(at: rawMax) { rawMax in 
             rawMax.replacing(
                 with: Tensor<Scalar>(zerosLike: rawMax),
                 where: rawMax.isFinite)
         }
         let result = TensorFlow.log(TensorFlow.exp(self - offset).sum(squeezingAxes: axes))
-        let resultShape = Swift.withoutDerivative(at: result.shapeTensor, in: identity)
+        let resultShape = withoutDerivative(at: result.shapeTensor)
         return result + offset.reshaped(toShape: resultShape)
     }
 
@@ -1954,7 +1969,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @differentiable(wrt: self)
     func logSumExp(squeezingAxes axes: [Int]) -> Tensor {
         // TODO(TF-433): Remove workaround for differentiating `map`.
-        let axes = Swift.withoutDerivative(at: axes) { $0.map(Int32.init) }
+        let axes = withoutDerivative(at: axes) { $0.map(Int32.init) }
         return logSumExp(squeezingAxes: Tensor<Int32>(axes))
     }
 
@@ -1996,7 +2011,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @differentiable(wrt: self)
     func logSumExp(alongAxes axes: Tensor<Int32>) -> Tensor {
         let rawMax = max(alongAxes: axes)
-        let offset = Swift.withoutDerivative(at: rawMax) { rawMax in 
+        let offset = withoutDerivative(at: rawMax) { rawMax in 
             rawMax.replacing(
                 with: Tensor<Scalar>(zerosLike: rawMax),
                 where: rawMax.isFinite)
@@ -2018,7 +2033,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @differentiable(wrt: self)
     func logSumExp(alongAxes axes: [Int]) -> Tensor {
         // TODO(TF-433): Remove workaround for differentiating `map`.
-        let axes = Swift.withoutDerivative(at: axes) { $0.map(Int32.init) }
+        let axes = withoutDerivative(at: axes) { $0.map(Int32.init) }
         return logSumExp(alongAxes: Tensor<Int32>(axes))
     }
 

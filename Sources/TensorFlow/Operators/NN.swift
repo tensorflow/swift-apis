@@ -121,9 +121,9 @@ public extension Padding {
 public func conv2D<Scalar: TensorFlowFloatingPoint>(
     _ input: Tensor<Scalar>,
     filter: Tensor<Scalar>,
-    strides: (Int, Int, Int, Int),
-    padding: Padding,
-    dilations: (Int, Int, Int, Int)
+    strides: (Int, Int, Int, Int) = (1, 1, 1, 1),
+    padding: Padding = .valid,
+    dilations: (Int, Int, Int, Int) = (1, 1, 1, 1)
 ) -> Tensor<Scalar> {
     return Raw.conv2D(
         input,
@@ -159,8 +159,8 @@ func conv2DBackpropInput<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>,
     shape: Tensor<Int32>,
     filter: Tensor<Scalar>,
-    strides: (Int, Int, Int, Int),
-    padding: Padding,
+    strides: (Int, Int, Int, Int) = (1, 1, 1, 1),
+    padding: Padding = .valid,
     dilations: (Int, Int, Int, Int) = (1, 1, 1, 1)
 ) -> Tensor<Scalar> {
     return Raw.conv2DBackpropInput(
@@ -198,9 +198,9 @@ func conv2DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>,
     input: Tensor<Scalar>,
     filterSizes: Tensor<Int32>,
-    strides: (Int, Int, Int, Int),
-    padding: Padding,
-    dilations: (Int, Int, Int, Int)
+    strides: (Int, Int, Int, Int) = (1, 1, 1, 1),
+    padding: Padding = .valid,
+    dilations: (Int, Int, Int, Int) = (1, 1, 1, 1)
 ) -> Tensor<Scalar> {
     return Raw.conv2DBackpropFilter(
         input,
