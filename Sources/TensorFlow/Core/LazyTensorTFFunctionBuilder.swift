@@ -56,7 +56,7 @@ class TFGraph {
             }
             let graphNode = makeTFGraphNode(
                 name: op.name,
-                attrs: op.attributes,
+                attributes: op.attributes,
                 inputs: opInputs,
                 device: op.deviceName)
             nodesCache[ObjectIdentifier(op)] = graphNode
@@ -86,41 +86,41 @@ class TFGraph {
     }
 
     private func updateAttribute(
-        _ desc: CTFOperationDescription,
-        _ name: String,
-        _ attrValue: LazyTensorOperation.Attribute
+        description: CTFOperationDescription,
+        name: String,
+        attribute: LazyTensorOperation.Attribute
     ) {
-        switch attrValue {
+        switch attribute {
         case .tensorDataTypeValue(let value):
-            TF_SetAttrType(desc, name, value._cDataType)
+            TF_SetAttrType(description, name, value._cDataType)
         case .boolValue(let value):
-            TF_SetAttrBool(desc, name, value ? 1 : 0)
+            TF_SetAttrBool(description, name, value ? 1 : 0)
         case .intValue(let value):
-            TF_SetAttrInt(desc, name, Int64(value))
+            TF_SetAttrInt(description, name, Int64(value))
         case .floatValue(let value):
-            TF_SetAttrFloat(desc, name, value)
+            TF_SetAttrFloat(description, name, value)
         case .doubleValue(let value):
-            TF_SetAttrFloat(desc, name, Float(value))
+            TF_SetAttrFloat(description, name, Float(value))
         case .stringValue(let value):
             value.utf8CString.withUnsafeBufferPointer { buffer in
                 // utf8CString is null-terminated; TF_SetAttrString wants
                 // non-null-terminated.
-                TF_SetAttrString(desc, name, buffer.baseAddress, buffer.count - 1)
+                TF_SetAttrString(description, name, buffer.baseAddress, buffer.count - 1)
             }
         case .intArray(let values):
             let values64 = values.map { Int64($0) }
             values64.withUnsafeBufferPointer { buffer in
-                TF_SetAttrIntList(desc, name, buffer.baseAddress, Int32(buffer.count))
+                TF_SetAttrIntList(description, name, buffer.baseAddress, Int32(buffer.count))
             }
         case .constTensor(let value):
             let cTensor = TFE_TensorHandleResolve(value._cTensorHandle, status)
             checkOk(status)
-            TF_SetAttrTensor(desc, name, cTensor!, status)
+            TF_SetAttrTensor(description, name, cTensor!, status)
         case .tensorDataTypeArray(let values):
             values.withUnsafeBufferPointer { buffer in
                 buffer.withMemoryRebound(to: TF_DataType.self) { reboundBuffer in
                     TF_SetAttrTypeList(
-                        desc,
+                        description,
                         name,
                         reboundBuffer.baseAddress,
                         Int32(reboundBuffer.count))
@@ -130,10 +130,10 @@ class TFGraph {
             if let shape = value  {
                 let dimensions: [Int64] = shape.dimensions.map(Int64.init)
                 dimensions.withUnsafeBufferPointer { buffer in
-                    TF_SetAttrShape(desc, name, buffer.baseAddress, Int32(buffer.count))
+                    TF_SetAttrShape(description, name, buffer.baseAddress, Int32(buffer.count))
                 }
             } else {
-                TF_SetAttrShape(desc, name, nil, -1)
+                TF_SetAttrShape(description, name, nil, -1)
             }
         case .optionalTensorShapeArray(let values):
             let flattenedDims = values.flatMap { (tensorShapeOpt) -> [Int64] in
@@ -155,7 +155,7 @@ class TFGraph {
                 dims.withUnsafeMutableBufferPointer { dimsBuffer in
                     ranks.withUnsafeBufferPointer { ranksBuffer in
                         TF_SetAttrShapeList(
-                            desc,
+                            description,
                             name,
                             dimsBuffer.baseAddress,
                             ranksBuffer.baseAddress,
@@ -163,43 +163,43 @@ class TFGraph {
                     }
                 }
             }
-        default: assert(false, "Unhandled attribute \(name):\(attrValue)")
+        default: assert(false, "Unhandled attribute \(name):\(attribute)")
         }
     }
 
     private func makeTFGraphNode(
         name: String,
-        attrs: [String: LazyTensorOperation.Attribute],
+        attributes: [String: LazyTensorOperation.Attribute],
         inputs: [Input],
         device: String?
     ) -> CTFOperation? {
         // Create a new graph node now.
-        let desc: CTFOperationDescription! = TF_NewOperation(
+        let description: CTFOperationDescription! = TF_NewOperation(
             cTFGraph,
             name,
             newNodeName(base: name))
 
         // Set Attributes
-        for (name, value) in attrs {
-            updateAttribute(desc, name, value)
+        for (name, value) in attributes {
+            updateAttribute(description: description, name: name, attribute: value)
         }
 
         // Add Inputs
         for input in inputs {
             switch input {
             case Input.single(let singleInput):
-                TF_AddInput(desc, singleInput)
+                TF_AddInput(description, singleInput)
             case Input.list(let inputList):
                 inputList.withUnsafeBufferPointer { buffer in
-                    TF_AddInputList(desc, buffer.baseAddress, Int32(buffer.count))
+                    TF_AddInputList(description, buffer.baseAddress, Int32(buffer.count))
                 }
             }
         }
 
-        if let device = device { TF_SetDevice(desc, device) }
+        if let device = device { TF_SetDevice(description, device) }
 
         // Finalize operation.
-        let graphNode = TF_FinishOperation(desc, status)
+        let graphNode = TF_FinishOperation(description, status)
         checkOk(status)
         return graphNode!
     }
