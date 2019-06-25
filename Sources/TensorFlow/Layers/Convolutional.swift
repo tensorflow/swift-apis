@@ -400,11 +400,11 @@ public extension Conv3D {
 @frozen
 public struct TransposedConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The 4-D convolution kernel.
-    public var filter: Tensor<Float>
+    public var filter: Tensor<Scalar>
     /// The bias vector.
-    public var bias: Tensor<Float>
+    public var bias: Tensor<Scalar>
     /// An activation function.
-    public typealias Activation = @differentiable (Tensor<Float>) -> Tensor<Float>
+    public typealias Activation = @differentiable (Tensor<Float>) -> Tensor<Scalar>
     /// The element-wise activation function.
     @noDerivative public let activation: Activation
     /// The strides of the sliding window for spatial dimensions.
@@ -424,8 +424,8 @@ public struct TransposedConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - strides: The strides of the sliding window for spatial dimensions.
     ///   - padding: The padding algorithm for convolution.
     public init(
-        filter: Tensor<Float>,
-        bias: Tensor<Float>,
+        filter: Tensor<Scalar>,
+        bias: Tensor<Scalar>,
         activation: @escaping Activation = identity,
         strides: (Int, Int) = (1, 1),
         padding: Padding = .valid
