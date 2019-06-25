@@ -737,7 +737,7 @@ extension LazyTensorOperation {
         // Return materialized outputs if any.
         if let outputs = outputs { return outputs }
 
-        LazyTensorOperation.materializeLiveTensors(self)
+        materializeLiveTensors()
 
         // Our outputs should have been updated by now. Otherwise,
         // something terrible happened!
@@ -748,29 +748,35 @@ extension LazyTensorOperation {
     /// Converts symbolic tensor inputs to concrete inputs if the
     /// associated `LazyTensorOperation` has been materialized.
     private func maybeMaterializeInputs() {
+        /// If `lazyTensor` is symbolic and the associated `LazyTensorOperation`
+        /// has been materialized, return the corresponding concrete `LazyTensor`.
+        /// Otherwise, return `lazyTensor`  untouched.
         func maybeMaterialized(lazyTensor: LazyTensor) -> LazyTensor {
             let handle = lazyTensor.handle
-            if case let LazyTensor.Handle.symbolic(lazyOp, index, _) = handle {
-                if let outputs = lazyOp.outputs {
-                    return LazyTensor(_materialized: outputs[index])
-                }
+            if case let LazyTensor.Handle.symbolic(lazyOp, index, _) = handle,
+                let outputs = lazyOp.outputs {
+                return LazyTensor(_materialized: outputs[index])
             }
             return lazyTensor
         }
 
+        /// Rewrite the input such that all symbolic values that have been
+        /// materialized have been replaced by the corresponding concerete
+        /// inputs. If no symbolic values have been materialized or if there are
+        /// no symbolic values, return the `input` untouched.
         func maybeMaterialized(input: Input) -> Input {
             switch input {
             case .single(let h):
-                return Input.single(maybeMaterialized(lazyTensor: h))
+                return .single(maybeMaterialized(lazyTensor: h))
             case .list(let elements):
-                return Input.list(elements.map { maybeMaterialized(lazyTensor: $0) })
+                return .list(elements.map { maybeMaterialized(lazyTensor: $0) })
             }
         }
         inputs = inputs.map { maybeMaterialized(input: $0) }
     }
 
-    private static func materializeLiveTensors(_ lazyOp: LazyTensorOperation) {
-        let lazyTrace = LazyTensorTrace(lazyOp)
+    private func materializeLiveTensors() {
+        let lazyTrace = LazyTensorTrace(self)
         debugLog("Extracted trace:\n\(lazyTrace)")
 
         let function = TFFunction(trace: lazyTrace)
