@@ -200,7 +200,7 @@ final class LazyTensorTFFunctionBuilderTests : XCTestCase {
         _ name: String? = nil
     ) -> TFFunction {
         let trace = LazyTensorTrace(lazyOp)
-        return TFFunction(trace, name: name)
+        return TFFunction(trace: trace, name: name)
     }
 
     private func materializedLazyTensor<T: TensorFlowScalar>(
@@ -225,7 +225,7 @@ final class LazyTensorTFFunctionBuilderTests : XCTestCase {
             return nil
         }
         let trace =  LazyTensorTrace(lazyOp)
-        return TFFunction(trace, name: name)
+        return TFFunction(trace: trace, name: name)
     }
 
     static var allTests = [

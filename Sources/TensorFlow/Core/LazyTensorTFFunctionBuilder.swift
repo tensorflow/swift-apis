@@ -42,15 +42,15 @@ class TFGraph {
     /// Counter that is used for number the generated graph nodes.
     private var nodeCounter: Int = 0
 
-    init(_ lazyTrace: LazyTensorTrace) {
+    init(trace: LazyTensorTrace) {
         var nodesCache: [ObjectIdentifier: CTFOperation?] = [:]
-        for op in lazyTrace.operations {
+        for op in trace.operations {
             let opInputs = op.inputs.map { input -> TFGraph.Input in
                 switch input {
                 case LazyTensorOperation.Input.single(let h):
-                    return TFGraph.Input.single(makeTFOutput(h, nodesCache))
+                    return TFGraph.Input.single(makeTFOutput(handle: h, nodesCache: nodesCache))
                 case LazyTensorOperation.Input.list(let elements):
-                    let tfInputs = elements.map { makeTFOutput($0, nodesCache) }
+                    let tfInputs = elements.map { makeTFOutput(handle: $0, nodesCache: nodesCache) }
                     return TFGraph.Input.list(tfInputs)
                 }
             }
@@ -62,10 +62,10 @@ class TFGraph {
             nodesCache[ObjectIdentifier(op)] = graphNode
             if op.name != "Placeholder" { nodes.append(graphNode) }
         }
-        self.inputs = lazyTrace.inputs.map {
+        self.inputs = trace.inputs.map {
             TF_Output(oper: nodesCache[ObjectIdentifier($0)]!, index: 0)
         }
-        for output in lazyTrace.outputs {
+        for output in trace.outputs {
             let graphNode = nodesCache[ObjectIdentifier(output)]!
             outputGroupCounts.append(output.outputCount)
             outputs += (0..<output.outputCount).map {
@@ -91,32 +91,32 @@ class TFGraph {
         _ attrValue: LazyTensorOperation.Attribute
     ) {
         switch attrValue {
-        case LazyTensorOperation.Attribute.tensorDataTypeValue(let value):
+        case .tensorDataTypeValue(let value):
             TF_SetAttrType(desc, name, value._cDataType)
-        case LazyTensorOperation.Attribute.boolValue(let value):
+        case .boolValue(let value):
             TF_SetAttrBool(desc, name, value ? 1 : 0)
-        case LazyTensorOperation.Attribute.intValue(let value):
+        case .intValue(let value):
             TF_SetAttrInt(desc, name, Int64(value))
-        case LazyTensorOperation.Attribute.floatValue(let value):
+        case .floatValue(let value):
             TF_SetAttrFloat(desc, name, value)
-        case LazyTensorOperation.Attribute.doubleValue(let value):
+        case .doubleValue(let value):
             TF_SetAttrFloat(desc, name, Float(value))
-        case LazyTensorOperation.Attribute.stringValue(let value):
+        case .stringValue(let value):
             value.utf8CString.withUnsafeBufferPointer { buffer in
                 // utf8CString is null-terminated; TF_SetAttrString wants
                 // non-null-terminated.
                 TF_SetAttrString(desc, name, buffer.baseAddress, buffer.count - 1)
             }
-        case LazyTensorOperation.Attribute.intArray(let values):
+        case .intArray(let values):
             let values64 = values.map { Int64($0) }
             values64.withUnsafeBufferPointer { buffer in
                 TF_SetAttrIntList(desc, name, buffer.baseAddress, Int32(buffer.count))
             }
-        case LazyTensorOperation.Attribute.constTensor(let value):
+        case .constTensor(let value):
             let cTensor = TFE_TensorHandleResolve(value._cTensorHandle, status)
             checkOk(status)
             TF_SetAttrTensor(desc, name, cTensor!, status)
-        case LazyTensorOperation.Attribute.tensorDataTypeArray(let values):
+        case .tensorDataTypeArray(let values):
             values.withUnsafeBufferPointer { buffer in
                 buffer.withMemoryRebound(to: TF_DataType.self) { reboundBuffer in
                     TF_SetAttrTypeList(
@@ -126,7 +126,7 @@ class TFGraph {
                         Int32(reboundBuffer.count))
                 }
             }
-        case LazyTensorOperation.Attribute.optionalTensorShape(let value):
+        case .optionalTensorShape(let value):
             if let shape = value  {
                 let dimensions: [Int64] = shape.dimensions.map(Int64.init)
                 dimensions.withUnsafeBufferPointer { buffer in
@@ -135,7 +135,7 @@ class TFGraph {
             } else {
                 TF_SetAttrShape(desc, name, nil, -1)
             }
-        case LazyTensorOperation.Attribute.optionalTensorShapeArray(let values):
+        case .optionalTensorShapeArray(let values):
             let flattenedDims = values.flatMap { (tensorShapeOpt) -> [Int64] in
                 if let tensorShape = tensorShapeOpt {
                     return tensorShape.dimensions.map(Int64.init)
@@ -204,24 +204,11 @@ class TFGraph {
         return graphNode!
     }
 
-    private func makeTFConstNode(_ handle: TFETensorHandle) -> TF_Output {
-        let cTensorHandle = handle._cTensorHandle
-        let cTensor = TFE_TensorHandleResolve(cTensorHandle, status)
-        checkOk(status)
-        let desc = TF_NewOperation(cTFGraph, "Const", newNodeName(base: "Const"))
-        checkOk(status)
-        TF_SetAttrType(desc, "dtype", TFE_TensorHandleDataType(cTensorHandle))
-        TF_SetAttrTensor(desc, "value", cTensor, status)
-        checkOk(status)
-        let constNode = TF_FinishOperation(desc, status)
-        return TF_Output(oper: constNode, index: 0)
-    }
-
     private func makeTFOutput(
-        _ lazyHandle: LazyTensor,
-        _ nodesCache: [ObjectIdentifier: CTFOperation?]
+        handle: LazyTensor,
+        nodesCache: [ObjectIdentifier: CTFOperation?]
     ) -> TF_Output {
-        if case let LazyTensor.Handle.symbolic(lazyOp, index, _) = lazyHandle.handle {
+        if case let LazyTensor.Handle.symbolic(lazyOp, index, _) = handle.handle {
             let id = ObjectIdentifier(lazyOp)
             return TF_Output(oper: nodesCache[id]!, index: Int32(index))
         }
@@ -235,10 +222,10 @@ class TFFunction {
     let outputCount: Int
     let outputGroupCounts: [Int]
 
-    init(_ lazyTrace: LazyTensorTrace, name: String? = nil) {
+    init(trace: LazyTensorTrace, name: String? = nil) {
         let status: CTFStatus = TF_NewStatus()
         defer { TF_DeleteStatus(status) }
-        let graph = TFGraph(lazyTrace)
+        let graph = TFGraph(trace: trace)
         let cTFGraph = graph.cTFGraph
         let inputs = graph.inputs
         let outputs = graph.outputs
@@ -313,7 +300,7 @@ class TFFunction {
 }
 
 extension TFFunction: CustomStringConvertible {
-    public var description: String {
+    var description: String {
         var len: Int = 0
         let funcDebugStr = TF_FunctionDebugString(cTFFunction, &len)!
         let result = String(cString: funcDebugStr)
