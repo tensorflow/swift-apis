@@ -23,6 +23,11 @@ final class LazyTensorEvaluationTests: XCTestCase {
         _RuntimeConfig.useLazyTensor = true
     }
 
+    override class func tearDown() {
+        super.tearDown()
+        _RuntimeConfig.useLazyTensor = false
+    }
+
     func testSimpleOperations() {
         let a = Tensor<Float>(10.0)
         let b = Tensor<Float>(2.0)
