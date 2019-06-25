@@ -38,12 +38,11 @@ public protocol TensorArrayProtocol {
     init<C: RandomAccessCollection>(_handles: C) where C.Element: _AnyTensorHandle
 }
 
-extension TensorArrayProtocol {
+public extension TensorArrayProtocol {
     init<C: RandomAccessCollection>(_handles: C) where C.Element: _AnyTensorHandle {
         let status = TF_NewStatus()
         defer { TF_DeleteStatus(status) }
-        let buffer: UnsafeMutablePointer<CTensorHandle> =
-            UnsafeMutablePointer.allocate(capacity: _handles.count)
+        let buffer = UnsafeMutablePointer<CTensorHandle>.allocate(capacity: _handles.count)
         defer { buffer.deallocate() }
         for handle in _handles {
             // Increment the reference count in TF.
@@ -54,7 +53,7 @@ extension TensorArrayProtocol {
         self.init(_owning: buffer, count: _handles.count)
     }
 
-    var _tensorHandles : [_AnyTensorHandle] {
+    var _tensorHandles: [_AnyTensorHandle] {
         let status = TF_NewStatus()
         defer { TF_DeleteStatus(status) }
         let count = Int(_tensorHandleCount)
