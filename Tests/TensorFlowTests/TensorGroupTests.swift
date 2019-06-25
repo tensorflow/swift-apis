@@ -64,6 +64,12 @@ extension TensorHandle {
     }
 }
 
+extension TensorArrayProtocol {
+    var tfeTensorHandles: [TFETensorHandle] {
+        self._tensorHandles.map { $0 as! TFETensorHandle }
+    }
+}
+
 final class TensorGroupTests: XCTestCase {
     func testEmptyList() {
         XCTAssertEqual([], Empty._typeList)
@@ -84,8 +90,10 @@ final class TensorGroupTests: XCTestCase {
         let bHandle = b.handle.makeCopy()
 
         let expectedSimple = Simple(_handles: [wHandle, bHandle])
-
         XCTAssertEqual(expectedSimple, simple)
+
+        let reconstructedSimple = Simple(_handles: simple.tfeTensorHandles)
+        XCTAssertEqual(reconstructedSimple, simple)
     }
 
     func testMixedTypeList() {
@@ -103,8 +111,10 @@ final class TensorGroupTests: XCTestCase {
         let intHandle = int.handle.makeCopy()
 
         let expectedMixed = Mixed(_handles: [floatHandle, intHandle])
-
         XCTAssertEqual(expectedMixed, mixed)
+
+        let reconstructedMixed = Mixed(_handles: mixed.tfeTensorHandles)
+        XCTAssertEqual(reconstructedMixed, mixed)
     }
 
     func testNestedTypeList() {
@@ -129,8 +139,10 @@ final class TensorGroupTests: XCTestCase {
 
         let expectedNested = Nested(
             _handles: [wHandle, bHandle, floatHandle, intHandle])
-        
         XCTAssertEqual(expectedNested, nested)
+
+        let reconstructedNested = Nested(_handles: nested.tfeTensorHandles)
+        XCTAssertEqual(reconstructedNested, nested)
     }
 
     func testGenericTypeList() {
@@ -156,8 +168,10 @@ final class TensorGroupTests: XCTestCase {
 
         let expectedGeneric = Generic<Simple, Mixed>(
             _handles: [wHandle, bHandle, floatHandle, intHandle])
-
         XCTAssertEqual(expectedGeneric, generic)
+
+        let reconstructedGeneric = Generic<Simple, Mixed>(_handles: generic.tfeTensorHandles)
+        XCTAssertEqual(reconstructedGeneric, generic)
     }
 
     func testNestedGenericTypeList() {
@@ -198,8 +212,11 @@ final class TensorGroupTests: XCTestCase {
                 let expectedGeneric = UltraNested<Simple, Mixed>(
                     _handles: [wHandle1, bHandle1, floatHandle1,  intHandle1,
                         floatHandle2, intHandle2, wHandle2, bHandle2])
-
                 XCTAssertEqual(expectedGeneric, generic)
+
+                let reconstructedGeneric = UltraNested<Simple, Mixed>(
+                    _handles: generic.tfeTensorHandles)
+                XCTAssertEqual(reconstructedGeneric, generic)
             }
         }
 

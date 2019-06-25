@@ -42,15 +42,16 @@ public extension TensorArrayProtocol {
     init<C: RandomAccessCollection>(_handles: C) where C.Element: _AnyTensorHandle {
         let status = TF_NewStatus()
         defer { TF_DeleteStatus(status) }
-        let buffer = UnsafeMutablePointer<CTensorHandle>.allocate(capacity: _handles.count)
+        let buffer = UnsafeMutableBufferPointer<CTensorHandle>.allocate(capacity: _handles.count)
         defer { buffer.deallocate() }
-        for handle in _handles {
+        for (i, handle) in _handles.enumerated() {
             // Increment the reference count in TF.
             let handleCopy = TFE_TensorHandleCopySharingTensor(handle._cTensorHandle, status)
             checkOk(status)
-            buffer.initialize(to: handleCopy!)
+            buffer[i] = handleCopy!
         }
-        self.init(_owning: buffer, count: _handles.count)
+        let baseAddress = UnsafeMutablePointer<OpaquePointer>(buffer.baseAddress)
+        self.init(_owning: baseAddress, count: _handles.count)
     }
 
     var _tensorHandles: [_AnyTensorHandle] {
@@ -59,11 +60,9 @@ public extension TensorArrayProtocol {
         let count = Int(_tensorHandleCount)
         var buffer = UnsafeMutableBufferPointer<CTensorHandle>.allocate(capacity: count)
         defer { buffer.deallocate() }
-        let pointer = UnsafeMutablePointer<OpaquePointer?>(buffer.baseAddress)
         self._unpackTensorHandles(into: buffer.baseAddress)
         let result: [TFETensorHandle] = (0..<count).map {
-            let current = pointer!.advanced(by: $0)
-            let cTensorHandle = current.pointee
+            let cTensorHandle = buffer[$0]
             // Increment the reference count in TF.
             let handleCopy = TFE_TensorHandleCopySharingTensor(cTensorHandle, status)
             checkOk(status)
