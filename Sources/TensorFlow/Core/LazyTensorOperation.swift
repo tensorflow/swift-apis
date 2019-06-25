@@ -34,7 +34,7 @@ class LazyTensor: _AnyTensorHandle {
         case .concrete(let h, _):
             return h
         case .symbolic(_, _, _):
-            assert(false, "TODO: to be send out in a separate PR.")
+            fatalError("TODO: to be send out in a separate PR.")
             // return op.materialized(index: index)
         }
     }
@@ -343,7 +343,7 @@ extension LazyTensorOperation: TFTensorOperation {
     func updateAttribute<In: TensorGroup, Out: TensorGroup>(
         _ name: String, _ value: (In) -> Out) {
         // TODO:
-        assert(false, "Unimplemented [TFFunction] attribute.")
+        fatalError("Unimplemented [TFFunction] attribute.")
     }
 
     func execute() {}
@@ -647,7 +647,7 @@ extension TFETensorHandle {
         case TF_VARIANT: return "variant"
         case TF_UINT32: return "uint32"
         case TF_UINT64: return "uint64"
-        default: assert(false, "Unhandled type: \(cDataType)")
+        default: fatalError("Unhandled type: \(cDataType)")
         }
     }
 }
