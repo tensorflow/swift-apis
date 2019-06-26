@@ -750,8 +750,8 @@ extension LazyTensorOperation {
     private func maybeMaterializeInputs() {
         /// If `lazyTensor` is symbolic and the associated `LazyTensorOperation`
         /// has been materialized, return the corresponding concrete `LazyTensor`.
-        /// Otherwise, return `lazyTensor`  untouched.
-        func maybeMaterialized(lazyTensor: LazyTensor) -> LazyTensor {
+        /// Otherwise, return `lazyTensor` untouched.
+        func materializedAsNeeded(lazyTensor: LazyTensor) -> LazyTensor {
             let handle = lazyTensor.handle
             if case let LazyTensor.Handle.symbolic(lazyOp, index, _) = handle,
                 let outputs = lazyOp.outputs {
@@ -764,15 +764,15 @@ extension LazyTensorOperation {
         /// materialized have been replaced by the corresponding concerete
         /// inputs. If no symbolic values have been materialized or if there are
         /// no symbolic values, return the `input` untouched.
-        func maybeMaterialized(input: Input) -> Input {
+        func materializedAsNeeded(input: Input) -> Input {
             switch input {
             case .single(let h):
-                return .single(maybeMaterialized(lazyTensor: h))
+                return .single(materializedAsNeeded(lazyTensor: h))
             case .list(let elements):
-                return .list(elements.map { maybeMaterialized(lazyTensor: $0) })
+                return .list(elements.map { materializedAsNeeded(lazyTensor: $0) })
             }
         }
-        inputs = inputs.map { maybeMaterialized(input: $0) }
+        inputs = inputs.map { materializedAsNeeded(input: $0) }
     }
 
     private func materializeLiveTensors() {
