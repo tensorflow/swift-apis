@@ -113,7 +113,7 @@ final class LazyTensorTraceTests: XCTestCase {
 
         // Since `lazyA` is not marked as an input, this will
         // be burnt into the trace as a constant.
-        let lazyA = a.lazyTensor
+        let lazyA = a.concreteLazyTensor
         let w1 = lazyA * b
         let w1Trace = lazyTrace(w1)!
         XCTAssertEqual(w1Trace.description,
@@ -128,7 +128,7 @@ final class LazyTensorTraceTests: XCTestCase {
 
         // Since `lazyInputA` is marked as an input, this will
         // be promoted to an input for the trace.
-        let inputLazyA = a.inputLazyTensor
+        let inputLazyA = a.concreteInputLazyTensor
         let w2 = inputLazyA * b
         let w2Trace = lazyTrace(w2)!
         XCTAssertEqual(w2Trace.description,
@@ -175,6 +175,7 @@ final class LazyTensorTraceTests: XCTestCase {
         // Make sure that the promoted constants are gathered as `inputValues`.
         XCTAssertEqual(zTrace.inputValues.count, 1)
         XCTAssertEqual(zTrace.inputValues[0].valueDescription, "3.0")
+        XCTAssertEqual(z.scalarized(), 9.0)
     }
 
     private func lazyTrace<T: TensorFlowScalar>(
