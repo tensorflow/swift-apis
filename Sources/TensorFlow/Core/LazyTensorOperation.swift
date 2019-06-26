@@ -346,17 +346,19 @@ extension LazyTensorOperation: TFTensorOperation {
     }
 
     func execute() {
-        // Just run it now.
+        // If we want to stage this, we will need to add control dependencies.
+        // For the time-being, just build a TFE_Op and run it.
+        //
         let op = TFE_Op(name, outputCount)
-        // TODO: Materialize en masse and not one-by-one.
+        // TODO(https://bugs.swift.org/browse/TF-604):
+        //   Materialize inputs en masse and not one-by-one.
         for input in inputs {
             switch input {
             case .single(let v):
                 op.addInput(v._tfeTensorHandle)
-            case .list(let values): do {
-                    for v in values {
-                        op.addInput(v._tfeTensorHandle)
-                    }
+            case .list(let values):
+                for v in values {
+                    op.addInput(v._tfeTensorHandle)
                 }
             }
         }
@@ -372,12 +374,12 @@ extension LazyTensorOperation: TFTensorOperation {
             case .floatArray(let v): op.updateAttribute(name, v)
             case .doubleArray(let v): op.updateAttribute(name, v)
             case .stringArray(let v): op.updateAttribute(name, v)
-            case .constTensor(_): assert(false, "Const Tensor cannot be eager attribute.")
+            case .constTensor(_): fatalError("Const Tensor cannot be eager attribute.")
             case .tensorDataTypeValue(let v): op.updateAttribute(name, v)
             case .tensorDataTypeArray(let v): op.updateAttribute(name, v)
             case .optionalTensorShape(let v): op.updateAttribute(name, v)
             case .optionalTensorShapeArray(let v): op.updateAttribute(name, v)
-            case .tensorFunctionPointer(_): assert(false, "Unimplemented")
+            case .tensorFunctionPointer(_): fatalError("tensorFunctionPointer Unimplemented!")
             }
         }
         op.execute()

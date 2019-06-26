@@ -86,8 +86,22 @@ final class LazyTensorEvaluationTests: XCTestCase {
         XCTAssertTrue(isMaterialized(sum))
     }
 
+    func testNoOutputOperations() {
+        let a = StringTensor("Hello ")
+        let b = StringTensor("World")
+        let c = Raw.add(a, b)
+        // c is not materialized yet.
+        XCTAssertFalse(isMaterialized(c.handle.handle))
+        Raw.printV2(c)
+        // c is materialized now as printV2 would be executed.
+        XCTAssertTrue(isMaterialized(c.handle.handle))
+    }
+
     private func isMaterialized<T: TensorFlowScalar>(_ input: Tensor<T>) -> Bool {
-        let tensor = input.handle.handle
+        return isMaterialized(input.handle.handle)
+    }
+
+    private func isMaterialized(_ tensor: _AnyTensorHandle) -> Bool {
         guard let lazyTensor = tensor as? LazyTensor else { return true }
         switch lazyTensor.handle {
         case .symbolic(let op, _, _): return op.outputs != nil
@@ -100,6 +114,7 @@ final class LazyTensorEvaluationTests: XCTestCase {
         ("testMultipleMaterializations", testMultipleMaterializations),
         ("testSimpleControlFlow", testSimpleControlFlow),
         ("testSimpleLoop", testSimpleLoop),
+        ("testNoOutputOperations", testNoOutputOperations)
     ]
 }
 
