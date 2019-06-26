@@ -113,7 +113,7 @@ final class LazyTensorTraceTests: XCTestCase {
 
         // Since `lazyA` is not marked as an input, this will
         // be burnt into the trace as a constant.
-        let lazyA = a.concreteLazyTensor
+        let lazyA = a._concreteLazyTensor
         let w1 = lazyA * b
         let w1Trace = lazyTrace(w1)!
         XCTAssertEqual(w1Trace.description,
@@ -128,7 +128,7 @@ final class LazyTensorTraceTests: XCTestCase {
 
         // Since `lazyInputA` is marked as an input, this will
         // be promoted to an input for the trace.
-        let inputLazyA = a.concreteInputLazyTensor
+        let inputLazyA = a._concreteInputLazyTensor
         let w2 = inputLazyA * b
         let w2Trace = lazyTrace(w2)!
         XCTAssertEqual(w2Trace.description,

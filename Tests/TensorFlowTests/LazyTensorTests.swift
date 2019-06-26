@@ -105,13 +105,13 @@ final class LazyTensorTests: XCTestCase {
         XCTAssertTrue(isSymbolic(t0))
     }
 
-    private func checkConversions<T: LazyTensorCompatible>(_ x: T) {
-        let concreteLazyX = x.concreteLazyTensor
-        let concreteInputLazyX = x.concreteInputLazyTensor
-        XCTAssertFalse(isSymbolic(concreteLazyX.lazyTensor))
-        XCTAssertFalse(isSymbolic(concreteInputLazyX.lazyTensor))
-        XCTAssertFalse(isMaterializedConcrete(concreteLazyX.lazyTensor))
-        XCTAssertTrue(isMaterializedConcrete(concreteInputLazyX.lazyTensor))
+    private func checkConversions<T: _LazyTensorCompatible>(_ x: T) {
+        let concreteLazyX = x._concreteLazyTensor
+        let concreteInputLazyX = x._concreteInputLazyTensor
+        XCTAssertFalse(isSymbolic(concreteLazyX._lazyTensor))
+        XCTAssertFalse(isSymbolic(concreteInputLazyX._lazyTensor))
+        XCTAssertFalse(isMaterializedConcrete(concreteLazyX._lazyTensor))
+        XCTAssertTrue(isMaterializedConcrete(concreteInputLazyX._lazyTensor))
     }
 
     func testTensorToLazyTensorConversions() {

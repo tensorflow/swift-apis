@@ -272,74 +272,74 @@ class LazyTensorOperation: TensorOperation {
     }
 }
 
-protocol LazyTensorCompatible {
+protocol _LazyTensorCompatible {
     /// The underlying `LazyTensor` (if any).
-    var lazyTensor: LazyTensor? { get }
+    var _lazyTensor: LazyTensor? { get }
 
     /// Returns `Self` that wraps a concrete `LazyTensor`.
     /// (Triggers materialization if needed.)
-    var concreteLazyTensor: Self { get }
+    var _concreteLazyTensor: Self { get }
 
     /// Similar to the `concreteLazyTensor` with an additional constraint that
     /// the underlying concrete `LazyTensor` should be marked to be promoted as
     /// an input when used in an extracted trace.
-    var concreteInputLazyTensor: Self { get }
+    var _concreteInputLazyTensor: Self { get }
 }
 
 extension _AnyTensorHandle {
-    var lazyTensor: LazyTensor? {
+    var _lazyTensor: LazyTensor? {
         if let handle = self as? LazyTensor {
             return handle
         } else {
             return nil
         }
     }
-    var concreteLazyTensor: LazyTensor { LazyTensor(self._tfeTensorHandle) }
-    var concreteInputLazyTensor: LazyTensor { LazyTensor(_materialized: self._tfeTensorHandle) }
+    var _concreteLazyTensor: LazyTensor { LazyTensor(self._tfeTensorHandle) }
+    var _concreteInputLazyTensor: LazyTensor { LazyTensor(_materialized: self._tfeTensorHandle) }
 }
 
-extension TensorHandle: LazyTensorCompatible {
-    var lazyTensor: LazyTensor? { handle.lazyTensor }
-    public var concreteLazyTensor: TensorHandle { TensorHandle(handle: handle.concreteLazyTensor) }
-    public var concreteInputLazyTensor: TensorHandle {
-        TensorHandle(handle: handle.concreteInputLazyTensor)
+extension TensorHandle: _LazyTensorCompatible {
+    var _lazyTensor: LazyTensor? { handle._lazyTensor }
+    public var _concreteLazyTensor: TensorHandle { TensorHandle(handle: handle._concreteLazyTensor) }
+    public var _concreteInputLazyTensor: TensorHandle {
+        TensorHandle(handle: handle._concreteInputLazyTensor)
     }
 }
 
-extension Tensor: LazyTensorCompatible {
-    var lazyTensor: LazyTensor? { handle.lazyTensor }
-    public var concreteLazyTensor: Tensor { Tensor(handle: handle.concreteLazyTensor) }
-    public var concreteInputLazyTensor: Tensor { Tensor(handle: handle.concreteInputLazyTensor) }
+extension Tensor: _LazyTensorCompatible {
+    var _lazyTensor: LazyTensor? { handle._lazyTensor }
+    public var _concreteLazyTensor: Tensor { Tensor(handle: handle._concreteLazyTensor) }
+    public var _concreteInputLazyTensor: Tensor { Tensor(handle: handle._concreteInputLazyTensor) }
 }
 
-extension StringTensor: LazyTensorCompatible {
-    var lazyTensor: LazyTensor? { handle.lazyTensor }
-    public var concreteLazyTensor: StringTensor { StringTensor(handle: handle.concreteLazyTensor) }
-    public var concreteInputLazyTensor: StringTensor {
-        StringTensor(handle: handle.concreteInputLazyTensor)
+extension StringTensor: _LazyTensorCompatible {
+    var _lazyTensor: LazyTensor? { handle._lazyTensor }
+    public var _concreteLazyTensor: StringTensor { StringTensor(handle: handle._concreteLazyTensor) }
+    public var _concreteInputLazyTensor: StringTensor {
+        StringTensor(handle: handle._concreteInputLazyTensor)
     }
 }
 
-extension VariantHandle: LazyTensorCompatible {
-    var lazyTensor: LazyTensor? { handle.lazyTensor }
-    public var concreteLazyTensor: VariantHandle { VariantHandle(handle: handle.concreteLazyTensor) }
-    public var concreteInputLazyTensor: VariantHandle {
-        VariantHandle(handle: handle.concreteInputLazyTensor)
+extension VariantHandle: _LazyTensorCompatible {
+    var _lazyTensor: LazyTensor? { handle._lazyTensor }
+    public var _concreteLazyTensor: VariantHandle { VariantHandle(handle: handle._concreteLazyTensor) }
+    public var _concreteInputLazyTensor: VariantHandle {
+        VariantHandle(handle: handle._concreteInputLazyTensor)
     }
 }
 
-extension ResourceHandle: LazyTensorCompatible {
-    var lazyTensor: LazyTensor? { handle.lazyTensor }
+extension ResourceHandle: _LazyTensorCompatible {
+    var _lazyTensor: LazyTensor? { handle._lazyTensor }
 
     /// Wraps this variant handle in a concrete `LazyTensor`.
-    public var concreteLazyTensor: ResourceHandle {
-        ResourceHandle(handle: handle.concreteLazyTensor)
+    public var _concreteLazyTensor: ResourceHandle {
+        ResourceHandle(handle: handle._concreteLazyTensor)
     }
 
     /// Wraps this variant handle in a concrete `LazyTensor` that will
     /// be promoted to an input when used in a extracted trace.
-    public var concreteInputLazyTensor: ResourceHandle {
-        ResourceHandle(handle: handle.concreteInputLazyTensor)
+    public var _concreteInputLazyTensor: ResourceHandle {
+        ResourceHandle(handle: handle._concreteInputLazyTensor)
     }
 }
 
