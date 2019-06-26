@@ -86,15 +86,37 @@ final class LazyTensorEvaluationTests: XCTestCase {
         XCTAssertTrue(isMaterialized(sum))
     }
 
+    struct SimpleOutput: TensorGroup {
+        let a: TensorHandle<Int32>
+        let b: TensorHandle<Int32>
+    }
+
     func testNoOutputOperations() {
-        let a = StringTensor("Hello ")
-        let b = StringTensor("World")
-        let c = Raw.add(a, b)
-        // c is not materialized yet.
-        XCTAssertFalse(isMaterialized(c.handle.handle))
-        Raw.printV2(c)
-        // c is materialized now as printV2 would be executed.
-        XCTAssertTrue(isMaterialized(c.handle.handle))
+        let elements1: Tensor<Int32> = [0, 1, 2]
+        let elements2: Tensor<Int32> = [10, 11, 12]
+        let outputTypes = [Int32.tensorFlowDataType, Int32.tensorFlowDataType]
+        let outputShapes: [TensorShape?] = [nil, nil]
+        let dataset: VariantHandle = Raw.tensorSliceDataset(
+            components: [elements1, elements2],
+            outputShapes: outputShapes
+        )
+        let iterator: ResourceHandle = Raw.iteratorV2(sharedName: "blah",
+            container: "earth", outputTypes: outputTypes, outputShapes: outputShapes
+        )
+        // `dataset` and `iterator` should not be materialized yet.
+        XCTAssertFalse(isMaterialized(dataset.handle))
+        XCTAssertFalse(isMaterialized(iterator.handle))
+        Raw.makeIterator(dataset: dataset, iterator: iterator)
+
+        // `dataset` and `iterator` should be materialized now as
+        // makeIterator executes.
+        XCTAssertTrue(isMaterialized(dataset.handle))
+        XCTAssertTrue(isMaterialized(iterator.handle))
+        let next: SimpleOutput = Raw.iteratorGetNext(
+            iterator: iterator, outputShapes: outputShapes
+        )
+        XCTAssertEqual(Tensor(handle: next.a).scalarized(), 0)
+        XCTAssertEqual(Tensor(handle: next.b).scalarized(), 10)
     }
 
     private func isMaterialized<T: TensorFlowScalar>(_ input: Tensor<T>) -> Bool {
