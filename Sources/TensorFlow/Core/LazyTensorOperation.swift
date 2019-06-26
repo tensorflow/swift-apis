@@ -760,10 +760,10 @@ extension LazyTensorOperation {
             return lazyTensor
         }
 
-        /// Rewrite the input such that all symbolic values that have been
-        /// materialized have been replaced by the corresponding concerete
-        /// inputs. If no symbolic values have been materialized or if there are
-        /// no symbolic values, return the `input` untouched.
+        /// Returns an input that is rewritten such that all symbolic values
+        /// that have been materialized have been replaced by the corresponding
+        /// concerete inputs. If no symbolic values have been materialized or if
+        /// there are no symbolic values, return the `input` untouched.
         func materializedAsNeeded(input: Input) -> Input {
             switch input {
             case .single(let h):
@@ -785,7 +785,7 @@ extension LazyTensorOperation {
         let allOutputs = function.execute(lazyTrace.inputValues)
 
         // Slice up the outputs to various lazy tensors
-        var start: Int = 0
+        var start = 0
         for lazyOp in lazyTrace.originalOutputs {
             let end = start + lazyOp.outputCount
             lazyOp.outputs = Array(allOutputs[start..<end])
