@@ -223,3 +223,26 @@ public extension Dense {
                   activation: activation)
     }
 }
+
+
+public struct Function<InputScalar: TensorFlowFloatingPoint, OutputScalar:TensorFlowFloatingPoint>: Layer {
+    /// The Function Layer arbitrarily takes any differentiable function and returns a Layer which can
+    /// used as a wrapper around that function.
+    public typealias Input = Tensor<InputScalar>
+
+    public typealias Output = Tensor<OutputScalar>
+
+    public typealias Body = @differentiable (Input) -> Output
+
+    @noDerivative public let body: Body
+
+    public init(
+        body: @escaping Body) {
+        self.body = body
+    }
+
+    @differentiable
+    public func callAsFunction(_ input: Input) -> Output {
+        return body(input)
+    }
+}
