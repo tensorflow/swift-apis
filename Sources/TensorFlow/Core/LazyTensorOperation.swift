@@ -272,58 +272,75 @@ class LazyTensorOperation: TensorOperation {
     }
 }
 
+protocol LazyTensorCompatible {
+    /// The underlying `LazyTensor` (if any).
+    var lazyTensor: LazyTensor? { get }
+
+    /// Returns `Self` that wraps a concrete `LazyTensor`.
+    /// (Triggers materialization if needed.)
+    var concreteLazyTensor: Self { get }
+
+    /// Similar to the `concreteLazyTensor` with an additional constraint that
+    /// the underlying concrete `LazyTensor` should be marked to be promoted as
+    /// an input when used in an extracted trace.
+    var concreteInputLazyTensor: Self { get }
+}
+
 extension _AnyTensorHandle {
-    /// Wraps the `_tfeTensorHandle` as a `LazyTensor`.
-    var lazyTensor: LazyTensor { LazyTensor(self._tfeTensorHandle) }
+    var lazyTensor: LazyTensor? {
+        if let handle = self as? LazyTensor {
+            return handle
+        } else {
+            return nil
+        }
+    }
+    var concreteLazyTensor: LazyTensor { LazyTensor(self._tfeTensorHandle) }
+    var concreteInputLazyTensor: LazyTensor { LazyTensor(_materialized: self._tfeTensorHandle) }
+}
 
-    /// Wraps the `_tfeTensorHandle` in a `LazyTensor` that will
+extension TensorHandle: LazyTensorCompatible {
+    var lazyTensor: LazyTensor? { handle.lazyTensor }
+    public var concreteLazyTensor: TensorHandle { TensorHandle(handle: handle.concreteLazyTensor) }
+    public var concreteInputLazyTensor: TensorHandle {
+        TensorHandle(handle: handle.concreteInputLazyTensor)
+    }
+}
+
+extension Tensor: LazyTensorCompatible {
+    var lazyTensor: LazyTensor? { handle.lazyTensor }
+    public var concreteLazyTensor: Tensor { Tensor(handle: handle.concreteLazyTensor) }
+    public var concreteInputLazyTensor: Tensor { Tensor(handle: handle.concreteInputLazyTensor) }
+}
+
+extension StringTensor: LazyTensorCompatible {
+    var lazyTensor: LazyTensor? { handle.lazyTensor }
+    public var concreteLazyTensor: StringTensor { StringTensor(handle: handle.concreteLazyTensor) }
+    public var concreteInputLazyTensor: StringTensor {
+        StringTensor(handle: handle.concreteInputLazyTensor)
+    }
+}
+
+extension VariantHandle: LazyTensorCompatible {
+    var lazyTensor: LazyTensor? { handle.lazyTensor }
+    public var concreteLazyTensor: VariantHandle { VariantHandle(handle: handle.concreteLazyTensor) }
+    public var concreteInputLazyTensor: VariantHandle {
+        VariantHandle(handle: handle.concreteInputLazyTensor)
+    }
+}
+
+extension ResourceHandle: LazyTensorCompatible {
+    var lazyTensor: LazyTensor? { handle.lazyTensor }
+
+    /// Wraps this variant handle in a concrete `LazyTensor`.
+    public var concreteLazyTensor: ResourceHandle {
+        ResourceHandle(handle: handle.concreteLazyTensor)
+    }
+
+    /// Wraps this variant handle in a concrete `LazyTensor` that will
     /// be promoted to an input when used in a extracted trace.
-    var inputLazyTensor: LazyTensor { LazyTensor(_materialized: self._tfeTensorHandle) }
-}
-
-extension TensorHandle {
-    /// Wraps this handle in a `LazyTensor`.
-    public var lazyTensor: TensorHandle { TensorHandle(handle: handle.lazyTensor) }
-
-    /// Wraps this handle in a `LazyTensor` that will be promoted
-    /// to an input when used in a extracted trace.
-    public var inputLazyTensor: TensorHandle { TensorHandle(handle: handle.inputLazyTensor) }
-}
-
-extension Tensor {
-    /// Wraps this tensor in a `LazyTensor`.
-    public var lazyTensor: Tensor { Tensor(handle: handle.lazyTensor) }
-
-    /// Wraps this tensor in a `LazyTensor` that will be promoted
-    /// to an input when used in a extracted trace.
-    public var inputLazyTensor: Tensor { Tensor(handle: handle.inputLazyTensor) }
-}
-
-extension StringTensor {
-    /// Wraps this tensor in a `LazyTensor`.
-    public var lazyTensor: StringTensor { StringTensor(handle: handle.lazyTensor) }
-
-    /// Wraps this tensor in a `LazyTensor` that will be promoted
-    /// to an input when used in a extracted trace.
-    public var inputLazyTensor: StringTensor { StringTensor(handle: handle.inputLazyTensor) }
-}
-
-extension VariantHandle {
-    /// Wraps this variant handle in a `LazyTensor`.
-    public var lazyTensor: VariantHandle { VariantHandle(handle: handle.lazyTensor) }
-
-    /// Wraps this variant handle in a `LazyTensor` that will
-    /// be promoted to an input when used in a extracted trace.
-    public var inputLazyTensor: VariantHandle { VariantHandle(handle: handle.inputLazyTensor) }
-}
-
-extension ResourceHandle {
-    /// Wraps this variant handle in a `LazyTensor`.
-    public var lazyTensor: ResourceHandle { ResourceHandle(handle: handle.lazyTensor) }
-
-    /// Wraps this variant handle in a `LazyTensor` that will
-    /// be promoted to an input when used in a extracted trace.
-    public var inputLazyTensor: ResourceHandle { ResourceHandle(handle: handle.inputLazyTensor) }
+    public var concreteInputLazyTensor: ResourceHandle {
+        ResourceHandle(handle: handle.concreteInputLazyTensor)
+    }
 }
 
 extension LazyTensorOperation: TFTensorOperation {
