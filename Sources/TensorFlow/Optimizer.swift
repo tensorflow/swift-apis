@@ -94,7 +94,7 @@ public class Adam<Model: Layer>: Optimizer
         }
     }
 
-
+    // TODO: Deprecate this when `Differentiable.AllDifferentiableVariables` is removed.
     public func update(_ model: inout Model.AllDifferentiableVariables,
                        along direction: Model.AllDifferentiableVariables) {
         step += 1
@@ -180,6 +180,7 @@ public class RMSProp<Model: Layer>: Optimizer
         }
     }
 
+    // TODO: Deprecate this when `Differentiable.AllDifferentiableVariables` is removed.
     public func update(_ model: inout Model.AllDifferentiableVariables,
                        along direction: Model.TangentVector) {
         step += 1
@@ -244,6 +245,7 @@ public class SGD<Model: Differentiable>: Optimizer
         self.nesterov = nesterov
     }
 
+    // TODO: Deprecate this when `Differentiable.AllDifferentiableVariables` is removed.
     public func update(_ model: inout Model.AllDifferentiableVariables,
                        along direction: Model.TangentVector) {
         step += 1
@@ -332,6 +334,7 @@ public class AdaGrad<Model: Layer>: Optimizer
         }
     }
 
+    // TODO: Deprecate this when `Differentiable.AllDifferentiableVariables` is removed.
     public func update(_ model: inout Model.AllDifferentiableVariables,
                        along direction: Model.TangentVector) {
         for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
