@@ -75,13 +75,6 @@ final class LazyTensorTests: XCTestCase {
             XCTAssertEqual(expectedAllOps, actualAllOps)
         }
 
-        func isSymbolic(_ t: LazyTensor) -> Bool {
-            switch t.handle {
-            case .symbolic(_): return true
-            case .concrete(_): return false
-            }
-        }
-
         let op0 = LazyTensorOperation(
             _id: "0", name: "IdentityN", outputCount: 2)
         let op1 = LazyTensorOperation(
@@ -112,9 +105,54 @@ final class LazyTensorTests: XCTestCase {
         XCTAssertTrue(isSymbolic(t0))
     }
 
+    private func checkConversions<T: _LazyTensorCompatible>(_ x: T) {
+        let concreteLazyX = x._concreteLazyTensor
+        let concreteInputLazyX = x._concreteInputLazyTensor
+        XCTAssertFalse(isSymbolic(concreteLazyX._lazyTensor))
+        XCTAssertFalse(isSymbolic(concreteInputLazyX._lazyTensor))
+        XCTAssertFalse(isMaterializedConcrete(concreteLazyX._lazyTensor))
+        XCTAssertTrue(isMaterializedConcrete(concreteInputLazyX._lazyTensor))
+    }
+
+    func testTensorToLazyTensorConversions() {
+        checkConversions(Tensor<Float>(10.0))
+        checkConversions(StringTensor("Hello!"))
+
+        // ResourceHandle and VariantHandle conversions.
+        let elements1: Tensor<Int32> = [0, 1, 2]
+        let elements2: Tensor<Int32> = [10, 11, 12]
+        let outputTypes = [Int32.tensorFlowDataType, Int32.tensorFlowDataType]
+        let outputShapes: [TensorShape?] = [nil, nil]
+        let dataset: VariantHandle = Raw.tensorSliceDataset(
+            components: [elements1, elements2],
+            outputShapes: outputShapes
+        )
+        let iterator: ResourceHandle = Raw.iteratorV2(sharedName: "blah",
+            container: "earth", outputTypes: outputTypes, outputShapes: outputShapes
+        )
+        checkConversions(dataset)
+        checkConversions(iterator)
+    }
+
+    private func isSymbolic(_ t: LazyTensor?) -> Bool {
+        guard let t = t else { return false }
+        switch t.handle {
+        case .symbolic(_): return true
+        case .concrete(_): return false
+        }
+    }
+
+    private func isMaterializedConcrete(_ t: LazyTensor?) -> Bool {
+        guard let t = t else { return false }
+        switch t.handle {
+        case .symbolic(_): return true
+        case .concrete(_, let isMaterialized): return isMaterialized
+        }
+    }
+
     static var allTests = [
         ("testConstructions", testConstructions),
         ("testLivenessTracking", testLivenessTracking),
+        ("testTensorToLazyTensorConversions", testTensorToLazyTensorConversions)
     ]
-
 }

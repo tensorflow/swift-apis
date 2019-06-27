@@ -130,6 +130,57 @@ class LazyTensor: _AnyTensorHandle {
     static var _materializationCallback: (String) -> () = { _ in }
 }
 
+extension _AnyTensorHandle {
+    /// Returns a concrete `LazyTensor` with an additional constraint that the
+    /// underlying concrete `LazyTensor` should be marked to be promoted as an
+    /// input when used in an extracted trace.  This provides a **temporary**
+    /// mechanism to promote a concrete lazy tensor to an input in extracted
+    /// traces. (Note that this may trigger materialization.)
+    var _concreteInputLazyTensor: LazyTensor {
+        LazyTensor(_materialized: self._tfeTensorHandle)
+    }
+}
+
+extension TensorHandle {
+    /// Returns `Self` that wraps `_concreteInputLazyTensor` of the underlying
+    /// `_AnyTensorHandle`
+    public var _concreteInputLazyTensor: TensorHandle {
+        TensorHandle(handle: handle._concreteInputLazyTensor)
+    }
+}
+
+extension Tensor {
+    /// Returns `Self` that wraps `_concreteInputLazyTensor` of the underlying
+    /// `_AnyTensorHandle`
+    public var _concreteInputLazyTensor: Tensor {
+        Tensor(handle: handle._concreteInputLazyTensor)
+    }
+}
+
+extension StringTensor {
+    /// Returns `Self` that wraps `_concreteInputLazyTensor` of the underlying
+    /// `_AnyTensorHandle`
+    public var _concreteInputLazyTensor: StringTensor {
+        StringTensor(handle: handle._concreteInputLazyTensor)
+    }
+}
+
+extension VariantHandle {
+    /// Returns `Self` that wraps `_concreteInputLazyTensor` of the underlying
+    /// `_AnyTensorHandle`
+    public var _concreteInputLazyTensor: VariantHandle {
+        VariantHandle(handle: handle._concreteInputLazyTensor)
+    }
+}
+
+extension ResourceHandle {
+    /// Returns `Self` that wraps `_concreteInputLazyTensor` of the underlying
+    /// `_AnyTensorHandle`
+    public var _concreteInputLazyTensor: ResourceHandle {
+        ResourceHandle(handle: handle._concreteInputLazyTensor)
+    }
+}
+
 class LazyTensorOperation: TensorOperation {
      typealias TensorValueHandle = LazyTensor
 
