@@ -141,7 +141,7 @@ public extension Tensor {
     @differentiable(wrt: self, vjp: _vjpScalarized where Scalar: TensorFlowFloatingPoint)
     func scalarized() -> Scalar {
         precondition(shape.contiguousSize == 1,
-           "This tensor must have exactly one scalar to be scalarized, but it has \(shape.contiguousSize) scalars.")
+           "This tensor must have exactly one scalar but contains \(shape.contiguousSize).")
         return reshaped(to: []).scalar!
     }
 }
