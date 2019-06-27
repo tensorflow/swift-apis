@@ -25,8 +25,7 @@ public protocol Optimizer {
     var learningRate: Scalar { get set }
     /// Updates the specified differentiable variables along the specified
     /// direction.
-    mutating func update(_ variables: inout Model.AllDifferentiableVariables,
-                         along direction: Model.TangentVector)
+    mutating func update(_ variables: inout Model, along direction: Model.TangentVector)
 }
 
 fileprivate extension Tensor where Scalar: Numeric {
@@ -35,14 +34,13 @@ fileprivate extension Tensor where Scalar: Numeric {
     }
 }
 
-// MARK: - Key-path based optimizers
-
 /// Adam optimizer.
 ///
 /// Reference: ["Adam - A Method for Stochastic Optimization"](
 /// https://arxiv.org/abs/1412.6980v8)
 public class Adam<Model: Layer>: Optimizer
     where Model.AllDifferentiableVariables == Model.TangentVector {
+    public typealias Model = Model
     /// The learning rate.
     public var learningRate: Float
     /// A coefficient used to calculate the first and second moments of
@@ -96,7 +94,7 @@ public class Adam<Model: Layer>: Optimizer
         }
     }
 
-
+    // TODO: Deprecate this when `Differentiable.AllDifferentiableVariables` is removed.
     public func update(_ model: inout Model.AllDifferentiableVariables,
                        along direction: Model.AllDifferentiableVariables) {
         step += 1
@@ -127,6 +125,11 @@ public class Adam<Model: Layer>: Optimizer
                 sqrt(secondMoments[keyPath: kp]) + Double(epsilon)
         }
     }
+
+    public func update(_ model: inout Model,
+                       along direction: Model.TangentVector) {
+        update(&model.allDifferentiableVariables, along: direction)
+    }
 }
 
 /// RMSProp optimizer.
@@ -139,6 +142,7 @@ public class Adam<Model: Layer>: Optimizer
 /// http://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf)
 public class RMSProp<Model: Layer>: Optimizer
     where Model.AllDifferentiableVariables == Model.TangentVector {
+    public typealias Model = Model
     /// The learning rate.
     public var learningRate: Float
     // TODO: Document `rho`. Keras doesn't document `rho`.
@@ -176,7 +180,7 @@ public class RMSProp<Model: Layer>: Optimizer
         }
     }
 
-
+    // TODO: Deprecate this when `Differentiable.AllDifferentiableVariables` is removed.
     public func update(_ model: inout Model.AllDifferentiableVariables,
                        along direction: Model.TangentVector) {
         step += 1
@@ -195,14 +199,21 @@ public class RMSProp<Model: Layer>: Optimizer
                 (sqrt(alpha[keyPath: kp]) + Double(epsilon))
         }
     }
+
+    public func update(_ model: inout Model,
+                       along direction: Model.TangentVector) {
+        update(&model.allDifferentiableVariables, along: direction)
+    }
 }
 
 /// Stochastic gradient descent (SGD) optimizer.
 ///
 /// An optimizer that implements stochastic gradient descent, with support for momentum, learning
 /// rate decay, and Nesterov momentum.
-public class SGD<Model: Layer>: Optimizer
-    where Model.AllDifferentiableVariables == Model.TangentVector {
+public class SGD<Model: Differentiable>: Optimizer
+    where Model.TangentVector: VectorProtocol & ElementaryFunctions,
+          Model.TangentVector.VectorSpaceScalar == Float {
+    public typealias Model = Model
     /// The learning rate.
     public var learningRate: Float
     /// The momentum factor. It accelerates stochastic gradient descent in the relevant direction
@@ -212,8 +223,8 @@ public class SGD<Model: Layer>: Optimizer
     public var decay: Float
     /// Use Nesterov momentum if true.
     public var nesterov: Bool
-    /// The velocity state of the model
-    public var velocity: Model.AllDifferentiableVariables
+    /// The velocity state of the model.
+    public var velocity: Model.TangentVector = .zero
     /// The set of steps taken.
     public var step: Int = 0
 
@@ -232,53 +243,38 @@ public class SGD<Model: Layer>: Optimizer
         self.momentum = momentum
         self.decay = decay
         self.nesterov = nesterov
-        velocity = model.allDifferentiableVariables
-        for kp in velocity.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
-            velocity[keyPath: kp].resetToZero()
-        }
-        for kp in velocity.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
-            velocity[keyPath: kp].resetToZero()
-        }
     }
 
+    // TODO: Deprecate this when `Differentiable.AllDifferentiableVariables` is removed.
     public func update(_ model: inout Model.AllDifferentiableVariables,
                        along direction: Model.TangentVector) {
         step += 1
         let learningRate = self.learningRate * 1 / (1 + decay * Float(step))
-        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
-            velocity[keyPath: kp] =
-                momentum * velocity[keyPath: kp] - learningRate * direction[keyPath: kp]
-            if nesterov {
-                model[keyPath: kp] +=
-                    momentum * velocity[keyPath: kp] - learningRate * direction[keyPath: kp]
-            } else {
-                model[keyPath: kp] += velocity[keyPath: kp]
-            }
+        velocity = momentum * velocity - direction * learningRate
+        if nesterov {
+            model.move(along: momentum * velocity - direction * learningRate)
+        } else {
+            model.move(along: velocity)
         }
-        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
-            velocity[keyPath: kp] =
-                Double(momentum) * velocity[keyPath: kp] -
-                Double(learningRate) * direction[keyPath: kp]
-            if nesterov {
-                model[keyPath: kp] +=
-                    Double(momentum) * velocity[keyPath: kp] - Double(learningRate) *
-                    direction[keyPath: kp]
-            } else {
-                model[keyPath: kp] += velocity[keyPath: kp]
-            }
-        }
+    }
+
+    public func update(_ model: inout Model,
+                       along direction: Model.TangentVector) {
+        update(&model.allDifferentiableVariables, along: direction)
     }
 }
 
 // MARK: - Manifold optimizers
 
 /// A Riemann manifold stochastic gradient descent (SGD) optimizer.
-public class RiemannSGD<Model: Layer, Scalar: FloatingPoint>: Optimizer
-    where Model.TangentVector: VectorProtocol, Model.TangentVector.VectorSpaceScalar == Scalar {
+public class RiemannSGD<Model: Differentiable>: Optimizer
+    where Model.TangentVector: VectorProtocol,
+          Model.TangentVector.VectorSpaceScalar: FloatingPoint {
+    public typealias Scalar = Model.TangentVector.VectorSpaceScalar
     /// The learning rate.
-    public var learningRate: Scalar
+    public var learningRate: Model.TangentVector.VectorSpaceScalar
 
-    public init(learningRate: Scalar) {
+    public init(learningRate: Model.TangentVector.VectorSpaceScalar) {
         self.learningRate = learningRate
     }
 
@@ -305,6 +301,7 @@ public class RiemannSGD<Model: Layer, Scalar: FloatingPoint>: Optimizer
 ///
 public class AdaGrad<Model: Layer>: Optimizer
     where Model.AllDifferentiableVariables == Model.TangentVector {
+    public typealias Model = Model
     /// The learning rate.
     public var learningRate: Float
     /// The smoothing factor (ρ). Typical values are `0.5`, `0.9`, and `0.99`, for smoothing over 2,
@@ -337,6 +334,7 @@ public class AdaGrad<Model: Layer>: Optimizer
         }
     }
 
+    // TODO: Deprecate this when `Differentiable.AllDifferentiableVariables` is removed.
     public func update(_ model: inout Model.AllDifferentiableVariables,
                        along direction: Model.TangentVector) {
         for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
@@ -350,5 +348,10 @@ public class AdaGrad<Model: Layer>: Optimizer
                 Double(learningRate) * direction[keyPath: kp] /
                 (sqrt(alpha[keyPath: kp] + Double(epsilon)))
         }
+    }
+
+    public func update(_ model: inout Model,
+                       along direction: Model.TangentVector) {
+        update(&model.allDifferentiableVariables, along: direction)
     }
 }
