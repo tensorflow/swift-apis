@@ -38,7 +38,8 @@ fileprivate extension Tensor where Scalar: Numeric {
 ///
 /// Reference: ["Adam - A Method for Stochastic Optimization"](
 /// https://arxiv.org/abs/1412.6980v8)
-public class Adam<Model: Differentiable>: Optimizer where Model.TangentVector: VectorProtocol {
+public class Adam<Model: Layer>: Optimizer
+    where Model.AllDifferentiableVariables == Model.TangentVector {
     /// The learning rate.
     public var learningRate: Float
     /// A coefficient used to calculate the first and second moments of
@@ -54,9 +55,9 @@ public class Adam<Model: Differentiable>: Optimizer where Model.TangentVector: V
     /// The current step.
     public var step: Int = 0
     /// The first moments of the weights.
-    public var firstMoments: Model.TangentVector = .zero
+    public var firstMoments: Model.AllDifferentiableVariables
     /// The second moments of the weights.
-    public var secondMoments: Model.TangentVector = .zero
+    public var secondMoments: Model.AllDifferentiableVariables
 
     public init(
         for model: __shared Model,
@@ -76,20 +77,52 @@ public class Adam<Model: Differentiable>: Optimizer where Model.TangentVector: V
         self.beta2 = beta2
         self.epsilon = epsilon
         self.decay = decay
+
+        // Initialize first & second moments to be zeros of the same shape.
+        // We can't use `Model.AllDifferentiableVariables.zero` due to the
+        // interaction between Key Paths and Differentiable Arrays.
+        firstMoments = model.allDifferentiableVariables
+        secondMoments = model.allDifferentiableVariables
+        for kp in firstMoments.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
+            firstMoments[keyPath: kp].resetToZero()
+            secondMoments[keyPath: kp].resetToZero()
+        }
+        for kp in firstMoments.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
+            firstMoments[keyPath: kp].resetToZero()
+            secondMoments[keyPath: kp].resetToZero()
+        }
     }
 
 
-    public func update(_ model: inout Model, along direction: Model.TangentVector) {
+    public func update(_ model: inout Model.AllDifferentiableVariables,
+                       along direction: Model.AllDifferentiableVariables) {
         step += 1
-        let learningRate = self.learningRate / (1 + decay * Float(step))
+        let learningRate = self.learningRate * 1 / (1 + decay * Float(step))
         // Note: `stepSize` is split into two lines to avoid the "compiler is unable to type-check
         // this expression in reasonable time" error.
         var stepSize = learningRate * sqrt(1 - pow(beta2, Float(step)))
         stepSize = stepSize / (1 - pow(beta1, Float(step)))
         // Update Float & Double Tensor variables.
-        firstMoments = firstMoments * beta1 + (1 - beta1) * direction
-        secondMoments = secondMoments * beta2 + (1 - beta2) * direction * direction
-        model -= stepSize * firstMoments / (sqrt(secondMoments) + epsilon)
+        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
+            firstMoments[keyPath: kp] =
+                firstMoments[keyPath: kp] * beta1 + (1 - beta1) * direction[keyPath: kp]
+            secondMoments[keyPath: kp] =
+                secondMoments[keyPath: kp] * beta2 + (1 - beta2) *
+                direction[keyPath: kp] * direction[keyPath: kp]
+            model[keyPath: kp] -=
+                stepSize * firstMoments[keyPath: kp] / (sqrt(secondMoments[keyPath: kp]) + epsilon)
+        }
+        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
+            firstMoments[keyPath: kp] =
+                firstMoments[keyPath: kp] * Double(beta1) +
+                Double((1 - beta1)) * direction[keyPath: kp]
+            secondMoments[keyPath: kp] =
+                secondMoments[keyPath: kp] * Double(beta2) + Double(1 - beta2) *
+                direction[keyPath: kp] * direction[keyPath: kp]
+            model[keyPath: kp] -=
+                Double(stepSize) * firstMoments[keyPath: kp] /
+                sqrt(secondMoments[keyPath: kp]) + Double(epsilon)
+        }
     }
 }
 
