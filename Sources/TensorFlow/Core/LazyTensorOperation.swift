@@ -345,7 +345,45 @@ extension LazyTensorOperation: TFTensorOperation {
         fatalError("Unimplemented [TFFunction] attribute.")
     }
 
-    func execute() {}
+    func execute() {
+        // If we want to stage this, we will need to add control dependencies.
+        // For the time-being, just build a TFE_Op and run it.
+        //
+        let op = TFE_Op(name, outputCount)
+        // TODO(https://bugs.swift.org/browse/TF-604):
+        //   Materialize inputs en masse and not one-by-one.
+        for input in inputs {
+            switch input {
+            case .single(let v):
+                op.addInput(v._tfeTensorHandle)
+            case .list(let values):
+                for v in values {
+                    op.addInput(v._tfeTensorHandle)
+                }
+            }
+        }
+        for (name, value) in attributes {
+            switch value {
+            case .boolValue(let v): op.updateAttribute(name, v)
+            case .intValue(let v): op.updateAttribute(name, v)
+            case .floatValue(let v): op.updateAttribute(name, v)
+            case .doubleValue(let v): op.updateAttribute(name, v)
+            case .stringValue(let v): op.updateAttribute(name, v)
+            case .boolArray(let v): op.updateAttribute(name, v)
+            case .intArray(let v): op.updateAttribute(name, v)
+            case .floatArray(let v): op.updateAttribute(name, v)
+            case .doubleArray(let v): op.updateAttribute(name, v)
+            case .stringArray(let v): op.updateAttribute(name, v)
+            case .constTensor(_): fatalError("Const Tensor cannot be eager attribute.")
+            case .tensorDataTypeValue(let v): op.updateAttribute(name, v)
+            case .tensorDataTypeArray(let v): op.updateAttribute(name, v)
+            case .optionalTensorShape(let v): op.updateAttribute(name, v)
+            case .optionalTensorShapeArray(let v): op.updateAttribute(name, v)
+            case .tensorFunctionPointer(_): fatalError("tensorFunctionPointer Unimplemented!")
+            }
+        }
+        op.execute()
+    }
 
     func execute<T0: TensorArrayProtocol>(
         _ count0: Int
