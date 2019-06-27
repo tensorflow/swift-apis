@@ -140,6 +140,7 @@ public extension Tensor {
     @inlinable
     @differentiable(wrt: self, vjp: _vjpScalarized where Scalar: TensorFlowFloatingPoint)
     func scalarized() -> Scalar {
+        precondition(shape.contiguousSize == 1, "This tensor has more than one scalar.")
         return reshaped(to: []).scalar!
     }
 }
@@ -229,6 +230,8 @@ public extension Tensor {
     /// - Precondition: The number of scalars must equal the product of the dimensions of the shape.
     @inlinable
     init(shape: TensorShape, scalars: [Scalar]) {
+        precondition(scalars.count == shape.contiguousSize,
+            "The number of scalars does not equal the product of dimensions given in the shape.")
         self = scalars.withUnsafeBufferPointer { bufferPointer in
 	        Tensor(shape: shape, scalars: bufferPointer)
 	    }
@@ -243,7 +246,8 @@ public extension Tensor {
     ///   dimensions of the shape.
     @inlinable
     init(shape: TensorShape, scalars: UnsafeBufferPointer<Scalar>) {
-        precondition(scalars.count == shape.contiguousSize)
+        precondition(scalars.count == shape.contiguousSize,
+            "The number of scalars does not equal the product of dimensions given in the shape.")
         let handle = TensorHandle<Scalar>(
             shape: shape.dimensions,
             scalarsInitializer: { address in
@@ -261,7 +265,8 @@ public extension Tensor {
     ///   dimensions of the shape.
     @inlinable
     init<C: RandomAccessCollection>(shape: TensorShape, scalars: C) where C.Element == Scalar {
-        precondition(scalars.count == shape.contiguousSize)
+        precondition(scalars.count == shape.contiguousSize,
+            "The number of scalars does not equal the product of dimensions given in the shape.")
         let handle = TensorHandle<Scalar>(
             shape: shape.dimensions,
             scalarsInitializer: { addr in
