@@ -355,3 +355,91 @@ public class AdaGrad<Model: Layer>: Optimizer
         update(&model.allDifferentiableVariables, along: direction)
     }
 }
+
+public class AdaDelta<Model: Layer>: Optimizer
+    where Model.AllDifferentiableVariables == Model.TangentVector {
+    public typealias Model = Model
+    /// The learning rate.
+    public var learningRate: Float
+    ///decay factor, corresponding to fraction of gradient to keep at each time step.
+    public var rho: Float
+    /// A small scalar added to the denominator to improve numerical stability.
+    public var epsilon: Float
+    /// The learning rate decay.
+    public var decay: Float
+    /// The current step.
+    public var step: Int = 0
+    public var accumulators: Model.AllDifferentiableVariables
+    public var accDelta: Model.AllDifferentiableVariables
+    
+
+    public init(
+        for model: __shared Model,
+        learningRate: Float = 1e-3,
+        rho: Float = 0.9,
+        epsilon: Float = 1e-8,
+        decay: Float = 0
+    ) {
+        precondition(learningRate >= 0, "Learning rate must be non-negative")
+        precondition(0 <= rho && rho <= 1, "Rho parameter must be between 0 and 1")
+        precondition(0 <= epsilon, "Epsilon parameter must be non-negative")
+        precondition(decay >= 0, "Learning rate decay must be non-negative")
+
+        self.learningRate = learningRate
+        self.rho = rho
+        self.epsilon = epsilon
+        self.decay = decay
+
+        accumulators = model.allDifferentiableVariables
+        accDelta = model.allDifferentiableVariables
+        
+        for kp in accumulators.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
+            accumulators[keyPath: kp].resetToZero()
+            accDelta[keyPath: kp].resetToZero()
+        }
+        for kp in accumulators.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
+            accumulators[keyPath: kp].resetToZero()
+            accDelta[keyPath: kp].resetToZero()
+        }
+    }
+
+    // TODO: Deprecate this when `Differentiable.AllDifferentiableVariables` is removed.
+    public func update(_ model: inout Model.AllDifferentiableVariables,
+                       along direction: Model.AllDifferentiableVariables) {
+        step += 1
+        let learningRate = self.learningRate * 1 / (1 + decay * Float(step))
+        
+        // Update Float & Double Tensor variables.
+        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
+            var accNew = rho * accumulators[keyPath: kp]
+            accNew += (1 - rho) * (direction[keyPath: kp] * direction[keyPath: kp])
+            accumulators[keyPath: kp] = accNew 
+
+            var stepSize =  direction[keyPath: kp] * sqrt(accDelta[keyPath: kp] + epsilon)
+            stepSize /=  sqrt(accumulators[keyPath: kp] + epsilon)
+            model[keyPath: kp] -= learningRate * stepSize
+
+            var accDeltaNew = accDelta[keyPath: kp] * rho
+            accDeltaNew += (1 - rho) * (stepSize * stepSize)
+            accDelta[keyPath: kp] =  accDeltaNew
+                                               
+        }
+        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
+            var accNew = Double(rho) * accumulators[keyPath: kp]
+            accNew += (1 - Double(rho)) * (direction[keyPath: kp] * direction[keyPath: kp])
+            accumulators[keyPath: kp] = accNew
+            var stepSize =  direction[keyPath: kp] * sqrt(accDelta[keyPath: kp] + Double(epsilon))
+            stepSize /=  sqrt(accumulators[keyPath: kp] + Double(epsilon))
+            model[keyPath: kp] -= Double(learningRate) * stepSize
+
+            var accDeltaNew = accDelta[keyPath: kp] * Double(rho)
+            accDeltaNew += (1 - Double(rho)) * (stepSize * stepSize)
+            accDelta[keyPath: kp] =  accDeltaNew
+        }
+    }
+
+    public func update(_ model: inout Model,
+                       along direction: Model.TangentVector) {
+        update(&model.allDifferentiableVariables, along: direction)
+    }
+}
