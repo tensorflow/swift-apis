@@ -251,7 +251,7 @@ public extension Tensor {
     init(shape: TensorShape, scalars: UnsafeBufferPointer<Scalar>) {
         precondition(shape.contiguousSize == scalars.count,
             """
-            The product of the dimensions of the shape must equal the number of scalars: 
+            The product of the dimensions of the shape must equal the number of scalars: \
             \(shape.contiguousSize) vs. \(scalars.count)
             """)
         let handle = TensorHandle<Scalar>(
