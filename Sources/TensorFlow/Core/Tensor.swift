@@ -560,7 +560,7 @@ extension Tensor: PointwiseMultiplicative where Scalar: Numeric {
     @inlinable
     public static var one: Tensor { Tensor(1) }
 
-    /// Returns the pointwise reciprocal of `self`.
+    /// Returns the element-wise reciprocal of `self`.
     @inlinable
     public var reciprocal: Tensor { 1 / self }
 
