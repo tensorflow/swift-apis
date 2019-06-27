@@ -33,9 +33,8 @@ class LazyTensor: _AnyTensorHandle {
         switch handle {
         case .concrete(let h, _):
             return h
-        case .symbolic(_, _, _):
-            assert(false, "TODO: to be send out in a separate PR.")
-            // return op.materialized(index: index)
+        case .symbolic(let op, let index, _):
+            return op.materialized(index: index)
         }
     }
 
@@ -343,10 +342,48 @@ extension LazyTensorOperation: TFTensorOperation {
     func updateAttribute<In: TensorGroup, Out: TensorGroup>(
         _ name: String, _ value: (In) -> Out) {
         // TODO:
-        assert(false, "Unimplemented [TFFunction] attribute.")
+        fatalError("Unimplemented [TFFunction] attribute.")
     }
 
-    func execute() {}
+    func execute() {
+        // If we want to stage this, we will need to add control dependencies.
+        // For the time-being, just build a TFE_Op and run it.
+        //
+        let op = TFE_Op(name, outputCount)
+        // TODO(https://bugs.swift.org/browse/TF-604):
+        //   Materialize inputs en masse and not one-by-one.
+        for input in inputs {
+            switch input {
+            case .single(let v):
+                op.addInput(v._tfeTensorHandle)
+            case .list(let values):
+                for v in values {
+                    op.addInput(v._tfeTensorHandle)
+                }
+            }
+        }
+        for (name, value) in attributes {
+            switch value {
+            case .boolValue(let v): op.updateAttribute(name, v)
+            case .intValue(let v): op.updateAttribute(name, v)
+            case .floatValue(let v): op.updateAttribute(name, v)
+            case .doubleValue(let v): op.updateAttribute(name, v)
+            case .stringValue(let v): op.updateAttribute(name, v)
+            case .boolArray(let v): op.updateAttribute(name, v)
+            case .intArray(let v): op.updateAttribute(name, v)
+            case .floatArray(let v): op.updateAttribute(name, v)
+            case .doubleArray(let v): op.updateAttribute(name, v)
+            case .stringArray(let v): op.updateAttribute(name, v)
+            case .constTensor(_): fatalError("Const Tensor cannot be eager attribute.")
+            case .tensorDataTypeValue(let v): op.updateAttribute(name, v)
+            case .tensorDataTypeArray(let v): op.updateAttribute(name, v)
+            case .optionalTensorShape(let v): op.updateAttribute(name, v)
+            case .optionalTensorShapeArray(let v): op.updateAttribute(name, v)
+            case .tensorFunctionPointer(_): fatalError("tensorFunctionPointer Unimplemented!")
+            }
+        }
+        op.execute()
+    }
 
     func execute<T0: TensorArrayProtocol>(
         _ count0: Int
@@ -647,7 +684,7 @@ extension TFETensorHandle {
         case TF_VARIANT: return "variant"
         case TF_UINT32: return "uint32"
         case TF_UINT64: return "uint64"
-        default: assert(false, "Unhandled type: \(cDataType)")
+        default: fatalError("Unhandled type: \(cDataType)")
         }
     }
 }
@@ -723,5 +760,78 @@ extension LazyTensorOperation: CustomStringConvertible {
         desc += inputsDesc.joined(separator: ", ")
         desc += ")"
         return desc
+    }
+}
+
+extension LazyTensorOperation {
+    /// Returns the materialized value at the given output `index`.
+    func materialized(index: Int) -> TFETensorHandle {
+        precondition(index < outputCount)
+        return materialized()[index]
+    }
+
+    /// Materializes all the outputs.
+    func materialized() -> [TFETensorHandle] {
+        // Return materialized outputs if any.
+        if let outputs = outputs { return outputs }
+
+        materializeLiveTensors()
+
+        // Our outputs should have been updated by now. Otherwise,
+        // something terrible happened!
+        precondition(outputs != nil, "Materialization failed!")
+        return outputs!
+    }
+
+    /// Converts symbolic tensor inputs to concrete inputs if the
+    /// associated `LazyTensorOperation` has been materialized.
+    private func maybeMaterializeInputs() {
+        /// If `lazyTensor` is symbolic and the associated `LazyTensorOperation`
+        /// has been materialized, return the corresponding concrete `LazyTensor`.
+        /// Otherwise, return `lazyTensor` untouched.
+        func materializedAsNeeded(lazyTensor: LazyTensor) -> LazyTensor {
+            let handle = lazyTensor.handle
+            if case let LazyTensor.Handle.symbolic(lazyOp, index, _) = handle,
+                let outputs = lazyOp.outputs {
+                return LazyTensor(_materialized: outputs[index])
+            }
+            return lazyTensor
+        }
+
+        /// Returns an input that is rewritten such that all symbolic values
+        /// that have been materialized have been replaced by the corresponding
+        /// concerete inputs. If no symbolic values have been materialized or if
+        /// there are no symbolic values, return the `input` untouched.
+        func materializedAsNeeded(input: Input) -> Input {
+            switch input {
+            case .single(let h):
+                return .single(materializedAsNeeded(lazyTensor: h))
+            case .list(let elements):
+                return .list(elements.map { materializedAsNeeded(lazyTensor: $0) })
+            }
+        }
+        inputs = inputs.map { materializedAsNeeded(input: $0) }
+    }
+
+    private func materializeLiveTensors() {
+        let lazyTrace = LazyTensorTrace(self)
+        debugLog("Extracted trace:\n\(lazyTrace)")
+
+        let function = TFFunction(trace: lazyTrace)
+        debugLog("Generated TFFunction:\n\(function)")
+
+        let allOutputs = function.execute(lazyTrace.inputValues)
+
+        // Slice up the outputs to various lazy tensors
+        var start = 0
+        for lazyOp in lazyTrace.originalOutputs {
+            let end = start + lazyOp.outputCount
+            lazyOp.outputs = Array(allOutputs[start..<end])
+            start = end
+        }
+
+        // On all the live operations rewrite the inputs so that we drop references
+        // to the LazyTensorOperations.
+        LazyTensor.forEachOperation { $0.maybeMaterializeInputs() }
     }
 }
