@@ -40,6 +40,7 @@ fileprivate extension Tensor where Scalar: Numeric {
 /// https://arxiv.org/abs/1412.6980v8)
 public class Adam<Model: Layer>: Optimizer
     where Model.AllDifferentiableVariables == Model.TangentVector {
+    public typealias Model = Model
     /// The learning rate.
     public var learningRate: Float
     /// A coefficient used to calculate the first and second moments of
@@ -124,6 +125,11 @@ public class Adam<Model: Layer>: Optimizer
                 sqrt(secondMoments[keyPath: kp]) + Double(epsilon)
         }
     }
+
+    public func update(_ model: inout Model,
+                       along direction: Model.TangentVector) {
+        update(&model.allDifferentiableVariables, along: direction)
+    }
 }
 
 /// RMSProp optimizer.
@@ -136,6 +142,7 @@ public class Adam<Model: Layer>: Optimizer
 /// http://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf)
 public class RMSProp<Model: Layer>: Optimizer
     where Model.AllDifferentiableVariables == Model.TangentVector {
+    public typealias Model = Model
     /// The learning rate.
     public var learningRate: Float
     // TODO: Document `rho`. Keras doesn't document `rho`.
@@ -155,7 +162,7 @@ public class RMSProp<Model: Layer>: Optimizer
         rho: Float = 0.9,
         epsilon: Float = 1e-8,
         decay: Float = 0
-        ) {
+    ) {
         precondition(learningRate >= 0, "Learning rate must be non-negative")
         precondition(rho >= 0, "Rho must be non-negative")
         precondition(decay >= 0, "Weight decay must be non-negative")
@@ -191,6 +198,11 @@ public class RMSProp<Model: Layer>: Optimizer
                 (sqrt(alpha[keyPath: kp]) + Double(epsilon))
         }
     }
+
+    public func update(_ model: inout Model,
+                       along direction: Model.TangentVector) {
+        update(&model.allDifferentiableVariables, along: direction)
+    }
 }
 
 /// Stochastic gradient descent (SGD) optimizer.
@@ -198,7 +210,9 @@ public class RMSProp<Model: Layer>: Optimizer
 /// An optimizer that implements stochastic gradient descent, with support for momentum, learning
 /// rate decay, and Nesterov momentum.
 public class SGD<Model: Differentiable>: Optimizer
-    where Model.TangentVector: VectorProtocol & ElementaryFunctions, Model.TangentVector.VectorSpaceScalar == Float {
+    where Model.TangentVector: VectorProtocol & ElementaryFunctions,
+          Model.TangentVector.VectorSpaceScalar == Float {
+    public typealias Model = Model
     /// The learning rate.
     public var learningRate: Float
     /// The momentum factor. It accelerates stochastic gradient descent in the relevant direction
@@ -230,7 +244,8 @@ public class SGD<Model: Differentiable>: Optimizer
         self.nesterov = nesterov
     }
 
-    public func update(_ model: inout Model, along direction: Model.TangentVector) {
+    public func update(_ model: inout Model.AllDifferentiableVariables,
+                       along direction: Model.TangentVector) {
         step += 1
         let learningRate = self.learningRate * 1 / (1 + decay * Float(step))
         velocity = momentum * velocity - direction * learningRate
@@ -239,6 +254,11 @@ public class SGD<Model: Differentiable>: Optimizer
         } else {
             model.move(along: velocity)
         }
+    }
+
+    public func update(_ model: inout Model,
+                       along direction: Model.TangentVector) {
+        update(&model.allDifferentiableVariables, along: direction)
     }
 }
 
@@ -279,6 +299,7 @@ public class RiemannSGD<Model: Differentiable>: Optimizer
 ///
 public class AdaGrad<Model: Layer>: Optimizer
     where Model.AllDifferentiableVariables == Model.TangentVector {
+    public typealias Model = Model
     /// The learning rate.
     public var learningRate: Float
     /// The smoothing factor (ρ). Typical values are `0.5`, `0.9`, and `0.99`, for smoothing over 2,
@@ -324,5 +345,10 @@ public class AdaGrad<Model: Layer>: Optimizer
                 Double(learningRate) * direction[keyPath: kp] /
                 (sqrt(alpha[keyPath: kp] + Double(epsilon)))
         }
+    }
+
+    public func update(_ model: inout Model,
+                       along direction: Model.TangentVector) {
+        update(&model.allDifferentiableVariables, along: direction)
     }
 }
