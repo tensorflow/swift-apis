@@ -50,7 +50,7 @@ final class TrivialModelTests: XCTestCase {
                 let ŷ = classifier(x)
                 return meanSquaredError(predicted: ŷ, expected: y)
             }
-            optimizer.update(&classifier.allDifferentiableVariables, along: 𝛁model)
+            optimizer.update(&classifier, along: 𝛁model)
         }
         let ŷ = classifier.inferring(from: x)
         XCTAssertEqual(round(ŷ), y)

@@ -134,7 +134,8 @@ public class Adam<Model: Layer>: Optimizer
 ///
 /// Reference: ["rmsprop: Divide the gradient by a running average of its recent magnitude"](
 /// http://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf)
-public class RMSProp<Model: Differentiable>: Optimizer where Model.TangentVector: VectorProtocol {
+public class RMSProp<Model: Layer>: Optimizer
+    where Model.AllDifferentiableVariables == Model.TangentVector {
     /// The learning rate.
     public var learningRate: Float
     // TODO: Document `rho`. Keras doesn't document `rho`.
@@ -146,7 +147,7 @@ public class RMSProp<Model: Differentiable>: Optimizer where Model.TangentVector
     /// The step count.
     public var step: Float = 0
     /// The alpha values for all model differentiable variables.
-    public var alpha: Model.TangentVector = .zero
+    public var alpha: Model.AllDifferentiableVariables
 
     public init(
         for model: __shared Model,
@@ -154,7 +155,7 @@ public class RMSProp<Model: Differentiable>: Optimizer where Model.TangentVector
         rho: Float = 0.9,
         epsilon: Float = 1e-8,
         decay: Float = 0
-    ) {
+        ) {
         precondition(learningRate >= 0, "Learning rate must be non-negative")
         precondition(rho >= 0, "Rho must be non-negative")
         precondition(decay >= 0, "Weight decay must be non-negative")
@@ -163,14 +164,32 @@ public class RMSProp<Model: Differentiable>: Optimizer where Model.TangentVector
         self.rho = rho
         self.epsilon = epsilon
         self.decay = decay
+        alpha = model.allDifferentiableVariables
+        for kp in alpha.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
+            alpha[keyPath: kp].resetToZero()
+        }
+        for kp in alpha.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
+            alpha[keyPath: kp].resetToZero()
+        }
     }
 
-
-    public func update(_ model: inout Model, along direction: Model.TangentVector) {
+    public func update(_ model: inout Model.AllDifferentiableVariables,
+                       along direction: Model.TangentVector) {
         step += 1
-        let learningRate = self.learningRate / (1 + decay * Float(step))
-        alpha = rho * alpha + (1 - rho) * pow(direction, 2)
-        model -= learningRate * direction / (sqrt(alpha) + epsilon)
+        let learningRate = self.learningRate * 1 / (1 + decay * Float(step))
+        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
+            alpha[keyPath: kp] =
+                rho * alpha[keyPath: kp] + (1 - rho) * pow(direction[keyPath: kp], 2)
+            model[keyPath: kp] -=
+                learningRate * direction[keyPath: kp] / (sqrt(alpha[keyPath: kp]) + epsilon)
+        }
+        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
+            alpha[keyPath: kp] =
+                Double(rho) * alpha[keyPath: kp] + Double(1 - rho) * pow(direction[keyPath: kp], 2)
+            model[keyPath: kp] -=
+                Double(learningRate) * direction[keyPath: kp] /
+                (sqrt(alpha[keyPath: kp]) + Double(epsilon))
+        }
     }
 }
 
@@ -178,7 +197,8 @@ public class RMSProp<Model: Differentiable>: Optimizer where Model.TangentVector
 ///
 /// An optimizer that implements stochastic gradient descent, with support for momentum, learning
 /// rate decay, and Nesterov momentum.
-public class SGD<Model: Differentiable>: Optimizer where Model.TangentVector: VectorProtocol {
+public class SGD<Model: Differentiable>: Optimizer
+    where Model.TangentVector: VectorProtocol & ElementaryFunctions, Model.TangentVector.VectorSpaceScalar == Float {
     /// The learning rate.
     public var learningRate: Float
     /// The momentum factor. It accelerates stochastic gradient descent in the relevant direction
@@ -215,9 +235,9 @@ public class SGD<Model: Differentiable>: Optimizer where Model.TangentVector: Ve
         let learningRate = self.learningRate * 1 / (1 + decay * Float(step))
         velocity = momentum * velocity - direction * learningRate
         if nesterov {
-            model += momentum * velocity - direction * learningRate
+            model.move(along: momentum * velocity - direction * learningRate)
         } else {
-            model += velocity
+            model.move(along: velocity)
         }
     }
 }
@@ -255,9 +275,10 @@ public class RiemannSGD<Model: Differentiable>: Optimizer
 /// the square root of the sum of all the historical squared values of the gradient.
 ///
 /// Reference: ["Adaptive Subgradient Methods for Online Learning and Stochastic Optimization"](
-///   http://www.jmlr.org/papers/volume12/duchi11a/duchi11a.pdf)
+///  http://www.jmlr.org/papers/volume12/duchi11a/duchi11a.pdf)
 ///
-public class AdaGrad<Model: Differentiable>: Optimizer where Model.TangentVector: VectorProtocol {
+public class AdaGrad<Model: Layer>: Optimizer
+    where Model.AllDifferentiableVariables == Model.TangentVector {
     /// The learning rate.
     public var learningRate: Float
     /// The smoothing factor (ρ). Typical values are `0.5`, `0.9`, and `0.99`, for smoothing over 2,
@@ -266,7 +287,7 @@ public class AdaGrad<Model: Differentiable>: Optimizer where Model.TangentVector
     /// A small scalar added to the denominator to improve numerical stability.
     public var epsilon: Float
     /// The alpha values for all model differentiable variables.
-    public var alpha: Model.TangentVector = .zero
+    public var alpha: Model.AllDifferentiableVariables
 
     public init(
         for model: __shared Model,
@@ -280,10 +301,28 @@ public class AdaGrad<Model: Differentiable>: Optimizer where Model.TangentVector
         self.learningRate = learningRate
         self.rho = rho
         self.epsilon = epsilon
+
+        alpha = model.allDifferentiableVariables
+        for kp in alpha.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
+            alpha[keyPath: kp].resetToZero()
+        }
+        for kp in alpha.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
+            alpha[keyPath: kp].resetToZero()
+        }
     }
 
-    public func update(_ model: inout Model, along direction: Model.TangentVector) {
-        alpha = rho + direction.squared()
-        model.move(along: -learningRate * direction / (sqrt(alpha + epsilon)))
+    public func update(_ model: inout Model.AllDifferentiableVariables,
+                       along direction: Model.TangentVector) {
+        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
+            alpha[keyPath: kp] = rho + direction[keyPath: kp].squared()
+            model[keyPath: kp] -=
+                learningRate * direction[keyPath: kp] / (sqrt(alpha[keyPath: kp] + epsilon))
+        }
+        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
+            alpha[keyPath: kp] = Double(rho) + direction[keyPath: kp].squared()
+            model[keyPath: kp] -=
+                Double(learningRate) * direction[keyPath: kp] /
+                (sqrt(alpha[keyPath: kp] + Double(epsilon)))
+        }
     }
 }

@@ -231,6 +231,7 @@ public func sigmoidCrossEntropy<Scalar: TensorFlowFloatingPoint>(
     // This numerical stable implementation is based on tf.nn.sigmoid_cross_entropy_with_logits.
 
     let maxLogitsWithZero = max(logits, Tensor(0))
-    let loss = maxLogitsWithZero - logits * labels + log(1 + exp(-abs(logits)))
+    var loss = maxLogitsWithZero - logits * labels
+    loss = loss + log(1 + exp(-abs(logits)))
     return loss.mean()
 }

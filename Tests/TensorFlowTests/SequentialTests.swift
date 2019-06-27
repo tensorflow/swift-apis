@@ -38,7 +38,7 @@ final class SequentialTests: XCTestCase {
                 let ŷ = model(x)
                 return meanSquaredError(predicted: ŷ, expected: y)
             }
-            optimizer.update(&model.allDifferentiableVariables, along: 𝛁model)
+            optimizer.update(&model, along: 𝛁model)
         }
         XCTAssertEqual(model.inferring(from: [[0, 0], [0, 1], [1, 0], [1, 1]]),
                        [[ 0.4904838], [0.49942452], [0.49740878], [ 0.5106092]])
