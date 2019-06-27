@@ -233,8 +233,8 @@ public extension Tensor {
     init(shape: TensorShape, scalars: [Scalar]) {
         precondition(shape.contiguousSize == scalars.count,
             """
-            The product of the dimensions of the shape must equal the number of scalars: \
-            \(shape.contiguousSize) vs. \(scalars.count)
+            The shape requires \(shape.contiguousSize) scalars but \(scalars.count) were \
+            provided.
             """)
         self = scalars.withUnsafeBufferPointer { bufferPointer in
 	        Tensor(shape: shape, scalars: bufferPointer)
@@ -251,8 +251,8 @@ public extension Tensor {
     init(shape: TensorShape, scalars: UnsafeBufferPointer<Scalar>) {
         precondition(shape.contiguousSize == scalars.count,
             """
-            The product of the dimensions of the shape must equal the number of scalars: \
-            \(shape.contiguousSize) vs. \(scalars.count)
+            The shape requires \(shape.contiguousSize) scalars but \(scalars.count) were \
+            provided.
             """)
         let handle = TensorHandle<Scalar>(
             shape: shape.dimensions,
@@ -272,8 +272,8 @@ public extension Tensor {
     init<C: RandomAccessCollection>(shape: TensorShape, scalars: C) where C.Element == Scalar {
         precondition(shape.contiguousSize == scalars.count,
             """
-            The product of the dimensions of the shape must equal the number of scalars: \
-            \(shape.contiguousSize) vs. \(scalars.count)
+            The shape requires \(shape.contiguousSize) scalars but \(scalars.count) were \
+            provided.
             """)
         let handle = TensorHandle<Scalar>(
             shape: shape.dimensions,
