@@ -39,7 +39,8 @@ fileprivate extension Tensor where Scalar: Numeric {
 /// https://arxiv.org/abs/1412.6980v8)
 public class Adam<Model: Differentiable>: Optimizer
     where Model.TangentVector: VectorProtocol & PointwiseMultiplicative & ElementaryFunctions,
-          Model.TangentVector.VectorSpaceScalar == Float {
+          Model.TangentVector.VectorSpaceScalar == Float,
+          Model.AllDifferentiableVariables == Model.TangentVector {
     public typealias Model = Model
     /// The learning rate.
     public var learningRate: Float
@@ -91,6 +92,25 @@ public class Adam<Model: Differentiable>: Optimizer
         let denominator = Model.TangentVector.sqrt(secondMoments) + epsilon
         // TODO: Update this when `./` becomes available.
         model.move(along: -stepSize * firstMoments .* denominator.reciprocal)
+    }
+
+    // TODO: Deprecate this when `Differentiable.AllDifferentiableVariables` is removed.
+    public func update(
+        _ model: inout Model.AllDifferentiableVariables,
+        along direction: Model.AllDifferentiableVariables
+    ) {
+        step += 1
+        let learningRate = self.learningRate * 1 / (1 + decay * Float(step))
+        // Note: `stepSize` and `secondMoments` are split into two lines to avoid the "compiler is 
+        // unable to type-check this expression in reasonable time" error.
+        var stepSize = learningRate * sqrt(1 - pow(beta2, Float(step)))
+        stepSize = stepSize / (1 - pow(beta1, Float(step)))
+        firstMoments = firstMoments * beta1 + direction * (1 - beta1)
+        secondMoments = secondMoments * beta2
+        secondMoments += direction .* direction * (1 - beta2)
+        let denominator = Model.TangentVector.sqrt(secondMoments) + epsilon
+        // TODO: Update this when `./` becomes available.
+        model -= stepSize * firstMoments .* denominator.reciprocal
     }
 }
 
