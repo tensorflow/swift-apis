@@ -430,7 +430,7 @@ public class AdaDelta<Model: Layer>: Optimizer
             stepSize /= sqrt(averageSquared[keyPath: kp] + epsilon)
             model[keyPath: kp] -= learningRate * stepSize
             accumulatedDelta[keyPath: kp] *= rho
-            accumulatedDelta[keyPath: kp] += (1 - rho) * (stepSize * stepSize)
+            accumulatedDelta[keyPath: kp] += (1 - rho) * stepSize.squared()
         }
         for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
             averageSquared[keyPath: kp] *= Double(rho)
@@ -441,7 +441,7 @@ public class AdaDelta<Model: Layer>: Optimizer
             stepSize /= sqrt(averageSquared[keyPath: kp] + Double(epsilon))
             model[keyPath: kp] -= Double(learningRate) * stepSize
             accumulatedDelta[keyPath: kp] *= Double(rho)
-            accumulatedDelta[keyPath: kp] += (1 - Double(rho)) * (stepSize * stepSize)
+            accumulatedDelta[keyPath: kp] += (1 - Double(rho)) * stepSize.squared()
         }
     }
 
