@@ -250,7 +250,7 @@ final class LayerTests: XCTestCase {
 
 
     func testFunction() {
-        let tanhLayer = Function<Float, Float>(tanh)
+        let tanhLayer = Function<Tensor<Float>, Tensor<Float>>(tanh)
         let input = Tensor(shape:[5, 1], scalars:(0..<5).map(Float.init))
         let output = tanhLayer.inferring(from: input)
         let expected = Tensor<Float>([[0.0], [0.7615942], [0.9640276], [0.9950547], [0.9993292]])
