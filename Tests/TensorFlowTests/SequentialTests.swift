@@ -48,7 +48,6 @@ final class SequentialTests: XCTestCase {
             rmsprop.update(&model, along: 𝛁model)
             rmsprop.update(&model.allDifferentiableVariables, along: 𝛁model)
             adam.update(&model, along: 𝛁model)
-            adam.update(&model.allDifferentiableVariables, along: 𝛁model)
             adamax.update(&model, along: 𝛁model)
             adamax.update(&model.allDifferentiableVariables, along: 𝛁model)
             adagrad.update(&model, along: 𝛁model)
@@ -57,7 +56,7 @@ final class SequentialTests: XCTestCase {
             adadelta.update(&model.allDifferentiableVariables, along: 𝛁model)
         }
         XCTAssertEqual(model.inferring(from: [[0, 0], [0, 1], [1, 0], [1, 1]]),
-                       [[0.47683996], [0.47683996], [0.47683996], [0.47683996]])
+                       [[0.4768619], [0.4768619], [0.4768619], [0.4768619]])
     }
 
     static var allTests = [

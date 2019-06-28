@@ -12,10 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// A machine learning optimizer.
+/// A numerical optimizer.
 ///
-/// Optimizers apply an optimization algorithm to update the differentiable variables of a machine
-/// learning model.
+/// Optimizers apply an optimization algorithm to update the differentiable models.
 public protocol Optimizer {
     /// The type of the model whose parameters are optimized.
     associatedtype Model: Differentiable
@@ -38,16 +37,15 @@ fileprivate extension Tensor where Scalar: Numeric {
 ///
 /// Reference: ["Adam - A Method for Stochastic Optimization"](
 /// https://arxiv.org/abs/1412.6980v8)
-public class Adam<Model: Layer>: Optimizer
-    where Model.AllDifferentiableVariables == Model.TangentVector {
+public class Adam<Model: Differentiable>: Optimizer
+    where Model.TangentVector: VectorProtocol & PointwiseMultiplicative & ElementaryFunctions,
+          Model.TangentVector.VectorSpaceScalar == Float {
     public typealias Model = Model
     /// The learning rate.
     public var learningRate: Float
-    /// A coefficient used to calculate the first and second moments of
-    /// gradients.
+    /// A coefficient used to calculate the first and second moments of the gradients.
     public var beta1: Float
-    /// A coefficient used to calculate the first and second moments of
-    /// gradients.
+    /// A coefficient used to calculate the first and second moments of the gradients.
     public var beta2: Float
     /// A small scalar added to the denominator to improve numerical stability.
     public var epsilon: Float
@@ -56,9 +54,9 @@ public class Adam<Model: Layer>: Optimizer
     /// The current step.
     public var step: Int = 0
     /// The first moments of the weights.
-    public var firstMoments: Model.AllDifferentiableVariables
+    public var firstMoments: Model.TangentVector = .zero
     /// The second moments of the weights.
-    public var secondMoments: Model.AllDifferentiableVariables
+    public var secondMoments: Model.TangentVector = .zero
 
     public init(
         for model: __shared Model,
@@ -78,57 +76,21 @@ public class Adam<Model: Layer>: Optimizer
         self.beta2 = beta2
         self.epsilon = epsilon
         self.decay = decay
-
-        // Initialize first & second moments to be zeros of the same shape.
-        // We can't use `Model.AllDifferentiableVariables.zero` due to the
-        // interaction between Key Paths and Differentiable Arrays.
-        firstMoments = model.allDifferentiableVariables
-        secondMoments = model.allDifferentiableVariables
-        for kp in firstMoments.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
-            firstMoments[keyPath: kp].resetToZero()
-            secondMoments[keyPath: kp].resetToZero()
-        }
-        for kp in firstMoments.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
-            firstMoments[keyPath: kp].resetToZero()
-            secondMoments[keyPath: kp].resetToZero()
-        }
     }
 
-    // TODO: Deprecate this when `Differentiable.AllDifferentiableVariables` is removed.
-    public func update(_ model: inout Model.AllDifferentiableVariables,
-                       along direction: Model.AllDifferentiableVariables) {
+    public func update(_ model: inout Model, along direction: Model.TangentVector) {
         step += 1
         let learningRate = self.learningRate * 1 / (1 + decay * Float(step))
-        // Note: `stepSize` is split into two lines to avoid the "compiler is unable to type-check
-        // this expression in reasonable time" error.
+        // Note: `stepSize` and `secondMoments` are split into two lines to avoid the "compiler is 
+        // unable to type-check this expression in reasonable time" error.
         var stepSize = learningRate * sqrt(1 - pow(beta2, Float(step)))
         stepSize = stepSize / (1 - pow(beta1, Float(step)))
-        // Update Float & Double Tensor variables.
-        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
-            firstMoments[keyPath: kp] =
-                firstMoments[keyPath: kp] * beta1 + (1 - beta1) * direction[keyPath: kp]
-            secondMoments[keyPath: kp] =
-                secondMoments[keyPath: kp] * beta2 + (1 - beta2) *
-                direction[keyPath: kp] * direction[keyPath: kp]
-            model[keyPath: kp] -=
-                stepSize * firstMoments[keyPath: kp] / (sqrt(secondMoments[keyPath: kp]) + epsilon)
-        }
-        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
-            firstMoments[keyPath: kp] =
-                firstMoments[keyPath: kp] * Double(beta1) +
-                Double((1 - beta1)) * direction[keyPath: kp]
-            secondMoments[keyPath: kp] =
-                secondMoments[keyPath: kp] * Double(beta2) + Double(1 - beta2) *
-                direction[keyPath: kp] * direction[keyPath: kp]
-            model[keyPath: kp] -=
-                Double(stepSize) * firstMoments[keyPath: kp] /
-                sqrt(secondMoments[keyPath: kp]) + Double(epsilon)
-        }
-    }
-
-    public func update(_ model: inout Model,
-                       along direction: Model.TangentVector) {
-        update(&model.allDifferentiableVariables, along: direction)
+        firstMoments = firstMoments * beta1 + direction * (1 - beta1)
+        secondMoments = secondMoments * beta2
+        secondMoments += direction .* direction * (1 - beta2)
+        let denominator = Model.TangentVector.sqrt(secondMoments) + epsilon
+        // TODO: Update this when `./` becomes available.
+        model.move(along: -stepSize * firstMoments .* denominator.reciprocal)
     }
 }
 
