@@ -320,13 +320,14 @@ public class SGD<Model: Differentiable>: Optimizer
 
 /// AdaGrad optimizer.
 ///
-/// Individually adapts the learning rates of all model parameters by scaling them inversely proportional to
-/// the square root of the sum of all the historical squared values of the gradient.
+/// Individually adapts the learning rates of all model parameters by scaling them inversely 
+/// proportional to the square root of the sum of all the historical squared values of the gradient.
 ///
 /// Reference: ["Adaptive Subgradient Methods for Online Learning and Stochastic Optimization"](
 /// http://www.jmlr.org/papers/volume12/duchi11a/duchi11a.pdf)
-public class AdaGrad<Model: Layer>: Optimizer
-    where Model.AllDifferentiableVariables == Model.TangentVector {
+public class AdaGrad<Model: Differentiable>: Optimizer
+    where Model.TangentVector: VectorProtocol & PointwiseMultiplicative & ElementaryFunctions,
+          Model.TangentVector.VectorSpaceScalar == Float {
     public typealias Model = Model
     /// The learning rate.
     public var learningRate: Float
@@ -336,7 +337,7 @@ public class AdaGrad<Model: Layer>: Optimizer
     /// A small scalar added to the denominator to improve numerical stability.
     public var epsilon: Float
     /// The alpha values for all model differentiable variables.
-    public var alpha: Model.AllDifferentiableVariables
+    public var alpha: Model.TangentVector = .zero
 
     public init(
         for model: __shared Model,
@@ -350,35 +351,20 @@ public class AdaGrad<Model: Layer>: Optimizer
         self.learningRate = learningRate
         self.rho = rho
         self.epsilon = epsilon
+    }
 
-        alpha = model.allDifferentiableVariables
-        for kp in alpha.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
-            alpha[keyPath: kp].resetToZero()
-        }
-        for kp in alpha.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
-            alpha[keyPath: kp].resetToZero()
-        }
+    public func update(_ model: inout Model, along direction: Model.TangentVector) {
+        update(&model.allDifferentiableVariables, along: direction)
     }
 
     // TODO: Deprecate this when `Differentiable.AllDifferentiableVariables` is removed.
-    public func update(_ model: inout Model.AllDifferentiableVariables,
-                       along direction: Model.TangentVector) {
-        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
-            alpha[keyPath: kp] = rho + direction[keyPath: kp].squared()
-            model[keyPath: kp] -=
-                learningRate * direction[keyPath: kp] / (sqrt(alpha[keyPath: kp] + epsilon))
-        }
-        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
-            alpha[keyPath: kp] = Double(rho) + direction[keyPath: kp].squared()
-            model[keyPath: kp] -=
-                Double(learningRate) * direction[keyPath: kp] /
-                (sqrt(alpha[keyPath: kp] + Double(epsilon)))
-        }
-    }
-
-    public func update(_ model: inout Model,
-                       along direction: Model.TangentVector) {
-        update(&model.allDifferentiableVariables, along: direction)
+    public func update(
+        _ model: inout Model.AllDifferentiableVariables,
+        along direction: Model.TangentVector
+    ) {
+        alpha = rho + direction .* direction
+        let denominator = Model.TangentVector.sqrt(alpha) + epsilon
+        model.move(along: -learningRate * direction ./ denominator)
     }
 }
 
