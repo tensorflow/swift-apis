@@ -264,32 +264,6 @@ public class SGD<Model: Differentiable>: Optimizer
     }
 }
 
-// MARK: - Manifold optimizers
-
-/// A Riemann manifold stochastic gradient descent (SGD) optimizer.
-public class RiemannSGD<Model: Differentiable>: Optimizer
-    where Model.TangentVector: VectorProtocol,
-          Model.TangentVector.VectorSpaceScalar: FloatingPoint {
-    public typealias Scalar = Model.TangentVector.VectorSpaceScalar
-    /// The learning rate.
-    public var learningRate: Model.TangentVector.VectorSpaceScalar
-
-    public init(learningRate: Model.TangentVector.VectorSpaceScalar) {
-        self.learningRate = learningRate
-    }
-
-    public convenience init(
-        for _: __shared Model,
-        learningRate: Scalar
-    ) {
-        self.init(learningRate: learningRate)
-    }
-
-    public func update(_ model: inout Model.AllDifferentiableVariables,
-                       along direction: Model.TangentVector) {
-        model.move(along: (.zero - direction).scaled(by: learningRate))
-    }
-}
 
 /// AdaGrad optimizer.
 ///
@@ -297,8 +271,7 @@ public class RiemannSGD<Model: Differentiable>: Optimizer
 /// the square root of the sum of all the historical squared values of the gradient.
 ///
 /// Reference: ["Adaptive Subgradient Methods for Online Learning and Stochastic Optimization"](
-///  http://www.jmlr.org/papers/volume12/duchi11a/duchi11a.pdf)
-///
+/// http://www.jmlr.org/papers/volume12/duchi11a/duchi11a.pdf)
 public class AdaGrad<Model: Layer>: Optimizer
     where Model.AllDifferentiableVariables == Model.TangentVector {
     public typealias Model = Model
@@ -353,5 +326,124 @@ public class AdaGrad<Model: Layer>: Optimizer
     public func update(_ model: inout Model,
                        along direction: Model.TangentVector) {
         update(&model.allDifferentiableVariables, along: direction)
+    }
+}
+
+/// ADADELTA optimizer.
+///
+/// ADADELTA is a more robust extension of AdaGrad. ADADELTA adapts learning rates based on a moving
+/// window of gradient updates rather accumulating all past gradients. ADADELTA can continue to
+/// learn even after many update steps.
+/// 
+/// Reference: ["ADADELTA: An Adaptive Learning Rate Method"](https://arxiv.org/abs/1212.5701)
+public class AdaDelta<Model: Layer>: Optimizer
+    where Model.AllDifferentiableVariables == Model.TangentVector {
+    public typealias Model = Model
+    /// The learning rate.
+    public var learningRate: Float
+    /// The decay factor, corresponding to fraction of gradient to keep at each time step.
+    public var rho: Float
+    /// A small scalar added to the denominator to improve numerical stability.
+    public var epsilon: Float
+    /// The learning rate decay.
+    public var decay: Float
+    /// The current step.
+    public var step: Int = 0
+    /// The accumulated, exponentially decaying average of squared gradients.
+    public var averageSquared: Model.TangentVector
+    /// The accumulated parameter updates.
+    public var accumulatedDelta: Model.TangentVector
+
+    public init(
+        for model: __shared Model,
+        learningRate: Float = 1,
+        rho: Float = 0.95,
+        epsilon: Float = 1e-6,
+        decay: Float = 0
+    ) {
+        precondition(learningRate >= 0, "Learning rate must be non-negative")
+        precondition(0 <= rho && rho <= 1, "Rho parameter must be between 0 and 1")
+        precondition(0 <= epsilon, "Epsilon parameter must be non-negative")
+        precondition(decay >= 0, "Learning rate decay must be non-negative")
+
+        self.learningRate = learningRate
+        self.rho = rho
+        self.epsilon = epsilon
+        self.decay = decay
+
+        averageSquared = model.allDifferentiableVariables
+        accumulatedDelta = model.allDifferentiableVariables
+        
+        for kp in averageSquared.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
+            averageSquared[keyPath: kp].resetToZero()
+            accumulatedDelta[keyPath: kp].resetToZero()
+        }
+        for kp in averageSquared.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
+            averageSquared[keyPath: kp].resetToZero()
+            accumulatedDelta[keyPath: kp].resetToZero()
+        }
+    }
+
+    // TODO: Deprecate this when `Differentiable.AllDifferentiableVariables` is removed.
+    public func update(_ model: inout Model.AllDifferentiableVariables,
+                       along direction: Model.AllDifferentiableVariables) {
+        step += 1
+        let learningRate = self.learningRate / (1 + decay * Float(step))
+        
+        // Update `Tensor<Float>` and `Tensor<Double>` variables.
+        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
+            averageSquared[keyPath: kp] *= rho
+            averageSquared[keyPath: kp] +=
+                (1 - rho) * (direction[keyPath: kp] * direction[keyPath: kp])
+            var stepSize = direction[keyPath: kp] *
+                sqrt(accumulatedDelta[keyPath: kp] + epsilon)
+            stepSize /= sqrt(averageSquared[keyPath: kp] + epsilon)
+            model[keyPath: kp] -= learningRate * stepSize
+            accumulatedDelta[keyPath: kp] *= rho
+            accumulatedDelta[keyPath: kp] += (1 - rho) * stepSize.squared()
+        }
+        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
+            averageSquared[keyPath: kp] *= Double(rho)
+            averageSquared[keyPath: kp] +=
+                (1 - Double(rho)) * (direction[keyPath: kp] * direction[keyPath: kp])
+            var stepSize = direction[keyPath: kp] *
+                sqrt(accumulatedDelta[keyPath: kp] + Double(epsilon))
+            stepSize /= sqrt(averageSquared[keyPath: kp] + Double(epsilon))
+            model[keyPath: kp] -= Double(learningRate) * stepSize
+            accumulatedDelta[keyPath: kp] *= Double(rho)
+            accumulatedDelta[keyPath: kp] += (1 - Double(rho)) * stepSize.squared()
+        }
+    }
+
+    public func update(_ model: inout Model,
+                       along direction: Model.TangentVector) {
+        update(&model.allDifferentiableVariables, along: direction)
+    }
+}
+
+// MARK: - Manifold optimizers
+
+/// A Riemann manifold stochastic gradient descent (SGD) optimizer.
+public class RiemannSGD<Model: Differentiable>: Optimizer
+    where Model.TangentVector: VectorProtocol,
+          Model.TangentVector.VectorSpaceScalar: FloatingPoint {
+    public typealias Scalar = Model.TangentVector.VectorSpaceScalar
+    /// The learning rate.
+    public var learningRate: Model.TangentVector.VectorSpaceScalar
+
+    public init(learningRate: Model.TangentVector.VectorSpaceScalar) {
+        self.learningRate = learningRate
+    }
+
+    public convenience init(
+        for _: __shared Model,
+        learningRate: Scalar
+    ) {
+        self.init(learningRate: learningRate)
+    }
+
+    public func update(_ model: inout Model.AllDifferentiableVariables,
+                       along direction: Model.TangentVector) {
+        model.move(along: (.zero - direction).scaled(by: learningRate))
     }
 }
