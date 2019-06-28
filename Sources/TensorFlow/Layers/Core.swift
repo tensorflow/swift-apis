@@ -224,7 +224,7 @@ public extension Dense {
     }
 }
 
-/// /// A layer that encloses a custom differentiable function.
+/// A layer that encloses a custom differentiable function.
 public struct Function<Input: Differentiable, Output: Differentiable>: Layer {
     public typealias Body = @differentiable (Input) -> Output
 
