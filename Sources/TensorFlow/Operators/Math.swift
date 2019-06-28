@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-infix operator .>: ComparisonPrecedence
-infix operator .==: ComparisonPrecedence
+infix operator .> : ComparisonPrecedence
+infix operator .== : ComparisonPrecedence
 
 // TODO:
 // - Consider explicit broadcasting for elementwise binary ops when
@@ -22,8 +22,8 @@ infix operator .==: ComparisonPrecedence
 // TODO: Remove the following extension once `./` and `./=` are defined for 
 // `PointwiseMultiplicative`.
 
-infix operator ./: MultiplicationPrecedence
-infix operator ./=: AssignmentPrecedence
+infix operator ./ : MultiplicationPrecedence
+infix operator ./= : AssignmentPrecedence
 
 public extension PointwiseMultiplicative {
     static func ./ (lhs: Self, rhs: Self) -> Self {
