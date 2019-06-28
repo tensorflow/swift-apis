@@ -371,12 +371,13 @@ public class AdaGrad<Model: Differentiable>: Optimizer
 /// ADADELTA optimizer.
 ///
 /// ADADELTA is a more robust extension of AdaGrad. ADADELTA adapts learning rates based on a moving
-/// window of gradient updates rather accumulating all past gradients. ADADELTA can continue to
-/// learn even after many update steps.
+/// window of gradient updates rather than by accumulating all past gradient norms. It can thus 
+/// adapt faster to changing dynamics of the optimization problem space.
 /// 
 /// Reference: ["ADADELTA: An Adaptive Learning Rate Method"](https://arxiv.org/abs/1212.5701)
-public class AdaDelta<Model: Layer>: Optimizer
-    where Model.AllDifferentiableVariables == Model.TangentVector {
+public class AdaDelta<Model: Differentiable>: Optimizer
+    where Model.TangentVector: VectorProtocol & PointwiseMultiplicative & ElementaryFunctions,
+          Model.TangentVector.VectorSpaceScalar == Float {
     public typealias Model = Model
     /// The learning rate.
     public var learningRate: Float
@@ -389,9 +390,9 @@ public class AdaDelta<Model: Layer>: Optimizer
     /// The current step.
     public var step: Int = 0
     /// The accumulated, exponentially decaying average of squared gradients.
-    public var averageSquared: Model.TangentVector
+    public var averageSquared: Model.TangentVector = .zero
     /// The accumulated parameter updates.
-    public var accumulatedDelta: Model.TangentVector
+    public var accumulatedDelta: Model.TangentVector = .zero
 
     public init(
         for model: __shared Model,
@@ -409,54 +410,24 @@ public class AdaDelta<Model: Layer>: Optimizer
         self.rho = rho
         self.epsilon = epsilon
         self.decay = decay
+    }
 
-        averageSquared = model.allDifferentiableVariables
-        accumulatedDelta = model.allDifferentiableVariables
-        
-        for kp in averageSquared.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
-            averageSquared[keyPath: kp].resetToZero()
-            accumulatedDelta[keyPath: kp].resetToZero()
-        }
-        for kp in averageSquared.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
-            averageSquared[keyPath: kp].resetToZero()
-            accumulatedDelta[keyPath: kp].resetToZero()
-        }
+    public func update(_ model: inout Model, along direction: Model.TangentVector) {
+        update(&model.allDifferentiableVariables, along: direction)
     }
 
     // TODO: Deprecate this when `Differentiable.AllDifferentiableVariables` is removed.
-    public func update(_ model: inout Model.AllDifferentiableVariables,
-                       along direction: Model.AllDifferentiableVariables) {
+    public func update(
+        _ model: inout Model.AllDifferentiableVariables,
+        along direction: Model.TangentVector
+    ) {
         step += 1
         let learningRate = self.learningRate / (1 + decay * Float(step))
-        
-        // Update `Tensor<Float>` and `Tensor<Double>` variables.
-        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
-            averageSquared[keyPath: kp] *= rho
-            averageSquared[keyPath: kp] +=
-                (1 - rho) * (direction[keyPath: kp] * direction[keyPath: kp])
-            var stepSize = direction[keyPath: kp] *
-                sqrt(accumulatedDelta[keyPath: kp] + epsilon)
-            stepSize /= sqrt(averageSquared[keyPath: kp] + epsilon)
-            model[keyPath: kp] -= learningRate * stepSize
-            accumulatedDelta[keyPath: kp] *= rho
-            accumulatedDelta[keyPath: kp] += (1 - rho) * stepSize.squared()
-        }
-        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
-            averageSquared[keyPath: kp] *= Double(rho)
-            averageSquared[keyPath: kp] +=
-                (1 - Double(rho)) * (direction[keyPath: kp] * direction[keyPath: kp])
-            var stepSize = direction[keyPath: kp] *
-                sqrt(accumulatedDelta[keyPath: kp] + Double(epsilon))
-            stepSize /= sqrt(averageSquared[keyPath: kp] + Double(epsilon))
-            model[keyPath: kp] -= Double(learningRate) * stepSize
-            accumulatedDelta[keyPath: kp] *= Double(rho)
-            accumulatedDelta[keyPath: kp] += (1 - Double(rho)) * stepSize.squared()
-        }
-    }
-
-    public func update(_ model: inout Model,
-                       along direction: Model.TangentVector) {
-        update(&model.allDifferentiableVariables, along: direction)
+        averageSquared = rho * averageSquared + (1 - rho) * direction .* direction
+        var stepSize = direction .* Model.TangentVector.sqrt(accumulatedDelta + epsilon)
+        stepSize ./= Model.TangentVector.sqrt(averageSquared + epsilon)
+        model.move(along: -learningRate * stepSize)
+        accumulatedDelta = rho * accumulatedDelta + (1 - rho) * stepSize .* stepSize
     }
 }
 
