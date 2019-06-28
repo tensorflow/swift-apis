@@ -97,8 +97,7 @@ public class Adam<Model: Differentiable>: Optimizer
         secondMoments = secondMoments * beta2
         secondMoments += direction .* direction * (1 - beta2)
         let denominator = Model.TangentVector.sqrt(secondMoments) + epsilon
-        // TODO: Update this when `./` becomes available.
-        model.move(along: -stepSize * firstMoments .* denominator.reciprocal)
+        model.move(along: -stepSize * firstMoments ./ denominator)
     }
 }
 
