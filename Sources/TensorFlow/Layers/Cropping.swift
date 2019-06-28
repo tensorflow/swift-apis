@@ -41,9 +41,9 @@ public struct Cropping1D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Returns: The cropped 3D tensor of shape `[batch, cropped axis, feature]`.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        let (start, end) = cropping
+        let (begin, end) = cropping
         return input.slice(
-            lowerBounds: [0, start, 0],
+            lowerBounds: [0, begin, 0],
             upperBounds: [input.shape[0], input.shape[1] - end, input.shape[2]])
     }
 }
