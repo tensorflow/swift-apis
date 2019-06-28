@@ -265,13 +265,13 @@ public class SGD<Model: Differentiable>: Optimizer
 }
 
 
-/// Adagrad optimizer.
+/// AdaGrad optimizer.
 ///
 /// Individually adapts the learning rates of all model parameters by scaling them inversely proportional to
 /// the square root of the sum of all the historical squared values of the gradient.
 ///
 /// Reference: ["Adaptive Subgradient Methods for Online Learning and Stochastic Optimization"](
-///  http://www.jmlr.org/papers/volume12/duchi11a/duchi11a.pdf)
+/// http://www.jmlr.org/papers/volume12/duchi11a/duchi11a.pdf)
 public class AdaGrad<Model: Layer>: Optimizer
     where Model.AllDifferentiableVariables == Model.TangentVector {
     public typealias Model = Model
@@ -329,14 +329,13 @@ public class AdaGrad<Model: Layer>: Optimizer
     }
 }
 
-/// Adadelta optimizer.
+/// ADADELTA optimizer.
 ///
-/// Adadelta is a more robust extension of Adagrad. Adadelta adapts learning rates based on a moving
-/// window of gradient updates rather accumulating all past gradients. Adadelta can continue to
+/// ADADELTA is a more robust extension of AdaGrad. ADADELTA adapts learning rates based on a moving
+/// window of gradient updates rather accumulating all past gradients. ADADELTA can continue to
 /// learn even after many update steps.
 /// 
-/// Reference: ["ADADELTA: An Adaptive Learning Rate Method"](
-/// https://arxiv.org/abs/1212.5701)
+/// Reference: ["ADADELTA: An Adaptive Learning Rate Method"](https://arxiv.org/abs/1212.5701)
 public class AdaDelta<Model: Layer>: Optimizer
     where Model.AllDifferentiableVariables == Model.TangentVector {
     public typealias Model = Model
