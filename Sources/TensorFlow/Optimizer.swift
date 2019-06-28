@@ -22,8 +22,7 @@ public protocol Optimizer {
     associatedtype Scalar: FloatingPoint
     /// The learning rate.
     var learningRate: Scalar { get set }
-    /// Updates the specified differentiable variables along the specified
-    /// direction.
+    /// Updates the specified differentiable variables along the specified direction.
     mutating func update(_ variables: inout Model, along direction: Model.TangentVector)
 }
 
