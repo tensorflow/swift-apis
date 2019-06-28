@@ -12,12 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-infix operator .>: ComparisonPrecedence
-infix operator .==: ComparisonPrecedence
+infix operator .> : ComparisonPrecedence
+infix operator .== : ComparisonPrecedence
 
 // TODO:
 // - Consider explicit broadcasting for elementwise binary ops when
 //   scalarization and rank getter are implemented.
+
+// TODO: Remove the following extension once `./` and `./=` are defined for 
+// `PointwiseMultiplicative`.
+
+infix operator ./ : MultiplicationPrecedence
+infix operator ./= : AssignmentPrecedence
+
+public extension PointwiseMultiplicative {
+    static func ./ (lhs: Self, rhs: Self) -> Self {
+        lhs .* rhs.reciprocal
+    }
+
+    static func ./= (lhs: inout Self, rhs: Self) {
+        lhs = lhs ./ rhs
+    }
+}
 
 //===------------------------------------------------------------------------------------------===//
 // Generic elementary functions
