@@ -118,7 +118,7 @@ final class LayerTests: XCTestCase {
 
     func testZeroPadding1D() {
         let input = Tensor<Float>([0.0, 1.0, 2.0])
-        let layer = ZeroPadding1D(2)
+        let layer = ZeroPadding1D(padding: 2)
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>([0.0, 0.0, 0.0, 1.0, 2.0, 0.0, 0.0])
         XCTAssertEqual(output, expected)
