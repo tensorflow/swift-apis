@@ -21,7 +21,7 @@ public struct Cropping1D<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Creates a cropping layer to trim the temporal dimension.
     ///
-    /// - Parameter
+    /// - Parameters:
     ///   - begin: The number of units to be trimmed off the beginning of the temporal dimension.
     ///   - end: The number of units to be trimmed off the end of the temporal dimension.
     public init(begin: Int = 1, end: Int = 1) {
