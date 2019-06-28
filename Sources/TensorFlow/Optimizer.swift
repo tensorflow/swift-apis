@@ -39,8 +39,7 @@ fileprivate extension Tensor where Scalar: Numeric {
 /// https://arxiv.org/abs/1412.6980v8)
 public class Adam<Model: Differentiable>: Optimizer
     where Model.TangentVector: VectorProtocol & PointwiseMultiplicative & ElementaryFunctions,
-          Model.TangentVector.VectorSpaceScalar == Float,
-          Model.AllDifferentiableVariables == Model.TangentVector {
+          Model.TangentVector.VectorSpaceScalar == Float {
     public typealias Model = Model
     /// The learning rate.
     public var learningRate: Float
@@ -86,7 +85,7 @@ public class Adam<Model: Differentiable>: Optimizer
     // TODO: Deprecate this when `Differentiable.AllDifferentiableVariables` is removed.
     public func update(
         _ model: inout Model.AllDifferentiableVariables,
-        along direction: Model.AllDifferentiableVariables
+        along direction: Model.TangentVector
     ) {
         step += 1
         let learningRate = self.learningRate * 1 / (1 + decay * Float(step))
@@ -99,7 +98,7 @@ public class Adam<Model: Differentiable>: Optimizer
         secondMoments += direction .* direction * (1 - beta2)
         let denominator = Model.TangentVector.sqrt(secondMoments) + epsilon
         // TODO: Update this when `./` becomes available.
-        model -= stepSize * firstMoments .* denominator.reciprocal
+        model.move(along: -stepSize * firstMoments .* denominator.reciprocal)
     }
 }
 
