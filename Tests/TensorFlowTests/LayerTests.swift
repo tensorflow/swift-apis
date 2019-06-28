@@ -117,8 +117,7 @@ final class LayerTests: XCTestCase {
     }
 
     func testCropping1D() {
-        let (begin, end) = (1, 1)
-        let layer = Cropping1D<Float>(cropping: (begin, end))
+        let layer = Cropping1D<Float>(begin: 1, end: 1)
         let input = Tensor<Float>(shape: [2, 3, 3], scalars: (0..<18).map(Float.init))
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>([[[3, 4, 5]], [[12, 13, 14]]])
@@ -126,9 +125,7 @@ final class LayerTests: XCTestCase {
     }
 
     func testCropping2D() {
-        let (top, bottom) = (0, 1)
-        let (left, right) = (1, 0)
-        let layer = Cropping2D<Float>(cropping: ((top, bottom), (left, right)))
+        let layer = Cropping2D<Float>(top: 0, bottom: 1, left: 1, right: 0)
         let input = Tensor<Float>(shape: [2, 3, 3, 2], scalars: (0..<36).map(Float.init))
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>(shape: [2, 2, 2, 2],
