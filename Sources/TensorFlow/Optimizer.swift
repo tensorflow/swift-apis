@@ -206,7 +206,7 @@ public class AdaMax<Model: Layer>: Optimizer
 /// the learning rate, which can be freely tuned). This optimizer is usually a good choice for 
 /// recurrent neural networks.
 ///
-/// Reference: ["RMSProp: Divide the gradient by a running average of its recent magnitude"](
+/// Reference: ["rmsprop: Divide the gradient by a running average of its recent magnitude"](
 /// http://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf)
 public class RMSProp<Model: Differentiable>: Optimizer
     where Model.TangentVector: VectorProtocol & PointwiseMultiplicative & ElementaryFunctions,
