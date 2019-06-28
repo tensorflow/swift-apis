@@ -224,10 +224,9 @@ public extension Dense {
     }
 }
 
-
+/// A `Function` layer arbitrarily stores any differentiable function and returns its
+/// `callAsFunction(_:)` method which can used as a wrapper around that function.
 public struct Function<Input: Differentiable, Output: Differentiable>: Layer {
-    /// The Function Layer arbitrarily takes any differentiable function and returns a Layer which can
-    /// used as a wrapper around that function.
 
     public typealias Body = @differentiable (Input) -> Output
 
