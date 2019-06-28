@@ -371,7 +371,7 @@ public class AdaDelta<Model: Layer>: Optimizer
     public typealias Model = Model
     /// The learning rate.
     public var learningRate: Float
-    ///decay factor, corresponding to fraction of gradient to keep at each time step.
+    /// The decay factor, corresponding to fraction of gradient to keep at each time step.
     public var rho: Float
     /// A small scalar added to the denominator to improve numerical stability.
     public var epsilon: Float
@@ -379,15 +379,15 @@ public class AdaDelta<Model: Layer>: Optimizer
     public var decay: Float
     /// The current step.
     public var step: Int = 0
-    /// Accumulate Gradients
-    public var accumulators: Model.AllDifferentiableVariables
-    /// Accumulate Updates(here StepSizes)
-    public var updates: Model.AllDifferentiableVariables
+    /// The accumulated, exponentially decaying average of squared gradients.
+    public var averageSquared: Model.TangentVector
+    /// The accumulated parameter updates.
+    public var accumulatedDelta: Model.TangentVector
 
     public init(
         for model: __shared Model,
         learningRate: Float = 1,
-        rho: Float = 0.9,
+        rho: Float = 0.95,
         epsilon: Float = 1e-6,
         decay: Float = 0
     ) {
@@ -401,16 +401,16 @@ public class AdaDelta<Model: Layer>: Optimizer
         self.epsilon = epsilon
         self.decay = decay
 
-        accumulators = model.allDifferentiableVariables
-        updates = model.allDifferentiableVariables
+        averageSquared = model.allDifferentiableVariables
+        accumulatedDelta = model.allDifferentiableVariables
         
-        for kp in accumulators.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
-            accumulators[keyPath: kp].resetToZero()
-            updates[keyPath: kp].resetToZero()
+        for kp in averageSquared.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
+            averageSquared[keyPath: kp].resetToZero()
+            accumulatedDelta[keyPath: kp].resetToZero()
         }
-        for kp in accumulators.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
-            accumulators[keyPath: kp].resetToZero()
-            updates[keyPath: kp].resetToZero()
+        for kp in averageSquared.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
+            averageSquared[keyPath: kp].resetToZero()
+            accumulatedDelta[keyPath: kp].resetToZero()
         }
     }
 
@@ -422,30 +422,26 @@ public class AdaDelta<Model: Layer>: Optimizer
         
         // Update Float & Double Tensor variables.
         for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
-            var accNew = rho * accumulators[keyPath: kp]
-            accNew += (1 - rho) * (direction[keyPath: kp] * direction[keyPath: kp])
-            accumulators[keyPath: kp] = accNew 
-
-            var stepSize =  direction[keyPath: kp] * sqrt(updates[keyPath: kp] + epsilon)
-            stepSize /=  sqrt(accumulators[keyPath: kp] + epsilon)
+            averageSquared[keyPath: kp] *= rho
+            averageSquared[keyPath: kp] +=
+                    (1 - rho) * (direction[keyPath: kp] * direction[keyPath: kp])
+            var stepSize = direction[keyPath: kp] *
+                    sqrt(accumulatedDelta[keyPath: kp] + epsilon)
+            stepSize /= sqrt(averageSquared[keyPath: kp] + epsilon)
             model[keyPath: kp] -= learningRate * stepSize
-
-            var updatesNew = updates[keyPath: kp] * rho
-            updatesNew += (1 - rho) * (stepSize * stepSize)
-            updates[keyPath: kp] =  updatesNew
-                                               
+            accumulatedDelta[keyPath: kp] *= rho
+            accumulatedDelta[keyPath: kp] += (1 - rho) * (stepSize * stepSize)
         }
         for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
-            var accNew = Double(rho) * accumulators[keyPath: kp]
-            accNew += (1 - Double(rho)) * (direction[keyPath: kp] * direction[keyPath: kp])
-            accumulators[keyPath: kp] = accNew
-            var stepSize =  direction[keyPath: kp] * sqrt(updates[keyPath: kp] + Double(epsilon))
-            stepSize /=  sqrt(accumulators[keyPath: kp] + Double(epsilon))
+            averageSquared[keyPath: kp] *= Double(rho)
+            averageSquared[keyPath: kp] +=
+                    (1 - Double(rho)) * (direction[keyPath: kp] * direction[keyPath: kp])
+            var stepSize = direction[keyPath: kp] *
+                    sqrt(accumulatedDelta[keyPath: kp] + Double(epsilon))
+            stepSize /= sqrt(averageSquared[keyPath: kp] + Double(epsilon))
             model[keyPath: kp] -= Double(learningRate) * stepSize
-
-            var updatesNew = updates[keyPath: kp] * Double(rho)
-            updatesNew += (1 - Double(rho)) * (stepSize * stepSize)
-            updates[keyPath: kp] =  updatesNew
+            accumulatedDelta[keyPath: kp] *= Double(rho)
+            accumulatedDelta[keyPath: kp] += (1 - Double(rho)) * (stepSize * stepSize)
         }
     }
 
