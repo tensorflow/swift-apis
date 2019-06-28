@@ -640,5 +640,4 @@ public extension DepthwiseConv2D {
             strides: strides,
             padding: padding)
     }
-
 }
