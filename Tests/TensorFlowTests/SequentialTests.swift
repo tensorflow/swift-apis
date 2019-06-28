@@ -54,7 +54,7 @@ final class SequentialTests: XCTestCase {
             adadelta.update(&model.allDifferentiableVariables, along: 𝛁model)
         }
         XCTAssertEqual(model.inferring(from: [[0, 0], [0, 1], [1, 0], [1, 1]]),
-                       [[0.4770241], [0.4770241], [0.4770241], [0.4770241]])
+                       [[0.4767533], [0.4767533], [0.4767533], [0.4767533]])
     }
 
     static var allTests = [

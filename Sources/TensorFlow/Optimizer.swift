@@ -356,6 +356,16 @@ public class AdaGrad<Model: Layer>: Optimizer
     }
 }
 
+/// Adadelta Optimizer
+///
+/// It is a method that uses the magnitude of recent gradients 
+/// and steps to obtain an adaptive step rate. 
+/// An exponential moving average over the gradients and steps is kept;
+/// a scale of the learning rate is then obtained by their ration.
+/// 
+/// Reference: ["ADADELTA: An Adaptive Learning Rate Method"](
+/// https://arxiv.org/abs/1212.5701)
+///
 public class AdaDelta<Model: Layer>: Optimizer
     where Model.AllDifferentiableVariables == Model.TangentVector {
     public typealias Model = Model
@@ -369,15 +379,16 @@ public class AdaDelta<Model: Layer>: Optimizer
     public var decay: Float
     /// The current step.
     public var step: Int = 0
+    /// Accumulate Gradients
     public var accumulators: Model.AllDifferentiableVariables
-    public var accDelta: Model.AllDifferentiableVariables
-    
+    /// Accumulate Updates(here StepSizes)
+    public var updates: Model.AllDifferentiableVariables
 
     public init(
         for model: __shared Model,
-        learningRate: Float = 1e-3,
+        learningRate: Float = 1,
         rho: Float = 0.9,
-        epsilon: Float = 1e-8,
+        epsilon: Float = 1e-6,
         decay: Float = 0
     ) {
         precondition(learningRate >= 0, "Learning rate must be non-negative")
@@ -391,15 +402,15 @@ public class AdaDelta<Model: Layer>: Optimizer
         self.decay = decay
 
         accumulators = model.allDifferentiableVariables
-        accDelta = model.allDifferentiableVariables
+        updates = model.allDifferentiableVariables
         
         for kp in accumulators.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
             accumulators[keyPath: kp].resetToZero()
-            accDelta[keyPath: kp].resetToZero()
+            updates[keyPath: kp].resetToZero()
         }
         for kp in accumulators.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
             accumulators[keyPath: kp].resetToZero()
-            accDelta[keyPath: kp].resetToZero()
+            updates[keyPath: kp].resetToZero()
         }
     }
 
@@ -415,26 +426,26 @@ public class AdaDelta<Model: Layer>: Optimizer
             accNew += (1 - rho) * (direction[keyPath: kp] * direction[keyPath: kp])
             accumulators[keyPath: kp] = accNew 
 
-            var stepSize =  direction[keyPath: kp] * sqrt(accDelta[keyPath: kp] + epsilon)
+            var stepSize =  direction[keyPath: kp] * sqrt(updates[keyPath: kp] + epsilon)
             stepSize /=  sqrt(accumulators[keyPath: kp] + epsilon)
             model[keyPath: kp] -= learningRate * stepSize
 
-            var accDeltaNew = accDelta[keyPath: kp] * rho
-            accDeltaNew += (1 - rho) * (stepSize * stepSize)
-            accDelta[keyPath: kp] =  accDeltaNew
+            var updatesNew = updates[keyPath: kp] * rho
+            updatesNew += (1 - rho) * (stepSize * stepSize)
+            updates[keyPath: kp] =  updatesNew
                                                
         }
         for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
             var accNew = Double(rho) * accumulators[keyPath: kp]
             accNew += (1 - Double(rho)) * (direction[keyPath: kp] * direction[keyPath: kp])
             accumulators[keyPath: kp] = accNew
-            var stepSize =  direction[keyPath: kp] * sqrt(accDelta[keyPath: kp] + Double(epsilon))
+            var stepSize =  direction[keyPath: kp] * sqrt(updates[keyPath: kp] + Double(epsilon))
             stepSize /=  sqrt(accumulators[keyPath: kp] + Double(epsilon))
             model[keyPath: kp] -= Double(learningRate) * stepSize
 
-            var accDeltaNew = accDelta[keyPath: kp] * Double(rho)
-            accDeltaNew += (1 - Double(rho)) * (stepSize * stepSize)
-            accDelta[keyPath: kp] =  accDeltaNew
+            var updatesNew = updates[keyPath: kp] * Double(rho)
+            updatesNew += (1 - Double(rho)) * (stepSize * stepSize)
+            updates[keyPath: kp] =  updatesNew
         }
     }
 
