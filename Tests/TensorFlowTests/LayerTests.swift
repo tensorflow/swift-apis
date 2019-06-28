@@ -116,6 +116,14 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(output, expected)
     }
 
+    func testZeroPadding1D() {
+        let input = Tensor<Float>([0.0, 1.0, 2.0])
+        let layer = ZeroPadding1D(2)
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>([0.0, 0.0, 0.0, 1.0, 2.0, 0.0, 0.0])
+        XCTAssertEqual(output, expected)
+    }
+
     func testMaxPool1D() {
         let layer = MaxPool1D<Float>(poolSize: 3, stride: 1, padding: .valid)
         let input = Tensor<Float>([[0, 1, 2, 3, 4], [10, 11, 12, 13, 14]]).expandingShape(at: 2)
@@ -333,6 +341,7 @@ final class LayerTests: XCTestCase {
         ("testConv2DDilation", testConv2DDilation),
         ("testConv3D", testConv3D),
         ("testDepthConv2D", testDepthConv2D),
+        ("testZeroPadding1D", testZeroPadding1D),
         ("testMaxPool1D", testMaxPool1D),
         ("testMaxPool2D", testMaxPool2D),
         ("testMaxPool3D", testMaxPool3D),

@@ -641,3 +641,34 @@ public extension DepthwiseConv2D {
             padding: padding)
     }
 }
+
+/// A layer for adding Zero-padding in the temporal dimension.
+public struct ZeroPadding1D<Scalar: TensorFlowFloatingPoint>: Layer{
+    /// The padding values along the temporal dimension.
+    @noDerivative public let padding: (Int, Int)
+
+    /// Creates a Zero-padding 1D Layer.
+    ///
+    /// - Parameter padding : A tuple of two integers describing how many zeros to be padded at the
+    /// beginning and end of the padding dimension.
+    public init(padding: (Int, Int)) {
+        self.padding = padding
+    }
+
+    /// Creates a Zero-padding 1D Layer.
+    ///
+    /// - Parameter padding : An integer which describes how many zeros to be padded at the beginning
+    /// and end of the padding dimension.
+    public init(padding: Int){
+        self.init(padding: (padding, padding))
+    }
+
+    /// Returns the output obtained from applying the layer to the given input.
+    ///
+    /// - Parameter input: The input to the layer.
+    /// - Returns: The output.
+    @differentiable
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+        return input.padded(forSizes: [(before: padding.0, after: padding.1)])
+    }
+}
