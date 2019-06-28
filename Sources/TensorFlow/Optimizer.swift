@@ -202,14 +202,15 @@ public class AdaMax<Model: Layer>: Optimizer
 
 /// RMSProp optimizer.
 ///
-/// It is recommended to leave the parameters of this optimizer at their default values (except the
-/// learning rate, which can be freely tuned). This optimizer is usually a good choice for recurrent
-/// neural networks.
+/// It is recommended to leave the parameters of this optimizer at their default values (except for 
+/// the learning rate, which can be freely tuned). This optimizer is usually a good choice for 
+/// recurrent neural networks.
 ///
-/// Reference: ["rmsprop: Divide the gradient by a running average of its recent magnitude"](
+/// Reference: ["RMSProp: Divide the gradient by a running average of its recent magnitude"](
 /// http://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf)
-public class RMSProp<Model: Layer>: Optimizer
-    where Model.AllDifferentiableVariables == Model.TangentVector {
+public class RMSProp<Model: Differentiable>: Optimizer
+    where Model.TangentVector: VectorProtocol & PointwiseMultiplicative & ElementaryFunctions,
+          Model.TangentVector.VectorSpaceScalar == Float {
     public typealias Model = Model
     /// The learning rate.
     public var learningRate: Float
@@ -222,7 +223,7 @@ public class RMSProp<Model: Layer>: Optimizer
     /// The step count.
     public var step: Float = 0
     /// The alpha values for all model differentiable variables.
-    public var alpha: Model.AllDifferentiableVariables
+    public var alpha: Model.TangentVector = .zero
 
     public init(
         for model: __shared Model,
@@ -239,38 +240,22 @@ public class RMSProp<Model: Layer>: Optimizer
         self.rho = rho
         self.epsilon = epsilon
         self.decay = decay
-        alpha = model.allDifferentiableVariables
-        for kp in alpha.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
-            alpha[keyPath: kp].resetToZero()
-        }
-        for kp in alpha.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
-            alpha[keyPath: kp].resetToZero()
-        }
+    }
+
+    public func update(_ model: inout Model, along direction: Model.TangentVector) {
+        update(&model.allDifferentiableVariables, along: direction)
     }
 
     // TODO: Deprecate this when `Differentiable.AllDifferentiableVariables` is removed.
-    public func update(_ model: inout Model.AllDifferentiableVariables,
-                       along direction: Model.TangentVector) {
+    public func update(
+        _ model: inout Model.AllDifferentiableVariables,
+        along direction: Model.TangentVector
+    ) {
         step += 1
         let learningRate = self.learningRate * 1 / (1 + decay * Float(step))
-        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
-            alpha[keyPath: kp] =
-                rho * alpha[keyPath: kp] + (1 - rho) * pow(direction[keyPath: kp], 2)
-            model[keyPath: kp] -=
-                learningRate * direction[keyPath: kp] / (sqrt(alpha[keyPath: kp]) + epsilon)
-        }
-        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
-            alpha[keyPath: kp] =
-                Double(rho) * alpha[keyPath: kp] + Double(1 - rho) * pow(direction[keyPath: kp], 2)
-            model[keyPath: kp] -=
-                Double(learningRate) * direction[keyPath: kp] /
-                (sqrt(alpha[keyPath: kp]) + Double(epsilon))
-        }
-    }
-
-    public func update(_ model: inout Model,
-                       along direction: Model.TangentVector) {
-        update(&model.allDifferentiableVariables, along: direction)
+        alpha = alpha * rho + direction .* direction * (1 - rho)
+        let denominator = Model.TangentVector.sqrt(alpha) + epsilon
+        model.move(along: -learningRate * direction ./ denominator)
     }
 }
 
@@ -313,9 +298,15 @@ public class SGD<Model: Differentiable>: Optimizer
         self.nesterov = nesterov
     }
 
+    public func update(_ model: inout Model, along direction: Model.TangentVector) {
+        update(&model.allDifferentiableVariables, along: direction)
+    }
+
     // TODO: Deprecate this when `Differentiable.AllDifferentiableVariables` is removed.
-    public func update(_ model: inout Model.AllDifferentiableVariables,
-                       along direction: Model.TangentVector) {
+    public func update(
+        _ model: inout Model.AllDifferentiableVariables,
+        along direction: Model.TangentVector
+    ) {
         step += 1
         let learningRate = self.learningRate * 1 / (1 + decay * Float(step))
         velocity = momentum * velocity - direction * learningRate
@@ -325,13 +316,7 @@ public class SGD<Model: Differentiable>: Optimizer
             model.move(along: velocity)
         }
     }
-
-    public func update(_ model: inout Model,
-                       along direction: Model.TangentVector) {
-        update(&model.allDifferentiableVariables, along: direction)
-    }
 }
-
 
 /// AdaGrad optimizer.
 ///
