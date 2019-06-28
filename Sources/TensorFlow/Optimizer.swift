@@ -264,41 +264,14 @@ public class SGD<Model: Differentiable>: Optimizer
     }
 }
 
-// MARK: - Manifold optimizers
 
-/// A Riemann manifold stochastic gradient descent (SGD) optimizer.
-public class RiemannSGD<Model: Differentiable>: Optimizer
-    where Model.TangentVector: VectorProtocol,
-          Model.TangentVector.VectorSpaceScalar: FloatingPoint {
-    public typealias Scalar = Model.TangentVector.VectorSpaceScalar
-    /// The learning rate.
-    public var learningRate: Model.TangentVector.VectorSpaceScalar
-
-    public init(learningRate: Model.TangentVector.VectorSpaceScalar) {
-        self.learningRate = learningRate
-    }
-
-    public convenience init(
-        for _: __shared Model,
-        learningRate: Scalar
-    ) {
-        self.init(learningRate: learningRate)
-    }
-
-    public func update(_ model: inout Model.AllDifferentiableVariables,
-                       along direction: Model.TangentVector) {
-        model.move(along: (.zero - direction).scaled(by: learningRate))
-    }
-}
-
-/// AdaGrad optimizer.
+/// Adagrad optimizer.
 ///
 /// Individually adapts the learning rates of all model parameters by scaling them inversely proportional to
 /// the square root of the sum of all the historical squared values of the gradient.
 ///
 /// Reference: ["Adaptive Subgradient Methods for Online Learning and Stochastic Optimization"](
 ///  http://www.jmlr.org/papers/volume12/duchi11a/duchi11a.pdf)
-///
 public class AdaGrad<Model: Layer>: Optimizer
     where Model.AllDifferentiableVariables == Model.TangentVector {
     public typealias Model = Model
@@ -356,17 +329,14 @@ public class AdaGrad<Model: Layer>: Optimizer
     }
 }
 
-/// ADADELTA optimizer.
+/// Adadelta optimizer.
 ///
-/// ADADELTA is a more robust extension of AdaGrad that adapts learning rates based on a moving
-/// window of gradient updates, instead of accumulating all past gradients. This way, Adadelta 
-/// continues learning even when many updates have been done. Compared to AdaGrad, in the original
-/// version of ADADELTA you don't have to set an initial learning rate. In this version, initial
-/// learning rate and decay factor can be set, as in most other optimizers.
+/// Adadelta is a more robust extension of Adagrad. Adadelta adapts learning rates based on a moving
+/// window of gradient updates rather accumulating all past gradients. Adadelta can continue to
+/// learn even after many update steps.
 /// 
 /// Reference: ["ADADELTA: An Adaptive Learning Rate Method"](
 /// https://arxiv.org/abs/1212.5701)
-///
 public class AdaDelta<Model: Layer>: Optimizer
     where Model.AllDifferentiableVariables == Model.TangentVector {
     public typealias Model = Model
@@ -449,5 +419,32 @@ public class AdaDelta<Model: Layer>: Optimizer
     public func update(_ model: inout Model,
                        along direction: Model.TangentVector) {
         update(&model.allDifferentiableVariables, along: direction)
+    }
+}
+
+// MARK: - Manifold optimizers
+
+/// A Riemann manifold stochastic gradient descent (SGD) optimizer.
+public class RiemannSGD<Model: Differentiable>: Optimizer
+    where Model.TangentVector: VectorProtocol,
+          Model.TangentVector.VectorSpaceScalar: FloatingPoint {
+    public typealias Scalar = Model.TangentVector.VectorSpaceScalar
+    /// The learning rate.
+    public var learningRate: Model.TangentVector.VectorSpaceScalar
+
+    public init(learningRate: Model.TangentVector.VectorSpaceScalar) {
+        self.learningRate = learningRate
+    }
+
+    public convenience init(
+        for _: __shared Model,
+        learningRate: Scalar
+    ) {
+        self.init(learningRate: learningRate)
+    }
+
+    public func update(_ model: inout Model.AllDifferentiableVariables,
+                       along direction: Model.TangentVector) {
+        model.move(along: (.zero - direction).scaled(by: learningRate))
     }
 }
