@@ -358,12 +358,11 @@ public class AdaGrad<Model: Layer>: Optimizer
 
 /// ADADELTA optimizer.
 ///
-/// ADADELTA is a more robust extension of AdaGrad that adapts learning rates
-/// based on a moving window of gradient updates, instead of accumulating all past gradients.
-/// This way, Adadelta continues learning even when many updates have been done.
-/// Compared to AdaGrad, in the original version of ADADELTA you don't have to set
-/// an initial learning rate. In this version, initial learning rate and decay factor can be set,
-/// as in most other optimizers.
+/// ADADELTA is a more robust extension of AdaGrad that adapts learning rates based on a moving
+/// window of gradient updates, instead of accumulating all past gradients. This way, Adadelta 
+/// continues learning even when many updates have been done. Compared to AdaGrad, in the original
+/// version of ADADELTA you don't have to set an initial learning rate. In this version, initial
+/// learning rate and decay factor can be set, as in most other optimizers.
 /// 
 /// Reference: ["ADADELTA: An Adaptive Learning Rate Method"](
 /// https://arxiv.org/abs/1212.5701)
