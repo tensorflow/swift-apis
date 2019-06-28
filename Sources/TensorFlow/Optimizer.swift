@@ -356,12 +356,14 @@ public class AdaGrad<Model: Layer>: Optimizer
     }
 }
 
-/// Adadelta Optimizer
+/// ADADELTA optimizer.
 ///
-/// It is a method that uses the magnitude of recent gradients 
-/// and steps to obtain an adaptive step rate. 
-/// An exponential moving average over the gradients and steps is kept;
-/// a scale of the learning rate is then obtained by their ration.
+/// ADADELTA is a more robust extension of AdaGrad that adapts learning rates
+/// based on a moving window of gradient updates, instead of accumulating all past gradients.
+/// This way, Adadelta continues learning even when many updates have been done.
+/// Compared to AdaGrad, in the original version of ADADELTA you don't have to set
+/// an initial learning rate. In this version, initial learning rate and decay factor can be set,
+/// as in most other optimizers.
 /// 
 /// Reference: ["ADADELTA: An Adaptive Learning Rate Method"](
 /// https://arxiv.org/abs/1212.5701)
@@ -418,15 +420,15 @@ public class AdaDelta<Model: Layer>: Optimizer
     public func update(_ model: inout Model.AllDifferentiableVariables,
                        along direction: Model.AllDifferentiableVariables) {
         step += 1
-        let learningRate = self.learningRate * 1 / (1 + decay * Float(step))
+        let learningRate = self.learningRate / (1 + decay * Float(step))
         
-        // Update Float & Double Tensor variables.
+        // Update `Tensor<Float>` and `Tensor<Double>` variables.
         for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
             averageSquared[keyPath: kp] *= rho
             averageSquared[keyPath: kp] +=
-                    (1 - rho) * (direction[keyPath: kp] * direction[keyPath: kp])
+                (1 - rho) * (direction[keyPath: kp] * direction[keyPath: kp])
             var stepSize = direction[keyPath: kp] *
-                    sqrt(accumulatedDelta[keyPath: kp] + epsilon)
+                sqrt(accumulatedDelta[keyPath: kp] + epsilon)
             stepSize /= sqrt(averageSquared[keyPath: kp] + epsilon)
             model[keyPath: kp] -= learningRate * stepSize
             accumulatedDelta[keyPath: kp] *= rho
@@ -435,9 +437,9 @@ public class AdaDelta<Model: Layer>: Optimizer
         for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
             averageSquared[keyPath: kp] *= Double(rho)
             averageSquared[keyPath: kp] +=
-                    (1 - Double(rho)) * (direction[keyPath: kp] * direction[keyPath: kp])
+                (1 - Double(rho)) * (direction[keyPath: kp] * direction[keyPath: kp])
             var stepSize = direction[keyPath: kp] *
-                    sqrt(accumulatedDelta[keyPath: kp] + Double(epsilon))
+                sqrt(accumulatedDelta[keyPath: kp] + Double(epsilon))
             stepSize /= sqrt(averageSquared[keyPath: kp] + Double(epsilon))
             model[keyPath: kp] -= Double(learningRate) * stepSize
             accumulatedDelta[keyPath: kp] *= Double(rho)
