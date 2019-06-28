@@ -25,6 +25,14 @@ public struct Cropping1D<Scalar: TensorFlowFloatingPoint>: Layer {
         self.cropping = cropping
     }
 
+    /// Creates a cropping layer to trim the temporal dimension.
+    ///
+    /// - Parameter cropping: An integer describing how many units should be symmetrically trimmed
+    ///   off the beginning and end of the cropping dimension. i.e. `(cropping, cropping)`.
+    public init(cropping: Int = 1) {
+        self.cropping = (cropping, cropping)
+    }
+
     /// Returns the cropped input tensor according to the `cropping` dimensions specified
     /// at initialization.
     ///
