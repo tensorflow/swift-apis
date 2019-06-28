@@ -38,7 +38,7 @@ final class LayerTests: XCTestCase {
         // Input shapes.
         let inputHeight = 2
         let inputWidth = 5
-        
+
         let filter = Tensor<Float>(shape: [width, inputChannels, outputChannels],
                                    scalars: [2, 3, 4, 1, 2, 3])
         let bias = Tensor<Float>([0])
@@ -256,14 +256,14 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(output.shape, expected)
     }
 
-    func testEmbedding() {       
-        var layer = Embedding<Float>(vocabularySize: 3, embeddingSize: 5)       
+    func testEmbedding() {
+        var layer = Embedding<Float>(vocabularySize: 3, embeddingSize: 5)
         var data = Tensor<Int32>(shape: [2, 3], scalars: [0, 1, 2, 1, 2, 2])
         var input = EmbeddingInput(indices: data)
         var output = layer.inferring(from: input)
         let expectedShape = TensorShape([2, 3, 5])
         XCTAssertEqual(output.shape, expectedShape)
-    
+
         let pretrained = Tensor<Float>(shape:[2, 2], scalars: [0.4, 0.3, 0.2, 0.1])
         layer = Embedding<Float>(embeddings: pretrained)
         data = Tensor<Int32>(shape: [2, 2], scalars: [0, 1, 1, 1])
@@ -318,6 +318,14 @@ final class LayerTests: XCTestCase {
         // XCTAssertEqual(𝛁rnn.cell.bias, [  0.2496884,  0.66947335,   0.7978788, -0.22378457])
     }
 
+    func testFunction() {
+        let tanhLayer = Function<Tensor<Float>, Tensor<Float>>(tanh)
+        let input = Tensor(shape: [5, 1], scalars: (0..<5).map(Float.init))
+        let output = tanhLayer.inferring(from: input)
+        let expected = Tensor<Float>([[0.0], [0.7615942], [0.9640276], [0.9950547], [0.9993292]])
+        XCTAssertEqual(output, expected)
+    }
+
     static var allTests = [
         ("testConv1D", testConv1D),
         ("testConv1DDilation", testConv1DDilation),
@@ -344,6 +352,7 @@ final class LayerTests: XCTestCase {
         ("testFlatten", testFlatten),
         ("testEmbedding", testEmbedding),
         ("testSimpleRNNCell", testSimpleRNNCell),
-        ("testRNN", testRNN)
+        ("testRNN", testRNN),
+        ("testFunction", testFunction)
     ]
 }

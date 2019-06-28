@@ -223,3 +223,19 @@ public extension Dense {
                   activation: activation)
     }
 }
+
+/// A layer that encloses a custom differentiable function.
+public struct Function<Input: Differentiable, Output: Differentiable>: Layer {
+    public typealias Body = @differentiable (Input) -> Output
+
+    @noDerivative public let body: Body
+
+    public init(_ body: @escaping Body) {
+        self.body = body
+    }
+
+    @differentiable
+    public func callAsFunction(_ input: Input) -> Output {
+        return body(input)
+    }
+}
