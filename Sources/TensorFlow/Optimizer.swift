@@ -371,7 +371,8 @@ public class AdaGrad<Model: Differentiable>: Optimizer
 /// ADADELTA optimizer.
 ///
 /// ADADELTA is a more robust extension of AdaGrad. ADADELTA adapts learning rates based on a moving
-/// window of gradient updates rather than by accumulating all past gradient norms.
+/// window of gradient updates rather than by accumulating all past gradient norms. It can thus 
+/// adapt faster to changing dynamics of the optimization problem space.
 /// 
 /// Reference: ["ADADELTA: An Adaptive Learning Rate Method"](https://arxiv.org/abs/1212.5701)
 public class AdaDelta<Model: Differentiable>: Optimizer
