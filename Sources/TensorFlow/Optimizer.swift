@@ -80,18 +80,7 @@ public class Adam<Model: Differentiable>: Optimizer
     }
 
     public func update(_ model: inout Model, along direction: Model.TangentVector) {
-        step += 1
-        let learningRate = self.learningRate * 1 / (1 + decay * Float(step))
-        // Note: `stepSize` and `secondMoments` are split into two lines to avoid the "compiler is 
-        // unable to type-check this expression in reasonable time" error.
-        var stepSize = learningRate * sqrt(1 - pow(beta2, Float(step)))
-        stepSize = stepSize / (1 - pow(beta1, Float(step)))
-        firstMoments = firstMoments * beta1 + direction * (1 - beta1)
-        secondMoments = secondMoments * beta2
-        secondMoments += direction .* direction * (1 - beta2)
-        let denominator = Model.TangentVector.sqrt(secondMoments) + epsilon
-        // TODO: Update this when `./` becomes available.
-        model.move(along: -stepSize * firstMoments .* denominator.reciprocal)
+        update(&model.allDifferentiableVariables, along: direction)
     }
 
     // TODO: Deprecate this when `Differentiable.AllDifferentiableVariables` is removed.
