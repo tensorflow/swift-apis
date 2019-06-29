@@ -550,6 +550,21 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
 }
 
 public extension Tensor where Scalar: TensorFlowFloatingPoint {
+    /// Initializer that generates an orthogonal matrix or tensor. 
+    ///
+    /// If the shape of the tensor to initialize is two-dimensional, it is initialized with an 
+    /// orthogonal matrix obtained from the QR decomposition of a matrix of random numbers drawn 
+    /// from a normal distribution. If the matrix has fewer rows than columns then the output will 
+    /// have orthogonal rows. Otherwise, the output will have orthogonal columns.
+    /// 
+    /// If the shape of the tensor to initialize is more than two-dimensional, a matrix of shape 
+    /// (shape[0] * ... * shape[n - 2], shape[n - 1]) is initialized, where n is the length of the 
+    /// shape vector. The matrix is subsequently reshaped to give a tensor of the desired shape.
+    ///
+    /// - Parameters:
+    ///   - shape: The dimensions of the tensor.
+    ///   - gain: A multiplicative factor to apply to the orthogonal tensor.
+    ///
     init(
         orthogonal shape: TensorShape,
         gain: Scalar = 1,
@@ -562,7 +577,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         let normal = Tensor(randomNormal: flatShape, seed: seed)
         var (q, r) = Raw.qr(normal, fullMatrices: false)
         let d = Raw.diagPart(r)
-        q *= Raw.sign(d)
+        q *= sign(d)
         if rowCount < columnCount {
             q = q.transposed()
         } 
