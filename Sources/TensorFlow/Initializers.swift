@@ -548,3 +548,24 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         self = Tensor.glorot(fromStandardNormalScaledBy: normal, shape: shape)
     }
 }
+
+public extension Tensor where Scalar: TensorFlowFloatingPoint {
+    init(
+        orthogonal shape: TensorShape,
+        gain: Scalar = 1,
+        seed: (Int32, Int32) = (Int32.random(in: Int32.min..<Int32.max),
+                                Int32.random(in: Int32.min..<Int32.max))
+    ) {
+        let rowCount = shape[0 ..< shape.rank - 1].dimensions.reduce(1, *)
+        let columnCount = shape[shape.rank - 1]
+        let flatShape: TensorShape = rowCount < columnCount ? [columnCount, rowCount] : [rowCount, columnCount]
+        let normal = Tensor(randomNormal: flatShape, seed: seed)
+        var (q, r) = Raw.qr(normal, fullMatrices: false)
+        let d = Raw.diagPart(r)
+        q *= Raw.sign(d)
+        if rowCount < columnCount {
+            q = q.transposed()
+        } 
+        self = q.reshaped(to: shape) * gain 
+    }
+}

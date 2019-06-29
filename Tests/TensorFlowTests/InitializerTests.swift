@@ -71,6 +71,24 @@ final class InitializerTests: XCTestCase {
         XCTAssertEqual(ShapedArray(shape: [2, 2], scalars: [1, 0, 1, 0]), i8s.array)
     }
 
+    func testOrthogonalShapesValues() {
+        for shape in [[10, 10], [10, 9, 8], [100, 5, 5], [50, 40], [3, 3, 32, 64]]{
+            // Check the shape
+            var t = Tensor<Float>(orthogonal: TensorShape(shape))
+            XCTAssertEqual(shape, t.shape.dimensions)
+        
+            // Check orthogonality by computing the inner product
+            t = t.reshaped(to: [t.shape.dimensions[0 ..< t.rank-1].reduce(1, *), t.shape[t.rank - 1]])
+            if t.shape[0] > t.shape[1] {
+                let eye = Raw.diag(diagonal: Tensor<Float>(ones: [t.shape[1]]))
+                XCTAssertEqual(eye, round(matmul(t.transposed(), t)))
+            } else {
+                let eye = Raw.diag(diagonal: Tensor<Float>(ones: [t.shape[0]]))
+                XCTAssertEqual(eye, round(matmul(t, t.transposed())))
+            }
+        }
+    }
+
     static var allTests = [
         ("testInitializers", testInitializers),
         ("testFactoryInitializers", testFactoryInitializers),
@@ -78,6 +96,7 @@ final class InitializerTests: XCTestCase {
         ("testScalarToTensorConversion", testScalarToTensorConversion),
         ("testArrayConversion", testArrayConversion),
         ("testDataTypeCast", testDataTypeCast),
-        ("testBoolToNumericCast", testBoolToNumericCast)
+        ("testBoolToNumericCast", testBoolToNumericCast),
+        ("testOrthogonalShapesValues", testOrthogonalShapesValues)
     ]
 }
