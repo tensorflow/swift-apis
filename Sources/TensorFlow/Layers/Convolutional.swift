@@ -642,23 +642,23 @@ public extension DepthwiseConv2D {
     }
 }
 
-/// A layer for adding Zero-padding in the temporal dimension.
+/// A layer for adding zero-padding in the temporal dimension.
 public struct ZeroPadding1D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The padding values along the temporal dimension.
     @noDerivative public let padding: (Int, Int)
 
-    /// Creates a Zero-padding 1D Layer.
+    /// Creates a zero-padding 1D Layer.
     ///
-    /// - Parameter padding : A tuple of two integers describing how many zeros to be padded at the
-    /// beginning and end of the padding dimension.
+    /// - Parameter padding: A tuple of two integers describing how many zeros to be padded at the
+    ///   beginning and end of the padding dimension.
     public init(padding: (Int, Int)) {
         self.padding = padding
     }
 
-    /// Creates a Zero-padding 1D Layer.
+    /// Creates a zero-padding 1D Layer.
     ///
-    /// - Parameter padding : An integer which describes how many zeros to be padded at the beginning
-    /// and end of the padding dimension.
+    /// - Parameter padding: An integer which describes how many zeros to be padded at the beginning
+    ///   and end of the padding dimension.
     public init(padding: Int) {
         self.init(padding: (padding, padding))
     }
@@ -673,23 +673,23 @@ public struct ZeroPadding1D<Scalar: TensorFlowFloatingPoint>: Layer {
     }
 }
 
-/// A layer for adding Zero-padding in the spatial dimensions.
+/// A layer for adding zero-padding in the spatial dimensions.
 public struct ZeroPadding2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The padding values along the spatial dimensions.
     @noDerivative public let padding: ((Int, Int), (Int, Int))
 
-    /// Creates a Zero-padding 2D Layer.
+    /// Creates a zero-padding 2D Layer.
     ///
-    /// - Parameter padding : A tuple of 2 tuples of two integers describing how many zeros to
-    /// be padded at the beginning and end of each padding dimensions.
+    /// - Parameter padding: A tuple of 2 tuples of two integers describing how many zeros to
+    ///   be padded at the beginning and end of each padding dimensions.
     public init(padding: ((Int, Int), (Int, Int))) {
         self.padding = padding
     }
 
-    /// Creates a Zero-padding 2D Layer.
+    /// Creates a zero-padding 2D Layer.
     ///
-    /// - Parameter padding : An tuple of 2 integers which describes how many zeros to be padded
-    /// at the beginning and end of each padding dimensions.
+    /// - Parameter padding: Tuple of 2 integers that describes how many zeros to be padded
+    ///   at the beginning and end of each padding dimensions.
     public init(padding: (Int, Int)) {
         let (height, width) = padding
         self.init(padding: ((height, height), (width, width)))
@@ -705,23 +705,23 @@ public struct ZeroPadding2D<Scalar: TensorFlowFloatingPoint>: Layer {
     }
 }
 
-/// A layer for adding Zero-padding in the spatial/spatio-temporal dimensions.
+/// A layer for adding zero-padding in the spatial/spatio-temporal dimensions.
 public struct ZeroPadding3D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The padding values along the spatial/spatio-temporal dimensions.
     @noDerivative public let padding: ((Int, Int), (Int, Int), (Int, Int))
 
-    /// Creates a Zero-padding 3D Layer.
+    /// Creates a zero-padding 3D Layer.
     ///
-    /// - Parameter padding : A tuple of 3 tuples of two integers describing how many zeros to
-    /// be padded at the beginning and end of each padding dimensions.
+    /// - Parameter padding: A tuple of 3 tuples of two integers describing how many zeros to
+    ///   be padded at the beginning and end of each padding dimensions.
     public init(padding: ((Int, Int), (Int, Int), (Int, Int))) {
         self.padding = padding
     }
 
-    /// Creates a Zero-padding 3D Layer.
+    /// Creates a zero-padding 3D Layer.
     ///
-    /// - Parameter padding : An tuple of 3 integers which describes how many zeros to be padded
-    /// at the beginning and end of each padding dimensions.
+    /// - Parameter padding: Tuple of 3 integers that describes how many zeros to be padded
+    ///   at the beginning and end of each padding dimensions.
     public init(padding: (Int, Int, Int)) {
         let (height, width, depth) = padding
         self.init(padding: ((height, height), (width, width), (depth, depth)))
