@@ -81,10 +81,10 @@ final class InitializerTests: XCTestCase {
             t = t.reshaped(to: [t.shape.dimensions[0 ..< t.rank-1].reduce(1, *), t.shape[t.rank - 1]])
             if t.shape[0] > t.shape[1] {
                 let eye = Raw.diag(diagonal: Tensor<Float>(ones: [t.shape[1]]))
-                XCTAssertEqual(eye, round(matmul(t.transposed(), t)))
+                assertEqual(eye, matmul(t.transposed(), t), accuracy: 1e-5)
             } else {
                 let eye = Raw.diag(diagonal: Tensor<Float>(ones: [t.shape[0]]))
-                XCTAssertEqual(eye, round(matmul(t, t.transposed())))
+                assertEqual(eye, matmul(t, t.transposed()), accuracy: 1e-5)
             }
         }
     }
