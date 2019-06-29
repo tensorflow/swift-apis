@@ -238,23 +238,18 @@ public class Adam<Model: Differentiable>: Optimizer
         _ model: inout Model.AllDifferentiableVariables,
         along direction: Model.TangentVector
     ) {
-        step += 1
-        let learningRate = self.learningRate * 1 / (1 + decay * Float(step))
+        self.step += 1
+        let step = Float(self.step)
+        let learningRate = self.learningRate * 1 / (1 + decay * step)
         // Note: `stepSize` and `secondMoments` are split into two lines to avoid the "compiler is 
         // unable to type-check this expression in reasonable time" error.
-        var stepSize = learningRate * sqrt(1 - pow(beta2, Float(step)))
-        stepSize = stepSize / (1 - pow(beta1, Float(step)))
+        var stepSize = learningRate * sqrt(1 - pow(beta2, step))
+        stepSize = stepSize / (1 - pow(beta1, step))
         firstMoments = firstMoments * beta1 + direction * (1 - beta1)
         secondMoments = secondMoments * beta2
         secondMoments += direction .* direction * (1 - beta2)
         let denominator = Model.TangentVector.sqrt(secondMoments) + epsilon
         model.move(along: -stepSize * firstMoments ./ denominator)
-    }
-}
-
-fileprivate extension Tensor where Scalar: Numeric {
-    mutating func resetToZero() {
-        self = Tensor(zeros: shape)
     }
 }
 
@@ -264,8 +259,11 @@ fileprivate extension Tensor where Scalar: Numeric {
 ///
 /// Reference: Section 7 of ["Adam - A Method for Stochastic Optimization"](
 /// https://arxiv.org/abs/1412.6980v8)
-public class AdaMax<Model: Layer>: Optimizer
-    where Model.AllDifferentiableVariables == Model.TangentVector {
+public class AdaMax<Model: Differentiable & KeyPathIterable>: Optimizer
+    where Model.TangentVector: VectorProtocol & PointwiseMultiplicative & ElementaryFunctions,
+          Model.TangentVector.VectorSpaceScalar == Float,
+          Model.AllDifferentiableVariables: KeyPathIterable,
+          Model.AllDifferentiableVariables == Model.TangentVector {
     public typealias Model = Model
     /// The learning rate.
     public var learningRate: Float
@@ -280,9 +278,9 @@ public class AdaMax<Model: Layer>: Optimizer
     /// The step count.
     public var step: Int = 0
     /// The first moments of the weights.
-    public var firstMoments: Model.TangentVector
+    public var firstMoments: Model.TangentVector = .zero
     /// The exponentially weighted infinity norm of the weights.
-    public var infinityNorm: Model.TangentVector
+    public var infinityNorm: Model.TangentVector = .zero
 
     /// Note: The default parameters follow those provided in the paper.
     public init(
@@ -303,57 +301,38 @@ public class AdaMax<Model: Layer>: Optimizer
         self.beta2 = beta2
         self.epsilon = epsilon
         self.decay = decay
+    }
 
-        // Initialize first moments and infinity norm to be zeros of the same shape.
-        // We can't use `Model.AllDifferentiableVariables.zero` due to the
-        // interaction between Key Paths and Differentiable Arrays.
-        firstMoments = model.allDifferentiableVariables
-        infinityNorm = model.allDifferentiableVariables
-        for kp in firstMoments.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
-            firstMoments[keyPath: kp].resetToZero()
-            infinityNorm[keyPath: kp].resetToZero()
-        }
-        for kp in firstMoments.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
-            firstMoments[keyPath: kp].resetToZero()
-            infinityNorm[keyPath: kp].resetToZero()
-        }
+    public func update(_ model: inout Model, along direction: Model.TangentVector) {
+        update(&model.allDifferentiableVariables, along: direction)
     }
 
     // TODO: Deprecate this when `Differentiable.AllDifferentiableVariables` is removed.
-    public func update(_ model: inout Model.AllDifferentiableVariables,
-                       along direction: Model.AllDifferentiableVariables) {
-        step += 1
-        let learningRate = self.learningRate * 1 / (1 + decay * Float(step))
+    public func update(
+        _ model: inout Model.AllDifferentiableVariables,
+        along direction: Model.TangentVector
+    ) {
+        self.step += 1
+        let step = Float(self.step)
+        let learningRate = self.learningRate * 1 / (1 + decay * step)
         // Note: `stepSize` is split into two lines to avoid the "compiler is unable to type-check
         // this expression in reasonable time" error.
-        var stepSize = learningRate * sqrt(1 - pow(beta2, Float(step)))
-        stepSize = stepSize / (1 - pow(beta1, Float(step)))
-        // Update `Tensor<Float>` & `Tensor<Double>` variables.
+        var stepSize = learningRate * sqrt(1 - pow(beta2, step))
+        stepSize = stepSize / (1 - pow(beta1, step))
+        firstMoments = firstMoments * beta1 + direction * (1 - beta1)
+
+        // Update `infinityNorm` using a key path approach because `max(_:_:)` cannot be 
+        // currently applied in a simpler manner.
         for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
-            firstMoments[keyPath: kp] =
-                (beta1 * firstMoments[keyPath: kp]) + (1 - beta1) * direction[keyPath: kp]
-            infinityNorm[keyPath: kp] =
-                max(beta2 * infinityNorm[keyPath: kp], abs(direction[keyPath: kp]))
-            let biasCorrection = stepSize / (1 - pow(beta1, Float(step)))
-            model[keyPath: kp] -=
-                biasCorrection * firstMoments[keyPath: kp]
-                / (infinityNorm[keyPath: kp] + Float(self.epsilon))
+            infinityNorm[keyPath: kp] = max(
+                beta2 * infinityNorm[keyPath: kp], abs(direction[keyPath: kp]))
         }
         for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
-            firstMoments[keyPath: kp] =
-                Double(beta1) * firstMoments[keyPath: kp]
-                + Double(1 - beta2) * direction[keyPath: kp]
-            infinityNorm[keyPath: kp] =
-                max(Double(beta2) * infinityNorm[keyPath: kp], abs(direction[keyPath: kp]))
-            let biasCorrection = Double(stepSize) / Double(1 - pow(beta1, Float(step)))
-            model[keyPath: kp] -=
-                biasCorrection * firstMoments[keyPath: kp]
-                / (infinityNorm[keyPath: kp] + Double(self.epsilon))
+            infinityNorm[keyPath: kp] = max(
+                Double(beta2) * infinityNorm[keyPath: kp], abs(direction[keyPath: kp]))
         }
-    }
 
-    public func update(_ model: inout Model,
-                       along direction: Model.TangentVector) {
-        update(&model.allDifferentiableVariables, along: direction)
+        let denominator = infinityNorm + epsilon
+        model.move(along: -stepSize * firstMoments ./ denominator)
     }
 }
