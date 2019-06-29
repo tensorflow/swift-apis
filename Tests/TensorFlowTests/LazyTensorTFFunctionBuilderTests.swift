@@ -212,7 +212,7 @@ final class LazyTensorTFFunctionBuilderTests : XCTestCase {
         _ input: Tensor<T>
     ) -> Tensor<T> {
         let concreteHandle = input.handle.handle._tfeTensorHandle
-        let materializedHandle = LazyTensor(_materialized: concreteHandle)
+        let materializedHandle = LazyTensorHandle(_materialized: concreteHandle)
         return Tensor(handle: TensorHandle<T>(handle: materializedHandle))
     }
 
@@ -221,7 +221,7 @@ final class LazyTensorTFFunctionBuilderTests : XCTestCase {
         _ name: String? = nil
     ) -> TFFunction? {
         let tensor = input.handle.handle
-        guard let lazyTensor = tensor as? LazyTensor else {
+        guard let lazyTensor = tensor as? LazyTensorHandle else {
             XCTFail("Trying to get TFFunction for a non-lazy tensor.")
             return nil
         }

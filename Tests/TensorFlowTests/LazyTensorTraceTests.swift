@@ -182,7 +182,7 @@ final class LazyTensorTraceTests: XCTestCase {
         _ input: Tensor<T>
     ) -> LazyTensorTrace? {
         let tensor = input.handle.handle
-        guard let lazyTensor = tensor as? LazyTensor else {
+        guard let lazyTensor = tensor as? LazyTensorHandle else {
             XCTFail("Trying to get lazy trace for a non-lazy tensor.")
             return nil
         }

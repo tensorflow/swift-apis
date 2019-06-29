@@ -15,7 +15,7 @@
 import CTensorFlow
 
 @usableFromInline
-class LazyTensor: _AnyTensorHandle {
+class LazyTensorHandle: _AnyTensorHandle {
     enum Handle {
         /// Bool indicates if this concrete TFETensorhandle was a result of
         /// materialization.
@@ -50,19 +50,19 @@ class LazyTensor: _AnyTensorHandle {
         precondition(
             index < op.outputCount, "Symbolic Tensor Index is out-of-bounds")
         handle = Handle.symbolic(op, index: index, isLive: false)
-        LazyTensor.incrementRefCount(op, isLive: false)
+        LazyTensorHandle.incrementRefCount(op, isLive: false)
     }
 
     init(_lazyLive op: LazyTensorOperation, index: Int) {
         precondition(
             index < op.outputCount, "Symbolic Tensor Index is out-of-bounds")
         handle = Handle.symbolic(op, index: index, isLive: true)
-        LazyTensor.incrementRefCount(op, isLive: true)
+        LazyTensorHandle.incrementRefCount(op, isLive: true)
     }
 
     deinit {
         if case let .symbolic(op, _, isLive) = handle {
-            LazyTensor.decrementRefCount(op, isLive: isLive)
+            LazyTensorHandle.decrementRefCount(op, isLive: isLive)
         }
     }
 
@@ -131,13 +131,13 @@ class LazyTensor: _AnyTensorHandle {
 }
 
 extension _AnyTensorHandle {
-    /// Returns a concrete `LazyTensor` with an additional constraint that the
-    /// underlying concrete `LazyTensor` should be marked to be promoted as an
+    /// Returns a concrete `LazyTensorHandle` with an additional constraint that the
+    /// underlying concrete `LazyTensorHandle` should be marked to be promoted as an
     /// input when used in an extracted trace.  This provides a **temporary**
     /// mechanism to promote a concrete lazy tensor to an input in extracted
     /// traces. (Note that this may trigger materialization.)
-    var _concreteInputLazyTensor: LazyTensor {
-        LazyTensor(_materialized: self._tfeTensorHandle)
+    var _concreteInputLazyTensor: LazyTensorHandle {
+        LazyTensorHandle(_materialized: self._tfeTensorHandle)
     }
 }
 
@@ -182,11 +182,11 @@ extension ResourceHandle {
 }
 
 class LazyTensorOperation: TensorOperation {
-     typealias TensorValueHandle = LazyTensor
+     typealias TensorValueHandle = LazyTensorHandle
 
     enum Input {
-        case single(LazyTensor)
-        case list([LazyTensor])
+        case single(LazyTensorHandle)
+        case list([LazyTensorHandle])
     }
 
     enum Attribute {
@@ -269,13 +269,13 @@ class LazyTensorOperation: TensorOperation {
         LazyTensorOperation.liveOperations -= 1
     }
 
-    func evaluate() -> [LazyTensor] {
+    func evaluate() -> [LazyTensorHandle] {
         return (0..<outputCount).map {
-            LazyTensor(_lazyLive: self, index: $0)
+            LazyTensorHandle(_lazyLive: self, index: $0)
         }
     }
 
-    func addInput(_ input : LazyTensor) {
+    func addInput(_ input : LazyTensorHandle) {
         inputs.append(Input.single(input))
     }
 
@@ -324,19 +324,19 @@ class LazyTensorOperation: TensorOperation {
 }
 
 extension LazyTensorOperation: TFTensorOperation {
-    private func lazyTensorHandle(_ input: _AnyTensorHandle) -> LazyTensor {
-        if let lazyHandle = input as? LazyTensor {
-            if case let LazyTensor.Handle.symbolic(
+    private func lazyTensorHandle(_ input: _AnyTensorHandle) -> LazyTensorHandle {
+        if let lazyHandle = input as? LazyTensorHandle {
+            if case let LazyTensorHandle.Handle.symbolic(
                 op, index, true) = lazyHandle.handle {
-                // We turn off liveness for the constructed LazyTensor,
+                // We turn off liveness for the constructed LazyTensorHandle,
                 // because it is only referenced internally as a part
                 // of the LazyTensorOperation input.
-                return LazyTensor(_lazy: op, index: index)
+                return LazyTensorHandle(_lazy: op, index: index)
             } else {
                 return lazyHandle
             }
         } else {
-            return LazyTensor(input._tfeTensorHandle)
+            return LazyTensorHandle(input._tfeTensorHandle)
         }
     }
 
@@ -775,14 +775,14 @@ extension LazyTensorOperation.Attribute: CustomStringConvertible {
     }
 }
 
-extension LazyTensor: CustomStringConvertible {
+extension LazyTensorHandle: CustomStringConvertible {
     public var description: String {
         switch self.handle {
-        case LazyTensor.Handle.concrete(let h, let isMaterialized):
+        case .concrete(let h, let isMaterialized):
             return isMaterialized
                 ? "\(h.valueDescription)*"
                 : "\(h.valueDescription)"
-        case LazyTensor.Handle.symbolic(let op, let index, let isLive):
+        case .symbolic(let op, let index, let isLive):
             return op.outputName(at: index) + (isLive ? "*" : "")
         }
     }
@@ -838,13 +838,13 @@ extension LazyTensorOperation {
     /// associated `LazyTensorOperation` has been materialized.
     private func maybeMaterializeInputs() {
         /// If `lazyTensor` is symbolic and the associated `LazyTensorOperation`
-        /// has been materialized, return the corresponding concrete `LazyTensor`.
+        /// has been materialized, return the corresponding concrete `LazyTensorHandle`.
         /// Otherwise, return `lazyTensor` untouched.
-        func materializedAsNeeded(lazyTensor: LazyTensor) -> LazyTensor {
+        func materializedAsNeeded(lazyTensor: LazyTensorHandle) -> LazyTensorHandle {
             let handle = lazyTensor.handle
-            if case let LazyTensor.Handle.symbolic(lazyOp, index, _) = handle,
+            if case let .symbolic(lazyOp, index, _) = handle,
                 let outputs = lazyOp.outputs {
-                return LazyTensor(_materialized: outputs[index])
+                return LazyTensorHandle(_materialized: outputs[index])
             }
             return lazyTensor
         }
@@ -883,6 +883,6 @@ extension LazyTensorOperation {
 
         // On all the live operations rewrite the inputs so that we drop references
         // to the LazyTensorOperations.
-        LazyTensor.forEachOperation { $0.maybeMaterializeInputs() }
+        LazyTensorHandle.forEachOperation { $0.maybeMaterializeInputs() }
     }
 }

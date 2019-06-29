@@ -205,10 +205,10 @@ class TFGraph {
     }
 
     private func makeTFOutput(
-        handle: LazyTensor,
+        handle: LazyTensorHandle,
         nodesCache: [ObjectIdentifier: CTFOperation?]
     ) -> TF_Output {
-        if case let LazyTensor.Handle.symbolic(lazyOp, index, _) = handle.handle {
+        if case let .symbolic(lazyOp, index, _) = handle.handle {
             let id = ObjectIdentifier(lazyOp)
             return TF_Output(oper: nodesCache[id]!, index: Int32(index))
         }

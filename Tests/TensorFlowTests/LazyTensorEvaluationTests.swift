@@ -124,7 +124,7 @@ final class LazyTensorEvaluationTests: XCTestCase {
     }
 
     private func isMaterialized(_ tensor: _AnyTensorHandle) -> Bool {
-        guard let lazyTensor = tensor as? LazyTensor else { return true }
+        guard let lazyTensor = tensor as? LazyTensorHandle else { return true }
         switch lazyTensor.handle {
         case .symbolic(let op, _, _): return op.outputs != nil
         default: return false
