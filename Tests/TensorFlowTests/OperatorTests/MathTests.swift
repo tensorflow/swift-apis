@@ -356,6 +356,48 @@ final class MathOperatorTests: XCTestCase {
         XCTAssertEqual(Double(prediction.scalars[0]), 0.816997, accuracy: 0.0001)
     }
 
+    func testQRApproximation() {
+        let shapes = [[5, 8], [3, 4, 4], [3, 3, 32, 64]]
+        for shape in shapes {
+            let a = Tensor<Float>(randomNormal: TensorShape(shape))
+            let (q, r) = a.qr()
+            let aReconstituted = matmul(q,r)
+            assertEqual(a, aReconstituted, accuracy: 1e-5)
+
+            let (qFull, rFull) = a.qr(fullMatrices: true)
+            let aReconstitutedFull = matmul(qFull, rFull)
+            assertEqual(a, aReconstitutedFull, accuracy: 1e-5)
+        }
+        
+    }
+
+    func testDiagPart() {
+        //test on 2D matrix
+        let t1 = Tensor<Float>(shape: [4, 4], scalars: (1...16).map(Float.init))
+        let target1 = Tensor<Float>([1, 6, 11, 16])
+        XCTAssertEqual(target1, t1.diagPart())
+
+        //test on 4D tensor
+        let t2 = Tensor<Float>([[[[1.0, 0.0, 0.0, 0.0],
+                                  [0.0, 0.0, 0.0, 0.0]],
+                                 [[0.0, 2.0, 0.0, 0.0],
+                                  [0.0, 0.0, 0.0, 0.0]],
+                                 [[0.0, 0.0, 3.0, 0.0],
+                                  [0.0, 0.0, 0.0, 0.0]],
+                                 [[0.0, 0.0, 0.0, 4.0],
+                                  [0.0, 0.0, 0.0, 0.0]]],
+                                [[[0.0, 0.0, 0.0, 0.0],
+                                  [5.0, 0.0, 0.0, 0.0]],
+                                 [[0.0, 0.0, 0.0, 0.0],
+                                  [0.0, 6.0, 0.0, 0.0]],
+                                 [[0.0, 0.0, 0.0, 0.0],
+                                  [0.0, 0.0, 7.0, 0.0]],
+                                 [[0.0, 0.0, 0.0, 0.0],
+                                  [0.0, 0.0, 0.0, 8.0]]]])
+        let target2 = Tensor<Float>([[1, 2, 3, 4], [5, 6, 7, 8]])
+        XCTAssertEqual(target2, t2.diagPart())
+    }
+
     func testBroadcastedAddGradient() {
         func foo(_ x: Tensor<Float>, _ y: Tensor<Float>) -> Tensor<Float> {
             return (x + y).sum()
@@ -394,6 +436,7 @@ final class MathOperatorTests: XCTestCase {
         ("testXWPlusB", testXWPlusB),
         ("testXORInference", testXORInference),
         ("testMLPClassifierStruct", testMLPClassifierStruct),
+        ("testQRApproximation", testQRApproximation),
         ("testBroadcastedAddGradient", testBroadcastedAddGradient)
     ]
 }
