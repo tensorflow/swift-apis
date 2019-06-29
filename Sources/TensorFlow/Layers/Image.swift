@@ -78,7 +78,7 @@ public struct Cropping2D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - symmetricHeight: The number of units to trim off the top and bottom of an input's height
     ///     dimension.
     ///   - symmetricWidth: The number of units to trim off the left and right of an input's width
-    ///   dimension.
+    ///     dimension.
     public init(symmetricHeight: Int = 1, symmetricWidth: Int = 1) {
         self.init(top: symmetricHeight, bottom: symmetricHeight,
             left: symmetricWidth, right: symmetricWidth)
