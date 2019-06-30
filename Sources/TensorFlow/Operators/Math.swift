@@ -2115,8 +2115,8 @@ public func matmul<Scalar: Numeric>(
     transposed transposeRhs: Bool = false
 ) -> Tensor<Scalar> {
     if lhs.rank > 2 || rhs.rank > 2 {
-      // TODO(TF-629): Conjugate to make compatible with the adjoint.
-      return Raw.batchMatMulV2(lhs, rhs, adjX: transposeLhs, adjY: transposeRhs)
+        // TODO(TF-629): Conjugate to make compatible with the adjoint.
+        return Raw.batchMatMulV2(lhs, rhs, adjX: transposeLhs, adjY: transposeRhs)
     }
     return Raw.matMul(lhs, rhs, transposeA: transposeLhs, transposeB: transposeRhs)
 }
