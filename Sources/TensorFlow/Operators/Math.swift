@@ -2114,16 +2114,11 @@ public func matmul<Scalar: Numeric>(
     _ rhs: Tensor<Scalar>,
     transposed transposeB: Bool = false
 ) -> Tensor<Scalar> {
-    switch (lhs.rank, rhs.rank) {
-    case (3..., 3...):
-        return Raw.batchMatMulV2(lhs, rhs, adjX: transposeA, adjY: transposeB)
-    case (2, 3...):
-        return Raw.batchMatMulV2(lhs.expandingShape(at: 1), rhs, adjX: transposeA, adjY: transposeB)
-    case (3..., 2):
-        return Raw.batchMatMulV2(lhs, rhs.expandingShape(at: 1), adjX: transposeA, adjY: transposeB)
-    default:
-        return Raw.matMul(lhs, rhs, transposeA: transposeA, transposeB: transposeB)
+    if lhs.rank > 2 || rhs.rank > 2 {
+      // TODO: Conjugate to make compatible with the adjoint.
+      return Raw.batchMatMulV2(lhs, rhs, adjX: transposeA, adjY: transposeB)
     }
+    return Raw.matMul(lhs, rhs, transposeA: transposeA, transposeB: transposeB)
 }
 
 @inlinable
@@ -2134,7 +2129,7 @@ internal func _vjpMatmul<Scalar: TensorFlowFloatingPoint>(
     transposed transposeB: Bool = false
 ) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
     let value = matmul(lhs, transposed: transposeA, rhs, transposed: transposeB)
-    return (value, { v in
+    return (value, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
         let (lhsGrad, rhsGrad): (Tensor<Scalar>, Tensor<Scalar>)
         switch (transposeA, transposeB) {
         case (false, false):
@@ -2150,11 +2145,13 @@ internal func _vjpMatmul<Scalar: TensorFlowFloatingPoint>(
             lhsGrad = matmul(v, transposed: true, rhs, transposed: true)
             rhsGrad = matmul(lhs, transposed: true, v, transposed: true)
         }
-        switch (lhs.rank, rhs.rank) {
-        case (3..., 3...): return (lhsGrad.sum(squeezingAxes: 1), rhsGrad)
-        case (3..., 2): return (lhsGrad, rhsGrad.sum(squeezingAxes: 1))
-        default: return (lhsGrad, rhsGrad)
-        }
+        let lhsRank = lhsShape.shape[0] - 2
+        let rhsRank = rhsShape.shape[0] - 2
+        let (lhsAxes, rhsAxes) = Raw.broadcastGradientArgs(
+            s0: lhsShape[..<lhsRank],
+            s1: rhsShape[..<rhsRank])
+        return (lhsGrad.sum(squeezingAxes: lhsAxes).reshaped(toShape: lhsShape),
+                rhsGrad.sum(squeezingAxes: rhsAxes).reshaped(toShape: rhsShape))
     })
 }
 
