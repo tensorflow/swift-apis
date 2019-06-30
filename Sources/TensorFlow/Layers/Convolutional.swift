@@ -641,3 +641,98 @@ public extension DepthwiseConv2D {
             padding: padding)
     }
 }
+
+/// A layer for adding zero-padding in the temporal dimension.
+public struct ZeroPadding1D<Scalar: TensorFlowFloatingPoint>: Layer {
+    /// The padding values along the temporal dimension.
+    @noDerivative public let padding: (Int, Int)
+
+    /// Creates a zero-padding 1D Layer.
+    ///
+    /// - Parameter padding: A tuple of two integers describing how many zeros to be padded at the
+    ///   beginning and end of the padding dimension.
+    public init(padding: (Int, Int)) {
+        self.padding = padding
+    }
+
+    /// Creates a zero-padding 1D Layer.
+    ///
+    /// - Parameter padding: An integer which describes how many zeros to be padded at the beginning
+    ///   and end of the padding dimension.
+    public init(padding: Int) {
+        self.init(padding: (padding, padding))
+    }
+
+    /// Returns the output obtained from applying the layer to the given input.
+    ///
+    /// - Parameter input: The input to the layer.
+    /// - Returns: The output.
+    @differentiable
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+        return input.padded(forSizes: [(padding.0, padding.1)])
+    }
+}
+
+/// A layer for adding zero-padding in the spatial dimensions.
+public struct ZeroPadding2D<Scalar: TensorFlowFloatingPoint>: Layer {
+    /// The padding values along the spatial dimensions.
+    @noDerivative public let padding: ((Int, Int), (Int, Int))
+
+    /// Creates a zero-padding 2D Layer.
+    ///
+    /// - Parameter padding: A tuple of 2 tuples of two integers describing how many zeros to
+    ///   be padded at the beginning and end of each padding dimensions.
+    public init(padding: ((Int, Int), (Int, Int))) {
+        self.padding = padding
+    }
+
+    /// Creates a zero-padding 2D Layer.
+    ///
+    /// - Parameter padding: Tuple of 2 integers that describes how many zeros to be padded
+    ///   at the beginning and end of each padding dimensions.
+    public init(padding: (Int, Int)) {
+        let (height, width) = padding
+        self.init(padding: ((height, height), (width, width)))
+    }
+
+    /// Returns the output obtained from applying the layer to the given input.
+    ///
+    /// - Parameter input: The input to the layer.
+    /// - Returns: The output.
+    @differentiable
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+        return input.padded(forSizes: [padding.0, padding.1])
+    }
+}
+
+/// A layer for adding zero-padding in the spatial/spatio-temporal dimensions.
+public struct ZeroPadding3D<Scalar: TensorFlowFloatingPoint>: Layer {
+    /// The padding values along the spatial/spatio-temporal dimensions.
+    @noDerivative public let padding: ((Int, Int), (Int, Int), (Int, Int))
+
+    /// Creates a zero-padding 3D Layer.
+    ///
+    /// - Parameter padding: A tuple of 3 tuples of two integers describing how many zeros to
+    ///   be padded at the beginning and end of each padding dimensions.
+    public init(padding: ((Int, Int), (Int, Int), (Int, Int))) {
+        self.padding = padding
+    }
+
+    /// Creates a zero-padding 3D Layer.
+    ///
+    /// - Parameter padding: Tuple of 3 integers that describes how many zeros to be padded
+    ///   at the beginning and end of each padding dimensions.
+    public init(padding: (Int, Int, Int)) {
+        let (height, width, depth) = padding
+        self.init(padding: ((height, height), (width, width), (depth, depth)))
+    }
+
+    /// Returns the output obtained from applying the layer to the given input.
+    ///
+    /// - Parameter input: The input to the layer.
+    /// - Returns: The output.
+    @differentiable
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+        return input.padded(forSizes: [padding.0, padding.1, padding.2])
+    }
+}
