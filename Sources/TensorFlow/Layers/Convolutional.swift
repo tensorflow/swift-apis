@@ -398,13 +398,13 @@ public extension Conv3D {
 /// This layer creates a convolution filter that is transpose-convolved with the layer input
 /// to produce a tensor of outputs.
 @frozen
-public struct TransposedConv2D: Layer {
+public struct TransposedConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The 4-D convolution kernel.
-    public var filter: Tensor<Float>
+    public var filter: Tensor<Scalar>
     /// The bias vector.
-    public var bias: Tensor<Float>
+    public var bias: Tensor<Scalar>
     /// An activation function.
-    public typealias Activation = @differentiable (Tensor<Float>) -> Tensor<Float>
+    public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
     /// The element-wise activation function.
     @noDerivative public let activation: Activation
     /// The strides of the sliding window for spatial dimensions.
@@ -424,8 +424,8 @@ public struct TransposedConv2D: Layer {
     ///   - strides: The strides of the sliding window for spatial dimensions.
     ///   - padding: The padding algorithm for convolution.
     public init(
-        filter: Tensor<Float>,
-        bias: Tensor<Float>,
+        filter: Tensor<Scalar>,
+        bias: Tensor<Scalar>,
         activation: @escaping Activation = identity,
         strides: (Int, Int) = (1, 1),
         padding: Padding = .valid
@@ -443,7 +443,7 @@ public struct TransposedConv2D: Layer {
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func callAsFunction(_ input: Tensor<Float>) -> Tensor<Float> {
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         let batchSize = input.shape[0]
         let w = (input.shape[1] - (1 * paddingIndex)) *
           strides.0 + (filter.shape[0] * paddingIndex)
