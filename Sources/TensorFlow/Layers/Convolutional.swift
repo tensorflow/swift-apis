@@ -130,7 +130,7 @@ public extension Conv1D {
         padding: Padding = .valid,
         dilation: Int = 1,
         activation: @escaping Activation = identity,
-        seed: (Int32, Int32) = randomSeed()
+        seed: (Int32, Int32) = randomSeedForTensorFlow()
     ) {
         let filterTensorShape = TensorShape([
             filterShape.0, filterShape.1, filterShape.2])
@@ -259,7 +259,7 @@ public extension Conv2D {
         padding: Padding = .valid,
         dilations: (Int, Int) = (1, 1),
         activation: @escaping Activation = identity,
-        seed: (Int32, Int32) = randomSeed()
+        seed: (Int32, Int32) = randomSeedForTensorFlow()
     ) {
         let filterTensorShape = TensorShape([
             filterShape.0, filterShape.1, filterShape.2, filterShape.3])
@@ -377,7 +377,7 @@ public extension Conv3D {
         strides: (Int, Int, Int) = (1, 1, 1),
         padding: Padding = .valid,
         activation: @escaping Activation = identity,
-        seed: (Int32, Int32) = randomSeed()
+        seed: (Int32, Int32) = randomSeedForTensorFlow()
     ) {
         let filterTensorShape = TensorShape([
             filterShape.0, filterShape.1, filterShape.2, filterShape.3, filterShape.4])
@@ -507,7 +507,7 @@ public extension TransposedConv2D {
         strides: (Int, Int) = (1, 1),
         padding: Padding = .valid,
         activation: @escaping Activation = identity,
-        seed: (Int32, Int32) = randomSeed()
+        seed: (Int32, Int32) = randomSeedForTensorFlow()
     ) {
         let filterTensorShape = TensorShape([
             filterShape.0, filterShape.1, filterShape.2, filterShape.3])
@@ -624,7 +624,7 @@ public extension DepthwiseConv2D {
         strides: (Int, Int) = (1, 1),
         padding: Padding = .valid,
         activation: @escaping Activation = identity,
-        seed: (Int32, Int32) = randomSeed()
+        seed: (Int32, Int32) = randomSeedForTensorFlow()
     ) {
         let filterTensorShape = TensorShape([
             filterShape.0, filterShape.1, filterShape.2, filterShape.3])
