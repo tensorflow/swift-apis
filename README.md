@@ -38,11 +38,11 @@ struct Model: Layer {
 #### Initialize a model and an optimizer
 
 ```swift
-let optimizer = SGD(for: model, learningRate: 0.02)
 var classifier = Model()
+let optimizer = SGD(for: classifier, learningRate: 0.02)
 Context.local.learningPhase = .training
 let x: Tensor<Float> = ...
-let y: Tensor<Float> = ...
+let y: Tensor<Int32> = ...
 ```
 
 #### Run a training loop
