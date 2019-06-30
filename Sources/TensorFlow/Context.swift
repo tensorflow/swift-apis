@@ -135,9 +135,9 @@ public func withRandomSeedForTensorFlow<R>(
 ///   - randomNumberGenerator: A random number generator that will be set before the closure gets 
 ///     called and restored after the closure returns.
 ///   - body: A nullary closure. If the closure has a return value, that value is also used as the
-///     return value of the `withRandomSeedForTensorFlow(_:_:)` function.
+///     return value of the `withRandomNumberGeneratorForTensorFlow(_:_:)` function.
 /// - Returns: The return value, if any, of the `body` closure.
-public func withRandomSeedForTensorFlow<G: RandomNumberGenerator, R>(
+public func withRandomNumberGeneratorForTensorFlow<G: RandomNumberGenerator, R>(
     _ randomNumberGenerator: inout G,
     _ body: () throws -> R
 ) rethrows -> R {
