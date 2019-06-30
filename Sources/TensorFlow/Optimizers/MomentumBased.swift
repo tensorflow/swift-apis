@@ -339,8 +339,8 @@ public class AdaMax<Model: Differentiable & KeyPathIterable>: Optimizer
 
 /// AMSGrad optimizer.
 ///
-/// This algorithm is a modification of Adam that allows for better convergence properties when 
-/// being close to a local optimum (i.e., later on in training).
+/// This algorithm is a modification of Adam with better convergence properties when close to local
+/// optima.
 ///
 /// Reference: ["On the Convergence of Adam and Beyond"](
 /// https://openreview.net/pdf?id=ryQu7f-RZ)
