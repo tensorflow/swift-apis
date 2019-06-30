@@ -13,8 +13,7 @@
 // limitations under the License.
 
 public extension Tensor {
-    /// Creates a tensor with the specified shape and a single, repeated scalar
-    /// value.
+    /// Creates a tensor with the specified shape and a single, repeated scalar value.
     ///
     /// - Parameters:
     ///   - shape: The dimensions of the tensor.
@@ -374,11 +373,7 @@ public extension Tensor where Scalar: BinaryFloatingPoint {
     ///   - shape: The dimensions of the tensor.
     ///   - seed: The seed value.
     ///
-    init(
-        randomUniform shape: TensorShape,
-        seed: (Int32, Int32) = (Int32.random(in: Int32.min..<Int32.max),
-                                Int32.random(in: Int32.min..<Int32.max))
-    ) {
+    init(randomUniform shape: TensorShape, seed: (Int32, Int32) = randomSeed()) {
         self = Raw.statelessRandomUniform(
           shape: Tensor<Int32>((0..<shape.rank).map { Int32(shape[$0]) }),
           seed: Tensor<Int32>([seed.0, seed.1])
@@ -392,11 +387,7 @@ public extension Tensor where Scalar: BinaryFloatingPoint {
     ///   - shape: The dimensions of the tensor.
     ///   - seed: The seed value.
     ///
-    init(
-        randomNormal shape: TensorShape,
-        seed: (Int32, Int32) = (Int32.random(in: Int32.min..<Int32.max),
-                                Int32.random(in: Int32.min..<Int32.max))
-    ) {
+    init(randomNormal shape: TensorShape, seed: (Int32, Int32) = randomSeed()) {
         self = Raw.statelessRandomNormal(
             shape: Tensor<Int32>((0..<shape.rank).map { Int32(shape[$0]) }),
             seed: Tensor<Int32>([seed.0, seed.1])
@@ -473,11 +464,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// - Parameters:
     ///   - shape: The dimensions of the tensor.
     ///
-    init(
-        glorotUniform shape: TensorShape,
-        seed: (Int32, Int32) = (Int32.random(in: Int32.min..<Int32.max),
-                                Int32.random(in: Int32.min..<Int32.max))
-    ) {
+    init(glorotUniform shape: TensorShape, seed: (Int32, Int32) = randomSeed()) {
         let uniform = Tensor(randomUniform: shape, seed: seed)
         self = Tensor.glorot(fromStandardUniform: uniform, shape: shape)
     }
@@ -523,11 +510,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// - Parameters:
     ///   - shape: The dimensions of the tensor.
     ///
-    init(
-        glorotNormal shape: TensorShape,
-        seed: (Int32, Int32) = (Int32.random(in: Int32.min..<Int32.max),
-                                Int32.random(in: Int32.min..<Int32.max))
-    ) {
+    init(glorotNormal shape: TensorShape, seed: (Int32, Int32) = randomSeed()) {
         let normal = Tensor(randomNormal: shape, seed: seed)
         self = Tensor.glorot(fromStandardNormalScaledBy: normal, shape: shape)
     }

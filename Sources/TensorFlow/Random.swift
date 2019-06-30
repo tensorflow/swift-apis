@@ -18,6 +18,10 @@ import Darwin
 import Glibc
 #endif
 
+public func randomSeed() -> (Int32, Int32) {
+    (Int32.random(in: Int32.min..<Int32.max), Int32.random(in: Int32.min..<Int32.max))
+}
+
 //===------------------------------------------------------------------------------------------===//
 // Random Number Generators
 //===------------------------------------------------------------------------------------------===//

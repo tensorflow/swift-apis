@@ -105,9 +105,7 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorPro
     ///   - inputSize: The number of features in 2-D input tensors.
     ///   - hiddenSize: The number of features in 2-D hidden states.
     ///   - seed: The random seed for initialization. The default value is random.
-    public init(inputSize: Int, hiddenSize: Int,
-                seed: (Int32, Int32) = (Int32.random(in: Int32.min..<Int32.max),
-                                        Int32.random(in: Int32.min..<Int32.max))) {
+    public init(inputSize: Int, hiddenSize: Int, seed: (Int32, Int32) = randomSeed()) {
         let concatenatedInputSize = inputSize + hiddenSize
         self.weight = Tensor(glorotUniform: [concatenatedInputSize, hiddenSize], seed: seed)
         self.bias = Tensor(zeros: [hiddenSize])
@@ -148,9 +146,7 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorProtocol
     /// - Parameters:
     ///   - inputSize: The number of features in 2-D input tensors.
     ///   - hiddenSize: The number of features in 2-D hidden states.
-    public init(inputSize: Int, hiddenSize: Int,
-                seed: (Int32, Int32) = (Int32.random(in: Int32.min..<Int32.max),
-                                        Int32.random(in: Int32.min..<Int32.max))) {
+    public init(inputSize: Int, hiddenSize: Int, seed: (Int32, Int32) = randomSeed()) {
         let concatenatedInputSize = inputSize + hiddenSize
         let gateWeightShape = TensorShape([concatenatedInputSize, hiddenSize])
         let gateBiasShape = TensorShape([hiddenSize])

@@ -214,8 +214,7 @@ public extension Dense {
         inputSize: Int,
         outputSize: Int,
         activation: @escaping Activation = identity,
-        seed: (Int32, Int32) = (Int32.random(in: Int32.min..<Int32.max),
-                                Int32.random(in: Int32.min..<Int32.max))
+        seed: (Int32, Int32) = randomSeed()
     ) {
         self.init(weight: Tensor(glorotUniform: [inputSize, outputSize],
                                  seed: seed),
