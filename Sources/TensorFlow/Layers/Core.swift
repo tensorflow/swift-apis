@@ -214,7 +214,7 @@ public extension Dense {
         inputSize: Int,
         outputSize: Int,
         activation: @escaping Activation = identity,
-        seed: (Int32, Int32) = randomSeed()
+        seed: (Int32, Int32) = randomSeedForTensorFlow()
     ) {
         self.init(weight: Tensor(glorotUniform: [inputSize, outputSize],
                                  seed: seed),
