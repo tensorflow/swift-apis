@@ -29,6 +29,15 @@ public struct Cropping1D<Scalar: TensorFlowFloatingPoint>: Layer {
         self.end = end
     }
 
+    /// Creates a cropping layer to trim the temporal dimension symmetrically from
+    /// one integer.
+    ///
+    /// - Parameter symmetric: The number of units to symmetrically trim off the beginning and end
+    ///   of the temporal dimension.
+    public init(symmetric: Int = 1) {
+        self.init(begin: symmetric, end: symmetric)
+    }
+
     /// Returns the cropped input tensor according to the `cropping` dimensions specified
     /// at initialization.
     ///
@@ -72,7 +81,8 @@ public struct Cropping2D<Scalar: TensorFlowFloatingPoint>: Layer {
         self.right = right
     }
 
-    /// Creates a cropping layer to trim spatial dimensions, i.e. height and width.
+    /// Creates a cropping layer to trim spatial dimensions, i.e. height and width, symmetrically
+    /// from two integers.
     ///
     /// - Parameters:
     ///   - symmetricHeight: The number of units to trim off the top and bottom of an input's height
@@ -82,6 +92,15 @@ public struct Cropping2D<Scalar: TensorFlowFloatingPoint>: Layer {
     public init(symmetricHeight: Int = 1, symmetricWidth: Int = 1) {
         self.init(top: symmetricHeight, bottom: symmetricHeight,
             left: symmetricWidth, right: symmetricWidth)
+    }
+
+    /// Creates a cropping layer to trim spatial dimensions, i.e. height and width, symmetrically
+    /// from one integer.
+    ///
+    /// - Parameter symmetric: The number of units to symmetrically trim off the top, bottom, left,
+    ///   and right of the spatial dimensions.
+    public init(symmetric: Int = 1) {
+        self.init(top: symmetric, bottom: symmetric, left: symmetric, right: symmetric)
     }
 
     /// Returns the cropped input tensor according to the `cropping` dimensions specified
