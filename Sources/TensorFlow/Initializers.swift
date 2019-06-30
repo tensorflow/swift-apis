@@ -550,7 +550,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
 }
 
 public extension Tensor where Scalar: TensorFlowFloatingPoint {
-    /// Initializer that generates an orthogonal matrix or tensor. 
+    /// Creates an orthogonal matrix or tensor. 
     ///
     /// If the shape of the tensor to initialize is two-dimensional, it is initialized with an 
     /// orthogonal matrix obtained from the QR decomposition of a matrix of random numbers drawn 
@@ -558,11 +558,11 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// have orthogonal rows. Otherwise, the output will have orthogonal columns.
     /// 
     /// If the shape of the tensor to initialize is more than two-dimensional, a matrix of shape 
-    /// (shape[0] * ... * shape[n - 2], shape[n - 1]) is initialized, where n is the length of the 
-    /// shape vector. The matrix is subsequently reshaped to give a tensor of the desired shape.
+    /// `[shape[0] * ... * shape[rank - 2], shape[rank - 1]]` is initialized.  The matrix is 
+    /// subsequently reshaped to give a tensor of the desired shape.
     ///
     /// - Parameters:
-    ///   - shape: The dimensions of the tensor.
+    ///   - shape: The shape of the tensor.
     ///   - gain: A multiplicative factor to apply to the orthogonal tensor.
     ///   - seed: A tuple of two integers to seed the random number generator.
     ///
@@ -572,9 +572,14 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         seed: (Int32, Int32) = (Int32.random(in: Int32.min..<Int32.max),
                                 Int32.random(in: Int32.min..<Int32.max))
     ) {
-        let rowCount = shape[0..<(shape.rank - 1)].dimensions.reduce(1, *)
+        let rowCount = shape.dimensions.dropLast().reduce(1, *)
         let columnCount = shape[shape.rank - 1]
-        let flatShape: TensorShape = rowCount < columnCount ? [columnCount, rowCount] : [rowCount, columnCount]
+        var flatShape: TensorShape 
+        if rowCount < columnCount {
+            flatShape = [columnCount, rowCount]
+        } else {
+            flatShape = [rowCount, columnCount]
+        }
         let normal = Tensor(randomNormal: flatShape, seed: seed)
         var (q, r) = normal.qrDecomposition(fullMatrices: false)
         let d = r.diagonalPart()

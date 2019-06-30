@@ -368,16 +368,15 @@ final class MathOperatorTests: XCTestCase {
             let aReconstitutedFull = matmul(qFull, rFull)
             assertEqual(a, aReconstitutedFull, accuracy: 1e-5)
         }
-        
     }
 
     func testDiagonalPart() {
-        //test on 2D matrix
+        // Test on 2-D matrix.
         let t1 = Tensor<Float>(shape: [4, 4], scalars: (1...16).map(Float.init))
         let target1 = Tensor<Float>([1, 6, 11, 16])
         XCTAssertEqual(target1, t1.diagonalPart())
 
-        //test on 4D tensor
+        // Test on 4-D tensor.
         let t2 = Tensor<Float>([[[[1.0, 0.0, 0.0, 0.0],
                                   [0.0, 0.0, 0.0, 0.0]],
                                  [[0.0, 2.0, 0.0, 0.0],

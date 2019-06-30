@@ -72,13 +72,13 @@ final class InitializerTests: XCTestCase {
     }
 
     func testOrthogonalShapesValues() {
-        for shape in [[10, 10], [10, 9, 8], [100, 5, 5], [50, 40], [3, 3, 32, 64]]{
-            // Check the shape
+        for shape in [[10, 10], [10, 9, 8], [100, 5, 5], [50, 40], [3, 3, 32, 64]] {
+            // Check the shape.
             var t = Tensor<Float>(orthogonal: TensorShape(shape))
             XCTAssertEqual(shape, t.shape.dimensions)
         
-            // Check orthogonality by computing the inner product
-            t = t.reshaped(to: [t.shape.dimensions[0..<(t.rank - 1)].reduce(1, *), t.shape[t.rank - 1]])
+            // Check orthogonality by computing the inner product.
+            t = t.reshaped(to: [t.shape.dimensions.dropLast().reduce(1, *), t.shape[t.rank - 1]])
             if t.shape[0] > t.shape[1] {
                 let eye = Raw.diag(diagonal: Tensor<Float>(ones: [t.shape[1]]))
                 assertEqual(eye, matmul(t.transposed(), t), accuracy: 1e-5)

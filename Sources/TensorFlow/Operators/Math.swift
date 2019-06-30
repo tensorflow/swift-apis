@@ -2183,8 +2183,9 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 }
 
 public extension Tensor where Scalar: TensorFlowFloatingPoint {
-    /// Computes the QR decomposition of each inner matrix in `tensor` such that
-    /// `tensor[..., :, :] = q[..., :, :] * r[..., :,:])`
+    /// Returns the QR decomposition of each inner matrix in the tensor, a tensor with inner 
+    /// orthogonal matrices q and a tensor with inner upper triangular matrices r, such that the 
+    /// tensor is equal to matmul(q, r).
     /// 
     /// - Parameters:
     ///   - fullMatrices: If true, compute full-sized `q` and `r`. If false
@@ -2199,12 +2200,11 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// For example:
     ///
     /// ```
-    /// # 't' is [[1, 0, 0, 0]
-    ///           [0, 2, 0, 0]
-    ///           [0, 0, 3, 0]
-    ///           [0, 0, 0, 4]]
-    ///
-    /// t.diagPart() ==> [1, 2, 3, 4]
+    /// // 't' is [[1, 0, 0, 0]
+    /// //         [0, 2, 0, 0]
+    /// //         [0, 0, 3, 0]
+    /// //         [0, 0, 0, 4]]
+    /// // t.diagPart() ==> [1, 2, 3, 4]
     /// ```
     ///
     func diagonalPart() -> Tensor<Scalar> {
