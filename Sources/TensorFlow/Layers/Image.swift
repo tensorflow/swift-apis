@@ -65,7 +65,7 @@ public struct Cropping2D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - left: The number of units to trim off the left of an input's height dimension.
     ///   - right: The number of units to trim off the right of an input's height dimension.
     // TODO: Add data format property support when control flow differentiation is completed.
-    public init(top: Int = 1, bottom: Int = 1, left: Int = 1, right: Int = 1 ) {
+    public init(top: Int = 1, bottom: Int = 1, left: Int = 1, right: Int = 1) {
         self.top = top
         self.bottom = bottom
         self.left = left
