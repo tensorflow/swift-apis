@@ -147,7 +147,7 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The element-wise activation function.
     @noDerivative public let activation: Activation
     
-    /// The activation function type.
+    /// The element-wise activation function type.
     public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
 
     public init(

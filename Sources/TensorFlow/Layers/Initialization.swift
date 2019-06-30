@@ -16,7 +16,7 @@ public typealias ParameterInitializer<Scalar: TensorFlowScalar> = (TensorShape) 
 
 /// Returns a function that creates a tensor by initializing all its values to zeros.
 public func zeros<Scalar: TensorFlowFloatingPoint>() -> ParameterInitializer<Scalar> {
-  { Tensor(zeros: $0) }
+    { Tensor(zeros: $0) }
 }
 
 /// Returns a function that creates a tensor by performing Glorot uniform initialization for the 
@@ -25,7 +25,7 @@ public func zeros<Scalar: TensorFlowFloatingPoint>() -> ParameterInitializer<Sca
 /// `sqrt(6 / (fanIn + fanOut))`, and `fanIn`/`fanOut` represent the number of input and output
 /// features multiplied by the receptive field, if present.
 public func glorotUniform<Scalar: TensorFlowFloatingPoint>(
-  seed: (Int32, Int32) = randomSeed()
+    seed: (Int32, Int32) = randomSeed()
 ) -> ParameterInitializer<Scalar> {
-  { Tensor<Scalar>(glorotUniform: $0, seed: seed) }
+    { Tensor<Scalar>(glorotUniform: $0, seed: seed) }
 }

@@ -22,8 +22,6 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     public var filter: Tensor<Scalar>
     /// The bias vector `[outputChannels]`.
     public var bias: Tensor<Scalar>
-    /// An activation function.
-    public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
     /// The element-wise activation function.
     @noDerivative public let activation: Activation
     /// The stride of the sliding window for the temporal dimension.
@@ -32,6 +30,9 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let padding: Padding
     /// The dilation factor for the temporal dimension.
     @noDerivative public let dilation: Int
+
+    /// The element-wise activation function type.
+    public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
 
     /// Creates a `Conv1D` layer with the specified filter, bias, activation function, stride,
     /// dilation and padding.
@@ -77,8 +78,7 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
 
 public extension Conv1D where Scalar.RawSignificand: FixedWidthInteger {
     /// Creates a `Conv1D` layer with the specified filter shape, stride, padding, dilation and
-    /// element-wise activation function. The filter tensor is initialized using Glorot uniform
-    /// initialization with the specified generator. The bias vector is initialized with zeros.
+    /// element-wise activation function.
     ///
     /// - Parameters:
     ///   - filterShape: The 3-D shape of the filter, representing
@@ -87,56 +87,22 @@ public extension Conv1D where Scalar.RawSignificand: FixedWidthInteger {
     ///   - padding: The padding algorithm for convolution.
     ///   - dilation: The dilation factor for the temporal dimension.
     ///   - activation: The element-wise activation function.
-    ///   - generator: The random number generator for initialization.
-    ///
-    /// - Note: Use `init(filterShape:stride:padding:dilation:activation:seed:)` for faster random
-    ///   initialization.
-    init<G: RandomNumberGenerator>(
-        filterShape: (Int, Int, Int),
-        stride: Int = 1,
-        padding: Padding = .valid,
-        dilation: Int = 1,
-        activation: @escaping Activation = identity,
-        generator: inout G
-    ) {
-        let filterTensorShape = TensorShape([
-            filterShape.0, filterShape.1, filterShape.2])
-        self.init(
-            filter: Tensor(glorotUniform: filterTensorShape),
-            bias: Tensor(zeros: [filterShape.2]),
-            activation: activation,
-            stride: stride,
-            padding: padding,
-            dilation: dilation)
-    }
-}
-
-public extension Conv1D {
-    /// Creates a `Conv1D` layer with the specified filter shape, strides, padding, dilation and
-    /// element-wise activation function. The filter tensor is initialized using Glorot uniform
-    /// initialization with the specified seed. The bias vector is initialized with zeros.
-    ///
-    /// - Parameters:
-    ///   - filterShape: The 3-D shape of the filter, representing
-    ///     `[width, inputChannels, outputChannels]`.
-    ///   - stride: The stride of the sliding window for the temporal dimension.
-    ///   - padding: The padding algorithm for convolution.
-    ///   - dilation: The dilation factor for the temporal dimension.
-    ///   - activation: The element-wise activation function.
-    ///   - seed: The random seed for initialization. The default value is random.
+    ///   - filterInitializer: Initializer to use for the filter parameters.
+    ///   - biasInitializer: Initializer to use for the bias parameters.
     init(
         filterShape: (Int, Int, Int),
         stride: Int = 1,
         padding: Padding = .valid,
         dilation: Int = 1,
         activation: @escaping Activation = identity,
-        seed: (Int32, Int32) = randomSeedForTensorFlow()
+        filterInitializer: ParameterInitializer<Scalar> = glorotUniform(),
+        biasInitializer: ParameterInitializer<Scalar> = zeros()
     ) {
         let filterTensorShape = TensorShape([
             filterShape.0, filterShape.1, filterShape.2])
         self.init(
-            filter: Tensor(glorotUniform: filterTensorShape, seed: seed),
-            bias: Tensor(zeros: [filterShape.2]),
+            filter: filterInitializer(filterTensorShape),
+            bias: biasInitializer([filterShape.2]),
             activation: activation,
             stride: stride,
             padding: padding,
@@ -154,8 +120,6 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     public var filter: Tensor<Scalar>
     /// The bias vector.
     public var bias: Tensor<Scalar>
-    /// An activation function.
-    public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
     /// The element-wise activation function.
     @noDerivative public let activation: Activation
     /// The strides of the sliding window for spatial dimensions.
@@ -164,6 +128,9 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let padding: Padding
     /// The dilation factor for spatial dimensions.
     @noDerivative public let dilations: (Int, Int)
+    
+    /// The element-wise activation function type.
+    public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
 
     /// Creates a `Conv2D` layer with the specified filter, bias, activation function, strides,
     /// dilations and padding.
@@ -208,8 +175,7 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
 
 public extension Conv2D {
     /// Creates a `Conv2D` layer with the specified filter shape, strides, padding, dilations and
-    /// element-wise activation function. The filter tensor is initialized using Glorot uniform
-    /// initialization with the specified generator. The bias vector is initialized with zeros.
+    /// element-wise activation function.
     ///
     /// - Parameters:
     ///   - filterShape: The shape of the 4-D convolution kernel.
@@ -217,55 +183,22 @@ public extension Conv2D {
     ///   - padding: The padding algorithm for convolution.
     ///   - dilations: The dilation factor for spatial dimensions.
     ///   - activation: The element-wise activation function.
-    ///   - generator: The random number generator for initialization.
-    ///
-    /// - Note: Use `init(filterShape:strides:padding:activation:seed:)` for faster random
-    ///   initialization.
-    init<G: RandomNumberGenerator>(
-        filterShape: (Int, Int, Int, Int),
-        strides: (Int, Int) = (1, 1),
-        padding: Padding = .valid,
-        dilations: (Int, Int) = (1, 1),
-        activation: @escaping Activation = identity,
-        generator: inout G
-    ) {
-        let filterTensorShape = TensorShape([
-            filterShape.0, filterShape.1, filterShape.2, filterShape.3])
-        self.init(
-            filter: Tensor(glorotUniform: filterTensorShape, generator: &generator),
-            bias: Tensor(zeros: [filterShape.3]),
-            activation: activation,
-            strides: strides,
-            padding: padding,
-            dilations: dilations)
-    }
-}
-
-public extension Conv2D {
-    /// Creates a `Conv2D` layer with the specified filter shape, strides, padding, dilations and
-    /// element-wise activation function. The filter tensor is initialized using Glorot uniform
-    /// initialization with the specified seed. The bias vector is initialized with zeros.
-    ///
-    /// - Parameters:
-    ///   - filterShape: The shape of the 4-D convolution kernel.
-    ///   - strides: The strides of the sliding window for spatial dimensions.
-    ///   - padding: The padding algorithm for convolution.
-    ///   - dilations: The dilation factor for spatial dimensions.
-    ///   - activation: The element-wise activation function.
-    ///   - seed: The random seed for initialization. The default value is random.
+    ///   - filterInitializer: Initializer to use for the filter parameters.
+    ///   - biasInitializer: Initializer to use for the bias parameters.
     init(
         filterShape: (Int, Int, Int, Int),
         strides: (Int, Int) = (1, 1),
         padding: Padding = .valid,
         dilations: (Int, Int) = (1, 1),
         activation: @escaping Activation = identity,
-        seed: (Int32, Int32) = randomSeedForTensorFlow()
+        filterInitializer: ParameterInitializer<Scalar> = glorotUniform(),
+        biasInitializer: ParameterInitializer<Scalar> = zeros()
     ) {
         let filterTensorShape = TensorShape([
             filterShape.0, filterShape.1, filterShape.2, filterShape.3])
         self.init(
-            filter: Tensor(glorotUniform: filterTensorShape, seed: seed),
-            bias: Tensor(zeros: [filterShape.3]),
+            filter: filterInitializer(filterTensorShape),
+            bias: biasInitializer([filterShape.3]),
             activation: activation,
             strides: strides,
             padding: padding,
@@ -283,14 +216,15 @@ public struct Conv3D<Scalar: TensorFlowFloatingPoint>: Layer {
     public var filter: Tensor<Scalar>
     /// The bias vector.
     public var bias: Tensor<Scalar>
-    /// An activation function.
-    public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
     /// The element-wise activation function.
     @noDerivative public let activation: Activation
     /// The strides of the sliding window for spatial dimensions.
     @noDerivative public let strides: (Int, Int, Int)
     /// The padding algorithm for convolution.
     @noDerivative public let padding: Padding
+
+    /// The element-wise activation function type.
+    public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
 
     /// Creates a `Conv3D` layer with the specified filter, bias, activation function, strides, and
     /// padding.
@@ -331,59 +265,28 @@ public struct Conv3D<Scalar: TensorFlowFloatingPoint>: Layer {
 
 public extension Conv3D {
     /// Creates a `Conv3D` layer with the specified filter shape, strides, padding, and
-    /// element-wise activation function. The filter tensor is initialized using Glorot uniform
-    /// initialization with the specified generator. The bias vector is initialized with zeros.
+    /// element-wise activation function.
     ///
     /// - Parameters:
     ///   - filterShape: The shape of the 5-D convolution kernel.
     ///   - strides: The strides of the sliding window for spatial/spatio-temporal dimensions.
     ///   - padding: The padding algorithm for convolution.
     ///   - activation: The element-wise activation function.
-    ///   - generator: The random number generator for initialization.
-    ///
-    /// - Note: Use `init(filterShape:strides:padding:activation:seed:)` for faster random
-    ///   initialization.
-    init<G: RandomNumberGenerator>(
-        filterShape: (Int, Int, Int, Int, Int),
-        strides: (Int, Int, Int) = (1, 1, 1),
-        padding: Padding = .valid,
-        activation: @escaping Activation = identity,
-        generator: inout G
-    ) {
-        let filterTensorShape = TensorShape([
-            filterShape.0, filterShape.1, filterShape.2, filterShape.3, filterShape.4])
-        self.init(
-            filter: Tensor(glorotUniform: filterTensorShape, generator: &generator),
-            bias: Tensor(zeros: [filterShape.4]),
-            activation: activation,
-            strides: strides,
-            padding: padding)
-    }
-}
-
-public extension Conv3D {
-    /// Creates a `Conv3D` layer with the specified filter shape, strides, padding, and
-    /// element-wise activation function. The filter tensor is initialized using Glorot uniform
-    /// initialization with the specified seed. The bias vector is initialized with zeros.
-    ///
-    /// - Parameters:
-    ///   - filterShape: The shape of the 5-D convolution kernel.
-    ///   - strides: The strides of the sliding window for spatial/spatio-temporal dimensions.
-    ///   - padding: The padding algorithm for convolution.
-    ///   - activation: The element-wise activation function.
-    ///   - seed: The random seed for initialization. The default value is random.
+    ///   - filterInitializer: Initializer to use for the filter parameters.
+    ///   - biasInitializer: Initializer to use for the bias parameters.
     init(
         filterShape: (Int, Int, Int, Int, Int),
         strides: (Int, Int, Int) = (1, 1, 1),
         padding: Padding = .valid,
         activation: @escaping Activation = identity,
-        seed: (Int32, Int32) = randomSeedForTensorFlow()
+        filterInitializer: ParameterInitializer<Scalar> = glorotUniform(),
+        biasInitializer: ParameterInitializer<Scalar> = zeros()
     ) {
         let filterTensorShape = TensorShape([
             filterShape.0, filterShape.1, filterShape.2, filterShape.3, filterShape.4])
         self.init(
-            filter: Tensor(glorotUniform: filterTensorShape, seed: seed),
-            bias: Tensor(zeros: [filterShape.4]),
+            filter: filterInitializer(filterTensorShape),
+            bias: biasInitializer([filterShape.4]),
             activation: activation,
             strides: strides,
             padding: padding)
@@ -400,8 +303,6 @@ public struct TransposedConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     public var filter: Tensor<Scalar>
     /// The bias vector.
     public var bias: Tensor<Scalar>
-    /// An activation function.
-    public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
     /// The element-wise activation function.
     @noDerivative public let activation: Activation
     /// The strides of the sliding window for spatial dimensions.
@@ -409,6 +310,9 @@ public struct TransposedConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The padding algorithm for convolution.
     @noDerivative public let padding: Padding
     @noDerivative public let paddingIndex: Int
+
+    /// The element-wise activation function type.
+    public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
 
     /// Creates a `TransposedConv2D` layer with the specified filter, bias,
     /// activation function, strides, and padding.
@@ -459,8 +363,7 @@ public struct TransposedConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
 
 public extension TransposedConv2D {
     /// Creates a `TransposedConv2D` layer with the specified filter shape, strides, padding, and
-    /// element-wise activation function. The filter tensor is initialized using Glorot uniform
-    /// initialization with the specified generator. The bias vector is initialized with zeros.
+    /// element-wise activation function.
     ///
     /// - Parameters:
     ///   - filterShape: A 4-D tensor of shape
@@ -468,52 +371,21 @@ public extension TransposedConv2D {
     ///   - strides: The strides of the sliding window for spatial dimensions.
     ///   - padding: The padding algorithm for convolution.
     ///   - activation: The element-wise activation function.
-    ///   - generator: The random number generator for initialization.
-    ///
-    /// - Note: Use `init(filterShape:strides:padding:activation:seed:)` for faster random
-    ///   initialization.
-    init<G: RandomNumberGenerator>(
-        filterShape: (Int, Int, Int, Int),
-        strides: (Int, Int) = (1, 1),
-        padding: Padding = .valid,
-        activation: @escaping Activation = identity,
-        generator: inout G
-    ) {
-        let filterTensorShape = TensorShape([
-            filterShape.0, filterShape.1, filterShape.2, filterShape.3])
-        self.init(
-            filter: Tensor(glorotUniform: filterTensorShape, generator: &generator),
-            bias: Tensor(zeros: [filterShape.3]),
-            activation: activation,
-            strides: strides,
-            padding: padding)
-    }
-}
-
-public extension TransposedConv2D {
-    /// Creates a `TransposedConv2D` layer with the specified filter shape, strides, padding, and
-    /// element-wise activation function. The filter tensor is initialized using Glorot uniform
-    /// initialization with the specified seed. The bias vector is initialized with zeros.
-    ///
-    /// - Parameters:
-    ///   - filterShape: A 4-D tensor of shape
-    ///     `[width, height, input channel count, output channel count]`.
-    ///   - strides: The strides of the sliding window for spatial dimensions.
-    ///   - padding: The padding algorithm for convolution.
-    ///   - activation: The element-wise activation function.
-    ///   - seed: The random seed for initialization. The default value is random.
+    ///   - filterInitializer: Initializer to use for the filter parameters.
+    ///   - biasInitializer: Initializer to use for the bias parameters.
     init(
         filterShape: (Int, Int, Int, Int),
         strides: (Int, Int) = (1, 1),
         padding: Padding = .valid,
         activation: @escaping Activation = identity,
-        seed: (Int32, Int32) = randomSeedForTensorFlow()
+        filterInitializer: ParameterInitializer<Scalar> = glorotUniform(),
+        biasInitializer: ParameterInitializer<Scalar> = zeros()
     ) {
         let filterTensorShape = TensorShape([
             filterShape.0, filterShape.1, filterShape.2, filterShape.3])
         self.init(
-            filter: Tensor(glorotUniform: filterTensorShape, seed: seed),
-            bias: Tensor(zeros: [filterShape.3]),
+            filter: filterInitializer(filterTensorShape),
+            bias: biasInitializer([filterShape.3]),
             activation: activation,
             strides: strides,
             padding: padding)
@@ -530,8 +402,6 @@ public struct DepthwiseConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     public var filter: Tensor<Scalar>
     /// The bias vector.
     public var bias: Tensor<Scalar>
-    /// An activation function.
-    public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
     /// The element-wise activation function.
     @noDerivative public let activation: Activation
     /// The strides of the sliding window for spatial dimensions.
@@ -539,8 +409,11 @@ public struct DepthwiseConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The padding algorithm for convolution.
     @noDerivative public let padding: Padding
 
-    /// Creates a `DepthwiseConv2D` layer with the specified filter, bias, activation function, strides, and
-    /// padding.
+    /// The element-wise activation function type.
+    public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
+
+    /// Creates a `DepthwiseConv2D` layer with the specified filter, bias, activation function, 
+    /// strides, and padding.
     ///
     /// - Parameters:
     ///   - filter: The 4-D convolution kernel.
@@ -578,59 +451,28 @@ public struct DepthwiseConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
 
 public extension DepthwiseConv2D {
     /// Creates a `DepthwiseConv2D` layer with the specified filter shape, strides, padding, and
-    /// element-wise activation function. The filter tensor is initialized using Glorot uniform
-    /// initialization with the specified generator. The bias vector is initialized with zeros.
+    /// element-wise activation function.
     ///
     /// - Parameters:
     ///   - filterShape: The shape of the 4-D convolution kernel.
     ///   - strides: The strides of the sliding window for spatial/spatio-temporal dimensions.
     ///   - padding: The padding algorithm for convolution.
     ///   - activation: The element-wise activation function.
-    ///   - generator: The random number generator for initialization.
-    ///
-    /// - Note: Use `init(filterShape:strides:padding:activation:seed:)` for faster random
-    ///   initialization.
-    init<G: RandomNumberGenerator>(
-        filterShape: (Int, Int, Int, Int),
-        strides: (Int, Int) = (1, 1),
-        padding: Padding = .valid,
-        activation: @escaping Activation = identity,
-        generator: inout G
-    ) {
-        let filterTensorShape = TensorShape([
-            filterShape.0, filterShape.1, filterShape.2, filterShape.3])
-        self.init(
-            filter: Tensor(glorotUniform: filterTensorShape, generator: &generator),
-            bias: Tensor(zeros: [filterShape.3]),
-            activation: activation,
-            strides: strides,
-            padding: padding)
-    }
-}
-
-public extension DepthwiseConv2D {
-    /// Creates a `depthwiseConv2D` layer with the specified filter shape, strides, padding, and
-    /// element-wise activation function. The filter tensor is initialized using Glorot uniform
-    /// initialization with the specified seed. The bias vector is initialized with zeros.
-    ///
-    /// - Parameters:
-    ///   - filterShape: The shape of the 4-D convolution kernel.
-    ///   - strides: The strides of the sliding window for spatial/spatio-temporal dimensions.
-    ///   - padding: The padding algorithm for convolution.
-    ///   - activation: The element-wise activation function.
-    ///   - seed: The random seed for initialization. The default value is random.
+    ///   - filterInitializer: Initializer to use for the filter parameters.
+    ///   - biasInitializer: Initializer to use for the bias parameters.
     init(
         filterShape: (Int, Int, Int, Int),
         strides: (Int, Int) = (1, 1),
         padding: Padding = .valid,
         activation: @escaping Activation = identity,
-        seed: (Int32, Int32) = randomSeedForTensorFlow()
+        filterInitializer: ParameterInitializer<Scalar> = glorotUniform(),
+        biasInitializer: ParameterInitializer<Scalar> = zeros()
     ) {
         let filterTensorShape = TensorShape([
             filterShape.0, filterShape.1, filterShape.2, filterShape.3])
         self.init(
-            filter: Tensor(glorotUniform: filterTensorShape, seed: seed),
-            bias: Tensor(zeros: [filterShape.3]),
+            filter: filterInitializer(filterTensorShape),
+            bias: biasInitializer([filterShape.3]),
             activation: activation,
             strides: strides,
             padding: padding)
