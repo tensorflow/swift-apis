@@ -2158,7 +2158,7 @@ internal func _vjpMatmul<Scalar: TensorFlowFloatingPoint>(
     })
 }
 
-public extension Tensor where Scalar: FloatingPoint & TensorFlowScalar {
+public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// Computes the QR decomposition of each inner matrix in `tensor` such that
     /// `tensor[..., :, :] = q[..., :, :] * r[..., :,:])`
     /// 

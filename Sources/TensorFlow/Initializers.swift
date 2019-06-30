@@ -564,6 +564,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// - Parameters:
     ///   - shape: The dimensions of the tensor.
     ///   - gain: A multiplicative factor to apply to the orthogonal tensor.
+    ///   - seed: A tuple of two integers to seed the random number generator.
     ///
     init(
         orthogonal shape: TensorShape,
@@ -571,7 +572,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         seed: (Int32, Int32) = (Int32.random(in: Int32.min..<Int32.max),
                                 Int32.random(in: Int32.min..<Int32.max))
     ) {
-        let rowCount = shape[0 ..< shape.rank - 1].dimensions.reduce(1, *)
+        let rowCount = shape[0..<(shape.rank - 1)].dimensions.reduce(1, *)
         let columnCount = shape[shape.rank - 1]
         let flatShape: TensorShape = rowCount < columnCount ? [columnCount, rowCount] : [rowCount, columnCount]
         let normal = Tensor(randomNormal: flatShape, seed: seed)

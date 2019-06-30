@@ -437,6 +437,7 @@ final class MathOperatorTests: XCTestCase {
         ("testXORInference", testXORInference),
         ("testMLPClassifierStruct", testMLPClassifierStruct),
         ("testQRApproximation", testQRApproximation),
+        ("testDiagPart", testDiagPart),
         ("testBroadcastedAddGradient", testBroadcastedAddGradient)
     ]
 }

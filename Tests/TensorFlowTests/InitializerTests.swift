@@ -78,7 +78,7 @@ final class InitializerTests: XCTestCase {
             XCTAssertEqual(shape, t.shape.dimensions)
         
             // Check orthogonality by computing the inner product
-            t = t.reshaped(to: [t.shape.dimensions[0 ..< t.rank-1].reduce(1, *), t.shape[t.rank - 1]])
+            t = t.reshaped(to: [t.shape.dimensions[0..<(t.rank - 1)].reduce(1, *), t.shape[t.rank - 1]])
             if t.shape[0] > t.shape[1] {
                 let eye = Raw.diag(diagonal: Tensor<Float>(ones: [t.shape[1]]))
                 assertEqual(eye, matmul(t.transposed(), t), accuracy: 1e-5)
