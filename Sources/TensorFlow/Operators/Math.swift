@@ -12,12 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-infix operator .>: ComparisonPrecedence
-infix operator .==: ComparisonPrecedence
+infix operator .> : ComparisonPrecedence
+infix operator .== : ComparisonPrecedence
 
 // TODO:
 // - Consider explicit broadcasting for elementwise binary ops when
 //   scalarization and rank getter are implemented.
+
+// TODO: Remove the following extension once `./` and `./=` are defined for 
+// `PointwiseMultiplicative`.
+
+infix operator ./ : MultiplicationPrecedence
+infix operator ./= : AssignmentPrecedence
+
+public extension PointwiseMultiplicative {
+    static func ./ (lhs: Self, rhs: Self) -> Self {
+        lhs .* rhs.reciprocal
+    }
+
+    static func ./= (lhs: inout Self, rhs: Self) {
+        lhs = lhs ./ rhs
+    }
+}
 
 //===------------------------------------------------------------------------------------------===//
 // Generic elementary functions
@@ -161,22 +177,54 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
 // Vector Space
 //===------------------------------------------------------------------------------------------===//
 
-extension Tensor: VectorProtocol where Scalar: Numeric {
-    public typealias VectorSpaceScalar = Scalar
+extension Tensor: VectorProtocol where Scalar: TensorFlowFloatingPoint {
+    public typealias VectorSpaceScalar = Float
 
-    @differentiable(where Scalar: TensorFlowFloatingPoint)
-    public func adding(_ scalar: Scalar) -> Self {
-        self + scalar
+    // @differentiable(where Scalar: TensorFlowFloatingPoint)
+    public func scaled(by scale: Float) -> Self {
+        Scalar(scale) * self
     }
 
-    @differentiable(where Scalar: TensorFlowFloatingPoint)
-    public func subtracting(_ scalar: Scalar) -> Self {
-        self - scalar
+    // @differentiable(where Scalar: TensorFlowFloatingPoint)
+    public func adding(_ scalar: Float) -> Self {
+        self + Scalar(scalar)
     }
 
-    @differentiable(where Scalar: TensorFlowFloatingPoint)
-    public func scaled(by scalar: Scalar) -> Self {
-        self * scalar
+    // @differentiable(where Scalar: TensorFlowFloatingPoint)
+    public func subtracting(_ scalar: Float) -> Self {
+        self - Scalar(scalar)
+    }
+}
+
+extension VectorProtocol {
+    static func + (lhs: VectorSpaceScalar, rhs: Self) -> Self {
+        rhs.adding(lhs)
+    }
+
+    static func + (lhs: Self, rhs: VectorSpaceScalar) -> Self {
+        lhs.adding(rhs)
+    }
+
+    static func - (lhs: Self, rhs: VectorSpaceScalar) -> Self {
+        lhs.subtracting(rhs)
+    }
+
+    static func * (lhs: VectorSpaceScalar, rhs: Self) -> Self {
+        rhs.scaled(by: lhs)
+    }
+
+    static func * (lhs: Self, rhs: VectorSpaceScalar) -> Self {
+        lhs.scaled(by: rhs)
+    }
+}
+
+extension VectorProtocol where VectorSpaceScalar: SignedNumeric {
+    static prefix func - (x: Self) -> Self {
+        .zero - x
+    }
+
+    static func - (lhs: VectorSpaceScalar, rhs: Self) -> Self {
+        (-rhs).adding(lhs)
     }
 }
 

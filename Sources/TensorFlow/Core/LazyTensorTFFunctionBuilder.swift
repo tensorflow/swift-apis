@@ -163,7 +163,7 @@ class TFGraph {
                     }
                 }
             }
-        default: assert(false, "Unhandled attribute \(name):\(attribute)")
+        default: fatalError("Unhandled attribute \(name):\(attribute)")
         }
     }
 
@@ -212,7 +212,7 @@ class TFGraph {
             let id = ObjectIdentifier(lazyOp)
             return TF_Output(oper: nodesCache[id]!, index: Int32(index))
         }
-        assert(false, "Should only have symbolic inputs.")
+        fatalError("Should only have symbolic inputs.")
     }
 }
 

@@ -38,7 +38,7 @@ final class LayerTests: XCTestCase {
         // Input shapes.
         let inputHeight = 2
         let inputWidth = 5
-        
+
         let filter = Tensor<Float>(shape: [width, inputChannels, outputChannels],
                                    scalars: [2, 3, 4, 1, 2, 3])
         let bias = Tensor<Float>([0])
@@ -130,6 +130,30 @@ final class LayerTests: XCTestCase {
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>(shape: [2, 2, 2, 2],
             scalars: [2, 3, 4, 5, 8, 9, 10, 11, 20, 21, 22, 23, 26, 27, 28, 29])
+        XCTAssertEqual(output, expected)
+    }
+
+    func testZeroPadding1D() {
+        let input = Tensor<Float>([0.0, 1.0, 2.0])
+        let layer = ZeroPadding1D<Float>(padding: 2)
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>([0.0, 0.0, 0.0, 1.0, 2.0, 0.0, 0.0])
+        XCTAssertEqual(output, expected)
+    }
+
+    func testZeroPadding2D() {
+        let input = Tensor<Float>(shape: [3, 1], scalars: [0.0, 1.0, 2.0])
+        let layer = ZeroPadding2D<Float>(padding: ((0, 0), (0, 1)))
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>([[0.0, 0.0], [1.0, 0.0], [2.0, 0.0]])
+        XCTAssertEqual(output, expected)
+    }
+
+    func testZeroPadding3D() {
+        let input = Tensor<Float>(shape:[3, 1, 1], scalars: [0.0, 1.0, 2.0])
+        let layer = ZeroPadding3D<Float>(padding: ((0, 0), (0, 1), (0, 0)))
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>(shape: [3, 2, 1], scalars: [0, 0, 1, 0, 2, 0])
         XCTAssertEqual(output, expected)
     }
 
@@ -335,6 +359,14 @@ final class LayerTests: XCTestCase {
         // XCTAssertEqual(𝛁rnn.cell.bias, [  0.2496884,  0.66947335,   0.7978788, -0.22378457])
     }
 
+    func testFunction() {
+        let tanhLayer = Function<Tensor<Float>, Tensor<Float>>(tanh)
+        let input = Tensor(shape: [5, 1], scalars: (0..<5).map(Float.init))
+        let output = tanhLayer.inferring(from: input)
+        let expected = Tensor<Float>([[0.0], [0.7615942], [0.9640276], [0.9950547], [0.9993292]])
+        XCTAssertEqual(output, expected)
+    }
+
     static var allTests = [
         ("testConv1D", testConv1D),
         ("testConv1DDilation", testConv1DDilation),
@@ -344,6 +376,9 @@ final class LayerTests: XCTestCase {
         ("testDepthConv2D", testDepthConv2D),
         ("testCropping1D", testCropping1D),
         ("testCropping2D", testCropping2D),
+        ("testZeroPadding1D", testZeroPadding1D),
+        ("testZeroPadding2D", testZeroPadding2D),
+        ("testZeroPadding3D", testZeroPadding3D),
         ("testMaxPool1D", testMaxPool1D),
         ("testMaxPool2D", testMaxPool2D),
         ("testMaxPool3D", testMaxPool3D),
@@ -363,6 +398,7 @@ final class LayerTests: XCTestCase {
         ("testFlatten", testFlatten),
         ("testEmbedding", testEmbedding),
         ("testSimpleRNNCell", testSimpleRNNCell),
-        ("testRNN", testRNN)
+        ("testRNN", testRNN),
+        ("testFunction", testFunction)
     ]
 }
