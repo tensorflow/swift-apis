@@ -21,7 +21,7 @@ public struct UpSampling1D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameter size: The upsampling factor for timesteps.
     public init(size: Int) {
-       self.size = size
+        self.size = size
     }
 
     /// Returns the output obtained from applying the layer to the given input.
@@ -47,7 +47,7 @@ public struct UpSampling2D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameter size: The upsampling factor for rows and columns.
     public init(size: Int) {
-       self.size = size
+        self.size = size
     }
 
     /// Returns the output obtained from applying the layer to the given input.
@@ -83,8 +83,10 @@ public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: Layer {
     private func repeatingElements(
         _ input: Tensor<Scalar>, alongAxis axis: Int, count: Int
     ) -> Tensor<Scalar> {
-        let splits = Raw.split(splitDim: Tensor<Int32>(Int32(axis)),
-                               value: input, numSplit: Int64(input.shape[axis]))
+        let splits = Raw.split(
+            splitDim: Tensor<Int32>(Int32(axis)),
+            value: input,
+            numSplit: Int64(input.shape[axis]))
         let repeated = splits.flatMap { x in Array(repeating: x, count: count) }
         return Tensor<Scalar>(concatenating: repeated, alongAxis: axis)
     }
@@ -94,8 +96,10 @@ public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: Layer {
     ) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (AllDifferentiableVariables, Tensor<Scalar>)) {
         let value = repeatingElements(input, alongAxis: axis, count: count)
         return (value, { v in
-            let splits = Raw.split(splitDim: Tensor<Int32>(Int32(axis)),
-                                   value: v, numSplit: Int64(input.shape[axis]))
+            let splits = Raw.split(
+                splitDim: Tensor<Int32>(Int32(axis)),
+                value: v,
+                numSplit: Int64(input.shape[axis]))
             let summed = splits.map { x in x.sum(alongAxes: axis) }
             let concatenated = Tensor<Scalar>(concatenating: summed, alongAxis: axis)
             return (.zero, concatenated)

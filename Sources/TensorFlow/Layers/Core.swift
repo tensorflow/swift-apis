@@ -189,7 +189,7 @@ public extension Dense {
         biasInitializer: ParameterInitializer<Scalar> = zeros()
     ) {
         self.init(
-            weight: weightsInitializer([inputSize, outputSize]),
+            weight: weightInitializer([inputSize, outputSize]),
             bias: Tensor(zeros: [outputSize]),
             activation: activation)
     }
