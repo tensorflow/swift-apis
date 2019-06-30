@@ -2155,36 +2155,6 @@ internal func _vjpMatmul<Scalar: TensorFlowFloatingPoint>(
     })
 }
 
-public extension Tensor where Scalar: TensorFlowFloatingPoint {
-    /// Computes the QR decomposition of each inner matrix in `tensor` such that
-    /// `tensor[..., :, :] = q[..., :, :] * r[..., :,:])`
-    /// 
-    /// - Parameters:
-    ///   - fullMatrices: If true, compute full-sized `q` and `r`. If false
-    ///     (the default), compute only the leading `P` columns of `q`.
-    ///  
-    func qr(fullMatrices: Bool = false) -> (Tensor<Scalar>, Tensor<Scalar>) {
-        return Raw.qr(self, fullMatrices: fullMatrices)
-    }
-
-    /// Returns the diagonal part of the tensor.
-    ///
-    /// For example:
-    ///
-    /// ```
-    /// # 't' is [[1, 0, 0, 0]
-    ///           [0, 2, 0, 0]
-    ///           [0, 0, 3, 0]
-    ///           [0, 0, 0, 4]]
-    ///
-    /// t.diagPart() ==> [1, 2, 3, 4]
-    /// ```
-    ///
-    func diagPart() -> Tensor<Scalar> {
-        return Raw.diagPart(self)
-    }
-}
-
 infix operator •: MultiplicationPrecedence
 
 public extension Tensor where Scalar: Numeric {
@@ -2211,3 +2181,34 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
         _vjpMatmul(lhs, rhs)
     }
 }
+
+public extension Tensor where Scalar: TensorFlowFloatingPoint {
+    /// Computes the QR decomposition of each inner matrix in `tensor` such that
+    /// `tensor[..., :, :] = q[..., :, :] * r[..., :,:])`
+    /// 
+    /// - Parameters:
+    ///   - fullMatrices: If true, compute full-sized `q` and `r`. If false
+    ///     (the default), compute only the leading `P` columns of `q`.
+    ///  
+    func qrDecomposition(fullMatrices: Bool = false) -> (q: Tensor<Scalar>, r: Tensor<Scalar>) {
+        return Raw.qr(self, fullMatrices: fullMatrices)
+    }
+
+    /// Returns the diagonal part of the tensor.
+    ///
+    /// For example:
+    ///
+    /// ```
+    /// # 't' is [[1, 0, 0, 0]
+    ///           [0, 2, 0, 0]
+    ///           [0, 0, 3, 0]
+    ///           [0, 0, 0, 4]]
+    ///
+    /// t.diagPart() ==> [1, 2, 3, 4]
+    /// ```
+    ///
+    func diagonalPart() -> Tensor<Scalar> {
+        return Raw.diagPart(self)
+    }
+}
+

@@ -576,8 +576,8 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         let columnCount = shape[shape.rank - 1]
         let flatShape: TensorShape = rowCount < columnCount ? [columnCount, rowCount] : [rowCount, columnCount]
         let normal = Tensor(randomNormal: flatShape, seed: seed)
-        var (q, r) = normal.qr(fullMatrices: false)
-        let d = r.diagPart()
+        var (q, r) = normal.qrDecomposition(fullMatrices: false)
+        let d = r.diagonalPart()
         q *= sign(d)
         if rowCount < columnCount {
             q = q.transposed()
