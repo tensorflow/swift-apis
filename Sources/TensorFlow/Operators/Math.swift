@@ -2110,33 +2110,28 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
 @differentiable(vjp: _vjpMatmul(_:transposed:_:transposed:) where Scalar: TensorFlowFloatingPoint)
 public func matmul<Scalar: Numeric>(
     _ lhs: Tensor<Scalar>,
-    transposed transposeA: Bool = false,
+    transposed transposeLhs: Bool = false,
     _ rhs: Tensor<Scalar>,
-    transposed transposeB: Bool = false
+    transposed transposeRhs: Bool = false
 ) -> Tensor<Scalar> {
-    switch (lhs.rank, rhs.rank) {
-    case (3..., 3...):
-        return Raw.batchMatMulV2(lhs, rhs, adjX: transposeA, adjY: transposeB)
-    case (2, 3...):
-        return Raw.batchMatMulV2(lhs.expandingShape(at: 1), rhs, adjX: transposeA, adjY: transposeB)
-    case (3..., 2):
-        return Raw.batchMatMulV2(lhs, rhs.expandingShape(at: 1), adjX: transposeA, adjY: transposeB)
-    default:
-        return Raw.matMul(lhs, rhs, transposeA: transposeA, transposeB: transposeB)
+    if lhs.rank > 2 || rhs.rank > 2 {
+        // TODO(TF-629): Conjugate to make compatible with the adjoint.
+        return Raw.batchMatMulV2(lhs, rhs, adjX: transposeLhs, adjY: transposeRhs)
     }
+    return Raw.matMul(lhs, rhs, transposeA: transposeLhs, transposeB: transposeRhs)
 }
 
 @inlinable
 internal func _vjpMatmul<Scalar: TensorFlowFloatingPoint>(
     _ lhs: Tensor<Scalar>,
-    transposed transposeA: Bool = false,
+    transposed transposeLhs: Bool = false,
     _ rhs: Tensor<Scalar>,
-    transposed transposeB: Bool = false
+    transposed transposeRhs: Bool = false
 ) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
-    let value = matmul(lhs, transposed: transposeA, rhs, transposed: transposeB)
-    return (value, { v in
+    let value = matmul(lhs, transposed: transposeLhs, rhs, transposed: transposeRhs)
+    return (value, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
         let (lhsGrad, rhsGrad): (Tensor<Scalar>, Tensor<Scalar>)
-        switch (transposeA, transposeB) {
+        switch (transposeLhs, transposeRhs) {
         case (false, false):
             lhsGrad = matmul(v, transposed: false, rhs, transposed: true)
             rhsGrad = matmul(lhs, transposed: true, v, transposed: false)
@@ -2150,11 +2145,13 @@ internal func _vjpMatmul<Scalar: TensorFlowFloatingPoint>(
             lhsGrad = matmul(v, transposed: true, rhs, transposed: true)
             rhsGrad = matmul(lhs, transposed: true, v, transposed: true)
         }
-        switch (lhs.rank, rhs.rank) {
-        case (3..., 3...): return (lhsGrad.sum(squeezingAxes: 1), rhsGrad)
-        case (3..., 2): return (lhsGrad, rhsGrad.sum(squeezingAxes: 1))
-        default: return (lhsGrad, rhsGrad)
-        }
+        let lhsRank = lhsShape.shape[0] - 2
+        let rhsRank = rhsShape.shape[0] - 2
+        let (lhsAxes, rhsAxes) = Raw.broadcastGradientArgs(
+            s0: lhsShape[..<lhsRank],
+            s1: rhsShape[..<rhsRank])
+        return (lhsGrad.sum(squeezingAxes: lhsAxes).reshaped(toShape: lhsShape),
+                rhsGrad.sum(squeezingAxes: rhsAxes).reshaped(toShape: rhsShape))
     })
 }
 
