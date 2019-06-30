@@ -12,9 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-public typealias Activation<Scalar: TensorFlowScalar> = 
-    @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
-
 public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// Computes dropout given a probability.
     @differentiable(wrt: self where Scalar: Differentiable)
@@ -108,6 +105,10 @@ public struct Reshape<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The target shape.
     @noDerivative public let shape: Tensor<Int32>
 
+    // TF-331 workaround:
+    @usableFromInline
+    internal var _nontrivial = Tensor<Float>(0)
+
     /// Creates a reshape layer.
     ///
     /// - Parameter shape: The target shape, represented by a tensor.
@@ -143,14 +144,16 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
     public var weight: Tensor<Scalar>
     /// The bias vector.
     public var bias: Tensor<Scalar>
-
     /// The element-wise activation function.
-    @noDerivative public let activation: Activation<Scalar>
+    @noDerivative public let activation: Activation
+    
+    /// The activation function type.
+    public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
 
     public init(
         weight: Tensor<Scalar>,
         bias: Tensor<Scalar>,
-        activation: @escaping Activation<Scalar>
+        activation: @escaping Activation
     ) {
         self.weight = weight
         self.bias = bias
@@ -176,13 +179,13 @@ public extension Dense {
     ///   - inputSize: The dimensionality of the input space.
     ///   - outputSize: The dimensionality of the output space.
     ///   - activation: The activation function to use. The default value is `identity(_:)`.
-    ///   - weightsInitializer: Initializer to use for the weight parameters.
-    ///   - biasInitializer: Initializer to use for the bias parameters.
+    ///   - weightInitializer: Initializer to use for `weight`.
+    ///   - biasInitializer: Initializer to use for `bias`.
     init(
         inputSize: Int,
         outputSize: Int,
-        activation: @escaping Activation<Scalar> = identity,
-        weightsInitializer: ParameterInitializer<Scalar> = glorotUniform(),
+        activation: @escaping Activation = identity,
+        weightInitializer: ParameterInitializer<Scalar> = glorotUniform(),
         biasInitializer: ParameterInitializer<Scalar> = zeros()
     ) {
         self.init(
