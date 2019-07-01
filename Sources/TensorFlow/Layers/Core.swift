@@ -28,7 +28,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
 /// Dropout consists in randomly setting a fraction of input units to `0` at each update during
 /// training time, which helps prevent overfitting.
 @frozen
-public struct Dropout<Scalar: TensorFlowFloatingPoint>: Layer {
+public struct Dropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     @noDerivative public let probability: Double
 
     /// Creates a dropout layer.
@@ -83,7 +83,7 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: Layer {
 ///
 /// A flatten layer flattens the input when applied without affecting the batch size.
 @frozen
-public struct Flatten<Scalar: TensorFlowFloatingPoint>: Layer {
+public struct Flatten<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     /// Creates a flatten layer.
     public init() {}
 
@@ -101,7 +101,7 @@ public struct Flatten<Scalar: TensorFlowFloatingPoint>: Layer {
 
 /// A reshape layer.
 @frozen
-public struct Reshape<Scalar: TensorFlowFloatingPoint>: Layer {
+public struct Reshape<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     /// The target shape.
     @noDerivative public let shape: Tensor<Int32>
 
@@ -196,7 +196,7 @@ public extension Dense {
 }
 
 /// A layer that encloses a custom differentiable function.
-public struct Function<Input: Differentiable, Output: Differentiable>: Layer {
+public struct Function<Input: Differentiable, Output: Differentiable>: ParameterlessLayer {
     public typealias Body = @differentiable (Input) -> Output
 
     @noDerivative public let body: Body

@@ -260,9 +260,9 @@ public class Adam<Model: Differentiable>: Optimizer
 /// Reference: Section 7 of ["Adam - A Method for Stochastic Optimization"](
 /// https://arxiv.org/abs/1412.6980v8)
 public class AdaMax<Model: Differentiable & KeyPathIterable>: Optimizer
-    where Model.TangentVector: VectorProtocol & PointwiseMultiplicative & ElementaryFunctions,
+    where Model.TangentVector: VectorProtocol & PointwiseMultiplicative & 
+                               ElementaryFunctions & KeyPathIterable,
           Model.TangentVector.VectorSpaceScalar == Float,
-          Model.AllDifferentiableVariables: KeyPathIterable,
           Model.AllDifferentiableVariables == Model.TangentVector {
     public typealias Model = Model
     /// The learning rate.
@@ -345,9 +345,9 @@ public class AdaMax<Model: Differentiable & KeyPathIterable>: Optimizer
 /// Reference: ["On the Convergence of Adam and Beyond"](
 /// https://openreview.net/pdf?id=ryQu7f-RZ)
 public class AMSGrad<Model: Differentiable & KeyPathIterable>: Optimizer
-    where Model.TangentVector: VectorProtocol & PointwiseMultiplicative & ElementaryFunctions,
+    where Model.TangentVector: VectorProtocol & PointwiseMultiplicative & 
+                               ElementaryFunctions & KeyPathIterable,
           Model.TangentVector.VectorSpaceScalar == Float,
-          Model.AllDifferentiableVariables: KeyPathIterable,
           Model.AllDifferentiableVariables == Model.TangentVector {
     public typealias Model = Model
     /// The learning rate.

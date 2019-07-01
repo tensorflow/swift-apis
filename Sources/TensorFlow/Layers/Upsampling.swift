@@ -14,7 +14,7 @@
 
 /// An upsampling layer for 1-D inputs.
 @frozen
-public struct UpSampling1D<Scalar: TensorFlowFloatingPoint>: Layer {
+public struct UpSampling1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     @noDerivative public let size: Int
 
     /// Creates an upsampling layer.
@@ -40,7 +40,7 @@ public struct UpSampling1D<Scalar: TensorFlowFloatingPoint>: Layer {
 
 /// An upsampling layer for 2-D inputs.
 @frozen
-public struct UpSampling2D<Scalar: TensorFlowFloatingPoint>: Layer {
+public struct UpSampling2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     @noDerivative public let size: Int
 
     /// Creates an upsampling layer.
@@ -66,7 +66,7 @@ public struct UpSampling2D<Scalar: TensorFlowFloatingPoint>: Layer {
 
 /// An upsampling layer for 3-D inputs.
 @frozen
-public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: Layer {
+public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     @noDerivative public let size: Int
 
     /// Creates an upsampling layer.
