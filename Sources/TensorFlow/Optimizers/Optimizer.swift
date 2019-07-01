@@ -17,7 +17,7 @@
 /// Optimizers apply an optimization algorithm to update the differentiable models.
 public protocol Optimizer {
     /// The type of the model whose parameters are optimized.
-    associatedtype Model: Differentiable where Model.TangentVector: Optimizable
+    associatedtype Model: Differentiable
     /// The scalar parameter type.
     associatedtype Scalar: FloatingPoint
     /// The learning rate.
