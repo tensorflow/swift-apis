@@ -197,8 +197,6 @@ public extension Dense {
 
 /// A layer that encloses a custom differentiable function.
 public struct Function<Input: Differentiable, Output: Differentiable>: ParameterlessLayer {
-    // Dummy typealias to guarantee conformance to `Layer`.
-    public typealias Scalar = Float
     public typealias Body = @differentiable (Input) -> Output
 
     @noDerivative public let body: Body

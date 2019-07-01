@@ -18,7 +18,7 @@
 /// rate decay, and Nesterov momentum.
 public class SGD<Model: Differentiable>: Optimizer
     where Model.TangentVector: VectorProtocol & ElementaryFunctions,
-	      Model.TangentVector.VectorSpaceScalar == Float {
+          Model.TangentVector.VectorSpaceScalar == Float {
     public typealias Model = Model
     /// The learning rate.
     public var learningRate: Float
