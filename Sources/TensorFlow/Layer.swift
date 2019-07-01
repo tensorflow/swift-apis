@@ -21,6 +21,8 @@
 /// outputs.
 public protocol Layer: Differentiable & KeyPathIterable
     where AllDifferentiableVariables: KeyPathIterable {
+    /// The parameters type of the layer.
+    associatedtype Scalar: TensorFlowFloatingPoint
     /// The input type of the layer.
     associatedtype Input: Differentiable
     /// The output type of the layer.
