@@ -48,8 +48,9 @@ public struct Context {
     public var learningPhase: LearningPhase = .inference
 
     /// The random seed.
-    /// Note that whenever obtained, the random seed is also updated so that future stateless 
-    /// random TensorFlow op executions will result in non-deterministic results.
+    ///
+    /// - Note: Whenever obtained, the random seed is also updated so that future stateless 
+    ///   random TensorFlow op executions will result in non-deterministic results.
     public var randomSeed: (Int32, Int32) {
         mutating get {
             let seed = _randomSeed
@@ -62,7 +63,7 @@ public struct Context {
     private var _randomSeed: (Int32, Int32) = randomSeedForTensorFlow()
 
     /// The random number generator.
-    public var randomNumberGenerator: AnyRandomNumberGenerator =
+    internal var randomNumberGenerator: AnyRandomNumberGenerator =
         AnyRandomNumberGenerator(PhiloxRandomNumberGenerator(uint64Seed: UInt64(time(nil))))
 
     /// Creates a context with default properties.
