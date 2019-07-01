@@ -70,7 +70,7 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   (input width + 2 * padding size - (dilation * (filter width - 1) + 1)) / stride + 1
     ///
     ///   and padding size is determined by the padding scheme. Note that padding size equals zero
-    ///   when using .valid.
+    ///   when using `.valid`.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         let conv = conv2D(
@@ -370,7 +370,7 @@ public struct Conv3D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   / stride width + 1
     ///
     ///   and padding sizes are determined by the padding scheme. Note that padding sizes equal zero
-    ///   when using .valid.
+    ///   when using `.valid`.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         return activation(conv3D(
