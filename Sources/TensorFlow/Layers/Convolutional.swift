@@ -68,10 +68,11 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// (input width + 2 * padding size - (dilation * (filter width - 1) + 1)) / stride + 1
     ///
     /// and padding size is determined by the padding scheme.
-    /// - Note: Padding size equals zero when using `.valid`.
     ///
     /// - Parameter input: The input to the layer [batch count, input width, input channel count].
     /// - Returns: The output of shape [batch count, output width, output channel count].
+    ///
+    /// - Note: Padding size equals zero when using `.valid`.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         let conv = conv2D(
@@ -216,12 +217,13 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// / stride width + 1
     ///
     /// and padding sizes are determined by the padding scheme.
-    /// - Note: Padding size equals zero when using `.valid`.
     ///
     /// - Parameter input: The input to the layer of shape
     ///   [batch count, input height, input width, input channel count].
     /// - Returns: The output of shape
     ///   [batch count, output height, output width, output channel count].
+    ///
+    /// - Note: Padding size equals zero when using `.valid`.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         return activation(conv2D(
@@ -368,12 +370,13 @@ public struct Conv3D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// / stride width + 1
     ///
     /// and padding sizes are determined by the padding scheme.
-    /// - Note: Padding size equals zero when using `.valid`.
     ///
     /// - Parameter input: The input to the layer of shape
     ///   [batch count, input depth, input height, input width, input channel count].
     /// - Returns: The output of shape
     ///   [batch count, output depth, output height, output width, output channel count].
+    ///
+    /// - Note: Padding size equals zero when using `.valid`.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         return activation(conv3D(
