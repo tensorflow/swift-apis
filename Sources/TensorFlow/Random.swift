@@ -29,7 +29,7 @@ public func randomSeedForTensorFlow() -> (Int32, Int32) {
 
 /// A type-erased random number generator.
 ///
-/// The `AnyRandomNumberGenerator` type forwards random number generating operations to an
+/// The `AnyRandomNumberGenerator` type forwards random number generating operations to an 
 /// underlying random number generator, hiding its specific underlying type.
 internal struct AnyRandomNumberGenerator: RandomNumberGenerator {
     @usableFromInline
