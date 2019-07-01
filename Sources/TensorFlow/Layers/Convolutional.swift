@@ -62,15 +62,16 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
+    /// The output width is computed as:
+    ///
+    /// output width =
+    /// (input width + 2 * padding size - (dilation * (filter width - 1) + 1)) / stride + 1
+    ///
+    /// and padding size is determined by the padding scheme.
+    /// - Note: Padding size equals zero when using `.valid`.
+    ///
     /// - Parameter input: The input to the layer [batch count, input width, input channel count].
-    /// - Returns: The output of shape [batch count, output width, output channel count],
-    ///   where output width is computed as:
-    ///
-    ///   output width =
-    ///   (input width + 2 * padding size - (dilation * (filter width - 1) + 1)) / stride + 1
-    ///
-    ///   and padding size is determined by the padding scheme. Note that padding size equals zero
-    ///   when using `.valid`.
+    /// - Returns: The output of shape [batch count, output width, output channel count].
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         let conv = conv2D(
@@ -204,22 +205,23 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
+    /// The output spatial dimensions are computed as:
+    ///
+    /// output height =
+    /// (input height + 2 * padding height - (dilation height * (filter height - 1) + 1))
+    /// / stride height + 1
+    ///
+    /// output width =
+    /// (input width + 2 * padding width - (dilation width * (filter width - 1) + 1))
+    /// / stride width + 1
+    ///
+    /// and padding sizes are determined by the padding scheme.
+    /// - Note: Padding size equals zero when using `.valid`.
+    ///
     /// - Parameter input: The input to the layer of shape
     ///   [batch count, input height, input width, input channel count].
     /// - Returns: The output of shape
-    ///   [batch count, output height, output width, output channel count],
-    ///   where the output spatial dimensions are computed as:
-    ///
-    ///   output height =
-    ///   (input height + 2 * padding height - (dilation height * (filter height - 1) + 1))
-    ///   / stride height + 1
-    ///
-    ///   output width =
-    ///   (input width + 2 * padding width - (dilation width * (filter width - 1) + 1))
-    ///   / stride width + 1
-    ///
-    ///   and padding sizes are determined by the padding scheme. Note padding sizes equal zero
-    ///   when using `.valid`.
+    ///   [batch count, output height, output width, output channel count].
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         return activation(conv2D(
@@ -351,26 +353,27 @@ public struct Conv3D<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
+    /// The output spatial dimensions are computed as:
+    ///
+    /// output depth =
+    /// (input depth + 2 * padding depth - (dilation depth * (filter depth - 1) + 1))
+    /// / stride depth + 1
+    ///
+    /// output height =
+    /// (input height + 2 * padding height - (dilation height * (filter height - 1) + 1))
+    /// / stride height + 1
+    ///
+    /// output width =
+    /// (input width + 2 * padding width - (dilation width * (filter width - 1) + 1))
+    /// / stride width + 1
+    ///
+    /// and padding sizes are determined by the padding scheme.
+    /// - Note: Padding size equals zero when using `.valid`.
+    ///
     /// - Parameter input: The input to the layer of shape
-    ///   [batch count, input depth, input height, input width, input channel count]
+    ///   [batch count, input depth, input height, input width, input channel count].
     /// - Returns: The output of shape
-    ///   [batch count, output depth, output height, output width, output channel count]
-    ///   where the spatial dimensions are computed as:
-    ///
-    ///   output depth =
-    ///   (input depth + 2 * padding depth - (dilation depth * (filter depth - 1) + 1))
-    ///   / stride depth + 1
-    ///
-    ///   output height =
-    ///   (input height + 2 * padding height - (dilation height * (filter height - 1) + 1))
-    ///   / stride height + 1
-    ///
-    ///   output width =
-    ///   (input width + 2 * padding width - (dilation width * (filter width - 1) + 1))
-    ///   / stride width + 1
-    ///
-    ///   and padding sizes are determined by the padding scheme. Note that padding sizes equal zero
-    ///   when using `.valid`.
+    ///   [batch count, output depth, output height, output width, output channel count].
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         return activation(conv3D(
