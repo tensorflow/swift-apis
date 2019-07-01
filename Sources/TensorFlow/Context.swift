@@ -63,7 +63,7 @@ public struct Context {
     private var _randomSeed: (Int32, Int32) = randomSeedForTensorFlow()
 
     /// The random number generator.
-    public var randomNumberGenerator: AnyRandomNumberGenerator =
+    internal var randomNumberGenerator: AnyRandomNumberGenerator =
         AnyRandomNumberGenerator(PhiloxRandomNumberGenerator(uint64Seed: UInt64(time(nil))))
 
     /// Creates a context with default properties.
