@@ -73,8 +73,7 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
         let mean = input.mean(alongAxes: normalizedAxes)
         let variance = input.variance(alongAxes: normalizedAxes)
         runningMean.value += (mean - runningMean.value) * (1 - momentum)
-        runningVariance.value += (
-            variance - runningVariance.value) * (1 - momentum)
+        runningVariance.value += (variance - runningVariance.value) * (1 - momentum)
         let inv = rsqrt(variance + epsilon) * scale
         return (input - mean) * inv + offset
     }
@@ -92,10 +91,8 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     @differentiable(vjp: _vjpApplied(to:))
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         switch Context.local.learningPhase {
-        case .training:
-            return applyingTraining(to: input)
-        case .inference:
-            return applyingInference(to: input)
+        case .training: return applyingTraining(to: input)
+        case .inference: return applyingInference(to: input)
         }
     }
 
@@ -122,10 +119,12 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - axis: The axis that should be normalized (typically the features axis).
     ///   - momentum: The momentum for the moving average.
     ///   - epsilon: A small scalar added to the denominator to improve numerical stability.
-    public init(featureCount: Int,
-                axis: Int = -1,
-                momentum: Tensor<Scalar> = Tensor(0.99),
-                epsilon: Tensor<Scalar> = Tensor(0.001)) {
+    public init(
+        featureCount: Int,
+        axis: Int = -1,
+        momentum: Tensor<Scalar> = Tensor(0.99),
+        epsilon: Tensor<Scalar> = Tensor(0.001)
+    ) {
         self.axis = axis
         self.momentum = momentum
         self.scale = Tensor<Scalar>(ones: [featureCount])
@@ -169,9 +168,11 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - featureCount: The number of features.
     ///   - axis: The axis that should be normalized.
     ///   - epsilon: The small scalar added to variance.
-    public init(featureCount: Int,
-                axis: Int,
-                epsilon: Tensor<Scalar> = Tensor(0.001)) {
+    public init(
+        featureCount: Int,
+        axis: Int,
+        epsilon: Tensor<Scalar> = Tensor(0.001)
+    ) {
         self.init(
             offset: Tensor(zeros: [featureCount]),
             scale: Tensor(ones: [featureCount]),

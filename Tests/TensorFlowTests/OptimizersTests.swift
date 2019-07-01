@@ -24,13 +24,13 @@ final class OptimizerTests: XCTestCase {
                     inputSize: 2,
                     outputSize: hiddenSize,
                     activation: relu,
-                    seed: (0xfffffff, 0xfeeff)
+                    weightInitializer: glorotUniform(seed: (0xfffffff, 0xfeeff))
                 )
                 l2 = Dense<Float>(
                     inputSize: hiddenSize,
                     outputSize: 1,
                     activation: relu,
-                    seed: (0xffeffe, 0xfffe)
+                    weightInitializer: glorotUniform(seed: (0xffeffe, 0xfffe))
                 )
             }
             @differentiable

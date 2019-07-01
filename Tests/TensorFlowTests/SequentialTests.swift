@@ -18,10 +18,16 @@ import XCTest
 final class SequentialTests: XCTestCase {
     func testSequential() {
         struct Model: Layer {
-            var dense1 = Dense<Float>(inputSize: 2, outputSize: 4, activation: relu,
-                                      seed: (0xfffffff, 0xfeeff))
-            var dense2 = Dense<Float>(inputSize: 4, outputSize: 1, activation: relu,
-                                      seed: (0xeffeffe, 0xfffe))
+            var dense1 = Dense<Float>(
+                inputSize: 2,
+                outputSize: 4,
+                activation: relu,
+                weightInitializer: glorotUniform(seed: (0xfffffff, 0xfeeff)))
+            var dense2 = Dense<Float>(
+                inputSize: 4,
+                outputSize: 1,
+                activation: relu,
+                weightInitializer: glorotUniform(seed: (0xeffeffe, 0xfffe)))
 
             @differentiable
             func callAsFunction(_ input: Tensor<Float>) -> Tensor<Float> {

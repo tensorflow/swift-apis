@@ -63,9 +63,9 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: Layer {
     }
 
     @usableFromInline
-    func _vjpApplied(to input: Tensor<Scalar>) ->
-        (Tensor<Scalar>, (Tensor<Scalar>) ->
-            (Dropout<Scalar>.TangentVector, Tensor<Scalar>)) {
+    func _vjpApplied(
+        to input: Tensor<Scalar>
+    ) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (Dropout<Scalar>.TangentVector, Tensor<Scalar>)) {
         switch Context.local.learningPhase {
         case .training:
             return valueWithPullback(at: input) {
@@ -120,7 +120,7 @@ public struct Reshape<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameter shape: The target shape.
     public init(_ shape: TensorShape) {
-      self.init(shape: Tensor(shape.dimensions.map(Int32.init)))
+        self.init(shape: Tensor(shape.dimensions.map(Int32.init)))
     }
 
     /// Returns the output obtained from applying the layer to the given input.
@@ -144,9 +144,11 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
     public var weight: Tensor<Scalar>
     /// The bias vector.
     public var bias: Tensor<Scalar>
-    public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
     /// The element-wise activation function.
     @noDerivative public let activation: Activation
+    
+    /// The element-wise activation function type.
+    public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
 
     public init(
         weight: Tensor<Scalar>,
@@ -171,55 +173,25 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
 public extension Dense {
     /// Creates a `Dense` layer with the specified input size, output size, and element-wise
     /// activation function. The weight matrix is created with shape `[inputSize, outputSize]` and
-    /// is initialized using Glorot uniform initialization with the specified generator. The bias
-    /// vector is created with shape `[outputSize]` and is initialized with zeros.
+    /// the bias vector is created with shape `[outputSize]`.
     ///
     /// - Parameters:
     ///   - inputSize: The dimensionality of the input space.
     ///   - outputSize: The dimensionality of the output space.
     ///   - activation: The activation function to use. The default value is `identity(_:)`.
-    ///   - generator: The random number generator for initialization.
-    ///
-    /// - Note: Use `init(inputSize:outputSize:activation:seed:)` for faster random initialization.
-    init<G: RandomNumberGenerator>(
-        inputSize: Int,
-        outputSize: Int,
-        activation: @escaping Activation = identity,
-        generator: inout G
-    ) {
-        self.init(weight: Tensor(glorotUniform: [inputSize, outputSize],
-                                 generator: &generator),
-                  bias: Tensor(zeros: [outputSize]),
-                  activation: activation)
-    }
-
-    init(inputSize: Int, outputSize: Int, activation: @escaping Activation = identity) {
-      self.init(inputSize: inputSize, outputSize: outputSize, activation: activation,
-                generator: &PhiloxRandomNumberGenerator.global)
-    }
-}
-
-public extension Dense {
-    /// Creates a `Dense` layer with the specified input size, output size, and element-wise
-    /// activation function. The weight matrix is created with shape `[inputSize, outputSize]` and
-    /// is initialized using Glorot uniform initialization with the specified seed. The bias vector
-    /// is created with shape `[outputSize]` and is initialized with zeros.
-    ///
-    /// - Parameters:
-    ///   - inputSize: The dimensionality of the input space.
-    ///   - outputSize: The dimensionality of the output space.
-    ///   - activation: The activation function to use. The default value is `identity(_:)`.
-    ///   - seed: The random seed for initialization. The default value is random.
+    ///   - weightInitializer: Initializer to use for `weight`.
+    ///   - biasInitializer: Initializer to use for `bias`.
     init(
         inputSize: Int,
         outputSize: Int,
         activation: @escaping Activation = identity,
-        seed: (Int32, Int32) = randomSeedForTensorFlow()
+        weightInitializer: ParameterInitializer<Scalar> = glorotUniform(),
+        biasInitializer: ParameterInitializer<Scalar> = zeros()
     ) {
-        self.init(weight: Tensor(glorotUniform: [inputSize, outputSize],
-                                 seed: seed),
-                  bias: Tensor(zeros: [outputSize]),
-                  activation: activation)
+        self.init(
+            weight: weightInitializer([inputSize, outputSize]),
+            bias: Tensor(zeros: [outputSize]),
+            activation: activation)
     }
 }
 
@@ -235,6 +207,6 @@ public struct Function<Input: Differentiable, Output: Differentiable>: Layer {
 
     @differentiable
     public func callAsFunction(_ input: Input) -> Output {
-        return body(input)
+        body(input)
     }
 }
