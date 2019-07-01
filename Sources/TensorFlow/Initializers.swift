@@ -531,3 +531,44 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         self = Tensor.glorot(fromStandardNormalScaledBy: normal, shape: shape)
     }
 }
+
+public extension Tensor where Scalar: TensorFlowFloatingPoint {
+    /// Creates an orthogonal matrix or tensor. 
+    ///
+    /// If the shape of the tensor to initialize is two-dimensional, it is initialized with an 
+    /// orthogonal matrix obtained from the QR decomposition of a matrix of random numbers drawn 
+    /// from a normal distribution. If the matrix has fewer rows than columns then the output will 
+    /// have orthogonal rows. Otherwise, the output will have orthogonal columns.
+    /// 
+    /// If the shape of the tensor to initialize is more than two-dimensional, a matrix of shape 
+    /// `[shape[0] * ... * shape[rank - 2], shape[rank - 1]]` is initialized.  The matrix is 
+    /// subsequently reshaped to give a tensor of the desired shape.
+    ///
+    /// - Parameters:
+    ///   - shape: The shape of the tensor.
+    ///   - gain: A multiplicative factor to apply to the orthogonal tensor.
+    ///   - seed: A tuple of two integers to seed the random number generator.
+    ///
+    init(
+        orthogonal shape: TensorShape,
+        gain: Scalar = 1,
+        seed: (Int32, Int32) = randomSeedForTensorFlow()
+    ) {
+        let rowCount = shape.dimensions.dropLast().reduce(1, *)
+        let columnCount = shape[shape.rank - 1]
+        var flatShape: TensorShape 
+        if rowCount < columnCount {
+            flatShape = [columnCount, rowCount]
+        } else {
+            flatShape = [rowCount, columnCount]
+        }
+        let normal = Tensor(randomNormal: flatShape, seed: seed)
+        var (q, r) = normal.qrDecomposition(fullMatrices: false)
+        let d = r.diagonalPart()
+        q *= sign(d)
+        if rowCount < columnCount {
+            q = q.transposed()
+        } 
+        self = q.reshaped(to: shape) * gain 
+    }
+}
