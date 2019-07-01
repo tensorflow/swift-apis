@@ -18,6 +18,42 @@
 // Old Initialization Schemes
 //===------------------------------------------------------------------------------------------===//
 
+public extension Tensor where Scalar == Int32 {
+    /// Creates a tensor with the specified shape, randomly sampling scalar values
+    /// from a discrete uniform distribution.
+    ///
+    /// - Parameters:
+    ///   - shape: The dimensions of the tensor.
+    ///   - generator: Random number generator to use.
+    @available(*, deprecated, message: "This API will be removed after Swift for TensorFlow 0.4.")
+    init<G: RandomNumberGenerator>(
+        randomStandardUniform shape: TensorShape,
+        generator: inout G
+    ) {
+        let dist = UniformIntegerDistribution<Scalar>()
+        var scalars: [Scalar] = []
+        for _ in 0 ..< shape.contiguousSize {
+            scalars.append(dist.next(using: &generator))
+        }
+        self.init(shape: shape, scalars: scalars)
+    }
+
+    /// Creates a tensor with the specified shape, randomly sampling scalar values
+    /// from a discrete uniform distribution, using the default random number
+    /// generator.
+    ///
+    /// - Parameters:
+    ///   - shape: The dimensions of the tensor.
+    @available(*, deprecated, message: "This API will be removed after Swift for TensorFlow 0.4.")
+    init(randomStandardUniform shape: TensorShape) {
+        self.init(randomStandardUniform: shape, generator: &PhiloxRandomNumberGenerator.global)
+    }
+}
+
+//===------------------------------------------------------------------------------------------===//
+// Old Layer Initialization Schemes
+//===------------------------------------------------------------------------------------------===//
+
 public extension Conv1D where Scalar.RawSignificand: FixedWidthInteger {
     /// Creates a `Conv1D` layer with the specified filter shape, stride, padding, dilation and
     /// element-wise activation function. The filter tensor is initialized using Glorot uniform
@@ -73,7 +109,7 @@ public extension Conv1D {
         padding: Padding = .valid,
         dilation: Int = 1,
         activation: @escaping Activation = identity,
-        seed: (Int32, Int32) = randomSeedForTensorFlow()
+        seed: (Int32, Int32) = Context.local.randomSeed
     ) {
         let filterTensorShape = TensorShape([
             filterShape.0, filterShape.1, filterShape.2])
@@ -148,7 +184,7 @@ public extension Conv2D {
         padding: Padding = .valid,
         dilations: (Int, Int) = (1, 1),
         activation: @escaping Activation = identity,
-        seed: (Int32, Int32) = randomSeedForTensorFlow()
+        seed: (Int32, Int32) = Context.local.randomSeed
     ) {
         let filterTensorShape = TensorShape([
             filterShape.0, filterShape.1, filterShape.2, filterShape.3])
@@ -218,7 +254,7 @@ public extension Conv3D {
         strides: (Int, Int, Int) = (1, 1, 1),
         padding: Padding = .valid,
         activation: @escaping Activation = identity,
-        seed: (Int32, Int32) = randomSeedForTensorFlow()
+        seed: (Int32, Int32) = Context.local.randomSeed
     ) {
         let filterTensorShape = TensorShape([
             filterShape.0, filterShape.1, filterShape.2, filterShape.3, filterShape.4])
@@ -283,7 +319,7 @@ public extension TransposedConv2D {
         strides: (Int, Int) = (1, 1),
         padding: Padding = .valid,
         activation: @escaping Activation = identity,
-        seed: (Int32, Int32) = randomSeedForTensorFlow()
+        seed: (Int32, Int32) = Context.local.randomSeed
     ) {
         let filterTensorShape = TensorShape([
             filterShape.0, filterShape.1, filterShape.2, filterShape.3])
@@ -346,7 +382,7 @@ public extension DepthwiseConv2D {
         strides: (Int, Int) = (1, 1),
         padding: Padding = .valid,
         activation: @escaping Activation = identity,
-        seed: (Int32, Int32) = randomSeedForTensorFlow()
+        seed: (Int32, Int32) = Context.local.randomSeed
     ) {
         let filterTensorShape = TensorShape([
             filterShape.0, filterShape.1, filterShape.2, filterShape.3])
@@ -407,7 +443,7 @@ public extension Dense {
         inputSize: Int,
         outputSize: Int,
         activation: @escaping Activation = identity,
-        seed: (Int32, Int32) = randomSeedForTensorFlow()
+        seed: (Int32, Int32) = Context.local.randomSeed
     ) {
         self.init(weight: Tensor(glorotUniform: [inputSize, outputSize],
                                  seed: seed),

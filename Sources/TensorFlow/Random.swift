@@ -18,6 +18,7 @@ import Darwin
 import Glibc
 #endif
 
+/// Generates a new random seed for TensorFlow.
 public func randomSeedForTensorFlow() -> (Int32, Int32) {
     (Int32.random(in: Int32.min..<Int32.max), Int32.random(in: Int32.min..<Int32.max))
 }
@@ -25,6 +26,26 @@ public func randomSeedForTensorFlow() -> (Int32, Int32) {
 //===------------------------------------------------------------------------------------------===//
 // Random Number Generators
 //===------------------------------------------------------------------------------------------===//
+
+/// A type-erased random number generator.
+///
+/// The `AnyRandomNumberGenerator` type forwards random number generating operations to an 
+/// underlying random number generator, hiding its specific underlying type.
+internal struct AnyRandomNumberGenerator: RandomNumberGenerator {
+    @usableFromInline
+    var _rng: RandomNumberGenerator
+
+    /// - Parameter rng: A random number generator.
+    @inlinable
+    init(_ rng: RandomNumberGenerator) {
+        self._rng = rng
+    }
+
+    @inlinable
+    mutating func next() -> UInt64 {
+        return self._rng.next()
+    }
+}
 
 /// A type that provides seedable deterministic pseudo-random data.
 ///
@@ -286,9 +307,7 @@ public struct ThreefryRandomNumberGenerator: SeedableRandomNumberGenerator {
 /// share state. The random data generated is of high-quality, but is not
 /// suitable for cryptographic applications.
 public struct PhiloxRandomNumberGenerator: SeedableRandomNumberGenerator {
-    public static var global = PhiloxRandomNumberGenerator(
-        uint64Seed: UInt64(time(nil))
-    )
+    public static var global = PhiloxRandomNumberGenerator(uint64Seed: UInt64(time(nil)))
 
     private var ctr: UInt64 = 0
     private let key: UInt32x2
