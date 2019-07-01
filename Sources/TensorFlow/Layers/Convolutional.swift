@@ -67,7 +67,7 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   where output width is computed as:
     ///
     ///   output width =
-    ///   [(input width + 2 * padding size - (dilation * (filter width - 1) + 1)) / stride] + 1
+    ///   (input width + 2 * padding size - (dilation * (filter width - 1) + 1)) / stride + 1
     ///
     ///   and padding size is determined by the padding scheme. Note that padding size equals zero
     ///   when using .valid.
@@ -211,15 +211,15 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   where the output spatial dimensions are computed as:
     ///
     ///   output height =
-    ///   [(input height + 2 * padding height - (dilation height * (filter height - 1) + 1))
-    ///   / stride height] + 1
+    ///   (input height + 2 * padding height - (dilation height * (filter height - 1) + 1))
+    ///   / stride height + 1
     ///
     ///   output width =
-    ///   [(input width + 2 * padding width - (dilation width * (filter width - 1) + 1))
-    ///   / stride width] + 1
+    ///   (input width + 2 * padding width - (dilation width * (filter width - 1) + 1))
+    ///   / stride width + 1
     ///
     ///   and padding sizes are determined by the padding scheme. Note padding sizes equal zero
-    ///   when using .valid.
+    ///   when using `.valid`.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         return activation(conv2D(
@@ -358,16 +358,16 @@ public struct Conv3D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   where the spatial dimensions are computed as:
     ///
     ///   output depth =
-    ///   [(input depth + 2 * padding depth - (dilation depth * (filter depth - 1) + 1))
-    ///   / stride depth] + 1
+    ///   (input depth + 2 * padding depth - (dilation depth * (filter depth - 1) + 1))
+    ///   / stride depth + 1
     ///
     ///   output height =
-    ///   [(input height + 2 * padding height - (dilation height * (filter height - 1) + 1))
-    ///   / stride height] + 1
+    ///   (input height + 2 * padding height - (dilation height * (filter height - 1) + 1))
+    ///   / stride height + 1
     ///
     ///   output width =
-    ///   [(input width + 2 * padding width - (dilation width * (filter width - 1) + 1))
-    ///   / stride width] + 1
+    ///   (input width + 2 * padding width - (dilation width * (filter width - 1) + 1))
+    ///   / stride width + 1
     ///
     ///   and padding sizes are determined by the padding scheme. Note that padding sizes equal zero
     ///   when using .valid.
