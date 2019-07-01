@@ -48,8 +48,9 @@ public struct Context {
     public var learningPhase: LearningPhase = .inference
 
     /// The random seed.
-    /// Note that whenever obtained, the random seed is also updated so that future stateless 
-    /// random TensorFlow op executions will result in non-deterministic results.
+    ///
+    /// - Note: Whenever obtained, the random seed is also updated so that future stateless 
+    ///   random TensorFlow op executions will result in non-deterministic results.
     public var randomSeed: (Int32, Int32) {
         mutating get {
             let seed = _randomSeed
