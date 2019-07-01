@@ -43,29 +43,29 @@ public extension Layer {
     }
 }
 
-public struct EmptyParameterSet: Differentiable & VectorProtocol & ElementaryFunctions & 
-                                 PointwiseMultiplicative & KeyPathIterable {
-    public typealias AllDifferentiableVariables = EmptyParameterSet
+public struct EmptyTangentVector: Differentiable & VectorProtocol & ElementaryFunctions & 
+                                  PointwiseMultiplicative & KeyPathIterable {
+    public typealias AllDifferentiableVariables = EmptyTangentVector
     public typealias VectorSpaceScalar = Float
 
-    public func adding(_ x: Float) -> EmptyParameterSet { self }
+    public func adding(_ x: Float) -> EmptyTangentVector { self }
     public mutating func add(_ x: Float) {}
-    public func subtracting(_ x: Float) -> EmptyParameterSet { self }
+    public func subtracting(_ x: Float) -> EmptyTangentVector { self }
     public mutating func subtract(_ x: Float) {}
-    public func scaled(by scalar: Float) -> EmptyParameterSet { self }
+    public func scaled(by scalar: Float) -> EmptyTangentVector { self }
     public mutating func scale(by scalar: Float) {}
 }
 
 public protocol ParameterlessLayer: Layer
-where AllDifferentiableVariables == EmptyParameterSet {}
+where AllDifferentiableVariables == EmptyTangentVector {}
 
 public extension ParameterlessLayer {
-    var allDifferentiableVariables: EmptyParameterSet {
-        get { return EmptyParameterSet() }
+    var allDifferentiableVariables: EmptyTangentVector {
+        get { return EmptyTangentVector() }
         set {}
     }
 
-    mutating func move(along direction: EmptyParameterSet) {}
+    mutating func move(along direction: EmptyTangentVector) {}
 }
 
 public extension Layer {
