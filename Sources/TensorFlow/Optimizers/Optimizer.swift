@@ -12,9 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-public typealias Optimizable =
-    VectorProtocol & ElementaryFunctions & PointwiseMultiplicative & KeyPathIterable
-
 /// A numerical optimizer.
 ///
 /// Optimizers apply an optimization algorithm to update the differentiable models.
