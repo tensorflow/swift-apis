@@ -19,9 +19,9 @@
 ///
 /// `Layer` instances define a differentiable `applied(to:)` method for mapping inputs to
 /// outputs.
-public protocol Layer: Differentiable & KeyPathIterable
-    where TangentVector: VectorProtocol & ElementaryFunctions & 
-                         PointwiseMultiplicative & KeyPathIterable, 
+public protocol Layer: Differentiable, KeyPathIterable
+    where TangentVector: VectorProtocol & ElementaryFunctions &
+                         PointwiseMultiplicative & KeyPathIterable,
           AllDifferentiableVariables == TangentVector {
     /// The input type of the layer.
     associatedtype Input: Differentiable
@@ -43,8 +43,9 @@ public extension Layer {
     }
 }
 
-public struct EmptyTangentVector: Differentiable & VectorProtocol & ElementaryFunctions & 
-                                  PointwiseMultiplicative & KeyPathIterable {
+/// An empty struct representing empty `TangentVector`s for parameterless layers.
+public struct EmptyTangentVector: Differentiable, VectorProtocol, ElementaryFunctions,
+                                  PointwiseMultiplicative, KeyPathIterable {
     public typealias AllDifferentiableVariables = EmptyTangentVector
     public typealias VectorSpaceScalar = Float
 
@@ -56,12 +57,14 @@ public struct EmptyTangentVector: Differentiable & VectorProtocol & ElementaryFu
     public mutating func scale(by scalar: Float) {}
 }
 
-public protocol ParameterlessLayer: Layer
-where AllDifferentiableVariables == EmptyTangentVector {}
+/// A parameterless neural network layer.
+///
+/// The `TangentVector` of parameterless layers is always `EmptyTangentVector`.
+public protocol ParameterlessLayer: Layer where AllDifferentiableVariables == EmptyTangentVector {}
 
 public extension ParameterlessLayer {
     var allDifferentiableVariables: EmptyTangentVector {
-        get { return EmptyTangentVector() }
+        get { EmptyTangentVector() }
         set {}
     }
 
