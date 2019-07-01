@@ -617,7 +617,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     init(
         orthogonal shape: TensorShape,
         gain: Scalar = 1,
-        seed: (Int32, Int32) = randomSeedForTensorFlow()
+        seed: (Int32, Int32) = Context.local.randomSeed
     ) {
         let rowCount = shape.dimensions.dropLast().reduce(1, *)
         let columnCount = shape[shape.rank - 1]
