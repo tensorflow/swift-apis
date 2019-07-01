@@ -390,7 +390,7 @@ public extension Conv3D {
     ///   - filterShape: The shape of the 5-D convolution filter, representing
     ///     (filter depth, filter height, filter width, input channel count,
     ///     output channel count).
-    ///   - strides: The strides of the sliding window for spatial dimensions of shape
+    ///   - strides: The strides of the sliding window for spatial dimensions, i.e.
     ///     (stride depth, stride height, stride width)
     ///   - padding: The padding algorithm for convolution.
     ///   - activation: The element-wise activation function.
@@ -425,7 +425,7 @@ public extension Conv3D {
     ///   - filterShape: The shape of the 5-D convolution filter, representing
     ///     (filter depth, filter height, filter width, input channel count,
     ///     output channel count).
-    ///   - strides: The strides of the sliding window for spatial dimensions of shape
+    ///   - strides: The strides of the sliding window for spatial dimensions, i.e.
     ///     (stride depth, stride height, stride width)
     ///   - padding: The padding algorithm for convolution.
     ///   - activation: The element-wise activation function.
