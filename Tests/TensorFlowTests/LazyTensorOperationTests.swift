@@ -50,7 +50,7 @@ final class LazyTensorOperationTests: XCTestCase {
             _id: "3", name: "Identity", outputCount: 1)
         let const = LazyTensorOperation(
             _id: "0", name: "Const", outputCount: 1)
-        op3.addInput(LazyTensor(_lazy: const, index: 0))
+        op3.addInput(LazyTensorHandle(_lazy: const, index: 0))
         XCTAssertEqual(op3.description, "%3 = Identity(%0)")
     }
 
@@ -59,7 +59,7 @@ final class LazyTensorOperationTests: XCTestCase {
             _id: "0", name: "Const", outputCount: 1)
         let op0 = LazyTensorOperation(
             _id: "0", name: "Identity", outputCount: 1)
-        op0.addInput(LazyTensor(_lazyLive: const, index: 0))
+        op0.addInput(LazyTensorHandle(_lazyLive: const, index: 0))
         op0.addInput(StringTensor("hello"))
         XCTAssertEqual(op0.description, "%0 = Identity(%0*, \"string\")")
     }
@@ -73,10 +73,10 @@ final class LazyTensorOperationTests: XCTestCase {
             _id: "0", name: "IdentityN", outputCount: 2)
         let inputs: [TensorHandle<Float>] = [
             zero.handle,
-            TensorHandle<Float>(handle: LazyTensor(_lazy: tuple, index: 0)),
-            TensorHandle<Float>(handle: LazyTensor(_lazy: tuple, index: 1))]
+            TensorHandle<Float>(handle: LazyTensorHandle(_lazy: tuple, index: 0)),
+            TensorHandle<Float>(handle: LazyTensorHandle(_lazy: tuple, index: 1))]
         op0.addInputList(inputs)
-        op0.addInput(LazyTensor(_lazy: tuple, index: 2))
+        op0.addInput(LazyTensorHandle(_lazy: tuple, index: 2))
         XCTAssertEqual(
             op0.description, "(%0.0, %0.1) = IdentityN([0.0, %0.0, %0.1], %0.2)")
 
