@@ -34,6 +34,7 @@ public extension Conv1D where Scalar.RawSignificand: FixedWidthInteger {
     ///
     /// - Note: Use `init(filterShape:stride:padding:dilation:activation:seed:)` for faster random
     ///   initialization.
+    @available(*, deprecated, message: "This API will be removed after Swift for TensorFlow 0.4.")
     init<G: RandomNumberGenerator>(
         filterShape: (Int, Int, Int),
         stride: Int = 1,
@@ -65,6 +66,7 @@ public extension Conv1D {
     ///   - dilation: The dilation factor for the temporal dimension.
     ///   - activation: The element-wise activation function.
     ///   - seed: The random seed for initialization. The default value is random.
+    @available(*, deprecated, message: "This API will be removed after Swift for TensorFlow 0.4.")
     init(
         filterShape: (Int, Int, Int),
         stride: Int = 1,
@@ -103,6 +105,7 @@ public extension Conv2D {
     ///
     /// - Note: Use `init(filterShape:strides:padding:activation:seed:)` for faster random
     ///   initialization.
+    @available(*, deprecated, message: "This API will be removed after Swift for TensorFlow 0.4.")
     init<G: RandomNumberGenerator>(
         filterShape: (Int, Int, Int, Int),
         strides: (Int, Int) = (1, 1),
@@ -138,6 +141,7 @@ public extension Conv2D {
     ///     (dilation height, dilation width).
     ///   - activation: The element-wise activation function.
     ///   - seed: The random seed for initialization. The default value is random.
+    @available(*, deprecated, message: "This API will be removed after Swift for TensorFlow 0.4.")
     init(
         filterShape: (Int, Int, Int, Int),
         strides: (Int, Int) = (1, 1),
@@ -175,6 +179,7 @@ public extension Conv3D {
     ///
     /// - Note: Use `init(filterShape:strides:padding:activation:seed:)` for faster random
     ///   initialization.
+    @available(*, deprecated, message: "This API will be removed after Swift for TensorFlow 0.4.")
     init<G: RandomNumberGenerator>(
         filterShape: (Int, Int, Int, Int, Int),
         strides: (Int, Int, Int) = (1, 1, 1),
@@ -207,6 +212,7 @@ public extension Conv3D {
     ///   - padding: The padding algorithm for convolution.
     ///   - activation: The element-wise activation function.
     ///   - seed: The random seed for initialization. The default value is random.
+    @available(*, deprecated, message: "This API will be removed after Swift for TensorFlow 0.4.")
     init(
         filterShape: (Int, Int, Int, Int, Int),
         strides: (Int, Int, Int) = (1, 1, 1),
@@ -240,6 +246,7 @@ public extension TransposedConv2D {
     ///
     /// - Note: Use `init(filterShape:strides:padding:activation:seed:)` for faster random
     ///   initialization.
+    @available(*, deprecated, message: "This API will be removed after Swift for TensorFlow 0.4.")
     init<G: RandomNumberGenerator>(
         filterShape: (Int, Int, Int, Int),
         strides: (Int, Int) = (1, 1),
@@ -270,6 +277,7 @@ public extension TransposedConv2D {
     ///   - padding: The padding algorithm for convolution.
     ///   - activation: The element-wise activation function.
     ///   - seed: The random seed for initialization. The default value is random.
+    @available(*, deprecated, message: "This API will be removed after Swift for TensorFlow 0.4.")
     init(
         filterShape: (Int, Int, Int, Int),
         strides: (Int, Int) = (1, 1),
@@ -302,6 +310,7 @@ public extension DepthwiseConv2D {
     ///
     /// - Note: Use `init(filterShape:strides:padding:activation:seed:)` for faster random
     ///   initialization.
+    @available(*, deprecated, message: "This API will be removed after Swift for TensorFlow 0.4.")
     init<G: RandomNumberGenerator>(
         filterShape: (Int, Int, Int, Int),
         strides: (Int, Int) = (1, 1),
@@ -331,6 +340,7 @@ public extension DepthwiseConv2D {
     ///   - padding: The padding algorithm for convolution.
     ///   - activation: The element-wise activation function.
     ///   - seed: The random seed for initialization. The default value is random.
+    @available(*, deprecated, message: "This API will be removed after Swift for TensorFlow 0.4.")
     init(
         filterShape: (Int, Int, Int, Int),
         strides: (Int, Int) = (1, 1),
@@ -362,6 +372,7 @@ public extension Dense {
     ///   - generator: The random number generator for initialization.
     ///
     /// - Note: Use `init(inputSize:outputSize:activation:seed:)` for faster random initialization.
+    @available(*, deprecated, message: "This API will be removed after Swift for TensorFlow 0.4.")
     init<G: RandomNumberGenerator>(
         inputSize: Int,
         outputSize: Int,
@@ -391,6 +402,7 @@ public extension Dense {
     ///   - outputSize: The dimensionality of the output space.
     ///   - activation: The activation function to use. The default value is `identity(_:)`.
     ///   - seed: The random seed for initialization. The default value is random.
+    @available(*, deprecated, message: "This API will be removed after Swift for TensorFlow 0.4.")
     init(
         inputSize: Int,
         outputSize: Int,
