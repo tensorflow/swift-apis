@@ -201,7 +201,6 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
 }
 
 public struct RNN<Cell: RNNCell>: Layer {
-    public typealias Scalar = Cell.Scalar
     public typealias Input = [Cell.TimeStepInput]
     public typealias Output = [Cell.TimeStepOutput]
 

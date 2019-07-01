@@ -14,7 +14,7 @@
 
 /// A max pooling layer for temporal data.
 @frozen
-public struct MaxPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
+public struct MaxPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     /// The size of the sliding reduction window for pooling.
     @noDerivative let poolSize: Int
     /// The stride of the sliding window for temporal dimension.
@@ -51,7 +51,7 @@ public struct MaxPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
 
 /// A max pooling layer for spatial data.
 @frozen
-public struct MaxPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
+public struct MaxPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     /// The size of the sliding reduction window for pooling.
     @noDerivative let poolSize: (Int, Int, Int, Int)
     /// The strides of the sliding window for each dimension of a 4-D input.
@@ -94,7 +94,7 @@ public extension MaxPool2D {
 
 /// A max pooling layer for spatial or spatio-temporal data.
 @frozen
-public struct MaxPool3D<Scalar: TensorFlowFloatingPoint>: Layer {
+public struct MaxPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     /// The size of the sliding reduction window for pooling.
     @noDerivative let poolSize: (Int, Int, Int, Int, Int)
     /// The strides of the sliding window for each dimension of a 5-D input.
@@ -152,7 +152,7 @@ public extension MaxPool3D {
 
 /// An average pooling layer for temporal data.
 @frozen
-public struct AvgPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
+public struct AvgPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     /// The size of the sliding reduction window for pooling.
     @noDerivative let poolSize: Int
     /// The stride of the sliding window for temporal dimension.
@@ -189,7 +189,7 @@ public struct AvgPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
 
 /// An average pooling layer for spatial data.
 @frozen
-public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
+public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     /// The size of the sliding reduction window for pooling.
     @noDerivative let poolSize: (Int, Int, Int, Int)
     /// The strides of the sliding window for each dimension of a 4-D input.
@@ -232,7 +232,7 @@ public extension AvgPool2D {
 
 /// An average pooling layer for spatial or spatio-temporal data.
 @frozen
-public struct AvgPool3D<Scalar: TensorFlowFloatingPoint>: Layer {
+public struct AvgPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     /// The size of the sliding reduction window for pooling.
     @noDerivative let poolSize: (Int, Int, Int, Int, Int)
     /// The strides of the sliding window for each dimension of a 5-D input.
@@ -290,7 +290,7 @@ public extension AvgPool3D {
 
 /// A global average pooling layer for temporal data.
 @frozen
-public struct GlobalAvgPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
+public struct GlobalAvgPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     /// Creates a global average pooling layer.
     public init() {}
 
@@ -306,7 +306,7 @@ public struct GlobalAvgPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
 
 /// A global average pooling layer for spatial data.
 @frozen
-public struct GlobalAvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
+public struct GlobalAvgPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     /// Creates a global average pooling layer.
     public init() {}
 
@@ -322,7 +322,7 @@ public struct GlobalAvgPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
 
 /// A global average pooling layer for spatial and spatio-temporal data.
 @frozen
-public struct GlobalAvgPool3D<Scalar: TensorFlowFloatingPoint>: Layer {
+public struct GlobalAvgPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     /// Creates a global average pooling layer.
     public init() {}
 
@@ -338,7 +338,7 @@ public struct GlobalAvgPool3D<Scalar: TensorFlowFloatingPoint>: Layer {
 
 /// A global max pooling layer for temporal data.
 @frozen
-public struct GlobalMaxPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
+public struct GlobalMaxPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     /// Creates a global max pooling layer.
     public init() {}
 
@@ -357,7 +357,7 @@ public struct GlobalMaxPool1D<Scalar: TensorFlowFloatingPoint>: Layer {
 
 /// A global max pooling layer for spatial data.
 @frozen
-public struct GlobalMaxPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
+public struct GlobalMaxPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     /// Creates a global max pooling layer.
     public init() {}
 
@@ -373,7 +373,7 @@ public struct GlobalMaxPool2D<Scalar: TensorFlowFloatingPoint>: Layer {
 
 /// A global max pooling layer for spatial and spatio-temporal data.
 @frozen
-public struct GlobalMaxPool3D<Scalar: TensorFlowFloatingPoint>: Layer {
+public struct GlobalMaxPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     /// Creates a global max pooling layer.
     public init() {}
 

@@ -20,9 +20,7 @@
 /// `Layer` instances define a differentiable `applied(to:)` method for mapping inputs to
 /// outputs.
 public protocol Layer: Differentiable & KeyPathIterable
-    where AllDifferentiableVariables: KeyPathIterable {
-    /// The parameters type of the layer.
-    associatedtype Scalar: TensorFlowFloatingPoint
+    where TangentVector: Optimizable, AllDifferentiableVariables == TangentVector {
     /// The input type of the layer.
     associatedtype Input: Differentiable
     /// The output type of the layer.
@@ -43,6 +41,30 @@ public extension Layer {
     }
 }
 
+public struct EmptyParameterSet: Differentiable & Optimizable {
+    public typealias AllDifferentiableVariables = EmptyParameterSet
+    public typealias VectorSpaceScalar = Float
+
+    public func adding(_ x: Float) -> EmptyParameterSet { self }
+    public mutating func add(_ x: Float) {}
+    public func subtracting(_ x: Float) -> EmptyParameterSet { self }
+    public mutating func subtract(_ x: Float) {}
+    public func scaled(by scalar: Float) -> EmptyParameterSet { self }
+    public mutating func scale(by scalar: Float) {}
+}
+
+public protocol ParameterlessLayer: Layer
+where AllDifferentiableVariables == EmptyParameterSet {}
+
+public extension ParameterlessLayer {
+    var allDifferentiableVariables: EmptyParameterSet {
+        get { return EmptyParameterSet() }
+        set {}
+    }
+
+    mutating func move(along direction: EmptyParameterSet) {}
+}
+
 public extension Layer {
     /// Returns the inference output obtained from applying the layer to the given input.
     ///
@@ -58,7 +80,7 @@ public extension Layer {
     @usableFromInline
     internal func _vjpInferring(from input: Input)
         -> (value: Output, pullback: (Output.TangentVector)
-            -> (TangentVector, Input.TangentVector)) {
+            -> (AllDifferentiableVariables, Input.TangentVector)) {
         return withLearningPhase(LearningPhase.inference) {
             let (output, pullback) = appliedForBackpropagation(to: input)
             return (output, { v in pullback(v) })

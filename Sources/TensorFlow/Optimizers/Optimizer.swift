@@ -12,12 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+public typealias Optimizable =
+    VectorProtocol & ElementaryFunctions & PointwiseMultiplicative & KeyPathIterable
+
 /// A numerical optimizer.
 ///
 /// Optimizers apply an optimization algorithm to update the differentiable models.
 public protocol Optimizer {
     /// The type of the model whose parameters are optimized.
-    associatedtype Model: Differentiable
+    associatedtype Model: Differentiable where Model.TangentVector: Optimizable
     /// The scalar parameter type.
     associatedtype Scalar: FloatingPoint
     /// The learning rate.

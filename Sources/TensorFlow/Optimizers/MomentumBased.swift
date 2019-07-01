@@ -21,8 +21,7 @@
 /// Reference: ["rmsprop: Divide the gradient by a running average of its recent magnitude"](
 /// http://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf)
 public class RMSProp<Model: Differentiable>: Optimizer
-    where Model.TangentVector: VectorProtocol & PointwiseMultiplicative & ElementaryFunctions,
-          Model.TangentVector.VectorSpaceScalar == Float {
+    where Model.TangentVector: Optimizable, Model.TangentVector.VectorSpaceScalar == Float {
     public typealias Model = Model
     /// The learning rate.
     public var learningRate: Float
@@ -79,8 +78,7 @@ public class RMSProp<Model: Differentiable>: Optimizer
 /// Reference: ["Adaptive Subgradient Methods for Online Learning and Stochastic Optimization"](
 /// http://www.jmlr.org/papers/volume12/duchi11a/duchi11a.pdf)
 public class AdaGrad<Model: Differentiable>: Optimizer
-    where Model.TangentVector: VectorProtocol & PointwiseMultiplicative & ElementaryFunctions,
-          Model.TangentVector.VectorSpaceScalar == Float {
+    where Model.TangentVector: Optimizable, Model.TangentVector.VectorSpaceScalar == Float {
     public typealias Model = Model
     /// The learning rate.
     public var learningRate: Float
@@ -129,8 +127,7 @@ public class AdaGrad<Model: Differentiable>: Optimizer
 /// 
 /// Reference: ["ADADELTA: An Adaptive Learning Rate Method"](https://arxiv.org/abs/1212.5701)
 public class AdaDelta<Model: Differentiable>: Optimizer
-    where Model.TangentVector: VectorProtocol & PointwiseMultiplicative & ElementaryFunctions,
-          Model.TangentVector.VectorSpaceScalar == Float {
+    where Model.TangentVector: Optimizable, Model.TangentVector.VectorSpaceScalar == Float {
     public typealias Model = Model
     /// The learning rate.
     public var learningRate: Float
@@ -189,8 +186,7 @@ public class AdaDelta<Model: Differentiable>: Optimizer
 /// Reference: ["Adam - A Method for Stochastic Optimization"](
 /// https://arxiv.org/abs/1412.6980v8)
 public class Adam<Model: Differentiable>: Optimizer
-    where Model.TangentVector: VectorProtocol & PointwiseMultiplicative & ElementaryFunctions,
-          Model.TangentVector.VectorSpaceScalar == Float {
+    where Model.TangentVector: Optimizable, Model.TangentVector.VectorSpaceScalar == Float {
     public typealias Model = Model
     /// The learning rate.
     public var learningRate: Float
@@ -260,9 +256,8 @@ public class Adam<Model: Differentiable>: Optimizer
 /// Reference: Section 7 of ["Adam - A Method for Stochastic Optimization"](
 /// https://arxiv.org/abs/1412.6980v8)
 public class AdaMax<Model: Differentiable & KeyPathIterable>: Optimizer
-    where Model.TangentVector: VectorProtocol & PointwiseMultiplicative & ElementaryFunctions,
+    where Model.TangentVector: Optimizable,
           Model.TangentVector.VectorSpaceScalar == Float,
-          Model.AllDifferentiableVariables: KeyPathIterable,
           Model.AllDifferentiableVariables == Model.TangentVector {
     public typealias Model = Model
     /// The learning rate.
@@ -345,9 +340,8 @@ public class AdaMax<Model: Differentiable & KeyPathIterable>: Optimizer
 /// Reference: ["On the Convergence of Adam and Beyond"](
 /// https://openreview.net/pdf?id=ryQu7f-RZ)
 public class AMSGrad<Model: Differentiable & KeyPathIterable>: Optimizer
-    where Model.TangentVector: VectorProtocol & PointwiseMultiplicative & ElementaryFunctions,
+    where Model.TangentVector: Optimizable,
           Model.TangentVector.VectorSpaceScalar == Float,
-          Model.AllDifferentiableVariables: KeyPathIterable,
           Model.AllDifferentiableVariables == Model.TangentVector {
     public typealias Model = Model
     /// The learning rate.

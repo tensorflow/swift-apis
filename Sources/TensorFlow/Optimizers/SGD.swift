@@ -17,8 +17,7 @@
 /// An optimizer that implements stochastic gradient descent, with support for momentum, learning
 /// rate decay, and Nesterov momentum.
 public class SGD<Model: Differentiable>: Optimizer
-    where Model.TangentVector: VectorProtocol & ElementaryFunctions,
-          Model.TangentVector.VectorSpaceScalar == Float {
+    where Model.TangentVector: Optimizable, Model.TangentVector.VectorSpaceScalar == Float {
     public typealias Model = Model
     /// The learning rate.
     public var learningRate: Float
