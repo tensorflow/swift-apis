@@ -44,7 +44,7 @@ public extension Layer {
 }
 
 public struct EmptyParameterSet: Differentiable & VectorProtocol & ElementaryFunctions & 
-                                PointwiseMultiplicative & KeyPathIterable {
+                                 PointwiseMultiplicative & KeyPathIterable {
     public typealias AllDifferentiableVariables = EmptyParameterSet
     public typealias VectorSpaceScalar = Float
 
