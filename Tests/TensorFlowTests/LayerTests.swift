@@ -17,25 +17,34 @@ import XCTest
 
 final class LayerTests: XCTestCase {
     func testSequential() {
-        let inputSize = 2
-        let hiddenSize = 4
-        // let dense1 = Dense<Float>(inputSize: inputSize, outputSize: hiddenSize, activation: relu)
-        // let dense2 = Dense<Float>(inputSize: hiddenSize, outputSize: 1, activation: relu)
-        var model = Sequential {
-            Dense<Float>(inputSize: inputSize, outputSize: hiddenSize, activation: relu)
-            Dense<Float>(inputSize: hiddenSize, outputSize: 1, activation: relu)
-        }
-        let optimizer = SGD(for: model, learningRate: 0.02)
-        let x = Tensor<Float>([[0, 0], [0, 1], [1, 0], [1, 1]])
-        let y = Tensor<Float>([0, 1, 1, 0])
-        for _ in 0..<1000 {
-            let 𝛁model = model.gradient { model -> Tensor<Float> in
-                let ŷ = model(x)
-                return meanSquaredError(predicted: ŷ, expected: y)
+        withRandomSeedForTensorFlow((12345, 12345)) {
+            let inputSize = 2
+            let hiddenSize = 4
+            var model = Sequential {
+                Dense<Float>(
+                    inputSize: inputSize,
+                    outputSize: hiddenSize,
+                    activation: sigmoid,
+                    weightInitializer: glorotUniform())
+                Dense<Float>(
+                    inputSize: hiddenSize,
+                    outputSize: 1,
+                    weightInitializer: glorotUniform())
             }
-            optimizer.update(&model, along: 𝛁model)
+            let optimizer = SGD(for: model)
+            let x = Tensor<Float>([[0, 0], [0, 1], [1, 0], [1, 1]])
+            let y = Tensor<Float>([0, 1, 1, 0])
+            for _ in 0..<10 {
+                let 𝛁model = model.gradient { model -> Tensor<Float> in
+                    let ŷ = model(x).squeezingShape(at: 1)
+                    return (y - ŷ).squared().sum()
+                }
+                optimizer.update(&model, along: 𝛁model)
+            }
+            assertEqual(
+                model.inferring(from: [[0, 0], [0, 1], [1, 0], [1, 1]]),
+                [0.25301588, 0.21743035, 0.32044548, 0.2807928], accuracy: 0.0001)
         }
-        print(model.inferring(from: [[0, 0], [0, 1], [1, 0], [1, 1]]))
     }
 
     func testConv1D() {
