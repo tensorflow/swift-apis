@@ -16,6 +16,25 @@ import XCTest
 @testable import TensorFlow
 
 final class LayerTests: XCTestCase {
+    func testComposed() {
+        let inputSize = 2
+        let hiddenSize = 4
+        let dense1 = Dense<Float>(inputSize: inputSize, outputSize: hiddenSize, activation: relu)
+        let dense2 = Dense<Float>(inputSize: hiddenSize, outputSize: 1, activation: relu)
+        var model = dense1 >>> dense2
+        let optimizer = SGD(for: model, learningRate: 0.02)
+        let x = Tensor<Float>([[0, 0], [0, 1], [1, 0], [1, 1]])
+        let y = Tensor<Float>([0, 1, 1, 0])
+        for _ in 0..<1000 {
+            let 𝛁model = model.gradient { model -> Tensor<Float> in
+                let ŷ = model(x)
+                return meanSquaredError(predicted: ŷ, expected: y)
+            }
+            optimizer.update(&model, along: 𝛁model)
+        }
+        print(model.inferring(from: [[0, 0], [0, 1], [1, 0], [1, 1]]))
+    }
+
     func testConv1D() {
         let filter = Tensor<Float>(ones: [3, 1, 2]) * Tensor<Float>([[[0.5, 1]]])
         let bias = Tensor<Float>([0, 1])
@@ -351,6 +370,7 @@ final class LayerTests: XCTestCase {
     }
 
     static var allTests = [
+        ("testComposed", testComposed),
         ("testConv1D", testConv1D),
         ("testConv1DDilation", testConv1DDilation),
         ("testConv2D", testConv2D),
