@@ -29,7 +29,7 @@ final class BasicOperatorTests: XCTestCase {
         let y = x.batchGathering(
             atIndices: Tensor<Int32>([1, 0]),
             alongAxis: 2,
-            batchDimCount: 2)
+            batchDimensionCount: 2)
         XCTAssertEqual(y, Tensor<Float>([2.0, 4.0]))
     }
 
