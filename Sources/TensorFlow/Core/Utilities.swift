@@ -277,7 +277,7 @@ internal extension Array where Element == UInt8 {
             }
 
             var hashCopy = accumulatedHash
-            for j in 0..<k.count {
+            for j in k.indices {
                 let s0 = hashCopy[0].rotate(rightBy: 28) ^
                     hashCopy[0].rotate(rightBy: 34) ^
                     hashCopy[0].rotate(rightBy: 39)
