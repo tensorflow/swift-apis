@@ -15,21 +15,22 @@
 import XCTest
 @testable import TensorFlow
 
-infix operator ++: AdditionPrecedence
-infix operator .=
-
-infix operator ..: StridedRangeFormationPrecedence
-precedencegroup StridedRangeFormationPrecedence {
-    associativity: left
-    higherThan: CastingPrecedence
-    lowerThan: RangeFormationPrecedence
-}
-
 final class BasicOperatorTests: XCTestCase {
     func testGathering() {
         let x = Tensor<Float>([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
         let y = x.gathering(atIndices: Tensor<Int32>(2), alongAxis: 1)
         XCTAssertEqual(y, Tensor<Float>([3.0, 6.0]))
+    }
+
+    func testBatchGathering() {
+        let x = Tensor<Float>([[
+            [1.0, 2.0, 3.0],
+            [4.0, 5.0, 6.0]]])
+        let y = x.batchGathering(
+            atIndices: Tensor<Int32>([1, 0]),
+            alongAxis: 2,
+            batchDimensionCount: 2)
+        XCTAssertEqual(y, Tensor<Float>([2.0, 4.0]))
     }
 
     func testPadded() {
@@ -596,6 +597,7 @@ final class BasicOperatorTests: XCTestCase {
 
     static var allTests = [
         ("testGathering", testGathering),
+        ("testBatchGathering", testBatchGathering),
         ("testPadded", testPadded),
         ("testVJPPadded", testVJPPadded),
         ("testElementIndexing", testElementIndexing),
