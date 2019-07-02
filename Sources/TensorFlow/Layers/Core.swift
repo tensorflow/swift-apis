@@ -46,7 +46,7 @@ public extension Layer {
         _ lhs: Self,
         _ rhs: OtherLayer
     ) -> ComposedLayer<Self, OtherLayer> {
-        return ComposedLayer(lhs, rhs)
+        ComposedLayer(lhs, rhs)
     }
 }
 
