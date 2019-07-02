@@ -276,40 +276,30 @@ internal extension Array where Element == UInt8 {
                 }
             }
 
-            var A = accumulatedHash[0]
-            var B = accumulatedHash[1]
-            var C = accumulatedHash[2]
-            var D = accumulatedHash[3]
-            var E = accumulatedHash[4]
-            var F = accumulatedHash[5]
-            var G = accumulatedHash[6]
-            var H = accumulatedHash[7]
-
+            var hashCopy = accumulatedHash
             for j in 0..<k.count {
-                let s0 = A.rotate(rightBy: 28) ^ A.rotate(rightBy: 34) ^ A.rotate(rightBy: 39)
-                let maj = (A & B) ^ (A & C) ^ (B & C)
+                let s0 = hashCopy[0].rotate(rightBy: 28) ^
+                    hashCopy[0].rotate(rightBy: 34) ^
+                    hashCopy[0].rotate(rightBy: 39)
+                let maj = (hashCopy[0] & hashCopy[1]) ^ 
+                    (hashCopy[0] & hashCopy[2]) ^
+                    (hashCopy[1] & hashCopy[2])
                 let t2 = s0 &+ maj
-                let s1 = E.rotate(rightBy: 14) ^ E.rotate(rightBy: 18) ^ E.rotate(rightBy: 41)
-                let ch = (E & F) ^ ((~E) & G)
-                let t1 = H &+ s1 &+ ch &+ k[j] &+ UInt64(M[j])
-                H = G
-                G = F
-                F = E
-                E = D &+ t1
-                D = C
-                C = B
-                B = A
-                A = t1 &+ t2
+                let s1 = hashCopy[4].rotate(rightBy: 14) ^
+                    hashCopy[4].rotate(rightBy: 18) ^
+                    hashCopy[4].rotate(rightBy: 41)
+                let ch = (hashCopy[4] & hashCopy[5]) ^ ((~hashCopy[4]) & hashCopy[6])
+                let t1 = hashCopy[7] &+ s1 &+ ch &+ k[j] &+ UInt64(M[j])
+                hashCopy[7] = hashCopy[6]
+                hashCopy[6] = hashCopy[5]
+                hashCopy[5] = hashCopy[4]
+                hashCopy[4] = hashCopy[3] &+ t1
+                hashCopy[3] = hashCopy[2]
+                hashCopy[2] = hashCopy[1]
+                hashCopy[1] = hashCopy[0]
+                hashCopy[0] = t1 &+ t2
             }
-
-            accumulatedHash[0] = (accumulatedHash[0] &+ A)
-            accumulatedHash[1] = (accumulatedHash[1] &+ B)
-            accumulatedHash[2] = (accumulatedHash[2] &+ C)
-            accumulatedHash[3] = (accumulatedHash[3] &+ D)
-            accumulatedHash[4] = (accumulatedHash[4] &+ E)
-            accumulatedHash[5] = (accumulatedHash[5] &+ F)
-            accumulatedHash[6] = (accumulatedHash[6] &+ G)
-            accumulatedHash[7] = (accumulatedHash[7] &+ H)
+            accumulatedHash &+= hashCopy
         }
 
         // Step 4: Return the computed hash.
