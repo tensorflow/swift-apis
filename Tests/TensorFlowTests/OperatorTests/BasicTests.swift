@@ -15,16 +15,6 @@
 import XCTest
 @testable import TensorFlow
 
-infix operator ++: AdditionPrecedence
-infix operator .=
-
-infix operator ..: StridedRangeFormationPrecedence
-precedencegroup StridedRangeFormationPrecedence {
-    associativity: left
-    higherThan: CastingPrecedence
-    lowerThan: RangeFormationPrecedence
-}
-
 final class BasicOperatorTests: XCTestCase {
     func testGathering() {
         let x = Tensor<Float>([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
