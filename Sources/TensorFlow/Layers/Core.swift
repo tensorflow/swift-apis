@@ -12,44 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-precedencegroup FunctionCompositionPrecedence {
-    associativity: left
-    higherThan: MultiplicationPrecedence
-    lowerThan: BitwiseShiftPrecedence
-}
-
-infix operator >>> : FunctionCompositionPrecedence
-
-public struct ComposedLayer<Layer1: Layer, Layer2: Layer>: Layer
-    where Layer1.Output == Layer2.Input,
-          Layer1.TangentVector.VectorSpaceScalar == Layer2.TangentVector.VectorSpaceScalar {
-    public var layer1: Layer1
-    public var layer2: Layer2
-
-    public init(_ layer1: Layer1, _ layer2: Layer2) {
-        self.layer1 = layer1
-        self.layer2 = layer2
-    }
-
-    @differentiable
-    public func callAsFunction(_ input: Layer1.Input) -> Layer2.Output {
-        layer2(layer1(input))
-    }
-}
-
-public extension Layer {
-    /// Composes two layers to form a chain.
-    ///
-    /// The composition combinator composes two layers sequentially, feeding the output of the
-    /// first layer as input to the second layer.
-    static func >>> <OtherLayer>(
-        _ lhs: Self,
-        _ rhs: OtherLayer
-    ) -> ComposedLayer<Self, OtherLayer> {
-        ComposedLayer(lhs, rhs)
-    }
-}
-
 public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// Computes dropout given a probability.
     @differentiable(wrt: self where Scalar: Differentiable)
