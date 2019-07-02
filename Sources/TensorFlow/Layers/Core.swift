@@ -138,6 +138,11 @@ public struct Reshape<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
 /// `Dense` implements the operation `activation(matmul(input, weight) + bias)`, where `weight` is
 /// a weight matrix, `bias` is a bias vector, and `activation` is an element-wise activation
 /// function.
+///
+/// This layer also supports 3-dimensional weight tensors with 2-dimensional bias matrices. In this 
+/// case the first dimension of both is treated as the batch size that is aligned with the first 
+/// dimension of `input` and the batch variant of the `matmul` operation is used, thus using a 
+/// different weight and bias for each element in input batch.
 @frozen
 public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The weight matrix.
@@ -166,6 +171,10 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+        if weight.rank == 3 {
+            let hidden = matmul(input.expandingShape(at: 1), weight)
+            return activation(hidden.squeezingShape(at: 1) + bias)
+        }
         return activation(matmul(input, weight) + bias)
     }
 }
