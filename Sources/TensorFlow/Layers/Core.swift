@@ -151,6 +151,8 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
     public var bias: Tensor<Scalar>
     /// The element-wise activation function.
     @noDerivative public let activation: Activation
+    /// Indicates whether this is a batched dense layer.
+    @noDerivative internal let batched: Bool
     
     /// The element-wise activation function type.
     public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
@@ -163,6 +165,7 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
         self.weight = weight
         self.bias = bias
         self.activation = activation
+        self.batched = weight.rank == 3
     }
 
     /// Returns the output obtained from applying the layer to the given input.
@@ -171,7 +174,7 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        if weight.rankTensor == Tensor<Int>(3) {
+        if batched {
             let hidden = matmul(input.expandingShape(at: 1), weight)
             return activation(hidden.squeezingShape(at: 1) + bias)
         }
