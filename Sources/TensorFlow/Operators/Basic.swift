@@ -458,7 +458,7 @@ public extension Tensor {
             return result.transposed(withPermutations: resultPermutation)
         }
 
-        let batchIndices = withoutDerivative(at: { () -> Tensor<Index> in
+        let batchIndices: Tensor<Index> = withoutDerivative(at: {
             var batchIndices = indices
             var accumulated = Tensor<Index>(ones: [])
             for d in (1...batchDimensionCount).reversed() {
