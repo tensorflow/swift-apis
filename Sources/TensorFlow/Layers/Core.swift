@@ -204,13 +204,6 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-<<<<<<< Updated upstream
-=======
-        if weight.rankTensor == Tensor<Int32>(3) {
-            let hidden = matmul(input.expandingShape(at: 1), weight)
-            return activation(hidden.squeezingShape(at: 1) + bias)
-        }
->>>>>>> Stashed changes
         return activation(matmul(input, weight) + bias)
     }
 }
