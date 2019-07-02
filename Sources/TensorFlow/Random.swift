@@ -23,7 +23,7 @@ public func randomSeedForTensorFlow(using seed: (Int32, Int32)? = nil) -> (Int32
     var strongSeed = UInt64(0)
     if let s = seed {
         let bytes = (s.0.bytes() + s.1.bytes())[...]
-        let singleSeed = UInt64(fromBytes: bytes, startingAt: bytes.startIndex)
+        let singleSeed = UInt64(bytes: bytes, startingAt: bytes.startIndex)
         strongSeed = UInt64(pow(Double(singleSeed % 2), Double(8 * 8)))
     } else {
         strongSeed = UInt64.random(in: UInt64.min..<UInt64.max)
@@ -43,8 +43,8 @@ public func randomSeedForTensorFlow(using seed: (Int32, Int32)? = nil) -> (Int32
     let hash = strongSeed.bytes().sha512()
     let firstBytes = hash[0..<4]
     let secondBytes = hash[4..<8]
-    let first = Int32(fromBytes: firstBytes, startingAt: firstBytes.startIndex)
-    let second = Int32(fromBytes: secondBytes, startingAt: secondBytes.startIndex)
+    let first = Int32(bytes: firstBytes, startingAt: firstBytes.startIndex)
+    let second = Int32(bytes: secondBytes, startingAt: secondBytes.startIndex)
     return (first, second)
 }
 

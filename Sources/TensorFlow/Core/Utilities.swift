@@ -173,33 +173,29 @@ extension UnsafeMutablePointer where Pointee == CTensorHandle? {
 //===------------------------------------------------------------------------------------------===//
 
 internal extension FixedWidthInteger {
-    @usableFromInline
-    init(fromBytes bytes: ArraySlice<UInt8>, startingAt index: Int) {
-        if bytes.isEmpty { self = 0; return }
+    init(bytes: ArraySlice<UInt8>, startingAt index: Int) {
+        if bytes.isEmpty { self.init(0); return }
         let count = bytes.count
-        self = Self(0)
+        self.init(0)
         for i in 0..<MemoryLayout<Self>.size {
             let j = (MemoryLayout<Self>.size - i - 1) * 8
             self |= count > 0 ? Self(bytes[index.advanced(by: i)]) << j : 0
         }
     }
 
-    @usableFromInline
     func bytes(count byteCount: Int = MemoryLayout<Self>.size) -> [UInt8] {
-        let valuePointer = UnsafeMutablePointer<Self>.allocate(capacity: 1)
-        valuePointer.pointee = self.littleEndian
-        let bytesPointer = UnsafeMutablePointer<UInt8>(OpaquePointer(valuePointer))
-        var bytes = [UInt8](repeating: 0, count: byteCount)
-        for i in 0..<Swift.min(MemoryLayout<Self>.size, byteCount) {
-            bytes[byteCount - 1 - i] = (bytesPointer + i).pointee
+        var littleEndianValue = littleEndian
+        return withUnsafePointer(to: &littleEndianValue) { pointer -> [UInt8] in
+            let bytesPointer = UnsafeMutablePointer<UInt8>(OpaquePointer(pointer))
+            var bytes = [UInt8](repeating: 0, count: byteCount)
+            for i in 0..<Swift.min(MemoryLayout<Self>.size, byteCount) {
+                bytes[byteCount - 1 - i] = (bytesPointer + i).pointee
+            }
+            return bytes
         }
-        valuePointer.deinitialize(count: 1)
-        valuePointer.deallocate()
-        return bytes
     }
 
-    @usableFromInline
-    func rotate(rightBy count: Self) -> Self {
+    fileprivate func rotate(rightBy count: Self) -> Self {
         (self >> count) | (self << (Self(MemoryLayout<Self>.size) * 8 - count))
     }
 }
@@ -251,9 +247,9 @@ internal extension Array where Element == UInt8 {
         accumulated += lengthBytes
 
         // Step 3: Process the array bytes.
-        var accumulatedHash: [UInt64] = [
+        var accumulatedHash = SIMD8<UInt64>(
             0x6a09e667f3bcc908, 0xbb67ae8584caa73b, 0x3c6ef372fe94f82b, 0xa54ff53a5f1d36f1, 
-            0x510e527fade682d1, 0x9b05688c2b3e6c1f, 0x1f83d9abfb41bd6b, 0x5be0cd19137e2179]
+            0x510e527fade682d1, 0x9b05688c2b3e6c1f, 0x1f83d9abfb41bd6b, 0x5be0cd19137e2179)
         var index = 0
         while index < accumulated.count {
             let chunk = accumulated[index..<(index + blockSize)]
@@ -261,17 +257,12 @@ internal extension Array where Element == UInt8 {
             
             // Break chunk into sixteen 64-bit words M[j], 0 ≤ j ≤ 15, in big-endian format.
             // Extend the sixteen 64-bit words into eighty 64-bit words:
-            let M = UnsafeMutablePointer<UInt64>.allocate(capacity: k.count)
-            M.initialize(repeating: 0, count: k.count)
-            defer {
-                M.deinitialize(count: k.count)
-                M.deallocate()
-            }
-            for x in 0..<k.count {
+            var M = [UInt64](repeating: 0, count: k.count)
+            for x in k.indices {
                 switch x {
                 case 0...15:
                     let start = chunk.startIndex.advanced(by: x * 8)
-                    M[x] = UInt64(fromBytes: chunk, startingAt: start)
+                    M[x] = UInt64(bytes: chunk, startingAt: start)
                     break
                 default:
                     let s0 = M[x - 15].rotate(rightBy: 1) ^ 
@@ -324,7 +315,7 @@ internal extension Array where Element == UInt8 {
         // Step 4: Return the computed hash.
         var result = [UInt8](repeating: 0, count: digestLength)
         var position = 0
-        for index in 0..<accumulatedHash.count {
+        for index in accumulatedHash.indices {
             let h = accumulatedHash[index]
             result[position + 0] = UInt8((h >> 56) & 0xff)
             result[position + 1] = UInt8((h >> 48) & 0xff)
