@@ -138,6 +138,11 @@ public struct Reshape<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
 /// `Dense` implements the operation `activation(matmul(input, weight) + bias)`, where `weight` is
 /// a weight matrix, `bias` is a bias vector, and `activation` is an element-wise activation
 /// function.
+///
+/// This layer also supports 3-D weight tensors with 2-D bias matrices. In this case the first
+/// dimension of both is treated as the batch size that is aligned with the first dimension of
+/// `input` and the batch variant of the `matmul(_:_:)` operation is used, thus using a different
+/// weight and bias for each element in input batch.
 @frozen
 public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The weight matrix.
@@ -146,6 +151,8 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
     public var bias: Tensor<Scalar>
     /// The element-wise activation function.
     @noDerivative public let activation: Activation
+    /// Indicates whether this is a batched dense layer.
+    @noDerivative internal let batched: Bool
     
     /// The element-wise activation function type.
     public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
@@ -155,9 +162,12 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
         bias: Tensor<Scalar>,
         activation: @escaping Activation
     ) {
+        precondition(weight.rank <= 3, "The rank of the 'weight' tensor must be less than 4.")
+        precondition(bias.rank <= 2, "The rank of the 'bias' tensor must be less than 3.")
         self.weight = weight
         self.bias = bias
         self.activation = activation
+        self.batched = weight.rank == 3
     }
 
     /// Returns the output obtained from applying the layer to the given input.
@@ -166,6 +176,10 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+        if batched {
+            let hidden = matmul(input.expandingShape(at: 1), weight)
+            return activation(hidden.squeezingShape(at: 1) + bias)
+        }
         return activation(matmul(input, weight) + bias)
     }
 }
