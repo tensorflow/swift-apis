@@ -15,6 +15,15 @@
 import XCTest
 @testable import TensorFlow
 
+fileprivate struct Sigmoid<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+    public init() {}
+
+    @differentiable
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+        return sigmoid(input)
+    }
+}
+
 final class LayerTests: XCTestCase {
     func testSequential() {
         withRandomSeedForTensorFlow((12345, 12345)) {
@@ -24,8 +33,8 @@ final class LayerTests: XCTestCase {
                 Dense<Float>(
                     inputSize: inputSize,
                     outputSize: hiddenSize,
-                    activation: sigmoid,
                     weightInitializer: glorotUniform())
+                Sigmoid<Float>()
                 Dense<Float>(
                     inputSize: hiddenSize,
                     outputSize: 1,
