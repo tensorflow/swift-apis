@@ -411,8 +411,8 @@ public extension Tensor {
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func batchGathering<Index: TensorFlowIndex>(
         atIndices indices: Tensor<Index>,
-        alongAxis axis: Int,
-        numBatchDims batchDims: Int
+        alongAxis axis: Int = 1,
+        batchDimCount batchDims: Int = 1
     ) -> Tensor {
         // TODO: precondition(batchDims >= 0 && batchDims < indices.rank,
         //                    "'numBatchDims' must be non-negative and less than 'indices.rank'.")
@@ -440,7 +440,7 @@ public extension Tensor {
             let result = tensor.batchGathering(
                 atIndices: indices,
                 alongAxis: batchDims,
-                numBatchDims: batchDims)
+                batchDimCount: batchDims)
 
             // Move the result dimensions corresponding to self[batchDims ..< axis] to just before
             // the dimensions corresponding to indices[batchDims ...].

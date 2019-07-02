@@ -32,6 +32,17 @@ final class BasicOperatorTests: XCTestCase {
         XCTAssertEqual(y, Tensor<Float>([3.0, 6.0]))
     }
 
+    func testBatchGathering() {
+        let x = Tensor<Float>([[
+            [1.0, 2.0, 3.0],
+            [4.0, 5.0, 6.0]]])
+        let y = x.batchGathering(
+            atIndices: Tensor<Int32>([1, 0]),
+            alongAxis: 2,
+            batchDimCount: 2)
+        XCTAssertEqual(y, Tensor<Float>([2.0, 4.0]))
+    }
+
     func testPadded() {
         let x = Tensor<Float>(ones: [2, 2])
         let target = Tensor<Float>([[3, 3, 3], [1, 1, 3], [1, 1, 3]])
@@ -596,6 +607,7 @@ final class BasicOperatorTests: XCTestCase {
 
     static var allTests = [
         ("testGathering", testGathering),
+        ("testBatchGathering", testBatchGathering),
         ("testPadded", testPadded),
         ("testVJPPadded", testVJPPadded),
         ("testElementIndexing", testElementIndexing),
