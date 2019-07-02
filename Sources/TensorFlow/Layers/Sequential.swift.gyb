@@ -13,9 +13,9 @@
 // limitations under the License.
 
 /// A layer that sequentially composes two other layers.
-public struct Sequential<Layer1: Layer, Layer2: Layer>: Layer where
-    Layer1.Output == Layer2.Input,
-    Layer1.TangentVector.VectorSpaceScalar == Layer2.TangentVector.VectorSpaceScalar {
+public struct Sequential<Layer1: Layer, Layer2: Layer>: Layer
+    where Layer1.Output == Layer2.Input,
+          Layer1.TangentVector.VectorSpaceScalar == Layer2.TangentVector.VectorSpaceScalar {
     public var layer1: Layer1
     public var layer2: Layer2
 
