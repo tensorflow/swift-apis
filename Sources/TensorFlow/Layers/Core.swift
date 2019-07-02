@@ -162,6 +162,8 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
         bias: Tensor<Scalar>,
         activation: @escaping Activation
     ) {
+        precondition(weight.rank <= 3, "The rank of the 'weight' tensor must be less than 4.")
+        precondition(bias.rank <= 2, "The rank of the 'bias' tensor must be less than 3.")
         self.weight = weight
         self.bias = bias
         self.activation = activation
