@@ -194,10 +194,6 @@ internal extension FixedWidthInteger {
             return bytes
         }
     }
-
-    fileprivate func rotate(rightBy count: Self) -> Self {
-        (self >> count) | (self << (Self(MemoryLayout<Self>.size) * 8 - count))
-    }
 }
 
 internal extension Array where Element == UInt8 {
@@ -254,7 +250,7 @@ internal extension Array where Element == UInt8 {
         while index < accumulated.count {
             let chunk = accumulated[index..<(index + blockSize)]
             index += blockSize
-            
+
             // Break chunk into sixteen 64-bit words M[j], 0 ≤ j ≤ 15, in big-endian format.
             // Extend the sixteen 64-bit words into eighty 64-bit words:
             var M = [UInt64](repeating: 0, count: k.count)
@@ -265,12 +261,12 @@ internal extension Array where Element == UInt8 {
                     M[x] = UInt64(bytes: chunk, startingAt: start)
                     break
                 default:
-                    let s0 = M[x - 15].rotate(rightBy: 1) ^ 
-                        M[x - 15].rotate(rightBy: 8) ^ 
-                        (M[x - 15] >> 7)
-                    let s1 = M[x - 2].rotate(rightBy: 19) ^ 
-                        M[x - 2].rotate(rightBy: 61) ^ 
-                        (M[x - 2] >> 6)
+                    let s0Term0 = ((M[x - 15] >> 1 ^ M[x - 15]) >> 6 ^ M[x - 15]) >> 1
+                    let s0Term1 = (M[x - 15] << 7 ^ M[x - 15]) << 56
+                    let s0 = s0Term0 ^ s0Term1
+                    let s1Term0 = ((M[x - 2] >> 42 ^ M[x - 2]) >> 13 ^ M[x - 2]) >> 6
+                    let s1Term1 = (M[x - 2] << 42 ^ M[x - 2]) << 3
+                    let s1 = s1Term0 ^ s1Term1
                     M[x] = M[x - 16] &+ s0 &+ M[x - 7] &+ s1
                     break
                 }
@@ -278,18 +274,18 @@ internal extension Array where Element == UInt8 {
 
             var hashCopy = accumulatedHash
             for j in k.indices {
-                let s0 = hashCopy[0].rotate(rightBy: 28) ^
-                    hashCopy[0].rotate(rightBy: 34) ^
-                    hashCopy[0].rotate(rightBy: 39)
+                let s0 = hashCopy[0] >> 28 ^ hashCopy[0] << 36 ^
+                    hashCopy[0] >> 34 ^ hashCopy[0] << 30 ^
+                    hashCopy[0] >> 39 ^ hashCopy[0] << 25
                 let maj = (hashCopy[0] & hashCopy[1]) ^ 
                     (hashCopy[0] & hashCopy[2]) ^
                     (hashCopy[1] & hashCopy[2])
                 let t2 = s0 &+ maj
-                let s1 = hashCopy[4].rotate(rightBy: 14) ^
-                    hashCopy[4].rotate(rightBy: 18) ^
-                    hashCopy[4].rotate(rightBy: 41)
-                let ch = (hashCopy[4] & hashCopy[5]) ^ ((~hashCopy[4]) & hashCopy[6])
-                let t1 = hashCopy[7] &+ s1 &+ ch &+ k[j] &+ UInt64(M[j])
+                let s1 = hashCopy[4] >> 14 ^ hashCopy[4] << 50 ^
+                    hashCopy[4] >> 18 ^ hashCopy[4] << 46 ^
+                    hashCopy[4] >> 41 ^ hashCopy[4] << 23
+                let ch = (hashCopy[4] & hashCopy[5]) ^ (~hashCopy[4] & hashCopy[6])
+                let t1 = hashCopy[7] &+ s1 &+ ch &+ k[j] &+ M[j]
                 hashCopy[7] = hashCopy[6]
                 hashCopy[6] = hashCopy[5]
                 hashCopy[5] = hashCopy[4]
