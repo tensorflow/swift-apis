@@ -299,7 +299,6 @@ internal extension Array where Element == UInt8 {
 
         // Step 4: Return the computed hash.
         var result = SIMD64<UInt8>()
-        // var result = [UInt8](repeating: 0, count: digestLength)
         var position = 0
         for index in accumulatedHash.indices {
             let h = accumulatedHash[index]
