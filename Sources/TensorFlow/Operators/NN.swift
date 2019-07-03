@@ -184,7 +184,7 @@ func _vjpConv2DBackpropInput<Scalar: TensorFlowFloatingPoint>(
 ) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
     let value = conv2DBackpropInput(x, shape: shape, filter: filter,
                                     strides: strides, padding: padding, dilations: dilations)
-    return (value, { v in
+     return (value, { [filterShape = filter.shapeTensor] v in
         (conv2DBackpropFilter(x, input: v, filterSizes: filter.shapeTensor, strides: strides,
                               padding: padding, dilations: dilations),
          conv2D(v, filter: filter, strides: strides, padding: padding, dilations: dilations))
