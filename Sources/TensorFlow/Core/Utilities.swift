@@ -197,10 +197,9 @@ internal extension FixedWidthInteger {
 }
 
 internal extension Array where Element == UInt8 {
-    func sha512() -> [UInt8] {
+    func sha512() -> SIMD64<UInt8> {
         // First we define some useful constants.
         let blockSize = 128
-        let digestLength = 64
         let k: [UInt64] = [
             0x428a2f98d728ae22, 0x7137449123ef65cd, 0xb5c0fbcfec4d3b2f, 0xe9b5dba58189dbbc,
             0x3956c25bf348b538, 0x59f111f1b605d019, 0x923f82a4af194f9b, 0xab1c5ed5da6d8118,
@@ -299,7 +298,8 @@ internal extension Array where Element == UInt8 {
         }
 
         // Step 4: Return the computed hash.
-        var result = [UInt8](repeating: 0, count: digestLength)
+        var result = SIMD64<UInt8>()
+        // var result = [UInt8](repeating: 0, count: digestLength)
         var position = 0
         for index in accumulatedHash.indices {
             let h = accumulatedHash[index]

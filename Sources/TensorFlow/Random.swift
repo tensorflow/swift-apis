@@ -41,10 +41,8 @@ public func randomSeedForTensorFlow(using seed: (Int32, Int32)? = nil) -> (Int32
     // Reference: https://github.com/openai/gym/blob/master/gym/utils/seeding.py
 
     let hash = strongSeed.bytes().sha512()
-    let firstBytes = hash[0..<4]
-    let secondBytes = hash[4..<8]
-    let first = Int32(bytes: firstBytes, startingAt: firstBytes.startIndex)
-    let second = Int32(bytes: secondBytes, startingAt: secondBytes.startIndex)
+    let first = Int32(bytes: [hash[0], hash[1], hash[2], hash[3]], startingAt: 0)
+    let second = Int32(bytes: [hash[4], hash[5], hash[6], hash[7]], startingAt: 0)
     return (first, second)
 }
 
