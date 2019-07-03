@@ -19,8 +19,31 @@ import Glibc
 #endif
 
 /// Generates a new random seed for TensorFlow.
-public func randomSeedForTensorFlow() -> (Int32, Int32) {
-    (Int32.random(in: Int32.min..<Int32.max), Int32.random(in: Int32.min..<Int32.max))
+public func randomSeedForTensorFlow(using seed: (Int32, Int32)? = nil) -> (Int32, Int32) {
+    var strongSeed = UInt64(0)
+    if let s = seed {
+        let bytes = (s.0.bytes() + s.1.bytes())[...]
+        let singleSeed = UInt64(bytes: bytes, startingAt: bytes.startIndex)
+        strongSeed = UInt64(pow(Double(singleSeed % 2), Double(8 * 8)))
+    } else {
+        strongSeed = UInt64.random(in: UInt64.min..<UInt64.max)
+    }
+
+    // Many machine learning systems are likely to have many random number generators active at
+    // once (e.g., in reinforcement learning we may have an environment running in multiple 
+    // processes). There is literature indicating that having linear correlations between seeds of 
+    // multiple PRNG's can correlate the outputs:
+    //   - http://blogs.unity3d.com/2015/01/07/a-primer-on-repeatable-random-numbers
+    //   - http://stackoverflow.com/questions/1554958/how-different-do-random-seeds-need-to-be
+    //   - http://dl.acm.org/citation.cfm?id=1276928
+    // Thus, for sanity we hash the generated seed before using it, This scheme is likely not 
+    // crypto-strength, but it should be good enough to get rid of simple correlations.
+    // Reference: https://github.com/openai/gym/blob/master/gym/utils/seeding.py
+
+    let hash = strongSeed.bytes().sha512()
+    let first = Int32(bytes: [hash[0], hash[1], hash[2], hash[3]], startingAt: 0)
+    let second = Int32(bytes: [hash[4], hash[5], hash[6], hash[7]], startingAt: 0)
+    return (first, second)
 }
 
 //===------------------------------------------------------------------------------------------===//
