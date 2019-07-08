@@ -541,11 +541,11 @@ fileprivate extension Tensor where Scalar: TensorFlowFloatingPoint {
         precondition(shape.count > 1,
             "Fans cannot be computed for tensors with fewer than 2 dimensions. Got: \(shape.count)")
 
-        // Fans for a two dimensional tensor, e.g. Dense/Embedding weights.
+        // Fans for a 2-D tensor, e.g. `Dense`/`Embedding` weights.
         if shape.count == 2 {
             return (shape[0], shape[1])
         }
-        // Fans for tensors with dimensions greater than 2, specifically conv filters.
+        // Fans for tensors with rank greater than `2`, specifically convolution filters.
         let lastSpatialDimension = shape.count - 3
         let spatialSize = shape[0..<(lastSpatialDimension + 1)].contiguousSize
         let inputDimension = shape.count - 2
@@ -625,7 +625,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     init<G: RandomNumberGenerator>(glorotNormal shape: TensorShape, generator: inout G) {
         let (fanIn, fanOut) = Tensor.fans(shape: shape)
         var standardDeviation = Scalar.sqrt(2 / Scalar(fanIn + fanOut))
-        // Standard deviation of the truncated standard normal between -2 and 2 standard deviations.
+        // Standard deviation of the truncated standard normal between `-2` and `2`.
         let truncationDeviation = Scalar(0.87962566103423978)
         standardDeviation /= truncationDeviation // Smooths the tails of the clipped normal.
         // TODO: Add generator argument to truncatedNormal when it's supported.
