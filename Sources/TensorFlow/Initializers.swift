@@ -417,6 +417,30 @@ public extension Tensor where Scalar: BinaryFloatingPoint {
             seed: Tensor<Int32>([seed.0, seed.1]))
         self = standardDeviation * sample + mean
     }
+
+    /// Creates a tensor with the specified shape, randomly sampling scalars from a truncated    
+    /// normal distribution.
+    ///
+    /// Note: The generated values follow a normal distribution with specified mean and standard
+    /// deviation, except that values whose magnitude is more than 2 standard deviations from
+    /// the mean are dropped and re-picked.
+    ///
+    /// - Parameters:
+    ///   - shape: The dimensions of the tensor.
+    ///   - mean: The mean of the distribution.
+    ///   - standardDeviation: The standard deviation of the distribution.
+    ///   - seed: The seed value.
+    init(
+        truncatedNormal shape: TensorShape,
+        mean: Scalar = 0,
+        standardDeviation: Scalar = 1,
+        seed: (Int32, Int32) = Context.local.randomSeed
+    ) {
+        let sample: Tensor<Scalar> = Raw.statelessTruncatedNormal(
+            shape: Tensor<Int32>((0..<shape.rank).map { Int32(shape[$0]) }),
+            seed: Tensor<Int32>([seed.0, seed.1]))
+        self = standardDeviation * sample + mean
+    }
 }
 
 public extension Tensor where Scalar: BinaryFloatingPoint,
@@ -442,8 +466,7 @@ public extension Tensor where Scalar: BinaryFloatingPoint,
         for _ in 0 ..< shape.contiguousSize {
             scalars.append(dist.next(using: &generator))
         }
-        let sample = Tensor(shape: shape, scalars: scalars)
-        self = (upperBound - lowerBound) * sample + lowerBound
+        self.init(shape: shape, scalars: scalars)
     }
 
     /// Creates a tensor with the specified shape, randomly sampling scalar values from a uniform 
@@ -485,8 +508,7 @@ public extension Tensor where Scalar: BinaryFloatingPoint,
         for _ in 0 ..< shape.contiguousSize {
             scalars.append(dist.next(using: &generator))
         }
-        let sample = Tensor(shape: shape, scalars: scalars)
-        self = standardDeviation * sample + mean
+        self.init(shape: shape, scalars: scalars)
     }
 
     /// Creates a tensor with the specified shape, randomly sampling scalar values from a normal 
@@ -509,17 +531,28 @@ public extension Tensor where Scalar: BinaryFloatingPoint,
     }
 }
 
+//===------------------------------------------------------------------------------------------===//
+// Variance Scaling
+//===------------------------------------------------------------------------------------------===//
+
 fileprivate extension Tensor where Scalar: TensorFlowFloatingPoint {
-    private static func glorot(
-        fromStandardUniform randomUniform: __shared Tensor<Scalar>,
-        shape: __shared TensorShape
-    ) -> Tensor<Scalar> {
-        let spatialDimCount = shape.count - 2
-        let receptiveField = shape[0..<spatialDimCount].contiguousSize
-        let fanIn = shape[shape.count - 2] * receptiveField
-        let fanOut = shape[shape.count - 1] * receptiveField
-        let minusOneToOne = 2 * randomUniform - 1
-        return Scalar.sqrt(Scalar(6) / Scalar(fanIn + fanOut)) * minusOneToOne
+    // Returns the input and output channel counts, `(fanIn, fanOut)`, of a given tensor shape.
+    private static func computeFans(shape: TensorShape) -> (Int, Int) {
+        precondition(shape.count > 1,
+            "Fans cannot be computed for tensors with fewer than 2 dimensions. Got: \(shape.count)")
+
+        // Fans for a two dimensional tensor, e.g. Dense/Embedding weights.
+        if shape.count == 2 {
+            return (shape[0], shape[1])
+        }
+        // Fans for tensors with dimensions greater than 2, specifically conv filters.
+        let lastSpatialDimension = shape.count - 3
+        let spatialSize = shape[0..<(lastSpatialDimension + 1)].contiguousSize
+        let inputDimension = shape.count - 2
+        let fanIn = shape[inputDimension] * spatialSize
+        let outputDimension = shape.count - 1
+        let fanOut = shape[outputDimension] * spatialSize
+        return (fanIn, fanOut)
     }
 }
 
@@ -530,70 +563,73 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// `sqrt(6 / (fanIn + fanOut))` and `fanIn`/`fanOut` represent the number of input and output
     /// features multiplied by the receptive field if present.
     ///
+    /// Reference: ["Understanding the difficulty of training deep feedforward neural networks"](
+    /// http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf)
+    ///
     /// - Parameters:
     ///   - shape: The dimensions of the tensor.
     init(glorotUniform shape: TensorShape, seed: (Int32, Int32) = Context.local.randomSeed) {
-        let uniform = Tensor(randomUniform: shape, seed: seed)
-        self = Tensor.glorot(fromStandardUniform: uniform, shape: shape)
+        let (fanIn, fanOut) = Tensor.computeFans(shape: shape)
+        let limit = Scalar.sqrt(6 / Scalar(fanIn + fanOut))
+        self.init(randomUniform: shape, lowerBound: -limit, upperBound: limit, seed: seed)
     }
-}
 
-public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// Performs Glorot uniform initialization for the specified shape, creating a tensor by
     /// randomly sampling scalar values from a uniform distribution between `-limit` and `limit`,
     /// where limit is `sqrt(6 / (fanIn + fanOut))` and `fanIn`/`fanOut` represent the number of
     /// input and output features multiplied by the receptive field if present.
     ///
+    /// Reference: ["Understanding the difficulty of training deep feedforward neural networks"](
+    /// http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf)
+    ///
     /// - Parameters:
     ///   - shape: The dimensions of the tensor.
     ///   - generator: Random number generator to use.
     init<G: RandomNumberGenerator>(glorotUniform shape: TensorShape, generator: inout G) {
-        let uniform = Tensor(randomUniform: shape, generator: &generator)
-        self = Tensor.glorot(fromStandardUniform: uniform, shape: shape)
+        let (fanIn, fanOut) = Tensor.computeFans(shape: shape)
+        let limit = Scalar.sqrt(6 / Scalar(fanIn + fanOut))
+        self.init(randomUniform: shape, generator: &generator, lowerBound: -limit, upperBound: limit)
     }
-}
 
-fileprivate extension Tensor where Scalar: TensorFlowFloatingPoint {
-    private static func glorot(
-        fromStandardNormal standardNormal: __shared Tensor<Scalar>,
-        shape: __shared TensorShape
-    ) -> Tensor<Scalar> {
-        let spatialDimCount = shape.count - 2
-        let receptiveField = shape[0..<spatialDimCount].contiguousSize
-        let fanIn = shape[shape.count - 2] * receptiveField
-        let fanOut = shape[shape.count - 1] * receptiveField
-        let minusOneToOne = 2 * standardNormal - 1
-        return Scalar.sqrt(Scalar(2) / Scalar(fanIn + fanOut)) * minusOneToOne
-    }
-}
-
-public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// Creates a tensor by performing Glorot normal initialization for the specified shape,
     /// randomly sampling scalar values from a uniform distribution between `-limit` and `limit`,
     /// generated by the default random number generator, where limit is
     /// `sqrt(2 / (fanIn + fanOut))` and `fanIn`/`fanOut` represent the number of input and output
     /// features multiplied by the receptive field if present.
     ///
+    /// Reference: ["Understanding the difficulty of training deep feedforward neural networks"](
+    /// http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf)
+    ///
     /// - Parameters:
     ///   - shape: The dimensions of the tensor.
     init(glorotNormal shape: TensorShape, seed: (Int32, Int32) = Context.local.randomSeed) {
-        let normal = Tensor(randomNormal: shape, seed: seed)
-        self = Tensor.glorot(fromStandardNormal: normal, shape: shape)
+        let (fanIn, fanOut) = Tensor.computeFans(shape: shape)
+        var standardDeviation = Scalar.sqrt(2 / Scalar(fanIn + fanOut))
+        // Standard deviation of the truncated standard normal between -2 and 2 standard deviations.
+        let truncationDeviation = Scalar(0.87962566103423978)
+        standardDeviation /= truncationDeviation // Smooths the tails of the clipped normal.
+        self.init(truncatedNormal: shape, mean: 0, standardDeviation: standardDeviation, seed: seed)
     }
-}
 
-public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// Performs Glorot normal initialization for the specified shape, creating a tensor by
     /// randomly sampling scalar values from a uniform distribution between `-limit` and `limit`,
     /// where limit is `sqrt(2 / (fanIn + fanOut))` and `fanIn`/`fanOut` represent the number of
     /// input and output features multiplied by the receptive field if present.
     ///
+    /// Reference: ["Understanding the difficulty of training deep feedforward neural networks"](
+    /// http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf)
+    ///
     /// - Parameters:
     ///   - shape: The dimensions of the tensor.
     ///   - generator: Random number generator to use.
     init<G: RandomNumberGenerator>(glorotNormal shape: TensorShape, generator: inout G) {
-        let normal = Tensor(randomNormal: shape, generator: &generator)
-        self = Tensor.glorot(fromStandardNormal: normal, shape: shape)
+        let (fanIn, fanOut) = Tensor.computeFans(shape: shape)
+        var standardDeviation = Scalar.sqrt(2 / Scalar(fanIn + fanOut))
+        // Standard deviation of the truncated standard normal between -2 and 2 standard deviations.
+        let truncationDeviation = Scalar(0.87962566103423978)
+        standardDeviation /= truncationDeviation // Smooths the tails of the clipped normal.
+        // TODO: Add generator argument to truncatedNormal when it's supported.
+        self.init(truncatedNormal: shape, mean: 0, standardDeviation: standardDeviation)
     }
 }
 

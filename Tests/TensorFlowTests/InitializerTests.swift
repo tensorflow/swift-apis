@@ -71,6 +71,65 @@ final class InitializerTests: XCTestCase {
         XCTAssertEqual(ShapedArray(shape: [2, 2], scalars: [1, 0, 1, 0]), i8s.array)
     }
 
+    // Constants for testing distribution based initializers.
+    private let fcShape = TensorShape([200, 100])
+    private let convShape = TensorShape([25, 25, 20, 20])
+    private let tolerance = Float(3e-2)
+
+    func testDistribution(
+      _ t: Tensor<Float>,
+      expectedMean: Float? = nil,
+      expectedStandardDeviation: Float? = nil,
+      expectedMin: Float? = nil,
+      expectedMax: Float? = nil
+    ) {
+        if let expectedMean: Float = expectedMean {
+            XCTAssertTrue(abs(t.mean() - expectedMean) < tolerance)
+        }
+        if let expectedStandardDeviation: Float = expectedStandardDeviation {
+            XCTAssertTrue(abs(t.standardDeviation() - expectedStandardDeviation) < tolerance)
+        }
+        if let expectedMin: Float = expectedMin {
+            XCTAssertTrue(abs(t.min() - expectedMin) < tolerance)
+        }
+        if let expectedMax: Float = expectedMax {
+            XCTAssertTrue(abs(t.max() - expectedMax) < tolerance)
+        }
+    }
+
+    func testRandomUniform() {
+        var t = Tensor<Float>(randomUniform: fcShape, lowerBound: 2, upperBound: 3)
+        testDistribution(t, expectedMean: 2.5, expectedMin: 2, expectedMax: 3)
+        t = Tensor<Float>(randomUniform: fcShape, lowerBound: -1, upperBound: 1)
+        testDistribution(t, expectedMean: 0, expectedMin: -1, expectedMax: 1)
+    }
+
+    func testRandomNormal() {
+        let t = Tensor<Float>(randomNormal: convShape, mean: 1, standardDeviation: 2)
+        testDistribution(t, expectedMean: 1, expectedStandardDeviation: 2)
+    }
+
+    func testTruncatedNormal() {
+        let t = Tensor<Float>(truncatedNormal: convShape)
+        testDistribution(t, expectedMean: 0, expectedMin: -2, expectedMax: 2)        
+    }
+
+    func testGlorotUniform() {
+        let t = Tensor<Float>(glorotUniform: convShape)
+        let spatialSize = convShape[0..<2].contiguousSize
+        let (fanIn, fanOut) = (convShape[2] * spatialSize, convShape[3] * spatialSize)
+        let stdDev = sqrt(Float(2.0) / Float(fanIn + fanOut))
+        testDistribution(t, expectedMean: 0, expectedStandardDeviation: stdDev)
+    }
+
+    func testGlorotNormal() {
+        let t = Tensor<Float>(glorotNormal: convShape)
+        let spatialSize = convShape[0..<2].contiguousSize
+        let (fanIn, fanOut) = (convShape[2] * spatialSize, convShape[3] * spatialSize)
+        let stdDev = sqrt(Float(2.0) / Float(fanIn + fanOut))
+        testDistribution(t, expectedMean: 0, expectedStandardDeviation: stdDev)
+    }
+
     func testOrthogonalShapesValues() {
         for shape in [[10, 10], [10, 9, 8], [100, 5, 5], [50, 40], [3, 3, 32, 64]] {
             // Check the shape.
@@ -97,6 +156,11 @@ final class InitializerTests: XCTestCase {
         ("testArrayConversion", testArrayConversion),
         ("testDataTypeCast", testDataTypeCast),
         ("testBoolToNumericCast", testBoolToNumericCast),
+        ("testRandomUniform", testRandomUniform),
+        ("testRandomNormal", testRandomNormal),
+        ("testTruncatedNormal", testTruncatedNormal),
+        ("testGlorotUniform", testGlorotUniform),
+        ("testGlorotNormal", testGlorotNormal),
         ("testOrthogonalShapesValues", testOrthogonalShapesValues)
     ]
 }
