@@ -537,7 +537,7 @@ public extension Tensor where Scalar: BinaryFloatingPoint,
 
 fileprivate extension Tensor where Scalar: TensorFlowFloatingPoint {
     // Returns the input and output channel counts, `(fanIn, fanOut)`, of a given tensor shape.
-    private static func computeFans(shape: TensorShape) -> (Int, Int) {
+    private static func fans(shape: TensorShape) -> (in: Int, out: Int) {
         precondition(shape.count > 1,
             "Fans cannot be computed for tensors with fewer than 2 dimensions. Got: \(shape.count)")
 
@@ -569,7 +569,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// - Parameters:
     ///   - shape: The dimensions of the tensor.
     init(glorotUniform shape: TensorShape, seed: (Int32, Int32) = Context.local.randomSeed) {
-        let (fanIn, fanOut) = Tensor.computeFans(shape: shape)
+        let (fanIn, fanOut) = Tensor.fans(shape: shape)
         let limit = Scalar.sqrt(6 / Scalar(fanIn + fanOut))
         self.init(randomUniform: shape, lowerBound: -limit, upperBound: limit, seed: seed)
     }
@@ -586,7 +586,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     ///   - shape: The dimensions of the tensor.
     ///   - generator: Random number generator to use.
     init<G: RandomNumberGenerator>(glorotUniform shape: TensorShape, generator: inout G) {
-        let (fanIn, fanOut) = Tensor.computeFans(shape: shape)
+        let (fanIn, fanOut) = Tensor.fans(shape: shape)
         let limit = Scalar.sqrt(6 / Scalar(fanIn + fanOut))
         self.init(randomUniform: shape, generator: &generator, lowerBound: -limit, upperBound: limit)
     }
@@ -603,7 +603,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// - Parameters:
     ///   - shape: The dimensions of the tensor.
     init(glorotNormal shape: TensorShape, seed: (Int32, Int32) = Context.local.randomSeed) {
-        let (fanIn, fanOut) = Tensor.computeFans(shape: shape)
+        let (fanIn, fanOut) = Tensor.fans(shape: shape)
         var standardDeviation = Scalar.sqrt(2 / Scalar(fanIn + fanOut))
         // Standard deviation of the truncated standard normal between -2 and 2 standard deviations.
         let truncationDeviation = Scalar(0.87962566103423978)
@@ -623,7 +623,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     ///   - shape: The dimensions of the tensor.
     ///   - generator: Random number generator to use.
     init<G: RandomNumberGenerator>(glorotNormal shape: TensorShape, generator: inout G) {
-        let (fanIn, fanOut) = Tensor.computeFans(shape: shape)
+        let (fanIn, fanOut) = Tensor.fans(shape: shape)
         var standardDeviation = Scalar.sqrt(2 / Scalar(fanIn + fanOut))
         // Standard deviation of the truncated standard normal between -2 and 2 standard deviations.
         let truncationDeviation = Scalar(0.87962566103423978)
