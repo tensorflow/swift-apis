@@ -83,16 +83,16 @@ final class InitializerTests: XCTestCase {
       expectedMin: Float? = nil,
       expectedMax: Float? = nil
     ) {
-        if let expectedMean: Float = expectedMean {
+        if let expectedMean = expectedMean {
             XCTAssertTrue(abs(t.mean() - expectedMean) < tolerance)
         }
-        if let expectedStandardDeviation: Float = expectedStandardDeviation {
+        if let expectedStandardDeviation = expectedStandardDeviation {
             XCTAssertTrue(abs(t.standardDeviation() - expectedStandardDeviation) < tolerance)
         }
-        if let expectedMin: Float = expectedMin {
+        if let expectedMin = expectedMin {
             XCTAssertTrue(abs(t.min() - expectedMin) < tolerance)
         }
-        if let expectedMax: Float = expectedMax {
+        if let expectedMax = expectedMax {
             XCTAssertTrue(abs(t.max() - expectedMax) < tolerance)
         }
     }
