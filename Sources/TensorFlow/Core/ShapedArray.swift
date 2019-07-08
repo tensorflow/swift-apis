@@ -703,6 +703,7 @@ extension ShapedArray: ExpressibleByArrayLiteral where Scalar: TensorFlowScalar 
     public typealias ArrayLiteralElement = _TensorElementLiteral<Scalar>
     @inlinable
     public init(arrayLiteral elements: _TensorElementLiteral<Scalar>...) {
+        precondition(!elements.isEmpty, "Cannot create a 'ShapedArray' with no elements")
         self = Tensor<Scalar>(_tensorElementLiterals: elements).array
     }
 }
@@ -1065,6 +1066,7 @@ extension ShapedArraySlice: ExpressibleByArrayLiteral where Scalar: TensorFlowSc
     public typealias ArrayLiteralElement = _TensorElementLiteral<Scalar>
     @inlinable
     public init(arrayLiteral elements: _TensorElementLiteral<Scalar>...) {
+        precondition(!elements.isEmpty, "Cannot create a 'ShapedArraySlice' with no elements")
         self.init(base: Tensor(_tensorElementLiterals: elements).array)
     }
 }

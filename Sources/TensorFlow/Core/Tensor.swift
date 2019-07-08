@@ -398,6 +398,7 @@ extension Tensor: ExpressibleByArrayLiteral {
     /// Creates a tensor initialized with the given elements.
     @inlinable
     public init(arrayLiteral elements: _TensorElementLiteral<Scalar>...) {
+        precondition(!elements.isEmpty, "Cannot create a 'Tensor' with no elements")
         self.init(_tensorElementLiterals: elements)
     }
 }
