@@ -506,12 +506,12 @@ fileprivate extension Tensor where Scalar: TensorFlowFloatingPoint {
             return (shape[0], shape[1])
         }
         // Fans for tensors with rank greater than `2`, specifically convolution filters.
-        let lastSpatialDimension = shape.count - 3
-        let spatialSize = shape[0..<(lastSpatialDimension + 1)].contiguousSize
-        let inputDimension = shape.count - 2
-        let fanIn = shape[inputDimension] * spatialSize
-        let outputDimension = shape.count - 1
-        let fanOut = shape[outputDimension] * spatialSize
+        let lastSpatialAxis = shape.count - 3
+        let spatialSize = shape[0..<(lastSpatialAxis + 1)].contiguousSize
+        let inputAxis = shape.count - 2
+        let fanIn = shape[inputAxis] * spatialSize
+        let outputAxis = shape.count - 1
+        let fanOut = shape[outputAxis] * spatialSize
         return (fanIn, fanOut)
     }
 }
