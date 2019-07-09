@@ -184,19 +184,118 @@ internal extension FixedWidthInteger {
     }
 
     func bytes(count byteCount: Int = MemoryLayout<Self>.size) -> [UInt8] {
+        let actualByteCount = Swift.min(MemoryLayout<Self>.size, byteCount)
         var littleEndianValue = littleEndian
-        return withUnsafePointer(to: &littleEndianValue) { pointer -> [UInt8] in
-            let bytesPointer = UnsafeMutablePointer<UInt8>(OpaquePointer(pointer))
-            var bytes = [UInt8](repeating: 0, count: byteCount)
-            for i in 0..<Swift.min(MemoryLayout<Self>.size, byteCount) {
-                bytes[byteCount - 1 - i] = (bytesPointer + i).pointee
+        return withUnsafePointer(to: &littleEndianValue) {
+            $0.withMemoryRebound(to: UInt8.self, capacity: actualByteCount) { pointer in
+                var bytes = [UInt8](repeating: 0, count: byteCount)
+                for i in 0..<actualByteCount {
+                    bytes[byteCount - 1 - i] = (pointer + i).pointee
+                }
+                return bytes
             }
-            return bytes
         }
     }
 }
 
 internal extension Array where Element == UInt8 {
+    /// - Note: The SHA1 hash is only 20 bytes long and so only the first 20 bytes of the returned
+    ///   `SIMD32<UInt8>` are non-zero.
+    func sha1() -> SIMD32<UInt8> {
+        let blockSize = 64
+        var accumulated = self
+        let lengthInBits = accumulated.count * 8
+        let lengthBytes = lengthInBits.bytes(count: blockSize / 8)
+        
+        // Step 1: Append padding.
+        let msgLength = accumulated.count
+        // Append one bit (`UInt8` with one bit) to the message.
+        accumulated.append(0x80)
+        // Append `0` bits until the length of `accumulated` in bits is 448 (mod 512).
+        let max = blockSize * 7 / 8
+        accumulated += [UInt8](
+        repeating: 0,
+        count: msgLength % blockSize < max ?
+            max - 1 - (msgLength % blockSize) :
+            blockSize + max - 1 - (msgLength % blockSize))
+
+        // Step 2: Append the message length as a 64-bit representation of `lengthInBits`.
+        accumulated += lengthBytes
+
+        // Step 3: Process the array bytes.
+        var accumulatedHash = SIMD8<UInt32>([
+            0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0, 0x00, 0x00, 0x00])
+        var index = 0
+        while index < accumulated.count {
+            let chunk = accumulated[index..<(index + blockSize)]
+            index += blockSize
+
+            // Break chunk into sixteen 32-bit words w[j], 0 ≤ j ≤ 15, in big-endian format.
+            // Extend the sixteen 32-bit words into eighty 32-bit words:
+            var w = [UInt32](repeating: 0, count: 80)
+            for x in w.indices {
+                switch x {
+                case 0...15:
+                    let start = chunk.startIndex.advanced(by: x * 4)
+                    w[x] = UInt32(bytes: chunk, startingAt: start)
+                    break
+                default:
+                    let term = w[x - 3] ^ w[x - 8] ^ w[x - 14] ^ w[x - 16]
+                    w[x] = term << 1 ^ term >> 31
+                    break
+                }
+            }
+
+            var hashCopy = accumulatedHash
+            for j in w.indices {
+                var f: UInt32 = 0
+                var k: UInt32 = 0
+                switch j {
+                case 0...19:
+                    f = (hashCopy[1] & hashCopy[2]) | (~hashCopy[1] & hashCopy[3])
+                    k = 0x5a827999
+                    break
+                case 20...39:
+                    f = hashCopy[1] ^ hashCopy[2] ^ hashCopy[3]
+                    k = 0x6ed9eba1
+                    break
+                case 40...59:
+                    f = (hashCopy[1] & hashCopy[2]) | 
+                        (hashCopy[1] & hashCopy[3]) |
+                        (hashCopy[2] & hashCopy[3])
+                    k = 0x8f1bbcdc
+                    break
+                default:
+                    f = hashCopy[1] ^ hashCopy[2] ^ hashCopy[3]
+                    k = 0xca62c1d6
+                    break
+                }
+                let temp = hashCopy[0] << 5 ^ hashCopy[0] >> 27
+                let t0 = temp &+ f &+ hashCopy[4] &+ w[j] &+ k
+                hashCopy[4] = hashCopy[3]
+                hashCopy[3] = hashCopy[2]
+                hashCopy[2] = hashCopy[1] << 30 ^ hashCopy[1] >> 2
+                hashCopy[1] = hashCopy[0]
+                hashCopy[0] = t0
+            }
+            accumulatedHash &+= hashCopy
+        }
+
+        // Step 4: Return the computed hash.
+        var result = SIMD32<UInt8>()
+        var position = 0
+        for index in accumulatedHash.indices {
+            let h = accumulatedHash[index]
+            result[position + 0] = UInt8((h >> 24) & 0xff)
+            result[position + 1] = UInt8((h >> 16) & 0xff)
+            result[position + 2] = UInt8((h >> 8) & 0xff)
+            result[position + 3] = UInt8(h & 0xff)
+            position += 4
+        }
+
+        return result
+    }
+
     func sha512() -> SIMD64<UInt8> {
         // First we define some useful constants.
         let blockSize = 128
@@ -253,7 +352,7 @@ internal extension Array where Element == UInt8 {
             // Break chunk into sixteen 64-bit words w[j], 0 ≤ j ≤ 15, in big-endian format.
             // Extend the sixteen 64-bit words into eighty 64-bit words:
             var w = [UInt64](repeating: 0, count: k.count)
-            for x in k.indices {
+            for x in w.indices {
                 switch x {
                 case 0...15:
                     let start = chunk.startIndex.advanced(by: x * 8)
@@ -272,7 +371,7 @@ internal extension Array where Element == UInt8 {
             }
 
             var hashCopy = accumulatedHash
-            for j in k.indices {
+            for j in w.indices {
                 let s0Term0 = ((hashCopy[0] >> 5 ^ hashCopy[0]) >> 6 ^ hashCopy[0]) >> 28
                 let s0Term1 = ((hashCopy[0] << 6 ^ hashCopy[0]) << 5 ^ hashCopy[0]) << 25
                 let s0 = s0Term0 ^ s0Term1
