@@ -114,6 +114,36 @@ public extension Tensor where Scalar: BinaryFloatingPoint,
     }
 }
 
+// TODO: Can become fileprivate after the 0.4 release.
+internal extension Tensor where Scalar: TensorFlowFloatingPoint {
+    static func glorot(
+        fromStandardUniform randomUniform: __shared Tensor<Scalar>,
+        shape: __shared TensorShape
+    ) -> Tensor<Scalar> {
+        let spatialDimCount = shape.count - 2
+        let receptiveField = shape[0..<spatialDimCount].contiguousSize
+        let fanIn = shape[shape.count - 2] * receptiveField
+        let fanOut = shape[shape.count - 1] * receptiveField
+        let minusOneToOne = 2 * randomUniform - 1
+        return Scalar.sqrt(Scalar(6) / Scalar(fanIn + fanOut)) * minusOneToOne
+    }
+}
+
+// TODO: Can become fileprivate after the 0.4 release.
+internal extension Tensor where Scalar: TensorFlowFloatingPoint {
+    static func glorot(
+        fromStandardNormal standardNormal: __shared Tensor<Scalar>,
+        shape: __shared TensorShape
+    ) -> Tensor<Scalar> {
+        let spatialDimCount = shape.count - 2
+        let receptiveField = shape[0..<spatialDimCount].contiguousSize
+        let fanIn = shape[shape.count - 2] * receptiveField
+        let fanOut = shape[shape.count - 1] * receptiveField
+        let minusOneToOne = 2 * standardNormal - 1
+        return Scalar.sqrt(Scalar(2) / Scalar(fanIn + fanOut)) * minusOneToOne
+    }
+}
+
 public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// Performs Glorot uniform initialization for the specified shape, creating a tensor by
     /// randomly sampling scalar values from a uniform distribution between `-limit` and `limit`,
