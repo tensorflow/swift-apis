@@ -401,7 +401,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     ///
     /// Note: The generated values follow a normal distribution with specified mean and standard
     /// deviation, except that values whose magnitude is more than `2` standard deviations from
-    /// the mean are dropped and re-picked.
+    /// the mean are dropped and re-sampled.
     ///
     /// - Parameters:
     ///   - shape: The dimensions of the tensor.
