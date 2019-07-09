@@ -27,8 +27,8 @@ public extension Tensor where Scalar == Int32 {
     init<G: RandomNumberGenerator>(
         randomUniform shape: TensorShape,
         generator: inout G,
-        lowerBound: Scalar = Scalar.self.min,
-        upperBound: Scalar = Scalar.self.max
+        lowerBound: Scalar = Scalar.min,
+        upperBound: Scalar = Scalar.max
     ) {
         let dist = UniformIntegerDistribution<Scalar>(
             lowerBound: lowerBound,
@@ -60,7 +60,6 @@ public extension Tensor where Scalar == Int32 {
             upperBound: upperBound)
     }
 }
-
 
 public extension Tensor where Scalar: BinaryFloatingPoint,
                               Scalar.RawSignificand: FixedWidthInteger {
