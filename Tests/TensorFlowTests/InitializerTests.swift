@@ -98,14 +98,14 @@ final class InitializerTests: XCTestCase {
     }
 
     func testRandomUniform() {
-        var t = Tensor<Float>(randomUniform: fcShape, lowerBound: 2, upperBound: 3)
+        var t = Tensor<Float>(randomUniform: fcShape, lowerBound: Tensor(2), upperBound: Tensor(3))
         testDistribution(t, expectedMean: 2.5, expectedMin: 2, expectedMax: 3)
-        t = Tensor<Float>(randomUniform: fcShape, lowerBound: -1, upperBound: 1)
+        t = Tensor<Float>(randomUniform: fcShape, lowerBound: Tensor(-1), upperBound: Tensor(1))
         testDistribution(t, expectedMean: 0, expectedMin: -1, expectedMax: 1)
     }
 
     func testRandomNormal() {
-        let t = Tensor<Float>(randomNormal: convShape, mean: 1, standardDeviation: 2)
+        let t = Tensor<Float>(randomNormal: convShape, mean: Tensor(1), standardDeviation: Tensor(2))
         testDistribution(t, expectedMean: 1, expectedStandardDeviation: 2)
     }
 

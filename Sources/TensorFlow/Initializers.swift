@@ -410,8 +410,8 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     ///   - seed: The seed value.
     init(
         truncatedRandomNormal shape: TensorShape,
-        mean: Scalar = 0,
-        standardDeviation: Scalar = 1,
+        mean: Tensor<Scalar> = Tensor<Scalar>(0),
+        standardDeviation: Tensor<Scalar> = Tensor<Scalar>(1),
         seed: TensorFlowSeed = Context.local.randomSeed
     ) {
         let sample: Tensor<Scalar> = Raw.statelessTruncatedNormal(
@@ -477,7 +477,6 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 }
 
-
 public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// Creates a tensor by performing Glorot uniform initialization for the specified shape,
     /// randomly sampling scalar values from a uniform distribution between `-limit` and `limit`,
@@ -492,7 +491,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     ///   - shape: The dimensions of the tensor.
     init(glorotUniform shape: TensorShape, seed: TensorFlowSeed = Context.local.randomSeed) {
         let (fanIn, fanOut) = Tensor.fans(shape: shape)
-        let limit = Scalar.sqrt(6 / Scalar(fanIn + fanOut))
+        let limit = Tensor<Scalar>(6 / Scalar(fanIn + fanOut))
         self.init(randomUniform: shape, lowerBound: -limit, upperBound: limit, seed: seed)
     }
 
@@ -509,13 +508,13 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     ///   - shape: The dimensions of the tensor.
     init(glorotNormal shape: TensorShape, seed: TensorFlowSeed = Context.local.randomSeed) {
         let (fanIn, fanOut) = Tensor.fans(shape: shape)
-        var standardDeviation = Scalar.sqrt(2 / Scalar(fanIn + fanOut))
+        var standardDeviation = Tensor<Scalar>(Scalar.sqrt(2 / Scalar(fanIn + fanOut)))
         // Standard deviation of the truncated standard normal between `-2` and `2` standard deviations.
-        let truncationDeviation = Scalar(0.87962566103423978)
+        let truncationDeviation = Tensor<Scalar>(0.87962566103423978)
         standardDeviation /= truncationDeviation // Smooths the tails of the clipped normal.
         self.init(
             truncatedRandomNormal: shape,
-            mean: 0,
+            mean: Tensor<Scalar>(0),
             standardDeviation: standardDeviation,
             seed: seed)
     }
