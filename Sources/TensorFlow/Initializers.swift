@@ -392,7 +392,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     ) {
         let sample: Tensor<Scalar> = Raw.statelessRandomNormal(
             shape: Tensor<Int32>((0..<shape.rank).map { Int32(shape[$0]) }),
-            seed: Tensor<Int32>([seed.graph, seed.op])))
+            seed: Tensor<Int32>([seed.graph, seed.op]))
         self = standardDeviation * sample + mean
     }
 
@@ -416,77 +416,8 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     ) {
         let sample: Tensor<Scalar> = Raw.statelessTruncatedNormal(
             shape: Tensor<Int32>((0..<shape.rank).map { Int32(shape[$0]) }),
-            seed: Tensor<Int32>([seed.graph, seed.op])))
+            seed: Tensor<Int32>([seed.graph, seed.op]))
         self = standardDeviation * sample + mean
-    }
-}
-
-public extension Tensor where Scalar: BinaryFloatingPoint,
-                              Scalar.RawSignificand: FixedWidthInteger {
-    /// Creates a tensor with the specified shape, randomly sampling scalar values from a uniform 
-    /// distribution between `lowerBound` and `upperBound`.
-    ///
-    /// - Parameters:
-    ///   - shape: The dimensions of the tensor.
-    ///   - generator: Random number generator to use.
-    ///   - lowerBound: The lower bound of the distribution.
-    ///   - upperBound: The upper bound of the distribution.
-    init<G: RandomNumberGenerator>(
-        randomUniform shape: TensorShape,
-        generator: inout G,
-        lowerBound: Scalar = 0,
-        upperBound: Scalar = 1
-    ) {
-        let dist = UniformFloatingPointDistribution<Scalar>(
-            lowerBound: lowerBound,
-            upperBound: upperBound)
-        var scalars: [Scalar] = []
-        for _ in 0 ..< shape.contiguousSize {
-            scalars.append(dist.next(using: &generator))
-        }
-        self.init(shape: shape, scalars: scalars)
-    }
-
-    /// Creates a tensor with the specified shape, randomly sampling scalar values from a uniform 
-    /// distribution between `lowerBound` and `upperBound`, using the default random number 
-    /// generator.
-    ///
-    /// - Parameters:
-    ///   - shape: The dimensions of the tensor.
-    ///   - lowerBound: The lower bound of the distribution.
-    ///   - upperBound: The upper bound of the distribution.
-    init(
-        randomUniform shape: TensorShape,
-        lowerBound: Scalar = 0,
-        upperBound: Scalar = 1
-    ) {
-        self.init(
-            randomUniform: shape,
-            generator: &Context.local.randomNumberGenerator,
-            lowerBound: lowerBound,
-            upperBound: upperBound)
-    }
-
-    /// Creates a tensor with the specified shape, randomly sampling scalar values from a normal 
-    /// distribution.
-    ///
-    /// - Parameters:
-    ///   - shape: The dimensions of the tensor.
-    ///   - generator: Random number generator to use.
-    ///   - mean: The mean of the distribution.
-    ///   - standardDeviation: The standard deviation of the distribution.
-    init<G: RandomNumberGenerator>(
-        randomNormal shape: TensorShape,
-        generator: inout G,
-        mean: Scalar = 0,
-        standardDeviation: Scalar = 1
-    ) {
-        let dist = NormalDistribution<Scalar>(mean: mean, standardDeviation: standardDeviation)
-        var scalars: [Scalar] = []
-        for _ in 0 ..< shape.contiguousSize {
-            scalars.append(dist.next(using: &generator))
-        }
-        self.init(shape: shape, scalars: scalars)
     }
 }
 
@@ -515,6 +446,37 @@ fileprivate extension Tensor where Scalar: TensorFlowFloatingPoint {
         return (fanIn, fanOut)
     }
 }
+
+// TODO: Can become fileprivate after the 0.4 release.
+internal extension Tensor where Scalar: TensorFlowFloatingPoint {
+    static func glorot(
+        fromStandardUniform randomUniform: __shared Tensor<Scalar>,
+        shape: __shared TensorShape
+    ) -> Tensor<Scalar> {
+        let spatialDimCount = shape.count - 2
+        let receptiveField = shape[0..<spatialDimCount].contiguousSize
+        let fanIn = shape[shape.count - 2] * receptiveField
+        let fanOut = shape[shape.count - 1] * receptiveField
+        let minusOneToOne = 2 * randomUniform - 1
+        return Scalar.sqrt(Scalar(6) / Scalar(fanIn + fanOut)) * minusOneToOne
+    }
+}
+
+// TODO: Can become fileprivate after the 0.4 release.
+internal extension Tensor where Scalar: TensorFlowFloatingPoint {
+    static func glorot(
+        fromStandardNormal standardNormal: __shared Tensor<Scalar>,
+        shape: __shared TensorShape
+    ) -> Tensor<Scalar> {
+        let spatialDimCount = shape.count - 2
+        let receptiveField = shape[0..<spatialDimCount].contiguousSize
+        let fanIn = shape[shape.count - 2] * receptiveField
+        let fanOut = shape[shape.count - 1] * receptiveField
+        let minusOneToOne = 2 * standardNormal - 1
+        return Scalar.sqrt(Scalar(2) / Scalar(fanIn + fanOut)) * minusOneToOne
+    }
+}
+
 
 public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// Creates a tensor by performing Glorot uniform initialization for the specified shape,
