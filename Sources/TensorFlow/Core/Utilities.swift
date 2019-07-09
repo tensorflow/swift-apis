@@ -184,14 +184,16 @@ internal extension FixedWidthInteger {
     }
 
     func bytes(count byteCount: Int = MemoryLayout<Self>.size) -> [UInt8] {
+        let actualByteCount = Swift.min(MemoryLayout<Self>.size, byteCount)
         var littleEndianValue = littleEndian
-        return withUnsafePointer(to: &littleEndianValue) { pointer -> [UInt8] in
-            let bytesPointer = UnsafeMutablePointer<UInt8>(OpaquePointer(pointer))
-            var bytes = [UInt8](repeating: 0, count: byteCount)
-            for i in 0..<Swift.min(MemoryLayout<Self>.size, byteCount) {
-                bytes[byteCount - 1 - i] = (bytesPointer + i).pointee
+        return withUnsafePointer(to: &littleEndianValue) {
+            $0.withMemoryRebound(to: UInt8.self, capacity: actualByteCount) { pointer in
+                var bytes = [UInt8](repeating: 0, count: byteCount)
+                for i in 0..<actualByteCount {
+                    bytes[byteCount - 1 - i] = (pointer + i).pointee
+                }
+                return bytes
             }
-            return bytes
         }
     }
 }
