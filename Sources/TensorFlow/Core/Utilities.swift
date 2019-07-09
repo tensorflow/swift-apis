@@ -199,7 +199,9 @@ internal extension FixedWidthInteger {
 }
 
 internal extension Array where Element == UInt8 {
-    func sha1() -> ContiguousArray<UInt8> {
+    /// - Note: The SHA1 hash is only 20 bytes long and so only the first 20 bytes of the returned
+    ///   `SIMD32<UInt8>` are non-zero.
+    func sha1() -> SIMD32<UInt8> {
         let blockSize = 64
         var accumulated = self
         let lengthInBits = accumulated.count * 8
@@ -221,8 +223,8 @@ internal extension Array where Element == UInt8 {
         accumulated += lengthBytes
 
         // Step 3: Process the array bytes.
-        var accumulatedHash = ContiguousArray<UInt32>([
-            0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0])
+        var accumulatedHash = SIMD8<UInt32>([
+            0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0, 0x00, 0x00, 0x00])
         var index = 0
         while index < accumulated.count {
             let chunk = accumulated[index..<(index + blockSize)]
@@ -276,15 +278,11 @@ internal extension Array where Element == UInt8 {
                 hashCopy[1] = hashCopy[0]
                 hashCopy[0] = t0
             }
-            accumulatedHash[0] &+= hashCopy[0]
-            accumulatedHash[1] &+= hashCopy[1]
-            accumulatedHash[2] &+= hashCopy[2]
-            accumulatedHash[3] &+= hashCopy[3]
-            accumulatedHash[4] &+= hashCopy[4]
+            accumulatedHash &+= hashCopy
         }
 
         // Step 4: Return the computed hash.
-        var result = ContiguousArray<UInt8>(repeating: 0, count: 20)
+        var result = SIMD32<UInt8>()
         var position = 0
         for index in accumulatedHash.indices {
             let h = accumulatedHash[index]
