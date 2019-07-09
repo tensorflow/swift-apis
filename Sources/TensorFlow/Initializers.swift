@@ -586,7 +586,6 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         // Standard deviation of the truncated standard normal between `-2` and `2`.
         let truncationDeviation = Scalar(0.87962566103423978)
         standardDeviation /= truncationDeviation // Smooths the tails of the clipped normal.
-        // TODO: Add generator argument to truncatedRandomNormal when it's supported.
         self.init(truncatedRandomNormal: shape, mean: 0, standardDeviation: standardDeviation)
     }
 }
