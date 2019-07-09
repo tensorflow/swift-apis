@@ -50,8 +50,8 @@ public extension Tensor where Scalar == Int32 {
     @available(*, deprecated, message: "This API will be removed after Swift for TensorFlow 0.4.")
     init(
         randomUniform shape: TensorShape,
-        lowerBound: Scalar = Scalar.self.min,
-        upperBound: Scalar = Scalar.self.max
+        lowerBound: Scalar = Scalar.min,
+        upperBound: Scalar = Scalar.max
     ) {
         self.init(
             randomUniform: shape,
