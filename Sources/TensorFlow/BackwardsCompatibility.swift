@@ -14,6 +14,136 @@
 
 // TODO: Remove this file after 0.4.
 
+public extension Tensor where Scalar == Int32 {
+    /// Creates a tensor with the specified shape, randomly sampling scalar values from a discrete 
+    /// uniform distribution.
+    ///
+    /// - Parameters:
+    ///   - shape: The dimensions of the tensor.
+    ///   - generator: Random number generator to use.
+    ///   - lowerBound: The lower bound of the distribution.
+    ///   - upperBound: The upper bound of the distribution.
+    @available(*, deprecated, message: "This API will be removed after Swift for TensorFlow 0.4.")
+    init<G: RandomNumberGenerator>(
+        randomUniform shape: TensorShape,
+        generator: inout G,
+        lowerBound: Scalar = Scalar.min,
+        upperBound: Scalar = Scalar.max
+    ) {
+        let dist = UniformIntegerDistribution<Scalar>(
+            lowerBound: lowerBound,
+            upperBound: upperBound)
+        var scalars: [Scalar] = []
+        for _ in 0 ..< shape.contiguousSize {
+            scalars.append(dist.next(using: &generator))
+        }
+        self.init(shape: shape, scalars: scalars)
+    }
+
+    /// Creates a tensor with the specified shape, randomly sampling scalar values from a discrete 
+    /// uniform distribution, using the default random number generator.
+    ///
+    /// - Parameters:
+    ///   - shape: The dimensions of the tensor.
+    ///   - lowerBound: The lower bound of the distribution.
+    ///   - upperBound: The upper bound of the distribution.
+    @available(*, deprecated, message: "This API will be removed after Swift for TensorFlow 0.4.")
+    init(
+        randomUniform shape: TensorShape,
+        lowerBound: Scalar = Scalar.min,
+        upperBound: Scalar = Scalar.max
+    ) {
+        self.init(
+            randomUniform: shape,
+            generator: &Context.local.randomNumberGenerator,
+            lowerBound: lowerBound,
+            upperBound: upperBound)
+    }
+}
+
+public extension Tensor where Scalar: BinaryFloatingPoint,
+                              Scalar.RawSignificand: FixedWidthInteger {
+    /// Creates a tensor with the specified shape, randomly sampling scalar values from a uniform 
+    /// distribution between `lowerBound` and `upperBound`.
+    ///
+    /// - Parameters:
+    ///   - shape: The dimensions of the tensor.
+    ///   - generator: Random number generator to use.
+    ///   - lowerBound: The lower bound of the distribution.
+    ///   - upperBound: The upper bound of the distribution.
+    @available(*, deprecated, message: "This API will be removed after Swift for TensorFlow 0.4.")
+    init<G: RandomNumberGenerator>(
+        randomUniform shape: TensorShape,
+        generator: inout G,
+        lowerBound: Scalar = 0,
+        upperBound: Scalar = 1
+    ) {
+        let dist = UniformFloatingPointDistribution<Scalar>(
+            lowerBound: lowerBound,
+            upperBound: upperBound)
+        var scalars: [Scalar] = []
+        for _ in 0 ..< shape.contiguousSize {
+            scalars.append(dist.next(using: &generator))
+        }
+        let sample = Tensor(shape: shape, scalars: scalars)
+        self = (upperBound - lowerBound) * sample + lowerBound
+    }
+
+    /// Creates a tensor with the specified shape, randomly sampling scalar values from a normal 
+    /// distribution.
+    ///
+    /// - Parameters:
+    ///   - shape: The dimensions of the tensor.
+    ///   - generator: Random number generator to use.
+    ///   - mean: The mean of the distribution.
+    ///   - standardDeviation: The standard deviation of the distribution.
+    @available(*, deprecated, message: "This API will be removed after Swift for TensorFlow 0.4.")
+    init<G: RandomNumberGenerator>(
+        randomNormal shape: TensorShape,
+        generator: inout G,
+        mean: Scalar = 0,
+        standardDeviation: Scalar = 1
+    ) {
+        let dist = NormalDistribution<Scalar>(mean: mean, standardDeviation: standardDeviation)
+        var scalars: [Scalar] = []
+        for _ in 0 ..< shape.contiguousSize {
+            scalars.append(dist.next(using: &generator))
+        }
+        let sample = Tensor(shape: shape, scalars: scalars)
+        self = standardDeviation * sample + mean
+    }
+}
+
+public extension Tensor where Scalar: TensorFlowFloatingPoint {
+    /// Performs Glorot uniform initialization for the specified shape, creating a tensor by
+    /// randomly sampling scalar values from a uniform distribution between `-limit` and `limit`,
+    /// where limit is `sqrt(6 / (fanIn + fanOut))` and `fanIn`/`fanOut` represent the number of
+    /// input and output features multiplied by the receptive field if present.
+    ///
+    /// - Parameters:
+    ///   - shape: The dimensions of the tensor.
+    ///   - generator: Random number generator to use.
+    @available(*, deprecated, message: "This API will be removed after Swift for TensorFlow 0.4.")
+    init<G: RandomNumberGenerator>(glorotUniform shape: TensorShape, generator: inout G) {
+        let uniform = Tensor(randomUniform: shape, generator: &generator)
+        self = Tensor.glorot(fromStandardUniform: uniform, shape: shape)
+    }
+    
+    /// Performs Glorot normal initialization for the specified shape, creating a tensor by
+    /// randomly sampling scalar values from a uniform distribution between `-limit` and `limit`,
+    /// where limit is `sqrt(2 / (fanIn + fanOut))` and `fanIn`/`fanOut` represent the number of
+    /// input and output features multiplied by the receptive field if present.
+    ///
+    /// - Parameters:
+    ///   - shape: The dimensions of the tensor.
+    ///   - generator: Random number generator to use.
+    @available(*, deprecated, message: "This API will be removed after Swift for TensorFlow 0.4.")
+    init<G: RandomNumberGenerator>(glorotNormal shape: TensorShape, generator: inout G) {
+        let normal = Tensor(randomNormal: shape, generator: &generator)
+        self = Tensor.glorot(fromStandardNormal: normal, shape: shape)
+    }
+}
+
 //===------------------------------------------------------------------------------------------===//
 // Old Initialization Schemes
 //===------------------------------------------------------------------------------------------===//
@@ -109,7 +239,7 @@ public extension Conv1D {
         padding: Padding = .valid,
         dilation: Int = 1,
         activation: @escaping Activation = identity,
-        seed: (Int32, Int32) = Context.local.randomSeed
+        seed: TensorFlowSeed = Context.local.randomSeed
     ) {
         let filterTensorShape = TensorShape([
             filterShape.0, filterShape.1, filterShape.2])
@@ -184,7 +314,7 @@ public extension Conv2D {
         padding: Padding = .valid,
         dilations: (Int, Int) = (1, 1),
         activation: @escaping Activation = identity,
-        seed: (Int32, Int32) = Context.local.randomSeed
+        seed: TensorFlowSeed = Context.local.randomSeed
     ) {
         let filterTensorShape = TensorShape([
             filterShape.0, filterShape.1, filterShape.2, filterShape.3])
@@ -254,7 +384,7 @@ public extension Conv3D {
         strides: (Int, Int, Int) = (1, 1, 1),
         padding: Padding = .valid,
         activation: @escaping Activation = identity,
-        seed: (Int32, Int32) = Context.local.randomSeed
+        seed: TensorFlowSeed = Context.local.randomSeed
     ) {
         let filterTensorShape = TensorShape([
             filterShape.0, filterShape.1, filterShape.2, filterShape.3, filterShape.4])
@@ -319,7 +449,7 @@ public extension TransposedConv2D {
         strides: (Int, Int) = (1, 1),
         padding: Padding = .valid,
         activation: @escaping Activation = identity,
-        seed: (Int32, Int32) = Context.local.randomSeed
+        seed: TensorFlowSeed = Context.local.randomSeed
     ) {
         let filterTensorShape = TensorShape([
             filterShape.0, filterShape.1, filterShape.2, filterShape.3])
@@ -382,7 +512,7 @@ public extension DepthwiseConv2D {
         strides: (Int, Int) = (1, 1),
         padding: Padding = .valid,
         activation: @escaping Activation = identity,
-        seed: (Int32, Int32) = Context.local.randomSeed
+        seed: TensorFlowSeed = Context.local.randomSeed
     ) {
         let filterTensorShape = TensorShape([
             filterShape.0, filterShape.1, filterShape.2, filterShape.3])
@@ -443,7 +573,7 @@ public extension Dense {
         inputSize: Int,
         outputSize: Int,
         activation: @escaping Activation = identity,
-        seed: (Int32, Int32) = Context.local.randomSeed
+        seed: TensorFlowSeed = Context.local.randomSeed
     ) {
         self.init(weight: Tensor(glorotUniform: [inputSize, outputSize],
                                  seed: seed),

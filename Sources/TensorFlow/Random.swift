@@ -18,11 +18,13 @@ import Darwin
 import Glibc
 #endif
 
+public typealias TensorFlowSeed = (graph: Int32, op: Int32)
+
 /// Generates a new random seed for TensorFlow.
-public func randomSeedForTensorFlow(using seed: (Int32, Int32)? = nil) -> (Int32, Int32) {
+public func randomSeedForTensorFlow(using seed: TensorFlowSeed? = nil) -> TensorFlowSeed {
     var strongSeed = UInt64(0)
     if let s = seed {
-        let bytes = (s.0.bytes() + s.1.bytes())[...]
+        let bytes = (s.graph.bytes() + s.op.bytes())[...]
         let singleSeed = UInt64(bytes: bytes, startingAt: bytes.startIndex)
         strongSeed = UInt64(pow(Double(singleSeed % 2), Double(8 * 8)))
     } else {
@@ -41,9 +43,9 @@ public func randomSeedForTensorFlow(using seed: (Int32, Int32)? = nil) -> (Int32
     // Reference: https://github.com/openai/gym/blob/master/gym/utils/seeding.py
 
     let hash = strongSeed.bytes().sha512()
-    let first = Int32(bytes: [hash[0], hash[1], hash[2], hash[3]], startingAt: 0)
-    let second = Int32(bytes: [hash[4], hash[5], hash[6], hash[7]], startingAt: 0)
-    return (first, second)
+    let graph = Int32(bytes: [hash[0], hash[1], hash[2], hash[3]], startingAt: 0)
+    let op = Int32(bytes: [hash[4], hash[5], hash[6], hash[7]], startingAt: 0)
+    return (graph: graph, op: op)
 }
 
 //===------------------------------------------------------------------------------------------===//
