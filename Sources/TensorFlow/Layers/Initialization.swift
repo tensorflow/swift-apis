@@ -25,7 +25,7 @@ public func zeros<Scalar: TensorFlowFloatingPoint>() -> ParameterInitializer<Sca
 /// `sqrt(6 / (fanIn + fanOut))`, and `fanIn`/`fanOut` represent the number of input and output
 /// features multiplied by the receptive field, if present.
 public func glorotUniform<Scalar: TensorFlowFloatingPoint>(
-    seed: (Int32, Int32) = Context.local.randomSeed
+    seed: TensorFlowSeed = Context.local.randomSeed
 ) -> ParameterInitializer<Scalar> {
     { Tensor<Scalar>(glorotUniform: $0, seed: seed) }
 }

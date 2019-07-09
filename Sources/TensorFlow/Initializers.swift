@@ -332,52 +332,7 @@ public extension Tensor where Scalar: Numeric {
 // Random
 //===------------------------------------------------------------------------------------------===//
 
-public extension Tensor where Scalar == Int32 {
-    /// Creates a tensor with the specified shape, randomly sampling scalar values from a discrete 
-    /// uniform distribution.
-    ///
-    /// - Parameters:
-    ///   - shape: The dimensions of the tensor.
-    ///   - generator: Random number generator to use.
-    ///   - lowerBound: The lower bound of the distribution.
-    ///   - upperBound: The upper bound of the distribution.
-    init<G: RandomNumberGenerator>(
-        randomUniform shape: TensorShape,
-        generator: inout G,
-        lowerBound: Scalar = Scalar.self.min,
-        upperBound: Scalar = Scalar.self.max
-    ) {
-        let dist = UniformIntegerDistribution<Scalar>(
-            lowerBound: lowerBound,
-            upperBound: upperBound)
-        var scalars: [Scalar] = []
-        for _ in 0 ..< shape.contiguousSize {
-            scalars.append(dist.next(using: &generator))
-        }
-        self.init(shape: shape, scalars: scalars)
-    }
-
-    /// Creates a tensor with the specified shape, randomly sampling scalar values from a discrete 
-    /// uniform distribution, using the default random number generator.
-    ///
-    /// - Parameters:
-    ///   - shape: The dimensions of the tensor.
-    ///   - lowerBound: The lower bound of the distribution.
-    ///   - upperBound: The upper bound of the distribution.
-    init(
-        randomUniform shape: TensorShape,
-        lowerBound: Scalar = Scalar.self.min,
-        upperBound: Scalar = Scalar.self.max
-    ) {
-        self.init(
-            randomUniform: shape,
-            generator: &Context.local.randomNumberGenerator,
-            lowerBound: lowerBound,
-            upperBound: upperBound)
-    }
-}
-
-public extension Tensor where Scalar: BinaryFloatingPoint {
+public extension Tensor where Scalar: TensorFlowIndex {
     /// Creates a tensor with the specified shape, randomly sampling scalar values from a uniform 
     /// distribution between `lowerBound` and `upperBound`.
     ///
@@ -388,13 +343,36 @@ public extension Tensor where Scalar: BinaryFloatingPoint {
     ///   - seed: The seed value.
     init(
         randomUniform shape: TensorShape,
-        lowerBound: Scalar = 0,
-        upperBound: Scalar = 1,
-        seed: (Int32, Int32) = Context.local.randomSeed
+        lowerBound: Tensor<Scalar> = Tensor<Scalar>(0),
+        upperBound: Tensor<Scalar> = Tensor<Scalar>(1),
+        seed: TensorFlowSeed = Context.local.randomSeed
+    ) {
+        self = Raw.statelessRandomUniformInt(
+            shape: Tensor<Int32>((0..<shape.rank).map { Int32(shape[$0]) }),
+            seed: Tensor<Int32>([seed.graph, seed.op]),
+            minval: lowerBound,
+            maxval: upperBound)
+    }
+}
+
+public extension Tensor where Scalar: TensorFlowFloatingPoint {
+    /// Creates a tensor with the specified shape, randomly sampling scalar values from a uniform 
+    /// distribution between `lowerBound` and `upperBound`.
+    ///
+    /// - Parameters:
+    ///   - shape: The dimensions of the tensor.
+    ///   - lowerBound: The lower bound of the distribution.
+    ///   - upperBound: The upper bound of the distribution.
+    ///   - seed: The seed value.
+    init(
+        randomUniform shape: TensorShape,
+        lowerBound: Tensor<Scalar> = Tensor<Scalar>(0),
+        upperBound: Tensor<Scalar> = Tensor<Scalar>(1),
+        seed: TensorFlowSeed = Context.local.randomSeed
     ) {
         let sample: Tensor<Scalar> = Raw.statelessRandomUniform(
             shape: Tensor<Int32>((0..<shape.rank).map { Int32(shape[$0]) }),
-            seed: Tensor<Int32>([seed.0, seed.1]))
+            seed: Tensor<Int32>([seed.graph, seed.op]))
         self = (upperBound - lowerBound) * sample + lowerBound
     }
 
@@ -408,109 +386,20 @@ public extension Tensor where Scalar: BinaryFloatingPoint {
     ///   - seed: The seed value.
     init(
         randomNormal shape: TensorShape,
-        mean: Scalar = 0,
-        standardDeviation: Scalar = 1,
-        seed: (Int32, Int32) = Context.local.randomSeed
+        mean: Tensor<Scalar> = Tensor<Scalar>(0),
+        standardDeviation: Tensor<Scalar> = Tensor<Scalar>(1),
+        seed: TensorFlowSeed = Context.local.randomSeed
     ) {
         let sample: Tensor<Scalar> = Raw.statelessRandomNormal(
             shape: Tensor<Int32>((0..<shape.rank).map { Int32(shape[$0]) }),
-            seed: Tensor<Int32>([seed.0, seed.1]))
+            seed: Tensor<Int32>([seed.graph, seed.op]))
         self = standardDeviation * sample + mean
     }
 }
 
-public extension Tensor where Scalar: BinaryFloatingPoint,
-                              Scalar.RawSignificand: FixedWidthInteger {
-    /// Creates a tensor with the specified shape, randomly sampling scalar values from a uniform 
-    /// distribution between `lowerBound` and `upperBound`.
-    ///
-    /// - Parameters:
-    ///   - shape: The dimensions of the tensor.
-    ///   - generator: Random number generator to use.
-    ///   - lowerBound: The lower bound of the distribution.
-    ///   - upperBound: The upper bound of the distribution.
-    init<G: RandomNumberGenerator>(
-        randomUniform shape: TensorShape,
-        generator: inout G,
-        lowerBound: Scalar = 0,
-        upperBound: Scalar = 1
-    ) {
-        let dist = UniformFloatingPointDistribution<Scalar>(
-            lowerBound: lowerBound,
-            upperBound: upperBound)
-        var scalars: [Scalar] = []
-        for _ in 0 ..< shape.contiguousSize {
-            scalars.append(dist.next(using: &generator))
-        }
-        let sample = Tensor(shape: shape, scalars: scalars)
-        self = (upperBound - lowerBound) * sample + lowerBound
-    }
-
-    /// Creates a tensor with the specified shape, randomly sampling scalar values from a uniform 
-    /// distribution between `lowerBound` and `upperBound`, using the default random number 
-    /// generator.
-    ///
-    /// - Parameters:
-    ///   - shape: The dimensions of the tensor.
-    ///   - lowerBound: The lower bound of the distribution.
-    ///   - upperBound: The upper bound of the distribution.
-    init(
-        randomUniform shape: TensorShape,
-        lowerBound: Scalar = 0,
-        upperBound: Scalar = 1
-    ) {
-        self.init(
-            randomUniform: shape,
-            generator: &Context.local.randomNumberGenerator,
-            lowerBound: lowerBound,
-            upperBound: upperBound)
-    }
-
-    /// Creates a tensor with the specified shape, randomly sampling scalar values from a normal 
-    /// distribution.
-    ///
-    /// - Parameters:
-    ///   - shape: The dimensions of the tensor.
-    ///   - generator: Random number generator to use.
-    ///   - mean: The mean of the distribution.
-    ///   - standardDeviation: The standard deviation of the distribution.
-    init<G: RandomNumberGenerator>(
-        randomNormal shape: TensorShape,
-        generator: inout G,
-        mean: Scalar = 0,
-        standardDeviation: Scalar = 1
-    ) {
-        let dist = NormalDistribution<Scalar>(mean: mean, standardDeviation: standardDeviation)
-        var scalars: [Scalar] = []
-        for _ in 0 ..< shape.contiguousSize {
-            scalars.append(dist.next(using: &generator))
-        }
-        let sample = Tensor(shape: shape, scalars: scalars)
-        self = standardDeviation * sample + mean
-    }
-
-    /// Creates a tensor with the specified shape, randomly sampling scalar values from a normal 
-    /// distribution, using the default random number generator.
-    ///
-    /// - Parameters:
-    ///   - shape: The dimensions of the tensor.
-    ///   - mean: The mean of the distribution.
-    ///   - stddev: The standard deviation of the distribution.
-    init(
-        randomNormal shape: TensorShape,
-        mean: Scalar = 0,
-        standardDeviation: Scalar = 1
-    ) {
-        self.init(
-            randomNormal: shape,
-            generator: &Context.local.randomNumberGenerator,
-            mean: mean,
-            standardDeviation: standardDeviation)
-    }
-}
-
-fileprivate extension Tensor where Scalar: TensorFlowFloatingPoint {
-    private static func glorot(
+// TODO: Can become fileprivate after the 0.4 release.
+internal extension Tensor where Scalar: TensorFlowFloatingPoint {
+    static func glorot(
         fromStandardUniform randomUniform: __shared Tensor<Scalar>,
         shape: __shared TensorShape
     ) -> Tensor<Scalar> {
@@ -532,29 +421,15 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     ///
     /// - Parameters:
     ///   - shape: The dimensions of the tensor.
-    init(glorotUniform shape: TensorShape, seed: (Int32, Int32) = Context.local.randomSeed) {
+    init(glorotUniform shape: TensorShape, seed: TensorFlowSeed = Context.local.randomSeed) {
         let uniform = Tensor(randomUniform: shape, seed: seed)
         self = Tensor.glorot(fromStandardUniform: uniform, shape: shape)
     }
 }
 
-public extension Tensor where Scalar: TensorFlowFloatingPoint {
-    /// Performs Glorot uniform initialization for the specified shape, creating a tensor by
-    /// randomly sampling scalar values from a uniform distribution between `-limit` and `limit`,
-    /// where limit is `sqrt(6 / (fanIn + fanOut))` and `fanIn`/`fanOut` represent the number of
-    /// input and output features multiplied by the receptive field if present.
-    ///
-    /// - Parameters:
-    ///   - shape: The dimensions of the tensor.
-    ///   - generator: Random number generator to use.
-    init<G: RandomNumberGenerator>(glorotUniform shape: TensorShape, generator: inout G) {
-        let uniform = Tensor(randomUniform: shape, generator: &generator)
-        self = Tensor.glorot(fromStandardUniform: uniform, shape: shape)
-    }
-}
-
-fileprivate extension Tensor where Scalar: TensorFlowFloatingPoint {
-    private static func glorot(
+// TODO: Can become fileprivate after the 0.4 release.
+internal extension Tensor where Scalar: TensorFlowFloatingPoint {
+    static func glorot(
         fromStandardNormal standardNormal: __shared Tensor<Scalar>,
         shape: __shared TensorShape
     ) -> Tensor<Scalar> {
@@ -576,23 +451,8 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     ///
     /// - Parameters:
     ///   - shape: The dimensions of the tensor.
-    init(glorotNormal shape: TensorShape, seed: (Int32, Int32) = Context.local.randomSeed) {
+    init(glorotNormal shape: TensorShape, seed: TensorFlowSeed = Context.local.randomSeed) {
         let normal = Tensor(randomNormal: shape, seed: seed)
-        self = Tensor.glorot(fromStandardNormal: normal, shape: shape)
-    }
-}
-
-public extension Tensor where Scalar: TensorFlowFloatingPoint {
-    /// Performs Glorot normal initialization for the specified shape, creating a tensor by
-    /// randomly sampling scalar values from a uniform distribution between `-limit` and `limit`,
-    /// where limit is `sqrt(2 / (fanIn + fanOut))` and `fanIn`/`fanOut` represent the number of
-    /// input and output features multiplied by the receptive field if present.
-    ///
-    /// - Parameters:
-    ///   - shape: The dimensions of the tensor.
-    ///   - generator: Random number generator to use.
-    init<G: RandomNumberGenerator>(glorotNormal shape: TensorShape, generator: inout G) {
-        let normal = Tensor(randomNormal: shape, generator: &generator)
         self = Tensor.glorot(fromStandardNormal: normal, shape: shape)
     }
 }
@@ -613,11 +473,10 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     ///   - shape: The shape of the tensor.
     ///   - gain: A multiplicative factor to apply to the orthogonal tensor.
     ///   - seed: A tuple of two integers to seed the random number generator.
-    ///
     init(
         orthogonal shape: TensorShape,
-        gain: Scalar = 1,
-        seed: (Int32, Int32) = Context.local.randomSeed
+        gain: Tensor<Scalar> = Tensor<Scalar>(1),
+        seed: TensorFlowSeed = Context.local.randomSeed
     ) {
         let rowCount = shape.dimensions.dropLast().reduce(1, *)
         let columnCount = shape[shape.rank - 1]
