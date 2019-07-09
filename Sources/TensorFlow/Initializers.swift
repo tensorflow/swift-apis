@@ -409,7 +409,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     ///   - standardDeviation: The standard deviation of the distribution.
     ///   - seed: The seed value.
     init(
-        truncatedNormal shape: TensorShape,
+        truncatedRandomNormal shape: TensorShape,
         mean: Scalar = 0,
         standardDeviation: Scalar = 1,
         seed: TensorFlowSeed = Context.local.randomSeed
@@ -567,7 +567,11 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         // Standard deviation of the truncated standard normal between -2 and 2 standard deviations.
         let truncationDeviation = Scalar(0.87962566103423978)
         standardDeviation /= truncationDeviation // Smooths the tails of the clipped normal.
-        self.init(truncatedNormal: shape, mean: 0, standardDeviation: standardDeviation, seed: seed)
+        self.init(
+            truncatedRandomNormal: shape,
+            mean: 0,
+            standardDeviation: standardDeviation,
+            seed: seed)
     }
 
     /// Performs Glorot normal initialization for the specified shape, creating a tensor by
@@ -587,8 +591,8 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         // Standard deviation of the truncated standard normal between `-2` and `2`.
         let truncationDeviation = Scalar(0.87962566103423978)
         standardDeviation /= truncationDeviation // Smooths the tails of the clipped normal.
-        // TODO: Add generator argument to truncatedNormal when it's supported.
-        self.init(truncatedNormal: shape, mean: 0, standardDeviation: standardDeviation)
+        // TODO: Add generator argument to truncatedRandomNormal when it's supported.
+        self.init(truncatedRandomNormal: shape, mean: 0, standardDeviation: standardDeviation)
     }
 }
 

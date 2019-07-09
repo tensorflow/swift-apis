@@ -110,7 +110,7 @@ final class InitializerTests: XCTestCase {
     }
 
     func testTruncatedNormal() {
-        let t = Tensor<Float>(truncatedNormal: convShape)
+        let t = Tensor<Float>(truncatedRandomNormal: convShape)
         testDistribution(t, expectedMean: 0, expectedMin: -2, expectedMax: 2)        
     }
 
