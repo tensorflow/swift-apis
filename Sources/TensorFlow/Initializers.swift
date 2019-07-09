@@ -400,7 +400,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// normal distribution.
     ///
     /// Note: The generated values follow a normal distribution with specified mean and standard
-    /// deviation, except that values whose magnitude is more than 2 standard deviations from
+    /// deviation, except that values whose magnitude is more than `2` standard deviations from
     /// the mean are dropped and re-picked.
     ///
     /// - Parameters:
@@ -548,7 +548,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     init(glorotNormal shape: TensorShape, seed: TensorFlowSeed = Context.local.randomSeed) {
         let (fanIn, fanOut) = Tensor.fans(shape: shape)
         var standardDeviation = Scalar.sqrt(2 / Scalar(fanIn + fanOut))
-        // Standard deviation of the truncated standard normal between -2 and 2 standard deviations.
+        // Standard deviation of the truncated standard normal between `-2` and `2` standard deviations.
         let truncationDeviation = Scalar(0.87962566103423978)
         standardDeviation /= truncationDeviation // Smooths the tails of the clipped normal.
         self.init(
