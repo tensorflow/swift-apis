@@ -497,7 +497,8 @@ public extension Tensor where Scalar: BinaryFloatingPoint,
 fileprivate extension Tensor where Scalar: TensorFlowFloatingPoint {
     // Returns the input and output channel counts, `(fanIn, fanOut)`, of a given tensor shape.
     private static func fans(shape: TensorShape) -> (in: Int, out: Int) {
-        precondition(shape.count > 1,
+        precondition(
+            shape.count > 1,
             "Fans cannot be computed for tensors with fewer than 2 dimensions. Got: \(shape.count)")
 
         // Fans for a 2-D tensor, e.g. `Dense`/`Embedding` weights.
@@ -538,9 +539,6 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// where limit is `sqrt(6 / (fanIn + fanOut))` and `fanIn`/`fanOut` represent the number of
     /// input and output features multiplied by the receptive field if present.
     ///
-    /// Reference: ["Understanding the difficulty of training deep feedforward neural networks"](
-    /// http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf)
-    ///
     /// - Parameters:
     ///   - shape: The dimensions of the tensor.
     ///   - generator: Random number generator to use.
@@ -578,9 +576,6 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// randomly sampling scalar values from a uniform distribution between `-limit` and `limit`,
     /// where limit is `sqrt(2 / (fanIn + fanOut))` and `fanIn`/`fanOut` represent the number of
     /// input and output features multiplied by the receptive field if present.
-    ///
-    /// Reference: ["Understanding the difficulty of training deep feedforward neural networks"](
-    /// http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf)
     ///
     /// - Parameters:
     ///   - shape: The dimensions of the tensor.
