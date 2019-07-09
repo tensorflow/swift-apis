@@ -443,7 +443,7 @@ public extension TransposedConv2D {
             filterShape.0, filterShape.1, filterShape.2, filterShape.3])
         self.init(
             filter: filterInitializer(filterTensorShape),
-            bias: biasInitializer([filterShape.3]),
+            bias: biasInitializer([filterShape.2]),
             activation: activation,
             strides: strides,
             padding: padding)

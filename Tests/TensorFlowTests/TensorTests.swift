@@ -25,7 +25,6 @@ final class TensorTests: XCTestCase {
             }
             return b
         }
-
         XCTAssertEqual(0, selectValue(true).scalar)
     }
 

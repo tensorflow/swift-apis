@@ -51,7 +51,7 @@ public struct Context {
     ///
     /// - Note: Whenever obtained, the random seed is also updated so that future stateless 
     ///   random TensorFlow op executions will result in non-deterministic results.
-    public var randomSeed: (Int32, Int32) {
+    public var randomSeed: TensorFlowSeed {
         mutating get {
             let seed = _randomSeed
             _randomSeed = (seed.0, seed.1 + 1)
@@ -60,7 +60,7 @@ public struct Context {
         set { _randomSeed = newValue }
     }
 
-    private var _randomSeed: (Int32, Int32) = randomSeedForTensorFlow()
+    private var _randomSeed: TensorFlowSeed = randomSeedForTensorFlow()
 
     /// The random number generator.
     internal var randomNumberGenerator: AnyRandomNumberGenerator =
@@ -121,7 +121,7 @@ public func withLearningPhase<R>(
 ///     return value of the `withRandomSeedForTensorFlow(_:_:)` function.
 /// - Returns: The return value, if any, of the `body` closure.
 public func withRandomSeedForTensorFlow<R>(
-    _ randomSeed: (Int32, Int32),
+    _ randomSeed: TensorFlowSeed,
     _ body: () throws -> R
 ) rethrows -> R {
     var context = ContextManager.local.currentContext
