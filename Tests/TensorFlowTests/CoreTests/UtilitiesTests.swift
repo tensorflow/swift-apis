@@ -16,6 +16,14 @@ import XCTest
 @testable import TensorFlow
 
 final class UtilitiesTests: XCTestCase {
+    func testSHA1() {
+        XCTAssertEqual(
+            [UInt8](repeating: 0x61, count: 1000000).sha1(),
+            ContiguousArray<UInt8>([
+                0x34, 0xaa, 0x97, 0x3c, 0xd4, 0xc4, 0xda, 0xa4, 0xf6, 0x1e,
+                0xeb, 0x2b, 0xdb, 0xad, 0x27, 0x31, 0x65, 0x34, 0x01, 0x6f]))
+    }
+
     func testSHA512() {
         XCTAssertEqual(
             [UInt8](repeating: 0x61, count: 1000).sha512(),
@@ -26,5 +34,7 @@ final class UtilitiesTests: XCTestCase {
                 125, 201, 109, 245, 153, 114, 125,  50, 146, 168, 217, 212,  71, 112, 156, 151]))
     }
 
-    static var allTests = [("testSHA512", testSHA512)]
+    static var allTests = [
+        ("testSHA1", testSHA1),
+        ("testSHA512", testSHA512)]
 }
