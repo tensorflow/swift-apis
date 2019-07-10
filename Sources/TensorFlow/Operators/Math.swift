@@ -971,7 +971,8 @@ public func sigmoid<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
 internal func _vjpSigmoid<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>
 ) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
-    (sigmoid(x), { v in Raw.sigmoidGrad(x, dy: v) })
+    let sigmoidValue = sigmoid(x)
+    return (sigmoidValue, { v in Raw.sigmoidGrad(sigmoidValue, dy: v) })
 }
 
 /// Returns the log-sigmoid of the specified tensor element-wise. Specifically,
