@@ -28,8 +28,22 @@ final class ComparisonOperatorTests: XCTestCase {
         XCTAssertTrue(x < y)
     }
 
+    func testIsAlmostEqual() {
+        let x = Tensor<Float>([0.1, 0.2, 0.3, 0.4])
+        let y = Tensor<Float>([0.0999, 0.20001, 0.2998, 0.4])
+        XCTAssertTrue(x.isAlmostEqual(to: y, tolerance: 0.01))
+    }
+
+    func testIsNotAlmostEqual() {
+        let x = Tensor<Float>([0.1, 0.2, 0.3, 0.4])
+        let y = Tensor<Float>([0.0999, 0.20001, 0.2998, 0.3])
+        XCTAssertFalse(x.isAlmostEqual(to: y))
+    }
+
     static var allTests = [
         ("testElementwiseComparison", testElementwiseComparison),
-        ("testLexicographicalComparison", testLexicographicalComparison)
+        ("testLexicographicalComparison", testLexicographicalComparison),
+        ("testIsAlmostEqual", testIsAlmostEqual),
+        ("testIsNotAlmostEqual", testIsNotAlmostEqual),
     ]
 }

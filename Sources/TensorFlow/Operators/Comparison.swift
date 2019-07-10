@@ -227,3 +227,16 @@ public extension StringTensor {
         return Raw.equal(self, other)
     }
 }
+
+public extension Tensor where Scalar: FloatingPoint {
+    /// Returns true if tensors are of equal shape and all pairs of elements are approximately
+    /// equal.
+    @inlinable
+    func isAlmostEqual(
+        to other: Tensor,
+        tolerance: Scalar = Scalar.ulpOfOne.squareRoot()
+    ) -> Bool {
+        return self.shape == other.shape &&
+          zip(self.scalars, other.scalars).allSatisfy{abs($0.0 - $0.1) < tolerance}
+    }
+}
