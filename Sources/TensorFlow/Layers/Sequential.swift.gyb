@@ -13,7 +13,7 @@
 // limitations under the License.
 
 /// A layer that sequentially composes two other layers.
-public struct Sequential<Layer1: Layer, Layer2: Layer>: Layer
+public struct Sequential<Layer1: XXX, Layer2: Layer>: XXX
     where Layer1.Output == Layer2.Input,
           Layer1.TangentVector.VectorSpaceScalar == Layer2.TangentVector.VectorSpaceScalar {
     public var layer1: Layer1
@@ -24,7 +24,7 @@ public struct Sequential<Layer1: Layer, Layer2: Layer>: Layer
         self.layer2 = layer2
     }
 
-    @differentiable
+    @differentiable(wrt: self)
     public func callAsFunction(_ input: Layer1.Input) -> Layer2.Output {
         layer2(layer1(input))
     }
@@ -34,16 +34,24 @@ public struct Sequential<Layer1: Layer, Layer2: Layer>: Layer
     }
 }
 
+extension Sequential: Layer where Layer1: Layer {
+    @differentiable
+    public func callAsFunction(_ input: Layer1.Input) -> Layer2.Output {
+        layer2(layer1(input))
+    }
+}
+
 @_functionBuilder
 public struct LayerBuilder {
-    public static func buildBlock<L1: Layer, L2: Layer>(_ l1: L1, _ l2: L2) -> Sequential<L1, L2>
+    public static func buildBlock<L1: XXX, L2: Layer>(_ l1: L1, _ l2: L2) -> Sequential<L1, L2>
         where L1.Output == L2.Input {
         Sequential(l1, l2)
     }
 
     %for n in range(3, 11):
     public static func buildBlock<
-        ${",\n        ".join(["L{}: Layer".format(i) for i in range(1, n+1)])}
+        L1: XXX,
+        ${",\n        ".join(["L{}: Layer".format(i) for i in range(2, n+1)])}
     >(${", ".join(["_ l{}: L{}".format(i, i) for i in range(1, n+1)])})
         -> ${"".join(["Sequential<L{}, ".format(i) for i in range(1, n)])}L${n}${"".join([">" for i in range(1, n)])} where
         ${",\n        ".join(["L{}.Output == L{}.Input".format(i, i+1)

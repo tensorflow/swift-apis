@@ -12,22 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+public protocol XXX: Differentiable, KeyPathIterable
+    where TangentVector: VectorProtocol & ElementaryFunctions &
+                         PointwiseMultiplicative & KeyPathIterable,
+          AllDifferentiableVariables == TangentVector {
+    /// The input type of the layer.
+    associatedtype Input
+    /// The output type of the layer.
+    associatedtype Output: Differentiable
+
+    /// Returns the output obtained from applying the layer to the given input.
+    ///
+    /// - Parameter input: The input to the layer.
+    /// - Returns: The output.
+    @differentiable(wrt: self)
+    func callAsFunction(_ input: Input) -> Output
+}
+
 /// A neural network layer.
 ///
 /// Types that conform to `Layer` represent functions that map inputs to outputs. They may have an
 /// internal state represented by parameters, such as weight tensors.
 ///
-/// `Layer` instances define a differentiable `applied(to:)` method for mapping inputs to
+/// `Layer` instances define a differentiable `callAsFunction(_:)` method for mapping inputs to
 /// outputs.
-public protocol Layer: Differentiable, KeyPathIterable
-    where TangentVector: VectorProtocol & ElementaryFunctions &
-                         PointwiseMultiplicative & KeyPathIterable,
-          AllDifferentiableVariables == TangentVector {
-    /// The input type of the layer.
-    associatedtype Input: Differentiable
-    /// The output type of the layer.
-    associatedtype Output: Differentiable
-
+public protocol Layer: XXX where Input: Differentiable {
     /// Returns the output obtained from applying the layer to the given input.
     ///
     /// - Parameter input: The input to the layer.
@@ -78,7 +87,7 @@ public extension Layer {
     /// - Returns: The inference output.
     @differentiable
     func inferring(from input: Input) -> Output {
-        return withLearningPhase(LearningPhase.inference) { self(input) }
+        withLearningPhase(LearningPhase.inference) { self(input) }
     }
 
     // TODO(rxwei): Remove this custom VJP once differentiation supports currying.
@@ -87,7 +96,7 @@ public extension Layer {
     internal func _vjpInferring(from input: Input)
         -> (value: Output, pullback: (Output.TangentVector)
             -> (AllDifferentiableVariables, Input.TangentVector)) {
-        return withLearningPhase(LearningPhase.inference) {
+        withLearningPhase(LearningPhase.inference) {
             let (output, pullback) = appliedForBackpropagation(to: input)
             return (output, { v in pullback(v) })
         }

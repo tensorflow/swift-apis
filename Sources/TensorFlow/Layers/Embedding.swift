@@ -12,29 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// An input structure containing the embedding indices.
-///
-/// - Note: Often times, `Embedding` is followed by a `Flatten` and a `Dense` layer. When this 
-///   is the case, ensure that all input sequences of indices have the same dimension.
-// NOTE: This structure is needed to conform `Embedding` to the Layer protocol.
-@frozen
-public struct EmbeddingInput: Differentiable {
-    /// Sequences of indices that will be passed into the layer.
-    @noDerivative public var indices: Tensor<Int32>
-
-    /// Creates an `EmbeddingInput`.
-    ///
-    /// - Parameter indices: The embedding indices.
-    public init(indices: Tensor<Int32>) {
-        self.indices = indices
-    }
-}
-
 /// An embedding layer.
 ///
 /// `Embedding` is effectively a lookup table that maps indices from a fixed vocabulary to fixed-size
 /// (dense) vector representations, e.g. `[[0], [3]] -> [[0.25, 0.1], [0.6, -0.2]]`.
-public struct Embedding<Scalar: TensorFlowFloatingPoint>: Layer {
+public struct Embedding<Scalar: TensorFlowFloatingPoint>: XXX {
     /// A learnable lookup table that maps vocabulary indices to their dense vector representations.
     public var embeddings: Tensor<Scalar>
 
@@ -63,8 +45,8 @@ public struct Embedding<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Parameter
     ///   - input: The indices that will be mapped to their vector representations.
     /// - Returns: The tensor created by replacing input indices with their vector representations.
-    @differentiable
-    public func callAsFunction(_ input: EmbeddingInput) -> Tensor<Scalar> {
-        return embeddings.gathering(atIndices: input.indices)
+    @differentiable(wrt: self)
+    public func callAsFunction(_ input: Tensor<Int32>) -> Tensor<Scalar> {
+        embeddings.gathering(atIndices: input)
     }
 }
