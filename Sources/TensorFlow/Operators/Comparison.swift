@@ -229,7 +229,7 @@ public extension StringTensor {
 }
 
 public extension Tensor where Scalar: FloatingPoint {
-    /// Returns true if tensors are of equal shape and all pairs of elements are approximately
+    /// Returns `true` if tensors are of equal shape and all pairs of scalars are approximately
     /// equal.
     @inlinable
     func isAlmostEqual(
@@ -237,6 +237,6 @@ public extension Tensor where Scalar: FloatingPoint {
         tolerance: Scalar = Scalar.ulpOfOne.squareRoot()
     ) -> Bool {
         return self.shape == other.shape &&
-          zip(self.scalars, other.scalars).allSatisfy{abs($0.0 - $0.1) < tolerance}
+            zip(self.scalars, other.scalars).allSatisfy { abs($0.0 - $0.1) < tolerance }
     }
 }
