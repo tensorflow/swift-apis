@@ -229,17 +229,17 @@ final class TensorAutoDiffTests: XCTestCase {
         XCTAssertEqual(input, transposedPermutationsPullback(transposed))
         XCTAssertEqual(input, transposedVariadicsPullback(transposed))
     }
-
-    func testRelu() {
-        func f(a: Tensor<Float>) -> Tensor<Float> { relu(a).sum() }
-        XCTAssertEqual([1, 0, 0], gradient(at: [5, -5, 0], in: f))
-    }
     
     func testSigmoid() {
         func f(a: Tensor<Float>) -> Tensor<Float> { sigmoid(a).sum() }
         assertEqual([0.1966119, 0.25, 0.1966119], gradient(at: [-1, 0, 1], in: f), accuracy: 0.0001)
     }
-
+    
+    func testRelu() {
+        func f(a: Tensor<Float>) -> Tensor<Float> { relu(a).sum() }
+        XCTAssertEqual([1, 0, 0], gradient(at: [5, -5, 0], in: f))
+    }
+    
     func testSoftmax() {
         let pb = pullback(at: Tensor(ones: [2, 2])) { (a: Tensor<Float>) in softmax(a) }
         XCTAssertEqual([[0, 0], [0, 0]], pb([[1, 1], [1, 1]]))
