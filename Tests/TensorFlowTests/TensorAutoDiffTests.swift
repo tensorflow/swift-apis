@@ -237,7 +237,7 @@ final class TensorAutoDiffTests: XCTestCase {
     
     func testSigmoid() {
         func f(a: Tensor<Float>) -> Tensor<Float> { sigmoid(a).sum() }
-        XCTAssertEqual([0.1966119, 0.25, 0.1966119], gradient(at: [-1, 0, 1], in: f), accuracy: 0.0001)
+        assertEqual([0.1966119, 0.25, 0.1966119], gradient(at: [-1, 0, 1], in: f), accuracy: 0.0001)
     }
 
     func testSoftmax() {
