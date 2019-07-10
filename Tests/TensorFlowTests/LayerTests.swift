@@ -43,18 +43,14 @@ final class LayerTests: XCTestCase {
             let optimizer = SGD(for: model)
             let x = Tensor<Float>([[0, 0], [0, 1], [1, 0], [1, 1]])
             let y = Tensor<Float>([0, 1, 1, 0])
-            
             let initialLoss = meanSquaredError(predicted: model(x).squeezingShape(at: 1), expected: y)
-            
             for _ in 0..<10 {
                 let 𝛁model = model.gradient { model -> Tensor<Float> in
                     meanSquaredError(predicted: model(x).squeezingShape(at: 1), expected: y)
                 }
                 optimizer.update(&model, along: 𝛁model)
             }
-            
             let updatedLoss = meanSquaredError(predicted: model(x).squeezingShape(at: 1), expected: y)
-            
             XCTAssertLessThan(updatedLoss, initialLoss)
         }
     }
