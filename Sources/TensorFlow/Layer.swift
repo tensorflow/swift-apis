@@ -20,7 +20,7 @@
 /// `Layer` instances define a differentiable `applied(to:)` method for mapping inputs to
 /// outputs.
 public protocol Layer: Differentiable, KeyPathIterable
-    where TangentVector: VectorProtocols & KeyPathIterable,
+    where TangentVector: VectorProtocol & KeyPathIterable,
           AllDifferentiableVariables == TangentVector {
     /// The input type of the layer.
     associatedtype Input: Differentiable
