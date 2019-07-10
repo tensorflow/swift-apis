@@ -20,8 +20,7 @@
 /// `Layer` instances define a differentiable `applied(to:)` method for mapping inputs to
 /// outputs.
 public protocol Layer: Differentiable, KeyPathIterable
-    where TangentVector: VectorProtocol & ElementaryFunctions &
-                         PointwiseMultiplicative & KeyPathIterable,
+    where TangentVector: VectorProtocol & KeyPathIterable,
           AllDifferentiableVariables == TangentVector {
     /// The input type of the layer.
     associatedtype Input: Differentiable
@@ -44,8 +43,7 @@ public extension Layer {
 }
 
 /// An empty struct representing empty `TangentVector`s for parameterless layers.
-public struct EmptyTangentVector: Differentiable, VectorProtocol, ElementaryFunctions,
-                                  PointwiseMultiplicative, KeyPathIterable {
+public struct EmptyTangentVector: Differentiable, VectorProtocol, KeyPathIterable {
     public typealias AllDifferentiableVariables = EmptyTangentVector
     public typealias VectorSpaceScalar = Float
 
