@@ -25,6 +25,58 @@ func vjpFoo(_ x: Tensor<Float>) -> (Tensor<Float>, (Tensor<Float>) -> Tensor<Flo
     return (foo(x), { v in v })
 }
 
+@differentiable(wrt: (x, offset, scale), vjp: _vjpOldBatchNormalized)
+func oldBatchNormalized(
+    _ x: Tensor<Float>,
+    alongAxis axis: Int,
+    offset: Tensor<Float> = Tensor(0),
+    scale: Tensor<Float> = Tensor(1),
+    epsilon: Float = 0.001
+) -> Tensor<Float> {
+    let mean = x.mean(alongAxes: axis)
+    let squaredDiff: Tensor = Raw.squaredDifference(x, mean)
+    let variance = squaredDiff.mean(alongAxes: axis)
+    let inv = rsqrt(variance + epsilon) * scale
+    return x * inv + offset - mean * inv
+}
+
+func _vjpOldBatchNormalized(
+    _ x: Tensor<Float>,
+    alongAxis axis: Int,
+    offset: Tensor<Float>,
+    scale: Tensor<Float>,
+    epsilon: Float
+) -> (Tensor<Float>, (Tensor<Float>) -> (Tensor<Float>, Tensor<Float>, Tensor<Float>)) {
+    let value = oldBatchNormalized(
+        x,
+        alongAxis: axis,
+        offset: offset,
+        scale: scale,
+        epsilon: epsilon)
+    return (value, { v in
+        let mean = x.mean(alongAxes: axis)
+        let squaredDiff: Tensor = Raw.squaredDifference(x, mean)
+        let variance = squaredDiff.mean(alongAxes: axis)
+
+        let diff = x - mean
+        let inv = rsqrt(variance + epsilon)
+        let norm = diff * inv
+
+        let dNorm = v * scale
+        let dVariance = -(dNorm * diff).sum(alongAxes: axis) / 2 * TensorFlow.pow(inv, -3)
+        // Note: `dMean` is split into two lines to avoid the "compiler is unable to 
+        // type-check this expression in reasonable time" error.
+        var dMean = (-dNorm * inv).sum(alongAxes: axis)
+        dMean = dMean + dVariance * (-diff * 2).mean(alongAxes: axis)
+        let dOffset = v.sum(alongAxes: axis)
+        let dScale = (norm * v).sum(alongAxes: axis)
+        let dim = Tensor<Float>(Tensor<Int32>(x.shapeTensor[axis]))
+        let tmp = (dNorm * inv) + (dVariance * 2 * dMean / dim)
+        let dSelf = tmp + (dMean / dim)
+        return (dSelf, dOffset, dScale)
+    })
+}
+
 final class TensorAutoDiffTests: XCTestCase {
     func testSimpleGrad() {
         func square(_ x: Tensor<Float>) -> Tensor<Float> {
@@ -392,7 +444,20 @@ final class TensorAutoDiffTests: XCTestCase {
         let expected: Tensor<Float> = inputTensor
         XCTAssertEqual(expected, pb(inputTensor))
     }
-    
+
+    func testBatchNormalized() {
+        let x = Tensor<Float>([
+            [0.45031791, 0.41123222, 0.53928467, 0.47167023, 0.15483777],
+            [0.49975705, 0.71807549, 0.30396056, 0.2690469 , 0.01404393],
+            [0.16950939, 0.41085612, 0.79503016, 0.11977817, 0.99728241],
+            [0.62510073, 0.17344792, 0.1540605 , 0.40758517, 0.93683817],
+            [0.15653343, 0.50502756, 0.99365925, 0.84617581, 0.17422509]])
+        assertEqual(
+            gradient(at: x) { $0.batchNormalized(alongAxis: 1).sum() },
+            gradient(at: x) { oldBatchNormalized($0, alongAxis: 1).sum() },
+            accuracy: 0.0001)
+    }
+
     static var allTests = [
         ("testSimpleGrad", testSimpleGrad),
         ("testGenericGrad", testGenericGrad),
@@ -429,6 +494,7 @@ final class TensorAutoDiffTests: XCTestCase {
         ("testBroadcastLike", testBroadcastLike),
         ("testUnbroadcastToShape", testUnbroadcastToShape),
         ("testUnbroadcastTo", testUnbroadcastTo),
-        ("testUnbroadcastLike", testUnbroadcastLike)
+        ("testUnbroadcastLike", testUnbroadcastLike),
+        ("testBatchNormalized", testBatchNormalized)
     ]
 }
