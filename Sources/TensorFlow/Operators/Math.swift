@@ -855,7 +855,7 @@ internal func _vjpRsqrt<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>
 ) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
     let value = rsqrt(x)
-    return (value, { v in -v * 0.5 * pow(value, 3) })
+    return (value, { v in Raw.rsqrtGrad(value, dy: v) })
 }
 
 /// Returns the exponential of the specified tensor element-wise.
