@@ -210,6 +210,27 @@ final class MathOperatorTests: XCTestCase {
             Tensor(shape: [1, 2], scalars: [2, 2]))
     }
 
+    func testCumulativeSum() {
+        // 2 x 3
+        let x = Tensor<Float>([[0, 1, 2], [3, 4, 5]])
+        let cumsum0 = x.cumulativeSum(alongAxis: 0)
+        let cumsum1 = x.cumulativeSum(alongAxis: 1)
+        let exclusiveCumsum0 = x.cumulativeSum(alongAxis: 0, exclusive: true)
+        let exclusiveCumsum1 = x.cumulativeSum(alongAxis: 1, exclusive: true)
+        let reverseCumsum0 = x.cumulativeSum(alongAxis: 0, reverse: true)
+        let reverseCumsum1 = x.cumulativeSum(alongAxis: 1, reverse: true)
+        let reverseExclusiveCumsum0 = x.cumulativeSum(alongAxis: 0, exclusive: true, reverse: true)
+        let reverseExclusiveCumsum1 = x.cumulativeSum(alongAxis: 1, exclusive: true, reverse: true)
+        XCTAssertEqual(cumsum0, Tensor<Float>([[0, 1, 2], [3, 5, 7]]))
+        XCTAssertEqual(cumsum1, Tensor<Float>([[0, 1, 3], [3, 7, 12]]))
+        XCTAssertEqual(exclusiveCumsum0, Tensor<Float>([[0, 0, 0], [0, 1, 2]]))
+        XCTAssertEqual(exclusiveCumsum1, Tensor<Float>([[0, 0, 1], [0, 3, 7]]))
+        XCTAssertEqual(reverseCumsum0, Tensor<Float>([[3, 5, 7], [3, 4, 5]]))
+        XCTAssertEqual(reverseCumsum1, Tensor<Float>([[3, 3, 2], [12, 9, 5]]))
+        XCTAssertEqual(reverseExclusiveCumsum0, Tensor<Float>([[3, 4, 5], [0, 0, 0]]))
+        XCTAssertEqual(reverseExclusiveCumsum1, Tensor<Float>([[3, 2, 0], [9, 5, 0]]))
+    }
+
     func testArgmax() {
         // 2 x 3
         let x = Tensor<Float>([[0, 1, 2], [3, 4, 5]])
@@ -435,6 +456,7 @@ final class MathOperatorTests: XCTestCase {
         ("testIsNaN", testIsNaN),
         ("testCosineSimilarity", testCosineSimilarity),
         ("testReduction", testReduction),
+        ("testCumulativeSum", testCumulativeSum),
         ("testArgmax", testArgmax),
         ("testLogSumExp", testLogSumExp),
         ("testCeilAndFloor", testCeilAndFloor),
