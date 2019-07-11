@@ -372,7 +372,7 @@ fileprivate extension _ShapedArrayProtocol
 
         // Return lines joined with separators.
         let lineSeparator = "," +
-            String(repeating: "\n", count: rank - 1) +
+            String(repeating: "\n", count: 1) +
             String(repeating: " ", count: indentLevel + 1)
         return elementDescriptions.enumerated().reduce(into: "[") { result, entry in
             let (i, elementDescription) = entry
