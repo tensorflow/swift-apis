@@ -59,6 +59,15 @@ final class MathOperatorTests: XCTestCase {
                                { x in root(x, 3) }, { x in Float.root(x, 3) })
     }
 
+    func testRsqrt() {
+        let x = Tensor<Double>([1, 0.25, 1.0 / 9.0, 0.0625, 0.04])
+        let target = Tensor<Double>([1, 2, 3, 4, 5]).sum()
+        let gradTarget = Tensor<Double>([-0.5,  -4.0, -13.5, -32.0, -62.5])
+        let (value, grad) = valueWithGradient(at: x) { rsqrt($0).sum() }
+        XCTAssertEqual(target, value)       
+        XCTAssertEqual(gradTarget, grad)
+    }
+
     func testLog1p() {
         let x = Tensor<Float>([1, 2, 3, 4, 5])
         let y = log1p(x)
@@ -410,6 +419,7 @@ final class MathOperatorTests: XCTestCase {
 
     static var allTests = [
         ("testElementaryFunctions", testElementaryFunctions),
+        ("testRsqrt", testRsqrt),
         ("testLog1p", testLog1p),
         ("testLog1mexp", testLog1mexp),
         ("testExpm1", testExpm1),
