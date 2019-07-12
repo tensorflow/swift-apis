@@ -1522,8 +1522,10 @@ public extension Tensor where Scalar: Numeric & Comparable {
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func min(alongAxes axes: [Int]) -> Tensor {
-        let axes = axes.map(Int32.init)
+        // TODO(TF-433): Remove workaround for differentiating `map`.
+        let axes = {axes.map(Int32.init)}()
         return min(alongAxes: Tensor<Int32>(axes))
     }
 
@@ -1532,6 +1534,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func min(alongAxes axes: Int...) -> Tensor {
         min(alongAxes: axes)
     }
@@ -1551,8 +1554,10 @@ public extension Tensor where Scalar: Numeric & Comparable {
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func max(alongAxes axes: [Int]) -> Tensor {
-        let axes = axes.map(Int32.init)
+        // TODO(TF-433): Remove workaround for differentiating `map`.
+        let axes = {axes.map(Int32.init)}()
         return max(alongAxes: Tensor<Int32>(axes))
     }
 
@@ -1561,6 +1566,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func max(alongAxes axes: Int...) -> Tensor {
         max(alongAxes: axes)
     }
