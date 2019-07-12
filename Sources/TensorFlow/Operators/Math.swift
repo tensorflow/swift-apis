@@ -12,12 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-infix operator .>: ComparisonPrecedence
-infix operator .==: ComparisonPrecedence
+infix operator .> : ComparisonPrecedence
+infix operator .== : ComparisonPrecedence
 
 // TODO:
 // - Consider explicit broadcasting for elementwise binary ops when
 //   scalarization and rank getter are implemented.
+
+// TODO: Remove the following extension once `./` and `./=` are defined for 
+// `PointwiseMultiplicative`.
+
+infix operator ./ : MultiplicationPrecedence
+infix operator ./= : AssignmentPrecedence
+
+public extension PointwiseMultiplicative {
+    static func ./ (lhs: Self, rhs: Self) -> Self {
+        lhs .* rhs.reciprocal
+    }
+
+    static func ./= (lhs: inout Self, rhs: Self) {
+        lhs = lhs ./ rhs
+    }
+}
 
 //===------------------------------------------------------------------------------------------===//
 // Generic elementary functions
@@ -161,22 +177,54 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
 // Vector Space
 //===------------------------------------------------------------------------------------------===//
 
-extension Tensor: VectorProtocol where Scalar: Numeric {
-    public typealias VectorSpaceScalar = Scalar
+extension Tensor: VectorProtocol where Scalar: TensorFlowFloatingPoint {
+    public typealias VectorSpaceScalar = Float
 
-    @differentiable(where Scalar: TensorFlowFloatingPoint)
-    public func adding(_ scalar: Scalar) -> Self {
-        self + scalar
+    // @differentiable(where Scalar: TensorFlowFloatingPoint)
+    public func scaled(by scale: Float) -> Self {
+        Scalar(scale) * self
     }
 
-    @differentiable(where Scalar: TensorFlowFloatingPoint)
-    public func subtracting(_ scalar: Scalar) -> Self {
-        self - scalar
+    // @differentiable(where Scalar: TensorFlowFloatingPoint)
+    public func adding(_ scalar: Float) -> Self {
+        self + Scalar(scalar)
     }
 
-    @differentiable(where Scalar: TensorFlowFloatingPoint)
-    public func scaled(by scalar: Scalar) -> Self {
-        self * scalar
+    // @differentiable(where Scalar: TensorFlowFloatingPoint)
+    public func subtracting(_ scalar: Float) -> Self {
+        self - Scalar(scalar)
+    }
+}
+
+extension VectorProtocol {
+    static func + (lhs: VectorSpaceScalar, rhs: Self) -> Self {
+        rhs.adding(lhs)
+    }
+
+    static func + (lhs: Self, rhs: VectorSpaceScalar) -> Self {
+        lhs.adding(rhs)
+    }
+
+    static func - (lhs: Self, rhs: VectorSpaceScalar) -> Self {
+        lhs.subtracting(rhs)
+    }
+
+    static func * (lhs: VectorSpaceScalar, rhs: Self) -> Self {
+        rhs.scaled(by: lhs)
+    }
+
+    static func * (lhs: Self, rhs: VectorSpaceScalar) -> Self {
+        lhs.scaled(by: rhs)
+    }
+}
+
+extension VectorProtocol where VectorSpaceScalar: SignedNumeric {
+    static prefix func - (x: Self) -> Self {
+        .zero - x
+    }
+
+    static func - (lhs: VectorSpaceScalar, rhs: Self) -> Self {
+        (-rhs).adding(lhs)
     }
 }
 
@@ -807,7 +855,7 @@ internal func _vjpRsqrt<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>
 ) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
     let value = rsqrt(x)
-    return (value, { v in -v / (2 * pow(x, 3 / 2)) })
+    return (value, { v in Raw.rsqrtGrad(value, dy: v) })
 }
 
 /// Returns the exponential of the specified tensor element-wise.
@@ -923,7 +971,8 @@ public func sigmoid<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
 internal func _vjpSigmoid<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>
 ) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
-    (sigmoid(x), { v in Raw.sigmoidGrad(x, dy: v) })
+    let sigmoidValue = sigmoid(x)
+    return (sigmoidValue, { v in Raw.sigmoidGrad(sigmoidValue, dy: v) })
 }
 
 /// Returns the log-sigmoid of the specified tensor element-wise. Specifically,
@@ -1144,6 +1193,29 @@ public func pow<T: TensorFlowFloatingPoint>(_ x: Tensor<T>, _ n: Int) -> Tensor<
 // @differentiable
 public func root<T: TensorFlowFloatingPoint>(_ x: Tensor<T>, _ n: Int) -> Tensor<T> {
     sign(x) * pow(abs(x), Tensor(T(1) / T(n)))
+}
+
+/// Returns the squared difference between `x` and `y`.
+/// - Returns: `(x - y) ^ 2`.
+@inlinable
+@differentiable(vjp: _vjpSquaredDifference where T: TensorFlowFloatingPoint)
+public func squaredDifference<T: TensorFlowNumeric>(_ x: Tensor<T>, _ y: Tensor<T>) -> Tensor<T> {
+    Raw.squaredDifference(x, y)
+}
+
+@inlinable
+internal func _vjpSquaredDifference<T: TensorFlowFloatingPoint>(
+    _ x: Tensor<T>,
+    _ y: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> (Tensor<T>, Tensor<T>)) {
+    (squaredDifference(x, y), { seed in
+        let lhsGrad = 2 * seed * (x - y)
+        let rhsGrad = -lhsGrad
+        let (lhsShape, rhsShape) = (x.shapeTensor, y.shapeTensor)
+        let (lhsAxes, rhsAxes) = Raw.broadcastGradientArgs(s0: lhsShape, s1: rhsShape)
+        return (lhsGrad.sum(squeezingAxes: lhsAxes).reshaped(toShape: lhsShape),
+                rhsGrad.sum(squeezingAxes: rhsAxes).reshaped(toShape: rhsShape))
+    })
 }
 
 /// Returns the element-wise maximum of two tensors.
@@ -1984,7 +2056,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func logSumExp(squeezingAxes axes: Int...) -> Tensor {
-        return logSumExp(squeezingAxes: axes)
+        logSumExp(squeezingAxes: axes)
     }
 
     /// Returns `log(exp(self).sum())`. The result is a scalar.
@@ -1995,7 +2067,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func logSumExp() -> Tensor {
-        return logSumExp(squeezingAxes: Array(0..<shape.rank))
+        logSumExp(squeezingAxes: Array(0..<shape.rank))
     }
 
     /// Returns `log(exp(self).sum(alongAxes: axes))`. The reduced dimensions are retained with 
@@ -2049,7 +2121,67 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func logSumExp(alongAxes axes: Int...) -> Tensor {
-        return logSumExp(alongAxes: axes)
+        logSumExp(alongAxes: axes)
+    }
+}
+
+/// Pair of first and second moments (i.e., mean and variance).
+/// - Note: This is needed because tuple types are not differentiable.
+public struct Moments<Scalar: TensorFlowFloatingPoint>: Differentiable {
+    public var mean: Tensor<Scalar>
+    public var variance: Tensor<Scalar>
+
+    @differentiable
+    public init(mean: Tensor<Scalar>, variance: Tensor<Scalar>) {
+        self.mean = mean
+        self.variance = variance
+    }
+}
+
+public extension Tensor where Scalar: TensorFlowFloatingPoint {
+    /// Returns the mean and variance of this tensor along the specified axes. The reduced
+    /// dimensions are removed.
+    @inlinable
+    @differentiable(wrt: self)
+    func moments(squeezingAxes axes: [Int]) -> Moments<Scalar> {
+        let mean = self.mean(alongAxes: axes)
+        let variance = squaredDifference(self, mean).mean(alongAxes: axes)
+        return Moments<Scalar>(
+            mean: mean.squeezingShape(at: axes),
+            variance: variance.squeezingShape(at: axes))
+    }
+
+    /// Returns the mean and variance of this tensor along the specified axes. The reduced
+    /// dimensions are removed.
+    @inlinable
+    @differentiable(wrt: self)
+    func moments(squeezingAxes axes: Int...) -> Moments<Scalar> {
+        moments(squeezingAxes: axes)
+    }
+
+    /// Returns the mean and variance of this tensor's elements.
+    @inlinable
+    @differentiable(wrt: self)
+    func moments() -> Moments<Scalar> {
+        moments(squeezingAxes: Array(0..<shape.rank))
+    }
+
+    /// Returns the mean and variance of this tensor along the specified axes. The reduced
+    /// dimensions are retained with value `1`.
+    @inlinable
+    @differentiable(wrt: self)
+    func moments(alongAxes axes: [Int]) -> Moments<Scalar> {
+        let mean = self.mean(alongAxes: axes)
+        let variance = squaredDifference(self, mean).mean(alongAxes: axes)
+        return Moments<Scalar>(mean: mean, variance: variance)
+    }
+
+    /// Returns the mean and variance of this tensor along the specified axes. The reduced
+    /// dimensions are retained with value `1`.
+    @inlinable
+    @differentiable(wrt: self)
+    func moments(alongAxes axes: Int...) -> Moments<Scalar> {
+        moments(alongAxes: axes)
     }
 }
 
@@ -2062,33 +2194,28 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
 @differentiable(vjp: _vjpMatmul(_:transposed:_:transposed:) where Scalar: TensorFlowFloatingPoint)
 public func matmul<Scalar: Numeric>(
     _ lhs: Tensor<Scalar>,
-    transposed transposeA: Bool = false,
+    transposed transposeLhs: Bool = false,
     _ rhs: Tensor<Scalar>,
-    transposed transposeB: Bool = false
+    transposed transposeRhs: Bool = false
 ) -> Tensor<Scalar> {
-    switch (lhs.rank, rhs.rank) {
-    case (3..., 3...):
-        return Raw.batchMatMulV2(lhs, rhs, adjX: transposeA, adjY: transposeB)
-    case (2, 3...):
-        return Raw.batchMatMulV2(lhs.expandingShape(at: 1), rhs, adjX: transposeA, adjY: transposeB)
-    case (3..., 2):
-        return Raw.batchMatMulV2(lhs, rhs.expandingShape(at: 1), adjX: transposeA, adjY: transposeB)
-    default:
-        return Raw.matMul(lhs, rhs, transposeA: transposeA, transposeB: transposeB)
+    if lhs.rank > 2 || rhs.rank > 2 {
+        // TODO(TF-629): Conjugate to make compatible with the adjoint.
+        return Raw.batchMatMulV2(lhs, rhs, adjX: transposeLhs, adjY: transposeRhs)
     }
+    return Raw.matMul(lhs, rhs, transposeA: transposeLhs, transposeB: transposeRhs)
 }
 
 @inlinable
 internal func _vjpMatmul<Scalar: TensorFlowFloatingPoint>(
     _ lhs: Tensor<Scalar>,
-    transposed transposeA: Bool = false,
+    transposed transposeLhs: Bool = false,
     _ rhs: Tensor<Scalar>,
-    transposed transposeB: Bool = false
+    transposed transposeRhs: Bool = false
 ) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
-    let value = matmul(lhs, transposed: transposeA, rhs, transposed: transposeB)
-    return (value, { v in
+    let value = matmul(lhs, transposed: transposeLhs, rhs, transposed: transposeRhs)
+    return (value, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
         let (lhsGrad, rhsGrad): (Tensor<Scalar>, Tensor<Scalar>)
-        switch (transposeA, transposeB) {
+        switch (transposeLhs, transposeRhs) {
         case (false, false):
             lhsGrad = matmul(v, transposed: false, rhs, transposed: true)
             rhsGrad = matmul(lhs, transposed: true, v, transposed: false)
@@ -2102,11 +2229,13 @@ internal func _vjpMatmul<Scalar: TensorFlowFloatingPoint>(
             lhsGrad = matmul(v, transposed: true, rhs, transposed: true)
             rhsGrad = matmul(lhs, transposed: true, v, transposed: true)
         }
-        switch (lhs.rank, rhs.rank) {
-        case (3..., 3...): return (lhsGrad.sum(squeezingAxes: 1), rhsGrad)
-        case (3..., 2): return (lhsGrad, rhsGrad.sum(squeezingAxes: 1))
-        default: return (lhsGrad, rhsGrad)
-        }
+        let lhsRank = lhsShape.shape[0] - 2
+        let rhsRank = rhsShape.shape[0] - 2
+        let (lhsAxes, rhsAxes) = Raw.broadcastGradientArgs(
+            s0: lhsShape[..<lhsRank],
+            s1: rhsShape[..<rhsRank])
+        return (lhsGrad.sum(squeezingAxes: lhsAxes).reshaped(toShape: lhsShape),
+                rhsGrad.sum(squeezingAxes: rhsAxes).reshaped(toShape: rhsShape))
     })
 }
 
@@ -2134,5 +2263,35 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
         rhs: Tensor
     ) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
         _vjpMatmul(lhs, rhs)
+    }
+}
+
+public extension Tensor where Scalar: TensorFlowFloatingPoint {
+    /// Returns the QR decomposition of each inner matrix in the tensor, a tensor with inner 
+    /// orthogonal matrices `q` and a tensor with inner upper triangular matrices `r`, such that the 
+    /// tensor is equal to `matmul(q, r)`.
+    /// 
+    /// - Parameters:
+    ///   - fullMatrices: If `true`, compute full-sized `q` and `r`. Otherwise compute only the 
+    ///     leading `min(shape[rank - 1], shape[rank - 2])` columns of `q`.
+    ///  
+    func qrDecomposition(fullMatrices: Bool = false) -> (q: Tensor<Scalar>, r: Tensor<Scalar>) {
+        return Raw.qr(self, fullMatrices: fullMatrices)
+    }
+
+    /// Returns the diagonal part of the tensor.
+    ///
+    /// For example:
+    ///
+    /// ```
+    /// // 't' is [[1, 0, 0, 0]
+    /// //         [0, 2, 0, 0]
+    /// //         [0, 0, 3, 0]
+    /// //         [0, 0, 0, 4]]
+    /// t.diagonalPart()
+    /// // [1, 2, 3, 4]
+    ///
+    func diagonalPart() -> Tensor<Scalar> {
+        return Raw.diagPart(self)
     }
 }

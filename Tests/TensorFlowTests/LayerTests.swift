@@ -15,7 +15,46 @@
 import XCTest
 @testable import TensorFlow
 
+fileprivate struct Sigmoid<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+    public init() {}
+
+    @differentiable
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+        return sigmoid(input)
+    }
+}
+
 final class LayerTests: XCTestCase {
+    func testSequential() {
+        withRandomSeedForTensorFlow((12345, 12345)) {
+            let inputSize = 2
+            let hiddenSize = 4
+            var model = Sequential {
+                Dense<Float>(
+                    inputSize: inputSize,
+                    outputSize: hiddenSize,
+                    weightInitializer: glorotUniform())
+                Sigmoid<Float>()
+                Dense<Float>(
+                    inputSize: hiddenSize,
+                    outputSize: 1,
+                    weightInitializer: glorotUniform())
+            }
+            let optimizer = SGD(for: model)
+            let x = Tensor<Float>([[0, 0], [0, 1], [1, 0], [1, 1]])
+            let y = Tensor<Float>([0, 1, 1, 0])
+            let initialLoss = meanSquaredError(predicted: model(x).squeezingShape(at: 1), expected: y)
+            for _ in 0..<10 {
+                let 𝛁model = model.gradient { model -> Tensor<Float> in
+                    meanSquaredError(predicted: model(x).squeezingShape(at: 1), expected: y)
+                }
+                optimizer.update(&model, along: 𝛁model)
+            }
+            let updatedLoss = meanSquaredError(predicted: model(x).squeezingShape(at: 1), expected: y)
+            XCTAssertLessThan(updatedLoss, initialLoss)
+        }
+    }
+
     func testConv1D() {
         let filter = Tensor<Float>(ones: [3, 1, 2]) * Tensor<Float>([[[0.5, 1]]])
         let bias = Tensor<Float>([0, 1])
@@ -125,6 +164,30 @@ final class LayerTests: XCTestCase {
         let expected = Tensor<Float>(shape: [1, 1, 4, 4],
                                      scalars: [9, 12, 23, 28, 25, 36, 55, 68, 41, 60, 87, 108,
                                                57, 84, 119, 148])
+        XCTAssertEqual(output, expected)
+    }
+
+    func testZeroPadding1D() {
+        let input = Tensor<Float>([0.0, 1.0, 2.0])
+        let layer = ZeroPadding1D<Float>(padding: 2)
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>([0.0, 0.0, 0.0, 1.0, 2.0, 0.0, 0.0])
+        XCTAssertEqual(output, expected)
+    }
+
+    func testZeroPadding2D() {
+        let input = Tensor<Float>(shape: [3, 1], scalars: [0.0, 1.0, 2.0])
+        let layer = ZeroPadding2D<Float>(padding: ((0, 0), (0, 1)))
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>([[0.0, 0.0], [1.0, 0.0], [2.0, 0.0]])
+        XCTAssertEqual(output, expected)
+    }
+
+    func testZeroPadding3D() {
+        let input = Tensor<Float>(shape:[3, 1, 1], scalars: [0.0, 1.0, 2.0])
+        let layer = ZeroPadding3D<Float>(padding: ((0, 0), (0, 1), (0, 0)))
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>(shape: [3, 2, 1], scalars: [0, 0, 1, 0, 2, 0])
         XCTAssertEqual(output, expected)
     }
 
@@ -330,7 +393,16 @@ final class LayerTests: XCTestCase {
         // XCTAssertEqual(𝛁rnn.cell.bias, [  0.2496884,  0.66947335,   0.7978788, -0.22378457])
     }
 
+    func testFunction() {
+        let tanhLayer = Function<Tensor<Float>, Tensor<Float>>(tanh)
+        let input = Tensor(shape: [5, 1], scalars: (0..<5).map(Float.init))
+        let output = tanhLayer.inferring(from: input)
+        let expected = Tensor<Float>([[0.0], [0.7615942], [0.9640276], [0.9950547], [0.9993292]])
+        XCTAssertEqual(output, expected)
+    }
+
     static var allTests = [
+        ("testSequential", testSequential),
         ("testConv1D", testConv1D),
         ("testConv1DDilation", testConv1DDilation),
         ("testConv2D", testConv2D),
@@ -338,6 +410,9 @@ final class LayerTests: XCTestCase {
         ("testConv3D", testConv3D),
         ("testConv3DDilation", testConv3DDilation),
         ("testDepthConv2D", testDepthConv2D),
+        ("testZeroPadding1D", testZeroPadding1D),
+        ("testZeroPadding2D", testZeroPadding2D),
+        ("testZeroPadding3D", testZeroPadding3D),
         ("testMaxPool1D", testMaxPool1D),
         ("testMaxPool2D", testMaxPool2D),
         ("testMaxPool3D", testMaxPool3D),
@@ -357,6 +432,7 @@ final class LayerTests: XCTestCase {
         ("testFlatten", testFlatten),
         ("testEmbedding", testEmbedding),
         ("testSimpleRNNCell", testSimpleRNNCell),
-        ("testRNN", testRNN)
+        ("testRNN", testRNN),
+        ("testFunction", testFunction)
     ]
 }

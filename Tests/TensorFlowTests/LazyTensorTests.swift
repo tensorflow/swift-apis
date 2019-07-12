@@ -33,29 +33,29 @@ final class LazyTensorTests: XCTestCase {
         let zero = Tensor<Float>(0.0)
         let zeroTFEHandle = zero.handle.handle._tfeTensorHandle
 
-        let concTensor = LazyTensor(zeroTFEHandle)
+        let concTensor = LazyTensorHandle(zeroTFEHandle)
         XCTAssertEqual(concTensor.description, "0.0")
 
-        let materializedConcTensor = LazyTensor(
+        let materializedConcTensor = LazyTensorHandle(
             _materialized: zeroTFEHandle)
         XCTAssertEqual(materializedConcTensor.description, "0.0*")
 
         let op = LazyTensorOperation(
             _id: "0", name: "IdentityN", outputCount: 3)
-        let symTensor0 = LazyTensor(_lazy: op, index: 0)
+        let symTensor0 = LazyTensorHandle(_lazy: op, index: 0)
         XCTAssertEqual(symTensor0.description, "%0.0")
 
-        let symTensor1 = LazyTensor(_lazy: op, index: 2)
+        let symTensor1 = LazyTensorHandle(_lazy: op, index: 2)
         XCTAssertEqual(symTensor1.description, "%0.2")
 
-        let liveSymTensor = LazyTensor(_lazyLive: op, index: 0)
+        let liveSymTensor = LazyTensorHandle(_lazyLive: op, index: 0)
         XCTAssertEqual(liveSymTensor.description, "%0.0*")
     }
 
     func testLivenessTracking() {
         func assertLive(_ expectedLive: [LazyTensorOperation]) {
             var actualLiveOps: Set<LazyTensorOperationRef> = []
-            LazyTensor.forEachLiveOperation {
+            LazyTensorHandle.forEachLiveOperation {
                 actualLiveOps.insert(LazyTensorOperationRef($0))
             }
             let expectedLiveOps = Set<LazyTensorOperationRef>(
@@ -66,7 +66,7 @@ final class LazyTensorTests: XCTestCase {
 
         func assertAll(_ expectedAll: [LazyTensorOperation]) {
             var actualAllOps: Set<LazyTensorOperationRef> = []
-            LazyTensor.forEachOperation {
+            LazyTensorHandle.forEachOperation {
                 actualAllOps.insert(LazyTensorOperationRef($0))
             }
             let expectedAllOps = Set<LazyTensorOperationRef>(
@@ -75,35 +75,28 @@ final class LazyTensorTests: XCTestCase {
             XCTAssertEqual(expectedAllOps, actualAllOps)
         }
 
-        func isSymbolic(_ t: LazyTensor) -> Bool {
-            switch t.handle {
-            case .symbolic(_): return true
-            case .concrete(_): return false
-            }
-        }
-
         let op0 = LazyTensorOperation(
             _id: "0", name: "IdentityN", outputCount: 2)
         let op1 = LazyTensorOperation(
             _id: "1", name: "IdentityN", outputCount: 2)
 
-        XCTAssertFalse(LazyTensor.isLive(op0))
-        XCTAssertFalse(LazyTensor.isLive(op1))
+        XCTAssertFalse(LazyTensorHandle.isLive(op0))
+        XCTAssertFalse(LazyTensorHandle.isLive(op1))
 
-        let t0 = LazyTensor(_lazyLive: op0, index: 0)
-        let t1 = LazyTensor(_lazy: op1, index: 1)
-        XCTAssertTrue(LazyTensor.isLive(op0))
-        XCTAssertFalse(LazyTensor.isLive(op1))
+        let t0 = LazyTensorHandle(_lazyLive: op0, index: 0)
+        let t1 = LazyTensorHandle(_lazy: op1, index: 1)
+        XCTAssertTrue(LazyTensorHandle.isLive(op0))
+        XCTAssertFalse(LazyTensorHandle.isLive(op1))
 
         do {
-            let t3 = LazyTensor(_lazyLive: op1, index: 0)
-            XCTAssertTrue(LazyTensor.isLive(op1))
+            let t3 = LazyTensorHandle(_lazyLive: op1, index: 0)
+            XCTAssertTrue(LazyTensorHandle.isLive(op1))
             assertLive([op0, op1])
             assertAll([op0, op1])
             // The following is here just to ensure t3 is live.
             XCTAssertTrue(isSymbolic(t3))
         }
-        XCTAssertFalse(LazyTensor.isLive(op1))
+        XCTAssertFalse(LazyTensorHandle.isLive(op1))
         assertLive([op0])
         assertAll([op0, op1])
 
@@ -112,9 +105,54 @@ final class LazyTensorTests: XCTestCase {
         XCTAssertTrue(isSymbolic(t0))
     }
 
+    private func checkConversions<T: _LazyTensorCompatible>(_ x: T) {
+        let concreteLazyX = x._concreteLazyTensor
+        let concreteInputLazyX = x._concreteInputLazyTensor
+        XCTAssertFalse(isSymbolic(concreteLazyX._lazyTensor))
+        XCTAssertFalse(isSymbolic(concreteInputLazyX._lazyTensor))
+        XCTAssertFalse(isMaterializedConcrete(concreteLazyX._lazyTensor))
+        XCTAssertTrue(isMaterializedConcrete(concreteInputLazyX._lazyTensor))
+    }
+
+    func testTensorToLazyTensorConversions() {
+        checkConversions(Tensor<Float>(10.0))
+        checkConversions(StringTensor("Hello!"))
+
+        // ResourceHandle and VariantHandle conversions.
+        let elements1: Tensor<Int32> = [0, 1, 2]
+        let elements2: Tensor<Int32> = [10, 11, 12]
+        let outputTypes = [Int32.tensorFlowDataType, Int32.tensorFlowDataType]
+        let outputShapes: [TensorShape?] = [nil, nil]
+        let dataset: VariantHandle = Raw.tensorSliceDataset(
+            components: [elements1, elements2],
+            outputShapes: outputShapes
+        )
+        let iterator: ResourceHandle = Raw.iteratorV2(sharedName: "blah",
+            container: "earth", outputTypes: outputTypes, outputShapes: outputShapes
+        )
+        checkConversions(dataset)
+        checkConversions(iterator)
+    }
+
+    private func isSymbolic(_ t: LazyTensorHandle?) -> Bool {
+        guard let t = t else { return false }
+        switch t.handle {
+        case .symbolic(_): return true
+        case .concrete(_): return false
+        }
+    }
+
+    private func isMaterializedConcrete(_ t: LazyTensorHandle?) -> Bool {
+        guard let t = t else { return false }
+        switch t.handle {
+        case .symbolic(_): return true
+        case .concrete(_, let isMaterialized): return isMaterialized
+        }
+    }
+
     static var allTests = [
         ("testConstructions", testConstructions),
         ("testLivenessTracking", testLivenessTracking),
+        ("testTensorToLazyTensorConversions", testTensorToLazyTensorConversions)
     ]
-
 }

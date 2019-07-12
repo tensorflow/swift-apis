@@ -59,7 +59,7 @@ class LazyTensorTrace {
         operations.append(node)
     }
 
-    private func makeConstTensor(with handle: TFETensorHandle) -> LazyTensor {
+    private func makeConstTensor(with handle: TFETensorHandle) -> LazyTensorHandle {
         let cTensorHandle = handle._cTensorHandle
         let result = LazyTensorOperation("Const", 1)
         let dtype = TensorDataType(TFE_TensorHandleDataType(cTensorHandle))
@@ -68,12 +68,12 @@ class LazyTensorTrace {
             "dtype": dtypeAttr,
             "value": LazyTensorOperation.Attribute.constTensor(handle)]
         updateOperationAndCache(ObjectIdentifier(handle), result)
-        return LazyTensor(_lazy: result, index: 0)
+        return LazyTensorHandle(_lazy: result, index: 0)
     }
 
     private func makePlaceholderTensor(
         with handle: TFETensorHandle
-    ) -> LazyTensor {
+    ) -> LazyTensorHandle {
         let cTensorHandle = handle._cTensorHandle
         let dtype = TensorDataType(TFE_TensorHandleDataType(cTensorHandle))
         let dtypeAttr = LazyTensorOperation.Attribute.tensorDataTypeValue(dtype)
@@ -82,15 +82,15 @@ class LazyTensorTrace {
         updateOperationAndCache(ObjectIdentifier(handle), placeholder)
         inputs.append(placeholder)
         inputValues.append(handle)
-        return LazyTensor(_lazy: placeholder, index: 0)
+        return LazyTensorHandle(_lazy: placeholder, index: 0)
     }
 
     private func makeConstTensorOrPlaceholder(
         with handle: TFETensorHandle, asConst: Bool
-    ) -> LazyTensor {
+    ) -> LazyTensorHandle {
         let id = ObjectIdentifier(handle)
         if let lazyOp = lazyOpsCache[id] {
-            return LazyTensor(_lazy: lazyOp, index: 0)
+            return LazyTensorHandle(_lazy: lazyOp, index: 0)
         }
         return asConst
             ? makeConstTensor(with: handle)
@@ -99,7 +99,7 @@ class LazyTensorTrace {
 
     /// Return the original tensor or a concrete tensor that is promoted to a
     /// placeholder input.
-    private func maybePromotedTensor(_ lazyHandle: LazyTensor) -> LazyTensor {
+    private func maybePromotedTensor(_ lazyHandle: LazyTensorHandle) -> LazyTensorHandle {
         switch lazyHandle.handle {
         case .concrete(let h, let materialized):
             return makeConstTensorOrPlaceholder(
@@ -108,7 +108,7 @@ class LazyTensorTrace {
             if let outputs = lazyOp.outputs {
                 return makeConstTensorOrPlaceholder(with: outputs[index], asConst: false)
             } else {
-                return LazyTensor(_lazy: collectLazyOperation(lazyOp), index: index)
+                return LazyTensorHandle(_lazy: collectLazyOperation(lazyOp), index: index)
             }
         }
     }
@@ -138,7 +138,7 @@ class LazyTensorTrace {
         newLazyOp.inputs = lazyOp.inputs.map { maybePromotedInput($0) }
         updateOperationAndCache(id, newLazyOp)
 
-        if LazyTensor.isLive(lazyOp) {
+        if LazyTensorHandle.isLive(lazyOp) {
             outputs.append(newLazyOp)
             originalOutputs.append(lazyOp)
         }

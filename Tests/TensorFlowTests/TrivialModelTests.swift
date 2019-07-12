@@ -24,14 +24,12 @@ final class TrivialModelTests: XCTestCase {
                     inputSize: 2,
                     outputSize: hiddenSize,
                     activation: relu,
-                    seed: (0xfffffff, 0xfeeff)
-                )
+                    weightInitializer: glorotUniform(seed: (0xfffffff, 0xfeeff)))
                 l2 = Dense<Float>(
                     inputSize: hiddenSize,
                     outputSize: 1,
                     activation: relu,
-                    seed: (0xffeffe, 0xfffe)
-                )
+                    weightInitializer: glorotUniform(seed: (0xffeffe, 0xfffe)))
             }
             @differentiable
             func callAsFunction(_ input: Tensor<Float>) -> Tensor<Float> {
@@ -50,7 +48,7 @@ final class TrivialModelTests: XCTestCase {
                 let ŷ = classifier(x)
                 return meanSquaredError(predicted: ŷ, expected: y)
             }
-            optimizer.update(&classifier.allDifferentiableVariables, along: 𝛁model)
+            optimizer.update(&classifier, along: 𝛁model)
         }
         let ŷ = classifier.inferring(from: x)
         XCTAssertEqual(round(ŷ), y)
