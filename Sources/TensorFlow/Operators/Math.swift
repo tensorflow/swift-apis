@@ -1978,7 +1978,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
         return (value, { [shape = shapeTensor] v in
             let unsqueezed = v.expandingShape(at: axes.scalars.map { Int($0) })
             return unsqueezed.broadcasted(toShape: shape)
-	    })
+        })
     }
 
     @inlinable
