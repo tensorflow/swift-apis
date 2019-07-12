@@ -138,7 +138,7 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let padding: Padding
     /// The dilation factor for spatial dimensions.
     @noDerivative public let dilations: (Int, Int)
-    
+
     /// The element-wise activation function type.
     public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
 
@@ -315,6 +315,8 @@ public struct Conv3D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Note: Padding size equals zero when using `.valid`.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+        precondition(dilations.0 == 1 && dilations.1 == 1 && dilations.2 == 1,
+                     "Currently, dilation values other than 1 are not supported.")
         return activation(conv3D(
             input,
             filter: filter,
@@ -481,7 +483,7 @@ public struct DepthwiseConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The element-wise activation function type.
     public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
 
-    /// Creates a `DepthwiseConv2D` layer with the specified filter, bias, activation function, 
+    /// Creates a `DepthwiseConv2D` layer with the specified filter, bias, activation function,
     /// strides, and padding.
     ///
     /// - Parameters:
