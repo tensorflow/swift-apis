@@ -1976,8 +1976,8 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     func _vjpSum(squeezingAxes axes: Tensor<Int32>) -> (Tensor, (Tensor) -> Tensor) {
         let value = sum(squeezingAxes: axes)
         return (value, { [shape = shapeTensor] v in
-	        let unsqueezed = v.expandingShape(at: axes.scalars.map { Int($0) })
-	        return unsqueezed.broadcasted(toShape: shape)
+            let unsqueezed = v.expandingShape(at: axes.scalars.map { Int($0) })
+            return unsqueezed.broadcasted(toShape: shape)
 	    })
     }
 
