@@ -25,58 +25,6 @@ func vjpFoo(_ x: Tensor<Float>) -> (Tensor<Float>, (Tensor<Float>) -> Tensor<Flo
     return (foo(x), { v in v })
 }
 
-@differentiable(wrt: (x, offset, scale), vjp: _vjpOldBatchNormalized)
-func oldBatchNormalized(
-    _ x: Tensor<Float>,
-    alongAxis axis: Int,
-    offset: Tensor<Float> = Tensor(0),
-    scale: Tensor<Float> = Tensor(1),
-    epsilon: Float = 0.001
-) -> Tensor<Float> {
-    let mean = x.mean(alongAxes: axis)
-    let squaredDiff: Tensor = Raw.squaredDifference(x, mean)
-    let variance = squaredDiff.mean(alongAxes: axis)
-    let inv = rsqrt(variance + epsilon) * scale
-    return x * inv + offset - mean * inv
-}
-
-func _vjpOldBatchNormalized(
-    _ x: Tensor<Float>,
-    alongAxis axis: Int,
-    offset: Tensor<Float>,
-    scale: Tensor<Float>,
-    epsilon: Float
-) -> (Tensor<Float>, (Tensor<Float>) -> (Tensor<Float>, Tensor<Float>, Tensor<Float>)) {
-    let value = oldBatchNormalized(
-        x,
-        alongAxis: axis,
-        offset: offset,
-        scale: scale,
-        epsilon: epsilon)
-    return (value, { v in
-        let mean = x.mean(alongAxes: axis)
-        let squaredDiff: Tensor = Raw.squaredDifference(x, mean)
-        let variance = squaredDiff.mean(alongAxes: axis)
-
-        let diff = x - mean
-        let inv = rsqrt(variance + epsilon)
-        let norm = diff * inv
-
-        let dNorm = v * scale
-        let dVariance = -(dNorm * diff).sum(alongAxes: axis) / 2 * TensorFlow.pow(inv, -3)
-        // Note: `dMean` is split into two lines to avoid the "compiler is unable to 
-        // type-check this expression in reasonable time" error.
-        var dMean = (-dNorm * inv).sum(alongAxes: axis)
-        dMean = dMean + dVariance * (-diff * 2).mean(alongAxes: axis)
-        let dOffset = v.sum(alongAxes: axis)
-        let dScale = (norm * v).sum(alongAxes: axis)
-        let dim = Tensor<Float>(Tensor<Int32>(x.shapeTensor[axis]))
-        let tmp = (dNorm * inv) + (dVariance * 2 * dMean / dim)
-        let dSelf = tmp + (dMean / dim)
-        return (dSelf, dOffset, dScale)
-    })
-}
-
 final class TensorAutoDiffTests: XCTestCase {
     func testSimpleGrad() {
         func square(_ x: Tensor<Float>) -> Tensor<Float> {
@@ -447,15 +395,28 @@ final class TensorAutoDiffTests: XCTestCase {
 
     func testBatchNormalized() {
         let x = Tensor<Float>([
-            [0.45031791, 0.41123222, 0.53928467, 0.47167023, 0.15483777],
-            [0.49975705, 0.71807549, 0.30396056, 0.2690469 , 0.01404393],
-            [0.16950939, 0.41085612, 0.79503016, 0.11977817, 0.99728241],
-            [0.62510073, 0.17344792, 0.1540605 , 0.40758517, 0.93683817],
-            [0.15653343, 0.50502756, 0.99365925, 0.84617581, 0.17422509]])
-        assertEqual(
-            gradient(at: x) { $0.batchNormalized(alongAxis: 1).sum() },
-            gradient(at: x) { oldBatchNormalized($0, alongAxis: 1).sum() },
-            accuracy: 0.0001)
+            [  -1.0474433,  -0.11914538,  -0.08634827,   0.15446888,    1.0572497],
+            [   1.5165012,    0.3753972,  -0.30856386,   -0.3100725,   -1.9584457],
+            [ 0.006384419,    1.4424847,   0.91568077,   0.66328526,   -1.0794537],
+            [    1.056803,   0.14263044,   -1.8308276,    0.4189805,    0.6933893],
+            [  0.30175626,  -0.16121633,   -0.4191958,  -0.53092813, -0.029484272]])
+        let computedGradient = gradient(at: x) { $0.batchNormalized(alongAxis: 1).squared().sum() }
+        // The expected value of the gradient was computed using the following Python code:
+        // ```
+        //   with tf.GradientTape() as t:
+        //     t.watch(x)
+        //     mean, var = tf.nn.moments(x, axes=1, keepdims=True)
+        //     y = tf.reduce_sum(tf.square(tf.nn.batch_normalization(
+        //     x, mean, var, offset=0, scale=1, variance_epsilon=0.001)))
+        //   print(t.gradient(y, x))
+        // ```
+        let expectedGradient = Tensor<Float>([
+            [-1.0127544e-02, -1.0807812e-03, -7.6115131e-04,  1.5857220e-03,  1.0383606e-02],
+            [ 2.0323221e-03,  6.2976527e-04, -2.1077941e-04, -2.1265696e-04, -2.2384699e-03],
+            [-1.3483668e-03,  3.7030075e-03,  1.8500184e-03,  9.6232636e-04, -5.1673558e-03],
+            [ 1.8438101e-03,  8.9146197e-05, -3.6990643e-03,  6.1964989e-04,  1.1463165e-03],
+            [ 1.2142579e-01,  1.7060755e-03, -6.5005139e-02, -9.3897656e-02,  3.5770576e-02]])
+        assertEqual(computedGradient, expectedGradient, accuracy: 0.0001)
     }
 
     static var allTests = [
