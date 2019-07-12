@@ -1904,8 +1904,8 @@ public extension Tensor where Scalar: Numeric {
     /// By setting the `reverse` argument to `true`, the cumulative sum is performed in the
     /// opposite direction:
     /// ```
-    /// Tensor<Float>([a, b, c]).cumulativeSum(reverse: true) = 
-    ///   Tensor<Float>([a + b + c, a + b, a])
+    /// Tensor<Float>([a, b, c]).cumulativeSum(reverse: true) ==
+    ///     Tensor<Float>([a + b + c, a + b, a])
     /// ```
     /// This is more efficient than separately reversing the resulting tensor.
     ///
@@ -1942,8 +1942,8 @@ public extension Tensor where Scalar: Numeric {
     /// By setting the `reverse` argument to `true`, the cumulative sum is performed in the
     /// opposite direction:
     /// ```
-    /// Tensor<Float>([a, b, c]).cumulativeSum(reverse: true) = 
-    ///   Tensor<Float>([a + b + c, a + b, a])
+    /// Tensor<Float>([a, b, c]).cumulativeSum(reverse: true) ==
+    ///     Tensor<Float>([a + b + c, a + b, a])
     /// ```
     /// This is more efficient than separately reversing the resulting tensor.
     ///
@@ -1975,9 +1975,9 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     func _vjpSum(squeezingAxes axes: Tensor<Int32>) -> (Tensor, (Tensor) -> Tensor) {
         let value = sum(squeezingAxes: axes)
-        return (value, { [shape = shapeTensor] seed in
-	      let unsqueezed = seed.expandingShape(at: axes.scalars.map { Int($0) })
-	      return unsqueezed.broadcasted(toShape: shape)
+        return (value, { [shape = shapeTensor] v in
+	        let unsqueezed = v.expandingShape(at: axes.scalars.map { Int($0) })
+	        return unsqueezed.broadcasted(toShape: shape)
 	    })
     }
 
@@ -1992,8 +1992,8 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     func _vjpMean(squeezingAxes axes: Tensor<Int32>) -> (Tensor, (Tensor) -> Tensor) {
         let value = mean(squeezingAxes: axes)
         let count = Raw.gather(params: shapeTensor, indices: axes).product()
-        return (value, { [shape = shapeTensor] seed in
-	      let unsqueezed = seed.expandingShape(at: axes.scalars.map { Int($0) })
+        return (value, { [shape = shapeTensor] v in
+	      let unsqueezed = v.expandingShape(at: axes.scalars.map { Int($0) })
 	      return unsqueezed.broadcasted(toShape: shape) / Tensor(count)
 	    })
     }
@@ -2004,8 +2004,8 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
         exclusive: Bool = false,
         reverse: Bool = false
     ) -> (Tensor, (Tensor) -> Tensor) {
-        (cumulativeSum(alongAxis: axis, exclusive: exclusive, reverse: reverse), { seed in
-            seed.cumulativeSum(alongAxis: axis, exclusive: exclusive, reverse: !reverse)
+        (cumulativeSum(alongAxis: axis, exclusive: exclusive, reverse: reverse), { v in
+            v.cumulativeSum(alongAxis: axis, exclusive: exclusive, reverse: !reverse)
         })
     }
 }
