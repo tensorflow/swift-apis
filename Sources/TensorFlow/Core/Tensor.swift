@@ -569,10 +569,6 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 //===------------------------------------------------------------------------------------------===//
 
 extension Tensor: PointwiseMultiplicative where Scalar: Numeric {
-    /// The scalar one tensor.
-    @inlinable
-    public static var one: Tensor { Tensor(1) }
-
     /// Returns the element-wise reciprocal of `self`.
     @inlinable
     public var reciprocal: Tensor { 1 / self }
