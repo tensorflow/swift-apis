@@ -242,6 +242,33 @@ final class MathOperatorTests: XCTestCase {
         XCTAssertEqual(reverseExclusiveCumsum1, Tensor<Float>([[3, 2, 0], [9, 5, 0]]))
     }
 
+    func testCumulativeProduct() {
+        // 2 x 3
+        let x = Tensor<Float>([[0, 1, 2], [3, 4, 5]])
+        let cumprod0 = x.cumulativeProduct(alongAxis: 0)
+        let cumprod1 = x.cumulativeProduct(alongAxis: 1)
+        let exclusiveCumprod0 = x.cumulativeProduct(alongAxis: 0, exclusive: true)
+        let exclusiveCumprod1 = x.cumulativeProduct(alongAxis: 1, exclusive: true)
+        let reverseCumprod0 = x.cumulativeProduct(alongAxis: 0, reverse: true)
+        let reverseCumprod1 = x.cumulativeProduct(alongAxis: 1, reverse: true)
+        let reverseExclusiveCumprod0 = x.cumulativeProduct(
+            alongAxis: 0,
+            exclusive: true,
+            reverse: true)
+        let reverseExclusiveCumprod1 = x.cumulativeProduct(
+            alongAxis: 1,
+            exclusive: true,
+            reverse: true)
+        XCTAssertEqual(cumprod0, Tensor<Float>([[0, 1, 2], [0, 4, 10]]))
+        XCTAssertEqual(cumprod1, Tensor<Float>([[0, 0, 0], [3, 12, 60]]))
+        XCTAssertEqual(exclusiveCumprod0, Tensor<Float>([[1, 1, 1], [0, 1, 2]]))
+        XCTAssertEqual(exclusiveCumprod1, Tensor<Float>([[1, 0, 0], [1, 3, 12]]))
+        XCTAssertEqual(reverseCumprod0, Tensor<Float>([[0, 4, 10], [3, 4, 5]]))
+        XCTAssertEqual(reverseCumprod1, Tensor<Float>([[0, 2, 2], [60, 20, 5]]))
+        XCTAssertEqual(reverseExclusiveCumprod0, Tensor<Float>([[3, 4, 5], [1, 1, 1]]))
+        XCTAssertEqual(reverseExclusiveCumprod1, Tensor<Float>([[2, 2, 1], [20, 5, 1]]))
+    }
+
     func testStandardDeviation() {
         XCTAssertEqual(Tensor<Float>([1]).standardDeviation(), Tensor(0))
         XCTAssertEqual(Tensor<Float>([0, 1]).standardDeviation(alongAxes: 0), Tensor(0.5))
@@ -485,6 +512,7 @@ final class MathOperatorTests: XCTestCase {
         ("testArgmax", testArgmax),
         ("testReduction", testReduction),
         ("testCumulativeSum", testCumulativeSum),
+        ("testCumulativeProduct", testCumulativeProduct),
         ("testStandardDeviation", testStandardDeviation),
         ("testLogSumExp", testLogSumExp),
         ("testMoments", testMoments),

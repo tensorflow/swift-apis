@@ -1963,6 +1963,79 @@ public extension Tensor where Scalar: Numeric {
     ) -> Tensor {
         Raw.cumsum(self, axis: axis, exclusive: exclusive, reverse: reverse)
     }
+
+    /// Returns the cumulative product of this tensor along the specified axis. By default, this
+    /// function performs an inclusive cumulative product which means that the first element of the
+    /// input is identical to the first element of the output:
+    /// ```
+    /// Tensor<Float>([a, b, c]).cumulativeProduct() = Tensor<Float>([a, a * b, a * b * c])
+    /// ```
+    /// By setting the `exclusive` argument to `true`, an exclusive cumulative product is performed
+    /// instead:
+    /// ```
+    /// Tensor<Float>([a, b, c]).cumulativeProduct(exclusive: true) = Tensor<Float>([1, a, a * b])
+    /// ```
+    /// By setting the `reverse` argument to `true`, the cumulative product is performed in the
+    /// opposite direction:
+    /// ```
+    /// Tensor<Float>([a, b, c]).cumulativeProduct(reverse: true) ==
+    ///     Tensor<Float>([a * b * c, a * b, a])
+    /// ```
+    /// This is more efficient than separately reversing the resulting tensor.
+    ///
+    /// - Parameters:
+    ///   - axis: Axis along which to perform the cumulative product operation.
+    ///   - exclusive: Indicates whether to perform an exclusive cumulative product.
+    ///   - reverse: Indicates whether to perform the cumulative product in reversed order.
+    /// - Returns: Result of the cumulative product operation.
+    /// - Precondition: `axis` must be in the range `-rank..<rank`.
+    @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+    func cumulativeProduct(
+        alongAxis axis: Int,
+        exclusive: Bool = false,
+        reverse: Bool = false
+    ) -> Tensor {
+        cumulativeProduct(
+            alongAxis: Tensor<Int32>(Int32(axis)),
+            exclusive: exclusive,
+            reverse: reverse)
+    }
+
+    /// Returns the cumulative product of this tensor along the specified axis. By default, this
+    /// function performs an inclusive cumulative product which means that the first element of the
+    /// input is identical to the first element of the output:
+    /// ```
+    /// Tensor<Float>([a, b, c]).cumulativeProduct() = Tensor<Float>([a, a * b, a * b * c])
+    /// ```
+    /// By setting the `exclusive` argument to `true`, an exclusive cumulative product is performed
+    /// instead:
+    /// ```
+    /// Tensor<Float>([a, b, c]).cumulativeProduct(exclusive: true) = Tensor<Float>([1, a, a * b])
+    /// ```
+    /// By setting the `reverse` argument to `true`, the cumulative product is performed in the
+    /// opposite direction:
+    /// ```
+    /// Tensor<Float>([a, b, c]).cumulativeProduct(reverse: true) ==
+    ///     Tensor<Float>([a * b * c, a * b, a])
+    /// ```
+    /// This is more efficient than separately reversing the resulting tensor.
+    ///
+    /// - Parameters:
+    ///   - axis: Axis along which to perform the cumulative product operation.
+    ///   - exclusive: Indicates whether to perform an exclusive cumulative product.
+    ///   - reverse: Indicates whether to perform the cumulative product in reversed order.
+    /// - Returns: Result of the cumulative product operation.
+    /// - Precondition: `axis` must be in the range `-rank..<rank`.
+    @inlinable
+    @differentiable(wrt: self, vjp: _vjpCumulativeProduct where Scalar: TensorFlowFloatingPoint)
+    func cumulativeProduct(
+        alongAxis axis: Tensor<Int32>,
+        exclusive: Bool = false,
+        reverse: Bool = false
+    ) -> Tensor {
+        Raw.cumprod(self, axis: axis, exclusive: exclusive, reverse: reverse)
+    }
 }
 
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
@@ -2006,6 +2079,22 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     ) -> (Tensor, (Tensor) -> Tensor) {
         (cumulativeSum(alongAxis: axis, exclusive: exclusive, reverse: reverse), { v in
             v.cumulativeSum(alongAxis: axis, exclusive: exclusive, reverse: !reverse)
+        })
+    }
+
+    @inlinable
+    func _vjpCumulativeProduct(
+        alongAxis axis: Tensor<Int32>,
+        exclusive: Bool = false,
+        reverse: Bool = false
+    ) -> (Tensor, (Tensor) -> Tensor) {
+        let result = cumulativeProduct(alongAxis: axis, exclusive: exclusive, reverse: reverse)
+        return (result, { v in
+            (result * v).cumulativeSum(
+                alongAxis: axis,
+                exclusive: exclusive,
+                reverse: !reverse
+            ) / self
         })
     }
 }
