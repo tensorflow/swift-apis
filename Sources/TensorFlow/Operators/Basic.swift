@@ -414,12 +414,15 @@ public extension Tensor {
         alongAxis axis: Int = 1,
         batchDimensionCount: Int = 1
     ) -> Tensor {
-        // TODO: precondition(batchDimensionCount >= 0,
-        //                    "'batchDimensionCount' must be non-negative.")
-        // TODO: precondition(batchDimensionCount < indices.rank,
-        //                    "'batchDimensionCount' must be less than 'indices.rank'.")
-        // TODO: precondition(batchDimensionCount < rank, 
-        //                    "'batchDimensionCount' must be less than the tensor's rank.")
+        precondition(batchDimensionCount >= 0, "'batchDimensionCount' must be non-negative.")
+        precondition(
+            batchDimensionCount < indices.rank,
+            "'batchDimensionCount' must be less than 'indices.rank'.")
+        withoutDerivative(at: rank) {
+            precondition(
+                batchDimensionCount < $0,
+                "'batchDimensionCount' must be less than the tensor's rank.")
+        }
 
         // Handle the axis argument by transposing the axis dimension so that it is the first
         // non-batch dimension, recursively calling `batchGathering` with `axis = 0`, and then
@@ -472,7 +475,7 @@ public extension Tensor {
                 let dShape = Tensor<Int32>(concatenating: [
                     Tensor<Int32>([Int32](repeating: 1, count: d - 1)),
                     dValue.rankLifted(),
-                    Tensor<Int32>([Int32](repeating: 1, count: indices.rank - 1))])
+                    Tensor<Int32>([Int32](repeating: 1, count: indices.rank - d))])
                 batchIndices += dIndices.reshaped(toShape: dShape)
             }
             return batchIndices
