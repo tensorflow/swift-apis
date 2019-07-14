@@ -2315,6 +2315,10 @@ public struct Moments<Scalar: TensorFlowFloatingPoint>: Differentiable {
 public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// Returns the mean and variance of this tensor along the specified axes. The reduced
     /// dimensions are removed.
+    ///
+    /// - Parameter axes: The dimensions to reduce.
+    /// - Precondition: `axes` must have rank `1`.
+    /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
     @differentiable(wrt: self)
     func moments(squeezingAxes axes: Tensor<Int32>) -> Moments<Scalar> {
@@ -2329,6 +2333,9 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
 
     /// Returns the mean and variance of this tensor along the specified axes. The reduced
     /// dimensions are removed.
+    ///
+    /// - Parameter axes: The dimensions to reduce.
+    /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
     @differentiable(wrt: self)
     func moments(squeezingAxes axes: [Int]) -> Moments<Scalar> {
@@ -2339,6 +2346,9 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
 
     /// Returns the mean and variance of this tensor along the specified axes. The reduced
     /// dimensions are removed.
+    ///
+    /// - Parameter axes: The dimensions to reduce.
+    /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
     @differentiable(wrt: self)
     func moments(squeezingAxes axes: Int...) -> Moments<Scalar> {
@@ -2354,6 +2364,10 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
 
     /// Returns the mean and variance of this tensor along the specified axes. The reduced
     /// dimensions are retained with value `1`.
+    ///
+    /// - Parameter axes: The dimensions to reduce.
+    /// - Precondition: `axes` must have rank `1`.
+    /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
     @differentiable(wrt: self)
     func moments(alongAxes axes: Tensor<Int32>) -> Moments<Scalar> {
@@ -2364,6 +2378,9 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
 
     /// Returns the mean and variance of this tensor along the specified axes. The reduced
     /// dimensions are retained with value `1`.
+    ///
+    /// - Parameter axes: The dimensions to reduce.
+    /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
     @differentiable(wrt: self)
     func moments(alongAxes axes: [Int]) -> Moments<Scalar> {
@@ -2374,6 +2391,9 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
 
     /// Returns the mean and variance of this tensor along the specified axes. The reduced
     /// dimensions are retained with value `1`.
+    ///
+    /// - Parameter axes: The dimensions to reduce.
+    /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
     @differentiable(wrt: self)
     func moments(alongAxes axes: Int...) -> Moments<Scalar> {
