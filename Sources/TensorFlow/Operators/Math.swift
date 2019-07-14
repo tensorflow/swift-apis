@@ -1228,7 +1228,8 @@ public func max<T>(_ lhs: Tensor<T>, _ rhs: Tensor<T>) -> Tensor<T> where T: Num
 
 @inlinable
 internal func _vjpMax<T: TensorFlowFloatingPoint>(
-    _ x: Tensor<T>, _ y: Tensor<T>
+    _ x: Tensor<T>,
+    _ y: Tensor<T>
 ) -> (Tensor<T>, (Tensor<T>) -> (Tensor<T>, Tensor<T>)) {
     let value = max(x, y)
     return (value, { v in _vjpMinMaxHelper(x, y, originalValue: value, seed: v) })
@@ -1236,14 +1237,14 @@ internal func _vjpMax<T: TensorFlowFloatingPoint>(
 
 /// Returns the element-wise maximum of the scalar and the tensor, broadcasting the scalar.
 @inlinable
-// @differentiable(where T: TensorFlowFloatingPoint)
+@differentiable(wrt: rhs where T: TensorFlowFloatingPoint)
 public func max<T>(_ lhs: T, _ rhs: Tensor<T>) -> Tensor<T> where T: Numeric & Comparable {
     max(Tensor(lhs), rhs)
 }
 
 /// Returns the element-wise maximum of the scalar and the tensor, broadcasting the scalar.
 @inlinable
-// @differentiable(where T: TensorFlowFloatingPoint)
+@differentiable(wrt: lhs where T: TensorFlowFloatingPoint)
 public func max<T>(_ lhs: Tensor<T>, _ rhs: T) -> Tensor<T> where T: Numeric & Comparable {
     max(lhs, Tensor(rhs))
 }
@@ -1258,7 +1259,8 @@ public func min<T>(_ lhs: Tensor<T>, _ rhs: Tensor<T>) -> Tensor<T> where T: Num
 
 @inlinable
 internal func _vjpMin<T: TensorFlowFloatingPoint>(
-    _ x: Tensor<T>, _ y: Tensor<T>
+    _ x: Tensor<T>,
+    _ y: Tensor<T>
 ) -> (Tensor<T>, (Tensor<T>) -> (Tensor<T>, Tensor<T>)) {
     let value = min(x, y)
     return (value, { v in _vjpMinMaxHelper(x, y, originalValue: value, seed: v) })
@@ -1266,14 +1268,14 @@ internal func _vjpMin<T: TensorFlowFloatingPoint>(
 
 /// Returns the element-wise minimum of the scalar and the tensor, broadcasting the scalar.
 @inlinable
-// @differentiable(where T: TensorFlowFloatingPoint)
+@differentiable(wrt: rhs where T: TensorFlowFloatingPoint)
 public func min<T>(_ lhs: T, _ rhs: Tensor<T>) -> Tensor<T> where T: Numeric & Comparable {
     min(Tensor(lhs), rhs)
 }
 
 /// Returns the element-wise minimum of the scalar and the tensor, broadcasting the scalar.
 @inlinable
-// @differentiable(where T: TensorFlowFloatingPoint)
+@differentiable(wrt: lhs where T: TensorFlowFloatingPoint)
 public func min<T>(_ lhs: Tensor<T>, _ rhs: T) -> Tensor<T> where T: Numeric & Comparable {
     min(lhs, Tensor(rhs))
 }
@@ -1297,7 +1299,8 @@ internal func _vjpMinMaxHelper<T: TensorFlowFloatingPoint>(
 /// Returns the cosine similarity between `x` and `y`.
 @differentiable
 public func cosineSimilarity<Scalar: TensorFlowFloatingPoint>(
-    _ x: Tensor<Scalar>, _ y: Tensor<Scalar>
+    _ x: Tensor<Scalar>,
+    _ y: Tensor<Scalar>
 ) -> Tensor<Scalar> {
     (x * y).sum() / (sqrt(x.squared().sum()) * sqrt(y.squared().sum()))
 }
@@ -1306,7 +1309,8 @@ public func cosineSimilarity<Scalar: TensorFlowFloatingPoint>(
 /// `1 - cosineSimilarity(x, y)`.
 @differentiable
 public func cosineDistance<Scalar: TensorFlowFloatingPoint>(
-    _ x: Tensor<Scalar>, _ y: Tensor<Scalar>
+    _ x: Tensor<Scalar>,
+    _ y: Tensor<Scalar>
 ) -> Tensor<Scalar> {
     1 - cosineSimilarity(x, y)
 }
