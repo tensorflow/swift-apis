@@ -2334,7 +2334,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     func moments(squeezingAxes axes: [Int]) -> Moments<Scalar> {
         // TODO(TF-433): Remove workaround for differentiating `map`.
         let axes = {axes.map(Int32.init)}()
-        moments(squeezingAxes: Tensor<Int32>(axes))
+        return moments(squeezingAxes: Tensor<Int32>(axes))
     }
 
     /// Returns the mean and variance of this tensor along the specified axes. The reduced
@@ -2369,7 +2369,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     func moments(alongAxes axes: [Int]) -> Moments<Scalar> {
         // TODO(TF-433): Remove workaround for differentiating `map`.
         let axes = {axes.map(Int32.init)}()
-        moments(alongAxes: Tensor<Int32>(axes))
+        return moments(alongAxes: Tensor<Int32>(axes))
     }
 
     /// Returns the mean and variance of this tensor along the specified axes. The reduced
