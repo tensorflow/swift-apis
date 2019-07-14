@@ -2319,10 +2319,12 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @differentiable(wrt: self)
     func moments(squeezingAxes axes: Tensor<Int32>) -> Moments<Scalar> {
         let mean = self.mean(alongAxes: axes)
-        let variance = squaredDifference(self, mean).mean(alongAxes: axes)
-        return Moments<Scalar>(
-            mean: mean.squeezingShape(at: axes),
-            variance: variance.squeezingShape(at: axes))
+        let variance = squaredDifference(self, mean).mean(squeezingAxes: axes)
+        return Moments(
+            // The following is required because `Tensor.squeezingShape(at:)` does not accept
+            // `Tensor<Int32>`-valued arguments.
+            mean: mean.sum(squeezingAxes: axes),
+            variance: variance)
     }
 
     /// Returns the mean and variance of this tensor along the specified axes. The reduced
