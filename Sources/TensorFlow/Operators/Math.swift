@@ -153,6 +153,7 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
     /// For real types, if `x` is negative the result is NaN, even if `y` has
     /// an integral value. For complex types, there is a branch cut on the
     /// negative real axis.
+    @differentiable
     public static func pow(_ x: Self, _ y: Self) -> Self {
         TensorFlow.pow(x, y)
     }
@@ -160,6 +161,7 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
     /// `x` raised to the `n`th power.
     ///
     /// The product of `n` copies of `x`.
+    @differentiable
     public static func pow(_ x: Self, _ n: Int) -> Self {
         TensorFlow.pow(x, n)
     }
@@ -168,6 +170,7 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
     ///
     /// For real types, if `x` is negative and `n` is even, the result is NaN.
     /// For complex types, there is a branch cut along the negative real axis.
+    @differentiable
     public static func root(_ x: Self, _ n: Int) -> Self {
         TensorFlow.root(x, n)
     }
