@@ -207,15 +207,15 @@ public extension Tensor where Scalar: Equatable {
 
 // TODO: infix operator ≈: ComparisonPrecedence
 
-public extension Tensor where Scalar: FloatingPoint & Equatable {
+public extension Tensor where Scalar: TensorFlowFloatingPoint & Equatable {
     /// Returns a tensor of Boolean values indicating whether the elements of `self` are
     /// approximately equal to those of `other`.
     @inlinable
-    func elementsApproximatelyEqual(
+    func elementsAlmostEqual(
         _ other: Tensor,
-        tolerance: Double = 0.00001
+        tolerance: Scalar = Scalar.ulpOfOne.squareRoot()
     ) -> Tensor<Bool> {
-        return Raw.approximateEqual(self, other, tolerance: tolerance)
+        return Raw.approximateEqual(self, other, tolerance: Double(tolerance))
     }
 }
 
@@ -228,7 +228,7 @@ public extension StringTensor {
     }
 }
 
-public extension Tensor where Scalar: FloatingPoint {
+public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// Returns `true` if tensors are of equal shape and all pairs of scalars are approximately
     /// equal.
     @inlinable
@@ -237,6 +237,6 @@ public extension Tensor where Scalar: FloatingPoint {
         tolerance: Scalar = Scalar.ulpOfOne.squareRoot()
     ) -> Bool {
         return self.shape == other.shape &&
-            zip(self.scalars, other.scalars).allSatisfy { abs($0.0 - $0.1) < tolerance }
+            self.elementsAlmostEqual(other, tolerance: tolerance).all()
     }
 }
