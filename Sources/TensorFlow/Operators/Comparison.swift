@@ -229,12 +229,12 @@ public extension StringTensor {
 }
 
 public extension Tensor where Scalar: TensorFlowFloatingPoint {
-    /// Returns `true` if all pairs of scalars are approximately equal.
+    /// Returns `true` if all elements of this tensor are approximately equal to those of `other`.
     @inlinable
     func isAlmostEqual(
         to other: Tensor,
         tolerance: Scalar = Scalar.ulpOfOne.squareRoot()
     ) -> Bool {
-        return self.elementsAlmostEqual(other, tolerance: tolerance).all()
+        elementsAlmostEqual(other, tolerance: tolerance).all()
     }
 }
