@@ -1221,28 +1221,28 @@ internal func _vjpPow<T: TensorFlowFloatingPoint>(
 
 /// Returns the power of the scalar to the tensor, broadcasting the scalar.
 @inlinable
-// @differentiable
+@differentiable(wrt: rhs where T: TensorFlowFloatingPoint)
 public func pow<T: TensorFlowFloatingPoint>(_ lhs: T, _ rhs: Tensor<T>) -> Tensor<T> {
     pow(Tensor(lhs), rhs)
 }
 
 /// Returns the power of the tensor to the scalar, broadcasting the scalar.
 @inlinable
-// @differentiable
+@differentiable(wrt: lhs where T: TensorFlowFloatingPoint)
 public func pow<T: TensorFlowFloatingPoint>(_ lhs: Tensor<T>, _ rhs: T) -> Tensor<T> {
     pow(lhs, Tensor(rhs))
 }
 
 /// Returns the power of the tensor to the scalar, broadcasting the scalar.
 @inlinable
-// @differentiable
+@differentiable
 public func pow<T: TensorFlowFloatingPoint>(_ x: Tensor<T>, _ n: Int) -> Tensor<T> {
     pow(x, Tensor(T(n)))
 }
 
 /// Returns the element-wise `n`th root of the tensor.
 @inlinable
-// @differentiable
+@differentiable
 public func root<T: TensorFlowFloatingPoint>(_ x: Tensor<T>, _ n: Int) -> Tensor<T> {
     sign(x) * pow(abs(x), Tensor(T(1) / T(n)))
 }
