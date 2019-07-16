@@ -44,106 +44,127 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
     ///
     /// For real types, if `x` is negative the result is `.nan`. For complex
     /// types there is a branch cut on the negative real axis.
+    @differentiable
     public static func sqrt(_ x: Self) -> Self {
         TensorFlow.sqrt(x)
     }
 
     /// The cosine of `x`, interpreted as an angle in radians.
+    @differentiable
     public static func cos(_ x: Self) -> Self {
         TensorFlow.cos(x)
     }
 
     /// The sine of `x`, interpreted as an angle in radians.
+    @differentiable
     public static func sin(_ x: Self) -> Self {
         TensorFlow.sin(x)
     }
 
     /// The tangent of `x`, interpreted as an angle in radians.
+    @differentiable
     public static func tan(_ x: Self) -> Self {
         TensorFlow.tan(x)
     }
 
     /// The inverse cosine of `x` in radians.
+    @differentiable
     public static func acos(_ x: Self) -> Self {
         TensorFlow.acos(x)
     }
 
     /// The inverse sine of `x` in radians.
+    @differentiable
     public static func asin(_ x: Self) -> Self {
         TensorFlow.asin(x)
     }
 
     /// The inverse tangent of `x` in radians.
+    @differentiable
     public static func atan(_ x: Self) -> Self {
         TensorFlow.atan(x)
     }
 
     /// The hyperbolic cosine of `x`.
+    @differentiable
     public static func cosh(_ x: Self) -> Self {
         TensorFlow.cosh(x)
     }
 
     /// The hyperbolic sine of `x`.
+    @differentiable
     public static func sinh(_ x: Self) -> Self {
         TensorFlow.sinh(x)
     }
 
     /// The hyperbolic tangent of `x`.
+    @differentiable
     public static func tanh(_ x: Self) -> Self {
         TensorFlow.tanh(x)
     }
 
     /// The inverse hyperbolic cosine of `x`.
+    @differentiable
     public static func acosh(_ x: Self) -> Self {
         TensorFlow.acosh(x)
     }
 
     /// The inverse hyperbolic sine of `x`.
+    @differentiable
     public static func asinh(_ x: Self) -> Self {
         TensorFlow.asinh(x)
     }
 
     /// The inverse hyperbolic tangent of `x`.
+    @differentiable
     public static func atanh(_ x: Self) -> Self {
         TensorFlow.atanh(x)
     }
 
     /// The exponential function applied to `x`, or `e**x`.
+    @differentiable
     public static func exp(_ x: Self) -> Self {
         TensorFlow.exp(x)
     }
 
     /// Two raised to to power `x`.
+    @differentiable
     public static func exp2(_ x: Self) -> Self {
         TensorFlow.exp2(x)
     }
 
     /// Ten raised to to power `x`.
+    @differentiable
     public static func exp10(_ x: Self) -> Self {
         TensorFlow.exp10(x)
     }
 
     /// `exp(x) - 1` evaluated so as to preserve accuracy close to zero.
+    @differentiable
     public static func expm1(_ x: Self) -> Self {
         TensorFlow.expm1(x)
     }
 
     /// The natural logarithm of `x`.
+    @differentiable
     public static func log(_ x: Self) -> Self {
         TensorFlow.log(x)
     }
 
     /// The base-two logarithm of `x`.
+    @differentiable
     public static func log2(_ x: Self) -> Self {
         TensorFlow.log2(x)
     }
 
     /// The base-ten logarithm of `x`.
+    @differentiable
     public static func log10(_ x: Self) -> Self {
         TensorFlow.log10(x)
     }
 
     /// `log(1 + x)` evaluated so as to preserve accuracy close to zero.
+    @differentiable
     public static func log1p(_ x: Self) -> Self {
         TensorFlow.log1p(x)
     }
@@ -930,14 +951,14 @@ internal func _vjpExp<T: TensorFlowFloatingPoint>(
 
 /// Returns two raised to the power of the specified tensor element-wise.
 @inlinable
-// @differentiable
+@differentiable
 public func exp2<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
     pow(2, x)
 }
 
 /// Returns ten raised to the power of the specified tensor element-wise.
 @inlinable
-// @differentiable
+@differentiable
 public func exp10<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
     pow(10, x)
 }
