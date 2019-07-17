@@ -1193,38 +1193,6 @@ func _TFCOpSetAttrTypeArray(
     }
 }
 
-/// Given dimensions and ranks in the form described below, makes the appropriate call to
-/// `TFE_OpSetAttrShapeList(op, attrName, ..., status)`.
-///
-/// - Parameters
-///   - flattenedDims: all the shapes' dimensions concatenated together in order.
-///   - ranks: all the shapes' ranks (-1 denotes unknown rank).
-fileprivate func setAttrShapeList(
-    op: CTFEOp,
-    attrName: UnsafePointer<Int8>,
-    flattenedDims: Array<Int64>,
-    ranks: Array<Int32>,
-    status: CTFStatus
-) {
-    flattenedDims.withUnsafeBufferPointer { flattenedDimsBuffer in
-        var dimsPtr: UnsafePointer<Int64>? = flattenedDimsBuffer.baseAddress
-        var dims: [UnsafePointer<Int64>?] = []
-        for rank in ranks {
-            dims.append(dimsPtr)
-            if rank >= 0 {
-                dimsPtr = dimsPtr.map { $0.advanced(by: Int(rank)) }
-            }
-        }
-        dims.withUnsafeMutableBufferPointer { dimsBuffer in
-            ranks.withUnsafeBufferPointer { ranksBuffer in
-                TFE_OpSetAttrShapeList(
-                    op, attrName, dimsBuffer.baseAddress, ranksBuffer.baseAddress,
-                    Int32(ranksBuffer.count), status)
-            }
-        }
-    }
-}
-
 /// A class to keep around thread local state.
 class _ThreadLocalState {
     var deviceScopes = DeviceScopes()
