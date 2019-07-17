@@ -59,3 +59,15 @@ class LazyTensorOperationsTracker {
         for (_, counts) in refCounts { try perform(counts.op) }
     }
 }
+
+struct LazyTensorContext {
+    var scopes = [LazyTensorOperationsTracker()]
+
+    static private var threadLocalContext: LazyTensorContext {
+        _ThreadLocalState.local.lazyTensorContext
+    }
+
+    static var operationsTracker: LazyTensorOperationsTracker {
+        return threadLocalContext.scopes.last!
+    }
+}

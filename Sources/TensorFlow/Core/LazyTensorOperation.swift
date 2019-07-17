@@ -50,40 +50,38 @@ class LazyTensorHandle: _AnyTensorHandle {
         precondition(
             index < op.outputCount, "Symbolic Tensor Index is out-of-bounds")
         handle = Handle.symbolic(op, index: index, isLive: false)
-        Self.operationsTracker.incrementRefCount(op, isLive: false)
+        LazyTensorContext.operationsTracker.incrementRefCount(op, isLive: false)
     }
 
     init(_lazyLive op: LazyTensorOperation, index: Int) {
         precondition(
             index < op.outputCount, "Symbolic Tensor Index is out-of-bounds")
         handle = Handle.symbolic(op, index: index, isLive: true)
-        Self.operationsTracker.incrementRefCount(op, isLive: true)
+        LazyTensorContext.operationsTracker.incrementRefCount(op, isLive: true)
     }
 
     deinit {
         if case let .symbolic(op, _, isLive) = handle {
-            Self.operationsTracker.decrementRefCount(op, isLive: isLive)
+            LazyTensorContext.operationsTracker.decrementRefCount(op, isLive: isLive)
         }
     }
     
     // Liveness tracking for LazyTensorOperations
     //
-    private static var operationsTracker = LazyTensorOperationsTracker()
-
     static func isLive(_ op: LazyTensorOperation) -> Bool {
-        return operationsTracker.isLive(op)
+        return LazyTensorContext.operationsTracker.isLive(op)
     }
 
     static func forEachLiveOperation(
         _ perform: (LazyTensorOperation) throws -> Void
     ) rethrows -> Void {
-        try operationsTracker.forEachLiveOperation(perform)
+        try LazyTensorContext.operationsTracker.forEachLiveOperation(perform)
     }
 
     static func forEachOperation(
         _ perform: (LazyTensorOperation) throws -> Void
     ) rethrows -> Void {
-        try operationsTracker.forEachOperation(perform)
+        try LazyTensorContext.operationsTracker.forEachOperation(perform)
     }
 
     @usableFromInline

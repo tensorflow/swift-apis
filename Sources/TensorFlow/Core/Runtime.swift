@@ -1197,6 +1197,8 @@ func _TFCOpSetAttrTypeArray(
 class _ThreadLocalState {
     var deviceScopes = DeviceScopes()
 
+    var lazyTensorContext = LazyTensorContext()
+
     private static let key: pthread_key_t = {
         var key = pthread_key_t()
         pthread_key_create(&key) {
