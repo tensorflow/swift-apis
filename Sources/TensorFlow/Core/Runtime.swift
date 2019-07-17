@@ -1001,7 +1001,7 @@ internal extension _ExecutionContext {
     /// withDevice call on the call stack or the presence of an immediately enclosing
     /// `withDefaultDevice(perform)` call.
     var currentDeviceName: String? {
-        return _ThreadLocalState.local._currentDevice
+        return _ThreadLocalState.local.deviceScopes._currentDevice
     }
 
     /// See documentation for the top-level `withDevice(_:_:perform)`.
@@ -1029,17 +1029,17 @@ internal extension _ExecutionContext {
         guard deviceNames.contains(name) else {
             fatalError("Device \(name) not found")
         }
-        _ThreadLocalState.local.pushDevice(name)
+        _ThreadLocalState.local.deviceScopes.pushDevice(name)
         let result = try body()
-        _ThreadLocalState.local.popDevice()
+        _ThreadLocalState.local.deviceScopes.popDevice()
         return result
     }
 
     /// See documentation for the top-level `withDefaultDevice(perform)`.
     func withDefaultDevice<R>(perform body: () throws -> R) rethrows -> R {
-        _ThreadLocalState.local.pushDevice(nil)
+        _ThreadLocalState.local.deviceScopes.pushDevice(nil)
         let result = try body()
-        _ThreadLocalState.local.popDevice()
+        _ThreadLocalState.local.deviceScopes.popDevice()
         return result
     }
 }
@@ -1233,16 +1233,9 @@ fileprivate func setAttrShapeList(
     }
 }
 
-/// Stack of devices that models nested calls to withDevice/withDefaultDevice. Devices are
-/// represented by their names in TensorFlow notation. See documentation for
-/// `withDevice(named:perform:)` to learn about device names.
-///
-/// All TensorFlow operations will be put on the topmost device on the stack. When the stack is
-/// empty or the topmost device is `nil`, that allows TensorFlow to place operations on any device
-/// that it sees fit.
-@usableFromInline
+/// A class to keep around thread local state.
 class _ThreadLocalState {
-    var deviceScopes: [String?] = []
+    var deviceScopes = DeviceScopes()
 
     private static let key: pthread_key_t = {
         var key = pthread_key_t()
@@ -1256,20 +1249,6 @@ class _ThreadLocalState {
         return key
     }()
 
-    var _currentDevice: String? {
-        return deviceScopes.last ?? nil
-    }
-
-    @usableFromInline
-    func pushDevice(_ device: String?) {
-        deviceScopes.append(device)
-    }
-
-    @usableFromInline
-    func popDevice() {
-        internalConsistencyCheck(deviceScopes.popLast() != nil)
-    }
-
     @usableFromInline
     static var local: _ThreadLocalState {
         if let state = pthread_getspecific(key) {
@@ -1278,6 +1257,32 @@ class _ThreadLocalState {
         let state = _ThreadLocalState()
         pthread_setspecific(key, Unmanaged.passRetained(state).toOpaque())
         return state
+    }
+}
+
+/// Stack of devices that models nested calls to withDevice/withDefaultDevice. Devices are
+/// represented by their names in TensorFlow notation. See documentation for
+/// `withDevice(named:perform:)` to learn about device names.
+///
+/// All TensorFlow operations will be put on the topmost device on the stack. When the stack is
+/// empty or the topmost device is `nil`, that allows TensorFlow to place operations on any device
+/// that it sees fit.
+@usableFromInline
+struct DeviceScopes {
+    var deviceStack: [String?] = []
+
+    var _currentDevice: String? {
+        return deviceStack.last ?? nil
+    }
+
+    @usableFromInline
+    mutating func pushDevice(_ device: String?) {
+        deviceStack.append(device)
+    }
+
+    @usableFromInline
+    mutating func popDevice() {
+        internalConsistencyCheck(deviceStack.popLast() != nil)
     }
 }
 
