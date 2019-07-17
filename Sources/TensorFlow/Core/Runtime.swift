@@ -1104,7 +1104,6 @@ internal func dumpCTensorHandleContent(_ idx: Int, _ inputTensorHandle: CTensorH
 }
 
 @inlinable
-@_cdecl("_swift_tfc_EagerExecute")
 func _TFCEagerExecute(
     _ op: CTFEOp,
     _ retvals: UnsafeMutablePointer<OpaquePointer?>,
@@ -1136,25 +1135,19 @@ func _TFCEagerExecute(
 //===----------------------------------------------------------------------===//
 
 @usableFromInline
-@_cdecl("_swift_tfc_GetGlobalEagerContext")
 func _TFCGetGlobalEagerContext() -> CTFEContext {
     debugLog("Calling _GetGlobalEagerContext()")
     return _ExecutionContext.global.eagerContext
 }
 
-// Some of the functions are marked with @silgen_name instead of @_cdecl, because their input/output
-// data types are not C-compatible (e.g., AnyTensorHandle).
-
 /// Adds `handle` as an input to `op`.
 @usableFromInline
-@_silgen_name("_swift_tfc_OpAddInputFromTensorHandle")
 func _TFCOpAddInputFromTensorHandle(_ op: CTFEOp, _ handle: _AnyTensorHandle, _ status: CTFStatus) {
     TFE_OpAddInput(op, handle._cTensorHandle, status)
 }
 
 /// Adds `t` as an input or inputs to `op`. Returns the number of inputs added.
 @usableFromInline
-@_silgen_name("_swift_tfc_OpAddInputFromTensorGroup")
 func _TFCOpAddInputFromTensorGroup<T: TensorArrayProtocol>(
     _ op: CTFEOp,
     _ t: T,
@@ -1187,7 +1180,6 @@ func _TFCOpAddInputFromAnyTensors(_ op: CTFEOp, _ tensors: [AnyTensor], _ status
 // can read.
 
 @usableFromInline
-@_silgen_name("_swift_tfc_OpSetAttrTypeArray")
 func _TFCOpSetAttrTypeArray(
     _ op: CTFEOp,
     _ attrName: UnsafePointer<Int8>,
@@ -1287,7 +1279,6 @@ struct DeviceScopes {
 }
 
 @usableFromInline
-@_cdecl("_swift_tfc_OpSetDeviceFromScope")
 func _TFCOpSetDeviceFromScope(_ op: CTFEOp, _ status: CTFStatus) {
     if let deviceName = _ExecutionContext.global.currentDeviceName {
         TFE_OpSetDevice(op, deviceName, status)
