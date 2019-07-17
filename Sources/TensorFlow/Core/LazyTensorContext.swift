@@ -1,5 +1,5 @@
 /// A class to keep track of runtime information about `LazyTensorOperation`
-/// instances created by the program. This will be manaaged as a thread local
+/// instances created by the program. This will be managed as a thread local
 /// state.
 class LazyTensorOperationsTracker {
     struct RefCounts {
