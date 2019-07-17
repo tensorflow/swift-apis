@@ -1104,7 +1104,6 @@ internal func dumpCTensorHandleContent(_ idx: Int, _ inputTensorHandle: CTensorH
 }
 
 @inlinable
-@_cdecl("_swift_tfc_EagerExecute")
 func _TFCEagerExecute(
     _ op: CTFEOp,
     _ retvals: UnsafeMutablePointer<OpaquePointer?>,
@@ -1136,25 +1135,19 @@ func _TFCEagerExecute(
 //===----------------------------------------------------------------------===//
 
 @usableFromInline
-@_cdecl("_swift_tfc_GetGlobalEagerContext")
 func _TFCGetGlobalEagerContext() -> CTFEContext {
     debugLog("Calling _GetGlobalEagerContext()")
     return _ExecutionContext.global.eagerContext
 }
 
-// Some of the functions are marked with @silgen_name instead of @_cdecl, because their input/output
-// data types are not C-compatible (e.g., AnyTensorHandle).
-
 /// Adds `handle` as an input to `op`.
 @usableFromInline
-@_silgen_name("_swift_tfc_OpAddInputFromTensorHandle")
 func _TFCOpAddInputFromTensorHandle(_ op: CTFEOp, _ handle: _AnyTensorHandle, _ status: CTFStatus) {
     TFE_OpAddInput(op, handle._cTensorHandle, status)
 }
 
 /// Adds `t` as an input or inputs to `op`. Returns the number of inputs added.
 @usableFromInline
-@_silgen_name("_swift_tfc_OpAddInputFromTensorGroup")
 func _TFCOpAddInputFromTensorGroup<T: TensorArrayProtocol>(
     _ op: CTFEOp,
     _ t: T,
@@ -1187,7 +1180,6 @@ func _TFCOpAddInputFromAnyTensors(_ op: CTFEOp, _ tensors: [AnyTensor], _ status
 // can read.
 
 @usableFromInline
-@_silgen_name("_swift_tfc_OpSetAttrTypeArray")
 func _TFCOpSetAttrTypeArray(
     _ op: CTFEOp,
     _ attrName: UnsafePointer<Int8>,
@@ -1197,38 +1189,6 @@ func _TFCOpSetAttrTypeArray(
         buffer.withMemoryRebound(to: TF_DataType.self) { reboundBuffer in
             TFE_OpSetAttrTypeList(
                 op, attrName, reboundBuffer.baseAddress, Int32(reboundBuffer.count))
-        }
-    }
-}
-
-/// Given dimensions and ranks in the form described below, makes the appropriate call to
-/// `TFE_OpSetAttrShapeList(op, attrName, ..., status)`.
-///
-/// - Parameters
-///   - flattenedDims: all the shapes' dimensions concatenated together in order.
-///   - ranks: all the shapes' ranks (-1 denotes unknown rank).
-fileprivate func setAttrShapeList(
-    op: CTFEOp,
-    attrName: UnsafePointer<Int8>,
-    flattenedDims: Array<Int64>,
-    ranks: Array<Int32>,
-    status: CTFStatus
-) {
-    flattenedDims.withUnsafeBufferPointer { flattenedDimsBuffer in
-        var dimsPtr: UnsafePointer<Int64>? = flattenedDimsBuffer.baseAddress
-        var dims: [UnsafePointer<Int64>?] = []
-        for rank in ranks {
-            dims.append(dimsPtr)
-            if rank >= 0 {
-                dimsPtr = dimsPtr.map { $0.advanced(by: Int(rank)) }
-            }
-        }
-        dims.withUnsafeMutableBufferPointer { dimsBuffer in
-            ranks.withUnsafeBufferPointer { ranksBuffer in
-                TFE_OpSetAttrShapeList(
-                    op, attrName, dimsBuffer.baseAddress, ranksBuffer.baseAddress,
-                    Int32(ranksBuffer.count), status)
-            }
         }
     }
 }
@@ -1287,7 +1247,6 @@ struct DeviceScopes {
 }
 
 @usableFromInline
-@_cdecl("_swift_tfc_OpSetDeviceFromScope")
 func _TFCOpSetDeviceFromScope(_ op: CTFEOp, _ status: CTFStatus) {
     if let deviceName = _ExecutionContext.global.currentDeviceName {
         TFE_OpSetDevice(op, deviceName, status)
