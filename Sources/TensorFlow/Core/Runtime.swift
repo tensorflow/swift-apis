@@ -1193,7 +1193,9 @@ func _TFCOpSetAttrTypeArray(
     }
 }
 
-/// A class to keep around thread local state.
+/// A class to keep around thread local state:
+///  - DeviceScopes
+///  - LazyTensorContext
 class _ThreadLocalState {
     var deviceScopes = DeviceScopes()
 
