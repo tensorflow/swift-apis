@@ -1001,7 +1001,7 @@ internal extension _ExecutionContext {
     /// withDevice call on the call stack or the presence of an immediately enclosing
     /// `withDefaultDevice(perform)` call.
     var currentDeviceName: String? {
-        return _ThreadLocalState.deviceScopes._currentDevice
+        return _ThreadLocalState.local.deviceScopes._currentDevice
     }
 
     /// See documentation for the top-level `withDevice(_:_:perform)`.
@@ -1029,17 +1029,17 @@ internal extension _ExecutionContext {
         guard deviceNames.contains(name) else {
             fatalError("Device \(name) not found")
         }
-        _ThreadLocalState.deviceScopes.pushDevice(name)
+        _ThreadLocalState.local.deviceScopes.pushDevice(name)
         let result = try body()
-        _ThreadLocalState.deviceScopes.popDevice()
+        _ThreadLocalState.local.deviceScopes.popDevice()
         return result
     }
 
     /// See documentation for the top-level `withDefaultDevice(perform)`.
     func withDefaultDevice<R>(perform body: () throws -> R) rethrows -> R {
-        _ThreadLocalState.deviceScopes.pushDevice(nil)
+        _ThreadLocalState.local.deviceScopes.pushDevice(nil)
         let result = try body()
-        _ThreadLocalState.deviceScopes.popDevice()
+        _ThreadLocalState.local.deviceScopes.popDevice()
         return result
     }
 }
@@ -1249,10 +1249,6 @@ class _ThreadLocalState {
         return key
     }()
 
-    static var deviceScopes: DeviceScopes {
-        _ThreadLocalState.local.deviceScopes
-    }
-
     @usableFromInline
     static var local: _ThreadLocalState {
         if let state = pthread_getspecific(key) {
@@ -1272,7 +1268,7 @@ class _ThreadLocalState {
 /// empty or the topmost device is `nil`, that allows TensorFlow to place operations on any device
 /// that it sees fit.
 @usableFromInline
-class DeviceScopes {
+struct DeviceScopes {
     var deviceStack: [String?] = []
 
     var _currentDevice: String? {
@@ -1280,12 +1276,12 @@ class DeviceScopes {
     }
 
     @usableFromInline
-    func pushDevice(_ device: String?) {
+    mutating func pushDevice(_ device: String?) {
         deviceStack.append(device)
     }
 
     @usableFromInline
-    func popDevice() {
+    mutating func popDevice() {
         internalConsistencyCheck(deviceStack.popLast() != nil)
     }
 }
