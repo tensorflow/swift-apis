@@ -96,6 +96,10 @@ class LazyTensorTraceBuilder {
     private var outputs: [LazyTensorOperation] = []
     private var originalOutputs: [LazyTensorOperation] = []
     private var lazyOpsCache: [ObjectIdentifier: LazyTensorOperation] = [:]
+    /// A flag that controls promotion of constants to inputs.
+    private var neverPromoteConstants: Bool = false
+    /// A closure that determines whether a `LazyTensorOperation` is an output.
+    private var isOutput: (LazyTensorOperation) -> Bool = LazyTensorHandle.isLive
 
     private func updateOperationAndCache(
         _ id: ObjectIdentifier, _ node: LazyTensorOperation
@@ -138,7 +142,7 @@ class LazyTensorTraceBuilder {
         if let lazyOp = lazyOpsCache[id] {
             return LazyTensorHandle(_lazy: lazyOp, index: 0)
         }
-        return asConst
+        return asConst || neverPromoteConstants
             ? makeConstTensor(with: handle)
             : makePlaceholderTensor(with: handle)
     }
@@ -184,7 +188,7 @@ class LazyTensorTraceBuilder {
         newLazyOp.inputs = lazyOp.inputs.map { maybePromotedInput($0) }
         updateOperationAndCache(id, newLazyOp)
 
-        if LazyTensorHandle.isLive(lazyOp) {
+        if isOutput(lazyOp) {
             outputs.append(newLazyOp)
             originalOutputs.append(lazyOp)
         }
