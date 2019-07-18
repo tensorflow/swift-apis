@@ -24,7 +24,7 @@ class LazyTensorTrace {
     var outputs: [LazyTensorOperation] = []
     var originalOutputs: [LazyTensorOperation] = []
 
-    init(_ lazyOp: LazyTensorOperation) {
+    init(_ lazyOperations: [LazyTensorOperation]) {
         // TODO: We only pick operations on which `lazyOp` depends on. Note that
         // there may be other live tensors that could also be materialized at
         // this time. e.g.,
@@ -34,8 +34,14 @@ class LazyTensorTrace {
         // `y = x + c` into the trace so that we don't have the overhead of creating
         // another trace when we need to materialize `y`.
         //
-        _ = collectLazyOperation(lazyOp)
+        for lazyOp in lazyOperations {
+            _ = collectLazyOperation(lazyOp)
+        }
         lazyOpsCache.removeAll()
+    }
+
+    convenience init(_ lazyOp: LazyTensorOperation) {
+        self.init([lazyOp])
     }
 
     var signature: String {
