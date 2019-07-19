@@ -121,14 +121,17 @@ class LazyTensorTraceBuilder {
         return LazyTensorHandle(_lazy: result, index: 0)
     }
 
-    private func makePlaceholderTensor(
-        with handle: TFETensorHandle
-    ) -> LazyTensorHandle {
+    private static func makePlaceholder(with dtype: TensorDataType) -> LazyTensorOperation {
+        let placeholder = LazyTensorOperation("Placeholder", 1)
+        let dtypeAttr = LazyTensorOperation.Attribute.tensorDataTypeValue(dtype)
+        placeholder.attributes = ["dtype": dtypeAttr]
+        return placeholder
+    }
+
+    private func makePlaceholderTensor(with handle: TFETensorHandle) -> LazyTensorHandle {
         let cTensorHandle = handle._cTensorHandle
         let dtype = TensorDataType(TFE_TensorHandleDataType(cTensorHandle))
-        let dtypeAttr = LazyTensorOperation.Attribute.tensorDataTypeValue(dtype)
-        let placeholder = LazyTensorOperation("Placeholder", 1)
-        placeholder.attributes = ["dtype": dtypeAttr]
+        let placeholder = Self.makePlaceholder(with: dtype)
         updateOperationAndCache(ObjectIdentifier(handle), placeholder)
         inputs.append(placeholder)
         inputValues.append(handle)
