@@ -823,17 +823,17 @@ extension LazyTensorOperation {
     }
 
     private func materializeLiveTensors() {
-        let lazyTrace = LazyTensorTrace(self)
-        debugLog("Extracted trace:\n\(lazyTrace)")
+        let traceInfo = LazyTensorTraceBuilder.materializationTraceInfo(self)
+        debugLog("Extracted trace:\n\(traceInfo.trace)")
 
-        let function = TFFunction(trace: lazyTrace)
+        let function = TFFunction(trace: traceInfo.trace)
         debugLog("Generated TFFunction:\n\(function)")
 
-        let allOutputs = function.execute(lazyTrace.inputValues)
+        let allOutputs = function.execute(traceInfo.concreteInputs)
 
         // Slice up the outputs to various lazy tensors
         var start = 0
-        for lazyOp in lazyTrace.originalOutputs {
+        for lazyOp in traceInfo.lazyOperations {
             let end = start + lazyOp.outputCount
             lazyOp.outputs = Array(allOutputs[start..<end])
             start = end

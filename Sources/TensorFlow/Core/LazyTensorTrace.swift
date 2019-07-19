@@ -14,35 +14,11 @@
 
 import CTensorFlow
 
-/// A class describing the tensor operations that need to be executed
-/// to evaluate a given `LazyTensorOperation`.
-class LazyTensorTrace {
-    // inputs will be "placeholder" nodes.
-    var inputs: [LazyTensorOperation] = []
-    var inputValues: [TFETensorHandle] = []
-    var operations: [LazyTensorOperation] = []
-    var outputs: [LazyTensorOperation] = []
-    var originalOutputs: [LazyTensorOperation] = []
-
-    init(_ lazyOperations: [LazyTensorOperation]) {
-        // TODO: We only pick operations on which `lazyOp` depends on. Note that
-        // there may be other live tensors that could also be materialized at
-        // this time. e.g.,
-        //   x = a + b
-        //   y = x + c
-        // For `x`, only `a + b` is extracted. One optimization is to also include
-        // `y = x + c` into the trace so that we don't have the overhead of creating
-        // another trace when we need to materialize `y`.
-        //
-        for lazyOp in lazyOperations {
-            _ = collectLazyOperation(lazyOp)
-        }
-        lazyOpsCache.removeAll()
-    }
-
-    convenience init(_ lazyOp: LazyTensorOperation) {
-        self.init([lazyOp])
-    }
+/// A struct representing a trace of `LazyTensorOperation` instances.
+struct LazyTensorTrace {
+    let inputs: [LazyTensorOperation]
+    let operations: [LazyTensorOperation]
+    let outputs: [LazyTensorOperation]
 
     var signature: String {
         let inputsDesc: [String] = inputs.map { input in
@@ -54,7 +30,72 @@ class LazyTensorTrace {
         let outputDesc = outputsDesc.joined(separator: ", ")
         return "lazyTrace_\(operations.count)(\(inputDesc)) -> (\(outputDesc))"
     }
+}
 
+extension LazyTensorTrace: CustomStringConvertible {
+    var description: String {
+        var result = "\(signature) {\n"
+        for op in operations where op.name != "Placeholder" {
+            result += "  \(op)\n"
+        }
+        result += "}"
+        return result
+    }
+}
+
+/// A struct representing information required to materialize the given
+/// `LazyTensorOperation` instances.
+struct MaterializationTraceInfo {
+    /// The operations that need to be materialized. These correspond to the outputs of `trace`.
+    let lazyOperations: [LazyTensorOperation]
+    /// Specification of the trace that can be evalaute to materialize `lazyOperations`.
+    let trace: LazyTensorTrace
+    /// Concrete tensor values for evaluating `trace`.
+    let concreteInputs: [TFETensorHandle]
+}
+
+/// Builder class that provides various mechanisms to extract traces for
+/// evaluating a given collection of `LazyTensorOperation` instances.
+class LazyTensorTraceBuilder {
+
+    /// Collect all the direct and transitive dependencies of `lazyOperations`
+    /// and package it in a `MaterializationTraceInfo`.
+    static func materializationTraceInfo(
+        _ lazyOperations: [LazyTensorOperation]
+    ) -> MaterializationTraceInfo {
+        // TODO: We only pick operations on which `lazyOp` depends on. Note that
+        // there may be other live tensors that could also be materialized at
+        // this time. e.g.,
+        //   x = a + b
+        //   y = x + c
+        // For `x`, only `a + b` is extracted. One optimization is to also include
+        // `y = x + c` into the trace so that we don't have the overhead of creating
+        // another trace when we need to materialize `y`.
+        //
+        let builder = LazyTensorTraceBuilder()
+        for lazyOp in lazyOperations { _ = builder.collectLazyOperation(lazyOp) }
+        let trace = LazyTensorTrace(
+            inputs: builder.inputs,
+            operations: builder.operations,
+            outputs: builder.outputs)
+        return MaterializationTraceInfo(
+            lazyOperations: builder.originalOutputs,
+            trace: trace,
+            concreteInputs: builder.inputValues)
+    }
+
+    static func materializationTraceInfo(
+        _ lazyOperation: LazyTensorOperation
+    ) -> MaterializationTraceInfo {
+        return materializationTraceInfo([lazyOperation])
+    }
+
+    // inputs will be "placeholder" nodes.
+    private var inputs: [LazyTensorOperation] = []
+    private var inputValues: [TFETensorHandle] = []
+    private var operations: [LazyTensorOperation] = []
+    private var outputs: [LazyTensorOperation] = []
+    private var originalOutputs: [LazyTensorOperation] = []
     private var lazyOpsCache: [ObjectIdentifier: LazyTensorOperation] = [:]
 
     private func updateOperationAndCache(
@@ -149,16 +190,5 @@ class LazyTensorTrace {
             originalOutputs.append(lazyOp)
         }
         return newLazyOp
-    }
-}
-
-extension LazyTensorTrace: CustomStringConvertible {
-    var description: String {
-        var result = "\(signature) {\n"
-        for op in operations where op.name != "Placeholder" {
-            result += "  \(op)\n"
-        }
-        result += "}"
-        return result
     }
 }

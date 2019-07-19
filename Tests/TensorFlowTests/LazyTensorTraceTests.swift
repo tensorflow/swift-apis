@@ -92,7 +92,7 @@ final class LazyTensorTraceTests: XCTestCase {
         let w = a + b
         let x = c + d
         let lazyOps = [w, x].map { self.lazyTensorOperation($0)! }
-        XCTAssertEqual(LazyTensorTrace(lazyOps).description,
+        XCTAssertEqual(lazyTrace(lazyOps).description,
             """
             lazyTrace_6() -> (%2, %5) {
               %0 = Const[dtype: float, value: 1.0]()
@@ -137,7 +137,9 @@ final class LazyTensorTraceTests: XCTestCase {
         // be burnt into the trace as a constant.
         let lazyA = a._concreteLazyTensor
         let w1 = lazyA * b
-        let w1Trace = lazyTrace(w1)
+        let w1LazyOp = lazyTensorOperation(w1)!
+        let w1TraceInfo = LazyTensorTraceBuilder.materializationTraceInfo(w1LazyOp)
+        let w1Trace = w1TraceInfo.trace
         XCTAssertEqual(w1Trace.description,
             """
             lazyTrace_3() -> (%2) {
@@ -146,13 +148,15 @@ final class LazyTensorTraceTests: XCTestCase {
               %2 = Mul[T: float](%0, %1)
             }
             """)
-        XCTAssertEqual(w1Trace.inputValues.count, 0)
+        XCTAssertEqual(w1TraceInfo.concreteInputs.count, 0)
 
         // Since `lazyInputA` is marked as an input, this will
         // be promoted to an input for the trace.
         let inputLazyA = a._concreteInputLazyTensor
         let w2 = inputLazyA * b
-        let w2Trace = lazyTrace(w2)
+        let w2LazyOp = lazyTensorOperation(w2)!
+        let w2TraceInfo = LazyTensorTraceBuilder.materializationTraceInfo(w2LazyOp)
+        let w2Trace = w2TraceInfo.trace
         XCTAssertEqual(w2Trace.description,
             """
             lazyTrace_3(%0: float) -> (%2) {
@@ -161,8 +165,8 @@ final class LazyTensorTraceTests: XCTestCase {
             }
             """)
         // Make sure that the promoted constants are gathered as `inputValues`.
-        XCTAssertEqual(w2Trace.inputValues.count, 1)
-        XCTAssertEqual(w2Trace.inputValues[0].valueDescription, "10.0")
+        XCTAssertEqual(w2TraceInfo.concreteInputs.count, 1)
+        XCTAssertEqual(w2TraceInfo.concreteInputs[0].valueDescription, "10.0")
     }
 
     func testConstPromotion() {
@@ -185,7 +189,9 @@ final class LazyTensorTraceTests: XCTestCase {
 
         /// Now that `y` is materialized and a constant,
         /// the trace for `z` will use that as a constant.
-        let zTrace = lazyTrace(z)
+        let zLazyOp = lazyTensorOperation(z)!
+        let zTraceInfo = LazyTensorTraceBuilder.materializationTraceInfo(zLazyOp)
+        let zTrace = zTraceInfo.trace
         XCTAssertEqual(
             zTrace.description,
             """
@@ -195,8 +201,8 @@ final class LazyTensorTraceTests: XCTestCase {
             }
             """)
         // Make sure that the promoted constants are gathered as `inputValues`.
-        XCTAssertEqual(zTrace.inputValues.count, 1)
-        XCTAssertEqual(zTrace.inputValues[0].valueDescription, "3.0")
+        XCTAssertEqual(zTraceInfo.concreteInputs.count, 1)
+        XCTAssertEqual(zTraceInfo.concreteInputs[0].valueDescription, "3.0")
         XCTAssertEqual(z.scalarized(), 9.0)
     }
 
@@ -216,7 +222,12 @@ final class LazyTensorTraceTests: XCTestCase {
     }
 
     private func lazyTrace<T: TensorFlowScalar>(_ input: Tensor<T>) -> LazyTensorTrace {
-        return LazyTensorTrace(lazyTensorOperation(input)!)
+        let lazyOperation = lazyTensorOperation(input)!
+        return lazyTrace([lazyOperation])
+    }
+
+    private func lazyTrace(_ lazyOperations: [LazyTensorOperation]) -> LazyTensorTrace {
+        return LazyTensorTraceBuilder.materializationTraceInfo(lazyOperations).trace
     }
 
     static var allTests = [
