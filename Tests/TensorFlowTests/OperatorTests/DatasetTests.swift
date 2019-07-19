@@ -125,7 +125,6 @@ final class DatasetTests: XCTestCase {
         XCTAssertEqual(iterator.next()!.scalars, [4])
     }
 
-/*
     func testDoubleValueDatasetIteration() {
         let scalars1 = Tensor<Float>(rangeFrom: 0, to: 5, stride: 1)
         let scalars2 = Tensor<Int32>(rangeFrom: 5, to: 10, stride: 1)
@@ -138,7 +137,6 @@ final class DatasetTests: XCTestCase {
             i += 1
         }
     }
-*/
 
     static var allTests = [
         ("testMultiValue", testMultiValue),
@@ -149,8 +147,6 @@ final class DatasetTests: XCTestCase {
         ("testParallelMap", testParallelMap),
         ("testMapToDifferentType", testMapToDifferentType),
         ("testSingleValueBatched", testSingleValueBatched),
-        // Currently broken even in TensorFlow ...
-        // This will be easier to fix once everything is moved ...
-        // ("testDoubleValueDatasetIteration", testDoubleValueDatasetIteration),
+        ("testDoubleValueDatasetIteration", testDoubleValueDatasetIteration),
     ]
 }
