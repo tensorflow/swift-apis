@@ -89,6 +89,48 @@ class LazyTensorTraceBuilder {
         return materializationTraceInfo([lazyOperation])
     }
 
+    /// Trace the given function and return the trace.
+    static func trace<In: TensorGroup, Out: TensorGroup>(
+        _ fn: (In) -> Out
+    ) -> LazyTensorTrace {
+        assert(_RuntimeConfig.useLazyTensor, "Lazy tensor is not enabled for tracing.")
+
+        // Set up inputs for running `fn`
+        let inputs = In._typeList.map { Self.makePlaceholder(with: $0) }
+        let inputHandles = inputs.map { LazyTensorHandle(_lazy: $0, index: 0) }
+        let input = In(_handles: inputHandles)
+
+        // Run the function.
+        let output: TensorArrayProtocol = fn(input)
+
+        // Set up the closure that determines if a `LazyTensorOperation` should be an output.
+        let outputLazyOperations = output._tensorHandles.map { (handle: _AnyTensorHandle) -> LazyTensorOperation in 
+            let lazyOp = lazyTensorOperation(handle)
+            assert(lazyOp != nil, "Found a non-lazy tensor in output when tracing.")
+            return lazyOp!
+        }
+        let outputIds = Set<ObjectIdentifier>(outputLazyOperations.map {
+                ObjectIdentifier($0)
+            })
+        let isOutput: (LazyTensorOperation) -> Bool = { outputIds.contains(ObjectIdentifier($0)) }
+
+        // Create the builder and get the trace.
+        let builder = LazyTensorTraceBuilder()
+        builder.neverPromoteConstants = true
+        builder.isOutput = isOutput
+        /// Set up the inputs for the builder as we need to have specific order.
+        for inputOp in inputs {
+            let id = ObjectIdentifier(inputOp)
+            builder.updateOperationAndCache(id, inputOp)
+        }
+        builder.inputs = inputs
+        for lazyOp in outputLazyOperations { _ = builder.collectLazyOperation(lazyOp) }
+        return LazyTensorTrace(
+            inputs: builder.inputs,
+            operations: builder.operations,
+            outputs: builder.outputs)
+    }
+
     // inputs will be "placeholder" nodes.
     private var inputs: [LazyTensorOperation] = []
     private var inputValues: [TFETensorHandle] = []
@@ -119,6 +161,17 @@ class LazyTensorTraceBuilder {
             "value": LazyTensorOperation.Attribute.constTensor(handle)]
         updateOperationAndCache(ObjectIdentifier(handle), result)
         return LazyTensorHandle(_lazy: result, index: 0)
+    }
+
+    /// Extract the LazyTensorOperation (if any) for this handle.
+    private static func lazyTensorOperation(_ handle: _AnyTensorHandle) -> LazyTensorOperation? {
+        guard let lazyTensorHandle = handle as? LazyTensorHandle else {
+            return nil
+        }
+        guard case let .symbolic(lazyOp, _, _)  = lazyTensorHandle.handle else {
+            return nil
+        }
+        return lazyOp
     }
 
     private static func makePlaceholder(with dtype: TensorDataType) -> LazyTensorOperation {
@@ -185,7 +238,9 @@ class LazyTensorTraceBuilder {
         if let cachedLazyOp = lazyOpsCache[id] {
             return cachedLazyOp
         }
-
+        precondition(
+            lazyOp.name != "Placeholder",
+            "The operation cannot already be a placeholder.")
         let newLazyOp = LazyTensorOperation(lazyOp.name, lazyOp.outputCount)
         newLazyOp.attributes = lazyOp.attributes
         newLazyOp.inputs = lazyOp.inputs.map { maybePromotedInput($0) }
