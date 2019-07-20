@@ -54,10 +54,9 @@ struct MaterializationTraceInfo {
     let concreteInputs: [TFETensorHandle]
 }
 
-/// Builder class that provides various mechanisms to extract traces for
+/// A builder class that provides various mechanisms to extract traces for
 /// evaluating a given collection of `LazyTensorOperation` instances.
 class LazyTensorTraceBuilder {
-
     /// Collect all the direct and transitive dependencies of `lazyOperations`
     /// and package it in a `MaterializationTraceInfo`.
     static func materializationTraceInfo(
