@@ -108,7 +108,7 @@ final class LossTests: XCTestCase {
         let predicted = Tensor<Float>([1, 2, 3, 4, 5, 6, 7, 8])
         let expected = Tensor<Float>([0.5, 1, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0])
         let loss = squaredHingeLoss(predicted: predicted, expected: expected)
-        let expectedLoss: Float = 0.03125
+        let expectedLoss: Float = 0.00390625
         assertEqual(loss, Tensor(expectedLoss), accuracy: 1e-6)
     }
 

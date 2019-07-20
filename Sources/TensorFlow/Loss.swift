@@ -50,7 +50,7 @@ public func meanAbsoluteError<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>,
     expected: Tensor<Scalar>
 ) -> Tensor<Scalar> {
-    l1Loss(predicted: predicted, expected: expected).mean()
+    l1Loss(predicted: predicted, expected: expected, reduction: { $0.mean() })
 }
 
 /// Returns the mean squared error between predictions and expectations.
@@ -63,7 +63,7 @@ public func meanSquaredError<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>,
     expected: Tensor<Scalar>
 ) -> Tensor<Scalar> {
-    l2Loss(predicted: predicted, expected: expected).mean()
+    l2Loss(predicted: predicted, expected: expected, reduction: { $0.mean() })
 }
 
 /// Returns the mean squared logarithmic error between predictions and expectations.
@@ -81,7 +81,7 @@ public func meanSquaredLogarithmicError<Scalar: TensorFlowFloatingPoint>(
 ) -> Tensor<Scalar> {
     let logPredicted = log(max(predicted, Tensor(0)) + 1)
     let logExpected = log(max(expected, Tensor(0)) + 1)
-    return l2Loss(predicted: logPredicted, expected: logExpected).mean()
+    return l2Loss(predicted: logPredicted, expected: logExpected, reduction: { $0.mean() })
 }
 
 /// Returns the mean absolute percentage error between predictions and expectations.
