@@ -58,8 +58,8 @@ public extension Tensor {
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     static func _vjpInit(
-        repeating repeatedValue: Scalar,
-        shape: TensorShape
+        repeating repeatedValue: __owned Scalar,
+        shape: __owned TensorShape
     ) -> (Tensor, (Tensor) -> Scalar) {
         return (Tensor(repeating: repeatedValue, shape: shape), {
             $0.sum().scalarized()
@@ -90,9 +90,9 @@ public extension Tensor where Scalar: Numeric {
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     static func _vjpCast<OtherScalar: TensorFlowFloatingPoint>(
-        _ other: Tensor<OtherScalar>
+        _ other: __owned Tensor<OtherScalar>
     ) -> (Tensor, (Tensor) -> Tensor<OtherScalar>) {
-        return (Tensor(other), { v in Tensor<OtherScalar>(v) })
+        (Tensor(other), { v in Tensor<OtherScalar>(v) })
     }
 }
 
@@ -185,26 +185,25 @@ public extension Tensor {
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     static func _vjpInitElements(
-        _ elements: [Tensor]
+        _ elements: __owned [Tensor]
     ) -> (Tensor, (Tensor) -> Array<Tensor>.DifferentiableView) {
-        return _vjpStacking(stacking: elements)
+        _vjpStacking(stacking: elements)
     }
 
     @inlinable
     static func _vjpStacking(
-        stacking tensors: [Tensor],
-        alongAxis axis: Int = 0
+        stacking tensors: __owned [Tensor],
+        alongAxis axis: __owned  Int = 0
     ) -> (Tensor, (Tensor) -> Array<Tensor>.DifferentiableView) {
-        let result = Tensor(stacking: tensors, alongAxis: axis)
-        return (result, { v in
+        (Tensor(stacking: tensors, alongAxis: axis), { v in
             Array<Tensor>.DifferentiableView(v.unstacked(alongAxis: axis))
         })
     }
 
     @inlinable
     static func _vjpConcatenating(
-        concatenating tensors: [Tensor],
-        alongAxis axis: Int = 0
+        concatenating tensors: __owned [Tensor],
+        alongAxis axis: __owned Int = 0
     ) -> (Tensor, (Tensor) -> Array<Tensor>.DifferentiableView) {
         let result = Tensor<Scalar>(concatenating: tensors, alongAxis: axis)
         let posAxis = axis < 0 ? axis + tensors[0].rank : axis
