@@ -20,7 +20,7 @@ fileprivate struct Sigmoid<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
 
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return sigmoid(input)
+        sigmoid(input)
     }
 }
 

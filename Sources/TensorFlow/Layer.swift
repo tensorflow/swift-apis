@@ -48,7 +48,7 @@ public protocol Layer: XXX where Input: Differentiable {
 public extension Layer {
     @differentiable
     func call(_  input: Input) -> Output {
-        return callAsFunction(input)
+        callAsFunction(input)
     }
 }
 
@@ -69,7 +69,10 @@ public struct EmptyTangentVector: Differentiable, VectorProtocol, ElementaryFunc
 /// A parameterless neural network layer.
 ///
 /// The `TangentVector` of parameterless layers is always `EmptyTangentVector`.
-public protocol ParameterlessLayer: Layer where AllDifferentiableVariables == EmptyTangentVector {}
+public protocol ParameterlessLayer: Layer where AllDifferentiableVariables == EmptyTangentVector {
+    @differentiable
+    func callAsFunction(_ input: Input) -> Output
+}
 
 public extension ParameterlessLayer {
     var allDifferentiableVariables: EmptyTangentVector {
