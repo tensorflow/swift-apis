@@ -194,7 +194,7 @@ public extension Tensor {
 
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
-    static func _vjpScalarInit(_ value: Scalar) -> (Tensor, (Tensor) -> Scalar) {
+    static func _vjpScalarInit(_ value: __owned Scalar) -> (Tensor, (Tensor) -> Scalar) {
         return (Tensor(value), { $0.scalarized() })
     }
 }
