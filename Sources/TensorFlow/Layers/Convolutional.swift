@@ -658,8 +658,10 @@ public struct SeparableConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// bias, activation function, strides, and padding.
     ///
     /// - Parameters:
-    ///   - depthwiseFilter: The 4-D depthwise convolution kernel.
-    ///   - pointwiseFilter: The 4-D pointwise convolution kernel.
+    ///   - depthwiseFilter: The 4-D depthwise convolution kernel
+    ///     `[filter height, filter width, input channels count, channel multiplier]`.
+    ///   - pointwiseFilter: The 4-D pointwise convolution kernel
+    ///     `[1, 1, channel multiplier * input channels count, output channels count]`.
     ///   - bias: The bias vector.
     ///   - activation: The element-wise activation function.
     ///   - strides: The strides of the sliding window for spatial dimensions.
