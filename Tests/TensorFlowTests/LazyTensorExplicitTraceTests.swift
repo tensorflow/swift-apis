@@ -66,7 +66,7 @@ final class LazyTensorExplicitTraceTests: XCTestCase {
         XCTAssertEqual(outputs[1].valueDescription, "13.0")
     }
 
-    func testClosureCaptures() {
+    func testClosureCapturesOfTensors() {
         let x = Tensor<Float>(10.0)
         let y = x + x
         func fn(input: Tensor<Float>) -> Tensor<Float> {
@@ -89,6 +89,28 @@ final class LazyTensorExplicitTraceTests: XCTestCase {
         XCTAssertEqual(outputs[0].valueDescription, "100.0")
     }
 
+    func testClosureCapturesOfNonTensors() {
+        let x: Float = 5.0
+        func fn(input: Tensor<Float>) -> Tensor<Float> {
+            return input * Tensor<Float>(x)
+        }
+        let trace = LazyTensorTraceBuilder.trace(fn)
+        /// Note that the computation x + x is encoded in the trace.
+        XCTAssertEqual(trace.description,
+            """
+            lazyTrace_3(%0: float) -> (%2) {
+              %1 = Const[dtype: float, value: 5.0]()
+              %2 = Mul[T: float](%0, %1)
+            }
+            """)
+        let outputs = runTrace(
+            trace: trace,
+            input: Tensor<Float>(23.0))
+        XCTAssertEqual(outputs.count, 1)
+        XCTAssertEqual(outputs[0].valueDescription, "115.0")
+    }
+
+
     private func runTrace(trace: LazyTensorTrace, input: TensorGroup) -> [TFETensorHandle] {
         let tffunc = TFFunction(trace: trace)
         let inputHandles = input._tensorHandles.map { $0._tfeTensorHandle }
@@ -99,6 +121,7 @@ final class LazyTensorExplicitTraceTests: XCTestCase {
     static var allTests = [
         ("testSingleInput", testSingleInput),
         ("testTensorGroupInputOutputs", testTensorGroupInputOutputs),
-        ("testClosureCaptures", testClosureCaptures)
+        ("testClosureCapturesOfTensors", testClosureCapturesOfTensors),
+        ("testClosureCapturesOfNonTensors", testClosureCapturesOfNonTensors)
     ]
 }
