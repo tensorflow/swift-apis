@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-public protocol XXX: Differentiable, KeyPathIterable
+public protocol Module: Differentiable, KeyPathIterable
     where TangentVector: VectorProtocol & ElementaryFunctions &
                          PointwiseMultiplicative & KeyPathIterable,
           AllDifferentiableVariables == TangentVector {
@@ -36,7 +36,7 @@ public protocol XXX: Differentiable, KeyPathIterable
 ///
 /// `Layer` instances define a differentiable `callAsFunction(_:)` method for mapping inputs to
 /// outputs.
-public protocol Layer: XXX where Input: Differentiable {
+public protocol Layer: Module where Input: Differentiable {
     /// Returns the output obtained from applying the layer to the given input.
     ///
     /// - Parameter input: The input to the layer.
