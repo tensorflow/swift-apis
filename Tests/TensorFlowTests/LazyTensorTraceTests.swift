@@ -206,19 +206,6 @@ final class LazyTensorTraceTests: XCTestCase {
         XCTAssertEqual(z.scalarized(), 9.0)
     }
 
-    func testTracing() {
-        func fn(x: Tensor<Float>) -> Tensor<Float>{
-            return x + x
-        }
-        let trace = LazyTensorTraceBuilder.trace(fn)
-        XCTAssertEqual(trace.description,
-            """
-            lazyTrace_2(%0: float) -> (%1) {
-              %1 = Add[T: float](%0, %0)
-            }
-            """)
-    }
-
     private func lazyTensorOperation<T: TensorFlowScalar>(
         _ input: Tensor<T>
     ) -> LazyTensorOperation? {
@@ -250,6 +237,5 @@ final class LazyTensorTraceTests: XCTestCase {
         ("testSimpleControlFlow", testSimpleControlFlow),
         ("testManualConstPromotion", testManualConstPromotion),
         ("testConstPromotion", testConstPromotion),
-        ("testTracing", testTracing)
     ]
 }
