@@ -365,7 +365,9 @@ final class LayerTests: XCTestCase {
 
         let weightBatched = Tensor<Float>(shape: [2, 2, 3], scalars: (0..<12).map(Float.init))
         let biasBatched = Tensor<Float>([[1.0, 2.0, 3.0]])
-        let layerBatched = Dense<Float>(weight: weightBatched, bias: biasBatched, activation: identity)
+        let layerBatched = Dense<Float>(weight: weightBatched, 
+                                        bias: biasBatched, 
+                                        activation: identity)
         let inputBatched = Tensor<Float>(shape: [2, 2], scalars: (0..<4).map(Float.init))
         let outputBatched = layerBatched.inferring(from: inputBatched)
         let expectedBatched = Tensor<Float>([[4.0, 6.0, 8.0], [40.0, 46.0, 52.0]])
