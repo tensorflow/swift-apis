@@ -229,12 +229,17 @@ final class TensorAutoDiffTests: XCTestCase {
         XCTAssertEqual(input, transposedPermutationsPullback(transposed))
         XCTAssertEqual(input, transposedVariadicsPullback(transposed))
     }
-
+    
+    func testSigmoid() {
+        func f(a: Tensor<Float>) -> Tensor<Float> { sigmoid(a).sum() }
+        assertEqual([0.1966119, 0.25, 0.1966119], gradient(at: [-1, 0, 1], in: f), accuracy: 0.0001)
+    }
+    
     func testRelu() {
         func f(a: Tensor<Float>) -> Tensor<Float> { relu(a).sum() }
         XCTAssertEqual([1, 0, 0], gradient(at: [5, -5, 0], in: f))
     }
-
+    
     func testSoftmax() {
         let pb = pullback(at: Tensor(ones: [2, 2])) { (a: Tensor<Float>) in softmax(a) }
         XCTAssertEqual([[0, 0], [0, 0]], pb([[1, 1], [1, 1]]))
@@ -387,7 +392,33 @@ final class TensorAutoDiffTests: XCTestCase {
         let expected: Tensor<Float> = inputTensor
         XCTAssertEqual(expected, pb(inputTensor))
     }
-    
+
+    func testBatchNormalized() {
+        let x = Tensor<Float>([
+            [  -1.0474433,  -0.11914538,  -0.08634827,   0.15446888,    1.0572497],
+            [   1.5165012,    0.3753972,  -0.30856386,   -0.3100725,   -1.9584457],
+            [ 0.006384419,    1.4424847,   0.91568077,   0.66328526,   -1.0794537],
+            [    1.056803,   0.14263044,   -1.8308276,    0.4189805,    0.6933893],
+            [  0.30175626,  -0.16121633,   -0.4191958,  -0.53092813, -0.029484272]])
+        let computedGradient = gradient(at: x) { $0.batchNormalized(alongAxis: 1).squared().sum() }
+        // The expected value of the gradient was computed using the following Python code:
+        // ```
+        //   with tf.GradientTape() as t:
+        //     t.watch(x)
+        //     mean, var = tf.nn.moments(x, axes=1, keepdims=True)
+        //     y = tf.reduce_sum(tf.square(tf.nn.batch_normalization(
+        //     x, mean, var, offset=0, scale=1, variance_epsilon=0.001)))
+        //   print(t.gradient(y, x))
+        // ```
+        let expectedGradient = Tensor<Float>([
+            [-1.0127544e-02, -1.0807812e-03, -7.6115131e-04,  1.5857220e-03,  1.0383606e-02],
+            [ 2.0323221e-03,  6.2976527e-04, -2.1077941e-04, -2.1265696e-04, -2.2384699e-03],
+            [-1.3483668e-03,  3.7030075e-03,  1.8500184e-03,  9.6232636e-04, -5.1673558e-03],
+            [ 1.8438101e-03,  8.9146197e-05, -3.6990643e-03,  6.1964989e-04,  1.1463165e-03],
+            [ 1.2142579e-01,  1.7060755e-03, -6.5005139e-02, -9.3897656e-02,  3.5770576e-02]])
+        assertEqual(computedGradient, expectedGradient, accuracy: 0.0001)
+    }
+
     static var allTests = [
         ("testSimpleGrad", testSimpleGrad),
         ("testGenericGrad", testGenericGrad),
@@ -411,6 +442,7 @@ final class TensorAutoDiffTests: XCTestCase {
         ("testConcatenationPlusPlus", testConcatenationPlusPlus),
         ("testConcatenated", testConcatenated),
         ("testTransposed", testTransposed),
+        ("testSigmoid", testSigmoid),
         ("testRelu", testRelu),
         ("testSoftmax", testSoftmax),
         ("testLogSoftmax", testLogSoftmax),
@@ -423,6 +455,7 @@ final class TensorAutoDiffTests: XCTestCase {
         ("testBroadcastLike", testBroadcastLike),
         ("testUnbroadcastToShape", testUnbroadcastToShape),
         ("testUnbroadcastTo", testUnbroadcastTo),
-        ("testUnbroadcastLike", testUnbroadcastLike)
+        ("testUnbroadcastLike", testUnbroadcastLike),
+        ("testBatchNormalized", testBatchNormalized)
     ]
 }
