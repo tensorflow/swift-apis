@@ -103,13 +103,37 @@ final class LazyTensorExplicitTraceTests: XCTestCase {
               %2 = Mul[T: float](%0, %1)
             }
             """)
-        let outputs = runTrace(
-            trace: trace,
-            input: Tensor<Float>(23.0))
+        let outputs = runTrace(trace: trace, input: Tensor<Float>(23.0))
         XCTAssertEqual(outputs.count, 1)
         XCTAssertEqual(outputs[0].valueDescription, "115.0")
     }
 
+    func testNestedTracing() {
+        func square(input: Tensor<Float>) -> Tensor<Float> {
+            return input * input
+        }
+
+        func nestedTrace(input: Tensor<Float>) -> Tensor<Float> {
+            let trace = LazyTensorTraceBuilder.trace(square)
+            let outputs = runTrace(trace: trace, input: Tensor<Float>(3.0))
+            XCTAssertEqual(outputs.count, 1)
+            let handle = TensorHandle<Float>(handle: outputs[0])
+            let y = Tensor<Float>(handle: handle)
+            return y + input
+        }
+
+        let trace = LazyTensorTraceBuilder.trace(nestedTrace)
+        XCTAssertEqual(trace.description,
+            """
+            lazyTrace_3(%0: float) -> (%2) {
+              %1 = Const[dtype: float, value: 9.0]()
+              %2 = Add[T: float](%1, %0)
+            }
+            """)
+        let outputs = runTrace(trace: trace, input: Tensor<Float>(4.0))
+        XCTAssertEqual(outputs.count, 1)
+        XCTAssertEqual(outputs[0].valueDescription, "13.0")
+    }
 
     private func runTrace(trace: LazyTensorTrace, input: TensorGroup) -> [TFETensorHandle] {
         let tffunc = TFFunction(trace: trace)
@@ -122,6 +146,7 @@ final class LazyTensorExplicitTraceTests: XCTestCase {
         ("testSingleInput", testSingleInput),
         ("testTensorGroupInputOutputs", testTensorGroupInputOutputs),
         ("testClosureCapturesOfTensors", testClosureCapturesOfTensors),
-        ("testClosureCapturesOfNonTensors", testClosureCapturesOfNonTensors)
+        ("testClosureCapturesOfNonTensors", testClosureCapturesOfNonTensors),
+        ("testNestedTracing", testNestedTracing)
     ]
 }
