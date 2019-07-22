@@ -353,6 +353,26 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(output, expected)
     }
 
+    func testDense() {
+        let weight = Tensor<Float>(shape: [3, 2], scalars: (0..<6).map(Float.init))
+        let bias = Tensor<Float>([[1.0, 2.0]])
+        let layer = Dense<Float>(weight: weight, bias: bias, activation: identity)
+        let input = Tensor<Float>(shape: [1, 3], scalars: (0..<3).map(Float.init))
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>([[11.0, 15.0]])
+        XCTAssertEqual(output, expected)
+        XCTAssertFalse(layer.batched)
+
+        let weightBatched = Tensor<Float>(shape: [2, 2, 3], scalars: (0..<12).map(Float.init))
+        let biasBatched = Tensor<Float>([[1.0, 2.0, 3.0]])
+        let layerBatched = Dense<Float>(weight: weightBatched, bias: biasBatched, activation: identity)
+        let inputBatched = Tensor<Float>(shape: [2, 2], scalars: (0..<4).map(Float.init))
+        let outputBatched = layerBatched.inferring(from: inputBatched)
+        let expectedBatched = Tensor<Float>([[4.0, 6.0, 8.0], [40.0, 46.0, 52.0]])
+        XCTAssertEqual(outputBatched, expectedBatched)
+        XCTAssertTrue(layerBatched.batched)
+    }
+
     // TODO(TF-507): Remove references to `SimpleRNNCell.State` after SR-10697 is fixed.
     func testRNN() {
         let x = Tensor<Float>(rangeFrom: 0.0, to: 0.4, stride: 0.1).rankLifted()
@@ -419,6 +439,7 @@ final class LayerTests: XCTestCase {
         ("testFlatten", testFlatten),
         ("testEmbedding", testEmbedding),
         ("testSimpleRNNCell", testSimpleRNNCell),
+        ("testDense", testDense),
         ("testRNN", testRNN),
         ("testFunction", testFunction)
     ]
