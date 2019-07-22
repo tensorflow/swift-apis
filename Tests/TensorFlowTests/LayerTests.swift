@@ -155,6 +155,24 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(output, expected)
     }
 
+    func testSeparableConv2D() {
+        let depthwiseFilter =  Tensor(shape: [2, 2, 2, 2], scalars: (0..<16).map(Float.init))
+        let pointwiseFilter =  Tensor(shape: [1, 1, 4, 1], scalars: (0..<4).map(Float.init))
+        let bias = Tensor<Float>([4])
+        let layer = SeparableConv2D<Float>(depthwiseFilter: depthwiseFilter,
+                                           pointwiseFilter: pointwiseFilter,
+                                           bias: bias,
+                                           activation: identity,
+                                           strides: (2, 2),
+                                           padding: .valid)
+        let input = Tensor(shape: [2, 2, 2, 2], scalars: (0..<16).map(Float.init))
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>(shape: [2, 1, 1, 1],
+                                     scalars: [1016, 2616])
+        XCTAssertEqual(output, expected)
+    }
+
+
     func testZeroPadding1D() {
         let input = Tensor<Float>([0.0, 1.0, 2.0])
         let layer = ZeroPadding1D<Float>(padding: 2)
@@ -397,6 +415,7 @@ final class LayerTests: XCTestCase {
         ("testConv2DDilation", testConv2DDilation),
         ("testConv3D", testConv3D),
         ("testDepthConv2D", testDepthConv2D),
+        ("testSeparableConv2D", testSeparableConv2D),
         ("testZeroPadding1D", testZeroPadding1D),
         ("testZeroPadding2D", testZeroPadding2D),
         ("testZeroPadding3D", testZeroPadding3D),

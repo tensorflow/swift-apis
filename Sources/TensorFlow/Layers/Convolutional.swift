@@ -686,15 +686,17 @@ public struct SeparableConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        depthwise = depthwiseConv2D( input,
-                                     filter: depthwiseFilter,
-                                     strides: (1, strides.0, strides.1, 1),
-                                     padding: padding)
-        return activation(Conv2D(
+        let depthwise = depthwiseConv2D(
+            input,
+            filter: depthwiseFilter,
+            strides: (1, strides.0, strides.1, 1),
+            padding: padding)
+        return activation(conv2D(
             depthwise,
             filter: pointwiseFilter,
             strides: (1, 1, 1, 1),
-            padding: padding) + bias)
+            padding: padding,
+            dilations: (1, 1, 1, 1)) + bias)
     }
 }
 
