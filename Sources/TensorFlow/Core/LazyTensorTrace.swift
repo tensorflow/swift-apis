@@ -89,12 +89,12 @@ class LazyTensorTraceBuilder {
         return materializationTraceInfo([lazyOperation])
     }
 
-    /// Trace the given function and return the trace.
+    /// Returns a trace obtained by tracing the given function.
     static func trace<In: TensorGroup, Out: TensorGroup>(_ fn: (In) -> Out) -> LazyTensorTrace {
         precondition(_RuntimeConfig.useLazyTensor, "Lazy tensor is not enabled for tracing.")
 
-        // Set up inputs for running `fn`
-        let inputOps = In._typeList.map { Self.makePlaceholder(with: $0) }
+        // Set up inputs for running `fn`.
+        let inputOps = In._typeList.map { Self.makePlaceholder(dataType: $0) }
         let inputHandles = inputOps.map { LazyTensorHandle(_lazy: $0, index: 0) }
         let input = In(_handles: inputHandles)
 
@@ -108,14 +108,13 @@ class LazyTensorTraceBuilder {
             precondition(lazyOp != nil, "Found a non-lazy tensor in output when tracing.")
             return lazyOp!
         }
-        let outputIds = Set<ObjectIdentifier>(outputLazyOperations.map { ObjectIdentifier($0) })
-        let isOutput: (LazyTensorOperation) -> Bool = { outputIds.contains(ObjectIdentifier($0)) }
+        let outputIDs = Set<ObjectIdentifier>(outputLazyOperations.map { ObjectIdentifier($0) })
 
         // Create the builder and get the trace.
         let builder = LazyTensorTraceBuilder()
         builder.neverPromoteConstants = true
-        builder.isOutput = isOutput
-        /// Set up the inputs for the builder as we need to have them in a specific order.
+        builder.isOutput = { outputIDs.contains(ObjectIdentifier($0)) }
+        // Set up the inputs for the builder as we need to have them in a specific order.
         for inputOp in inputOps {
             builder.updateOperationAndCache(ObjectIdentifier(inputOp), inputOp)
         }
@@ -170,9 +169,9 @@ class LazyTensorTraceBuilder {
         return lazyOp
     }
 
-    private static func makePlaceholder(with dtype: TensorDataType) -> LazyTensorOperation {
+    private static func makePlaceholder(dataType: TensorDataType) -> LazyTensorOperation {
         let placeholder = LazyTensorOperation("Placeholder", 1)
-        let dtypeAttr = LazyTensorOperation.Attribute.tensorDataTypeValue(dtype)
+        let dtypeAttr = LazyTensorOperation.Attribute.tensorDataTypeValue(dataType)
         placeholder.attributes = ["dtype": dtypeAttr]
         return placeholder
     }
@@ -180,7 +179,7 @@ class LazyTensorTraceBuilder {
     private func makePlaceholderTensor(with handle: TFETensorHandle) -> LazyTensorHandle {
         let cTensorHandle = handle._cTensorHandle
         let dtype = TensorDataType(TFE_TensorHandleDataType(cTensorHandle))
-        let placeholder = Self.makePlaceholder(with: dtype)
+        let placeholder = Self.makePlaceholder(dataType: dtype)
         updateOperationAndCache(ObjectIdentifier(handle), placeholder)
         inputs.append(placeholder)
         inputValues.append(handle)
