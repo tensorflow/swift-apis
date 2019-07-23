@@ -934,17 +934,21 @@ public func _tffunc<State: _TensorArrayProtocolEnhanced, Data: TensorGroup>(
     }
 }
 
+internal func _trace<In: TensorGroup, Out: TensorGroup>(_ fn: (In) -> Out) -> TFFunction {
+    let useLazyTensor = _RuntimeConfig.useLazyTensor
+    defer { _RuntimeConfig.useLazyTensor = useLazyTensor }
+    _RuntimeConfig.useLazyTensor = true
+    let trace = LazyTensorTraceBuilder.trace(fn)
+    return TFFunction(trace: trace)
+}
+
 // Trace the given function to generate a TF graph and return a closure that can be used to launch
 // the graph.
 public func _graph<In: TensorGroup, Out: TensorGroup>(
     _ fn: (In) -> Out,
     useXLA: Bool = false
 ) -> (In) -> Out {
-    let useLazyTensor = _RuntimeConfig.useLazyTensor
-    defer { _RuntimeConfig.useLazyTensor = useLazyTensor }
-    _RuntimeConfig.useLazyTensor = true
-    let trace = LazyTensorTraceBuilder.trace(fn)
-    let tffunc = TFFunction(trace: trace)
+    let tffunc = _trace(fn)
     return {(input: In) -> Out in
         let inputHandles = input._tensorHandles.map { $0._tfeTensorHandle }
         let outputHandles = tffunc.execute(inputHandles, useXLA: useXLA)
@@ -955,11 +959,7 @@ public func _graph<In: TensorGroup, Out: TensorGroup>(
 /// Trace the given function and return the name of the corresponding `TF_Function: In -> Out` that
 /// was created.
 public func _tffunc<In: TensorGroup, Out: TensorGroup>(_ fn: (In) -> Out) -> String {
-    let useLazyTensor = _RuntimeConfig.useLazyTensor
-    defer { _RuntimeConfig.useLazyTensor = useLazyTensor }
-    _RuntimeConfig.useLazyTensor = true
-    let trace = LazyTensorTraceBuilder.trace(fn)
-    let tffunc = TFFunction(trace: trace)
+    let tffunc = _trace(fn)
     return tffunc.name
 }
 
