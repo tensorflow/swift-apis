@@ -176,7 +176,7 @@ class LazyTensorTraceBuilder {
         return placeholder
     }
 
-    private func makePlaceholderTensor(with handle: TFETensorHandle) -> LazyTensorHandle {
+    private func makePlaceholderTensor(handle: TFETensorHandle) -> LazyTensorHandle {
         let cTensorHandle = handle._cTensorHandle
         let dtype = TensorDataType(TFE_TensorHandleDataType(cTensorHandle))
         let placeholder = Self.makePlaceholder(dataType: dtype)
@@ -195,7 +195,7 @@ class LazyTensorTraceBuilder {
         }
         return asConst || neverPromoteConstants
             ? makeConstTensor(with: handle)
-            : makePlaceholderTensor(with: handle)
+            : makePlaceholderTensor(handle: handle)
     }
 
     /// Return the original tensor or a concrete tensor that is promoted to a
