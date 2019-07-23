@@ -236,6 +236,6 @@ final class LazyTensorTraceTests: XCTestCase {
         ("testMultipleTargets", testMultipleTargets),
         ("testSimpleControlFlow", testSimpleControlFlow),
         ("testManualConstPromotion", testManualConstPromotion),
-        ("testConstPromotion", testConstPromotion),
+        ("testConstPromotion", testConstPromotion)
     ]
 }
