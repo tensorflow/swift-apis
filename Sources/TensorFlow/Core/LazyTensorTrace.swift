@@ -90,40 +90,36 @@ class LazyTensorTraceBuilder {
     }
 
     /// Trace the given function and return the trace.
-    static func trace<In: TensorGroup, Out: TensorGroup>(
-        _ fn: (In) -> Out
-    ) -> LazyTensorTrace {
-        assert(_RuntimeConfig.useLazyTensor, "Lazy tensor is not enabled for tracing.")
+    static func trace<In: TensorGroup, Out: TensorGroup>(_ fn: (In) -> Out) -> LazyTensorTrace {
+        precondition(_RuntimeConfig.useLazyTensor, "Lazy tensor is not enabled for tracing.")
 
         // Set up inputs for running `fn`
-        let inputs = In._typeList.map { Self.makePlaceholder(with: $0) }
-        let inputHandles = inputs.map { LazyTensorHandle(_lazy: $0, index: 0) }
+        let inputOps = In._typeList.map { Self.makePlaceholder(with: $0) }
+        let inputHandles = inputOps.map { LazyTensorHandle(_lazy: $0, index: 0) }
         let input = In(_handles: inputHandles)
 
         // Run the function.
         let output: TensorArrayProtocol = fn(input)
 
         // Set up the closure that determines if a `LazyTensorOperation` should be an output.
-        let outputLazyOperations = output._tensorHandles.map { (handle: _AnyTensorHandle) -> LazyTensorOperation in 
+        let outputLazyOperations = output._tensorHandles.map {
+            (handle: _AnyTensorHandle) -> LazyTensorOperation in
             let lazyOp = lazyTensorOperation(handle)
-            assert(lazyOp != nil, "Found a non-lazy tensor in output when tracing.")
+            precondition(lazyOp != nil, "Found a non-lazy tensor in output when tracing.")
             return lazyOp!
         }
-        let outputIds = Set<ObjectIdentifier>(outputLazyOperations.map {
-                ObjectIdentifier($0)
-            })
+        let outputIds = Set<ObjectIdentifier>(outputLazyOperations.map { ObjectIdentifier($0) })
         let isOutput: (LazyTensorOperation) -> Bool = { outputIds.contains(ObjectIdentifier($0)) }
 
         // Create the builder and get the trace.
         let builder = LazyTensorTraceBuilder()
         builder.neverPromoteConstants = true
         builder.isOutput = isOutput
-        /// Set up the inputs for the builder as we need to have specific order.
-        for inputOp in inputs {
-            let id = ObjectIdentifier(inputOp)
-            builder.updateOperationAndCache(id, inputOp)
+        /// Set up the inputs for the builder as we need to have them in a specific order.
+        for inputOp in inputOps {
+            builder.updateOperationAndCache(ObjectIdentifier(inputOp), inputOp)
         }
-        builder.inputs = inputs
+        builder.inputs = inputOps
         for lazyOp in outputLazyOperations { _ = builder.collectLazyOperation(lazyOp) }
         return LazyTensorTrace(
             inputs: builder.inputs,
