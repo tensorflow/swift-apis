@@ -976,23 +976,12 @@ public func _graph<In: TensorGroup, Out: TensorGroup>(
 /// Trace the given function and return the name of the corresponding `TF_Function: In -> Out` that
 /// was created.
 public func _tffunc<In: TensorGroup, Out: TensorGroup>(_ fn: (In) -> Out) -> String {
-    let traceContext: TraceContext = withoutActuallyEscaping(fn) { escapableFn in
-        let wrappedFn = { (inputs: [CTensorHandle]) -> [CTensorHandle] in
-            let buffer = UnsafeMutablePointer<CTensorHandle>.allocate(capacity: Int(inputs.count))
-            var ptr = buffer
-            for input in inputs {
-                ptr.initialize(to: input)
-                ptr = ptr.advanced(by: 1)
-            }
-            let symbolicIn = In(_owning: buffer)
-            let symbolicOut = escapableFn(symbolicIn)
-            return symbolicOut.cTensorHandles
-        }
-
-        let dtypes = In._typeList.map { $0._cDataType }
-        return _trace(with: dtypes, in: wrappedFn)
-    }
-    return traceContext.specializeTFFunction(with: [])
+    let useLazyTensor = _RuntimeConfig.useLazyTensor
+    defer { _RuntimeConfig.useLazyTensor = useLazyTensor }
+    _RuntimeConfig.useLazyTensor = true
+    let trace = LazyTensorTraceBuilder.trace(fn)
+    let tffunc = TFFunction(trace: trace)
+    return tffunc.name
 }
 
 internal extension _ExecutionContext {

@@ -221,6 +221,7 @@ class TFFunction {
     let cTFFunction: CTFFunction
     let outputCount: Int
     let outputGroupCounts: [Int]
+    var name: String { String(cString: TF_FunctionName(cTFFunction)!) }
 
     init(trace: LazyTensorTrace, name: String? = nil) {
         let status: CTFStatus = TF_NewStatus()
