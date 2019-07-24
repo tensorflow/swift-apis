@@ -1205,11 +1205,14 @@ class _ThreadLocalState {
         get {
             _ThreadLocalState.local.lazyTensorEnabled ?? _RuntimeConfig.useLazyTensor
         }
-        set(newValue) {
+        set {
             _ThreadLocalState.local.lazyTensorEnabled = newValue
         }
     }
 
+    /// When true, use lazy evaluation. If this is not set, we should use the
+    /// value of `_RuntimeConfig.useLazyTensor` to determine if lazy evaluation
+    /// is enabled.
     private var lazyTensorEnabled: Bool? = nil
 
     private static let key: pthread_key_t = {
