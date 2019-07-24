@@ -161,10 +161,7 @@ class LazyTensorTraceBuilder {
 
     /// Returns the `LazyTensorOperation`, if any, for this handle.
     private static func lazyTensorOperation(_ handle: _AnyTensorHandle) -> LazyTensorOperation? {
-        guard let lazyTensorHandle = handle as? LazyTensorHandle else {
-            return nil
-        }
-        guard case let .symbolic(lazyOp, _, _)  = lazyTensorHandle.handle else {
+        guard case let .symbolic(lazyOp, _, _)? = (handle as? LazyTensorHandle)?.handle else {
             return nil
         }
         return lazyOp
