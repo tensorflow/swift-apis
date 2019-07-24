@@ -108,7 +108,8 @@ class LazyTensorTraceBuilder {
             precondition(lazyOp != nil, "Found a non-lazy tensor in output when tracing.")
             return lazyOp!
         }
-        let outputIDs = Set<ObjectIdentifier>(outputLazyOperations.map { ObjectIdentifier($0) })
+        let outputIDs = Set<ObjectIdentifier>(
+            outputLazyOperations.lazy.map { ObjectIdentifier($0) })
 
         // Create the builder and get the trace.
         let builder = LazyTensorTraceBuilder()
@@ -158,7 +159,7 @@ class LazyTensorTraceBuilder {
         return LazyTensorHandle(_lazy: result, index: 0)
     }
 
-    /// Extract the LazyTensorOperation (if any) for this handle.
+    /// Returns the `LazyTensorOperation`, if any, for this handle.
     private static func lazyTensorOperation(_ handle: _AnyTensorHandle) -> LazyTensorOperation? {
         guard let lazyTensorHandle = handle as? LazyTensorHandle else {
             return nil
@@ -198,7 +199,7 @@ class LazyTensorTraceBuilder {
             : makePlaceholderTensor(handle: handle)
     }
 
-    /// Return the original tensor or a concrete tensor that is promoted to a
+    /// Returns the original tensor or a concrete tensor that is promoted to a
     /// placeholder input.
     private func maybePromotedTensor(_ lazyHandle: LazyTensorHandle) -> LazyTensorHandle {
         switch lazyHandle.handle {
