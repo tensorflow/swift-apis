@@ -89,7 +89,7 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
-    @differentiable
+    @differentiable(vjp: _vjpApplied)
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         switch Context.local.learningPhase {
         case .training: return applyingTraining(to: input)
@@ -97,6 +97,22 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
         }
     }
 
+    @usableFromInline
+    func _vjpApplied(to input: Tensor<Scalar>) ->
+        (Tensor<Scalar>, (Tensor<Scalar>) ->
+        (BatchNorm<Scalar>.TangentVector, Tensor<Scalar>)) {
+            switch Context.local.learningPhase {
+            case .training:
+                return valueWithPullback(at: input) {
+                    $0.applyingTraining(to: $1)
+                }
+            case .inference:
+                return valueWithPullback(at: input) {
+                    $0.applyingInference(to: $1)
+                }
+            }
+    }
+    
     /// Creates a batch normalization layer.
     ///
     /// - Parameters:
