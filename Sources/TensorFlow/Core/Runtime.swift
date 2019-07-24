@@ -693,7 +693,7 @@ extension _ExecutionContext {
     static func makeOp(
         _ name: String, _ outputCount: Int
     ) -> TFTensorOperation {
-        return _RuntimeConfig.useLazyTensor
+        return _ThreadLocalState.useLazyTensor
             ? LazyTensorOperation(name, outputCount)
             : TFE_Op(name, outputCount)
     }
@@ -1200,6 +1200,17 @@ class _ThreadLocalState {
     var deviceScopes = DeviceScopes()
 
     var lazyTensorContext = LazyTensorContext()
+
+    static var useLazyTensor: Bool {
+        get {
+            _ThreadLocalState.local.lazyTensorEnabled ?? _RuntimeConfig.useLazyTensor
+        }
+        set(newValue) {
+            _ThreadLocalState.local.lazyTensorEnabled = newValue
+        }
+    }
+
+    private var lazyTensorEnabled: Bool? = nil
 
     private static let key: pthread_key_t = {
         var key = pthread_key_t()
