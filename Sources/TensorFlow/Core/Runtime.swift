@@ -935,9 +935,9 @@ public func _tffunc<State: _TensorArrayProtocolEnhanced, Data: TensorGroup>(
 }
 
 internal func _trace<In: TensorGroup, Out: TensorGroup>(_ fn: (In) -> Out) -> TFFunction {
-    let useLazyTensor = _RuntimeConfig.useLazyTensor
-    defer { _RuntimeConfig.useLazyTensor = useLazyTensor }
-    _RuntimeConfig.useLazyTensor = true
+    let useLazyTensor = _ThreadLocalState.useLazyTensor
+    defer { _ThreadLocalState.useLazyTensor = useLazyTensor }
+    _ThreadLocalState.useLazyTensor = true
     let trace = LazyTensorTraceBuilder.trace(fn)
     return TFFunction(trace: trace)
 }
