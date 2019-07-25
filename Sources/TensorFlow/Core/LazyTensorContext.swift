@@ -62,12 +62,22 @@ class LazyTensorOperationsTracker {
 
 struct LazyTensorContext {
     private var operationsTracker = LazyTensorOperationsTracker()
+    private var _shapeTrackingEnabled = true
 
     static private var threadLocalContext: LazyTensorContext {
-        _ThreadLocalState.local.lazyTensorContext
+        _read { yield _ThreadLocalState.local.lazyTensorContext }
+        _modify { yield &_ThreadLocalState.local.lazyTensorContext }
     }
 
     static var operationsTracker: LazyTensorOperationsTracker {
         return threadLocalContext.operationsTracker
+    }
+
+    /// A flag that determines whether we should track shapes.
+    /// We will need to disable shape tracking within certain contexts.
+    /// e.g., we won't be able to compute shapes when tracing.
+    static var shapeTrackingEnabled: Bool {
+        get { threadLocalContext._shapeTrackingEnabled }
+        set { threadLocalContext._shapeTrackingEnabled = newValue }
     }
 }
