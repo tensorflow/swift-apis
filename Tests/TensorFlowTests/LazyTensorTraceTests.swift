@@ -20,12 +20,12 @@ import CTensorFlow
 final class LazyTensorTraceTests: XCTestCase {
     override class func setUp() {
         super.setUp()
-        _RuntimeConfig.useLazyTensor = true
+        _ThreadLocalState.useLazyTensor = true
     }
 
     override class func tearDown() {
         super.tearDown()
-        _RuntimeConfig.useLazyTensor = false
+        _ThreadLocalState.useLazyTensor = false
     }
 
     func testSingleLiveTensor() {
