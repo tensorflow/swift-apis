@@ -269,7 +269,7 @@ class TFFunction {
         checkOk(status)
     }
 
-    func execute(_ inputs: [TFETensorHandle], useXLA: Bool = false) -> [TFETensorHandle] {
+    func execute(_ inputs: [TFETensorHandle], usingXLA: Bool = false) -> [TFETensorHandle] {
         let status: CTFStatus = TF_NewStatus()
         defer { TF_DeleteStatus(status) }
 
@@ -286,7 +286,7 @@ class TFFunction {
             checkOk(status)
         }
 
-        if useXLA {
+        if usingXLA {
             debugLog("Enabling XLA compilation")
             TFE_OpSetAttrBool(eagerOp, "_XlaCompile", 1)
         }
