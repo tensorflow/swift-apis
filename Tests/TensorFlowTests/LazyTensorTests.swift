@@ -61,7 +61,7 @@ final class LazyTensorTests: XCTestCase {
             let expectedLiveOps = Set<LazyTensorOperationRef>(
                 expectedLive.map { LazyTensorOperationRef($0) }
             )
-            XCTAssertEqual(expectedLiveOps, actualLiveOps)
+            XCTAssertEqual(actualLiveOps, expectedLiveOps)
         }
 
         func assertAll(_ expectedAll: [LazyTensorOperation]) {
@@ -72,7 +72,7 @@ final class LazyTensorTests: XCTestCase {
             let expectedAllOps = Set<LazyTensorOperationRef>(
                 expectedAll.map { LazyTensorOperationRef($0) }
             )
-            XCTAssertEqual(expectedAllOps, actualAllOps)
+            XCTAssertEqual(actualAllOps, expectedAllOps)
         }
 
         let op0 = LazyTensorOperation(

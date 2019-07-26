@@ -365,8 +365,8 @@ final class LayerTests: XCTestCase {
 
         let weightBatched = Tensor<Float>(shape: [2, 2, 3], scalars: (0..<12).map(Float.init))
         let biasBatched = Tensor<Float>([[1.0, 2.0, 3.0]])
-        let layerBatched = Dense<Float>(weight: weightBatched, 
-                                        bias: biasBatched, 
+        let layerBatched = Dense<Float>(weight: weightBatched,
+                                        bias: biasBatched,
                                         activation: identity)
         let inputBatched = Tensor<Float>(shape: [2, 2], scalars: (0..<4).map(Float.init))
         let outputBatched = layerBatched.inferring(from: inputBatched)
@@ -410,7 +410,7 @@ final class LayerTests: XCTestCase {
         let expected = Tensor<Float>([[0.0], [0.7615942], [0.9640276], [0.9950547], [0.9993292]])
         XCTAssertEqual(output, expected)
     }
-    
+
     func testBatchNorm() {
         let x = Tensor<Float>([
             [  -1.0474433,  -0.11914538,  -0.08634827,   0.15446888,    1.0572497],
@@ -447,7 +447,7 @@ final class LayerTests: XCTestCase {
             [-0.44139984,  1.2124169 ,  0.60574806,  0.3150888 , -1.6918538 ],
             [ 0.9507547 ,  0.04595902, -1.9072568 ,  0.31947452,  0.5910686 ],
             [ 1.5834246 ,  0.02224666, -0.8476793 , -1.2244489 ,  0.46645695]])
-        
+
         let expectedInputGradient = Tensor<Float>([
             [-1.0127544e-02, -1.0807812e-03, -7.6115131e-04,  1.5857220e-03,  1.0383606e-02],
             [ 2.0323221e-03,  6.2976527e-04, -2.1077941e-04, -2.1265696e-04, -2.2384699e-03],
@@ -456,12 +456,12 @@ final class LayerTests: XCTestCase {
             [ 1.2142579e-01,  1.7060755e-03, -6.5005139e-02, -9.3897656e-02,  3.5770576e-02]])
         let expectedScaleGradient = Tensor<Float>([9.977925, 9.992161, 9.986738, 9.990202, 9.886292])
         let expectedOffsetGradient = Tensor<Float>([0.0, 0.0, 0.0, 0.0, 0.0])
-        assertEqual(expectedTrainingValue, trainingValue, accuracy: 1e-5)
-        assertEqual(expectedInputGradient, grad.0, accuracy: 1e-5)
-        assertEqual(expectedScaleGradient, grad.1.scale, accuracy: 1e-5)
-        assertEqual(expectedOffsetGradient, grad.1.offset, accuracy: 1e-5)
+        assertEqual(trainingValue, expectedTrainingValue, accuracy: 1e-5)
+        assertEqual(grad.0, expectedInputGradient, accuracy: 1e-5)
+        assertEqual(grad.1.scale, expectedScaleGradient, accuracy: 1e-5)
+        assertEqual(grad.1.offset, expectedOffsetGradient, accuracy: 1e-5)
     }
-    
+
     func testLayerNorm() {
         let x = Tensor<Float>([
             [  -1.0474433,  -0.11914538,  -0.08634827,   0.15446888,    1.0572497],
@@ -480,7 +480,7 @@ final class LayerTests: XCTestCase {
             [-0.44139984,  1.2124169 ,  0.60574806,  0.3150888 , -1.6918538 ],
             [ 0.9507547 ,  0.04595902, -1.9072568 ,  0.31947452,  0.5910686 ],
             [ 1.5834246 ,  0.02224666, -0.8476793 , -1.2244489 ,  0.46645695]])
-        
+
         let expectedInputGradient = Tensor<Float>([
             [-1.0127544e-02, -1.0807812e-03, -7.6115131e-04,  1.5857220e-03,  1.0383606e-02],
             [ 2.0323221e-03,  6.2976527e-04, -2.1077941e-04, -2.1265696e-04, -2.2384699e-03],
@@ -489,10 +489,10 @@ final class LayerTests: XCTestCase {
             [ 1.2142579e-01,  1.7060755e-03, -6.5005139e-02, -9.3897656e-02,  3.5770576e-02]])
         let expectedScaleGradient = Tensor<Float>([9.977925, 9.992161, 9.986738, 9.990202, 9.886292])
         let expectedOffsetGradient = Tensor<Float>([0.0, 0.0, 0.0, 0.0, 0.0])
-        assertEqual(expectedValue, value, accuracy: 1e-5)
-        assertEqual(expectedInputGradient, grad.0, accuracy: 1e-5)
-        assertEqual(expectedScaleGradient, grad.1.scale, accuracy: 1e-5)
-        assertEqual(expectedOffsetGradient, grad.1.offset, accuracy: 1e-5)
+        assertEqual(value, expectedValue, accuracy: 1e-5)
+        assertEqual(grad.0, expectedInputGradient, accuracy: 1e-5)
+        assertEqual(grad.1.scale, expectedScaleGradient, accuracy: 1e-5)
+        assertEqual(grad.1.offset, expectedOffsetGradient, accuracy: 1e-5)
     }
 
     static var allTests = [

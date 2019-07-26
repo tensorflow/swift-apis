@@ -81,8 +81,8 @@ final class MathOperatorTests: XCTestCase {
         let target = Tensor<Double>([1, 2, 3, 4, 5]).sum()
         let gradTarget = Tensor<Double>([-0.5,  -4.0, -13.5, -32.0, -62.5])
         let (value, grad) = valueWithGradient(at: x) { rsqrt($0).sum() }
-        XCTAssertEqual(target, value)       
-        XCTAssertEqual(gradTarget, grad)
+        XCTAssertEqual( value, target)
+        XCTAssertEqual( grad, gradTarget)
     }
 
     func testLog1p() {
@@ -463,11 +463,11 @@ final class MathOperatorTests: XCTestCase {
             let a = Tensor<Float>(randomNormal: TensorShape(shape))
             let (q, r) = a.qrDecomposition()
             let aReconstituted = matmul(q,r)
-            assertEqual(a, aReconstituted, accuracy: 1e-5)
+            assertEqual(aReconstituted, a, accuracy: 1e-5)
 
             let (qFull, rFull) = a.qrDecomposition(fullMatrices: true)
             let aReconstitutedFull = matmul(qFull, rFull)
-            assertEqual(a, aReconstitutedFull, accuracy: 1e-5)
+            assertEqual(aReconstitutedFull, a, accuracy: 1e-5)
         }
     }
 
@@ -475,7 +475,7 @@ final class MathOperatorTests: XCTestCase {
         // Test on 2-D matrix.
         let t1 = Tensor<Float>(shape: [4, 4], scalars: (1...16).map(Float.init))
         let target1 = Tensor<Float>([1, 6, 11, 16])
-        XCTAssertEqual(target1, t1.diagonalPart())
+        XCTAssertEqual(t1.diagonalPart(), target1)
 
         // Test on 4-D tensor.
         let t2 = Tensor<Float>([[[[1.0, 0.0, 0.0, 0.0],
@@ -495,7 +495,7 @@ final class MathOperatorTests: XCTestCase {
                                  [[0.0, 0.0, 0.0, 0.0],
                                   [0.0, 0.0, 0.0, 8.0]]]])
         let target2 = Tensor<Float>([[1, 2, 3, 4], [5, 6, 7, 8]])
-        XCTAssertEqual(target2, t2.diagonalPart())
+        XCTAssertEqual(t2.diagonalPart(), target2)
     }
 
     func testBroadcastedAddGradient() {

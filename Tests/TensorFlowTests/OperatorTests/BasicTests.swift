@@ -289,7 +289,7 @@ final class BasicOperatorTests: XCTestCase {
         XCTAssertEqual(array3D.scalars, Array(stride(from: 40.0, to: 60, by: 1)))
         XCTAssertEqual(
             array2D.scalars,
-            Array(stride(from: 20.0, to: 25, by: 1)) + 
+            Array(stride(from: 20.0, to: 25, by: 1)) +
             Array(stride(from: 30.0, to: 35, by: 1)))
         XCTAssertEqual(array1D.scalars, Array(stride(from: 1.0, to: 5, by: 2)))
     }
@@ -310,7 +310,7 @@ final class BasicOperatorTests: XCTestCase {
         let array3D = slice3D.array
         let array2D = slice2D.array
         let array1D = slice1D.array
-		
+
         /// Test shapes
         XCTAssertEqual(array3D.shape, [1, 4, 5])
         XCTAssertEqual(array2D.shape, [2, 5])
@@ -362,7 +362,7 @@ final class BasicOperatorTests: XCTestCase {
         XCTAssertEqual(concatenated.array, ShapedArray(shape: [4, 3], scalars: Array(0..<12)))
         XCTAssertEqual(concatenated0.array, ShapedArray(shape: [4, 3], scalars: Array(0..<12)))
         XCTAssertEqual(
-            concatenated1.array, 
+            concatenated1.array,
             ShapedArray(shape: [2, 6], scalars: [0, 1, 2, 6, 7, 8, 3, 4, 5, 9, 10, 11]))
     }
 
@@ -457,12 +457,12 @@ final class BasicOperatorTests: XCTestCase {
         let z = x.unbroadcasted(like: y)
         XCTAssertEqual(z.array, ShapedArray<Float>(repeating: 8, shape: [3, 1, 5]))
     }
-    
+
     func testUnbroadcast3x3To1x3() {
         func foo(tensor: Tensor<Float>, shape: Tensor<Int32>) -> Tensor<Float> {
             tensor.unbroadcasted(toShape: shape)
         }
-        
+
         // [3,3] -> [1,3]
         let atTensor: Tensor<Float> = [
             [1, 2, 3],
@@ -471,26 +471,26 @@ final class BasicOperatorTests: XCTestCase {
         let pb: (Tensor<Float>) -> Tensor<Float> = pullback(at: atTensor) { x in
             foo(tensor: x, shape: [1, 3])
         }
-        
+
         // Same shape as parameter of pullback
         var inputTensor: Tensor<Float> = [[1, 2, 3]]
         var expected: Tensor<Float> = atTensor
-        XCTAssertEqual(expected, pb(inputTensor))
+        XCTAssertEqual(pb(inputTensor), expected)
         // Different shape than parameter of pullback
         inputTensor = [2]
         expected = [
             [2, 2, 2],
             [2, 2, 2],
             [2, 2, 2]]
-        XCTAssertEqual(expected, pb(inputTensor))
-        
+        XCTAssertEqual(pb(inputTensor), expected)
+
         // Same shape as tensor we are differentiating at
         inputTensor = [
             [8, 1, 3],
             [8, 1, 3],
             [8, 1, 3]]
         expected = inputTensor
-        XCTAssertEqual(expected, pb(inputTensor))
+        XCTAssertEqual(pb(inputTensor), expected)
     }
 
     func testSliceUpdate() {
@@ -518,25 +518,25 @@ final class BasicOperatorTests: XCTestCase {
         target .= Tensor(repeating: 1, shape: [1, 3, 1])
         XCTAssertEqual(target, Tensor(repeating: 1, shape: [2, 3, 4]))
     }
-  
+
     func testBroadcast3x0To3x3() {
         func foo(tensor: Tensor<Float>, shape: Tensor<Int32>) -> Tensor<Float> {
             tensor.broadcasted(toShape: shape)
         }
-        
+
         // [3,] -> [3,3]
         let pb: (Tensor<Float>) -> Tensor<Float> = pullback(at: [99, 33, 55]) { x in
             foo(tensor: x, shape: [3, 3])
         }
-        
+
         // Same shape as parameter of pullback
         var inputTensor: Tensor<Float> = [
             [1, 2, 3],
             [1, 2, 3],
             [1, 2, 3]]
         var expected: Tensor<Float> = [3, 6, 9]
-        XCTAssertEqual(expected, pb(inputTensor))
-        
+        XCTAssertEqual(pb(inputTensor), expected)
+
         // Different shape than parameter of pullback
         inputTensor = [
             [1, 2, 3],
@@ -544,37 +544,37 @@ final class BasicOperatorTests: XCTestCase {
             [1, 2, 3],
             [1, 2, 3]]
         expected = [4, 8, 12]
-        XCTAssertEqual(expected, pb(inputTensor))
-        
+        XCTAssertEqual(pb(inputTensor), expected)
+
         // Same shape as tensor we are differentiating at
         inputTensor = [1, 2, 3]
         expected = [1, 2, 3]
-        XCTAssertEqual(expected, pb(inputTensor))
-        
+        XCTAssertEqual(pb(inputTensor), expected)
+
         // Extremely padded shape as tensor we are differentiating at
         inputTensor = [[[[[[1, 2, 3]]]]]]
         expected = [1, 2, 3]
-        XCTAssertEqual(expected, pb(inputTensor))
+        XCTAssertEqual(pb(inputTensor), expected)
     }
-    
+
     func testBroadcast3x1To3x3() {
         func foo(tensor: Tensor<Float>, shape: Tensor<Int32>) -> Tensor<Float> {
             tensor.broadcasted(toShape: shape)
         }
-    
+
         // [3,1] -> [3x3]
         let pb: (Tensor<Float>) -> Tensor<Float> = pullback(at: [[99, 33, 55]]) { x in
             foo(tensor: x, shape: [3, 3])
         }
-        
+
         // Same shape as parameter of pullback
         var inputTensor: Tensor<Float> = [
             [1, 2, 3],
             [1, 2, 3],
             [1, 2, 3]]
         var expected: Tensor<Float> = [[3, 6, 9]]
-        XCTAssertEqual(expected, pb(inputTensor))
-        
+        XCTAssertEqual(pb(inputTensor), expected)
+
         // Different shape than parameter of pullback
         inputTensor = [
             [1, 2, 3],
@@ -582,17 +582,17 @@ final class BasicOperatorTests: XCTestCase {
             [1, 2, 3],
             [1, 2, 3]]
         expected = [[4, 8, 12]]
-        XCTAssertEqual(expected, pb(inputTensor))
-        
+        XCTAssertEqual(pb(inputTensor), expected)
+
         // Same shape as tensor we are differentiating at
         inputTensor = [[1, 2, 3]]
         expected = [[1, 2, 3]]
-        XCTAssertEqual(expected, pb(inputTensor))
-        
+        XCTAssertEqual(pb(inputTensor), expected)
+
         // Extremely padded shape of tensor we are differentiating at
         inputTensor = [[[[[[1, 2, 3]]]]]]
         expected = [[1, 2, 3]]
-        XCTAssertEqual(expected, pb(inputTensor))
+        XCTAssertEqual(pb(inputTensor), expected)
     }
 
     static var allTests = [
