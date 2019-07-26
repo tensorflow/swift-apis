@@ -20,7 +20,7 @@ fileprivate struct Sigmoid<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
 
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return sigmoid(input)
+        sigmoid(input)
     }
 }
 
@@ -321,17 +321,15 @@ final class LayerTests: XCTestCase {
 
     func testEmbedding() {
         var layer = Embedding<Float>(vocabularySize: 3, embeddingSize: 5)
-        var data = Tensor<Int32>(shape: [2, 3], scalars: [0, 1, 2, 1, 2, 2])
-        var input = EmbeddingInput(indices: data)
-        var output = layer.inferring(from: input)
+        var input = Tensor<Int32>(shape: [2, 3], scalars: [0, 1, 2, 1, 2, 2])
+        var output = layer(input)
         let expectedShape = TensorShape([2, 3, 5])
         XCTAssertEqual(output.shape, expectedShape)
 
         let pretrained = Tensor<Float>(shape:[2, 2], scalars: [0.4, 0.3, 0.2, 0.1])
         layer = Embedding<Float>(embeddings: pretrained)
-        data = Tensor<Int32>(shape: [2, 2], scalars: [0, 1, 1, 1])
-        input = EmbeddingInput(indices: data)
-        output = layer.inferring(from: input)
+        input = Tensor<Int32>(shape: [2, 2], scalars: [0, 1, 1, 1])
+        output = layer(input)
         let expected = Tensor<Float>([[[0.4, 0.3], [0.2, 0.1]], [[0.2, 0.1],[0.2, 0.1]]])
         XCTAssertEqual(output, expected)
     }
