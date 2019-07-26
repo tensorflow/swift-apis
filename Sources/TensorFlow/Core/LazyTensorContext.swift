@@ -63,8 +63,8 @@ class LazyTensorOperationsTracker {
 struct LazyTensorContext {
     private var operationsTracker = LazyTensorOperationsTracker()
 
-    static private var threadLocalContext: LazyTensorContext {
-        _ThreadLocalState.local.lazyTensorContext
+    private static var threadLocalContext: LazyTensorContext {
+        Context.local.lazyTensorContext
     }
 
     static var operationsTracker: LazyTensorOperationsTracker {

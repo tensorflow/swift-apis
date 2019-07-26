@@ -91,7 +91,7 @@ class LazyTensorTraceBuilder {
 
     /// Returns a trace obtained by tracing the given function.
     static func trace<In: TensorGroup, Out: TensorGroup>(_ fn: (In) -> Out) -> LazyTensorTrace {
-        precondition(_ThreadLocalState.useLazyTensor, "Lazy tensor is not enabled for tracing.")
+        precondition(Context.local.useLazyTensor, "Lazy tensor is not enabled for tracing.")
 
         // Set up inputs for running `fn`.
         let inputOps = In._typeList.map { Self.makePlaceholder(dataType: $0) }

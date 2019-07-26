@@ -693,7 +693,7 @@ extension _ExecutionContext {
     static func makeOp(
         _ name: String, _ outputCount: Int
     ) -> TFTensorOperation {
-        return _ThreadLocalState.useLazyTensor
+        return Context.local.useLazyTensor
             ? LazyTensorOperation(name, outputCount)
             : TFE_Op(name, outputCount)
     }
@@ -1001,7 +1001,7 @@ internal extension _ExecutionContext {
     /// withDevice call on the call stack or the presence of an immediately enclosing
     /// `withDefaultDevice(perform)` call.
     var currentDeviceName: String? {
-        return _ThreadLocalState.local.deviceScopes._currentDevice
+        Context.local.deviceName
     }
 
     /// See documentation for the top-level `withDevice(_:_:perform)`.
@@ -1029,18 +1029,16 @@ internal extension _ExecutionContext {
         guard deviceNames.contains(name) else {
             fatalError("Device \(name) not found")
         }
-        _ThreadLocalState.local.deviceScopes.pushDevice(name)
-        let result = try body()
-        _ThreadLocalState.local.deviceScopes.popDevice()
-        return result
+        var context = Context.local
+        context.deviceName = name
+        return try withContext(context, body)
     }
 
     /// See documentation for the top-level `withDefaultDevice(perform)`.
     func withDefaultDevice<R>(perform body: () throws -> R) rethrows -> R {
-        _ThreadLocalState.local.deviceScopes.pushDevice(nil)
-        let result = try body()
-        _ThreadLocalState.local.deviceScopes.popDevice()
-        return result
+        var context = Context.local
+        context.deviceName = nil
+        return try withContext(context, body)
     }
 }
 
@@ -1103,6 +1101,9 @@ internal func dumpCTensorHandleContent(_ idx: Int, _ inputTensorHandle: CTensorH
     }
 }
 
+// FIXME: Top-level functions starting with "_TFC" are remnants from IRGen-supported TF eager
+// execution. Rename these to something Swifty.
+
 @inlinable
 func _TFCEagerExecute(
     _ op: CTFEOp,
@@ -1129,10 +1130,6 @@ func _TFCEagerExecute(
         TFE_Execute(op, retvals, retvalCount, status)
     }
 }
-
-//===----------------------------------------------------------------------===//
-// - MARK: Dynamic compilation (per-op dispatch) entrypoints
-//===----------------------------------------------------------------------===//
 
 @usableFromInline
 func _TFCGetGlobalEagerContext() -> CTFEContext {
@@ -1190,77 +1187,6 @@ func _TFCOpSetAttrTypeArray(
             TFE_OpSetAttrTypeList(
                 op, attrName, reboundBuffer.baseAddress, Int32(reboundBuffer.count))
         }
-    }
-}
-
-/// A class to keep around thread local state:
-///  - DeviceScopes
-///  - LazyTensorContext
-class _ThreadLocalState {
-    var deviceScopes = DeviceScopes()
-
-    var lazyTensorContext = LazyTensorContext()
-
-    static var useLazyTensor: Bool {
-        get {
-            _ThreadLocalState.local.lazyTensorEnabled ?? _RuntimeConfig.useLazyTensor
-        }
-        set {
-            _ThreadLocalState.local.lazyTensorEnabled = newValue
-        }
-    }
-
-    /// When true, use lazy evaluation. If this is not set, we should use the
-    /// value of `_RuntimeConfig.useLazyTensor` to determine if lazy evaluation
-    /// is enabled.
-    private var lazyTensorEnabled: Bool? = nil
-
-    private static let key: pthread_key_t = {
-        var key = pthread_key_t()
-        pthread_key_create(&key) {
-#if os(macOS) || os(iOS) || os(watchOS) || os(tvOS)
-            let _: AnyObject = Unmanaged.fromOpaque($0).takeRetainedValue()
-#else
-            let _: AnyObject = Unmanaged.fromOpaque($0!).takeRetainedValue()
-#endif
-        }
-        return key
-    }()
-
-    @usableFromInline
-    static var local: _ThreadLocalState {
-        if let state = pthread_getspecific(key) {
-            return Unmanaged.fromOpaque(state).takeUnretainedValue()
-        }
-        let state = _ThreadLocalState()
-        pthread_setspecific(key, Unmanaged.passRetained(state).toOpaque())
-        return state
-    }
-}
-
-/// Stack of devices that models nested calls to withDevice/withDefaultDevice. Devices are
-/// represented by their names in TensorFlow notation. See documentation for
-/// `withDevice(named:perform:)` to learn about device names.
-///
-/// All TensorFlow operations will be put on the topmost device on the stack. When the stack is
-/// empty or the topmost device is `nil`, that allows TensorFlow to place operations on any device
-/// that it sees fit.
-@usableFromInline
-struct DeviceScopes {
-    var deviceStack: [String?] = []
-
-    var _currentDevice: String? {
-        return deviceStack.last ?? nil
-    }
-
-    @usableFromInline
-    mutating func pushDevice(_ device: String?) {
-        deviceStack.append(device)
-    }
-
-    @usableFromInline
-    mutating func popDevice() {
-        internalConsistencyCheck(deviceStack.popLast() != nil)
     }
 }
 

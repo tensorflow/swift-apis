@@ -44,28 +44,6 @@ public enum LearningPhase {
 ///   Context.local.learningPhase = .inference
 ///   ```
 public struct Context {
-    /// The learning phase.
-    public var learningPhase: LearningPhase = .inference
-
-    /// The random seed.
-    ///
-    /// - Note: Whenever obtained, the random seed is also updated so that future stateless 
-    ///   random TensorFlow op executions will result in non-deterministic results.
-    public var randomSeed: TensorFlowSeed {
-        mutating get {
-            let seed = _randomSeed
-            _randomSeed = (seed.0, seed.1 + 1)
-            return seed
-        }
-        set { _randomSeed = newValue }
-    }
-
-    private var _randomSeed: TensorFlowSeed = randomSeedForTensorFlow()
-
-    /// The random number generator.
-    internal var randomNumberGenerator: AnyRandomNumberGenerator =
-        AnyRandomNumberGenerator(PhiloxRandomNumberGenerator(uint64Seed: UInt64(time(nil))))
-
     /// Creates a context with default properties.
     public init() {}
 
@@ -75,6 +53,53 @@ public struct Context {
     public static var local: Context {
         _read { yield ContextManager.local.currentContext }
         _modify { yield &ContextManager.local.currentContext }
+    }
+
+    // MARK: - Training/inference utilities
+
+    /// The learning phase.
+    public var learningPhase: LearningPhase = .inference
+
+    // MARK: - Random number generation
+
+    /// The random seed.
+    ///
+    /// - Note: Whenever obtained, the random seed is also updated so that future stateless
+    ///   random TensorFlow op executions will result in non-deterministic results.
+    public var randomSeed: TensorFlowSeed {
+        mutating get {
+            let seed = _randomSeed
+            _randomSeed = (seed.0, seed.1 + 1)
+            return seed
+        }
+        set { _randomSeed = newValue }
+    }
+    private var _randomSeed: TensorFlowSeed = randomSeedForTensorFlow()
+    /// The random number generator.
+    internal var randomNumberGenerator: AnyRandomNumberGenerator =
+        AnyRandomNumberGenerator(PhiloxRandomNumberGenerator(uint64Seed: UInt64(time(nil))))
+
+    // MARK: - Runtime internals
+
+    /// The device name, if any.
+    ///
+    /// Devices are represented by their names in TensorFlow notation. See documentation for
+    /// `withDevice(named:perform:)` to learn about device names.
+    ///
+    /// All TensorFlow operations will be put on this device. When the `deviceName` is `nil`,
+    /// TensorFlow will place operations on any device that it sees fit.
+    internal var deviceName: String? = nil
+
+    /// The lazy tensor context.
+    internal var lazyTensorContext = LazyTensorContext()
+
+    /// When true, use lazy evaluation. If this is not set, use the value of
+    /// `_RuntimeConfig.useLazyTensor` to determine if lazy evaluation is enabled.
+    private var isLazyTensorEnabled: Bool? = nil
+
+    internal var useLazyTensor: Bool {
+        get { isLazyTensorEnabled ?? _RuntimeConfig.useLazyTensor }
+        set { isLazyTensorEnabled = newValue }
     }
 }
 
