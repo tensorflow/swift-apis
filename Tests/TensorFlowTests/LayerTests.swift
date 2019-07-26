@@ -43,14 +43,18 @@ final class LayerTests: XCTestCase {
             let optimizer = SGD(for: model)
             let x = Tensor<Float>([[0, 0], [0, 1], [1, 0], [1, 1]])
             let y = Tensor<Float>([0, 1, 1, 0])
-            let initialLoss = meanSquaredError(predicted: model(x).squeezingShape(at: 1), expected: y)
-            for _ in 0..<10 {
-                let 𝛁model = model.gradient { model -> Tensor<Float> in
-                    meanSquaredError(predicted: model(x).squeezingShape(at: 1), expected: y)
+            let initialLoss = meanSquaredError(predicted: model(x).squeezingShape(at: 1),
+                                               expected: y)
+            withTensorLeakChecking {
+                for _ in 0..<10 {
+                    let 𝛁model = model.gradient { model -> Tensor<Float> in
+                        meanSquaredError(predicted: model(x).squeezingShape(at: 1), expected: y)
+                    }
+                    optimizer.update(&model, along: 𝛁model)
                 }
-                optimizer.update(&model, along: 𝛁model)
             }
-            let updatedLoss = meanSquaredError(predicted: model(x).squeezingShape(at: 1), expected: y)
+            let updatedLoss = meanSquaredError(predicted: model(x).squeezingShape(at: 1),
+                                               expected: y)
             XCTAssertLessThan(updatedLoss, initialLoss)
         }
     }
@@ -117,8 +121,9 @@ final class LayerTests: XCTestCase {
         let filterSize = filterHeight * filterWidth * inputChannels * outputChannels
 
         // Testing.
-        let filter = Tensor<Float>(shape: [filterHeight, filterWidth, inputChannels, outputChannels],
-                                   scalars: (0..<filterSize).map(Float.init))
+        let filter = Tensor<Float>(
+            shape: [filterHeight, filterWidth, inputChannels, outputChannels],
+            scalars: (0..<filterSize).map(Float.init))
         let bias = Tensor<Float>([0])
         let layer = Conv2D<Float>(filter: filter, bias: bias, activation: identity, strides: (1, 1),
                                   padding: .valid, dilations: (2, 2))
@@ -298,7 +303,8 @@ final class LayerTests: XCTestCase {
       let layer = UpSampling3D<Float>(size: size)
       let input = Tensor<Float>(shape: [1, 4, 3, 2, 1], scalars: (0..<24).map(Float.init))
       let output = layer.inferring(from: input)
-      let expected = TensorShape([1, input.shape[1] * size, input.shape[2] * size, input.shape[3] * size, 1])
+      let expected = TensorShape([1, input.shape[1] * size, input.shape[2] * size,
+                                  input.shape[3] * size, 1])
       XCTAssertEqual(output.shape, expected)
       XCTAssertEqual(output.shape, expected)
     }
@@ -381,14 +387,16 @@ final class LayerTests: XCTestCase {
         let inputs: [Tensor<Float>] = Array(repeating: x, count: 4)
         let rnn = RNN(SimpleRNNCell<Float>(inputSize: 4, hiddenSize: 4,
                                            seed: (0xFeed, 0xBeef)))
-        let (outputs, _) = rnn.valueWithPullback(at: inputs) { rnn, inputs in
-            return rnn(inputs)
+        withTensorLeakChecking {
+            let (outputs, _) = rnn.valueWithPullback(at: inputs) { rnn, inputs in
+                return rnn(inputs)
+            }
+            XCTAssertEqual(outputs.map { $0.value },
+                           [[[ 0.20775771,  0.20080023, -0.13768704, -0.18534681]],
+                            [[ 0.22666009,  0.30019346, -0.19720285, -0.14683801]],
+                            [[ 0.23758979,  0.32101023, -0.20359215,  -0.1787096]],
+                            [[ 0.24337786,   0.3389194, -0.21143384,  -0.1675081]]])
         }
-        XCTAssertEqual(outputs.map { $0.value },
-                       [[[ 0.20775771,  0.20080023, -0.13768704, -0.18534681]],
-                        [[ 0.22666009,  0.30019346, -0.19720285, -0.14683801]],
-                        [[ 0.23758979,  0.32101023, -0.20359215,  -0.1787096]],
-                        [[ 0.24337786,   0.3389194, -0.21143384,  -0.1675081]]])
         // TODO: Figure out why the following is numerically unstable.
         // let (𝛁rnn, _) = pullback(.init(inputs.map { SimpleRNNCell<Float>.State($0) }))
         // XCTAssertEqual(𝛁rnn.cell.weight,
@@ -420,46 +428,49 @@ final class LayerTests: XCTestCase {
             [  0.30175626,  -0.16121633,   -0.4191958,  -0.53092813, -0.029484272]])
         let bnLayer = BatchNorm<Float>(featureCount: 5, axis: 0)
         Context.local.learningPhase = .training
-        let trainingValue = bnLayer(x)
-        let grad = gradient(at: x, bnLayer) { $1($0).squared().sum() }
-        // The expected values and gradients were computed using the following Python code:
-        // ```
-        //   x = tf.constant(
-        //         [[  -1.0474433,  -0.11914538,  -0.08634827,   0.15446888,    1.0572497],
-        //          [   1.5165012,    0.3753972,  -0.30856386,   -0.3100725,   -1.9584457],
-        //          [ 0.006384419,    1.4424847,   0.91568077,   0.66328526,   -1.0794537],
-        //          [    1.056803,   0.14263044,   -1.8308276,    0.4189805,    0.6933893],
-        //          [  0.30175626,  -0.16121633,   -0.4191958,  -0.53092813, -0.029484272]])
-        //  scale = tf.reshape(tf.constant([1., 1., 1., 1., 1.]), [5, 1])
-        //  offset = tf.reshape(tf.constant([0., 0., 0., 0., 0.]), [5, 1])
-        //  (mean, var) = tf.nn.moments(x, axes=1, keepdims=True)
-        //  bn = tf.nn.batch_normalization( x, mean, var, offset=offset, scale=scale, variance_epsilon=0.001)
-        //  scaled = tf.reduce_sum(tf.square(bn))
-        //  g = tf.gradients(scaled, [x, offset, scale])
-        //  init = tf.initialize_all_variables()
-        //  with tf.Session() as sess:
-        //    sess.run(init)
-        //    print(sess.run([bn, g]))
-        // ```
-        let expectedTrainingValue = Tensor<Float>([
-            [-1.5439795 , -0.16477099, -0.11604305,  0.24174842,  1.5830451 ],
-            [ 1.4639764 ,  0.45368853, -0.15186328, -0.15319899, -1.6126028 ],
-            [-0.44139984,  1.2124169 ,  0.60574806,  0.3150888 , -1.6918538 ],
-            [ 0.9507547 ,  0.04595902, -1.9072568 ,  0.31947452,  0.5910686 ],
-            [ 1.5834246 ,  0.02224666, -0.8476793 , -1.2244489 ,  0.46645695]])
-        
-        let expectedInputGradient = Tensor<Float>([
-            [-1.0127544e-02, -1.0807812e-03, -7.6115131e-04,  1.5857220e-03,  1.0383606e-02],
-            [ 2.0323221e-03,  6.2976527e-04, -2.1077941e-04, -2.1265696e-04, -2.2384699e-03],
-            [-1.3483668e-03,  3.7030075e-03,  1.8500184e-03,  9.6232636e-04, -5.1673558e-03],
-            [ 1.8438101e-03,  8.9146197e-05, -3.6990643e-03,  6.1964989e-04,  1.1463165e-03],
-            [ 1.2142579e-01,  1.7060755e-03, -6.5005139e-02, -9.3897656e-02,  3.5770576e-02]])
-        let expectedScaleGradient = Tensor<Float>([9.977925, 9.992161, 9.986738, 9.990202, 9.886292])
-        let expectedOffsetGradient = Tensor<Float>([0.0, 0.0, 0.0, 0.0, 0.0])
-        assertEqual(expectedTrainingValue, trainingValue, accuracy: 1e-5)
-        assertEqual(expectedInputGradient, grad.0, accuracy: 1e-5)
-        assertEqual(expectedScaleGradient, grad.1.scale, accuracy: 1e-5)
-        assertEqual(expectedOffsetGradient, grad.1.offset, accuracy: 1e-5)
+        withTensorLeakChecking {
+            let output = bnLayer(x)
+            let grad = gradient(at: x, bnLayer) { $1($0).squared().sum() }
+            // The expected values and gradients were computed using the following Python code:
+            // ```
+            //   x = tf.constant(
+            //         [[  -1.0474433,  -0.11914538,  -0.08634827,   0.15446888,    1.0572497],
+            //          [   1.5165012,    0.3753972,  -0.30856386,   -0.3100725,   -1.9584457],
+            //          [ 0.006384419,    1.4424847,   0.91568077,   0.66328526,   -1.0794537],
+            //          [    1.056803,   0.14263044,   -1.8308276,    0.4189805,    0.6933893],
+            //          [  0.30175626,  -0.16121633,   -0.4191958,  -0.53092813, -0.029484272]])
+            //  scale = tf.reshape(tf.constant([1., 1., 1., 1., 1.]), [5, 1])
+            //  offset = tf.reshape(tf.constant([0., 0., 0., 0., 0.]), [5, 1])
+            //  (mean, var) = tf.nn.moments(x, axes=1, keepdims=True)
+            //  bn = tf.nn.batch_normalization(x, mean, var, offset=offset, scale=scale,
+            //                                 variance_epsilon=0.001)
+            //  scaled = tf.reduce_sum(tf.square(bn))
+            //  g = tf.gradients(scaled, [x, offset, scale])
+            //  init = tf.initialize_all_variables()
+            //  with tf.Session() as sess:
+            //    sess.run(init)
+            //    print(sess.run([bn, g]))
+            // ```
+            assertEqual(
+                output,
+                [[-1.5439795 , -0.16477099, -0.11604305,  0.24174842,  1.5830451 ],
+                 [ 1.4639764 ,  0.45368853, -0.15186328, -0.15319899, -1.6126028 ],
+                 [-0.44139984,  1.2124169 ,  0.60574806,  0.3150888 , -1.6918538 ],
+                 [ 0.9507547 ,  0.04595902, -1.9072568 ,  0.31947452,  0.5910686 ],
+                 [ 1.5834246 ,  0.02224666, -0.8476793 , -1.2244489 ,  0.46645695]],
+                accuracy: 1e-5)
+            assertEqual(
+                grad.0,
+                [[-1.0127544e-02, -1.0807812e-03, -7.6115131e-04,  1.5857220e-03,  1.0383606e-02],
+                 [ 2.0323221e-03,  6.2976527e-04, -2.1077941e-04, -2.1265696e-04, -2.2384699e-03],
+                 [-1.3483668e-03,  3.7030075e-03,  1.8500184e-03,  9.6232636e-04, -5.1673558e-03],
+                 [ 1.8438101e-03,  8.9146197e-05, -3.6990643e-03,  6.1964989e-04,  1.1463165e-03],
+                 [ 1.2142579e-01,  1.7060755e-03, -6.5005139e-02, -9.3897656e-02,  3.5770576e-02]],
+                accuracy: 1e-5)
+            assertEqual(grad.1.offset, [0.0, 0.0, 0.0, 0.0, 0.0], accuracy: 1e-5)
+            assertEqual(grad.1.scale, [9.977925, 9.992161, 9.986738, 9.990202, 9.886292],
+                        accuracy: 1e-5)
+        }
     }
     
     func testLayerNorm() {
@@ -472,27 +483,27 @@ final class LayerTests: XCTestCase {
         let lnLayer = LayerNorm<Float>(featureCount: 5, axis: 1)
         let value = lnLayer(x)
         let grad = gradient(at: x, lnLayer) { $1($0).squared().sum() }
-        // Uses the same values as testBatchNorm() above because LayerNorm with features on axis 1
-        // is equivalent to BatchNorm with features on axis 0
-        let expectedValue = Tensor<Float>([
-            [-1.5439795 , -0.16477099, -0.11604305,  0.24174842,  1.5830451 ],
-            [ 1.4639764 ,  0.45368853, -0.15186328, -0.15319899, -1.6126028 ],
-            [-0.44139984,  1.2124169 ,  0.60574806,  0.3150888 , -1.6918538 ],
-            [ 0.9507547 ,  0.04595902, -1.9072568 ,  0.31947452,  0.5910686 ],
-            [ 1.5834246 ,  0.02224666, -0.8476793 , -1.2244489 ,  0.46645695]])
-        
-        let expectedInputGradient = Tensor<Float>([
-            [-1.0127544e-02, -1.0807812e-03, -7.6115131e-04,  1.5857220e-03,  1.0383606e-02],
-            [ 2.0323221e-03,  6.2976527e-04, -2.1077941e-04, -2.1265696e-04, -2.2384699e-03],
-            [-1.3483668e-03,  3.7030075e-03,  1.8500184e-03,  9.6232636e-04, -5.1673558e-03],
-            [ 1.8438101e-03,  8.9146197e-05, -3.6990643e-03,  6.1964989e-04,  1.1463165e-03],
-            [ 1.2142579e-01,  1.7060755e-03, -6.5005139e-02, -9.3897656e-02,  3.5770576e-02]])
-        let expectedScaleGradient = Tensor<Float>([9.977925, 9.992161, 9.986738, 9.990202, 9.886292])
-        let expectedOffsetGradient = Tensor<Float>([0.0, 0.0, 0.0, 0.0, 0.0])
-        assertEqual(expectedValue, value, accuracy: 1e-5)
-        assertEqual(expectedInputGradient, grad.0, accuracy: 1e-5)
-        assertEqual(expectedScaleGradient, grad.1.scale, accuracy: 1e-5)
-        assertEqual(expectedOffsetGradient, grad.1.offset, accuracy: 1e-5)
+        // Uses the same values as `testBatchNorm()` above because `LayerNorm` with features on axis
+        // `1` is equivalent to `BatchNorm` with features on axis `0`.
+        assertEqual(
+            value,
+            [[-1.5439795 , -0.16477099, -0.11604305,  0.24174842,  1.5830451 ],
+             [ 1.4639764 ,  0.45368853, -0.15186328, -0.15319899, -1.6126028 ],
+             [-0.44139984,  1.2124169 ,  0.60574806,  0.3150888 , -1.6918538 ],
+             [ 0.9507547 ,  0.04595902, -1.9072568 ,  0.31947452,  0.5910686 ],
+             [ 1.5834246 ,  0.02224666, -0.8476793 , -1.2244489 ,  0.46645695]],
+            accuracy: 1e-5)
+        assertEqual(
+            grad.0,
+            [[-1.0127544e-02, -1.0807812e-03, -7.6115131e-04,  1.5857220e-03,  1.0383606e-02],
+             [ 2.0323221e-03,  6.2976527e-04, -2.1077941e-04, -2.1265696e-04, -2.2384699e-03],
+             [-1.3483668e-03,  3.7030075e-03,  1.8500184e-03,  9.6232636e-04, -5.1673558e-03],
+             [ 1.8438101e-03,  8.9146197e-05, -3.6990643e-03,  6.1964989e-04,  1.1463165e-03],
+             [ 1.2142579e-01,  1.7060755e-03, -6.5005139e-02, -9.3897656e-02,  3.5770576e-02]],
+            accuracy: 1e-5)
+        assertEqual(grad.1.scale, [9.977925, 9.992161, 9.986738, 9.990202, 9.886292],
+                    accuracy: 1e-5)
+        assertEqual(grad.1.offset, [0.0, 0.0, 0.0, 0.0, 0.0], accuracy: 1e-5)
     }
 
     static var allTests = [
