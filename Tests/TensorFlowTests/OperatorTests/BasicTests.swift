@@ -27,10 +27,10 @@ final class BasicOperatorTests: XCTestCase {
             [1.0, 2.0, 3.0],
             [4.0, 5.0, 6.0]]])
         let y = x.batchGathering(
-            atIndices: Tensor<Int32>([1, 0]),
+            atIndices: Tensor<Int32>([[[1], [0]]]),
             alongAxis: 2,
             batchDimensionCount: 2)
-        XCTAssertEqual(y, Tensor<Float>([2.0, 4.0]))
+        XCTAssertEqual(y, Tensor<Float>([[[2.0], [4.0]]]))
     }
 
     func testPadded() {

@@ -204,8 +204,7 @@ final class LazyTensorTFFunctionBuilderTests : XCTestCase {
         _ lazyOp: LazyTensorOperation,
         _ name: String? = nil
     ) -> TFFunction {
-        let trace = LazyTensorTrace(lazyOp)
-        return TFFunction(trace: trace, name: name)
+        return TFFunction(trace: lazyTensorTrace(lazyOp), name: name)
     }
 
     private func materializedLazyTensor<T: TensorFlowScalar>(
@@ -229,8 +228,12 @@ final class LazyTensorTFFunctionBuilderTests : XCTestCase {
             XCTFail("Cannot get TFFunction for a concrete tensor.")
             return nil
         }
-        let trace =  LazyTensorTrace(lazyOp)
-        return TFFunction(trace: trace, name: name)
+        return TFFunction(trace: lazyTensorTrace(lazyOp), name: name)
+    }
+
+    private func lazyTensorTrace(_ lazyOp: LazyTensorOperation) -> LazyTensorTrace {
+        let traceInfo = LazyTensorTraceBuilder.materializationTraceInfo(lazyOp)
+        return traceInfo.trace
     }
 
     static var allTests = [
