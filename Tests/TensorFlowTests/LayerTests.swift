@@ -56,8 +56,9 @@ final class LayerTests: XCTestCase {
                     optimizer.update(&model, along: 𝛁model)
                 }
             }
-            let updatedLoss = meanSquaredError(predicted: model(x).squeezingShape(at: 1),
-                                               expected: y)
+            let updatedLoss = meanSquaredError(
+                predicted: model(x).squeezingShape(at: 1),
+                expected: y)
             XCTAssertLessThan(updatedLoss, initialLoss)
         }
     }
@@ -306,8 +307,8 @@ final class LayerTests: XCTestCase {
       let layer = UpSampling3D<Float>(size: size)
       let input = Tensor<Float>(shape: [1, 4, 3, 2, 1], scalars: (0..<24).map(Float.init))
       let output = layer.inferring(from: input)
-      let expected = TensorShape([1, input.shape[1] * size, input.shape[2] * size,
-                                  input.shape[3] * size, 1])
+      let expected = TensorShape(
+          [1, input.shape[1] * size, input.shape[2] * size, input.shape[3] * size, 1])
       XCTAssertEqual(output.shape, expected)
       XCTAssertEqual(output.shape, expected)
     }
