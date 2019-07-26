@@ -1,0 +1,7 @@
+module CTensorFlow {
+  header "c_api.h"
+  header "c_api_experimental.h"
+  header "c_api_eager.h"
+
+  link "tensorflow"
+}

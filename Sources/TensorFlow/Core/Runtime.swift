@@ -693,7 +693,7 @@ extension _ExecutionContext {
     static func makeOp(
         _ name: String, _ outputCount: Int
     ) -> TFTensorOperation {
-        return _RuntimeConfig.useLazyTensor
+        return _ThreadLocalState.useLazyTensor
             ? LazyTensorOperation(name, outputCount)
             : TFE_Op(name, outputCount)
     }
@@ -1200,6 +1200,20 @@ class _ThreadLocalState {
     var deviceScopes = DeviceScopes()
 
     var lazyTensorContext = LazyTensorContext()
+
+    static var useLazyTensor: Bool {
+        get {
+            _ThreadLocalState.local.lazyTensorEnabled ?? _RuntimeConfig.useLazyTensor
+        }
+        set {
+            _ThreadLocalState.local.lazyTensorEnabled = newValue
+        }
+    }
+
+    /// When true, use lazy evaluation. If this is not set, we should use the
+    /// value of `_RuntimeConfig.useLazyTensor` to determine if lazy evaluation
+    /// is enabled.
+    private var lazyTensorEnabled: Bool? = nil
 
     private static let key: pthread_key_t = {
         var key = pthread_key_t()
