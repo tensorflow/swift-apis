@@ -81,8 +81,8 @@ final class MathOperatorTests: XCTestCase {
         let target = Tensor<Double>([1, 2, 3, 4, 5]).sum()
         let gradTarget = Tensor<Double>([-0.5,  -4.0, -13.5, -32.0, -62.5])
         let (value, grad) = valueWithGradient(at: x) { rsqrt($0).sum() }
-        XCTAssertEqual( value, target)
-        XCTAssertEqual( grad, gradTarget)
+        XCTAssertEqual(value, target)
+        XCTAssertEqual(grad, gradTarget)
     }
 
     func testLog1p() {
