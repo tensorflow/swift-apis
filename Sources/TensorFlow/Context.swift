@@ -66,6 +66,8 @@ public struct Context {
     internal var randomNumberGenerator: AnyRandomNumberGenerator =
         AnyRandomNumberGenerator(PhiloxRandomNumberGenerator(uint64Seed: UInt64(time(nil))))
 
+    internal var globalTensorCount: Int = 0
+
     /// Creates a context with default properties.
     public init() {}
 
