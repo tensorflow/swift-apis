@@ -30,15 +30,15 @@ final class TensorAutoDiffTests: XCTestCase {
         func square(_ x: Tensor<Float>) -> Tensor<Float> {
             return (x * x).sum()
         }
-        XCTAssertEqual(gradient(at: [0.1, 0.2, 0.3], [0.2, 0.4, 0.6], in: square))
-        XCTAssertEqual(gradient(at: [[10], [20]], [[20], [40]], in: square))
+        XCTAssertEqual(gradient(at: [0.1, 0.2, 0.3]), [0.2, 0.4, 0.6], in: square))
+        XCTAssertEqual(gradient(at: [[10], [20]]), [[20], [40]], in: square))
     }
 
     func testGenericGrad() {
         func square<T : TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
             return (x * x).sum()
         }
-        XCTAssertEqual(gradient(at: Tensor([0.1, 0.2, 0.3]), [0.2, 0.4, 0.6], in: square))
+        XCTAssertEqual(gradient(at: Tensor([0.1, 0.2, 0.3])), [0.2, 0.4, 0.6], in: square))
     }
 
     func testScalarGenericGrad() {
@@ -46,7 +46,7 @@ final class TensorAutoDiffTests: XCTestCase {
         func negate<T : TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
             return (1 - x).sum()
         }
-        XCTAssertEqual(gradient(at: Tensor([0.1, 0.2, 0.3]), Tensor(-1), in: negate))
+        XCTAssertEqual(gradient(at: Tensor([0.1, 0.2, 0.3])), Tensor(-1), in: negate))
     }
 
     func testScalarized() {
@@ -95,13 +95,13 @@ final class TensorAutoDiffTests: XCTestCase {
 
     func testNegate() {
         func f(a: Tensor<Float>) -> Tensor<Float> { (-a).sum() }
-        XCTAssertEqual(gradient(at: [0], [-1], in: f))
-        XCTAssertEqual(gradient(at: [10], [-1], in: f))
+        XCTAssertEqual(gradient(at: [0]), [-1], in: f))
+        XCTAssertEqual(gradient(at: [10]), [-1], in: f))
     }
 
     func testAbs() {
         func f(a: Tensor<Float>) -> Tensor<Float> { abs(a).sum() }
-        XCTAssertEqual(gradient(at: [3.0, -3.0, 0], [1, -1, 0], in: f))
+        XCTAssertEqual(gradient(at: [3.0, -3.0, 0]), [1, -1, 0], in: f))
     }
 
     func testSum() {
