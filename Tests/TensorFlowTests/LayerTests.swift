@@ -373,8 +373,8 @@ final class LayerTests: XCTestCase {
 
         let weightBatched = Tensor<Float>(shape: [2, 2, 3], scalars: (0..<12).map(Float.init))
         let biasBatched = Tensor<Float>([[1.0, 2.0, 3.0]])
-        let layerBatched = Dense<Float>(weight: weightBatched, 
-                                        bias: biasBatched, 
+        let layerBatched = Dense<Float>(weight: weightBatched,
+                                        bias: biasBatched,
                                         activation: identity)
         let inputBatched = Tensor<Float>(shape: [2, 2], scalars: (0..<4).map(Float.init))
         let outputBatched = layerBatched.inferring(from: inputBatched)
@@ -420,7 +420,7 @@ final class LayerTests: XCTestCase {
         let expected = Tensor<Float>([[0.0], [0.7615942], [0.9640276], [0.9950547], [0.9993292]])
         XCTAssertEqual(output, expected)
     }
-    
+
     func testBatchNorm() {
         let x = Tensor<Float>([
             [  -1.0474433,  -0.11914538,  -0.08634827,   0.15446888,    1.0572497],
@@ -474,7 +474,7 @@ final class LayerTests: XCTestCase {
                         accuracy: 1e-5)
         }
     }
-    
+
     func testLayerNorm() {
         let x = Tensor<Float>([
             [  -1.0474433,  -0.11914538,  -0.08634827,   0.15446888,    1.0572497],
@@ -485,6 +485,7 @@ final class LayerTests: XCTestCase {
         let lnLayer = LayerNorm<Float>(featureCount: 5, axis: 1)
         let value = lnLayer(x)
         let grad = gradient(at: x, lnLayer) { $1($0).squared().sum() }
+
         // Uses the same values as `testBatchNorm()` above because `LayerNorm` with features on axis
         // `1` is equivalent to `BatchNorm` with features on axis `0`.
         assertEqual(
