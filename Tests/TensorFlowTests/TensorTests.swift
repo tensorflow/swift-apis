@@ -25,8 +25,7 @@ final class TensorTests: XCTestCase {
             }
             return b
         }
-
-        XCTAssertEqual(0, selectValue(true).scalar)
+        XCTAssertEqual(selectValue(true).scalar, 0)
     }
 
     func testRankGetter() {
@@ -34,10 +33,10 @@ final class TensorTests: XCTestCase {
         let matrix = Tensor<Float>([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
         let ones = Tensor<Int32>(ones: [1, 2, 2, 2, 2, 2, 1])
         let tensor = Tensor<Int32>(shape: [3, 4, 5], scalars: Array(0..<60))
-        XCTAssertEqual(1, vector.rank)
-        XCTAssertEqual(2, matrix.rank)
-        XCTAssertEqual(7, ones.rank)
-        XCTAssertEqual(3, tensor.rank)
+        XCTAssertEqual(vector.rank, 1)
+        XCTAssertEqual(matrix.rank, 2)
+        XCTAssertEqual(ones.rank, 7)
+        XCTAssertEqual(tensor.rank, 3)
     }
 
     func testShapeGetter() {
@@ -45,15 +44,15 @@ final class TensorTests: XCTestCase {
         let matrix = Tensor<Float>([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
         let ones = Tensor<Int32>(ones: [1, 2, 2, 2, 2, 2, 1])
         let tensor = Tensor<Int32>(shape: [3, 4, 5], scalars: Array(0..<60))
-        XCTAssertEqual([1], vector.shape)
-        XCTAssertEqual([2, 3], matrix.shape)
-        XCTAssertEqual([1, 2, 2, 2, 2, 2, 1], ones.shape)
-        XCTAssertEqual([3, 4, 5], tensor.shape)
+        XCTAssertEqual(vector.shape, [1])
+        XCTAssertEqual(matrix.shape, [2, 3])
+        XCTAssertEqual(ones.shape, [1, 2, 2, 2, 2, 2, 1])
+        XCTAssertEqual(tensor.shape, [3, 4, 5])
     }
 
     func testTensorShapeDescription() {
-        XCTAssertEqual("[2, 2]", Tensor<Int32>(ones: [2, 2]).shape.description)
-        XCTAssertEqual("[]", Tensor(1).shape.description)
+        XCTAssertEqual(Tensor<Int32>(ones: [2, 2]).shape.description, "[2, 2]")
+        XCTAssertEqual(Tensor(1).shape.description, "[]")
     }
 
     static var allTests = [

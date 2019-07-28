@@ -140,6 +140,8 @@ public extension Tensor {
     @inlinable
     @differentiable(wrt: self, vjp: _vjpScalarized where Scalar: TensorFlowFloatingPoint)
     func scalarized() -> Scalar {
+        precondition(shape.contiguousSize == 1,
+           "This tensor must have exactly one scalar but contains \(shape.contiguousSize).")
         return reshaped(to: []).scalar!
     }
 }
@@ -194,7 +196,7 @@ public extension Tensor {
 
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
-    static func _vjpScalarInit(_ value: Scalar) -> (Tensor, (Tensor) -> Scalar) {
+    static func _vjpScalarInit(_ value: __owned Scalar) -> (Tensor, (Tensor) -> Scalar) {
         return (Tensor(value), { $0.scalarized() })
     }
 }
@@ -226,9 +228,14 @@ public extension Tensor {
     /// - Parameters:
     ///   - shape: The shape of the tensor.
     ///   - scalars: The scalar contents of the tensor.
-    /// - Precondition: The number of scalars must equal the product of the dimensions of the shape.
+    /// - Precondition: The product of the dimensions of the shape must equal the number of scalars.
     @inlinable
     init(shape: TensorShape, scalars: [Scalar]) {
+        precondition(shape.contiguousSize == scalars.count,
+            """
+            The shape requires \(shape.contiguousSize) scalars but \(scalars.count) were \
+            provided.
+            """)
         self = scalars.withUnsafeBufferPointer { bufferPointer in
 	        Tensor(shape: shape, scalars: bufferPointer)
 	    }
@@ -239,11 +246,14 @@ public extension Tensor {
     /// - Parameters:
     ///   - shape: The shape of the tensor.
     ///   - scalars: The scalar contents of the tensor.
-    /// - Precondition: The number of scalars must equal the product of the
-    ///   dimensions of the shape.
+    /// - Precondition: The product of the dimensions of the shape must equal the number of scalars.
     @inlinable
     init(shape: TensorShape, scalars: UnsafeBufferPointer<Scalar>) {
-        precondition(scalars.count == shape.contiguousSize)
+        precondition(shape.contiguousSize == scalars.count,
+            """
+            The shape requires \(shape.contiguousSize) scalars but \(scalars.count) were \
+            provided.
+            """)
         let handle = TensorHandle<Scalar>(
             shape: shape.dimensions,
             scalarsInitializer: { address in
@@ -257,11 +267,14 @@ public extension Tensor {
     /// - Parameters:
     ///   - shape: The shape of the tensor.
     ///   - scalars: The scalar contents of the tensor.
-    /// - Precondition: The number of scalars must equal the product of the
-    ///   dimensions of the shape.
+    /// - Precondition: The product of the dimensions of the shape must equal the number of scalars.
     @inlinable
     init<C: RandomAccessCollection>(shape: TensorShape, scalars: C) where C.Element == Scalar {
-        precondition(scalars.count == shape.contiguousSize)
+        precondition(shape.contiguousSize == scalars.count,
+            """
+            The shape requires \(shape.contiguousSize) scalars but \(scalars.count) were \
+            provided.
+            """)
         let handle = TensorHandle<Scalar>(
             shape: shape.dimensions,
             scalarsInitializer: { addr in
@@ -385,6 +398,7 @@ extension Tensor: ExpressibleByArrayLiteral {
     /// Creates a tensor initialized with the given elements.
     @inlinable
     public init(arrayLiteral elements: _TensorElementLiteral<Scalar>...) {
+        precondition(!elements.isEmpty, "Cannot create a 'Tensor' with no elements.")
         self.init(_tensorElementLiterals: elements)
     }
 }
@@ -500,11 +514,9 @@ extension Tensor: Codable where Scalar: Codable {
 //===------------------------------------------------------------------------------------------===//
 
 extension Tensor: AdditiveArithmetic where Scalar: Numeric {
-    /// A scalar zero tensor.
+    /// The scalar zero tensor.
     @inlinable
-    public static var zero: Tensor {
-        return Tensor(0)
-    }
+    public static var zero: Tensor { Tensor(0) }
 
     /// Adds two tensors and produces their sum.
     /// - Note: `+` supports broadcasting.
@@ -550,6 +562,26 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
             return (lhsGrad.sum(squeezingAxes: lhsAxes).reshaped(toShape: lhsShape),
                     rhsGrad.sum(squeezingAxes: rhsAxes).reshaped(toShape: rhsShape))
         })
+    }
+}
+
+//===------------------------------------------------------------------------------------------===//
+// Multiplicative Group
+//===------------------------------------------------------------------------------------------===//
+
+extension Tensor: PointwiseMultiplicative where Scalar: Numeric {
+    /// The scalar one tensor.
+    @inlinable
+    public static var one: Tensor { Tensor(1) }
+
+    /// Returns the element-wise reciprocal of `self`.
+    @inlinable
+    public var reciprocal: Tensor { 1 / self }
+
+    /// Multiplies two tensors element-wise and produces their product.
+    /// - Note: `.*` supports broadcasting.
+    public static func .* (lhs: Tensor, rhs: Tensor) -> Tensor {
+        return lhs * rhs
     }
 }
 

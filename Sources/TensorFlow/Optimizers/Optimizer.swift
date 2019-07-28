@@ -1,6 +1,3 @@
-// swift-tools-version:4.2
-// The swift-tools-version declares the minimum version of Swift required to build this package.
-//
 // Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,23 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import PackageDescription
-
-let package = Package(
-    name: "TensorFlow",
-    products: [
-        .library(
-            name: "TensorFlow",
-            type: .dynamic,
-            targets: ["TensorFlow"]),
-    ],
-    dependencies: [],
-    targets: [
-        .target(
-            name: "TensorFlow",
-            dependencies: []),
-        .testTarget(
-            name: "TensorFlowTests",
-            dependencies: ["TensorFlow"]),
-    ]
-)
+/// A numerical optimizer.
+///
+/// Optimizers apply an optimization algorithm to update the differentiable models.
+public protocol Optimizer {
+    /// The type of the model whose parameters are optimized.
+    associatedtype Model: Differentiable
+    /// The scalar parameter type.
+    associatedtype Scalar: FloatingPoint
+    /// The learning rate.
+    var learningRate: Scalar { get set }
+    /// Updates the specified differentiable variables along the specified direction.
+    mutating func update(_ variables: inout Model, along direction: Model.TangentVector)
+}

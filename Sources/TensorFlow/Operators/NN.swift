@@ -28,51 +28,16 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     ///   - scale: The scale, also known as gamma.
     ///   - epsilon: A small value added to the denominator for numerical stability.
     @inlinable
-    @differentiable(wrt: (self, offset, scale), vjp: _vjpBatchNormalized)
+    @differentiable(wrt: (self, offset, scale))
     func batchNormalized(
         alongAxis axis: Int,
         offset: Tensor = Tensor(0),
         scale: Tensor = Tensor(1),
         epsilon: Scalar = 0.001
     ) -> Tensor {
-        let mean = self.mean(alongAxes: axis)
-        let squaredDiff: Tensor = Raw.squaredDifference(self, mean)
-        let variance = squaredDiff.mean(alongAxes: axis)
-        let inv = rsqrt(variance + epsilon) * scale
-        return self * inv + offset - mean * inv
-    }
-
-    // TODO: Verify that these calculations are correct.
-    @inlinable
-    internal func _vjpBatchNormalized(
-        alongAxis axis: Int,
-        offset: Tensor,
-        scale: Tensor,
-        epsilon: Scalar
-    ) -> (Tensor, (Tensor) -> (Tensor, Tensor, Tensor)) {
-        let value = batchNormalized(alongAxis: axis, offset: offset, scale: scale, epsilon: epsilon)
-        return (value, { v in
-            let mean = self.mean(alongAxes: axis)
-            let squaredDiff: Tensor = Raw.squaredDifference(self, mean)
-            let variance = squaredDiff.mean(alongAxes: axis)
-
-            let diff = self - mean
-            let inv = rsqrt(variance + epsilon)
-            let norm = diff * inv
-
-            let dNorm = v * scale
-            let dVariance = -(dNorm * diff).sum(alongAxes: axis) / 2 * TensorFlow.pow(inv, -3)
-            // Note: `dMean` is split into two lines to avoid the "compiler is unable to type-check
-            // this expression in reasonable time" error.
-            var dMean = (-dNorm * inv).sum(alongAxes: axis)
-            dMean = dMean + dVariance * (-diff * 2).mean(alongAxes: axis)
-            let dOffset = v.sum(alongAxes: axis)
-            let dScale = (norm * v).sum(alongAxes: axis)
-            let dim = Tensor(Tensor<Int32>(self.shapeTensor[axis]))
-            let tmp = (dNorm * inv) + (dVariance * 2 * dMean / dim)
-            let dSelf = tmp + (dMean / dim)
-            return (dSelf, dOffset, dScale)
-        })
+        let moments = self.moments(alongAxes: axis)
+        let inv = rsqrt(moments.variance + epsilon) * scale
+        return self * inv + offset - moments.mean * inv
     }
 }
 
@@ -121,9 +86,9 @@ public extension Padding {
 public func conv2D<Scalar: TensorFlowFloatingPoint>(
     _ input: Tensor<Scalar>,
     filter: Tensor<Scalar>,
-    strides: (Int, Int, Int, Int),
-    padding: Padding,
-    dilations: (Int, Int, Int, Int)
+    strides: (Int, Int, Int, Int) = (1, 1, 1, 1),
+    padding: Padding = .valid,
+    dilations: (Int, Int, Int, Int) = (1, 1, 1, 1)
 ) -> Tensor<Scalar> {
     return Raw.conv2D(
         input,
@@ -159,8 +124,8 @@ func conv2DBackpropInput<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>,
     shape: Tensor<Int32>,
     filter: Tensor<Scalar>,
-    strides: (Int, Int, Int, Int),
-    padding: Padding,
+    strides: (Int, Int, Int, Int) = (1, 1, 1, 1),
+    padding: Padding = .valid,
     dilations: (Int, Int, Int, Int) = (1, 1, 1, 1)
 ) -> Tensor<Scalar> {
     return Raw.conv2DBackpropInput(
@@ -185,9 +150,9 @@ func _vjpConv2DBackpropInput<Scalar: TensorFlowFloatingPoint>(
     let value = conv2DBackpropInput(x, shape: shape, filter: filter,
                                     strides: strides, padding: padding, dilations: dilations)
     return (value, { v in
-        (conv2DBackpropFilter(x, input: v, filterSizes: shape, strides: strides,
-                              padding: padding, dilations: dilations),
-         conv2D(v, filter: filter, strides: strides, padding: padding, dilations: dilations))
+        (conv2D(v, filter: filter, strides: strides, padding: padding, dilations: dilations),
+         conv2DBackpropFilter(x, input: v, filterSizes: filter.shapeTensor, strides: strides,
+                              padding: padding, dilations: dilations))
     })
 }
 
@@ -198,9 +163,9 @@ func conv2DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>,
     input: Tensor<Scalar>,
     filterSizes: Tensor<Int32>,
-    strides: (Int, Int, Int, Int),
-    padding: Padding,
-    dilations: (Int, Int, Int, Int)
+    strides: (Int, Int, Int, Int) = (1, 1, 1, 1),
+    padding: Padding = .valid,
+    dilations: (Int, Int, Int, Int) = (1, 1, 1, 1)
 ) -> Tensor<Scalar> {
     return Raw.conv2DBackpropFilter(
         input,
@@ -243,8 +208,8 @@ func _vjpConv2DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
 public func conv3D<Scalar: TensorFlowFloatingPoint>(
     _ input: Tensor<Scalar>,
     filter: Tensor<Scalar>,
-    strides: (Int, Int, Int, Int, Int),
-    padding: Padding
+    strides: (Int, Int, Int, Int, Int) = (1, 1, 1, 1, 1),
+    padding: Padding = .valid
 ) -> Tensor<Scalar> {
     return Raw.conv3D(
         input,
@@ -280,8 +245,8 @@ func conv3DBackpropInput<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>,
     shape: Tensor<Int32>,
     filter: Tensor<Scalar>,
-    strides: (Int, Int, Int, Int, Int),
-    padding: Padding
+    strides: (Int, Int, Int, Int, Int) = (1, 1, 1, 1, 1),
+    padding: Padding = .valid
 ) -> Tensor<Scalar> {
     return Raw.conv3DBackpropInputV2(
         inputSizes: shape,
@@ -318,8 +283,8 @@ func conv3DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>,
     input: Tensor<Scalar>,
     filterSizes: Tensor<Int32>,
-    strides: (Int, Int, Int, Int, Int),
-    padding: Padding
+    strides: (Int, Int, Int, Int, Int) = (1, 1, 1, 1, 1),
+    padding: Padding = .valid
 ) -> Tensor<Scalar> {
     return Raw.conv3DBackpropFilterV2(
         x,

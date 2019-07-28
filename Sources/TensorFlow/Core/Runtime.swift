@@ -693,7 +693,7 @@ extension _ExecutionContext {
     static func makeOp(
         _ name: String, _ outputCount: Int
     ) -> TFTensorOperation {
-        return _RuntimeConfig.useLazyTensor
+        return _ThreadLocalState.useLazyTensor
             ? LazyTensorOperation(name, outputCount)
             : TFE_Op(name, outputCount)
     }
@@ -1001,7 +1001,7 @@ internal extension _ExecutionContext {
     /// withDevice call on the call stack or the presence of an immediately enclosing
     /// `withDefaultDevice(perform)` call.
     var currentDeviceName: String? {
-        return _ThreadLocalState.local._currentDevice
+        return _ThreadLocalState.local.deviceScopes._currentDevice
     }
 
     /// See documentation for the top-level `withDevice(_:_:perform)`.
@@ -1029,17 +1029,17 @@ internal extension _ExecutionContext {
         guard deviceNames.contains(name) else {
             fatalError("Device \(name) not found")
         }
-        _ThreadLocalState.local.pushDevice(name)
+        _ThreadLocalState.local.deviceScopes.pushDevice(name)
         let result = try body()
-        _ThreadLocalState.local.popDevice()
+        _ThreadLocalState.local.deviceScopes.popDevice()
         return result
     }
 
     /// See documentation for the top-level `withDefaultDevice(perform)`.
     func withDefaultDevice<R>(perform body: () throws -> R) rethrows -> R {
-        _ThreadLocalState.local.pushDevice(nil)
+        _ThreadLocalState.local.deviceScopes.pushDevice(nil)
         let result = try body()
-        _ThreadLocalState.local.popDevice()
+        _ThreadLocalState.local.deviceScopes.popDevice()
         return result
     }
 }
@@ -1104,7 +1104,6 @@ internal func dumpCTensorHandleContent(_ idx: Int, _ inputTensorHandle: CTensorH
 }
 
 @inlinable
-@_cdecl("_swift_tfc_EagerExecute")
 func _TFCEagerExecute(
     _ op: CTFEOp,
     _ retvals: UnsafeMutablePointer<OpaquePointer?>,
@@ -1136,25 +1135,19 @@ func _TFCEagerExecute(
 //===----------------------------------------------------------------------===//
 
 @usableFromInline
-@_cdecl("_swift_tfc_GetGlobalEagerContext")
 func _TFCGetGlobalEagerContext() -> CTFEContext {
     debugLog("Calling _GetGlobalEagerContext()")
     return _ExecutionContext.global.eagerContext
 }
 
-// Some of the functions are marked with @silgen_name instead of @_cdecl, because their input/output
-// data types are not C-compatible (e.g., AnyTensorHandle).
-
 /// Adds `handle` as an input to `op`.
 @usableFromInline
-@_silgen_name("_swift_tfc_OpAddInputFromTensorHandle")
 func _TFCOpAddInputFromTensorHandle(_ op: CTFEOp, _ handle: _AnyTensorHandle, _ status: CTFStatus) {
     TFE_OpAddInput(op, handle._cTensorHandle, status)
 }
 
 /// Adds `t` as an input or inputs to `op`. Returns the number of inputs added.
 @usableFromInline
-@_silgen_name("_swift_tfc_OpAddInputFromTensorGroup")
 func _TFCOpAddInputFromTensorGroup<T: TensorArrayProtocol>(
     _ op: CTFEOp,
     _ t: T,
@@ -1187,7 +1180,6 @@ func _TFCOpAddInputFromAnyTensors(_ op: CTFEOp, _ tensors: [AnyTensor], _ status
 // can read.
 
 @usableFromInline
-@_silgen_name("_swift_tfc_OpSetAttrTypeArray")
 func _TFCOpSetAttrTypeArray(
     _ op: CTFEOp,
     _ attrName: UnsafePointer<Int8>,
@@ -1201,48 +1193,27 @@ func _TFCOpSetAttrTypeArray(
     }
 }
 
-/// Given dimensions and ranks in the form described below, makes the appropriate call to
-/// `TFE_OpSetAttrShapeList(op, attrName, ..., status)`.
-///
-/// - Parameters
-///   - flattenedDims: all the shapes' dimensions concatenated together in order.
-///   - ranks: all the shapes' ranks (-1 denotes unknown rank).
-fileprivate func setAttrShapeList(
-    op: CTFEOp,
-    attrName: UnsafePointer<Int8>,
-    flattenedDims: Array<Int64>,
-    ranks: Array<Int32>,
-    status: CTFStatus
-) {
-    flattenedDims.withUnsafeBufferPointer { flattenedDimsBuffer in
-        var dimsPtr: UnsafePointer<Int64>? = flattenedDimsBuffer.baseAddress
-        var dims: [UnsafePointer<Int64>?] = []
-        for rank in ranks {
-            dims.append(dimsPtr)
-            if rank >= 0 {
-                dimsPtr = dimsPtr.map { $0.advanced(by: Int(rank)) }
-            }
+/// A class to keep around thread local state:
+///  - DeviceScopes
+///  - LazyTensorContext
+class _ThreadLocalState {
+    var deviceScopes = DeviceScopes()
+
+    var lazyTensorContext = LazyTensorContext()
+
+    static var useLazyTensor: Bool {
+        get {
+            _ThreadLocalState.local.lazyTensorEnabled ?? _RuntimeConfig.useLazyTensor
         }
-        dims.withUnsafeMutableBufferPointer { dimsBuffer in
-            ranks.withUnsafeBufferPointer { ranksBuffer in
-                TFE_OpSetAttrShapeList(
-                    op, attrName, dimsBuffer.baseAddress, ranksBuffer.baseAddress,
-                    Int32(ranksBuffer.count), status)
-            }
+        set {
+            _ThreadLocalState.local.lazyTensorEnabled = newValue
         }
     }
-}
 
-/// Stack of devices that models nested calls to withDevice/withDefaultDevice. Devices are
-/// represented by their names in TensorFlow notation. See documentation for
-/// `withDevice(named:perform:)` to learn about device names.
-///
-/// All TensorFlow operations will be put on the topmost device on the stack. When the stack is
-/// empty or the topmost device is `nil`, that allows TensorFlow to place operations on any device
-/// that it sees fit.
-@usableFromInline
-class _ThreadLocalState {
-    var deviceScopes: [String?] = []
+    /// When true, use lazy evaluation. If this is not set, we should use the
+    /// value of `_RuntimeConfig.useLazyTensor` to determine if lazy evaluation
+    /// is enabled.
+    private var lazyTensorEnabled: Bool? = nil
 
     private static let key: pthread_key_t = {
         var key = pthread_key_t()
@@ -1256,20 +1227,6 @@ class _ThreadLocalState {
         return key
     }()
 
-    var _currentDevice: String? {
-        return deviceScopes.last ?? nil
-    }
-
-    @usableFromInline
-    func pushDevice(_ device: String?) {
-        deviceScopes.append(device)
-    }
-
-    @usableFromInline
-    func popDevice() {
-        internalConsistencyCheck(deviceScopes.popLast() != nil)
-    }
-
     @usableFromInline
     static var local: _ThreadLocalState {
         if let state = pthread_getspecific(key) {
@@ -1281,8 +1238,33 @@ class _ThreadLocalState {
     }
 }
 
+/// Stack of devices that models nested calls to withDevice/withDefaultDevice. Devices are
+/// represented by their names in TensorFlow notation. See documentation for
+/// `withDevice(named:perform:)` to learn about device names.
+///
+/// All TensorFlow operations will be put on the topmost device on the stack. When the stack is
+/// empty or the topmost device is `nil`, that allows TensorFlow to place operations on any device
+/// that it sees fit.
 @usableFromInline
-@_cdecl("_swift_tfc_OpSetDeviceFromScope")
+struct DeviceScopes {
+    var deviceStack: [String?] = []
+
+    var _currentDevice: String? {
+        return deviceStack.last ?? nil
+    }
+
+    @usableFromInline
+    mutating func pushDevice(_ device: String?) {
+        deviceStack.append(device)
+    }
+
+    @usableFromInline
+    mutating func popDevice() {
+        internalConsistencyCheck(deviceStack.popLast() != nil)
+    }
+}
+
+@usableFromInline
 func _TFCOpSetDeviceFromScope(_ op: CTFEOp, _ status: CTFStatus) {
     if let deviceName = _ExecutionContext.global.currentDeviceName {
         TFE_OpSetDevice(op, deviceName, status)
