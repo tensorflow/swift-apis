@@ -18,10 +18,16 @@ import XCTest
 final class SequentialTests: XCTestCase {
     func testSequential() {
         struct Model: Layer {
-            var dense1 = Dense<Float>(inputSize: 2, outputSize: 4, activation: relu,
-                                      seed: (0xfffffff, 0xfeeff))
-            var dense2 = Dense<Float>(inputSize: 4, outputSize: 1, activation: relu,
-                                      seed: (0xeffeffe, 0xfffe))
+            var dense1 = Dense<Float>(
+                inputSize: 2,
+                outputSize: 4,
+                activation: relu,
+                weightInitializer: glorotUniform(seed: (0xfffffff, 0xfeeff)))
+            var dense2 = Dense<Float>(
+                inputSize: 4,
+                outputSize: 1,
+                activation: relu,
+                weightInitializer: glorotUniform(seed: (0xeffeffe, 0xfffe)))
 
             @differentiable
             func callAsFunction(_ input: Tensor<Float>) -> Tensor<Float> {
@@ -29,19 +35,40 @@ final class SequentialTests: XCTestCase {
             }
         }
         var model = Model()
-        let optimizer = SGD(for: model, learningRate: 0.02)
+        let sgd = SGD(for: model, learningRate: 0.02)
+        let rmsprop = RMSProp(for: model, learningRate: 0.02)
+        let adam = Adam(for: model, learningRate: 0.02)
+        let adamax = AdaMax(for: model, learningRate: 0.02)
+        let amsgrad = AMSGrad(for: model, learningRate: 0.02)
+        let adagrad = AdaGrad(for: model, learningRate: 0.02)
+        let adadelta = AdaDelta(for: model, learningRate: 0.02)
         let x: Tensor<Float> = [[0, 0], [0, 1], [1, 0], [1, 1]]
         let y: Tensor<Float> = [0, 1, 1, 0]
         Context.local.learningPhase = .training
-        for _ in 0..<1000 {
-            let 𝛁model = model.gradient { model -> Tensor<Float> in
-                let ŷ = model(x)
-                return meanSquaredError(predicted: ŷ, expected: y)
+        withTensorLeakChecking {
+            for _ in 0..<1000 {
+                let 𝛁model = model.gradient { model -> Tensor<Float> in
+                    let ŷ = model(x)
+                    return meanSquaredError(predicted: ŷ, expected: y)
+                }
+                sgd.update(&model, along: 𝛁model)
+                sgd.update(&model.allDifferentiableVariables, along: 𝛁model)
+                rmsprop.update(&model, along: 𝛁model)
+                rmsprop.update(&model.allDifferentiableVariables, along: 𝛁model)
+                adam.update(&model, along: 𝛁model)
+                adam.update(&model.allDifferentiableVariables, along: 𝛁model)
+                adamax.update(&model, along: 𝛁model)
+                adamax.update(&model.allDifferentiableVariables, along: 𝛁model)
+                amsgrad.update(&model, along: 𝛁model)
+                amsgrad.update(&model.allDifferentiableVariables, along: 𝛁model)
+                adagrad.update(&model, along: 𝛁model)
+                adagrad.update(&model.allDifferentiableVariables, along: 𝛁model)
+                adadelta.update(&model, along: 𝛁model)
+                adadelta.update(&model.allDifferentiableVariables, along: 𝛁model)
             }
-            optimizer.update(&model.allDifferentiableVariables, along: 𝛁model)
         }
         XCTAssertEqual(model.inferring(from: [[0, 0], [0, 1], [1, 0], [1, 1]]),
-                       [[ 0.4904838], [0.49942452], [0.49740878], [ 0.5106092]])
+                       [[0.52508783], [0.52508783], [0.52508783], [0.52508783]])
     }
 
     static var allTests = [

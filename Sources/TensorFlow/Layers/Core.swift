@@ -28,7 +28,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
 /// Dropout consists in randomly setting a fraction of input units to `0` at each update during
 /// training time, which helps prevent overfitting.
 @frozen
-public struct Dropout<Scalar: TensorFlowFloatingPoint>: Layer {
+public struct Dropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     @noDerivative public let probability: Double
 
     /// Creates a dropout layer.
@@ -52,7 +52,7 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
-    @differentiable(vjp: _vjpApplied(to:))
+    @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         switch Context.local.learningPhase {
         case .training:
@@ -61,29 +61,13 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: Layer {
             return applyingInference(to: input)
         }
     }
-
-    @usableFromInline
-    func _vjpApplied(to input: Tensor<Scalar>) ->
-        (Tensor<Scalar>, (Tensor<Scalar>) ->
-            (Dropout<Scalar>.TangentVector, Tensor<Scalar>)) {
-        switch Context.local.learningPhase {
-        case .training:
-            return valueWithPullback(at: input) {
-                $0.applyingTraining(to: $1)
-            }
-        case .inference:
-            return valueWithPullback(at: input) {
-                $0.applyingInference(to: $1)
-            }
-        }
-    }
 }
 
 /// A flatten layer.
 ///
 /// A flatten layer flattens the input when applied without affecting the batch size.
 @frozen
-public struct Flatten<Scalar: TensorFlowFloatingPoint>: Layer {
+public struct Flatten<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     /// Creates a flatten layer.
     public init() {}
 
@@ -101,7 +85,7 @@ public struct Flatten<Scalar: TensorFlowFloatingPoint>: Layer {
 
 /// A reshape layer.
 @frozen
-public struct Reshape<Scalar: TensorFlowFloatingPoint>: Layer {
+public struct Reshape<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     /// The target shape.
     @noDerivative public let shape: Tensor<Int32>
 
@@ -120,7 +104,7 @@ public struct Reshape<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameter shape: The target shape.
     public init(_ shape: TensorShape) {
-      self.init(shape: Tensor(shape.dimensions.map(Int32.init)))
+        self.init(shape: Tensor(shape.dimensions.map(Int32.init)))
     }
 
     /// Returns the output obtained from applying the layer to the given input.
@@ -138,24 +122,36 @@ public struct Reshape<Scalar: TensorFlowFloatingPoint>: Layer {
 /// `Dense` implements the operation `activation(matmul(input, weight) + bias)`, where `weight` is
 /// a weight matrix, `bias` is a bias vector, and `activation` is an element-wise activation
 /// function.
+///
+/// This layer also supports 3-D weight tensors with 2-D bias matrices. In this case the first
+/// dimension of both is treated as the batch size that is aligned with the first dimension of
+/// `input` and the batch variant of the `matmul(_:_:)` operation is used, thus using a different
+/// weight and bias for each element in input batch.
 @frozen
 public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The weight matrix.
     public var weight: Tensor<Scalar>
     /// The bias vector.
     public var bias: Tensor<Scalar>
-    public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
     /// The element-wise activation function.
     @noDerivative public let activation: Activation
+    /// Indicates whether this is a batched dense layer.
+    @noDerivative internal let batched: Bool
+    
+    /// The element-wise activation function type.
+    public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
 
     public init(
         weight: Tensor<Scalar>,
         bias: Tensor<Scalar>,
         activation: @escaping Activation
     ) {
+        precondition(weight.rank <= 3, "The rank of the 'weight' tensor must be less than 4.")
+        precondition(bias.rank <= 2, "The rank of the 'bias' tensor must be less than 3.")
         self.weight = weight
         self.bias = bias
         self.activation = activation
+        self.batched = weight.rank == 3
     }
 
     /// Returns the output obtained from applying the layer to the given input.
@@ -164,6 +160,10 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+        if batched {
+            let hidden = matmul(input.expandingShape(at: 1), weight)
+            return activation(hidden.squeezingShape(at: 1) + bias)
+        }
         return activation(matmul(input, weight) + bias)
     }
 }
@@ -171,55 +171,40 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
 public extension Dense {
     /// Creates a `Dense` layer with the specified input size, output size, and element-wise
     /// activation function. The weight matrix is created with shape `[inputSize, outputSize]` and
-    /// is initialized using Glorot uniform initialization with the specified generator. The bias
-    /// vector is created with shape `[outputSize]` and is initialized with zeros.
+    /// the bias vector is created with shape `[outputSize]`.
     ///
     /// - Parameters:
     ///   - inputSize: The dimensionality of the input space.
     ///   - outputSize: The dimensionality of the output space.
     ///   - activation: The activation function to use. The default value is `identity(_:)`.
-    ///   - generator: The random number generator for initialization.
-    ///
-    /// - Note: Use `init(inputSize:outputSize:activation:seed:)` for faster random initialization.
-    init<G: RandomNumberGenerator>(
-        inputSize: Int,
-        outputSize: Int,
-        activation: @escaping Activation = identity,
-        generator: inout G
-    ) {
-        self.init(weight: Tensor(glorotUniform: [inputSize, outputSize],
-                                 generator: &generator),
-                  bias: Tensor(zeros: [outputSize]),
-                  activation: activation)
-    }
-
-    init(inputSize: Int, outputSize: Int, activation: @escaping Activation = identity) {
-      self.init(inputSize: inputSize, outputSize: outputSize, activation: activation,
-                generator: &PhiloxRandomNumberGenerator.global)
-    }
-}
-
-public extension Dense {
-    /// Creates a `Dense` layer with the specified input size, output size, and element-wise
-    /// activation function. The weight matrix is created with shape `[inputSize, outputSize]` and
-    /// is initialized using Glorot uniform initialization with the specified seed. The bias vector
-    /// is created with shape `[outputSize]` and is initialized with zeros.
-    ///
-    /// - Parameters:
-    ///   - inputSize: The dimensionality of the input space.
-    ///   - outputSize: The dimensionality of the output space.
-    ///   - activation: The activation function to use. The default value is `identity(_:)`.
-    ///   - seed: The random seed for initialization. The default value is random.
+    ///   - weightInitializer: Initializer to use for `weight`.
+    ///   - biasInitializer: Initializer to use for `bias`.
     init(
         inputSize: Int,
         outputSize: Int,
         activation: @escaping Activation = identity,
-        seed: (Int32, Int32) = (Int32.random(in: Int32.min..<Int32.max),
-                                Int32.random(in: Int32.min..<Int32.max))
+        weightInitializer: ParameterInitializer<Scalar> = glorotUniform(),
+        biasInitializer: ParameterInitializer<Scalar> = zeros()
     ) {
-        self.init(weight: Tensor(glorotUniform: [inputSize, outputSize],
-                                 seed: seed),
-                  bias: Tensor(zeros: [outputSize]),
-                  activation: activation)
+        self.init(
+            weight: weightInitializer([inputSize, outputSize]),
+            bias: Tensor(zeros: [outputSize]),
+            activation: activation)
+    }
+}
+
+/// A layer that encloses a custom differentiable function.
+public struct Function<Input: Differentiable, Output: Differentiable>: ParameterlessLayer {
+    public typealias Body = @differentiable (Input) -> Output
+
+    @noDerivative public let body: Body
+
+    public init(_ body: @escaping Body) {
+        self.body = body
+    }
+
+    @differentiable
+    public func callAsFunction(_ input: Input) -> Output {
+        body(input)
     }
 }

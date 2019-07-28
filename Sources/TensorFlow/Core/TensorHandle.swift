@@ -39,12 +39,14 @@ public class TFETensorHandle: _AnyTensorHandle {
     public var _tfeTensorHandle: TFETensorHandle { return self }
 
     public init(_owning base: CTensorHandle) {
+        Context.local.globalTensorCount += 1
         self._cTensorHandle = base
     }
 
     deinit {
         debugLog("De-initializing TensorHandle.")
         TFE_DeleteTensorHandle(_cTensorHandle)
+        Context.local.globalTensorCount -= 1
         debugLog("Returning from deinit of TensorHandle.")
     }
 }
