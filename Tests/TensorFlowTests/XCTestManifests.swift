@@ -16,25 +16,27 @@ import XCTest
 
 #if !os(macOS)
 public func allTests() -> [XCTestCaseEntry] {
+    // Please ensure the test cases remain alphabetized.
     return [
-        testCase(UtilitiesTests.allTests),
-        testCase(LossTests.allTests),
-        testCase(PRNGTests.allTests),
-        testCase(TrivialModelTests.allTests),
-        testCase(SequentialTests.allTests),
-        testCase(LayerTests.allTests),
-        testCase(TensorTests.allTests),
-        testCase(TensorGroupTests.allTests),
         testCase(BasicOperatorTests.allTests),
         testCase(ComparisonOperatorTests.allTests),
         testCase(DatasetTests.allTests),
-        testCase(MathOperatorTests.allTests),
+        testCase(LayerTests.allTests),
         testCase(LazyTensorTests.allTests),
         testCase(LazyTensorTraceTests.allTests),
         testCase(LazyTensorExplicitTraceTests.allTests),
         testCase(LazyTensorOperationTests.allTests),
         testCase(LazyTensorTFFunctionBuilderTests.allTests),
         testCase(LazyTensorEvaluationTests.allTests),
+        testCase(LossTests.allTests),
+        testCase(MathOperatorTests.allTests),
+        testCase(PRNGTests.allTests),
+        testCase(RuntimeTests.allTests),
+        testCase(SequentialTests.allTests),
+        testCase(TensorTests.allTests),
+        testCase(TensorGroupTests.allTests),
+        testCase(TrivialModelTests.allTests),
+        testCase(UtilitiesTests.allTests),
     ]
 }
 #endif
