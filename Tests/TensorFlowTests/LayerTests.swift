@@ -154,7 +154,7 @@ final class LayerTests: XCTestCase {
     func testTransposedConv1D() {
         let filter =  Tensor(shape: [1, 4, 1, 1], scalars: (0..<4).map(Float.init))
         let bias = Tensor<Float>([8])
-        let layer = Conv1D<Float>(filter: filter, bias: bias, activation: identity, stride: 1, padding: .valid)
+        let layer = TransposedConv1D<Float>(filter: filter, bias: bias, activation: identity, stride: 1, padding: .valid)
         let input = Tensor<Float>([0, 1, 2, 3]).expandingShape(at: 2)
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>([0, 1, 4, 10])
@@ -164,7 +164,7 @@ final class LayerTests: XCTestCase {
     func testTransposedConv3D() {
         let filter =  Tensor(shape: [2, 2, 2, 1, 1], scalars: (0..<8).map(Float.init))
         let bias = Tensor<Float>([8])
-        let layer = Conv3D<Float>(filter: filter, bias: bias, activation: identity,
+        let layer = TransposedConv3D<Float>(filter: filter, bias: bias, activation: identity,
                                   strides: (1, 1, 1), padding: .valid)
         let input = Tensor(shape: [1, 2, 2, 2, 1], scalars: (0..<8).map(Float.init))
         let output = layer.inferring(from: input)
