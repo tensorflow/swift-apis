@@ -550,7 +550,7 @@ public final class _ExecutionContext {
     /// List of devices available to this execution context.
     /// Devices are represented by their names in TensorFlow notation.
     /// See documentation for `withDevice(named:perform:)` to learn about device names.
-    private var deviceNames: [String] = []
+    public private(set) var deviceNames: [String] = []
 
     /// The buffer storing a serialized TensorFlow config proto.
     public let tensorFlowConfig: UnsafeMutablePointer<TF_Buffer>
