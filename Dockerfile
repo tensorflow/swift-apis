@@ -39,5 +39,25 @@ RUN echo "/usr/local/cuda-10.0/targets/x86_64-linux/lib/stubs" > /etc/ld.so.conf
 # Print out swift version for better debugging for toolchain problems
 RUN /swift-tensorflow-toolchain/usr/bin/swift --version
 
+# Clean out existing artifacts.
+# TODO: move into bash scripts...
+RUN rm /swift-tensorflow-toolchain/usr/lib/swift/linux/x86_64/TensorFlow.swiftinterface
+RUN rm /swift-tensorflow-toolchain/usr/lib/swift/linux/x86_64/TensorFlow.swiftdoc
+RUN rm /swift-tensorflow-toolchain/usr/lib/swift/linux/x86_64/TensorFlow.swiftmodule
+RUN rm /swift-tensorflow-toolchain/usr/lib/swift/linux/libswiftTensorFlow.so
+
 # Run SwiftPM tests
 RUN /swift-tensorflow-toolchain/usr/bin/swift test
+
+# Install into toolchain
+# TODO: Unify this with testing. (currently there is a demangling bug).
+RUN /swift-tensorflow-toolchain/usr/bin/swift build -Xswiftc -module-link-name -Xswiftc TensorFlow
+RUN cp /swift-apis/.build/debug/TensorFlow.swiftmodule /swift-tensorflow-toolchain/usr/lib/swift/linux/x86_64/
+RUN cp /swift-apis/.build/debug/libTensorFlow.so /swift-tensorflow-toolchain/usr/lib/swift/linux/
+
+WORKDIR /
+RUN git clone https://github.com/tensorflow/swift-models.git
+
+WORKDIR /swift-models
+
+RUN /swift-tensorflow-toolchain/usr/bin/swift build

@@ -52,7 +52,7 @@ public func meanAbsoluteError<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>,
     expected: Tensor<Scalar>
 ) -> Tensor<Scalar> {
-    l1Loss(predicted: predicted, expected: expected, reduction: { $0.mean() })
+    l1Loss(predicted: predicted, expected: expected, reduction: _mean)
 }
 
 /// Returns the mean squared error between predictions and expectations.
@@ -65,7 +65,7 @@ public func meanSquaredError<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>,
     expected: Tensor<Scalar>
 ) -> Tensor<Scalar> {
-    l2Loss(predicted: predicted, expected: expected, reduction: { $0.mean() })
+    l2Loss(predicted: predicted, expected: expected, reduction: _mean)
 }
 
 /// Returns the mean squared logarithmic error between predictions and expectations.
@@ -83,7 +83,7 @@ public func meanSquaredLogarithmicError<Scalar: TensorFlowFloatingPoint>(
 ) -> Tensor<Scalar> {
     let logPredicted = log(max(predicted, Tensor(0)) + 1)
     let logExpected = log(max(expected, Tensor(0)) + 1)
-    return l2Loss(predicted: logPredicted, expected: logExpected, reduction: { $0.mean() })
+    return l2Loss(predicted: logPredicted, expected: logExpected, reduction: _mean)
 }
 
 /// Returns the mean absolute percentage error between predictions and expectations.
@@ -109,7 +109,7 @@ public func meanAbsolutePercentageError<Scalar: TensorFlowFloatingPoint>(
 public func hingeLoss<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>,
     expected: Tensor<Scalar>,
-    reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = { $0.mean() }
+    reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = _mean
 ) -> Tensor<Scalar> {
     reduction(max(Tensor(0), Tensor(1) - expected * predicted))
 }
@@ -124,7 +124,7 @@ public func hingeLoss<Scalar: TensorFlowFloatingPoint>(
 public func squaredHingeLoss<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>,
     expected: Tensor<Scalar>,
-    reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = { $0.mean() }
+    reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = _mean
 ) -> Tensor<Scalar> {
     reduction(hingeLoss(predicted: predicted, expected: expected).squared())
 }
@@ -139,7 +139,7 @@ public func squaredHingeLoss<Scalar: TensorFlowFloatingPoint>(
 public func categoricalHingeLoss<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>,
     expected: Tensor<Scalar>,
-    reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = { $0.mean() }
+    reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = _mean
 ) -> Tensor<Scalar> {
     let positive = (expected * predicted).sum(alongAxes: -1)
     let negative = ((Tensor(1) - expected) * predicted).max(alongAxes: -1)
@@ -157,7 +157,7 @@ public func categoricalHingeLoss<Scalar: TensorFlowFloatingPoint>(
 public func logCoshLoss<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>,
     expected: Tensor<Scalar>,
-    reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = { $0.mean() }
+    reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = _mean
 ) -> Tensor<Scalar> {
     let x = predicted - expected
     return reduction(x + softplus(Tensor(-2) * x) - log(Tensor(2)))
@@ -173,7 +173,7 @@ public func logCoshLoss<Scalar: TensorFlowFloatingPoint>(
 public func poissonLoss<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>,
     expected: Tensor<Scalar>,
-    reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = { $0.mean() }
+    reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = _mean
 ) -> Tensor<Scalar> {
     reduction(predicted - expected * log(predicted))
 }
@@ -194,6 +194,15 @@ public func kullbackLeiblerDivergence<Scalar: TensorFlowFloatingPoint>(
     reduction(expected * log(expected / predicted))
 }
 
+/// Workaround for cross-module default parameter @differentiable functions.
+/// Tensor<Scalar>.mean() is the preferred way to do this.
+@differentiable
+public func _mean<Scalar: TensorFlowFloatingPoint>(
+    _ value: Tensor<Scalar>
+) -> Tensor<Scalar> {
+  return value.mean()
+}
+
 /// Returns the softmax cross entropy (categorical cross entropy) between logits and labels.
 ///
 /// - Parameters:
@@ -204,7 +213,7 @@ public func kullbackLeiblerDivergence<Scalar: TensorFlowFloatingPoint>(
 public func softmaxCrossEntropy<Scalar: TensorFlowFloatingPoint>(
     logits: Tensor<Scalar>,
     labels: Tensor<Int32>,
-    reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = { $0.mean() }
+    reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = _mean
 ) -> Tensor<Scalar> {
     reduction(softmaxCrossEntropyHelper(logits: logits, labels: labels))
 }
@@ -238,7 +247,7 @@ func _vjpSoftmaxCrossEntropyHelper<Scalar: TensorFlowFloatingPoint>(
 public func softmaxCrossEntropy<Scalar: TensorFlowFloatingPoint>(
     logits: Tensor<Scalar>,
     probabilities: Tensor<Scalar>,
-    reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = { $0.mean() }
+    reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = _mean
 ) -> Tensor<Scalar> {
     reduction(softmaxCrossEntropyHelper(logits: logits, probabilities: probabilities))
 }
@@ -274,7 +283,7 @@ func _vjpSoftmaxCrossEntropyHelper<Scalar: TensorFlowFloatingPoint>(
 public func sigmoidCrossEntropy<Scalar: TensorFlowFloatingPoint>(
     logits: Tensor<Scalar>,
     labels: Tensor<Scalar>,
-    reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = { $0.mean() }
+    reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = _mean
 ) -> Tensor<Scalar> {
     // This numerically stable implementation is based on the TensorFlow Python API.
     let maxLogitsWithZero = max(logits, Tensor(0))
