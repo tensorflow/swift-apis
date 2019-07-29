@@ -934,65 +934,33 @@ public func _tffunc<State: _TensorArrayProtocolEnhanced, Data: TensorGroup>(
     }
 }
 
+internal func _trace<In: TensorGroup, Out: TensorGroup>(_ fn: (In) -> Out) -> TFFunction {
+    let useLazyTensor = _ThreadLocalState.useLazyTensor
+    defer { _ThreadLocalState.useLazyTensor = useLazyTensor }
+    _ThreadLocalState.useLazyTensor = true
+    let trace = LazyTensorTraceBuilder.trace(fn)
+    return TFFunction(trace: trace)
+}
+
 // Trace the given function to generate a TF graph and return a closure that can be used to launch
 // the graph.
 public func _graph<In: TensorGroup, Out: TensorGroup>(
     _ fn: (In) -> Out,
     useXLA: Bool = false
 ) -> (In) -> Out {
-    let traceContext: TraceContext = withoutActuallyEscaping(fn) { escapableFn in
-        let wrappedFn = { (inputs: [CTensorHandle]) -> [CTensorHandle] in
-            let buffer = UnsafeMutablePointer<CTensorHandle>.allocate(capacity: Int(inputs.count))
-            var ptr = buffer
-            for input in inputs {
-                ptr.initialize(to: input)
-                ptr = ptr.advanced(by: 1)
-            }
-            let symbolicIn = In(_owning: buffer)
-            let symbolicOut = escapableFn(symbolicIn)
-            return symbolicOut.cTensorHandles
-        }
-        let dtypes = In._typeList.map { $0._cDataType }
-        return _trace(with: dtypes, in: wrappedFn)
-    }
-    // The result is a closure that captures and executes the trace graph function in the trace
-    // context.
-    return { (input: In) -> (Out) in
-        debugLog("Running trace function over input \(input).")
-
-        debugLog("Getting input state tensor handles.")
-        let inputStateTensorHandles =  input.cTensorHandles
-        let inputTensors = inputStateTensorHandles.map {
-            TFETensorHandle(_owning: $0)
-        }
-        debugLog("Executing trace graph function.")
-        let returnValues = traceContext.execute(traceeInputs: inputTensors, useXLA: useXLA)
-
-        debugLog("Creating output model instance.")
-        return Out(_owning: returnValues)
+    let tffunc = _trace(fn)
+    return {input in
+        let inputHandles = input._tensorHandles.map { $0._tfeTensorHandle }
+        let outputHandles = tffunc.execute(inputHandles, usingXLA: useXLA)
+        return Out(_handles: outputHandles)
     }
 }
 
 /// Trace the given function and return the name of the corresponding `TF_Function: In -> Out` that
 /// was created.
 public func _tffunc<In: TensorGroup, Out: TensorGroup>(_ fn: (In) -> Out) -> String {
-    let traceContext: TraceContext = withoutActuallyEscaping(fn) { escapableFn in
-        let wrappedFn = { (inputs: [CTensorHandle]) -> [CTensorHandle] in
-            let buffer = UnsafeMutablePointer<CTensorHandle>.allocate(capacity: Int(inputs.count))
-            var ptr = buffer
-            for input in inputs {
-                ptr.initialize(to: input)
-                ptr = ptr.advanced(by: 1)
-            }
-            let symbolicIn = In(_owning: buffer)
-            let symbolicOut = escapableFn(symbolicIn)
-            return symbolicOut.cTensorHandles
-        }
-
-        let dtypes = In._typeList.map { $0._cDataType }
-        return _trace(with: dtypes, in: wrappedFn)
-    }
-    return traceContext.specializeTFFunction(with: [])
+    let tffunc = _trace(fn)
+    return tffunc.name
 }
 
 internal extension _ExecutionContext {
