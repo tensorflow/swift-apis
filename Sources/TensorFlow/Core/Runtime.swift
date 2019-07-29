@@ -949,7 +949,7 @@ public func _graph<In: TensorGroup, Out: TensorGroup>(
     useXLA: Bool = false
 ) -> (In) -> Out {
     let tffunc = _trace(fn)
-    return {(input: In) -> Out in
+    return {input in
         let inputHandles = input._tensorHandles.map { $0._tfeTensorHandle }
         let outputHandles = tffunc.execute(inputHandles, usingXLA: useXLA)
         return Out(_handles: outputHandles)
