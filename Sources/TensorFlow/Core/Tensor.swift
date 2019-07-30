@@ -54,27 +54,14 @@ public extension Tensor {
     @inlinable
     var rank: Int {
         @_semantics("autodiff.nonvarying")
-        get {
-            let status = _ExecutionContext.global.status
-            let rank = TFE_TensorHandleNumDims(handle._cTensorHandle, status)
-            checkOk(status)
-            return Int(rank)
-        }
+        get { handle.rank }
     }
 
     /// The shape of the `Tensor`.
     @inlinable
     var shape: TensorShape {
         @_semantics("autodiff.nonvarying")
-        get {
-            let status = _ExecutionContext.global.status
-            let dims: [Int] = (0..<Int32(rank)).map { i in
-                let dim = TFE_TensorHandleDim(self.handle._cTensorHandle, i, status)
-                checkOk(status)
-                return Int(dim)
-            }
-            return TensorShape(dims)
-        }
+        get { handle.shape }
     }
 
     /// The number of scalars in the `Tensor`.

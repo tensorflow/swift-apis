@@ -65,6 +65,14 @@ class LazyTensorHandle: _AnyTensorHandle {
             LazyTensorContext.operationsTracker.decrementRefCount(op, isLive: isLive)
         }
     }
+
+    /// The number of dimensions of the underlying `Tensor`.
+    @inlinable
+    var rank: Int { _tfeTensorHandle.rank }
+
+    /// The shape of the underlying `Tensor`.
+    @inlinable
+    var shape: TensorShape { _tfeTensorHandle.shape }
     
     // Liveness tracking for LazyTensorOperations
     //
