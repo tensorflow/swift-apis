@@ -22,7 +22,7 @@
 public func l1Loss<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>,
     expected: Tensor<Scalar>,
-    reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = { $0.sum() }
+    reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = _sum
 ) -> Tensor<Scalar> {
     reduction(abs(expected - predicted))
 }
@@ -37,7 +37,7 @@ public func l1Loss<Scalar: TensorFlowFloatingPoint>(
 public func l2Loss<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>,
     expected: Tensor<Scalar>,
-    reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = { $0.sum() }
+    reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = _sum
 ) -> Tensor<Scalar> {
     reduction((expected - predicted).squared())
 }
@@ -189,7 +189,7 @@ public func poissonLoss<Scalar: TensorFlowFloatingPoint>(
 public func kullbackLeiblerDivergence<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>,
     expected: Tensor<Scalar>,
-    reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = { $0.sum() }
+    reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = _sum
 ) -> Tensor<Scalar> {
     reduction(expected * log(expected / predicted))
 }
@@ -200,8 +200,17 @@ public func kullbackLeiblerDivergence<Scalar: TensorFlowFloatingPoint>(
 public func _mean<Scalar: TensorFlowFloatingPoint>(
     _ value: Tensor<Scalar>
 ) -> Tensor<Scalar> {
-  return value.mean()
+    return value.mean()
 }
+
+/// Sum reduction.
+@differentiable
+public func _sum<Scalar: TensorFlowFloatingPoint>(
+    _ value: Tensor<Scalar>
+) -> Tensor<Scalar> {
+    return value.sum()
+}
+
 
 /// Returns the softmax cross entropy (categorical cross entropy) between logits and labels.
 ///
