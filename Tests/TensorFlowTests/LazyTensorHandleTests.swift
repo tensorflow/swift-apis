@@ -28,7 +28,7 @@ func ==(lhs: LazyTensorOperationRef, rhs: LazyTensorOperationRef) -> Bool {
     return lhs.value === rhs.value
 }
 
-final class LazyTensorTests: XCTestCase {
+final class LazyTensorHandleTests: XCTestCase {
     func testConstructions() {
         let zero = Tensor<Float>(0.0)
         let zeroTFEHandle = zero.handle.handle._tfeTensorHandle
