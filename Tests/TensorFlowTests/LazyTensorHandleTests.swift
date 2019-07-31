@@ -64,7 +64,7 @@ final class LazyTensorHandleTests: XCTestCase {
         let lazyTensorOperation = symTensor.lazyTensorOperation
         XCTAssertNotNil(lazyTensorOperation)
         // Checks that returned value is the same as the one that we passed in.
-        XCTAssertTrue(lazyTensorOperation! === op)
+        XCTAssertTrue(lazyTensorOperation === op)
     }
 
     func testLivenessTracking() {
