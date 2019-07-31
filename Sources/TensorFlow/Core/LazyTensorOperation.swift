@@ -73,6 +73,14 @@ class LazyTensorHandle: _AnyTensorHandle {
     /// The shape of the underlying `Tensor`.
     @inlinable
     var shape: TensorShape { _tfeTensorHandle.shape }
+
+    /// Returns the underlying `LazyTensorOperation` if this is a symbolic `LazyTensorHandle`.
+    var lazyTensorOperation: LazyTensorOperation? {
+        switch handle {
+        case .symbolic(let op, _, _): return op
+        case .concrete(_): return nil
+        }
+    }
     
     // Liveness tracking for LazyTensorOperations
     //

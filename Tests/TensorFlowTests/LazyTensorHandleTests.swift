@@ -52,6 +52,21 @@ final class LazyTensorHandleTests: XCTestCase {
         XCTAssertEqual(liveSymTensor.description, "%0.0*")
     }
 
+    func testLazyTensorOperationProperty() {
+        let zero = Tensor<Float>(0.0)
+        let zeroTFEHandle = zero.handle.handle._tfeTensorHandle
+        let concTensor = LazyTensorHandle(zeroTFEHandle)
+        XCTAssertTrue(concTensor.lazyTensorOperation == nil)
+
+        let op = LazyTensorOperation(
+            _id: "0", name: "IdentityN", outputCount: 3)
+        let symTensor = LazyTensorHandle(_lazy: op, index: 0)
+        let lazyTensorOperation = symTensor.lazyTensorOperation
+        XCTAssertFalse(lazyTensorOperation == nil)
+        // Checks that returned value is the same as the one that we passed in.
+        XCTAssertTrue(lazyTensorOperation! === op)
+    }
+
     func testLivenessTracking() {
         func assertLive(_ expectedLive: [LazyTensorOperation]) {
             var actualLiveOps: Set<LazyTensorOperationRef> = []
@@ -152,6 +167,7 @@ final class LazyTensorHandleTests: XCTestCase {
 
     static var allTests = [
         ("testConstructions", testConstructions),
+        ("testLazyTensorOperationProperty", testLazyTensorOperationProperty),
         ("testLivenessTracking", testLivenessTracking),
         ("testTensorToLazyTensorConversions", testTensorToLazyTensorConversions)
     ]
