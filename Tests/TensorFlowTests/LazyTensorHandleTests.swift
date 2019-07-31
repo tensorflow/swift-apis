@@ -56,13 +56,13 @@ final class LazyTensorHandleTests: XCTestCase {
         let zero = Tensor<Float>(0.0)
         let zeroTFEHandle = zero.handle.handle._tfeTensorHandle
         let concTensor = LazyTensorHandle(zeroTFEHandle)
-        XCTAssertTrue(concTensor.lazyTensorOperation == nil)
+        XCTAssertNil(concTensor.lazyTensorOperation)
 
         let op = LazyTensorOperation(
             _id: "0", name: "IdentityN", outputCount: 3)
         let symTensor = LazyTensorHandle(_lazy: op, index: 0)
         let lazyTensorOperation = symTensor.lazyTensorOperation
-        XCTAssertFalse(lazyTensorOperation == nil)
+        XCTAssertNotNil(lazyTensorOperation)
         // Checks that returned value is the same as the one that we passed in.
         XCTAssertTrue(lazyTensorOperation! === op)
     }
