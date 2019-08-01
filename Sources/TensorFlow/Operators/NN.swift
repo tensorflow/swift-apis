@@ -35,7 +35,7 @@ private extension Tensor where Scalar: TensorFlowFloatingPoint {
 ///     - noiseShape: The shape of the randomly generated keep mask.
 /// - Precondition: `probability` is within the range 0..<1.
 /// - Note: `dropout` is an identity function on `input` when called during the inference phase of
-///     learning.
+///   learning.
 @differentiable(wrt: input)
 public func dropout<Scalar: TensorFlowFloatingPoint>(
     _ input: Tensor<Scalar>,
