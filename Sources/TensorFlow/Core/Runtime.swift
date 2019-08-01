@@ -41,9 +41,6 @@ import CTensorFlow
 // @_frozen // SR-9739
 public enum _RuntimeConfig {
     // TODO: change this and subsequent properties from static to thread local.
-    /// Used to create unique trace graph function names.
-    fileprivate static var traceGraphFunctionCounter = 0
-
     /// When false, tensorflow runtime will be initialized before running any tensor program in this
     /// process.
     static public var tensorFlowRuntimeInitialized = false
@@ -54,10 +51,6 @@ public enum _RuntimeConfig {
 
     /// The number of CPU devices.
     static public var cpuDeviceCount: UInt32 = 1
-
-    /// When non-nil, run metadata (with full trace) of each session execution will be dumped to the
-    /// give path.
-    static public var runMetadataOutputPath: String? = nil
 
     /// Specifies whether the TensorFlow computation runs in a local (in-process) session, or a
     /// remote session with the specified server definition.
@@ -158,12 +151,6 @@ private func configureRuntimeFromEnvironment() {
                 debugLog("Setting TF_EAGER_REMOTE_USE_SEND_TENSOR_RPC to 1")
             }
         }
-    }
-
-    if let value = getenv("SWIFT_TENSORFLOW_RUN_METADATA_OUTPUT") {
-        let path = String(cString: value)
-        _RuntimeConfig.runMetadataOutputPath = path
-        debugLog("Setting run metadata output path to \(path) from env.")
     }
 
     if let value = getenv("SWIFT_TENSORFLOW_CPU_DEVICE_COUNT") {
