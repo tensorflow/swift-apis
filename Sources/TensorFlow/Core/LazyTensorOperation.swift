@@ -81,7 +81,7 @@ class LazyTensorHandle: _AnyTensorHandle {
         case .concrete(_): return nil
         }
     }
-    
+
     // Liveness tracking for LazyTensorOperations
     //
     static func isLive(_ op: LazyTensorOperation) -> Bool {
@@ -374,9 +374,26 @@ extension LazyTensorOperation: TFTensorOperation {
         // If we want to stage this, we will need to add control dependencies.
         // For the time-being, just build a TFE_Op and run it.
         //
+        // Collect all the unmaterialized inputs.
+        var unmaterializedInputs = Array<LazyTensorOperation>()
+        unmaterializedInputs.reserveCapacity(inputs.count)
+        for input in inputs {
+            switch input {
+            case .single(let v):
+                if let lazyOperation = v.lazyTensorOperation {
+                    unmaterializedInputs.append(lazyOperation)
+                }
+            case .list(let values):
+                unmaterializedInputs.append(
+                    contentsOf: values.lazy.compactMap { $0.lazyTensorOperation }
+                )
+            }
+        }
+        // Materialize the inputs now.
+        LazyTensorOperation.materialize(targets: unmaterializedInputs)
+
+        // Build the TFEOp and execute.
         let op = TFE_Op(name, outputCount)
-        // TODO(https://bugs.swift.org/browse/TF-604):
-        //   Materialize inputs en masse and not one-by-one.
         for input in inputs {
             switch input {
             case .single(let v):
@@ -800,7 +817,7 @@ extension LazyTensorOperation {
         // Return materialized outputs if any.
         if let outputs = outputs { return outputs }
 
-        materializeLiveTensors()
+        LazyTensorOperation.materialize(targets: [self])
 
         // Our outputs should have been updated by now. Otherwise,
         // something terrible happened!
@@ -838,8 +855,8 @@ extension LazyTensorOperation {
         inputs = inputs.map { materializedAsNeeded(input: $0) }
     }
 
-    private func materializeLiveTensors() {
-        let traceInfo = LazyTensorTraceBuilder.materializationTraceInfo(self)
+    static func materialize(targets: [LazyTensorOperation]) {
+        let traceInfo = LazyTensorTraceBuilder.materializationTraceInfo(targets)
         debugLog("Extracted trace:\n\(traceInfo.trace)")
 
         let function = TFFunction(trace: traceInfo.trace)
