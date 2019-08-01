@@ -891,6 +891,7 @@ extension LazyTensorOperation {
         for lazyOp in traceInfo.lazyOperations {
             let end = start + lazyOp.outputCount
             lazyOp.outputs = Array(allOutputs[start..<end])
+            lazyOp.outputShapes = lazyOp.outputs!.map { $0.shape }
             start = end
         }
 
