@@ -70,7 +70,7 @@ class LazyTensorHandle: _AnyTensorHandle {
     @usableFromInline
     var rank: Int {
         @_semantics("autodiff.nonvarying")
-        get { return shape.rank }
+        get { shape.rank }
     }
 
     /// The shape of the underlying `Tensor`.
