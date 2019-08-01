@@ -12,54 +12,150 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-public extension Tensor where Scalar: TensorFlowFloatingPoint {
-    /// Computes dropout given a probability.
-    @differentiable(wrt: self where Scalar: Differentiable)
-    func droppingOut(probability: Double) -> Tensor {
-        let noise = Tensor(randomUniform: shape)
-        let keepMask = noise .>= Scalar(probability)
-        let keepProbability = Scalar(1.0 - probability)
-        return self * Tensor(keepMask) / Tensor(keepProbability)
-    }
-}
-
 /// A dropout layer.
 ///
-/// Dropout consists in randomly setting a fraction of input units to `0` at each update during
-/// training time, which helps prevent overfitting.
+/// For each update step of the training phase, `Dropout` randomly and independently omits input
+/// units by setting them to `0` with probability, `probability`, according to the standard Uniform
+/// distribution.
+///
+/// This layer effectively provides a way to train an ensemble of "thinned" out models of a
+/// network in order to prevent the co-adaptation of units. By doing so, overfitting can be
+/// significantly reduced.
+///
+/// Reference: ["Dropout: A Simple Way to Prevent Neural Networks from Overfitting"]
+/// (http://jmlr.org/papers/volume15/srivastava14a/srivastava14a.pdf)
 @frozen
 public struct Dropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     @noDerivative public let probability: Double
 
     /// Creates a dropout layer.
     ///
-    /// - Parameter probability: The drop probability.
+    /// - Parameter probability: The probability that an input unit will be dropped. This value must
+    ///   be between `0` and `1`, i.e. `(0..<1)`.
     public init(probability: Double) {
+        precondition(
+            (0..<1.0).contains(probability),
+            "Dropout probability must be between 0 and 1. Got: \(probability)")
+
         self.probability = probability
-    }
-
-    @differentiable
-    private func applyingTraining(to input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return input.droppingOut(probability: probability)
-    }
-
-    @differentiable
-    private func applyingInference(to input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return input
     }
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
     /// - Parameter input: The input to the layer.
-    /// - Returns: The output.
+    /// - Returns: An output of the same shape as `input`.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        switch Context.local.learningPhase {
-        case .training:
-            return applyingTraining(to: input)
-        case .inference:
-            return applyingInference(to: input)
-        }
+        dropout(input, probability: probability, noiseShape: input.shape)
+    }
+}
+
+/// A 1-D spatial dropout layer.
+///
+/// For each update step of the training phase, `SpatialDropout1D` performs the same functionality
+/// as `Dropout` but instead omits entire 1-D feature maps as opposed to individual units. This is
+/// done to avoid possibly removing a single unit from a highly correlated neighborhood of units
+/// (e.g. pixels), which results in greater independence.
+///
+/// Reference: [Efficient Object Localization Using Convolutional Networks]
+/// (https://arxiv.org/pdf/1411.4280.pdf)
+public struct SpatialDropout1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+    @noDerivative public let probability: Double
+
+    /// Creates a 1-D spatial dropout layer.
+    ///
+    /// - Parameter probability: The probability that an input unit will be dropped. This value must
+    ///   be between `0` and `1`, i.e. `(0..<1)`.
+    public init(probability: Double) {
+        precondition(
+            (0..<1.0).contains(probability),
+            "Dropout probability must be between 0 and 1. Got: \(probability)")
+
+        self.probability = probability
+    }
+
+    /// Returns the output obtained from applying the layer to the given input.
+    ///
+    /// - Parameter input: The input to the layer of shape
+    ///   [batch count, timestep count, channel count]
+    /// - Returns: An output of the same shape as `input`.
+    /// - Precondition: `input` must be rank `3`.
+    @differentiable
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+        dropout(input, probability: probability, noiseShape: [input.shape[0], 1, input.shape[2]])
+    }
+}
+
+/// A 2-D spatial dropout layer.
+///
+/// For each update step of the training phase, `SpatialDropout2D` performs the same functionality
+/// as `Dropout` but instead omits entire 2-D feature maps as opposed to individual units. This is
+/// done to avoid possibly removing a single unit from a highly correlated neighborhood of units
+/// (e.g. pixels), which results in greater independence.
+///
+/// Reference: [Efficient Object Localization Using Convolutional Networks]
+/// (https://arxiv.org/pdf/1411.4280.pdf)
+public struct SpatialDropout2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+    @noDerivative public let probability: Double
+
+    /// Creates a 2-D spatial dropout layer.
+    ///
+    /// - Parameter probability: The probability that an input unit will be dropped. This value must
+    ///   be between `0` and `1`, i.e. `(0..<1)`.
+    public init(probability: Double) {
+        precondition(
+            (0..<1.0).contains(probability),
+            "Dropout probability must be between 0 and 1. Got: \(probability)")
+
+        self.probability = probability
+    }
+
+    /// Returns the output obtained from applying the layer to the given input.
+    ///
+    /// - Parameter input: The input to the layer of shape
+    ///   [batch count, height, width, channel count]
+    /// - Returns: An output of the same shape as `input`.
+    /// - Precondition: `input` must be rank `4`.
+    @differentiable
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+        dropout(input, probability: probability, noiseShape: [input.shape[0], 1, 1, input.shape[3]])
+    }
+}
+
+/// A 3-D spatial dropout layer.
+///
+/// For each update step of the training phase, `SpatialDropout3D` performs the same functionality
+/// as `Dropout` but instead omits entire 3-D feature maps as opposed to individual units. This is
+/// done to avoid possibly removing a single unit from a highly correlated neighborhood of units
+/// (e.g. pixels), which results in greater independence.
+///
+/// Reference: [Efficient Object Localization Using Convolutional Networks]
+/// (https://arxiv.org/pdf/1411.4280.pdf)
+public struct SpatialDropout3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+    @noDerivative public let probability: Double
+
+    /// Creates a 3-D spatial dropout layer.
+    ///
+    /// - Parameter probability: The probability that an input unit will be dropped. This value must
+    /// be between `0` and `1`, i.e. `(0..<1)`.
+    public init(probability: Double) {
+        precondition(
+            (0..<1.0).contains(probability),
+            "Dropout probability must be between 0 and 1. Got: \(probability)")
+
+        self.probability = probability
+    }
+
+    /// Returns the output obtained from applying the layer to the given input.
+    ///
+    /// - Parameter input: The input to the layer of shape
+    ///   [batch count, depth, height, width, channel count]
+    /// - Returns: An output of the same shape as `input`.
+    /// - Precondition: `input` must be rank `5`.
+    @differentiable
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+        dropout(input, probability: probability,
+             noiseShape: [input.shape[0], 1, 1, 1, input.shape[4]])
     }
 }
 
