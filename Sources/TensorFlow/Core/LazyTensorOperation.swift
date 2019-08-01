@@ -384,11 +384,9 @@ extension LazyTensorOperation: TFTensorOperation {
                     unmaterializedInputs.append(lazyOperation)
                 }
             case .list(let values):
-                for value in values {
-                    if let lazyOperation = value.lazyTensorOperation {
-                        unmaterializedInputs.append(lazyOperation)
-                    }
-                }
+                unmaterializedInputs.append(
+                    contentsOf: values.lazy.compactMap { $0.lazyTensorOperation }
+                )
             }
         }
         // Materialize the inputs now.
