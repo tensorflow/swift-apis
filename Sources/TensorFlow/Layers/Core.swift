@@ -31,7 +31,7 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     /// Creates a dropout layer.
     ///
     /// - Parameter probability: The probability that an input unit will be dropped. This value must
-    ///   be between `0` and `1`, i.e. `(0..<1)`.
+    ///   be in the interval `0..<1`.
     public init(probability: Double) {
         precondition(
             (0..<1.0).contains(probability),
@@ -65,7 +65,7 @@ public struct SpatialDropout1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLa
     /// Creates a 1-D spatial dropout layer.
     ///
     /// - Parameter probability: The probability that an input unit will be dropped. This value must
-    ///   be between `0` and `1`, i.e. `(0..<1)`.
+    ///   be in the interval `0..<1`.
     public init(probability: Double) {
         precondition(
             (0..<1.0).contains(probability),
@@ -101,7 +101,7 @@ public struct SpatialDropout2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLa
     /// Creates a 2-D spatial dropout layer.
     ///
     /// - Parameter probability: The probability that an input unit will be dropped. This value must
-    ///   be between `0` and `1`, i.e. `(0..<1)`.
+    ///   be in the interval `0..<1`.
     public init(probability: Double) {
         precondition(
             (0..<1.0).contains(probability),
@@ -137,7 +137,7 @@ public struct SpatialDropout3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLa
     /// Creates a 3-D spatial dropout layer.
     ///
     /// - Parameter probability: The probability that an input unit will be dropped. This value must
-    /// be between `0` and `1`, i.e. `(0..<1)`.
+    ///   be in the interval `0..<1`.
     public init(probability: Double) {
         precondition(
             (0..<1.0).contains(probability),
