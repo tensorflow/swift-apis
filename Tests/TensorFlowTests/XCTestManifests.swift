@@ -33,8 +33,9 @@ public func allTests() -> [XCTestCaseEntry] {
         testCase(PRNGTests.allTests),
         testCase(RuntimeTests.allTests),
         testCase(SequentialTests.allTests),
-        testCase(TensorTests.allTests),
+        testCase(TensorTests.allTests),        
         testCase(TensorGroupTests.allTests),
+        testCase(TensorAutoDiffTests.allTests),
         testCase(TrivialModelTests.allTests),
         testCase(UtilitiesTests.allTests),
     ]
