@@ -12,6 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
+/// Returns the result of dropout according to the current learning phase.
+@differentiable(wrt: input)
+private func dropout<Scalar: TensorFlowFloatingPoint>(
+    _ input: Tensor<Scalar>,
+    probability: Double,
+    noiseShape: TensorShape
+) -> Tensor<Scalar> {
+    switch Context.local.learningPhase {
+    case .training:
+        return input.droppingOut(probability: probability, noiseShape: noiseShape)
+    case .inference:
+        return input
+    }
+}
+
 /// A dropout layer.
 ///
 /// For each update step of the training phase, `Dropout` randomly and independently omits input

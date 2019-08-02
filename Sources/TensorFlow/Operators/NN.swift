@@ -17,36 +17,21 @@
 //===------------------------------------------------------------------------------------------===//
 
 public extension Tensor where Scalar: TensorFlowFloatingPoint {
-    /// Returns a dropout given a probability and noise shape.
+    /// Returns the result of applying dropout given a probability and noise shape.
+    ///
+    /// - Parameters:
+    ///     - input: The input units.
+    ///     - probability: The probability that a input unit will be dropped.
+    ///     - noiseShape: The shape of the randomly generated keep mask.
+    /// - Precondition: `probability` is within the range `0..<1`.
+    /// - Note: `dropout` is an identity function on `input` when called during the inference phase of
+    ///   learning.
     @differentiable(wrt: self where Scalar: Differentiable)
     func droppingOut(probability: Double, noiseShape: TensorShape) -> Tensor {
         let noise = Tensor(randomUniform: noiseShape)
         let keepMask = noise .>= Scalar(probability)
         let keepProbability = Scalar(1.0 - probability)
         return self * Tensor(keepMask) / Tensor(keepProbability)
-    }
-}
-
-/// Returns the result of applying dropout on an input tensor.
-///
-/// - Parameters:
-///     - input: The input units.
-///     - probability: The probability that a input unit will be dropped.
-///     - noiseShape: The shape of the randomly generated keep mask.
-/// - Precondition: `probability` is within the range 0..<1.
-/// - Note: `dropout` is an identity function on `input` when called during the inference phase of
-///   learning.
-@differentiable(wrt: input)
-public func dropout<Scalar: TensorFlowFloatingPoint>(
-    _ input: Tensor<Scalar>,
-    probability: Double,
-    noiseShape: TensorShape
-) -> Tensor<Scalar> {
-    switch Context.local.learningPhase {
-    case .training:
-        return input.droppingOut(probability: probability, noiseShape: noiseShape)
-    case .inference:
-        return input
     }
 }
 
