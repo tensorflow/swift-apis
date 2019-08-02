@@ -1,4 +1,4 @@
-// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,17 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// A neural network layer.
-///
-/// Types that conform to `Layer` represent functions that map inputs to outputs. They may have an
-/// internal state represented by parameters, such as weight tensors.
-///
-/// `Layer` instances define a differentiable `applied(to:)` method for mapping inputs to
-/// outputs.
-public protocol Layer: Differentiable & KeyPathIterable 
-    where AllDifferentiableVariables: KeyPathIterable {
+public protocol Module: Differentiable, KeyPathIterable
+    where TangentVector: VectorProtocol & ElementaryFunctions &
+                         PointwiseMultiplicative & KeyPathIterable,
+          AllDifferentiableVariables == TangentVector {
     /// The input type of the layer.
-    associatedtype Input: Differentiable
+    associatedtype Input
     /// The output type of the layer.
     associatedtype Output: Differentiable
 
@@ -30,8 +25,62 @@ public protocol Layer: Differentiable & KeyPathIterable
     ///
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
+    @differentiable(wrt: self)
+    func callAsFunction(_ input: Input) -> Output
+}
+
+/// A neural network layer.
+///
+/// Types that conform to `Layer` represent functions that map inputs to outputs. They may have an
+/// internal state represented by parameters, such as weight tensors.
+///
+/// `Layer` instances define a differentiable `callAsFunction(_:)` method for mapping inputs to
+/// outputs.
+public protocol Layer: Module where Input: Differentiable {
+    /// Returns the output obtained from applying the layer to the given input.
+    ///
+    /// - Parameter input: The input to the layer.
+    /// - Returns: The output.
     @differentiable
-    func call(_ input: Input) -> Output
+    func callAsFunction(_ input: Input) -> Output
+}
+
+public extension Layer {
+    @differentiable
+    func call(_  input: Input) -> Output {
+        callAsFunction(input)
+    }
+}
+
+/// An empty struct representing empty `TangentVector`s for parameterless layers.
+public struct EmptyTangentVector: Differentiable, VectorProtocol, ElementaryFunctions,
+                                  PointwiseMultiplicative, KeyPathIterable {
+    public typealias AllDifferentiableVariables = EmptyTangentVector
+    public typealias VectorSpaceScalar = Float
+
+    public func adding(_ x: Float) -> EmptyTangentVector { self }
+    public mutating func add(_ x: Float) {}
+    public func subtracting(_ x: Float) -> EmptyTangentVector { self }
+    public mutating func subtract(_ x: Float) {}
+    public func scaled(by scalar: Float) -> EmptyTangentVector { self }
+    public mutating func scale(by scalar: Float) {}
+}
+
+/// A parameterless neural network layer.
+///
+/// The `TangentVector` of parameterless layers is always `EmptyTangentVector`.
+public protocol ParameterlessLayer: Layer where AllDifferentiableVariables == EmptyTangentVector {
+    @differentiable
+    func callAsFunction(_ input: Input) -> Output
+}
+
+public extension ParameterlessLayer {
+    var allDifferentiableVariables: EmptyTangentVector {
+        get { EmptyTangentVector() }
+        set {}
+    }
+
+    mutating func move(along direction: EmptyTangentVector) {}
 }
 
 public extension Layer {
@@ -41,7 +90,7 @@ public extension Layer {
     /// - Returns: The inference output.
     @differentiable
     func inferring(from input: Input) -> Output {
-        return withLearningPhase(LearningPhase.inference) { self(input) }
+        withLearningPhase(LearningPhase.inference) { self(input) }
     }
 
     // TODO(rxwei): Remove this custom VJP once differentiation supports currying.
@@ -49,8 +98,8 @@ public extension Layer {
     @usableFromInline
     internal func _vjpInferring(from input: Input)
         -> (value: Output, pullback: (Output.TangentVector)
-            -> (TangentVector, Input.TangentVector)) {
-        return withLearningPhase(LearningPhase.inference) {
+            -> (AllDifferentiableVariables, Input.TangentVector)) {
+        withLearningPhase(LearningPhase.inference) {
             let (output, pullback) = appliedForBackpropagation(to: input)
             return (output, { v in pullback(v) })
         }

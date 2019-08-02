@@ -1,4 +1,4 @@
-// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,15 +13,15 @@
 // limitations under the License.
 
 /// An upsampling layer for 1-D inputs.
-@_fixed_layout
-public struct UpSampling1D<Scalar: TensorFlowFloatingPoint>: Layer {
+@frozen
+public struct UpSampling1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     @noDerivative public let size: Int
 
     /// Creates an upsampling layer.
     ///
     /// - Parameter size: The upsampling factor for timesteps.
     public init(size: Int) {
-       self.size = size
+        self.size = size
     }
 
     /// Returns the output obtained from applying the layer to the given input.
@@ -29,7 +29,7 @@ public struct UpSampling1D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         let shape = input.shape
         let (batchSize, timesteps, channels) = (shape[0], shape[1], shape[2])
         let scaleOnes = Tensor<Scalar>(ones: [1, 1, size, 1])
@@ -39,15 +39,15 @@ public struct UpSampling1D<Scalar: TensorFlowFloatingPoint>: Layer {
 }
 
 /// An upsampling layer for 2-D inputs.
-@_fixed_layout
-public struct UpSampling2D<Scalar: TensorFlowFloatingPoint>: Layer {
+@frozen
+public struct UpSampling2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     @noDerivative public let size: Int
 
     /// Creates an upsampling layer.
     ///
     /// - Parameter size: The upsampling factor for rows and columns.
     public init(size: Int) {
-       self.size = size
+        self.size = size
     }
 
     /// Returns the output obtained from applying the layer to the given input.
@@ -55,7 +55,7 @@ public struct UpSampling2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         let shape = input.shape
         let (batchSize, height, width, channels) = (shape[0], shape[1], shape[2], shape[3])
         let scaleOnes = Tensor<Scalar>(ones: [1, 1, size, 1, size, 1])
@@ -65,8 +65,8 @@ public struct UpSampling2D<Scalar: TensorFlowFloatingPoint>: Layer {
 }
 
 /// An upsampling layer for 3-D inputs.
-@_fixed_layout
-public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: Layer {
+@frozen
+public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     @noDerivative public let size: Int
 
     /// Creates an upsampling layer.
@@ -83,8 +83,10 @@ public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: Layer {
     private func repeatingElements(
         _ input: Tensor<Scalar>, alongAxis axis: Int, count: Int
     ) -> Tensor<Scalar> {
-        let splits = Raw.split(splitDim: Tensor<Int32>(Int32(axis)),
-                               value: input, numSplit: Int64(input.shape[axis]))
+        let splits = Raw.split(
+            splitDim: Tensor<Int32>(Int32(axis)),
+            value: input,
+            numSplit: Int64(input.shape[axis]))
         let repeated = splits.flatMap { x in Array(repeating: x, count: count) }
         return Tensor<Scalar>(concatenating: repeated, alongAxis: axis)
     }
@@ -94,8 +96,10 @@ public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: Layer {
     ) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (AllDifferentiableVariables, Tensor<Scalar>)) {
         let value = repeatingElements(input, alongAxis: axis, count: count)
         return (value, { v in
-            let splits = Raw.split(splitDim: Tensor<Int32>(Int32(axis)),
-                                   value: v, numSplit: Int64(input.shape[axis]))
+            let splits = Raw.split(
+                splitDim: Tensor<Int32>(Int32(axis)),
+                value: v,
+                numSplit: Int64(input.shape[axis]))
             let summed = splits.map { x in x.sum(alongAxes: axis) }
             let concatenated = Tensor<Scalar>(concatenating: summed, alongAxis: axis)
             return (.zero, concatenated)
@@ -107,7 +111,7 @@ public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
     @differentiable
-    public func call(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         var result = repeatingElements(input, alongAxis: 1, count: size)
         result = repeatingElements(result, alongAxis: 2, count: size)
         result = repeatingElements(result, alongAxis: 3, count: size)

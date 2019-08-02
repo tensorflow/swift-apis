@@ -1,4 +1,4 @@
-// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -41,8 +41,9 @@ public struct RNNCellOutput<Output: Differentiable, State: Differentiable>: Diff
 }
 
 /// A recurrent neural network cell.
-public protocol RNNCell: Layer where Input == RNNCellInput<TimeStepInput, State>,
-                                     Output == RNNCellOutput<TimeStepOutput, State> {
+public protocol RNNCell: Layer
+    where Input == RNNCellInput<TimeStepInput, State>, 
+          Output == RNNCellOutput<TimeStepOutput, State> {
     /// The input at a time step.
     associatedtype TimeStepInput: Differentiable
     /// The output at a time step.
@@ -62,28 +63,35 @@ public extension RNNCell {
     ///   - previousState: The previous state of the RNN cell.
     /// - Returns: The output.
     @differentiable
+    func callAsFunction(
+        input: TimeStepInput,
+        state: State
+    ) -> RNNCellOutput<TimeStepOutput, State> {
+        self(RNNCellInput(input: input, state: state))
+    }
+
+    @differentiable
     func call(input: TimeStepInput, state: State) -> RNNCellOutput<TimeStepOutput, State> {
-        return self(RNNCellInput(input: input, state: state))
+        self(RNNCellInput(input: input, state: state))
     }
 }
 
 /// A simple RNN cell.
-public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNumeric {
+public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     public var weight: Tensor<Scalar>
     public var bias: Tensor<Scalar>
 
     @noDerivative public var stateShape: TensorShape {
-        return TensorShape([1, weight.shape[1]])
+        TensorShape([1, weight.shape[1]])
     }
 
     public var zeroState: State {
-        return State(Tensor(zeros: stateShape))
+        State(Tensor(zeros: stateShape))
     }
 
-    // TODO(TF-507): Revert to `typealias State = Tensor<Scalar>` after
-    // SR-10697 is fixed.
-    public struct State: Equatable, Differentiable, VectorNumeric, KeyPathIterable {
-        public let value: Tensor<Scalar>
+    // TODO(TF-507): Revert to `typealias State = Tensor<Scalar>` after SR-10697 is fixed.
+    public struct State: Equatable, Differentiable, VectorProtocol, KeyPathIterable {
+        public var value: Tensor<Scalar>
         public init(_ value: Tensor<Scalar>) {
             self.value = value
         }
@@ -100,9 +108,7 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNum
     ///   - inputSize: The number of features in 2-D input tensors.
     ///   - hiddenSize: The number of features in 2-D hidden states.
     ///   - seed: The random seed for initialization. The default value is random.
-    public init(inputSize: Int, hiddenSize: Int,
-                seed: (Int64, Int64) = (Int64.random(in: Int64.min..<Int64.max),
-                                        Int64.random(in: Int64.min..<Int64.max))) {
+    public init(inputSize: Int, hiddenSize: Int, seed: TensorFlowSeed = Context.local.randomSeed) {
         let concatenatedInputSize = inputSize + hiddenSize
         self.weight = Tensor(glorotUniform: [concatenatedInputSize, hiddenSize], seed: seed)
         self.bias = Tensor(zeros: [hiddenSize])
@@ -113,7 +119,7 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNum
     /// - Parameter input: The input to the layer.
     /// - Returns: The hidden state.
     @differentiable
-    public func call(_ input: Input) -> Output {
+    public func callAsFunction(_ input: Input) -> Output {
         let concatenatedInput = input.input.concatenated(with: input.state.value, alongAxis: 1)
         let newState = State(tanh(matmul(concatenatedInput, weight) + bias))
         return Output(output: newState, state: newState)
@@ -121,16 +127,16 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNum
 }
 
 /// An LSTM cell.
-public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNumeric {
+public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     public var inputWeight, updateWeight, forgetWeight, outputWeight: Tensor<Scalar>
     public var inputBias, updateBias, forgetBias, outputBias: Tensor<Scalar>
 
     @noDerivative public var stateShape: TensorShape {
-        return TensorShape([1, inputWeight.shape[1]])
+        TensorShape([1, inputWeight.shape[1]])
     }
 
     public var zeroState: State {
-        return State(cell: Tensor(zeros: stateShape), hidden: Tensor(zeros: stateShape))
+        State(cell: Tensor(zeros: stateShape), hidden: Tensor(zeros: stateShape))
     }
 
     public typealias TimeStepInput = Tensor<Scalar>
@@ -143,9 +149,11 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNumeric 
     /// - Parameters:
     ///   - inputSize: The number of features in 2-D input tensors.
     ///   - hiddenSize: The number of features in 2-D hidden states.
-    public init(inputSize: Int, hiddenSize: Int,
-                seed: (Int64, Int64) = (Int64.random(in: Int64.min..<Int64.max),
-                                        Int64.random(in: Int64.min..<Int64.max))) {
+    public init(
+        inputSize: Int,
+        hiddenSize: Int,
+        seed: TensorFlowSeed = Context.local.randomSeed
+    ) {
         let concatenatedInputSize = inputSize + hiddenSize
         let gateWeightShape = TensorShape([concatenatedInputSize, hiddenSize])
         let gateBiasShape = TensorShape([hiddenSize])
@@ -175,7 +183,7 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell, VectorNumeric 
     /// - Parameter input: The input to the layer.
     /// - Returns: The hidden state.
     @differentiable
-    public func call(_ input: Input) -> Output {
+    public func callAsFunction(_ input: Input) -> Output {
         let gateInput = input.input.concatenated(with: input.state.hidden, alongAxis: 1)
 
         let inputGate = sigmoid(matmul(gateInput, inputWeight) + inputBias)
@@ -202,9 +210,11 @@ public struct RNN<Cell: RNNCell>: Layer {
         self.cell = cell()
     }
 
-    @differentiable(wrt: (self, input), vjp: _vjpCall(_:initialState:))
-    public func call(_ input: [Cell.TimeStepInput],
-                     initialState: Cell.State) -> [Cell.TimeStepOutput] {
+    @differentiable(wrt: (self, input), vjp: _vjpCallAsFunction(_:initialState:))
+    public func callAsFunction(
+        _ input: [Cell.TimeStepInput],
+        initialState: Cell.State
+    ) -> [Cell.TimeStepOutput] {
         var currentHiddenState = initialState
         var timeStepOutputs: [Cell.TimeStepOutput] = []
         for timestep in input {
@@ -215,9 +225,18 @@ public struct RNN<Cell: RNNCell>: Layer {
         return timeStepOutputs
     }
 
+    @differentiable(wrt: (self, input))
+    public func call(
+        _ input: [Cell.TimeStepInput],
+        initialState: Cell.State
+    ) -> [Cell.TimeStepOutput] {
+        callAsFunction(input, initialState: initialState)
+    }
+
     @usableFromInline
-    internal func _vjpCall(
-        _ inputs: [Cell.TimeStepInput], initialState: Cell.State
+    internal func _vjpCallAsFunction(
+        _ inputs: [Cell.TimeStepInput],
+        initialState: Cell.State
     ) -> ([Cell.TimeStepOutput],
           (Array<Cell.TimeStepOutput>.TangentVector)
               -> (TangentVector, Array<Cell.TimeStepInput>.TangentVector)) {
@@ -228,9 +247,8 @@ public struct RNN<Cell: RNNCell>: Layer {
         var backpropagators: [Cell.Backpropagator] = []
         backpropagators.reserveCapacity(timeStepCount)
         for timestep in inputs {
-            let (output, backpropagator) =
-                cell.appliedForBackpropagation(to: .init(input: timestep,
-                                                         state: currentHiddenState))
+            let (output, backpropagator) = cell.appliedForBackpropagation(
+                to: .init(input: timestep, state: currentHiddenState))
             currentHiddenState = output.state
             timeStepOutputs.append(output.output)
             backpropagators.append(backpropagator)
@@ -252,9 +270,9 @@ public struct RNN<Cell: RNNCell>: Layer {
         })
     }
 
-    @differentiable(wrt: (self, inputs))
-    public func call(_ inputs: [Cell.TimeStepInput]) -> [Cell.TimeStepOutput] {
-        return self(inputs, initialState: cell.zeroState.withoutDerivative())
+    @differentiable
+    public func callAsFunction(_ inputs: [Cell.TimeStepInput]) -> [Cell.TimeStepOutput] {
+        return self(inputs, initialState: withoutDerivative(at: cell.zeroState))
     }
 
     /* TODO: Uncomment once control flow and differentiation through force unwrapping is supported.
@@ -275,7 +293,6 @@ public struct RNN<Cell: RNNCell>: Layer {
 
 extension RNN: Equatable where Cell: Equatable {}
 extension RNN: AdditiveArithmetic where Cell: AdditiveArithmetic {}
-extension RNN: VectorNumeric where Cell: VectorNumeric {}
 
 public typealias SimpleRNN<Scalar: TensorFlowFloatingPoint> = RNN<SimpleRNNCell<Scalar>>
 public typealias LSTM<Scalar: TensorFlowFloatingPoint> = RNN<LSTMCell<Scalar>>

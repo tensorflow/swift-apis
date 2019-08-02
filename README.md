@@ -29,7 +29,7 @@ struct Model: Layer {
     var layer3 = Dense<Float>(inputSize: hiddenSize, outputSize: 3, activation: identity)
     
     @differentiable
-    func call(_ input: Tensor<Float>) -> Tensor<Float> {
+    func callAsFunction(_ input: Tensor<Float>) -> Tensor<Float> {
         return input.sequenced(through: layer1, layer2, layer3)
     }
 }
@@ -38,11 +38,11 @@ struct Model: Layer {
 #### Initialize a model and an optimizer
 
 ```swift
-let optimizer = SGD(for: model, learningRate: 0.02)
 var classifier = Model()
+let optimizer = SGD(for: classifier, learningRate: 0.02)
 Context.local.learningPhase = .training
 let x: Tensor<Float> = ...
-let y: Tensor<Float> = ...
+let y: Tensor<Int32> = ...
 ```
 
 #### Run a training loop

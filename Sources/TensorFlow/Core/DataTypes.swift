@@ -1,4 +1,4 @@
-// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -70,11 +70,19 @@ public typealias TensorFlowNumeric = TensorFlowScalar & Numeric
 public typealias TensorFlowSignedNumeric = TensorFlowScalar & SignedNumeric
 public typealias TensorFlowInteger = TensorFlowScalar & BinaryInteger
 
+/// An integer data type that represents integer types which can be used as tensor indices in 
+/// TensorFlow.
+public protocol TensorFlowIndex: TensorFlowInteger {}
+
+extension Int32: TensorFlowIndex {}
+extension Int64: TensorFlowIndex {}
+
 /// A floating-point data type that conforms to `Differentiable` and is compatible with TensorFlow.
 ///
 /// - Note: `Tensor` conditionally conforms to `Differentiable` when the `Scalar` associated type
 ///   conforms `TensorFlowFloatingPoint`.
-public protocol TensorFlowFloatingPoint: TensorFlowScalar & BinaryFloatingPoint & Differentiable
+public protocol TensorFlowFloatingPoint:
+    TensorFlowScalar & BinaryFloatingPoint & Differentiable & ElementaryFunctions
     where Self.RawSignificand: FixedWidthInteger,
           Self == Self.TangentVector,
           Self == Self.AllDifferentiableVariables {}
@@ -145,7 +153,7 @@ extension UInt64: TensorFlowScalar {
     }
 }
 
-@_fixed_layout
+@frozen
 public struct BFloat16 {
     @usableFromInline var data: Int16 = 0
     private init() {}

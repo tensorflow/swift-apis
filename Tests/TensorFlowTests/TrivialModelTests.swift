@@ -1,4 +1,4 @@
-// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,17 +24,15 @@ final class TrivialModelTests: XCTestCase {
                     inputSize: 2,
                     outputSize: hiddenSize,
                     activation: relu,
-                    seed: (0xfffffff, 0xfeeff)
-                )
+                    weightInitializer: glorotUniform(seed: (0xfffffff, 0xfeeff)))
                 l2 = Dense<Float>(
                     inputSize: hiddenSize,
                     outputSize: 1,
                     activation: relu,
-                    seed: (0xfeffeffe, 0xfffe)
-                )
+                    weightInitializer: glorotUniform(seed: (0xffeffe, 0xfffe)))
             }
             @differentiable
-            func call(_ input: Tensor<Float>) -> Tensor<Float> {
+            func callAsFunction(_ input: Tensor<Float>) -> Tensor<Float> {
                 let h1 = l1(input)
                 return l2(h1)
             }
@@ -45,12 +43,14 @@ final class TrivialModelTests: XCTestCase {
         let y: Tensor<Float> = [[0], [1], [1], [0]]
 
         Context.local.learningPhase = .training
-        for _ in 0..<3000 {
-            let 𝛁model = classifier.gradient { classifier -> Tensor<Float> in
-                let ŷ = classifier(x)
-                return meanSquaredError(predicted: ŷ, expected: y)
+        withTensorLeakChecking {
+            for _ in 0..<3000 {
+                let 𝛁model = classifier.gradient { classifier -> Tensor<Float> in
+                    let ŷ = classifier(x)
+                    return meanSquaredError(predicted: ŷ, expected: y)
+                }
+                optimizer.update(&classifier, along: 𝛁model)
             }
-            optimizer.update(&classifier.allDifferentiableVariables, along: 𝛁model)
         }
         let ŷ = classifier.inferring(from: x)
         XCTAssertEqual(round(ŷ), y)

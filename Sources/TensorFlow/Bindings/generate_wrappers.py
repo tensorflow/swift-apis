@@ -1,4 +1,4 @@
-# Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ _WARNING = """// !!! THIS CODE IS AUTOMATICALLY GENERATED, DO NOT EDIT BY HAND !
 //
 """
 
-_HEADER = """// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+_HEADER = """// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -77,6 +77,8 @@ _TYPE_PROTOCOLS = [
     types_pb2.DT_UINT16,
     types_pb2.DT_UINT32,
     types_pb2.DT_UINT64}, 'UnsignedInteger & TensorFlowScalar'),
+  ({types_pb2.DT_INT32,
+    types_pb2.DT_INT64}, 'TensorFlowIndex'),
   ({types_pb2.DT_UINT8,
     types_pb2.DT_UINT16,
     types_pb2.DT_UINT32,
@@ -84,7 +86,7 @@ _TYPE_PROTOCOLS = [
     types_pb2.DT_INT8,
     types_pb2.DT_INT16,
     types_pb2.DT_INT32,
-    types_pb2.DT_INT64}, 'BinaryInteger & TensorFlowScalar'),
+    types_pb2.DT_INT64}, 'TensorFlowInteger'),
   ({types_pb2.DT_FLOAT,
     types_pb2.DT_DOUBLE,
     types_pb2.DT_HALF,
@@ -100,7 +102,7 @@ _TYPE_PROTOCOLS = [
     types_pb2.DT_FLOAT,
     types_pb2.DT_DOUBLE,
     types_pb2.DT_HALF,
-    types_pb2.DT_BFLOAT16}, 'Numeric & TensorFlowScalar')]
+    types_pb2.DT_BFLOAT16}, 'TensorFlowNumeric')]
 
 _SWIFTIFIED_TYPES = {
   types_pb2.DT_FLOAT: 'Float',
@@ -523,7 +525,7 @@ class Attribute(object):
       # The following is used for inferring the lengths of output lists.
       self.op.inferred_counts[self.name] = self.input_arg.swift_name + '.count'
       return 'op.updateAttribute("{}", {}.count)'.format(self.name, self.input_arg.swift_name)
-    
+
     if self.attr_def.type == 'int':
       # The following is used for inferring the lengths of output lists.
       self.op.inferred_counts[self.name] = self.swift_name

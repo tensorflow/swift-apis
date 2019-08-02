@@ -16,22 +16,178 @@ import XCTest
 @testable import TensorFlow
 
 final class MathOperatorTests: XCTestCase {
+    func testElementaryFunction(
+        name: String,
+        _ tensorOperator: (Tensor<Float>) -> Tensor<Float>,
+        _ scalarOperator: (Float) -> Float,
+        accuracy: Float = 1e-4,
+        file: StaticString = #file, line: UInt = #line
+    ) {
+        let x = Tensor<Float>(randomNormal: [20], seed: (0, 0))
+        let actual = tensorOperator(x).scalars
+        let expected = x.scalars.map(scalarOperator)
+        assertEqual(actual, expected, accuracy: accuracy, name, file: file, line: line)
+    }
+
+    func testElementaryFunctions() {
+        testElementaryFunction(name: "sqrt", sqrt, Float.sqrt)
+        testElementaryFunction(name: "cos", cos, Float.cos)
+        testElementaryFunction(name: "sin", sin, Float.sin)
+        testElementaryFunction(name: "tan", tan, Float.tan)
+        testElementaryFunction(name: "cosh", cosh, Float.cosh)
+        testElementaryFunction(name: "sinh", sinh, Float.sinh)
+        testElementaryFunction(name: "tanh", tanh, Float.tanh)
+        testElementaryFunction(name: "acos", acos, Float.acos)
+        testElementaryFunction(name: "asin", asin, Float.asin)
+        testElementaryFunction(name: "atan", atan, Float.atan)
+        testElementaryFunction(name: "acosh", acosh, Float.acosh)
+        testElementaryFunction(name: "asinh", asinh, Float.asinh)
+        testElementaryFunction(name: "atanh", atanh, Float.atanh)
+        testElementaryFunction(name: "exp", exp, Float.exp)
+        testElementaryFunction(name: "exp2", exp2, Float.exp2)
+        testElementaryFunction(name: "exp10", exp10, Float.exp10)
+        testElementaryFunction(name: "expm1", expm1, Float.expm1)
+        testElementaryFunction(name: "log", log, Float.log)
+        testElementaryFunction(name: "log2", log2, Float.log2)
+        testElementaryFunction(name: "log10", log10, Float.log10)
+        testElementaryFunction(name: "log1p", log1p, Float.log1p)
+        testElementaryFunction(name: "pow",
+                               { x in pow(x, x) }, { x in Float.pow(x, x) })
+        testElementaryFunction(name: "pow",
+                               { x in pow(x, 3) }, { x in Float.pow(x, 3) })
+        testElementaryFunction(name: "root",
+                               { x in root(x, 3) }, { x in Float.root(x, 3) })
+    }
+
+    func testClipping() {
+        let x = Tensor<Float>([
+            [0.45031791, 0.41123222, 0.53928467, 0.47167023, 0.15483777],
+            [0.49975705, 0.71807549, 0.30396056, 0.26904690, 0.01404393],
+            [0.16950939, 0.41085612, 0.79503016, 0.11977817, 0.99728241],
+            [0.62510073, 0.17344792, 0.15406050, 0.40758517, 0.93683817],
+            [0.15653343, 0.50502756, 0.99365925, 0.84617581, 0.17422509]])
+        let clippedX = x.clipped(min: 0.2, max: 0.5)
+        let expectedClippedX = Tensor<Float>([
+            [0.45031791, 0.41123222, 0.50000000, 0.47167023, 0.20000000],
+            [0.49975705, 0.50000000, 0.30396056, 0.26904690, 0.20000000],
+            [0.20000000, 0.41085612, 0.50000000, 0.20000000, 0.50000000],
+            [0.50000000, 0.20000000, 0.20000000, 0.40758517, 0.50000000],
+            [0.20000000, 0.50000000, 0.50000000, 0.50000000, 0.20000000]])
+        assertEqual(clippedX, expectedClippedX, accuracy: 0.0001)
+    }
+
+    func testRsqrt() {
+        let x = Tensor<Double>([1, 0.25, 1.0 / 9.0, 0.0625, 0.04])
+        let target = Tensor<Double>([1, 2, 3, 4, 5]).sum()
+        let gradTarget = Tensor<Double>([-0.5,  -4.0, -13.5, -32.0, -62.5])
+        let (value, grad) = valueWithGradient(at: x) { rsqrt($0).sum() }
+        XCTAssertEqual(value, target)
+        XCTAssertEqual(grad, gradTarget)
+    }
+
     func testLog1p() {
-        let x = Tensor<Float>([[1, 2, 3, 4, 5], [1, 2, 3, 4, 5]])
+        let x = Tensor<Float>([1, 2, 3, 4, 5])
         let y = log1p(x)
-        assertEqual(y, log(1 + x), accuracy: 0.0001)
+        let expectedY = Tensor<Float>([0.69315, 1.09861, 1.38629, 1.60944, 1.79176])
+        assertEqual(y, expectedY, accuracy: 0.0001)
+    }
+
+    func testLog1mexp() {
+        let x = Tensor<Float>([-1, -2, -3, -4, -5])
+        let y = log1mexp(x)
+        let expectedY = Tensor<Float>([-0.45868, -0.14541, -0.05107, -0.01849, -0.00676])
+        assertEqual(y, expectedY, accuracy: 0.0001)
     }
 
     func testExpm1() {
-        let x = Tensor<Float>([[1, 2, 3, 4, 5], [1, 2, 3, 4, 5]])
+        let x = Tensor<Float>([1, 2, 3, 4, 5])
         let y = expm1(x)
-        assertEqual(y, exp(x - 1), accuracy: 0.0001)
+        let expectedY = Tensor<Float>([1.71828, 6.38906, 19.08554, 53.59815, 147.41316])
+        assertEqual(y, expectedY, accuracy: 0.0001)
     }
 
     func testSign() {
         let x = Tensor<Float>([[1, 2, -3, 4, 5], [1, 2, 3, 4, -5]])
         let y = sign(x)
         XCTAssertEqual(y, Tensor<Float>([[1, 1, -1, 1, 1], [1, 1, 1, 1, -1]]))
+    }
+
+    func testLogSigmoid() {
+        let x = Tensor<Float>([[1, 2, 3, 4, 5], [1, 2, 3, 4, 5]])
+        let y = logSigmoid(x)
+        assertEqual(y, log(sigmoid(x)), accuracy: 0.0001)
+    }
+
+    func testSoftplus() {
+        let x = Tensor<Float>([1.0, 2.0, 3.0])
+        let y = softplus(x)
+        let expected = Tensor<Float>([1.3132616,  2.126928, 3.0485873])
+        XCTAssertEqual(y, expected)
+    }
+
+    func testSoftsign() {
+        let x = Tensor<Float>([1.0, 4.0, 3.0])
+        let y = softsign(x)
+        let expected = Tensor<Float>([0.5 , 0.8 , 0.75])
+        XCTAssertEqual(y, expected)
+    }
+
+    func testElu() {
+        let x = Tensor<Float>([-1.0, 2.0, 3.0])
+        let y = elu(x)
+        let expected = Tensor<Float>([-0.63212055, 2, 3])
+        XCTAssertEqual(y, expected)
+    }
+
+    func testGelu() {
+        let x = Tensor<Float>([2.0, 1.0, 7.0])
+        let y = gelu(x)
+        let expected = Tensor<Float>([1.95459769, 0.84119199, 7.0])
+        XCTAssertEqual(y, expected)
+    }
+
+    func testLeakyRelu() {
+        let x = Tensor<Float>([[-1.0, 2.0, 3.0]])
+        let y = leakyRelu(x, alpha: 0.4)
+        let expected = Tensor<Float>([-0.4, 2, 3])
+        XCTAssertEqual(y, expected)
+    }
+
+    func testIsFinite() {
+        let x = Tensor<Float>([1, 2, 3, 4, -Float.infinity])
+        let y = x.isFinite
+        XCTAssertEqual(y, Tensor([true, true, true, true, false]))
+    }
+
+    func testIsInfinite() {
+        let x = Tensor<Float>([1, 2, 3, 4, log(0.0)])
+        let y = x.isInfinite
+        XCTAssertEqual(y, Tensor([false, false, false, false, true]))
+    }
+
+    func testIsNaN() {
+        let x = Tensor<Float>([1, 2, 3, 4, log(-5.0)])
+        let y = x.isNaN
+        XCTAssertEqual(y, Tensor([false, false, false, false, true]))
+    }
+
+    func testCosineSimilarity() {
+        let x = Tensor<Float>([1, 2, 3, 4, 5, 6, 7, 8])
+        let y = Tensor<Float>([0.5, 1, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0])
+        let z = cosineSimilarity(x, y)
+        let output: Float = 1.0
+        XCTAssertEqual(z, Tensor(output))
+    }
+
+    func testArgmax() {
+        // 2 x 3
+        let x = Tensor<Float>([[0, 1, 2], [3, 4, 5]])
+        let argmax0 = x.argmax(squeezingAxis: 0)
+        let argmax1 = x.argmax(squeezingAxis: 1)
+        let scalarsArgmax = x.argmax()
+        XCTAssertEqual(argmax0.array, ShapedArray(shape: [3], scalars: [1, 1, 1]))
+        XCTAssertEqual(argmax1.array, ShapedArray(shape: [2], scalars: [2, 2]))
+        XCTAssertEqual(scalarsArgmax.array, ShapedArray(shape: [], scalars: [5]))
     }
 
     func testReduction() {
@@ -72,7 +228,7 @@ final class MathOperatorTests: XCTestCase {
             x.variance(squeezingAxes: 0),
             Tensor(shape: [5], scalars: [0, 0, 0, 0, 0]))
         XCTAssertEqual(
-            x.variance(alongAxes: 0), 
+            x.variance(alongAxes: 0),
             Tensor(shape: [5], scalars: [0, 0, 0, 0, 0]))
         XCTAssertEqual(
             x.variance(squeezingAxes: 1),
@@ -82,15 +238,114 @@ final class MathOperatorTests: XCTestCase {
             Tensor(shape: [1, 2], scalars: [2, 2]))
     }
 
-    func testArgmax() {
+    func testCumulativeSum() {
         // 2 x 3
         let x = Tensor<Float>([[0, 1, 2], [3, 4, 5]])
-        let argmax0 = x.argmax(squeezingAxis: 0)
-        let argmax1 = x.argmax(squeezingAxis: 1)
-        let scalarsArgmax = x.argmax()
-        XCTAssertEqual(argmax0.array, ShapedArray(shape: [3], scalars: [1, 1, 1]))
-        XCTAssertEqual(argmax1.array, ShapedArray(shape: [2], scalars: [2, 2]))
-        XCTAssertEqual(scalarsArgmax.array, ShapedArray(shape: [], scalars: [5]))
+        let cumsum0 = x.cumulativeSum(alongAxis: 0)
+        let cumsum1 = x.cumulativeSum(alongAxis: 1)
+        let exclusiveCumsum0 = x.cumulativeSum(alongAxis: 0, exclusive: true)
+        let exclusiveCumsum1 = x.cumulativeSum(alongAxis: 1, exclusive: true)
+        let reverseCumsum0 = x.cumulativeSum(alongAxis: 0, reverse: true)
+        let reverseCumsum1 = x.cumulativeSum(alongAxis: 1, reverse: true)
+        let reverseExclusiveCumsum0 = x.cumulativeSum(alongAxis: 0, exclusive: true, reverse: true)
+        let reverseExclusiveCumsum1 = x.cumulativeSum(alongAxis: 1, exclusive: true, reverse: true)
+        XCTAssertEqual(cumsum0, Tensor<Float>([[0, 1, 2], [3, 5, 7]]))
+        XCTAssertEqual(cumsum1, Tensor<Float>([[0, 1, 3], [3, 7, 12]]))
+        XCTAssertEqual(exclusiveCumsum0, Tensor<Float>([[0, 0, 0], [0, 1, 2]]))
+        XCTAssertEqual(exclusiveCumsum1, Tensor<Float>([[0, 0, 1], [0, 3, 7]]))
+        XCTAssertEqual(reverseCumsum0, Tensor<Float>([[3, 5, 7], [3, 4, 5]]))
+        XCTAssertEqual(reverseCumsum1, Tensor<Float>([[3, 3, 2], [12, 9, 5]]))
+        XCTAssertEqual(reverseExclusiveCumsum0, Tensor<Float>([[3, 4, 5], [0, 0, 0]]))
+        XCTAssertEqual(reverseExclusiveCumsum1, Tensor<Float>([[3, 2, 0], [9, 5, 0]]))
+    }
+
+    func testCumulativeProduct() {
+        // 2 x 3
+        let x = Tensor<Float>([[0, 1, 2], [3, 4, 5]])
+        let cumprod0 = x.cumulativeProduct(alongAxis: 0)
+        let cumprod1 = x.cumulativeProduct(alongAxis: 1)
+        let exclusiveCumprod0 = x.cumulativeProduct(alongAxis: 0, exclusive: true)
+        let exclusiveCumprod1 = x.cumulativeProduct(alongAxis: 1, exclusive: true)
+        let reverseCumprod0 = x.cumulativeProduct(alongAxis: 0, reverse: true)
+        let reverseCumprod1 = x.cumulativeProduct(alongAxis: 1, reverse: true)
+        let reverseExclusiveCumprod0 = x.cumulativeProduct(
+            alongAxis: 0,
+            exclusive: true,
+            reverse: true)
+        let reverseExclusiveCumprod1 = x.cumulativeProduct(
+            alongAxis: 1,
+            exclusive: true,
+            reverse: true)
+        XCTAssertEqual(cumprod0, Tensor<Float>([[0, 1, 2], [0, 4, 10]]))
+        XCTAssertEqual(cumprod1, Tensor<Float>([[0, 0, 0], [3, 12, 60]]))
+        XCTAssertEqual(exclusiveCumprod0, Tensor<Float>([[1, 1, 1], [0, 1, 2]]))
+        XCTAssertEqual(exclusiveCumprod1, Tensor<Float>([[1, 0, 0], [1, 3, 12]]))
+        XCTAssertEqual(reverseCumprod0, Tensor<Float>([[0, 4, 10], [3, 4, 5]]))
+        XCTAssertEqual(reverseCumprod1, Tensor<Float>([[0, 2, 2], [60, 20, 5]]))
+        XCTAssertEqual(reverseExclusiveCumprod0, Tensor<Float>([[3, 4, 5], [1, 1, 1]]))
+        XCTAssertEqual(reverseExclusiveCumprod1, Tensor<Float>([[2, 2, 1], [20, 5, 1]]))
+    }
+
+    func testStandardDeviation() {
+        XCTAssertEqual(Tensor<Float>([1]).standardDeviation(), Tensor(0))
+        XCTAssertEqual(Tensor<Float>([0, 1]).standardDeviation(alongAxes: 0), Tensor(0.5))
+        XCTAssertEqual(Tensor<Float>([0, 1]).standardDeviation(), Tensor(0.5))
+        XCTAssertEqual(
+            Tensor<Float>(rangeFrom: 0, to: 10, stride: 1).standardDeviation().scalarized(),
+            2.87228132,
+            accuracy: 0.001)
+        let matrix = Tensor<Float>(rangeFrom: 0, to: 10, stride: 1).reshaped(to: [2, 5])
+        XCTAssertEqual(matrix.standardDeviation().scalarized(), 2.87228132, accuracy: 0.001)
+        let values = matrix.standardDeviation(alongAxes: 1).array.scalars
+        XCTAssertEqual(Double(values[0]), 1.4142, accuracy: 0.0001)
+        XCTAssertEqual(Double(values[1]), 1.4142, accuracy: 0.0001)
+    }
+
+    func testLogSumExp() {
+        let x = Tensor<Float>([
+            [0.45031791, 0.41123222, 0.53928467, 0.47167023, 0.15483777],
+            [0.49975705, 0.71807549, 0.30396056, 0.2690469 , 0.01404393],
+            [0.16950939, 0.41085612, 0.79503016, 0.11977817, 0.99728241],
+            [0.62510073, 0.17344792, 0.1540605 , 0.40758517, 0.93683817],
+            [0.15653343, 0.50502756, 0.99365925, 0.84617581, 0.17422509]])
+        let y0 = x.logSumExp()
+        let y1 = x.logSumExp(squeezingAxes: 1)
+        let y2 = x.logSumExp(alongAxes: 1)
+        let expectedY0 = Tensor<Float>(3.713885997817954)
+        let expectedY1 = Tensor<Float>(
+            [2.02318908, 1.99835067, 2.16853826, 2.1137799, 2.20261244])
+        let expectedY2 = Tensor<Float>(
+            [[2.02318908], [1.99835067], [2.16853826], [2.1137799], [2.20261244]])
+        assertEqual(y0, expectedY0, accuracy: 0.0001)
+        assertEqual(y1, expectedY1, accuracy: 0.0001)
+        assertEqual(y2, expectedY2, accuracy: 0.0001)
+    }
+
+    func testMoments() {
+        let x = Tensor<Float>([
+            [0.45031791, 0.41123222, 0.53928467, 0.47167023, 0.15483777],
+            [0.49975705, 0.71807549, 0.30396056, 0.2690469 , 0.01404393],
+            [0.16950939, 0.41085612, 0.79503016, 0.11977817, 0.99728241],
+            [0.62510073, 0.17344792, 0.1540605 , 0.40758517, 0.93683817],
+            [0.15653343, 0.50502756, 0.99365925, 0.84617581, 0.17422509]])
+        let moments = x.moments()
+        let moments0 = x.moments(alongAxes: 0)
+        let moments1 = x.moments(alongAxes: 1)
+        let expectedMoments = Moments(
+            mean: Tensor<Float>(0.4518935),
+            variance: Tensor<Float>(0.0829807))
+        let expectedMoments0 = Moments(
+            mean: Tensor<Float>([0.3802437 , 0.44372786, 0.55719903, 0.42285126, 0.45544547]),
+            variance: Tensor<Float>([0.03472081, 0.03084241, 0.0948065 , 0.05946582, 0.17792228]))
+        let expectedMoments1 = Moments(
+            mean: Tensor<Float>([0.40546856, 0.36097679, 0.49849125, 0.4594065 , 0.53512423]),
+            variance: Tensor<Float>([0.01742998, 0.05576876, 0.1192121 , 0.0866179 , 0.11629849]))
+        assertEqual(moments.mean, expectedMoments.mean, accuracy: 0.0001)
+        assertEqual(moments.variance, expectedMoments.variance, accuracy: 0.0001)
+        assertEqual(moments0.mean, expectedMoments0.mean, accuracy: 0.0001)
+        assertEqual(moments0.variance, expectedMoments0.variance, accuracy: 0.0001)
+        assertEqual(moments1.mean, expectedMoments1.mean, accuracy: 0.0001)
+        assertEqual(moments1.variance, expectedMoments1.variance, accuracy: 0.0001)
     }
 
     func testCeilAndFloor() {
@@ -108,21 +363,6 @@ final class MathOperatorTests: XCTestCase {
         XCTAssertEqual([2], array.shape)
         XCTAssertEqual(Double(array.scalars[0]), 0.833655, accuracy: 0.0001)
         XCTAssertEqual(Double(array.scalars[1]), 0.833655, accuracy: 0.0001)
-    }
-
-    func testStandardDeviation() {
-        XCTAssertEqual(Tensor<Float>([1]).standardDeviation(), Tensor(0))
-        XCTAssertEqual(Tensor<Float>([0, 1]).standardDeviation(alongAxes: 0), Tensor(0.5))
-        XCTAssertEqual(Tensor<Float>([0, 1]).standardDeviation(), Tensor(0.5))
-        XCTAssertEqual(
-            Tensor<Float>(rangeFrom: 0, to: 10, stride: 1).standardDeviation().scalarized(),
-            2.87228132,
-            accuracy: 0.001)
-        let matrix = Tensor<Float>(rangeFrom: 0, to: 10, stride: 1).reshaped(to: [2, 5])
-        XCTAssertEqual(matrix.standardDeviation().scalarized(), 2.87228132, accuracy: 0.001)
-        let values = matrix.standardDeviation(alongAxes: 1).array.scalars
-        XCTAssertEqual(Double(values[0]), 1.4142, accuracy: 0.0001)
-        XCTAssertEqual(Double(values[1]), 1.4142, accuracy: 0.0001)
     }
 
     func test3Adds() {
@@ -217,32 +457,91 @@ final class MathOperatorTests: XCTestCase {
         XCTAssertEqual(Double(prediction.scalars[0]), 0.816997, accuracy: 0.0001)
     }
 
+    func testQRDecompositionApproximation() {
+        let shapes = [[5, 8], [3, 4, 4], [3, 3, 32, 64]]
+        for shape in shapes {
+            let a = Tensor<Float>(randomNormal: TensorShape(shape))
+            let (q, r) = a.qrDecomposition()
+            let aReconstituted = matmul(q,r)
+            assertEqual(aReconstituted, a, accuracy: 1e-5)
+
+            let (qFull, rFull) = a.qrDecomposition(fullMatrices: true)
+            let aReconstitutedFull = matmul(qFull, rFull)
+            assertEqual(aReconstitutedFull, a, accuracy: 1e-5)
+        }
+    }
+
+    func testDiagonalPart() {
+        // Test on 2-D matrix.
+        let t1 = Tensor<Float>(shape: [4, 4], scalars: (1...16).map(Float.init))
+        let target1 = Tensor<Float>([1, 6, 11, 16])
+        XCTAssertEqual(t1.diagonalPart(), target1)
+
+        // Test on 4-D tensor.
+        let t2 = Tensor<Float>([[[[1.0, 0.0, 0.0, 0.0],
+                                  [0.0, 0.0, 0.0, 0.0]],
+                                 [[0.0, 2.0, 0.0, 0.0],
+                                  [0.0, 0.0, 0.0, 0.0]],
+                                 [[0.0, 0.0, 3.0, 0.0],
+                                  [0.0, 0.0, 0.0, 0.0]],
+                                 [[0.0, 0.0, 0.0, 4.0],
+                                  [0.0, 0.0, 0.0, 0.0]]],
+                                [[[0.0, 0.0, 0.0, 0.0],
+                                  [5.0, 0.0, 0.0, 0.0]],
+                                 [[0.0, 0.0, 0.0, 0.0],
+                                  [0.0, 6.0, 0.0, 0.0]],
+                                 [[0.0, 0.0, 0.0, 0.0],
+                                  [0.0, 0.0, 7.0, 0.0]],
+                                 [[0.0, 0.0, 0.0, 0.0],
+                                  [0.0, 0.0, 0.0, 8.0]]]])
+        let target2 = Tensor<Float>([[1, 2, 3, 4], [5, 6, 7, 8]])
+        XCTAssertEqual(t2.diagonalPart(), target2)
+    }
+
     func testBroadcastedAddGradient() {
-	  func foo(_ x: Tensor<Float>, _ y: Tensor<Float>) -> Tensor<Float> {
-	    return (x + y).sum()
-	  }
-	  let x = Tensor<Float>(ones: [1, 2, 1, 4])
-	  let y = Tensor<Float>(ones: [4, 1, 3, 1])
-	  let (dx, dy) = gradient(at: x, y, in: foo)
-	  XCTAssertEqual(x.shape, dx.shape)
-	  XCTAssertEqual(y.shape, dy.shape)
-	}
+        func foo(_ x: Tensor<Float>, _ y: Tensor<Float>) -> Tensor<Float> {
+            return (x + y).sum()
+        }
+        let x = Tensor<Float>(ones: [1, 2, 1, 4])
+        let y = Tensor<Float>(ones: [4, 1, 3, 1])
+        let (dx, dy) = gradient(at: x, y, in: foo)
+        XCTAssertEqual(x.shape, dx.shape)
+        XCTAssertEqual(y.shape, dy.shape)
+    }
 
     static var allTests = [
+        ("testElementaryFunctions", testElementaryFunctions),
+        ("testRsqrt", testRsqrt),
         ("testLog1p", testLog1p),
-        // TODO(https://bugs.swift.org/browse/TF-543): Test is failing in Linux
-	// ("testExpm1", testExpm1),
+        ("testLog1mexp", testLog1mexp),
+        ("testExpm1", testExpm1),
         ("testSign", testSign),
-        ("testReduction", testReduction),
+        ("testLogSigmoid", testLogSigmoid),
+        ("testSoftplus", testSoftplus),
+        ("testSoftsign", testSoftsign),
+        ("testElu",testElu),
+        ("testGelu", testGelu),
+        ("testLeakyRelu", testLeakyRelu),
+        ("testIsFinite", testIsFinite),
+        ("testIsInfinite", testIsInfinite),
+        ("testIsNaN", testIsNaN),
+        ("testCosineSimilarity", testCosineSimilarity),
         ("testArgmax", testArgmax),
+        ("testReduction", testReduction),
+        ("testCumulativeSum", testCumulativeSum),
+        ("testCumulativeProduct", testCumulativeProduct),
+        ("testStandardDeviation", testStandardDeviation),
+        ("testLogSumExp", testLogSumExp),
+        ("testMoments", testMoments),
         ("testCeilAndFloor", testCeilAndFloor),
         ("testSimpleMath", testSimpleMath),
-        ("testStandardDeviation", testStandardDeviation),
         ("test3Adds", test3Adds),
         ("testMultiOpMath", testMultiOpMath),
         ("testXWPlusB", testXWPlusB),
         ("testXORInference", testXORInference),
         ("testMLPClassifierStruct", testMLPClassifierStruct),
+        ("testQRDecompositionApproximation", testQRDecompositionApproximation),
+        ("testDiagonalPart", testDiagonalPart),
         ("testBroadcastedAddGradient", testBroadcastedAddGradient)
     ]
 }

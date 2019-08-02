@@ -1,4 +1,4 @@
-// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,7 +29,10 @@ public extension Differentiable {
         in f: @differentiable (Self) -> Tensor<R>
     ) -> (value: Tensor<R>, gradient: TangentVector) {
         let (y, pb) = self.valueWithPullback(in: f)
-        precondition(y.rank == 0)
+        precondition(y.rank == 0, """
+            The function being differentiated produced a tensor with shape \(y.shape). \
+            You can only compute the gradient of functions that return scalar values.
+            """)
         return (y, pb(Tensor<R>(1)))
     }
 
@@ -47,7 +50,10 @@ public extension Differentiable {
         in f: @differentiable (Self, T) -> Tensor<R>
     ) -> (value: Tensor<R>, gradient: (TangentVector, T.TangentVector)) {
         let (y, pb) = self.valueWithPullback(at: x, in: f)
-        precondition(y.rank == 0)
+        precondition(y.rank == 0, """
+            The function being differentiated produced a tensor with shape \(y.shape). \
+            You can only compute the gradient of functions that return scalar values.
+            """)
         return (y, pb(Tensor<R>(1)))
     }
 }
@@ -65,7 +71,10 @@ public func valueWithGradient<T, R>(
 ) -> (value: Tensor<R>, gradient: T.TangentVector)
 where T: Differentiable, R: TensorFlowFloatingPoint {
     let (y, pullback) = valueWithPullback(at: x, in: f)
-    precondition(y.rank == 0)
+    precondition(y.rank == 0, """
+        The function being differentiated produced a tensor with shape \(y.shape). \
+        You can only compute the gradient of functions that return scalar values.
+        """)
     return (y, pullback(Tensor<R>(1)))
 }
 
@@ -77,7 +86,10 @@ public func valueWithGradient<T, U, R>(
 ) -> (value: Tensor<R>, gradient: (T.TangentVector, U.TangentVector))
     where T: Differentiable, U: Differentiable, R: TensorFlowFloatingPoint {
     let (y, pullback) = valueWithPullback(at: x, y, in: f)
-    precondition(y.rank == 0)
+    precondition(y.rank == 0, """
+        The function being differentiated produced a tensor with shape \(y.shape). \
+        You can only compute the gradient of functions that return scalar values.
+        """)
     return (y, pullback(Tensor<R>(1)))
 }
 

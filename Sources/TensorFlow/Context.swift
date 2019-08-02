@@ -1,4 +1,4 @@
-// Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -47,6 +47,27 @@ public struct Context {
     /// The learning phase.
     public var learningPhase: LearningPhase = .inference
 
+    /// The random seed.
+    ///
+    /// - Note: Whenever obtained, the random seed is also updated so that future stateless 
+    ///   random TensorFlow op executions will result in non-deterministic results.
+    public var randomSeed: TensorFlowSeed {
+        mutating get {
+            let seed = _randomSeed
+            _randomSeed = (seed.0, seed.1 + 1)
+            return seed
+        }
+        set { _randomSeed = newValue }
+    }
+
+    private var _randomSeed: TensorFlowSeed = randomSeedForTensorFlow()
+
+    /// The random number generator.
+    internal var randomNumberGenerator: AnyRandomNumberGenerator =
+        AnyRandomNumberGenerator(PhiloxRandomNumberGenerator(uint64Seed: UInt64(time(nil))))
+
+    internal var globalTensorCount: Int = 0
+
     /// Creates a context with default properties.
     public init() {}
 
@@ -83,10 +104,48 @@ public func withContext<R>(_ context: Context, _ body: () throws -> R) rethrows 
 ///   - body: A nullary closure. If the closure has a return value, that value is also used as the
 ///     return value of the `withLearningPhase(_:_:)` function.
 /// - Returns: The return value, if any, of the `body` closure.
-public func withLearningPhase<R>(_ learningPhase: LearningPhase,
-                                 _ body: () throws -> R) rethrows -> R {
+public func withLearningPhase<R>(
+    _ learningPhase: LearningPhase,
+    _ body: () throws -> R
+) rethrows -> R {
     var context = ContextManager.local.currentContext
     context.learningPhase = learningPhase
+    return try withContext(context, body)
+}
+
+/// Calls the given closure within a context that has everything identical to the current context
+/// except for the given random seed.
+///
+/// - Parameters:
+///   - randomSeed: A random seed that will be set before the closure gets called and restored
+///     after the closure returns.
+///   - body: A nullary closure. If the closure has a return value, that value is also used as the
+///     return value of the `withRandomSeedForTensorFlow(_:_:)` function.
+/// - Returns: The return value, if any, of the `body` closure.
+public func withRandomSeedForTensorFlow<R>(
+    _ randomSeed: TensorFlowSeed,
+    _ body: () throws -> R
+) rethrows -> R {
+    var context = ContextManager.local.currentContext
+    context.randomSeed = randomSeed
+    return try withContext(context, body)
+}
+
+/// Calls the given closure within a context that has everything identical to the current context
+/// except for the given random number generator.
+///
+/// - Parameters:
+///   - randomNumberGenerator: A random number generator that will be set before the closure gets 
+///     called and restored after the closure returns.
+///   - body: A nullary closure. If the closure has a return value, that value is also used as the
+///     return value of the `withRandomNumberGeneratorForTensorFlow(_:_:)` function.
+/// - Returns: The return value, if any, of the `body` closure.
+public func withRandomNumberGeneratorForTensorFlow<G: RandomNumberGenerator, R>(
+    _ randomNumberGenerator: inout G,
+    _ body: () throws -> R
+) rethrows -> R {
+    var context = ContextManager.local.currentContext
+    context.randomNumberGenerator = AnyRandomNumberGenerator(randomNumberGenerator)
     return try withContext(context, body)
 }
 
