@@ -16,7 +16,7 @@
 // Core
 //===------------------------------------------------------------------------------------------===//
 
-private extension Tensor where Scalar: TensorFlowFloatingPoint {
+public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// Returns a dropout given a probability and noise shape.
     @differentiable(wrt: self where Scalar: Differentiable)
     func droppingOut(probability: Double, noiseShape: TensorShape) -> Tensor {
