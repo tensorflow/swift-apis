@@ -153,10 +153,19 @@ final class ComplexTests: XCTestCase {
     }
   
     func testVjpInit() {
-        let pb = pullback(at: 4, -3) { r, i in
+        var pb = pullback(at: 4, -3) { r, i in
             return Complex<Float>(real: r, imaginary: i)
         }
-        XCTAssertEqual((-1, 2), pb(Complex<Float>(real: -1, imaginary: 2)))
+        var tanTuple = pb(Complex<Float>(real: -1, imaginary: 2))
+        XCTAssertEqual(-1, tanTuple.0)
+        XCTAssertEqual(2, tanTuple.1)
+
+      pb = pullback(at: 4, -3) { r, i in
+          return Complex<Float>(real: r * r, imaginary: i + i)
+      }
+      tanTuple = pb(Complex<Float>(real: -1, imaginary: 1))
+      XCTAssertEqual(-8, tanTuple.0)
+      XCTAssertEqual(2, tanTuple.1)
     }
     
     func testVjpAdd() {
@@ -164,7 +173,8 @@ final class ComplexTests: XCTestCase {
             pullback(at: Complex<Float>(real: 2, imaginary: 3)) { x in
             return x + Complex<Float>(real: 5, imaginary: 6)
         }
-        XCTAssertEqual(pb(Complex(real: 1, imaginary: 1)), Complex<Float>(real: 1, imaginary: 1))
+        XCTAssertEqual(pb(Complex(real: 1, imaginary: 1)),
+                       Complex<Float>(real: 1, imaginary: 1))
     }
     
     func testVjpSubtract() {
@@ -316,7 +326,7 @@ final class ComplexTests: XCTestCase {
         }
         
         XCTAssertEqual(-2, result)
-        XCTAssertEqual(Complex(real: 1, imaginary: 1), pbComplex(1))
+        XCTAssertEqual(Complex(real: 1, imaginary: 0), pbComplex(1))
     }
     
     static var allTests = [
