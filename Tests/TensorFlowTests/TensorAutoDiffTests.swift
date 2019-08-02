@@ -569,6 +569,6 @@ final class TensorAutoDiffTests: XCTestCase {
         ("testUnbroadcastToShape", testUnbroadcastToShape),
         ("testUnbroadcastTo", testUnbroadcastTo),
         ("testUnbroadcastLike", testUnbroadcastLike),
-        ("testBatchNormalized", testBatchNormalized),
+        ("testBatchNormalized", testBatchNormalized)
     ]
 }
