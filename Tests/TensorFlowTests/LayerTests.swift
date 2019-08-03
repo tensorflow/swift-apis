@@ -362,17 +362,18 @@ final class LayerTests: XCTestCase {
     }
 
     func testDropout() {
-        Context.local.learningPhase = .training
         let probability = 0.25
         let layer = Dropout<Double>(probability: probability)
         let input = Tensor<Double>(randomNormal: [500, 500], mean: Tensor(5))
-        let output = layer(input)
-        let fractionDropped = Tensor<Double>(output .== 0).mean()
-        XCTAssertTrue(fractionDropped.isAlmostEqual(to: Tensor(probability), tolerance: 0.01))
-
-        Context.local.learningPhase = .inference
-        let inferenceOutput = layer.inferring(from: input)
-        XCTAssertEqual(inferenceOutput, input)
+        withLearningPhase(.training) {
+            let output = layer(input)
+            let fractionDropped = Tensor<Double>(output .== 0).mean()
+            XCTAssertEqual(fractionDropped.scalar!, probability, accuracy: 0.01)
+        }
+        withLearningPhase(.inference) {
+            let inferenceOutput = layer.inferring(from: input)
+            XCTAssertEqual(inferenceOutput, input)
+        }
     }
 
     func testDense() {
