@@ -52,7 +52,6 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
         precondition(
             (0..<1.0).contains(probability),
             "Dropout probability must be between 0 and 1. Got: \(probability)")
-
         self.probability = probability
     }
 
@@ -86,7 +85,6 @@ public struct SpatialDropout1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLa
         precondition(
             (0..<1.0).contains(probability),
             "Dropout probability must be between 0 and 1. Got: \(probability)")
-
         self.probability = probability
     }
 
@@ -122,7 +120,6 @@ public struct SpatialDropout2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLa
         precondition(
             (0..<1.0).contains(probability),
             "Dropout probability must be between 0 and 1. Got: \(probability)")
-
         self.probability = probability
     }
 
@@ -158,7 +155,6 @@ public struct SpatialDropout3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLa
         precondition(
             (0..<1.0).contains(probability),
             "Dropout probability must be between 0 and 1. Got: \(probability)")
-
         self.probability = probability
     }
 
@@ -170,8 +166,10 @@ public struct SpatialDropout3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLa
     /// - Precondition: `input` must be rank `5`.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        dropout(input, probability: probability,
-             noiseShape: [input.shape[0], 1, 1, 1, input.shape[4]])
+        dropout(
+            input,
+            probability: probability,
+            noiseShape: [input.shape[0], 1, 1, 1, input.shape[4]])
     }
 }
 
