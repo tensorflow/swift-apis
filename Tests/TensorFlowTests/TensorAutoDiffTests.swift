@@ -133,11 +133,11 @@ final class TensorAutoDiffTests: XCTestCase {
             }
             return x * factorial(x - 1)
         }
-        XCTAssertTrue(Tensor(0) == gradient(at: Tensor(1), in: factorial))
-        XCTAssertTrue(Tensor(1) == gradient(at: Tensor(2), in: factorial))
-        XCTAssertTrue(Tensor(5) == gradient(at: Tensor(3), in: factorial))
-        XCTAssertTrue(Tensor(26) == gradient(at: Tensor(4), in: factorial))
-        XCTAssertTrue(Tensor(154) == gradient(at: Tensor(5), in: factorial))
+        XCTAssertEqual(gradient(at: Tensor(1), in: factorial), Tensor(0))
+        XCTAssertEqual(gradient(at: Tensor(2), in: factorial), Tensor(1))
+        XCTAssertEqual(gradient(at: Tensor(3), in: factorial), Tensor(5))
+        XCTAssertEqual(gradient(at: Tensor(4), in: factorial), Tensor(26))
+        XCTAssertEqual(gradient(at: Tensor(5), in: factorial), Tensor(154))
 
         func product(_ x: Tensor<Float>, count: Int) -> Tensor<Float> {
             precondition(count > 0)
@@ -146,9 +146,9 @@ final class TensorAutoDiffTests: XCTestCase {
             }
             return x * product(x, count: count - 1)
         }
-        XCTAssertTrue(Tensor(300) == gradient(at: Tensor(10), in: { x in product(x, count: 3) }))
-        XCTAssertTrue(Tensor(-20) == gradient(at: Tensor(-10), in: { x in product(x, count: 2) }))
-        XCTAssertTrue(Tensor(1) == gradient(at: Tensor(100), in: { x in product(x, count: 1) }))
+        XCTAssertEqual(gradient(at: Tensor(-10), in: { x in product(x, count: 2) }), Tensor(-20))
+        XCTAssertEqual(gradient(at: Tensor(10), in: { x in product(x, count: 3) }), Tensor(300))
+        XCTAssertEqual(gradient(at: Tensor(100), in: { x in product(x, count: 1) }), Tensor(1))
     }
 
     func testScalarGenericGrad() {
