@@ -412,6 +412,27 @@ final class LayerTests: XCTestCase {
         //                 [         0.0,          0.0,          0.0,          0.0]])
         // XCTAssertEqual(𝛁rnn.cell.bias, [  0.2496884,  0.66947335,   0.7978788, -0.22378457])
     }
+    
+    func testLSTM() {
+        let x = Tensor<Float>(rangeFrom: 0.0, to: 0.4, stride: 0.1).rankLifted()
+        let inputs: [Tensor<Float>] = Array(repeating: x, count: 4)
+        let rnn = RNN(LSTMCell<Float>(inputSize: 4, hiddenSize: 4, seed: (0xFeed, 0xBeef)))
+        withTensorLeakChecking {
+            let (outputs, _) = rnn.valueWithPullback(at: inputs) { rnn, inputs in
+                return rnn(inputs)
+            }
+            XCTAssertEqual(outputs.map { $0.cell },
+                           [[[ 0.1147887,  0.110584,   -0.064081416, -0.08400999]],
+                            [[ 0.20066944, 0.20825693, -0.11570193,  -0.14060757]],
+                            [[ 0.26505938, 0.29501802, -0.15672679,  -0.1794617]],
+                            [[ 0.31350702, 0.37243342, -0.1890606,   -0.20662251]]])
+            XCTAssertEqual(outputs.map { $0.hidden },
+                           [[[ 0.06314508, 0.060653392, -0.029783601, -0.037988894]],
+                            [[ 0.10919889, 0.114127055, -0.053144053, -0.063461654]],
+                            [[ 0.14266092, 0.16068783,  -0.07122802,  -0.08071505]],
+                            [[ 0.16709672, 0.20094386,  -0.0851357,   -0.09258326]]])
+        }
+    }
 
     func testFunction() {
         let tanhLayer = Function<Tensor<Float>, Tensor<Float>>(tanh)
@@ -541,6 +562,7 @@ final class LayerTests: XCTestCase {
         ("testSimpleRNNCell", testSimpleRNNCell),
         ("testDense", testDense),
         ("testRNN", testRNN),
+        ("testLSTM", testLSTM),
         ("testFunction", testFunction),
         ("testBatchNorm", testBatchNorm),
         ("testLayerNorm", testLayerNorm)
