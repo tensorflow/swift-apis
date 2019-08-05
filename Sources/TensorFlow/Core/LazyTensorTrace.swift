@@ -93,9 +93,9 @@ class LazyTensorTraceBuilder {
     static func trace<In: TensorGroup, Out: TensorGroup>(_ fn: (In) -> Out) -> LazyTensorTrace {
         precondition(_ThreadLocalState.useLazyTensor, "Lazy tensor is not enabled for tracing.")
         // Disable shape tracking and reset to original state when done.
-        let shapeTrackingEnabled = LazyTensorContext.shapeTrackingEnabled
-        defer { LazyTensorContext.shapeTrackingEnabled = shapeTrackingEnabled }
-        LazyTensorContext.shapeTrackingEnabled = false
+        let isShapeTrackingEnabled = LazyTensorContext.isShapeTrackingEnabled
+        defer { LazyTensorContext.isShapeTrackingEnabled = isShapeTrackingEnabled }
+        LazyTensorContext.isShapeTrackingEnabled = false
 
         // Set up inputs for running `fn`.
         let inputOps = In._typeList.map { Self.makePlaceholder(dataType: $0) }

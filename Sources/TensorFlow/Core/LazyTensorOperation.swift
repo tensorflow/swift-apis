@@ -80,7 +80,7 @@ class LazyTensorHandle: _AnyTensorHandle {
         get {
             switch handle {
             case .symbolic(let op, let index, _):
-                precondition(LazyTensorContext.shapeTrackingEnabled,
+                precondition(LazyTensorContext.isShapeTrackingEnabled,
                     "Shape tracking is not enabled in this context.")
                 if let shape = op.outputShapes[index] { return shape }
                 // Materialize and get the shape from concrete tensor handle.
@@ -263,7 +263,7 @@ class LazyTensorOperation: TensorOperation {
     }
 
     func evaluate() -> [LazyTensorHandle] {
-        if LazyTensorContext.shapeTrackingEnabled {
+        if LazyTensorContext.isShapeTrackingEnabled {
             updateOutputShapes()
         }
         return (0..<outputCount).map {
