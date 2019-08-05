@@ -50,19 +50,19 @@ class LazyTensorHandle: _AnyTensorHandle {
         precondition(
             index < op.outputCount, "Symbolic Tensor Index is out-of-bounds")
         handle = Handle.symbolic(op, index: index, isLive: false)
-        LazyTensorContext.operationsTracker.incrementRefCount(op, isLive: false)
+        LazyTensorContext.local.operationsTracker.incrementRefCount(op, isLive: false)
     }
 
     init(_lazyLive op: LazyTensorOperation, index: Int) {
         precondition(
             index < op.outputCount, "Symbolic Tensor Index is out-of-bounds")
         handle = Handle.symbolic(op, index: index, isLive: true)
-        LazyTensorContext.operationsTracker.incrementRefCount(op, isLive: true)
+        LazyTensorContext.local.operationsTracker.incrementRefCount(op, isLive: true)
     }
 
     deinit {
         if case let .symbolic(op, _, isLive) = handle {
-            LazyTensorContext.operationsTracker.decrementRefCount(op, isLive: isLive)
+            LazyTensorContext.local.operationsTracker.decrementRefCount(op, isLive: isLive)
         }
     }
 
@@ -80,7 +80,7 @@ class LazyTensorHandle: _AnyTensorHandle {
         get {
             switch handle {
             case .symbolic(let op, let index, _):
-                precondition(LazyTensorContext.isShapeTrackingEnabled,
+                precondition(LazyTensorContext.local.isShapeTrackingEnabled,
                     "Shape tracking is not enabled in this context.")
                 if let shape = op.outputShapes[index] { return shape }
                 // Materialize and get the shape from concrete tensor handle.
@@ -102,19 +102,19 @@ class LazyTensorHandle: _AnyTensorHandle {
     // Liveness tracking for LazyTensorOperations
     //
     static func isLive(_ op: LazyTensorOperation) -> Bool {
-        return LazyTensorContext.operationsTracker.isLive(op)
+        return LazyTensorContext.local.operationsTracker.isLive(op)
     }
 
     static func forEachLiveOperation(
         _ perform: (LazyTensorOperation) throws -> Void
     ) rethrows -> Void {
-        try LazyTensorContext.operationsTracker.forEachLiveOperation(perform)
+        try LazyTensorContext.local.operationsTracker.forEachLiveOperation(perform)
     }
 
     static func forEachOperation(
         _ perform: (LazyTensorOperation) throws -> Void
     ) rethrows -> Void {
-        try LazyTensorContext.operationsTracker.forEachOperation(perform)
+        try LazyTensorContext.local.operationsTracker.forEachOperation(perform)
     }
 
     @usableFromInline
@@ -263,7 +263,7 @@ class LazyTensorOperation: TensorOperation {
     }
 
     func evaluate() -> [LazyTensorHandle] {
-        if LazyTensorContext.isShapeTrackingEnabled {
+        if LazyTensorContext.local.isShapeTrackingEnabled {
             updateOutputShapes()
         }
         return (0..<outputCount).map {
