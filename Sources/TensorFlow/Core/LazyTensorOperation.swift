@@ -67,12 +67,29 @@ class LazyTensorHandle: _AnyTensorHandle {
     }
 
     /// The number of dimensions of the underlying `Tensor`.
-    @inlinable
-    var rank: Int { _tfeTensorHandle.rank }
+    @usableFromInline
+    var rank: Int {
+        @_semantics("autodiff.nonvarying")
+        get { shape.rank }
+    }
 
     /// The shape of the underlying `Tensor`.
-    @inlinable
-    var shape: TensorShape { _tfeTensorHandle.shape }
+    @usableFromInline
+    var shape: TensorShape {
+        @_semantics("autodiff.nonvarying")
+        get {
+            switch handle {
+            case .symbolic(let op, let index, _):
+                precondition(LazyTensorContext.isShapeTrackingEnabled,
+                    "Shape tracking is not enabled in this context.")
+                if let shape = op.outputShapes[index] { return shape }
+                // Materialize and get the shape from concrete tensor handle.
+                op.outputShapes[index] = _tfeTensorHandle.shape
+                return op.outputShapes[index]!
+            case .concrete(let tfeHandle, _): return tfeHandle.shape
+            }
+        }
+    }
 
     /// Returns the underlying `LazyTensorOperation` if this is a symbolic `LazyTensorHandle`.
     var lazyTensorOperation: LazyTensorOperation? {
@@ -186,6 +203,7 @@ class LazyTensorOperation: TensorOperation {
     let outputCount: Int
     var inputs: [Input]
     var attributes: [String: Attribute]
+    var outputShapes: [TensorShape?]
     var deviceName: String?
     var outputs: [TFETensorHandle]?
     var id: String?
@@ -230,6 +248,7 @@ class LazyTensorOperation: TensorOperation {
         self.attributes = [:]
         self.deviceName = _ExecutionContext.global.currentDeviceName
         self.outputCount = outputCount
+        self.outputShapes = []
         self.outputs = nil
         self.id = id
         LazyTensorOperation.liveOperations += 1
@@ -244,6 +263,9 @@ class LazyTensorOperation: TensorOperation {
     }
 
     func evaluate() -> [LazyTensorHandle] {
+        if LazyTensorContext.isShapeTrackingEnabled {
+            updateOutputShapes()
+        }
         return (0..<outputCount).map {
             LazyTensorHandle(_lazyLive: self, index: $0)
         }
@@ -869,6 +891,7 @@ extension LazyTensorOperation {
         for lazyOp in traceInfo.lazyOperations {
             let end = start + lazyOp.outputCount
             lazyOp.outputs = Array(allOutputs[start..<end])
+            lazyOp.outputShapes = lazyOp.outputs!.map { $0.shape }
             start = end
         }
 
