@@ -45,25 +45,27 @@ final class SequentialTests: XCTestCase {
         let x: Tensor<Float> = [[0, 0], [0, 1], [1, 0], [1, 1]]
         let y: Tensor<Float> = [0, 1, 1, 0]
         Context.local.learningPhase = .training
-        for _ in 0..<1000 {
-            let 𝛁model = model.gradient { model -> Tensor<Float> in
-                let ŷ = model(x)
-                return meanSquaredError(predicted: ŷ, expected: y)
+        withTensorLeakChecking {
+            for _ in 0..<1000 {
+                let 𝛁model = model.gradient { model -> Tensor<Float> in
+                    let ŷ = model(x)
+                    return meanSquaredError(predicted: ŷ, expected: y)
+                }
+                sgd.update(&model, along: 𝛁model)
+                sgd.update(&model.allDifferentiableVariables, along: 𝛁model)
+                rmsprop.update(&model, along: 𝛁model)
+                rmsprop.update(&model.allDifferentiableVariables, along: 𝛁model)
+                adam.update(&model, along: 𝛁model)
+                adam.update(&model.allDifferentiableVariables, along: 𝛁model)
+                adamax.update(&model, along: 𝛁model)
+                adamax.update(&model.allDifferentiableVariables, along: 𝛁model)
+                amsgrad.update(&model, along: 𝛁model)
+                amsgrad.update(&model.allDifferentiableVariables, along: 𝛁model)
+                adagrad.update(&model, along: 𝛁model)
+                adagrad.update(&model.allDifferentiableVariables, along: 𝛁model)
+                adadelta.update(&model, along: 𝛁model)
+                adadelta.update(&model.allDifferentiableVariables, along: 𝛁model)
             }
-            sgd.update(&model, along: 𝛁model)
-            sgd.update(&model.allDifferentiableVariables, along: 𝛁model)
-            rmsprop.update(&model, along: 𝛁model)
-            rmsprop.update(&model.allDifferentiableVariables, along: 𝛁model)
-            adam.update(&model, along: 𝛁model)
-            adam.update(&model.allDifferentiableVariables, along: 𝛁model)
-            adamax.update(&model, along: 𝛁model)
-            adamax.update(&model.allDifferentiableVariables, along: 𝛁model)
-            amsgrad.update(&model, along: 𝛁model)
-            amsgrad.update(&model.allDifferentiableVariables, along: 𝛁model)
-            adagrad.update(&model, along: 𝛁model)
-            adagrad.update(&model.allDifferentiableVariables, along: 𝛁model)
-            adadelta.update(&model, along: 𝛁model)
-            adadelta.update(&model.allDifferentiableVariables, along: 𝛁model)
         }
         XCTAssertEqual(model.inferring(from: [[0, 0], [0, 1], [1, 0], [1, 1]]),
                        [[0.52508783], [0.52508783], [0.52508783], [0.52508783]])
