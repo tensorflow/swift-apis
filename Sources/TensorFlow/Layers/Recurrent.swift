@@ -262,11 +262,13 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
 
 /// An GRU cell.
 public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
-    public var updateWeight, updateWeight2, resetWeight, resetWeight2, outputWeight, outputWeight2: Tensor<Scalar>
+    public var updateWeight1, updateWeight2: Tensor<Scalar>
+    public var resetWeight1, resetWeight2: Tensor<Scalar>
+    public var outputWeight1, outputWeight2: Tensor<Scalar>
     public var updateBias, outputBias, resetBias: Tensor<Scalar>
 
     @noDerivative public var stateShape: TensorShape {
-        TensorShape([1, updateWeight.shape[0]])
+        [1, updateWeight.shape[0]]
     }
 
     public var zeroState: State {
@@ -287,16 +289,16 @@ public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
         inputSize: Int,
         hiddenSize: Int,
         seed: TensorFlowSeed = Context.local.randomSeed
-        ) {
+    ) {
         let gateWeightShape = TensorShape([inputSize, 1])
         let gateBiasShape = TensorShape([hiddenSize])
-        self.updateWeight = Tensor(glorotUniform: gateWeightShape, seed: seed)
+        self.updateWeight1 = Tensor(glorotUniform: gateWeightShape, seed: seed)
         self.updateWeight2 = Tensor(glorotUniform: gateWeightShape, seed: seed)
         self.updateBias = Tensor(zeros: gateBiasShape)
-        self.resetWeight = Tensor(glorotUniform: gateWeightShape, seed: seed)
+        self.resetWeight1 = Tensor(glorotUniform: gateWeightShape, seed: seed)
         self.resetWeight2 = Tensor(glorotUniform: gateWeightShape, seed: seed)
         self.resetBias = Tensor(zeros: gateBiasShape)
-        self.outputWeight = Tensor(glorotUniform: gateWeightShape, seed: seed)
+        self.outputWeight1 = Tensor(glorotUniform: gateWeightShape, seed: seed)
         self.outputWeight2 = Tensor(glorotUniform: gateWeightShape, seed: seed)
         self.outputBias = Tensor(zeros: gateBiasShape)
     }
@@ -316,9 +318,12 @@ public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     /// - Returns: The hidden state.
     @differentiable
     public func callAsFunction(_ input: Input) -> Output {
-        let resetGate = sigmoid(matmul(input.input, resetWeight) + matmul(input.state.hidden, resetWeight2) + resetBias)
-        let updateGate = sigmoid(matmul(input.input, updateWeight) + matmul(input.state.hidden, updateWeight2) + updateBias)
-        let outputGate = tanh(matmul(input.input, outputWeight) + matmul(resetGate * input.state.hidden, outputWeight2) + outputBias)
+        let resetGate = sigmoid(matmul(input.input, resetWeight1) +
+            matmul(input.state.hidden, resetWeight2) + resetBias)
+        let updateGate = sigmoid(matmul(input.input, updateWeight1) +
+            matmul(input.state.hidden, updateWeight2) + updateBias)
+        let outputGate = tanh(matmul(input.input, outputWeight1) +
+            matmul(resetGate * input.state.hidden, outputWeight2) + outputBias)
 
         let updateHidden = (1 - updateGate) * input.state.hidden
         let updateOutput = (1 - updateGate) * outputGate
