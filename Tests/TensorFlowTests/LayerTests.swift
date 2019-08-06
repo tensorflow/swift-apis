@@ -1194,6 +1194,23 @@ final class LayerTests: XCTestCase {
         }
     }
 
+    func testGRU() {
+        let x = Tensor<Float>(rangeFrom: 0.0, to: 0.4, stride: 0.1).rankLifted()
+        let inputs: [Tensor<Float>] = Array(repeating: x, count: 4)
+        let rnn = RNN(GRUCell<Float>(inputSize: 4, hiddenSize: 4,
+                                           seed: (0xFeed, 0xBeef)))
+        withTensorLeakChecking {
+            let (outputs, _) = rnn.valueWithPullback(at: inputs) { rnn, inputs in
+                return rnn(inputs)
+            }
+            XCTAssertEqual(outputs.map { $0.hidden },
+                           [[[0.11937807, 0.11937807, 0.11937807, 0.11937807]],
+                             [[0.18876444, 0.18876444, 0.18876444, 0.18876444]],
+                             [[0.2230835, 0.2230835, 0.2230835, 0.2230835]],
+                             [[0.2383619, 0.2383619, 0.2383619, 0.2383619]]])
+        }
+    }
+
     func testFunction() {
         let tanhLayer = Function<Tensor<Float>, Tensor<Float>>(tanh)
         let input = Tensor(shape: [5, 1], scalars: (0..<5).map(Float.init))
@@ -1415,6 +1432,7 @@ final class LayerTests: XCTestCase {
         ("testRNN", testRNN),
         ("testLSTM", testLSTM),
         ("testFunction", testFunction),
+        ("testGRU", testGRU),
         ("testBatchNorm", testBatchNorm),
         ("testBatchNormInference", testBatchNormInference),
         ("testLayerNorm", testLayerNorm),
