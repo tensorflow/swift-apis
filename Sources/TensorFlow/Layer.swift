@@ -81,6 +81,8 @@ public extension ParameterlessLayer {
     }
 
     mutating func move(along direction: EmptyTangentVector) {}
+
+    var zeroTangentVector: TangentVector { .zero }
 }
 
 public extension Layer {
