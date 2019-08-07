@@ -56,7 +56,6 @@ struct Complex<T: FloatingPoint> {
 
 extension Complex: Differentiable where T: Differentiable {
     typealias TangentVector = Complex
-    typealias AllDifferentiableVariables = Complex
 }
 
 extension Complex {
