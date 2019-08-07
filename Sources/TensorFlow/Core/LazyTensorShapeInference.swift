@@ -66,6 +66,37 @@ extension LazyTensorOperation {
             }
         }
 
+        // Return the CTensor, selectively materializing it if needed.
+        func cTensor(handle: LazyTensorHandle) -> CTensor? {
+            switch handle.handle {
+            case .concrete(let h, _):
+                let cTensor = TFE_TensorHandleResolve(h._cTensorHandle, status)
+                checkOk(status)
+                return cTensor
+            case .symbolic(let op, _, _):
+                // TODO(https://bugs.swift.org/browse/TF-765): "Pack" is used
+                // for creating tensors from array literals. So, allow
+                // materialization for 'Pack' so that we can get the shape for
+                // array literals. We should revisit this heuristic.
+                if op.name != "Pack" { return nil }
+                let cTensor = TFE_TensorHandleResolve(handle._cTensorHandle, status)
+                return cTensor
+            }
+        }
+
+        // Create input_tensors consisting of *only* materialized inputs.
+        var input_tensors = Array<CTensor?>()
+        for input in inputs {
+            switch input {
+            case .single(let v):
+                input_tensors.append(cTensor(handle: v))
+            case .list(let values):
+                input_tensors.append(
+                    contentsOf: values.lazy.map { cTensor(handle: $0) }
+                )
+            }
+        }
+
         // This will be filled in by `TFE_InferShapes` and should be freed later.
         var outputShapeListPtr = UnsafeMutablePointer<TF_ShapeAndTypeList>(nil)
         defer { TF_DeleteShapeAndTypeList(outputShapeListPtr) }
@@ -76,17 +107,18 @@ extension LazyTensorOperation {
             TF_DeleteStatus(tfeOp.status)
         }
 
-        TFE_InferShapes(
-            tfeOp.op,
-            /*input_shapes*/ inputShapeList,
-            /*input_tensors*/ nil,
-            /*input_tensors_as_shapes*/ nil,
-            /*input_resource_shapes_and_types*/ nil,
-            /*output_shapes*/ &outputShapeListPtr,
-            /*output_resource_shapes_and_types*/ nil,
-            status)
-
-        checkOk(status)
+        input_tensors.withUnsafeMutableBufferPointer { buffer in
+            TFE_InferShapes(
+                tfeOp.op,
+                /*input_shapes*/ inputShapeList,
+                /*input_tensors*/ buffer.baseAddress!,
+                /*input_tensors_as_shapes*/ nil,
+                /*input_resource_shapes_and_types*/ nil,
+                /*output_shapes*/ &outputShapeListPtr,
+                /*output_resource_shapes_and_types*/ nil,
+                status)
+            checkOk(status)
+        }
 
         precondition(outputShapeListPtr != nil, "TFE_InferShapes returned nil for output shapes")
         let outputShapeList = outputShapeListPtr!.pointee
