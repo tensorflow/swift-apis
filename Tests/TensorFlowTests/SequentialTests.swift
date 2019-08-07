@@ -52,19 +52,12 @@ final class SequentialTests: XCTestCase {
                     return meanSquaredError(predicted: ŷ, expected: y)
                 }
                 sgd.update(&model, along: 𝛁model)
-                sgd.update(&model.allDifferentiableVariables, along: 𝛁model)
                 rmsprop.update(&model, along: 𝛁model)
-                rmsprop.update(&model.allDifferentiableVariables, along: 𝛁model)
                 adam.update(&model, along: 𝛁model)
-                adam.update(&model.allDifferentiableVariables, along: 𝛁model)
                 adamax.update(&model, along: 𝛁model)
-                adamax.update(&model.allDifferentiableVariables, along: 𝛁model)
                 amsgrad.update(&model, along: 𝛁model)
-                amsgrad.update(&model.allDifferentiableVariables, along: 𝛁model)
                 adagrad.update(&model, along: 𝛁model)
-                adagrad.update(&model.allDifferentiableVariables, along: 𝛁model)
                 adadelta.update(&model, along: 𝛁model)
-                adadelta.update(&model.allDifferentiableVariables, along: 𝛁model)
             }
         }
         XCTAssertEqual(model.inferring(from: [[0, 0], [0, 1], [1, 0], [1, 1]]),
