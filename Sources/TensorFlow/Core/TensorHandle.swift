@@ -22,6 +22,8 @@ import CTensorFlow
 // protocol to workaround bug TF-527. When it is fixed, we should remove `: class`.
 public protocol _AnyTensorHandle: class {
     var _tfeTensorHandle: TFETensorHandle { get }
+    var rank: Int { get }
+    var shape: TensorShape { get }
 }
 
 extension _AnyTensorHandle {
@@ -39,22 +41,50 @@ public class TFETensorHandle: _AnyTensorHandle {
     public var _tfeTensorHandle: TFETensorHandle { return self }
 
     public init(_owning base: CTensorHandle) {
+        Context.local.globalTensorCount += 1
         self._cTensorHandle = base
     }
 
     deinit {
         debugLog("De-initializing TensorHandle.")
         TFE_DeleteTensorHandle(_cTensorHandle)
+        Context.local.globalTensorCount -= 1
         debugLog("Returning from deinit of TensorHandle.")
     }
-}
 
+    /// The number of dimensions of the underlying `Tensor`.
+    @inlinable
+    public var rank: Int {
+        @_semantics("autodiff.nonvarying")
+        get {
+            let status = _ExecutionContext.global.status
+            let rank = TFE_TensorHandleNumDims(_cTensorHandle, status)
+            checkOk(status)
+            return Int(rank)
+        }
+    }
+
+    /// The shape of the underlying `Tensor`.
+    @inlinable
+    public var shape: TensorShape {
+        @_semantics("autodiff.nonvarying")
+        get {
+            let status = _ExecutionContext.global.status
+            let dims: [Int] = (0..<Int32(rank)).map { i in
+                let dim = TFE_TensorHandleDim(_cTensorHandle, i, status)
+                checkOk(status)
+                return Int(dim)
+            }
+            return TensorShape(dims)
+        }
+    }
+}
 
 /// `TensorHandle` is the type used by ops. It includes a `Scalar` type, which
 /// compiler internals can use to determine the datatypes of parameters when
 /// they are extracted into a tensor program.
 public struct TensorHandle<Scalar> where Scalar: _TensorFlowDataTypeCompatible {
-    let handle: _AnyTensorHandle
+    @usableFromInline let handle: _AnyTensorHandle
 
     public var _cTensorHandle: CTensorHandle { handle._cTensorHandle }
 
@@ -123,6 +153,22 @@ extension TensorHandle where Scalar: TensorFlowScalar {
             let pointer = buffer.bindMemory(to: Scalar.self, capacity: contiguousSize)
             scalarsInitializer(pointer)
         })
+    }
+}
+
+extension TensorHandle {
+    /// The number of dimensions of the `Tensor`.
+    @inlinable
+    public var rank: Int {
+        @_semantics("autodiff.nonvarying")
+        get { handle.rank }
+    }
+
+    /// The shape of the `Tensor`.
+    @inlinable
+    public var shape: TensorShape {
+        @_semantics("autodiff.nonvarying")
+        get { handle.shape }
     }
 }
 

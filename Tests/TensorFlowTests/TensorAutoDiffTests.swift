@@ -30,15 +30,15 @@ final class TensorAutoDiffTests: XCTestCase {
         func square(_ x: Tensor<Float>) -> Tensor<Float> {
             return (x * x).sum()
         }
-        XCTAssertEqual([0.2, 0.4, 0.6], gradient(at: [0.1, 0.2, 0.3], in: square))
-        XCTAssertEqual([[20], [40]], gradient(at: [[10], [20]], in: square))
+        XCTAssertEqual(gradient(at: [0.1, 0.2, 0.3], in: square), [0.2, 0.4, 0.6])
+        XCTAssertEqual(gradient(at: [[10], [20]], in: square), [[20], [40]])
     }
 
     func testGenericGrad() {
         func square<T : TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
             return (x * x).sum()
         }
-        XCTAssertEqual([0.2, 0.4, 0.6], gradient(at: Tensor([0.1, 0.2, 0.3]), in: square))
+        XCTAssertEqual(gradient(at: Tensor([0.1, 0.2, 0.3]), in: square), [0.2, 0.4, 0.6])
     }
 
     func testScalarGenericGrad() {
@@ -46,14 +46,14 @@ final class TensorAutoDiffTests: XCTestCase {
         func negate<T : TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
             return (1 - x).sum()
         }
-        XCTAssertEqual(Tensor(-1), gradient(at: Tensor([0.1, 0.2, 0.3]), in: negate))
+        XCTAssertEqual(gradient(at: Tensor([0.1, 0.2, 0.3]), in: negate), Tensor(-1))
     }
 
     func testScalarized() {
         let grad = gradient(at: Tensor<Float>([3.0, 4.0])) { x in
             logSoftmax(x).mean().scalarized()
         }
-        XCTAssertEqual(Tensor([0.23105857, -0.2310586]), grad)
+        XCTAssertEqual(grad, Tensor([0.23105857, -0.2310586]))
     }
 
     func testPlus() {
@@ -67,7 +67,7 @@ final class TensorAutoDiffTests: XCTestCase {
         XCTAssertTrue((Tensor(1), Tensor(-1)) == gradient(at: Tensor(0), Tensor(0), in: f))
         XCTAssertTrue(([1], [-1]) == pullback(at: [1], [10], in: f)([1]))
     }
-    
+
     func testMultiply() {
         func f(a: Tensor<Float>, b: Tensor<Float>) -> Tensor<Float> { (a * b).sum() }
         XCTAssertTrue(([0], [0]) == gradient(at: [0], [0], in: f))
@@ -95,13 +95,13 @@ final class TensorAutoDiffTests: XCTestCase {
 
     func testNegate() {
         func f(a: Tensor<Float>) -> Tensor<Float> { (-a).sum() }
-        XCTAssertEqual([-1], gradient(at: [0], in: f))
-        XCTAssertEqual([-1], gradient(at: [10], in: f))
+        XCTAssertEqual(gradient(at: [0], in: f), [-1])
+        XCTAssertEqual(gradient(at: [10], in: f), [-1])
     }
 
     func testAbs() {
         func f(a: Tensor<Float>) -> Tensor<Float> { abs(a).sum() }
-        XCTAssertEqual([1, -1, 0], gradient(at: [3.0, -3.0, 0], in: f))
+        XCTAssertEqual(gradient(at: [3.0, -3.0, 0], in: f), [1, -1, 0])
     }
 
     func testSum() {
@@ -115,12 +115,12 @@ final class TensorAutoDiffTests: XCTestCase {
         }
 
         let expected = Tensor<Float>(ones: [2, 2])
-        XCTAssertEqual(expected, sumPullbackScalar(Tensor(1)))
-        XCTAssertEqual(expected, sumPullbackSqueezingAxes(Tensor(1)))
-        XCTAssertEqual(expected, sumPullbackAlongAxes(Tensor(1)))
-        XCTAssertEqual(expected * 3, sumPullbackScalar(Tensor(3)))
-        XCTAssertEqual(expected * 3, sumPullbackSqueezingAxes(Tensor(3)))
-        XCTAssertEqual(expected * 3, sumPullbackAlongAxes(Tensor(3)))
+        XCTAssertEqual(sumPullbackScalar(Tensor(1)), expected)
+        XCTAssertEqual(sumPullbackSqueezingAxes(Tensor(1)), expected)
+        XCTAssertEqual(sumPullbackAlongAxes(Tensor(1)), expected)
+        XCTAssertEqual(sumPullbackScalar(Tensor(3)), expected * 3)
+        XCTAssertEqual(sumPullbackSqueezingAxes(Tensor(3)), expected * 3)
+        XCTAssertEqual(sumPullbackAlongAxes(Tensor(3)), expected * 3)
     }
 
     func testMean() {
@@ -132,9 +132,9 @@ final class TensorAutoDiffTests: XCTestCase {
 
         let input = Tensor<Float>(ones: [2, 2])
         let expected = Tensor<Float>(repeating: 0.25, shape: [2, 2])
-        XCTAssertEqual(expected, meanGradScalar(input))
-        XCTAssertEqual(expected, meanGradSqueezingAxes(input))
-        XCTAssertEqual(expected, meanGradAlongAxes(input))
+        XCTAssertEqual(meanGradScalar(input), expected)
+        XCTAssertEqual(meanGradSqueezingAxes(input), expected)
+        XCTAssertEqual(meanGradAlongAxes(input), expected)
     }
 
     func testVariance() {
@@ -148,30 +148,30 @@ final class TensorAutoDiffTests: XCTestCase {
 
         let input: Tensor<Float> = [[1, 2], [3, 4]]
         let expected: Tensor<Float> = [[-0.75, -0.25], [0.25, 0.75]]
-        XCTAssertEqual(expected, varianceGradScalar(input))
-        XCTAssertEqual(expected, varianceGradSqueezingAxes(input))
-        XCTAssertEqual(expected, varianceGradAlongAxes(input))
+        XCTAssertEqual(varianceGradScalar(input), expected)
+        XCTAssertEqual(varianceGradSqueezingAxes(input), expected)
+        XCTAssertEqual(varianceGradAlongAxes(input), expected)
     }
 
     func testExpandingShape() {
         func f1(a: Tensor<Float>) -> Tensor<Float> { a.expandingShape(at: 0).squared() }
         func f2(a: Tensor<Float>) -> Tensor<Float> { a.squared().expandingShape(at: 0) }
-        XCTAssertEqual([6, 10], pullback(at: [3, 5], in: f1)([[1, 1]]))
-        XCTAssertEqual([6, 10], pullback(at: [3, 5], in: f2)([[1, 1]]))
+        XCTAssertEqual(pullback(at: [3, 5], in: f1)([[1, 1]]), [6, 10])
+        XCTAssertEqual(pullback(at: [3, 5], in: f2)([[1, 1]]), [6, 10])
     }
 
     func testSqueezingShape() {
         func f1(a: Tensor<Float>) -> Tensor<Float> { a.squeezingShape(at: 0).squared() }
         func f2(a: Tensor<Float>) -> Tensor<Float> { a.squared().squeezingShape(at: 0) }
-        XCTAssertEqual([[6, 10]], pullback(at: [[3, 5]], in: f1)([1, 1]))
-        XCTAssertEqual([[6, 10]], pullback(at: [[3, 5]], in: f2)([1, 1]))
+        XCTAssertEqual(pullback(at: [[3, 5]], in: f1)([1, 1]), [[6, 10]])
+        XCTAssertEqual(pullback(at: [[3, 5]], in: f2)([1, 1]), [[6, 10]])
     }
 
     func testReshapedBackprop() {
         func f1(a: Tensor<Float>) -> Tensor<Float> { a.reshaped(toShape: Tensor<Int32>([2, 1])).squared() }
         func f2(a: Tensor<Float>) -> Tensor<Float> { a.squared().reshaped(toShape: Tensor<Int32>([2, 1])) }
-        XCTAssertEqual([[6, 10]], pullback(at: [[3, 5]], in: f1)([[1], [1]]))
-        XCTAssertEqual([[6, 10]], pullback(at: [[3, 5]], in: f2)([[1], [1]]))
+        XCTAssertEqual(pullback(at: [[3, 5]], in: f1)([[1], [1]]), [[6, 10]])
+        XCTAssertEqual(pullback(at: [[3, 5]], in: f2)([[1], [1]]), [[6, 10]])
     }
 
     func testReshaped() {
@@ -229,26 +229,26 @@ final class TensorAutoDiffTests: XCTestCase {
         XCTAssertEqual(input, transposedPermutationsPullback(transposed))
         XCTAssertEqual(input, transposedVariadicsPullback(transposed))
     }
-    
+
     func testSigmoid() {
         func f(a: Tensor<Float>) -> Tensor<Float> { sigmoid(a).sum() }
-        assertEqual([0.1966119, 0.25, 0.1966119], gradient(at: [-1, 0, 1], in: f), accuracy: 0.0001)
+        assertEqual(gradient(at: [-1, 0, 1], in: f), [0.1966119, 0.25, 0.1966119], accuracy: 0.0001)
     }
-    
+
     func testRelu() {
         func f(a: Tensor<Float>) -> Tensor<Float> { relu(a).sum() }
-        XCTAssertEqual([1, 0, 0], gradient(at: [5, -5, 0], in: f))
+        XCTAssertEqual(gradient(at: [5, -5, 0], in: f), [1, 0, 0])
     }
-    
+
     func testSoftmax() {
         let pb = pullback(at: Tensor(ones: [2, 2])) { (a: Tensor<Float>) in softmax(a) }
-        XCTAssertEqual([[0, 0], [0, 0]], pb([[1, 1], [1, 1]]))
-        XCTAssertEqual([[-0.25, 0.25], [0.75, -0.75]], pb([[1, 2], [4, 1]]))
+        XCTAssertEqual(pb([[1, 1], [1, 1]]), [[0, 0], [0, 0]])
+        XCTAssertEqual(pb([[1, 2], [4, 1]]), [[-0.25, 0.25], [0.75, -0.75]])
     }
 
     func testLogSoftmax() {
         let pb = pullback(at: Tensor(ones: [3, 3])) { (a: Tensor<Float>) in logSoftmax(a) }
-        XCTAssertEqual(Tensor(repeating: 5.9604645e-08, shape: [3, 3]), pb(Tensor(ones: [3, 3])))
+        XCTAssertEqual(pb(Tensor(ones: [3, 3])), Tensor(repeating: 5.9604645e-08, shape: [3, 3]))
     }
 
     // SR-9345
@@ -256,7 +256,7 @@ final class TensorAutoDiffTests: XCTestCase {
         func body(_ x: Tensor<Float>) -> Tensor<Float> {
             return foo(foo(x))
         }
-        
+
         let pb = pullback(at: Tensor(Float(10)), in: body)
         XCTAssertEqual(Tensor(1), pb(Tensor(1)))
     }

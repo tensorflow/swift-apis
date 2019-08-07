@@ -20,12 +20,12 @@ import CTensorFlow
 final class LazyTensorExplicitTraceTests: XCTestCase {
     override class func setUp() {
         super.setUp()
-        _RuntimeConfig.useLazyTensor = true
+        _ThreadLocalState.useLazyTensor = true
     }
 
     override class func tearDown() {
         super.tearDown()
-        _RuntimeConfig.useLazyTensor = false
+        _ThreadLocalState.useLazyTensor = false
     }
 
     func testSingleInput() {
@@ -135,6 +135,15 @@ final class LazyTensorExplicitTraceTests: XCTestCase {
         XCTAssertEqual(outputs[0].valueDescription, "13.0")
     }
 
+    func testCallableTrace() {
+        func square(input: Tensor<Float>) -> Tensor<Float> {
+            return input * input
+        }
+        let tracedSquare = _graph(square)
+        XCTAssertEqual(tracedSquare(Tensor<Float>(10.0)).scalarized(), 100.0)
+        XCTAssertEqual(tracedSquare(Tensor<Float>(5.0)).scalarized(), 25.0)
+    }
+
     private func runTrace(trace: LazyTensorTrace, input: TensorGroup) -> [TFETensorHandle] {
         let tffunc = TFFunction(trace: trace)
         let inputHandles = input._tensorHandles.map { $0._tfeTensorHandle }
@@ -147,6 +156,7 @@ final class LazyTensorExplicitTraceTests: XCTestCase {
         ("testTensorGroupInputOutputs", testTensorGroupInputOutputs),
         ("testClosureCapturesOfTensors", testClosureCapturesOfTensors),
         ("testClosureCapturesOfNonTensors", testClosureCapturesOfNonTensors),
-        ("testNestedTracing", testNestedTracing)
+        ("testNestedTracing", testNestedTracing),
+        ("testCallableTrace", testCallableTrace)
     ]
 }

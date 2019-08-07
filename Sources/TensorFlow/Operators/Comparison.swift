@@ -210,6 +210,7 @@ public extension Tensor where Scalar: Equatable {
 public extension Tensor where Scalar: TensorFlowFloatingPoint & Equatable {
     /// Returns a tensor of Boolean values indicating whether the elements of `self` are
     /// approximately equal to those of `other`.
+    /// - Precondition: `self` and `other` must be of the same shape.
     @inlinable
     func elementsAlmostEqual(
         _ other: Tensor,
@@ -229,14 +230,13 @@ public extension StringTensor {
 }
 
 public extension Tensor where Scalar: TensorFlowFloatingPoint {
-    /// Returns `true` if tensors are of equal shape and all pairs of scalars are approximately
-    /// equal.
+    /// Returns `true` if all elements of `self` are approximately equal to those of `other`.
+    /// - Precondition: `self` and `other` must be of the same shape.
     @inlinable
     func isAlmostEqual(
         to other: Tensor,
         tolerance: Scalar = Scalar.ulpOfOne.squareRoot()
     ) -> Bool {
-        return self.shape == other.shape &&
-            self.elementsAlmostEqual(other, tolerance: tolerance).all()
+        elementsAlmostEqual(other, tolerance: tolerance).all()
     }
 }

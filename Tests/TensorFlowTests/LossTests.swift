@@ -21,7 +21,7 @@ final class LossTests: XCTestCase {
         let expected = Tensor<Float>([0.1, 0.2, 0.3, 0.4])
         let loss = l1Loss(predicted: predicted, expected: expected)
         let expectedLoss: Float = 9.0
-        assertElementsEqual(expected: Tensor(expectedLoss), actual: loss)
+        assertEqual(loss, Tensor(expectedLoss), accuracy: 1e-6)
     }
 
     func testL2Loss() {
@@ -29,7 +29,7 @@ final class LossTests: XCTestCase {
         let expected = Tensor<Float>([0.5, 1.5, 2.5, 3.5])
         let loss = l2Loss(predicted: predicted, expected: expected)
         let expectedLoss: Float = 1.0
-        assertElementsEqual(expected: Tensor(expectedLoss), actual: loss)
+        assertEqual(loss, Tensor(expectedLoss), accuracy: 1e-6)
     }
 
     func testMeanSquaredErrorLoss() {
@@ -40,7 +40,7 @@ final class LossTests: XCTestCase {
 
         let loss = meanSquaredError(predicted: predicted, expected: expected)
         let expectedLoss: Float = 23.324999
-        assertElementsEqual(expected: Tensor(expectedLoss), actual: loss)
+        assertEqual(loss, Tensor(expectedLoss), accuracy: 1e-6)
     }
 
     func testMeanSquaredLogarithmicError() {
@@ -51,7 +51,7 @@ final class LossTests: XCTestCase {
 
         let loss = meanSquaredLogarithmicError(predicted: predicted, expected: expected)
         let expectedLoss: Float = 2.1312442
-        assertElementsEqual(expected: Tensor(expectedLoss), actual: loss)
+        assertEqual(loss, Tensor(expectedLoss), accuracy: 1e-6)
     }
 
     func testMeanAbsoluteError() {
@@ -62,7 +62,7 @@ final class LossTests: XCTestCase {
 
         let loss = meanAbsoluteError(predicted: predicted, expected: expected)
         let expectedLoss: Float = 4.25
-        assertElementsEqual(expected: Tensor(expectedLoss), actual: loss)
+        assertEqual(loss, Tensor(expectedLoss), accuracy: 1e-6)
     }
 
     func testMeanAbsolutePercentageError() {
@@ -71,7 +71,7 @@ final class LossTests: XCTestCase {
 
         let loss = meanAbsolutePercentageError(predicted: predicted, expected: expected)
         let expectedLoss: Float = 900.0
-        assertElementsEqual(expected: Tensor(expectedLoss), actual: loss)
+        assertEqual(loss, Tensor(expectedLoss), accuracy: 1e-6)
     }
 
     func testMeanSquaredErrorGrad() {
@@ -90,7 +90,7 @@ final class LossTests: XCTestCase {
             at: predicted,
             in: { meanSquaredError(predicted: $0, expected: expected) })
 
-        assertElementsEqual(expected: expectedGradients, actual: gradients)
+        assertEqual(gradients, expectedGradients, accuracy: 1e-6)
     }
 
     func testHingeLoss() {
@@ -101,15 +101,15 @@ final class LossTests: XCTestCase {
 
         let loss = hingeLoss(predicted: predicted, expected: expected)
         let expectedLoss: Float = 0.225
-        assertElementsEqual(expected: Tensor(expectedLoss), actual: loss)
+        assertEqual(loss, Tensor(expectedLoss), accuracy: 1e-6)
     }
 
     func testSquaredHingeLoss() {
         let predicted = Tensor<Float>([1, 2, 3, 4, 5, 6, 7, 8])
         let expected = Tensor<Float>([0.5, 1, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0])
         let loss = squaredHingeLoss(predicted: predicted, expected: expected)
-        let expectedLoss: Float = 0.03125
-        assertElementsEqual(expected: Tensor(expectedLoss), actual: loss)
+        let expectedLoss: Float = 0.00390625
+        assertEqual(loss, Tensor(expectedLoss), accuracy: 1e-6)
     }
 
     func testCategoricalHingeLoss() {
@@ -118,7 +118,7 @@ final class LossTests: XCTestCase {
 
         let loss = categoricalHingeLoss(predicted: predicted, expected: expected)
         let expectedLoss: Float = 0.5
-        assertElementsEqual(expected: Tensor(expectedLoss), actual: loss)
+        assertEqual(loss, Tensor(expectedLoss), accuracy: 1e-6)
     }
 
     func testLogCoshLoss() {
@@ -126,7 +126,7 @@ final class LossTests: XCTestCase {
         let expected = Tensor<Float>([1.0, 4.0, 3.0])
         let loss = logCoshLoss(predicted: predicted, expected: expected)
         let expectedLoss: Float = 1.7368573
-        assertElementsEqual(expected: Tensor(expectedLoss), actual: loss)
+        assertEqual(loss, Tensor(expectedLoss), accuracy: 1e-6)
     }
 
     func testPoissonLoss() {
@@ -134,7 +134,7 @@ final class LossTests: XCTestCase {
         let expected = Tensor<Float>([1, 2, 3])
         let loss = poissonLoss(predicted: predicted, expected: expected)
         let expectedLoss: Float = 3.2444599
-        assertElementsEqual(expected: Tensor(expectedLoss), actual: loss)
+        assertEqual(loss, Tensor(expectedLoss), accuracy: 1e-6)
     }
 
     func testKullbackLeiblerDivergence() {
@@ -142,7 +142,7 @@ final class LossTests: XCTestCase {
         let expected = Tensor<Float>([1.0, 4.0, 3.0])
         let loss = kullbackLeiblerDivergence(predicted: predicted, expected: expected)
         let expectedLoss: Float = 18.015217
-        assertElementsEqual(expected: Tensor(expectedLoss), actual: loss)
+        assertEqual(loss, Tensor(expectedLoss), accuracy: 1e-6)
     }
 
     func testSoftmaxCrossEntropyWithProbabilitiesLoss() {
@@ -154,7 +154,7 @@ final class LossTests: XCTestCase {
         let loss = softmaxCrossEntropy(logits: logits, probabilities: labels)
         // Loss for two rows are 1.44019 and 2.44019 respectively.
         let expectedLoss: Float = (1.44019 + 2.44019) / 2.0
-        assertElementsEqual(expected: Tensor(expectedLoss), actual: loss)
+        assertEqual(loss, Tensor(expectedLoss), accuracy: 1e-6)
     }
 
     func testSoftmaxCrossEntropyWithProbabilitiesGrad() {
@@ -179,7 +179,7 @@ final class LossTests: XCTestCase {
         let gradients = gradient(
             at: logits,
             in: { softmaxCrossEntropy(logits: $0, probabilities: labels) })
-        assertElementsEqual(expected: expectedGradients, actual: gradients)
+        assertEqual(gradients, expectedGradients, accuracy: 1e-6)
     }
 
     func testSigmoidCrossEntropyLoss() {
@@ -193,7 +193,7 @@ final class LossTests: XCTestCase {
 
         let loss = sigmoidCrossEntropy(logits: logits, labels: labels)
         let expectedLoss: Float = 0.7909734
-        assertElementsEqual(expected: Tensor(expectedLoss), actual: loss)
+        assertEqual(loss, Tensor(expectedLoss), accuracy: 1e-6)
     }
 
     func testSigmoidCrossEntropyGrad() {
@@ -216,22 +216,7 @@ final class LossTests: XCTestCase {
         let gradients = gradient(
             at: logits,
             in: { sigmoidCrossEntropy(logits: $0, labels: labels) })
-        assertElementsEqual(expected: expectedGradients, actual: gradients)
-    }
-
-    func assertElementsEqual(
-        expected: Tensor<Float>,
-        actual: Tensor<Float>,
-        accuracy: Float = 1e-6
-    ) {
-        XCTAssertEqual(expected.shape, actual.shape, "Shape mismatch.")
-        for (index, expectedElement) in expected.scalars.enumerated() {
-            let actualElement = actual.scalars[index]
-            XCTAssertEqual(
-                expectedElement, actualElement, accuracy: accuracy,
-                "Found difference at \(index), " +
-                "expected: \(expectedElement), actual: \(actualElement).")
-        }
+        assertEqual(gradients, expectedGradients, accuracy: 1e-6)
     }
 
     static var allTests = [

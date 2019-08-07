@@ -40,7 +40,7 @@ public struct MaxPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return maxPool2D(
+        maxPool2D(
             input.expandingShape(at: 1),
             filterSize: (1, 1, poolSize, 1),
             strides: (1, 1, stride, 1),
@@ -73,7 +73,7 @@ public struct MaxPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return maxPool2D(input, filterSize: poolSize, strides: strides, padding: padding)
+        maxPool2D(input, filterSize: poolSize, strides: strides, padding: padding)
     }
 }
 
@@ -120,7 +120,7 @@ public struct MaxPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return maxPool3D(input, filterSize: poolSize, strides: strides, padding: padding)
+        maxPool3D(input, filterSize: poolSize, strides: strides, padding: padding)
     }
 }
 
@@ -178,7 +178,7 @@ public struct AvgPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return avgPool2D(
+        avgPool2D(
             input.expandingShape(at: 1),
             filterSize: (1, 1, poolSize, 1),
             strides: (1, 1, stride, 1),
@@ -211,7 +211,7 @@ public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return avgPool2D(input, filterSize: poolSize, strides: strides, padding: padding)
+        avgPool2D(input, filterSize: poolSize, strides: strides, padding: padding)
     }
 }
 
@@ -258,7 +258,7 @@ public struct AvgPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return avgPool3D(input, filterSize: poolSize, strides: strides, padding: padding)
+        avgPool3D(input, filterSize: poolSize, strides: strides, padding: padding)
     }
 }
 
@@ -300,7 +300,7 @@ public struct GlobalAvgPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return input.mean(squeezingAxes: 1)
+        input.mean(squeezingAxes: 1)
     }
 }
 
@@ -316,7 +316,7 @@ public struct GlobalAvgPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return input.mean(squeezingAxes: [1, 2])
+        input.mean(squeezingAxes: [1, 2])
     }
 }
 
@@ -332,7 +332,7 @@ public struct GlobalAvgPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return input.mean(squeezingAxes: [1, 2, 3])
+        input.mean(squeezingAxes: [1, 2, 3])
     }
 }
 
@@ -351,7 +351,7 @@ public struct GlobalMaxPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return input.max(squeezingAxes: 1)
+        input.max(squeezingAxes: 1)
     }
 }
 
@@ -367,7 +367,7 @@ public struct GlobalMaxPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return input.max(squeezingAxes: [1, 2])
+        input.max(squeezingAxes: [1, 2])
     }
 }
 
@@ -383,6 +383,6 @@ public struct GlobalMaxPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return input.max(squeezingAxes: [1, 2, 3])
+        input.max(squeezingAxes: [1, 2, 3])
     }
 }
