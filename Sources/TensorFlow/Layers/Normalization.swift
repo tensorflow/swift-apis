@@ -82,10 +82,8 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
           let inv = rsqrt(moments.variance + epsilon) * scale.reshaped(to: moments.variance.shape)
           return (input - moments.mean) * inv + offset.reshaped(to: moments.mean.shape)
         case .inference:
-          let scaleShape = runningVariance.value.shape
-          let offsetShape = runningMean.value.shape
-          let inv = rsqrt(runningVariance.value + epsilon) * scale.reshaped(to: scaleShape)
-          return (input - runningMean.value) * inv + offset.reshaped(to: offsetShape)
+          let inv = rsqrt(runningVariance.value + epsilon) * scale
+          return (input - runningMean.value) * inv + offset
         }
     }
 
