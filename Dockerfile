@@ -57,7 +57,12 @@ RUN cp /swift-apis/.build/debug/libTensorFlow.so /swift-tensorflow-toolchain/usr
 
 WORKDIR /
 RUN git clone https://github.com/tensorflow/swift-models.git
+RUN git clone https://github.com/fastai/fastai_dev.git
 
 WORKDIR /swift-models
+
+RUN /swift-tensorflow-toolchain/usr/bin/swift build
+
+WORKDIR /fastai_dev/swift/FastaiNotebook_07_batchnorm
 
 RUN /swift-tensorflow-toolchain/usr/bin/swift build
