@@ -14,7 +14,8 @@
 
 public protocol Module: Differentiable, KeyPathIterable
     where TangentVector: VectorProtocol & ElementaryFunctions &
-                         PointwiseMultiplicative & KeyPathIterable {
+                         PointwiseMultiplicative & KeyPathIterable,
+          AllDifferentiableVariables == TangentVector {
     /// The input type of the layer.
     associatedtype Input
     /// The output type of the layer.
@@ -54,6 +55,7 @@ public extension Layer {
 /// An empty struct representing empty `TangentVector`s for parameterless layers.
 public struct EmptyTangentVector: Differentiable, VectorProtocol, ElementaryFunctions,
                                   PointwiseMultiplicative, KeyPathIterable {
+    public typealias AllDifferentiableVariables = EmptyTangentVector
     public typealias VectorSpaceScalar = Float
 
     public func adding(_ x: Float) -> EmptyTangentVector { self }
@@ -67,12 +69,17 @@ public struct EmptyTangentVector: Differentiable, VectorProtocol, ElementaryFunc
 /// A parameterless neural network layer.
 ///
 /// The `TangentVector` of parameterless layers is always `EmptyTangentVector`.
-public protocol ParameterlessLayer: Layer {
+public protocol ParameterlessLayer: Layer where AllDifferentiableVariables == EmptyTangentVector {
     @differentiable
     func callAsFunction(_ input: Input) -> Output
 }
 
 public extension ParameterlessLayer {
+    var allDifferentiableVariables: EmptyTangentVector {
+        get { EmptyTangentVector() }
+        set {}
+    }
+
     mutating func move(along direction: EmptyTangentVector) {}
 }
 
@@ -91,7 +98,7 @@ public extension Layer {
     @usableFromInline
     internal func _vjpInferring(from input: Input)
         -> (value: Output, pullback: (Output.TangentVector)
-            -> (TangentVector, Input.TangentVector)) {
+            -> (AllDifferentiableVariables, Input.TangentVector)) {
         withLearningPhase(LearningPhase.inference) {
             let (output, pullback) = appliedForBackpropagation(to: input)
             return (output, { v in pullback(v) })
