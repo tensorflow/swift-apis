@@ -25,6 +25,38 @@ public protocol LearningRateSchedule {
     func callAsFunction(step: UInt64, learningRate: Scalar) -> Scalar
 }
 
+extension LearningRateSchedule {
+    /// Returns a new learning rate schedule which is defined as the composition of this schedule
+    /// with the provided one. More specifically, the new schedule will transform the provided
+    /// learning rates as follows:
+    /// `self(step: step, learningRate: other(step: step, learningRate: learningRate))`.
+    public func composed<Schedule: LearningRateSchedule>(
+        with other: Schedule
+    ) -> ComposedLearningRateSchedule<Self, Schedule> {
+        ComposedLearningRateSchedule(schedule1: self, schedule2: other)
+    }
+}
+
+/// Composed learning rate schedule.
+///
+/// This schedule transforms the provided learning rates as follows:
+/// ```swift
+/// schedule1(step: step, learningRate: schedule2(step: step, learningRate: learningRate))
+/// ```
+public struct ComposedLearningRateSchedule<
+    Schedule1: LearningRateSchedule,
+    Schedule2: LearningRateSchedule
+>: LearningRateSchedule where Schedule1.Scalar == Schedule2.Scalar {
+    public typealias Scalar = Schedule1.Scalar
+
+    public let schedule1: Schedule1
+    public let schedule2: Schedule2
+
+    public func callAsFunction(step: UInt64, learningRate: Scalar) -> Scalar {
+        schedule1(step: step, learningRate: schedule2(step: step, learningRate: learningRate))
+    }
+}
+
 /// Dummy learning rate schedule that represents no schedule being used. This is useful as a
 /// default value whenever a learning rate schedule argument is used.
 public struct FixedLearningRate<Scalar: FloatingPoint>: LearningRateSchedule {
