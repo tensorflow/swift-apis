@@ -510,7 +510,7 @@ extension Tensor: AdditiveArithmetic where Scalar: Numeric {
     @inlinable
     @differentiable(vjp: _vjpAdd(lhs:rhs:) where Scalar: TensorFlowFloatingPoint)
     public static func + (lhs: Tensor, rhs: Tensor) -> Tensor {
-        return Raw.add(lhs, rhs)
+        Raw.addV2(lhs, rhs)
     }
 
     /// Subtracts one tensor from another and produces their difference.
@@ -518,17 +518,14 @@ extension Tensor: AdditiveArithmetic where Scalar: Numeric {
     @inlinable
     @differentiable(vjp: _vjpSubtract(lhs:rhs:) where Scalar: TensorFlowFloatingPoint)
     public static func - (lhs: Tensor, rhs: Tensor) -> Tensor {
-        return Raw.sub(lhs, rhs)
+        Raw.sub(lhs, rhs)
     }
 }
 
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
-    static func _vjpAdd(
-        lhs: Tensor,
-        rhs: Tensor
-    ) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
-        return (lhs + rhs, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
+    static func _vjpAdd(lhs: Tensor, rhs: Tensor) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
+        (lhs + rhs, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
             let lhsGrad = v
             let rhsGrad = lhsGrad
             let (lhsAxes, rhsAxes) = Raw.broadcastGradientArgs(s0: lhsShape, s1: rhsShape)
@@ -538,11 +535,8 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 
     @inlinable
-    static func _vjpSubtract(
-        lhs: Tensor,
-        rhs: Tensor
-    ) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
-        return (lhs - rhs, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
+    static func _vjpSubtract(lhs: Tensor, rhs: Tensor) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
+        (lhs - rhs, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
             let lhsGrad = v
             let rhsGrad = -lhsGrad
             let (lhsAxes, rhsAxes) = Raw.broadcastGradientArgs(s0: lhsShape, s1: rhsShape)

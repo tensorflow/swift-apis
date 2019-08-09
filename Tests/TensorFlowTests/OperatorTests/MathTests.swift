@@ -121,36 +121,50 @@ final class MathOperatorTests: XCTestCase {
     func testSoftplus() {
         let x = Tensor<Float>([1.0, 2.0, 3.0])
         let y = softplus(x)
-        let expected = Tensor<Float>([1.3132616,  2.126928, 3.0485873])
-        XCTAssertEqual(y, expected)
+        let expectedY = Tensor<Float>([1.3132616,  2.126928, 3.0485873])
+        XCTAssertEqual(y, expectedY)
     }
 
     func testSoftsign() {
         let x = Tensor<Float>([1.0, 4.0, 3.0])
         let y = softsign(x)
-        let expected = Tensor<Float>([0.5 , 0.8 , 0.75])
-        XCTAssertEqual(y, expected)
+        let expectedY = Tensor<Float>([0.5 , 0.8 , 0.75])
+        XCTAssertEqual(y, expectedY)
     }
 
     func testElu() {
         let x = Tensor<Float>([-1.0, 2.0, 3.0])
         let y = elu(x)
-        let expected = Tensor<Float>([-0.63212055, 2, 3])
-        XCTAssertEqual(y, expected)
+        let expectedY = Tensor<Float>([-0.63212055, 2, 3])
+        XCTAssertEqual(y, expectedY)
     }
 
     func testGelu() {
         let x = Tensor<Float>([2.0, 1.0, 7.0])
         let y = gelu(x)
-        let expected = Tensor<Float>([1.95459769, 0.84119199, 7.0])
-        XCTAssertEqual(y, expected)
+        let expectedY = Tensor<Float>([1.95459769, 0.84119199, 7.0])
+        XCTAssertEqual(y, expectedY)
+    }
+
+    func testRelu() {
+        let x = Tensor<Float>([[-1.0, 2.0, 3.0]])
+        let y = relu(x)
+        let expectedY = Tensor<Float>([0.0, 2.0, 3.0])
+        XCTAssertEqual(y, expectedY)
     }
 
     func testLeakyRelu() {
         let x = Tensor<Float>([[-1.0, 2.0, 3.0]])
         let y = leakyRelu(x, alpha: 0.4)
-        let expected = Tensor<Float>([-0.4, 2, 3])
-        XCTAssertEqual(y, expected)
+        let expectedY = Tensor<Float>([-0.4, 2.0, 3.0])
+        XCTAssertEqual(y, expectedY)
+    }
+
+    func testSelu() {
+        let x = Tensor<Float>([[-1.0, 2.0, 3.0]])
+        let y = selu(x)
+        let expectedY = Tensor<Float>([-1.111331, 2.101402, 3.152103])
+        assertEqual(y, expectedY, accuracy: 1e-5)
     }
 
     func testIsFinite() {
@@ -521,7 +535,9 @@ final class MathOperatorTests: XCTestCase {
         ("testSoftsign", testSoftsign),
         ("testElu",testElu),
         ("testGelu", testGelu),
+        ("testRelu", testRelu),
         ("testLeakyRelu", testLeakyRelu),
+        ("testSelu", testSelu),
         ("testIsFinite", testIsFinite),
         ("testIsInfinite", testIsInfinite),
         ("testIsNaN", testIsNaN),
