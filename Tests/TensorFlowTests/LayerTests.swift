@@ -456,7 +456,7 @@ final class LayerTests: XCTestCase {
             let grad = gradient(at: x, bnLayer) { $1($0).squared().sum() }
             // The expected values and gradients were computed using the following Python code:
             // ```
-            //   x = tf.constant(
+            //  x = tf.constant(
             //         [[  -1.0474433,  -0.11914538,  -0.08634827,   0.15446888,    1.0572497],
             //          [   1.5165012,    0.3753972,  -0.30856386,   -0.3100725,   -1.9584457],
             //          [ 0.006384419,    1.4424847,   0.91568077,   0.66328526,   -1.0794537],
@@ -491,8 +491,10 @@ final class LayerTests: XCTestCase {
                  [ 1.2142579e-01,  1.7060755e-03, -6.5005139e-02, -9.3897656e-02,  3.5770576e-02]],
                 accuracy: 1e-5)
             assertEqual(grad.1.offset, [0.0, 0.0, 0.0, 0.0, 0.0], accuracy: 1e-5)
-            assertEqual(grad.1.scale, [9.977925, 9.992161, 9.986738, 9.990202, 9.886292],
-                        accuracy: 1e-5)
+            assertEqual(
+                grad.1.scale,
+                [9.977925, 9.992161, 9.986738, 9.990202, 9.886292],
+                accuracy: 1e-5)
         }
     }
 
@@ -507,8 +509,8 @@ final class LayerTests: XCTestCase {
         let value = lnLayer(x)
         let grad = gradient(at: x, lnLayer) { $1($0).squared().sum() }
 
-        // Uses the same values as `testBatchNorm()` above because `LayerNorm` with features on axis
-        // `1` is equivalent to `BatchNorm` with features on axis `0`.
+        // Uses the same values as `testBatchNorm()` above because `LayerNorm` with features on
+        // axis `1` is equivalent to `BatchNorm` with features on axis `0`.
         assertEqual(
             value,
             [[-1.5439795 , -0.16477099, -0.11604305,  0.24174842,  1.5830451 ],
@@ -525,9 +527,11 @@ final class LayerTests: XCTestCase {
              [ 1.8438101e-03,  8.9146197e-05, -3.6990643e-03,  6.1964989e-04,  1.1463165e-03],
              [ 1.2142579e-01,  1.7060755e-03, -6.5005139e-02, -9.3897656e-02,  3.5770576e-02]],
             accuracy: 1e-5)
-        assertEqual(grad.1.scale, [9.977925, 9.992161, 9.986738, 9.990202, 9.886292],
-                    accuracy: 1e-5)
         assertEqual(grad.1.offset, [0.0, 0.0, 0.0, 0.0, 0.0], accuracy: 1e-5)
+        assertEqual(
+            grad.1.scale,
+            [9.977925, 9.992161, 9.986738, 9.990202, 9.886292],
+            accuracy: 1e-5)
     }
 
     static var allTests = [
