@@ -510,7 +510,7 @@ extension Tensor: AdditiveArithmetic where Scalar: Numeric {
     @inlinable
     @differentiable(vjp: _vjpAdd(lhs:rhs:) where Scalar: TensorFlowFloatingPoint)
     public static func + (lhs: Tensor, rhs: Tensor) -> Tensor {
-        Raw.add(lhs, rhs)
+        Raw.addV2(lhs, rhs)
     }
 
     /// Subtracts one tensor from another and produces their difference.
