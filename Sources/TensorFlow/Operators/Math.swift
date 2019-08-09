@@ -1183,6 +1183,20 @@ func _vjpRelu<T: TensorFlowFloatingPoint>(
     (relu(x), { v in Raw.reluGrad(gradients: v, features: x) })
 }
 
+/// Returns a tensor by applying the ReLU6 activation function, namely `min(max(0, x), 6)`.
+@inlinable
+@differentiable(vjp: _vjpRelu6(_:))
+public func relu6<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    Raw.relu6(features: x)
+}
+
+@inlinable
+func _vjpRelu6<T: TensorFlowFloatingPoint>(
+    _ x: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+    (relu6(x), { v in Raw.relu6Grad(gradients: v, features: x)})
+}
+
 /// Returns a tensor by applying the leaky ReLU activation function
 /// to the specified tensor element-wise.
 /// Specifically, computes `max(x, x * alpha)`.
