@@ -40,7 +40,7 @@ extension LearningRateSchedule {
 /// Composed learning rate schedule.
 ///
 /// This schedule transforms the provided learning rates as follows:
-/// ```swift
+/// ```
 /// schedule1(step: step, learningRate: schedule2(step: step, learningRate: learningRate))
 /// ```
 public struct ComposedLearningRateSchedule<
