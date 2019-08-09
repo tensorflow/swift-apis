@@ -1205,7 +1205,7 @@ func _vjpLeakyRelu<T: TensorFlowFloatingPoint>(
     })
 }
 
-/// Returns `scale * alpha * (exp(x) - 1)` if `x < 0`, and  `scale * x` otherwise.
+/// Returns `scale * alpha * (exp(x) - 1)` if `x < 0`, and `scale * x` otherwise.
 ///
 /// - Note: This is designed to be used together with the variance scaling layer initializers.
 ///   Please refer to [Self-Normalizing Neural Networks](https://arxiv.org/abs/1706.02515) for more
