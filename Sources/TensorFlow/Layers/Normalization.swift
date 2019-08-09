@@ -79,8 +79,6 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
             broadcastShape[positiveAxis] = input.shape[positiveAxis]
             offset = offset.reshaped(to: broadcastShape)
             scale = scale.reshaped(to: broadcastShape)
-            runningMean.value = runningMean.value.reshaped(to: broadcastShape)
-            runningVariance.value = runningVariance.value.reshaped(to: broadcastShape)
         }
         switch Context.local.learningPhase {
         case .training:
@@ -116,8 +114,8 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
             offset: Tensor(zeros: [featureCount]),
             scale: Tensor(ones: [featureCount]),
             epsilon: epsilon,
-            runningMean: Tensor(zeros: [featureCount]),
-            runningVariance: Tensor(ones: [featureCount]))
+            runningMean: Tensor(0),
+            runningVariance: Tensor(1))
     }
 }
 
