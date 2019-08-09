@@ -496,6 +496,24 @@ final class LayerTests: XCTestCase {
         }
     }
 
+    func testBatchNormInference() {
+        let x = Tensor<Float>(rangeFrom: 0, to: 25, stride: 1).reshaped(to: [5,5])
+        let epsilon = Tensor<Float>(0.001)
+        let bnLayer = BatchNorm<Float>(featureCount: 5, axis: 0, epsilon: epsilon)
+        // Test inferrence before any training is only changed by epsilon value.
+        assertEqual(bnLayer.inferring(from: x), x / TensorFlow.sqrt(1 + epsilon), accuracy: 1e-6)
+        // Test inferrence after single training step.
+        Context.local.learningPhase = .training
+        let y = bnLayer(x)
+        assertEqual(bnLayer.inferring(from: x),
+                    [[-0.01989088,    0.974654,    1.969199,    2.963744,    3.958289],
+                     [  4.9031067,   5.8976517,   6.8921967,   7.8867416,    8.881287],
+                     [   9.826104,   10.820649,   11.815194,   12.809739,   13.804284],
+                     [  14.749101,   15.743646,   16.738192,   17.732737,   18.727282],
+                     [    19.6721,   20.666645,    21.66119,   22.655735,    23.65028]], 
+                    accuracy: 1e-6)
+    }
+
     func testLayerNorm() {
         let x = Tensor<Float>([
             [  -1.0474433,  -0.11914538,  -0.08634827,   0.15446888,    1.0572497],

@@ -20,6 +20,8 @@
 ///
 /// Reference: [Batch Normalization: Accelerating Deep Network Training by Reducing Internal
 /// Covariate Shift](https://arxiv.org/abs/1502.03167).
+
+
 @frozen
 public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The feature dimension.
@@ -71,6 +73,14 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+        var reshapedScale = scale
+        var reshapedOffset = offset
+        if axis != input.rank - 1 {
+            var offsetAndScaleShape = Array(repeating: 1, count: input.rank)
+            offsetAndScaleShape[axis] = scale.shape[0]
+            reshapedScale = scale.reshaped(to: TensorShape(offsetAndScaleShape))
+            reshapedOffset = offset.reshaped(to: TensorShape(offsetAndScaleShape))
+        }
         switch Context.local.learningPhase {
         case .training:
           let positiveAxis = (input.rank + axis) % input.rank
@@ -79,11 +89,11 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
           let moments = input.moments(alongAxes: normalizedAxes)
           runningMean.value += (moments.mean - runningMean.value) * (1 - momentum)
           runningVariance.value += (moments.variance - runningVariance.value) * (1 - momentum)
-          let inv = rsqrt(moments.variance + epsilon) * scale.reshaped(to: moments.variance.shape)
-          return (input - moments.mean) * inv + offset.reshaped(to: moments.mean.shape)
+          let inv = rsqrt(moments.variance + epsilon) * reshapedScale
+          return (input - moments.mean) * inv + reshapedOffset
         case .inference:
-          let inv = rsqrt(runningVariance.value + epsilon) * scale
-          return (input - runningMean.value) * inv + offset
+          let inv = rsqrt(runningVariance.value + epsilon) * reshapedScale
+          return (input - runningMean.value) * inv + reshapedOffset
         }
     }
 
