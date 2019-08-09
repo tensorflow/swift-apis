@@ -34,7 +34,7 @@ final class LazyTensorExplicitTraceTests: XCTestCase {
         XCTAssertEqual(trace.description,
             """
             lazyTrace_2(%0: float) -> (%1) {
-              %1 = Add[T: float](%0, %0)
+              %1 = AddV2[T: float](%0, %0)
             }
             """)
         let outputs = runTrace(trace: trace, input: Tensor<Float>(10.0))
@@ -55,7 +55,7 @@ final class LazyTensorExplicitTraceTests: XCTestCase {
               %2 = Const[dtype: int32, value: 4]()
               %3 = Mul[T: int32](%1, %2)
               %4 = Const[dtype: float, value: 3.0]()
-              %5 = Add[T: float](%0, %4)
+              %5 = AddV2[T: float](%0, %4)
             }
             """)
         let outputs = runTrace(
@@ -78,7 +78,7 @@ final class LazyTensorExplicitTraceTests: XCTestCase {
             """
             lazyTrace_4(%0: float) -> (%3) {
               %1 = Const[dtype: float, value: 10.0]()
-              %2 = Add[T: float](%1, %1)
+              %2 = AddV2[T: float](%1, %1)
               %3 = Mul[T: float](%0, %2)
             }
             """)
@@ -127,7 +127,7 @@ final class LazyTensorExplicitTraceTests: XCTestCase {
             """
             lazyTrace_3(%0: float) -> (%2) {
               %1 = Const[dtype: float, value: 9.0]()
-              %2 = Add[T: float](%1, %0)
+              %2 = AddV2[T: float](%1, %0)
             }
             """)
         let outputs = runTrace(trace: trace, input: Tensor<Float>(4.0))

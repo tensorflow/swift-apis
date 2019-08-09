@@ -69,7 +69,7 @@ final class LazyTensorTFFunctionBuilderTests : XCTestCase {
 
             sequence(placeholder_0:float, placeholder_1:float, placeholder_2:float) -> (add_4:float) {
               Mul_3 = Mul[T=float](placeholder_1, placeholder_2)
-              Add_4 = Add[T=float](placeholder_0, Mul_3:z:0)
+              Add_4 = AddV2[T=float](placeholder_0, Mul_3:z:0)
               return add_4 = Add_4:z:0
             }
 
