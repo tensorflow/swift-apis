@@ -13,7 +13,7 @@
 // limitations under the License.
 
 /// A layer that sequentially composes two other layers.
-public struct Sequential<Layer1: Layer, Layer2: Layer>: Layer
+public struct Sequential<Layer1: Module, Layer2: Layer>: Module
     where Layer1.Output == Layer2.Input,
           Layer1.TangentVector.VectorSpaceScalar == Layer2.TangentVector.VectorSpaceScalar {
     public var layer1: Layer1
@@ -24,7 +24,7 @@ public struct Sequential<Layer1: Layer, Layer2: Layer>: Layer
         self.layer2 = layer2
     }
 
-    @differentiable
+    @differentiable(wrt: self)
     public func callAsFunction(_ input: Layer1.Input) -> Layer2.Output {
         layer2(layer1(input))
     }
@@ -34,15 +34,22 @@ public struct Sequential<Layer1: Layer, Layer2: Layer>: Layer
     }
 }
 
+extension Sequential: Layer where Layer1: Layer {
+    @differentiable
+    public func callAsFunction(_ input: Layer1.Input) -> Layer2.Output {
+        layer2(layer1(input))
+    }
+}
+
 @_functionBuilder
 public struct LayerBuilder {
-    public static func buildBlock<L1: Layer, L2: Layer>(_ l1: L1, _ l2: L2) -> Sequential<L1, L2>
+    public static func buildBlock<L1: Module, L2: Layer>(_ l1: L1, _ l2: L2) -> Sequential<L1, L2>
         where L1.Output == L2.Input {
         Sequential(l1, l2)
     }
 
     public static func buildBlock<
-        L1: Layer,
+        L1: Module,
         L2: Layer,
         L3: Layer
     >(_ l1: L1, _ l2: L2, _ l3: L3)
@@ -56,7 +63,7 @@ public struct LayerBuilder {
     }
 
     public static func buildBlock<
-        L1: Layer,
+        L1: Module,
         L2: Layer,
         L3: Layer,
         L4: Layer
@@ -73,7 +80,7 @@ public struct LayerBuilder {
     }
 
     public static func buildBlock<
-        L1: Layer,
+        L1: Module,
         L2: Layer,
         L3: Layer,
         L4: Layer,
@@ -93,7 +100,7 @@ public struct LayerBuilder {
     }
 
     public static func buildBlock<
-        L1: Layer,
+        L1: Module,
         L2: Layer,
         L3: Layer,
         L4: Layer,
@@ -116,7 +123,7 @@ public struct LayerBuilder {
     }
 
     public static func buildBlock<
-        L1: Layer,
+        L1: Module,
         L2: Layer,
         L3: Layer,
         L4: Layer,
@@ -142,7 +149,7 @@ public struct LayerBuilder {
     }
 
     public static func buildBlock<
-        L1: Layer,
+        L1: Module,
         L2: Layer,
         L3: Layer,
         L4: Layer,
@@ -171,7 +178,7 @@ public struct LayerBuilder {
     }
 
     public static func buildBlock<
-        L1: Layer,
+        L1: Module,
         L2: Layer,
         L3: Layer,
         L4: Layer,
@@ -203,7 +210,7 @@ public struct LayerBuilder {
     }
 
     public static func buildBlock<
-        L1: Layer,
+        L1: Module,
         L2: Layer,
         L3: Layer,
         L4: Layer,

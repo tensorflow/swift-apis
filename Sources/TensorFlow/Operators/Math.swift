@@ -36,7 +36,7 @@ public extension PointwiseMultiplicative {
 }
 
 //===------------------------------------------------------------------------------------------===//
-// Generic elementary functions
+// Generic Elementary Functions
 //===------------------------------------------------------------------------------------------===//
 
 extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
@@ -44,106 +44,127 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
     ///
     /// For real types, if `x` is negative the result is `.nan`. For complex
     /// types there is a branch cut on the negative real axis.
+    @differentiable
     public static func sqrt(_ x: Self) -> Self {
         TensorFlow.sqrt(x)
     }
 
     /// The cosine of `x`, interpreted as an angle in radians.
+    @differentiable
     public static func cos(_ x: Self) -> Self {
         TensorFlow.cos(x)
     }
 
     /// The sine of `x`, interpreted as an angle in radians.
+    @differentiable
     public static func sin(_ x: Self) -> Self {
         TensorFlow.sin(x)
     }
 
     /// The tangent of `x`, interpreted as an angle in radians.
+    @differentiable
     public static func tan(_ x: Self) -> Self {
         TensorFlow.tan(x)
     }
 
     /// The inverse cosine of `x` in radians.
+    @differentiable
     public static func acos(_ x: Self) -> Self {
         TensorFlow.acos(x)
     }
 
     /// The inverse sine of `x` in radians.
+    @differentiable
     public static func asin(_ x: Self) -> Self {
         TensorFlow.asin(x)
     }
 
     /// The inverse tangent of `x` in radians.
+    @differentiable
     public static func atan(_ x: Self) -> Self {
         TensorFlow.atan(x)
     }
 
     /// The hyperbolic cosine of `x`.
+    @differentiable
     public static func cosh(_ x: Self) -> Self {
         TensorFlow.cosh(x)
     }
 
     /// The hyperbolic sine of `x`.
+    @differentiable
     public static func sinh(_ x: Self) -> Self {
         TensorFlow.sinh(x)
     }
 
     /// The hyperbolic tangent of `x`.
+    @differentiable
     public static func tanh(_ x: Self) -> Self {
         TensorFlow.tanh(x)
     }
 
     /// The inverse hyperbolic cosine of `x`.
+    @differentiable
     public static func acosh(_ x: Self) -> Self {
         TensorFlow.acosh(x)
     }
 
     /// The inverse hyperbolic sine of `x`.
+    @differentiable
     public static func asinh(_ x: Self) -> Self {
         TensorFlow.asinh(x)
     }
 
     /// The inverse hyperbolic tangent of `x`.
+    @differentiable
     public static func atanh(_ x: Self) -> Self {
         TensorFlow.atanh(x)
     }
 
     /// The exponential function applied to `x`, or `e**x`.
+    @differentiable
     public static func exp(_ x: Self) -> Self {
         TensorFlow.exp(x)
     }
 
     /// Two raised to to power `x`.
+    @differentiable
     public static func exp2(_ x: Self) -> Self {
         TensorFlow.exp2(x)
     }
 
     /// Ten raised to to power `x`.
+    @differentiable
     public static func exp10(_ x: Self) -> Self {
         TensorFlow.exp10(x)
     }
 
     /// `exp(x) - 1` evaluated so as to preserve accuracy close to zero.
+    @differentiable
     public static func expm1(_ x: Self) -> Self {
         TensorFlow.expm1(x)
     }
 
     /// The natural logarithm of `x`.
+    @differentiable
     public static func log(_ x: Self) -> Self {
         TensorFlow.log(x)
     }
 
     /// The base-two logarithm of `x`.
+    @differentiable
     public static func log2(_ x: Self) -> Self {
         TensorFlow.log2(x)
     }
 
     /// The base-ten logarithm of `x`.
+    @differentiable
     public static func log10(_ x: Self) -> Self {
         TensorFlow.log10(x)
     }
 
     /// `log(1 + x)` evaluated so as to preserve accuracy close to zero.
+    @differentiable
     public static func log1p(_ x: Self) -> Self {
         TensorFlow.log1p(x)
     }
@@ -153,6 +174,7 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
     /// For real types, if `x` is negative the result is NaN, even if `y` has
     /// an integral value. For complex types, there is a branch cut on the
     /// negative real axis.
+    @differentiable
     public static func pow(_ x: Self, _ y: Self) -> Self {
         TensorFlow.pow(x, y)
     }
@@ -160,6 +182,7 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
     /// `x` raised to the `n`th power.
     ///
     /// The product of `n` copies of `x`.
+    @differentiable
     public static func pow(_ x: Self, _ n: Int) -> Self {
         TensorFlow.pow(x, n)
     }
@@ -168,6 +191,7 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
     ///
     /// For real types, if `x` is negative and `n` is even, the result is NaN.
     /// For complex types, there is a branch cut along the negative real axis.
+    @differentiable
     public static func root(_ x: Self, _ n: Int) -> Self {
         TensorFlow.root(x, n)
     }
@@ -491,6 +515,58 @@ public extension Tensor where Scalar == Bool {
     @inlinable
     func elementsLogicalOr(_ other: Scalar) -> Tensor {
         return elementsLogicalOr(Tensor(other))
+    }
+}
+
+public extension Tensor where Scalar: TensorFlowNumeric {
+    /// Returns `max(min(self, max), min)`.
+    @inlinable
+    @differentiable(vjp: _vjpClipped where Scalar: TensorFlowFloatingPoint)
+    func clipped(min: Tensor, max: Tensor) -> Tensor {
+        Raw.clipByValue(t: self, clipValueMin: min, clipValueMax: max)
+    }
+
+    /// Returns `max(min(self, max), min)`.
+    @inlinable
+    @differentiable(wrt: (self, min) where Scalar: TensorFlowFloatingPoint)
+    func clipped(min: Tensor, max: Scalar) -> Tensor {
+        clipped(min: min, max: Tensor(max))
+    }
+
+    /// Returns `max(min(self, max), min)`.
+    @inlinable
+    @differentiable(wrt: (self, max) where Scalar: TensorFlowFloatingPoint)
+    func clipped(min: Scalar, max: Tensor) -> Tensor {
+        clipped(min: Tensor(min), max: max)
+    }
+
+    /// Returns `max(min(self, max), min)`.
+    @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+    func clipped(min: Scalar, max: Scalar) -> Tensor {
+        clipped(min: Tensor(min), max: Tensor(max))
+    }
+}
+
+internal extension Tensor where Scalar: TensorFlowFloatingPoint {
+    @inlinable
+    func _vjpClipped(min: Tensor, max: Tensor) -> (Tensor, (Tensor) -> (Tensor, Tensor, Tensor)) {
+        (clipped(min: min, max: max), { v in
+            let selfShape = self.shapeTensor
+            let minShape = min.shapeTensor
+            let maxShape = max.shapeTensor
+            let zeros = Tensor(zerosLike: v)
+            let minMask = self .< min
+            let maxMask = self .> max
+            let selfGradient = v.replacing(with: zeros, where: minMask.elementsLogicalOr(maxMask))
+            let minGradient = zeros.replacing(with: v, where: minMask)
+            let maxGradient = zeros.replacing(with: v, where: maxMask)
+            let (selfAxes, minAxes) = Raw.broadcastGradientArgs(s0: selfShape, s1: minShape)
+            let (_, maxAxes) = Raw.broadcastGradientArgs(s0: selfShape, s1: maxShape)
+            return (selfGradient.sum(squeezingAxes: selfAxes).reshaped(toShape: selfShape),
+                    minGradient.sum(squeezingAxes: minAxes).reshaped(toShape: minShape),
+                    maxGradient.sum(squeezingAxes: maxAxes).reshaped(toShape: maxShape))
+        })
     }
 }
 
@@ -875,14 +951,14 @@ internal func _vjpExp<T: TensorFlowFloatingPoint>(
 
 /// Returns two raised to the power of the specified tensor element-wise.
 @inlinable
-// @differentiable
+@differentiable
 public func exp2<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
     pow(2, x)
 }
 
 /// Returns ten raised to the power of the specified tensor element-wise.
 @inlinable
-// @differentiable
+@differentiable
 public func exp10<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
     pow(10, x)
 }
@@ -1169,28 +1245,28 @@ internal func _vjpPow<T: TensorFlowFloatingPoint>(
 
 /// Returns the power of the scalar to the tensor, broadcasting the scalar.
 @inlinable
-// @differentiable
+@differentiable(wrt: rhs where T: TensorFlowFloatingPoint)
 public func pow<T: TensorFlowFloatingPoint>(_ lhs: T, _ rhs: Tensor<T>) -> Tensor<T> {
     pow(Tensor(lhs), rhs)
 }
 
 /// Returns the power of the tensor to the scalar, broadcasting the scalar.
 @inlinable
-// @differentiable
+@differentiable(wrt: lhs where T: TensorFlowFloatingPoint)
 public func pow<T: TensorFlowFloatingPoint>(_ lhs: Tensor<T>, _ rhs: T) -> Tensor<T> {
     pow(lhs, Tensor(rhs))
 }
 
 /// Returns the power of the tensor to the scalar, broadcasting the scalar.
 @inlinable
-// @differentiable
+@differentiable
 public func pow<T: TensorFlowFloatingPoint>(_ x: Tensor<T>, _ n: Int) -> Tensor<T> {
     pow(x, Tensor(T(n)))
 }
 
 /// Returns the element-wise `n`th root of the tensor.
 @inlinable
-// @differentiable
+@differentiable
 public func root<T: TensorFlowFloatingPoint>(_ x: Tensor<T>, _ n: Int) -> Tensor<T> {
     sign(x) * pow(abs(x), Tensor(T(1) / T(n)))
 }
@@ -1526,8 +1602,10 @@ public extension Tensor where Scalar: Numeric & Comparable {
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func min(alongAxes axes: [Int]) -> Tensor {
-        let axes = axes.map(Int32.init)
+        // TODO(TF-433): Remove workaround for differentiating `map`.
+        let axes = {axes.map(Int32.init)}()
         return min(alongAxes: Tensor<Int32>(axes))
     }
 
@@ -1536,6 +1614,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func min(alongAxes axes: Int...) -> Tensor {
         min(alongAxes: axes)
     }
@@ -1555,8 +1634,10 @@ public extension Tensor where Scalar: Numeric & Comparable {
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func max(alongAxes axes: [Int]) -> Tensor {
-        let axes = axes.map(Int32.init)
+        // TODO(TF-433): Remove workaround for differentiating `map`.
+        let axes = {axes.map(Int32.init)}()
         return max(alongAxes: Tensor<Int32>(axes))
     }
 
@@ -1565,6 +1646,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func max(alongAxes axes: Int...) -> Tensor {
         max(alongAxes: axes)
     }
@@ -2319,18 +2401,40 @@ public struct Moments<Scalar: TensorFlowFloatingPoint>: Differentiable {
 public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// Returns the mean and variance of this tensor along the specified axes. The reduced
     /// dimensions are removed.
+    ///
+    /// - Parameter axes: The dimensions to reduce.
+    /// - Precondition: `axes` must have rank `1`.
+    /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
     @differentiable(wrt: self)
-    func moments(squeezingAxes axes: [Int]) -> Moments<Scalar> {
+    func moments(squeezingAxes axes: Tensor<Int32>) -> Moments<Scalar> {
         let mean = self.mean(alongAxes: axes)
-        let variance = squaredDifference(self, mean).mean(alongAxes: axes)
-        return Moments<Scalar>(
-            mean: mean.squeezingShape(at: axes),
-            variance: variance.squeezingShape(at: axes))
+        let variance = squaredDifference(self, mean).mean(squeezingAxes: axes)
+        return Moments(
+            // The following is required because `Tensor.squeezingShape(at:)` does not accept
+            // `Tensor<Int32>`-valued arguments.
+            mean: mean.sum(squeezingAxes: axes),
+            variance: variance)
     }
 
     /// Returns the mean and variance of this tensor along the specified axes. The reduced
     /// dimensions are removed.
+    ///
+    /// - Parameter axes: The dimensions to reduce.
+    /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
+    @inlinable
+    @differentiable(wrt: self)
+    func moments(squeezingAxes axes: [Int]) -> Moments<Scalar> {
+        // TODO(TF-433): Remove workaround for differentiating `map`.
+        let axes = {axes.map(Int32.init)}()
+        return moments(squeezingAxes: Tensor<Int32>(axes))
+    }
+
+    /// Returns the mean and variance of this tensor along the specified axes. The reduced
+    /// dimensions are removed.
+    ///
+    /// - Parameter axes: The dimensions to reduce.
+    /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
     @differentiable(wrt: self)
     func moments(squeezingAxes axes: Int...) -> Moments<Scalar> {
@@ -2346,9 +2450,13 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
 
     /// Returns the mean and variance of this tensor along the specified axes. The reduced
     /// dimensions are retained with value `1`.
+    ///
+    /// - Parameter axes: The dimensions to reduce.
+    /// - Precondition: `axes` must have rank `1`.
+    /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
     @differentiable(wrt: self)
-    func moments(alongAxes axes: [Int]) -> Moments<Scalar> {
+    func moments(alongAxes axes: Tensor<Int32>) -> Moments<Scalar> {
         let mean = self.mean(alongAxes: axes)
         let variance = squaredDifference(self, mean).mean(alongAxes: axes)
         return Moments<Scalar>(mean: mean, variance: variance)
@@ -2356,6 +2464,22 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
 
     /// Returns the mean and variance of this tensor along the specified axes. The reduced
     /// dimensions are retained with value `1`.
+    ///
+    /// - Parameter axes: The dimensions to reduce.
+    /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
+    @inlinable
+    @differentiable(wrt: self)
+    func moments(alongAxes axes: [Int]) -> Moments<Scalar> {
+        // TODO(TF-433): Remove workaround for differentiating `map`.
+        let axes = {axes.map(Int32.init)}()
+        return moments(alongAxes: Tensor<Int32>(axes))
+    }
+
+    /// Returns the mean and variance of this tensor along the specified axes. The reduced
+    /// dimensions are retained with value `1`.
+    ///
+    /// - Parameter axes: The dimensions to reduce.
+    /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
     @differentiable(wrt: self)
     func moments(alongAxes axes: Int...) -> Moments<Scalar> {

@@ -52,14 +52,6 @@ public class SGD<Model: Differentiable>: Optimizer
     }
 
     public func update(_ model: inout Model, along direction: Model.TangentVector) {
-        update(&model.allDifferentiableVariables, along: direction)
-    }
-
-    // TODO: Deprecate this when `Differentiable.AllDifferentiableVariables` is removed.
-    public func update(
-        _ model: inout Model.AllDifferentiableVariables,
-        along direction: Model.TangentVector
-    ) {
         step += 1
         let learningRate = self.learningRate * 1 / (1 + decay * Float(step))
         velocity = momentum * velocity - direction * learningRate
