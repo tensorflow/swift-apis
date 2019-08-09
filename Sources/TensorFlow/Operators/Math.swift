@@ -1180,7 +1180,7 @@ public func relu<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
 func _vjpRelu<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>
 ) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
-    (relu(x), { v in Tensor(x .> 0) * v })
+    (relu(x), { v in Raw.reluGrad(gradients: v, features: x) })
 }
 
 /// Returns a tensor by applying the leaky ReLU activation function
