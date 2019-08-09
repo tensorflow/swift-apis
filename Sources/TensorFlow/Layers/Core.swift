@@ -52,29 +52,13 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     ///
     /// - Parameter input: The input to the layer.
     /// - Returns: The output.
-    @differentiable(vjp: _vjpApplied(to:))
+    @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         switch Context.local.learningPhase {
         case .training:
             return applyingTraining(to: input)
         case .inference:
             return applyingInference(to: input)
-        }
-    }
-
-    @usableFromInline
-    func _vjpApplied(
-        to input: Tensor<Scalar>
-    ) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (Dropout<Scalar>.TangentVector, Tensor<Scalar>)) {
-        switch Context.local.learningPhase {
-        case .training:
-            return valueWithPullback(at: input) {
-                $0.applyingTraining(to: $1)
-            }
-        case .inference:
-            return valueWithPullback(at: input) {
-                $0.applyingInference(to: $1)
-            }
         }
     }
 }
@@ -204,7 +188,7 @@ public extension Dense {
     ) {
         self.init(
             weight: weightInitializer([inputSize, outputSize]),
-            bias: Tensor(zeros: [outputSize]),
+            bias: biasInitializer([outputSize]),
             activation: activation)
     }
 }

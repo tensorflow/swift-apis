@@ -68,10 +68,11 @@ internal struct TFE_Op: TFTensorOperation {
         let count = input._tensorHandleCount
         var buffer = UnsafeMutableBufferPointer<CTensorHandle>.allocate(capacity: Int(count))
         defer { buffer.deallocate() }
-        let pointer = UnsafeMutablePointer<OpaquePointer?>(buffer.baseAddress)
         input._unpackTensorHandles(into: buffer.baseAddress)
-        TFE_OpAddInputList(op, pointer, count, status)
-        // TODO: checkOk(status)
+        for i in 0..<Int(count) {
+            TFE_OpAddInput(op, buffer[i], status)
+            checkOk(status)
+        }
     }
 
     @inlinable @inline(__always)

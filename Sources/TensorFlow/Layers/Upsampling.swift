@@ -93,7 +93,7 @@ public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
 
     private func _vjpRepeatingElements(
         _ input: Tensor<Scalar>, alongAxis axis: Int, count: Int
-    ) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (AllDifferentiableVariables, Tensor<Scalar>)) {
+    ) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (TangentVector, Tensor<Scalar>)) {
         let value = repeatingElements(input, alongAxis: axis, count: count)
         return (value, { v in
             let splits = Raw.split(

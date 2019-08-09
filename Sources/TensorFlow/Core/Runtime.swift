@@ -36,381 +36,11 @@ import Glibc
 #endif
 import CTensorFlow
 
-/// TraceContext contains the state needed to build a trace graph function (TF_Function). As eager
-/// ops are executed in tracing mode, their corresponding nodes are added to the trace graph (via
-/// `addEagerOpToGraph()`). When the trace is finalized (via `finalize()`), the trace graph function
-/// can then be executed (via `execute()`) by the eager runtime.
-@usableFromInline
-internal class TraceContext {
-    let status: CTFStatus = TF_NewStatus()
-
-    /// The trace graph, which will be converted to a trace graph function upon finalizing.
-    let graph = TF_NewGraph()
-
-    /// The list of inputs to the trace graph function. It starts with the inputs to the function
-    /// that we trace (referred to as the "tracee function" or "tracee"), followed by possible
-    /// additional inputs that correspond to concrete tensors produced within the trace function.
-    ///
-    /// For example, if the tracee is:
-    ///
-    /// struct TensorPair<T: TensorGroup, U: TensorGroup>: TensorGroup {
-    ///   public var first: T
-    ///   public var second: U
-    /// }
-    ///
-    /// func foo(x: TensorPair) -> Tensor {
-    ///   let y = Tensor<Float>(1.0)
-    ///   return x.first + x.second + y
-    /// }
-    ///
-    /// Then the generated trace graph function has 3 input tensors: x.first, x.second, and y.
-    ///
-    /// These symbolic tensors corresond to PlaceHolder nodes in the trace graph, and will be filled
-    /// in when we execute the trace graph function.
-    //
-    // TODO: If some tensors in `x` are not used within `foo()`, they can be pruned away in the
-    // inputs to the trace graph function.
-    var symbolicInputs: [TF_Output] = []
-
-    /// The outputs obtained by executing the `tracee` for computing the trace.
-    var tracedOutputs: [CTensorHandle] = []
-
-    /// The trace context object used in TF C API calls that convert eager ops to (trace) graph
-    /// nodes.
-    let cTraceContext: CTFETraceContext
-
-    /// The trace graph function created by `finalize()`.
-    var traceGraphFn: CTFFunction?
-
-    /// The number of additional input tensors to the trace graph function, created from concrete
-    /// intermediate tensors in the tracee, such as `y` in the code snippet above.
-    var additionalInputTensorCount: Int32 = -1
-
-    /// `dtypes` is the (flattened) list of TF_DataType of input tensors to the trace function.
-    init(dtypes: [TF_DataType]) {
-        debugLog("Instiantiating TraceContext with \(dtypes.count) input tensors.")
-        for (i, dtype) in dtypes.enumerated() {
-            let desc = TF_NewOperation(graph, "Placeholder", "input_\(i)")
-            TF_SetAttrType(desc, "dtype", dtype)
-            let result = TF_FinishOperation(desc, status)
-            checkOk(status)
-            symbolicInputs.append(TF_Output(oper: result, index: 0))
-        }
-        cTraceContext = TFE_NewTraceContext(graph)
-    }
-
-    deinit {
-        TFE_DeleteTraceContext(cTraceContext)
-        TF_DeleteGraph(graph)
-        TF_DeleteStatus(status)
-    }
-
-    @usableFromInline
-    func addEagerOpToGraph(
-        _ op: CTFEOp,
-        _ retvals: UnsafeMutablePointer<OpaquePointer?>,
-        _ retvalCount: UnsafeMutablePointer<Int32>,
-        _ status: CTFStatus
-    ) {
-        TFE_AddEagerOpToGraph(op, cTraceContext, retvals, retvalCount, status)
-        checkOk(status)
-    }
-
-    /// Finalize the trace graph function.
-    func finalize(traceeBasicName: String) {
-        internalConsistencyCheck(traceGraphFn == nil)
-        var symbolicOutputs: [TF_Output] = []
-        // Only add symbolic output tensors as the outputs of the trace graph function.
-        // For example, let the tracee be:
-        //   func foo(x: Tensor) -> (Tensor, Tensor) {
-        //     let y = Tensor<Float>(1.0)
-        //     return (x + x, y)
-        //   }
-        //
-        // Here foo() returns 2 tensors, but only the first one (as computed by x + x) is symbolic.
-        // The second one for y is concrete, and is computed at trace creation time, not trace
-        // execution time. Also see the comment block above finalizeAndExecuteTraceFn().
-        for (i, tracedOutput) in tracedOutputs.enumerated()
-        where TFE_TensorHandleIsConcrete(tracedOutput) == 0 {
-            debugLog("Adding symbolic tracedOutput \(i) as a trace graph func output.")
-            symbolicOutputs.append(TFE_GetTFOutputFromTensorHandle(tracedOutput ,status))
-            checkOk(status)
-        }
-
-        let traceeInputCount = symbolicInputs.count
-        // Append concrete tensors created within the tracee as symbolic inputs to the generated
-        // trace graph function.
-        additionalInputTensorCount = TFE_FinalizeInputTensorsFromTraceContext(cTraceContext)
-        for i in 0..<additionalInputTensorCount {
-            symbolicInputs.append(TFE_GetInputGraphNodeFromTraceContext(cTraceContext, UInt32(i)))
-        }
-
-        let tracedFunctionName = "\(traceeBasicName)_\(_RuntimeConfig.traceGraphFunctionCounter)"
-        _RuntimeConfig.traceGraphFunctionCounter += 1
-        debugLog("""
-                 Finalizing trace graph func \(tracedFunctionName), with \
-                 \(traceeInputCount) tracee inputs and \
-                 \(additionalInputTensorCount) additional inputs, and up to \
-                 \(tracedOutputs.count) return values.
-                 """)
-        traceGraphFn = TF_GraphToFunction(
-            graph,
-            tracedFunctionName,
-            /*append_hash_to_fn_name*/ 0,
-            /*num_opers*/ -1,
-            /*opers*/ nil,
-            /*numinputs*/ Int32(symbolicInputs.count),
-            /*inputs*/ symbolicInputs,
-            /*noutputs*/ Int32(symbolicOutputs.count),
-            /*outputs*/ symbolicOutputs,
-            /*outputnames*/ nil,
-            /*functionoptions*/ nil, "", status)
-        checkOk(status)
-
-        if _RuntimeConfig.printsDebugLog {
-            var len: Int = 0
-            let funcDebugStr = TF_FunctionDebugString(traceGraphFn, &len)!
-            debugLog("The traced function is:\n\(String(cString: funcDebugStr))")
-            free(funcDebugStr)
-        }
-
-        // TODO: Consider garbage-collecting these trace graph functions if we end up with too many.
-        let eagerContext = _TFCGetGlobalEagerContext()
-        TFE_ContextAddFunction(eagerContext, traceGraphFn, status)
-        checkOk(status)
-    }
-
-    /// Execute the trace graph function, and return the list of output tensors from the trace
-    /// execution. These output tensors are owned by the caller.
-    func execute(traceeInputs: [_AnyTensorHandle], useXLA: Bool = false) -> [CTensorHandle] {
-        // We must be in the `notTracing` enum mode.
-        internalConsistencyCheck(_RuntimeConfig.traceState.context == nil)
-        internalConsistencyCheck(traceGraphFn != nil)
-
-        let tracedFunctionName = TF_FunctionName(traceGraphFn)
-        internalConsistencyCheck(tracedFunctionName != nil)
-        let eagerContext = _TFCGetGlobalEagerContext()
-        let op: CTFEOp! = TFE_NewOp(eagerContext, tracedFunctionName, status)
-        defer { TFE_DeleteOp(op) }
-        checkOk(status)
-
-        let deviceName = _ExecutionContext.global.currentDeviceName
-        if let deviceName = deviceName {
-            debugLog("Placing the trace func on device \(deviceName).")
-            TFE_OpSetDevice(op, deviceName, status)
-            checkOk(status)
-        }
-
-        if useXLA {
-            debugLog("Enabling XLA compilation")
-            TFE_OpSetAttrBool(op, "_XlaCompile", 1)
-        }
-
-        debugLog("Adding \(traceeInputs.count) tracee input tensors.")
-        internalConsistencyCheck(
-            symbolicInputs.count == traceeInputs.count + Int(additionalInputTensorCount))
-        for input in traceeInputs {
-            _TFCOpAddInputFromTensorHandle(op, input, status)
-            checkOk(status)
-        }
-
-        debugLog("Adding \(additionalInputTensorCount) additional input tensors.")
-        for i in 0..<additionalInputTensorCount {
-            let input = TFE_ConsumeInputConcreteTensorFromTraceContext(cTraceContext, UInt32(i))
-            internalConsistencyCheck(input != nil)
-            debugLog("""
-                     Adding additional input tensor of idx \
-                     \(traceeInputs.count+Int(additionalInputTensorCount)):\
-                     \(input!).
-                     """)
-            TFE_OpAddInput(op, input, status)
-            checkOk(status)
-        }
-
-        // Tell TensorFlow to execute the graph function we built, containing the trace.
-        let maxReturnValueCount = tracedOutputs.count
-        debugLog("""
-                 Executing trace func \(tracedFunctionName!) with up to \
-                 \(maxReturnValueCount) return values.
-                 """)
-        var returnValues = [CTensorHandle?](repeating: nil, count: maxReturnValueCount)
-        var outputReturnValueCount = Int32(maxReturnValueCount)
-        TFE_Execute(op, &returnValues, &outputReturnValueCount, status)
-        checkOk(status)
-        debugLog("""
-                 returnValues.count=\(returnValues.count), \
-                 outputReturnValueCount=\(outputReturnValueCount).
-                 """)
-        internalConsistencyCheck(outputReturnValueCount <= returnValues.count)
-
-        // Now that all the output elements have been filled in, remove a level of optional, and
-        // also add concrete outputs.
-        var traceGraphOutputs: [CTensorHandle] = []
-        // Points to an element in `returnValues`.
-        var returnValueIdx = 0
-        // See the comment block within finalize() below on why we handle concrete and symbolic
-        // output tensors differently.
-        for tracedOutput in tracedOutputs {
-            if TFE_TensorHandleIsConcrete(tracedOutput) != 0 {
-                // These concrete tensors are owned by some other objects, so we make a copy here.
-                let newOutput = TFE_TensorHandleCopySharingTensor(tracedOutput, status)
-                checkOk(status)
-                internalConsistencyCheck(newOutput != nil)
-                traceGraphOutputs.append(newOutput!)
-            } else {
-                // These symbolic tensors are produced by TFE_Execute() above, and we need not make
-                // an extra copy.
-                internalConsistencyCheck(returnValues[returnValueIdx] != nil)
-                traceGraphOutputs.append(returnValues[returnValueIdx]!)
-                returnValueIdx += 1
-            }
-        }
-        internalConsistencyCheck(returnValueIdx == outputReturnValueCount)
-        return traceGraphOutputs
-    }
-
-    /// Bind data to the inputs of the graph and return the specialized graph.
-    func specializeTFFunction(with dataTensors: [CTensorHandle]) -> String {
-        let specializedGraph = TF_NewGraph()!
-
-        TF_GraphCopyFunction(specializedGraph, traceGraphFn, /*gradient*/ nil, status)
-        checkOk(status)
-
-        let tracedFunctionName = TF_FunctionName(traceGraphFn)
-        internalConsistencyCheck(tracedFunctionName != nil)
-        let tracedOpDesc = TF_NewOperation(specializedGraph, tracedFunctionName, "tracedFn")
-
-        // Create and append the inputs to the graph function.
-        let traceeInputs = symbolicInputs.dropLast(
-            dataTensors.count + Int(additionalInputTensorCount))
-        var inputs: [TF_Output] = []
-        for (i, traceeInput) in traceeInputs.enumerated() {
-            let desc = TF_NewOperation(specializedGraph, "Placeholder", "input_\(i)")
-            TF_SetAttrType(desc, "dtype", TF_OperationOutputType(traceeInput))
-            let result = TF_FinishOperation(desc, status)
-            checkOk(status)
-            let input = TF_Output(oper: result, index: 0)
-            TF_AddInput(tracedOpDesc, input)
-            inputs.append(input)
-        }
-
-        // Wire the data to the corresponding inputs of the tracedOp.
-        for (i, cTensorHandle) in dataTensors.enumerated() {
-            let cTensor = TFE_TensorHandleResolve(cTensorHandle, status)
-            checkOk(status)
-            let desc = TF_NewOperation(specializedGraph, "Const", "input_const_\(i)")
-            TF_SetAttrType(desc, "dtype", TFE_TensorHandleDataType(cTensorHandle))
-            TF_SetAttrTensor(desc, "value", cTensor, status)
-            checkOk(status)
-            let result = TF_FinishOperation(desc, status)
-            checkOk(status)
-            TF_AddInput(tracedOpDesc, TF_Output(oper: result, index: 0))
-        }
-
-        var nextConst = dataTensors.count
-        debugLog("Adding \(additionalInputTensorCount) additional input tensors.")
-        for i in 0..<additionalInputTensorCount {
-            let cTensorHandle = TFE_ConsumeInputConcreteTensorFromTraceContext(
-                cTraceContext, UInt32(i))
-            internalConsistencyCheck(cTensorHandle != nil)
-            let cTensor = TFE_TensorHandleResolve(cTensorHandle, status)
-            checkOk(status)
-            let desc = TF_NewOperation(specializedGraph, "Const", "input_const_\(nextConst)")
-            nextConst += 1
-            TF_SetAttrType(desc, "dtype", TFE_TensorHandleDataType(cTensorHandle))
-            TF_SetAttrTensor(desc, "value", cTensor, status)
-            checkOk(status)
-            debugLog("""
-                     Adding additional input tensor of idx \
-                     \(traceeInputs.count+Int(additionalInputTensorCount)):\
-                     \(cTensorHandle!).
-                     """)
-            let result = TF_FinishOperation(desc, status)
-            checkOk(status)
-            TF_AddInput(tracedOpDesc, TF_Output(oper: result, index: 0))
-        }
-
-        let tracedOp = TF_FinishOperation(tracedOpDesc, status)
-        checkOk(status)
-
-        // Set up outputs.
-        var outputIndex: Int32 = 0
-        var outputs: [TF_Output] = []
-        // Get the symbolic outputs from the output.
-        for output in tracedOutputs
-        where TFE_TensorHandleIsConcrete(output) == 0 {
-            outputs.append(TF_Output(oper: tracedOp, index: outputIndex))
-            outputIndex += 1
-        }
-        // Create constants for the concrete outputs.
-        for output in tracedOutputs
-        where TFE_TensorHandleIsConcrete(output) != 0 {
-            let cTensor = TFE_TensorHandleResolve(output, status)
-            checkOk(status)
-            let desc = TF_NewOperation(specializedGraph, "Const", "output_const_\(outputIndex)")
-            TF_SetAttrType(desc, "dtype", TFE_TensorHandleDataType(output))
-            TF_SetAttrTensor(desc, "value", cTensor, status);
-            checkOk(status)
-            let result = TF_FinishOperation(desc, status)
-            checkOk(status)
-            outputs.append(TF_Output(oper: result, index: outputIndex))
-            outputIndex += 1
-        }
-        let specializedTFFuncName = "specialized_tffunc_\(_RuntimeConfig.traceGraphFunctionCounter)"
-        _RuntimeConfig.traceGraphFunctionCounter += 1
-
-        let tffunc = TF_GraphToFunction(
-            specializedGraph,
-            specializedTFFuncName,
-            /*append_hash_to_fn_name*/ 0,
-            /*num_opers*/ -1,
-            /*opers*/ nil,
-            /*numinputs*/ Int32(inputs.count),
-            /*inputs*/ inputs,
-            /*noutputs*/ Int32(outputs.count),
-            /*outputs*/ outputs,
-            /*outputnames*/ nil,
-            /*functionoptions*/ nil, "", status)
-        checkOk(status)
-
-        if _RuntimeConfig.printsDebugLog {
-            var len: Int = 0
-            let funcDebugStr = TF_FunctionDebugString(tffunc, &len)!
-            debugLog("Specialized TF_Function is:\n\(String(cString: funcDebugStr))")
-            free(funcDebugStr)
-        }
-        let eagerContext = _TFCGetGlobalEagerContext()
-        TFE_ContextAddFunction(eagerContext, tffunc, status)
-        checkOk(status)
-        return specializedTFFuncName
-    }
-}
-
-// This enum keeps track of whether we are building or executing a trace.
-@usableFromInline
-internal enum TracingState {
-    case notTracing
-    case tracing(TraceContext)
-
-    // Return nil if we are not in tracing mode.
-    @usableFromInline
-    var context: TraceContext? {
-        guard case let .tracing(context) = self else { return nil }
-        return context
-    }
-}
-
 /// The configuration for the compiler runtime.
 // TODO(hongm): Revisit the longer-term design.
 // @_frozen // SR-9739
 public enum _RuntimeConfig {
     // TODO: change this and subsequent properties from static to thread local.
-    @usableFromInline
-    internal static var traceState: TracingState = .notTracing
-
-    /// Used to create unique trace graph function names.
-    fileprivate static var traceGraphFunctionCounter = 0
-
     /// When false, tensorflow runtime will be initialized before running any tensor program in this
     /// process.
     static public var tensorFlowRuntimeInitialized = false
@@ -421,10 +51,6 @@ public enum _RuntimeConfig {
 
     /// The number of CPU devices.
     static public var cpuDeviceCount: UInt32 = 1
-
-    /// When non-nil, run metadata (with full trace) of each session execution will be dumped to the
-    /// give path.
-    static public var runMetadataOutputPath: String? = nil
 
     /// Specifies whether the TensorFlow computation runs in a local (in-process) session, or a
     /// remote session with the specified server definition.
@@ -527,12 +153,6 @@ private func configureRuntimeFromEnvironment() {
         }
     }
 
-    if let value = getenv("SWIFT_TENSORFLOW_RUN_METADATA_OUTPUT") {
-        let path = String(cString: value)
-        _RuntimeConfig.runMetadataOutputPath = path
-        debugLog("Setting run metadata output path to \(path) from env.")
-    }
-
     if let value = getenv("SWIFT_TENSORFLOW_CPU_DEVICE_COUNT") {
         guard let cpuDeviceCount = UInt32(String(cString: value)) else {
             fatalError("SWIFT_TENSORFLOW_CPU_DEVICE_COUNT must take an int value.")
@@ -550,7 +170,7 @@ public final class _ExecutionContext {
     /// List of devices available to this execution context.
     /// Devices are represented by their names in TensorFlow notation.
     /// See documentation for `withDevice(named:perform:)` to learn about device names.
-    private var deviceNames: [String] = []
+    public private(set) var deviceNames: [String] = []
 
     /// The buffer storing a serialized TensorFlow config proto.
     public let tensorFlowConfig: UnsafeMutablePointer<TF_Buffer>
@@ -693,245 +313,18 @@ extension _ExecutionContext {
     static func makeOp(
         _ name: String, _ outputCount: Int
     ) -> TFTensorOperation {
-        return _RuntimeConfig.useLazyTensor
+        return _ThreadLocalState.useLazyTensor
             ? LazyTensorOperation(name, outputCount)
             : TFE_Op(name, outputCount)
     }
 }
 
-// Elements in `outputs` can come from two sources:
-// a) Symbolic tensors produced by tensor ops, and added as trace graph nodes.
-// b) Concrete tensors produced by host code (e.g. Tensor(1.0)).
-fileprivate func finalizeTraceFunction(_ name: String) -> TraceContext {
-    guard let traceContext = _RuntimeConfig.traceState.context else {
-        fatalError("Not in tracing mode!.")
-    }
-    _RuntimeConfig.traceState = .notTracing
-    traceContext.finalize(traceeBasicName: name)
-    return traceContext
-}
-
-private extension TensorArrayProtocol {
-    // The returned handles are owned by the caller.
-    var cTensorHandles: [CTensorHandle] {
-        debugLog("Getting \(self._tensorHandleCount) C handles.")
-        let buffer = UnsafeMutablePointer<CTensorHandle>.allocate(
-            capacity: Int(self._tensorHandleCount))
-        debugLog("Unpacking handles into buffer.")
-        _unpackTensorHandles(into: buffer)
-        let status = TF_NewStatus()
-        debugLog("Copying buffer content to output handles.")
-        var output: [CTensorHandle] = []
-        for i in 0..<Int(_tensorHandleCount) {
-            let address = buffer.advanced(by: i)
-            let isConcrete = TFE_TensorHandleIsConcrete(address.pointee) != 0
-            debugLog("""
-                     Copying the \(i)-th C handle \(address.pointee) with \
-                     concrete=\(isConcrete).
-                     """)
-            let newHandle = TFE_TensorHandleCopySharingTensor(address.pointee, status)
-            checkOk(status)
-            internalConsistencyCheck(newHandle != nil)
-            debugLog("""
-                     Copying the \(i)-th C handle \(address.pointee) with \
-                     concrete=\(isConcrete) to C handle create \(newHandle!).
-                     """)
-            output.append(newHandle!)
-        }
-        TF_DeleteStatus(status)
-        return output
-    }
-}
-
-private extension TensorGroup {
-    // The tensors in `input` are NOT owned by this instance.
-    init<C: Collection>(_copying input: C) where C.Element == CTensorHandle {
-        assert(Self._tensorHandleCount == input.count)
-        let buffer = UnsafeMutablePointer<CTensorHandle>.allocate(capacity: input.count)
-        let status = TF_NewStatus()
-        // copy input to buffer
-        for (i, inputTensorHandle) in input.enumerated() {
-            let address = buffer.advanced(by: i)
-            // Each tensor can be symbolic (e.g. when using this API to create a symbolic input
-            // instance to tracee) or concrete (e.g. when creating the final output of the tracee).
-            let newHandle = TFE_TensorHandleCopySharingTensor(inputTensorHandle, status)
-            checkOk(status)
-            address.initialize(to: newHandle!)
-        }
-        TF_DeleteStatus(status)
-        self.init(_owning: buffer)
-    }
-
-    init<C: Collection>(_owning input: C) where C.Element == CTensorHandle {
-        assert(Self._tensorHandleCount == input.count)
-        let buffer = UnsafeMutablePointer<CTensorHandle>.allocate(capacity: input.count)
-        let status = TF_NewStatus()
-        // copy input to buffer
-        for (i, inputTensorHandle) in input.enumerated() {
-            let address = buffer.advanced(by: i)
-            address.initialize(to: inputTensorHandle)
-        }
-        TF_DeleteStatus(status)
-        self.init(_owning: buffer)
-    }
-}
-
-// TODO: Fold this protocol into TensorArrayProtocol.
-// This requires that we move concrete implementation such as Tensor._makeInstance() to
-// TensorGroup.swift.
-public protocol _TensorArrayProtocolEnhanced: TensorArrayProtocol {
-    // Create an instance based on `inputs`, which can be symbolic (e.g., when creating a symbolic
-    // input to tracee) or concrete (e.., when creating a final output of executing the tracee).
-    func _makeInstance<C: Collection>(owning inputs: C) -> Self where C.Element == CTensorHandle
-}
-
-extension _TensorArrayProtocolEnhanced {
-    var _dtypes: [TF_DataType] {
-        let count = Int(_tensorHandleCount)
-        let buffer = UnsafeMutableBufferPointer<CTensorHandle>.allocate(capacity: count)
-        defer { buffer.deallocate() }
-        _unpackTensorHandles(into: buffer.baseAddress)
-        return buffer.map { TFE_TensorHandleDataType($0) }
-    }
-}
-
-/// Trace `fn` with newly created tensor handles and return a trace context.
-private func _trace(
-    with dtypes: [TF_DataType],
-    in fn: ([CTensorHandle]) -> [CTensorHandle]
-) -> TraceContext {
-    debugLog("""
-             Tracing over a function with \(dtypes.count) inputs.
-             """)
-
-    // Verify that we are not already tracing.
-    internalConsistencyCheck(_RuntimeConfig.traceState.context == nil,
-                             "Should not be in tracing mode already!")
-
-    // Switch to tracing mode.
-    let traceCtx = TraceContext(dtypes: dtypes)
-    _RuntimeConfig.traceState = .tracing(traceCtx)
-
-    // Handle inputs.
-    let inputSymbolicTensors = traceCtx.symbolicInputs.map {
-        TFE_NewTensorHandleFromTFOutput($0, TF_OperationOutputType($0))!
-    }
-    internalConsistencyCheck(inputSymbolicTensors.count == dtypes.count)
-
-    // Run tracee to build the trace, adding ops to the trace graph function. The tracee output can
-    // contain a mixture of symbolic and concrete tensors (see the comment block within
-    // TraceContext.finalize()).
-    debugLog("Running tracee in tracing mode.")
-    traceCtx.tracedOutputs = fn(inputSymbolicTensors)
-
-    debugLog("Finalizing trace graph function.")
-    // TAP means tensor array protocol.
-    let opType = "MyTraceFn_TAP"
-    return finalizeTraceFunction(opType)
-}
-
-private func _graphInternal<
-    State: _TensorArrayProtocolEnhanced,
-    Data: TensorGroup,
-    Result: TensorGroup
->(
-    with state: State,
-    in fn: (State, Data) -> (State, Result?)
-) -> (State, Data) -> (State, Result?) {
-    let traceContext: TraceContext = withoutActuallyEscaping(fn) { escapableFn in
-        let wrappedFn = { (inputs: [CTensorHandle]) -> [CTensorHandle] in
-            let symbolicState = state._makeInstance(owning: inputs.dropLast(Data._typeList.count))
-            let symbolicData = Data(_copying: inputs.dropFirst(Int(state._tensorHandleCount)))
-            let (outputState, outputResult) = escapableFn(symbolicState, symbolicData)
-
-            debugLog("Assembling output tensor handles.")
-            let outputs =
-                outputResult != nil
-                ? (outputState.cTensorHandles + outputResult!.cTensorHandles)
-                : outputState.cTensorHandles
-            return outputs
-        }
-        let dtypes = state._dtypes + Data._typeList.map { $0._cDataType }
-        return _trace(with: dtypes, in: wrappedFn)
-    }
-    // The result is a closure that captures and executes the trace graph function in the trace
-    // context.
-    return { (oldState: State, data: Data) -> (State, Result?) in
-        debugLog("Running trace function over state \(oldState) and data \(data).")
-
-        debugLog("Getting input state tensor handles.")
-        let inputStateTensorHandles =  oldState.cTensorHandles
-        var inputTensors = inputStateTensorHandles.map {
-            TFETensorHandle(_owning: $0)
-        }
-        debugLog("Getting input data tensor handles.")
-        let inputDataTensorHandles =  data.cTensorHandles
-        inputTensors.append(contentsOf: inputDataTensorHandles.map {
-            TFETensorHandle(_owning: $0)
-        })
-
-        debugLog("Executing trace graph function.")
-        let returnValues = traceContext.execute(traceeInputs: inputTensors)
-
-        debugLog("Creating output model instance.")
-        let newState = state._makeInstance(
-            owning: returnValues.prefix(Int(state._tensorHandleCount)))
-        let resultValues = returnValues.dropFirst(Int(state._tensorHandleCount))
-        let result: Result? = resultValues.isEmpty ? nil : Result(_owning: resultValues)
-        return (newState, result)
-    }
-}
-
-// TODO: rename this to `graph` when it's ready for end users.
-public func _graph<State: _TensorArrayProtocolEnhanced, Data: TensorGroup, Result: TensorGroup>(
-    with state: State,
-    in fn: (State, Data) -> (State, Result)
-) -> (State, Data) -> (State, Result) {
-    let graphFunction = _graphInternal(with: state, in: fn)
-    return { (state: State, data: Data) in
-        let result = graphFunction(state, data)
-        internalConsistencyCheck(result.1 != nil)
-        return (result.0, result.1!)
-    }
-}
-
-// TODO: rename this to `graph` when it's ready for end users.
-public func _graph<State: _TensorArrayProtocolEnhanced, Data: TensorGroup>(
-    with state: State,
-    in fn: (State, Data) -> State
-) -> (State, Data) -> State {
-    let graphFunction: (State, Data) -> (State, Tensor<Float>?) =
-        withoutActuallyEscaping(fn) { escapableFn in
-            let wrappedFn = {
-                // The result argument needs to a type that conforms to TensorGroup.
-                // We are arbitrarily picking Tensor<Float> here.
-                (s: State, d: Data) -> (State, Tensor<Float>?) in
-                (escapableFn(s, d), nil)
-            }
-            return _graphInternal(with: state, in: wrappedFn)
-        }
-    return { (state: State, data: Data) in graphFunction(state, data).0 }
-}
-
-/// Trace the given function `fn` and return a closure that can be used to create a
-/// `TF_Function(State)` specialized for `data`.
-public func _tffunc<State: _TensorArrayProtocolEnhanced, Data: TensorGroup>(
-    with state: State,
-    in fn: (State, Data) -> State
-) -> (Data) -> (String) {
-    let traceContext: TraceContext = withoutActuallyEscaping(fn) { escapableFn in
-        let wrappedFn = { (inputs: [CTensorHandle]) -> [CTensorHandle] in
-            let symbolicState = state._makeInstance(owning: inputs.dropLast(Data._typeList.count))
-            let symbolicData = Data(_copying: inputs.dropFirst(Int(state._tensorHandleCount)))
-            let outputState = escapableFn(symbolicState, symbolicData)
-            return outputState.cTensorHandles
-        }
-        let dtypes = state._dtypes + Data._typeList.map { $0._cDataType }
-        return _trace(with: dtypes, in: wrappedFn)
-    }
-    return {
-        data in traceContext.specializeTFFunction(with: data.cTensorHandles)
-    }
+internal func _trace<In: TensorGroup, Out: TensorGroup>(_ fn: (In) -> Out) -> TFFunction {
+    let useLazyTensor = _ThreadLocalState.useLazyTensor
+    defer { _ThreadLocalState.useLazyTensor = useLazyTensor }
+    _ThreadLocalState.useLazyTensor = true
+    let trace = LazyTensorTraceBuilder.trace(fn)
+    return TFFunction(trace: trace)
 }
 
 // Trace the given function to generate a TF graph and return a closure that can be used to launch
@@ -940,59 +333,19 @@ public func _graph<In: TensorGroup, Out: TensorGroup>(
     _ fn: (In) -> Out,
     useXLA: Bool = false
 ) -> (In) -> Out {
-    let traceContext: TraceContext = withoutActuallyEscaping(fn) { escapableFn in
-        let wrappedFn = { (inputs: [CTensorHandle]) -> [CTensorHandle] in
-            let buffer = UnsafeMutablePointer<CTensorHandle>.allocate(capacity: Int(inputs.count))
-            var ptr = buffer
-            for input in inputs {
-                ptr.initialize(to: input)
-                ptr = ptr.advanced(by: 1)
-            }
-            let symbolicIn = In(_owning: buffer)
-            let symbolicOut = escapableFn(symbolicIn)
-            return symbolicOut.cTensorHandles
-        }
-        let dtypes = In._typeList.map { $0._cDataType }
-        return _trace(with: dtypes, in: wrappedFn)
-    }
-    // The result is a closure that captures and executes the trace graph function in the trace
-    // context.
-    return { (input: In) -> (Out) in
-        debugLog("Running trace function over input \(input).")
-
-        debugLog("Getting input state tensor handles.")
-        let inputStateTensorHandles =  input.cTensorHandles
-        let inputTensors = inputStateTensorHandles.map {
-            TFETensorHandle(_owning: $0)
-        }
-        debugLog("Executing trace graph function.")
-        let returnValues = traceContext.execute(traceeInputs: inputTensors, useXLA: useXLA)
-
-        debugLog("Creating output model instance.")
-        return Out(_owning: returnValues)
+    let tffunc = _trace(fn)
+    return {input in
+        let inputHandles = input._tensorHandles.map { $0._tfeTensorHandle }
+        let outputHandles = tffunc.execute(inputHandles, usingXLA: useXLA)
+        return Out(_handles: outputHandles)
     }
 }
 
 /// Trace the given function and return the name of the corresponding `TF_Function: In -> Out` that
 /// was created.
 public func _tffunc<In: TensorGroup, Out: TensorGroup>(_ fn: (In) -> Out) -> String {
-    let traceContext: TraceContext = withoutActuallyEscaping(fn) { escapableFn in
-        let wrappedFn = { (inputs: [CTensorHandle]) -> [CTensorHandle] in
-            let buffer = UnsafeMutablePointer<CTensorHandle>.allocate(capacity: Int(inputs.count))
-            var ptr = buffer
-            for input in inputs {
-                ptr.initialize(to: input)
-                ptr = ptr.advanced(by: 1)
-            }
-            let symbolicIn = In(_owning: buffer)
-            let symbolicOut = escapableFn(symbolicIn)
-            return symbolicOut.cTensorHandles
-        }
-
-        let dtypes = In._typeList.map { $0._cDataType }
-        return _trace(with: dtypes, in: wrappedFn)
-    }
-    return traceContext.specializeTFFunction(with: [])
+    let tffunc = _trace(fn)
+    return tffunc.name
 }
 
 internal extension _ExecutionContext {
@@ -1001,7 +354,7 @@ internal extension _ExecutionContext {
     /// withDevice call on the call stack or the presence of an immediately enclosing
     /// `withDefaultDevice(perform)` call.
     var currentDeviceName: String? {
-        return _ThreadLocalState.local._currentDevice
+        return _ThreadLocalState.local.deviceScopes._currentDevice
     }
 
     /// See documentation for the top-level `withDevice(_:_:perform)`.
@@ -1029,17 +382,17 @@ internal extension _ExecutionContext {
         guard deviceNames.contains(name) else {
             fatalError("Device \(name) not found")
         }
-        _ThreadLocalState.local.pushDevice(name)
+        _ThreadLocalState.local.deviceScopes.pushDevice(name)
         let result = try body()
-        _ThreadLocalState.local.popDevice()
+        _ThreadLocalState.local.deviceScopes.popDevice()
         return result
     }
 
     /// See documentation for the top-level `withDefaultDevice(perform)`.
     func withDefaultDevice<R>(perform body: () throws -> R) rethrows -> R {
-        _ThreadLocalState.local.pushDevice(nil)
+        _ThreadLocalState.local.deviceScopes.pushDevice(nil)
         let result = try body()
-        _ThreadLocalState.local.popDevice()
+        _ThreadLocalState.local.deviceScopes.popDevice()
         return result
     }
 }
@@ -1104,7 +457,6 @@ internal func dumpCTensorHandleContent(_ idx: Int, _ inputTensorHandle: CTensorH
 }
 
 @inlinable
-@_cdecl("_swift_tfc_EagerExecute")
 func _TFCEagerExecute(
     _ op: CTFEOp,
     _ retvals: UnsafeMutablePointer<OpaquePointer?>,
@@ -1120,15 +472,8 @@ func _TFCEagerExecute(
             debugLog("[Run with TF_CPP_MIN_LOG_LEVEL=0 to have TFEOps printed out]")
         }
     }
-    if let traceContext = _RuntimeConfig.traceState.context {
-        // convert this eager op into a trace graph node
-        debugLog("Adding eager op \(op) to trace graph.")
-        traceContext.addEagerOpToGraph(op, retvals, retvalCount, status)
-        checkOk(status)
-    } else {
-        debugLog("Executing eager op \(op).")
-        TFE_Execute(op, retvals, retvalCount, status)
-    }
+    debugLog("Executing eager op \(op).")
+    TFE_Execute(op, retvals, retvalCount, status)
 }
 
 //===----------------------------------------------------------------------===//
@@ -1136,25 +481,19 @@ func _TFCEagerExecute(
 //===----------------------------------------------------------------------===//
 
 @usableFromInline
-@_cdecl("_swift_tfc_GetGlobalEagerContext")
 func _TFCGetGlobalEagerContext() -> CTFEContext {
     debugLog("Calling _GetGlobalEagerContext()")
     return _ExecutionContext.global.eagerContext
 }
 
-// Some of the functions are marked with @silgen_name instead of @_cdecl, because their input/output
-// data types are not C-compatible (e.g., AnyTensorHandle).
-
 /// Adds `handle` as an input to `op`.
 @usableFromInline
-@_silgen_name("_swift_tfc_OpAddInputFromTensorHandle")
 func _TFCOpAddInputFromTensorHandle(_ op: CTFEOp, _ handle: _AnyTensorHandle, _ status: CTFStatus) {
     TFE_OpAddInput(op, handle._cTensorHandle, status)
 }
 
 /// Adds `t` as an input or inputs to `op`. Returns the number of inputs added.
 @usableFromInline
-@_silgen_name("_swift_tfc_OpAddInputFromTensorGroup")
 func _TFCOpAddInputFromTensorGroup<T: TensorArrayProtocol>(
     _ op: CTFEOp,
     _ t: T,
@@ -1187,7 +526,6 @@ func _TFCOpAddInputFromAnyTensors(_ op: CTFEOp, _ tensors: [AnyTensor], _ status
 // can read.
 
 @usableFromInline
-@_silgen_name("_swift_tfc_OpSetAttrTypeArray")
 func _TFCOpSetAttrTypeArray(
     _ op: CTFEOp,
     _ attrName: UnsafePointer<Int8>,
@@ -1201,48 +539,27 @@ func _TFCOpSetAttrTypeArray(
     }
 }
 
-/// Given dimensions and ranks in the form described below, makes the appropriate call to
-/// `TFE_OpSetAttrShapeList(op, attrName, ..., status)`.
-///
-/// - Parameters
-///   - flattenedDims: all the shapes' dimensions concatenated together in order.
-///   - ranks: all the shapes' ranks (-1 denotes unknown rank).
-fileprivate func setAttrShapeList(
-    op: CTFEOp,
-    attrName: UnsafePointer<Int8>,
-    flattenedDims: Array<Int64>,
-    ranks: Array<Int32>,
-    status: CTFStatus
-) {
-    flattenedDims.withUnsafeBufferPointer { flattenedDimsBuffer in
-        var dimsPtr: UnsafePointer<Int64>? = flattenedDimsBuffer.baseAddress
-        var dims: [UnsafePointer<Int64>?] = []
-        for rank in ranks {
-            dims.append(dimsPtr)
-            if rank >= 0 {
-                dimsPtr = dimsPtr.map { $0.advanced(by: Int(rank)) }
-            }
+/// A class to keep around thread local state:
+///  - DeviceScopes
+///  - LazyTensorContext
+class _ThreadLocalState {
+    var deviceScopes = DeviceScopes()
+
+    var lazyTensorContext = LazyTensorContext()
+
+    static var useLazyTensor: Bool {
+        get {
+            _ThreadLocalState.local.lazyTensorEnabled ?? _RuntimeConfig.useLazyTensor
         }
-        dims.withUnsafeMutableBufferPointer { dimsBuffer in
-            ranks.withUnsafeBufferPointer { ranksBuffer in
-                TFE_OpSetAttrShapeList(
-                    op, attrName, dimsBuffer.baseAddress, ranksBuffer.baseAddress,
-                    Int32(ranksBuffer.count), status)
-            }
+        set {
+            _ThreadLocalState.local.lazyTensorEnabled = newValue
         }
     }
-}
 
-/// Stack of devices that models nested calls to withDevice/withDefaultDevice. Devices are
-/// represented by their names in TensorFlow notation. See documentation for
-/// `withDevice(named:perform:)` to learn about device names.
-///
-/// All TensorFlow operations will be put on the topmost device on the stack. When the stack is
-/// empty or the topmost device is `nil`, that allows TensorFlow to place operations on any device
-/// that it sees fit.
-@usableFromInline
-class _ThreadLocalState {
-    var deviceScopes: [String?] = []
+    /// When true, use lazy evaluation. If this is not set, we should use the
+    /// value of `_RuntimeConfig.useLazyTensor` to determine if lazy evaluation
+    /// is enabled.
+    private var lazyTensorEnabled: Bool? = nil
 
     private static let key: pthread_key_t = {
         var key = pthread_key_t()
@@ -1256,20 +573,6 @@ class _ThreadLocalState {
         return key
     }()
 
-    var _currentDevice: String? {
-        return deviceScopes.last ?? nil
-    }
-
-    @usableFromInline
-    func pushDevice(_ device: String?) {
-        deviceScopes.append(device)
-    }
-
-    @usableFromInline
-    func popDevice() {
-        internalConsistencyCheck(deviceScopes.popLast() != nil)
-    }
-
     @usableFromInline
     static var local: _ThreadLocalState {
         if let state = pthread_getspecific(key) {
@@ -1281,8 +584,33 @@ class _ThreadLocalState {
     }
 }
 
+/// Stack of devices that models nested calls to withDevice/withDefaultDevice. Devices are
+/// represented by their names in TensorFlow notation. See documentation for
+/// `withDevice(named:perform:)` to learn about device names.
+///
+/// All TensorFlow operations will be put on the topmost device on the stack. When the stack is
+/// empty or the topmost device is `nil`, that allows TensorFlow to place operations on any device
+/// that it sees fit.
 @usableFromInline
-@_cdecl("_swift_tfc_OpSetDeviceFromScope")
+struct DeviceScopes {
+    var deviceStack: [String?] = []
+
+    var _currentDevice: String? {
+        return deviceStack.last ?? nil
+    }
+
+    @usableFromInline
+    mutating func pushDevice(_ device: String?) {
+        deviceStack.append(device)
+    }
+
+    @usableFromInline
+    mutating func popDevice() {
+        internalConsistencyCheck(deviceStack.popLast() != nil)
+    }
+}
+
+@usableFromInline
 func _TFCOpSetDeviceFromScope(_ op: CTFEOp, _ status: CTFStatus) {
     if let deviceName = _ExecutionContext.global.currentDeviceName {
         TFE_OpSetDevice(op, deviceName, status)

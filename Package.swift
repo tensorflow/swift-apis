@@ -22,6 +22,7 @@ let package = Package(
     products: [
         .library(
             name: "TensorFlow",
+            type: .dynamic,
             targets: ["TensorFlow"]),
     ],
     dependencies: [],
@@ -29,6 +30,13 @@ let package = Package(
         .target(
             name: "TensorFlow",
             dependencies: []),
+        .target(
+            name: "Experimental",
+            dependencies: [],
+            path: "Sources/third_party/Experimental"),
+        .testTarget(
+            name: "ExperimentalTests",
+            dependencies: ["Experimental"]),
         .testTarget(
             name: "TensorFlowTests",
             dependencies: ["TensorFlow"]),

@@ -28,7 +28,7 @@ func ==(lhs: LazyTensorOperationRef, rhs: LazyTensorOperationRef) -> Bool {
     return lhs.value === rhs.value
 }
 
-final class LazyTensorTests: XCTestCase {
+final class LazyTensorHandleTests: XCTestCase {
     func testConstructions() {
         let zero = Tensor<Float>(0.0)
         let zeroTFEHandle = zero.handle.handle._tfeTensorHandle
@@ -52,6 +52,21 @@ final class LazyTensorTests: XCTestCase {
         XCTAssertEqual(liveSymTensor.description, "%0.0*")
     }
 
+    func testLazyTensorOperationProperty() {
+        let zero = Tensor<Float>(0.0)
+        let zeroTFEHandle = zero.handle.handle._tfeTensorHandle
+        let concTensor = LazyTensorHandle(zeroTFEHandle)
+        XCTAssertNil(concTensor.lazyTensorOperation)
+
+        let op = LazyTensorOperation(
+            _id: "0", name: "IdentityN", outputCount: 3)
+        let symTensor = LazyTensorHandle(_lazy: op, index: 0)
+        let lazyTensorOperation = symTensor.lazyTensorOperation
+        XCTAssertNotNil(lazyTensorOperation)
+        // Checks that returned value is the same as the one that we passed in.
+        XCTAssertTrue(lazyTensorOperation === op)
+    }
+
     func testLivenessTracking() {
         func assertLive(_ expectedLive: [LazyTensorOperation]) {
             var actualLiveOps: Set<LazyTensorOperationRef> = []
@@ -61,7 +76,7 @@ final class LazyTensorTests: XCTestCase {
             let expectedLiveOps = Set<LazyTensorOperationRef>(
                 expectedLive.map { LazyTensorOperationRef($0) }
             )
-            XCTAssertEqual(expectedLiveOps, actualLiveOps)
+            XCTAssertEqual(actualLiveOps, expectedLiveOps)
         }
 
         func assertAll(_ expectedAll: [LazyTensorOperation]) {
@@ -72,7 +87,7 @@ final class LazyTensorTests: XCTestCase {
             let expectedAllOps = Set<LazyTensorOperationRef>(
                 expectedAll.map { LazyTensorOperationRef($0) }
             )
-            XCTAssertEqual(expectedAllOps, actualAllOps)
+            XCTAssertEqual(actualAllOps, expectedAllOps)
         }
 
         let op0 = LazyTensorOperation(
@@ -152,6 +167,7 @@ final class LazyTensorTests: XCTestCase {
 
     static var allTests = [
         ("testConstructions", testConstructions),
+        ("testLazyTensorOperationProperty", testLazyTensorOperationProperty),
         ("testLivenessTracking", testLivenessTracking),
         ("testTensorToLazyTensorConversions", testTensorToLazyTensorConversions)
     ]
