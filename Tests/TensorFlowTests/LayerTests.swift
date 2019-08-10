@@ -612,6 +612,7 @@ final class LayerTests: XCTestCase {
         ("testLSTM", testLSTM),
         ("testFunction", testFunction),
         ("testBatchNorm", testBatchNorm),
+        ("testBatchNormInference", testBatchNormInference),
         ("testLayerNorm", testLayerNorm)
     ]
 }
