@@ -144,6 +144,19 @@ final class LazyTensorExplicitTraceTests: XCTestCase {
         XCTAssertEqual(tracedSquare(Tensor<Float>(5.0)).scalarized(), 25.0)
     }
 
+    func testTraceWithOutputSameAsInput() {
+        func identity(input: Tensor<Float>) -> Tensor<Float> { return input }
+        let trace = LazyTensorTraceBuilder.trace(identity)
+        XCTAssertEqual(trace.description,
+            """
+            lazyTrace_1(%0: float) -> (%0) {
+            }
+            """)
+        let tracedIdentity = _graph(identity)
+        XCTAssertEqual(tracedIdentity(Tensor<Float>(10.0)).scalarized(), 10.0)
+        XCTAssertEqual(tracedIdentity(Tensor<Float>(17.0)).scalarized(), 17.0)
+    }
+
     private func runTrace(trace: LazyTensorTrace, input: TensorGroup) -> [TFETensorHandle] {
         let tffunc = TFFunction(trace: trace)
         let inputHandles = input._tensorHandles.map { $0._tfeTensorHandle }
@@ -157,6 +170,7 @@ final class LazyTensorExplicitTraceTests: XCTestCase {
         ("testClosureCapturesOfTensors", testClosureCapturesOfTensors),
         ("testClosureCapturesOfNonTensors", testClosureCapturesOfNonTensors),
         ("testNestedTracing", testNestedTracing),
-        ("testCallableTrace", testCallableTrace)
+        ("testCallableTrace", testCallableTrace),
+        ("testTraceWithOutputSameAsInput", testTraceWithOutputSameAsInput),
     ]
 }
