@@ -171,11 +171,11 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         let positiveAxis = (input.rank + axis) % input.rank
-        var broadcastShape = input.shape
-        broadcastShape[positiveAxis] = 1
-        let offset = self.offset.reshaped(to: broadcastShape)
-        let scale = self.scale.reshaped(to: broadcastShape)
-        let moments = input.moments(alongAxes: axis)
+        var broadcastShape = Array(repeating: 1, count: input.rank)
+        broadcastShape[positiveAxis] = input.shape[positiveAxis]
+        let offset = self.offset.reshaped(to: TensorShape(broadcastShape))
+        let scale = self.scale.reshaped(to: TensorShape(broadcastShape))
+        let moments = input.moments(alongAxes: positiveAxis)
         let inv = rsqrt(moments.variance + epsilon) * scale
         return (input - moments.mean) * inv + offset
     }
