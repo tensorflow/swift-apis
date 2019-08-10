@@ -12,88 +12,82 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// Learning rate schedule that takes a learning rate as input, along with the current training
-/// step and returns a modified learning rate (e.g., decayed).
-public protocol LearningRateSchedule {
+/// Learning rate schedule that takes the current training step as input and returns a learning
+/// rate to be used for training.
+public protocol LearningRate {
     associatedtype Scalar: FloatingPoint
 
-    /// Returns the transformed value of `learningRate` for the specified training step.
+    /// Returns the learning rate value for the specified training step.
     ///
-    /// - Parameters:
-    ///   - step: Training step.
-    ///   - learningRate: Learning rate value to transform according to this schedule.
-    func callAsFunction(step: UInt64, learningRate: Scalar) -> Scalar
-}
-
-extension LearningRateSchedule {
-    /// Returns a new learning rate schedule which is defined as the composition of this schedule
-    /// with the provided one. More specifically, the new schedule will transform the provided
-    /// learning rates as follows:
-    /// `self(step: step, learningRate: other(step: step, learningRate: learningRate))`.
-    public func composed<Schedule: LearningRateSchedule>(
-        with other: Schedule
-    ) -> ComposedLearningRateSchedule<Self, Schedule> {
-        ComposedLearningRateSchedule(schedule1: self, schedule2: other)
-    }
-}
-
-/// Composed learning rate schedule.
-///
-/// This schedule transforms the provided learning rates as follows:
-/// ```
-/// schedule1(step: step, learningRate: schedule2(step: step, learningRate: learningRate))
-/// ```
-public struct ComposedLearningRateSchedule<
-    Schedule1: LearningRateSchedule,
-    Schedule2: LearningRateSchedule
->: LearningRateSchedule where Schedule1.Scalar == Schedule2.Scalar {
-    public typealias Scalar = Schedule1.Scalar
-
-    public let schedule1: Schedule1
-    public let schedule2: Schedule2
-
-    public func callAsFunction(step: UInt64, learningRate: Scalar) -> Scalar {
-        schedule1(step: step, learningRate: schedule2(step: step, learningRate: learningRate))
-    }
+    /// - Parameter step: Training step.
+    func callAsFunction(forStep step: UInt64) -> Scalar
 }
 
 /// Dummy learning rate schedule that represents no schedule being used. This is useful as a
 /// default value whenever a learning rate schedule argument is used.
-public struct FixedLearningRate<Scalar: FloatingPoint>: LearningRateSchedule {
+public struct FixedLearningRate<Scalar: FloatingPoint>: LearningRate {
+    public let value: Scalar
+
     @inlinable
-    public func callAsFunction(step: UInt64, learningRate: Scalar) -> Scalar {
-        learningRate
+    public init(_ value: Scalar) {
+        self.value = value
+    }
+
+    @inlinable
+    public func callAsFunction(forStep step: UInt64) -> Scalar {
+        value
     }
 }
 
-/// Linear learning rate decay schedule.
+extension FixedLearningRate: ExpressibleByFloatLiteral
+where Scalar: _ExpressibleByBuiltinFloatLiteral {
+    public typealias FloatLiteralType = Scalar
+
+    public init(floatLiteral value: Scalar) {
+        self.init(value)
+    }
+}
+
+/// Linearly decayed learning rate.
 ///
 /// The decayed learning rate is computed as follows:
+/// ```swift
+/// let initial = baseLearningRate(forStep: step)
+/// let decayed = initial + step * slope
+/// let decayedLearningRate = max(lowerBound * initial, decayed)
 /// ```
-/// decayed = learningRate + step * slope
-/// decayedLearningRate = max(lowerBound * learningRate, decayed)
-/// ```
-public struct LinearLearningRateDecay<Scalar: FloatingPoint>: LearningRateSchedule {
+public struct LinearlyDecayedLearningRate<BaseLearningRate: LearningRate>: LearningRate {
+    public typealias Scalar = BaseLearningRate.Scalar
+
+    public let baseLearningRate: BaseLearningRate
     public let slope: Scalar
     public let lowerBound: Scalar
     public let startStep: UInt64
 
-    /// Creates a new linear learning rate decay schedule.
+    /// Creates a new linearly decayed learning rate.
     ///
     /// - Parameters:
+    ///   - baseLearningRate: Learning rate to decay.
     ///   - slope: Slope of the linear decay.
     ///   - lowerBound: Minimum decayed learning rate value as a fraction of the original learning
     ///     rate value.
     ///   - startStep: Step after which to start decaying the learning rate.
     @inlinable
-    public init(slope: Scalar, lowerBound: Scalar = Scalar(0), startStep: UInt64 = 0) {
+    public init(
+        baseLearningRate: BaseLearningRate,
+        slope: Scalar,
+        lowerBound: Scalar = Scalar(0),
+        startStep: UInt64 = 0
+    ) {
+        self.baseLearningRate = baseLearningRate
         self.slope = slope
         self.lowerBound = lowerBound
         self.startStep = startStep
     }
 
     @inlinable
-    public func callAsFunction(step: UInt64, learningRate: Scalar) -> Scalar {
+    public func callAsFunction(forStep step: UInt64) -> Scalar {
+        let learningRate = baseLearningRate(forStep: step)
         if step < startStep { return learningRate }
         let step = step - startStep
         let decayed = learningRate + Scalar(step) * slope
@@ -101,27 +95,31 @@ public struct LinearLearningRateDecay<Scalar: FloatingPoint>: LearningRateSchedu
     }
 }
 
-/// Exponential learning rate decay schedule.
+/// Exponentially decayed learning rate.
 ///
 /// The decayed learning rate is computed as follows:
-/// ```
-/// decay = decayRate ^ (step / decayStepCount)
-/// decayedLearningRate = learningRate * ((1 - lowerBound) * decay + lowerBound)
+/// ```swift
+/// let initial = baseLearningRate(forStep: step)
+/// let decay = decayRate ^ (step / decayStepCount)
+/// let decayedLearningRate = initial * ((1 - lowerBound) * decay + lowerBound)
 /// ```
 /// where if `staircase = true`, then `step / decayStepCount` uses integer division and the decayed
 /// learning rate follows a staircase function.
-public struct ExponentialLearningRateDecay<
-    Scalar: FloatingPoint & ElementaryFunctions
->: LearningRateSchedule {
+public struct ExponentiallyDecayedLearningRate<BaseLearningRate: LearningRate>: LearningRate
+    where BaseLearningRate.Scalar: ElementaryFunctions {
+    public typealias Scalar = BaseLearningRate.Scalar
+
+    public let baseLearningRate: BaseLearningRate
     public let decayRate: Scalar
     public let decayStepCount: UInt64
     public let staircase: Bool
     public let lowerBound: Scalar
     public let startStep: UInt64
 
-    /// Creates a new exponential learning rate decay schedule.
+    /// Creates a new exponentially decayed learning rate.
     ///
     /// - Parameters:
+    ///   - baseLearningRate: Learning rate to decay.
     ///   - decayRate: Decay rate.
     ///   - decayStepCount: Decay step count.
     ///   - staircase: If `true`, the decay will occur at discrete intervals.
@@ -130,12 +128,14 @@ public struct ExponentialLearningRateDecay<
     ///   - startStep: Step after which to start decaying the learning rate.
     @inlinable
     public init(
+        baseLearningRate: BaseLearningRate,
         decayRate: Scalar,
         decayStepCount: UInt64,
         staircase: Bool = false,
         lowerBound: Scalar = Scalar(0),
         startStep: UInt64 = 0
     ) {
+        self.baseLearningRate = baseLearningRate
         self.decayRate = decayRate
         self.decayStepCount = decayStepCount
         self.staircase = staircase
@@ -144,7 +144,8 @@ public struct ExponentialLearningRateDecay<
     }
 
     @inlinable
-    public func callAsFunction(step: UInt64, learningRate: Scalar) -> Scalar {
+    public func callAsFunction(forStep step: UInt64) -> Scalar {
+        let learningRate = baseLearningRate(forStep: step)
         if step < startStep { return learningRate }
         let step = step - startStep
         let power = Scalar(step) / Scalar(decayStepCount)
@@ -153,24 +154,28 @@ public struct ExponentialLearningRateDecay<
     }
 }
 
-/// Reciprocal square root learning rate decay schedule.
+/// Reciprocal square root decayed learning rate.
 ///
 /// The decayed learning rate is computed as follows:
+/// ```swift
+/// let initial = baseLearningRate(forStep: step)
+/// let decay = decayFactor / sqrt(max(step, decayThreshold))
+/// let decayedLearningRate = initial * ((1 - lowerBound) * decay + lowerBound)
 /// ```
-/// decay = decayFactor / sqrt(max(step, decayThreshold))
-/// decayedLearningRate = learningRate * ((1 - lowerBound) * decay + lowerBound)
-/// ```
-public struct RSqrtLearningRateDecay<
-    Scalar: FloatingPoint & ElementaryFunctions
->: LearningRateSchedule {
+public struct RSqrtLearningRateDecay<BaseLearningRate: LearningRate>: LearningRate
+    where BaseLearningRate.Scalar: ElementaryFunctions {
+    public typealias Scalar = BaseLearningRate.Scalar
+
+    public let baseLearningRate: BaseLearningRate
     public let decayFactor: Scalar
     public let decayThreshold: Scalar
     public let lowerBound: Scalar
     public let startStep: UInt64
 
-    /// Creates a new reciprocal square root learning rate decay schedule.
+    /// Creates a new reciprocal square root decayed learning rate.
     ///
     /// - Parameters:
+    ///   - baseLearningRate: Learning rate to decay.
     ///   - decayFactor: Decay factor.
     ///   - decayThreshold: Decay threshold.
     ///   - lowerBound: Minimum decayed learning rate value as a fraction of the original learning
@@ -178,11 +183,13 @@ public struct RSqrtLearningRateDecay<
     ///   - startStep: Step after which to start decaying the learning rate.
     @inlinable
     public init(
+        baseLearningRate: BaseLearningRate,
         decayFactor: Scalar,
         decayThreshold: Scalar,
         lowerBound: Scalar = Scalar(0),
         startStep: UInt64 = 0
     ) {
+        self.baseLearningRate = baseLearningRate
         self.decayFactor = decayFactor
         self.decayThreshold = decayThreshold
         self.lowerBound = lowerBound
@@ -190,7 +197,8 @@ public struct RSqrtLearningRateDecay<
     }
 
     @inlinable
-    public func callAsFunction(step: UInt64, learningRate: Scalar) -> Scalar {
+    public func callAsFunction(forStep step: UInt64) -> Scalar {
+        let learningRate = baseLearningRate(forStep: step)
         if step < startStep { return learningRate }
         let step = step - startStep
         let decay = decayFactor / Scalar.sqrt(max(Scalar(step), decayThreshold))
@@ -198,40 +206,47 @@ public struct RSqrtLearningRateDecay<
     }
 }
 
-/// Cosine learning rate decay schedule.
+/// Cosine decayed learning rate.
 ///
 /// The decayed learning rate is computed as follows:
+/// ```swift
+/// let initial = baseLearningRate(forStep: step)
+/// let decay = 0.5 * (1 + cos(pi * min(step, cycleStepCount) / cycleStepCount))
+/// let decayedLearningRate = initial * ((1 - lowerBound) * decay + lowerBound)
 /// ```
-/// decay = 0.5 * (1 + cos(pi * min(step, cycleStepCount) / cycleStepCount))
-/// decayedLearningRate = learningRate * ((1 - lowerBound) * decay + lowerBound)
-/// ```
-public struct CosineLearningRateDecay<
-    Scalar: FloatingPoint & ElementaryFunctions
->: LearningRateSchedule {
+public struct CosineDecayedLearningRate<BaseLearningRate: LearningRate>: LearningRate
+    where BaseLearningRate.Scalar: ElementaryFunctions {
+    public typealias Scalar = BaseLearningRate.Scalar
+
+    public let baseLearningRate: BaseLearningRate
     public let cycleStepCount: UInt64
     public let lowerBound: Scalar
     public let startStep: UInt64
 
-    /// Creates a new cosine learning rate decay schedule.
+    /// Creates a new cosine decayed learning rate.
     ///
     /// - Parameters:
+    ///   - baseLearningRate: Learning rate to decay.
     ///   - cycleStepCount: Cosine decay cycle in terms of number of steps.
     ///   - lowerBound: Minimum decayed learning rate value as a fraction of the original learning
     ///     rate value.
     ///   - startStep: Step after which to start decaying the learning rate.
     @inlinable
     public init(
+        baseLearningRate: BaseLearningRate,
         cycleStepCount: UInt64,
         lowerBound: Scalar = Scalar(0),
         startStep: UInt64 = 0
     ) {
+        self.baseLearningRate = baseLearningRate
         self.cycleStepCount = cycleStepCount
         self.lowerBound = lowerBound
         self.startStep = startStep
     }
 
     @inlinable
-    public func callAsFunction(step: UInt64, learningRate: Scalar) -> Scalar {
+    public func callAsFunction(forStep step: UInt64) -> Scalar {
+        let learningRate = baseLearningRate(forStep: step)
         if step < startStep { return learningRate }
         let step = step - startStep
         let cosine = Scalar.cos(Scalar(min(step, cycleStepCount)))
@@ -240,39 +255,47 @@ public struct CosineLearningRateDecay<
     }
 }
 
-/// Cycle-linear 10x learning rate decay schedule.
+/// Cycle-linear 10x decayed learning rate.
 ///
 /// The decayed learning rate is computed as follows:
+/// ```swift
+/// let initial = baseLearningRate(forStep: step)
+/// let cyclePosition = 1 - abs((step % (2 * cycleStepCount) - cycleStepCount) / cycleStepCount)
+/// let decay = (0.1 + cyclePosition) * 3
+/// let decayedLearningRate = initial * ((1 - lowerBound) * decay + lowerBound)
 /// ```
-/// cyclePosition = 1 - abs((step % (2 * cycleStepCount) - cycleStepCount) / cycleStepCount)
-/// decay = (0.1 + cyclePosition) * 3
-/// decayedLearningRate = learningRate * ((1 - lowerBound) * decay + lowerBound)
-/// ```
-public struct CycleLinear10xLearningRateDecay<Scalar: FloatingPoint>: LearningRateSchedule {
+public struct CycleLinear10xLearningRateDecay<BaseLearningRate: LearningRate>: LearningRate {
+    public typealias Scalar = BaseLearningRate.Scalar
+
+    public let baseLearningRate: BaseLearningRate
     public let cycleStepCount: UInt64
     public let lowerBound: Scalar
     public let startStep: UInt64
 
-    /// Creates a new cycle-linear 10x learning rate decay schedule.
+    /// Creates a new cycle-linear 10x decayed learning rate.
     ///
     /// - Parameters:
+    ///   - baseLearningRate: Learning rate to decay.
     ///   - cycleStepCount: Cycle-linear 10x decay cycle in terms of number of steps.
     ///   - lowerBound: Minimum decayed learning rate value as a fraction of the original learning
     ///     rate value.
     ///   - startStep: Step after which to start decaying the learning rate.
     @inlinable
     public init(
+        baseLearningRate: BaseLearningRate,
         cycleStepCount: UInt64,
         lowerBound: Scalar = Scalar(0),
         startStep: UInt64 = 0
     ) {
+        self.baseLearningRate = baseLearningRate
         self.cycleStepCount = cycleStepCount
         self.lowerBound = lowerBound
         self.startStep = startStep
     }
 
     @inlinable
-    public func callAsFunction(step: UInt64, learningRate: Scalar) -> Scalar {
+    public func callAsFunction(forStep step: UInt64) -> Scalar {
+        let learningRate = baseLearningRate(forStep: step)
         if step < startStep { return learningRate }
         let step = step - startStep
         let ratio = Scalar((step % (2 * cycleStepCount) - cycleStepCount)) / Scalar(cycleStepCount)
@@ -282,64 +305,83 @@ public struct CycleLinear10xLearningRateDecay<Scalar: FloatingPoint>: LearningRa
     }
 }
 
-/// Linear learning rate warm-up schedule.
+/// Linearly warmed-up learning rate.
 ///
-/// For the first `warmUpStepCount` steps the learning rate is multiplied with:
+/// For the first `warmUpStepCount` steps the base learning rate is multiplied with:
 /// ```
 /// warmUpOffset + ((1 - warmUpOffset) / warmUpStepCount) * step
 /// ```
 ///
 /// - Source: [Attention is All You Need (Section 5.3)](https://arxiv.org/pdf/1706.03762.pdf).
-public struct LinearLearningRateWarmUp<Scalar: FloatingPoint>: LearningRateSchedule {
+public struct LinearlyWarmedUpLearningRate<BaseLearningRate: LearningRate>: LearningRate {
+    public typealias Scalar = BaseLearningRate.Scalar
+
+    public let baseLearningRate: BaseLearningRate
     public let warmUpStepCount: UInt64
     public let warmUpOffset: Scalar
 
     /// Creates a new linear learning rate warm-up schedule.
     ///
     /// - Parameters:
+    ///   - baseLearningRate: Learning rate to warm-up.
     ///   - warmUpStepCount: Number of warm-up steps.
     ///   - warmUpOffset: Linear schedule offset.
     @inlinable
-    public init(warmUpStepCount: UInt64, warmUpOffset: Scalar) {
+    public init(
+        baseLearningRate: BaseLearningRate,
+        warmUpStepCount: UInt64,
+        warmUpOffset: Scalar
+    ) {
+        self.baseLearningRate = baseLearningRate
         self.warmUpStepCount = warmUpStepCount
         self.warmUpOffset = warmUpOffset
     }
 
     @inlinable
-    public func callAsFunction(step: UInt64, learningRate: Scalar) -> Scalar {
+    public func callAsFunction(forStep step: UInt64) -> Scalar {
+        let learningRate = baseLearningRate(forStep: step)
         if step >= warmUpStepCount { return learningRate }
         let factor = warmUpOffset + ((1 - warmUpOffset) / Scalar(warmUpStepCount)) * Scalar(step)
         return learningRate * factor
     }
 }
 
-/// Exponential learning rate warm-up schedule.
+/// Exponentially warmed-up learning rate.
 ///
-/// For the first `warmUpStepCount` steps the learning rate is multiplied with:
+/// For the first `warmUpStepCount` steps the base learning rate is multiplied with:
 /// ```
 /// exp(log(warmUpFactor) / step) ^ (warmUpStepCount - step)
 /// ```
 ///
 /// - Source: [Attention is All You Need (Section 5.3)](https://arxiv.org/pdf/1706.03762.pdf).
-public struct ExponentialLearningRateWarmUp<
-    Scalar: FloatingPoint & ElementaryFunctions
->: LearningRateSchedule {
+public struct ExponentialLearningRateWarmUp<BaseLearningRate: LearningRate>: LearningRate
+    where BaseLearningRate.Scalar: ElementaryFunctions {
+    public typealias Scalar = BaseLearningRate.Scalar
+
+    public let baseLearningRate: BaseLearningRate
     public let warmUpStepCount: UInt64
     public let warmUpFactor: Scalar
 
     /// Creates a new linear learning rate warm-up schedule.
     ///
     /// - Parameters:
+    ///   - baseLearningRate: Learning rate to warm-up.
     ///   - warmUpStepCount: Number of warm-up steps.
     ///   - warmUpFactor: Warm-up learning rate scaling factor.
     @inlinable
-    public init(warmUpStepCount: UInt64, warmUpFactor: Scalar) {
+    public init(
+        baseLearningRate: BaseLearningRate,
+        warmUpStepCount: UInt64,
+        warmUpFactor: Scalar
+    ) {
+        self.baseLearningRate = baseLearningRate
         self.warmUpStepCount = warmUpStepCount
         self.warmUpFactor = warmUpFactor
     }
 
     @inlinable
-    public func callAsFunction(step: UInt64, learningRate: Scalar) -> Scalar {
+    public func callAsFunction(forStep step: UInt64) -> Scalar {
+        let learningRate = baseLearningRate(forStep: step)
         if step >= warmUpStepCount { return learningRate }
         let base = Scalar.exp(Scalar.log(warmUpFactor) / Scalar(warmUpStepCount))
         let factor = Scalar.pow(base, Scalar(warmUpStepCount - step))
