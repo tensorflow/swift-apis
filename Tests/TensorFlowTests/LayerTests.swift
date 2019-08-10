@@ -162,6 +162,14 @@ final class LayerTests: XCTestCase {
                                      scalars: [9, 12, 23, 28, 25, 36, 55, 68, 41, 60, 87, 108,
                                                57, 84, 119, 148])
         XCTAssertEqual(output, expected)
+        
+        let channelMultiplier = 4
+        let multiplierLayer = DepthwiseConv2D<Float>(
+            filterShape: (2, 2, input.shape[3], channelMultiplier),
+            filterInitializer: glorotUniform(),
+            biasInitializer: zeros())
+        let multiplierOutput = multiplierLayer.inferring(from: input)
+        XCTAssertEqual(multiplierOutput.shape[3], input.shape[3] * channelMultiplier)
     }
 
     func testSeparableConv2D() {
