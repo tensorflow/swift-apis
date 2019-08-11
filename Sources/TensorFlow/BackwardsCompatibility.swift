@@ -623,56 +623,69 @@ public extension Dense {
 // Losses
 //===------------------------------------------------------------------------------------------===//
 
-/// Returns the sigmoid cross entropy (binary cross entropy) between logits and labels.
-/// - Parameters:
-///   - logits: The unscaled output of a neural network.
-///   - labels: Integer values that correspond to the correct output.
-@differentiable(wrt: logits)
-public func sigmoidCrossEntropy<Scalar: TensorFlowFloatingPoint>(
-    logits: Tensor<Scalar>,
-    labels: Tensor<Scalar>
-) -> Tensor<Scalar> {
-    sigmoidCrossEntropy(logits: logits, labels:labels, reduction: _mean)
-}
-
-/// Returns the softmax cross entropy (categorical cross entropy) between logits and labels.
-///
-/// - Parameters:
-///   - logits: One-hot encoded outputs from a neural network.
-///   - labels: Indices (zero-indexed) of the correct outputs.
-@differentiable(wrt: logits)
-public func softmaxCrossEntropy<Scalar: TensorFlowFloatingPoint>(
-    logits: Tensor<Scalar>,
-    probabilities: Tensor<Scalar>
-) -> Tensor<Scalar> {
-    softmaxCrossEntropy(logits: logits, probabilities: probabilities, reduction: _mean)
-}
-
-/// Returns the Kullback-Leibler divergence (KL divergence) between between expectations and
-/// predictions. Given two distributions `p` and `q`, KL divergence computes `p * log(p / q)`.
+/// Returns the L1 loss between predictions and expectations.
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 @differentiable(wrt: predicted)
-public func kullbackLeiblerDivergence<Scalar: TensorFlowFloatingPoint>(
+public func l1Loss<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>,
     expected: Tensor<Scalar>
 ) -> Tensor<Scalar> {
-    kullbackLeiblerDivergence(predicted: predicted, expected: expected, reduction: { $0.sum() })
+    l1Loss(predicted: predicted, expected: expected, reduction: { $0.sum() })
 }
 
-/// Returns the Poisson loss between predictions and expectations.
+/// Returns the L2 loss between predictions and expectations.
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 @differentiable(wrt: predicted)
-public func poissonLoss<Scalar: TensorFlowFloatingPoint>(
+public func l2Loss<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>,
     expected: Tensor<Scalar>
 ) -> Tensor<Scalar> {
-    poissonLoss(predicted: predicted, expected: expected, reduction: _mean)
+    l2Loss(predicted: predicted, expected: expected, reduction: { $0.sum() })
+}
+
+/// Returns the hinge loss between predictions and expectations.
+///
+/// - Parameters:
+///   - predicted: Predicted outputs from a neural network.
+///   - expected: Expected values, i.e. targets, that correspond to the correct output.
+@differentiable(wrt: predicted)
+public func hingeLoss<Scalar: TensorFlowFloatingPoint>(
+    predicted: Tensor<Scalar>,
+    expected: Tensor<Scalar>
+) -> Tensor<Scalar> {
+    hingeLoss(predicted: predicted, expected: expected, reduction: _mean)
+}
+
+/// Returns the squared hinge loss between predictions and expectations.
+///
+/// - Parameters:
+///   - predicted: Predicted outputs from a neural network.
+///   - expected: Expected values, i.e. targets, that correspond to the correct output.
+@differentiable(wrt: predicted)
+public func squaredHingeLoss<Scalar: TensorFlowFloatingPoint>(
+    predicted: Tensor<Scalar>,
+    expected: Tensor<Scalar>
+) -> Tensor<Scalar> {
+    squaredHingeLoss(predicted: predicted, expected: expected, reduction: _mean)
+}
+
+/// Returns the categorical hinge loss between predictions and expectations.
+///
+/// - Parameters:
+///   - predicted: Predicted outputs from a neural network.
+///   - expected: Expected values, i.e. targets, that correspond to the correct output.
+@differentiable(wrt: predicted)
+public func categoricalHingeLoss<Scalar: TensorFlowFloatingPoint>(
+    predicted: Tensor<Scalar>,
+    expected: Tensor<Scalar>
+) -> Tensor<Scalar> {
+    categoricalHingeLoss(predicted: predicted, expected: expected, reduction: _mean)
 }
 
 /// Returns the logarithm of the hyperbolic cosine of the error between predictions and
@@ -689,67 +702,54 @@ public func logCoshLoss<Scalar: TensorFlowFloatingPoint>(
     logCoshLoss(predicted: predicted, expected: expected, reduction: _mean)
 }
 
-/// Returns the categorical hinge loss between predictions and expectations.
+/// Returns the Poisson loss between predictions and expectations.
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 @differentiable(wrt: predicted)
-public func categoricalHingeLoss<Scalar: TensorFlowFloatingPoint>(
+public func poissonLoss<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>,
     expected: Tensor<Scalar>
 ) -> Tensor<Scalar> {
-    categoricalHingeLoss(predicted: predicted, expected: expected, reduction: _mean)
+    poissonLoss(predicted: predicted, expected: expected, reduction: _mean)
 }
 
-/// Returns the squared hinge loss between predictions and expectations.
+/// Returns the Kullback-Leibler divergence (KL divergence) between between expectations and
+/// predictions. Given two distributions `p` and `q`, KL divergence computes `p * log(p / q)`.
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 @differentiable(wrt: predicted)
-public func squaredHingeLoss<Scalar: TensorFlowFloatingPoint>(
+public func kullbackLeiblerDivergence<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>,
     expected: Tensor<Scalar>
 ) -> Tensor<Scalar> {
-    squaredHingeLoss(predicted: predicted, expected: expected, reduction: _mean)
+    kullbackLeiblerDivergence(predicted: predicted, expected: expected, reduction: { $0.sum() })
 }
 
-/// Returns the hinge loss between predictions and expectations.
+/// Returns the softmax cross entropy (categorical cross entropy) between logits and labels.
 ///
 /// - Parameters:
-///   - predicted: Predicted outputs from a neural network.
-///   - expected: Expected values, i.e. targets, that correspond to the correct output.
-@differentiable(wrt: predicted)
-public func hingeLoss<Scalar: TensorFlowFloatingPoint>(
-    predicted: Tensor<Scalar>,
-    expected: Tensor<Scalar>
+///   - logits: One-hot encoded outputs from a neural network.
+///   - labels: Indices (zero-indexed) of the correct outputs.
+@differentiable(wrt: logits)
+public func softmaxCrossEntropy<Scalar: TensorFlowFloatingPoint>(
+    logits: Tensor<Scalar>,
+    probabilities: Tensor<Scalar>
 ) -> Tensor<Scalar> {
-    hingeLoss(predicted: predicted, expected: expected, reduction: _mean)
+    softmaxCrossEntropy(logits: logits, probabilities: probabilities, reduction: _mean)
 }
 
-/// Returns the L2 loss between predictions and expectations.
-///
+/// Returns the sigmoid cross entropy (binary cross entropy) between logits and labels.
 /// - Parameters:
-///   - predicted: Predicted outputs from a neural network.
-///   - expected: Expected values, i.e. targets, that correspond to the correct output.
-@differentiable(wrt: predicted)
-public func l2Loss<Scalar: TensorFlowFloatingPoint>(
-    predicted: Tensor<Scalar>,
-    expected: Tensor<Scalar>
+///   - logits: The unscaled output of a neural network.
+///   - labels: Integer values that correspond to the correct output.
+@differentiable(wrt: logits)
+public func sigmoidCrossEntropy<Scalar: TensorFlowFloatingPoint>(
+    logits: Tensor<Scalar>,
+    labels: Tensor<Scalar>
 ) -> Tensor<Scalar> {
-    l2Loss(predicted: predicted, expected: expected, reduction: { $0.sum() })
-}
-
-/// Returns the L1 loss between predictions and expectations.
-///
-/// - Parameters:
-///   - predicted: Predicted outputs from a neural network.
-///   - expected: Expected values, i.e. targets, that correspond to the correct output.
-@differentiable(wrt: predicted)
-public func l1Loss<Scalar: TensorFlowFloatingPoint>(
-    predicted: Tensor<Scalar>,
-    expected: Tensor<Scalar>
-) -> Tensor<Scalar> {
-    l1Loss(predicted: predicted, expected: expected, reduction: { $0.sum() })
+    sigmoidCrossEntropy(logits: logits, labels:labels, reduction: _mean)
 }
