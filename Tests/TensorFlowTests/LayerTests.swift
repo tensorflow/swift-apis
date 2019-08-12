@@ -516,6 +516,30 @@ final class LayerTests: XCTestCase {
         }
     }
 
+    func testBatchNormInference() {
+        let x = Tensor<Float>(rangeFrom: 0, to: 20, stride: 1).reshaped(to: [4,5])
+        let epsilon = Tensor<Float>(0.001)
+        let bnLayer = BatchNorm<Float>(featureCount: 5, axis: 1, epsilon: epsilon)
+        // Test inferrence before any training is only changed by epsilon value.
+        assertEqual(bnLayer.inferring(from: x), x / TensorFlow.sqrt(1 + epsilon), accuracy: 1e-5)
+        // Test inferrence after single training step.
+        Context.local.learningPhase = .training
+        let y = bnLayer(x)
+        // The expected values were computed using the following TensorFlow 2.0 Beta1 Python code :
+        // ```
+        //  x = tf.reshape(tf.range(20, dtype=tf.float32), [4,5])
+        //  y_train = bnLayer(x, training=True)
+        //  y = bnLayer(x, training=False)
+        //  print(y)
+        // ```
+        assertEqual(bnLayer.inferring(from: x),
+                    [[-0.06569097,  0.8014299 ,  1.6685508 ,  2.5356717 ,  3.4027927 ],
+                     [ 4.3137074 ,  5.180828  ,  6.0479493 ,  6.91507   ,  7.7821913 ],
+                     [ 8.693106  ,  9.560227  , 10.427347  , 11.294469  , 12.16159   ],
+                     [13.072505  , 13.939626  , 14.806746  , 15.673867  , 16.540987  ]],
+                    accuracy: 1e-5)
+    }
+
     func testLayerNorm() {
         let x = Tensor<Float>([
             [ 2.736876  , -0.8932728 , -0.11240143,  1.252899  , -0.35648823],
@@ -598,6 +622,7 @@ final class LayerTests: XCTestCase {
         ("testLSTM", testLSTM),
         ("testFunction", testFunction),
         ("testBatchNorm", testBatchNorm),
+        ("testBatchNormInference", testBatchNormInference),
         ("testLayerNorm", testLayerNorm)
     ]
 }
