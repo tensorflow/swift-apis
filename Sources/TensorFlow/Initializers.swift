@@ -424,24 +424,25 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
 // Variance Scaling
 //===------------------------------------------------------------------------------------------===//
 
-fileprivate extension Tensor where Scalar: TensorFlowFloatingPoint {
-    // Returns the input and output channel counts, `(fanIn, fanOut)`, of a given tensor shape.
-    private static func fans(shape: TensorShape) -> (in: Int, out: Int) {
+fileprivate extension TensorShape {
+    // Returns the `fanIn` and `fanOut` counts for `TensorShape`s where the last two axes represent
+    // the input channel count and output channel count, respectively.
+    public func fans() -> (in: Int, out: Int) {
         precondition(
-            shape.count > 1,
-            "Fans cannot be computed for tensors with fewer than 2 dimensions. Got: \(shape.count)")
-
+            count > 1,
+            "Fans cannot be computed for tensors with fewer than 2 dimensions. Got: \(count)")
+ 
         // Fans for a 2-D tensor, e.g. `Dense`/`Embedding` weights.
-        if shape.count == 2 {
-            return (shape[0], shape[1])
+        if count == 2 {
+            return (self[0], self[1])
         }
         // Fans for tensors with rank greater than `2`, specifically convolution filters.
-        let lastSpatialAxis = shape.count - 3
-        let spatialSize = shape[0..<(lastSpatialAxis + 1)].contiguousSize
-        let inputAxis = shape.count - 2
-        let fanIn = shape[inputAxis] * spatialSize
-        let outputAxis = shape.count - 1
-        let fanOut = shape[outputAxis] * spatialSize
+        let lastSpatialAxis = endIndex - 3
+        let spatialSize = self[0..<(lastSpatialAxis + 1)].contiguousSize
+        let inputAxis = endIndex - 2
+        let fanIn = self[inputAxis] * spatialSize
+        let outputAxis = endIndex - 1
+        let fanOut = self[outputAxis] * spatialSize
         return (fanIn, fanOut)
     }
 }
@@ -459,7 +460,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// - Parameters:
     ///   - shape: The dimensions of the tensor.
     init(glorotUniform shape: TensorShape, seed: TensorFlowSeed = Context.local.randomSeed) {
-        let (fanIn, fanOut) = Tensor.fans(shape: shape)
+        let (fanIn, fanOut) = shape.fans()
         let limit = Tensor<Scalar>(6 / Scalar(fanIn + fanOut))
         self.init(randomUniform: shape, lowerBound: -limit, upperBound: limit, seed: seed)
     }
@@ -476,7 +477,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// - Parameters:
     ///   - shape: The dimensions of the tensor.
     init(glorotNormal shape: TensorShape, seed: TensorFlowSeed = Context.local.randomSeed) {
-        let (fanIn, fanOut) = Tensor.fans(shape: shape)
+        let (fanIn, fanOut) = shape.fans()
         var standardDeviation = Tensor<Scalar>(Scalar.sqrt(2 / Scalar(fanIn + fanOut)))
         // Standard deviation of the truncated standard normal between `-2` and `2` standard deviations.
         let truncationDeviation = Tensor<Scalar>(0.87962566103423978)
