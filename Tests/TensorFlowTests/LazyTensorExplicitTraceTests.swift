@@ -189,6 +189,6 @@ final class LazyTensorExplicitTraceTests: XCTestCase {
         ("testNestedTracing", testNestedTracing),
         ("testCallableTrace", testCallableTrace),
         ("testTraceWithOutputSameAsInput", testTraceWithOutputSameAsInput),
-        ("testRetainsidenticaloutputs", testRetainsIdenticalOutputs)
+        ("testRetainsIdenticalOutputs", testRetainsIdenticalOutputs)
     ]
 }

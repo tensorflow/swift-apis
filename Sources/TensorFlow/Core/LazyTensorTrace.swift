@@ -243,7 +243,7 @@ class LazyTensorTraceBuilder {
         newLazyOp.inputs = lazyOp.inputs.map { maybePromotedInput($0) }
         updateOperationAndCache(id, newLazyOp)
 
-        if generateOutputs &&  LazyTensorHandle.isLive(lazyOp) {
+        if generateOutputs && LazyTensorHandle.isLive(lazyOp) {
             outputs.append(newLazyOp)
             originalOutputs.append(lazyOp)
         }
