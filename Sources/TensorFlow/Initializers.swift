@@ -431,7 +431,7 @@ fileprivate extension TensorShape {
         precondition(
             count > 1,
             "Fans cannot be computed for tensors with fewer than 2 dimensions. Got: \(count)")
- 
+
         // Fans for a 2-D tensor, e.g. `Dense`/`Embedding` weights.
         if count == 2 {
             return (self[0], self[1])
