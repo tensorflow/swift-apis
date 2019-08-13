@@ -214,6 +214,18 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(output, expected)
     }
 
+    func testMaxPool1DGradient() {
+        let layer = MaxPool1D<Float>(poolSize: 2, stride: 1, padding: .valid)
+        let input = Tensor<Float>(shape: [1, 4, 4], scalars: (0..<16).map(Float.init))
+        let computedGradient = gradient(at: input, layer) { $1($0).sum() }
+        let expectedGradient = Tensor<Float>([[
+            [0, 0, 0, 0],
+            [1, 1, 1, 1],
+            [1, 1, 1, 1],
+            [1, 1, 1, 1]]])
+        XCTAssertEqual(computedGradient.0, expectedGradient)
+    }
+
     func testMaxPool2D() {
         let layer = MaxPool2D<Float>(poolSize: (2, 2), strides: (1, 1), padding: .valid)
         let input = Tensor(shape: [1, 2, 2, 1], scalars: (0..<4).map(Float.init))
@@ -222,12 +234,36 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(output, expected)
     }
 
+    func testMaxPool2DGradient() {
+        let layer = MaxPool2D<Float>(poolSize: (2, 2), strides: (2, 2), padding: .valid)
+        let input = Tensor(shape: [1, 4, 4, 1], scalars: (0..<16).map(Float.init))
+        let computedGradient = gradient(at: input, layer) { $1($0).sum() }
+        let expectedGradient = Tensor<Float>([[
+            [[0], [0], [0], [0]],
+            [[0], [1], [0], [1]],
+            [[0], [0], [0], [0]],
+            [[0], [1], [0], [1]]]])
+        XCTAssertEqual(computedGradient.0, expectedGradient)
+    }
+
     func testMaxPool3D() {
         let layer = MaxPool3D<Float>(poolSize: (2, 2, 2), strides: (1, 1, 1), padding: .valid)
         let input = Tensor(shape: [1, 2, 2, 2, 1], scalars: (0..<8).map(Float.init))
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>([[[[[7]]]]])
         XCTAssertEqual(output, expected)
+    }
+
+    func testMaxPool3DGradient(){
+        let layer = MaxPool3D<Float>(poolSize: (2, 2, 2), strides: (1, 1, 1), padding: .valid)
+        let input = Tensor(shape: [1, 2, 2, 2, 1], scalars: (0..<8).map(Float.init))
+        let computedGradient = gradient(at: input, layer) { $1($0).sum() }
+        let expectedGradient = Tensor<Float>([[
+            [[[0], [0]],
+             [[0], [0]]],
+            [[[0], [0]],
+             [[0], [1]]]]])
+        XCTAssertEqual(computedGradient.0, expectedGradient)
     }
 
     func testAvgPool1D() {
@@ -561,8 +597,11 @@ final class LayerTests: XCTestCase {
         ("testZeroPadding2D", testZeroPadding2D),
         ("testZeroPadding3D", testZeroPadding3D),
         ("testMaxPool1D", testMaxPool1D),
+        ("testMaxPool1DGradient", testMaxPool1DGradient),
         ("testMaxPool2D", testMaxPool2D),
+        ("testMaxPool2DGradient", testMaxPool2DGradient),
         ("testMaxPool3D", testMaxPool3D),
+        ("testMaxPool3DGradient", testMaxPool3DGradient),
         ("testAvgPool1D", testAvgPool1D),
         ("testAvgPool2D", testAvgPool2D),
         ("testAvgPool3D", testAvgPool3D),
