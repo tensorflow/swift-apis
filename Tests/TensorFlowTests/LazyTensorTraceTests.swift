@@ -206,6 +206,36 @@ final class LazyTensorTraceTests: XCTestCase {
         XCTAssertEqual(z.scalarized(), 9.0)
     }
 
+    func testTraceWithFunctionAttributes() {
+        typealias Int32Pair = Zip2TensorGroup<Tensor<Int32>, Tensor<Int32>>
+        func thenBranch(x: Tensor<Float>) -> Tensor<Float> {
+            return x + 10.0
+        }
+        func elseBranch(x: Tensor<Float>) -> Tensor<Float> {
+            return x - 9.0
+        }
+        let c: Tensor<Float> = Raw.if_(
+            cond: Tensor<Bool>(false),
+            Tensor<Float>(20.0),
+            thenBranch: thenBranch,
+            elseBranch: elseBranch,
+            outputShapes: [nil])
+        let cLazyOp = lazyTensorOperation(c)!
+        let cTraceInfo = LazyTensorTraceBuilder.materializationTraceInfo(cLazyOp)
+        let cTrace = cTraceInfo.trace
+        XCTAssertEqual(
+            cTrace.description,
+            """
+            lazyTrace_3() -> (%2) {
+              %0 = Const[dtype: bool, value: false]()
+              %1 = Const[dtype: float, value: 20.0]()
+              %2 = If[Tcond: bool, Tin: [float], Tout: [float], else_branch: TFFunction(lazyTrace_3_kMDsaAFRUp8), output_shapes: [nil], then_branch: TFFunction(lazyTrace_3_sayLTaDTeLE)](%0, [%1])
+            }
+            """)
+        // Returns the result of the else branch.
+        XCTAssertEqual(c.scalarized(), 11.0)
+    }
+
     private func lazyTensorOperation<T: TensorFlowScalar>(
         _ input: Tensor<T>
     ) -> LazyTensorOperation? {
@@ -236,6 +266,7 @@ final class LazyTensorTraceTests: XCTestCase {
         ("testMultipleTargets", testMultipleTargets),
         ("testSimpleControlFlow", testSimpleControlFlow),
         ("testManualConstPromotion", testManualConstPromotion),
-        ("testConstPromotion", testConstPromotion)
+        ("testConstPromotion", testConstPromotion),
+        ("testTraceWithFunctionAttributes", testTraceWithFunctionAttributes)
     ]
 }
