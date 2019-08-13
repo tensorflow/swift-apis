@@ -218,6 +218,14 @@ final class LayerTests: XCTestCase {
         let layer = MaxPool1D<Float>(poolSize: 2, stride: 1, padding: .valid)
         let input = Tensor<Float>(shape: [1, 4, 4], scalars: (0..<16).map(Float.init))
         let computedGradient = gradient(at: input, layer) { $1($0).sum() }
+        // The expected value of the gradient was computed using the following Python code:
+        // ```
+        //   maxpool1D = tf.keras.layers.MaxPool1D()
+        //   with tf.GradientTape() as t:
+        //     t.watch(x)
+        //     y = tf.math.reduce_sum(maxpool1D(x))
+        //   print(t.gradient(y, x))
+        // ```
         let expectedGradient = Tensor<Float>([[
             [0, 0, 0, 0],
             [1, 1, 1, 1],
@@ -238,6 +246,14 @@ final class LayerTests: XCTestCase {
         let layer = MaxPool2D<Float>(poolSize: (2, 2), strides: (2, 2), padding: .valid)
         let input = Tensor(shape: [1, 4, 4, 1], scalars: (0..<16).map(Float.init))
         let computedGradient = gradient(at: input, layer) { $1($0).sum() }
+        // The expected value of the gradient was computed using the following Python code:
+        // ```
+        //   maxpool2D = tf.keras.layers.MaxPool2D(strides=(2, 2))
+        //   with tf.GradientTape() as t:
+        //     t.watch(x)
+        //     y = tf.math.reduce_sum(maxpool2D(x))
+        //   print(t.gradient(y, x))
+        // ```
         let expectedGradient = Tensor<Float>([[
             [[0], [0], [0], [0]],
             [[0], [1], [0], [1]],
@@ -258,6 +274,14 @@ final class LayerTests: XCTestCase {
         let layer = MaxPool3D<Float>(poolSize: (2, 2, 2), strides: (1, 1, 1), padding: .valid)
         let input = Tensor(shape: [1, 2, 2, 2, 1], scalars: (0..<8).map(Float.init))
         let computedGradient = gradient(at: input, layer) { $1($0).sum() }
+        // The expected value of the gradient was computed using the following Python code:
+        // ```
+        //   maxpool3D = tf.keras.layers.MaxPool3D(strides=(1, 1, 1))
+        //   with tf.GradientTape() as t:
+        //     t.watch(x)
+        //     y = tf.math.reduce_sum(maxpool3D(x))
+        //   print(t.gradient(y, x))
+        // ```
         let expectedGradient = Tensor<Float>([[
             [[[0], [0]],
              [[0], [0]]],
