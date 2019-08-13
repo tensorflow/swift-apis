@@ -110,6 +110,52 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(output, expected)
     }
 
+    func testConv2DGradient() {
+        let filter =  Tensor(shape: [3, 3, 2, 4], scalars: (0..<72).map(Float.init))
+        let bias = Tensor<Float>(zeros: [4])
+        let layer = Conv2D<Float>(filter: filter, 
+                                  bias: bias, 
+                                  activation: identity,
+                                  strides: (2, 2), 
+                                  padding: .valid)
+        let input = Tensor(shape: [2, 4, 4, 2], scalars: (0..<64).map(Float.init))
+        let grads = gradient( at: input, layer) { $1($0).sum() }
+        // The expected gradients were computed using the following Python code: 
+        // ```
+        //  x = tf.reshape(tf.range(64, dtype=tf.float32), [2, 4, 4, 2])
+        //  filter = tf.reshape(tf.range(72, dtype=tf.float32), [3, 3, 2, 4])
+        //  bias = tf.zeros([4])
+        //  with tf.GradientTape() as t:
+        //      t.watch([x, filter, bias])
+        //      y = tf.math.reduce_sum(tf.nn.conv2d(input=x, 
+        //                                          filters=filter,
+        //                                          strides=[1, 2, 2, 1],
+        //                                          data_format="NHWC",
+        //                                          padding="VALID") + bias)
+        //  grads = t.gradient(y, [x, filter, bias])
+        // ```
+        XCTAssertEqual(grads.0, 
+                       [[[[  6,  22], [ 38,  54], [ 70,  86], [  0,   0]],
+                         [[102, 118], [134, 150], [166, 182], [  0,   0]],
+                         [[198, 214], [230, 246], [262, 278], [  0,   0]],
+                         [[  0,   0], [  0,   0], [  0,   0], [  0,   0]]],
+                        [[[  6,  22], [ 38,  54], [ 70,  86], [  0,   0]],
+                         [[102, 118], [134, 150], [166, 182], [  0,   0]],
+                         [[198, 214], [230, 246], [262, 278], [  0,   0]],
+                         [[  0,   0], [  0,   0], [  0,   0], [  0,   0]]]])
+        XCTAssertEqual(grads.1.filter, 
+                        [[[[32, 32, 32, 32], [34, 34, 34, 34]],
+                          [[36, 36, 36, 36], [38, 38, 38, 38]],
+                          [[40, 40, 40, 40], [42, 42, 42, 42]]],
+                         [[[48, 48, 48, 48], [50, 50, 50, 50]],
+                          [[52, 52, 52, 52], [54, 54, 54, 54]],
+                          [[56, 56, 56, 56], [58, 58, 58, 58]]],
+                         [[[64, 64, 64, 64], [66, 66, 66, 66]],
+                          [[68, 68, 68, 68], [70, 70, 70, 70]],
+                          [[72, 72, 72, 72], [74, 74, 74, 74]]]])
+        XCTAssertEqual(grads.1.bias, [2, 2, 2, 2])
+    }
+
     func testConv2DDilation() {
         // Input shapes. (Data format = NHWC)
         let batchSize = 2
@@ -591,6 +637,7 @@ final class LayerTests: XCTestCase {
         ("testConv1D", testConv1D),
         ("testConv1DDilation", testConv1DDilation),
         ("testConv2D", testConv2D),
+        ("testConv2DGradient", testConv2DGradient),
         ("testConv2DDilation", testConv2DDilation),
         ("testConv3D", testConv3D),
         ("testDepthConv2D", testDepthConv2D),
