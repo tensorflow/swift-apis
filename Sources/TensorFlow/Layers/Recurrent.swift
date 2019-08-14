@@ -324,12 +324,9 @@ public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
             matmul(input.state.hidden, updateWeight2) + updateBias)
         let outputGate = tanh(matmul(input.input, outputWeight1) +
             matmul(resetGate * input.state.hidden, outputWeight2) + outputBias)
-
         let updateHidden = (1 - updateGate) * input.state.hidden
         let updateOutput = (1 - updateGate) * outputGate
-
         let newState = State(hidden: updateHidden + updateOutput)
-
         return Output(output: newState, state: newState)
     }
 }
