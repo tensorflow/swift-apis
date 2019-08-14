@@ -174,7 +174,6 @@ internal extension TensorHandle {
     @usableFromInline
     @inline(never)
     func makeHostCopy() -> ShapedArray<Scalar> {
-        internalConsistencyCheck(isConcrete)
         debugLog("Calling makeHostCopy() with c handle \(_cTensorHandle)")
         return ShapedArray(cTensorHandle: _cTensorHandle)
     }

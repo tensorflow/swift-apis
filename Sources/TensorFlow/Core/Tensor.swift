@@ -223,7 +223,7 @@ public extension Tensor {
             provided.
             """)
         self = scalars.withUnsafeBufferPointer { bufferPointer in
-          Tensor(shape: shape, scalars: bufferPointer)
+            Tensor(shape: shape, scalars: bufferPointer)
         }
     }
 
