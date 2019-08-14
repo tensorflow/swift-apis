@@ -153,6 +153,19 @@ final class TensorAutoDiffTests: XCTestCase {
         XCTAssertEqual(varianceGradAlongAxes(input), expected)
     }
 
+    // TODO: Uncomment once TF-653 is resolved.
+    // func testTensorInitStacking() {
+    //     let a1 = Tensor<Float>([1, 2, 3, 4, 5])
+    //     let b1 = Tensor<Float>([6, 7, 8, 9, 10])
+    //     let a2 = Tensor<Float>([1, 1, 1, 1, 1])
+    //     let b2 = Tensor<Float>([1, 1, 1, 1, 1])
+    //     let grads = gradient(at: a2, b2) { a, b in
+    //         Tensor<Float>(stacking: [a1 * a, b1 * b], alongAxis: -1).sum()
+    //     }
+    //     XCTAssertEqual(a1, grads.0)
+    //     XCTAssertEqual(b1, grads.1)
+    // }
+
     func testExpandingShape() {
         func f1(a: Tensor<Float>) -> Tensor<Float> { a.expandingShape(at: 0).squared() }
         func f2(a: Tensor<Float>) -> Tensor<Float> { a.squared().expandingShape(at: 0) }
@@ -435,6 +448,8 @@ final class TensorAutoDiffTests: XCTestCase {
         ("testSum", testSum),
         ("testMean", testMean),
         ("testVariance", testVariance),
+        // TODO: Uncomment once TF-653 is resolved.
+        // ("testTensorInitStacking", testTensorInitStacking),
         ("testExpandingShape", testExpandingShape),
         ("testSqueezingShape", testSqueezingShape),
         ("testReshapedBackprop", testReshapedBackprop),
