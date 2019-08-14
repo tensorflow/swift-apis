@@ -45,59 +45,61 @@ extension LazyTensorOperation {
 
     func updateOutputShapes() {
         outputShapes = Array<TensorShape?>(repeating: nil, count: outputCount)
-        // let status = TF_NewStatus()
-        // defer { TF_DeleteStatus(status) }
+        /*
+        let status = TF_NewStatus()
+        defer { TF_DeleteStatus(status) }
 
-        // let inputShapes: [TensorShape] = inputs.lazy.flatMap { (input: Input) -> [TensorShape] in
-        //     switch input {
-        //     case .single(let handle): return [handle.shape]
-        //     case .list(let values): return values.lazy.map { $0.shape }
-        //     }
-        // }
-        // let inputShapeList = TF_NewShapeAndTypeList(/*num_shapes*/ Int32(inputShapes.count))
-        // defer { TF_DeleteShapeAndTypeList(inputShapeList) }
-        // for (i, shape) in inputShapes.enumerated() {
-        //     let int64_dimensions = shape.dimensions.map { Int64($0) }
-        //     int64_dimensions.withUnsafeBufferPointer { buffer in
-        //         TF_ShapeAndTypeListSetShape(
-        //             inputShapeList,
-        //             /*index*/ Int32(i),
-        //             buffer.baseAddress,
-        //             Int32(int64_dimensions.count))
-        //     }
-        // }
+        let inputShapes: [TensorShape] = inputs.lazy.flatMap { (input: Input) -> [TensorShape] in
+            switch input {
+            case .single(let handle): return [handle.shape]
+            case .list(let values): return values.lazy.map { $0.shape }
+            }
+        }
+        let inputShapeList = TF_NewShapeAndTypeList(/*num_shapes*/ Int32(inputShapes.count))
+        defer { TF_DeleteShapeAndTypeList(inputShapeList) }
+        for (i, shape) in inputShapes.enumerated() {
+            let int64_dimensions = shape.dimensions.map { Int64($0) }
+            int64_dimensions.withUnsafeBufferPointer { buffer in
+                TF_ShapeAndTypeListSetShape(
+                    inputShapeList,
+                    /*index*/ Int32(i),
+                    buffer.baseAddress,
+                    Int32(int64_dimensions.count))
+            }
+        }
 
-        // // This will be filled in by `TFE_InferShapes` and should be freed later.
-        // var outputShapeListPtr = UnsafeMutablePointer<TF_ShapeAndTypeList>(nil)
-        // defer { TF_DeleteShapeAndTypeList(outputShapeListPtr) }
+        // This will be filled in by `TFE_InferShapes` and should be freed later.
+        var outputShapeListPtr = UnsafeMutablePointer<TF_ShapeAndTypeList>(nil)
+        defer { TF_DeleteShapeAndTypeList(outputShapeListPtr) }
 
-        // let tfeOp = self.tfeOp
-        // defer {
-        //     TFE_DeleteOp(tfeOp.op)
-        //     TF_DeleteStatus(tfeOp.status)
-        // }
+        let tfeOp = self.tfeOp
+        defer {
+            TFE_DeleteOp(tfeOp.op)
+            TF_DeleteStatus(tfeOp.status)
+        }
 
-        // TFE_InferShapes(
-        //     tfeOp.op,
-        //     /*input_shapes*/ inputShapeList,
-        //     /*input_tensors*/ nil,
-        //     /*num_input_tensors*/ 0,
-        //     /*input_tensors_as_shapes*/ nil,
-        //     /*input_resource_shapes_and_types*/ nil,
-        //     /*output_shapes*/ &outputShapeListPtr,
-        //     /*output_resource_shapes_and_types*/ nil,
-        //     status)
+        TFE_InferShapes(
+            tfeOp.op,
+            /*input_shapes*/ inputShapeList,
+            /*input_tensors*/ nil,
+            /*num_input_tensors*/ 0,
+            /*input_tensors_as_shapes*/ nil,
+            /*input_resource_shapes_and_types*/ nil,
+            /*output_shapes*/ &outputShapeListPtr,
+            /*output_resource_shapes_and_types*/ nil,
+            status)
 
-        // checkOk(status)
+        checkOk(status)
 
-        // precondition(outputShapeListPtr != nil, "TFE_InferShapes returned nil for output shapes")
-        // let outputShapeList = outputShapeListPtr!.pointee
-        // outputShapes = (0..<outputShapeList.num_items).lazy.map { index -> TensorShape? in
-        //     let outputShape = outputShapeList.items![Int(index)]
-        //     if outputShape.num_dims == -1 { return nil }
-        //     let dims = (0..<outputShape.num_dims).lazy.map { Int(outputShape.dims![Int($0)]) }
-        //     let hasUnknownDims = dims.contains { $0 == -1 }
-        //     return hasUnknownDims ? nil : TensorShape(dims)
-        // }
+        precondition(outputShapeListPtr != nil, "TFE_InferShapes returned nil for output shapes")
+        let outputShapeList = outputShapeListPtr!.pointee
+        outputShapes = (0..<outputShapeList.num_items).lazy.map { index -> TensorShape? in
+            let outputShape = outputShapeList.items![Int(index)]
+            if outputShape.num_dims == -1 { return nil }
+            let dims = (0..<outputShape.num_dims).lazy.map { Int(outputShape.dims![Int($0)]) }
+            let hasUnknownDims = dims.contains { $0 == -1 }
+            return hasUnknownDims ? nil : TensorShape(dims)
+        }
+        */
     }
 }
