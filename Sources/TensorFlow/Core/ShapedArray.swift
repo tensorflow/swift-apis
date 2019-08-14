@@ -474,20 +474,6 @@ internal extension ShapedArray where Scalar: _TensorFlowDataTypeCompatible {
         buffer = TensorBuffer(owning: cTensor, count: shape.reduce(1, *))
         debugLog("Done initializing ShapedArray from CTensor.")
     }
-
-    @usableFromInline
-    @inline(never)
-    init(cTensorHandle: CTensorHandle) {
-        internalConsistencyCheck(TFE_TensorHandleIsConcrete(cTensorHandle) != 0)
-        let status = TF_NewStatus()
-        let cTensor = TFE_TensorHandleResolve(cTensorHandle, status)
-        checkOk(status)
-        TF_DeleteStatus(status)
-        internalConsistencyCheck(cTensor != nil)
-        debugLog("# of dims is \(TF_NumDims(cTensor!))")
-        debugLog("Returning a shaped array.")
-        self.init(owning: cTensor!)
-    }
 }
 
 public extension ShapedArray {

@@ -129,11 +129,6 @@ public struct TensorHandle<Scalar> where Scalar: _TensorFlowDataTypeCompatible {
         self.init(copyingFromCTensor: cTensor)
         TF_DeleteTensor(cTensor)
     }
-
-    /// Return true if the underlying tensor is concrete (as opposed to being symbolic).
-    public var isConcrete: Bool {
-        return TFE_TensorHandleIsConcrete(_cTensorHandle) != 0
-    }
 }
 
 extension TensorHandle where Scalar: TensorFlowScalar {

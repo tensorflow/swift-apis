@@ -158,8 +158,7 @@ public extension Tensor {
     @inlinable
     var array: ShapedArray<Scalar> {
         debugLog("Returning a host copy of array.")
-        internalConsistencyCheck(handle.isConcrete)
-	    return handle.makeHostCopy()
+        return handle.makeHostCopy()
     }
 
     @inlinable
@@ -224,8 +223,8 @@ public extension Tensor {
             provided.
             """)
         self = scalars.withUnsafeBufferPointer { bufferPointer in
-	        Tensor(shape: shape, scalars: bufferPointer)
-	    }
+          Tensor(shape: shape, scalars: bufferPointer)
+        }
     }
 
     /// Creates a tensor with the specified shape and contiguous scalars in row-major order.
