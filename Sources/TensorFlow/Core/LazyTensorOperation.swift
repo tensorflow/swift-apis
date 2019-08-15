@@ -388,8 +388,7 @@ extension LazyTensorOperation: TFTensorOperation {
 
     func updateAttribute<In: TensorGroup, Out: TensorGroup>(
         _ name: String, _ value: (In) -> Out) {
-        // TODO:
-        fatalError("Unimplemented [TFFunction] attribute.")
+        updateAttribute(name, _TensorFunctionPointer(name: _tffunc(value)))
     }
 
     func execute() {
@@ -443,7 +442,7 @@ extension LazyTensorOperation: TFTensorOperation {
             case .tensorDataTypeArray(let v): op.updateAttribute(name, v)
             case .optionalTensorShape(let v): op.updateAttribute(name, v)
             case .optionalTensorShapeArray(let v): op.updateAttribute(name, v)
-            case .tensorFunctionPointer(_): fatalError("tensorFunctionPointer Unimplemented!")
+            case .tensorFunctionPointer(let v): op.updateAttribute(name, v)
             }
         }
         op.execute()

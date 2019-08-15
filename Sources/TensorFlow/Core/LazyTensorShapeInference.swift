@@ -37,7 +37,7 @@ extension LazyTensorOperation {
             case .tensorDataTypeArray(let v): op.updateAttribute(name, v)
             case .optionalTensorShape(let v): op.updateAttribute(name, v)
             case .optionalTensorShapeArray(let v): op.updateAttribute(name, v)
-            case .tensorFunctionPointer(_): fatalError("tensorFunctionPointer Unimplemented!")
+            case .tensorFunctionPointer(let v): op.updateAttribute(name, v)
             }
         }
         return op
