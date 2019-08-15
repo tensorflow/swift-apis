@@ -80,7 +80,6 @@ extension LazyTensorOperation {
             tfeOp.op,
             /*input_shapes*/ inputShapeList,
             /*input_tensors*/ nil,
-            /*num_input_tensors*/ 0,
             /*input_tensors_as_shapes*/ nil,
             /*input_resource_shapes_and_types*/ nil,
             /*output_shapes*/ &outputShapeListPtr,
