@@ -14,7 +14,7 @@
 
 /// Opaque reference to a function that has been made callable by loading it
 /// into the runtime.
-public struct _TensorFunctionPointer {
+public struct _TensorFunctionPointer: Equatable {
     public var name: String
     public init(name: String) {
         self.name = name

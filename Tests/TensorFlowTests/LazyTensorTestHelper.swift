@@ -19,11 +19,13 @@ class LazyTensorTestCase: XCTestCase {
     override class func setUp() {
         super.setUp()
         _ThreadLocalState.useLazyTensor = true
+        LazyTensorContext.local.autoConstPromotion = false
     }
 
     override class func tearDown() {
         super.tearDown()
         _ThreadLocalState.useLazyTensor = false
+        LazyTensorContext.local.autoConstPromotion = true
     }
 }
 

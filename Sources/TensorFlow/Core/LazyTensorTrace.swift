@@ -77,10 +77,13 @@ class LazyTensorTraceBuilder {
             inputs: builder.inputs,
             operations: builder.operations,
             outputs: builder.outputs)
-        return MaterializationTraceInfo(
+        let materializationTraceInfo = MaterializationTraceInfo(
             lazyOperations: builder.originalOutputs,
             trace: trace,
             concreteInputs: builder.inputValues)
+        return LazyTensorContext.local.autoConstPromotion
+            ? LazyTensorTraceCache.traceWithPromotedConstants(materializationTraceInfo)
+            : materializationTraceInfo
     }
 
     static func materializationTraceInfo(

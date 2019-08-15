@@ -199,7 +199,7 @@ class LazyTensorOperation: TensorOperation {
         case optionalTensorShapeArray([TensorShape?])
     }
 
-    let name: String
+    var name: String
     let outputCount: Int
     var inputs: [Input]
     var attributes: [String: Attribute]
