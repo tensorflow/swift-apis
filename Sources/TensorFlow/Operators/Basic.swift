@@ -34,9 +34,10 @@ public extension TensorFlowScalar {
 }
 
 public extension Tensor {
-    /// Unpacks the given dimension of a rank-`R` tensor into multiple rank-`(R-1)` tensors. Unpacks
-    /// `N` tensors from this tensor by chipping it along the `axis` dimension, where `N` is
-    /// inferred from this tensor's shape. For example, given a tensor with shape `[A, B, C, D]`:
+    /// Unpacks the given dimension of a rank-`R` tensor into multiple rank-`(R-1)` tensors.
+    /// Unpacks `N` tensors from this tensor by chipping it along the `axis` dimension, where `N`
+    /// is inferred from this tensor's shape. For example, given a tensor with shape
+    /// `[A, B, C, D]`:
     ///
     ///   - If `axis == 0` then the `i`-th tensor in the returned array is the slice
     ///     `self[i, :, :, :]` and each tensor in that array will have shape `[B, C, D]`.
@@ -51,14 +52,15 @@ public extension Tensor {
     /// - Parameters:
     ///   - axis: Dimension along which to unstack. Negative values wrap around.
     ///
-    /// - Precondition: `axis` must be in the range `[-rank, rank)`, where `rank` is the rank of the
-    ///   provided tensors.
+    /// - Precondition: `axis` must be in the range `[-rank, rank)`, where `rank` is the rank of
+    ///   the provided tensors.
     ///
     /// - Returns: Array containing the unstacked tensors.
     @inlinable
     @differentiable(vjp: _vjpUnstacked(alongAxis:) where Scalar: TensorFlowFloatingPoint)
     func unstacked(alongAxis axis: Int = 0) -> [Tensor] {
-        return Raw.unpack(value: self, num: Int64(shape[axis]), axis: Int64(axis))
+        let posAxis = axis < 0 ? axis + rank : axis
+        return Raw.unpack(value: self, num: Int64(shape[posAxis]), axis: Int64(posAxis))
     }
 
     /// Splits a tensor into multiple tensors. The tensor is split along dimension `axis` into
@@ -79,8 +81,8 @@ public extension Tensor {
     ///   - axis: The dimension along which to split this tensor. Negative values wrap around.
     ///
     /// - Precondition: `count` must divide the size of dimension `axis` evenly.
-    /// - Precondition: `axis` must be in the range `[-rank, rank)`, where `rank` is the rank of the
-    ///   provided tensors.
+    /// - Precondition: `axis` must be in the range `[-rank, rank)`, where `rank` is the rank of
+    ///   the provided tensors.
     ///
     /// - Returns: An array containing the tensors part.
     @inlinable
@@ -108,8 +110,8 @@ public extension Tensor {
     ///   - axis: Dimension along which to split this tensor. Negative values wrap around.
     ///
     /// - Precondition: The values in `sizes` must add up to the size of dimension `axis`.
-    /// - Precondition: `axis` must be in the range `[-rank, rank)`, where `rank` is the rank of the
-    ///   provided tensors.
+    /// - Precondition: `axis` must be in the range `[-rank, rank)`, where `rank` is the rank of
+    ///   the provided tensors.
     ///
     /// - Returns: Array containing the tensors parts.
     @inlinable
@@ -158,9 +160,7 @@ public extension Tensor {
     /// Reshape to the specified `Tensor` representing a shape.
     /// - Precondition: The number of scalars matches the new shape.
     @inlinable
-    @differentiable(
-        wrt: self,
-        vjp: _vjpReshaped(toShape:) where Scalar: TensorFlowFloatingPoint)
+    @differentiable(wrt: self, vjp: _vjpReshaped(toShape:) where Scalar: TensorFlowFloatingPoint)
     func reshaped(toShape newShape: Tensor<Int32>) -> Tensor {
         Raw.reshape(self, shape: newShape)
     }
@@ -224,10 +224,8 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 
     @inlinable
-    func _vjpTiled(
-        multiples: Tensor<Int32>
-    ) -> (Tensor, (Tensor) -> Tensor) {
-        return (tiled(multiples: multiples), { [shape = shapeTensor] v in
+    func _vjpTiled(multiples: Tensor<Int32>) -> (Tensor, (Tensor) -> Tensor) {
+        (tiled(multiples: multiples), { [shape = shapeTensor] v in
             let splitShape = Tensor<Int32>(stacking: [multiples, shape]).transposed().flattened()
             let axes = Tensor<Int32>(rangeFrom: 0, to: Int32(splitShape.scalarCount), stride: 2)
             return v.reshaped(toShape: splitShape).sum(squeezingAxes: axes)
@@ -386,7 +384,7 @@ public extension Tensor {
         atIndices indices: Tensor<Index>,
         alongAxis axis: Int = 0
     ) -> Tensor {
-        return Raw.gatherV2(params: self, indices: indices, axis: Tensor<Int32>(Int32(axis)))
+        Raw.gatherV2(params: self, indices: indices, axis: Tensor<Int32>(Int32(axis)))
     }
 
     /// Returns slices of this tensor at `indices` along the `axis` dimension, while ignoring the 
