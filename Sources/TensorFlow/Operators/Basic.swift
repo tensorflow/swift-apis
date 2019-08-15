@@ -82,12 +82,11 @@ public extension Tensor {
     /// - Precondition: `axis` must be in the range `[-rank, rank)`, where `rank` is the rank of the
     ///   provided tensors.
     ///
-    /// - Returns: An array containing the tensors parts.
+    /// - Returns: An array containing the tensors part.
     @inlinable
     @differentiable(vjp: _vjpSplit(count:alongAxis:) where Scalar: TensorFlowFloatingPoint)
     func split(count: Int, alongAxis axis: Int = 0) -> [Tensor] {
-        return Raw.split(
-            splitDim: Tensor<Int32>(Int32(axis)), value: self, numSplit: Int64(count))
+        Raw.split(splitDim: Tensor<Int32>(Int32(axis)), value: self, numSplit: Int64(count))
     }
 
     /// Splits a tensor into multiple tensors. The tensor is split  into `sizes.shape[0]` pieces.
@@ -118,7 +117,7 @@ public extension Tensor {
         wrt: self,
         vjp: _vjpSplit(sizes:alongAxis:) where Scalar: TensorFlowFloatingPoint)
     func split(sizes: Tensor<Int32>, alongAxis axis: Int = 0) -> [Tensor] {
-        return Raw.splitV(
+        Raw.splitV(
             value: self,
             sizeSplits: sizes,
             splitDim: Tensor<Int32>(Int32(axis)),
@@ -136,7 +135,7 @@ public extension Tensor {
     @inlinable
     @differentiable(wrt: self, vjp: _vjpTiled(multiples:) where Scalar: TensorFlowFloatingPoint)
     func tiled(multiples: Tensor<Int32>) -> Tensor {
-        return Raw.tile(self, multiples: multiples)
+        Raw.tile(self, multiples: multiples)
     }
 
     /// Reshape to the shape of the specified `Tensor`.
@@ -144,7 +143,7 @@ public extension Tensor {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func reshaped<T>(like other: Tensor<T>) -> Tensor {
-        return reshaped(toShape: other.shapeTensor)
+        reshaped(toShape: other.shapeTensor)
     }
 
     /// Reshape to the specified shape.
@@ -153,7 +152,7 @@ public extension Tensor {
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func reshaped(to newShape: TensorShape) -> Tensor {
         // TODO(TF-433): Remove workaround for differentiating `map`.
-        return reshaped(toShape: Tensor<Int32>({newShape.dimensions.map(Int32.init)}()))
+        reshaped(toShape: Tensor<Int32>({newShape.dimensions.map(Int32.init)}()))
     }
 
     /// Reshape to the specified `Tensor` representing a shape.
@@ -163,14 +162,14 @@ public extension Tensor {
         wrt: self,
         vjp: _vjpReshaped(toShape:) where Scalar: TensorFlowFloatingPoint)
     func reshaped(toShape newShape: Tensor<Int32>) -> Tensor {
-        return Raw.reshape(self, shape: newShape)
+        Raw.reshape(self, shape: newShape)
     }
 
     /// Return a copy of the tensor collapsed into a 1-D `Tensor`, in row-major order.
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func flattened() -> Tensor {
-        return reshaped(to: [-1])
+        reshaped(to: [-1])
     }
 
     /// Returns a shape-expanded `Tensor`, with a dimension of 1 inserted at the specified shape
@@ -178,7 +177,7 @@ public extension Tensor {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func expandingShape(at axes: Int...) -> Tensor {
-        return expandingShape(at: axes)
+        expandingShape(at: axes)
     }
 
     /// Returns a shape-expanded `Tensor`, with a dimension of 1 inserted at the
@@ -195,7 +194,7 @@ public extension Tensor {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func rankLifted() -> Tensor {
-        return expandingShape(at: 0)
+        expandingShape(at: 0)
     }
 
     /// Removes the specified dimensions of size 1 from the shape of a tensor. If no dimensions are
@@ -203,7 +202,7 @@ public extension Tensor {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func squeezingShape(at axes: Int...) -> Tensor {
-        return squeezingShape(at: axes)
+        squeezingShape(at: axes)
     }
 
     /// Removes the specified dimensions of size 1 from the shape of a tensor. If no dimensions are
@@ -211,7 +210,7 @@ public extension Tensor {
     @inlinable
     @differentiable(wrt: self, vjp: _vjpSqueezingShape(at:) where Scalar: TensorFlowFloatingPoint)
     func squeezingShape(at axes: [Int]) -> Tensor {
-        return Raw.squeeze(self, squeezeDims: axes.map(Int32.init))
+        Raw.squeeze(self, squeezeDims: axes.map(Int32.init))
     }
 }
 
