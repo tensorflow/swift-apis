@@ -131,6 +131,54 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     public var fusedWeight: Tensor<Scalar>
     public var fusedBias: Tensor<Scalar>
 
+    public var inputWeight: Tensor<Scalar> {
+        let hiddenSize = fusedWeight.shape[1] / 4
+        return fusedWeight.slice(
+            lowerBounds: [0, 0],
+            upperBounds: [fusedWeight.shape[0], hiddenSize])
+    }
+
+    public var updateWeight: Tensor<Scalar> {
+        let hiddenSize = fusedWeight.shape[1] / 4
+        return fusedWeight.slice(
+            lowerBounds: [0, hiddenSize],
+            upperBounds: [fusedWeight.shape[0], 2 * hiddenSize])
+    }
+
+    public var forgetWeight: Tensor<Scalar> {
+        let hiddenSize = fusedWeight.shape[1] / 4
+        return fusedWeight.slice(
+            lowerBounds: [0, 2 * hiddenSize],
+            upperBounds: [fusedWeight.shape[0], 3 * hiddenSize])
+    }
+
+    public var outputWeight: Tensor<Scalar> {
+        let hiddenSize = fusedWeight.shape[1] / 4
+        return fusedWeight.slice(
+            lowerBounds: [0, 3 * hiddenSize],
+            upperBounds: [fusedWeight.shape[0], 4 * hiddenSize])
+    }
+
+    public var inputBias: Tensor<Scalar> {
+        let hiddenSize = fusedWeight.shape[1] / 4
+        return fusedBias.slice(lowerBounds: [0], upperBounds: [hiddenSize])
+    }
+
+    public var updateBias: Tensor<Scalar> {
+        let hiddenSize = fusedWeight.shape[1] / 4
+        return fusedBias.slice(lowerBounds: [hiddenSize], upperBounds: [2 * hiddenSize])
+    }
+
+    public var forgetBias: Tensor<Scalar> {
+        let hiddenSize = fusedWeight.shape[1] / 4
+        return fusedBias.slice(lowerBounds: [2 * hiddenSize], upperBounds: [3 * hiddenSize])
+    }
+
+    public var outputBias: Tensor<Scalar> {
+        let hiddenSize = fusedWeight.shape[1] / 4
+        return fusedBias.slice(lowerBounds: [3 * hiddenSize], upperBounds: [4 * hiddenSize])
+    }
+
     @noDerivative public var stateShape: TensorShape {
         TensorShape([1, fusedWeight.shape[1] / 4])
     }
