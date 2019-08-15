@@ -44,8 +44,6 @@ extension LazyTensorOperation {
     }
 
     func updateOutputShapes() {
-        outputShapes = Array<TensorShape?>(repeating: nil, count: outputCount)
-        /*
         let status = TF_NewStatus()
         defer { TF_DeleteStatus(status) }
 
@@ -100,6 +98,5 @@ extension LazyTensorOperation {
             let hasUnknownDims = dims.contains { $0 == -1 }
             return hasUnknownDims ? nil : TensorShape(dims)
         }
-        */
     }
 }
