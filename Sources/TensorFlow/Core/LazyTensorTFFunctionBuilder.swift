@@ -164,11 +164,7 @@ class TFGraph {
                 }
             }
         case .tensorFunctionPointer(let value):
-            value.name.utf8CString.withUnsafeBufferPointer { buffer in
-                // utf8CString is null-terminated; TF_SetAttrFuncName wants
-                // non-null-terminated.
-                TF_SetAttrFuncName(description, name, buffer.baseAddress, buffer.count - 1)
-            }
+            TF_SetAttrFuncName(description, name, value.name, value.name.count)
         default: fatalError("Unhandled attribute \(name):\(attribute)")
         }
     }
