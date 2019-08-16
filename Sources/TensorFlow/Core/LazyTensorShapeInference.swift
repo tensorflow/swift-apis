@@ -90,9 +90,9 @@ extension LazyTensorOperation {
         for input in inputs {
             switch input {
             case .single(let v):
-                input_tensors.append(cTensor(handle: v))
+                inputTensors.append(cTensor(handle: v))
             case .list(let values):
-                input_tensors.append(contentsOf: values.lazy.map { cTensor(handle: $0) } )
+                inputTensors.append(contentsOf: values.lazy.map { cTensor(handle: $0) } )
             }
         }
 
@@ -106,7 +106,7 @@ extension LazyTensorOperation {
             TF_DeleteStatus(tfeOp.status)
         }
 
-        input_tensors.withUnsafeMutableBufferPointer { buffer in
+        inputTensors.withUnsafeMutableBufferPointer { buffer in
             TFE_InferShapes(
                 tfeOp.op,
                 /*input_shapes*/ inputShapeList,
