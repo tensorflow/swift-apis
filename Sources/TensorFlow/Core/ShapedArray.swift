@@ -86,7 +86,7 @@ extension TensorBuffer {
         count: Int,
         withInitializer body: (UnsafeMutableBufferPointer<Scalar>) -> Void
     ) -> TensorBuffer<Scalar> {
-        let array = Array<Scalar>(unsafeUninitializedCapacity: 1) { buffer, initializedCount in
+        let array = [Scalar](unsafeUninitializedCapacity: count) { buffer, initializedCount in
             body(buffer)
             initializedCount = count
         }
