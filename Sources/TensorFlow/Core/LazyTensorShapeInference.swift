@@ -66,7 +66,7 @@ extension LazyTensorOperation {
             }
         }
 
-        // Return the CTensor, selectively materializing it if needed.
+        // Returns the `CTensor`, selectively materializing it if needed.
         func cTensor(handle: LazyTensorHandle) -> CTensor? {
             switch handle.handle {
             case .concrete(let h, _):
@@ -85,16 +85,14 @@ extension LazyTensorOperation {
             }
         }
 
-        // Create input_tensors consisting of *only* materialized inputs.
-        var input_tensors = Array<CTensor?>()
+        // Create `inputTensors` consisting of *only* materialized inputs.
+        var inputTensors: [CTensor?] = []
         for input in inputs {
             switch input {
             case .single(let v):
                 input_tensors.append(cTensor(handle: v))
             case .list(let values):
-                input_tensors.append(
-                    contentsOf: values.lazy.map { cTensor(handle: $0) }
-                )
+                input_tensors.append(contentsOf: values.lazy.map { cTensor(handle: $0) } )
             }
         }
 
