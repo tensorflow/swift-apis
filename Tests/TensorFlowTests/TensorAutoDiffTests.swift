@@ -46,7 +46,7 @@ final class TensorAutoDiffTests: XCTestCase {
         func negate<T : TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
             return (1 - x).sum()
         }
-        XCTAssertEqual(gradient(at: Tensor([0.1, 0.2, 0.3]), in: negate), Tensor(-1))
+        XCTAssertEqual(gradient(at: Tensor([0.1, 0.2, 0.3]), in: negate), Tensor([-1, -1, -1]))
     }
 
     func testScalarized() {
@@ -318,7 +318,7 @@ final class TensorAutoDiffTests: XCTestCase {
             [1, 2, 3],
             [1, 2, 3]]
         )
-        let expected: Tensor<Float> = Tensor([[4, 8, 12]])
+        let expected: Tensor<Float> = Tensor([4, 8, 12])
         XCTAssertEqual(expected, pb(inputTensor))
     }
 
@@ -342,7 +342,7 @@ final class TensorAutoDiffTests: XCTestCase {
             foo(tensor: x, other: Tensor([[1, 2, 3], [1, 2, 3], [1, 2, 3]]))
         }
         let inputTensor: Tensor<Float> = Tensor([[[[[[1, 2, 3]]]]]])
-        let expected: Tensor<Float> = Tensor([[1, 2, 3]])
+        let expected: Tensor<Float> = Tensor([1, 2, 3])
 
         XCTAssertEqual(expected, pb(inputTensor))
     }
