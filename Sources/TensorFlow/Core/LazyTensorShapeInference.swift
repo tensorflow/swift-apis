@@ -80,6 +80,7 @@ extension LazyTensorOperation {
                 // array literals. We should revisit this heuristic.
                 if op.name != "Pack" { return nil }
                 let cTensor = TFE_TensorHandleResolve(handle._cTensorHandle, status)
+                checkOk(status)
                 return cTensor
             }
         }
