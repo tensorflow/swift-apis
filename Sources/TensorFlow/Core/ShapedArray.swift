@@ -473,7 +473,6 @@ internal extension ShapedArray where Scalar: _TensorFlowDataTypeCompatible {
     @usableFromInline
     @inline(never)
     init(cTensorHandle: CTensorHandle) {
-        internalConsistencyCheck(TFE_TensorHandleIsConcrete(cTensorHandle) != 0)
         let status = TF_NewStatus()
         let cTensor = TFE_TensorHandleResolve(cTensorHandle, status)
         checkOk(status)

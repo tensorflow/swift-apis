@@ -112,19 +112,19 @@ class LazyTensorTraceBuilder {
             precondition(lazyOp != nil, "Found a non-lazy tensor in output when tracing.")
             return lazyOp!
         }
-        let outputIDs = Set<ObjectIdentifier>(
-            outputLazyOperations.lazy.map { ObjectIdentifier($0) })
 
         // Create the builder and get the trace.
         let builder = LazyTensorTraceBuilder()
         builder.neverPromoteConstants = true
-        builder.isOutput = { outputIDs.contains(ObjectIdentifier($0)) }
+        builder.generateOutputs = false
         // Set up the inputs for the builder as we need to have them in a specific order.
         for inputOp in inputOps {
             builder.updateOperationAndCache(ObjectIdentifier(inputOp), inputOp)
         }
         builder.inputs = inputOps
         for lazyOp in outputLazyOperations { _ = builder.collectLazyOperation(lazyOp) }
+        // Set up the outputs for the builder as we need to have them in a specific order.
+        builder.outputs = outputLazyOperations.map { builder.lazyOpsCache[ObjectIdentifier($0)]! }
         return LazyTensorTrace(
             inputs: builder.inputs,
             operations: builder.operations,
@@ -140,8 +140,8 @@ class LazyTensorTraceBuilder {
     private var lazyOpsCache: [ObjectIdentifier: LazyTensorOperation] = [:]
     /// A flag that controls promotion of constants to inputs.
     private var neverPromoteConstants: Bool = false
-    /// A closure that determines whether a `LazyTensorOperation` is an output.
-    private var isOutput: (LazyTensorOperation) -> Bool = LazyTensorHandle.isLive
+    /// A flag that controls whether outputs should be automatically generated.
+    private var generateOutputs: Bool = true
 
     private func updateOperationAndCache(
         _ id: ObjectIdentifier, _ node: LazyTensorOperation
@@ -243,7 +243,7 @@ class LazyTensorTraceBuilder {
         newLazyOp.inputs = lazyOp.inputs.map { maybePromotedInput($0) }
         updateOperationAndCache(id, newLazyOp)
 
-        if isOutput(lazyOp) {
+        if generateOutputs && LazyTensorHandle.isLive(lazyOp) {
             outputs.append(newLazyOp)
             originalOutputs.append(lazyOp)
         }

@@ -144,6 +144,36 @@ final class LazyTensorExplicitTraceTests: XCTestCase {
         XCTAssertEqual(tracedSquare(Tensor<Float>(5.0)).scalarized(), 25.0)
     }
 
+    func testTraceWithOutputSameAsInput() {
+        func identity(input: Tensor<Float>) -> Tensor<Float> { return input }
+        let trace = LazyTensorTraceBuilder.trace(identity)
+        XCTAssertEqual(trace.description,
+            """
+            lazyTrace_1(%0: float) -> (%0) {
+            }
+            """)
+        let tracedIdentity = _graph(identity)
+        XCTAssertEqual(tracedIdentity(Tensor<Float>(10.0)).scalarized(), 10.0)
+        XCTAssertEqual(tracedIdentity(Tensor<Float>(17.0)).scalarized(), 17.0)
+    }
+
+    func testRetainsIdenticalOutputs() {
+        typealias TensorFloatPair = Zip2TensorGroup<Tensor<Float>, Tensor<Float>>
+        func makePair(input: Tensor<Float>) -> TensorFloatPair {
+            return TensorFloatPair(input, input)
+        }
+        let trace = LazyTensorTraceBuilder.trace(makePair)
+        XCTAssertEqual(trace.description,
+            """
+            lazyTrace_1(%0: float) -> (%0, %0) {
+            }
+            """)
+        let tracedMakePair = _graph(makePair)
+        let result = tracedMakePair(Tensor<Float>(5.0))
+        XCTAssertEqual(result.first.scalarized(), 5.0)
+        XCTAssertEqual(result.second.scalarized(), 5.0)
+    }
+
     private func runTrace(trace: LazyTensorTrace, input: TensorGroup) -> [TFETensorHandle] {
         let tffunc = TFFunction(trace: trace)
         let inputHandles = input._tensorHandles.map { $0._tfeTensorHandle }
@@ -157,6 +187,8 @@ final class LazyTensorExplicitTraceTests: XCTestCase {
         ("testClosureCapturesOfTensors", testClosureCapturesOfTensors),
         ("testClosureCapturesOfNonTensors", testClosureCapturesOfNonTensors),
         ("testNestedTracing", testNestedTracing),
-        ("testCallableTrace", testCallableTrace)
+        ("testCallableTrace", testCallableTrace),
+        ("testTraceWithOutputSameAsInput", testTraceWithOutputSameAsInput),
+        ("testRetainsIdenticalOutputs", testRetainsIdenticalOutputs)
     ]
 }
