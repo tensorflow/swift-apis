@@ -461,6 +461,52 @@ final class LayerTests: XCTestCase {
         XCTAssertTrue(layerBatched.batched)
     }
 
+    func testDenseGradient() {
+        let weight = Tensor<Float>(shape: [4, 8], scalars: (0..<32).map(Float.init))
+        let bias = Tensor<Float>(shape: [1, 8], scalars: (0..<8).map(Float.init))
+        let layer = Dense<Float>(weight: weight, bias: bias, activation: identity)
+        let x = Tensor<Float>(shape: [2, 4], scalars: (0..<8).map(Float.init))
+        let grad = gradient(at: x, layer) { $1($0).squared().sum() }
+        let value = layer(x)
+        // The expected values and gradients were computed using the following Python code:
+        // ```
+        // x = tf.reshape(tf.range(8, dtype=tf.float32), [2, 4])
+        // kernel_value = np.arange(32.0).reshape([4, 8])
+        // bias_value = np.arange(8.0)
+        // kernel_initializer = tf.compat.v2.constant_initializer(kernel_value)
+        // bias_initializer = tf.compat.v2.constant_initializer(bias_value)
+        // layer = tf.keras.layers.Dense(8,
+        //                               kernel_initializer=kernel_initializer,
+        //                               bias_initializer=bias_initializer)
+        // with tf.GradientTape() as t:
+        //     t.watch(x)
+        //     y = layer(x)
+        //     z = tf.math.reduce_sum(tf.math.square(y))
+        // print(y, t.gradient(z, [x] + layer.trainable_variables))
+        // ```
+        assertEqual(
+            value,
+            [[112.0, 119.0, 126.0, 133.0, 140.0, 147.0, 154.0, 161.0],
+             [304.0, 327.0, 350.0, 373.0, 396.0, 419.0, 442.0, 465.0]],
+            accuracy: 1e-5)
+        assertEqual(
+            grad.0,
+            [[  8232.0,  25704.0,  43176.0,  60648.0],
+             [ 23464.0,  72680.0, 121896.0, 171112.0]],
+            accuracy: 1e-5)
+        assertEqual(
+            grad.1.weight,
+            [[2432.0, 2616.0, 2800.0, 2984.0, 3168.0, 3352.0, 3536.0, 3720.0],
+             [3264.0, 3508.0, 3752.0, 3996.0, 4240.0, 4484.0, 4728.0, 4972.0],
+             [4096.0, 4400.0, 4704.0, 5008.0, 5312.0, 5616.0, 5920.0, 6224.0],
+             [4928.0, 5292.0, 5656.0, 6020.0, 6384.0, 6748.0, 7112.0, 7476.0]],
+            accuracy: 1e-5)
+        assertEqual(
+            grad.1.bias,
+            [[ 832.0,  892.0,  952.0, 1012.0, 1072.0, 1132.0, 1192.0, 1252.0]],
+            accuracy: 1e-5)
+    }
+
     // TODO(TF-507): Remove references to `SimpleRNNCell.State` after SR-10697 is fixed.
     func testRNN() {
         let x = Tensor<Float>(rangeFrom: 0.0, to: 0.4, stride: 0.1).rankLifted()
@@ -534,7 +580,7 @@ final class LayerTests: XCTestCase {
             let grad = gradient(at: x, bnLayer) { $1($0).squared().sum() }
             // The expected values and gradients were computed using the following Python code:
             // ```
-            //   x = tf.constant(
+            //  x = tf.constant(
             //         [[  -1.0474433,  -0.11914538,  -0.08634827,   0.15446888,    1.0572497],
             //          [   1.5165012,    0.3753972,  -0.30856386,   -0.3100725,   -1.9584457],
             //          [ 0.006384419,    1.4424847,   0.91568077,   0.66328526,   -1.0794537],
@@ -569,43 +615,81 @@ final class LayerTests: XCTestCase {
                  [ 1.2142579e-01,  1.7060755e-03, -6.5005139e-02, -9.3897656e-02,  3.5770576e-02]],
                 accuracy: 1e-5)
             assertEqual(grad.1.offset, [0.0, 0.0, 0.0, 0.0, 0.0], accuracy: 1e-5)
-            assertEqual(grad.1.scale, [9.977925, 9.992161, 9.986738, 9.990202, 9.886292],
-                        accuracy: 1e-5)
+            assertEqual(
+                grad.1.scale,
+                [9.977925, 9.992161, 9.986738, 9.990202, 9.886292],
+                accuracy: 1e-5)
         }
+    }
+
+    func testBatchNormInference() {
+        let x = Tensor<Float>(rangeFrom: 0, to: 20, stride: 1).reshaped(to: [4,5])
+        let epsilon = Tensor<Float>(0.001)
+        let bnLayer = BatchNorm<Float>(featureCount: 5, axis: 1, epsilon: epsilon)
+        // Test inferrence before any training is only changed by epsilon value.
+        assertEqual(bnLayer.inferring(from: x), x / TensorFlow.sqrt(1 + epsilon), accuracy: 1e-5)
+        // Test inferrence after single training step.
+        Context.local.learningPhase = .training
+        let y = bnLayer(x)
+        // The expected values were computed using the following TensorFlow 2.0 Beta1 Python code :
+        // ```
+        //  x = tf.reshape(tf.range(20, dtype=tf.float32), [4,5])
+        //  y_train = bnLayer(x, training=True)
+        //  y = bnLayer(x, training=False)
+        //  print(y)
+        // ```
+        assertEqual(bnLayer.inferring(from: x),
+                    [[-0.06569097,  0.8014299 ,  1.6685508 ,  2.5356717 ,  3.4027927 ],
+                     [ 4.3137074 ,  5.180828  ,  6.0479493 ,  6.91507   ,  7.7821913 ],
+                     [ 8.693106  ,  9.560227  , 10.427347  , 11.294469  , 12.16159   ],
+                     [13.072505  , 13.939626  , 14.806746  , 15.673867  , 16.540987  ]],
+                    accuracy: 1e-5)
     }
 
     func testLayerNorm() {
         let x = Tensor<Float>([
-            [  -1.0474433,  -0.11914538,  -0.08634827,   0.15446888,    1.0572497],
-            [   1.5165012,    0.3753972,  -0.30856386,   -0.3100725,   -1.9584457],
-            [ 0.006384419,    1.4424847,   0.91568077,   0.66328526,   -1.0794537],
-            [    1.056803,   0.14263044,   -1.8308276,    0.4189805,    0.6933893],
-            [  0.30175626,  -0.16121633,   -0.4191958,  -0.53092813, -0.029484272]])
+            [ 2.736876  , -0.8932728 , -0.11240143,  1.252899  , -0.35648823],
+            [-0.43356904, -0.5147881 ,  0.8055815 ,  0.97228354,  1.4561518 ],
+            [ 0.56300443, -0.87069905, -0.20677163,  1.1823419 ,  1.0455104 ],
+            [-0.8246169 ,  1.4249208 ,  1.2131604 ,  1.1445689 , -0.94032115]])
         let lnLayer = LayerNorm<Float>(featureCount: 5, axis: 1)
         let value = lnLayer(x)
         let grad = gradient(at: x, lnLayer) { $1($0).squared().sum() }
-
-        // Uses the same values as `testBatchNorm()` above because `LayerNorm` with features on axis
-        // `1` is equivalent to `BatchNorm` with features on axis `0`.
+        // The expected values and gradients were computed using the following Python code:
+        // ```
+        //  x = tf.constant([[ 2.736876  , -0.8932728 , -0.11240143,  1.252899  , -0.35648823],
+        //                   [-0.43356904, -0.5147881 ,  0.8055815 ,  0.97228354,  1.4561518 ],
+        //                   [ 0.56300443, -0.87069905, -0.20677163,  1.1823419 ,  1.0455104 ],
+        //                   [-0.8246169 ,  1.4249208 ,  1.2131604 ,  1.1445689 , -0.94032115]])
+        //  lnLayer = tf.keras.layers.LayerNormalization(axis=1, epsilon=0.001)
+        //  with tf.GradientTape() as t:
+        //      t.watch(x)
+        //      y = lnLayer(x) 
+        //      z = tf.math.reduce_sum(tf.math.square(y))
+        //  print(y, t.gradient(z, [x] + lnLayer.trainable_variables))
+        // ```
         assertEqual(
             value,
-            [[-1.5439795 , -0.16477099, -0.11604305,  0.24174842,  1.5830451 ],
-             [ 1.4639764 ,  0.45368853, -0.15186328, -0.15319899, -1.6126028 ],
-             [-0.44139984,  1.2124169 ,  0.60574806,  0.3150888 , -1.6918538 ],
-             [ 0.9507547 ,  0.04595902, -1.9072568 ,  0.31947452,  0.5910686 ],
-             [ 1.5834246 ,  0.02224666, -0.8476793 , -1.2244489 ,  0.46645695]],
+            [[ 1.6839857 , -1.0804383 , -0.4857906 ,  0.5539104 , -0.6716671 ],
+             [-1.1261504 , -1.228839  ,  0.44055927,  0.6513276 ,  1.2631025 ],
+             [ 0.28318238, -1.5595294 , -0.70619607,  1.079205  ,  0.9033381 ],
+             [-1.1639192 ,  0.96795416,  0.7672701 ,  0.70226634, -1.2735714 ]],
             accuracy: 1e-5)
         assertEqual(
             grad.0,
-            [[-1.0127544e-02, -1.0807812e-03, -7.6115131e-04,  1.5857220e-03,  1.0383606e-02],
-             [ 2.0323221e-03,  6.2976527e-04, -2.1077941e-04, -2.1265696e-04, -2.2384699e-03],
-             [-1.3483668e-03,  3.7030075e-03,  1.8500184e-03,  9.6232636e-04, -5.1673558e-03],
-             [ 1.8438101e-03,  8.9146197e-05, -3.6990643e-03,  6.1964989e-04,  1.1463165e-03],
-             [ 1.2142579e-01,  1.7060755e-03, -6.5005139e-02, -9.3897656e-02,  3.5770576e-02]],
+            [[ 0.00148721, -0.00095408, -0.00042902,  0.00048913, -0.00059323],
+             [-0.00455132, -0.00496664,  0.00178061,  0.00263247,  0.00510535],
+             [ 0.0012024 , -0.00662184, -0.00299847,  0.00458241,  0.00383568],
+             [-0.0019815 ,  0.00164783,  0.00130618,  0.00119543, -0.00216818]],
             accuracy: 1e-5)
-        assertEqual(grad.1.scale, [9.977925, 9.992161, 9.986738, 9.990202, 9.886292],
-                    accuracy: 1e-5)
-        assertEqual(grad.1.offset, [0.0, 0.0, 0.0, 0.0, 0.0], accuracy: 1e-5)
+        assertEqual(
+            grad.1.offset, 
+            [-0.645803  , -5.8017054 ,  0.03168535,  5.973418  ,  0.44240427], 
+            accuracy: 1e-5)
+        assertEqual(
+            grad.1.scale,
+            [11.077844 , 12.092919 ,  3.0350027,  4.7778125,  8.969137],
+            accuracy: 1e-5)
     }
 
     static var allTests = [
@@ -643,10 +727,12 @@ final class LayerTests: XCTestCase {
         ("testEmbedding", testEmbedding),
         ("testSimpleRNNCell", testSimpleRNNCell),
         ("testDense", testDense),
+        ("testDenseGradient", testDenseGradient),
         ("testRNN", testRNN),
         ("testLSTM", testLSTM),
         ("testFunction", testFunction),
         ("testBatchNorm", testBatchNorm),
+        ("testBatchNormInference", testBatchNormInference),
         ("testLayerNorm", testLayerNorm)
     ]
 }
