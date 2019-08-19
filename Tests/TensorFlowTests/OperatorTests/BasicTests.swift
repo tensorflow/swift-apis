@@ -366,6 +366,8 @@ final class BasicOperatorTests: XCTestCase {
             ShapedArray(shape: [2, 6], scalars: [0, 1, 2, 6, 7, 8, 3, 4, 5, 9, 10, 11]))
     }
 
+    /* TODO(https://bugs.swift.org/browse/TF-698): This test is failing with the latest toolchain.*/
+    /*
     func testVJPConcatenation() {
         let a1 = Tensor<Float>([1,2,3,4])
         let b1 = Tensor<Float>([5,6,7,8,9,10])
@@ -380,6 +382,7 @@ final class BasicOperatorTests: XCTestCase {
         XCTAssertEqual(grads.0, a1)
         XCTAssertEqual(grads.1, b1)
     }
+    */
 
     func testVJPConcatenationNegativeAxis() {
         let a1 = Tensor<Float>([1,2,3,4])
@@ -613,7 +616,8 @@ final class BasicOperatorTests: XCTestCase {
         ("testWholeTensorSlicing", testWholeTensorSlicing),
         ("testAdvancedIndexing", testAdvancedIndexing),
         ("testConcatenation", testConcatenation),
-        ("testVJPConcatenation", testVJPConcatenation),
+        // TODO(https://bugs.swift.org/browse/TF-698): Investigate test failure.
+        // ("testVJPConcatenation", testVJPConcatenation),
         ("testTranspose", testTranspose),
         ("testReshape", testReshape),
         ("testFlatten", testFlatten),

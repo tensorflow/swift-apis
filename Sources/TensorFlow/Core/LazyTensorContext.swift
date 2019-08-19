@@ -61,13 +61,11 @@ class LazyTensorOperationsTracker {
 }
 
 struct LazyTensorContext {
-    private var operationsTracker = LazyTensorOperationsTracker()
+    var operationsTracker = LazyTensorOperationsTracker()
+    var isShapeTrackingEnabled = true
 
-    static private var threadLocalContext: LazyTensorContext {
-        _ThreadLocalState.local.lazyTensorContext
-    }
-
-    static var operationsTracker: LazyTensorOperationsTracker {
-        return threadLocalContext.operationsTracker
+    static var local: LazyTensorContext {
+        _read { yield _ThreadLocalState.local.lazyTensorContext }
+        _modify { yield &_ThreadLocalState.local.lazyTensorContext }
     }
 }

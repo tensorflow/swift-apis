@@ -188,7 +188,7 @@ public extension Dense {
     ) {
         self.init(
             weight: weightInitializer([inputSize, outputSize]),
-            bias: Tensor(zeros: [outputSize]),
+            bias: biasInitializer([outputSize]),
             activation: activation)
     }
 }

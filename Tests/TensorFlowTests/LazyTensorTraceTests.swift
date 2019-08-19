@@ -20,12 +20,12 @@ import CTensorFlow
 final class LazyTensorTraceTests: XCTestCase {
     override class func setUp() {
         super.setUp()
-        _RuntimeConfig.useLazyTensor = true
+        _ThreadLocalState.useLazyTensor = true
     }
 
     override class func tearDown() {
         super.tearDown()
-        _RuntimeConfig.useLazyTensor = false
+        _ThreadLocalState.useLazyTensor = false
     }
 
     func testSingleLiveTensor() {
@@ -40,7 +40,7 @@ final class LazyTensorTraceTests: XCTestCase {
               %1 = Const[dtype: float, value: 2.0]()
               %2 = Const[dtype: float, value: 3.0]()
               %3 = Mul[T: float](%1, %2)
-              %4 = Add[T: float](%0, %3)
+              %4 = AddV2[T: float](%0, %3)
             }
             """)
     }
@@ -60,9 +60,9 @@ final class LazyTensorTraceTests: XCTestCase {
             lazyTrace_8() -> (%4, %5, %7) {
               %0 = Const[dtype: float, value: 10.0]()
               %1 = Const[dtype: float, value: 2.0]()
-              %2 = Add[T: float](%0, %1)
+              %2 = AddV2[T: float](%0, %1)
               %3 = Const[dtype: float, value: 3.0]()
-              %4 = Add[T: float](%2, %3)
+              %4 = AddV2[T: float](%2, %3)
               %5 = Mul[T: float](%4, %3)
               %6 = Sub[T: float](%4, %3)
               %7 = Div[T: float](%5, %6)
@@ -76,9 +76,9 @@ final class LazyTensorTraceTests: XCTestCase {
             lazyTrace_6() -> (%4, %5) {
               %0 = Const[dtype: float, value: 10.0]()
               %1 = Const[dtype: float, value: 2.0]()
-              %2 = Add[T: float](%0, %1)
+              %2 = AddV2[T: float](%0, %1)
               %3 = Const[dtype: float, value: 3.0]()
-              %4 = Add[T: float](%2, %3)
+              %4 = AddV2[T: float](%2, %3)
               %5 = Mul[T: float](%4, %3)
             }
             """)
@@ -97,10 +97,10 @@ final class LazyTensorTraceTests: XCTestCase {
             lazyTrace_6() -> (%2, %5) {
               %0 = Const[dtype: float, value: 1.0]()
               %1 = Const[dtype: float, value: 2.0]()
-              %2 = Add[T: float](%0, %1)
+              %2 = AddV2[T: float](%0, %1)
               %3 = Const[dtype: float, value: 3.0]()
               %4 = Const[dtype: float, value: 4.0]()
-              %5 = Add[T: float](%3, %4)
+              %5 = AddV2[T: float](%3, %4)
             }
             """)
     }
@@ -116,7 +116,7 @@ final class LazyTensorTraceTests: XCTestCase {
             """
             lazyTrace_2() -> (%1) {
               %0 = Const[dtype: float, value: 5.0]()
-              %1 = Add[T: float](%0, %0)
+              %1 = AddV2[T: float](%0, %0)
             }
             """)
         let mul = addOrMul(/*useAdd:*/false, a)
@@ -182,7 +182,7 @@ final class LazyTensorTraceTests: XCTestCase {
             lazyTrace_3() -> (%2) {
               %0 = Const[dtype: float, value: 1.0]()
               %1 = Const[dtype: float, value: 2.0]()
-              %2 = Add[T: float](%0, %1)
+              %2 = AddV2[T: float](%0, %1)
             }
             """)
         XCTAssertEqual(y.scalarized(), 3.0)
@@ -204,6 +204,36 @@ final class LazyTensorTraceTests: XCTestCase {
         XCTAssertEqual(zTraceInfo.concreteInputs.count, 1)
         XCTAssertEqual(zTraceInfo.concreteInputs[0].valueDescription, "3.0")
         XCTAssertEqual(z.scalarized(), 9.0)
+    }
+
+    func testTraceWithFunctionAttributes() {
+        typealias Int32Pair = Zip2TensorGroup<Tensor<Int32>, Tensor<Int32>>
+        func thenBranch(x: Tensor<Float>) -> Tensor<Float> {
+            return x + 10.0
+        }
+        func elseBranch(x: Tensor<Float>) -> Tensor<Float> {
+            return x - 9.0
+        }
+        let c: Tensor<Float> = Raw.if_(
+            cond: Tensor<Bool>(false),
+            Tensor<Float>(20.0),
+            thenBranch: thenBranch,
+            elseBranch: elseBranch,
+            outputShapes: [nil])
+        let cLazyOp = lazyTensorOperation(c)!
+        let cTraceInfo = LazyTensorTraceBuilder.materializationTraceInfo(cLazyOp)
+        let cTrace = cTraceInfo.trace
+        XCTAssertEqual(
+            cTrace.description,
+            """
+            lazyTrace_3() -> (%2) {
+              %0 = Const[dtype: bool, value: false]()
+              %1 = Const[dtype: float, value: 20.0]()
+              %2 = If[Tcond: bool, Tin: [float], Tout: [float], else_branch: TFFunction(lazyTrace_3_kMDsaAFRUp8), output_shapes: [nil], then_branch: TFFunction(lazyTrace_3_sayLTaDTeLE)](%0, [%1])
+            }
+            """)
+        // Returns the result of the else branch.
+        XCTAssertEqual(c.scalarized(), 11.0)
     }
 
     private func lazyTensorOperation<T: TensorFlowScalar>(
@@ -236,6 +266,7 @@ final class LazyTensorTraceTests: XCTestCase {
         ("testMultipleTargets", testMultipleTargets),
         ("testSimpleControlFlow", testSimpleControlFlow),
         ("testManualConstPromotion", testManualConstPromotion),
-        ("testConstPromotion", testConstPromotion)
+        ("testConstPromotion", testConstPromotion),
+        ("testTraceWithFunctionAttributes", testTraceWithFunctionAttributes)
     ]
 }
