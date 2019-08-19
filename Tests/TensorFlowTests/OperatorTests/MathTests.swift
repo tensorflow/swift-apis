@@ -59,13 +59,30 @@ final class MathOperatorTests: XCTestCase {
                                { x in root(x, 3) }, { x in Float.root(x, 3) })
     }
 
+    func testClipping() {
+        let x = Tensor<Float>([
+            [0.45031791, 0.41123222, 0.53928467, 0.47167023, 0.15483777],
+            [0.49975705, 0.71807549, 0.30396056, 0.26904690, 0.01404393],
+            [0.16950939, 0.41085612, 0.79503016, 0.11977817, 0.99728241],
+            [0.62510073, 0.17344792, 0.15406050, 0.40758517, 0.93683817],
+            [0.15653343, 0.50502756, 0.99365925, 0.84617581, 0.17422509]])
+        let clippedX = x.clipped(min: 0.2, max: 0.5)
+        let expectedClippedX = Tensor<Float>([
+            [0.45031791, 0.41123222, 0.50000000, 0.47167023, 0.20000000],
+            [0.49975705, 0.50000000, 0.30396056, 0.26904690, 0.20000000],
+            [0.20000000, 0.41085612, 0.50000000, 0.20000000, 0.50000000],
+            [0.50000000, 0.20000000, 0.20000000, 0.40758517, 0.50000000],
+            [0.20000000, 0.50000000, 0.50000000, 0.50000000, 0.20000000]])
+        assertEqual(clippedX, expectedClippedX, accuracy: 0.0001)
+    }
+
     func testRsqrt() {
         let x = Tensor<Double>([1, 0.25, 1.0 / 9.0, 0.0625, 0.04])
         let target = Tensor<Double>([1, 2, 3, 4, 5]).sum()
         let gradTarget = Tensor<Double>([-0.5,  -4.0, -13.5, -32.0, -62.5])
         let (value, grad) = valueWithGradient(at: x) { rsqrt($0).sum() }
-        XCTAssertEqual(target, value)       
-        XCTAssertEqual(gradTarget, grad)
+        XCTAssertEqual(value, target)
+        XCTAssertEqual(grad, gradTarget)
     }
 
     func testLog1p() {
@@ -104,36 +121,57 @@ final class MathOperatorTests: XCTestCase {
     func testSoftplus() {
         let x = Tensor<Float>([1.0, 2.0, 3.0])
         let y = softplus(x)
-        let expected = Tensor<Float>([1.3132616,  2.126928, 3.0485873])
-        XCTAssertEqual(y, expected)
+        let expectedY = Tensor<Float>([1.3132616,  2.126928, 3.0485873])
+        XCTAssertEqual(y, expectedY)
     }
 
     func testSoftsign() {
         let x = Tensor<Float>([1.0, 4.0, 3.0])
         let y = softsign(x)
-        let expected = Tensor<Float>([0.5 , 0.8 , 0.75])
-        XCTAssertEqual(y, expected)
+        let expectedY = Tensor<Float>([0.5 , 0.8 , 0.75])
+        XCTAssertEqual(y, expectedY)
     }
 
     func testElu() {
         let x = Tensor<Float>([-1.0, 2.0, 3.0])
         let y = elu(x)
-        let expected = Tensor<Float>([-0.63212055, 2, 3])
-        XCTAssertEqual(y, expected)
+        let expectedY = Tensor<Float>([-0.63212055, 2, 3])
+        XCTAssertEqual(y, expectedY)
     }
 
     func testGelu() {
         let x = Tensor<Float>([2.0, 1.0, 7.0])
         let y = gelu(x)
-        let expected = Tensor<Float>([1.95459769, 0.84119199, 7.0])
-        XCTAssertEqual(y, expected)
+        let expectedY = Tensor<Float>([1.95459769, 0.84119199, 7.0])
+        XCTAssertEqual(y, expectedY)
+    }
+
+    func testRelu() {
+        let x = Tensor<Float>([[-1.0, 2.0, 3.0]])
+        let y = relu(x)
+        let expectedY = Tensor<Float>([0.0, 2.0, 3.0])
+        XCTAssertEqual(y, expectedY)
+    }
+
+    func testRelu6() {
+        let x = Tensor<Float>([1.0, -2.0, 3.0, 4.0, 10.0])
+        let y = relu6(x)
+        let expectedY = Tensor<Float>([1.0, 0, 3.0, 4.0, 6.0])
+        XCTAssertEqual(y, expectedY)
     }
 
     func testLeakyRelu() {
         let x = Tensor<Float>([[-1.0, 2.0, 3.0]])
         let y = leakyRelu(x, alpha: 0.4)
-        let expected = Tensor<Float>([-0.4, 2, 3])
-        XCTAssertEqual(y, expected)
+        let expectedY = Tensor<Float>([-0.4, 2.0, 3.0])
+        XCTAssertEqual(y, expectedY)
+    }
+
+    func testSelu() {
+        let x = Tensor<Float>([[-1.0, 2.0, 3.0]])
+        let y = selu(x)
+        let expectedY = Tensor<Float>([-1.111331, 2.101402, 3.152103])
+        assertEqual(y, expectedY, accuracy: 1e-5)
     }
 
     func testIsFinite() {
@@ -219,6 +257,54 @@ final class MathOperatorTests: XCTestCase {
         XCTAssertEqual(
             x.variance(alongAxes: 1),
             Tensor(shape: [1, 2], scalars: [2, 2]))
+    }
+
+    func testCumulativeSum() {
+        // 2 x 3
+        let x = Tensor<Float>([[0, 1, 2], [3, 4, 5]])
+        let cumsum0 = x.cumulativeSum(alongAxis: 0)
+        let cumsum1 = x.cumulativeSum(alongAxis: 1)
+        let exclusiveCumsum0 = x.cumulativeSum(alongAxis: 0, exclusive: true)
+        let exclusiveCumsum1 = x.cumulativeSum(alongAxis: 1, exclusive: true)
+        let reverseCumsum0 = x.cumulativeSum(alongAxis: 0, reverse: true)
+        let reverseCumsum1 = x.cumulativeSum(alongAxis: 1, reverse: true)
+        let reverseExclusiveCumsum0 = x.cumulativeSum(alongAxis: 0, exclusive: true, reverse: true)
+        let reverseExclusiveCumsum1 = x.cumulativeSum(alongAxis: 1, exclusive: true, reverse: true)
+        XCTAssertEqual(cumsum0, Tensor<Float>([[0, 1, 2], [3, 5, 7]]))
+        XCTAssertEqual(cumsum1, Tensor<Float>([[0, 1, 3], [3, 7, 12]]))
+        XCTAssertEqual(exclusiveCumsum0, Tensor<Float>([[0, 0, 0], [0, 1, 2]]))
+        XCTAssertEqual(exclusiveCumsum1, Tensor<Float>([[0, 0, 1], [0, 3, 7]]))
+        XCTAssertEqual(reverseCumsum0, Tensor<Float>([[3, 5, 7], [3, 4, 5]]))
+        XCTAssertEqual(reverseCumsum1, Tensor<Float>([[3, 3, 2], [12, 9, 5]]))
+        XCTAssertEqual(reverseExclusiveCumsum0, Tensor<Float>([[3, 4, 5], [0, 0, 0]]))
+        XCTAssertEqual(reverseExclusiveCumsum1, Tensor<Float>([[3, 2, 0], [9, 5, 0]]))
+    }
+
+    func testCumulativeProduct() {
+        // 2 x 3
+        let x = Tensor<Float>([[0, 1, 2], [3, 4, 5]])
+        let cumprod0 = x.cumulativeProduct(alongAxis: 0)
+        let cumprod1 = x.cumulativeProduct(alongAxis: 1)
+        let exclusiveCumprod0 = x.cumulativeProduct(alongAxis: 0, exclusive: true)
+        let exclusiveCumprod1 = x.cumulativeProduct(alongAxis: 1, exclusive: true)
+        let reverseCumprod0 = x.cumulativeProduct(alongAxis: 0, reverse: true)
+        let reverseCumprod1 = x.cumulativeProduct(alongAxis: 1, reverse: true)
+        let reverseExclusiveCumprod0 = x.cumulativeProduct(
+            alongAxis: 0,
+            exclusive: true,
+            reverse: true)
+        let reverseExclusiveCumprod1 = x.cumulativeProduct(
+            alongAxis: 1,
+            exclusive: true,
+            reverse: true)
+        XCTAssertEqual(cumprod0, Tensor<Float>([[0, 1, 2], [0, 4, 10]]))
+        XCTAssertEqual(cumprod1, Tensor<Float>([[0, 0, 0], [3, 12, 60]]))
+        XCTAssertEqual(exclusiveCumprod0, Tensor<Float>([[1, 1, 1], [0, 1, 2]]))
+        XCTAssertEqual(exclusiveCumprod1, Tensor<Float>([[1, 0, 0], [1, 3, 12]]))
+        XCTAssertEqual(reverseCumprod0, Tensor<Float>([[0, 4, 10], [3, 4, 5]]))
+        XCTAssertEqual(reverseCumprod1, Tensor<Float>([[0, 2, 2], [60, 20, 5]]))
+        XCTAssertEqual(reverseExclusiveCumprod0, Tensor<Float>([[3, 4, 5], [1, 1, 1]]))
+        XCTAssertEqual(reverseExclusiveCumprod1, Tensor<Float>([[2, 2, 1], [20, 5, 1]]))
     }
 
     func testStandardDeviation() {
@@ -398,11 +484,11 @@ final class MathOperatorTests: XCTestCase {
             let a = Tensor<Float>(randomNormal: TensorShape(shape))
             let (q, r) = a.qrDecomposition()
             let aReconstituted = matmul(q,r)
-            assertEqual(a, aReconstituted, accuracy: 1e-5)
+            assertEqual(aReconstituted, a, accuracy: 1e-5)
 
             let (qFull, rFull) = a.qrDecomposition(fullMatrices: true)
             let aReconstitutedFull = matmul(qFull, rFull)
-            assertEqual(a, aReconstitutedFull, accuracy: 1e-5)
+            assertEqual(aReconstitutedFull, a, accuracy: 1e-5)
         }
     }
 
@@ -410,7 +496,7 @@ final class MathOperatorTests: XCTestCase {
         // Test on 2-D matrix.
         let t1 = Tensor<Float>(shape: [4, 4], scalars: (1...16).map(Float.init))
         let target1 = Tensor<Float>([1, 6, 11, 16])
-        XCTAssertEqual(target1, t1.diagonalPart())
+        XCTAssertEqual(t1.diagonalPart(), target1)
 
         // Test on 4-D tensor.
         let t2 = Tensor<Float>([[[[1.0, 0.0, 0.0, 0.0],
@@ -430,7 +516,7 @@ final class MathOperatorTests: XCTestCase {
                                  [[0.0, 0.0, 0.0, 0.0],
                                   [0.0, 0.0, 0.0, 8.0]]]])
         let target2 = Tensor<Float>([[1, 2, 3, 4], [5, 6, 7, 8]])
-        XCTAssertEqual(target2, t2.diagonalPart())
+        XCTAssertEqual(t2.diagonalPart(), target2)
     }
 
     func testBroadcastedAddGradient() {
@@ -456,13 +542,18 @@ final class MathOperatorTests: XCTestCase {
         ("testSoftsign", testSoftsign),
         ("testElu",testElu),
         ("testGelu", testGelu),
+        ("testRelu", testRelu),
+        ("testRelu6", testRelu6),
         ("testLeakyRelu", testLeakyRelu),
+        ("testSelu", testSelu),
         ("testIsFinite", testIsFinite),
         ("testIsInfinite", testIsInfinite),
         ("testIsNaN", testIsNaN),
         ("testCosineSimilarity", testCosineSimilarity),
         ("testArgmax", testArgmax),
         ("testReduction", testReduction),
+        ("testCumulativeSum", testCumulativeSum),
+        ("testCumulativeProduct", testCumulativeProduct),
         ("testStandardDeviation", testStandardDeviation),
         ("testLogSumExp", testLogSumExp),
         ("testMoments", testMoments),
