@@ -281,6 +281,8 @@ public struct Conv3D<Scalar: TensorFlowFloatingPoint>: Layer {
         padding: Padding = .valid,
         dilations: (Int, Int, Int) = (1, 1, 1)
     ) {
+        precondition(dilations.2 == 1,
+                     "Dilations in the depth dimension must be 1.")
         self.filter = filter
         self.bias = bias
         self.activation = activation
@@ -315,8 +317,6 @@ public struct Conv3D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Note: Padding size equals zero when using `.valid`.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        precondition(dilations.2 == 1,
-                     "Dilations in the depth dimension must be 1.")
         return activation(conv3D(
             input,
             filter: filter,
