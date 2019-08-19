@@ -404,12 +404,12 @@ public struct TransposedConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         let batchSize = input.shape[0]
-        let w = (input.shape[1] - 1) *
+        let h = (input.shape[1] - (1 * paddingIndex)) *
           strides.0 + (filter.shape[0] * paddingIndex)
-        let h = (input.shape[2] - 1) *
+        let w = (input.shape[2] - (1 * paddingIndex)) *
           strides.1 + (filter.shape[1] * paddingIndex)
         let c = filter.shape[2]
-        let newShape = Tensor<Int32>([Int32(batchSize), Int32(w), Int32(h), Int32(c)])
+        let newShape = Tensor<Int32>([Int32(batchSize), Int32(h), Int32(w), Int32(c)])
         return activation(conv2DBackpropInput(
             input,
             shape: newShape,
