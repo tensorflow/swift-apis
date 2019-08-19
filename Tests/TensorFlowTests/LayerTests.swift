@@ -260,6 +260,26 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(output, expected)
     }
 
+    func testMaxPool1DGradient() {
+        let layer = MaxPool1D<Float>(poolSize: 2, stride: 1, padding: .valid)
+        let x = Tensor<Float>(shape: [1, 4, 4], scalars: (0..<16).map(Float.init))
+        let computedGradient = gradient(at: x, layer) { $1($0).sum() }
+        // The expected value of the gradient was computed using the following Python code:
+        // ```
+        //   maxpool1D = tf.keras.layers.MaxPool1D()
+        //   with tf.GradientTape() as t:
+        //     t.watch(x)
+        //     y = tf.math.reduce_sum(maxpool1D(x))
+        //   print(t.gradient(y, x))
+        // ```
+        let expectedGradient = Tensor<Float>([[
+            [0, 0, 0, 0],
+            [1, 1, 1, 1],
+            [1, 1, 1, 1],
+            [1, 1, 1, 1]]])
+        XCTAssertEqual(computedGradient.0, expectedGradient)
+    }
+
     func testMaxPool2D() {
         let layer = MaxPool2D<Float>(poolSize: (2, 2), strides: (1, 1), padding: .valid)
         let input = Tensor(shape: [1, 2, 2, 1], scalars: (0..<4).map(Float.init))
@@ -268,12 +288,52 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(output, expected)
     }
 
+    func testMaxPool2DGradient() {
+        let layer = MaxPool2D<Float>(poolSize: (2, 2), strides: (2, 2), padding: .valid)
+        let x = Tensor(shape: [1, 4, 4, 1], scalars: (0..<16).map(Float.init))
+        let computedGradient = gradient(at: x, layer) { $1($0).sum() }
+        // The expected value of the gradient was computed using the following Python code:
+        // ```
+        //   maxpool2D = tf.keras.layers.MaxPool2D(strides=(2, 2))
+        //   with tf.GradientTape() as t:
+        //     t.watch(x)
+        //     y = tf.math.reduce_sum(maxpool2D(x))
+        //   print(t.gradient(y, x))
+        // ```
+        let expectedGradient = Tensor<Float>([[
+            [[0], [0], [0], [0]],
+            [[0], [1], [0], [1]],
+            [[0], [0], [0], [0]],
+            [[0], [1], [0], [1]]]])
+        XCTAssertEqual(computedGradient.0, expectedGradient)
+    }
+
     func testMaxPool3D() {
         let layer = MaxPool3D<Float>(poolSize: (2, 2, 2), strides: (1, 1, 1), padding: .valid)
         let input = Tensor(shape: [1, 2, 2, 2, 1], scalars: (0..<8).map(Float.init))
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>([[[[[7]]]]])
         XCTAssertEqual(output, expected)
+    }
+
+    func testMaxPool3DGradient(){
+        let layer = MaxPool3D<Float>(poolSize: (2, 2, 2), strides: (1, 1, 1), padding: .valid)
+        let x = Tensor(shape: [1, 2, 2, 2, 1], scalars: (0..<8).map(Float.init))
+        let computedGradient = gradient(at: x, layer) { $1($0).sum() }
+        // The expected value of the gradient was computed using the following Python code:
+        // ```
+        //   maxpool3D = tf.keras.layers.MaxPool3D(strides=(1, 1, 1))
+        //   with tf.GradientTape() as t:
+        //     t.watch(x)
+        //     y = tf.math.reduce_sum(maxpool3D(x))
+        //   print(t.gradient(y, x))
+        // ```
+        let expectedGradient = Tensor<Float>([[
+            [[[0], [0]],
+             [[0], [0]]],
+            [[[0], [0]],
+             [[0], [1]]]]])
+        XCTAssertEqual(computedGradient.0, expectedGradient)
     }
 
     func testAvgPool1D() {
@@ -445,6 +505,52 @@ final class LayerTests: XCTestCase {
         let expectedBatched = Tensor<Float>([[4.0, 6.0, 8.0], [40.0, 46.0, 52.0]])
         XCTAssertEqual(outputBatched, expectedBatched)
         XCTAssertTrue(layerBatched.batched)
+    }
+
+    func testDenseGradient() {
+        let weight = Tensor<Float>(shape: [4, 8], scalars: (0..<32).map(Float.init))
+        let bias = Tensor<Float>(shape: [1, 8], scalars: (0..<8).map(Float.init))
+        let layer = Dense<Float>(weight: weight, bias: bias, activation: identity)
+        let x = Tensor<Float>(shape: [2, 4], scalars: (0..<8).map(Float.init))
+        let grad = gradient(at: x, layer) { $1($0).squared().sum() }
+        let value = layer(x)
+        // The expected values and gradients were computed using the following Python code:
+        // ```
+        // x = tf.reshape(tf.range(8, dtype=tf.float32), [2, 4])
+        // kernel_value = np.arange(32.0).reshape([4, 8])
+        // bias_value = np.arange(8.0)
+        // kernel_initializer = tf.compat.v2.constant_initializer(kernel_value)
+        // bias_initializer = tf.compat.v2.constant_initializer(bias_value)
+        // layer = tf.keras.layers.Dense(8,
+        //                               kernel_initializer=kernel_initializer,
+        //                               bias_initializer=bias_initializer)
+        // with tf.GradientTape() as t:
+        //     t.watch(x)
+        //     y = layer(x)
+        //     z = tf.math.reduce_sum(tf.math.square(y))
+        // print(y, t.gradient(z, [x] + layer.trainable_variables))
+        // ```
+        assertEqual(
+            value,
+            [[112.0, 119.0, 126.0, 133.0, 140.0, 147.0, 154.0, 161.0],
+             [304.0, 327.0, 350.0, 373.0, 396.0, 419.0, 442.0, 465.0]],
+            accuracy: 1e-5)
+        assertEqual(
+            grad.0,
+            [[  8232.0,  25704.0,  43176.0,  60648.0],
+             [ 23464.0,  72680.0, 121896.0, 171112.0]],
+            accuracy: 1e-5)
+        assertEqual(
+            grad.1.weight,
+            [[2432.0, 2616.0, 2800.0, 2984.0, 3168.0, 3352.0, 3536.0, 3720.0],
+             [3264.0, 3508.0, 3752.0, 3996.0, 4240.0, 4484.0, 4728.0, 4972.0],
+             [4096.0, 4400.0, 4704.0, 5008.0, 5312.0, 5616.0, 5920.0, 6224.0],
+             [4928.0, 5292.0, 5656.0, 6020.0, 6384.0, 6748.0, 7112.0, 7476.0]],
+            accuracy: 1e-5)
+        assertEqual(
+            grad.1.bias,
+            [[ 832.0,  892.0,  952.0, 1012.0, 1072.0, 1132.0, 1192.0, 1252.0]],
+            accuracy: 1e-5)
     }
 
     // TODO(TF-507): Remove references to `SimpleRNNCell.State` after SR-10697 is fixed.
@@ -646,8 +752,11 @@ final class LayerTests: XCTestCase {
         ("testZeroPadding2D", testZeroPadding2D),
         ("testZeroPadding3D", testZeroPadding3D),
         ("testMaxPool1D", testMaxPool1D),
+        ("testMaxPool1DGradient", testMaxPool1DGradient),
         ("testMaxPool2D", testMaxPool2D),
+        ("testMaxPool2DGradient", testMaxPool2DGradient),
         ("testMaxPool3D", testMaxPool3D),
+        ("testMaxPool3DGradient", testMaxPool3DGradient),
         ("testAvgPool1D", testAvgPool1D),
         ("testAvgPool2D", testAvgPool2D),
         ("testAvgPool3D", testAvgPool3D),
@@ -665,6 +774,7 @@ final class LayerTests: XCTestCase {
         ("testEmbedding", testEmbedding),
         ("testSimpleRNNCell", testSimpleRNNCell),
         ("testDense", testDense),
+        ("testDenseGradient", testDenseGradient),
         ("testRNN", testRNN),
         ("testLSTM", testLSTM),
         ("testFunction", testFunction),
