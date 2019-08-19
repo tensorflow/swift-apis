@@ -149,7 +149,7 @@ final class MathOperatorTests: XCTestCase {
     func testRelu() {
         let x = Tensor<Float>([[-1.0, 2.0, 3.0]])
         let y = relu(x)
-        let expectedY = Tensor<Float>([0.0, 2.0, 3.0])
+        let expectedY = Tensor<Float>([[0.0, 2.0, 3.0]])
         XCTAssertEqual(y, expectedY)
     }
 
@@ -163,7 +163,7 @@ final class MathOperatorTests: XCTestCase {
     func testLeakyRelu() {
         let x = Tensor<Float>([[-1.0, 2.0, 3.0]])
         let y = leakyRelu(x, alpha: 0.4)
-        let expectedY = Tensor<Float>([-0.4, 2.0, 3.0])
+        let expectedY = Tensor<Float>([[-0.4, 2.0, 3.0]])
         XCTAssertEqual(y, expectedY)
     }
 
@@ -236,13 +236,13 @@ final class MathOperatorTests: XCTestCase {
             Tensor(shape: [5], scalars: [1, 2, 3, 4, 5]))
         XCTAssertEqual(
             x.mean(alongAxes: 0),
-            Tensor(shape: [5], scalars: [1, 2, 3, 4, 5]))
+            Tensor(shape: [1, 5], scalars: [1, 2, 3, 4, 5]))
         XCTAssertEqual(
             x.mean(squeezingAxes: 1),
             Tensor(shape: [2], scalars: [3, 3]))
         XCTAssertEqual(
             x.mean(alongAxes: 1),
-            Tensor(shape: [1, 2], scalars: [3, 3]))
+            Tensor(shape: [2, 1], scalars: [3, 3]))
 
         XCTAssertEqual(x.variance(), Tensor(2))
         XCTAssertEqual(
@@ -250,13 +250,13 @@ final class MathOperatorTests: XCTestCase {
             Tensor(shape: [5], scalars: [0, 0, 0, 0, 0]))
         XCTAssertEqual(
             x.variance(alongAxes: 0),
-            Tensor(shape: [5], scalars: [0, 0, 0, 0, 0]))
+            Tensor(shape: [1, 5], scalars: [0, 0, 0, 0, 0]))
         XCTAssertEqual(
             x.variance(squeezingAxes: 1),
             Tensor(shape: [2], scalars: [2, 2]))
         XCTAssertEqual(
             x.variance(alongAxes: 1),
-            Tensor(shape: [1, 2], scalars: [2, 2]))
+            Tensor(shape: [2, 1], scalars: [2, 2]))
     }
 
     func testCumulativeSum() {
@@ -309,7 +309,7 @@ final class MathOperatorTests: XCTestCase {
 
     func testStandardDeviation() {
         XCTAssertEqual(Tensor<Float>([1]).standardDeviation(), Tensor(0))
-        XCTAssertEqual(Tensor<Float>([0, 1]).standardDeviation(alongAxes: 0), Tensor(0.5))
+        XCTAssertEqual(Tensor<Float>([0, 1]).standardDeviation(alongAxes: 0), Tensor([0.5]))
         XCTAssertEqual(Tensor<Float>([0, 1]).standardDeviation(), Tensor(0.5))
         XCTAssertEqual(
             Tensor<Float>(rangeFrom: 0, to: 10, stride: 1).standardDeviation().scalarized(),

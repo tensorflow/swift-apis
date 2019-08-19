@@ -396,13 +396,17 @@ extension Tensor: ExpressibleByArrayLiteral {
 extension Tensor: Equatable where Scalar: Equatable {
     @inlinable
     public static func == (lhs: Tensor, rhs: Tensor) -> Bool {
-        // TODO: This is not correct due to broadcasting.
+        guard lhs.shape == rhs.shape else {
+            return false
+        }
         return (lhs .== rhs).all()
     }
 
     @inlinable
     public static func != (lhs: Tensor, rhs: Tensor) -> Bool {
-        // TODO: This is not correct due to broadcasting.
+        guard lhs.shape == rhs.shape else {
+            return true
+        }
         return (lhs .!= rhs).any()
     }
 }

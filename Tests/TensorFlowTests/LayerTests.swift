@@ -201,7 +201,7 @@ final class LayerTests: XCTestCase {
         let filter =  Tensor(shape: [2, 2, 2, 2], scalars: (0..<16).map(Float.init))
         let bias = Tensor<Float>([1, 2, 3, 4])
         let layer = DepthwiseConv2D<Float>(filter: filter, bias: bias, activation: identity,
-                                           strides: (2, 2), padding: .valid)
+                                           strides: (2, 2), padding: .same)
         let input = Tensor(shape: [1, 1, 8, 2], scalars: (0..<16).map(Float.init))
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>(shape: [1, 1, 4, 4],
@@ -388,7 +388,7 @@ final class LayerTests: XCTestCase {
         let layer = GlobalMaxPool1D<Float>()
         let input = Tensor(shape: [1, 10, 1], scalars: (0..<10).map(Float.init))
         let output = layer.inferring(from: input)
-        let expected = Tensor<Float>([9])
+        let expected = Tensor<Float>([[9]])
         XCTAssertEqual(output, expected)
     }
 
@@ -396,7 +396,7 @@ final class LayerTests: XCTestCase {
         let layer = GlobalMaxPool2D<Float>()
         let input = Tensor(shape: [1, 2, 10, 1], scalars: (0..<20).map(Float.init))
         let output = layer.inferring(from: input)
-        let expected = Tensor<Float>([19])
+        let expected = Tensor<Float>([[19]])
         XCTAssertEqual(output, expected)
     }
 
@@ -404,7 +404,7 @@ final class LayerTests: XCTestCase {
         let layer = GlobalMaxPool3D<Float>()
         let input = Tensor<Float>(shape: [1, 2, 3, 5, 1], scalars: (0..<30).map(Float.init))
         let output = layer.inferring(from: input)
-        let expected = Tensor<Float>([29])
+        let expected = Tensor<Float>([[29]])
         XCTAssertEqual(output, expected)
     }
 
