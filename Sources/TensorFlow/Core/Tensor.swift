@@ -54,27 +54,14 @@ public extension Tensor {
     @inlinable
     var rank: Int {
         @_semantics("autodiff.nonvarying")
-        get {
-            let status = _ExecutionContext.global.status
-            let rank = TFE_TensorHandleNumDims(handle._cTensorHandle, status)
-            checkOk(status)
-            return Int(rank)
-        }
+        get { handle.rank }
     }
 
     /// The shape of the `Tensor`.
     @inlinable
     var shape: TensorShape {
         @_semantics("autodiff.nonvarying")
-        get {
-            let status = _ExecutionContext.global.status
-            let dims: [Int] = (0..<Int32(rank)).map { i in
-                let dim = TFE_TensorHandleDim(self.handle._cTensorHandle, i, status)
-                checkOk(status)
-                return Int(dim)
-            }
-            return TensorShape(dims)
-        }
+        get { handle.shape }
     }
 
     /// The number of scalars in the `Tensor`.
@@ -171,8 +158,7 @@ public extension Tensor {
     @inlinable
     var array: ShapedArray<Scalar> {
         debugLog("Returning a host copy of array.")
-        internalConsistencyCheck(handle.isConcrete)
-	    return handle.makeHostCopy()
+        return handle.makeHostCopy()
     }
 
     @inlinable
@@ -237,8 +223,8 @@ public extension Tensor {
             provided.
             """)
         self = scalars.withUnsafeBufferPointer { bufferPointer in
-	        Tensor(shape: shape, scalars: bufferPointer)
-	    }
+            Tensor(shape: shape, scalars: bufferPointer)
+        }
     }
 
     /// Creates a tensor with the specified shape and contiguous scalars in row-major order.
@@ -410,13 +396,17 @@ extension Tensor: ExpressibleByArrayLiteral {
 extension Tensor: Equatable where Scalar: Equatable {
     @inlinable
     public static func == (lhs: Tensor, rhs: Tensor) -> Bool {
-        // TODO: This is not correct due to broadcasting.
+        guard lhs.shape == rhs.shape else {
+            return false
+        }
         return (lhs .== rhs).all()
     }
 
     @inlinable
     public static func != (lhs: Tensor, rhs: Tensor) -> Bool {
-        // TODO: This is not correct due to broadcasting.
+        guard lhs.shape == rhs.shape else {
+            return true
+        }
         return (lhs .!= rhs).any()
     }
 }
@@ -523,7 +513,7 @@ extension Tensor: AdditiveArithmetic where Scalar: Numeric {
     @inlinable
     @differentiable(vjp: _vjpAdd(lhs:rhs:) where Scalar: TensorFlowFloatingPoint)
     public static func + (lhs: Tensor, rhs: Tensor) -> Tensor {
-        return Raw.add(lhs, rhs)
+        Raw.addV2(lhs, rhs)
     }
 
     /// Subtracts one tensor from another and produces their difference.
@@ -531,17 +521,14 @@ extension Tensor: AdditiveArithmetic where Scalar: Numeric {
     @inlinable
     @differentiable(vjp: _vjpSubtract(lhs:rhs:) where Scalar: TensorFlowFloatingPoint)
     public static func - (lhs: Tensor, rhs: Tensor) -> Tensor {
-        return Raw.sub(lhs, rhs)
+        Raw.sub(lhs, rhs)
     }
 }
 
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
-    static func _vjpAdd(
-        lhs: Tensor,
-        rhs: Tensor
-    ) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
-        return (lhs + rhs, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
+    static func _vjpAdd(lhs: Tensor, rhs: Tensor) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
+        (lhs + rhs, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
             let lhsGrad = v
             let rhsGrad = lhsGrad
             let (lhsAxes, rhsAxes) = Raw.broadcastGradientArgs(s0: lhsShape, s1: rhsShape)
@@ -551,11 +538,8 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 
     @inlinable
-    static func _vjpSubtract(
-        lhs: Tensor,
-        rhs: Tensor
-    ) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
-        return (lhs - rhs, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
+    static func _vjpSubtract(lhs: Tensor, rhs: Tensor) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
+        (lhs - rhs, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
             let lhsGrad = v
             let rhsGrad = -lhsGrad
             let (lhsAxes, rhsAxes) = Raw.broadcastGradientArgs(s0: lhsShape, s1: rhsShape)
@@ -591,5 +575,4 @@ extension Tensor: PointwiseMultiplicative where Scalar: Numeric {
 
 extension Tensor: Differentiable where Scalar: TensorFlowFloatingPoint {
     public typealias TangentVector = Tensor
-    public typealias AllDifferentiableVariables = Tensor
 }
