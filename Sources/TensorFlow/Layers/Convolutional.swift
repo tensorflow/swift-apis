@@ -377,7 +377,7 @@ public struct TransposedConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameters:
     ///   - filter: A 4-D tensor of shape
-    ///     `[width, height, input channel count, output channel count]`.
+    ///     `[height, width, output channel count, input channel count]`.
     ///   - bias: The bias tensor of shape `[output channel count]`.
     ///   - activation: The element-wise activation function.
     ///   - strides: The strides of the sliding window for spatial dimensions.
