@@ -64,8 +64,38 @@ final class LazyTensorShapeInferenceTests: XCTestCase {
         XCTAssertTrue(xLazyTensorOperation.isMaterialized)
     }
 
+    /// Checks scenarios where shapes are computed from input tensors.
+    func testShapeComputationsWithInputTensors() {
+        let a = Tensor<Float>(shape: [3, 1], scalars: [1.0, 2.0, 3.0])
+        let b = a.reshaped(toShape: [1, 3])
+
+        let bLazyTensorOperation = b._lazyTensor!.lazyTensorOperation!
+        XCTAssertFalse(bLazyTensorOperation.isMaterialized)
+
+        let bShape = b.shape
+        XCTAssertEqual(bShape.rank, 2)
+        XCTAssertEqual(bShape.dimensions, [1, 3])
+        XCTAssertFalse(bLazyTensorOperation.isMaterialized)
+
+        let c = Tensor<Float>(repeating: 5, shape: [4, 5, 6])
+        let cLazyTensorOperation = c._lazyTensor!.lazyTensorOperation!
+        XCTAssertFalse(cLazyTensorOperation.isMaterialized)
+
+        let cShape = c.shape
+        XCTAssertEqual(cShape.rank, 3)
+        XCTAssertEqual(cShape.dimensions, [4, 5, 6])
+        XCTAssertFalse(cLazyTensorOperation.isMaterialized)
+
+        // Trigger materialization.
+        let _ = b._rawTensorHandle
+        let _ = c._rawTensorHandle
+        XCTAssertTrue(bLazyTensorOperation.isMaterialized)
+        XCTAssertTrue(cLazyTensorOperation.isMaterialized)
+    }
+
     static var allTests = [
-        ("testSimpleShapeComputations", testSimpleShapeComputations)
+        ("testSimpleShapeComputations", testSimpleShapeComputations),
+        ("testShapeComputationsWithInputTensors", testShapeComputationsWithInputTensors)
     ]
 }
 
