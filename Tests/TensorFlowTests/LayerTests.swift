@@ -200,7 +200,8 @@ final class LayerTests: XCTestCase {
     func testTransposedConv1D() {
         let filter =  Tensor(shape: [4, 1, 1], scalars: (0..<4).map(Float.init))
         let bias = Tensor<Float>([8])
-        let layer = TransposedConv1D(filter: filter, bias: bias, activation: identity, stride: 1, padding: .same)
+        let layer = TransposedConv1D(filter: filter, bias: bias, activation: identity,
+                                     stride: 1, padding: .same)
         let input = Tensor(shape: [1, 4, 1], scalars: (0..<4).map(Float.init))
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>(shape: [1, 1, 4, 1],
@@ -212,7 +213,7 @@ final class LayerTests: XCTestCase {
         let filter =  Tensor(shape: [2, 2, 2, 1, 1], scalars: (0..<8).map(Float.init))
         let bias = Tensor<Float>([8])
         let layer = TransposedConv3D(filter: filter, bias: bias, activation: identity,
-                                  strides: (1, 1, 1), padding: .same)
+                                     strides: (1, 1, 1), padding: .same)
         let input = Tensor(shape: [1, 2, 2, 2, 1], scalars: (0..<8).map(Float.init))
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>(shape: [1, 2, 2, 2, 1],
@@ -769,8 +770,8 @@ final class LayerTests: XCTestCase {
         ("testConv2DGradient", testConv2DGradient),
         ("testConv2DDilation", testConv2DDilation),
         ("testConv3D", testConv3D),
-        ("testTransposedConv1D",testTransposedConv1D),
-        ("testTransposedConv3D",testTransposedConv3D),
+        ("testTransposedConv1D", testTransposedConv1D),
+        ("testTransposedConv3D", testTransposedConv3D),
         ("testDepthConv2D", testDepthConv2D),
         ("testSeparableConv2D", testSeparableConv2D),
         ("testZeroPadding1D", testZeroPadding1D),

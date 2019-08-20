@@ -404,7 +404,7 @@ public struct TransposedConv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         let batchSize = input.shape[0]
         let w = (input.shape[1] - (1 * paddingIndex)) *
-          stride + (filter.shape[0] * paddingIndex)
+            stride + (filter.shape[0] * paddingIndex)
         let c = filter.shape[2]
         let newShape = Tensor<Int32>([Int32(batchSize), 1, Int32(w), Int32(c)])
         return activation(conv2DBackpropInput(
@@ -500,9 +500,9 @@ public struct TransposedConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         let batchSize = input.shape[0]
         let w = (input.shape[1] - (1 * paddingIndex)) *
-          strides.0 + (filter.shape[0] * paddingIndex)
+            strides.0 + (filter.shape[0] * paddingIndex)
         let h = (input.shape[2] - (1 * paddingIndex)) *
-          strides.1 + (filter.shape[1] * paddingIndex)
+            strides.1 + (filter.shape[1] * paddingIndex)
         let c = filter.shape[2]
         let newShape = Tensor<Int32>([Int32(batchSize), Int32(w), Int32(h), Int32(c)])
         return activation(conv2DBackpropInput(
@@ -599,11 +599,11 @@ public struct TransposedConv3D<Scalar: TensorFlowFloatingPoint>: Layer {
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         let batchSize = input.shape[0]
         let w = (input.shape[1] - (1 * paddingIndex)) *
-          strides.0 + (filter.shape[0] * paddingIndex)
+            strides.0 + (filter.shape[0] * paddingIndex)
         let h = (input.shape[2] - (1 * paddingIndex)) *
-          strides.1 + (filter.shape[1] * paddingIndex)
+            strides.1 + (filter.shape[1] * paddingIndex)
         let d = (input.shape[3] - (1 * paddingIndex)) *
-          strides.2 + (filter.shape[2] * paddingIndex)
+            strides.2 + (filter.shape[2] * paddingIndex)
         let c = filter.shape[3]
         let newShape = Tensor<Int32>([Int32(batchSize), Int32(w), Int32(h), Int32(d), Int32(c)])
         return activation(conv3DBackpropInput(
