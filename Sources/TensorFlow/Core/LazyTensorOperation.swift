@@ -848,7 +848,7 @@ extension LazyTensorOperation {
 
     /// Converts symbolic tensor inputs to concrete inputs if the
     /// associated `LazyTensorOperation` has been materialized.
-    private func maybeMaterializeInputs() {
+    func maybeMaterializeInputs() {
         /// If `lazyTensor` is symbolic and the associated `LazyTensorOperation`
         /// has been materialized, return the corresponding concrete `LazyTensorHandle`.
         /// Otherwise, return `lazyTensor` untouched.
@@ -893,9 +893,5 @@ extension LazyTensorOperation {
             lazyOp.outputShapes = lazyOp.outputs!.map { $0.shape }
             start = end
         }
-
-        // On all the live operations rewrite the inputs so that we drop references
-        // to the LazyTensorOperations.
-        LazyTensorHandle.forEachOperation { $0.maybeMaterializeInputs() }
     }
 }
