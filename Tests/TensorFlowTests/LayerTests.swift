@@ -584,23 +584,27 @@ final class LayerTests: XCTestCase {
     }
     
     func testLSTM() {
-        let x = Tensor<Float>(rangeFrom: 0.0, to: 0.4, stride: 0.1).rankLifted()
-        let inputs: [Tensor<Float>] = Array(repeating: x, count: 4)
-        let rnn = RNN(LSTMCell<Float>(inputSize: 4, hiddenSize: 4, seed: (0xFeed, 0xBeef)))
-        withTensorLeakChecking {
-            let (outputs, _) = rnn.valueWithPullback(at: inputs) { rnn, inputs in
-                return rnn(inputs)
+        withRandomSeedForTensorFlow((0xFeed, 0xBeef)) {
+            let x = Tensor<Float>(rangeFrom: 0.0, to: 0.4, stride: 0.1).rankLifted()
+            let inputs: [Tensor<Float>] = Array(repeating: x, count: 4)
+            let rnn = RNN(LSTMCell<Float>(inputSize: 4, hiddenSize: 4))
+            withTensorLeakChecking {
+                let (outputs, _) = rnn.valueWithPullback(at: inputs) { rnn, inputs in
+                    return rnn(inputs)
+                }
+                XCTAssertEqual(
+                    outputs.map { $0.cell },
+                    [[[ 0.08981595, 0.027691621, -0.059235442, -0.075101905]],
+                     [[ 0.12952757, 0.040402323, -0.084273980, -0.116252676]],
+                     [[ 0.14727503, 0.046511370, -0.094689950, -0.138459030]],
+                     [[ 0.15532997, 0.049573865, -0.098824400, -0.150242210]]])
+                XCTAssertEqual(
+                    outputs.map { $0.hidden },
+                    [[[ 0.046985064, 0.012670102, -0.031083463, -0.038572006]],
+                     [[ 0.066482050, 0.018388016, -0.044252350, -0.058907583]],
+                     [[ 0.074910110, 0.021107012, -0.049724963, -0.069670826]],
+                     [[ 0.078670055, 0.022462710, -0.051899005, -0.075331904]]])
             }
-            XCTAssertEqual(outputs.map { $0.cell },
-                           [[[ 0.1147887,  0.110584,   -0.064081416, -0.08400999]],
-                            [[ 0.20066944, 0.20825693, -0.11570193,  -0.14060757]],
-                            [[ 0.26505938, 0.29501802, -0.15672679,  -0.1794617]],
-                            [[ 0.31350702, 0.37243342, -0.1890606,   -0.20662251]]])
-            XCTAssertEqual(outputs.map { $0.hidden },
-                           [[[ 0.06314508, 0.060653392, -0.029783601, -0.037988894]],
-                            [[ 0.10919889, 0.114127055, -0.053144053, -0.063461654]],
-                            [[ 0.14266092, 0.16068783,  -0.07122802,  -0.08071505]],
-                            [[ 0.16709672, 0.20094386,  -0.0851357,   -0.09258326]]])
         }
     }
 
