@@ -222,11 +222,11 @@ final class LayerTests: XCTestCase {
                                            padding: .same)
         let input = Tensor(shape: [2, 2, 2], scalars: (0..<8).map(Float.init))
         let output = layer.inferring(from: input)
-        let expected = Tensor<Float>(shape: [2, 2, 1],
-                                     scalars: [17, 45, 73, 101])
+        let expected = Tensor<Float>(shape: [2, 2, 1], scalars: [17, 45, 73, 101])
         XCTAssertEqual(output, expected)
     }
 
+        
     func testSeparableConv2D() {
         let depthwiseFilter =  Tensor(shape: [2, 2, 2, 2], scalars: (0..<16).map(Float.init))
         let pointwiseFilter =  Tensor(shape: [1, 1, 4, 1], scalars: (0..<4).map(Float.init))
