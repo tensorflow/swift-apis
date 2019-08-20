@@ -632,7 +632,6 @@ public struct ZeroPadding3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer
     }
 }
 
-
 /// A 1-D Separable convolution layer.
 ///
 /// This layer performs a depthwise convolution that acts separately on channels followed by
@@ -739,7 +738,6 @@ public extension SeparableConv1D {
             padding: padding)
     }
 }
-
 
 /// A 2-D Separable convolution layer.
 ///
