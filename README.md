@@ -38,11 +38,11 @@ struct Model: Layer {
 #### Initialize a model and an optimizer
 
 ```swift
-let optimizer = SGD(for: model, learningRate: 0.02)
 var classifier = Model()
+let optimizer = SGD(for: classifier, learningRate: 0.02)
 Context.local.learningPhase = .training
 let x: Tensor<Float> = ...
-let y: Tensor<Float> = ...
+let y: Tensor<Int32> = ...
 ```
 
 #### Run a training loop
@@ -57,7 +57,7 @@ for _ in 0..<1000 {
         print("Loss: \(loss)")
         return loss
     }
-    optimizer.update(&classifier.allDifferentiableVariables, along: 𝛁model)
+    optimizer.update(&classifier, along: 𝛁model)
 }
 ```
 
@@ -69,7 +69,7 @@ for _ in 0..<1000 {
     let (loss, 𝛁ŷ) = ŷ.valueWithGradient { ŷ in softmaxCrossEntropy(logits: ŷ, labels: y) }
     print("Model output: \(ŷ), Loss: \(loss)")
     let 𝛁model = backprop(𝛁ŷ)
-    optimizer.update(&classifier.allDifferentiableVariables, along: 𝛁model)
+    optimizer.update(&classifier, along: 𝛁model)
 }
 ```
 

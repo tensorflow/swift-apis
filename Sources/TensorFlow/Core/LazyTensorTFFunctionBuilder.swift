@@ -163,6 +163,8 @@ class TFGraph {
                     }
                 }
             }
+        case .tensorFunctionPointer(let value):
+            TF_SetAttrFuncName(description, name, value.name, value.name.count)
         default: fatalError("Unhandled attribute \(name):\(attribute)")
         }
     }
@@ -205,10 +207,10 @@ class TFGraph {
     }
 
     private func makeTFOutput(
-        handle: LazyTensor,
+        handle: LazyTensorHandle,
         nodesCache: [ObjectIdentifier: CTFOperation?]
     ) -> TF_Output {
-        if case let LazyTensor.Handle.symbolic(lazyOp, index, _) = handle.handle {
+        if case let .symbolic(lazyOp, index, _) = handle.handle {
             let id = ObjectIdentifier(lazyOp)
             return TF_Output(oper: nodesCache[id]!, index: Int32(index))
         }
@@ -221,6 +223,7 @@ class TFFunction {
     let cTFFunction: CTFFunction
     let outputCount: Int
     let outputGroupCounts: [Int]
+    var name: String { String(cString: TF_FunctionName(cTFFunction)!) }
 
     init(trace: LazyTensorTrace, name: String? = nil) {
         let status: CTFStatus = TF_NewStatus()
@@ -268,7 +271,7 @@ class TFFunction {
         checkOk(status)
     }
 
-    func execute(_ inputs: [TFETensorHandle]) -> [TFETensorHandle] {
+    func execute(_ inputs: [TFETensorHandle], usingXLA: Bool = false) -> [TFETensorHandle] {
         let status: CTFStatus = TF_NewStatus()
         defer { TF_DeleteStatus(status) }
 
@@ -283,6 +286,11 @@ class TFFunction {
             debugLog("Placing the trace func on device \(deviceName).")
             TFE_OpSetDevice(eagerOp, deviceName, status)
             checkOk(status)
+        }
+
+        if usingXLA {
+            debugLog("Enabling XLA compilation")
+            TFE_OpSetAttrBool(eagerOp, "_XlaCompile", 1)
         }
 
         for input in inputs {

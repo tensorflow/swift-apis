@@ -55,14 +55,6 @@ public class RMSProp<Model: Differentiable>: Optimizer
     }
 
     public func update(_ model: inout Model, along direction: Model.TangentVector) {
-        update(&model.allDifferentiableVariables, along: direction)
-    }
-
-    // TODO: Deprecate this when `Differentiable.AllDifferentiableVariables` is removed.
-    public func update(
-        _ model: inout Model.AllDifferentiableVariables,
-        along direction: Model.TangentVector
-    ) {
         step += 1
         let learningRate = self.learningRate * 1 / (1 + decay * Float(step))
         alpha = alpha * rho + direction .* direction * (1 - rho)
@@ -107,14 +99,6 @@ public class AdaGrad<Model: Differentiable>: Optimizer
     }
 
     public func update(_ model: inout Model, along direction: Model.TangentVector) {
-        update(&model.allDifferentiableVariables, along: direction)
-    }
-
-    // TODO: Deprecate this when `Differentiable.AllDifferentiableVariables` is removed.
-    public func update(
-        _ model: inout Model.AllDifferentiableVariables,
-        along direction: Model.TangentVector
-    ) {
         alpha = rho + direction .* direction
         let denominator = Model.TangentVector.sqrt(alpha) + epsilon
         model.move(along: -learningRate * direction ./ denominator)
@@ -166,14 +150,6 @@ public class AdaDelta<Model: Differentiable>: Optimizer
     }
 
     public func update(_ model: inout Model, along direction: Model.TangentVector) {
-        update(&model.allDifferentiableVariables, along: direction)
-    }
-
-    // TODO: Deprecate this when `Differentiable.AllDifferentiableVariables` is removed.
-    public func update(
-        _ model: inout Model.AllDifferentiableVariables,
-        along direction: Model.TangentVector
-    ) {
         step += 1
         let learningRate = self.learningRate / (1 + decay * Float(step))
         averageSquared = rho * averageSquared + (1 - rho) * direction .* direction
@@ -230,15 +206,7 @@ public class Adam<Model: Differentiable>: Optimizer
     }
 
     public func update(_ model: inout Model, along direction: Model.TangentVector) {
-        update(&model.allDifferentiableVariables, along: direction)
-    }
-
-    // TODO: Deprecate this when `Differentiable.AllDifferentiableVariables` is removed.
-    public func update(
-        _ model: inout Model.AllDifferentiableVariables,
-        along direction: Model.TangentVector
-    ) {
-        self.step += 1
+        step += 1
         let step = Float(self.step)
         let learningRate = self.learningRate * 1 / (1 + decay * step)
         // Note: `stepSize` and `secondMoments` are split into two lines to avoid the "compiler is 
@@ -260,10 +228,9 @@ public class Adam<Model: Differentiable>: Optimizer
 /// Reference: Section 7 of ["Adam - A Method for Stochastic Optimization"](
 /// https://arxiv.org/abs/1412.6980v8)
 public class AdaMax<Model: Differentiable & KeyPathIterable>: Optimizer
-    where Model.TangentVector: VectorProtocol & PointwiseMultiplicative & ElementaryFunctions,
-          Model.TangentVector.VectorSpaceScalar == Float,
-          Model.AllDifferentiableVariables: KeyPathIterable,
-          Model.AllDifferentiableVariables == Model.TangentVector {
+    where Model.TangentVector: VectorProtocol & PointwiseMultiplicative & 
+                               ElementaryFunctions & KeyPathIterable,
+          Model.TangentVector.VectorSpaceScalar == Float {
     public typealias Model = Model
     /// The learning rate.
     public var learningRate: Float
@@ -304,15 +271,7 @@ public class AdaMax<Model: Differentiable & KeyPathIterable>: Optimizer
     }
 
     public func update(_ model: inout Model, along direction: Model.TangentVector) {
-        update(&model.allDifferentiableVariables, along: direction)
-    }
-
-    // TODO: Deprecate this when `Differentiable.AllDifferentiableVariables` is removed.
-    public func update(
-        _ model: inout Model.AllDifferentiableVariables,
-        along direction: Model.TangentVector
-    ) {
-        self.step += 1
+        step += 1
         let step = Float(self.step)
         let learningRate = self.learningRate * 1 / (1 + decay * step)
         // Note: `stepSize` is split into two lines to avoid the "compiler is unable to type-check
@@ -323,11 +282,11 @@ public class AdaMax<Model: Differentiable & KeyPathIterable>: Optimizer
 
         // Update `infinityNorm` using a key path approach because `max(_:_:)` cannot be 
         // currently applied in a simpler manner.
-        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
+        for kp in infinityNorm.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
             infinityNorm[keyPath: kp] = max(
                 beta2 * infinityNorm[keyPath: kp], abs(direction[keyPath: kp]))
         }
-        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
+        for kp in infinityNorm.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
             infinityNorm[keyPath: kp] = max(
                 Double(beta2) * infinityNorm[keyPath: kp], abs(direction[keyPath: kp]))
         }
@@ -345,10 +304,9 @@ public class AdaMax<Model: Differentiable & KeyPathIterable>: Optimizer
 /// Reference: ["On the Convergence of Adam and Beyond"](
 /// https://openreview.net/pdf?id=ryQu7f-RZ)
 public class AMSGrad<Model: Differentiable & KeyPathIterable>: Optimizer
-    where Model.TangentVector: VectorProtocol & PointwiseMultiplicative & ElementaryFunctions,
-          Model.TangentVector.VectorSpaceScalar == Float,
-          Model.AllDifferentiableVariables: KeyPathIterable,
-          Model.AllDifferentiableVariables == Model.TangentVector {
+    where Model.TangentVector: VectorProtocol & PointwiseMultiplicative & 
+                               ElementaryFunctions & KeyPathIterable,
+          Model.TangentVector.VectorSpaceScalar == Float {
     public typealias Model = Model
     /// The learning rate.
     public var learningRate: Float
@@ -390,15 +348,7 @@ public class AMSGrad<Model: Differentiable & KeyPathIterable>: Optimizer
     }
 
     public func update(_ model: inout Model, along direction: Model.TangentVector) {
-        update(&model.allDifferentiableVariables, along: direction)
-    }
-
-    // TODO: Deprecate this when `Differentiable.AllDifferentiableVariables` is removed.
-    public func update(
-        _ model: inout Model.AllDifferentiableVariables,
-        along direction: Model.TangentVector
-    ) {
-        self.step += 1
+        step += 1
         let step = Float(self.step)
         let beta1Power = pow(beta1, step)
         let beta2Power = pow(beta2, step)
@@ -413,11 +363,11 @@ public class AMSGrad<Model: Differentiable & KeyPathIterable>: Optimizer
 
         // Update `secondMomentsMax` using a key path approach because `max(_:_:)` cannot be 
         // currently applied in a simpler manner.
-        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
+        for kp in secondMomentsMax.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
             secondMomentsMax[keyPath: kp] = max(
                 secondMomentsMax[keyPath: kp], secondMoments[keyPath: kp])
         }
-        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
+        for kp in secondMomentsMax.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
             secondMomentsMax[keyPath: kp] = max(
                 secondMomentsMax[keyPath: kp], secondMoments[keyPath: kp])
         }

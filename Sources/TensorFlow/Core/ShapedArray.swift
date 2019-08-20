@@ -86,15 +86,10 @@ extension TensorBuffer {
         count: Int,
         withInitializer body: (UnsafeMutableBufferPointer<Scalar>) -> Void
     ) -> TensorBuffer<Scalar> {
-        /// Since `Scalar` may be any generic type, it is not possible to construct
-        /// an instance of `Scalar` directly for use with the
-        /// `Array(repeating:count:)` initializer. The workaround here is to
-        /// allocate a dummy `Scalar` pointer of size 1 and to use the pointee value
-        /// as the `repeatedValue` of the initializer.
-        let dummyPointer = UnsafeMutablePointer<Scalar>.allocate(capacity: 1)
-        var array = Array(repeating: dummyPointer.move(), count: count)
-        array.withUnsafeMutableBufferPointer { body($0) }
-        dummyPointer.deallocate()
+        let array = [Scalar](unsafeUninitializedCapacity: count) { buffer, initializedCount in
+            body(buffer)
+            initializedCount = count
+        }
         return TensorBuffer(allocation: .native(BoxedArray(array)), count: count)
     }
 }
@@ -478,7 +473,6 @@ internal extension ShapedArray where Scalar: _TensorFlowDataTypeCompatible {
     @usableFromInline
     @inline(never)
     init(cTensorHandle: CTensorHandle) {
-        internalConsistencyCheck(TFE_TensorHandleIsConcrete(cTensorHandle) != 0)
         let status = TF_NewStatus()
         let cTensor = TFE_TensorHandleResolve(cTensorHandle, status)
         checkOk(status)
@@ -587,15 +581,15 @@ extension ShapedArray: RandomAccessCollection, MutableCollection {
     public subscript(index: Int) -> Element {
         get {
             precondition(!isScalar, "Scalar has no elements and cannot be subscripted.")
-            precondition(index < endIndex, "ShapedArray index is out of range")
-            precondition(index >= startIndex, "Negative ShapedArray index is out of range")
+            precondition(index < endIndex, "ShapedArray index is out of range.")
+            precondition(index >= startIndex, "Negative ShapedArray index is out of range.")
             return ShapedArraySlice(base: self, baseIndices: [index])
         }
         set {
             precondition(!isScalar, "Scalar has no elements and cannot be subscripted.")
-            precondition(index < endIndex, "ShapedArray index is out of range")
-            precondition(index >= startIndex, "Negative ShapedArray index is out of range")
-            precondition(shape.dropFirst().elementsEqual(newValue.shape), "Element shape mismatch")
+            precondition(index < endIndex, "ShapedArray index is out of range.")
+            precondition(index >= startIndex, "Negative ShapedArray index is out of range.")
+            precondition(shape.dropFirst().elementsEqual(newValue.shape), "Element shape mismatch.")
             let scalarIndex = self.scalarIndex(fromIndex: index)
             withUnsafeMutableBufferPointer { destBuffPtr in
                 let ptr = destBuffPtr.baseAddress!.advanced(by: scalarIndex)
@@ -703,6 +697,7 @@ extension ShapedArray: ExpressibleByArrayLiteral where Scalar: TensorFlowScalar 
     public typealias ArrayLiteralElement = _TensorElementLiteral<Scalar>
     @inlinable
     public init(arrayLiteral elements: _TensorElementLiteral<Scalar>...) {
+        precondition(!elements.isEmpty, "Cannot create a 'ShapedArray' with no elements.")
         self = Tensor<Scalar>(_tensorElementLiterals: elements).array
     }
 }
@@ -836,7 +831,7 @@ public struct ShapedArraySlice<Scalar>: _ShapedArrayProtocol {
         baseIndices indices: __owned [Int] = [],
         bounds: Range<Int>? = nil
     ) {
-        precondition(indices.count <= base.rank, "Number of base indices exceeds base rank")
+        precondition(indices.count <= base.rank, "Number of base indices exceeds base rank.")
         precondition(
             zip(base.shape, indices).allSatisfy { $1 >= 0 && $1 < $0 },
             "Base indices are out of range")
@@ -1065,6 +1060,7 @@ extension ShapedArraySlice: ExpressibleByArrayLiteral where Scalar: TensorFlowSc
     public typealias ArrayLiteralElement = _TensorElementLiteral<Scalar>
     @inlinable
     public init(arrayLiteral elements: _TensorElementLiteral<Scalar>...) {
+        precondition(!elements.isEmpty, "Cannot create a 'ShapedArraySlice' with no elements.")
         self.init(base: Tensor(_tensorElementLiterals: elements).array)
     }
 }

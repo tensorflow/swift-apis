@@ -36,3 +36,15 @@ internal func assertEqual<T: TensorFlowFloatingPoint>(
 ) {
     assertEqual(x.scalars, y.scalars, accuracy: accuracy, message, file: file, line: line)
 }
+
+func withTensorLeakChecking(
+    file: StaticString = #file,
+    line: UInt = #line,
+    _ body: () throws -> Void
+) rethrows {
+    let initialTensorCount = Context.local.globalTensorCount
+    try body()
+    let tensorCountDifference = Context.local.globalTensorCount - initialTensorCount
+    XCTAssertGreaterThanOrEqual(tensorCountDifference, 0, "Negative tensor count?")
+    XCTAssertEqual(tensorCountDifference, 0, "Memory leaks found", file: file, line: line)
+}

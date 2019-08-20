@@ -19,12 +19,12 @@ import CTensorFlow
 final class LazyTensorTFFunctionBuilderTests : XCTestCase {
     override class func setUp() {
         super.setUp()
-        _RuntimeConfig.useLazyTensor = true
+        _ThreadLocalState.useLazyTensor = true
     }
 
     override class func tearDown() {
         super.tearDown()
-        _RuntimeConfig.useLazyTensor = false
+        _ThreadLocalState.useLazyTensor = false
     }
 
     func testSingletonInputs() {
@@ -67,10 +67,10 @@ final class LazyTensorTFFunctionBuilderTests : XCTestCase {
             tfFunction(w, "sequence")!.description,
             """
 
-            sequence(placeholder_0:float, placeholder_1:float, placeholder_2:float) -> (add_4:float) {
+            sequence(placeholder_0:float, placeholder_1:float, placeholder_2:float) -> (addv2_4:float) {
               Mul_3 = Mul[T=float](placeholder_1, placeholder_2)
-              Add_4 = Add[T=float](placeholder_0, Mul_3:z:0)
-              return add_4 = Add_4:z:0
+              AddV2_4 = AddV2[T=float](placeholder_0, Mul_3:z:0)
+              return addv2_4 = AddV2_4:z:0
             }
 
             """)
@@ -198,21 +198,36 @@ final class LazyTensorTFFunctionBuilderTests : XCTestCase {
 
             """)
 
+        // TensorFunctionPointer attribute.
+        let statelessWhile = LazyTensorOperation("StatelessWhile", 1)
+        statelessWhile.updateAttribute("T", [Float.tensorFlowDataType])
+        statelessWhile.updateAttribute("cond", _TensorFunctionPointer(name: "cond"))
+        statelessWhile.updateAttribute("body", _TensorFunctionPointer(name: "body"))
+        statelessWhile.addInputList([a])
+        XCTAssertEqual(
+            tfFunction(statelessWhile, "statelessWhile").description,
+            """
+
+            statelessWhile(placeholder_0:float) -> () {
+              StatelessWhile_1 = StatelessWhile[T={float}, body=body, cond=cond, output_shapes=[], parallel_iterations=10](placeholder_0)
+            }
+
+            """)
+
     }
 
     private func tfFunction(
         _ lazyOp: LazyTensorOperation,
         _ name: String? = nil
     ) -> TFFunction {
-        let trace = LazyTensorTrace(lazyOp)
-        return TFFunction(trace: trace, name: name)
+        return TFFunction(trace: lazyTensorTrace(lazyOp), name: name)
     }
 
     private func materializedLazyTensor<T: TensorFlowScalar>(
         _ input: Tensor<T>
     ) -> Tensor<T> {
         let concreteHandle = input.handle.handle._tfeTensorHandle
-        let materializedHandle = LazyTensor(_materialized: concreteHandle)
+        let materializedHandle = LazyTensorHandle(_materialized: concreteHandle)
         return Tensor(handle: TensorHandle<T>(handle: materializedHandle))
     }
 
@@ -221,7 +236,7 @@ final class LazyTensorTFFunctionBuilderTests : XCTestCase {
         _ name: String? = nil
     ) -> TFFunction? {
         let tensor = input.handle.handle
-        guard let lazyTensor = tensor as? LazyTensor else {
+        guard let lazyTensor = tensor as? LazyTensorHandle else {
             XCTFail("Trying to get TFFunction for a non-lazy tensor.")
             return nil
         }
@@ -229,8 +244,12 @@ final class LazyTensorTFFunctionBuilderTests : XCTestCase {
             XCTFail("Cannot get TFFunction for a concrete tensor.")
             return nil
         }
-        let trace =  LazyTensorTrace(lazyOp)
-        return TFFunction(trace: trace, name: name)
+        return TFFunction(trace: lazyTensorTrace(lazyOp), name: name)
+    }
+
+    private func lazyTensorTrace(_ lazyOp: LazyTensorOperation) -> LazyTensorTrace {
+        let traceInfo = LazyTensorTraceBuilder.materializationTraceInfo(lazyOp)
+        return traceInfo.trace
     }
 
     static var allTests = [
