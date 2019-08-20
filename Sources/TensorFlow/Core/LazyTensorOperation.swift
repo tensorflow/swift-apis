@@ -846,8 +846,8 @@ extension LazyTensorOperation {
         return outputs!
     }
 
-    /// Converts symbolic tensor inputs to concrete inputs if the
-    /// associated `LazyTensorOperation` has been materialized.
+    /// Converts symbolic tensor inputs to concrete inputs if the associated `LazyTensorOperation`
+    /// has been materialized.
     func maybeMaterializeInputs() {
         /// If `lazyTensor` is symbolic and the associated `LazyTensorOperation`
         /// has been materialized, return the corresponding concrete `LazyTensorHandle`.
