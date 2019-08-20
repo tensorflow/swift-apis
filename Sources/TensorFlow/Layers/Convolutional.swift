@@ -655,13 +655,13 @@ public struct SeparableConv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The element-wise activation function type.
     public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
 
-    /// Creates a `SeparableConv2D` layer with the specified depthwise and pointwise filter,
+    /// Creates a `SeparableConv1D` layer with the specified depthwise and pointwise filter,
     /// bias, activation function, strides, and padding.
     ///
     /// - Parameters:
     ///   - depthwiseFilter: The 3-D depthwise convolution kernel
     ///     `[filter width, input channels count, channel multiplier]`.
-    ///   - pointwiseFilter: The 4-D pointwise convolution kernel
+    ///   - pointwiseFilter: The 3-D pointwise convolution kernel
     ///     `[1, channel multiplier * input channels count, output channels count]`.
     ///   - bias: The bias vector.
     ///   - activation: The element-wise activation function.
