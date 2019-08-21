@@ -74,6 +74,34 @@ final class LazyTensorTraceCacheTests : LazyTensorTestCase {
         XCTAssertEqual(y.scalars, [5.0, 10.0, 15.0])
     }
 
+    func testDontPromoteEqualConstants() {
+        LazyTensorTraceCache.clearCache()
+        let a = Tensor<Float>(1.0)
+        let b = Tensor<Float>(2.0)
+        let c = Tensor<Float>(3.0)
+        let w = a * b
+        let x = a * c
+        XCTAssertEqual(
+            lazyTrace(w).description,
+            """
+            lazyTrace_3() -> (%2) {
+              %0 = Const[dtype: float, value: 1.0]()
+              %1 = Const[dtype: float, value: 2.0]()
+              %2 = Mul[T: float](%0, %1)
+            }
+            """)
+        XCTAssertEqual(w.scalars, [2.0])
+        // Const 1.0 is not promoted.
+        XCTAssertEqual(
+            lazyTrace(x).description,
+            """
+            lazyTrace_3(%1: float) -> (%2) {
+              %0 = Const[dtype: float, value: 1.0]()
+              %2 = Mul[T: float](%0, %1)
+            }
+            """)
+    }
+
     private func lazyTensorOperation<T: TensorFlowScalar>(
         _ input: Tensor<T>
     ) -> LazyTensorOperation? {
@@ -97,6 +125,7 @@ final class LazyTensorTraceCacheTests : LazyTensorTestCase {
     }
 
     static var allTests = [
-        ("testAutoConstPromotion", testAutoConstPromotion)
+        ("testAutoConstPromotion", testAutoConstPromotion),
+        ("testDontPromoteEqualConstants", testDontPromoteEqualConstants)
     ]
 }
