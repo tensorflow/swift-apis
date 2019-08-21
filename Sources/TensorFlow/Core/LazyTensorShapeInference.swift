@@ -48,20 +48,17 @@ extension LazyTensorOperation {
         defer { TF_DeleteStatus(status) }
 
         /// Returns shape only if it has already been computed.
-        func shapeIfAvailable(_ handle: LazyTensorHandle) -> TensorShape? {
+        func shape(for handle: LazyTensorHandle) -> TensorShape? {
             switch handle.handle {
-            case .symbolic(let op, let index, _):
-                if let shape = op.outputShapes[index] { return shape }
-                return nil
+            case .symbolic(let op, let index, _): return op.outputShapes[index]
             case .concrete(let tfeHandle, _): return tfeHandle.shape
             }
         }
 
-        LazyTensorHandle._materializationCallback("inputshape_start")
-        let inputShapes: [TensorShape?] = inputs.lazy.flatMap { (input: Input) -> [TensorShape?] in
+        let inputShapes: [TensorShape?] = inputs.lazy.flatMap { (input) -> [TensorShape?] in
             switch input {
-            case .single(let handle): return [shapeIfAvailable(handle)]
-            case .list(let values): return values.lazy.map { shapeIfAvailable($0) }
+            case .single(let handle): return [shape(for: handle)]
+            case .list(let values): return values.lazy.map { shape(for: $0) }
             }
         }
         let inputShapeList = TF_NewShapeAndTypeList(/*num_shapes*/ Int32(inputShapes.count))
