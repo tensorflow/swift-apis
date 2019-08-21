@@ -84,9 +84,11 @@ func ==(_ lhs: LazyTensorOperation.Attribute, _ rhs: LazyTensorOperation.Attribu
     }
 }
 
+// TODO(https://bugs.swift.org/browse/TF-693): This is not thread safe!
 struct LazyTensorTraceCache {
     // Cache from signature to traces that match signature.
     static private var cache: [String: [LazyTensorTrace]] = [:]
+    static func clearCache() { cache.removeAll() }
 
     // Returns a `MaterializationTraceInfo` with possibly some constants promoted to inputs.
     static func traceWithPromotedConstants(_ traceInfo: MaterializationTraceInfo) -> MaterializationTraceInfo {
