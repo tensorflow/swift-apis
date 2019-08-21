@@ -757,7 +757,9 @@ final class LayerTests: XCTestCase {
         // This tests for a specific failure that had impacted the Transformer model.
         let transformerTensor = Tensor<Float>(randomUniform: [1, 1, 768])
         let transformerLayerNorm = LayerNorm(
-            featureCount: 768, axis: -1, epsilon: Tensor<Float>(1e-5))
+            featureCount: 768,
+            axis: -1,
+            epsilon: Tensor<Float>(1e-5))
         let transformerResult = transformerLayerNorm(transformerTensor)
         XCTAssertEqual(transformerTensor.shape, transformerResult.shape)
     }
