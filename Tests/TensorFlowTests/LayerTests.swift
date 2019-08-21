@@ -673,6 +673,16 @@ final class LayerTests: XCTestCase {
     }
 
     func testBatchNormInference() {
+        Context.local.learningPhase = .inference
+        // This tests for a specific failure that had impacted the MiniGo model.
+        let miniGoTensor = Tensor<Float>(randomUniform: [2, 19, 19, 256])
+        let miniGoBatchNorm = BatchNorm(
+            featureCount: 256,
+            momentum: Tensor<Float>(0.95),
+            epsilon: Tensor<Float>(1e-5))
+        let miniGoResult = miniGoBatchNorm(miniGoTensor)
+        XCTAssertEqual(miniGoTensor.shape, miniGoResult.shape)
+
         let x = Tensor<Float>(rangeFrom: 0, to: 20, stride: 1).reshaped(to: [4,5])
         let epsilon = Tensor<Float>(0.001)
         let bnLayer = BatchNorm<Float>(featureCount: 5, axis: 1, epsilon: epsilon)
@@ -741,6 +751,18 @@ final class LayerTests: XCTestCase {
             [11.077844 , 12.092919 ,  3.0350027,  4.7778125,  8.969137],
             accuracy: 1e-5)
     }
+    
+    func testLayerNormInference() {
+        Context.local.learningPhase = .inference
+        // This tests for a specific failure that had impacted the Transformer model.
+        let transformerTensor = Tensor<Float>(randomUniform: [1, 1, 768])
+        let transformerLayerNorm = LayerNorm(
+            featureCount: 768,
+            axis: -1,
+            epsilon: Tensor<Float>(1e-5))
+        let transformerResult = transformerLayerNorm(transformerTensor)
+        XCTAssertEqual(transformerTensor.shape, transformerResult.shape)
+    }
 
     static var allTests = [
         ("testSequential", testSequential),
@@ -784,6 +806,7 @@ final class LayerTests: XCTestCase {
         ("testFunction", testFunction),
         ("testBatchNorm", testBatchNorm),
         ("testBatchNormInference", testBatchNormInference),
-        ("testLayerNorm", testLayerNorm)
+        ("testLayerNorm", testLayerNorm),
+        ("testLayerNormInference", testLayerNormInference),
     ]
 }
