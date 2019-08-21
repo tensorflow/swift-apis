@@ -113,28 +113,28 @@ final class LayerTests: XCTestCase {
     func testConv2DGradient() {
         let filter =  Tensor(shape: [3, 3, 2, 4], scalars: (0..<72).map(Float.init))
         let bias = Tensor<Float>(zeros: [4])
-        let layer = Conv2D<Float>(filter: filter, 
-                                  bias: bias, 
+        let layer = Conv2D<Float>(filter: filter,
+                                  bias: bias,
                                   activation: identity,
-                                  strides: (2, 2), 
+                                  strides: (2, 2),
                                   padding: .valid)
         let input = Tensor(shape: [2, 4, 4, 2], scalars: (0..<64).map(Float.init))
         let grads = gradient( at: input, layer) { $1($0).sum() }
-        // The expected gradients were computed using the following Python code: 
+        // The expected gradients were computed using the following Python code:
         // ```
         //  x = tf.reshape(tf.range(64, dtype=tf.float32), [2, 4, 4, 2])
         //  filter = tf.reshape(tf.range(72, dtype=tf.float32), [3, 3, 2, 4])
         //  bias = tf.zeros([4])
         //  with tf.GradientTape() as t:
         //      t.watch([x, filter, bias])
-        //      y = tf.math.reduce_sum(tf.nn.conv2d(input=x, 
+        //      y = tf.math.reduce_sum(tf.nn.conv2d(input=x,
         //                                          filters=filter,
         //                                          strides=[1, 2, 2, 1],
         //                                          data_format="NHWC",
         //                                          padding="VALID") + bias)
         //  grads = t.gradient(y, [x, filter, bias])
         // ```
-        XCTAssertEqual(grads.0, 
+        XCTAssertEqual(grads.0,
                        [[[[  6,  22], [ 38,  54], [ 70,  86], [  0,   0]],
                          [[102, 118], [134, 150], [166, 182], [  0,   0]],
                          [[198, 214], [230, 246], [262, 278], [  0,   0]],
@@ -143,7 +143,7 @@ final class LayerTests: XCTestCase {
                          [[102, 118], [134, 150], [166, 182], [  0,   0]],
                          [[198, 214], [230, 246], [262, 278], [  0,   0]],
                          [[  0,   0], [  0,   0], [  0,   0], [  0,   0]]]])
-        XCTAssertEqual(grads.1.filter, 
+        XCTAssertEqual(grads.1.filter,
                         [[[[32, 32, 32, 32], [34, 34, 34, 34]],
                           [[36, 36, 36, 36], [38, 38, 38, 38]],
                           [[40, 40, 40, 40], [42, 42, 42, 42]]],
@@ -207,6 +207,22 @@ final class LayerTests: XCTestCase {
         let expected = Tensor<Float>(shape: [1, 1, 4, 4],
                                      scalars: [9, 12, 23, 28, 25, 36, 55, 68, 41, 60, 87, 108,
                                                57, 84, 119, 148])
+        XCTAssertEqual(output, expected)
+    }
+
+    func testSeparableConv1D() {
+        let depthwiseFilter = Tensor(shape: [2, 2, 2], scalars: (0..<8).map(Float.init))
+        let pointwiseFilter = Tensor(shape: [1, 4, 1], scalars: (0..<4).map(Float.init))
+        let bias = Tensor<Float>([4])
+        let layer = SeparableConv1D<Float>(depthwiseFilter: depthwiseFilter,
+                                           pointwiseFilter: pointwiseFilter,
+                                           bias: bias,
+                                           activation: identity,
+                                           stride: 1,
+                                           padding: .same)
+        let input = Tensor(shape: [2, 2, 2], scalars: (0..<8).map(Float.init))
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>(shape: [2, 2, 1], scalars: [17, 45, 73, 101])
         XCTAssertEqual(output, expected)
     }
 
@@ -582,7 +598,7 @@ final class LayerTests: XCTestCase {
         //                 [         0.0,          0.0,          0.0,          0.0]])
         // XCTAssertEqual(𝛁rnn.cell.bias, [  0.2496884,  0.66947335,   0.7978788, -0.22378457])
     }
-    
+
     func testLSTM() {
         withRandomSeedForTensorFlow((0xFeed, 0xBeef)) {
             let x = Tensor<Float>(rangeFrom: 0.0, to: 0.4, stride: 0.1).rankLifted()
@@ -724,7 +740,7 @@ final class LayerTests: XCTestCase {
         //  lnLayer = tf.keras.layers.LayerNormalization(axis=1, epsilon=0.001)
         //  with tf.GradientTape() as t:
         //      t.watch(x)
-        //      y = lnLayer(x) 
+        //      y = lnLayer(x)
         //      z = tf.math.reduce_sum(tf.math.square(y))
         //  print(y, t.gradient(z, [x] + lnLayer.trainable_variables))
         // ```
@@ -743,8 +759,8 @@ final class LayerTests: XCTestCase {
              [-0.0019815 ,  0.00164783,  0.00130618,  0.00119543, -0.00216818]],
             accuracy: 1e-5)
         assertEqual(
-            grad.1.offset, 
-            [-0.645803  , -5.8017054 ,  0.03168535,  5.973418  ,  0.44240427], 
+            grad.1.offset,
+            [-0.645803  , -5.8017054 ,  0.03168535,  5.973418  ,  0.44240427],
             accuracy: 1e-5)
         assertEqual(
             grad.1.scale,
@@ -773,6 +789,7 @@ final class LayerTests: XCTestCase {
         ("testConv2DDilation", testConv2DDilation),
         ("testConv3D", testConv3D),
         ("testDepthConv2D", testDepthConv2D),
+        ("testSeparableConv1D", testSeparableConv1D),
         ("testSeparableConv2D", testSeparableConv2D),
         ("testZeroPadding1D", testZeroPadding1D),
         ("testZeroPadding2D", testZeroPadding2D),
