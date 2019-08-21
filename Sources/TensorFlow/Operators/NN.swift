@@ -269,9 +269,9 @@ func _vjpConv3DBackpropInput<Scalar: TensorFlowFloatingPoint>(
                                     padding: padding)
     return (value, { v in
         return (
-            conv3DBackpropFilter(x, input: v, filterSizes: shape, strides: strides,
-                                 padding: padding),
-            conv3D(v, filter: filter, strides: strides, padding: padding)
+            conv3D(v, filter: filter, strides: strides, padding: padding),
+            conv3DBackpropFilter(x, input: v, filterSizes: filter.shapeTensor, strides: strides,
+                                 padding: padding)
         )
     })
 }
@@ -307,9 +307,9 @@ func _vjpConv3DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
                                      strides: strides, padding: padding)
     return (value, { v in
         return (
-            conv3DBackpropInput(x, shape: filterSizes, filter: v, strides: strides,
-                                  padding: padding),
-            conv3D(input, filter: v, strides: strides, padding: padding)
+            conv3D(input, filter: v, strides: strides, padding: padding),
+            conv3DBackpropInput(x, shape: x.shapeTensor, filter: v, strides: strides,
+                                  padding: padding)
         )
     })
 }
