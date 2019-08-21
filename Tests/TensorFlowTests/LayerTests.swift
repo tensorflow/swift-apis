@@ -207,6 +207,19 @@ final class LayerTests: XCTestCase {
                             padding: .same)
         let input = Tensor(shape: [1, 4, 4, 4, 1], scalars: (0..<64).map(Float.init))
         let grads = gradient( at: input, layer) { $1($0).sum() }
+        // The expected gradients were computed using the following Python code:
+        // ```
+        //  x = tf.reshape(tf.range(64, dtype=tf.float32), [1, 4, 4, 4, 1])
+        //  filter = tf.reshape(tf.range(72, dtype=tf.float32), [1, 4, 4, 1, 1])
+        //  bias = tf.ones([2])
+        //  with tf.GradientTape() as t:
+        //      t.watch([x, filter, bias])
+        //      y = tf.math.reduce_sum(tf.nn.conv3d(input=x,
+        //                                          filters=filter,
+        //                                          strides=[1, 2, 2, 2, 1],
+        //                                          padding="SAME") + bias)
+        //  grads = t.gradient(y, [x, filter, bias])
+        // ```
         XCTAssertEqual(grads.0,
                        [[[[[10.0], [20.0], [24.0], [12.0]],
                           [[20.0], [40.0], [48.0], [24.0]],
