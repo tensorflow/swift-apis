@@ -63,6 +63,6 @@ WORKDIR /swift-models
 
 RUN /swift-tensorflow-toolchain/usr/bin/swift build
 
-WORKDIR /fastai_dev/swift/FastaiNotebook_07_batchnorm
+WORKDIR /fastai_dev/swift/FastaiNotebook_08_data_block
 
 RUN /swift-tensorflow-toolchain/usr/bin/swift build
