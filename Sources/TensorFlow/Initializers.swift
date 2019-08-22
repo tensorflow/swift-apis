@@ -185,7 +185,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     static func _vjpInitElements(
         _ elements: __owned [Tensor]
-    ) -> (Tensor, (Tensor) -> Array<Tensor>.DifferentiableView) {
+    ) -> (Tensor, (Tensor) -> Array<Tensor>.TangentVector) {
         _vjpStacking(stacking: elements)
     }
 
@@ -193,9 +193,9 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     static func _vjpStacking(
         stacking tensors: __owned [Tensor],
         alongAxis axis: __owned  Int = 0
-    ) -> (Tensor, (Tensor) -> Array<Tensor>.DifferentiableView) {
+    ) -> (Tensor, (Tensor) -> Array<Tensor>.TangentVector) {
         (Tensor(stacking: tensors, alongAxis: axis), { v in
-            Array<Tensor>.DifferentiableView(v.unstacked(alongAxis: axis))
+            Array<Tensor>.TangentVector(v.unstacked(alongAxis: axis))
         })
     }
 
@@ -203,14 +203,14 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     static func _vjpConcatenating(
         concatenating tensors: __owned [Tensor],
         alongAxis axis: __owned Int = 0
-    ) -> (Tensor, (Tensor) -> Array<Tensor>.DifferentiableView) {
+    ) -> (Tensor, (Tensor) -> Array<Tensor>.TangentVector) {
         let result = Tensor<Scalar>(concatenating: tensors, alongAxis: axis)
         let posAxis = axis < 0 ? axis + tensors[0].rank : axis
         let sizes = Tensor<Int32>(stacking: tensors.map { $0.shapeTensor[posAxis] })
         return (result, { [count = tensors.count] v in
-            if count == 1 { return Array<Tensor>.DifferentiableView([v]) }
+            if count == 1 { return Array<Tensor>.TangentVector([v]) }
             let splits = v.split(sizes: sizes, alongAxis: posAxis)
-            return Array<Tensor>.DifferentiableView(splits)
+            return Array<Tensor>.TangentVector(splits)
         })
     }
 }

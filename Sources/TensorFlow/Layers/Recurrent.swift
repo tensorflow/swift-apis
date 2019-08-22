@@ -254,13 +254,13 @@ public struct RNN<Cell: RNNCell>: Layer {
             backpropagators.append(backpropagator)
         }
         return (timeStepOutputs, { 𝛁outputs in
-            precondition(𝛁outputs.base.count == timeStepCount,
+            precondition(𝛁outputs.elements.count == timeStepCount,
                          "The number of output gradients must equal the number of time steps")
             var 𝛁cell = Cell.TangentVector.zero
             var 𝛁state = Cell.State.TangentVector.zero
             var reversed𝛁inputs: [Cell.TimeStepInput.TangentVector] = []
             reversed𝛁inputs.reserveCapacity(timeStepCount)
-            for (𝛁output, backpropagator) in zip(𝛁outputs.base, backpropagators).reversed() {
+            for (𝛁output, backpropagator) in zip(𝛁outputs.elements, backpropagators).reversed() {
                 let (new𝛁cell, 𝛁input) = backpropagator(.init(output: 𝛁output, state: 𝛁state))
                 𝛁cell = new𝛁cell
                 𝛁state = 𝛁input.state

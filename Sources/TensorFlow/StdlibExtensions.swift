@@ -105,119 +105,112 @@ extension Array: ElementaryFunctions where Element: ElementaryFunctions {
 
 // MARK: - Array derivative extensions
 
-extension Array.DifferentiableView: ElementaryFunctions where Element: ElementaryFunctions {
+extension Array.TangentVector: ElementaryFunctions where Element: ElementaryFunctions {
     /// The square root of `x`.
     ///
     /// For real types, if `x` is negative the result is `.nan`. For complex
     /// types there is a branch cut on the negative real axis.
-    public static func sqrt(_ x: Self) -> Self { .init(Array.sqrt(x.base)) }
+    public static func sqrt(_ x: Self) -> Self { .init(Array.sqrt(x.elements)) }
 
     /// The cosine of `x`, interpreted as an angle in radians.
-    public static func cos(_ x: Self) -> Self { .init(Array.cos(x.base)) }
+    public static func cos(_ x: Self) -> Self { .init(Array.cos(x.elements)) }
 
     /// The sine of `x`, interpreted as an angle in radians.
-    public static func sin(_ x: Self) -> Self { .init(Array.sin(x.base)) }
+    public static func sin(_ x: Self) -> Self { .init(Array.sin(x.elements)) }
 
     /// The tangent of `x`, interpreted as an angle in radians.
-    public static func tan(_ x: Self) -> Self { .init(Array.tan(x.base)) }
+    public static func tan(_ x: Self) -> Self { .init(Array.tan(x.elements)) }
 
     /// The inverse cosine of `x` in radians.
-    public static func acos(_ x: Self) -> Self { .init(Array.acos(x.base)) }
+    public static func acos(_ x: Self) -> Self { .init(Array.acos(x.elements)) }
 
     /// The inverse sine of `x` in radians.
-    public static func asin(_ x: Self) -> Self { .init(Array.asin(x.base)) }
+    public static func asin(_ x: Self) -> Self { .init(Array.asin(x.elements)) }
 
     /// The inverse tangent of `x` in radians.
-    public static func atan(_ x: Self) -> Self { .init(Array.atan(x.base)) }
+    public static func atan(_ x: Self) -> Self { .init(Array.atan(x.elements)) }
 
     /// The hyperbolic cosine of `x`.
-    public static func cosh(_ x: Self) -> Self { .init(Array.cosh(x.base)) }
+    public static func cosh(_ x: Self) -> Self { .init(Array.cosh(x.elements)) }
 
     /// The hyperbolic sine of `x`.
-    public static func sinh(_ x: Self) -> Self { .init(Array.sinh(x.base)) }
+    public static func sinh(_ x: Self) -> Self { .init(Array.sinh(x.elements)) }
 
     /// The hyperbolic tangent of `x`.
-    public static func tanh(_ x: Self) -> Self { .init(Array.tanh(x.base)) }
+    public static func tanh(_ x: Self) -> Self { .init(Array.tanh(x.elements)) }
 
     /// The inverse hyperbolic cosine of `x`.
-    public static func acosh(_ x: Self) -> Self { .init(Array.acosh(x.base)) }
+    public static func acosh(_ x: Self) -> Self { .init(Array.acosh(x.elements)) }
 
     /// The inverse hyperbolic sine of `x`.
-    public static func asinh(_ x: Self) -> Self { .init(Array.asinh(x.base)) }
+    public static func asinh(_ x: Self) -> Self { .init(Array.asinh(x.elements)) }
 
     /// The inverse hyperbolic tangent of `x`.
-    public static func atanh(_ x: Self) -> Self { .init(Array.atanh(x.base)) }
+    public static func atanh(_ x: Self) -> Self { .init(Array.atanh(x.elements)) }
 
     /// The exponential function applied to `x`, or `e**x`.
-    public static func exp(_ x: Self) -> Self { .init(Array.exp(x.base)) }
+    public static func exp(_ x: Self) -> Self { .init(Array.exp(x.elements)) }
 
     /// Two raised to to power `x`.
-    public static func exp2(_ x: Self) -> Self { .init(Array.exp2(x.base)) }
+    public static func exp2(_ x: Self) -> Self { .init(Array.exp2(x.elements)) }
 
     /// Ten raised to to power `x`.
-    public static func exp10(_ x: Self) -> Self { .init(Array.exp10(x.base)) }
+    public static func exp10(_ x: Self) -> Self { .init(Array.exp10(x.elements)) }
 
     /// `exp(x) - 1` evaluated so as to preserve accuracy close to zero.
-    public static func expm1(_ x: Self) -> Self { .init(Array.expm1(x.base)) }
+    public static func expm1(_ x: Self) -> Self { .init(Array.expm1(x.elements)) }
 
     /// The natural logarithm of `x`.
-    public static func log(_ x: Self) -> Self { .init(Array.log(x.base)) }
+    public static func log(_ x: Self) -> Self { .init(Array.log(x.elements)) }
 
     /// The base-two logarithm of `x`.
-    public static func log2(_ x: Self) -> Self { .init(Array.log2(x.base)) }
+    public static func log2(_ x: Self) -> Self { .init(Array.log2(x.elements)) }
 
     /// The base-ten logarithm of `x`.
-    public static func log10(_ x: Self) -> Self { .init(Array.log10(x.base)) }
+    public static func log10(_ x: Self) -> Self { .init(Array.log10(x.elements)) }
 
     /// `log(1 + x)` evaluated so as to preserve accuracy close to zero.
-    public static func log1p(_ x: Self) -> Self { .init(Array.log1p(x.base)) }
+    public static func log1p(_ x: Self) -> Self { .init(Array.log1p(x.elements)) }
 
     /// `exp(y log(x))` computed without loss of intermediate precision.
     ///
     /// For real types, if `x` is negative the result is NaN, even if `y` has
     /// an integral value. For complex types, there is a branch cut on the
     /// negative real axis.
-    public static func pow(_ x: Self, _ y: Self) -> Self { .init(Array.pow(x.base, y.base)) }
+    public static func pow(_ x: Self, _ y: Self) -> Self { .init(Array.pow(x.elements, y.elements)) }
 
     /// `x` raised to the `n`th power.
     ///
     /// The product of `n` copies of `x`.
-    public static func pow(_ x: Self, _ n: Int) -> Self { .init(Array.pow(x.base, n)) }
+    public static func pow(_ x: Self, _ n: Int) -> Self { .init(Array.pow(x.elements, n)) }
 
     /// The `n`th root of `x`.
     ///
     /// For real types, if `x` is negative and `n` is even, the result is NaN.
     /// For complex types, there is a branch cut along the negative real axis.
-    public static func root(_ x: Self, _ n: Int) -> Self { .init(Array.root(x.base, n)) }
+    public static func root(_ x: Self, _ n: Int) -> Self { .init(Array.root(x.elements, n)) }
 }
 
-extension Array.DifferentiableView
+extension Array.TangentVector
     : MutableCollection, RandomAccessCollection, RangeReplaceableCollection {
-    public typealias Element = Array<Element>.Element
-    public typealias Index = Array<Element>.Index
+    public typealias Index = Int
     public typealias Indices = Array<Element>.Indices
     public typealias SubSequence = Array<Element>.SubSequence
 
     @inlinable
-    public subscript(position: Array<Element>.Index) -> Element {
-        _read { yield base[position] }
-        set { base[position] = newValue }
-    }
+    public var startIndex: Index { elements.startIndex }
 
     @inlinable
-    public var startIndex: Index { base.startIndex }
-
-    @inlinable
-    public var endIndex: Index { base.endIndex }
+    public var endIndex: Index { elements.endIndex }
 
     @inlinable
     public init() { self.init(.init()) }
 }
 
-extension Array.DifferentiableView: VectorProtocol where Element: VectorProtocol {
+extension Array.TangentVector: VectorProtocol where Element: VectorProtocol {
     public typealias VectorSpaceScalar = Element.VectorSpaceScalar
 
-    public func adding(_ x: Element.VectorSpaceScalar) -> Array<Element>.DifferentiableView {
+    public func adding(_ x: Element.VectorSpaceScalar) -> Array<Element>.TangentVector {
         .init(map { $0.adding(x) })
     }
 
@@ -227,7 +220,7 @@ extension Array.DifferentiableView: VectorProtocol where Element: VectorProtocol
         }
     }
 
-    public func subtracting(_ x: Element.VectorSpaceScalar) -> Array<Element>.DifferentiableView {
+    public func subtracting(_ x: Element.VectorSpaceScalar) -> Array<Element>.TangentVector {
         .init(map { $0.subtracting(x) })
     }
 
@@ -248,7 +241,7 @@ extension Array.DifferentiableView: VectorProtocol where Element: VectorProtocol
     }
 }
 
-extension Array.DifferentiableView: PointwiseMultiplicative
+extension Array.TangentVector: PointwiseMultiplicative
     where Element: PointwiseMultiplicative {
     // FIXME: `one` should probably be removed from the protocol. `Array` cannot represent `one`.
     public static var one: Self {

@@ -221,7 +221,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
         alongAxis axis: Int = 0
     ) -> ([Tensor], (Array<Tensor>.TangentVector) -> Tensor) {
         let result = unstacked(alongAxis: axis)
-        return (result, { v in Tensor(stacking: v.base, alongAxis: axis) })
+        return (result, { v in Tensor(stacking: v.elements, alongAxis: axis) })
     }
 
     @inlinable
@@ -241,7 +241,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
         alongAxis axis: Int = 0
     ) -> ([Tensor], (Array<Tensor>.TangentVector) -> Tensor) {
         let result = split(count: count, alongAxis: axis)
-        return (result, { v in Tensor(concatenating: v.base, alongAxis: axis) })
+        return (result, { v in Tensor(concatenating: v.elements, alongAxis: axis) })
     }
 
     @inlinable
@@ -250,7 +250,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
         alongAxis axis: Int = 0
     ) -> ([Tensor], (Array<Tensor>.TangentVector) -> Tensor) {
         let result = split(sizes: sizes, alongAxis: axis)
-        return (result, { v in Tensor(concatenating: v.base, alongAxis: axis) })
+        return (result, { v in Tensor(concatenating: v.elements, alongAxis: axis) })
     }
 
     @inlinable
