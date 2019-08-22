@@ -128,11 +128,59 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
 
 /// An LSTM cell.
 public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
-    public var inputWeight, updateWeight, forgetWeight, outputWeight: Tensor<Scalar>
-    public var inputBias, updateBias, forgetBias, outputBias: Tensor<Scalar>
+    public var fusedWeight: Tensor<Scalar>
+    public var fusedBias: Tensor<Scalar>
+
+    public var inputWeight: Tensor<Scalar> {
+        let hiddenSize = fusedWeight.shape[1] / 4
+        return fusedWeight.slice(
+            lowerBounds: [0, 0],
+            upperBounds: [fusedWeight.shape[0], hiddenSize])
+    }
+
+    public var updateWeight: Tensor<Scalar> {
+        let hiddenSize = fusedWeight.shape[1] / 4
+        return fusedWeight.slice(
+            lowerBounds: [0, hiddenSize],
+            upperBounds: [fusedWeight.shape[0], 2 * hiddenSize])
+    }
+
+    public var forgetWeight: Tensor<Scalar> {
+        let hiddenSize = fusedWeight.shape[1] / 4
+        return fusedWeight.slice(
+            lowerBounds: [0, 2 * hiddenSize],
+            upperBounds: [fusedWeight.shape[0], 3 * hiddenSize])
+    }
+
+    public var outputWeight: Tensor<Scalar> {
+        let hiddenSize = fusedWeight.shape[1] / 4
+        return fusedWeight.slice(
+            lowerBounds: [0, 3 * hiddenSize],
+            upperBounds: [fusedWeight.shape[0], 4 * hiddenSize])
+    }
+
+    public var inputBias: Tensor<Scalar> {
+        let hiddenSize = fusedWeight.shape[1] / 4
+        return fusedBias.slice(lowerBounds: [0], upperBounds: [hiddenSize])
+    }
+
+    public var updateBias: Tensor<Scalar> {
+        let hiddenSize = fusedWeight.shape[1] / 4
+        return fusedBias.slice(lowerBounds: [hiddenSize], upperBounds: [2 * hiddenSize])
+    }
+
+    public var forgetBias: Tensor<Scalar> {
+        let hiddenSize = fusedWeight.shape[1] / 4
+        return fusedBias.slice(lowerBounds: [2 * hiddenSize], upperBounds: [3 * hiddenSize])
+    }
+
+    public var outputBias: Tensor<Scalar> {
+        let hiddenSize = fusedWeight.shape[1] / 4
+        return fusedBias.slice(lowerBounds: [3 * hiddenSize], upperBounds: [4 * hiddenSize])
+    }
 
     @noDerivative public var stateShape: TensorShape {
-        TensorShape([1, inputWeight.shape[1]])
+        TensorShape([1, fusedWeight.shape[1] / 4])
     }
 
     public var zeroState: State {
@@ -149,22 +197,9 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     /// - Parameters:
     ///   - inputSize: The number of features in 2-D input tensors.
     ///   - hiddenSize: The number of features in 2-D hidden states.
-    public init(
-        inputSize: Int,
-        hiddenSize: Int,
-        seed: TensorFlowSeed = Context.local.randomSeed
-    ) {
-        let concatenatedInputSize = inputSize + hiddenSize
-        let gateWeightShape = TensorShape([concatenatedInputSize, hiddenSize])
-        let gateBiasShape = TensorShape([hiddenSize])
-        self.inputWeight = Tensor(glorotUniform: gateWeightShape, seed: seed)
-        self.inputBias = Tensor(zeros: gateBiasShape)
-        self.updateWeight = Tensor(glorotUniform: gateWeightShape, seed: seed)
-        self.updateBias = Tensor(zeros: gateBiasShape)
-        self.forgetWeight = Tensor(glorotUniform: gateWeightShape, seed: seed)
-        self.forgetBias = Tensor(ones: gateBiasShape)
-        self.outputWeight = Tensor(glorotUniform: gateWeightShape, seed: seed)
-        self.outputBias = Tensor(zeros: gateBiasShape)
+    public init(inputSize: Int, hiddenSize: Int) {
+        self.fusedWeight = Tensor(glorotUniform: [inputSize + hiddenSize, 4 * hiddenSize])
+        self.fusedBias = Tensor(zeros: [4 * hiddenSize])
     }
 
     public struct State: Differentiable {
@@ -186,10 +221,27 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     public func callAsFunction(_ input: Input) -> Output {
         let gateInput = input.input.concatenated(with: input.state.hidden, alongAxis: 1)
 
-        let inputGate = sigmoid(matmul(gateInput, inputWeight) + inputBias)
-        let updateGate = tanh(matmul(gateInput, updateWeight) + updateBias)
-        let forgetGate = sigmoid(matmul(gateInput, forgetWeight) + forgetBias)
-        let outputGate = sigmoid(matmul(gateInput, outputWeight) + outputBias)
+        let fused = matmul(gateInput, fusedWeight) + fusedBias
+        let batchSize = fused.shape[0]
+        let hiddenSize = fused.shape[1] / 4
+        let inputGate = sigmoid(fused.slice(
+            lowerBounds: [0, 0],
+            upperBounds: [batchSize, hiddenSize]))
+        let updateGate = tanh(fused.slice(
+            lowerBounds: [0, hiddenSize],
+            upperBounds: [batchSize, 2 * hiddenSize]))
+        let forgetGate = sigmoid(fused.slice(
+            lowerBounds: [0, 2 * hiddenSize],
+            upperBounds: [batchSize, 3 * hiddenSize]))
+        let outputGate = sigmoid(fused.slice(
+            lowerBounds: [0, 3 * hiddenSize],
+            upperBounds: [batchSize,4 * hiddenSize]))
+        // TODO(SR-10697/TF-507): Replace with the following once it does not crash the compiler.
+        // let fusedParts = fused.split(count: 4, alongAxis: 1)
+        // let inputGate = sigmoid(fusedParts[0])
+        // let updateGate = tanh(fusedParts[1])
+        // let forgetGate = sigmoid(fusedParts[2])
+        // let outputGate = sigmoid(fusedParts[3])
 
         let newCellState = input.state.cell * forgetGate + inputGate * updateGate
         let newHiddenState = tanh(newCellState) * outputGate

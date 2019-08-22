@@ -163,6 +163,8 @@ class TFGraph {
                     }
                 }
             }
+        case .tensorFunctionPointer(let value):
+            TF_SetAttrFuncName(description, name, value.name, value.name.count)
         default: fatalError("Unhandled attribute \(name):\(attribute)")
         }
     }
