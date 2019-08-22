@@ -338,7 +338,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     ///     sequence.
     ///   - count: The number of values in the resulting sequence. `count` must be positive.
     @inlinable
-    init(linSpaceFrom start: Scalar, to end: Scalar, count: Int) {
+    init(linearSpaceFrom start: Scalar, to end: Scalar, count: Int) {
         self = Raw.linSpace(
             start: Tensor(start), stop: Tensor(end), num: Tensor<Int32>(Int32(count)))
     }
@@ -353,7 +353,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     ///     sequence.
     ///   - count: The number of values in the resulting sequence. `count` must be positive.
     @inlinable
-    init(linSpaceFrom start: Tensor<Scalar>, to end: Tensor<Scalar>, count: Tensor<Int32>) {
+    init(linearSpaceFrom start: Tensor<Scalar>, to end: Tensor<Scalar>, count: Tensor<Int32>) {
         self = Raw.linSpace(start: start, stop: end, num: count)
     }
 }
