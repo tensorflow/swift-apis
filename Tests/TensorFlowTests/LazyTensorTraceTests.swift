@@ -17,7 +17,7 @@ import XCTest
 @testable import TensorFlow
 import CTensorFlow
 
-final class LazyTensorTraceTests : LazyTensorTestCase {
+final class LazyTensorTraceTests: LazyTensorTestCase {
     func testSingleLiveTensor() {
         let a = Tensor<Float>(10.0)
         let b = Tensor<Float>(2.0)

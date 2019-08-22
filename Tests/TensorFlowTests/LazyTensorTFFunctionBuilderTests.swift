@@ -16,7 +16,7 @@ import XCTest
 @testable import TensorFlow
 import CTensorFlow
 
-final class LazyTensorTFFunctionBuilderTests : LazyTensorTestCase {
+final class LazyTensorTFFunctionBuilderTests: LazyTensorTestCase {
     func testSingletonInputs() {
         let a = materializedLazyTensor(Tensor<Float>(10.0))
         let w = Raw.identity(a)

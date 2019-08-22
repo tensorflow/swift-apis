@@ -15,8 +15,7 @@
 import XCTest
 @testable import TensorFlow
 
-
-class LazyTensorTestCase : XCTestCase {
+class LazyTensorTestCase: XCTestCase {
     override class func setUp() {
         super.setUp()
         _ThreadLocalState.useLazyTensor = true

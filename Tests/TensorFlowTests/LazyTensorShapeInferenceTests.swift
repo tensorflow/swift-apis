@@ -21,7 +21,7 @@ extension LazyTensorOperation {
     var isMaterialized: Bool { outputs != nil }
 }
 
-final class LazyTensorShapeInferenceTests : LazyTensorTestCase {
+final class LazyTensorShapeInferenceTests: LazyTensorTestCase {
     func testSimpleShapeComputations() {
         let a = Tensor<Float>(shape: [3, 1], scalars: [1.0, 2.0, 3.0])
         let b = Tensor<Float>(shape: [1, 3], scalars: [1.0, 2.0, 3.0])

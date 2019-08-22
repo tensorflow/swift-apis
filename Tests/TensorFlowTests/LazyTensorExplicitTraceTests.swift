@@ -17,7 +17,7 @@ import XCTest
 @testable import TensorFlow
 import CTensorFlow
 
-final class LazyTensorExplicitTraceTests : LazyTensorTestCase {
+final class LazyTensorExplicitTraceTests: LazyTensorTestCase {
     func testSingleInput() {
         func fn(x: Tensor<Float>) -> Tensor<Float> { return x + x }
         let trace = LazyTensorTraceBuilder.trace(fn)
