@@ -86,15 +86,10 @@ extension TensorBuffer {
         count: Int,
         withInitializer body: (UnsafeMutableBufferPointer<Scalar>) -> Void
     ) -> TensorBuffer<Scalar> {
-        /// Since `Scalar` may be any generic type, it is not possible to construct
-        /// an instance of `Scalar` directly for use with the
-        /// `Array(repeating:count:)` initializer. The workaround here is to
-        /// allocate a dummy `Scalar` pointer of size 1 and to use the pointee value
-        /// as the `repeatedValue` of the initializer.
-        let dummyPointer = UnsafeMutablePointer<Scalar>.allocate(capacity: 1)
-        var array = Array(repeating: dummyPointer.move(), count: count)
-        array.withUnsafeMutableBufferPointer { body($0) }
-        dummyPointer.deallocate()
+        let array = [Scalar](unsafeUninitializedCapacity: count) { buffer, initializedCount in
+            body(buffer)
+            initializedCount = count
+        }
         return TensorBuffer(allocation: .native(BoxedArray(array)), count: count)
     }
 }
@@ -478,7 +473,6 @@ internal extension ShapedArray where Scalar: _TensorFlowDataTypeCompatible {
     @usableFromInline
     @inline(never)
     init(cTensorHandle: CTensorHandle) {
-        internalConsistencyCheck(TFE_TensorHandleIsConcrete(cTensorHandle) != 0)
         let status = TF_NewStatus()
         let cTensor = TFE_TensorHandleResolve(cTensorHandle, status)
         checkOk(status)
