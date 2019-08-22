@@ -26,7 +26,7 @@ public func allTests() -> [XCTestCaseEntry] {
         testCase(LazyTensorTraceTests.allTests),
         testCase(LazyTensorExplicitTraceTests.allTests),
         testCase(LazyTensorOperationTests.allTests),
-        // testCase(LazyTensorShapeInferenceTests.allTests),
+        testCase(LazyTensorShapeInferenceTests.allTests),
         testCase(LazyTensorTFFunctionBuilderTests.allTests),
         testCase(LazyTensorEvaluationTests.allTests),
         testCase(LossTests.allTests),

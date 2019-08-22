@@ -388,8 +388,7 @@ extension LazyTensorOperation: TFTensorOperation {
 
     func updateAttribute<In: TensorGroup, Out: TensorGroup>(
         _ name: String, _ value: (In) -> Out) {
-        // TODO:
-        fatalError("Unimplemented [TFFunction] attribute.")
+        updateAttribute(name, _TensorFunctionPointer(name: _tffunc(value)))
     }
 
     func execute() {
@@ -443,7 +442,7 @@ extension LazyTensorOperation: TFTensorOperation {
             case .tensorDataTypeArray(let v): op.updateAttribute(name, v)
             case .optionalTensorShape(let v): op.updateAttribute(name, v)
             case .optionalTensorShapeArray(let v): op.updateAttribute(name, v)
-            case .tensorFunctionPointer(_): fatalError("tensorFunctionPointer Unimplemented!")
+            case .tensorFunctionPointer(let v): op.updateAttribute(name, v)
             }
         }
         op.execute()
@@ -847,9 +846,9 @@ extension LazyTensorOperation {
         return outputs!
     }
 
-    /// Converts symbolic tensor inputs to concrete inputs if the
-    /// associated `LazyTensorOperation` has been materialized.
-    private func maybeMaterializeInputs() {
+    /// Converts symbolic tensor inputs to concrete inputs if the associated `LazyTensorOperation`
+    /// has been materialized.
+    func maybeMaterializeInputs() {
         /// If `lazyTensor` is symbolic and the associated `LazyTensorOperation`
         /// has been materialized, return the corresponding concrete `LazyTensorHandle`.
         /// Otherwise, return `lazyTensor` untouched.
@@ -894,9 +893,5 @@ extension LazyTensorOperation {
             lazyOp.outputShapes = lazyOp.outputs!.map { $0.shape }
             start = end
         }
-
-        // On all the live operations rewrite the inputs so that we drop references
-        // to the LazyTensorOperations.
-        LazyTensorHandle.forEachOperation { $0.maybeMaterializeInputs() }
     }
 }

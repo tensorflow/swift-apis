@@ -198,6 +198,22 @@ final class LazyTensorTFFunctionBuilderTests : XCTestCase {
 
             """)
 
+        // TensorFunctionPointer attribute.
+        let statelessWhile = LazyTensorOperation("StatelessWhile", 1)
+        statelessWhile.updateAttribute("T", [Float.tensorFlowDataType])
+        statelessWhile.updateAttribute("cond", _TensorFunctionPointer(name: "cond"))
+        statelessWhile.updateAttribute("body", _TensorFunctionPointer(name: "body"))
+        statelessWhile.addInputList([a])
+        XCTAssertEqual(
+            tfFunction(statelessWhile, "statelessWhile").description,
+            """
+
+            statelessWhile(placeholder_0:float) -> () {
+              StatelessWhile_1 = StatelessWhile[T={float}, body=body, cond=cond, output_shapes=[], parallel_iterations=10](placeholder_0)
+            }
+
+            """)
+
     }
 
     private func tfFunction(

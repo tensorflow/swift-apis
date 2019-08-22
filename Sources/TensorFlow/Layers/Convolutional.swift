@@ -632,6 +632,113 @@ public struct ZeroPadding3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer
     }
 }
 
+/// A 1-D separable convolution layer.
+///
+/// This layer performs a depthwise convolution that acts separately on channels followed by
+/// a pointwise convolution that mixes channels.
+@frozen
+public struct SeparableConv1D<Scalar: TensorFlowFloatingPoint>: Layer {
+    /// The 3-D depthwise convolution kernel.
+    public var depthwiseFilter: Tensor<Scalar>
+    /// The 3-D pointwise convolution kernel.
+    public var pointwiseFilter: Tensor<Scalar>
+    /// The bias vector.
+    public var bias: Tensor<Scalar>
+    /// The element-wise activation function.
+    @noDerivative public let activation: Activation
+    /// The strides of the sliding window for spatial dimensions.
+    @noDerivative public let stride: Int
+    /// The padding algorithm for convolution.
+    @noDerivative public let padding: Padding
+
+    /// The element-wise activation function type.
+    public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
+
+    /// Creates a `SeparableConv1D` layer with the specified depthwise and pointwise filter,
+    /// bias, activation function, strides, and padding.
+    ///
+    /// - Parameters:
+    ///   - depthwiseFilter: The 3-D depthwise convolution kernel
+    ///     `[filter width, input channels count, channel multiplier]`.
+    ///   - pointwiseFilter: The 3-D pointwise convolution kernel
+    ///     `[1, channel multiplier * input channels count, output channels count]`.
+    ///   - bias: The bias vector.
+    ///   - activation: The element-wise activation function.
+    ///   - strides: The strides of the sliding window for spatial dimensions.
+    ///   - padding: The padding algorithm for convolution.
+    public init(
+        depthwiseFilter: Tensor<Scalar>,
+        pointwiseFilter: Tensor<Scalar>,
+        bias: Tensor<Scalar>,
+        activation: @escaping Activation = identity,
+        stride: Int = 1,
+        padding: Padding = .valid
+    ) {
+        self.depthwiseFilter = depthwiseFilter
+        self.pointwiseFilter = pointwiseFilter
+        self.bias = bias
+        self.activation = activation
+        self.stride = stride
+        self.padding = padding
+    }
+
+    /// Returns the output obtained from applying the layer to the given input.
+    ///
+    /// - Parameter input: The input to the layer.
+    /// - Returns: The output.
+    @differentiable
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+        let depthwise = depthwiseConv2D(
+            input.expandingShape(at: 1),
+            filter: depthwiseFilter.expandingShape(at: 1),
+            strides: (1, stride, stride, 1),
+            padding: padding)
+        let x = conv2D(
+            depthwise,
+            filter: pointwiseFilter.expandingShape(at: 1),
+            strides: (1, 1, 1, 1),
+            padding: padding,
+            dilations: (1, 1, 1, 1))
+        return activation(x.squeezingShape(at: 1) + bias)
+    }
+}
+
+public extension SeparableConv1D {
+    /// Creates a `SeparableConv1D` layer with the specified depthwise and pointwise filter shape,
+    /// strides, padding, and element-wise activation function.
+    ///
+    /// - Parameters:
+    ///   - depthwiseFilterShape: The shape of the 3-D depthwise convolution kernel.
+    ///   - pointwiseFilterShape: The shape of the 3-D pointwise convolution kernel.
+    ///   - strides: The strides of the sliding window for temporal dimensions.
+    ///   - padding: The padding algorithm for convolution.
+    ///   - activation: The element-wise activation function.
+    ///   - filterInitializer: Initializer to use for the filter parameters.
+    ///   - biasInitializer: Initializer to use for the bias parameters.
+    init(
+        depthwiseFilterShape: (Int, Int, Int),
+        pointwiseFilterShape: (Int, Int, Int),
+        stride: Int = 1,
+        padding: Padding = .valid,
+        activation: @escaping Activation = identity,
+        depthwiseFilterInitializer: ParameterInitializer<Scalar> = glorotUniform(),
+        pointwiseFilterInitializer: ParameterInitializer<Scalar> = glorotUniform(),
+        biasInitializer: ParameterInitializer<Scalar> = zeros()
+    ) {
+        let depthwiseFilterTensorShape = TensorShape([
+            depthwiseFilterShape.0, depthwiseFilterShape.1, depthwiseFilterShape.2])
+        let pointwiseFilterTensorShape = TensorShape([
+            pointwiseFilterShape.0, pointwiseFilterShape.1, pointwiseFilterShape.2])
+        self.init(
+            depthwiseFilter: depthwiseFilterInitializer(depthwiseFilterTensorShape),
+            pointwiseFilter: pointwiseFilterInitializer(pointwiseFilterTensorShape),
+            bias: biasInitializer([pointwiseFilterShape.2]),
+            activation: activation,
+            stride: stride,
+            padding: padding)
+    }
+}
+
 /// A 2-D Separable convolution layer.
 ///
 /// This layer performs a depthwise convolution that acts separately on channels followed by
