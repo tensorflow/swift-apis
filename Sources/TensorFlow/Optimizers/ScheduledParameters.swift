@@ -18,7 +18,7 @@
 public protocol ScheduledParameter {
     associatedtype Scalar: FloatingPoint
 
-    /// Returns theparameter value for the specified training step.
+    /// Returns the parameter value for the specified training step.
     ///
     /// - Parameter step: Training step.
     func callAsFunction(forStep step: UInt64) -> Scalar
