@@ -38,7 +38,7 @@ final class InitializerTests: XCTestCase {
             shape: [4, 3],
             scalars: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0]), x.array)
 
-        let linSpaceTensor1 = Tensor<Float>(linSpaceFrom: 0.1, to: 2.0, count: 20)
+        let linSpaceTensor1 = Tensor<Float>(linSpaceFrom: 0.1, to: 2.0, count: 10)
         assertEqual(
             Tensor<Float>(
                 [
@@ -46,7 +46,7 @@ final class InitializerTests: XCTestCase {
                     1.57777777, 1.78888888, 2.0
                 ]), linSpaceTensor1, accuracy: 0.001)
 
-        let linSpaceTensor2 = Tensor<Float>(linSpaceFrom: 2.0, to: 0.1, count: 20)
+        let linSpaceTensor2 = Tensor<Float>(linSpaceFrom: 2.0, to: 0.1, count: 10)
         assertEqual(
             Tensor<Float>(
                 [
