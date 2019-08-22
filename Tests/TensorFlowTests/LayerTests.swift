@@ -360,7 +360,7 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(output, expected)
     }
 
-    func testAvgPool1DGradient(){
+    func testAvgPool1DGradient() {
         let layer = AvgPool1D<Float>(poolSize: 2, stride: 1, padding: .valid)
         let x = Tensor(shape: [1, 4, 4], scalars: (0..<16).map(Float.init))
         let computedGradient = gradient(at: x, layer) { $1($0).sum() }
@@ -388,7 +388,7 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(output, expected)
     }
 
-    func testAvgPool2DGradient(){
+    func testAvgPool2DGradient() {
         let layer = AvgPool2D<Float>(poolSize: (2, 2), strides: (1, 1), padding: .valid)
         let x = Tensor(shape: [1, 4, 4, 2], scalars: (0..<32).map(Float.init))
         let computedGradient = gradient(at: x, layer) { $1($0).sum() }
@@ -416,7 +416,7 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(output, expected)
     }
 
-    func testAvgPool3DGradient(){
+    func testAvgPool3DGradient() {
         let layer = AvgPool3D<Float>(poolSize: (2, 2, 2), strides: (1, 1, 1), padding: .valid)
         let x = Tensor(shape: [1, 2, 2, 2, 1], scalars: (0..<8).map(Float.init))
         let computedGradient = gradient(at: x, layer) { $1($0).sum() }
