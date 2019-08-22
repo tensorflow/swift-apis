@@ -327,6 +327,37 @@ public extension Tensor where Scalar: Numeric {
     }
 }
 
+public extension Tensor where Scalar: TensorFlowFloatingPoint {
+    /// Creates a 1-D tensor representing a sequence from a starting value, up to and
+    /// including an end value, spaced evenly to generate the number of values specified.
+    ///
+    /// - Parameters:
+    ///   - start: The starting value to use for the sequence. If the sequence contains any values,
+    ///     the first one is `start`.
+    ///   - end: An end value to limit the sequence. `end` is the last element of the resulting
+    ///     sequence.
+    ///   - count: The number of values in the resulting sequence. `count` must be positive.
+    @inlinable
+    init(linSpaceFrom start: Scalar, to end: Scalar, count: Int) {
+        self = Raw.linSpace(
+            start: Tensor(start), stop: Tensor(end), num: Tensor<Int32>(Int32(count)))
+    }
+
+    /// Creates a 1-D tensor representing a sequence from a starting value, up to and
+    /// including an end value, spaced evenly to generate the number of values specified.
+    ///
+    /// - Parameters:
+    ///   - start: The starting value to use for the sequence. If the sequence contains any values,
+    ///     the first one is `start`.
+    ///   - end: An end value to limit the sequence. `end` is the last element of the resulting
+    ///     sequence.
+    ///   - count: The number of values in the resulting sequence. `count` must be positive.
+    @inlinable
+    init(linSpaceFrom start: Tensor<Scalar>, to end: Tensor<Scalar>, count: Tensor<Int32>) {
+        self = Raw.linSpace(start: start, stop: end, num: count)
+    }
+}
+
 //===------------------------------------------------------------------------------------------===//
 // Random
 //===------------------------------------------------------------------------------------------===//
