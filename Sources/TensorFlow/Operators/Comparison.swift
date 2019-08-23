@@ -105,6 +105,7 @@ extension Tensor where Scalar: Numeric & Comparable {
     /// Returns a Boolean value indicating whether the results of element-wise comparison
     /// `lhs .< rhs` are all `true`.
     @inlinable
+    @available(*, deprecated, message: "This API will be removed. Use `(lhs .< rhs).all()` instead.")
     public static func < (lhs: Tensor, rhs: Tensor) -> Bool {
         return (lhs .< rhs).all()
     }
@@ -112,6 +113,7 @@ extension Tensor where Scalar: Numeric & Comparable {
     /// Returns a Boolean value indicating whether the results of element-wise comparison
     /// `lhs .<= rhs` are all `true`.
     @inlinable
+    @available(*, deprecated, message: "This API will be removed. Use `(lhs .<= rhs).all()` instead.")
     public static func <= (lhs: Tensor, rhs: Tensor) -> Bool {
         return (lhs .<= rhs).all()
     }
@@ -119,6 +121,7 @@ extension Tensor where Scalar: Numeric & Comparable {
     /// Returns a Boolean value indicating whether the results of element-wise comparison
     /// `lhs .> rhs` are all `true`.
     @inlinable
+    @available(*, deprecated, message: "This API will be removed. Use `(lhs .> rhs).all()` instead.")
     public static func > (lhs: Tensor, rhs: Tensor) -> Bool {
         return (lhs .> rhs).all()
     }
@@ -126,6 +129,7 @@ extension Tensor where Scalar: Numeric & Comparable {
     /// Returns a Boolean value indicating whether the results of element-wise comparison
     /// `lhs .>= rhs` are all `true`.
     @inlinable
+    @available(*, deprecated, message: "This API will be removed. Use `(lhs .>= rhs).all()` instead.")
     public static func >= (lhs: Tensor, rhs: Tensor) -> Bool {
         return (lhs .>= rhs).all()
     }
@@ -135,6 +139,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     /// Returns a Boolean value indicating whether all scalars in the first argument are less than
     ///  the second argument.
     @inlinable
+    @available(*, deprecated, message: "This API will be removed. Use `(lhs .< rhs).all()` instead.")
     static func < (lhs: Tensor, rhs: Scalar) -> Bool {
         return (lhs .< rhs).all()
     }
@@ -142,6 +147,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     /// Returns a Boolean value indicating whether all scalars in the first argument are less than
     /// or equal to the second argument.
     @inlinable
+    @available(*, deprecated, message: "This API will be removed. Use `(lhs .<= rhs).all()` instead.")
     static func <= (lhs: Tensor, rhs: Scalar) -> Bool {
         return (lhs .<= rhs).all()
     }
@@ -149,6 +155,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     /// Returns a Boolean value indicating whether all scalars in the first argument are greater than
     /// the second argument.
     @inlinable
+    @available(*, deprecated, message: "This API will be removed. Use `(lhs .> rhs).all()` instead.")
     static func > (lhs: Tensor, rhs: Scalar) -> Bool {
         return (lhs .> rhs).all()
     }
@@ -156,6 +163,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     /// Returns a Boolean value indicating whether all scalars in the first argument are greater than
     /// or equal to the second argument.
     @inlinable
+    @available(*, deprecated, message: "This API will be removed. Use `(lhs .>= rhs).all()` instead.")
     static func >= (lhs: Tensor, rhs: Scalar) -> Bool {
         return (lhs .>= rhs).all()
     }
