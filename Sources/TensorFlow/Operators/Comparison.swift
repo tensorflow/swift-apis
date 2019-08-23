@@ -101,9 +101,8 @@ public extension Tensor where Scalar: Numeric & Comparable {
     }
 }
 
-extension Tensor: Comparable where Scalar: Numeric & Comparable {
-    /// Returns a Boolean value indicating whether the value of the first argument is
-    /// lexicographically less than that of the second argument.
+extension Tensor where Scalar: Numeric & Comparable {
+    /// Returns a Boolean value indicating whether all values of first argument are less than corresponding values of second argument.
     @inlinable
     public static func < (lhs: Tensor, rhs: Tensor) -> Bool {
         return (lhs .< rhs).all()

@@ -59,7 +59,7 @@ final class LayerTests: XCTestCase {
             let updatedLoss = meanSquaredError(
                 predicted: model(x).squeezingShape(at: 1),
                 expected: y)
-            XCTAssertLessThan(updatedLoss, initialLoss)
+            XCTAssertLessThan(updatedLoss.scalarized(), initialLoss.scalarized())
         }
     }
 
