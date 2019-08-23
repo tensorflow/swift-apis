@@ -153,7 +153,7 @@ final class TensorAutoDiffTests: XCTestCase {
         XCTAssertEqual(varianceGradAlongAxes(input), expected)
     }
 
-    /*TODO:(https://bugs.swift.org/browse/TF-772): Disabling this case as assertions fail.
+    /*TODO:(https://bugs.swift.org/browse/TF-771): Disabling this case as assertions fail.
     func testTensorInitStacking() {
         let a1 = Tensor<Float>([1, 2, 3, 4, 5])
         let b1 = Tensor<Float>([6, 7, 8, 9, 10])
@@ -449,7 +449,7 @@ final class TensorAutoDiffTests: XCTestCase {
         ("testSum", testSum),
         ("testMean", testMean),
         ("testVariance", testVariance),
-        // TODO(https://bugs.swift.org/browse/TF-772): Disabling the failing test.
+        // TODO(https://bugs.swift.org/browse/TF-771): Disabling the failing test.
         // ("testTensorInitStacking", testTensorInitStacking),
         ("testExpandingShape", testExpandingShape),
         ("testSqueezingShape", testSqueezingShape),
