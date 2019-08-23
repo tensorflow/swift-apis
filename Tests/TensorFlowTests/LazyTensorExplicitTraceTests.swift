@@ -17,17 +17,7 @@ import XCTest
 @testable import TensorFlow
 import CTensorFlow
 
-final class LazyTensorExplicitTraceTests: XCTestCase {
-    override class func setUp() {
-        super.setUp()
-        _ThreadLocalState.useLazyTensor = true
-    }
-
-    override class func tearDown() {
-        super.tearDown()
-        _ThreadLocalState.useLazyTensor = false
-    }
-
+final class LazyTensorExplicitTraceTests: LazyTensorTestCase {
     func testSingleInput() {
         func fn(x: Tensor<Float>) -> Tensor<Float> { return x + x }
         let trace = LazyTensorTraceBuilder.trace(fn)

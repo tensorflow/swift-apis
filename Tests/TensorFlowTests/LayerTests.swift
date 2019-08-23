@@ -258,6 +258,22 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(output, expected)
     }
 
+    func testSeparableConv1D() {
+        let depthwiseFilter = Tensor(shape: [2, 2, 2], scalars: (0..<8).map(Float.init))
+        let pointwiseFilter = Tensor(shape: [1, 4, 1], scalars: (0..<4).map(Float.init))
+        let bias = Tensor<Float>([4])
+        let layer = SeparableConv1D<Float>(depthwiseFilter: depthwiseFilter,
+                                           pointwiseFilter: pointwiseFilter,
+                                           bias: bias,
+                                           activation: identity,
+                                           stride: 1,
+                                           padding: .same)
+        let input = Tensor(shape: [2, 2, 2], scalars: (0..<8).map(Float.init))
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>(shape: [2, 2, 1], scalars: [17, 45, 73, 101])
+        XCTAssertEqual(output, expected)
+    }
+
     func testSeparableConv2D() {
         let depthwiseFilter =  Tensor(shape: [2, 2, 2, 2], scalars: (0..<16).map(Float.init))
         let pointwiseFilter =  Tensor(shape: [1, 1, 4, 1], scalars: (0..<4).map(Float.init))
@@ -416,6 +432,25 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(output, expected)
     }
 
+    func testGlobalAvgPool1DGradient() {
+        let layer = GlobalAvgPool1D<Float>()
+        let input = Tensor(shape: [2, 2, 2], scalars: (0..<8).map(Float.init))
+        let computedGradient = gradient(at: input, layer) { $1($0).sum() }
+        // The expected value of the gradient was computed using the following Python code:
+        // ```
+        //   GlobalAvgPool1D = tf.keras.layers.GlobalAveragePooling1D()
+        //   with tf.GradientTape() as t:
+        //     t.watch(x)
+        //     y = tf.math.reduce_sum(GlobalAvgPool1D(x))
+        //   print(t.gradient(y, x))
+        // ```
+        XCTAssertEqual(computedGradient.0,
+                       [[[0.5, 0.5],
+                         [0.5, 0.5]],
+                        [[0.5, 0.5],
+                         [0.5, 0.5]]])
+    }
+
     func testGlobalAvgPool2D() {
         let layer = GlobalAvgPool2D<Float>()
         let input = Tensor(shape: [2, 6, 2, 1], scalars: (0..<24).map(Float.init))
@@ -424,12 +459,52 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(output, expected)
     }
 
+    func testGlobalAvgPool2DGradient() {
+        let layer = GlobalAvgPool2D<Float>()
+        let input = Tensor(shape: [2, 2, 2, 2], scalars: (0..<16).map(Float.init))
+        let computedGradient = gradient(at: input, layer) { $1($0).sum() }
+        // The expected value of the gradient was computed using the following Python code:
+        // ```
+        //   GlobalAvgPool2D = tf.keras.layers.GlobalAveragePooling2D()
+        //   with tf.GradientTape() as t:
+        //     t.watch(x)
+        //     y = tf.math.reduce_sum(GlobalAvgPool2D(x))
+        //   print(t.gradient(y, x))
+        // ```
+        XCTAssertEqual(computedGradient.0,
+                       [[[[0.25, 0.25], [0.25, 0.25]],
+                         [[0.25, 0.25], [0.25, 0.25]]],
+                        [[[0.25, 0.25], [0.25, 0.25]],
+                         [[0.25, 0.25], [0.25, 0.25]]]])
+    }
+
     func testGlobalAvgPool3D() {
         let layer = GlobalAvgPool3D<Float>()
         let input = Tensor<Float>(shape: [2, 6, 2, 1, 1], scalars: (0..<24).map(Float.init))
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>([[5.5], [17.5]])
         XCTAssertEqual(output, expected)
+    }
+
+    func testGlobalAvgPool3DGradient() {
+        let layer = GlobalAvgPool3D<Float>()
+        let input = Tensor(shape: [1, 3, 2, 3, 1], scalars: (0..<18).map(Float.init))
+        let computedGradient = gradient(at: input, layer) { $1($0).sum() }
+        // The expected value of the gradient was computed using the following Python code:
+        // ```
+        //   GlobalAvgPool3D = tf.keras.layers.GlobalAveragePooling3D()
+        //   with tf.GradientTape() as t:
+        //     t.watch(x)
+        //     y = tf.math.reduce_sum(GlobalAvgPool3D(x))
+        //   print(t.gradient(y, x))
+        // ```
+        XCTAssertEqual(computedGradient.0,
+                       [[[[[0.055555556], [0.055555556], [0.055555556]],
+                          [[0.055555556], [0.055555556], [0.055555556]]],
+                         [[[0.055555556], [0.055555556], [0.055555556]],
+                          [[0.055555556], [0.055555556], [0.055555556]]],
+                         [[[0.055555556], [0.055555556], [0.055555556]],
+                          [[0.055555556], [0.055555556], [0.055555556]]]]])
     }
 
     func testGlobalMaxPool1D() {
@@ -721,6 +796,16 @@ final class LayerTests: XCTestCase {
     }
 
     func testBatchNormInference() {
+        Context.local.learningPhase = .inference
+        // This tests for a specific failure that had impacted the MiniGo model.
+        let miniGoTensor = Tensor<Float>(randomUniform: [2, 19, 19, 256])
+        let miniGoBatchNorm = BatchNorm(
+            featureCount: 256,
+            momentum: Tensor<Float>(0.95),
+            epsilon: Tensor<Float>(1e-5))
+        let miniGoResult = miniGoBatchNorm(miniGoTensor)
+        XCTAssertEqual(miniGoTensor.shape, miniGoResult.shape)
+
         let x = Tensor<Float>(rangeFrom: 0, to: 20, stride: 1).reshaped(to: [4,5])
         let epsilon = Tensor<Float>(0.001)
         let bnLayer = BatchNorm<Float>(featureCount: 5, axis: 1, epsilon: epsilon)
@@ -790,6 +875,18 @@ final class LayerTests: XCTestCase {
             accuracy: 1e-5)
     }
 
+    func testLayerNormInference() {
+        Context.local.learningPhase = .inference
+        // This tests for a specific failure that had impacted the Transformer model.
+        let transformerTensor = Tensor<Float>(randomUniform: [1, 1, 768])
+        let transformerLayerNorm = LayerNorm(
+            featureCount: 768,
+            axis: -1,
+            epsilon: Tensor<Float>(1e-5))
+        let transformerResult = transformerLayerNorm(transformerTensor)
+        XCTAssertEqual(transformerTensor.shape, transformerResult.shape)
+    }
+
     static var allTests = [
         ("testSequential", testSequential),
         ("testConv1D", testConv1D),
@@ -800,6 +897,7 @@ final class LayerTests: XCTestCase {
         ("testConv3D", testConv3D),
         ("testConv3DGradient", testConv3DGradient),
         ("testDepthConv2D", testDepthConv2D),
+        ("testSeparableConv1D", testSeparableConv1D),
         ("testSeparableConv2D", testSeparableConv2D),
         ("testZeroPadding1D", testZeroPadding1D),
         ("testZeroPadding2D", testZeroPadding2D),
@@ -814,8 +912,11 @@ final class LayerTests: XCTestCase {
         ("testAvgPool2D", testAvgPool2D),
         ("testAvgPool3D", testAvgPool3D),
         ("testGlobalAvgPool1D", testGlobalAvgPool1D),
+        ("testGlobalAvgPool1DGradient", testGlobalAvgPool1DGradient),
         ("testGlobalAvgPool2D", testGlobalAvgPool2D),
+        ("testGlobalAvgPool2DGradient", testGlobalAvgPool2DGradient),
         ("testGlobalAvgPool3D", testGlobalAvgPool3D),
+        ("testGlobalAvgPool3DGradient", testGlobalAvgPool3DGradient),
         ("testGlobalMaxPool1D", testGlobalMaxPool1D),
         ("testGlobalMaxPool2D", testGlobalMaxPool2D),
         ("testGlobalMaxPool3D", testGlobalMaxPool3D),
@@ -833,6 +934,7 @@ final class LayerTests: XCTestCase {
         ("testFunction", testFunction),
         ("testBatchNorm", testBatchNorm),
         ("testBatchNormInference", testBatchNormInference),
-        ("testLayerNorm", testLayerNorm)
+        ("testLayerNorm", testLayerNorm),
+        ("testLayerNormInference", testLayerNormInference),
     ]
 }
