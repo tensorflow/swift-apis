@@ -352,6 +352,8 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     ///   - end: An end value to limit the sequence. `end` is the last element of the resulting
     ///     sequence.
     ///   - count: The number of values in the resulting sequence. `count` must be positive.
+    ///
+    /// - Precondition: `start`, `to`, and `count` must be Tensors containing a single Scalar value.
     @inlinable
     init(linearSpaceFrom start: Tensor<Scalar>, to end: Tensor<Scalar>, count: Tensor<Int32>) {
         self = Raw.linSpace(start: start, stop: end, num: count)
