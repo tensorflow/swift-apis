@@ -373,10 +373,10 @@ final class LayerTests: XCTestCase {
         //   print(t.gradient(y, x))
         // ```
         let expectedGradient = Tensor<Float>([[
-             [0.5, 0.5, 0.5, 0.5],
-             [1.0, 1.0, 1.0, 1.0],
-             [1.0, 1.0, 1.0, 1.0],
-             [0.5, 0.5, 0.5, 0.5]]])
+            [0.5, 0.5, 0.5, 0.5],
+            [1.0, 1.0, 1.0, 1.0],
+            [1.0, 1.0, 1.0, 1.0],
+            [0.5, 0.5, 0.5, 0.5]]])
         XCTAssertEqual(computedGradient.0, expectedGradient)
     }
 
