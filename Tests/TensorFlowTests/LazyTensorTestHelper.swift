@@ -12,7 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import XCTest
 @testable import TensorFlow
+
+class LazyTensorTestCase: XCTestCase {
+    override class func setUp() {
+        super.setUp()
+        _ThreadLocalState.useLazyTensor = true
+    }
+
+    override class func tearDown() {
+        super.tearDown()
+        _ThreadLocalState.useLazyTensor = false
+    }
+}
 
 protocol _LazyTensorCompatible {
     /// The underlying `LazyTensorHandle` (if any).

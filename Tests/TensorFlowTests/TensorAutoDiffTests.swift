@@ -46,7 +46,7 @@ final class TensorAutoDiffTests: XCTestCase {
         func negate<T : TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
             return (1 - x).sum()
         }
-        XCTAssertEqual(gradient(at: Tensor([0.1, 0.2, 0.3]), in: negate), Tensor(-1))
+        XCTAssertEqual(gradient(at: Tensor([0.1, 0.2, 0.3]), in: negate), Tensor([-1, -1, -1]))
     }
 
     func testScalarized() {
@@ -152,6 +152,20 @@ final class TensorAutoDiffTests: XCTestCase {
         XCTAssertEqual(varianceGradSqueezingAxes(input), expected)
         XCTAssertEqual(varianceGradAlongAxes(input), expected)
     }
+
+    /*TODO:(https://bugs.swift.org/browse/TF-771): Disabling this case as assertions fail.
+    func testTensorInitStacking() {
+        let a1 = Tensor<Float>([1, 2, 3, 4, 5])
+        let b1 = Tensor<Float>([6, 7, 8, 9, 10])
+        let a2 = Tensor<Float>([1, 1, 1, 1, 1])
+        let b2 = Tensor<Float>([1, 1, 1, 1, 1])
+        let grads = gradient(at: a2, b2) { a, b in
+            Tensor<Float>(stacking: [a1 * a, b1 * b], alongAxis: -1).sum()
+        }
+        XCTAssertEqual(a1, grads.0)
+        XCTAssertEqual(b1, grads.1)
+    }
+    */
 
     func testExpandingShape() {
         func f1(a: Tensor<Float>) -> Tensor<Float> { a.expandingShape(at: 0).squared() }
@@ -305,7 +319,7 @@ final class TensorAutoDiffTests: XCTestCase {
             [1, 2, 3],
             [1, 2, 3]]
         )
-        let expected: Tensor<Float> = Tensor([[4, 8, 12]])
+        let expected: Tensor<Float> = Tensor([4, 8, 12])
         XCTAssertEqual(expected, pb(inputTensor))
     }
 
@@ -329,7 +343,7 @@ final class TensorAutoDiffTests: XCTestCase {
             foo(tensor: x, other: Tensor([[1, 2, 3], [1, 2, 3], [1, 2, 3]]))
         }
         let inputTensor: Tensor<Float> = Tensor([[[[[[1, 2, 3]]]]]])
-        let expected: Tensor<Float> = Tensor([[1, 2, 3]])
+        let expected: Tensor<Float> = Tensor([1, 2, 3])
 
         XCTAssertEqual(expected, pb(inputTensor))
     }
@@ -435,6 +449,8 @@ final class TensorAutoDiffTests: XCTestCase {
         ("testSum", testSum),
         ("testMean", testMean),
         ("testVariance", testVariance),
+        // TODO(https://bugs.swift.org/browse/TF-771): Disabling the failing test.
+        // ("testTensorInitStacking", testTensorInitStacking),
         ("testExpandingShape", testExpandingShape),
         ("testSqueezingShape", testSqueezingShape),
         ("testReshapedBackprop", testReshapedBackprop),

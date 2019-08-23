@@ -50,54 +50,71 @@ class LazyTensorHandle: _AnyTensorHandle {
         precondition(
             index < op.outputCount, "Symbolic Tensor Index is out-of-bounds")
         handle = Handle.symbolic(op, index: index, isLive: false)
-        LazyTensorContext.operationsTracker.incrementRefCount(op, isLive: false)
+        LazyTensorContext.local.operationsTracker.incrementRefCount(op, isLive: false)
     }
 
     init(_lazyLive op: LazyTensorOperation, index: Int) {
         precondition(
             index < op.outputCount, "Symbolic Tensor Index is out-of-bounds")
         handle = Handle.symbolic(op, index: index, isLive: true)
-        LazyTensorContext.operationsTracker.incrementRefCount(op, isLive: true)
+        LazyTensorContext.local.operationsTracker.incrementRefCount(op, isLive: true)
     }
 
     deinit {
         if case let .symbolic(op, _, isLive) = handle {
-            LazyTensorContext.operationsTracker.decrementRefCount(op, isLive: isLive)
+            LazyTensorContext.local.operationsTracker.decrementRefCount(op, isLive: isLive)
         }
     }
 
     /// The number of dimensions of the underlying `Tensor`.
-    @inlinable
-    var rank: Int { _tfeTensorHandle.rank }
+    @usableFromInline
+    var rank: Int {
+        @_semantics("autodiff.nonvarying")
+        get { shape.rank }
+    }
 
     /// The shape of the underlying `Tensor`.
-    @inlinable
-    var shape: TensorShape { _tfeTensorHandle.shape }
+    @usableFromInline
+    var shape: TensorShape {
+        @_semantics("autodiff.nonvarying")
+        get {
+            switch handle {
+            case .symbolic(let op, let index, _):
+                precondition(LazyTensorContext.local.isShapeTrackingEnabled,
+                    "Shape tracking is not enabled in this context.")
+                if let shape = op.outputShapes[index] { return shape }
+                // Materialize and get the shape from concrete tensor handle.
+                op.outputShapes[index] = _tfeTensorHandle.shape
+                return op.outputShapes[index]!
+            case .concrete(let tfeHandle, _): return tfeHandle.shape
+            }
+        }
+    }
 
     /// Returns the underlying `LazyTensorOperation` if this is a symbolic `LazyTensorHandle`.
     var lazyTensorOperation: LazyTensorOperation? {
         switch handle {
         case .symbolic(let op, _, _): return op
-        case .concrete(_): return nil
+        case .concrete: return nil
         }
     }
-    
+
     // Liveness tracking for LazyTensorOperations
     //
     static func isLive(_ op: LazyTensorOperation) -> Bool {
-        return LazyTensorContext.operationsTracker.isLive(op)
+        return LazyTensorContext.local.operationsTracker.isLive(op)
     }
 
     static func forEachLiveOperation(
         _ perform: (LazyTensorOperation) throws -> Void
     ) rethrows -> Void {
-        try LazyTensorContext.operationsTracker.forEachLiveOperation(perform)
+        try LazyTensorContext.local.operationsTracker.forEachLiveOperation(perform)
     }
 
     static func forEachOperation(
         _ perform: (LazyTensorOperation) throws -> Void
     ) rethrows -> Void {
-        try LazyTensorContext.operationsTracker.forEachOperation(perform)
+        try LazyTensorContext.local.operationsTracker.forEachOperation(perform)
     }
 
     @usableFromInline
@@ -186,6 +203,7 @@ class LazyTensorOperation: TensorOperation {
     let outputCount: Int
     var inputs: [Input]
     var attributes: [String: Attribute]
+    var outputShapes: [TensorShape?]
     var deviceName: String?
     var outputs: [TFETensorHandle]?
     var id: String?
@@ -230,6 +248,7 @@ class LazyTensorOperation: TensorOperation {
         self.attributes = [:]
         self.deviceName = _ExecutionContext.global.currentDeviceName
         self.outputCount = outputCount
+        self.outputShapes = []
         self.outputs = nil
         self.id = id
         LazyTensorOperation.liveOperations += 1
@@ -244,6 +263,9 @@ class LazyTensorOperation: TensorOperation {
     }
 
     func evaluate() -> [LazyTensorHandle] {
+        if LazyTensorContext.local.isShapeTrackingEnabled {
+            updateOutputShapes()
+        }
         return (0..<outputCount).map {
             LazyTensorHandle(_lazyLive: self, index: $0)
         }
@@ -366,17 +388,33 @@ extension LazyTensorOperation: TFTensorOperation {
 
     func updateAttribute<In: TensorGroup, Out: TensorGroup>(
         _ name: String, _ value: (In) -> Out) {
-        // TODO:
-        fatalError("Unimplemented [TFFunction] attribute.")
+        updateAttribute(name, _TensorFunctionPointer(name: _tffunc(value)))
     }
 
     func execute() {
         // If we want to stage this, we will need to add control dependencies.
         // For the time-being, just build a TFE_Op and run it.
         //
+        // Collect all the unmaterialized inputs.
+        var unmaterializedInputs = Array<LazyTensorOperation>()
+        unmaterializedInputs.reserveCapacity(inputs.count)
+        for input in inputs {
+            switch input {
+            case .single(let v):
+                if let lazyOperation = v.lazyTensorOperation {
+                    unmaterializedInputs.append(lazyOperation)
+                }
+            case .list(let values):
+                unmaterializedInputs.append(
+                    contentsOf: values.lazy.compactMap { $0.lazyTensorOperation }
+                )
+            }
+        }
+        // Materialize the inputs now.
+        LazyTensorOperation.materialize(targets: unmaterializedInputs)
+
+        // Build the TFEOp and execute.
         let op = TFE_Op(name, outputCount)
-        // TODO(https://bugs.swift.org/browse/TF-604):
-        //   Materialize inputs en masse and not one-by-one.
         for input in inputs {
             switch input {
             case .single(let v):
@@ -404,7 +442,7 @@ extension LazyTensorOperation: TFTensorOperation {
             case .tensorDataTypeArray(let v): op.updateAttribute(name, v)
             case .optionalTensorShape(let v): op.updateAttribute(name, v)
             case .optionalTensorShapeArray(let v): op.updateAttribute(name, v)
-            case .tensorFunctionPointer(_): fatalError("tensorFunctionPointer Unimplemented!")
+            case .tensorFunctionPointer(let v): op.updateAttribute(name, v)
             }
         }
         op.execute()
@@ -800,7 +838,7 @@ extension LazyTensorOperation {
         // Return materialized outputs if any.
         if let outputs = outputs { return outputs }
 
-        materializeLiveTensors()
+        LazyTensorOperation.materialize(targets: [self])
 
         // Our outputs should have been updated by now. Otherwise,
         // something terrible happened!
@@ -808,9 +846,9 @@ extension LazyTensorOperation {
         return outputs!
     }
 
-    /// Converts symbolic tensor inputs to concrete inputs if the
-    /// associated `LazyTensorOperation` has been materialized.
-    private func maybeMaterializeInputs() {
+    /// Converts symbolic tensor inputs to concrete inputs if the associated `LazyTensorOperation`
+    /// has been materialized.
+    func maybeMaterializeInputs() {
         /// If `lazyTensor` is symbolic and the associated `LazyTensorOperation`
         /// has been materialized, return the corresponding concrete `LazyTensorHandle`.
         /// Otherwise, return `lazyTensor` untouched.
@@ -838,8 +876,8 @@ extension LazyTensorOperation {
         inputs = inputs.map { materializedAsNeeded(input: $0) }
     }
 
-    private func materializeLiveTensors() {
-        let traceInfo = LazyTensorTraceBuilder.materializationTraceInfo(self)
+    static func materialize(targets: [LazyTensorOperation]) {
+        let traceInfo = LazyTensorTraceBuilder.materializationTraceInfo(targets)
         debugLog("Extracted trace:\n\(traceInfo.trace)")
 
         let function = TFFunction(trace: traceInfo.trace)
@@ -852,11 +890,8 @@ extension LazyTensorOperation {
         for lazyOp in traceInfo.lazyOperations {
             let end = start + lazyOp.outputCount
             lazyOp.outputs = Array(allOutputs[start..<end])
+            lazyOp.outputShapes = lazyOp.outputs!.map { $0.shape }
             start = end
         }
-
-        // On all the live operations rewrite the inputs so that we drop references
-        // to the LazyTensorOperations.
-        LazyTensorHandle.forEachOperation { $0.maybeMaterializeInputs() }
     }
 }

@@ -56,7 +56,7 @@ final class OptimizerTests: XCTestCase {
                 let ŷ = classifier(x)
                 return meanSquaredError(predicted: ŷ, expected: y)
             }
-            optimizer.update(&classifier.allDifferentiableVariables, along: 𝛁model)
+            optimizer.update(&classifier, along: 𝛁model)
         }
 
         // trained classifier should return valid values

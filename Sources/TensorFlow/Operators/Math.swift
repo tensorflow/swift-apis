@@ -1168,6 +1168,35 @@ public func gelu<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
     return x * cdf
 }
 
+/// Returns a tensor by applying the ReLU activation function to the specified tensor element-wise.
+/// Specifically, computes `max(0, x)`.
+@inlinable
+@differentiable(vjp: _vjpRelu(_:))
+public func relu<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    Raw.relu(features: x)
+}
+
+@inlinable
+func _vjpRelu<T: TensorFlowFloatingPoint>(
+    _ x: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+    (relu(x), { v in Raw.reluGrad(gradients: v, features: x) })
+}
+
+/// Returns a tensor by applying the ReLU6 activation function, namely `min(max(0, x), 6)`.
+@inlinable
+@differentiable(vjp: _vjpRelu6(_:))
+public func relu6<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    Raw.relu6(features: x)
+}
+
+@inlinable
+func _vjpRelu6<T: TensorFlowFloatingPoint>(
+    _ x: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+    (relu6(x), { v in Raw.relu6Grad(gradients: v, features: x)})
+}
+
 /// Returns a tensor by applying the leaky ReLU activation function
 /// to the specified tensor element-wise.
 /// Specifically, computes `max(x, x * alpha)`.
@@ -1185,24 +1214,31 @@ func _vjpLeakyRelu<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>,
     alpha: Double
 ) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
-    return (leakyRelu(x, alpha: alpha), { v in
+    (leakyRelu(x, alpha: alpha), { v in
         Raw.leakyReluGrad(gradients: v, features: x, alpha: alpha)
     })
 }
 
-/// Returns a tensor by applying the ReLU activation function to the specified tensor element-wise.
-/// Specifically, computes `max(0, x)`.
+/// Returns a tensor by applying the SeLU activation function, namely
+/// `scale * alpha * (exp(x) - 1)` if `x < 0`, and `scale * x` otherwise.
+///
+/// - Note: This is designed to be used together with the variance scaling layer initializers.
+///   Please refer to [Self-Normalizing Neural Networks](https://arxiv.org/abs/1706.02515) for more
+///   information.
 @inlinable
-@differentiable(vjp: _vjpRelu(_:))
-public func relu<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
-    max(0, x)
+@differentiable(vjp: _vjpSelu(_:))
+public func selu<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    Raw.selu(features: x)
 }
 
 @inlinable
-func _vjpRelu<T: TensorFlowFloatingPoint>(
+func _vjpSelu<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>
 ) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
-    (relu(x), { v in Tensor(x .> 0) * v })
+    let result = selu(x)
+    return (result, { v in
+        Raw.seluGrad(gradients: v, outputs: result)
+    })
 }
 
 public extension Tensor where Scalar: TensorFlowFloatingPoint {
