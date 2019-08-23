@@ -492,7 +492,7 @@ final class LayerTests: XCTestCase {
       XCTAssertEqual(output.shape, expected)
     }
 
-    func testUpsampling1DGradient() {
+    func testUpSampling1DGradient() {
         let layer = UpSampling1D<Float>(size: 3)
         let input = Tensor(shape: [2, 2, 2], scalars: (0..<8).map(Float.init))
         let computedGradient = gradient(at: input, layer) { $1($0).sum() }
@@ -520,7 +520,7 @@ final class LayerTests: XCTestCase {
       XCTAssertEqual(output.shape, expected)
     }
 
-    func testUpsampling2DGradient() {
+    func testUpSampling2DGradient() {
         let layer = UpSampling2D<Float>(size: 3)
         let input = Tensor(shape: [1, 3, 4, 2], scalars: (0..<24).map(Float.init))
         let computedGradient = gradient(at: input, layer) { $1($0).sum() }
@@ -549,7 +549,7 @@ final class LayerTests: XCTestCase {
       XCTAssertEqual(output.shape, expected)
     }
 
-    func testUpsampling3DGradient() {
+    func testUpSampling3DGradient() {
         let layer = UpSampling3D<Float>(size: 3)
         let input = Tensor(shape: [1, 2, 2, 2, 4], scalars: (0..<32).map(Float.init))
         let computedGradient = gradient(at: input, layer) { $1($0).sum() }
@@ -928,11 +928,11 @@ final class LayerTests: XCTestCase {
         ("testGlobalMaxPool2D", testGlobalMaxPool2D),
         ("testGlobalMaxPool3D", testGlobalMaxPool3D),
         ("testUpSampling1D", testUpSampling1D),
-        ("testUpsampling1DGradient", testUpsampling1DGradient),
+        ("testUpSampling1DGradient", testUpSampling1DGradient),
         ("testUpSampling2D", testUpSampling2D),
-        ("testUpsampling2DGradient", testUpsampling2DGradient),
+        ("testUpSampling2DGradient", testUpSampling2DGradient),
         ("testUpSampling3D", testUpSampling3D),
-        ("testUpsampling3DGradient", testUpsampling3DGradient),
+        ("testUpSampling3DGradient", testUpSampling3DGradient),
         ("testReshape", testReshape),
         ("testFlatten", testFlatten),
         ("testEmbedding", testEmbedding),
