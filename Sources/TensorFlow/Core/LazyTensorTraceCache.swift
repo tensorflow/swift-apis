@@ -18,6 +18,20 @@ extension TFETensorHandle {
     static func areHandlesEquivalent(_ lhs: TFETensorHandle, _ rhs: TFETensorHandle) -> Bool {
         return lhs._cTensorHandle == rhs._cTensorHandle
     }
+
+    /// Returns true if the underlying tensors are equal.
+    static func areTensorsEqual(_ lhs: TFETensorHandle, _ rhs: TFETensorHandle) -> Bool {
+        let lhsDtype = TFE_TensorHandleDataType(lhs._cTensorHandle)
+        let rhsDtype = TFE_TensorHandleDataType(rhs._cTensorHandle)
+        precondition(lhsDtype == rhsDtype && lhsDtype != TF_VARIANT && lhsDtype != TF_RESOURCE,
+            "Datatypes of tensor handles don't match.")
+        let op = TFE_Op("Equal", 1)
+        op.updateAttribute("T", TensorDataType(lhsDtype))
+        op.addInput(lhs)
+        op.addInput(rhs)
+        let result: Tensor<Bool> = op.execute(Int(1))
+        return result.scalars.allSatisfy { $0 }
+    }
 }
 
 extension LazyTensorHandle {
@@ -118,29 +132,7 @@ struct LazyTensorTraceCache {
         for (i, current) in currentTrace.operations.enumerated() {
             let cached = cachedTrace.operations[i]
             if let (currentTensor, cachedTensor) = promotableConstant(current, cached) {
-                 let currentDtype = TFE_TensorHandleDataType(currentTensor._cTensorHandle)
-                if areTensorsEqual(currentDtype, currentTensor._cTensorHandle, cachedTensor._cTensorHandle) {continue }
-                // if (currentTensor.rank == 0) || (currentTensor.rank == 1 && currentTensor.shape.dimensions[0] < 10) {
-                //     let currentDtype = TFE_TensorHandleDataType(currentTensor._cTensorHandle)
-                //     let op = TFE_Op("Equal", 1)
-                //     op.updateAttribute("T", TensorDataType(currentDtype))
-                //     op.addInput(currentTensor)
-                //     op.addInput(cachedTensor)
-                //     var result: Tensor<Bool> = op.execute(Int(1))
-                //     // if (currentTensor.rank == 1) {
-                //     //     let all = TFE_Op("All", 1)
-                //     //     let reductionIndices = Tensor<Int32>(shape: [1], scalars: [0])
-                //     //     all.updateAttribute("keep_dims", false)
-                //     //     all.updateAttribute("Tidx", TensorDataType(TF_INT32))
-                //     //     all.addInput(result)
-                //     //     all.addInput(reductionIndices)
-                //     //     result = all.execute(Int(1))
-                //     // }
-                //     let s = result.scalars.allSatisfy { $0 }
-                //     print("Result of comparison \(currentTensor.valueDescription) vs \(cachedTensor.valueDescription): \(result.scalars), \(s)\n")
-                //     // Same, but we don't want to promote it.
-                //     if (result.scalars.allSatisfy { $0 } ) { continue }
-                // }
+                if TFETensorHandle.areTensorsEqual(currentTensor, cachedTensor) { continue }
                 promotableConstants.append((i, currentTensor))
                 continue
             }
@@ -166,39 +158,6 @@ struct LazyTensorTraceCache {
             lazyOperations: traceInfo.lazyOperations,
             trace: newTrace,
             concreteInputs: traceInfo.concreteInputs + newConcreteInputs)
-    }
-
-    static private func areTensorsEqual(
-        _ dataType: TF_DataType,
-        _ l: CTensorHandle,
-        _ r: CTensorHandle
-    ) -> Bool {
-        switch dataType {
-        case TF_BOOL:
-            return ShapedArray<Bool>(cTensorHandle: l) == ShapedArray<Bool>(cTensorHandle: r)
-        case TF_INT8:
-            return ShapedArray<Int8>(cTensorHandle: l) == ShapedArray<Int8>(cTensorHandle: r)
-        case TF_UINT8:
-            return ShapedArray<UInt8>(cTensorHandle: l) == ShapedArray<UInt8>(cTensorHandle: r)
-        case TF_INT16:
-            return ShapedArray<Int16>(cTensorHandle: l) == ShapedArray<Int16>(cTensorHandle: r)
-        case TF_UINT16:
-            return ShapedArray<UInt16>(cTensorHandle: l) == ShapedArray<UInt16>(cTensorHandle: r)
-        case TF_INT32:
-            return ShapedArray<Int32>(cTensorHandle: l) == ShapedArray<Int32>(cTensorHandle: r)
-        case TF_UINT32:
-            return ShapedArray<UInt32>(cTensorHandle: l) == ShapedArray<UInt32>(cTensorHandle: r)
-        case TF_INT64:
-            return ShapedArray<Int64>(cTensorHandle: l) == ShapedArray<Int64>(cTensorHandle: r)
-        case TF_UINT64:
-            return ShapedArray<UInt64>(cTensorHandle: l) == ShapedArray<UInt64>(cTensorHandle: r)
-        case TF_BFLOAT16: return false
-        case TF_FLOAT:
-            return ShapedArray<Float>(cTensorHandle: l) == ShapedArray<Float>(cTensorHandle: r)
-        case TF_DOUBLE:
-            return ShapedArray<Double>(cTensorHandle: l) == ShapedArray<Double>(cTensorHandle: r)
-        default: return false
-        }
     }
 
     /// If `current` and `cached` are compatible constants, returns the constant tensors.
