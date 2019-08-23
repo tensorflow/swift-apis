@@ -95,7 +95,7 @@ class LazyTensorHandle: _AnyTensorHandle {
     var lazyTensorOperation: LazyTensorOperation? {
         switch handle {
         case .symbolic(let op, _, _): return op
-        case .concrete(_, _): return nil
+        case .concrete: return nil
         }
     }
 
