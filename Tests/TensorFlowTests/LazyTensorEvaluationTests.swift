@@ -17,17 +17,7 @@ import XCTest
 @testable import TensorFlow
 import CTensorFlow
 
-final class LazyTensorEvaluationTests: XCTestCase {
-    override class func setUp() {
-        super.setUp()
-        _ThreadLocalState.useLazyTensor = true
-    }
-
-    override class func tearDown() {
-        super.tearDown()
-        _ThreadLocalState.useLazyTensor = false
-    }
-
+final class LazyTensorEvaluationTests: LazyTensorTestCase {
     func testSimpleOperations() {
         let a = Tensor<Float>(10.0)
         let b = Tensor<Float>(2.0)

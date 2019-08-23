@@ -384,6 +384,25 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(output, expected)
     }
 
+    func testGlobalAvgPool1DGradient() {
+        let layer = GlobalAvgPool1D<Float>()
+        let input = Tensor(shape: [2, 2, 2], scalars: (0..<8).map(Float.init))
+        let computedGradient = gradient(at: input, layer) { $1($0).sum() }
+        // The expected value of the gradient was computed using the following Python code:
+        // ```
+        //   GlobalAvgPool1D = tf.keras.layers.GlobalAveragePooling1D()
+        //   with tf.GradientTape() as t:
+        //     t.watch(x)
+        //     y = tf.math.reduce_sum(GlobalAvgPool1D(x))
+        //   print(t.gradient(y, x))
+        // ```
+        XCTAssertEqual(computedGradient.0,
+                       [[[0.5, 0.5],
+                         [0.5, 0.5]],
+                        [[0.5, 0.5],
+                         [0.5, 0.5]]])
+    }
+
     func testGlobalAvgPool2D() {
         let layer = GlobalAvgPool2D<Float>()
         let input = Tensor(shape: [2, 6, 2, 1], scalars: (0..<24).map(Float.init))
@@ -392,12 +411,52 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(output, expected)
     }
 
+    func testGlobalAvgPool2DGradient() {
+        let layer = GlobalAvgPool2D<Float>()
+        let input = Tensor(shape: [2, 2, 2, 2], scalars: (0..<16).map(Float.init))
+        let computedGradient = gradient(at: input, layer) { $1($0).sum() }
+        // The expected value of the gradient was computed using the following Python code:
+        // ```
+        //   GlobalAvgPool2D = tf.keras.layers.GlobalAveragePooling2D()
+        //   with tf.GradientTape() as t:
+        //     t.watch(x)
+        //     y = tf.math.reduce_sum(GlobalAvgPool2D(x))
+        //   print(t.gradient(y, x))
+        // ```
+        XCTAssertEqual(computedGradient.0,
+                       [[[[0.25, 0.25], [0.25, 0.25]],
+                         [[0.25, 0.25], [0.25, 0.25]]],
+                        [[[0.25, 0.25], [0.25, 0.25]],
+                         [[0.25, 0.25], [0.25, 0.25]]]])
+    }
+
     func testGlobalAvgPool3D() {
         let layer = GlobalAvgPool3D<Float>()
         let input = Tensor<Float>(shape: [2, 6, 2, 1, 1], scalars: (0..<24).map(Float.init))
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>([[5.5], [17.5]])
         XCTAssertEqual(output, expected)
+    }
+
+    func testGlobalAvgPool3DGradient() {
+        let layer = GlobalAvgPool3D<Float>()
+        let input = Tensor(shape: [1, 3, 2, 3, 1], scalars: (0..<18).map(Float.init))
+        let computedGradient = gradient(at: input, layer) { $1($0).sum() }
+        // The expected value of the gradient was computed using the following Python code:
+        // ```
+        //   GlobalAvgPool3D = tf.keras.layers.GlobalAveragePooling3D()
+        //   with tf.GradientTape() as t:
+        //     t.watch(x)
+        //     y = tf.math.reduce_sum(GlobalAvgPool3D(x))
+        //   print(t.gradient(y, x))
+        // ```
+        XCTAssertEqual(computedGradient.0,
+                       [[[[[0.055555556], [0.055555556], [0.055555556]],
+                          [[0.055555556], [0.055555556], [0.055555556]]],
+                         [[[0.055555556], [0.055555556], [0.055555556]],
+                          [[0.055555556], [0.055555556], [0.055555556]]],
+                         [[[0.055555556], [0.055555556], [0.055555556]],
+                          [[0.055555556], [0.055555556], [0.055555556]]]]])
     }
 
     func testGlobalMaxPool1D() {
@@ -867,8 +926,11 @@ final class LayerTests: XCTestCase {
         ("testAvgPool2D", testAvgPool2D),
         ("testAvgPool3D", testAvgPool3D),
         ("testGlobalAvgPool1D", testGlobalAvgPool1D),
+        ("testGlobalAvgPool1DGradient", testGlobalAvgPool1DGradient),
         ("testGlobalAvgPool2D", testGlobalAvgPool2D),
+        ("testGlobalAvgPool2DGradient", testGlobalAvgPool2DGradient),
         ("testGlobalAvgPool3D", testGlobalAvgPool3D),
+        ("testGlobalAvgPool3DGradient", testGlobalAvgPool3DGradient),
         ("testGlobalMaxPool1D", testGlobalMaxPool1D),
         ("testGlobalMaxPool1DGradient", testGlobalMaxPool1DGradient),
         ("testGlobalMaxPool2D", testGlobalMaxPool2D),
