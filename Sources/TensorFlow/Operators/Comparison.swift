@@ -102,28 +102,25 @@ public extension Tensor where Scalar: Numeric & Comparable {
 }
 
 extension Tensor where Scalar: Numeric & Comparable {
-    /// Returns a Boolean value indicating whether all values of first argument are less than corresponding values of second argument.
+    /// Returns a Boolean value indicating whether the results of element-wise comparison `lhs .< rhs` are all `true`.
     @inlinable
     public static func < (lhs: Tensor, rhs: Tensor) -> Bool {
         return (lhs .< rhs).all()
     }
 
-    /// Returns a Boolean value indicating whether the value of the first argument is
-    /// lexicographically less than or equal to that of the second argument.
+    /// Returns a Boolean value indicating whether the results of element-wise comparison `lhs .<= rhs` are all `true`.
     @inlinable
     public static func <= (lhs: Tensor, rhs: Tensor) -> Bool {
         return (lhs .<= rhs).all()
     }
 
-    /// Returns a Boolean value indicating whether the value of the first argument is
-    /// lexicographically greater than that of the second argument.
+    /// Returns a Boolean value indicating whether the results of element-wise comparison `lhs .> rhs` are all `true`.
     @inlinable
     public static func > (lhs: Tensor, rhs: Tensor) -> Bool {
         return (lhs .> rhs).all()
     }
 
-    /// Returns a Boolean value indicating whether the value of the first argument is
-    /// lexicographically greater than or equal to that of the second argument.
+    /// Returns a Boolean value indicating whether the results of element-wise comparison `lhs .>= rhs` are all `true`.
     @inlinable
     public static func >= (lhs: Tensor, rhs: Tensor) -> Bool {
         return (lhs .>= rhs).all()
@@ -131,29 +128,25 @@ extension Tensor where Scalar: Numeric & Comparable {
 }
 
 public extension Tensor where Scalar: Numeric & Comparable {
-    /// Returns a Boolean value indicating whether the value of the first argument is
-    /// lexicographically less than that of the second argument.
+    /// Returns a Boolean value indicating whether all scalars in the first argument are less than the second argument.
     @inlinable
     static func < (lhs: Tensor, rhs: Scalar) -> Bool {
         return (lhs .< rhs).all()
     }
 
-    /// Returns a Boolean value indicating whether the value of the first argument is
-    /// lexicographically less than or equal to that of the second argument.
+    /// Returns a Boolean value indicating whether all scalars in the first argument are less than or equal to the second argument.
     @inlinable
     static func <= (lhs: Tensor, rhs: Scalar) -> Bool {
         return (lhs .<= rhs).all()
     }
 
-    /// Returns a Boolean value indicating whether the value of the first argument is
-    /// lexicographically greater than that of the second argument.
+    /// Returns a Boolean value indicating whether all scalars in the first argument are greater than the second argument.
     @inlinable
     static func > (lhs: Tensor, rhs: Scalar) -> Bool {
         return (lhs .> rhs).all()
     }
 
-    /// Returns a Boolean value indicating whether the value of the first argument is
-    /// lexicographically greater than or equal to that of the second argument.
+    /// Returns a Boolean value indicating whether all scalars in the first argument are greater than or equal to the second argument.
     @inlinable
     static func >= (lhs: Tensor, rhs: Scalar) -> Bool {
         return (lhs .>= rhs).all()
