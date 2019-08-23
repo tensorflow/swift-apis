@@ -152,15 +152,15 @@ final class LazyTensorHandleTests: XCTestCase {
     private func isSymbolic(_ t: LazyTensorHandle?) -> Bool {
         guard let t = t else { return false }
         switch t.handle {
-        case .symbolic(_): return true
-        case .concrete(_): return false
+        case .symbolic(_, _, _): return true
+        case .concrete(_, _): return false
         }
     }
 
     private func isMaterializedConcrete(_ t: LazyTensorHandle?) -> Bool {
         guard let t = t else { return false }
         switch t.handle {
-        case .symbolic(_): return true
+        case .symbolic(_, _, _): return true
         case .concrete(_, let isMaterialized): return isMaterialized
         }
     }
