@@ -639,12 +639,51 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(output.shape, expected)
     }
 
+    func testReshapeGradient() {
+        let layer = Reshape<Float>(shape: [10, 2, 1])
+        let input = Tensor(shape: [1, 5, 4], scalars: (0..<20).map(Float.init))
+        let computedGradient = gradient(at: input, layer) { $1($0).sum() }
+        // The expected value of the gradient was computed using the following Python code:
+        // ```
+        //   reshape = tf.keras.layers.Reshape(target_shape = (10, 2, 1))
+        //   with tf.GradientTape() as t:
+        //     t.watch(x)
+        //     y = tf.math.reduce_sum(reshape(x))
+        //   print(t.gradient(y, x))
+        // ```
+        XCTAssertEqual(computedGradient.0,
+                       [[[1.0, 1.0, 1.0, 1.0],
+                         [1.0, 1.0, 1.0, 1.0],
+                         [1.0, 1.0, 1.0, 1.0],
+                         [1.0, 1.0, 1.0, 1.0],
+                         [1.0, 1.0, 1.0, 1.0]]])
+    }
+
     func testFlatten() {
         let layer = Flatten<Float>()
         let input = Tensor(shape: [10, 2, 2], scalars: (0..<40).map(Float.init))
         let output = layer.inferring(from: input)
         let expected = TensorShape([10, 4])
         XCTAssertEqual(output.shape, expected)
+    }
+
+    func testFlattenGradient() {
+        let layer = Flatten<Float>()
+        let input = Tensor(shape: [1, 4, 4], scalars: (0..<16).map(Float.init))
+        let computedGradient = gradient(at: input, layer) { $1($0).sum() }
+        // The expected value of the gradient was computed using the following Python code:
+        // ```
+        //   flatten = tf.keras.layers.Flatten()
+        //   with tf.GradientTape() as t:
+        //     t.watch(x)
+        //     y = tf.math.reduce_sum(flatten(x))
+        //   print(t.gradient(y, x))
+        // ```
+        XCTAssertEqual(computedGradient.0,
+                       [[[1.0, 1.0, 1.0, 1.0],
+                         [1.0, 1.0, 1.0, 1.0],
+                         [1.0, 1.0, 1.0, 1.0],
+                         [1.0, 1.0, 1.0, 1.0]]])
     }
 
     func testEmbedding() {
@@ -1000,7 +1039,9 @@ final class LayerTests: XCTestCase {
         ("testUpSampling3D", testUpSampling3D),
         ("testUpSampling3DGradient", testUpSampling3DGradient),
         ("testReshape", testReshape),
+        ("testReshapeGradient", testReshapeGradient),
         ("testFlatten", testFlatten),
+        ("testFlattenGradient", testFlattenGradient),
         ("testEmbedding", testEmbedding),
         ("testSimpleRNNCell", testSimpleRNNCell),
         ("testDense", testDense),
