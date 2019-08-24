@@ -153,6 +153,42 @@ final class TensorAutoDiffTests: XCTestCase {
         XCTAssertEqual(varianceGradAlongAxes(input), expected)
     }
 
+    func testMin() {
+        func f(a: Tensor<Float>, b: Tensor<Float>) -> Tensor<Float> { min(a, b).sum() }
+        var a = Tensor<Float>([[3.0, -2.0], [0.3, 10.0]])
+        var b = Tensor<Float>([[9.0, -3.0], [0.1, 10.0]])
+        var computedGradient = gradient(at: a, b, in: f)
+        var expectedGradient: (Tensor<Float>, Tensor<Float>) = (
+            [[1.0, 1.0], [1.0, 1.0]], [[0.0, 0.0], [1.0, 0.0]])
+        XCTAssertEqual(computedGradient.0, expectedGradient.0)
+        XCTAssertEqual(computedGradient.1, expectedGradient.1)
+
+        a = Tensor<Float>([[3.0, -2.0], [0.3, 10.0]])
+        b = Tensor<Float>([9.0, -3.0])
+        computedGradient = gradient(at: a, b, in: f)
+        expectedGradient = ([[1.0, 1.0], [1.0, 0.0]], [0.1, 1.0])
+        XCTAssertEqual(computedGradient.0, expectedGradient.0)
+        XCTAssertEqual(computedGradient.1, expectedGradient.1)
+    }
+
+    func testMax() {
+        func f(a: Tensor<Float>, b: Tensor<Float>) -> Tensor<Float> { max(a, b).sum() }
+        var a = Tensor<Float>([[3.0, -2.0], [0.3, 10.0]])
+        var b = Tensor<Float>([[9.0, -3.0], [0.5, 10.0]])
+        var computedGradient = gradient(at: a, b, in: f)
+        var expectedGradient: (Tensor<Float>, Tensor<Float>) = (
+            [[0.0, 1.0], [0.0, 1.0]], [[1.0, 0.0], [1.0, 0.0]])
+        XCTAssertEqual(computedGradient.0, expectedGradient.0)
+        XCTAssertEqual(computedGradient.1, expectedGradient.1)
+
+        a = Tensor<Float>([[3.0, -2.0], [0.3, 10.0]])
+        b = Tensor<Float>([9.0, -3.0])
+        computedGradient = gradient(at: a, b, in: f)
+        expectedGradient = ([[0.0, 1.0], [0.0, 1.0]], [2.0, 0.0])
+        XCTAssertEqual(computedGradient.0, expectedGradient.0)
+        XCTAssertEqual(computedGradient.1, expectedGradient.1)
+    }
+
     /*TODO:(https://bugs.swift.org/browse/TF-771): Disabling this case as assertions fail.
     func testTensorInitStacking() {
         let a1 = Tensor<Float>([1, 2, 3, 4, 5])
@@ -449,6 +485,8 @@ final class TensorAutoDiffTests: XCTestCase {
         ("testSum", testSum),
         ("testMean", testMean),
         ("testVariance", testVariance),
+        ("testMin", testMax),
+        ("testMax", testMax),
         // TODO(https://bugs.swift.org/browse/TF-771): Disabling the failing test.
         // ("testTensorInitStacking", testTensorInitStacking),
         ("testExpandingShape", testExpandingShape),
