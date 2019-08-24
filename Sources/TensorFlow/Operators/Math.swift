@@ -1404,7 +1404,7 @@ internal func _vjpMinMaxHelper<T: TensorFlowFloatingPoint>(
     seed: Tensor<T>,
     comparisonOperation: (Tensor<T>, Tensor<T>) -> Tensor<Bool>
 ) -> (Tensor<T>, Tensor<T>) {
-    let mask: Tensor<T> = Raw.cast(comparisonOperation(x, y))
+    let mask = Tensor<T>(comparisonOperation(x, y))
     let lhsGrad = seed * mask
     let rhsGrad = seed - lhsGrad
     let (lhsShape, rhsShape) = (x.shapeTensor, y.shapeTensor)
