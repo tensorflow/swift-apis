@@ -25,7 +25,7 @@ final class ComparisonOperatorTests: XCTestCase {
     func testLexicographicalComparison() {
         let x = Tensor<Float>([0, 1, 2, 3, 4])
         let y = Tensor<Float>([2, 3, 4, 5, 6])
-        XCTAssertTrue(x < y)
+        XCTAssertTrue((x .< y).all())
     }
 
     func testIsAlmostEqual() {
