@@ -1344,8 +1344,9 @@ internal func _vjpMax<T: TensorFlowFloatingPoint>(
     _ y: Tensor<T>
 ) -> (Tensor<T>, (Tensor<T>) -> (Tensor<T>, Tensor<T>)) {
     let value = max(x, y)
-    return (value,
-            { v in _vjpMinMaxHelper(x, y, originalValue: value, seed: v, comparisonOperation: .>=) })
+    return (value, { v in
+        _vjpMinMaxHelper(x, y, originalValue: value, seed: v, comparisonOperation: .>=)
+    })
 }
 
 /// Returns the element-wise maximum of the scalar and the tensor, broadcasting the scalar.
@@ -1376,8 +1377,9 @@ internal func _vjpMin<T: TensorFlowFloatingPoint>(
     _ y: Tensor<T>
 ) -> (Tensor<T>, (Tensor<T>) -> (Tensor<T>, Tensor<T>)) {
     let value = min(x, y)
-    return (value,
-            { v in _vjpMinMaxHelper(x, y, originalValue: value, seed: v, comparisonOperation: .<=) })
+    return (value, { v in
+        _vjpMinMaxHelper(x, y, originalValue: value, seed: v, comparisonOperation: .<=)
+    })
 }
 
 /// Returns the element-wise minimum of the scalar and the tensor, broadcasting the scalar.
