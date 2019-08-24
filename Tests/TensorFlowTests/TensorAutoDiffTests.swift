@@ -167,14 +167,14 @@ final class TensorAutoDiffTests: XCTestCase {
         var b = Tensor<Float>([[9.0, -3.0], [0.1, 10.0]])
         var computedGradient = gradient(at: a, b, in: f)
         var expectedGradient: (Tensor<Float>, Tensor<Float>) = (
-            [[1.0, 1.0], [1.0, 1.0]], [[0.0, 0.0], [1.0, 0.0]])
+            [[1.0, 0.0], [0.0, 1.0]], [[0.0, 1.0], [1.0, 0.0]])
         XCTAssertEqual(computedGradient.0, expectedGradient.0)
         XCTAssertEqual(computedGradient.1, expectedGradient.1)
 
         a = Tensor<Float>([[3.0, -2.0], [0.3, 10.0]])
         b = Tensor<Float>([9.0, -3.0])
         computedGradient = gradient(at: a, b, in: f)
-        expectedGradient = ([[1.0, 1.0], [1.0, 0.0]], [0.1, 1.0])
+        expectedGradient = ([[1.0, 0.0], [1.0, 0.0]], [0.0, 2.0])
         XCTAssertEqual(computedGradient.0, expectedGradient.0)
         XCTAssertEqual(computedGradient.1, expectedGradient.1)
     }
