@@ -154,6 +154,13 @@ final class TensorAutoDiffTests: XCTestCase {
     }
 
     func testMin() {
+        // The expected gradient values were computed using the following TensorFlow 2.0 Beta1
+        // Python code with respective `a` and `b` tensors :
+        // ```with tf.GradientTape() as t:
+        //        t.watch([a, b])
+        //        y = tf.math.reduce_sum(tf.minimum(a, b))
+        //    grads = t.gradient(y, [a, b])
+        // ```
         func f(a: Tensor<Float>, b: Tensor<Float>) -> Tensor<Float> { min(a, b).sum() }
         var a = Tensor<Float>([[3.0, -2.0], [0.3, 10.0]])
         var b = Tensor<Float>([[9.0, -3.0], [0.1, 10.0]])
@@ -172,6 +179,13 @@ final class TensorAutoDiffTests: XCTestCase {
     }
 
     func testMax() {
+        // The expected gradient values were computed using the following TensorFlow 2.0 Beta1
+        // Python code with respective `a` and `b` tensors :
+        // ```with tf.GradientTape() as t:
+        //        t.watch([a, b])
+        //        y = tf.math.reduce_sum(tf.maximum(a, b))
+        //    grads = t.gradient(y, [a, b])
+        // ```
         func f(a: Tensor<Float>, b: Tensor<Float>) -> Tensor<Float> { max(a, b).sum() }
         var a = Tensor<Float>([[3.0, -2.0], [0.3, 10.0]])
         var b = Tensor<Float>([[9.0, -3.0], [0.5, 10.0]])
@@ -485,7 +499,7 @@ final class TensorAutoDiffTests: XCTestCase {
         ("testSum", testSum),
         ("testMean", testMean),
         ("testVariance", testVariance),
-        ("testMin", testMax),
+        ("testMin", testMin),
         ("testMax", testMax),
         // TODO(https://bugs.swift.org/browse/TF-771): Disabling the failing test.
         // ("testTensorInitStacking", testTensorInitStacking),

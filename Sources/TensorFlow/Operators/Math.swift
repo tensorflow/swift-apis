@@ -1399,9 +1399,9 @@ internal func _vjpMinMaxHelper<T: TensorFlowFloatingPoint>(
     originalValue: Tensor<T>,
     seed: Tensor<T>
 ) -> (Tensor<T>, Tensor<T>) {
-    let tieBreakerMask = Tensor<T>(x .!= y)
+    let mask = Tensor<T>(x .!= y)
     let lhsGrad = seed * Tensor<T>(x .== originalValue)
-    let rhsGrad = seed * Tensor<T>(y .== originalValue) * tieBreakerMask
+    let rhsGrad = seed * Tensor<T>(y .== originalValue) * mask
     let (lhsShape, rhsShape) = (x.shapeTensor, y.shapeTensor)
     let (lhsAxes, rhsAxes) = Raw.broadcastGradientArgs(s0: lhsShape, s1: rhsShape)
     return (lhsGrad.sum(squeezingAxes: lhsAxes).reshaped(toShape: lhsShape),
