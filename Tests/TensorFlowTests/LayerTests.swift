@@ -645,10 +645,10 @@ final class LayerTests: XCTestCase {
         let computedGradient = gradient(at: input, layer) { $1($0).sum() }
         // The expected value of the gradient was computed using the following Python code:
         // ```
-        //   Reshape = tf.keras.layers.Reshape(target_shape = (10, 2, 1))
+        //   reshape = tf.keras.layers.Reshape(target_shape = (10, 2, 1))
         //   with tf.GradientTape() as t:
         //     t.watch(x)
-        //     y = tf.math.reduce_sum(Reshape(x))
+        //     y = tf.math.reduce_sum(reshape(x))
         //   print(t.gradient(y, x))
         // ```
         XCTAssertEqual(computedGradient.0,
@@ -673,10 +673,10 @@ final class LayerTests: XCTestCase {
         let computedGradient = gradient(at: input, layer) { $1($0).sum() }
         // The expected value of the gradient was computed using the following Python code:
         // ```
-        //   Flatten = tf.keras.layers.Flatten()
+        //   flatten = tf.keras.layers.Flatten()
         //   with tf.GradientTape() as t:
         //     t.watch(x)
-        //     y = tf.math.reduce_sum(Flatten(x)
+        //     y = tf.math.reduce_sum(flatten(x))
         //   print(t.gradient(y, x))
         // ```
         XCTAssertEqual(computedGradient.0,
