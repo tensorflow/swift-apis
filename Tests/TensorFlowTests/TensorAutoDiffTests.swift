@@ -186,7 +186,7 @@ final class TensorAutoDiffTests: XCTestCase {
         // with tf.GradientTape() as t:
         //     t.watch([a, b])
         //     y = tf.math.reduce_sum(tf.maximum(a, b))
-        // grads = t.gradient(y, [a, b])
+        // print(t.gradient(y, [a, b]))
         // ```
         func f(a: Tensor<Float>, b: Tensor<Float>) -> Tensor<Float> { max(a, b).sum() }
         var a = Tensor<Float>([[3.0, -2.0], [0.3, 10.0]])
