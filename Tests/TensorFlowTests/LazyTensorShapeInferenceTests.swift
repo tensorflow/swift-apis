@@ -21,17 +21,7 @@ extension LazyTensorOperation {
     var isMaterialized: Bool { outputs != nil }
 }
 
-final class LazyTensorShapeInferenceTests: XCTestCase {
-    override class func setUp() {
-        super.setUp()
-        _ThreadLocalState.useLazyTensor = true
-    }
-
-    override class func tearDown() {
-        super.tearDown()
-        _ThreadLocalState.useLazyTensor = false
-    }
-
+final class LazyTensorShapeInferenceTests: LazyTensorTestCase {
     func testSimpleShapeComputations() {
         let a = Tensor<Float>(shape: [3, 1], scalars: [1.0, 2.0, 3.0])
         let b = Tensor<Float>(shape: [1, 3], scalars: [1.0, 2.0, 3.0])
@@ -93,9 +83,25 @@ final class LazyTensorShapeInferenceTests: XCTestCase {
         XCTAssertTrue(cLazyTensorOperation.isMaterialized)
     }
 
+    func testNoMaterialization() {
+        // Compute [2, 2] using another op so that it won't be available unless it is materialized.
+        let a = Tensor<Int32>(shape: [2], scalars: [1, 1])
+        let b = Tensor<Int32>(1)
+        let dims = a + b
+        let m = Raw.fill(dims: dims, value: Tensor<Float>(1.0))
+        let result = Raw.matMul(m, m)
+        let mLazyTensorOperation = m._lazyTensor!.lazyTensorOperation!
+        // Note that we have not triggered materialization yet. So, it should not have happened
+        // implicitly during shape inference.
+        XCTAssertFalse(mLazyTensorOperation.isMaterialized)
+        XCTAssertEqual(result.shape, [2, 2])
+        XCTAssertTrue(mLazyTensorOperation.isMaterialized)
+    }
+
     static var allTests = [
         ("testSimpleShapeComputations", testSimpleShapeComputations),
-        ("testShapeComputationsWithInputTensors", testShapeComputationsWithInputTensors)
+        ("testShapeComputationsWithInputTensors", testShapeComputationsWithInputTensors),
+        ("testNoMaterialization", testNoMaterialization)
     ]
 }
 

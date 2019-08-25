@@ -101,66 +101,6 @@ public extension Tensor where Scalar: Numeric & Comparable {
     }
 }
 
-extension Tensor: Comparable where Scalar: Numeric & Comparable {
-    /// Returns a Boolean value indicating whether the value of the first argument is
-    /// lexicographically less than that of the second argument.
-    @inlinable
-    public static func < (lhs: Tensor, rhs: Tensor) -> Bool {
-        return (lhs .< rhs).all()
-    }
-
-    /// Returns a Boolean value indicating whether the value of the first argument is
-    /// lexicographically less than or equal to that of the second argument.
-    @inlinable
-    public static func <= (lhs: Tensor, rhs: Tensor) -> Bool {
-        return (lhs .<= rhs).all()
-    }
-
-    /// Returns a Boolean value indicating whether the value of the first argument is
-    /// lexicographically greater than that of the second argument.
-    @inlinable
-    public static func > (lhs: Tensor, rhs: Tensor) -> Bool {
-        return (lhs .> rhs).all()
-    }
-
-    /// Returns a Boolean value indicating whether the value of the first argument is
-    /// lexicographically greater than or equal to that of the second argument.
-    @inlinable
-    public static func >= (lhs: Tensor, rhs: Tensor) -> Bool {
-        return (lhs .>= rhs).all()
-    }
-}
-
-public extension Tensor where Scalar: Numeric & Comparable {
-    /// Returns a Boolean value indicating whether the value of the first argument is
-    /// lexicographically less than that of the second argument.
-    @inlinable
-    static func < (lhs: Tensor, rhs: Scalar) -> Bool {
-        return (lhs .< rhs).all()
-    }
-
-    /// Returns a Boolean value indicating whether the value of the first argument is
-    /// lexicographically less than or equal to that of the second argument.
-    @inlinable
-    static func <= (lhs: Tensor, rhs: Scalar) -> Bool {
-        return (lhs .<= rhs).all()
-    }
-
-    /// Returns a Boolean value indicating whether the value of the first argument is
-    /// lexicographically greater than that of the second argument.
-    @inlinable
-    static func > (lhs: Tensor, rhs: Scalar) -> Bool {
-        return (lhs .> rhs).all()
-    }
-
-    /// Returns a Boolean value indicating whether the value of the first argument is
-    /// lexicographically greater than or equal to that of the second argument.
-    @inlinable
-    static func >= (lhs: Tensor, rhs: Scalar) -> Bool {
-        return (lhs .>= rhs).all()
-    }
-}
-
 public extension Tensor where Scalar: Equatable {
     /// Returns a tensor of Boolean scalars by computing `lhs == rhs` element-wise.
     /// - Note: `.==` supports broadcasting.
