@@ -23,7 +23,8 @@ extension TFETensorHandle {
     static func areTensorsEqual(_ lhs: TFETensorHandle, _ rhs: TFETensorHandle) -> Bool {
         let lhsDtype = TFE_TensorHandleDataType(lhs._cTensorHandle)
         let rhsDtype = TFE_TensorHandleDataType(rhs._cTensorHandle)
-        precondition(lhsDtype == rhsDtype && lhsDtype != TF_VARIANT && lhsDtype != TF_RESOURCE,
+        precondition(
+            lhsDtype == rhsDtype && lhsDtype != TF_VARIANT && lhsDtype != TF_RESOURCE,
             "Datatypes of tensor handles don't match.")
         let op = TFE_Op("Equal", 1)
         op.updateAttribute("T", TensorDataType(lhsDtype))
@@ -37,9 +38,9 @@ extension TFETensorHandle {
 extension LazyTensorHandle {
     static func areHandlesEquivalent(_ lhs: LazyTensorHandle, _ rhs: LazyTensorHandle) -> Bool {
         switch (lhs.handle, rhs.handle) {
-        case (let .concrete(x, _), let .concrete(y, _)):
+        case let (.concrete(x, _), .concrete(y, _)):
             return TFETensorHandle.areHandlesEquivalent(x, y)
-        case (let .symbolic(x, xi, _), let .symbolic(y, yi, _)):
+        case let (.symbolic(x, xi, _), .symbolic(y, yi, _)):
             return (xi == yi) && (x.id == y.id)
         default: return false
         }
@@ -50,9 +51,9 @@ extension LazyTensorOperation {
     /// Returns true if these inputs are equivalent when comparing lazy tensor traces.
     static func areInputsEquivalent(_ lhs: Input, _ rhs: Input) -> Bool {
         switch (lhs, rhs) {
-        case (.single(let l), .single(let r)):
+        case let (.single(l), .single(r)):
             return LazyTensorHandle.areHandlesEquivalent(l, r)
-        case (.list(let l), .list(let r)):
+        case let (.list(l), .list(r)):
             return l.elementsEqual(r, by: {LazyTensorHandle.areHandlesEquivalent($0, $1) })
         default:
             return false
@@ -64,36 +65,37 @@ extension LazyTensorOperation {
         return (lhs.name == rhs.name) &&
             (lhs.outputCount == rhs.outputCount) &&
             (lhs.deviceName == rhs.deviceName) &&
-            lhs.inputs.elementsEqual(rhs.inputs, by: {
-                LazyTensorOperation.areInputsEquivalent($0, $1)
-            }) &&
+            lhs.inputs.elementsEqual(
+                rhs.inputs,
+                by: { LazyTensorOperation.areInputsEquivalent($0, $1) }) &&
            (lhs.attributes == rhs.attributes)
     }
 }
 
 extension LazyTensorOperation.Attribute: Equatable {}
+
 func ==(_ lhs: LazyTensorOperation.Attribute, _ rhs: LazyTensorOperation.Attribute) -> Bool {
     // We cannot rely on the derived conformance, because it would force us to add a conformance
     // for TFETensorHandle that simply compares the _cTensorHandle property. It is not clear if that
     // is the right thing to do for TFETensorHandle instances in the general case.
     switch (lhs, rhs) {
-    case (.boolValue(let l), .boolValue(let r)): return l == r
-    case (.intValue(let l), .intValue(let r)): return l == r
-    case (.floatValue(let l), .floatValue(let r)): return l == r
-    case (.doubleValue(let l), .doubleValue(let r)): return l == r
-    case (.stringValue(let l), .stringValue(let r)): return l == r
-    case (.boolArray(let l), .boolArray(let r)): return l == r
-    case (.intArray(let l), .intArray(let r)): return l == r
-    case (.floatArray(let l), .floatArray(let r)): return l == r
-    case (.doubleArray(let l), .doubleArray(let r)): return l == r
-    case (.stringArray(let l), .stringArray(let r)): return l == r
-    case (.constTensor(let l), .constTensor(let r)):
+    case let (.boolValue(l), .boolValue(r)): return l == r
+    case let (.intValue(l), .intValue(r)): return l == r
+    case let (.floatValue(l), .floatValue(r)): return l == r
+    case let (.doubleValue(l), .doubleValue(r)): return l == r
+    case let (.stringValue(l), .stringValue(r)): return l == r
+    case let (.boolArray(l), .boolArray(r)): return l == r
+    case let (.intArray(l), .intArray(r)): return l == r
+    case let (.floatArray(l), .floatArray(r)): return l == r
+    case let (.doubleArray(l), .doubleArray(r)): return l == r
+    case let (.stringArray(l), .stringArray(r)): return l == r
+    case let (.constTensor(l), .constTensor(r)):
         return TFETensorHandle.areHandlesEquivalent(l, r)
-    case (.tensorDataTypeValue(let l), .tensorDataTypeValue(let r)): return l == r
-    case (.tensorFunctionPointer(let l), .tensorFunctionPointer(let r)): return l == r
-    case (.tensorDataTypeArray(let l), .tensorDataTypeArray(let r)): return l == r
-    case (.optionalTensorShape(let l), .optionalTensorShape(let r)): return l == r
-    case (.optionalTensorShapeArray(let l), .optionalTensorShapeArray(let r)): return l == r
+    case let (.tensorDataTypeValue(l), .tensorDataTypeValue(r)): return l == r
+    case let (.tensorFunctionPointer(l), .tensorFunctionPointer(r)): return l == r
+    case let (.tensorDataTypeArray(l), .tensorDataTypeArray(r)): return l == r
+    case let (.optionalTensorShape(l), .optionalTensorShape(r)): return l == r
+    case let (.optionalTensorShapeArray(l), .optionalTensorShapeArray(r)): return l == r
     default: return false
     }
 }

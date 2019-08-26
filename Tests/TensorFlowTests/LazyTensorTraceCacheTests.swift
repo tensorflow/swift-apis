@@ -17,7 +17,7 @@ import XCTest
 @testable import TensorFlow
 import CTensorFlow
 
-final class LazyTensorTraceCacheTests : LazyTensorTestCase {
+final class LazyTensorTraceCacheTests: LazyTensorTestCase {
     override class func setUp() {
         super.setUp()
         LazyTensorContext.local.constPromotion = true
@@ -28,7 +28,7 @@ final class LazyTensorTraceCacheTests : LazyTensorTestCase {
         LazyTensorTraceCache.clearCache()
     }
 
-    func testAutoConstPromotion() {
+    func testConstPromotion() {
         LazyTensorTraceCache.clearCache()
         let a = Tensor<Float>(1.0)
         let b = Tensor<Float>(2.0)
@@ -74,7 +74,7 @@ final class LazyTensorTraceCacheTests : LazyTensorTestCase {
         XCTAssertEqual(y.scalars, [5.0, 10.0, 15.0])
     }
 
-    func testDontPromoteEqualConstants() {
+    func testDoNotPromoteEqualConstants() {
         LazyTensorTraceCache.clearCache()
         let a = Tensor<Float>(1.0)
         let b = Tensor<Float>(2.0)
@@ -125,7 +125,7 @@ final class LazyTensorTraceCacheTests : LazyTensorTestCase {
     }
 
     static var allTests = [
-        ("testAutoConstPromotion", testAutoConstPromotion),
-        ("testDontPromoteEqualConstants", testDontPromoteEqualConstants)
+        ("testConstPromotion", testConstPromotion),
+        ("testDoNotPromoteEqualConstants", testDoNotPromoteEqualConstants)
     ]
 }
