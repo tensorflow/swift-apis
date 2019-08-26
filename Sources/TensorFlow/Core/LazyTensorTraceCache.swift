@@ -16,7 +16,7 @@ import CTensorFlow
 extension TFETensorHandle {
     /// Returns true if the handles are equivalent for the purposes of comparing lazy tensor traces.
     static func areHandlesEquivalent(_ lhs: TFETensorHandle, _ rhs: TFETensorHandle) -> Bool {
-        return lhs._cTensorHandle == rhs._cTensorHandle
+        lhs._cTensorHandle == rhs._cTensorHandle
     }
 
     /// Returns true if the underlying tensors are equal.
