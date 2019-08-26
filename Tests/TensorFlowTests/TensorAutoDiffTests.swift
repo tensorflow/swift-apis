@@ -163,14 +163,19 @@ final class TensorAutoDiffTests: XCTestCase {
         // print(t.gradient(y, [a, b]))
         // ```
         func f(a: Tensor<Float>, b: Tensor<Float>) -> Tensor<Float> { min(a, b).sum() }
-        var a = Tensor<Float>([[3.0, -2.0], [0.3, 10.0]])
-        var b = Tensor<Float>([[9.0, -3.0], [0.1, 10.0]])
+        var a = Tensor<Float>([4, 5, 3])
+        var b = Tensor<Float>([4, 2, 6])
         var computedGradient = gradient(at: a, b, in: f)
-        var expectedGradient: (Tensor<Float>, Tensor<Float>) = (
-            [[1.0, 0.0], [0.0, 1.0]], [[0.0, 1.0], [1.0, 0.0]])
+        var expectedGradient: (Tensor<Float>, Tensor<Float>) = ([1.0, 0.0, 1.0], [0.0, 1.0, 0.0])
+        XCTAssertEqual(computedGradient.0, expectedGradient.0)
+        XCTAssertEqual(computedGradient.1, expectedGradient.1)
+        // Swap argument order.
+        computedGradient = gradient(at: b, a, in: f)
+        expectedGradient = ([1.0, 1.0, 0.0], [0.0, 0.0, 1.0])
         XCTAssertEqual(computedGradient.0, expectedGradient.0)
         XCTAssertEqual(computedGradient.1, expectedGradient.1)
 
+        // Test broadcasting behavior.
         a = Tensor<Float>([[3.0, -2.0], [0.3, 10.0]])
         b = Tensor<Float>([9.0, -3.0])
         computedGradient = gradient(at: a, b, in: f)
@@ -189,14 +194,19 @@ final class TensorAutoDiffTests: XCTestCase {
         // print(t.gradient(y, [a, b]))
         // ```
         func f(a: Tensor<Float>, b: Tensor<Float>) -> Tensor<Float> { max(a, b).sum() }
-        var a = Tensor<Float>([[3.0, -2.0], [0.3, 10.0]])
-        var b = Tensor<Float>([[9.0, -3.0], [0.5, 10.0]])
+        var a = Tensor<Float>([4, 5, 3])
+        var b = Tensor<Float>([4, 2, 6])
         var computedGradient = gradient(at: a, b, in: f)
-        var expectedGradient: (Tensor<Float>, Tensor<Float>) = (
-            [[0.0, 1.0], [0.0, 1.0]], [[1.0, 0.0], [1.0, 0.0]])
+        var expectedGradient: (Tensor<Float>, Tensor<Float>) = ([1.0, 1.0, 0.0], [0.0, 0.0, 1.0])
+        XCTAssertEqual(computedGradient.0, expectedGradient.0)
+        XCTAssertEqual(computedGradient.1, expectedGradient.1)
+        // Swap argument order.
+        computedGradient = gradient(at: b, a, in: f)
+        expectedGradient = ([1.0, 0.0, 1.0], [0.0, 1.0, 0.0])
         XCTAssertEqual(computedGradient.0, expectedGradient.0)
         XCTAssertEqual(computedGradient.1, expectedGradient.1)
 
+        // Test broadcasting behavior.
         a = Tensor<Float>([[3.0, -2.0], [0.3, 10.0]])
         b = Tensor<Float>([9.0, -3.0])
         computedGradient = gradient(at: a, b, in: f)
