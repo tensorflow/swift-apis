@@ -20,7 +20,7 @@ import CTensorFlow
 final class LazyTensorTraceCacheTests : LazyTensorTestCase {
     override class func setUp() {
         super.setUp()
-        LazyTensorContext.local.autoConstPromotion = true
+        LazyTensorContext.local.constPromotion = true
     }
 
     override class func tearDown() {
