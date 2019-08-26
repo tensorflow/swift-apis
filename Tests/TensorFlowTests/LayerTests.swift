@@ -975,12 +975,13 @@ final class LayerTests: XCTestCase {
         let x = Tensor<Float>(rangeFrom: 0, to: 20, stride: 1).reshaped(to: [4,5])
         let epsilon = Tensor<Float>(0.001)
         let bnLayer = BatchNorm<Float>(featureCount: 5, axis: 1, epsilon: epsilon)
-        // Test inferrence before any training is only changed by epsilon value.
+        // Test inference before any training.
         assertEqual(bnLayer.inferring(from: x), x / TensorFlow.sqrt(1 + epsilon), accuracy: 1e-5)
-        // Test inferrence after single training step.
+        // Perform one training step, updating the running mean and variance.
         Context.local.learningPhase = .training
-        let y = bnLayer(x)
-        // The expected values were computed using the following TensorFlow 2.0 Beta1 Python code :
+        _ = bnLayer(x) // This line is important and cannot be removed.
+        // Test inference after training step.
+        // The expected value was computed using the following Python code:
         // ```
         //  x = tf.reshape(tf.range(20, dtype=tf.float32), [4,5])
         //  y_train = bnLayer(x, training=True)
