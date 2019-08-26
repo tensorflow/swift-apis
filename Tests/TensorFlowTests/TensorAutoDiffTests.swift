@@ -155,64 +155,73 @@ final class TensorAutoDiffTests: XCTestCase {
 
     func testMin() {
         // The expected gradient values were computed using the following TensorFlow 2.0 Beta1
-        // Python code with respective `a` and `b` tensors :
+        // Python code with respective `a` and `b` tensors:
         // ```
         // with tf.GradientTape() as t:
         //     t.watch([a, b])
         //     y = tf.math.reduce_sum(tf.minimum(a, b))
         // print(t.gradient(y, [a, b]))
         // ```
-        func f(a: Tensor<Float>, b: Tensor<Float>) -> Tensor<Float> { min(a, b).sum() }
-        var a = Tensor<Float>([4, 5, 3])
-        var b = Tensor<Float>([4, 2, 6])
-        var computedGradient = gradient(at: a, b, in: f)
-        var expectedGradient: (Tensor<Float>, Tensor<Float>) = ([1.0, 0.0, 1.0], [0.0, 1.0, 0.0])
-        XCTAssertEqual(computedGradient.0, expectedGradient.0)
-        XCTAssertEqual(computedGradient.1, expectedGradient.1)
-        // Swap argument order.
-        computedGradient = gradient(at: b, a, in: f)
-        expectedGradient = ([1.0, 1.0, 0.0], [0.0, 0.0, 1.0])
-        XCTAssertEqual(computedGradient.0, expectedGradient.0)
-        XCTAssertEqual(computedGradient.1, expectedGradient.1)
+        do {
+            let a = Tensor<Float>([4, 5, 3])
+            let b = Tensor<Float>([4, 2, 6])
+            let computedGradient1 = gradient(at: a, b) { a, b in min(a, b).sum() }
+            let expectedGradient1: (Tensor<Float>, Tensor<Float>) = (
+                [1.0, 0.0, 1.0], [0.0, 1.0, 0.0])
+            XCTAssertEqual(computedGradient1.0, expectedGradient1.0)
+            XCTAssertEqual(computedGradient1.1, expectedGradient1.1)
 
-        // Test broadcasting behavior.
-        a = Tensor<Float>([[3.0, -2.0], [0.3, 10.0]])
-        b = Tensor<Float>([9.0, -3.0])
-        computedGradient = gradient(at: a, b, in: f)
-        expectedGradient = ([[1.0, 0.0], [1.0, 0.0]], [0.0, 2.0])
-        XCTAssertEqual(computedGradient.0, expectedGradient.0)
-        XCTAssertEqual(computedGradient.1, expectedGradient.1)
+            let computedGradient2 = gradient(at: a, b) { a, b in min(b, a).sum() }
+            let expectedGradient2: (Tensor<Float>, Tensor<Float>) =  (
+                [0.0, 0.0, 1.0], [1.0, 1.0, 0.0])
+            XCTAssertEqual(computedGradient2.0, expectedGradient2.0)
+            XCTAssertEqual(computedGradient2.1, expectedGradient2.1)
+        }
+
+        do {
+            let a = Tensor<Float>([[3.0, -2.0], [0.3, 10.0]])
+            let b = Tensor<Float>([9.0, -3.0])
+            let computedGradient = gradient(at: a, b) { a, b in min(a, b).sum() }
+            let expectedGradient: (Tensor<Float>, Tensor<Float>) = (
+                [[1.0, 0.0], [1.0, 0.0]], [0.0, 2.0])
+            XCTAssertEqual(computedGradient.0, expectedGradient.0)
+            XCTAssertEqual(computedGradient.1, expectedGradient.1)
+        }
     }
 
     func testMax() {
         // The expected gradient values were computed using the following TensorFlow 2.0 Beta1
-        // Python code with respective `a` and `b` tensors :
+        // Python code with respective `a` and `b` tensors:
         // ```
         // with tf.GradientTape() as t:
         //     t.watch([a, b])
         //     y = tf.math.reduce_sum(tf.maximum(a, b))
         // print(t.gradient(y, [a, b]))
         // ```
-        func f(a: Tensor<Float>, b: Tensor<Float>) -> Tensor<Float> { max(a, b).sum() }
-        var a = Tensor<Float>([4, 5, 3])
-        var b = Tensor<Float>([4, 2, 6])
-        var computedGradient = gradient(at: a, b, in: f)
-        var expectedGradient: (Tensor<Float>, Tensor<Float>) = ([1.0, 1.0, 0.0], [0.0, 0.0, 1.0])
-        XCTAssertEqual(computedGradient.0, expectedGradient.0)
-        XCTAssertEqual(computedGradient.1, expectedGradient.1)
-        // Swap argument order.
-        computedGradient = gradient(at: b, a, in: f)
-        expectedGradient = ([1.0, 0.0, 1.0], [0.0, 1.0, 0.0])
-        XCTAssertEqual(computedGradient.0, expectedGradient.0)
-        XCTAssertEqual(computedGradient.1, expectedGradient.1)
+        do {
+            let a = Tensor<Float>([4, 5, 3])
+            let b = Tensor<Float>([4, 2, 6])
+            let computedGradient1 = gradient(at: a, b) { a, b in max(a, b).sum() }
+            let expectedGradient1: (Tensor<Float>, Tensor<Float>) = (
+                [1.0, 1.0, 0.0], [0.0, 0.0, 1.0])
+            XCTAssertEqual(computedGradient1.0, expectedGradient1.0)
+            XCTAssertEqual(computedGradient1.1, expectedGradient1.1)
 
-        // Test broadcasting behavior.
-        a = Tensor<Float>([[3.0, -2.0], [0.3, 10.0]])
-        b = Tensor<Float>([9.0, -3.0])
-        computedGradient = gradient(at: a, b, in: f)
-        expectedGradient = ([[0.0, 1.0], [0.0, 1.0]], [2.0, 0.0])
-        XCTAssertEqual(computedGradient.0, expectedGradient.0)
-        XCTAssertEqual(computedGradient.1, expectedGradient.1)
+            let computedGradient2 = gradient(at: a, b) { a, b in max(b, a).sum() }
+            let expectedGradient2: (Tensor<Float>, Tensor<Float>) = (
+                [0.0, 1.0, 0.0],  [1.0, 0.0, 1.0])
+            XCTAssertEqual(computedGradient2.0, expectedGradient2.0)
+            XCTAssertEqual(computedGradient2.1, expectedGradient2.1)
+        }
+        do {
+            let a = Tensor<Float>([[3.0, -2.0], [0.3, 10.0]])
+            let b = Tensor<Float>([9.0, -3.0])
+            let computedGradient = gradient(at: a, b) { a, b in max(a, b).sum() }
+            let expectedGradient: (Tensor<Float>, Tensor<Float>)  = (
+                [[0.0, 1.0], [0.0, 1.0]], [2.0, 0.0])
+            XCTAssertEqual(computedGradient.0, expectedGradient.0)
+            XCTAssertEqual(computedGradient.1, expectedGradient.1)
+        }
     }
 
     /*TODO:(https://bugs.swift.org/browse/TF-771): Disabling this case as assertions fail.
