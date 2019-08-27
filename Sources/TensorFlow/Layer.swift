@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-public protocol Module: Differentiable, KeyPathIterable
+public protocol Module: EuclideanDifferentiable, KeyPathIterable
     where TangentVector: VectorProtocol & ElementaryFunctions &
                          PointwiseMultiplicative & KeyPathIterable {
     /// The input type of the layer.
