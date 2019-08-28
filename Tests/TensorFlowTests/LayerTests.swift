@@ -756,6 +756,19 @@ final class LayerTests: XCTestCase {
         let expected = Tensor<Float>([[[0.4, 0.3], [0.2, 0.1]], [[0.2, 0.1],[0.2, 0.1]]])
         XCTAssertEqual(output, expected)
     }
+    
+    func testEmbeddingGradient() {
+        let layer = Embedding<Float>(vocabularySize: 4, embeddingSize: 5)
+        let input = Tensor<Int32>(shape: [2, 3], scalars: [0, 1, 2, 1, 2, 2])
+        let grad = gradient(at: layer) { $0(input).sum() }
+        let expected = Tensor<Float>([
+            [1, 1, 1, 1, 1],
+            [2, 2, 2, 2, 2],
+            [3, 3, 3, 3, 3],
+            [0, 0, 0, 0, 0],
+        ])
+        XCTAssertEqual(grad.embeddings, expected)
+    }
 
     func testSimpleRNNCell() {
         let weight = Tensor<Float>(ones: [7, 5]) * Tensor<Float>([0.3333, 1, 0.3333, 1, 0.3333])
@@ -1103,6 +1116,7 @@ final class LayerTests: XCTestCase {
         ("testFlatten", testFlatten),
         ("testFlattenGradient", testFlattenGradient),
         ("testEmbedding", testEmbedding),
+        ("testEmbeddingGradient", testEmbeddingGradient),
         ("testSimpleRNNCell", testSimpleRNNCell),
         ("testDense", testDense),
         ("testDenseGradient", testDenseGradient),
