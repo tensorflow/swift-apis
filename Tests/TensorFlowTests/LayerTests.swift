@@ -255,9 +255,9 @@ final class LayerTests: XCTestCase {
     func testZeroPadding1DGradient() {
         let input = Tensor<Float>([0.0, 1.0, 2.0])
         let layer = ZeroPadding1D<Float>(padding: 2)
-        let computedGradient = gradient(at: input) { layer($0).sum() }
+        let computedGradient = gradient(at: input, layer) { $1($0).sum() }
         let expectedGradient = Tensor<Float>(onesLike: input)
-        XCTAssertEqual(computedGradient, expectedGradient)
+        XCTAssertEqual(computedGradient.0, expectedGradient)
     }
 
     func testZeroPadding2D() {
@@ -271,9 +271,9 @@ final class LayerTests: XCTestCase {
     func testZeroPadding2DGradient() {
         let input = Tensor<Float>(shape: [3, 1], scalars: [0.0, 1.0, 2.0])
         let layer = ZeroPadding2D<Float>(padding: ((0, 1), (2, 3)))
-        let computedGradient = gradient(at: input) { layer($0).sum() }
+        let computedGradient = gradient(at: input, layer) { $1($0).sum() }
         let expectedGradient = Tensor<Float>(onesLike: input)
-        XCTAssertEqual(computedGradient, expectedGradient)
+        XCTAssertEqual(computedGradient.0, expectedGradient)
     }
 
     func testZeroPadding3D() {
@@ -287,9 +287,9 @@ final class LayerTests: XCTestCase {
     func testZeroPadding3DGradient() {
         let input = Tensor<Float>(shape:[3, 1, 1], scalars: [0.0, 1.0, 2.0])
         let layer = ZeroPadding3D<Float>(padding: ((0, 1), (2, 3), (2, 0)))
-        let computedGradient = gradient(at: input) { layer($0).sum() }
+        let computedGradient = gradient(at: input, layer) { $1($0).sum() }
         let expectedGradient = Tensor<Float>(onesLike: input)
-        XCTAssertEqual(computedGradient, expectedGradient)
+        XCTAssertEqual(computedGradient.0, expectedGradient)
     }
 
     func testMaxPool1D() {
