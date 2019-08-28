@@ -761,6 +761,19 @@ final class LayerTests: XCTestCase {
         let layer = Embedding<Float>(vocabularySize: 4, embeddingSize: 5)
         let input = Tensor<Int32>(shape: [2, 3], scalars: [0, 1, 2, 1, 2, 2])
         let grad = gradient(at: layer) { $0(input).sum() }
+        // The expected value of the gradient was computed using the following Python code:
+        // ```
+        // indices = tf.convert_to_tensor([[0, 1, 2], [1, 2, 2]], dtype=tf.int32)
+        // embedding = tf.random.normal([4, 5])
+        // with tf.GradientTape() as t:
+        //     t.watch(embedding)
+        //     y = tf.reduce_sum(tf.gather(embedding, indices))
+        // grad_slice = t.gradient(y, embedding) # IndexedSlice
+        // grad = tf.zeros_like(embedding).numpy()
+        // for index in grad_slice.indices:
+        //     grad[index] += grad_slice.values[index].numpy()
+        // print(grad)
+        // ```
         let expected = Tensor<Float>([
             [1, 1, 1, 1, 1],
             [2, 2, 2, 2, 2],
