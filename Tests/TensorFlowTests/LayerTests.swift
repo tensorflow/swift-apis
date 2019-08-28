@@ -251,6 +251,14 @@ final class LayerTests: XCTestCase {
         let expected = Tensor<Float>([0.0, 0.0, 0.0, 1.0, 2.0, 0.0, 0.0])
         XCTAssertEqual(output, expected)
     }
+    
+    func testZeroPadding1DGradient() {
+        let input = Tensor<Float>([0.0, 1.0, 2.0])
+        let layer = ZeroPadding1D<Float>(padding: 2)
+        let computedGradient = gradient(at: input) { layer($0).sum() }
+        let expectedGradient = Tensor<Float>(onesLike: input)
+        XCTAssertEqual(computedGradient, expectedGradient)
+    }
 
     func testZeroPadding2D() {
         let input = Tensor<Float>(shape: [3, 1], scalars: [0.0, 1.0, 2.0])
@@ -259,6 +267,14 @@ final class LayerTests: XCTestCase {
         let expected = Tensor<Float>([[0.0, 0.0], [1.0, 0.0], [2.0, 0.0]])
         XCTAssertEqual(output, expected)
     }
+    
+    func testZeroPadding2DGradient() {
+        let input = Tensor<Float>(shape: [3, 1], scalars: [0.0, 1.0, 2.0])
+        let layer = ZeroPadding2D<Float>(padding: ((0, 1), (2, 3)))
+        let computedGradient = gradient(at: input) { layer($0).sum() }
+        let expectedGradient = Tensor<Float>(onesLike: input)
+        XCTAssertEqual(computedGradient, expectedGradient)
+    }
 
     func testZeroPadding3D() {
         let input = Tensor<Float>(shape:[3, 1, 1], scalars: [0.0, 1.0, 2.0])
@@ -266,6 +282,14 @@ final class LayerTests: XCTestCase {
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>(shape: [3, 2, 1], scalars: [0, 0, 1, 0, 2, 0])
         XCTAssertEqual(output, expected)
+    }
+    
+    func testZeroPadding3DGradient() {
+        let input = Tensor<Float>(shape:[3, 1, 1], scalars: [0.0, 1.0, 2.0])
+        let layer = ZeroPadding3D<Float>(padding: ((0, 1), (2, 3), (2, 0)))
+        let computedGradient = gradient(at: input) { layer($0).sum() }
+        let expectedGradient = Tensor<Float>(onesLike: input)
+        XCTAssertEqual(computedGradient, expectedGradient)
     }
 
     func testMaxPool1D() {
@@ -1066,8 +1090,11 @@ final class LayerTests: XCTestCase {
         ("testSeparableConv1D", testSeparableConv1D),
         ("testSeparableConv2D", testSeparableConv2D),
         ("testZeroPadding1D", testZeroPadding1D),
+        ("testZeroPadding1DGradient", testZeroPadding1DGradient),
         ("testZeroPadding2D", testZeroPadding2D),
+        ("testZeroPadding2DGradient", testZeroPadding2DGradient),
         ("testZeroPadding3D", testZeroPadding3D),
+        ("testZeroPadding3DGradient", testZeroPadding3DGradient),
         ("testMaxPool1D", testMaxPool1D),
         ("testMaxPool1DGradient", testMaxPool1DGradient),
         ("testMaxPool2D", testMaxPool2D),
