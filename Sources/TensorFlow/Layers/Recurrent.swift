@@ -26,6 +26,14 @@ public struct RNNCellInput<Input: Differentiable, State: Differentiable>: Differ
     }
 }
 
+extension RNNCellInput: EuclideanDifferentiable
+    where Input: EuclideanDifferentiable, State: EuclideanDifferentiable {
+    public var differentiableVectorView: TangentVector {
+        TangentVector(input: input.differentiableVectorView,
+                      state: state.differentiableVectorView)
+    }
+}
+
 /// An output to a recurrent neural network.
 public struct RNNCellOutput<Output: Differentiable, State: Differentiable>: Differentiable {
     /// The output at the current time step.
@@ -37,6 +45,14 @@ public struct RNNCellOutput<Output: Differentiable, State: Differentiable>: Diff
     public init(output: Output, state: State) {
         self.output = output
         self.state = state
+    }
+}
+
+extension RNNCellOutput: EuclideanDifferentiable
+    where Output: EuclideanDifferentiable, State: EuclideanDifferentiable {
+    public var differentiableVectorView: TangentVector {
+        TangentVector(output: output.differentiableVectorView,
+                      state: state.differentiableVectorView)
     }
 }
 

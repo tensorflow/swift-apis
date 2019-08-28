@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-public protocol Module: Differentiable, KeyPathIterable
+public protocol Module: EuclideanDifferentiable, KeyPathIterable
     where TangentVector: VectorProtocol & ElementaryFunctions &
                          PointwiseMultiplicative & KeyPathIterable {
     /// The input type of the layer.
@@ -52,9 +52,10 @@ public extension Layer {
 }
 
 /// An empty struct representing empty `TangentVector`s for parameterless layers.
-public struct EmptyTangentVector: Differentiable, VectorProtocol, ElementaryFunctions,
+public struct EmptyTangentVector: EuclideanDifferentiable, VectorProtocol, ElementaryFunctions,
                                   PointwiseMultiplicative, KeyPathIterable {
     public typealias VectorSpaceScalar = Float
+    public typealias TangentVector = Self
 
     public func adding(_ x: Float) -> EmptyTangentVector { self }
     public mutating func add(_ x: Float) {}
@@ -67,13 +68,14 @@ public struct EmptyTangentVector: Differentiable, VectorProtocol, ElementaryFunc
 /// A parameterless neural network layer.
 ///
 /// The `TangentVector` of parameterless layers is always `EmptyTangentVector`.
-public protocol ParameterlessLayer: Layer {
+public protocol ParameterlessLayer: Layer where TangentVector == EmptyTangentVector {
     @differentiable
     func callAsFunction(_ input: Input) -> Output
 }
 
 public extension ParameterlessLayer {
     mutating func move(along direction: EmptyTangentVector) {}
+    var differentiableVectorView: EmptyTangentVector { EmptyTangentVector() }
 }
 
 public extension Layer {
