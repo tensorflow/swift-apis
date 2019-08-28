@@ -81,7 +81,7 @@ class LazyTensorTraceBuilder {
             lazyOperations: builder.originalOutputs,
             trace: trace,
             concreteInputs: builder.inputValues)
-        return LazyTensorContext.local.constPromotion
+        return LazyTensorContext.local.shouldPromoteConstants
             ? LazyTensorTraceCache.traceWithPromotedConstants(materializationTraceInfo)
             : materializationTraceInfo
     }

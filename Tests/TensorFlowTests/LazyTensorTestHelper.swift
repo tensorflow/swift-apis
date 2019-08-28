@@ -16,18 +16,18 @@ import XCTest
 @testable import TensorFlow
 
 class LazyTensorTestCase: XCTestCase {
-    static var constPromotion = true
+    static var shouldPromoteConstants = true
     override class func setUp() {
         super.setUp()
         _ThreadLocalState.useLazyTensor = true
-        constPromotion = LazyTensorContext.local.constPromotion
-        LazyTensorContext.local.constPromotion = false
+        shouldPromoteConstants = LazyTensorContext.local.shouldPromoteConstants
+        LazyTensorContext.local.shouldPromoteConstants = false
     }
 
     override class func tearDown() {
         super.tearDown()
         _ThreadLocalState.useLazyTensor = false
-        LazyTensorContext.local.constPromotion = constPromotion
+        LazyTensorContext.local.shouldPromoteConstants = shouldPromoteConstants
     }
 }
 

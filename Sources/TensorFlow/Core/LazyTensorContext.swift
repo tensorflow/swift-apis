@@ -65,7 +65,7 @@ struct LazyTensorContext {
     var isShapeTrackingEnabled = true
     /// Should constants in trace be heuristically promoted to inputs automatically?
     /// (See `LazyTensorTraceCache`)
-    var constPromotion = true
+    var shouldPromoteConstants = true
 
     static var local: LazyTensorContext {
         _read { yield _ThreadLocalState.local.lazyTensorContext }

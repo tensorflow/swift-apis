@@ -20,55 +20,55 @@ extension TFETensorHandle {
     }
 
     /// Returns true if the underlying tensors are equal.
-    static func areTensorsEqual(_ lhs: TFETensorHandle, _ rhs: TFETensorHandle) -> Bool {
-        let lhsDtype = TFE_TensorHandleDataType(lhs._cTensorHandle)
-        let rhsDtype = TFE_TensorHandleDataType(rhs._cTensorHandle)
+    func elementsEqual(_ other: TFETensorHandle) -> Bool {
+        let selfDtype = TFE_TensorHandleDataType(self._cTensorHandle)
+        let otherDtype = TFE_TensorHandleDataType(other._cTensorHandle)
         precondition(
-            lhsDtype == rhsDtype && lhsDtype != TF_VARIANT && lhsDtype != TF_RESOURCE,
+            selfDtype == otherDtype && selfDtype != TF_VARIANT && selfDtype != TF_RESOURCE,
             "Datatypes of tensor handles don't match.")
         let op = TFE_Op("Equal", 1)
-        op.updateAttribute("T", TensorDataType(lhsDtype))
-        op.addInput(lhs)
-        op.addInput(rhs)
+        op.updateAttribute("T", TensorDataType(selfDtype))
+        op.addInput(self)
+        op.addInput(other)
         let result: Tensor<Bool> = op.execute(Int(1))
         return result.scalars.allSatisfy { $0 }
     }
 }
 
 extension LazyTensorHandle {
-    static func areHandlesEquivalent(_ lhs: LazyTensorHandle, _ rhs: LazyTensorHandle) -> Bool {
-        switch (lhs.handle, rhs.handle) {
+    func isEquivalent(to other: LazyTensorHandle) -> Bool {
+        switch (self.handle, other.handle) {
         case let (.concrete(x, _), .concrete(y, _)):
             return TFETensorHandle.areHandlesEquivalent(x, y)
         case let (.symbolic(x, xi, _), .symbolic(y, yi, _)):
-            return (xi == yi) && (x.id == y.id)
+            return xi == yi && x.id == y.id
         default: return false
         }
     }
 }
 
-extension LazyTensorOperation {
+extension LazyTensorOperation.Input {
     /// Returns true if these inputs are equivalent when comparing lazy tensor traces.
-    static func areInputsEquivalent(_ lhs: Input, _ rhs: Input) -> Bool {
-        switch (lhs, rhs) {
+    func isEquivalent(to other: LazyTensorOperation.Input) -> Bool {
+        switch (self, other) {
         case let (.single(l), .single(r)):
-            return LazyTensorHandle.areHandlesEquivalent(l, r)
+            return l.isEquivalent(to: r)
         case let (.list(l), .list(r)):
-            return l.elementsEqual(r, by: {LazyTensorHandle.areHandlesEquivalent($0, $1) })
+            return l.elementsEqual(r, by: { $0.isEquivalent(to: $1) })
         default:
             return false
         }
     }
+}
 
+extension LazyTensorOperation {
     /// Returns true if these operations are equivalent when comparing lazy tensor traces.
-    static func areEquivalent(_ lhs: LazyTensorOperation, _ rhs: LazyTensorOperation) -> Bool {
-        return (lhs.name == rhs.name) &&
-            (lhs.outputCount == rhs.outputCount) &&
-            (lhs.deviceName == rhs.deviceName) &&
-            lhs.inputs.elementsEqual(
-                rhs.inputs,
-                by: { LazyTensorOperation.areInputsEquivalent($0, $1) }) &&
-           (lhs.attributes == rhs.attributes)
+    func isEquivalent(to other: LazyTensorOperation) -> Bool {
+        return self.name == other.name &&
+            self.outputCount == other.outputCount &&
+            self.deviceName == other.deviceName &&
+            self.inputs.elementsEqual(other.inputs, by: { $0.isEquivalent(to: $1) }) &&
+            self.attributes == other.attributes
     }
 }
 
@@ -100,21 +100,23 @@ func ==(_ lhs: LazyTensorOperation.Attribute, _ rhs: LazyTensorOperation.Attribu
     }
 }
 
-// TODO(https://bugs.swift.org/browse/TF-693): This is not thread safe!
+// TODO(TF-693): This is not thread safe!
 struct LazyTensorTraceCache {
-    // Cache from signature to traces that match signature.
+    /// Cache from signature to traces that match signature.
     static private var cache: [String: [LazyTensorTrace]] = [:]
     static func clearCache() { cache.removeAll() }
 
-    // Returns a `MaterializationTraceInfo` with possibly some constants promoted to inputs.
-    static func traceWithPromotedConstants(_ traceInfo: MaterializationTraceInfo) -> MaterializationTraceInfo {
+    /// Returns a `MaterializationTraceInfo` with possibly some constants promoted to inputs.
+    static func traceWithPromotedConstants(
+        _ traceInfo: MaterializationTraceInfo
+    ) -> MaterializationTraceInfo {
         let trace = traceInfo.trace
         guard var traces = cache[trace.signature] else {
             cache[trace.signature] = [trace]
             return traceInfo
         }
         for cachedTrace in traces {
-            if let promotedTrace = traceWithPromotedConstants(traceInfo, cachedTrace) {
+            if let promotedTrace = traceInfo.withPromotedConstants(cachedTrace: cachedTrace) {
                 debugLog("Promoted: \(promotedTrace)\n")
                 return promotedTrace
             }
@@ -123,23 +125,22 @@ struct LazyTensorTraceCache {
         traces.append(trace)
         return traceInfo
     }
+}
 
-    static private func traceWithPromotedConstants(
-        _ traceInfo: MaterializationTraceInfo,
-        _ cachedTrace: LazyTensorTrace
-    ) -> MaterializationTraceInfo? {
-        let currentTrace = traceInfo.trace
+private extension MaterializationTraceInfo {
+    func withPromotedConstants(cachedTrace: LazyTensorTrace) -> MaterializationTraceInfo? {
+        let currentTrace = self.trace
         if currentTrace.operations.count != cachedTrace.operations.count { return nil }
         var promotableConstants: [(Int, TFETensorHandle)] = []
         for (i, current) in currentTrace.operations.enumerated() {
             let cached = cachedTrace.operations[i]
-            if let (currentTensor, cachedTensor) = promotableConstant(current, cached) {
-                if TFETensorHandle.areTensorsEqual(currentTensor, cachedTensor) { continue }
+            if let (currentTensor, cachedTensor) = Self.promotableConstants(current, cached) {
+                if currentTensor.elementsEqual(cachedTensor) { continue }
                 promotableConstants.append((i, currentTensor))
                 continue
             }
             // TODO: we might avoid running the following check based on results of promotableConstant
-            if LazyTensorOperation.areEquivalent(current, cached) { continue }
+            if current.isEquivalent(to: cached) { continue }
             return nil
         }
 
@@ -157,26 +158,27 @@ struct LazyTensorTraceCache {
             operations: newOperations,
             outputs: currentTrace.outputs)
         return MaterializationTraceInfo(
-            lazyOperations: traceInfo.lazyOperations,
+            lazyOperations: self.lazyOperations,
             trace: newTrace,
-            concreteInputs: traceInfo.concreteInputs + newConcreteInputs)
+            concreteInputs: self.concreteInputs + newConcreteInputs)
     }
 
     /// If `current` and `cached` are compatible constants, returns the constant tensors.
-    static private func promotableConstant(
+    static private func promotableConstants(
         _ current: LazyTensorOperation,
         _ cached: LazyTensorOperation
     ) -> (TFETensorHandle, TFETensorHandle)? {
-        if (current.name != "Const" || cached.name != "Const") { return nil }
+        if current.name != "Const" || cached.name != "Const" { return nil }
         let currentValue = current.attributes["value"]!
         let cachedValue = cached.attributes["value"]!
-        guard case let .constTensor(currentTensor) = currentValue else { return nil }
-        guard case let .constTensor(cachedTensor) = cachedValue else { return nil }
+        guard case let .constTensor(currentTensor) = currentValue,
+              case let .constTensor(cachedTensor) = cachedValue
+        else { return nil }
         let currentDtype = TFE_TensorHandleDataType(currentTensor._cTensorHandle)
         let cachedDtype = TFE_TensorHandleDataType(cachedTensor._cTensorHandle)
         if currentDtype == TF_VARIANT || currentDtype == TF_RESOURCE { return nil }
         if cachedDtype == TF_VARIANT || cachedDtype == TF_RESOURCE { return nil }
-        return (currentTensor.shape == cachedTensor.shape) && (currentDtype == cachedDtype)
+        return currentTensor.shape == cachedTensor.shape && currentDtype == cachedDtype
             ? (currentTensor, cachedTensor)
             : nil
     }
