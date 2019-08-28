@@ -1,5 +1,3 @@
-# TODO: We should have a job that creates a S4TF base image so that
-#we don't have to duplicate the installation everywhere.
 FROM gcr.io/swift-tensorflow/cuda10.0-cudnn7-devel-ubuntu18.04
 
 # Allows the caller to specify the toolchain to use.
