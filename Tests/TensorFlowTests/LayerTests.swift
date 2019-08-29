@@ -219,8 +219,7 @@ final class LayerTests: XCTestCase {
         //                                         filters=filter,
         //                                         strides=[1, 2, 2, 2, 1],
         //                                         padding="SAME") + bias)
-        // grads = tape.gradient(y, [x, filter, bias])
-        // print(grads)
+        // print(tape.gradient(y, [x, filter, bias]))
         // ```
         XCTAssertEqual(grads.0,
                        [[[[[10.0], [20.0], [24.0], [12.0]],
