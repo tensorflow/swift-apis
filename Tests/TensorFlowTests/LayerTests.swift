@@ -764,10 +764,11 @@ final class LayerTests: XCTestCase {
             [0.2, 0.4, 0.6],
             [0.3, 0.2, 0.3]])
         let layer = Embedding<Float>(embeddings: embeddings)
-        let input = Tensor<Int32>(shape: [2, 3], scalars: [0, 1, 2, 1, 2, 2])
-        let grad = gradient(at: layer) { $0(input).sum() }
+        let indices = Tensor<Int32>(shape: [2, 3], scalars: [0, 1, 2, 1, 2, 2])
+        let grad = gradient(at: layer) { $0(indices).sum() }
         // The expected value of the gradient was computed using the following Python code:
         // ```
+        // import tensorflow as tf
         // indices = tf.constant([0, 1, 2, 1, 2, 2], dtype=tf.int32)
         // embeddings = tf.constant([
         //      [0.0, 0.2, 0.1],
