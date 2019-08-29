@@ -244,26 +244,28 @@ final class LayerTests: XCTestCase {
     }
 
     func testZeroPadding1D() {
-        let input = Tensor<Float>([0.0, 1.0, 2.0])
+        let input = Tensor<Float>(shape: [1, 3, 1], scalars: [0.0, 1.0, 2.0])
         let layer = ZeroPadding1D<Float>(padding: 2)
         let output = layer.inferring(from: input)
-        let expected = Tensor<Float>([0.0, 0.0, 0.0, 1.0, 2.0, 0.0, 0.0])
+        let expected = Tensor<Float>(shape: [1, 7, 1],
+                                     scalars: [0.0, 0.0, 0.0, 1.0, 2.0, 0.0, 0.0])
         XCTAssertEqual(output, expected)
     }
 
     func testZeroPadding2D() {
-        let input = Tensor<Float>(shape: [3, 1], scalars: [0.0, 1.0, 2.0])
+        let input = Tensor<Float>(shape: [1, 3, 1, 1], scalars: [0.0, 1.0, 2.0])
         let layer = ZeroPadding2D<Float>(padding: ((0, 0), (0, 1)))
         let output = layer.inferring(from: input)
-        let expected = Tensor<Float>([[0.0, 0.0], [1.0, 0.0], [2.0, 0.0]])
+        let expected = Tensor<Float>(shape: [1, 3, 2, 1],
+                                     scalars: [0.0, 0.0, 1.0, 0.0, 2.0, 0.0])
         XCTAssertEqual(output, expected)
     }
 
     func testZeroPadding3D() {
-        let input = Tensor<Float>(shape:[3, 1, 1], scalars: [0.0, 1.0, 2.0])
+        let input = Tensor<Float>(shape:[1, 3, 1, 1, 1], scalars: [0.0, 1.0, 2.0])
         let layer = ZeroPadding3D<Float>(padding: ((0, 0), (0, 1), (0, 0)))
         let output = layer.inferring(from: input)
-        let expected = Tensor<Float>(shape: [3, 2, 1], scalars: [0, 0, 1, 0, 2, 0])
+        let expected = Tensor<Float>(shape: [1, 3, 2, 1, 1], scalars: [0, 0, 1, 0, 2, 0])
         XCTAssertEqual(output, expected)
     }
 

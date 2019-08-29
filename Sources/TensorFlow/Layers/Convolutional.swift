@@ -564,7 +564,7 @@ public struct ZeroPadding1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        input.padded(forSizes: [(padding.0, padding.1)])
+        input.padded(forSizes: [(0, 0), padding, (0, 0)])
     }
 }
 
@@ -596,7 +596,7 @@ public struct ZeroPadding2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return input.padded(forSizes: [padding.0, padding.1])
+        input.padded(forSizes: [(0, 0), padding.0, padding.1, (0, 0)])
     }
 }
 
@@ -628,7 +628,7 @@ public struct ZeroPadding3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return input.padded(forSizes: [padding.0, padding.1, padding.2])
+        input.padded(forSizes: [(0, 0), padding.0, padding.1, padding.2, (0, 0)])
     }
 }
 
