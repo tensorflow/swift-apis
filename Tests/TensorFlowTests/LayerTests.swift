@@ -122,17 +122,19 @@ final class LayerTests: XCTestCase {
         let grads = gradient( at: input, layer) { $1($0).sum() }
         // The expected gradients were computed using the following Python code:
         // ```
-        //  x = tf.reshape(tf.range(64, dtype=tf.float32), [2, 4, 4, 2])
-        //  filter = tf.reshape(tf.range(72, dtype=tf.float32), [3, 3, 2, 4])
-        //  bias = tf.zeros([4])
-        //  with tf.GradientTape() as t:
-        //      t.watch([x, filter, bias])
-        //      y = tf.math.reduce_sum(tf.nn.conv2d(input=x,
-        //                                          filters=filter,
-        //                                          strides=[1, 2, 2, 1],
-        //                                          data_format="NHWC",
-        //                                          padding="VALID") + bias)
-        //  grads = t.gradient(y, [x, filter, bias])
+        // import tensorflow as tf
+        // x = tf.reshape(tf.range(64, dtype=tf.float32), [2, 4, 4, 2])
+        // filter = tf.reshape(tf.range(72, dtype=tf.float32), [3, 3, 2, 4])
+        // bias = tf.zeros([4])
+        // with tf.GradientTape() as tape:
+        //     tape.watch([x, filter, bias])
+        //     y = tf.math.reduce_sum(tf.nn.conv2d(input=x,
+        //                                         filters=filter,
+        //                                         strides=[1, 2, 2, 1],
+        //                                         data_format="NHWC",
+        //                                         padding="VALID") + bias)
+        // grads = tape.gradient(y, [x, filter, bias])
+        // print(grads)
         // ```
         XCTAssertEqual(grads.0,
                        [[[[  6,  22], [ 38,  54], [ 70,  86], [  0,   0]],
@@ -251,7 +253,7 @@ final class LayerTests: XCTestCase {
                                      scalars: [0.0, 0.0, 0.0, 1.0, 2.0, 0.0, 0.0])
         XCTAssertEqual(output, expected)
     }
-    
+
     func testZeroPadding1DGradient() {
         let x = Tensor<Float>(shape: [1, 3, 1], scalars: [0.0, 1.0, 2.0])
         let layer = ZeroPadding1D<Float>(padding: 2)
@@ -261,10 +263,10 @@ final class LayerTests: XCTestCase {
         // import tensorflow as tf
         // x = tf.reshape(tf.constant([0.0, 1.0, 2.0]), [1, 3, 1])
         // layer = tf.keras.layers.ZeroPadding1D(2)
-        // with tf.GradientTape() as t:
-        //     t.watch(x)
+        // with tf.GradientTape() as tape:
+        //     tape.watch(x)
         //     y = tf.reduce_sum(layer(x))
-        // print(t.gradient(y, x))
+        // print(tape.gradient(y, x))
         // ```
         let expectedGradient = Tensor<Float>(onesLike: x)
         XCTAssertEqual(computedGradient.0, expectedGradient)
@@ -278,7 +280,7 @@ final class LayerTests: XCTestCase {
                                      scalars: [0.0, 0.0, 1.0, 0.0, 2.0, 0.0])
         XCTAssertEqual(output, expected)
     }
-    
+
     func testZeroPadding2DGradient() {
         let x = Tensor<Float>(shape: [1, 3, 1, 1], scalars: [0.0, 1.0, 2.0])
         let layer = ZeroPadding2D<Float>(padding: ((0, 0), (0, 1)))
@@ -288,10 +290,10 @@ final class LayerTests: XCTestCase {
         // import tensorflow as tf
         // x = tf.reshape(tf.constant([0.0, 1.0, 2.0]), [1, 3, 1, 1])
         // layer = tf.keras.layers.ZeroPadding2D(((0, 0), (0, 1)))
-        // with tf.GradientTape() as t:
-        //     t.watch(x)
+        // with tf.GradientTape() as tape:
+        //     tape.watch(x)
         //     y = tf.reduce_sum(layer(x))
-        // print(t.gradient(y, x))
+        // print(tape.gradient(y, x))
         // ```
         let expectedGradient = Tensor<Float>(onesLike: x)
         XCTAssertEqual(computedGradient.0, expectedGradient)
@@ -304,7 +306,7 @@ final class LayerTests: XCTestCase {
         let expected = Tensor<Float>(shape: [1, 3, 2, 1, 1], scalars: [0, 0, 1, 0, 2, 0])
         XCTAssertEqual(output, expected)
     }
-    
+
     func testZeroPadding3DGradient() {
         let x = Tensor<Float>(shape:[1, 3, 1, 1, 1], scalars: [0.0, 1.0, 2.0])
         let layer = ZeroPadding3D<Float>(padding: ((0, 0), (0, 1), (0, 0)))
@@ -314,10 +316,10 @@ final class LayerTests: XCTestCase {
         // import tensorflow as tf
         // x = tf.reshape(tf.constant([0.0, 1.0, 2.0]), [1, 3, 1, 1, 1])
         // layer = tf.keras.layers.ZeroPadding3D(((0, 0), (0, 1), (0, 0)))
-        // with tf.GradientTape() as t:
-        //     t.watch(x)
+        // with tf.GradientTape() as tape:
+        //     tape.watch(x)
         //     y = tf.reduce_sum(layer(x))
-        // print(t.gradient(y, x))
+        // print(tape.gradient(y, x))
         // ```
         let expectedGradient = Tensor<Float>(onesLike: x)
         XCTAssertEqual(computedGradient.0, expectedGradient)
@@ -337,11 +339,13 @@ final class LayerTests: XCTestCase {
         let computedGradient = gradient(at: x, layer) { $1($0).sum() }
         // The expected value of the gradient was computed using the following Python code:
         // ```
-        //   maxpool1D = tf.keras.layers.MaxPool1D()
-        //   with tf.GradientTape() as t:
-        //     t.watch(x)
+        // import tensorflow as tf
+        // maxpool1D = tf.keras.layers.MaxPool1D()
+        // x = tf.reshape(tf.range(16, dtype=tf.float32), [1, 4, 4])
+        // with tf.GradientTape() as tape:
+        //     tape.watch(x)
         //     y = tf.math.reduce_sum(maxpool1D(x))
-        //   print(t.gradient(y, x))
+        // print(tape.gradient(y, x))
         // ```
         let expectedGradient = Tensor<Float>([[
             [0, 0, 0, 0],
@@ -365,11 +369,13 @@ final class LayerTests: XCTestCase {
         let computedGradient = gradient(at: x, layer) { $1($0).sum() }
         // The expected value of the gradient was computed using the following Python code:
         // ```
-        //   maxpool2D = tf.keras.layers.MaxPool2D(strides=(2, 2))
-        //   with tf.GradientTape() as t:
-        //     t.watch(x)
+        // import tensorflow as tf
+        // maxpool2D = tf.keras.layers.MaxPool2D(strides=(2, 2))
+        // x = tf.reshape(tf.range(16, dtype=tf.float32), [1, 4, 4, 1])
+        // with tf.GradientTape() as tape:
+        //     tape.watch(x)
         //     y = tf.math.reduce_sum(maxpool2D(x))
-        //   print(t.gradient(y, x))
+        // print(tape.gradient(y, x))
         // ```
         let expectedGradient = Tensor<Float>([[
             [[0], [0], [0], [0]],
@@ -393,11 +399,13 @@ final class LayerTests: XCTestCase {
         let computedGradient = gradient(at: x, layer) { $1($0).sum() }
         // The expected value of the gradient was computed using the following Python code:
         // ```
-        //   maxpool3D = tf.keras.layers.MaxPool3D(strides=(1, 1, 1))
-        //   with tf.GradientTape() as t:
-        //     t.watch(x)
+        // import tensorflow as tf
+        // maxpool3D = tf.keras.layers.MaxPool3D(strides=(1, 1, 1))
+        // x = tf.reshape(tf.range(8, dtype=tf.float32), [1, 2, 2, 2, 1])
+        // with tf.GradientTape() as tape:
+        //     tape.watch(x)
         //     y = tf.math.reduce_sum(maxpool3D(x))
-        //   print(t.gradient(y, x))
+        // print(tape.gradient(y, x))
         // ```
         let expectedGradient = Tensor<Float>([[
             [[[0], [0]],
@@ -421,11 +429,13 @@ final class LayerTests: XCTestCase {
         let computedGradient = gradient(at: x, layer) { $1($0).sum() }
         // The expected value of the gradient was computed using the following Python code:
         // ```
-        //   avgpool1D = tf.keras.layers.AvgPool1D(strides=1)
-        //   with tf.GradientTape() as t:
-        //     t.watch(x)
+        // import tensorflow as tf
+        // avgpool1D = tf.keras.layers.AvgPool1D(strides=1)
+        // x = tf.reshape(tf.range(16, dtype=tf.float32), [1, 4, 4])
+        // with tf.GradientTape() as tape:
+        //     tape.watch(x)
         //     y = tf.math.reduce_sum(avgpool1D(x))
-        //   print(t.gradient(y, x))
+        // print(tape.gradient(y, x))
         // ```
         let expectedGradient = Tensor<Float>([[
             [0.5, 0.5, 0.5, 0.5],
@@ -449,11 +459,13 @@ final class LayerTests: XCTestCase {
         let computedGradient = gradient(at: x, layer) { $1($0).sum() }
         // The expected value of the gradient was computed using the following Python code:
         // ```
-        //   avgpool2D = tf.keras.layers.AvgPool2D(strides=(1, 1))
-        //   with tf.GradientTape() as t:
-        //     t.watch(x)
+        // import tensorflow as tf
+        // avgpool2D = tf.keras.layers.AvgPool2D(strides=(1, 1))
+        // x = tf.reshape(tf.range(32, dtype=tf.float32), [1, 4, 4, 2])
+        // with tf.GradientTape() as tape:
+        //     tape.watch(x)
         //     y = tf.math.reduce_sum(avgpool2D(x))
-        //   print(t.gradient(y, x))
+        // print(tape.gradient(y, x))
         // ```
         let expectedGradient = Tensor<Float>([[
             [[0.25, 0.25], [0.50, 0.50], [0.50, 0.50], [0.25, 0.25]],
@@ -477,11 +489,13 @@ final class LayerTests: XCTestCase {
         let computedGradient = gradient(at: x, layer) { $1($0).sum() }
         // The expected value of the gradient was computed using the following Python code:
         // ```
-        //   avgpool3D = tf.keras.layers.AvgPool3D(strides=(1, 1, 1))
-        //   with tf.GradientTape() as t:
-        //     t.watch(x)
+        // import tensorflow as tf
+        // avgpool3D = tf.keras.layers.AvgPool3D(strides=(1, 1, 1))
+        // x = tf.reshape(tf.range(8, dtype=tf.float32), [1, 2, 2, 2, 1])
+        // with tf.GradientTape() as tape:
+        //     tape.watch(x)
         //     y = tf.math.reduce_sum(avgpool3D(x))
-        //   print(t.gradient(y, x))
+        // print(tape.gradient(y, x))
         // ```
         let expectedGradient = Tensor<Float>(repeating: 0.125, shape: [1, 2, 2, 2, 1])
         XCTAssertEqual(computedGradient.0, expectedGradient)
@@ -501,11 +515,13 @@ final class LayerTests: XCTestCase {
         let computedGradient = gradient(at: input, layer) { $1($0).sum() }
         // The expected value of the gradient was computed using the following Python code:
         // ```
-        //   GlobalAvgPool1D = tf.keras.layers.GlobalAveragePooling1D()
-        //   with tf.GradientTape() as t:
-        //     t.watch(x)
-        //     y = tf.math.reduce_sum(GlobalAvgPool1D(x))
-        //   print(t.gradient(y, x))
+        // import tensorflow as tf
+        // globalAvgPool1D = tf.keras.layers.GlobalAveragePooling1D()
+        // x = tf.reshape(tf.range(8, dtype=tf.float32), [2, 2, 2])
+        // with tf.GradientTape() as tape:
+        //     tape.watch(x)
+        //     y = tf.math.reduce_sum(globalAvgPool1D(x))
+        // print(tape.gradient(y, x))
         // ```
         XCTAssertEqual(computedGradient.0,
                        [[[0.5, 0.5],
@@ -528,11 +544,13 @@ final class LayerTests: XCTestCase {
         let computedGradient = gradient(at: input, layer) { $1($0).sum() }
         // The expected value of the gradient was computed using the following Python code:
         // ```
-        //   GlobalAvgPool2D = tf.keras.layers.GlobalAveragePooling2D()
-        //   with tf.GradientTape() as t:
-        //     t.watch(x)
-        //     y = tf.math.reduce_sum(GlobalAvgPool2D(x))
-        //   print(t.gradient(y, x))
+        // import tensorflow as tf
+        // globalAvgPool2D = tf.keras.layers.GlobalAveragePooling2D()
+        // x = tf.reshape(tf.range(16, dtype=tf.float32), [2, 2, 2, 2])
+        // with tf.GradientTape() as tape:
+        //     tape.watch(x)
+        //     y = tf.math.reduce_sum(globalAvgPool2D(x))
+        // print(tape.gradient(y, x))
         // ```
         XCTAssertEqual(computedGradient.0,
                        [[[[0.25, 0.25], [0.25, 0.25]],
@@ -555,11 +573,13 @@ final class LayerTests: XCTestCase {
         let computedGradient = gradient(at: input, layer) { $1($0).sum() }
         // The expected value of the gradient was computed using the following Python code:
         // ```
-        //   GlobalAvgPool3D = tf.keras.layers.GlobalAveragePooling3D()
-        //   with tf.GradientTape() as t:
-        //     t.watch(x)
-        //     y = tf.math.reduce_sum(GlobalAvgPool3D(x))
-        //   print(t.gradient(y, x))
+        // import tensorflow as tf
+        // globalAvgPool3D = tf.keras.layers.GlobalAveragePooling3D()
+        // x = tf.reshape(tf.range(18, dtype=tf.float32), [1, 3, 2, 2, 1])
+        // with tf.GradientTape() as tape:
+        //     tape.watch(x)
+        //     y = tf.math.reduce_sum(globalAvgPool3D(x))
+        // print(tape.gradient(y, x))
         // ```
         XCTAssertEqual(computedGradient.0,
                        [[[[[0.055555556], [0.055555556], [0.055555556]],
@@ -584,11 +604,13 @@ final class LayerTests: XCTestCase {
         let computedGradient = gradient(at: input, layer) { $1($0).sum() }
         // The expected value of the gradient was computed using the following Python code:
         // ```
-        //   GlobalMaxPool1D = tf.keras.layers.GlobalMaxPooling1D()
-        //   with tf.GradientTape() as t:
-        //     t.watch(x)
-        //     y = tf.math.reduce_sum(GlobalMaxPool1D(x))
-        //   print(t.gradient(y, x))
+        // import tensorflow as tf
+        // globalMaxPool1D = tf.keras.layers.GlobalMaxPooling1D()
+        // x = tf.reshape(tf.range(8, dtype=tf.float32), [2, 2, 2])
+        // with tf.GradientTape() as tape:
+        //     tape.watch(x)
+        //     y = tf.math.reduce_sum(globalMaxPool1D(x))
+        // print(tape.gradient(y, x))
         // ```
         XCTAssertEqual(computedGradient.0,
                        [[[0.0, 0.0],
@@ -611,11 +633,13 @@ final class LayerTests: XCTestCase {
         let computedGradient = gradient(at: input, layer) { $1($0).sum() }
         // The expected value of the gradient was computed using the following Python code:
         // ```
-        //   GlobalMaxPool2D = tf.keras.layers.GlobalMaxPooling2D()
-        //   with tf.GradientTape() as t:
-        //     t.watch(x)
-        //     y = tf.math.reduce_sum(GlobalMaxPool2D(x))
-        //   print(t.gradient(y, x))
+        //import tensorflow as tf
+        // globalMaxPool2D = tf.keras.layers.GlobalMaxPooling2D()
+        // x = tf.reshape(tf.range(36, dtype=tf.float32), [2, 3, 3, 2])
+        // with tf.GradientTape() as tape:
+        //     tape.watch(x)
+        //     y = tf.math.reduce_sum(globalMaxPool2D(x))
+        // print(tape.gradient(y, x))
         // ```
         XCTAssertEqual(computedGradient.0,
                        [[[[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]],
@@ -640,11 +664,13 @@ final class LayerTests: XCTestCase {
         let computedGradient = gradient(at: input, layer) { $1($0).sum() }
         // The expected value of the gradient was computed using the following Python code:
         // ```
-        //   GlobalMaxPool3D = tf.keras.layers.GlobalMaxPooling3D()
-        //   with tf.GradientTape() as t:
-        //     t.watch(x)
-        //     y = tf.math.reduce_sum(GlobalMaxPool3D(x))
-        //   print(t.gradient(y, x))
+        // import tensorflow as tf
+        // globalMaxPool3D = tf.keras.layers.GlobalMaxPooling3D()
+        // x = tf.reshape(tf.range(32, dtype=tf.float32), [2, 2, 2, 2, 2])
+        // with tf.GradientTape() as tape:
+        //     tape.watch(x)
+        //     y = tf.math.reduce_sum(globalMaxPool3D(x))
+        // print(tape.gradient(y, x))
         // ```
         XCTAssertEqual(computedGradient.0,
                        [[[[[0.0, 0.0], [0.0, 0.0]],
@@ -672,11 +698,13 @@ final class LayerTests: XCTestCase {
         let computedGradient = gradient(at: input, layer) { $1($0).sum() }
         // The expected value of the gradient was computed using the following Python code:
         // ```
-        //   UpSampling1D = tf.keras.layers.UpSampling1D(size = 3)
-        //   with tf.GradientTape() as t:
-        //     t.watch(x)
-        //     y = tf.math.reduce_sum(Upsampling1D(x))
-        //   print(t.gradient(y, x))
+        // import tensorflow as tf
+        // upSampling1D = tf.keras.layers.UpSampling1D(size = 3)
+        // x = tf.reshape(tf.range(8, dtype=tf.float32), [2, 2, 2])
+        // with tf.GradientTape() as tape:
+        //     tape.watch(x)
+        //     y = tf.math.reduce_sum(upSampling1D(x))
+        // print(tape.gradient(y, x))
         // ```
         XCTAssertEqual(computedGradient.0,
                        [[[3.0, 3.0],
@@ -700,11 +728,13 @@ final class LayerTests: XCTestCase {
         let computedGradient = gradient(at: input, layer) { $1($0).sum() }
         // The expected value of the gradient was computed using the following Python code:
         // ```
-        //   UpSampling2D = tf.keras.layers.UpSampling2D(size = 3)
-        //   with tf.GradientTape() as t:
-        //     t.watch(x)
-        //     y = tf.math.reduce_sum(Upsampling2D(x))
-        //   print(t.gradient(y, x))
+        // import tensorflow as tf
+        // upSampling2D = tf.keras.layers.UpSampling2D(size = 3)
+        // x = tf.reshape(tf.range(24, dtype=tf.float32), [1, 3, 4, 2])
+        // with tf.GradientTape() as tape:
+        //     tape.watch(x)
+        //     y = tf.math.reduce_sum(upSampling2D(x))
+        // print(tape.gradient(y, x))
         // ```
         XCTAssertEqual(computedGradient.0,
                        [[[[9.0, 9.0], [9.0, 9.0], [9.0, 9.0], [9.0, 9.0]],
@@ -729,11 +759,13 @@ final class LayerTests: XCTestCase {
         let computedGradient = gradient(at: input, layer) { $1($0).sum() }
         // The expected value of the gradient was computed using the following Python code:
         // ```
-        //   UpSampling3D = tf.keras.layers.UpSampling3D(size = 3)
-        //   with tf.GradientTape() as t:
-        //     t.watch(x)
-        //     y = tf.math.reduce_sum(Upsampling3D(x))
-        //   print(t.gradient(y, x))
+        // import tensorflow as tf
+        // upSampling3D = tf.keras.layers.UpSampling3D(size = 3)
+        // x = tf.reshape(tf.range(32, dtype=tf.float32), [1, 2, 2, 2, 4])
+        // with tf.GradientTape() as tape:
+        //     tape.watch(x)
+        //     y = tf.math.reduce_sum(upSampling3D(x))
+        // print(tape.gradient(y, x))
         // ```
         XCTAssertEqual(computedGradient.0,
                        [[[[[27.0, 27.0, 27.0, 27.0], [27.0, 27.0, 27.0, 27.0]],
@@ -756,11 +788,13 @@ final class LayerTests: XCTestCase {
         let computedGradient = gradient(at: input, layer) { $1($0).sum() }
         // The expected value of the gradient was computed using the following Python code:
         // ```
-        //   reshape = tf.keras.layers.Reshape(target_shape = (10, 2, 1))
-        //   with tf.GradientTape() as t:
-        //     t.watch(x)
+        // import tensorflow as tf
+        // reshape = tf.keras.layers.Reshape(target_shape = (10, 2, 1))
+        // x = tf.reshape(tf.range(20, dtype=tf.float32), [1, 5, 4])
+        // with tf.GradientTape() as tape:
+        //     tape.watch(x)
         //     y = tf.math.reduce_sum(reshape(x))
-        //   print(t.gradient(y, x))
+        // print(tape.gradient(y, x))
         // ```
         XCTAssertEqual(computedGradient.0,
                        [[[1.0, 1.0, 1.0, 1.0],
@@ -784,11 +818,13 @@ final class LayerTests: XCTestCase {
         let computedGradient = gradient(at: input, layer) { $1($0).sum() }
         // The expected value of the gradient was computed using the following Python code:
         // ```
-        //   flatten = tf.keras.layers.Flatten()
-        //   with tf.GradientTape() as t:
-        //     t.watch(x)
+        // import tensorflow as tf
+        // flatten = tf.keras.layers.Flatten()
+        // x = tf.reshape(tf.range(16, dtype=tf.float32), [1, 4, 4])
+        // with tf.GradientTape() as tape:
+        //     tape.watch(x)
         //     y = tf.math.reduce_sum(flatten(x))
-        //   print(t.gradient(y, x))
+        // print(tape.gradient(y, x))
         // ```
         XCTAssertEqual(computedGradient.0,
                        [[[1.0, 1.0, 1.0, 1.0],
@@ -811,7 +847,7 @@ final class LayerTests: XCTestCase {
         let expected = Tensor<Float>([[[0.4, 0.3], [0.2, 0.1]], [[0.2, 0.1],[0.2, 0.1]]])
         XCTAssertEqual(output, expected)
     }
-    
+
     func testEmbeddingGradient() {
         let embeddings = Tensor<Float>([
             [0.0, 0.2, 0.1],
@@ -831,10 +867,10 @@ final class LayerTests: XCTestCase {
         //      [0.2, 0.4, 0.6],
         //      [0.3, 0.2, 0.3]])
         // layer = tf.keras.layers.Embedding(4, 3, weights=[embeddings])
-        // with tf.GradientTape() as t:
-        //     t.watch(layer.weights)
+        // with tf.GradientTape() as tape:
+        //     tape.watch(layer.weights)
         //     y = tf.reduce_sum(layer(indices))
-        // grad_slice = t.gradient(y, layer.weights)[0]  # IndexedSlice
+        // grad_slice = tape.gradient(y, layer.weights)[0]  # IndexedSlice
         // grad = tf.zeros_like(embeddings).numpy()
         // for index in grad_slice.indices:
         //     grad[index] += grad_slice.values[index].numpy()
@@ -897,6 +933,7 @@ final class LayerTests: XCTestCase {
         let value = layer(x)
         // The expected values and gradients were computed using the following Python code:
         // ```
+        // import tensorflow as tf
         // x = tf.reshape(tf.range(8, dtype=tf.float32), [2, 4])
         // kernel_value = np.arange(32.0).reshape([4, 8])
         // bias_value = np.arange(8.0)
@@ -905,11 +942,11 @@ final class LayerTests: XCTestCase {
         // layer = tf.keras.layers.Dense(8,
         //                               kernel_initializer=kernel_initializer,
         //                               bias_initializer=bias_initializer)
-        // with tf.GradientTape() as t:
-        //     t.watch(x)
+        // with tf.GradientTape() as tape:
+        //     tape.watch(x)
         //     y = layer(x)
         //     z = tf.math.reduce_sum(tf.math.square(y))
-        // print(y, t.gradient(z, [x] + layer.trainable_variables))
+        // print(y, tape.gradient(z, [x] + layer.trainable_variables))
         // ```
         assertEqual(
             value,
@@ -1011,23 +1048,24 @@ final class LayerTests: XCTestCase {
             let grad = gradient(at: x, bnLayer) { $1($0).squared().sum() }
             // The expected values and gradients were computed using the following Python code:
             // ```
-            //  x = tf.constant(
-            //         [[  -1.0474433,  -0.11914538,  -0.08634827,   0.15446888,    1.0572497],
-            //          [   1.5165012,    0.3753972,  -0.30856386,   -0.3100725,   -1.9584457],
-            //          [ 0.006384419,    1.4424847,   0.91568077,   0.66328526,   -1.0794537],
-            //          [    1.056803,   0.14263044,   -1.8308276,    0.4189805,    0.6933893],
-            //          [  0.30175626,  -0.16121633,   -0.4191958,  -0.53092813, -0.029484272]])
-            //  scale = tf.reshape(tf.constant([1., 1., 1., 1., 1.]), [5, 1])
-            //  offset = tf.reshape(tf.constant([0., 0., 0., 0., 0.]), [5, 1])
-            //  (mean, var) = tf.nn.moments(x, axes=1, keepdims=True)
-            //  bn = tf.nn.batch_normalization(x, mean, var, offset=offset, scale=scale,
-            //                                 variance_epsilon=0.001)
-            //  scaled = tf.reduce_sum(tf.square(bn))
-            //  g = tf.gradients(scaled, [x, offset, scale])
-            //  init = tf.initialize_all_variables()
-            //  with tf.Session() as sess:
-            //    sess.run(init)
-            //    print(sess.run([bn, g]))
+            // import tensorflow as tf
+            // x = tf.constant(
+            //        [[  -1.0474433,  -0.11914538,  -0.08634827,   0.15446888,    1.0572497],
+            //         [   1.5165012,    0.3753972,  -0.30856386,   -0.3100725,   -1.9584457],
+            //         [ 0.006384419,    1.4424847,   0.91568077,   0.66328526,   -1.0794537],
+            //         [    1.056803,   0.14263044,   -1.8308276,    0.4189805,    0.6933893],
+            //         [  0.30175626,  -0.16121633,   -0.4191958,  -0.53092813, -0.029484272]])
+            // scale = tf.reshape(tf.constant([1., 1., 1., 1., 1.]), [5, 1])
+            // offset = tf.reshape(tf.constant([0., 0., 0., 0., 0.]), [5, 1])
+            // (mean, var) = tf.nn.moments(x, axes=1, keepdims=True)
+            // bn = tf.nn.batch_normalization(x, mean, var, offset=offset, scale=scale,
+            //                                variance_epsilon=0.001)
+            // scaled = tf.reduce_sum(tf.square(bn))
+            // g = tf.gradients(scaled, [x, offset, scale])
+            // init = tf.initialize_all_variables()
+            // with tf.Session() as sess:
+            //     sess.run(init)
+            //     print(sess.run([bn, g]))
             // ```
             assertEqual(
                 output,
@@ -1075,10 +1113,11 @@ final class LayerTests: XCTestCase {
         // Test inference after training step.
         // The expected value was computed using the following Python code:
         // ```
-        //  x = tf.reshape(tf.range(20, dtype=tf.float32), [4,5])
-        //  y_train = bnLayer(x, training=True)
-        //  y = bnLayer(x, training=False)
-        //  print(y)
+        // import tensorflow as tf
+        // x = tf.reshape(tf.range(20, dtype=tf.float32), [4,5])
+        // y_train = bnLayer(x, training=True)
+        // y = bnLayer(x, training=False)
+        // print(y)
         // ```
         assertEqual(bnLayer.inferring(from: x),
                     [[-0.06569097,  0.8014299 ,  1.6685508 ,  2.5356717 ,  3.4027927 ],
@@ -1099,16 +1138,17 @@ final class LayerTests: XCTestCase {
         let grad = gradient(at: x, lnLayer) { $1($0).squared().sum() }
         // The expected values and gradients were computed using the following Python code:
         // ```
-        //  x = tf.constant([[ 2.736876  , -0.8932728 , -0.11240143,  1.252899  , -0.35648823],
-        //                   [-0.43356904, -0.5147881 ,  0.8055815 ,  0.97228354,  1.4561518 ],
-        //                   [ 0.56300443, -0.87069905, -0.20677163,  1.1823419 ,  1.0455104 ],
-        //                   [-0.8246169 ,  1.4249208 ,  1.2131604 ,  1.1445689 , -0.94032115]])
-        //  lnLayer = tf.keras.layers.LayerNormalization(axis=1, epsilon=0.001)
-        //  with tf.GradientTape() as t:
-        //      t.watch(x)
-        //      y = lnLayer(x)
-        //      z = tf.math.reduce_sum(tf.math.square(y))
-        //  print(y, t.gradient(z, [x] + lnLayer.trainable_variables))
+        // import tensorflow as tf
+        // x = tf.constant([[ 2.736876  , -0.8932728 , -0.11240143,  1.252899  , -0.35648823],
+        //                  [-0.43356904, -0.5147881 ,  0.8055815 ,  0.97228354,  1.4561518 ],
+        //                  [ 0.56300443, -0.87069905, -0.20677163,  1.1823419 ,  1.0455104 ],
+        //                  [-0.8246169 ,  1.4249208 ,  1.2131604 ,  1.1445689 , -0.94032115]])
+        // lnLayer = tf.keras.layers.LayerNormalization(axis=1, epsilon=0.001)
+        // with tf.GradientTape() as tape:
+        //     tape.watch(x)
+        //     y = lnLayer(x)
+        //     z = tf.math.reduce_sum(tf.math.square(y))
+        // print(y, tape.gradient(z, [x] + lnLayer.trainable_variables))
         // ```
         assertEqual(
             value,
