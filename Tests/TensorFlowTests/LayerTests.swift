@@ -1115,6 +1115,8 @@ final class LayerTests: XCTestCase {
         // ```
         // import tensorflow as tf
         // x = tf.reshape(tf.range(20, dtype=tf.float32), [4,5])
+        // bn = tf.nn.batch_normalization(x, mean, var, offset=offset, scale=scale,
+        //                                variance_epsilon=0.001)
         // y_train = bnLayer(x, training=True)
         // y = bnLayer(x, training=False)
         // print(y)
