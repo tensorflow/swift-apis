@@ -755,6 +755,43 @@ final class LayerTests: XCTestCase {
         let expected = Tensor<Float>([[[0.4, 0.3], [0.2, 0.1]], [[0.2, 0.1],[0.2, 0.1]]])
         XCTAssertEqual(output, expected)
     }
+    
+    func testEmbeddingGradient() {
+        let embeddings = Tensor<Float>([
+            [0.0, 0.2, 0.1],
+            [0.1, 0.7, 0.5],
+            [0.2, 0.4, 0.6],
+            [0.3, 0.2, 0.3]])
+        let layer = Embedding<Float>(embeddings: embeddings)
+        let indices = Tensor<Int32>(shape: [2, 3], scalars: [0, 1, 2, 1, 2, 2])
+        let grad = gradient(at: layer) { $0(indices).sum() }
+        // The expected value of the gradient was computed using the following Python code:
+        // ```
+        // import tensorflow as tf
+        // indices = tf.constant([0, 1, 2, 1, 2, 2], dtype=tf.int32)
+        // embeddings = tf.constant([
+        //      [0.0, 0.2, 0.1],
+        //      [0.1, 0.7, 0.5],
+        //      [0.2, 0.4, 0.6],
+        //      [0.3, 0.2, 0.3]])
+        // layer = tf.keras.layers.Embedding(4, 3, weights=[embeddings])
+        // with tf.GradientTape() as t:
+        //     t.watch(layer.weights)
+        //     y = tf.reduce_sum(layer(indices))
+        // grad_slice = t.gradient(y, layer.weights)[0]  # IndexedSlice
+        // grad = tf.zeros_like(embeddings).numpy()
+        // for index in grad_slice.indices:
+        //     grad[index] += grad_slice.values[index].numpy()
+        // print(grad)
+        // ```
+        let expected = Tensor<Float>([
+            [1, 1, 1],
+            [2, 2, 2],
+            [3, 3, 3],
+            [0, 0, 0],
+        ])
+        XCTAssertEqual(grad.embeddings, expected)
+    }
 
     func testSimpleRNNCell() {
         let weight = Tensor<Float>(ones: [7, 5]) * Tensor<Float>([0.3333, 1, 0.3333, 1, 0.3333])
@@ -1102,6 +1139,7 @@ final class LayerTests: XCTestCase {
         ("testFlatten", testFlatten),
         ("testFlattenGradient", testFlattenGradient),
         ("testEmbedding", testEmbedding),
+        ("testEmbeddingGradient", testEmbeddingGradient),
         ("testSimpleRNNCell", testSimpleRNNCell),
         ("testDense", testDense),
         ("testDenseGradient", testDenseGradient),
