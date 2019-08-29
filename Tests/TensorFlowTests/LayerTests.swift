@@ -120,7 +120,7 @@ final class LayerTests: XCTestCase {
                                   padding: .valid)
         let input = Tensor(shape: [2, 4, 4, 2], scalars: (0..<64).map(Float.init))
         let grads = gradient( at: input, layer) { $1($0).sum() }
-        // The expected gradients were computed using the following Python code:
+        // The expected value of the gradient was computed using the following Python code:
         // ```
         // import tensorflow as tf
         // x = tf.reshape(tf.range(64, dtype=tf.float32), [2, 4, 4, 2])
@@ -133,8 +133,7 @@ final class LayerTests: XCTestCase {
         //                                         strides=[1, 2, 2, 1],
         //                                         data_format="NHWC",
         //                                         padding="VALID") + bias)
-        // grads = tape.gradient(y, [x, filter, bias])
-        // print(grads)
+        // print(tape.gradient(y, [x, filter, bias]))
         // ```
         XCTAssertEqual(grads.0,
                        [[[[  6,  22], [ 38,  54], [ 70,  86], [  0,   0]],
