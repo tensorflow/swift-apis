@@ -251,6 +251,22 @@ final class LayerTests: XCTestCase {
                                      scalars: [0.0, 0.0, 0.0, 1.0, 2.0, 0.0, 0.0])
         XCTAssertEqual(output, expected)
     }
+    
+    func testZeroPadding1DGradient() {
+        let input = Tensor<Float>(shape: [1, 3, 1], scalars: [0.0, 1.0, 2.0])
+        let layer = ZeroPadding1D<Float>(padding: 2)
+        let computedGradient = gradient(at: input, layer) { $1($0).sum() }
+        // The expected value of the gradient was computed using the following Python code:
+        // ```
+        // layer = tf.keras.layers.ZeroPadding1D(2)
+        // with tf.GradientTape() as t:
+        //     t.watch(x)
+        //     y = tf.reduce_sum(layer(x))
+        // print(t.gradient(y, x))
+        // ```
+        let expectedGradient = Tensor<Float>(onesLike: input)
+        XCTAssertEqual(computedGradient.0, expectedGradient)
+    }
 
     func testZeroPadding2D() {
         let input = Tensor<Float>(shape: [1, 3, 1, 1], scalars: [0.0, 1.0, 2.0])
@@ -260,6 +276,22 @@ final class LayerTests: XCTestCase {
                                      scalars: [0.0, 0.0, 1.0, 0.0, 2.0, 0.0])
         XCTAssertEqual(output, expected)
     }
+    
+    func testZeroPadding2DGradient() {
+        let input = Tensor<Float>(shape: [1, 3, 1, 1], scalars: [0.0, 1.0, 2.0])
+        let layer = ZeroPadding2D<Float>(padding: ((0, 0), (0, 1)))
+        let computedGradient = gradient(at: input, layer) { $1($0).sum() }
+        // The expected value of the gradient was computed using the following Python code:
+        // ```
+        // layer = tf.keras.layers.ZeroPadding2D(((0, 0), (0, 1)))
+        // with tf.GradientTape() as t:
+        //     t.watch(x)
+        //     y = tf.reduce_sum(layer(x))
+        // print(t.gradient(y, x))
+        // ```
+        let expectedGradient = Tensor<Float>(onesLike: input)
+        XCTAssertEqual(computedGradient.0, expectedGradient)
+    }
 
     func testZeroPadding3D() {
         let input = Tensor<Float>(shape:[1, 3, 1, 1, 1], scalars: [0.0, 1.0, 2.0])
@@ -267,6 +299,22 @@ final class LayerTests: XCTestCase {
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>(shape: [1, 3, 2, 1, 1], scalars: [0, 0, 1, 0, 2, 0])
         XCTAssertEqual(output, expected)
+    }
+    
+    func testZeroPadding3DGradient() {
+        let input = Tensor<Float>(shape:[1, 3, 1, 1, 1], scalars: [0.0, 1.0, 2.0])
+        let layer = ZeroPadding3D<Float>(padding: ((0, 0), (0, 1), (0, 0)))
+        let computedGradient = gradient(at: input, layer) { $1($0).sum() }
+        // The expected value of the gradient was computed using the following Python code:
+        // ```
+        // layer = tf.keras.layers.ZeroPadding3D(((0, 0), (0, 1), (0, 0))
+        // with tf.GradientTape() as t:
+        //     t.watch(x)
+        //     y = tf.reduce_sum(layer(x))
+        // print(t.gradient(y, x))
+        // ```
+        let expectedGradient = Tensor<Float>(onesLike: input)
+        XCTAssertEqual(computedGradient.0, expectedGradient)
     }
 
     func testMaxPool1D() {
@@ -1067,8 +1115,11 @@ final class LayerTests: XCTestCase {
         ("testSeparableConv1D", testSeparableConv1D),
         ("testSeparableConv2D", testSeparableConv2D),
         ("testZeroPadding1D", testZeroPadding1D),
+        ("testZeroPadding1DGradient", testZeroPadding1DGradient),
         ("testZeroPadding2D", testZeroPadding2D),
+        ("testZeroPadding2DGradient", testZeroPadding2DGradient),
         ("testZeroPadding3D", testZeroPadding3D),
+        ("testZeroPadding3DGradient", testZeroPadding3DGradient),
         ("testMaxPool1D", testMaxPool1D),
         ("testMaxPool1DGradient", testMaxPool1DGradient),
         ("testMaxPool2D", testMaxPool2D),
