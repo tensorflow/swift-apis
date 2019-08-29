@@ -207,7 +207,7 @@ final class LayerTests: XCTestCase {
                             padding: .same)
         let input = Tensor(shape: [1, 4, 4, 4, 1], scalars: (0..<64).map(Float.init))
         let grads = gradient( at: input, layer) { $1($0).sum() }
-        // The expected gradients were computed using the following Python code:
+        // The expected value of the gradient was computed using the following Python code:
         // ```
         // import tensorflow as tf
         // x = tf.reshape(tf.range(64, dtype=tf.float32), [1, 4, 4, 4, 1])
