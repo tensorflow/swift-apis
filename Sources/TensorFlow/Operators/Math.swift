@@ -1344,7 +1344,9 @@ internal func _vjpMax<T: TensorFlowFloatingPoint>(
     _ y: Tensor<T>
 ) -> (Tensor<T>, (Tensor<T>) -> (Tensor<T>, Tensor<T>)) {
     let value = max(x, y)
-    return (value, { v in _vjpMinMaxHelper(x, y, originalValue: value, seed: v) })
+    return (value, { v in
+        _vjpMinMaxHelper(x, y, originalValue: value, seed: v, comparisonOperation: .>=)
+    })
 }
 
 /// Returns the element-wise maximum of the scalar and the tensor, broadcasting the scalar.
@@ -1375,7 +1377,9 @@ internal func _vjpMin<T: TensorFlowFloatingPoint>(
     _ y: Tensor<T>
 ) -> (Tensor<T>, (Tensor<T>) -> (Tensor<T>, Tensor<T>)) {
     let value = min(x, y)
-    return (value, { v in _vjpMinMaxHelper(x, y, originalValue: value, seed: v) })
+    return (value, { v in
+        _vjpMinMaxHelper(x, y, originalValue: value, seed: v, comparisonOperation: .<=)
+    })
 }
 
 /// Returns the element-wise minimum of the scalar and the tensor, broadcasting the scalar.
@@ -1397,11 +1401,12 @@ internal func _vjpMinMaxHelper<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>,
     _ y: Tensor<T>,
     originalValue: Tensor<T>,
-    seed: Tensor<T>
+    seed: Tensor<T>,
+    comparisonOperation: (Tensor<T>, Tensor<T>) -> Tensor<Bool>
 ) -> (Tensor<T>, Tensor<T>) {
-    let denominator = 1 + Tensor<T>(x .== y)
-    let lhsGrad = seed * Tensor<T>(x .== originalValue) / denominator
-    let rhsGrad = seed * Tensor<T>(y .== originalValue) / denominator
+    let mask = Tensor<T>(comparisonOperation(x, y))
+    let lhsGrad = seed * mask
+    let rhsGrad = seed * (1 - mask)
     let (lhsShape, rhsShape) = (x.shapeTensor, y.shapeTensor)
     let (lhsAxes, rhsAxes) = Raw.broadcastGradientArgs(s0: lhsShape, s1: rhsShape)
     return (lhsGrad.sum(squeezingAxes: lhsAxes).reshaped(toShape: lhsShape),
