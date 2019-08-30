@@ -17,24 +17,14 @@ import XCTest
 @testable import TensorFlow
 import CTensorFlow
 
-final class LazyTensorExplicitTraceTests: XCTestCase {
-    override class func setUp() {
-        super.setUp()
-        _ThreadLocalState.useLazyTensor = true
-    }
-
-    override class func tearDown() {
-        super.tearDown()
-        _ThreadLocalState.useLazyTensor = false
-    }
-
+final class LazyTensorExplicitTraceTests: LazyTensorTestCase {
     func testSingleInput() {
         func fn(x: Tensor<Float>) -> Tensor<Float> { return x + x }
         let trace = LazyTensorTraceBuilder.trace(fn)
         XCTAssertEqual(trace.description,
             """
             lazyTrace_2(%0: float) -> (%1) {
-              %1 = Add[T: float](%0, %0)
+              %1 = AddV2[T: float](%0, %0)
             }
             """)
         let outputs = runTrace(trace: trace, input: Tensor<Float>(10.0))
@@ -55,7 +45,7 @@ final class LazyTensorExplicitTraceTests: XCTestCase {
               %2 = Const[dtype: int32, value: 4]()
               %3 = Mul[T: int32](%1, %2)
               %4 = Const[dtype: float, value: 3.0]()
-              %5 = Add[T: float](%0, %4)
+              %5 = AddV2[T: float](%0, %4)
             }
             """)
         let outputs = runTrace(
@@ -78,7 +68,7 @@ final class LazyTensorExplicitTraceTests: XCTestCase {
             """
             lazyTrace_4(%0: float) -> (%3) {
               %1 = Const[dtype: float, value: 10.0]()
-              %2 = Add[T: float](%1, %1)
+              %2 = AddV2[T: float](%1, %1)
               %3 = Mul[T: float](%0, %2)
             }
             """)
@@ -127,7 +117,7 @@ final class LazyTensorExplicitTraceTests: XCTestCase {
             """
             lazyTrace_3(%0: float) -> (%2) {
               %1 = Const[dtype: float, value: 9.0]()
-              %2 = Add[T: float](%1, %0)
+              %2 = AddV2[T: float](%1, %0)
             }
             """)
         let outputs = runTrace(trace: trace, input: Tensor<Float>(4.0))
@@ -144,6 +134,36 @@ final class LazyTensorExplicitTraceTests: XCTestCase {
         XCTAssertEqual(tracedSquare(Tensor<Float>(5.0)).scalarized(), 25.0)
     }
 
+    func testTraceWithOutputSameAsInput() {
+        func identity(input: Tensor<Float>) -> Tensor<Float> { return input }
+        let trace = LazyTensorTraceBuilder.trace(identity)
+        XCTAssertEqual(trace.description,
+            """
+            lazyTrace_1(%0: float) -> (%0) {
+            }
+            """)
+        let tracedIdentity = _graph(identity)
+        XCTAssertEqual(tracedIdentity(Tensor<Float>(10.0)).scalarized(), 10.0)
+        XCTAssertEqual(tracedIdentity(Tensor<Float>(17.0)).scalarized(), 17.0)
+    }
+
+    func testRetainsIdenticalOutputs() {
+        typealias TensorFloatPair = Zip2TensorGroup<Tensor<Float>, Tensor<Float>>
+        func makePair(input: Tensor<Float>) -> TensorFloatPair {
+            return TensorFloatPair(input, input)
+        }
+        let trace = LazyTensorTraceBuilder.trace(makePair)
+        XCTAssertEqual(trace.description,
+            """
+            lazyTrace_1(%0: float) -> (%0, %0) {
+            }
+            """)
+        let tracedMakePair = _graph(makePair)
+        let result = tracedMakePair(Tensor<Float>(5.0))
+        XCTAssertEqual(result.first.scalarized(), 5.0)
+        XCTAssertEqual(result.second.scalarized(), 5.0)
+    }
+
     private func runTrace(trace: LazyTensorTrace, input: TensorGroup) -> [TFETensorHandle] {
         let tffunc = TFFunction(trace: trace)
         let inputHandles = input._tensorHandles.map { $0._tfeTensorHandle }
@@ -157,6 +177,8 @@ final class LazyTensorExplicitTraceTests: XCTestCase {
         ("testClosureCapturesOfTensors", testClosureCapturesOfTensors),
         ("testClosureCapturesOfNonTensors", testClosureCapturesOfNonTensors),
         ("testNestedTracing", testNestedTracing),
-        ("testCallableTrace", testCallableTrace)
+        ("testCallableTrace", testCallableTrace),
+        ("testTraceWithOutputSameAsInput", testTraceWithOutputSameAsInput),
+        ("testRetainsIdenticalOutputs", testRetainsIdenticalOutputs)
     ]
 }

@@ -37,6 +37,29 @@ final class InitializerTests: XCTestCase {
         XCTAssertEqual(ShapedArray(
             shape: [4, 3],
             scalars: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0]), x.array)
+
+        let linearSpaceTensor1 = Tensor<Float>(linearSpaceFrom: 0.1, to: 2.0, count: 10)
+        assertEqual(
+            [
+                0.1, 0.31111111, 0.52222222, 0.73333333, 0.94444444, 1.15555555, 1.36666666,
+                1.57777777, 1.78888888, 2.0,
+            ], linearSpaceTensor1, accuracy: 0.001)
+
+        let linearSpaceTensor2 = Tensor<Float>(linearSpaceFrom: 2.0, to: 0.1, count: 10)
+        assertEqual(
+            [
+                2, 1.78888889, 1.57777778, 1.36666667, 1.15555556, 0.94444444, 0.73333333,
+                0.52222222, 0.31111111, 0.1,
+            ], linearSpaceTensor2, accuracy: 0.001)
+
+        let linearSpaceTensor3 = Tensor<Float>(linearSpaceFrom: -5.0, to: 8.5, count: 20)
+        assertEqual(
+            [
+                -5.0, -4.28947368, -3.57894737, -2.86842105, -2.15789474, -1.44736842,
+                -0.73684211, -0.02631579, 0.68421053, 1.39473684, 2.10526316, 2.81578947,
+                3.52631579, 4.23684211, 4.94736842, 5.65789474, 6.36842105, 7.07894737,
+                7.78947368, 8.5,
+            ], linearSpaceTensor3, accuracy: 0.001)
     }
 
     func testScalarToTensorConversion() {

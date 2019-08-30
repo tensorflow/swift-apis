@@ -287,5 +287,6 @@ public func sigmoidCrossEntropy<Scalar: TensorFlowFloatingPoint>(
 ) -> Tensor<Scalar> {
     // This numerically stable implementation is based on the TensorFlow Python API.
     let maxLogitsWithZero = max(logits, Tensor(0))
-    return reduction(maxLogitsWithZero - logits * labels + log(1 + exp(-abs(logits))))
+    let negAbsLogits = max(logits, -logits) // Custom `abs` to compute gradients at `0`.
+    return reduction(maxLogitsWithZero - logits * labels + log1p(exp(-negAbsLogits)))
 }
