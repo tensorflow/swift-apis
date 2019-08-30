@@ -201,10 +201,10 @@ final class LayerTests: XCTestCase {
         let filter =  Tensor(shape: [1, 4, 4, 1, 1], scalars: (0..<16).map(Float.init))
         let bias = Tensor<Float>(ones: [2])
         let layer = Conv3D(filter: filter,
-                            bias: bias,
-                            activation: identity,
-                            strides: (2, 2, 2),
-                            padding: .same)
+                           bias: bias,
+                           activation: identity,
+                           strides: (2, 2, 2),
+                           padding: .same)
         let input = Tensor(shape: [1, 4, 4, 4, 1], scalars: (0..<64).map(Float.init))
         let grads = gradient( at: input, layer) { $1($0).sum() }
         // The expected value of the gradient was computed using the following Python code:
