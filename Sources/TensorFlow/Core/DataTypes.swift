@@ -19,7 +19,7 @@ import CTensorFlow
 // This simply wraps a `TF_DataType` and allows user code to handle
 // `TF_DataType` without importing CTensorFlow, which pollutes the namespace
 // with TensorFlow C API declarations.
-public struct TensorDataType {
+public struct TensorDataType: Equatable {
     public var _cDataType: TF_DataType
 
     @usableFromInline
