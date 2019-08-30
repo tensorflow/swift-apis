@@ -669,10 +669,10 @@ extension ShapedArray where Scalar: TensorFlowScalar {
         switch buffer.allocation {
         case let .native(box):
             precondition(
-                rank <= Int32.max,
+                rank <= Int(Int32.max),
                 "Conversion to TensorHandle is undefined when rank exceeds `Int32.max`.")
             precondition(
-                shape.allSatisfy { $0 <= Int32.max },
+                shape.allSatisfy { $0 <= Int(Int32.max) },
                 "Conversion to TensorHandle is undefined when shape dimensions exceed `Int32.max`.")
             return TensorHandle<Scalar>(
                 shape: shape,
