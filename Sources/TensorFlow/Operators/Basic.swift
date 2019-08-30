@@ -84,7 +84,7 @@ public extension Tensor {
     /// - Precondition: `axis` must be in the range `[-rank, rank)`, where `rank` is the rank of
     ///   the provided tensors.
     ///
-    /// - Returns: An array containing the tensors parts.
+    /// - Returns: An array containing the tensors part.
     @inlinable
     @differentiable(vjp: _vjpSplit(count:alongAxis:) where Scalar: TensorFlowFloatingPoint)
     func split(count: Int, alongAxis axis: Int = 0) -> [Tensor] {

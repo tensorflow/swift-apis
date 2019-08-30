@@ -235,6 +235,7 @@ class LazyTensorTraceBuilder {
         if let cachedLazyOp = lazyOpsCache[id] {
             return cachedLazyOp
         }
+        lazyOp.maybeMaterializeInputs()
         precondition(
             lazyOp.name != "Placeholder",
             "The operation cannot already be a placeholder.")

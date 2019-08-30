@@ -573,6 +573,6 @@ extension Tensor: PointwiseMultiplicative where Scalar: Numeric {
 // Differentiable
 //===------------------------------------------------------------------------------------------===//
 
-extension Tensor: Differentiable where Scalar: TensorFlowFloatingPoint {
+extension Tensor: Differentiable & EuclideanDifferentiable where Scalar: TensorFlowFloatingPoint {
     public typealias TangentVector = Tensor
 }
