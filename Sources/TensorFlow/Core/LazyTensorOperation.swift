@@ -180,7 +180,7 @@ class LazyTensorOperation: TensorOperation {
         case list([LazyTensorHandle])
     }
 
-    enum Attribute {
+    enum Attribute: Equatable {
         case boolValue(Bool)
         case intValue(Int)
         case floatValue(Float)
