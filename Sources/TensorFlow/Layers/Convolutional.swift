@@ -70,8 +70,8 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// and padding size is determined by the padding scheme.
     ///
-    /// - Parameter input: The input to the layer [batch count, input width, input channel count].
-    /// - Returns: The output of shape [batch count, output width, output channel count].
+    /// - Parameter input: The input to the layer [batch size, input width, input channel count].
+    /// - Returns: The output of shape [batch size, output width, output channel count].
     ///
     /// - Note: Padding size equals zero when using `.valid`.
     @differentiable
@@ -186,7 +186,7 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// and padding sizes are determined by the padding scheme.
     ///
     /// - Parameter input: The input to the layer of shape
-    ///   [batch count, input height, input width, input channel count].
+    ///   [batch size, input height, input width, input channel count].
     /// - Returns: The output of shape
     ///   [batch count, output height, output width, output channel count].
     ///
