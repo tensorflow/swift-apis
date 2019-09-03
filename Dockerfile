@@ -58,6 +58,7 @@ RUN cp /swift-apis/.build/debug/libTensorFlow.so /swift-tensorflow-toolchain/usr
 WORKDIR /
 RUN git clone https://github.com/tensorflow/swift-models.git
 RUN git clone https://github.com/fastai/fastai_dev.git
+RUN git clone https://github.com/deepmind/open_spiel.git
 
 WORKDIR /swift-models
 
@@ -66,3 +67,6 @@ RUN /swift-tensorflow-toolchain/usr/bin/swift build
 WORKDIR /fastai_dev/swift/FastaiNotebook_11_imagenette
 
 RUN /swift-tensorflow-toolchain/usr/bin/swift build
+
+WORKDIR /open_spiel
+RUN /swift-tensorflow-toolchain/usr/bin/swift test
