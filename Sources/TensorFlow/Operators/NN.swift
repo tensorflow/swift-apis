@@ -329,7 +329,7 @@ public func depthwiseConv2D<Scalar: TensorFlowFloatingPoint>(
     filter: Tensor<Scalar>,
     strides: (Int, Int, Int, Int),
     padding: Padding
-    ) -> Tensor<Scalar> {
+) -> Tensor<Scalar> {
     return Raw.depthwiseConv2dNative(
         input,
         filter: filter,
@@ -343,7 +343,7 @@ func _vjpDepthwiseConv2D<Scalar: TensorFlowFloatingPoint>(
     filter: Tensor<Scalar>,
     strides: (Int, Int, Int, Int),
     padding: Padding
-    ) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
+) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
     let value = depthwiseConv2D(x, filter: filter, strides: strides,
                                 padding: padding)
     return (value, { v in
@@ -363,7 +363,7 @@ func depthwiseConv2dBackpropInput<Scalar: TensorFlowFloatingPoint>(
     filter: Tensor<Scalar>,
     strides: (Int, Int, Int, Int),
     padding: Padding
-    ) -> Tensor<Scalar> {
+) -> Tensor<Scalar> {
     return Raw.depthwiseConv2dNativeBackpropInput(
         inputSizes: shape,
         filter: filter,
@@ -379,7 +379,7 @@ func _vjpDepthwiseConv2dBackpropInput<Scalar: TensorFlowFloatingPoint>(
     _ filter: Tensor<Scalar>,
     _ strides: (Int, Int, Int, Int),
     _ padding: Padding
-    ) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
+) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
     let value = depthwiseConv2dBackpropInput(x, shape: shape, filter: filter, strides: strides,
                                              padding: padding)
     return (value, { v in
@@ -399,7 +399,7 @@ func depthwiseConv2dBackpropFilter<Scalar: TensorFlowFloatingPoint>(
     filterSizes: Tensor<Int32>,
     strides: (Int, Int, Int, Int),
     padding: Padding
-    ) -> Tensor<Scalar> {
+) -> Tensor<Scalar> {
     return Raw.depthwiseConv2dNativeBackpropFilter(
         input,
         filterSizes: filterSizes,
@@ -415,7 +415,7 @@ func _vjpDepthwiseConv2dBackpropFilter<Scalar: TensorFlowFloatingPoint>(
     _ filterSizes: Tensor<Int32>,
     _ strides: (Int, Int, Int, Int),
     _ padding: Padding
-    ) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
+) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
     let value = depthwiseConv2dBackpropFilter(x, input: input, filterSizes: filterSizes,
                                               strides: strides, padding: padding)
     return (value, { v in
