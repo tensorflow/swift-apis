@@ -2193,9 +2193,9 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
         let value = mean(squeezingAxes: axes)
         let count = Raw.gather(params: shapeTensor, indices: axes).product()
         return (value, { [shape = shapeTensor] v in
-	      let unsqueezed = v.expandingShape(at: axes.scalars.map { Int($0) })
-	      return unsqueezed.broadcasted(toShape: shape) / Tensor(count)
-	    })
+            let unsqueezed = v.expandingShape(at: axes.scalars.map { Int($0) })
+            return unsqueezed.broadcasted(toShape: shape) / Tensor(count)
+        })
     }
 
     @inlinable
