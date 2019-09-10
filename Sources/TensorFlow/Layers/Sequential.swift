@@ -16,8 +16,22 @@
 public struct Sequential<Layer1: Module, Layer2: Layer>: Module
     where Layer1.Output == Layer2.Input,
           Layer1.TangentVector.VectorSpaceScalar == Layer2.TangentVector.VectorSpaceScalar {
+
     public var layer1: Layer1
     public var layer2: Layer2
+
+    public struct TangentVector: VectorProtocol & Differentiable & ElementaryFunctions & KeyPathIterable & PointwiseMultiplicative {
+      public var layer1: Layer1.TangentVector
+      public var layer2: Layer2.TangentVector
+    }
+
+    public mutating func move(along dir: TangentVector) {
+      fatalError("unimplemented")
+    }
+
+    public var differentiableVectorView: TangentVector {
+      return TangentVector(layer1: layer1.differentiableVectorView, layer2: layer2.differentiableVectorView)
+    }
 
     public init(_ layer1: Layer1, _ layer2: Layer2) {
         self.layer1 = layer1
