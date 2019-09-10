@@ -711,10 +711,10 @@ public extension Tensor where Scalar: Numeric {
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func unbroadcasted(toShape otherShape: Tensor<Int32>) -> Tensor {
         // TODO: Simplify this once differentiating control flow is supported.
-	    return unbroadcasted(to: {
-	      precondition(otherShape.rank == 1)
-	      return TensorShape(otherShape.scalars.map(Int.init))
-	    }())
+        return unbroadcasted(to: {
+            precondition(otherShape.rank == 1)
+            return TensorShape(otherShape.scalars.map(Int.init))
+        }())
     }
 
     @inlinable
@@ -727,24 +727,24 @@ public extension Tensor where Scalar: Numeric {
     @differentiable(wrt: self, vjp: _vjpUnbroadcasted(to:) where Scalar: TensorFlowFloatingPoint)
     func unbroadcasted(to shape: TensorShape) -> Tensor {
         let dimensions = self.shape.dimensions
-	    var otherDimensions = shape.dimensions
-	    let rankDifference = dimensions.count - otherDimensions.count
-	    precondition(rankDifference >= 0, """
-	        The rank of 'self' must be greater than or equal to the number of \
-	        dimensions in the destination shape
-	        """)
-	    if rankDifference > 0 {
+        var otherDimensions = shape.dimensions
+        let rankDifference = dimensions.count - otherDimensions.count
+        precondition(rankDifference >= 0, """
+            The rank of 'self' must be greater than or equal to the number of \
+            dimensions in the destination shape
+            """)
+        if rankDifference > 0 {
             otherDimensions.insert(contentsOf: repeatElement(1, count: rankDifference), at: 0)
-	    }
-	    assert(dimensions.count == otherDimensions.count)
-	    var axes: [Int] = []
-	    axes.reserveCapacity(dimensions.count)
-	    for (i, (dim, otherDim)) in zip(dimensions, otherDimensions).enumerated() {
-	        if dim == otherDim { continue }
-	        if otherDim == 1 { axes.append(i); continue }
-	        preconditionFailure("Cannot unbroadcast \(self.shape) to \(shape)")
-	    }
-	    return sum(alongAxes: axes).reshaped(to: shape)
+        }
+        assert(dimensions.count == otherDimensions.count)
+        var axes: [Int] = []
+        axes.reserveCapacity(dimensions.count)
+        for (i, (dim, otherDim)) in zip(dimensions, otherDimensions).enumerated() {
+            if dim == otherDim { continue }
+            if otherDim == 1 { axes.append(i); continue }
+            preconditionFailure("Cannot unbroadcast \(self.shape) to \(shape)")
+        }
+        return sum(alongAxes: axes).reshaped(to: shape)
     }
 }
 

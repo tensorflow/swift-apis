@@ -23,8 +23,8 @@ public struct TensorDataType: Equatable {
     public var _cDataType: TF_DataType
 
     @usableFromInline
-	internal init(_ cDataType: TF_DataType) {
-	    self._cDataType = cDataType
+    internal init(_ cDataType: TF_DataType) {
+        self._cDataType = cDataType
     }
 }
 
