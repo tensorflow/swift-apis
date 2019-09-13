@@ -19,7 +19,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libicu-dev \
         libncurses5-dev \
         libxml2 \
-        libblocksruntime-dev
+        libblocksruntime-dev \
+        python3 \
+        python3-pip \
+        python3-setuptools \
+        python3-dev
+
+RUN pip3 install psutil junit-xml
 
 # Download and extract S4TF
 WORKDIR /swift-tensorflow-toolchain
@@ -45,6 +51,9 @@ RUN rm /swift-tensorflow-toolchain/usr/lib/swift/linux/x86_64/TensorFlow.swiftin
 RUN rm /swift-tensorflow-toolchain/usr/lib/swift/linux/x86_64/TensorFlow.swiftdoc
 RUN rm /swift-tensorflow-toolchain/usr/lib/swift/linux/x86_64/TensorFlow.swiftmodule
 RUN rm /swift-tensorflow-toolchain/usr/lib/swift/linux/libswiftTensorFlow.so
+
+# Benchmark compile times
+RUN python3 Tools/benchmark_compile.py /swift-tensorflow-toolchain/usr/bin/swift benchmark_results.xml
 
 # Run SwiftPM tests
 RUN /swift-tensorflow-toolchain/usr/bin/swift test
