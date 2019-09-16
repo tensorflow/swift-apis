@@ -198,7 +198,7 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(output, expected)
     }
 
-    func testDepthConv2D() {
+    func testDepthwiseConv2D() {
         let filter =  Tensor(shape: [2, 2, 2, 2], scalars: (0..<16).map(Float.init))
         let bias = Tensor<Float>([1, 2, 3, 4])
         let layer = DepthwiseConv2D<Float>(filter: filter, bias: bias, activation: identity,
@@ -209,6 +209,40 @@ final class LayerTests: XCTestCase {
                                      scalars: [9, 12, 23, 28, 25, 36, 55, 68, 41, 60, 87, 108,
                                                57, 84, 119, 148])
         XCTAssertEqual(output, expected)
+    }
+
+    func testDepthwiseConv2DGradient() {
+        let filter = Tensor(shape: [2, 1, 2, 2], scalars: (0..<8).map(Float.init))
+        let bias = Tensor<Float>(ones: [4])
+        let layer = DepthwiseConv2D<Float>(filter: filter,
+                                           bias: bias,
+                                           activation: identity,
+                                           strides: (1, 1),
+                                           padding: .same)
+        let input = Tensor(shape: [2, 1, 2, 2], scalars: (0..<8).map(Float.init))
+        let grads = gradient(at: input, layer) { $1($0).sum() }
+        // The expected value of the gradient was computed using the following Python code:
+        // ```
+        // import tensorflow as tf
+        // input = tf.reshape(tf.range(8, dtype=tf.float32), [2, 1, 2, 2])
+        // filter = tf.reshape(tf.range(8, dtype=tf.float32), [2, 1, 2, 2])
+        // bias = tf.ones([4])
+        // with tf.GradientTape() as tape:
+        //     tape.watch([x, filter, bias])
+        //     y = tf.math.reduce_sum(tf.nn.depthwise_conv2d(input=x,
+        //                                                   filters=filter,
+        //                                                   strides=[1, 1, 1, 1],
+        //                                                   data_format="NHWC",
+        //                                                   padding="SAME") + bias)
+        // print(tape.gradient(y, [x, filter, bias]))
+        // ```
+        XCTAssertEqual(grads.0,
+                       [[[[1, 5], [1, 5]]],
+                        [[[1, 5], [1, 5]]]])
+        XCTAssertEqual(grads.1.filter,
+                       [[[[12, 12], [16, 16]]],
+                        [[[ 0,  0], [ 0,  0]]]])
+        XCTAssertEqual(grads.1.bias, [4, 4, 4, 4])
     }
 
     func testSeparableConv1D() {
@@ -1195,7 +1229,8 @@ final class LayerTests: XCTestCase {
         ("testConv2DGradient", testConv2DGradient),
         ("testConv2DDilation", testConv2DDilation),
         ("testConv3D", testConv3D),
-        ("testDepthConv2D", testDepthConv2D),
+        ("testDepthwiseConv2D", testDepthwiseConv2D),
+        ("testDepthwiseConv2DGradient", testDepthwiseConv2DGradient),
         ("testSeparableConv1D", testSeparableConv1D),
         ("testSeparableConv2D", testSeparableConv2D),
         ("testZeroPadding1D", testZeroPadding1D),
