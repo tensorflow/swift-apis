@@ -56,6 +56,13 @@ final class TensorAutoDiffTests: XCTestCase {
         XCTAssertEqual(grad, Tensor([0.23105857, -0.2310586]))
     }
 
+    func testScalars() {
+        let grad = gradient(at: Tensor<Float>([3, 4])) { x in
+            x.scalars.differentiableReduce(0, { $0 + $1 })
+        }
+        XCTAssertEqual(grad, Tensor([1, 1]))
+    }
+
     func testPlus() {
         func f(a: Tensor<Float>, b: Tensor<Float>) -> Tensor<Float> { a + b }
         XCTAssertTrue((Tensor(1), Tensor(1)) == gradient(at: Tensor(0), Tensor(0), in: f))
