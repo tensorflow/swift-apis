@@ -162,8 +162,18 @@ public extension Tensor {
     }
 
     @inlinable
+    @differentiable(vjp: _vjpScalars where Scalar: TensorFlowFloatingPoint)
     var scalars: [Scalar] {
         return array.scalars
+    }
+}
+
+extension Tensor where Scalar: TensorFlowFloatingPoint {
+    @usableFromInline
+    func _vjpScalars() -> (value: [Scalar], pullback: (Array<Scalar>.TangentVector) -> Tensor) {
+        (value: scalars, pullback: { [shape = self.shape] v in
+            Tensor(shape: shape, scalars: v.base)
+        })
     }
 }
 
