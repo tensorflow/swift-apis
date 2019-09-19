@@ -63,6 +63,20 @@ final class TensorAutoDiffTests: XCTestCase {
         XCTAssertEqual(grad, Tensor([1, 1]))
     }
 
+    func testInitFromScalars() {
+        let grad = gradient(at: [3.0, 4.0]) { x in
+            Tensor(x).sum()
+        }
+        XCTAssertEqual(grad, Array<Double>.TangentVector([1, 1]))
+    }
+
+    func testInitFromScalarsWithShape() {
+        let grad = gradient(at: [3.0, 4.0]) { x in
+            Tensor(shape: [1, 2, 1, 1], scalars: x).sum()
+        }
+        XCTAssertEqual(grad, Array<Double>.TangentVector([1, 1]))
+    }
+
     func testPlus() {
         func f(a: Tensor<Float>, b: Tensor<Float>) -> Tensor<Float> { a + b }
         XCTAssertTrue((Tensor(1), Tensor(1)) == gradient(at: Tensor(0), Tensor(0), in: f))
@@ -516,6 +530,9 @@ final class TensorAutoDiffTests: XCTestCase {
         ("testGenericGrad", testGenericGrad),
         ("testScalarGenericGrad", testScalarGenericGrad),
         ("testScalarized", testScalarized),
+        ("testScalars", testScalars),
+        ("testInitFromScalars", testInitFromScalars),
+        ("testInitFromScalarsWithShape", testInitFromScalarsWithShape),
         ("testPlus", testPlus),
         ("testSubtract", testSubtract),
         ("testMultiply", testMultiply),
