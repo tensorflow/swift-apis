@@ -229,12 +229,10 @@ func _vjpConv3D<Scalar: TensorFlowFloatingPoint>(
     let value = conv3D(x, filter: filter, strides: strides,
                        padding: padding)
     return (value, { v in
-        return (
-            conv3DBackpropInput(v, shape: x.shapeTensor, filter: filter,
-                                strides: strides, padding: padding),
-            conv3DBackpropFilter(v, input: x, filterSizes: filter.shapeTensor,
-                                 strides: strides, padding: padding)
-        )
+        (conv3DBackpropInput(v, shape: x.shapeTensor, filter: filter,
+                             strides: strides, padding: padding),
+         conv3DBackpropFilter(v, input: x, filterSizes: filter.shapeTensor,
+                              strides: strides, padding: padding))
     })
 }
 
@@ -268,11 +266,9 @@ func _vjpConv3DBackpropInput<Scalar: TensorFlowFloatingPoint>(
     let value = conv3DBackpropInput(x, shape: shape, filter: filter, strides: strides,
                                     padding: padding)
     return (value, { v in
-        return (
-            conv3DBackpropFilter(x, input: v, filterSizes: shape, strides: strides,
-                                 padding: padding),
-            conv3D(v, filter: filter, strides: strides, padding: padding)
-        )
+        (conv3D(v, filter: filter, strides: strides, padding: padding),
+         conv3DBackpropFilter(x, input: v, filterSizes: filter.shapeTensor, strides: strides,
+                              padding: padding))
     })
 }
 
@@ -287,7 +283,7 @@ func conv3DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
     padding: Padding = .valid
 ) -> Tensor<Scalar> {
     return Raw.conv3DBackpropFilterV2(
-        x,
+        input,
         filterSizes: filterSizes,
         outBackprop: x,
         strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2),
@@ -306,11 +302,9 @@ func _vjpConv3DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
     let value = conv3DBackpropFilter(x, input: input, filterSizes: filterSizes,
                                      strides: strides, padding: padding)
     return (value, { v in
-        return (
-            conv3DBackpropInput(x, shape: filterSizes, filter: v, strides: strides,
-                                  padding: padding),
-            conv3D(input, filter: v, strides: strides, padding: padding)
-        )
+        (conv3D(input, filter: v, strides: strides, padding: padding),
+         conv3DBackpropInput(x, shape: x.shapeTensor, filter: v, strides: strides,
+                             padding: padding))
     })
 }
 
