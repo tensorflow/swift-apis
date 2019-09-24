@@ -196,27 +196,25 @@ final class LossTests: XCTestCase {
         assertEqual(loss, Tensor(expectedLoss), accuracy: 1e-6)
     }
 
-    func testSigmoidCrossEntropyGrad() {
-        let logits = Tensor<Float>(
-            shape: [2, 4],
-            scalars: [-100, -2, -2, 0, 2, 2, 2, 100])
+    func testSigmoidCrossEntropyGradient() {
+        let logits = Tensor<Float>(shape: [2, 4], scalars: [-100, -2, -2, 0, 0, 2, 2, 100])
+        let labels = Tensor<Float>(shape: [2, 4], scalars: [0, 0, 1, 0, 1, 1, 0.5, 1])
 
-        let labels = Tensor<Float>(
-            shape: [2, 4],
-            scalars: [0, 0, 1, 0, 0, 1, 0.5, 1])
-
-        // For each element x in logits and y in labels, the gradient is sigmoid(x) - y.
-        let expectedGradientsBeforeMean = Tensor<Float>(
-            shape: [2, 4],
-            scalars: [0.00,  0.11920291, -0.8807971,  0.5,
-                      0.8807971, -0.11920291,  0.3807971 , 0.0])
-
-        // As the loss is mean loss, we should scale the golden gradient numbers.
-        let expectedGradients = expectedGradientsBeforeMean / Float(logits.scalars.count)
-        let gradients = gradient(
+        let computedGradient = gradient(
             at: logits,
             in: { sigmoidCrossEntropy(logits: $0, labels: labels) })
-        assertEqual(gradients, expectedGradients, accuracy: 1e-6)
+        // The expected value of the gradient was computed using Python TensorFlow 1.14 with
+        // the following code:
+        // ```
+        // with tf.GradientTape() as t:
+        //    t.watch([logits])
+        //    y = tf.losses.sigmoid_cross_entropy(labels, logits, reduction="weighted_mean")
+        // print(t.gradient(y, [logits]))
+        // ```
+        let expectedGradient = Tensor<Float>([
+            [0.0, 0.01490036, -0.11009964, 0.0625],
+            [-0.0625, -0.01490036, 0.04759964, 0.0]])
+        assertEqual(computedGradient, expectedGradient, accuracy: 1e-6)
     }
 
     static var allTests = [
@@ -238,6 +236,6 @@ final class LossTests: XCTestCase {
         ("testSoftmaxCrossEntropyWithProbabilitiesGrad",
          testSoftmaxCrossEntropyWithProbabilitiesGrad),
         ("testSigmoidCrossEntropyLoss", testSigmoidCrossEntropyLoss),
-        ("testSigmoidCrossEntropyGrad", testSigmoidCrossEntropyGrad),
+        ("testSigmoidCrossEntropyGradient", testSigmoidCrossEntropyGradient),
     ]
 }
