@@ -768,15 +768,14 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
 // Padding
 //===------------------------------------------------------------------------------------------===//
 
-
 public extension Tensor where Scalar: Numeric {
-    /// Padding modes:
-    ///  * `constant` - pad with constant value.
-    ///  * `reflect` - mirror values along padding dimensions, excluding the edge value.
-    ///  * `symmetric` - mirror values along padding dimensions, including the edge value.
+    /// A mode that dictates how a tensor is padded.
     enum PaddingMode {
+        /// Pads with constant value.
         case constant(Scalar)
+        /// Mirrors values along padding dimensions, excluding the edge value.
         case reflect
+        /// Mirrors values along padding dimensions, including the edge value.
         case symmetric
     }
 
@@ -784,12 +783,12 @@ public extension Tensor where Scalar: Numeric {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func padded(forSizes sizes: [(before: Int, after: Int)], with value: Scalar = 0) -> Tensor {
-        padded(forSizes: sizes, with: .constant(value))
+        padded(forSizes: sizes, mode: .constant(value))
     }
 
     /// Returns a padded tensor according to the specified padding sizes and mode.
     @inlinable
-    @differentiable(wrt: self, vjp: _vjpPaddedWithMode(forSizes:with:) where Scalar: TensorFlowFloatingPoint)
+    @differentiable(wrt: self, vjp: _vjpPaddedWithMode(forSizes:mode:) where Scalar: TensorFlowFloatingPoint)
     func padded(forSizes sizes: [(before: Int, after: Int)], mode: PaddingMode) -> Tensor {
         let paddings = Tensor<Int32>(
             shape: [sizes.count, 2],
@@ -809,9 +808,9 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     func _vjpPaddedWithMode(
         forSizes sizes: [(before: Int, after: Int)],
-        with mode: PaddingMode
+        mode: PaddingMode
     ) -> (Tensor, (Tensor) -> Tensor) {
-        let result = padded(forSizes: sizes, with: mode)
+        let result = padded(forSizes: sizes, mode: mode)
         return (result, { [rank = rankTensor, shape = shapeTensor] v in
             let paddings = Tensor<Int32>(
                 shape: [sizes.count, 2],
