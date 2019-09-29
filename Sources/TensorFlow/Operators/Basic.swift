@@ -784,13 +784,13 @@ public extension Tensor where Scalar: Numeric {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func padded(forSizes sizes: [(before: Int, after: Int)], with value: Scalar = 0) -> Tensor {
-        return self.padded(forSizes: sizes, with: .constant(value))
+        padded(forSizes: sizes, with: .constant(value))
     }
 
     /// Returns a padded tensor according to the specified padding sizes and mode.
     @inlinable
     @differentiable(wrt: self, vjp: _vjpPaddedWithMode(forSizes:with:) where Scalar: TensorFlowFloatingPoint)
-    func padded(forSizes sizes: [(before: Int, after: Int)], with mode: PaddingMode) -> Tensor {
+    func padded(forSizes sizes: [(before: Int, after: Int)], mode: PaddingMode) -> Tensor {
         let paddings = Tensor<Int32>(
             shape: [sizes.count, 2],
             scalars: sizes.flatMap { [Int32($0.before), Int32($0.after)] })
@@ -798,9 +798,9 @@ public extension Tensor where Scalar: Numeric {
         case .constant(let constantValue):
             return Raw.padV2(self, paddings: paddings, constantValues: Tensor(constantValue))
         case .reflect:
-            return Raw.mirrorPad(self, paddings: paddings, mode: Raw.Mode5.reflect)
+            return Raw.mirrorPad(self, paddings: paddings, mode: .reflect)
         case .symmetric:
-            return Raw.mirrorPad(self, paddings: paddings, mode: Raw.Mode5.symmetric)
+            return Raw.mirrorPad(self, paddings: paddings, mode: .symmetric)
         }
     }
 }
@@ -817,16 +817,17 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
                 shape: [sizes.count, 2],
                 scalars: sizes.flatMap { [Int32($0.before), Int32($0.after)] })
             switch mode {
-            case .constant(_):
-                let padBefore = Raw.slice(paddings,
-                        begin: Tensor<Int32>([0, 0]),
-                        size: Tensor<Int32>(stacking: [rank, Tensor<Int32>(1)]))
+            case .constant:
+                let padBefore = Raw.slice(
+                    paddings,
+                    begin: Tensor<Int32>([0, 0]),
+                    size: Tensor<Int32>(stacking: [rank, Tensor<Int32>(1)]))
                 let begin = padBefore.reshaped(to: [-1])
-                return Raw.slice(v, begin: begin, size: shape)
+                return v.slice(lowerBounds: begin, sizes: shape)
             case .reflect:
-                return Raw.mirrorPadGrad(v, paddings: paddings, mode: Raw.Mode5.reflect)
+                return Raw.mirrorPadGrad(v, paddings: paddings, mode: .reflect)
             case .symmetric:
-                return Raw.mirrorPadGrad(v, paddings: paddings, mode: Raw.Mode5.symmetric)
+                return Raw.mirrorPadGrad(v, paddings: paddings, mode: .symmetric)
             }
         })
     }
