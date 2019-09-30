@@ -788,7 +788,7 @@ public extension Tensor where Scalar: Numeric {
 
     /// Returns a padded tensor according to the specified padding sizes and mode.
     @inlinable
-    @differentiable(wrt: self, vjp: _vjpPaddedWithMode(forSizes:mode:) where Scalar: TensorFlowFloatingPoint)
+    @differentiable(wrt: self, vjp: _vjpPadded(forSizes:mode:) where Scalar: TensorFlowFloatingPoint)
     func padded(forSizes sizes: [(before: Int, after: Int)], mode: PaddingMode) -> Tensor {
         let paddings = Tensor<Int32>(
             shape: [sizes.count, 2],
@@ -806,7 +806,7 @@ public extension Tensor where Scalar: Numeric {
 
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
-    func _vjpPaddedWithMode(
+    func _vjpPadded(
         forSizes sizes: [(before: Int, after: Int)],
         mode: PaddingMode
     ) -> (Tensor, (Tensor) -> Tensor) {
