@@ -13,7 +13,8 @@
 // limitations under the License.
 
 fileprivate extension Tensor where Scalar: TensorFlowFloatingPoint {
-    /// Computes dropout given a probability.
+     /// Computes dropout given a probability.
+     // TODO: Remove the underscore once `droppingOut(probability:)` has been removed.
     @differentiable(wrt: self where Scalar: Differentiable)
     func _droppingOut(probability: Double) -> Tensor {
         let noise = Tensor(randomUniform: shape)
