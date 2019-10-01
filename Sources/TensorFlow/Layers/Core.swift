@@ -12,14 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-public extension Tensor where Scalar: TensorFlowFloatingPoint {
-    /// Computes dropout given a probability.
+fileprivate extension Tensor where Scalar: TensorFlowFloatingPoint {
+     /// Computes dropout given a probability.
+     // TODO: Remove the underscore once `droppingOut(probability:)` has been removed.
     @differentiable(wrt: self where Scalar: Differentiable)
-    func droppingOut(probability: Double) -> Tensor {
+    func _droppingOut(probability: Double) -> Tensor {
         let noise = Tensor(randomUniform: shape)
         let keepMask = noise .>= Scalar(probability)
         let keepProbability = Scalar(1.0 - probability)
         return self * Tensor(keepMask) / Tensor(keepProbability)
+    }
+}
+
+public extension Tensor where Scalar: TensorFlowFloatingPoint {
+    /// Computes dropout given a probability.
+    @available(*, deprecated, message: """
+        This API will be removed after Swift for TensorFlow 0.6.
+        For dropout, use the `Dropout` layer.
+        """)
+    @differentiable(wrt: self where Scalar: Differentiable)
+    func droppingOut(probability: Double) -> Tensor {
+        _droppingOut(probability: probability)
     }
 }
 
@@ -40,7 +53,7 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
 
     @differentiable
     private func applyingTraining(to input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return input.droppingOut(probability: probability)
+        return input._droppingOut(probability: probability)
     }
 
     @differentiable
@@ -137,7 +150,7 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let activation: Activation
     /// Indicates whether this is a batched dense layer.
     @noDerivative internal let batched: Bool
-    
+
     /// The element-wise activation function type.
     public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
 
