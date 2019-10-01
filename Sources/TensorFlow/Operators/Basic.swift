@@ -769,14 +769,38 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
 //===------------------------------------------------------------------------------------------===//
 
 public extension Tensor where Scalar: Numeric {
-    /// Returns a padded tensor according to the specified padding sizes.
+    /// A mode that dictates how a tensor is padded.
+    enum PaddingMode {
+        /// Pads with constant value.
+        case constant(Scalar)
+        /// Mirrors values along padding dimensions, excluding the edge value.
+        case reflect
+        /// Mirrors values along padding dimensions, including the edge value.
+        case symmetric
+    }
+
+    /// Returns a tensor padded with constant according to the specified padding sizes.
     @inlinable
-    @differentiable(wrt: self, vjp: _vjpPadded(forSizes:with:) where Scalar: TensorFlowFloatingPoint)
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func padded(forSizes sizes: [(before: Int, after: Int)], with value: Scalar = 0) -> Tensor {
+        padded(forSizes: sizes, mode: .constant(value))
+    }
+
+    /// Returns a padded tensor according to the specified padding sizes and mode.
+    @inlinable
+    @differentiable(wrt: self, vjp: _vjpPadded(forSizes:mode:) where Scalar: TensorFlowFloatingPoint)
+    func padded(forSizes sizes: [(before: Int, after: Int)], mode: PaddingMode) -> Tensor {
         let paddings = Tensor<Int32>(
             shape: [sizes.count, 2],
             scalars: sizes.flatMap { [Int32($0.before), Int32($0.after)] })
-        return Raw.padV2(self, paddings: paddings, constantValues: Tensor(value))
+        switch mode {
+        case .constant(let constantValue):
+            return Raw.padV2(self, paddings: paddings, constantValues: Tensor(constantValue))
+        case .reflect:
+            return Raw.mirrorPad(self, paddings: paddings, mode: .reflect)
+        case .symmetric:
+            return Raw.mirrorPad(self, paddings: paddings, mode: .symmetric)
+        }
     }
 }
 
@@ -784,18 +808,26 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     func _vjpPadded(
         forSizes sizes: [(before: Int, after: Int)],
-        with value: Scalar
+        mode: PaddingMode
     ) -> (Tensor, (Tensor) -> Tensor) {
-        let result = padded(forSizes: sizes, with: value)
+        let result = padded(forSizes: sizes, mode: mode)
         return (result, { [rank = rankTensor, shape = shapeTensor] v in
             let paddings = Tensor<Int32>(
                 shape: [sizes.count, 2],
                 scalars: sizes.flatMap { [Int32($0.before), Int32($0.after)] })
-            let padBefore = Raw.slice(paddings,
-                begin: Tensor<Int32>([0, 0]),
-                size: Tensor<Int32>(stacking: [rank, Tensor<Int32>(1)]))
-            let begin = padBefore.reshaped(to: [-1])
-            return Raw.slice(v, begin: begin, size: shape)
+            switch mode {
+            case .constant:
+                let padBefore = Raw.slice(
+                    paddings,
+                    begin: Tensor<Int32>([0, 0]),
+                    size: Tensor<Int32>(stacking: [rank, Tensor<Int32>(1)]))
+                let begin = padBefore.reshaped(to: [-1])
+                return v.slice(lowerBounds: begin, sizes: shape)
+            case .reflect:
+                return Raw.mirrorPadGrad(v, paddings: paddings, mode: .reflect)
+            case .symmetric:
+                return Raw.mirrorPadGrad(v, paddings: paddings, mode: .symmetric)
+            }
         })
     }
 }
