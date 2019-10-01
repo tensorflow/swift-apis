@@ -162,8 +162,18 @@ public extension Tensor {
     }
 
     @inlinable
+    @differentiable(vjp: _vjpScalars where Scalar: TensorFlowFloatingPoint)
     var scalars: [Scalar] {
         return array.scalars
+    }
+}
+
+extension Tensor where Scalar: TensorFlowFloatingPoint {
+    @inlinable
+    func _vjpScalars() -> (value: [Scalar], pullback: (Array<Scalar>.TangentVector) -> Tensor) {
+        (value: scalars, pullback: { [shape = self.shape] v in
+            Tensor(shape: shape, scalars: v.base)
+        })
     }
 }
 
@@ -190,6 +200,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 public extension Tensor {
     /// Creates a 1D tensor from scalars.
     @inlinable
+    @differentiable(vjp: _vjpInit(_:) where Scalar: TensorFlowFloatingPoint)
     init(_ scalars: [Scalar]) {
         self.init(shape: [scalars.count], scalars: scalars)
     }
@@ -216,6 +227,7 @@ public extension Tensor {
     ///   - scalars: The scalar contents of the tensor.
     /// - Precondition: The product of the dimensions of the shape must equal the number of scalars.
     @inlinable
+    @differentiable(vjp: _vjpInit(shape:scalars:) where Scalar: TensorFlowFloatingPoint)
     init(shape: TensorShape, scalars: [Scalar]) {
         precondition(shape.contiguousSize == scalars.count,
             """
@@ -271,6 +283,22 @@ public extension Tensor {
                 }
             })
         self.init(handle: handle)
+    }
+}
+
+extension Tensor where Scalar: TensorFlowFloatingPoint {
+    @inlinable
+    static func _vjpInit(_ scalars: [Scalar]) -> (
+        value: Tensor, pullback: (Tensor) -> Array<Scalar>.TangentVector
+    ) {
+        (value: Tensor(scalars), pullback: { v in Array<Scalar>.TangentVector(v.scalars) })
+    }
+
+    @inlinable
+    static func _vjpInit(shape: TensorShape, scalars: [Scalar]) -> (
+        value: Tensor, pullback: (Tensor) -> Array<Scalar>.TangentVector
+    ) {
+        (value: Tensor(scalars), pullback: { v in Array<Scalar>.TangentVector(v.scalars) })
     }
 }
 
@@ -573,6 +601,6 @@ extension Tensor: PointwiseMultiplicative where Scalar: Numeric {
 // Differentiable
 //===------------------------------------------------------------------------------------------===//
 
-extension Tensor: Differentiable where Scalar: TensorFlowFloatingPoint {
+extension Tensor: Differentiable & EuclideanDifferentiable where Scalar: TensorFlowFloatingPoint {
     public typealias TangentVector = Tensor
 }

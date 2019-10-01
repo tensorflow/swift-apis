@@ -711,10 +711,10 @@ public extension Tensor where Scalar: Numeric {
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func unbroadcasted(toShape otherShape: Tensor<Int32>) -> Tensor {
         // TODO: Simplify this once differentiating control flow is supported.
-	    return unbroadcasted(to: {
-	      precondition(otherShape.rank == 1)
-	      return TensorShape(otherShape.scalars.map(Int.init))
-	    }())
+        return unbroadcasted(to: {
+            precondition(otherShape.rank == 1)
+            return TensorShape(otherShape.scalars.map(Int.init))
+        }())
     }
 
     @inlinable
@@ -727,24 +727,24 @@ public extension Tensor where Scalar: Numeric {
     @differentiable(wrt: self, vjp: _vjpUnbroadcasted(to:) where Scalar: TensorFlowFloatingPoint)
     func unbroadcasted(to shape: TensorShape) -> Tensor {
         let dimensions = self.shape.dimensions
-	    var otherDimensions = shape.dimensions
-	    let rankDifference = dimensions.count - otherDimensions.count
-	    precondition(rankDifference >= 0, """
-	        The rank of 'self' must be greater than or equal to the number of \
-	        dimensions in the destination shape
-	        """)
-	    if rankDifference > 0 {
+        var otherDimensions = shape.dimensions
+        let rankDifference = dimensions.count - otherDimensions.count
+        precondition(rankDifference >= 0, """
+            The rank of 'self' must be greater than or equal to the number of \
+            dimensions in the destination shape
+            """)
+        if rankDifference > 0 {
             otherDimensions.insert(contentsOf: repeatElement(1, count: rankDifference), at: 0)
-	    }
-	    assert(dimensions.count == otherDimensions.count)
-	    var axes: [Int] = []
-	    axes.reserveCapacity(dimensions.count)
-	    for (i, (dim, otherDim)) in zip(dimensions, otherDimensions).enumerated() {
-	        if dim == otherDim { continue }
-	        if otherDim == 1 { axes.append(i); continue }
-	        preconditionFailure("Cannot unbroadcast \(self.shape) to \(shape)")
-	    }
-	    return sum(alongAxes: axes).reshaped(to: shape)
+        }
+        assert(dimensions.count == otherDimensions.count)
+        var axes: [Int] = []
+        axes.reserveCapacity(dimensions.count)
+        for (i, (dim, otherDim)) in zip(dimensions, otherDimensions).enumerated() {
+            if dim == otherDim { continue }
+            if otherDim == 1 { axes.append(i); continue }
+            preconditionFailure("Cannot unbroadcast \(self.shape) to \(shape)")
+        }
+        return sum(alongAxes: axes).reshaped(to: shape)
     }
 }
 
@@ -769,14 +769,38 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
 //===------------------------------------------------------------------------------------------===//
 
 public extension Tensor where Scalar: Numeric {
-    /// Returns a padded tensor according to the specified padding sizes.
+    /// A mode that dictates how a tensor is padded.
+    enum PaddingMode {
+        /// Pads with constant value.
+        case constant(Scalar)
+        /// Mirrors values along padding dimensions, excluding the edge value.
+        case reflect
+        /// Mirrors values along padding dimensions, including the edge value.
+        case symmetric
+    }
+
+    /// Returns a tensor padded with constant according to the specified padding sizes.
     @inlinable
-    @differentiable(wrt: self, vjp: _vjpPadded(forSizes:with:) where Scalar: TensorFlowFloatingPoint)
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func padded(forSizes sizes: [(before: Int, after: Int)], with value: Scalar = 0) -> Tensor {
+        padded(forSizes: sizes, mode: .constant(value))
+    }
+
+    /// Returns a padded tensor according to the specified padding sizes and mode.
+    @inlinable
+    @differentiable(wrt: self, vjp: _vjpPadded(forSizes:mode:) where Scalar: TensorFlowFloatingPoint)
+    func padded(forSizes sizes: [(before: Int, after: Int)], mode: PaddingMode) -> Tensor {
         let paddings = Tensor<Int32>(
             shape: [sizes.count, 2],
             scalars: sizes.flatMap { [Int32($0.before), Int32($0.after)] })
-        return Raw.padV2(self, paddings: paddings, constantValues: Tensor(value))
+        switch mode {
+        case .constant(let constantValue):
+            return Raw.padV2(self, paddings: paddings, constantValues: Tensor(constantValue))
+        case .reflect:
+            return Raw.mirrorPad(self, paddings: paddings, mode: .reflect)
+        case .symmetric:
+            return Raw.mirrorPad(self, paddings: paddings, mode: .symmetric)
+        }
     }
 }
 
@@ -784,18 +808,26 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     func _vjpPadded(
         forSizes sizes: [(before: Int, after: Int)],
-        with value: Scalar
+        mode: PaddingMode
     ) -> (Tensor, (Tensor) -> Tensor) {
-        let result = padded(forSizes: sizes, with: value)
+        let result = padded(forSizes: sizes, mode: mode)
         return (result, { [rank = rankTensor, shape = shapeTensor] v in
             let paddings = Tensor<Int32>(
                 shape: [sizes.count, 2],
                 scalars: sizes.flatMap { [Int32($0.before), Int32($0.after)] })
-            let padBefore = Raw.slice(paddings,
-                begin: Tensor<Int32>([0, 0]),
-                size: Tensor<Int32>(stacking: [rank, Tensor<Int32>(1)]))
-            let begin = padBefore.reshaped(to: [-1])
-            return Raw.slice(v, begin: begin, size: shape)
+            switch mode {
+            case .constant:
+                let padBefore = Raw.slice(
+                    paddings,
+                    begin: Tensor<Int32>([0, 0]),
+                    size: Tensor<Int32>(stacking: [rank, Tensor<Int32>(1)]))
+                let begin = padBefore.reshaped(to: [-1])
+                return v.slice(lowerBounds: begin, sizes: shape)
+            case .reflect:
+                return Raw.mirrorPadGrad(v, paddings: paddings, mode: .reflect)
+            case .symmetric:
+                return Raw.mirrorPadGrad(v, paddings: paddings, mode: .symmetric)
+            }
         })
     }
 }

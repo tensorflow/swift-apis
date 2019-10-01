@@ -40,11 +40,74 @@ final class BasicOperatorTests: XCTestCase {
         XCTAssertEqual(paddedTensor, target)
     }
 
+    func testPaddedConstant() {
+        let x = Tensor<Float>(ones: [2, 2])
+        let target = Tensor<Float>([[3, 3, 3], [1, 1, 3], [1, 1, 3]])
+        let paddedTensor = x.padded(forSizes: [(1, 0), (0, 1)], mode: .constant(3.0))
+        XCTAssertEqual(paddedTensor, target)
+    }
+
+    func testPaddedReflect() {
+        let x = Tensor<Float>([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+        let target = Tensor<Float>([
+            [7, 8, 9, 8, 7],
+            [4, 5, 6, 5, 4],
+            [1, 2, 3, 2, 1],
+            [4, 5, 6, 5, 4],
+            [7, 8, 9, 8, 7]
+        ])
+        let paddedTensor = x.padded(forSizes: [(2, 0), (0, 2)], mode: .reflect)
+        XCTAssertEqual(paddedTensor, target)
+    }
+
+    func testPaddedSymmetric() {
+        let x = Tensor<Float>([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+        let target = Tensor<Float>([
+            [4, 5, 6, 6, 5],
+            [1, 2, 3, 3, 2],
+            [1, 2, 3, 3, 2],
+            [4, 5, 6, 6, 5],
+            [7, 8, 9, 9, 8]
+        ])
+        let paddedTensor = x.padded(forSizes: [(2, 0), (0, 2)], mode: .symmetric)
+        XCTAssertEqual(paddedTensor, target)
+    }
+
     func testVJPPadded() {
         let x = Tensor<Float>(ones: [3, 2])
         let target = Tensor<Float>([[2, 2], [2, 2], [2, 2]])
         let grads = x.gradient { a -> Tensor<Float> in
             let paddedTensor = a.padded(forSizes: [(1, 0), (0, 1)], with: 3.0)
+            return (paddedTensor * paddedTensor).sum()
+        }
+        XCTAssertEqual(grads, target)
+    }
+
+    func testVJPPaddedConstant() {
+        let x = Tensor<Float>(ones: [3, 2])
+        let target = Tensor<Float>([[2, 2], [2, 2], [2, 2]])
+        let grads = x.gradient { a -> Tensor<Float> in
+            let paddedTensor = a.padded(forSizes: [(1, 0), (0, 1)], mode: .constant(3.0))
+            return (paddedTensor * paddedTensor).sum()
+        }
+        XCTAssertEqual(grads, target)
+    }
+
+    func testVJPPaddedReflect() {
+        let x = Tensor<Float>([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+        let target = Tensor<Float>([[4, 8, 6], [32, 40, 24], [56, 64, 36]])
+        let grads = x.gradient { a -> Tensor<Float> in
+            let paddedTensor = a.padded(forSizes: [(2, 0), (0, 2)], mode: .reflect)
+            return (paddedTensor * paddedTensor).sum()
+        }
+        XCTAssertEqual(grads, target)
+    }
+
+    func testVJPPaddedSymmetric() {
+        let x = Tensor<Float>([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+        let target = Tensor<Float>([[4, 16, 24], [16, 40, 48], [14, 32, 36]])
+        let grads = x.gradient { a -> Tensor<Float> in
+            let paddedTensor = a.padded(forSizes: [(2, 0), (0, 2)], mode: .symmetric)
             return (paddedTensor * paddedTensor).sum()
         }
         XCTAssertEqual(grads, target)
@@ -599,7 +662,13 @@ final class BasicOperatorTests: XCTestCase {
         ("testGathering", testGathering),
         ("testBatchGathering", testBatchGathering),
         ("testPadded", testPadded),
+        ("testPaddedConstant", testPaddedConstant),
+        ("testPaddedReflect", testPaddedReflect),
+        ("testPaddedSymmetric", testPaddedSymmetric),
         ("testVJPPadded", testVJPPadded),
+        ("testVJPPaddedConstant", testVJPPaddedConstant),
+        ("testVJPPaddedReflect", testVJPPaddedReflect),
+        ("testVJPPaddedSymmetric", testVJPPaddedSymmetric),
         ("testElementIndexing", testElementIndexing),
         ("testElementIndexingAssignment", testElementIndexingAssignment),
         ("testNestedElementIndexing", testNestedElementIndexing),
