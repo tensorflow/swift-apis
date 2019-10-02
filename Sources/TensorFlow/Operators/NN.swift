@@ -90,8 +90,8 @@ public func conv2D<Scalar: TensorFlowFloatingPoint>(
     padding: Padding = .valid,
     dilations: (Int, Int, Int, Int) = (1, 1, 1, 1)
 ) -> Tensor<Scalar> {
-    assert(input.shape.rank == 4, "input must have rank 4")
-    assert(filter.shape.rank == 4, "filter must have rank 4")
+    precondition(input.shape.rank == 4, "input must have rank 4")
+    precondition(filter.shape.rank == 4, "filter must have rank 4")
     return Raw.conv2D(
         input,
         filter: filter,
