@@ -245,7 +245,6 @@ final class TensorAutoDiffTests: XCTestCase {
         }
     }
 
-    /*TODO:(https://bugs.swift.org/browse/TF-771): Disabling this case as assertions fail.
     func testTensorInitStacking() {
         let a1 = Tensor<Float>([1, 2, 3, 4, 5])
         let b1 = Tensor<Float>([6, 7, 8, 9, 10])
@@ -257,7 +256,6 @@ final class TensorAutoDiffTests: XCTestCase {
         XCTAssertEqual(a1, grads.0)
         XCTAssertEqual(b1, grads.1)
     }
-    */
 
     func testExpandingShape() {
         func f1(a: Tensor<Float>) -> Tensor<Float> { a.expandingShape(at: 0).squared() }
@@ -546,8 +544,7 @@ final class TensorAutoDiffTests: XCTestCase {
         ("testVariance", testVariance),
         ("testMin", testMin),
         ("testMax", testMax),
-        // TODO(https://bugs.swift.org/browse/TF-771): Disabling the failing test.
-        // ("testTensorInitStacking", testTensorInitStacking),
+        ("testTensorInitStacking", testTensorInitStacking),
         ("testExpandingShape", testExpandingShape),
         ("testSqueezingShape", testSqueezingShape),
         ("testReshapedBackprop", testReshapedBackprop),
