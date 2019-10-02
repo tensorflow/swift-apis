@@ -446,7 +446,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         standardDeviation: Tensor<Scalar> = Tensor<Scalar>(1),
         seed: TensorFlowSeed = TensorFlow.Context.local.randomSeed
     ) {
-        let sample: Tensor<Scalar> = Raw.statelessTruncatedNormal(
+        let sample: Tensor<Scalar> = _Raw.statelessTruncatedNormal(
             shape: Tensor<Int32>((0..<shape.rank).map { Int32(shape[$0]) }),
             seed: Tensor<Int32>([seed.graph, seed.op]))
         self = standardDeviation * sample + mean
