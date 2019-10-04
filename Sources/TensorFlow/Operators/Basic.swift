@@ -280,36 +280,63 @@ public extension Tensor {
     @inlinable
     @differentiable(
         wrt: self,
-        vjp: _vjpTransposed(withPermutations:) where Scalar: TensorFlowFloatingPoint)
+        vjp: _vjpTransposed(permutation:) where Scalar: TensorFlowFloatingPoint)
+    @available(*, deprecated, message: "Please use transposed(permutation:) instead.")
     func transposed(withPermutations permutations: Tensor<Int32>) -> Tensor {
-        return Raw.transpose(self, perm: permutations)
+        return transposed(permutation: permutations)
+    }
+
+    @inlinable
+    @differentiable(
+            wrt: self,
+            vjp: _vjpTransposed(permutation:) where Scalar: TensorFlowFloatingPoint)
+    func transposed(permutation perm: Tensor<Int32>) -> Tensor {
+        return Raw.transpose(self, perm: perm)
+    }
+
+    /// Returns a transposed tensor, with dimensions permuted in the specified order.
+    @inlinable
+    @differentiable(
+            wrt: self,
+            vjp: _vjpTransposed(permutation:) where Scalar: TensorFlowFloatingPoint)
+    @available(*, deprecated, message: "Please use transposed(permutation:) instead.")
+    func transposed(withPermutations permutations: [Int]) -> Tensor {
+        return transposed(permutation: permutations)
     }
 
     /// Returns a transposed tensor, with dimensions permuted in the specified order.
     @inlinable
     @differentiable(
         wrt: self,
-        vjp: _vjpTransposed(withPermutations:) where Scalar: TensorFlowFloatingPoint)
-    func transposed(withPermutations permutations: [Int]) -> Tensor {
-        let permutations = permutations.map(Int32.init)
-        return transposed(withPermutations: Tensor<Int32>(permutations))
+        vjp: _vjpTransposed(permutation:) where Scalar: TensorFlowFloatingPoint)
+    func transposed(permutation perm: [Int]) -> Tensor {
+        let permutation = perm.map(Int32.init)
+        return transposed(permutation: Tensor<Int32>(permutation))
     }
 
     /// Returns a transposed tensor, with dimensions permuted in the specified order.
     @inlinable
     @differentiable(
-        wrt: self, vjp: _vjpTransposed(withPermutations:) where Scalar: TensorFlowFloatingPoint)
+        wrt: self, vjp: _vjpTransposed(permutation:) where Scalar: TensorFlowFloatingPoint)
+    @available(*, deprecated, message: "Please use transposed(permutation:) instead.")
     func transposed(withPermutations permutations: Int...) -> Tensor {
-        return transposed(withPermutations: permutations)
+        return transposed(permutation: permutations)
+    }
+
+    @inlinable
+    @differentiable(
+            wrt: self, vjp: _vjpTransposed(permutation:) where Scalar: TensorFlowFloatingPoint)
+    func transposed(permutation perm: Int...) -> Tensor {
+        return transposed(permutation: perm)
     }
 
     /// Returns a transposed tensor, with dimensions permuted in reverse order.
     @inlinable
     @differentiable(wrt: self, vjp: _vjpTransposed() where Scalar: TensorFlowFloatingPoint)
     func transposed() -> Tensor {
-        let defaultPermutations = rankTensor - 1 - Tensor<Int32>(
+        let defaultPermutation = rankTensor - 1 - Tensor<Int32>(
             rangeFrom: 0, to: Int32(rank), stride: 1)
-        return transposed(withPermutations: Tensor<Int32>(defaultPermutations))
+        return transposed(permutation: Tensor<Int32>(defaultPermutation))
     }
 
     /// Returns a concatenated tensor along the specified axis.
@@ -438,7 +465,7 @@ public extension Tensor {
                 Tensor<Int32>(Int32(axis)).rankLifted(),
                 Tensor<Int32>(rangeFrom: Int32(batchDimensionCount), to: Int32(posAxis), stride: 1),
                 Tensor<Int32>(rangeFrom: Int32(axis) + 1, to: Int32(rank), stride: 1)])
-            let tensor = transposed(withPermutations: permutation)
+            let tensor = transposed(permutation: permutation)
             let result = tensor.batchGathering(
                 atIndices: indices,
                 alongAxis: batchDimensionCount,
@@ -455,7 +482,7 @@ public extension Tensor {
                     to: Int32(indices.rank),
                     stride: 1),
                 Tensor<Int32>(rangeFrom: Int32(start), to: Int32(result.rank), stride: 1)])
-            return result.transposed(withPermutations: resultPermutation)
+            return result.transposed(permutation: resultPermutation)
         }
 
         let batchIndices: Tensor<Index> = withoutDerivative(at: {
@@ -538,22 +565,22 @@ public extension Tensor {
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     func _vjpTransposed(
-        withPermutations permutations: Tensor<Int32>
+        permutation perm: Tensor<Int32>
     ) -> (Tensor, (Tensor) -> Tensor) {
-        let value = transposed(withPermutations: permutations)
-        return (value, { $0.transposed(withPermutations: permutations) })
+        let value = transposed(permutation: perm)
+        return (value, { $0.transposed(permutation: perm) })
     }
 
     @inlinable
-    func _vjpTransposed(withPermutations permutations: [Int]) -> (Tensor, (Tensor) -> Tensor) {
-        let value = transposed(withPermutations: permutations)
-        return (value, { $0.transposed(withPermutations: permutations) })
+    func _vjpTransposed(permutation perm: [Int]) -> (Tensor, (Tensor) -> Tensor) {
+        let value = transposed(permutation: perm)
+        return (value, { $0.transposed(permutation: perm) })
     }
 
     @inlinable
-    func _vjpTransposed(withPermutations permutations: Int...) -> (Tensor, (Tensor) -> Tensor) {
-        let value = transposed(withPermutations: permutations)
-        return (value, { $0.transposed(withPermutations: permutations) })
+    func _vjpTransposed(permutation perm: Int...) -> (Tensor, (Tensor) -> Tensor) {
+        let value = transposed(permutation: perm)
+        return (value, { $0.transposed(permutation: perm) })
     }
 
     @inlinable
@@ -616,11 +643,11 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
             // parameter, we transpose the gather dimension to the front, then use
             // `unsortedSegmentSum` to build a `[gatherAxis, outerAxes, innerAxes]` tensor with all
             // the gradients affecting each index in `gatherAxis` summed up.
-            let permutations = Tensor<Int32>(concatenating: [
+            let permutation = Tensor<Int32>(concatenating: [
                 Tensor<Int32>([Int32(outerSize)]),
                 outerIndices,
                 innerIndices])
-            let transposedValues = values.transposed(withPermutations: permutations)
+            let transposedValues = values.transposed(permutation: permutation)
             let gradient = Raw.unsortedSegmentSum(
                 data: transposedValues,
                 segmentIds: valueIndices,
@@ -632,7 +659,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
                 outerIndices + 1,
                 Tensor<Int32>([0]),
                 innerIndices])
-            return gradient.transposed(withPermutations: inversePermutations)
+            return gradient.transposed(permutation: inversePermutations)
         })
     }
 }
