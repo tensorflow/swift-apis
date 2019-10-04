@@ -146,3 +146,55 @@ public func sigmoidCrossEntropy<Scalar: TensorFlowFloatingPoint>(
 ) -> Tensor<Scalar> {
     sigmoidCrossEntropy(logits: logits, labels:labels, reduction: _mean)
 }
+
+public extension Tensor {
+    /// Returns a transposed tensor, with dimensions permuted in the specified order.
+    @inlinable
+    @differentiable(
+            wrt: self,
+            vjp: _vjpTransposed(withPermutations:) where Scalar: TensorFlowFloatingPoint)
+    @available(*, deprecated, message: "Please use transposed(permutation:) instead.")
+    func transposed(withPermutations permutations: Tensor<Int32>) -> Tensor {
+        transposed(permutation: permutations)
+    }
+
+    /// Returns a transposed tensor, with dimensions permuted in the specified order.
+    @inlinable
+    @differentiable(
+            wrt: self,
+            vjp: _vjpTransposed(withPermutations:) where Scalar: TensorFlowFloatingPoint)
+    @available(*, deprecated, message: "Please use transposed(permutation:) instead.")
+    func transposed(withPermutations permutations: [Int]) -> Tensor {
+        transposed(permutation: permutations)
+    }
+
+    /// Returns a transposed tensor, with dimensions permuted in the specified order.
+    @inlinable
+    @differentiable(
+            wrt: self, vjp: _vjpTransposed(withPermutations:) where Scalar: TensorFlowFloatingPoint)
+    @available(*, deprecated, message: "Please use transposed(permutation:) instead.")
+    func transposed(withPermutations permutations: Int...) -> Tensor {
+        transposed(permutation: permutations)
+    }
+}
+
+internal extension Tensor where Scalar: TensorFlowFloatingPoint {
+    @inlinable
+    func _vjpTransposed(
+            withPermutations permutations: Tensor<Int32>) -> (Tensor, (Tensor) -> Tensor) {
+        let value = transposed(permutation: permutations)
+        return (value, { $0.transposed(permutation: permutations) })
+    }
+
+    @inlinable
+    func _vjpTransposed(withPermutations permutations: [Int]) -> (Tensor, (Tensor) -> Tensor) {
+        let value = transposed(permutation: permutations)
+        return (value, { $0.transposed(permutation: permutations) })
+    }
+
+    @inlinable
+    func _vjpTransposed(withPermutations permutations: Int...) -> (Tensor, (Tensor) -> Tensor) {
+        let value = transposed(permutation: permutations)
+        return (value, { $0.transposed(permutation: permutations) })
+    }
+}
