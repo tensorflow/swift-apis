@@ -29,7 +29,7 @@ public extension TensorFlowScalar {
     /// Convert to a tensor with the specified rank, with all dimensions equal to `1`.
     @inlinable
     func makeTensor(rank: Int) -> Tensor<Self> {
-        return Tensor(repeating: self, shape: TensorShape(rank))
+        Tensor(repeating: self, shape: TensorShape(rank))
     }
 }
 
@@ -283,7 +283,7 @@ public extension Tensor {
         vjp: _vjpTransposed(permutation:) where Scalar: TensorFlowFloatingPoint)
     @available(*, deprecated, message: "Please use transposed(permutation:) instead.")
     func transposed(withPermutations permutations: Tensor<Int32>) -> Tensor {
-        return transposed(permutation: permutations)
+        transposed(permutation: permutations)
     }
 
     @inlinable
@@ -291,7 +291,7 @@ public extension Tensor {
             wrt: self,
             vjp: _vjpTransposed(permutation:) where Scalar: TensorFlowFloatingPoint)
     func transposed(permutation perm: Tensor<Int32>) -> Tensor {
-        return Raw.transpose(self, perm: perm)
+        Raw.transpose(self, perm: perm)
     }
 
     /// Returns a transposed tensor, with dimensions permuted in the specified order.
@@ -301,7 +301,7 @@ public extension Tensor {
             vjp: _vjpTransposed(permutation:) where Scalar: TensorFlowFloatingPoint)
     @available(*, deprecated, message: "Please use transposed(permutation:) instead.")
     func transposed(withPermutations permutations: [Int]) -> Tensor {
-        return transposed(permutation: permutations)
+        transposed(permutation: permutations)
     }
 
     /// Returns a transposed tensor, with dimensions permuted in the specified order.
@@ -320,14 +320,14 @@ public extension Tensor {
         wrt: self, vjp: _vjpTransposed(permutation:) where Scalar: TensorFlowFloatingPoint)
     @available(*, deprecated, message: "Please use transposed(permutation:) instead.")
     func transposed(withPermutations permutations: Int...) -> Tensor {
-        return transposed(permutation: permutations)
+        transposed(permutation: permutations)
     }
 
     @inlinable
     @differentiable(
             wrt: self, vjp: _vjpTransposed(permutation:) where Scalar: TensorFlowFloatingPoint)
     func transposed(permutation perm: Int...) -> Tensor {
-        return transposed(permutation: perm)
+        transposed(permutation: perm)
     }
 
     /// Returns a transposed tensor, with dimensions permuted in reverse order.
@@ -346,7 +346,7 @@ public extension Tensor {
     @inlinable
     @differentiable(vjp: _vjpConcatenated where Scalar: TensorFlowFloatingPoint)
     func concatenated(with other: Tensor, alongAxis axis: Int = 0) -> Tensor {
-        return Tensor(concatenating: [self, other], alongAxis: axis)
+        Tensor(concatenating: [self, other], alongAxis: axis)
     }
 
     /// Concatenation operator.
@@ -357,7 +357,7 @@ public extension Tensor {
     @inlinable
     @differentiable(where Scalar: TensorFlowFloatingPoint)
     static func ++ (lhs: Tensor, rhs: Tensor) -> Tensor {
-        return lhs.concatenated(with: rhs)
+        lhs.concatenated(with: rhs)
     }
 
     /// Returns a tensor by gathering slices of the input at `indices` along the `axis` dimension
@@ -585,7 +585,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 
     @inlinable
     func _vjpTransposed() -> (Tensor, (Tensor) -> Tensor) {
-        return (transposed(), { $0.transposed() })
+        (transposed(), { $0.transposed() })
     }
 
     @inlinable
@@ -695,7 +695,7 @@ public extension Tensor {
     /// - Returns: A tensor with shape `(num_true, rank(condition))`.
     @inlinable
     func nonZeroIndices() -> Tensor<Int64> {
-        return Raw.where_(self)
+        Raw.where_(self)
     }
 }
 
@@ -710,13 +710,13 @@ public extension Tensor {
     @inlinable
     @differentiable(wrt: self, vjp: _vjpBroadcasted(toShape:) where Scalar: TensorFlowFloatingPoint)
     func broadcasted(toShape shape: Tensor<Int32>) -> Tensor {
-        return Raw.broadcastTo(self, shape: shape)
+        Raw.broadcastTo(self, shape: shape)
     }
 
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func broadcasted(to shape: TensorShape) -> Tensor {
-        return broadcasted(toShape: Tensor<Int32>({ shape.dimensions.map(Int32.init) }()))
+        broadcasted(toShape: Tensor<Int32>({ shape.dimensions.map(Int32.init) }()))
     }
 
     /// Broadcast to the same shape as the specified `Tensor`.
@@ -724,7 +724,7 @@ public extension Tensor {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func broadcasted<OtherScalar>(like other: Tensor<OtherScalar>) -> Tensor {
-        return broadcasted(toShape: other.shapeTensor)
+        broadcasted(toShape: other.shapeTensor)
     }
 
     @inlinable
@@ -738,7 +738,7 @@ public extension Tensor where Scalar: Numeric {
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func unbroadcasted(toShape otherShape: Tensor<Int32>) -> Tensor {
         // TODO: Simplify this once differentiating control flow is supported.
-        return unbroadcasted(to: {
+        unbroadcasted(to: {
             precondition(otherShape.rank == 1)
             return TensorShape(otherShape.scalars.map(Int.init))
         }())
@@ -747,7 +747,7 @@ public extension Tensor where Scalar: Numeric {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func unbroadcasted<OtherScalar>(like other: Tensor<OtherScalar>) -> Tensor {
-        return unbroadcasted(toShape: other.shapeTensor)
+        unbroadcasted(toShape: other.shapeTensor)
     }
 
     @inlinable
@@ -778,14 +778,14 @@ public extension Tensor where Scalar: Numeric {
 extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     func _vjpBroadcasted(toShape shape: Tensor<Int32>) -> (Tensor, (Tensor) -> Tensor) {
-        return (broadcasted(toShape: shape), { [originalShape = shapeTensor] v in
+        (broadcasted(toShape: shape), { [originalShape = shapeTensor] v in
             v.unbroadcasted(toShape: originalShape)
         })
     }
 
     @inlinable
     func _vjpUnbroadcasted(to shape: TensorShape) -> (Tensor, (Tensor) -> Tensor) {
-        return (unbroadcasted(to: shape), { [originalShape = shapeTensor] v in
+        (unbroadcasted(to: shape), { [originalShape = shapeTensor] v in
             v.broadcasted(toShape: originalShape)
         })
     }
@@ -885,7 +885,7 @@ public extension Tensor {
     @inlinable
     @differentiable(wrt: self, vjp: _vjpSlice where Scalar: TensorFlowFloatingPoint)
     func slice(lowerBounds: Tensor<Int32>, sizes: Tensor<Int32>) -> Tensor {
-        return Raw.slice(self, begin: lowerBounds, size: sizes)
+        Raw.slice(self, begin: lowerBounds, size: sizes)
     }
 }
 
@@ -918,7 +918,7 @@ public enum TensorRange: TensorRangeExpression {
     case partialRangeUpTo(PartialRangeUpTo<Int>, stride: Int)
     case partialRangeThrough(PartialRangeThrough<Int>, stride: Int)
 
-    public var tensorRange: TensorRange { return self }
+    public var tensorRange: TensorRange { self }
 }
 
 extension TensorRange: Equatable {
@@ -953,36 +953,36 @@ public protocol TensorRangeExpression {
 // }
 
 extension Int: TensorRangeExpression {
-    public var tensorRange: TensorRange { return .index(self) }
+    public var tensorRange: TensorRange { .index(self) }
 }
 
 extension Range: TensorRangeExpression where Bound == Int {
     public var tensorRange: TensorRange {
-        return .range(self, stride: 1)
+        .range(self, stride: 1)
     }
 }
 
 extension ClosedRange: TensorRangeExpression where Bound == Int {
     public var tensorRange: TensorRange {
-        return .closedRange(self, stride: 1)
+        .closedRange(self, stride: 1)
     }
 }
 
 extension PartialRangeFrom: TensorRangeExpression where Bound == Int {
     public var tensorRange: TensorRange {
-        return .partialRangeFrom(self, stride: 1)
+        .partialRangeFrom(self, stride: 1)
     }
 }
 
 extension PartialRangeUpTo: TensorRangeExpression where Bound == Int {
     public var tensorRange: TensorRange {
-        return .partialRangeUpTo(self, stride: 1)
+        .partialRangeUpTo(self, stride: 1)
     }
 }
 
 extension PartialRangeThrough: TensorRangeExpression where Bound == Int {
     public var tensorRange: TensorRange {
-        return .partialRangeThrough(self, stride: 1)
+        .partialRangeThrough(self, stride: 1)
     }
 }
 
@@ -995,31 +995,31 @@ precedencegroup StridedRangeFormationPrecedence {
 
 public extension Range where Bound == Int {
     static func .. (range: Range, stride: Int) -> TensorRange {
-        return .range(range, stride: stride)
+        .range(range, stride: stride)
     }
 }
 
 public extension ClosedRange where Bound == Int {
     static func .. (range: ClosedRange, stride: Int) -> TensorRange {
-        return .closedRange(range, stride: stride)
+        .closedRange(range, stride: stride)
     }
 }
 
 public extension PartialRangeFrom where Bound == Int {
     static func .. (range: PartialRangeFrom, stride: Int) -> TensorRange {
-        return .partialRangeFrom(range, stride: stride)
+        .partialRangeFrom(range, stride: stride)
     }
 }
 
 public extension PartialRangeUpTo where Bound == Int {
     static func .. (range: PartialRangeUpTo, stride: Int) -> TensorRange {
-        return .partialRangeUpTo(range, stride: stride)
+        .partialRangeUpTo(range, stride: stride)
     }
 }
 
 public extension PartialRangeThrough where Bound == Int {
     static func .. (range: PartialRangeThrough, stride: Int) -> TensorRange {
-        return .partialRangeThrough(range, stride: stride)
+        .partialRangeThrough(range, stride: stride)
     }
 }
 
@@ -1053,7 +1053,7 @@ public extension Tensor {
     @differentiable(wrt: self, vjp: _vjpSubscript where Scalar : TensorFlowFloatingPoint)
     internal subscript(_ indexPath: IndexPath) -> Tensor {
         get {
-            return Raw.stridedSlice(
+            Raw.stridedSlice(
                 self, begin: indexPath.begin, end: indexPath.end,
                 strides: indexPath.strides, beginMask: indexPath.beginMask,
                 endMask: indexPath.endMask, ellipsisMask: indexPath.ellipsisMask,
@@ -1075,7 +1075,7 @@ public extension Tensor {
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     subscript(_ ranges: TensorRangeExpression...) -> Tensor {
         get {
-            return self[{IndexPath({ranges.map { $0.tensorRange }}())}()]
+            self[{IndexPath({ranges.map { $0.tensorRange }}())}()]
         }
         set {
             self[{IndexPath({ranges.map { $0.tensorRange }}())}()] = newValue
@@ -1088,7 +1088,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     internal func _vjpSubscript(
         _ indexPath: IndexPath
     ) -> (Tensor, (Tensor) -> Tensor) {
-        return (self[indexPath], { [shape = shapeTensor] v in
+        (self[indexPath], { [shape = shapeTensor] v in
             Raw.stridedSliceGrad(
                 shape: shape, begin: indexPath.begin, end: indexPath.end,
                 strides: indexPath.strides, dy: v, beginMask: indexPath.beginMask,
