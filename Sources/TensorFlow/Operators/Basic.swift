@@ -333,7 +333,7 @@ public extension Tensor {
     func transposed() -> Tensor {
         let defaultPermutations = rankTensor - 1 - Tensor<Int32>(
             rangeFrom: 0, to: Int32(rank), stride: 1)
-        return transposed(withPermutations: Tensor<Int32>(defaultPermutations))
+        return transposed(permutation: Tensor<Int32>(defaultPermutations))
     }
 
     /// Returns a concatenated tensor along the specified axis.
@@ -462,7 +462,7 @@ public extension Tensor {
                 Tensor<Int32>(Int32(axis)).rankLifted(),
                 Tensor<Int32>(rangeFrom: Int32(batchDimensionCount), to: Int32(posAxis), stride: 1),
                 Tensor<Int32>(rangeFrom: Int32(axis) + 1, to: Int32(rank), stride: 1)])
-            let tensor = transposed(withPermutations: permutation)
+            let tensor = transposed(permutation: permutation)
             let result = tensor.batchGathering(
                 atIndices: indices,
                 alongAxis: batchDimensionCount,
@@ -479,7 +479,7 @@ public extension Tensor {
                     to: Int32(indices.rank),
                     stride: 1),
                 Tensor<Int32>(rangeFrom: Int32(start), to: Int32(result.rank), stride: 1)])
-            return result.transposed(withPermutations: resultPermutation)
+            return result.transposed(permutation: resultPermutation)
         }
 
         let batchIndices: Tensor<Index> = withoutDerivative(at: {
@@ -643,7 +643,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
                 Tensor<Int32>([Int32(outerSize)]),
                 outerIndices,
                 innerIndices])
-            let transposedValues = values.transposed(withPermutations: permutations)
+            let transposedValues = values.transposed(permutation: permutations)
             let gradient = Raw.unsortedSegmentSum(
                 data: transposedValues,
                 segmentIds: valueIndices,
@@ -655,7 +655,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
                 outerIndices + 1,
                 Tensor<Int32>([0]),
                 innerIndices])
-            return gradient.transposed(withPermutations: inversePermutations)
+            return gradient.transposed(permutation: inversePermutations)
         })
     }
 }
