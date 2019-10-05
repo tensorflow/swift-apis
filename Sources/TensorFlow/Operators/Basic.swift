@@ -281,8 +281,18 @@ public extension Tensor {
     @differentiable(
         wrt: self,
         vjp: _vjpTransposed(withPermutations:) where Scalar: TensorFlowFloatingPoint)
+    func transposed(permutation: Tensor<Int32>) -> Tensor {
+        Raw.transpose(self, perm: permutation)
+    }
+
+    /// Returns a transposed tensor, with dimensions permuted in the specified order.
+    @available(*, deprecated, renamed: "transposed(permutation:)")
+    @inlinable
+    @differentiable(
+        wrt: self,
+        vjp: _vjpTransposed(withPermutations:) where Scalar: TensorFlowFloatingPoint)
     func transposed(withPermutations permutations: Tensor<Int32>) -> Tensor {
-        return Raw.transpose(self, perm: permutations)
+        transposed(permutation: permutations)
     }
 
     /// Returns a transposed tensor, with dimensions permuted in the specified order.
