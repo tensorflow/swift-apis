@@ -41,13 +41,14 @@ internal final class TensorBuffer<Scalar> {
         }
     }
 
+    @usableFromInline
     enum Allocation {
         case native(BoxedArray)
         case tensorFlow(CTensor)
     }
 
-    let allocation: Allocation
-    let count: Int
+    @usableFromInline let allocation: Allocation
+    @usableFromInline let count: Int
 
     deinit {
         debugLog("De-initializing tensor buffer.")
@@ -61,7 +62,8 @@ internal final class TensorBuffer<Scalar> {
         debugLog("Returning from deinit of TensorBuffer.")
     }
 
-    init(allocation: Allocation, count: Int) {
+    @usableFromInline
+    internal init(allocation: Allocation, count: Int) {
         self.allocation = allocation
         self.count = count
     }
@@ -70,6 +72,7 @@ internal final class TensorBuffer<Scalar> {
 // TF Tensor-specific initializer.
 extension TensorBuffer where Scalar: _TensorFlowDataTypeCompatible {
     /// Creates a local tensor buffer from a C `TF_Tensor*` value and takes ownership of the value.
+    @usableFromInline
     convenience init(owning cTensor: CTensor, count: Int) {
         debugLog("Initializing TensorBuffer with a cTensor of \(count) elements.")
         let actualCount = (0..<TF_NumDims(cTensor)).reduce(1) { accumulator, next in
@@ -423,10 +426,10 @@ public extension _ShapedArrayProtocol
 @frozen
 public struct ShapedArray<Scalar>: _ShapedArrayProtocol {
     /// Contiguous memory storing scalars.
-    internal var buffer: TensorBuffer<Scalar>
+    @usableFromInline internal var buffer: TensorBuffer<Scalar>
 
     /// The dimensions of the array.
-    public private(set) var shape: [Int]
+    public internal(set) var shape: [Int]
 
     /// Creates a `ShapedArray` from a `TensorBuffer` and a shape.
     internal init(buffer: __owned TensorBuffer<Scalar>, shape: __owned [Int]) {
@@ -454,9 +457,9 @@ fileprivate extension ShapedArray {
     }
 }
 
-internal extension ShapedArray where Scalar: _TensorFlowDataTypeCompatible {
-    @usableFromInline
-    init(owning cTensor: CTensor) {
+extension ShapedArray where Scalar: _TensorFlowDataTypeCompatible {
+    @inlinable
+    public init(owning cTensor: OpaquePointer) {
         // Including \(Scalar.self) into the message would cause non-deterministic crashes.
         debugLog("Initializing ShapedArray from CTensor.")
         shape = (0..<TF_NumDims(cTensor)).map { Int(TF_Dim(cTensor, $0)) }
@@ -472,7 +475,7 @@ internal extension ShapedArray where Scalar: _TensorFlowDataTypeCompatible {
 
     @usableFromInline
     @inline(never)
-    init(cTensorHandle: CTensorHandle) {
+    internal init(cTensorHandle: CTensorHandle) {
         let status = TF_NewStatus()
         let cTensor = TFE_TensorHandleResolve(cTensorHandle, status)
         checkOk(status)
