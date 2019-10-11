@@ -325,10 +325,10 @@ final class TensorAutoDiffTests: XCTestCase {
         let transposed = Tensor<Float>(ones: [3, 2])
         let transposedPullback = pullback(at: input) { (a: Tensor<Float>) in a.transposed() }
         let transposedPermutationsPullback = pullback(at: input) { (a: Tensor<Float>) in
-            a.transposed(withPermutations: [1, 0])
+            a.transposed(permutation: [1, 0])
         }
         let transposedVariadicsPullback = pullback(at: input) { (a: Tensor<Float>) in
-            a.transposed(withPermutations: 1, 0)
+            a.transposed(permutation: 1, 0)
         }
 
         XCTAssertEqual(input, transposedPullback(transposed))
