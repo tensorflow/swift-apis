@@ -119,6 +119,34 @@ public extension Layer {
     }
 }
 
+
+
+public extension Layer where Self: KeyPathIterable {
+    var allLearningPhases: LearningPhase? {
+        get {
+            let allPhases = self.recursivelyAllKeyPaths(to: LearningPhase.self)
+            if allPhases.isEmpty {
+                return nil
+            }
+            let first = self[keyPath: allPhases[0]]
+            for kp in allPhases {
+                if self[keyPath: kp] != first {
+                    return nil
+                }
+            }
+            return first
+        }
+        set {
+            guard let phase = newValue else {
+                fatalError("Cannot set allLearningPhases to nil!")
+            }
+            for kp in self.recursivelyAllWritableKeyPaths(to: LearningPhase.self) {
+                self[keyPath: kp] = phase
+            }
+        }
+    }
+}
+
 public extension Differentiable {
     /// Returns the output computed by applying a sequence of layers to the previous layer's output,
     /// except that the first layer's input is `self`.

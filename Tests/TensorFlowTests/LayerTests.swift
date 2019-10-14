@@ -24,6 +24,32 @@ fileprivate struct Sigmoid<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
     }
 }
 
+// A testing helper that inverts the input when in inference mode.
+fileprivate struct NotBatchNorm: ParameterlessLayer, KeyPathIterable {
+    @noDerivative var learningPhase: LearningPhase = .training
+
+    @differentiable
+    public func callAsFunction(_ input: Tensor<Float>) -> Tensor<Float> {
+        if learningPhase == .inference {
+            return -input
+        }
+        return input
+    }
+}
+
+fileprivate struct MyModel: Layer, KeyPathIterable {
+    var dense = Dense<Float>(weight: Tensor<Float>(ones: [5, 2]),
+                             bias: Tensor<Float>(ones: [2]),
+                             activation: identity)
+    var nbn = NotBatchNorm()
+    
+    @differentiable
+    public func callAsFunction(_ input: Tensor<Float>) -> Tensor<Float> {
+        return input.sequenced(through: dense, nbn)
+    }
+}
+
+
 final class LayerTests: XCTestCase {
     func testSequential() {
         withRandomSeedForTensorFlow((12345, 12345)) {
@@ -1315,6 +1341,16 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(transformerTensor.shape, transformerResult.shape)
     }
 
+    func testAllLearningPhases() {
+        var model = MyModel()
+        XCTAssertEqual(model.allLearningPhases, .training)
+        XCTAssertEqual(6 * Tensor<Float>(ones: [3, 2]), model(Tensor<Float>(ones: [3, 5])))
+        model.allLearningPhases = .inference
+        XCTAssertEqual(-6 * Tensor<Float>(ones: [3, 2]), model(Tensor<Float>(ones: [3, 5])))
+        model.allLearningPhases = .training
+        XCTAssertEqual(6 * Tensor<Float>(ones: [3, 2]), model(Tensor<Float>(ones: [3, 5])))
+    }
+
     static var allTests = [
         ("testSequential", testSequential),
         ("testConv1D", testConv1D),
@@ -1381,5 +1417,6 @@ final class LayerTests: XCTestCase {
         ("testBatchNormInference", testBatchNormInference),
         ("testLayerNorm", testLayerNorm),
         ("testLayerNormInference", testLayerNormInference),
+        ("testAllLearningPhases", testAllLearningPhases),
     ]
 }
