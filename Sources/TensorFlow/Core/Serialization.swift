@@ -37,7 +37,7 @@ public class TensorFlowCheckpointReader {
     ///
     /// - Arguments:
     ///   - checkpointPath: URL of the checkpoint file.
-    public init?(checkpointPath: URL) {
+    public init(checkpointPath: URL) {
         self.status = TF_NewStatus()
         self.handle = TF_NewCheckpointReader(checkpointPath.path, status)
         checkOk(status)
