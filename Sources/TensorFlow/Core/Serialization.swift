@@ -17,8 +17,8 @@ import Foundation
 
 /// A TensorFlow checkpoint file reader.
 public class TensorFlowCheckpointReader {
-    @usableFromInline internal let status: OpaquePointer
-    @usableFromInline internal let handle: OpaquePointer
+    internal let status: OpaquePointer
+    internal let handle: OpaquePointer
 
     /// The URL of the checkpoint file.
     public let checkpointPath: URL
@@ -64,8 +64,8 @@ public class TensorFlowCheckpointReader {
         return TensorShape([Int64](dimensionsBufferPointer).map(Int.init))
     }
 
-    /// Returns the type of the tensor with the provided name stored in the checkpoint.
-    public func typeOfTensor(named name: String) -> Any.Type {
+    /// Returns the scalar type of the tensor with the provided name stored in the checkpoint.
+    public func scalarTypeOfTensor(named name: String) -> Any.Type {
         let dataType = TensorDataType(TF_CheckpointReaderGetVariableDataType(handle, name))
         switch dataType._cDataType {
         case TF_BOOL: return Bool.self
