@@ -20,13 +20,13 @@ public class TensorFlowCheckpointReader {
     @usableFromInline internal let status: OpaquePointer
     @usableFromInline internal let handle: OpaquePointer
 
-    /// URL of the checkpoint file.
+    /// The URL of the checkpoint file.
     public let checkpointPath: URL
 
-    /// Number of tensors stored in the checkpoint.
+    /// The number of tensors stored in the checkpoint.
     public var tensorCount: Int { Int(TF_CheckpointReaderSize(handle)) }
 
-    /// Names of the tensors stored in the checkpoint.
+    /// The names of the tensors stored in the checkpoint.
     public var tensorNames: [String] {
         (0..<tensorCount).map {
             String(cString: TF_CheckpointReaderGetVariable(handle, Int32($0)))
@@ -37,7 +37,6 @@ public class TensorFlowCheckpointReader {
     ///
     /// - Arguments:
     ///   - checkpointPath: URL of the checkpoint file.
-    @inlinable
     public init?(checkpointPath: URL) {
         self.status = TF_NewStatus()
         self.handle = TF_NewCheckpointReader(checkpointPath.path, status)
@@ -50,14 +49,12 @@ public class TensorFlowCheckpointReader {
     }
 
     /// Returns `true` if the checkpoint contains a tensor with the provided name.
-    @inlinable
-    public func contains(tensorNamed name: String) -> Bool {
+    public func containsTensor(named name: String) -> Bool {
         TF_CheckpointReaderHasTensor(handle, name) > 0
     }
 
     /// Returns the shape of the tensor with the provided name stored in the checkpoint.
-    @inlinable
-    public func shape(ofTensorNamed name: String) -> TensorShape {
+    public func shapeOfTensor(named name: String) -> TensorShape {
         let rank = TF_CheckpointReaderGetVariableNumDims(handle, name)
         let dimensions = UnsafeMutablePointer<Int64>.allocate(capacity: Int(rank))
         defer { dimensions.deallocate() }
@@ -68,15 +65,29 @@ public class TensorFlowCheckpointReader {
     }
 
     /// Returns the data type of the tensor with the provided name stored in the checkpoint.
-    @inlinable
-    public func dataType(ofTensorNamed name: String) -> TensorDataType {
-        TensorDataType(TF_CheckpointReaderGetVariableDataType(handle, name))
+    public func typeOfTensor(named name: String) -> Any.Type {
+        let dataType = TensorDataType(TF_CheckpointReaderGetVariableDataType(handle, name))
+        switch dataType._cDataType {
+        case TF_BOOL: return Bool.self
+        case TF_INT8: return Int8.self
+        case TF_UINT8: return UInt8.self
+        case TF_INT16: return Int16.self
+        case TF_UINT16: return UInt16.self
+        case TF_INT32: return Int32.self
+        case TF_UINT32: return UInt32.self
+        case TF_INT64: return Int64.self
+        case TF_UINT64: return UInt64.self
+        case TF_BFLOAT16: return BFloat16.self
+        case TF_FLOAT: return Float.self
+        case TF_DOUBLE: return Double.self
+        case TF_STRING: return String.self
+        default: fatalError("Unhandled type: \(dataType)")
+        }
     }
 
     /// Loads and returns the value of the tensor with the provided name stored in the checkpoint.
-    @inlinable
-    public func load<Scalar: _TensorFlowDataTypeCompatible>(
-        tensorNamed name: String
+    public func loadTensor<Scalar: _TensorFlowDataTypeCompatible>(
+        named name: String
     ) -> ShapedArray<Scalar> {
         let pointer = TF_CheckpointReaderGetTensor(handle, name, status)
         checkOk(status)
