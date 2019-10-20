@@ -64,7 +64,7 @@ public class TensorFlowCheckpointReader {
         return TensorShape([Int64](dimensionsBufferPointer).map(Int.init))
     }
 
-    /// Returns the data type of the tensor with the provided name stored in the checkpoint.
+    /// Returns the type of the tensor with the provided name stored in the checkpoint.
     public func typeOfTensor(named name: String) -> Any.Type {
         let dataType = TensorDataType(TF_CheckpointReaderGetVariableDataType(handle, name))
         switch dataType._cDataType {
