@@ -19,12 +19,24 @@ public func zeros<Scalar: TensorFlowFloatingPoint>() -> ParameterInitializer<Sca
     { Tensor(zeros: $0) }
 }
 
+/// Returns a function that creates a tensor by initializing all its values to the provided value.
+public func constantInitializer<Scalar: TensorFlowFloatingPoint>(
+    value: Scalar
+) -> ParameterInitializer<Scalar> {
+    { Tensor(repeating: value, shape: $0) }
+}
+
 /// Returns a function that creates a tensor by initializing it to the provided value. Note that
-/// broadcasting of the provided value is supported.
+/// broadcasting of the provided value is *not* supported.
 public func constantInitializer<Scalar: TensorFlowFloatingPoint>(
     value: Tensor<Scalar>
 ) -> ParameterInitializer<Scalar> {
-    { value.broadcasted(to: $0) }
+    {
+        precondition(
+            value.shape == $0,
+            "The constant tensor shape (\(value.shape)) must match the requested shape \($0).")
+        return value
+    }
 }
 
 /// Returns a function that creates a tensor by performing Glorot uniform initialization for the 
