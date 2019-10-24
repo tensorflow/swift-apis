@@ -217,6 +217,23 @@ final class LossTests: XCTestCase {
         assertEqual(computedGradient, expectedGradient, accuracy: 1e-6)
     }
 
+    func testHuberLoss() {
+        let predictions = Tensor<Float>([[0.9, 0.2, 0.2], 
+                                         [0.8, 0.4, 0.6]])
+        let targets = Tensor<Float>([[1, 0, 1], 
+                                     [1, 0, 0]])
+
+        // test huber(x, x) = 0
+        let loss1 = huberLoss(predicted: predictions, expected: predictions, delta: Float(1))
+        XCTAssertTrue(loss1.isAlmostEqual(to: Tensor(0), tolerance: 0.001), "Huber Loss all correct")
+
+        // test huber(p, t) = 0.62500006 computed from tf.keras.losses.Huber
+        let loss2 = huberLoss(predicted: predictions, expected: targets, delta: Float(1))
+        XCTAssertTrue(
+            loss2.isAlmostEqual(to: Tensor(0.62500006), tolerance: 0.001), 
+            "Huber Loss unweighted")
+    }
+
     static var allTests = [
         ("testL1Loss", testL1Loss),
         ("testL2Loss", testL2Loss),
@@ -237,5 +254,6 @@ final class LossTests: XCTestCase {
          testSoftmaxCrossEntropyWithProbabilitiesGrad),
         ("testSigmoidCrossEntropyLoss", testSigmoidCrossEntropyLoss),
         ("testSigmoidCrossEntropyGradient", testSigmoidCrossEntropyGradient),
+        ("testHuberLoss", testHuberLoss)
     ]
 }
