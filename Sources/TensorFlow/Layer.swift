@@ -57,6 +57,8 @@ public struct EmptyTangentVector: EuclideanDifferentiable, VectorProtocol, Eleme
     public typealias VectorSpaceScalar = Float
     public typealias TangentVector = Self
 
+    public init() {}
+
     public func adding(_ x: Float) -> EmptyTangentVector { self }
     public mutating func add(_ x: Float) {}
     public func subtracting(_ x: Float) -> EmptyTangentVector { self }
