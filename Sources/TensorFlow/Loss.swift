@@ -311,7 +311,6 @@ public func huberLoss<Scalar: TensorFlowFloatingPoint>(
     delta: Scalar,
     reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = { $0.sum() }
 ) -> Tensor<Scalar> {
-
     let error = expected - predicted
     let absError = abs(error)
     let quadratic = min(absError, delta)
