@@ -290,3 +290,31 @@ public func sigmoidCrossEntropy<Scalar: TensorFlowFloatingPoint>(
     let negAbsLogits = max(logits, -logits) // Custom `abs` to compute gradients at `0`.
     return reduction(maxLogitsWithZero - logits * labels + log1p(exp(-negAbsLogits)))
 }
+
+/// Returns the Huber loss between predictions and expectations.
+///
+/// For each value x in error = exprected - predicted
+///     loss = 0.5 * x^2                 if |x| <= ∂
+///     loss = 0.5 * ∂^2 + ∂ * (|x| - ∂) if |x| > ∂
+/// See: https://en.wikipedia.org/wiki/Huber_loss
+///
+/// - Parameters:
+///   - predicted: Predicted outputs from a neural network.
+///   - expected: Expected values, i.e. targets, that correspond to the correct output.
+///   - delta: A floating point scalar, the point where the Huber loss function changes from a
+///     quadratic to linear. 
+///   - reduction: Reduction to apply on the computed element-wise loss values.
+@differentiable(wrt: predicted)
+public func huberLoss<Scalar: TensorFlowFloatingPoint>(
+    predicted: Tensor<Scalar>,
+    expected: Tensor<Scalar>,
+    delta: Scalar,
+    reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = { $0.sum() }
+) -> Tensor<Scalar> {
+
+    let error = expected - predicted
+    let absError = abs(error)
+    let quadratic = min(absError, delta)
+    let linear = absError - quadratic
+    return reduction((0.5 * quadratic * quadratic) + (delta * linear))
+}
