@@ -13,15 +13,14 @@
 // limitations under the License.
 
 import CTensorFlow
-import Foundation
 
 /// A TensorFlow checkpoint file reader.
 public class TensorFlowCheckpointReader {
     internal let status: OpaquePointer
     internal let handle: OpaquePointer
 
-    /// The URL of the checkpoint file.
-    public let checkpointPath: URL
+    /// The path to the checkpoint file.
+    public let checkpointPath: String
 
     /// The number of tensors stored in the checkpoint.
     public var tensorCount: Int { Int(TF_CheckpointReaderSize(handle)) }
@@ -36,8 +35,8 @@ public class TensorFlowCheckpointReader {
     /// Creates a new TensorFlow checkpoint reader.
     ///
     /// - Arguments:
-    ///   - checkpointPath: URL of the checkpoint file.
-    public init(checkpointPath: URL) {
+    ///   - checkpointPath: Path to the checkpoint file.
+    public init(checkpointPath: String) {
         self.status = TF_NewStatus()
         self.handle = TF_NewCheckpointReader(checkpointPath.path, status)
         checkOk(status)
@@ -45,6 +44,7 @@ public class TensorFlowCheckpointReader {
     }
 
     deinit {
+        TF_DeleteStatus(status)
         TF_DeleteCheckpointReader(handle)
     }
 
