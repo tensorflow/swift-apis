@@ -225,13 +225,11 @@ final class LossTests: XCTestCase {
 
         // test huber(x, x) = 0
         let loss1 = huberLoss(predicted: predictions, expected: predictions, delta: Float(1))
-        XCTAssertTrue(loss1.isAlmostEqual(to: Tensor(0), tolerance: 0.001), "Huber Loss all correct")
+        assertEqual(loss1, Tensor(0), accuracy: 1e-6)
 
-        // test huber(p, t) = 0.62500006 computed from tf.keras.losses.Huber
+        // test huber(p, t) = 0.62500006 computed from tf.keras.losses.Huber(delta=1)
         let loss2 = huberLoss(predicted: predictions, expected: targets, delta: Float(1))
-        XCTAssertTrue(
-            loss2.isAlmostEqual(to: Tensor(0.62500006), tolerance: 0.001), 
-            "Huber Loss unweighted")
+        assertEqual(loss2, Tensor(0.62500006), accuracy: 1e-6)
     }
 
     static var allTests = [
