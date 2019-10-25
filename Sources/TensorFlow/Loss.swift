@@ -293,10 +293,10 @@ public func sigmoidCrossEntropy<Scalar: TensorFlowFloatingPoint>(
 
 /// Returns the Huber loss between predictions and expectations.
 ///
-/// For each value x in error = exprected - predicted
-///     loss = 0.5 * x^2                 if |x| <= ∂
-///     loss = 0.5 * ∂^2 + ∂ * (|x| - ∂) if |x| > ∂
-/// See: https://en.wikipedia.org/wiki/Huber_loss
+/// For each value `x` in the difference `exprected - predicted`, the loss equals `0.5 * x^2` if
+/// `abs(x) <= δ`, or `0.5 * δ^2 + δ * (|x| - δ)` otherwise.
+///
+/// - Source: [Wikipedia article](https://en.wikipedia.org/wiki/Huber_loss).
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
