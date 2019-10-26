@@ -227,7 +227,22 @@ final class LossTests: XCTestCase {
         let loss1 = huberLoss(predicted: predictions, expected: predictions, delta: Float(1))
         assertEqual(loss1, Tensor(0), accuracy: 1e-6)
 
-        // test huber(p, t) = 0.62500006 computed from tf.keras.losses.Huber(delta=1)
+        // test huber(p, t) = 0.62500006. This value was computed using the following python code
+        //       import tensorflow as tf
+        //       predicted = tf.constant(
+        //           [[0.9, 0.2, 0.2], 
+        //           [0.8, 0.4, 0.6]],
+        //           dtype=tf.float32
+        //       )
+        //       expected = tf.constant(
+        //           [[1, 0, 1], 
+        //           [1, 0, 0]],
+        //           dtype=tf.float32
+        //       )
+        //       loss_fn = tf.keras.losses.Huber(delta=1.0, reduction=tf.keras.losses.Reduction.SUM)
+        //       loss_value = loss_fn(expected, predicted)
+        //       print(loss_value)
+        //       -> tf.Tensor(0.62500006, shape=(), dtype=float32)
         let loss2 = huberLoss(predicted: predictions, expected: targets, delta: Float(1))
         assertEqual(loss2, Tensor(0.62500006), accuracy: 1e-6)
     }
