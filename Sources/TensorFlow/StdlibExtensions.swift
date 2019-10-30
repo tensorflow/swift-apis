@@ -105,7 +105,9 @@ extension Array: ElementaryFunctions where Element: ElementaryFunctions {
 
 // MARK: - Array derivative extensions
 
-extension Array.DifferentiableView: ElementaryFunctions where Element: ElementaryFunctions {
+extension Array.DifferentiableView: ElementaryFunctions
+    where Element: Differentiable & ElementaryFunctions
+{
     /// The square root of `x`.
     ///
     /// For real types, if `x` is negative the result is `.nan`. For complex
@@ -192,7 +194,9 @@ extension Array.DifferentiableView: ElementaryFunctions where Element: Elementar
 }
 
 extension Array.DifferentiableView
-    : MutableCollection, RandomAccessCollection, RangeReplaceableCollection {
+    : MutableCollection, RandomAccessCollection, RangeReplaceableCollection
+    where Element: Differentiable
+{
     public typealias Element = Array<Element>.Element
     public typealias Index = Array<Element>.Index
     public typealias Indices = Array<Element>.Indices
@@ -214,7 +218,9 @@ extension Array.DifferentiableView
     public init() { self.init(.init()) }
 }
 
-extension Array.DifferentiableView: VectorProtocol where Element: VectorProtocol {
+extension Array.DifferentiableView: VectorProtocol
+    where Element: Differentiable & VectorProtocol
+{
     public typealias VectorSpaceScalar = Element.VectorSpaceScalar
 
     public func adding(_ x: Element.VectorSpaceScalar) -> Array<Element>.DifferentiableView {
@@ -249,7 +255,8 @@ extension Array.DifferentiableView: VectorProtocol where Element: VectorProtocol
 }
 
 extension Array.DifferentiableView: PointwiseMultiplicative
-    where Element: PointwiseMultiplicative {
+    where Element: Differentiable & PointwiseMultiplicative
+{
     // FIXME: `one` should probably be removed from the protocol. `Array` cannot represent `one`.
     public static var one: Self {
         fatalError("One is not array-representable")
