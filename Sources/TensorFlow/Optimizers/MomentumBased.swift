@@ -376,3 +376,85 @@ public class AMSGrad<Model: Differentiable & KeyPathIterable>: Optimizer
         model.move(along: -stepSize * firstMoments ./ denominator)
     }
 }
+
+/// RAdam Optimizer
+/// 
+/// Recitified Adam optimizer, a variant of Adam that introduces a term to rectify
+/// variance of adaptive learning rate
+/// 
+/// Reference: ["On the Variance of the Adaptive Learning Rate and Beyond"]
+/// https://arxiv.org/pdf/1908.03265.pdf
+public class RAdam<Model: Differentiable>: Optimizer
+    where Model.TangentVector: VectorProtocol & PointwiseMultiplicative & 
+                               ElementaryFunctions & KeyPathIterable,
+          Model.TangentVector.VectorSpaceScalar == Float {
+    public typealias Model = Model
+    /// The learning rate.
+    public var learningRate: Float
+    /// A coefficient used to calculate the first and second moments of the gradients.
+    public var beta1: Float
+    /// A coefficient used to calculate the first and second moments of the gradients.
+    public var beta2: Float
+    /// A small scalar added to the denominator to improve numerical stability.
+    public var epsilon: Float
+    /// The learning rate decay.
+    public var decay: Float
+    /// The current step.
+    public var step: Int = 0
+    /// The first moments of the weights.
+    public var firstMoments: Model.TangentVector = .zero
+    /// The second moments of the weights.
+    public var secondMoments: Model.TangentVector = .zero
+
+    public var firstMoments_h: Model.TangentVector = .zero
+    
+    public var secondMoments_h: Model.TangentVector = .zero
+
+    public init(
+        for model: __shared Model,
+        learningRate: Float = 1e-3,
+        beta1: Float = 0.9,
+        beta2: Float = 0.999,
+        epsilon: Float = 1e-8,
+        decay: Float = 0
+    ) {
+        precondition(learningRate >= 0, "Learning rate must be non-negative")
+        precondition(0 <= beta1 && beta1 <= 1, "Beta parameter must be between 0 and 1")
+        precondition(0 <= beta2 && beta2 <= 1, "Beta parameter must be between 0 and 1")
+        precondition(decay >= 0, "Learning rate decay must be non-negative")
+
+        self.learningRate = learningRate
+        self.beta1 = beta1
+        self.beta2 = beta2
+        self.epsilon = epsilon
+        self.decay = decay
+    }
+
+    public func update(_ model: inout Model, along direction: Model.TangentVector) {
+        step += 1
+        let step = Float(self.step)
+        let beta1Power = pow(beta1, step)
+        let beta2Power = pow(beta2, step)
+        let stepSize = self.learningRate * step / (1 - beta1Power)
+        secondMoments = beta2 * secondMoments + direction .* direction * (1 - beta2)
+        firstMoments = beta1 * firstMoments + direction * (1 - beta1)
+        
+        // Compute maximum length SMA, bias-corrected moving average and approximate length 
+        // SMA
+        let N_sma_inf =  2 / (1 - beta2) - 1
+        let N_sma_t = N_sma_inf - 2*step*beta2Power / (1 - beta2Power)
+        firstMoments_h = firstMoments
+
+        if N_sma_t > 4 {
+            // Comppute Bias corrected second moments, rectification and
+            // adapted momentum
+            secondMoments_h = Model.TangentVector.sqrt(secondMoments)
+            let r = sqrt((N_sma_t-4)*(N_sma_t-2)*N_sma_inf/((N_sma_inf-4)*(N_sma_inf-2)*(N_sma_t)))
+            model.move(along: -stepSize*sqrt(1 - beta2Power)*firstMoments_h*r./secondMoments_h)
+        } 
+        else {
+            // Update with un-adapted momentum
+            model.move(along: -stepSize*firstMoments_h)
+        }
+    }
+}
