@@ -193,10 +193,14 @@ extension Array.DifferentiableView: ElementaryFunctions
     public static func root(_ x: Self, _ n: Int) -> Self { .init(Array.root(x.base, n)) }
 }
 
-extension Array.DifferentiableView
-    : MutableCollection, RandomAccessCollection, RangeReplaceableCollection
-    where Element: Differentiable
-{
+extension Array.DifferentiableView:
+    BidirectionalCollection,
+    Collection,
+    MutableCollection,
+    RandomAccessCollection,
+    RangeReplaceableCollection,
+    Sequence
+where Element: Differentiable {
     public typealias Element = Array<Element>.Element
     public typealias Index = Array<Element>.Index
     public typealias Indices = Array<Element>.Indices
