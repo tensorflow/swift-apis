@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import Tensor
+
 /// An input to a recurrent neural network.
 public struct RNNCellInput<Input: Differentiable, State: Differentiable>: Differentiable {
     /// The input at the current time step.
