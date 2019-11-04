@@ -87,5 +87,3 @@ public extension Dense {
             activation: activation)
     }
 }
-
-

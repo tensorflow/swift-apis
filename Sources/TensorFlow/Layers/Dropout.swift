@@ -78,5 +78,3 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
         }
     }
 }
-
-
