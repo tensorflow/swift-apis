@@ -12,22 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// A layer that encloses a custom differentiable function.
-public struct Function<Input: Differentiable, Output: Differentiable>: ParameterlessLayer {
-    public typealias Body = @differentiable (Input) -> Output
-
-    @noDerivative public let body: Body
-
-    public init(_ body: @escaping Body) {
-        self.body = body
-    }
-
-    @differentiable
-    public func callAsFunction(_ input: Input) -> Output {
-        body(input)
-    }
-}
-
 /// A flatten layer.
 ///
 /// A flatten layer flattens the input when applied without affecting the batch size.
@@ -82,3 +66,18 @@ public struct Reshape<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     }
 }
 
+/// A layer that encloses a custom differentiable function.
+public struct Function<Input: Differentiable, Output: Differentiable>: ParameterlessLayer {
+    public typealias Body = @differentiable (Input) -> Output
+
+    @noDerivative public let body: Body
+
+    public init(_ body: @escaping Body) {
+        self.body = body
+    }
+
+    @differentiable
+    public func callAsFunction(_ input: Input) -> Output {
+        body(input)
+    }
+}
