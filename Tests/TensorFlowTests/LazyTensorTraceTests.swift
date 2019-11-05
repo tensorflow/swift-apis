@@ -204,7 +204,7 @@ final class LazyTensorTraceTests: LazyTensorTestCase {
         func elseBranch(x: Tensor<Float>) -> Tensor<Float> {
             return x - 9.0
         }
-        let c: Tensor<Float> = Raw.if_(
+        let c: Tensor<Float> = _Raw.if_(
             cond: Tensor<Bool>(false),
             Tensor<Float>(20.0),
             thenBranch: thenBranch,

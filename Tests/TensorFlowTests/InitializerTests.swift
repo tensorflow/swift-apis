@@ -103,10 +103,10 @@ final class InitializerTests: XCTestCase {
             // Check orthogonality by computing the inner product.
             t = t.reshaped(to: [t.shape.dimensions.dropLast().reduce(1, *), t.shape[t.rank - 1]])
             if t.shape[0] > t.shape[1] {
-                let eye = Raw.diag(diagonal: Tensor<Float>(ones: [t.shape[1]]))
+                let eye = _Raw.diag(diagonal: Tensor<Float>(ones: [t.shape[1]]))
                 assertEqual(eye, matmul(t.transposed(), t), accuracy: 1e-5)
             } else {
-                let eye = Raw.diag(diagonal: Tensor<Float>(ones: [t.shape[0]]))
+                let eye = _Raw.diag(diagonal: Tensor<Float>(ones: [t.shape[0]]))
                 assertEqual(eye, matmul(t, t.transposed()), accuracy: 1e-5)
             }
         }
