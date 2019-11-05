@@ -21,8 +21,9 @@ func makeOp(_ name: String, _ nOutputs: Int) -> TFTensorOperation {
     _ExecutionContext.makeOp(name, nOutputs)
 }
 
-@available(*, deprecated, renamed: "_Raw",
-           message: "Raw has been renamed to _Raw to indicate it is not a guaranteed / stable API.")
+@available(*, deprecated, renamed: "_Raw", message: """
+  'Raw' has been renamed to '_Raw' to indicate that it is not a guaranteed/stable API.
+  """)
 public typealias Raw = _Raw
 
 public enum _Raw {
