@@ -18,6 +18,8 @@ import Darwin
 import Glibc
 #endif
 
+import Tensor
+
 /// A value that indicates the phase of using a machine learning model.
 public enum LearningPhase {
     case training

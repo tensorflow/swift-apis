@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import Tensor
+
 public extension Tensor {
     /// Creates a tensor with the specified shape and a single, repeated scalar value.
     ///
