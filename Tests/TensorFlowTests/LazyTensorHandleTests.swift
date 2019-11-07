@@ -138,11 +138,11 @@ final class LazyTensorHandleTests: XCTestCase {
         let elements2: Tensor<Int32> = [10, 11, 12]
         let outputTypes = [Int32.tensorFlowDataType, Int32.tensorFlowDataType]
         let outputShapes: [TensorShape?] = [nil, nil]
-        let dataset: VariantHandle = Raw.tensorSliceDataset(
+        let dataset: VariantHandle = _Raw.tensorSliceDataset(
             components: [elements1, elements2],
             outputShapes: outputShapes
         )
-        let iterator: ResourceHandle = Raw.iteratorV2(sharedName: "blah",
+        let iterator: ResourceHandle = _Raw.iteratorV2(sharedName: "blah",
             container: "earth", outputTypes: outputTypes, outputShapes: outputShapes
         )
         checkConversions(dataset)

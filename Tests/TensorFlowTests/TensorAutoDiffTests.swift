@@ -19,7 +19,7 @@ let cube: @differentiable (Tensor<Float>) -> Tensor<Float> = { ($0 * $0 * $0) }
 
 @differentiable(vjp: vjpFoo)
 func foo(_ x: Tensor<Float>) -> Tensor<Float> {
-    return Raw.identity(x)
+    return _Raw.identity(x)
 }
 func vjpFoo(_ x: Tensor<Float>) -> (Tensor<Float>, (Tensor<Float>) -> Tensor<Float>) {
     return (foo(x), { v in v })
@@ -325,10 +325,10 @@ final class TensorAutoDiffTests: XCTestCase {
         let transposed = Tensor<Float>(ones: [3, 2])
         let transposedPullback = pullback(at: input) { (a: Tensor<Float>) in a.transposed() }
         let transposedPermutationsPullback = pullback(at: input) { (a: Tensor<Float>) in
-            a.transposed(withPermutations: [1, 0])
+            a.transposed(permutation: [1, 0])
         }
         let transposedVariadicsPullback = pullback(at: input) { (a: Tensor<Float>) in
-            a.transposed(withPermutations: 1, 0)
+            a.transposed(permutation: 1, 0)
         }
 
         XCTAssertEqual(input, transposedPullback(transposed))
