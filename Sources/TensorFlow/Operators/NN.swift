@@ -90,6 +90,8 @@ public func conv2D<Scalar: TensorFlowFloatingPoint>(
     padding: Padding = .valid,
     dilations: (Int, Int, Int, Int) = (1, 1, 1, 1)
 ) -> Tensor<Scalar> {
+    precondition(input.shape.rank == 4, "The input must have rank 4.")
+    precondition(filter.shape.rank == 4, "The filter must have rank 4.")
     return _Raw.conv2D(
         input,
         filter: filter,
@@ -211,6 +213,8 @@ public func conv3D<Scalar: TensorFlowFloatingPoint>(
     strides: (Int, Int, Int, Int, Int) = (1, 1, 1, 1, 1),
     padding: Padding = .valid
 ) -> Tensor<Scalar> {
+    precondition(input.shape.rank == 5, "The input must have rank 5.")
+    precondition(filter.shape.rank == 5, "The filter must have rank 5.")
     return _Raw.conv3D(
         input,
         filter: filter,
@@ -324,6 +328,8 @@ public func depthwiseConv2D<Scalar: TensorFlowFloatingPoint>(
     strides: (Int, Int, Int, Int),
     padding: Padding
 ) -> Tensor<Scalar> {
+    precondition(input.shape.rank == 4, "The input must have rank 4.")
+    precondition(filter.shape.rank == 4, "The filter must have rank 4.")
     return _Raw.depthwiseConv2dNative(
         input,
         filter: filter,
