@@ -92,7 +92,7 @@ public func conv2D<Scalar: TensorFlowFloatingPoint>(
 ) -> Tensor<Scalar> {
     precondition(input.shape.rank == 4, "The input must have rank 4.")
     precondition(filter.shape.rank == 4, "The filter must have rank 4.")
-    return Raw.conv2D(
+    return _Raw.conv2D(
         input,
         filter: filter,
         strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2), Int32(strides.3)],
