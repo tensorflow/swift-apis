@@ -47,15 +47,27 @@ extension LazyTensorOperation {
         let status = TF_NewStatus()
         defer { TF_DeleteStatus(status) }
 
-        let inputShapes: [TensorShape] = inputs.lazy.flatMap { (input: Input) -> [TensorShape] in
+        /// Returns shape only if it has already been computed.
+        func shape(for handle: LazyTensorHandle) -> TensorShape? {
+            switch handle.handle {
+            case .symbolic(let op, let index, _): return op.outputShapes[index]
+            case .concrete(let tfeHandle, _): return tfeHandle.shape
+            }
+        }
+
+        let inputShapes: [TensorShape?] = inputs.lazy.flatMap { (input) -> [TensorShape?] in
             switch input {
-            case .single(let handle): return [handle.shape]
-            case .list(let values): return values.lazy.map { $0.shape }
+            case .single(let handle): return [shape(for: handle)]
+            case .list(let values): return values.lazy.map { shape(for: $0) }
             }
         }
         let inputShapeList = TF_NewShapeAndTypeList(/*num_shapes*/ Int32(inputShapes.count))
         defer { TF_DeleteShapeAndTypeList(inputShapeList) }
         for (i, shape) in inputShapes.enumerated() {
+            guard let shape = shape else {
+                TF_ShapeAndTypeListSetUnknownShape(inputShapeList, Int32(i))
+                continue
+            }
             let int64_dimensions = shape.dimensions.map { Int64($0) }
             int64_dimensions.withUnsafeBufferPointer { buffer in
                 TF_ShapeAndTypeListSetShape(

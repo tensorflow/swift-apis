@@ -19,7 +19,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libicu-dev \
         libncurses5-dev \
         libxml2 \
-        libblocksruntime-dev
+        libblocksruntime-dev \
+        python3 \
+        python3-pip \
+        python3-setuptools \
+        python3-dev
+
+RUN pip3 install psutil junit-xml
 
 # Download and extract S4TF
 WORKDIR /swift-tensorflow-toolchain
@@ -46,6 +52,9 @@ RUN rm /swift-tensorflow-toolchain/usr/lib/swift/linux/x86_64/TensorFlow.swiftdo
 RUN rm /swift-tensorflow-toolchain/usr/lib/swift/linux/x86_64/TensorFlow.swiftmodule
 RUN rm /swift-tensorflow-toolchain/usr/lib/swift/linux/libswiftTensorFlow.so
 
+# Benchmark compile times
+RUN python3 Tools/benchmark_compile.py /swift-tensorflow-toolchain/usr/bin/swift benchmark_results.xml
+
 # Run SwiftPM tests
 RUN /swift-tensorflow-toolchain/usr/bin/swift test
 
@@ -53,16 +62,22 @@ RUN /swift-tensorflow-toolchain/usr/bin/swift test
 # TODO: Unify this with testing. (currently there is a demangling bug).
 RUN /swift-tensorflow-toolchain/usr/bin/swift build -Xswiftc -module-link-name -Xswiftc TensorFlow
 RUN cp /swift-apis/.build/debug/TensorFlow.swiftmodule /swift-tensorflow-toolchain/usr/lib/swift/linux/x86_64/
+RUN cp /swift-apis/.build/debug/Tensor.swiftmodule /swift-tensorflow-toolchain/usr/lib/swift/linux/x86_64/
 RUN cp /swift-apis/.build/debug/libTensorFlow.so /swift-tensorflow-toolchain/usr/lib/swift/linux/
+RUN cp /swift-apis/.build/debug/libTensor.so /swift-tensorflow-toolchain/usr/lib/swift/linux/
 
 WORKDIR /
 RUN git clone https://github.com/tensorflow/swift-models.git
 RUN git clone https://github.com/fastai/fastai_dev.git
+RUN git clone https://github.com/deepmind/open_spiel.git
 
 WORKDIR /swift-models
 
 RUN /swift-tensorflow-toolchain/usr/bin/swift build
 
-WORKDIR /fastai_dev/swift/FastaiNotebook_08_data_block
+WORKDIR /fastai_dev/swift/FastaiNotebook_11_imagenette
 
 RUN /swift-tensorflow-toolchain/usr/bin/swift build
+
+WORKDIR /open_spiel
+RUN /swift-tensorflow-toolchain/usr/bin/swift test

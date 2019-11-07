@@ -26,25 +26,25 @@ final class DatasetTests: XCTestCase {
         let elements2: Tensor<Int32> = [10, 11, 12]
         let outputTypes = [Int32.tensorFlowDataType, Int32.tensorFlowDataType]
         let outputShapes: [TensorShape?] = [nil, nil]
-        let dataset: VariantHandle = Raw.tensorSliceDataset(
+        let dataset: VariantHandle = _Raw.tensorSliceDataset(
             components: [elements1, elements2],
             outputShapes: outputShapes
         )
-        let iterator: ResourceHandle = Raw.iteratorV2(sharedName: "blah",
+        let iterator: ResourceHandle = _Raw.iteratorV2(sharedName: "blah",
             container: "earth", outputTypes: outputTypes, outputShapes: outputShapes
         )
-        Raw.makeIterator(dataset: dataset, iterator: iterator)
-        var next: SimpleOutput = Raw.iteratorGetNext(
+        _Raw.makeIterator(dataset: dataset, iterator: iterator)
+        var next: SimpleOutput = _Raw.iteratorGetNext(
             iterator: iterator, outputShapes: outputShapes
         )
         XCTAssertEqual(Tensor(handle: next.a).scalarized(), 0)
         XCTAssertEqual(Tensor(handle: next.b).scalarized(), 10)
-        next = Raw.iteratorGetNext(
+        next = _Raw.iteratorGetNext(
             iterator: iterator, outputShapes: outputShapes
         )
         XCTAssertEqual(Tensor(handle: next.a).scalarized(), 1)
         XCTAssertEqual(Tensor(handle: next.b).scalarized(), 11)
-        next = Raw.iteratorGetNext(
+        next = _Raw.iteratorGetNext(
             iterator: iterator, outputShapes: outputShapes
         )
         XCTAssertEqual(Tensor(handle: next.a).scalarized(), 2)

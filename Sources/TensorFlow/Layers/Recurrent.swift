@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#if !COMPILING_TENSORFLOW_STDLIB_MODULE
+import Tensor
+#endif
+
 /// An input to a recurrent neural network.
 public struct RNNCellInput<Input: Differentiable, State: Differentiable>: Differentiable {
     /// The input at the current time step.
@@ -26,6 +30,9 @@ public struct RNNCellInput<Input: Differentiable, State: Differentiable>: Differ
     }
 }
 
+extension RNNCellInput: EuclideanDifferentiable
+    where Input: EuclideanDifferentiable, State: EuclideanDifferentiable {}
+
 /// An output to a recurrent neural network.
 public struct RNNCellOutput<Output: Differentiable, State: Differentiable>: Differentiable {
     /// The output at the current time step.
@@ -39,6 +46,9 @@ public struct RNNCellOutput<Output: Differentiable, State: Differentiable>: Diff
         self.state = state
     }
 }
+
+extension RNNCellOutput: EuclideanDifferentiable
+    where Output: EuclideanDifferentiable, State: EuclideanDifferentiable {}
 
 /// A recurrent neural network cell.
 public protocol RNNCell: Layer
