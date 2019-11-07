@@ -431,6 +431,26 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
             seed: Tensor<Int32>([seed.graph, seed.op]))
         self = standardDeviation * sample + mean
     }
+
+    /// Creates a tensor with the specified shape, randomly sampling scalar values from a truncated
+    /// Normal distribution.
+    ///
+    /// - Parameters:
+    ///   - shape: The dimensions of the tensor.
+    ///   - mean: The mean of the distribution.
+    ///   - standardDeviation: The standard deviation of the distribution.
+    ///   - seed: The seed value.
+    init(
+        randomTruncatedNormal shape: TensorShape,
+        mean: Tensor<Scalar> = Tensor<Scalar>(0),
+        standardDeviation: Tensor<Scalar> = Tensor<Scalar>(1),
+        seed: TensorFlowSeed = TensorFlow.Context.local.randomSeed
+    ) {
+        let sample: Tensor<Scalar> = Raw.statelessTruncatedNormal(
+            shape: Tensor<Int32>((0..<shape.rank).map { Int32(shape[$0]) }),
+            seed: Tensor<Int32>([seed.graph, seed.op]))
+        self = standardDeviation * sample + mean
+    }
 }
 
 // TODO: Can become fileprivate after the 0.4 release.
