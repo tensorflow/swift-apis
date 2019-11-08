@@ -72,6 +72,35 @@ public extension Padding {
     }
 }
 
+/// Returns a 1-D convolution with the specified input, filter, stride, and padding.
+///
+/// - Parameters:
+///   - input: The input.
+///   - filter: The convolution filter.
+///   - stride: The stride of the sliding filter.
+///   - padding: The padding for the operation
+///   - dilation: The dilation factor.
+/// - Precondition: `input` must have rank `3`.
+/// - Precondition: `filter` must have rank 3.
+@differentiable(wrt: (input, filter))
+public func conv1D<Scalar: TensorFlowFloatingPoint>(
+    _ input: Tensor<Scalar>,
+    filter: Tensor<Scalar>,
+    stride: Int = 1,
+    padding: Padding = .valid,
+    dilation: Int = 1
+) -> Tensor<Scalar> {
+    precondition(input.shape.rank == 3, "The input must have rank 3.")
+    precondition(filter.shape.rank == 3, "The filter must have rank 3.")
+    return conv2D(
+        input.expandingShape(at: 1),
+        filter: filter.expandingShape(at: 0),
+        strides: (1, 1, stride, 1),
+        padding: padding,
+        dilations: (1, 1, dilation, 1)
+    ).squeezingShape(at: 1)
+}
+
 /// Returns a 2-D convolution with the specified input, filter, strides, and padding.
 ///
 /// - Parameters:
