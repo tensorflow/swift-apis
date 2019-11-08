@@ -19,7 +19,7 @@ let cube: @differentiable (Tensor<Float>) -> Tensor<Float> = { ($0 * $0 * $0) }
 
 @differentiable(vjp: vjpFoo)
 func foo(_ x: Tensor<Float>) -> Tensor<Float> {
-    return Raw.identity(x)
+    return _Raw.identity(x)
 }
 func vjpFoo(_ x: Tensor<Float>) -> (Tensor<Float>, (Tensor<Float>) -> Tensor<Float>) {
     return (foo(x), { v in v })
@@ -46,7 +46,7 @@ final class TensorAutoDiffTests: XCTestCase {
         func negate<T : TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
             return (1 - x).sum()
         }
-        XCTAssertEqual(gradient(at: Tensor([0.1, 0.2, 0.3]), in: negate), Tensor(-1))
+        XCTAssertEqual(gradient(at: Tensor([0.1, 0.2, 0.3]), in: negate), Tensor([-1, -1, -1]))
     }
 
     func testScalarized() {
@@ -54,6 +54,27 @@ final class TensorAutoDiffTests: XCTestCase {
             logSoftmax(x).mean().scalarized()
         }
         XCTAssertEqual(grad, Tensor([0.23105857, -0.2310586]))
+    }
+
+    func testScalars() {
+        let grad = gradient(at: Tensor<Float>([3, 4])) { x in
+            x.scalars.differentiableReduce(0, { $0 + $1 })
+        }
+        XCTAssertEqual(grad, Tensor([1, 1]))
+    }
+
+    func testInitFromScalars() {
+        let grad = gradient(at: [3.0, 4.0]) { x in
+            Tensor(x).sum()
+        }
+        XCTAssertEqual(grad, Array<Double>.TangentVector([1, 1]))
+    }
+
+    func testInitFromScalarsWithShape() {
+        let grad = gradient(at: [3.0, 4.0]) { x in
+            Tensor(shape: [1, 2, 1, 1], scalars: x).sum()
+        }
+        XCTAssertEqual(grad, Array<Double>.TangentVector([1, 1]))
     }
 
     func testPlus() {
@@ -153,18 +174,90 @@ final class TensorAutoDiffTests: XCTestCase {
         XCTAssertEqual(varianceGradAlongAxes(input), expected)
     }
 
-    // TODO: Uncomment once TF-653 is resolved.
-    // func testTensorInitStacking() {
-    //     let a1 = Tensor<Float>([1, 2, 3, 4, 5])
-    //     let b1 = Tensor<Float>([6, 7, 8, 9, 10])
-    //     let a2 = Tensor<Float>([1, 1, 1, 1, 1])
-    //     let b2 = Tensor<Float>([1, 1, 1, 1, 1])
-    //     let grads = gradient(at: a2, b2) { a, b in
-    //         Tensor<Float>(stacking: [a1 * a, b1 * b], alongAxis: -1).sum()
-    //     }
-    //     XCTAssertEqual(a1, grads.0)
-    //     XCTAssertEqual(b1, grads.1)
-    // }
+    func testMin() {
+        // The expected gradient values were computed using the following TensorFlow 2.0 Beta1
+        // Python code with respective `a` and `b` tensors:
+        // ```
+        // with tf.GradientTape() as t:
+        //     t.watch([a, b])
+        //     y = tf.math.reduce_sum(tf.minimum(a, b))
+        // print(t.gradient(y, [a, b]))
+        // ```
+        do {
+            let a = Tensor<Float>([4, 5, 3])
+            let b = Tensor<Float>([4, 2, 6])
+            let computedGradient1 = gradient(at: a, b) { a, b in min(a, b).sum() }
+            let expectedGradient1: (Tensor<Float>, Tensor<Float>) = (
+                [1.0, 0.0, 1.0], [0.0, 1.0, 0.0])
+            XCTAssertEqual(computedGradient1.0, expectedGradient1.0)
+            XCTAssertEqual(computedGradient1.1, expectedGradient1.1)
+
+            let computedGradient2 = gradient(at: a, b) { a, b in min(b, a).sum() }
+            let expectedGradient2: (Tensor<Float>, Tensor<Float>) =  (
+                [0.0, 0.0, 1.0], [1.0, 1.0, 0.0])
+            XCTAssertEqual(computedGradient2.0, expectedGradient2.0)
+            XCTAssertEqual(computedGradient2.1, expectedGradient2.1)
+        }
+
+        do {
+            let a = Tensor<Float>([[3.0, -2.0], [0.3, 10.0]])
+            let b = Tensor<Float>([9.0, -3.0])
+            let computedGradient = gradient(at: a, b) { a, b in min(a, b).sum() }
+            let expectedGradient: (Tensor<Float>, Tensor<Float>) = (
+                [[1.0, 0.0], [1.0, 0.0]], [0.0, 2.0])
+            XCTAssertEqual(computedGradient.0, expectedGradient.0)
+            XCTAssertEqual(computedGradient.1, expectedGradient.1)
+        }
+    }
+
+    func testMax() {
+        // The expected gradient values were computed using the following TensorFlow 2.0 Beta1
+        // Python code with respective `a` and `b` tensors:
+        // ```
+        // with tf.GradientTape() as t:
+        //     t.watch([a, b])
+        //     y = tf.math.reduce_sum(tf.maximum(a, b))
+        // print(t.gradient(y, [a, b]))
+        // ```
+        do {
+            let a = Tensor<Float>([4, 5, 3])
+            let b = Tensor<Float>([4, 2, 6])
+            let computedGradient1 = gradient(at: a, b) { a, b in max(a, b).sum() }
+            let expectedGradient1: (Tensor<Float>, Tensor<Float>) = (
+                [1.0, 1.0, 0.0], [0.0, 0.0, 1.0])
+            XCTAssertEqual(computedGradient1.0, expectedGradient1.0)
+            XCTAssertEqual(computedGradient1.1, expectedGradient1.1)
+
+            let computedGradient2 = gradient(at: a, b) { a, b in max(b, a).sum() }
+            let expectedGradient2: (Tensor<Float>, Tensor<Float>) = (
+                [0.0, 1.0, 0.0],  [1.0, 0.0, 1.0])
+            XCTAssertEqual(computedGradient2.0, expectedGradient2.0)
+            XCTAssertEqual(computedGradient2.1, expectedGradient2.1)
+        }
+        do {
+            let a = Tensor<Float>([[3.0, -2.0], [0.3, 10.0]])
+            let b = Tensor<Float>([9.0, -3.0])
+            let computedGradient = gradient(at: a, b) { a, b in max(a, b).sum() }
+            let expectedGradient: (Tensor<Float>, Tensor<Float>)  = (
+                [[0.0, 1.0], [0.0, 1.0]], [2.0, 0.0])
+            XCTAssertEqual(computedGradient.0, expectedGradient.0)
+            XCTAssertEqual(computedGradient.1, expectedGradient.1)
+        }
+    }
+
+    /*TODO:(https://bugs.swift.org/browse/TF-771): Disabling this case as assertions fail.
+    func testTensorInitStacking() {
+        let a1 = Tensor<Float>([1, 2, 3, 4, 5])
+        let b1 = Tensor<Float>([6, 7, 8, 9, 10])
+        let a2 = Tensor<Float>([1, 1, 1, 1, 1])
+        let b2 = Tensor<Float>([1, 1, 1, 1, 1])
+        let grads = gradient(at: a2, b2) { a, b in
+            Tensor<Float>(stacking: [a1 * a, b1 * b], alongAxis: -1).sum()
+        }
+        XCTAssertEqual(a1, grads.0)
+        XCTAssertEqual(b1, grads.1)
+    }
+    */
 
     func testExpandingShape() {
         func f1(a: Tensor<Float>) -> Tensor<Float> { a.expandingShape(at: 0).squared() }
@@ -232,10 +325,10 @@ final class TensorAutoDiffTests: XCTestCase {
         let transposed = Tensor<Float>(ones: [3, 2])
         let transposedPullback = pullback(at: input) { (a: Tensor<Float>) in a.transposed() }
         let transposedPermutationsPullback = pullback(at: input) { (a: Tensor<Float>) in
-            a.transposed(withPermutations: [1, 0])
+            a.transposed(permutation: [1, 0])
         }
         let transposedVariadicsPullback = pullback(at: input) { (a: Tensor<Float>) in
-            a.transposed(withPermutations: 1, 0)
+            a.transposed(permutation: 1, 0)
         }
 
         XCTAssertEqual(input, transposedPullback(transposed))
@@ -318,7 +411,7 @@ final class TensorAutoDiffTests: XCTestCase {
             [1, 2, 3],
             [1, 2, 3]]
         )
-        let expected: Tensor<Float> = Tensor([[4, 8, 12]])
+        let expected: Tensor<Float> = Tensor([4, 8, 12])
         XCTAssertEqual(expected, pb(inputTensor))
     }
 
@@ -342,7 +435,7 @@ final class TensorAutoDiffTests: XCTestCase {
             foo(tensor: x, other: Tensor([[1, 2, 3], [1, 2, 3], [1, 2, 3]]))
         }
         let inputTensor: Tensor<Float> = Tensor([[[[[[1, 2, 3]]]]]])
-        let expected: Tensor<Float> = Tensor([[1, 2, 3]])
+        let expected: Tensor<Float> = Tensor([1, 2, 3])
 
         XCTAssertEqual(expected, pb(inputTensor))
     }
@@ -437,6 +530,9 @@ final class TensorAutoDiffTests: XCTestCase {
         ("testGenericGrad", testGenericGrad),
         ("testScalarGenericGrad", testScalarGenericGrad),
         ("testScalarized", testScalarized),
+        ("testScalars", testScalars),
+        ("testInitFromScalars", testInitFromScalars),
+        ("testInitFromScalarsWithShape", testInitFromScalarsWithShape),
         ("testPlus", testPlus),
         ("testSubtract", testSubtract),
         ("testMultiply", testMultiply),
@@ -448,7 +544,9 @@ final class TensorAutoDiffTests: XCTestCase {
         ("testSum", testSum),
         ("testMean", testMean),
         ("testVariance", testVariance),
-        // TODO: Uncomment once TF-653 is resolved.
+        ("testMin", testMin),
+        ("testMax", testMax),
+        // TODO(https://bugs.swift.org/browse/TF-771): Disabling the failing test.
         // ("testTensorInitStacking", testTensorInitStacking),
         ("testExpandingShape", testExpandingShape),
         ("testSqueezingShape", testSqueezingShape),

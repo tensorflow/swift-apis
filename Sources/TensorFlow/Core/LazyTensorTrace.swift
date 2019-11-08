@@ -77,10 +77,13 @@ class LazyTensorTraceBuilder {
             inputs: builder.inputs,
             operations: builder.operations,
             outputs: builder.outputs)
-        return MaterializationTraceInfo(
+        let materializationTraceInfo = MaterializationTraceInfo(
             lazyOperations: builder.originalOutputs,
             trace: trace,
             concreteInputs: builder.inputValues)
+        return LazyTensorContext.local.shouldPromoteConstants
+            ? LazyTensorTraceCache.traceWithPromotedConstants(materializationTraceInfo)
+            : materializationTraceInfo
     }
 
     static func materializationTraceInfo(
@@ -235,6 +238,7 @@ class LazyTensorTraceBuilder {
         if let cachedLazyOp = lazyOpsCache[id] {
             return cachedLazyOp
         }
+        lazyOp.maybeMaterializeInputs()
         precondition(
             lazyOp.name != "Placeholder",
             "The operation cannot already be a placeholder.")

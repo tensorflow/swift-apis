@@ -12,7 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import XCTest
 @testable import TensorFlow
+
+class LazyTensorTestCase: XCTestCase {
+    static var shouldPromoteConstants = true
+    override class func setUp() {
+        super.setUp()
+        _ThreadLocalState.useLazyTensor = true
+        shouldPromoteConstants = LazyTensorContext.local.shouldPromoteConstants
+        LazyTensorContext.local.shouldPromoteConstants = false
+    }
+
+    override class func tearDown() {
+        super.tearDown()
+        _ThreadLocalState.useLazyTensor = false
+        LazyTensorContext.local.shouldPromoteConstants = shouldPromoteConstants
+    }
+}
 
 protocol _LazyTensorCompatible {
     /// The underlying `LazyTensorHandle` (if any).

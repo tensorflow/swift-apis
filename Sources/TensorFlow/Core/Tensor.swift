@@ -81,7 +81,7 @@ public extension Tensor {
     var rankTensor: Tensor<Int32> {
         @_semantics("autodiff.nonvarying")
         get {
-            return Raw.rank(self)
+            return _Raw.rank(self)
         }
     }
 
@@ -90,7 +90,7 @@ public extension Tensor {
     var shapeTensor: Tensor<Int32> {
         @_semantics("autodiff.nonvarying")
         get {
-            return Raw.shape(self)
+            return _Raw.shape(self)
         }
     }
 
@@ -99,7 +99,7 @@ public extension Tensor {
     var scalarCountTensor: Tensor<Int32> {
         @_semantics("autodiff.nonvarying")
         get {
-            return Raw.size(self)
+            return _Raw.size(self)
         }
     }
 }
@@ -162,8 +162,18 @@ public extension Tensor {
     }
 
     @inlinable
+    @differentiable(vjp: _vjpScalars where Scalar: TensorFlowFloatingPoint)
     var scalars: [Scalar] {
         return array.scalars
+    }
+}
+
+extension Tensor where Scalar: TensorFlowFloatingPoint {
+    @inlinable
+    func _vjpScalars() -> (value: [Scalar], pullback: (Array<Scalar>.TangentVector) -> Tensor) {
+        (value: scalars, pullback: { [shape = self.shape] v in
+            Tensor(shape: shape, scalars: v.base)
+        })
     }
 }
 
@@ -190,6 +200,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 public extension Tensor {
     /// Creates a 1D tensor from scalars.
     @inlinable
+    @differentiable(vjp: _vjpInit(_:) where Scalar: TensorFlowFloatingPoint)
     init(_ scalars: [Scalar]) {
         self.init(shape: [scalars.count], scalars: scalars)
     }
@@ -216,6 +227,7 @@ public extension Tensor {
     ///   - scalars: The scalar contents of the tensor.
     /// - Precondition: The product of the dimensions of the shape must equal the number of scalars.
     @inlinable
+    @differentiable(vjp: _vjpInit(shape:scalars:) where Scalar: TensorFlowFloatingPoint)
     init(shape: TensorShape, scalars: [Scalar]) {
         precondition(shape.contiguousSize == scalars.count,
             """
@@ -271,6 +283,22 @@ public extension Tensor {
                 }
             })
         self.init(handle: handle)
+    }
+}
+
+extension Tensor where Scalar: TensorFlowFloatingPoint {
+    @inlinable
+    static func _vjpInit(_ scalars: [Scalar]) -> (
+        value: Tensor, pullback: (Tensor) -> Array<Scalar>.TangentVector
+    ) {
+        (value: Tensor(scalars), pullback: { v in Array<Scalar>.TangentVector(v.scalars) })
+    }
+
+    @inlinable
+    static func _vjpInit(shape: TensorShape, scalars: [Scalar]) -> (
+        value: Tensor, pullback: (Tensor) -> Array<Scalar>.TangentVector
+    ) {
+        (value: Tensor(scalars), pullback: { v in Array<Scalar>.TangentVector(v.scalars) })
     }
 }
 
@@ -365,7 +393,7 @@ extension _TensorElementLiteral: ExpressibleByArrayLiteral {
     public typealias ArrayLiteralElement = _TensorElementLiteral<Scalar>
     @inlinable
     public init(arrayLiteral elements: _TensorElementLiteral<Scalar>...) {
-        tensor = Raw.pack(elements.map { $0.tensor })
+        tensor = _Raw.pack(elements.map { $0.tensor })
     }
 }
 
@@ -378,7 +406,7 @@ extension Tensor: ExpressibleByArrayLiteral {
     ///   separate method because `ShapedArray` initializers need to call it.
     @inlinable
     internal init(_tensorElementLiterals elements: [_TensorElementLiteral<Scalar>]) {
-        self = Raw.pack(elements.map { $0.tensor })
+        self = _Raw.pack(elements.map { $0.tensor })
     }
 
     /// Creates a tensor initialized with the given elements.
@@ -396,13 +424,17 @@ extension Tensor: ExpressibleByArrayLiteral {
 extension Tensor: Equatable where Scalar: Equatable {
     @inlinable
     public static func == (lhs: Tensor, rhs: Tensor) -> Bool {
-        // TODO: This is not correct due to broadcasting.
+        guard lhs.shape == rhs.shape else {
+            return false
+        }
         return (lhs .== rhs).all()
     }
 
     @inlinable
     public static func != (lhs: Tensor, rhs: Tensor) -> Bool {
-        // TODO: This is not correct due to broadcasting.
+        guard lhs.shape == rhs.shape else {
+            return true
+        }
         return (lhs .!= rhs).any()
     }
 }
@@ -509,7 +541,7 @@ extension Tensor: AdditiveArithmetic where Scalar: Numeric {
     @inlinable
     @differentiable(vjp: _vjpAdd(lhs:rhs:) where Scalar: TensorFlowFloatingPoint)
     public static func + (lhs: Tensor, rhs: Tensor) -> Tensor {
-        Raw.addV2(lhs, rhs)
+        _Raw.addV2(lhs, rhs)
     }
 
     /// Subtracts one tensor from another and produces their difference.
@@ -517,7 +549,7 @@ extension Tensor: AdditiveArithmetic where Scalar: Numeric {
     @inlinable
     @differentiable(vjp: _vjpSubtract(lhs:rhs:) where Scalar: TensorFlowFloatingPoint)
     public static func - (lhs: Tensor, rhs: Tensor) -> Tensor {
-        Raw.sub(lhs, rhs)
+        _Raw.sub(lhs, rhs)
     }
 }
 
@@ -527,7 +559,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
         (lhs + rhs, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
             let lhsGrad = v
             let rhsGrad = lhsGrad
-            let (lhsAxes, rhsAxes) = Raw.broadcastGradientArgs(s0: lhsShape, s1: rhsShape)
+            let (lhsAxes, rhsAxes) = _Raw.broadcastGradientArgs(s0: lhsShape, s1: rhsShape)
             return (lhsGrad.sum(squeezingAxes: lhsAxes).reshaped(toShape: lhsShape),
                     rhsGrad.sum(squeezingAxes: rhsAxes).reshaped(toShape: rhsShape))
         })
@@ -538,7 +570,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
         (lhs - rhs, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
             let lhsGrad = v
             let rhsGrad = -lhsGrad
-            let (lhsAxes, rhsAxes) = Raw.broadcastGradientArgs(s0: lhsShape, s1: rhsShape)
+            let (lhsAxes, rhsAxes) = _Raw.broadcastGradientArgs(s0: lhsShape, s1: rhsShape)
             return (lhsGrad.sum(squeezingAxes: lhsAxes).reshaped(toShape: lhsShape),
                     rhsGrad.sum(squeezingAxes: rhsAxes).reshaped(toShape: rhsShape))
         })
@@ -569,6 +601,6 @@ extension Tensor: PointwiseMultiplicative where Scalar: Numeric {
 // Differentiable
 //===------------------------------------------------------------------------------------------===//
 
-extension Tensor: Differentiable where Scalar: TensorFlowFloatingPoint {
+extension Tensor: Differentiable & EuclideanDifferentiable where Scalar: TensorFlowFloatingPoint {
     public typealias TangentVector = Tensor
 }

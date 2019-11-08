@@ -16,20 +16,10 @@ import XCTest
 @testable import TensorFlow
 import CTensorFlow
 
-final class LazyTensorTFFunctionBuilderTests : XCTestCase {
-    override class func setUp() {
-        super.setUp()
-        _ThreadLocalState.useLazyTensor = true
-    }
-
-    override class func tearDown() {
-        super.tearDown()
-        _ThreadLocalState.useLazyTensor = false
-    }
-
+final class LazyTensorTFFunctionBuilderTests: LazyTensorTestCase {
     func testSingletonInputs() {
         let a = materializedLazyTensor(Tensor<Float>(10.0))
-        let w = Raw.identity(a)
+        let w = _Raw.identity(a)
         XCTAssertEqual(
             tfFunction(w, "testSingletonInputs")!.description,
             """
@@ -45,7 +35,7 @@ final class LazyTensorTFFunctionBuilderTests : XCTestCase {
     func testListInputs() {
         let a = materializedLazyTensor(Tensor<Float>(10.0))
         let b = materializedLazyTensor(Tensor<Float>(2.0))
-        let w = Raw.addN(inputs: [a, b])
+        let w = _Raw.addN(inputs: [a, b])
         XCTAssertEqual(
             tfFunction(w, "testListInputs")!.description,
             """

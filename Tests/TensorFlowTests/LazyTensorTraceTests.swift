@@ -17,17 +17,7 @@ import XCTest
 @testable import TensorFlow
 import CTensorFlow
 
-final class LazyTensorTraceTests: XCTestCase {
-    override class func setUp() {
-        super.setUp()
-        _ThreadLocalState.useLazyTensor = true
-    }
-
-    override class func tearDown() {
-        super.tearDown()
-        _ThreadLocalState.useLazyTensor = false
-    }
-
+final class LazyTensorTraceTests: LazyTensorTestCase {
     func testSingleLiveTensor() {
         let a = Tensor<Float>(10.0)
         let b = Tensor<Float>(2.0)
@@ -214,7 +204,7 @@ final class LazyTensorTraceTests: XCTestCase {
         func elseBranch(x: Tensor<Float>) -> Tensor<Float> {
             return x - 9.0
         }
-        let c: Tensor<Float> = Raw.if_(
+        let c: Tensor<Float> = _Raw.if_(
             cond: Tensor<Bool>(false),
             Tensor<Float>(20.0),
             thenBranch: thenBranch,

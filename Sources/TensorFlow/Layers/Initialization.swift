@@ -12,11 +12,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#if !COMPILING_TENSORFLOW_STDLIB_MODULE
+import Tensor
+#endif
+
 public typealias ParameterInitializer<Scalar: TensorFlowScalar> = (TensorShape) -> Tensor<Scalar>
 
 /// Returns a function that creates a tensor by initializing all its values to zeros.
 public func zeros<Scalar: TensorFlowFloatingPoint>() -> ParameterInitializer<Scalar> {
     { Tensor(zeros: $0) }
+}
+
+/// Returns a function that creates a tensor by initializing all its values to the provided value.
+public func constantInitializer<Scalar: TensorFlowFloatingPoint>(
+    value: Scalar
+) -> ParameterInitializer<Scalar> {
+    { Tensor(repeating: value, shape: $0) }
+}
+
+/// Returns a function that creates a tensor by initializing it to the provided value. Note that
+/// broadcasting of the provided value is *not* supported.
+public func constantInitializer<Scalar: TensorFlowFloatingPoint>(
+    value: Tensor<Scalar>
+) -> ParameterInitializer<Scalar> {
+    {
+        precondition(
+            value.shape == $0,
+            "The constant tensor shape (\(value.shape)) must match the requested shape \($0).")
+        return value
+    }
 }
 
 /// Returns a function that creates a tensor by performing Glorot uniform initialization for the 
@@ -28,4 +52,28 @@ public func glorotUniform<Scalar: TensorFlowFloatingPoint>(
     seed: TensorFlowSeed = Context.local.randomSeed
 ) -> ParameterInitializer<Scalar> {
     { Tensor<Scalar>(glorotUniform: $0, seed: seed) }
+}
+
+/// Returns a function that creates a tensor by initializing all its values randomly from a
+/// truncated Normal distribution. The generated values follow a Normal distribution with mean
+/// `mean` and standard deviation `standardDeviation`, except that values whose magnitude is more
+/// than two standard deviations from the mean are dropped and resampled.
+///
+/// - Parameters:
+///   - mean: Mean of the Normal distribution.
+///   - standardDeviation: Standard deviation of the Normal distribution.
+///
+///- Returns: A truncated normal parameter initializer function.
+public func truncatedNormalInitializer<Scalar: TensorFlowFloatingPoint>(
+    mean: Tensor<Scalar> = Tensor<Scalar>(0),
+    standardDeviation: Tensor<Scalar> = Tensor<Scalar>(1),
+    seed: TensorFlowSeed = TensorFlow.Context.local.randomSeed
+) -> ParameterInitializer<Scalar> {
+    {
+        Tensor<Scalar>(
+            randomTruncatedNormal: $0,
+            mean: mean,
+            standardDeviation: standardDeviation,
+            seed: seed)
+    }
 }

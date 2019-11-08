@@ -224,7 +224,7 @@ func softmaxCrossEntropyHelper<Scalar: TensorFlowFloatingPoint>(
     logits: Tensor<Scalar>,
     labels: Tensor<Int32>
 ) -> Tensor<Scalar> {
-    Raw.sparseSoftmaxCrossEntropyWithLogits(features: logits, labels: labels).loss
+    _Raw.sparseSoftmaxCrossEntropyWithLogits(features: logits, labels: labels).loss
 }
 
 @inlinable
@@ -232,7 +232,7 @@ func _vjpSoftmaxCrossEntropyHelper<Scalar: TensorFlowFloatingPoint>(
     logits: Tensor<Scalar>,
     labels: Tensor<Int32>
 ) -> (Tensor<Scalar>, (Tensor<Scalar>) -> Tensor<Scalar>) {
-    let (loss, grad) = Raw.sparseSoftmaxCrossEntropyWithLogits(features: logits, labels: labels)
+    let (loss, grad) = _Raw.sparseSoftmaxCrossEntropyWithLogits(features: logits, labels: labels)
     return (loss, { $0.expandingShape(at: -1) * grad })
 }
 
@@ -258,7 +258,7 @@ func softmaxCrossEntropyHelper<Scalar: TensorFlowFloatingPoint>(
     logits: Tensor<Scalar>,
     probabilities: Tensor<Scalar>
 ) -> Tensor<Scalar> {
-    Raw.softmaxCrossEntropyWithLogits(features: logits, labels: probabilities).loss
+    _Raw.softmaxCrossEntropyWithLogits(features: logits, labels: probabilities).loss
 }
 
 @inlinable
@@ -266,7 +266,7 @@ func _vjpSoftmaxCrossEntropyHelper<Scalar: TensorFlowFloatingPoint>(
     logits: Tensor<Scalar>,
     probabilities: Tensor<Scalar>
 ) -> (Tensor<Scalar>, (Tensor<Scalar>) -> Tensor<Scalar>) {
-    let (loss, grad) = Raw.softmaxCrossEntropyWithLogits(features: logits, labels: probabilities)
+    let (loss, grad) = _Raw.softmaxCrossEntropyWithLogits(features: logits, labels: probabilities)
     return (loss, { $0.expandingShape(at: -1) * grad })
 }
 
@@ -287,8 +287,6 @@ public func sigmoidCrossEntropy<Scalar: TensorFlowFloatingPoint>(
 ) -> Tensor<Scalar> {
     // This numerically stable implementation is based on the TensorFlow Python API.
     let maxLogitsWithZero = max(logits, Tensor(0))
-    // Note: `result` is split into two lines to avoid the "compiler is unable to type-check this
-    // expression in reasonable time" error.
-    let result = log(1 + exp(-abs(logits)))
-    return reduction(maxLogitsWithZero - logits * labels + result)
+    let negAbsLogits = max(logits, -logits) // Custom `abs` to compute gradients at `0`.
+    return reduction(maxLogitsWithZero - logits * labels + log1p(exp(-negAbsLogits)))
 }

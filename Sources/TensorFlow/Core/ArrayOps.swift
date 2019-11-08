@@ -14,7 +14,7 @@
 
 import CTensorFlow
 
-public extension Raw {
+public extension _Raw {
     /// Saves tensors in V2 checkpoint format.
     ///
     /// By default, saves the named tensors in full.  If the caller wishes to save specific slices
