@@ -303,8 +303,7 @@ public func sigmoidCrossEntropy<Scalar: TensorFlowFloatingPoint>(
 ///   - predicted: Predicted outputs from a neural network.
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 ///   - delta: A floating point scalar representing the point where the Huber loss function changes
-/// from quadratic to linear.
-///     quadratic to linear. 
+///     from quadratic to linear.
 ///   - reduction: Reduction to apply on the computed element-wise loss values.
 @differentiable(wrt: predicted)
 public func huberLoss<Scalar: TensorFlowFloatingPoint>(
