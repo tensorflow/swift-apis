@@ -78,7 +78,7 @@ public extension Padding {
 ///   - input: The input.
 ///   - filter: The convolution filter.
 ///   - stride: The stride of the sliding filter.
-///   - padding: The padding for the operation
+///   - padding: The padding for the operation.
 ///   - dilation: The dilation factor.
 /// - Precondition: `input` must have rank `3`.
 /// - Precondition: `filter` must have rank 3.
