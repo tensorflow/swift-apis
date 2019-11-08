@@ -216,7 +216,6 @@ final class LossTests: XCTestCase {
             [-0.0625, -0.01490036, 0.04759964, 0.0]])
         assertEqual(computedGradient, expectedGradient, accuracy: 1e-6)
     }
-    
     func testHuberLoss() {
         let predictions = Tensor<Float>([[0.9, 0.2, 0.2], [0.8, 0.4, 0.6]])
         let labels = Tensor<Float>([[1, 0, 1], [1, 0, 0]])

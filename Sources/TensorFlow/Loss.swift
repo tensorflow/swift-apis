@@ -296,14 +296,14 @@ public func sigmoidCrossEntropy<Scalar: TensorFlowFloatingPoint>(
 /// For each value `x` in the difference `expected - predicted`, the loss is:
 /// - `0.5 * x^2` if `abs(x) <= δ`.
 /// - `0.5 * δ^2 + δ * (|x| - δ)` otherwise.
-/// `abs(x) <= δ`, or `0.5 * δ^2 + δ * (|x| - δ)` otherwise.
 ///
 /// - Source: [Wikipedia article](https://en.wikipedia.org/wiki/Huber_loss).
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
-///   - delta: A floating point scalar, the point where the Huber loss function changes from
+///   - delta: A floating point scalar representing the point where the Huber loss function changes
+/// from quadratic to linear.
 ///     quadratic to linear. 
 ///   - reduction: Reduction to apply on the computed element-wise loss values.
 @differentiable(wrt: predicted)
