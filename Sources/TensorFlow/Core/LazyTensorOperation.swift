@@ -180,7 +180,7 @@ class LazyTensorOperation: TensorOperation {
         case list([LazyTensorHandle])
     }
 
-    enum Attribute {
+    enum Attribute: Equatable {
         case boolValue(Bool)
         case intValue(Int)
         case floatValue(Float)
@@ -199,7 +199,7 @@ class LazyTensorOperation: TensorOperation {
         case optionalTensorShapeArray([TensorShape?])
     }
 
-    let name: String
+    var name: String
     let outputCount: Int
     var inputs: [Input]
     var attributes: [String: Attribute]

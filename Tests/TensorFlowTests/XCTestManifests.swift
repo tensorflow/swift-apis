@@ -25,6 +25,8 @@ public func allTests() -> [XCTestCaseEntry] {
         testCase(InitializerTests.allTests),
         testCase(LayerTests.allTests),
         testCase(LazyTensorEvaluationTests.allTests),
+        testCase(LazyTensorTraceTests.allTests),
+        testCase(LazyTensorTraceCacheTests.allTests),
         testCase(LazyTensorExplicitTraceTests.allTests),
         testCase(LazyTensorHandleTests.allTests),
         testCase(LazyTensorOperationTests.allTests),
@@ -33,14 +35,12 @@ public func allTests() -> [XCTestCaseEntry] {
         testCase(LazyTensorTraceTests.allTests),
         testCase(LossTests.allTests),
         testCase(MathOperatorTests.allTests),
-        testCase(PRNGTests.allTests),
         testCase(RuntimeTests.allTests),
         testCase(SequentialTests.allTests),
         testCase(TensorAutoDiffTests.allTests),
         testCase(TensorGroupTests.allTests),
         testCase(TensorTests.allTests),
         testCase(TrivialModelTests.allTests),
-        testCase(UtilitiesTests.allTests),
     ]
 }
 #endif

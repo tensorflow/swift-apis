@@ -12,14 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import XCTest
-
-import TensorFlowTests
-import TensorTests
-import ExperimentalTests
-
-var tests = [XCTestCaseEntry]()
-tests += TensorFlowTests.allTests()
-tests += TensorTests.allTests()
-tests += ExperimentalTests.allTests()
-XCTMain(tests)
+#if !COMPILING_TENSORFLOW_STDLIB_MODULE
+// Re-export all public symbols in the Tensor library.
+@_exported import Tensor
+#endif

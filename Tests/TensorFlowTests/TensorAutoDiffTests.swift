@@ -19,7 +19,7 @@ let cube: @differentiable (Tensor<Float>) -> Tensor<Float> = { ($0 * $0 * $0) }
 
 @differentiable(vjp: vjpFoo)
 func foo(_ x: Tensor<Float>) -> Tensor<Float> {
-    return Raw.identity(x)
+    return _Raw.identity(x)
 }
 func vjpFoo(_ x: Tensor<Float>) -> (Tensor<Float>, (Tensor<Float>) -> Tensor<Float>) {
     return (foo(x), { v in v })
@@ -54,6 +54,27 @@ final class TensorAutoDiffTests: XCTestCase {
             logSoftmax(x).mean().scalarized()
         }
         XCTAssertEqual(grad, Tensor([0.23105857, -0.2310586]))
+    }
+
+    func testScalars() {
+        let grad = gradient(at: Tensor<Float>([3, 4])) { x in
+            x.scalars.differentiableReduce(0, { $0 + $1 })
+        }
+        XCTAssertEqual(grad, Tensor([1, 1]))
+    }
+
+    func testInitFromScalars() {
+        let grad = gradient(at: [3.0, 4.0]) { x in
+            Tensor(x).sum()
+        }
+        XCTAssertEqual(grad, Array<Double>.TangentVector([1, 1]))
+    }
+
+    func testInitFromScalarsWithShape() {
+        let grad = gradient(at: [3.0, 4.0]) { x in
+            Tensor(shape: [1, 2, 1, 1], scalars: x).sum()
+        }
+        XCTAssertEqual(grad, Array<Double>.TangentVector([1, 1]))
     }
 
     func testPlus() {
@@ -304,10 +325,10 @@ final class TensorAutoDiffTests: XCTestCase {
         let transposed = Tensor<Float>(ones: [3, 2])
         let transposedPullback = pullback(at: input) { (a: Tensor<Float>) in a.transposed() }
         let transposedPermutationsPullback = pullback(at: input) { (a: Tensor<Float>) in
-            a.transposed(withPermutations: [1, 0])
+            a.transposed(permutation: [1, 0])
         }
         let transposedVariadicsPullback = pullback(at: input) { (a: Tensor<Float>) in
-            a.transposed(withPermutations: 1, 0)
+            a.transposed(permutation: 1, 0)
         }
 
         XCTAssertEqual(input, transposedPullback(transposed))
@@ -509,6 +530,9 @@ final class TensorAutoDiffTests: XCTestCase {
         ("testGenericGrad", testGenericGrad),
         ("testScalarGenericGrad", testScalarGenericGrad),
         ("testScalarized", testScalarized),
+        ("testScalars", testScalars),
+        ("testInitFromScalars", testInitFromScalars),
+        ("testInitFromScalarsWithShape", testInitFromScalarsWithShape),
         ("testPlus", testPlus),
         ("testSubtract", testSubtract),
         ("testMultiply", testMultiply),

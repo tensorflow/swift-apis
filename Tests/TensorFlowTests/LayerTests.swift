@@ -198,7 +198,56 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(output, expected)
     }
 
-    func testDepthConv2D() {
+    func testConv3DGradient() {
+        let filter = Tensor(shape: [1, 4, 4, 1, 1], scalars: (0..<16).map(Float.init))
+        let bias = Tensor<Float>(ones: [2])
+        let layer = Conv3D(filter: filter,
+                           bias: bias,
+                           activation: identity,
+                           strides: (2, 2, 2),
+                           padding: .same)
+        let input = Tensor(shape: [1, 4, 4, 4, 1], scalars: (0..<64).map(Float.init))
+        let grads = gradient(at: input, layer) { $1($0).sum() }
+        // The expected value of the gradient was computed using the following Python code:
+        // ```
+        // import tensorflow as tf
+        // x = tf.reshape(tf.range(64, dtype=tf.float32), [1, 4, 4, 4, 1])
+        // filter = tf.reshape(tf.range(72, dtype=tf.float32), [1, 4, 4, 1, 1])
+        // bias = tf.ones([2])
+        // with tf.GradientTape() as tape:
+        //     tape.watch([x, filter, bias])
+        //     y = tf.math.reduce_sum(tf.nn.conv3d(input=x,
+        //                                         filters=filter,
+        //                                         strides=[1, 2, 2, 2, 1],
+        //                                         padding="SAME") + bias)
+        // print(tape.gradient(y, [x, filter, bias]))
+        // ```
+        XCTAssertEqual(grads.0,
+                       [[[[[10.0], [20.0], [24.0], [12.0]],
+                          [[20.0], [40.0], [48.0], [24.0]],
+                          [[36.0], [72.0], [80.0], [40.0]],
+                          [[18.0], [36.0], [40.0], [20.0]]],
+                         [[[ 0.0], [ 0.0], [ 0.0], [ 0.0]],
+                          [[ 0.0], [ 0.0], [ 0.0], [ 0.0]],
+                          [[ 0.0], [ 0.0], [ 0.0], [ 0.0]],
+                          [[ 0.0], [ 0.0], [ 0.0], [ 0.0]]],
+                         [[[10.0], [20.0], [24.0], [12.0]],
+                          [[20.0], [40.0], [48.0], [24.0]],
+                          [[36.0], [72.0], [80.0], [40.0]],
+                          [[18.0], [36.0], [40.0], [20.0]]],
+                         [[[ 0.0], [ 0.0], [ 0.0], [ 0.0]],
+                          [[ 0.0], [ 0.0], [ 0.0], [ 0.0]],
+                          [[ 0.0], [ 0.0], [ 0.0], [ 0.0]],
+                          [[ 0.0], [ 0.0], [ 0.0], [ 0.0]]]]])
+        XCTAssertEqual(grads.1.filter,
+                       [[[[[ 84.0]], [[168.0]], [[176.0]], [[ 88.0]]],
+                         [[[168.0]], [[336.0]], [[352.0]], [[176.0]]],
+                         [[[200.0]], [[400.0]], [[416.0]], [[208.0]]],
+                         [[[100.0]], [[200.0]], [[208.0]], [[104.0]]]]])
+        XCTAssertEqual(grads.1.bias, [8.0, 8.0])
+    }
+
+    func testDepthwiseConv2D() {
         let filter =  Tensor(shape: [2, 2, 2, 2], scalars: (0..<16).map(Float.init))
         let bias = Tensor<Float>([1, 2, 3, 4])
         let layer = DepthwiseConv2D<Float>(filter: filter, bias: bias, activation: identity,
@@ -209,6 +258,48 @@ final class LayerTests: XCTestCase {
                                      scalars: [9, 12, 23, 28, 25, 36, 55, 68, 41, 60, 87, 108,
                                                57, 84, 119, 148])
         XCTAssertEqual(output, expected)
+        
+        let channelMultiplier = 4
+        let multiplierLayer = DepthwiseConv2D<Float>(
+            filterShape: (2, 2, input.shape[3], channelMultiplier),
+            filterInitializer: glorotUniform(),
+            biasInitializer: zeros())
+        let multiplierOutput = multiplierLayer.inferring(from: input)
+        XCTAssertEqual(multiplierOutput.shape[3], input.shape[3] * channelMultiplier)
+    }
+
+    func testDepthwiseConv2DGradient() {
+        let filter = Tensor(shape: [2, 1, 2, 2], scalars: (0..<8).map(Float.init))
+        let bias = Tensor<Float>(ones: [4])
+        let layer = DepthwiseConv2D<Float>(filter: filter,
+                                           bias: bias,
+                                           activation: identity,
+                                           strides: (1, 1),
+                                           padding: .same)
+        let input = Tensor(shape: [2, 1, 2, 2], scalars: (0..<8).map(Float.init))
+        let grads = gradient(at: input, layer) { $1($0).sum() }
+        // The expected value of the gradient was computed using the following Python code:
+        // ```
+        // import tensorflow as tf
+        // input = tf.reshape(tf.range(8, dtype=tf.float32), [2, 1, 2, 2])
+        // filter = tf.reshape(tf.range(8, dtype=tf.float32), [2, 1, 2, 2])
+        // bias = tf.ones([4])
+        // with tf.GradientTape() as tape:
+        //     tape.watch([x, filter, bias])
+        //     y = tf.math.reduce_sum(tf.nn.depthwise_conv2d(input=x,
+        //                                                   filters=filter,
+        //                                                   strides=[1, 1, 1, 1],
+        //                                                   data_format="NHWC",
+        //                                                   padding="SAME") + bias)
+        // print(tape.gradient(y, [x, filter, bias]))
+        // ```
+        XCTAssertEqual(grads.0,
+                       [[[[1, 5], [1, 5]]],
+                        [[[1, 5], [1, 5]]]])
+        XCTAssertEqual(grads.1.filter,
+                       [[[[12, 12], [16, 16]]],
+                        [[[ 0,  0], [ 0,  0]]]])
+        XCTAssertEqual(grads.1.bias, [4, 4, 4, 4])
     }
 
     func testTransposedConv2D() {
@@ -254,6 +345,43 @@ final class LayerTests: XCTestCase {
         let expected = Tensor<Float>(shape: [2, 1, 1, 1],
                                      scalars: [1016, 2616])
         XCTAssertEqual(output, expected)
+    }
+
+    func testSeparableConv2DGradient() {
+        let depthwiseFilter = Tensor(shape: [2, 1, 2, 2], scalars: (0..<8).map(Float.init))
+        let pointwiseFilter = Tensor(shape: [1, 1, 4, 1], scalars: (0..<4).map(Float.init))
+        let bias = Tensor<Float>([1, 1])
+        let layer = SeparableConv2D<Float>(depthwiseFilter: depthwiseFilter,
+                                           pointwiseFilter: pointwiseFilter,
+                                           bias: bias,
+                                           activation: identity,
+                                           strides: (1, 1),
+                                           padding: .same)
+        let input = Tensor(shape: [2, 1, 2, 2], scalars: (0..<8).map(Float.init))
+        let grads = gradient(at: input, layer) { $1($0).sum() }
+        // The expected value of the gradient was computed using the following Python code:
+        // ```
+        // import tensorflow as tf
+        // x = tf.reshape(tf.range(8, dtype=tf.float32), [2, 1, 2, 2])
+        // depthwiseFilter = tf.reshape(tf.range(8, dtype=tf.float32), [2, 1, 2, 2])
+        // pointwiseFilter = tf.reshape(tf.range(4, dtype=tf.float32), [1, 1, 4, 1])
+        // bias = tf.ones([2])
+        // with tf.GradientTape() as tape:
+        //     tape.watch([x, depthwiseFilter, pointwiseFilter, bias])
+        //     y = tf.math.reduce_sum(tf.nn.separable_conv2D(input,
+        //                                                   depthwiseFilter,
+        //                                                   pointwiseFilter
+        //                                                   strides=[1, 1, 1, 1],
+        //                                                   padding="SAME") + bias)
+        // print(tape.gradient(y, [x, depthwiseFilter, pointwiseFilter, bias])
+        // ```
+        XCTAssertEqual(grads.0,
+                       [[[[ 2.0, 26.0], [ 2.0, 26.0]]],
+                        [[[ 2.0, 26.0], [ 2.0, 26.0]]]])
+        XCTAssertEqual(grads.1.depthwiseFilter,
+                       [[[[ 0.0, 24.0], [64.0, 96.0]]],
+                        [[[ 0.0,  0.0], [ 0.0,  0.0]]]])
+        XCTAssertEqual(grads.1.bias, [4.0, 4.0])
     }
 
     func testZeroPadding1D() {
@@ -1106,15 +1234,12 @@ final class LayerTests: XCTestCase {
         Context.local.learningPhase = .inference
         // This tests for a specific failure that had impacted the MiniGo model.
         let miniGoTensor = Tensor<Float>(randomUniform: [2, 19, 19, 256])
-        let miniGoBatchNorm = BatchNorm(
-            featureCount: 256,
-            momentum: Tensor<Float>(0.95),
-            epsilon: Tensor<Float>(1e-5))
+        let miniGoBatchNorm = BatchNorm<Float>(featureCount: 256, momentum: 0.95, epsilon: 1e-5)
         let miniGoResult = miniGoBatchNorm(miniGoTensor)
         XCTAssertEqual(miniGoTensor.shape, miniGoResult.shape)
 
         let x = Tensor<Float>(rangeFrom: 0, to: 20, stride: 1).reshaped(to: [4,5])
-        let epsilon = Tensor<Float>(0.001)
+        let epsilon: Float = 0.001
         let bnLayer = BatchNorm<Float>(featureCount: 5, axis: 1, epsilon: epsilon)
         // Test inference before any training.
         assertEqual(bnLayer.inferring(from: x), x / TensorFlow.sqrt(1 + epsilon), accuracy: 1e-5)
@@ -1191,10 +1316,7 @@ final class LayerTests: XCTestCase {
         Context.local.learningPhase = .inference
         // This tests for a specific failure that had impacted the Transformer model.
         let transformerTensor = Tensor<Float>(randomUniform: [1, 1, 768])
-        let transformerLayerNorm = LayerNorm(
-            featureCount: 768,
-            axis: -1,
-            epsilon: Tensor<Float>(1e-5))
+        let transformerLayerNorm = LayerNorm<Float>(featureCount: 768, axis: -1, epsilon: 1e-5)
         let transformerResult = transformerLayerNorm(transformerTensor)
         XCTAssertEqual(transformerTensor.shape, transformerResult.shape)
     }
@@ -1207,10 +1329,13 @@ final class LayerTests: XCTestCase {
         ("testConv2DGradient", testConv2DGradient),
         ("testConv2DDilation", testConv2DDilation),
         ("testConv3D", testConv3D),
+        ("testConv3DGradient", testConv3DGradient),
         ("testTransposedConv2D", testTransposedConv2D),
-        ("testDepthConv2D", testDepthConv2D),
+        ("testDepthwiseConv2D", testDepthwiseConv2D),
+        ("testDepthwiseConv2DGradient", testDepthwiseConv2DGradient),
         ("testSeparableConv1D", testSeparableConv1D),
         ("testSeparableConv2D", testSeparableConv2D),
+        ("testSeparableConv2DGradient", testSeparableConv2DGradient),
         ("testZeroPadding1D", testZeroPadding1D),
         ("testZeroPadding1DGradient", testZeroPadding1DGradient),
         ("testZeroPadding2D", testZeroPadding2D),

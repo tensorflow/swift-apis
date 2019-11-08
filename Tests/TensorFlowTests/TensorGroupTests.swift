@@ -16,12 +16,6 @@ import XCTest
 @testable import TensorFlow
 import CTensorFlow
 
-extension TensorDataType : Equatable {
-    public static func == (lhs: TensorDataType, rhs: TensorDataType) -> Bool {
-        return Int(lhs._cDataType.rawValue) == Int(rhs._cDataType.rawValue)
-    }
-}
-
 struct Empty : TensorGroup {}
 
 struct Simple : TensorGroup, Equatable {
