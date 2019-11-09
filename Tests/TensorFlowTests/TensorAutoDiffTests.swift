@@ -46,7 +46,7 @@ final class TensorAutoDiffTests: XCTestCase {
             // Convoluted function returning `x + x`.
             var y: (Tensor<Float>, Tensor<Float>) = (x + x, x - x)
             var z: ((Tensor<Float>, Tensor<Float>), Tensor<Float>) = (y, x)
-            if x > 0 {
+            if (x .> 0).all() {
                 let w = (x, x)
                 y.0 = w.1
                 y.1 = w.0
@@ -57,14 +57,14 @@ final class TensorAutoDiffTests: XCTestCase {
             }
             return y.0 + y.1 - z.0.0 + z.0.1
         }
-        XCTAssertTrue(([8], [2]) == valueWithGradient(at: Tensor(4), in: condNestedTupleVar))
-        XCTAssertTrue(([-20], [2]) == valueWithGradient(at: Tensor(-10), in: condNestedTupleVar))
-        XCTAssertTrue(([-2674], [2]) == valueWithGradient(at: Tensor(-1337), in: condNestedTupleVar))
+        XCTAssertTrue((value: Tensor(8), gradient: Tensor(2)) == valueWithGradient(at: Tensor(4), in: condNestedTupleVar))
+        XCTAssertTrue((value: Tensor(-20), gradient: Tensor(2)) == valueWithGradient(at: Tensor(-10), in: condNestedTupleVar))
+        XCTAssertTrue((value: Tensor(-2674), gradient: Tensor(2)) == valueWithGradient(at: Tensor(-1337), in: condNestedTupleVar))
 
         func guard2Var(_ x: Tensor<Float>, _ y: Tensor<Float>) -> Tensor<Float> {
             var z = y
-            guard x > 0 else {
-                if y > 0 {
+            guard (x .> 0).all() else {
+                if (y .> 0).all() {
                     z = z * x
                 } else if x == Tensor(-1337) {
                     z = x
@@ -76,19 +76,19 @@ final class TensorAutoDiffTests: XCTestCase {
             }
             return z * y
         }
-        XCTAssertTrue(([0], [10]) == gradient(at: Tensor(4), Tensor(5), in: guard2Var))
-        XCTAssertTrue(([5], [-1337]) == gradient(at: Tensor(-1337), Tensor(5), in: guard2Var))
-        XCTAssertTrue(([-2674], [0]) == gradient(at: Tensor(-1337), Tensor(-5), in: guard2Var))
-        XCTAssertTrue(([2], [-3]) == gradient(at: Tensor(-3), Tensor(2), in: guard2Var))
+        XCTAssertTrue((Tensor(0), Tensor(10)) == gradient(at: Tensor(4), Tensor(5), in: guard2Var))
+        XCTAssertTrue((Tensor(5), Tensor(-1337)) == gradient(at: Tensor(-1337), Tensor(5), in: guard2Var))
+        XCTAssertTrue((Tensor(-2674), Tensor(0)) == gradient(at: Tensor(-1337), Tensor(-5), in: guard2Var))
+        XCTAssertTrue((Tensor(2), Tensor(-3)) == gradient(at: Tensor(-3), Tensor(2), in: guard2Var))
     }
 
     func testNestedConditionals() {
         // Test tensor-tensor ops.
         func condNested1(_ x: Tensor<Float>, _ y: Tensor<Float>) -> Tensor<Float> {
-            if x > 0 {
-                if y > 10 {
+            if (x .> 0).all() {
+                if (y .> 10).all() {
                     let z = x * y
-                    if z > 100 {
+                    if (z .> 100).all() {
                         return x + z
                     } else if y == Tensor(20) {
                         return z + z
@@ -99,17 +99,17 @@ final class TensorAutoDiffTests: XCTestCase {
             }
             return -y
         }
-        XCTAssertTrue(([40], [8]) == gradient(at: Tensor(4), Tensor(20), in: condNested1))
-        XCTAssertTrue(([0], [-1]) == gradient(at: Tensor(4), Tensor(21), in: condNested1))
-        XCTAssertTrue(([1], [1]) == gradient(at: Tensor(4), Tensor(5), in: condNested1))
-        XCTAssertTrue(([0], [-1]) == gradient(at: Tensor(-3), Tensor(-2), in: condNested1))
+        XCTAssertTrue((Tensor(40), Tensor(8)) == gradient(at: Tensor(4), Tensor(20), in: condNested1))
+        XCTAssertTrue((Tensor(0), Tensor(-1)) == gradient(at: Tensor(4), Tensor(21), in: condNested1))
+        XCTAssertTrue((Tensor(1), Tensor(1)) == gradient(at: Tensor(4), Tensor(5), in: condNested1))
+        XCTAssertTrue((Tensor(0), Tensor(-1)) == gradient(at: Tensor(-3), Tensor(-2), in: condNested1))
 
         // Test tensor-scalar ops.
         func condNested2(_ x: Tensor<Float>, _ y: Float) -> Tensor<Float> {
-            if x > 0 {
+            if (x .> 0).all() {
                 if y > 10 {
                     let z = x * y
-                    if z > 100 {
+                    if (z .> 100).all() {
                         return x + z
                     } else if y == 20 {
                         return z + z
