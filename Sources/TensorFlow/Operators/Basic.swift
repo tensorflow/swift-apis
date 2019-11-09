@@ -148,6 +148,18 @@ public extension Tensor {
         reshaped(toShape: other.shapeTensor)
     }
 
+    /// Helper function for reduction ops.
+    /// Returns 1D Tensor, the output shape as if keepDims were set to True.
+    func reducedShape(axes: Tensor<Int32>) -> TensorShape {
+        var reducedShapeScalars = self.shapeTensor.scalars
+
+        for axe in axes.scalars {
+            reducedShapeScalars[Int(axe)] = 1
+        }
+
+        return TensorShape(reducedShapeScalars.map { Int($0) })
+    }
+
     /// Reshape to the specified shape.
     /// - Precondition: The number of scalars matches the new shape.
     @inlinable
