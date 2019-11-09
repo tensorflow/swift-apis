@@ -302,6 +302,18 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(grads.1.bias, [4, 4, 4, 4])
     }
 
+    func testTransposedConv2D() {
+        let filter =  Tensor(shape: [4, 2, 1, 1], scalars: (0..<8).map(Float.init))
+        let bias = Tensor<Float>([8])
+        let layer = TransposedConv2D(filter: filter, bias: bias, activation: identity,
+                                  strides: (1, 1), padding: .same)
+        let input = Tensor(shape: [1, 4, 2, 1], scalars: (0..<8).map(Float.init))
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>(shape: [1, 4, 2, 1],
+                                     scalars: [8, 12, 12, 28, 24, 64, 48, 112])
+        XCTAssertEqual(output, expected)
+    }  
+
     func testSeparableConv1D() {
         let depthwiseFilter = Tensor(shape: [2, 2, 2], scalars: (0..<8).map(Float.init))
         let pointwiseFilter = Tensor(shape: [1, 4, 1], scalars: (0..<4).map(Float.init))
@@ -1222,15 +1234,12 @@ final class LayerTests: XCTestCase {
         Context.local.learningPhase = .inference
         // This tests for a specific failure that had impacted the MiniGo model.
         let miniGoTensor = Tensor<Float>(randomUniform: [2, 19, 19, 256])
-        let miniGoBatchNorm = BatchNorm(
-            featureCount: 256,
-            momentum: Tensor<Float>(0.95),
-            epsilon: Tensor<Float>(1e-5))
+        let miniGoBatchNorm = BatchNorm<Float>(featureCount: 256, momentum: 0.95, epsilon: 1e-5)
         let miniGoResult = miniGoBatchNorm(miniGoTensor)
         XCTAssertEqual(miniGoTensor.shape, miniGoResult.shape)
 
         let x = Tensor<Float>(rangeFrom: 0, to: 20, stride: 1).reshaped(to: [4,5])
-        let epsilon = Tensor<Float>(0.001)
+        let epsilon: Float = 0.001
         let bnLayer = BatchNorm<Float>(featureCount: 5, axis: 1, epsilon: epsilon)
         // Test inference before any training.
         assertEqual(bnLayer.inferring(from: x), x / TensorFlow.sqrt(1 + epsilon), accuracy: 1e-5)
@@ -1307,10 +1316,7 @@ final class LayerTests: XCTestCase {
         Context.local.learningPhase = .inference
         // This tests for a specific failure that had impacted the Transformer model.
         let transformerTensor = Tensor<Float>(randomUniform: [1, 1, 768])
-        let transformerLayerNorm = LayerNorm(
-            featureCount: 768,
-            axis: -1,
-            epsilon: Tensor<Float>(1e-5))
+        let transformerLayerNorm = LayerNorm<Float>(featureCount: 768, axis: -1, epsilon: 1e-5)
         let transformerResult = transformerLayerNorm(transformerTensor)
         XCTAssertEqual(transformerTensor.shape, transformerResult.shape)
     }
@@ -1324,6 +1330,7 @@ final class LayerTests: XCTestCase {
         ("testConv2DDilation", testConv2DDilation),
         ("testConv3D", testConv3D),
         ("testConv3DGradient", testConv3DGradient),
+        ("testTransposedConv2D", testTransposedConv2D),
         ("testDepthwiseConv2D", testDepthwiseConv2D),
         ("testDepthwiseConv2DGradient", testDepthwiseConv2DGradient),
         ("testSeparableConv1D", testSeparableConv1D),
