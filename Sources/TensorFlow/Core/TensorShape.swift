@@ -110,6 +110,20 @@ public extension TensorShape {
         get { return TensorShape(dimensions[bounds]) }
         set { dimensions[bounds] = ArraySlice(newValue.dimensions) }
     }
+
+    /// Returns the reduced shape along the given axes. For each axis, the dimension is set to 1.
+    ///
+    /// Adapted from `reduced_shape` in Python TensorFlow:
+    /// https://github.com/tensorflow/tensorflow/blob/8023e0736756b93308cbe847e5e6afbfb625f8d8/tensorflow/python/ops/math_ops.py#L3490
+    func reducedShape(axes: [Int32]) -> TensorShape {
+        var reducedShapeScalars = dimensions.map { Int($0) }
+
+        for axe in axes {
+            reducedShapeScalars[Int(axe)] = 1
+        }
+
+        return TensorShape(reducedShapeScalars)
+    }
 }
 
 extension TensorShape: Equatable {
