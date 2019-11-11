@@ -1812,8 +1812,8 @@ public extension Tensor where Scalar: Numeric {
     ///
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank...rank`.
-    // TODO: Make this @differentiable.
     @inlinable
+    @differentiable(wrt: self, vjp: _vjpProduct(squeezingAxes:) where Scalar: TensorFlowFloatingPoint)
     func product(squeezingAxes axes: Tensor<Int32>) -> Tensor {
         _Raw.prod(self, reductionIndices: axes, keepDims: false)
     }
@@ -1823,6 +1823,7 @@ public extension Tensor where Scalar: Numeric {
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank...rank`.
     @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func product(squeezingAxes axes: [Int]) -> Tensor {
         // TODO(TF-433): Remove workaround for differentiating `map`.
         let axes = {axes.map(Int32.init)}()
@@ -1834,11 +1835,13 @@ public extension Tensor where Scalar: Numeric {
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank...rank`.
     @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func product(squeezingAxes axes: Int...) -> Tensor {
         product(squeezingAxes: axes)
     }
 
     @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func product() -> Tensor {
         flattened().product(squeezingAxes: 0)
     }
@@ -2222,6 +2225,54 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
                 exclusive: exclusive,
                 reverse: !reverse
             ) / self
+        })
+    }
+
+    // Adapted from `_ProdGrad` in Python TensorFlow:
+    // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/ops/math_grad.py
+    @inlinable
+    func _vjpProduct(squeezingAxes axes: Tensor<Int32>) -> (Tensor, (Tensor) -> Tensor) {
+        // The gradient can be expressed by dividing the product by each entry of the
+        // input tensor, but this approach can't deal with zeros in the input.
+        // Here, we avoid this problem by composing the output as a product of two
+        // `cumulativeProduct` operations.
+        let result = product(squeezingAxes: axes)
+        return (result, { v in
+            // Reshape reduction indices for the case where the parameter is a scalar.
+            var reductionIndices = axes.reshaped(to: TensorShape(-1))
+            // Normalize any negative reduction indices to positive values.
+            reductionIndices = (reductionIndices + Int32(self.rank)) % Int32(self.rank)
+
+            // Expand `v` to full input shape.
+            var outputShape = self.shape
+            for axis in reductionIndices.scalars {
+                outputShape[Int(axis)] = 1
+            }
+            let vReshaped = v.reshaped(to: outputShape)
+            let vBroadcasted = vReshaped.broadcasted(to: self.shape)
+
+            // Pack all reduced dimensions into a single one, so we can perform the
+            // `cumulativeProduct` operations.
+            let idx = Tensor<Int32>(0..<Int32(self.rank))
+            let other = Tensor<Int32>(
+                Array(Set(idx.scalars).symmetricDifference(reductionIndices.scalars)))
+            let perm = reductionIndices.concatenated(with: other)
+            let reducedNum = Int(
+                self.shapeTensor.gathering(atIndices: reductionIndices).product().scalarized())
+            let otherNum = Int(
+                self.shapeTensor.gathering(atIndices: other).product().scalarized())
+
+            let permuted = self.transposed(permutation: perm)
+            let reshaped = permuted.reshaped(to: [reducedNum, otherNum])
+            // Calculate product, leaving out the current entry.
+            let left = reshaped.cumulativeProduct(alongAxis: 0, exclusive: true, reverse: false)
+            let right = reshaped.cumulativeProduct(alongAxis: 0, exclusive: true, reverse: true)
+            let y = (left * right).reshaped(to: permuted.shape)
+
+            // Invert the transpose and reshape operations.
+            // Make sure to set the statically known shape information through a reshape.
+            return (vBroadcasted * y.transposed(permutation: _Raw.invertPermutation(perm)))
+                .reshaped(to: self.shape)
         })
     }
 }
