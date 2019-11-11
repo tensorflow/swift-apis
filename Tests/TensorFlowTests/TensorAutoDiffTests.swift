@@ -526,14 +526,17 @@ final class TensorAutoDiffTests: XCTestCase {
     }
 
     func testProductGrad() {
-        // The expected gradient values were computed using the following TensorFlow 2.0 in Python,
-        // where "x" is "at: value" and "axe" is "squeezingAxes: value"
+        // The expected gradient values were computed using the following Python code:
         // ```
-        // with tf.GradientTape() as g:
-        //     g.watch(x)
-        //     y = tf.reduce_prod(x, axis=axes)
-        //     z = tf.reduce_sum(y)
-        // grad = g.gradient(y, x)
+        // import tensorflow as tf
+        // # Adjust values of `x` and `axis` for each test.
+        // x = tf.constant([[[3, 4], [5, 6], [7, 8]], [[3, 5], [0, 6], [5, 6]]], dtype=tf.float32)
+        // axis = 1
+        // with tf.GradientTape() as t:
+        //   t.watch(x)
+        //   y = tf.reduce_prod(x, axis=axis)
+        //   z = tf.reduce_sum(y)
+        // print(t.gradient(z, x))
         // ```
         func product(_ x: Tensor<Float>) -> Tensor<Float> {
             return x.product().sum()
@@ -541,15 +544,23 @@ final class TensorAutoDiffTests: XCTestCase {
         func productSqueezingAxes1(_ x: Tensor<Float>) -> Tensor<Float> {
             return x.product(squeezingAxes: 1).sum()
         }
+        func productSqueezingAxes_Neg1(_ x: Tensor<Float>) -> Tensor<Float> {
+            return x.product(squeezingAxes: -1).sum()
+        }
         func productSqueezingAxes01(_ x: Tensor<Float>) -> Tensor<Float> {
             return x.product(squeezingAxes: [0, 1]).sum()
         }
         XCTAssertEqual(gradient(at: [[10], [20]], in: product), [[20], [10]])
-        XCTAssertEqual(gradient(at: [[10, 20], [20, 30]], in: productSqueezingAxes1), [[20, 10], [30, 20]])
-        XCTAssertEqual(gradient(at: [[[3, 4], [5, 6], [7, 8]], [[3, 5], [0, 6], [5, 6]]], in: productSqueezingAxes1),
-                [[[35, 48], [21, 32], [15, 24]], [[0, 36], [15, 30], [0, 30]]])
-        XCTAssertEqual(gradient(at: [[[3, 4], [5, 6], [7, 8]], [[3, 5], [0, 6], [5, 6]]], in: productSqueezingAxes01),
-                [[[0, 8640], [0, 5760], [0, 4320]], [[0, 6912], [1575, 5760], [0, 5760]]])
+        XCTAssertEqual(gradient(at: [[10, 20], [20, 30]], in: productSqueezingAxes1),
+                       [[20, 10], [30, 20]])
+        XCTAssertEqual(gradient(at: [[10, 20], [20, 30]], in: productSqueezingAxes_Neg1),
+                       [[20, 10], [30, 20]])
+        XCTAssertEqual(gradient(at: [[[3, 4], [5, 6], [7, 8]], [[3, 5], [0, 6], [5, 6]]],
+                                in: productSqueezingAxes1),
+                       [[[35, 48], [21, 32], [15, 24]], [[0, 36], [15, 30], [0, 30]]])
+        XCTAssertEqual(gradient(at: [[[3, 4], [5, 6], [7, 8]], [[3, 5], [0, 6], [5, 6]]],
+                                in: productSqueezingAxes01),
+                       [[[0, 8640], [0, 5760], [0, 4320]], [[0, 6912], [1575, 5760], [0, 5760]]])
     }
 
     static var allTests = [
