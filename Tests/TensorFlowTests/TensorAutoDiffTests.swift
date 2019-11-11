@@ -19,7 +19,7 @@ let cube: @differentiable (Tensor<Float>) -> Tensor<Float> = { ($0 * $0 * $0) }
 
 @differentiable(vjp: vjpFoo)
 func foo(_ x: Tensor<Float>) -> Tensor<Float> {
-    return Raw.identity(x)
+    return _Raw.identity(x)
 }
 func vjpFoo(_ x: Tensor<Float>) -> (Tensor<Float>, (Tensor<Float>) -> Tensor<Float>) {
     return (foo(x), { v in v })

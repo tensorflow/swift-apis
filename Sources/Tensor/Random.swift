@@ -56,18 +56,18 @@ public func randomSeedForTensorFlow(using seed: TensorFlowSeed? = nil) -> Tensor
 ///
 /// The `AnyRandomNumberGenerator` type forwards random number generating operations to an 
 /// underlying random number generator, hiding its specific underlying type.
-internal struct AnyRandomNumberGenerator: RandomNumberGenerator {
+public struct AnyRandomNumberGenerator: RandomNumberGenerator {
     @usableFromInline
     var _rng: RandomNumberGenerator
 
     /// - Parameter rng: A random number generator.
     @inlinable
-    init(_ rng: RandomNumberGenerator) {
+    public init(_ rng: RandomNumberGenerator) {
         self._rng = rng
     }
 
     @inlinable
-    mutating func next() -> UInt64 {
+    public mutating func next() -> UInt64 {
         return self._rng.next()
     }
 }
@@ -400,7 +400,7 @@ public struct PhiloxRandomNumberGenerator: SeedableRandomNumberGenerator {
         return ctr
     }
 
-    internal init(uint64Seed seed: UInt64) {
+    public init(uint64Seed seed: UInt64) {
         key = seed.vector2
     }
 
