@@ -2241,8 +2241,13 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
             var reductionIndices = axes.reshaped(to: TensorShape(-1))
 
             // Expand grad to full input shape
-            let outputShapeKeptDims = self.shape.reducedShape(axes: reductionIndices.scalars)
-            let vReshaped = v.reshaped(to: outputShapeKeptDims)
+            var outputShape = self.shape
+
+            for axis in reductionIndices.scalars {
+                outputShape[Int(axis)] = 1
+            }
+
+            let vReshaped = v.reshaped(to: outputShape)
 
             let vBroadcasted = vReshaped.broadcasted(to: self.shape)
 
@@ -2258,14 +2263,14 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
             let reducedNum = Int(self.shapeTensor.gathering(atIndices: reductionIndices).product().scalars[0])
             let otherNum = Int(self.shapeTensor.gathering(atIndices: other).product().scalars[0])
 
-            let permutated = self.transposed(permutation: perm)
-            let reshaped = permutated.reshaped(to: [reducedNum, otherNum])
+            let permuted = self.transposed(permutation: perm)
+            let reshaped = permuted.reshaped(to: [reducedNum, otherNum])
 
             // Calculate product, leaving out the current entry
             let left = reshaped.cumulativeProduct(alongAxis: 0, exclusive: true, reverse: false)
             let right = reshaped.cumulativeProduct(alongAxis: 0, exclusive: true, reverse: true)
 
-            let y = (left * right).reshaped(to: permutated.shape)
+            let y = (left * right).reshaped(to: permuted.shape)
 
             // Invert the transpose and reshape operations
             // Make sure to set the statically known shape information through a reshape
