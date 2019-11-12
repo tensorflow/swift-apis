@@ -2239,7 +2239,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
         let result = product(squeezingAxes: axes)
         return (result, { v in
             // Reshape reduction indices for the case where the parameter is a scalar.
-            var reductionIndices = axes.reshaped(to: TensorShape(-1))
+            var reductionIndices = axes.flattened()
             // Normalize any negative reduction indices to positive values.
             reductionIndices = (reductionIndices + Int32(self.rank)) % Int32(self.rank)
 
@@ -2248,8 +2248,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
             for axis in reductionIndices.scalars {
                 outputShape[Int(axis)] = 1
             }
-            let vReshaped = v.reshaped(to: outputShape)
-            let vBroadcasted = vReshaped.broadcasted(to: self.shape)
+            let vBroadcasted = v.reshaped(to: outputShape).broadcasted(to: self.shape)
 
             // Pack all reduced dimensions into a single one, so we can perform the
             // `cumulativeProduct` operations.
