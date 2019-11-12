@@ -2374,7 +2374,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         let offset = withoutDerivative(at: rawMax) { rawMax in 
             rawMax.replacing(
                 with: Tensor<Scalar>(zerosLike: rawMax),
-                where: rawMax.isFinite)
+                where: rawMax.isInfinite)
         }
         let result = TensorFlow.log(TensorFlow.exp(self - offset).sum(squeezingAxes: axes))
         let resultShape = withoutDerivative(at: result.shapeTensor)
@@ -2438,7 +2438,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         let offset = withoutDerivative(at: rawMax) { rawMax in 
             rawMax.replacing(
                 with: Tensor<Scalar>(zerosLike: rawMax),
-                where: rawMax.isFinite)
+                where: rawMax.isInfinite)
         }
         let result = TensorFlow.log(TensorFlow.exp(self - offset).sum(alongAxes: axes))
         return result + offset
