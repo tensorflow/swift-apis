@@ -2371,8 +2371,8 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     func logSumExp(squeezingAxes axes: Tensor<Int32>) -> Tensor {
         let rawMax = max(alongAxes: axes)
         let offset = withoutDerivative(at: rawMax) { rawMax in 
-            rawMax.replacing(
-                with: Tensor<Scalar>(zerosLike: rawMax),
+            Tensor<Scalar>(zerosLike: rawMax).replacing(
+                with: rawMax,
                 where: rawMax.isFinite)
         }
         let result = TensorFlow.log(TensorFlow.exp(self - offset).sum(squeezingAxes: axes))
@@ -2435,8 +2435,8 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     func logSumExp(alongAxes axes: Tensor<Int32>) -> Tensor {
         let rawMax = max(alongAxes: axes)
         let offset = withoutDerivative(at: rawMax) { rawMax in 
-            rawMax.replacing(
-                with: Tensor<Scalar>(zerosLike: rawMax),
+            Tensor<Scalar>(zerosLike: rawMax).replacing(
+                with: rawMax,
                 where: rawMax.isFinite)
         }
         let result = TensorFlow.log(TensorFlow.exp(self - offset).sum(alongAxes: axes))
