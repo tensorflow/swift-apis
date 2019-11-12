@@ -509,12 +509,13 @@ final class TensorAutoDiffTests: XCTestCase {
         let computedGradient = gradient(at: x) { $0.batchNormalized(alongAxis: 1).squared().sum() }
         // The expected value of the gradient was computed using the following Python code:
         // ```
-        //   with tf.GradientTape() as t:
-        //     t.watch(x)
-        //     mean, var = tf.nn.moments(x, axes=1, keepdims=True)
-        //     y = tf.reduce_sum(tf.square(tf.nn.batch_normalization(
-        //     x, mean, var, offset=0, scale=1, variance_epsilon=0.001)))
-        //   print(t.gradient(y, x))
+        // import tensorflow as tf
+        // with tf.GradientTape() as t:
+        //   t.watch(x)
+        //   mean, var = tf.nn.moments(x, axes=1, keepdims=True)
+        //   y = tf.reduce_sum(tf.square(tf.nn.batch_normalization(
+        //   x, mean, var, offset=0, scale=1, variance_epsilon=0.001)))
+        // print(t.gradient(y, x))
         // ```
         let expectedGradient = Tensor<Float>([
             [-1.0127544e-02, -1.0807812e-03, -7.6115131e-04,  1.5857220e-03,  1.0383606e-02],
