@@ -14,12 +14,11 @@
 
 import XCTest
 
-import TensorFlowTests
-import TensorTests
-import ExperimentalTests
-
-var tests = [XCTestCaseEntry]()
-tests += TensorFlowTests.allTests()
-tests += TensorTests.allTests()
-tests += ExperimentalTests.allTests()
-XCTMain(tests)
+#if !os(macOS)
+public func allTests() -> [XCTestCaseEntry] {
+    // Please ensure the test cases remain alphabetized.
+    return [
+        testCase(ComplexTests.allTests),
+    ]
+}
+#endif

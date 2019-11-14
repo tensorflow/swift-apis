@@ -83,7 +83,7 @@ public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
     private func repeatingElements(
         _ input: Tensor<Scalar>, alongAxis axis: Int, count: Int
     ) -> Tensor<Scalar> {
-        let splits = Raw.split(
+        let splits = _Raw.split(
             splitDim: Tensor<Int32>(Int32(axis)),
             value: input,
             numSplit: Int64(input.shape[axis]))
@@ -93,10 +93,10 @@ public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
 
     private func _vjpRepeatingElements(
         _ input: Tensor<Scalar>, alongAxis axis: Int, count: Int
-    ) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (AllDifferentiableVariables, Tensor<Scalar>)) {
+    ) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (TangentVector, Tensor<Scalar>)) {
         let value = repeatingElements(input, alongAxis: axis, count: count)
         return (value, { v in
-            let splits = Raw.split(
+            let splits = _Raw.split(
                 splitDim: Tensor<Int32>(Int32(axis)),
                 value: v,
                 numSplit: Int64(input.shape[axis]))

@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#if !COMPILING_TENSORFLOW_STDLIB_MODULE
+import Tensor
+#endif
+
 public extension Tensor {
     /// Creates a tensor with the specified shape and a single, repeated scalar value.
     ///
@@ -32,7 +36,7 @@ public extension Tensor {
     @inlinable
     @differentiable(vjp: _vjpInit(repeating:shape:) where Scalar: TensorFlowFloatingPoint)
     init(repeating repeatedValue: Scalar, shape: TensorShape) {
-        self = Raw.fill(
+        self = _Raw.fill(
             dims: Tensor<Int32>(shape.dimensions.map(Int32.init)),
             value: Tensor(repeatedValue))
     }
@@ -74,7 +78,7 @@ public extension Tensor where Scalar: Numeric {
     /// Perform an element-wise type conversion from a `Bool` tensor.
     @inlinable
     init(_ other: Tensor<Bool>) {
-        self = Raw.cast(other)
+        self = _Raw.cast(other)
     }
 
     /// Perform an element-wise conversion from another `Tensor`.
@@ -82,7 +86,7 @@ public extension Tensor where Scalar: Numeric {
     @differentiable(
         vjp: _vjpCast where Scalar: TensorFlowFloatingPoint, OtherScalar: TensorFlowFloatingPoint)
     init<OtherScalar: Numeric>(_ other: Tensor<OtherScalar>) {
-        self = Raw.cast(other)
+        self = _Raw.cast(other)
     }
 }
 
@@ -104,7 +108,7 @@ public extension Tensor {
     @inlinable
     @differentiable(vjp: _vjpInitElements where Scalar: TensorFlowFloatingPoint)
     init(_ elements: [Tensor]) {
-        self = Raw.pack(elements)
+        self = _Raw.pack(elements)
     }
 
     /// Stacks `tensors`, along the `axis` dimension, into a new tensor with rank one higher than
@@ -138,7 +142,7 @@ public extension Tensor {
     @inlinable
     @differentiable(vjp: _vjpStacking where Scalar: TensorFlowFloatingPoint)
     init(stacking tensors: [Tensor], alongAxis axis: Int = 0) {
-        self = Raw.pack(tensors, axis: Int64(axis))
+        self = _Raw.pack(tensors, axis: Int64(axis))
     }
 
     /// Concatenates `tensors` along the `axis` dimension.
@@ -177,7 +181,7 @@ public extension Tensor {
     @differentiable(vjp: _vjpConcatenating where Scalar: TensorFlowFloatingPoint)
     init(concatenating tensors: [Tensor], alongAxis axis: Int = 0) {
         precondition(tensors.count > 0)
-        self = Raw.concatV2(tensors, axis: Tensor<Int32>(Int32(axis)))
+        self = _Raw.concatV2(tensors, axis: Tensor<Int32>(Int32(axis)))
     }
 }
 
@@ -242,7 +246,7 @@ public extension Tensor where Scalar: Numeric {
     /// - Parameter other: Tensor whose shape and data type to use.
     @inlinable
     init(zerosLike other: Tensor) {
-        self = Raw.zerosLike(other)
+        self = _Raw.zerosLike(other)
     }
 
     /// Creates a tensor with all scalars set to one that has the same shape and type as the provided
@@ -251,7 +255,7 @@ public extension Tensor where Scalar: Numeric {
     /// - Parameter other: Tensor whose shape and data type to use.
     @inlinable
     init(onesLike other: Tensor) {
-        self = Raw.onesLike(other)
+        self = _Raw.onesLike(other)
     }
 
     /// Creates a 1-D tensor representing a sequence from a starting value to, but not including,
@@ -266,7 +270,7 @@ public extension Tensor where Scalar: Numeric {
     ///     positive.
     @inlinable
     init(rangeFrom start: Scalar, to end: Scalar, stride: Scalar) {
-        self = Raw.range(start: Tensor(start), limit: Tensor(end), delta: Tensor(stride))
+        self = _Raw.range(start: Tensor(start), limit: Tensor(end), delta: Tensor(stride))
     }
 
     /// Creates a 1-D tensor representing a sequence from a starting value to, but not including, an
@@ -280,7 +284,7 @@ public extension Tensor where Scalar: Numeric {
     ///   - stride: The amount to step by with each iteration. `stride` must be positive.
     @inlinable
     init(rangeFrom start: Tensor<Scalar>, to end: Tensor<Scalar>, stride: Tensor<Scalar>) {
-        self = Raw.range(start: start, limit: end, delta: stride)
+        self = _Raw.range(start: start, limit: end, delta: stride)
     }
 
     /// Creates a one-hot tensor at given indices. The locations represented by
@@ -318,12 +322,45 @@ public extension Tensor where Scalar: Numeric {
         offValue: Scalar = 0,
         axis: Int = -1
     ) {
-        self = Raw.oneHot(
+        self = _Raw.oneHot(
             indices: indices,
             depth: Tensor<Int32>(Int32(depth)),
             onValue: Tensor(onValue),
             offValue: Tensor(offValue),
             axis: Int64(axis))
+    }
+}
+
+public extension Tensor where Scalar: TensorFlowFloatingPoint {
+    /// Creates a 1-D tensor representing a sequence from a starting value, up to and
+    /// including an end value, spaced evenly to generate the number of values specified.
+    ///
+    /// - Parameters:
+    ///   - start: The starting value to use for the sequence. If the sequence contains any values,
+    ///     the first one is `start`.
+    ///   - end: An end value to limit the sequence. `end` is the last element of the resulting
+    ///     sequence.
+    ///   - count: The number of values in the resulting sequence. `count` must be positive.
+    @inlinable
+    init(linearSpaceFrom start: Scalar, to end: Scalar, count: Int) {
+        self = _Raw.linSpace(
+            start: Tensor(start), stop: Tensor(end), num: Tensor<Int32>(Int32(count)))
+    }
+
+    /// Creates a 1-D tensor representing a sequence from a starting value, up to and
+    /// including an end value, spaced evenly to generate the number of values specified.
+    ///
+    /// - Parameters:
+    ///   - start: The starting value to use for the sequence. If the sequence contains any values,
+    ///     the first one is `start`.
+    ///   - end: An end value to limit the sequence. `end` is the last element of the resulting
+    ///     sequence.
+    ///   - count: The number of values in the resulting sequence. `count` must be positive.
+    ///
+    /// - Precondition: `start`, `to`, and `count` must be Tensors containing a single Scalar value.
+    @inlinable
+    init(linearSpaceFrom start: Tensor<Scalar>, to end: Tensor<Scalar>, count: Tensor<Int32>) {
+        self = _Raw.linSpace(start: start, stop: end, num: count)
     }
 }
 
@@ -346,7 +383,7 @@ public extension Tensor where Scalar: TensorFlowIndex {
         upperBound: Tensor<Scalar> = Tensor<Scalar>(1),
         seed: TensorFlowSeed = Context.local.randomSeed
     ) {
-        self = Raw.statelessRandomUniformInt(
+        self = _Raw.statelessRandomUniformInt(
             shape: Tensor<Int32>((0..<shape.rank).map { Int32(shape[$0]) }),
             seed: Tensor<Int32>([seed.graph, seed.op]),
             minval: lowerBound,
@@ -369,7 +406,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         upperBound: Tensor<Scalar> = Tensor<Scalar>(1),
         seed: TensorFlowSeed = Context.local.randomSeed
     ) {
-        let sample: Tensor<Scalar> = Raw.statelessRandomUniform(
+        let sample: Tensor<Scalar> = _Raw.statelessRandomUniform(
             shape: Tensor<Int32>((0..<shape.rank).map { Int32(shape[$0]) }),
             seed: Tensor<Int32>([seed.graph, seed.op]))
         self = (upperBound - lowerBound) * sample + lowerBound
@@ -389,7 +426,27 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         standardDeviation: Tensor<Scalar> = Tensor<Scalar>(1),
         seed: TensorFlowSeed = Context.local.randomSeed
     ) {
-        let sample: Tensor<Scalar> = Raw.statelessRandomNormal(
+        let sample: Tensor<Scalar> = _Raw.statelessRandomNormal(
+            shape: Tensor<Int32>((0..<shape.rank).map { Int32(shape[$0]) }),
+            seed: Tensor<Int32>([seed.graph, seed.op]))
+        self = standardDeviation * sample + mean
+    }
+
+    /// Creates a tensor with the specified shape, randomly sampling scalar values from a truncated
+    /// Normal distribution.
+    ///
+    /// - Parameters:
+    ///   - shape: The dimensions of the tensor.
+    ///   - mean: The mean of the distribution.
+    ///   - standardDeviation: The standard deviation of the distribution.
+    ///   - seed: The seed value.
+    init(
+        randomTruncatedNormal shape: TensorShape,
+        mean: Tensor<Scalar> = Tensor<Scalar>(0),
+        standardDeviation: Tensor<Scalar> = Tensor<Scalar>(1),
+        seed: TensorFlowSeed = TensorFlow.Context.local.randomSeed
+    ) {
+        let sample: Tensor<Scalar> = _Raw.statelessTruncatedNormal(
             shape: Tensor<Int32>((0..<shape.rank).map { Int32(shape[$0]) }),
             seed: Tensor<Int32>([seed.graph, seed.op]))
         self = standardDeviation * sample + mean

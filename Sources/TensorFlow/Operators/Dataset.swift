@@ -53,7 +53,7 @@ public extension Dataset {
     @inlinable
     init(randomSeed: Int64) {
         let (seed1, seed2) = _tensorSeeds(Tensor(randomSeed))
-        self.init(_handle: Raw.experimentalRandomDataset(
+        self.init(_handle: _Raw.experimentalRandomDataset(
             seed: seed1,
             seed2: seed2,
             outputTypes: Element._typeList,
@@ -65,7 +65,7 @@ public extension Dataset {
     /// Creates a dataset from a batch of elements as a tensor.
     @inlinable
     init(elements: Element) {
-        self.init(_handle: Raw.tensorSliceDataset(
+        self.init(_handle: _Raw.tensorSliceDataset(
             components: [elements],
             outputShapes: Element._unknownShapeList))
     }
@@ -77,10 +77,10 @@ extension Dataset: Sequence {
     /// Returns an iterator over the elements of this dataset.
     @inlinable
     public func makeIterator() -> DatasetIterator<Element> {
-        let resource = Raw.anonymousIterator(
+        let resource = _Raw.anonymousIterator(
             outputTypes: Element._typeList,
             outputShapes: Element._unknownShapeList)
-        Raw.makeIterator(dataset: _handle, iterator: resource)
+        _Raw.makeIterator(dataset: _handle, iterator: resource)
         return DatasetIterator(_handle: resource)
     }
 }
@@ -92,7 +92,7 @@ public extension Dataset {
     func map<ResultElement: TensorGroup>(
         _ transform: (Element) -> ResultElement
     ) -> Dataset<ResultElement> {
-        return Dataset<ResultElement>(_handle: Raw.mapDataset(
+        return Dataset<ResultElement>(_handle: _Raw.mapDataset(
             inputDataset: _handle,
             otherArguments: Tensor<Int32>(0),
             f: transform,
@@ -107,7 +107,7 @@ public extension Dataset {
         parallelCallCount: Int,
         _ transform: (Element) -> ResultElement
     ) -> Dataset<ResultElement> {
-        return Dataset<ResultElement>(_handle: Raw.parallelMapDataset(
+        return Dataset<ResultElement>(_handle: _Raw.parallelMapDataset(
             inputDataset: _handle,
             otherArguments: Tensor<Int32>(0),
             numParallelCalls: Tensor<Int32>(Int32(parallelCallCount)),
@@ -121,7 +121,7 @@ public extension Dataset {
 
     @inlinable
     func filter(_ isIncluded: (Element) -> Tensor<Bool>) -> Dataset {
-        return Dataset(_handle: Raw.filterDataset(
+        return Dataset(_handle: _Raw.filterDataset(
             inputDataset: _handle,
             otherArguments: Tensor<Int32>(0),
             predicate: isIncluded,
@@ -133,7 +133,7 @@ public extension Dataset {
 public extension Dataset {
     @inlinable
     func prefetched(count: Int) -> Dataset {
-        return Dataset(_handle: Raw.prefetchDataset(
+        return Dataset(_handle: _Raw.prefetchDataset(
             inputDataset: _handle,
             bufferSize: Tensor(Int64(count)),
             outputTypes: Element._typeList,
@@ -147,7 +147,7 @@ public extension Dataset {
         reshuffleForEachIterator: Bool = true
     ) -> Dataset {
         let (seed1, seed2) = _tensorSeeds(Tensor(randomSeed))
-        return Dataset(_handle: Raw.shuffleDataset(
+        return Dataset(_handle: _Raw.shuffleDataset(
             inputDataset: _handle,
             bufferSize: Tensor(Int64(sampleCount)),
             seed: seed1,
@@ -159,7 +159,7 @@ public extension Dataset {
 
     @inlinable
     func batched(_ batchSize: Int) -> Dataset {
-        return Dataset(_handle: Raw.batchDataset(
+        return Dataset(_handle: _Raw.batchDataset(
             inputDataset: _handle,
             batchSize: Tensor(Int64(batchSize)),
             outputTypes: Element._typeList,
@@ -168,7 +168,7 @@ public extension Dataset {
 
     @inlinable
     func repeated(count: Int? = nil) -> Dataset {
-        return Dataset(_handle: Raw.repeatDataset(
+        return Dataset(_handle: _Raw.repeatDataset(
             inputDataset: _handle,
             count: Tensor(Int64(count ?? -1)),
             outputTypes: Element._typeList,
@@ -191,14 +191,14 @@ extension DatasetIterator: IteratorProtocol {
     /// Advances to the next element and returns it, or `nil` if no next element exists.
     @inlinable
     public mutating func next() -> Element? {
-        let optional = Raw.iteratorGetNextAsOptional(
+        let optional = _Raw.iteratorGetNextAsOptional(
             iterator: _handle,
             outputTypes: Element._typeList,
             outputShapes: Element._unknownShapeList)
-        guard Raw.optionalHasValue(optional: optional).scalarized() else {
+        guard _Raw.optionalHasValue(optional: optional).scalarized() else {
             return nil
         }
-        return Raw.optionalGetValue(
+        return _Raw.optionalGetValue(
             optional: optional,
             outputShapes: Element._unknownShapeList)
     }
@@ -236,7 +236,7 @@ public struct Zip2TensorGroup<T: TensorGroup, U: TensorGroup>: TensorGroup {
 public func zip<T: TensorGroup, U: TensorGroup>(
     _ dataset1: Dataset<T>, _ dataset2: Dataset<U>
 ) -> Dataset<Zip2TensorGroup<T, U>> {
-    let handle = Raw.zipDataset(
+    let handle = _Raw.zipDataset(
         inputDatasets: [dataset1._handle, dataset2._handle],
         outputTypes: Zip2TensorGroup<T, U>._typeList,
         outputShapes: Zip2TensorGroup<T, U>._unknownShapeList)

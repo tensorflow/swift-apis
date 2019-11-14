@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#if !COMPILING_TENSORFLOW_STDLIB_MODULE
+import Tensor
+#endif
+
 /// An input to a recurrent neural network.
 public struct RNNCellInput<Input: Differentiable, State: Differentiable>: Differentiable {
     /// The input at the current time step.
@@ -25,6 +29,9 @@ public struct RNNCellInput<Input: Differentiable, State: Differentiable>: Differ
         self.state = state
     }
 }
+
+extension RNNCellInput: EuclideanDifferentiable
+    where Input: EuclideanDifferentiable, State: EuclideanDifferentiable {}
 
 /// An output to a recurrent neural network.
 public struct RNNCellOutput<Output: Differentiable, State: Differentiable>: Differentiable {
@@ -40,9 +47,12 @@ public struct RNNCellOutput<Output: Differentiable, State: Differentiable>: Diff
     }
 }
 
+extension RNNCellOutput: EuclideanDifferentiable
+    where Output: EuclideanDifferentiable, State: EuclideanDifferentiable {}
+
 /// A recurrent neural network cell.
 public protocol RNNCell: Layer
-    where Input == RNNCellInput<TimeStepInput, State>, 
+    where Input == RNNCellInput<TimeStepInput, State>,
           Output == RNNCellOutput<TimeStepOutput, State> {
     /// The input at a time step.
     associatedtype TimeStepInput: Differentiable
@@ -50,8 +60,9 @@ public protocol RNNCell: Layer
     associatedtype TimeStepOutput: Differentiable
     /// The state that may be preserved across time steps.
     associatedtype State: Differentiable
-    /// The zero state.
-    var zeroState: State { get }
+    
+    /// Returns a zero-valued state with shape compatible with the provided input.
+    func zeroState(for input: TimeStepInput) -> State
 }
 
 public extension RNNCell {
@@ -81,14 +92,6 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     public var weight: Tensor<Scalar>
     public var bias: Tensor<Scalar>
 
-    @noDerivative public var stateShape: TensorShape {
-        TensorShape([1, weight.shape[1]])
-    }
-
-    public var zeroState: State {
-        State(Tensor(zeros: stateShape))
-    }
-
     // TODO(TF-507): Revert to `typealias State = Tensor<Scalar>` after SR-10697 is fixed.
     public struct State: Equatable, Differentiable, VectorProtocol, KeyPathIterable {
         public var value: Tensor<Scalar>
@@ -114,6 +117,11 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
         self.bias = Tensor(zeros: [hiddenSize])
     }
 
+    /// Returns a zero-valued state with shape compatible with the provided input.
+    public func zeroState(for input: Tensor<Scalar>) -> State {
+        State(Tensor(zeros: [input.shape[0], weight.shape[1]]))
+    }
+
     /// Returns the output obtained from applying the layer to the given input.
     ///
     /// - Parameter input: The input to the layer.
@@ -128,15 +136,55 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
 
 /// An LSTM cell.
 public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
-    public var inputWeight, updateWeight, forgetWeight, outputWeight: Tensor<Scalar>
-    public var inputBias, updateBias, forgetBias, outputBias: Tensor<Scalar>
+    public var fusedWeight: Tensor<Scalar>
+    public var fusedBias: Tensor<Scalar>
 
-    @noDerivative public var stateShape: TensorShape {
-        TensorShape([1, inputWeight.shape[1]])
+    public var inputWeight: Tensor<Scalar> {
+        let hiddenSize = fusedWeight.shape[1] / 4
+        return fusedWeight.slice(
+            lowerBounds: [0, 0],
+            upperBounds: [fusedWeight.shape[0], hiddenSize])
     }
 
-    public var zeroState: State {
-        State(cell: Tensor(zeros: stateShape), hidden: Tensor(zeros: stateShape))
+    public var updateWeight: Tensor<Scalar> {
+        let hiddenSize = fusedWeight.shape[1] / 4
+        return fusedWeight.slice(
+            lowerBounds: [0, hiddenSize],
+            upperBounds: [fusedWeight.shape[0], 2 * hiddenSize])
+    }
+
+    public var forgetWeight: Tensor<Scalar> {
+        let hiddenSize = fusedWeight.shape[1] / 4
+        return fusedWeight.slice(
+            lowerBounds: [0, 2 * hiddenSize],
+            upperBounds: [fusedWeight.shape[0], 3 * hiddenSize])
+    }
+
+    public var outputWeight: Tensor<Scalar> {
+        let hiddenSize = fusedWeight.shape[1] / 4
+        return fusedWeight.slice(
+            lowerBounds: [0, 3 * hiddenSize],
+            upperBounds: [fusedWeight.shape[0], 4 * hiddenSize])
+    }
+
+    public var inputBias: Tensor<Scalar> {
+        let hiddenSize = fusedWeight.shape[1] / 4
+        return fusedBias.slice(lowerBounds: [0], upperBounds: [hiddenSize])
+    }
+
+    public var updateBias: Tensor<Scalar> {
+        let hiddenSize = fusedWeight.shape[1] / 4
+        return fusedBias.slice(lowerBounds: [hiddenSize], upperBounds: [2 * hiddenSize])
+    }
+
+    public var forgetBias: Tensor<Scalar> {
+        let hiddenSize = fusedWeight.shape[1] / 4
+        return fusedBias.slice(lowerBounds: [2 * hiddenSize], upperBounds: [3 * hiddenSize])
+    }
+
+    public var outputBias: Tensor<Scalar> {
+        let hiddenSize = fusedWeight.shape[1] / 4
+        return fusedBias.slice(lowerBounds: [3 * hiddenSize], upperBounds: [4 * hiddenSize])
     }
 
     public typealias TimeStepInput = Tensor<Scalar>
@@ -149,22 +197,9 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     /// - Parameters:
     ///   - inputSize: The number of features in 2-D input tensors.
     ///   - hiddenSize: The number of features in 2-D hidden states.
-    public init(
-        inputSize: Int,
-        hiddenSize: Int,
-        seed: TensorFlowSeed = Context.local.randomSeed
-    ) {
-        let concatenatedInputSize = inputSize + hiddenSize
-        let gateWeightShape = TensorShape([concatenatedInputSize, hiddenSize])
-        let gateBiasShape = TensorShape([hiddenSize])
-        self.inputWeight = Tensor(glorotUniform: gateWeightShape, seed: seed)
-        self.inputBias = Tensor(zeros: gateBiasShape)
-        self.updateWeight = Tensor(glorotUniform: gateWeightShape, seed: seed)
-        self.updateBias = Tensor(zeros: gateBiasShape)
-        self.forgetWeight = Tensor(glorotUniform: gateWeightShape, seed: seed)
-        self.forgetBias = Tensor(ones: gateBiasShape)
-        self.outputWeight = Tensor(glorotUniform: gateWeightShape, seed: seed)
-        self.outputBias = Tensor(zeros: gateBiasShape)
+    public init(inputSize: Int, hiddenSize: Int) {
+        self.fusedWeight = Tensor(glorotUniform: [inputSize + hiddenSize, 4 * hiddenSize])
+        self.fusedBias = Tensor(zeros: [4 * hiddenSize])
     }
 
     public struct State: Differentiable {
@@ -178,6 +213,14 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
         }
     }
 
+    /// Returns a zero-valued state with shape compatible with the provided input.
+    public func zeroState(for input: Tensor<Scalar>) -> State {
+        let hiddenSize = fusedWeight.shape[1] / 4
+        return State(
+            cell: Tensor(zeros: [input.shape[0], hiddenSize]),
+            hidden: Tensor(zeros: [input.shape[0], hiddenSize]))
+    }
+
     /// Returns the output obtained from applying the layer to the given input.
     ///
     /// - Parameter input: The input to the layer.
@@ -186,10 +229,27 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     public func callAsFunction(_ input: Input) -> Output {
         let gateInput = input.input.concatenated(with: input.state.hidden, alongAxis: 1)
 
-        let inputGate = sigmoid(matmul(gateInput, inputWeight) + inputBias)
-        let updateGate = tanh(matmul(gateInput, updateWeight) + updateBias)
-        let forgetGate = sigmoid(matmul(gateInput, forgetWeight) + forgetBias)
-        let outputGate = sigmoid(matmul(gateInput, outputWeight) + outputBias)
+        let fused = matmul(gateInput, fusedWeight) + fusedBias
+        let batchSize = fused.shape[0]
+        let hiddenSize = fused.shape[1] / 4
+        let inputGate = sigmoid(fused.slice(
+            lowerBounds: [0, 0],
+            upperBounds: [batchSize, hiddenSize]))
+        let updateGate = tanh(fused.slice(
+            lowerBounds: [0, hiddenSize],
+            upperBounds: [batchSize, 2 * hiddenSize]))
+        let forgetGate = sigmoid(fused.slice(
+            lowerBounds: [0, 2 * hiddenSize],
+            upperBounds: [batchSize, 3 * hiddenSize]))
+        let outputGate = sigmoid(fused.slice(
+            lowerBounds: [0, 3 * hiddenSize],
+            upperBounds: [batchSize,4 * hiddenSize]))
+        // TODO(SR-10697/TF-507): Replace with the following once it does not crash the compiler.
+        // let fusedParts = fused.split(count: 4, alongAxis: 1)
+        // let inputGate = sigmoid(fusedParts[0])
+        // let updateGate = tanh(fusedParts[1])
+        // let forgetGate = sigmoid(fusedParts[2])
+        // let outputGate = sigmoid(fusedParts[3])
 
         let newCellState = input.state.cell * forgetGate + inputGate * updateGate
         let newHiddenState = tanh(newCellState) * outputGate
@@ -210,27 +270,28 @@ public struct RNN<Cell: RNNCell>: Layer {
         self.cell = cell()
     }
 
-    @differentiable(wrt: (self, input), vjp: _vjpCallAsFunction(_:initialState:))
+    @differentiable(wrt: (self, inputs), vjp: _vjpCallAsFunction(_:initialState:))
     public func callAsFunction(
-        _ input: [Cell.TimeStepInput],
+        _ inputs: [Cell.TimeStepInput],
         initialState: Cell.State
     ) -> [Cell.TimeStepOutput] {
+        if inputs.isEmpty { return [Cell.TimeStepOutput]() }
         var currentHiddenState = initialState
         var timeStepOutputs: [Cell.TimeStepOutput] = []
-        for timestep in input {
-            let output = cell(input: timestep, state: currentHiddenState)
+        for timeStepInput in inputs {
+            let output = cell(input: timeStepInput, state: currentHiddenState)
             currentHiddenState = output.state
             timeStepOutputs.append(output.output)
         }
         return timeStepOutputs
     }
 
-    @differentiable(wrt: (self, input))
+    @differentiable(wrt: (self, inputs))
     public func call(
-        _ input: [Cell.TimeStepInput],
+        _ inputs: [Cell.TimeStepInput],
         initialState: Cell.State
     ) -> [Cell.TimeStepOutput] {
-        callAsFunction(input, initialState: initialState)
+        callAsFunction(inputs, initialState: initialState)
     }
 
     @usableFromInline
@@ -241,7 +302,7 @@ public struct RNN<Cell: RNNCell>: Layer {
           (Array<Cell.TimeStepOutput>.TangentVector)
               -> (TangentVector, Array<Cell.TimeStepInput>.TangentVector)) {
         let timeStepCount = inputs.count
-        var currentHiddenState = cell.zeroState
+        var currentHiddenState = cell.zeroState(for: inputs[0])
         var timeStepOutputs: [Cell.TimeStepOutput] = []
         timeStepOutputs.reserveCapacity(timeStepCount)
         var backpropagators: [Cell.Backpropagator] = []
@@ -262,7 +323,7 @@ public struct RNN<Cell: RNNCell>: Layer {
             reversed𝛁inputs.reserveCapacity(timeStepCount)
             for (𝛁output, backpropagator) in zip(𝛁outputs.base, backpropagators).reversed() {
                 let (new𝛁cell, 𝛁input) = backpropagator(.init(output: 𝛁output, state: 𝛁state))
-                𝛁cell = new𝛁cell
+                𝛁cell += new𝛁cell
                 𝛁state = 𝛁input.state
                 reversed𝛁inputs.append(𝛁input.input)
             }
@@ -272,23 +333,25 @@ public struct RNN<Cell: RNNCell>: Layer {
 
     @differentiable
     public func callAsFunction(_ inputs: [Cell.TimeStepInput]) -> [Cell.TimeStepOutput] {
-        return self(inputs, initialState: withoutDerivative(at: cell.zeroState))
+        let initialState = withoutDerivative(at: cell.zeroState(for: inputs[0]))
+        return self(inputs, initialState: withoutDerivative(at: initialState))
     }
 
-    /* TODO: Uncomment once control flow and differentiation through force unwrapping is supported.
     @differentiable(wrt: (self, inputs))
-    public func lastOutput(from inputs: [Cell.TimeStepInput],
-                           initialState: Cell.State) -> Cell.TimeStepOutput {
-        precondition(!inputs.isEmpty, "inputs cannot be empty")
-        return self(inputs, initialState: initialState).last!
+    public func lastOutput(
+        from inputs: [Cell.TimeStepInput],
+        initialState: Cell.State
+    ) -> Cell.TimeStepOutput {
+        precondition(!inputs.isEmpty, "'inputs' must be non-empty.")
+        return self(inputs, initialState: initialState)[withoutDerivative(at: inputs.count - 1)]
     }
 
     @differentiable(wrt: (self, inputs))
     public func lastOutput(from inputs: [Cell.TimeStepInput]) -> Cell.TimeStepOutput {
-        precondition(!inputs.isEmpty, "inputs cannot be empty")
-        return self(inputs, initialState: cell.zeroState).last!
+        precondition(!inputs.isEmpty, "'inputs' must be non-empty.")
+        let initialState = withoutDerivative(at: cell.zeroState(for: inputs[0]))
+        return lastOutput(from: inputs, initialState: initialState)
     }
-    */
 }
 
 extension RNN: Equatable where Cell: Equatable {}

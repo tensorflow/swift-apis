@@ -54,11 +54,24 @@ final class TensorTests: XCTestCase {
         XCTAssertEqual(Tensor<Int32>(ones: [2, 2]).shape.description, "[2, 2]")
         XCTAssertEqual(Tensor(1).shape.description, "[]")
     }
+    
+    func testEquality() {
+        let tensor = Tensor<Float>([0, 1, 2, 3, 4, 5])
+        let zeros = Tensor<Float>(zeros: [6])
+        
+        XCTAssertTrue(tensor == tensor)
+        XCTAssertFalse(tensor != tensor)
+        XCTAssertFalse(tensor == zeros)
+        XCTAssertTrue(tensor != zeros)
+        XCTAssertFalse(tensor == tensor.reshaped(to: [2, 3]))
+        XCTAssertTrue(tensor != tensor.reshaped(to: [2, 3]))
+    }
 
     static var allTests = [
         ("testSimpleCond", testSimpleCond),
         ("testRankGetter", testRankGetter),
         ("testShapeGetter", testShapeGetter),
-        ("testTensorShapeDescription", testTensorShapeDescription)
+        ("testTensorShapeDescription", testTensorShapeDescription),
+        ("testEquality", testEquality),
     ]
 }

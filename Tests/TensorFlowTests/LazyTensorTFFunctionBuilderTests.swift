@@ -16,20 +16,10 @@ import XCTest
 @testable import TensorFlow
 import CTensorFlow
 
-final class LazyTensorTFFunctionBuilderTests : XCTestCase {
-    override class func setUp() {
-        super.setUp()
-        _ThreadLocalState.useLazyTensor = true
-    }
-
-    override class func tearDown() {
-        super.tearDown()
-        _ThreadLocalState.useLazyTensor = false
-    }
-
+final class LazyTensorTFFunctionBuilderTests: LazyTensorTestCase {
     func testSingletonInputs() {
         let a = materializedLazyTensor(Tensor<Float>(10.0))
-        let w = Raw.identity(a)
+        let w = _Raw.identity(a)
         XCTAssertEqual(
             tfFunction(w, "testSingletonInputs")!.description,
             """
@@ -45,7 +35,7 @@ final class LazyTensorTFFunctionBuilderTests : XCTestCase {
     func testListInputs() {
         let a = materializedLazyTensor(Tensor<Float>(10.0))
         let b = materializedLazyTensor(Tensor<Float>(2.0))
-        let w = Raw.addN(inputs: [a, b])
+        let w = _Raw.addN(inputs: [a, b])
         XCTAssertEqual(
             tfFunction(w, "testListInputs")!.description,
             """
@@ -67,10 +57,10 @@ final class LazyTensorTFFunctionBuilderTests : XCTestCase {
             tfFunction(w, "sequence")!.description,
             """
 
-            sequence(placeholder_0:float, placeholder_1:float, placeholder_2:float) -> (add_4:float) {
+            sequence(placeholder_0:float, placeholder_1:float, placeholder_2:float) -> (addv2_4:float) {
               Mul_3 = Mul[T=float](placeholder_1, placeholder_2)
-              Add_4 = Add[T=float](placeholder_0, Mul_3:z:0)
-              return add_4 = Add_4:z:0
+              AddV2_4 = AddV2[T=float](placeholder_0, Mul_3:z:0)
+              return addv2_4 = AddV2_4:z:0
             }
 
             """)
@@ -194,6 +184,22 @@ final class LazyTensorTFFunctionBuilderTests : XCTestCase {
 
             constTensorAttr() -> () {
               Const_0 = Const[dtype=float, value=Tensor<type: float shape: [] values: 5.5>]()
+            }
+
+            """)
+
+        // TensorFunctionPointer attribute.
+        let statelessWhile = LazyTensorOperation("StatelessWhile", 1)
+        statelessWhile.updateAttribute("T", [Float.tensorFlowDataType])
+        statelessWhile.updateAttribute("cond", _TensorFunctionPointer(name: "cond"))
+        statelessWhile.updateAttribute("body", _TensorFunctionPointer(name: "body"))
+        statelessWhile.addInputList([a])
+        XCTAssertEqual(
+            tfFunction(statelessWhile, "statelessWhile").description,
+            """
+
+            statelessWhile(placeholder_0:float) -> () {
+              StatelessWhile_1 = StatelessWhile[T={float}, body=body, cond=cond, output_shapes=[], parallel_iterations=10](placeholder_0)
             }
 
             """)

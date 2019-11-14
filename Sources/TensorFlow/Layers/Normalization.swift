@@ -25,13 +25,13 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The feature dimension.
     @noDerivative public let axis: Int
     /// The momentum for the running mean and running variance.
-    @noDerivative public let momentum: Tensor<Scalar>
+    @noDerivative public let momentum: Scalar
     /// The offset value, also known as beta.
     public var offset: Tensor<Scalar>
     /// The scale value, also known as gamma.
     public var scale: Tensor<Scalar>
     /// The variance epsilon value.
-    @noDerivative public let epsilon: Tensor<Scalar>
+    @noDerivative public let epsilon: Scalar
     /// The running mean.
     @noDerivative public let runningMean: Parameter<Scalar>
     /// The running variance.
@@ -49,10 +49,10 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - runningVariance: The running variance.
     public init(
         axis: Int,
-        momentum: Tensor<Scalar>,
+        momentum: Scalar,
         offset: Tensor<Scalar>,
         scale: Tensor<Scalar>,
-        epsilon: Tensor<Scalar>,
+        epsilon: Scalar,
         runningMean: Tensor<Scalar>,
         runningVariance: Tensor<Scalar>
     ) {
@@ -71,21 +71,27 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+        let positiveAxis = (input.rank + axis) % input.rank
+        var offset = self.offset
+        var scale = self.scale
+        if positiveAxis != input.rank - 1 {
+            var broadcastShape = TensorShape([Int](repeating: 1, count: input.rank))
+            broadcastShape[positiveAxis] = input.shape[positiveAxis]
+            offset = offset.reshaped(to: broadcastShape)
+            scale = scale.reshaped(to: broadcastShape)
+        }
         switch Context.local.learningPhase {
         case .training:
-          let positiveAxis = (input.rank + axis) % input.rank
           var normalizedAxes = Array(0..<input.rank)
           normalizedAxes.remove(at: positiveAxis)
           let moments = input.moments(alongAxes: normalizedAxes)
           runningMean.value += (moments.mean - runningMean.value) * (1 - momentum)
           runningVariance.value += (moments.variance - runningVariance.value) * (1 - momentum)
-          let inv = rsqrt(moments.variance + epsilon) * scale.reshaped(to: moments.variance.shape)
-          return (input - moments.mean) * inv + offset.reshaped(to: moments.mean.shape)
+          let inv = rsqrt(moments.variance + epsilon) * scale
+          return (input - moments.mean) * inv + offset
         case .inference:
-          let scaleShape = runningVariance.value.shape
-          let offsetShape = runningMean.value.shape
-          let inv = rsqrt(runningVariance.value + epsilon) * scale.reshaped(to: scaleShape)
-          return (input - runningMean.value) * inv + offset.reshaped(to: offsetShape)
+          let inv = rsqrt(runningVariance.value + epsilon) * scale
+          return (input - runningMean.value) * inv + offset
         }
     }
 
@@ -99,16 +105,17 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     public init(
         featureCount: Int,
         axis: Int = -1,
-        momentum: Tensor<Scalar> = Tensor(0.99),
-        epsilon: Tensor<Scalar> = Tensor(0.001)
+        momentum: Scalar = 0.99,
+        epsilon: Scalar = 0.001
     ) {
-        self.axis = axis
-        self.momentum = momentum
-        self.scale = Tensor<Scalar>(ones: [featureCount])
-        self.offset = Tensor<Scalar>(zeros: [featureCount])
-        self.epsilon = epsilon
-        self.runningMean = Parameter(Tensor(0))
-        self.runningVariance = Parameter(Tensor(1))
+        self.init(
+            axis: axis,
+            momentum: momentum,
+            offset: Tensor(zeros: [featureCount]),
+            scale: Tensor(ones: [featureCount]),
+            epsilon: epsilon,
+            runningMean: Tensor(0),
+            runningVariance: Tensor(1))
     }
 }
 
@@ -124,14 +131,14 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     /// The axis.
     @noDerivative public let axis: Int
     /// The variance epsilon value.
-    @noDerivative public let epsilon: Tensor<Scalar>
+    @noDerivative public let epsilon: Scalar
 
     /// Creates a layer normalization layer.
     public init(
         offset: Tensor<Scalar>,
         scale: Tensor<Scalar>,
         axis: Int,
-        epsilon: Tensor<Scalar>
+        epsilon: Scalar
     ) {
         self.offset = offset
         self.scale = scale
@@ -148,14 +155,13 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     public init(
         featureCount: Int,
         axis: Int,
-        epsilon: Tensor<Scalar> = Tensor(0.001)
+        epsilon: Scalar = 0.001
     ) {
         self.init(
             offset: Tensor(zeros: [featureCount]),
             scale: Tensor(ones: [featureCount]),
             axis: axis,
-            epsilon: epsilon
-        )
+            epsilon: epsilon)
     }
 
     /// Returns the output obtained from applying the layer to the given input.
@@ -164,8 +170,13 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        let moments = input.moments(alongAxes: axis)
-        let inv = rsqrt(moments.variance + epsilon) * scale.reshaped(to: moments.variance.shape)
-        return (input - moments.mean) * inv + offset.reshaped(to: moments.mean.shape)
+        let positiveAxis = (input.rank + axis) % input.rank
+        var broadcastShape = TensorShape(Array(repeating: 1, count: input.rank))
+        broadcastShape[positiveAxis] = input.shape[positiveAxis]
+        let offset = self.offset.reshaped(to: broadcastShape)
+        let scale = self.scale.reshaped(to: broadcastShape)
+        let moments = input.moments(alongAxes: positiveAxis)
+        let inv = rsqrt(moments.variance + epsilon) * scale
+        return (input - moments.mean) * inv + offset
     }
 }
