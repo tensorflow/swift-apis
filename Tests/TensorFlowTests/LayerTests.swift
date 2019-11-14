@@ -247,7 +247,7 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(grads.1.bias, [8.0, 8.0])
     }
 
-    func testDepthwiseConv2D() 
+    func testDepthwiseConv2D() {
         let filter =  Tensor(shape: [2, 2, 2, 2], scalars: (0..<16).map(Float.init))
         let bias = Tensor<Float>([1, 2, 3, 4])
         let layer = DepthwiseConv2D<Float>(filter: filter, bias: bias, activation: identity,
