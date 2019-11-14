@@ -52,7 +52,7 @@ extension RNNCellOutput: EuclideanDifferentiable
 
 /// A recurrent neural network cell.
 public protocol RNNCell: Layer
-    where Input == RNNCellInput<TimeStepInput, State>, 
+    where Input == RNNCellInput<TimeStepInput, State>,
           Output == RNNCellOutput<TimeStepOutput, State> {
     /// The input at a time step.
     associatedtype TimeStepInput: Differentiable
@@ -324,7 +324,7 @@ public struct RNN<Cell: RNNCell>: Layer {
             reversed𝛁inputs.reserveCapacity(timeStepCount)
             for (𝛁output, backpropagator) in zip(𝛁outputs.base, backpropagators).reversed() {
                 let (new𝛁cell, 𝛁input) = backpropagator(.init(output: 𝛁output, state: 𝛁state))
-                𝛁cell = new𝛁cell
+                𝛁cell += new𝛁cell
                 𝛁state = 𝛁input.state
                 reversed𝛁inputs.append(𝛁input.input)
             }
