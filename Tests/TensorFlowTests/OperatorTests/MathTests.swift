@@ -340,6 +340,12 @@ final class MathOperatorTests: XCTestCase {
         assertEqual(y0, expectedY0, accuracy: 0.0001)
         assertEqual(y1, expectedY1, accuracy: 0.0001)
         assertEqual(y2, expectedY2, accuracy: 0.0001)
+
+        let xSmall = Tensor<Float>([
+            -301.9475, -265.2244, -275.77475, -235.28029, -277.2509, -396.6921, -400.01385])
+        let ySmall = xSmall.logSumExp()
+        let expectedYSmall = Tensor<Float>(-235.28029)
+        assertEqual(ySmall, expectedYSmall, accuracy: 0.0001)
     }
 
     func testMoments() {

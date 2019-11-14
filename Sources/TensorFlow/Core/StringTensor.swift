@@ -100,8 +100,8 @@ public extension StringTensor {
     /// Creates a 1-D `StringTensor` in from contiguous scalars.
     @inlinable
     init(_ scalars: [String]) {
-	    self.init(shape: [scalars.count], scalars: scalars)
-	}
+        self.init(shape: [scalars.count], scalars: scalars)
+    }
 }
 
 //===------------------------------------------------------------------------------------------===//

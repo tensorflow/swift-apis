@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import XCTest
-@testable import TensorFlow
+@testable import Tensor
 
 final class PRNGTests: XCTestCase {
     func testARC4() {

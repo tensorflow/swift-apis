@@ -70,19 +70,18 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// and padding size is determined by the padding scheme.
     ///
-    /// - Parameter input: The input to the layer [batch count, input width, input channel count].
-    /// - Returns: The output of shape [batch count, output width, output channel count].
+    /// - Parameter input: The input to the layer [batch size, input width, input channel count].
+    /// - Returns: The output of shape [batch size, output width, output channel count].
     ///
     /// - Note: Padding size equals zero when using `.valid`.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        let conv = conv2D(
-            input.expandingShape(at: 1),
-            filter: filter.expandingShape(at: 0),
-            strides: (1, 1, stride, 1),
+        activation(conv1D(
+            input,
+            filter: filter,
+            stride: stride,
             padding: padding,
-            dilations: (1, 1, dilation, 1))
-        return activation(conv.squeezingShape(at: 1) + bias)
+            dilation: dilation) + bias)
     }
 }
 
@@ -186,7 +185,7 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// and padding sizes are determined by the padding scheme.
     ///
     /// - Parameter input: The input to the layer of shape
-    ///   [batch count, input height, input width, input channel count].
+    ///   [batch size, input height, input width, input channel count].
     /// - Returns: The output of shape
     ///   [batch count, output height, output width, output channel count].
     ///
@@ -472,7 +471,7 @@ public struct TransposedConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameters:
     ///   - filter: A 4-D tensor of shape
-    ///     `[width, height, input channel count, output channel count]`.
+    ///     `[height, width, output channel count, input channel count]`.
     ///   - bias: The bias tensor of shape `[output channel count]`.
     ///   - activation: The element-wise activation function.
     ///   - strides: The strides of the sliding window for spatial dimensions.
@@ -499,12 +498,12 @@ public struct TransposedConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         let batchSize = input.shape[0]
-        let w = (input.shape[1] - (1 * paddingIndex)) *
-            strides.0 + (filter.shape[0] * paddingIndex)
-        let h = (input.shape[2] - (1 * paddingIndex)) *
-            strides.1 + (filter.shape[1] * paddingIndex)
+        let h = (input.shape[1] - (1 * paddingIndex)) *
+          strides.0 + (filter.shape[0] * paddingIndex)
+        let w = (input.shape[2] - (1 * paddingIndex)) *
+          strides.1 + (filter.shape[1] * paddingIndex)
         let c = filter.shape[2]
-        let newShape = Tensor<Int32>([Int32(batchSize), Int32(w), Int32(h), Int32(c)])
+        let newShape = Tensor<Int32>([Int32(batchSize), Int32(h), Int32(w), Int32(c)])
         return activation(conv2DBackpropInput(
             input,
             shape: newShape,
@@ -690,8 +689,10 @@ public struct DepthwiseConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
 
     /// Returns the output obtained from applying the layer to the given input.
     ///
-    /// - Parameter input: The input to the layer.
-    /// - Returns: The output.
+    /// - Parameter input: The input to the layer of shape,
+    ///   [batch count, input height, input width, input channel count]
+    /// - Returns: The output of shape,
+    ///   [batch count, output height, output width, input channel count * channel multiplier]
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         return activation(depthwiseConv2D(
@@ -707,7 +708,8 @@ public extension DepthwiseConv2D {
     /// element-wise activation function.
     ///
     /// - Parameters:
-    ///   - filterShape: The shape of the 4-D convolution kernel.
+    ///   - filterShape: The shape of the 4-D convolution kernel with form,
+    ///     [filter width, filter height, input channel count, channel multiplier].
     ///   - strides: The strides of the sliding window for spatial/spatio-temporal dimensions.
     ///   - padding: The padding algorithm for convolution.
     ///   - activation: The element-wise activation function.
@@ -725,7 +727,7 @@ public extension DepthwiseConv2D {
             filterShape.0, filterShape.1, filterShape.2, filterShape.3])
         self.init(
             filter: filterInitializer(filterTensorShape),
-            bias: biasInitializer([filterShape.3]),
+            bias: biasInitializer([filterShape.2 * filterShape.3]),
             activation: activation,
             strides: strides,
             padding: padding)
