@@ -76,13 +76,12 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Note: Padding size equals zero when using `.valid`.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        let conv = conv2D(
-            input.expandingShape(at: 1),
-            filter: filter.expandingShape(at: 0),
-            strides: (1, 1, stride, 1),
+        activation(conv1D(
+            input,
+            filter: filter,
+            stride: stride,
             padding: padding,
-            dilations: (1, 1, dilation, 1))
-        return activation(conv.squeezingShape(at: 1) + bias)
+            dilation: dilation) + bias)
     }
 }
 
