@@ -216,6 +216,33 @@ final class LossTests: XCTestCase {
             [-0.0625, -0.01490036, 0.04759964, 0.0]])
         assertEqual(computedGradient, expectedGradient, accuracy: 1e-6)
     }
+    func testHuberLoss() {
+        let predictions = Tensor<Float>([[0.9, 0.2, 0.2], [0.8, 0.4, 0.6]])
+        let labels = Tensor<Float>([[1, 0, 1], [1, 0, 0]])
+
+        do {
+          // Test adapted from:
+          // https://github.com/tensorflow/tensorflow/blob/148f07323f97ef54998f28cd95c195064ce2c426/tensorflow/python/keras/losses_test.py#L1554
+          let loss = huberLoss(predicted: predictions, expected: predictions, delta: 1)
+          assertEqual(loss, Tensor(0), accuracy: 1e-6)
+        }
+
+        do {
+          // Test adapted from:
+          // https://github.com/tensorflow/tensorflow/blob/148f07323f97ef54998f28cd95c195064ce2c426/tensorflow/python/keras/losses_test.py#L1560
+          // The expected loss was computed using Python TensorFlow 2.0.0-beta1:
+          // ```
+          // import tensorflow as tf # 2.0.0-beta1
+          // predictions = tf.constant([[0.9, 0.2, 0.2], [0.8, 0.4, 0.6]])
+          // labels = tf.constant([[1.0, 0.0, 1.0], [1.0, 0.0, 0.0]])
+          // loss = tf.losses.Huber(delta=1.0, reduction=tf.losses.Reduction.SUM)
+          // print(loss(labels, predictions))
+          // # tf.Tensor(0.62500006, shape=(), dtype=float32)
+          // ```
+          let loss = huberLoss(predicted: predictions, expected: labels, delta: Float(1))
+          assertEqual(loss, Tensor(0.62500006), accuracy: 1e-6)
+        }
+    }
 
     static var allTests = [
         ("testL1Loss", testL1Loss),
@@ -237,5 +264,6 @@ final class LossTests: XCTestCase {
          testSoftmaxCrossEntropyWithProbabilitiesGrad),
         ("testSigmoidCrossEntropyLoss", testSigmoidCrossEntropyLoss),
         ("testSigmoidCrossEntropyGradient", testSigmoidCrossEntropyGradient),
+        ("testHuberLoss", testHuberLoss)
     ]
 }
