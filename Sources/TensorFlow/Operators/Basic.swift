@@ -34,6 +34,18 @@ public extension TensorFlowScalar {
 }
 
 public extension Tensor {
+    /// Helper function that assess if `axis` is in the range `[-rank, rank)`, where `rank` is the rank of
+    /// the provided tensors.
+    @usableFromInline
+    internal func preconditionAxis(_ axis: Int) {
+        precondition(
+            axis >= -rank && axis < rank,
+            """
+            The axis must be in the range [-rank, rank)
+            of the provided tensors.
+            """)
+    }
+
     /// Unpacks the given dimension of a rank-`R` tensor into multiple rank-`(R-1)` tensors.
     /// Unpacks `N` tensors from this tensor by chipping it along the `axis` dimension, where `N`
     /// is inferred from this tensor's shape. For example, given a tensor with shape
@@ -59,6 +71,7 @@ public extension Tensor {
     @inlinable
     @differentiable(vjp: _vjpUnstacked(alongAxis:) where Scalar: TensorFlowFloatingPoint)
     func unstacked(alongAxis axis: Int = 0) -> [Tensor] {
+        preconditionAxis(axis)
         let posAxis = axis < 0 ? axis + rank : axis
         return _Raw.unpack(value: self, num: Int64(shape[posAxis]), axis: Int64(posAxis))
     }
@@ -88,7 +101,8 @@ public extension Tensor {
     @inlinable
     @differentiable(vjp: _vjpSplit(count:alongAxis:) where Scalar: TensorFlowFloatingPoint)
     func split(count: Int, alongAxis axis: Int = 0) -> [Tensor] {
-        _Raw.split(splitDim: Tensor<Int32>(Int32(axis)), value: self, numSplit: Int64(count))
+        preconditionAxis(axis)
+        return _Raw.split(splitDim: Tensor<Int32>(Int32(axis)), value: self, numSplit: Int64(count))
     }
 
     /// Splits a tensor into multiple tensors. The tensor is split  into `sizes.shape[0]` pieces.
@@ -119,7 +133,8 @@ public extension Tensor {
         wrt: self,
         vjp: _vjpSplit(sizes:alongAxis:) where Scalar: TensorFlowFloatingPoint)
     func split(sizes: Tensor<Int32>, alongAxis axis: Int = 0) -> [Tensor] {
-        _Raw.splitV(
+        preconditionAxis(axis)
+        return _Raw.splitV(
             value: self,
             sizeSplits: sizes,
             splitDim: Tensor<Int32>(Int32(axis)),
@@ -408,7 +423,8 @@ public extension Tensor {
         atIndices indices: Tensor<Index>,
         alongAxis axis: Int = 0
     ) -> Tensor {
-        _Raw.gatherV2(params: self, indices: indices, axis: Tensor<Int32>(Int32(axis)))
+        preconditionAxis(axis)
+        return _Raw.gatherV2(params: self, indices: indices, axis: Tensor<Int32>(Int32(axis)))
     }
 
     /// Returns slices of this tensor at `indices` along the `axis` dimension, while ignoring the 
