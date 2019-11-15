@@ -102,6 +102,9 @@ public extension Tensor {
     @differentiable(vjp: _vjpSplit(count:alongAxis:) where Scalar: TensorFlowFloatingPoint)
     func split(count: Int, alongAxis axis: Int = 0) -> [Tensor] {
         preconditionAxis(axis)
+        precondition(
+            shape[axis] % count == 0,
+            "Number of ways to split should evenly divide the split dimension.")
         return _Raw.split(splitDim: Tensor<Int32>(Int32(axis)), value: self, numSplit: Int64(count))
     }
 
@@ -134,6 +137,9 @@ public extension Tensor {
         vjp: _vjpSplit(sizes:alongAxis:) where Scalar: TensorFlowFloatingPoint)
     func split(sizes: Tensor<Int32>, alongAxis axis: Int = 0) -> [Tensor] {
         preconditionAxis(axis)
+        precondition(
+            shape[axis] == Int(sizes.sum().scalarized()),
+            "The values in sizes must add up to the size of dimension axis.")
         return _Raw.splitV(
             value: self,
             sizeSplits: sizes,
