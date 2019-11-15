@@ -154,11 +154,16 @@ public extension Tensor {
     /// values of this tensor are replicated `multiples[i]` times along the `i`'th dimension. For
     /// example, tiling `[a b c d]` by `[2]` produces `[a b c d a b c d]`.
     ///
+    /// - Precondition: The expected `rank` of multiples must be `1`.
     /// - Precondition: The shape of `multiples` must be `[tensor.rank]`.
     @inlinable
     @differentiable(wrt: self, vjp: _vjpTiled(multiples:) where Scalar: TensorFlowFloatingPoint)
     func tiled(multiples: Tensor<Int32>) -> Tensor {
-        _Raw.tile(self, multiples: multiples)
+        precondition(multiples.rank == 1, "The expected rank of multiples must be 1.")
+        precondition(
+            rank == multiples.shapeTensor.scalarized(),
+            "The shape of multiples must be [tensor.rank].")
+        return _Raw.tile(self, multiples: multiples)
     }
 
     /// Reshape to the shape of the specified `Tensor`.
