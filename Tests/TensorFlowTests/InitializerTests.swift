@@ -100,41 +100,58 @@ final class InitializerTests: XCTestCase {
     private let tolerance = Float(3e-2)
 
     func testDistribution(
-      _ t: Tensor<Float>,
-      expectedMean: Float? = nil,
-      expectedStandardDeviation: Float? = nil,
-      expectedMin: Float? = nil,
-      expectedMax: Float? = nil
+        _ t: Tensor<Float>,
+        expectedMean: Float? = nil,
+        expectedStandardDeviation: Float? = nil,
+        expectedMin: Float? = nil,
+        expectedMax: Float? = nil
     ) {
         if let expectedMean = expectedMean {
-            XCTAssertTrue(abs(t.mean() - expectedMean) < tolerance)
+            let mean = t.mean().scalarized()
+            XCTAssertTrue(abs(mean - expectedMean) < tolerance)
         }
         if let expectedStandardDeviation = expectedStandardDeviation {
-            XCTAssertTrue(abs(t.standardDeviation() - expectedStandardDeviation) < tolerance)
+            let standardDeviation = t.standardDeviation().scalarized()
+            XCTAssertTrue(abs(standardDeviation - expectedStandardDeviation) < tolerance)
         }
         if let expectedMin = expectedMin {
-            XCTAssertTrue(abs(t.min() - expectedMin) < tolerance)
+            let min = t.min().scalarized()
+            XCTAssertTrue(abs(min - expectedMin) < tolerance)
         }
         if let expectedMax = expectedMax {
-            XCTAssertTrue(abs(t.max() - expectedMax) < tolerance)
+            let max = t.max().scalarized()
+            XCTAssertTrue(abs(max - expectedMax) < tolerance)
         }
     }
 
     func testRandomUniform() {
-        var t = Tensor<Float>(randomUniform: fcShape, lowerBound: Tensor(2), upperBound: Tensor(3))
-        testDistribution(t, expectedMean: 2.5, expectedMin: 2, expectedMax: 3)
-        t = Tensor<Float>(randomUniform: fcShape, lowerBound: Tensor(-1), upperBound: Tensor(1))
-        testDistribution(t, expectedMean: 0, expectedMin: -1, expectedMax: 1)
+        do {
+            let t = Tensor<Float>(
+                randomUniform: fcShape,
+                lowerBound: Tensor(2),
+                upperBound: Tensor(3))
+            testDistribution(t, expectedMean: 2.5, expectedMin: 2, expectedMax: 3)
+        }
+        do {
+            let t = Tensor<Float>(
+                randomUniform: fcShape,
+                lowerBound: Tensor(-1),
+                upperBound: Tensor(1))
+            testDistribution(t, expectedMean: 0, expectedMin: -1, expectedMax: 1)
+        }
     }
 
     func testRandomNormal() {
-        let t = Tensor<Float>(randomNormal: convShape, mean: Tensor(1), standardDeviation: Tensor(2))
+        let t = Tensor<Float>(
+            randomNormal: convShape,
+            mean: Tensor(1),
+            standardDeviation: Tensor(2))
         testDistribution(t, expectedMean: 1, expectedStandardDeviation: 2)
     }
 
-    func testTruncatedRandomNormal() {
-        let t = Tensor<Float>(truncatedRandomNormal: convShape)
-        testDistribution(t, expectedMean: 0, expectedMin: -2, expectedMax: 2)        
+    func testRandomTruncatedNormal() {
+        let t = Tensor<Float>(randomTruncatedNormal: convShape)
+        testDistribution(t, expectedMean: 0, expectedMin: -2, expectedMax: 2)
     }
 
     func testGlorotUniform() {
@@ -158,7 +175,7 @@ final class InitializerTests: XCTestCase {
             // Check the shape.
             var t = Tensor<Float>(orthogonal: TensorShape(shape))
             XCTAssertEqual(shape, t.shape.dimensions)
-        
+
             // Check orthogonality by computing the inner product.
             t = t.reshaped(to: [t.shape.dimensions.dropLast().reduce(1, *), t.shape[t.rank - 1]])
             if t.shape[0] > t.shape[1] {
@@ -181,7 +198,7 @@ final class InitializerTests: XCTestCase {
         ("testBoolToNumericCast", testBoolToNumericCast),
         ("testRandomUniform", testRandomUniform),
         ("testRandomNormal", testRandomNormal),
-        ("testTruncatedRandomNormal", testTruncatedRandomNormal),
+        ("testRandomTruncatedNormal", testRandomTruncatedNormal),
         ("testGlorotUniform", testGlorotUniform),
         ("testGlorotNormal", testGlorotNormal),
         ("testOrthogonalShapesValues", testOrthogonalShapesValues)
