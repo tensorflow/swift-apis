@@ -29,7 +29,7 @@ public protocol AnyTensor {
 /// The generic parameter `Scalar` describes the type of scalars in the tensor (such as `Int32`,
 ///  `Float`, etc).
 @frozen
-public struct Tensor<Scalar: TensorFlowScalar>: TensorProtocol {
+public struct Tensor<Scalar: TensorFlowScalar> {
     /// The underlying `TensorHandle`.
     /// - Note: `handle` is public to allow user defined ops, but should not normally be used.
     public let handle: TensorHandle<Scalar>
@@ -348,18 +348,8 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
 ///   during the conversion from an array literal to a `Tensor`, and is purely
 ///   for implementation purposes.
 @frozen
-public struct _TensorElementLiteral<Scalar>: TensorProtocol where Scalar: TensorFlowScalar {
+public struct _TensorElementLiteral<Scalar> where Scalar: TensorFlowScalar {
     @usableFromInline let tensor: Tensor<Scalar>
-
-    @inlinable
-    public var handle: TensorHandle<Scalar> {
-        return tensor.handle
-    }
-
-    @inlinable
-    public init(handle: TensorHandle<Scalar>) {
-        tensor = Tensor(handle: handle)
-    }
 }
 
 extension _TensorElementLiteral: ExpressibleByBooleanLiteral
