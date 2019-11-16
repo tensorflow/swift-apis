@@ -46,7 +46,7 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
 
     /// Creates a dropout layer.
     ///
-    /// - Parameter probability: The drop probability.
+    /// - Parameter probability: The probability of a node dropping out.
     /// - Precondition: probability must be a value between 0 and 1 (inclusive). 
     public init(probability: Double) {
         precondition(0...1 ~= probability,
