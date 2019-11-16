@@ -54,16 +54,6 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
         self.probability = probability
     }
 
-    @differentiable
-    private func applyingTraining(to input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return input._droppingOut(probability: probability)
-    }
-
-    @differentiable
-    private func applyingInference(to input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return input
-    }
-
     /// Returns the output obtained from applying the layer to the given input.
     ///
     /// - Parameter input: The input to the layer.
@@ -72,9 +62,9 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         switch Context.local.learningPhase {
         case .training:
-            return applyingTraining(to: input)
+            return input._droppingOut(probability: probability)
         case .inference:
-            return applyingInference(to: input)
+            return input
         }
     }
 }
