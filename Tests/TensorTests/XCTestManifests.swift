@@ -12,15 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-public protocol TensorProtocol {
-    /// Scalar type.
-    associatedtype Scalar: TensorFlowScalar
+import XCTest
 
-    /// The underlying `TensorHandle`.
-    /// - Note: Do NOT remove this. This is a compiler requirement.
-    var handle: TensorHandle<Scalar> { get }
-
-    /// Initialize from a `TensorHandle`.
-    /// - Note: Do NOT remove this. This is a compiler requirement.
-    init(handle: TensorHandle<Scalar>)
+#if !os(macOS)
+public func allTests() -> [XCTestCaseEntry] {
+    // Please ensure the test cases remain alphabetized.
+    return [
+        testCase(PRNGTests.allTests),
+        testCase(UtilitiesTests.allTests),
+    ]
 }
+#endif

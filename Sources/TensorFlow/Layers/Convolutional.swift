@@ -76,13 +76,12 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Note: Padding size equals zero when using `.valid`.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        let conv = conv2D(
-            input.expandingShape(at: 1),
-            filter: filter.expandingShape(at: 0),
-            strides: (1, 1, stride, 1),
+        activation(conv1D(
+            input,
+            filter: filter,
+            stride: stride,
             padding: padding,
-            dilations: (1, 1, dilation, 1))
-        return activation(conv.squeezingShape(at: 1) + bias)
+            dilation: dilation) + bias)
     }
 }
 
@@ -377,7 +376,7 @@ public struct TransposedConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///
     /// - Parameters:
     ///   - filter: A 4-D tensor of shape
-    ///     `[width, height, input channel count, output channel count]`.
+    ///     `[height, width, output channel count, input channel count]`.
     ///   - bias: The bias tensor of shape `[output channel count]`.
     ///   - activation: The element-wise activation function.
     ///   - strides: The strides of the sliding window for spatial dimensions.
@@ -404,12 +403,12 @@ public struct TransposedConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         let batchSize = input.shape[0]
-        let w = (input.shape[1] - (1 * paddingIndex)) *
+        let h = (input.shape[1] - (1 * paddingIndex)) *
           strides.0 + (filter.shape[0] * paddingIndex)
-        let h = (input.shape[2] - (1 * paddingIndex)) *
+        let w = (input.shape[2] - (1 * paddingIndex)) *
           strides.1 + (filter.shape[1] * paddingIndex)
         let c = filter.shape[2]
-        let newShape = Tensor<Int32>([Int32(batchSize), Int32(w), Int32(h), Int32(c)])
+        let newShape = Tensor<Int32>([Int32(batchSize), Int32(h), Int32(w), Int32(c)])
         return activation(conv2DBackpropInput(
             input,
             shape: newShape,

@@ -56,7 +56,7 @@ public enum Padding {
 
 public extension Padding {
     @inlinable
-    var raw: Raw.Padding {
+    var raw: _Raw.Padding {
         switch self {
         case .same: return .same
         case .valid: return .valid
@@ -64,12 +64,41 @@ public extension Padding {
     }
 
     @inlinable
-    internal var raw2: Raw.Padding2 {
+    internal var raw2: _Raw.Padding2 {
         switch self {
         case .same: return .same
         case .valid: return .valid
         }
     }
+}
+
+/// Returns a 1-D convolution with the specified input, filter, stride, and padding.
+///
+/// - Parameters:
+///   - input: The input.
+///   - filter: The convolution filter.
+///   - stride: The stride of the sliding filter.
+///   - padding: The padding for the operation.
+///   - dilation: The dilation factor.
+/// - Precondition: `input` must have rank `3`.
+/// - Precondition: `filter` must have rank 3.
+@differentiable(wrt: (input, filter))
+public func conv1D<Scalar: TensorFlowFloatingPoint>(
+    _ input: Tensor<Scalar>,
+    filter: Tensor<Scalar>,
+    stride: Int = 1,
+    padding: Padding = .valid,
+    dilation: Int = 1
+) -> Tensor<Scalar> {
+    precondition(input.shape.rank == 3, "The input must have rank 3.")
+    precondition(filter.shape.rank == 3, "The filter must have rank 3.")
+    return conv2D(
+        input.expandingShape(at: 1),
+        filter: filter.expandingShape(at: 0),
+        strides: (1, 1, stride, 1),
+        padding: padding,
+        dilations: (1, 1, dilation, 1)
+    ).squeezingShape(at: 1)
 }
 
 /// Returns a 2-D convolution with the specified input, filter, strides, and padding.
@@ -90,7 +119,9 @@ public func conv2D<Scalar: TensorFlowFloatingPoint>(
     padding: Padding = .valid,
     dilations: (Int, Int, Int, Int) = (1, 1, 1, 1)
 ) -> Tensor<Scalar> {
-    return Raw.conv2D(
+    precondition(input.shape.rank == 4, "The input must have rank 4.")
+    precondition(filter.shape.rank == 4, "The filter must have rank 4.")
+    return _Raw.conv2D(
         input,
         filter: filter,
         strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2), Int32(strides.3)],
@@ -128,7 +159,7 @@ func conv2DBackpropInput<Scalar: TensorFlowFloatingPoint>(
     padding: Padding = .valid,
     dilations: (Int, Int, Int, Int) = (1, 1, 1, 1)
 ) -> Tensor<Scalar> {
-    return Raw.conv2DBackpropInput(
+    return _Raw.conv2DBackpropInput(
         inputSizes: shape,
         filter: filter,
         outBackprop: x,
@@ -167,7 +198,7 @@ func conv2DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
     padding: Padding = .valid,
     dilations: (Int, Int, Int, Int) = (1, 1, 1, 1)
 ) -> Tensor<Scalar> {
-    return Raw.conv2DBackpropFilter(
+    return _Raw.conv2DBackpropFilter(
         input,
         filterSizes: filterSizes,
         outBackprop: x,
@@ -211,7 +242,9 @@ public func conv3D<Scalar: TensorFlowFloatingPoint>(
     strides: (Int, Int, Int, Int, Int) = (1, 1, 1, 1, 1),
     padding: Padding = .valid
 ) -> Tensor<Scalar> {
-    return Raw.conv3D(
+    precondition(input.shape.rank == 5, "The input must have rank 5.")
+    precondition(filter.shape.rank == 5, "The filter must have rank 5.")
+    return _Raw.conv3D(
         input,
         filter: filter,
         strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2),
@@ -246,7 +279,7 @@ func conv3DBackpropInput<Scalar: TensorFlowFloatingPoint>(
     strides: (Int, Int, Int, Int, Int) = (1, 1, 1, 1, 1),
     padding: Padding = .valid
 ) -> Tensor<Scalar> {
-    return Raw.conv3DBackpropInputV2(
+    return _Raw.conv3DBackpropInputV2(
         inputSizes: shape,
         filter: filter,
         outBackprop: x,
@@ -282,7 +315,7 @@ func conv3DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
     strides: (Int, Int, Int, Int, Int) = (1, 1, 1, 1, 1),
     padding: Padding = .valid
 ) -> Tensor<Scalar> {
-    return Raw.conv3DBackpropFilterV2(
+    return _Raw.conv3DBackpropFilterV2(
         input,
         filterSizes: filterSizes,
         outBackprop: x,
@@ -324,7 +357,9 @@ public func depthwiseConv2D<Scalar: TensorFlowFloatingPoint>(
     strides: (Int, Int, Int, Int),
     padding: Padding
 ) -> Tensor<Scalar> {
-    return Raw.depthwiseConv2dNative(
+    precondition(input.shape.rank == 4, "The input must have rank 4.")
+    precondition(filter.shape.rank == 4, "The filter must have rank 4.")
+    return _Raw.depthwiseConv2dNative(
         input,
         filter: filter,
         strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2),Int32(strides.3)],
@@ -358,7 +393,7 @@ func depthwiseConv2dBackpropInput<Scalar: TensorFlowFloatingPoint>(
     strides: (Int, Int, Int, Int),
     padding: Padding
 ) -> Tensor<Scalar> {
-    return Raw.depthwiseConv2dNativeBackpropInput(
+    return _Raw.depthwiseConv2dNativeBackpropInput(
         inputSizes: shape,
         filter: filter,
         outBackprop: x,
@@ -394,7 +429,7 @@ func depthwiseConv2dBackpropFilter<Scalar: TensorFlowFloatingPoint>(
     strides: (Int, Int, Int, Int),
     padding: Padding
 ) -> Tensor<Scalar> {
-    return Raw.depthwiseConv2dNativeBackpropFilter(
+    return _Raw.depthwiseConv2dNativeBackpropFilter(
         input,
         filterSizes: filterSizes,
         outBackprop: x,
@@ -434,7 +469,7 @@ public func maxPool2D<Scalar: TensorFlowFloatingPoint>(
     strides: (Int, Int, Int, Int),
     padding: Padding
 ) -> Tensor<Scalar> {
-    return Raw.maxPoolV2(
+    return _Raw.maxPoolV2(
         input,
         ksize: Tensor<Int32>([Int32(filterSize.0), Int32(filterSize.1),
                                    Int32(filterSize.2), Int32(filterSize.3)]),
@@ -454,7 +489,7 @@ func _vjpMaxPool2D<Scalar: TensorFlowFloatingPoint>(
     // closed form.
     let value = maxPool2D(x, filterSize: filterSize, strides: strides, padding: padding)
     return (value, { v in
-        Raw.maxPoolGradV2(
+        _Raw.maxPoolGradV2(
             origInput: x,
             origOutput: value,
             grad: v,
@@ -481,7 +516,7 @@ public func maxPool3D<Scalar: TensorFlowFloatingPoint>(
     strides: (Int, Int, Int, Int, Int),
     padding: Padding
 ) -> Tensor<Scalar> {
-    return Raw.maxPool3D(
+    return _Raw.maxPool3D(
         input,
         ksize: [Int32(filterSize.0), Int32(filterSize.1),
                      Int32(filterSize.2), Int32(filterSize.3), Int32(filterSize.4)],
@@ -501,7 +536,7 @@ func _vjpMaxPool3D<Scalar: TensorFlowFloatingPoint>(
     // closed form.
     let value = maxPool3D(x, filterSize: filterSize, strides: strides, padding: padding)
     return (value, { v in
-        return Raw.maxPool3DGrad(
+        return _Raw.maxPool3DGrad(
             origInput: x,
             origOutput: value,
             grad: v,
@@ -529,7 +564,7 @@ public func avgPool2D<Scalar: TensorFlowFloatingPoint>(
     strides: (Int, Int, Int, Int),
     padding: Padding
 ) -> Tensor<Scalar> {
-    return Raw.avgPool(
+    return _Raw.avgPool(
         value: input,
         ksize: [Int32(filterSize.0), Int32(filterSize.1),
                 Int32(filterSize.2), Int32(filterSize.3)],
@@ -548,7 +583,7 @@ func _vjpAvgPool2D<Scalar: TensorFlowFloatingPoint>(
     // closed form.
     let value = avgPool2D(x, filterSize: filterSize, strides: strides, padding: padding)
     return (value, { v in
-        Raw.avgPoolGrad(
+        _Raw.avgPoolGrad(
             origInputShape: x.shapeTensor,
             grad: v,
             ksize: [Int32(filterSize.0), Int32(filterSize.1),
@@ -575,7 +610,7 @@ public func avgPool3D<Scalar: TensorFlowFloatingPoint>(
     strides: (Int, Int, Int, Int, Int),
     padding: Padding
 ) -> Tensor<Scalar> {
-    return Raw.avgPool3D(
+    return _Raw.avgPool3D(
         input,
         ksize: [Int32(filterSize.0), Int32(filterSize.1),
                 Int32(filterSize.2), Int32(filterSize.3), Int32(filterSize.4)],
@@ -595,7 +630,7 @@ func _vjpAvgPool3D<Scalar: TensorFlowFloatingPoint>(
     // closed form.
     let value = avgPool3D(x, filterSize: filterSize, strides: strides, padding: padding)
     return (value, { v in
-        return Raw.avgPool3DGrad(
+        return _Raw.avgPool3DGrad(
             origInputShape: x.shapeTensor,
             grad: v,
             ksize: [Int32(filterSize.0), Int32(filterSize.1), Int32(filterSize.2),

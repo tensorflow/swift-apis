@@ -24,12 +24,19 @@ let package = Package(
             name: "TensorFlow",
             type: .dynamic,
             targets: ["TensorFlow"]),
+        .library(
+            name: "Tensor",
+            type: .dynamic,
+            targets: ["Tensor"]),
     ],
     dependencies: [],
     targets: [
         .target(
-            name: "TensorFlow",
+            name: "Tensor",
             dependencies: []),
+        .target(
+            name: "TensorFlow",
+            dependencies: ["Tensor"]),
         .target(
             name: "Experimental",
             dependencies: [],
@@ -37,6 +44,9 @@ let package = Package(
         .testTarget(
             name: "ExperimentalTests",
             dependencies: ["Experimental"]),
+        .testTarget(
+            name: "TensorTests",
+            dependencies: ["Tensor"]),
         .testTarget(
             name: "TensorFlowTests",
             dependencies: ["TensorFlow"]),
