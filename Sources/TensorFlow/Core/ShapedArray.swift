@@ -13,7 +13,6 @@
 // limitations under the License.
 
 import Swift
-import CTensorFlow
 
 //===------------------------------------------------------------------------------------------===//
 // TensorBuffer
@@ -25,101 +24,44 @@ import CTensorFlow
 /// TensorFlow. In either mode, the buffer object owns the memory and will deallocate it on
 /// `deinit`.
 @usableFromInline
-internal final class TensorBuffer<Scalar> {
-    typealias Shape = [Int]
+internal class TensorBuffer<Scalar> {
+    /// Cached element count of the underlying buffer.
+    let count : Int
 
-    /// A reference type wrapping a Swift Array.
-    /// - Note: An array is used as the native storage for `TensorBuffer`. To make in-place mutation
-    ///   possible when the array is stored in an enumeration value, the array must be wrapped in a
-    ///   reference type.
-    @usableFromInline
-    final class BoxedArray {
-        var array: [Scalar]
+    init(count: Int) { self.count = count }
 
-        init(_ array: __owned [Scalar]) {
-            self.array = array
-        }
-    }
-
-    enum Allocation {
-        case native(BoxedArray)
-        case tensorFlow(CTensor)
-    }
-
-    let allocation: Allocation
-    let count: Int
-
-    deinit {
-        debugLog("De-initializing tensor buffer.")
-        switch allocation {
-        case .native:
-            debugLog("Deallocating underlying buffer.")
-        case let .tensorFlow(cTensor):
-            debugLog("Deleting underlying tensor.")
-            TF_DeleteTensor(cTensor)
-        }
-        debugLog("Returning from deinit of TensorBuffer.")
-    }
-
-    init(allocation: Allocation, count: Int) {
-        self.allocation = allocation
-        self.count = count
-    }
-}
-
-// TF Tensor-specific initializer.
-extension TensorBuffer where Scalar: _TensorFlowDataTypeCompatible {
-    /// Creates a local tensor buffer from a C `TF_Tensor*` value and takes ownership of the value.
-    convenience init(owning cTensor: CTensor, count: Int) {
-        debugLog("Initializing TensorBuffer with a cTensor of \(count) elements.")
-        let actualCount = (0..<TF_NumDims(cTensor)).reduce(1) { accumulator, next in
-            accumulator * Int(TF_Dim(cTensor, next))
-        }
-        assert(actualCount == count)
-        self.init(allocation: .tensorFlow(cTensor), count: count)
-    }
-}
-
-// Factory methods.
-extension TensorBuffer {
-    static func create(
-        count: Int,
-        withInitializer body: (UnsafeMutableBufferPointer<Scalar>) -> Void
-    ) -> TensorBuffer<Scalar> {
-        let array = [Scalar](unsafeUninitializedCapacity: count) { buffer, initializedCount in
-            body(buffer)
-            initializedCount = count
-        }
-        return TensorBuffer(allocation: .native(BoxedArray(array)), count: count)
-    }
-}
-
-// Unsafe address accessor.
-extension TensorBuffer {
     func withUnsafeBufferPointer<R>(
         _ body: (UnsafeBufferPointer<Scalar>) throws -> R
     ) rethrows -> R {
-        switch allocation {
-        case let .native(box):
-            return try box.array.withUnsafeBufferPointer { pointer in try body(pointer) }
-        case let .tensorFlow(cTensor):
-            let startAddress = TF_TensorData(cTensor).assumingMemoryBound(to: Scalar.self)
-            let bufferPointer = UnsafeBufferPointer(start: startAddress, count: count)
-            return try body(bufferPointer)
-        }
+        fatalError("withUnsafeBufferPointer unimplemented because TensorBuffer is abstract")
     }
 
     func withUnsafeMutableBufferPointer<R>(
         _ body: (inout UnsafeMutableBufferPointer<Scalar>) throws -> R
     ) rethrows -> R {
-        switch allocation {
-        case let .native(box):
-            return try box.array.withUnsafeMutableBufferPointer { pointer in try body(&pointer) }
-        case let .tensorFlow(cTensor):
-            let startAddress = TF_TensorData(cTensor).assumingMemoryBound(to: Scalar.self)
-            var bufferPointer = UnsafeMutableBufferPointer(start: startAddress, count: count)
-            return try body(&bufferPointer)
-        }
+        fatalError("withUnsafeMutableBufferPointer unimplemented because TensorBuffer is abstract")
+    }
+}
+
+// TensorBuffer backed by a native swift array.
+internal class ArrayTensorBuffer<Scalar> : TensorBuffer<Scalar> {
+    var array: [Scalar]
+
+    init(_ array: __owned [Scalar]) {
+      self.array = array
+      super.init(count: array.count)
+    }
+
+    override func withUnsafeBufferPointer<R>(
+        _ body: (UnsafeBufferPointer<Scalar>) throws -> R
+    ) rethrows -> R {
+        return try array.withUnsafeBufferPointer(body)
+    }
+
+    override func withUnsafeMutableBufferPointer<R>(
+        _ body: (inout UnsafeMutableBufferPointer<Scalar>) throws -> R
+    ) rethrows -> R {
+        return try array.withUnsafeMutableBufferPointer(body)
     }
 }
 
@@ -444,43 +386,9 @@ fileprivate extension ShapedArray {
         if isKnownUniquelyReferenced(&buffer) { return }
         let oldBuffer = buffer
         debugLog("Unique reference check")
-        buffer = TensorBuffer.create(count: scalarCount) { bufferPointer in
-            let pointer = bufferPointer.baseAddress!
-            oldBuffer.withUnsafeBufferPointer { oldBufferPointer in
-                let oldPointer = oldBufferPointer.baseAddress!
-                pointer.initialize(from: oldPointer, count: scalarCount)
-            }
+        buffer = oldBuffer.withUnsafeBufferPointer { oldBufferPointer in
+            ArrayTensorBuffer<Scalar>([Scalar](oldBufferPointer))
         }
-    }
-}
-
-internal extension ShapedArray where Scalar: _TensorFlowDataTypeCompatible {
-    @usableFromInline
-    init(owning cTensor: CTensor) {
-        // Including \(Scalar.self) into the message would cause non-deterministic crashes.
-        debugLog("Initializing ShapedArray from CTensor.")
-        shape = (0..<TF_NumDims(cTensor)).map { Int(TF_Dim(cTensor, $0)) }
-        if _RuntimeConfig.printsDebugLog {
-            // Without this local variable, passing the string directly into debugLog() would not
-            // work, because 'self' is captured by the auto closure param in debugLog().
-            let shapeStr = "The shape is \(shape)."
-            debugLog(shapeStr)
-        }
-        buffer = TensorBuffer(owning: cTensor, count: shape.reduce(1, *))
-        debugLog("Done initializing ShapedArray from CTensor.")
-    }
-
-    @usableFromInline
-    @inline(never)
-    init(cTensorHandle: CTensorHandle) {
-        let status = TF_NewStatus()
-        let cTensor = TFE_TensorHandleResolve(cTensorHandle, status)
-        checkOk(status)
-        TF_DeleteStatus(status)
-        internalConsistencyCheck(cTensor != nil)
-        debugLog("# of dims is \(TF_NumDims(cTensor!))")
-        debugLog("Returning a shaped array.")
-        self.init(owning: cTensor!)
     }
 }
 
@@ -505,7 +413,7 @@ public extension ShapedArray {
     /// - Precondition: The number of scalars must equal the product of the dimensions of the shape.
     init(shape: __owned [Int], scalars: __owned [Scalar]) {
         precondition(shape.reduce(1, *) == scalars.count, "Scalar count mismatch.")
-        let buffer = TensorBuffer<Scalar>(allocation: .native(.init(scalars)), count: scalars.count)
+        let buffer = ArrayTensorBuffer<Scalar>(scalars)
         self.init(buffer: buffer, shape: shape)
     }
 
@@ -513,27 +421,16 @@ public extension ShapedArray {
     /// - Precondition: The number of scalars must equal the product of the dimensions of the shape.
     init<S: Sequence>(shape: __owned [Int], scalars: __shared S) where S.Element == Scalar {
         let scalarCount = shape.reduce(1, *)
-        let buffer = TensorBuffer<Scalar>.create(count: scalarCount) { bufferPointer in
-            let pointer = bufferPointer.baseAddress!
-            // TODO: Refactor with better pointer initializers in Swift 4.1.
-            var i = 0
-            for scalar in scalars {
-                guard i < scalarCount else { break }
-                pointer.advanced(by: i).initialize(to: scalar)
-                i += 1
-            }
-            // If the sequence has fewer elements than the shape needs, this is a precondition
-            // failure.
-            precondition(
-                i == scalarCount,
-                "The sequence has fewer elements than needed by the shape.")
-        }
+        let buffer = ArrayTensorBuffer<Scalar>([Scalar](scalars))
+        precondition(
+            buffer.count == scalarCount,
+            "The sequence has fewer elements than needed by the shape.")
         self.init(buffer: buffer, shape: shape)
     }
 
     /// Creates a `ShapedArray` from a scalar value.
     init(_ scalar: __owned Scalar) {
-        self.init(buffer: TensorBuffer(allocation: .native(.init([scalar])), count: 1), shape: [])
+        self.init(buffer: ArrayTensorBuffer([scalar]), shape: [])
     }
 
     /// Creates a `ShapedArray` with the specified shape and a single, repeated scalar value.
@@ -552,9 +449,7 @@ public extension ShapedArray {
     ///   - shape: The shape of the `ShapedArray`.
     init(repeating repeatedValue: __owned Scalar, shape: __owned [Int]) {
         let scalarCount = shape.reduce(1, *)
-        let buffer = TensorBuffer<Scalar>(
-            allocation: .native(.init(Array(repeating: repeatedValue, count: scalarCount))),
-            count: scalarCount)
+        let buffer = ArrayTensorBuffer<Scalar>(Array(repeating: repeatedValue, count: scalarCount))
         self.init(buffer: buffer, shape: shape)
     }
 }
@@ -653,42 +548,6 @@ public extension ShapedArray {
     ) rethrows -> Result {
         ensureUniquelyReferenced()
         return try buffer.withUnsafeMutableBufferPointer { ptr in try body(&ptr) }
-    }
-}
-
-// Tensor conversion.
-extension ShapedArray where Scalar: TensorFlowScalar {
-    var byteCount: Int {
-        return MemoryLayout<Scalar>.stride * scalarCount
-    }
-
-    @usableFromInline
-    __consuming func makeTensorHandle() -> TensorHandle<Scalar> {
-        // This initializer is designed to optimize conversion from TF-allocated
-        // `ShapedArray` instances.
-        switch buffer.allocation {
-        case let .native(box):
-            precondition(
-                rank <= Int(Int32.max),
-                "Conversion to TensorHandle is undefined when rank exceeds `Int32.max`.")
-            precondition(
-                shape.allSatisfy { $0 <= Int(Int32.max) },
-                "Conversion to TensorHandle is undefined when shape dimensions exceed `Int32.max`.")
-            return TensorHandle<Scalar>(
-                shape: shape,
-                scalarsInitializer: { addr in
-                    addr.initialize(from: box.array, count: scalarCount)
-                })
-        case let .tensorFlow(cTensor):
-            return TensorHandle(copyingFromCTensor: cTensor)
-        }
-    }
-}
-
-// Tensor conversion.
-public extension Tensor {
-    init(_ array: __owned ShapedArray<Scalar>) {
-        self.init(handle: array.makeTensorHandle())
     }
 }
 
