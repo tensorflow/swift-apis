@@ -302,6 +302,18 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(grads.1.bias, [4, 4, 4, 4])
     }
 
+    func testTransposedConv1D() {
+        let filter =  Tensor(shape: [4, 1, 1], scalars: (0..<4).map(Float.init))
+        let bias = Tensor<Float>([8])
+        let layer = TransposedConv1D(filter: filter, bias: bias, activation: identity,
+                                     stride: 1, padding: .same)
+        let input = Tensor(shape: [1, 4, 1], scalars: (0..<4).map(Float.init))
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>(shape: [1, 1, 4, 1],
+                                     scalars: [8, 9, 12, 18])
+        XCTAssertEqual(output, expected)
+    }
+
     func testTransposedConv2D() {
         let filter =  Tensor(shape: [4, 2, 1, 1], scalars: (0..<8).map(Float.init))
         let bias = Tensor<Float>([8])
@@ -313,6 +325,19 @@ final class LayerTests: XCTestCase {
                                      scalars: [8, 12, 12, 28, 24, 64, 48, 112])
         XCTAssertEqual(output, expected)
     }  
+
+    
+    func testTransposedConv3D() {
+        let filter =  Tensor(shape: [2, 2, 2, 1, 1], scalars: (0..<8).map(Float.init))
+        let bias = Tensor<Float>([8])
+        let layer = TransposedConv3D(filter: filter, bias: bias, activation: identity,
+                                     strides: (1, 1, 1), padding: .same)
+        let input = Tensor(shape: [1, 2, 2, 2, 1], scalars: (0..<8).map(Float.init))
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>(shape: [1, 2, 2, 2, 1],
+                                     scalars: [8, 8, 8, 12, 8, 16, 24, 64])
+        XCTAssertEqual(output, expected)
+    }
 
     func testSeparableConv1D() {
         let depthwiseFilter = Tensor(shape: [2, 2, 2], scalars: (0..<8).map(Float.init))
@@ -1334,7 +1359,9 @@ final class LayerTests: XCTestCase {
         ("testConv2DDilation", testConv2DDilation),
         ("testConv3D", testConv3D),
         ("testConv3DGradient", testConv3DGradient),
+        ("testTransposedConv1D", testTransposedConv1D),
         ("testTransposedConv2D", testTransposedConv2D),
+        ("testTransposedConv3D", testTransposedConv3D),
         ("testDepthwiseConv2D", testDepthwiseConv2D),
         ("testDepthwiseConv2DGradient", testDepthwiseConv2DGradient),
         ("testSeparableConv1D", testSeparableConv1D),
