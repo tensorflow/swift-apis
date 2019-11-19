@@ -366,6 +366,7 @@ public struct TransposedConv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let stride: Int
     /// The padding algorithm for convolution.
     @noDerivative public let padding: Padding
+    /// The paddingIndex property allows us to handle computation based on padding.
     @noDerivative public let paddingIndex: Int
 
     /// The element-wise activation function type.
@@ -561,6 +562,7 @@ public struct TransposedConv3D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let strides: (Int, Int, Int)
     /// The padding algorithm for convolution.
     @noDerivative public let padding: Padding
+    /// The paddingIndex property allows us to handle computation based on padding.
     @noDerivative public let paddingIndex: Int
 
     /// The element-wise activation function type.
