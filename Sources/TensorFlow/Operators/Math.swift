@@ -2686,6 +2686,33 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 }
 
+/// Returns the Cholesky decomposition of one or more square matrices.
+///
+/// The input is a tensor of shape `[..., M, M]` whose inner-most 2 dimensions
+/// form square matrices.
+///
+/// The input has to be symmetric and positive definite. Only the lower-triangular
+/// part of the input will be used for this operation. The upper-triangular part
+/// will not be read.
+///
+/// The output is a tensor of the same shape as the input
+/// containing the Cholesky decompositions for all input submatrices `[..., :, :]`.
+///
+/// - Parameter input: A tensor of shape `[..., M, M]`.
+@inlinable
+@differentiable(vjp: _vjpCholesky)
+public func cholesky<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    _Raw.cholesky(x)
+}
+
+@inlinable
+internal func _vjpCholesky<T: TensorFlowFloatingPoint>(
+    _ x: Tensor<T>
+) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+    let decomposition = cholesky(x)
+    return (decomposition, { v in _Raw.choleskyGrad(l: decomposition, grad: v)})
+}
+
 public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// Returns the QR decomposition of each inner matrix in the tensor, a tensor with inner 
     /// orthogonal matrices `q` and a tensor with inner upper triangular matrices `r`, such that the 
