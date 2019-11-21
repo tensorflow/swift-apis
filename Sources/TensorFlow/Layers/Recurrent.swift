@@ -272,10 +272,9 @@ public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     }
     
     public func zeroState(for input: Tensor<Scalar>) -> State {
-        return Tensor(zeros: stateShape)
+        return State(hidden: Tensor(zeros: stateShape))
     }
 
-    public typealias State = Tensor<Scalar>
     public typealias TimeStepInput = Tensor<Scalar>
     public typealias TimeStepOutput = State
     public typealias Input = RNNCellInput<TimeStepInput, State>
@@ -304,6 +303,17 @@ public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
         self.outputBias = Tensor(zeros: gateBiasShape)
     }
 
+    // TODO(TF-507): Revert to `typealias State = Tensor<Scalar>` after
+    // SR-10697 is fixed.
+    public struct State: Differentiable {
+        public var hidden: Tensor<Scalar>
+
+        @differentiable
+        public init(hidden: Tensor<Scalar>) {
+            self.hidden = hidden
+        }
+    }
+
     /// Returns the output obtained from applying the layer to the given input.
     ///
     /// - Parameter input: The input to the layer.
@@ -311,14 +321,14 @@ public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     @differentiable
     public func callAsFunction(_ input: Input) -> Output {
         let resetGate = sigmoid(matmul(input.input, resetWeight1) +
-            matmul(input.state, resetWeight2) + resetBias)
+            matmul(input.state.hidden, resetWeight2) + resetBias)
         let updateGate = sigmoid(matmul(input.input, updateWeight1) +
-            matmul(input.state, updateWeight2) + updateBias)
+            matmul(input.state.hidden, updateWeight2) + updateBias)
         let outputGate = tanh(matmul(input.input, outputWeight1) +
-            matmul(resetGate * input.state, outputWeight2) + outputBias)
-        let updateHidden = (1 - updateGate) * input.state
+            matmul(resetGate * input.state.hidden, outputWeight2) + outputBias)
+        let updateHidden = (1 - updateGate) * input.state.hidden
         let updateOutput = (1 - updateGate) * outputGate
-        let newState = updateHidden + updateOutput
+        let newState = State(hidden: updateHidden + updateOutput)
         return Output(output: newState, state: newState)
     }
 }
