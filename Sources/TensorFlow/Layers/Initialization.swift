@@ -67,7 +67,7 @@ public func glorotUniform<Scalar: TensorFlowFloatingPoint>(
 public func truncatedNormalInitializer<Scalar: TensorFlowFloatingPoint>(
     mean: Tensor<Scalar> = Tensor<Scalar>(0),
     standardDeviation: Tensor<Scalar> = Tensor<Scalar>(1),
-    seed: TensorFlowSeed = TensorFlow.Context.local.randomSeed
+    seed: TensorFlowSeed = Context.local.randomSeed
 ) -> ParameterInitializer<Scalar> {
     {
         Tensor<Scalar>(
