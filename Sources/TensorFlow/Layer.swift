@@ -91,7 +91,7 @@ public extension Layer {
     }
 
     // TODO(rxwei): Remove this custom VJP once differentiation supports currying.
-    @differentiating(inferring(from:))
+    @derivative(of: inferring(from:))
     @usableFromInline
     internal func _vjpInferring(from input: Input)
         -> (value: Output, pullback: (Output.TangentVector)
