@@ -484,36 +484,6 @@ final class MathOperatorTests: XCTestCase {
         XCTAssertEqual(Double(prediction.scalars[0]), 0.816997, accuracy: 0.0001)
     }
 
-    func testCholesky() {
-        let shapes = [[3, 3], [4, 2, 2], [2, 1, 16, 16]]
-        let permutations = [[1, 0], [0, 2, 1], [0, 1, 3, 2]] // To avoid permuting batch dimensions.
-        for (shape, permutation) in zip(shapes, permutations) {
-            let a = Tensor<Float>(randomNormal: TensorShape(shape))
-            let x = matmul(a, a.transposed(permutation: permutation)) // Make `a` positive-definite.
-            let l = cholesky(x)
-            let xReconstructed = matmul(l, l.transposed(permutation: permutation))
-            assertEqual(xReconstructed, x, accuracy: 1e-5)
-        }
-
-        // The expected value of the gradient was computed using the following Python code:
-        // ```
-        // import tensorflow as tf
-        // x = tf.constant([[[6., 4.], [4., 6.]], [[2., 6.], [6., 20.]]])
-        // with tf.GradientTape() as tape:
-        //    tape.watch(x)
-        //    l = tf.reduce_sum(tf.linalg.cholesky(x))
-        // print(tape.gradient(l, x))
-        // ```
-        let x = Tensor<Float>([[[6, 4], [4, 6]], [[2, 6], [6, 20]]])
-        let computedGradient = gradient(at: x) { cholesky($0).sum() }
-        let expectedGradient = Tensor<Float>([
-            [[0.1897575, 0.02154995],
-             [0.02154995, 0.2738613]],
-            [[2.4748755, -0.7071073],
-             [-0.7071073, 0.3535535]]])
-        assertEqual(computedGradient, expectedGradient, accuracy: 1e-5)
-     }
-
     func testQRDecompositionApproximation() {
         let shapes = [[5, 8], [3, 4, 4], [3, 3, 32, 64]]
         for shape in shapes {
@@ -526,33 +496,6 @@ final class MathOperatorTests: XCTestCase {
             let aReconstitutedFull = matmul(qFull, rFull)
             assertEqual(aReconstitutedFull, a, accuracy: 1e-5)
         }
-    }
-
-    func testDiagonalPart() {
-        // Test on 2-D matrix.
-        let t1 = Tensor<Float>(shape: [4, 4], scalars: (1...16).map(Float.init))
-        let target1 = Tensor<Float>([1, 6, 11, 16])
-        XCTAssertEqual(t1.diagonalPart(), target1)
-
-        // Test on 4-D tensor.
-        let t2 = Tensor<Float>([[[[1.0, 0.0, 0.0, 0.0],
-                                  [0.0, 0.0, 0.0, 0.0]],
-                                 [[0.0, 2.0, 0.0, 0.0],
-                                  [0.0, 0.0, 0.0, 0.0]],
-                                 [[0.0, 0.0, 3.0, 0.0],
-                                  [0.0, 0.0, 0.0, 0.0]],
-                                 [[0.0, 0.0, 0.0, 4.0],
-                                  [0.0, 0.0, 0.0, 0.0]]],
-                                [[[0.0, 0.0, 0.0, 0.0],
-                                  [5.0, 0.0, 0.0, 0.0]],
-                                 [[0.0, 0.0, 0.0, 0.0],
-                                  [0.0, 6.0, 0.0, 0.0]],
-                                 [[0.0, 0.0, 0.0, 0.0],
-                                  [0.0, 0.0, 7.0, 0.0]],
-                                 [[0.0, 0.0, 0.0, 0.0],
-                                  [0.0, 0.0, 0.0, 8.0]]]])
-        let target2 = Tensor<Float>([[1, 2, 3, 4], [5, 6, 7, 8]])
-        XCTAssertEqual(t2.diagonalPart(), target2)
     }
 
     func testBroadcastedAddGradient() {
@@ -600,9 +543,7 @@ final class MathOperatorTests: XCTestCase {
         ("testXWPlusB", testXWPlusB),
         ("testXORInference", testXORInference),
         ("testMLPClassifierStruct", testMLPClassifierStruct),
-        ("testCholesky", testCholesky),
         ("testQRDecompositionApproximation", testQRDecompositionApproximation),
-        ("testDiagonalPart", testDiagonalPart),
         ("testBroadcastedAddGradient", testBroadcastedAddGradient)
     ]
 }
