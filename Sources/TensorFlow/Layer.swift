@@ -114,7 +114,7 @@ public extension Layer {
     ///   gradients at the layer and at the input, respectively.
     func appliedForBackpropagation(to input: Input)
         -> (output: Output, backpropagator: Backpropagator) {
-        let (out, pullback) = valueWithPullback(at: input) { layer, input in
+        let (out, pullback) = Swift.valueWithPullback(at: self, input) { layer, input in
             return layer(input)
         }
         return (out, pullback)
