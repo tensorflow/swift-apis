@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 /// Returns the Cholesky decomposition of one or more square matrices.
 ///
 /// The input is a tensor of shape `[..., M, M]` whose inner-most 2 dimensions
@@ -39,4 +38,3 @@ internal func _vjpCholesky<T: TensorFlowFloatingPoint>(
     let decomposition = cholesky(x)
     return (decomposition, { v in _Raw.choleskyGrad(l: decomposition, grad: v)})
 }
-

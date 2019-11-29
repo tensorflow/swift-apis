@@ -14,7 +14,7 @@
 
 
 public extension Tensor where Scalar: TensorFlowNumeric {
-    /// Returns the diagonal part of the tensor.
+    /// Returns the batched diagonal part of a batched tensor.
     ///
     /// For example:
     ///
@@ -25,10 +25,10 @@ public extension Tensor where Scalar: TensorFlowNumeric {
     /// //         [0, 0, 0, 4]]
     /// t.diagonalPart()
     /// // [1, 2, 3, 4]
-    ///
+    /// ```
     @inlinable
     @differentiable(wrt: self, vjp: _vjpDiagonalPart where Scalar: TensorFlowFloatingPoint)
-    func diagonalPart() -> Tensor {
+    var diagonalPart: Tensor {
         _Raw.matrixDiagPart(self)
     }
     
@@ -44,10 +44,10 @@ public extension Tensor where Scalar: TensorFlowNumeric {
     /// //  [0, 2, 0, 0]
     /// //  [0, 0, 3, 0]
     /// //  [0, 0, 0, 4]]
-    ///
+    /// ```
     @inlinable
     @differentiable(wrt: self, vjp: _vjpDiagonal where Scalar: TensorFlowFloatingPoint)
-    func diagonal() -> Tensor {
+    var diagonal: Tensor {
         _Raw.matrixDiag(diagonal: self)
     }
     
@@ -73,10 +73,10 @@ public extension Tensor where Scalar: TensorFlowNumeric {
     /// //  [-1,  0,  1, 0]
     /// //  [-2, -1,  0, 1]
     /// //  [ 0, -2, -1, 0]]
-    ///
+    /// ```
     @inlinable
     @differentiable(wrt: self, vjp: _vjpBandPart where Scalar: TensorFlowFloatingPoint)
-    func bandPart(_ numLower: Int, _ numUpper: Int) -> Tensor {
+    func bandPart(lowerCount: Int, upperCount: Int) -> Tensor {
         let lower = Tensor<Int32>(Int32(numLower))
         let upper = Tensor<Int32>(Int32(numUpper))
         return _Raw.matrixBandPart(self, numLower: lower, numUpper: upper)
@@ -84,7 +84,6 @@ public extension Tensor where Scalar: TensorFlowNumeric {
 }
 
 
-//
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     func _vjpDiagonalPart() -> (Tensor, (Tensor) -> Tensor) {
