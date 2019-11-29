@@ -15,8 +15,7 @@
 import XCTest
 @testable import TensorFlow
 
-
-final class LinalgTests: XCTestCase {
+final class LinearAlgebraTests: XCTestCase {
     func testCholesky() {
         let shapes = [[3, 3], [4, 2, 2], [2, 1, 16, 16]]
         let permutations = [[1, 0], [0, 2, 1], [0, 1, 3, 2]] // To avoid permuting batch dimensions.
