@@ -2685,19 +2685,3 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
         _vjpMatmul(lhs, rhs)
     }
 }
-
-
-public extension Tensor where Scalar: TensorFlowFloatingPoint {
-    /// Returns the QR decomposition of each inner matrix in the tensor, a tensor with inner
-    /// orthogonal matrices `q` and a tensor with inner upper triangular matrices `r`, such that the
-    /// tensor is equal to `matmul(q, r)`.
-    ///
-    /// - Parameters:
-    ///   - fullMatrices: If `true`, compute full-sized `q` and `r`. Otherwise compute only the
-    ///     leading `min(shape[rank - 1], shape[rank - 2])` columns of `q`.
-    ///
-    @inlinable
-    func qrDecomposition(fullMatrices: Bool = false) -> (q: Tensor<Scalar>, r: Tensor<Scalar>) {
-        _Raw.qr(self, fullMatrices: fullMatrices)
-    }
-}

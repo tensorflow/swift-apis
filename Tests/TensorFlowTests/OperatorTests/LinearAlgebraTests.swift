@@ -46,5 +46,22 @@ final class LinearAlgebraTests: XCTestCase {
         assertEqual(computedGradient, expectedGradient, accuracy: 1e-5) 
     }
     
-    static var allTests = [("testCholesky", testCholesky)]
+    func testQRDecompositionApproximation() {
+        let shapes = [[5, 8], [3, 4, 4], [3, 3, 32, 64]]
+        for shape in shapes {
+            let a = Tensor<Float>(randomNormal: TensorShape(shape))
+            let (q, r) = a.qrDecomposition()
+            let aReconstituted = matmul(q,r)
+            assertEqual(aReconstituted, a, accuracy: 1e-5)
+
+            let (qFull, rFull) = a.qrDecomposition(fullMatrices: true)
+            let aReconstitutedFull = matmul(qFull, rFull)
+            assertEqual(aReconstitutedFull, a, accuracy: 1e-5)
+        }
+    }
+    
+    static var allTests = [
+        ("testCholesky", testCholesky),
+        ("testQRDecompositionApproximation", testQRDecompositionApproximation)
+    ]
 }

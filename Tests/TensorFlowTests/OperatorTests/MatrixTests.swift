@@ -16,12 +16,12 @@ import XCTest
 @testable import TensorFlow
 
 
-final class ArrayTests: XCTestCase {
+final class MatrixTests: XCTestCase {
     func testDiagonalPart() {
         // Test on a matrix.
         let t1 = Tensor<Float>(shape: [4, 4], scalars: (1...16).map(Float.init))
         let target1 = Tensor<Float>([1, 6, 11, 16])
-        XCTAssertEqual(t1.diagonalPart(), target1)
+        XCTAssertEqual(t1.diagonalPart, target1)
 
         // Test on a matrix with 2 leading dimentions.
         let t2 = Tensor<Float>([[[[1, 0, 0, 0],
@@ -33,11 +33,11 @@ final class ArrayTests: XCTestCase {
                                   [0, 0, 7, 0],
                                   [0, 0, 0, 8]]]])
         let target2 = Tensor<Float>([[[1, 2, 3, 4], [5, 6, 7, 8]]])
-        XCTAssertEqual(t2.diagonalPart(), target2)
+        XCTAssertEqual(t2.diagonalPart, target2)
         
         // Test diaginalPart gradient on matrix with 1 leading dimension
         let t3 = Tensor<Float>([[[1, 2, 3], [4, 5, 6], [7, 8, 9]]])
-        let computedGrad = gradient(at: t3) { 2 * $0.diagonalPart().sum() }
+        let computedGrad = gradient(at: t3) { 2 * $0.diagonalPart.sum() }
         let expectedGrad = Tensor<Float>([[[2, 0, 0], [0, 2, 0], [0, 0, 2]]])
         XCTAssertEqual(computedGrad, expectedGrad)
     }
@@ -49,7 +49,7 @@ final class ArrayTests: XCTestCase {
                                      [0, 2, 0, 0],
                                      [0, 0, 3, 0],
                                      [0, 0, 0, 4]])
-        XCTAssertEqual(t1.diagonal(), target1)
+        XCTAssertEqual(t1.diagonal, target1)
         
         // Test on a matrix with 2 leading dimentions
         let t2 = Tensor<Float>(shape: [2, 4], scalars: (1...8).map(Float.init))
@@ -61,11 +61,11 @@ final class ArrayTests: XCTestCase {
                                       [0, 6, 0, 0],
                                       [0, 0, 7, 0],
                                       [0, 0, 0, 8]]])
-        XCTAssertEqual(t2.diagonal(), target2)
+        XCTAssertEqual(t2.diagonal, target2)
         
         // Test diaginalPart gradient on matrix with 1 leading dimension
         let t3 = Tensor<Float>(shape: [1, 3], scalars: (1...3).map(Float.init))
-        let computedGrad = gradient(at: t3) { $0.squared().diagonal().sum() }
+        let computedGrad = gradient(at: t3) { $0.squared().diagonal.sum() }
         let expectedGrad = 2 * t3
         XCTAssertEqual(computedGrad, expectedGrad)
     }
