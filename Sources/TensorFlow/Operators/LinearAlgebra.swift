@@ -16,7 +16,9 @@
 // MARK: - Matrix operations
 
 public extension Tensor where Scalar: TensorFlowNumeric {
-    /// Returns the batched diagonal part of a batched tensor.
+    /// Returns the [batched] diagonal part of a [batched] tensor.
+    /// For the tensor instance of the shape `[..., M, N]`, the output is a tensor
+    /// of the shape `[..., K]`, where `K` equals `min(N, M)`.
     ///
     /// For example:
     ///
@@ -30,11 +32,13 @@ public extension Tensor where Scalar: TensorFlowNumeric {
     /// ```
     @inlinable
     @differentiable(wrt: self, vjp: _vjpDiagonalPart where Scalar: TensorFlowFloatingPoint)
-    var diagonalPart: Tensor {
-        _Raw.matrixDiagPart(self)
+    func diagonalPart() -> Tensor {
+        precondition(rank >= 2, "The tensor must have at least rank 2.")
+        return _Raw.matrixDiagPart(self)
     }
     
-    /// Constructs a diagonal array.
+    /// Constructs a [batched] diagonal array.
+    /// For the tensor instance of the shape `[..., M]`, the output is a tensor of the shape `[..., M, M]`.
     ///
     /// For example:
     ///
@@ -49,12 +53,13 @@ public extension Tensor where Scalar: TensorFlowNumeric {
     /// ```
     @inlinable
     @differentiable(wrt: self, vjp: _vjpDiagonal where Scalar: TensorFlowFloatingPoint)
-    var diagonal: Tensor {
+    func diagonal() -> Tensor {
         _Raw.matrixDiag(diagonal: self)
     }
     
     
     /// Returns a copy of a innermost tensor defined by a central band boundaries.
+    /// The output is a tensor of the same shape as the instance `[..., :, :]`.
     ///
     /// For example:
     ///
@@ -79,6 +84,7 @@ public extension Tensor where Scalar: TensorFlowNumeric {
     @inlinable
     @differentiable(wrt: self, vjp: _vjpBandPart where Scalar: TensorFlowFloatingPoint)
     func bandPart(_ lowerCount: Int, _ upperCount: Int) -> Tensor {
+        precondition(rank >= 2, "The tensor must have at least rank 2.")
         let lower = Tensor<Int32>(Int32(lowerCount))
         let upper = Tensor<Int32>(Int32(upperCount))
         return _Raw.matrixBandPart(self, numLower: lower, numUpper: upper)
@@ -89,12 +95,12 @@ public extension Tensor where Scalar: TensorFlowNumeric {
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     func _vjpDiagonalPart() -> (Tensor, (Tensor) -> Tensor) {
-        (diagonalPart, { $0.diagonal })
+        (diagonalPart(), { $0.diagonal() })
     }
     
     @inlinable
     func _vjpDiagonal() -> (Tensor, (Tensor) -> Tensor) {
-        (diagonal, { $0.diagonalPart })
+        (diagonal(), { $0.diagonalPart() })
     }
     
     @inlinable
@@ -103,7 +109,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 }
 
-// Mark: - Decompositions
+// MARK: - Decompositions
 
 /// Returns the Cholesky decomposition of one or more square matrices.
 ///
