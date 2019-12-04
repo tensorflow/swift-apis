@@ -198,18 +198,6 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(output, expected)
     }
 
-    func testConv3DDilation() {
-        let filter =  Tensor(shape: [1, 1, 2, 1, 1], scalars: (0..<2).map(Float.init))
-        let bias = Tensor<Float>([8])
-        let layer = Conv3D<Float>(filter: filter, bias: bias, activation: identity,
-                                  strides: (2, 2, 2), padding: .valid, dilations: (2, 2, 1))
-        let input = Tensor(shape: [1, 4, 4, 4, 1], scalars: (0..<64).map(Float.init))
-        let output = layer.inferring(from: input)
-        let expected = Tensor<Float>(shape: [1, 2, 2, 2, 1],
-                                     scalars: [9, 11, 17, 19, 41, 43, 49, 51])
-        XCTAssertEqual(output, expected)
-    }
-
     func testConv3DGradient() {
         let filter = Tensor(shape: [1, 4, 4, 1, 1], scalars: (0..<16).map(Float.init))
         let bias = Tensor<Float>(ones: [2])
@@ -1329,7 +1317,6 @@ final class LayerTests: XCTestCase {
         ("testConv2DGradient", testConv2DGradient),
         ("testConv2DDilation", testConv2DDilation),
         ("testConv3D", testConv3D),
-        ("testConv3DDilation", testConv3DDilation),
         ("testConv3DGradient", testConv3DGradient),
         ("testDepthwiseConv2D", testDepthwiseConv2D),
         ("testDepthwiseConv2DGradient", testDepthwiseConv2DGradient),
