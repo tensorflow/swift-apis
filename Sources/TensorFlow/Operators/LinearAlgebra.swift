@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 // MARK: - Matrix operations
 
 public extension Tensor where Scalar: TensorFlowNumeric {
@@ -36,7 +35,7 @@ public extension Tensor where Scalar: TensorFlowNumeric {
         precondition(rank >= 2, "The tensor must have at least rank 2.")
         return _Raw.matrixDiagPart(self)
     }
-    
+
     /// Constructs a [batched] diagonal array.
     /// For the tensor instance of the shape `[..., M]`, the output is a tensor of the shape `[..., M, M]`.
     ///
@@ -56,8 +55,7 @@ public extension Tensor where Scalar: TensorFlowNumeric {
     func diagonal() -> Tensor {
         _Raw.matrixDiag(diagonal: self)
     }
-    
-    
+
     /// Returns a copy of a innermost tensor defined by a central band boundaries.
     /// The output is a tensor of the same shape as the instance `[..., :, :]`.
     ///
@@ -91,18 +89,17 @@ public extension Tensor where Scalar: TensorFlowNumeric {
     }
 }
 
-
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     func _vjpDiagonalPart() -> (Tensor, (Tensor) -> Tensor) {
         (diagonalPart(), { $0.diagonal() })
     }
-    
+
     @inlinable
     func _vjpDiagonal() -> (Tensor, (Tensor) -> Tensor) {
         (diagonal(), { $0.diagonalPart() })
     }
-    
+
     @inlinable
     func _vjpBandPart(_ numLower: Int, _ numUpper: Int) -> (Tensor, (Tensor) -> Tensor) {
         (bandPart(numLower, numUpper), { $0.bandPart(numLower, numUpper) })
