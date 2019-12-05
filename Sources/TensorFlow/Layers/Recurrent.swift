@@ -288,19 +288,20 @@ public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     public init(
         inputSize: Int,
         hiddenSize: Int,
-        seed: TensorFlowSeed = Context.local.randomSeed
+        weightInitializer: ParameterInitializer<Scalar> = glorotUniform(),
+        biasInitializer: ParameterInitializer<Scalar> = zeros()
     ) {
         let gateWeightShape = TensorShape([inputSize, 1])
         let gateBiasShape = TensorShape([hiddenSize])
-        self.updateWeight1 = Tensor(glorotUniform: gateWeightShape, seed: seed)
-        self.updateWeight2 = Tensor(glorotUniform: gateWeightShape, seed: seed)
-        self.updateBias = Tensor(zeros: gateBiasShape)
-        self.resetWeight1 = Tensor(glorotUniform: gateWeightShape, seed: seed)
-        self.resetWeight2 = Tensor(glorotUniform: gateWeightShape, seed: seed)
-        self.resetBias = Tensor(zeros: gateBiasShape)
-        self.outputWeight1 = Tensor(glorotUniform: gateWeightShape, seed: seed)
-        self.outputWeight2 = Tensor(glorotUniform: gateWeightShape, seed: seed)
-        self.outputBias = Tensor(zeros: gateBiasShape)
+        self.updateWeight1 = weightInitializer(gateWeightShape)
+        self.updateWeight2 = weightInitializer(gateWeightShape)
+        self.updateBias = biasInitializer(gateBiasShape)
+        self.resetWeight1 = weightInitializer(gateWeightShape)
+        self.resetWeight2 = weightInitializer(gateWeightShape)
+        self.resetBias = biasInitializer(gateBiasShape)
+        self.outputWeight1 = weightInitializer(gateWeightShape)
+        self.outputWeight2 = weightInitializer(gateWeightShape)
+        self.outputBias = biasInitializer(gateBiasShape)
     }
 
     // TODO(TF-507): Revert to `typealias State = Tensor<Scalar>` after
