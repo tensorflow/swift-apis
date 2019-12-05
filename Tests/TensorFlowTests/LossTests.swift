@@ -223,7 +223,9 @@ final class LossTests: XCTestCase {
         do {
           // Test adapted from:
           // https://github.com/tensorflow/tensorflow/blob/148f07323f97ef54998f28cd95c195064ce2c426/tensorflow/python/keras/losses_test.py#L1554
-          let loss = huberLoss(predicted: predictions, expected: predictions, delta: 1)
+          // TODO(TF-1025): Remove `reduction`, use default instead.
+          let loss = huberLoss(
+              predicted: predictions, expected: predictions, delta: 1, reduction: { $0.sum() })
           assertEqual(loss, Tensor(0), accuracy: 1e-6)
         }
 
@@ -239,7 +241,9 @@ final class LossTests: XCTestCase {
           // print(loss(labels, predictions))
           // # tf.Tensor(0.62500006, shape=(), dtype=float32)
           // ```
-          let loss = huberLoss(predicted: predictions, expected: labels, delta: Float(1))
+          // TODO(TF-1025): Remove `reduction`, use default instead.
+          let loss = huberLoss(
+              predicted: predictions, expected: labels, delta: Float(1), reduction: { $0.sum() })
           assertEqual(loss, Tensor(0.62500006), accuracy: 1e-6)
         }
     }

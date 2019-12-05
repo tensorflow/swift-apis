@@ -22,7 +22,7 @@
 public func l1Loss<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>,
     expected: Tensor<Scalar>,
-    reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = { $0.sum() }
+    reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = _sum
 ) -> Tensor<Scalar> {
     reduction(abs(expected - predicted))
 }
@@ -37,7 +37,7 @@ public func l1Loss<Scalar: TensorFlowFloatingPoint>(
 public func l2Loss<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>,
     expected: Tensor<Scalar>,
-    reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = { $0.sum() }
+    reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = _sum
 ) -> Tensor<Scalar> {
     reduction((expected - predicted).squared())
 }
@@ -189,18 +189,9 @@ public func poissonLoss<Scalar: TensorFlowFloatingPoint>(
 public func kullbackLeiblerDivergence<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>,
     expected: Tensor<Scalar>,
-    reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = { $0.sum() }
+    reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = _sum
 ) -> Tensor<Scalar> {
     reduction(expected * log(expected / predicted))
-}
-
-/// Workaround for cross-module default parameter @differentiable functions.
-/// Tensor<Scalar>.mean() is the preferred way to do this.
-@differentiable
-public func _mean<Scalar: TensorFlowFloatingPoint>(
-    _ value: Tensor<Scalar>
-) -> Tensor<Scalar> {
-  return value.mean()
 }
 
 /// Returns the softmax cross entropy (categorical cross entropy) between logits and labels.
@@ -310,11 +301,31 @@ public func huberLoss<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>,
     expected: Tensor<Scalar>,
     delta: Scalar,
-    reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = { $0.sum() }
+    reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = _sum
 ) -> Tensor<Scalar> {
     let error = expected - predicted
     let absError = abs(error)
     let quadratic = min(absError, delta)
     let linear = absError - quadratic
     return reduction((0.5 * quadratic * quadratic) + (delta * linear))
+}
+
+/// Workaround for TF-1030 so that we can use sum as a default argument for reductions.
+/// `Tensor<Scalar>.sum()` is the preferred way to do this.
+// TODO(TF-1030): Remove this and replace with `{ $0.sum() }`.
+@differentiable
+public func _sum<Scalar: TensorFlowFloatingPoint>(
+    _ value: Tensor<Scalar>
+) -> Tensor<Scalar> {
+  return value.sum()
+}
+
+/// Workaround for TF-1030 so that we can use mean as a default argument for reductions.
+/// `Tensor<Scalar>.mean()` is the preferred way to do this.
+// TODO(TF-1030): Remove this and replace with `{ $0.mean() }`.
+@differentiable
+public func _mean<Scalar: TensorFlowFloatingPoint>(
+    _ value: Tensor<Scalar>
+) -> Tensor<Scalar> {
+  return value.mean()
 }
