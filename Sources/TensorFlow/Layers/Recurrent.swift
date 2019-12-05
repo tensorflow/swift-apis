@@ -260,6 +260,80 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     }
 }
 
+/// An GRU cell.
+public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
+    public var updateWeight1, updateWeight2: Tensor<Scalar>
+    public var resetWeight1, resetWeight2: Tensor<Scalar>
+    public var outputWeight1, outputWeight2: Tensor<Scalar>
+    public var updateBias, outputBias, resetBias: Tensor<Scalar>
+
+    @noDerivative public var stateShape: TensorShape {
+        [1, updateWeight1.shape[0]]
+    }
+    
+    public func zeroState(for input: Tensor<Scalar>) -> State {
+        return State(hidden: Tensor(zeros: stateShape))
+    }
+
+    public typealias TimeStepInput = Tensor<Scalar>
+    public typealias TimeStepOutput = State
+    public typealias Input = RNNCellInput<TimeStepInput, State>
+    public typealias Output = RNNCellOutput<TimeStepOutput, State>
+
+    /// Creates a `GRUCell` with the specified input size and hidden state size.
+    ///
+    /// - Parameters:
+    ///   - inputSize: The number of features in 2-D input tensors.
+    ///   - hiddenSize: The number of features in 2-D hidden states.
+    public init(
+        inputSize: Int,
+        hiddenSize: Int,
+        weightInitializer: ParameterInitializer<Scalar> = glorotUniform(),
+        biasInitializer: ParameterInitializer<Scalar> = zeros()
+    ) {
+        let gateWeightShape = TensorShape([inputSize, 1])
+        let gateBiasShape = TensorShape([hiddenSize])
+        self.updateWeight1 = weightInitializer(gateWeightShape)
+        self.updateWeight2 = weightInitializer(gateWeightShape)
+        self.updateBias = biasInitializer(gateBiasShape)
+        self.resetWeight1 = weightInitializer(gateWeightShape)
+        self.resetWeight2 = weightInitializer(gateWeightShape)
+        self.resetBias = biasInitializer(gateBiasShape)
+        self.outputWeight1 = weightInitializer(gateWeightShape)
+        self.outputWeight2 = weightInitializer(gateWeightShape)
+        self.outputBias = biasInitializer(gateBiasShape)
+    }
+
+    // TODO(TF-507): Revert to `typealias State = Tensor<Scalar>` after
+    // SR-10697 is fixed.
+    public struct State: Differentiable {
+        public var hidden: Tensor<Scalar>
+
+        @differentiable
+        public init(hidden: Tensor<Scalar>) {
+            self.hidden = hidden
+        }
+    }
+
+    /// Returns the output obtained from applying the layer to the given input.
+    ///
+    /// - Parameter input: The input to the layer.
+    /// - Returns: The hidden state.
+    @differentiable
+    public func callAsFunction(_ input: Input) -> Output {
+        let resetGate = sigmoid(matmul(input.input, resetWeight1) +
+            matmul(input.state.hidden, resetWeight2) + resetBias)
+        let updateGate = sigmoid(matmul(input.input, updateWeight1) +
+            matmul(input.state.hidden, updateWeight2) + updateBias)
+        let outputGate = tanh(matmul(input.input, outputWeight1) +
+            matmul(resetGate * input.state.hidden, outputWeight2) + outputBias)
+        let updateHidden = (1 - updateGate) * input.state.hidden
+        let updateOutput = (1 - updateGate) * outputGate
+        let newState = State(hidden: updateHidden + updateOutput)
+        return Output(output: newState, state: newState)
+    }
+}
+
 public struct RNN<Cell: RNNCell>: Layer {
     public typealias Input = [Cell.TimeStepInput]
     public typealias Output = [Cell.TimeStepOutput]
