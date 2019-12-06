@@ -42,6 +42,7 @@ final class SequentialTests: XCTestCase {
         let amsgrad = AMSGrad(for: model, learningRate: 0.02)
         let adagrad = AdaGrad(for: model, learningRate: 0.02)
         let adadelta = AdaDelta(for: model, learningRate: 0.02)
+        let radam = RAdam(for: model, learningRate: 0.02)
         let x: Tensor<Float> = [[0, 0], [0, 1], [1, 0], [1, 1]]
         let y: Tensor<Float> = [0, 1, 1, 0]
         Context.local.learningPhase = .training
@@ -58,11 +59,11 @@ final class SequentialTests: XCTestCase {
                 amsgrad.update(&model, along: 𝛁model)
                 adagrad.update(&model, along: 𝛁model)
                 adadelta.update(&model, along: 𝛁model)
+                radam.update(&model, along: 𝛁model)
             }
         }
-        assertEqual(model.inferring(from: [[0, 0], [0, 1], [1, 0], [1, 1]]),
-                    [[0.5115531], [0.5115531], [0.5115531], [0.5115531]],
-                    accuracy: 1e-6)
+        XCTAssertEqual(model.inferring(from: [[0, 0], [0, 1], [1, 0], [1, 1]]),
+                       [[0.5567076], [0.5567076], [0.5567076], [0.5567076]])
     }
 
     static var allTests = [
