@@ -406,10 +406,6 @@ public class RAdam<Model: Differentiable>: Optimizer
     /// The second moments of the weights.
     public var secondMoments: Model.TangentVector = .zero
 
-    public var firstMoments_h: Model.TangentVector = .zero
-    
-    public var secondMoments_h: Model.TangentVector = .zero
-
     public init(
         for model: __shared Model,
         learningRate: Float = 1e-3,
@@ -435,26 +431,24 @@ public class RAdam<Model: Differentiable>: Optimizer
         let step = Float(self.step)
         let beta1Power = pow(beta1, step)
         let beta2Power = pow(beta2, step)
-        let stepSize = self.learningRate * step / (1 - beta1Power)
+        // let stepSize = self.learningRate * step / (1 - beta1Power)
         secondMoments = beta2 * secondMoments + direction .* direction * (1 - beta2)
         firstMoments = beta1 * firstMoments + direction * (1 - beta1)
-        
         // Compute maximum length SMA, bias-corrected moving average and approximate length 
         // SMA
         let N_sma_inf =  2 / (1 - beta2) - 1
         let N_sma_t = N_sma_inf - 2*step*beta2Power / (1 - beta2Power)
-        firstMoments_h = firstMoments
 
-        if N_sma_t > 4 {
-            // Comppute Bias corrected second moments, rectification and
-            // adapted momentum
-            secondMoments_h = Model.TangentVector.sqrt(secondMoments)
-            let r = sqrt((N_sma_t-4)*(N_sma_t-2)*N_sma_inf/((N_sma_inf-4)*(N_sma_inf-2)*(N_sma_t)))
-            model.move(along: -stepSize*sqrt(1 - beta2Power)*firstMoments_h*r./secondMoments_h)
+        if N_sma_t > 5 {
+            // Compute Bias corrected second moments, rectification and adapted momentum
+            let secondMoments_h = Model.TangentVector.sqrt(secondMoments) + epsilon
+            let stepSize = sqrt((N_sma_t-4)*(N_sma_t-2)*N_sma_inf/((N_sma_inf-4)*(N_sma_inf-2)*(N_sma_t)))
+            model.move(along: -stepSize*sqrt(1 - beta2Power)*firstMoments./secondMoments_h)
         } 
         else {
             // Update with un-adapted momentum
-            model.move(along: -stepSize*firstMoments_h)
+            let stepSize = self.learningRate * step / (1 - beta1Power)
+            model.move(along: -stepSize*firstMoments)
         }
     }
 }
