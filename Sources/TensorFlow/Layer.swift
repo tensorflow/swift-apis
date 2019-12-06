@@ -85,12 +85,12 @@ public extension Layer {
     ///
     /// - Parameter input: The input to the layer.
     /// - Returns: The inference output.
-    @differentiable
     func inferring(from input: Input) -> Output {
         withLearningPhase(LearningPhase.inference) { self(input) }
     }
 
-    // TODO(rxwei): Remove this custom VJP once differentiation supports currying.
+    // TODO(TF-433, SR-11882): Remove this custom derivative when
+    // differentiation supports `rethrows` functions and currying.
     @derivative(of: inferring(from:))
     @usableFromInline
     internal func _vjpInferring(from input: Input)
