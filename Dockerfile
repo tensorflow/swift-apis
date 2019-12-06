@@ -62,7 +62,9 @@ RUN /swift-tensorflow-toolchain/usr/bin/swift test
 # TODO: Unify this with testing. (currently there is a demangling bug).
 RUN /swift-tensorflow-toolchain/usr/bin/swift build -Xswiftc -module-link-name -Xswiftc TensorFlow
 RUN cp /swift-apis/.build/debug/TensorFlow.swiftmodule /swift-tensorflow-toolchain/usr/lib/swift/linux/x86_64/
+RUN cp /swift-apis/.build/debug/Tensor.swiftmodule /swift-tensorflow-toolchain/usr/lib/swift/linux/x86_64/
 RUN cp /swift-apis/.build/debug/libTensorFlow.so /swift-tensorflow-toolchain/usr/lib/swift/linux/
+RUN cp /swift-apis/.build/debug/libTensor.so /swift-tensorflow-toolchain/usr/lib/swift/linux/
 
 WORKDIR /
 RUN git clone https://github.com/tensorflow/swift-models.git
@@ -72,10 +74,12 @@ RUN git clone https://github.com/deepmind/open_spiel.git
 WORKDIR /swift-models
 
 RUN /swift-tensorflow-toolchain/usr/bin/swift build
+RUN /swift-tensorflow-toolchain/usr/bin/swift build -c release
 
 WORKDIR /fastai_dev/swift/FastaiNotebook_11_imagenette
 
 RUN /swift-tensorflow-toolchain/usr/bin/swift build
+RUN /swift-tensorflow-toolchain/usr/bin/swift build -c release
 
 WORKDIR /open_spiel
 RUN /swift-tensorflow-toolchain/usr/bin/swift test

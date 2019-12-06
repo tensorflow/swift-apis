@@ -16,11 +16,11 @@
 @frozen
 public struct MaxPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     /// The size of the sliding reduction window for pooling.
-    @noDerivative let poolSize: Int
+    @noDerivative public let poolSize: Int
     /// The stride of the sliding window for temporal dimension.
-    @noDerivative let stride: Int
+    @noDerivative public let stride: Int
     /// The padding algorithm for pooling.
-    @noDerivative let padding: Padding
+    @noDerivative public let padding: Padding
 
     /// Creates a max pooling layer.
     ///
@@ -53,12 +53,12 @@ public struct MaxPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
 @frozen
 public struct MaxPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     /// The size of the sliding reduction window for pooling.
-    @noDerivative let poolSize: (Int, Int, Int, Int)
+    @noDerivative public let poolSize: (Int, Int, Int, Int)
     /// The strides of the sliding window for each dimension of a 4-D input.
     /// Strides in non-spatial dimensions must be `1`.
-    @noDerivative let strides: (Int, Int, Int, Int)
+    @noDerivative public let strides: (Int, Int, Int, Int)
     /// The padding algorithm for pooling.
-    @noDerivative let padding: Padding
+    @noDerivative public let padding: Padding
 
     /// Creates a max pooling layer.
     public init(poolSize: (Int, Int, Int, Int), strides: (Int, Int, Int, Int), padding: Padding) {
@@ -96,12 +96,12 @@ public extension MaxPool2D {
 @frozen
 public struct MaxPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     /// The size of the sliding reduction window for pooling.
-    @noDerivative let poolSize: (Int, Int, Int, Int, Int)
+    @noDerivative public let poolSize: (Int, Int, Int, Int, Int)
     /// The strides of the sliding window for each dimension of a 5-D input.
     /// Strides in non-spatial dimensions must be `1`.
-    @noDerivative let strides: (Int, Int, Int, Int, Int)
+    @noDerivative public let strides: (Int, Int, Int, Int, Int)
     /// The padding algorithm for pooling.
-    @noDerivative let padding: Padding
+    @noDerivative public let padding: Padding
 
     /// Creates a max pooling layer.
     public init(
@@ -154,11 +154,11 @@ public extension MaxPool3D {
 @frozen
 public struct AvgPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     /// The size of the sliding reduction window for pooling.
-    @noDerivative let poolSize: Int
+    @noDerivative public let poolSize: Int
     /// The stride of the sliding window for temporal dimension.
-    @noDerivative let stride: Int
+    @noDerivative public let stride: Int
     /// The padding algorithm for pooling.
-    @noDerivative let padding: Padding
+    @noDerivative public let padding: Padding
 
     /// Creates an average pooling layer.
     ///
@@ -191,12 +191,12 @@ public struct AvgPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
 @frozen
 public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     /// The size of the sliding reduction window for pooling.
-    @noDerivative let poolSize: (Int, Int, Int, Int)
+    @noDerivative public let poolSize: (Int, Int, Int, Int)
     /// The strides of the sliding window for each dimension of a 4-D input.
     /// Strides in non-spatial dimensions must be `1`.
-    @noDerivative let strides: (Int, Int, Int, Int)
+    @noDerivative public let strides: (Int, Int, Int, Int)
     /// The padding algorithm for pooling.
-    @noDerivative let padding: Padding
+    @noDerivative public let padding: Padding
 
     /// Creates an average pooling layer.
     public init(poolSize: (Int, Int, Int, Int), strides: (Int, Int, Int, Int), padding: Padding) {
@@ -234,12 +234,12 @@ public extension AvgPool2D {
 @frozen
 public struct AvgPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     /// The size of the sliding reduction window for pooling.
-    @noDerivative let poolSize: (Int, Int, Int, Int, Int)
+    @noDerivative public let poolSize: (Int, Int, Int, Int, Int)
     /// The strides of the sliding window for each dimension of a 5-D input.
     /// Strides in non-spatial dimensions must be `1`.
-    @noDerivative let strides: (Int, Int, Int, Int, Int)
+    @noDerivative public let strides: (Int, Int, Int, Int, Int)
     /// The padding algorithm for pooling.
-    @noDerivative let padding: Padding
+    @noDerivative public let padding: Padding
 
     /// Creates an average pooling layer.
     public init(

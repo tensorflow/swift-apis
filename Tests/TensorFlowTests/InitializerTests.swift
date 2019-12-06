@@ -94,19 +94,95 @@ final class InitializerTests: XCTestCase {
         XCTAssertEqual(ShapedArray(shape: [2, 2], scalars: [1, 0, 1, 0]), i8s.array)
     }
 
+    // Constants for testing distribution based initializers.
+    private let fcShape = TensorShape([200, 100])
+    private let convShape = TensorShape([25, 25, 20, 20])
+    private let tolerance = Float(3e-2)
+
+    func testDistribution(
+        _ t: Tensor<Float>,
+        expectedMean: Float? = nil,
+        expectedStandardDeviation: Float? = nil,
+        expectedMin: Float? = nil,
+        expectedMax: Float? = nil
+    ) {
+        if let expectedMean = expectedMean {
+            let mean = t.mean().scalarized()
+            XCTAssertTrue(abs(mean - expectedMean) < tolerance)
+        }
+        if let expectedStandardDeviation = expectedStandardDeviation {
+            let standardDeviation = t.standardDeviation().scalarized()
+            XCTAssertTrue(abs(standardDeviation - expectedStandardDeviation) < tolerance)
+        }
+        if let expectedMin = expectedMin {
+            let min = t.min().scalarized()
+            XCTAssertTrue(abs(min - expectedMin) < tolerance)
+        }
+        if let expectedMax = expectedMax {
+            let max = t.max().scalarized()
+            XCTAssertTrue(abs(max - expectedMax) < tolerance)
+        }
+    }
+
+    func testRandomUniform() {
+        do {
+            let t = Tensor<Float>(
+                randomUniform: fcShape,
+                lowerBound: Tensor(2),
+                upperBound: Tensor(3))
+            testDistribution(t, expectedMean: 2.5, expectedMin: 2, expectedMax: 3)
+        }
+        do {
+            let t = Tensor<Float>(
+                randomUniform: fcShape,
+                lowerBound: Tensor(-1),
+                upperBound: Tensor(1))
+            testDistribution(t, expectedMean: 0, expectedMin: -1, expectedMax: 1)
+        }
+    }
+
+    func testRandomNormal() {
+        let t = Tensor<Float>(
+            randomNormal: convShape,
+            mean: Tensor(1),
+            standardDeviation: Tensor(2))
+        testDistribution(t, expectedMean: 1, expectedStandardDeviation: 2)
+    }
+
+    func testRandomTruncatedNormal() {
+        let t = Tensor<Float>(randomTruncatedNormal: convShape)
+        testDistribution(t, expectedMean: 0, expectedMin: -2, expectedMax: 2)
+    }
+
+    func testGlorotUniform() {
+        let t = Tensor<Float>(glorotUniform: convShape)
+        let spatialSize = convShape[0..<2].contiguousSize
+        let (fanIn, fanOut) = (convShape[2] * spatialSize, convShape[3] * spatialSize)
+        let stdDev = sqrt(Float(2.0) / Float(fanIn + fanOut))
+        testDistribution(t, expectedMean: 0, expectedStandardDeviation: stdDev)
+    }
+
+    func testGlorotNormal() {
+        let t = Tensor<Float>(glorotNormal: convShape)
+        let spatialSize = convShape[0..<2].contiguousSize
+        let (fanIn, fanOut) = (convShape[2] * spatialSize, convShape[3] * spatialSize)
+        let stdDev = sqrt(Float(2.0) / Float(fanIn + fanOut))
+        testDistribution(t, expectedMean: 0, expectedStandardDeviation: stdDev)
+    }
+
     func testOrthogonalShapesValues() {
         for shape in [[10, 10], [10, 9, 8], [100, 5, 5], [50, 40], [3, 3, 32, 64]] {
             // Check the shape.
             var t = Tensor<Float>(orthogonal: TensorShape(shape))
             XCTAssertEqual(shape, t.shape.dimensions)
-        
+
             // Check orthogonality by computing the inner product.
             t = t.reshaped(to: [t.shape.dimensions.dropLast().reduce(1, *), t.shape[t.rank - 1]])
             if t.shape[0] > t.shape[1] {
-                let eye = Raw.diag(diagonal: Tensor<Float>(ones: [t.shape[1]]))
+                let eye = _Raw.diag(diagonal: Tensor<Float>(ones: [t.shape[1]]))
                 assertEqual(eye, matmul(t.transposed(), t), accuracy: 1e-5)
             } else {
-                let eye = Raw.diag(diagonal: Tensor<Float>(ones: [t.shape[0]]))
+                let eye = _Raw.diag(diagonal: Tensor<Float>(ones: [t.shape[0]]))
                 assertEqual(eye, matmul(t, t.transposed()), accuracy: 1e-5)
             }
         }
@@ -120,6 +196,11 @@ final class InitializerTests: XCTestCase {
         ("testArrayConversion", testArrayConversion),
         ("testDataTypeCast", testDataTypeCast),
         ("testBoolToNumericCast", testBoolToNumericCast),
+        ("testRandomUniform", testRandomUniform),
+        ("testRandomNormal", testRandomNormal),
+        ("testRandomTruncatedNormal", testRandomTruncatedNormal),
+        ("testGlorotUniform", testGlorotUniform),
+        ("testGlorotNormal", testGlorotNormal),
         ("testOrthogonalShapesValues", testOrthogonalShapesValues)
     ]
 }

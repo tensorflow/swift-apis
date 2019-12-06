@@ -340,6 +340,12 @@ final class MathOperatorTests: XCTestCase {
         assertEqual(y0, expectedY0, accuracy: 0.0001)
         assertEqual(y1, expectedY1, accuracy: 0.0001)
         assertEqual(y2, expectedY2, accuracy: 0.0001)
+
+        let xSmall = Tensor<Float>([
+            -301.9475, -265.2244, -275.77475, -235.28029, -277.2509, -396.6921, -400.01385])
+        let ySmall = xSmall.logSumExp()
+        let expectedYSmall = Tensor<Float>(-235.28029)
+        assertEqual(ySmall, expectedYSmall, accuracy: 0.0001)
     }
 
     func testMoments() {
@@ -478,47 +484,6 @@ final class MathOperatorTests: XCTestCase {
         XCTAssertEqual(Double(prediction.scalars[0]), 0.816997, accuracy: 0.0001)
     }
 
-    func testQRDecompositionApproximation() {
-        let shapes = [[5, 8], [3, 4, 4], [3, 3, 32, 64]]
-        for shape in shapes {
-            let a = Tensor<Float>(randomNormal: TensorShape(shape))
-            let (q, r) = a.qrDecomposition()
-            let aReconstituted = matmul(q,r)
-            assertEqual(aReconstituted, a, accuracy: 1e-5)
-
-            let (qFull, rFull) = a.qrDecomposition(fullMatrices: true)
-            let aReconstitutedFull = matmul(qFull, rFull)
-            assertEqual(aReconstitutedFull, a, accuracy: 1e-5)
-        }
-    }
-
-    func testDiagonalPart() {
-        // Test on 2-D matrix.
-        let t1 = Tensor<Float>(shape: [4, 4], scalars: (1...16).map(Float.init))
-        let target1 = Tensor<Float>([1, 6, 11, 16])
-        XCTAssertEqual(t1.diagonalPart(), target1)
-
-        // Test on 4-D tensor.
-        let t2 = Tensor<Float>([[[[1.0, 0.0, 0.0, 0.0],
-                                  [0.0, 0.0, 0.0, 0.0]],
-                                 [[0.0, 2.0, 0.0, 0.0],
-                                  [0.0, 0.0, 0.0, 0.0]],
-                                 [[0.0, 0.0, 3.0, 0.0],
-                                  [0.0, 0.0, 0.0, 0.0]],
-                                 [[0.0, 0.0, 0.0, 4.0],
-                                  [0.0, 0.0, 0.0, 0.0]]],
-                                [[[0.0, 0.0, 0.0, 0.0],
-                                  [5.0, 0.0, 0.0, 0.0]],
-                                 [[0.0, 0.0, 0.0, 0.0],
-                                  [0.0, 6.0, 0.0, 0.0]],
-                                 [[0.0, 0.0, 0.0, 0.0],
-                                  [0.0, 0.0, 7.0, 0.0]],
-                                 [[0.0, 0.0, 0.0, 0.0],
-                                  [0.0, 0.0, 0.0, 8.0]]]])
-        let target2 = Tensor<Float>([[1, 2, 3, 4], [5, 6, 7, 8]])
-        XCTAssertEqual(t2.diagonalPart(), target2)
-    }
-
     func testBroadcastedAddGradient() {
         func foo(_ x: Tensor<Float>, _ y: Tensor<Float>) -> Tensor<Float> {
             return (x + y).sum()
@@ -564,8 +529,6 @@ final class MathOperatorTests: XCTestCase {
         ("testXWPlusB", testXWPlusB),
         ("testXORInference", testXORInference),
         ("testMLPClassifierStruct", testMLPClassifierStruct),
-        ("testQRDecompositionApproximation", testQRDecompositionApproximation),
-        ("testDiagonalPart", testDiagonalPart),
         ("testBroadcastedAddGradient", testBroadcastedAddGradient)
     ]
 }

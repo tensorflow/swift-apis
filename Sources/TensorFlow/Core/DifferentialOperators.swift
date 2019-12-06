@@ -13,10 +13,14 @@
 // limitations under the License.
 
 //===------------------------------------------------------------------------------------------===//
-// Method-style Differential Operators
+// Method-style differential operators
 //===------------------------------------------------------------------------------------------===//
 
 public extension Differentiable {
+    @available(*, deprecated, message: """
+        Method-style differential operators are deprecated and will be removed; use top-level
+        function 'TensorFlow.gradient(at:in:)' instead
+        """)
     @inlinable
     func gradient<R: TensorFlowFloatingPoint>(
         in f: @differentiable (Self) -> Tensor<R>
@@ -24,6 +28,10 @@ public extension Differentiable {
         return self.valueWithGradient(in: f).1
     }
 
+    @available(*, deprecated, message: """
+        Method-style differential operators are deprecated and will be removed; use top-level
+        function 'TensorFlow.valueWithGradient(at:in:)' instead
+        """)
     @inlinable
     func valueWithGradient<R: TensorFlowFloatingPoint>(
         in f: @differentiable (Self) -> Tensor<R>
@@ -36,6 +44,10 @@ public extension Differentiable {
         return (y, pb(Tensor<R>(1)))
     }
 
+    @available(*, deprecated, message: """
+        Method-style differential operators are deprecated and will be removed; use top-level
+        function 'TensorFlow.gradient(at:_:in:)' instead
+        """)
     @inlinable
     func gradient<T: Differentiable, R: TensorFlowFloatingPoint>(
         at x: T,
@@ -44,6 +56,10 @@ public extension Differentiable {
         return self.valueWithGradient(at: x, in: f).1
     }
 
+    @available(*, deprecated, message: """
+        Method-style differential operators are deprecated and will be removed; use top-level
+        function 'TensorFlow.valueWithGradient(at:_:in:)' instead
+        """)
     @inlinable
     func valueWithGradient<T: Differentiable, R: TensorFlowFloatingPoint>(
         at x: T,
@@ -59,7 +75,7 @@ public extension Differentiable {
 }
 
 // ===------------------------------------------------------------------------------------------===//
-// Free-Function-Style Differential Operators
+// Free-function-style differential operators
 // ===------------------------------------------------------------------------------------------===//
 
 // Value with gradient

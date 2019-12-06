@@ -22,7 +22,7 @@
 public func l1Loss<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>,
     expected: Tensor<Scalar>,
-    reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = { $0.sum() }
+    reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = _sum
 ) -> Tensor<Scalar> {
     reduction(abs(expected - predicted))
 }
@@ -37,7 +37,7 @@ public func l1Loss<Scalar: TensorFlowFloatingPoint>(
 public func l2Loss<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>,
     expected: Tensor<Scalar>,
-    reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = { $0.sum() }
+    reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = _sum
 ) -> Tensor<Scalar> {
     reduction((expected - predicted).squared())
 }
@@ -189,18 +189,9 @@ public func poissonLoss<Scalar: TensorFlowFloatingPoint>(
 public func kullbackLeiblerDivergence<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>,
     expected: Tensor<Scalar>,
-    reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = { $0.sum() }
+    reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = _sum
 ) -> Tensor<Scalar> {
     reduction(expected * log(expected / predicted))
-}
-
-/// Workaround for cross-module default parameter @differentiable functions.
-/// Tensor<Scalar>.mean() is the preferred way to do this.
-@differentiable
-public func _mean<Scalar: TensorFlowFloatingPoint>(
-    _ value: Tensor<Scalar>
-) -> Tensor<Scalar> {
-  return value.mean()
 }
 
 /// Returns the softmax cross entropy (categorical cross entropy) between logits and labels.
@@ -224,7 +215,7 @@ func softmaxCrossEntropyHelper<Scalar: TensorFlowFloatingPoint>(
     logits: Tensor<Scalar>,
     labels: Tensor<Int32>
 ) -> Tensor<Scalar> {
-    Raw.sparseSoftmaxCrossEntropyWithLogits(features: logits, labels: labels).loss
+    _Raw.sparseSoftmaxCrossEntropyWithLogits(features: logits, labels: labels).loss
 }
 
 @inlinable
@@ -232,7 +223,7 @@ func _vjpSoftmaxCrossEntropyHelper<Scalar: TensorFlowFloatingPoint>(
     logits: Tensor<Scalar>,
     labels: Tensor<Int32>
 ) -> (Tensor<Scalar>, (Tensor<Scalar>) -> Tensor<Scalar>) {
-    let (loss, grad) = Raw.sparseSoftmaxCrossEntropyWithLogits(features: logits, labels: labels)
+    let (loss, grad) = _Raw.sparseSoftmaxCrossEntropyWithLogits(features: logits, labels: labels)
     return (loss, { $0.expandingShape(at: -1) * grad })
 }
 
@@ -258,7 +249,7 @@ func softmaxCrossEntropyHelper<Scalar: TensorFlowFloatingPoint>(
     logits: Tensor<Scalar>,
     probabilities: Tensor<Scalar>
 ) -> Tensor<Scalar> {
-    Raw.softmaxCrossEntropyWithLogits(features: logits, labels: probabilities).loss
+    _Raw.softmaxCrossEntropyWithLogits(features: logits, labels: probabilities).loss
 }
 
 @inlinable
@@ -266,7 +257,7 @@ func _vjpSoftmaxCrossEntropyHelper<Scalar: TensorFlowFloatingPoint>(
     logits: Tensor<Scalar>,
     probabilities: Tensor<Scalar>
 ) -> (Tensor<Scalar>, (Tensor<Scalar>) -> Tensor<Scalar>) {
-    let (loss, grad) = Raw.softmaxCrossEntropyWithLogits(features: logits, labels: probabilities)
+    let (loss, grad) = _Raw.softmaxCrossEntropyWithLogits(features: logits, labels: probabilities)
     return (loss, { $0.expandingShape(at: -1) * grad })
 }
 
@@ -289,4 +280,52 @@ public func sigmoidCrossEntropy<Scalar: TensorFlowFloatingPoint>(
     let maxLogitsWithZero = max(logits, Tensor(0))
     let negAbsLogits = max(logits, -logits) // Custom `abs` to compute gradients at `0`.
     return reduction(maxLogitsWithZero - logits * labels + log1p(exp(-negAbsLogits)))
+}
+
+/// Returns the Huber loss between predictions and expectations.
+///
+/// For each value `x` in the difference `expected - predicted`, the loss is:
+/// - `0.5 * x^2` if `abs(x) <= δ`.
+/// - `0.5 * δ^2 + δ * (|x| - δ)` otherwise.
+///
+/// - Source: [Wikipedia article](https://en.wikipedia.org/wiki/Huber_loss).
+///
+/// - Parameters:
+///   - predicted: Predicted outputs from a neural network.
+///   - expected: Expected values, i.e. targets, that correspond to the correct output.
+///   - delta: A floating point scalar representing the point where the Huber loss function changes
+///     from quadratic to linear.
+///   - reduction: Reduction to apply on the computed element-wise loss values.
+@differentiable(wrt: predicted)
+public func huberLoss<Scalar: TensorFlowFloatingPoint>(
+    predicted: Tensor<Scalar>,
+    expected: Tensor<Scalar>,
+    delta: Scalar,
+    reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = _sum
+) -> Tensor<Scalar> {
+    let error = expected - predicted
+    let absError = abs(error)
+    let quadratic = min(absError, delta)
+    let linear = absError - quadratic
+    return reduction((0.5 * quadratic * quadratic) + (delta * linear))
+}
+
+/// Workaround for TF-1030 so that we can use sum as a default argument for reductions.
+/// `Tensor<Scalar>.sum()` is the preferred way to do this.
+// TODO(TF-1030): Remove this and replace with `{ $0.sum() }`.
+@differentiable
+public func _sum<Scalar: TensorFlowFloatingPoint>(
+    _ value: Tensor<Scalar>
+) -> Tensor<Scalar> {
+  return value.sum()
+}
+
+/// Workaround for TF-1030 so that we can use mean as a default argument for reductions.
+/// `Tensor<Scalar>.mean()` is the preferred way to do this.
+// TODO(TF-1030): Remove this and replace with `{ $0.mean() }`.
+@differentiable
+public func _mean<Scalar: TensorFlowFloatingPoint>(
+    _ value: Tensor<Scalar>
+) -> Tensor<Scalar> {
+  return value.mean()
 }
