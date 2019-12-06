@@ -377,10 +377,10 @@ public class AMSGrad<Model: Differentiable & KeyPathIterable>: Optimizer
     }
 }
 
-/// RAdam Optimizer
+/// RAdam optimizer.
 /// 
-/// Recitified Adam optimizer, a variant of Adam that introduces a term to rectify
-/// variance of adaptive learning rate
+/// Rectified Adam, a variant of Adam that introduces a term to rectify the adaptive learning rate
+/// variance.
 /// 
 /// Reference: ["On the Variance of the Adaptive Learning Rate and Beyond"]
 /// https://arxiv.org/pdf/1908.03265.pdf
@@ -431,24 +431,24 @@ public class RAdam<Model: Differentiable>: Optimizer
         let step = Float(self.step)
         let beta1Power = pow(beta1, step)
         let beta2Power = pow(beta2, step)
-        // let stepSize = self.learningRate * step / (1 - beta1Power)
         secondMoments = beta2 * secondMoments + direction .* direction * (1 - beta2)
         firstMoments = beta1 * firstMoments + direction * (1 - beta1)
-        // Compute maximum length SMA, bias-corrected moving average and approximate length 
-        // SMA
+        // Compute maximum length SMA, bias-corrected moving average and approximate length.
         let N_sma_inf =  2 / (1 - beta2) - 1
-        let N_sma_t = N_sma_inf - 2*step*beta2Power / (1 - beta2Power)
+        let N_sma_t = N_sma_inf - 2 * step * beta2Power / (1 - beta2Power)
 
         if N_sma_t > 5 {
-            // Compute Bias corrected second moments, rectification and adapted momentum
+            // Compute bias-corrected second moments, rectification and adapted momentum.
             let secondMoments_h = Model.TangentVector.sqrt(secondMoments) + epsilon
-            let stepSize = sqrt((N_sma_t-4)*(N_sma_t-2)*N_sma_inf/((N_sma_inf-4)*(N_sma_inf-2)*(N_sma_t)))
-            model.move(along: -stepSize*sqrt(1 - beta2Power)*firstMoments./secondMoments_h)
-        } 
-        else {
-            // Update with un-adapted momentum
+            let stepSize = sqrt(
+                (N_sma_t - 4) * (N_sma_t - 2) * N_sma_inf / (
+                     (N_sma_inf - 4) * (N_sma_inf - 2) * (N_sma_t)
+                ))
+            model.move(along: -stepSize * sqrt(1 - beta2Power) * firstMoments ./ secondMoments_h)
+        } else {
+            // Update with un-adapted momentum.
             let stepSize = self.learningRate * step / (1 - beta1Power)
-            model.move(along: -stepSize*firstMoments)
+            model.move(along: -stepSize * firstMoments)
         }
     }
 }
