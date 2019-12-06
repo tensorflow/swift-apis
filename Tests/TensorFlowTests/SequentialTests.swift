@@ -63,7 +63,7 @@ final class SequentialTests: XCTestCase {
             }
         }
         XCTAssertEqual(model.inferring(from: [[0, 0], [0, 1], [1, 0], [1, 1]]),
-                       [[0.5567076], [0.5567076], [0.5567076], [0.5567076]])
+                       [[0.50182396], [0.50182396], [0.50182396], [0.50182396]])
     }
 
     static var allTests = [
