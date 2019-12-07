@@ -48,7 +48,7 @@ final class LayerTests: XCTestCase {
                 expected: y)
             withTensorLeakChecking {
                 for _ in 0..<10 {
-                    let 𝛁model = model.gradient { model -> Tensor<Float> in
+                    let 𝛁model = gradient(at: model) { model -> Tensor<Float> in
                         meanSquaredError(
                             predicted: model(x).squeezingShape(at: 1),
                             expected: y)
@@ -1142,7 +1142,7 @@ final class LayerTests: XCTestCase {
         let rnn = RNN(SimpleRNNCell<Float>(inputSize: 4, hiddenSize: 4,
                                            seed: (0xFeed, 0xBeef)))
         withTensorLeakChecking {
-            let (outputs, _) = rnn.valueWithPullback(at: inputs) { rnn, inputs in
+            let (outputs, _) = valueWithPullback(at: rnn, inputs) { rnn, inputs in
                 return rnn(inputs)
             }
             assertEqual(
@@ -1173,7 +1173,7 @@ final class LayerTests: XCTestCase {
             let inputs: [Tensor<Float>] = Array(repeating: x, count: 4)
             let rnn = RNN(LSTMCell<Float>(inputSize: 4, hiddenSize: 4))
             withTensorLeakChecking {
-                let (outputs, _) = rnn.valueWithPullback(at: inputs) { rnn, inputs in
+                let (outputs, _) = valueWithPullback(at: rnn, inputs) { rnn, inputs in
                     return rnn(inputs)
                 }
                 assertEqual(
@@ -1204,7 +1204,7 @@ final class LayerTests: XCTestCase {
           biasInitializer: zeros())
         )
         withTensorLeakChecking {
-            let (outputs, _) = rnn.valueWithPullback(at: inputs) { rnn, inputs in
+            let (outputs, _) = valueWithPullback(at: rnn, inputs) { rnn, inputs in
                 return rnn(inputs)
             }
             XCTAssertEqual(outputs.map { $0.hidden },

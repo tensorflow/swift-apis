@@ -45,7 +45,7 @@ final class TrivialModelTests: XCTestCase {
         Context.local.learningPhase = .training
         withTensorLeakChecking {
             for _ in 0..<3000 {
-                let 𝛁model = classifier.gradient { classifier -> Tensor<Float> in
+                let 𝛁model = gradient(at: classifier) { classifier -> Tensor<Float> in
                     let ŷ = classifier(x)
                     return meanSquaredError(predicted: ŷ, expected: y)
                 }
