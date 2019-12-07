@@ -56,6 +56,17 @@ public extension Tensor where Scalar: TensorFlowNumeric {
         _Raw.matrixDiag(diagonal: self)
     }
 
+    /// Returns a batched matrix tensor with new batched diagonal values.
+    /// Given the input tensor and diagonal, this operation returns a tensor with the same
+    /// shape and values as the input, except for the specified diagonals of the innermost matrices
+    /// which will be overwritten by the values in diagonal.
+    ///
+    /// Parameter diagonal: A tensor with rank k.
+    @inlinable
+    func setDiagonal(diagonal: Tensor<Scalar>) -> Tensor {
+        _Raw.matrixSetDiag(self, diagonal: diagonal)
+    }
+
     /// Returns a copy of a innermost tensor defined by a central band boundaries.
     /// The output is a tensor of the same shape as the instance `[..., :, :]`.
     ///
@@ -106,6 +117,31 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 }
 
+/// Returns an identity matrix or a batch of matrices.
+///
+/// - Parameters:
+///   - numRows: A non-negative integer giving the number of rows in each batch matrix.
+///   - numCols: A non-negative integer giving the number of rows in each batch matrix.
+///   - batchShape: A list of integers. The returned tensor will have leading batch dimensions
+///     of this shape.
+public func eye<Scalar: Numeric>(
+    numRows: Int,
+    numCols: Int,
+    batchShape: [Int]
+) -> Tensor<Scalar> {
+    let diagonalSize = min(numRows, numCols)
+    let diagShape = batchShape + [diagonalSize]
+    let diagonalOnes = Tensor<Scalar>(ones: TensorShape(diagShape))
+    if numRows == numCols{
+        return diagonalOnes.diagonal()
+    }
+    else{
+        let shape = batchShape + [numRows, numCols]
+        let zeroMatrix = Tensor<Scalar>(zeros: TensorShape(shape))
+        return zeroMatrix.setDiagonal(diagonal: diagonalOnes)
+    }
+}
+
 // MARK: - Decompositions
 
 /// Returns the Cholesky decomposition of one or more square matrices.
@@ -147,5 +183,27 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     func qrDecomposition(fullMatrices: Bool = false) -> (q: Tensor<Scalar>, r: Tensor<Scalar>) {
         _Raw.qr(self, fullMatrices: fullMatrices)
+    }
+
+    /// Returns the singular value decompositions of one or more matrices.
+    ///
+    /// Computes the SVD of each inner matrix in the `input` tensor such that
+    /// `input[..., :, :] = u[..., :, :] * diag(s[..., :, :]) * transpose(v[..., :, :])`
+    ///
+    /// - Parameters:
+    ///   - computeUv: If `true` then left and right singular vectors will be computed and
+    ///     returned in `u` and `v`, respectively. Otherwise, only the singular values will be
+    ///     computed, which can be significantly faster.
+    ///   - fullMatrices:  If `true`, compute full-sized `u` and `v`. If `false` compute only the
+    ///     leading `min(shape[rank - 1], shape[rank - 2])` singular vectors. Ignored if
+    //      `computeUv` is `false`.
+    @inlinable
+    func svd(computeUv: Bool = true, fullMatrices: Bool = false
+    ) -> (s: Tensor<Scalar>, u: Tensor<Scalar>, v: Tensor<Scalar>) {
+        let (s, u, v) = _Raw.svd(self, computeUv: computeUv, fullMatrices: fullMatrices)
+        if !computeUv {
+            return s
+        }
+        return (s, u, v)
     }
 }

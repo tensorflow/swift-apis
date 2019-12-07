@@ -43,9 +43,9 @@ final class LinearAlgebraTests: XCTestCase {
              [0.02154995, 0.2738613]],
             [[2.4748755, -0.7071073],
              [-0.7071073, 0.3535535]]])
-        assertEqual(computedGradient, expectedGradient, accuracy: 1e-5) 
+        assertEqual(computedGradient, expectedGradient, accuracy: 1e-5)
     }
-    
+
     func testQRDecompositionApproximation() {
         let shapes = [[5, 8], [3, 4, 4], [3, 3, 32, 64]]
         for shape in shapes {
@@ -59,7 +59,7 @@ final class LinearAlgebraTests: XCTestCase {
             assertEqual(aReconstitutedFull, a, accuracy: 1e-5)
         }
     }
-    
+
     static var allTests = [
         ("testCholesky", testCholesky),
         ("testQRDecompositionApproximation", testQRDecompositionApproximation)
