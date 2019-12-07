@@ -1173,7 +1173,7 @@ final class LayerTests: XCTestCase {
             let inputs: [Tensor<Float>] = Array(repeating: x, count: 4)
             let rnn = RNN(LSTMCell<Float>(inputSize: 4, hiddenSize: 4))
             withTensorLeakChecking {
-                let (outputs, _) = rnn.valueWithPullback(at: inputs) { rnn, inputs in
+                let (outputs, _) = valueWithPullback(at: rnn, inputs) { rnn, inputs in
                     return rnn(inputs)
                 }
                 assertEqual(
