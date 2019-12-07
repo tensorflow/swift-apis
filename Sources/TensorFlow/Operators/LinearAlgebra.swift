@@ -199,10 +199,10 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     //      `computeUv` is `false`.
     @inlinable
     func svd(computeUv: Bool = true, fullMatrices: Bool = false
-    ) -> (s: Tensor<Scalar>, u: Tensor<Scalar>, v: Tensor<Scalar>) {
+    ) -> (s: Tensor<Scalar>, u: Tensor<Scalar>?, v: Tensor<Scalar>?) {
         let (s, u, v) = _Raw.svd(self, computeUv: computeUv, fullMatrices: fullMatrices)
         if !computeUv {
-            return s
+            return (s, nil, nil)
         }
         return (s, u, v)
     }
