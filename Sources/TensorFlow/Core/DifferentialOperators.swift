@@ -18,7 +18,7 @@
 
 public extension Differentiable {
     @available(*, deprecated, message: """
-        Method-style differential operators are deprecated and will be removed; use top-level
+        Method-style differential operators are deprecated and will be removed; use top-level \
         function 'TensorFlow.gradient(at:in:)' instead
         """)
     @inlinable
@@ -29,7 +29,7 @@ public extension Differentiable {
     }
 
     @available(*, deprecated, message: """
-        Method-style differential operators are deprecated and will be removed; use top-level
+        Method-style differential operators are deprecated and will be removed; use top-level \
         function 'TensorFlow.valueWithGradient(at:in:)' instead
         """)
     @inlinable
@@ -45,7 +45,7 @@ public extension Differentiable {
     }
 
     @available(*, deprecated, message: """
-        Method-style differential operators are deprecated and will be removed; use top-level
+        Method-style differential operators are deprecated and will be removed; use top-level \
         function 'TensorFlow.gradient(at:_:in:)' instead
         """)
     @inlinable
@@ -57,7 +57,7 @@ public extension Differentiable {
     }
 
     @available(*, deprecated, message: """
-        Method-style differential operators are deprecated and will be removed; use top-level
+        Method-style differential operators are deprecated and will be removed; use top-level \
         function 'TensorFlow.valueWithGradient(at:_:in:)' instead
         """)
     @inlinable
