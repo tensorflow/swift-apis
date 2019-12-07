@@ -48,7 +48,7 @@ final class SequentialTests: XCTestCase {
         Context.local.learningPhase = .training
         withTensorLeakChecking {
             for _ in 0..<1000 {
-                let 𝛁model = model.gradient { model -> Tensor<Float> in
+                let 𝛁model = gradient(at: model) { model -> Tensor<Float> in
                     let ŷ = model(x)
                     return meanSquaredError(predicted: ŷ, expected: y)
                 }
