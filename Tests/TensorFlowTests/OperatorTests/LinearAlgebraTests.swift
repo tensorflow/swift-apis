@@ -60,8 +60,26 @@ final class LinearAlgebraTests: XCTestCase {
         }
     }
 
+    func testSVD() {
+        let shapes = [[2, 2, 2], [3, 4, 4], [4, 4, 16, 32]]
+        for shape in shapes {
+            let a = Tensor<Float>(randomNormal: TensorShape(shape))
+            let (s, u, v) = a.svd()
+            let x = matmul(u!, s.diagonal())
+            let aReconstituted = matmul(x, v!)
+            assertEqual(aReconstituted, a, accuracy: 1e-5)
+
+            let (sFull, uFull, vFull) = a.svd(computeUv: true, fullMatrices: true)
+            let xFull = matmul(uFull!, sFull.diagonal())
+            let aReconstitutedFull = matmul(xFull, vFull!)
+            assertEqual(aReconstitutedFull, a, accuracy: 1e-5)
+        }
+    }
+
+
     static var allTests = [
         ("testCholesky", testCholesky),
-        ("testQRDecompositionApproximation", testQRDecompositionApproximation)
+        ("testQRDecompositionApproximation", testQRDecompositionApproximation),
+        ("testSVD", testSVD)
     ]
 }
