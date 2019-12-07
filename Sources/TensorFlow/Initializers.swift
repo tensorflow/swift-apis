@@ -495,7 +495,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     ///   - shape: The dimensions of the tensor.
     init(glorotUniform shape: TensorShape, seed: TensorFlowSeed = Context.local.randomSeed) {
         let (fanIn, fanOut) = shape.fans()
-        let limit = Tensor<Scalar>(6 / Scalar(fanIn + fanOut))
+        let limit = Tensor<Scalar>(Scalar.sqrt(6 / Scalar(fanIn + fanOut)))
         self.init(randomUniform: shape, lowerBound: -limit, upperBound: limit, seed: seed)
     }
 
