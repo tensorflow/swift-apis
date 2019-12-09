@@ -1,0 +1,82 @@
+<div class="task-group">
+  {{#name}}
+  <div class="task-name-container">
+    <a name="/{{uid}}"></a>
+    <a name="//apple_ref/{{language_stub}}/Section/{{name}}" class="dashAnchor"></a>
+    <a href="#/{{uid}}">
+      <h2 class="section-name">{{name}}</h2>
+    </a>
+  </div>
+  {{/name}}
+  <ul>
+    {{#items}}
+    <li class="item">
+      <div>
+        <code>
+        <a name="/{{usr}}"></a>
+        <a name="//apple_ref/{{language_stub}}/{{dash_type}}/{{name}}" class="dashAnchor"></a>
+        {{#url}}
+        <h3><a class="token" href="{{{path_to_root}}}{{{url}}}">{{name}}</a></h3>
+        {{/url}}
+        {{^url}}
+        <h3><a class="token" href="#/{{usr}}">{{name}}</a></h3>
+        {{/url}}
+        </code>
+        {{#default_impl_abstract}}
+          <span class="declaration-note">
+            Default implementation
+          </span>
+        {{/default_impl_abstract}}
+        {{#from_protocol_extension}}
+          <span class="declaration-note">
+            Extension method
+          </span>
+        {{/from_protocol_extension}}
+      </div>
+      <div class="height-container">
+        <div class="pointer-container"></div>
+        <section class="section">
+          <div class="pointer"></div>
+          {{#abstract}}
+          <div class="abstract">
+            {{{abstract}}}
+          </div>
+          {{/abstract}}
+          {{#default_impl_abstract}}
+          <h4>Default Implementation</h4>
+          <div class="default_impl abstract">
+            {{{default_impl_abstract}}}
+          </div>
+          {{/default_impl_abstract}}
+          {{#declaration}}
+          <div class="declaration">
+            <h4>Declaration</h4>
+            <div class="{{language-stub}}">
+              {{{declaration}}}
+            </div>
+          </div>
+          {{/declaration}}
+          {{#parameters.count}}
+          <div>
+            <h4>Parameters</h4>
+            <table class="graybox">
+              <tbody>
+                {{#parameters}}
+                {{> parameter}}
+                {{/parameters}}
+              </tbody>
+            </table>
+          </div>
+          {{/parameters.count}}
+          {{#return}}
+          <div>
+            <h4>Return Value</h4>
+            {{{return}}}
+          </div>
+          {{/return}}
+        </section>
+      </div>
+    </li>
+    {{/items}}
+  </ul>
+</div>

@@ -1,0 +1,5 @@
+module: TensorFlow
+exclude:
+- Sources/TensorFlow/CompilerRuntime.swift
+- Sources/TensorFlow/Utilities.swift
+- Sources/TensorFlow/Threading.swift

@@ -1,0 +1,11 @@
+toc:
+
+{{#structure}}
+- title: {{section}}
+  path: /{{author_name}}/{{path_to_root}}{{url}}
+  section:
+  {{#children}}
+  - title: {{name}}
+    path: /{{author_name}}/{{path_to_root}}{{url}}
+  {{/children}}
+{{/structure}}

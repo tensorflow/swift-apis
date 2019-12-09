@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html devsite>
+  <head>
+    <title>{{name}}</title>
+    <link rel="stylesheet" type="text/css" href="{{path_to_root}}css/jazzy.css" />
+    <meta charset='utf-8'>
+    {{{custom_head}}}
+  </head>
+  <body>
+    <div class="content-wrapper">
+      <article class="main-content">
+        <section>
+          <section class="section">
+            {{#declaration}}
+              <div class="declaration">
+                <div class="language">
+                  {{{declaration}}}
+                </div>
+              </div>
+            {{/declaration}}
+            {{{overview}}}
+          </section>
+          {{> tasks}}
+        </section>
+      </article>
+    </div>
+  </body>
+</html>
+{{> nav}}

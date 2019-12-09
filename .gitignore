@@ -8,5 +8,8 @@ DerivedData/
 *.vscode
 *.idea
 
+### API documentation ###
+Tools/api_docs/api_docs
+
 ### MacOS ###
 .DS_Store
