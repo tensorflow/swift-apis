@@ -13,6 +13,9 @@
 // limitations under the License.
 
 /// Returns the L1 loss between predictions and expectations.
+/// Given the x and y vectors L1 loss computes:
+///  `reduction([l_1, l_2, ..., l_N]^T)`, where `l_i = |x_i - y_i|`
+///   and `N` is yhe batch size
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
@@ -28,6 +31,9 @@ public func l1Loss<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// Returns the L2 loss between predictions and expectations.
+/// Given the x and y vectors L1 loss computes:
+///  `reduction([l_1, l_2, ..., l_N]^T)`, where `l_i = (x_i - y_i)^2`
+///   and `N` is yhe batch size
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
@@ -43,6 +49,7 @@ public func l2Loss<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// Returns the mean absolute error between predictions and expectations.
+/// Applies the mean reduction to the l1 loss
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
@@ -56,6 +63,7 @@ public func meanAbsoluteError<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// Returns the mean squared error between predictions and expectations.
+/// Applies the mean reduction to the l2 loss
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
@@ -69,6 +77,9 @@ public func meanSquaredError<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// Returns the mean squared logarithmic error between predictions and expectations.
+/// Given the x and y vectors the mean squared logarithmic is:
+///  `(l_1, l_2, ..., l_N)/N`, where `l_i = (log(x_i + 1) - log(y_i + 1))^2`
+///  and `N` is yhe batch size
 ///
 /// - Note: Negative tensor entries will be clamped at `0` to avoid undefined
 ///   logarithmic behavior, as `log(_:)` is undefined for negative reals.
@@ -228,6 +239,7 @@ func _vjpSoftmaxCrossEntropyHelper<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// Returns the softmax cross entropy (categorical cross entropy) between logits and labels.
+/// Given the logits and probabilites cross entropy computes `reduction(-logits * log(p))`.
 ///
 /// - Parameters:
 ///   - logits: Unscaled log probabilities from a neural network.
