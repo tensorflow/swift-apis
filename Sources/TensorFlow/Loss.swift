@@ -98,7 +98,9 @@ public func meanSquaredLogarithmicError<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// Returns the mean absolute percentage error between predictions and expectations.
-///
+/// Given the x and y vectors, the mean absolute percentage error is:
+///  `100 * (abs((expected - predicted) / abs(expected)))/N`
+///  Where N is the batch size
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
@@ -111,6 +113,8 @@ public func meanAbsolutePercentageError<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// Returns the hinge loss between predictions and expectations.
+/// Given the predicted and expected, the Hinge loss is computed as follows:
+///  `reduction(max(0, 1 - predicted * expected))` 
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
@@ -126,6 +130,8 @@ public func hingeLoss<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// Returns the squared hinge loss between predictions and expectations.
+/// Given the predicted and expected, the Hinge loss is computed as follows:
+///  `reduction(max(0, 1 - predicted * expected)^2)` 
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
@@ -175,6 +181,8 @@ public func logCoshLoss<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// Returns the Poisson loss between predictions and expectations.
+/// Given the predicted and observed, the Poisson loss is computed as follows:
+///  `reduction(predicted - observed * log(predicted))`
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
@@ -190,7 +198,9 @@ public func poissonLoss<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// Returns the Kullback-Leibler divergence (KL divergence) between between expectations and
-/// predictions. Given two distributions `p` and `q`, KL divergence computes `p * log(p / q)`.
+/// predictions. 
+/// Given two distributions `p` and `q`, KL divergence is computed as follows:
+/// `p * log(p / q)`
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
@@ -206,7 +216,7 @@ public func kullbackLeiblerDivergence<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// Returns the softmax cross entropy (categorical cross entropy) between logits and labels.
-///
+/// 
 /// - Parameters:
 ///   - logits: One-hot encoded outputs from a neural network.
 ///   - labels: Indices (zero-indexed) of the correct outputs.
@@ -239,7 +249,8 @@ func _vjpSoftmaxCrossEntropyHelper<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// Returns the softmax cross entropy (categorical cross entropy) between logits and labels.
-/// Given the logits and probabilites cross entropy computes `reduction(-logits * log(p))`.
+/// Given the logits and probabilites, the softmax cross entropy computes `reduction(-softmax(logits) * log(p))`
+/// Where softmax(x) = `exp(x)/sum(exp(x))`
 ///
 /// - Parameters:
 ///   - logits: Unscaled log probabilities from a neural network.
@@ -274,6 +285,8 @@ func _vjpSoftmaxCrossEntropyHelper<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// Returns the sigmoid cross entropy (binary cross entropy) between logits and labels.
+/// Given the logits and probabilites, the sigmoid cross entropy computes `reduction(-sigmoid(logits) * log(p))`
+/// Where sigmoid(x) = `1/(1 + exp(-x))`
 ///
 /// The reduction is reduced over all elements. If reduced over batch size is intended, please
 /// consider to scale the loss.
