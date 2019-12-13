@@ -79,7 +79,7 @@ public func meanSquaredError<Scalar: TensorFlowFloatingPoint>(
 /// Returns the mean squared logarithmic error between predictions and expectations.
 /// Given the x and y vectors, the mean squared logarithmic error is:
 ///  `(l_1, l_2, ..., l_N)/N`, where `l_i = (log(x_i + 1) - log(y_i + 1))^2`
-///  and `N` is yhe batch size
+///  and `N` is the batch size.
 ///
 /// - Note: Negative tensor entries will be clamped at `0` to avoid undefined
 ///   logarithmic behavior, as `log(_:)` is undefined for negative reals.
