@@ -31,7 +31,7 @@ public func l1Loss<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// Returns the L2 loss between predictions and expectations.
-/// Given the x and y vectors L1 loss computes:
+/// Given the x and y vectors, the L2 loss is computed as follows:
 ///  `reduction([l_1, l_2, ..., l_N]^T)`, where `l_i = (x_i - y_i)^2`
 ///   and `N` is yhe batch size
 ///
