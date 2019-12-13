@@ -13,9 +13,8 @@
 // limitations under the License.
 
 /// Returns the L1 loss between predictions and expectations.
-/// Given the x and y vectors, the L1 loss is computed as follows:
-///  `reduction([l_1, l_2, ..., l_N]^T)`, where `l_i = |x_i - y_i|`
-///   and `N` is the batch size.
+/// Given `y_pred` and `y_true` vectors, the L1 loss is computed as follows:
+///  `reduction(abs(y_pred - y_true))`
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
@@ -31,9 +30,8 @@ public func l1Loss<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// Returns the L2 loss between predictions and expectations.
-/// Given the x and y vectors, the L2 loss is computed as follows:
-///  `reduction([l_1, l_2, ..., l_N]^T)`, where `l_i = (x_i - y_i)^2`
-///   and `N` is the batch size.
+/// Given`y_pred` and `y_true`, the L2 loss is computed as follows:
+///  `reduction((y_pred - y_true)^2)`
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
@@ -77,9 +75,8 @@ public func meanSquaredError<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// Returns the mean squared logarithmic error between predictions and expectations.
-/// Given the x and y vectors, the mean squared logarithmic error is:
-///  `(l_1, l_2, ..., l_N)/N`, where `l_i = (log(x_i + 1) - log(y_i + 1))^2`
-///  and `N` is the batch size.
+/// Given the `y_pred` and `y_true`, the mean squared logarithmic error is:
+///  `mean((log(y_pred) - log(y_true))^2)`
 ///
 /// - Note: Negative tensor entries will be clamped at `0` to avoid undefined
 ///   logarithmic behavior, as `log(_:)` is undefined for negative reals.
@@ -98,9 +95,9 @@ public func meanSquaredLogarithmicError<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// Returns the mean absolute percentage error between predictions and expectations.
-/// Given the x and y vectors, the mean absolute percentage error is:
-///  `100 * (abs((expected - predicted) / abs(expected)))/N`
-///  Where N is the batch size
+/// Given `y_pred` and `y_true` the mean absolute percentage error is:
+///  `100 * mean(abs((y_true - y_pred) / abs(y_true)))`
+///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
@@ -113,8 +110,8 @@ public func meanAbsolutePercentageError<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// Returns the hinge loss between predictions and expectations.
-/// Given the predicted and expected, the Hinge loss is computed as follows:
-///  `reduction(max(0, 1 - predicted * expected))` 
+/// Given the `y_pred` and `y_true`, the Hinge loss is computed as follows:
+///  `reduction(max(0, 1 - y_pred * y_true))` 
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
@@ -130,8 +127,8 @@ public func hingeLoss<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// Returns the squared hinge loss between predictions and expectations.
-/// Given the predicted and expected, the Hinge loss is computed as follows:
-///  `reduction(max(0, 1 - predicted * expected)^2)` 
+/// Given the `y_pred` and `y_true`, the Hinge loss is computed as follows:
+///  `reduction(max(0, 1 - y_pred * y_true)^2)` 
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
@@ -181,8 +178,8 @@ public func logCoshLoss<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// Returns the Poisson loss between predictions and expectations.
-/// Given the predicted and observed, the Poisson loss is computed as follows:
-///  `reduction(predicted - observed * log(predicted))`
+/// Given `y_pred` and `y_true`, the Poisson loss is computed as follows:
+///  `reduction(y_pred - y_true * log(y_pred))`
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
@@ -199,8 +196,8 @@ public func poissonLoss<Scalar: TensorFlowFloatingPoint>(
 
 /// Returns the Kullback-Leibler divergence (KL divergence) between between expectations and
 /// predictions. 
-/// Given two distributions `p` and `q`, KL divergence is computed as follows:
-/// `p * log(p / q)`
+/// Given two distributions `y_pred` and `y_true`, KL divergence is computed as follows:
+/// `reduction(y_true * log(y_true / y_pred))`
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
