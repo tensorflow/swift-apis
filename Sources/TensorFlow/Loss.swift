@@ -15,7 +15,7 @@
 /// Returns the L1 loss between predictions and expectations.
 /// Given the x and y vectors, the L1 loss is computed as follows:
 ///  `reduction([l_1, l_2, ..., l_N]^T)`, where `l_i = |x_i - y_i|`
-///   and `N` is yhe batch size
+///   and `N` is the batch size.
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
