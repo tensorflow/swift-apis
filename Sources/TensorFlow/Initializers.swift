@@ -453,6 +453,31 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 }
 
+public extension Tensor where Scalar: TensorFlowIndex {
+    /// Creates a tensor by drawing samples from a categorical distribution.
+    ///
+    /// - Parameters:
+    ///     - logits: 2-D Tensor with shape `[batch_size, num_classes]`.  Each slice `[i, :]`
+    ///         represents the unnormalized log probabilities for all classes.
+    ///     - num_samples: 0-D.  Number of independent samples to draw for each row slice.
+    ///
+    /// - Attrs:
+    ///     - seed: If either seed or seed2 is set to be non-zero, the internal random number
+    ///         generator is seeded by the given seed.  Otherwise, a random seed is used.
+    ///     - seed2: A second seed to avoid seed collision.
+    ///
+    /// - Output: 2-D Tensor with shape `[batch_size, num_samples]`.  Each slice `[i, :]`
+    ///     contains the drawn class labels with range `[0, num_classes)`.
+    init<T: TensorFlowNumeric>(
+        logits: Tensor<T>,
+        numSamples: Tensor<Int32>,
+        seed: Int64 = 0,
+        seed2: Int64 = 0
+    ) {
+        self = _Raw.multinomial(logits: logits, numSamples: numSamples, seed: seed, seed2: seed2)
+    }
+}
+
 //===------------------------------------------------------------------------------------------===//
 // Variance Scaling
 //===------------------------------------------------------------------------------------------===//
