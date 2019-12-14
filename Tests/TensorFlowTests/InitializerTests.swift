@@ -173,7 +173,7 @@ final class InitializerTests: XCTestCase {
     func testCategoricalFromLogits() {
         let probabilities = Tensor<Float>([[0.5, 0.3, 0.2], [0.6, 0.3, 0.1]])
         let logits = log(probabilities)
-        let t = Tensor<Int32>(logits: logits, numSamples: Tensor<Int32>(1))
+        let t = Tensor<Int32>(randomCategorialLogits: logits, sampleCount: 1)
 
         XCTAssertEqual(TensorShape([2, 1]), t.shape)
         // Test all elements are in range of [0, 3)
