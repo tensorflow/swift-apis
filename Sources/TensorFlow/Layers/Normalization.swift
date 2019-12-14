@@ -85,13 +85,13 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
           var normalizedAxes = Array(0..<input.rank)
           normalizedAxes.remove(at: positiveAxis)
           let moments = input.moments(alongAxes: normalizedAxes)
-          let decayMomentum = Tensor(1 - momentum)
+          let decayMomentum = Tensor(1 - momentum, on: input.device)
           runningMean.value += (moments.mean - runningMean.value) * decayMomentum
           runningVariance.value += (moments.variance - runningVariance.value) * decayMomentum
-          let inv = rsqrt(moments.variance + Tensor(epsilon)) * scale
+          let inv = rsqrt(moments.variance + Tensor(epsilon, on: input.device)) * scale
           return (input - moments.mean) * inv + offset
         case .inference:
-          let inv = rsqrt(runningVariance.value + Tensor(epsilon)) * scale
+          let inv = rsqrt(runningVariance.value + Tensor(epsilon, on: input.device)) * scale
           return (input - runningMean.value) * inv + offset
         }
     }
