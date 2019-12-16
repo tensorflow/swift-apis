@@ -149,3 +149,46 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         _Raw.qr(self, fullMatrices: fullMatrices)
     }
 }
+
+
+// MARK: Solvers
+
+/// Returns the Cholesky decomposition of one or more square matrices.
+///
+/// The input is a tensor of shape `[..., M, M]` whose inner-most 2 dimensions
+/// form square matrices.
+///
+/// The input has to be symmetric and positive definite. Only the lower-triangular
+/// part of the input will be used for this operation. The upper-triangular part
+/// will not be read.
+///
+/// The output is a tensor of the same shape as the input
+/// containing the Cholesky decompositions for all input submatrices `[..., :, :]`.
+///
+/// - Parameter input: A tensor of shape `[..., M, M]`.
+@inlinable
+@differentiable(vjp: _vjpTriangularSolve)
+public func triangularSolve<T: TensorFlowFloatingPoint>(
+    A matrix: Tensor<T>,
+    b rhs: Tensor<T>,
+    lower: Bool = true,
+    adjoint: Bool = false
+) -> Tensor<T> {
+    _Raw.matrixTriangularSolve(matrix: matrix, rhs: rhs, lower: lower, adjoint: adjoint)
+}
+
+@inlinable
+internal func _vjpTriangularSolve<T: TensorFlowFloatingPoint>(
+    A matrix: Tensor<T>,
+    b rhs: Tensor<T>,
+    lower: Bool = true,
+    adjoint: Bool = false
+) -> (Tensor<T>, (Tensor<T>) -> (Tensor<T>, Tensor<T>)) {
+    let c = triangularSolve(A: matrix, b: rhs, lower: lower, adjoint: adjoint)
+    let triangularSolveGrad = { (gradient: Tensor<T>) -> (Tensor<T>, Tensor<T>) in
+        let gradB = triangularSolve(A: matrix, b: gradient, lower: lower, adjoint: !adjoint)
+        let gradA = adjoint ? matmul(c, transposed: false, gradB, transposed: true) : matmul(gradB, transposed: false, c, transposed: true)
+        return (lower ? gradA.bandPart(-1, 0) : gradA.bandPart(0, -1), gradB)
+    }
+    return (c, triangularSolveGrad)
+}
