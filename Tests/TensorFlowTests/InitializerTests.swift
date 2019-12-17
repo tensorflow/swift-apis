@@ -170,6 +170,17 @@ final class InitializerTests: XCTestCase {
         testDistribution(t, expectedMean: 0, expectedStandardDeviation: stdDev)
     }
 
+    func testCategoricalFromLogits() {
+        let probabilities = Tensor<Float>([[0.5, 0.3, 0.2], [0.6, 0.3, 0.1]])
+        let logits = log(probabilities)
+        let t = Tensor<Int32>(randomCategorialLogits: logits, sampleCount: 1)
+
+        XCTAssertEqual(TensorShape([2, 1]), t.shape)
+        // Test all elements are in range of [0, 3)
+        XCTAssertTrue((t .>= Tensor<Int32>([[0], [0]])).all())
+        XCTAssertTrue((t .< Tensor<Int32>([[3], [3]])).all())
+    }
+
     func testOrthogonalShapesValues() {
         for shape in [[10, 10], [10, 9, 8], [100, 5, 5], [50, 40], [3, 3, 32, 64]] {
             // Check the shape.
@@ -201,6 +212,7 @@ final class InitializerTests: XCTestCase {
         ("testRandomTruncatedNormal", testRandomTruncatedNormal),
         ("testGlorotUniform", testGlorotUniform),
         ("testGlorotNormal", testGlorotNormal),
+        ("testCategoricalFromLogits", testCategoricalFromLogits),
         ("testOrthogonalShapesValues", testOrthogonalShapesValues)
     ]
 }

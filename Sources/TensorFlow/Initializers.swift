@@ -453,6 +453,29 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 }
 
+public extension Tensor where Scalar: TensorFlowIndex {
+    /// Creates a tensor by drawing samples from a categorical distribution.
+    ///
+    /// - Parameters:
+    ///     - randomCategorialLogits: 2-D Tensor with shape `[batchSize, classCount]`.  Each slice `[i, :]`
+    ///         represents the unnormalized log probabilities for all classes.
+    ///     - sampleCount: 0-D.  Number of independent samples to draw for each row slice.
+    ///     - seed: The seed value.
+    ///
+    /// - Returns: 2-D Tensor with shape `[batchSize, sampleCount]`.  Each slice `[i, :]`
+    ///     contains the drawn class labels with range `[0, classCount)`.
+    init<T: TensorFlowNumeric>(
+        randomCategorialLogits: Tensor<T>,
+        sampleCount: Int32,
+        seed: TensorFlowSeed = Context.local.randomSeed
+    ) {
+        self = _Raw.statelessMultinomial(
+            logits: randomCategorialLogits, 
+            numSamples: Tensor<Int32>(sampleCount), 
+            seed: Tensor<Int32>([seed.graph, seed.op]))
+    }
+}
+
 //===------------------------------------------------------------------------------------------===//
 // Variance Scaling
 //===------------------------------------------------------------------------------------------===//
