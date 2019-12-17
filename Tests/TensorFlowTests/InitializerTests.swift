@@ -177,8 +177,8 @@ final class InitializerTests: XCTestCase {
 
         XCTAssertEqual(TensorShape([2, 1]), t.shape)
         // Test all elements are in range of [0, 3)
-        XCTAssertEqual(1, (Tensor<Int32>(t .>= Tensor<Int32>([[0], [0]])).product()).scalar!)
-        XCTAssertEqual(1, (Tensor<Int32>(t .< Tensor<Int32>([[3], [3]])).product()).scalar!)
+        XCTAssertTrue((t .>= Tensor<Int32>([[0], [0]])).all())
+        XCTAssertTrue((t .< Tensor<Int32>([[3], [3]])).all())
     }
 
     func testOrthogonalShapesValues() {
