@@ -110,7 +110,7 @@ public func meanAbsolutePercentageError<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// Returns the hinge loss between predictions and expectations.
-/// Given the `y_pred` and `y_true`, the Hinge loss is computed as follows:
+/// Given the `y_pred` and `y_true`, the hinge loss is computed as follows:
 ///  `reduction(max(0, 1 - y_pred * y_true))` 
 ///
 /// - Parameters:
