@@ -59,9 +59,17 @@ final class LinearAlgebraTests: XCTestCase {
             assertEqual(aReconstitutedFull, a, accuracy: 1e-5)
         }
     }
+//
+//    func testTrace() {
+//        let shape = [2, 4, 4]
+//        let scalars = (1...shape.reduce(1, *)).map(Float.init)
+//        let x = Tensor<Float>(shape: TensorShape(shape), scalars: scalars)
+//        let result = trace(x)
+//    }
     
     static var allTests = [
         ("testCholesky", testCholesky),
-        ("testQRDecompositionApproximation", testQRDecompositionApproximation)
+        ("testQRDecompositionApproximation", testQRDecompositionApproximation),
+//        ("testTrace", testTrace)
     ]
 }
