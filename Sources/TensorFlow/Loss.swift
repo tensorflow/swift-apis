@@ -283,7 +283,7 @@ func _vjpSoftmaxCrossEntropyHelper<Scalar: TensorFlowFloatingPoint>(
 
 /// Returns the sigmoid cross entropy (binary cross entropy) between logits and labels.
 /// Given the logits and probabilites, the sigmoid cross entropy computes `reduction(-sigmoid(logits) * log(p))`
-/// Where sigmoid(x) = `1/(1 + exp(-x))`
+/// Where sigmoid(x) = `1 / (1 + exp(-x))`
 ///
 /// The reduction is reduced over all elements. If reduced over batch size is intended, please
 /// consider to scale the loss.
