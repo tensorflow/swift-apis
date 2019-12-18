@@ -213,7 +213,7 @@ public func kullbackLeiblerDivergence<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// Returns the softmax cross entropy (categorical cross entropy) between logits and labels.
-/// 
+///
 /// - Parameters:
 ///   - logits: One-hot encoded outputs from a neural network.
 ///   - labels: Indices (zero-indexed) of the correct outputs.
