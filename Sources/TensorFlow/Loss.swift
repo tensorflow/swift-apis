@@ -246,7 +246,7 @@ func _vjpSoftmaxCrossEntropyHelper<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// Returns the softmax cross entropy (categorical cross entropy) between logits and labels.
-/// Given the logits and probabilites, the softmax cross entropy computes `reduction(-softmax(logits) * log(p))`
+/// Given the logits and probabilities, the softmax cross entropy computes `reduction(-softmax(logits) * log(p))`
 /// Where softmax(x) = `exp(x)/sum(exp(x))`
 ///
 /// - Parameters:
