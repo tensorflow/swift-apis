@@ -118,7 +118,9 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 @inlinable
 @differentiable(wrt: matrix where T: TensorFlowFloatingPoint)
 public func trace<T: TensorFlowNumeric>(_ matrix: Tensor<T>) -> Tensor<T> {
-    matrix.diagonalPart().sum(squeezingAxes: -1)
+    precondition(matrix.rank >= 2, "The tensor must have at least rank 2.")
+    precondition(matrix.shape[matrix.rank - 1] == matrix.shape[matrix.rank - 2], "Squared [batched] matrix expected")
+    return matrix.diagonalPart().sum(squeezingAxes: -1)
 }
 
 // MARK: - Decompositions

@@ -67,8 +67,8 @@ final class LinearAlgebraTests: XCTestCase {
         for shape in shapes {
             let x = Tensor<scalar>(ones: TensorShape(shape))
             let computedTrace = trace(x)
-            let leadingShape = x.shape[0..<(x.shape.count-2)]
-            let value = scalar(x.shape[x.shape.count - 1])
+            let leadingShape = x.shape[0..<(x.rank - 2)]
+            let value = scalar(x.shape[x.rank - 1])
             let expectedTrace = Tensor<scalar>(repeating: value, shape: leadingShape)
             assertEqual(computedTrace, expectedTrace, accuracy: 1e-16)
         }
@@ -89,7 +89,7 @@ final class LinearAlgebraTests: XCTestCase {
     static var allTests = [
         ("testCholesky", testCholesky),
         ("testQRDecompositionApproximation", testQRDecompositionApproximation),
-        ("testTrace", testTrace)
+        ("testTrace", testTrace),
         ("testTraceGradient", testTraceGradient),
     ]
 }
