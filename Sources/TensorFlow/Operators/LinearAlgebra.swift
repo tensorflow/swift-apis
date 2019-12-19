@@ -106,12 +106,12 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 }
 
-/// Computes the trace of an optionally batched square matrix.
-/// The trace is the the sum along the main diagonal of [batched] matrix.
+/// Computes the trace of an optionally batched matrix.
+/// The trace is the the sum along the main diagonal of an optionally batched matrix.
 ///
-/// The output is a tensor with shape `[...]`. In case of an input tensor
-/// with shape `[..., M, N]`, for `M > N` the main diagonal has `N`
-/// elements and for `M < N` the main diagonal has `M` elements.
+/// The input is a tensor with shape `[..., M, M]`.
+/// The output is a tensor with shape `[...]`. The main diagonal of a matrix has
+/// `min(M, N)` length, in cases when `N` does not equal `M`.
 ///
 /// - Parameter matrix: A tensor of shape `[..., M, N]`.
 /// - Precondition: `matrix` must be a tensor with shape `[..., M, N]`.
