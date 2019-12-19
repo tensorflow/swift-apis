@@ -109,17 +109,17 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 /// Computes the trace of an input tensor.
 /// Returns the sum along the main diagonal of [batched] matrix.
 ///
-/// The input has to be [batched] symmetric matrix.
+/// The input has to be [batched] square matrix.
 /// When the input is a tensor of shape `[..., M, M]` then the output is a tensor
 /// with dimensions `[...]`
 ///
 /// - Parameter matrix: A tensor of shape `[..., M, M]`
 
-//@inlinable
-//@differentiable(wrt: matrix where T: TensorFlowFloatingPoint)
-//public func trace<T: TensorFlowNumeric>(matrix: Tensor<T>) -> Tensor<T> {
-//    matrix.diagonalPart().sum(squeezingAxes: -1)
-//}
+@inlinable
+@differentiable(wrt: matrix where T: TensorFlowFloatingPoint)
+public func trace<T: TensorFlowNumeric>(_ matrix: Tensor<T>) -> Tensor<T> {
+    matrix.diagonalPart().sum(squeezingAxes: -1)
+}
 
 // MARK: - Decompositions
 
