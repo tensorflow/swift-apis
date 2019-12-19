@@ -106,15 +106,15 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 }
 
-/// Computes the trace of an input tensor.
-/// Returns the sum along the main diagonal of [batched] matrix.
+/// Computes the trace of an optionally batched square matrix.
+/// The trace is the the sum along the main diagonal of [batched] matrix.
 ///
-/// The input has to be [batched] square matrix.
-/// When the input is a tensor of shape `[..., M, N]` then the output is a tensor
-/// with dimensions `[...]`
+/// The output is a tensor with shape `[...]`. In case of an input tensor
+/// with shape `[..., M, N]`, for `M > N` the main diagonal has `N`
+/// elements and for `M < N` the main diagonal has `M` elements.
 ///
-/// - Parameter matrix: A tensor of shape `[..., M, N]`
-/// - Precondition: The [batched] matrix rank must be greater or equal 2.
+/// - Parameter matrix: A tensor of shape `[..., M, N]`.
+/// - Precondition: `matrix` must be a tensor with shape `[..., M, N]`.
 @inlinable
 @differentiable(wrt: matrix where T: TensorFlowFloatingPoint)
 public func trace<T: TensorFlowNumeric>(_ matrix: Tensor<T>) -> Tensor<T> {
