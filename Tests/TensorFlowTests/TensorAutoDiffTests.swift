@@ -41,6 +41,116 @@ final class TensorAutoDiffTests: XCTestCase {
         XCTAssertEqual(gradient(at: Tensor([0.1, 0.2, 0.3]), in: square), [0.2, 0.4, 0.6])
     }
 
+    func testConditionals() {
+        func condNestedTupleVar(_ x: Tensor<Float>) -> Tensor<Float> {
+            // Convoluted function returning `x + x`.
+            var y: (Tensor<Float>, Tensor<Float>) = (x + x, x - x)
+            var z: ((Tensor<Float>, Tensor<Float>), Tensor<Float>) = (y, x)
+            if (x .> 0).all() {
+                let w = (x, x)
+                y.0 = w.1
+                y.1 = w.0
+                z.0.0 = z.0.0 - y.0
+                z.0.1 = z.0.1 + y.0
+            } else {
+                z = ((y.0 - x, y.1 + x), x)
+            }
+            return y.0 + y.1 - z.0.0 + z.0.1
+        }
+        XCTAssertTrue((value: Tensor(8), gradient: Tensor(2)) == valueWithGradient(at: Tensor(4), in: condNestedTupleVar))
+        XCTAssertTrue((value: Tensor(-20), gradient: Tensor(2)) == valueWithGradient(at: Tensor(-10), in: condNestedTupleVar))
+        XCTAssertTrue((value: Tensor(-2674), gradient: Tensor(2)) == valueWithGradient(at: Tensor(-1337), in: condNestedTupleVar))
+
+        func guard2Var(_ x: Tensor<Float>, _ y: Tensor<Float>) -> Tensor<Float> {
+            var z = y
+            guard (x .> 0).all() else {
+                if (y .> 0).all() {
+                    z = z * x
+                } else if x == Tensor(-1337) {
+                    z = x
+                    z = z * z
+                } else {
+                    z = Tensor(0)
+                }
+                return z
+            }
+            return z * y
+        }
+        XCTAssertTrue((Tensor(0), Tensor(10)) == gradient(at: Tensor(4), Tensor(5), in: guard2Var))
+        XCTAssertTrue((Tensor(5), Tensor(-1337)) == gradient(at: Tensor(-1337), Tensor(5), in: guard2Var))
+        XCTAssertTrue((Tensor(-2674), Tensor(0)) == gradient(at: Tensor(-1337), Tensor(-5), in: guard2Var))
+        XCTAssertTrue((Tensor(2), Tensor(-3)) == gradient(at: Tensor(-3), Tensor(2), in: guard2Var))
+    }
+
+    func testNestedConditionals() {
+        // Test tensor-tensor ops.
+        func condNested1(_ x: Tensor<Float>, _ y: Tensor<Float>) -> Tensor<Float> {
+            if (x .> 0).all() {
+                if (y .> 10).all() {
+                    let z = x * y
+                    if (z .> 100).all() {
+                        return x + z
+                    } else if y == Tensor(20) {
+                        return z + z
+                    }
+                } else {
+                    return x + y
+                }
+            }
+            return -y
+        }
+        XCTAssertTrue((Tensor(40), Tensor(8)) == gradient(at: Tensor(4), Tensor(20), in: condNested1))
+        XCTAssertTrue((Tensor(0), Tensor(-1)) == gradient(at: Tensor(4), Tensor(21), in: condNested1))
+        XCTAssertTrue((Tensor(1), Tensor(1)) == gradient(at: Tensor(4), Tensor(5), in: condNested1))
+        XCTAssertTrue((Tensor(0), Tensor(-1)) == gradient(at: Tensor(-3), Tensor(-2), in: condNested1))
+
+        // Test tensor-scalar ops.
+        func condNested2(_ x: Tensor<Float>, _ y: Float) -> Tensor<Float> {
+            if (x .> 0).all() {
+                if y > 10 {
+                    let z = x * y
+                    if (z .> 100).all() {
+                        return x + z
+                    } else if y == 20 {
+                        return z + z
+                    }
+                } else {
+                    return x + y
+                }
+            }
+            return Tensor(-y)
+        }
+        XCTAssertTrue((Tensor(40), 8) == gradient(at: Tensor(4), 20, in: condNested2))
+        XCTAssertTrue((Tensor(0), -1) == gradient(at: Tensor(4), 21, in: condNested2))
+        XCTAssertTrue((Tensor(1), 1) == gradient(at: Tensor(4), 5, in: condNested2))
+        XCTAssertTrue((Tensor(0), -1) == gradient(at: Tensor(-3), -2, in: condNested2))
+    }
+
+    func testRecursion() {
+        func factorial(_ x: Tensor<Float>) -> Tensor<Float> {
+            if x == Tensor(1) {
+                return Tensor(1)
+            }
+            return x * factorial(x - 1)
+        }
+        XCTAssertEqual(gradient(at: Tensor(1), in: factorial), Tensor(0))
+        XCTAssertEqual(gradient(at: Tensor(2), in: factorial), Tensor(1))
+        XCTAssertEqual(gradient(at: Tensor(3), in: factorial), Tensor(5))
+        XCTAssertEqual(gradient(at: Tensor(4), in: factorial), Tensor(26))
+        XCTAssertEqual(gradient(at: Tensor(5), in: factorial), Tensor(154))
+
+        func product(_ x: Tensor<Float>, count: Int) -> Tensor<Float> {
+            precondition(count > 0)
+            if count == 1 {
+                return x
+            }
+            return x * product(x, count: count - 1)
+        }
+        XCTAssertEqual(gradient(at: Tensor(-10), in: { x in product(x, count: 2) }), Tensor(-20))
+        XCTAssertEqual(gradient(at: Tensor(10), in: { x in product(x, count: 3) }), Tensor(300))
+        XCTAssertEqual(gradient(at: Tensor(100), in: { x in product(x, count: 1) }), Tensor(1))
+    }
+
     func testScalarGenericGrad() {
         // Tests TF-287.
         func negate<T : TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
@@ -245,7 +355,6 @@ final class TensorAutoDiffTests: XCTestCase {
         }
     }
 
-    /*TODO:(https://bugs.swift.org/browse/TF-771): Disabling this case as assertions fail.
     func testTensorInitStacking() {
         let a1 = Tensor<Float>([1, 2, 3, 4, 5])
         let b1 = Tensor<Float>([6, 7, 8, 9, 10])
@@ -257,7 +366,6 @@ final class TensorAutoDiffTests: XCTestCase {
         XCTAssertEqual(a1, grads.0)
         XCTAssertEqual(b1, grads.1)
     }
-    */
 
     func testExpandingShape() {
         func f1(a: Tensor<Float>) -> Tensor<Float> { a.expandingShape(at: 0).squared() }
@@ -509,12 +617,13 @@ final class TensorAutoDiffTests: XCTestCase {
         let computedGradient = gradient(at: x) { $0.batchNormalized(alongAxis: 1).squared().sum() }
         // The expected value of the gradient was computed using the following Python code:
         // ```
-        //   with tf.GradientTape() as t:
-        //     t.watch(x)
-        //     mean, var = tf.nn.moments(x, axes=1, keepdims=True)
-        //     y = tf.reduce_sum(tf.square(tf.nn.batch_normalization(
-        //     x, mean, var, offset=0, scale=1, variance_epsilon=0.001)))
-        //   print(t.gradient(y, x))
+        // import tensorflow as tf
+        // with tf.GradientTape() as t:
+        //   t.watch(x)
+        //   mean, var = tf.nn.moments(x, axes=1, keepdims=True)
+        //   y = tf.reduce_sum(tf.square(tf.nn.batch_normalization(
+        //   x, mean, var, offset=0, scale=1, variance_epsilon=0.001)))
+        // print(t.gradient(y, x))
         // ```
         let expectedGradient = Tensor<Float>([
             [-1.0127544e-02, -1.0807812e-03, -7.6115131e-04,  1.5857220e-03,  1.0383606e-02],
@@ -566,6 +675,9 @@ final class TensorAutoDiffTests: XCTestCase {
     static var allTests = [
         ("testSimpleGrad", testSimpleGrad),
         ("testGenericGrad", testGenericGrad),
+        ("testConditionals", testConditionals),
+        ("testNestedConditionals", testNestedConditionals),
+        ("testRecursion", testRecursion),
         ("testScalarGenericGrad", testScalarGenericGrad),
         ("testScalarized", testScalarized),
         ("testScalars", testScalars),
@@ -584,8 +696,7 @@ final class TensorAutoDiffTests: XCTestCase {
         ("testVariance", testVariance),
         ("testMin", testMin),
         ("testMax", testMax),
-        // TODO(https://bugs.swift.org/browse/TF-771): Disabling the failing test.
-        // ("testTensorInitStacking", testTensorInitStacking),
+        ("testTensorInitStacking", testTensorInitStacking),
         ("testExpandingShape", testExpandingShape),
         ("testSqueezingShape", testSqueezingShape),
         ("testReshapedBackprop", testReshapedBackprop),

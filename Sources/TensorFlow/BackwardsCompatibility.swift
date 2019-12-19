@@ -52,7 +52,7 @@ public func hingeLoss<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>,
     expected: Tensor<Scalar>
 ) -> Tensor<Scalar> {
-    hingeLoss(predicted: predicted, expected: expected, reduction: _mean)
+    hingeLoss(predicted: predicted, expected: expected, reduction: { $0.mean() })
 }
 
 /// Returns the squared hinge loss between predictions and expectations.
@@ -65,7 +65,7 @@ public func squaredHingeLoss<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>,
     expected: Tensor<Scalar>
 ) -> Tensor<Scalar> {
-    squaredHingeLoss(predicted: predicted, expected: expected, reduction: _mean)
+    squaredHingeLoss(predicted: predicted, expected: expected, reduction: { $0.mean() })
 }
 
 /// Returns the categorical hinge loss between predictions and expectations.
@@ -78,7 +78,7 @@ public func categoricalHingeLoss<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>,
     expected: Tensor<Scalar>
 ) -> Tensor<Scalar> {
-    categoricalHingeLoss(predicted: predicted, expected: expected, reduction: _mean)
+    categoricalHingeLoss(predicted: predicted, expected: expected, reduction: { $0.mean() })
 }
 
 /// Returns the logarithm of the hyperbolic cosine of the error between predictions and
@@ -92,7 +92,7 @@ public func logCoshLoss<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>,
     expected: Tensor<Scalar>
 ) -> Tensor<Scalar> {
-    logCoshLoss(predicted: predicted, expected: expected, reduction: _mean)
+    logCoshLoss(predicted: predicted, expected: expected, reduction: { $0.mean() })
 }
 
 /// Returns the Poisson loss between predictions and expectations.
@@ -105,7 +105,7 @@ public func poissonLoss<Scalar: TensorFlowFloatingPoint>(
     predicted: Tensor<Scalar>,
     expected: Tensor<Scalar>
 ) -> Tensor<Scalar> {
-    poissonLoss(predicted: predicted, expected: expected, reduction: _mean)
+    poissonLoss(predicted: predicted, expected: expected, reduction: { $0.mean() })
 }
 
 /// Returns the Kullback-Leibler divergence (KL divergence) between between expectations and
@@ -132,7 +132,7 @@ public func softmaxCrossEntropy<Scalar: TensorFlowFloatingPoint>(
     logits: Tensor<Scalar>,
     probabilities: Tensor<Scalar>
 ) -> Tensor<Scalar> {
-    softmaxCrossEntropy(logits: logits, probabilities: probabilities, reduction: _mean)
+    softmaxCrossEntropy(logits: logits, probabilities: probabilities, reduction: { $0.mean() })
 }
 
 /// Returns the sigmoid cross entropy (binary cross entropy) between logits and labels.
@@ -144,5 +144,5 @@ public func sigmoidCrossEntropy<Scalar: TensorFlowFloatingPoint>(
     logits: Tensor<Scalar>,
     labels: Tensor<Scalar>
 ) -> Tensor<Scalar> {
-    sigmoidCrossEntropy(logits: logits, labels:labels, reduction: _mean)
+    sigmoidCrossEntropy(logits: logits, labels:labels, reduction: { $0.mean() })
 }

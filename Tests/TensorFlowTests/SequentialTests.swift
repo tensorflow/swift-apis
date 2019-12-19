@@ -42,12 +42,13 @@ final class SequentialTests: XCTestCase {
         let amsgrad = AMSGrad(for: model, learningRate: 0.02)
         let adagrad = AdaGrad(for: model, learningRate: 0.02)
         let adadelta = AdaDelta(for: model, learningRate: 0.02)
+        let radam = RAdam(for: model, learningRate: 0.02)
         let x: Tensor<Float> = [[0, 0], [0, 1], [1, 0], [1, 1]]
         let y: Tensor<Float> = [0, 1, 1, 0]
         Context.local.learningPhase = .training
         withTensorLeakChecking {
             for _ in 0..<1000 {
-                let 𝛁model = model.gradient { model -> Tensor<Float> in
+                let 𝛁model = gradient(at: model) { model -> Tensor<Float> in
                     let ŷ = model(x)
                     return meanSquaredError(predicted: ŷ, expected: y)
                 }
@@ -58,10 +59,11 @@ final class SequentialTests: XCTestCase {
                 amsgrad.update(&model, along: 𝛁model)
                 adagrad.update(&model, along: 𝛁model)
                 adadelta.update(&model, along: 𝛁model)
+                radam.update(&model, along: 𝛁model)
             }
         }
         XCTAssertEqual(model.inferring(from: [[0, 0], [0, 1], [1, 0], [1, 1]]),
-                       [[0.4884567], [0.4884567], [0.4884567], [0.4884567]])
+                       [[0.50378805], [0.50378805], [0.50378805], [0.50378805]])
     }
 
     static var allTests = [

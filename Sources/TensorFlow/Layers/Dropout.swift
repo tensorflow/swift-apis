@@ -46,22 +46,12 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
 
     /// Creates a dropout layer.
     ///
-    /// - Parameter probability: The drop probability.
+    /// - Parameter probability: The probability of a node dropping out.
     /// - Precondition: probability must be a value between 0 and 1 (inclusive). 
     public init(probability: Double) {
         precondition(0...1 ~= probability,
             "Probability must be a value between 0 and 1 (inclusive) but is \(probability)")
         self.probability = probability
-    }
-
-    @differentiable
-    private func applyingTraining(to input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return input._droppingOut(probability: probability)
-    }
-
-    @differentiable
-    private func applyingInference(to input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return input
     }
 
     /// Returns the output obtained from applying the layer to the given input.
@@ -72,9 +62,9 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         switch Context.local.learningPhase {
         case .training:
-            return applyingTraining(to: input)
+            return input._droppingOut(probability: probability)
         case .inference:
-            return applyingInference(to: input)
+            return input
         }
     }
 }

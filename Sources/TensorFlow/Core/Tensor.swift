@@ -29,7 +29,7 @@ public protocol AnyTensor {
 /// The generic parameter `Scalar` describes the type of scalars in the tensor (such as `Int32`,
 ///  `Float`, etc).
 @frozen
-public struct Tensor<Scalar: TensorFlowScalar>: TensorProtocol {
+public struct Tensor<Scalar: TensorFlowScalar> {
     /// The underlying `TensorHandle`.
     /// - Note: `handle` is public to allow user defined ops, but should not normally be used.
     public let handle: TensorHandle<Scalar>
@@ -171,8 +171,8 @@ public extension Tensor {
 extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     func _vjpScalars() -> (value: [Scalar], pullback: (Array<Scalar>.TangentVector) -> Tensor) {
-        (value: scalars, pullback: { [shape = self.shape] v in
-            Tensor(shape: shape, scalars: v.base)
+        (value: scalars, pullback: { [shape = self.shape, device = self.device] v in
+            Tensor(shape: shape, scalars: v.base, on: device)
         })
     }
 }
@@ -185,29 +185,32 @@ public extension Tensor {
     /// Creates a 0-D tensor from a scalar value.
     @inlinable
     @differentiable(vjp: _vjpScalarInit where Scalar: TensorFlowFloatingPoint)
-    init(_ value: Scalar) {
-        self.init(shape: [], scalars: [value])
+    init(_ value: Scalar, on device: Device = Device.getDefault) {
+        self.init(shape: [], scalars: [value], on: device)
     }
 }
 
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
-    static func _vjpScalarInit(_ value: __owned Scalar) -> (Tensor, (Tensor) -> Scalar) {
-        return (Tensor(value), { $0.scalarized() })
+    static func _vjpScalarInit(_ value: __owned Scalar, on device: Device = Device.getDefault
+    ) -> (Tensor, (Tensor) -> Scalar) {
+        return (Tensor(value, on: device), { $0.scalarized() })
     }
 }
 
 public extension Tensor {
     /// Creates a 1D tensor from scalars.
     @inlinable
-    @differentiable(vjp: _vjpInit(_:) where Scalar: TensorFlowFloatingPoint)
-    init(_ scalars: [Scalar]) {
-        self.init(shape: [scalars.count], scalars: scalars)
+    @differentiable(vjp: _vjpInit(_:on:) where Scalar: TensorFlowFloatingPoint)
+    init(_ scalars: [Scalar], on device: Device = Device.getDefault) {
+        self.init(shape: [scalars.count], scalars: scalars, on: device)
     }
 
     /// Creates a 1D tensor from scalars.
     @inlinable
-    init<C: RandomAccessCollection>(_ vector: C) where C.Element == Scalar {
+    init<C: RandomAccessCollection>(
+        _ vector: C, on device: Device = Device.getDefault
+    ) where C.Element == Scalar {
         let handle = TensorHandle<Scalar>(
             shape: [vector.count],
             scalarsInitializer: { addr in
@@ -227,15 +230,15 @@ public extension Tensor {
     ///   - scalars: The scalar contents of the tensor.
     /// - Precondition: The product of the dimensions of the shape must equal the number of scalars.
     @inlinable
-    @differentiable(vjp: _vjpInit(shape:scalars:) where Scalar: TensorFlowFloatingPoint)
-    init(shape: TensorShape, scalars: [Scalar]) {
+    @differentiable(vjp: _vjpInit(shape:scalars:on:) where Scalar: TensorFlowFloatingPoint)
+    init(shape: TensorShape, scalars: [Scalar], on device: Device = Device.getDefault) {
         precondition(shape.contiguousSize == scalars.count,
             """
             The shape requires \(shape.contiguousSize) scalars but \(scalars.count) were \
             provided.
             """)
         self = scalars.withUnsafeBufferPointer { bufferPointer in
-            Tensor(shape: shape, scalars: bufferPointer)
+            Tensor(shape: shape, scalars: bufferPointer, on: device)
         }
     }
 
@@ -246,7 +249,11 @@ public extension Tensor {
     ///   - scalars: The scalar contents of the tensor.
     /// - Precondition: The product of the dimensions of the shape must equal the number of scalars.
     @inlinable
-    init(shape: TensorShape, scalars: UnsafeBufferPointer<Scalar>) {
+    init(
+        shape: TensorShape,
+        scalars: UnsafeBufferPointer<Scalar>,
+        on device: Device = Device.getDefault
+    ) {
         precondition(shape.contiguousSize == scalars.count,
             """
             The shape requires \(shape.contiguousSize) scalars but \(scalars.count) were \
@@ -267,7 +274,9 @@ public extension Tensor {
     ///   - scalars: The scalar contents of the tensor.
     /// - Precondition: The product of the dimensions of the shape must equal the number of scalars.
     @inlinable
-    init<C: RandomAccessCollection>(shape: TensorShape, scalars: C) where C.Element == Scalar {
+    init<C: RandomAccessCollection>(
+        shape: TensorShape, scalars: C, on device: Device = Device.getDefault
+    ) where C.Element == Scalar {
         precondition(shape.contiguousSize == scalars.count,
             """
             The shape requires \(shape.contiguousSize) scalars but \(scalars.count) were \
@@ -288,17 +297,21 @@ public extension Tensor {
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
-    static func _vjpInit(_ scalars: [Scalar]) -> (
+    static func _vjpInit(_ scalars: [Scalar], on device: Device = Device.getDefault) -> (
         value: Tensor, pullback: (Tensor) -> Array<Scalar>.TangentVector
     ) {
-        (value: Tensor(scalars), pullback: { v in Array<Scalar>.TangentVector(v.scalars) })
+        (value: Tensor(scalars, on: device), pullback: { v in
+            Array<Scalar>.TangentVector(v.scalars)
+        })
     }
 
     @inlinable
-    static func _vjpInit(shape: TensorShape, scalars: [Scalar]) -> (
-        value: Tensor, pullback: (Tensor) -> Array<Scalar>.TangentVector
-    ) {
-        (value: Tensor(scalars), pullback: { v in Array<Scalar>.TangentVector(v.scalars) })
+    static func _vjpInit(
+        shape: TensorShape, scalars: [Scalar], on device: Device = Device.getDefault
+    ) -> (value: Tensor, pullback: (Tensor) -> Array<Scalar>.TangentVector) {
+        (value: Tensor(scalars, on: device), pullback: { v in
+            Array<Scalar>.TangentVector(v.scalars)
+        })
     }
 }
 
@@ -348,18 +361,8 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
 ///   during the conversion from an array literal to a `Tensor`, and is purely
 ///   for implementation purposes.
 @frozen
-public struct _TensorElementLiteral<Scalar>: TensorProtocol where Scalar: TensorFlowScalar {
+public struct _TensorElementLiteral<Scalar> where Scalar: TensorFlowScalar {
     @usableFromInline let tensor: Tensor<Scalar>
-
-    @inlinable
-    public var handle: TensorHandle<Scalar> {
-        return tensor.handle
-    }
-
-    @inlinable
-    public init(handle: TensorHandle<Scalar>) {
-        tensor = Tensor(handle: handle)
-    }
 }
 
 extension _TensorElementLiteral: ExpressibleByBooleanLiteral

@@ -240,21 +240,20 @@ extension _TensorElementLiteral: TensorGroup {
         return [Scalar.tensorFlowDataType]
     }
 
-    public var _tensorHandles: [_AnyTensorHandle] { [self.handle.handle] }
+    public var _tensorHandles: [_AnyTensorHandle] { tensor._tensorHandles }
 
     public func _unpackTensorHandles(into address: UnsafeMutablePointer<CTensorHandle>?) {
-        address!.initialize(to: handle._cTensorHandle)
+        tensor._unpackTensorHandles(into: address)
     }
 
     public init(_owning tensorHandles: UnsafePointer<CTensorHandle>?) {
-        self.init(handle: TensorHandle(_owning: tensorHandles!.pointee))
+        tensor = Tensor(_owning: tensorHandles)
     }
 
     public init<C: RandomAccessCollection>(
         _handles: C
     ) where C.Element: _AnyTensorHandle {
-        precondition(_handles.count == 1)
-        self.init(handle: TensorHandle(handle: _handles[_handles.startIndex]))
+        tensor = Tensor(_handles: _handles)
     }
 }
 

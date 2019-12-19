@@ -34,6 +34,18 @@ public extension TensorFlowScalar {
 }
 
 public extension Tensor {
+    /// Helper function that assess if `axis` is in the range `[-rank, rank)`, where `rank` is the rank of
+    /// the provided tensors.
+    @usableFromInline
+    internal func preconditionAxis(_ axis: Int) {
+        precondition(
+            axis >= -rank && axis < rank,
+            """
+            The axis must be in the range [-rank, rank)
+            of the provided tensors.
+            """)
+    }
+
     /// Unpacks the given dimension of a rank-`R` tensor into multiple rank-`(R-1)` tensors.
     /// Unpacks `N` tensors from this tensor by chipping it along the `axis` dimension, where `N`
     /// is inferred from this tensor's shape. For example, given a tensor with shape
@@ -59,6 +71,7 @@ public extension Tensor {
     @inlinable
     @differentiable(vjp: _vjpUnstacked(alongAxis:) where Scalar: TensorFlowFloatingPoint)
     func unstacked(alongAxis axis: Int = 0) -> [Tensor] {
+        preconditionAxis(axis)
         let posAxis = axis < 0 ? axis + rank : axis
         return _Raw.unpack(value: self, num: Int64(shape[posAxis]), axis: Int64(posAxis))
     }
@@ -88,7 +101,11 @@ public extension Tensor {
     @inlinable
     @differentiable(vjp: _vjpSplit(count:alongAxis:) where Scalar: TensorFlowFloatingPoint)
     func split(count: Int, alongAxis axis: Int = 0) -> [Tensor] {
-        _Raw.split(splitDim: Tensor<Int32>(Int32(axis)), value: self, numSplit: Int64(count))
+        preconditionAxis(axis)
+        precondition(
+            shapeTensor[axis].scalarized() % Int32(count) == 0,
+            "Number of ways to split should evenly divide the split dimension.")
+        return _Raw.split(splitDim: Tensor<Int32>(Int32(axis)), value: self, numSplit: Int64(count))
     }
 
     /// Splits a tensor into multiple tensors. The tensor is split  into `sizes.shape[0]` pieces.
@@ -119,7 +136,11 @@ public extension Tensor {
         wrt: self,
         vjp: _vjpSplit(sizes:alongAxis:) where Scalar: TensorFlowFloatingPoint)
     func split(sizes: Tensor<Int32>, alongAxis axis: Int = 0) -> [Tensor] {
-        _Raw.splitV(
+        preconditionAxis(axis)
+        precondition(
+            shapeTensor[axis] == sizes.sum(),
+            "The values in sizes must add up to the size of dimension axis.")
+        return _Raw.splitV(
             value: self,
             sizeSplits: sizes,
             splitDim: Tensor<Int32>(Int32(axis)),
@@ -133,11 +154,16 @@ public extension Tensor {
     /// values of this tensor are replicated `multiples[i]` times along the `i`'th dimension. For
     /// example, tiling `[a b c d]` by `[2]` produces `[a b c d a b c d]`.
     ///
+    /// - Precondition: The expected `rank` of multiples must be `1`.
     /// - Precondition: The shape of `multiples` must be `[tensor.rank]`.
     @inlinable
     @differentiable(wrt: self, vjp: _vjpTiled(multiples:) where Scalar: TensorFlowFloatingPoint)
     func tiled(multiples: Tensor<Int32>) -> Tensor {
-        _Raw.tile(self, multiples: multiples)
+        precondition(multiples.rank == 1, "The expected rank of multiples must be 1.")
+        precondition(
+            rank == multiples.shapeTensor.scalarized(),
+            "The shape of multiples must be [tensor.rank].")
+        return _Raw.tile(self, multiples: multiples)
     }
 
     /// Reshape to the shape of the specified `Tensor`.
@@ -162,7 +188,23 @@ public extension Tensor {
     @inlinable
     @differentiable(wrt: self, vjp: _vjpReshaped(toShape:) where Scalar: TensorFlowFloatingPoint)
     func reshaped(toShape newShape: Tensor<Int32>) -> Tensor {
-        _Raw.reshape(self, shape: newShape)
+        let totalNegative = newShape.scalars.filter({$0 == -1}).count
+        let positiveShapeSizes = newShape.scalars.filter({$0 > 0})
+        let newShapeScalarCount = positiveShapeSizes.reduce(1, {$0 * $1})
+
+        precondition(totalNegative <= 1, "Only one input size may be -1.")
+
+        if totalNegative == 1 {
+            precondition(
+                scalarCount % Int(newShapeScalarCount) == 0,
+                "The number of scalars must be a multiple of the new shape.")
+        } else {
+            precondition(
+                scalarCount == newShapeScalarCount,
+                "The number of scalars must match the new shape.")
+        }
+
+        return _Raw.reshape(self, shape: newShape)
     }
 
     /// Return a copy of the tensor collapsed into a 1-D `Tensor`, in row-major order.
@@ -408,7 +450,8 @@ public extension Tensor {
         atIndices indices: Tensor<Index>,
         alongAxis axis: Int = 0
     ) -> Tensor {
-        _Raw.gatherV2(params: self, indices: indices, axis: Tensor<Int32>(Int32(axis)))
+        preconditionAxis(axis)
+        return _Raw.gatherV2(params: self, indices: indices, axis: Tensor<Int32>(Int32(axis)))
     }
 
     /// Returns slices of this tensor at `indices` along the `axis` dimension, while ignoring the 

@@ -52,7 +52,7 @@ extension RNNCellOutput: EuclideanDifferentiable
 
 /// A recurrent neural network cell.
 public protocol RNNCell: Layer
-    where Input == RNNCellInput<TimeStepInput, State>, 
+    where Input == RNNCellInput<TimeStepInput, State>,
           Output == RNNCellOutput<TimeStepOutput, State> {
     /// The input at a time step.
     associatedtype TimeStepInput: Differentiable
@@ -60,8 +60,9 @@ public protocol RNNCell: Layer
     associatedtype TimeStepOutput: Differentiable
     /// The state that may be preserved across time steps.
     associatedtype State: Differentiable
-    /// The zero state.
-    var zeroState: State { get }
+    
+    /// Returns a zero-valued state with shape compatible with the provided input.
+    func zeroState(for input: TimeStepInput) -> State
 }
 
 public extension RNNCell {
@@ -91,14 +92,6 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     public var weight: Tensor<Scalar>
     public var bias: Tensor<Scalar>
 
-    @noDerivative public var stateShape: TensorShape {
-        TensorShape([1, weight.shape[1]])
-    }
-
-    public var zeroState: State {
-        State(Tensor(zeros: stateShape))
-    }
-
     // TODO(TF-507): Revert to `typealias State = Tensor<Scalar>` after SR-10697 is fixed.
     public struct State: Equatable, Differentiable, VectorProtocol, KeyPathIterable {
         public var value: Tensor<Scalar>
@@ -122,6 +115,11 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
         let concatenatedInputSize = inputSize + hiddenSize
         self.weight = Tensor(glorotUniform: [concatenatedInputSize, hiddenSize], seed: seed)
         self.bias = Tensor(zeros: [hiddenSize])
+    }
+
+    /// Returns a zero-valued state with shape compatible with the provided input.
+    public func zeroState(for input: Tensor<Scalar>) -> State {
+        State(Tensor(zeros: [input.shape[0], weight.shape[1]]))
     }
 
     /// Returns the output obtained from applying the layer to the given input.
@@ -189,14 +187,6 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
         return fusedBias.slice(lowerBounds: [3 * hiddenSize], upperBounds: [4 * hiddenSize])
     }
 
-    @noDerivative public var stateShape: TensorShape {
-        TensorShape([1, fusedWeight.shape[1] / 4])
-    }
-
-    public var zeroState: State {
-        State(cell: Tensor(zeros: stateShape), hidden: Tensor(zeros: stateShape))
-    }
-
     public typealias TimeStepInput = Tensor<Scalar>
     public typealias TimeStepOutput = State
     public typealias Input = RNNCellInput<TimeStepInput, State>
@@ -221,6 +211,14 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
             self.cell = cell
             self.hidden = hidden
         }
+    }
+
+    /// Returns a zero-valued state with shape compatible with the provided input.
+    public func zeroState(for input: Tensor<Scalar>) -> State {
+        let hiddenSize = fusedWeight.shape[1] / 4
+        return State(
+            cell: Tensor(zeros: [input.shape[0], hiddenSize]),
+            hidden: Tensor(zeros: [input.shape[0], hiddenSize]))
     }
 
     /// Returns the output obtained from applying the layer to the given input.
@@ -262,6 +260,80 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     }
 }
 
+/// An GRU cell.
+public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
+    public var updateWeight1, updateWeight2: Tensor<Scalar>
+    public var resetWeight1, resetWeight2: Tensor<Scalar>
+    public var outputWeight1, outputWeight2: Tensor<Scalar>
+    public var updateBias, outputBias, resetBias: Tensor<Scalar>
+
+    @noDerivative public var stateShape: TensorShape {
+        [1, updateWeight1.shape[0]]
+    }
+    
+    public func zeroState(for input: Tensor<Scalar>) -> State {
+        return State(hidden: Tensor(zeros: stateShape))
+    }
+
+    public typealias TimeStepInput = Tensor<Scalar>
+    public typealias TimeStepOutput = State
+    public typealias Input = RNNCellInput<TimeStepInput, State>
+    public typealias Output = RNNCellOutput<TimeStepOutput, State>
+
+    /// Creates a `GRUCell` with the specified input size and hidden state size.
+    ///
+    /// - Parameters:
+    ///   - inputSize: The number of features in 2-D input tensors.
+    ///   - hiddenSize: The number of features in 2-D hidden states.
+    public init(
+        inputSize: Int,
+        hiddenSize: Int,
+        weightInitializer: ParameterInitializer<Scalar> = glorotUniform(),
+        biasInitializer: ParameterInitializer<Scalar> = zeros()
+    ) {
+        let gateWeightShape = TensorShape([inputSize, 1])
+        let gateBiasShape = TensorShape([hiddenSize])
+        self.updateWeight1 = weightInitializer(gateWeightShape)
+        self.updateWeight2 = weightInitializer(gateWeightShape)
+        self.updateBias = biasInitializer(gateBiasShape)
+        self.resetWeight1 = weightInitializer(gateWeightShape)
+        self.resetWeight2 = weightInitializer(gateWeightShape)
+        self.resetBias = biasInitializer(gateBiasShape)
+        self.outputWeight1 = weightInitializer(gateWeightShape)
+        self.outputWeight2 = weightInitializer(gateWeightShape)
+        self.outputBias = biasInitializer(gateBiasShape)
+    }
+
+    // TODO(TF-507): Revert to `typealias State = Tensor<Scalar>` after
+    // SR-10697 is fixed.
+    public struct State: Differentiable {
+        public var hidden: Tensor<Scalar>
+
+        @differentiable
+        public init(hidden: Tensor<Scalar>) {
+            self.hidden = hidden
+        }
+    }
+
+    /// Returns the output obtained from applying the layer to the given input.
+    ///
+    /// - Parameter input: The input to the layer.
+    /// - Returns: The hidden state.
+    @differentiable
+    public func callAsFunction(_ input: Input) -> Output {
+        let resetGate = sigmoid(matmul(input.input, resetWeight1) +
+            matmul(input.state.hidden, resetWeight2) + resetBias)
+        let updateGate = sigmoid(matmul(input.input, updateWeight1) +
+            matmul(input.state.hidden, updateWeight2) + updateBias)
+        let outputGate = tanh(matmul(input.input, outputWeight1) +
+            matmul(resetGate * input.state.hidden, outputWeight2) + outputBias)
+        let updateHidden = (1 - updateGate) * input.state.hidden
+        let updateOutput = (1 - updateGate) * outputGate
+        let newState = State(hidden: updateHidden + updateOutput)
+        return Output(output: newState, state: newState)
+    }
+}
+
 public struct RNN<Cell: RNNCell>: Layer {
     public typealias Input = [Cell.TimeStepInput]
     public typealias Output = [Cell.TimeStepOutput]
@@ -272,27 +344,28 @@ public struct RNN<Cell: RNNCell>: Layer {
         self.cell = cell()
     }
 
-    @differentiable(wrt: (self, input), vjp: _vjpCallAsFunction(_:initialState:))
+    @differentiable(wrt: (self, inputs), vjp: _vjpCallAsFunction(_:initialState:))
     public func callAsFunction(
-        _ input: [Cell.TimeStepInput],
+        _ inputs: [Cell.TimeStepInput],
         initialState: Cell.State
     ) -> [Cell.TimeStepOutput] {
+        if inputs.isEmpty { return [Cell.TimeStepOutput]() }
         var currentHiddenState = initialState
         var timeStepOutputs: [Cell.TimeStepOutput] = []
-        for timestep in input {
-            let output = cell(input: timestep, state: currentHiddenState)
+        for timeStepInput in inputs {
+            let output = cell(input: timeStepInput, state: currentHiddenState)
             currentHiddenState = output.state
             timeStepOutputs.append(output.output)
         }
         return timeStepOutputs
     }
 
-    @differentiable(wrt: (self, input))
+    @differentiable(wrt: (self, inputs))
     public func call(
-        _ input: [Cell.TimeStepInput],
+        _ inputs: [Cell.TimeStepInput],
         initialState: Cell.State
     ) -> [Cell.TimeStepOutput] {
-        callAsFunction(input, initialState: initialState)
+        callAsFunction(inputs, initialState: initialState)
     }
 
     @usableFromInline
@@ -303,7 +376,7 @@ public struct RNN<Cell: RNNCell>: Layer {
           (Array<Cell.TimeStepOutput>.TangentVector)
               -> (TangentVector, Array<Cell.TimeStepInput>.TangentVector)) {
         let timeStepCount = inputs.count
-        var currentHiddenState = cell.zeroState
+        var currentHiddenState = cell.zeroState(for: inputs[0])
         var timeStepOutputs: [Cell.TimeStepOutput] = []
         timeStepOutputs.reserveCapacity(timeStepCount)
         var backpropagators: [Cell.Backpropagator] = []
@@ -324,7 +397,7 @@ public struct RNN<Cell: RNNCell>: Layer {
             reversed𝛁inputs.reserveCapacity(timeStepCount)
             for (𝛁output, backpropagator) in zip(𝛁outputs.base, backpropagators).reversed() {
                 let (new𝛁cell, 𝛁input) = backpropagator(.init(output: 𝛁output, state: 𝛁state))
-                𝛁cell = new𝛁cell
+                𝛁cell += new𝛁cell
                 𝛁state = 𝛁input.state
                 reversed𝛁inputs.append(𝛁input.input)
             }
@@ -334,23 +407,25 @@ public struct RNN<Cell: RNNCell>: Layer {
 
     @differentiable
     public func callAsFunction(_ inputs: [Cell.TimeStepInput]) -> [Cell.TimeStepOutput] {
-        return self(inputs, initialState: withoutDerivative(at: cell.zeroState))
+        let initialState = withoutDerivative(at: cell.zeroState(for: inputs[0]))
+        return self(inputs, initialState: withoutDerivative(at: initialState))
     }
 
-    /* TODO: Uncomment once control flow and differentiation through force unwrapping is supported.
     @differentiable(wrt: (self, inputs))
-    public func lastOutput(from inputs: [Cell.TimeStepInput],
-                           initialState: Cell.State) -> Cell.TimeStepOutput {
-        precondition(!inputs.isEmpty, "inputs cannot be empty")
-        return self(inputs, initialState: initialState).last!
+    public func lastOutput(
+        from inputs: [Cell.TimeStepInput],
+        initialState: Cell.State
+    ) -> Cell.TimeStepOutput {
+        precondition(!inputs.isEmpty, "'inputs' must be non-empty.")
+        return self(inputs, initialState: initialState)[withoutDerivative(at: inputs.count - 1)]
     }
 
     @differentiable(wrt: (self, inputs))
     public func lastOutput(from inputs: [Cell.TimeStepInput]) -> Cell.TimeStepOutput {
-        precondition(!inputs.isEmpty, "inputs cannot be empty")
-        return self(inputs, initialState: cell.zeroState).last!
+        precondition(!inputs.isEmpty, "'inputs' must be non-empty.")
+        let initialState = withoutDerivative(at: cell.zeroState(for: inputs[0]))
+        return lastOutput(from: inputs, initialState: initialState)
     }
-    */
 }
 
 extension RNN: Equatable where Cell: Equatable {}

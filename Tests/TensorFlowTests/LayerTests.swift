@@ -48,7 +48,7 @@ final class LayerTests: XCTestCase {
                 expected: y)
             withTensorLeakChecking {
                 for _ in 0..<10 {
-                    let 𝛁model = model.gradient { model -> Tensor<Float> in
+                    let 𝛁model = gradient(at: model) { model -> Tensor<Float> in
                         meanSquaredError(
                             predicted: model(x).squeezingShape(at: 1),
                             expected: y)
@@ -190,7 +190,7 @@ final class LayerTests: XCTestCase {
         let filter =  Tensor(shape: [1, 2, 2, 2, 1], scalars: (0..<8).map(Float.init))
         let bias = Tensor<Float>([-1, 1])
         let layer = Conv3D<Float>(filter: filter, bias: bias, activation: identity,
-                                  strides: (1, 2, 1), padding: .valid)
+                                  strides: (1, 2, 1), padding: .valid, dilations: (1, 1, 1))
         let input = Tensor(shape: [2, 2, 2, 2, 2], scalars: (0..<32).map(Float.init))
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>(shape: [2, 2, 1, 1, 2],
@@ -302,6 +302,18 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(grads.1.bias, [4, 4, 4, 4])
     }
 
+    func testTransposedConv1D() {
+        let filter =  Tensor(shape: [4, 1, 1], scalars: (0..<4).map(Float.init))
+        let bias = Tensor<Float>([8])
+        let layer = TransposedConv1D(filter: filter, bias: bias, activation: identity,
+                                     stride: 1, padding: .same)
+        let input = Tensor(shape: [1, 4, 1], scalars: (0..<4).map(Float.init))
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>(shape: [1, 1, 4, 1],
+                                     scalars: [8, 9, 12, 18])
+        XCTAssertEqual(output, expected)
+    }
+
     func testTransposedConv2D() {
         let filter =  Tensor(shape: [4, 2, 1, 1], scalars: (0..<8).map(Float.init))
         let bias = Tensor<Float>([8])
@@ -313,6 +325,19 @@ final class LayerTests: XCTestCase {
                                      scalars: [8, 12, 12, 28, 24, 64, 48, 112])
         XCTAssertEqual(output, expected)
     }  
+
+    
+    func testTransposedConv3D() {
+        let filter =  Tensor(shape: [2, 2, 2, 1, 1], scalars: (0..<8).map(Float.init))
+        let bias = Tensor<Float>([8])
+        let layer = TransposedConv3D(filter: filter, bias: bias, activation: identity,
+                                     strides: (1, 1, 1), padding: .same)
+        let input = Tensor(shape: [1, 2, 2, 2, 1], scalars: (0..<8).map(Float.init))
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>(shape: [1, 2, 2, 2, 1],
+                                     scalars: [8, 8, 8, 12, 8, 16, 24, 64])
+        XCTAssertEqual(output, expected)
+    }
 
     func testSeparableConv1D() {
         let depthwiseFilter = Tensor(shape: [2, 2, 2], scalars: (0..<8).map(Float.init))
@@ -1117,14 +1142,16 @@ final class LayerTests: XCTestCase {
         let rnn = RNN(SimpleRNNCell<Float>(inputSize: 4, hiddenSize: 4,
                                            seed: (0xFeed, 0xBeef)))
         withTensorLeakChecking {
-            let (outputs, _) = rnn.valueWithPullback(at: inputs) { rnn, inputs in
+            let (outputs, _) = valueWithPullback(at: rnn, inputs) { rnn, inputs in
                 return rnn(inputs)
             }
-            XCTAssertEqual(outputs.map { $0.value },
-                           [[[ 0.20775771,  0.20080023, -0.13768704, -0.18534681]],
-                            [[ 0.22666009,  0.30019346, -0.19720285, -0.14683801]],
-                            [[ 0.23758979,  0.32101023, -0.20359215,  -0.1787096]],
-                            [[ 0.24337786,   0.3389194, -0.21143384,  -0.1675081]]])
+            assertEqual(
+                outputs.map { $0.value.squeezingShape(at: 0) }[0],
+                [[ 0.20775771,  0.20080023, -0.13768704, -0.18534681],
+                 [ 0.22666009,  0.30019346, -0.19720285, -0.14683801],
+                 [ 0.23758979,  0.32101023, -0.20359215,  -0.1787096],
+                 [ 0.24337786,   0.3389194, -0.21143384,  -0.1675081]],
+                accuracy: 1e-6)
         }
         // TODO: Figure out why the following is numerically unstable.
         // let (𝛁rnn, _) = pullback(.init(inputs.map { SimpleRNNCell<Float>.State($0) }))
@@ -1146,22 +1173,47 @@ final class LayerTests: XCTestCase {
             let inputs: [Tensor<Float>] = Array(repeating: x, count: 4)
             let rnn = RNN(LSTMCell<Float>(inputSize: 4, hiddenSize: 4))
             withTensorLeakChecking {
-                let (outputs, _) = rnn.valueWithPullback(at: inputs) { rnn, inputs in
+                let (outputs, _) = valueWithPullback(at: rnn, inputs) { rnn, inputs in
                     return rnn(inputs)
                 }
-                XCTAssertEqual(
-                    outputs.map { $0.cell },
-                    [[[ 0.08981595, 0.027691621, -0.059235442, -0.075101905]],
-                     [[ 0.12952757, 0.040402323, -0.084273980, -0.116252676]],
-                     [[ 0.14727503, 0.046511370, -0.094689950, -0.138459030]],
-                     [[ 0.15532997, 0.049573865, -0.098824400, -0.150242210]]])
-                XCTAssertEqual(
-                    outputs.map { $0.hidden },
-                    [[[ 0.046985064, 0.012670102, -0.031083463, -0.038572006]],
-                     [[ 0.066482050, 0.018388016, -0.044252350, -0.058907583]],
-                     [[ 0.074910110, 0.021107012, -0.049724963, -0.069670826]],
-                     [[ 0.078670055, 0.022462710, -0.051899005, -0.075331904]]])
+                assertEqual(
+                    outputs.map { $0.cell.squeezingShape(at: 0) }[0],
+                    [[ 0.08981595, 0.027691621, -0.059235442, -0.075101905],
+                     [ 0.12952757, 0.040402323, -0.084273980, -0.116252676],
+                     [ 0.14727503, 0.046511370, -0.094689950, -0.138459030],
+                     [ 0.15532997, 0.049573865, -0.098824400, -0.150242210]],
+                    accuracy: 1e-6)
+                assertEqual(
+                    outputs.map { $0.hidden.squeezingShape(at: 0) }[0],
+                    [[ 0.046985064, 0.012670102, -0.031083463, -0.038572006],
+                     [ 0.066482050, 0.018388016, -0.044252350, -0.058907583],
+                     [ 0.074910110, 0.021107012, -0.049724963, -0.069670826],
+                     [ 0.078670055, 0.022462710, -0.051899005, -0.075331904]],
+                    accuracy: 1e-6)
             }
+        }
+    }
+
+    func testGRU() {
+        let x = Tensor<Float>(rangeFrom: 0.0, to: 0.4, stride: 0.1).rankLifted()
+        let inputs: [Tensor<Float>] = Array(repeating: x, count: 4)
+        let rnn = RNN(GRUCell<Float>(
+          inputSize: 4, 
+          hiddenSize: 4, 
+          weightInitializer: glorotUniform(seed: (0xFeed, 0xBeef)), 
+          biasInitializer: zeros())
+        )
+        withTensorLeakChecking {
+            let (outputs, _) = valueWithPullback(at: rnn, inputs) { rnn, inputs in
+                return rnn(inputs)
+            }
+            assertEqual(
+                outputs.map { $0.hidden }[0],
+                [[0.1193780, 0.1193780, 0.1193780, 0.1193780],
+                 [0.1887644, 0.1887644, 0.1887644, 0.1887644],
+                 [0.2230835, 0.2230835, 0.2230835, 0.2230835],
+                 [0.2383619, 0.2383619, 0.2383619, 0.2383619]],
+                accuracy: 1e-5)
         }
     }
 
@@ -1330,7 +1382,9 @@ final class LayerTests: XCTestCase {
         ("testConv2DDilation", testConv2DDilation),
         ("testConv3D", testConv3D),
         ("testConv3DGradient", testConv3DGradient),
+        ("testTransposedConv1D", testTransposedConv1D),
         ("testTransposedConv2D", testTransposedConv2D),
+        ("testTransposedConv3D", testTransposedConv3D),
         ("testDepthwiseConv2D", testDepthwiseConv2D),
         ("testDepthwiseConv2DGradient", testDepthwiseConv2DGradient),
         ("testSeparableConv1D", testSeparableConv1D),
@@ -1383,6 +1437,7 @@ final class LayerTests: XCTestCase {
         ("testDenseGradient", testDenseGradient),
         ("testRNN", testRNN),
         ("testLSTM", testLSTM),
+        ("testGRU", testGRU),
         ("testFunction", testFunction),
         ("testBatchNorm", testBatchNorm),
         ("testBatchNormInference", testBatchNormInference),

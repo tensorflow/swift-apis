@@ -1890,7 +1890,7 @@ public extension Tensor where Scalar: Numeric {
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank...rank`.
     @inlinable
-    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+    @differentiable(wrt: self, vjp: _vjpMean(squeezingAxes:) where Scalar: TensorFlowFloatingPoint)
     func mean(squeezingAxes axes: [Int]) -> Tensor {
         // TODO(TF-433): Remove workaround for differentiating `map`.
         let axes = {axes.map(Int32.init)}()
@@ -1927,7 +1927,7 @@ public extension Tensor where Scalar: Numeric {
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
-    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+    @differentiable(wrt: self, vjp: _vjpMean(alongAxes:) where Scalar: TensorFlowFloatingPoint)
     func mean(alongAxes axes: [Int]) -> Tensor {
         // TODO(TF-433): Remove workaround for differentiating `map`.
         let axes = {axes.map(Int32.init)}()
@@ -2201,6 +2201,31 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
         })
     }
 
+    // Specialization to avoid _Raw.gather on shapes when axes is known to be
+    // [Int].
+    @inlinable
+    func _vjpMean(alongAxes axes: [Int]) -> (Tensor, (Tensor) -> Tensor) {
+        let value = mean(alongAxes: axes)
+        // Cache shape because it is a computed property.
+        let cachedShape = shape
+        let count = axes.map { cachedShape[$0] }.reduce(1, *)
+        return (value, { [shape = shapeTensor] in $0.broadcasted(toShape: shape) / Tensor(Scalar(count)) })
+    }
+
+    // Specialization to avoid _Raw.gather on shapes when axes is known to be
+    // [Int].
+    @inlinable
+    func _vjpMean(squeezingAxes axes: [Int]) -> (Tensor, (Tensor) -> Tensor) {
+        let value = mean(squeezingAxes: axes)
+        // Cache shape because it is a computed property.
+        let cachedShape = shape
+        let count = axes.map { cachedShape[$0] }.reduce(1, *)
+        return (value, { [shape = shapeTensor] v in
+            let unsqueezed = v.expandingShape(at: axes)
+            return unsqueezed.broadcasted(toShape: shape) / Tensor(Scalar(count))
+        })
+    }
+
     @inlinable
     func _vjpCumulativeSum(
         alongAxis axis: Tensor<Int32>,
@@ -2239,7 +2264,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
         let result = product(squeezingAxes: axes)
         return (result, { v in
             // Reshape reduction indices for the case where the parameter is a scalar.
-            var reductionIndices = axes.reshaped(to: TensorShape(-1))
+            var reductionIndices = axes.flattened()
             // Normalize any negative reduction indices to positive values.
             reductionIndices = (reductionIndices + Int32(self.rank)) % Int32(self.rank)
 
@@ -2248,8 +2273,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
             for axis in reductionIndices.scalars {
                 outputShape[Int(axis)] = 1
             }
-            let vReshaped = v.reshaped(to: outputShape)
-            let vBroadcasted = vReshaped.broadcasted(to: self.shape)
+            let vBroadcasted = v.reshaped(to: outputShape).broadcasted(to: self.shape)
 
             // Pack all reduced dimensions into a single one, so we can perform the
             // `cumulativeProduct` operations.
@@ -2372,8 +2396,8 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     func logSumExp(squeezingAxes axes: Tensor<Int32>) -> Tensor {
         let rawMax = max(alongAxes: axes)
         let offset = withoutDerivative(at: rawMax) { rawMax in 
-            rawMax.replacing(
-                with: Tensor<Scalar>(zerosLike: rawMax),
+            Tensor<Scalar>(zerosLike: rawMax).replacing(
+                with: rawMax,
                 where: rawMax.isFinite)
         }
         let result = TensorFlow.log(TensorFlow.exp(self - offset).sum(squeezingAxes: axes))
@@ -2436,8 +2460,8 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     func logSumExp(alongAxes axes: Tensor<Int32>) -> Tensor {
         let rawMax = max(alongAxes: axes)
         let offset = withoutDerivative(at: rawMax) { rawMax in 
-            rawMax.replacing(
-                with: Tensor<Scalar>(zerosLike: rawMax),
+            Tensor<Scalar>(zerosLike: rawMax).replacing(
+                with: rawMax,
                 where: rawMax.isFinite)
         }
         let result = TensorFlow.log(TensorFlow.exp(self - offset).sum(alongAxes: axes))
@@ -2607,7 +2631,7 @@ internal func _vjpMatmul<Scalar: TensorFlowFloatingPoint>(
     transposed transposeRhs: Bool = false
 ) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
     let value = matmul(lhs, transposed: transposeLhs, rhs, transposed: transposeRhs)
-    return (value, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
+    return (value, { [lhsShape = lhs.shape, rhsShape = rhs.shape] v in
         let (lhsGrad, rhsGrad): (Tensor<Scalar>, Tensor<Scalar>)
         switch (transposeLhs, transposeRhs) {
         case (false, false):
@@ -2623,13 +2647,15 @@ internal func _vjpMatmul<Scalar: TensorFlowFloatingPoint>(
             lhsGrad = matmul(v, transposed: true, rhs, transposed: true)
             rhsGrad = matmul(lhs, transposed: true, v, transposed: true)
         }
-        let lhsRank = lhsShape.shape[0] - 2
-        let rhsRank = rhsShape.shape[0] - 2
+        let lhsRank = lhsShape.rank - 2
+        let rhsRank = rhsShape.rank - 2
         let (lhsAxes, rhsAxes) = _Raw.broadcastGradientArgs(
-            s0: lhsShape[..<lhsRank],
-            s1: rhsShape[..<rhsRank])
-        return (lhsGrad.sum(squeezingAxes: lhsAxes).reshaped(toShape: lhsShape),
-                rhsGrad.sum(squeezingAxes: rhsAxes).reshaped(toShape: rhsShape))
+            s0: Tensor<Int32>(lhsShape.dimensions[..<lhsRank].map { Int32($0) } ),
+            s1: Tensor<Int32>(rhsShape.dimensions[..<rhsRank].map { Int32($0) } ))
+        let lhsShapeTensor = Tensor<Int32>(lhsShape.dimensions.map { Int32($0) })
+        let rhsShapeTensor = Tensor<Int32>(rhsShape.dimensions.map { Int32($0) })
+        return (lhsGrad.sum(squeezingAxes: lhsAxes).reshaped(toShape: lhsShapeTensor),
+                rhsGrad.sum(squeezingAxes: rhsAxes).reshaped(toShape: rhsShapeTensor))
     })
 }
 
@@ -2657,35 +2683,5 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
         rhs: Tensor
     ) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
         _vjpMatmul(lhs, rhs)
-    }
-}
-
-public extension Tensor where Scalar: TensorFlowFloatingPoint {
-    /// Returns the QR decomposition of each inner matrix in the tensor, a tensor with inner 
-    /// orthogonal matrices `q` and a tensor with inner upper triangular matrices `r`, such that the 
-    /// tensor is equal to `matmul(q, r)`.
-    /// 
-    /// - Parameters:
-    ///   - fullMatrices: If `true`, compute full-sized `q` and `r`. Otherwise compute only the 
-    ///     leading `min(shape[rank - 1], shape[rank - 2])` columns of `q`.
-    ///  
-    func qrDecomposition(fullMatrices: Bool = false) -> (q: Tensor<Scalar>, r: Tensor<Scalar>) {
-        return _Raw.qr(self, fullMatrices: fullMatrices)
-    }
-
-    /// Returns the diagonal part of the tensor.
-    ///
-    /// For example:
-    ///
-    /// ```
-    /// // 't' is [[1, 0, 0, 0]
-    /// //         [0, 2, 0, 0]
-    /// //         [0, 0, 3, 0]
-    /// //         [0, 0, 0, 4]]
-    /// t.diagonalPart()
-    /// // [1, 2, 3, 4]
-    ///
-    func diagonalPart() -> Tensor<Scalar> {
-        return _Raw.diagPart(self)
     }
 }

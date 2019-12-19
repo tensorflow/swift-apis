@@ -212,3 +212,94 @@ public struct VariantHandle {
         self.handle = handle
     }
 }
+
+//===------------------------------------------------------------------------------------------===//
+// TensorBuffer based on a C `TF_Tensor*`.
+//===------------------------------------------------------------------------------------------===//
+
+// TF Tensor-specific initializer.
+internal class CTensorTensorBuffer<Scalar> : TensorBuffer<Scalar> {
+    let cTensor: CTensor
+
+    /// Creates a local tensor buffer from a C `TF_Tensor*` value and takes ownership of the value.
+    init(owning cTensor: CTensor, count: Int) {
+        debugLog("Initializing TensorBuffer with a cTensor of \(count) elements.")
+        let actualCount = (0..<TF_NumDims(cTensor)).reduce(1) { accumulator, next in
+            accumulator * Int(TF_Dim(cTensor, next))
+        }
+        assert(actualCount == count)
+        self.cTensor = cTensor
+        super.init(count: count)
+    }
+
+    override func withUnsafeBufferPointer<R>(
+        _ body: (UnsafeBufferPointer<Scalar>) throws -> R
+    ) rethrows -> R {
+        let startAddress = TF_TensorData(cTensor).assumingMemoryBound(to: Scalar.self)
+        let bufferPointer = UnsafeBufferPointer(start: startAddress, count: count)
+        return try body(bufferPointer)
+    }
+
+    override func withUnsafeMutableBufferPointer<R>(
+        _ body: (inout UnsafeMutableBufferPointer<Scalar>) throws -> R
+    ) rethrows -> R {
+        let startAddress = TF_TensorData(cTensor).assumingMemoryBound(to: Scalar.self)
+        var bufferPointer = UnsafeMutableBufferPointer(start: startAddress, count: count)
+        return try body(&bufferPointer)
+    }
+
+    deinit {
+        TF_DeleteTensor(cTensor)
+    }
+}
+
+internal extension ShapedArray where Scalar: _TensorFlowDataTypeCompatible {
+    @usableFromInline
+    init(owning cTensor: CTensor) {
+        // Including \(Scalar.self) into the message would cause non-deterministic crashes.
+        debugLog("Initializing ShapedArray from CTensor.")
+        let shape = (0..<TF_NumDims(cTensor)).map { Int(TF_Dim(cTensor, $0)) }
+        if _RuntimeConfig.printsDebugLog {
+            // Without this local variable, passing the string directly into debugLog() would not
+            // work, because 'self' is captured by the auto closure param in debugLog().
+            let shapeStr = "The shape is \(shape)."
+            debugLog(shapeStr)
+        }
+        self.init(
+            buffer: CTensorTensorBuffer<Scalar>(owning: cTensor, count: shape.reduce(1, *)),
+            shape: shape)
+        debugLog("Done initializing ShapedArray from CTensor.")
+    }
+
+    @usableFromInline
+    @inline(never)
+    init(cTensorHandle: CTensorHandle) {
+        let status = TF_NewStatus()
+        let cTensor = TFE_TensorHandleResolve(cTensorHandle, status)
+        checkOk(status)
+        TF_DeleteStatus(status)
+        internalConsistencyCheck(cTensor != nil)
+        debugLog("# of dims is \(TF_NumDims(cTensor!))")
+        debugLog("Returning a shaped array.")
+        self.init(owning: cTensor!)
+    }
+}
+
+// Tensor conversion.
+public extension Tensor {
+    init(_ array: __owned ShapedArray<Scalar>) {
+        precondition(
+            array.rank <= Int(Int32.max),
+            "Conversion to TensorHandle is undefined when rank exceeds `Int32.max`.")
+        precondition(
+            array.shape.allSatisfy { $0 <= Int(Int32.max) },
+            "Conversion to TensorHandle is undefined when shape dimensions exceed `Int32.max`.")
+        if let buffer = array.buffer as? CTensorTensorBuffer<Scalar> {
+            self = Tensor(handle: TensorHandle(copyingFromCTensor: buffer.cTensor))
+        } else {
+            self = array.buffer.withUnsafeBufferPointer { buffer in
+                return Tensor(shape: TensorShape(array.shape), scalars: buffer)
+            }
+        }
+    }
+}
