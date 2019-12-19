@@ -60,7 +60,7 @@ final class LinearAlgebraTests: XCTestCase {
         }
     }
     func testTrace() {
-        assertEqual(trace(Tensor<Float>(ones: [3, 3])) == Tensor(3.0))
+        assertEqual(trace(Tensor<Float>(ones: [3, 3])), Tensor(3.0), accuracy: 1e-16)
         let shapes = [[1, 3, 3], [2, 4, 4], [2, 3, 5, 5]]
         for shape in shapes {
             let x = Tensor<Float>(ones: TensorShape(shape))
