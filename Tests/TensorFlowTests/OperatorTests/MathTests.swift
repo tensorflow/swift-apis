@@ -346,6 +346,14 @@ final class MathOperatorTests: XCTestCase {
         let ySmall = xSmall.logSumExp()
         let expectedYSmall = Tensor<Float>(-235.28029)
         assertEqual(ySmall, expectedYSmall, accuracy: 0.0001)
+
+        let xLarge = Tensor<Float>([
+            58.510986, 23.337719, -51.607407, 51.836594,  83.806120, 30.955265, 14.600592,
+            68.560730,  9.113760,  19.036130, 45.364760, 107.097015, 38.674847, 34.488792,
+            51.945650, 37.298780])
+        let yLarge = xLarge.logSumExp()
+        let expectedYLarge = Tensor<Float>(107.097015)
+        assertEqual(yLarge, expectedYLarge, accuracy: 0.0001)
     }
 
     func testMoments() {
