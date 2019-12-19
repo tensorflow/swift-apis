@@ -114,7 +114,6 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 /// with dimensions `[...]`
 ///
 /// - Parameter matrix: A tensor of shape `[..., M, M]`
-
 @inlinable
 @differentiable(wrt: matrix where T: TensorFlowFloatingPoint)
 public func trace<T: TensorFlowNumeric>(_ matrix: Tensor<T>) -> Tensor<T> {
