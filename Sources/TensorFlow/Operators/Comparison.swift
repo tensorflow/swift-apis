@@ -48,56 +48,56 @@ public extension Tensor where Scalar: Numeric & Comparable {
     /// - Note: `.<` supports broadcasting.
     @inlinable
     static func .< (lhs: Scalar, rhs: Tensor) -> Tensor<Bool> {
-        return _Raw.less(Tensor(lhs), rhs)
+        return _Raw.less(Tensor(lhs, on: rhs.device), rhs)
     }
 
     /// Returns a tensor of Boolean scalars by computing `lhs <= rhs` element-wise.
     /// - Note: `.<=` supports broadcasting.
     @inlinable
     static func .<= (lhs: Scalar, rhs: Tensor) -> Tensor<Bool> {
-        return _Raw.lessEqual(Tensor(lhs), rhs)
+        return _Raw.lessEqual(Tensor(lhs, on: rhs.device), rhs)
     }
 
     /// Returns a tensor of Boolean scalars by computing `lhs > rhs` element-wise.
     /// - Note: `.>` supports broadcasting.
     @inlinable
     static func .> (lhs: Scalar, rhs: Tensor) -> Tensor<Bool> {
-        return _Raw.greater(Tensor(lhs), rhs)
+        return _Raw.greater(Tensor(lhs, on: rhs.device), rhs)
     }
 
     /// Returns a tensor of Boolean scalars by computing `lhs >= rhs` element-wise.
     /// - Note: `.>=` supports broadcasting.
     @inlinable
     static func .>= (lhs: Scalar, rhs: Tensor) -> Tensor<Bool> {
-        return _Raw.greaterEqual(Tensor(lhs), rhs)
+        return _Raw.greaterEqual(Tensor(lhs, on: rhs.device), rhs)
     }
 
     /// Returns a tensor of Boolean scalars by computing `lhs < rhs` element-wise.
     /// - Note: `.<` supports broadcasting.
     @inlinable
     static func .< (lhs: Tensor, rhs: Scalar) -> Tensor<Bool> {
-        return _Raw.less(lhs, Tensor(rhs))
+        return _Raw.less(lhs, Tensor(rhs, on: lhs.device))
     }
 
     /// Returns a tensor of Boolean scalars by computing `lhs <= rhs` element-wise.
     /// - Note: `.<=` supports broadcasting.
     @inlinable
     static func .<= (lhs: Tensor, rhs: Scalar) -> Tensor<Bool> {
-        return _Raw.lessEqual(lhs, Tensor(rhs))
+        return _Raw.lessEqual(lhs, Tensor(rhs, on: lhs.device))
     }
 
     /// Returns a tensor of Boolean scalars by computing `lhs > rhs` element-wise.
     /// - Note: `.>` supports broadcasting.
     @inlinable
     static func .> (lhs: Tensor, rhs: Scalar) -> Tensor<Bool> {
-        return _Raw.greater(lhs, Tensor(rhs))
+        return _Raw.greater(lhs, Tensor(rhs, on: lhs.device))
     }
 
     /// Returns a tensor of Boolean scalars by computing `lhs >= rhs` element-wise.
     /// - Note: `.>=` supports broadcasting.
     @inlinable
     static func .>= (lhs: Tensor, rhs: Scalar) -> Tensor<Bool> {
-        return _Raw.greaterEqual(lhs, Tensor(rhs))
+        return _Raw.greaterEqual(lhs, Tensor(rhs, on: lhs.device))
     }
 }
 
@@ -120,28 +120,28 @@ public extension Tensor where Scalar: Equatable {
     /// - Note: `.==` supports broadcasting.
     @inlinable
     static func .== (lhs: Scalar, rhs: Tensor) -> Tensor<Bool> {
-        return Tensor(lhs) .== rhs
+        return Tensor(lhs, on: rhs.device) .== rhs
     }
 
     /// Returns a tensor of Boolean scalars by computing `lhs != rhs` element-wise.
     /// - Note: `.!=` supports broadcasting.
     @inlinable
     static func .!= (lhs: Scalar, rhs: Tensor) -> Tensor<Bool> {
-        return Tensor(lhs) .!= rhs
+        return Tensor(lhs, on: rhs.device) .!= rhs
     }
 
     /// Returns a tensor of Boolean scalars by computing `lhs == rhs` element-wise.
     /// - Note: `.==` supports broadcasting.
     @inlinable
     static func .== (lhs: Tensor, rhs: Scalar) -> Tensor<Bool> {
-        return lhs .== Tensor(rhs)
+        return lhs .== Tensor(rhs, on: lhs.device)
     }
 
     /// Returns a tensor of Boolean scalars by computing `lhs != rhs` element-wise.
     /// - Note: `.!=` supports broadcasting.
     @inlinable
     static func .!= (lhs: Tensor, rhs: Scalar) -> Tensor<Bool> {
-        return lhs .!= Tensor(rhs)
+        return lhs .!= Tensor(rhs, on: lhs.device)
     }
 }
 
@@ -157,15 +157,6 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint & Equatable {
         tolerance: Scalar = Scalar.ulpOfOne.squareRoot()
     ) -> Tensor<Bool> {
         return _Raw.approximateEqual(self, other, tolerance: Double(tolerance))
-    }
-}
-
-public extension StringTensor {
-    /// Computes `self == other` element-wise.
-    /// - Note: `elementsEqual` supports broadcasting.
-    @inlinable
-    func elementsEqual(_ other: StringTensor) -> Tensor<Bool> {
-        return _Raw.equal(self, other)
     }
 }
 

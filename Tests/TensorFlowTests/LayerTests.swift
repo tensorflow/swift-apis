@@ -190,7 +190,7 @@ final class LayerTests: XCTestCase {
         let filter =  Tensor(shape: [1, 2, 2, 2, 1], scalars: (0..<8).map(Float.init))
         let bias = Tensor<Float>([-1, 1])
         let layer = Conv3D<Float>(filter: filter, bias: bias, activation: identity,
-                                  strides: (1, 2, 1), padding: .valid)
+                                  strides: (1, 2, 1), padding: .valid, dilations: (1, 1, 1))
         let input = Tensor(shape: [2, 2, 2, 2, 2], scalars: (0..<32).map(Float.init))
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>(shape: [2, 2, 1, 1, 2],
