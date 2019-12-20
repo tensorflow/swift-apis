@@ -106,6 +106,21 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 }
 
+/// Computes the trace of an optionally batched matrix.
+/// The trace is the the sum along the main diagonal of each inner-most matrix.
+///
+/// The input is a tensor with shape `[..., M, N]`.
+/// The output is a tensor with shape `[...]`.
+///
+/// - Parameter matrix: A tensor of shape `[..., M, N]`.
+/// - Precondition: `matrix` must be a tensor with shape `[..., M, N]`.
+@inlinable
+@differentiable(wrt: matrix where T: TensorFlowFloatingPoint)
+public func trace<T: TensorFlowNumeric>(_ matrix: Tensor<T>) -> Tensor<T> {
+    precondition(matrix.rank >= 2, "The tensor must have at least rank 2.")
+    return matrix.diagonalPart().sum(squeezingAxes: -1)
+}
+
 // MARK: - Decompositions
 
 /// Returns the Cholesky decomposition of one or more square matrices.
