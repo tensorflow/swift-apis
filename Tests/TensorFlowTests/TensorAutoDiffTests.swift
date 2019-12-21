@@ -17,14 +17,6 @@ import XCTest
 
 let cube: @differentiable (Tensor<Float>) -> Tensor<Float> = { ($0 * $0 * $0) }
 
-@differentiable(vjp: vjpFoo)
-func foo(_ x: Tensor<Float>) -> Tensor<Float> {
-    return _Raw.identity(x)
-}
-func vjpFoo(_ x: Tensor<Float>) -> (Tensor<Float>, (Tensor<Float>) -> Tensor<Float>) {
-    return (foo(x), { v in v })
-}
-
 final class TensorAutoDiffTests: XCTestCase {
     func testSimpleGrad() {
         func square(_ x: Tensor<Float>) -> Tensor<Float> {
@@ -575,16 +567,6 @@ final class TensorAutoDiffTests: XCTestCase {
         XCTAssertEqual(pb(Tensor(ones: [3, 3])), Tensor(repeating: 5.9604645e-08, shape: [3, 3]))
     }
 
-    // SR-9345
-    func testOwnedCheckpoints() {
-        func body(_ x: Tensor<Float>) -> Tensor<Float> {
-            return foo(foo(x))
-        }
-
-        let pb = pullback(at: Tensor(Float(10)), in: body)
-        XCTAssertEqual(Tensor(1), pb(Tensor(1)))
-    }
-
     // SR-9804
     func testADRefcounting() {
         func f(_ x: Tensor<Float>) -> Tensor<Float> {
@@ -818,7 +800,6 @@ final class TensorAutoDiffTests: XCTestCase {
         ("testRelu", testRelu),
         ("testSoftmax", testSoftmax),
         ("testLogSoftmax", testLogSoftmax),
-        ("testOwnedCheckpoints", testOwnedCheckpoints),
         ("testADRefcounting", testADRefcounting),
         ("testDifferentiateGlobal", testDifferentiateGlobal),
         ("testSideEffects", testSideEffects),
