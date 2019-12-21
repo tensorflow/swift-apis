@@ -61,7 +61,7 @@ With the exception that 4-space indendation be used.
 
 #### API documentation contribution guidelines
 
-* Closely mirror Swift for TensorFlow API docs with implementations in [tensorflow/tensorflow/python](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/python) to maintain consistency across platforms.
+* For APIs ported from Python TensorFlow, adopt the API documentation from [tensorflow.org/api_docs](https://www.tensorflow.org/api_docs) as a starting point.
   - If required, replace variable names from Python docs to reflect the Swift code. For example: `y_true` and `y_predict` in TensorFlow 2.x API docs will become `expected` and `predicted` in Swift for TensorFlow, respectively.
 * When you contribute a new feature to Swift for TensorFlow, the maintenance burden is (by default) transferred to the Swift to TensorFlow team. This means that the benefit of the contribution must be compared against the cost of maintaining the feature.
 
