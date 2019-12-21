@@ -284,74 +284,184 @@ final class TensorAutoDiffTests: XCTestCase {
         XCTAssertEqual(varianceGradAlongAxes(input), expected)
     }
 
-    func testMin() {
-        // The expected gradient values were computed using the following TensorFlow 2.0 Beta1
-        // Python code with respective `a` and `b` tensors:
-        // ```
-        // with tf.GradientTape() as t:
-        //     t.watch([a, b])
-        //     y = tf.math.reduce_sum(tf.minimum(a, b))
-        // print(t.gradient(y, [a, b]))
-        // ```
-        do {
-            let a = Tensor<Float>([4, 5, 3])
-            let b = Tensor<Float>([4, 2, 6])
-            let computedGradient1 = gradient(at: a, b) { a, b in min(a, b).sum() }
-            let expectedGradient1: (Tensor<Float>, Tensor<Float>) = (
-                [1.0, 0.0, 1.0], [0.0, 1.0, 0.0])
-            XCTAssertEqual(computedGradient1.0, expectedGradient1.0)
-            XCTAssertEqual(computedGradient1.1, expectedGradient1.1)
-
-            let computedGradient2 = gradient(at: a, b) { a, b in min(b, a).sum() }
-            let expectedGradient2: (Tensor<Float>, Tensor<Float>) =  (
-                [0.0, 0.0, 1.0], [1.0, 1.0, 0.0])
-            XCTAssertEqual(computedGradient2.0, expectedGradient2.0)
-            XCTAssertEqual(computedGradient2.1, expectedGradient2.1)
-        }
-
-        do {
-            let a = Tensor<Float>([[3.0, -2.0], [0.3, 10.0]])
-            let b = Tensor<Float>([9.0, -3.0])
-            let computedGradient = gradient(at: a, b) { a, b in min(a, b).sum() }
-            let expectedGradient: (Tensor<Float>, Tensor<Float>) = (
-                [[1.0, 0.0], [1.0, 0.0]], [0.0, 2.0])
-            XCTAssertEqual(computedGradient.0, expectedGradient.0)
-            XCTAssertEqual(computedGradient.1, expectedGradient.1)
-        }
-    }
-
     func testMax() {
-        // The expected gradient values were computed using the following TensorFlow 2.0 Beta1
-        // Python code with respective `a` and `b` tensors:
+        // Expected gradient values were computed using the following TensorFlow Python code:
         // ```
+        // import tensorflow as tf
         // with tf.GradientTape() as t:
         //     t.watch([a, b])
-        //     y = tf.math.reduce_sum(tf.maximum(a, b))
+        //     y = tf.reduce_sum(tf.maximum(a, b))
         // print(t.gradient(y, [a, b]))
         // ```
         do {
             let a = Tensor<Float>([4, 5, 3])
             let b = Tensor<Float>([4, 2, 6])
             let computedGradient1 = gradient(at: a, b) { a, b in max(a, b).sum() }
-            let expectedGradient1: (Tensor<Float>, Tensor<Float>) = (
-                [1.0, 1.0, 0.0], [0.0, 0.0, 1.0])
+            let expectedGradient1: (Tensor<Float>, Tensor<Float>) = ([1, 1, 0], [0, 0, 1])
             XCTAssertEqual(computedGradient1.0, expectedGradient1.0)
             XCTAssertEqual(computedGradient1.1, expectedGradient1.1)
 
             let computedGradient2 = gradient(at: a, b) { a, b in max(b, a).sum() }
-            let expectedGradient2: (Tensor<Float>, Tensor<Float>) = (
-                [0.0, 1.0, 0.0],  [1.0, 0.0, 1.0])
+            let expectedGradient2: (Tensor<Float>, Tensor<Float>) = ([0, 1, 0],  [1, 0, 1])
             XCTAssertEqual(computedGradient2.0, expectedGradient2.0)
             XCTAssertEqual(computedGradient2.1, expectedGradient2.1)
         }
         do {
-            let a = Tensor<Float>([[3.0, -2.0], [0.3, 10.0]])
-            let b = Tensor<Float>([9.0, -3.0])
+            let a = Tensor<Float>([[3, -2], [0.3, 10]])
+            let b = Tensor<Float>([9, -3])
             let computedGradient = gradient(at: a, b) { a, b in max(a, b).sum() }
-            let expectedGradient: (Tensor<Float>, Tensor<Float>)  = (
-                [[0.0, 1.0], [0.0, 1.0]], [2.0, 0.0])
+            let expectedGradient: (Tensor<Float>, Tensor<Float>)  = ([[0, 1], [0, 1]], [2, 0])
             XCTAssertEqual(computedGradient.0, expectedGradient.0)
             XCTAssertEqual(computedGradient.1, expectedGradient.1)
+        }
+    }
+
+    func testMin() {
+        // Expected gradient values were computed using the following TensorFlow Python code:
+        // ```
+        // import tensorflow as tf
+        // with tf.GradientTape() as t:
+        //     t.watch([a, b])
+        //     y = tf.reduce_sum(tf.minimum(a, b))
+        // print(t.gradient(y, [a, b]))
+        // ```
+        do {
+            let a = Tensor<Float>([4, 5, 3])
+            let b = Tensor<Float>([4, 2, 6])
+            let computedGradient1 = gradient(at: a, b) { a, b in min(a, b).sum() }
+            let expectedGradient1: (Tensor<Float>, Tensor<Float>) = ([1, 0, 1], [0, 1, 0])
+            XCTAssertEqual(computedGradient1.0, expectedGradient1.0)
+            XCTAssertEqual(computedGradient1.1, expectedGradient1.1)
+
+            let computedGradient2 = gradient(at: a, b) { a, b in min(b, a).sum() }
+            let expectedGradient2: (Tensor<Float>, Tensor<Float>) =  ([0, 0, 1], [1, 1, 0])
+            XCTAssertEqual(computedGradient2.0, expectedGradient2.0)
+            XCTAssertEqual(computedGradient2.1, expectedGradient2.1)
+        }
+
+        do {
+            let a = Tensor<Float>([[3, -2], [0.3, 10]])
+            let b = Tensor<Float>([9, -3])
+            let computedGradient = gradient(at: a, b) { a, b in min(a, b).sum() }
+            let expectedGradient: (Tensor<Float>, Tensor<Float>) = ([[1, 0], [1, 0]], [0, 2])
+            XCTAssertEqual(computedGradient.0, expectedGradient.0)
+            XCTAssertEqual(computedGradient.1, expectedGradient.1)
+        }
+    }
+
+    func testMaxAlongAxes() {
+        // Expected gradient values were computed using the following TensorFlow Python code:
+        // ```
+        // import tensorflow as tf
+        // x = tf.constant(range(6), shape=(2, 3), dtype=float)
+        // with tf.GradientTape() as t:
+        //     t.watch(x)
+        //     y = tf.reduce_sum(tf.reduce_max(x, axis=0, keepdims=True))
+        // print(t.gradient(y, x))
+        // ```
+        func maxAlongAxesSum(_ x: Tensor<Float>) -> Tensor<Float> {
+            x.max(alongAxes: 0).sum()
+        }
+        do {
+            let x: Tensor<Float> = [[0, 1, 2], [3, 4, 5]]
+            let (value, computedGradient) = valueWithGradient(at: x, in: maxAlongAxesSum)
+            XCTAssertEqual(value, maxAlongAxesSum(x))
+            let expectedGradient: Tensor<Float> = [[0, 0, 0], [1, 1, 1]]
+            XCTAssertEqual(computedGradient, expectedGradient)
+        }
+        do {
+            let x: Tensor<Float> = [[0, 1, 2], [2, 1, 0]]
+            let (value, computedGradient) = valueWithGradient(at: x, in: maxAlongAxesSum)
+            XCTAssertEqual(value, maxAlongAxesSum(x))
+            let expectedGradient: Tensor<Float> = [[0, 0.5, 1], [1, 0.5, 0]]
+            XCTAssertEqual(computedGradient, expectedGradient)
+        }
+    }
+
+    func testMinAlongAxes() {
+        // Expected gradient values were computed using the following TensorFlow Python code:
+        // ```
+        // import tensorflow as tf
+        // x = tf.constant(range(6), shape=(2, 3), dtype=float)
+        // with tf.GradientTape() as t:
+        //     t.watch(x)
+        //     y = tf.reduce_sum(tf.reduce_min(x, axis=0, keepdims=True))
+        // print(t.gradient(y, x))
+        // ```
+        func minAlongAxesSum(_ x: Tensor<Float>) -> Tensor<Float> {
+            x.min(alongAxes: 0).sum()
+        }
+        do {
+            let x: Tensor<Float> = [[0, 1, 2], [3, 4, 5]]
+            let (value, computedGradient) = valueWithGradient(at: x, in: minAlongAxesSum)
+            XCTAssertEqual(value, minAlongAxesSum(x))
+            let expectedGradient: Tensor<Float> = [[1, 1, 1], [0, 0, 0]]
+            XCTAssertEqual(computedGradient, expectedGradient)
+        }
+        do {
+            let x: Tensor<Float> = [[0, 1, 2], [2, 1, 0]]
+            let (value, computedGradient) = valueWithGradient(at: x, in: minAlongAxesSum)
+            XCTAssertEqual(value, minAlongAxesSum(x))
+            let expectedGradient: Tensor<Float> = [[1, 0.5, 0], [0, 0.5, 1]]
+            XCTAssertEqual(computedGradient, expectedGradient)
+        }
+    }
+
+    func testMaxSqueezingAxes() {
+        // Expected gradient values were computed using the following TensorFlow Python code:
+        // ```
+        // import tensorflow as tf
+        // x = tf.constant(range(6), shape=(2, 3), dtype=float)
+        // with tf.GradientTape() as t:
+        //     t.watch(x)
+        //     y = tf.reduce_sum(tf.reduce_max(x, axis=0, keepdims=False))
+        // print(t.gradient(y, x))
+        // ```
+        func maxSqueezingAxesSum(_ x: Tensor<Float>) -> Tensor<Float> {
+            x.max(squeezingAxes: 0).sum()
+        }
+        do {
+            let x: Tensor<Float> = [[0, 1, 2], [3, 4, 5]]
+            let (value, computedGradient) = valueWithGradient(at: x, in: maxSqueezingAxesSum)
+            XCTAssertEqual(value, maxSqueezingAxesSum(x))
+            let expectedGradient: Tensor<Float> = [[0, 0, 0], [1, 1, 1]]
+            XCTAssertEqual(computedGradient, expectedGradient)
+        }
+        do {
+            let x: Tensor<Float> = [[0, 1, 2], [2, 1, 0]]
+            let (value, computedGradient) = valueWithGradient(at: x, in: maxSqueezingAxesSum)
+            XCTAssertEqual(value, maxSqueezingAxesSum(x))
+            let expectedGradient: Tensor<Float> = [[0, 0.5, 1], [1, 0.5, 0]]
+            XCTAssertEqual(computedGradient, expectedGradient)
+        }
+    }
+
+    func testMinSqueezingAxes() {
+        // Expected gradient values were computed using the following TensorFlow Python code:
+        // ```
+        // import tensorflow as tf
+        // x = tf.constant(range(6), shape=(2, 3), dtype=float)
+        // with tf.GradientTape() as t:
+        //     t.watch(x)
+        //     y = tf.reduce_sum(tf.reduce_min(x, axis=0, keepdims=False))
+        // print(t.gradient(y, x))
+        // ```
+        func minSqueezingAxesSum(_ x: Tensor<Float>) -> Tensor<Float> {
+            x.min(squeezingAxes: 0).sum()
+        }
+        do {
+            let x: Tensor<Float> = [[0, 1, 2], [3, 4, 5]]
+            let (value, computedGradient) = valueWithGradient(at: x, in: minSqueezingAxesSum)
+            XCTAssertEqual(value, minSqueezingAxesSum(x))
+            let expectedGradient: Tensor<Float> = [[1, 1, 1], [0, 0, 0]]
+            XCTAssertEqual(computedGradient, expectedGradient)
+        }
+        do {
+            let x: Tensor<Float> = [[0, 1, 2], [2, 1, 0]]
+            let (value, computedGradient) = valueWithGradient(at: x, in: minSqueezingAxesSum)
+            XCTAssertEqual(value, minSqueezingAxesSum(x))
+            let expectedGradient: Tensor<Float> = [[1, 0.5, 0], [0, 0.5, 1]]
+            XCTAssertEqual(computedGradient, expectedGradient)
         }
     }
 

@@ -1396,6 +1396,8 @@ public func min<T>(_ lhs: Tensor<T>, _ rhs: T) -> Tensor<T> where T: Numeric & C
     min(lhs, Tensor(rhs))
 }
 
+// Note: adapted from `_MinOrMaxGrad`:
+// https://github.com/tensorflow/tensorflow/blob/r2.1/tensorflow/python/ops/math_grad.py#L223.
 @inlinable
 internal func _vjpMinMaxHelper<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>,
@@ -1554,7 +1556,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     @inlinable
     @differentiable(
         wrt: self,
-        vjp: _vjpMinOrMax(squeezingAxes:) where Scalar: TensorFlowFloatingPoint)
+        vjp: _vjpMax(squeezingAxes:) where Scalar: TensorFlowFloatingPoint)
     func max(squeezingAxes axes: Tensor<Int32>) -> Tensor {
         return _Raw.max(self, reductionIndices: axes, keepDims: false)
     }
@@ -1585,7 +1587,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     @inlinable
     @differentiable(
         wrt: self,
-        vjp: _vjpMinOrMax(squeezingAxes:) where Scalar: TensorFlowFloatingPoint)
+        vjp: _vjpMin(squeezingAxes:) where Scalar: TensorFlowFloatingPoint)
     func min(squeezingAxes axes: Tensor<Int32>) -> Tensor {
         _Raw.min(self, reductionIndices: axes, keepDims: false)
     }
@@ -1633,7 +1635,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
-    @differentiable(wrt: self, vjp: _vjpMinOrMax(alongAxes:) where Scalar: TensorFlowFloatingPoint)
+    @differentiable(wrt: self, vjp: _vjpMin(alongAxes:) where Scalar: TensorFlowFloatingPoint)
     func min(alongAxes axes: Tensor<Int32>) -> Tensor {
         _Raw.min(self, reductionIndices: axes, keepDims: true)
     }
@@ -1665,7 +1667,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     /// - Parameter axes: The dimensions to reduce.
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
-    @differentiable(wrt: self, vjp: _vjpMinOrMax(alongAxes:) where Scalar: TensorFlowFloatingPoint)
+    @differentiable(wrt: self, vjp: _vjpMax(alongAxes:) where Scalar: TensorFlowFloatingPoint)
     func max(alongAxes axes: Tensor<Int32>) -> Tensor {
         _Raw.max(self, reductionIndices: axes, keepDims: true)
     }
@@ -1706,35 +1708,73 @@ public extension Tensor where Scalar: Numeric & Comparable {
 }
 
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
-  @inlinable
-  func _vjpMinOrMax(squeezingAxes axes: Tensor<Int32>) -> (Tensor, (Tensor) -> Tensor) {
-    let result = max(squeezingAxes: axes)
-    return (result, { v in
-      let yUnsqueezed = result.expandingShape(at: axes.scalars.map { Int($0) })
-      let gradientUnsqueezed = v.expandingShape(at: axes.scalars.map { Int($0) })
+    // Note: adapted from `_MinOrMaxGrad`:
+    // https://github.com/tensorflow/tensorflow/blob/r2.1/tensorflow/python/ops/math_grad.py#L223.
+    @inlinable
+    func _vjpMinMaxHelper(
+        squeezingAxes axes: Tensor<Int32>,
+        originalValue: Tensor,
+        seed: Tensor
+    ) -> Tensor {
+        let yUnsqueezed = originalValue.expandingShape(at: axes.scalars.map { Int($0) })
+        let gradientUnsqueezed = seed.expandingShape(at: axes.scalars.map { Int($0) })
 
-      // Compute the number of selected (maximum or minimum) elements in each reduction dimension.
-      // If there are multiple minimum or maximum elements then the gradient will be divided between
-      // them.
-      let indicators = Tensor(yUnsqueezed .== self)
-      let selectedCount = indicators.sum(alongAxes: axes)
+        // Compute the number of selected (maximum or minimum) elements in each reduction dimension.
+        // If there are multiple minimum or maximum elements then the gradient will be divided
+        // between them.
+        let indicators = Tensor(yUnsqueezed .== self)
+        let selectedCount = indicators.sum(alongAxes: axes)
 
-      return gradientUnsqueezed.broadcasted(toShape: self.shapeTensor) * indicators / selectedCount
-    })
-  }
+        return gradientUnsqueezed.broadcasted(toShape: self.shapeTensor) * indicators / selectedCount
+    }
 
-  @inlinable
-  func _vjpMinOrMax(alongAxes axes: Tensor<Int32>) -> (Tensor, (Tensor) -> Tensor) {
-    let result = max(alongAxes: axes)
-    return (result, { v in
-      // Compute the number of selected (maximum or minimum) elements in each reduction dimension.
-      // If there are multiple minimum or maximum elements then the gradient will be divided between
-      // them.
-      let indicators = Tensor(result .== self)
-      let selectedCount = indicators.sum(alongAxes: axes)
-      return v.broadcasted(toShape: self.shapeTensor) * indicators / selectedCount
-    })
-  }
+    @inlinable
+    func _vjpMax(squeezingAxes axes: Tensor<Int32>) -> (Tensor, (Tensor) -> Tensor) {
+        let result = max(squeezingAxes: axes)
+        return (result, { v in
+            self._vjpMinMaxHelper(squeezingAxes: axes, originalValue: result, seed: v)
+        })
+    }
+
+    @inlinable
+    func _vjpMin(squeezingAxes axes: Tensor<Int32>) -> (Tensor, (Tensor) -> Tensor) {
+        let result = min(squeezingAxes: axes)
+        return (result, { v in
+            self._vjpMinMaxHelper(squeezingAxes: axes, originalValue: result, seed: v)
+        })
+    }
+
+    // Note: adapted from `_MinOrMaxGrad`:
+    // https://github.com/tensorflow/tensorflow/blob/r2.1/tensorflow/python/ops/math_grad.py#L223.
+    @inlinable
+    func _vjpMinMaxHelper(
+        alongAxes axes: Tensor<Int32>,
+        originalValue: Tensor,
+        seed: Tensor
+    ) -> Tensor {
+        // Compute the number of selected (maximum or minimum) elements in each reduction dimension.
+        // If there are multiple minimum or maximum elements then the gradient will be divided
+        // between them.
+        let indicators = Tensor(originalValue .== self)
+        let selectedCount = indicators.sum(alongAxes: axes)
+        return seed.broadcasted(toShape: self.shapeTensor) * indicators / selectedCount
+    }
+
+    @inlinable
+    func _vjpMax(alongAxes axes: Tensor<Int32>) -> (Tensor, (Tensor) -> Tensor) {
+        let result = max(alongAxes: axes)
+        return (result, { v in
+            self._vjpMinMaxHelper(alongAxes: axes, originalValue: result, seed: v)
+        })
+    }
+
+    @inlinable
+    func _vjpMin(alongAxes axes: Tensor<Int32>) -> (Tensor, (Tensor) -> Tensor) {
+        let result = min(alongAxes: axes)
+        return (result, { v in
+            self._vjpMinMaxHelper(alongAxes: axes, originalValue: result, seed: v)
+        })
+    }
 }
 
 // MARK: - Numeric Reductions
