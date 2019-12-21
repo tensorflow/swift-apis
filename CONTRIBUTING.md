@@ -1,5 +1,14 @@
 # Contributing guidelines
 
+## Welcome!
+
+`swift-apis` is a carefully curated set of maintained APIs and functionality. 
+We generally aim to incubate new features in the library ecosystem that builds 
+on top of Swift for TensorFlow. Popular functionality, such as new layers or 
+helpful abstractions, often graduate into `swift-apis` after maturing in other 
+repositories first (e.g. `swift-models`), where the development team and the 
+community can try them out in context and iterate quickly.
+
 ## How to become a contributor and submit your own code
 
 ### Contributor License Agreements
@@ -65,10 +74,6 @@ With the exception that 4-space indendation be used.
   - If required, replace variable names from Python docs to reflect the Swift code. 
   For example: `y_true` and `y_predict` in TensorFlow 2.x API docs will become 
   `expected` and `predicted` in Swift for TensorFlow, respectively.
-* When you contribute a new feature to Swift for TensorFlow, the maintenance burden is 
-(by default) transferred to the Swift to TensorFlow team. This means that the benefit 
-of the contribution must be compared against the cost of maintaining the 
-feature.
 
 ## Community
 
