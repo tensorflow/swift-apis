@@ -74,7 +74,7 @@ API documentation should follow guidelines from the
 ["Write a documentation comment"](https://swift.org/documentation/api-design-guidelines/#write-doc-comment)
 section of the Swift API Design Guidelines:
 
-> * Use Swift’s [dialect of Markdown](https://developer.apple.com/library/archive/documentation/Xcode/Reference/xcode_markup_formatting_ref).
+> * **Use Swift’s [dialect of Markdown](https://developer.apple.com/library/archive/documentation/Xcode/Reference/xcode_markup_formatting_ref)**.
 > * **Begin with a summary** that describes the entity being declared. Often, an API can be completely understood from its declaration and its summary.
 > * **Optionally, continue** with one or more paragraphs and bullet items. Paragraphs are separated by blank lines and use complete sentences.
 
