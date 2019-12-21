@@ -68,12 +68,19 @@ Changes should conform to:
 
 With the exception that 4-space indendation be used.
 
-#### API documentation contribution guidelines
+#### API documentation guidelines
 
-* For APIs ported from Python TensorFlow, adopt the API documentation from [tensorflow.org/api_docs](https://www.tensorflow.org/api_docs) as a starting point.
-  - If required, replace variable names from Python docs to reflect the Swift code. 
-  For example: `y_true` and `y_predict` in TensorFlow 2.x API docs will become 
-  `expected` and `predicted` in Swift for TensorFlow, respectively.
+API documentation should follow guidelines from the
+["Write a documentation comment"](https://swift.org/documentation/api-design-guidelines/#write-doc-comment)
+section of the Swift API Design Guidelines:
+
+> * Use Swift’s [dialect of Markdown](https://developer.apple.com/library/archive/documentation/Xcode/Reference/xcode_markup_formatting_ref).
+> * **Begin with a summary** that describes the entity being declared. Often, an API can be completely understood from its declaration and its summary.
+> * **Optionally, continue** with one or more paragraphs and bullet items. Paragraphs are separated by blank lines and use complete sentences.
+
+For APIs ported from Python TensorFlow, use the API documentation from
+[tensorflow.org/api_docs](https://www.tensorflow.org/api_docs) (e.g. function
+parameter descriptions) as a starting point.
 
 ## Community
 
