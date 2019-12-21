@@ -56,6 +56,12 @@ public extension Tensor where Scalar: TensorFlowNumeric {
         _Raw.matrixDiag(diagonal: self)
     }
 
+    @available(*, deprecated, renamed: "bandPart(subdiagonalCount:superdiagonalCount:)")
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+    func bandPart(_ subdiagonalCount: Int, _ superdiagonalCount: Int) -> Tensor {
+        return bandPart(subdiagonalCount: subdiagonalCount, superdiagonalCount: superdiagonalCount)
+    }
+
     /// Returns a copy of a innermost tensor defined by a central band boundaries.
     /// The output is a tensor of the same shape as the instance `[..., :, :]`.
     ///
