@@ -56,6 +56,12 @@ public extension Tensor where Scalar: TensorFlowNumeric {
         _Raw.matrixDiag(diagonal: self)
     }
 
+    @available(*, deprecated, renamed: "bandPart(subdiagonalCount:superdiagonalCount:)")
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+    func bandPart(_ subdiagonalCount: Int, _ superdiagonalCount: Int) -> Tensor {
+        return bandPart(subdiagonalCount: subdiagonalCount, superdiagonalCount: superdiagonalCount)
+    }
+
     /// Returns a copy of a innermost tensor defined by a central band boundaries.
     /// The output is a tensor of the same shape as the instance `[..., :, :]`.
     ///
@@ -79,12 +85,18 @@ public extension Tensor where Scalar: TensorFlowNumeric {
     /// //  [-2, -1,  0, 1]
     /// //  [ 0, -2, -1, 0]]
     /// ```
+    ///
+    /// - Parameters:
+    ///   - subdiagonalCount: The number of subdiagonals to keep. If negative, keep entire lower
+    ///     triangle.
+    ///   - superdiagonalCount: The number of superdiagonals to keep. If negative, keep entire upper
+    ///     triangle.
     @inlinable
     @differentiable(wrt: self, vjp: _vjpBandPart where Scalar: TensorFlowFloatingPoint)
-    func bandPart(_ lowerCount: Int, _ upperCount: Int) -> Tensor {
+    func bandPart(subdiagonalCount: Int, superdiagonalCount: Int) -> Tensor {
         precondition(rank >= 2, "The tensor must have at least rank 2.")
-        let lower = Tensor<Int32>(Int32(lowerCount))
-        let upper = Tensor<Int32>(Int32(upperCount))
+        let lower = Tensor<Int32>(Int32(subdiagonalCount))
+        let upper = Tensor<Int32>(Int32(superdiagonalCount))
         return _Raw.matrixBandPart(self, numLower: lower, numUpper: upper)
     }
 }
@@ -101,8 +113,15 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 
     @inlinable
-    func _vjpBandPart(_ numLower: Int, _ numUpper: Int) -> (Tensor, (Tensor) -> Tensor) {
-        (bandPart(numLower, numUpper), { $0.bandPart(numLower, numUpper) })
+    func _vjpBandPart(
+        subdiagonalCount: Int, superdiagonalCount: Int
+    ) -> (Tensor, (Tensor) -> Tensor) {
+        let value = bandPart(
+            subdiagonalCount: subdiagonalCount,
+            superdiagonalCount: superdiagonalCount)
+        return (value, {
+            $0.bandPart(subdiagonalCount: subdiagonalCount, superdiagonalCount: superdiagonalCount)
+        })
     }
 }
 
