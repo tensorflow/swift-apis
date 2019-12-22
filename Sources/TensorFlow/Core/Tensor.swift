@@ -187,7 +187,7 @@ public extension Tensor {
     /// Creates a 0-D tensor from a scalar value.
     @inlinable
     @differentiable(where Scalar: TensorFlowFloatingPoint)
-    init(_ value: Scalar, on device: Device = Device.getDefault) {
+    init(_ value: Scalar, on device: Device = .default) {
         self.init(shape: [], scalars: [value], on: device)
     }
 }
@@ -195,7 +195,7 @@ public extension Tensor {
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @derivative(of: init(_:on:))
-    static func _vjpScalarInit(_ value: __owned Scalar, on device: Device = Device.getDefault) -> (
+    static func _vjpScalarInit(_ value: __owned Scalar, on device: Device = .default) -> (
         value: Tensor, pullback: (Tensor) -> Scalar
     ) {
         return (Tensor(value, on: device), { $0.scalarized() })
@@ -206,14 +206,14 @@ public extension Tensor {
     /// Creates a 1D tensor from scalars.
     @inlinable
     @differentiable(where Scalar: TensorFlowFloatingPoint)
-    init(_ scalars: [Scalar], on device: Device = Device.getDefault) {
+    init(_ scalars: [Scalar], on device: Device = .default) {
         self.init(shape: [scalars.count], scalars: scalars, on: device)
     }
 
     /// Creates a 1D tensor from scalars.
     @inlinable
     init<C: RandomAccessCollection>(
-        _ vector: C, on device: Device = Device.getDefault
+        _ vector: C, on device: Device = .default
     ) where C.Element == Scalar {
         let handle = TensorHandle<Scalar>(
             shape: [vector.count],
@@ -235,7 +235,7 @@ public extension Tensor {
     /// - Precondition: The product of the dimensions of the shape must equal the number of scalars.
     @inlinable
     @differentiable(where Scalar: TensorFlowFloatingPoint)
-    init(shape: TensorShape, scalars: [Scalar], on device: Device = Device.getDefault) {
+    init(shape: TensorShape, scalars: [Scalar], on device: Device = .default) {
         precondition(shape.contiguousSize == scalars.count,
             """
             The shape requires \(shape.contiguousSize) scalars but \(scalars.count) were \
@@ -256,7 +256,7 @@ public extension Tensor {
     init(
         shape: TensorShape,
         scalars: UnsafeBufferPointer<Scalar>,
-        on device: Device = Device.getDefault
+        on device: Device = .default
     ) {
         precondition(shape.contiguousSize == scalars.count,
             """
@@ -279,7 +279,7 @@ public extension Tensor {
     /// - Precondition: The product of the dimensions of the shape must equal the number of scalars.
     @inlinable
     init<C: RandomAccessCollection>(
-        shape: TensorShape, scalars: C, on device: Device = Device.getDefault
+        shape: TensorShape, scalars: C, on device: Device = .default
     ) where C.Element == Scalar {
         precondition(shape.contiguousSize == scalars.count,
             """
@@ -302,7 +302,7 @@ public extension Tensor {
 extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @derivative(of: init(_:on:))
-    static func _vjpInit(_ scalars: [Scalar], on device: Device = Device.getDefault) -> (
+    static func _vjpInit(_ scalars: [Scalar], on device: Device = .default) -> (
         value: Tensor, pullback: (Tensor) -> Array<Scalar>.TangentVector
     ) {
         (value: Tensor(scalars, on: device), pullback: { v in
@@ -313,7 +313,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @derivative(of: init(shape:scalars:on:))
     static func _vjpInit(
-        shape: TensorShape, scalars: [Scalar], on device: Device = Device.getDefault
+        shape: TensorShape, scalars: [Scalar], on device: Device = .default
     ) -> (value: Tensor, pullback: (Tensor) -> Array<Scalar>.TangentVector) {
         (value: Tensor(scalars, on: device), pullback: { v in
             Array<Scalar>.TangentVector(v.scalars)
