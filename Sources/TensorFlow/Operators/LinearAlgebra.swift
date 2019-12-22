@@ -30,7 +30,7 @@ public extension Tensor where Scalar: TensorFlowNumeric {
     /// // [1, 2, 3, 4]
     /// ```
     @inlinable
-    @differentiable(wrt: self, vjp: _vjpDiagonalPart where Scalar: TensorFlowFloatingPoint)
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
     func diagonalPart() -> Tensor {
         precondition(rank >= 2, "The tensor must have at least rank 2.")
         return _Raw.matrixDiagPart(self)
@@ -51,7 +51,7 @@ public extension Tensor where Scalar: TensorFlowNumeric {
     /// //  [0, 0, 0, 4]]
     /// ```
     @inlinable
-    @differentiable(wrt: self, vjp: _vjpDiagonal where Scalar: TensorFlowFloatingPoint)
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
     func diagonal() -> Tensor {
         _Raw.matrixDiag(diagonal: self)
     }
@@ -92,7 +92,7 @@ public extension Tensor where Scalar: TensorFlowNumeric {
     ///   - superdiagonalCount: The number of superdiagonals to keep. If negative, keep entire upper
     ///     triangle.
     @inlinable
-    @differentiable(wrt: self, vjp: _vjpBandPart where Scalar: TensorFlowFloatingPoint)
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
     func bandPart(subdiagonalCount: Int, superdiagonalCount: Int) -> Tensor {
         precondition(rank >= 2, "The tensor must have at least rank 2.")
         let lower = Tensor<Int32>(Int32(subdiagonalCount))
@@ -103,19 +103,22 @@ public extension Tensor where Scalar: TensorFlowNumeric {
 
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
-    func _vjpDiagonalPart() -> (Tensor, (Tensor) -> Tensor) {
+    @derivative(of: diagonalPart)
+    func _vjpDiagonalPart() -> (value: Tensor, pullback: (Tensor) -> Tensor) {
         (diagonalPart(), { $0.diagonal() })
     }
 
     @inlinable
-    func _vjpDiagonal() -> (Tensor, (Tensor) -> Tensor) {
+    @derivative(of: diagonal)
+    func _vjpDiagonal() -> (value: Tensor, pullback: (Tensor) -> Tensor) {
         (diagonal(), { $0.diagonalPart() })
     }
 
     @inlinable
-    func _vjpBandPart(
-        subdiagonalCount: Int, superdiagonalCount: Int
-    ) -> (Tensor, (Tensor) -> Tensor) {
+    @derivative(of: bandPart(subdiagonalCount:superdiagonalCount:))
+    func _vjpBandPart(subdiagonalCount: Int, superdiagonalCount: Int) -> (
+        value: Tensor, pullback: (Tensor) -> Tensor
+    ) {
         let value = bandPart(
             subdiagonalCount: subdiagonalCount,
             superdiagonalCount: superdiagonalCount)
@@ -156,15 +159,16 @@ public func trace<T: TensorFlowNumeric>(_ matrix: Tensor<T>) -> Tensor<T> {
 ///
 /// - Parameter input: A tensor of shape `[..., M, M]`.
 @inlinable
-@differentiable(vjp: _vjpCholesky)
+@differentiable
 public func cholesky<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
     _Raw.cholesky(x)
 }
 
 @inlinable
+@derivative(of: cholesky)
 internal func _vjpCholesky<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>
-) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+) -> (value: Tensor<T>, pullback: (Tensor<T>) -> Tensor<T>) {
     let decomposition = cholesky(x)
     return (decomposition, { v in _Raw.choleskyGrad(l: decomposition, grad: v)})
 }

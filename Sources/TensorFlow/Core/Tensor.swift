@@ -125,7 +125,7 @@ public extension Tensor {
     /// Reshape to scalar.
     /// - Precondition: The tensor has exactly one scalar.
     @inlinable
-    @differentiable(wrt: self, vjp: _vjpScalarized where Scalar: TensorFlowFloatingPoint)
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
     func scalarized() -> Scalar {
         precondition(shape.contiguousSize == 1,
            "This tensor must have exactly one scalar but contains \(shape.contiguousSize).")
@@ -135,7 +135,8 @@ public extension Tensor {
 
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
-    func _vjpScalarized() -> (Scalar, (Scalar) -> Tensor) {
+    @derivative(of: scalarized)
+    func _vjpScalarized() -> (value: Scalar, pullback: (Scalar) -> Tensor) {
         return (scalarized(), { v in Tensor(v) })
     }
 }
@@ -162,7 +163,7 @@ public extension Tensor {
     }
 
     @inlinable
-    @differentiable(vjp: _vjpScalars where Scalar: TensorFlowFloatingPoint)
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
     var scalars: [Scalar] {
         return array.scalars
     }
@@ -170,6 +171,7 @@ public extension Tensor {
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
+    @derivative(of: scalars)
     func _vjpScalars() -> (value: [Scalar], pullback: (Array<Scalar>.TangentVector) -> Tensor) {
         (value: scalars, pullback: { [shape = self.shape, device = self.device] v in
             Tensor(shape: shape, scalars: v.base, on: device)
@@ -184,7 +186,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
 public extension Tensor {
     /// Creates a 0-D tensor from a scalar value.
     @inlinable
-    @differentiable(vjp: _vjpScalarInit where Scalar: TensorFlowFloatingPoint)
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
     init(_ value: Scalar, on device: Device = Device.getDefault) {
         self.init(shape: [], scalars: [value], on: device)
     }
@@ -192,8 +194,10 @@ public extension Tensor {
 
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
-    static func _vjpScalarInit(_ value: __owned Scalar, on device: Device = Device.getDefault
-    ) -> (Tensor, (Tensor) -> Scalar) {
+    @derivative(of: init(_:on:))
+    static func _vjpScalarInit(_ value: __owned Scalar, on device: Device = Device.getDefault) -> (
+        value: Tensor, pullback: (Tensor) -> Scalar
+    ) {
         return (Tensor(value, on: device), { $0.scalarized() })
     }
 }
@@ -201,7 +205,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 public extension Tensor {
     /// Creates a 1D tensor from scalars.
     @inlinable
-    @differentiable(vjp: _vjpInit(_:on:) where Scalar: TensorFlowFloatingPoint)
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
     init(_ scalars: [Scalar], on device: Device = Device.getDefault) {
         self.init(shape: [scalars.count], scalars: scalars, on: device)
     }
@@ -230,7 +234,7 @@ public extension Tensor {
     ///   - scalars: The scalar contents of the tensor.
     /// - Precondition: The product of the dimensions of the shape must equal the number of scalars.
     @inlinable
-    @differentiable(vjp: _vjpInit(shape:scalars:on:) where Scalar: TensorFlowFloatingPoint)
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
     init(shape: TensorShape, scalars: [Scalar], on device: Device = Device.getDefault) {
         precondition(shape.contiguousSize == scalars.count,
             """
@@ -297,6 +301,7 @@ public extension Tensor {
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
+    @derivative(of: init(_:on:))
     static func _vjpInit(_ scalars: [Scalar], on device: Device = Device.getDefault) -> (
         value: Tensor, pullback: (Tensor) -> Array<Scalar>.TangentVector
     ) {
@@ -306,6 +311,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 
     @inlinable
+    @derivative(of: init(shape:scalars:on:))
     static func _vjpInit(
         shape: TensorShape, scalars: [Scalar], on device: Device = Device.getDefault
     ) -> (value: Tensor, pullback: (Tensor) -> Array<Scalar>.TangentVector) {
@@ -542,7 +548,7 @@ extension Tensor: AdditiveArithmetic where Scalar: Numeric {
     /// Adds two tensors and produces their sum.
     /// - Note: `+` supports broadcasting.
     @inlinable
-    @differentiable(vjp: _vjpAdd(lhs:rhs:) where Scalar: TensorFlowFloatingPoint)
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
     public static func + (lhs: Tensor, rhs: Tensor) -> Tensor {
         _Raw.addV2(lhs, rhs)
     }
@@ -550,7 +556,7 @@ extension Tensor: AdditiveArithmetic where Scalar: Numeric {
     /// Subtracts one tensor from another and produces their difference.
     /// - Note: `-` supports broadcasting.
     @inlinable
-    @differentiable(vjp: _vjpSubtract(lhs:rhs:) where Scalar: TensorFlowFloatingPoint)
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
     public static func - (lhs: Tensor, rhs: Tensor) -> Tensor {
         _Raw.sub(lhs, rhs)
     }
@@ -558,7 +564,10 @@ extension Tensor: AdditiveArithmetic where Scalar: Numeric {
 
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
-    static func _vjpAdd(lhs: Tensor, rhs: Tensor) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
+    @derivative(of: +)
+    static func _vjpAdd(lhs: Tensor, rhs: Tensor) -> (
+        value: Tensor, pullback: (Tensor) -> (Tensor, Tensor)
+    ) {
         (lhs + rhs, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
             let lhsGrad = v
             let rhsGrad = lhsGrad
@@ -569,7 +578,10 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 
     @inlinable
-    static func _vjpSubtract(lhs: Tensor, rhs: Tensor) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
+    @derivative(of: -)
+    static func _vjpSubtract(lhs: Tensor, rhs: Tensor) -> (
+        value: Tensor, pullback: (Tensor) -> (Tensor, Tensor)
+    ) {
         (lhs - rhs, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
             let lhsGrad = v
             let rhsGrad = -lhsGrad

@@ -34,7 +34,7 @@ public extension Tensor {
     ///   - repeatedValue: The scalar value to repeat.
     ///   - shape: The dimensions of the tensor.
     @inlinable
-    @differentiable(vjp: _vjpInit(repeating:shape:) where Scalar: TensorFlowFloatingPoint)
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
     init(repeating repeatedValue: Scalar, shape: TensorShape) {
         self = _Raw.fill(
             dims: Tensor<Int32>(shape.dimensions.map(Int32.init)),
@@ -60,10 +60,11 @@ public extension Tensor {
 
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
+    @derivative(of: init(repeating:shape:))
     static func _vjpInit(
         repeating repeatedValue: __owned Scalar,
         shape: __owned TensorShape
-    ) -> (Tensor, (Tensor) -> Scalar) {
+    ) -> (value: Tensor, pullback: (Tensor) -> Scalar) {
         return (Tensor(repeating: repeatedValue, shape: shape), {
             $0.sum().scalarized()
         })
@@ -83,8 +84,7 @@ public extension Tensor where Scalar: Numeric {
 
     /// Perform an element-wise conversion from another `Tensor`.
     @inlinable
-    @differentiable(
-        vjp: _vjpCast where Scalar: TensorFlowFloatingPoint, OtherScalar: TensorFlowFloatingPoint)
+    @differentiable(where Scalar: TensorFlowFloatingPoint, OtherScalar: TensorFlowFloatingPoint)
     init<OtherScalar: Numeric>(_ other: Tensor<OtherScalar>) {
         self = _Raw.cast(other)
     }
@@ -92,9 +92,10 @@ public extension Tensor where Scalar: Numeric {
 
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
+    @derivative(of: init(_:))
     static func _vjpCast<OtherScalar: TensorFlowFloatingPoint>(
         _ other: __owned Tensor<OtherScalar>
-    ) -> (Tensor, (Tensor) -> Tensor<OtherScalar>) {
+    ) -> (value: Tensor, pullback: (Tensor) -> Tensor<OtherScalar>) {
         (Tensor(other), { v in Tensor<OtherScalar>(v) })
     }
 }
@@ -106,7 +107,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 public extension Tensor {
     /// Creates a tensor from an array of tensors (which may themselves be scalars).
     @inlinable
-    @differentiable(vjp: _vjpInitElements where Scalar: TensorFlowFloatingPoint)
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
     init(_ elements: [Tensor]) {
         self = _Raw.pack(elements)
     }
@@ -140,7 +141,7 @@ public extension Tensor {
     ///
     /// - Returns: The stacked tensor.
     @inlinable
-    @differentiable(vjp: _vjpStacking where Scalar: TensorFlowFloatingPoint)
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
     init(stacking tensors: [Tensor], alongAxis axis: Int = 0) {
         self = _Raw.pack(tensors, axis: Int64(axis))
     }
@@ -178,7 +179,7 @@ public extension Tensor {
     ///
     /// - Returns: The concatenated tensor.
     @inlinable
-    @differentiable(vjp: _vjpConcatenating where Scalar: TensorFlowFloatingPoint)
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
     init(concatenating tensors: [Tensor], alongAxis axis: Int = 0) {
         precondition(tensors.count > 0)
         self = _Raw.concatV2(tensors, axis: Tensor<Int32>(Int32(axis)))
@@ -187,27 +188,30 @@ public extension Tensor {
 
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
+    @derivative(of: init(_:))
     static func _vjpInitElements(
         _ elements: __owned [Tensor]
-    ) -> (Tensor, (Tensor) -> Array<Tensor>.DifferentiableView) {
+    ) -> (value: Tensor, pullback: (Tensor) -> Array<Tensor>.DifferentiableView) {
         _vjpStacking(stacking: elements)
     }
 
     @inlinable
+    @derivative(of: init(stacking:alongAxis:))
     static func _vjpStacking(
         stacking tensors: __owned [Tensor],
         alongAxis axis: __owned  Int = 0
-    ) -> (Tensor, (Tensor) -> Array<Tensor>.DifferentiableView) {
+    ) -> (value: Tensor, pullback: (Tensor) -> Array<Tensor>.DifferentiableView) {
         (Tensor(stacking: tensors, alongAxis: axis), { v in
             Array<Tensor>.DifferentiableView(v.unstacked(alongAxis: axis))
         })
     }
 
     @inlinable
+    @derivative(of: init(concatenating:alongAxis:))
     static func _vjpConcatenating(
         concatenating tensors: __owned [Tensor],
         alongAxis axis: __owned Int = 0
-    ) -> (Tensor, (Tensor) -> Array<Tensor>.DifferentiableView) {
+    ) -> (value: Tensor, pullback: (Tensor) -> Array<Tensor>.DifferentiableView) {
         let result = Tensor<Scalar>(concatenating: tensors, alongAxis: axis)
         let posAxis = axis < 0 ? axis + tensors[0].rank : axis
         let sizes = Tensor<Int32>(stacking: tensors.map { $0.shapeTensor[posAxis] })
