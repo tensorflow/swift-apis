@@ -143,10 +143,10 @@ public func trace<T: TensorFlowNumeric>(_ matrix: Tensor<T>) -> Tensor<T> {
     return matrix.diagonalPart().sum(squeezingAxes: -1)
 }
 
-/// Computes log of the determinant of a hermitian positive definite matrix.
+/// Computes the natural logarithm of the determinant of a hermitian positive definite matrix.
 ///
 /// - Parameter matrix: A tensor of shape `[..., M, N]`.
-/// - Returns: The natural log of the determinant of matrix.
+/// - Returns: The natural logarithm of the determinant of `matrix`.
 @inlinable
 @differentiable(wrt: matrix where T: TensorFlowFloatingPoint)
 func logdet<T: TensorFlowFloatingPoint>(_ matrix: Tensor<T>) -> Tensor<T> {
