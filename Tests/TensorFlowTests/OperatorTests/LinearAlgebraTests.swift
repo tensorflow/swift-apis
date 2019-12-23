@@ -99,7 +99,7 @@ final class LinearAlgebraTests: XCTestCase {
     // with tf.GradientTape() as tape:
     //     tape.watch(x)
     //     y = tf.reduce_sum(tf.linalg.logdet(x))
-    //     print(tape.gradient(y, x))
+    // print(tape.gradient(y, x))
     // ```
     func testLogdetGradient() {
         let input = Tensor<Float>([[[6.0, 4.0], [4.0, 6.0]], [[2.0, 6.0], [6.0, 20.0]]])
