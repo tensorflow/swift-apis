@@ -84,11 +84,40 @@ final class LinearAlgebraTests: XCTestCase {
         let expectedGradient = Tensor([a, b])
         assertEqual(computedGradient, expectedGradient, accuracy: 1e-16)
     }
+
+    func testLogdet() {
+        let input = Tensor<Float>([[[6.0, 4.0], [4.0, 6.0]], [[2.0, 6.0], [6.0, 20.0]]])
+        let expected = Tensor<Float>([2.9957323, 1.3862934])
+        let computed = logdet(input)
+        assertEqual(computed, expected, accuracy: 1e-5)
+    }
     
+    // The expected value of the gradient was computed using the following Python code:
+    // ```
+    // import tensorflow as tf
+    // x = tf.constant([[[6., 4.], [4., 6.]], [[2., 6.], [6., 20.]]])
+    // with tf.GradientTape() as tape:
+    //     tape.watch(x)
+    //     y = tf.reduce_sum(tf.linalg.logdet(x))
+    // print(tape.gradient(y, x))
+    // ```
+    func testLogdetGradient() {
+        let input = Tensor<Float>([[[6.0, 4.0], [4.0, 6.0]], [[2.0, 6.0], [6.0, 20.0]]])
+        let expectedGradient = Tensor<Float>([
+            [[ 0.29999998, -0.2       ],
+             [-0.2       ,  0.3       ]],
+            [[ 5.0000043 , -1.5000012 ],
+             [-1.5000012 ,  0.50000036]]])
+        let computedGradient = gradient(at: input) { logdet($0).sum() }
+        assertEqual(computedGradient, expectedGradient, accuracy: 1e-5)
+    }
+
     static var allTests = [
         ("testCholesky", testCholesky),
         ("testQRDecompositionApproximation", testQRDecompositionApproximation),
         ("testTrace", testTrace),
         ("testTraceGradient", testTraceGradient),
+        ("testLogdet", testLogdet),
+        ("testLogdetGradient", testLogdetGradient)
     ]
 }
