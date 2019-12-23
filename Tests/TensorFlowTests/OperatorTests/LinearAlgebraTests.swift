@@ -60,6 +60,15 @@ final class LinearAlgebraTests: XCTestCase {
         }
     }
     
+    // The expected value of the gradient was computed using the following Python code:
+    // ```
+    // import tensorflow as tf
+    // x = tf.constant([[[6., 4.], [4., 6.]], [[2., 6.], [6., 20.]]])
+    // with tf.GradientTape() as tape:
+    // tape.watch(x)
+    // y = tf.reduce_sum(tf.linalg.logdet(x))
+    // print(tape.gradient(y, x))
+    // ```
     func testTrace() {
         assertEqual(trace(Tensor<Float>(ones: [3, 3])), Tensor(3.0), accuracy: 1e-16)
         assertEqual(trace(Tensor<Float>(ones: [5, 6])), Tensor(5.0), accuracy: 1e-16)
