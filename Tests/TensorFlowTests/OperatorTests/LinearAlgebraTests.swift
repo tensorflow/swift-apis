@@ -59,17 +59,31 @@ final class LinearAlgebraTests: XCTestCase {
             assertEqual(aReconstitutedFull, a, accuracy: 1e-5)
         }
     }
-    
+
     func testSVD() {
         let shapes = [[2, 2, 2], [3, 4, 4], [4, 4, 16, 32]]
         for shape in shapes {
             let a = Tensor<Float>(randomNormal: TensorShape(shape))
-            let (s, u, v) = a.svd()
+            var (s, u, v) = a.svd()
+            var m = u!.shape.dimensions.last!
+            var n = v!.shape.dimensions.last!
+            if m <= n {
+                v = v![TensorRange.ellipsis, ..<m]
+            } else {
+                u = u![TensorRange.ellipsis, ..<n]
+            }
             let x = matmul(u!, s.diagonal())
             let aReconstituted = matmul(x, v!)
             assertEqual(aReconstituted, a, accuracy: 1e-5)
 
-            let (sFull, uFull, vFull) = a.svd(computeUv: true, fullMatrices: true)
+            var (sFull, uFull, vFull) = a.svd(computeUv: true, fullMatrices: true)
+            m = uFull!.shape.dimensions.last!
+            n = vFull!.shape.dimensions.last!
+            if m <= n {
+                vFull = vFull![TensorRange.ellipsis, ..<m]
+            } else {
+                uFull = uFull![TensorRange.ellipsis, ..<n]
+            }
             let xFull = matmul(uFull!, sFull.diagonal())
             let aReconstitutedFull = matmul(xFull, vFull!)
             assertEqual(aReconstitutedFull, a, accuracy: 1e-5)
@@ -130,9 +144,7 @@ final class LinearAlgebraTests: XCTestCase {
     static var allTests = [
         ("testCholesky", testCholesky),
         ("testQRDecompositionApproximation", testQRDecompositionApproximation),
-        ("testSVD", testSVD)
-        ("testQRDecompositionApproximation", testQRDecompositionApproximation)
-        ("testQRDecompositionApproximation", testQRDecompositionApproximation),
+        ("testSVD", testSVD),
         ("testTrace", testTrace),
         ("testTraceGradient", testTraceGradient),
         ("testLogdet", testLogdet),

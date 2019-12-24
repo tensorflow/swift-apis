@@ -56,7 +56,6 @@ public extension Tensor where Scalar: TensorFlowNumeric {
         _Raw.matrixDiag(diagonal: self)
     }
 
-<<<<<<< HEAD
     /// Returns a batched matrix tensor with new batched diagonal values.
     /// Given the input tensor and diagonal, this operation returns a tensor with the same
     /// shape and values as the input, except for the specified diagonals of the innermost matrices
@@ -64,19 +63,16 @@ public extension Tensor where Scalar: TensorFlowNumeric {
     ///
     /// Parameter diagonal: A tensor with rank k.
     @inlinable
-    func setDiagonal(diagonal: Tensor<Scalar>) -> Tensor {
+    func setDiagonal(_ diagonal: Tensor<Scalar>) -> Tensor {
         _Raw.matrixSetDiag(self, diagonal: diagonal)
     }
 
-||||||| merged common ancestors
-=======
     @available(*, deprecated, renamed: "bandPart(subdiagonalCount:superdiagonalCount:)")
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func bandPart(_ subdiagonalCount: Int, _ superdiagonalCount: Int) -> Tensor {
         return bandPart(subdiagonalCount: subdiagonalCount, superdiagonalCount: superdiagonalCount)
     }
 
->>>>>>> 7330b8d7106489c906f85b92c8f5471f6959b10e
     /// Returns a copy of a innermost tensor defined by a central band boundaries.
     /// The output is a tensor of the same shape as the instance `[..., :, :]`.
     ///
@@ -143,7 +139,6 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 }
 
-<<<<<<< HEAD
 /// Returns an identity matrix or a batch of matrices.
 ///
 /// - Parameters:
@@ -152,25 +147,23 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 ///   - batchShape: A list of integers. The returned tensor will have leading batch dimensions
 ///     of this shape.
 public func eye<Scalar: Numeric>(
-    numRows: Int,
-    numCols: Int,
+    rowCount: Int,
+    columnCount: Int,
     batchShape: [Int]
 ) -> Tensor<Scalar> {
-    let diagonalSize = min(numRows, numCols)
+    let diagonalSize = min(rowCount, columnCount)
     let diagShape = batchShape + [diagonalSize]
     let diagonalOnes = Tensor<Scalar>(ones: TensorShape(diagShape))
-    if numRows == numCols{
+    if rowCount == columnCount {
         return diagonalOnes.diagonal()
     }
-    else{
-        let shape = batchShape + [numRows, numCols]
+    else {
+        let shape = batchShape + [rowCount, columnCount]
         let zeroMatrix = Tensor<Scalar>(zeros: TensorShape(shape))
-        return zeroMatrix.setDiagonal(diagonal: diagonalOnes)
+        return zeroMatrix.setDiagonal(diagonalOnes)
     }
 }
 
-||||||| merged common ancestors
-=======
 /// Computes the trace of an optionally batched matrix.
 /// The trace is the the sum along the main diagonal of each inner-most matrix.
 ///
@@ -196,7 +189,6 @@ func logdet<T: TensorFlowFloatingPoint>(_ matrix: Tensor<T>) -> Tensor<T> {
     return 2.0 * log(cholesky(matrix).diagonalPart()).sum(squeezingAxes: -1) 
 }
 
->>>>>>> 7330b8d7106489c906f85b92c8f5471f6959b10e
 // MARK: - Decompositions
 
 /// Returns the Cholesky decomposition of one or more square matrices.
