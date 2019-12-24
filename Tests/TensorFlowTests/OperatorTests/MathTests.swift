@@ -199,6 +199,7 @@ final class MathOperatorTests: XCTestCase {
         let output: Float = 1.0
         XCTAssertEqual(z, Tensor(output))
     }
+    
     func testCosineDistance(){
         let x = Tensor<Float>([7.0])
         let y = Tensor<Float>([8.0])
@@ -521,8 +522,8 @@ final class MathOperatorTests: XCTestCase {
         ("testIsFinite", testIsFinite),
         ("testIsInfinite", testIsInfinite),
         ("testIsNaN", testIsNaN),
-        ("testCosineDistance", testCosineDistance),
         ("testCosineSimilarity", testCosineSimilarity),
+        ("testCosineDistance", testCosineDistance),
         ("testArgmax", testArgmax),
         ("testReduction", testReduction),
         ("testCumulativeSum", testCumulativeSum),
