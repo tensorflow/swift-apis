@@ -72,8 +72,8 @@ final class LinearAlgebraTests: XCTestCase {
             } else {
                 u = u![TensorRange.ellipsis, ..<n]
             }
-            let x = matmul(u!, s.diagonal())
-            let aReconstituted = matmul(x, v!)
+            //let x = matmul(u!, s.diagonal())
+            let aReconstituted = matmul(u!, matmul( s.diagonal(), transposed: false, v!, transposed: true))
             assertEqual(aReconstituted, a, accuracy: 1e-5)
 
             var (sFull, uFull, vFull) = a.svd(computeUv: true, fullMatrices: true)
@@ -84,8 +84,8 @@ final class LinearAlgebraTests: XCTestCase {
             } else {
                 uFull = uFull![TensorRange.ellipsis, ..<n]
             }
-            let xFull = matmul(uFull!, sFull.diagonal())
-            let aReconstitutedFull = matmul(xFull, vFull!)
+            //let xFull = matmul(uFull!, sFull.diagonal())
+            let aReconstitutedFull = matmul(uFull!, matmul(sFull.diagonal(), transposed: false, vFull!, transposed: true))
             assertEqual(aReconstitutedFull, a, accuracy: 1e-5)
         }
     }
