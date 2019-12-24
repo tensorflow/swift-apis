@@ -48,7 +48,7 @@ final class LayerTests: XCTestCase {
                 expected: y)
             withTensorLeakChecking {
                 for _ in 0..<10 {
-                    let 𝛁model = model.gradient { model -> Tensor<Float> in
+                    let 𝛁model = gradient(at: model) { model -> Tensor<Float> in
                         meanSquaredError(
                             predicted: model(x).squeezingShape(at: 1),
                             expected: y)
@@ -190,7 +190,7 @@ final class LayerTests: XCTestCase {
         let filter =  Tensor(shape: [1, 2, 2, 2, 1], scalars: (0..<8).map(Float.init))
         let bias = Tensor<Float>([-1, 1])
         let layer = Conv3D<Float>(filter: filter, bias: bias, activation: identity,
-                                  strides: (1, 2, 1), padding: .valid)
+                                  strides: (1, 2, 1), padding: .valid, dilations: (1, 1, 1))
         let input = Tensor(shape: [2, 2, 2, 2, 2], scalars: (0..<32).map(Float.init))
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>(shape: [2, 2, 1, 1, 2],
@@ -1142,15 +1142,15 @@ final class LayerTests: XCTestCase {
         let rnn = RNN(SimpleRNNCell<Float>(inputSize: 4, hiddenSize: 4,
                                            seed: (0xFeed, 0xBeef)))
         withTensorLeakChecking {
-            let (outputs, _) = rnn.valueWithPullback(at: inputs) { rnn, inputs in
+            let (outputs, _) = valueWithPullback(at: rnn, inputs) { rnn, inputs in
                 return rnn(inputs)
             }
             assertEqual(
                 outputs.map { $0.value.squeezingShape(at: 0) }[0],
-                [[ 0.14798240, 0.14295710, -0.09766942, -0.131820890],
-                 [ 0.15757358, 0.19475500, -0.12810913, -0.112212844],
-                 [ 0.16168950, 0.20306197, -0.13058113, -0.123917180],
-                 [ 0.16325668, 0.20822097, -0.13273866, -0.121018395]],
+                [[ 0.20775771,  0.20080023, -0.13768704, -0.18534681],
+                 [ 0.22666009,  0.30019346, -0.19720285, -0.14683801],
+                 [ 0.23758979,  0.32101023, -0.20359215,  -0.1787096],
+                 [ 0.24337786,   0.3389194, -0.21143384,  -0.1675081]],
                 accuracy: 1e-6)
         }
         // TODO: Figure out why the following is numerically unstable.
@@ -1173,22 +1173,22 @@ final class LayerTests: XCTestCase {
             let inputs: [Tensor<Float>] = Array(repeating: x, count: 4)
             let rnn = RNN(LSTMCell<Float>(inputSize: 4, hiddenSize: 4))
             withTensorLeakChecking {
-                let (outputs, _) = rnn.valueWithPullback(at: inputs) { rnn, inputs in
+                let (outputs, _) = valueWithPullback(at: rnn, inputs) { rnn, inputs in
                     return rnn(inputs)
                 }
                 assertEqual(
                     outputs.map { $0.cell.squeezingShape(at: 0) }[0],
-                    [[ 0.047114454, 0.013959665, -0.030737250, -0.038524970],
-                     [ 0.069171116, 0.020617897, -0.044740470, -0.058878290],
-                     [ 0.079530790, 0.023841830, -0.051080680, -0.069567055],
-                     [ 0.084416830, 0.025424266, -0.053918116, -0.075140170]],
+                    [[ 0.08981595, 0.027691621, -0.059235442, -0.075101905],
+                     [ 0.12952757, 0.040402323, -0.084273980, -0.116252676],
+                     [ 0.14727503, 0.046511370, -0.094689950, -0.138459030],
+                     [ 0.15532997, 0.049573865, -0.098824400, -0.150242210]],
                     accuracy: 1e-6)
                 assertEqual(
                     outputs.map { $0.hidden.squeezingShape(at: 0) }[0],
-                    [[ 0.024117637, 0.0066833394, -0.015753632, -0.019533360],
-                     [ 0.035230752, 0.0098582430, -0.022934474, -0.029750597],
-                     [ 0.040405065, 0.0113919870, -0.026185552, -0.035087958],
-                     [ 0.042834233, 0.0121438510, -0.027640648, -0.037863784]],
+                    [[ 0.046985064, 0.012670102, -0.031083463, -0.038572006],
+                     [ 0.066482050, 0.018388016, -0.044252350, -0.058907583],
+                     [ 0.074910110, 0.021107012, -0.049724963, -0.069670826],
+                     [ 0.078670055, 0.022462710, -0.051899005, -0.075331904]],
                     accuracy: 1e-6)
             }
         }
@@ -1204,14 +1204,16 @@ final class LayerTests: XCTestCase {
           biasInitializer: zeros())
         )
         withTensorLeakChecking {
-            let (outputs, _) = rnn.valueWithPullback(at: inputs) { rnn, inputs in
+            let (outputs, _) = valueWithPullback(at: rnn, inputs) { rnn, inputs in
                 return rnn(inputs)
             }
-            XCTAssertEqual(outputs.map { $0.hidden },
-                           [[[0.12806869, 0.12806869, 0.12806869, 0.12806869]],
-                             [[0.2007559, 0.2007559, 0.2007559, 0.2007559]],
-                             [[0.23432666, 0.23432666, 0.23432666, 0.23432666]],
-                             [[0.24788898, 0.24788898, 0.24788898, 0.24788898]]])
+            assertEqual(
+                outputs.map { $0.hidden }[0],
+                [[0.1193780, 0.1193780, 0.1193780, 0.1193780],
+                 [0.1887644, 0.1887644, 0.1887644, 0.1887644],
+                 [0.2230835, 0.2230835, 0.2230835, 0.2230835],
+                 [0.2383619, 0.2383619, 0.2383619, 0.2383619]],
+                accuracy: 1e-5)
         }
     }
 

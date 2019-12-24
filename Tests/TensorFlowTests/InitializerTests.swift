@@ -97,14 +97,14 @@ final class InitializerTests: XCTestCase {
     // Constants for testing distribution based initializers.
     private let fcShape = TensorShape([200, 100])
     private let convShape = TensorShape([25, 25, 20, 20])
-    private let tolerance = Float(3e-2)
 
     func testDistribution(
         _ t: Tensor<Float>,
         expectedMean: Float? = nil,
         expectedStandardDeviation: Float? = nil,
         expectedMin: Float? = nil,
-        expectedMax: Float? = nil
+        expectedMax: Float? = nil,
+        tolerance: Float = 3e-2
     ) {
         if let expectedMean = expectedMean {
             let mean = t.mean().scalarized()
@@ -159,7 +159,7 @@ final class InitializerTests: XCTestCase {
         let spatialSize = convShape[0..<2].contiguousSize
         let (fanIn, fanOut) = (convShape[2] * spatialSize, convShape[3] * spatialSize)
         let stdDev = sqrt(Float(2.0) / Float(fanIn + fanOut))
-        testDistribution(t, expectedMean: 0, expectedStandardDeviation: stdDev)
+        testDistribution(t, expectedMean: 0, expectedStandardDeviation: stdDev, tolerance: 1e-4)
     }
 
     func testGlorotNormal() {
@@ -168,6 +168,17 @@ final class InitializerTests: XCTestCase {
         let (fanIn, fanOut) = (convShape[2] * spatialSize, convShape[3] * spatialSize)
         let stdDev = sqrt(Float(2.0) / Float(fanIn + fanOut))
         testDistribution(t, expectedMean: 0, expectedStandardDeviation: stdDev)
+    }
+
+    func testCategoricalFromLogits() {
+        let probabilities = Tensor<Float>([[0.5, 0.3, 0.2], [0.6, 0.3, 0.1]])
+        let logits = log(probabilities)
+        let t = Tensor<Int32>(randomCategorialLogits: logits, sampleCount: 1)
+
+        XCTAssertEqual(TensorShape([2, 1]), t.shape)
+        // Test all elements are in range of [0, 3)
+        XCTAssertTrue((t .>= Tensor<Int32>([[0], [0]])).all())
+        XCTAssertTrue((t .< Tensor<Int32>([[3], [3]])).all())
     }
 
     func testOrthogonalShapesValues() {
@@ -201,6 +212,7 @@ final class InitializerTests: XCTestCase {
         ("testRandomTruncatedNormal", testRandomTruncatedNormal),
         ("testGlorotUniform", testGlorotUniform),
         ("testGlorotNormal", testGlorotNormal),
+        ("testCategoricalFromLogits", testCategoricalFromLogits),
         ("testOrthogonalShapesValues", testOrthogonalShapesValues)
     ]
 }

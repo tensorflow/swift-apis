@@ -30,13 +30,14 @@ public struct _Freezable<Value: Differentiable> {
     }
 
     /// The wrapped differentiable value.
-    @differentiable(vjp: _vjpValue)
+    @differentiable
     public var wrappedValue: Value {
         get { _value }
         set { _value = newValue }
     }
 
     @usableFromInline
+    @derivative(of: wrappedValue)
     func _vjpValue() -> (value: Value, pullback: (Value.TangentVector) -> TangentVector) {
         return (_value, { [isFrozen = self.isFrozen] v in
             isFrozen ? .zero : v

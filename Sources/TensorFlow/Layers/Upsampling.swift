@@ -79,7 +79,7 @@ public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
     /// Repeats the elements of a tensor along an axis, like `np.repeat`.
     /// Function adapted from `def repeat_elements`:
     /// https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/keras/backend.py
-    @differentiable(vjp: _vjpRepeatingElements)
+    @differentiable
     private func repeatingElements(
         _ input: Tensor<Scalar>, alongAxis axis: Int, count: Int
     ) -> Tensor<Scalar> {
@@ -91,9 +91,10 @@ public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
         return Tensor<Scalar>(concatenating: repeated, alongAxis: axis)
     }
 
+    @derivative(of: repeatingElements)
     private func _vjpRepeatingElements(
         _ input: Tensor<Scalar>, alongAxis axis: Int, count: Int
-    ) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (TangentVector, Tensor<Scalar>)) {
+    ) -> (value: Tensor<Scalar>, pullback: (Tensor<Scalar>) -> (TangentVector, Tensor<Scalar>)) {
         let value = repeatingElements(input, alongAxis: axis, count: count)
         return (value, { v in
             let splits = _Raw.split(

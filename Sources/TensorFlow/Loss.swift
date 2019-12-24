@@ -210,7 +210,7 @@ public func softmaxCrossEntropy<Scalar: TensorFlowFloatingPoint>(
 }
 
 @inlinable
-@differentiable(wrt: logits, vjp: _vjpSoftmaxCrossEntropyHelper(logits:labels:))
+@differentiable(wrt: logits)
 func softmaxCrossEntropyHelper<Scalar: TensorFlowFloatingPoint>(
     logits: Tensor<Scalar>,
     labels: Tensor<Int32>
@@ -219,10 +219,11 @@ func softmaxCrossEntropyHelper<Scalar: TensorFlowFloatingPoint>(
 }
 
 @inlinable
+@derivative(of: softmaxCrossEntropyHelper(logits:labels:))
 func _vjpSoftmaxCrossEntropyHelper<Scalar: TensorFlowFloatingPoint>(
     logits: Tensor<Scalar>,
     labels: Tensor<Int32>
-) -> (Tensor<Scalar>, (Tensor<Scalar>) -> Tensor<Scalar>) {
+) -> (value: Tensor<Scalar>, pullback: (Tensor<Scalar>) -> Tensor<Scalar>) {
     let (loss, grad) = _Raw.sparseSoftmaxCrossEntropyWithLogits(features: logits, labels: labels)
     return (loss, { $0.expandingShape(at: -1) * grad })
 }
@@ -244,7 +245,7 @@ public func softmaxCrossEntropy<Scalar: TensorFlowFloatingPoint>(
 }
 
 @inlinable
-@differentiable(wrt: logits, vjp: _vjpSoftmaxCrossEntropyHelper(logits:probabilities:))
+@differentiable(wrt: logits)
 func softmaxCrossEntropyHelper<Scalar: TensorFlowFloatingPoint>(
     logits: Tensor<Scalar>,
     probabilities: Tensor<Scalar>
@@ -253,10 +254,11 @@ func softmaxCrossEntropyHelper<Scalar: TensorFlowFloatingPoint>(
 }
 
 @inlinable
+@derivative(of: softmaxCrossEntropyHelper(logits:probabilities:), wrt: logits)
 func _vjpSoftmaxCrossEntropyHelper<Scalar: TensorFlowFloatingPoint>(
     logits: Tensor<Scalar>,
     probabilities: Tensor<Scalar>
-) -> (Tensor<Scalar>, (Tensor<Scalar>) -> Tensor<Scalar>) {
+) -> (value: Tensor<Scalar>, pullback: (Tensor<Scalar>) -> Tensor<Scalar>) {
     let (loss, grad) = _Raw.softmaxCrossEntropyWithLogits(features: logits, labels: probabilities)
     return (loss, { $0.expandingShape(at: -1) * grad })
 }
