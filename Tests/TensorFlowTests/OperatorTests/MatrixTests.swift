@@ -69,6 +69,15 @@ final class MatrixTests: XCTestCase {
         let expectedGrad = 2 * t3
         XCTAssertEqual(computedGrad, expectedGrad)
     }
+
+    func testSetDiagonal() {
+        let t1 = Tensor<Float>(shape: [4], scalars: (1...4).map(Float.init))
+        let matrix = Tensor<Float>(zeros: [4, 4])
+        XCTAssertEqual(matrix.setDiagonal(t1), [[1, 0, 0, 0],
+                                                [0, 2, 0, 0],
+                                                [0, 0, 3, 0],
+                                                [0, 0, 0, 4]])
+    }
     
     func testBandPart() {
         let t1 = Tensor<Float>([[ 0,  1,  2, 3],
@@ -116,6 +125,7 @@ final class MatrixTests: XCTestCase {
     static var allTests = [
         ("testDiagonalPart", testDiagonalPart),
         ("testDiagonal", testDiagonal),
+        ("testSetDiagonal", testSetDiagonal),
         ("testBandPart", testBandPart)
     ]
 }
