@@ -2070,7 +2070,7 @@ public extension Tensor where Scalar: Numeric {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func variance(squeezingAxes axes: Tensor<Int32>) -> Tensor {
-        let squaredDiff = (self - mean(alongAxes: axes)).squared()
+        let squaredDiff = squaredDifference(self, mean(alongAxes: axes))
         return squaredDiff.mean(squeezingAxes: axes)
     }
 
@@ -2100,7 +2100,7 @@ public extension Tensor where Scalar: Numeric {
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func variance() -> Tensor {
         let mean = self.mean()
-        let squaredDiff = (self - mean).squared()
+        let squaredDiff = squaredDifference(self, mean)
         return squaredDiff.mean()
     }
 
@@ -2111,7 +2111,7 @@ public extension Tensor where Scalar: Numeric {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func variance(alongAxes axes: Tensor<Int32>) -> Tensor {
-        let squaredDiff = (self - mean(alongAxes: axes)).squared()
+        let squaredDiff = squaredDifference(self, mean(alongAxes: axes))
         return squaredDiff.mean(alongAxes: axes)
     }
 
