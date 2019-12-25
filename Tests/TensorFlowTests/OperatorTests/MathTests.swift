@@ -69,7 +69,7 @@ final class MathOperatorTests: XCTestCase {
         let x = Tensor<Float>([-5.8])
         let y = Tensor<Float>([-5.7])
         let z = squaredDifference(x, y)
-        let aproxZ = 132.25
+        let approxZ = 132.25
         assertEqual(z, aproxZ, accuracy: 0.0001)
     }
     
