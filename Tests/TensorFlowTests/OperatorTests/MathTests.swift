@@ -69,12 +69,12 @@ final class MathOperatorTests: XCTestCase {
         let x = Tensor<Float>([-5.8])
         let y = Tensor<Float>([-5.7])
         let z = squaredDifference(x, y)
-        let zaprox = 132.25
-        assertEqual(z, zaprox, accuracy: 0.0001)
+        let aproxZ = 132.25
+        assertEqual(z, aproxZ, accuracy: 0.0001)
     }
     
     func testZeros() {
-        let x = Tensor<Float>(zeros:[1])
+        let x = Tensor<Float>(zeros: [1])
         let x1 = Tensor<Float>([0.0])
         assertEqual(x, x1)
     }
@@ -86,49 +86,41 @@ final class MathOperatorTests: XCTestCase {
         assertEqual(y, y1, accuracy: 0.0001)
     }
     
-    func testLogCoshLoss() {
-        let predicted = Tensor<Float>([32.0, 34.0, 36.0])
-        let expected = Tensor<Float>([32.0, 36.0, 37.0])
-        let val = logCoshLoss(predicted:predicted , expected:expected)
-        let valExpected = 0.58626
-        assertEqual(val, valExpected, accuracy: 0.0001)
-    }
-    
     func testMax() {
         let x = Tensor<Float>([58.0])
         let y = Tensor<Float>([57.0])
         let z = max(x, y)
-        let zExpected = 58.0
-        assertEqual(z, zExpected)
+        let expectedZ = 58.0
+        assertEqual(z, expectedZ)
     }
     
     func testMin() {
         let x = Tensor<Float>([58.0])
         let y = Tensor<Float>([57.0])
         let z = min(x, y)
-        let zExpected = 57.0
-        assertEqual(z, zExpected)
+        let expectedZ = 57.0
+        assertEqual(z, expectedZ)
     }
     
     func testRound() {
         let x = Tensor<Float>([58.76])
         let y = round(x)
-        let yExp = 58.0
-        assertEqual(y, yExp)
+        let expectedY = 59.0
+        assertEqual(y, expectedY)
     }
     
     func testSoftmax() {
         let x = Tensor<Float>([-1.4, -3.5])
         let y = softmax(x)
-        let yExp = Tensor<Float>([0.8909, 0.1090])
-        assertEqual(y, yExp)
+        let expectedY = Tensor<Float>([0.8909, 0.1090])
+        assertEqual(y, expectedY)
     }
     
     func testSigmoid() {
         let x = Tensor<Float>([59.0])
         let y = sigmoid(x)
-        let yExp = Tensor<Float>([1.0])
-        assertEqual(y, yExp)
+        let expectedY = Tensor<Float>([1.0])
+        assertEqual(y, expectedY)
     }
     
     func testIdentity() {
@@ -586,7 +578,6 @@ final class MathOperatorTests: XCTestCase {
         ("testSquaredDifference", testSquaredDifference),
         ("testZeros", testZeros),
         ("testLogSoftmax", testLogSoftmax),
-        ("testLogCoshLoss", testLogCoshLoss),
         ("testMax", testMax),
         ("testMin", testMin),
         ("testRound", testRound),
