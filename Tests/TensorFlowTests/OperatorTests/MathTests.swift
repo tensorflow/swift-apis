@@ -67,10 +67,10 @@ final class MathOperatorTests: XCTestCase {
     
     func testSquaredDifference() {
         let x = Tensor<Float>([-5.8])
-        let y = Tensor<Float>([-5.7])
+        let y = Tensor<Float>([5.7])
         let z = squaredDifference(x, y)
-        let approxZ = 132.25
-        assertEqual(z, approxZ, accuracy: 0.0001)
+        let approxZ = Tensor<Float>([132.25])
+        assertEqual(z, approxZ)
     }
     
     func testZeros() {
