@@ -864,8 +864,8 @@ final class LayerTests: XCTestCase {
         // import tensorflow as tf
         // from tensorflow.python.keras import backend
         // x = tf.reshape(tf.range(8, dtype=tf.float32), [2, 2, 2])
-        // with tf.GradientTape() as tape:
-        // tape.watch(x)
+        //     with tf.GradientTape() as tape:
+        //     tape.watch(x)
         // y = tf.math.reduce_sum(backend.min(x, axis=[1]))
         // print(tape.gradient(y, x))
         // ```
@@ -894,8 +894,8 @@ final class LayerTests: XCTestCase {
         // from tensorflow.python.keras import backend
         // x = tf.reshape(tf.range(36, dtype=tf.float32), [2, 3, 3, 2])
         // with tf.GradientTape() as tape:
-        // tape.watch(x)
-        // y = tf.math.reduce_sum(backend.min(x, axis=[1, 2]))
+        //     tape.watch(x)
+        //     y = tf.math.reduce_sum(backend.min(x, axis=[1, 2]))
         // print(tape.gradient(y, x))
         // ```
         XCTAssertEqual(computedGradient.0,
@@ -925,8 +925,8 @@ final class LayerTests: XCTestCase {
         // from tensorflow.python.keras import backend
         // x = tf.reshape(tf.range(32, dtype=tf.float32), [2, 2, 2, 2, 2])
         // with tf.GradientTape() as tape:
-        // tape.watch(x)
-        // y = tf.math.reduce_sum(backend.min(x, axis=[1, 2, 3]))
+        //     tape.watch(x)
+        //     y = tf.math.reduce_sum(backend.min(x, axis=[1, 2, 3]))
         // print(tape.gradient(y, x))
         // ```
         XCTAssertEqual(computedGradient.0,
