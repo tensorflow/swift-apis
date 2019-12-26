@@ -168,42 +168,96 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
 
 // MARK: Solvers
 
+
 /// Returns the Cholesky decomposition of one or more square matrices.
 ///
-/// The input is a tensor of shape `[..., M, M]` whose inner-most 2 dimensions
-/// form square matrices.
-///
-/// The input has to be symmetric and positive definite. Only the lower-triangular
-/// part of the input will be used for this operation. The upper-triangular part
-/// will not be read.
-///
-/// The output is a tensor of the same shape as the input
-/// containing the Cholesky decompositions for all input submatrices `[..., :, :]`.
-///
-/// - Parameter input: A tensor of shape `[..., M, M]`.
+/// - Parameter matrix: A batched matrix tensor.
+/// - Parameter rhs: A batched vector tensor.
+/// - Precondition: `matrix` must be a tensor with shape `[..., M, M]`.
+/// - Precondition: `rhs` must be a tensor with shape `[..., M, K]`.
 @inlinable
 @differentiable(vjp: _vjpTriangularSolve)
 public func triangularSolve<T: TensorFlowFloatingPoint>(
-    A matrix: Tensor<T>,
-    b rhs: Tensor<T>,
+    matrix: Tensor<T>,
+    rhs: Tensor<T>,
     lower: Bool = true,
     adjoint: Bool = false
 ) -> Tensor<T> {
-    _Raw.matrixTriangularSolve(matrix: matrix, rhs: rhs, lower: lower, adjoint: adjoint)
+    precondition(matrix.rank >= 2, "The matrix tensor must have at least rank 2.")
+    precondition(rhs.rank >= 2, "The rhs tensor must have at least rank 2.")
+    if matrix.rank < rhs.rank {
+        let leadingDims = extractLeadingDims(rhs.shape, matrix.shape, ignoreLast: 2)
+        let matchedMatrix = matrix.broadcasted(to: leadingDims + matrix.shape)
+        return _Raw.matrixTriangularSolve(matrix: matchedMatrix, rhs: rhs, lower: lower, adjoint: adjoint)
+    } else if matrix.rank > rhs.rank {
+        let leadingDims = extractLeadingDims(rhs.shape, matrix.shape, ignoreLast: 2)
+        let matchedRhs = rhs.broadcasted(to: leadingDims + rhs.shape)
+        return _Raw.matrixTriangularSolve(matrix: matrix, rhs: matchedRhs, lower: lower, adjoint: adjoint)
+    }
+    return _Raw.matrixTriangularSolve(matrix: matrix, rhs: rhs, lower: lower, adjoint: adjoint)
 }
 
 @inlinable
 internal func _vjpTriangularSolve<T: TensorFlowFloatingPoint>(
-    A matrix: Tensor<T>,
-    b rhs: Tensor<T>,
+    matrix: Tensor<T>,
+    rhs: Tensor<T>,
     lower: Bool = true,
     adjoint: Bool = false
 ) -> (Tensor<T>, (Tensor<T>) -> (Tensor<T>, Tensor<T>)) {
-    let c = triangularSolve(A: matrix, b: rhs, lower: lower, adjoint: adjoint)
+    let broadcastMatrix: Bool = matrix.rank < rhs.rank
+    let broadcastRhs: Bool = matrix.rank > rhs.rank
+
+    var matchedMatrix: Tensor<T> = matrix
+    if broadcastMatrix {
+        let leadingDims = extractLeadingDims(rhs.shape, matrix.shape, ignoreLast: 2)
+        matchedMatrix = matrix.broadcasted(to: leadingDims + matrix.shape)
+    }
+    
+    let c = triangularSolve(matrix: matchedMatrix, rhs: rhs, lower: lower, adjoint: adjoint)
     let triangularSolveGrad = { (gradient: Tensor<T>) -> (Tensor<T>, Tensor<T>) in
-        let gradB = triangularSolve(A: matrix, b: gradient, lower: lower, adjoint: !adjoint)
-        let gradA = adjoint ? matmul(c, transposed: false, gradB, transposed: true) : matmul(gradB, transposed: false, c, transposed: true)
-        return (lower ? gradA.bandPart(-1, 0) : gradA.bandPart(0, -1), gradB)
+        let gradB = triangularSolve(matrix: matchedMatrix, rhs: gradient, lower: lower, adjoint: !adjoint)
+        let (left, right) = adjoint ? (c, gradB) : (gradB, c)
+        let gradA = -matmul(left, transposed: false, right, transposed: true)
+        let triangularGradA = lower ? gradA.bandPart(-1, 0) : gradA.bandPart(0, -1)
+        if broadcastMatrix {
+            return (triangularGradA.unbroadcasted(to: matrix.shape), gradB)
+        } else if broadcastRhs {
+            return (triangularGradA, gradB.unbroadcasted(to: rhs.shape))
+        }
+        return (triangularGradA, gradB)
     }
     return (c, triangularSolveGrad)
+}
+
+
+/// Extracts leading dimension from tensors
+///
+/// - Parameter left:
+@inlinable
+public func extractLeadingDims<T: TensorFlowNumeric>(
+    _ left: Tensor<T>,
+    _ right: Tensor<T>,
+    ignoreLast: Int = 0
+) -> TensorShape {
+    extractLeadingDims(left.shape, right.shape, ignoreLast: ignoreLast)
+}
+
+/// Extracts leading dimension from tensors
+///
+/// - Parameter left:
+/// - Parameter right:
+@inlinable
+public func extractLeadingDims(_ left: TensorShape, _ right: TensorShape, ignoreLast: Int = 0) -> TensorShape {
+    precondition(left.rank >= ignoreLast, "The left tensor must have at least rank 2.")
+    precondition(right.rank >= ignoreLast, "The right tensor must have at least rank 2.")
+    let (smallerShape, largerShape) = left.rank > right.rank ? (right, left) : (left, right)
+    let smaller = smallerShape.dimensions.dropLast(ignoreLast)
+    let larger = largerShape.dimensions.dropLast(ignoreLast)
+    let smallerEndIndex = smaller.count - 1
+    let largerEndIndex = larger.count - 1
+    for i in 0..<smaller.count {
+        internalConsistencyCheck(smaller[smallerEndIndex - i] == larger[largerEndIndex - i],
+                                 "Shapes \(smaller) and \(larger) do not have common parts")
+    }
+    return TensorShape(larger.dropLast(smaller.count))
 }

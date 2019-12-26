@@ -94,6 +94,18 @@ public extension TensorShape {
     var endIndex: Int {
         return dimensions.endIndex
     }
+    
+    static func +  (lhs: TensorShape, rhs: TensorShape) -> TensorShape {
+        return TensorShape(lhs.dimensions + rhs.dimensions)
+    }
+    
+    static func + <Other>(lhs: TensorShape, rhs: Other) -> TensorShape where Other: Sequence, Other.Element == Int {
+        return TensorShape(lhs.dimensions + rhs)
+    }
+    
+    static func + <Other>(lhs: Other, rhs: TensorShape) -> TensorShape where Other: Sequence, Other.Element == Int {
+        return TensorShape(lhs + rhs.dimensions)
+    }
 
     /// Access the size of the i-th dimension.
     /// - Parameter index: The index of a dimension.
