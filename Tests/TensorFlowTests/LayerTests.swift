@@ -864,9 +864,9 @@ final class LayerTests: XCTestCase {
         // import tensorflow as tf
         // from tensorflow.python.keras import backend
         // x = tf.reshape(tf.range(8, dtype=tf.float32), [2, 2, 2])
-        //     with tf.GradientTape() as tape:
+        // with tf.GradientTape() as tape:
         //     tape.watch(x)
-        // y = tf.math.reduce_sum(backend.min(x, axis=[1]))
+        //     y = tf.math.reduce_sum(backend.min(x, axis=[1]))
         // print(tape.gradient(y, x))
         // ```
         XCTAssertEqual(computedGradient.0,
