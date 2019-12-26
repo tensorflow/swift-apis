@@ -386,3 +386,54 @@ public struct GlobalMaxPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
         input.max(squeezingAxes: [1, 2, 3])
     }
 }
+
+/// A global min pooling layer for temporal data.
+@frozen
+public struct GlobalMinPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+    /// Creates a global min pooling layer.
+    public init() {}
+
+    /// Returns the output obtained from applying the layer to the given input.
+    ///
+    /// - Parameters:
+    ///   - input: The input to the layer.
+    ///   - context: The contextual information for the layer application, e.g. the current learning
+    ///     phase.
+    /// - Returns: The output.
+    @differentiable
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+        input.min(squeezingAxes: 1)
+    }
+}
+
+/// A global min pooling layer for spatial data.
+@frozen
+public struct GlobalMinPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+    /// Creates a global min pooling layer.
+    public init() {}
+
+    /// Returns the output obtained from applying the layer to the given input.
+    ///
+    /// - Parameter input: The input to the layer.
+    /// - Returns: The output.
+    @differentiable
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+        input.min(squeezingAxes: [1, 2])
+    }
+}
+
+/// A global min pooling layer for spatial and spatio-temporal data.
+@frozen
+public struct GlobalMinPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+    /// Creates a global min pooling layer.
+    public init() {}
+
+    /// Returns the output obtained from applying the layer to the given input.
+    ///
+    /// - Parameter input: The input to the layer.
+    /// - Returns: The output.
+    @differentiable
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+        input.min(squeezingAxes: [1, 2, 3])
+    }
+}

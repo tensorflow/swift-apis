@@ -847,6 +847,69 @@ final class LayerTests: XCTestCase {
                           [[0.0, 0.0], [1.0, 1.0]]]]])
     }
 
+    func testGlobalMinPool1D() {
+        let layer = GlobalMinPool1D<Float>()
+        let input = Tensor(shape: [1, 10, 1], scalars: (0..<10).map(Float.init))
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>([[0]])
+        XCTAssertEqual(output, expected)
+    }
+
+    func testGlobalMinPool1DGradient() {
+        let layer = GlobalMinPool1D<Float>()
+        let input = Tensor(shape: [2, 2, 2], scalars: (0..<8).map(Float.init))
+        let computedGradient = gradient(at: input, layer) { $1($0).sum() }
+        XCTAssertEqual(computedGradient.0,
+                       [[[1.0, 1.0],
+                         [0.0, 0.0]],
+                        [[1.0, 1.0],
+                         [0.0, 0.0]]])
+    }
+
+    func testGlobalMinPool2D() {
+        let layer = GlobalMinPool2D<Float>()
+        let input = Tensor(shape: [1, 2, 10, 1], scalars: (0..<20).map(Float.init))
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>([[0]])
+        XCTAssertEqual(output, expected)
+    }
+
+    func testGlobalMinPool2DGradient() {
+        let layer = GlobalMinPool2D<Float>()
+        let input = Tensor(shape: [2, 3, 3, 2], scalars: (0..<36).map(Float.init))
+        let computedGradient = gradient(at: input, layer) { $1($0).sum() }
+        XCTAssertEqual(computedGradient.0,
+                       [[[[1.0, 1.0], [0.0, 0.0], [0.0, 0.0]],
+                         [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]],
+                         [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]],
+                        [[[1.0, 1.0], [0.0, 0.0], [0.0, 0.0]],
+                         [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]],
+                         [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]]])
+    }
+
+    func testGlobalMinPool3D() {
+        let layer = GlobalMinPool3D<Float>()
+        let input = Tensor<Float>(shape: [1, 2, 3, 5, 1], scalars: (0..<30).map(Float.init))
+        let output = layer.inferring(from: input)
+        let expected = Tensor<Float>([[0]])
+        XCTAssertEqual(output, expected)
+    }
+
+    func testGlobalMinPool3DGradient() {
+        let layer = GlobalMinPool3D<Float>()
+        let input = Tensor(shape: [2, 2, 2, 2, 2], scalars: (0..<32).map(Float.init))
+        let computedGradient = gradient(at: input, layer) { $1($0).sum() }
+        XCTAssertEqual(computedGradient.0,
+                       [[[[[1.0, 1.0], [0.0, 0.0]],
+                          [[0.0, 0.0], [0.0, 0.0]]],
+                         [[[0.0, 0.0], [0.0, 0.0]],
+                          [[0.0, 0.0], [0.0, 0.0]]]],
+                        [[[[1.0, 1.0], [0.0, 0.0]],
+                          [[0.0, 0.0], [0.0, 0.0]]],
+                         [[[0.0, 0.0], [0.0, 0.0]],
+                          [[0.0, 0.0], [0.0, 0.0]]]]])
+    }
+
     func testUpSampling1D() {
       let size = 6
       let layer = UpSampling1D<Float>(size: size)
@@ -1420,6 +1483,12 @@ final class LayerTests: XCTestCase {
         ("testGlobalMaxPool2DGradient", testGlobalMaxPool2DGradient),
         ("testGlobalMaxPool3D", testGlobalMaxPool3D),
         ("testGlobalMaxPool3DGradient", testGlobalMaxPool3DGradient),
+        ("testGlobalMinPool1D", testGlobalMinPool1D),
+        ("testGlobalMinPool1DGradient", testGlobalMinPool1DGradient),
+        ("testGlobalMinPool2D", testGlobalMinPool2D),
+        ("testGlobalMinPool2DGradient", testGlobalMinPool2DGradient),
+        ("testGlobalMinPool3D", testGlobalMinPool3D),
+        ("testGlobalMinPool3DGradient", testGlobalMinPool3DGradient),
         ("testUpSampling1D", testUpSampling1D),
         ("testUpSampling1DGradient", testUpSampling1DGradient),
         ("testUpSampling2D", testUpSampling2D),
