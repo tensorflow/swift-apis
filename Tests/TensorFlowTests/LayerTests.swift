@@ -859,6 +859,16 @@ final class LayerTests: XCTestCase {
         let layer = GlobalMinPool1D<Float>()
         let input = Tensor(shape: [2, 2, 2], scalars: (0..<8).map(Float.init))
         let computedGradient = gradient(at: input, layer) { $1($0).sum() }
+        // The expected value of the gradient was computed using the following Python code:
+        // ```
+        // import tensorflow as tf
+        // from tensorflow.python.keras import backend
+        // x = tf.reshape(tf.range(8, dtype=tf.float32), [2, 2, 2])
+        // with tf.GradientTape() as tape:
+        // tape.watch(x)
+        // y = tf.math.reduce_sum(backend.min(x, axis=[1]))
+        // print(tape.gradient(y, x))
+        // ```
         XCTAssertEqual(computedGradient.0,
                        [[[1.0, 1.0],
                          [0.0, 0.0]],
@@ -878,6 +888,16 @@ final class LayerTests: XCTestCase {
         let layer = GlobalMinPool2D<Float>()
         let input = Tensor(shape: [2, 3, 3, 2], scalars: (0..<36).map(Float.init))
         let computedGradient = gradient(at: input, layer) { $1($0).sum() }
+        // The expected value of the gradient was computed using the following Python code:
+        // ```
+        // import tensorflow as tf
+        // from tensorflow.python.keras import backend
+        // x = tf.reshape(tf.range(36, dtype=tf.float32), [2, 3, 3, 2])
+        // with tf.GradientTape() as tape:
+        // tape.watch(x)
+        // y = tf.math.reduce_sum(backend.min(x, axis=[1, 2]))
+        // print(tape.gradient(y, x))
+        // ```
         XCTAssertEqual(computedGradient.0,
                        [[[[1.0, 1.0], [0.0, 0.0], [0.0, 0.0]],
                          [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]],
@@ -899,6 +919,16 @@ final class LayerTests: XCTestCase {
         let layer = GlobalMinPool3D<Float>()
         let input = Tensor(shape: [2, 2, 2, 2, 2], scalars: (0..<32).map(Float.init))
         let computedGradient = gradient(at: input, layer) { $1($0).sum() }
+        // The expected value of the gradient was computed using the following Python code:
+        // ```
+        // import tensorflow as tf
+        // from tensorflow.python.keras import backend
+        // x = tf.reshape(tf.range(32, dtype=tf.float32), [2, 2, 2, 2, 2])
+        // with tf.GradientTape() as tape:
+        // tape.watch(x)
+        // y = tf.math.reduce_sum(backend.min(x, axis=[1, 2, 3]))
+        // print(tape.gradient(y, x))
+        // ```
         XCTAssertEqual(computedGradient.0,
                        [[[[[1.0, 1.0], [0.0, 0.0]],
                           [[0.0, 0.0], [0.0, 0.0]]],
