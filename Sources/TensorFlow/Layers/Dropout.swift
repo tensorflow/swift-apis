@@ -68,3 +68,39 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
         }
     }
 }
+
+/// A scale layer with LearningPhase distinguishing.
+///
+/// Consists of multiplying all nodes by a given value, but only in provided phase. 
+/// Used after Dropout layer to compensate for learning with dropped nodes.
+///
+/// Reference: [Improving neural networks by preventing co-adaptation of feature detectors]
+/// (https://arxiv.org/pdf/1207.0580.pdf).
+@frozen
+public struct Scale<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+    @noDerivative public let by: Scalar
+    @noDerivative public let when: LearningPhase
+
+    /// Creates a scale layer.
+    ///
+    /// - Parameter by: The value a node will be multiplied with.
+    /// - Parameter when: The LearningPhase when layer will be active.
+    public init(by: Scalar, when: LearningPhase = .inference) {
+        self.by = by
+        self.when = when
+    }
+
+    /// Returns the output obtained from applying the layer to the given input.
+    ///
+    /// - Parameter input: The input to the layer.
+    /// - Returns: The output.
+    @differentiable
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+        switch Context.local.learningPhase {
+        case self.when:
+            return input * self.by
+        default:
+            return input
+        }
+    }
+}

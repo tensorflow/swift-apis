@@ -32,6 +32,18 @@ final class ContextTests: XCTestCase {
         XCTAssertEqual(dropout(x), x)
     }
 
+    func testScale() {
+        let scale = Scale<Float>(by: 0.5)
+        let x = Tensor<Float>(repeating: 1.0, shape: [5])
+        let y = Tensor<Float>(repeating: 0.5, shape: [5])
+        withLearningPhase(LearningPhase.inference) {
+            XCTAssertEqual(scale(x), y)
+        }
+        withLearningPhase(LearningPhase.training) {
+            XCTAssertEqual(scale(x), x)
+        }
+    }
+
     func testMultithreadedDropout() {
         let dropout = Dropout<Float>(probability: 0.5)
         let x = Tensor<Float>(repeating: 1.0, shape: [5, 5])
@@ -51,6 +63,7 @@ final class ContextTests: XCTestCase {
 
     static var allTests = [
         ("testDropout", testDropout),
+        ("testScale", testScale),
         ("testMultithreadedDropout", testMultithreadedDropout)
     ]
 }
