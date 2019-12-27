@@ -111,7 +111,7 @@ public func conv1D<Scalar: TensorFlowFloatingPoint>(
 ///   - dilations: The dilation factor for each dimension of the input.
 /// - Precondition: `input` must have rank `4`.
 /// - Precondition: `filter` must have rank 4.
-@differentiable(wrt: (input, filter), vjp: _vjpConv2D)
+@differentiable(wrt: (input, filter))
 public func conv2D<Scalar: TensorFlowFloatingPoint>(
     _ input: Tensor<Scalar>,
     filter: Tensor<Scalar>,
@@ -132,13 +132,14 @@ public func conv2D<Scalar: TensorFlowFloatingPoint>(
 }
 
 @usableFromInline
+@derivative(of: conv2D)
 func _vjpConv2D<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>,
     filter: Tensor<Scalar>,
     strides: (Int, Int, Int, Int),
     padding: Padding,
     dilations: (Int, Int, Int, Int)
-) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
+) -> (value: Tensor<Scalar>, pullback: (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
     let value = conv2D(x, filter: filter, strides: strides, padding: padding, dilations: dilations)
     return (value, { v in
         (conv2DBackpropInput(v, shape: x.shapeTensor, filter: filter,
@@ -149,7 +150,7 @@ func _vjpConv2D<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// TensorFlow builtin conv2d gradient helper for the input.
-@differentiable(wrt: (x, filter), vjp: _vjpConv2DBackpropInput)
+@differentiable(wrt: (x, filter))
 @usableFromInline
 func conv2DBackpropInput<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>,
@@ -170,6 +171,7 @@ func conv2DBackpropInput<Scalar: TensorFlowFloatingPoint>(
 }
 
 @usableFromInline
+@derivative(of: conv2DBackpropInput)
 func _vjpConv2DBackpropInput<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>,
     _ shape: Tensor<Int32>,
@@ -177,7 +179,7 @@ func _vjpConv2DBackpropInput<Scalar: TensorFlowFloatingPoint>(
     _ strides: (Int, Int, Int, Int),
     _ padding: Padding,
     _ dilations: (Int, Int, Int, Int)
-) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
+) -> (value: Tensor<Scalar>, pullback: (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
     let value = conv2DBackpropInput(x, shape: shape, filter: filter,
                                     strides: strides, padding: padding, dilations: dilations)
     return (value, { v in
@@ -188,7 +190,7 @@ func _vjpConv2DBackpropInput<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// TensorFlow builtin conv2d gradient helper for the filter.
-@differentiable(wrt: (x, input), vjp: _vjpConv2DBackpropFilter)
+@differentiable(wrt: (x, input))
 @usableFromInline
 func conv2DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>,
@@ -209,6 +211,7 @@ func conv2DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
 }
 
 @usableFromInline
+@derivative(of: conv2DBackpropFilter)
 func _vjpConv2DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>,
     _ input: Tensor<Scalar>,
@@ -216,7 +219,7 @@ func _vjpConv2DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
     _ strides: (Int, Int, Int, Int),
     _ padding: Padding,
     _ dilations: (Int, Int, Int, Int)
-) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
+) -> (value: Tensor<Scalar>, pullback: (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
     let value = conv2DBackpropFilter(x, input: input, filterSizes: filterSizes,
                                      strides: strides, padding: padding, dilations: dilations)
     return (value, { v in
@@ -236,7 +239,7 @@ func _vjpConv2DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
 ///   - dilations: The dilation factor for each dimension of the input.
 /// - Precondition: `input` must have rank `5`.
 /// - Precondition: `filter` must have rank 5.
-@differentiable(wrt: (input, filter), vjp: _vjpConv3D)
+@differentiable(wrt: (input, filter))
 public func conv3D<Scalar: TensorFlowFloatingPoint>(
     _ input: Tensor<Scalar>,
     filter: Tensor<Scalar>,
@@ -258,13 +261,14 @@ public func conv3D<Scalar: TensorFlowFloatingPoint>(
 }
 
 @usableFromInline
+@derivative(of: conv3D)
 func _vjpConv3D<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>,
     filter: Tensor<Scalar>,
     strides: (Int, Int, Int, Int, Int),
     padding: Padding,
     dilations: (Int, Int, Int, Int, Int)
-) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
+) -> (value: Tensor<Scalar>, pullback: (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
     let value = conv3D(x, filter: filter, strides: strides,
                        padding: padding, dilations: dilations)
     return (value, { v in
@@ -276,7 +280,7 @@ func _vjpConv3D<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// TensorFlow builtin conv3d gradient helper for the input.
-@differentiable(wrt: (x, filter), vjp: _vjpConv3DBackpropInput)
+@differentiable(wrt: (x, filter))
 @usableFromInline
 func conv3DBackpropInput<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>,
@@ -299,6 +303,7 @@ func conv3DBackpropInput<Scalar: TensorFlowFloatingPoint>(
 }
 
 @usableFromInline
+@derivative(of: conv3DBackpropInput)
 func _vjpConv3DBackpropInput<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>,
     _ shape: Tensor<Int32>,
@@ -306,7 +311,7 @@ func _vjpConv3DBackpropInput<Scalar: TensorFlowFloatingPoint>(
     _ strides: (Int, Int, Int, Int, Int),
     _ padding: Padding,
     _ dilations: (Int, Int, Int, Int, Int)
-) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
+) -> (value: Tensor<Scalar>, pullback: (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
     let value = conv3DBackpropInput(x, shape: shape, filter: filter, strides: strides,
                                     padding: padding, dilations: dilations)
     return (value, { v in
@@ -317,7 +322,7 @@ func _vjpConv3DBackpropInput<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// TensorFlow builtin conv3d gradient helper for the filter.
-@differentiable(wrt: (x, input), vjp: _vjpConv3DBackpropFilter)
+@differentiable(wrt: (x, input))
 @usableFromInline
 func conv3DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>,
@@ -340,6 +345,7 @@ func conv3DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
 }
 
 @usableFromInline
+@derivative(of: conv3DBackpropFilter)
 func _vjpConv3DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>,
     _ input: Tensor<Scalar>,
@@ -347,7 +353,7 @@ func _vjpConv3DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
     _ strides: (Int, Int, Int, Int, Int),
     _ padding: Padding,
     _ dilations: (Int, Int, Int, Int, Int)
-) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
+) -> (value: Tensor<Scalar>, pullback: (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
     let value = conv3DBackpropFilter(x, input: input, filterSizes: filterSizes,
                                      strides: strides, padding: padding, dilations: dilations)
     return (value, { v in
@@ -366,7 +372,7 @@ func _vjpConv3DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
 ///   - padding: The padding for the operation.
 /// - Precondition: `input` must have rank 4.
 /// - Precondition: `filter` must have rank 4.
-@differentiable(wrt: (input, filter), vjp: _vjpDepthwiseConv2D)
+@differentiable(wrt: (input, filter))
 public func depthwiseConv2D<Scalar: TensorFlowFloatingPoint>(
     _ input: Tensor<Scalar>,
     filter: Tensor<Scalar>,
@@ -383,12 +389,13 @@ public func depthwiseConv2D<Scalar: TensorFlowFloatingPoint>(
 }
 
 @usableFromInline
+@derivative(of: depthwiseConv2D)
 func _vjpDepthwiseConv2D<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>,
     filter: Tensor<Scalar>,
     strides: (Int, Int, Int, Int),
     padding: Padding
-) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
+) -> (value: Tensor<Scalar>, pullback: (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
     let value = depthwiseConv2D(x, filter: filter, strides: strides,
                                 padding: padding)
     return (value, { v in
@@ -400,7 +407,7 @@ func _vjpDepthwiseConv2D<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// TensorFlow builtin depthwiseConv2D gradient helper for the input.
-@differentiable(wrt: (x, filter), vjp: _vjpDepthwiseConv2dBackpropInput)
+@differentiable(wrt: (x, filter))
 @usableFromInline
 func depthwiseConv2dBackpropInput<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>,
@@ -418,13 +425,14 @@ func depthwiseConv2dBackpropInput<Scalar: TensorFlowFloatingPoint>(
 }
 
 @usableFromInline
+@derivative(of: depthwiseConv2dBackpropInput)
 func _vjpDepthwiseConv2dBackpropInput<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>,
     _ shape: Tensor<Int32>,
     _ filter: Tensor<Scalar>,
     _ strides: (Int, Int, Int, Int),
     _ padding: Padding
-) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
+) -> (value: Tensor<Scalar>, pullback: (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
     let value = depthwiseConv2dBackpropInput(x, shape: shape, filter: filter, strides: strides,
                                              padding: padding)
     return (value, { v in
@@ -436,7 +444,7 @@ func _vjpDepthwiseConv2dBackpropInput<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// TensorFlow builtin depthwiseConv2D gradient helper for the filter.
-@differentiable(wrt: (x, input), vjp: _vjpDepthwiseConv2dBackpropFilter)
+@differentiable(wrt: (x, input))
 @usableFromInline
 func depthwiseConv2dBackpropFilter<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>,
@@ -454,13 +462,14 @@ func depthwiseConv2dBackpropFilter<Scalar: TensorFlowFloatingPoint>(
 }
 
 @usableFromInline
+@derivative(of: depthwiseConv2dBackpropFilter)
 func _vjpDepthwiseConv2dBackpropFilter<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>,
     _ input: Tensor<Scalar>,
     _ filterSizes: Tensor<Int32>,
     _ strides: (Int, Int, Int, Int),
     _ padding: Padding
-) -> (Tensor<Scalar>, (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
+) -> (value: Tensor<Scalar>, pullback: (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
     let value = depthwiseConv2dBackpropFilter(x, input: input, filterSizes: filterSizes,
                                               strides: strides, padding: padding)
     return (value, { v in
@@ -478,7 +487,7 @@ func _vjpDepthwiseConv2dBackpropFilter<Scalar: TensorFlowFloatingPoint>(
 ///   - filterSize: The dimensions of the pooling kernel.
 ///   - strides: The strides of the sliding filter for each dimension of the input.
 ///   - padding: The padding for the operation.
-@differentiable(wrt: input, vjp: _vjpMaxPool2D)
+@differentiable(wrt: input)
 public func maxPool2D<Scalar: TensorFlowFloatingPoint>(
     _ input: Tensor<Scalar>,
     filterSize: (Int, Int, Int, Int),
@@ -495,12 +504,13 @@ public func maxPool2D<Scalar: TensorFlowFloatingPoint>(
 }
 
 @usableFromInline
+@derivative(of: maxPool2D)
 func _vjpMaxPool2D<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>,
     filterSize: (Int, Int, Int, Int),
     strides: (Int, Int, Int, Int),
     padding: Padding
-) -> (Tensor<Scalar>, (Tensor<Scalar>) -> Tensor<Scalar>) {
+) -> (value: Tensor<Scalar>, pullback: (Tensor<Scalar>) -> Tensor<Scalar>) {
     // TODO: Currently this is not higher order differentiable. Redefine in
     // closed form.
     let value = maxPool2D(x, filterSize: filterSize, strides: strides, padding: padding)
@@ -525,7 +535,7 @@ func _vjpMaxPool2D<Scalar: TensorFlowFloatingPoint>(
 ///   - filterSize: The dimensions of the pooling kernel.
 ///   - strides: The strides of the sliding filter for each dimension of the input.
 ///   - padding: The padding for the operation.
-@differentiable(wrt: input, vjp: _vjpMaxPool3D)
+@differentiable(wrt: input)
 public func maxPool3D<Scalar: TensorFlowFloatingPoint>(
     _ input: Tensor<Scalar>,
     filterSize: (Int, Int, Int, Int, Int),
@@ -542,12 +552,13 @@ public func maxPool3D<Scalar: TensorFlowFloatingPoint>(
 }
 
 @usableFromInline
+@derivative(of: maxPool3D)
 func _vjpMaxPool3D<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>,
     filterSize: (Int, Int, Int, Int, Int),
     strides: (Int, Int, Int, Int, Int),
     padding: Padding
-) -> (Tensor<Scalar>, (Tensor<Scalar>) -> Tensor<Scalar>) {
+) -> (value: Tensor<Scalar>, pullback: (Tensor<Scalar>) -> Tensor<Scalar>) {
     // TODO: Currently this is not higher order differentiable. Redefine in
     // closed form.
     let value = maxPool3D(x, filterSize: filterSize, strides: strides, padding: padding)
@@ -573,7 +584,7 @@ func _vjpMaxPool3D<Scalar: TensorFlowFloatingPoint>(
 ///   - filterSize: The dimensions of the pooling kernel.
 ///   - strides: The strides of the sliding filter for each dimension of the input.
 ///   - padding: The padding for the operation.
-@differentiable(wrt: input, vjp: _vjpAvgPool2D)
+@differentiable(wrt: input)
 public func avgPool2D<Scalar: TensorFlowFloatingPoint>(
     _ input: Tensor<Scalar>,
     filterSize: (Int, Int, Int, Int),
@@ -589,12 +600,13 @@ public func avgPool2D<Scalar: TensorFlowFloatingPoint>(
 }
 
 @usableFromInline
+@derivative(of: avgPool2D)
 func _vjpAvgPool2D<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>,
     filterSize: (Int, Int, Int, Int),
     strides: (Int, Int, Int, Int),
     padding: Padding
-) -> (Tensor<Scalar>, (Tensor<Scalar>) -> Tensor<Scalar>) {
+) -> (value: Tensor<Scalar>, pullback: (Tensor<Scalar>) -> Tensor<Scalar>) {
     // TODO: Currently this is not higher order differentiable. Redefine in
     // closed form.
     let value = avgPool2D(x, filterSize: filterSize, strides: strides, padding: padding)
@@ -619,7 +631,7 @@ func _vjpAvgPool2D<Scalar: TensorFlowFloatingPoint>(
 ///   - filterSize: The dimensions of the pooling kernel.
 ///   - strides: The strides of the sliding filter for each dimension of the input.
 ///   - padding: The padding for the operation.
-@differentiable(wrt: input, vjp: _vjpAvgPool3D)
+@differentiable(wrt: input)
 public func avgPool3D<Scalar: TensorFlowFloatingPoint>(
     _ input: Tensor<Scalar>,
     filterSize: (Int, Int, Int, Int, Int),
@@ -636,12 +648,13 @@ public func avgPool3D<Scalar: TensorFlowFloatingPoint>(
 }
 
 @usableFromInline
+@derivative(of: avgPool3D)
 func _vjpAvgPool3D<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>,
     filterSize: (Int, Int, Int, Int, Int),
     strides: (Int, Int, Int, Int, Int),
     padding: Padding
-) -> (Tensor<Scalar>, (Tensor<Scalar>) -> Tensor<Scalar>) {
+) -> (value: Tensor<Scalar>, pullback: (Tensor<Scalar>) -> Tensor<Scalar>) {
     // TODO: Currently this is not higher order differentiable. Redefine in
     // closed form.
     let value = avgPool3D(x, filterSize: filterSize, strides: strides, padding: padding)
