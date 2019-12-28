@@ -30,7 +30,7 @@ public extension Tensor where Scalar: TensorFlowNumeric {
     /// // [1, 2, 3, 4]
     /// ```
     @inlinable
-    @differentiable(wrt: self, vjp: _vjpDiagonalPart where Scalar: TensorFlowFloatingPoint)
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
     func diagonalPart() -> Tensor {
         precondition(rank >= 2, "The tensor must have at least rank 2.")
         return _Raw.matrixDiagPart(self)
@@ -51,9 +51,15 @@ public extension Tensor where Scalar: TensorFlowNumeric {
     /// //  [0, 0, 0, 4]]
     /// ```
     @inlinable
-    @differentiable(wrt: self, vjp: _vjpDiagonal where Scalar: TensorFlowFloatingPoint)
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
     func diagonal() -> Tensor {
         _Raw.matrixDiag(diagonal: self)
+    }
+
+    @available(*, deprecated, renamed: "bandPart(subdiagonalCount:superdiagonalCount:)")
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+    func bandPart(_ subdiagonalCount: Int, _ superdiagonalCount: Int) -> Tensor {
+        return bandPart(subdiagonalCount: subdiagonalCount, superdiagonalCount: superdiagonalCount)
     }
 
     /// Returns a copy of a innermost tensor defined by a central band boundaries.
@@ -79,31 +85,72 @@ public extension Tensor where Scalar: TensorFlowNumeric {
     /// //  [-2, -1,  0, 1]
     /// //  [ 0, -2, -1, 0]]
     /// ```
+    ///
+    /// - Parameters:
+    ///   - subdiagonalCount: The number of subdiagonals to keep. If negative, keep entire lower
+    ///     triangle.
+    ///   - superdiagonalCount: The number of superdiagonals to keep. If negative, keep entire upper
+    ///     triangle.
     @inlinable
-    @differentiable(wrt: self, vjp: _vjpBandPart where Scalar: TensorFlowFloatingPoint)
-    func bandPart(_ lowerCount: Int, _ upperCount: Int) -> Tensor {
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
+    func bandPart(subdiagonalCount: Int, superdiagonalCount: Int) -> Tensor {
         precondition(rank >= 2, "The tensor must have at least rank 2.")
-        let lower = Tensor<Int32>(Int32(lowerCount))
-        let upper = Tensor<Int32>(Int32(upperCount))
+        let lower = Tensor<Int32>(Int32(subdiagonalCount))
+        let upper = Tensor<Int32>(Int32(superdiagonalCount))
         return _Raw.matrixBandPart(self, numLower: lower, numUpper: upper)
     }
 }
 
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
-    func _vjpDiagonalPart() -> (Tensor, (Tensor) -> Tensor) {
+    @derivative(of: diagonalPart)
+    func _vjpDiagonalPart() -> (value: Tensor, pullback: (Tensor) -> Tensor) {
         (diagonalPart(), { $0.diagonal() })
     }
 
     @inlinable
-    func _vjpDiagonal() -> (Tensor, (Tensor) -> Tensor) {
+    @derivative(of: diagonal)
+    func _vjpDiagonal() -> (value: Tensor, pullback: (Tensor) -> Tensor) {
         (diagonal(), { $0.diagonalPart() })
     }
 
     @inlinable
-    func _vjpBandPart(_ numLower: Int, _ numUpper: Int) -> (Tensor, (Tensor) -> Tensor) {
-        (bandPart(numLower, numUpper), { $0.bandPart(numLower, numUpper) })
+    @derivative(of: bandPart(subdiagonalCount:superdiagonalCount:))
+    func _vjpBandPart(subdiagonalCount: Int, superdiagonalCount: Int) -> (
+        value: Tensor, pullback: (Tensor) -> Tensor
+    ) {
+        let value = bandPart(
+            subdiagonalCount: subdiagonalCount,
+            superdiagonalCount: superdiagonalCount)
+        return (value, {
+            $0.bandPart(subdiagonalCount: subdiagonalCount, superdiagonalCount: superdiagonalCount)
+        })
     }
+}
+
+/// Computes the trace of an optionally batched matrix.
+/// The trace is the the sum along the main diagonal of each inner-most matrix.
+///
+/// The input is a tensor with shape `[..., M, N]`.
+/// The output is a tensor with shape `[...]`.
+///
+/// - Parameter matrix: A tensor of shape `[..., M, N]`.
+/// - Precondition: `matrix` must be a tensor with shape `[..., M, N]`.
+@inlinable
+@differentiable(wrt: matrix where T: TensorFlowFloatingPoint)
+public func trace<T: TensorFlowNumeric>(_ matrix: Tensor<T>) -> Tensor<T> {
+    precondition(matrix.rank >= 2, "The tensor must have at least rank 2.")
+    return matrix.diagonalPart().sum(squeezingAxes: -1)
+}
+
+/// Computes the natural logarithm of the determinant of a hermitian positive definite matrix.
+///
+/// - Parameter matrix: A tensor of shape `[..., M, N]`.
+/// - Returns: The natural logarithm of the determinant of `matrix`.
+@inlinable
+@differentiable(wrt: matrix where T: TensorFlowFloatingPoint)
+func logdet<T: TensorFlowFloatingPoint>(_ matrix: Tensor<T>) -> Tensor<T> {
+    return 2.0 * log(cholesky(matrix).diagonalPart()).sum(squeezingAxes: -1) 
 }
 
 // MARK: - Decompositions
@@ -122,15 +169,16 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 ///
 /// - Parameter input: A tensor of shape `[..., M, M]`.
 @inlinable
-@differentiable(vjp: _vjpCholesky)
+@differentiable
 public func cholesky<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
     _Raw.cholesky(x)
 }
 
 @inlinable
+@derivative(of: cholesky)
 internal func _vjpCholesky<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>
-) -> (Tensor<T>, (Tensor<T>) -> Tensor<T>) {
+) -> (value: Tensor<T>, pullback: (Tensor<T>) -> Tensor<T>) {
     let decomposition = cholesky(x)
     return (decomposition, { v in _Raw.choleskyGrad(l: decomposition, grad: v)})
 }

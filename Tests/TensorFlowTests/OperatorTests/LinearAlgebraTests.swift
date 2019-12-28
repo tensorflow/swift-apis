@@ -60,8 +60,64 @@ final class LinearAlgebraTests: XCTestCase {
         }
     }
     
+    func testTrace() {
+        assertEqual(trace(Tensor<Float>(ones: [3, 3])), Tensor(3.0), accuracy: 1e-16)
+        assertEqual(trace(Tensor<Float>(ones: [5, 6])), Tensor(5.0), accuracy: 1e-16)
+        let shapes = [[1, 3, 3], [2, 4, 4], [2, 3, 5, 5]]
+        for shape in shapes {
+            let x = Tensor<Float>(ones: TensorShape(shape))
+            let computedTrace = trace(x)
+            let leadingShape = TensorShape(shape.dropLast(2))
+            let value = Float(shape.last!)
+            let expectedTrace = Tensor<Float>(repeating: value, shape: leadingShape)
+            assertEqual(computedTrace, expectedTrace, accuracy: 1e-16)
+        }
+    }
+
+    func testTraceGradient() {
+        let shape: TensorShape = [2, 4, 4]
+        let scalars = (0..<shape.contiguousSize).map(Float.init)
+        let x = Tensor<Float>(shape: shape, scalars: scalars)
+        let computedGradient = gradient(at: x) { (trace($0) * [2.0, 3.0]).sum() }
+        let a = Tensor<Float>(repeating: 2.0, shape: [4]).diagonal()
+        let b = Tensor<Float>(repeating: 3.0, shape: [4]).diagonal()
+        let expectedGradient = Tensor([a, b])
+        assertEqual(computedGradient, expectedGradient, accuracy: 1e-16)
+    }
+
+    func testLogdet() {
+        let input = Tensor<Float>([[[6.0, 4.0], [4.0, 6.0]], [[2.0, 6.0], [6.0, 20.0]]])
+        let expected = Tensor<Float>([2.9957323, 1.3862934])
+        let computed = logdet(input)
+        assertEqual(computed, expected, accuracy: 1e-5)
+    }
+    
+    // The expected value of the gradient was computed using the following Python code:
+    // ```
+    // import tensorflow as tf
+    // x = tf.constant([[[6., 4.], [4., 6.]], [[2., 6.], [6., 20.]]])
+    // with tf.GradientTape() as tape:
+    //     tape.watch(x)
+    //     y = tf.reduce_sum(tf.linalg.logdet(x))
+    // print(tape.gradient(y, x))
+    // ```
+    func testLogdetGradient() {
+        let input = Tensor<Float>([[[6.0, 4.0], [4.0, 6.0]], [[2.0, 6.0], [6.0, 20.0]]])
+        let expectedGradient = Tensor<Float>([
+            [[ 0.29999998, -0.2       ],
+             [-0.2       ,  0.3       ]],
+            [[ 5.0000043 , -1.5000012 ],
+             [-1.5000012 ,  0.50000036]]])
+        let computedGradient = gradient(at: input) { logdet($0).sum() }
+        assertEqual(computedGradient, expectedGradient, accuracy: 1e-5)
+    }
+
     static var allTests = [
         ("testCholesky", testCholesky),
-        ("testQRDecompositionApproximation", testQRDecompositionApproximation)
+        ("testQRDecompositionApproximation", testQRDecompositionApproximation),
+        ("testTrace", testTrace),
+        ("testTraceGradient", testTraceGradient),
+        ("testLogdet", testLogdet),
+        ("testLogdetGradient", testLogdetGradient)
     ]
 }

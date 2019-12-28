@@ -80,16 +80,17 @@ final class MatrixTests: XCTestCase {
                                      [-1,  0,  1, 2],
                                      [ 0, -1,  0, 1],
                                      [ 0,  0, -1, 0]])
-        XCTAssertEqual(t1.bandPart(1, -1), target1)
+        XCTAssertEqual(t1.bandPart(subdiagonalCount: 1, superdiagonalCount: -1), target1)
         
         let target2 = Tensor<Float>([[ 0,  1,  0, 0],
                                      [-1,  0,  1, 0],
                                      [-2, -1,  0, 1],
                                      [ 0, -2, -1, 0]])
-        XCTAssertEqual(t1.bandPart(2, 1), target2)
+        XCTAssertEqual(t1.bandPart(subdiagonalCount: 2, superdiagonalCount: 1), target2)
         
         // Test special case - diagonal
-        XCTAssertEqual(t1.bandPart(0, 0), Tensor<Float>(zeros: [4, 4]))
+        XCTAssertEqual(t1.bandPart(subdiagonalCount: 0, superdiagonalCount: 0),
+                       Tensor<Float>(zeros: [4, 4]))
         
         // Test leading dimensions with special case - lower triangular
         let t2 = Tensor<Float>(stacking: [t1, t1 + 1])
@@ -101,12 +102,14 @@ final class MatrixTests: XCTestCase {
                                       [ 0,  1,  0, 0],
                                       [-1,  0,  1, 0],
                                       [-2, -1,  0, 1]]])
-        XCTAssertEqual(t2.bandPart(-1, 0), target3)
+        XCTAssertEqual(t2.bandPart(subdiagonalCount: -1, superdiagonalCount: 0), target3)
         
         // Test bandPart gradient with special case - upper triangular
         let t3 = Tensor<Float>(shape: [2, 4, 4], scalars: (1...(2 * 16)).map(Float.init))
-        let computedGrad = gradient(at: t3) { $0.squared().bandPart(0, -1).sum() }
-        let expectedGrad = 2 * t3.bandPart(0, -1)
+        let computedGrad = gradient(at: t3) {
+            $0.squared().bandPart(subdiagonalCount: 0, superdiagonalCount: -1).sum()
+        }
+        let expectedGrad = 2 * t3.bandPart(subdiagonalCount: 0, superdiagonalCount: -1)
         XCTAssertEqual(computedGrad, expectedGrad)
     }
     
