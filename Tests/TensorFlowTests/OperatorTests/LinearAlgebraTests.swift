@@ -141,6 +141,7 @@ final class LinearAlgebraTests: XCTestCase {
         let computedGradient = gradient(at: input) { logdet($0).sum() }
         assertEqual(computedGradient, expectedGradient, accuracy: 1e-5)
     }
+
     static var allTests = [
         ("testCholesky", testCholesky),
         ("testQRDecompositionApproximation", testQRDecompositionApproximation),
