@@ -146,6 +146,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 ///   - numCols: A non-negative integer giving the number of rows in each batch matrix.
 ///   - batchShape: A list of integers. The returned tensor will have leading batch dimensions
 ///     of this shape.
+/// TODO: Make columnCount and batchShape optional.
 public func eye<Scalar: Numeric>(
     rowCount: Int,
     columnCount: Int,
