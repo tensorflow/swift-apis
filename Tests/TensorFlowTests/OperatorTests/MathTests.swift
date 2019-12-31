@@ -62,7 +62,8 @@ final class MathOperatorTests: XCTestCase {
     func testAbs() {
         let x = Tensor<Float>([-1.0])
         let y = abs(x)
-        assertEqual(y, Tensor<Float>([1.0]))
+        let expectedY = Tensor<Float>([1.0])
+        XCTAssertEqual(y, expectedY)
     }
     
     func testSquaredDifference() {
@@ -70,63 +71,64 @@ final class MathOperatorTests: XCTestCase {
         let y = Tensor<Float>([5.7])
         let z = squaredDifference(x, y)
         let approxZ = Tensor<Float>([132.25])
-        assertEqual(z, approxZ)
+        XCTAssertEqual(z, approxZ)
     }
     
     func testZeros() {
         let x = Tensor<Float>(zeros: [1])
         let x1 = Tensor<Float>([0.0])
-        assertEqual(x, x1)
+        XCTAssertEqual(x, x1)
     }
     
     func testLogSoftmax() {
         let x = Tensor<Float>([32.0, 34.0, 35.0])
         let y = logSoftmax(x)
-        let y1 = Tensor<Float>([-3.34901, -1.34901, -0.34901])
-        assertEqual(y, y1, accuracy: 0.0001)
+        let y1 = Tensor<Float>([-3.3490124, -1.3490123, -0.34901226])
+        XCTAssertEqual(y, y1)
     }
     
     func testMax() {
         let x = Tensor<Float>([58.0])
         let y = Tensor<Float>([57.0])
         let z = max(x, y)
-        let expectedZ = 58.0
-        assertEqual(z, expectedZ)
+        let expectedZ = Tensor<Float>([58.0])
+        XCTAssertEqual(z, expectedZ)
     }
     
     func testMin() {
         let x = Tensor<Float>([58.0])
         let y = Tensor<Float>([57.0])
         let z = min(x, y)
-        let expectedZ = 57.0
-        assertEqual(z, expectedZ)
+        let expectedZ = Tensor<Float>([57.0])
+        XCTAssertEqual(z, expectedZ)
     }
     
     func testRound() {
         let x = Tensor<Float>([58.76])
         let y = round(x)
-        let expectedY = 59.0
-        assertEqual(y, expectedY)
+        let expectedY = Tensor<Float>([59.0])
+        XCTAssertEqual(y, expectedY)
     }
     
     func testSoftmax() {
         let x = Tensor<Float>([-1.4, -3.5])
         let y = softmax(x)
-        let expectedY = Tensor<Float>([0.8909, 0.1090])
-        assertEqual(y, expectedY)
+        let expectedY = Tensor<Float>([0.8909032, 0.10909683])
+        XCTAssertEqual(y, expectedY)
     }
     
     func testSigmoid() {
         let x = Tensor<Float>([59.0])
         let y = sigmoid(x)
         let expectedY = Tensor<Float>([1.0])
-        assertEqual(y, expectedY)
+        XCTAssertEqual(y, expectedY)
     }
     
     func testIdentity() {
         let x = Tensor<Float>([-5.8, -5.9])
         let y = identity(x)
-        assertEqual(x, y)
+        let expectedY = Tensor<Float>([-5.8, -5.9])
+        XCTAssertEqual(y, expectedY)
     }
 
     func testClipping() {
