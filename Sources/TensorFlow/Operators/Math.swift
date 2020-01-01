@@ -19,7 +19,7 @@ infix operator .== : ComparisonPrecedence
 // - Consider explicit broadcasting for elementwise binary ops when
 //   scalarization and rank getter are implemented.
 
-// TODO: Remove the following extension once `./` and `./=` are defined for 
+// TODO: Remove the following extension once `./` and `./=` are defined for
 // `PointwiseMultiplicative`.
 
 infix operator ./ : MultiplicationPrecedence
@@ -748,7 +748,7 @@ func _vjpLog1p<T: TensorFlowFloatingPoint>(
 @differentiable
 public func log1mexp<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
     let isTooSmall = withoutDerivative(at: x) { x in -x .< T(log(2.0)) }
-    // This `replacing` will ultimately be a no-op because we will not select this code-path 
+    // This `replacing` will ultimately be a no-op because we will not select this code-path
     // whenever we use the surrogate `-Tensor(onesLike: x)`.
     let ones = withoutDerivative(at: x) { x in Tensor(onesLike: x) }
     let xSafe = x.replacing(with: -ones, where: isTooSmall)
@@ -2469,7 +2469,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         standardDeviation(squeezingAxes: axes)
     }
 
-    /// Returns the standard deviation of all elements in this tensor. 
+    /// Returns the standard deviation of all elements in this tensor.
     /// Does not apply Bessel's correction.
     ///
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
@@ -2516,9 +2516,9 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 
     /// Returns `log(exp(self).sum(squeezingAxes: axes))`. The reduced dimensions are removed.
-    /// 
+    ///
     /// This function is more numerically stable than computing
-    /// `log(exp(self).sum(squeezingAxes: axes))` directly. It avoids overflows caused by computing 
+    /// `log(exp(self).sum(squeezingAxes: axes))` directly. It avoids overflows caused by computing
     /// the `exp` of large inputs and underflows caused by computing the `log` of small inputs.
     ///
     /// - Parameter axes: The dimensions to reduce.
@@ -2527,7 +2527,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @differentiable(wrt: self)
     func logSumExp(squeezingAxes axes: Tensor<Int32>) -> Tensor {
         let rawMax = max(alongAxes: axes)
-        let offset = withoutDerivative(at: rawMax) { rawMax in 
+        let offset = withoutDerivative(at: rawMax) { rawMax in
             Tensor<Scalar>(zerosLike: rawMax).replacing(
                 with: rawMax,
                 where: rawMax.isFinite)
@@ -2538,9 +2538,9 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 
     /// Returns `log(exp(self).sum(squeezingAxes: axes))`. The reduced dimensions are removed.
-    /// 
+    ///
     /// This function is more numerically stable than computing
-    /// `log(exp(self).sum(squeezingAxes: axes))` directly. It avoids overflows caused by computing 
+    /// `log(exp(self).sum(squeezingAxes: axes))` directly. It avoids overflows caused by computing
     /// the `exp` of large inputs and underflows caused by computing the `log` of small inputs.
     ///
     /// - Parameter axes: The dimensions to reduce.
@@ -2554,9 +2554,9 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 
     /// Returns `log(exp(self).sum(squeezingAxes: axes))`. The reduced dimensions are removed.
-    /// 
+    ///
     /// This function is more numerically stable than computing
-    /// `log(exp(self).sum(squeezingAxes: axes))` directly. It avoids overflows caused by computing 
+    /// `log(exp(self).sum(squeezingAxes: axes))` directly. It avoids overflows caused by computing
     /// the `exp` of large inputs and underflows caused by computing the `log` of small inputs.
     ///
     /// - Parameter axes: The dimensions to reduce.
@@ -2570,7 +2570,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// Returns `log(exp(self).sum())`. The result is a scalar.
     ///
     /// This function is more numerically stable than computing `log(exp(self).sum())` directly. It
-    /// avoids overflows caused by computing the `exp` of large inputs and underflows caused by 
+    /// avoids overflows caused by computing the `exp` of large inputs and underflows caused by
     /// computing the `log` of small inputs.
     @inlinable
     @differentiable(wrt: self)
@@ -2578,11 +2578,11 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         logSumExp(squeezingAxes: Array(0..<shape.rank))
     }
 
-    /// Returns `log(exp(self).sum(alongAxes: axes))`. The reduced dimensions are retained with 
+    /// Returns `log(exp(self).sum(alongAxes: axes))`. The reduced dimensions are retained with
     /// value `1`.
     ///
     /// This function is more numerically stable than computing
-    /// `log(exp(self).sum(alongAxes: axes))` directly. It avoids overflows caused by computing 
+    /// `log(exp(self).sum(alongAxes: axes))` directly. It avoids overflows caused by computing
     /// the `exp` of large inputs and underflows caused by computing the `log` of small inputs.
     ///
     /// - Parameter axes: The dimensions to reduce.
@@ -2591,7 +2591,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @differentiable(wrt: self)
     func logSumExp(alongAxes axes: Tensor<Int32>) -> Tensor {
         let rawMax = max(alongAxes: axes)
-        let offset = withoutDerivative(at: rawMax) { rawMax in 
+        let offset = withoutDerivative(at: rawMax) { rawMax in
             Tensor<Scalar>(zerosLike: rawMax).replacing(
                 with: rawMax,
                 where: rawMax.isFinite)
@@ -2600,11 +2600,11 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         return result + offset
     }
 
-    /// Returns `log(exp(self).sum(alongAxes: axes))`. The reduced dimensions are retained with 
+    /// Returns `log(exp(self).sum(alongAxes: axes))`. The reduced dimensions are retained with
     /// value `1`.
     ///
     /// This function is more numerically stable than computing
-    /// `log(exp(self).sum(alongAxes: axes))` directly. It avoids overflows caused by computing 
+    /// `log(exp(self).sum(alongAxes: axes))` directly. It avoids overflows caused by computing
     /// the `exp` of large inputs and underflows caused by computing the `log` of small inputs.
     ///
     /// - Parameter axes: The dimensions to reduce.
@@ -2617,11 +2617,11 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         return logSumExp(alongAxes: Tensor<Int32>(axes))
     }
 
-    /// Returns `log(exp(self).sum(alongAxes: axes))`. The reduced dimensions are retained with 
+    /// Returns `log(exp(self).sum(alongAxes: axes))`. The reduced dimensions are retained with
     /// value `1`.
     ///
     /// This function is more numerically stable than computing
-    /// `log(exp(self).sum(alongAxes: axes))` directly. It avoids overflows caused by computing 
+    /// `log(exp(self).sum(alongAxes: axes))` directly. It avoids overflows caused by computing
     /// the `exp` of large inputs and underflows caused by computing the `log` of small inputs.
     ///
     /// - Parameter axes: The dimensions to reduce.
@@ -2748,6 +2748,9 @@ public func matmul<Scalar: Numeric>(
     _ rhs: Tensor<Scalar>,
     transposed transposeRhs: Bool = false
 ) -> Tensor<Scalar> {
+    precondition(lhs.rank >= 2, "The input must have rank greater than or equal to 2.")
+    precondition(rhs.rank >= 2, "The input must have rank greater than or equal to 2.")
+    precondition(lhs.shape[1] == rhs.shape[0] , "Dimesion must be equal,but are \(lhs.shape[1]) and \(rhs.shape[0]).")
     if lhs.rank > 2 || rhs.rank > 2 {
         // TODO(TF-629): Conjugate to make compatible with the adjoint.
         return _Raw.batchMatMulV2(lhs, rhs, adjX: transposeLhs, adjY: transposeRhs)
