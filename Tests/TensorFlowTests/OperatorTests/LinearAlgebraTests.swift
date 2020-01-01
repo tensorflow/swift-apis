@@ -112,29 +112,29 @@ final class LinearAlgebraTests: XCTestCase {
         assertEqual(computedGradient, expectedGradient, accuracy: 1e-5)
     }
     
-    func testTriangularSolve() {
-        let a = Tensor<Float>([
-            [1, 0, 0],
-            [2, 1, 0],
-            [3, 2, 1]
-        ])
-        let y = Tensor<Float>([1, 1, 3]).reshaped(to: [-1, 1])
-        let y2 = Tensor<Float>([y, y])
-        let x = triangularSolve(matrix: a, rhs: y2)
-    }
     
+    /// Data generation function for the triangular solve test.
     /// Value of the gradient was computed using the following code:
+    ///
     /// ```
     /// import tensorflow as tf
     /// a = tf.Variable([[1., 0., 0.],
     ///                  [2., 1., 0.],
     ///                  [3., 2., 1.]])
-    /// y = tf.Variable([[1.], [1.], [3.]])
+    /// b = tf.Variable([[1.], [1.], [3.]])
     /// with tf.GradientTape() as tape:
-    ///     x = tf.linalg.triangular_solve(a, y)
-    /// grad = tape.gradient(x, [a, y])
+    ///     x = tf.reduce_sum(tf.linalg.triangular_solve(a, b))
+    /// grad = tape.gradient(x, [a, b])
     /// ```
-    func testTriangularSolveGrad() {
+    func triangularSolveTestData(
+    ) -> (
+        a: Tensor<Float>,
+        x: Tensor<Float>,
+        b: Tensor<Float>,
+        aGrad: Tensor<Float>,
+        bGrad: Tensor<Float>,
+        leadingShapes: [([Int], [Int])]
+    ) {
         typealias IntList = [Int]
         typealias PairIntList = (IntList, IntList)
 
@@ -143,13 +143,14 @@ final class LinearAlgebraTests: XCTestCase {
             [2, 1, 0],
             [3, 2, 1]
         ])
-        let y = Tensor<Float>([1, 1, 3]).reshaped(to: [-1, 1])
+        let b = Tensor<Float>([1,  1, 3]).reshaped(to: [-1, 1])
+        let x = Tensor<Float>([1, -1, 2]).reshaped(to: [-1, 1])
         let aGrad = Tensor<Float>([
             [ 0,  0,  0],
             [ 1, -1,  0],
             [-1,  1, -2]
         ])
-        let yGrad = Tensor<Float>([0, -1, 1]).reshaped(to: [-1, 1])
+        let bGrad = Tensor<Float>([0, -1, 1]).reshaped(to: [-1, 1])
         let dimEmpty: IntList = []
         let dimOne: IntList = [2]
         let dimTwo: IntList = [3, 2]
@@ -159,20 +160,30 @@ final class LinearAlgebraTests: XCTestCase {
                         [dimOne,   dimTwo,   dimEmpty, dimEmpty]))
             + Array(zip([dimOne, dimTwo],
                         [dimTwo, dimOne]))
-        
-        for (aLeadingShape, yLeadingShape) in leadingShapes {
+        return (a, x, b, aGrad, bGrad, leadingShapes)
+    }
+    
+    func testTriangularSolve() {
+        let (a, x, b, aGrad, bGrad, leadingShapes) = triangularSolveTestData()
+        for (aLeadingShape, bLeadingShape) in leadingShapes {
             let aNewShape = aLeadingShape + a.shape
-            let yNewShape = yLeadingShape + y.shape
-            let atA = a.broadcasted(to: aNewShape)
-            let atY = y.broadcasted(to: yNewShape)
-            let multiplier = Float(extractLeadingDims(atA, atY, ignoreLast: 2).contiguousSize)
-            let (computedGradA, computedGradY) = gradient(at: atA, atY) {
+            let bNewShape = bLeadingShape + b.shape
+            let aNew = a.broadcasted(to: aNewShape)
+            let bNew = b.broadcasted(to: bNewShape)
+            let multiplier = Float(extractLeadingDims(aNew, bNew, ignoreLast: 2).contiguousSize)
+            let xComputed = triangularSolve(matrix: aNew, rhs: bNew)
+            let (aGradComputed, bGradComputed) = gradient(at: aNew, bNew) {
                 triangularSolve(matrix: $0, rhs: $1).sum()
             }
-            let expectedGradA = (atA.rank > atY.rank ? aGrad : multiplier * aGrad).broadcasted(like: atA)
-            let expectedGradY = (atY.rank > atA.rank ? yGrad : multiplier * yGrad).broadcasted(like: atY)
-            assertEqual(computedGradA, expectedGradA, accuracy: 1e-16)
-            assertEqual(computedGradY, expectedGradY, accuracy: 1e-16)
+
+            let xExpectedShape = (aNew.rank > bNew.rank ? aLeadingShape : bLeadingShape) + x.shape
+            let xExpected = x.broadcasted(to: xExpectedShape)
+            let aGradExpected = (aNew.rank > bNew.rank ? aGrad : multiplier * aGrad).broadcasted(like: aNew)
+            let bGradExpected = (bNew.rank > aNew.rank ? bGrad : multiplier * bGrad).broadcasted(like: bNew)
+
+            assertEqual(xComputed, xExpected, accuracy: 1e-16)
+            assertEqual(aGradComputed, aGradExpected, accuracy: 1e-16)
+            assertEqual(bGradComputed, bGradExpected, accuracy: 1e-16)
         }
     }
     
@@ -183,6 +194,6 @@ final class LinearAlgebraTests: XCTestCase {
         ("testTraceGradient", testTraceGradient),
         ("testLogdet", testLogdet),
         ("testLogdetGradient", testLogdetGradient),
-        ("testTriangularSolveGrad", testTriangularSolveGrad)
+        ("testTriangularSolve", testTriangularSolve)
     ]
 }

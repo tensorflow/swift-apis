@@ -202,6 +202,8 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
 // MARK: Solvers
 
 
+/// Solves optionally batched systems of linear equations with upper or lower triangular matrices by backsubstitution.
+/// Returns solution to the system `A x = b`. Shape of return matches `b`.
 ///
 /// - Parameters:
 ///     - matrix: A batched matrix tensor.
@@ -247,28 +249,37 @@ internal func _vjpTriangularSolve<T: TensorFlowFloatingPoint>(
         matchedMatrix = matrix.broadcasted(to: leadingDims + matrix.shape)
     }
     
-    let c = triangularSolve(matrix: matchedMatrix, rhs: rhs, lower: lower, adjoint: adjoint)
+    let x = triangularSolve(matrix: matchedMatrix, rhs: rhs, lower: lower, adjoint: adjoint)
     let triangularSolveGrad = { (gradient: Tensor<T>) -> (Tensor<T>, Tensor<T>) in
         let rhsGrad = triangularSolve(matrix: matchedMatrix, rhs: gradient, lower: lower, adjoint: !adjoint)
-        let (left, right) = adjoint ? (c, rhsGrad) : (rhsGrad, c)
+        let (left, right) = adjoint ? (x, rhsGrad) : (rhsGrad, x)
         let matrixGrad = -matmul(left, transposed: false, right, transposed: true)
-        let triangularMatrixGrad = lower
+        let triMatrixGrad = lower
             ? matrixGrad.bandPart(subdiagonalCount: -1, superdiagonalCount: 0)
             : matrixGrad.bandPart(subdiagonalCount: 0, superdiagonalCount: -1)
         if broadcastMatrix {
-            return (triangularMatrixGrad.unbroadcasted(to: matrix.shape), rhsGrad)
+            return (triMatrixGrad.unbroadcasted(to: matrix.shape), rhsGrad)
         } else if broadcastRhs {
-            return (triangularMatrixGrad, rhsGrad.unbroadcasted(to: rhs.shape))
+            return (triMatrixGrad, rhsGrad.unbroadcasted(to: rhs.shape))
         }
-        return (triangularMatrixGrad, rhsGrad)
+        return (triMatrixGrad, rhsGrad)
     }
-    return (c, triangularSolveGrad)
+    return (x, triangularSolveGrad)
 }
 
 
-/// Extracts leading dimension from tensors
+/// Returns leading dimension from tensors shapes.
+/// Example:
+/// The leading dimension for tensors with shapes `[N, M, K]` and `[M, K]`
+/// is `[N]`. In cases, when tensors shapes do not have common parts from the end, e.g.
+/// `[N, M, K]` and `[N, M]`, it will raise an error.
 ///
-/// - Parameter left:
+/// - Parameters:
+///     - left: Left tensor.
+///     - right: Right tensor.
+///     - ignoreLast: Number of dimensions from the end to ignore. Default value is zero.
+/// - Precondition: Left tensor rank cannot be lower than `ignoreLast`.
+/// - Precondition: Right tensor rank cannot be lower than `ignoreLast`.
 @inlinable
 public func extractLeadingDims<T: TensorFlowNumeric>(
     _ left: Tensor<T>,
@@ -278,10 +289,18 @@ public func extractLeadingDims<T: TensorFlowNumeric>(
     extractLeadingDims(left.shape, right.shape, ignoreLast: ignoreLast)
 }
 
-/// Extracts leading dimension from tensors
+/// Returns leading dimension from tensors shapes.
+/// Example:
+/// The leading dimension for tensors with shapes `[N, M, K]` and `[M, K]`
+/// is `[N]`. In cases, when tensors shapes do not have common parts from the end, e.g.
+/// `[N, M, K]` and `[N, M]`, it will raise an error.
 ///
-/// - Parameter left:
-/// - Parameter right:
+/// - Parameters:
+///     - left: Left tensor shape.
+///     - right: Right tensor shape.
+///     - ignoreLast: Number of dimensions from the end to ignore. Default value is zero.
+/// - Precondition: Left tensor rank cannot be lower than `ignoreLast`.
+/// - Precondition: Right tensor rank cannot be lower than `ignoreLast`.
 @inlinable
 public func extractLeadingDims(_ left: TensorShape, _ right: TensorShape, ignoreLast: Int = 0) -> TensorShape {
     precondition(left.rank >= ignoreLast, "The left tensor must have at least rank 2.")
