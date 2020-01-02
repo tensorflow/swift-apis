@@ -460,12 +460,18 @@ final class BasicOperatorTests: XCTestCase {
     }
 
     func testTranspose() {
-        // 3 x 2 -> 2 x 3
-        let xT = Tensor<Float>([[1, 2], [3, 4], [5, 6]]).transposed()
+        // 3 x 2 x 1 -> 2 x 3 x 1
+        let x = Tensor<Float>([[[1], [2]], [[3], [4]], [[5], [6]]])
+        let xT = x.transposed(permutation: 1, 0, 2)
         let xTArray = xT.array
-        XCTAssertEqual(xTArray.rank, 2)
-        XCTAssertEqual(xTArray.shape, [2, 3])
+        XCTAssertEqual(xTArray.rank, 3)
+        XCTAssertEqual(xTArray.shape, [2, 3, 1])
         XCTAssertEqual(xTArray.scalars, [1, 3, 5, 2, 4, 6])
+
+        let grad = gradient(at: x) { $0.transposed(permutation: 1, 0, 2).sum() }
+        XCTAssertEqual(grad.rank, 3)
+        XCTAssertEqual(grad.shape, [3, 2, 1])
+        XCTAssertEqual(grad.scalars, [1, 1, 1, 1, 1, 1])
     }
 
     func testReshape() {
