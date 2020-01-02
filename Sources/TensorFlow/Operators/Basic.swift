@@ -611,21 +611,23 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
         value: Tensor, pullback: (Tensor) -> Tensor
     ) {
         let value = transposed(permutation: permutation)
-        return (value, { $0.transposed(permutation: permutation) })
+        return (value, { $0.transposed(permutation: _Raw.invertPermutation(permutation)) })
     }
 
     @inlinable
     @derivative(of: transposed(permutation:))
     func _vjpTransposed(permutation: [Int]) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
+        let permutation = Tensor<Int32>(permutation.map(Int32.init))
         let value = transposed(permutation: permutation)
-        return (value, { $0.transposed(permutation: permutation) })
+        return (value, { $0.transposed(permutation: _Raw.invertPermutation(permutation)) })
     }
 
     @inlinable
     @derivative(of: transposed(permutation:))
     func _vjpTransposed(permutation: Int...) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
+        let permutation = Tensor<Int32>(permutation.map(Int32.init))
         let value = transposed(permutation: permutation)
-        return (value, { $0.transposed(permutation: permutation) })
+        return (value, { $0.transposed(permutation: _Raw.invertPermutation(permutation)) })
     }
 
     @inlinable
