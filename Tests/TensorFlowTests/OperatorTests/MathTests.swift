@@ -81,10 +81,11 @@ final class MathOperatorTests: XCTestCase {
     }
     
     func testLogSoftmax() {
-        let x = Tensor<Float>([32.0, 34.0, 35.0, 36.0, 37.0, 38.0])
+        let x = Tensor<Float>([[32.0, 34.0, 35.0],
+                               [36.0, 37.0, 38.0]])
         let y = logSoftmax(x)
-        let y1 = Tensor<Float>([-6.4534907, -4.4534907, -3.4534907, 
-                                -2.4534907, -1.4534906, -0.4534906])
+        let y1 = Tensor<Float>([[-3.3490124, -1.3490123, -0.34901226], 
+                                [-2.407606, -1.407606, -0.40760598]])
         XCTAssertEqual(y, y1)
     }
     
@@ -112,11 +113,11 @@ final class MathOperatorTests: XCTestCase {
     }
     
     func testSoftmax() {
-        let x = Tensor<Float>([-32.0, -34.0, -35.0, -36.0, -37.0, -38.0])
+        let x = Tensor<Float>([[-32.0, -34.0, -35.0], 
+                               [-36.0, -37.0, -38.0]])
         let y = softmax(x)
-        let expectedY = Tensor<Float>([0.82463706, 0.111602485, 
-                                       0.04105626, 0.015103755, 
-                                       0.005556361, 0.0020440707])
+        let expectedY = Tensor<Float>([[0.8437947, 0.1141952, 0.042010065], 
+                                       [0.66524094, 0.24472848, 0.09003057]])
         XCTAssertEqual(y, expectedY)
     }
     
