@@ -81,9 +81,10 @@ final class MathOperatorTests: XCTestCase {
     }
     
     func testLogSoftmax() {
-        let x = Tensor<Float>([32.0, 34.0, 35.0])
+        let x = Tensor<Float>([32.0, 34.0, 35.0, 36.0, 37.0, 38.0])
         let y = logSoftmax(x)
-        let y1 = Tensor<Float>([-3.3490124, -1.3490123, -0.34901226])
+        let y1 = Tensor<Float>([-6.4534907, -4.4534907, -3.4534907, 
+                                -2.4534907, -1.4534906, -0.4534906])
         XCTAssertEqual(y, y1)
     }
     
@@ -111,9 +112,11 @@ final class MathOperatorTests: XCTestCase {
     }
     
     func testSoftmax() {
-        let x = Tensor<Float>([-1.4, -3.5])
+        let x = Tensor<Float>([-32.0, -34.0, -35.0, -36.0, -37.0, -38.0])
         let y = softmax(x)
-        let expectedY = Tensor<Float>([0.8909032, 0.10909683])
+        let expectedY = Tensor<Float>([0.82463706, 0.111602485, 
+                                       0.04105626, 0.015103755, 
+                                       0.005556361, 0.0020440707])
         XCTAssertEqual(y, expectedY)
     }
     
@@ -576,6 +579,7 @@ final class MathOperatorTests: XCTestCase {
     }
 
     static var allTests = [
+        ("testElementaryFunctions", testElementaryFunctions),
         ("testAbs", testAbs),
         ("testSquaredDifference", testSquaredDifference),
         ("testZeros", testZeros),
@@ -586,7 +590,7 @@ final class MathOperatorTests: XCTestCase {
         ("testSoftmax", testSoftmax),
         ("testSigmoid", testSigmoid),
         ("testIdentity", testIdentity),
-        ("testElementaryFunctions", testElementaryFunctions),
+        ("testClipping", testClipping),
         ("testRsqrt", testRsqrt),
         ("testLog1p", testLog1p),
         ("testLog1mexp", testLog1mexp),
