@@ -2748,15 +2748,8 @@ public func matmul<Scalar: Numeric>(
     _ rhs: Tensor<Scalar>,
     transposed transposeRhs: Bool = false
 ) -> Tensor<Scalar> {
-    precondition(lhs.rank >= 2, "Input tensors must have at least rank 2.")
-    precondition(rhs.rank >= 2, "Input tensors must have at least rank 2.")
-    precondition(
-        lhs.shape[1] == rhs.shape[0],
-        """
-        Dimension mismatch: lhs.shape[1] is not equal to rhs.shape[0] \
-        (\(lhs.shape) vs \(rhs.shape)).
-        """
-    )
+    precondition(lhs.rank >= 2, "Input tensors must have at least rank 2")
+    precondition(rhs.rank >= 2, "Input tensors must have at least rank 2")
     if lhs.rank > 2 || rhs.rank > 2 {
         // TODO(TF-629): Conjugate to make compatible with the adjoint.
         return _Raw.batchMatMulV2(lhs, rhs, adjX: transposeLhs, adjY: transposeRhs)
