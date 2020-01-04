@@ -61,9 +61,9 @@ public extension Tensor where Scalar: TensorFlowNumeric {
     /// shape and values as the input, except for the specified diagonals of the innermost matrices
     /// which will be overwritten by the values in diagonal.
     ///
-    /// Parameter diagonal: A tensor with rank k.
+    /// Parameter diagonal: A tensor with rank `rank - 1`.
     @inlinable
-    func setDiagonal(_ diagonal: Tensor<Scalar>) -> Tensor {
+    func withDiagonal(_ diagonal: Tensor<Scalar>) -> Tensor {
         _Raw.matrixSetDiag(self, diagonal: diagonal)
     }
 
@@ -142,26 +142,31 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 /// Returns an identity matrix or a batch of matrices.
 ///
 /// - Parameters:
-///   - numRows: A non-negative integer giving the number of rows in each batch matrix.
-///   - numCols: A non-negative integer giving the number of rows in each batch matrix.
-///   - batchShape: A list of integers. The returned tensor will have leading batch dimensions
-///     of this shape.
+///   - rowCount: The number of rows in each batch matrix.
+///   - columnCount: The number of columns in each batch matrix.
+///   - batchShape: The leading batch dimensions of the returned tensor.
 /// TODO: Make columnCount and batchShape optional.
 public func eye<Scalar: Numeric>(
     rowCount: Int,
-    columnCount: Int,
-    batchShape: [Int]
+    columnCount: Int? = nil,
+    batchShape: [Int] = []
 ) -> Tensor<Scalar> {
+    let columnCount = columnCount ?? rowCount
     let diagonalSize = min(rowCount, columnCount)
-    let diagShape = batchShape + [diagonalSize]
+    var diagShape = [diagonalSize]
+    if(!batchShape.isEmpty) {
+        diagShape = batchShape + diagShape
+    }
     let diagonalOnes = Tensor<Scalar>(ones: TensorShape(diagShape))
     if rowCount == columnCount {
         return diagonalOnes.diagonal()
-    }
-    else {
-        let shape = batchShape + [rowCount, columnCount]
+    } else {
+        var shape = [rowCount, columnCount]
+        if(!batchShape.isEmpty) {
+        shape = batchShape + shape
+        }
         let zeroMatrix = Tensor<Scalar>(zeros: TensorShape(shape))
-        return zeroMatrix.setDiagonal(diagonalOnes)
+        return zeroMatrix.withDiagonal(diagonalOnes)
     }
 }
 
@@ -240,10 +245,10 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// `input[..., :, :] = u[..., :, :] * diag(s[..., :, :]) * transpose(v[..., :, :])`
     ///
     /// - Parameters:
-    ///   - computeUv: If `true` then left and right singular vectors will be computed and
-    ///     returned in `u` and `v`, respectively. Otherwise, only the singular values will be
+    ///   - computeUv: If `true`, left and right singular vectors will be computed and
+    ///     returned as `u` and `v`, respectively. Otherwise, only the singular values will be
     ///     computed, which can be significantly faster.
-    ///   - fullMatrices:  If `true`, compute full-sized `u` and `v`. If `false` compute only the
+    ///   - fullMatrices:  If `true`, compute full-sized `u` and `v`. If `false`, compute only the
     ///     leading `min(shape[rank - 1], shape[rank - 2])` singular vectors. Ignored if
     //      `computeUv` is `false`.
     @inlinable
