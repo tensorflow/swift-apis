@@ -155,7 +155,7 @@ func det<T:TensorFlowFloatingPoint>(_ matrix: Tensor<T>) -> Tensor<T> {
 /// Computes the sign and the log of the absolute value of the determinant of
 /// one or more square matrices.
 ///
-/// - Parameter matrix: A tensor of shape `[...,N, M, M]`.
+/// - Parameter matrix: A tensor of shape `[..., N, M, M]`.
 @inlinable
 func slogdet<T:TensorFlowFloatingPoint>(_ matrix: Tensor<T>) -> (Tensor<T>, Tensor<T>) {
     _Raw.logMatrixDeterminant(matrix)
