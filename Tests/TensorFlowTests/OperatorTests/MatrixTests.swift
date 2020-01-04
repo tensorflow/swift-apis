@@ -112,7 +112,7 @@ final class MatrixTests: XCTestCase {
         let expectedGrad = 2 * t3.bandPart(subdiagonalCount: 0, superdiagonalCount: -1)
         XCTAssertEqual(computedGrad, expectedGrad)
     }
-    
+
     static var allTests = [
         ("testDiagonalPart", testDiagonalPart),
         ("testDiagonal", testDiagonal),

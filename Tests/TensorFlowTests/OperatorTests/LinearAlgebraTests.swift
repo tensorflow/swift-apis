@@ -85,6 +85,22 @@ final class LinearAlgebraTests: XCTestCase {
         assertEqual(computedGradient, expectedGradient, accuracy: 1e-16)
     }
 
+    func testDet() {
+        let matrix = Tensor<Float>(shape: [1, 4, 4], scalars: (0..<16).map(Float.init))
+        let computedDet = det(matrix)
+        let expectedDet = Tensor<Float>([0])
+        XCTAssertEqual(computedDet, expectedDet)
+    }
+
+    func testSlogdet() {
+        let input = Tensor<Float>(shape: [1, 2, 2], scalars: (0..<4).map(Float.init))
+        let expectedSigns = Tensor<Float>([-1])
+        let expectedLogs = Tensor<Float>([0.6931472])
+        let (computedSigns, computedLogs) = slogdet(input)
+        XCTAssertEqual(computedSigns, expectedSigns)
+        XCTAssertEqual(computedLogs, expectedLogs)
+    }
+
     func testLogdet() {
         let input = Tensor<Float>([[[6.0, 4.0], [4.0, 6.0]], [[2.0, 6.0], [6.0, 20.0]]])
         let expected = Tensor<Float>([2.9957323, 1.3862934])
@@ -117,6 +133,8 @@ final class LinearAlgebraTests: XCTestCase {
         ("testQRDecompositionApproximation", testQRDecompositionApproximation),
         ("testTrace", testTrace),
         ("testTraceGradient", testTraceGradient),
+        ("testDet", testDet),
+        ("testSlogdet", testSlogdet),
         ("testLogdet", testLogdet),
         ("testLogdetGradient", testLogdetGradient)
     ]
