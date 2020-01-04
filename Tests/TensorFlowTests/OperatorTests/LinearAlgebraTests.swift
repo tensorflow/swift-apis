@@ -187,6 +187,36 @@ final class LinearAlgebraTests: XCTestCase {
         }
     }
     
+    func testExtractLeadingDims() {
+        var a: TensorShape = []
+        var b: TensorShape = []
+        var computed1: [Int] = extractLeadingDims(a, b).dimensions
+        var computed2: [Int] = extractLeadingDims(b, a).dimensions
+        XCTAssertEqual(computed1, [Int]())
+        XCTAssertEqual(computed2, [Int]())
+        
+        a = [1]
+        b = [3, 2, 1]
+        computed1 = extractLeadingDims(a, b).dimensions
+        computed2 = extractLeadingDims(b, a).dimensions
+        XCTAssertEqual(computed1, [3, 2])
+        XCTAssertEqual(computed2, [3, 2])
+
+        a = [3, 2, 1]
+        b = [4, 5, 6, 3, 20, 10]
+        computed1 = extractLeadingDims(a, b, ignoreLast: 2).dimensions
+        computed2 = extractLeadingDims(b, a, ignoreLast: 2).dimensions
+        XCTAssertEqual(computed1, [4, 5, 6])
+        XCTAssertEqual(computed2, [4, 5, 6])
+
+        a = [3, 2, 1]
+        b = [30, 20, 10]
+        computed1 = extractLeadingDims(a, b, ignoreLast: 3).dimensions
+        computed2 = extractLeadingDims(b, a, ignoreLast: 3).dimensions
+        XCTAssertEqual(computed1, [Int]())
+        XCTAssertEqual(computed2, [Int]())
+    }
+    
     static var allTests = [
         ("testCholesky", testCholesky),
         ("testQRDecompositionApproximation", testQRDecompositionApproximation),
@@ -194,6 +224,7 @@ final class LinearAlgebraTests: XCTestCase {
         ("testTraceGradient", testTraceGradient),
         ("testLogdet", testLogdet),
         ("testLogdetGradient", testLogdetGradient),
-        ("testTriangularSolve", testTriangularSolve)
+        ("testTriangularSolve", testTriangularSolve),
+        ("testExtractLeadingDims", testExtractLeadingDims)
     ]
 }
