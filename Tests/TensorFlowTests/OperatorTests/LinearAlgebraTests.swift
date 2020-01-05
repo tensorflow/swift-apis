@@ -76,7 +76,7 @@ final class LinearAlgebraTests: XCTestCase {
                                         transposed: false, v!, transposed: true))
             assertEqual(aReconstituted, a, accuracy: 1e-5)
 
-            var (sFull, uFull, vFull) = a.svd(computeUv: true, fullMatrices: true)
+            var (sFull, uFull, vFull) = a.svd(computeUV: true, fullMatrices: true)
             m = uFull!.shape.dimensions.last!
             n = vFull!.shape.dimensions.last!
             if m <= n {
