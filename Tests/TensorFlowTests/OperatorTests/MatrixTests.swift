@@ -74,9 +74,9 @@ final class MatrixTests: XCTestCase {
         let t1 = Tensor<Float>(shape: [4], scalars: (1...4).map(Float.init))
         let matrix = Tensor<Float>(zeros: [4, 4])
         XCTAssertEqual(matrix.withDiagonal(t1), [[1, 0, 0, 0],
-                                                [0, 2, 0, 0],
-                                                [0, 0, 3, 0],
-                                                [0, 0, 0, 4]])
+                                                 [0, 2, 0, 0],
+                                                 [0, 0, 3, 0],
+                                                 [0, 0, 0, 4]])
     }
     
     func testBandPart() {
