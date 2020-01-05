@@ -2647,6 +2647,18 @@ public struct Moments<Scalar: TensorFlowFloatingPoint>: Differentiable {
 }
 
 public extension Tensor where Scalar: TensorFlowFloatingPoint {
+    /// Helper function that assess if `axis` is in the range `[-rank, rank)`, where `rank` is the rank of
+    /// the provided tensors.
+    @usableFromInline
+    internal func preconditionAxis(_ axis: Int) {
+        precondition(
+            axis >= -rank && axis < rank,
+            """
+            The axis must be in the range [-rank, rank)
+            of the provided tensors.
+            """)
+    }
+
     /// Returns the mean and variance of this tensor along the specified axes. The reduced
     /// dimensions are removed.
     ///
@@ -2656,6 +2668,8 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func moments(squeezingAxes axes: Tensor<Int32>) -> Moments<Scalar> {
+        precondition(axes.rank == 1, "Axes must have rank 1")
+        for i in axes.scalars{ preconditionAxis(Int(i))}
         let mean = self.mean(alongAxes: axes)
         let variance = squaredDifference(self, mean).mean(squeezingAxes: axes)
         return Moments(
@@ -2705,6 +2719,8 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func moments(alongAxes axes: Tensor<Int32>) -> Moments<Scalar> {
+        precondition(axes.rank == 1, "Axes must have rank 1")
+        for i in axes.scalars{ preconditionAxis(Int(i))}
         let mean = self.mean(alongAxes: axes)
         let variance = squaredDifference(self, mean).mean(alongAxes: axes)
         return Moments<Scalar>(mean: mean, variance: variance)
