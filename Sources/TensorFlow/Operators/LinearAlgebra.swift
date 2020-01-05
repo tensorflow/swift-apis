@@ -245,17 +245,17 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// `input[..., :, :] = u[..., :, :] * diag(s[..., :, :]) * transpose(v[..., :, :])`
     ///
     /// - Parameters:
-    ///   - computeUv: If `true`, left and right singular vectors will be computed and
+    ///   - computeUV: If `true`, left and right singular vectors will be computed and
     ///     returned as `u` and `v`, respectively. Otherwise, only the singular values will be
     ///     computed, which can be significantly faster.
     ///   - fullMatrices:  If `true`, compute full-sized `u` and `v`. If `false`, compute only the
     ///     leading `min(shape[rank - 1], shape[rank - 2])` singular vectors. Ignored if
     //      `computeUv` is `false`.
     @inlinable
-    func svd(computeUv: Bool = true, fullMatrices: Bool = false
+    func svd(computeUV: Bool = true, fullMatrices: Bool = false
     ) -> (s: Tensor<Scalar>, u: Tensor<Scalar>?, v: Tensor<Scalar>?) {
-        let (s, u, v) = _Raw.svd(self, computeUv: computeUv, fullMatrices: fullMatrices)
-        if !computeUv {
+        let (s, u, v) = _Raw.svd(self, computeUv: computeUV, fullMatrices: fullMatrices)
+        if !computeUV {
             return (s, nil, nil)
         }
         return (s, u, v)
