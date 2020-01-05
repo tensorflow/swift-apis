@@ -2436,17 +2436,6 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 // TODO: Consider making the return type be generic over `FloatingPoint` types
 // so that `self`'s scalar type can be any `Numeric` type.
 public extension Tensor where Scalar: TensorFlowFloatingPoint {
-    /// Helper function that assess if `axis` is in the range `[-rank, rank)`, where `rank` is the rank of
-    /// the provided tensors.
-    @usableFromInline
-    internal func preconditionAxis(_ axis: Int) {
-        precondition(
-            axis >= -rank && axis < rank,
-            """
-            The axis must be in the range [-rank, rank)
-            of the provided tensors.
-            """)
-    }
 
     /// Returns the standard deviation of the elements along the specified axes. The reduced
     /// dimensions are retained with value `1`. Does not apply Bessel's correction.
@@ -2661,18 +2650,6 @@ public struct Moments<Scalar: TensorFlowFloatingPoint>: Differentiable {
 }
 
 public extension Tensor where Scalar: TensorFlowFloatingPoint {
-    /// Helper function that assess if `axis` is in the range `[-rank, rank)`, where `rank` is the rank of
-    /// the provided tensors.
-    @usableFromInline
-    internal func preconditionAxis(_ axis: Int) {
-        precondition(
-            axis >= -rank && axis < rank,
-            """
-            The axis must be in the range [-rank, rank)
-            of the provided tensors.
-            """)
-    }
-
     /// Returns the mean and variance of this tensor along the specified axes. The reduced
     /// dimensions are removed.
     ///
