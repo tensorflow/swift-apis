@@ -45,7 +45,7 @@ def execute_benchmark(test_case, cmd, timeout):
   return test_case
 
 
-def benchmark(test_case, cmd, timeout=300):
+def benchmark(test_case, cmd, timeout=600):
   with tempfile.TemporaryDirectory() as build_path:
     cmd += ['--build-path', build_path]
     return execute_benchmark(test_case, cmd, timeout)
