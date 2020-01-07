@@ -266,7 +266,7 @@ public final class _ExecutionContext {
 
         if case .remote(let serverDef) = _RuntimeConfig.session {
             debugLog("Setting up the server def to \(serverDef)...")
-            let serverDef: UnsafeMutablePointer! = TFE_GetServerDef(serverDef, status)
+            let serverDef: UnsafeMutablePointer<TF_Buffer>! = TFE_GetServerDef(serverDef, status)
             checkOk(status)
             TFE_ContextSetServerDef(
                 eagerContext, /*keep_alive_secs*/0, serverDef.pointee.data,
