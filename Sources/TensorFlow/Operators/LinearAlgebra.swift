@@ -231,21 +231,34 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         _Raw.qr(self, fullMatrices: fullMatrices)
     }
 
-    /// Returns the singular value decompositions of one or more matrices.
+    /// Returns the singular value decomposition of `self`, given that `self` is an optionally
+    /// batched matrix.
     ///
-    /// Computes the SVD of each inner matrix in the `input` tensor such that
-    /// `input[..., :, :] = u[..., :, :] * diag(s[..., :, :]) * transpose(v[..., :, :])`
+    /// The singular value decomposition (SVD) of the optionally batched matrix `self` is values
+    /// `s`, `u`, and `v`, such that:
+    ///
+    ///     self[..., :, :] = u[..., :, :] • s[..., :, :].diagonal() • v[..., :, :].transposed()`
+    ///
+    /// self` must be a tensor with shape `[..., M, N]`. Let `K = min(M, N)`.
     ///
     /// - Parameters:
-    ///   - computeUV: If `true`, left and right singular vectors will be computed and
-    ///     returned as `u` and `v`, respectively. Otherwise, only the singular values will be
-    ///     computed, which can be significantly faster.
-    ///   - fullMatrices:  If `true`, compute full-sized `u` and `v`. If `false`, compute only the
-    ///     leading `min(shape[rank - 1], shape[rank - 2])` singular vectors. Ignored if
-    //      `computeUV` is `false`.
+    ///   - computeUV: If `true`, the left and right singular vectors are computed and returned as
+    ///     `u` and `v`, respectively. If `false`, `nil` values are returned as `u` and `v`.
+    ///   - fullMatrices: If `true`, `u` and `v` respectively have shapes `[..., M, M]` and
+    ///     `[..., N, N]`. If `false`, `u` and `v` respectively have shapes `[..., M, K]` and
+    ///     `[..., K, N]`. Ignored when `computeUV` is false.
+    ///
+    /// - Returns:
+    ///   - s: The singular values, with shape `[..., K]`. Within each vector, the singular values
+    ///     are sorted in descending order.
+    ///   - u: The left singular vectors.
+    ///   - v: The right singular vectors.
+    ///
+    /// - Precondition: `self` must be a tensor with shape `[..., M, N]`.
     @inlinable
-    func svd(computeUV: Bool = true, fullMatrices: Bool = false
-    ) -> (s: Tensor<Scalar>, u: Tensor<Scalar>?, v: Tensor<Scalar>?) {
+    func svd(computeUV: Bool = true, fullMatrices: Bool = false) -> (
+        s: Tensor<Scalar>, u: Tensor<Scalar>?, v: Tensor<Scalar>?
+    ) {
         let (s, u, v) = _Raw.svd(self, computeUv: computeUV, fullMatrices: fullMatrices)
         if !computeUV {
             return (s, nil, nil)
