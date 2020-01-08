@@ -607,21 +607,23 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 // Element-wise Unary Math Functions
 //===------------------------------------------------------------------------------------------===//
 
-// Export Glibc/Darwin math functions. We should not require users to import
-// Foundation/Darwin/Glibc in order to use scalar math functions.
-//
+// Export Glibc/Darwin/ucrt math functions. We should not require users to import
+// Foundation/Darwin/Glibc/ucrt in order to use scalar math functions.
+
 #if os(macOS) || os(iOS) || os(watchOS) || os(tvOS)
 @_exported import Darwin.C
+#elseif os(Windows)
+@_exported import ucrt
 #else
 @_exported import Glibc
 #endif
+
+// FIXME: Scoped imports are not yet supported in parseable module interfaces, so
+// `@_exported import` won't work. When that becomes supported, switch to `@_exported import` by
+// removing `import Darwin.C/Glibc` above and uncommenting the following lines.
 //
-// FIXME(rxwei): Scoped imports are not yet supported in parseable module
-// interfaces, so `@_exported import` won't work. When that becomes supported,
-// switch to `@_exported import` by removing `import Darwin.C/Glibc` above and
-// uncommenting the following lines. In the meantime, consider using indirect
-// wrappers for each function so that random libc symbols won't be leaked to
-// users' code completion.
+// In the meantime, consider using indirect wrappers for each function to avoidleaking random libc
+// symbols to users' code completion.
 //
 // #if os(macOS) || os(iOS) || os(watchOS) || os(tvOS)
 // @_exported import func Darwin.C.sin
@@ -642,6 +644,25 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 // @_exported import func Darwin.C.expf
 // @_exported import func Darwin.C.pow
 // @_exported import func Darwin.C.powf
+// #elseif os(Windows)
+// @_exported import func ucrt.sin
+// @_exported import func ucrt.cos
+// @_exported import func ucrt.tan
+// @_exported import func ucrt.sinf
+// @_exported import func ucrt.cosf
+// @_exported import func ucrt.tanf
+// @_exported import func ucrt.sinh
+// @_exported import func ucrt.cosh
+// @_exported import func ucrt.tanh
+// @_exported import func ucrt.sinhf
+// @_exported import func ucrt.coshf
+// @_exported import func ucrt.tanhf
+// @_exported import func ucrt.log
+// @_exported import func ucrt.logf
+// @_exported import func ucrt.exp
+// @_exported import func ucrt.expf
+// @_exported import func ucrt.pow
+// @_exported import func ucrt.powf
 // #else
 // @_exported import func Glibc.sin
 // @_exported import func Glibc.cos
