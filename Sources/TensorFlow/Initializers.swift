@@ -520,6 +520,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     ///
     /// - Parameters:
     ///   - shape: The dimensions of the tensor.
+    ///   - seed: The seed value.
     init(glorotUniform shape: TensorShape, seed: TensorFlowSeed = Context.local.randomSeed) {
         let (fanIn, fanOut) = shape.fans()
         let limit = Tensor<Scalar>(Scalar.sqrt(6 / Scalar(fanIn + fanOut)))
@@ -538,6 +539,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     ///
     /// - Parameters:
     ///   - shape: The dimensions of the tensor.
+    ///   - seed: The seed value.
     init(glorotNormal shape: TensorShape, seed: TensorFlowSeed = Context.local.randomSeed) {
         let (fanIn, fanOut) = shape.fans()
         var standardDeviation = Tensor<Scalar>(Scalar.sqrt(2 / Scalar(fanIn + fanOut)))
@@ -565,6 +567,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     ///
     /// - Parameters:
     ///   - shape: The dimensions of the tensor.
+    ///   - seed: The seed value.
     init(heUniform shape: TensorShape, seed: TensorFlowSeed = Context.local.randomSeed) {
         let (fanIn, _) = shape.fans()
         let limit = Tensor<Scalar>(Scalar.sqrt(6 / Scalar(fanIn)))
@@ -583,6 +586,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     ///
     /// - Parameters:
     ///   - shape: The dimensions of the tensor.
+    ///   - seed: The seed value.
     init(heNormal shape: TensorShape, seed: TensorFlowSeed = Context.local.randomSeed) {
         let (fanIn, _) = shape.fans()
         var standardDeviation = Tensor<Scalar>(Scalar.sqrt(2 / Scalar(fanIn)))
@@ -609,6 +613,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     ///
     /// - Parameters:
     ///   - shape: The dimensions of the tensor.
+    ///   - seed: The seed value.
     init(leCunUniform shape: TensorShape, seed: TensorFlowSeed = Context.local.randomSeed) {
         let (fanIn, _) = shape.fans()
         let limit = Tensor<Scalar>(Scalar.sqrt(3 / Scalar(fanIn)))
@@ -626,6 +631,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     ///
     /// - Parameters:
     ///   - shape: The dimensions of the tensor.
+    ///   - seed: The seed value.
     init(leCunNormal shape: TensorShape, seed: TensorFlowSeed = Context.local.randomSeed) {
         let (fanIn, _) = shape.fans()
         var standardDeviation = Tensor<Scalar>(Scalar.sqrt(1 / Scalar(fanIn)))
