@@ -559,7 +559,7 @@ public struct BetaDistribution: RandomDistribution {
         using rng: inout G
     ) -> Float {
         let alpha = a + b
-        let beta  = sqrt((alpha - 2) / (2 * a * b - alpha))
+        let beta  = sqrtf((alpha - 2.0) / (2 * a * b - alpha))
         let gamma = a + 1 / beta
 
         var r: Float = 0.0
@@ -569,21 +569,21 @@ public struct BetaDistribution: RandomDistribution {
         repeat {
             let u1 = Float.random(in: 0.0...1.0, using: &rng)
             let u2 = Float.random(in: 0.0...1.0, using: &rng)
-            let v = beta * (log(u1) - log1p(-u1))
+            let v = beta * (logf(u1) - log1pf(-u1))
             r = gamma * v - 1.3862944
             let z = u1 * u1 * u2
-            w = a * exp(v)
+            w = a * expf(v)
 
             let s = a + r - w
             if s + 2.609438 >= 5 * z {
                 break
             }
 
-            t = log(z)
+            t = logf(z)
             if s >= t {
                 break
             }
-        } while r + alpha * (log(alpha) - log(b + w)) < t
+        } while r + alpha * (logf(alpha) - logf(b + w)) < t
 
         w = min(w, Float.greatestFiniteMagnitude)
         return a == alpha0 ? w / (b + w) : b / (b + w)
@@ -625,8 +625,8 @@ public struct BetaDistribution: RandomDistribution {
                 }
             } else {
                 if z <= 0.25 {
-                    let v = beta * (log(u1) - log1p(-u1))
-                    w = a * exp(v)
+                    let v = beta * (logf(u1) - log1pf(-u1))
+                    w = a * expf(v)
                     break
                 }
                 if z >= k2 {
@@ -634,9 +634,9 @@ public struct BetaDistribution: RandomDistribution {
                 }
             }
 
-            let v = beta * (log(u1) - log1p(-u1))
-            w = a * exp(v)
-            if alpha * (log(alpha) - log(b + 1) + v) - 1.3862944 >= log(z) {
+            let v = beta * (logf(u1) - log1pf(-u1))
+            w = a * expf(v)
+            if alpha * (logf(alpha) - logf(b + 1) + v) - 1.3862944 >= logf(z) {
                 break
             }
         }
