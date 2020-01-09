@@ -2435,24 +2435,33 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 
 // TODO: Consider making the return type be generic over `FloatingPoint` types
 // so that `self`'s scalar type can be any `Numeric` type.
-public extension Tensor where Scalar: TensorFlowFloatingPoint {
-
-    /// Helper function that assess if `axis` is in the range `[-rank, rank)`, where `rank` is the rank of
-    /// the provided tensors.
+extension Tensor {
+    /// Returns `true` if given axis is in the range `[-rank, rank)`
+    /// for the provided tensors.
     @usableFromInline
-    internal func isAxisInRange(_ axis: Int) -> Bool {
+    internal func isAxisInRange<T: BinaryInteger>(_ axis: T) -> Bool {
+        let axis = Int(axis)
         return axis >= -rank && axis < rank
     }
 
+    /// Returns `true` if given axes are all in the range `[-rank, rank)`
+    /// for the provided tensors.
     @usableFromInline
-    internal func areAxesInRange(_ axes: [Int]) -> Bool {
+    internal func areAxesInRange<T: BinaryInteger>(_ axes: [T]) -> Bool {
         return !axes.contains(where: { !isAxisInRange($0) })
     }
 
+    /// Returns `true` if the scalars of the given 1-D tensor are all in the
+    /// range `[-rank, rank)` for the provided tensor.
     @usableFromInline
     internal func areAxesInRange(_ axes: Tensor<Int32>) -> Bool {
-        return !axes.scalars.contains(where: { !isAxisInRange(Int($0)) })
+        precondition(axes.rank == 1, "Axes must have rank 1")
+        return areAxesInRange(axes.scalars)
+        // return !axes.scalars.contains(where: { !isAxisInRange(Int($0)) })
     }
+}
+
+public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// Returns the standard deviation of the elements along the specified axes. The reduced
     /// dimensions are retained with value `1`. Does not apply Bessel's correction.
     ///
@@ -2461,12 +2470,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func standardDeviation(squeezingAxes axes: Tensor<Int32>) -> Tensor {
-        precondition(
-            areAxesInRange(axes),
-            """
-            The axis must be in the range [-rank, rank)
-            of the provided tensors.
-            """)
+        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
         return TensorFlow.sqrt(variance(squeezingAxes: axes))
     }
 
@@ -2478,12 +2482,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func standardDeviation(squeezingAxes axes: [Int]) -> Tensor {
-        precondition(
-            areAxesInRange(axes),
-            """
-            The axis must be in the range [-rank, rank)
-            of the provided tensors.
-            """)
+        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
         return TensorFlow.sqrt(variance(squeezingAxes: axes))
     }
 
@@ -2517,12 +2516,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func standardDeviation(alongAxes axes: Tensor<Int32>) -> Tensor {
-        precondition(
-            areAxesInRange(axes),
-            """
-            The axis must be in the range [-rank, rank)
-            of the provided tensors.
-            """)
+        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
         return TensorFlow.sqrt(variance(alongAxes: axes))
     }
 
@@ -2547,12 +2541,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func standardDeviation(alongAxes axes: Int...) -> Tensor {
-        precondition(
-            areAxesInRange(axes),
-            """
-            The axis must be in the range [-rank, rank)
-            of the provided tensors.
-            """)
+        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
         return TensorFlow.sqrt(variance(alongAxes: axes))
     }
 
@@ -2567,12 +2556,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func logSumExp(squeezingAxes axes: Tensor<Int32>) -> Tensor {
-        precondition(
-            areAxesInRange(axes),
-            """
-            The axis must be in the range [-rank, rank)
-            of the provided tensors.
-            """)
+        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
         let rawMax = max(alongAxes: axes)
         let offset = withoutDerivative(at: rawMax) { rawMax in
             Tensor<Scalar>(zerosLike: rawMax).replacing(
@@ -2637,12 +2621,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func logSumExp(alongAxes axes: Tensor<Int32>) -> Tensor {
-        precondition(
-            areAxesInRange(axes),
-            """
-            The axis must be in the range [-rank, rank)
-            of the provided tensors.
-            """)
+        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
         let rawMax = max(alongAxes: axes)
         let offset = withoutDerivative(at: rawMax) { rawMax in
             Tensor<Scalar>(zerosLike: rawMax).replacing(
@@ -2685,7 +2664,6 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         logSumExp(alongAxes: axes)
     }
 }
-
 /// Pair of first and second moments (i.e., mean and variance).
 /// - Note: This is needed because tuple types are not differentiable.
 public struct Moments<Scalar: TensorFlowFloatingPoint>: Differentiable {
@@ -2700,19 +2678,6 @@ public struct Moments<Scalar: TensorFlowFloatingPoint>: Differentiable {
 }
 
 public extension Tensor where Scalar: TensorFlowFloatingPoint {
-
-    /// Helper function that assess if `axis` is in the range `[-rank, rank)`, where `rank` is the rank of
-    /// the provided tensors.
-    @usableFromInline
-    internal func isAxisInRange(_ axis: Int) -> Bool {
-        return axis >= -rank && axis < rank
-    }
-
-    @usableFromInline
-    internal func areAxesInRange(_ axes: Tensor<Int32>) -> Bool {
-        return !axes.scalars.contains(where: { !isAxisInRange(Int($0)) })
-    }
-
     /// Returns the mean and variance of this tensor along the specified axes. The reduced
     /// dimensions are removed.
     ///
@@ -2722,13 +2687,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func moments(squeezingAxes axes: Tensor<Int32>) -> Moments<Scalar> {
-        precondition(axes.rank == 1, "Axes must have rank 1")
-        precondition(
-            areAxesInRange(axes),
-            """
-            The axis must be in the range [-rank, rank)
-            of the provided tensors.
-            """)
+        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
         let mean = self.mean(alongAxes: axes)
         let variance = squaredDifference(self, mean).mean(squeezingAxes: axes)
         return Moments(
@@ -2778,13 +2737,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func moments(alongAxes axes: Tensor<Int32>) -> Moments<Scalar> {
-        precondition(axes.rank == 1, "Axes must have rank 1")
-        precondition(
-            areAxesInRange(axes),
-            """
-            The axis must be in the range [-rank, rank)
-            of the provided tensors.
-            """)
+        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
         let mean = self.mean(alongAxes: axes)
         let variance = squaredDifference(self, mean).mean(alongAxes: axes)
         return Moments<Scalar>(mean: mean, variance: variance)
