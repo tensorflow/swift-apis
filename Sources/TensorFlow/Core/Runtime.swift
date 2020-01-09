@@ -524,9 +524,9 @@ class _ThreadLocalState {
         var key = pthread_key_t()
         pthread_key_create(&key) {
 #if os(macOS) || os(iOS) || os(watchOS) || os(tvOS)
-            let _: AnyObject = Unmanaged.fromOpaque($0).takeRetainedValue()
+            Unmanaged<AnyObject>.fromOpaque($0).release()
 #else
-            let _: AnyObject = Unmanaged.fromOpaque($0!).takeRetainedValue()
+            Unmanaged<AnyObject>.fromOpaque($0!).release()
 #endif
         }
         return key
