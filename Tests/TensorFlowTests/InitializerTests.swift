@@ -129,14 +129,16 @@ final class InitializerTests: XCTestCase {
             let t = Tensor<Float>(
                 randomUniform: fcShape,
                 lowerBound: Tensor(2),
-                upperBound: Tensor(3))
+                upperBound: Tensor(3),
+                seed: (0xFeed, 0xBeef))
             testDistribution(t, expectedMean: 2.5, expectedMin: 2, expectedMax: 3)
         }
         do {
             let t = Tensor<Float>(
                 randomUniform: fcShape,
                 lowerBound: Tensor(-1),
-                upperBound: Tensor(1))
+                upperBound: Tensor(1),
+                seed: (0xFeed, 0xBeef))
             testDistribution(t, expectedMean: 0, expectedMin: -1, expectedMax: 1)
         }
     }
@@ -145,17 +147,18 @@ final class InitializerTests: XCTestCase {
         let t = Tensor<Float>(
             randomNormal: convShape,
             mean: Tensor(1),
-            standardDeviation: Tensor(2))
+            standardDeviation: Tensor(2),
+            seed: (0xFeed, 0xBeef))
         testDistribution(t, expectedMean: 1, expectedStandardDeviation: 2)
     }
 
     func testRandomTruncatedNormal() {
-        let t = Tensor<Float>(randomTruncatedNormal: convShape)
+        let t = Tensor<Float>(randomTruncatedNormal: convShape, seed: (0xFeed, 0xBeef))
         testDistribution(t, expectedMean: 0, expectedMin: -2, expectedMax: 2)
     }
 
     func testGlorotUniform() {
-        let t = Tensor<Float>(glorotUniform: convShape)
+        let t = Tensor<Float>(glorotUniform: convShape, seed: (0xFeed, 0xBeef))
         let spatialSize = convShape[0..<2].contiguousSize
         let (fanIn, fanOut) = (convShape[2] * spatialSize, convShape[3] * spatialSize)
         let stdDev = sqrt(Float(2.0) / Float(fanIn + fanOut))
@@ -163,11 +166,43 @@ final class InitializerTests: XCTestCase {
     }
 
     func testGlorotNormal() {
-        let t = Tensor<Float>(glorotNormal: convShape)
+        let t = Tensor<Float>(glorotNormal: convShape, seed: (0xFeed, 0xBeef))
         let spatialSize = convShape[0..<2].contiguousSize
         let (fanIn, fanOut) = (convShape[2] * spatialSize, convShape[3] * spatialSize)
         let stdDev = sqrt(Float(2.0) / Float(fanIn + fanOut))
-        testDistribution(t, expectedMean: 0, expectedStandardDeviation: stdDev)
+        testDistribution(t, expectedMean: 0, expectedStandardDeviation: stdDev, tolerance: 1e-4)
+    }
+
+    func testHeUniform() {
+        let t = Tensor<Float>(heUniform: convShape, seed: (0xFeed, 0xBeef))
+        let spatialSize = convShape[0..<2].contiguousSize
+        let (fanIn, _) = (convShape[2] * spatialSize, convShape[3] * spatialSize)
+        let stdDev = sqrt(Float(2.0) / Float(fanIn))
+        testDistribution(t, expectedMean: 0, expectedStandardDeviation: stdDev, tolerance: 1e-4)
+    }
+
+    func testHeNormal() {
+        let t = Tensor<Float>(heNormal: convShape, seed: (0xFeed, 0xBeef))
+        let spatialSize = convShape[0..<2].contiguousSize
+        let (fanIn, _) = (convShape[2] * spatialSize, convShape[3] * spatialSize)
+        let stdDev = sqrt(Float(2.0) / Float(fanIn))
+        testDistribution(t, expectedMean: 0, expectedStandardDeviation: stdDev, tolerance: 1e-4)
+    }
+
+    func testLeCunUniform() {
+        let t = Tensor<Float>(leCunUniform: convShape, seed: (0xFeed, 0xBeef))
+        let spatialSize = convShape[0..<2].contiguousSize
+        let (fanIn, _) = (convShape[2] * spatialSize, convShape[3] * spatialSize)
+        let stdDev = sqrt(Float(1.0) / Float(fanIn))
+        testDistribution(t, expectedMean: 0, expectedStandardDeviation: stdDev, tolerance: 1e-4)
+    }
+
+    func testLeCunNormal() {
+        let t = Tensor<Float>(leCunNormal: convShape, seed: (0xFeed, 0xBeef))
+        let spatialSize = convShape[0..<2].contiguousSize
+        let (fanIn, _) = (convShape[2] * spatialSize, convShape[3] * spatialSize)
+        let stdDev = sqrt(Float(1.0) / Float(fanIn))
+        testDistribution(t, expectedMean: 0, expectedStandardDeviation: stdDev, tolerance: 1e-4)
     }
 
     func testCategoricalFromLogits() {
@@ -212,6 +247,10 @@ final class InitializerTests: XCTestCase {
         ("testRandomTruncatedNormal", testRandomTruncatedNormal),
         ("testGlorotUniform", testGlorotUniform),
         ("testGlorotNormal", testGlorotNormal),
+        ("testHeUniform", testHeUniform),
+        ("testHeNormal", testHeNormal),
+        ("testLeCunUniform", testLeCunUniform),
+        ("testLeCunNormal", testLeCunNormal),
         ("testCategoricalFromLogits", testCategoricalFromLogits),
         ("testOrthogonalShapesValues", testOrthogonalShapesValues)
     ]
