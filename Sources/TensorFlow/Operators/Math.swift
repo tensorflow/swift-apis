@@ -2440,7 +2440,19 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// Helper function that assess if `axis` is in the range `[-rank, rank)`, where `rank` is the rank of
     /// the provided tensors.
     @usableFromInline
+    internal func isAxisInRange(_ axis: Int) -> Bool {
+        return axis >= -rank && axis < rank
+    }
 
+    @usableFromInline
+    internal func areAxesInRange(_ axes: [Int]) -> Bool {
+        return !axes.contains(where: { !isAxisInRange($0) })
+    }
+
+    @usableFromInline
+    internal func areAxesInRange(_ axes: Tensor<Int32>) -> Bool {
+        return !axes.scalars.contains(where: { !isAxisInRange(Int($0)) })
+    }
     /// Returns the standard deviation of the elements along the specified axes. The reduced
     /// dimensions are retained with value `1`. Does not apply Bessel's correction.
     ///
@@ -2449,8 +2461,13 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func standardDeviation(squeezingAxes axes: Tensor<Int32>) -> Tensor {
-        for i in axes.scalars{ preconditionAxis(Int(i))}
-        TensorFlow.sqrt(variance(squeezingAxes: axes))
+        precondition(
+            areAxesInRange(axes),
+            """
+            The axis must be in the range [-rank, rank)
+            of the provided tensors.
+            """)
+        return TensorFlow.sqrt(variance(squeezingAxes: axes))
     }
 
     /// Returns the standard deviation of the elements along the specified axes. The reduced
@@ -2461,8 +2478,13 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func standardDeviation(squeezingAxes axes: [Int]) -> Tensor {
-        for i in axes.scalars{ preconditionAxis(Int(i))}
-        TensorFlow.sqrt(variance(squeezingAxes: axes))
+        precondition(
+            areAxesInRange(axes),
+            """
+            The axis must be in the range [-rank, rank)
+            of the provided tensors.
+            """)
+        return TensorFlow.sqrt(variance(squeezingAxes: axes))
     }
 
     /// Returns the standard deviation of the elements along the specified axes. The reduced
@@ -2495,7 +2517,13 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func standardDeviation(alongAxes axes: Tensor<Int32>) -> Tensor {
-        TensorFlow.sqrt(variance(alongAxes: axes))
+        precondition(
+            areAxesInRange(axes),
+            """
+            The axis must be in the range [-rank, rank)
+            of the provided tensors.
+            """)
+        return TensorFlow.sqrt(variance(alongAxes: axes))
     }
 
     /// Returns the standard deviation of the elements along the specified axes. The reduced
@@ -2519,7 +2547,13 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func standardDeviation(alongAxes axes: Int...) -> Tensor {
-        TensorFlow.sqrt(variance(alongAxes: axes))
+        precondition(
+            areAxesInRange(axes),
+            """
+            The axis must be in the range [-rank, rank)
+            of the provided tensors.
+            """)
+        return TensorFlow.sqrt(variance(alongAxes: axes))
     }
 
     /// Returns `log(exp(self).sum(squeezingAxes: axes))`. The reduced dimensions are removed.
@@ -2533,6 +2567,12 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func logSumExp(squeezingAxes axes: Tensor<Int32>) -> Tensor {
+        precondition(
+            areAxesInRange(axes),
+            """
+            The axis must be in the range [-rank, rank)
+            of the provided tensors.
+            """)
         let rawMax = max(alongAxes: axes)
         let offset = withoutDerivative(at: rawMax) { rawMax in
             Tensor<Scalar>(zerosLike: rawMax).replacing(
@@ -2597,6 +2637,12 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func logSumExp(alongAxes axes: Tensor<Int32>) -> Tensor {
+        precondition(
+            areAxesInRange(axes),
+            """
+            The axis must be in the range [-rank, rank)
+            of the provided tensors.
+            """)
         let rawMax = max(alongAxes: axes)
         let offset = withoutDerivative(at: rawMax) { rawMax in
             Tensor<Scalar>(zerosLike: rawMax).replacing(
