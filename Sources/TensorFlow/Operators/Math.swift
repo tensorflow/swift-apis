@@ -2433,34 +2433,30 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 }
 
-// TODO: Consider making the return type be generic over `FloatingPoint` types
-// so that `self`'s scalar type can be any `Numeric` type.
 extension Tensor {
-    /// Returns `true` if given axis is in the range `[-rank, rank)`
-    /// for the provided tensors.
+    /// Returns `true` if given axis is in the range `[-rank, rank)`.
     @usableFromInline
     internal func isAxisInRange<T: BinaryInteger>(_ axis: T) -> Bool {
         let axis = Int(axis)
         return axis >= -rank && axis < rank
     }
 
-    /// Returns `true` if given axes are all in the range `[-rank, rank)`
-    /// for the provided tensors.
+    /// Returns `true` if given axes are all in the range `[-rank, rank)`.
     @usableFromInline
     internal func areAxesInRange<T: BinaryInteger>(_ axes: [T]) -> Bool {
         return !axes.contains(where: { !isAxisInRange($0) })
     }
 
-    /// Returns `true` if the scalars of the given 1-D tensor are all in the
-    /// range `[-rank, rank)` for the provided tensor.
+    /// Returns `true` if the scalars of the given 1-D tensor are all in the range `[-rank, rank)`.
     @usableFromInline
     internal func areAxesInRange(_ axes: Tensor<Int32>) -> Bool {
         precondition(axes.rank == 1, "Axes must have rank 1")
         return areAxesInRange(axes.scalars)
-        // return !axes.scalars.contains(where: { !isAxisInRange(Int($0)) })
     }
 }
 
+// TODO: Consider making the return type be generic over `FloatingPoint` types
+// so that `self`'s scalar type can be any `Numeric` type.
 public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// Returns the standard deviation of the elements along the specified axes. The reduced
     /// dimensions are retained with value `1`. Does not apply Bessel's correction.
@@ -2664,6 +2660,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         logSumExp(alongAxes: axes)
     }
 }
+
 /// Pair of first and second moments (i.e., mean and variance).
 /// - Note: This is needed because tuple types are not differentiable.
 public struct Moments<Scalar: TensorFlowFloatingPoint>: Differentiable {
