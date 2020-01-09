@@ -1206,3 +1206,29 @@ internal extension Tensor.IndexPath {
         self.squeezeAxisMask = squeezeAxisMask
     }
 }
+
+//===------------------------------------------------------------------------------------------===//
+// Precondition utilities
+//===------------------------------------------------------------------------------------------===//
+
+extension Tensor {
+    /// Returns `true` if the given axis is in the range `[-rank, rank)`.
+    @usableFromInline
+    internal func isAxisInRange<T: BinaryInteger>(_ axis: T) -> Bool {
+        let axis = Int(axis)
+        return axis >= -rank && axis < rank
+    }
+
+    /// Returns `true` if all given axes are in the range `[-rank, rank)`.
+    @usableFromInline
+    internal func areAxesInRange<T: BinaryInteger>(_ axes: [T]) -> Bool {
+        return !axes.contains(where: { !isAxisInRange($0) })
+    }
+
+    /// Returns `true` if all scalars of the given 1-D tensor are in the range `[-rank, rank)`.
+    @usableFromInline
+    internal func areAxesInRange(_ axes: Tensor<Int32>) -> Bool {
+        precondition(axes.rank == 1, "Axes must have rank 1")
+        return areAxesInRange(axes.scalars)
+    }
+}

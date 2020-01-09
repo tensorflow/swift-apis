@@ -2433,28 +2433,6 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 }
 
-extension Tensor {
-    /// Returns `true` if given axis is in the range `[-rank, rank)`.
-    @usableFromInline
-    internal func isAxisInRange<T: BinaryInteger>(_ axis: T) -> Bool {
-        let axis = Int(axis)
-        return axis >= -rank && axis < rank
-    }
-
-    /// Returns `true` if given axes are all in the range `[-rank, rank)`.
-    @usableFromInline
-    internal func areAxesInRange<T: BinaryInteger>(_ axes: [T]) -> Bool {
-        return !axes.contains(where: { !isAxisInRange($0) })
-    }
-
-    /// Returns `true` if the scalars of the given 1-D tensor are all in the range `[-rank, rank)`.
-    @usableFromInline
-    internal func areAxesInRange(_ axes: Tensor<Int32>) -> Bool {
-        precondition(axes.rank == 1, "Axes must have rank 1")
-        return areAxesInRange(axes.scalars)
-    }
-}
-
 // TODO: Consider making the return type be generic over `FloatingPoint` types
 // so that `self`'s scalar type can be any `Numeric` type.
 public extension Tensor where Scalar: TensorFlowFloatingPoint {
