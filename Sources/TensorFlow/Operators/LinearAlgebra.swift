@@ -56,6 +56,17 @@ public extension Tensor where Scalar: TensorFlowNumeric {
         _Raw.matrixDiag(diagonal: self)
     }
 
+    /// Returns `self` with new diagonal values, given that `self` is an optionally batched matrix.
+    ///
+    /// The returned tensor has the same shape and values as `self`, except for the specified
+    /// diagonals of the innermost matrices which are overwritten by the values in `diagonal`.
+    ///
+    /// Parameter diagonal: A tensor with rank `rank - 1` representing the new diagonal values.
+    @inlinable
+    func withDiagonal(_ diagonal: Tensor<Scalar>) -> Tensor {
+        _Raw.matrixSetDiag(self, diagonal: diagonal)
+    }
+
     @available(*, deprecated, renamed: "bandPart(subdiagonalCount:superdiagonalCount:)")
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func bandPart(_ subdiagonalCount: Int, _ superdiagonalCount: Int) -> Tensor {
@@ -126,6 +137,29 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
             $0.bandPart(subdiagonalCount: subdiagonalCount, superdiagonalCount: superdiagonalCount)
         })
     }
+}
+
+/// Returns an identity matrix or a batch of matrices.
+///
+/// - Parameters:
+///   - rowCount: The number of rows in each batch matrix.
+///   - columnCount: The number of columns in each batch matrix.
+///   - batchShape: The leading batch dimensions of the returned tensor.
+public func eye<Scalar: Numeric>(
+    rowCount: Int,
+    columnCount: Int? = nil,
+    batchShape: [Int] = []
+) -> Tensor<Scalar> {
+    let columnCount = columnCount ?? rowCount
+    let diagonalSize = min(rowCount, columnCount)
+    let diagonalShape = batchShape + [diagonalSize]
+    let diagonalOnes = Tensor<Scalar>(ones: TensorShape(diagonalShape))
+    if rowCount == columnCount {
+        return diagonalOnes.diagonal()
+    }
+    let shape = batchShape + [rowCount, columnCount]
+    let zeroMatrix = Tensor<Scalar>(zeros: TensorShape(shape))
+    return zeroMatrix.withDiagonal(diagonalOnes)
 }
 
 /// Computes the trace of an optionally batched matrix.
@@ -213,5 +247,40 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     func qrDecomposition(fullMatrices: Bool = false) -> (q: Tensor<Scalar>, r: Tensor<Scalar>) {
         _Raw.qr(self, fullMatrices: fullMatrices)
+    }
+
+    /// Returns the singular value decomposition of `self`, given that `self` is an optionally
+    /// batched matrix.
+    ///
+    /// The singular value decomposition (SVD) of the optionally batched matrix `self` is values
+    /// `s`, `u`, and `v`, such that:
+    ///
+    ///     self[..., :, :] = u[..., :, :] • s[..., :, :].diagonal() • v[..., :, :].transposed()`
+    ///
+    /// self` must be a tensor with shape `[..., M, N]`. Let `K = min(M, N)`.
+    ///
+    /// - Parameters:
+    ///   - computeUV: If `true`, the left and right singular vectors are computed and returned as
+    ///     `u` and `v`, respectively. If `false`, `nil` values are returned as `u` and `v`.
+    ///   - fullMatrices: If `true`, `u` and `v` respectively have shapes `[..., M, M]` and
+    ///     `[..., N, N]`. If `false`, `u` and `v` respectively have shapes `[..., M, K]` and
+    ///     `[..., K, N]`. Ignored when `computeUV` is false.
+    ///
+    /// - Returns:
+    ///   - s: The singular values, with shape `[..., K]`. Within each vector, the singular values
+    ///     are sorted in descending order.
+    ///   - u: The left singular vectors.
+    ///   - v: The right singular vectors.
+    ///
+    /// - Precondition: `self` must be a tensor with shape `[..., M, N]`.
+    @inlinable
+    func svd(computeUV: Bool = true, fullMatrices: Bool = false) -> (
+        s: Tensor<Scalar>, u: Tensor<Scalar>?, v: Tensor<Scalar>?
+    ) {
+        let (s, u, v) = _Raw.svd(self, computeUv: computeUV, fullMatrices: fullMatrices)
+        if !computeUV {
+            return (s, nil, nil)
+        }
+        return (s, u, v)
     }
 }

@@ -607,21 +607,23 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 // Element-wise Unary Math Functions
 //===------------------------------------------------------------------------------------------===//
 
-// Export Glibc/Darwin math functions. We should not require users to import
-// Foundation/Darwin/Glibc in order to use scalar math functions.
-//
+// Export Glibc/Darwin/ucrt math functions. We should not require users to import
+// Foundation/Darwin/Glibc/ucrt in order to use scalar math functions.
+
 #if os(macOS) || os(iOS) || os(watchOS) || os(tvOS)
 @_exported import Darwin.C
+#elseif os(Windows)
+@_exported import ucrt
 #else
 @_exported import Glibc
 #endif
+
+// FIXME: Scoped imports are not yet supported in parseable module interfaces, so
+// `@_exported import` won't work. When that becomes supported, switch to `@_exported import` by
+// removing `import Darwin.C/Glibc` above and uncommenting the following lines.
 //
-// FIXME(rxwei): Scoped imports are not yet supported in parseable module
-// interfaces, so `@_exported import` won't work. When that becomes supported,
-// switch to `@_exported import` by removing `import Darwin.C/Glibc` above and
-// uncommenting the following lines. In the meantime, consider using indirect
-// wrappers for each function so that random libc symbols won't be leaked to
-// users' code completion.
+// In the meantime, consider using indirect wrappers for each function to avoidleaking random libc
+// symbols to users' code completion.
 //
 // #if os(macOS) || os(iOS) || os(watchOS) || os(tvOS)
 // @_exported import func Darwin.C.sin
@@ -642,6 +644,25 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 // @_exported import func Darwin.C.expf
 // @_exported import func Darwin.C.pow
 // @_exported import func Darwin.C.powf
+// #elseif os(Windows)
+// @_exported import func ucrt.sin
+// @_exported import func ucrt.cos
+// @_exported import func ucrt.tan
+// @_exported import func ucrt.sinf
+// @_exported import func ucrt.cosf
+// @_exported import func ucrt.tanf
+// @_exported import func ucrt.sinh
+// @_exported import func ucrt.cosh
+// @_exported import func ucrt.tanh
+// @_exported import func ucrt.sinhf
+// @_exported import func ucrt.coshf
+// @_exported import func ucrt.tanhf
+// @_exported import func ucrt.log
+// @_exported import func ucrt.logf
+// @_exported import func ucrt.exp
+// @_exported import func ucrt.expf
+// @_exported import func ucrt.pow
+// @_exported import func ucrt.powf
 // #else
 // @_exported import func Glibc.sin
 // @_exported import func Glibc.cos
@@ -2070,7 +2091,7 @@ public extension Tensor where Scalar: Numeric {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func variance(squeezingAxes axes: Tensor<Int32>) -> Tensor {
-        let squaredDiff = (self - mean(alongAxes: axes)).squared()
+        let squaredDiff = squaredDifference(self, mean(alongAxes: axes))
         return squaredDiff.mean(squeezingAxes: axes)
     }
 
@@ -2100,7 +2121,7 @@ public extension Tensor where Scalar: Numeric {
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func variance() -> Tensor {
         let mean = self.mean()
-        let squaredDiff = (self - mean).squared()
+        let squaredDiff = squaredDifference(self, mean)
         return squaredDiff.mean()
     }
 
@@ -2111,7 +2132,7 @@ public extension Tensor where Scalar: Numeric {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func variance(alongAxes axes: Tensor<Int32>) -> Tensor {
-        let squaredDiff = (self - mean(alongAxes: axes)).squared()
+        let squaredDiff = squaredDifference(self, mean(alongAxes: axes))
         return squaredDiff.mean(alongAxes: axes)
     }
 
@@ -2444,7 +2465,8 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func standardDeviation(squeezingAxes axes: Tensor<Int32>) -> Tensor {
-        TensorFlow.sqrt(variance(squeezingAxes: axes))
+        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
+        return TensorFlow.sqrt(variance(squeezingAxes: axes))
     }
 
     /// Returns the standard deviation of the elements along the specified axes. The reduced
@@ -2455,7 +2477,8 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func standardDeviation(squeezingAxes axes: [Int]) -> Tensor {
-        TensorFlow.sqrt(variance(squeezingAxes: axes))
+        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
+        return TensorFlow.sqrt(variance(squeezingAxes: axes))
     }
 
     /// Returns the standard deviation of the elements along the specified axes. The reduced
@@ -2488,7 +2511,8 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func standardDeviation(alongAxes axes: Tensor<Int32>) -> Tensor {
-        TensorFlow.sqrt(variance(alongAxes: axes))
+        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
+        return TensorFlow.sqrt(variance(alongAxes: axes))
     }
 
     /// Returns the standard deviation of the elements along the specified axes. The reduced
@@ -2512,7 +2536,8 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func standardDeviation(alongAxes axes: Int...) -> Tensor {
-        TensorFlow.sqrt(variance(alongAxes: axes))
+        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
+        return TensorFlow.sqrt(variance(alongAxes: axes))
     }
 
     /// Returns `log(exp(self).sum(squeezingAxes: axes))`. The reduced dimensions are removed.
@@ -2526,6 +2551,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func logSumExp(squeezingAxes axes: Tensor<Int32>) -> Tensor {
+        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
         let rawMax = max(alongAxes: axes)
         let offset = withoutDerivative(at: rawMax) { rawMax in
             Tensor<Scalar>(zerosLike: rawMax).replacing(
@@ -2590,6 +2616,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func logSumExp(alongAxes axes: Tensor<Int32>) -> Tensor {
+        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
         let rawMax = max(alongAxes: axes)
         let offset = withoutDerivative(at: rawMax) { rawMax in
             Tensor<Scalar>(zerosLike: rawMax).replacing(
@@ -2656,6 +2683,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func moments(squeezingAxes axes: Tensor<Int32>) -> Moments<Scalar> {
+        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
         let mean = self.mean(alongAxes: axes)
         let variance = squaredDifference(self, mean).mean(squeezingAxes: axes)
         return Moments(
@@ -2705,6 +2733,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func moments(alongAxes axes: Tensor<Int32>) -> Moments<Scalar> {
+        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
         let mean = self.mean(alongAxes: axes)
         let variance = squaredDifference(self, mean).mean(alongAxes: axes)
         return Moments<Scalar>(mean: mean, variance: variance)

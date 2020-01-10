@@ -15,7 +15,6 @@
 import XCTest
 @testable import TensorFlow
 
-
 final class MatrixTests: XCTestCase {
     func testDiagonalPart() {
         // Test on a matrix.
@@ -69,6 +68,15 @@ final class MatrixTests: XCTestCase {
         let expectedGrad = 2 * t3
         XCTAssertEqual(computedGrad, expectedGrad)
     }
+
+    func testWithDiagonal() {
+        let t1 = Tensor<Float>(shape: [4], scalars: (1...4).map(Float.init))
+        let matrix = Tensor<Float>(zeros: [4, 4])
+        XCTAssertEqual(matrix.withDiagonal(t1), [[1, 0, 0, 0],
+                                                 [0, 2, 0, 0],
+                                                 [0, 0, 3, 0],
+                                                 [0, 0, 0, 4]])
+    }
     
     func testBandPart() {
         let t1 = Tensor<Float>([[ 0,  1,  2, 3],
@@ -113,9 +121,26 @@ final class MatrixTests: XCTestCase {
         XCTAssertEqual(computedGrad, expectedGrad)
     }
 
+    func testEye() {
+        // Test for non-batched identity matrix.
+        var identity: Tensor<Float> = eye(rowCount: 2)
+        XCTAssertEqual(identity, [[1, 0],
+                                  [0, 1]])
+        // Test for symmetric identity matrix.
+        identity = eye(rowCount: 2, batchShape:[1])
+        XCTAssertEqual(identity, [[[1, 0],
+                                   [0, 1]]])
+        // Test for non-symmetric identity matrix.
+        identity = eye(rowCount: 2, columnCount: 3, batchShape: [1])
+        XCTAssertEqual(identity, [[[1, 0, 0],
+                                   [0, 1, 0]]])
+    }
+    
     static var allTests = [
         ("testDiagonalPart", testDiagonalPart),
         ("testDiagonal", testDiagonal),
-        ("testBandPart", testBandPart)
+        ("testWithDiagonal", testWithDiagonal),
+        ("testBandPart", testBandPart),
+        ("testEye", testEye)
     ]
 }
