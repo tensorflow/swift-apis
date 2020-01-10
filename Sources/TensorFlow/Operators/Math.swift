@@ -2465,7 +2465,8 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func standardDeviation(squeezingAxes axes: Tensor<Int32>) -> Tensor {
-        TensorFlow.sqrt(variance(squeezingAxes: axes))
+        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
+        return TensorFlow.sqrt(variance(squeezingAxes: axes))
     }
 
     /// Returns the standard deviation of the elements along the specified axes. The reduced
@@ -2476,7 +2477,8 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func standardDeviation(squeezingAxes axes: [Int]) -> Tensor {
-        TensorFlow.sqrt(variance(squeezingAxes: axes))
+        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
+        return TensorFlow.sqrt(variance(squeezingAxes: axes))
     }
 
     /// Returns the standard deviation of the elements along the specified axes. The reduced
@@ -2509,7 +2511,8 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func standardDeviation(alongAxes axes: Tensor<Int32>) -> Tensor {
-        TensorFlow.sqrt(variance(alongAxes: axes))
+        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
+        return TensorFlow.sqrt(variance(alongAxes: axes))
     }
 
     /// Returns the standard deviation of the elements along the specified axes. The reduced
@@ -2533,7 +2536,8 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func standardDeviation(alongAxes axes: Int...) -> Tensor {
-        TensorFlow.sqrt(variance(alongAxes: axes))
+        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
+        return TensorFlow.sqrt(variance(alongAxes: axes))
     }
 
     /// Returns `log(exp(self).sum(squeezingAxes: axes))`. The reduced dimensions are removed.
@@ -2547,6 +2551,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func logSumExp(squeezingAxes axes: Tensor<Int32>) -> Tensor {
+        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
         let rawMax = max(alongAxes: axes)
         let offset = withoutDerivative(at: rawMax) { rawMax in
             Tensor<Scalar>(zerosLike: rawMax).replacing(
@@ -2611,6 +2616,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func logSumExp(alongAxes axes: Tensor<Int32>) -> Tensor {
+        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
         let rawMax = max(alongAxes: axes)
         let offset = withoutDerivative(at: rawMax) { rawMax in
             Tensor<Scalar>(zerosLike: rawMax).replacing(
@@ -2677,6 +2683,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func moments(squeezingAxes axes: Tensor<Int32>) -> Moments<Scalar> {
+        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
         let mean = self.mean(alongAxes: axes)
         let variance = squaredDifference(self, mean).mean(squeezingAxes: axes)
         return Moments(
@@ -2726,6 +2733,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func moments(alongAxes axes: Tensor<Int32>) -> Moments<Scalar> {
+        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
         let mean = self.mean(alongAxes: axes)
         let variance = squaredDifference(self, mean).mean(alongAxes: axes)
         return Moments<Scalar>(mean: mean, variance: variance)
