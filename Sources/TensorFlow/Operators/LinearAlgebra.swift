@@ -177,21 +177,22 @@ public func trace<T: TensorFlowNumeric>(_ matrix: Tensor<T>) -> Tensor<T> {
     return matrix.diagonalPart().sum(squeezingAxes: -1)
 }
 
-/// Computes the determinant of one or more square matrices.
+/// Computes the determinant of an optionally batched matrix.
 /// 
 /// - Parameter matrix: A tensor of shape `[..., M, M]`.
 /// - Returns: A tensor containing the determinants of all input submatrices.
 @inlinable 
-func det<T:TensorFlowFloatingPoint>(_ matrix: Tensor<T>) -> Tensor<T> {
+func det<T: TensorFlowFloatingPoint>(_ matrix: Tensor<T>) -> Tensor<T> {
     _Raw.matrixDeterminant(matrix)
 }
 
-/// Computes the sign and the log of the absolute value of the determinant of
-/// one or more square matrices.
+/// Computes the sign and the natural logarithm of the absolute value of the determinant of an
+/// optionally batched square matrix.
 ///
 /// - Parameter matrix: A tensor of shape `[..., N, M, M]`.
+/// - Returns: A tensor containing the determinants of all input submatrices.
 @inlinable
-func slogdet<T:TensorFlowFloatingPoint>(_ matrix: Tensor<T>) -> (Tensor<T>, Tensor<T>) {
+func slogdet<T: TensorFlowFloatingPoint>(_ matrix: Tensor<T>) -> (Tensor<T>, Tensor<T>) {
     _Raw.logMatrixDeterminant(matrix)
 }
 
