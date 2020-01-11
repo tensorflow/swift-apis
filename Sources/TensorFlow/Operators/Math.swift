@@ -2249,7 +2249,7 @@ public extension Tensor where Scalar: Numeric {
         reverse: Bool = false
     ) -> Tensor {
         precondition(axis.rank == 0, "Axis must have rank 0.")
-        precondition(areAxesInRange(axis), "All axis must be in the range `[-rank, rank)`.")
+        precondition(areAxesInRange(axis), "Axis must be in the range `[-rank, rank)`.")
         return _Raw.cumsum(self, axis: axis, exclusive: exclusive, reverse: reverse)
     }
 
@@ -2323,7 +2323,7 @@ public extension Tensor where Scalar: Numeric {
         exclusive: Bool = false,
         reverse: Bool = false
     ) -> Tensor {
-        precondition(areAxesInRange(axis), "All axis must be in the range `[-rank, rank)`.")
+        precondition(areAxesInRange(axis), "Axis must be in the range `[-rank, rank)`.")
         return _Raw.cumprod(self, axis: axis, exclusive: exclusive, reverse: reverse)
     }
 }
