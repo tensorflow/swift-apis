@@ -22,43 +22,83 @@ import Glibc
 
 // A thread that runs the provided body.
 class Thread {
-    var thread: pthread_t
-    init(perform body: @escaping () -> ()) {
-        class ThreadArg {
-        var body : () -> ()
-            init(body : @escaping () -> ()) {
-                self.body = body
-            }
-        }
-#if os(macOS) || os(iOS) || os(watchOS) || os(tvOS)
-        typealias ThreadBody = @convention(c) (UnsafeMutableRawPointer) -> UnsafeMutableRawPointer?
+#if os(Windows)
+    typealias Handle = HANDLE
 #else
-        typealias ThreadBody = @convention(c) (UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer?
+#if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
+    typealias Handle = pthread_t?
+#else
+    typealias Handle = pthread_t
 #endif
-        let threadBody: ThreadBody = { arg in
+#endif
+
+    static func _invalid_handle() -> Handle {
+#if os(Windows)
+      return INVALID_HANDLE_VALUE
+#else
+#if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
+      return nil
+#else
+      return pthread_t()
+#endif
+#endif
+    }
+
+    class Procedure {
+        let body: () -> ()
+
+        init(_ body: @escaping () -> ()) {
+            self.body = body
+        }
+
+        func run() {
+            self.body()
+        }
+    }
+
+    var thread: Handle = _invalid_handle()
+
+    init(perform body: @escaping () -> ()) {
+        let context = Unmanaged.passRetained(Procedure(body)).toOpaque()
+#if os(Windows)
+        let status = _beginthreadex(nil, 0, {
+            let procedure: Thread.Procedure =
+                Unmanaged.fromOpaque($0!).takeRetainedValue()
+            procedure.run()
+            return 0
+        }, context, 0, nil)
+#else
+        let status = pthread_create(&self.thread, nil, {
             // Set the cancelability of the detached thread.
             pthread_setcanceltype(Int32(PTHREAD_CANCEL_DEFERRED), nil)
-            // Execute the tensor computation.
-#if !(os(macOS) || os(iOS) || os(watchOS) || os(tvOS))
-            let arg = arg!
-#endif
-            let param: ThreadArg = Unmanaged.fromOpaque(arg).takeRetainedValue()
-            param.body()
-            return nil
-        }
-#if os(macOS) || os(iOS) || os(watchOS) || os(tvOS)
-        var newThread: pthread_t!
+
+#if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
+            let procedure: Thread.Procedure =
+                Unmanaged.fromOpaque($0).takeRetainedValue()
 #else
-        var newThread = pthread_t()
+            let procedure: Thread.Procedure =
+                Unmanaged.fromOpaque($0!).takeRetainedValue()
 #endif
-        let creationStatus = pthread_create(
-            &newThread, nil, threadBody,
-            Unmanaged.passRetained(ThreadArg(body: body)).toOpaque())
-        internalConsistencyCheck(creationStatus == 0)
-        self.thread = newThread
+            procedure.run()
+            return nil
+        }, context)
+#endif
+        internalConsistencyCheck(status == 0)
     }
+
     func join() {
-        internalConsistencyCheck(pthread_join(thread, nil) == 0)
+#if os(Windows)
+        let result = WaitForSingleObject(thread, INFINITE)
+        internalConsistencyCheck(result == WAIT_OBJECT_0)
+        CloseHandle(self.thread)
+#else
+#if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
+        let status = pthread_join(thread!, nil)
+#else
+        let status = pthread_join(thread, nil)
+#endif
+        internalConsistencyCheck(status == 0)
+#endif
     }
 }
 
