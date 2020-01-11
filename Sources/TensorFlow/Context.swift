@@ -14,6 +14,8 @@
 
 #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
 import Darwin
+#elseif os(Windows)
+import ucrt
 #else
 import Glibc
 #endif

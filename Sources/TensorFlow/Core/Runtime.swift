@@ -31,6 +31,8 @@
 
 #if os(macOS) || os(iOS) || os(watchOS) || os(tvOS)
 import Darwin
+#elseif os(Windows)
+import ucrt
 #else
 import Glibc
 #endif
@@ -266,7 +268,7 @@ public final class _ExecutionContext {
 
         if case .remote(let serverDef) = _RuntimeConfig.session {
             debugLog("Setting up the server def to \(serverDef)...")
-            let serverDef: UnsafeMutablePointer! = TFE_GetServerDef(serverDef, status)
+            let serverDef: UnsafeMutablePointer<TF_Buffer>! = TFE_GetServerDef(serverDef, status)
             checkOk(status)
             TFE_ContextSetServerDef(
                 eagerContext, /*keep_alive_secs*/0, serverDef.pointee.data,
@@ -522,9 +524,9 @@ class _ThreadLocalState {
         var key = pthread_key_t()
         pthread_key_create(&key) {
 #if os(macOS) || os(iOS) || os(watchOS) || os(tvOS)
-            let _: AnyObject = Unmanaged.fromOpaque($0).takeRetainedValue()
+            Unmanaged<AnyObject>.fromOpaque($0).release()
 #else
-            let _: AnyObject = Unmanaged.fromOpaque($0!).takeRetainedValue()
+            Unmanaged<AnyObject>.fromOpaque($0!).release()
 #endif
         }
         return key
