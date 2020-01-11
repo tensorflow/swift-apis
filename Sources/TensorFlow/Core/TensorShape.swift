@@ -73,32 +73,47 @@ public struct TensorShape: ExpressibleByArrayLiteral {
     }
 }
 
-public extension TensorShape {
+extension TensorShape: Collection, MutableCollection, RandomAccessCollection, RangeReplaceableCollection {
+    public typealias Element = Int
+    public typealias Index = Int
+    public typealias Indices = Range<Int>
+    public typealias SubSequence = Self
+    
+    @inlinable
+    public init() {
+        self.init([])
+    }
+    
+    @inlinable
+    public func index(after i: Index) -> Index {
+        return dimensions.index(after: i)
+    }
+    
     /// The rank of the shape (i.e. the number of dimensions).
     @inlinable
-    var count: Int {
+    public var count: Int {
         return dimensions.count
     }
 
     @inlinable
-    var indices: Range<Int> {
+    public var indices: Indices {
         return dimensions.indices.lowerBound ..< dimensions.indices.upperBound
     }
 
     @inlinable
-    var startIndex: Int {
+    public var startIndex: Index {
         return dimensions.startIndex
     }
 
     @inlinable
-    var endIndex: Int {
+    public var endIndex: Index {
         return dimensions.endIndex
     }
 
     /// Access the size of the i-th dimension.
     /// - Parameter index: The index of a dimension.
     @inlinable
-    subscript(index: Int) -> Int {
+    public subscript(index: Index) -> Element {
         _read { yield dimensions[index] }
         _modify { yield &dimensions[index] }
     }
@@ -106,9 +121,29 @@ public extension TensorShape {
     /// Access the size of the i-th dimension.
     /// - Parameter index: The index of a dimension.
     @inlinable
-    subscript(bounds: Range<Int>) -> TensorShape {
+    public subscript(bounds: Range<Int>) -> TensorShape {
         get { return TensorShape(dimensions[bounds]) }
         set { dimensions[bounds] = ArraySlice(newValue.dimensions) }
+    }
+    
+    @inlinable
+    public mutating func append(_ newElement: Element) {
+        dimensions.insert(newElement, at: endIndex)
+    }
+    
+    @inlinable
+    public mutating func append(contentsOf newElements: TensorShape) {
+        dimensions.append(contentsOf: newElements.dimensions)
+    }
+
+    @inlinable
+    public mutating func append<S : Sequence>(contentsOf newElements: S) where Element == S.Element {
+        dimensions.append(contentsOf: newElements)
+    }
+    
+    @inlinable
+    public mutating func replaceSubrange<C>(_ subrange: Range<Index>, with newElements: C) where C : Collection, Element == C.Element {
+        dimensions.replaceSubrange(subrange, with: newElements)
     }
 }
 

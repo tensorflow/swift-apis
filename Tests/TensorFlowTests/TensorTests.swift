@@ -66,6 +66,17 @@ final class TensorTests: XCTestCase {
         XCTAssertFalse(tensor == tensor.reshaped(to: [2, 3]))
         XCTAssertTrue(tensor != tensor.reshaped(to: [2, 3]))
     }
+    
+    func testTensorShapeCollectionConformance() {
+        let dims1 = Array<Int>(1...3)
+        let dims2 = Array<Int>(1...2)
+        let dims3: [Int] = [4, 5]
+        let shape1 = TensorShape(dims1)
+        let shape2 = TensorShape(dims2)
+        XCTAssertEqual((shape1 + shape2), TensorShape(dims1 + dims2))
+        XCTAssertTrue((shape1 + shape2).count == shape1.count + shape2.count)
+        XCTAssertTrue((shape1 + dims3).count == shape1.count + dims3.count)
+    }
 
     static var allTests = [
         ("testSimpleCond", testSimpleCond),
@@ -73,5 +84,6 @@ final class TensorTests: XCTestCase {
         ("testShapeGetter", testShapeGetter),
         ("testTensorShapeDescription", testTensorShapeDescription),
         ("testEquality", testEquality),
+        ("testTensorShapeCollectionConformance", testTensorShapeCollectionConformance)
     ]
 }
