@@ -86,7 +86,7 @@ final class MathOperatorTests: XCTestCase {
         let y = logSoftmax(x)
         let y1 = Tensor<Float>([[-3.3490124, -1.3490123, -0.34901226], 
                                 [-2.407606, -1.407606, -0.40760598]])
-        XCTAssertEqual(y, y1)
+        assertEqual(y, y1, accuracy: 0.0001)
     }
     
     func testMax() {
@@ -118,7 +118,7 @@ final class MathOperatorTests: XCTestCase {
         let y = softmax(x)
         let expectedY = Tensor<Float>([[0.8437947, 0.1141952, 0.042010065], 
                                        [0.66524094, 0.24472848, 0.09003057]])
-        XCTAssertEqual(y, expectedY)
+        assertEqual(y, expectedY, accuracy: 0.0001)
     }
     
     func testSigmoid() {
