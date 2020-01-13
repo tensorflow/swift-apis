@@ -84,11 +84,24 @@ For more models, go to [**tensorflow/swift-models**](https://github.com/tensorfl
 
 ### Building and testing
 
+#### Building using swift-package-manager (swift-build)
+
 ```
 $ swift build
 ```
 ```
 $ swift test
+```
+
+#### Building using CMake
+
+Note that this requires CMake 3.15.1 or newer.  In-tree builds are not
+supported. If `swiftc` is not in your path, you will need to specify the path to
+it with `-D CMAKE_Swift_COMPILER=`.
+
+```
+cmake -B out -S swift-apis
+cmake --build out
 ```
 
 ## Bugs
