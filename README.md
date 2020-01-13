@@ -99,11 +99,11 @@ $ swift test
 
 CMake 3.15.1 or newer is required. In-tree builds are not supported.
 
-If `swiftc` is not in your `PATH`, you must specify the path to it using `-D
-CMAKE_Swift_COMPILER=`.
+If `swiftc` is not in your `PATH`, you must specify the path to it using
+`-D CMAKE_Swift_COMPILER=`.
 
 ```
-cmake -B out -S swift-apis
+cmake -G Ninja -B out -S swift-apis
 cmake --build out
 ```
 
