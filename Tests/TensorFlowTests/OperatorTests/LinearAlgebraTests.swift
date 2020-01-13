@@ -15,7 +15,6 @@
 import XCTest
 @testable import TensorFlow
 
-
 final class LinearAlgebraTests: XCTestCase {
     func testCholesky() {
         let shapes = [[3, 3], [4, 2, 2], [2, 1, 16, 16]]
