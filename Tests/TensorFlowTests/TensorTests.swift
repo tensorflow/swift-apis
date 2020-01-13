@@ -67,7 +67,7 @@ final class TensorTests: XCTestCase {
         XCTAssertTrue(tensor != tensor.reshaped(to: [2, 3]))
     }
     
-    func testTensorShapeCollectionConformance() {
+    func testTensorShapeCollectionOperations() {
         let dims1 = Array<Int>(1...3)
         let dims2 = Array<Int>(1...2)
         let dims3: [Int] = [4, 5]
