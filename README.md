@@ -95,6 +95,8 @@ $ swift test
 
 #### CMake
 
+*Note: CMake support is experimental and under development.*
+
 CMake 3.15.1 or newer is required. In-tree builds are not supported.
 
 If `swiftc` is not in your `PATH`, you must specify the path to it using `-D
