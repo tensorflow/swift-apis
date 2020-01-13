@@ -58,6 +58,82 @@ final class MathOperatorTests: XCTestCase {
         testElementaryFunction(name: "root",
                                { x in root(x, 3) }, { x in Float.root(x, 3) })
     }
+    
+    func testAbs() {
+        let x = Tensor<Float>([-1.0])
+        let y = abs(x)
+        let expectedY = Tensor<Float>([1.0])
+        XCTAssertEqual(y, expectedY)
+    }
+    
+    func testSquaredDifference() {
+        let x = Tensor<Float>([-5.8])
+        let y = Tensor<Float>([5.7])
+        let z = squaredDifference(x, y)
+        let approxZ = Tensor<Float>([132.25])
+        XCTAssertEqual(z, approxZ)
+    }
+    
+    func testZeros() {
+        let x = Tensor<Float>(zeros: [1])
+        let x1 = Tensor<Float>([0.0])
+        XCTAssertEqual(x, x1)
+    }
+    
+    func testLogSoftmax() {
+        let x = Tensor<Float>([[32.0, 34.0, 35.0],
+                               [36.0, 37.0, 38.0]])
+        let y = logSoftmax(x)
+        let y1 = Tensor<Float>([[-3.3490124, -1.3490123, -0.34901226], 
+                                [-2.407606, -1.407606, -0.40760598]])
+        assertEqual(y, y1, accuracy: 0.0001)
+    }
+    
+    func testMax() {
+        let x = Tensor<Float>([58.0])
+        let y = Tensor<Float>([57.0])
+        let z = max(x, y)
+        let expectedZ = Tensor<Float>([58.0])
+        XCTAssertEqual(z, expectedZ)
+    }
+    
+    func testMin() {
+        let x = Tensor<Float>([58.0])
+        let y = Tensor<Float>([57.0])
+        let z = min(x, y)
+        let expectedZ = Tensor<Float>([57.0])
+        XCTAssertEqual(z, expectedZ)
+    }
+    
+    func testRound() {
+        let x = Tensor<Float>([58.76])
+        let y = round(x)
+        let expectedY = Tensor<Float>([59.0])
+        XCTAssertEqual(y, expectedY)
+    }
+    
+    func testSoftmax() {
+        let x = Tensor<Float>([[-32.0, -34.0, -35.0], 
+                               [-36.0, -37.0, -38.0]])
+        let y = softmax(x)
+        let expectedY = Tensor<Float>([[0.8437947, 0.1141952, 0.042010065], 
+                                       [0.66524094, 0.24472848, 0.09003057]])
+        assertEqual(y, expectedY, accuracy: 0.0001)
+    }
+    
+    func testSigmoid() {
+        let x = Tensor<Float>([59.0])
+        let y = sigmoid(x)
+        let expectedY = Tensor<Float>([1.0])
+        XCTAssertEqual(y, expectedY)
+    }
+    
+    func testIdentity() {
+        let x = Tensor<Float>([-5.8, -5.9])
+        let y = identity(x)
+        let expectedY = Tensor<Float>([-5.8, -5.9])
+        XCTAssertEqual(y, expectedY)
+    }
 
     func testClipping() {
         let x = Tensor<Float>([
@@ -197,6 +273,14 @@ final class MathOperatorTests: XCTestCase {
         let y = Tensor<Float>([0.5, 1, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0])
         let z = cosineSimilarity(x, y)
         let output: Float = 1.0
+        XCTAssertEqual(z, Tensor(output))
+    }
+    
+    func testCosineDistance() {
+        let x = Tensor<Float>([7.0])
+        let y = Tensor<Float>([8.0])
+        let z = cosineDistance(x, y)
+        let output: Float = 0.0
         XCTAssertEqual(z, Tensor(output))
     }
 
@@ -497,6 +581,17 @@ final class MathOperatorTests: XCTestCase {
 
     static var allTests = [
         ("testElementaryFunctions", testElementaryFunctions),
+        ("testAbs", testAbs),
+        ("testSquaredDifference", testSquaredDifference),
+        ("testZeros", testZeros),
+        ("testLogSoftmax", testLogSoftmax),
+        ("testMax", testMax),
+        ("testMin", testMin),
+        ("testRound", testRound),
+        ("testSoftmax", testSoftmax),
+        ("testSigmoid", testSigmoid),
+        ("testIdentity", testIdentity),
+        ("testClipping", testClipping),
         ("testRsqrt", testRsqrt),
         ("testLog1p", testLog1p),
         ("testLog1mexp", testLog1mexp),
@@ -515,6 +610,7 @@ final class MathOperatorTests: XCTestCase {
         ("testIsInfinite", testIsInfinite),
         ("testIsNaN", testIsNaN),
         ("testCosineSimilarity", testCosineSimilarity),
+        ("testCosineDistance", testCosineDistance),
         ("testArgmax", testArgmax),
         ("testReduction", testReduction),
         ("testCumulativeSum", testCumulativeSum),
