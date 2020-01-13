@@ -1219,6 +1219,13 @@ extension Tensor {
         return axis >= -rank && axis < rank
     }
 
+    /// Returns `true` if the given axis tensor is in the range `[-rank, rank)`.
+    @usableFromInline
+    internal func isAxisInRange(_ axis: Tensor<Int32>) -> Bool {
+        precondition(axis.rank == 0, "Axis must have rank 0.")
+        return areAxesInRange(axis.scalars)
+    }
+
     /// Returns `true` if all given axes are in the range `[-rank, rank)`.
     @usableFromInline
     internal func areAxesInRange<T: BinaryInteger>(_ axes: [T]) -> Bool {
@@ -1228,6 +1235,7 @@ extension Tensor {
     /// Returns `true` if all scalars of the given 1-D tensor are in the range `[-rank, rank)`.
     @usableFromInline
     internal func areAxesInRange(_ axes: Tensor<Int32>) -> Bool {
+        precondition(axes.rank == 1, "Axes must have rank 1.")
         return areAxesInRange(axes.scalars)
     }
 }

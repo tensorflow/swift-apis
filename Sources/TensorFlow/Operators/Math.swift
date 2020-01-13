@@ -2248,8 +2248,7 @@ public extension Tensor where Scalar: Numeric {
         exclusive: Bool = false,
         reverse: Bool = false
     ) -> Tensor {
-        precondition(axis.rank == 0, "Axis must have rank 0.")
-        precondition(areAxesInRange(axis), "Axis must be in the range `[-rank, rank)`.")
+        precondition(isAxisInRange(axis), "Axis must be in the range `[-rank, rank)`.")
         return _Raw.cumsum(self, axis: axis, exclusive: exclusive, reverse: reverse)
     }
 
@@ -2315,6 +2314,7 @@ public extension Tensor where Scalar: Numeric {
     ///   - exclusive: Indicates whether to perform an exclusive cumulative product.
     ///   - reverse: Indicates whether to perform the cumulative product in reversed order.
     /// - Returns: Result of the cumulative product operation.
+    /// - Precondition: `axis.rank` must be `0`.
     /// - Precondition: `axis` must be in the range `-rank..<rank`.
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
@@ -2323,7 +2323,7 @@ public extension Tensor where Scalar: Numeric {
         exclusive: Bool = false,
         reverse: Bool = false
     ) -> Tensor {
-        precondition(areAxesInRange(axis), "Axis must be in the range `[-rank, rank)`.")
+        precondition(isAxisInRange(axis), "Axis must be in the range `[-rank, rank)`.")
         return _Raw.cumprod(self, axis: axis, exclusive: exclusive, reverse: reverse)
     }
 }
@@ -2705,7 +2705,6 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func moments(squeezingAxes axes: Tensor<Int32>) -> Moments<Scalar> {
-        precondition(axes.rank == 1, "Axes must have rank 1")
         precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
         let mean = self.mean(alongAxes: axes)
         let variance = squaredDifference(self, mean).mean(squeezingAxes: axes)
@@ -2756,7 +2755,6 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func moments(alongAxes axes: Tensor<Int32>) -> Moments<Scalar> {
-        precondition(axes.rank == 1, "Axes must have rank 1")
         precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
         let mean = self.mean(alongAxes: axes)
         let variance = squaredDifference(self, mean).mean(alongAxes: axes)
