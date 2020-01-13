@@ -43,9 +43,9 @@ final class LinearAlgebraTests: XCTestCase {
              [0.02154995, 0.2738613]],
             [[2.4748755, -0.7071073],
              [-0.7071073, 0.3535535]]])
-        assertEqual(computedGradient, expectedGradient, accuracy: 1e-5) 
+        assertEqual(computedGradient, expectedGradient, accuracy: 1e-5)
     }
-    
+
     func testQRDecompositionApproximation() {
         let shapes = [[5, 8], [3, 4, 4], [3, 3, 32, 64]]
         for shape in shapes {
@@ -59,7 +59,37 @@ final class LinearAlgebraTests: XCTestCase {
             assertEqual(aReconstitutedFull, a, accuracy: 1e-5)
         }
     }
-    
+
+    func testSVD() {
+        let shapes = [[2, 2, 2], [3, 4, 4], [4, 4, 16, 32]]
+        for shape in shapes {
+            let a = Tensor<Float>(randomNormal: TensorShape(shape))
+            var (s, u, v) = a.svd()
+            var m = u!.shape.dimensions.last!
+            var n = v!.shape.dimensions.last!
+            if m <= n {
+                v = v![TensorRange.ellipsis, ..<m]
+            } else {
+                u = u![TensorRange.ellipsis, ..<n]
+            }
+            let aReconstituted = matmul(u!, matmul(s.diagonal(), 
+                                        transposed: false, v!, transposed: true))
+            assertEqual(aReconstituted, a, accuracy: 1e-5)
+
+            var (sFull, uFull, vFull) = a.svd(computeUV: true, fullMatrices: true)
+            m = uFull!.shape.dimensions.last!
+            n = vFull!.shape.dimensions.last!
+            if m <= n {
+                vFull = vFull![TensorRange.ellipsis, ..<m]
+            } else {
+                uFull = uFull![TensorRange.ellipsis, ..<n]
+            }
+            let aReconstitutedFull = matmul(uFull!, matmul(sFull.diagonal(), 
+                                            transposed: false, vFull!, transposed: true))
+            assertEqual(aReconstitutedFull, a, accuracy: 1e-5)
+        }
+    }
+
     func testTrace() {
         assertEqual(trace(Tensor<Float>(ones: [3, 3])), Tensor(3.0), accuracy: 1e-16)
         assertEqual(trace(Tensor<Float>(ones: [5, 6])), Tensor(5.0), accuracy: 1e-16)
@@ -166,8 +196,8 @@ final class LinearAlgebraTests: XCTestCase {
     func testTriangularSolve() {
         let (a, x, b, aGrad, bGrad, leadingShapes) = triangularSolveTestData()
         for (aLeadingShape, bLeadingShape) in leadingShapes {
-            let aNewShape = aLeadingShape + a.shape
-            let bNewShape = bLeadingShape + b.shape
+            let aNewShape: TensorShape = aLeadingShape + a.shape
+            let bNewShape: TensorShape = bLeadingShape + b.shape
             let aNew = a.broadcasted(to: aNewShape)
             let bNew = b.broadcasted(to: bNewShape)
             let multiplier = Float(extractLeadingDims(aNew, bNew, ignoreLast: 2).contiguousSize)
@@ -176,7 +206,7 @@ final class LinearAlgebraTests: XCTestCase {
                 triangularSolve(matrix: $0, rhs: $1).sum()
             }
 
-            let xExpectedShape = (aNew.rank > bNew.rank ? aLeadingShape : bLeadingShape) + x.shape
+            let xExpectedShape: TensorShape = (aNew.rank > bNew.rank ? aLeadingShape : bLeadingShape) + x.shape
             let xExpected = x.broadcasted(to: xExpectedShape)
             let aGradExpected = (aNew.rank > bNew.rank ? aGrad : multiplier * aGrad).broadcasted(like: aNew)
             let bGradExpected = (bNew.rank > aNew.rank ? bGrad : multiplier * bGrad).broadcasted(like: bNew)
@@ -190,36 +220,37 @@ final class LinearAlgebraTests: XCTestCase {
     func testExtractLeadingDims() {
         var a: TensorShape = []
         var b: TensorShape = []
-        var computed1: [Int] = extractLeadingDims(a, b).dimensions
-        var computed2: [Int] = extractLeadingDims(b, a).dimensions
-        XCTAssertEqual(computed1, [Int]())
-        XCTAssertEqual(computed2, [Int]())
+        var computed1: TensorShape = extractLeadingDims(a, b)
+        var computed2: TensorShape = extractLeadingDims(b, a)
+        XCTAssertEqual(computed1, TensorShape())
+        XCTAssertEqual(computed2, TensorShape())
         
         a = [1]
         b = [3, 2, 1]
-        computed1 = extractLeadingDims(a, b).dimensions
-        computed2 = extractLeadingDims(b, a).dimensions
-        XCTAssertEqual(computed1, [3, 2])
-        XCTAssertEqual(computed2, [3, 2])
+        computed1 = extractLeadingDims(a, b)
+        computed2 = extractLeadingDims(b, a)
+        XCTAssertEqual(computed1, TensorShape([3, 2]))
+        XCTAssertEqual(computed2, TensorShape([3, 2]))
 
         a = [3, 2, 1]
         b = [4, 5, 6, 3, 20, 10]
-        computed1 = extractLeadingDims(a, b, ignoreLast: 2).dimensions
-        computed2 = extractLeadingDims(b, a, ignoreLast: 2).dimensions
-        XCTAssertEqual(computed1, [4, 5, 6])
-        XCTAssertEqual(computed2, [4, 5, 6])
+        computed1 = extractLeadingDims(a, b, ignoreLast: 2)
+        computed2 = extractLeadingDims(b, a, ignoreLast: 2)
+        XCTAssertEqual(computed1, TensorShape([4, 5, 6]))
+        XCTAssertEqual(computed2, TensorShape([4, 5, 6]))
 
         a = [3, 2, 1]
         b = [30, 20, 10]
-        computed1 = extractLeadingDims(a, b, ignoreLast: 3).dimensions
-        computed2 = extractLeadingDims(b, a, ignoreLast: 3).dimensions
-        XCTAssertEqual(computed1, [Int]())
-        XCTAssertEqual(computed2, [Int]())
+        computed1 = extractLeadingDims(a, b, ignoreLast: 3)
+        computed2 = extractLeadingDims(b, a, ignoreLast: 3)
+        XCTAssertEqual(computed1, TensorShape())
+        XCTAssertEqual(computed2, TensorShape())
     }
     
     static var allTests = [
         ("testCholesky", testCholesky),
         ("testQRDecompositionApproximation", testQRDecompositionApproximation),
+        ("testSVD", testSVD),
         ("testTrace", testTrace),
         ("testTraceGradient", testTraceGradient),
         ("testLogdet", testLogdet),

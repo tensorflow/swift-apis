@@ -73,54 +73,94 @@ public struct TensorShape: ExpressibleByArrayLiteral {
     }
 }
 
-public extension TensorShape {
+extension TensorShape: Collection, MutableCollection {
+    public typealias Element = Int
+    public typealias Index = Int
+    public typealias Indices = Range<Int>
+    
     /// The rank of the shape (i.e. the number of dimensions).
     @inlinable
-    var count: Int {
+    public var count: Int {
         return dimensions.count
     }
 
     @inlinable
-    var indices: Range<Int> {
+    public var indices: Indices {
         return dimensions.indices.lowerBound ..< dimensions.indices.upperBound
     }
 
     @inlinable
-    var startIndex: Int {
+    public var startIndex: Index {
         return dimensions.startIndex
     }
 
     @inlinable
-    var endIndex: Int {
+    public var endIndex: Index {
         return dimensions.endIndex
     }
-    
-    static func +  (lhs: TensorShape, rhs: TensorShape) -> TensorShape {
-        return TensorShape(lhs.dimensions + rhs.dimensions)
+
+    @inlinable
+    public func index(after i: Index) -> Index {
+        return dimensions.index(after: i)
     }
     
-    static func + <Other>(lhs: TensorShape, rhs: Other) -> TensorShape where Other: Sequence, Other.Element == Int {
-        return TensorShape(lhs.dimensions + rhs)
-    }
-    
-    static func + <Other>(lhs: Other, rhs: TensorShape) -> TensorShape where Other: Sequence, Other.Element == Int {
-        return TensorShape(lhs + rhs.dimensions)
+    /// Access the size of the i-th dimension.
+    /// - Parameter position: The index of a dimension.
+    @inlinable
+    public subscript(position: Index) -> Element {
+        _read { yield dimensions[position] }
+        _modify { yield &dimensions[position] }
     }
 
     /// Access the size of the i-th dimension.
     /// - Parameter index: The index of a dimension.
     @inlinable
-    subscript(index: Int) -> Int {
-        _read { yield dimensions[index] }
-        _modify { yield &dimensions[index] }
-    }
-
-    /// Access the size of the i-th dimension.
-    /// - Parameter index: The index of a dimension.
-    @inlinable
-    subscript(bounds: Range<Int>) -> TensorShape {
+    public subscript(bounds: Range<Int>) -> TensorShape {
         get { return TensorShape(dimensions[bounds]) }
         set { dimensions[bounds] = ArraySlice(newValue.dimensions) }
+    }
+}
+
+extension TensorShape: RandomAccessCollection {
+    @inlinable
+    public func index(_ i: Int, offsetBy distance: Int) -> Int {
+        dimensions.index(i, offsetBy: distance)
+    }
+    
+    @inlinable
+    public func distance(from start: Int, to end: Int) -> Int {
+        dimensions.distance(from: start, to: end)
+    }
+}
+
+extension TensorShape: RangeReplaceableCollection {
+    public typealias SubSequence = Self
+
+    @inlinable
+    public init() {
+        self.init([])
+    }
+
+    @inlinable
+    public mutating func append(_ newElement: Element) {
+        dimensions.append(newElement)
+    }
+
+    @inlinable
+    public mutating func append(contentsOf newElements: TensorShape) {
+        dimensions.append(contentsOf: newElements.dimensions)
+    }
+
+    @inlinable
+    public mutating func append<S : Sequence>(contentsOf newElements: S) where Element == S.Element {
+        dimensions.append(contentsOf: newElements)
+    }
+
+    @inlinable
+    public mutating func replaceSubrange<C>(
+        _ subrange: Range<Index>, with newElements: C
+    ) where C: Collection, Element == C.Element {
+        dimensions.replaceSubrange(subrange, with: newElements)
     }
 }
 

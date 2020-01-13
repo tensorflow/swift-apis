@@ -34,18 +34,6 @@ public extension TensorFlowScalar {
 }
 
 public extension Tensor {
-    /// Helper function that assess if `axis` is in the range `[-rank, rank)`, where `rank` is the rank of
-    /// the provided tensors.
-    @usableFromInline
-    internal func preconditionAxis(_ axis: Int) {
-        precondition(
-            axis >= -rank && axis < rank,
-            """
-            The axis must be in the range [-rank, rank)
-            of the provided tensors.
-            """)
-    }
-
     /// Unpacks the given dimension of a rank-`R` tensor into multiple rank-`(R-1)` tensors.
     /// Unpacks `N` tensors from this tensor by chipping it along the `axis` dimension, where `N`
     /// is inferred from this tensor's shape. For example, given a tensor with shape
@@ -71,7 +59,7 @@ public extension Tensor {
     @inlinable
     @differentiable(where Scalar: TensorFlowFloatingPoint)
     func unstacked(alongAxis axis: Int = 0) -> [Tensor] {
-        preconditionAxis(axis)
+        precondition(isAxisInRange(axis), "Axis must be in the range `[-rank, rank)`.")
         let posAxis = axis < 0 ? axis + rank : axis
         return _Raw.unpack(value: self, num: Int64(shape[posAxis]), axis: Int64(posAxis))
     }
@@ -101,7 +89,7 @@ public extension Tensor {
     @inlinable
     @differentiable(where Scalar: TensorFlowFloatingPoint)
     func split(count: Int, alongAxis axis: Int = 0) -> [Tensor] {
-        preconditionAxis(axis)
+        precondition(isAxisInRange(axis), "Axis must be in the range `[-rank, rank)`.")
         precondition(
             shapeTensor[axis].scalarized() % Int32(count) == 0,
             "Number of ways to split should evenly divide the split dimension.")
@@ -134,7 +122,7 @@ public extension Tensor {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func split(sizes: Tensor<Int32>, alongAxis axis: Int = 0) -> [Tensor] {
-        preconditionAxis(axis)
+        precondition(isAxisInRange(axis), "Axis must be in the range `[-rank, rank)`.")
         precondition(
             shapeTensor[axis] == sizes.sum(),
             "The values in sizes must add up to the size of dimension axis.")
@@ -452,15 +440,15 @@ public extension Tensor {
         atIndices indices: Tensor<Index>,
         alongAxis axis: Int = 0
     ) -> Tensor {
-        preconditionAxis(axis)
+        precondition(isAxisInRange(axis), "Axis must be in the range `[-rank, rank)`.")
         return _Raw.gatherV2(params: self, indices: indices, axis: Tensor<Int32>(Int32(axis)))
     }
 
-    /// Returns slices of this tensor at `indices` along the `axis` dimension, while ignoring the 
-    /// first `batchDimensionCount` dimensions that correspond to batch dimensions. The gather is 
+    /// Returns slices of this tensor at `indices` along the `axis` dimension, while ignoring the
+    /// first `batchDimensionCount` dimensions that correspond to batch dimensions. The gather is
     /// performed along the first non-batch dimension.
     ///
-    /// Performs similar functionality to `gathering`, except that the resulting tensor shape is 
+    /// Performs similar functionality to `gathering`, except that the resulting tensor shape is
     /// now `shape[..<axis] + indices.shape[batchDimensionCount...] + shape[(axis + 1)...]`.
     ///
     /// - Parameters:
@@ -611,21 +599,23 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
         value: Tensor, pullback: (Tensor) -> Tensor
     ) {
         let value = transposed(permutation: permutation)
-        return (value, { $0.transposed(permutation: permutation) })
+        return (value, { $0.transposed(permutation: _Raw.invertPermutation(permutation)) })
     }
 
     @inlinable
     @derivative(of: transposed(permutation:))
     func _vjpTransposed(permutation: [Int]) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
+        let permutation = Tensor<Int32>(permutation.map(Int32.init))
         let value = transposed(permutation: permutation)
-        return (value, { $0.transposed(permutation: permutation) })
+        return (value, { $0.transposed(permutation: _Raw.invertPermutation(permutation)) })
     }
 
     @inlinable
     @derivative(of: transposed(permutation:))
     func _vjpTransposed(permutation: Int...) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
+        let permutation = Tensor<Int32>(permutation.map(Int32.init))
         let value = transposed(permutation: permutation)
-        return (value, { $0.transposed(permutation: permutation) })
+        return (value, { $0.transposed(permutation: _Raw.invertPermutation(permutation)) })
     }
 
     @inlinable
@@ -1214,5 +1204,31 @@ internal extension Tensor.IndexPath {
         self.ellipsisMask = ellipsisMask
         self.newAxisMask = newAxisMask
         self.squeezeAxisMask = squeezeAxisMask
+    }
+}
+
+//===------------------------------------------------------------------------------------------===//
+// Precondition utilities
+//===------------------------------------------------------------------------------------------===//
+
+extension Tensor {
+    /// Returns `true` if the given axis is in the range `[-rank, rank)`.
+    @usableFromInline
+    internal func isAxisInRange<T: BinaryInteger>(_ axis: T) -> Bool {
+        let axis = Int(axis)
+        return axis >= -rank && axis < rank
+    }
+
+    /// Returns `true` if all given axes are in the range `[-rank, rank)`.
+    @usableFromInline
+    internal func areAxesInRange<T: BinaryInteger>(_ axes: [T]) -> Bool {
+        return !axes.contains(where: { !isAxisInRange($0) })
+    }
+
+    /// Returns `true` if all scalars of the given 1-D tensor are in the range `[-rank, rank)`.
+    @usableFromInline
+    internal func areAxesInRange(_ axes: Tensor<Int32>) -> Bool {
+        precondition(axes.rank == 1, "Axes must have rank 1")
+        return areAxesInRange(axes.scalars)
     }
 }
