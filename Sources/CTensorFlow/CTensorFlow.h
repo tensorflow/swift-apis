@@ -1,4 +1,3 @@
-
 #ifndef CTensorFlow_CTensorFlow_h
 #define CTensorFlow_CTensorFlow_h
 
