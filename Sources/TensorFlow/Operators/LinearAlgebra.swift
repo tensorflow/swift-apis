@@ -156,9 +156,14 @@ func det<T:TensorFlowFloatingPoint>(_ matrix: Tensor<T>) -> Tensor<T> {
 /// one or more square matrices.
 ///
 /// - Parameter matrix: A tensor of shape `[...,N, M, M]`.
+/// - Returns: 
+///   - sign: The signs of the log determinants of the inputs. Shape is `[N]`.
+///   - logAbsDeterminant: The logs of the absolute values of the determinants
+///     of the N input matrices.  Shape is `[N]`.
 @inlinable
-func slogdet<T:TensorFlowFloatingPoint>(_ matrix: Tensor<T>) -> (Tensor<T>, Tensor<T>) {
-    _Raw.logMatrixDeterminant(matrix)
+func slogdet<T:TensorFlowFloatingPoint>(_ matrix: Tensor<T>) -> (sign: Tensor<T>, logAbsDeterminant: Tensor<T>) {
+    return _Raw.logMatrixDeterminant(matrix)
+    //return (sign, logDeterminant)
 }
 
 /// Computes the natural logarithm of the determinant of a hermitian positive definite matrix.
