@@ -76,6 +76,14 @@ final class TensorTests: XCTestCase {
         XCTAssertEqual((shape1 + shape2), TensorShape(dims1 + dims2))
         XCTAssertTrue((shape1 + shape2).count == shape1.count + shape2.count)
         XCTAssertTrue((shape1 + dims3).count == shape1.count + dims3.count)
+        
+        var shape3: TensorShape = shape2
+        let firstValue: Int! = shape3.popFirst()
+        XCTAssertTrue(firstValue == shape2[0])
+        XCTAssertTrue(shape3 == shape2[1..<shape2.count])
+
+        shape3.insert(firstValue, at: 0)
+        XCTAssertTrue(shape3 == shape2)
     }
 
     static var allTests = [

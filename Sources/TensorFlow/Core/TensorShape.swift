@@ -73,21 +73,9 @@ public struct TensorShape: ExpressibleByArrayLiteral {
     }
 }
 
-extension TensorShape: Collection, MutableCollection, RandomAccessCollection, RangeReplaceableCollection {
+extension TensorShape: Collection, MutableCollection {
     public typealias Element = Int
     public typealias Index = Int
-    public typealias Indices = Range<Int>
-    public typealias SubSequence = Self
-    
-    @inlinable
-    public init() {
-        self.init([])
-    }
-    
-    @inlinable
-    public func index(after i: Index) -> Index {
-        return dimensions.index(after: i)
-    }
     
     /// The rank of the shape (i.e. the number of dimensions).
     @inlinable
@@ -109,13 +97,18 @@ extension TensorShape: Collection, MutableCollection, RandomAccessCollection, Ra
     public var endIndex: Index {
         return dimensions.endIndex
     }
-
-    /// Access the size of the i-th dimension.
-    /// - Parameter index: The index of a dimension.
+    
     @inlinable
-    public subscript(index: Index) -> Element {
-        _read { yield dimensions[index] }
-        _modify { yield &dimensions[index] }
+    public func index(after i: Index) -> Index {
+        return dimensions.index(after: i)
+    }
+    
+    /// Access the size of the i-th dimension.
+    /// - Parameter position: The index of a dimension.
+    @inlinable
+    public subscript(position: Index) -> Element {
+        _read { yield dimensions[position] }
+        _modify { yield &dimensions[position] }
     }
 
     /// Access the size of the i-th dimension.
@@ -125,12 +118,35 @@ extension TensorShape: Collection, MutableCollection, RandomAccessCollection, Ra
         get { return TensorShape(dimensions[bounds]) }
         set { dimensions[bounds] = ArraySlice(newValue.dimensions) }
     }
+}
+
+extension TensorShape: RandomAccessCollection {
+    public typealias Indices = Range<Int>
     
+    @inlinable
+    public func index(_ i: Int, offsetBy distance: Int) -> Int {
+        dimensions.index(i, offsetBy: distance)
+    }
+    
+    @inlinable
+    public func distance(from start: Int, to end: Int) -> Int {
+        dimensions.distance(from: start, to: end)
+    }
+}
+
+extension TensorShape: RangeReplaceableCollection {
+    public typealias SubSequence = Self
+
+    @inlinable
+    public init() {
+        self.init([])
+    }
+
     @inlinable
     public mutating func append(_ newElement: Element) {
         dimensions.insert(newElement, at: endIndex)
     }
-    
+
     @inlinable
     public mutating func append(contentsOf newElements: TensorShape) {
         dimensions.append(contentsOf: newElements.dimensions)
@@ -140,9 +156,11 @@ extension TensorShape: Collection, MutableCollection, RandomAccessCollection, Ra
     public mutating func append<S : Sequence>(contentsOf newElements: S) where Element == S.Element {
         dimensions.append(contentsOf: newElements)
     }
-    
+
     @inlinable
-    public mutating func replaceSubrange<C>(_ subrange: Range<Index>, with newElements: C) where C : Collection, Element == C.Element {
+    public mutating func replaceSubrange<C>(
+        _ subrange: Range<Index>, with newElements: C
+    ) where C : Collection, Element == C.Element {
         dimensions.replaceSubrange(subrange, with: newElements)
     }
 }
