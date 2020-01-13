@@ -2314,7 +2314,7 @@ public extension Tensor where Scalar: Numeric {
     ///   - exclusive: Indicates whether to perform an exclusive cumulative product.
     ///   - reverse: Indicates whether to perform the cumulative product in reversed order.
     /// - Returns: Result of the cumulative product operation.
-    /// - Precondition: `axis.rank` must be `0`.
+    /// - Precondition: `axis` must have rank `0`.
     /// - Precondition: `axis` must be in the range `-rank..<rank`.
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
