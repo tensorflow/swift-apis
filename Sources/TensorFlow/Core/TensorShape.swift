@@ -76,6 +76,7 @@ public struct TensorShape: ExpressibleByArrayLiteral {
 extension TensorShape: Collection, MutableCollection {
     public typealias Element = Int
     public typealias Index = Int
+    public typealias Indices = Range<Int>
     
     /// The rank of the shape (i.e. the number of dimensions).
     @inlinable
@@ -121,8 +122,6 @@ extension TensorShape: Collection, MutableCollection {
 }
 
 extension TensorShape: RandomAccessCollection {
-    public typealias Indices = Range<Int>
-    
     @inlinable
     public func index(_ i: Int, offsetBy distance: Int) -> Int {
         dimensions.index(i, offsetBy: distance)
