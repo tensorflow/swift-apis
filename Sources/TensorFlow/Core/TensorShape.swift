@@ -159,7 +159,7 @@ extension TensorShape: RangeReplaceableCollection {
     @inlinable
     public mutating func replaceSubrange<C>(
         _ subrange: Range<Index>, with newElements: C
-    ) where C : Collection, Element == C.Element {
+    ) where C: Collection, Element == C.Element {
         dimensions.replaceSubrange(subrange, with: newElements)
     }
 }
