@@ -95,6 +95,6 @@ final class TensorTests: XCTestCase {
         ("testShapeGetter", testShapeGetter),
         ("testTensorShapeDescription", testTensorShapeDescription),
         ("testEquality", testEquality),
-        ("testTensorShapeCollectionConformance", testTensorShapeCollectionConformance)
+        ("testTensorShapeCollectionOperations", testTensorShapeCollectionOperations)
     ]
 }
