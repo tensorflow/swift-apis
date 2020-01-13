@@ -15,7 +15,6 @@
 import XCTest
 @testable import TensorFlow
 
-
 final class MatrixTests: XCTestCase {
     func testDiagonalPart() {
         // Test on a matrix.
