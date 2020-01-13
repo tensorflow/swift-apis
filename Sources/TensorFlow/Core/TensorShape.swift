@@ -144,7 +144,7 @@ extension TensorShape: RangeReplaceableCollection {
 
     @inlinable
     public mutating func append(_ newElement: Element) {
-        dimensions.insert(newElement, at: endIndex)
+        dimensions.append(newElement)
     }
 
     @inlinable

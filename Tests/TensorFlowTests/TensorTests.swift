@@ -84,6 +84,9 @@ final class TensorTests: XCTestCase {
 
         shape3.insert(firstValue, at: 0)
         XCTAssertTrue(shape3 == shape2)
+        
+        shape3.append(contentsOf: shape2)
+        XCTAssertTrue(shape3 == (shape2 + shape2))
     }
 
     static var allTests = [
