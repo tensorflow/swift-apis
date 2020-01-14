@@ -116,17 +116,29 @@ final class LinearAlgebraTests: XCTestCase {
     }
 
     func testDet() {
-        let matrix = Tensor<Float>(shape: [1, 4, 4], scalars: (0..<16).map(Float.init))
-        let computedDet = det(matrix)
-        let expectedDet = Tensor<Float>([0])
+        var matrix = Tensor<Float>(shape: [1, 4, 4], scalars: (0..<16).map(Float.init))
+        var computedDet = det(matrix)
+        var expectedDet = Tensor<Float>([0])
         XCTAssertEqual(computedDet, expectedDet)
+
+        matrix = Tensor<Float>(shape: [2, 2, 2, 2], scalars: (0..<16).map(Float.init))
+        computedDet = det(matrix)
+        expectedDet = Tensor<Float>([[-2.0, -2.0], [-2.0, -2.0]])
+        assertEqual(computedDet, expectedDet, accuracy: 1e-5)
     }
 
     func testSlogdet() {
-        let input = Tensor<Float>(shape: [1, 2, 2], scalars: (0..<4).map(Float.init))
-        let expectedSigns = Tensor<Float>([-1])
-        let expectedLogs = Tensor<Float>([0.6931472])
-        let (computedSigns, computedLogs) = slogdet(input)
+        var input = Tensor<Float>(shape: [1, 2, 2], scalars: (0..<4).map(Float.init))
+        var expectedSigns = Tensor<Float>([-1])
+        var expectedLogs = Tensor<Float>([0.6931472])
+        var (computedSigns, computedLogs) = slogdet(input)
+        XCTAssertEqual(computedSigns, expectedSigns)
+        XCTAssertEqual(computedLogs, expectedLogs)
+        
+        input = Tensor<Float>(shape: [2, 2, 2, 2], scalars: (0..<16).map(Float.init))
+        expectedSigns = Tensor<Float>([[-1.0, -1.0], [-1.0, -1.0]])
+        expectedLogs = Tensor<Float>([[0.6931472, 0.6931462], [0.6931462, 0.6931435]])
+        (computedSigns, computedLogs) = slogdet(input)
         XCTAssertEqual(computedSigns, expectedSigns)
         XCTAssertEqual(computedLogs, expectedLogs)
     }
