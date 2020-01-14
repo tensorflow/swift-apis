@@ -20,7 +20,6 @@ from __future__ import print_function
 
 import os
 import six
-#import tensorflow as tf
 import tensorflow.compat.v1 as tf
 
 from tensorflow.core.framework import types_pb2
