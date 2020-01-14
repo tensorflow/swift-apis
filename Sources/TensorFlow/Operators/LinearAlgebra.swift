@@ -191,9 +191,10 @@ func det<T: TensorFlowFloatingPoint>(_ matrix: Tensor<T>) -> Tensor<T> {
 ///
 /// - Parameter matrix: A tensor of shape `[...,N, M, M]`.
 /// - Returns: 
-///   - sign: A tensor with shape `[N]`, representing the signs of the natural logarithms of the determinants of input submatrices.
-///   - logAbsDeterminant: A tensor with shape `[N]`, representing the natural logarithms of the absolute values of the determinants of input submatrices.
-///     of the N input matrices.  Shape is `[N]`.
+///   - sign: A tensor with shape `[N]`, representing the signs of the natural logarithms of the 
+///     determinants of input submatrices.
+///   - logAbsDeterminant: A tensor with shape `[N]`, representing the natural logarithms of the 
+///     absolute values of the determinants of input submatrices.
 @inlinable
 func slogdet<T: TensorFlowFloatingPoint>(_ matrix: Tensor<T>) -> (sign: Tensor<T>, logAbsDeterminant: Tensor<T>) {
     _Raw.logMatrixDeterminant(matrix)
