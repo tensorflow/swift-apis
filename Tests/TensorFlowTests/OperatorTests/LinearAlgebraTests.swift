@@ -74,7 +74,7 @@ final class LinearAlgebraTests: XCTestCase {
             }
             let aReconstituted = matmul(u!, matmul(s.diagonal(), 
                                         transposed: false, v!, transposed: true))
-            assertEqual(aReconstituted, a, accuracy: 1e-5)
+            assertEqual(aReconstituted, a, accuracy: 3e-5)
 
             var (sFull, uFull, vFull) = a.svd(computeUV: true, fullMatrices: true)
             m = uFull!.shape.dimensions.last!
@@ -86,7 +86,7 @@ final class LinearAlgebraTests: XCTestCase {
             }
             let aReconstitutedFull = matmul(uFull!, matmul(sFull.diagonal(), 
                                             transposed: false, vFull!, transposed: true))
-            assertEqual(aReconstitutedFull, a, accuracy: 1e-5)
+            assertEqual(aReconstitutedFull, a, accuracy: 3e-5)
         }
     }
 
