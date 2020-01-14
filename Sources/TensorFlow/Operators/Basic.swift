@@ -1219,7 +1219,7 @@ extension Tensor {
         return axis >= -rank && axis < rank
     }
 
-    /// Returns `true` if the given axis tensor is in the range `[-rank, rank)`.
+    /// Returns `true` if the given scalar tensor is in the range `[-rank, rank)`.
     @usableFromInline
     internal func isAxisInRange(_ axis: Tensor<Int32>) -> Bool {
         precondition(axis.rank == 0, "Axis must have rank 0.")
