@@ -189,7 +189,7 @@ func det<T: TensorFlowFloatingPoint>(_ matrix: Tensor<T>) -> Tensor<T> {
 /// Computes the sign and the natural logarithm of the absolute value of the determinant of an
 /// optionally batched square matrix.
 ///
-/// - Parameter matrix: A tensor of shape `[...,N, M, M]`.
+/// - Parameter matrix: A tensor of shape `[..., N, M, M]`.
 /// - Returns: 
 ///   - sign: A tensor with shape `[N]`, representing the signs of the natural logarithms of the 
 ///     determinants of input submatrices.
