@@ -22484,127 +22484,127 @@ public static func parseSequenceExample<
     //    Int(FeatureListDenseTypes._typeList.count), Int(nfeatureListDense))
 }
 
-// /// Transforms a vector of tf.io.SequenceExample protos (as strings) into
-// /// typed tensors.
-// ///
-// /// - Parameters:
-// ///     - serialized: A scalar or vector containing binary serialized SequenceExample protos.
-// ///     - debug_name: A scalar or vector containing the names of the serialized protos.
-// ///         May contain, for example, table key (descriptive) name for the
-// ///         corresponding serialized proto.  This is purely useful for debugging
-// ///         purposes, and the presence of values here has no effect on the output.
-// ///         May also be an empty vector if no name is available.
-// ///     - context_sparse_keys: The keys expected in the Examples' features associated with context_sparse
-// ///         values.
-// ///     - context_dense_keys: The keys expected in the SequenceExamples' context features associated with
-// ///         dense values.
-// ///     - context_ragged_keys: The keys expected in the Examples' features associated with context_ragged
-// ///         values.
-// ///     - feature_list_sparse_keys: The keys expected in the FeatureLists associated with sparse values.
-// ///     - feature_list_dense_keys: The keys expected in the SequenceExamples' feature_lists associated
-// ///         with lists of dense values.
-// ///     - feature_list_ragged_keys: The keys expected in the FeatureLists associated with ragged values.
-// ///     - feature_list_dense_missing_assumed_empty: A vector corresponding 1:1 with featue_list_dense_keys, indicating which
-// ///         features may be missing from the SequenceExamples.  If the associated
-// ///         FeatureList is missing, it is treated as empty.
-// ///     - context_dense_defaults: A list of Ncontext_dense Tensors (some may be empty).
-// ///         context_dense_defaults[j] provides default values
-// ///         when the SequenceExample's context map lacks context_dense_key[j].
-// ///         If an empty Tensor is provided for context_dense_defaults[j],
-// ///         then the Feature context_dense_keys[j] is required.
-// ///         The input type is inferred from context_dense_defaults[j], even when it's
-// ///         empty.  If context_dense_defaults[j] is not empty, its shape must match
-// ///         context_dense_shapes[j].
-// ///
-// /// - Attrs:
-// ///     - context_sparse_types: A list of Ncontext_sparse types; the data types of data in
-// ///         each context Feature given in context_sparse_keys.
-// ///         Currently the ParseSingleSequenceExample supports DT_FLOAT (FloatList),
-// ///         DT_INT64 (Int64List), and DT_STRING (BytesList).
-// ///     - context_ragged_value_types: RaggedTensor.value dtypes for the ragged context features.
-// ///     - context_ragged_split_types: RaggedTensor.row_split dtypes for the ragged context features.
-// ///     - context_dense_shapes: A list of Ncontext_dense shapes; the shapes of data in
-// ///         each context Feature given in context_dense_keys.
-// ///         The number of elements in the Feature corresponding to context_dense_key[j]
-// ///         must always equal context_dense_shapes[j].NumEntries().
-// ///         The shape of context_dense_values[j] will match context_dense_shapes[j].
-// ///     - feature_list_sparse_types: A list of Nfeature_list_sparse types; the data types
-// ///         of data in each FeatureList given in feature_list_sparse_keys.
-// ///         Currently the ParseSingleSequenceExample supports DT_FLOAT (FloatList),
-// ///         DT_INT64 (Int64List), and DT_STRING (BytesList).
-// ///     - feature_list_ragged_value_types: RaggedTensor.value dtypes for the ragged FeatureList features.
-// ///     - feature_list_ragged_split_types: RaggedTensor.row_split dtypes for the ragged FeatureList features.
-// ///     - feature_list_dense_shapes: A list of Nfeature_list_dense shapes; the shapes of
-// ///         data in each FeatureList given in feature_list_dense_keys.
-// ///         The shape of each Feature in the FeatureList corresponding to
-// ///         feature_list_dense_key[j] must always equal
-// ///         feature_list_dense_shapes[j].NumEntries().
-// @inlinable @inline(__always)
-// public static func parseSequenceExampleV2<
-//     TcontextDense: TensorArrayProtocol,
-//     ContextSparseTypes: TensorGroup,
-//     ContextRaggedValueTypes: TensorGroup,
-//     ContextRaggedSplitTypes: TensorGroup,
-//     FeatureListDenseTypes: TensorGroup,
-//     FeatureListSparseTypes: TensorGroup,
-//     FeatureListRaggedValueTypes: TensorGroup,
-//     FeatureListRaggedSplitTypes: TensorGroup
-// >(
-//     serialized: StringTensor,
-//     debugName: StringTensor,
-//     contextSparseKeys: StringTensor,
-//     contextDenseKeys: StringTensor,
-//     contextRaggedKeys: StringTensor,
-//     featureListSparseKeys: StringTensor,
-//     featureListDenseKeys: StringTensor,
-//     featureListRaggedKeys: StringTensor,
-//     featureListDenseMissingAssumedEmpty: Tensor<Bool>,
-//     contextDenseDefaults: TcontextDense,
-//     ncontextSparse: Int64 = 0,
-//     contextDenseShapes: [TensorShape?],
-//     nfeatureListSparse: Int64 = 0,
-//     nfeatureListDense: Int64 = 0,
-//     featureListDenseShapes: [TensorShape?]
-// ) -> (contextSparseIndices: [Tensor<Int64>], contextSparseValues: ContextSparseTypes, contextSparseShapes: [Tensor<Int64>], contextDenseValues: TcontextDense, contextRaggedValues: ContextRaggedValueTypes, contextRaggedRowSplits: ContextRaggedSplitTypes, featureListSparseIndices: [Tensor<Int64>], featureListSparseValues: FeatureListSparseTypes, featureListSparseShapes: [Tensor<Int64>], featureListDenseValues: FeatureListDenseTypes, featureListDenseLengths: [Tensor<Int64>], featureListRaggedValues: FeatureListRaggedValueTypes, featureListRaggedOuterSplits: FeatureListRaggedSplitTypes, featureListRaggedInnerSplits: FeatureListRaggedSplitTypes) {
-//   let nOutputs = Int(ncontextSparse) + Int(ContextSparseTypes._typeList.count) + Int(ncontextSparse) + Int(contextDenseDefaults._typeList.count) + Int(ContextRaggedValueTypes._typeList.count) + Int(ContextRaggedSplitTypes._typeList.count) + Int(nfeatureListSparse) + Int(FeatureListSparseTypes._typeList.count) + Int(nfeatureListSparse) + Int(FeatureListDenseTypes._typeList.count) + Int(nfeatureListDense) + Int(FeatureListRaggedValueTypes._typeList.count) + Int(FeatureListRaggedSplitTypes._typeList.count) + Int(FeatureListRaggedSplitTypes._typeList.count)
-//     let op = makeOp("ParseSequenceExampleV2", nOutputs)
-//     op.updateAttribute("Ncontext_sparse", ncontextSparse)
-//     op.updateAttribute("Tcontext_dense", contextDenseDefaults._typeList)
-//     op.updateAttribute("context_sparse_types", ContextSparseTypes._typeList)
-//     op.updateAttribute("context_ragged_value_types", ContextRaggedValueTypes._typeList)
-//     op.updateAttribute("context_ragged_split_types", ContextRaggedSplitTypes._typeList)
-//     op.updateAttribute("context_dense_shapes", contextDenseShapes)
-//     op.updateAttribute("Nfeature_list_sparse", nfeatureListSparse)
-//     op.updateAttribute("Nfeature_list_dense", nfeatureListDense)
-//     op.updateAttribute("feature_list_dense_types", FeatureListDenseTypes._typeList)
-//     op.updateAttribute("feature_list_sparse_types", FeatureListSparseTypes._typeList)
-//     op.updateAttribute("feature_list_ragged_value_types", FeatureListRaggedValueTypes._typeList)
-//     op.updateAttribute("feature_list_ragged_split_types", FeatureListRaggedSplitTypes._typeList)
-//     op.updateAttribute("feature_list_dense_shapes", featureListDenseShapes)
-//     op.addInput(serialized)
-//     op.addInput(debugName)
-//     op.addInput(contextSparseKeys)
-//     op.addInput(contextDenseKeys)
-//     op.addInput(contextRaggedKeys)
-//     op.addInput(featureListSparseKeys)
-//     op.addInput(featureListDenseKeys)
-//     op.addInput(featureListRaggedKeys)
-//     op.addInput(featureListDenseMissingAssumedEmpty)
-//     op.addInputList(contextDenseDefaults)
-//     let ncontextSparse = Int(ncontextSparse)
-//     let contextSparseTypesCount =  Int(ContextSparseTypes._typeList.count)
-//     let contextDenseDefaultsCount = Int(contextDenseDefaults._typeList.count)
-//     let contextRaggedValueTypesCount = Int(ContextRaggedValueTypes._typeList.count)
-//     let contextRaggedSplitTypesCount = Int(ContextRaggedSplitTypes._typeList.count)
-//     let nfeatureListSparse = Int(nfeatureListSparse)
-//     let featureListSparseTypesCount = Int(FeatureListSparseTypes._typeList.count)
-//     let featureListDenseTypesCount = Int(FeatureListDenseTypes._typeList.count)
-//     let nfeatureListDense = Int(nfeatureListDense)
-//     let featureListRaggedValueTypesCount = Int(FeatureListRaggedValueTypes._typeList.count)
-//     let featureListRaggedSplitTypesCount = Int(FeatureListRaggedSplitTypes._typeList.count)
-//     return op.execute(ncontextSparse, contextSparseTypesCount, ncontextSparse, contextDenseDefaultsCount, contextRaggedValueTypesCount, contextRaggedSplitTypesCount, nfeatureListSparse, featureListSparseTypesCount, nfeatureListSparse, featureListDenseTypesCount, nfeatureListDense, featureListRaggedValueTypesCount, featureListRaggedSplitTypesCount, featureListRaggedSplitTypesCount)
-//    // return op.execute(Int(ncontextSparse), Int(ContextSparseTypes._typeList.count), Int(ncontextSparse), Int(contextDenseDefaults._typeList.count), Int(ContextRaggedValueTypes._typeList.count), Int(ContextRaggedSplitTypes._typeList.count), Int(nfeatureListSparse), Int(FeatureListSparseTypes._typeList.count), Int(nfeatureListSparse), Int(FeatureListDenseTypes._typeList.count), Int(nfeatureListDense), Int(FeatureListRaggedValueTypes._typeList.count), Int(FeatureListRaggedSplitTypes._typeList.count), Int(FeatureListRaggedSplitTypes._typeList.count))
-// }
+/// Transforms a vector of tf.io.SequenceExample protos (as strings) into
+/// typed tensors.
+///
+/// - Parameters:
+///     - serialized: A scalar or vector containing binary serialized SequenceExample protos.
+///     - debug_name: A scalar or vector containing the names of the serialized protos.
+///         May contain, for example, table key (descriptive) name for the
+///         corresponding serialized proto.  This is purely useful for debugging
+///         purposes, and the presence of values here has no effect on the output.
+///         May also be an empty vector if no name is available.
+///     - context_sparse_keys: The keys expected in the Examples' features associated with context_sparse
+///         values.
+///     - context_dense_keys: The keys expected in the SequenceExamples' context features associated with
+///         dense values.
+///     - context_ragged_keys: The keys expected in the Examples' features associated with context_ragged
+///         values.
+///     - feature_list_sparse_keys: The keys expected in the FeatureLists associated with sparse values.
+///     - feature_list_dense_keys: The keys expected in the SequenceExamples' feature_lists associated
+///         with lists of dense values.
+///     - feature_list_ragged_keys: The keys expected in the FeatureLists associated with ragged values.
+///     - feature_list_dense_missing_assumed_empty: A vector corresponding 1:1 with featue_list_dense_keys, indicating which
+///         features may be missing from the SequenceExamples.  If the associated
+///         FeatureList is missing, it is treated as empty.
+///     - context_dense_defaults: A list of Ncontext_dense Tensors (some may be empty).
+///         context_dense_defaults[j] provides default values
+///         when the SequenceExample's context map lacks context_dense_key[j].
+///         If an empty Tensor is provided for context_dense_defaults[j],
+///         then the Feature context_dense_keys[j] is required.
+///         The input type is inferred from context_dense_defaults[j], even when it's
+///         empty.  If context_dense_defaults[j] is not empty, its shape must match
+///         context_dense_shapes[j].
+///
+/// - Attrs:
+///     - context_sparse_types: A list of Ncontext_sparse types; the data types of data in
+///         each context Feature given in context_sparse_keys.
+///         Currently the ParseSingleSequenceExample supports DT_FLOAT (FloatList),
+///         DT_INT64 (Int64List), and DT_STRING (BytesList).
+///     - context_ragged_value_types: RaggedTensor.value dtypes for the ragged context features.
+///     - context_ragged_split_types: RaggedTensor.row_split dtypes for the ragged context features.
+///     - context_dense_shapes: A list of Ncontext_dense shapes; the shapes of data in
+///         each context Feature given in context_dense_keys.
+///         The number of elements in the Feature corresponding to context_dense_key[j]
+///         must always equal context_dense_shapes[j].NumEntries().
+///         The shape of context_dense_values[j] will match context_dense_shapes[j].
+///     - feature_list_sparse_types: A list of Nfeature_list_sparse types; the data types
+///         of data in each FeatureList given in feature_list_sparse_keys.
+///         Currently the ParseSingleSequenceExample supports DT_FLOAT (FloatList),
+///         DT_INT64 (Int64List), and DT_STRING (BytesList).
+///     - feature_list_ragged_value_types: RaggedTensor.value dtypes for the ragged FeatureList features.
+///     - feature_list_ragged_split_types: RaggedTensor.row_split dtypes for the ragged FeatureList features.
+///     - feature_list_dense_shapes: A list of Nfeature_list_dense shapes; the shapes of
+///         data in each FeatureList given in feature_list_dense_keys.
+///         The shape of each Feature in the FeatureList corresponding to
+///         feature_list_dense_key[j] must always equal
+///         feature_list_dense_shapes[j].NumEntries().
+@inlinable @inline(__always)
+public static func parseSequenceExampleV2<
+    TcontextDense: TensorArrayProtocol,
+    ContextSparseTypes: TensorGroup,
+    ContextRaggedValueTypes: TensorGroup,
+    ContextRaggedSplitTypes: TensorGroup,
+    FeatureListDenseTypes: TensorGroup,
+    FeatureListSparseTypes: TensorGroup,
+    FeatureListRaggedValueTypes: TensorGroup,
+    FeatureListRaggedSplitTypes: TensorGroup
+>(
+    serialized: StringTensor,
+    debugName: StringTensor,
+    contextSparseKeys: StringTensor,
+    contextDenseKeys: StringTensor,
+    contextRaggedKeys: StringTensor,
+    featureListSparseKeys: StringTensor,
+    featureListDenseKeys: StringTensor,
+    featureListRaggedKeys: StringTensor,
+    featureListDenseMissingAssumedEmpty: Tensor<Bool>,
+    contextDenseDefaults: TcontextDense,
+    ncontextSparse: Int64 = 0,
+    contextDenseShapes: [TensorShape?],
+    nfeatureListSparse: Int64 = 0,
+    nfeatureListDense: Int64 = 0,
+    featureListDenseShapes: [TensorShape?]
+) -> (contextSparseIndices: [Tensor<Int64>], contextSparseValues: ContextSparseTypes, contextSparseShapes: [Tensor<Int64>], contextDenseValues: TcontextDense, contextRaggedValues: ContextRaggedValueTypes, contextRaggedRowSplits: ContextRaggedSplitTypes, featureListSparseIndices: [Tensor<Int64>], featureListSparseValues: FeatureListSparseTypes, featureListSparseShapes: [Tensor<Int64>], featureListDenseValues: FeatureListDenseTypes, featureListDenseLengths: [Tensor<Int64>], featureListRaggedValues: FeatureListRaggedValueTypes, featureListRaggedOuterSplits: FeatureListRaggedSplitTypes, featureListRaggedInnerSplits: FeatureListRaggedSplitTypes) {
+  let nOutputs = Int(ncontextSparse) + Int(ContextSparseTypes._typeList.count) + Int(ncontextSparse) + Int(contextDenseDefaults._typeList.count) + Int(ContextRaggedValueTypes._typeList.count) + Int(ContextRaggedSplitTypes._typeList.count) + Int(nfeatureListSparse) + Int(FeatureListSparseTypes._typeList.count) + Int(nfeatureListSparse) + Int(FeatureListDenseTypes._typeList.count) + Int(nfeatureListDense) + Int(FeatureListRaggedValueTypes._typeList.count) + Int(FeatureListRaggedSplitTypes._typeList.count) + Int(FeatureListRaggedSplitTypes._typeList.count)
+    let op = makeOp("ParseSequenceExampleV2", nOutputs)
+    op.updateAttribute("Ncontext_sparse", ncontextSparse)
+    op.updateAttribute("Tcontext_dense", contextDenseDefaults._typeList)
+    op.updateAttribute("context_sparse_types", ContextSparseTypes._typeList)
+    op.updateAttribute("context_ragged_value_types", ContextRaggedValueTypes._typeList)
+    op.updateAttribute("context_ragged_split_types", ContextRaggedSplitTypes._typeList)
+    op.updateAttribute("context_dense_shapes", contextDenseShapes)
+    op.updateAttribute("Nfeature_list_sparse", nfeatureListSparse)
+    op.updateAttribute("Nfeature_list_dense", nfeatureListDense)
+    op.updateAttribute("feature_list_dense_types", FeatureListDenseTypes._typeList)
+    op.updateAttribute("feature_list_sparse_types", FeatureListSparseTypes._typeList)
+    op.updateAttribute("feature_list_ragged_value_types", FeatureListRaggedValueTypes._typeList)
+    op.updateAttribute("feature_list_ragged_split_types", FeatureListRaggedSplitTypes._typeList)
+    op.updateAttribute("feature_list_dense_shapes", featureListDenseShapes)
+    op.addInput(serialized)
+    op.addInput(debugName)
+    op.addInput(contextSparseKeys)
+    op.addInput(contextDenseKeys)
+    op.addInput(contextRaggedKeys)
+    op.addInput(featureListSparseKeys)
+    op.addInput(featureListDenseKeys)
+    op.addInput(featureListRaggedKeys)
+    op.addInput(featureListDenseMissingAssumedEmpty)
+    op.addInputList(contextDenseDefaults)
+    let ncontextSparse = Int(ncontextSparse)
+    let contextSparseTypesCount =  Int(ContextSparseTypes._typeList.count)
+    let contextDenseDefaultsCount = Int(contextDenseDefaults._typeList.count)
+    let contextRaggedValueTypesCount = Int(ContextRaggedValueTypes._typeList.count)
+    let contextRaggedSplitTypesCount = Int(ContextRaggedSplitTypes._typeList.count)
+    let nfeatureListSparse = Int(nfeatureListSparse)
+    let featureListSparseTypesCount = Int(FeatureListSparseTypes._typeList.count)
+    let featureListDenseTypesCount = Int(FeatureListDenseTypes._typeList.count)
+    let nfeatureListDense = Int(nfeatureListDense)
+    let featureListRaggedValueTypesCount = Int(FeatureListRaggedValueTypes._typeList.count)
+    let featureListRaggedSplitTypesCount = Int(FeatureListRaggedSplitTypes._typeList.count)
+    return op.execute(ncontextSparse, contextSparseTypesCount, ncontextSparse, contextDenseDefaultsCount, contextRaggedValueTypesCount, contextRaggedSplitTypesCount, nfeatureListSparse, featureListSparseTypesCount, nfeatureListSparse, featureListDenseTypesCount, nfeatureListDense, featureListRaggedValueTypesCount, featureListRaggedSplitTypesCount, featureListRaggedSplitTypesCount)
+   // return op.execute(Int(ncontextSparse), Int(ContextSparseTypes._typeList.count), Int(ncontextSparse), Int(contextDenseDefaults._typeList.count), Int(ContextRaggedValueTypes._typeList.count), Int(ContextRaggedSplitTypes._typeList.count), Int(nfeatureListSparse), Int(FeatureListSparseTypes._typeList.count), Int(nfeatureListSparse), Int(FeatureListDenseTypes._typeList.count), Int(nfeatureListDense), Int(FeatureListRaggedValueTypes._typeList.count), Int(FeatureListRaggedSplitTypes._typeList.count), Int(FeatureListRaggedSplitTypes._typeList.count))
+}
 
 /// Transforms a tf.Example proto (as a string) into typed tensors.
 ///
