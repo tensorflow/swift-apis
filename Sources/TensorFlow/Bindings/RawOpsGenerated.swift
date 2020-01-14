@@ -22474,14 +22474,6 @@ public static func parseSequenceExample<
     let FeatureListDenseTypesCounts = Int(FeatureListDenseTypes._typeList.count)
     let nfeatureListDense = Int(nfeatureListDense)
     return op.execute(ncontextSparse, contextSparseTypesCounts, ncontextSparse, contextDenseDefaultsCounts, nfeatureListSparse, nfeaturelistSparseTypesCounts, nfeatureListSparse, FeatureListDenseTypesCounts, nfeatureListDense)
-    // return op.execute(Int(ncontextSparse), 
-    // Int(ContextSparseTypes._typeList.count), 
-    // Int(ncontextSparse), 
-    // Int(contextDenseDefaults._typeList.count),
-    //  Int(nfeatureListSparse),
-    //   Int(FeatureListSparseTypes._typeList.count),
-    //    Int(nfeatureListSparse), 
-    //    Int(FeatureListDenseTypes._typeList.count), Int(nfeatureListDense))
 }
 
 /// Transforms a vector of tf.io.SequenceExample protos (as strings) into
@@ -22603,7 +22595,6 @@ public static func parseSequenceExampleV2<
     let featureListRaggedValueTypesCount = Int(FeatureListRaggedValueTypes._typeList.count)
     let featureListRaggedSplitTypesCount = Int(FeatureListRaggedSplitTypes._typeList.count)
     return op.execute(ncontextSparse, contextSparseTypesCount, ncontextSparse, contextDenseDefaultsCount, contextRaggedValueTypesCount, contextRaggedSplitTypesCount, nfeatureListSparse, featureListSparseTypesCount, nfeatureListSparse, featureListDenseTypesCount, nfeatureListDense, featureListRaggedValueTypesCount, featureListRaggedSplitTypesCount, featureListRaggedSplitTypesCount)
-   // return op.execute(Int(ncontextSparse), Int(ContextSparseTypes._typeList.count), Int(ncontextSparse), Int(contextDenseDefaults._typeList.count), Int(ContextRaggedValueTypes._typeList.count), Int(ContextRaggedSplitTypes._typeList.count), Int(nfeatureListSparse), Int(FeatureListSparseTypes._typeList.count), Int(nfeatureListSparse), Int(FeatureListDenseTypes._typeList.count), Int(nfeatureListDense), Int(FeatureListRaggedValueTypes._typeList.count), Int(FeatureListRaggedSplitTypes._typeList.count), Int(FeatureListRaggedSplitTypes._typeList.count))
 }
 
 /// Transforms a tf.Example proto (as a string) into typed tensors.
