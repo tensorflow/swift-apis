@@ -120,6 +120,7 @@ final class MatrixTests: XCTestCase {
         let expectedGrad = 2 * t3.bandPart(subdiagonalCount: 0, superdiagonalCount: -1)
         XCTAssertEqual(computedGrad, expectedGrad)
     }
+
     func testEye() {
         // Test for non-batched identity matrix.
         var identity: Tensor<Float> = eye(rowCount: 2)
