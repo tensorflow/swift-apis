@@ -270,7 +270,6 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
 
 // MARK: Solvers
 
-
 /// Solves optionally batched systems of linear equations with upper or lower triangular matrices by backsubstitution.
 /// Returns solution to the system `A x = b`. Shape of return matches `b`.
 ///

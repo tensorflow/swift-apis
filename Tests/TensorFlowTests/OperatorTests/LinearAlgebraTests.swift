@@ -142,7 +142,6 @@ final class LinearAlgebraTests: XCTestCase {
         assertEqual(computedGradient, expectedGradient, accuracy: 1e-5)
     }
     
-    
     /// Data generation function for the triangular solve test.
     /// Value of the gradient was computed using the following code:
     ///
