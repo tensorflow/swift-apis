@@ -16,9 +16,51 @@
 import Darwin
 #elseif os(Windows)
 import ucrt
+import WinSDK
 #else
 import Glibc
 #endif
+
+struct ThreadLocalStorage {
+    struct Key {
+#if os(Windows)
+        var _value: DWORD
+#else
+        var _value: pthread_key_t
+#endif
+
+#if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
+        typealias KeyDestructor = @convention(c) (UnsafeMutableRawPointer) -> Void
+#else
+        typealias KeyDestructor = @convention(c) (UnsafeMutableRawPointer?) -> Void
+#endif
+
+        init(destructor: KeyDestructor?) {
+#if os(Windows)
+            _value = FlsAlloc(destructor)
+#else
+            _value = pthread_key_t()
+            pthread_key_create(&_value, destructor)
+#endif
+        }
+    }
+
+    public static func get(for key: Key) -> UnsafeMutableRawPointer? {
+#if os(Windows)
+        return FlsGetValue(key._value)
+#else
+        return pthread_getspecific(key._value)
+#endif
+    }
+
+    public static func set(value: UnsafeMutableRawPointer?, for key: Key) {
+#if os(Windows)
+        FlsSetValue(key._value, value)
+#else
+        pthread_setspecific(key._value, value)
+#endif
+    }
+}
 
 // A thread that runs the provided body.
 class Thread {

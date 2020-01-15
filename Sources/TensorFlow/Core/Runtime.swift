@@ -36,6 +36,7 @@ import ucrt
 #else
 import Glibc
 #endif
+
 import CTensorFlow
 
 /// The configuration for the compiler runtime.
@@ -520,25 +521,24 @@ class _ThreadLocalState {
     /// is enabled.
     private var lazyTensorEnabled: Bool? = nil
 
-    private static let key: pthread_key_t = {
-        var key = pthread_key_t()
-        pthread_key_create(&key) {
+    private static let key: ThreadLocalStorage.Key =
+        ThreadLocalStorage.Key {
 #if os(macOS) || os(iOS) || os(watchOS) || os(tvOS)
             Unmanaged<AnyObject>.fromOpaque($0).release()
 #else
             Unmanaged<AnyObject>.fromOpaque($0!).release()
 #endif
         }
-        return key
-    }()
 
     @usableFromInline
     static var local: _ThreadLocalState {
-        if let state = pthread_getspecific(key) {
+        if let state = ThreadLocalStorage.get(for: key) {
             return Unmanaged.fromOpaque(state).takeUnretainedValue()
         }
+
         let state = _ThreadLocalState()
-        pthread_setspecific(key, Unmanaged.passRetained(state).toOpaque())
+        ThreadLocalStorage.set(value: Unmanaged.passRetained(state).toOpaque(),
+                               for: key)
         return state
     }
 }
