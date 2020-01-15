@@ -146,6 +146,65 @@ class Thread {
     }
 }
 
+/// A portable mutex for synchronization of a shared resource.
+class Mutex {
+#if os(Windows)
+    typealias MutexType = SRWLOCK
+#else
+    typealias MutexType = pthread_mutex_t
+#endif
+
+    var _mutex: MutexType
+
+    init() {
+        _mutex = MutexType()
+#if os(Windows)
+        InitializeSRWLock(&_mutex)
+#else
+        pthread_mutex_init(&_mutex, nil)
+#endif
+    }
+
+    deinit {
+#if os(Windows)
+        // SRWLOCKs do not need explicit destruction
+#else
+        pthread_mutex_destroy(&_mutex)
+#endif
+    }
+
+    // Acquire the mutex.
+    //
+    // Calling this function will block until it is safe to access the resource
+    // that the mutex is protecting, locking the mutex indicating ownership of
+    // the shared resource.
+    //
+    // Returns 0 on success.
+    func acquire() -> Int32 {
+#if os(Windows)
+        AcquireSRWLockExclusive(&_mutex)
+        return 0
+#else
+        return pthread_mutex_lock(&_mutex)
+#endif
+    }
+
+    // Release the mutex.
+    //
+    // Calling this function unlocks the mutex, relinquishing control of the
+    // shared resource.
+    //
+    // Returns 0 on success.
+    func release() -> Int32 {
+#if os(Windows)
+        ReleaseSRWLockExclusive(&_mutex)
+        return 0
+#else
+        return pthread_mutex_unlock(&_mutex)
+#endif
+    }
+}
+
 public func _runOnNDevices(_ n: Int, perform body: @escaping (Int) -> ()) {
     var threads = [] as [Thread]
     for i in 0..<n {

@@ -185,7 +185,7 @@ public final class _ExecutionContext {
     @usableFromInline let status: CTFStatus = TF_NewStatus()
 
     /// The mutex for preventing potential concurrent access.
-    private var mutex: pthread_mutex_t = pthread_mutex_t()
+    private var mutex: Mutex = Mutex()
 
     /// Initializes a new execution context by initializing available devices.
     @usableFromInline
@@ -294,8 +294,6 @@ public final class _ExecutionContext {
             debugLog("Device \(deviceId) has type \(deviceType) and name \(deviceName).")
             deviceNames.append(deviceName)
         }
-
-        pthread_mutex_init(&mutex, nil)
     }
 
     deinit {
@@ -304,7 +302,6 @@ public final class _ExecutionContext {
         TFE_DeleteContext(eagerContext)
         TF_DeleteBuffer(tensorFlowConfig)
         TF_DeleteStatus(status)
-        pthread_mutex_destroy(&mutex)
     }
 }
 
@@ -404,13 +401,15 @@ internal extension _ExecutionContext {
     /// Synchronously execute the body, preventing asynchronous computation from corrupting the
     /// context data.
     private func sync<Result>(execute body: () throws -> Result) rethrows -> Result {
-        let lockStatus = pthread_mutex_lock(&mutex)
+        let lockStatus = mutex.acquire()
         internalConsistencyCheck(lockStatus == 0)
         defer {
-            let unlockStatus = pthread_mutex_unlock(&mutex)
+            let unlockStatus = mutex.release()
             internalConsistencyCheck(unlockStatus == 0)
+#if !os(Windows)
             // Create a cancellation point.
             pthread_testcancel()
+#endif
         }
         return try body()
     }
