@@ -32,7 +32,7 @@ class Thread {
 #endif
 #endif
 
-    static func _invalid_handle() -> Handle {
+    static func _invalidHandle() -> Handle {
 #if os(Windows)
       return INVALID_HANDLE_VALUE
 #else
@@ -44,6 +44,8 @@ class Thread {
 #endif
     }
 
+    // NOTE: the `Procedure` abstraction is required as the use of the
+    // `Unmanaged` requires a `class` type for the reference counting purposes.
     class Procedure {
         let body: () -> ()
 
@@ -56,7 +58,7 @@ class Thread {
         }
     }
 
-    var thread: Handle = _invalid_handle()
+    var thread: Handle = _invalidHandle()
 
     init(perform body: @escaping () -> ()) {
         let context = Unmanaged.passRetained(Procedure(body)).toOpaque()
