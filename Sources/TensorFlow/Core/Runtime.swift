@@ -406,10 +406,6 @@ internal extension _ExecutionContext {
         defer {
             let unlockStatus = mutex.release()
             internalConsistencyCheck(unlockStatus == 0)
-#if !os(Windows)
-            // Create a cancellation point.
-            pthread_testcancel()
-#endif
         }
         return try body()
     }
