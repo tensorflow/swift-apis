@@ -271,12 +271,15 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
 // MARK: Solvers
 
 
-/// Solves optionally batched systems of linear equations with upper or lower triangular matrices by backsubstitution.
+/// Solves optionally batched systems of linear equations with upper or lower triangular
+/// matrices by backsubstitution.
 /// Returns solution to the system `A x = b`. Shape of return matches `b`.
 ///
 /// - Parameters:
 ///     - matrix: A batched matrix tensor.
 ///     - rhs: A batched vector tensor.
+///     - lower:
+///     - adjoint:
 /// - Precondition: `matrix` must be a tensor with shape `[..., M, M]`.
 /// - Precondition: `rhs` must be a tensor with shape `[..., M, K]`.
 @inlinable
@@ -338,10 +341,12 @@ internal func _vjpTriangularSolve<T: TensorFlowFloatingPoint>(
 
 
 /// Returns leading dimension from tensors shapes.
-/// Example:
-/// The leading dimension for tensors with shapes `[N, M, K]` and `[M, K]`
-/// is `[N]`. In cases, when tensors shapes do not have common parts from the end, e.g.
-/// `[N, M, K]` and `[N, M]`, it will raise an error.
+/// Consider input tensors Left and Right, there are three major cases
+/// - `Left.shape > Right.shape` and `Left.shape` equals `[A, B, C, D, F]`
+///   and `Right.shape` equals `[D, F]`, the `extractLeadingDims` returns `[A, B, C]`
+/// - `Left.shape < Right.shape` and `Left.shape` equals `[D, F]`
+///   and `Right.shape` equals `[A, B, C, D, F]`, the `extractLeadingDims` returns `[A, B, C]`
+/// - `Left.shape == Right.shape`, and `extractLeadingDims` returns `[]`
 ///
 /// - Parameters:
 ///     - left: Left tensor.
@@ -350,7 +355,7 @@ internal func _vjpTriangularSolve<T: TensorFlowFloatingPoint>(
 /// - Precondition: Left tensor rank cannot be lower than `ignoreLast`.
 /// - Precondition: Right tensor rank cannot be lower than `ignoreLast`.
 @inlinable
-public func extractLeadingDims<T: TensorFlowNumeric>(
+internal func extractLeadingDims<T: TensorFlowNumeric>(
     _ left: Tensor<T>,
     _ right: Tensor<T>,
     ignoreLast: Int = 0
@@ -359,10 +364,12 @@ public func extractLeadingDims<T: TensorFlowNumeric>(
 }
 
 /// Returns leading dimension from tensors shapes.
-/// Example:
-/// The leading dimension for tensors with shapes `[N, M, K]` and `[M, K]`
-/// is `[N]`. In cases, when tensors shapes do not have common parts from the end, e.g.
-/// `[N, M, K]` and `[N, M]`, it will raise an error.
+/// Consider input shapes Left and Right, there are three major cases
+/// - `Left > Right` and `Left` equals `[A, B, C, D, F]` and `Right` equals `[D, F]`,
+///   the `extractLeadingDims` returns `[A, B, C]`
+/// - `Left < Right` and `Left` equals `[D, F]` and `Right` equals `[A, B, C, D, F]`,
+///   the `extractLeadingDims` returns `[A, B, C]`
+/// - `Left == Right`, and `extractLeadingDims` returns `[]`
 ///
 /// - Parameters:
 ///     - left: Left tensor shape.
@@ -371,17 +378,14 @@ public func extractLeadingDims<T: TensorFlowNumeric>(
 /// - Precondition: Left tensor rank cannot be lower than `ignoreLast`.
 /// - Precondition: Right tensor rank cannot be lower than `ignoreLast`.
 @inlinable
-public func extractLeadingDims(_ left: TensorShape, _ right: TensorShape, ignoreLast: Int = 0) -> TensorShape {
-    precondition(left.rank >= ignoreLast, "The left tensor must have at least rank 2.")
-    precondition(right.rank >= ignoreLast, "The right tensor must have at least rank 2.")
-    let (smallerShape, largerShape) = left.rank > right.rank ? (right, left) : (left, right)
-    let smaller = smallerShape.dropLast(ignoreLast)
-    let larger = largerShape.dropLast(ignoreLast)
-    let smallerEndIndex = smaller.count - 1
-    let largerEndIndex = larger.count - 1
-    for i in 0..<smaller.count {
-        internalConsistencyCheck(smaller[smallerEndIndex - i] == larger[largerEndIndex - i],
-                                 "Shapes \(smaller) and \(larger) do not have common parts")
-    }
-    return TensorShape(larger.dropLast(smaller.count))
+internal func extractLeadingDims(_ left: TensorShape, _ right: TensorShape, ignoreLast: Int = 0) -> TensorShape {
+    precondition(left.rank >= ignoreLast, "The left tensor must have at least rank `ignoreLast`.")
+    precondition(right.rank >= ignoreLast, "The right tensor must have at least rank `ignoreLast`.")
+    let (smallShape, largeShape) = left.rank > right.rank ? (right, left) : (left, right)
+    let leadingLength = largeShape.count - smallShape.count
+    let largeIgnored: TensorShape = largeShape.dropLast(ignoreLast)
+    let smallIgnored: TensorShape = smallShape.dropLast(ignoreLast)
+    internalConsistencyCheck(smallIgnored == largeIgnored.dropFirst(leadingLength),
+                             "Shapes \(left) and \(right) do not overlap")
+    return largeIgnored.dropLast(smallIgnored.count)
 }
