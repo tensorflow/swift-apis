@@ -113,9 +113,6 @@ class Thread {
         }, context, 0, nil)
 #else
         let status = pthread_create(&self.thread, nil, {
-            // Set the cancelability of the detached thread.
-            pthread_setcanceltype(Int32(PTHREAD_CANCEL_DEFERRED), nil)
-
 #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
             let procedure: Thread.Procedure =
                 Unmanaged.fromOpaque($0).takeRetainedValue()
