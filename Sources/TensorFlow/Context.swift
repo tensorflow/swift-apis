@@ -160,24 +160,25 @@ private final class ContextManager {
     var contextStack: [Context] = [Context()]
 
     /// The data key for the singleton `Context` in the current thread.
-    static let key: pthread_key_t = {
-        var key = pthread_key_t()
-        pthread_key_create(&key) { obj in
-#if !(os(macOS) || os(iOS) || os(watchOS) || os(tvOS))
-            let obj = obj!
+    static let key: ThreadLocalStorage.Key =
+        ThreadLocalStorage.Key {
+#if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
+            Unmanaged<ContextManager>.fromOpaque($0).release()
+#else
+            Unmanaged<ContextManager>.fromOpaque($0!).release()
 #endif
-            Unmanaged<ContextManager>.fromOpaque(obj).release()
         }
-        return key
-    }()
 
     /// The thread-local singleton.
     static var local: ContextManager {
-        if let address = pthread_getspecific(key) {
-            return Unmanaged<ContextManager>.fromOpaque(address).takeUnretainedValue()
+        if let address = ThreadLocalStorage.get(for: key) {
+            return Unmanaged<ContextManager>.fromOpaque(address)
+                .takeUnretainedValue()
         }
+
         let context = ContextManager()
-        pthread_setspecific(key, Unmanaged.passRetained(context).toOpaque())
+        ThreadLocalStorage.set(value: Unmanaged.passRetained(context).toOpaque(),
+                               for: key)
         return context
     }
 
