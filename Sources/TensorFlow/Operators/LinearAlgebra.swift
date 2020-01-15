@@ -371,14 +371,14 @@ public func extractLeadingDims<T: TensorFlowNumeric>(
 /// - Precondition: Right tensor rank cannot be lower than `ignoreLast`.
 @inlinable
 public func extractLeadingDims(_ left: TensorShape, _ right: TensorShape, ignoreLast: Int = 0) -> TensorShape {
-    precondition(left.rank >= ignoreLast, "The left tensor must have at least rank 2.")
+    precondition(left.rank >= ignoreLast, "The left tensor must have at least rank `ignoreLast`.")
     precondition(right.rank >= ignoreLast, "The right tensor must have at least rank 2.")
     let (smallerShape, largerShape) = left.rank > right.rank ? (right, left) : (left, right)
     let smaller = smallerShape.dropLast(ignoreLast)
     let larger = largerShape.dropLast(ignoreLast)
     let smallerEndIndex = smaller.count - 1
     let largerEndIndex = larger.count - 1
-    for i in 0..<smaller.count {
+    for i in smaller.indices {
         internalConsistencyCheck(smaller[smallerEndIndex - i] == larger[largerEndIndex - i],
                                  "Shapes \(smaller) and \(larger) do not have common parts")
     }
