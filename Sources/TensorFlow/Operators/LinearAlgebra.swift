@@ -278,8 +278,10 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
 /// - Parameters:
 ///     - matrix: A batched matrix tensor.
 ///     - rhs: A batched vector tensor.
-///     - lower:
-///     - adjoint:
+///     - lower: Boolean option indicating whether the innermost matrices in
+///         matrix are lower or upper triangular. Defaults to true.
+///     - adjoint: Boolean option indicating whether to solve with matrix or
+///         its (block-wise) adjoint. Defaults to False.
 /// - Precondition: `matrix` must be a tensor with shape `[..., M, M]`.
 /// - Precondition: `rhs` must be a tensor with shape `[..., M, K]`.
 @inlinable
