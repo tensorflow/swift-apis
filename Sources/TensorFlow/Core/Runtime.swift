@@ -39,6 +39,17 @@ import Glibc
 
 import CTensorFlow
 
+#if os(Windows)
+// NOTE(abdulras) although the function is racy, we do not really care as the
+// usage here is to not override the value if the user specified one before
+// creating the process.
+@discardableResult
+func setenv(_ variable: String, _ value: String, _ `override`: Int) -> Int {
+  guard `override` > 0 || getenv(variable) == nil else { return 0 }
+  return Int(_putenv_s(variable, value))
+}
+#endif
+
 /// The configuration for the compiler runtime.
 // TODO(hongm): Revisit the longer-term design.
 // @_frozen // SR-9739
