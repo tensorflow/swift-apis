@@ -40,7 +40,7 @@ import Glibc
 import CTensorFlow
 
 #if os(Windows)
-// NOTE(abdulras) although the function is racy, we do not really care as the
+// NOTE: although the function is racy, we do not really care as the
 // usage here is to not override the value if the user specified one before
 // creating the process.
 @discardableResult
