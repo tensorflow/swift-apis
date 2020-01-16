@@ -38,7 +38,7 @@ let package = Package(
             name: "TensorFlow",
             dependencies: ["Tensor"],
             linkerSettings: [
-              .unsafeFlags(["-z", "defs"], .when(platforms: [.linux])),
+              .unsafeFlags(["-Xlinker", "-z", "-Xlinker", "defs"], .when(platforms: [.linux])),
             ]),
         .target(
             name: "Experimental",
