@@ -57,7 +57,8 @@ add_library(TensorFlow SHARED
   Optimizers/MomentumBased.swift
   Optimizers/Optimizer.swift
   Optimizers/SGD.swift)
-
+set_target_properties(TensorFlow PROPERTIES
+  OUTPUT_NAME swiftTensorFlow)
 target_link_libraries(TensorFlow PRIVATE
   CTensorFlow
   Tensor)
