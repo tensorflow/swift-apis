@@ -342,13 +342,15 @@ internal func _vjpTriangularSolve<T: TensorFlowFloatingPoint>(
 }
 
 
-/// Returns leading dimension from tensors shapes.
-/// Consider input tensors Left and Right, there are three major cases
-/// - `Left.shape > Right.shape` and `Left.shape` equals `[A, B, C, D, F]`
-///   and `Right.shape` equals `[D, F]`, the `extractLeadingDims` returns `[A, B, C]`
-/// - `Left.shape < Right.shape` and `Left.shape` equals `[D, F]`
-///   and `Right.shape` equals `[A, B, C, D, F]`, the `extractLeadingDims` returns `[A, B, C]`
-/// - `Left.shape == Right.shape`, and `extractLeadingDims` returns `[]`
+/// Returns leading dimension of two input tensors.
+/// Consider input tensors left and right, there are three major cases
+/// - Shape size of the left tensor shape is larger than shape size of the right tensor.
+///   E.g. the left tensor shape equals `[A, B, C, D, F]` and the right tensor equals `[D, F]`, then
+///   the `extractLeadingDims` returns `[A, B, C]`.
+/// - Shape size of the left is larger than shape of the right.
+///   E.g. the left shape equals `[D, F]` and the right shape equals `[A, B, C, D, F]`, then
+///   the `extractLeadingDims` returns `[A, B, C]`.
+/// - When both shape sizes for left tensor and right tensor equal, the `extractLeadingDims` returns `[]`.
 ///
 /// - Parameters:
 ///     - left: Left tensor.
@@ -365,13 +367,15 @@ internal func extractLeadingDims<T: TensorFlowNumeric>(
     extractLeadingDims(left.shape, right.shape, ignoreLast: ignoreLast)
 }
 
-/// Returns leading dimension from tensors shapes.
-/// Consider input shapes Left and Right, there are three major cases
-/// - `Left > Right` and `Left` equals `[A, B, C, D, F]` and `Right` equals `[D, F]`,
-///   the `extractLeadingDims` returns `[A, B, C]`
-/// - `Left < Right` and `Left` equals `[D, F]` and `Right` equals `[A, B, C, D, F]`,
-///   the `extractLeadingDims` returns `[A, B, C]`
-/// - `Left == Right`, and `extractLeadingDims` returns `[]`
+/// Returns leading dimension of two input tensors.
+/// Consider input shapes left and right, there are three major cases
+/// - The left shape size is larger than the right shape size.
+///   E.g. the left shape equals `[A, B, C, D, F]` and the right equals `[D, F]`, then
+///   the `extractLeadingDims` returns `[A, B, C]`.
+/// - Shape size of the left is larger than shape of the right.
+///   E.g. the left shape equals `[D, F]` and the right shape equals `[A, B, C, D, F]`, then
+///   the `extractLeadingDims` returns `[A, B, C]`.
+/// - When both shape sizes for left and right equal, the `extractLeadingDims` returns `[]`.
 ///
 /// - Parameters:
 ///     - left: Left tensor shape.
