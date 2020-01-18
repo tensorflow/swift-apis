@@ -682,6 +682,236 @@ extension LazyTensorOperation: TFTensorOperation {
             T9.init(_handles: outputs[offset9..<outputs.count]))
         return result
     }
+
+    func execute<T0: TensorArrayProtocol, T1: TensorArrayProtocol, T2: TensorArrayProtocol, T3: TensorArrayProtocol, T4: TensorArrayProtocol, T5: TensorArrayProtocol, T6: TensorArrayProtocol, T7: TensorArrayProtocol, T8: TensorArrayProtocol, T9: TensorArrayProtocol, T10: TensorArrayProtocol>(
+        _ count0: Int,
+        _ count1: Int,
+        _ count2: Int,
+        _ count3: Int,
+        _ count4: Int,
+        _ count5: Int,
+        _ count6: Int,
+        _ count7: Int,
+        _ count8: Int,
+        _ count9: Int,
+        _ count10: Int
+    ) -> (T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10) {
+        let outputs = evaluate()
+        let offset0 = 0
+        let offset1 = offset0 + count0
+        let offset2 = offset1 + count1
+        let offset3 = offset2 + count2
+        let offset4 = offset3 + count3
+        let offset5 = offset4 + count4
+        let offset6 = offset5 + count5
+        let offset7 = offset6 + count6
+        let offset8 = offset7 + count7
+        let offset9 = offset8 + count8
+        let offset10 = offset9 + count9
+        let result = (
+            T0.init(_handles: outputs[offset0..<offset1]),
+            T1.init(_handles: outputs[offset1..<offset2]),
+            T2.init(_handles: outputs[offset2..<offset3]),
+            T3.init(_handles: outputs[offset3..<offset4]),
+            T4.init(_handles: outputs[offset4..<offset5]),
+            T5.init(_handles: outputs[offset5..<offset6]),
+            T6.init(_handles: outputs[offset6..<offset7]),
+            T7.init(_handles: outputs[offset7..<offset8]),
+            T8.init(_handles: outputs[offset8..<offset9]),
+            T9.init(_handles: outputs[offset9..<offset10]),
+            T10.init(_handles: outputs[offset10..<outputs.count])) 
+        return result
+    }
+
+    func execute<T0: TensorArrayProtocol, T1: TensorArrayProtocol, T2: TensorArrayProtocol, T3: TensorArrayProtocol, T4: TensorArrayProtocol, T5: TensorArrayProtocol, T6: TensorArrayProtocol, T7: TensorArrayProtocol, T8: TensorArrayProtocol, T9: TensorArrayProtocol, T10: TensorArrayProtocol, T11: TensorArrayProtocol>(
+        _ count0: Int,
+        _ count1: Int,
+        _ count2: Int,
+        _ count3: Int,
+        _ count4: Int,
+        _ count5: Int,
+        _ count6: Int,
+        _ count7: Int,
+        _ count8: Int,
+        _ count9: Int,
+        _ count10: Int,
+        _ count11: Int
+    ) -> (T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11) {
+        let outputs = evaluate()
+        let offset0 = 0
+        let offset1 = offset0 + count0
+        let offset2 = offset1 + count1
+        let offset3 = offset2 + count2
+        let offset4 = offset3 + count3
+        let offset5 = offset4 + count4
+        let offset6 = offset5 + count5
+        let offset7 = offset6 + count6
+        let offset8 = offset7 + count7
+        let offset9 = offset8 + count8
+        let offset10 = offset9 + count9
+        let offset11 = offset10 + count10
+        let result = (
+            T0.init(_handles: outputs[offset0..<offset1]),
+            T1.init(_handles: outputs[offset1..<offset2]),
+            T2.init(_handles: outputs[offset2..<offset3]),
+            T3.init(_handles: outputs[offset3..<offset4]),
+            T4.init(_handles: outputs[offset4..<offset5]),
+            T5.init(_handles: outputs[offset5..<offset6]),
+            T6.init(_handles: outputs[offset6..<offset7]),
+            T7.init(_handles: outputs[offset7..<offset8]),
+            T8.init(_handles: outputs[offset8..<offset9]),           
+            T9.init(_handles: outputs[offset9..<offset10]),
+            T10.init(_handles: outputs[offset10..<offset11]),
+            T11.init(_handles: outputs[offset11..<outputs.count]))   
+        return result
+    }
+
+    func execute<T0: TensorArrayProtocol, T1: TensorArrayProtocol, T2: TensorArrayProtocol, T3: TensorArrayProtocol, T4: TensorArrayProtocol, T5: TensorArrayProtocol, T6: TensorArrayProtocol, T7: TensorArrayProtocol, T8: TensorArrayProtocol, T9: TensorArrayProtocol, T10: TensorArrayProtocol, T11: TensorArrayProtocol, T12: TensorArrayProtocol>(
+        _ count0: Int,
+        _ count1: Int,
+        _ count2: Int,
+        _ count3: Int,
+        _ count4: Int,
+        _ count5: Int,
+        _ count6: Int,
+        _ count7: Int,
+        _ count8: Int,
+        _ count9: Int,
+        _ count10: Int,
+        _ count11: Int,
+        _ count12: Int
+    ) -> (T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12) {
+        let outputs = evaluate()
+        let offset0 = 0
+        let offset1 = offset0 + count0
+        let offset2 = offset1 + count1
+        let offset3 = offset2 + count2
+        let offset4 = offset3 + count3
+        let offset5 = offset4 + count4
+        let offset6 = offset5 + count5
+        let offset7 = offset6 + count6
+        let offset8 = offset7 + count7
+        let offset9 = offset8 + count8
+        let offset10 = offset9 + count9
+        let offset11 = offset10 + count10
+        let offset12 = offset11 + count11
+        let result = (
+            T0.init(_handles: outputs[offset0..<offset1]),
+            T1.init(_handles: outputs[offset1..<offset2]),
+            T2.init(_handles: outputs[offset2..<offset3]),
+            T3.init(_handles: outputs[offset3..<offset4]),
+            T4.init(_handles: outputs[offset4..<offset5]),
+            T5.init(_handles: outputs[offset5..<offset6]),
+            T6.init(_handles: outputs[offset6..<offset7]),
+            T7.init(_handles: outputs[offset7..<offset8]),
+            T8.init(_handles: outputs[offset8..<offset9]),
+            T9.init(_handles: outputs[offset9..<offset10]),
+            T10.init(_handles: outputs[offset10..<offset11]),
+            T11.init(_handles: outputs[offset11..<offset12]),
+            T12.init(_handles: outputs[offset12..<outputs.count]))     
+        return result
+    }
+
+    func execute<T0: TensorArrayProtocol, T1: TensorArrayProtocol, T2: TensorArrayProtocol, T3: TensorArrayProtocol, T4: TensorArrayProtocol, T5: TensorArrayProtocol, T6: TensorArrayProtocol, T7: TensorArrayProtocol, T8: TensorArrayProtocol, T9: TensorArrayProtocol, T10: TensorArrayProtocol, T11: TensorArrayProtocol, T12: TensorArrayProtocol, T13: TensorArrayProtocol>(
+        _ count0: Int,
+        _ count1: Int,
+        _ count2: Int,
+        _ count3: Int,
+        _ count4: Int,
+        _ count5: Int,
+        _ count6: Int,
+        _ count7: Int,
+        _ count8: Int,
+        _ count9: Int,
+        _ count10: Int,
+        _ count11: Int,
+        _ count12: Int,
+        _ count13: Int
+    ) -> (T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13) {
+        let outputs = evaluate()
+        let offset0 = 0
+        let offset1 = offset0 + count0
+        let offset2 = offset1 + count1
+        let offset3 = offset2 + count2
+        let offset4 = offset3 + count3
+        let offset5 = offset4 + count4
+        let offset6 = offset5 + count5
+        let offset7 = offset6 + count6
+        let offset8 = offset7 + count7
+        let offset9 = offset8 + count8
+        let offset10 = offset9 + count9
+        let offset11 = offset10 + count10
+        let offset12 = offset11 + count11
+        let offset13 = offset12 + count12
+        let result = (
+            T0.init(_handles: outputs[offset0..<offset1]),
+            T1.init(_handles: outputs[offset1..<offset2]),
+            T2.init(_handles: outputs[offset2..<offset3]),
+            T3.init(_handles: outputs[offset3..<offset4]),
+            T4.init(_handles: outputs[offset4..<offset5]),
+            T5.init(_handles: outputs[offset5..<offset6]),
+            T6.init(_handles: outputs[offset6..<offset7]),
+            T7.init(_handles: outputs[offset7..<offset8]),
+            T8.init(_handles: outputs[offset8..<offset9]),
+            T9.init(_handles: outputs[offset9..<offset10]),
+            T10.init(_handles: outputs[offset10..<offset11]),
+            T11.init(_handles: outputs[offset11..<offset12]),
+            T12.init(_handles: outputs[offset12..<offset13]),
+            T13.init(_handles: outputs[offset13..<outputs.count]))       
+        return result
+    } 
+
+    func execute<T0: TensorArrayProtocol, T1: TensorArrayProtocol, T2: TensorArrayProtocol, T3: TensorArrayProtocol, T4: TensorArrayProtocol, T5: TensorArrayProtocol, T6: TensorArrayProtocol, T7: TensorArrayProtocol, T8: TensorArrayProtocol, T9: TensorArrayProtocol, T10: TensorArrayProtocol, T11: TensorArrayProtocol, T12: TensorArrayProtocol, T13: TensorArrayProtocol, T14: TensorArrayProtocol>(
+        _ count0: Int,
+        _ count1: Int,
+        _ count2: Int,
+        _ count3: Int,
+        _ count4: Int,
+        _ count5: Int,
+        _ count6: Int,
+        _ count7: Int,
+        _ count8: Int,
+        _ count9: Int,
+        _ count10: Int,
+        _ count11: Int,
+        _ count12: Int,
+        _ count13: Int,
+        _ count14: Int
+    ) -> (T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14) {
+        let outputs = evaluate()
+        let offset0 = 0
+        let offset1 = offset0 + count0
+        let offset2 = offset1 + count1
+        let offset3 = offset2 + count2
+        let offset4 = offset3 + count3
+        let offset5 = offset4 + count4
+        let offset6 = offset5 + count5
+        let offset7 = offset6 + count6
+        let offset8 = offset7 + count7
+        let offset9 = offset8 + count8
+        let offset10 = offset9 + count9
+        let offset11 = offset10 + count10
+        let offset12 = offset11 + count11
+        let offset13 = offset12 + count12
+        let offset14 = offset13 + count13
+        let result = (
+            T0.init(_handles: outputs[offset0..<offset1]),
+            T1.init(_handles: outputs[offset1..<offset2]),
+            T2.init(_handles: outputs[offset2..<offset3]),
+            T3.init(_handles: outputs[offset3..<offset4]),
+            T4.init(_handles: outputs[offset4..<offset5]),
+            T5.init(_handles: outputs[offset5..<offset6]),
+            T6.init(_handles: outputs[offset6..<offset7]),
+            T7.init(_handles: outputs[offset7..<offset8]),
+            T8.init(_handles: outputs[offset8..<offset9]),
+            T9.init(_handles: outputs[offset9..<offset10]),
+            T10.init(_handles: outputs[offset10..<offset11]),
+            T11.init(_handles: outputs[offset11..<offset12]),
+            T12.init(_handles: outputs[offset12..<offset13]),
+            T13.init(_handles: outputs[offset13..<offset14]),
+            T14.init(_handles: outputs[offset14..<outputs.count]))
+        return result
+    } 
 }
 
 extension TFETensorHandle {

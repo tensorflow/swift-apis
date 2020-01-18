@@ -28,8 +28,8 @@ public typealias Raw = _Raw
 
 public enum _Raw {
 
-static let generatedTensorFlowVersion = "1.14.1-dev20190421"
-static let generatedTensorFlowGitVersion = "v1.12.1-149-gd57b65578c"
+static let generatedTensorFlowVersion = "2.1.0"
+static let generatedTensorFlowGitVersion = "v2.1.0-rc2-17-ge5bf8de410"
 
 // @_frozen // SR-9739
 public enum A {
@@ -83,7 +83,7 @@ public enum DataFormat1 {
 }
 
 // @_frozen // SR-9739
-public enum DataFormat4 {
+public enum DataFormat5 {
     case nchw
     case nchwVectC
     case nhwc
@@ -210,6 +210,23 @@ public enum InputMode {
 }
 
 // @_frozen // SR-9739
+public enum InputQuantMode {
+    case minFirst
+    case scaled
+
+    @inlinable
+    var cName: String {
+        @inline(__always)
+        get {
+            switch self {
+            case .minFirst: return "MIN_FIRST"
+            case .scaled: return "SCALED"
+            }
+        }
+    }
+}
+
+// @_frozen // SR-9739
 public enum LossType {
     case hingeLoss
     case logisticLoss
@@ -271,7 +288,7 @@ public enum Method {
 }
 
 // @_frozen // SR-9739
-public enum Method3 {
+public enum Method4 {
     case bilinear
 
     @inlinable
@@ -305,7 +322,7 @@ public enum Mode {
 }
 
 // @_frozen // SR-9739
-public enum Mode5 {
+public enum Mode6 {
     case reflect
     case symmetric
 
@@ -398,6 +415,23 @@ public enum Reduction {
 }
 
 // @_frozen // SR-9739
+public enum ReductionType {
+    case mean
+    case sum
+
+    @inlinable
+    var cName: String {
+        @inline(__always)
+        get {
+            switch self {
+            case .mean: return "MEAN"
+            case .sum: return "SUM"
+            }
+        }
+    }
+}
+
+// @_frozen // SR-9739
 public enum RnnMode {
     case gru
     case lstm
@@ -436,7 +470,7 @@ public enum RoundMode {
 }
 
 // @_frozen // SR-9739
-public enum RoundMode6 {
+public enum RoundMode7 {
     case halfAwayFromZero
     case halfToEven
 
@@ -454,6 +488,23 @@ public enum RoundMode6 {
 
 // @_frozen // SR-9739
 public enum SplitType {
+    case equality
+    case inequality
+
+    @inlinable
+    var cName: String {
+        @inline(__always)
+        get {
+            switch self {
+            case .equality: return "equality"
+            case .inequality: return "inequality"
+            }
+        }
+    }
+}
+
+// @_frozen // SR-9739
+public enum SplitType2 {
     case inequality
 
     @inlinable
@@ -498,7 +549,7 @@ public static func a(
 ///
 /// If exit_without_error is true, the process will exit normally,
 /// otherwise it will exit with a SIGABORT signal.
-///
+/// 
 /// Returns nothing but an exception.
 ///
 /// - Attr error_msg: A string which is the message associated with the exception.
@@ -536,9 +587,9 @@ public static func abs<T: TensorFlowNumeric>(
 /// wait for all of its inputs to be ready before beginning to sum. This can
 /// save memory if inputs are ready at different times, since minimum temporary
 /// storage is proportional to the output size rather than the inputs size.
-///
+/// 
 /// Unlike the original `accumulate_n`, `accumulate_n_v2` is differentiable.
-///
+/// 
 /// Returns a `Tensor` of same shape and type as the elements of `inputs`.
 ///
 /// - Parameter inputs: A list of `Tensor` objects, each with same shape and type.
@@ -571,6 +622,14 @@ public static func acos<T: TensorFlowNumeric>(
 }
 
 /// Computes inverse hyperbolic cosine of x element-wise.
+///
+/// Given an input tensor, the function computes inverse hyperbolic cosine of every element.
+/// Input range is `[1, inf]`. It returns `nan` if the input lies outside the range.
+/// 
+/// ```python
+/// x = tf.constant([-2, -0.5, 1, 1.2, 200, 10000, float("inf")])
+/// tf.math.acosh(x) ==> [nan nan 0. 0.62236255 5.9914584 9.903487 inf]
+/// ```
 @inlinable @inline(__always)
 public static func acosh<T: FloatingPoint & TensorFlowScalar>(
     _ x: Tensor<T>
@@ -620,19 +679,19 @@ public static func add(
 ///
 /// A `SparseTensor` of rank `R` is represented by three tensors: `sparse_indices`,
 /// `sparse_values`, and `sparse_shape`, where
-///
+/// 
 /// ```sparse_indices.shape[1] == sparse_shape.shape[0] == R```
-///
+/// 
 /// An `N`-minibatch of `SparseTensor` objects is represented as a `SparseTensor`
 /// having a first `sparse_indices` column taking values between `[0, N)`, where
 /// the minibatch size `N == sparse_shape[0]`.
-///
+/// 
 /// The input `SparseTensor` must have rank `R` greater than 1, and the first
 /// dimension is treated as the minibatch dimension.  Elements of the `SparseTensor`
 /// must be sorted in increasing order of this first dimension.  The stored
 /// `SparseTensor` objects pointed to by each row of the output `sparse_handles`
 /// will have rank `R-1`.
-///
+/// 
 /// The `SparseTensor` values can then be read out as part of a minibatch by passing
 /// the given keys as vector elements to `TakeManySparseFromTensorsMap`.  To ensure
 /// the correct `SparseTensorsMap` is accessed, ensure that the same
@@ -676,7 +735,12 @@ public static func addManySparseToTensorsMap<T: TensorFlowScalar>(
 
 /// Add all input tensors element wise.
 ///
-/// - Parameter inputs: Must all be the same size and shape.
+///   Inputs must be of same size and shape.
+/// 
+///   ```python
+///   x = [9, 7, 10]
+///   tf.math.add_n(x) ==> 26
+///   ```
 @inlinable @inline(__always)
 public static func addN<T: TensorFlowNumeric>(
     inputs: [Tensor<T>]
@@ -693,11 +757,11 @@ public static func addN<T: TensorFlowNumeric>(
 ///
 /// A `SparseTensor` is represented by three tensors: `sparse_indices`,
 /// `sparse_values`, and `sparse_shape`.
-///
+/// 
 /// This operator takes the given `SparseTensor` and adds it to a container
 /// object (a `SparseTensorsMap`).  A unique key within this container is generated
 /// in the form of an `int64`, and this is the value that is returned.
-///
+/// 
 /// The `SparseTensor` can then be read out as part of a minibatch by passing
 /// the key as a vector element to `TakeManySparseFromTensorsMap`.  To ensure
 /// the correct `SparseTensorsMap` is accessed, ensure that the same
@@ -777,9 +841,9 @@ public static func adjustContrast<T: TensorFlowNumeric>(
 /// `images` is a tensor of at least 3 dimensions.  The last 3 dimensions are
 /// interpreted as `[height, width, channels]`.  The other dimensions only
 /// represent a collection of images, such as `[batch, height, width, channels].`
-///
+/// 
 /// Contrast is adjusted independently for each channel of each image.
-///
+/// 
 /// For each channel, the Op first computes the mean of the image pixels in the
 /// channel and then adjusts each component of each pixel to
 /// `(x - mean) * contrast_factor + mean`.
@@ -806,7 +870,7 @@ public static func adjustContrastv2<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// `images` is a tensor of at least 3 dimensions.  The last dimension is
 /// interpretted as channels, and must be three.
-///
+/// 
 /// The input image is considered in the RGB colorspace. Conceptually, the RGB
 /// colors are first mapped into HSV. A delta is then applied all the hue values,
 /// and then remapped back to RGB colorspace.
@@ -833,7 +897,7 @@ public static func adjustHue<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// `images` is a tensor of at least 3 dimensions.  The last dimension is
 /// interpretted as channels, and must be three.
-///
+/// 
 /// The input image is considered in the RGB colorspace. Conceptually, the RGB
 /// colors are first mapped into HSV. A scale is then applied all the saturation
 /// values, and then remapped back to RGB colorspace.
@@ -890,9 +954,9 @@ public static func all<Tidx: TensorFlowIndex>(
 ///
 /// See explanations of candidate sampling and the data formats at
 /// go/candidate-sampling.
-///
+/// 
 /// For each batch, this op picks a single set of sampled candidate labels.
-///
+/// 
 /// The advantages of sampling candidates per-batch are simplicity and the
 /// possibility of efficient dense matrix multiplication. The disadvantage is that
 /// the sampled candidates must be chosen independently of the context and of the
@@ -948,16 +1012,16 @@ public static func allCandidateSampler(
 /// `split_dimension` and send to the other replicas given group_assignment. After
 /// receiving `split_count` - 1 blocks from other replicas, we concatenate the
 /// blocks along `concat_dimension` as the output.
-///
+/// 
 /// For example, suppose there are 2 TPU replicas:
 /// replica 0 receives input: `[[A, B]]`
 /// replica 1 receives input: `[[C, D]]`
-///
+/// 
 /// group_assignment=`[[0, 1]]`
 /// concat_dimension=0
 /// split_dimension=1
 /// split_count=2
-///
+/// 
 /// replica 0's output: `[[A], [C]]`
 /// replica 1's output: `[[B], [D]]`
 ///
@@ -1000,16 +1064,16 @@ public static func allToAll<T: TensorFlowScalar>(
 /// type `float` that is the argument of each element in `input`. All elements in
 /// `input` must be complex numbers of the form \\(a + bj\\), where *a*
 /// is the real part and *b* is the imaginary part.
-///
+/// 
 /// The argument returned by this operation is of the form \\(atan2(b, a)\\).
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// # tensor 'input' is [-2.25 + 4.75j, 3.25 + 5.75j]
 /// tf.angle(input) ==> [2.0132, 1.056]
 /// ```
-///
+/// 
 /// @compatibility(numpy)
 /// Equivalent to np.angle.
 /// @end_compatibility
@@ -1066,6 +1130,49 @@ public static func anonymousIteratorV2(
     return op.execute(Int(1), Int(1))
 }
 
+@inlinable @inline(__always)
+public static func anonymousMemoryCache(
+) -> (handle: ResourceHandle, deleter: VariantHandle) {
+  let nOutputs = Int(1) + Int(1)
+    let op = makeOp("AnonymousMemoryCache", nOutputs)
+    
+    return op.execute(Int(1), Int(1))
+}
+
+/// A container for a multi device iterator resource.
+///
+/// - Outputs:
+///     - handle: A handle to a multi device iterator that can be passed to a
+///         "MultiDeviceIteratorGetNextFromShard" op. In contrast to MultiDeviceIterator,
+///         AnonymousIterator prevents resource sharing by name, and does not keep a
+///         reference to the resource container.
+///     - deleter: A variant deleter that should be passed into the op that deletes the iterator.
+@inlinable @inline(__always)
+public static func anonymousMultiDeviceIterator(
+    devices: [String],
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?]
+) -> (handle: ResourceHandle, deleter: VariantHandle) {
+  let nOutputs = Int(1) + Int(1)
+    let op = makeOp("AnonymousMultiDeviceIterator", nOutputs)
+    op.updateAttribute("devices", devices)
+    op.updateAttribute("output_types", outputTypes)
+    op.updateAttribute("output_shapes", outputShapes)
+    return op.execute(Int(1), Int(1))
+}
+
+@inlinable @inline(__always)
+public static func anonymousRandomSeedGenerator(
+    seed: Tensor<Int64>,
+    seed2: Tensor<Int64>
+) -> (handle: ResourceHandle, deleter: VariantHandle) {
+  let nOutputs = Int(1) + Int(1)
+    let op = makeOp("AnonymousRandomSeedGenerator", nOutputs)
+    op.addInput(seed)
+    op.addInput(seed2)
+    return op.execute(Int(1), Int(1))
+}
+
 /// Computes the "logical or" of elements across dimensions of a tensor.
 ///
 /// Reduces `input` along the dimensions given in `axis`. Unless
@@ -1115,13 +1222,13 @@ public static func approximateEqual<T: TensorFlowNumeric>(
 /// Returns the index with the largest value across dimensions of a tensor.
 ///
 /// Note that in case of ties the identity of the return value is not guaranteed.
-///
+/// 
 /// Usage:
 ///   ```python
 ///   import tensorflow as tf
 ///   a = [1, 10, 26.9, 2.8, 166.32, 62.3]
 ///   b = tf.math.argmax(input = a)
-///   c = tf.keras.backend.eval(b)  
+///   c = tf.keras.backend.eval(b)
 ///   # c = 4
 ///   # here a[4] = 166.32 which is the largest element of a across axis 0
 ///   ```
@@ -1151,13 +1258,13 @@ public static func argMax<
 /// Returns the index with the smallest value across dimensions of a tensor.
 ///
 /// Note that in case of ties the identity of the return value is not guaranteed.
-///
+/// 
 /// Usage:
 ///   ```python
 ///   import tensorflow as tf
 ///   a = [1, 10, 26.9, 2.8, 166.32, 62.3]
 ///   b = tf.math.argmin(input = a)
-///   c = tf.keras.backend.eval(b)  
+///   c = tf.keras.backend.eval(b)
 ///   # c = 0
 ///   # here a[0] = 1 which is the smallest element of a across axis 0
 ///   ```
@@ -1184,9 +1291,13 @@ public static func argMin<
     return op.execute(Int(1))
 }
 
-/// Converts each entry in the given tensor to strings.  Supports many numeric
+/// Converts each entry in the given tensor to strings.
 ///
-/// types and boolean.
+/// Supports many numeric types and boolean.
+/// 
+/// For Unicode, see the
+/// [https://www.tensorflow.org/tutorials/representation/unicode](Working with Unicode text)
+/// tutorial.
 ///
 /// - Attrs:
 ///     - precision: The post-decimal precision to use for floating point numbers.
@@ -1224,20 +1335,20 @@ public static func asString<T: TensorFlowScalar>(
 ///
 /// The `tf.math.asin` operation returns the inverse of `tf.math.sin`, such that
 /// if `y = tf.math.sin(x)` then, `x = tf.math.asin(y)`.
-///
-/// **Note**: The output of `tf.math.asin` will lie within the invertible range 
+/// 
+/// **Note**: The output of `tf.math.asin` will lie within the invertible range
 /// of sine, i.e [-pi/2, pi/2].
-///
+/// 
 /// For example:
-///
+/// 
 /// ```python
 /// # Note: [1.047, 0.785] ~= [(pi/3), (pi/4)]
 /// x = tf.constant([1.047, 0.785])
 /// y = tf.math.sin(x) # [0.8659266, 0.7068252]
-///
+/// 
 /// tf.math.asin(y) # [1.047, 0.785] = x
 /// ```
-///
+/// 
 @inlinable @inline(__always)
 public static func asin<T: TensorFlowNumeric>(
     _ x: Tensor<T>
@@ -1250,6 +1361,15 @@ public static func asin<T: TensorFlowNumeric>(
 }
 
 /// Computes inverse hyperbolic sine of x element-wise.
+///
+///   Given an input tensor, this function computes inverse hyperbolic sine
+///   for every element in the tensor. Both input and output has a range of
+///   `[-inf, inf]`.
+/// 
+///   ```python
+///   x = tf.constant([-float("inf"), -2, -0.5, 1, 1.2, 200, 10000, float("inf")])
+///   tf.math.asinh(x) ==> [-inf -1.4436355 -0.4812118 0.8813736 1.0159732 5.991471 9.903487 inf]
+///   ```
 @inlinable @inline(__always)
 public static func asinh<T: FloatingPoint & TensorFlowScalar>(
     _ x: Tensor<T>
@@ -1284,6 +1404,38 @@ public static func assert<T: TensorArrayProtocol>(
     op.addInput(condition)
     op.addInputList(data)
     op.execute()
+}
+
+/// A transformation that asserts which transformations happen next.
+///
+/// This transformation checks whether the camel-case names (i.e. "FlatMap", not
+/// "flat_map") of the transformations following this transformation match the list
+/// of names in the `transformations` argument. If there is a mismatch, the
+/// transformation raises an exception.
+/// 
+/// The check occurs when iterating over the contents of the dataset, which
+/// means that the check happens *after* any static optimizations are applied
+/// to the dataset graph.
+///
+/// - Parameters:
+///     - input_dataset: A variant tensor representing the input dataset.
+///         `AssertNextDataset` passes through the outputs of its input dataset.
+///     - transformations: A `tf.string` vector `tf.Tensor` identifying the transformations that are
+///         expected to happen next.
+@inlinable @inline(__always)
+public static func assertNextDataset(
+    inputDataset: VariantHandle,
+    transformations: StringTensor,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?]
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("AssertNextDataset", nOutputs)
+    op.updateAttribute("output_types", outputTypes)
+    op.updateAttribute("output_shapes", outputShapes)
+    op.addInput(inputDataset)
+    op.addInput(transformations)
+    return op.execute(Int(1))
 }
 
 /// Adds a value to the current value of a variable.
@@ -1359,20 +1511,20 @@ public static func assignVariableOp<Dtype: TensorFlowScalar>(
 ///
 /// The `tf.math.atan` operation returns the inverse of `tf.math.tan`, such that
 /// if `y = tf.math.tan(x)` then, `x = tf.math.atan(y)`.
-///
-/// **Note**: The output of `tf.math.atan` will lie within the invertible range 
+/// 
+/// **Note**: The output of `tf.math.atan` will lie within the invertible range
 /// of tan, i.e (-pi/2, pi/2).
-///
+/// 
 /// For example:
-///
+/// 
 /// ```python
 /// # Note: [1.047, 0.785] ~= [(pi/3), (pi/4)]
 /// x = tf.constant([1.047, 0.785])
 /// y = tf.math.tan(x) # [1.731261, 0.99920404]
-///
+/// 
 /// tf.math.atan(y) # [1.047, 0.785] = x
 /// ```
-///
+/// 
 @inlinable @inline(__always)
 public static func atan<T: TensorFlowNumeric>(
     _ x: Tensor<T>
@@ -1405,6 +1557,17 @@ public static func atan2<T: FloatingPoint & TensorFlowScalar>(
 }
 
 /// Computes inverse hyperbolic tangent of x element-wise.
+///
+///   Given an input tensor, this function computes inverse hyperbolic tangent
+///   for every element in the tensor. Input range is `[-1,1]` and output range is
+///   `[-inf, inf]`. If input is `-1`, output will be `-inf` and if the
+///   input is `1`, output will be `inf`. Values outside the range will have
+///   `nan` as output.
+/// 
+///   ```python
+///   x = tf.constant([-float("inf"), -1, -0.5, 1, 0, 0.5, 10, float("inf")])
+///   tf.math.atanh(x) ==> [nan -inf -0.54930615 inf  0. 0.54930615 nan nan]
+///   ```
 @inlinable @inline(__always)
 public static func atanh<T: FloatingPoint & TensorFlowScalar>(
     _ x: Tensor<T>
@@ -1591,30 +1754,124 @@ public static func attrTypeDefault<T: TensorFlowScalar>(
     op.execute()
 }
 
+/// Audio Microfrontend Op.
+///
+/// This Op converts a sequence of audio data into one or more
+/// feature vectors containing filterbanks of the input. The
+/// conversion process uses a lightweight library to perform:
+///
+/// 1. A slicing window function
+/// 2. Short-time FFTs
+/// 3. Filterbank calculations
+/// 4. Noise reduction
+/// 5. PCAN Auto Gain Control
+/// 6. Logarithmic scaling
+///
+/// Arguments
+///   audio: 1D Tensor, int16 audio data in temporal ordering.
+///   sample_rate: Integer, the sample rate of the audio in Hz.
+///   window_size: Integer, length of desired time frames in ms.
+///   window_step: Integer, length of step size for the next frame in ms.
+///   num_channels: Integer, the number of filterbank channels to use.
+///   upper_band_limit: Float, the highest frequency included in the filterbanks.
+///   lower_band_limit: Float, the lowest frequency included in the filterbanks.
+///   smoothing_bits: Int, scale up signal by 2^(smoothing_bits) before reduction.
+///   even_smoothing: Float, smoothing coefficient for even-numbered channels.
+///   odd_smoothing: Float, smoothing coefficient for odd-numbered channels.
+///   min_signal_remaining: Float, fraction of signal to preserve in smoothing.
+///   enable_pcan: Bool, enable PCAN auto gain control.
+///   pcan_strength: Float, gain normalization exponent.
+///   pcan_offset: Float, positive value added in the normalization denominator.
+///   gain_bits: Int, number of fractional bits in the gain.
+///   enable_log: Bool, enable logarithmic scaling of filterbanks.
+///   scale_shift: Integer, scale filterbanks by 2^(scale_shift).
+///   left_context: Integer, number of preceding frames to attach to each frame.
+///   right_context: Integer, number of preceding frames to attach to each frame.
+///   frame_stride: Integer, M frames to skip over, where output[n] = frame[n*M].
+///   zero_padding: Bool, if left/right context is out-of-bounds, attach frame of
+///                 zeroes. Otherwise, frame[0] or frame[size-1] will be copied.
+///   out_scale: Integer, divide all filterbanks by this number.
+///   out_type: DType, type of the output Tensor, defaults to UINT16.
+///
+/// Returns
+///   filterbanks: 2D Tensor, each row is a time frame, each column is a channel.
+@inlinable @inline(__always)
+public static func audioMicrofrontend<OutType: TensorFlowNumeric>(
+    audio: Tensor<Int16>,
+    sampleRate: Int64 = 16000,
+    windowSize: Int64 = 25,
+    windowStep: Int64 = 10,
+    numChannels: Int64 = 32,
+    upperBandLimit: Double = 7500,
+    lowerBandLimit: Double = 125,
+    smoothingBits: Int64 = 10,
+    evenSmoothing: Double = 0.025,
+    oddSmoothing: Double = 0.06,
+    minSignalRemaining: Double = 0.05,
+    enablePcan: Bool = false,
+    pcanStrength: Double = 0.95,
+    pcanOffset: Double = 80,
+    gainBits: Int64 = 21,
+    enableLog: Bool = true,
+    scaleShift: Int64 = 6,
+    leftContext: Int64 = 0,
+    rightContext: Int64 = 0,
+    frameStride: Int64 = 1,
+    zeroPadding: Bool = false,
+    outScale: Int64 = 1
+) -> Tensor<OutType> {
+  let nOutputs = Int(1)
+    let op = makeOp("AudioMicrofrontend", nOutputs)
+    op.updateAttribute("sample_rate", sampleRate)
+    op.updateAttribute("window_size", windowSize)
+    op.updateAttribute("window_step", windowStep)
+    op.updateAttribute("num_channels", numChannels)
+    op.updateAttribute("upper_band_limit", upperBandLimit)
+    op.updateAttribute("lower_band_limit", lowerBandLimit)
+    op.updateAttribute("smoothing_bits", smoothingBits)
+    op.updateAttribute("even_smoothing", evenSmoothing)
+    op.updateAttribute("odd_smoothing", oddSmoothing)
+    op.updateAttribute("min_signal_remaining", minSignalRemaining)
+    op.updateAttribute("enable_pcan", enablePcan)
+    op.updateAttribute("pcan_strength", pcanStrength)
+    op.updateAttribute("pcan_offset", pcanOffset)
+    op.updateAttribute("gain_bits", gainBits)
+    op.updateAttribute("enable_log", enableLog)
+    op.updateAttribute("scale_shift", scaleShift)
+    op.updateAttribute("left_context", leftContext)
+    op.updateAttribute("right_context", rightContext)
+    op.updateAttribute("frame_stride", frameStride)
+    op.updateAttribute("zero_padding", zeroPadding)
+    op.updateAttribute("out_scale", outScale)
+    op.updateAttribute("out_type", OutType.tensorFlowDataType)
+    op.addInput(audio)
+    return op.execute(Int(1))
+}
+
 /// Produces a visualization of audio data over time.
 ///
 /// Spectrograms are a standard way of representing audio information as a series of
 /// slices of frequency information, one slice for each window of time. By joining
 /// these together into a sequence, they form a distinctive fingerprint of the sound
 /// over time.
-///
+/// 
 /// This op expects to receive audio data as an input, stored as floats in the range
 /// -1 to 1, together with a window width in samples, and a stride specifying how
 /// far to move the window between slices. From this it generates a three
-/// dimensional output. The lowest dimension has an amplitude value for each
-/// frequency during that time slice. The next dimension is time, with successive
-/// frequency slices. The final dimension is for the channels in the input, so a
-/// stereo audio input would have two here for example.
-///
+/// dimensional output. The first dimension is for the channels in the input, so a
+/// stereo audio input would have two here for example. The second dimension is time,
+/// with successive frequency slices. The third dimension has an amplitude value for
+/// each frequency during that time slice.
+/// 
 /// This means the layout when converted and saved as an image is rotated 90 degrees
 /// clockwise from a typical spectrogram. Time is descending down the Y axis, and
 /// the frequency decreases from left to right.
-///
+/// 
 /// Each value in the result represents the square root of the sum of the real and
 /// imaginary parts of an FFT on the current window of samples. In this way, the
 /// lowest dimension represents the power of each frequency in the current window,
 /// and adjacent windows are concatenated in the next dimension.
-///
+/// 
 /// To get a more intuitive and visual look at what this operation does, you can run
 /// tensorflow/examples/wav_to_spectrogram to read in an audio file and save out the
 /// resulting spectrogram as a PNG image.
@@ -1651,10 +1908,10 @@ public static func audioSpectrogram(
 /// audio is built from `tensor` which must be 3-D with shape `[batch_size,
 /// frames, channels]` or 2-D with shape `[batch_size, frames]`. The values are
 /// assumed to be in the range of `[-1.0, 1.0]` with a sample rate of `sample_rate`.
-///
+/// 
 /// The `tag` argument is a scalar `Tensor` of type `string`.  It is used to
 /// build the `tag` of the summary values:
-///
+/// 
 /// *  If `max_outputs` is 1, the summary value tag is '*tag*/audio'.
 /// *  If `max_outputs` is greater than 1, the summary value tags are
 ///    generated sequentially as '*tag*/audio/0', '*tag*/audio/1', etc.
@@ -1690,10 +1947,10 @@ public static func audioSummary(
 /// audio is built from `tensor` which must be 3-D with shape `[batch_size,
 /// frames, channels]` or 2-D with shape `[batch_size, frames]`. The values are
 /// assumed to be in the range of `[-1.0, 1.0]` with a sample rate of `sample_rate`.
-///
+/// 
 /// The `tag` argument is a scalar `Tensor` of type `string`.  It is used to
 /// build the `tag` of the summary values:
-///
+/// 
 /// *  If `max_outputs` is 1, the summary value tag is '*tag*/audio'.
 /// *  If `max_outputs` is greater than 1, the summary value tags are
 ///    generated sequentially as '*tag*/audio/0', '*tag*/audio/1', etc.
@@ -1719,6 +1976,40 @@ public static func audioSummaryV2(
     op.addInput(tag)
     op.addInput(tensor)
     op.addInput(sampleRate)
+    return op.execute(Int(1))
+}
+
+/// Creates a dataset that shards the input dataset.
+///
+/// Creates a dataset that shards the input dataset by num_workers, returning a
+/// sharded dataset for the index-th worker. This attempts to automatically shard
+/// a dataset by examining the Dataset graph and inserting a shard op before the
+/// inputs to a reader Dataset (e.g. CSVDataset, TFRecordDataset).
+/// 
+/// This dataset will throw a NotFound error if we cannot shard the dataset
+/// automatically.
+///
+/// - Parameters:
+///     - input_dataset: A variant tensor representing the input dataset.
+///     - num_workers: A scalar representing the number of workers to distribute this dataset across.
+///     - index: A scalar representing the index of the current worker out of num_workers.
+@inlinable @inline(__always)
+public static func autoShardDataset(
+    inputDataset: VariantHandle,
+    numWorkers: Tensor<Int64>,
+    index: Tensor<Int64>,
+    autoShardPolicy: Int64 = 0,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?]
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("AutoShardDataset", nOutputs)
+    op.updateAttribute("auto_shard_policy", autoShardPolicy)
+    op.updateAttribute("output_types", outputTypes)
+    op.updateAttribute("output_shapes", outputShapes)
+    op.addInput(inputDataset)
+    op.addInput(numWorkers)
+    op.addInput(index)
     return op.execute(Int(1))
 }
 
@@ -1888,20 +2179,20 @@ public static func b(
 /// When many instances of this Op are being run concurrently with the same
 /// container/shared_name in the same device, some will output zero-shaped Tensors
 /// and others will output Tensors of size up to max_batch_size.
-///
+/// 
 /// All Tensors in in_tensors are batched together (so, for example, labels and
 /// features should be batched with a single instance of this operation.
-///
+/// 
 /// Each invocation of batch emits an `id` scalar which will be used to identify
 /// this particular invocation when doing unbatch or its gradient.
-///
+/// 
 /// Each op which emits a non-empty batch will also emit a non-empty batch_index
 /// Tensor, which, is a [K, 3] matrix where each row contains the invocation's id,
 /// start, and length of elements of each set of Tensors present in batched_tensors.
-///
+/// 
 /// Batched tensors are concatenated along the first dimension, and all tensors in
 /// in_tensors must have the first dimension of the same size.
-///
+/// 
 /// in_tensors: The tensors to be batched.
 /// num_batch_threads: Number of scheduling threads for processing batches of work.
 ///  Determines the number of batches processed in parallel.
@@ -2023,16 +2314,16 @@ public static func batchDatasetV2(
 /// Batches all the inputs tensors to the computation done by the function.
 ///
 /// So, for example, in the following code
-///
+/// 
 ///   ```python
-///
+/// 
 ///   # This input will be captured.
 ///   y = tf.placeholder_with_default(1.0, shape=[])
-///
+/// 
 ///   @tf.Defun(tf.float32)
 ///   def computation(a):
 ///     return tf.matmul(a, a) + y
-///
+/// 
 ///   b = gen_batch_ops.batch_function(
 ///           f=computation
 ///           in_tensors=[a],
@@ -2043,19 +2334,19 @@ public static func batchDatasetV2(
 ///           batch_timeout_micros=100000,  # 100ms
 ///           allowed_batch_sizes=[3, 10],
 ///           batching_queue="")
-///
+/// 
 /// If more than one session.run call is simultaneously trying to compute `b`
 /// the values of `a` will be gathered, non-deterministically concatenated
 /// along the first axis, and only one thread will run the computation.
-///
+/// 
 /// Assumes that all arguments of the function are Tensors which will be batched
 /// along their first dimension.
-///
+/// 
 /// Arguments that are captured, are not batched. The session.run call which does
 /// the concatenation, will use the values of the captured tensors available to it.
 /// Therefore, typical uses of captured tensors should involve values which remain
 /// unchanged across session.run calls. Inference is a good example of this.
-///
+/// 
 /// SparseTensor is not supported. The return value of the decorated function
 /// must be a Tensor or a list/tuple of Tensors.
 ///
@@ -2131,17 +2422,17 @@ public static func batchFunction<
 /// individual slices can optionally be adjointed (to adjoint a matrix
 /// means to transpose and conjugate it) before multiplication by setting
 /// the `adj_x` or `adj_y` flag to `True`, which are by default `False`.
-///
+/// 
 /// The input tensors `x` and `y` are 2-D or higher with shape `[..., r_x, c_x]`
 /// and `[..., r_y, c_y]`.
-///
+/// 
 /// The output tensor is 2-D or higher with shape `[..., r_o, c_o]`, where:
-///
+/// 
 ///     r_o = c_x if adj_x else r_x
 ///     c_o = r_y if adj_y else c_y
-///
+/// 
 /// It is computed as:
-///
+/// 
 ///     output[..., :, :] = matrix(x[..., :, :]) * matrix(y[..., :, :])
 ///
 /// - Parameters:
@@ -2178,23 +2469,23 @@ public static func batchMatMul<T: TensorFlowNumeric>(
 /// individual slices can optionally be adjointed (to adjoint a matrix
 /// means to transpose and conjugate it) before multiplication by setting
 /// the `adj_x` or `adj_y` flag to `True`, which are by default `False`.
-///
+/// 
 /// The input tensors `x` and `y` are 2-D or higher with shape `[..., r_x, c_x]`
 /// and `[..., r_y, c_y]`.
-///
+/// 
 /// The output tensor is 2-D or higher with shape `[..., r_o, c_o]`, where:
-///
+/// 
 ///     r_o = c_x if adj_x else r_x
 ///     c_o = r_y if adj_y else c_y
-///
+/// 
 /// It is computed as:
-///
+/// 
 ///     output[..., :, :] = matrix(x[..., :, :]) * matrix(y[..., :, :])
-///
+/// 
 /// *NOTE*: `BatchMatMulV2` supports broadcasting in the batch dimensions. More
 /// about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html).
-///
+/// 
 ///
 /// - Parameters:
 ///     - x: 2-D or higher with shape `[..., r_x, c_x]`.
@@ -2483,7 +2774,7 @@ public static func batchSvd<T: FloatingPoint & TensorFlowScalar>(
 /// BatchToSpace for 4-D tensors of type T.
 ///
 /// This is a legacy version of the more general BatchToSpaceND.
-///
+/// 
 /// Rearranges (permutes) data from batch into blocks of spatial data, followed by
 /// cropping. This is the reverse transformation of SpaceToBatch. More specifically,
 /// this op outputs a copy of the input tensor where values from the `batch`
@@ -2498,70 +2789,70 @@ public static func batchSvd<T: FloatingPoint & TensorFlowScalar>(
 ///     - crops: 2-D tensor of non-negative integers with shape `[2, 2]`. It specifies
 ///         how many elements to crop from the intermediate result across the spatial
 ///         dimensions as follows:
-///
+///         
 ///             crops = [[crop_top, crop_bottom], [crop_left, crop_right]]
 ///
 /// - Output output: 4-D with shape `[batch, height, width, depth]`, where:
-///
+///     
 ///           height = height_pad - crop_top - crop_bottom
 ///           width = width_pad - crop_left - crop_right
-///
+///     
 ///     The attr `block_size` must be greater than one. It indicates the block size.
-///
+///     
 ///     Some examples:
-///
+///     
 ///     (1) For the following input of shape `[4, 1, 1, 1]` and block_size of 2:
-///
+///     
 ///     ```
 ///     [[[[1]]], [[[2]]], [[[3]]], [[[4]]]]
 ///     ```
-///
+///     
 ///     The output tensor has shape `[1, 2, 2, 1]` and value:
-///
+///     
 ///     ```
 ///     x = [[[[1], [2]], [[3], [4]]]]
 ///     ```
-///
+///     
 ///     (2) For the following input of shape `[4, 1, 1, 3]` and block_size of 2:
-///
+///     
 ///     ```
 ///     [[[[1, 2, 3]]], [[[4, 5, 6]]], [[[7, 8, 9]]], [[[10, 11, 12]]]]
 ///     ```
-///
+///     
 ///     The output tensor has shape `[1, 2, 2, 3]` and value:
-///
+///     
 ///     ```
 ///     x = [[[[1, 2, 3], [4, 5, 6]],
 ///           [[7, 8, 9], [10, 11, 12]]]]
 ///     ```
-///
+///     
 ///     (3) For the following input of shape `[4, 2, 2, 1]` and block_size of 2:
-///
+///     
 ///     ```
 ///     x = [[[[1], [3]], [[9], [11]]],
 ///          [[[2], [4]], [[10], [12]]],
 ///          [[[5], [7]], [[13], [15]]],
 ///          [[[6], [8]], [[14], [16]]]]
 ///     ```
-///
+///     
 ///     The output tensor has shape `[1, 4, 4, 1]` and value:
-///
+///     
 ///     ```
 ///     x = [[[[1],   [2],  [3],  [4]],
 ///          [[5],   [6],  [7],  [8]],
 ///          [[9],  [10], [11],  [12]],
 ///          [[13], [14], [15],  [16]]]]
 ///     ```
-///
+///     
 ///     (4) For the following input of shape `[8, 1, 2, 1]` and block_size of 2:
-///
+///     
 ///     ```
 ///     x = [[[[1], [3]]], [[[9], [11]]], [[[2], [4]]], [[[10], [12]]],
 ///          [[[5], [7]]], [[[13], [15]]], [[[6], [8]]], [[[14], [16]]]]
 ///     ```
-///
+///     
 ///     The output tensor has shape `[2, 2, 4, 1]` and value:
-///
+///     
 ///     ```
 ///     x = [[[[1], [3]], [[5], [7]]],
 ///          [[[2], [4]], [[10], [12]]],
@@ -2605,104 +2896,104 @@ public static func batchToSpace<
 ///           dimension `i + 1`, which corresponds to spatial dimension `i`.  It is
 ///           required that
 ///           `crop_start[i] + crop_end[i] <= block_shape[i] * input_shape[i + 1]`.
-///
+///         
 ///         This operation is equivalent to the following steps:
-///
+///         
 ///         1. Reshape `input` to `reshaped` of shape:
 ///              [block_shape[0], ..., block_shape[M-1],
 ///               batch / prod(block_shape),
 ///               input_shape[1], ..., input_shape[N-1]]
-///
+///         
 ///         2. Permute dimensions of `reshaped` to produce `permuted` of shape
 ///              [batch / prod(block_shape),
-///
+///         
 ///               input_shape[1], block_shape[0],
 ///               ...,
 ///               input_shape[M], block_shape[M-1],
-///
+///         
 ///               input_shape[M+1], ..., input_shape[N-1]]
-///
+///         
 ///         3. Reshape `permuted` to produce `reshaped_permuted` of shape
 ///              [batch / prod(block_shape),
-///
+///         
 ///               input_shape[1] * block_shape[0],
 ///               ...,
 ///               input_shape[M] * block_shape[M-1],
-///
+///         
 ///               input_shape[M+1],
 ///               ...,
 ///               input_shape[N-1]]
-///
+///         
 ///         4. Crop the start and end of dimensions `[1, ..., M]` of
 ///            `reshaped_permuted` according to `crops` to produce the output of shape:
 ///              [batch / prod(block_shape),
-///
+///         
 ///               input_shape[1] * block_shape[0] - crops[0,0] - crops[0,1],
 ///               ...,
 ///               input_shape[M] * block_shape[M-1] - crops[M-1,0] - crops[M-1,1],
-///
+///         
 ///               input_shape[M+1], ..., input_shape[N-1]]
-///
+///         
 ///         Some examples:
-///
+///         
 ///         (1) For the following input of shape `[4, 1, 1, 1]`, `block_shape = [2, 2]`, and
 ///             `crops = [[0, 0], [0, 0]]`:
-///
+///         
 ///         ```
 ///         [[[[1]]], [[[2]]], [[[3]]], [[[4]]]]
 ///         ```
-///
+///         
 ///         The output tensor has shape `[1, 2, 2, 1]` and value:
-///
+///         
 ///         ```
 ///         x = [[[[1], [2]], [[3], [4]]]]
 ///         ```
-///
+///         
 ///         (2) For the following input of shape `[4, 1, 1, 3]`, `block_shape = [2, 2]`, and
 ///             `crops = [[0, 0], [0, 0]]`:
-///
+///         
 ///         ```
 ///         [[[[1, 2, 3]]], [[[4, 5, 6]]], [[[7, 8, 9]]], [[[10, 11, 12]]]]
 ///         ```
-///
+///         
 ///         The output tensor has shape `[1, 2, 2, 3]` and value:
-///
+///         
 ///         ```
 ///         x = [[[[1, 2, 3], [4, 5, 6]],
 ///               [[7, 8, 9], [10, 11, 12]]]]
 ///         ```
-///
+///         
 ///         (3) For the following input of shape `[4, 2, 2, 1]`, `block_shape = [2, 2]`, and
 ///             `crops = [[0, 0], [0, 0]]`:
-///
+///         
 ///         ```
 ///         x = [[[[1], [3]], [[9], [11]]],
 ///              [[[2], [4]], [[10], [12]]],
 ///              [[[5], [7]], [[13], [15]]],
 ///              [[[6], [8]], [[14], [16]]]]
 ///         ```
-///
+///         
 ///         The output tensor has shape `[1, 4, 4, 1]` and value:
-///
+///         
 ///         ```
 ///         x = [[[[1],   [2],  [3],  [4]],
 ///              [[5],   [6],  [7],  [8]],
 ///              [[9],  [10], [11],  [12]],
 ///              [[13], [14], [15],  [16]]]]
 ///         ```
-///
+///         
 ///         (4) For the following input of shape `[8, 1, 3, 1]`, `block_shape = [2, 2]`, and
 ///             `crops = [[0, 0], [2, 0]]`:
-///
+///         
 ///         ```
 ///         x = [[[[0], [1], [3]]], [[[0], [9], [11]]],
 ///              [[[0], [2], [4]]], [[[0], [10], [12]]],
 ///              [[[0], [5], [7]]], [[[0], [13], [15]]],
 ///              [[[0], [6], [8]]], [[[0], [14], [16]]]]
 ///         ```
-///
+///         
 ///         The output tensor has shape `[2, 2, 4, 1]` and value:
-///
+///         
 ///         ```
 ///         x = [[[[1],   [2],  [3],  [4]],
 ///               [[5],   [6],  [7],  [8]]],
@@ -2734,7 +3025,7 @@ public static func batchToSpaceND<
 ///
 /// Exponentially scaled modified Bessel function of order 0 defined as
 /// `bessel_i0e(x) = exp(-abs(x)) bessel_i0(x)`.
-///
+/// 
 /// This function is faster and numerically stabler than `bessel_i0(x)`.
 @inlinable @inline(__always)
 public static func besselI0e<T: FloatingPoint & TensorFlowScalar>(
@@ -2751,7 +3042,7 @@ public static func besselI0e<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// Exponentially scaled modified Bessel function of order 0 defined as
 /// `bessel_i1e(x) = exp(-abs(x)) bessel_i1(x)`.
-///
+/// 
 /// This function is faster and numerically stabler than `bessel_i1(x)`.
 @inlinable @inline(__always)
 public static func besselI1e<T: FloatingPoint & TensorFlowScalar>(
@@ -2767,16 +3058,16 @@ public static func besselI1e<T: FloatingPoint & TensorFlowScalar>(
 /// Compute the regularized incomplete beta integral \\(I_x(a, b)\\).
 ///
 /// The regularized incomplete beta integral is defined as:
-///
-///
+/// 
+/// 
 /// \\(I_x(a, b) = \frac{B(x; a, b)}{B(a, b)}\\)
-///
+/// 
 /// where
-///
-///
+/// 
+/// 
 /// \\(B(x; a, b) = \int_0^x t^{a-1} (1 - t)^{b-1} dt\\)
-///
-///
+/// 
+/// 
 /// is the incomplete beta function and \\(B(a, b)\\) is the *complete*
 /// beta function.
 @inlinable @inline(__always)
@@ -2860,7 +3151,7 @@ public static func biasAddGrad<T: TensorFlowNumeric>(
 /// Adds `bias` to `value`.
 ///
 /// This is a deprecated version of BiasAdd and will be soon removed.
-///
+/// 
 /// This is a special case of `tf.add` where `bias` is restricted to be 1-D.
 /// Broadcasting is supported, so `value` may have any number of dimensions.
 ///
@@ -2902,7 +3193,7 @@ public static func binary<T: TensorFlowScalar>(
 /// counted in `arr`. If `weights` are non-empty, then index `i` stores the sum of
 /// the value in `weights` at each index where the corresponding value in `arr` is
 /// `i`.
-///
+/// 
 /// Values in `arr` outside of the range [0, size) are ignored.
 ///
 /// - Parameters:
@@ -2933,35 +3224,37 @@ public static func bincount<T: TensorFlowNumeric>(
 ///
 /// Given a tensor `input`, this operation returns a tensor that has the same buffer
 /// data as `input` with datatype `type`.
-///
+/// 
 /// If the input datatype `T` is larger than the output datatype `type` then the
 /// shape changes from [...] to [..., sizeof(`T`)/sizeof(`type`)].
-///
+/// 
 /// If `T` is smaller than `type`, the operator requires that the rightmost
 /// dimension be equal to sizeof(`type`)/sizeof(`T`). The shape then goes from
 /// [..., sizeof(`type`)/sizeof(`T`)] to [...].
-///
+/// 
 /// tf.bitcast() and tf.cast() work differently when real dtype is casted as a complex dtype
 /// (e.g. tf.complex64 or tf.complex128) as tf.cast() make imaginary part 0 while tf.bitcast()
 /// gives module error.
 /// For example,
-///
+/// 
 /// Example 1:
-/// ```python
+/// 
 /// >>> a = [1., 2., 3.]
-/// >>> equality_bitcast = tf.bitcast(a,tf.complex128)
-/// tensorflow.python.framework.errors_impl.InvalidArgumentError: Cannot bitcast from float to complex128: shape [3] [Op:Bitcast]
-/// >>> equality_cast = tf.cast(a,tf.complex128)
+/// >>> equality_bitcast = tf.bitcast(a, tf.complex128)
+/// Traceback (most recent call last):
+/// ...
+/// InvalidArgumentError: Cannot bitcast from 1 to 18 [Op:Bitcast]
+/// >>> equality_cast = tf.cast(a, tf.complex128)
 /// >>> print(equality_cast)
 /// tf.Tensor([1.+0.j 2.+0.j 3.+0.j], shape=(3,), dtype=complex128)
-/// ```
+/// 
 /// Example 2:
-/// ```python
+/// 
 /// >>> tf.bitcast(tf.constant(0xffffffff, dtype=tf.uint32), tf.uint8)
-/// <tf.Tensor: ... shape=(4,), dtype=uint8, numpy=array([255, 255, 255, 255], dtype=uint8)>
-/// ```
+/// <tf.Tensor: shape=(4,), dtype=uint8, numpy=array([255, 255, 255, 255], dtype=uint8)>
+/// 
 /// Example 3:
-/// ```python
+/// 
 /// >>> x = [1., 2., 3.]
 /// >>> y = [0., 2., 3.]
 /// >>> equality= tf.equal(x,y)
@@ -2973,11 +3266,10 @@ public static func bincount<T: TensorFlowNumeric>(
 /// tf.Tensor([0. 1. 1.], shape=(3,), dtype=float32)
 /// >>> print(equality_bitcast)
 /// tf.Tensor(
-/// [[ 0 0 0 0]
-///  [ 0 0 128 63]
-///  [ 0 0 128 63]], shape=(3, 4), dtype=uint8)
-/// ```
-///
+///     [[  0   0   0   0]
+///      [  0   0 128  63]
+///      [  0   0 128  63]], shape=(3, 4), dtype=uint8)
+/// 
 /// *NOTE*: Bitcast is implemented as a low-level cast, so machines with different
 /// endian orderings will give different results.
 @inlinable @inline(__always)
@@ -2999,6 +3291,24 @@ public static func bitcast<
 ///
 /// The result will have those bits set, that are set in both `x` and `y`. The
 /// computation is performed on the underlying representations of `x` and `y`.
+/// 
+/// For example:
+/// 
+/// ```python
+/// import tensorflow as tf
+/// from tensorflow.python.ops import bitwise_ops
+/// dtype_list = [tf.int8, tf.int16, tf.int32, tf.int64,
+///               tf.uint8, tf.uint16, tf.uint32, tf.uint64]
+/// 
+/// for dtype in dtype_list:
+///   lhs = tf.constant([0, 5, 3, 14], dtype=dtype)
+///   rhs = tf.constant([5, 0, 7, 11], dtype=dtype)
+///   exp = tf.constant([0, 0, 3, 10], dtype=tf.float32)
+/// 
+///   res = bitwise_ops.bitwise_and(lhs, rhs)
+///   tf.assert_equal(tf.cast(res, tf.float32), exp) # TRUE
+/// ```
+/// 
 @inlinable @inline(__always)
 public static func bitwiseAnd<T: TensorFlowInteger>(
     _ x: Tensor<T>,
@@ -3016,6 +3326,24 @@ public static func bitwiseAnd<T: TensorFlowInteger>(
 ///
 /// The result will have those bits set, that are set in `x`, `y` or both. The
 /// computation is performed on the underlying representations of `x` and `y`.
+/// 
+/// For example:
+/// 
+/// ```python
+/// import tensorflow as tf
+/// from tensorflow.python.ops import bitwise_ops
+/// dtype_list = [tf.int8, tf.int16, tf.int32, tf.int64,
+///               tf.uint8, tf.uint16, tf.uint32, tf.uint64]
+/// 
+/// for dtype in dtype_list:
+///   lhs = tf.constant([0, 5, 3, 14], dtype=dtype)
+///   rhs = tf.constant([5, 0, 7, 11], dtype=dtype)
+///   exp = tf.constant([5, 5, 7, 15], dtype=tf.float32)
+/// 
+///   res = bitwise_ops.bitwise_or(lhs, rhs)
+///   tf.assert_equal(tf.cast(res,  tf.float32), exp)  # TRUE
+/// ```
+/// 
 @inlinable @inline(__always)
 public static func bitwiseOr<T: TensorFlowInteger>(
     _ x: Tensor<T>,
@@ -3033,6 +3361,24 @@ public static func bitwiseOr<T: TensorFlowInteger>(
 ///
 /// The result will have those bits set, that are different in `x` and `y`. The
 /// computation is performed on the underlying representations of `x` and `y`.
+/// 
+/// For example:
+/// 
+/// ```python
+/// import tensorflow as tf
+/// from tensorflow.python.ops import bitwise_ops
+/// dtype_list = [tf.int8, tf.int16, tf.int32, tf.int64,
+///               tf.uint8, tf.uint16, tf.uint32, tf.uint64]
+/// 
+/// for dtype in dtype_list:
+///   lhs = tf.constant([0, 5, 3, 14], dtype=dtype)
+///   rhs = tf.constant([5, 0, 7, 11], dtype=dtype)
+///   exp = tf.constant([5, 5, 4, 5],  dtype=tf.float32)
+/// 
+///   res = bitwise_ops.bitwise_xor(lhs, rhs)
+///   tf.assert_equal(tf.cast(res, tf.float32), exp) # TRUE
+/// ```
+/// 
 @inlinable @inline(__always)
 public static func bitwiseXor<T: TensorFlowInteger>(
     _ x: Tensor<T>,
@@ -3049,7 +3395,7 @@ public static func bitwiseXor<T: TensorFlowInteger>(
 /// Computes the LSTM cell forward propagation for all the time steps.
 ///
 /// This is equivalent to applying LSTMBlockCell in a loop, like so:
-///
+/// 
 /// ```python
 /// for x1 in unpack(x):
 ///   i1, cs1, f1, o1, ci1, co1, h1 = LSTMBlock(
@@ -3207,6 +3553,168 @@ public static func blockLSTMGrad<T: FloatingPoint & TensorFlowScalar>(
     return op.execute(Int(1), Int(1), Int(1), Int(1), Int(1), Int(1), Int(1), Int(1))
 }
 
+/// Computes the LSTM cell backward propagation for the entire time sequence.
+///
+/// This implementation is to be used in conjunction of BlockLSTMV2.
+///
+/// - Parameters:
+///     - seq_len_max: Maximum time length actually used by this input. Outputs are padded
+///         with zeros beyond this length.
+///     - x: The sequence input to the LSTM, shape (timelen, batch_size, num_inputs).
+///     - cs_prev: Value of the initial cell state.
+///     - h_prev: Initial output of cell (to be used for peephole).
+///     - w: The weight matrix.
+///     - wci: The weight matrix for input gate peephole connection.
+///     - wcf: The weight matrix for forget gate peephole connection.
+///     - wco: The weight matrix for output gate peephole connection.
+///     - b: The bias vector.
+///     - i: The input gate over the whole time sequence.
+///     - cs: The cell state before the tanh over the whole time sequence.
+///     - f: The forget gate over the whole time sequence.
+///     - o: The output gate over the whole time sequence.
+///     - ci: The cell input over the whole time sequence.
+///     - co: The cell after the tanh over the whole time sequence.
+///     - h: The output h vector over the whole time sequence.
+///     - cs_grad: The current gradient of cs.
+///     - h_grad: The gradient of h vector.
+///
+/// - Attr use_peephole: Whether to use peephole weights.
+///
+/// - Outputs:
+///     - x_grad: The gradient of x to be back-propped.
+///     - cs_prev_grad: The gradient of cs_prev to be back-propped.
+///     - h_prev_grad: The gradient of h_prev to be back-propped.
+///     - w_grad: The gradient for w to be back-propped.
+///     - wci_grad: The gradient for wci to be back-propped.
+///     - wcf_grad: The gradient for wcf to be back-propped.
+///     - wco_grad: The gradient for wco to be back-propped.
+///     - b_grad: The gradient for w to be back-propped.
+@inlinable @inline(__always)
+public static func blockLSTMGradV2<T: FloatingPoint & TensorFlowScalar>(
+    seqLenMax: Tensor<Int64>,
+    _ x: Tensor<T>,
+    csPrev: Tensor<T>,
+    hPrev: Tensor<T>,
+    w: Tensor<T>,
+    wci: Tensor<T>,
+    wcf: Tensor<T>,
+    wco: Tensor<T>,
+    _ b: Tensor<T>,
+    i: Tensor<T>,
+    cs: Tensor<T>,
+    f: Tensor<T>,
+    o: Tensor<T>,
+    ci: Tensor<T>,
+    co: Tensor<T>,
+    h: Tensor<T>,
+    csGrad: Tensor<T>,
+    hGrad: Tensor<T>,
+    usePeephole: Bool
+) -> (xGrad: Tensor<T>, csPrevGrad: Tensor<T>, hPrevGrad: Tensor<T>, wGrad: Tensor<T>, wciGrad: Tensor<T>, wcfGrad: Tensor<T>, wcoGrad: Tensor<T>, bGrad: Tensor<T>) {
+  let nOutputs = Int(1) + Int(1) + Int(1) + Int(1) + Int(1) + Int(1) + Int(1) + Int(1)
+    let op = makeOp("BlockLSTMGradV2", nOutputs)
+    op.updateAttribute("use_peephole", usePeephole)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.addInput(seqLenMax)
+    op.addInput(x)
+    op.addInput(csPrev)
+    op.addInput(hPrev)
+    op.addInput(w)
+    op.addInput(wci)
+    op.addInput(wcf)
+    op.addInput(wco)
+    op.addInput(b)
+    op.addInput(i)
+    op.addInput(cs)
+    op.addInput(f)
+    op.addInput(o)
+    op.addInput(ci)
+    op.addInput(co)
+    op.addInput(h)
+    op.addInput(csGrad)
+    op.addInput(hGrad)
+    return op.execute(Int(1), Int(1), Int(1), Int(1), Int(1), Int(1), Int(1), Int(1))
+}
+
+/// Computes the LSTM cell forward propagation for all the time steps.
+///
+/// This is equivalent to applying LSTMBlockCell in a loop, like so:
+/// 
+/// ```python
+/// for x1 in unpack(x):
+///   i1, cs1, f1, o1, ci1, co1, h1 = LSTMBlock(
+///     x1, cs_prev, h_prev, w, wci, wcf, wco, b)
+///   cs_prev = cs1
+///   h_prev = h1
+///   i.append(i1)
+///   cs.append(cs1)
+///   f.append(f1)
+///   o.append(o1)
+///   ci.append(ci1)
+///   co.append(co1)
+///   h.append(h1)
+/// return pack(i), pack(cs), pack(f), pack(o), pack(ci), pack(ch), pack(h)
+/// 
+/// Note that unlike LSTMBlockCell (and BlockLSTM) which uses ICFO gate layout,
+/// this op uses IFCO. So in order for the following snippet to be equivalent
+/// all gate-related outputs should be reordered.
+/// ```
+///
+/// - Parameters:
+///     - seq_len_max: Maximum time length actually used by this input. Outputs are padded
+///         with zeros beyond this length.
+///     - x: The sequence input to the LSTM, shape (timelen, batch_size, num_inputs).
+///     - cs_prev: Value of the initial cell state.
+///     - h_prev: Initial output of cell (to be used for peephole).
+///     - w: The weight matrix.
+///     - wci: The weight matrix for input gate peephole connection.
+///     - wcf: The weight matrix for forget gate peephole connection.
+///     - wco: The weight matrix for output gate peephole connection.
+///     - b: The bias vector.
+///
+/// - Attrs:
+///     - cell_clip: Value to clip the 'cs' value to.
+///     - use_peephole: Whether to use peephole weights.
+///
+/// - Outputs:
+///     - i: The input gate over the whole time sequence.
+///     - cs: The cell state before the tanh over the whole time sequence.
+///     - f: The forget gate over the whole time sequence.
+///     - o: The output gate over the whole time sequence.
+///     - ci: The cell input over the whole time sequence.
+///     - co: The cell after the tanh over the whole time sequence.
+///     - h: The output h vector over the whole time sequence.
+@inlinable @inline(__always)
+public static func blockLSTMV2<T: FloatingPoint & TensorFlowScalar>(
+    seqLenMax: Tensor<Int64>,
+    _ x: Tensor<T>,
+    csPrev: Tensor<T>,
+    hPrev: Tensor<T>,
+    w: Tensor<T>,
+    wci: Tensor<T>,
+    wcf: Tensor<T>,
+    wco: Tensor<T>,
+    _ b: Tensor<T>,
+    cellClip: Double = 0,
+    usePeephole: Bool = false
+) -> (i: Tensor<T>, cs: Tensor<T>, f: Tensor<T>, o: Tensor<T>, ci: Tensor<T>, co: Tensor<T>, h: Tensor<T>) {
+  let nOutputs = Int(1) + Int(1) + Int(1) + Int(1) + Int(1) + Int(1) + Int(1)
+    let op = makeOp("BlockLSTMV2", nOutputs)
+    op.updateAttribute("cell_clip", cellClip)
+    op.updateAttribute("use_peephole", usePeephole)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.addInput(seqLenMax)
+    op.addInput(x)
+    op.addInput(csPrev)
+    op.addInput(hPrev)
+    op.addInput(w)
+    op.addInput(wci)
+    op.addInput(wcf)
+    op.addInput(wco)
+    op.addInput(b)
+    return op.execute(Int(1), Int(1), Int(1), Int(1), Int(1), Int(1), Int(1))
+}
+
 /// Aggregates the summary of accumulated stats for the batch.
 ///
 /// The summary stats contains gradients and hessians accumulated for each node, feature dimension id and bucket.
@@ -3272,11 +3780,11 @@ public static func boostedTreesBucketize(
 /// Calculates gains for each feature and returns the best possible split information for the feature.
 ///
 /// The split information is the best threshold (bucket id), gains and left/right node contributions per node for each feature.
-///
+/// 
 /// It is possible that not all nodes can be split on each feature. Hence, the list of possible nodes can differ between the features. Therefore, we return `node_ids_list` for each feature, containing the list of nodes that this feature can be used to split.
-///
+/// 
 /// In this manner, the output is the best split per features and per node, so that it needs to be combined later to produce the best split for each node (among all possible features).
-///
+/// 
 /// The output shapes are compatible in a way that the first dimension of all tensors are the same and equal to the number of possible split nodes for each feature.
 ///
 /// - Parameters:
@@ -3300,6 +3808,7 @@ public static func boostedTreesBucketize(
 ///     - left_node_contribs: A Rank 2 tensors indicating the contribution of the left nodes when branching from parent nodes (given by the tensor element in the output node_ids_list) to the left direction by the given threshold for each feature. This value will be used to make the left node value by adding to the parent node value. Second dimension size is 1 for 1-dimensional logits, but would be larger for multi-class problems. See above for details like shapes and sizes.
 ///     - right_node_contribs: A Rank 2 tensors, with the same shape/conditions as left_node_contribs_list, but just that the value is for the right node.
 ///     - split_with_default_directions: A Rank 1 tensors indicating the which direction to go if data is missing. See above for details like shapes and sizes.
+///         Inequality with default left returns 0, inequality with default right returns 1, equality with default right returns 2.
 @inlinable @inline(__always)
 public static func boostedTreesCalculateBestFeatureSplit(
     nodeIdRange: Tensor<Int32>,
@@ -3327,11 +3836,11 @@ public static func boostedTreesCalculateBestFeatureSplit(
 /// Calculates gains for each feature and returns the best possible split information for the feature.
 ///
 /// The split information is the best threshold (bucket id), gains and left/right node contributions per node for each feature.
-///
+/// 
 /// It is possible that not all nodes can be split on each feature. Hence, the list of possible nodes can differ between the features. Therefore, we return `node_ids_list` for each feature, containing the list of nodes that this feature can be used to split.
-///
+/// 
 /// In this manner, the output is the best split per features and per node, so that it needs to be combined later to produce the best split for each node (among all possible features).
-///
+/// 
 /// The length of output lists are all of the same length, `num_features`.
 /// The output shapes are compatible in a way that the first dimension of all tensors of all lists are the same and equal to the number of possible split nodes for each feature.
 ///
@@ -3485,7 +3994,7 @@ public static func boostedTreesEnsembleResourceHandleOp(
 
 /// Debugging/model interpretability outputs for each example.
 ///
-/// It traverses all the trees and computes debug metrics for individual examples, 
+/// It traverses all the trees and computes debug metrics for individual examples,
 /// such as getting split feature ids and logits after each split along the decision
 /// path used to compute directional feature contributions.
 ///
@@ -3511,6 +4020,25 @@ public static func boostedTreesExampleDebugOutputs(
     op.addInput(treeEnsembleHandle)
     op.addInputList(bucketizedFeatures)
     return op.execute(Int(1))
+}
+
+/// Flush the quantile summaries from each quantile stream resource.
+///
+/// An op that outputs a list of quantile summaries of a quantile stream resource.
+/// Each summary Tensor is rank 2, containing summaries (value, weight, min_rank,
+/// max_rank) for a single feature.
+///
+/// - Parameter quantile_stream_resource_handle: resource handle referring to a QuantileStreamResource.
+@inlinable @inline(__always)
+public static func boostedTreesFlushQuantileSummaries(
+    quantileStreamResourceHandle: ResourceHandle,
+    numFeatures: Int64
+) -> [Tensor<Float>] {
+  let nOutputs = Int(numFeatures)
+    let op = makeOp("BoostedTreesFlushQuantileSummaries", nOutputs)
+    op.updateAttribute("num_features", numFeatures)
+    op.addInput(quantileStreamResourceHandle)
+    return op.execute(Int(numFeatures))
 }
 
 /// Retrieves the tree ensemble resource stamp token, number of trees and growing statistics.
@@ -3754,6 +4282,126 @@ public static func boostedTreesSerializeEnsemble(
     return op.execute(Int(1), Int(1))
 }
 
+/// Aggregates the summary of accumulated stats for the batch.
+///
+/// The summary stats contains gradients and hessians accumulated for each node, bucket and dimension id.
+///
+/// - Parameters:
+///     - node_ids: int32; Rank 1 Tensor containing node ids for each example, shape [batch_size].
+///     - gradients: float32; Rank 2 Tensor (shape=[batch_size, logits_dimension]) with gradients for each example.
+///     - hessians: float32; Rank 2 Tensor (shape=[batch_size, hessian_dimension]) with hessians for each example.
+///     - feature_indices: int32; Rank 2 indices of feature sparse Tensors (shape=[number of sparse entries, 2]).
+///         Number of sparse entries across all instances from the batch. The first value is
+///         the index of the instance, the second is dimension of the feature. The second axis
+///         can only have 2 values, i.e., the input dense version of Tensor can only be matrix.
+///     - feature_values: int32; Rank 1 values of feature sparse Tensors (shape=[number of sparse entries]).
+///         Number of sparse entries across all instances from the batch. The first value is
+///         the index of the instance, the second is dimension of the feature.
+///     - feature_shape: int32; Rank 1 dense shape of feature sparse Tensors (shape=[2]).
+///         The first axis can only have 2 values, [batch_size, feature_dimension].
+///
+/// - Attrs:
+///     - max_splits: int; the maximum number of splits possible in the whole tree.
+///     - num_buckets: int; equals to the maximum possible value of bucketized feature + 1.
+///
+/// - Outputs:
+///     - stats_summary_indices: int32; Rank 2 indices of summary sparse Tensors (shape=[number of non zero statistics, 4])
+///         The second axis can only be 4 including node id, feature dimension, bucket id, and statistics_dimension.
+///         statistics_dimension = logits_dimension + hessian_dimension.
+///     - stats_summary_values: output Rank 1 Tensor (shape=[number of non zero statistics])
+///     - stats_summary_shape: output Rank 1 Tensor (shape=[4])
+///         The tensor has following 4 values: [max_splits, feature_dimension, num_buckets, statistics_dimension],
+///         where statistics_dimension = gradient_dimension + hessian_dimension. gradient_dimension
+///         is the same as label_dimension, i.e., the output space. hessian_dimension can be the same
+///         as logits dimension when diagonal hessian is used, or label_dimension^2 when full
+///         hessian is used.
+@inlinable @inline(__always)
+public static func boostedTreesSparseAggregateStats(
+    nodeIds: Tensor<Int32>,
+    gradients: Tensor<Float>,
+    hessians: Tensor<Float>,
+    featureIndices: Tensor<Int32>,
+    featureValues: Tensor<Int32>,
+    featureShape: Tensor<Int32>,
+    maxSplits: Int64,
+    numBuckets: Int64
+) -> (statsSummaryIndices: Tensor<Int32>, statsSummaryValues: Tensor<Float>, statsSummaryShape: Tensor<Int32>) {
+  let nOutputs = Int(1) + Int(1) + Int(1)
+    let op = makeOp("BoostedTreesSparseAggregateStats", nOutputs)
+    op.updateAttribute("max_splits", maxSplits)
+    op.updateAttribute("num_buckets", numBuckets)
+    op.addInput(nodeIds)
+    op.addInput(gradients)
+    op.addInput(hessians)
+    op.addInput(featureIndices)
+    op.addInput(featureValues)
+    op.addInput(featureShape)
+    return op.execute(Int(1), Int(1), Int(1))
+}
+
+/// Calculates gains for each feature and returns the best possible split information for the feature.
+///
+/// The split information is the best threshold (bucket id), gains and left/right node contributions per node for each feature.
+/// 
+/// It is possible that not all nodes can be split on each feature. Hence, the list of possible nodes can differ between the features. Therefore, we return `node_ids_list` for each feature, containing the list of nodes that this feature can be used to split.
+/// 
+/// In this manner, the output is the best split per features and per node, so that it needs to be combined later to produce the best split for each node (among all possible features).
+/// 
+/// The output shapes are compatible in a way that the first dimension of all tensors are the same and equal to the number of possible split nodes for each feature.
+///
+/// - Parameters:
+///     - node_id_range: A Rank 1 tensor (shape=[2]) to specify the range [first, last) of node ids to process within `stats_summary_list`. The nodes are iterated between the two nodes specified by the tensor, as like `for node_id in range(node_id_range[0], node_id_range[1])` (Note that the last index node_id_range[1] is exclusive).
+///     - stats_summary_indices: A Rank 2 int64 tensor of dense shape [N, 4] (N specifies the number of non-zero values) for accumulated stats summary (gradient/hessian) per node per bucket for each feature. The second dimension contains node id, feature dimension, bucket id, and stats dim.
+///         stats dim is the sum of logits dimension and hessian dimension, hessian dimension can either be logits dimension if diagonal hessian is used, or logits dimension^2 if full hessian is used.
+///     - stats_summary_values: A Rank 1 float tensor of dense shape [N] (N specifies the number of non-zero values), which supplies the values for each element in summary_indices.
+///     - stats_summary_shape: A Rank 1 float tensor of dense shape [4], which specifies the dense shape of the sparse tensor, which is [num tree nodes, feature dimensions, num buckets, stats dim].
+///     - l1: l1 regularization factor on leaf weights, per instance based.
+///     - l2: l2 regularization factor on leaf weights, per instance based.
+///     - tree_complexity: adjustment to the gain, per leaf based.
+///     - min_node_weight: mininum avg of hessians in a node before required for the node to be considered for splitting.
+///
+/// - Attrs:
+///     - logits_dimension: The dimension of logit, i.e., number of classes.
+///     - split_type: A string indicating if this Op should perform inequality split or equality split.
+///
+/// - Outputs:
+///     - node_ids: A Rank 1 tensor indicating possible node ids that can be split.
+///     - gains: A Rank 1 tensor indicating the best gains to split each node.
+///     - feature_dimensions: A Rank 1 tensor indicating the best feature dimension for each feature to split for each node.
+///     - thresholds: A Rank 1 tensor indicating the bucket id to compare with (as a threshold) for split in each node.
+///     - left_node_contribs: A Rank 2 tensor indicating the contribution of the left nodes when branching from parent nodes to the left direction by the given threshold for each feature.
+///         This value will be used to make the left node value by adding to the parent node value. Second dimension size is logits dimension.
+///     - right_node_contribs: A Rank 2 tensor, with the same shape/conditions as left_node_contribs_list, but just that the value is for the right node.
+///     - split_with_default_directions: A Rank 1 tensor indicating which direction to go if data is missing.
+///         Inequality with default left returns 0, inequality with default right returns 1, equality with default right returns 2.
+@inlinable @inline(__always)
+public static func boostedTreesSparseCalculateBestFeatureSplit(
+    nodeIdRange: Tensor<Int32>,
+    statsSummaryIndices: Tensor<Int32>,
+    statsSummaryValues: Tensor<Float>,
+    statsSummaryShape: Tensor<Int32>,
+    l1: Tensor<Float>,
+    l2: Tensor<Float>,
+    treeComplexity: Tensor<Float>,
+    minNodeWeight: Tensor<Float>,
+    logitsDimension: Int64,
+    splitType: SplitType2 = .inequality
+) -> (nodeIds: Tensor<Int32>, gains: Tensor<Float>, featureDimensions: Tensor<Int32>, thresholds: Tensor<Int32>, leftNodeContribs: Tensor<Float>, rightNodeContribs: Tensor<Float>, splitWithDefaultDirections: StringTensor) {
+  let nOutputs = Int(1) + Int(1) + Int(1) + Int(1) + Int(1) + Int(1) + Int(1)
+    let op = makeOp("BoostedTreesSparseCalculateBestFeatureSplit", nOutputs)
+    op.updateAttribute("logits_dimension", logitsDimension)
+    op.updateAttribute("split_type", splitType.cName)
+    op.addInput(nodeIdRange)
+    op.addInput(statsSummaryIndices)
+    op.addInput(statsSummaryValues)
+    op.addInput(statsSummaryShape)
+    op.addInput(l1)
+    op.addInput(l2)
+    op.addInput(treeComplexity)
+    op.addInput(minNodeWeight)
+    return op.execute(Int(1), Int(1), Int(1), Int(1), Int(1), Int(1), Int(1))
+}
+
 /// Runs multiple additive regression ensemble predictors on input instances and
 ///
 /// computes the update to cached logits. It is designed to be used during training.
@@ -3852,6 +4500,70 @@ public static func boostedTreesUpdateEnsemble(
     op.execute()
 }
 
+/// Updates the tree ensemble by adding a layer to the last tree being grown
+///
+/// or by starting a new tree.
+///
+/// - Parameters:
+///     - tree_ensemble_handle: Handle to the ensemble variable.
+///     - feature_ids: Rank 1 tensor with ids for each feature. This is the real id of
+///         the feature that will be used in the split.
+///     - dimension_ids: List of rank 1 tensors representing the dimension in each feature.
+///     - node_ids: List of rank 1 tensors representing the nodes for which this feature
+///         has a split.
+///     - gains: List of rank 1 tensors representing the gains for each of the feature's
+///         split.
+///     - thresholds: List of rank 1 tensors representing the thesholds for each of the
+///         feature's split.
+///     - left_node_contribs: List of rank 2 tensors with left leaf contribs for each of
+///         the feature's splits. Will be added to the previous node values to constitute
+///         the values of the left nodes.
+///     - right_node_contribs: List of rank 2 tensors with right leaf contribs for each
+///         of the feature's splits. Will be added to the previous node values to constitute
+///         the values of the right nodes.
+///     - split_types: List of rank 1 tensors representing the split type for each feature.
+///     - max_depth: Max depth of the tree to build.
+///     - learning_rate: shrinkage const for each new tree.
+///     - pruning_mode: 0-No pruning, 1-Pre-pruning, 2-Post-pruning.
+///
+/// - Attrs:
+///     - num_features: Number of features that have best splits returned. INFERRED.
+///     - logits_dimension: scalar, dimension of the logits
+@inlinable @inline(__always)
+public static func boostedTreesUpdateEnsembleV2(
+    treeEnsembleHandle: ResourceHandle,
+    featureIds: Tensor<Int32>,
+    dimensionIds: [Tensor<Int32>],
+    nodeIds: [Tensor<Int32>],
+    gains: [Tensor<Float>],
+    thresholds: [Tensor<Int32>],
+    leftNodeContribs: [Tensor<Float>],
+    rightNodeContribs: [Tensor<Float>],
+    splitTypes: [StringTensor],
+    maxDepth: Tensor<Int32>,
+    learningRate: Tensor<Float>,
+    pruningMode: Tensor<Int32>,
+    logitsDimension: Int64 = 1
+) {
+  let nOutputs = 0
+    let op = makeOp("BoostedTreesUpdateEnsembleV2", nOutputs)
+    op.updateAttribute("num_features", dimensionIds.count)
+    op.updateAttribute("logits_dimension", logitsDimension)
+    op.addInput(treeEnsembleHandle)
+    op.addInput(featureIds)
+    op.addInputList(dimensionIds)
+    op.addInputList(nodeIds)
+    op.addInputList(gains)
+    op.addInputList(thresholds)
+    op.addInputList(leftNodeContribs)
+    op.addInputList(rightNodeContribs)
+    op.addInputList(splitTypes)
+    op.addInput(maxDepth)
+    op.addInput(learningRate)
+    op.addInput(pruningMode)
+    op.execute()
+}
+
 /// Return the shape of s0 op s1 with broadcast.
 ///
 /// Given `s0` and `s1`, tensors that represent shapes, compute `r0`, the
@@ -3892,16 +4604,17 @@ public static func broadcastGradientArgs<T: TensorFlowIndex>(
 /// dimension pair they are either equal or one of them is one. When trying
 /// to broadcast a Tensor to a shape, it starts with the trailing dimensions,
 /// and works its way forward.
-///
+/// 
 /// For example,
-/// ```
+/// 
 /// >>> x = tf.constant([1, 2, 3])
 /// >>> y = tf.broadcast_to(x, [3, 3])
-/// >>> sess.run(y)
-/// array([[1, 2, 3],
-///        [1, 2, 3],
-///        [1, 2, 3]], dtype=int32)
-/// ```
+/// >>> print(y)
+/// tf.Tensor(
+///     [[1 2 3]
+///      [1 2 3]
+///      [1 2 3]], shape=(3, 3), dtype=int32)
+/// 
 /// In the above example, the input Tensor with the shape of `[1, 3]`
 /// is broadcasted to output Tensor with shape of `[3, 3]`.
 ///
@@ -3934,7 +4647,7 @@ public static func broadcastTo<
 ///     input = [[-5, 10000]
 ///              [150,   10]
 ///              [5,    100]]
-///
+/// 
 /// then the output will be
 ///     output = [[0, 3]
 ///               [3, 2]
@@ -3945,7 +4658,7 @@ public static func broadcastTo<
 /// - Attr boundaries: A sorted list of floats gives the boundary of the buckets.
 ///
 /// - Output output: Same shape with 'input', each value of input replaced with bucket index.
-///
+///     
 ///     @compatibility(numpy)
 ///     Equivalent to np.digitize.
 ///     @end_compatibility
@@ -3959,6 +4672,113 @@ public static func bucketize<T: TensorFlowNumeric>(
     op.updateAttribute("T", T.tensorFlowDataType)
     op.updateAttribute("boundaries", boundaries)
     op.addInput(input)
+    return op.execute(Int(1))
+}
+
+/// Records the bytes size of each element of `input_dataset` in a StatsAggregator.
+@inlinable @inline(__always)
+public static func bytesProducedStatsDataset(
+    inputDataset: VariantHandle,
+    tag: StringTensor,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?]
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("BytesProducedStatsDataset", nOutputs)
+    op.updateAttribute("output_types", outputTypes)
+    op.updateAttribute("output_shapes", outputShapes)
+    op.addInput(inputDataset)
+    op.addInput(tag)
+    return op.execute(Int(1))
+}
+
+/// Reads out the CSR components at batch `index`.
+///
+/// This op is meant only for debugging / testing, and its interface is not expected
+/// to be stable.
+///
+/// - Parameters:
+///     - csr_sparse_matrix: A batched CSRSparseMatrix.
+///     - index: The index in `csr_sparse_matrix`'s batch.
+///
+/// - Outputs:
+///     - row_ptrs: An array containing CSR matrix row pointers.
+///     - col_inds: An array containing CSR matrix column indices.
+///     - values: An array containing CSR matrix nonzero values.
+@inlinable @inline(__always)
+public static func cSRSparseMatrixComponents<Type: FloatingPoint & TensorFlowScalar>(
+    csrSparseMatrix: VariantHandle,
+    index: Tensor<Int32>
+) -> (rowPtrs: Tensor<Int32>, colInds: Tensor<Int32>, values: Tensor<Type>) {
+  let nOutputs = Int(1) + Int(1) + Int(1)
+    let op = makeOp("CSRSparseMatrixComponents", nOutputs)
+    op.updateAttribute("type", Type.tensorFlowDataType)
+    op.addInput(csrSparseMatrix)
+    op.addInput(index)
+    return op.execute(Int(1), Int(1), Int(1))
+}
+
+/// Convert a (possibly batched) CSRSparseMatrix to dense.
+///
+/// - Parameter sparse_input: A batched CSRSparseMatrix.
+///
+/// - Output dense_output: A dense tensor.
+@inlinable @inline(__always)
+public static func cSRSparseMatrixToDense<Type: FloatingPoint & TensorFlowScalar>(
+    sparseInput: VariantHandle
+) -> Tensor<Type> {
+  let nOutputs = Int(1)
+    let op = makeOp("CSRSparseMatrixToDense", nOutputs)
+    op.updateAttribute("type", Type.tensorFlowDataType)
+    op.addInput(sparseInput)
+    return op.execute(Int(1))
+}
+
+/// Converts a (possibly batched) CSRSparesMatrix to a SparseTensor.
+///
+/// - Parameter sparse_matrix: A (possibly batched) CSRSparseMatrix.
+///
+/// - Outputs:
+///     - indices: SparseTensor indices.
+///     - values: SparseTensor values.
+///     - dense_shape: SparseTensor dense shape.
+@inlinable @inline(__always)
+public static func cSRSparseMatrixToSparseTensor<Type: FloatingPoint & TensorFlowScalar>(
+    sparseMatrix: VariantHandle
+) -> (indices: Tensor<Int64>, values: Tensor<Type>, denseShape: Tensor<Int64>) {
+  let nOutputs = Int(1) + Int(1) + Int(1)
+    let op = makeOp("CSRSparseMatrixToSparseTensor", nOutputs)
+    op.updateAttribute("type", Type.tensorFlowDataType)
+    op.addInput(sparseMatrix)
+    return op.execute(Int(1), Int(1), Int(1))
+}
+
+@inlinable @inline(__always)
+public static func cSVDataset<OutputTypes: TensorArrayProtocol>(
+    filenames: StringTensor,
+    compressionType: StringTensor,
+    bufferSize: Tensor<Int64>,
+    header: Tensor<Bool>,
+    fieldDelim: StringTensor,
+    useQuoteDelim: Tensor<Bool>,
+    naValue: StringTensor,
+    selectCols: Tensor<Int64>,
+    recordDefaults: OutputTypes,
+    outputShapes: [TensorShape?]
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("CSVDataset", nOutputs)
+    op.updateAttribute("output_types", recordDefaults._typeList)
+    op.updateAttribute("output_shapes", outputShapes)
+    op.addInput(filenames)
+    op.addInput(compressionType)
+    op.addInput(bufferSize)
+    op.addInput(header)
+    op.addInput(fieldDelim)
+    op.addInput(useQuoteDelim)
+    op.addInput(naValue)
+    op.addInput(selectCols)
+    op.addInputList(recordDefaults)
     return op.execute(Int(1))
 }
 
@@ -3992,18 +4812,19 @@ public static func bucketize<T: TensorFlowNumeric>(
 ///     - log_probability: A matrix, shaped: `(batch_size x top_paths)`.  The
 ///         sequence log-probabilities.
 @inlinable @inline(__always)
-public static func cTCBeamSearchDecoder(
-    inputs: Tensor<Float>,
+public static func cTCBeamSearchDecoder<T: FloatingPoint & TensorFlowScalar>(
+    inputs: Tensor<T>,
     sequenceLength: Tensor<Int32>,
     beamWidth: Int64,
     topPaths: Int64,
     mergeRepeated: Bool = true
-) -> (decodedIndices: [Tensor<Int64>], decodedValues: [Tensor<Int64>], decodedShape: [Tensor<Int64>], logProbability: Tensor<Float>) {
+) -> (decodedIndices: [Tensor<Int64>], decodedValues: [Tensor<Int64>], decodedShape: [Tensor<Int64>], logProbability: Tensor<T>) {
   let nOutputs = Int(topPaths) + Int(topPaths) + Int(topPaths) + Int(1)
     let op = makeOp("CTCBeamSearchDecoder", nOutputs)
     op.updateAttribute("beam_width", beamWidth)
     op.updateAttribute("top_paths", topPaths)
     op.updateAttribute("merge_repeated", mergeRepeated)
+    op.updateAttribute("T", T.tensorFlowDataType)
     op.addInput(inputs)
     op.addInput(sequenceLength)
     return op.execute(Int(topPaths), Int(topPaths), Int(topPaths), Int(1))
@@ -4016,7 +4837,7 @@ public static func cTCBeamSearchDecoder(
 /// these is emitted.  Labeling the blank '*', the sequence "A B B * B B"
 /// becomes "A B B" if merge_repeated = True and "A B B B B" if
 /// merge_repeated = False.
-///
+/// 
 /// Regardless of the value of merge_repeated, if the maximum index of a given
 /// time and batch corresponds to the blank, index `(num_classes - 1)`, no new
 /// element is emitted.
@@ -4037,14 +4858,15 @@ public static func cTCBeamSearchDecoder(
 ///     - log_probability: Matrix, size `(batch_size x 1)`, containing sequence
 ///         log-probabilities.
 @inlinable @inline(__always)
-public static func cTCGreedyDecoder(
-    inputs: Tensor<Float>,
+public static func cTCGreedyDecoder<T: FloatingPoint & TensorFlowScalar>(
+    inputs: Tensor<T>,
     sequenceLength: Tensor<Int32>,
     mergeRepeated: Bool = false
-) -> (decodedIndices: Tensor<Int64>, decodedValues: Tensor<Int64>, decodedShape: Tensor<Int64>, logProbability: Tensor<Float>) {
+) -> (decodedIndices: Tensor<Int64>, decodedValues: Tensor<Int64>, decodedShape: Tensor<Int64>, logProbability: Tensor<T>) {
   let nOutputs = Int(1) + Int(1) + Int(1) + Int(1)
     let op = makeOp("CTCGreedyDecoder", nOutputs)
     op.updateAttribute("merge_repeated", mergeRepeated)
+    op.updateAttribute("T", T.tensorFlowDataType)
     op.addInput(inputs)
     op.addInput(sequenceLength)
     return op.execute(Int(1), Int(1), Int(1), Int(1))
@@ -4078,20 +4900,21 @@ public static func cTCGreedyDecoder(
 ///     - gradient: The gradient of `loss`.  3-D, shape:
 ///         `(max_time x batch_size x num_classes)`.
 @inlinable @inline(__always)
-public static func cTCLoss(
-    inputs: Tensor<Float>,
+public static func cTCLoss<T: FloatingPoint & TensorFlowScalar>(
+    inputs: Tensor<T>,
     labelsIndices: Tensor<Int64>,
     labelsValues: Tensor<Int32>,
     sequenceLength: Tensor<Int32>,
     preprocessCollapseRepeated: Bool = false,
     ctcMergeRepeated: Bool = true,
     ignoreLongerOutputsThanInputs: Bool = false
-) -> (loss: Tensor<Float>, gradient: Tensor<Float>) {
+) -> (loss: Tensor<T>, gradient: Tensor<T>) {
   let nOutputs = Int(1) + Int(1)
     let op = makeOp("CTCLoss", nOutputs)
     op.updateAttribute("preprocess_collapse_repeated", preprocessCollapseRepeated)
     op.updateAttribute("ctc_merge_repeated", ctcMergeRepeated)
     op.updateAttribute("ignore_longer_outputs_than_inputs", ignoreLongerOutputsThanInputs)
+    op.updateAttribute("T", T.tensorFlowDataType)
     op.addInput(inputs)
     op.addInput(labelsIndices)
     op.addInput(labelsValues)
@@ -4121,6 +4944,24 @@ public static func cacheDataset(
     op.updateAttribute("output_shapes", outputShapes)
     op.addInput(inputDataset)
     op.addInput(filename)
+    return op.execute(Int(1))
+}
+
+@inlinable @inline(__always)
+public static func cacheDatasetV2(
+    inputDataset: VariantHandle,
+    filename: StringTensor,
+    cache: ResourceHandle,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?]
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("CacheDatasetV2", nOutputs)
+    op.updateAttribute("output_types", outputTypes)
+    op.updateAttribute("output_shapes", outputShapes)
+    op.addInput(inputDataset)
+    op.addInput(filename)
+    op.addInput(cache)
     return op.execute(Int(1))
 }
 
@@ -4177,14 +5018,14 @@ public static func checkNumerics<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// The input is a tensor of shape `[..., M, M]` whose inner-most 2 dimensions
 /// form square matrices.
-///
+/// 
 /// The input has to be symmetric and positive definite. Only the lower-triangular
 /// part of the input will be used for this operation. The upper-triangular part
 /// will not be read.
-///
+/// 
 /// The output is a tensor of the same shape as the input
 /// containing the Cholesky decompositions for all input submatrices `[..., :, :]`.
-///
+/// 
 /// **Note**: The gradient computation on GPU is faster for large matrices but
 /// not for large batch dimensions when the submatrices are small. In this
 /// case it might be faster to use the CPU.
@@ -4227,6 +5068,23 @@ public static func choleskyGrad<T: FloatingPoint & TensorFlowScalar>(
     op.updateAttribute("T", T.tensorFlowDataType)
     op.addInput(l)
     op.addInput(grad)
+    return op.execute(Int(1))
+}
+
+@inlinable @inline(__always)
+public static func chooseFastestDataset(
+    inputDatasets: [VariantHandle],
+    numExperiments: Int64,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?]
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("ChooseFastestDataset", nOutputs)
+    op.updateAttribute("N", inputDatasets.count)
+    op.updateAttribute("num_experiments", numExperiments)
+    op.updateAttribute("output_types", outputTypes)
+    op.updateAttribute("output_shapes", outputShapes)
+    op.addInputList(inputDatasets)
     return op.execute(Int(1))
 }
 
@@ -4276,7 +5134,8 @@ public static func collectiveBcastRecv<T: TensorFlowNumeric>(
     groupSize: Int64,
     groupKey: Int64,
     instanceKey: Int64,
-    shape: TensorShape?
+    shape: TensorShape?,
+    communicationHint: String = "auto"
 ) -> Tensor<T> {
   let nOutputs = Int(1)
     let op = makeOp("CollectiveBcastRecv", nOutputs)
@@ -4285,6 +5144,7 @@ public static func collectiveBcastRecv<T: TensorFlowNumeric>(
     op.updateAttribute("group_key", groupKey)
     op.updateAttribute("instance_key", instanceKey)
     op.updateAttribute("shape", shape)
+    op.updateAttribute("communication_hint", communicationHint)
     return op.execute(Int(1))
 }
 
@@ -4295,7 +5155,8 @@ public static func collectiveBcastSend<T: TensorFlowNumeric>(
     groupSize: Int64,
     groupKey: Int64,
     instanceKey: Int64,
-    shape: TensorShape?
+    shape: TensorShape?,
+    communicationHint: String = "auto"
 ) -> Tensor<T> {
   let nOutputs = Int(1)
     let op = makeOp("CollectiveBcastSend", nOutputs)
@@ -4304,6 +5165,7 @@ public static func collectiveBcastSend<T: TensorFlowNumeric>(
     op.updateAttribute("group_key", groupKey)
     op.updateAttribute("instance_key", instanceKey)
     op.updateAttribute("shape", shape)
+    op.updateAttribute("communication_hint", communicationHint)
     op.addInput(input)
     return op.execute(Int(1))
 }
@@ -4315,7 +5177,8 @@ public static func collectiveGather<T: TensorFlowNumeric>(
     groupSize: Int64,
     groupKey: Int64,
     instanceKey: Int64,
-    shape: TensorShape?
+    shape: TensorShape?,
+    communicationHint: String = "auto"
 ) -> Tensor<T> {
   let nOutputs = Int(1)
     let op = makeOp("CollectiveGather", nOutputs)
@@ -4324,6 +5187,7 @@ public static func collectiveGather<T: TensorFlowNumeric>(
     op.updateAttribute("group_key", groupKey)
     op.updateAttribute("instance_key", instanceKey)
     op.updateAttribute("shape", shape)
+    op.updateAttribute("communication_hint", communicationHint)
     op.addInput(input)
     return op.execute(Int(1))
 }
@@ -4331,7 +5195,7 @@ public static func collectiveGather<T: TensorFlowNumeric>(
 /// An Op to permute tensors across replicated TPU instances.
 ///
 /// Each instance supplies its own input.
-///
+/// 
 /// For example, suppose there are 4 TPU instances: `[A, B, C, D]`. Passing
 /// source_target_pairs=`[[0,1],[1,2],[2,3],[3,0]]` gets the outputs:
 /// `[D, A, B, C]`.
@@ -4367,7 +5231,8 @@ public static func collectiveReduce<T: TensorFlowNumeric>(
     mergeOp: MergeOp,
     finalOp: FinalOp,
     subdivOffsets: [Int32],
-    waitFor: [Int32]
+    waitFor: [Int32],
+    communicationHint: String = "auto"
 ) -> Tensor<T> {
   let nOutputs = Int(1)
     let op = makeOp("CollectiveReduce", nOutputs)
@@ -4379,6 +5244,7 @@ public static func collectiveReduce<T: TensorFlowNumeric>(
     op.updateAttribute("final_op", finalOp.cName)
     op.updateAttribute("subdiv_offsets", subdivOffsets)
     op.updateAttribute("wait_for", waitFor)
+    op.updateAttribute("communication_hint", communicationHint)
     op.addInput(input)
     return op.execute(Int(1))
 }
@@ -4400,12 +5266,12 @@ public static func collectiveReduce<T: TensorFlowNumeric>(
 /// returned after performing non_max_suppression.
 ///
 /// - Parameters:
-///     - boxes: A 4-D float tensor of shape `[batch_size, num_boxes, q, 4]`. If `q` is 1 then 
-///         same boxes are used for all classes otherwise, if `q` is equal to number of 
+///     - boxes: A 4-D float tensor of shape `[batch_size, num_boxes, q, 4]`. If `q` is 1 then
+///         same boxes are used for all classes otherwise, if `q` is equal to number of
 ///         classes, class-specific boxes are used.
 ///     - scores: A 3-D float tensor of shape `[batch_size, num_boxes, num_classes]`
 ///         representing a single score corresponding to each box (each row of boxes).
-///     - max_output_size_per_class: A scalar integer tensor representing the maximum number of 
+///     - max_output_size_per_class: A scalar integer tensor representing the maximum number of
 ///         boxes to be selected by non max suppression per class
 ///     - max_total_size: A scalar representing maximum number of boxes retained over all classes.
 ///     - iou_threshold: A 0-D float tensor representing the threshold for deciding whether
@@ -4424,11 +5290,11 @@ public static func collectiveReduce<T: TensorFlowNumeric>(
 ///         coordinates as it is.
 ///
 /// - Outputs:
-///     - nmsed_boxes: A [batch_size, max_detections, 4] float32 tensor 
+///     - nmsed_boxes: A [batch_size, max_detections, 4] float32 tensor
 ///         containing the non-max suppressed boxes.
-///     - nmsed_scores: A [batch_size, max_detections] float32 tensor 
+///     - nmsed_scores: A [batch_size, max_detections] float32 tensor
 ///         containing the scores for the boxes.
-///     - nmsed_classes: A [batch_size, max_detections] float32 tensor 
+///     - nmsed_classes: A [batch_size, max_detections] float32 tensor
 ///         containing the classes for the boxes.
 ///     - valid_detections: A [batch_size] int32 tensor indicating the number of
 ///         valid detections per batch item. Only the top num_detections[i] entries in
@@ -4462,11 +5328,11 @@ public static func combinedNonMaxSuppression(
 ///
 /// Each comparison returns a boolean `true` (if `input_value > threshold`)
 /// or and `false` otherwise.
-///
+/// 
 /// This operation is useful for Locality-Sensitive-Hashing (LSH) and other
 /// algorithms that use hashing approximations of cosine and `L2` distances;
 /// codes can be generated from an input via:
-///
+/// 
 /// ```python
 /// codebook_size = 50
 /// codebook_bits = codebook_size * 32
@@ -4477,10 +5343,10 @@ public static func combinedNonMaxSuppression(
 /// codes = tf.bitcast(codes, tf.int32)  # go from uint8 to int32
 /// # now codes has shape x.shape[:-1] + [codebook_size]
 /// ```
-///
+/// 
 /// **NOTE**: Currently, the innermost dimension of the tensor must be divisible
 /// by 8.
-///
+/// 
 /// Given an `input` shaped `[s0, s1, ..., s_n]`, the output is
 /// a `uint8` tensor shaped `[s0, s1, ..., s_n / 8]`.
 ///
@@ -4510,11 +5376,11 @@ public static func compareAndBitpack<T: TensorFlowScalar>(
 /// tensor `imag` representing the imaginary part of a complex number, this
 /// operation returns complex numbers elementwise of the form \\(a + bj\\), where
 /// *a* represents the `real` part and *b* represents the `imag` part.
-///
+/// 
 /// The input tensors `real` and `imag` must have the same shape.
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// # tensor 'real' is [2.25, 3.25]
 /// # tensor `imag` is [4.75, 5.75]
@@ -4641,14 +5507,14 @@ public static func concat<T: TensorFlowScalar>(
 /// Computes offsets of concat inputs within its output.
 ///
 /// For example:
-///
+/// 
 /// ```
 /// # 'x' is [2, 2, 7]
 /// # 'y' is [2, 3, 7]
 /// # 'z' is [2, 5, 7]
 /// concat_offset(2, [x, y, z]) => [0, 0, 0], [0, 2, 0], [0, 5, 0]
 /// ```
-///
+/// 
 /// This is typically used by gradient computations for a concat operation.
 ///
 /// - Parameters:
@@ -4730,14 +5596,32 @@ public static func concatenateDataset(
 public static func configureDistributedTPU(
     embeddingConfig: String,
     tpuEmbeddingConfig: String,
-    isGlobalInit: Bool = false
+    isGlobalInit: Bool = false,
+    enableWholeMeshCompilations: Bool = false,
+    compilationFailureClosesChips: Bool = true
 ) -> StringTensor {
   let nOutputs = Int(1)
     let op = makeOp("ConfigureDistributedTPU", nOutputs)
     op.updateAttribute("embedding_config", embeddingConfig)
     op.updateAttribute("tpu_embedding_config", tpuEmbeddingConfig)
     op.updateAttribute("is_global_init", isGlobalInit)
+    op.updateAttribute("enable_whole_mesh_compilations", enableWholeMeshCompilations)
+    op.updateAttribute("compilation_failure_closes_chips", compilationFailureClosesChips)
     return op.execute(Int(1))
+}
+
+/// Sets up TPUEmbedding in a distributed TPU system.
+///
+/// - Attr config: Serialized tensorflow.tpu.TPUEmbeddingConfiguration that
+///     describes the embedding lookups of the program.
+@inlinable @inline(__always)
+public static func configureTPUEmbedding(
+    config: String
+) {
+  let nOutputs = 0
+    let op = makeOp("ConfigureTPUEmbedding", nOutputs)
+    op.updateAttribute("config", config)
+    op.execute()
 }
 
 /// Returns the complex conjugate of a complex number.
@@ -4746,11 +5630,11 @@ public static func configureDistributedTPU(
 /// complex numbers that are the complex conjugate of each element in `input`. The
 /// complex numbers in `input` must be of the form \\(a + bj\\), where *a* is the
 /// real part and *b* is the imaginary part.
-///
+/// 
 /// The complex conjugate returned by this operation is of the form \\(a - bj\\).
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// # tensor 'input' is [-2.25 + 4.75j, 3.25 + 5.75j]
 /// tf.conj(input) ==> [-2.25 - 4.75j, 3.25 - 5.75j]
@@ -4803,7 +5687,7 @@ public static func constructionFails(
 /// direct control dependencies).  It should be the only that consumes the tensor,
 /// and will raise an error if it is not.  Its only purpose is to keep the
 /// mutex lock tensor alive until it is consumed by this op.
-///
+/// 
 /// **NOTE**: This operation must run on the same device as its input.  This may
 /// be enforced via the `colocate_with` mechanism.
 ///
@@ -4836,7 +5720,7 @@ public static func controlTrigger(
 /// and a filter / kernel tensor of shape
 /// `[filter_height, filter_width, in_channels, out_channels]`, this op
 /// performs the following:
-///
+/// 
 /// 1. Flattens the filter to a 2-D matrix with shape
 ///    `[filter_height * filter_width * in_channels, output_channels]`.
 /// 2. Extracts image patches from the input tensor to form a *virtual*
@@ -4844,13 +5728,13 @@ public static func controlTrigger(
 ///    filter_height * filter_width * in_channels]`.
 /// 3. For each patch, right-multiplies the filter matrix and the image patch
 ///    vector.
-///
+/// 
 /// In detail, with the default NHWC format,
-///
+/// 
 ///     output[b, i, j, k] =
 ///         sum_{di, dj, q} input[b, strides[1] * i + di, strides[2] * j + dj, q] *
 ///                         filter[di, dj, q, k]
-///
+/// 
 /// Must have `strides[0] = strides[3] = 1`.  For the most common case of the same
 /// horizontal and vertices strides, `strides = [1, stride, stride, 1]`.
 ///
@@ -4883,7 +5767,7 @@ public static func controlTrigger(
 /// - Output output: A 4-D tensor. The dimension order is determined by the value of
 ///     `data_format`, see below for details.
 @inlinable @inline(__always)
-public static func conv2D<T: FloatingPoint & TensorFlowScalar>(
+public static func conv2D<T: TensorFlowNumeric>(
     _ input: Tensor<T>,
     filter: Tensor<T>,
     strides: [Int32],
@@ -5000,7 +5884,7 @@ public static func conv2DBackpropFilter<T: FloatingPoint & TensorFlowScalar>(
 /// - Output output: 4-D with shape `[batch, in_height, in_width, in_channels]`.  Gradient
 ///     w.r.t. the input of the convolution.
 @inlinable @inline(__always)
-public static func conv2DBackpropInput<T: FloatingPoint & TensorFlowScalar>(
+public static func conv2DBackpropInput<T: TensorFlowNumeric>(
     inputSizes: Tensor<Int32>,
     filter: Tensor<T>,
     outBackprop: Tensor<T>,
@@ -5031,7 +5915,7 @@ public static func conv2DBackpropInput<T: FloatingPoint & TensorFlowScalar>(
 /// In signal processing, cross-correlation is a measure of similarity of
 /// two waveforms as a function of a time-lag applied to one of them. This
 /// is also known as a sliding dot product or sliding inner-product.
-///
+/// 
 /// Our Conv3D implements a form of cross-correlation.
 ///
 /// - Parameters:
@@ -5242,14 +6126,14 @@ public static func conv3DBackpropInputV2<
     return op.execute(Int(1))
 }
 
-/// Copy Op.
+/// Copy a tensor from CPU-to-CPU or GPU-to-GPU.
 ///
 /// Performs CPU-to-CPU or GPU-to-GPU deep-copying of tensor, depending on the
 /// device on which the tensor is allocated.
 /// N.B.: If the all downstream attached debug ops are disabled given the current
 /// gRPC gating status, the output will simply forward the input tensor without
 /// deep-copying. See the documentation of Debug* ops for more details.
-///
+/// 
 /// Unlike the CopyHost Op, this op does not have HostMemory constraint on its
 /// input or output.
 ///
@@ -5262,8 +6146,6 @@ public static func conv3DBackpropInputV2<
 ///         <debug_op>;<grpc_url>;<gated_grpc>, wherein gated_grpc is boolean represented
 ///         as 0/1. E.g., "DebugIdentity;grpc://foo:3333;1",
 ///         "DebugIdentity;file:///tmp/tfdbg_1;0".
-///
-/// - Output output: Output tensor, deep-copied from input.
 @inlinable @inline(__always)
 public static func copy<T: TensorFlowScalar>(
     _ input: Tensor<T>,
@@ -5279,13 +6161,13 @@ public static func copy<T: TensorFlowScalar>(
     return op.execute(Int(1))
 }
 
-/// Copy Host Op.
+/// Copy a tensor to host.
 ///
 /// Performs CPU-to-CPU deep-copying of tensor.
 /// N.B.: If the all downstream attached debug ops are disabled given the current
 /// gRPC gating status, the output will simply forward the input tensor without
 /// deep-copying. See the documentation of Debug* ops for more details.
-///
+/// 
 /// Unlike the Copy Op, this op has HostMemory constraint on its input or output.
 ///
 /// - Parameter input: Input tensor.
@@ -5297,8 +6179,6 @@ public static func copy<T: TensorFlowScalar>(
 ///         <debug_op>;<grpc_url>;<gated_grpc>, wherein gated_grpc is boolean represented
 ///         as 0/1. E.g., "DebugIdentity;grpc://foo:3333;1",
 ///         "DebugIdentity;file:///tmp/tfdbg_1;0".
-///
-/// - Output output: Output tensor, deep-copied from input.
 @inlinable @inline(__always)
 public static func copyHost<T: TensorFlowScalar>(
     _ input: Tensor<T>,
@@ -5326,6 +6206,16 @@ public static func copyOp<T: TensorFlowScalar>(
 }
 
 /// Computes cos of x element-wise.
+///
+///   Given an input tensor, this function computes cosine of every
+///   element in the tensor. Input range is `(-inf, inf)` and
+///   output range is `[-1,1]`. If input lies outside the boundary, `nan`
+///   is returned.
+/// 
+///   ```python
+///   x = tf.constant([-float("inf"), -9, -0.5, 1, 1.2, 200, 10000, float("inf")])
+///   tf.math.cos(x) ==> [nan -0.91113025 0.87758255 0.5403023 0.36235774 0.48718765 -0.95215535 nan]
+///   ```
 @inlinable @inline(__always)
 public static func cos<T: FloatingPoint & TensorFlowScalar>(
     _ x: Tensor<T>
@@ -5338,6 +6228,15 @@ public static func cos<T: FloatingPoint & TensorFlowScalar>(
 }
 
 /// Computes hyperbolic cosine of x element-wise.
+///
+///   Given an input tensor, this function computes hyperbolic cosine of every
+///   element in the tensor. Input range is `[-inf, inf]` and output range
+///   is `[1, inf]`.
+/// 
+///   ```python
+///   x = tf.constant([-float("inf"), -9, -0.5, 1, 1.2, 2, 10, float("inf")])
+///   tf.math.cosh(x) ==> [inf 4.0515420e+03 1.1276259e+00 1.5430807e+00 1.8106556e+00 3.7621956e+00 1.1013233e+04 inf]
+///   ```
 @inlinable @inline(__always)
 public static func cosh<T: FloatingPoint & TensorFlowScalar>(
     _ x: Tensor<T>
@@ -5392,7 +6291,7 @@ public static func createSummaryFileWriter(
 /// common output size specified by `crop_size`. This is more general than the
 /// `crop_to_bounding_box` op which extracts a fixed size slice from the input image
 /// and does not allow resizing or aspect ratio change.
-///
+/// 
 /// Returns a tensor with `crops` from the input `image` at positions defined at the
 /// bounding box locations in `boxes`. The cropped boxes are all resized (with
 /// bilinear or nearest neighbor interpolation) to a fixed
@@ -5480,7 +6379,7 @@ public static func cropAndResizeGradBoxes<T: TensorFlowNumeric>(
     image: Tensor<T>,
     boxes: Tensor<Float>,
     boxInd: Tensor<Int32>,
-    method: Method3 = .bilinear
+    method: Method4 = .bilinear
 ) -> Tensor<Float> {
   let nOutputs = Int(1)
     let op = makeOp("CropAndResizeGradBoxes", nOutputs)
@@ -5563,7 +6462,7 @@ public static func cross<T: TensorFlowNumeric>(
 /// An Op to sum inputs across replicated TPU instances.
 ///
 /// Each instance supplies its own input.
-///
+/// 
 /// For example, suppose there are 8 TPU instances: `[A, B, C, D, E, F, G, H]`.
 /// Passing group_assignment=`[[0,2,4,6],[1,3,5,7]]` sets `A, C, E, G` as group 0,
 /// and `B, D, F, H` as group 1. Thus we get the outputs:
@@ -5595,7 +6494,7 @@ public static func crossReplicaSum<T: TensorFlowNumeric>(
 ///
 /// Computes the RNN from the input and initial states, with respect to the params
 /// buffer.
-///
+/// 
 /// rnn_mode: Indicates the type of the RNN model.
 /// input_mode: Indicate whether there is a linear projection between the input and
 ///   the actual computation before the first layer. 'skip_input' is only allowed
@@ -5657,7 +6556,7 @@ public static func cudnnRNN<T: FloatingPoint & TensorFlowScalar>(
 /// Backprop step of CudnnRNN.
 ///
 /// Compute the backprop of both data and weights in a RNN.
-///
+/// 
 /// rnn_mode: Indicates the type of the RNN model.
 /// input_mode: Indicate whether there is a linear projection between the input and
 ///     the actual computation before the first layer. 'skip_input' is only allowed
@@ -5743,7 +6642,7 @@ public static func cudnnRNNBackprop<T: FloatingPoint & TensorFlowScalar>(
 /// Compute the backprop of both data and weights in a RNN. Takes an extra
 ///     "host_reserved" inupt than CudnnRNNBackprop, which is used to determine RNN
 ///     cudnnRNNAlgo_t and cudnnMathType_t.
-///
+/// 
 /// rnn_mode: Indicates the type of the RNN model.
 /// input_mode: Indicates whether there is a linear projection between the input and
 ///     the actual computation before the first layer. 'skip_input' is only allowed
@@ -5831,7 +6730,7 @@ public static func cudnnRNNBackpropV2<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// Compute the backprop of both data and weights in a RNN. Takes an extra
 ///     "sequence_lengths" input than CudnnRNNBackprop.
-///
+/// 
 /// rnn_mode: Indicates the type of the RNN model.
 /// input_mode: Indicates whether there is a linear projection between the input and
 ///     the actual computation before the first layer. 'skip_input' is only allowed
@@ -5897,6 +6796,7 @@ public static func cudnnRNNBackpropV3<T: FloatingPoint & TensorFlowScalar>(
     dropout: Double = 0,
     seed: Int64 = 0,
     seed2: Int64 = 0,
+    numProj: Int64 = 0,
     timeMajor: Bool = true
 ) -> (inputBackprop: Tensor<T>, inputHBackprop: Tensor<T>, inputCBackprop: Tensor<T>, paramsBackprop: Tensor<T>) {
   let nOutputs = Int(1) + Int(1) + Int(1) + Int(1)
@@ -5908,6 +6808,7 @@ public static func cudnnRNNBackpropV3<T: FloatingPoint & TensorFlowScalar>(
     op.updateAttribute("dropout", dropout)
     op.updateAttribute("seed", seed)
     op.updateAttribute("seed2", seed2)
+    op.updateAttribute("num_proj", numProj)
     op.updateAttribute("time_major", timeMajor)
     op.addInput(input)
     op.addInput(inputH)
@@ -5929,11 +6830,11 @@ public static func cudnnRNNBackpropV3<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// Writes a set of weights into the opaque params buffer so they can be used in
 /// upcoming training or inferences.
-///
+/// 
 /// Note that the params buffer may not be compatible across different GPUs. So any
 /// save and restoration should be converted to and from the canonical weights and
 /// biases.
-///
+/// 
 /// num_layers: Specifies the number of layers in the RNN model.
 /// num_units: Specifies the size of the hidden state.
 /// input_size: Specifies the size of the input state.
@@ -5988,11 +6889,78 @@ public static func cudnnRNNCanonicalToParams<T: FloatingPoint & TensorFlowScalar
     return op.execute(Int(1))
 }
 
+/// Converts CudnnRNN params from canonical form to usable form. It supports the projection in LSTM.
+///
+/// Writes a set of weights into the opaque params buffer so they can be used in
+/// upcoming training or inferences.
+/// 
+/// Note that the params buffer may not be compatible across different GPUs. So any
+/// save and restoration should be converted to and from the canonical weights and
+/// biases.
+/// 
+/// num_layers: Specifies the number of layers in the RNN model.
+/// num_units: Specifies the size of the hidden state.
+/// input_size: Specifies the size of the input state.
+/// weights: the canonical form of weights that can be used for saving
+///     and restoration. They are more likely to be compatible across different
+///     generations.
+/// biases: the canonical form of biases that can be used for saving
+///     and restoration. They are more likely to be compatible across different
+///     generations.
+/// num_params_weigths: number of weight parameter matrix for all layers.
+/// num_params_biases: number of bias parameter vector for all layers.
+/// rnn_mode: Indicates the type of the RNN model.
+/// input_mode: Indicate whether there is a linear projection between the input and
+///     The actual computation before the first layer. 'skip_input' is only allowed
+///     when input_size == num_units; 'auto_select' implies 'skip_input' when
+///     input_size == num_units; otherwise, it implies 'linear_input'.
+/// direction: Indicates whether a bidirectional model will be used.
+///     dir = (direction == bidirectional) ? 2 : 1
+/// dropout: dropout probability. When set to 0., dropout is disabled.
+/// seed: the 1st part of a seed to initialize dropout.
+/// seed2: the 2nd part of a seed to initialize dropout.
+/// num_proj: The output dimensionality for the projection matrices. If None or 0,
+///     no projection is performed.
+@inlinable @inline(__always)
+public static func cudnnRNNCanonicalToParamsV2<T: FloatingPoint & TensorFlowScalar>(
+    numLayers: Tensor<Int32>,
+    numUnits: Tensor<Int32>,
+    inputSize: Tensor<Int32>,
+    weights: [Tensor<T>],
+    biases: [Tensor<T>],
+    rnnMode: RnnMode = .lstm,
+    inputMode: InputMode = .linearInput,
+    direction: Direction = .unidirectional,
+    dropout: Double = 0,
+    seed: Int64 = 0,
+    seed2: Int64 = 0,
+    numProj: Int64 = 0
+) -> Tensor<T> {
+  let nOutputs = Int(1)
+    let op = makeOp("CudnnRNNCanonicalToParamsV2", nOutputs)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.updateAttribute("num_params_weights", weights.count)
+    op.updateAttribute("num_params_biases", biases.count)
+    op.updateAttribute("rnn_mode", rnnMode.cName)
+    op.updateAttribute("input_mode", inputMode.cName)
+    op.updateAttribute("direction", direction.cName)
+    op.updateAttribute("dropout", dropout)
+    op.updateAttribute("seed", seed)
+    op.updateAttribute("seed2", seed2)
+    op.updateAttribute("num_proj", numProj)
+    op.addInput(numLayers)
+    op.addInput(numUnits)
+    op.addInput(inputSize)
+    op.addInputList(weights)
+    op.addInputList(biases)
+    return op.execute(Int(1))
+}
+
 /// Computes size of weights that can be used by a Cudnn RNN model.
 ///
 /// Return the params size that can be used by the Cudnn RNN model. Subsequent
 /// weight allocation and initialization should use this size.
-///
+/// 
 /// num_layers: Specifies the number of layers in the RNN model.
 /// num_units: Specifies the size of the hidden state.
 /// input_size: Specifies the size of the input state.
@@ -6022,7 +6990,8 @@ public static func cudnnRNNParamsSize<S: TensorFlowIndex>(
     direction: Direction = .unidirectional,
     dropout: Double = 0,
     seed: Int64 = 0,
-    seed2: Int64 = 0
+    seed2: Int64 = 0,
+    numProj: Int64 = 0
 ) -> Tensor<S> {
   let nOutputs = Int(1)
     let op = makeOp("CudnnRNNParamsSize", nOutputs)
@@ -6034,6 +7003,7 @@ public static func cudnnRNNParamsSize<S: TensorFlowIndex>(
     op.updateAttribute("dropout", dropout)
     op.updateAttribute("seed", seed)
     op.updateAttribute("seed2", seed2)
+    op.updateAttribute("num_proj", numProj)
     op.addInput(numLayers)
     op.addInput(numUnits)
     op.addInput(inputSize)
@@ -6044,11 +7014,11 @@ public static func cudnnRNNParamsSize<S: TensorFlowIndex>(
 ///
 /// Retrieves a set of weights from the opaque params buffer that can be saved and
 /// restored in a way compatible with future runs.
-///
+/// 
 /// Note that the params buffer may not be compatible across different GPUs. So any
 /// save and restoration should be converted to and from the canonical weights and
 /// biases.
-///
+/// 
 /// num_layers: Specifies the number of layers in the RNN model.
 /// num_units: Specifies the size of the hidden state.
 /// input_size: Specifies the size of the input state.
@@ -6102,11 +7072,78 @@ public static func cudnnRNNParamsToCanonical<T: FloatingPoint & TensorFlowScalar
     return op.execute(Int(numParams), Int(numParams))
 }
 
+/// Retrieves CudnnRNN params in canonical form. It supports the projection in LSTM.
+///
+/// Retrieves a set of weights from the opaque params buffer that can be saved and
+/// restored in a way compatible with future runs.
+/// 
+/// Note that the params buffer may not be compatible across different GPUs. So any
+/// save and restoration should be converted to and from the canonical weights and
+/// biases.
+/// 
+/// num_layers: Specifies the number of layers in the RNN model.
+/// num_units: Specifies the size of the hidden state.
+/// input_size: Specifies the size of the input state.
+/// num_params_weigths: number of weight parameter matrix for all layers.
+/// num_params_biases: number of bias parameter vector for all layers.
+/// weights: the canonical form of weights that can be used for saving
+///     and restoration. They are more likely to be compatible across different
+///     generations.
+/// biases: the canonical form of biases that can be used for saving
+///     and restoration. They are more likely to be compatible across different
+///     generations.
+/// rnn_mode: Indicates the type of the RNN model.
+/// input_mode: Indicate whether there is a linear projection between the input and
+///     The actual computation before the first layer. 'skip_input' is only allowed
+///     when input_size == num_units; 'auto_select' implies 'skip_input' when
+///     input_size == num_units; otherwise, it implies 'linear_input'.
+/// direction: Indicates whether a bidirectional model will be used.
+///     dir = (direction == bidirectional) ? 2 : 1
+/// dropout: dropout probability. When set to 0., dropout is disabled.
+/// seed: the 1st part of a seed to initialize dropout.
+/// seed2: the 2nd part of a seed to initialize dropout.
+/// num_proj: The output dimensionality for the projection matrices. If None or 0,
+///     no projection is performed.
+@inlinable @inline(__always)
+public static func cudnnRNNParamsToCanonicalV2<T: FloatingPoint & TensorFlowScalar>(
+    numLayers: Tensor<Int32>,
+    numUnits: Tensor<Int32>,
+    inputSize: Tensor<Int32>,
+    params: Tensor<T>,
+    numParamsWeights: Int64,
+    numParamsBiases: Int64,
+    rnnMode: RnnMode = .lstm,
+    inputMode: InputMode = .linearInput,
+    direction: Direction = .unidirectional,
+    dropout: Double = 0,
+    seed: Int64 = 0,
+    seed2: Int64 = 0,
+    numProj: Int64 = 0
+) -> (weights: [Tensor<T>], biases: [Tensor<T>]) {
+  let nOutputs = Int(numParamsWeights) + Int(numParamsBiases)
+    let op = makeOp("CudnnRNNParamsToCanonicalV2", nOutputs)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.updateAttribute("num_params_weights", numParamsWeights)
+    op.updateAttribute("num_params_biases", numParamsBiases)
+    op.updateAttribute("rnn_mode", rnnMode.cName)
+    op.updateAttribute("input_mode", inputMode.cName)
+    op.updateAttribute("direction", direction.cName)
+    op.updateAttribute("dropout", dropout)
+    op.updateAttribute("seed", seed)
+    op.updateAttribute("seed2", seed2)
+    op.updateAttribute("num_proj", numProj)
+    op.addInput(numLayers)
+    op.addInput(numUnits)
+    op.addInput(inputSize)
+    op.addInput(params)
+    return op.execute(Int(numParamsWeights), Int(numParamsBiases))
+}
+
 /// A RNN backed by cuDNN.
 ///
 /// Computes the RNN from the input and initial states, with respect to the params
 /// buffer. Produces one extra output "host_reserved" than CudnnRNN.
-///
+/// 
 /// rnn_mode: Indicates the type of the RNN model.
 /// input_mode: Indicates whether there is a linear projection between the input and
 ///   the actual computation before the first layer. 'skip_input' is only allowed
@@ -6172,7 +7209,7 @@ public static func cudnnRNNV2<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// Computes the RNN from the input and initial states, with respect to the params
 /// buffer. Accepts one extra input "sequence_lengths" than CudnnRNN.
-///
+/// 
 /// rnn_mode: Indicates the type of the RNN model.
 /// input_mode: Indicates whether there is a linear projection between the input and
 ///   the actual computation before the first layer. 'skip_input' is only allowed
@@ -6220,6 +7257,7 @@ public static func cudnnRNNV3<T: FloatingPoint & TensorFlowScalar>(
     dropout: Double = 0,
     seed: Int64 = 0,
     seed2: Int64 = 0,
+    numProj: Int64 = 0,
     isTraining: Bool = true,
     timeMajor: Bool = true
 ) -> (output: Tensor<T>, outputH: Tensor<T>, outputC: Tensor<T>, reserveSpace: Tensor<T>, hostReserved: Tensor<Int8>) {
@@ -6232,6 +7270,7 @@ public static func cudnnRNNV3<T: FloatingPoint & TensorFlowScalar>(
     op.updateAttribute("dropout", dropout)
     op.updateAttribute("seed", seed)
     op.updateAttribute("seed2", seed2)
+    op.updateAttribute("num_proj", numProj)
     op.updateAttribute("is_training", isTraining)
     op.updateAttribute("time_major", timeMajor)
     op.addInput(input)
@@ -6246,29 +7285,29 @@ public static func cudnnRNNV3<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// By default, this op performs an inclusive cumprod, which means that the first
 /// element of the input is identical to the first element of the output:
-///
+/// 
 /// ```python
 /// tf.cumprod([a, b, c])  # => [a, a * b, a * b * c]
 /// ```
-///
+/// 
 /// By setting the `exclusive` kwarg to `True`, an exclusive cumprod is
 /// performed instead:
-///
+/// 
 /// ```python
 /// tf.cumprod([a, b, c], exclusive=True)  # => [1, a, a * b]
 /// ```
-///
+/// 
 /// By setting the `reverse` kwarg to `True`, the cumprod is performed in the
 /// opposite direction:
-///
+/// 
 /// ```python
 /// tf.cumprod([a, b, c], reverse=True)  # => [a * b * c, b * c, c]
 /// ```
-///
+/// 
 /// This is more efficient than using separate `tf.reverse` ops.
-///
+/// 
 /// The `reverse` and `exclusive` kwargs can also be combined:
-///
+/// 
 /// ```python
 /// tf.cumprod([a, b, c], exclusive=True, reverse=True)  # => [b * c, c, 1]
 /// ```
@@ -6308,29 +7347,29 @@ public static func cumprod<
 ///
 /// By default, this op performs an inclusive cumsum, which means that the first
 /// element of the input is identical to the first element of the output:
-///
+/// 
 /// ```python
 /// tf.cumsum([a, b, c])  # => [a, a + b, a + b + c]
 /// ```
-///
+/// 
 /// By setting the `exclusive` kwarg to `True`, an exclusive cumsum is
 /// performed instead:
-///
+/// 
 /// ```python
 /// tf.cumsum([a, b, c], exclusive=True)  # => [0, a, a + b]
 /// ```
-///
+/// 
 /// By setting the `reverse` kwarg to `True`, the cumsum is performed in the
 /// opposite direction:
-///
+/// 
 /// ```python
 /// tf.cumsum([a, b, c], reverse=True)  # => [a + b + c, b + c, c]
 /// ```
-///
+/// 
 /// This is more efficient than using separate `tf.reverse` ops.
-///
+/// 
 /// The `reverse` and `exclusive` kwargs can also be combined:
-///
+/// 
 /// ```python
 /// tf.cumsum([a, b, c], exclusive=True, reverse=True)  # => [b + c, c, 0]
 /// ```
@@ -6357,6 +7396,56 @@ public static func cumsum<
 ) -> Tensor<T> {
   let nOutputs = Int(1)
     let op = makeOp("Cumsum", nOutputs)
+    op.updateAttribute("exclusive", exclusive)
+    op.updateAttribute("reverse", reverse)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.updateAttribute("Tidx", Tidx.tensorFlowDataType)
+    op.addInput(x)
+    op.addInput(axis)
+    return op.execute(Int(1))
+}
+
+/// Compute the cumulative product of the tensor `x` along `axis`.
+///
+/// By default, this op performs an inclusive cumulative log-sum-exp,
+/// which means that the first
+/// element of the input is identical to the first element of the output:
+/// ```python
+/// tf.math.cumulative_logsumexp([a, b, c])  # => [a, log(exp(a) + exp(b)), log(exp(a) + exp(b) + exp(c))]
+/// ```
+/// 
+/// By setting the `exclusive` kwarg to `True`, an exclusive cumulative log-sum-exp is
+/// performed instead:
+/// ```python
+/// tf.cumulative_logsumexp([a, b, c], exclusive=True)  # => [-inf, a, log(exp(a) * exp(b))]
+/// ```
+/// Note that the neutral element of the log-sum-exp operation is `-inf`,
+/// however, for performance reasons, the minimal value representable by the
+/// floating point type is used instead.
+/// 
+/// By setting the `reverse` kwarg to `True`, the cumulative log-sum-exp is performed in the
+/// opposite direction.
+///
+/// - Parameters:
+///     - x: A `Tensor`. Must be one of the following types: `float16`, `float32`, `float64`.
+///     - axis: A `Tensor` of type `int32` (default: 0). Must be in the range
+///         `[-rank(x), rank(x))`.
+///
+/// - Attrs:
+///     - exclusive: If `True`, perform exclusive cumulative log-sum-exp.
+///     - reverse: A `bool` (default: False).
+@inlinable @inline(__always)
+public static func cumulativeLogsumexp<
+    T: FloatingPoint & TensorFlowScalar,
+    Tidx: TensorFlowIndex
+>(
+    _ x: Tensor<T>,
+    axis: Tensor<Tidx>,
+    exclusive: Bool = false,
+    reverse: Bool = false
+) -> Tensor<T> {
+  let nOutputs = Int(1)
+    let op = makeOp("CumulativeLogsumexp", nOutputs)
     op.updateAttribute("exclusive", exclusive)
     op.updateAttribute("reverse", reverse)
     op.updateAttribute("T", T.tensorFlowDataType)
@@ -6419,6 +7508,41 @@ public static func dataFormatVecPermute<T: TensorFlowIndex>(
     return op.execute(Int(1))
 }
 
+/// Returns the cardinality of `input_dataset`.
+///
+/// Returns the cardinality of `input_dataset`.
+///
+/// - Parameter input_dataset: A variant tensor representing the dataset to return cardinality for.
+///
+/// - Output cardinality: The cardinality of `input_dataset`. Named constants are used to represent
+///     infinite and unknown cardinality.
+@inlinable @inline(__always)
+public static func datasetCardinality(
+    inputDataset: VariantHandle
+) -> Tensor<Int64> {
+  let nOutputs = Int(1)
+    let op = makeOp("DatasetCardinality", nOutputs)
+    op.addInput(inputDataset)
+    return op.execute(Int(1))
+}
+
+/// Creates a dataset from the given `graph_def`.
+///
+/// Creates a dataset from the provided `graph_def`.
+///
+/// - Parameter graph_def: The graph representation of the dataset (as serialized GraphDef).
+///
+/// - Output handle: A variant tensor representing the dataset.
+@inlinable @inline(__always)
+public static func datasetFromGraph(
+    graphDef: StringTensor
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("DatasetFromGraph", nOutputs)
+    op.addInput(graphDef)
+    return op.execute(Int(1))
+}
+
 /// Returns a serialized GraphDef representing `input_dataset`.
 ///
 /// Returns a graph representation for `input_dataset`.
@@ -6428,10 +7552,37 @@ public static func dataFormatVecPermute<T: TensorFlowIndex>(
 /// - Output graph: The graph representation of the dataset (as serialized GraphDef).
 @inlinable @inline(__always)
 public static func datasetToGraph(
-    inputDataset: VariantHandle
+    inputDataset: VariantHandle,
+    statefulWhitelist: [String],
+    allowStateful: Bool = false,
+    stripDeviceAssignment: Bool = false
 ) -> StringTensor {
   let nOutputs = Int(1)
     let op = makeOp("DatasetToGraph", nOutputs)
+    op.updateAttribute("stateful_whitelist", statefulWhitelist)
+    op.updateAttribute("allow_stateful", allowStateful)
+    op.updateAttribute("strip_device_assignment", stripDeviceAssignment)
+    op.addInput(inputDataset)
+    return op.execute(Int(1))
+}
+
+/// Returns a serialized GraphDef representing `input_dataset`.
+///
+/// Returns a graph representation for `input_dataset`.
+///
+/// - Parameter input_dataset: A variant tensor representing the dataset to return the graph representation for.
+///
+/// - Output graph: The graph representation of the dataset (as serialized GraphDef).
+@inlinable @inline(__always)
+public static func datasetToGraphV2(
+    inputDataset: VariantHandle,
+    externalStatePolicy: Int64 = 0,
+    stripDeviceAssignment: Bool = false
+) -> StringTensor {
+  let nOutputs = Int(1)
+    let op = makeOp("DatasetToGraphV2", nOutputs)
+    op.updateAttribute("external_state_policy", externalStatePolicy)
+    op.updateAttribute("strip_device_assignment", stripDeviceAssignment)
     op.addInput(inputDataset)
     return op.execute(Int(1))
 }
@@ -6454,6 +7605,27 @@ public static func datasetToSingleElement<OutputTypes: TensorGroup>(
     return op.execute(Int(OutputTypes._typeList.count))
 }
 
+/// Writes the given dataset to the given file using the TFRecord format.
+///
+/// - Parameters:
+///     - input_dataset: A variant tensor representing the dataset to write.
+///     - filename: A scalar string tensor representing the filename to use.
+///     - compression_type: A scalar string tensor containing either (i) the empty string (no
+///         compression), (ii) "ZLIB", or (iii) "GZIP".
+@inlinable @inline(__always)
+public static func datasetToTFRecord(
+    inputDataset: VariantHandle,
+    filename: StringTensor,
+    compressionType: StringTensor
+) {
+  let nOutputs = 0
+    let op = makeOp("DatasetToTFRecord", nOutputs)
+    op.addInput(inputDataset)
+    op.addInput(filename)
+    op.addInput(compressionType)
+    op.execute()
+}
+
 /// Identity op for gradient debugging.
 ///
 /// This op is hidden from public in Python. It is used by TensorFlow Debugger to
@@ -6470,24 +7642,23 @@ public static func debugGradientIdentity<T: TensorFlowScalar>(
     return op.execute(Int(1))
 }
 
-/// Debug Identity Op.
+/// Provides an identity mapping of the non-Ref type input tensor for debugging.
 ///
 /// Provides an identity mapping of the non-Ref type input tensor for debugging.
 ///
-/// - Parameter input: Input tensor, non-Reference type.
+/// - Parameter input: Input tensor, non-Reference type
 ///
 /// - Attrs:
+///     - device_name: Name of the device on which the tensor resides.
 ///     - tensor_name: Name of the input tensor.
 ///     - debug_urls: List of URLs to debug targets, e.g.,
-///         file:///foo/tfdbg_dump, grpc:://localhost:11011
+///           file:///foo/tfdbg_dump, grpc:://localhost:11011
 ///     - gated_grpc: Whether this op will be gated. If any of the debug_urls of this
-///         debug node is of the grpc:// scheme, when the value of this attribute is set
-///         to True, the data will not actually be sent via the grpc stream unless this
-///         debug op has been enabled at the debug_url. If all of the debug_urls of this
-///         debug node are of the grpc:// scheme and the debug op is enabled at none of
-///         them, the output will be an empty Tensor.
-///
-/// - Output output: Output tensor that equals the input tensor.
+///           debug node is of the grpc:// scheme, when the value of this attribute is set
+///           to True, the data will not actually be sent via the grpc stream unless this
+///           debug op has been enabled at the debug_url. If all of the debug_urls of this
+///           debug node are of the grpc:// scheme and the debug op is enabled at none of
+///           them, the output will be an empty Tensor.
 @inlinable @inline(__always)
 public static func debugIdentity<T: TensorFlowScalar>(
     _ input: Tensor<T>,
@@ -6507,7 +7678,51 @@ public static func debugIdentity<T: TensorFlowScalar>(
     return op.execute(Int(1))
 }
 
-/// Debug NaN Value Counter Op
+/// Debug Identity V2 Op.
+///
+/// Provides an identity mapping from input to output, while writing the content of
+/// the input tensor by calling DebugEventsWriter.
+/// 
+/// The semantics of the input tensor depends on tensor_debug_mode. In typical
+/// usage, the input tensor comes directly from the user computation only when
+/// graph_debug_mode is FULL_TENSOR (see protobuf/debug_event.proto for a
+/// list of all the possible values of graph_debug_mode). For the other debug modes,
+/// the input tensor should be produced by an additional op or subgraph that
+/// computes summary information about one or more tensors.
+///
+/// - Parameter input: Input tensor, non-Reference type
+///
+/// - Attrs:
+///     - tfdbg_context_id: A tfdbg-generated ID for the context that the op belongs to,
+///           e.g., a concrete compiled tf.function.
+///     - op_name: Optional. Name of the op that the debug op is concerned with.
+///           Used only for single-tensor trace.
+///     - output_slot: Optional. Output slot index of the tensor that the debug op
+///           is concerned with. Used only for single-tensor trace.
+///     - tensor_debug_mode: TensorDebugMode enum value. See debug_event.proto for details.
+///     - debug_urls: List of URLs to debug targets, e.g., file:///foo/tfdbg_dump.
+@inlinable @inline(__always)
+public static func debugIdentityV2<T: TensorFlowScalar>(
+    _ input: Tensor<T>,
+    tfdbgContextId: String,
+    opName: String,
+    outputSlot: Int64 = -1,
+    tensorDebugMode: Int64 = -1,
+    debugUrls: [String]
+) -> Tensor<T> {
+  let nOutputs = Int(1)
+    let op = makeOp("DebugIdentityV2", nOutputs)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.updateAttribute("tfdbg_context_id", tfdbgContextId)
+    op.updateAttribute("op_name", opName)
+    op.updateAttribute("output_slot", outputSlot)
+    op.updateAttribute("tensor_debug_mode", tensorDebugMode)
+    op.updateAttribute("debug_urls", debugUrls)
+    op.addInput(input)
+    return op.execute(Int(1))
+}
+
+/// Debug NaN Value Counter Op.
 ///
 /// Counts number of NaNs in the input tensor, for debugging.
 ///
@@ -6516,15 +7731,13 @@ public static func debugIdentity<T: TensorFlowScalar>(
 /// - Attrs:
 ///     - tensor_name: Name of the input tensor.
 ///     - debug_urls: List of URLs to debug targets, e.g.,
-///         file:///foo/tfdbg_dump, grpc:://localhost:11011.
-///     - gated_grpc: Whether this op will be gated. If any of the debug_urls of this
-///         debug node is of the grpc:// scheme, when the value of this attribute is set
-///         to True, the data will not actually be sent via the grpc stream unless this
-///         debug op has been enabled at the debug_url. If all of the debug_urls of this
-///         debug node are of the grpc:// scheme and the debug op is enabled at none of
-///         them, the output will be an empty Tensor.
-///
-/// - Output output: An integer output tensor that is the number of NaNs in the input.
+///           file:///foo/tfdbg_dump, grpc:://localhost:11011.
+///     - gated_grpc:  Whether this op will be gated. If any of the debug_urls of this
+///           debug node is of the grpc:// scheme, when the value of this attribute is set
+///           to True, the data will not actually be sent via the grpc stream unless this
+///           debug op has been enabled at the debug_url. If all of the debug_urls of this
+///           debug node are of the grpc:// scheme and the debug op is enabled at none of
+///           them, the output will be an empty Tensor.
 @inlinable @inline(__always)
 public static func debugNanCount<T: TensorFlowScalar>(
     _ input: Tensor<T>,
@@ -6547,54 +7760,55 @@ public static func debugNanCount<T: TensorFlowScalar>(
 /// Debug Numeric Summary Op.
 ///
 /// Provide a basic summary of numeric value types, range and distribution.
+/// 
+/// output: A double tensor of shape [14 + nDimensions], where nDimensions is the
+///   the number of dimensions of the tensor's shape. The elements of output are:
+///   [0]: is initialized (1.0) or not (0.0).
+///   [1]: total number of elements
+///   [2]: NaN element count
+///   [3]: generalized -inf count: elements <= lower_bound. lower_bound is -inf by
+///     default.
+///   [4]: negative element count (excluding -inf), if lower_bound is the default
+///     -inf. Otherwise, this is the count of elements > lower_bound and < 0.
+///   [5]: zero element count
+///   [6]: positive element count (excluding +inf), if upper_bound is the default
+///     -inf. Otherwise, this is the count of elements < upper_bound and > 0.
+///   [7]: generalized +inf count, elements >= upper_bound. upper_bound is +inf by
+///     default.
+/// Output elements [1:8] are all zero, if the tensor is uninitialized.
+///   [8]: minimum of all non-inf and non-NaN elements.
+///        If uninitialized or no such element exists: +inf.
+///   [9]: maximum of all non-inf and non-NaN elements.
+///        If uninitialized or no such element exists: -inf.
+///   [10]: mean of all non-inf and non-NaN elements.
+///         If uninitialized or no such element exists: NaN.
+///   [11]: variance of all non-inf and non-NaN elements.
+///         If uninitialized or no such element exists: NaN.
+///   [12]: Data type of the tensor encoded as an enum integer. See the DataType
+///         proto for more details.
+///   [13]: Number of dimensions of the tensor (ndims).
+///   [14+]: Sizes of the dimensions.
+/// 
 ///
-/// - Parameter input: Input tensor, non-Reference type, float or double.
+/// - Parameter input: Input tensor, non-Reference type.
 ///
 /// - Attrs:
 ///     - tensor_name: Name of the input tensor.
 ///     - debug_urls: List of URLs to debug targets, e.g.,
-///         file:///foo/tfdbg_dump, grpc:://localhost:11011
+///           file:///foo/tfdbg_dump, grpc:://localhost:11011.
 ///     - lower_bound: (float) The lower bound <= which values will be included in the
-///         generalized -inf count. Default: -inf.
+///           generalized -inf count. Default: -inf.
 ///     - upper_bound: (float) The upper bound >= which values will be included in the
-///         generalized +inf count. Default: +inf.
+///           generalized +inf count. Default: +inf.
 ///     - mute_if_healthy: (bool) Do not send data to the debug URLs unless at least one
-///         of elements [2], [3] and [7] (i.e., the nan count and the generalized -inf and
-///         inf counts) is non-zero.
+///           of elements [2], [3] and [7] (i.e., the nan count and the generalized -inf and
+///           inf counts) is non-zero.
 ///     - gated_grpc: Whether this op will be gated. If any of the debug_urls of this
-///         debug node is of the grpc:// scheme, when the value of this attribute is set
-///         to True, the data will not actually be sent via the grpc stream unless this
-///         debug op has been enabled at the debug_url. If all of the debug_urls of this
-///         debug node are of the grpc:// scheme and the debug op is enabled at none of
-///         them, the output will be an empty Tensor.
-///
-/// - Output output: A double tensor of shape [14 + nDimensions], where nDimensions is the
-///       the number of dimensions of the tensor's shape. The elements of output are:
-///       [0]: is initialized (1.0) or not (0.0).
-///       [1]: total number of elements
-///       [2]: NaN element count
-///       [3]: generalized -inf count: elements <= lower_bound. lower_bound is -inf by
-///         default.
-///       [4]: negative element count (excluding -inf), if lower_bound is the default
-///         -inf. Otherwise, this is the count of elements > lower_bound and < 0.
-///       [5]: zero element count
-///       [6]: positive element count (excluding +inf), if upper_bound is the default
-///         -inf. Otherwise, this is the count of elements < upper_bound and > 0.
-///       [7]: generalized +inf count, elements >= upper_bound. upper_bound is +inf by
-///         default.
-///     Output elements [1:8] are all zero, if the tensor is uninitialized.
-///       [8]: minimum of all non-inf and non-NaN elements.
-///            If uninitialized or no such element exists: +inf.
-///       [9]: maximum of all non-inf and non-NaN elements.
-///            If uninitialized or no such element exists: -inf.
-///       [10]: mean of all non-inf and non-NaN elements.
-///             If uninitialized or no such element exists: NaN.
-///       [11]: variance of all non-inf and non-NaN elements.
-///             If uninitialized or no such element exists: NaN.
-///       [12]: Data type of the tensor encoded as an enum integer. See the DataType
-///             proto for more details.
-///       [13]: Number of dimensions of the tensor (ndims).
-///       [14+]: Sizes of the dimensions.
+///           debug node is of the grpc:// scheme, when the value of this attribute is set
+///           to True, the data will not actually be sent via the grpc stream unless this
+///           debug op has been enabled at the debug_url. If all of the debug_urls of this
+///           debug node are of the grpc:// scheme and the debug op is enabled at none of
+///           them, the output will be an empty Tensor.
 @inlinable @inline(__always)
 public static func debugNumericSummary<T: TensorFlowScalar>(
     _ input: Tensor<T>,
@@ -6620,25 +7834,99 @@ public static func debugNumericSummary<T: TensorFlowScalar>(
     return op.execute(Int(1))
 }
 
+///
+/// - Parameter input: Input tensor, to be summarized by the op.
+///
+/// - Attrs:
+///     - tensor_debug_mode: Tensor debug mode: the mode in which the input tensor is summarized
+///           by the op. See the TensorDebugMode enum in
+///           tensorflow/core/protobuf/debug_event.proto for details.
+///         
+///         Supported values:
+///           2 (CURT_HEALTH): Output a float32/64 tensor of shape [2]. The 1st
+///           element is the tensor_id, if provided, and -1 otherwise. The 2nd
+///           element is a bit which is set to 1 if the input tensor has an
+///           infinity or nan value, or zero otherwise.
+///         
+///           3 (CONCISE_HEALTH): Ouput a float32/64 tensor of shape [5]. The 1st
+///           element is the tensor_id, if provided, and -1 otherwise. The
+///           remaining four slots are the total number of elements, -infs,
+///           +infs, and nans in the input tensor respectively.
+///         
+///           4 (FULL_HEALTH): Output a float32/64 tensor of shape [11]. The 1st
+///           element is the tensor_id, if provided, and -1 otherwise. The 2nd
+///           element is the device_id, if provided, and -1 otherwise. The 3rd
+///           element holds the datatype value of the input tensor as according
+///           to the enumerated type in tensorflow/core/framework/types.proto.
+///           The remaining elements hold the total number of elements, -infs,
+///           +infs, nans, negative finite numbers, zeros, and positive finite
+///           numbers in the input tensor respectively.
+///         
+///           5 (SHAPE): Output a float32/64 tensor of shape [10]. The 1st
+///           element is the tensor_id, if provided, and -1 otherwise. The 2nd
+///           element holds the datatype value of the input tensor as according
+///           to the enumerated type in tensorflow/core/framework/types.proto.
+///           The 3rd element holds the rank of the tensor. The 4th element holds
+///           the number of elements within the tensor. Finally the remaining 6
+///           elements hold the shape of the tensor. If the rank of the tensor
+///           is lower than 6, the shape is right padded with zeros. If the rank
+///           is greater than 6, the head of the shape is truncated.
+///         
+///           6 (FULL_NUMERICS): Output a float32/64 tensor of shape [22]. The 1st
+///           element is the tensor_id, if provided, and -1 otherwise. The 2nd
+///           element is the device_id, if provided, and -1 otherwise. The 3rd
+///           element holds the datatype value of the input tensor as according
+///           to the enumerated type in tensorflow/core/framework/types.proto.
+///           The 4th element holds the rank of the tensor. The 5th to 11th
+///           elements hold the shape of the tensor. If the rank of the tensor
+///           is lower than 6, the shape is right padded with zeros. If the rank
+///           is greater than 6, the head of the shape is truncated. The 12th to
+///           18th elements hold the number of elements, -infs, +infs, nans,
+///           denormal floats, negative finite numbers, zeros, and positive
+///           finite numbers in the input tensor respectively. The final four
+///           elements hold the min value, max value, mean, and variance of the
+///           input tensor.
+///         
+///           8 (REDUCE_INF_NAN_THREE_SLOTS): Output a float32/64 tensor of shape
+///           [3]. The 1st element is -inf if any elements of the input tensor
+///           is -inf, or zero otherwise. The 2nd element is +inf if any elements
+///           of the input tensor is +inf, or zero otherwise.  The 3rd element is
+///           nan if any element of the input tensor is nan, or zero otherwise.
+///     - tensor_id: Optional. An integer identifier for the tensor being summarized by this op.
+@inlinable @inline(__always)
+public static func debugNumericSummaryV2<T: TensorFlowScalar>(
+    _ input: Tensor<T>,
+    tensorDebugMode: Int64 = -1,
+    tensorId: Int64 = -1
+) -> Tensor<Float> {
+  let nOutputs = Int(1)
+    let op = makeOp("DebugNumericSummaryV2", nOutputs)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.updateAttribute("tensor_debug_mode", tensorDebugMode)
+    op.updateAttribute("tensor_id", tensorId)
+    op.addInput(input)
+    return op.execute(Int(1))
+}
+
 /// Decode and Crop a JPEG-encoded image to a uint8 tensor.
 ///
 /// The attr `channels` indicates the desired number of color channels for the
 /// decoded image.
-///
+/// 
 /// Accepted values are:
-///
+/// 
 /// *   0: Use the number of channels in the JPEG-encoded image.
 /// *   1: output a grayscale image.
 /// *   3: output an RGB image.
-///
+/// 
 /// If needed, the JPEG-encoded image is transformed to match the requested number
 /// of color channels.
-///
+/// 
 /// The attr `ratio` allows downscaling the image by an integer factor during
 /// decoding.  Allowed values are: 1, 2, 4, and 8.  This is much faster than
 /// downscaling the image later.
-///
-///
+/// 
+/// 
 /// It is equivalent to a combination of decode and crop, but much faster by only
 /// decoding partial jpeg image.
 ///
@@ -6708,9 +7996,9 @@ public static func decodeBase64(
 ///
 /// The attr `channels` indicates the desired number of color channels for the
 /// decoded image.
-///
+/// 
 /// Accepted values are:
-///
+/// 
 /// *   0: Use the number of channels in the BMP-encoded image.
 /// *   3: output an RGB image.
 /// *   4: output an RGBA image.
@@ -6776,7 +8064,7 @@ public static func decodeCSV<OutType: TensorArrayProtocol>(
 ///
 /// This op decompresses each element of the `bytes` input `Tensor`, which
 /// is assumed to be compressed using the given `compression_type`.
-///
+/// 
 /// The `output` is a string `Tensor` of the same shape as `bytes`,
 /// each element containing the decompressed data from the corresponding
 /// element in `bytes`.
@@ -6805,9 +8093,9 @@ public static func decodeCompressed(
 /// GIF images with frame or transparency compression are not supported.
 /// On Linux and MacOS systems, convert animated GIFs from compressed to
 /// uncompressed by running:
-///
+/// 
 ///     convert $src.gif -coalesce $dst.gif
-///
+/// 
 /// This op also supports decoding JPEGs and PNGs, though it is cleaner to use
 /// `tf.image.decode_image`.
 ///
@@ -6852,21 +8140,21 @@ public static func decodeJSONExample(
 ///
 /// The attr `channels` indicates the desired number of color channels for the
 /// decoded image.
-///
+/// 
 /// Accepted values are:
-///
+/// 
 /// *   0: Use the number of channels in the JPEG-encoded image.
 /// *   1: output a grayscale image.
 /// *   3: output an RGB image.
-///
+/// 
 /// If needed, the JPEG-encoded image is transformed to match the requested number
 /// of color channels.
-///
+/// 
 /// The attr `ratio` allows downscaling the image by an integer factor during
 /// decoding.  Allowed values are: 1, 2, 4, and 8.  This is much faster than
 /// downscaling the image later.
-///
-///
+/// 
+/// 
 /// This op also supports decoding PNGs and non-animated GIFs since the interface is
 /// the same, though it is cleaner to use `tf.image.decode_image`.
 ///
@@ -6910,6 +8198,19 @@ public static func decodeJpeg(
     return op.execute(Int(1))
 }
 
+/// Reinterpret the bytes of a string as a vector of numbers.
+///
+/// - Parameters:
+///     - input_bytes: Tensor of string to be decoded.
+///     - fixed_length: Length in bytes for each element of the decoded output. Must be a multiple
+///         of the size of the output type.
+///
+/// - Attr little_endian: Whether the input `input_bytes` is in little-endian order. Ignored for
+///     `out_type` values that are stored in a single byte, like `uint8`
+///
+/// - Output output: A Tensor with one more dimension than the input `bytes`. The added dimension
+///     will have size equal to the length of the elements of `bytes` divided by the
+///     number of bytes to represent `out_type`.
 @inlinable @inline(__always)
 public static func decodePaddedRaw<OutType: TensorFlowNumeric>(
     inputBytes: StringTensor,
@@ -6929,17 +8230,17 @@ public static func decodePaddedRaw<OutType: TensorFlowNumeric>(
 ///
 /// The attr `channels` indicates the desired number of color channels for the
 /// decoded image.
-///
+/// 
 /// Accepted values are:
-///
+/// 
 /// *   0: Use the number of channels in the PNG-encoded image.
 /// *   1: output a grayscale image.
 /// *   3: output an RGB image.
 /// *   4: output an RGBA image.
-///
+/// 
 /// If needed, the PNG-encoded image is transformed to match the requested number
 /// of color channels.
-///
+/// 
 /// This op also supports decoding JPEGs and non-animated GIFs since the interface
 /// is the same, though it is cleaner to use `tf.image.decode_image`.
 ///
@@ -6966,52 +8267,50 @@ public static func decodePng<Dtype: UnsignedInteger & TensorFlowScalar>(
 /// The `decode_proto` op extracts fields from a serialized protocol buffers
 /// message into tensors.  The fields in `field_names` are decoded and converted
 /// to the corresponding `output_types` if possible.
-///
-/// A `message_type` name must be provided to give context for the field
-/// names. The actual message descriptor can be looked up either in the
-/// linked-in descriptor pool or a filename provided by the caller using
-/// the `descriptor_source` attribute.
-///
-/// Each output tensor is a dense tensor. This means that it is padded to
-/// hold the largest number of repeated elements seen in the input
-/// minibatch. (The shape is also padded by one to prevent zero-sized
-/// dimensions). The actual repeat counts for each example in the
-/// minibatch can be found in the `sizes` output. In many cases the output
-/// of `decode_proto` is fed immediately into tf.squeeze if missing values
-/// are not a concern. When using tf.squeeze, always pass the squeeze
-/// dimension explicitly to avoid surprises.
-///
-/// For the most part, the mapping between Proto field types and
-/// TensorFlow dtypes is straightforward. However, there are a few
-/// special cases:
-///
+/// 
+/// A `message_type` name must be provided to give context for the field names.
+/// The actual message descriptor can be looked up either in the linked-in
+/// descriptor pool or a filename provided by the caller using the
+/// `descriptor_source` attribute.
+/// 
+/// Each output tensor is a dense tensor. This means that it is padded to hold
+/// the largest number of repeated elements seen in the input minibatch. (The
+/// shape is also padded by one to prevent zero-sized dimensions). The actual
+/// repeat counts for each example in the minibatch can be found in the `sizes`
+/// output. In many cases the output of `decode_proto` is fed immediately into
+/// tf.squeeze if missing values are not a concern. When using tf.squeeze, always
+/// pass the squeeze dimension explicitly to avoid surprises.
+/// 
+/// For the most part, the mapping between Proto field types and TensorFlow dtypes
+/// is straightforward. However, there are a few special cases:
+/// 
 /// - A proto field that contains a submessage or group can only be converted
-/// to `DT_STRING` (the serialized submessage). This is to reduce the
-/// complexity of the API. The resulting string can be used as input
-/// to another instance of the decode_proto op.
-///
+/// to `DT_STRING` (the serialized submessage). This is to reduce the complexity
+/// of the API. The resulting string can be used as input to another instance of
+/// the decode_proto op.
+/// 
 /// - TensorFlow lacks support for unsigned integers. The ops represent uint64
-/// types as a `DT_INT64` with the same twos-complement bit pattern
-/// (the obvious way). Unsigned int32 values can be represented exactly by
-/// specifying type `DT_INT64`, or using twos-complement if the caller
-/// specifies `DT_INT32` in the `output_types` attribute.
-///
-/// The `descriptor_source` attribute selects a source of protocol
-/// descriptors to consult when looking up `message_type`. This may be a
-/// filename containing a serialized `FileDescriptorSet` message,
-/// or the special value `local://`, in which case only descriptors linked
-/// into the code will be searched; the filename can be on any filesystem
-/// accessible to TensorFlow.
-///
-/// You can build a `descriptor_source` file using the `--descriptor_set_out`
-/// and `--include_imports` options to the protocol compiler `protoc`.
-///
-/// The `local://` database only covers descriptors linked into the
-/// code via C++ libraries, not Python imports. You can link in a proto descriptor
-/// by creating a cc_library target with alwayslink=1.
-///
+/// types as a `DT_INT64` with the same twos-complement bit pattern (the obvious
+/// way). Unsigned int32 values can be represented exactly by specifying type
+/// `DT_INT64`, or using twos-complement if the caller specifies `DT_INT32` in
+/// the `output_types` attribute.
+/// 
 /// Both binary and text proto serializations are supported, and can be
 /// chosen using the `format` attribute.
+/// 
+/// The `descriptor_source` attribute selects the source of protocol
+/// descriptors to consult when looking up `message_type`. This may be:
+/// 
+/// - An empty string  or "local://", in which case protocol descriptors are
+/// created for C++ (not Python) proto definitions linked to the binary.
+/// 
+/// - A file, in which case protocol descriptors are created from the file,
+/// which is expected to contain a `FileDescriptorSet` serialized as a string.
+/// NOTE: You can build a `descriptor_source` file using the `--descriptor_set_out`
+/// and `--include_imports` options to the protocol compiler `protoc`.
+/// 
+/// - A "bytes://<bytes>", in which protocol descriptors are created from `<bytes>`,
+/// which is expected to be a `FileDescriptorSet` serialized as a string.
 ///
 /// - Parameter bytes: Tensor of serialized protos with shape `batch_shape`.
 ///
@@ -7080,15 +8379,15 @@ public static func decodeRaw<OutType: TensorFlowScalar>(
 /// Decode a 16-bit PCM WAV file to a float tensor.
 ///
 /// The -32768 to 32767 signed 16-bit values will be scaled to -1.0 to 1.0 in float.
-///
+/// 
 /// When desired_channels is set, if the input contains fewer channels than this
 /// then the last channel will be duplicated to give the requested number, else if
 /// the input has more channels than requested then the additional channels will be
 /// ignored.
-///
+/// 
 /// If desired_samples is set, then the audio will be cropped or padded with zeroes
 /// to the requested length.
-///
+/// 
 /// The first output contains a Tensor with the content of the audio samples. The
 /// lowest dimension will be the number of channels, and the second will be the
 /// number of samples. For example, a ten-sample-long stereo WAV file should give an
@@ -7151,6 +8450,51 @@ public static func deleteIterator(
     op.execute()
 }
 
+@inlinable @inline(__always)
+public static func deleteMemoryCache(
+    handle: ResourceHandle,
+    deleter: VariantHandle
+) {
+  let nOutputs = 0
+    let op = makeOp("DeleteMemoryCache", nOutputs)
+    op.addInput(handle)
+    op.addInput(deleter)
+    op.execute()
+}
+
+/// A container for an iterator resource.
+///
+/// - Parameters:
+///     - multi_device_iterator: A handle to the multi device iterator to delete.
+///     - iterators: A list of iterator handles (unused). This is added so that automatic control dependencies get added during function tracing that ensure this op runs after all the dependent iterators are deleted.
+///     - deleter: A variant deleter.
+@inlinable @inline(__always)
+public static func deleteMultiDeviceIterator(
+    multiDeviceIterator: ResourceHandle,
+    iterators: [ResourceHandle],
+    deleter: VariantHandle
+) {
+  let nOutputs = 0
+    let op = makeOp("DeleteMultiDeviceIterator", nOutputs)
+    op.updateAttribute("N", iterators.count)
+    op.addInput(multiDeviceIterator)
+    op.addInputList(iterators)
+    op.addInput(deleter)
+    op.execute()
+}
+
+@inlinable @inline(__always)
+public static func deleteRandomSeedGenerator(
+    handle: ResourceHandle,
+    deleter: VariantHandle
+) {
+  let nOutputs = 0
+    let op = makeOp("DeleteRandomSeedGenerator", nOutputs)
+    op.addInput(handle)
+    op.addInput(deleter)
+    op.execute()
+}
+
 /// Delete the tensor specified by its handle in the session.
 ///
 /// - Parameter handle: The handle for a tensor stored in the session state.
@@ -7164,10 +8508,30 @@ public static func deleteSessionTensor(
     op.execute()
 }
 
+/// Converts a dense tensor to a (possibly batched) CSRSparseMatrix.
+///
+/// - Parameters:
+///     - dense_input: A Dense tensor.
+///     - indices: Indices of nonzero elements.
+///
+/// - Output sparse_output: A (possibly batched) CSRSparseMatrix.
+@inlinable @inline(__always)
+public static func denseToCSRSparseMatrix<T: FloatingPoint & TensorFlowScalar>(
+    denseInput: Tensor<T>,
+    indices: Tensor<Int64>
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("DenseToCSRSparseMatrix", nOutputs)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.addInput(denseInput)
+    op.addInput(indices)
+    return op.execute(Int(1))
+}
+
 /// Applies set operation along last dimension of 2 `Tensor` inputs.
 ///
 /// See SetOperationOp::SetOperationFromContext for values of `set_operation`.
-///
+/// 
 /// Output `result` is a `SparseTensor` represented by `result_indices`,
 /// `result_values`, and `result_shape`. For `set1` and `set2` ranked `n`, this
 /// has rank `n` and the same 1st `n-1` dimensions as `set1` and `set2`. The `nth`
@@ -7206,7 +8570,7 @@ public static func denseToDenseSetOperation<T: TensorFlowInteger>(
 /// Applies set operation along last dimension of 2 `Tensor` inputs.
 ///
 /// See SetOperationOp::SetOperationFromContext for values of `set_operation`.
-///
+/// 
 /// Output `result` is a `SparseTensor` represented by `result_indices`,
 /// `result_values`, and `result_shape`. For `set1` and `set2` ranked `n`, this
 /// has rank `n` and the same 1st `n-1` dimensions as `set1` and `set2`. The `nth`
@@ -7242,18 +8606,45 @@ public static func denseToDenseSetOperation(
     return op.execute(Int(1), Int(1), Int(1))
 }
 
+/// Creates a dataset that batches input elements into a SparseTensor.
+///
+/// - Parameters:
+///     - input_dataset: A handle to an input dataset. Must have a single component.
+///     - batch_size: A scalar representing the number of elements to accumulate in a
+///         batch.
+///     - row_shape: A vector representing the dense shape of each row in the produced
+///         SparseTensor. The shape may be partially specified, using `-1` to indicate
+///         that a particular dimension should use the maximum size of all batch elements.
+@inlinable @inline(__always)
+public static func denseToSparseBatchDataset(
+    inputDataset: VariantHandle,
+    batchSize: Tensor<Int64>,
+    rowShape: Tensor<Int64>,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?]
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("DenseToSparseBatchDataset", nOutputs)
+    op.updateAttribute("output_types", outputTypes)
+    op.updateAttribute("output_shapes", outputShapes)
+    op.addInput(inputDataset)
+    op.addInput(batchSize)
+    op.addInput(rowShape)
+    return op.execute(Int(1))
+}
+
 /// Applies set operation along last dimension of `Tensor` and `SparseTensor`.
 ///
 /// See SetOperationOp::SetOperationFromContext for values of `set_operation`.
-///
+/// 
 /// Input `set2` is a `SparseTensor` represented by `set2_indices`, `set2_values`,
 /// and `set2_shape`. For `set2` ranked `n`, 1st `n-1` dimensions must be the same
 /// as `set1`. Dimension `n` contains values in a set, duplicates are allowed but
 /// ignored.
-///
+/// 
 /// If `validate_indices` is `True`, this op validates the order and range of `set2`
 /// indices.
-///
+/// 
 /// Output `result` is a `SparseTensor` represented by `result_indices`,
 /// `result_values`, and `result_shape`. For `set1` and `set2` ranked `n`, this
 /// has rank `n` and the same 1st `n-1` dimensions as `set1` and `set2`. The `nth`
@@ -7301,15 +8692,15 @@ public static func denseToSparseSetOperation<T: TensorFlowInteger>(
 /// Applies set operation along last dimension of `Tensor` and `SparseTensor`.
 ///
 /// See SetOperationOp::SetOperationFromContext for values of `set_operation`.
-///
+/// 
 /// Input `set2` is a `SparseTensor` represented by `set2_indices`, `set2_values`,
 /// and `set2_shape`. For `set2` ranked `n`, 1st `n-1` dimensions must be the same
 /// as `set1`. Dimension `n` contains values in a set, duplicates are allowed but
 /// ignored.
-///
+/// 
 /// If `validate_indices` is `True`, this op validates the order and range of `set2`
 /// indices.
-///
+/// 
 /// Output `result` is a `SparseTensor` represented by `result_indices`,
 /// `result_values`, and `result_shape`. For `set1` and `set2` ranked `n`, this
 /// has rank `n` and the same 1st `n-1` dimensions as `set1` and `set2`. The `nth`
@@ -7361,7 +8752,7 @@ public static func denseToSparseSetOperation(
 /// this op outputs a copy of the input tensor where values from the `depth`
 /// dimension are moved in spatial blocks to the `height` and `width` dimensions.
 /// The attr `block_size` indicates the input block size and how the data is moved.
-///
+/// 
 ///   * Chunks of data of size `block_size * block_size` from depth are rearranged
 ///     into non-overlapping blocks of size `block_size x block_size`
 ///   * The width the output tensor is `input_depth * block_size`, whereas the
@@ -7370,14 +8761,14 @@ public static func denseToSparseSetOperation(
 ///     by the high order component of the input channel index.
 ///   * The depth of the input tensor must be divisible by
 ///     `block_size * block_size`.
-///
+/// 
 /// The `data_format` attr specifies the layout of the input and output tensors
 /// with the following options:
 ///   "NHWC": `[ batch, height, width, channels ]`
 ///   "NCHW": `[ batch, channels, height, width ]`
 ///   "NCHW_VECT_C":
 ///       `qint8 [ batch, channels / 4, height, width, 4 ]`
-///
+/// 
 /// It is useful to consider the operation as transforming a 6-D Tensor.
 /// e.g. for data_format = NHWC,
 ///      Each element in the input tensor can be specified via 6 coordinates,
@@ -7387,63 +8778,63 @@ public static func denseToSparseSetOperation(
 ///                         within the output block, oC means output channels).
 ///      The output would be the input transposed to the following layout:
 ///      n,iY,bY,iX,bX,oC
-///
+/// 
 /// This operation is useful for resizing the activations between convolutions
 /// (but keeping all data), e.g. instead of pooling. It is also useful for training
 /// purely convolutional models.
-///
+/// 
 /// For example, given an input of shape `[1, 1, 1, 4]`, data_format = "NHWC" and
 /// block_size = 2:
-///
+/// 
 /// ```
 /// x = [[[[1, 2, 3, 4]]]]
-///
+/// 
 /// ```
-///
+/// 
 /// This operation will output a tensor of shape `[1, 2, 2, 1]`:
-///
+/// 
 /// ```
 ///    [[[[1], [2]],
 ///      [[3], [4]]]]
 /// ```
-///
+/// 
 /// Here, the input has a batch of 1 and each batch element has shape `[1, 1, 4]`,
 /// the corresponding output will have 2x2 elements and will have a depth of
 /// 1 channel (1 = `4 / (block_size * block_size)`).
 /// The output element shape is `[2, 2, 1]`.
-///
+/// 
 /// For an input tensor with larger depth, here of shape `[1, 1, 1, 12]`, e.g.
-///
+/// 
 /// ```
 /// x = [[[[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]]]]
 /// ```
-///
+/// 
 /// This operation, for block size of 2, will return the following tensor of shape
 /// `[1, 2, 2, 3]`
-///
+/// 
 /// ```
 ///    [[[[1, 2, 3], [4, 5, 6]],
 ///      [[7, 8, 9], [10, 11, 12]]]]
-///
+/// 
 /// ```
-///
+/// 
 /// Similarly, for the following input of shape `[1 2 2 4]`, and a block size of 2:
-///
+/// 
 /// ```
 /// x =  [[[[1, 2, 3, 4],
 ///        [5, 6, 7, 8]],
 ///       [[9, 10, 11, 12],
 ///        [13, 14, 15, 16]]]]
 /// ```
-///
+/// 
 /// the operator will return the following tensor of shape `[1 4 4 1]`:
-///
+/// 
 /// ```
 /// x = [[[ [1],   [2],  [5],  [6]],
 ///       [ [3],   [4],  [7],  [8]],
 ///       [ [9],  [10], [13],  [14]],
 ///       [ [11], [12], [15],  [16]]]]
-///
+/// 
 /// ```
 ///
 /// - Attr block_size: The size of the spatial block, same as in Space2Depth.
@@ -7451,7 +8842,7 @@ public static func denseToSparseSetOperation(
 public static func depthToSpace<T: TensorFlowScalar>(
     _ input: Tensor<T>,
     blockSize: Int64,
-    dataFormat: DataFormat4 = .nhwc
+    dataFormat: DataFormat5 = .nhwc
 ) -> Tensor<T> {
   let nOutputs = Int(1)
     let op = makeOp("DepthToSpace", nOutputs)
@@ -7471,7 +8862,7 @@ public static func depthToSpace<T: TensorFlowScalar>(
 /// a different filter to each input channel (expanding from 1 channel to
 /// `channel_multiplier` channels for each), then concatenates the results
 /// together. Thus, the output has `in_channels * channel_multiplier` channels.
-///
+/// 
 /// ```
 /// for k in 0..in_channels-1
 ///   for q in 0..channel_multiplier-1
@@ -7479,7 +8870,7 @@ public static func depthToSpace<T: TensorFlowScalar>(
 ///       sum_{di, dj} input[b, strides[1] * i + di, strides[2] * j + dj, k] *
 ///                         filter[di, dj, k, q]
 /// ```
-///
+/// 
 /// Must have `strides[0] = strides[3] = 1`.  For the most common case of the same
 /// horizontal and vertices strides, `strides = [1, stride, stride, 1]`.
 ///
@@ -7628,81 +9019,6 @@ public static func depthwiseConv2dNativeBackpropInput<T: FloatingPoint & TensorF
     return op.execute(Int(1))
 }
 
-/// Dequantize the 'input' tensor into a float Tensor.
-///
-/// [min_range, max_range] are scalar floats that specify the range for
-/// the 'input' data. The 'mode' attribute controls exactly which calculations are
-/// used to convert the float values to their quantized equivalents.
-///
-/// In 'MIN_COMBINED' mode, each value of the tensor will undergo the following:
-///
-/// ```
-/// if T == qint8: in[i] += (range(T) + 1)/ 2.0
-/// out[i] = min_range + (in[i]* (max_range - min_range) / range(T))
-/// ```
-/// here `range(T) = numeric_limits<T>::max() - numeric_limits<T>::min()`
-///
-/// *MIN_COMBINED Mode Example*
-///
-/// If the input comes from a QuantizedRelu6, the output type is
-/// quint8 (range of 0-255) but the possible range of QuantizedRelu6 is
-/// 0-6.  The min_range and max_range values are therefore 0.0 and 6.0.
-/// Dequantize on quint8 will take each value, cast to float, and multiply
-/// by 6 / 255.
-/// Note that if quantizedtype is qint8, the operation will additionally add
-/// each value by 128 prior to casting.
-///
-/// If the mode is 'MIN_FIRST', then this approach is used:
-///
-/// ```c++
-/// num_discrete_values = 1 << (# of bits in T)
-/// range_adjust = num_discrete_values / (num_discrete_values - 1)
-/// range = (range_max - range_min) * range_adjust
-/// range_scale = range / num_discrete_values
-/// const double offset_input = static_cast<double>(input) - lowest_quantized;
-/// result = range_min + ((input - numeric_limits<T>::min()) * range_scale)
-/// ```
-///
-/// *SCALED mode Example*
-///
-/// `SCALED` mode matches the quantization approach used in
-/// `QuantizeAndDequantize{V2|V3}`.
-///
-/// If the mode is `SCALED`, we do not use the full range of the output type,
-/// choosing to elide the lowest possible value for symmetry (e.g., output range is
-/// -127 to 127, not -128 to 127 for signed 8 bit quantization), so that 0.0 maps to
-/// 0.
-///
-/// We first find the range of values in our tensor. The
-/// range we use is always centered on 0, so we find m such that
-/// ```c++
-///   m = max(abs(input_min), abs(input_max))
-/// ```
-///
-/// Our input tensor range is then `[-m, m]`.
-///
-/// Next, we choose our fixed-point quantization buckets, `[min_fixed, max_fixed]`.
-/// If T is signed, this is
-/// ```
-///   num_bits = sizeof(T) * 8
-///   [min_fixed, max_fixed] =
-///       [-(1 << (num_bits - 1) - 1), (1 << (num_bits - 1)) - 1]
-/// ```
-///
-/// Otherwise, if T is unsigned, the fixed-point range is
-/// ```
-///   [min_fixed, max_fixed] = [0, (1 << num_bits) - 1]
-/// ```
-///
-/// From this we compute our scaling factor, s:
-/// ```c++
-///   s = (2 * m) / (max_fixed - min_fixed)
-/// ```
-///
-/// Now we can dequantize the elements of our tensor:
-/// ```c++
-/// result = input * s
-/// ```
 ///
 /// - Parameters:
 ///     - min_range: The minimum scalar value possibly produced for the input.
@@ -7712,12 +9028,16 @@ public static func dequantize<T: TensorFlowScalar>(
     _ input: Tensor<T>,
     minRange: Tensor<Float>,
     maxRange: Tensor<Float>,
-    mode: Mode = .minCombined
+    mode: Mode = .minCombined,
+    narrowRange: Bool = false,
+    axis: Int64 = -1
 ) -> Tensor<Float> {
   let nOutputs = Int(1)
     let op = makeOp("Dequantize", nOutputs)
     op.updateAttribute("T", T.tensorFlowDataType)
     op.updateAttribute("mode", mode.cName)
+    op.updateAttribute("narrow_range", narrowRange)
+    op.updateAttribute("axis", axis)
     op.addInput(input)
     op.addInput(minRange)
     op.addInput(maxRange)
@@ -7750,34 +9070,34 @@ public static func deserializeIterator(
 /// must all match.  When the final `SparseTensor` is created, it has rank one
 /// higher than the ranks of the incoming `SparseTensor` objects
 /// (they have been concatenated along a new row dimension).
-///
+/// 
 /// The output `SparseTensor` object's shape values for all dimensions but the
 /// first are the max across the input `SparseTensor` objects' shape values
 /// for the corresponding dimensions.  Its first shape value is `N`, the minibatch
 /// size.
-///
+/// 
 /// The input `SparseTensor` objects' indices are assumed ordered in
 /// standard lexicographic order.  If this is not the case, after this
 /// step run `SparseReorder` to restore index ordering.
-///
+/// 
 /// For example, if the serialized input is a `[2 x 3]` matrix representing two
 /// original `SparseTensor` objects:
-///
+/// 
 ///     index = [ 0]
 ///             [10]
 ///             [20]
 ///     values = [1, 2, 3]
 ///     shape = [50]
-///
+/// 
 /// and
-///
+/// 
 ///     index = [ 2]
 ///             [10]
 ///     values = [4, 5]
 ///     shape = [30]
-///
+/// 
 /// then the final deserialized `SparseTensor` will be:
-///
+/// 
 ///     index = [0  0]
 ///             [0 10]
 ///             [0 20]
@@ -7810,33 +9130,33 @@ public static func deserializeManySparse<Dtype: TensorFlowScalar>(
 /// created, its rank is the rank of the incoming `SparseTensor` objects plus N;
 /// the sparse tensors have been concatenated along new dimensions, one for each
 /// batch.
-///
+/// 
 /// The output `SparseTensor` object's shape values for the original dimensions
 /// are the max across the input `SparseTensor` objects' shape values for the
 /// corresponding dimensions. The new dimensions match the size of the batch.
-///
+/// 
 /// The input `SparseTensor` objects' indices are assumed ordered in
 /// standard lexicographic order.  If this is not the case, after this
 /// step run `SparseReorder` to restore index ordering.
-///
+/// 
 /// For example, if the serialized input is a `[2 x 3]` matrix representing two
 /// original `SparseTensor` objects:
-///
+/// 
 ///     index = [ 0]
 ///             [10]
 ///             [20]
 ///     values = [1, 2, 3]
 ///     shape = [50]
-///
+/// 
 /// and
-///
+/// 
 ///     index = [ 2]
 ///             [10]
 ///     values = [4, 5]
 ///     shape = [30]
-///
+/// 
 /// then the final deserialized `SparseTensor` will be:
-///
+/// 
 ///     index = [0  0]
 ///             [0 10]
 ///             [0 20]
@@ -7873,33 +9193,33 @@ public static func deserializeSparse<
 /// created, its rank is the rank of the incoming `SparseTensor` objects plus N;
 /// the sparse tensors have been concatenated along new dimensions, one for each
 /// batch.
-///
+/// 
 /// The output `SparseTensor` object's shape values for the original dimensions
 /// are the max across the input `SparseTensor` objects' shape values for the
 /// corresponding dimensions. The new dimensions match the size of the batch.
-///
+/// 
 /// The input `SparseTensor` objects' indices are assumed ordered in
 /// standard lexicographic order.  If this is not the case, after this
 /// step run `SparseReorder` to restore index ordering.
-///
+/// 
 /// For example, if the serialized input is a `[2 x 3]` matrix representing two
 /// original `SparseTensor` objects:
-///
+/// 
 ///     index = [ 0]
 ///             [10]
 ///             [20]
 ///     values = [1, 2, 3]
 ///     shape = [50]
-///
+/// 
 /// and
-///
+/// 
 ///     index = [ 2]
 ///             [10]
 ///     values = [4, 5]
 ///     shape = [30]
-///
+/// 
 /// then the final deserialized `SparseTensor` will be:
-///
+/// 
 ///     index = [0  0]
 ///             [0 10]
 ///             [0 20]
@@ -7958,14 +9278,14 @@ public static func devicePlacementOp(
 ///
 /// Given a `diagonal`, this operation returns a tensor with the `diagonal` and
 /// everything else padded with zeros. The diagonal is computed as follows:
-///
+/// 
 /// Assume `diagonal` has dimensions [D1,..., Dk], then the output is a tensor of
 /// rank 2k with dimensions [D1,..., Dk, D1,..., Dk] where:
-///
+/// 
 /// `output[i1,..., ik, i1,..., ik] = diagonal[i1, ..., ik]` and 0 everywhere else.
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// # 'diagonal' is [1, 2, 3, 4]
 /// tf.diag(diagonal) ==> [[1, 0, 0, 0]
@@ -7990,20 +9310,20 @@ public static func diag<T: TensorFlowNumeric>(
 ///
 /// This operation returns a tensor with the `diagonal` part
 /// of the `input`. The `diagonal` part is computed as follows:
-///
+/// 
 /// Assume `input` has dimensions `[D1,..., Dk, D1,..., Dk]`, then the output is a
 /// tensor of rank `k` with dimensions `[D1,..., Dk]` where:
-///
+/// 
 /// `diagonal[i1,..., ik] = input[i1, ..., ik, i1,..., ik]`.
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// # 'input' is [[1, 0, 0, 0]
 ///               [0, 2, 0, 0]
 ///               [0, 0, 3, 0]
 ///               [0, 0, 0, 4]]
-///
+/// 
 /// tf.diag_part(input) ==> [1, 2, 3, 4]
 /// ```
 ///
@@ -8044,20 +9364,20 @@ public static func digamma<T: FloatingPoint & TensorFlowScalar>(
 /// `[batch, out_height, out_width, depth]`. The spatial dimensions of the output
 /// tensor depend on the `padding` algorithm. We currently only support the default
 /// "NHWC" `data_format`.
-///
+/// 
 /// In detail, the grayscale morphological 2-D dilation is the max-sum correlation
 /// (for consistency with `conv2d`, we use unmirrored filters):
-///
+/// 
 ///     output[b, y, x, c] =
 ///        max_{dy, dx} input[b,
 ///                           strides[1] * y + rates[1] * dy,
 ///                           strides[2] * x + rates[2] * dx,
 ///                           c] +
 ///                     filter[dy, dx, c]
-///
+/// 
 /// Max-pooling is a special case when the filter has size equal to the pooling
 /// kernel size and contains all zeros.
-///
+/// 
 /// Note on duality: The dilation of `input` by the `filter` is equal to the
 /// negation of the erosion of `-input` by the reflected `filter`.
 ///
@@ -8164,6 +9484,30 @@ public static func dilation2DBackpropInput<T: TensorFlowNumeric>(
     return op.execute(Int(1))
 }
 
+/// A substitute for `InterleaveDataset` on a fixed list of `N` datasets.
+///
+/// - Parameters:
+///     - selector_input_dataset: A dataset of scalar `DT_INT64` elements that determines which of the
+///         `N` data inputs should produce the next output element.
+///     - data_input_datasets: `N` datasets with the same type that will be interleaved according to
+///         the values of `selector_input_dataset`.
+@inlinable @inline(__always)
+public static func directedInterleaveDataset(
+    selectorInputDataset: VariantHandle,
+    dataInputDatasets: [VariantHandle],
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?]
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("DirectedInterleaveDataset", nOutputs)
+    op.updateAttribute("output_types", outputTypes)
+    op.updateAttribute("output_shapes", outputShapes)
+    op.updateAttribute("N", dataInputDatasets.count)
+    op.addInput(selectorInputDataset)
+    op.addInputList(dataInputDatasets)
+    return op.execute(Int(1))
+}
+
 /// Returns x / y element-wise.
 ///
 /// *NOTE*: `Div` supports broadcasting. More about broadcasting
@@ -8183,7 +9527,7 @@ public static func div<T: TensorFlowNumeric>(
 
 /// Returns 0 if the denominator is zero.
 ///
-///
+/// 
 /// *NOTE*: `DivNoNan` supports broadcasting. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
 @inlinable @inline(__always)
@@ -8206,11 +9550,11 @@ public static func divNoNan<T: FloatingPoint & TensorFlowScalar>(
 /// bounding box in `boxes` are encoded as `[y_min, x_min, y_max, x_max]`. The
 /// bounding box coordinates are floats in `[0.0, 1.0]` relative to the width and
 /// height of the underlying image.
-///
+/// 
 /// For example, if an image is 100 x 200 pixels (height x width) and the bounding
 /// box is `[0.1, 0.2, 0.5, 0.9]`, the upper-left and bottom-right coordinates of
 /// the bounding box will be `(40, 10)` to `(180, 50)` (in (x,y) coordinates).
-///
+/// 
 /// Parts of the bounding box may fall outside the image.
 ///
 /// - Parameters:
@@ -8240,11 +9584,11 @@ public static func drawBoundingBoxes<T: FloatingPoint & TensorFlowScalar>(
 /// bounding box in `boxes` are encoded as `[y_min, x_min, y_max, x_max]`. The
 /// bounding box coordinates are floats in `[0.0, 1.0]` relative to the width and
 /// height of the underlying image.
-///
+/// 
 /// For example, if an image is 100 x 200 pixels (height x width) and the bounding
 /// box is `[0.1, 0.2, 0.5, 0.9]`, the upper-left and bottom-right coordinates of
 /// the bounding box will be `(40, 10)` to `(100, 50)` (in (x,y) coordinates).
-///
+/// 
 /// Parts of the bounding box may fall outside the image.
 ///
 /// - Parameters:
@@ -8277,17 +9621,17 @@ public static func drawBoundingBoxesV2<T: FloatingPoint & TensorFlowScalar>(
 /// are placed in `outputs[i]` in lexicographic order of `js`, and the first
 /// dimension of `outputs[i]` is the number of entries in `partitions` equal to `i`.
 /// In detail,
-///
+/// 
 /// ```python
 ///     outputs[i].shape = [sum(partitions == i)] + data.shape[partitions.ndim:]
-///
+/// 
 ///     outputs[i] = pack([data[js, ...] for js if partitions[js] == i])
 /// ```
-///
+/// 
 /// `data.shape` must start with `partitions.shape`.
-///
+/// 
 /// For example:
-///
+/// 
 /// ```python
 ///     # Scalar partitions.
 ///     partitions = 1
@@ -8295,7 +9639,7 @@ public static func drawBoundingBoxesV2<T: FloatingPoint & TensorFlowScalar>(
 ///     data = [10, 20]
 ///     outputs[0] = []  # Empty with shape [0, 2]
 ///     outputs[1] = [[10, 20]]
-///
+/// 
 ///     # Vector partitions.
 ///     partitions = [0, 0, 1, 1, 0]
 ///     num_partitions = 2
@@ -8303,9 +9647,9 @@ public static func drawBoundingBoxesV2<T: FloatingPoint & TensorFlowScalar>(
 ///     outputs[0] = [10, 20, 50]
 ///     outputs[1] = [30, 40]
 /// ```
-///
+/// 
 /// See `dynamic_stitch` for an example on how to merge partitions back.
-///
+/// 
 /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
 /// <img style="width:100%" src="https://www.tensorflow.org/images/DynamicPartition.png" alt>
 /// </div>
@@ -8331,35 +9675,35 @@ public static func dynamicPartition<T: TensorFlowScalar>(
 /// Interleave the values from the `data` tensors into a single tensor.
 ///
 /// Builds a merged tensor such that
-///
+/// 
 /// ```python
 ///     merged[indices[m][i, ..., j], ...] = data[m][i, ..., j, ...]
 /// ```
-///
+/// 
 /// For example, if each `indices[m]` is scalar or vector, we have
-///
+/// 
 /// ```python
 ///     # Scalar indices:
 ///     merged[indices[m], ...] = data[m][...]
-///
+/// 
 ///     # Vector indices:
 ///     merged[indices[m][i], ...] = data[m][i, ...]
 /// ```
-///
+/// 
 /// Each `data[i].shape` must start with the corresponding `indices[i].shape`,
 /// and the rest of `data[i].shape` must be constant w.r.t. `i`.  That is, we
 /// must have `data[i].shape = indices[i].shape + constant`.  In terms of this
 /// `constant`, the output shape is
-///
+/// 
 ///     merged.shape = [max(indices)] + constant
-///
+/// 
 /// Values are merged in order, so if an index appears in both `indices[m][i]` and
 /// `indices[n][j]` for `(m,i) < (n,j)` the slice `data[n][j]` will appear in the
 /// merged result. If you do not need this guarantee, ParallelDynamicStitch might
 /// perform better on some devices.
-///
+/// 
 /// For example:
-///
+/// 
 /// ```python
 ///     indices[0] = 6
 ///     indices[1] = [4, 1]
@@ -8370,10 +9714,10 @@ public static func dynamicPartition<T: TensorFlowScalar>(
 ///     merged = [[1, 2], [11, 12], [21, 22], [31, 32], [41, 42],
 ///               [51, 52], [61, 62]]
 /// ```
-///
+/// 
 /// This method can be used to merge partitions created by `dynamic_partition`
 /// as illustrated on the following example:
-///
+/// 
 /// ```python
 ///     # Apply function (increments x_i) on elements for which a certain condition
 ///     # apply (x_i != -1 in this example).
@@ -8388,7 +9732,7 @@ public static func dynamicPartition<T: TensorFlowScalar>(
 ///     # Here x=[1.1, -1., 6.2, 5.3, -1, 8.4], the -1. values remain
 ///     # unchanged.
 /// ```
-///
+/// 
 /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
 /// <img style="width:100%" src="https://www.tensorflow.org/images/DynamicStitch.png" alt>
 /// </div>
@@ -8416,11 +9760,13 @@ public static func eagerPyFunc<
     Tout: TensorGroup
 >(
     _ input: Tin,
-    token: String
+    token: String,
+    isAsync: Bool = false
 ) -> Tout {
   let nOutputs = Int(Tout._typeList.count)
     let op = makeOp("EagerPyFunc", nOutputs)
     op.updateAttribute("token", token)
+    op.updateAttribute("is_async", isAsync)
     op.updateAttribute("Tin", input._typeList)
     op.updateAttribute("Tout", Tout._typeList)
     op.addInputList(input)
@@ -8433,7 +9779,7 @@ public static func eagerPyFunc<
 ///   (hypothesis_indices, hypothesis_values, hypothesis_shape)
 /// and
 ///   (truth_indices, truth_values, truth_shape).
-///
+/// 
 /// The inputs are:
 ///
 /// - Parameters:
@@ -8450,13 +9796,13 @@ public static func eagerPyFunc<
 ///     - truth_shape: truth indices, vector.
 ///
 /// - Attr normalize: boolean (if true, edit distances are normalized by length of truth).
-///
+///     
 ///     The output is:
 ///
 /// - Output output: A dense float tensor with rank R - 1.
-///
+///     
 ///     For the example input:
-///
+///     
 ///         // hypothesis represents a 2x1 matrix with variable-length values:
 ///         //   (0,0) = ["a"]
 ///         //   (1,0) = ["b"]
@@ -8464,7 +9810,7 @@ public static func eagerPyFunc<
 ///                               [1, 0, 0]]
 ///         hypothesis_values = ["a", "b"]
 ///         hypothesis_shape = [2, 1, 1]
-///
+///     
 ///         // truth represents a 2x2 matrix with variable-length values:
 ///         //   (0,0) = []
 ///         //   (0,1) = ["a"]
@@ -8477,9 +9823,9 @@ public static func eagerPyFunc<
 ///         truth_values = ["a", "b", "c", "a"]
 ///         truth_shape = [2, 2, 2]
 ///         normalize = true
-///
+///     
 ///     The output will be:
-///
+///     
 ///         // output is a 2x2 matrix with edit distances normalized by truth lengths.
 ///         output = [[inf, 1.0],  // (0,0): no truth, (0,1): no hypothesis
 ///                   [0.5, 1.0]]  // (1,0): addition, (1,1): no hypothesis
@@ -8503,6 +9849,143 @@ public static func editDistance<T: TensorFlowScalar>(
     op.addInput(truthIndices)
     op.addInput(truthValues)
     op.addInput(truthShape)
+    return op.execute(Int(1))
+}
+
+/// Computes the eigen decomposition of one or more square matrices.
+///
+/// Computes the eigenvalues and (optionally) right eigenvectors of each inner matrix in
+/// `input` such that `input[..., :, :] = v[..., :, :] * diag(e[..., :])`. The eigenvalues
+/// are sorted in non-decreasing order.
+/// 
+/// ```python
+/// # a is a tensor.
+/// # e is a tensor of eigenvalues.
+/// # v is a tensor of eigenvectors.
+/// e, v = eig(a)
+/// e = eig(a, compute_v=False)
+/// ```
+///
+/// - Parameter input: `Tensor` input of shape `[N, N]`.
+///
+/// - Attr compute_v: If `True` then eigenvectors will be computed and returned in `v`.
+///     Otherwise, only the eigenvalues will be computed.
+///
+/// - Outputs:
+///     - e: Eigenvalues. Shape is `[N]`.
+///     - v: Eigenvectors. Shape is `[N, N]`.
+@inlinable @inline(__always)
+public static func eig<
+    T: FloatingPoint & TensorFlowScalar,
+    Tout: TensorFlowScalar
+>(
+    _ input: Tensor<T>,
+    computeV: Bool = true
+) -> (e: Tensor<Tout>, v: Tensor<Tout>) {
+  let nOutputs = Int(1) + Int(1)
+    let op = makeOp("Eig", nOutputs)
+    op.updateAttribute("compute_v", computeV)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.updateAttribute("Tout", Tout.tensorFlowDataType)
+    op.addInput(input)
+    return op.execute(Int(1), Int(1))
+}
+
+/// Tensor contraction according to Einstein summation convention.
+///
+/// Implements generalized Tensor contraction and reduction. Each input Tensor must
+/// have a corresponding input subscript appearing in the comma-separated left-hand
+/// side of the equation. The right-hand side of the equation consists of the
+/// output subscript. The input subscripts and the output subscript should consist
+/// of zero or more named axis labels and at most one ellipsis (`...`).
+/// 
+/// The named axis labels may be any single character other than those having
+/// special meaning, namely `,.->`. The behavior of this Op is undefined if it
+/// receives an ill-formatted equation; since the validation is done at
+/// graph-building time, we omit format validation checks at runtime.
+/// 
+/// Note: This Op is *not* intended to be called by the user; instead users should
+/// call `tf.einsum` directly. It is a hidden Op used by `tf.einsum`.
+/// 
+/// Operations are applied to the input(s) according to the following rules:
+/// 
+///  (a) Generalized Diagonals: For input dimensions corresponding to axis labels
+///      appearing more than once in the same input subscript, we take the
+///      generalized (`k`-dimensional) diagonal.
+///      For example, in the equation `iii->i` with input shape `[3, 3, 3]`, the
+///      generalized diagonal would consist of `3` elements at indices `(0, 0, 0)`,
+///      `(1, 1, 1)` and `(2, 2, 2)` to create a Tensor of shape `[3]`.
+/// 
+///  (b) Reduction: Axes corresponding to labels appearing only in one input
+///      subscript but not in the output subscript are summed over prior to Tensor
+///      contraction.
+///      For example, in the equation `ab,bc->b`, the axis labels `a` and `c` are
+///      the reduction axis labels.
+/// 
+///  (c) Batch Dimensions: Axes corresponding to labels appearing in each of the
+///      input subscripts and also in the output subscript make up the batch
+///      dimensions in Tensor contraction. Unnamed axis labels corresponding to
+///      ellipsis (`...`) also correspond to batch dimensions.
+///      For example, for the equation denoting batch matrix multiplication,
+///      `bij,bjk->bik`, the axis label `b` corresponds to a batch dimension.
+/// 
+///  (d) Contraction: In case of binary einsum, axes corresponding to labels
+///      appearing in two different inputs (and not in the output) are contracted
+///      against each other.
+///      Considering the batch matrix multiplication equation again
+///      (`bij,bjk->bik`), the contracted axis label is `j`.
+/// 
+///  (e) Expand Diagonal: If the output subscripts contain repeated (explicit) axis
+///      labels, the opposite operation of (a) is applied. For example, in the
+///      equation `i->iii`, and input shape `[3]`, the output of shape `[3, 3, 3]`
+///      are all zeros, except for the (generalized) diagonal which is populated
+///      with values from the input.
+///      Note: This operation is not supported by `np.einsum` or `tf.einsum`; it is
+///      provided to enable computing the symbolic gradient of `tf.einsum`.
+/// 
+/// The output subscripts must contain only labels appearing in at least one of the
+/// input subscripts. Furthermore, all dimensions mapping to the same axis label
+/// must be equal.
+/// 
+/// Any of the input and output subscripts may contain at most a single ellipsis
+/// (`...`). These ellipsis are mapped against dimensions not corresponding to any
+/// named axis label. If two inputs contain ellipsis, then they are broadcasted
+/// according to standard NumPy broadcasting
+/// [rules](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html).
+/// 
+/// The broadcasted dimensions are placed in the corresponding location of the
+/// ellipsis in the output subscript. If the broadcasted dimensions are non-empty
+/// and the output subscripts do not contain ellipsis, then an InvalidArgument error
+/// is raised.
+/// 
+/// @compatibility(numpy)
+/// Similar to [`numpy.einsum`](https://docs.scipy.org/doc/numpy/reference/generated/numpy.einsum.html).
+/// 
+/// Comparison with `numpy.einsum`:
+/// 
+///  * This Op only supports unary and binary forms of `numpy.einsum`.
+///  * This Op does not support implicit form. (i.e. equations without `->`).
+///  * This Op also supports repeated indices in the output subscript, which is not
+///    supported by `numpy.einsum`.
+/// @end_compatibility
+/// 
+///
+/// - Parameter inputs: List of 1 or 2 Tensors.
+///
+/// - Attr equation: String describing the Einstein Summation operation; in the format of np.einsum.
+///
+/// - Output output: Output Tensor with shape depending upon `equation`.
+@inlinable @inline(__always)
+public static func einsum<T: TensorFlowScalar>(
+    inputs: [Tensor<T>],
+    equation: String
+) -> Tensor<T> {
+  let nOutputs = Int(1)
+    let op = makeOp("Einsum", nOutputs)
+    op.updateAttribute("equation", equation)
+    op.updateAttribute("N", inputs.count)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.addInputList(inputs)
     return op.execute(Int(1))
 }
 
@@ -8543,7 +10026,7 @@ public static func eluGrad<T: FloatingPoint & TensorFlowScalar>(
 }
 
 /// Creates a tensor with the given shape.
-///
+/// 
 /// This operation creates a tensor of `shape` and `dtype`.
 ///
 /// - Parameter shape: 1-D. Represents the shape of the output tensor.
@@ -8568,7 +10051,7 @@ public static func empty<Dtype: TensorFlowScalar>(
 ///
 /// All list elements must be tensors of dtype element_dtype and shape compatible
 /// with element_shape.
-///
+/// 
 /// handle: an empty tensor list.
 /// element_dtype: the type of elements in the list.
 /// element_shape: a shape compatible with that of elements in the list.
@@ -8593,7 +10076,7 @@ public static func emptyTensorList<ShapeType: TensorFlowIndex>(
 /// en.wikipedia.org/wiki/Base64. Base64 strings may have padding with '=' at the
 /// end so that the encoded has length multiple of 4. See Padding section of the
 /// link above.
-///
+/// 
 /// Web-safe means that the encoder uses - and _ instead of + and /.
 ///
 /// - Parameter input: Strings to be encoded.
@@ -8616,19 +10099,19 @@ public static func encodeBase64(
 /// JPEG-encode an image.
 ///
 /// `image` is a 3-D uint8 Tensor of shape `[height, width, channels]`.
-///
+/// 
 /// The attr `format` can be used to override the color format of the encoded
 /// output.  Values can be:
-///
+/// 
 /// *   `''`: Use a default format based on the number of channels in the image.
 /// *   `grayscale`: Output a grayscale JPEG image.  The `channels` dimension
 ///     of `image` must be 1.
 /// *   `rgb`: Output an RGB JPEG image. The `channels` dimension
 ///     of `image` must be 3.
-///
+/// 
 /// If `format` is not specified or is the empty string, a default format is picked
 /// in function of the number of channels in `image`:
-///
+/// 
 /// *   1: Output a grayscale image.
 /// *   3: Output an RGB image.
 ///
@@ -8679,7 +10162,7 @@ public static func encodeJpeg(
 ///
 /// `image` is a 3-D uint8 Tensor of shape `[height, width, channels]`.
 /// `quality` is an int32 jpeg compression quality value between 0 and 100.
-///
+/// 
 ///
 /// - Parameters:
 ///     - images: Images to adjust.  At least 3-D.
@@ -8702,12 +10185,12 @@ public static func encodeJpegVariableQuality(
 ///
 /// `image` is a 3-D uint8 or uint16 Tensor of shape `[height, width, channels]`
 /// where `channels` is:
-///
+/// 
 /// *   1: for grayscale.
 /// *   2: for grayscale + alpha.
 /// *   3: for RGB.
 /// *   4: for RGBA.
-///
+/// 
 /// The ZLIB compression level, `compression`, can be -1 for the PNG-encoder
 /// default or a value from 0 to 9.  9 is the highest compression level, generating
 /// the smallest output, but is slower.
@@ -8732,43 +10215,46 @@ public static func encodePng<T: UnsignedInteger & TensorFlowScalar>(
 
 /// The op serializes protobuf messages provided in the input tensors.
 ///
-/// The types of the tensors in `values` must match the schema for the
-/// fields specified in `field_names`. All the tensors in `values` must
-/// have a common shape prefix, *batch_shape*.
-///
-/// The `sizes` tensor specifies repeat counts for each field.  The repeat
-/// count (last dimension) of a each tensor in `values` must be greater
-/// than or equal to corresponding repeat count in `sizes`.
-///
-/// A `message_type` name must be provided to give context for the field
-/// names. The actual message descriptor can be looked up either in the
-/// linked-in descriptor pool or a filename provided by the caller using
-/// the `descriptor_source` attribute.
-///
-/// The `descriptor_source` attribute selects a source of protocol
-/// descriptors to consult when looking up `message_type`. This may be a
-/// filename containing a serialized `FileDescriptorSet` message,
-/// or the special value `local://`, in which case only descriptors linked
-/// into the code will be searched; the filename can be on any filesystem
-/// accessible to TensorFlow.
-///
-/// You can build a `descriptor_source` file using the `--descriptor_set_out`
+/// The types of the tensors in `values` must match the schema for the fields
+/// specified in `field_names`. All the tensors in `values` must have a common
+/// shape prefix, *batch_shape*.
+/// 
+/// The `sizes` tensor specifies repeat counts for each field.  The repeat count
+/// (last dimension) of a each tensor in `values` must be greater than or equal
+/// to corresponding repeat count in `sizes`.
+/// 
+/// A `message_type` name must be provided to give context for the field names.
+/// The actual message descriptor can be looked up either in the linked-in
+/// descriptor pool or a filename provided by the caller using the
+/// `descriptor_source` attribute.
+/// 
+/// For the most part, the mapping between Proto field types and TensorFlow dtypes
+/// is straightforward. However, there are a few special cases:
+/// 
+/// - A proto field that contains a submessage or group can only be converted
+/// to `DT_STRING` (the serialized submessage). This is to reduce the complexity
+/// of the API. The resulting string can be used as input to another instance of
+/// the decode_proto op.
+/// 
+/// - TensorFlow lacks support for unsigned integers. The ops represent uint64
+/// types as a `DT_INT64` with the same twos-complement bit pattern (the obvious
+/// way). Unsigned int32 values can be represented exactly by specifying type
+/// `DT_INT64`, or using twos-complement if the caller specifies `DT_INT32` in
+/// the `output_types` attribute.
+/// 
+/// The `descriptor_source` attribute selects the source of protocol
+/// descriptors to consult when looking up `message_type`. This may be:
+/// 
+/// - An empty string  or "local://", in which case protocol descriptors are
+/// created for C++ (not Python) proto definitions linked to the binary.
+/// 
+/// - A file, in which case protocol descriptors are created from the file,
+/// which is expected to contain a `FileDescriptorSet` serialized as a string.
+/// NOTE: You can build a `descriptor_source` file using the `--descriptor_set_out`
 /// and `--include_imports` options to the protocol compiler `protoc`.
-///
-/// The `local://` database only covers descriptors linked into the
-/// code via C++ libraries, not Python imports. You can link in a proto descriptor
-/// by creating a cc_library target with alwayslink=1.
-///
-/// There are a few special cases in the value mapping:
-///
-/// Submessage and group fields must be pre-serialized as TensorFlow strings.
-///
-/// TensorFlow lacks support for unsigned int64s, so they must be
-/// represented as `tf.int64` with the same twos-complement bit pattern
-/// (the obvious way).
-///
-/// Unsigned int32 values can be represented exactly with `tf.int64`, or
-/// with sign wrapping if the input is of type `tf.int32`.
+/// 
+/// - A "bytes://<bytes>", in which protocol descriptors are created from `<bytes>`,
+/// which is expected to be a `FileDescriptorSet` serialized as a string.
 ///
 /// - Parameters:
 ///     - sizes: Tensor of int32 with shape `[batch_shape, len(field_names)]`.
@@ -8805,7 +10291,7 @@ public static func encodeProto<TinputTypes: TensorArrayProtocol>(
 /// audio file. It will be encoded in the 16-bit PCM format. It takes in float
 /// values in the range -1.0f to 1.0f, and any outside that value will be clamped to
 /// that range.
-///
+/// 
 /// `audio` is a 2-D float Tensor of shape `[length, channels]`.
 /// `sample_rate` is a scalar Tensor holding the rate to use (e.g. 44100).
 ///
@@ -8860,7 +10346,7 @@ public static func enqueueTPUEmbeddingIntegerBatch(
 /// embedding_lookup_sparse() is required to produce the arguments to this Op,
 /// since only a single EnqueueTPUEmbeddingSparseBatch Op is allowed per training
 /// step.
-///
+/// 
 /// The tensors at corresponding positions in the three input lists
 /// must have the same shape, i.e. rank 1 with dim_size() equal to the total
 /// number of lookups into the table described by the corresponding table_id.
@@ -8921,7 +10407,7 @@ public static func enqueueTPUEmbeddingSparseBatch<
 /// sample_indices[i], embedding_indices[i] and aggregation_weights[i] correspond
 /// to the ith feature. table_ids[i] indicates which embedding table to look up ith
 /// feature.
-///
+/// 
 /// The tensors at corresponding positions in the three input lists (sample_indices,
 /// embedding_indices and aggregation_weights) must have the same shape, i.e. rank 1
 /// with dim_size() equal to the total number of lookups into the table described by
@@ -9047,14 +10533,26 @@ public static func enter<T: TensorFlowScalar>(
 ///
 /// *NOTE*: `Equal` supports broadcasting. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
+/// 
+/// ```python
+/// x = tf.constant([2, 4])
+/// y = tf.constant(2)
+/// tf.math.equal(x, y) ==> array([True, False])
+/// 
+/// x = tf.constant([2, 4])
+/// y = tf.constant([2, 4])
+/// tf.math.equal(x, y) ==> array([True,  True])
+/// ```
 @inlinable @inline(__always)
 public static func equal<T: TensorFlowScalar>(
     _ x: Tensor<T>,
-    _ y: Tensor<T>
+    _ y: Tensor<T>,
+    incompatibleShapeError: Bool = true
 ) -> Tensor<Bool> {
   let nOutputs = Int(1)
     let op = makeOp("Equal", nOutputs)
     op.updateAttribute("T", T.tensorFlowDataType)
+    op.updateAttribute("incompatible_shape_error", incompatibleShapeError)
     op.addInput(x)
     op.addInput(y)
     return op.execute(Int(1))
@@ -9064,14 +10562,26 @@ public static func equal<T: TensorFlowScalar>(
 ///
 /// *NOTE*: `Equal` supports broadcasting. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
+/// 
+/// ```python
+/// x = tf.constant([2, 4])
+/// y = tf.constant(2)
+/// tf.math.equal(x, y) ==> array([True, False])
+/// 
+/// x = tf.constant([2, 4])
+/// y = tf.constant([2, 4])
+/// tf.math.equal(x, y) ==> array([True,  True])
+/// ```
 @inlinable @inline(__always)
 public static func equal(
     _ x: StringTensor,
-    _ y: StringTensor
+    _ y: StringTensor,
+    incompatibleShapeError: Bool = true
 ) -> Tensor<Bool> {
   let nOutputs = Int(1)
     let op = makeOp("Equal", nOutputs)
     op.updateAttribute("T", TensorDataType(TF_STRING))
+    op.updateAttribute("incompatible_shape_error", incompatibleShapeError)
     op.addInput(x)
     op.addInput(y)
     return op.execute(Int(1))
@@ -9096,6 +10606,17 @@ public static func erfc<T: FloatingPoint & TensorFlowScalar>(
 ) -> Tensor<T> {
   let nOutputs = Int(1)
     let op = makeOp("Erfc", nOutputs)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.addInput(x)
+    return op.execute(Int(1))
+}
+
+@inlinable @inline(__always)
+public static func erfinv<T: FloatingPoint & TensorFlowScalar>(
+    _ x: Tensor<T>
+) -> Tensor<T> {
+  let nOutputs = Int(1)
+    let op = makeOp("Erfinv", nOutputs)
     op.updateAttribute("T", T.tensorFlowDataType)
     op.addInput(x)
     return op.execute(Int(1))
@@ -9154,6 +10675,33 @@ public static func exit<T: TensorFlowScalar>(
 }
 
 /// Computes exponential of x element-wise.  \\(y = e^x\\).
+///
+///   This function computes the exponential of every element in the input tensor.
+///   i.e. `exp(x)` or `e^(x)`, where `x` is the input tensor.
+///   `e` denotes Euler's number and is approximately equal to 2.718281.
+///   Output is positive for any real input.
+/// 
+///   ```python
+///   x = tf.constant(2.0)
+///   tf.math.exp(x) ==> 7.389056
+/// 
+///   x = tf.constant([2.0, 8.0])
+///   tf.math.exp(x) ==> array([7.389056, 2980.958], dtype=float32)
+///   ```
+/// 
+///   For complex numbers, the exponential value is calculated as follows:
+/// 
+///   ```
+///   e^(x+iy) = e^x * e^iy = e^x * (cos y + i sin y)
+///   ```
+/// 
+///   Let's consider complex number 1+1j as an example.
+///   e^1 * (cos 1 + i sin 1) = 2.7182818284590 * (0.54030230586+0.8414709848j)
+/// 
+///   ```python
+///   x = tf.constant(1 + 1j)
+///   tf.math.exp(x) ==> 1.4686939399158851+2.2873552871788423j
+///   ```
 @inlinable @inline(__always)
 public static func exp<T: FloatingPoint & TensorFlowScalar>(
     _ x: Tensor<T>
@@ -9171,30 +10719,30 @@ public static func exp<T: FloatingPoint & TensorFlowScalar>(
 /// dimension index `axis` of `input`'s shape. The dimension index `axis` starts at
 /// zero; if you specify a negative number for `axis` it is counted backward from
 /// the end.
-///
+/// 
 /// This operation is useful if you want to add a batch dimension to a single
 /// element. For example, if you have a single image of shape `[height, width,
 /// channels]`, you can make it a batch of 1 image with `expand_dims(image, 0)`,
 /// which will make the shape `[1, height, width, channels]`.
-///
+/// 
 /// Other examples:
-///
+/// 
 /// ```
 /// # 't' is a tensor of shape [2]
 /// shape(expand_dims(t, 0)) ==> [1, 2]
 /// shape(expand_dims(t, 1)) ==> [2, 1]
 /// shape(expand_dims(t, -1)) ==> [2, 1]
-///
+/// 
 /// # 't2' is a tensor of shape [2, 3, 5]
 /// shape(expand_dims(t2, 0)) ==> [1, 2, 3, 5]
 /// shape(expand_dims(t2, 2)) ==> [2, 3, 1, 5]
 /// shape(expand_dims(t2, 3)) ==> [2, 3, 5, 1]
 /// ```
-///
+/// 
 /// This operation requires that:
-///
+/// 
 /// `-1-input.dims() <= dim <= input.dims()`
-///
+/// 
 /// This operation is related to `squeeze()`, which removes dimensions of
 /// size 1.
 ///
@@ -9243,7 +10791,7 @@ public static func experimentalAssertNextDataset(
 /// sharded dataset for the index-th worker. This attempts to automatically shard
 /// a dataset by examining the Dataset graph and inserting a shard op before the
 /// inputs to a reader Dataset (e.g. CSVDataset, TFRecordDataset).
-///
+/// 
 /// This dataset will throw a NotFound error if we cannot shard the dataset
 /// automatically.
 ///
@@ -9256,11 +10804,13 @@ public static func experimentalAutoShardDataset(
     inputDataset: VariantHandle,
     numWorkers: Tensor<Int64>,
     index: Tensor<Int64>,
+    autoShardPolicy: Int64 = 0,
     outputTypes: [TensorDataType],
     outputShapes: [TensorShape?]
 ) -> VariantHandle {
   let nOutputs = Int(1)
     let op = makeOp("ExperimentalAutoShardDataset", nOutputs)
+    op.updateAttribute("auto_shard_policy", autoShardPolicy)
     op.updateAttribute("output_types", outputTypes)
     op.updateAttribute("output_shapes", outputShapes)
     op.addInput(inputDataset)
@@ -9537,16 +11087,6 @@ public static func experimentalGroupByWindowDataset<
     return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
-public static func experimentalIdentityIndexedDataset(
-    size: Tensor<UInt64>
-) -> VariantHandle {
-  let nOutputs = Int(1)
-    let op = makeOp("ExperimentalIdentityIndexedDataset", nOutputs)
-    op.addInput(size)
-    return op.execute(Int(1))
-}
-
 /// Creates a dataset that contains the elements of `input_dataset` ignoring errors.
 @inlinable @inline(__always)
 public static func experimentalIgnoreErrorsDataset(
@@ -9560,33 +11100,6 @@ public static func experimentalIgnoreErrorsDataset(
     op.updateAttribute("output_shapes", outputShapes)
     op.addInput(inputDataset)
     return op.execute(Int(1))
-}
-
-@inlinable @inline(__always)
-public static func experimentalIndexedDatasetGet<OutputTypes: TensorGroup>(
-    materialized: ResourceHandle,
-    index: Tensor<UInt64>,
-    outputShapes: [TensorShape?]
-) -> OutputTypes {
-  let nOutputs = Int(OutputTypes._typeList.count)
-    let op = makeOp("ExperimentalIndexedDatasetGet", nOutputs)
-    op.updateAttribute("output_types", OutputTypes._typeList)
-    op.updateAttribute("output_shapes", outputShapes)
-    op.addInput(materialized)
-    op.addInput(index)
-    return op.execute(Int(OutputTypes._typeList.count))
-}
-
-@inlinable @inline(__always)
-public static func experimentalIndexedDatasetMaterialize(
-    dataset: VariantHandle,
-    materialized: ResourceHandle
-) {
-  let nOutputs = 0
-    let op = makeOp("ExperimentalIndexedDatasetMaterialize", nOutputs)
-    op.addInput(dataset)
-    op.addInput(materialized)
-    op.execute()
 }
 
 /// Returns the name of the device on which `resource` has been placed.
@@ -9635,7 +11148,7 @@ public static func experimentalLatencyStatsDataset(
 ///
 /// Creates a dataset that applies `f` to the outputs of `input_dataset` and then
 /// batches `batch_size` of them.
-///
+/// 
 /// Unlike a "MapDataset", which applies `f` sequentially, this dataset invokes up
 /// to `batch_size * num_parallel_batches` copies of `f` in parallel.
 ///
@@ -9722,22 +11235,6 @@ public static func experimentalMatchingFilesDataset(
     return op.execute(Int(1))
 }
 
-@inlinable @inline(__always)
-public static func experimentalMaterializedIndexDatasetHandle(
-    container: String,
-    sharedName: String,
-    outputTypes: [TensorDataType],
-    outputShapes: [TensorShape?]
-) -> ResourceHandle {
-  let nOutputs = Int(1)
-    let op = makeOp("ExperimentalMaterializedIndexDatasetHandle", nOutputs)
-    op.updateAttribute("container", container)
-    op.updateAttribute("shared_name", sharedName)
-    op.updateAttribute("output_types", outputTypes)
-    op.updateAttribute("output_shapes", outputShapes)
-    return op.execute(Int(1))
-}
-
 /// Creates a dataset that overrides the maximum intra-op parallelism.
 ///
 /// - Parameter max_intra_op_parallelism: Identifies the maximum intra-op parallelism to use.
@@ -9771,63 +11268,6 @@ public static func experimentalNonSerializableDataset(
     return op.execute(Int(1))
 }
 
-/// Creates a dataset that fuses mapping with batching.
-///
-/// Creates a dataset that applies `f` to the outputs of `input_dataset` and then
-/// batches `batch_size` of them.
-///
-/// Unlike a "MapDataset", which applies `f` sequentially, this dataset invokes up
-/// to `batch_size * num_parallel_batches` copies of `f` in parallel.
-///
-/// Unlike "MapAndBatchDatasetV2", this dataset uses a NUMA-aware thread scheduling
-/// policy. Because it uses the single-threaded executor, it only supports the
-/// function-based control flow ops.
-///
-/// - Parameters:
-///     - input_dataset: A variant tensor representing the input dataset.
-///     - other_arguments: A list of tensors, typically values that were captured when building a closure
-///         for `f`.
-///     - batch_size: A scalar representing the number of elements to accumulate in a
-///         batch. It determines the number of concurrent invocations of `f` that process
-///         elements from `input_dataset` in parallel.
-///     - num_parallel_calls: A scalar representing the maximum number of parallel invocations of the `map_fn`
-///         function. Applying the `map_fn` on consecutive input elements in parallel has
-///         the potential to improve input pipeline throughput.
-///     - drop_remainder: A scalar representing whether the last batch should be dropped in case its size
-///         is smaller than desired.
-///
-/// - Attr f: A function to apply to the outputs of `input_dataset`.
-@inlinable @inline(__always)
-public static func experimentalNumaMapAndBatchDataset<
-    FIn: TensorGroup,
-    FOut: TensorGroup,
-    Targuments: TensorArrayProtocol
->(
-    inputDataset: VariantHandle,
-    otherArguments: Targuments,
-    batchSize: Tensor<Int64>,
-    numParallelCalls: Tensor<Int64>,
-    dropRemainder: Tensor<Bool>,
-    f: (FIn) -> FOut,
-    outputTypes: [TensorDataType],
-    outputShapes: [TensorShape?],
-    preserveCardinality: Bool = false
-) -> VariantHandle {
-  let nOutputs = Int(1)
-    let op = makeOp("ExperimentalNumaMapAndBatchDataset", nOutputs)
-    op.updateAttribute("f", f)
-    op.updateAttribute("Targuments", otherArguments._typeList)
-    op.updateAttribute("output_types", outputTypes)
-    op.updateAttribute("output_shapes", outputShapes)
-    op.updateAttribute("preserve_cardinality", preserveCardinality)
-    op.addInput(inputDataset)
-    op.addInputList(otherArguments)
-    op.addInput(batchSize)
-    op.addInput(numParallelCalls)
-    op.addInput(dropRemainder)
-    return op.execute(Int(1))
-}
-
 /// Creates a dataset that applies `f` to the outputs of `input_dataset`.
 ///
 /// The resulting dataset is similar to the `InterleaveDataset`, with the exception
@@ -9835,7 +11275,7 @@ public static func experimentalNumaMapAndBatchDataset<
 /// block, it will skip that input dataset. This dataset is especially useful
 /// when loading data from a variable-latency datastores (e.g. HDFS, GCS), as it
 /// allows the training step to proceed so long as some data is available.
-///
+/// 
 /// !! WARNING !! This dataset is not deterministic!
 ///
 /// - Attr f: A function mapping elements of `input_dataset`, concatenated with
@@ -9890,7 +11330,7 @@ public static func experimentalParallelInterleaveDataset<
 ///     - Tdense: A list of DTypes of the same length as `dense_keys`.
 ///         Only `tf.float32` (`FloatList`), `tf.int64` (`Int64List`),
 ///         and `tf.string` (`BytesList`) are supported.
-///
+///         
 ///     - dense_shapes: List of tuples with the same length as `dense_keys`.
 ///         The shape of the data for each dense feature referenced by `dense_keys`.
 ///         Required for any input tensors identified by `dense_keys`.  Must be
@@ -9976,26 +11416,28 @@ public static func experimentalRandomDataset(
 /// Creates a dataset that changes the batch size.
 ///
 /// Creates a dataset that changes the batch size of the dataset to current batch
-/// size // num_workers.
+/// size // num_replicas.
 ///
 /// - Parameters:
 ///     - input_dataset: A variant tensor representing the input dataset.
-///     - num_workers: A scalar representing the number of workers to distribute this batch across. As
+///     - num_replicas: A scalar representing the number of replicas to distribute this batch across. As
 ///         a result of this transformation the current batch size would end up being
 ///         divided  by this parameter.
 @inlinable @inline(__always)
 public static func experimentalRebatchDataset(
     inputDataset: VariantHandle,
-    numWorkers: Tensor<Int64>,
+    numReplicas: Tensor<Int64>,
     outputTypes: [TensorDataType],
-    outputShapes: [TensorShape?]
+    outputShapes: [TensorShape?],
+    useFallback: Bool = true
 ) -> VariantHandle {
   let nOutputs = Int(1)
     let op = makeOp("ExperimentalRebatchDataset", nOutputs)
     op.updateAttribute("output_types", outputTypes)
     op.updateAttribute("output_shapes", outputShapes)
+    op.updateAttribute("use_fallback", useFallback)
     op.addInput(inputDataset)
-    op.addInput(numWorkers)
+    op.addInput(numReplicas)
     return op.execute(Int(1))
 }
 
@@ -10146,7 +11588,7 @@ public static func experimentalStatsAggregatorSummary(
 ///
 /// The `predicate` function must return a scalar boolean and accept the
 /// following arguments:
-///
+/// 
 /// * One tensor for each component of an element of `input_dataset`.
 /// * One tensor for each value in `other_arguments`.
 ///
@@ -10256,9 +11698,21 @@ public static func experimentalUniqueDataset(
     return op.execute(Int(1))
 }
 
-/// Computes exponential of x - 1 element-wise.
+/// Computes `exp(x) - 1` element-wise.
 ///
-/// I.e., \\(y = (\exp x) - 1\\).
+///   i.e. `exp(x) - 1` or `e^(x) - 1`, where `x` is the input tensor.
+///   `e` denotes Euler's number and is approximately equal to 2.718281.
+/// 
+///   ```python
+///   x = tf.constant(2.0)
+///   tf.math.expm1(x) ==> 6.389056
+/// 
+///   x = tf.constant([2.0, 8.0])
+///   tf.math.expm1(x) ==> array([6.389056, 2979.958], dtype=float32)
+/// 
+///   x = tf.constant(1 + 1j)
+///   tf.math.expm1(x) ==> (0.46869393991588515+2.2873552871788423j)
+///   ```
 @inlinable @inline(__always)
 public static func expm1<T: FloatingPoint & TensorFlowScalar>(
     _ x: Tensor<T>
@@ -10276,14 +11730,14 @@ public static func expm1<T: FloatingPoint & TensorFlowScalar>(
 /// `offsets` from the input tensor. If the windows only partially
 /// overlaps the inputs, the non overlapping areas will be filled with
 /// random noise.
-///
+/// 
 /// The result is a 4-D tensor of shape `[batch_size, glimpse_height,
 /// glimpse_width, channels]`. The channels and batch dimensions are the
 /// same as that of the input tensor. The height and width of the output
 /// windows are specified in the `size` parameter.
-///
+/// 
 /// The argument `normalized` and `centered` controls how the windows are built:
-///
+/// 
 /// * If the coordinates are normalized but not centered, 0.0 and 1.0
 ///   correspond to the minimum and maximum of each height and width
 ///   dimension.
@@ -10344,23 +11798,15 @@ public static func extractGlimpse(
 ///
 /// - Attrs:
 ///     - ksizes: The size of the sliding window for each dimension of `images`.
-///     - strides: 1-D of length 4. How far the centers of two consecutive patches are in
+///     - strides: How far the centers of two consecutive patches are in
 ///         the images. Must be: `[1, stride_rows, stride_cols, 1]`.
-///     - rates: 1-D of length 4. Must be: `[1, rate_rows, rate_cols, 1]`. This is the
+///     - rates: Must be: `[1, rate_rows, rate_cols, 1]`. This is the
 ///         input stride, specifying how far two consecutive patch samples are in the
 ///         input. Equivalent to extracting patches with
 ///         `patch_sizes_eff = patch_sizes + (patch_sizes - 1) * (rates - 1)`, followed by
 ///         subsampling them spatially by a factor of `rates`. This is equivalent to
 ///         `rate` in dilated (a.k.a. Atrous) convolutions.
 ///     - padding: The type of padding algorithm to use.
-///
-///         We specify the size-related attributes as:
-///
-///         ```python
-///               ksizes = [1, ksize_rows, ksize_cols, 1]
-///               strides = [1, strides_rows, strides_cols, 1]
-///               rates = [1, rates_rows, rates_cols, 1]
-///         ```
 ///
 /// - Output patches: 4-D Tensor with shape `[batch, out_rows, out_cols, ksize_rows *
 ///     ksize_cols * depth]` containing image patches with size
@@ -10415,9 +11861,9 @@ public static func extractJpegShape<OutputType: TensorFlowIndex>(
 ///     - strides: 1-D of length 5. How far the centers of two consecutive patches are in
 ///         `input`. Must be: `[1, stride_planes, stride_rows, stride_cols, 1]`.
 ///     - padding: The type of padding algorithm to use.
-///
+///         
 ///         We specify the size-related attributes as:
-///
+///         
 ///         ```python
 ///               ksizes = [1, ksize_planes, ksize_rows, ksize_cols, 1]
 ///               strides = [1, stride_planes, strides_rows, strides_cols, 1]
@@ -10454,7 +11900,7 @@ public static func extractVolumePatches<T: TensorFlowNumeric>(
 ///
 /// - Output output: A complex tensor of the same shape as `input`. The inner-most
 ///       dimension of `input` is replaced with its 1D Fourier transform.
-///
+///     
 ///     @compatibility(numpy)
 ///     Equivalent to np.fft.fft
 ///     @end_compatibility
@@ -10478,7 +11924,7 @@ public static func fFT<Tcomplex: TensorFlowScalar>(
 ///
 /// - Output output: A complex tensor of the same shape as `input`. The inner-most 2
 ///       dimensions of `input` are replaced with their 2D Fourier transform.
-///
+///     
 ///     @compatibility(numpy)
 ///     Equivalent to np.fft.fft2
 ///     @end_compatibility
@@ -10498,11 +11944,11 @@ public static func fFT2D<Tcomplex: TensorFlowScalar>(
 /// Computes the 3-dimensional discrete Fourier transform over the inner-most 3
 /// dimensions of `input`.
 ///
-/// - Parameter input: A complex64 tensor.
+/// - Parameter input: A complex tensor.
 ///
-/// - Output output: A complex64 tensor of the same shape as `input`. The inner-most 3
+/// - Output output: A complex tensor of the same shape as `input`. The inner-most 3
 ///       dimensions of `input` are replaced with their 3D Fourier transform.
-///
+///     
 ///     @compatibility(numpy)
 ///     Equivalent to np.fft.fftn with 3 dimensions.
 ///     @end_compatibility
@@ -10590,7 +12036,7 @@ public static func fakeParam<Dtype: TensorFlowScalar>(
 /// when `narrow_range` is false and `[1; 2^num_bits - 1]` when it is true) and
 /// then de-quantized and output as floats in `[min; max]` interval.
 /// `num_bits` is the bitwidth of the quantization; between 2 and 16, inclusive.
-///
+/// 
 /// Before quantization, `min` and `max` values are adjusted with the following
 /// logic.
 /// It is suggested to have `min <= 0 <= max`. If `0` is not in the range of values,
@@ -10599,7 +12045,7 @@ public static func fakeParam<Dtype: TensorFlowScalar>(
 /// If `min < max < 0`: `min_adj = min - max` and `max_adj = 0`.
 /// If `min <= 0 <= max`: `scale = (max - min) / (2^num_bits - 1) `,
 /// `min_adj = scale * round(min / scale)` and `max_adj = max + min_adj - min`.
-///
+/// 
 /// Quantization is called fake since the output is still in floating point.
 @inlinable @inline(__always)
 public static func fakeQuantWithMinMaxArgs(
@@ -10650,13 +12096,13 @@ public static func fakeQuantWithMinMaxArgsGradient(
 /// Fake-quantize the 'inputs' tensor of type float via global float scalars `min`
 ///
 /// and `max` to 'outputs' tensor of same shape as `inputs`.
-///
+/// 
 /// `[min; max]` define the clamping range for the `inputs` data.
 /// `inputs` values are quantized into the quantization range (`[0; 2^num_bits - 1]`
 /// when `narrow_range` is false and `[1; 2^num_bits - 1]` when it is true) and
 /// then de-quantized and output as floats in `[min; max]` interval.
 /// `num_bits` is the bitwidth of the quantization; between 2 and 16, inclusive.
-///
+/// 
 /// Before quantization, `min` and `max` values are adjusted with the following
 /// logic.
 /// It is suggested to have `min <= 0 <= max`. If `0` is not in the range of values,
@@ -10665,7 +12111,7 @@ public static func fakeQuantWithMinMaxArgsGradient(
 /// If `min < max < 0`: `min_adj = min - max` and `max_adj = 0`.
 /// If `min <= 0 <= max`: `scale = (max - min) / (2^num_bits - 1) `,
 /// `min_adj = scale * round(min / scale)` and `max_adj = max + min_adj - min`.
-///
+/// 
 /// This operation has a gradient and thus allows for training `min` and `max`
 /// values.
 @inlinable @inline(__always)
@@ -10728,13 +12174,13 @@ public static func fakeQuantWithMinMaxVarsGradient(
 ///
 /// `[b, d]` `[b, h, w, d]` via per-channel floats `min` and `max` of shape `[d]`
 /// to 'outputs' tensor of same shape as `inputs`.
-///
+/// 
 /// `[min; max]` define the clamping range for the `inputs` data.
 /// `inputs` values are quantized into the quantization range (`[0; 2^num_bits - 1]`
 /// when `narrow_range` is false and `[1; 2^num_bits - 1]` when it is true) and
 /// then de-quantized and output as floats in `[min; max]` interval.
 /// `num_bits` is the bitwidth of the quantization; between 2 and 16, inclusive.
-///
+/// 
 /// Before quantization, `min` and `max` values are adjusted with the following
 /// logic.
 /// It is suggested to have `min <= 0 <= max`. If `0` is not in the range of values,
@@ -10743,7 +12189,7 @@ public static func fakeQuantWithMinMaxVarsGradient(
 /// If `min < max < 0`: `min_adj = min - max` and `max_adj = 0`.
 /// If `min <= 0 <= max`: `scale = (max - min) / (2^num_bits - 1) `,
 /// `min_adj = scale * round(min / scale)` and `max_adj = max + min_adj - min`.
-///
+/// 
 /// This operation has a gradient and thus allows for training `min` and `max`
 /// values.
 @inlinable @inline(__always)
@@ -10808,17 +12254,17 @@ public static func fakeQuantWithMinMaxVarsPerChannelGradient(
 /// Creates a tensor filled with a scalar value.
 ///
 /// This operation creates a tensor of shape `dims` and fills it with `value`.
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// # Output tensor has shape [2, 3].
 /// fill([2, 3], 9) ==> [[9, 9, 9]
 ///                      [9, 9, 9]]
 /// ```
-///
+/// 
 /// `tf.fill` differs from `tf.constant` in a few ways:
-///
+/// 
 /// *   `tf.fill` only supports scalar contents, whereas `tf.constant` supports
 ///     Tensor values.
 /// *   `tf.fill` creates an Op in the computation graph that constructs the actual
@@ -10830,7 +12276,7 @@ public static func fakeQuantWithMinMaxVarsPerChannelGradient(
 /// - Parameters:
 ///     - dims: 1-D. Represents the shape of the output tensor.
 ///     - value: 0-D (scalar). Value to fill the returned tensor.
-///
+///         
 ///         @compatibility(numpy)
 ///         Equivalent to np.full
 ///         @end_compatibility
@@ -10870,7 +12316,7 @@ public static func filterByLastComponentDataset(
 ///
 /// The `predicate` function must return a scalar boolean and accept the
 /// following arguments:
-///
+/// 
 /// * One tensor for each component of an element of `input_dataset`.
 /// * One tensor for each value in `other_arguments`.
 ///
@@ -10898,6 +12344,62 @@ public static func filterDataset<
     op.updateAttribute("output_shapes", outputShapes)
     op.addInput(inputDataset)
     op.addInputList(otherArguments)
+    return op.execute(Int(1))
+}
+
+/// Generates fingerprint values.
+///
+/// Generates fingerprint values of `data`.
+/// 
+/// Fingerprint op considers the first dimension of `data` as the batch dimension,
+/// and `output[i]` contains the fingerprint value generated from contents in
+/// `data[i, ...]` for all `i`.
+/// 
+/// Fingerprint op writes fingerprint values as byte arrays. For example, the
+/// default method `farmhash64` generates a 64-bit fingerprint value at a time.
+/// This 8-byte value is written out as an `uint8` array of size 8, in little-endian
+/// order.
+/// 
+/// For example, suppose that `data` has data type `DT_INT32` and shape (2, 3, 4),
+/// and that the fingerprint method is `farmhash64`. In this case, the output shape
+/// is (2, 8), where 2 is the batch dimension size of `data`, and 8 is the size of
+/// each fingerprint value in bytes. `output[0, :]` is generated from 12 integers in
+/// `data[0, :, :]` and similarly `output[1, :]` is generated from other 12 integers
+/// in `data[1, :, :]`.
+/// 
+/// Note that this op fingerprints the raw underlying buffer, and it does not
+/// fingerprint Tensor's metadata such as data type and/or shape. For example, the
+/// fingerprint values are invariant under reshapes and bitcasts as long as the
+/// batch dimension remain the same:
+/// 
+/// ```
+/// Fingerprint(data) == Fingerprint(Reshape(data, ...))
+/// Fingerprint(data) == Fingerprint(Bitcast(data, ...))
+/// ```
+/// 
+/// For string data, one should expect `Fingerprint(data) !=
+/// Fingerprint(ReduceJoin(data))` in general.
+///
+/// - Parameters:
+///     - data: Must have rank 1 or higher.
+///     - method: Fingerprint method used by this op. Currently available method is
+///         `farmhash::fingerprint64`.
+///
+/// - Attr T: This can be a POD-type or string type.
+///
+/// - Output fingerprint: A two-dimensional `Tensor` of type `tf.uint8`. The first dimension equals to
+///     `data`'s first dimension, and the second dimension size depends on the
+///     fingerprint algorithm.
+@inlinable @inline(__always)
+public static func fingerprint<T: TensorFlowScalar>(
+    data: Tensor<T>,
+    method: StringTensor
+) -> Tensor<UInt8> {
+  let nOutputs = Int(1)
+    let op = makeOp("Fingerprint", nOutputs)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.addInput(data)
+    op.addInput(method)
     return op.execute(Int(1))
 }
 
@@ -11003,12 +12505,12 @@ public static func fixedLengthRecordReaderV2(
 /// file or passed in as an in-memory array instead of building up the distribution
 /// from data on the fly. There is also an option to skew the distribution by
 /// applying a distortion power to the weights.
-///
+/// 
 /// The vocabulary file should be in CSV-like format, with the last field
 /// being the weight associated with the word.
-///
+/// 
 /// For each batch, this op picks a single set of sampled candidate labels.
-///
+/// 
 /// The advantages of sampling candidates per-batch are simplicity and the
 /// possibility of efficient dense matrix multiplication. The disadvantage is that
 /// the sampled candidates must be chosen independently of the context and of the
@@ -11189,7 +12691,7 @@ public static func floorDiv<T: TensorFlowNumeric>(
 ///
 /// true, this follows Python semantics in that the result here is consistent
 /// with a flooring divide. E.g. `floor(x / y) * y + mod(x, y) = x`.
-///
+/// 
 /// *NOTE*: `FloorMod` supports broadcasting. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
 @inlinable @inline(__always)
@@ -11320,11 +12822,11 @@ public static func for_<
 ///         difference between pseudorandom and random.
 ///     - overlapping: When set to True, it means when pooling, the values at the boundary
 ///         of adjacent pooling cells are used by both cells. For example:
-///
+///         
 ///         `index  0  1  2  3  4`
-///
+///         
 ///         `value  20 5  16 3  7`
-///
+///         
 ///         If the pooling sequence is [0, 2, 4], then 16, at index 2 will be used twice.
 ///         The result would be [41/3, 26/3] for fractional avg pooling.
 ///     - deterministic: When set to True, a fixed pooling region will be used when
@@ -11381,11 +12883,11 @@ public static func fractionalAvgPool<T: TensorFlowNumeric>(
 ///
 /// - Attr overlapping: When set to True, it means when pooling, the values at the boundary
 ///     of adjacent pooling cells are used by both cells. For example:
-///
+///     
 ///     `index  0  1  2  3  4`
-///
+///     
 ///     `value  20 5  16 3  7`
-///
+///     
 ///     If the pooling sequence is [0, 2, 4], then 16, at index 2 will be used twice.
 ///     The result would be [41/3, 26/3] for fractional avg pooling.
 ///
@@ -11417,26 +12919,26 @@ public static func fractionalAvgPoolGrad<T: TensorFlowNumeric>(
 /// a factor of N, where N is an integer.  Fractional max pooling, as you might
 /// expect from the word "fractional", means that the overall reduction ratio N
 /// does not have to be an integer.
-///
+/// 
 /// The sizes of the pooling regions are generated randomly but are fairly uniform.
 /// For example, let's look at the height dimension, and the constraints on the
 /// list of rows that will be pool boundaries.
-///
+/// 
 /// First we define the following:
-///
+/// 
 /// 1.  input_row_length : the number of rows from the input set
 /// 2.  output_row_length : which will be smaller than the input
 /// 3.  alpha = input_row_length / output_row_length : our reduction ratio
 /// 4.  K = floor(alpha)
 /// 5.  row_pooling_sequence : this is the result list of pool boundary rows
-///
+/// 
 /// Then, row_pooling_sequence should satisfy:
-///
+/// 
 /// 1.  a[0] = 0 : the first value of the sequence is 0
 /// 2.  a[end] = input_row_length : the last value of the sequence is the size
 /// 3.  K <= (a[i+1] - a[i]) <= K+1 : all intervals are K or K+1 size
 /// 4.  length(row_pooling_sequence) = output_row_length+1
-///
+/// 
 /// For more details on fractional max pooling, see this paper:
 /// [Benjamin Graham, Fractional Max-Pooling](http://arxiv.org/abs/1412.6071)
 ///
@@ -11455,11 +12957,11 @@ public static func fractionalAvgPoolGrad<T: TensorFlowNumeric>(
 ///         difference between pseudorandom and random.
 ///     - overlapping: When set to True, it means when pooling, the values at the boundary
 ///         of adjacent pooling cells are used by both cells. For example:
-///
+///         
 ///         `index  0  1  2  3  4`
-///
+///         
 ///         `value  20 5  16 3  7`
-///
+///         
 ///         If the pooling sequence is [0, 2, 4], then 16, at index 2 will be used twice.
 ///         The result would be [20, 16] for fractional max pooling.
 ///     - deterministic: When set to True, a fixed pooling region will be used when
@@ -11511,11 +13013,11 @@ public static func fractionalMaxPool<T: TensorFlowNumeric>(
 ///
 /// - Attr overlapping: When set to True, it means when pooling, the values at the boundary
 ///     of adjacent pooling cells are used by both cells. For example:
-///
+///     
 ///     `index  0  1  2  3  4`
-///
+///     
 ///     `value  20 5  16 3  7`
-///
+///     
 ///     If the pooling sequence is [0, 2, 4], then 16, at index 2 will be used twice.
 ///     The result would be [20, 16] for fractional max pooling.
 ///
@@ -11731,6 +13233,75 @@ public static func fusedBatchNormGradV2<
     return op.execute(Int(1), Int(1), Int(1), Int(1), Int(1))
 }
 
+/// Gradient for batch normalization.
+///
+/// Note that the size of 4D Tensors are defined by either "NHWC" or "NCHW".
+/// The size of 1D Tensors matches the dimension C of the 4D Tensors.
+///
+/// - Parameters:
+///     - y_backprop: A 4D Tensor for the gradient with respect to y.
+///     - x: A 4D Tensor for input data.
+///     - scale: A 1D Tensor for scaling factor, to scale the normalized x.
+///     - reserve_space_1: When is_training is True, a 1D Tensor for the computed batch
+///         mean to be reused in gradient computation. When is_training is
+///         False, a 1D Tensor for the population mean to be reused in both
+///         1st and 2nd order gradient computation.
+///     - reserve_space_2: When is_training is True, a 1D Tensor for the computed batch
+///         variance (inverted variance in the cuDNN case) to be reused in
+///         gradient computation. When is_training is False, a 1D Tensor
+///         for the population variance to be reused in both 1st and 2nd
+///         order gradient computation.
+///     - reserve_space_3: When is_training is True, a 1D Tensor for some intermediate results to be reused
+///         in gradient computation. When is_training is False, a dummy empty Tensor will be
+///         created.
+///
+/// - Attrs:
+///     - T: The data type for the elements of input and output Tensors.
+///     - U: The data type for the scale, offset, mean, and variance.
+///     - epsilon: A small float number added to the variance of x.
+///     - data_format: The data format for y_backprop, x, x_backprop.
+///         Either "NHWC" (default) or "NCHW".
+///     - is_training: A bool value to indicate the operation is for training (default)
+///         or inference.
+///
+/// - Outputs:
+///     - x_backprop: A 4D Tensor for the gradient with respect to x.
+///     - scale_backprop: A 1D Tensor for the gradient with respect to scale.
+///     - offset_backprop: A 1D Tensor for the gradient with respect to offset.
+///     - reserve_space_4: Unused placeholder to match the mean input in FusedBatchNorm.
+///     - reserve_space_5: Unused placeholder to match the variance input
+///         in FusedBatchNorm.
+@inlinable @inline(__always)
+public static func fusedBatchNormGradV3<
+    T: FloatingPoint & TensorFlowScalar,
+    U: FloatingPoint & TensorFlowScalar
+>(
+    yBackprop: Tensor<T>,
+    _ x: Tensor<T>,
+    scale: Tensor<Float>,
+    reserveSpace1: Tensor<U>,
+    reserveSpace2: Tensor<U>,
+    reserveSpace3: Tensor<U>,
+    epsilon: Double = 0.0001,
+    dataFormat: DataFormat = .nhwc,
+    isTraining: Bool = true
+) -> (xBackprop: Tensor<T>, scaleBackprop: Tensor<U>, offsetBackprop: Tensor<U>, reserveSpace4: Tensor<U>, reserveSpace5: Tensor<U>) {
+  let nOutputs = Int(1) + Int(1) + Int(1) + Int(1) + Int(1)
+    let op = makeOp("FusedBatchNormGradV3", nOutputs)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.updateAttribute("U", U.tensorFlowDataType)
+    op.updateAttribute("epsilon", epsilon)
+    op.updateAttribute("data_format", dataFormat.cName)
+    op.updateAttribute("is_training", isTraining)
+    op.addInput(yBackprop)
+    op.addInput(x)
+    op.addInput(scale)
+    op.addInput(reserveSpace1)
+    op.addInput(reserveSpace2)
+    op.addInput(reserveSpace3)
+    return op.execute(Int(1), Int(1), Int(1), Int(1), Int(1))
+}
+
 /// Batch normalization.
 ///
 /// Note that the size of 4D Tensors are defined by either "NHWC" or "NCHW".
@@ -11792,6 +13363,69 @@ public static func fusedBatchNormV2<
     return op.execute(Int(1), Int(1), Int(1), Int(1), Int(1))
 }
 
+/// Batch normalization.
+///
+/// Note that the size of 4D Tensors are defined by either "NHWC" or "NCHW".
+/// The size of 1D Tensors matches the dimension C of the 4D Tensors.
+///
+/// - Parameters:
+///     - x: A 4D Tensor for input data.
+///     - scale: A 1D Tensor for scaling factor, to scale the normalized x.
+///     - offset: A 1D Tensor for offset, to shift to the normalized x.
+///     - mean: A 1D Tensor for population mean. Used for inference only;
+///         must be empty for training.
+///     - variance: A 1D Tensor for population variance. Used for inference only;
+///         must be empty for training.
+///
+/// - Attrs:
+///     - T: The data type for the elements of input and output Tensors.
+///     - U: The data type for the scale, offset, mean, and variance.
+///     - epsilon: A small float number added to the variance of x.
+///     - data_format: The data format for x and y. Either "NHWC" (default) or "NCHW".
+///     - is_training: A bool value to indicate the operation is for training (default)
+///         or inference.
+///
+/// - Outputs:
+///     - y: A 4D Tensor for output data.
+///     - batch_mean: A 1D Tensor for the computed batch mean, to be used by TensorFlow
+///         to compute the running mean.
+///     - batch_variance: A 1D Tensor for the computed batch variance, to be used by
+///         TensorFlow to compute the running variance.
+///     - reserve_space_1: A 1D Tensor for the computed batch mean, to be reused
+///         in the gradient computation.
+///     - reserve_space_2: A 1D Tensor for the computed batch variance (inverted variance
+///         in the cuDNN case), to be reused in the gradient computation.
+///     - reserve_space_3: A 1D Tensor for some intermediate results, to be reused in the gradient
+///         computation for better efficiency.
+@inlinable @inline(__always)
+public static func fusedBatchNormV3<
+    T: FloatingPoint & TensorFlowScalar,
+    U: FloatingPoint & TensorFlowScalar
+>(
+    _ x: Tensor<T>,
+    scale: Tensor<U>,
+    offset: Tensor<U>,
+    mean: Tensor<U>,
+    variance: Tensor<U>,
+    epsilon: Double = 0.0001,
+    dataFormat: DataFormat = .nhwc,
+    isTraining: Bool = true
+) -> (y: Tensor<T>, batchMean: Tensor<U>, batchVariance: Tensor<U>, reserveSpace1: Tensor<U>, reserveSpace2: Tensor<U>, reserveSpace3: Tensor<U>) {
+  let nOutputs = Int(1) + Int(1) + Int(1) + Int(1) + Int(1) + Int(1)
+    let op = makeOp("FusedBatchNormV3", nOutputs)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.updateAttribute("U", U.tensorFlowDataType)
+    op.updateAttribute("epsilon", epsilon)
+    op.updateAttribute("data_format", dataFormat.cName)
+    op.updateAttribute("is_training", isTraining)
+    op.addInput(x)
+    op.addInput(scale)
+    op.addInput(offset)
+    op.addInput(mean)
+    op.addInput(variance)
+    return op.execute(Int(1), Int(1), Int(1), Int(1), Int(1), Int(1))
+}
+
 /// Performs a padding as a preprocess during a convolution.
 ///
 /// Similar to FusedResizeAndPadConv2d, this op allows for an optimized
@@ -11822,7 +13456,7 @@ public static func fusedPadConv2D<T: FloatingPoint & TensorFlowScalar>(
     _ input: Tensor<T>,
     paddings: Tensor<Int32>,
     filter: Tensor<T>,
-    mode: Mode5,
+    mode: Mode6,
     strides: [Int32],
     padding: Padding
 ) -> Tensor<T> {
@@ -11873,7 +13507,7 @@ public static func fusedResizeAndPadConv2D<T: FloatingPoint & TensorFlowScalar>(
     paddings: Tensor<Int32>,
     filter: Tensor<T>,
     resizeAlignCorners: Bool = false,
-    mode: Mode5,
+    mode: Mode6,
     strides: [Int32],
     padding: Padding
 ) -> Tensor<T> {
@@ -11900,41 +13534,41 @@ public static func fusedResizeAndPadConv2D<T: FloatingPoint & TensorFlowScalar>(
 ///     w_c: Weight matrix for the cell connection gate.
 ///     b_ru: Bias vector for the reset and update gate.
 ///     b_c: Bias vector for the cell connection gate.
-///
+/// 
 /// Returns
 ///     r: Output of the reset gate.
 ///     u: Output of the update gate.
 ///     c: Output of the cell connection gate.
 ///     h: Current state of the GRU cell.
-///
+/// 
 /// Note on notation of the variables:
-///
+/// 
 /// Concatenation of a and b is represented by a_b
 /// Element-wise dot product of a and b is represented by ab
 /// Element-wise dot product is represented by \circ
 /// Matrix multiplication is represented by *
-///
+/// 
 /// Biases are initialized with :
 /// `b_ru` - constant_initializer(1.0)
 /// `b_c` - constant_initializer(0.0)
-///
+/// 
 /// This kernel op implements the following mathematical equations:
-///
+/// 
 /// ```
 /// x_h_prev = [x, h_prev]
-///
+/// 
 /// [r_bar u_bar] = x_h_prev * w_ru + b_ru
-///
+/// 
 /// r = sigmoid(r_bar)
 /// u = sigmoid(u_bar)
-///
+/// 
 /// h_prevr = h_prev \circ r
-///
+/// 
 /// x_h_prevr = [x h_prevr]
-///
+/// 
 /// c_bar = x_h_prevr * w_c + b_c
 /// c = tanh(c_bar)
-///
+/// 
 /// h = (1-u) \circ c + u \circ h_prev
 /// ```
 @inlinable @inline(__always)
@@ -11971,24 +13605,24 @@ public static func gRUBlockCell<T: FloatingPoint & TensorFlowScalar>(
 ///     u: Output of the update gate.
 ///     c: Output of the cell connection gate.
 ///     d_h: Gradients of the h_new wrt to objective function.
-///
+/// 
 /// Returns
 ///     d_x: Gradients of the x wrt to objective function.
 ///     d_h_prev: Gradients of the h wrt to objective function.
 ///     d_c_bar Gradients of the c_bar wrt to objective function.
 ///     d_r_bar_u_bar Gradients of the r_bar & u_bar wrt to objective function.
-///
+/// 
 /// This kernel op implements the following mathematical equations:
-///
+/// 
 /// Note on notation of the variables:
-///
+/// 
 /// Concatenation of a and b is represented by a_b
 /// Element-wise dot product of a and b is represented by ab
 /// Element-wise dot product is represented by \circ
 /// Matrix multiplication is represented by *
-///
+/// 
 /// Additional notes for clarity:
-///
+/// 
 /// `w_ru` can be segmented into 4 different matrices.
 /// ```
 /// w_ru = [w_r_x w_u_x
@@ -12006,38 +13640,38 @@ public static func gRUBlockCell<T: FloatingPoint & TensorFlowScalar>(
 /// Another note on notation:
 /// ```
 /// d_x = d_x_component_1 + d_x_component_2
-///
+/// 
 /// where d_x_component_1 = d_r_bar * w_r_x^T + d_u_bar * w_r_x^T
 /// and d_x_component_2 = d_c_bar * w_c_x^T
-///
+/// 
 /// d_h_prev = d_h_prev_component_1 + d_h_prevr \circ r + d_h \circ u
 /// where d_h_prev_componenet_1 = d_r_bar * w_r_h_prev^T + d_u_bar * w_r_h_prev^T
 /// ```
-///
+/// 
 /// Mathematics behind the Gradients below:
 /// ```
 /// d_c_bar = d_h \circ (1-u) \circ (1-c \circ c)
 /// d_u_bar = d_h \circ (h-c) \circ u \circ (1-u)
-///
+/// 
 /// d_r_bar_u_bar = [d_r_bar d_u_bar]
-///
+/// 
 /// [d_x_component_1 d_h_prev_component_1] = d_r_bar_u_bar * w_ru^T
-///
+/// 
 /// [d_x_component_2 d_h_prevr] = d_c_bar * w_c^T
-///
+/// 
 /// d_x = d_x_component_1 + d_x_component_2
-///
+/// 
 /// d_h_prev = d_h_prev_component_1 + d_h_prevr \circ r + u
 /// ```
 /// Below calculation is performed in the python wrapper for the Gradients
 /// (not in the gradient kernel.)
 /// ```
 /// d_w_ru = x_h_prevr^T * d_c_bar
-///
+/// 
 /// d_w_c = x_h_prev^T * d_r_bar_u_bar
-///
+/// 
 /// d_b_ru = sum of d_r_bar_u_bar along axis = 0
-///
+/// 
 /// d_b_c = sum of d_c_bar along axis = 0
 /// ```
 @inlinable @inline(__always)
@@ -12073,26 +13707,26 @@ public static func gRUBlockCellGrad<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// `indices` must be an integer tensor of any dimension (usually 0-D or 1-D).
 /// Produces an output tensor with shape `indices.shape + params.shape[1:]` where:
-///
+/// 
 /// ```python
 ///     # Scalar indices
 ///     output[:, ..., :] = params[indices, :, ... :]
-///
+/// 
 ///     # Vector indices
 ///     output[i, :, ..., :] = params[indices[i], :, ... :]
-///
+/// 
 ///     # Higher rank indices
 ///     output[i, ..., j, :, ... :] = params[indices[i, ..., j], :, ..., :]
 /// ```
-///
+/// 
 /// If `indices` is a permutation and `len(indices) == params.shape[0]` then
 /// this operation will permute `params` accordingly.
-///
+/// 
 /// `validate_indices`: DEPRECATED. If this operation is assigned to CPU, values in
 /// `indices` are always validated to be within range. If assigned to GPU,
 /// out-of-bound indices result in safe but unspecified behavior, which may include
 /// raising an error.
-///
+/// 
 /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
 /// <img style="width:100%" src="https://www.tensorflow.org/images/Gather.png" alt>
 /// </div>
@@ -12117,109 +13751,109 @@ public static func gather<
 
 /// Gather slices from `params` into a Tensor with shape specified by `indices`.
 ///
-/// `indices` is an K-dimensional integer tensor, best thought of as a
+/// `indices` is a K-dimensional integer tensor, best thought of as a
 /// (K-1)-dimensional tensor of indices into `params`, where each element defines a
 /// slice of `params`:
-///
+/// 
 ///     output[\\(i_0, ..., i_{K-2}\\)] = params[indices[\\(i_0, ..., i_{K-2}\\)]]
-///
-/// Whereas in `tf.gather` `indices` defines slices into the first
+/// 
+/// Whereas in `tf.gather` `indices` defines slices into the `axis`
 /// dimension of `params`, in `tf.gather_nd`, `indices` defines slices into the
 /// first `N` dimensions of `params`, where `N = indices.shape[-1]`.
-///
+/// 
 /// The last dimension of `indices` can be at most the rank of
 /// `params`:
-///
+/// 
 ///     indices.shape[-1] <= params.rank
-///
+/// 
 /// The last dimension of `indices` corresponds to elements
 /// (if `indices.shape[-1] == params.rank`) or slices
 /// (if `indices.shape[-1] < params.rank`) along dimension `indices.shape[-1]`
 /// of `params`.  The output tensor has shape
-///
+/// 
 ///     indices.shape[:-1] + params.shape[indices.shape[-1]:]
-///
+/// 
 /// Note that on CPU, if an out of bound index is found, an error is returned.
 /// On GPU, if an out of bound index is found, a 0 is stored in the
 /// corresponding output value.
-///
+/// 
 /// Some examples below.
-///
+/// 
 /// Simple indexing into a matrix:
-///
+/// 
 /// ```python
 ///     indices = [[0, 0], [1, 1]]
 ///     params = [['a', 'b'], ['c', 'd']]
 ///     output = ['a', 'd']
 /// ```
-///
+/// 
 /// Slice indexing into a matrix:
-///
+/// 
 /// ```python
 ///     indices = [[1], [0]]
 ///     params = [['a', 'b'], ['c', 'd']]
 ///     output = [['c', 'd'], ['a', 'b']]
 /// ```
-///
+/// 
 /// Indexing into a 3-tensor:
-///
+/// 
 /// ```python
 ///     indices = [[1]]
 ///     params = [[['a0', 'b0'], ['c0', 'd0']],
 ///               [['a1', 'b1'], ['c1', 'd1']]]
 ///     output = [[['a1', 'b1'], ['c1', 'd1']]]
-///
-///
+/// 
+/// 
 ///     indices = [[0, 1], [1, 0]]
 ///     params = [[['a0', 'b0'], ['c0', 'd0']],
 ///               [['a1', 'b1'], ['c1', 'd1']]]
 ///     output = [['c0', 'd0'], ['a1', 'b1']]
-///
-///
+/// 
+/// 
 ///     indices = [[0, 0, 1], [1, 0, 1]]
 ///     params = [[['a0', 'b0'], ['c0', 'd0']],
 ///               [['a1', 'b1'], ['c1', 'd1']]]
 ///     output = ['b0', 'b1']
 /// ```
-///
+/// 
 /// Batched indexing into a matrix:
-///
+/// 
 /// ```python
 ///     indices = [[[0, 0]], [[0, 1]]]
 ///     params = [['a', 'b'], ['c', 'd']]
 ///     output = [['a'], ['b']]
 /// ```
-///
+/// 
 /// Batched slice indexing into a matrix:
-///
+/// 
 /// ```python
 ///     indices = [[[1]], [[0]]]
 ///     params = [['a', 'b'], ['c', 'd']]
 ///     output = [[['c', 'd']], [['a', 'b']]]
 /// ```
-///
+/// 
 /// Batched indexing into a 3-tensor:
-///
+/// 
 /// ```python
 ///     indices = [[[1]], [[0]]]
 ///     params = [[['a0', 'b0'], ['c0', 'd0']],
 ///               [['a1', 'b1'], ['c1', 'd1']]]
 ///     output = [[[['a1', 'b1'], ['c1', 'd1']]],
 ///               [[['a0', 'b0'], ['c0', 'd0']]]]
-///
+/// 
 ///     indices = [[[0, 1], [1, 0]], [[0, 0], [1, 1]]]
 ///     params = [[['a0', 'b0'], ['c0', 'd0']],
 ///               [['a1', 'b1'], ['c1', 'd1']]]
 ///     output = [[['c0', 'd0'], ['a1', 'b1']],
 ///               [['a0', 'b0'], ['c1', 'd1']]]
-///
-///
+/// 
+/// 
 ///     indices = [[[0, 0, 1], [1, 0, 1]], [[0, 1, 1], [1, 1, 0]]]
 ///     params = [[['a0', 'b0'], ['c0', 'd0']],
 ///               [['a1', 'b1'], ['c1', 'd1']]]
 ///     output = [['b0', 'b1'], ['d0', 'c1']]
 /// ```
-///
+/// 
 /// See also `tf.gather` and `tf.batch_gather`.
 ///
 /// - Parameters:
@@ -12250,29 +13884,29 @@ public static func gatherNd<
 /// `indices` must be an integer tensor of any dimension (usually 0-D or 1-D).
 /// Produces an output tensor with shape `params.shape[:axis] + indices.shape +
 /// params.shape[axis + 1:]` where:
-///
+/// 
 /// ```python
 ///     # Scalar indices (output is rank(params) - 1).
 ///     output[a_0, ..., a_n, b_0, ..., b_n] =
 ///       params[a_0, ..., a_n, indices, b_0, ..., b_n]
-///
+/// 
 ///     # Vector indices (output is rank(params)).
 ///     output[a_0, ..., a_n, i, b_0, ..., b_n] =
 ///       params[a_0, ..., a_n, indices[i], b_0, ..., b_n]
-///
+/// 
 ///     # Higher rank indices (output is rank(params) + rank(indices) - 1).
 ///     output[a_0, ..., a_n, i, ..., j, b_0, ... b_n] =
 ///       params[a_0, ..., a_n, indices[i, ..., j], b_0, ..., b_n]
 /// ```
-///
+/// 
 /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
 /// <img style="width:100%" src="https://www.tensorflow.org/images/Gather.png" alt>
 /// </div>
-///
+/// 
 /// Note that on CPU, if an out of bound index is found, an error is returned.
 /// On GPU, if an out of bound index is found, a 0 is stored in the
 /// corresponding output value.
-///
+/// 
 /// See also `tf.batch_gather` and `tf.gather_nd`.
 ///
 /// - Parameters:
@@ -12292,10 +13926,12 @@ public static func gatherV2<
 >(
     params: Tensor<Tparams>,
     indices: Tensor<Tindices>,
-    axis: Tensor<Taxis>
+    axis: Tensor<Taxis>,
+    batchDims: Int64 = 0
 ) -> Tensor<Tparams> {
   let nOutputs = Int(1)
     let op = makeOp("GatherV2", nOutputs)
+    op.updateAttribute("batch_dims", batchDims)
     op.updateAttribute("Tparams", Tparams.tensorFlowDataType)
     op.updateAttribute("Tindices", Tindices.tensorFlowDataType)
     op.updateAttribute("Taxis", Taxis.tensorFlowDataType)
@@ -12305,101 +13941,59 @@ public static func gatherV2<
     return op.execute(Int(1))
 }
 
-/// Re-configures the GCS block cache with the new configuration values.
+/// This op produces Region of Interests from given bounding boxes(bbox_deltas) encoded wrt anchors according to eq.2 in arXiv:1506.01497
 ///
-/// If the values are the same as already configured values, this op is a no-op. If
-/// they are different, the current contents of the block cache is dropped, and a
-/// new block cache is created fresh.
+///       The op selects top `pre_nms_topn` scoring boxes, decodes them with respect to anchors,
+///       applies non-maximal suppression on overlapping boxes with higher than
+///       `nms_threshold` intersection-over-union (iou) value, discarding boxes where shorter
+///       side is less than `min_size`.
+///       Inputs:
+///       `scores`: A 4D tensor of shape [Batch, Height, Width, Num Anchors] containing the scores per anchor at given postion
+///       `bbox_deltas`: is a tensor of shape [Batch, Height, Width, 4 x Num Anchors] boxes encoded to each anchor
+///       `anchors`: A 1D tensor of shape [4 x Num Anchors], representing the anchors.
+///       Outputs:
+///       `rois`: output RoIs, a 3D tensor of shape [Batch, post_nms_topn, 4], padded by 0 if less than post_nms_topn candidates found.
+///       `roi_probabilities`: probability scores of each roi in 'rois', a 2D tensor of shape [Batch,post_nms_topn], padded with 0 if needed, sorted by scores.
+///
+/// - Parameters:
+///     - scores: A 4-D float tensor of shape `[num_images, height, width, num_achors]` containing scores of the boxes for given anchors, can be unsorted.
+///     - bbox_deltas: A 4-D float tensor of shape `[num_images, height, width, 4 x num_anchors]`. encoding boxes with respec to each anchor.
+///         Coordinates are given in the form [dy, dx, dh, dw].
+///     - image_info: A 2-D float tensor of shape `[num_images, 5]` containing image information Height, Width, Scale.
+///     - anchors: A 2-D float tensor of shape `[num_anchors, 4]` describing the anchor boxes. Boxes are formatted in the form [y1, x1, y2, x2].
+///     - nms_threshold: A scalar float tensor for non-maximal-suppression threshold.
+///     - pre_nms_topn: A scalar int tensor for the number of top scoring boxes to be used as input.
+///     - min_size: A scalar float tensor. Any box that has a smaller size than min_size will be discarded.
+///
+/// - Attr post_nms_topn: An integer. Maximum number of rois in the output.
+///
+/// - Outputs:
+///     - rois: A 3-D float tensor of shape `[num_images,post_nms_topn,4]` representing the selected
+///         region of interest boxes. Sorted in descending order in scores.
+///     - roi_probabilities: A 2-D float tensor of shape `[num_images, post_nms_topn]` representing the score of the
+///         region of interest box in `rois` tensor at the same index.
 @inlinable @inline(__always)
-public static func gcsConfigureBlockCache(
-    maxCacheSize: Tensor<UInt64>,
-    blockSize: Tensor<UInt64>,
-    maxStaleness: Tensor<UInt64>
-) {
-  let nOutputs = 0
-    let op = makeOp("GcsConfigureBlockCache", nOutputs)
-    op.addInput(maxCacheSize)
-    op.addInput(blockSize)
-    op.addInput(maxStaleness)
-    op.execute()
-}
-
-/// Configures the credentials used by the GCS client of the local TF runtime.
-///
-/// The json input can be of the format:
-///
-/// 1. Refresh Token:
-/// {
-///   "client_id": "<redacted>",
-///   "client_secret": "<redacted>",
-///   "refresh_token: "<redacted>",
-///   "type": "authorized_user",
-/// }
-///
-/// 2. Service Account:
-/// {
-///   "type": "service_account",
-///   "project_id": "<redacted>",
-///   "private_key_id": "<redacted>",
-///   "private_key": "------BEGIN PRIVATE KEY-----\n<REDACTED>\n-----END PRIVATE KEY------\n",
-///   "client_email": "<REDACTED>@<REDACTED>.iam.gserviceaccount.com",
-///   "client_id": "<REDACTED>",
-///   # Some additional fields elided
-/// }
-///
-/// Note the credentials established through this method are shared across all
-/// sessions run on this runtime.
-///
-/// Note be sure to feed the inputs to this op to ensure the credentials are not
-/// stored in a constant op within the graph that might accidentally be checkpointed
-/// or in other ways be persisted or exfiltrated.
-@inlinable @inline(__always)
-public static func gcsConfigureCredentials(
-    json: StringTensor
-) {
-  let nOutputs = 0
-    let op = makeOp("GcsConfigureCredentials", nOutputs)
-    op.addInput(json)
-    op.execute()
-}
-
-/// Generates serialized partition messages suitable for batch reads.
-///
-/// This op should not be used directly by clients. Instead, the
-/// bigquery_reader_ops.py file defines a clean interface to the reader.
-///
-/// - Attrs:
-///     - project_id: GCP project ID.
-///     - dataset_id: BigQuery Dataset ID.
-///     - table_id: Table to read.
-///     - columns: List of columns to read. Leave empty to read all columns.
-///     - timestamp_millis: Table snapshot timestamp in millis since epoch. Relative
-///         (negative or zero) snapshot times are not allowed. For more details, see
-///         'Table Decorators' in BigQuery docs.
-///     - num_partitions: Number of partitions to split the table into.
-///     - test_end_point: Do not use. For testing purposes only.
-///
-/// - Output partitions: Serialized table partitions.
-@inlinable @inline(__always)
-public static func generateBigQueryReaderPartitions(
-    projectId: String,
-    datasetId: String,
-    tableId: String,
-    columns: [String],
-    timestampMillis: Int64,
-    numPartitions: Int64,
-    testEndPoint: String
-) -> StringTensor {
-  let nOutputs = Int(1)
-    let op = makeOp("GenerateBigQueryReaderPartitions", nOutputs)
-    op.updateAttribute("project_id", projectId)
-    op.updateAttribute("dataset_id", datasetId)
-    op.updateAttribute("table_id", tableId)
-    op.updateAttribute("columns", columns)
-    op.updateAttribute("timestamp_millis", timestampMillis)
-    op.updateAttribute("num_partitions", numPartitions)
-    op.updateAttribute("test_end_point", testEndPoint)
-    return op.execute(Int(1))
+public static func generateBoundingBoxProposals(
+    scores: Tensor<Float>,
+    bboxDeltas: Tensor<Float>,
+    imageInfo: Tensor<Float>,
+    anchors: Tensor<Float>,
+    nmsThreshold: Tensor<Float>,
+    preNmsTopn: Tensor<Int32>,
+    minSize: Tensor<Float>,
+    postNmsTopn: Int64 = 300
+) -> (rois: Tensor<Float>, roiProbabilities: Tensor<Float>) {
+  let nOutputs = Int(1) + Int(1)
+    let op = makeOp("GenerateBoundingBoxProposals", nOutputs)
+    op.updateAttribute("post_nms_topn", postNmsTopn)
+    op.addInput(scores)
+    op.addInput(bboxDeltas)
+    op.addInput(imageInfo)
+    op.addInput(anchors)
+    op.addInput(nmsThreshold)
+    op.addInput(preNmsTopn)
+    op.addInput(minSize)
+    return op.execute(Int(1), Int(1))
 }
 
 /// Given a path to new and old vocabulary files, returns a remapping Tensor of
@@ -12410,21 +14004,21 @@ public static func generateBigQueryReaderPartitions(
 /// in the new vocabulary is not in the old vocabulary.  The old vocabulary is
 /// constrained to the first `old_vocab_size` entries if `old_vocab_size` is not the
 /// default value of -1.
-///
+/// 
 /// `num_vocab_offset` enables
 /// use in the partitioned variable case, and should generally be set through
 /// examining partitioning info.  The format of the files should be a text file,
 /// with each line containing a single entity within the vocabulary.
-///
+/// 
 /// For example, with `new_vocab_file` a text file containing each of the following
 /// elements on a single line: `[f0, f1, f2, f3]`, old_vocab_file = [f1, f0, f3],
 /// `num_new_vocab = 3, new_vocab_offset = 1`, the returned remapping would be
 /// `[0, -1, 2]`.
-///
+/// 
 /// The op also returns a count of how many entries in the new vocabulary
 /// were present in the old vocabulary, which is used to calculate the number of
 /// values to initialize in a weight matrix remapping
-///
+/// 
 /// This functionality can be used to remap both row vocabularies (typically,
 /// features) and column vocabularies (typically, classes) from TensorFlow
 /// checkpoints.  Note that the partitioning logic relies on contiguous vocabularies
@@ -12569,6 +14163,18 @@ public static func graphDefVersion(
 ///
 /// *NOTE*: `Greater` supports broadcasting. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
+/// 
+/// Example:
+/// 
+/// ```python
+/// x = tf.constant([5, 4, 6])
+/// y = tf.constant([5, 2, 5])
+/// tf.math.greater(x, y) ==> [False, True, True]
+/// 
+/// x = tf.constant([5, 4, 6])
+/// y = tf.constant([5])
+/// tf.math.greater(x, y) ==> [False, False, True]
+/// ```
 @inlinable @inline(__always)
 public static func greater<T: TensorFlowNumeric>(
     _ x: Tensor<T>,
@@ -12586,6 +14192,18 @@ public static func greater<T: TensorFlowNumeric>(
 ///
 /// *NOTE*: `GreaterEqual` supports broadcasting. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
+/// 
+/// Example:
+/// 
+/// ```python
+/// x = tf.constant([5, 4, 6, 7])
+/// y = tf.constant([5, 2, 5, 10])
+/// tf.math.greater_equal(x, y) ==> [True, True, True, False]
+/// 
+/// x = tf.constant([5, 4, 6, 7])
+/// y = tf.constant([5])
+/// tf.math.greater_equal(x, y) ==> [True, False, True, True]
+/// ```
 @inlinable @inline(__always)
 public static func greaterEqual<T: TensorFlowNumeric>(
     _ x: Tensor<T>,
@@ -12599,13 +14217,128 @@ public static func greaterEqual<T: TensorFlowNumeric>(
     return op.execute(Int(1))
 }
 
+/// Creates a dataset that computes a group-by on `input_dataset`.
+///
+/// Creates a dataset that computes a group-by on `input_dataset`.
+///
+/// - Parameters:
+///     - input_dataset: A variant tensor representing the input dataset.
+///     - key_func_other_arguments: A list of tensors, typically values that were captured when
+///         building a closure for `key_func`.
+///     - init_func_other_arguments: A list of tensors, typically values that were captured when
+///         building a closure for `init_func`.
+///     - reduce_func_other_arguments: A list of tensors, typically values that were captured when
+///         building a closure for `reduce_func`.
+///     - finalize_func_other_arguments: A list of tensors, typically values that were captured when
+///         building a closure for `finalize_func`.
+///
+/// - Attrs:
+///     - key_func: A function mapping an element of `input_dataset`, concatenated
+///         with `key_func_other_arguments` to a scalar value of type DT_INT64.
+///     - init_func: A function mapping a key of type DT_INT64, concatenated with
+///         `init_func_other_arguments` to the initial reducer state.
+///     - reduce_func: A function mapping the current reducer state and an element of `input_dataset`,
+///         concatenated with `reduce_func_other_arguments` to a new reducer state.
+///     - finalize_func: A function mapping the final reducer state to an output element.
+@inlinable @inline(__always)
+public static func groupByReducerDataset<
+    KeyfuncIn: TensorGroup,
+    KeyfuncOut: TensorGroup,
+    InitfuncIn: TensorGroup,
+    InitfuncOut: TensorGroup,
+    ReducefuncIn: TensorGroup,
+    ReducefuncOut: TensorGroup,
+    FinalizefuncIn: TensorGroup,
+    FinalizefuncOut: TensorGroup,
+    TkeyFuncOtherArguments: TensorArrayProtocol,
+    TinitFuncOtherArguments: TensorArrayProtocol,
+    TreduceFuncOtherArguments: TensorArrayProtocol,
+    TfinalizeFuncOtherArguments: TensorArrayProtocol
+>(
+    inputDataset: VariantHandle,
+    keyFuncOtherArguments: TkeyFuncOtherArguments,
+    initFuncOtherArguments: TinitFuncOtherArguments,
+    reduceFuncOtherArguments: TreduceFuncOtherArguments,
+    finalizeFuncOtherArguments: TfinalizeFuncOtherArguments,
+    keyFunc: (KeyfuncIn) -> KeyfuncOut,
+    initFunc: (InitfuncIn) -> InitfuncOut,
+    reduceFunc: (ReducefuncIn) -> ReducefuncOut,
+    finalizeFunc: (FinalizefuncIn) -> FinalizefuncOut,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?]
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("GroupByReducerDataset", nOutputs)
+    op.updateAttribute("key_func", keyFunc)
+    op.updateAttribute("init_func", initFunc)
+    op.updateAttribute("reduce_func", reduceFunc)
+    op.updateAttribute("finalize_func", finalizeFunc)
+    op.updateAttribute("Tkey_func_other_arguments", keyFuncOtherArguments._typeList)
+    op.updateAttribute("Tinit_func_other_arguments", initFuncOtherArguments._typeList)
+    op.updateAttribute("Treduce_func_other_arguments", reduceFuncOtherArguments._typeList)
+    op.updateAttribute("Tfinalize_func_other_arguments", finalizeFuncOtherArguments._typeList)
+    op.updateAttribute("output_types", outputTypes)
+    op.updateAttribute("output_shapes", outputShapes)
+    op.addInput(inputDataset)
+    op.addInputList(keyFuncOtherArguments)
+    op.addInputList(initFuncOtherArguments)
+    op.addInputList(reduceFuncOtherArguments)
+    op.addInputList(finalizeFuncOtherArguments)
+    return op.execute(Int(1))
+}
+
+/// Creates a dataset that computes a windowed group-by on `input_dataset`.
+///
+/// // TODO(mrry): Support non-int64 keys.
+///
+/// - Attr key_func: A function mapping an element of `input_dataset`, concatenated
+///     with `key_func_other_arguments` to a scalar value of type DT_INT64.
+@inlinable @inline(__always)
+public static func groupByWindowDataset<
+    KeyfuncIn: TensorGroup,
+    KeyfuncOut: TensorGroup,
+    ReducefuncIn: TensorGroup,
+    ReducefuncOut: TensorGroup,
+    WindowsizefuncIn: TensorGroup,
+    WindowsizefuncOut: TensorGroup,
+    TkeyFuncOtherArguments: TensorArrayProtocol,
+    TreduceFuncOtherArguments: TensorArrayProtocol,
+    TwindowSizeFuncOtherArguments: TensorArrayProtocol
+>(
+    inputDataset: VariantHandle,
+    keyFuncOtherArguments: TkeyFuncOtherArguments,
+    reduceFuncOtherArguments: TreduceFuncOtherArguments,
+    windowSizeFuncOtherArguments: TwindowSizeFuncOtherArguments,
+    keyFunc: (KeyfuncIn) -> KeyfuncOut,
+    reduceFunc: (ReducefuncIn) -> ReducefuncOut,
+    windowSizeFunc: (WindowsizefuncIn) -> WindowsizefuncOut,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?]
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("GroupByWindowDataset", nOutputs)
+    op.updateAttribute("key_func", keyFunc)
+    op.updateAttribute("reduce_func", reduceFunc)
+    op.updateAttribute("window_size_func", windowSizeFunc)
+    op.updateAttribute("Tkey_func_other_arguments", keyFuncOtherArguments._typeList)
+    op.updateAttribute("Treduce_func_other_arguments", reduceFuncOtherArguments._typeList)
+    op.updateAttribute("Twindow_size_func_other_arguments", windowSizeFuncOtherArguments._typeList)
+    op.updateAttribute("output_types", outputTypes)
+    op.updateAttribute("output_shapes", outputShapes)
+    op.addInput(inputDataset)
+    op.addInputList(keyFuncOtherArguments)
+    op.addInputList(reduceFuncOtherArguments)
+    op.addInputList(windowSizeFuncOtherArguments)
+    return op.execute(Int(1))
+}
+
 /// Gives a guarantee to the TF runtime that the input tensor is a constant.
 ///
 /// The runtime is then free to make optimizations based on this.
-///
+/// 
 /// Only accepts value typed tensors as inputs and rejects resource variable handles
 /// as input.
-///
+/// 
 /// Returns the input tensor without modification.
 @inlinable @inline(__always)
 public static func guaranteeConst<T: TensorFlowScalar>(
@@ -12623,7 +14356,7 @@ public static func guaranteeConst<T: TensorFlowScalar>(
 /// Outputs a tensor of the same shape as the `images` tensor, containing the RGB
 /// value of the pixels. The output is only well defined if the value in `images`
 /// are in `[0,1]`.
-///
+/// 
 /// See `rgb_to_hsv` for a description of the HSV encoding.
 ///
 /// - Parameter images: 1-D or higher rank. HSV data to convert. Last dimension must be size 3.
@@ -12680,13 +14413,13 @@ public static func hashTableV2(
 /// Given the tensor `values`, this operation returns a rank 1 histogram counting
 /// the number of entries in `values` that fall into every bin.  The bins are
 /// equal width and determined by the arguments `value_range` and `nbins`.
-///
+/// 
 /// ```python
 /// # Bins will be:  (-inf, 1), [1, 2), [2, 3), [3, 4), [4, inf)
 /// nbins = 5
 /// value_range = [0.0, 5.0]
 /// new_values = [-1.0, 0.0, 1.5, 2.0, 5.0, 15]
-///
+/// 
 /// with tf.get_default_session() as sess:
 ///   hist = tf.histogram_fixed_width(new_values, value_range, nbins=5)
 ///   variables.global_variables_initializer().run()
@@ -12725,7 +14458,7 @@ public static func histogramFixedWidth<
 /// The generated
 /// [`Summary`](https://www.tensorflow.org/code/tensorflow/core/framework/summary.proto)
 /// has one summary value containing a histogram for `values`.
-///
+/// 
 /// This op reports an `InvalidArgument` error if any value is not finite.
 ///
 /// - Parameters:
@@ -12755,7 +14488,7 @@ public static func histogramSummary<T: TensorFlowNumeric>(
 ///
 /// - Output output: A complex tensor of the same shape as `input`. The inner-most
 ///       dimension of `input` is replaced with its inverse 1D Fourier transform.
-///
+///     
 ///     @compatibility(numpy)
 ///     Equivalent to np.fft.ifft
 ///     @end_compatibility
@@ -12779,7 +14512,7 @@ public static func iFFT<Tcomplex: TensorFlowScalar>(
 ///
 /// - Output output: A complex tensor of the same shape as `input`. The inner-most 2
 ///       dimensions of `input` are replaced with their inverse 2D Fourier transform.
-///
+///     
 ///     @compatibility(numpy)
 ///     Equivalent to np.fft.ifft2
 ///     @end_compatibility
@@ -12799,11 +14532,11 @@ public static func iFFT2D<Tcomplex: TensorFlowScalar>(
 /// Computes the inverse 3-dimensional discrete Fourier transform over the
 /// inner-most 3 dimensions of `input`.
 ///
-/// - Parameter input: A complex64 tensor.
+/// - Parameter input: A complex tensor.
 ///
-/// - Output output: A complex64 tensor of the same shape as `input`. The inner-most 3
+/// - Output output: A complex tensor of the same shape as `input`. The inner-most 3
 ///       dimensions of `input` are replaced with their inverse 3D Fourier transform.
-///
+///     
 ///     @compatibility(numpy)
 ///     Equivalent to np.fft.ifftn with 3 dimensions.
 ///     @end_compatibility
@@ -12815,6 +14548,140 @@ public static func iFFT3D<Tcomplex: TensorFlowScalar>(
     let op = makeOp("IFFT3D", nOutputs)
     op.updateAttribute("Tcomplex", Tcomplex.tensorFlowDataType)
     op.addInput(input)
+    return op.execute(Int(1))
+}
+
+/// Inverse real-valued fast Fourier transform.
+///
+/// Computes the inverse 1-dimensional discrete Fourier transform of a real-valued
+/// signal over the inner-most dimension of `input`.
+/// 
+/// The inner-most dimension of `input` is assumed to be the result of `RFFT`: the
+/// `fft_length / 2 + 1` unique components of the DFT of a real-valued signal. If
+/// `fft_length` is not provided, it is computed from the size of the inner-most
+/// dimension of `input` (`fft_length = 2 * (inner - 1)`). If the FFT length used to
+/// compute `input` is odd, it should be provided since it cannot be inferred
+/// properly.
+/// 
+/// Along the axis `IRFFT` is computed on, if `fft_length / 2 + 1` is smaller
+/// than the corresponding dimension of `input`, the dimension is cropped. If it is
+/// larger, the dimension is padded with zeros.
+///
+/// - Parameters:
+///     - input: A complex tensor.
+///     - fft_length: An int32 tensor of shape [1]. The FFT length.
+///
+/// - Output output: A float32 tensor of the same rank as `input`. The inner-most
+///       dimension of `input` is replaced with the `fft_length` samples of its inverse
+///       1D Fourier transform.
+///     
+///     @compatibility(numpy)
+///     Equivalent to np.fft.irfft
+///     @end_compatibility
+@inlinable @inline(__always)
+public static func iRFFT<
+    Treal: FloatingPoint & TensorFlowScalar,
+    Tcomplex: TensorFlowScalar
+>(
+    _ input: Tensor<Tcomplex>,
+    fftLength: Tensor<Int32>
+) -> Tensor<Treal> {
+  let nOutputs = Int(1)
+    let op = makeOp("IRFFT", nOutputs)
+    op.updateAttribute("Treal", Treal.tensorFlowDataType)
+    op.updateAttribute("Tcomplex", Tcomplex.tensorFlowDataType)
+    op.addInput(input)
+    op.addInput(fftLength)
+    return op.execute(Int(1))
+}
+
+/// Inverse 2D real-valued fast Fourier transform.
+///
+/// Computes the inverse 2-dimensional discrete Fourier transform of a real-valued
+/// signal over the inner-most 2 dimensions of `input`.
+/// 
+/// The inner-most 2 dimensions of `input` are assumed to be the result of `RFFT2D`:
+/// The inner-most dimension contains the `fft_length / 2 + 1` unique components of
+/// the DFT of a real-valued signal. If `fft_length` is not provided, it is computed
+/// from the size of the inner-most 2 dimensions of `input`. If the FFT length used
+/// to compute `input` is odd, it should be provided since it cannot be inferred
+/// properly.
+/// 
+/// Along each axis `IRFFT2D` is computed on, if `fft_length` (or
+/// `fft_length / 2 + 1` for the inner-most dimension) is smaller than the
+/// corresponding dimension of `input`, the dimension is cropped. If it is larger,
+/// the dimension is padded with zeros.
+///
+/// - Parameters:
+///     - input: A complex tensor.
+///     - fft_length: An int32 tensor of shape [2]. The FFT length for each dimension.
+///
+/// - Output output: A float32 tensor of the same rank as `input`. The inner-most 2
+///       dimensions of `input` are replaced with the `fft_length` samples of their
+///       inverse 2D Fourier transform.
+///     
+///     @compatibility(numpy)
+///     Equivalent to np.fft.irfft2
+///     @end_compatibility
+@inlinable @inline(__always)
+public static func iRFFT2D<
+    Treal: FloatingPoint & TensorFlowScalar,
+    Tcomplex: TensorFlowScalar
+>(
+    _ input: Tensor<Tcomplex>,
+    fftLength: Tensor<Int32>
+) -> Tensor<Treal> {
+  let nOutputs = Int(1)
+    let op = makeOp("IRFFT2D", nOutputs)
+    op.updateAttribute("Treal", Treal.tensorFlowDataType)
+    op.updateAttribute("Tcomplex", Tcomplex.tensorFlowDataType)
+    op.addInput(input)
+    op.addInput(fftLength)
+    return op.execute(Int(1))
+}
+
+/// Inverse 3D real-valued fast Fourier transform.
+///
+/// Computes the inverse 3-dimensional discrete Fourier transform of a real-valued
+/// signal over the inner-most 3 dimensions of `input`.
+/// 
+/// The inner-most 3 dimensions of `input` are assumed to be the result of `RFFT3D`:
+/// The inner-most dimension contains the `fft_length / 2 + 1` unique components of
+/// the DFT of a real-valued signal. If `fft_length` is not provided, it is computed
+/// from the size of the inner-most 3 dimensions of `input`. If the FFT length used
+/// to compute `input` is odd, it should be provided since it cannot be inferred
+/// properly.
+/// 
+/// Along each axis `IRFFT3D` is computed on, if `fft_length` (or
+/// `fft_length / 2 + 1` for the inner-most dimension) is smaller than the
+/// corresponding dimension of `input`, the dimension is cropped. If it is larger,
+/// the dimension is padded with zeros.
+///
+/// - Parameters:
+///     - input: A complex tensor.
+///     - fft_length: An int32 tensor of shape [3]. The FFT length for each dimension.
+///
+/// - Output output: A float32 tensor of the same rank as `input`. The inner-most 3
+///       dimensions of `input` are replaced with the `fft_length` samples of their
+///       inverse 3D real Fourier transform.
+///     
+///     @compatibility(numpy)
+///     Equivalent to np.irfftn with 3 dimensions.
+///     @end_compatibility
+@inlinable @inline(__always)
+public static func iRFFT3D<
+    Treal: FloatingPoint & TensorFlowScalar,
+    Tcomplex: TensorFlowScalar
+>(
+    _ input: Tensor<Tcomplex>,
+    fftLength: Tensor<Int32>
+) -> Tensor<Treal> {
+  let nOutputs = Int(1)
+    let op = makeOp("IRFFT3D", nOutputs)
+    op.updateAttribute("Treal", Treal.tensorFlowDataType)
+    op.updateAttribute("Tcomplex", Tcomplex.tensorFlowDataType)
+    op.addInput(input)
+    op.addInput(fftLength)
     return op.execute(Int(1))
 }
 
@@ -12833,16 +14700,16 @@ public static func identity<T: TensorFlowScalar>(
 /// Returns a list of tensors with the same shapes and contents as the input
 ///
 /// tensors.
-///
+/// 
 /// This op can be used to override the gradient for complicated functions. For
 /// example, suppose y = f(x) and we wish to apply a custom function g for backprop
 /// such that dx = g(dy). In Python,
-///
+/// 
 /// ```python
 /// with tf.get_default_graph().gradient_override_map(
 ///     {'IdentityN': 'OverrideGradientWithG'}):
 ///   y, _ = identity_n([f(x), x])
-///
+/// 
 /// @tf.RegisterGradient('OverrideGradientWithG')
 /// def ApplyG(op, dy, _):
 ///   return [None, g(dy)]  # Do not backprop to f(x).
@@ -12934,16 +14801,16 @@ public static func if_<
 /// Compute the lower regularized incomplete Gamma function `P(a, x)`.
 ///
 /// The lower regularized incomplete Gamma function is defined as:
-///
-///
+/// 
+/// 
 /// \\(P(a, x) = gamma(a, x) / Gamma(a) = 1 - Q(a, x)\\)
-///
+/// 
 /// where
-///
+/// 
 /// \\(gamma(a, x) = \\int_{0}^{x} t^{a-1} exp(-t) dt\\)
-///
+/// 
 /// is the lower incomplete Gamma function.
-///
+/// 
 /// Note, above `Q(a, x)` (`Igammac`) is the upper regularized complete
 /// Gamma function.
 @inlinable @inline(__always)
@@ -12976,15 +14843,15 @@ public static func igammaGradA<T: FloatingPoint & TensorFlowScalar>(
 /// Compute the upper regularized incomplete Gamma function `Q(a, x)`.
 ///
 /// The upper regularized incomplete Gamma function is defined as:
-///
+/// 
 /// \\(Q(a, x) = Gamma(a, x) / Gamma(a) = 1 - P(a, x)\\)
-///
+/// 
 /// where
-///
+/// 
 /// \\(Gamma(a, x) = int_{x}^{\infty} t^{a-1} exp(-t) dt\\)
-///
+/// 
 /// is the upper incomplete Gama function.
-///
+/// 
 /// Note, above `P(a, x)` (`Igamma`) is the lower regularized complete
 /// Gamma function.
 @inlinable @inline(__always)
@@ -13000,15 +14867,30 @@ public static func igammac<T: FloatingPoint & TensorFlowScalar>(
     return op.execute(Int(1))
 }
 
+/// Creates a dataset that contains the elements of `input_dataset` ignoring errors.
+@inlinable @inline(__always)
+public static func ignoreErrorsDataset(
+    inputDataset: VariantHandle,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?]
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("IgnoreErrorsDataset", nOutputs)
+    op.updateAttribute("output_types", outputTypes)
+    op.updateAttribute("output_shapes", outputShapes)
+    op.addInput(inputDataset)
+    return op.execute(Int(1))
+}
+
 /// Returns the imaginary part of a complex number.
 ///
 /// Given a tensor `input` of complex numbers, this operation returns a tensor of
 /// type `float` that is the imaginary part of each element in `input`. All
 /// elements in `input` must be complex numbers of the form \\(a + bj\\), where *a*
 /// is the real part and *b* is the imaginary part returned by this operation.
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// # tensor 'input' is [-2.25 + 4.75j, 3.25 + 5.75j]
 /// tf.imag(input) ==> [4.75, 5.75]
@@ -13085,13 +14967,13 @@ public static func inPolymorphicTwice<T: TensorFlowScalar>(
 /// from the `TopK` op in its handling of ties; if multiple classes have the
 /// same prediction value and straddle the top-`k` boundary, all of those
 /// classes are considered to be in the top `k`.
-///
+/// 
 /// More formally, let
-///
+/// 
 ///   \\(predictions_i\\) be the predictions for all classes for example `i`,
 ///   \\(targets_i\\) be the target class for example `i`,
 ///   \\(out_i\\) be the output for example `i`,
-///
+/// 
 /// $$out_i = predictions_{i, targets_i} \in TopKIncludingTies(predictions_i)$$
 ///
 /// - Parameters:
@@ -13124,13 +15006,13 @@ public static func inTopK<T: TensorFlowIndex>(
 /// from the `TopK` op in its handling of ties; if multiple classes have the
 /// same prediction value and straddle the top-`k` boundary, all of those
 /// classes are considered to be in the top `k`.
-///
+/// 
 /// More formally, let
-///
+/// 
 ///   \\(predictions_i\\) be the predictions for all classes for example `i`,
 ///   \\(targets_i\\) be the target class for example `i`,
 ///   \\(out_i\\) be the output for example `i`,
-///
+/// 
 /// $$out_i = predictions_{i, targets_i} \in TopKIncludingTies(predictions_i)$$
 ///
 /// - Parameters:
@@ -13276,7 +15158,7 @@ public static func infeedEnqueueTuple<Dtypes: TensorArrayProtocol>(
 /// split line based on `delimiter` or the line number (starting from zero).
 /// Where to extract the key and value from a line is specified by `key_index` and
 /// `value_index`.
-///
+/// 
 /// - A value of -1 means use the line number(starting from zero), expects `int64`.
 /// - A value of -2 means use the whole line content, expects `string`.
 /// - A value >= 0 means use the index (starting at zero) of the split line based
@@ -13338,7 +15220,7 @@ public static func initializeTableV2<
 }
 
 ///     Adds v into specified rows of x.
-///
+/// 
 ///     Computes y = x; y[i, :] += v; return y.
 ///
 /// - Parameters:
@@ -13363,7 +15245,7 @@ public static func inplaceAdd<T: TensorFlowScalar>(
 }
 
 ///     Subtracts `v` into specified rows of `x`.
-///
+/// 
 ///     Computes y = x; y[i, :] -= v; return y.
 ///
 /// - Parameters:
@@ -13388,7 +15270,7 @@ public static func inplaceSub<T: TensorFlowScalar>(
 }
 
 ///     Updates specified rows with values in `v`.
-///
+/// 
 ///     Computes `x[i, :] = v; return x`.
 ///
 /// - Parameters:
@@ -13550,10 +15432,47 @@ public static func invGrad<T: FloatingPoint & TensorFlowScalar>(
     return op.execute(Int(1))
 }
 
-/// Flips all bits elementwise.
+/// Invert (flip) each bit of supported types; for example, type `uint8` value 01010101 becomes 10101010.
 ///
-/// The result will have exactly those bits set, that are not set in `x`. The
-/// computation is performed on the underlying representation of x.
+/// Flip each bit of supported types.  For example, type `int8` (decimal 2) binary 00000010 becomes (decimal -3) binary 11111101.
+/// This operation is performed on each element of the tensor argument `x`.
+/// 
+/// Example:
+/// ```python
+/// import tensorflow as tf
+/// from tensorflow.python.ops import bitwise_ops
+/// 
+/// # flip 2 (00000010) to -3 (11111101)
+/// tf.assert_equal(-3, bitwise_ops.invert(2))
+/// 
+/// dtype_list = [dtypes.int8, dtypes.int16, dtypes.int32, dtypes.int64,
+///               dtypes.uint8, dtypes.uint16, dtypes.uint32, dtypes.uint64]
+/// 
+/// inputs = [0, 5, 3, 14]
+/// for dtype in dtype_list:
+///   # Because of issues with negative numbers, let's test this indirectly.
+///   # 1. invert(a) and a = 0
+///   # 2. invert(a) or a = invert(0)
+///   input_tensor = tf.constant([0, 5, 3, 14], dtype=dtype)
+///   not_a_and_a, not_a_or_a, not_0 = [bitwise_ops.bitwise_and(
+///                                       input_tensor, bitwise_ops.invert(input_tensor)),
+///                                     bitwise_ops.bitwise_or(
+///                                       input_tensor, bitwise_ops.invert(input_tensor)),
+///                                     bitwise_ops.invert(
+///                                       tf.constant(0, dtype=dtype))]
+/// 
+///   expected = tf.constant([0, 0, 0, 0], dtype=tf.float32)
+///   tf.assert_equal(tf.cast(not_a_and_a, tf.float32), expected)
+/// 
+///   expected = tf.cast([not_0] * 4, tf.float32)
+///   tf.assert_equal(tf.cast(not_a_or_a, tf.float32), expected)
+/// 
+///   # For unsigned dtypes let's also check the result directly.
+///   if dtype.is_unsigned:
+///     inverted = bitwise_ops.invert(input_tensor)
+///     expected = tf.constant([dtype.max - x for x in inputs], dtype=tf.float32)
+///     tf.assert_equal(tf.cast(inverted, tf.float32), tf.cast(expected, tf.float32))
+/// ```
 @inlinable @inline(__always)
 public static func invert<T: TensorFlowInteger>(
     _ x: Tensor<T>
@@ -13571,13 +15490,13 @@ public static func invert<T: TensorFlowInteger>(
 /// integer tensor `x`, which represents the indices of a zero-based array, and
 /// swaps each value with its index position. In other words, for an output tensor
 /// `y` and an input tensor `x`, this operation computes the following:
-///
+/// 
 /// `y[x[i]] = i for i in [0, 1, ..., len(x) - 1]`
-///
+/// 
 /// The values must include 0. There can be no duplicate values or negative values.
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// # tensor `x` is [3, 4, 0, 2, 1]
 /// invert_permutation(x) ==> [2, 4, 3, 0, 1]
@@ -13634,6 +15553,13 @@ public static func isBoostedTreesQuantileStreamResourceInitialized(
 /// @compatibility(numpy)
 /// Equivalent to np.isfinite
 /// @end_compatibility
+/// 
+/// Example:
+/// 
+/// ```python
+/// x = tf.constant([5.0, 4.8, 6.8, np.inf, np.nan])
+/// tf.math.is_finite(x) ==> [True, True, True, False, False]
+/// ```
 @inlinable @inline(__always)
 public static func isFinite<T: FloatingPoint & TensorFlowScalar>(
     _ x: Tensor<T>
@@ -13650,6 +15576,13 @@ public static func isFinite<T: FloatingPoint & TensorFlowScalar>(
 /// @compatibility(numpy)
 /// Equivalent to np.isinf
 /// @end_compatibility
+/// 
+/// Example:
+/// 
+/// ```python
+/// x = tf.constant([5.0, np.inf, 6.8, np.inf])
+/// tf.math.is_inf(x) ==> [False, True, False, True]
+/// ```
 @inlinable @inline(__always)
 public static func isInf<T: FloatingPoint & TensorFlowScalar>(
     _ x: Tensor<T>
@@ -13666,6 +15599,13 @@ public static func isInf<T: FloatingPoint & TensorFlowScalar>(
 /// @compatibility(numpy)
 /// Equivalent to np.isnan
 /// @end_compatibility
+/// 
+/// Example:
+/// 
+/// ```python
+/// x = tf.constant([5.0, np.nan, 6.8, np.nan, np.inf])
+/// tf.math.is_nan(x) ==> [False, True, False, True, False]
+/// ```
 @inlinable @inline(__always)
 public static func isNan<T: FloatingPoint & TensorFlowScalar>(
     _ x: Tensor<T>
@@ -13733,6 +15673,17 @@ public static func iteratorFromStringHandleV2(
     op.updateAttribute("output_types", outputTypes)
     op.updateAttribute("output_shapes", outputShapes)
     op.addInput(stringHandle)
+    return op.execute(Int(1))
+}
+
+/// Returns the name of the device on which `resource` has been placed.
+@inlinable @inline(__always)
+public static func iteratorGetDevice(
+    resource: ResourceHandle
+) -> StringTensor {
+  let nOutputs = Int(1)
+    let op = makeOp("IteratorGetDevice", nOutputs)
+    op.addInput(resource)
     return op.execute(Int(1))
 }
 
@@ -13895,7 +15846,7 @@ public static func kmeansPlusPlusInitialization(
 /// L2 Loss.
 ///
 /// Computes half the L2 norm of a tensor without the `sqrt`:
-///
+/// 
 ///     output = sum(t ** 2) / 2
 ///
 /// - Parameter t: Typically 2-D, but may have any dimensions.
@@ -13912,17 +15863,46 @@ public static func l2Loss<T: FloatingPoint & TensorFlowScalar>(
     return op.execute(Int(1))
 }
 
+/// Creates a dataset that emits the key-value pairs in one or more LMDB files.
+///
+/// The Lightning Memory-Mapped Database Manager, or LMDB, is an embedded binary
+/// key-value database. This dataset can read the contents of LMDB database files,
+/// the names of which generally have the `.mdb` suffix.
+/// 
+/// Each output element consists of a key-value pair represented as a pair of
+/// scalar string `Tensor`s, where the first `Tensor` contains the key and the
+/// second `Tensor` contains the value.
+/// 
+/// LMDB uses different file formats on big- and little-endian machines.
+/// `LMDBDataset` can only read files in the format of the host machine.
+///
+/// - Parameter filenames: A scalar or a vector containing the name(s) of the binary file(s) to be
+///     read.
+@inlinable @inline(__always)
+public static func lMDBDataset(
+    filenames: StringTensor,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?]
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("LMDBDataset", nOutputs)
+    op.updateAttribute("output_types", outputTypes)
+    op.updateAttribute("output_shapes", outputShapes)
+    op.addInput(filenames)
+    return op.execute(Int(1))
+}
+
 /// Local Response Normalization.
 ///
 /// The 4-D `input` tensor is treated as a 3-D array of 1-D vectors (along the last
 /// dimension), and each vector is normalized independently.  Within a given vector,
 /// each component is divided by the weighted, squared sum of inputs within
 /// `depth_radius`.  In detail,
-///
+/// 
 ///     sqr_sum[a, b, c, d] =
 ///         sum(input[a, b, c, d - depth_radius : d + depth_radius + 1] ** 2)
 ///     output = input / (bias + alpha * sqr_sum) ** beta
-///
+/// 
 /// For details, see [Krizhevsky et al., ImageNet classification with deep
 /// convolutional neural networks (NIPS 2012)](http://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks).
 ///
@@ -13993,24 +15973,24 @@ public static func lRNGrad<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// This implementation uses 1 weight matrix and 1 bias vector, and there's an
 /// optional peephole connection.
-///
+/// 
 /// This kernel op implements the following mathematical equations:
-///
+/// 
 /// ```python
 /// xh = [x, h_prev]
 /// [i, f, ci, o] = xh * w + b
 /// f = f + forget_bias
-///
+/// 
 /// if not use_peephole:
 ///   wci = wcf = wco = 0
-///
+/// 
 /// i = sigmoid(cs_prev * wci + i)
 /// f = sigmoid(cs_prev * wcf + f)
 /// ci = tanh(ci)
-///
+/// 
 /// cs = ci .* i + cs_prev .* f
 /// cs = clip(cs, cell_clip)
-///
+/// 
 /// o = sigmoid(cs * wco + o)
 /// co = tanh(cs)
 /// h = co .* o
@@ -14143,6 +16123,23 @@ public static func lSTMBlockCellGrad<T: FloatingPoint & TensorFlowScalar>(
     return op.execute(Int(1), Int(1), Int(1), Int(1), Int(1))
 }
 
+/// Records the latency of producing `input_dataset` elements in a StatsAggregator.
+@inlinable @inline(__always)
+public static func latencyStatsDataset(
+    inputDataset: VariantHandle,
+    tag: StringTensor,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?]
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("LatencyStatsDataset", nOutputs)
+    op.updateAttribute("output_types", outputTypes)
+    op.updateAttribute("output_shapes", outputShapes)
+    op.addInput(inputDataset)
+    op.addInput(tag)
+    return op.execute(Int(1))
+}
+
 /// Computes rectified linear: `max(features, features * alpha)`.
 @inlinable @inline(__always)
 public static func leakyRelu<T: FloatingPoint & TensorFlowScalar>(
@@ -14164,7 +16161,7 @@ public static func leakyRelu<T: FloatingPoint & TensorFlowScalar>(
 ///     - features: The features passed as input to the corresponding LeakyRelu operation,
 ///         OR the outputs of that operation (both work equivalently).
 ///
-/// - Output backprops: `gradients * (features > 0) + alpha * gradients * (featurs <= 0)`.
+/// - Output backprops: `gradients * (features > 0) + alpha * gradients * (features <= 0)`.
 @inlinable @inline(__always)
 public static func leakyReluGrad<T: FloatingPoint & TensorFlowScalar>(
     gradients: Tensor<T>,
@@ -14184,9 +16181,9 @@ public static func leakyReluGrad<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// See explanations of candidate sampling and the data formats at
 /// go/candidate-sampling.
-///
+/// 
 /// For each batch, this op picks a single set of sampled candidate labels.
-///
+/// 
 /// The advantages of sampling candidates per-batch are simplicity and the
 /// possibility of efficient dense matrix multiplication. The disadvantage is that
 /// the sampled candidates must be chosen independently of the context and of the
@@ -14243,6 +16240,35 @@ public static func learnedUnigramCandidateSampler(
 ///
 /// If `y` is negative, or greater than or equal to the width of `x` in bits the
 /// result is implementation defined.
+/// 
+/// Example:
+/// 
+/// ```python
+/// import tensorflow as tf
+/// from tensorflow.python.ops import bitwise_ops
+/// import numpy as np
+/// dtype_list = [tf.int8, tf.int16, tf.int32, tf.int64]
+/// 
+/// for dtype in dtype_list:
+///   lhs = tf.constant([-1, -5, -3, -14], dtype=dtype)
+///   rhs = tf.constant([5, 0, 7, 11], dtype=dtype)
+/// 
+///   left_shift_result = bitwise_ops.left_shift(lhs, rhs)
+/// 
+///   print(left_shift_result)
+/// 
+/// # This will print:
+/// # tf.Tensor([ -32   -5 -128    0], shape=(4,), dtype=int8)
+/// # tf.Tensor([   -32     -5   -384 -28672], shape=(4,), dtype=int16)
+/// # tf.Tensor([   -32     -5   -384 -28672], shape=(4,), dtype=int32)
+/// # tf.Tensor([   -32     -5   -384 -28672], shape=(4,), dtype=int64)
+/// 
+/// lhs = np.array([-2, 64, 101, 32], dtype=np.int8)
+/// rhs = np.array([-1, -5, -3, -14], dtype=np.int8)
+/// bitwise_ops.left_shift(lhs, rhs)
+/// # <tf.Tensor: shape=(4,), dtype=int8, numpy=array([ -2,  64, 101,  32], dtype=int8)>
+/// ```
+/// 
 @inlinable @inline(__always)
 public static func leftShift<T: TensorFlowInteger>(
     _ x: Tensor<T>,
@@ -14260,6 +16286,18 @@ public static func leftShift<T: TensorFlowInteger>(
 ///
 /// *NOTE*: `Less` supports broadcasting. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
+/// 
+/// Example:
+/// 
+/// ```python
+/// x = tf.constant([5, 4, 6])
+/// y = tf.constant([5])
+/// tf.math.less(x, y) ==> [False, True, False]
+/// 
+/// x = tf.constant([5, 4, 6])
+/// y = tf.constant([5, 6, 7])
+/// tf.math.less(x, y) ==> [False, True, True]
+/// ```
 @inlinable @inline(__always)
 public static func less<T: TensorFlowNumeric>(
     _ x: Tensor<T>,
@@ -14277,6 +16315,18 @@ public static func less<T: TensorFlowNumeric>(
 ///
 /// *NOTE*: `LessEqual` supports broadcasting. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
+/// 
+/// Example:
+/// 
+/// ```python
+/// x = tf.constant([5, 4, 6])
+/// y = tf.constant([5])
+/// tf.math.less_equal(x, y) ==> [True, True, False]
+/// 
+/// x = tf.constant([5, 4, 6])
+/// y = tf.constant([5, 6, 6])
+/// tf.math.less_equal(x, y) ==> [True, True, True]
+/// ```
 @inlinable @inline(__always)
 public static func lessEqual<T: TensorFlowNumeric>(
     _ x: Tensor<T>,
@@ -14291,6 +16341,16 @@ public static func lessEqual<T: TensorFlowNumeric>(
 }
 
 /// Computes the log of the absolute value of `Gamma(x)` element-wise.
+///
+///   For positive numbers, this function computes log((input - 1)!) for every element in the tensor.
+///   `lgamma(5) = log((5-1)!) = log(4!) = log(24) = 3.1780539`
+/// 
+/// Example:
+/// 
+/// ```python
+/// x = tf.constant([0, 0.5, 1, 4.5, -4, -5.6])
+/// tf.math.lgamma(x) ==> [inf, 0.5723649, 0., 2.4537368, inf, -4.6477685]
+/// ```
 @inlinable @inline(__always)
 public static func lgamma<T: FloatingPoint & TensorFlowScalar>(
     _ x: Tensor<T>
@@ -14307,9 +16367,9 @@ public static func lgamma<T: FloatingPoint & TensorFlowScalar>(
 /// A sequence of `num` evenly-spaced values are generated beginning at `start`.
 /// If `num > 1`, the values in the sequence increase by `stop - start / num - 1`,
 /// so that the last one is exactly `stop`.
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// tf.linspace(10.0, 12.0, 3, name="linspace") => [ 10.0  11.0  12.0]
 /// ```
@@ -14346,18 +16406,18 @@ public static func linSpace<
 /// is sorted in the same order that the numbers appear in `x` (duplicates are
 /// preserved). This operation also returns a list `idx` that represents the
 /// position of each `out` element in `x`. In other words:
-///
+/// 
 /// `out[i] = x[idx[i]] for i in [0, 1, ..., len(out) - 1]`
-///
+/// 
 /// For example, given this input:
-///
+/// 
 /// ```
 /// x = [1, 2, 3, 4, 5, 6]
 /// y = [1, 3, 5]
 /// ```
-///
+/// 
 /// This operation would return:
-///
+/// 
 /// ```
 /// out ==> [2, 4, 6]
 /// idx ==> [1, 3, 5]
@@ -14412,13 +16472,13 @@ public static func listOutput<T: TensorGroup>(
 ///
 /// at `ckpt_path` and potentially reorders its rows and columns using the
 /// specified remappings.
-///
+/// 
 /// Most users should use one of the wrapper initializers (such as
 /// `tf.contrib.framework.load_and_remap_matrix_initializer`) instead of this
 /// function directly.
-///
+/// 
 /// The remappings are 1-D tensors with the following properties:
-///
+/// 
 /// * `row_remapping` must have exactly `num_rows` entries. Row `i` of the output
 ///   matrix will be initialized from the row corresponding to index
 ///   `row_remapping[i]` in the old `Tensor` from the checkpoint.
@@ -14431,16 +16491,16 @@ public static func listOutput<T: TensorGroup>(
 ///   missing row or column. If `row_remapping` has `r` missing entries and
 ///   `col_remapping` has `c` missing entries, then the following condition must be
 ///   true:
-///
+/// 
 /// `(r * num_cols) + (c * num_rows) - (r * c) == len(initializing_values)`
-///
+/// 
 /// The remapping tensors can be generated using the GenerateVocabRemapping op.
-///
+/// 
 /// As an example, with row_remapping = [1, 0, -1], col_remapping = [0, 2, -1],
 /// initializing_values = [0.5, -0.5, 0.25, -0.25, 42], and w(i, j) representing
 /// the value from row i, column j of the old tensor in the checkpoint, the output
 /// matrix will look like the following:
-///
+/// 
 /// [[w(1, 0),  w(1, 2),  0.5],
 ///  [w(0, 0),  w(0, 2), -0.5],
 ///  [0.25,    -0.25,      42]]
@@ -14513,7 +16573,8 @@ public static func loadTPUEmbeddingADAMParameters(
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
-    shardId: Int64
+    shardId: Int64,
+    config: String
 ) {
   let nOutputs = 0
     let op = makeOp("LoadTPUEmbeddingADAMParameters", nOutputs)
@@ -14521,6 +16582,7 @@ public static func loadTPUEmbeddingADAMParameters(
     op.updateAttribute("table_name", tableName)
     op.updateAttribute("num_shards", numShards)
     op.updateAttribute("shard_id", shardId)
+    op.updateAttribute("config", config)
     op.addInput(parameters)
     op.addInput(momenta)
     op.addInput(velocities)
@@ -14549,7 +16611,8 @@ public static func loadTPUEmbeddingADAMParametersGradAccumDebug(
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
-    shardId: Int64
+    shardId: Int64,
+    config: String
 ) {
   let nOutputs = 0
     let op = makeOp("LoadTPUEmbeddingADAMParametersGradAccumDebug", nOutputs)
@@ -14557,6 +16620,7 @@ public static func loadTPUEmbeddingADAMParametersGradAccumDebug(
     op.updateAttribute("table_name", tableName)
     op.updateAttribute("num_shards", numShards)
     op.updateAttribute("shard_id", shardId)
+    op.updateAttribute("config", config)
     op.addInput(parameters)
     op.addInput(momenta)
     op.addInput(velocities)
@@ -14584,7 +16648,8 @@ public static func loadTPUEmbeddingAdadeltaParameters(
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
-    shardId: Int64
+    shardId: Int64,
+    config: String
 ) {
   let nOutputs = 0
     let op = makeOp("LoadTPUEmbeddingAdadeltaParameters", nOutputs)
@@ -14592,6 +16657,7 @@ public static func loadTPUEmbeddingAdadeltaParameters(
     op.updateAttribute("table_name", tableName)
     op.updateAttribute("num_shards", numShards)
     op.updateAttribute("shard_id", shardId)
+    op.updateAttribute("config", config)
     op.addInput(parameters)
     op.addInput(accumulators)
     op.addInput(updates)
@@ -14620,7 +16686,8 @@ public static func loadTPUEmbeddingAdadeltaParametersGradAccumDebug(
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
-    shardId: Int64
+    shardId: Int64,
+    config: String
 ) {
   let nOutputs = 0
     let op = makeOp("LoadTPUEmbeddingAdadeltaParametersGradAccumDebug", nOutputs)
@@ -14628,6 +16695,7 @@ public static func loadTPUEmbeddingAdadeltaParametersGradAccumDebug(
     op.updateAttribute("table_name", tableName)
     op.updateAttribute("num_shards", numShards)
     op.updateAttribute("shard_id", shardId)
+    op.updateAttribute("config", config)
     op.addInput(parameters)
     op.addInput(accumulators)
     op.addInput(updates)
@@ -14653,7 +16721,8 @@ public static func loadTPUEmbeddingAdagradParameters(
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
-    shardId: Int64
+    shardId: Int64,
+    config: String
 ) {
   let nOutputs = 0
     let op = makeOp("LoadTPUEmbeddingAdagradParameters", nOutputs)
@@ -14661,6 +16730,7 @@ public static func loadTPUEmbeddingAdagradParameters(
     op.updateAttribute("table_name", tableName)
     op.updateAttribute("num_shards", numShards)
     op.updateAttribute("shard_id", shardId)
+    op.updateAttribute("config", config)
     op.addInput(parameters)
     op.addInput(accumulators)
     op.execute()
@@ -14686,7 +16756,8 @@ public static func loadTPUEmbeddingAdagradParametersGradAccumDebug(
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
-    shardId: Int64
+    shardId: Int64,
+    config: String
 ) {
   let nOutputs = 0
     let op = makeOp("LoadTPUEmbeddingAdagradParametersGradAccumDebug", nOutputs)
@@ -14694,6 +16765,7 @@ public static func loadTPUEmbeddingAdagradParametersGradAccumDebug(
     op.updateAttribute("table_name", tableName)
     op.updateAttribute("num_shards", numShards)
     op.updateAttribute("shard_id", shardId)
+    op.updateAttribute("config", config)
     op.addInput(parameters)
     op.addInput(accumulators)
     op.addInput(gradientAccumulators)
@@ -14722,7 +16794,8 @@ public static func loadTPUEmbeddingCenteredRMSPropParameters(
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
-    shardId: Int64
+    shardId: Int64,
+    config: String
 ) {
   let nOutputs = 0
     let op = makeOp("LoadTPUEmbeddingCenteredRMSPropParameters", nOutputs)
@@ -14730,6 +16803,7 @@ public static func loadTPUEmbeddingCenteredRMSPropParameters(
     op.updateAttribute("table_name", tableName)
     op.updateAttribute("num_shards", numShards)
     op.updateAttribute("shard_id", shardId)
+    op.updateAttribute("config", config)
     op.addInput(parameters)
     op.addInput(ms)
     op.addInput(mom)
@@ -14757,7 +16831,8 @@ public static func loadTPUEmbeddingFTRLParameters(
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
-    shardId: Int64
+    shardId: Int64,
+    config: String
 ) {
   let nOutputs = 0
     let op = makeOp("LoadTPUEmbeddingFTRLParameters", nOutputs)
@@ -14765,6 +16840,7 @@ public static func loadTPUEmbeddingFTRLParameters(
     op.updateAttribute("table_name", tableName)
     op.updateAttribute("num_shards", numShards)
     op.updateAttribute("shard_id", shardId)
+    op.updateAttribute("config", config)
     op.addInput(parameters)
     op.addInput(accumulators)
     op.addInput(linears)
@@ -14793,7 +16869,8 @@ public static func loadTPUEmbeddingFTRLParametersGradAccumDebug(
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
-    shardId: Int64
+    shardId: Int64,
+    config: String
 ) {
   let nOutputs = 0
     let op = makeOp("LoadTPUEmbeddingFTRLParametersGradAccumDebug", nOutputs)
@@ -14801,6 +16878,7 @@ public static func loadTPUEmbeddingFTRLParametersGradAccumDebug(
     op.updateAttribute("table_name", tableName)
     op.updateAttribute("num_shards", numShards)
     op.updateAttribute("shard_id", shardId)
+    op.updateAttribute("config", config)
     op.addInput(parameters)
     op.addInput(accumulators)
     op.addInput(linears)
@@ -14830,7 +16908,8 @@ public static func loadTPUEmbeddingMDLAdagradLightParameters(
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
-    shardId: Int64
+    shardId: Int64,
+    config: String
 ) {
   let nOutputs = 0
     let op = makeOp("LoadTPUEmbeddingMDLAdagradLightParameters", nOutputs)
@@ -14838,6 +16917,7 @@ public static func loadTPUEmbeddingMDLAdagradLightParameters(
     op.updateAttribute("table_name", tableName)
     op.updateAttribute("num_shards", numShards)
     op.updateAttribute("shard_id", shardId)
+    op.updateAttribute("config", config)
     op.addInput(parameters)
     op.addInput(accumulators)
     op.addInput(weights)
@@ -14863,7 +16943,8 @@ public static func loadTPUEmbeddingMomentumParameters(
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
-    shardId: Int64
+    shardId: Int64,
+    config: String
 ) {
   let nOutputs = 0
     let op = makeOp("LoadTPUEmbeddingMomentumParameters", nOutputs)
@@ -14871,6 +16952,7 @@ public static func loadTPUEmbeddingMomentumParameters(
     op.updateAttribute("table_name", tableName)
     op.updateAttribute("num_shards", numShards)
     op.updateAttribute("shard_id", shardId)
+    op.updateAttribute("config", config)
     op.addInput(parameters)
     op.addInput(momenta)
     op.execute()
@@ -14896,7 +16978,8 @@ public static func loadTPUEmbeddingMomentumParametersGradAccumDebug(
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
-    shardId: Int64
+    shardId: Int64,
+    config: String
 ) {
   let nOutputs = 0
     let op = makeOp("LoadTPUEmbeddingMomentumParametersGradAccumDebug", nOutputs)
@@ -14904,6 +16987,7 @@ public static func loadTPUEmbeddingMomentumParametersGradAccumDebug(
     op.updateAttribute("table_name", tableName)
     op.updateAttribute("num_shards", numShards)
     op.updateAttribute("shard_id", shardId)
+    op.updateAttribute("config", config)
     op.addInput(parameters)
     op.addInput(momenta)
     op.addInput(gradientAccumulators)
@@ -14928,7 +17012,8 @@ public static func loadTPUEmbeddingProximalAdagradParameters(
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
-    shardId: Int64
+    shardId: Int64,
+    config: String
 ) {
   let nOutputs = 0
     let op = makeOp("LoadTPUEmbeddingProximalAdagradParameters", nOutputs)
@@ -14936,6 +17021,7 @@ public static func loadTPUEmbeddingProximalAdagradParameters(
     op.updateAttribute("table_name", tableName)
     op.updateAttribute("num_shards", numShards)
     op.updateAttribute("shard_id", shardId)
+    op.updateAttribute("config", config)
     op.addInput(parameters)
     op.addInput(accumulators)
     op.execute()
@@ -14961,7 +17047,8 @@ public static func loadTPUEmbeddingProximalAdagradParametersGradAccumDebug(
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
-    shardId: Int64
+    shardId: Int64,
+    config: String
 ) {
   let nOutputs = 0
     let op = makeOp("LoadTPUEmbeddingProximalAdagradParametersGradAccumDebug", nOutputs)
@@ -14969,6 +17056,7 @@ public static func loadTPUEmbeddingProximalAdagradParametersGradAccumDebug(
     op.updateAttribute("table_name", tableName)
     op.updateAttribute("num_shards", numShards)
     op.updateAttribute("shard_id", shardId)
+    op.updateAttribute("config", config)
     op.addInput(parameters)
     op.addInput(accumulators)
     op.addInput(gradientAccumulators)
@@ -14995,7 +17083,8 @@ public static func loadTPUEmbeddingRMSPropParameters(
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
-    shardId: Int64
+    shardId: Int64,
+    config: String
 ) {
   let nOutputs = 0
     let op = makeOp("LoadTPUEmbeddingRMSPropParameters", nOutputs)
@@ -15003,6 +17092,7 @@ public static func loadTPUEmbeddingRMSPropParameters(
     op.updateAttribute("table_name", tableName)
     op.updateAttribute("num_shards", numShards)
     op.updateAttribute("shard_id", shardId)
+    op.updateAttribute("config", config)
     op.addInput(parameters)
     op.addInput(ms)
     op.addInput(mom)
@@ -15031,7 +17121,8 @@ public static func loadTPUEmbeddingRMSPropParametersGradAccumDebug(
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
-    shardId: Int64
+    shardId: Int64,
+    config: String
 ) {
   let nOutputs = 0
     let op = makeOp("LoadTPUEmbeddingRMSPropParametersGradAccumDebug", nOutputs)
@@ -15039,6 +17130,7 @@ public static func loadTPUEmbeddingRMSPropParametersGradAccumDebug(
     op.updateAttribute("table_name", tableName)
     op.updateAttribute("num_shards", numShards)
     op.updateAttribute("shard_id", shardId)
+    op.updateAttribute("config", config)
     op.addInput(parameters)
     op.addInput(ms)
     op.addInput(mom)
@@ -15061,7 +17153,8 @@ public static func loadTPUEmbeddingStochasticGradientDescentParameters(
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
-    shardId: Int64
+    shardId: Int64,
+    config: String
 ) {
   let nOutputs = 0
     let op = makeOp("LoadTPUEmbeddingStochasticGradientDescentParameters", nOutputs)
@@ -15069,6 +17162,7 @@ public static func loadTPUEmbeddingStochasticGradientDescentParameters(
     op.updateAttribute("table_name", tableName)
     op.updateAttribute("num_shards", numShards)
     op.updateAttribute("shard_id", shardId)
+    op.updateAttribute("config", config)
     op.addInput(parameters)
     op.execute()
 }
@@ -15076,6 +17170,13 @@ public static func loadTPUEmbeddingStochasticGradientDescentParameters(
 /// Computes natural logarithm of x element-wise.
 ///
 /// I.e., \\(y = \log_e x\\).
+/// 
+/// Example:
+/// 
+/// ```python
+/// x = tf.constant([0, 0.5, 1, 5])
+/// tf.math.log(x) ==> [-inf, -0.6931472,  0. ,  1.609438]
+/// ```
 @inlinable @inline(__always)
 public static func log<T: FloatingPoint & TensorFlowScalar>(
     _ x: Tensor<T>
@@ -15090,6 +17191,13 @@ public static func log<T: FloatingPoint & TensorFlowScalar>(
 /// Computes natural logarithm of (1 + x) element-wise.
 ///
 /// I.e., \\(y = \log_e (1 + x)\\).
+/// 
+/// Example:
+/// 
+/// ```python
+/// x = tf.constant([0, 0.5, 1, 5])
+/// tf.math.log1p(x) ==> [0., 0.4054651, 0.6931472, 1.7917595]
+/// ```
 @inlinable @inline(__always)
 public static func log1p<T: FloatingPoint & TensorFlowScalar>(
     _ x: Tensor<T>
@@ -15104,7 +17212,7 @@ public static func log1p<T: FloatingPoint & TensorFlowScalar>(
 /// Computes the sign and the log of the absolute value of the determinant of
 ///
 /// one or more square matrices.
-///
+/// 
 /// The input is a tensor of shape `[N, M, M]` whose inner-most 2 dimensions
 /// form square matrices. The outputs are two tensors containing the signs and
 /// absolute values of the log determinants for all N input submatrices
@@ -15133,7 +17241,7 @@ public static func logMatrixDeterminant<T: FloatingPoint & TensorFlowScalar>(
 /// Computes log softmax activations.
 ///
 /// For each batch `i` and class `j` we have
-///
+/// 
 ///     logsoftmax[i, j] = logits[i, j] - log(sum(exp(logits[i])))
 ///
 /// - Parameter logits: 2-D with shape `[batch_size, num_classes]`.
@@ -15154,9 +17262,9 @@ public static func logSoftmax<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// See explanations of candidate sampling and the data formats at
 /// go/candidate-sampling.
-///
+/// 
 /// For each batch, this op picks a single set of sampled candidate labels.
-///
+/// 
 /// The advantages of sampling candidates per-batch are simplicity and the
 /// possibility of efficient dense matrix multiplication. The disadvantage is that
 /// the sampled candidates must be chosen independently of the context and of the
@@ -15225,7 +17333,11 @@ public static func logicalAnd(
     return op.execute(Int(1))
 }
 
-/// Returns the truth value of NOT x element-wise.
+/// Returns the truth value of `NOT x` element-wise.
+///
+/// - Parameter x: A `Tensor` of type `bool`.
+///
+/// - Output y: A `Tensor` of type `bool` with the same shape as `x`. The logical negation of `x`.
 @inlinable @inline(__always)
 public static func logicalNot(
     _ x: Tensor<Bool>
@@ -15278,7 +17390,7 @@ public static func lookupTableExportV2<
 ///
 /// The tensor `keys` must of the same type as the keys of the table.
 /// The output `values` is of the type of the table values.
-///
+/// 
 /// The scalar `default_value` is the value output for keys not present in the
 /// table. It must also be of the same type as the table values.
 ///
@@ -15422,18 +17534,18 @@ public static func loopCond(
 /// Each set of rows with the same index in (sorted_inputs, values) is treated
 /// independently.  The resulting row is the equivalent of calling
 /// `np.searchsorted(sorted_inputs, values, side='left')`.
-///
-/// The result is not a global index to the entire 
+/// 
+/// The result is not a global index to the entire
 /// `Tensor`, but rather just the index in the last dimension.
-///
+/// 
 /// A 2-D example:
 ///   sorted_sequence = [[0, 3, 9, 9, 10],
 ///                      [1, 2, 3, 4, 5]]
 ///   values = [[2, 4, 9],
 ///             [0, 2, 6]]
-///
+/// 
 ///   result = LowerBound(sorted_sequence, values)
-///
+/// 
 ///   result == [[1, 2, 2],
 ///              [0, 1, 5]]
 ///
@@ -15466,18 +17578,18 @@ public static func lowerBound<
 ///
 /// The input is a tensor of shape `[..., M, M]` whose inner-most 2 dimensions
 /// form square matrices.
-///
+/// 
 /// The input has to be invertible.
-///
+/// 
 /// The output consists of two tensors LU and P containing the LU decomposition
 /// of all input submatrices `[..., :, :]`. LU encodes the lower triangular and
 /// upper triangular factors.
-///
+/// 
 /// For each input submatrix of shape `[M, M]`, L is a lower triangular matrix of
 /// shape `[M, M]` with unit diagonal whose entries correspond to the strictly lower
 /// triangular part of LU. U is a upper triangular matrix of shape `[M, M]` whose
 /// entries correspond to the upper triangular part, including the diagonal, of LU.
-///
+/// 
 /// P represents a permutation matrix encoded as a list of indices each between `0`
 /// and `M-1`, inclusive. If P_mat denotes the permutation matrix corresponding to
 /// P, then the L, U and P satisfies P_mat * input = L * U.
@@ -15526,6 +17638,59 @@ public static func makeIterator(
     op.addInput(dataset)
     op.addInput(iterator)
     op.execute()
+}
+
+/// Creates a dataset that fuses mapping with batching.
+///
+/// Creates a dataset that applies `f` to the outputs of `input_dataset` and then
+/// batches `batch_size` of them.
+/// 
+/// Unlike a "MapDataset", which applies `f` sequentially, this dataset invokes up
+/// to `batch_size * num_parallel_batches` copies of `f` in parallel.
+///
+/// - Parameters:
+///     - input_dataset: A variant tensor representing the input dataset.
+///     - other_arguments: A list of tensors, typically values that were captured when building a closure
+///         for `f`.
+///     - batch_size: A scalar representing the number of elements to accumulate in a
+///         batch. It determines the number of concurrent invocations of `f` that process
+///         elements from `input_dataset` in parallel.
+///     - num_parallel_calls: A scalar representing the maximum number of parallel invocations of the `map_fn`
+///         function. Applying the `map_fn` on consecutive input elements in parallel has
+///         the potential to improve input pipeline throughput.
+///     - drop_remainder: A scalar representing whether the last batch should be dropped in case its size
+///         is smaller than desired.
+///
+/// - Attr f: A function to apply to the outputs of `input_dataset`.
+@inlinable @inline(__always)
+public static func mapAndBatchDataset<
+    FIn: TensorGroup,
+    FOut: TensorGroup,
+    Targuments: TensorArrayProtocol
+>(
+    inputDataset: VariantHandle,
+    otherArguments: Targuments,
+    batchSize: Tensor<Int64>,
+    numParallelCalls: Tensor<Int64>,
+    dropRemainder: Tensor<Bool>,
+    f: (FIn) -> FOut,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?],
+    preserveCardinality: Bool = false
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("MapAndBatchDataset", nOutputs)
+    op.updateAttribute("f", f)
+    op.updateAttribute("Targuments", otherArguments._typeList)
+    op.updateAttribute("output_types", outputTypes)
+    op.updateAttribute("output_shapes", outputShapes)
+    op.updateAttribute("preserve_cardinality", preserveCardinality)
+    op.addInput(inputDataset)
+    op.addInputList(otherArguments)
+    op.addInput(batchSize)
+    op.addInput(numParallelCalls)
+    op.addInput(dropRemainder)
+    return op.execute(Int(1))
 }
 
 /// Op removes all elements in the underlying container.
@@ -15579,12 +17744,12 @@ public static func mapDataset<
 ///   The function given by `f` is assumed to be stateless, and is executed
 ///   concurrently on all the slices; up to batch_size (i.e. the size of the 0th
 ///   dimension of each argument) functions will be scheduled at once.
-///
+/// 
 ///   The `max_intra_op_parallelism` attr, which defaults to 1, can be used to
 ///   limit the intra op parallelism. To limit inter-op parallelism, a user can
 ///   set a private threadpool on the dataset using `tf.data.Options`'s
 ///   `ThreadingOptions`.
-///
+/// 
 ///   Note that this op is not exposed to users directly, but is invoked in tf.data
 ///   rewrites.
 ///
@@ -15785,7 +17950,7 @@ public static func mapUnstageNoKey<Dtypes: TensorGroup>(
 /// "a" (after being transposed if transpose_a is true) must match the
 /// outer dimension of "b" (after being transposed if transposed_b is
 /// true).
-///
+/// 
 /// *Note*: The default kernel implementation for MatMul on GPUs uses
 /// cublas.
 ///
@@ -15813,7 +17978,7 @@ public static func matMul<T: TensorFlowNumeric>(
 ///
 /// Note that this routine only supports wildcard characters in the
 /// basename portion of the pattern, not in the directory portion.
-/// Note also that the order of filenames returned can be non-deterministic.
+/// Note also that the order of filenames returned is deterministic.
 ///
 /// - Parameter pattern: Shell wildcard pattern(s). Scalar or vector of type string.
 ///
@@ -15828,42 +17993,52 @@ public static func matchingFiles(
     return op.execute(Int(1))
 }
 
+@inlinable @inline(__always)
+public static func matchingFilesDataset(
+    patterns: StringTensor
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("MatchingFilesDataset", nOutputs)
+    op.addInput(patterns)
+    return op.execute(Int(1))
+}
+
 /// Copy a tensor setting everything outside a central band in each innermost matrix
 ///
 /// to zero.
-///
+/// 
 /// The `band` part is computed as follows:
 /// Assume `input` has `k` dimensions `[I, J, K, ..., M, N]`, then the output is a
 /// tensor with the same shape where
-///
+/// 
 /// `band[i, j, k, ..., m, n] = in_band(m, n) * input[i, j, k, ..., m, n]`.
-///
+/// 
 /// The indicator function
-///
+/// 
 /// `in_band(m, n) = (num_lower < 0 || (m-n) <= num_lower)) &&
 ///                  (num_upper < 0 || (n-m) <= num_upper)`.
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// # if 'input' is [[ 0,  1,  2, 3]
 ///                  [-1,  0,  1, 2]
 ///                  [-2, -1,  0, 1]
 ///                  [-3, -2, -1, 0]],
-///
+/// 
 /// tf.matrix_band_part(input, 1, -1) ==> [[ 0,  1,  2, 3]
 ///                                        [-1,  0,  1, 2]
 ///                                        [ 0, -1,  0, 1]
 ///                                        [ 0,  0, -1, 0]],
-///
+/// 
 /// tf.matrix_band_part(input, 2, 1) ==> [[ 0,  1,  0, 0]
 ///                                       [-1,  0,  1, 0]
 ///                                       [-2, -1,  0, 1]
 ///                                       [ 0, -2, -1, 0]]
 /// ```
-///
+/// 
 /// Useful special cases:
-///
+/// 
 /// ```
 ///  tf.matrix_band_part(input, 0, -1) ==> Upper triangular part.
 ///  tf.matrix_band_part(input, -1, 0) ==> Lower triangular part.
@@ -15921,19 +18096,19 @@ public static func matrixDeterminant<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// Given a `diagonal`, this operation returns a tensor with the `diagonal` and
 /// everything else padded with zeros. The diagonal is computed as follows:
-///
+/// 
 /// Assume `diagonal` has `k` dimensions `[I, J, K, ..., N]`, then the output is a
 /// tensor of rank `k+1` with dimensions [I, J, K, ..., N, N]` where:
-///
+/// 
 /// `output[i, j, k, ..., m, n] = 1{m=n} * diagonal[i, j, k, ..., n]`.
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// # 'diagonal' is [[1, 2, 3, 4], [5, 6, 7, 8]]
-///
+/// 
 /// and diagonal.shape = (2, 4)
-///
+/// 
 /// tf.matrix_diag(diagonal) ==> [[[1, 0, 0, 0]
 ///                                      [0, 2, 0, 0]
 ///                                      [0, 0, 3, 0]
@@ -15942,7 +18117,7 @@ public static func matrixDeterminant<T: FloatingPoint & TensorFlowScalar>(
 ///                                      [0, 6, 0, 0]
 ///                                      [0, 0, 7, 0]
 ///                                      [0, 0, 0, 8]]]
-///
+/// 
 /// which has shape (2, 4, 4)
 /// ```
 ///
@@ -15964,16 +18139,16 @@ public static func matrixDiag<T: TensorFlowScalar>(
 ///
 /// This operation returns a tensor with the `diagonal` part
 /// of the batched `input`. The `diagonal` part is computed as follows:
-///
+/// 
 /// Assume `input` has `k` dimensions `[I, J, K, ..., M, N]`, then the output is a
 /// tensor of rank `k - 1` with dimensions `[I, J, K, ..., min(M, N)]` where:
-///
+/// 
 /// `diagonal[i, j, k, ..., n] = input[i, j, k, ..., n, n]`.
-///
+/// 
 /// The input must be at least a matrix.
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// # 'input' is [[[1, 0, 0, 0]
 ///                [0, 2, 0, 0]
@@ -15983,11 +18158,11 @@ public static func matrixDiag<T: TensorFlowScalar>(
 ///                [0, 6, 0, 0]
 ///                [0, 0, 7, 0]
 ///                [0, 0, 0, 8]]]
-///
+/// 
 /// and input.shape = (2, 4, 4)
-///
+/// 
 /// tf.matrix_diag_part(input) ==> [[1, 2, 3, 4], [5, 6, 7, 8]]
-///
+/// 
 /// which has shape (2, 4)
 /// ```
 ///
@@ -16006,6 +18181,227 @@ public static func matrixDiagPart<T: TensorFlowScalar>(
     return op.execute(Int(1))
 }
 
+/// Returns the batched diagonal part of a batched tensor.
+///
+/// Returns a tensor with the `k[0]`-th to `k[1]`-th diagonals of the batched
+/// `input`.
+/// 
+/// Assume `input` has `r` dimensions `[I, J, ..., L, M, N]`.
+/// Let `max_diag_len` be the maximum length among all diagonals to be extracted,
+/// `max_diag_len = min(M + min(k[1], 0), N + min(-k[0], 0))`
+/// Let `num_diags` be the number of diagonals to extract,
+/// `num_diags = k[1] - k[0] + 1`.
+/// 
+/// If `num_diags == 1`, the output tensor is of rank `r - 1` with shape
+/// `[I, J, ..., L, max_diag_len]` and values:
+/// 
+/// ```
+/// diagonal[i, j, ..., l, n]
+///   = input[i, j, ..., l, n+y, n+x] ; if 0 <= n+y < M and 0 <= n+x < N,
+///     padding_value                 ; otherwise.
+/// ```
+/// where `y = max(-k[1], 0)`, `x = max(k[1], 0)`.
+/// 
+/// Otherwise, the output tensor has rank `r` with dimensions
+/// `[I, J, ..., L, num_diags, max_diag_len]` with values:
+/// 
+/// ```
+/// diagonal[i, j, ..., l, m, n]
+///   = input[i, j, ..., l, n+y, n+x] ; if 0 <= n+y < M and 0 <= n+x < N,
+///     padding_value                 ; otherwise.
+/// ```
+/// where `d = k[1] - m`, `y = max(-d, 0)`, and `x = max(d, 0)`.
+/// 
+/// The input must be at least a matrix.
+/// 
+/// For example:
+/// 
+/// ```
+/// input = np.array([[[1, 2, 3, 4],  # Input shape: (2, 3, 4)
+///                    [5, 6, 7, 8],
+///                    [9, 8, 7, 6]],
+///                   [[5, 4, 3, 2],
+///                    [1, 2, 3, 4],
+///                    [5, 6, 7, 8]]])
+/// 
+/// # A main diagonal from each batch.
+/// tf.matrix_diag_part(input) ==> [[1, 6, 7],  # Output shape: (2, 3)
+///                                 [5, 2, 7]]
+/// 
+/// # A superdiagonal from each batch.
+/// tf.matrix_diag_part(input, k = 1)
+///   ==> [[2, 7, 6],  # Output shape: (2, 3)
+///        [4, 3, 8]]
+/// 
+/// # A tridiagonal band from each batch.
+/// tf.matrix_diag_part(input, k = (-1, 1))
+///   ==> [[[2, 7, 6],  # Output shape: (2, 3, 3)
+///         [1, 6, 7],
+///         [5, 8, 0]],
+///        [[4, 3, 8],
+///         [5, 2, 7],
+///         [1, 6, 0]]]
+/// 
+/// # Padding value = 9
+/// tf.matrix_diag_part(input, k = (1, 3), padding_value = 9)
+///   ==> [[[4, 9, 9],  # Output shape: (2, 3, 3)
+///         [3, 8, 9],
+///         [2, 7, 6]],
+///        [[2, 9, 9],
+///         [3, 4, 9],
+///         [4, 3, 8]]]
+/// ```
+///
+/// - Parameters:
+///     - input: Rank `r` tensor where `r >= 2`.
+///     - k: Diagonal offset(s). Positive value means superdiagonal, 0 refers to the main
+///         diagonal, and negative value means subdiagonals. `k` can be a single integer
+///         (for a single diagonal) or a pair of integers specifying the low and high ends
+///         of a matrix band. `k[0]` must not be larger than `k[1]`.
+///     - padding_value: The value to fill the area outside the specified diagonal band with.
+///         Default is 0.
+///
+/// - Output diagonal: The extracted diagonal(s).
+@inlinable @inline(__always)
+public static func matrixDiagPartV2<T: TensorFlowScalar>(
+    _ input: Tensor<T>,
+    k: Tensor<Int32>,
+    paddingValue: Tensor<T>
+) -> Tensor<T> {
+  let nOutputs = Int(1)
+    let op = makeOp("MatrixDiagPartV2", nOutputs)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.addInput(input)
+    op.addInput(k)
+    op.addInput(paddingValue)
+    return op.execute(Int(1))
+}
+
+/// Returns a batched diagonal tensor with given batched diagonal values.
+///
+/// Returns a tensor with the contents in `diagonal` as `k[0]`-th to `k[1]`-th
+/// diagonals of a matrix, with everything else padded with `padding`. `num_rows`
+/// and `num_cols` specify the dimension of the innermost matrix of the output. If
+/// both are not specified, the op assumes the innermost matrix is square and infers
+/// its size from `k` and the innermost dimension of `diagonal`. If only one of them
+/// is specified, the op assumes the unspecified value is the smallest possible
+/// based on other criteria.
+/// 
+/// Let `diagonal` have `r` dimensions `[I, J, ..., L, M, N]`. The output tensor has
+/// rank `r+1` with shape `[I, J, ..., L, M, num_rows, num_cols]` when only one
+/// diagonal is given (`k` is an integer or `k[0] == k[1]`). Otherwise, it has rank
+/// `r` with shape `[I, J, ..., L, num_rows, num_cols]`.
+/// 
+/// The second innermost dimension of `diagonal` has double meaning.
+/// When `k` is scalar or `k[0] == k[1]`, `M` is part of the batch size
+/// [I, J, ..., M], and the output tensor is:
+/// 
+/// ```
+/// output[i, j, ..., l, m, n]
+///   = diagonal[i, j, ..., l, n-max(d_upper, 0)] ; if n - m == d_upper
+///     padding_value                             ; otherwise
+/// ```
+/// 
+/// Otherwise, `M` is treated as the number of diagonals for the matrix in the
+/// same batch (`M = k[1]-k[0]+1`), and the output tensor is:
+/// 
+/// ```
+/// output[i, j, ..., l, m, n]
+///   = diagonal[i, j, ..., l, diag_index, index_in_diag] ; if k[0] <= d <= k[1]
+///     padding_value                                     ; otherwise
+/// ```
+/// where `d = n - m`, `diag_index = k[1] - d`, and `index_in_diag = n - max(d, 0)`.
+/// 
+/// For example:
+/// 
+/// ```
+/// # The main diagonal.
+/// diagonal = np.array([[1, 2, 3, 4],            # Input shape: (2, 4)
+///                      [5, 6, 7, 8]])
+/// tf.matrix_diag(diagonal) ==> [[[1, 0, 0, 0],  # Output shape: (2, 4, 4)
+///                                [0, 2, 0, 0],
+///                                [0, 0, 3, 0],
+///                                [0, 0, 0, 4]],
+///                               [[5, 0, 0, 0],
+///                                [0, 6, 0, 0],
+///                                [0, 0, 7, 0],
+///                                [0, 0, 0, 8]]]
+/// 
+/// # A superdiagonal (per batch).
+/// diagonal = np.array([[1, 2, 3],  # Input shape: (2, 3)
+///                      [4, 5, 6]])
+/// tf.matrix_diag(diagonal, k = 1)
+///   ==> [[[0, 1, 0, 0],  # Output shape: (2, 4, 4)
+///         [0, 0, 2, 0],
+///         [0, 0, 0, 3],
+///         [0, 0, 0, 0]],
+///        [[0, 4, 0, 0],
+///         [0, 0, 5, 0],
+///         [0, 0, 0, 6],
+///         [0, 0, 0, 0]]]
+/// 
+/// # A band of diagonals.
+/// diagonals = np.array([[[1, 2, 3],  # Input shape: (2, 2, 3)
+///                        [4, 5, 0]],
+///                       [[6, 7, 9],
+///                        [9, 1, 0]]])
+/// tf.matrix_diag(diagonals, k = (-1, 0))
+///   ==> [[[1, 0, 0],  # Output shape: (2, 3, 3)
+///         [4, 2, 0],
+///         [0, 5, 3]],
+///        [[6, 0, 0],
+///         [9, 7, 0],
+///         [0, 1, 9]]]
+/// 
+/// # Rectangular matrix.
+/// diagonal = np.array([1, 2])  # Input shape: (2)
+/// tf.matrix_diag(diagonal, k = -1, num_rows = 3, num_cols = 4)
+///   ==> [[0, 0, 0, 0],  # Output shape: (3, 4)
+///        [1, 0, 0, 0],
+///        [0, 2, 0, 0]]
+/// 
+/// # Rectangular matrix with inferred num_cols and padding_value = 9.
+/// tf.matrix_diag(diagonal, k = -1, num_rows = 3, padding_value = 9)
+///   ==> [[9, 9],  # Output shape: (3, 2)
+///        [1, 9],
+///        [9, 2]]
+/// ```
+///
+/// - Parameters:
+///     - diagonal: Rank `r`, where `r >= 1`
+///     - k: Diagonal offset(s). Positive value means superdiagonal, 0 refers to the main
+///         diagonal, and negative value means subdiagonals. `k` can be a single integer
+///         (for a single diagonal) or a pair of integers specifying the low and high ends
+///         of a matrix band. `k[0]` must not be larger than `k[1]`.
+///     - num_rows: The number of rows of the output matrix. If it is not provided, the op assumes
+///         the output matrix is a square matrix and infers the matrix size from k and the
+///         innermost dimension of `diagonal`.
+///     - num_cols: The number of columns of the output matrix. If it is not provided, the op
+///         assumes the output matrix is a square matrix and infers the matrix size from
+///         k and the innermost dimension of `diagonal`.
+///     - padding_value: The number to fill the area outside the specified diagonal band with.
+///         Default is 0.
+///
+/// - Output output: Has rank `r+1` when `k` is an integer or `k[0] == k[1]`, rank `r` otherwise.
+@inlinable @inline(__always)
+public static func matrixDiagV2<T: TensorFlowScalar>(
+    diagonal: Tensor<T>,
+    k: Tensor<Int32>,
+    numRows: Tensor<Int32>,
+    numCols: Tensor<Int32>,
+    paddingValue: Tensor<T>
+) -> Tensor<T> {
+  let nOutputs = Int(1)
+    let op = makeOp("MatrixDiagV2", nOutputs)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.addInput(diagonal)
+    op.addInput(k)
+    op.addInput(numRows)
+    op.addInput(numCols)
+    op.addInput(paddingValue)
+    return op.execute(Int(1))
+}
+
 /// Deprecated, use python implementation tf.linalg.matrix_exponential.
 @inlinable @inline(__always)
 public static func matrixExponential<T: FloatingPoint & TensorFlowScalar>(
@@ -16021,13 +18417,13 @@ public static func matrixExponential<T: FloatingPoint & TensorFlowScalar>(
 /// Computes the inverse of one or more square invertible matrices or their
 ///
 /// adjoints (conjugate transposes).
-///
+/// 
 /// The input is a tensor of shape `[..., M, M]` whose inner-most 2 dimensions
 /// form square matrices. The output is a tensor of the same shape as the input
 /// containing the inverse for all input submatrices `[..., :, :]`.
-///
+/// 
 /// The op uses LU decomposition with partial pivoting to compute the inverses.
-///
+/// 
 /// If a matrix is not invertible there is no guarantee what the op does. It
 /// may detect the condition and raise an exception or it may simply return a
 /// garbage result.
@@ -16035,7 +18431,7 @@ public static func matrixExponential<T: FloatingPoint & TensorFlowScalar>(
 /// - Parameter input: Shape is `[..., M, M]`.
 ///
 /// - Output output: Shape is `[..., M, M]`.
-///
+///     
 ///     @compatibility(numpy)
 ///     Equivalent to np.linalg.inv
 ///     @end_compatibility
@@ -16054,18 +18450,18 @@ public static func matrixInverse<T: FloatingPoint & TensorFlowScalar>(
 
 /// Computes the matrix logarithm of one or more square matrices:
 ///
-///
+/// 
 /// \\(log(exp(A)) = A\\)
-///
+/// 
 /// This op is only defined for complex matrices. If A is positive-definite and
 /// real, then casting to a complex matrix, taking the logarithm and casting back
 /// to a real matrix will give the correct result.
-///
+/// 
 /// This function computes the matrix logarithm using the Schur-Parlett algorithm.
 /// Details of the algorithm can be found in Section 11.6.2 of:
 /// Nicholas J. Higham, Functions of Matrices: Theory and Computation, SIAM 2008.
 /// ISBN 978-0-898716-46-7.
-///
+/// 
 /// The input is a tensor of shape `[..., M, M]` whose inner-most 2 dimensions
 /// form square matrices. The output is a tensor of the same shape as the input
 /// containing the exponential for all input submatrices `[..., :, :]`.
@@ -16073,7 +18469,7 @@ public static func matrixInverse<T: FloatingPoint & TensorFlowScalar>(
 /// - Parameter input: Shape is `[..., M, M]`.
 ///
 /// - Output output: Shape is `[..., M, M]`.
-///
+///     
 ///     @compatibility(scipy)
 ///     Equivalent to scipy.linalg.logm
 ///     @end_compatibility
@@ -16093,13 +18489,13 @@ public static func matrixLogarithm<T: TensorFlowScalar>(
 /// Given `input` and `diagonal`, this operation returns a tensor with the
 /// same shape and values as `input`, except for the main diagonal of the
 /// innermost matrices.  These will be overwritten by the values in `diagonal`.
-///
+/// 
 /// The output is computed as follows:
-///
+/// 
 /// Assume `input` has `k+1` dimensions `[I, J, K, ..., M, N]` and `diagonal` has
 /// `k` dimensions `[I, J, K, ..., min(M, N)]`.  Then the output is a
 /// tensor of rank `k+1` with dimensions `[I, J, K, ..., M, N]` where:
-///
+/// 
 ///   * `output[i, j, k, ..., m, n] = diagonal[i, j, k, ..., n]` for `m == n`.
 ///   * `output[i, j, k, ..., m, n] = input[i, j, k, ..., m, n]` for `m != n`.
 ///
@@ -16118,6 +18514,105 @@ public static func matrixSetDiag<T: TensorFlowScalar>(
     op.updateAttribute("T", T.tensorFlowDataType)
     op.addInput(input)
     op.addInput(diagonal)
+    return op.execute(Int(1))
+}
+
+/// Returns a batched matrix tensor with new batched diagonal values.
+///
+/// Given `input` and `diagonal`, this operation returns a tensor with the
+/// same shape and values as `input`, except for the specified diagonals of the
+/// innermost matrices. These will be overwritten by the values in `diagonal`.
+/// 
+/// `input` has `r+1` dimensions `[I, J, ..., L, M, N]`. When `k` is scalar or
+/// `k[0] == k[1]`, `diagonal` has `r` dimensions `[I, J, ..., L, max_diag_len]`.
+/// Otherwise, it has `r+1` dimensions `[I, J, ..., L, num_diags, max_diag_len]`.
+/// `num_diags` is the number of diagonals, `num_diags = k[1] - k[0] + 1`.
+/// `max_diag_len` is the longest diagonal in the range `[k[0], k[1]]`,
+/// `max_diag_len = min(M + min(k[1], 0), N + min(-k[0], 0))`
+/// 
+/// The output is a tensor of rank `k+1` with dimensions `[I, J, ..., L, M, N]`.
+/// If `k` is scalar or `k[0] == k[1]`:
+/// 
+/// ```
+/// output[i, j, ..., l, m, n]
+///   = diagonal[i, j, ..., l, n-max(k[1], 0)] ; if n - m == k[1]
+///     input[i, j, ..., l, m, n]              ; otherwise
+/// ```
+/// 
+/// Otherwise,
+/// 
+/// ```
+/// output[i, j, ..., l, m, n]
+///   = diagonal[i, j, ..., l, diag_index, index_in_diag] ; if k[0] <= d <= k[1]
+///     input[i, j, ..., l, m, n]                         ; otherwise
+/// ```
+/// where `d = n - m`, `diag_index = k[1] - d`, and `index_in_diag = n - max(d, 0)`.
+/// 
+/// For example:
+/// 
+/// ```
+/// # The main diagonal.
+/// input = np.array([[[7, 7, 7, 7],              # Input shape: (2, 3, 4)
+///                    [7, 7, 7, 7],
+///                    [7, 7, 7, 7]],
+///                   [[7, 7, 7, 7],
+///                    [7, 7, 7, 7],
+///                    [7, 7, 7, 7]]])
+/// diagonal = np.array([[1, 2, 3],               # Diagonal shape: (2, 3)
+///                      [4, 5, 6]])
+/// tf.matrix_set_diag(diagonal) ==> [[[1, 7, 7, 7],  # Output shape: (2, 3, 4)
+///                                    [7, 2, 7, 7],
+///                                    [7, 7, 3, 7]],
+///                                   [[4, 7, 7, 7],
+///                                    [7, 5, 7, 7],
+///                                    [7, 7, 6, 7]]]
+/// 
+/// # A superdiagonal (per batch).
+/// tf.matrix_set_diag(diagonal, k = 1)
+///   ==> [[[7, 1, 7, 7],  # Output shape: (2, 3, 4)
+///         [7, 7, 2, 7],
+///         [7, 7, 7, 3]],
+///        [[7, 4, 7, 7],
+///         [7, 7, 5, 7],
+///         [7, 7, 7, 6]]]
+/// 
+/// # A band of diagonals.
+/// diagonals = np.array([[[1, 2, 3],  # Diagonal shape: (2, 2, 3)
+///                        [4, 5, 0]],
+///                       [[6, 1, 2],
+///                        [3, 4, 0]]])
+/// tf.matrix_set_diag(diagonals, k = (-1, 0))
+///   ==> [[[1, 7, 7, 7],  # Output shape: (2, 3, 4)
+///         [4, 2, 7, 7],
+///         [0, 5, 3, 7]],
+///        [[6, 7, 7, 7],
+///         [3, 1, 7, 7],
+///         [7, 4, 2, 7]]]
+/// 
+/// ```
+///
+/// - Parameters:
+///     - input: Rank `r+1`, where `r >= 1`.
+///     - diagonal: Rank `r` when `k` is an integer or `k[0] == k[1]`. Otherwise, it has rank `r+1`.
+///         `k >= 1`.
+///     - k: Diagonal offset(s). Positive value means superdiagonal, 0 refers to the main
+///         diagonal, and negative value means subdiagonals. `k` can be a single integer
+///         (for a single diagonal) or a pair of integers specifying the low and high ends
+///         of a matrix band. `k[0]` must not be larger than `k[1]`.
+///
+/// - Output output: Rank `r+1`, with `output.shape = input.shape`.
+@inlinable @inline(__always)
+public static func matrixSetDiagV2<T: TensorFlowScalar>(
+    _ input: Tensor<T>,
+    diagonal: Tensor<T>,
+    k: Tensor<Int32>
+) -> Tensor<T> {
+  let nOutputs = Int(1)
+    let op = makeOp("MatrixSetDiagV2", nOutputs)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.addInput(input)
+    op.addInput(diagonal)
+    op.addInput(k)
     return op.execute(Int(1))
 }
 
@@ -16162,19 +18657,19 @@ public static func matrixSolve<T: FloatingPoint & TensorFlowScalar>(
 /// each of the equations
 /// `matrix[..., :, :]` * `output[..., :, :]` = `rhs[..., :, :]`
 /// in the least squares sense.
-///
+/// 
 /// We use the following notation for (complex) matrix and right-hand sides
 /// in the batch:
-///
+/// 
 /// `matrix`=\\(A \in \mathbb{C}^{m \times n}\\),
 /// `rhs`=\\(B  \in \mathbb{C}^{m \times k}\\),
 /// `output`=\\(X  \in \mathbb{C}^{n \times k}\\),
 /// `l2_regularizer`=\\(\lambda \in \mathbb{R}\\).
-///
+/// 
 /// If `fast` is `True`, then the solution is computed by solving the normal
 /// equations using Cholesky decomposition. Specifically, if \\(m \ge n\\) then
 /// \\(X = (A^H A + \lambda I)^{-1} A^H B\\), which solves the least-squares
-/// problem \\(X = \mathrm{argmin}_{Z \in \Re^{n \times k} } ||A Z - B||_F^2 + \lambda ||Z||_F^2\\). 
+/// problem \\(X = \mathrm{argmin}_{Z \in \Re^{n \times k} } ||A Z - B||_F^2 + \lambda ||Z||_F^2\\).
 /// If \\(m \lt n\\) then `output` is computed as
 /// \\(X = A^H (A A^H + \lambda I)^{-1} B\\), which (for \\(\lambda = 0\\)) is the
 /// minimum-norm solution to the under-determined linear system, i.e.
@@ -16183,7 +18678,7 @@ public static func matrixSolve<T: FloatingPoint & TensorFlowScalar>(
 /// when \\(A\\) is numerically full rank and has a condition number
 /// \\(\mathrm{cond}(A) \lt \frac{1}{\sqrt{\epsilon_{mach} } }\\) or \\(\lambda\\) is
 /// sufficiently large.
-///
+/// 
 /// If `fast` is `False` an algorithm based on the numerically robust complete
 /// orthogonal decomposition is used. This computes the minimum-norm
 /// least-squares solution, even when \\(A\\) is rank deficient. This path is
@@ -16194,7 +18689,7 @@ public static func matrixSolve<T: FloatingPoint & TensorFlowScalar>(
 ///     - matrix: Shape is `[..., M, N]`.
 ///     - rhs: Shape is `[..., M, K]`.
 ///     - l2_regularizer: Scalar tensor.
-///
+///         
 ///         @compatibility(numpy)
 ///         Equivalent to np.linalg.lstsq
 ///         @end_compatibility
@@ -16220,17 +18715,17 @@ public static func matrixSolveLs<T: FloatingPoint & TensorFlowScalar>(
 /// Computes the matrix square root of one or more square matrices:
 ///
 /// matmul(sqrtm(A), sqrtm(A)) = A
-///
+/// 
 /// The input matrix should be invertible. If the input matrix is real, it should
 /// have no eigenvalues which are real and negative (pairs of complex conjugate
 /// eigenvalues are allowed).
-///
-/// The matrix square root is computed by first reducing the matrix to 
-/// quasi-triangular form with the real Schur decomposition. The square root 
-/// of the quasi-triangular matrix is then computed directly. Details of 
-/// the algorithm can be found in: Nicholas J. Higham, "Computing real 
+/// 
+/// The matrix square root is computed by first reducing the matrix to
+/// quasi-triangular form with the real Schur decomposition. The square root
+/// of the quasi-triangular matrix is then computed directly. Details of
+/// the algorithm can be found in: Nicholas J. Higham, "Computing real
 /// square roots of a real matrix", Linear Algebra Appl., 1987.
-///
+/// 
 /// The input is a tensor of shape `[..., M, M]` whose inner-most 2 dimensions
 /// form square matrices. The output is a tensor of the same shape as the input
 /// containing the matrix square root for all input submatrices `[..., :, :]`.
@@ -16238,7 +18733,7 @@ public static func matrixSolveLs<T: FloatingPoint & TensorFlowScalar>(
 /// - Parameter input: Shape is `[..., M, M]`.
 ///
 /// - Output output: Shape is `[..., M, M]`.
-///
+///     
 ///     @compatibility(scipy)
 ///     Equivalent to scipy.linalg.sqrtm
 ///     @end_compatibility
@@ -16253,23 +18748,52 @@ public static func matrixSquareRoot<T: FloatingPoint & TensorFlowScalar>(
     return op.execute(Int(1))
 }
 
-/// Solves systems of linear equations with upper or lower triangular matrices by
+/// Solves systems of linear equations with upper or lower triangular matrices by backsubstitution.
 ///
-/// backsubstitution.
-///
+/// 
 /// `matrix` is a tensor of shape `[..., M, M]` whose inner-most 2 dimensions form
 /// square matrices. If `lower` is `True` then the strictly upper triangular part
 /// of each inner-most matrix is assumed to be zero and not accessed.
 /// If `lower` is False then the strictly lower triangular part of each inner-most
 /// matrix is assumed to be zero and not accessed.
 /// `rhs` is a tensor of shape `[..., M, K]`.
-///
+/// 
 /// The output is a tensor of shape `[..., M, K]`. If `adjoint` is
 /// `True` then the innermost matrices in `output` satisfy matrix equations
 /// `matrix[..., :, :] * output[..., :, :] = rhs[..., :, :]`.
 /// If `adjoint` is `False` then the strictly then the  innermost matrices in
 /// `output` satisfy matrix equations
 /// `adjoint(matrix[..., i, k]) * output[..., k, j] = rhs[..., i, j]`.
+/// 
+/// Example:
+/// ```python
+/// 
+/// a = tf.constant([[3,  0,  0,  0],
+///                  [2,  1,  0,  0],
+///                  [1,  0,  1,  0],
+///                  [1,  1,  1,  1]], dtype=tf.float32)
+/// 
+/// b = tf.constant([[4],
+///                  [2],
+///                  [4],
+///                  [2]], dtype=tf.float32)
+/// 
+/// x = tf.linalg.triangular_solve(a, b, lower=True)
+/// x
+/// # <tf.Tensor: shape=(4, 1), dtype=float32, numpy=
+/// # array([[ 1.3333334 ],
+/// #        [-0.66666675],
+/// #        [ 2.6666665 ],
+/// #        [-1.3333331 ]], dtype=float32)>
+/// 
+/// # in python3 one can use `a@x`
+/// tf.matmul(a, x)
+/// # <tf.Tensor: shape=(4, 1), dtype=float32, numpy=
+/// # array([[4.       ],
+/// #        [2.       ],
+/// #        [4.       ],
+/// #        [1.9999999]], dtype=float32)>
+/// ```
 ///
 /// - Parameters:
 ///     - matrix: Shape is `[..., M, M]`.
@@ -16280,7 +18804,7 @@ public static func matrixSquareRoot<T: FloatingPoint & TensorFlowScalar>(
 ///         lower or upper triangular.
 ///     - adjoint: Boolean indicating whether to solve with `matrix` or its (block-wise)
 ///                  adjoint.
-///
+///         
 ///         @compatibility(numpy)
 ///         Equivalent to scipy.linalg.solve_triangular
 ///         @end_compatibility
@@ -16337,6 +18861,25 @@ public static func max<
     return op.execute(Int(1))
 }
 
+/// Creates a dataset that overrides the maximum intra-op parallelism.
+///
+/// - Parameter max_intra_op_parallelism: Identifies the maximum intra-op parallelism to use.
+@inlinable @inline(__always)
+public static func maxIntraOpParallelismDataset(
+    inputDataset: VariantHandle,
+    maxIntraOpParallelism: Tensor<Int64>,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?]
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("MaxIntraOpParallelismDataset", nOutputs)
+    op.updateAttribute("output_types", outputTypes)
+    op.updateAttribute("output_shapes", outputShapes)
+    op.addInput(inputDataset)
+    op.addInput(maxIntraOpParallelism)
+    return op.execute(Int(1))
+}
+
 /// Performs max pooling on the input.
 ///
 /// - Parameter input: 4-D input to pool over.
@@ -16359,7 +18902,7 @@ public static func maxPool<T: TensorFlowNumeric>(
     ksize: [Int32],
     strides: [Int32],
     padding: Padding,
-    dataFormat: DataFormat4 = .nhwc
+    dataFormat: DataFormat5 = .nhwc
 ) -> Tensor<T> {
   let nOutputs = Int(1)
     let op = makeOp("MaxPool", nOutputs)
@@ -16773,7 +19316,7 @@ public static func maxPoolV2<T: TensorFlowNumeric>(
     ksize: Tensor<Int32>,
     strides: Tensor<Int32>,
     padding: Padding,
-    dataFormat: DataFormat4 = .nhwc
+    dataFormat: DataFormat5 = .nhwc
 ) -> Tensor<T> {
   let nOutputs = Int(1)
     let op = makeOp("MaxPoolV2", nOutputs)
@@ -16792,7 +19335,7 @@ public static func maxPoolV2<T: TensorFlowNumeric>(
 /// `[b, y, x, c]` becomes flattened index:
 /// `(y * width + x) * channels + c` if `include_batch_in_index` is False;
 /// `((b * height + y) * width + x) * channels + c` if `include_batch_in_index` is True.
-///
+/// 
 /// The indices returned are always in `[0, height) x [0, width)` before flattening,
 /// even if padding is involved and the mathematically correct answer is outside
 /// (either negative or too large).  This is a bug, but fixing it is difficult to do
@@ -16888,7 +19431,7 @@ public static func mean<
 ///
 /// `Merge` waits for at least one of the tensors in `inputs` to become available.
 /// It is usually combined with `Switch` to implement branching.
-///
+/// 
 /// `Merge` forwards the first tensor to become available to `output`, and sets
 /// `value_index` to its index in `inputs`.
 ///
@@ -16915,7 +19458,7 @@ public static func merge<T: TensorFlowScalar>(
 /// [`Summary`](https://www.tensorflow.org/code/tensorflow/core/framework/summary.proto)
 /// protocol buffer that contains the union of all the values in the input
 /// summaries.
-///
+/// 
 /// When the Op is run, it reports an `InvalidArgument` error if multiple values
 /// in the summaries to merge use the same tag.
 ///
@@ -16938,9 +19481,9 @@ public static func mergeSummary(
 ///
 /// result is one logical checkpoint, with one physical metadata file and renamed
 /// data files.
-///
+/// 
 /// Intended for "grouping" multiple checkpoints in a sharded checkpoint setup.
-///
+/// 
 /// If delete_old_dirs is true, attempts to delete recursively the dirname of each
 /// path in the input checkpoint_prefixes.  This is useful when those paths are non
 /// user-facing temporary locations.
@@ -17067,13 +19610,13 @@ public static func minimum<T: TensorFlowNumeric>(
 /// in that dimension. Both `paddings[D, 0]` and `paddings[D, 1]` must be no greater
 /// than `input.dim_size(D)` (or `input.dim_size(D) - 1`) if `copy_border` is true
 /// (if false, respectively).
-///
+/// 
 /// The padded size of each dimension D of the output is:
-///
+/// 
 /// `paddings(D, 0) + input.dim_size(D) + paddings(D, 1)`
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// # 't' is [[1, 2, 3], [4, 5, 6]].
 /// # 'paddings' is [[1, 1]], [2, 2]].
@@ -17104,7 +19647,7 @@ public static func mirrorPad<
 >(
     _ input: Tensor<T>,
     paddings: Tensor<Tpaddings>,
-    mode: Mode5
+    mode: Mode6
 ) -> Tensor<T> {
   let nOutputs = Int(1)
     let op = makeOp("MirrorPad", nOutputs)
@@ -17121,13 +19664,13 @@ public static func mirrorPad<
 /// This operation folds the padded areas of `input` by `MirrorPad` according to the
 /// `paddings` you specify. `paddings` must be the same as `paddings` argument
 /// given to the corresponding `MirrorPad` op.
-///
+/// 
 /// The folded size of each dimension D of the output is:
-///
+/// 
 /// `input.dim_size(D) - paddings(D, 0) - paddings(D, 1)`
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// # 't' is [[1, 2, 3], [4, 5, 6], [7, 8, 9]].
 /// # 'paddings' is [[0, 1]], [0, 1]].
@@ -17152,7 +19695,7 @@ public static func mirrorPadGrad<
 >(
     _ input: Tensor<T>,
     paddings: Tensor<Tpaddings>,
-    mode: Mode5
+    mode: Mode6
 ) -> Tensor<T> {
   let nOutputs = Int(1)
     let op = makeOp("MirrorPadGrad", nOutputs)
@@ -17174,11 +19717,59 @@ public static func mixedStruct(
     return op.execute(Int(nA), Int(1))
 }
 
+/// Wraps an arbitrary MLIR computation expressed as a module with a main() function.
+///
+/// This operation does not have an associated kernel and is not intended to be
+/// executed in a regular TensorFlow session. Instead it is intended to be used for
+/// testing or for special case where a user intends to pass custom MLIR computation
+/// through a TensorFlow graph with the intent of having custom tooling processing
+/// it downstream (when targeting a different environment, like TensorFlow lite for
+/// example).
+/// The MLIR module is expected to have a main() function that will be used as an
+/// entry point. The inputs to the operations will be passed as argument to the
+/// main() function and the returned values of the main function mapped to the
+/// outputs.
+/// Example usage:
+/// 
+/// ```
+/// import tensorflow as tf
+/// from tensorflow.compiler.mlir.tensorflow.gen_mlir_passthrough_op import mlir_passthrough_op
+/// 
+/// mlir_module = '''python
+/// func @main(%arg0 : tensor<10xf32>, %arg1 : tensor<10xf32>) -> tensor<10x10xf32> {
+///    %add = "magic.op"(%arg0, %arg1) : (tensor<10xf32>, tensor<10xf32>) -> tensor<10x10xf32>
+///    return %ret : tensor<10x10xf32>
+/// }
+/// '''
+/// 
+/// @tf.function
+/// def foo(x, y):
+///   return = mlir_passthrough_op([x, y], mlir_module, Toutputs=[tf.float32])
+/// 
+/// graph_def = foo.get_concrete_function(tf.TensorSpec([10], tf.float32), tf.TensorSpec([10], tf.float32)).graph.as_graph_def()
+/// ```
+@inlinable @inline(__always)
+public static func mlirPassthroughOp<
+    Tinputs: TensorArrayProtocol,
+    Toutputs: TensorGroup
+>(
+    inputs: Tinputs,
+    mlirModule: String
+) -> Toutputs {
+  let nOutputs = Int(Toutputs._typeList.count)
+    let op = makeOp("MlirPassthroughOp", nOutputs)
+    op.updateAttribute("mlir_module", mlirModule)
+    op.updateAttribute("Tinputs", inputs._typeList)
+    op.updateAttribute("Toutputs", Toutputs._typeList)
+    op.addInputList(inputs)
+    return op.execute(Int(Toutputs._typeList.count))
+}
+
 /// Returns element-wise remainder of division. This emulates C semantics in that
 ///
 /// the result here is consistent with a truncating divide. E.g.
 /// `tf.truncatediv(x, y) * y + truncate_mod(x, y) = x`.
-///
+/// 
 /// *NOTE*: `Mod` supports broadcasting. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
 @inlinable @inline(__always)
@@ -17202,12 +19793,14 @@ public static func mod<T: TensorFlowNumeric>(
 @inlinable @inline(__always)
 public static func modelDataset(
     inputDataset: VariantHandle,
+    algorithm: Int64 = 0,
     cpuBudget: Int64 = 0,
     outputTypes: [TensorDataType],
     outputShapes: [TensorShape?]
 ) -> VariantHandle {
   let nOutputs = Int(1)
     let op = makeOp("ModelDataset", nOutputs)
+    op.updateAttribute("algorithm", algorithm)
     op.updateAttribute("cpu_budget", cpuBudget)
     op.updateAttribute("output_types", outputTypes)
     op.updateAttribute("output_shapes", outputShapes)
@@ -17234,7 +19827,7 @@ public static func mul<T: TensorFlowNumeric>(
 
 /// Returns x * y element-wise. Returns zero if y is zero, even if x if infinite or NaN.
 ///
-/// *NOTE*: `Mul` supports broadcasting. More about broadcasting
+/// *NOTE*: `MulNoNan` supports broadcasting. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
 @inlinable @inline(__always)
 public static func mulNoNan<T: FloatingPoint & TensorFlowScalar>(
@@ -17408,7 +20001,7 @@ public static func multinomial<
 ///
 /// It uses "open addressing" with quadratic reprobing to resolve
 /// collisions.
-///
+/// 
 /// This op creates a mutable hash table, specifying the type of its keys and
 /// values. Each value must be a scalar. Data can be inserted into the table using
 /// the insert operations. It does not support the initialization operation.
@@ -17530,41 +20123,41 @@ public static func mutableHashTableV2(
 /// Locks a mutex resource.  The output is the lock.  So long as the lock tensor
 ///
 /// is alive, any other request to use `MutexLock` with this mutex will wait.
-///
+/// 
 /// This is particularly useful for creating a critical section when used in
 /// conjunction with `MutexLockIdentity`:
-///
+/// 
 /// ```python
-///
+/// 
 /// mutex = mutex_v2(
 ///   shared_name=handle_name, container=container, name=name)
-///
+/// 
 /// def execute_in_critical_section(fn, *args, **kwargs):
 ///   lock = gen_resource_variable_ops.mutex_lock(mutex)
-///
+/// 
 ///   with ops.control_dependencies([lock]):
 ///     r = fn(*args, **kwargs)
-///
+/// 
 ///   with ops.control_dependencies(nest.flatten(r)):
 ///     with ops.colocate_with(mutex):
 ///       ensure_lock_exists = mutex_lock_identity(lock)
-///
+/// 
 ///     # Make sure that if any element of r is accessed, all of
 ///     # them are executed together.
 ///     r = nest.map_structure(tf.identity, r)
-///
+/// 
 ///   with ops.control_dependencies([ensure_lock_exists]):
 ///     return nest.map_structure(tf.identity, r)
 /// ```
-///
+/// 
 /// While `fn` is running in the critical section, no other functions which wish to
 /// use this critical section may run.
-///
+/// 
 /// Often the use case is that two executions of the same graph, in parallel,
 /// wish to run `fn`; and we wish to ensure that only one of them executes
 /// at a time.  This is especially important if `fn` modifies one or more
 /// variables at a time.
-///
+/// 
 /// It is also useful if two separate functions must share a resource, but we
 /// wish to ensure the usage is exclusive.
 ///
@@ -17760,15 +20353,25 @@ public static func nPolymorphicRestrictOut(
     return op.execute(Int(n))
 }
 
+@inlinable @inline(__always)
+public static func namespaceTestStringOutput(
+    _ input: Tensor<Float>
+) -> (output1: Tensor<Float>, output2: StringTensor) {
+  let nOutputs = Int(1) + Int(1)
+    let op = makeOp("NamespaceTestStringOutput", nOutputs)
+    op.addInput(input)
+    return op.execute(Int(1), Int(1))
+}
+
 /// Outputs a tensor containing the reduction across all input tensors.
 ///
 /// Outputs a tensor containing the reduction across all input tensors passed to ops
 /// within the same `shared_name.
-///
+/// 
 /// The graph should be constructed so if one op runs with shared_name value `c`,
 /// then `num_devices` ops will run with shared_name value `c`.  Failure to do so
 /// will cause the graph execution to fail to complete.
-///
+/// 
 /// input: the input to the reduction
 /// data: the value of the reduction across all `num_devices` devices.
 /// reduction: the reduction operation to perform.
@@ -17794,14 +20397,14 @@ public static func ncclAllReduce<T: TensorFlowNumeric>(
 /// Sends `input` to all devices that are connected to the output.
 ///
 /// Sends `input` to all devices that are connected to the output.
-///
+/// 
 /// The graph should be constructed so that all ops connected to the output have a
 /// valid device assignment, and the op itself is assigned one of these devices.
-///
+/// 
 /// input: The input to the broadcast.
 /// output: The same as input.
 /// shape: The shape of the input tensor.
-///
+/// 
 @inlinable @inline(__always)
 public static func ncclBroadcast<T: TensorFlowNumeric>(
     _ input: Tensor<T>,
@@ -17818,10 +20421,10 @@ public static func ncclBroadcast<T: TensorFlowNumeric>(
 /// Reduces `input` from `num_devices` using `reduction` to a single device.
 ///
 /// Reduces `input` from `num_devices` using `reduction` to a single device.
-///
+/// 
 /// The graph should be constructed so that all inputs have a valid device
 /// assignment, and the op itself is assigned one of these devices.
-///
+/// 
 /// input: The input to the reduction.
 /// data: the value of the reduction across all `num_devices` devices.
 /// reduction: the reduction operation to perform.
@@ -17836,6 +20439,17 @@ public static func ncclReduce<T: TensorFlowNumeric>(
     op.updateAttribute("T", T.tensorFlowDataType)
     op.updateAttribute("num_devices", input.count)
     op.addInputList(input)
+    return op.execute(Int(1))
+}
+
+@inlinable @inline(__always)
+public static func ndtri<T: FloatingPoint & TensorFlowScalar>(
+    _ x: Tensor<T>
+) -> Tensor<T> {
+  let nOutputs = Int(1)
+    let op = makeOp("Ndtri", nOutputs)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.addInput(x)
     return op.execute(Int(1))
 }
 
@@ -17887,9 +20501,9 @@ public static func neg<T: TensorFlowNumeric>(
 /// Returns the next representable value of `x1` in the direction of `x2`, element-wise.
 ///
 /// This operation returns the same result as the C++ std::nextafter function.
-///
+/// 
 /// It can also return a subnormal number.
-///
+/// 
 /// @compatibility(cpp)
 /// Equivalent to C++ std::nextafter function.
 /// @end_compatibility
@@ -18014,12 +20628,12 @@ public static func nonMaxSuppression(
 /// algorithm is invariant to orthogonal transformations and translations
 /// of the coordinate system; thus translating or reflections of the coordinate
 /// system result in the same boxes being selected by the algorithm.
-///
+/// 
 /// The output of this operation is a set of integers indexing into the input
 /// collection of bounding boxes representing the selected boxes.  The bounding
 /// box coordinates corresponding to the selected indices can then be obtained
 /// using the `tf.gather operation`.  For example:
-///
+/// 
 ///   selected_indices = tf.image.non_max_suppression_v2(
 ///       boxes, scores, max_output_size, iou_threshold)
 ///   selected_boxes = tf.gather(boxes, selected_indices)
@@ -18036,15 +20650,19 @@ public static func nonMaxSuppression(
 /// - Output selected_indices: A 1-D integer tensor of shape `[M]` representing the selected
 ///     indices from the boxes tensor, where `M <= max_output_size`.
 @inlinable @inline(__always)
-public static func nonMaxSuppressionV2<T: FloatingPoint & TensorFlowScalar>(
+public static func nonMaxSuppressionV2<
+    T: FloatingPoint & TensorFlowScalar,
+    TThreshold: FloatingPoint & TensorFlowScalar
+>(
     boxes: Tensor<T>,
     scores: Tensor<T>,
     maxOutputSize: Tensor<Int32>,
-    iouThreshold: Tensor<Float>
+    iouThreshold: Tensor<TThreshold>
 ) -> Tensor<Int32> {
   let nOutputs = Int(1)
     let op = makeOp("NonMaxSuppressionV2", nOutputs)
     op.updateAttribute("T", T.tensorFlowDataType)
+    op.updateAttribute("T_threshold", TThreshold.tensorFlowDataType)
     op.addInput(boxes)
     op.addInput(scores)
     op.addInput(maxOutputSize)
@@ -18086,16 +20704,20 @@ public static func nonMaxSuppressionV2<T: FloatingPoint & TensorFlowScalar>(
 /// - Output selected_indices: A 1-D integer tensor of shape `[M]` representing the selected
 ///     indices from the boxes tensor, where `M <= max_output_size`.
 @inlinable @inline(__always)
-public static func nonMaxSuppressionV3<T: FloatingPoint & TensorFlowScalar>(
+public static func nonMaxSuppressionV3<
+    T: FloatingPoint & TensorFlowScalar,
+    TThreshold: FloatingPoint & TensorFlowScalar
+>(
     boxes: Tensor<T>,
     scores: Tensor<T>,
     maxOutputSize: Tensor<Int32>,
-    iouThreshold: Tensor<Float>,
-    scoreThreshold: Tensor<Float>
+    iouThreshold: Tensor<TThreshold>,
+    scoreThreshold: Tensor<TThreshold>
 ) -> Tensor<Int32> {
   let nOutputs = Int(1)
     let op = makeOp("NonMaxSuppressionV3", nOutputs)
     op.updateAttribute("T", T.tensorFlowDataType)
+    op.updateAttribute("T_threshold", TThreshold.tensorFlowDataType)
     op.addInput(boxes)
     op.addInput(scores)
     op.addInput(maxOutputSize)
@@ -18144,17 +20766,21 @@ public static func nonMaxSuppressionV3<T: FloatingPoint & TensorFlowScalar>(
 ///     - valid_outputs: A 0-D integer tensor representing the number of valid elements in
 ///         `selected_indices`, with the valid elements appearing first.
 @inlinable @inline(__always)
-public static func nonMaxSuppressionV4<T: FloatingPoint & TensorFlowScalar>(
+public static func nonMaxSuppressionV4<
+    T: FloatingPoint & TensorFlowScalar,
+    TThreshold: FloatingPoint & TensorFlowScalar
+>(
     boxes: Tensor<T>,
     scores: Tensor<T>,
     maxOutputSize: Tensor<Int32>,
-    iouThreshold: Tensor<Float>,
-    scoreThreshold: Tensor<Float>,
+    iouThreshold: Tensor<TThreshold>,
+    scoreThreshold: Tensor<TThreshold>,
     padToMaxOutputSize: Bool = false
 ) -> (selectedIndices: Tensor<Int32>, validOutputs: Tensor<Int32>) {
   let nOutputs = Int(1) + Int(1)
     let op = makeOp("NonMaxSuppressionV4", nOutputs)
     op.updateAttribute("T", T.tensorFlowDataType)
+    op.updateAttribute("T_threshold", TThreshold.tensorFlowDataType)
     op.updateAttribute("pad_to_max_output_size", padToMaxOutputSize)
     op.addInput(boxes)
     op.addInput(scores)
@@ -18166,17 +20792,91 @@ public static func nonMaxSuppressionV4<T: FloatingPoint & TensorFlowScalar>(
 
 /// Greedily selects a subset of bounding boxes in descending order of score,
 ///
+/// pruning away boxes that have high intersection-over-union (IOU) overlap
+/// with previously selected boxes.  Bounding boxes with score less than
+/// `score_threshold` are removed.  Bounding boxes are supplied as
+/// [y1, x1, y2, x2], where (y1, x1) and (y2, x2) are the coordinates of any
+/// diagonal pair of box corners and the coordinates can be provided as normalized
+/// (i.e., lying in the interval [0, 1]) or absolute.  Note that this algorithm
+/// is agnostic to where the origin is in the coordinate system and more
+/// generally is invariant to orthogonal transformations and translations
+/// of the coordinate system; thus translating or reflections of the coordinate
+/// system result in the same boxes being selected by the algorithm.
+/// The output of this operation is a set of integers indexing into the input
+/// collection of bounding boxes representing the selected boxes.  The bounding
+/// box coordinates corresponding to the selected indices can then be obtained
+/// using the `tf.gather operation`.  For example:
+///   selected_indices = tf.image.non_max_suppression_v2(
+///       boxes, scores, max_output_size, iou_threshold, score_threshold)
+///   selected_boxes = tf.gather(boxes, selected_indices)
+/// This op also supports a Soft-NMS (with Gaussian weighting) mode (c.f.
+/// Bodla et al, https://arxiv.org/abs/1704.04503) where boxes reduce the score
+/// of other overlapping boxes instead of directly causing them to be pruned.
+/// To enable this Soft-NMS mode, set the `soft_nms_sigma` parameter to be
+/// larger than 0.
+///
+/// - Parameters:
+///     - boxes: A 2-D float tensor of shape `[num_boxes, 4]`.
+///     - scores: A 1-D float tensor of shape `[num_boxes]` representing a single
+///         score corresponding to each box (each row of boxes).
+///     - max_output_size: A scalar integer tensor representing the maximum number of
+///         boxes to be selected by non max suppression.
+///     - iou_threshold: A 0-D float tensor representing the threshold for deciding whether
+///         boxes overlap too much with respect to IOU.
+///     - score_threshold: A 0-D float tensor representing the threshold for deciding when to remove
+///         boxes based on score.
+///     - soft_nms_sigma: A 0-D float tensor representing the sigma parameter for Soft NMS; see Bodla et
+///         al (c.f. https://arxiv.org/abs/1704.04503).  When `soft_nms_sigma=0.0` (which
+///         is default), we fall back to standard (hard) NMS.
+///
+/// - Attr pad_to_max_output_size: If true, the output `selected_indices` is padded to be of length
+///     `max_output_size`. Defaults to false.
+///
+/// - Outputs:
+///     - selected_indices: A 1-D integer tensor of shape `[M]` representing the selected
+///         indices from the boxes tensor, where `M <= max_output_size`.
+///     - selected_scores: A 1-D float tensor of shape `[M]` representing the corresponding
+///         scores for each selected box, where `M <= max_output_size`.  Scores only differ
+///         from corresponding input scores when using Soft NMS (i.e. when
+///         `soft_nms_sigma>0`)
+///     - valid_outputs: A 0-D integer tensor representing the number of valid elements in
+///         `selected_indices`, with the valid elements appearing first.
+@inlinable @inline(__always)
+public static func nonMaxSuppressionV5<T: FloatingPoint & TensorFlowScalar>(
+    boxes: Tensor<T>,
+    scores: Tensor<T>,
+    maxOutputSize: Tensor<Int32>,
+    iouThreshold: Tensor<T>,
+    scoreThreshold: Tensor<T>,
+    softNmsSigma: Tensor<T>,
+    padToMaxOutputSize: Bool = false
+) -> (selectedIndices: Tensor<Int32>, selectedScores: Tensor<T>, validOutputs: Tensor<Int32>) {
+  let nOutputs = Int(1) + Int(1) + Int(1)
+    let op = makeOp("NonMaxSuppressionV5", nOutputs)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.updateAttribute("pad_to_max_output_size", padToMaxOutputSize)
+    op.addInput(boxes)
+    op.addInput(scores)
+    op.addInput(maxOutputSize)
+    op.addInput(iouThreshold)
+    op.addInput(scoreThreshold)
+    op.addInput(softNmsSigma)
+    return op.execute(Int(1), Int(1), Int(1))
+}
+
+/// Greedily selects a subset of bounding boxes in descending order of score,
+///
 /// pruning away boxes that have high overlaps
 /// with previously selected boxes.  Bounding boxes with score less than
 /// `score_threshold` are removed. N-by-n overlap values are supplied as square matrix,
 /// which allows for defining a custom overlap criterium (eg. intersection over union,
 /// intersection over area, etc.).
-///
+/// 
 /// The output of this operation is a set of integers indexing into the input
 /// collection of bounding boxes representing the selected boxes.  The bounding
 /// box coordinates corresponding to the selected indices can then be obtained
 /// using the `tf.gather operation`.  For example:
-///
+/// 
 ///   selected_indices = tf.image.non_max_suppression_with_overlaps(
 ///       overlaps, scores, max_output_size, overlap_threshold, score_threshold)
 ///   selected_boxes = tf.gather(boxes, selected_indices)
@@ -18214,6 +20914,20 @@ public static func nonMaxSuppressionWithOverlaps(
 }
 
 @inlinable @inline(__always)
+public static func nonSerializableDataset(
+    inputDataset: VariantHandle,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?]
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("NonSerializableDataset", nOutputs)
+    op.updateAttribute("output_types", outputTypes)
+    op.updateAttribute("output_shapes", outputShapes)
+    op.addInput(inputDataset)
+    return op.execute(Int(1))
+}
+
+@inlinable @inline(__always)
 public static func none(
 ) {
   let nOutputs = 0
@@ -18229,11 +20943,13 @@ public static func none(
 @inlinable @inline(__always)
 public static func notEqual<T: TensorFlowScalar>(
     _ x: Tensor<T>,
-    _ y: Tensor<T>
+    _ y: Tensor<T>,
+    incompatibleShapeError: Bool = true
 ) -> Tensor<Bool> {
   let nOutputs = Int(1)
     let op = makeOp("NotEqual", nOutputs)
     op.updateAttribute("T", T.tensorFlowDataType)
+    op.updateAttribute("incompatible_shape_error", incompatibleShapeError)
     op.addInput(x)
     op.addInput(y)
     return op.execute(Int(1))
@@ -18246,11 +20962,13 @@ public static func notEqual<T: TensorFlowScalar>(
 @inlinable @inline(__always)
 public static func notEqual(
     _ x: StringTensor,
-    _ y: StringTensor
+    _ y: StringTensor,
+    incompatibleShapeError: Bool = true
 ) -> Tensor<Bool> {
   let nOutputs = Int(1)
     let op = makeOp("NotEqual", nOutputs)
     op.updateAttribute("T", TensorDataType(TF_STRING))
+    op.updateAttribute("incompatible_shape_error", incompatibleShapeError)
     op.addInput(x)
     op.addInput(y)
     return op.execute(Int(1))
@@ -18260,10 +20978,10 @@ public static func notEqual(
 ///
 /// If the input is a vector (rank-1), finds the entries which is the nth-smallest
 /// value in the vector and outputs their values as scalar tensor.
-///
+/// 
 /// For matrices (resp. higher rank input), computes the entries which is the
 /// nth-smallest value in each row (resp. vector along the last dimension). Thus,
-///
+/// 
 ///     values.shape = input.shape[:-1]
 ///
 /// - Parameters:
@@ -18303,19 +21021,19 @@ public static func old(
 ///
 /// The locations represented by indices in `indices` take value `on_value`,
 /// while all other locations take value `off_value`.
-///
+/// 
 /// If the input `indices` is rank `N`, the output will have rank `N+1`,
 /// The new axis is created at dimension `axis` (default: the new axis is
 /// appended at the end).
-///
+/// 
 /// If `indices` is a scalar the output shape will be a vector of length `depth`.
-///
+/// 
 /// If `indices` is a vector of length `features`, the output shape will be:
 /// ```
 ///   features x depth if axis == -1
 ///   depth x features if axis == 0
 /// ```
-///
+/// 
 /// If `indices` is a matrix (batch) with shape `[batch, features]`,
 /// the output shape will be:
 /// ```
@@ -18323,11 +21041,11 @@ public static func old(
 ///   batch x depth x features if axis == 1
 ///   depth x batch x features if axis == 0
 /// ```
-///
-///
+/// 
+/// 
 /// Examples
 /// =========
-///
+/// 
 /// Suppose that
 /// ```
 ///   indices = [0, 2, -1, 1]
@@ -18336,7 +21054,7 @@ public static func old(
 ///   off_value = 0.0
 ///   axis = -1
 /// ```
-///
+/// 
 /// Then output is `[4 x 3]`:
 /// ```
 /// output =
@@ -18345,7 +21063,7 @@ public static func old(
 ///   [0.0 0.0 0.0]  // one_hot(-1)
 ///   [0.0 5.0 0.0]  // one_hot(1)
 /// ```
-///
+/// 
 /// Suppose that
 /// ```
 ///   indices = [0, 2, -1, 1]
@@ -18354,7 +21072,7 @@ public static func old(
 ///   off_value = 3.0
 ///   axis = 0
 /// ```
-///
+/// 
 /// Then output is `[3 x 4]`:
 /// ```
 /// output =
@@ -18367,7 +21085,7 @@ public static func old(
 /// //          ^        one_hot(-1)
 /// //              ^    one_hot(1)
 /// ```
-///
+/// 
 /// Suppose that
 /// ```
 ///   indices = [[0, 2], [1, -1]]
@@ -18376,7 +21094,7 @@ public static func old(
 ///   off_value = 0.0
 ///   axis = -1
 /// ```
-///
+/// 
 /// Then output is `[2 x 2 x 3]`:
 /// ```
 /// output =
@@ -18427,15 +21145,15 @@ public static func oneHot<
 /// the state of the iterator in a single op, which allows simple input
 /// pipelines to be defined without an additional initialization
 /// ("MakeIterator") step.
-///
+/// 
 /// One-shot iterators have the following limitations:
-///
+/// 
 /// * They do not support parameterization: all logic for creating the underlying
 ///   dataset must be bundled in the `dataset_factory` function.
 /// * They are not resettable. Once a one-shot iterator reaches the end of its
 ///   underlying dataset, subsequent "IteratorGetNext" operations on that
 ///   iterator will always produce an `OutOfRange` error.
-///
+/// 
 /// For greater flexibility, use "Iterator" and "MakeIterator" to define
 /// an iterator using an arbitrary subgraph, which may capture tensors
 /// (including fed values) as parameters, and which may be reset multiple
@@ -18855,13 +21573,13 @@ public static func outfeedEnqueueTuple<Dtypes: TensorArrayProtocol>(
 /// Packs the `N` tensors in `values` into a tensor with rank one higher than each
 /// tensor in `values`, by packing them along the `axis` dimension.
 /// Given a list of tensors of shape `(A, B, C)`;
-///
+/// 
 /// if `axis == 0` then the `output` tensor will have the shape `(N, A, B, C)`.
 /// if `axis == 1` then the `output` tensor will have the shape `(A, N, B, C)`.
 /// Etc.
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// # 'x' is [1, 4]
 /// # 'y' is [2, 5]
@@ -18869,7 +21587,7 @@ public static func outfeedEnqueueTuple<Dtypes: TensorArrayProtocol>(
 /// pack([x, y, z]) => [[1, 4], [2, 5], [3, 6]]  # Pack along first dim.
 /// pack([x, y, z], axis=1) => [[1, 2, 3], [4, 5, 6]]
 /// ```
-///
+/// 
 /// This is the opposite of `unpack`.
 ///
 /// - Parameter values: Must be of same shape and type.
@@ -18900,13 +21618,13 @@ public static func pack<T: TensorFlowScalar>(
 /// how many zeros to add before the contents of `input` in that dimension, and
 /// `paddings[D, 1]` indicates how many zeros to add after the contents of `input`
 /// in that dimension.
-///
+/// 
 /// The padded size of each dimension D of the output is:
-///
+/// 
 /// `paddings(D, 0) + input.dim_size(D) + paddings(D, 1)`
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// # 't' is [[1, 1], [2, 2]]
 /// # 'paddings' is [[1, 1], [2, 2]]
@@ -18916,7 +21634,7 @@ public static func pack<T: TensorFlowScalar>(
 ///                       [0, 0, 2, 2, 0, 0]
 ///                       [0, 0, 0, 0, 0, 0]]
 /// ```
-///
+/// 
 @inlinable @inline(__always)
 public static func pad<
     T: TensorFlowScalar,
@@ -18943,13 +21661,13 @@ public static func pad<
 /// and `paddings[D, 1]` indicates how many padding values to add after the contents
 /// of `input` in that dimension. `constant_values` is a scalar tensor of the same
 /// type as `input` that indicates the value to use for padding `input`.
-///
+/// 
 /// The padded size of each dimension D of the output is:
-///
+/// 
 /// `paddings(D, 0) + input.dim_size(D) + paddings(D, 1)`
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// # 't' is [[1, 1], [2, 2]]
 /// # 'paddings' is [[1, 1], [2, 2]]
@@ -19092,16 +21810,16 @@ public static func paddingFIFOQueueV2(
 /// Concatenates a list of `N` tensors along the first dimension.
 ///
 /// The input tensors are all required to have size 1 in the first dimension.
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// # 'x' is [[1, 4]]
 /// # 'y' is [[2, 5]]
 /// # 'z' is [[3, 6]]
 /// parallel_concat([x, y, z]) => [[1, 4], [2, 5], [3, 6]]  # Pack along first dim.
 /// ```
-///
+/// 
 /// The difference between concat and parallel_concat is that concat requires all
 /// of the inputs be computed before the operation will begin but doesn't require
 /// that the input shapes be known during graph construction.  Parallel concat
@@ -19132,34 +21850,34 @@ public static func parallelConcat<T: TensorFlowScalar>(
 /// Interleave the values from the `data` tensors into a single tensor.
 ///
 /// Builds a merged tensor such that
-///
+/// 
 /// ```python
 ///     merged[indices[m][i, ..., j], ...] = data[m][i, ..., j, ...]
 /// ```
-///
+/// 
 /// For example, if each `indices[m]` is scalar or vector, we have
-///
+/// 
 /// ```python
 ///     # Scalar indices:
 ///     merged[indices[m], ...] = data[m][...]
-///
+/// 
 ///     # Vector indices:
 ///     merged[indices[m][i], ...] = data[m][i, ...]
 /// ```
-///
+/// 
 /// Each `data[i].shape` must start with the corresponding `indices[i].shape`,
 /// and the rest of `data[i].shape` must be constant w.r.t. `i`.  That is, we
 /// must have `data[i].shape = indices[i].shape + constant`.  In terms of this
 /// `constant`, the output shape is
-///
+/// 
 ///     merged.shape = [max(indices)] + constant
-///
+/// 
 /// Values may be merged in parallel, so if an index appears in both `indices[m][i]`
 /// and `indices[n][j]`, the result may be invalid. This differs from the normal
 /// DynamicStitch operator that defines the behavior in that case.
-///
+/// 
 /// For example:
-///
+/// 
 /// ```python
 ///     indices[0] = 6
 ///     indices[1] = [4, 1]
@@ -19170,10 +21888,10 @@ public static func parallelConcat<T: TensorFlowScalar>(
 ///     merged = [[1, 2], [11, 12], [21, 22], [31, 32], [41, 42],
 ///               [51, 52], [61, 62]]
 /// ```
-///
+/// 
 /// This method can be used to merge partitions created by `dynamic_partition`
 /// as illustrated on the following example:
-///
+/// 
 /// ```python
 ///     # Apply function (increments x_i) on elements for which a certain condition
 ///     # apply (x_i != -1 in this example).
@@ -19188,7 +21906,7 @@ public static func parallelConcat<T: TensorFlowScalar>(
 ///     # Here x=[1.1, -1., 6.2, 5.3, -1, 8.4], the -1. values remain
 ///     # unchanged.
 /// ```
-///
+/// 
 /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
 /// <img style="width:100%" src="https://www.tensorflow.org/images/DynamicStitch.png" alt>
 /// </div>
@@ -19208,9 +21926,111 @@ public static func parallelDynamicStitch<T: TensorFlowScalar>(
 
 /// Creates a dataset that applies `f` to the outputs of `input_dataset`.
 ///
-/// - Attr f: A function mapping elements of `input_dataset`, concatenated with
-///     `other_arguments`, to a Dataset variant that contains elements matching
-///     `output_types` and `output_shapes`.
+/// The resulting dataset is similar to the `InterleaveDataset`, with the exception
+/// that if retrieving the next value from a dataset would cause the requester to
+/// block, it will skip that input dataset. This dataset is especially useful
+/// when loading data from a variable-latency datastores (e.g. HDFS, GCS), as it
+/// allows the training step to proceed so long as some data is available.
+/// 
+/// !! WARNING !! If the `sloppy` parameter is set to `True`, the operation of this
+/// dataset will not be deterministic!
+/// 
+/// This dataset has been superseded by `ParallelInterleaveDatasetV2`.  New code
+/// should use `ParallelInterleaveDatasetV2`.
+/// 
+/// The Python API `tf.data.experimental.parallel_interleave` creates instances of
+/// this op. `tf.data.experimental.parallel_interleave` is a deprecated API.
+///
+/// - Parameters:
+///     - input_dataset: Dataset that produces a stream of arguments for the function `f`.
+///     - other_arguments: Additional arguments to pass to `f` beyond those produced by `input_dataset`.
+///         Evaluated once when the dataset is instantiated.
+///     - cycle_length: Number of datasets (each created by applying `f` to the elements of
+///         `input_dataset`) among which the `ParallelInterleaveDataset` will cycle in a
+///         round-robin fashion.
+///     - block_length: Number of elements at a time to produce from each interleaved invocation of a
+///         dataset returned by `f`.
+///     - sloppy: If `True`, return elements as they become available, even if that means returning
+///         these elements in a non-deterministic order. Sloppy operation may result in better
+///         performance in the presence of stragglers, but the dataset will still block if
+///         all of its open streams are blocked.
+///         If `False`, always return elements in a deterministic order.
+///     - buffer_output_elements: The number of elements each iterator being interleaved should buffer (similar
+///         to the `.prefetch()` transformation for each interleaved iterator).
+///     - prefetch_input_elements: Determines the number of iterators to prefetch, allowing buffers to warm up and
+///         data to be pre-fetched without blocking the main thread.
+///
+/// - Attrs:
+///     - f: A function mapping elements of `input_dataset`, concatenated with
+///         `other_arguments`, to a Dataset variant that contains elements matching
+///         `output_types` and `output_shapes`.
+///     - Targuments: Types of the elements of `other_arguments`.
+@inlinable @inline(__always)
+public static func parallelInterleaveDataset<
+    FIn: TensorGroup,
+    FOut: TensorGroup,
+    Targuments: TensorArrayProtocol
+>(
+    inputDataset: VariantHandle,
+    otherArguments: Targuments,
+    cycleLength: Tensor<Int64>,
+    blockLength: Tensor<Int64>,
+    sloppy: Tensor<Bool>,
+    bufferOutputElements: Tensor<Int64>,
+    prefetchInputElements: Tensor<Int64>,
+    f: (FIn) -> FOut,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?]
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("ParallelInterleaveDataset", nOutputs)
+    op.updateAttribute("f", f)
+    op.updateAttribute("Targuments", otherArguments._typeList)
+    op.updateAttribute("output_types", outputTypes)
+    op.updateAttribute("output_shapes", outputShapes)
+    op.addInput(inputDataset)
+    op.addInputList(otherArguments)
+    op.addInput(cycleLength)
+    op.addInput(blockLength)
+    op.addInput(sloppy)
+    op.addInput(bufferOutputElements)
+    op.addInput(prefetchInputElements)
+    return op.execute(Int(1))
+}
+
+/// Creates a dataset that applies `f` to the outputs of `input_dataset`.
+///
+/// The resulting dataset is similar to the `InterleaveDataset`, except that the
+/// dataset will fetch records from the interleaved datasets in parallel.
+/// 
+/// The `tf.data` Python API creates instances of this op from
+/// `Dataset.interleave()` when the `num_parallel_calls` parameter of that method
+/// is set to any value other than `None`.
+/// 
+/// By default, the output of this dataset will be deterministic, which may result
+/// in the dataset blocking if the next data item to be returned isn't available.
+/// In order to avoid head-of-line blocking, one can set the
+/// `experimental_deterministic` parameter of `tf.data.Options` to `False`,
+/// which can improve performance at the expense of non-determinism.
+///
+/// - Parameters:
+///     - input_dataset: Dataset that produces a stream of arguments for the function `f`.
+///     - other_arguments: Additional arguments to pass to `f` beyond those produced by `input_dataset`.
+///         Evaluated once when the dataset is instantiated.
+///     - cycle_length: Number of datasets (each created by applying `f` to the elements of
+///         `input_dataset`) among which the `ParallelInterleaveDatasetV2` will cycle in a
+///         round-robin fashion.
+///     - block_length: Number of elements at a time to produce from each interleaved invocation of a
+///         dataset returned by `f`.
+///     - num_parallel_calls: Determines the number of threads that should be used for fetching data from
+///         input datasets in parallel. The Python API `tf.data.experimental.AUTOTUNE`
+///         constant can be used to indicate that the level of parallelism should be autotuned.
+///
+/// - Attrs:
+///     - f: A function mapping elements of `input_dataset`, concatenated with
+///         `other_arguments`, to a Dataset variant that contains elements matching
+///         `output_types` and `output_shapes`.
+///     - Targuments: Types of the elements of `other_arguments`.
 @inlinable @inline(__always)
 public static func parallelInterleaveDatasetV2<
     FIn: TensorGroup,
@@ -19400,6 +22220,157 @@ public static func parseExample<
     return op.execute(Int(sparseKeys.count), Int(SparseTypes._typeList.count), Int(sparseKeys.count), Int(denseDefaults._typeList.count))
 }
 
+/// Transforms `input_dataset` containing `Example` protos as vectors of DT_STRING into a dataset of `Tensor` or `SparseTensor` objects representing the parsed features.
+///
+/// - Parameter dense_defaults: A dict mapping string keys to `Tensor`s.
+///     The keys of the dict must match the dense_keys of the feature.
+///
+/// - Attrs:
+///     - sparse_keys: A list of string keys in the examples features.
+///         The results for these keys will be returned as `SparseTensor` objects.
+///     - dense_keys: A list of Ndense string Tensors (scalars).
+///         The keys expected in the Examples features associated with dense values.
+///     - sparse_types: A list of `DTypes` of the same length as `sparse_keys`.
+///         Only `tf.float32` (`FloatList`), `tf.int64` (`Int64List`),
+///         and `tf.string` (`BytesList`) are supported.
+///     - Tdense: A list of DTypes of the same length as `dense_keys`.
+///         Only `tf.float32` (`FloatList`), `tf.int64` (`Int64List`),
+///         and `tf.string` (`BytesList`) are supported.
+///         
+///     - dense_shapes: List of tuples with the same length as `dense_keys`.
+///         The shape of the data for each dense feature referenced by `dense_keys`.
+///         Required for any input tensors identified by `dense_keys`.  Must be
+///         either fully defined, or may contain an unknown first dimension.
+///         An unknown first dimension means the feature is treated as having
+///         a variable number of blocks, and the output shape along this dimension
+///         is considered unknown at graph build time.  Padding is applied for
+///         minibatch elements smaller than the maximum number of blocks for the
+///         given feature along this dimension.
+///     - output_types: The type list for the return values.
+///     - output_shapes: The list of shapes being produced.
+@inlinable @inline(__always)
+public static func parseExampleDataset<Tdense: TensorArrayProtocol>(
+    inputDataset: VariantHandle,
+    numParallelCalls: Tensor<Int64>,
+    denseDefaults: Tdense,
+    sparseKeys: [String],
+    denseKeys: [String],
+    sparseTypes: [TensorDataType],
+    denseShapes: [TensorShape?],
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?],
+    sloppy: Bool = false,
+    raggedKeys: [String],
+    raggedValueTypes: [TensorDataType],
+    raggedSplitTypes: [TensorDataType]
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("ParseExampleDataset", nOutputs)
+    op.updateAttribute("sparse_keys", sparseKeys)
+    op.updateAttribute("dense_keys", denseKeys)
+    op.updateAttribute("sparse_types", sparseTypes)
+    op.updateAttribute("Tdense", denseDefaults._typeList)
+    op.updateAttribute("dense_shapes", denseShapes)
+    op.updateAttribute("output_types", outputTypes)
+    op.updateAttribute("output_shapes", outputShapes)
+    op.updateAttribute("sloppy", sloppy)
+    op.updateAttribute("ragged_keys", raggedKeys)
+    op.updateAttribute("ragged_value_types", raggedValueTypes)
+    op.updateAttribute("ragged_split_types", raggedSplitTypes)
+    op.addInput(inputDataset)
+    op.addInput(numParallelCalls)
+    op.addInputList(denseDefaults)
+    return op.execute(Int(1))
+}
+
+/// Transforms a vector of tf.Example protos (as strings) into typed tensors.
+///
+/// - Parameters:
+///     - serialized: A scalar or vector containing binary serialized Example protos.
+///     - names: A tensor containing the names of the serialized protos.
+///         Corresponds 1:1 with the `serialized` tensor.
+///         May contain, for example, table key (descriptive) names for the
+///         corresponding serialized protos.  These are purely useful for debugging
+///         purposes, and the presence of values here has no effect on the output.
+///         May also be an empty vector if no names are available.
+///         If non-empty, this tensor must have the same shape as "serialized".
+///     - sparse_keys: Vector of strings.
+///         The keys expected in the Examples' features associated with sparse values.
+///     - dense_keys: Vector of strings.
+///         The keys expected in the Examples' features associated with dense values.
+///     - ragged_keys: Vector of strings.
+///         The keys expected in the Examples' features associated with ragged values.
+///     - dense_defaults: A list of Tensors (some may be empty).  Corresponds 1:1 with `dense_keys`.
+///         dense_defaults[j] provides default values
+///         when the example's feature_map lacks dense_key[j].  If an empty Tensor is
+///         provided for dense_defaults[j], then the Feature dense_keys[j] is required.
+///         The input type is inferred from dense_defaults[j], even when it's empty.
+///         If dense_defaults[j] is not empty, and dense_shapes[j] is fully defined,
+///         then the shape of dense_defaults[j] must match that of dense_shapes[j].
+///         If dense_shapes[j] has an undefined major dimension (variable strides dense
+///         feature), dense_defaults[j] must contain a single element:
+///         the padding element.
+///
+/// - Attrs:
+///     - num_sparse: The number of sparse keys.
+///     - sparse_types: A list of `num_sparse` types; the data types of data in each Feature
+///         given in sparse_keys.
+///         Currently the ParseExample supports DT_FLOAT (FloatList),
+///         DT_INT64 (Int64List), and DT_STRING (BytesList).
+///     - ragged_value_types: A list of `num_ragged` types; the data types of data in each Feature
+///         given in ragged_keys (where `num_ragged = sparse_keys.size()`).
+///         Currently the ParseExample supports DT_FLOAT (FloatList),
+///         DT_INT64 (Int64List), and DT_STRING (BytesList).
+///     - ragged_split_types: A list of `num_ragged` types; the data types of row_splits in each Feature
+///         given in ragged_keys (where `num_ragged = sparse_keys.size()`).
+///         May be DT_INT32 or DT_INT64.
+///     - dense_shapes: A list of `num_dense` shapes; the shapes of data in each Feature
+///         given in dense_keys (where `num_dense = dense_keys.size()`).
+///         The number of elements in the Feature corresponding to dense_key[j]
+///         must always equal dense_shapes[j].NumEntries().
+///         If dense_shapes[j] == (D0, D1, ..., DN) then the shape of output
+///         Tensor dense_values[j] will be (|serialized|, D0, D1, ..., DN):
+///         The dense outputs are just the inputs row-stacked by batch.
+///         This works for dense_shapes[j] = (-1, D1, ..., DN).  In this case
+///         the shape of the output Tensor dense_values[j] will be
+///         (|serialized|, M, D1, .., DN), where M is the maximum number of blocks
+///         of elements of length D1 * .... * DN, across all minibatch entries
+///         in the input.  Any minibatch entry with less than M blocks of elements of
+///         length D1 * ... * DN will be padded with the corresponding default_value
+///         scalar element along the second dimension.
+@inlinable @inline(__always)
+public static func parseExampleV2<
+    Tdense: TensorArrayProtocol,
+    SparseTypes: TensorGroup,
+    RaggedValueTypes: TensorGroup,
+    RaggedSplitTypes: TensorGroup
+>(
+    serialized: StringTensor,
+    names: StringTensor,
+    sparseKeys: StringTensor,
+    denseKeys: StringTensor,
+    raggedKeys: StringTensor,
+    denseDefaults: Tdense,
+    numSparse: Int64,
+    denseShapes: [TensorShape?]
+) -> (sparseIndices: [Tensor<Int64>], sparseValues: SparseTypes, sparseShapes: [Tensor<Int64>], denseValues: Tdense, raggedValues: RaggedValueTypes, raggedRowSplits: RaggedSplitTypes) {
+  let nOutputs = Int(numSparse) + Int(SparseTypes._typeList.count) + Int(numSparse) + Int(denseDefaults._typeList.count) + Int(RaggedValueTypes._typeList.count) + Int(RaggedSplitTypes._typeList.count)
+    let op = makeOp("ParseExampleV2", nOutputs)
+    op.updateAttribute("Tdense", denseDefaults._typeList)
+    op.updateAttribute("num_sparse", numSparse)
+    op.updateAttribute("sparse_types", SparseTypes._typeList)
+    op.updateAttribute("ragged_value_types", RaggedValueTypes._typeList)
+    op.updateAttribute("ragged_split_types", RaggedSplitTypes._typeList)
+    op.updateAttribute("dense_shapes", denseShapes)
+    op.addInput(serialized)
+    op.addInput(names)
+    op.addInput(sparseKeys)
+    op.addInput(denseKeys)
+    op.addInput(raggedKeys)
+    op.addInputList(denseDefaults)
+    return op.execute(Int(numSparse), Int(SparseTypes._typeList.count), Int(numSparse), Int(denseDefaults._typeList.count), Int(RaggedValueTypes._typeList.count), Int(RaggedSplitTypes._typeList.count))
+}
+
 /// Transforms a vector of brain.SequenceExample protos (as strings) into typed tensors.
 ///
 /// - Parameters:
@@ -19495,7 +22466,135 @@ public static func parseSequenceExample<
     op.addInput(serialized)
     op.addInput(debugName)
     op.addInputList(contextDenseDefaults)
-    return op.execute(Int(ncontextSparse), Int(ContextSparseTypes._typeList.count), Int(ncontextSparse), Int(contextDenseDefaults._typeList.count), Int(nfeatureListSparse), Int(FeatureListSparseTypes._typeList.count), Int(nfeatureListSparse), Int(FeatureListDenseTypes._typeList.count), Int(nfeatureListDense))
+    let ncontextSparse = Int(ncontextSparse)
+    let contextSparseTypesCounts = Int(ContextSparseTypes._typeList.count)
+    let contextDenseDefaultsCounts = Int(contextDenseDefaults._typeList.count)
+    let nfeatureListSparse = Int(nfeatureListSparse)
+    let nfeaturelistSparseTypesCounts = Int(FeatureListSparseTypes._typeList.count)
+    let FeatureListDenseTypesCounts = Int(FeatureListDenseTypes._typeList.count)
+    let nfeatureListDense = Int(nfeatureListDense)
+    return op.execute(ncontextSparse, contextSparseTypesCounts, ncontextSparse, contextDenseDefaultsCounts, nfeatureListSparse, nfeaturelistSparseTypesCounts, nfeatureListSparse, FeatureListDenseTypesCounts, nfeatureListDense)
+}
+
+/// Transforms a vector of tf.io.SequenceExample protos (as strings) into
+/// typed tensors.
+///
+/// - Parameters:
+///     - serialized: A scalar or vector containing binary serialized SequenceExample protos.
+///     - debug_name: A scalar or vector containing the names of the serialized protos.
+///         May contain, for example, table key (descriptive) name for the
+///         corresponding serialized proto.  This is purely useful for debugging
+///         purposes, and the presence of values here has no effect on the output.
+///         May also be an empty vector if no name is available.
+///     - context_sparse_keys: The keys expected in the Examples' features associated with context_sparse
+///         values.
+///     - context_dense_keys: The keys expected in the SequenceExamples' context features associated with
+///         dense values.
+///     - context_ragged_keys: The keys expected in the Examples' features associated with context_ragged
+///         values.
+///     - feature_list_sparse_keys: The keys expected in the FeatureLists associated with sparse values.
+///     - feature_list_dense_keys: The keys expected in the SequenceExamples' feature_lists associated
+///         with lists of dense values.
+///     - feature_list_ragged_keys: The keys expected in the FeatureLists associated with ragged values.
+///     - feature_list_dense_missing_assumed_empty: A vector corresponding 1:1 with featue_list_dense_keys, indicating which
+///         features may be missing from the SequenceExamples.  If the associated
+///         FeatureList is missing, it is treated as empty.
+///     - context_dense_defaults: A list of Ncontext_dense Tensors (some may be empty).
+///         context_dense_defaults[j] provides default values
+///         when the SequenceExample's context map lacks context_dense_key[j].
+///         If an empty Tensor is provided for context_dense_defaults[j],
+///         then the Feature context_dense_keys[j] is required.
+///         The input type is inferred from context_dense_defaults[j], even when it's
+///         empty.  If context_dense_defaults[j] is not empty, its shape must match
+///         context_dense_shapes[j].
+///
+/// - Attrs:
+///     - context_sparse_types: A list of Ncontext_sparse types; the data types of data in
+///         each context Feature given in context_sparse_keys.
+///         Currently the ParseSingleSequenceExample supports DT_FLOAT (FloatList),
+///         DT_INT64 (Int64List), and DT_STRING (BytesList).
+///     - context_ragged_value_types: RaggedTensor.value dtypes for the ragged context features.
+///     - context_ragged_split_types: RaggedTensor.row_split dtypes for the ragged context features.
+///     - context_dense_shapes: A list of Ncontext_dense shapes; the shapes of data in
+///         each context Feature given in context_dense_keys.
+///         The number of elements in the Feature corresponding to context_dense_key[j]
+///         must always equal context_dense_shapes[j].NumEntries().
+///         The shape of context_dense_values[j] will match context_dense_shapes[j].
+///     - feature_list_sparse_types: A list of Nfeature_list_sparse types; the data types
+///         of data in each FeatureList given in feature_list_sparse_keys.
+///         Currently the ParseSingleSequenceExample supports DT_FLOAT (FloatList),
+///         DT_INT64 (Int64List), and DT_STRING (BytesList).
+///     - feature_list_ragged_value_types: RaggedTensor.value dtypes for the ragged FeatureList features.
+///     - feature_list_ragged_split_types: RaggedTensor.row_split dtypes for the ragged FeatureList features.
+///     - feature_list_dense_shapes: A list of Nfeature_list_dense shapes; the shapes of
+///         data in each FeatureList given in feature_list_dense_keys.
+///         The shape of each Feature in the FeatureList corresponding to
+///         feature_list_dense_key[j] must always equal
+///         feature_list_dense_shapes[j].NumEntries().
+@inlinable @inline(__always)
+public static func parseSequenceExampleV2<
+    TcontextDense: TensorArrayProtocol,
+    ContextSparseTypes: TensorGroup,
+    ContextRaggedValueTypes: TensorGroup,
+    ContextRaggedSplitTypes: TensorGroup,
+    FeatureListDenseTypes: TensorGroup,
+    FeatureListSparseTypes: TensorGroup,
+    FeatureListRaggedValueTypes: TensorGroup,
+    FeatureListRaggedSplitTypes: TensorGroup
+>(
+    serialized: StringTensor,
+    debugName: StringTensor,
+    contextSparseKeys: StringTensor,
+    contextDenseKeys: StringTensor,
+    contextRaggedKeys: StringTensor,
+    featureListSparseKeys: StringTensor,
+    featureListDenseKeys: StringTensor,
+    featureListRaggedKeys: StringTensor,
+    featureListDenseMissingAssumedEmpty: Tensor<Bool>,
+    contextDenseDefaults: TcontextDense,
+    ncontextSparse: Int64 = 0,
+    contextDenseShapes: [TensorShape?],
+    nfeatureListSparse: Int64 = 0,
+    nfeatureListDense: Int64 = 0,
+    featureListDenseShapes: [TensorShape?]
+) -> (contextSparseIndices: [Tensor<Int64>], contextSparseValues: ContextSparseTypes, contextSparseShapes: [Tensor<Int64>], contextDenseValues: TcontextDense, contextRaggedValues: ContextRaggedValueTypes, contextRaggedRowSplits: ContextRaggedSplitTypes, featureListSparseIndices: [Tensor<Int64>], featureListSparseValues: FeatureListSparseTypes, featureListSparseShapes: [Tensor<Int64>], featureListDenseValues: FeatureListDenseTypes, featureListDenseLengths: [Tensor<Int64>], featureListRaggedValues: FeatureListRaggedValueTypes, featureListRaggedOuterSplits: FeatureListRaggedSplitTypes, featureListRaggedInnerSplits: FeatureListRaggedSplitTypes) {
+  let nOutputs = Int(ncontextSparse) + Int(ContextSparseTypes._typeList.count) + Int(ncontextSparse) + Int(contextDenseDefaults._typeList.count) + Int(ContextRaggedValueTypes._typeList.count) + Int(ContextRaggedSplitTypes._typeList.count) + Int(nfeatureListSparse) + Int(FeatureListSparseTypes._typeList.count) + Int(nfeatureListSparse) + Int(FeatureListDenseTypes._typeList.count) + Int(nfeatureListDense) + Int(FeatureListRaggedValueTypes._typeList.count) + Int(FeatureListRaggedSplitTypes._typeList.count) + Int(FeatureListRaggedSplitTypes._typeList.count)
+    let op = makeOp("ParseSequenceExampleV2", nOutputs)
+    op.updateAttribute("Ncontext_sparse", ncontextSparse)
+    op.updateAttribute("Tcontext_dense", contextDenseDefaults._typeList)
+    op.updateAttribute("context_sparse_types", ContextSparseTypes._typeList)
+    op.updateAttribute("context_ragged_value_types", ContextRaggedValueTypes._typeList)
+    op.updateAttribute("context_ragged_split_types", ContextRaggedSplitTypes._typeList)
+    op.updateAttribute("context_dense_shapes", contextDenseShapes)
+    op.updateAttribute("Nfeature_list_sparse", nfeatureListSparse)
+    op.updateAttribute("Nfeature_list_dense", nfeatureListDense)
+    op.updateAttribute("feature_list_dense_types", FeatureListDenseTypes._typeList)
+    op.updateAttribute("feature_list_sparse_types", FeatureListSparseTypes._typeList)
+    op.updateAttribute("feature_list_ragged_value_types", FeatureListRaggedValueTypes._typeList)
+    op.updateAttribute("feature_list_ragged_split_types", FeatureListRaggedSplitTypes._typeList)
+    op.updateAttribute("feature_list_dense_shapes", featureListDenseShapes)
+    op.addInput(serialized)
+    op.addInput(debugName)
+    op.addInput(contextSparseKeys)
+    op.addInput(contextDenseKeys)
+    op.addInput(contextRaggedKeys)
+    op.addInput(featureListSparseKeys)
+    op.addInput(featureListDenseKeys)
+    op.addInput(featureListRaggedKeys)
+    op.addInput(featureListDenseMissingAssumedEmpty)
+    op.addInputList(contextDenseDefaults)
+    let ncontextSparse = Int(ncontextSparse)
+    let contextSparseTypesCount =  Int(ContextSparseTypes._typeList.count)
+    let contextDenseDefaultsCount = Int(contextDenseDefaults._typeList.count)
+    let contextRaggedValueTypesCount = Int(ContextRaggedValueTypes._typeList.count)
+    let contextRaggedSplitTypesCount = Int(ContextRaggedSplitTypes._typeList.count)
+    let nfeatureListSparse = Int(nfeatureListSparse)
+    let featureListSparseTypesCount = Int(FeatureListSparseTypes._typeList.count)
+    let featureListDenseTypesCount = Int(FeatureListDenseTypes._typeList.count)
+    let nfeatureListDense = Int(nfeatureListDense)
+    let featureListRaggedValueTypesCount = Int(FeatureListRaggedValueTypes._typeList.count)
+    let featureListRaggedSplitTypesCount = Int(FeatureListRaggedSplitTypes._typeList.count)
+    return op.execute(ncontextSparse, contextSparseTypesCount, ncontextSparse, contextDenseDefaultsCount, contextRaggedValueTypesCount, contextRaggedSplitTypesCount, nfeatureListSparse, featureListSparseTypesCount, nfeatureListSparse, featureListDenseTypesCount, nfeatureListDense, featureListRaggedValueTypesCount, featureListRaggedSplitTypesCount, featureListRaggedSplitTypesCount)
 }
 
 /// Transforms a tf.Example proto (as a string) into typed tensors.
@@ -19784,10 +22883,10 @@ public static func placeholderWithDefault<Dtype: TensorFlowScalar>(
 /// Compute the polygamma function \\(\psi^{(n)}(x)\\).
 ///
 /// The polygamma function is defined as:
-///
-///
+/// 
+/// 
 /// \\(\psi^{(a)}(x) = \frac{d^a}{dx^a} \psi(x)\\)
-///
+/// 
 /// where \\(\psi(x)\\) is the digamma function.
 /// The polygamma function is defined only for non-negative integer orders \\a\\.
 @inlinable @inline(__always)
@@ -19836,7 +22935,7 @@ public static func polymorphicOut<T: TensorFlowScalar>(
 ///
 /// For each entry in `x`, calculates the number of `1` (on) bits in the binary
 /// representation of that entry.
-///
+/// 
 /// **NOTE**: It is more efficient to first `tf.bitcast` your tensors into
 /// `int32` or `int64` and perform the bitcount on the result, than to feed in
 /// 8- or 16-bit inputs and then aggregate the resulting counts.
@@ -19855,7 +22954,7 @@ public static func populationCount<T: TensorFlowInteger>(
 ///
 /// Given a tensor `x` and a tensor `y`, this operation computes \\(x^y\\) for
 /// corresponding elements in `x` and `y`. For example:
-///
+/// 
 /// ```
 /// # tensor 'x' is [[2, 2]], [3, 3]]
 /// # tensor 'y' is [[8, 16], [2, 3]]
@@ -19883,12 +22982,16 @@ public static func prefetchDataset(
     inputDataset: VariantHandle,
     bufferSize: Tensor<Int64>,
     outputTypes: [TensorDataType],
-    outputShapes: [TensorShape?]
+    outputShapes: [TensorShape?],
+    slackPeriod: Int64 = 0,
+    legacyAutotune: Bool = true
 ) -> VariantHandle {
   let nOutputs = Int(1)
     let op = makeOp("PrefetchDataset", nOutputs)
     op.updateAttribute("output_types", outputTypes)
     op.updateAttribute("output_shapes", outputShapes)
+    op.updateAttribute("slack_period", slackPeriod)
+    op.updateAttribute("legacy_autotune", legacyAutotune)
     op.addInput(inputDataset)
     op.addInput(bufferSize)
     return op.execute(Int(1))
@@ -19948,7 +23051,7 @@ public static func prelinearizeTuple<Dtypes: TensorArrayProtocol>(
 /// An identity op that triggers an error if a gradient is requested.
 ///
 /// When executed in a graph, this op outputs its input tensor as-is.
-///
+/// 
 /// When building ops to compute gradients, the TensorFlow gradient system
 /// will return an error when trying to lookup the gradient of this op,
 /// because no gradient must ever be registered for this function.  This
@@ -20021,11 +23124,13 @@ public static func print<
 @inlinable @inline(__always)
 public static func printV2(
     _ input: StringTensor,
-    outputStream: String = "stderr"
+    outputStream: String = "stderr",
+    end: String = ""
 ) {
   let nOutputs = 0
     let op = makeOp("PrintV2", nOutputs)
     op.updateAttribute("output_stream", outputStream)
+    op.updateAttribute("end", end)
     op.addInput(input)
     op.execute()
 }
@@ -20067,6 +23172,25 @@ public static func priorityQueueV2(
     op.updateAttribute("capacity", capacity)
     op.updateAttribute("container", container)
     op.updateAttribute("shared_name", sharedName)
+    return op.execute(Int(1))
+}
+
+/// Creates a dataset that uses a custom thread pool to compute `input_dataset`.
+///
+/// - Parameter num_threads: Identifies the number of threads to use for the private threadpool.
+@inlinable @inline(__always)
+public static func privateThreadPoolDataset(
+    inputDataset: VariantHandle,
+    numThreads: Tensor<Int64>,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?]
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("PrivateThreadPoolDataset", nOutputs)
+    op.updateAttribute("output_types", outputTypes)
+    op.updateAttribute("output_shapes", outputShapes)
+    op.addInput(inputDataset)
+    op.addInput(numThreads)
     return op.execute(Int(1))
 }
 
@@ -20157,7 +23281,7 @@ public static func pyFuncStateless<
 ///
 /// Computes the QR decomposition of each inner matrix in `tensor` such that
 /// `tensor[..., :, :] = q[..., :, :] * r[..., :,:])`
-///
+/// 
 /// ```python
 /// # a is a tensor.
 /// # q is a tensor of orthonormal matrices.
@@ -20216,41 +23340,41 @@ public static func quantizeAndDequantize<T: FloatingPoint & TensorFlowScalar>(
 /// Quantizes then dequantizes a tensor.
 ///
 /// This op simulates the precision loss from the quantized forward pass by:
-///
+/// 
 /// 1. Quantizing the tensor to fixed point numbers, which should match the target
 ///    quantization method when it is used in inference.
 /// 2. Dequantizing it back to floating point numbers for the following ops, most
 ///    likely matmul.
-///
+/// 
 /// There are different ways to quantize. This version uses only scaling, so 0.0
 /// maps to 0.
-///
+/// 
 /// From the specified 'num_bits' in the quantized output type, it determines
 /// minimum and maximum representable quantized values.
-///
+/// 
 /// e.g.
-///
+/// 
 /// *   [-128, 127] for signed, num_bits = 8, or
 /// *   [0, 255] for unsigned, num_bits = 8.
-///
+/// 
 /// If range_given == False, the initial input_min, input_max will be determined
 /// automatically as the minimum and maximum values in the input tensor, otherwise
 /// the specified values of input_min, input_max are used.
-///
+/// 
 /// Note: If the input_min, input_max are specified, they do not need to equal the
 /// actual minimum and maximum values in the tensor. e.g. in some cases it may be
 /// beneficial to specify these values such that the low probability extremes of the
 /// input distribution are clipped.
-///
+/// 
 /// This op determines the maximum scale_factor that would map the initial
 /// [input_min, input_max] range to a range that lies within the representable
 /// quantized range.
-///
+/// 
 /// It determines the scale from one of input_min and input_max, then updates the
-/// other one to maximize the respresentable range.
-///
+/// other one to maximize the representable range.
+/// 
 /// e.g.
-///
+/// 
 /// *   if the output is signed, num_bits = 8, [input_min, input_max] = [-10.0,
 ///     5.0]: it would use a scale_factor of -128 / -10.0 = 12.8 In this case, it
 ///     would update input_max to be 127 / 12.8 = 9.921875
@@ -20259,14 +23383,14 @@ public static func quantizeAndDequantize<T: FloatingPoint & TensorFlowScalar>(
 ///     would update input_min to be 128.0 / 12.7 = -10.07874
 /// *   if the output is unsigned, input_min is forced to be 0, and only the
 ///     specified input_max is used.
-///
+/// 
 /// After determining the scale_factor and updating the input range, it applies the
 /// following to each value in the 'input' tensor.
-///
+/// 
 /// output = round(clamp(value, input_min, input_max) * scale_factor) / scale_factor.
-///
+/// 
 /// The above round function rounds the value based on the given round_mode.
-///
+/// 
 ///
 /// - Parameters:
 ///     - input: Tensor to quantize and then dequantize.
@@ -20285,11 +23409,16 @@ public static func quantizeAndDequantize<T: FloatingPoint & TensorFlowScalar>(
 ///     - round_mode: The 'round_mode' attribute controls which rounding tie-breaking algorithm is
 ///         used when rounding float values to their quantized equivalents. The following
 ///         rounding modes are currently supported:
-///
+///         
 ///         *   HALF_TO_EVEN: this is the default round_mode.
 ///         *   HALF_UP: round towards positive. In this mode 7.5 rounds up to 8 and -7.5
 ///             rounds up to -7.
-///
+///         
+///     - narrow_range: If True, then the absolute value of the quantized minimum value is the same as
+///         the quantized maximum value, instead of 1 greater.
+///         i.e. for 8 bit quantization, the minimum value is -127 instead of -128.
+///     - axis: If specified, this axis is treated as a channel or slice axis, and a separate
+///         quantization range is used for each channel or slice along this axis.
 @inlinable @inline(__always)
 public static func quantizeAndDequantizeV2<T: FloatingPoint & TensorFlowScalar>(
     _ input: Tensor<T>,
@@ -20298,7 +23427,9 @@ public static func quantizeAndDequantizeV2<T: FloatingPoint & TensorFlowScalar>(
     signedInput: Bool = true,
     numBits: Int64 = 8,
     rangeGiven: Bool = false,
-    roundMode: RoundMode = .halfToEven
+    roundMode: RoundMode = .halfToEven,
+    narrowRange: Bool = false,
+    axis: Int64 = -1
 ) -> Tensor<T> {
   let nOutputs = Int(1)
     let op = makeOp("QuantizeAndDequantizeV2", nOutputs)
@@ -20307,6 +23438,8 @@ public static func quantizeAndDequantizeV2<T: FloatingPoint & TensorFlowScalar>(
     op.updateAttribute("range_given", rangeGiven)
     op.updateAttribute("T", T.tensorFlowDataType)
     op.updateAttribute("round_mode", roundMode.cName)
+    op.updateAttribute("narrow_range", narrowRange)
+    op.updateAttribute("axis", axis)
     op.addInput(input)
     op.addInput(inputMin)
     op.addInput(inputMax)
@@ -20324,13 +23457,17 @@ public static func quantizeAndDequantizeV3<T: FloatingPoint & TensorFlowScalar>(
     inputMax: Tensor<T>,
     numBits: Tensor<Int32>,
     signedInput: Bool = true,
-    rangeGiven: Bool = true
+    rangeGiven: Bool = true,
+    narrowRange: Bool = false,
+    axis: Int64 = -1
 ) -> Tensor<T> {
   let nOutputs = Int(1)
     let op = makeOp("QuantizeAndDequantizeV3", nOutputs)
     op.updateAttribute("signed_input", signedInput)
     op.updateAttribute("range_given", rangeGiven)
     op.updateAttribute("T", T.tensorFlowDataType)
+    op.updateAttribute("narrow_range", narrowRange)
+    op.updateAttribute("axis", axis)
     op.addInput(input)
     op.addInput(inputMin)
     op.addInput(inputMax)
@@ -20342,12 +23479,12 @@ public static func quantizeAndDequantizeV3<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// actual distribution of the values to maximize the usage of the lower bit depth
 /// and adjusting the output min and max ranges accordingly.
-///
+/// 
 /// [input_min, input_max] are scalar floats that specify the range for the float
 /// interpretation of the 'input' data. For example, if input_min is -1.0f and
 /// input_max is 1.0f, and we are dealing with quint16 quantized data, then a 0
 /// value in the 16-bit data should be interpreted as -1.0f, and a 65535 means 1.0f.
-///
+/// 
 /// This operator tries to squeeze as much precision as possible into an output with
 /// a lower bit depth by calculating the actual min and max values found in the
 /// data. For example, maybe that quint16 input has no values lower than 16,384 and
@@ -20355,7 +23492,7 @@ public static func quantizeAndDequantizeV3<T: FloatingPoint & TensorFlowScalar>(
 /// the float interpretations are between -0.5f and 0.5f, so if we want to compress
 /// the data into a quint8 output, we can use that range rather than the theoretical
 /// -1.0f to 1.0f that is suggested by the input min and max.
-///
+/// 
 /// In practice, this is most useful for taking output from operations like
 /// QuantizedMatMul that can produce higher bit-depth outputs than their inputs and
 /// may have large potential output ranges, but in practice have a distribution of
@@ -20400,29 +23537,29 @@ public static func quantizeDownAndShrinkRange<
 /// used to convert the float values to their quantized equivalents.  The
 /// 'round_mode' attribute controls which rounding tie-breaking algorithm is used
 /// when rounding float values to their quantized equivalents.
-///
+/// 
 /// In 'MIN_COMBINED' mode, each value of the tensor will undergo the following:
-///
+/// 
 /// ```
 /// out[i] = (in[i] - min_range) * range(T) / (max_range - min_range)
 /// if T == qint8: out[i] -= (range(T) + 1) / 2.0
 /// ```
-///
+/// 
 /// here `range(T) = numeric_limits<T>::max() - numeric_limits<T>::min()`
-///
+/// 
 /// *MIN_COMBINED Mode Example*
-///
+/// 
 /// Assume the input is type float and has a possible range of [0.0, 6.0] and the
 /// output type is quint8 ([0, 255]). The min_range and max_range values should be
 /// specified as 0.0 and 6.0. Quantizing from float to quint8 will multiply each
 /// value of the input by 255/6 and cast to quint8.
-///
+/// 
 /// If the output type was qint8 ([-128, 127]), the operation will additionally
 /// subtract each value by 128 prior to casting, so that the range of values aligns
 /// with the range of qint8.
-///
+/// 
 /// If the mode is 'MIN_FIRST', then this approach is used:
-///
+/// 
 /// ```
 /// num_discrete_values = 1 << (# of bits in T)
 /// range_adjust = num_discrete_values / (num_discrete_values - 1)
@@ -20433,88 +23570,132 @@ public static func quantizeDownAndShrinkRange<
 /// quantized = max(quantized, numeric_limits<T>::min())
 /// quantized = min(quantized, numeric_limits<T>::max())
 /// ```
-///
+/// 
 /// The biggest difference between this and MIN_COMBINED is that the minimum range
 /// is rounded first, before it's subtracted from the rounded value. With
 /// MIN_COMBINED, a small bias is introduced where repeated iterations of quantizing
 /// and dequantizing will introduce a larger and larger error.
-///
+/// 
 /// *SCALED mode Example*
-///
+/// 
 /// `SCALED` mode matches the quantization approach used in
 /// `QuantizeAndDequantize{V2|V3}`.
-///
-/// If the mode is `SCALED`, we do not use the full range of the output type,
-/// choosing to elide the lowest possible value for symmetry (e.g., output range is
-/// -127 to 127, not -128 to 127 for signed 8 bit quantization), so that 0.0 maps to
-/// 0.
-///
-/// We first find the range of values in our tensor. The
-/// range we use is always centered on 0, so we find m such that
-///
+/// 
+/// If the mode is `SCALED`, the quantization is performed by multiplying each
+/// input value by a scaling_factor.
+/// The scaling_factor is determined from `min_range` and `max_range` to be as large
+/// as possible such that the range from `min_range` to `max_range` is representable
+/// within values of type T.
+/// 
 /// ```c++
-///   m = max(abs(input_min), abs(input_max))
+/// 
+///   const int min_T = std::numeric_limits<T>::min();
+///   const int max_T = std::numeric_limits<T>::max();
+///   const float max_float = std::numeric_limits<float>::max();
+/// 
+///   const float scale_factor_from_min_side =
+///       (min_T * min_range > 0) ? min_T / min_range : max_float;
+///   const float scale_factor_from_max_side =
+///       (max_T * max_range > 0) ? max_T / max_range : max_float;
+/// 
+///   const float scale_factor = std::min(scale_factor_from_min_side,
+///                                       scale_factor_from_max_side);
 /// ```
-///
-/// Our input tensor range is then `[-m, m]`.
-///
-/// Next, we choose our fixed-point quantization buckets, `[min_fixed, max_fixed]`.
-/// If T is signed, this is
-///
-/// ```
-///   num_bits = sizeof(T) * 8
-///   [min_fixed, max_fixed] =
-///       [-(1 << (num_bits - 1) - 1), (1 << (num_bits - 1)) - 1]
-/// ```
-///
-/// Otherwise, if T is unsigned, the fixed-point range is
-///
-/// ```
-///   [min_fixed, max_fixed] = [0, (1 << num_bits) - 1]
-/// ```
-///
-/// From this we compute our scaling factor, s:
-///
+/// 
+/// We next use the scale_factor to adjust min_range and max_range as follows:
+/// 
 /// ```c++
-///   s = (max_fixed - min_fixed) / (2 * m)
+///       min_range = min_T / scale_factor;
+///       max_range = max_T / scale_factor;
 /// ```
-///
-/// Now we can quantize the elements of our tensor:
-///
+/// 
+/// 
+/// e.g. if T = qint8, and initially min_range = -10, and max_range = 9, we would
+/// compare -128/-10.0 = 12.8 to 127/9.0 = 14.11, and set scaling_factor = 12.8
+/// In this case, min_range would remain -10, but max_range would be adjusted to
+/// 127 / 12.8 = 9.921875
+/// 
+/// So we will quantize input values in the range (-10, 9.921875) to (-128, 127).
+/// 
+/// The input tensor can now be quantized by clipping values to the range
+/// `min_range` to `max_range`, then multiplying by scale_factor as follows:
+/// 
 /// ```c++
-/// result = round(input * s)
+/// result = round(min(max_range, max(min_range, input)) * scale_factor)
 /// ```
-///
-/// One thing to watch out for is that the operator may choose to adjust the
-/// requested minimum and maximum values slightly during the quantization process,
-/// so you should always use the output ports as the range for further calculations.
-/// For example, if the requested minimum and maximum values are close to equal,
-/// they will be separated by a small epsilon value to prevent ill-formed quantized
-/// buffers from being created. Otherwise, you can end up with buffers where all the
-/// quantized values map to the same float value, which causes problems for
-/// operations that have to perform further calculations on them.
+/// 
+/// The adjusted `min_range` and `max_range` are returned as outputs 2 and 3 of
+/// this operation. These outputs should be used as the range for any further
+/// calculations.
+/// 
+/// 
+/// *narrow_range (bool) attribute*
+/// 
+/// If true, we do not use the minimum quantized value.
+/// i.e. for int8 the quantized output, it would be restricted to the range
+/// -127..127 instead of the full -128..127 range.
+/// This is provided for compatibility with certain inference backends.
+/// (Only applies to SCALED mode)
+/// 
+/// 
+/// *axis (int) attribute*
+/// 
+/// An optional `axis` attribute can specify a dimension index of the input tensor,
+/// such that quantization ranges will be calculated and applied separately for each
+/// slice of the tensor along that dimension. This is useful for per-channel
+/// quantization.
+/// 
+/// If axis is specified, min_range and max_range
+/// 
+/// if `axis`=None, per-tensor quantization is performed as normal.
+/// 
+/// 
+/// *ensure_minimum_range (float) attribute*
+/// 
+/// Ensures the minimum quantization range is at least this value.
+/// The legacy default value for this is 0.01, but it is strongly suggested to
+/// set it to 0 for new uses.
+/// 
 ///
 /// - Parameters:
-///     - min_range: The minimum scalar value possibly produced for the input.
-///     - max_range: The maximum scalar value possibly produced for the input.
+///     - min_range: The minimum value of the quantization range. This value may be adjusted by the
+///         op depending on other parameters. The adjusted value is written to `output_min`.
+///         If the `axis` attribute is specified, this must be a 1-D tensor whose size
+///         matches the `axis` dimension of the input and output tensors.
+///     - max_range: The maximum value of the quantization range. This value may be adjusted by the
+///         op depending on other parameters. The adjusted value is written to `output_max`.
+///         If the `axis` attribute is specified, this must be a 1-D tensor whose size
+///         matches the `axis` dimension of the input and output tensors.
 ///
 /// - Outputs:
 ///     - output: The quantized data produced from the float input.
-///     - output_min: The actual minimum scalar value used for the output.
-///     - output_max: The actual maximum scalar value used for the output.
+///     - output_min: The final quantization range minimum, used to clip input values before scaling
+///         and rounding them to quantized values.
+///         If the `axis` attribute is specified, this will be a 1-D tensor whose size
+///         matches the `axis` dimension of the input and output tensors.
+///     - output_max: The final quantization range maximum, used to clip input values before scaling
+///         and rounding them to quantized values.
+///         If the `axis` attribute is specified, this will be a 1-D tensor whose size
+///         matches the `axis` dimension of the input and output tensors.
 @inlinable @inline(__always)
 public static func quantizeV2<T: TensorFlowScalar>(
     _ input: Tensor<Float>,
     minRange: Tensor<Float>,
     maxRange: Tensor<Float>,
     mode: Mode = .minCombined,
-    roundMode: RoundMode6 = .halfAwayFromZero
+    roundMode: RoundMode7 = .halfAwayFromZero,
+    narrowRange: Bool = false,
+    axis: Int64 = -1,
+    ensureMinimumRange: Double = 0.01
 ) -> (output: Tensor<T>, outputMin: Tensor<Float>, outputMax: Tensor<Float>) {
   let nOutputs = Int(1) + Int(1) + Int(1)
     let op = makeOp("QuantizeV2", nOutputs)
     op.updateAttribute("T", T.tensorFlowDataType)
     op.updateAttribute("mode", mode.cName)
     op.updateAttribute("round_mode", roundMode.cName)
+    op.updateAttribute("narrow_range", narrowRange)
+    op.updateAttribute("axis", axis)
+    op.updateAttribute("ensure_minimum_range", ensureMinimumRange)
     op.addInput(input)
     op.addInput(minRange)
     op.addInput(maxRange)
@@ -20532,7 +23713,7 @@ public static func quantizeV2<T: TensorFlowScalar>(
 /// - Outputs:
 ///     - min_z: The float value that the lowest quantized output value represents.
 ///     - max_z: The float value that the highest quantized output value represents.
-///
+///         
 ///         *NOTE*: `QuantizedAdd` supports limited forms of broadcasting. More about
 ///         broadcasting [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
 @inlinable @inline(__always)
@@ -20939,8 +24120,8 @@ public static func quantizedConv2DAndRequantize<
 ///     - max_filter: The maximum value of the filter tensor.
 ///
 /// - Attrs:
-///     - Tinput: The quantized type of input tensor that needs to be converted. 
-///     - Tfilter: The quantized type of filter tensor that needs to be converted. 
+///     - Tinput: The quantized type of input tensor that needs to be converted.
+///     - Tfilter: The quantized type of filter tensor that needs to be converted.
 ///     - out_type: The quantized type of output tensor that needs to be converted.
 ///     - strides: list of stride values.
 ///     - dilations: list of dilation values.
@@ -21283,6 +24464,27 @@ public static func quantizedConv2DWithBiasSumAndReluAndRequantize<
     return op.execute(Int(1), Int(1), Int(1))
 }
 
+/// Computes quantized depthwise Conv2D.
+///
+/// - Parameters:
+///     - input: The original input tensor.
+///     - filter: The original filter tensor.
+///     - min_input: The float value that the minimum quantized input value represents.
+///     - max_input: The float value that the maximum quantized input value represents.
+///     - min_filter: The float value that the minimum quantized filter value represents.
+///     - max_filter: The float value that the maximum quantized filter value represents.
+///
+/// - Attrs:
+///     - Tinput: The type of the input.
+///     - Tfilter: The type of the filter.
+///     - out_type: The type of the output.
+///     - strides: List of stride values.
+///     - dilations: List of dilation values.
+///
+/// - Outputs:
+///     - output: The output tensor.
+///     - min_output: The float value that the minimum quantized output value represents.
+///     - max_output: The float value that the maximum quantized output value represents.
 @inlinable @inline(__always)
 public static func quantizedDepthwiseConv2D<
     Tinput: TensorFlowScalar,
@@ -21316,6 +24518,28 @@ public static func quantizedDepthwiseConv2D<
     return op.execute(Int(1), Int(1), Int(1))
 }
 
+/// Computes quantized depthwise Conv2D with Bias.
+///
+/// - Parameters:
+///     - input: The original input tensor.
+///     - filter: The original filter tensor.
+///     - bias: The original bias tensor.
+///     - min_input: The float value that the minimum quantized input value represents.
+///     - max_input: The float value that the maximum quantized input value represents.
+///     - min_filter: The float value that the minimum quantized filter value represents.
+///     - max_filter: The float value that the maximum quantized filter value represents.
+///
+/// - Attrs:
+///     - Tinput: The type of the input.
+///     - Tfilter: The type of the filter.
+///     - out_type: The type of the output.
+///     - strides: List of stride values.
+///     - dilations: List of dilation values.
+///
+/// - Outputs:
+///     - output: The output tensor.
+///     - min_output: The float value that the minimum quantized output value represents.
+///     - max_output: The float value that the maximum quantized output value represents.
 @inlinable @inline(__always)
 public static func quantizedDepthwiseConv2DWithBias<
     Tinput: TensorFlowScalar,
@@ -21351,6 +24575,28 @@ public static func quantizedDepthwiseConv2DWithBias<
     return op.execute(Int(1), Int(1), Int(1))
 }
 
+/// Computes quantized depthwise Conv2D with Bias and Relu.
+///
+/// - Parameters:
+///     - input: The original input tensor.
+///     - filter: The original filter tensor.
+///     - bias: The original bias tensor.
+///     - min_input: The float value that the minimum quantized input value represents.
+///     - max_input: The float value that the maximum quantized input value represents.
+///     - min_filter: The float value that the minimum quantized filter value represents.
+///     - max_filter: The float value that the maximum quantized filter value represents.
+///
+/// - Attrs:
+///     - Tinput: The type of the input.
+///     - Tfilter: The type of the filter.
+///     - out_type: The type of the output.
+///     - strides: List of stride values.
+///     - dilations: List of dilation values.
+///
+/// - Outputs:
+///     - output: The output tensor.
+///     - min_output: The float value that the minimum quantized output value represents.
+///     - max_output: The float value that the maximum quantized output value represents.
 @inlinable @inline(__always)
 public static func quantizedDepthwiseConv2DWithBiasAndRelu<
     Tinput: TensorFlowScalar,
@@ -21386,6 +24632,31 @@ public static func quantizedDepthwiseConv2DWithBiasAndRelu<
     return op.execute(Int(1), Int(1), Int(1))
 }
 
+/// Computes quantized depthwise Conv2D with Bias, Relu and Requantize.
+///
+/// - Parameters:
+///     - input: The original input tensor.
+///     - filter: The original filter tensor.
+///     - bias: The original bias tensor.
+///     - min_input: The float value that the minimum quantized input value represents.
+///     - max_input: The float value that the maximum quantized input value represents.
+///     - min_filter: The float value that the minimum quantized filter value represents.
+///     - max_filter: The float value that the maximum quantized filter value represents.
+///     - min_freezed_output: The minimum float value of the output tensor.
+///     - max_freezed_output: The maximum float value of the output tensor.
+///
+/// - Attrs:
+///     - Tinput: The type of the input.
+///     - Tfilter: The type of the filter.
+///     - Tbias: The type of the bias.
+///     - out_type: The type of the output.
+///     - strides: List of stride values.
+///     - dilations: List of dilation values.
+///
+/// - Outputs:
+///     - output: The output tensor.
+///     - min_output: The float value that the minimum quantized output value represents.
+///     - max_output: The float value that the maximum quantized output value represents.
 @inlinable @inline(__always)
 public static func quantizedDepthwiseConv2DWithBiasAndReluAndRequantize<
     Tinput: TensorFlowScalar,
@@ -21529,6 +24800,204 @@ public static func quantizedMatMul<
     return op.execute(Int(1), Int(1), Int(1))
 }
 
+/// Performs a quantized matrix multiplication of `a` by the matrix `b` with bias
+/// add.
+///
+/// The inputs must be two-dimensional matrices and 1D bias vector. And the inner
+/// dimension of `a` (after being transposed if `transpose_a` is non-zero) must
+/// match the outer dimension of `b` (after being transposed if `transposed_b` is
+/// non-zero). Then do broadcast add operation with bias values on the matrix
+/// mulplication result. The bias size must match inner dimension of `b`.
+///
+/// - Parameters:
+///     - a: A matrix to be multiplied. Must be a two-dimensional tensor of type `quint8`.
+///     - b: A matrix to be multiplied and must be a two-dimensional tensor of type `qint8`.
+///     - bias: A 1D bias tensor with size matching inner dimension of `b` (after being
+///         transposed if `transposed_b` is non-zero).
+///     - min_a: The float value that the lowest quantized `a` value represents.
+///     - max_a: The float value that the highest quantized `a` value represents.
+///     - min_b: The float value that the lowest quantized `b` value represents.
+///     - max_b: The float value that the highest quantized `b` value represents.
+///
+/// - Attrs:
+///     - transpose_a: If true, `a` is transposed before multiplication.
+///     - transpose_b: If true, `b` is transposed before multiplication.
+///     - input_quant_mode: Input data quantization mode. Either MIN_FIRST(default) or SCALED.
+///
+/// - Outputs:
+///     - min_out: The float value that the lowest quantized output value represents.
+///     - max_out: The float value that the highest quantized output value represents.
+@inlinable @inline(__always)
+public static func quantizedMatMulWithBias<
+    T1: TensorFlowScalar,
+    T2: TensorFlowScalar,
+    Tbias: FloatingPoint & TensorFlowScalar,
+    Toutput: TensorFlowScalar
+>(
+    _ a: Tensor<T1>,
+    _ b: Tensor<T2>,
+    bias: Tensor<Tbias>,
+    minA: Tensor<Float>,
+    maxA: Tensor<Float>,
+    minB: Tensor<Float>,
+    maxB: Tensor<Float>,
+    transposeA: Bool = false,
+    transposeB: Bool = false,
+    inputQuantMode: InputQuantMode = .minFirst
+) -> (out: Tensor<Toutput>, minOut: Tensor<Float>, maxOut: Tensor<Float>) {
+  let nOutputs = Int(1) + Int(1) + Int(1)
+    let op = makeOp("QuantizedMatMulWithBias", nOutputs)
+    op.updateAttribute("T1", T1.tensorFlowDataType)
+    op.updateAttribute("T2", T2.tensorFlowDataType)
+    op.updateAttribute("Tbias", Tbias.tensorFlowDataType)
+    op.updateAttribute("Toutput", Toutput.tensorFlowDataType)
+    op.updateAttribute("transpose_a", transposeA)
+    op.updateAttribute("transpose_b", transposeB)
+    op.updateAttribute("input_quant_mode", inputQuantMode.cName)
+    op.addInput(a)
+    op.addInput(b)
+    op.addInput(bias)
+    op.addInput(minA)
+    op.addInput(maxA)
+    op.addInput(minB)
+    op.addInput(maxB)
+    return op.execute(Int(1), Int(1), Int(1))
+}
+
+/// Perform a quantized matrix multiplication of  `a` by the matrix `b` with bias
+/// add and relu fusion.
+///
+/// The inputs must be two-dimensional matrices and 1D bias vector. And the inner
+/// dimension of `a` (after being transposed if `transpose_a` is non-zero) must
+/// match the outer dimension of `b` (after being transposed if `transposed_b` is
+/// non-zero). Then do broadcast add operation with bias values on the matrix
+/// mulplication result. The bias size must match inner dimension of `b`. Then do
+/// relu activation to get non-negative result.
+///
+/// - Parameters:
+///     - a: A matrix to be multiplied. Must be a two-dimensional tensor of type `quint8`.
+///     - b: A matrix to be multiplied and must be a two-dimensional tensor of type `qint8`.
+///     - bias: A 1D bias tensor with size matching with inner dimension of `b` (after being
+///         transposed if `transposed_b` is non-zero).
+///     - min_a: The float value that the lowest quantized `a` value represents.
+///     - max_a: The float value that the highest quantized `a` value represents.
+///     - min_b: The float value that the lowest quantized `b` value represents.
+///     - max_b: The float value that the highest quantized `b` value represents.
+///
+/// - Attrs:
+///     - transpose_a: If true, `a` is transposed before multiplication.
+///     - transpose_b: If true, `b` is transposed before multiplication.
+///     - input_quant_mode: Input data quantization mode. Either MIN_FIRST(default) or SCALED.
+///
+/// - Outputs:
+///     - min_out: The float value that the lowest quantized output value represents.
+///     - max_out: The float value that the highest quantized output value represents.
+@inlinable @inline(__always)
+public static func quantizedMatMulWithBiasAndRelu<
+    T1: TensorFlowScalar,
+    T2: TensorFlowScalar,
+    Toutput: TensorFlowScalar
+>(
+    _ a: Tensor<T1>,
+    _ b: Tensor<T2>,
+    bias: Tensor<Float>,
+    minA: Tensor<Float>,
+    maxA: Tensor<Float>,
+    minB: Tensor<Float>,
+    maxB: Tensor<Float>,
+    transposeA: Bool = false,
+    transposeB: Bool = false,
+    inputQuantMode: InputQuantMode = .minFirst
+) -> (out: Tensor<Toutput>, minOut: Tensor<Float>, maxOut: Tensor<Float>) {
+  let nOutputs = Int(1) + Int(1) + Int(1)
+    let op = makeOp("QuantizedMatMulWithBiasAndRelu", nOutputs)
+    op.updateAttribute("T1", T1.tensorFlowDataType)
+    op.updateAttribute("T2", T2.tensorFlowDataType)
+    op.updateAttribute("Toutput", Toutput.tensorFlowDataType)
+    op.updateAttribute("transpose_a", transposeA)
+    op.updateAttribute("transpose_b", transposeB)
+    op.updateAttribute("input_quant_mode", inputQuantMode.cName)
+    op.addInput(a)
+    op.addInput(b)
+    op.addInput(bias)
+    op.addInput(minA)
+    op.addInput(maxA)
+    op.addInput(minB)
+    op.addInput(maxB)
+    return op.execute(Int(1), Int(1), Int(1))
+}
+
+/// Perform a quantized matrix multiplication of  `a` by the matrix `b` with bias
+/// add and relu and requantize fusion.
+///
+/// The inputs must be two-dimensional matrices and 1D bias vector. And the inner
+/// dimension of `a` (after being transposed if `transpose_a` is non-zero) must
+/// match the outer dimension of `b` (after being transposed if `transposed_b` is
+/// non-zero). Then do broadcast add operation with bias values on the matrix
+/// mulplication result. The bias size must match inner dimension of `b`.  Then do
+/// relu activation to get non-negative result. Then do requantize operation to get
+/// final uint8 result.
+///
+/// - Parameters:
+///     - a: A matrix to be multiplied. Must be a two-dimensional tensor of type `quint8`.
+///     - b: A matrix to be multiplied and must be a two-dimensional tensor of type `qint8`.
+///     - bias: A 1D bias tensor with size matching with inner dimension of `b` (after being
+///         transposed if `transposed_b` is non-zero).
+///     - min_a: The float value that the lowest quantized `a` value represents.
+///     - max_a: The float value that the highest quantized `a` value represents.
+///     - min_b: The float value that the lowest quantized `b` value represents.
+///     - max_b: The float value that the highest quantized `b` value represents.
+///     - min_freezed_output: The float value that the highest quantized output value after requantize.
+///
+/// - Attrs:
+///     - transpose_a: If true, `a` is transposed before multiplication.
+///     - transpose_b: If true, `b` is transposed before multiplication.
+///     - input_quant_mode: Input data quantization mode. Either MIN_FIRST(default) or SCALED.
+///
+/// - Outputs:
+///     - min_out: The float value that the lowest quantized output value represents.
+///     - max_out: The float value that the highest quantized output value represents.
+@inlinable @inline(__always)
+public static func quantizedMatMulWithBiasAndReluAndRequantize<
+    T1: TensorFlowScalar,
+    T2: TensorFlowScalar,
+    Tbias: FloatingPoint & TensorFlowScalar,
+    Toutput: TensorFlowScalar
+>(
+    _ a: Tensor<T1>,
+    _ b: Tensor<T2>,
+    bias: Tensor<Tbias>,
+    minA: Tensor<Float>,
+    maxA: Tensor<Float>,
+    minB: Tensor<Float>,
+    maxB: Tensor<Float>,
+    minFreezedOutput: Tensor<Float>,
+    maxFreezedOutput: Tensor<Float>,
+    transposeA: Bool = false,
+    transposeB: Bool = false,
+    inputQuantMode: InputQuantMode = .minFirst
+) -> (out: Tensor<Toutput>, minOut: Tensor<Float>, maxOut: Tensor<Float>) {
+  let nOutputs = Int(1) + Int(1) + Int(1)
+    let op = makeOp("QuantizedMatMulWithBiasAndReluAndRequantize", nOutputs)
+    op.updateAttribute("T1", T1.tensorFlowDataType)
+    op.updateAttribute("T2", T2.tensorFlowDataType)
+    op.updateAttribute("Tbias", Tbias.tensorFlowDataType)
+    op.updateAttribute("Toutput", Toutput.tensorFlowDataType)
+    op.updateAttribute("transpose_a", transposeA)
+    op.updateAttribute("transpose_b", transposeB)
+    op.updateAttribute("input_quant_mode", inputQuantMode.cName)
+    op.addInput(a)
+    op.addInput(b)
+    op.addInput(bias)
+    op.addInput(minA)
+    op.addInput(maxA)
+    op.addInput(minB)
+    op.addInput(maxB)
+    op.addInput(minFreezedOutput)
+    op.addInput(maxFreezedOutput)
+    return op.execute(Int(1), Int(1), Int(1))
+}
+
 /// Produces the max pool of the input tensor for quantized types.
 ///
 /// - Parameters:
@@ -21578,7 +25047,7 @@ public static func quantizedMaxPool<T: TensorFlowScalar>(
 /// - Outputs:
 ///     - min_z: The float value that the lowest quantized output value represents.
 ///     - max_z: The float value that the highest quantized output value represents.
-///
+///         
 ///         *NOTE*: `QuantizedMul` supports limited forms of broadcasting. More about
 ///         broadcasting [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
 @inlinable @inline(__always)
@@ -21793,15 +25262,15 @@ public static func queueCloseV2(
 ///
 /// If the queue is closed and there are fewer than `n` elements, then an
 /// OutOfRange error is returned.
-///
+/// 
 /// This operation concatenates queue-element component tensors along the
 /// 0th dimension to make a single component tensor.  All of the components
 /// in the dequeued tuple will have size `n` in the 0th dimension.
-///
+/// 
 /// This operation has `k` outputs, where `k` is the number of components in
 /// the tuples stored in the given queue, and output `i` is the ith
 /// component of the dequeued tuple.
-///
+/// 
 /// N.B. If the queue is empty, this operation will block until `n` elements
 /// have been dequeued (or 'timeout_ms' elapses, if specified).
 ///
@@ -21835,18 +25304,18 @@ public static func queueDequeueManyV2<ComponentTypes: TensorGroup>(
 ///
 /// This operation is not supported by all queues.  If a queue does not support
 /// DequeueUpTo, then an Unimplemented error is returned.
-///
+/// 
 /// If the queue is closed and there are more than 0 but less than `n`
 /// elements remaining, then instead of returning an OutOfRange error like
 /// QueueDequeueMany, less than `n` elements are returned immediately.  If
 /// the queue is closed and there are 0 elements left in the queue, then
 /// an OutOfRange error is returned just like in QueueDequeueMany.
 /// Otherwise the behavior is identical to QueueDequeueMany:
-///
+/// 
 /// This operation concatenates queue-element component tensors along the
 /// 0th dimension to make a single component tensor.  All of the components
 /// in the dequeued tuple will have size n in the 0th dimension.
-///
+/// 
 /// This operation has `k` outputs, where `k` is the number of components in
 /// the tuples stored in the given queue, and output `i` is the ith
 /// component of the dequeued tuple.
@@ -21882,7 +25351,7 @@ public static func queueDequeueUpToV2<ComponentTypes: TensorGroup>(
 /// This operation has k outputs, where k is the number of components
 /// in the tuples stored in the given queue, and output i is the ith
 /// component of the dequeued tuple.
-///
+/// 
 /// N.B. If the queue is empty, this operation will block until an element
 /// has been dequeued (or 'timeout_ms' elapses, if specified).
 ///
@@ -21913,10 +25382,10 @@ public static func queueDequeueV2<ComponentTypes: TensorGroup>(
 /// This operation slices each component tensor along the 0th dimension to
 /// make multiple queue elements. All of the tuple components must have the
 /// same size in the 0th dimension.
-///
+/// 
 /// The components input has k elements, which correspond to the components of
 /// tuples stored in the given queue.
-///
+/// 
 /// N.B. If the queue is full, this operation will block until the given
 /// elements have been enqueued (or 'timeout_ms' elapses, if specified).
 ///
@@ -21947,7 +25416,7 @@ public static func queueEnqueueManyV2<Tcomponents: TensorArrayProtocol>(
 ///
 /// The components input has k elements, which correspond to the components of
 /// tuples stored in the given queue.
-///
+/// 
 /// N.B. If the queue is full, this operation will block until the given
 /// element has been enqueued (or 'timeout_ms' elapses, if specified).
 ///
@@ -22004,12 +25473,139 @@ public static func queueSizeV2(
     return op.execute(Int(1))
 }
 
+/// Real-valued fast Fourier transform.
+///
+/// Computes the 1-dimensional discrete Fourier transform of a real-valued signal
+/// over the inner-most dimension of `input`.
+/// 
+/// Since the DFT of a real signal is Hermitian-symmetric, `RFFT` only returns the
+/// `fft_length / 2 + 1` unique components of the FFT: the zero-frequency term,
+/// followed by the `fft_length / 2` positive-frequency terms.
+/// 
+/// Along the axis `RFFT` is computed on, if `fft_length` is smaller than the
+/// corresponding dimension of `input`, the dimension is cropped. If it is larger,
+/// the dimension is padded with zeros.
+///
+/// - Parameters:
+///     - input: A float32 tensor.
+///     - fft_length: An int32 tensor of shape [1]. The FFT length.
+///
+/// - Output output: A complex64 tensor of the same rank as `input`. The inner-most
+///       dimension of `input` is replaced with the `fft_length / 2 + 1` unique
+///       frequency components of its 1D Fourier transform.
+///     
+///     @compatibility(numpy)
+///     Equivalent to np.fft.rfft
+///     @end_compatibility
+@inlinable @inline(__always)
+public static func rFFT<
+    Treal: FloatingPoint & TensorFlowScalar,
+    Tcomplex: TensorFlowScalar
+>(
+    _ input: Tensor<Treal>,
+    fftLength: Tensor<Int32>
+) -> Tensor<Tcomplex> {
+  let nOutputs = Int(1)
+    let op = makeOp("RFFT", nOutputs)
+    op.updateAttribute("Treal", Treal.tensorFlowDataType)
+    op.updateAttribute("Tcomplex", Tcomplex.tensorFlowDataType)
+    op.addInput(input)
+    op.addInput(fftLength)
+    return op.execute(Int(1))
+}
+
+/// 2D real-valued fast Fourier transform.
+///
+/// Computes the 2-dimensional discrete Fourier transform of a real-valued signal
+/// over the inner-most 2 dimensions of `input`.
+/// 
+/// Since the DFT of a real signal is Hermitian-symmetric, `RFFT2D` only returns the
+/// `fft_length / 2 + 1` unique components of the FFT for the inner-most dimension
+/// of `output`: the zero-frequency term, followed by the `fft_length / 2`
+/// positive-frequency terms.
+/// 
+/// Along each axis `RFFT2D` is computed on, if `fft_length` is smaller than the
+/// corresponding dimension of `input`, the dimension is cropped. If it is larger,
+/// the dimension is padded with zeros.
+///
+/// - Parameters:
+///     - input: A float32 tensor.
+///     - fft_length: An int32 tensor of shape [2]. The FFT length for each dimension.
+///
+/// - Output output: A complex64 tensor of the same rank as `input`. The inner-most 2
+///       dimensions of `input` are replaced with their 2D Fourier transform. The
+///       inner-most dimension contains `fft_length / 2 + 1` unique frequency
+///       components.
+///     
+///     @compatibility(numpy)
+///     Equivalent to np.fft.rfft2
+///     @end_compatibility
+@inlinable @inline(__always)
+public static func rFFT2D<
+    Treal: FloatingPoint & TensorFlowScalar,
+    Tcomplex: TensorFlowScalar
+>(
+    _ input: Tensor<Treal>,
+    fftLength: Tensor<Int32>
+) -> Tensor<Tcomplex> {
+  let nOutputs = Int(1)
+    let op = makeOp("RFFT2D", nOutputs)
+    op.updateAttribute("Treal", Treal.tensorFlowDataType)
+    op.updateAttribute("Tcomplex", Tcomplex.tensorFlowDataType)
+    op.addInput(input)
+    op.addInput(fftLength)
+    return op.execute(Int(1))
+}
+
+/// 3D real-valued fast Fourier transform.
+///
+/// Computes the 3-dimensional discrete Fourier transform of a real-valued signal
+/// over the inner-most 3 dimensions of `input`.
+/// 
+/// Since the DFT of a real signal is Hermitian-symmetric, `RFFT3D` only returns the
+/// `fft_length / 2 + 1` unique components of the FFT for the inner-most dimension
+/// of `output`: the zero-frequency term, followed by the `fft_length / 2`
+/// positive-frequency terms.
+/// 
+/// Along each axis `RFFT3D` is computed on, if `fft_length` is smaller than the
+/// corresponding dimension of `input`, the dimension is cropped. If it is larger,
+/// the dimension is padded with zeros.
+///
+/// - Parameters:
+///     - input: A float32 tensor.
+///     - fft_length: An int32 tensor of shape [3]. The FFT length for each dimension.
+///
+/// - Output output: A complex64 tensor of the same rank as `input`. The inner-most 3
+///       dimensions of `input` are replaced with the their 3D Fourier transform. The
+///       inner-most dimension contains `fft_length / 2 + 1` unique frequency
+///       components.
+///     
+///     @compatibility(numpy)
+///     Equivalent to np.fft.rfftn with 3 dimensions.
+///     @end_compatibility
+@inlinable @inline(__always)
+public static func rFFT3D<
+    Treal: FloatingPoint & TensorFlowScalar,
+    Tcomplex: TensorFlowScalar
+>(
+    _ input: Tensor<Treal>,
+    fftLength: Tensor<Int32>
+) -> Tensor<Tcomplex> {
+  let nOutputs = Int(1)
+    let op = makeOp("RFFT3D", nOutputs)
+    op.updateAttribute("Treal", Treal.tensorFlowDataType)
+    op.updateAttribute("Tcomplex", Tcomplex.tensorFlowDataType)
+    op.addInput(input)
+    op.addInput(fftLength)
+    return op.execute(Int(1))
+}
+
 /// Converts one or more images from RGB to HSV.
 ///
 /// Outputs a tensor of the same shape as the `images` tensor, containing the HSV
 /// value of the pixels. The output is only well defined if the value in `images`
 /// are in `[0,1]`.
-///
+/// 
 /// `output[..., 0]` contains hue, `output[..., 1]` contains saturation, and
 /// `output[..., 2]` contains value. All HSV values are in `[0,1]`. A hue of 0
 /// corresponds to pure red, hue 1/3 is pure green, and 2/3 is pure blue.
@@ -22032,15 +25628,15 @@ public static func rGBToHSV<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// Outputs a `RaggedTensor` output composed from `output_dense_values` and
 /// `output_nested_splits`, such that:
-///
+/// 
 /// ```python
 /// output.shape = indices.shape + params.shape[1:]
 /// output.ragged_rank = indices.shape.ndims + params.ragged_rank
 /// output[i...j, d0...dn] = params[indices[i...j], d0...dn]
 /// ```
-///
+/// 
 /// where
-///
+/// 
 /// * `params =
 ///    ragged.from_nested_row_splits(params_dense_values, params_nested_splits)`
 ///    provides the values that should be gathered.
@@ -22049,10 +25645,10 @@ public static func rGBToHSV<T: FloatingPoint & TensorFlowScalar>(
 /// * `output =
 ///    ragged.from_nested_row_splits(output_dense_values, output_nested_splits)`
 ///    is the output tensor.
-///
+/// 
 /// (Note: This c++ op is used to implement the higher-level python
 /// `tf.ragged.gather` op, which also supports ragged indices.)
-///
+/// 
 ///
 /// - Parameters:
 ///     - params_nested_splits: The `nested_row_splits` tensors that define the row-partitioning for the
@@ -22078,17 +25674,19 @@ public static func rGBToHSV<T: FloatingPoint & TensorFlowScalar>(
 @inlinable @inline(__always)
 public static func raggedGather<
     Tvalues: TensorFlowScalar,
-    Tindices: TensorFlowIndex
+    Tindices: TensorFlowIndex,
+    Tsplits: TensorFlowIndex
 >(
-    paramsNestedSplits: [Tensor<Int64>],
+    paramsNestedSplits: [Tensor<Tsplits>],
     paramsDenseValues: Tensor<Tvalues>,
     indices: Tensor<Tindices>,
     oUTPUTRAGGEDRANK: Int64
-) -> (outputNestedSplits: [Tensor<Int64>], outputDenseValues: Tensor<Tvalues>) {
+) -> (outputNestedSplits: [Tensor<Tsplits>], outputDenseValues: Tensor<Tvalues>) {
   let nOutputs = Int(oUTPUTRAGGEDRANK) + Int(1)
     let op = makeOp("RaggedGather", nOutputs)
     op.updateAttribute("Tvalues", Tvalues.tensorFlowDataType)
     op.updateAttribute("Tindices", Tindices.tensorFlowDataType)
+    op.updateAttribute("Tsplits", Tsplits.tensorFlowDataType)
     op.updateAttribute("PARAMS_RAGGED_RANK", paramsNestedSplits.count)
     op.updateAttribute("OUTPUT_RAGGED_RANK", oUTPUTRAGGEDRANK)
     op.addInputList(paramsNestedSplits)
@@ -22099,21 +25697,19 @@ public static func raggedGather<
 
 /// Returns a `RaggedTensor` containing the specified sequences of numbers.
 ///
-///
+/// 
 /// Returns a `RaggedTensor` `result` composed from `rt_dense_values` and
 /// `rt_nested_splits`, such that
 /// `result[i] = range(starts[i], limits[i], deltas[i])`.
-///
+/// 
 /// ```python
-/// >>> (rt_nested_splits, rt_dense_values) = gen_ragged_ops.ragged_range(
-/// ...     starts=[2, 5, 8], limits=[3, 5, 12], deltas=1)
-/// >>> result = ragged.from_nested_row_splits(rt_dense_values, rt_nested_splits)
-/// >>> print result.eval().tolist()
-/// [[2],               # result[0] = range(2, 3)
-///  [],                # result[1] = range(5, 5)
-///  [8, 9, 10, 11]]    # result[2] = range(8, 12)
+/// (rt_nested_splits, rt_dense_values) = ragged_range(
+///       starts=[2, 5, 8], limits=[3, 5, 12], deltas=1)
+/// result = tf.ragged.from_row_splits(rt_dense_values, rt_nested_splits)
+/// print(result)
+/// <tf.RaggedTensor [[2], [], [8, 9, 10, 11]] >
 /// ```
-///
+/// 
 /// The input tensors `starts`, `limits`, and `deltas` may be scalars or vectors.
 /// The vector inputs must all have the same size.  Scalar inputs are broadcast
 /// to match the size of the vector inputs.
@@ -22127,18 +25723,68 @@ public static func raggedGather<
 ///     - rt_nested_splits: The `row_splits` for the returned `RaggedTensor`.
 ///     - rt_dense_values: The `flat_values` for the returned `RaggedTensor`.
 @inlinable @inline(__always)
-public static func raggedRange<T: TensorFlowNumeric>(
+public static func raggedRange<
+    T: TensorFlowNumeric,
+    Tsplits: TensorFlowIndex
+>(
     starts: Tensor<T>,
     limits: Tensor<T>,
     deltas: Tensor<T>
-) -> (rtNestedSplits: Tensor<Int64>, rtDenseValues: Tensor<T>) {
+) -> (rtNestedSplits: Tensor<Tsplits>, rtDenseValues: Tensor<T>) {
   let nOutputs = Int(1) + Int(1)
     let op = makeOp("RaggedRange", nOutputs)
     op.updateAttribute("T", T.tensorFlowDataType)
+    op.updateAttribute("Tsplits", Tsplits.tensorFlowDataType)
     op.addInput(starts)
     op.addInput(limits)
     op.addInput(deltas)
     return op.execute(Int(1), Int(1))
+}
+
+/// Decodes a `variant` Tensor into a `RaggedTensor`.
+///
+/// Decodes the given `variant` Tensor and returns a `RaggedTensor`. The input
+/// could be a scalar, meaning it encodes a single `RaggedTensor` with ragged_rank
+/// `output_ragged_rank`. It could also have an arbitrary rank, in which case each
+/// element is decoded into a `RaggedTensor` with ragged_rank `input_ragged_rank`
+/// and these are then stacked according to the input shape to output a single
+/// `RaggedTensor` with ragged_rank `output_ragged_rank`. Each `variant` element in
+/// the input Tensor is decoded by retrieving from the element a 1-D `variant`
+/// Tensor with `input_ragged_rank + 1` Tensors, corresponding to the splits and
+/// values of the decoded `RaggedTensor`. If `input_ragged_rank` is -1, then it is
+/// inferred as `output_ragged_rank` - `rank(encoded_ragged)`. See
+/// `RaggedTensorToVariant` for the corresponding encoding logic.
+/// 
+///
+/// - Parameter encoded_ragged: A `variant` Tensor containing encoded `RaggedTensor`s.
+///
+/// - Attrs:
+///     - input_ragged_rank: The ragged rank of each encoded `RaggedTensor` component in the input. If set to
+///         -1, this is inferred as `output_ragged_rank` - `rank(encoded_ragged)`
+///     - output_ragged_rank: The expected ragged rank of the output `RaggedTensor`. The following must hold:
+///         `output_ragged_rank = rank(encoded_ragged) + input_ragged_rank`.
+///
+/// - Outputs:
+///     - output_nested_splits: A list of one or more Tensors representing the splits of the output
+///         `RaggedTensor`.
+///     - output_dense_values: A Tensor representing the values of the output `RaggedTensor`.
+@inlinable @inline(__always)
+public static func raggedTensorFromVariant<
+    Tvalues: TensorFlowScalar,
+    Tsplits: TensorFlowIndex
+>(
+    encodedRagged: VariantHandle,
+    inputRaggedRank: Int64,
+    outputRaggedRank: Int64
+) -> (outputNestedSplits: [Tensor<Tsplits>], outputDenseValues: Tensor<Tvalues>) {
+  let nOutputs = Int(outputRaggedRank) + Int(1)
+    let op = makeOp("RaggedTensorFromVariant", nOutputs)
+    op.updateAttribute("input_ragged_rank", inputRaggedRank)
+    op.updateAttribute("output_ragged_rank", outputRaggedRank)
+    op.updateAttribute("Tvalues", Tvalues.tensorFlowDataType)
+    op.updateAttribute("Tsplits", Tsplits.tensorFlowDataType)
+    op.addInput(encodedRagged)
+    return op.execute(Int(outputRaggedRank), Int(1))
 }
 
 /// Converts a `RaggedTensor` into a `SparseTensor` with the same values.
@@ -22160,24 +25806,152 @@ public static func raggedRange<T: TensorFlowNumeric>(
 ///     - sparse_values: The values of the `SparseTensor`.
 ///     - sparse_dense_shape: `sparse_dense_shape` is a tight bounding box of the input `RaggedTensor`.
 @inlinable @inline(__always)
-public static func raggedTensorToSparse<T: TensorFlowScalar>(
-    rtNestedSplits: [Tensor<Int64>],
+public static func raggedTensorToSparse<
+    T: TensorFlowScalar,
+    Tsplits: TensorFlowIndex
+>(
+    rtNestedSplits: [Tensor<Tsplits>],
     rtDenseValues: Tensor<T>
 ) -> (sparseIndices: Tensor<Int64>, sparseValues: Tensor<T>, sparseDenseShape: Tensor<Int64>) {
   let nOutputs = Int(1) + Int(1) + Int(1)
     let op = makeOp("RaggedTensorToSparse", nOutputs)
     op.updateAttribute("RAGGED_RANK", rtNestedSplits.count)
     op.updateAttribute("T", T.tensorFlowDataType)
+    op.updateAttribute("Tsplits", Tsplits.tensorFlowDataType)
     op.addInputList(rtNestedSplits)
     op.addInput(rtDenseValues)
     return op.execute(Int(1), Int(1), Int(1))
+}
+
+/// Create a dense tensor from a ragged tensor, possibly altering its shape.
+///
+/// The `ragged_to_dense` op creates a dense tensor from a list of row partition
+/// tensors, a value vector, and default values. If the shape is unspecified, the
+/// minimal shape required to contain all the elements in the ragged tensor (the
+/// natural shape) will be used. If some dimensions are left unspecified, then the
+/// size of the natural shape is used in that dimension.
+/// 
+/// The default_value will be broadcast to the output shape. After that, the values
+/// from the ragged tensor overwrite the default values. Note that the default_value
+/// must have less dimensions than the value.
+/// 
+/// The row partition tensors are in the order of the dimensions.
+/// At present, the types can be:
+/// * "ROW_SPLITS": the row_splits tensor from the ragged tensor.
+/// * "VALUE_ROWIDS": the value_rowids tensor from the ragged tensor.
+/// * "FIRST_DIM_SIZE": if value_rowids is used for the first dimension, then it
+///   is preceded by "FIRST_DIM_SIZE".
+///
+/// - Parameters:
+///     - shape: The desired shape of the the output tensor. If left unspecified (empty),
+///         the minimal shape required to contain all the elements in the ragged tensor
+///         (the natural shape) will be used. If some dimensions are left unspecified, then
+///         the size of the natural shape is used in that dimension.
+///         
+///         Note that dense dimensions cannot be modified by the shape argument. Trying to
+///         change the size of a dense dimension will cause the op to fail.
+///         Examples:
+///         natural shape: [4, 5, 6]
+///         shape: -1
+///         output shape: [4, 5, 6]
+///         
+///         natural shape: [4, 5, 6]
+///         shape: [3, -1, 2]
+///         output shape: [3, 5, 2]
+///         
+///         natural shape: [4, 5, 6]
+///         shape: [3, 7, 2]
+///         output shape: [3, 7, 2]
+///         
+///     - values: A 1D tensor representing the values of the ragged tensor.
+///     - default_value: The default_value when the shape is larger than the ragged tensor. The
+///         default_value is broadcast until it is the shape of the output tensor, and
+///         then overwritten by values in the ragged tensor. The default value must be
+///         compatible with this broadcast operation, and must have fewer dimensions than
+///         the value tensor.
+///
+/// - Attr row_partition_types: The types of the row partition tensors. At present, these can be:
+///     * "ROW_SPLITS": the row_splits tensor from the ragged tensor.
+///     * "VALUE_ROWIDS": the value_rowids tensor from the ragged tensor.
+///     * "FIRST_DIM_SIZE": if value_rowids is used for the first dimension, then it
+///       is preceeded by "FIRST_DIM_SIZE".
+///     The tensors are in the order of the dimensions.
+///
+/// - Output result: The resulting dense tensor.
+@inlinable @inline(__always)
+public static func raggedTensorToTensor<
+    T: TensorFlowScalar,
+    Tindex: TensorFlowIndex,
+    Tshape: TensorFlowIndex
+>(
+    shape: Tensor<Tshape>,
+    _ values: Tensor<T>,
+    defaultValue: Tensor<T>,
+    rowPartitionTensors: [Tensor<Tindex>],
+    rowPartitionTypes: [String]
+) -> Tensor<T> {
+  let nOutputs = Int(1)
+    let op = makeOp("RaggedTensorToTensor", nOutputs)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.updateAttribute("Tindex", Tindex.tensorFlowDataType)
+    op.updateAttribute("Tshape", Tshape.tensorFlowDataType)
+    op.updateAttribute("num_row_partition_tensors", rowPartitionTensors.count)
+    op.updateAttribute("row_partition_types", rowPartitionTypes)
+    op.addInput(shape)
+    op.addInput(values)
+    op.addInput(defaultValue)
+    op.addInputList(rowPartitionTensors)
+    return op.execute(Int(1))
+}
+
+/// Encodes a `RaggedTensor` into a `variant` Tensor.
+///
+/// 
+/// Encodes the given `RaggedTensor` and returns a `variant` Tensor. If
+/// `batched_input` is True, then input `RaggedTensor` is unbatched along the
+/// zero-th dimension, each component `RaggedTensor` is encoded into a scalar
+/// `variant` Tensor, and these are stacked to return a 1-D `variant` Tensor.
+/// If `batched_input` is False, then the input `RaggedTensor` is encoded as is and
+/// a scalar `variant` Tensor is returned. A `RaggedTensor` is encoded by first
+/// creating a 1-D `variant` Tensor with `ragged_rank + 1` elements, containing the
+/// splits and values Tensors of the `RaggedTensor`. Then the 1-D `variant` Tensor
+/// is wrapped in a scalar `variant` Tensor. See `RaggedTensorFromVariant` for the
+/// corresponding decoding logic.
+/// 
+///
+/// - Parameters:
+///     - rt_nested_splits: A list of one or more Tensors representing the splits of the input
+///         `RaggedTensor`.
+///     - rt_dense_values: A Tensor representing the values of the input `RaggedTensor`.
+///
+/// - Attr batched_input: A `bool` denoting whether the input is a batched `RaggedTensor`.
+///
+/// - Output encoded_ragged: A `variant` Tensor that containing encoded `RaggedTensor`.
+@inlinable @inline(__always)
+public static func raggedTensorToVariant<
+    Tvalues: TensorFlowScalar,
+    Tsplits: TensorFlowIndex
+>(
+    rtNestedSplits: [Tensor<Tsplits>],
+    rtDenseValues: Tensor<Tvalues>,
+    batchedInput: Bool
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("RaggedTensorToVariant", nOutputs)
+    op.updateAttribute("RAGGED_RANK", rtNestedSplits.count)
+    op.updateAttribute("Tvalues", Tvalues.tensorFlowDataType)
+    op.updateAttribute("Tsplits", Tsplits.tensorFlowDataType)
+    op.updateAttribute("batched_input", batchedInput)
+    op.addInputList(rtNestedSplits)
+    op.addInput(rtDenseValues)
+    return op.execute(Int(1))
 }
 
 /// Randomly crop `image`.
 ///
 /// `size` is a 1-D int64 tensor with 2 elements representing the crop height and
 /// width.  The values must be non negative.
-///
+/// 
 /// This Op picks a random location in `image` and crops a `height` by `width`
 /// rectangle from that location.  The random location is picked so the cropped
 /// area will fit inside the original image.
@@ -22207,6 +25981,40 @@ public static func randomCrop<T: TensorFlowNumeric>(
     op.updateAttribute("seed2", seed2)
     op.addInput(image)
     op.addInput(size)
+    return op.execute(Int(1))
+}
+
+/// Creates a Dataset that returns pseudorandom numbers.
+///
+/// Creates a Dataset that returns a stream of uniformly distributed
+/// pseudorandom 64-bit signed integers.
+/// 
+/// In the TensorFlow Python API, you can instantiate this dataset via the
+/// class `tf.data.experimental.RandomDataset`.
+/// 
+/// Instances of this dataset are also created as a result of the
+/// `hoist_random_uniform` static optimization. Whether this optimization is
+/// performed is determined by the `experimental_optimization.hoist_random_uniform`
+/// option of `tf.data.Options`.
+///
+/// - Parameters:
+///     - seed: A scalar seed for the random number generator. If either seed or
+///         seed2 is set to be non-zero, the random number generator is seeded
+///         by the given seed.  Otherwise, a random seed is used.
+///     - seed2: A second scalar seed to avoid seed collision.
+@inlinable @inline(__always)
+public static func randomDataset(
+    seed: Tensor<Int64>,
+    seed2: Tensor<Int64>,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?]
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("RandomDataset", nOutputs)
+    op.updateAttribute("output_types", outputTypes)
+    op.updateAttribute("output_shapes", outputShapes)
+    op.addInput(seed)
+    op.addInput(seed2)
     return op.execute(Int(1))
 }
 
@@ -22294,7 +26102,7 @@ public static func randomPoisson<
 /// the algorithm by Hormann is used to acquire samples via
 /// transformation-rejection.
 /// See http://www.sciencedirect.com/science/article/pii/0167668793909974.
-///
+/// 
 /// Otherwise, Knuth's algorithm is used to acquire samples via multiplying uniform
 /// random variables.
 /// See Donald E. Knuth (1969). Seminumerical Algorithms. The Art of Computer
@@ -22343,7 +26151,7 @@ public static func randomPoissonV2<
 ///   The tensor is shuffled along dimension 0, such that each `value[j]` is mapped
 ///   to one and only one `output[i]`. For example, a mapping that might occur for a
 ///   3x2 tensor is:
-///
+/// 
 /// ```
 /// [[1, 2],       [[5, 6],
 ///  [3, 4],  ==>   [1, 2],
@@ -22493,7 +26301,7 @@ public static func randomUniform<
 /// The generated values are uniform integers in the range `[minval, maxval)`.
 /// The lower bound `minval` is included in the range, while the upper bound
 /// `maxval` is excluded.
-///
+/// 
 /// The random integers are slightly biased unless `maxval - minval` is an exact
 /// power of two.  The bias is small for values of `maxval - minval` significantly
 /// smaller than the range of the output (either `2^32` or `2^64`).
@@ -22537,9 +26345,9 @@ public static func randomUniformInt<
 ///
 /// This operation creates a sequence of numbers that begins at `start` and
 /// extends by increments of `delta` up to but not including `limit`.
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// # 'start' is 3
 /// # 'limit' is 18
@@ -22595,15 +26403,15 @@ public static func rangeDataset(
 /// Returns the rank of a tensor.
 ///
 /// This operation returns an integer representing the rank of `input`.
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// # 't' is [[[1, 1, 1], [2, 2, 2]], [[3, 3, 3], [4, 4, 4]]]
 /// # shape of tensor 't' is [2, 2, 3]
 /// rank(t) ==> 3
 /// ```
-///
+/// 
 /// **Note**: The rank of a tensor is not the same as the rank of a matrix. The rank
 /// of a tensor is the number of indices required to uniquely select each element
 /// of the tensor. Rank is also known as "order", "degree", or "ndims."
@@ -22632,7 +26440,7 @@ public static func readFile(
 /// Reads the value of a variable.
 ///
 /// The tensor returned by this operation is immutable.
-///
+/// 
 /// The value returned by this operation is guaranteed to be influenced by all the
 /// writes on which this operation depends directly or indirectly, and to not be
 /// influenced by any of the writes which depend directly or indirectly on this
@@ -22791,9 +26599,9 @@ public static func readerSerializeStateV2(
 /// type `float` that is the real part of each element in `input`. All elements in
 /// `input` must be complex numbers of the form \\(a + bj\\), where *a* is the real
 ///  part returned by this operation and *b* is the imaginary part.
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// # tensor 'input' is [-2.25 + 4.75j, 3.25 + 5.75j]
 /// tf.real(input) ==> [-2.25, 3.25]
@@ -22816,7 +26624,7 @@ public static func real<
 /// Returns x / y element-wise for real types.
 ///
 /// If `x` and `y` are reals, this will return the floating-point division.
-///
+/// 
 /// *NOTE*: `Div` supports broadcasting. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
 @inlinable @inline(__always)
@@ -22829,6 +26637,34 @@ public static func realDiv<T: TensorFlowNumeric>(
     op.updateAttribute("T", T.tensorFlowDataType)
     op.addInput(x)
     op.addInput(y)
+    return op.execute(Int(1))
+}
+
+/// Creates a dataset that changes the batch size.
+///
+/// Creates a dataset that changes the batch size of the dataset to current batch
+/// size // num_workers.
+///
+/// - Parameters:
+///     - input_dataset: A variant tensor representing the input dataset.
+///     - num_replicas: A scalar representing the number of replicas to distribute this batch across. As
+///         a result of this transformation the current batch size would end up being
+///         divided  by this parameter.
+@inlinable @inline(__always)
+public static func rebatchDataset(
+    inputDataset: VariantHandle,
+    numReplicas: Tensor<Int64>,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?],
+    useFallback: Bool = true
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("RebatchDataset", nOutputs)
+    op.updateAttribute("output_types", outputTypes)
+    op.updateAttribute("output_shapes", outputShapes)
+    op.updateAttribute("use_fallback", useFallback)
+    op.addInput(inputDataset)
+    op.addInput(numReplicas)
     return op.execute(Int(1))
 }
 
@@ -22896,6 +26732,38 @@ public static func recordInput(
     op.updateAttribute("file_parallelism", fileParallelism)
     op.updateAttribute("batch_size", batchSize)
     op.updateAttribute("compression_type", compressionType)
+    return op.execute(Int(1))
+}
+
+/// Receives the named tensor from send_device on recv_device.
+///
+/// - Attrs:
+///     - tensor_name: The name of the tensor to receive.
+///     - send_device: The name of the device sending the tensor.
+///     - send_device_incarnation: The current incarnation of send_device.
+///     - recv_device: The name of the device receiving the tensor.
+///     - client_terminated: If set to true, this indicates that the node was added
+///         to the graph as a result of a client-side feed or fetch of Tensor data,
+///         in which case the corresponding send or recv is expected to be managed
+///         locally by the caller.
+///
+/// - Output tensor: The tensor to receive.
+@inlinable @inline(__always)
+public static func recv<TensorType: TensorFlowScalar>(
+    tensorName: String,
+    sendDevice: String,
+    sendDeviceIncarnation: Int64,
+    recvDevice: String,
+    clientTerminated: Bool = false
+) -> Tensor<TensorType> {
+  let nOutputs = Int(1)
+    let op = makeOp("Recv", nOutputs)
+    op.updateAttribute("tensor_type", TensorType.tensorFlowDataType)
+    op.updateAttribute("tensor_name", tensorName)
+    op.updateAttribute("send_device", sendDevice)
+    op.updateAttribute("send_device_incarnation", sendDeviceIncarnation)
+    op.updateAttribute("recv_device", recvDevice)
+    op.updateAttribute("client_terminated", clientTerminated)
     return op.execute(Int(1))
 }
 
@@ -22974,9 +26842,9 @@ public static func reduceDataset<
 /// counted backwards from the end, with `-1` being equivalent to `n - 1`.  If
 /// indices are not specified, joins across all dimensions beginning from `n - 1`
 /// through `0`.
-///
+/// 
 /// For example:
-///
+/// 
 /// ```python
 /// # tensor `a` is [["a", "b"], ["c", "d"]]
 /// tf.reduce_join(a, 0) ==> ["ac", "bd"]
@@ -23026,7 +26894,7 @@ public static func reduceJoin(
 /// string tensor which is applied to every element of the input tensor.
 /// The boolean values (True or False) of the output tensor indicate
 /// if the input matches the regex pattern provided.
-///
+/// 
 /// The pattern follows the re2 syntax (https://github.com/google/re2/wiki/Syntax)
 ///
 /// - Parameters:
@@ -23079,6 +26947,11 @@ public static func regexReplace(
 }
 
 /// Computes rectified linear: `max(features, 0)`.
+///
+/// See: https://en.wikipedia.org/wiki/Rectifier_(neural_networks)
+/// Example usage:
+/// >>> tf.nn.relu([-2., 0., -0., 3.]).numpy()
+/// array([ 0.,  0., -0.,  3.], dtype=float32)
 @inlinable @inline(__always)
 public static func relu<T: TensorFlowNumeric>(
     features: Tensor<T>
@@ -23270,9 +27143,9 @@ public static func requantizationRange<Tinput: TensorFlowScalar>(
 ///     - input_max: The maximum value of the input tensor.
 ///
 /// - Attrs:
-///     - T: The quantized type of input tensor that needs to be converted. 
+///     - T: The quantized type of input tensor that needs to be converted.
 ///     - clip_value_max: The maximum value of the output that needs to be clipped.
-///         Example: set this to 6 for Relu6. 
+///         Example: set this to 6 for Relu6.
 ///
 /// - Outputs:
 ///     - output_min: The minimum value of the final output tensor
@@ -23298,7 +27171,7 @@ public static func requantizationRangePerChannel<T: TensorFlowScalar>(
 ///
 /// Converts the quantized `input` tensor into a lower-precision `output`, using the
 /// output range specified with `requested_output_min` and `requested_output_max`.
-///
+/// 
 /// `[input_min, input_max]` are scalar floats that specify the range for the float
 /// interpretation of the `input` data. For example, if `input_min` is -1.0f and
 /// `input_max` is 1.0f, and we are dealing with `quint16` quantized data, then a 0
@@ -23350,7 +27223,7 @@ public static func requantize<
 ///     - requested_output_max: The maximum value of the output tensor requested.
 ///
 /// - Attrs:
-///     - T: The quantized type of input tensor that needs to be converted. 
+///     - T: The quantized type of input tensor that needs to be converted.
 ///     - out_type: The quantized type of output tensor that needs to be converted.
 ///
 /// - Outputs:
@@ -23413,30 +27286,33 @@ public static func reservedInput(
 ///
 /// Given `tensor`, this operation returns a tensor that has the same values
 /// as `tensor` with shape `shape`.
-///
-/// If one component of `shape` is the special value -1, the size of that dimension
-/// is computed so that the total size remains constant.  In particular, a `shape`
-/// of `[-1]` flattens into 1-D.  At most one component of `shape` can be -1.
-///
-/// If `shape` is 1-D or higher, then the operation returns a tensor with shape
+/// 
+/// If one component of 1-D tensor `shape` is the special value -1, the size of that
+/// dimension is computed so that the total size remains constant.  In particular, a
+/// `shape` of `[-1]` flattens into 1-D.  At most one component of `shape` may be
+/// unknown.
+/// 
+/// The `shape` must be 1-D and the operation returns a tensor with shape
 /// `shape` filled with the values of `tensor`. In this case, the number of elements
 /// implied by `shape` must be the same as the number of elements in `tensor`.
-///
+/// 
+/// It is an error if `shape` is not 1-D.
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// # tensor 't' is [1, 2, 3, 4, 5, 6, 7, 8, 9]
 /// # tensor 't' has shape [9]
 /// reshape(t, [3, 3]) ==> [[1, 2, 3],
 ///                         [4, 5, 6],
 ///                         [7, 8, 9]]
-///
+/// 
 /// # tensor 't' is [[[1, 1], [2, 2]],
 /// #                [[3, 3], [4, 4]]]
 /// # tensor 't' has shape [2, 2, 2]
 /// reshape(t, [2, 4]) ==> [[1, 1, 2, 2],
 ///                         [3, 3, 4, 4]]
-///
+/// 
 /// # tensor 't' is [[[1, 1, 1],
 /// #                 [2, 2, 2]],
 /// #                [[3, 3, 3],
@@ -23446,9 +27322,9 @@ public static func reservedInput(
 /// # tensor 't' has shape [3, 2, 3]
 /// # pass '[-1]' to flatten 't'
 /// reshape(t, [-1]) ==> [1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6]
-///
+/// 
 /// # -1 can also be used to infer the shape
-///
+/// 
 /// # -1 is inferred to be 9:
 /// reshape(t, [2, -1]) ==> [[1, 1, 1, 2, 2, 2, 3, 3, 3],
 ///                          [4, 4, 4, 5, 5, 5, 6, 6, 6]]
@@ -23462,7 +27338,7 @@ public static func reservedInput(
 ///                              [[4, 4, 4],
 ///                               [5, 5, 5],
 ///                               [6, 6, 6]]]
-///
+/// 
 /// # tensor 't' is [7]
 /// # shape `[]` reshapes to a scalar
 /// reshape(t, []) ==> 7
@@ -23489,12 +27365,12 @@ public static func reshape<
 /// Resize `images` to `size` using area interpolation.
 ///
 /// Input images can be of different types but output images are always float.
-///
+/// 
 /// The range of pixel values for the output image might be slightly different
 /// from the range for the input image because of limited numerical precision.
 /// To guarantee an output range, for example `[0.0, 1.0]`, apply
 /// `tf.clip_by_value` to the output.
-///
+/// 
 /// Each output pixel is computed by first transforming the pixel's footprint into
 /// the input tensor and then averaging the pixels that intersect the footprint. An
 /// input pixel's contribution to the average is weighted by the fraction of its
@@ -23705,6 +27581,96 @@ public static func resizeNearestNeighborGrad<T: TensorFlowNumeric>(
     return op.execute(Int(1))
 }
 
+/// Applies a gradient to a given accumulator.
+///
+/// Does not add if local_step is lesser than the accumulator's global_step.
+///
+/// - Parameters:
+///     - handle: The handle to a accumulator.
+///     - local_step: The local_step value at which the gradient was computed.
+///     - gradient: A tensor of the gradient to be accumulated.
+///
+/// - Attr dtype: The data type of accumulated gradients. Needs to correspond to the type
+///     of the accumulator.
+@inlinable @inline(__always)
+public static func resourceAccumulatorApplyGradient<Dtype: TensorFlowNumeric>(
+    handle: ResourceHandle,
+    localStep: Tensor<Int64>,
+    gradient: Tensor<Dtype>
+) {
+  let nOutputs = 0
+    let op = makeOp("ResourceAccumulatorApplyGradient", nOutputs)
+    op.updateAttribute("dtype", Dtype.tensorFlowDataType)
+    op.addInput(handle)
+    op.addInput(localStep)
+    op.addInput(gradient)
+    op.execute()
+}
+
+/// Returns the number of gradients aggregated in the given accumulators.
+///
+/// - Parameter handle: The handle to an accumulator.
+///
+/// - Output num_accumulated: The number of gradients aggregated in the given accumulator.
+@inlinable @inline(__always)
+public static func resourceAccumulatorNumAccumulated(
+    handle: ResourceHandle
+) -> Tensor<Int32> {
+  let nOutputs = Int(1)
+    let op = makeOp("ResourceAccumulatorNumAccumulated", nOutputs)
+    op.addInput(handle)
+    return op.execute(Int(1))
+}
+
+/// Updates the accumulator with a new value for global_step.
+///
+/// Logs warning if the accumulator's value is already higher than
+/// new_global_step.
+///
+/// - Parameters:
+///     - handle: The handle to an accumulator.
+///     - new_global_step: The new global_step value to set.
+@inlinable @inline(__always)
+public static func resourceAccumulatorSetGlobalStep(
+    handle: ResourceHandle,
+    newGlobalStep: Tensor<Int64>
+) {
+  let nOutputs = 0
+    let op = makeOp("ResourceAccumulatorSetGlobalStep", nOutputs)
+    op.addInput(handle)
+    op.addInput(newGlobalStep)
+    op.execute()
+}
+
+/// Extracts the average gradient in the given ConditionalAccumulator.
+///
+/// The op blocks until sufficient (i.e., more than num_required)
+/// gradients have been accumulated.  If the accumulator has already
+/// aggregated more than num_required gradients, it returns the average of
+/// the accumulated gradients.  Also automatically increments the recorded
+/// global_step in the accumulator by 1, and resets the aggregate to 0.
+///
+/// - Parameters:
+///     - handle: The handle to an accumulator.
+///     - num_required: Number of gradients required before we return an aggregate.
+///
+/// - Attr dtype: The data type of accumulated gradients. Needs to correspond to the type
+///     of the accumulator.
+///
+/// - Output average: The average of the accumulated gradients.
+@inlinable @inline(__always)
+public static func resourceAccumulatorTakeGradient<Dtype: TensorFlowNumeric>(
+    handle: ResourceHandle,
+    numRequired: Tensor<Int32>
+) -> Tensor<Dtype> {
+  let nOutputs = Int(1)
+    let op = makeOp("ResourceAccumulatorTakeGradient", nOutputs)
+    op.updateAttribute("dtype", Dtype.tensorFlowDataType)
+    op.addInput(handle)
+    op.addInput(numRequired)
+    return op.execute(Int(1))
+}
+
 /// Update '*var' according to the AdaMax algorithm.
 ///
 /// m_t <- beta1 * m_{t-1} + (1 - beta1) * g
@@ -23873,12 +27839,50 @@ public static func resourceApplyAdagradDA<T: TensorFlowNumeric>(
     op.execute()
 }
 
+/// Update '*var' according to the adagrad scheme.
+///
+/// accum += grad * grad
+/// var -= lr * grad * (1 / sqrt(accum))
+///
+/// - Parameters:
+///     - var: Should be from a Variable().
+///     - accum: Should be from a Variable().
+///     - lr: Scaling factor. Must be a scalar.
+///     - epsilon: Constant factor. Must be a scalar.
+///     - grad: The gradient.
+///
+/// - Attr use_locking: If `True`, updating of the var and accum tensors will be protected
+///     by a lock; otherwise the behavior is undefined, but may exhibit less
+///     contention.
+@inlinable @inline(__always)
+public static func resourceApplyAdagradV2<T: TensorFlowNumeric>(
+    var_: ResourceHandle,
+    accum: ResourceHandle,
+    lr: Tensor<T>,
+    epsilon: Tensor<T>,
+    grad: Tensor<T>,
+    useLocking: Bool = false,
+    updateSlots: Bool = true
+) {
+  let nOutputs = 0
+    let op = makeOp("ResourceApplyAdagradV2", nOutputs)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.updateAttribute("use_locking", useLocking)
+    op.updateAttribute("update_slots", updateSlots)
+    op.addInput(var_)
+    op.addInput(accum)
+    op.addInput(lr)
+    op.addInput(epsilon)
+    op.addInput(grad)
+    op.execute()
+}
+
 /// Update '*var' according to the Adam algorithm.
 ///
-/// $$lr_t := \text{learning\_rate} * \sqrt{1 - beta_2^t} / (1 - beta_1^t)$$
-/// $$m_t := beta_1 * m_{t-1} + (1 - beta_1) * g$$
-/// $$v_t := beta_2 * v_{t-1} + (1 - beta_2) * g * g$$
-/// $$variable := variable - lr_t * m_t / (\sqrt{v_t} + \epsilon)$$
+/// $$\text{lr}_t := \mathrm{learning_rate} * \sqrt{1 - \beta_2^t} / (1 - \beta_1^t)$$
+/// $$m_t := \beta_1 * m_{t-1} + (1 - \beta_1) * g$$
+/// $$v_t := \beta_2 * v_{t-1} + (1 - \beta_2) * g * g$$
+/// $$\text{variable} := \text{variable} - \text{lr}_t * m_t / (\sqrt{v_t} + \epsilon)$$
 ///
 /// - Parameters:
 ///     - var: Should be from a Variable().
@@ -23932,11 +27936,11 @@ public static func resourceApplyAdam<T: TensorFlowNumeric>(
 
 /// Update '*var' according to the Adam algorithm.
 ///
-/// $$lr_t := \text{learning\_rate} * \sqrt{1 - beta_2^t} / (1 - beta_1^t)$$
-/// $$m_t := beta_1 * m_{t-1} + (1 - beta_1) * g$$
-/// $$v_t := beta_2 * v_{t-1} + (1 - beta_2) * g * g$$
-/// $$vhat_t := max{vhat_{t-1}, v_t}$$
-/// $$variable := variable - lr_t * m_t / (\sqrt{vhat_t} + \epsilon)$$
+/// $$\text{lr}_t := \mathrm{learning_rate} * \sqrt{1 - \beta_2^t} / (1 - \beta_1^t)$$
+/// $$m_t := \beta_1 * m_{t-1} + (1 - \beta_1) * g$$
+/// $$v_t := \beta_2 * v_{t-1} + (1 - \beta_2) * g * g$$
+/// $$\hat{v}_t := max{\hat{v}_{t-1}, v_t}$$
+/// $$\text{variable} := \text{variable} - \text{lr}_t * m_t / (\sqrt{\hat{v}_t} + \epsilon)$$
 ///
 /// - Parameters:
 ///     - var: Should be from a Variable().
@@ -24036,16 +28040,16 @@ public static func resourceApplyAddSign<T: TensorFlowNumeric>(
 /// (i.e., the variance) for normalization, as opposed to regular RMSProp, which
 /// uses the (uncentered) second moment. This often helps with training, but is
 /// slightly more expensive in terms of computation and memory.
-///
+/// 
 /// Note that in dense implementation of this algorithm, mg, ms, and mom will
 /// update even if the grad is zero, but in this sparse implementation, mg, ms,
 /// and mom will not update in iterations during which the grad is zero.
-///
+/// 
 /// mean_square = decay * mean_square + (1-decay) * gradient ** 2
 /// mean_grad = decay * mean_grad + (1-decay) * gradient
-///
+/// 
 /// Delta = learning_rate * gradient / sqrt(mean_square + epsilon - mean_grad ** 2)
-///
+/// 
 /// mg <- rho * mg_{t-1} + (1-rho) * grad
 /// ms <- rho * ms_{t-1} + (1-rho) * grad * grad
 /// mom <- momentum * mom_{t-1} + lr * grad / sqrt(ms - mg * mg + epsilon)
@@ -24219,10 +28223,10 @@ public static func resourceApplyGradientDescent<T: TensorFlowNumeric>(
     op.execute()
 }
 
-/// Update '*var' according to the momentum scheme. Set use_nesterov = True if you
+/// Update '*var' according to the momentum scheme.
 ///
-/// want to use Nesterov momentum.
-///
+/// Set use_nesterov = True if you want to use Nesterov momentum.
+/// 
 /// accum = accum * momentum - lr * grad
 /// var += accum
 ///
@@ -24266,7 +28270,7 @@ public static func resourceApplyKerasMomentum<T: TensorFlowNumeric>(
 /// Update '*var' according to the momentum scheme. Set use_nesterov = True if you
 ///
 /// want to use Nesterov momentum.
-///
+/// 
 /// accum = accum * momentum + grad
 /// var -= lr * accum
 ///
@@ -24429,10 +28433,10 @@ public static func resourceApplyProximalGradientDescent<T: TensorFlowNumeric>(
 /// Note that in dense implementation of this algorithm, ms and mom will
 /// update even if the grad is zero, but in this sparse implementation, ms
 /// and mom will not update in iterations during which the grad is zero.
-///
+/// 
 /// mean_square = decay * mean_square + (1-decay) * gradient ** 2
 /// Delta = learning_rate * gradient / sqrt(mean_square + epsilon)
-///
+/// 
 /// ms <- rho * ms_{t-1} + (1-rho) * grad * grad
 /// mom <- momentum * mom_{t-1} + lr * grad / sqrt(ms + epsilon)
 /// var <- var - mom
@@ -24476,6 +28480,44 @@ public static func resourceApplyRMSProp<T: TensorFlowNumeric>(
     op.execute()
 }
 
+/// A conditional accumulator for aggregating gradients.
+///
+/// The accumulator accepts gradients marked with local_step greater or
+/// equal to the most recent global_step known to the accumulator. The
+/// average can be extracted from the accumulator, provided sufficient
+/// gradients have been accumulated. Extracting the average automatically
+/// resets the aggregate to 0, and increments the global_step recorded by
+/// the accumulator.
+/// This is a resource version of ConditionalAccumulator that will work in TF2.0
+/// with tf.cond version 2.
+///
+/// - Attrs:
+///     - dtype: The type of the value being accumulated.
+///     - shape: The shape of the values, can be [], in which case shape is unknown.
+///     - container: If non-empty, this accumulator is placed in the given container.
+///         Otherwise, a default container is used.
+///     - shared_name: If non-empty, this accumulator will be shared under the
+///         given name across multiple sessions.
+///
+/// - Output handle: The handle to the accumulator.
+@inlinable @inline(__always)
+public static func resourceConditionalAccumulator(
+    dtype: TensorDataType,
+    shape: TensorShape?,
+    container: String,
+    sharedName: String,
+    reductionType: ReductionType = .mean
+) -> ResourceHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("ResourceConditionalAccumulator", nOutputs)
+    op.updateAttribute("dtype", dtype)
+    op.updateAttribute("shape", shape)
+    op.updateAttribute("container", container)
+    op.updateAttribute("shared_name", sharedName)
+    op.updateAttribute("reduction_type", reductionType.cName)
+    return op.execute(Int(1))
+}
+
 /// Increments variable pointed to by 'resource' until it reaches 'limit'.
 ///
 /// - Parameter resource: Should be from a scalar `Variable` node.
@@ -24512,14 +28554,14 @@ public static func resourceCreateOp(
 ///
 /// `indices` must be an integer tensor of any dimension (usually 0-D or 1-D).
 /// Produces an output tensor with shape `indices.shape + params.shape[1:]` where:
-///
+/// 
 /// ```python
 ///     # Scalar indices
 ///     output[:, ..., :] = params[indices, :, ... :]
-///
+/// 
 ///     # Vector indices
 ///     output[i, :, ..., :] = params[indices[i], :, ... :]
-///
+/// 
 ///     # Higher rank indices
 ///     output[i, ..., j, :, ... :] = params[indices[i, ..., j], :, ..., :]
 /// ```
@@ -24574,21 +28616,21 @@ public static func resourceInitializedOp(
 /// Adds sparse updates to the variable referenced by `resource`.
 ///
 /// This operation computes
-///
+/// 
 ///     # Scalar indices
 ///     ref[indices, ...] += updates[...]
-///
+/// 
 ///     # Vector indices (for each i)
 ///     ref[indices[i], ...] += updates[i, ...]
-///
+/// 
 ///     # High rank indices (for each i, ..., j)
 ///     ref[indices[i, ..., j], ...] += updates[i, ..., j, ...]
-///
+/// 
 /// Duplicate entries are handled correctly: if multiple `indices` reference
 /// the same location, their contributions add.
-///
+/// 
 /// Requires `updates.shape = indices.shape + ref.shape[1:]` or `updates.shape = []`.
-///
+/// 
 /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
 /// <img style="width:100%" src='https://www.tensorflow.org/images/ScatterAdd.png' alt>
 /// </div>
@@ -24619,21 +28661,21 @@ public static func resourceScatterAdd<
 /// Divides sparse updates into the variable referenced by `resource`.
 ///
 /// This operation computes
-///
+/// 
 ///     # Scalar indices
 ///     ref[indices, ...] /= updates[...]
-///
+/// 
 ///     # Vector indices (for each i)
 ///     ref[indices[i], ...] /= updates[i, ...]
-///
+/// 
 ///     # High rank indices (for each i, ..., j)
 ///     ref[indices[i, ..., j], ...] /= updates[i, ..., j, ...]
-///
+/// 
 /// Duplicate entries are handled correctly: if multiple `indices` reference
 /// the same location, their contributions multiply.
-///
+/// 
 /// Requires `updates.shape = indices.shape + ref.shape[1:]` or `updates.shape = []`.
-///
+/// 
 /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
 /// <img style="width:100%" src='https://www.tensorflow.org/images/ScatterAdd.png' alt>
 /// </div>
@@ -24664,21 +28706,21 @@ public static func resourceScatterDiv<
 /// Reduces sparse updates into the variable referenced by `resource` using the `max` operation.
 ///
 /// This operation computes
-///
+/// 
 ///     # Scalar indices
 ///     ref[indices, ...] = max(ref[indices, ...], updates[...])
-///
+/// 
 ///     # Vector indices (for each i)
 ///     ref[indices[i], ...] = max(ref[indices[i], ...], updates[i, ...])
-///
+/// 
 ///     # High rank indices (for each i, ..., j)
 ///     ref[indices[i, ..., j], ...] = max(ref[indices[i, ..., j], ...], updates[i, ..., j, ...])
-///
+/// 
 /// Duplicate entries are handled correctly: if multiple `indices` reference
 /// the same location, their contributions are combined.
-///
+/// 
 /// Requires `updates.shape = indices.shape + ref.shape[1:]` or `updates.shape = []`.
-///
+/// 
 /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
 /// <img style="width:100%" src='https://www.tensorflow.org/images/ScatterAdd.png' alt>
 /// </div>
@@ -24709,21 +28751,21 @@ public static func resourceScatterMax<
 /// Reduces sparse updates into the variable referenced by `resource` using the `min` operation.
 ///
 /// This operation computes
-///
+/// 
 ///     # Scalar indices
 ///     ref[indices, ...] = min(ref[indices, ...], updates[...])
-///
+/// 
 ///     # Vector indices (for each i)
 ///     ref[indices[i], ...] = min(ref[indices[i], ...], updates[i, ...])
-///
+/// 
 ///     # High rank indices (for each i, ..., j)
 ///     ref[indices[i, ..., j], ...] = min(ref[indices[i, ..., j], ...], updates[i, ..., j, ...])
-///
+/// 
 /// Duplicate entries are handled correctly: if multiple `indices` reference
 /// the same location, their contributions are combined.
-///
+/// 
 /// Requires `updates.shape = indices.shape + ref.shape[1:]` or `updates.shape = []`.
-///
+/// 
 /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
 /// <img style="width:100%" src='https://www.tensorflow.org/images/ScatterAdd.png' alt>
 /// </div>
@@ -24754,21 +28796,21 @@ public static func resourceScatterMin<
 /// Multiplies sparse updates into the variable referenced by `resource`.
 ///
 /// This operation computes
-///
+/// 
 ///     # Scalar indices
 ///     ref[indices, ...] *= updates[...]
-///
+/// 
 ///     # Vector indices (for each i)
 ///     ref[indices[i], ...] *= updates[i, ...]
-///
+/// 
 ///     # High rank indices (for each i, ..., j)
 ///     ref[indices[i, ..., j], ...] *= updates[i, ..., j, ...]
-///
+/// 
 /// Duplicate entries are handled correctly: if multiple `indices` reference
 /// the same location, their contributions multiply.
-///
+/// 
 /// Requires `updates.shape = indices.shape + ref.shape[1:]` or `updates.shape = []`.
-///
+/// 
 /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
 /// <img style="width:100%" src='https://www.tensorflow.org/images/ScatterAdd.png' alt>
 /// </div>
@@ -24799,23 +28841,23 @@ public static func resourceScatterMul<
 /// Applies sparse addition to individual values or slices in a Variable.
 ///
 /// `ref` is a `Tensor` with rank `P` and `indices` is a `Tensor` of rank `Q`.
-///
+/// 
 /// `indices` must be integer tensor, containing indices into `ref`.
 /// It must be shape `[d_0, ..., d_{Q-2}, K]` where `0 < K <= P`.
-///
+/// 
 /// The innermost dimension of `indices` (with length `K`) corresponds to
 /// indices into elements (if `K = P`) or slices (if `K < P`) along the `K`th
 /// dimension of `ref`.
-///
+/// 
 /// `updates` is `Tensor` of rank `Q-1+P-K` with shape:
-///
+/// 
 /// ```
 /// [d_0, ..., d_{Q-2}, ref.shape[K], ..., ref.shape[P-1]]
 /// ```
-///
+/// 
 /// For example, say we want to add 4 scattered elements to a rank-1 tensor to
 /// 8 elements. In Python, that addition would look like this:
-///
+/// 
 /// ```python
 /// ref = tf.Variable([1, 2, 3, 4, 5, 6, 7, 8], use_resource=True)
 /// indices = tf.constant([[4], [3], [1], [7]])
@@ -24824,11 +28866,11 @@ public static func resourceScatterMul<
 /// with tf.Session() as sess:
 ///   print sess.run(add)
 /// ```
-///
+/// 
 /// The resulting update to ref would look like this:
-///
+/// 
 ///     [1, 13, 3, 14, 14, 6, 7, 20]
-///
+/// 
 /// See `tf.scatter_nd` for more details about how to make updates to
 /// slices.
 ///
@@ -24866,23 +28908,23 @@ public static func resourceScatterNdAdd<
 /// Applies sparse subtraction to individual values or slices in a Variable.
 ///
 /// `ref` is a `Tensor` with rank `P` and `indices` is a `Tensor` of rank `Q`.
-///
+/// 
 /// `indices` must be integer tensor, containing indices into `ref`.
 /// It must be shape `[d_0, ..., d_{Q-2}, K]` where `0 < K <= P`.
-///
+/// 
 /// The innermost dimension of `indices` (with length `K`) corresponds to
 /// indices into elements (if `K = P`) or slices (if `K < P`) along the `K`th
 /// dimension of `ref`.
-///
+/// 
 /// `updates` is `Tensor` of rank `Q-1+P-K` with shape:
-///
+/// 
 /// ```
 /// [d_0, ..., d_{Q-2}, ref.shape[K], ..., ref.shape[P-1]]
 /// ```
-///
+/// 
 /// For example, say we want to subtract 4 scattered elements from a rank-1 tensor
 /// with 8 elements. In Python, that subtraction would look like this:
-///
+/// 
 /// ```python
 /// ref = tf.Variable([1, 2, 3, 4, 5, 6, 7, 8], use_resource=True)
 /// indices = tf.constant([[4], [3], [1], [7]])
@@ -24891,11 +28933,11 @@ public static func resourceScatterNdAdd<
 /// with tf.Session() as sess:
 ///   print sess.run(sub)
 /// ```
-///
+/// 
 /// The resulting update to ref would look like this:
-///
+/// 
 ///     [1, -9, 3, -6, -4, 6, 7, -4]
-///
+/// 
 /// See `tf.scatter_nd` for more details about how to make updates to
 /// slices.
 ///
@@ -24933,25 +28975,25 @@ public static func resourceScatterNdSub<
 /// Applies sparse `updates` to individual values or slices within a given
 ///
 /// variable according to `indices`.
-///
+/// 
 /// `ref` is a `Tensor` with rank `P` and `indices` is a `Tensor` of rank `Q`.
-///
+/// 
 /// `indices` must be integer tensor, containing indices into `ref`.
 /// It must be shape `[d_0, ..., d_{Q-2}, K]` where `0 < K <= P`.
-///
+/// 
 /// The innermost dimension of `indices` (with length `K`) corresponds to
 /// indices into elements (if `K = P`) or slices (if `K < P`) along the `K`th
 /// dimension of `ref`.
-///
+/// 
 /// `updates` is `Tensor` of rank `Q-1+P-K` with shape:
-///
+/// 
 /// ```
 /// [d_0, ..., d_{Q-2}, ref.shape[K], ..., ref.shape[P-1]].
 /// ```
-///
+/// 
 /// For example, say we want to update 4 scattered elements to a rank-1 tensor to
 /// 8 elements. In Python, that update would look like this:
-///
+/// 
 /// ```python
 ///     ref = tf.Variable([1, 2, 3, 4, 5, 6, 7, 8])
 ///     indices = tf.constant([[4], [3], [1] ,[7]])
@@ -24960,11 +29002,11 @@ public static func resourceScatterNdSub<
 ///     with tf.Session() as sess:
 ///       print sess.run(update)
 /// ```
-///
+/// 
 /// The resulting update to ref would look like this:
-///
+/// 
 ///     [1, 11, 3, 10, 9, 6, 7, 12]
-///
+/// 
 /// See `tf.scatter_nd` for more details about how to make updates to
 /// slices.
 ///
@@ -25002,21 +29044,21 @@ public static func resourceScatterNdUpdate<
 /// Subtracts sparse updates from the variable referenced by `resource`.
 ///
 /// This operation computes
-///
+/// 
 ///     # Scalar indices
 ///     ref[indices, ...] -= updates[...]
-///
+/// 
 ///     # Vector indices (for each i)
 ///     ref[indices[i], ...] -= updates[i, ...]
-///
+/// 
 ///     # High rank indices (for each i, ..., j)
 ///     ref[indices[i, ..., j], ...] -= updates[i, ..., j, ...]
-///
+/// 
 /// Duplicate entries are handled correctly: if multiple `indices` reference
 /// the same location, their contributions add.
-///
+/// 
 /// Requires `updates.shape = indices.shape + ref.shape[1:]` or `updates.shape = []`.
-///
+/// 
 /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
 /// <img style="width:100%" src='https://www.tensorflow.org/images/ScatterAdd.png' alt>
 /// </div>
@@ -25047,13 +29089,13 @@ public static func resourceScatterSub<
 /// Assigns sparse updates to the variable referenced by `resource`.
 ///
 /// This operation computes
-///
+/// 
 ///     # Scalar indices
 ///     ref[indices, ...] = updates[...]
-///
+/// 
 ///     # Vector indices (for each i)
 ///     ref[indices[i], ...] = updates[i, ...]
-///
+/// 
 ///     # High rank indices (for each i, ..., j)
 ///     ref[indices[i, ..., j], ...] = updates[i, ..., j, ...]
 ///
@@ -25215,21 +29257,67 @@ public static func resourceSparseApplyAdagradDA<
     op.execute()
 }
 
+/// Update relevant entries in '*var' and '*accum' according to the adagrad scheme.
+///
+/// That is for rows we have grad for, we update var and accum as follows:
+/// accum += grad * grad
+/// var -= lr * grad * (1 / sqrt(accum))
+///
+/// - Parameters:
+///     - var: Should be from a Variable().
+///     - accum: Should be from a Variable().
+///     - lr: Learning rate. Must be a scalar.
+///     - epsilon: Constant factor. Must be a scalar.
+///     - grad: The gradient.
+///     - indices: A vector of indices into the first dimension of var and accum.
+///
+/// - Attr use_locking: If `True`, updating of the var and accum tensors will be protected
+///     by a lock; otherwise the behavior is undefined, but may exhibit less
+///     contention.
+@inlinable @inline(__always)
+public static func resourceSparseApplyAdagradV2<
+    T: TensorFlowNumeric,
+    Tindices: TensorFlowIndex
+>(
+    var_: ResourceHandle,
+    accum: ResourceHandle,
+    lr: Tensor<T>,
+    epsilon: Tensor<T>,
+    grad: Tensor<T>,
+    indices: Tensor<Tindices>,
+    useLocking: Bool = false,
+    updateSlots: Bool = true
+) {
+  let nOutputs = 0
+    let op = makeOp("ResourceSparseApplyAdagradV2", nOutputs)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.updateAttribute("Tindices", Tindices.tensorFlowDataType)
+    op.updateAttribute("use_locking", useLocking)
+    op.updateAttribute("update_slots", updateSlots)
+    op.addInput(var_)
+    op.addInput(accum)
+    op.addInput(lr)
+    op.addInput(epsilon)
+    op.addInput(grad)
+    op.addInput(indices)
+    op.execute()
+}
+
 /// Update '*var' according to the centered RMSProp algorithm.
 ///
 /// The centered RMSProp algorithm uses an estimate of the centered second moment
 /// (i.e., the variance) for normalization, as opposed to regular RMSProp, which
 /// uses the (uncentered) second moment. This often helps with training, but is
 /// slightly more expensive in terms of computation and memory.
-///
+/// 
 /// Note that in dense implementation of this algorithm, mg, ms, and mom will
 /// update even if the grad is zero, but in this sparse implementation, mg, ms,
 /// and mom will not update in iterations during which the grad is zero.
-///
+/// 
 /// mean_square = decay * mean_square + (1-decay) * gradient ** 2
 /// mean_grad = decay * mean_grad + (1-decay) * gradient
 /// Delta = learning_rate * gradient / sqrt(mean_square + epsilon - mean_grad ** 2)
-///
+/// 
 /// ms <- rho * ms_{t-1} + (1-rho) * grad * grad
 /// mom <- momentum * mom_{t-1} + lr * grad / sqrt(ms + epsilon)
 /// var <- var - mom
@@ -25287,7 +29375,7 @@ public static func resourceSparseApplyCenteredRMSProp<
 ///
 /// That is for rows we have grad for, we update var, accum and linear as follows:
 /// accum_new = accum + grad * grad
-/// linear += grad + (accum_new^(-lr_power) - accum^(-lr_power)) / lr * var
+/// linear += grad - (accum_new^(-lr_power) - accum^(-lr_power)) / lr * var
 /// quadratic = 1.0 / (accum_new^(lr_power) * lr) + 2 * l2
 /// var = (sign(linear) * l1 - linear) / quadratic if |linear| > l1 else 0.0
 /// accum = accum_new
@@ -25402,9 +29490,9 @@ public static func resourceSparseApplyFtrlV2<
 /// Update relevant entries in '*var' and '*accum' according to the momentum scheme.
 ///
 /// Set use_nesterov = True if you want to use Nesterov momentum.
-///
+/// 
 /// That is for rows we have grad for, we update var and accum as follows:
-///
+/// 
 /// accum = accum * momentum - lr * grad
 /// var += accum
 ///
@@ -25455,9 +29543,9 @@ public static func resourceSparseApplyKerasMomentum<
 /// Update relevant entries in '*var' and '*accum' according to the momentum scheme.
 ///
 /// Set use_nesterov = True if you want to use Nesterov momentum.
-///
+/// 
 /// That is for rows we have grad for, we update var and accum as follows:
-///
+/// 
 /// accum = accum * momentum + grad
 /// var -= lr * accum
 ///
@@ -25601,10 +29689,10 @@ public static func resourceSparseApplyProximalGradientDescent<
 /// Note that in dense implementation of this algorithm, ms and mom will
 /// update even if the grad is zero, but in this sparse implementation, ms
 /// and mom will not update in iterations during which the grad is zero.
-///
+/// 
 /// mean_square = decay * mean_square + (1-decay) * gradient ** 2
 /// Delta = learning_rate * gradient / sqrt(mean_square + epsilon)
-///
+/// 
 /// ms <- rho * ms_{t-1} + (1-rho) * grad * grad
 /// mom <- momentum * mom_{t-1} + lr * grad / sqrt(ms + epsilon)
 /// var <- var - mom
@@ -25660,7 +29748,7 @@ public static func resourceSparseApplyRMSProp<
 /// The values of `value` are assigned to the positions in the variable
 /// `ref` that are selected by the slice parameters. The slice parameters
 /// `begin, `end`, `strides`, etc. work exactly as in `StridedSlice`.
-///
+/// 
 /// NOTE this op currently does not support broadcasting and so `value`'s
 /// shape must be exactly the shape produced by the slice of `ref`.
 @inlinable @inline(__always)
@@ -25712,7 +29800,7 @@ public static func resourceUsingOp(
 /// instance because a tensor was saved as slices), `file_pattern` may contain
 /// wildcard symbols (`*` and `?`) in the filename portion only, not in the
 /// directory portion.
-///
+/// 
 /// If a `file_pattern` matches several files, `preferred_shard` can be used to hint
 /// in which file the requested tensor is likely to be found. This op will first
 /// open the file at index `preferred_shard` in the list of matching files and try
@@ -25722,7 +29810,7 @@ public static func resourceUsingOp(
 /// of a matching `Save` Op may speed up Restore.  This attribute only affects
 /// performance, not correctness.  The default value -1 means files are processed in
 /// order.
-///
+/// 
 /// See also `RestoreSlice`.
 ///
 /// - Parameters:
@@ -25757,7 +29845,7 @@ public static func restore<Dt: TensorFlowScalar>(
 /// This is like `Restore` except that restored tensor can be listed as filling
 /// only a slice of a larger tensor.  `shape_and_slice` specifies the shape of the
 /// larger tensor and the slice that the restored tensor covers.
-///
+/// 
 /// The `shape_and_slice` input has the same format as the
 /// elements of the `shapes_and_slices` input of the `SaveSlices` op.
 ///
@@ -25801,11 +29889,11 @@ public static func restoreSlice<Dt: TensorFlowScalar>(
 ///   - Otherwise the V1 read path is invoked.
 /// Relying on this behavior is not recommended, as the ability to fall back to read
 /// V1 might be deprecated and eventually removed.
-///
+/// 
 /// By default, restores the named tensors in full.  If the caller wishes to restore
 /// specific slices of stored tensors, "shape_and_slices" should be non-empty
 /// strings and correspondingly well-formed.
-///
+/// 
 /// Callers must ensure all the named tensors are indeed stored in the checkpoint.
 ///
 /// - Parameters:
@@ -25872,7 +29960,8 @@ public static func retrieveTPUEmbeddingADAMParameters(
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
-    shardId: Int64
+    shardId: Int64,
+    config: String
 ) -> (parameters: Tensor<Float>, momenta: Tensor<Float>, velocities: Tensor<Float>) {
   let nOutputs = Int(1) + Int(1) + Int(1)
     let op = makeOp("RetrieveTPUEmbeddingADAMParameters", nOutputs)
@@ -25880,6 +29969,7 @@ public static func retrieveTPUEmbeddingADAMParameters(
     op.updateAttribute("table_name", tableName)
     op.updateAttribute("num_shards", numShards)
     op.updateAttribute("shard_id", shardId)
+    op.updateAttribute("config", config)
     return op.execute(Int(1), Int(1), Int(1))
 }
 
@@ -25900,7 +29990,8 @@ public static func retrieveTPUEmbeddingADAMParametersGradAccumDebug(
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
-    shardId: Int64
+    shardId: Int64,
+    config: String
 ) -> (parameters: Tensor<Float>, momenta: Tensor<Float>, velocities: Tensor<Float>, gradientAccumulators: Tensor<Float>) {
   let nOutputs = Int(1) + Int(1) + Int(1) + Int(1)
     let op = makeOp("RetrieveTPUEmbeddingADAMParametersGradAccumDebug", nOutputs)
@@ -25908,6 +29999,7 @@ public static func retrieveTPUEmbeddingADAMParametersGradAccumDebug(
     op.updateAttribute("table_name", tableName)
     op.updateAttribute("num_shards", numShards)
     op.updateAttribute("shard_id", shardId)
+    op.updateAttribute("config", config)
     return op.execute(Int(1), Int(1), Int(1), Int(1))
 }
 
@@ -25927,7 +30019,8 @@ public static func retrieveTPUEmbeddingAdadeltaParameters(
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
-    shardId: Int64
+    shardId: Int64,
+    config: String
 ) -> (parameters: Tensor<Float>, accumulators: Tensor<Float>, updates: Tensor<Float>) {
   let nOutputs = Int(1) + Int(1) + Int(1)
     let op = makeOp("RetrieveTPUEmbeddingAdadeltaParameters", nOutputs)
@@ -25935,6 +30028,7 @@ public static func retrieveTPUEmbeddingAdadeltaParameters(
     op.updateAttribute("table_name", tableName)
     op.updateAttribute("num_shards", numShards)
     op.updateAttribute("shard_id", shardId)
+    op.updateAttribute("config", config)
     return op.execute(Int(1), Int(1), Int(1))
 }
 
@@ -25955,7 +30049,8 @@ public static func retrieveTPUEmbeddingAdadeltaParametersGradAccumDebug(
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
-    shardId: Int64
+    shardId: Int64,
+    config: String
 ) -> (parameters: Tensor<Float>, accumulators: Tensor<Float>, updates: Tensor<Float>, gradientAccumulators: Tensor<Float>) {
   let nOutputs = Int(1) + Int(1) + Int(1) + Int(1)
     let op = makeOp("RetrieveTPUEmbeddingAdadeltaParametersGradAccumDebug", nOutputs)
@@ -25963,6 +30058,7 @@ public static func retrieveTPUEmbeddingAdadeltaParametersGradAccumDebug(
     op.updateAttribute("table_name", tableName)
     op.updateAttribute("num_shards", numShards)
     op.updateAttribute("shard_id", shardId)
+    op.updateAttribute("config", config)
     return op.execute(Int(1), Int(1), Int(1), Int(1))
 }
 
@@ -25981,7 +30077,8 @@ public static func retrieveTPUEmbeddingAdagradParameters(
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
-    shardId: Int64
+    shardId: Int64,
+    config: String
 ) -> (parameters: Tensor<Float>, accumulators: Tensor<Float>) {
   let nOutputs = Int(1) + Int(1)
     let op = makeOp("RetrieveTPUEmbeddingAdagradParameters", nOutputs)
@@ -25989,6 +30086,7 @@ public static func retrieveTPUEmbeddingAdagradParameters(
     op.updateAttribute("table_name", tableName)
     op.updateAttribute("num_shards", numShards)
     op.updateAttribute("shard_id", shardId)
+    op.updateAttribute("config", config)
     return op.execute(Int(1), Int(1))
 }
 
@@ -26008,7 +30106,8 @@ public static func retrieveTPUEmbeddingAdagradParametersGradAccumDebug(
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
-    shardId: Int64
+    shardId: Int64,
+    config: String
 ) -> (parameters: Tensor<Float>, accumulators: Tensor<Float>, gradientAccumulators: Tensor<Float>) {
   let nOutputs = Int(1) + Int(1) + Int(1)
     let op = makeOp("RetrieveTPUEmbeddingAdagradParametersGradAccumDebug", nOutputs)
@@ -26016,6 +30115,7 @@ public static func retrieveTPUEmbeddingAdagradParametersGradAccumDebug(
     op.updateAttribute("table_name", tableName)
     op.updateAttribute("num_shards", numShards)
     op.updateAttribute("shard_id", shardId)
+    op.updateAttribute("config", config)
     return op.execute(Int(1), Int(1), Int(1))
 }
 
@@ -26036,7 +30136,8 @@ public static func retrieveTPUEmbeddingCenteredRMSPropParameters(
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
-    shardId: Int64
+    shardId: Int64,
+    config: String
 ) -> (parameters: Tensor<Float>, ms: Tensor<Float>, mom: Tensor<Float>, mg: Tensor<Float>) {
   let nOutputs = Int(1) + Int(1) + Int(1) + Int(1)
     let op = makeOp("RetrieveTPUEmbeddingCenteredRMSPropParameters", nOutputs)
@@ -26044,6 +30145,7 @@ public static func retrieveTPUEmbeddingCenteredRMSPropParameters(
     op.updateAttribute("table_name", tableName)
     op.updateAttribute("num_shards", numShards)
     op.updateAttribute("shard_id", shardId)
+    op.updateAttribute("config", config)
     return op.execute(Int(1), Int(1), Int(1), Int(1))
 }
 
@@ -26063,7 +30165,8 @@ public static func retrieveTPUEmbeddingFTRLParameters(
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
-    shardId: Int64
+    shardId: Int64,
+    config: String
 ) -> (parameters: Tensor<Float>, accumulators: Tensor<Float>, linears: Tensor<Float>) {
   let nOutputs = Int(1) + Int(1) + Int(1)
     let op = makeOp("RetrieveTPUEmbeddingFTRLParameters", nOutputs)
@@ -26071,6 +30174,7 @@ public static func retrieveTPUEmbeddingFTRLParameters(
     op.updateAttribute("table_name", tableName)
     op.updateAttribute("num_shards", numShards)
     op.updateAttribute("shard_id", shardId)
+    op.updateAttribute("config", config)
     return op.execute(Int(1), Int(1), Int(1))
 }
 
@@ -26091,7 +30195,8 @@ public static func retrieveTPUEmbeddingFTRLParametersGradAccumDebug(
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
-    shardId: Int64
+    shardId: Int64,
+    config: String
 ) -> (parameters: Tensor<Float>, accumulators: Tensor<Float>, linears: Tensor<Float>, gradientAccumulators: Tensor<Float>) {
   let nOutputs = Int(1) + Int(1) + Int(1) + Int(1)
     let op = makeOp("RetrieveTPUEmbeddingFTRLParametersGradAccumDebug", nOutputs)
@@ -26099,6 +30204,7 @@ public static func retrieveTPUEmbeddingFTRLParametersGradAccumDebug(
     op.updateAttribute("table_name", tableName)
     op.updateAttribute("num_shards", numShards)
     op.updateAttribute("shard_id", shardId)
+    op.updateAttribute("config", config)
     return op.execute(Int(1), Int(1), Int(1), Int(1))
 }
 
@@ -26119,7 +30225,8 @@ public static func retrieveTPUEmbeddingMDLAdagradLightParameters(
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
-    shardId: Int64
+    shardId: Int64,
+    config: String
 ) -> (parameters: Tensor<Float>, accumulators: Tensor<Float>, weights: Tensor<Float>, benefits: Tensor<Float>) {
   let nOutputs = Int(1) + Int(1) + Int(1) + Int(1)
     let op = makeOp("RetrieveTPUEmbeddingMDLAdagradLightParameters", nOutputs)
@@ -26127,6 +30234,7 @@ public static func retrieveTPUEmbeddingMDLAdagradLightParameters(
     op.updateAttribute("table_name", tableName)
     op.updateAttribute("num_shards", numShards)
     op.updateAttribute("shard_id", shardId)
+    op.updateAttribute("config", config)
     return op.execute(Int(1), Int(1), Int(1), Int(1))
 }
 
@@ -26145,7 +30253,8 @@ public static func retrieveTPUEmbeddingMomentumParameters(
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
-    shardId: Int64
+    shardId: Int64,
+    config: String
 ) -> (parameters: Tensor<Float>, momenta: Tensor<Float>) {
   let nOutputs = Int(1) + Int(1)
     let op = makeOp("RetrieveTPUEmbeddingMomentumParameters", nOutputs)
@@ -26153,6 +30262,7 @@ public static func retrieveTPUEmbeddingMomentumParameters(
     op.updateAttribute("table_name", tableName)
     op.updateAttribute("num_shards", numShards)
     op.updateAttribute("shard_id", shardId)
+    op.updateAttribute("config", config)
     return op.execute(Int(1), Int(1))
 }
 
@@ -26172,7 +30282,8 @@ public static func retrieveTPUEmbeddingMomentumParametersGradAccumDebug(
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
-    shardId: Int64
+    shardId: Int64,
+    config: String
 ) -> (parameters: Tensor<Float>, momenta: Tensor<Float>, gradientAccumulators: Tensor<Float>) {
   let nOutputs = Int(1) + Int(1) + Int(1)
     let op = makeOp("RetrieveTPUEmbeddingMomentumParametersGradAccumDebug", nOutputs)
@@ -26180,6 +30291,7 @@ public static func retrieveTPUEmbeddingMomentumParametersGradAccumDebug(
     op.updateAttribute("table_name", tableName)
     op.updateAttribute("num_shards", numShards)
     op.updateAttribute("shard_id", shardId)
+    op.updateAttribute("config", config)
     return op.execute(Int(1), Int(1), Int(1))
 }
 
@@ -26198,7 +30310,8 @@ public static func retrieveTPUEmbeddingProximalAdagradParameters(
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
-    shardId: Int64
+    shardId: Int64,
+    config: String
 ) -> (parameters: Tensor<Float>, accumulators: Tensor<Float>) {
   let nOutputs = Int(1) + Int(1)
     let op = makeOp("RetrieveTPUEmbeddingProximalAdagradParameters", nOutputs)
@@ -26206,6 +30319,7 @@ public static func retrieveTPUEmbeddingProximalAdagradParameters(
     op.updateAttribute("table_name", tableName)
     op.updateAttribute("num_shards", numShards)
     op.updateAttribute("shard_id", shardId)
+    op.updateAttribute("config", config)
     return op.execute(Int(1), Int(1))
 }
 
@@ -26225,7 +30339,8 @@ public static func retrieveTPUEmbeddingProximalAdagradParametersGradAccumDebug(
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
-    shardId: Int64
+    shardId: Int64,
+    config: String
 ) -> (parameters: Tensor<Float>, accumulators: Tensor<Float>, gradientAccumulators: Tensor<Float>) {
   let nOutputs = Int(1) + Int(1) + Int(1)
     let op = makeOp("RetrieveTPUEmbeddingProximalAdagradParametersGradAccumDebug", nOutputs)
@@ -26233,6 +30348,7 @@ public static func retrieveTPUEmbeddingProximalAdagradParametersGradAccumDebug(
     op.updateAttribute("table_name", tableName)
     op.updateAttribute("num_shards", numShards)
     op.updateAttribute("shard_id", shardId)
+    op.updateAttribute("config", config)
     return op.execute(Int(1), Int(1), Int(1))
 }
 
@@ -26252,7 +30368,8 @@ public static func retrieveTPUEmbeddingRMSPropParameters(
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
-    shardId: Int64
+    shardId: Int64,
+    config: String
 ) -> (parameters: Tensor<Float>, ms: Tensor<Float>, mom: Tensor<Float>) {
   let nOutputs = Int(1) + Int(1) + Int(1)
     let op = makeOp("RetrieveTPUEmbeddingRMSPropParameters", nOutputs)
@@ -26260,6 +30377,7 @@ public static func retrieveTPUEmbeddingRMSPropParameters(
     op.updateAttribute("table_name", tableName)
     op.updateAttribute("num_shards", numShards)
     op.updateAttribute("shard_id", shardId)
+    op.updateAttribute("config", config)
     return op.execute(Int(1), Int(1), Int(1))
 }
 
@@ -26280,7 +30398,8 @@ public static func retrieveTPUEmbeddingRMSPropParametersGradAccumDebug(
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
-    shardId: Int64
+    shardId: Int64,
+    config: String
 ) -> (parameters: Tensor<Float>, ms: Tensor<Float>, mom: Tensor<Float>, gradientAccumulators: Tensor<Float>) {
   let nOutputs = Int(1) + Int(1) + Int(1) + Int(1)
     let op = makeOp("RetrieveTPUEmbeddingRMSPropParametersGradAccumDebug", nOutputs)
@@ -26288,6 +30407,7 @@ public static func retrieveTPUEmbeddingRMSPropParametersGradAccumDebug(
     op.updateAttribute("table_name", tableName)
     op.updateAttribute("num_shards", numShards)
     op.updateAttribute("shard_id", shardId)
+    op.updateAttribute("config", config)
     return op.execute(Int(1), Int(1), Int(1), Int(1))
 }
 
@@ -26304,7 +30424,8 @@ public static func retrieveTPUEmbeddingStochasticGradientDescentParameters(
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
-    shardId: Int64
+    shardId: Int64,
+    config: String
 ) -> Tensor<Float> {
   let nOutputs = Int(1)
     let op = makeOp("RetrieveTPUEmbeddingStochasticGradientDescentParameters", nOutputs)
@@ -26312,6 +30433,7 @@ public static func retrieveTPUEmbeddingStochasticGradientDescentParameters(
     op.updateAttribute("table_name", tableName)
     op.updateAttribute("num_shards", numShards)
     op.updateAttribute("shard_id", shardId)
+    op.updateAttribute("config", config)
     return op.execute(Int(1))
 }
 
@@ -26320,14 +30442,14 @@ public static func retrieveTPUEmbeddingStochasticGradientDescentParameters(
 /// Given a `tensor`, and a `bool` tensor `dims` representing the dimensions
 /// of `tensor`, this operation reverses each dimension i of `tensor` where
 /// `dims[i]` is `True`.
-///
+/// 
 /// `tensor` can have up to 8 dimensions. The number of dimensions
 /// of `tensor` must equal the number of elements in `dims`. In other words:
-///
+/// 
 /// `rank(tensor) = size(dims)`
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// # tensor 't' is [[[[ 0,  1,  2,  3],
 /// #                  [ 4,  5,  6,  7],
@@ -26336,7 +30458,7 @@ public static func retrieveTPUEmbeddingStochasticGradientDescentParameters(
 /// #                  [16, 17, 18, 19],
 /// #                  [20, 21, 22, 23]]]]
 /// # tensor 't' shape is [1, 2, 3, 4]
-///
+/// 
 /// # 'dims' is [False, False, False, True]
 /// reverse(t, dims) ==> [[[[ 3,  2,  1,  0],
 ///                         [ 7,  6,  5,  4],
@@ -26344,7 +30466,7 @@ public static func retrieveTPUEmbeddingStochasticGradientDescentParameters(
 ///                        [[15, 14, 13, 12],
 ///                         [19, 18, 17, 16],
 ///                         [23, 22, 21, 20]]]]
-///
+/// 
 /// # 'dims' is [False, True, False, False]
 /// reverse(t, dims) ==> [[[[12, 13, 14, 15],
 ///                         [16, 17, 18, 19],
@@ -26352,7 +30474,7 @@ public static func retrieveTPUEmbeddingStochasticGradientDescentParameters(
 ///                        [[ 0,  1,  2,  3],
 ///                         [ 4,  5,  6,  7],
 ///                         [ 8,  9, 10, 11]]]]
-///
+/// 
 /// # 'dims' is [False, False, True, False]
 /// reverse(t, dims) ==> [[[[8, 9, 10, 11],
 ///                         [4, 5, 6, 7],
@@ -26385,14 +30507,14 @@ public static func reverse<T: TensorFlowScalar>(
 /// Given a `tensor`, and a `bool` tensor `dims` representing the dimensions
 /// of `tensor`, this operation reverses each dimension i of `tensor` where
 /// `dims[i]` is `True`.
-///
+/// 
 /// `tensor` can have up to 8 dimensions. The number of dimensions
 /// of `tensor` must equal the number of elements in `dims`. In other words:
-///
+/// 
 /// `rank(tensor) = size(dims)`
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// # tensor 't' is [[[[ 0,  1,  2,  3],
 /// #                  [ 4,  5,  6,  7],
@@ -26401,7 +30523,7 @@ public static func reverse<T: TensorFlowScalar>(
 /// #                  [16, 17, 18, 19],
 /// #                  [20, 21, 22, 23]]]]
 /// # tensor 't' shape is [1, 2, 3, 4]
-///
+/// 
 /// # 'dims' is [False, False, False, True]
 /// reverse(t, dims) ==> [[[[ 3,  2,  1,  0],
 ///                         [ 7,  6,  5,  4],
@@ -26409,7 +30531,7 @@ public static func reverse<T: TensorFlowScalar>(
 ///                        [[15, 14, 13, 12],
 ///                         [19, 18, 17, 16],
 ///                         [23, 22, 21, 20]]]]
-///
+/// 
 /// # 'dims' is [False, True, False, False]
 /// reverse(t, dims) ==> [[[[12, 13, 14, 15],
 ///                         [16, 17, 18, 19],
@@ -26417,7 +30539,7 @@ public static func reverse<T: TensorFlowScalar>(
 ///                        [[ 0,  1,  2,  3],
 ///                         [ 4,  5,  6,  7],
 ///                         [ 8,  9, 10, 11]]]]
-///
+/// 
 /// # 'dims' is [False, False, True, False]
 /// reverse(t, dims) ==> [[[[8, 9, 10, 11],
 ///                         [4, 5, 6, 7],
@@ -26450,51 +30572,51 @@ public static func reverse(
 /// This op first slices `input` along the dimension `batch_dim`, and for each
 /// slice `i`, reverses the first `seq_lengths[i]` elements along
 /// the dimension `seq_dim`.
-///
+/// 
 /// The elements of `seq_lengths` must obey `seq_lengths[i] <= input.dims[seq_dim]`,
 /// and `seq_lengths` must be a vector of length `input.dims[batch_dim]`.
-///
+/// 
 /// The output slice `i` along dimension `batch_dim` is then given by input
 /// slice `i`, with the first `seq_lengths[i]` slices along dimension
 /// `seq_dim` reversed.
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// # Given this:
 /// batch_dim = 0
 /// seq_dim = 1
 /// input.dims = (4, 8, ...)
 /// seq_lengths = [7, 2, 3, 5]
-///
+/// 
 /// # then slices of input are reversed on seq_dim, but only up to seq_lengths:
 /// output[0, 0:7, :, ...] = input[0, 7:0:-1, :, ...]
 /// output[1, 0:2, :, ...] = input[1, 2:0:-1, :, ...]
 /// output[2, 0:3, :, ...] = input[2, 3:0:-1, :, ...]
 /// output[3, 0:5, :, ...] = input[3, 5:0:-1, :, ...]
-///
+/// 
 /// # while entries past seq_lens are copied through:
 /// output[0, 7:, :, ...] = input[0, 7:, :, ...]
 /// output[1, 2:, :, ...] = input[1, 2:, :, ...]
 /// output[2, 3:, :, ...] = input[2, 3:, :, ...]
 /// output[3, 2:, :, ...] = input[3, 2:, :, ...]
 /// ```
-///
+/// 
 /// In contrast, if:
-///
+/// 
 /// ```
 /// # Given this:
 /// batch_dim = 2
 /// seq_dim = 0
 /// input.dims = (8, ?, 4, ...)
 /// seq_lengths = [7, 2, 3, 5]
-///
+/// 
 /// # then slices of input are reversed on seq_dim, but only up to seq_lengths:
 /// output[0:7, :, 0, :, ...] = input[7:0:-1, :, 0, :, ...]
 /// output[0:2, :, 1, :, ...] = input[2:0:-1, :, 1, :, ...]
 /// output[0:3, :, 2, :, ...] = input[3:0:-1, :, 2, :, ...]
 /// output[0:5, :, 3, :, ...] = input[5:0:-1, :, 3, :, ...]
-///
+/// 
 /// # while entries past seq_lens are copied through:
 /// output[7:, :, 0, :, ...] = input[7:, :, 0, :, ...]
 /// output[2:, :, 1, :, ...] = input[2:, :, 1, :, ...]
@@ -26537,17 +30659,17 @@ public static func reverseSequence<
 ///
 /// NOTE `tf.reverse` has now changed behavior in preparation for 1.0.
 /// `tf.reverse_v2` is currently an alias that will be deprecated before TF 1.0.
-///
+/// 
 /// Given a `tensor`, and a `int32` tensor `axis` representing the set of
 /// dimensions of `tensor` to reverse. This operation reverses each dimension
 /// `i` for which there exists `j` s.t. `axis[j] == i`.
-///
+/// 
 /// `tensor` can have up to 8 dimensions. The number of dimensions specified
 /// in `axis` may be 0 or more entries. If an index is specified more than
 /// once, a InvalidArgument error is raised.
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// # tensor 't' is [[[[ 0,  1,  2,  3],
 /// #                  [ 4,  5,  6,  7],
@@ -26556,7 +30678,7 @@ public static func reverseSequence<
 /// #                  [16, 17, 18, 19],
 /// #                  [20, 21, 22, 23]]]]
 /// # tensor 't' shape is [1, 2, 3, 4]
-///
+/// 
 /// # 'dims' is [3] or 'dims' is [-1]
 /// reverse(t, dims) ==> [[[[ 3,  2,  1,  0],
 ///                         [ 7,  6,  5,  4],
@@ -26564,7 +30686,7 @@ public static func reverseSequence<
 ///                        [[15, 14, 13, 12],
 ///                         [19, 18, 17, 16],
 ///                         [23, 22, 21, 20]]]]
-///
+/// 
 /// # 'dims' is '[1]' (or 'dims' is '[-3]')
 /// reverse(t, dims) ==> [[[[12, 13, 14, 15],
 ///                         [16, 17, 18, 19],
@@ -26572,7 +30694,7 @@ public static func reverseSequence<
 ///                        [[ 0,  1,  2,  3],
 ///                         [ 4,  5,  6,  7],
 ///                         [ 8,  9, 10, 11]]]]
-///
+/// 
 /// # 'dims' is '[2]' (or 'dims' is '[-2]')
 /// reverse(t, dims) ==> [[[[8, 9, 10, 11],
 ///                         [4, 5, 6, 7],
@@ -26609,17 +30731,17 @@ public static func reverseV2<
 ///
 /// NOTE `tf.reverse` has now changed behavior in preparation for 1.0.
 /// `tf.reverse_v2` is currently an alias that will be deprecated before TF 1.0.
-///
+/// 
 /// Given a `tensor`, and a `int32` tensor `axis` representing the set of
 /// dimensions of `tensor` to reverse. This operation reverses each dimension
 /// `i` for which there exists `j` s.t. `axis[j] == i`.
-///
+/// 
 /// `tensor` can have up to 8 dimensions. The number of dimensions specified
 /// in `axis` may be 0 or more entries. If an index is specified more than
 /// once, a InvalidArgument error is raised.
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// # tensor 't' is [[[[ 0,  1,  2,  3],
 /// #                  [ 4,  5,  6,  7],
@@ -26628,7 +30750,7 @@ public static func reverseV2<
 /// #                  [16, 17, 18, 19],
 /// #                  [20, 21, 22, 23]]]]
 /// # tensor 't' shape is [1, 2, 3, 4]
-///
+/// 
 /// # 'dims' is [3] or 'dims' is [-1]
 /// reverse(t, dims) ==> [[[[ 3,  2,  1,  0],
 ///                         [ 7,  6,  5,  4],
@@ -26636,7 +30758,7 @@ public static func reverseV2<
 ///                        [[15, 14, 13, 12],
 ///                         [19, 18, 17, 16],
 ///                         [23, 22, 21, 20]]]]
-///
+/// 
 /// # 'dims' is '[1]' (or 'dims' is '[-3]')
 /// reverse(t, dims) ==> [[[[12, 13, 14, 15],
 ///                         [16, 17, 18, 19],
@@ -26644,7 +30766,7 @@ public static func reverseV2<
 ///                        [[ 0,  1,  2,  3],
 ///                         [ 4,  5,  6,  7],
 ///                         [ 8,  9, 10, 11]]]]
-///
+/// 
 /// # 'dims' is '[2]' (or 'dims' is '[-2]')
 /// reverse(t, dims) ==> [[[[8, 9, 10, 11],
 ///                         [4, 5, 6, 7],
@@ -26678,9 +30800,38 @@ public static func reverseV2<Tidx: TensorFlowIndex>(
 ///
 /// Performs a logical shift for unsigned integer types, and an arithmetic shift
 /// for signed integer types.
-///
+/// 
 /// If `y` is negative, or greater than or equal to than the width of `x` in bits
 /// the result is implementation defined.
+/// 
+/// Example:
+/// 
+/// ```python
+/// import tensorflow as tf
+/// from tensorflow.python.ops import bitwise_ops
+/// import numpy as np
+/// dtype_list = [tf.int8, tf.int16, tf.int32, tf.int64]
+/// 
+/// for dtype in dtype_list:
+///   lhs = tf.constant([-1, -5, -3, -14], dtype=dtype)
+///   rhs = tf.constant([5, 0, 7, 11], dtype=dtype)
+/// 
+///   right_shift_result = bitwise_ops.right_shift(lhs, rhs)
+/// 
+///   print(right_shift_result)
+/// 
+/// # This will print:
+/// # tf.Tensor([-1 -5 -1 -1], shape=(4,), dtype=int8)
+/// # tf.Tensor([-1 -5 -1 -1], shape=(4,), dtype=int16)
+/// # tf.Tensor([-1 -5 -1 -1], shape=(4,), dtype=int32)
+/// # tf.Tensor([-1 -5 -1 -1], shape=(4,), dtype=int64)
+/// 
+/// lhs = np.array([-2, 64, 101, 32], dtype=np.int8)
+/// rhs = np.array([-1, -5, -3, -14], dtype=np.int8)
+/// bitwise_ops.right_shift(lhs, rhs)
+/// # <tf.Tensor: shape=(4,), dtype=int8, numpy=array([ -2,  64, 101,  32], dtype=int8)>
+/// ```
+/// 
 @inlinable @inline(__always)
 public static func rightShift<T: TensorFlowInteger>(
     _ x: Tensor<T>,
@@ -26699,7 +30850,7 @@ public static func rightShift<T: TensorFlowInteger>(
 /// If the result is midway between two representable values,
 /// the even representable is chosen.
 /// For example:
-///
+/// 
 /// ```
 /// rint(-1.5) ==> -2.0
 /// rint(0.5000001) ==> 1.0
@@ -26716,6 +30867,31 @@ public static func rint<T: FloatingPoint & TensorFlowScalar>(
     return op.execute(Int(1))
 }
 
+/// Advance the counter of a counter-based RNG.
+///
+/// The state of the RNG after
+/// `rng_skip(n)` will be the same as that after `stateful_uniform([n])`
+/// (or any other distribution). The actual increment added to the
+/// counter is an unspecified implementation detail.
+///
+/// - Parameters:
+///     - resource: The handle of the resource variable that stores the state of the RNG.
+///     - algorithm: The RNG algorithm.
+///     - delta: The amount of advancement.
+@inlinable @inline(__always)
+public static func rngSkip(
+    resource: ResourceHandle,
+    algorithm: Tensor<Int64>,
+    delta: Tensor<Int64>
+) {
+  let nOutputs = 0
+    let op = makeOp("RngSkip", nOutputs)
+    op.addInput(resource)
+    op.addInput(algorithm)
+    op.addInput(delta)
+    op.execute()
+}
+
 /// Rolls the elements of a tensor along an axis.
 ///
 /// The elements are shifted positively (towards larger indices) by the offset of
@@ -26723,17 +30899,17 @@ public static func rint<T: FloatingPoint & TensorFlowScalar>(
 /// elements in the opposite direction. Elements that roll passed the last position
 /// will wrap around to the first and vice versa. Multiple shifts along multiple
 /// axes may be specified.
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// # 't' is [0, 1, 2, 3, 4]
 /// roll(t, shift=2, axis=0) ==> [3, 4, 0, 1, 2]
-///
+/// 
 /// # shifting along multiple dimensions
 /// # 't' is [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]
 /// roll(t, shift=[1, -2], axis=[0, 1]) ==> [[7, 8, 9, 5, 6], [2, 3, 4, 0, 1]]
-///
+/// 
 /// # shifting along the same axis multiple times
 /// # 't' is [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]
 /// roll(t, shift=[2, -3], axis=[1, 1]) ==> [[1, 2, 3, 4, 0], [6, 7, 8, 9, 5]]
@@ -26792,50 +30968,50 @@ public static func round<T: TensorFlowNumeric>(
 ///
 /// This op asynchronously performs either a single RPC request, or a batch
 /// of requests.  RPC requests are defined by three main parameters:
-///
+/// 
 ///   - `address` (the host+port or BNS address of the request)
 ///   - `method` (the RPC method name for the request)
 ///   - `request` (the serialized proto string, or vector of strings,
 ///      of the RPC request argument).
-///
+/// 
 /// For example, if you have an RPC service running on port localhost:2345,
 /// and its interface is configured with the following proto declaration:
-///
+/// 
 /// ```
 /// service MyService {
 ///   rpc MyMethod(MyRequestProto) returns (MyResponseProto) {
 ///   }
 /// };
 /// ```
-///
+/// 
 /// then call this op with arguments:
-///
+/// 
 /// ```
 /// address = "localhost:2345"
 /// method = "MyService/MyMethod"
 /// ```
-///
+/// 
 /// The `request` tensor is a string tensor representing serialized `MyRequestProto`
 /// strings; and the output string tensor `response` will have the same shape
 /// and contain (upon successful completion) corresponding serialized
 /// `MyResponseProto` strings.
-///
+/// 
 /// For example, to send a single, empty, `MyRequestProto`, call
 /// this op with `request = ""`.  To send 5 **parallel** empty requests,
 /// call this op with `request = ["", "", "", "", ""]`.
-///
+/// 
 /// More generally, one can create a batch of `MyRequestProto` serialized protos
 /// from regular batched tensors using the `encode_proto` op, and convert
 /// the response `MyResponseProto` serialized protos to batched tensors
 /// using the `decode_proto` op.
-///
+/// 
 /// **NOTE** Working with serialized proto strings is faster than instantiating
 /// actual proto objects in memory, so no performance degradation is expected
 /// compared to writing custom kernels for this workflow.
-///
+/// 
 /// If the connection fails or the remote worker returns an error
 /// status, the op reraises this exception locally.
-///
+/// 
 /// See the `TryRpc` op if you prefer to handle RPC failures manually in the graph.
 ///
 /// - Parameters:
@@ -26919,34 +31095,34 @@ public static func rsqrtGrad<T: FloatingPoint & TensorFlowScalar>(
 /// its content, i.e. *data augmentation*. This Op outputs a randomly distorted
 /// localization of an object, i.e. bounding box, given an `image_size`,
 /// `bounding_boxes` and a series of constraints.
-///
+/// 
 /// The output of this Op is a single bounding box that may be used to crop the
 /// original image. The output is returned as 3 tensors: `begin`, `size` and
 /// `bboxes`. The first 2 tensors can be fed directly into `tf.slice` to crop the
 /// image. The latter may be supplied to `tf.image.draw_bounding_boxes` to visualize
 /// what the bounding box looks like.
-///
+/// 
 /// Bounding boxes are supplied and returned as `[y_min, x_min, y_max, x_max]`. The
 /// bounding box coordinates are floats in `[0.0, 1.0]` relative to the width and
 /// height of the underlying image.
-///
+/// 
 /// For example,
-///
+/// 
 /// ```python
 ///     # Generate a single distorted bounding box.
 ///     begin, size, bbox_for_draw = tf.image.sample_distorted_bounding_box(
 ///         tf.shape(image),
 ///         bounding_boxes=bounding_boxes)
-///
+/// 
 ///     # Draw the bounding box in an image summary.
 ///     image_with_box = tf.image.draw_bounding_boxes(tf.expand_dims(image, 0),
 ///                                                   bbox_for_draw)
 ///     tf.summary.image('images_with_box', image_with_box)
-///
+/// 
 ///     # Employ the bounding box to distort the image.
 ///     distorted_image = tf.slice(image, begin, size)
 /// ```
-///
+/// 
 /// Note that if no bounding box information is available, setting
 /// `use_image_if_no_bounding_boxes = true` will assume there is a single implicit
 /// bounding box covering the whole image. If `use_image_if_no_bounding_boxes` is
@@ -27019,34 +31195,34 @@ public static func sampleDistortedBoundingBox<T: TensorFlowInteger>(
 /// its content, i.e. *data augmentation*. This Op outputs a randomly distorted
 /// localization of an object, i.e. bounding box, given an `image_size`,
 /// `bounding_boxes` and a series of constraints.
-///
+/// 
 /// The output of this Op is a single bounding box that may be used to crop the
 /// original image. The output is returned as 3 tensors: `begin`, `size` and
 /// `bboxes`. The first 2 tensors can be fed directly into `tf.slice` to crop the
 /// image. The latter may be supplied to `tf.image.draw_bounding_boxes` to visualize
 /// what the bounding box looks like.
-///
+/// 
 /// Bounding boxes are supplied and returned as `[y_min, x_min, y_max, x_max]`. The
 /// bounding box coordinates are floats in `[0.0, 1.0]` relative to the width and
 /// height of the underlying image.
-///
+/// 
 /// For example,
-///
+/// 
 /// ```python
 ///     # Generate a single distorted bounding box.
 ///     begin, size, bbox_for_draw = tf.image.sample_distorted_bounding_box(
 ///         tf.shape(image),
 ///         bounding_boxes=bounding_boxes)
-///
+/// 
 ///     # Draw the bounding box in an image summary.
 ///     image_with_box = tf.image.draw_bounding_boxes(tf.expand_dims(image, 0),
 ///                                                   bbox_for_draw)
 ///     tf.summary.image('images_with_box', image_with_box)
-///
+/// 
 ///     # Employ the bounding box to distort the image.
 ///     distorted_image = tf.slice(image, begin, size)
 /// ```
-///
+/// 
 /// Note that if no bounding box information is available, setting
 /// `use_image_if_no_bounding_boxes = true` will assume there is a single implicit
 /// bounding box covering the whole image. If `use_image_if_no_bounding_boxes` is
@@ -27111,11 +31287,17 @@ public static func sampleDistortedBoundingBoxV2<T: TensorFlowInteger>(
     return op.execute(Int(1), Int(1), Int(1))
 }
 
-/// Creates a dataset that contains `rate` elements from the `input_dataset`.
+/// Creates a dataset that takes a Bernoulli sample of the contents of another dataset.
+///
+/// There is no transformation in the `tf.data` Python API for creating this dataset.
+/// Instead, it is created as a result of the `filter_with_random_uniform_fusion`
+/// static optimization. Whether this optimization is performed is determined by the
+/// `experimental_optimization.filter_with_random_uniform_fusion` option of
+/// `tf.data.Options`.
 ///
 /// - Parameters:
-///     - rate: A scalar representing the sample rate of elements from the `input_dataset`
-///         that should be taken.
+///     - rate: A scalar representing the sample rate. Each element of `input_dataset` is
+///         retained with this probability, independent of all other elements.
 ///     - seed: A scalar representing seed of random number generator.
 ///     - seed2: A scalar representing seed2 of random number generator.
 @inlinable @inline(__always)
@@ -27142,7 +31324,7 @@ public static func samplingDataset(
 ///
 /// The size of `tensor_names` must match the number of tensors in `data`. `data[i]`
 /// is written to `filename` with name `tensor_names[i]`.
-///
+/// 
 /// See also `SaveSlices`.
 ///
 /// - Parameters:
@@ -27171,22 +31353,22 @@ public static func save<T: TensorArrayProtocol>(
 /// a slice of a larger tensor.  `shapes_and_slices` specifies the shape of the
 /// larger tensor and the slice that this tensor covers. `shapes_and_slices` must
 /// have as many elements as `tensor_names`.
-///
+/// 
 /// Elements of the `shapes_and_slices` input must either be:
-///
+/// 
 /// *  The empty string, in which case the corresponding tensor is
 ///    saved normally.
 /// *  A string of the form `dim0 dim1 ... dimN-1 slice-spec` where the
 ///    `dimI` are the dimensions of the larger tensor and `slice-spec`
 ///    specifies what part is covered by the tensor to save.
-///
+/// 
 /// `slice-spec` itself is a `:`-separated list: `slice0:slice1:...:sliceN-1`
 /// where each `sliceI` is either:
-///
+/// 
 /// *  The string `-` meaning that the slice covers all indices of this dimension
 /// *  `start,length` where `start` and `length` are integers.  In that
 ///    case the slice covers `length` indices starting at `start`.
-///
+/// 
 /// See also `Save`.
 ///
 /// - Parameters:
@@ -27308,69 +31490,100 @@ public static func scaleAndTranslateGrad<T: FloatingPoint & TensorFlowScalar>(
     return op.execute(Int(1))
 }
 
+/// Creates a dataset successively reduces `f` over the elements of `input_dataset`.
+@inlinable @inline(__always)
+public static func scanDataset<
+    FIn: TensorGroup,
+    FOut: TensorGroup,
+    Tstate: TensorArrayProtocol,
+    Targuments: TensorArrayProtocol
+>(
+    inputDataset: VariantHandle,
+    initialState: Tstate,
+    otherArguments: Targuments,
+    f: (FIn) -> FOut,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?],
+    preserveCardinality: Bool = false,
+    useDefaultDevice: Bool = true
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("ScanDataset", nOutputs)
+    op.updateAttribute("f", f)
+    op.updateAttribute("Tstate", initialState._typeList)
+    op.updateAttribute("Targuments", otherArguments._typeList)
+    op.updateAttribute("output_types", outputTypes)
+    op.updateAttribute("output_shapes", outputShapes)
+    op.updateAttribute("preserve_cardinality", preserveCardinality)
+    op.updateAttribute("use_default_device", useDefaultDevice)
+    op.addInput(inputDataset)
+    op.addInputList(initialState)
+    op.addInputList(otherArguments)
+    return op.execute(Int(1))
+}
+
 /// Scatter `updates` into a new tensor according to `indices`.
 ///
 /// Creates a new tensor by applying sparse `updates` to individual values or
 /// slices within a tensor (initially zero for numeric, empty for string) of
 /// the given `shape` according to indices.  This operator is the inverse of the
 /// `tf.gather_nd` operator which extracts values or slices from a given tensor.
-///
+/// 
 /// This operation is similar to tensor_scatter_add, except that the tensor is
 /// zero-initialized. Calling `tf.scatter_nd(indices, values, shape)` is identical
 /// to `tensor_scatter_add(tf.zeros(shape, values.dtype), indices, values)`
-///
+/// 
 /// If `indices` contains duplicates, then their updates are accumulated (summed).
-///
+/// 
 /// **WARNING**: The order in which updates are applied is nondeterministic, so the
 /// output will be nondeterministic if `indices` contains duplicates -- because
 /// of some numerical approximation issues, numbers summed in different order
 /// may yield different results.
-///
+/// 
 /// `indices` is an integer tensor containing indices into a new tensor of shape
 /// `shape`.  The last dimension of `indices` can be at most the rank of `shape`:
-///
+/// 
 ///     indices.shape[-1] <= shape.rank
-///
+/// 
 /// The last dimension of `indices` corresponds to indices into elements
 /// (if `indices.shape[-1] = shape.rank`) or slices
 /// (if `indices.shape[-1] < shape.rank`) along dimension `indices.shape[-1]` of
 /// `shape`.  `updates` is a tensor with shape
-///
+/// 
 ///     indices.shape[:-1] + shape[indices.shape[-1]:]
-///
+/// 
 /// The simplest form of scatter is to insert individual elements in a tensor by
 /// index. For example, say we want to insert 4 scattered elements in a rank-1
 /// tensor with 8 elements.
-///
+/// 
 /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
 /// <img style="width:100%" src="https://www.tensorflow.org/images/ScatterNd1.png" alt>
 /// </div>
-///
+/// 
 /// In Python, this scatter operation would look like this:
-///
+/// 
 /// ```python
 ///     indices = tf.constant([[4], [3], [1], [7]])
 ///     updates = tf.constant([9, 10, 11, 12])
 ///     shape = tf.constant([8])
 ///     scatter = tf.scatter_nd(indices, updates, shape)
-///     with tf.Session() as sess:
-///       print(sess.run(scatter))
+///     print(scatter)
 /// ```
-///
+/// 
 /// The resulting tensor would look like this:
-///
+/// 
 ///     [0, 11, 0, 10, 9, 0, 0, 12]
-///
+/// 
 /// We can also, insert entire slices of a higher rank tensor all at once. For
 /// example, if we wanted to insert two slices in the first dimension of a
 /// rank-3 tensor with two matrices of new values.
-///
+/// 
 /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
 /// <img style="width:100%" src="https://www.tensorflow.org/images/ScatterNd2.png" alt>
 /// </div>
-///
+/// 
 /// In Python, this scatter operation would look like this:
-///
+/// 
 /// ```python
 ///     indices = tf.constant([[0], [2]])
 ///     updates = tf.constant([[[5, 5, 5, 5], [6, 6, 6, 6],
@@ -27379,17 +31592,16 @@ public static func scaleAndTranslateGrad<T: FloatingPoint & TensorFlowScalar>(
 ///                             [7, 7, 7, 7], [8, 8, 8, 8]]])
 ///     shape = tf.constant([4, 4, 4])
 ///     scatter = tf.scatter_nd(indices, updates, shape)
-///     with tf.Session() as sess:
-///       print(sess.run(scatter))
+///     print(scatter)
 /// ```
-///
+/// 
 /// The resulting tensor would look like this:
-///
+/// 
 ///     [[[5, 5, 5, 5], [6, 6, 6, 6], [7, 7, 7, 7], [8, 8, 8, 8]],
 ///      [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
 ///      [[5, 5, 5, 5], [6, 6, 6, 6], [7, 7, 7, 7], [8, 8, 8, 8]],
 ///      [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]]
-///
+/// 
 /// Note that on CPU, if an out of bound index is found, an error is returned.
 /// On GPU, if an out of bound index is found, the index is ignored.
 ///
@@ -27425,34 +31637,34 @@ public static func scatterNd<
 /// `input` is only modified in-place if no other operations will use it.
 /// Otherwise, a copy of `input` is made.  This operation has a gradient with
 /// respect to both `input` and `updates`.
-///
+/// 
 /// `input` is a `Tensor` with rank `P` and `indices` is a `Tensor` of rank `Q`.
-///
+/// 
 /// `indices` must be integer tensor, containing indices into `input`.
 /// It must be shape \\([d_0, ..., d_{Q-2}, K]\\) where `0 < K <= P`.
-///
+/// 
 /// The innermost dimension of `indices` (with length `K`) corresponds to
 /// indices into elements (if `K = P`) or `(P-K)`-dimensional slices
 /// (if `K < P`) along the `K`th dimension of `input`.
-///
+/// 
 /// `updates` is `Tensor` of rank `Q-1+P-K` with shape:
-///
+/// 
 /// $$[d_0, ..., d_{Q-2}, input.shape[K], ..., input.shape[P-1]].$$
-///
+/// 
 /// For example, say we want to add 4 scattered elements to a rank-1 tensor to 8
 /// elements. In Python, that addition would look like this:
-///
+/// 
 ///     input = tf.constant([1, 2, 3, 4, 5, 6, 7, 8])
 ///     indices = tf.constant([[4], [3], [1], [7]])
 ///     updates = tf.constant([9, 10, 11, 12])
 ///     output = tf.scatter_nd_non_aliasing_add(input, indices, updates)
 ///     with tf.Session() as sess:
 ///       print(sess.run(output))
-///
+/// 
 /// The resulting value `output` would look like this:
-///
+/// 
 ///     [1, 13, 3, 14, 14, 6, 7, 20]
-///
+/// 
 /// See `tf.scatter_nd` for more details about how to make updates to slices.
 ///
 /// - Parameters:
@@ -27506,16 +31718,16 @@ public static func sdcaFprint(
 /// optimizer applies each update one example at a time. Examples are sampled
 /// uniformly, and the optimizer is learning rate free and enjoys linear convergence
 /// rate.
-///
+/// 
 /// [Proximal Stochastic Dual Coordinate Ascent](http://arxiv.org/pdf/1211.2717v1.pdf).<br>
 /// Shai Shalev-Shwartz, Tong Zhang. 2012
-///
+/// 
 /// $$Loss Objective = \sum f_{i} (wx_{i}) + (l2 / 2) * |w|^2 + l1 * |w|$$
-///
+/// 
 /// [Adding vs. Averaging in Distributed Primal-Dual Optimization](http://arxiv.org/abs/1502.03508).<br>
 /// Chenxin Ma, Virginia Smith, Martin Jaggi, Michael I. Jordan,
 /// Peter Richtarik, Martin Takac. 2015
-///
+/// 
 /// [Stochastic Dual Coordinate Ascent with Adaptive Probabilities](https://arxiv.org/abs/1502.08053).<br>
 /// Dominik Csiba, Zheng Qu, Peter Richtarik. 2015
 ///
@@ -27608,16 +31820,16 @@ public static func sdcaOptimizer(
 /// optimizer applies each update one example at a time. Examples are sampled
 /// uniformly, and the optimizer is learning rate free and enjoys linear convergence
 /// rate.
-///
+/// 
 /// [Proximal Stochastic Dual Coordinate Ascent](http://arxiv.org/pdf/1211.2717v1.pdf).<br>
 /// Shai Shalev-Shwartz, Tong Zhang. 2012
-///
+/// 
 /// $$Loss Objective = \sum f_{i} (wx_{i}) + (l2 / 2) * |w|^2 + l1 * |w|$$
-///
+/// 
 /// [Adding vs. Averaging in Distributed Primal-Dual Optimization](http://arxiv.org/abs/1502.03508).<br>
 /// Chenxin Ma, Virginia Smith, Martin Jaggi, Michael I. Jordan,
 /// Peter Richtarik, Martin Takac. 2015
-///
+/// 
 /// [Stochastic Dual Coordinate Ascent with Adaptive Probabilities](https://arxiv.org/abs/1502.08053).<br>
 /// Dominik Csiba, Zheng Qu, Peter Richtarik. 2015
 ///
@@ -27708,26 +31920,26 @@ public static func sdcaOptimizerV2(
 /// Read
 /// [the section on segmentation](https://tensorflow.org/api_docs/python/tf/math#Segmentation)
 /// for an explanation of segments.
-///
+/// 
 /// Computes a tensor such that
 /// \\(output_i = \max_j(data_j)\\) where `max` is over `j` such
 /// that `segment_ids[j] == i`.
-///
+/// 
 /// If the max is empty for a given segment ID `i`, `output[i] = 0`.
-///
+/// 
 /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
 /// <img style="width:100%" src="https://www.tensorflow.org/images/SegmentMax.png" alt>
 /// </div>
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// c = tf.constant([[1,2,3,4], [4, 3, 2, 1], [5,6,7,8]])
 /// tf.segment_max(c, tf.constant([0, 0, 1]))
 /// # ==> [[4, 3, 3, 4],
 /// #      [5, 6, 7, 8]]
 /// ```
-///
+/// 
 ///
 /// - Parameter segment_ids: A 1-D tensor whose size is equal to the size of `data`'s
 ///     first dimension.  Values should be sorted and can be repeated.
@@ -27756,27 +31968,27 @@ public static func segmentMax<
 /// Read
 /// [the section on segmentation](https://tensorflow.org/api_docs/python/tf/math#Segmentation)
 /// for an explanation of segments.
-///
+/// 
 /// Computes a tensor such that
 /// \\(output_i = \frac{\sum_j data_j}{N}\\) where `mean` is
 /// over `j` such that `segment_ids[j] == i` and `N` is the total number of
 /// values summed.
-///
+/// 
 /// If the mean is empty for a given segment ID `i`, `output[i] = 0`.
-///
+/// 
 /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
 /// <img style="width:100%" src="https://www.tensorflow.org/images/SegmentMean.png" alt>
 /// </div>
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// c = tf.constant([[1.0,2,3,4], [4, 3, 2, 1], [5,6,7,8]])
 /// tf.segment_mean(c, tf.constant([0, 0, 1]))
 /// # ==> [[2.5, 2.5, 2.5, 2.5],
 /// #      [5, 6, 7, 8]]
 /// ```
-///
+/// 
 ///
 /// - Parameter segment_ids: A 1-D tensor whose size is equal to the size of `data`'s
 ///     first dimension.  Values should be sorted and can be repeated.
@@ -27805,19 +32017,19 @@ public static func segmentMean<
 /// Read
 /// [the section on segmentation](https://tensorflow.org/api_docs/python/tf/math#Segmentation)
 /// for an explanation of segments.
-///
+/// 
 /// Computes a tensor such that
 /// \\(output_i = \min_j(data_j)\\) where `min` is over `j` such
 /// that `segment_ids[j] == i`.
-///
+/// 
 /// If the min is empty for a given segment ID `i`, `output[i] = 0`.
-///
+/// 
 /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
 /// <img style="width:100%" src="https://www.tensorflow.org/images/SegmentMin.png" alt>
 /// </div>
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// c = tf.constant([[1,2,3,4], [4, 3, 2, 1], [5,6,7,8]])
 /// tf.segment_min(c, tf.constant([0, 0, 1]))
@@ -27852,26 +32064,26 @@ public static func segmentMin<
 /// Read
 /// [the section on segmentation](https://tensorflow.org/api_docs/python/tf/math#Segmentation)
 /// for an explanation of segments.
-///
+/// 
 /// Computes a tensor such that
 /// \\(output_i = \prod_j data_j\\) where the product is over `j` such
 /// that `segment_ids[j] == i`.
-///
+/// 
 /// If the product is empty for a given segment ID `i`, `output[i] = 1`.
-///
+/// 
 /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
 /// <img style="width:100%" src="https://www.tensorflow.org/images/SegmentProd.png" alt>
 /// </div>
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// c = tf.constant([[1,2,3,4], [4, 3, 2, 1], [5,6,7,8]])
 /// tf.segment_prod(c, tf.constant([0, 0, 1]))
 /// # ==> [[4, 6, 6, 4],
 /// #      [5, 6, 7, 8]]
 /// ```
-///
+/// 
 ///
 /// - Parameter segment_ids: A 1-D tensor whose size is equal to the size of `data`'s
 ///     first dimension.  Values should be sorted and can be repeated.
@@ -27900,26 +32112,26 @@ public static func segmentProd<
 /// Read
 /// [the section on segmentation](https://tensorflow.org/api_docs/python/tf/math#Segmentation)
 /// for an explanation of segments.
-///
+/// 
 /// Computes a tensor such that
 /// \\(output_i = \sum_j data_j\\) where sum is over `j` such
 /// that `segment_ids[j] == i`.
-///
+/// 
 /// If the sum is empty for a given segment ID `i`, `output[i] = 0`.
-///
+/// 
 /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
 /// <img style="width:100%" src="https://www.tensorflow.org/images/SegmentSum.png" alt>
 /// </div>
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// c = tf.constant([[1,2,3,4], [4, 3, 2, 1], [5,6,7,8]])
 /// tf.segment_sum(c, tf.constant([0, 0, 1]))
 /// # ==> [[5, 5, 5, 5],
 /// #      [5, 6, 7, 8]]
 /// ```
-///
+/// 
 ///
 /// - Parameter segment_ids: A 1-D tensor whose size is equal to the size of `data`'s
 ///     first dimension.  Values should be sorted and can be repeated.
@@ -27947,23 +32159,23 @@ public static func segmentSum<
 ///
 /// The `x`, and `y` tensors must all have the same shape, and the
 /// output will also have that shape.
-///
+/// 
 /// The `condition` tensor must be a scalar if `x` and `y` are scalars.
 /// If `x` and `y` are vectors or higher rank, then `condition` must be either a
 /// scalar, a vector with size matching the first dimension of `x`, or must have
 /// the same shape as `x`.
-///
+/// 
 /// The `condition` tensor acts as a mask that chooses, based on the value at each
 /// element, whether the corresponding element / row in the output should be
 /// taken from `x` (if true) or `y` (if false).
-///
+/// 
 /// If `condition` is a vector and `x` and `y` are higher rank matrices, then
 /// it chooses which row (outer dimension) to copy from `x` and `y`.
 /// If `condition` has the same shape as `x` and `y`, then it chooses which
 /// element to copy from `x` and `y`.
-///
+/// 
 /// For example:
-///
+/// 
 /// ```python
 /// # 'condition' tensor is [[True,  False]
 /// #                        [False, True]]
@@ -27972,8 +32184,8 @@ public static func segmentSum<
 /// # 'e' is [[5, 6],
 /// #         [7, 8]]
 /// select(condition, t, e)  # => [[1, 6], [7, 4]]
-///
-///
+/// 
+/// 
 /// # 'condition' tensor is [True, False]
 /// # 't' is [[1, 2],
 /// #         [3, 4]]
@@ -27981,7 +32193,7 @@ public static func segmentSum<
 /// #         [7, 8]]
 /// select(condition, t, e) ==> [[1, 2],
 ///                              [7, 8]]
-///
+/// 
 /// ```
 ///
 /// - Parameters:
@@ -28006,12 +32218,27 @@ public static func select<T: TensorFlowScalar>(
     return op.execute(Int(1))
 }
 
+@inlinable @inline(__always)
+public static func selectV2<T: TensorFlowScalar>(
+    condition: Tensor<Bool>,
+    t: Tensor<T>,
+    e: Tensor<T>
+) -> Tensor<T> {
+  let nOutputs = Int(1)
+    let op = makeOp("SelectV2", nOutputs)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.addInput(condition)
+    op.addInput(t)
+    op.addInput(e)
+    return op.execute(Int(1))
+}
+
 /// Computes the Eigen Decomposition of a batch of square self-adjoint matrices.
 ///
 /// The input is a tensor of shape `[..., M, M]` whose inner-most 2 dimensions
 /// form square matrices, with the same constraints as the single matrix
 /// SelfAdjointEig.
-///
+/// 
 /// The result is a [..., M+1, M] matrix with [..., 0,:] containing the
 /// eigenvalues, and subsequent [...,1:, :] containing the eigenvectors. The eigenvalues
 /// are sorted in non-decreasing order.
@@ -28035,7 +32262,7 @@ public static func selfAdjointEig<T: FloatingPoint & TensorFlowScalar>(
 /// Computes the eigenvalues and (optionally) eigenvectors of each inner matrix in
 /// `input` such that `input[..., :, :] = v[..., :, :] * diag(e[..., :])`. The eigenvalues
 /// are sorted in non-decreasing order.
-///
+/// 
 /// ```python
 /// # a is a tensor.
 /// # e is a tensor of eigenvalues.
@@ -28068,11 +32295,11 @@ public static func selfAdjointEigV2<T: FloatingPoint & TensorFlowScalar>(
 /// Computes scaled exponential linear: `scale * alpha * (exp(features) - 1)`
 ///
 /// if < 0, `scale * features` otherwise.
-///
+/// 
 /// To be used together with
 /// `initializer = tf.variance_scaling_initializer(factor=1.0, mode='FAN_IN')`.
 /// For correct dropout, use `tf.contrib.nn.alpha_dropout`.
-///
+/// 
 /// See [Self-Normalizing Neural Networks](https://arxiv.org/abs/1706.02515)
 @inlinable @inline(__always)
 public static func selu<T: FloatingPoint & TensorFlowScalar>(
@@ -28104,6 +32331,40 @@ public static func seluGrad<T: FloatingPoint & TensorFlowScalar>(
     op.addInput(gradients)
     op.addInput(outputs)
     return op.execute(Int(1))
+}
+
+/// Sends the named tensor from send_device to recv_device.
+///
+/// - Parameter tensor: The tensor to send.
+///
+/// - Attrs:
+///     - tensor_name: The name of the tensor to send.
+///     - send_device: The name of the device sending the tensor.
+///     - send_device_incarnation: The current incarnation of send_device.
+///     - recv_device: The name of the device receiving the tensor.
+///     - client_terminated: If set to true, this indicates that the node was added
+///         to the graph as a result of a client-side feed or fetch of Tensor data,
+///         in which case the corresponding send or recv is expected to be managed
+///         locally by the caller.
+@inlinable @inline(__always)
+public static func send<T: TensorFlowScalar>(
+    _ tensor: Tensor<T>,
+    tensorName: String,
+    sendDevice: String,
+    sendDeviceIncarnation: Int64,
+    recvDevice: String,
+    clientTerminated: Bool = false
+) {
+  let nOutputs = 0
+    let op = makeOp("Send", nOutputs)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.updateAttribute("tensor_name", tensorName)
+    op.updateAttribute("send_device", sendDevice)
+    op.updateAttribute("send_device_incarnation", sendDeviceIncarnation)
+    op.updateAttribute("recv_device", recvDevice)
+    op.updateAttribute("client_terminated", clientTerminated)
+    op.addInput(tensor)
+    op.execute()
 }
 
 /// Performs gradient updates of embedding tables.
@@ -28162,7 +32423,7 @@ public static func serializeIterator(
 /// must be sorted in increasing order of this first dimension.  The serialized
 /// `SparseTensor` objects going into each row of `serialized_sparse` will have
 /// rank `R-1`.
-///
+/// 
 /// The minibatch size `N` is extracted from `sparse_shape[0]`.
 ///
 /// - Parameters:
@@ -28198,7 +32459,7 @@ public static func serializeManySparse<
 /// must be sorted in increasing order of this first dimension.  The serialized
 /// `SparseTensor` objects going into each row of `serialized_sparse` will have
 /// rank `R-1`.
-///
+/// 
 /// The minibatch size `N` is extracted from `sparse_shape[0]`.
 ///
 /// - Parameters:
@@ -28300,7 +32561,7 @@ public static func serializeTensor<T: TensorFlowScalar>(
 /// Input `set` is a `SparseTensor` represented by `set_indices`, `set_values`,
 /// and `set_shape`. The last dimension contains values in a set, duplicates are
 /// allowed but ignored.
-///
+/// 
 /// If `validate_indices` is `True`, this op validates the order and range of `set`
 /// indices.
 ///
@@ -28334,7 +32595,7 @@ public static func setSize<T: TensorFlowInteger>(
 /// Input `set` is a `SparseTensor` represented by `set_indices`, `set_values`,
 /// and `set_shape`. The last dimension contains values in a set, duplicates are
 /// allowed but ignored.
-///
+/// 
 /// If `validate_indices` is `True`, this op validates the order and range of `set`
 /// indices.
 ///
@@ -28363,12 +32624,32 @@ public static func setSize(
     return op.execute(Int(1))
 }
 
+@inlinable @inline(__always)
+public static func setStatsAggregatorDataset(
+    inputDataset: VariantHandle,
+    statsAggregator: ResourceHandle,
+    tag: StringTensor,
+    counterPrefix: StringTensor,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?]
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("SetStatsAggregatorDataset", nOutputs)
+    op.updateAttribute("output_types", outputTypes)
+    op.updateAttribute("output_shapes", outputShapes)
+    op.addInput(inputDataset)
+    op.addInput(statsAggregator)
+    op.addInput(tag)
+    op.addInput(counterPrefix)
+    return op.execute(Int(1))
+}
+
 /// Returns the shape of a tensor.
 ///
 /// This operation returns a 1-D integer tensor representing the shape of `input`.
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// # 't' is [[[1, 1, 1], [2, 2, 2]], [[3, 3, 3], [4, 4, 4]]]
 /// shape(t) ==> [2, 2, 3]
@@ -28417,11 +32698,13 @@ public static func shardDataset(
     inputDataset: VariantHandle,
     numShards: Tensor<Int64>,
     index: Tensor<Int64>,
+    requireNonEmpty: Bool = false,
     outputTypes: [TensorDataType],
     outputShapes: [TensorShape?]
 ) -> VariantHandle {
   let nOutputs = Int(1)
     let op = makeOp("ShardDataset", nOutputs)
+    op.updateAttribute("require_non_empty", requireNonEmpty)
     op.updateAttribute("output_types", outputTypes)
     op.updateAttribute("output_shapes", outputShapes)
     op.addInput(inputDataset)
@@ -28534,6 +32817,24 @@ public static func shuffleDataset(
     return op.execute(Int(1))
 }
 
+@inlinable @inline(__always)
+public static func shuffleDatasetV2(
+    inputDataset: VariantHandle,
+    bufferSize: Tensor<Int64>,
+    seedGenerator: ResourceHandle,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?]
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("ShuffleDatasetV2", nOutputs)
+    op.updateAttribute("output_types", outputTypes)
+    op.updateAttribute("output_shapes", outputShapes)
+    op.addInput(inputDataset)
+    op.addInput(bufferSize)
+    op.addInput(seedGenerator)
+    return op.execute(Int(1))
+}
+
 /// Shuts down a running distributed TPU system.
 ///
 /// The op returns an error if no system is running.
@@ -28580,8 +32881,12 @@ public static func sigmoidGrad<T: FloatingPoint & TensorFlowScalar>(
 /// Returns an element-wise indication of the sign of a number.
 ///
 /// `y = sign(x) = -1` if `x < 0`; 0 if `x == 0`; 1 if `x > 0`.
-///
+/// 
 /// For complex numbers, `y = sign(x) = x / |x|` if `x != 0`, otherwise `y = 0`.
+/// 
+/// Example usage:
+/// >>> tf.math.sign([0., 2., -3.])
+/// <tf.Tensor: shape=(3,), dtype=float32, numpy=array([ 0.,  1., -1.], dtype=float32)>
 @inlinable @inline(__always)
 public static func sign<T: TensorFlowNumeric>(
     _ x: Tensor<T>
@@ -28613,7 +32918,16 @@ public static func simpleStruct(
     return op.execute(Int(nA))
 }
 
-/// Computes sin of x element-wise.
+/// Computes sine of x element-wise.
+///
+///   Given an input tensor, this function computes sine of every
+///   element in the tensor. Input range is `(-inf, inf)` and
+///   output range is `[-1,1]`.
+/// 
+///   ```python
+///   x = tf.constant([-float("inf"), -9, -0.5, 1, 1.2, 200, 10, float("inf")])
+///   tf.math.sin(x) ==> [nan -0.4121185 -0.47942555 0.84147096 0.9320391 -0.87329733 -0.54402107 nan]
+///   ```
 @inlinable @inline(__always)
 public static func sin<T: FloatingPoint & TensorFlowScalar>(
     _ x: Tensor<T>
@@ -28626,6 +32940,15 @@ public static func sin<T: FloatingPoint & TensorFlowScalar>(
 }
 
 /// Computes hyperbolic sine of x element-wise.
+///
+///   Given an input tensor, this function computes hyperbolic sine of every
+///   element in the tensor. Input range is `[-inf,inf]` and output range
+///   is `[-inf,inf]`.
+/// 
+///   ```python
+///   x = tf.constant([-float("inf"), -9, -0.5, 1, 1.2, 2, 10, float("inf")])
+///   tf.math.sinh(x) ==> [-inf -4.0515420e+03 -5.2109528e-01 1.1752012e+00 1.5094614e+00 3.6268604e+00 1.1013232e+04 inf]
+///   ```
 @inlinable @inline(__always)
 public static func sinh<T: FloatingPoint & TensorFlowScalar>(
     _ x: Tensor<T>
@@ -28641,9 +32964,9 @@ public static func sinh<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// This operation returns an integer representing the number of elements in
 /// `input`.
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// # 't' is [[[1, 1,, 1], [2, 2, 2]], [[3, 3, 3], [4, 4, 4]]]]
 /// size(t) ==> 12
@@ -28720,12 +33043,28 @@ public static func skipgram(
     return op.execute(Int(1), Int(1), Int(1), Int(1), Int(1), Int(1), Int(1))
 }
 
+@inlinable @inline(__always)
+public static func sleepDataset(
+    inputDataset: VariantHandle,
+    sleepMicroseconds: Tensor<Int64>,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?]
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("SleepDataset", nOutputs)
+    op.updateAttribute("output_types", outputTypes)
+    op.updateAttribute("output_shapes", outputShapes)
+    op.addInput(inputDataset)
+    op.addInput(sleepMicroseconds)
+    return op.execute(Int(1))
+}
+
 /// Return a slice from 'input'.
 ///
 /// The output tensor is a tensor with dimensions described by 'size'
 /// whose values are extracted from 'input' starting at the offsets in
 /// 'begin'.
-///
+/// 
 /// *Requirements*:
 ///   0 <= begin[i] <= begin[i] + size[i] <= Di  for i in [0, n)
 ///
@@ -28755,6 +33094,35 @@ public static func slice<
     return op.execute(Int(1))
 }
 
+/// Creates a dataset that passes a sliding window over `input_dataset`.
+///
+/// - Parameters:
+///     - window_size: A scalar representing the number of elements in the
+///         sliding window.
+///     - window_shift: A scalar representing the steps moving the sliding window
+///         forward in one iteration. It must be positive.
+///     - window_stride: A scalar representing the stride of the input elements of the sliding window.
+///         It must be positive.
+@inlinable @inline(__always)
+public static func slidingWindowDataset(
+    inputDataset: VariantHandle,
+    windowSize: Tensor<Int64>,
+    windowShift: Tensor<Int64>,
+    windowStride: Tensor<Int64>,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?]
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("SlidingWindowDataset", nOutputs)
+    op.updateAttribute("output_types", outputTypes)
+    op.updateAttribute("output_shapes", outputShapes)
+    op.addInput(inputDataset)
+    op.addInput(windowSize)
+    op.addInput(windowShift)
+    op.addInput(windowStride)
+    return op.execute(Int(1))
+}
+
 /// Returns a copy of the input tensor.
 @inlinable @inline(__always)
 public static func snapshot<T: TensorFlowScalar>(
@@ -28767,10 +33135,60 @@ public static func snapshot<T: TensorFlowScalar>(
     return op.execute(Int(1))
 }
 
+/// Creates a dataset that will write to / read from a snapshot.
+///
+/// This dataset attempts to determine whether a valid snapshot exists at the
+/// `snapshot_path`, and reads from the snapshot in lieu of using `input_dataset`.
+/// If not, it will run the preprocessing pipeline as usual, and write out a
+/// snapshot of the data processed for future use.
+///
+/// - Parameters:
+///     - input_dataset: A variant tensor representing the input dataset.
+///     - path: The path we should write snapshots to / read snapshots from.
+@inlinable @inline(__always)
+public static func snapshotDataset(
+    inputDataset: VariantHandle,
+    path: StringTensor,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?],
+    compression: String,
+    readerPathPrefix: String,
+    writerPathPrefix: String,
+    shardSizeBytes: Int64 = 10737418240,
+    pendingSnapshotExpirySeconds: Int64 = 86400,
+    numReaderThreads: Int64 = 1,
+    readerBufferSize: Int64 = 1,
+    numWriterThreads: Int64 = 1,
+    writerBufferSize: Int64 = 1,
+    shuffleOnRead: Bool = false,
+    seed: Int64 = 0,
+    seed2: Int64 = 0
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("SnapshotDataset", nOutputs)
+    op.updateAttribute("output_types", outputTypes)
+    op.updateAttribute("output_shapes", outputShapes)
+    op.updateAttribute("compression", compression)
+    op.updateAttribute("reader_path_prefix", readerPathPrefix)
+    op.updateAttribute("writer_path_prefix", writerPathPrefix)
+    op.updateAttribute("shard_size_bytes", shardSizeBytes)
+    op.updateAttribute("pending_snapshot_expiry_seconds", pendingSnapshotExpirySeconds)
+    op.updateAttribute("num_reader_threads", numReaderThreads)
+    op.updateAttribute("reader_buffer_size", readerBufferSize)
+    op.updateAttribute("num_writer_threads", numWriterThreads)
+    op.updateAttribute("writer_buffer_size", writerBufferSize)
+    op.updateAttribute("shuffle_on_read", shuffleOnRead)
+    op.updateAttribute("seed", seed)
+    op.updateAttribute("seed2", seed2)
+    op.addInput(inputDataset)
+    op.addInput(path)
+    return op.execute(Int(1))
+}
+
 /// Computes softmax activations.
 ///
 /// For each batch `i` and class `j` we have
-///
+/// 
 ///     $$softmax[i, j] = exp(logits[i, j]) / sum_j(exp(logits[i, j]))$$
 ///
 /// - Parameter logits: 2-D with shape `[batch_size, num_classes]`.
@@ -28880,7 +33298,7 @@ public static func softsignGrad<T: FloatingPoint & TensorFlowScalar>(
 /// SpaceToBatch for 4-D tensors of type T.
 ///
 /// This is a legacy version of the more general SpaceToBatchND.
-///
+/// 
 /// Zero-pads and then rearranges (permutes) blocks of spatial data into batch.
 /// More specifically, this op outputs a copy of the input tensor where values from
 /// the `height` and `width` dimensions are moved to the `batch` dimension. After
@@ -28891,87 +33309,87 @@ public static func softsignGrad<T: FloatingPoint & TensorFlowScalar>(
 ///     - input: 4-D with shape `[batch, height, width, depth]`.
 ///     - paddings: 2-D tensor of non-negative integers with shape `[2, 2]`. It specifies
 ///           the padding of the input with zeros across the spatial dimensions as follows:
-///
+///         
 ///               paddings = [[pad_top, pad_bottom], [pad_left, pad_right]]
-///
+///         
 ///           The effective spatial dimensions of the zero-padded input tensor will be:
-///
+///         
 ///               height_pad = pad_top + height + pad_bottom
 ///               width_pad = pad_left + width + pad_right
-///
+///         
 ///         The attr `block_size` must be greater than one. It indicates the block size.
-///
+///         
 ///           * Non-overlapping blocks of size `block_size x block size` in the height and
 ///             width dimensions are rearranged into the batch dimension at each location.
 ///           * The batch of the output tensor is `batch * block_size * block_size`.
 ///           * Both height_pad and width_pad must be divisible by block_size.
-///
+///         
 ///         The shape of the output will be:
-///
+///         
 ///             [batch*block_size*block_size, height_pad/block_size, width_pad/block_size,
 ///              depth]
-///
+///         
 ///         Some examples:
-///
+///         
 ///         (1) For the following input of shape `[1, 2, 2, 1]` and block_size of 2:
-///
+///         
 ///         ```
 ///         x = [[[[1], [2]], [[3], [4]]]]
 ///         ```
-///
+///         
 ///         The output tensor has shape `[4, 1, 1, 1]` and value:
-///
+///         
 ///         ```
 ///         [[[[1]]], [[[2]]], [[[3]]], [[[4]]]]
 ///         ```
-///
+///         
 ///         (2) For the following input of shape `[1, 2, 2, 3]` and block_size of 2:
-///
+///         
 ///         ```
 ///         x = [[[[1, 2, 3], [4, 5, 6]],
 ///               [[7, 8, 9], [10, 11, 12]]]]
 ///         ```
-///
+///         
 ///         The output tensor has shape `[4, 1, 1, 3]` and value:
-///
+///         
 ///         ```
 ///         [[[[1, 2, 3]]], [[[4, 5, 6]]], [[[7, 8, 9]]], [[[10, 11, 12]]]]
 ///         ```
-///
+///         
 ///         (3) For the following input of shape `[1, 4, 4, 1]` and block_size of 2:
-///
+///         
 ///         ```
 ///         x = [[[[1],   [2],  [3],  [4]],
 ///               [[5],   [6],  [7],  [8]],
 ///               [[9],  [10], [11],  [12]],
 ///               [[13], [14], [15],  [16]]]]
 ///         ```
-///
+///         
 ///         The output tensor has shape `[4, 2, 2, 1]` and value:
-///
+///         
 ///         ```
 ///         x = [[[[1], [3]], [[9], [11]]],
 ///              [[[2], [4]], [[10], [12]]],
 ///              [[[5], [7]], [[13], [15]]],
 ///              [[[6], [8]], [[14], [16]]]]
 ///         ```
-///
+///         
 ///         (4) For the following input of shape `[2, 2, 4, 1]` and block_size of 2:
-///
+///         
 ///         ```
 ///         x = [[[[1],   [2],  [3],  [4]],
 ///               [[5],   [6],  [7],  [8]]],
 ///              [[[9],  [10], [11],  [12]],
 ///               [[13], [14], [15],  [16]]]]
 ///         ```
-///
+///         
 ///         The output tensor has shape `[8, 1, 2, 1]` and value:
-///
+///         
 ///         ```
 ///         x = [[[[1], [3]]], [[[9], [11]]], [[[2], [4]]], [[[10], [12]]],
 ///              [[[5], [7]]], [[[13], [15]]], [[[6], [8]]], [[[14], [16]]]]
 ///         ```
-///
+///         
 ///         Among others, this operation is useful for reducing atrous convolution into
 ///         regular convolution.
 @inlinable @inline(__always)
@@ -29012,14 +33430,14 @@ public static func spaceToBatch<
 ///           `paddings[i] = [pad_start, pad_end]` specifies the padding for input dimension
 ///           `i + 1`, which corresponds to spatial dimension `i`.  It is required that
 ///           `block_shape[i]` divides `input_shape[i + 1] + pad_start + pad_end`.
-///
+///         
 ///         This operation is equivalent to the following steps:
-///
+///         
 ///         1. Zero-pad the start and end of dimensions `[1, ..., M]` of the
 ///            input according to `paddings` to produce `padded` of shape `padded_shape`.
-///
+///         
 ///         2. Reshape `padded` to `reshaped_padded` of shape:
-///
+///         
 ///              [batch] +
 ///              [padded_shape[1] / block_shape[0],
 ///                block_shape[0],
@@ -29027,93 +33445,93 @@ public static func spaceToBatch<
 ///               padded_shape[M] / block_shape[M-1],
 ///               block_shape[M-1]] +
 ///              remaining_shape
-///
+///         
 ///         3. Permute dimensions of `reshaped_padded` to produce
 ///            `permuted_reshaped_padded` of shape:
-///
+///         
 ///              block_shape +
 ///              [batch] +
 ///              [padded_shape[1] / block_shape[0],
 ///               ...,
 ///               padded_shape[M] / block_shape[M-1]] +
 ///              remaining_shape
-///
+///         
 ///         4. Reshape `permuted_reshaped_padded` to flatten `block_shape` into the batch
 ///            dimension, producing an output tensor of shape:
-///
+///         
 ///              [batch * prod(block_shape)] +
 ///              [padded_shape[1] / block_shape[0],
 ///               ...,
 ///               padded_shape[M] / block_shape[M-1]] +
 ///              remaining_shape
-///
+///         
 ///         Some examples:
-///
+///         
 ///         (1) For the following input of shape `[1, 2, 2, 1]`, `block_shape = [2, 2]`, and
 ///             `paddings = [[0, 0], [0, 0]]`:
-///
+///         
 ///         ```
 ///         x = [[[[1], [2]], [[3], [4]]]]
 ///         ```
-///
+///         
 ///         The output tensor has shape `[4, 1, 1, 1]` and value:
-///
+///         
 ///         ```
 ///         [[[[1]]], [[[2]]], [[[3]]], [[[4]]]]
 ///         ```
-///
+///         
 ///         (2) For the following input of shape `[1, 2, 2, 3]`, `block_shape = [2, 2]`, and
 ///             `paddings = [[0, 0], [0, 0]]`:
-///
+///         
 ///         ```
 ///         x = [[[[1, 2, 3], [4, 5, 6]],
 ///               [[7, 8, 9], [10, 11, 12]]]]
 ///         ```
-///
+///         
 ///         The output tensor has shape `[4, 1, 1, 3]` and value:
-///
+///         
 ///         ```
 ///         [[[[1, 2, 3]]], [[[4, 5, 6]]], [[[7, 8, 9]]], [[[10, 11, 12]]]]
 ///         ```
-///
+///         
 ///         (3) For the following input of shape `[1, 4, 4, 1]`, `block_shape = [2, 2]`, and
 ///             `paddings = [[0, 0], [0, 0]]`:
-///
+///         
 ///         ```
 ///         x = [[[[1],   [2],  [3],  [4]],
 ///               [[5],   [6],  [7],  [8]],
 ///               [[9],  [10], [11],  [12]],
 ///               [[13], [14], [15],  [16]]]]
 ///         ```
-///
+///         
 ///         The output tensor has shape `[4, 2, 2, 1]` and value:
-///
+///         
 ///         ```
 ///         x = [[[[1], [3]], [[9], [11]]],
 ///              [[[2], [4]], [[10], [12]]],
 ///              [[[5], [7]], [[13], [15]]],
 ///              [[[6], [8]], [[14], [16]]]]
 ///         ```
-///
+///         
 ///         (4) For the following input of shape `[2, 2, 4, 1]`, block_shape = `[2, 2]`, and
 ///             paddings = `[[0, 0], [2, 0]]`:
-///
+///         
 ///         ```
 ///         x = [[[[1],   [2],  [3],  [4]],
 ///               [[5],   [6],  [7],  [8]]],
 ///              [[[9],  [10], [11],  [12]],
 ///               [[13], [14], [15],  [16]]]]
 ///         ```
-///
+///         
 ///         The output tensor has shape `[8, 1, 3, 1]` and value:
-///
+///         
 ///         ```
 ///         x = [[[[0], [1], [3]]], [[[0], [9], [11]]],
 ///              [[[0], [2], [4]]], [[[0], [10], [12]]],
 ///              [[[0], [5], [7]]], [[[0], [13], [15]]],
 ///              [[[0], [6], [8]]], [[[0], [14], [16]]]]
 ///         ```
-///
+///         
 ///         Among others, this operation is useful for reducing atrous convolution into
 ///         regular convolution.
 @inlinable @inline(__always)
@@ -29143,21 +33561,21 @@ public static func spaceToBatchND<
 /// this op outputs a copy of the input tensor where values from the `height`
 /// and `width` dimensions are moved to the `depth` dimension.
 /// The attr `block_size` indicates the input block size.
-///
+/// 
 ///   * Non-overlapping blocks of size `block_size x block size` are rearranged
 ///     into depth at each location.
 ///   * The depth of the output tensor is `block_size * block_size * input_depth`.
 ///   * The Y, X coordinates within each block of the input become the high order
 ///     component of the output channel index.
 ///   * The input tensor's height and width must be divisible by block_size.
-///
+/// 
 /// The `data_format` attr specifies the layout of the input and output tensors
 /// with the following options:
 ///   "NHWC": `[ batch, height, width, channels ]`
 ///   "NCHW": `[ batch, channels, height, width ]`
 ///   "NCHW_VECT_C":
 ///       `qint8 [ batch, channels / 4, height, width, 4 ]`
-///
+/// 
 /// It is useful to consider the operation as transforming a 6-D Tensor.
 /// e.g. for data_format = NHWC,
 ///      Each element in the input tensor can be specified via 6 coordinates,
@@ -29167,55 +33585,55 @@ public static func spaceToBatchND<
 ///                         within the input block, iC means input channels).
 ///      The output would be a transpose to the following layout:
 ///      n,oY,oX,bY,bX,iC
-///
+/// 
 /// This operation is useful for resizing the activations between convolutions
 /// (but keeping all data), e.g. instead of pooling. It is also useful for training
 /// purely convolutional models.
-///
+/// 
 /// For example, given an input of shape `[1, 2, 2, 1]`, data_format = "NHWC" and
 /// block_size = 2:
-///
+/// 
 /// ```
 /// x = [[[[1], [2]],
 ///       [[3], [4]]]]
 /// ```
-///
+/// 
 /// This operation will output a tensor of shape `[1, 1, 1, 4]`:
-///
+/// 
 /// ```
 /// [[[[1, 2, 3, 4]]]]
 /// ```
-///
+/// 
 /// Here, the input has a batch of 1 and each batch element has shape `[2, 2, 1]`,
 /// the corresponding output will have a single element (i.e. width and height are
 /// both 1) and will have a depth of 4 channels (1 * block_size * block_size).
 /// The output element shape is `[1, 1, 4]`.
-///
+/// 
 /// For an input tensor with larger depth, here of shape `[1, 2, 2, 3]`, e.g.
-///
+/// 
 /// ```
 /// x = [[[[1, 2, 3], [4, 5, 6]],
 ///       [[7, 8, 9], [10, 11, 12]]]]
 /// ```
-///
+/// 
 /// This operation, for block_size of 2, will return the following tensor of shape
 /// `[1, 1, 1, 12]`
-///
+/// 
 /// ```
 /// [[[[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]]]]
 /// ```
-///
+/// 
 /// Similarly, for the following input of shape `[1 4 4 1]`, and a block size of 2:
-///
+/// 
 /// ```
 /// x = [[[[1],   [2],  [5],  [6]],
 ///       [[3],   [4],  [7],  [8]],
 ///       [[9],  [10], [13],  [14]],
 ///       [[11], [12], [15],  [16]]]]
 /// ```
-///
+/// 
 /// the operator will return the following tensor of shape `[1 2 2 4]`:
-///
+/// 
 /// ```
 /// x = [[[[1, 2, 3, 4],
 ///        [5, 6, 7, 8]],
@@ -29228,7 +33646,7 @@ public static func spaceToBatchND<
 public static func spaceToDepth<T: TensorFlowScalar>(
     _ input: Tensor<T>,
     blockSize: Int64,
-    dataFormat: DataFormat4 = .nhwc
+    dataFormat: DataFormat5 = .nhwc
 ) -> Tensor<T> {
   let nOutputs = Int(1)
     let op = makeOp("SpaceToDepth", nOutputs)
@@ -29244,7 +33662,7 @@ public static func spaceToDepth<T: TensorFlowScalar>(
 /// The input `SparseTensor` objects' indices are assumed ordered in standard
 /// lexicographic order.  If this is not the case, before this step run
 /// `SparseReorder` to restore index ordering.
-///
+/// 
 /// By default, if two values sum to zero at some index, the output `SparseTensor`
 /// would still include that particular location in its index, storing a zero in the
 /// corresponding value slot.  To override this, callers can specify `thresh`,
@@ -29252,7 +33670,7 @@ public static func spaceToDepth<T: TensorFlowScalar>(
 /// corresponding value and index would then not be included.  In particular,
 /// `thresh == 0` (default) means everything is kept and actual thresholding happens
 /// only for a positive value.
-///
+/// 
 /// In the following shapes, `nnz` is the count after taking `thresh` into account.
 ///
 /// - Parameters:
@@ -29333,42 +33751,42 @@ public static func sparseAddGrad<T: TensorFlowNumeric>(
 /// Concatenation is with respect to the dense versions of these sparse tensors.
 /// It is assumed that each input is a `SparseTensor` whose elements are ordered
 /// along increasing dimension number.
-///
+/// 
 /// All inputs' shapes must match, except for the concat dimension.  The
 /// `indices`, `values`, and `shapes` lists must have the same length.
-///
+/// 
 /// The output shape is identical to the inputs', except along the concat
 /// dimension, where it is the sum of the inputs' sizes along that dimension.
-///
+/// 
 /// The output elements will be resorted to preserve the sort order along
 /// increasing dimension number.
-///
+/// 
 /// This op runs in `O(M log M)` time, where `M` is the total number of non-empty
 /// values across all inputs. This is due to the need for an internal sort in
 /// order to concatenate efficiently across an arbitrary dimension.
-///
+/// 
 /// For example, if `concat_dim = 1` and the inputs are
-///
+/// 
 ///     sp_inputs[0]: shape = [2, 3]
 ///     [0, 2]: "a"
 ///     [1, 0]: "b"
 ///     [1, 1]: "c"
-///
+/// 
 ///     sp_inputs[1]: shape = [2, 4]
 ///     [0, 1]: "d"
 ///     [0, 2]: "e"
-///
+/// 
 /// then the output will be
-///
+/// 
 ///     shape = [2, 7]
 ///     [0, 2]: "a"
 ///     [0, 4]: "d"
 ///     [0, 5]: "e"
 ///     [1, 0]: "b"
 ///     [1, 1]: "c"
-///
+/// 
 /// Graphically this is equivalent to doing
-///
+/// 
 ///     [    a] concat [  d e  ] = [    a   d e  ]
 ///     [b c  ]        [       ]   [b c          ]
 ///
@@ -29407,29 +33825,29 @@ public static func sparseConcat<T: TensorFlowScalar>(
 /// The op takes two lists, one of 2D `SparseTensor` and one of 2D `Tensor`, each
 /// representing features of one feature column. It outputs a 2D `SparseTensor` with
 /// the batchwise crosses of these features.
-///
+/// 
 /// For example, if the inputs are
-///
+/// 
 ///     inputs[0]: SparseTensor with shape = [2, 2]
 ///     [0, 0]: "a"
 ///     [1, 0]: "b"
 ///     [1, 1]: "c"
-///
+/// 
 ///     inputs[1]: SparseTensor with shape = [2, 1]
 ///     [0, 0]: "d"
 ///     [1, 0]: "e"
-///
+/// 
 ///     inputs[2]: Tensor [["f"], ["g"]]
-///
+/// 
 /// then the output will be
-///
+/// 
 ///     shape = [2, 2]
 ///     [0, 0]: "a_X_d_X_f"
 ///     [1, 0]: "b_X_e_X_g"
 ///     [1, 1]: "c_X_e_X_g"
-///
+/// 
 /// if hashed_output=true then the output will be
-///
+/// 
 ///     shape = [2, 2]
 ///     [0, 0]: FingerprintCat64(
 ///                 Fingerprint64("f"), FingerprintCat64(
@@ -29497,29 +33915,29 @@ public static func sparseCross<
 /// The op takes two lists, one of 2D `SparseTensor` and one of 2D `Tensor`, each
 /// representing features of one feature column. It outputs a 2D `SparseTensor` with
 /// the batchwise crosses of these features.
-///
+/// 
 /// For example, if the inputs are
-///
+/// 
 ///     inputs[0]: SparseTensor with shape = [2, 2]
 ///     [0, 0]: "a"
 ///     [1, 0]: "b"
 ///     [1, 1]: "c"
-///
+/// 
 ///     inputs[1]: SparseTensor with shape = [2, 1]
 ///     [0, 0]: "d"
 ///     [1, 0]: "e"
-///
+/// 
 ///     inputs[2]: Tensor [["f"], ["g"]]
-///
+/// 
 /// then the output will be
-///
+/// 
 ///     shape = [2, 2]
 ///     [0, 0]: "a_X_d_X_f"
 ///     [1, 0]: "b_X_e_X_g"
 ///     [1, 1]: "c_X_e_X_g"
-///
+/// 
 /// if hashed_output=true then the output will be
-///
+/// 
 ///     shape = [2, 2]
 ///     [0, 0]: FingerprintCat64(
 ///                 Fingerprint64("f"), FingerprintCat64(
@@ -29587,7 +34005,7 @@ public static func sparseCross<
 ///     eligible;
 /// (2) Then, only the dense values pointed to by the indices of the SparseTensor
 ///     participate in the cwise addition.
-///
+/// 
 /// By these rules, the result is a logical SparseTensor with exactly the same
 /// indices and shape, but possibly with different non-zero values.  The output of
 /// this Op is the resultant non-zero values.
@@ -29652,7 +34070,7 @@ public static func sparseDenseCwiseDiv<T: TensorFlowNumeric>(
 /// The output locations corresponding to the implicitly zero elements in the sparse
 /// tensor will be zero (i.e., will not take up storage space), regardless of the
 /// contents of the dense tensor (even if it's +/-INF and that INF*0 == NaN).
-///
+/// 
 /// *Limitation*: this Op only broadcasts the dense side to the sparse side, but not
 /// the other direction.
 ///
@@ -29687,37 +34105,37 @@ public static func sparseDenseCwiseMul<T: TensorFlowNumeric>(
 /// (`indices`, `values`, `dense_shape`).  The output `SparseTensor` has the
 /// same `dense_shape` but with indices `output_indices` and values
 /// `output_values`.
-///
+/// 
 /// This op inserts a single entry for every row that doesn't have any values.
 /// The index is created as `[row, 0, ..., 0]` and the inserted value
 /// is `default_value`.
-///
+/// 
 /// For example, suppose `sp_input` has shape `[5, 6]` and non-empty values:
-///
+/// 
 ///     [0, 1]: a
 ///     [0, 3]: b
 ///     [2, 0]: c
 ///     [3, 1]: d
-///
+/// 
 /// Rows 1 and 4 are empty, so the output will be of shape `[5, 6]` with values:
-///
+/// 
 ///     [0, 1]: a
 ///     [0, 3]: b
 ///     [1, 0]: default_value
 ///     [2, 0]: c
 ///     [3, 1]: d
 ///     [4, 0]: default_value
-///
+/// 
 /// The output `SparseTensor` will be in row-major order and will have the
 /// same shape as the input.
-///
+/// 
 /// This op also returns an indicator vector shaped `[dense_shape[0]]` such that
-///
+/// 
 ///     empty_row_indicator[i] = True iff row i was an empty row.
-///
+/// 
 /// And a reverse index map vector shaped `[indices.shape[0]]` that is used during
 /// backpropagation,
-///
+/// 
 ///     reverse_index_map[j] = out_j s.t. indices[j, :] == output_indices[out_j, :]
 ///
 /// - Parameters:
@@ -29756,7 +34174,7 @@ public static func sparseFillEmptyRows<T: TensorFlowScalar>(
 /// shaped `[N_full]`, where `N_full >= N` and copies data into either
 /// `d_values` or `d_default_value`.  Here `d_values` is shaped `[N]` and
 /// `d_default_value` is a scalar.
-///
+/// 
 ///   d_values[j] = grad_values[reverse_index_map[j]]
 ///   d_default_value = sum_{k : 0 .. N_full - 1} (
 ///      grad_values[k] * 1{k not in reverse_index_map})
@@ -29789,7 +34207,7 @@ public static func sparseFillEmptyRowsGrad<T: TensorFlowScalar>(
 /// "b" is sparse, in the sense that they have a large proportion of zero values.
 /// The breakeven for using this versus a dense matrix multiply on one platform was
 /// 30% zero values in the sparse matrix.
-///
+/// 
 /// The gradient computation of this operation will only take advantage of sparsity
 /// in the input gradient when that gradient comes from a Relu.
 @inlinable @inline(__always)
@@ -29817,17 +34235,517 @@ public static func sparseMatMul<
     return op.execute(Int(1))
 }
 
+/// Sparse addition of two CSR matrices, C = alpha * A + beta * B.
+///
+/// The gradients of SparseMatrixAdd outputs with respect to alpha and beta are not
+/// currently defined (TensorFlow will return zeros for these entries).
+///
+/// - Parameters:
+///     - a: A CSRSparseMatrix.
+///     - b: A CSRSparseMatrix.
+///     - alpha: A constant scalar.
+///     - beta: A constant scalar.
+///
+/// - Output c: A CSRSparseMatrix.
+@inlinable @inline(__always)
+public static func sparseMatrixAdd<T: FloatingPoint & TensorFlowScalar>(
+    _ a: VariantHandle,
+    _ b: VariantHandle,
+    alpha: Tensor<T>,
+    beta: Tensor<T>
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("SparseMatrixAdd", nOutputs)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.addInput(a)
+    op.addInput(b)
+    op.addInput(alpha)
+    op.addInput(beta)
+    return op.execute(Int(1))
+}
+
+/// Matrix-multiplies a sparse matrix with a dense matrix.
+///
+/// Returns a dense matrix.
+/// For inputs A and B, where A is CSR and B is dense; this op returns a dense C;
+/// 
+/// If transpose_output is false, returns:
+/// ```
+///   C = A . B
+/// ```
+/// 
+/// If transpose_output is `true`, returns:
+/// ```
+///   C = transpose(A . B) = transpose(B) . transpose(A)
+/// ```
+/// where the transposition is performed along the two innermost (matrix)
+/// dimensions.
+/// 
+/// If conjugate_output is `true`, returns:
+/// ```
+///   C = conjugate(A . B) = conjugate(A) . conjugate(B)
+/// ```
+/// 
+/// If both conjugate_output and transpose_output are `true`, returns:
+/// ```
+///   C = conjugate(transpose(A . B)) = conjugate(transpose(B)) .
+///                                     conjugate(transpose(A))
+/// ```
+///
+/// - Parameters:
+///     - a: A CSRSparseMatrix.
+///     - b: A dense tensor.
+///
+/// - Attrs:
+///     - transpose_a: Indicates whether `a` should be transposed.
+///     - transpose_b: Indicates whether `b` should be transposed.
+///     - adjoint_a: Indicates whether `a` should be conjugate-transposed.
+///     - adjoint_b: Indicates whether `b` should be conjugate-transposed.
+///     - transpose_output: Transposes the product of `a` and `b`.
+///     - conjugate_output: Conjugates the product of `a` and `b`.
+///
+/// - Output output: A dense output tensor.
+@inlinable @inline(__always)
+public static func sparseMatrixMatMul<T: TensorFlowScalar>(
+    _ a: VariantHandle,
+    _ b: Tensor<T>,
+    transposeA: Bool = false,
+    transposeB: Bool = false,
+    adjointA: Bool = false,
+    adjointB: Bool = false,
+    transposeOutput: Bool = false,
+    conjugateOutput: Bool = false
+) -> Tensor<T> {
+  let nOutputs = Int(1)
+    let op = makeOp("SparseMatrixMatMul", nOutputs)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.updateAttribute("transpose_a", transposeA)
+    op.updateAttribute("transpose_b", transposeB)
+    op.updateAttribute("adjoint_a", adjointA)
+    op.updateAttribute("adjoint_b", adjointB)
+    op.updateAttribute("transpose_output", transposeOutput)
+    op.updateAttribute("conjugate_output", conjugateOutput)
+    op.addInput(a)
+    op.addInput(b)
+    return op.execute(Int(1))
+}
+
+/// Element-wise multiplication of a sparse matrix with a dense tensor.
+///
+/// Returns a sparse matrix.
+/// 
+/// The dense tensor `b` may be either a scalar; otherwise `a` must be a rank-3
+/// `SparseMatrix`; in this case `b` must be shaped `[batch_size, 1, 1]` and the
+/// multiply operation broadcasts.
+/// 
+/// **NOTE** even if `b` is zero, the sparsity structure of the output does not
+/// change.
+///
+/// - Parameters:
+///     - a: A CSRSparseMatrix.
+///     - b: A dense tensor.
+///
+/// - Output output: A dense output tensor.
+@inlinable @inline(__always)
+public static func sparseMatrixMul<T: TensorFlowScalar>(
+    _ a: VariantHandle,
+    _ b: Tensor<T>
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("SparseMatrixMul", nOutputs)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.addInput(a)
+    op.addInput(b)
+    return op.execute(Int(1))
+}
+
+/// Returns the number of nonzeroes of `sparse_matrix`.
+///
+/// - Parameter sparse_matrix: A CSRSparseMatrix.
+///
+/// - Output nnz: The number of nonzeroes of `sparse_matrix`.
+@inlinable @inline(__always)
+public static func sparseMatrixNNZ(
+    sparseMatrix: VariantHandle
+) -> Tensor<Int32> {
+  let nOutputs = Int(1)
+    let op = makeOp("SparseMatrixNNZ", nOutputs)
+    op.addInput(sparseMatrix)
+    return op.execute(Int(1))
+}
+
+/// Computes the Approximate Minimum Degree (AMD) ordering of `input`.
+///
+/// Computes the Approximate Minimum Degree (AMD) ordering for a sparse matrix.
+/// 
+/// The returned permutation may be used to permute the rows and columns of the
+/// given sparse matrix. This typically results in permuted sparse matrix's sparse
+/// Cholesky (or other decompositions) in having fewer zero fill-in compared to
+/// decomposition of the original matrix.
+/// 
+/// The input sparse matrix may have rank 2 or rank 3. The output Tensor,
+/// representing would then have rank 1 or 2 respectively, with the same batch
+/// shape as the input.
+/// 
+/// Each component of the input sparse matrix must represent a square symmetric
+/// matrix; only the lower triangular part of the matrix is read. The values of the
+/// sparse matrix does not affect the returned permutation, only the sparsity
+/// pattern of the sparse matrix is used. Hence, a single AMD ordering may be
+/// reused for the Cholesky decompositions of sparse matrices with the same sparsity
+/// pattern but with possibly different values.
+/// 
+/// Each batch component of the output permutation represents a permutation of `N`
+/// elements, where the input sparse matrix components each have `N` rows. That is,
+/// the component contains each of the integers `{0, .. N-1}` exactly once. The
+/// `i`th element represents the row index that the `i`th row maps to.
+/// 
+/// Usage example:
+/// 
+/// ```python
+///     from tensorflow.python.ops.linalg.sparse import sparse_csr_matrix_ops
+/// 
+///     a_indices = np.array([[0, 0], [1, 1], [2, 1], [2, 2], [3, 3]])
+///     a_values = np.array([1.0, 2.0, 1.0, 3.0, 4.0], np.float32)
+///     a_dense_shape = [4, 4]
+/// 
+///     with tf.Session() as sess:
+///       # Define (COO format) SparseTensor over Numpy array.
+///       a_st = tf.SparseTensor(a_indices, a_values, a_dense_shape)
+/// 
+///       # Convert SparseTensors to CSR SparseMatrix.
+///       a_sm = sparse_csr_matrix_ops.sparse_tensor_to_csr_sparse_matrix(
+///           a_st.indices, a_st.values, a_st.dense_shape)
+/// 
+///       # Obtain the AMD Ordering for the CSR SparseMatrix.
+///       ordering_amd = sparse_csr_matrix_ops.sparse_matrix_ordering_amd(sparse_matrix)
+/// 
+///       ordering_amd_value = sess.run(ordering_amd)
+/// ```
+/// 
+/// `ordering_amd_value` stores the AMD ordering: `[1 2 3 0]`.
+/// 
+/// input: A `CSRSparseMatrix`.
+///
+/// - Parameter input: A `CSRSparseMatrix`.
+///
+/// - Output output: The Approximate Minimum Degree (AMD) ordering of `input`.
+@inlinable @inline(__always)
+public static func sparseMatrixOrderingAMD(
+    _ input: VariantHandle
+) -> Tensor<Int32> {
+  let nOutputs = Int(1)
+    let op = makeOp("SparseMatrixOrderingAMD", nOutputs)
+    op.addInput(input)
+    return op.execute(Int(1))
+}
+
+/// Calculates the softmax of a CSRSparseMatrix.
+///
+/// Calculate the softmax of the innermost dimensions of a SparseMatrix.
+/// 
+/// Missing values are treated as `-inf` (i.e., logits of zero probability); and
+/// the output has the same sparsity structure as the input (though missing values
+/// in the output may now be treated as having probability zero).
+///
+/// - Parameter logits: A CSRSparseMatrix.
+///
+/// - Output softmax: A CSRSparseMatrix.
+@inlinable @inline(__always)
+public static func sparseMatrixSoftmax(
+    logits: VariantHandle,
+    type: TensorDataType
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("SparseMatrixSoftmax", nOutputs)
+    op.updateAttribute("type", type)
+    op.addInput(logits)
+    return op.execute(Int(1))
+}
+
+/// Calculates the gradient of the SparseMatrixSoftmax op.
+///
+/// - Parameters:
+///     - softmax: A CSRSparseMatrix.
+///     - grad_softmax: The gradient of `softmax`.
+///
+/// - Output gradient: The output gradient.
+@inlinable @inline(__always)
+public static func sparseMatrixSoftmaxGrad(
+    softmax: VariantHandle,
+    gradSoftmax: VariantHandle,
+    type: TensorDataType
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("SparseMatrixSoftmaxGrad", nOutputs)
+    op.updateAttribute("type", type)
+    op.addInput(softmax)
+    op.addInput(gradSoftmax)
+    return op.execute(Int(1))
+}
+
+/// Computes the sparse Cholesky decomposition of `input`.
+///
+/// Computes the Sparse Cholesky decomposition of a sparse matrix, with the given
+/// fill-in reducing permutation.
+/// 
+/// The input sparse matrix and the fill-in reducing permutation `permutation` must
+/// have compatible shapes. If the sparse matrix has rank 3; with the batch
+/// dimension `B`, then the `permutation` must be of rank 2; with the same batch
+/// dimension `B`. There is no support for broadcasting.
+/// 
+/// Furthermore, each component vector of `permutation` must be of length `N`,
+/// containing each of the integers {0, 1, ..., N - 1} exactly once, where `N` is
+/// the number of rows of each component of the sparse matrix.
+/// 
+/// Each component of the input sparse matrix must represent a symmetric positive
+/// definite (SPD) matrix; although only the lower triangular part of the matrix is
+/// read. If any individual component is not SPD, then an InvalidArgument error is
+/// thrown.
+/// 
+/// The returned sparse matrix has the same dense shape as the input sparse matrix.
+/// For each component `A` of the input sparse matrix, the corresponding output
+/// sparse matrix represents `L`, the lower triangular Cholesky factor satisfying
+/// the following identity:
+/// 
+/// ```
+///   A = L * Lt
+/// ```
+/// 
+/// where Lt denotes the transpose of L (or its conjugate transpose, if `type` is
+/// `complex64` or `complex128`).
+/// 
+/// The `type` parameter denotes the type of the matrix elements. The supported
+/// types are: `float32`, `float64`, `complex64` and `complex128`.
+/// 
+/// Usage example:
+/// 
+/// ```python
+///     from tensorflow.python.ops.linalg.sparse import sparse_csr_matrix_ops
+/// 
+///     a_indices = np.array([[0, 0], [1, 1], [2, 1], [2, 2], [3, 3]])
+///     a_values = np.array([1.0, 2.0, 1.0, 3.0, 4.0], np.float32)
+///     a_dense_shape = [4, 4]
+/// 
+///     with tf.Session() as sess:
+///       # Define (COO format) SparseTensor over Numpy array.
+///       a_st = tf.SparseTensor(a_indices, a_values, a_dense_shape)
+/// 
+///       # Convert SparseTensors to CSR SparseMatrix.
+///       a_sm = sparse_csr_matrix_ops.sparse_tensor_to_csr_sparse_matrix(
+///           a_st.indices, a_st.values, a_st.dense_shape)
+/// 
+///       # Obtain the Sparse Cholesky factor using AMD Ordering for reducing zero
+///       # fill-in (number of structural non-zeros in the sparse Cholesky factor).
+///       ordering_amd = sparse_csr_matrix_ops.sparse_matrix_ordering_amd(sparse_matrix)
+///       cholesky_sparse_matrices = (
+///           sparse_csr_matrix_ops.sparse_matrix_sparse_cholesky(
+///               sparse_matrix, ordering_amd, type=tf.float32))
+/// 
+///       # Convert the CSRSparseMatrix Cholesky factor to a dense Tensor
+///       dense_cholesky = sparse_csr_matrix_ops.csr_sparse_matrix_to_dense(
+///           cholesky_sparse_matrices, tf.float32)
+/// 
+///       # Evaluate the dense Tensor value.
+///       dense_cholesky_value = sess.run(dense_cholesky)
+/// ```
+/// 
+/// `dense_cholesky_value` stores the dense Cholesky factor:
+/// 
+/// ```
+///     [[  1.  0.    0.    0.]
+///      [  0.  1.41  0.    0.]
+///      [  0.  0.70  1.58  0.]
+///      [  0.  0.    0.    2.]]
+/// ```
+/// 
+/// 
+/// input: A `CSRSparseMatrix`.
+/// permutation: A `Tensor`.
+/// type: The type of `input`.
+///
+/// - Parameters:
+///     - input: A `CSRSparseMatrix`.
+///     - permutation: A fill-in reducing permutation matrix.
+///
+/// - Output output: The sparse Cholesky decompsition of `input`.
+@inlinable @inline(__always)
+public static func sparseMatrixSparseCholesky(
+    _ input: VariantHandle,
+    permutation: Tensor<Int32>,
+    type: TensorDataType
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("SparseMatrixSparseCholesky", nOutputs)
+    op.updateAttribute("type", type)
+    op.addInput(input)
+    op.addInput(permutation)
+    return op.execute(Int(1))
+}
+
+/// Sparse-matrix-multiplies two CSR matrices `a` and `b`.
+///
+/// Performs a matrix multiplication of a sparse matrix `a` with a sparse matrix
+/// `b`; returns a sparse matrix `a * b`, unless either `a` or `b` is transposed or
+/// adjointed.
+/// 
+/// Each matrix may be transposed or adjointed (conjugated and transposed)
+/// according to the Boolean parameters `transpose_a`, `adjoint_a`, `transpose_b`
+/// and `adjoint_b`. At most one of `transpose_a` or `adjoint_a` may be True.
+/// Similarly, at most one of `transpose_b` or `adjoint_b` may be True.
+/// 
+/// The inputs must have compatible shapes. That is, the inner dimension of `a`
+/// must be equal to the outer dimension of `b`. This requirement is adjusted
+/// according to whether either `a` or `b` is transposed or adjointed.
+/// 
+/// The `type` parameter denotes the type of the matrix elements. Both `a` and `b`
+/// must have the same type. The supported types are: `float32`, `float64`,
+/// `complex64` and `complex128`.
+/// 
+/// Both `a` and `b` must have the same rank. Broadcasting is not supported. If they
+/// have rank 3, each batch of 2D CSRSparseMatrices within `a` and `b` must have the
+/// same dense shape.
+/// 
+/// The sparse matrix product may have numeric (non-structural) zeros.
+/// TODO(anudhyan): Consider adding a boolean attribute to control whether to prune
+/// zeros.
+/// 
+/// Usage example:
+/// 
+/// ```python
+///     from tensorflow.python.ops.linalg.sparse import sparse_csr_matrix_ops
+/// 
+///     a_indices = np.array([[0, 0], [2, 3], [2, 4], [3, 0]])
+///     a_values = np.array([1.0, 5.0, -1.0, -2.0], np.float32)
+///     a_dense_shape = [4, 5]
+/// 
+///     b_indices = np.array([[0, 0], [3, 0], [3, 1]])
+///     b_values = np.array([2.0, 7.0, 8.0], np.float32)
+///     b_dense_shape = [5, 3]
+/// 
+///     with tf.Session() as sess:
+///       # Define (COO format) Sparse Tensors over Numpy arrays
+///       a_st = tf.SparseTensor(a_indices, a_values, a_dense_shape)
+///       b_st = tf.SparseTensor(b_indices, b_values, b_dense_shape)
+/// 
+///       # Convert SparseTensors to CSR SparseMatrix
+///       a_sm = sparse_csr_matrix_ops.sparse_tensor_to_csr_sparse_matrix(
+///           a_st.indices, a_st.values, a_st.dense_shape)
+///       b_sm = sparse_csr_matrix_ops.sparse_tensor_to_csr_sparse_matrix(
+///           b_st.indices, b_st.values, b_st.dense_shape)
+/// 
+///       # Compute the CSR SparseMatrix matrix multiplication
+///       c_sm = sparse_csr_matrix_ops.sparse_matrix_sparse_mat_mul(
+///           a=a_sm, b=b_sm, type=tf.float32)
+/// 
+///       # Convert the CSR SparseMatrix product to a dense Tensor
+///       c_sm_dense = sparse_csr_matrix_ops.csr_sparse_matrix_to_dense(
+///           c_sm, tf.float32)
+///       # Evaluate the dense Tensor value
+///       c_sm_dense_value = sess.run(c_sm_dense)
+/// ```
+/// 
+/// `c_sm_dense_value` stores the dense matrix product:
+/// 
+/// ```
+///     [[  2.   0.   0.]
+///      [  0.   0.   0.]
+///      [ 35.  40.   0.]
+///      [ -4.   0.   0.]]
+/// ```
+/// 
+/// a: A `CSRSparseMatrix`.
+/// b: A `CSRSparseMatrix` with the same type and rank as `a`.
+/// type: The type of both `a` and `b`.
+/// transpose_a: If True, `a` transposed before multiplication.
+/// transpose_b: If True, `b` transposed before multiplication.
+/// adjoint_a: If True, `a` adjointed before multiplication.
+/// adjoint_b: If True, `b` adjointed before multiplication.
+///
+/// - Parameters:
+///     - a: A CSRSparseMatrix.
+///     - b: A CSRSparseMatrix.
+///
+/// - Attrs:
+///     - transpose_a: Indicates whether `a` should be transposed.
+///     - transpose_b: Indicates whether `b` should be transposed.
+///     - adjoint_a: Indicates whether `a` should be conjugate-transposed.
+///     - adjoint_b: Indicates whether `b` should be conjugate-transposed.
+///
+/// - Output c: A CSRSparseMatrix.
+@inlinable @inline(__always)
+public static func sparseMatrixSparseMatMul(
+    _ a: VariantHandle,
+    _ b: VariantHandle,
+    type: TensorDataType,
+    transposeA: Bool = false,
+    transposeB: Bool = false,
+    adjointA: Bool = false,
+    adjointB: Bool = false
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("SparseMatrixSparseMatMul", nOutputs)
+    op.updateAttribute("type", type)
+    op.updateAttribute("transpose_a", transposeA)
+    op.updateAttribute("transpose_b", transposeB)
+    op.updateAttribute("adjoint_a", adjointA)
+    op.updateAttribute("adjoint_b", adjointB)
+    op.addInput(a)
+    op.addInput(b)
+    return op.execute(Int(1))
+}
+
+/// Transposes the inner (matrix) dimensions of a CSRSparseMatrix.
+///
+/// Transposes the inner (matrix) dimensions of a SparseMatrix and optionally
+/// conjugates its values.
+///
+/// - Parameter input: A CSRSparseMatrix.
+///
+/// - Attr conjugate: Indicates whether `input` should be conjugated.
+///
+/// - Output output: A CSRSparseMatrix.
+@inlinable @inline(__always)
+public static func sparseMatrixTranspose(
+    _ input: VariantHandle,
+    conjugate: Bool = false,
+    type: TensorDataType
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("SparseMatrixTranspose", nOutputs)
+    op.updateAttribute("conjugate", conjugate)
+    op.updateAttribute("type", type)
+    op.addInput(input)
+    return op.execute(Int(1))
+}
+
+/// Creates an all-zeros CSRSparseMatrix with shape `dense_shape`.
+///
+/// - Parameter dense_shape: The desired matrix shape.
+///
+/// - Output sparse_matrix: An empty CSR matrix with shape `dense_shape`.
+@inlinable @inline(__always)
+public static func sparseMatrixZeros(
+    denseShape: Tensor<Int64>,
+    type: TensorDataType
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("SparseMatrixZeros", nOutputs)
+    op.updateAttribute("type", type)
+    op.addInput(denseShape)
+    return op.execute(Int(1))
+}
+
 /// Computes the max of elements across dimensions of a SparseTensor.
 ///
 /// This Op takes a SparseTensor and is the sparse counterpart to
 /// `tf.reduce_max()`.  In particular, this Op also returns a dense `Tensor`
 /// instead of a sparse one.
-///
+/// 
 /// Reduces `sp_input` along the dimensions given in `reduction_axes`.  Unless
 /// `keep_dims` is true, the rank of the tensor is reduced by 1 for each entry in
 /// `reduction_axes`. If `keep_dims` is true, the reduced dimensions are retained
 /// with length 1.
-///
+/// 
 /// If `reduction_axes` has no entries, all dimensions are reduced, and a tensor
 /// with a single element is returned.  Additionally, the axes can be negative,
 /// which are interpreted according to the indexing rules in Python.
@@ -29866,12 +34784,12 @@ public static func sparseReduceMax<T: TensorFlowNumeric>(
 /// This Op takes a SparseTensor and is the sparse counterpart to
 /// `tf.reduce_max()`.  In contrast to SparseReduceMax, this Op returns a
 /// SparseTensor.
-///
+/// 
 /// Reduces `sp_input` along the dimensions given in `reduction_axes`.  Unless
 /// `keep_dims` is true, the rank of the tensor is reduced by 1 for each entry in
 /// `reduction_axes`. If `keep_dims` is true, the reduced dimensions are retained
 /// with length 1.
-///
+/// 
 /// If `reduction_axes` has no entries, all dimensions are reduced, and a tensor
 /// with a single element is returned.  Additionally, the axes can be negative,
 /// which are interpreted according to the indexing rules in Python.
@@ -29908,12 +34826,12 @@ public static func sparseReduceMaxSparse<T: TensorFlowNumeric>(
 /// This Op takes a SparseTensor and is the sparse counterpart to
 /// `tf.reduce_sum()`.  In particular, this Op also returns a dense `Tensor`
 /// instead of a sparse one.
-///
+/// 
 /// Reduces `sp_input` along the dimensions given in `reduction_axes`.  Unless
 /// `keep_dims` is true, the rank of the tensor is reduced by 1 for each entry in
 /// `reduction_axes`. If `keep_dims` is true, the reduced dimensions are retained
 /// with length 1.
-///
+/// 
 /// If `reduction_axes` has no entries, all dimensions are reduced, and a tensor
 /// with a single element is returned.  Additionally, the axes can be negative,
 /// which are interpreted according to the indexing rules in Python.
@@ -29952,12 +34870,12 @@ public static func sparseReduceSum<T: TensorFlowNumeric>(
 /// This Op takes a SparseTensor and is the sparse counterpart to
 /// `tf.reduce_sum()`.  In contrast to SparseReduceSum, this Op returns a
 /// SparseTensor.
-///
+/// 
 /// Reduces `sp_input` along the dimensions given in `reduction_axes`.  Unless
 /// `keep_dims` is true, the rank of the tensor is reduced by 1 for each entry in
 /// `reduction_axes`. If `keep_dims` is true, the reduced dimensions are retained
 /// with length 1.
-///
+/// 
 /// If `reduction_axes` has no entries, all dimensions are reduced, and a tensor
 /// with a single element is returned.  Additionally, the axes can be negative,
 /// which are interpreted according to the indexing rules in Python.
@@ -29994,9 +34912,9 @@ public static func sparseReduceSumSparse<T: TensorFlowNumeric>(
 /// Note that by convention, all sparse ops preserve the canonical ordering along
 /// increasing dimension number. The only time ordering can be violated is during
 /// manual manipulation of the indices and values vectors to add entries.
-///
+/// 
 /// Reordering does not affect the shape of the SparseTensor.
-///
+/// 
 /// If the tensor has rank `R` and `N` non-empty values, `input_indices` has
 /// shape `[N, R]`, input_values has length `N`, and input_shape has length `R`.
 ///
@@ -30029,15 +34947,15 @@ public static func sparseReorder<T: TensorFlowScalar>(
 ///
 /// This operation has the same semantics as reshape on the represented dense
 /// tensor.  The `input_indices` are recomputed based on the requested `new_shape`.
-///
+/// 
 /// If one component of `new_shape` is the special value -1, the size of that
 /// dimension is computed so that the total dense size remains constant.  At
 /// most one component of `new_shape` can be -1.  The number of dense elements
 /// implied by `new_shape` must be the same as the number of dense elements
 /// originally implied by `input_shape`.
-///
+/// 
 /// Reshaping does not affect the order of values in the SparseTensor.
-///
+/// 
 /// If the input tensor has rank `R_in` and `N` non-empty values, and `new_shape`
 /// has length `R_out`, then `input_indices` has shape `[N, R_in]`,
 /// `input_shape` has length `R_in`, `output_indices` has shape `[N, R_out]`, and
@@ -30072,7 +34990,7 @@ public static func sparseReshape(
 /// Computes the mean along sparse segments of a tensor.
 ///
 /// See `tf.sparse.segment_sum` for usage examples.
-///
+/// 
 /// Like `SegmentMean`, but `segment_ids` can have rank less than `data`'s first
 /// dimension, selecting a subset of dimension 0, specified by `indices`.
 ///
@@ -30136,7 +35054,7 @@ public static func sparseSegmentMeanGrad<
 ///
 /// Like `SparseSegmentMean`, but allows missing ids in `segment_ids`. If an id is
 /// misisng, the `output` tensor at that position will be zeroed.
-///
+/// 
 /// Read
 /// [the section on segmentation](https://tensorflow.org/api_docs/python/tf/math#Segmentation)
 /// for an explanation of segments.
@@ -30174,9 +35092,9 @@ public static func sparseSegmentMeanWithNumSegments<
 /// Computes the sum along sparse segments of a tensor divided by the sqrt of N.
 ///
 /// N is the size of the segment being reduced.
-///
+/// 
 /// See `tf.sparse.segment_sum` for usage examples.
-///
+/// 
 ///
 /// - Parameters:
 ///     - indices: A 1-D tensor. Has same rank as `segment_ids`.
@@ -30237,10 +35155,10 @@ public static func sparseSegmentSqrtNGrad<
 /// Computes the sum along sparse segments of a tensor divided by the sqrt of N.
 ///
 /// N is the size of the segment being reduced.
-///
+/// 
 /// Like `SparseSegmentSqrtN`, but allows missing ids in `segment_ids`. If an id is
 /// misisng, the `output` tensor at that position will be zeroed.
-///
+/// 
 /// Read
 /// [the section on segmentation](https://tensorflow.org/api_docs/python/tf/math#Segmentation)
 /// for an explanation of segments.
@@ -30280,29 +35198,29 @@ public static func sparseSegmentSqrtNWithNumSegments<
 /// Read
 /// [the section on segmentation](https://tensorflow.org/api_docs/python/tf/math#Segmentation)
 /// for an explanation of segments.
-///
+/// 
 /// Like `SegmentSum`, but `segment_ids` can have rank less than `data`'s first
 /// dimension, selecting a subset of dimension 0, specified by `indices`.
-///
+/// 
 /// For example:
-///
+/// 
 /// ```python
 /// c = tf.constant([[1,2,3,4], [-1,-2,-3,-4], [5,6,7,8]])
-///
+/// 
 /// # Select two rows, one segment.
 /// tf.sparse_segment_sum(c, tf.constant([0, 1]), tf.constant([0, 0]))
 /// # => [[0 0 0 0]]
-///
+/// 
 /// # Select two rows, two segment.
 /// tf.sparse_segment_sum(c, tf.constant([0, 1]), tf.constant([0, 1]))
 /// # => [[ 1  2  3  4]
 /// #     [-1 -2 -3 -4]]
-///
+/// 
 /// # Select all rows, two segments.
 /// tf.sparse_segment_sum(c, tf.constant([0, 1, 2]), tf.constant([0, 0, 1]))
 /// # => [[0 0 0 0]
 /// #     [5 6 7 8]]
-///
+/// 
 /// # Which is equivalent to:
 /// tf.segment_sum(c, tf.constant([0, 0, 1]))
 /// ```
@@ -30336,22 +35254,22 @@ public static func sparseSegmentSum<
 ///
 /// Like `SparseSegmentSum`, but allows missing ids in `segment_ids`. If an id is
 /// misisng, the `output` tensor at that position will be zeroed.
-///
+/// 
 /// Read
 /// [the section on segmentation](https://tensorflow.org/api_docs/python/tf/sparse#Segmentation)
 /// for an explanation of segments.
-///
+/// 
 /// For example:
-///
+/// 
 /// ```python
 /// c = tf.constant([[1,2,3,4], [-1,-2,-3,-4], [5,6,7,8]])
-///
+/// 
 /// tf.sparse_segment_sum_with_num_segments(
 ///     c, tf.constant([0, 1]), tf.constant([0, 0]), num_segments=3)
 /// # => [[0 0 0 0]
 /// #     [0 0 0 0]
 /// #     [0 0 0 0]]
-///
+/// 
 /// tf.sparse_segment_sum_with_num_segments(c,
 ///                                         tf.constant([0, 1]),
 ///                                         tf.constant([0, 2],
@@ -30395,17 +35313,17 @@ public static func sparseSegmentSumWithNumSegments<
 /// Slice a `SparseTensor` based on the `start` and `size`.
 ///
 /// For example, if the input is
-///
+/// 
 ///     input_tensor = shape = [2, 7]
 ///     [    a   d e  ]
 ///     [b c          ]
-///
+/// 
 /// Graphically the output tensors are:
-///
+/// 
 ///     sparse_slice([0, 0], [2, 4]) = shape = [2, 4]
 ///     [    a  ]
 ///     [b c    ]
-///
+/// 
 ///     sparse_slice([0, 4], [2, 3]) = shape = [2, 3]
 ///     [ d e  ]
 ///     [      ]
@@ -30478,17 +35396,17 @@ public static func sparseSliceGrad<T: TensorFlowNumeric>(
 ///
 /// The inputs represent an N-D SparseTensor  with logical shape `[..., B, C]`
 /// (where `N >= 2`), and with indices sorted in the canonical lexicographic order.
-///
+/// 
 /// This op is equivalent to applying the normal `tf.nn.softmax()` to each innermost
 /// logical submatrix with shape `[B, C]`, but with the catch that *the implicitly
 /// zero elements do not participate*.  Specifically, the algorithm is equivalent
 /// to the following:
-///
+/// 
 ///   (1) Applies `tf.nn.softmax()` to a densified view of each innermost submatrix
 ///       with shape `[B, C]`, along the size-C dimension;
 ///   (2) Masks out the original implicitly-zero locations;
 ///   (3) Renormalizes the remaining elements.
-///
+/// 
 /// Hence, the `SparseTensor` result has exactly the same non-zero indices and
 /// shape.
 ///
@@ -30520,7 +35438,7 @@ public static func sparseSoftmax<T: FloatingPoint & TensorFlowScalar>(
 /// a matrix of label probabilities, but rather a single label per row
 /// of features.  This label is considered to have probability 1.0 for the
 /// given row.
-///
+/// 
 /// Inputs are the logits, not probabilities.
 ///
 /// - Parameters:
@@ -30627,17 +35545,17 @@ public static func sparseSparseMinimum<T: TensorFlowNumeric>(
 /// If the `shape[split_dim]` is not an integer multiple of `num_split`. Slices
 /// `[0 : shape[split_dim] % num_split]` gets one extra dimension.
 /// For example, if `split_dim = 1` and `num_split = 2` and the input is
-///
+/// 
 ///     input_tensor = shape = [2, 7]
 ///     [    a   d e  ]
 ///     [b c          ]
-///
+/// 
 /// Graphically the output tensors are:
-///
+/// 
 ///     output_tensor[0] = shape = [2, 4]
 ///     [    a  ]
 ///     [b c    ]
-///
+/// 
 ///     output_tensor[1] = shape = [2, 3]
 ///     [ d e  ]
 ///     [      ]
@@ -30711,7 +35629,7 @@ public static func sparseTensorDenseAdd<
 ///
 /// No validity checking is performed on the indices of A.  However, the following
 /// input format is recommended for optimal behavior:
-///
+/// 
 /// if adjoint_a == false:
 ///   A should be sorted in lexicographically increasing order.  Use SparseReorder
 ///   if you're not sure.
@@ -30771,24 +35689,47 @@ public static func sparseTensorSliceDataset<Tvalues: TensorFlowScalar>(
     return op.execute(Int(1))
 }
 
+/// Converts a SparseTensor to a (possibly batched) CSRSparseMatrix.
+///
+/// - Parameters:
+///     - indices: SparseTensor indices.
+///     - values: SparseTensor values.
+///     - dense_shape: SparseTensor dense shape.
+///
+/// - Output sparse_matrix: A (possibly batched) CSRSparseMatrix.
+@inlinable @inline(__always)
+public static func sparseTensorToCSRSparseMatrix<T: FloatingPoint & TensorFlowScalar>(
+    indices: Tensor<Int64>,
+    _ values: Tensor<T>,
+    denseShape: Tensor<Int64>
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("SparseTensorToCSRSparseMatrix", nOutputs)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.addInput(indices)
+    op.addInput(values)
+    op.addInput(denseShape)
+    return op.execute(Int(1))
+}
+
 /// Converts a sparse representation into a dense tensor.
 ///
 /// Builds an array `dense` with shape `output_shape` such that
-///
+/// 
 /// ```
 /// # If sparse_indices is scalar
 /// dense[i] = (i == sparse_indices ? sparse_values : default_value)
-///
+/// 
 /// # If sparse_indices is a vector, then for each i
 /// dense[sparse_indices[i]] = sparse_values[i]
-///
+/// 
 /// # If sparse_indices is an n by d matrix, then for each i in [0, n)
 /// dense[sparse_indices[i][0], ..., sparse_indices[i][d-1]] = sparse_values[i]
 /// ```
-///
+/// 
 /// All other values in `dense` are set to `default_value`.  If `sparse_values` is a
 /// scalar, all sparse indices are set to this single value.
-///
+/// 
 /// Indices should be sorted in lexicographic order, and indices must not
 /// contain any repeats. If `validate_indices` is true, these properties
 /// are checked during execution.
@@ -30832,23 +35773,23 @@ public static func sparseToDense<
 /// Applies set operation along last dimension of 2 `SparseTensor` inputs.
 ///
 /// See SetOperationOp::SetOperationFromContext for values of `set_operation`.
-///
+/// 
 /// If `validate_indices` is `True`, `SparseToSparseSetOperation` validates the
 /// order and range of `set1` and `set2` indices.
-///
+/// 
 /// Input `set1` is a `SparseTensor` represented by `set1_indices`, `set1_values`,
 /// and `set1_shape`. For `set1` ranked `n`, 1st `n-1` dimensions must be the same
 /// as `set2`. Dimension `n` contains values in a set, duplicates are allowed but
 /// ignored.
-///
+/// 
 /// Input `set2` is a `SparseTensor` represented by `set2_indices`, `set2_values`,
 /// and `set2_shape`. For `set2` ranked `n`, 1st `n-1` dimensions must be the same
 /// as `set1`. Dimension `n` contains values in a set, duplicates are allowed but
 /// ignored.
-///
+/// 
 /// If `validate_indices` is `True`, this op validates the order and range of `set1`
 /// and `set2` indices.
-///
+/// 
 /// Output `result` is a `SparseTensor` represented by `result_indices`,
 /// `result_values`, and `result_shape`. For `set1` and `set2` ranked `n`, this
 /// has rank `n` and the same 1st `n-1` dimensions as `set1` and `set2`. The `nth`
@@ -30905,23 +35846,23 @@ public static func sparseToSparseSetOperation<T: TensorFlowInteger>(
 /// Applies set operation along last dimension of 2 `SparseTensor` inputs.
 ///
 /// See SetOperationOp::SetOperationFromContext for values of `set_operation`.
-///
+/// 
 /// If `validate_indices` is `True`, `SparseToSparseSetOperation` validates the
 /// order and range of `set1` and `set2` indices.
-///
+/// 
 /// Input `set1` is a `SparseTensor` represented by `set1_indices`, `set1_values`,
 /// and `set1_shape`. For `set1` ranked `n`, 1st `n-1` dimensions must be the same
 /// as `set2`. Dimension `n` contains values in a set, duplicates are allowed but
 /// ignored.
-///
+/// 
 /// Input `set2` is a `SparseTensor` represented by `set2_indices`, `set2_values`,
 /// and `set2_shape`. For `set2` ranked `n`, 1st `n-1` dimensions must be the same
 /// as `set1`. Dimension `n` contains values in a set, duplicates are allowed but
 /// ignored.
-///
+/// 
 /// If `validate_indices` is `True`, this op validates the order and range of `set1`
 /// and `set2` indices.
-///
+/// 
 /// Output `result` is a `SparseTensor` represented by `result_indices`,
 /// `result_values`, and `result_shape`. For `set1` and `set2` ranked `n`, this
 /// has rank `n` and the same 1st `n-1` dimensions as `set1` and `set2`. The `nth`
@@ -31037,6 +35978,30 @@ public static func splitV<
     return op.execute(Int(numSplit))
 }
 
+/// Creates a dataset that executes a SQL query and emits rows of the result set.
+///
+/// - Parameters:
+///     - driver_name: The database type. Currently, the only supported type is 'sqlite'.
+///     - data_source_name: A connection string to connect to the database.
+///     - query: A SQL query to execute.
+@inlinable @inline(__always)
+public static func sqlDataset(
+    driverName: StringTensor,
+    dataSourceName: StringTensor,
+    query: StringTensor,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?]
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("SqlDataset", nOutputs)
+    op.updateAttribute("output_types", outputTypes)
+    op.updateAttribute("output_shapes", outputShapes)
+    op.addInput(driverName)
+    op.addInput(dataSourceName)
+    op.addInput(query)
+    return op.execute(Int(1))
+}
+
 /// Computes square root of x element-wise.
 ///
 /// I.e., \\(y = \sqrt{x} = x^{1/2}\\).
@@ -31105,16 +36070,16 @@ public static func squaredDifference<T: TensorFlowNumeric>(
 /// all dimensions of size 1 removed. If you don't want to remove all size 1
 /// dimensions, you can remove specific size 1 dimensions by specifying
 /// `axis`.
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// # 't' is a tensor of shape [1, 2, 1, 3, 1, 1]
 /// shape(squeeze(t)) ==> [2, 3]
 /// ```
-///
+/// 
 /// Or, to remove specific size 1 dimensions:
-///
+/// 
 /// ```
 /// # 't' is a tensor of shape [1, 2, 1, 3, 1, 1]
 /// shape(squeeze(t, [2, 4])) ==> [1, 2, 3, 1]
@@ -31508,7 +36473,7 @@ public static func statefulUniform<
 
 /// Outputs random integers from a uniform distribution.
 ///
-/// The generated values are uniform integers covering the whole range of `dtype`. 
+/// The generated values are uniform integers covering the whole range of `dtype`.
 ///
 /// - Parameters:
 ///     - resource: The handle of the resource variable that stores the state of the RNG.
@@ -31542,7 +36507,7 @@ public static func statefulUniformFullInt<
 /// The generated values are uniform integers in the range `[minval, maxval)`.
 /// The lower bound `minval` is included in the range, while the upper bound
 /// `maxval` is excluded.
-///
+/// 
 /// The random integers are slightly biased unless `maxval - minval` is an exact
 /// power of two.  The bias is small for values of `maxval - minval` significantly
 /// smaller than the range of the output (either `2^32` or `2^64`).
@@ -31589,7 +36554,7 @@ public static func statefulUniformInt<
 ///               `True` and zero means False; if the scalar is a string, non-empty
 ///               means `True` and empty means `False`. If the tensor is not a scalar,
 ///               being empty means False and being non-empty means True.
-///
+///         
 ///               This should only be used when the if then/else body functions do not
 ///               have stateful ops.
 ///     - input: A list of input tensors.
@@ -31616,7 +36581,8 @@ public static func statelessIf<
     cond: Tensor<Tcond>,
     _ input: Tin,
     thenBranch: (ThenbranchIn) -> ThenbranchOut,
-    elseBranch: (ElsebranchIn) -> ElsebranchOut
+    elseBranch: (ElsebranchIn) -> ElsebranchOut,
+    outputShapes: [TensorShape?]
 ) -> Tout {
   let nOutputs = Int(Tout._typeList.count)
     let op = makeOp("StatelessIf", nOutputs)
@@ -31625,6 +36591,7 @@ public static func statelessIf<
     op.updateAttribute("Tout", Tout._typeList)
     op.updateAttribute("then_branch", thenBranch)
     op.updateAttribute("else_branch", elseBranch)
+    op.updateAttribute("output_shapes", outputShapes)
     op.addInput(cond)
     op.addInputList(input)
     return op.execute(Int(Tout._typeList.count))
@@ -31664,7 +36631,7 @@ public static func statelessMultinomial<
 /// Outputs deterministic pseudorandom values from a normal distribution.
 ///
 /// The generated values will have mean 0 and standard deviation 1.
-///
+/// 
 /// The outputs are a deterministic function of `shape` and `seed`.
 ///
 /// - Parameters:
@@ -31697,7 +36664,7 @@ public static func statelessRandomNormal<
 ///
 /// The generated values follow a uniform distribution in the range `[0, 1)`. The
 /// lower bound 0 is included in the range, while the upper bound 1 is excluded.
-///
+/// 
 /// The outputs are a deterministic function of `shape` and `seed`.
 ///
 /// - Parameters:
@@ -31729,7 +36696,7 @@ public static func statelessRandomUniform<
 /// Outputs deterministic pseudorandom random integers from a uniform distribution.
 ///
 /// The generated values follow a uniform distribution in the range `[minval, maxval)`.
-///
+/// 
 /// The outputs are a deterministic function of `shape`, `seed`, `minval`, and `maxval`.
 ///
 /// - Parameters:
@@ -31769,7 +36736,7 @@ public static func statelessRandomUniformInt<
 /// The generated values follow a normal distribution with mean 0 and standard
 /// deviation 1, except that values whose magnitude is more than 2 standard
 /// deviations from the mean are dropped and re-picked.
-///
+/// 
 /// The outputs are a deterministic function of `shape` and `seed`.
 ///
 /// - Parameters:
@@ -31811,7 +36778,7 @@ public static func statelessTruncatedNormal<
 ///               a string, non-empty means True and empty means False. If the
 ///               tensor is not a scalar, non-emptiness means True and False
 ///               otherwise.
-///
+///         
 ///               This should only be used when the while condition and body functions
 ///               do not have stateful ops.
 ///     - body:       A function that takes a list of tensors and returns another
@@ -31829,13 +36796,17 @@ public static func statelessWhile<
 >(
     _ input: T,
     cond: (CondIn) -> CondOut,
-    body: (BodyIn) -> BodyOut
+    body: (BodyIn) -> BodyOut,
+    outputShapes: [TensorShape?],
+    parallelIterations: Int64 = 10
 ) -> T {
   let nOutputs = Int(input._typeList.count)
     let op = makeOp("StatelessWhile", nOutputs)
     op.updateAttribute("T", input._typeList)
     op.updateAttribute("cond", cond)
     op.updateAttribute("body", body)
+    op.updateAttribute("output_shapes", outputShapes)
+    op.updateAttribute("parallel_iterations", parallelIterations)
     op.addInputList(input)
     return op.execute(Int(input._typeList.count))
 }
@@ -31846,7 +36817,7 @@ public static func statelessWhile<
 /// regular expression to be matched with every element of the input tensor.
 /// The boolean values (True or False) of the output tensor indicate
 /// if the input matches the regex pattern provided.
-///
+/// 
 /// The pattern follows the re2 syntax (https://github.com/google/re2/wiki/Syntax)
 ///
 /// - Parameter input: A string tensor of the text to be processed.
@@ -31895,6 +36866,19 @@ public static func staticRegexReplace(
     return op.execute(Int(1))
 }
 
+/// Creates a statistics manager resource.
+@inlinable @inline(__always)
+public static func statsAggregatorHandle(
+    container: String,
+    sharedName: String
+) -> ResourceHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("StatsAggregatorHandle", nOutputs)
+    op.updateAttribute("container", container)
+    op.updateAttribute("shared_name", sharedName)
+    return op.execute(Int(1))
+}
+
 @inlinable @inline(__always)
 public static func statsAggregatorHandleV2(
     container: String,
@@ -31920,20 +36904,31 @@ public static func statsAggregatorSetSummaryWriter(
     op.execute()
 }
 
+/// Produces a summary of any statistics recorded by the given statistics manager.
+@inlinable @inline(__always)
+public static func statsAggregatorSummary(
+    iterator: ResourceHandle
+) -> StringTensor {
+  let nOutputs = Int(1)
+    let op = makeOp("StatsAggregatorSummary", nOutputs)
+    op.addInput(iterator)
+    return op.execute(Int(1))
+}
+
 /// Stops gradient computation.
 ///
 /// When executed in a graph, this op outputs its input tensor as-is.
-///
+/// 
 /// When building ops to compute gradients, this op prevents the contribution of
 /// its inputs to be taken into account.  Normally, the gradient generator adds ops
 /// to a graph to compute the derivatives of a specified 'loss' by recursively
 /// finding out inputs that contributed to its computation.  If you insert this op
 /// in the graph it inputs are masked from the gradient generator.  They are not
 /// taken into account for computing gradients.
-///
+/// 
 /// This is useful any time you want to compute a value with TensorFlow but need
 /// to pretend that the value was a constant. Some examples include:
-///
+/// 
 /// *  The *EM* algorithm where the *M-step* should not involve backpropagation
 ///    through the output of the *E-step*.
 /// *  Contrastive divergence training of Boltzmann machines where, when
@@ -31956,23 +36951,23 @@ public static func stopGradient<T: TensorFlowScalar>(
 ///
 /// Note, most python users will want to use the Python `Tensor.__getitem__`
 /// or `Variable.__getitem__` rather than this op directly.
-///
+/// 
 /// The goal of this op is to produce a new tensor with a subset of
 /// the elements from the `n` dimensional `input` tensor. The subset is chosen using
 /// a sequence of `m` sparse range specifications encoded into the arguments
 /// of this function. Note, in some cases
 /// `m` could be equal to `n`, but this need not be the case. Each
 /// range specification entry can be one of the following:
-///
+/// 
 /// - An ellipsis (...). Ellipses are used to imply zero or more
 ///   dimensions of full-dimension selection and are produced using
 ///   `ellipsis_mask`. For example, `foo[...]` is the identity slice.
-///
+/// 
 /// - A new axis. This is used to insert a new shape=1 dimension and is
 ///   produced using `new_axis_mask`. For example, `foo[:, ...]` where
 ///   `foo` is shape `(3, 4)` produces a `(1, 3, 4)` tensor.
-///
-///
+/// 
+/// 
 /// - A range `begin:end:stride`. This is used to specify how much to choose from
 ///   a given dimension. `stride` can be any integer but 0.  `begin` is an integer
 ///   which represents the index of the first value to select while `end` represents
@@ -31988,17 +36983,17 @@ public static func stopGradient<T: TensorFlowScalar>(
 ///   and `end` of `0` and `2`. Another example is `foo[-2::-1]` which reverses the
 ///   first dimension of a tensor while dropping the last two (in the original
 ///   order elements). For example `foo = [1,2,3,4]; foo[-2::-1]` is `[4,3]`.
-///
+/// 
 /// - A single index. This is used to keep only elements that have a given
 ///   index. For example (`foo[2, :]` on a shape `(5,6)` tensor produces a
 ///   shape `(6,)` tensor. This is encoded in `begin` and `end` and
 ///   `shrink_axis_mask`.
-///
+/// 
 /// Each conceptual range specification is encoded in the op's argument. This
 /// encoding is best understand by considering a non-trivial example. In
 /// particular,
 /// `foo[1, 2:4, None, ..., :-3:-1, :]` will be encoded as
-///
+/// 
 /// ```
 /// begin = [1, 2, x, x, 0, x] # x denotes don't care (usually 0)
 /// end = [2, 4, x, x, -3, x]
@@ -32009,37 +37004,37 @@ public static func stopGradient<T: TensorFlowScalar>(
 /// new_axis_mask = 1<<2 4
 /// shrink_axis_mask = 1<<0
 /// ```
-///
+/// 
 /// In this case if `foo.shape` is (5, 5, 5, 5, 5, 5) the final shape of
 /// the slice becomes (2, 1, 5, 5, 2, 5).
 /// Let us walk step by step through each argument specification.
-///
+/// 
 /// 1.  The first argument in the example slice is turned into `begin = 1` and
 /// `end = begin + 1 = 2`. To disambiguate from the original spec `2:4` we
 /// also set the appropriate bit in `shrink_axis_mask`.
-///
+/// 
 /// 2. `2:4` is contributes 2, 4, 1 to begin, end, and stride. All masks have
 /// zero bits contributed.
-///
+/// 
 /// 3. None is a synonym for `tf.newaxis`. This means insert a dimension of size 1
 /// dimension in the final shape. Dummy values are contributed to begin,
 /// end and stride, while the new_axis_mask bit is set.
-///
+/// 
 /// 4. `...` grab the full ranges from as many dimensions as needed to
 /// fully specify a slice for every dimension of the input shape.
-///
+/// 
 /// 5. `:-3:-1` shows the use of negative indices. A negative index `i` associated
 /// with a dimension that has shape `s` is converted to a positive index
 /// `s + i`. So `-1` becomes `s-1` (i.e. the last element). This conversion
 /// is done internally so begin, end and strides receive x, -3, and -1.
 /// The appropriate begin_mask bit is set to indicate the start range is the
 /// full range (ignoring the x).
-///
+/// 
 /// 6. `:` indicates that the entire contents of the corresponding dimension
 /// is selected. This is equivalent to `::` or `0::1`. begin, end, and strides
 /// receive 0, 0, and 1, respectively. The appropriate bits in `begin_mask` and
 /// `end_mask` are also set.
-///
+/// 
 /// *Requirements*:
 ///   `0 != strides[i] for i in [0, m)`
 ///   `ellipsis_mask must be a power of two (only one ellipsis)`
@@ -32116,7 +37111,7 @@ public static func stridedSlice<
 /// `shape`, its gradient will have the same shape (which is passed here
 /// as `shape`). The gradient will be zero in any element that the slice
 /// does not select.
-///
+/// 
 /// Arguments are the same as StridedSliceGrad with the exception that
 /// `dy` is the input gradient to be propagated and `shape` is the
 /// shape of `StridedSlice`'s `input`.
@@ -32207,8 +37202,15 @@ public static func stringJoin(
 /// String lengths of `input`.
 ///
 /// Computes the length of each string given in the input tensor.
+/// 
+/// >>> strings = tf.constant(['Hello','TensorFlow', '\U0001F642'])
+/// >>> tf.strings.length(strings).numpy() # default counts bytes
+/// array([ 5, 10, 4], dtype=int32)
+/// >>> tf.strings.length(strings, unit="UTF8_CHAR").numpy()
+/// array([ 5, 10, 1], dtype=int32)
+/// 
 ///
-/// - Parameter input: The string for which to compute the length.
+/// - Parameter input: The strings for which to compute the length for each element.
 ///
 /// - Attr unit: The unit that is counted to compute string length.  One of: `"BYTE"` (for
 ///     the number of bytes in each string) or `"UTF8_CHAR"` (for the number of UTF-8
@@ -32242,21 +37244,86 @@ public static func stringListAttr(
     op.execute()
 }
 
+///
+/// Converts each string in the input Tensor to lowercase.
+@inlinable @inline(__always)
+public static func stringLower(
+    _ input: StringTensor,
+    encoding: String
+) -> StringTensor {
+  let nOutputs = Int(1)
+    let op = makeOp("StringLower", nOutputs)
+    op.updateAttribute("encoding", encoding)
+    op.addInput(input)
+    return op.execute(Int(1))
+}
+
+/// Creates ngrams from ragged string data.
+///
+/// This op accepts a ragged tensor with 1 ragged dimension containing only
+/// strings and outputs a ragged tensor with 1 ragged dimension containing ngrams
+/// of that string, joined along the innermost axis.
+///
+/// - Parameters:
+///     - data: The values tensor of the ragged string tensor to make ngrams out of. Must be a
+///         1D string tensor.
+///     - data_splits: The splits tensor of the ragged string tensor to make ngrams out of.
+///
+/// - Attrs:
+///     - separator: The string to append between elements of the token. Use "" for no separator.
+///     - ngram_widths: The sizes of the ngrams to create.
+///     - left_pad: The string to use to pad the left side of the ngram sequence. Only used if
+///         pad_width != 0.
+///     - right_pad: The string to use to pad the right side of the ngram sequence. Only used if
+///         pad_width != 0.
+///     - pad_width: The number of padding elements to add to each side of each
+///         sequence. Note that padding will never be greater than 'ngram_widths'-1
+///         regardless of this value. If `pad_width=-1`, then add `max(ngram_widths)-1`
+///         elements.
+///
+/// - Outputs:
+///     - ngrams: The values tensor of the output ngrams ragged tensor.
+///     - ngrams_splits: The splits tensor of the output ngrams ragged tensor.
+@inlinable @inline(__always)
+public static func stringNGrams<Tsplits: TensorFlowIndex>(
+    data: StringTensor,
+    dataSplits: Tensor<Tsplits>,
+    separator: String,
+    ngramWidths: [Int32],
+    leftPad: String,
+    rightPad: String,
+    padWidth: Int64,
+    preserveShortSequences: Bool
+) -> (ngrams: StringTensor, ngramsSplits: Tensor<Tsplits>) {
+  let nOutputs = Int(1) + Int(1)
+    let op = makeOp("StringNGrams", nOutputs)
+    op.updateAttribute("separator", separator)
+    op.updateAttribute("ngram_widths", ngramWidths)
+    op.updateAttribute("left_pad", leftPad)
+    op.updateAttribute("right_pad", rightPad)
+    op.updateAttribute("pad_width", padWidth)
+    op.updateAttribute("preserve_short_sequences", preserveShortSequences)
+    op.updateAttribute("Tsplits", Tsplits.tensorFlowDataType)
+    op.addInput(data)
+    op.addInput(dataSplits)
+    return op.execute(Int(1), Int(1))
+}
+
 /// Split elements of `input` based on `delimiter` into a `SparseTensor`.
 ///
 /// Let N be the size of source (typically N will be the batch size). Split each
 /// element of `input` based on `delimiter` and return a `SparseTensor`
 /// containing the splitted tokens. Empty tokens are ignored.
-///
+/// 
 /// `delimiter` can be empty, or a string of split characters. If `delimiter` is an
 ///  empty string, each element of `input` is split into individual single-byte
 ///  character strings, including splitting of UTF-8 multibyte sequences. Otherwise
 ///  every character of `delimiter` is a potential split point.
-///
+/// 
 /// For example:
 ///   N = 2, input[0] is 'hello world' and input[1] is 'a b c', then the output
 ///   will be
-///
+/// 
 ///   indices = [0, 0;
 ///              0, 1;
 ///              1, 0;
@@ -32296,7 +37363,7 @@ public static func stringSplit(
 /// Let N be the size of source (typically N will be the batch size). Split each
 /// element of `source` based on `sep` and return a `SparseTensor`
 /// containing the split tokens. Empty tokens are ignored.
-///
+/// 
 /// For example, N = 2, source[0] is 'hello world' and source[1] is 'a b c',
 /// then the output will be
 /// ```
@@ -32308,14 +37375,14 @@ public static func stringSplit(
 /// st.shape = [2, 3]
 /// st.values = ['hello', 'world', 'a', 'b', 'c']
 /// ```
-///
+/// 
 /// If `sep` is given, consecutive delimiters are not grouped together and are
 /// deemed to delimit empty strings. For example, source of `"1<>2<><>3"` and
 /// sep of `"<>"` returns `["1", "2", "", "3"]`. If `sep` is None or an empty
 /// string, consecutive whitespace are regarded as a single separator, and the
 /// result will contain no empty strings at the startor end if the string has
 /// leading or trailing whitespace.
-///
+/// 
 /// Note that the above mentioned behavior matches python's str.split.
 ///
 /// - Parameters:
@@ -32356,7 +37423,7 @@ public static func stringStrip(
 ///
 /// The hash function is deterministic on the content of the string within the
 /// process.
-///
+/// 
 /// Note that the hash function may change from time to time.
 /// This functionality will be deprecated and it's recommended to use
 /// `tf.string_to_hash_bucket_fast()` or `tf.string_to_hash_bucket_strong()`.
@@ -32407,19 +37474,22 @@ public static func stringToHashBucketFast(
 /// The hash function is deterministic on the content of the string within the
 /// process. The hash function is a keyed hash function, where attribute `key`
 /// defines the key of the hash function. `key` is an array of 2 elements.
-///
+/// 
 /// A strong hash is important when inputs may be malicious, e.g. URLs with
 /// additional components. Adversaries could try to make their inputs hash to the
 /// same bucket for a denial-of-service attack or to skew the results. A strong
-/// hash prevents this by making it difficult, if not infeasible, to compute inputs
-/// that hash to the same bucket. This comes at a cost of roughly 4x higher compute
+/// hash can be used to make it difficult to find inputs with a skewed hash value
+/// distribution over buckets. This requires that the hash function is
+/// seeded by a high-entropy (random) "key" unknown to the adversary.
+/// 
+/// The additional robustness comes at a cost of roughly 4x higher compute
 /// time than `tf.string_to_hash_bucket_fast`.
 ///
 /// - Parameter input: The strings to assign a hash bucket.
 ///
 /// - Attrs:
 ///     - num_buckets: The number of buckets.
-///     - key: The key for the keyed hash function passed as a list of two uint64
+///     - key: The key used to seed the hash function, passed as a list of two uint64
 ///         elements.
 ///
 /// - Output output: A Tensor of the same shape as the input `string_tensor`.
@@ -32441,6 +37511,13 @@ public static func stringToHashBucketStrong(
 ///
 /// (Note that int32 overflow results in an error while float overflow
 /// results in a rounded value.)
+/// 
+/// Example:
+/// 
+/// >>> strings = ["5.0", "3.0", "7.0"]
+/// >>> tf.strings.to_number(strings)
+/// <tf.Tensor: shape=(3,), dtype=float32, numpy=array([5., 3., 7.], dtype=float32)>
+/// 
 ///
 /// - Attr out_type: The numeric type to interpret each string in `string_tensor` as.
 ///
@@ -32453,6 +37530,20 @@ public static func stringToNumber<OutType: TensorFlowNumeric>(
     let op = makeOp("StringToNumber", nOutputs)
     op.updateAttribute("out_type", OutType.tensorFlowDataType)
     op.addInput(stringTensor)
+    return op.execute(Int(1))
+}
+
+///
+/// Converts each string in the input Tensor to uppercase.
+@inlinable @inline(__always)
+public static func stringUpper(
+    _ input: StringTensor,
+    encoding: String
+) -> StringTensor {
+  let nOutputs = Int(1)
+    let op = makeOp("StringUpper", nOutputs)
+    op.updateAttribute("encoding", encoding)
+    op.addInput(input)
     return op.execute(Int(1))
 }
 
@@ -32489,38 +37580,38 @@ public static func sub<T: TensorFlowNumeric>(
 ///
 /// For each string in the input `Tensor`, creates a substring starting at index
 /// `pos` with a total length of `len`.
-///
+/// 
 /// If `len` defines a substring that would extend beyond the length of the input
-/// string, then as many characters as possible are used.
-///
+/// string, or if `len` is negative, then as many characters as possible are used.
+/// 
 /// A negative `pos` indicates distance within the string backwards from the end.
-///
+/// 
 /// If `pos` specifies an index which is out of range for any of the input strings,
 /// then an `InvalidArgumentError` is thrown.
-///
+/// 
 /// `pos` and `len` must have the same shape, otherwise a `ValueError` is thrown on
 /// Op creation.
-///
+/// 
 /// *NOTE*: `Substr` supports broadcasting up to two dimensions. More about
 /// broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-///
+/// 
 /// ---
-///
+/// 
 /// Examples
-///
+/// 
 /// Using scalar `pos` and `len`:
-///
+/// 
 /// ```python
 /// input = [b'Hello', b'World']
 /// position = 1
 /// length = 3
-///
+/// 
 /// output = [b'ell', b'orl']
 /// ```
-///
+/// 
 /// Using `pos` and `len` with same shape as `input`:
-///
+/// 
 /// ```python
 /// input = [[b'ten', b'eleven', b'twelve'],
 ///          [b'thirteen', b'fourteen', b'fifteen'],
@@ -32531,14 +37622,14 @@ public static func sub<T: TensorFlowNumeric>(
 /// length =   [[2, 3, 4],
 ///             [4, 3, 2],
 ///             [5, 5, 5]]
-///
+/// 
 /// output = [[b'en', b'eve', b'lve'],
 ///           [b'hirt', b'urt', b'te'],
 ///           [b'ixtee', b'vente', b'hteen']]
 /// ```
-///
+/// 
 /// Broadcasting `pos` and `len` onto `input`:
-///
+/// 
 /// ```
 /// input = [[b'ten', b'eleven', b'twelve'],
 ///          [b'thirteen', b'fourteen', b'fifteen'],
@@ -32546,20 +37637,20 @@ public static func sub<T: TensorFlowNumeric>(
 ///          [b'nineteen', b'twenty', b'twentyone']]
 /// position = [1, 2, 3]
 /// length =   [1, 2, 3]
-///
+/// 
 /// output = [[b'e', b'ev', b'lve'],
 ///           [b'h', b'ur', b'tee'],
 ///           [b'i', b've', b'hte'],
 ///           [b'i', b'en', b'nty']]
 /// ```
-///
+/// 
 /// Broadcasting `input` onto `pos` and `len`:
-///
+/// 
 /// ```
 /// input = b'thirteen'
 /// position = [1, 5, 7]
 /// length =   [3, 2, 1]
-///
+/// 
 /// output = [b'hir', b'ee', b'n']
 /// ```
 ///
@@ -32642,12 +37733,12 @@ public static func summaryWriter(
 ///
 /// Computes the SVD of each inner matrix in `input` such that
 /// `input[..., :, :] = u[..., :, :] * diag(s[..., :, :]) * transpose(v[..., :, :])`
-///
+/// 
 /// ```python
 /// # a is a tensor containing a batch of matrices.
 /// # s is a tensor of singular values for each matrix.
-/// # u is the tensor containing of left singular vectors for each matrix.
-/// # v is the tensor containing of right singular vectors for each matrix.
+/// # u is the tensor containing the left singular vectors for each matrix.
+/// # v is the tensor containing the right singular vectors for each matrix.
 /// s, u, v = svd(a)
 /// s, _, _ = svd(a, compute_uv=False)
 /// ```
@@ -32690,7 +37781,7 @@ public static func svd<T: FloatingPoint & TensorFlowScalar>(
 ///
 /// If `pred` is true, the `data` input is forwarded to `output_true`. Otherwise,
 /// the data goes to `output_false`.
-///
+/// 
 /// See also `RefSwitch` and `Merge`.
 ///
 /// - Parameters:
@@ -32721,22 +37812,22 @@ public static func switch_<T: TensorFlowScalar>(
 ///     - Tin: the type list for the input list.
 ///     - Tout: the type list for the input list.
 ///     - f: The function we want to compute the gradient for.
-///
+///         
 ///         The function 'f' must be a numerical function which takes N inputs and
 ///         produces M outputs. Its gradient function 'g', which is computed by
 ///         this SymbolicGradient op is a function taking N + M inputs and
 ///         produces N outputs.
-///
+///         
 ///         I.e. if we have
 ///            (y1, y2, ..., y_M) = f(x1, x2, ..., x_N),
 ///         then, g is
 ///            (dL/dx1, dL/dx2, ..., dL/dx_N) = g(x1, x2, ..., x_N,
 ///                                              dL/dy1, dL/dy2, ..., dL/dy_M),
-///
+///         
 ///         where L is a scalar-value function of (x1, x2, ..., xN) (e.g., the
 ///         loss function). dL/dx_i is the partial derivative of L with respect
 ///         to x_i.
-///
+///         
 ///         (Needs some math expert to say the comment above better.)
 ///
 /// - Output output: a list of output tensors of size N;
@@ -32805,7 +37896,11 @@ public static func tFRecordReaderV2(
     return op.execute(Int(1))
 }
 
-/// CompilationResultProto indicating the status of the TPU compilation.
+/// Returns the result of a TPU compilation.
+///
+/// This operation returns the result of a TPU compilation as a serialized
+/// CompilationResultProto, which holds a status and an error message if an error
+/// occurred during compilation.
 @inlinable @inline(__always)
 public static func tPUCompilationResult(
 ) -> StringTensor {
@@ -32885,96 +37980,23 @@ public static func tPUPartitionedCall<
 >(
     args: Tin,
     deviceOrdinal: Tensor<Int32>,
-    f: (FIn) -> FOut
+    f: (FIn) -> FOut,
+    autotunerThresh: Int64 = 0
 ) -> Tout {
   let nOutputs = Int(Tout._typeList.count)
     let op = makeOp("TPUPartitionedCall", nOutputs)
     op.updateAttribute("Tin", args._typeList)
     op.updateAttribute("Tout", Tout._typeList)
     op.updateAttribute("f", f)
+    op.updateAttribute("autotuner_thresh", autotunerThresh)
     op.addInputList(args)
     op.addInput(deviceOrdinal)
     return op.execute(Int(Tout._typeList.count))
 }
 
-/// Runs replicated computations on a distributed TPU system.
+/// Metadata indicating how the TPU computation should be replicated.
 ///
-/// - Parameters:
-///     - inputs: the inputs to 'computation', flattened, in replica-major order.
-///     - broadcast_inputs: additional arguments to broadcast to all replicas. The
-///         broadcast inputs are appended to the per-replica inputs when calling
-///         computation.
-///     - guaranteed_constants: arguments which have been guaranteed to not
-///         change their values during the session lifetime. These contain tensors marked as
-///         constant using the GuaranteeConstOp.
-///
-/// - Attrs:
-///     - computation: a function containing the computation to run.
-///     - num_replicas: the number of replicas of the computation to run.
-///     - num_cores_per_replica: the number of logical cores in each replica.
-///     - topology: A serialized tensorflow.tpu.TopologyProto that describes the TPU
-///         topology.
-///     - use_tpu: a bool indicating if this computation will run on TPU or CPU/GPU.
-///         Currently, only supports a default placement (computation is placed on GPU
-///         if one is available, and on CPU if not).
-///     - device_assignment: a flattened array with shape
-///         [replica, num_cores_per_replica, mesh_dimension] that maps the coordinates
-///         of logical cores in each replica of a computation to physical coordinates in
-///         the TPU topology.
-///     - Tinputs: the types of the arguments to 'computation'.
-///     - Tbroadcast_inputs: the types of the additional arguments to broadcast to all
-///         replicas.
-///     - Tguaranteed_constants: the types of the arguments to 'guaranteed_constants'.
-///     - output_types: the types of the outputs of 'computation'.
-///
-/// - Output outputs: the outputs of 'computation'.
-@inlinable @inline(__always)
-public static func tPUReplicate<
-    ComputationIn: TensorGroup,
-    ComputationOut: TensorGroup,
-    Tinputs: TensorArrayProtocol,
-    TbroadcastInputs: TensorArrayProtocol,
-    TguaranteedConstants: TensorArrayProtocol,
-    OutputTypes: TensorGroup
->(
-    inputs: Tinputs,
-    broadcastInputs: TbroadcastInputs,
-    variables: [ResourceHandle],
-    guaranteedConstants: TguaranteedConstants,
-    computation: (ComputationIn) -> ComputationOut,
-    numReplicas: Int64,
-    numCoresPerReplica: Int64 = 1,
-    topology: String,
-    useTpu: Bool = true,
-    deviceAssignment: [Int32],
-    hostComputeCore: [String],
-    paddingMap: [String],
-    stepMarkerLocation: String = "STEP_MARK_AT_ENTRY"
-) -> OutputTypes {
-  let nOutputs = Int(OutputTypes._typeList.count)
-    let op = makeOp("TPUReplicate", nOutputs)
-    op.updateAttribute("computation", computation)
-    op.updateAttribute("num_replicas", numReplicas)
-    op.updateAttribute("num_cores_per_replica", numCoresPerReplica)
-    op.updateAttribute("topology", topology)
-    op.updateAttribute("use_tpu", useTpu)
-    op.updateAttribute("device_assignment", deviceAssignment)
-    op.updateAttribute("host_compute_core", hostComputeCore)
-    op.updateAttribute("Tinputs", inputs._typeList)
-    op.updateAttribute("Tbroadcast_inputs", broadcastInputs._typeList)
-    op.updateAttribute("NumVariables", variables.count)
-    op.updateAttribute("Tguaranteed_constants", guaranteedConstants._typeList)
-    op.updateAttribute("output_types", OutputTypes._typeList)
-    op.updateAttribute("padding_map", paddingMap)
-    op.updateAttribute("step_marker_location", stepMarkerLocation)
-    op.addInputList(inputs)
-    op.addInputList(broadcastInputs)
-    op.addInputList(variables)
-    op.addInputList(guaranteedConstants)
-    return op.execute(Int(OutputTypes._typeList.count))
-}
-
-/// Metadata indicaitng how the TPU computation should be replicated.
+/// This operation holds the metadata common to operations of a `tpu.replicate()` computation subgraph.
 ///
 /// - Attrs:
 ///     - num_replicas: Number of replicas of the computation
@@ -32993,7 +38015,8 @@ public static func tPUReplicateMetadata(
     computationShape: [Int32],
     hostComputeCore: [String],
     paddingMap: [String],
-    stepMarkerLocation: String = "STEP_MARK_AT_ENTRY"
+    stepMarkerLocation: String = "STEP_MARK_AT_ENTRY",
+    allowSoftPlacement: Bool = false
 ) {
   let nOutputs = 0
     let op = makeOp("TPUReplicateMetadata", nOutputs)
@@ -33006,23 +38029,50 @@ public static func tPUReplicateMetadata(
     op.updateAttribute("host_compute_core", hostComputeCore)
     op.updateAttribute("padding_map", paddingMap)
     op.updateAttribute("step_marker_location", stepMarkerLocation)
+    op.updateAttribute("allow_soft_placement", allowSoftPlacement)
     op.execute()
 }
 
 /// Connects N inputs to an N-way replicated TPU computation.
+///
+/// This operation holds a replicated input to a `tpu.replicate()` computation subgraph.
+/// Each replicated input has the same shape and type alongside the output.
+/// 
+/// For example:
+/// ```
+/// %a = "tf.opA"()
+/// %b = "tf.opB"()
+/// %replicated_input = "tf.TPUReplicatedInput"(%a, %b)
+/// %computation = "tf.Computation"(%replicated_input)
+/// ```
+/// The above computation has a replicated input of two replicas.
 @inlinable @inline(__always)
 public static func tPUReplicatedInput<T: TensorFlowScalar>(
-    inputs: [Tensor<T>]
+    inputs: [Tensor<T>],
+    isMirroredVariable: Bool = false,
+    index: Int64 = -1
 ) -> Tensor<T> {
   let nOutputs = Int(1)
     let op = makeOp("TPUReplicatedInput", nOutputs)
     op.updateAttribute("N", inputs.count)
     op.updateAttribute("T", T.tensorFlowDataType)
+    op.updateAttribute("is_mirrored_variable", isMirroredVariable)
+    op.updateAttribute("index", index)
     op.addInputList(inputs)
     return op.execute(Int(1))
 }
 
-/// Connects outputs of an N-way replicated computation to N outputs.
+/// Connects N outputs from an N-way replicated TPU computation.
+///
+/// This operation holds a replicated output from a `tpu.replicate()` computation subgraph.
+/// Each replicated output has the same shape and type alongside the input.
+/// 
+/// For example:
+/// ```
+/// %computation = "tf.Computation"()
+/// %replicated_output:2 = "tf.TPUReplicatedOutput"(%computation)
+/// ```
+/// The above computation has a replicated output of two replicas.
 @inlinable @inline(__always)
 public static func tPUReplicatedOutput<T: TensorFlowScalar>(
     _ input: Tensor<T>,
@@ -33066,19 +38116,19 @@ public static func takeDataset(
 /// match.  When the final `SparseTensor` is created, it has rank one
 /// higher than the ranks of the incoming `SparseTensor` objects
 /// (they have been concatenated along a new row dimension on the left).
-///
+/// 
 /// The output `SparseTensor` object's shape values for all dimensions but the
 /// first are the max across the input `SparseTensor` objects' shape values
 /// for the corresponding dimensions.  Its first shape value is `N`, the minibatch
 /// size.
-///
+/// 
 /// The input `SparseTensor` objects' indices are assumed ordered in
 /// standard lexicographic order.  If this is not the case, after this
 /// step run `SparseReorder` to restore index ordering.
-///
+/// 
 /// For example, if the handles represent an input, which is a `[2, 3]` matrix
 /// representing two original `SparseTensor` objects:
-///
+/// 
 /// ```
 ///     index = [ 0]
 ///             [10]
@@ -33086,18 +38136,18 @@ public static func takeDataset(
 ///     values = [1, 2, 3]
 ///     shape = [50]
 /// ```
-///
+/// 
 /// and
-///
+/// 
 /// ```
 ///     index = [ 2]
 ///             [10]
 ///     values = [4, 5]
 ///     shape = [30]
 /// ```
-///
+/// 
 /// then the final `SparseTensor` will be:
-///
+/// 
 /// ```
 ///     index = [0  0]
 ///             [0 10]
@@ -33138,7 +38188,52 @@ public static func takeManySparseFromTensorsMap<Dtype: TensorFlowScalar>(
     return op.execute(Int(1), Int(1), Int(1))
 }
 
+/// Creates a dataset that stops iteration when predicate` is false.
+///
+/// The `predicate` function must return a scalar boolean and accept the
+/// following arguments:
+/// 
+/// * One tensor for each component of an element of `input_dataset`.
+/// * One tensor for each value in `other_arguments`.
+///
+/// - Parameter other_arguments: A list of tensors, typically values that were captured when
+///     building a closure for `predicate`.
+///
+/// - Attr predicate: A function returning a scalar boolean.
+@inlinable @inline(__always)
+public static func takeWhileDataset<
+    PredicateIn: TensorGroup,
+    PredicateOut: TensorGroup,
+    Targuments: TensorArrayProtocol
+>(
+    inputDataset: VariantHandle,
+    otherArguments: Targuments,
+    predicate: (PredicateIn) -> PredicateOut,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?]
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("TakeWhileDataset", nOutputs)
+    op.updateAttribute("predicate", predicate)
+    op.updateAttribute("Targuments", otherArguments._typeList)
+    op.updateAttribute("output_types", outputTypes)
+    op.updateAttribute("output_shapes", outputShapes)
+    op.addInput(inputDataset)
+    op.addInputList(otherArguments)
+    return op.execute(Int(1))
+}
+
 /// Computes tan of x element-wise.
+///
+///   Given an input tensor, this function computes tangent of every
+///   element in the tensor. Input range is `(-inf, inf)` and
+///   output range is `(-inf, inf)`. If input lies outside the boundary, `nan`
+///   is returned.
+/// 
+///   ```python
+///   x = tf.constant([-float("inf"), -9, -0.5, 1, 1.2, 200, 10000, float("inf")])
+///   tf.math.tan(x) ==> [nan 0.45231566 -0.5463025 1.5574077 2.572152 -1.7925274 0.32097113 nan]
+///   ```
 @inlinable @inline(__always)
 public static func tan<T: TensorFlowNumeric>(
     _ x: Tensor<T>
@@ -33151,6 +38246,15 @@ public static func tan<T: TensorFlowNumeric>(
 }
 
 /// Computes hyperbolic tangent of `x` element-wise.
+///
+///   Given an input tensor, this function computes hyperbolic tangent of every
+///   element in the tensor. Input range is `[-inf, inf]` and
+///   output range is `[-1,1]`.
+/// 
+///   ```python
+///   x = tf.constant([-float("inf"), -5, -0.5, 1, 1.2, 2, 3, float("inf")])
+///   tf.math.tanh(x) ==> [-1. -0.99990916 -0.46211717 0.7615942 0.8336547 0.9640276 0.9950547 1.]
+///   ```
 @inlinable @inline(__always)
 public static func tanh<T: FloatingPoint & TensorFlowScalar>(
     _ x: Tensor<T>
@@ -33225,15 +38329,15 @@ public static func tensorArrayConcatV2<Dtype: TensorFlowScalar>(
 /// Concat the elements from the TensorArray into value `value`.
 ///
 /// Takes `T` elements of shapes
-///
+/// 
 ///   ```
 ///   (n0 x d0 x d1 x ...), (n1 x d0 x d1 x ...), ..., (n(T-1) x d0 x d1 x ...)
 ///   ```
-///
+/// 
 /// and concatenates them into a Tensor of shape:
-///
+/// 
 ///   ```(n0 + n1 + ... + n(T-1) x d0 x d1 x ...)```
-///
+/// 
 /// All elements must have the same shape (excepting the first dimension).
 ///
 /// - Parameters:
@@ -33338,11 +38442,11 @@ public static func tensorArrayGradV2(
 /// Creates a TensorArray for storing the gradients of values in the given handle.
 ///
 /// If the given TensorArray gradient already exists, returns a reference to it.
-///
+/// 
 /// Locks the size of the original TensorArray by disabling its dynamic size flag.
-///
+/// 
 /// **A note about the input flow_in:**
-///
+/// 
 /// The handle flow_in forces the execution of the gradient lookup to occur
 /// only after certain other operations have occurred.  For example, when
 /// the forward TensorArray is dynamically sized, writes to this TensorArray
@@ -33351,25 +38455,25 @@ public static func tensorArrayGradV2(
 /// Furthermore, the size of the forward TensorArray is frozen by this call.
 /// As a result, the flow is used to ensure that the call to generate the gradient
 /// TensorArray only happens after all writes are executed.
-///
+/// 
 /// In the case of dynamically sized TensorArrays, gradient computation should
 /// only be performed on read operations that have themselves been chained via
 /// flow to occur only after all writes have executed. That way the final size
 /// of the forward TensorArray is known when this operation is called.
-///
+/// 
 /// **A note about the source attribute:**
-///
+/// 
 /// TensorArray gradient calls use an accumulator TensorArray object.  If
 /// multiple gradients are calculated and run in the same session, the multiple
 /// gradient nodes may accidentally flow through the same accumulator TensorArray.
 /// This double counts and generally breaks the TensorArray gradient flow.
-///
+/// 
 /// The solution is to identify which gradient call this particular
 /// TensorArray gradient is being called in.  This is performed by identifying
 /// a unique string (e.g. "gradients", "gradients_1", ...) from the input
 /// gradient Tensor's name.  This string is used as a suffix when creating
 /// the TensorArray gradient object here (the attribute `source`).
-///
+/// 
 /// The attribute `source` is added as a suffix to the forward TensorArray's
 /// name when performing the creation / lookup, so that each separate gradient
 /// calculation gets its own TensorArray accumulator.
@@ -33565,21 +38669,21 @@ public static func tensorArraySplitV2<T: TensorFlowScalar>(
 /// Split the data from the input value into TensorArray elements.
 ///
 /// Assuming that `lengths` takes on values
-///
+/// 
 ///   ```(n0, n1, ..., n(T-1))```
-///
+/// 
 /// and that `value` has shape
-///
+/// 
 ///   ```(n0 + n1 + ... + n(T-1) x d0 x d1 x ...)```,
-///
+/// 
 /// this splits values into a TensorArray with T tensors.
-///
+/// 
 /// TensorArray index t will be the subtensor of values with starting position
-///
+/// 
 ///   ```(n0 + n1 + ... + n(t-1), 0, 0, ...)```
-///
+/// 
 /// and having size
-///
+/// 
 ///   ```nt x d0 x d1 x ...```
 ///
 /// - Parameters:
@@ -33855,11 +38959,11 @@ public static func tensorForestTreeSize(
 /// Concats all tensors in the list along the 0th dimension.
 ///
 /// Requires that all tensors have the same shape except the first dimension.
-///
+/// 
 /// input_handle: The input list.
 /// tensor: The concated result.
 /// lengths: Output tensor containing sizes of the 0th dimension of tensors in the list, used for computing the gradient.
-///
+/// 
 @inlinable @inline(__always)
 public static func tensorListConcat<ElementDtype: TensorFlowScalar>(
     inputHandle: VariantHandle,
@@ -33890,7 +38994,7 @@ public static func tensorListConcatLists(
 /// Concats all tensors in the list along the 0th dimension.
 ///
 /// Requires that all tensors have the same shape except the first dimension.
-///
+/// 
 /// input_handle: The input list.
 /// element_shape: The shape of the uninitialized elements in the list. If the first
 ///   dimension is not -1, it is assumed that all list elements have the same
@@ -33900,7 +39004,7 @@ public static func tensorListConcatLists(
 ///   is not already set.
 /// tensor: The concated result.
 /// lengths: Output tensor containing sizes of the 0th dimension of tensors in the list, used for computing the gradient.
-///
+/// 
 @inlinable @inline(__always)
 public static func tensorListConcatV2<
     ElementDtype: TensorFlowScalar,
@@ -33938,7 +39042,7 @@ public static func tensorListElementShape<ShapeType: TensorFlowIndex>(
 /// Creates a TensorList which, when stacked, has the value of `tensor`.
 ///
 /// Each tensor in the result list corresponds to one row of the input tensor.
-///
+/// 
 /// tensor: The input tensor.
 /// output_handle: The list.
 @inlinable @inline(__always)
@@ -33961,8 +39065,8 @@ public static func tensorListFromTensor<
 /// Creates a Tensor by indexing into the TensorList.
 ///
 /// Each row in the produced Tensor corresponds to the element in the TensorList
-/// specified by the given index (see `tf.gather`).  
-///
+/// specified by the given index (see `tf.gather`).
+/// 
 /// input_handle: The input tensor list.
 /// indices: The indices used to index into the list.
 /// values: The tensor.
@@ -34013,7 +39117,7 @@ public static func tensorListLength(
 /// Returns the last element of the input list as well as a list with all but that element.
 ///
 /// Fails if the list is empty.
-///
+/// 
 /// input_handle: the input list
 /// tensor: the withdrawn last element of the list
 /// element_dtype: the type of elements in the list
@@ -34031,7 +39135,7 @@ public static func tensorListPopBack<ElementDtype: TensorFlowScalar>(
     return op.execute(Int(1), Int(1))
 }
 
-/// Returns a list list which has the passed-in `Tensor` as last element and the other elements of the given list in `input_handle`.
+/// Returns a list which has the passed-in `Tensor` as last element and the other elements of the given list in `input_handle`.
 ///
 /// tensor: The tensor to put on the list.
 /// input_handle: The old list.
@@ -34087,10 +39191,10 @@ public static func tensorListReserve<ShapeType: TensorFlowIndex>(
 
 /// Resizes the list.
 ///
-///
+/// 
 /// input_handle: the input list
 /// size: size of the output list
-///
+/// 
 @inlinable @inline(__always)
 public static func tensorListResize(
     inputHandle: VariantHandle,
@@ -34107,11 +39211,11 @@ public static func tensorListResize(
 ///
 /// Each member of the TensorList corresponds to one row of the input tensor,
 /// specified by the given index (see `tf.gather`).
-///
+/// 
 /// tensor: The input tensor.
 /// indices: The indices used to index into the list.
 /// element_shape: The shape of the elements in the list (can be less specified than
-///   the shape of the tensor).  
+///   the shape of the tensor).
 /// output_handle: The TensorList.
 @inlinable @inline(__always)
 public static func tensorListScatter<
@@ -34136,7 +39240,7 @@ public static func tensorListScatter<
 ///
 /// Each member of the TensorList corresponds to one row of the input tensor,
 /// specified by the given index (see `tf.gather`).
-///
+/// 
 /// input_handle: The list to scatter into.
 /// tensor: The input tensor.
 /// indices: The indices used to index into the list.
@@ -34160,7 +39264,7 @@ public static func tensorListScatterIntoExistingList<ElementDtype: TensorFlowSca
 ///
 /// Each member of the TensorList corresponds to one row of the input tensor,
 /// specified by the given index (see `tf.gather`).
-///
+/// 
 /// tensor: The input tensor.
 /// indices: The indices used to index into the list.
 /// element_shape: The shape of the elements in the list (can be less specified than
@@ -34209,7 +39313,7 @@ public static func tensorListSetItem<ElementDtype: TensorFlowScalar>(
 ///
 /// list[i] corresponds to lengths[i] tensors from the input tensor.
 /// The tensor must have rank at least 1 and contain exactly sum(lengths) elements.
-///
+/// 
 /// tensor: The input tensor.
 /// element_shape: A shape compatible with that of elements in the tensor.
 /// lengths: Vector of sizes of the 0th dimension of tensors in the list.
@@ -34236,11 +39340,11 @@ public static func tensorListSplit<
 /// Stacks all tensors in the list.
 ///
 /// Requires that all tensors have the same shape.
-///
+/// 
 /// input_handle: the input list
 /// tensor: the gathered result
 /// num_elements: optional. If not -1, the number of elements in the list.
-///
+/// 
 @inlinable @inline(__always)
 public static func tensorListStack<ElementDtype: TensorFlowScalar>(
     inputHandle: VariantHandle,
@@ -34263,63 +39367,61 @@ public static func tensorListStack<ElementDtype: TensorFlowScalar>(
 /// This operation is very similar to `tf.scatter_nd_add`, except that the updates
 /// are added onto an existing tensor (as opposed to a variable). If the memory
 /// for the existing tensor cannot be re-used, a copy is made and updated.
-///
+/// 
 /// `indices` is an integer tensor containing indices into a new tensor of shape
 /// `shape`.  The last dimension of `indices` can be at most the rank of `shape`:
-///
+/// 
 ///     indices.shape[-1] <= shape.rank
-///
+/// 
 /// The last dimension of `indices` corresponds to indices into elements
 /// (if `indices.shape[-1] = shape.rank`) or slices
 /// (if `indices.shape[-1] < shape.rank`) along dimension `indices.shape[-1]` of
 /// `shape`.  `updates` is a tensor with shape
-///
+/// 
 ///     indices.shape[:-1] + shape[indices.shape[-1]:]
-///
+/// 
 /// The simplest form of tensor_scatter_add is to add individual elements to a
 /// tensor by index. For example, say we want to add 4 elements in a rank-1
 /// tensor with 8 elements.
-///
+/// 
 /// In Python, this scatter add operation would look like this:
-///
+/// 
 /// ```python
 ///     indices = tf.constant([[4], [3], [1], [7]])
 ///     updates = tf.constant([9, 10, 11, 12])
 ///     tensor = tf.ones([8], dtype=tf.int32)
-///     updated = tf.tensor_scatter_add(tensor, indices, updates)
-///     with tf.Session() as sess:
-///       print(sess.run(scatter))
+///     updated = tf.tensor_scatter_nd_add(tensor, indices, updates)
+///     print(updated)
 /// ```
-///
+/// 
 /// The resulting tensor would look like this:
-///
+/// 
 ///     [1, 12, 1, 11, 10, 1, 1, 13]
-///
+/// 
 /// We can also, insert entire slices of a higher rank tensor all at once. For
 /// example, if we wanted to insert two slices in the first dimension of a
 /// rank-3 tensor with two matrices of new values.
-///
+/// 
 /// In Python, this scatter add operation would look like this:
-///
+/// 
 /// ```python
 ///     indices = tf.constant([[0], [2]])
 ///     updates = tf.constant([[[5, 5, 5, 5], [6, 6, 6, 6],
 ///                             [7, 7, 7, 7], [8, 8, 8, 8]],
 ///                            [[5, 5, 5, 5], [6, 6, 6, 6],
 ///                             [7, 7, 7, 7], [8, 8, 8, 8]]])
-///     tensor = tf.ones([4, 4, 4])
-///     updated = tf.tensor_scatter_add(tensor, indices, updates)
-///     with tf.Session() as sess:
-///       print(sess.run(scatter))
+///     tensor = tf.ones([4, 4, 4],dtype=tf.int32)
+///     updated = tf.tensor_scatter_nd_add(tensor, indices, updates)
+///     print(updated)
 /// ```
-///
+/// 
 /// The resulting tensor would look like this:
-///
+/// 
 ///     [[[6, 6, 6, 6], [7, 7, 7, 7], [8, 8, 8, 8], [9, 9, 9, 9]],
 ///      [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]],
 ///      [[6, 6, 6, 6], [7, 7, 7, 7], [8, 8, 8, 8], [9, 9, 9, 9]],
 ///      [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]]]
-///
+/// 
 /// Note that on CPU, if an out of bound index is found, an error is returned.
 /// On GPU, if an out of bound index is found, the index is ignored.
 ///
@@ -34355,63 +39457,61 @@ public static func tensorScatterAdd<
 /// This operation is very similar to `tf.scatter_nd_sub`, except that the updates
 /// are subtracted from an existing tensor (as opposed to a variable). If the memory
 /// for the existing tensor cannot be re-used, a copy is made and updated.
-///
+/// 
 /// `indices` is an integer tensor containing indices into a new tensor of shape
 /// `shape`.  The last dimension of `indices` can be at most the rank of `shape`:
-///
+/// 
 ///     indices.shape[-1] <= shape.rank
-///
+/// 
 /// The last dimension of `indices` corresponds to indices into elements
 /// (if `indices.shape[-1] = shape.rank`) or slices
 /// (if `indices.shape[-1] < shape.rank`) along dimension `indices.shape[-1]` of
 /// `shape`.  `updates` is a tensor with shape
-///
+/// 
 ///     indices.shape[:-1] + shape[indices.shape[-1]:]
-///
+/// 
 /// The simplest form of tensor_scatter_sub is to subtract individual elements
 /// from a tensor by index. For example, say we want to insert 4 scattered elements
 /// in a rank-1 tensor with 8 elements.
-///
+/// 
 /// In Python, this scatter subtract operation would look like this:
-///
+/// 
 /// ```python
 ///     indices = tf.constant([[4], [3], [1], [7]])
 ///     updates = tf.constant([9, 10, 11, 12])
 ///     tensor = tf.ones([8], dtype=tf.int32)
-///     updated = tf.tensor_scatter_sub(tensor, indices, updates)
-///     with tf.Session() as sess:
-///       print(sess.run(scatter))
+///     updated = tf.tensor_scatter_nd_sub(tensor, indices, updates)
+///     print(updated)
 /// ```
-///
+/// 
 /// The resulting tensor would look like this:
-///
+/// 
 ///     [1, -10, 1, -9, -8, 1, 1, -11]
-///
+/// 
 /// We can also, insert entire slices of a higher rank tensor all at once. For
 /// example, if we wanted to insert two slices in the first dimension of a
 /// rank-3 tensor with two matrices of new values.
-///
+/// 
 /// In Python, this scatter add operation would look like this:
-///
+/// 
 /// ```python
 ///     indices = tf.constant([[0], [2]])
 ///     updates = tf.constant([[[5, 5, 5, 5], [6, 6, 6, 6],
 ///                             [7, 7, 7, 7], [8, 8, 8, 8]],
 ///                            [[5, 5, 5, 5], [6, 6, 6, 6],
 ///                             [7, 7, 7, 7], [8, 8, 8, 8]]])
-///     tensor = tf.ones([4, 4, 4])
-///     updated = tf.tensor_scatter_sub(tensor, indices, updates)
-///     with tf.Session() as sess:
-///       print(sess.run(scatter))
+///     tensor = tf.ones([4, 4, 4],dtype=tf.int32)
+///     updated = tf.tensor_scatter_nd_sub(tensor, indices, updates)
+///     print(updated)
 /// ```
-///
+/// 
 /// The resulting tensor would look like this:
-///
+/// 
 ///     [[[-4, -4, -4, -4], [-5, -5, -5, -5], [-6, -6, -6, -6], [-7, -7, -7, -7]],
 ///      [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]],
 ///      [[-4, -4, -4, -4], [-5, -5, -5, -5], [-6, -6, -6, -6], [-7, -7, -7, -7]],
 ///      [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]]]
-///
+/// 
 /// Note that on CPU, if an out of bound index is found, an error is returned.
 /// On GPU, if an out of bound index is found, the index is ignored.
 ///
@@ -34447,74 +39547,72 @@ public static func tensorScatterSub<
 /// This operation is very similar to `tf.scatter_nd`, except that the updates are
 /// scattered onto an existing tensor (as opposed to a zero-tensor). If the memory
 /// for the existing tensor cannot be re-used, a copy is made and updated.
-///
+/// 
 /// If `indices` contains duplicates, then their updates are accumulated (summed).
-///
+/// 
 /// **WARNING**: The order in which updates are applied is nondeterministic, so the
 /// output will be nondeterministic if `indices` contains duplicates -- because
 /// of some numerical approximation issues, numbers summed in different order
 /// may yield different results.
-///
+/// 
 /// `indices` is an integer tensor containing indices into a new tensor of shape
 /// `shape`.  The last dimension of `indices` can be at most the rank of `shape`:
-///
+/// 
 ///     indices.shape[-1] <= shape.rank
-///
+/// 
 /// The last dimension of `indices` corresponds to indices into elements
 /// (if `indices.shape[-1] = shape.rank`) or slices
 /// (if `indices.shape[-1] < shape.rank`) along dimension `indices.shape[-1]` of
 /// `shape`.  `updates` is a tensor with shape
-///
+/// 
 ///     indices.shape[:-1] + shape[indices.shape[-1]:]
-///
+/// 
 /// The simplest form of scatter is to insert individual elements in a tensor by
 /// index. For example, say we want to insert 4 scattered elements in a rank-1
 /// tensor with 8 elements.
-///
+/// 
 /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
 /// <img style="width:100%" src="https://www.tensorflow.org/images/ScatterNd1.png" alt>
 /// </div>
-///
+/// 
 /// In Python, this scatter operation would look like this:
-///
-/// ```python
-///     indices = tf.constant([[4], [3], [1], [7]])
-///     updates = tf.constant([9, 10, 11, 12])
-///     tensor = tf.ones([8], dtype=tf.int32)
-///     updated = tf.tensor_scatter_update(tensor, indices, updates)
-///     with tf.Session() as sess:
-///       print(sess.run(scatter))
-/// ```
-///
-/// The resulting tensor would look like this:
-///
-///     [1, 11, 1, 10, 9, 1, 1, 12]
-///
+/// 
+///     >>> indices = tf.constant([[4], [3], [1], [7]])
+///     >>> updates = tf.constant([9, 10, 11, 12])
+///     >>> tensor = tf.ones([8], dtype=tf.int32)
+///     >>> print(tf.tensor_scatter_nd_update(tensor, indices, updates))
+///     tf.Tensor([ 1 11  1 10  9  1  1 12], shape=(8,), dtype=int32)
+/// 
 /// We can also, insert entire slices of a higher rank tensor all at once. For
 /// example, if we wanted to insert two slices in the first dimension of a
 /// rank-3 tensor with two matrices of new values.
-///
+/// 
 /// In Python, this scatter operation would look like this:
-///
-/// ```python
-///     indices = tf.constant([[0], [2]])
-///     updates = tf.constant([[[5, 5, 5, 5], [6, 6, 6, 6],
-///                             [7, 7, 7, 7], [8, 8, 8, 8]],
-///                            [[5, 5, 5, 5], [6, 6, 6, 6],
-///                             [7, 7, 7, 7], [8, 8, 8, 8]]])
-///     tensor = tf.ones([4, 4, 4])
-///     updated = tf.tensor_scatter_update(tensor, indices, updates)
-///     with tf.Session() as sess:
-///       print(sess.run(scatter))
-/// ```
-///
-/// The resulting tensor would look like this:
-///
-///     [[[5, 5, 5, 5], [6, 6, 6, 6], [7, 7, 7, 7], [8, 8, 8, 8]],
-///      [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]],
-///      [[5, 5, 5, 5], [6, 6, 6, 6], [7, 7, 7, 7], [8, 8, 8, 8]],
-///      [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]]]
-///
+/// 
+///     >>> indices = tf.constant([[0], [2]])
+///     >>> updates = tf.constant([[[5, 5, 5, 5], [6, 6, 6, 6],
+///     ...                         [7, 7, 7, 7], [8, 8, 8, 8]],
+///     ...                        [[5, 5, 5, 5], [6, 6, 6, 6],
+///     ...                         [7, 7, 7, 7], [8, 8, 8, 8]]])
+///     >>> tensor = tf.ones([4, 4, 4], dtype=tf.int32)
+///     >>> print(tf.tensor_scatter_nd_update(tensor, indices, updates).numpy())
+///     [[[5 5 5 5]
+///       [6 6 6 6]
+///       [7 7 7 7]
+///       [8 8 8 8]]
+///      [[1 1 1 1]
+///       [1 1 1 1]
+///       [1 1 1 1]
+///       [1 1 1 1]]
+///      [[5 5 5 5]
+///       [6 6 6 6]
+///       [7 7 7 7]
+///       [8 8 8 8]]
+///      [[1 1 1 1]
+///       [1 1 1 1]
+///       [1 1 1 1]
+///       [1 1 1 1]]]
+/// 
 /// Note that on CPU, if an out of bound index is found, an error is returned.
 /// On GPU, if an out of bound index is found, the index is ignored.
 ///
@@ -34563,7 +39661,7 @@ public static func tensorSliceDataset<ToutputTypes: TensorArrayProtocol>(
 /// The values of `value` are assigned to the positions in the tensor `input` that
 /// are selected by the slice parameters. The slice parameters `begin` `end`
 /// `strides` etc. work exactly as in `StridedSlice`.
-///
+/// 
 /// NOTE this op currently does not support broadcasting and so `value`'s shape
 /// must be exactly the shape produced by the slice of `input`.
 @inlinable @inline(__always)
@@ -34715,13 +39813,62 @@ public static func textLineReaderV2(
     return op.execute(Int(1))
 }
 
+/// Creates a dataset that uses a custom thread pool to compute `input_dataset`.
+///
+/// - Parameter thread_pool: A resource produced by the ThreadPoolHandle op.
+@inlinable @inline(__always)
+public static func threadPoolDataset(
+    inputDataset: VariantHandle,
+    threadPool: ResourceHandle,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?]
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("ThreadPoolDataset", nOutputs)
+    op.updateAttribute("output_types", outputTypes)
+    op.updateAttribute("output_shapes", outputShapes)
+    op.addInput(inputDataset)
+    op.addInput(threadPool)
+    return op.execute(Int(1))
+}
+
+/// Creates a dataset that uses a custom thread pool to compute `input_dataset`.
+///
+/// - Attrs:
+///     - num_threads: The number of threads in the thread pool.
+///     - max_intra_op_parallelism: The maximum degree of parallelism to use within operations that execute on this
+///         threadpool.
+///     - display_name: A human-readable name for the threads that may be visible in some
+///         visualizations.
+///         threadpool.
+///
+/// - Output handle: A resource that can be consumed by one or more ExperimentalThreadPoolDataset
+///     ops.
+@inlinable @inline(__always)
+public static func threadPoolHandle(
+    numThreads: Int64,
+    maxIntraOpParallelism: Int64 = 1,
+    displayName: String,
+    container: String,
+    sharedName: String
+) -> ResourceHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("ThreadPoolHandle", nOutputs)
+    op.updateAttribute("num_threads", numThreads)
+    op.updateAttribute("max_intra_op_parallelism", maxIntraOpParallelism)
+    op.updateAttribute("display_name", displayName)
+    op.updateAttribute("container", container)
+    op.updateAttribute("shared_name", sharedName)
+    return op.execute(Int(1))
+}
+
 /// Generates labels for candidate sampling with a learned unigram distribution.
 ///
 /// See explanations of candidate sampling and the data formats at
 /// go/candidate-sampling.
-///
+/// 
 /// For each batch, this op picks a single set of sampled candidate labels.
-///
+/// 
 /// The advantages of sampling candidates per-batch are simplicity and the
 /// possibility of efficient dense matrix multiplication. The disadvantage is that
 /// the sampled candidates must be chosen independently of the context and of the
@@ -34781,6 +39928,27 @@ public static func threadUnsafeUnigramCandidateSampler(
 /// and the values of `input` are replicated `multiples[i]` times along the 'i'th
 /// dimension. For example, tiling `[a b c d]` by `[2]` produces
 /// `[a b c d a b c d]`.
+/// 
+/// >>> a = tf.constant([[1,2,3],[4,5,6]], tf.int32)
+/// >>> b = tf.constant([1,2], tf.int32)
+/// >>> tf.tile(a, b)
+/// <tf.Tensor: shape=(2, 6), dtype=int32, numpy=
+/// array([[1, 2, 3, 1, 2, 3],
+///        [4, 5, 6, 4, 5, 6]], dtype=int32)>
+/// >>> c = tf.constant([2,1], tf.int32)
+/// >>> tf.tile(a, c)
+/// <tf.Tensor: shape=(4, 3), dtype=int32, numpy=
+/// array([[1, 2, 3],
+///        [4, 5, 6],
+///        [1, 2, 3],
+///        [4, 5, 6]], dtype=int32)>
+/// >>> d = tf.constant([2,2], tf.int32)
+/// >>> tf.tile(a, d)
+/// <tf.Tensor: shape=(4, 6), dtype=int32, numpy=
+/// array([[1, 2, 3, 1, 2, 3],
+///        [4, 5, 6, 4, 5, 6],
+///        [1, 2, 3, 1, 2, 3],
+///        [4, 5, 6, 4, 5, 6]], dtype=int32)>
 ///
 /// - Parameters:
 ///     - input: 1-D or higher.
@@ -34823,7 +39991,7 @@ public static func tileGrad<T: TensorFlowScalar>(
 /// Provides the time since epoch in seconds.
 ///
 /// Returns the timestamp as a `float64` for seconds since the Unix epoch.
-///
+/// 
 /// Note: the timestamp is computed when the op is executed, not when it is added
 /// to the graph.
 @inlinable @inline(__always)
@@ -34840,14 +40008,14 @@ public static func timestamp(
 /// If the input is a vector (rank-1), finds the `k` largest entries in the vector
 /// and outputs their values and indices as vectors.  Thus `values[j]` is the
 /// `j`-th largest entry in `input`, and its index is `indices[j]`.
-///
+/// 
 /// For matrices (resp. higher rank input), computes the top `k` entries in each
 /// row (resp. vector along the last dimension).  Thus,
-///
+/// 
 ///     values.shape = indices.shape = input.shape[:-1] + [k]
-///
+/// 
 /// If two elements are equal, the lower-index element appears first.
-///
+/// 
 /// If `k` varies dynamically, use `TopKV2` below.
 ///
 /// - Parameter input: 1-D or higher with last dimension at least `k`.
@@ -34881,12 +40049,12 @@ public static func topK<T: TensorFlowNumeric>(
 /// If the input is a vector (rank-1), finds the `k` largest entries in the vector
 /// and outputs their values and indices as vectors.  Thus `values[j]` is the
 /// `j`-th largest entry in `input`, and its index is `indices[j]`.
-///
+/// 
 /// For matrices (resp. higher rank input), computes the top `k` entries in each
 /// row (resp. vector along the last dimension).  Thus,
-///
+/// 
 ///     values.shape = indices.shape = input.shape[:-1] + [k]
-///
+/// 
 /// If two elements are equal, the lower-index element appears first.
 ///
 /// - Parameters:
@@ -34936,28 +40104,68 @@ public static func transpose<
     return op.execute(Int(1))
 }
 
-/// Solves tridiagonal systems of equations.
+/// Calculate product with tridiagonal matrix.
 ///
-/// `diagonals` is a tensor of shape `[..., 3, M]` whose inner-most 2 dimensions
-/// represent matrices with three rows being the superdiagonal, diagonals, and
-/// subdiagonals, in order. The last element of the superdiagonal and the first
-/// element of the subdiagonal is ignored.
-/// `rhs` is a tensor of shape `[..., M, K]`, representing K right-hand sides per
-/// each left-hand side.
-/// The output is a tensor of shape `[..., M, K]` containing the solutions.
+/// Calculates product of two matrices, where left matrix is a tridiagonal matrix.
 ///
 /// - Parameters:
-///     - diagonals: Shape is `[..., 3, M]`.
-///     - rhs: Shape is `[..., M, K]`.
+///     - superdiag: Tensor of shape `[..., 1, M]`, representing superdiagonals of
+///         tri-diagonal matrices to the left of multiplication. Last element is ingored.
+///     - maindiag: Tensor of shape `[..., 1, M]`, representing main diagonals of tri-diagonal
+///         matrices to the left of multiplication.
+///     - subdiag: Tensor of shape `[..., 1, M]`, representing subdiagonals of tri-diagonal
+///         matrices to the left of multiplication. First element is ingored.
+///     - rhs: Tensor of shape `[..., M, N]`, representing MxN matrices to the right of
+///         multiplication.
 ///
-/// - Output output: Shape is `[..., M, K]`.
+/// - Output output: Tensor of shape `[..., M, N]` containing the product.
 @inlinable @inline(__always)
-public static func tridiagonalSolve<T: FloatingPoint & TensorFlowScalar>(
-    diagonals: Tensor<T>,
+public static func tridiagonalMatMul<T: FloatingPoint & TensorFlowScalar>(
+    superdiag: Tensor<T>,
+    maindiag: Tensor<T>,
+    subdiag: Tensor<T>,
     rhs: Tensor<T>
 ) -> Tensor<T> {
   let nOutputs = Int(1)
+    let op = makeOp("TridiagonalMatMul", nOutputs)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.addInput(superdiag)
+    op.addInput(maindiag)
+    op.addInput(subdiag)
+    op.addInput(rhs)
+    return op.execute(Int(1))
+}
+
+/// Solves tridiagonal systems of equations.
+///
+///   Solves tridiagonal systems of equations.
+///   Supports batch dimensions and multiple right-hand sides per each left-hand
+///   side.
+///   On CPU, solution is computed via Gaussian elimination with or without partial
+///   pivoting, depending on `partial_pivoting` attribute. On GPU, Nvidia's cuSPARSE
+///   library is used: https://docs.nvidia.com/cuda/cusparse/index.html#gtsv
+///
+/// - Parameters:
+///     - diagonals: Tensor of shape `[..., 3, M]` whose innermost 2 dimensions represent the
+///         tridiagonal matrices with three rows being the superdiagonal, diagonals, and
+///         subdiagonals, in order. The last element of the superdiagonal and the first
+///         element of the subdiagonal is ignored.
+///     - rhs: Tensor of shape `[..., M, K]`, representing K right-hand sides per each
+///         left-hand side.
+///
+/// - Attr partial_pivoting: Whether to apply partial pivoting. Partial pivoting makes the procedure more
+///     stable, but slower.
+///
+/// - Output output: Tensor of shape `[..., M, K]` containing the solutions
+@inlinable @inline(__always)
+public static func tridiagonalSolve<T: FloatingPoint & TensorFlowScalar>(
+    diagonals: Tensor<T>,
+    rhs: Tensor<T>,
+    partialPivoting: Bool = true
+) -> Tensor<T> {
+  let nOutputs = Int(1)
     let op = makeOp("TridiagonalSolve", nOutputs)
+    op.updateAttribute("partial_pivoting", partialPivoting)
     op.updateAttribute("T", T.tensorFlowDataType)
     op.addInput(diagonals)
     op.addInput(rhs)
@@ -34970,7 +40178,7 @@ public static func tridiagonalSolve<T: FloatingPoint & TensorFlowScalar>(
 /// toward zero. I.e. -7 / 5 = -1. This matches C semantics but it is different
 /// than Python semantics. See `FloorDiv` for a division function that matches
 /// Python Semantics.
-///
+/// 
 /// *NOTE*: `TruncateDiv` supports broadcasting. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
 @inlinable @inline(__always)
@@ -34990,7 +40198,7 @@ public static func truncateDiv<T: TensorFlowNumeric>(
 ///
 /// the result here is consistent with a truncating divide. E.g. `truncate(x / y) *
 /// y + truncate_mod(x, y) = x`.
-///
+/// 
 /// *NOTE*: `TruncateMod` supports broadcasting. More about broadcasting
 /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
 @inlinable @inline(__always)
@@ -35046,47 +40254,47 @@ public static func truncatedNormal<
 ///
 /// This op asynchronously performs either a single RPC request, or a batch
 /// of requests.  RPC requests are defined by three main parameters:
-///
+/// 
 ///   - `address` (the host+port or BNS address of the request)
 ///   - `method` (the method name for the request)
 ///   - `request` (the serialized proto string, or vector of strings,
 ///      of the RPC request argument).
-///
+/// 
 /// For example, if you have an RPC service running on port localhost:2345,
 /// and its interface is configured with the following proto declaration:
-///
+/// 
 /// ```
 /// service MyService {
 ///   rpc MyMethod(MyRequestProto) returns (MyResponseProto) {
 ///   }
 /// };
 /// ```
-///
+/// 
 /// then call this op with arguments:
-///
+/// 
 /// ```
 /// address = "localhost:2345"
 /// method = "MyService/MyMethod"
 /// ```
-///
+/// 
 /// The `request` tensor is a string tensor representing serialized `MyRequestProto`
 /// strings; and the output string tensor `response` will have the same shape
 /// and contain (upon successful completion) corresponding serialized
 /// `MyResponseProto` strings.
-///
+/// 
 /// For example, to send a single, empty, `MyRequestProto`, call
 /// this op with `request = ""`.  To send 5 **parallel** empty requests,
 /// call this op with `request = ["", "", "", "", ""]`.
-///
+/// 
 /// More generally, one can create a batch of `MyRequestProto` serialized protos
 /// from regular batched tensors using the `encode_proto` op, and convert
 /// the response `MyResponseProto` serialized protos to batched tensors
 /// using the `decode_proto` op.
-///
+/// 
 /// **NOTE** Working with serialized proto strings is faster than instantiating
 /// actual proto objects in memory, so no performance degradation is expected
 /// compared to writing custom kernels for this workflow.
-///
+/// 
 /// Unlike the standard `Rpc` op, if the connection fails or the remote worker
 /// returns an error status, this op does **not** reraise the exception.
 /// Instead, the `status_code` and `status_message` entry for the corresponding RPC
@@ -35259,7 +40467,7 @@ public static func unary<T: TensorFlowScalar>(
 /// running instance of Unbatch with the same container and shared_name, or receives
 /// a non-empty batched_tensor in which case it finalizes all other concurrently
 /// running instances and outputs its own element from the batch.
-///
+/// 
 /// batched_tensor: The possibly transformed output of Batch. The size of the first
 ///  dimension should remain unchanged by the transformations for the operation to
 ///  work.
@@ -35293,12 +40501,27 @@ public static func unbatch<T: TensorFlowScalar>(
     return op.execute(Int(1))
 }
 
+/// A dataset that splits the elements of its input into multiple elements.
+@inlinable @inline(__always)
+public static func unbatchDataset(
+    inputDataset: VariantHandle,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?]
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("UnbatchDataset", nOutputs)
+    op.updateAttribute("output_types", outputTypes)
+    op.updateAttribute("output_shapes", outputShapes)
+    op.addInput(inputDataset)
+    return op.execute(Int(1))
+}
+
 /// Gradient of Unbatch.
 ///
 /// Acts like Batch but using the given batch_index index of batching things as they
 /// become available. This ensures that the gradients are propagated back in the
 /// same session which did the forward pass.
-///
+/// 
 /// original_input: The input to the Unbatch operation this is the gradient of.
 /// batch_index: The batch_index given to the Unbatch operation this is the gradient
 /// of.
@@ -35334,13 +40557,13 @@ public static func unbatchGrad<T: TensorFlowScalar>(
 ///
 /// The character codepoints for all strings are returned using a single vector
 /// `char_values`, with strings expanded to characters in row-major order.
-///
+/// 
 /// The `row_splits` tensor indicates where the codepoints for
 /// each input string begin and end within the `char_values` tensor.
 /// In particular, the values for the `i`th
 /// string (in row-major order) are stored in the slice
 /// `[row_splits[i]:row_splits[i+1]]`. Thus:
-///
+/// 
 /// * `char_values[row_splits[i]+j]` is the Unicode codepoint for the `j`th
 ///   character in the `i`th string (in row-major order).
 /// * `row_splits[i+1] - row_splits[i]` is the number of characters in the `i`th
@@ -35370,19 +40593,20 @@ public static func unbatchGrad<T: TensorFlowScalar>(
 ///     - row_splits: A 1D int32 tensor containing the row splits.
 ///     - char_values: A 1D int32 Tensor containing the decoded codepoints.
 @inlinable @inline(__always)
-public static func unicodeDecode(
+public static func unicodeDecode<Tsplits: TensorFlowIndex>(
     _ input: StringTensor,
     inputEncoding: String,
     errors: Errors = .replace,
     replacementChar: Int64 = 65533,
     replaceControlCharacters: Bool = false
-) -> (rowSplits: Tensor<Int64>, charValues: Tensor<Int32>) {
+) -> (rowSplits: Tensor<Tsplits>, charValues: Tensor<Int32>) {
   let nOutputs = Int(1) + Int(1)
     let op = makeOp("UnicodeDecode", nOutputs)
     op.updateAttribute("input_encoding", inputEncoding)
     op.updateAttribute("errors", errors.cName)
     op.updateAttribute("replacement_char", replacementChar)
     op.updateAttribute("replace_control_characters", replaceControlCharacters)
+    op.updateAttribute("Tsplits", Tsplits.tensorFlowDataType)
     op.addInput(input)
     return op.execute(Int(1), Int(1))
 }
@@ -35393,13 +40617,13 @@ public static func unicodeDecode(
 /// `char_values`, with strings expanded to characters in row-major order.
 /// Similarly, the character start byte offsets are returned using a single vector
 /// `char_to_byte_starts`, with strings expanded in row-major order.
-///
+/// 
 /// The `row_splits` tensor indicates where the codepoints and start offsets for
 /// each input string begin and end within the `char_values` and
 /// `char_to_byte_starts` tensors.  In particular, the values for the `i`th
 /// string (in row-major order) are stored in the slice
 /// `[row_splits[i]:row_splits[i+1]]`. Thus:
-///
+/// 
 /// * `char_values[row_splits[i]+j]` is the Unicode codepoint for the `j`th
 ///   character in the `i`th string (in row-major order).
 /// * `char_to_bytes_starts[row_splits[i]+j]` is the start byte offset for the `j`th
@@ -35433,19 +40657,20 @@ public static func unicodeDecode(
 ///     - char_to_byte_starts: A 1D int32 Tensor containing the byte index in the input string where each
 ///         character in `char_values` starts.
 @inlinable @inline(__always)
-public static func unicodeDecodeWithOffsets(
+public static func unicodeDecodeWithOffsets<Tsplits: TensorFlowIndex>(
     _ input: StringTensor,
     inputEncoding: String,
     errors: Errors = .replace,
     replacementChar: Int64 = 65533,
     replaceControlCharacters: Bool = false
-) -> (rowSplits: Tensor<Int64>, charValues: Tensor<Int32>, charToByteStarts: Tensor<Int64>) {
+) -> (rowSplits: Tensor<Tsplits>, charValues: Tensor<Int32>, charToByteStarts: Tensor<Int64>) {
   let nOutputs = Int(1) + Int(1) + Int(1)
     let op = makeOp("UnicodeDecodeWithOffsets", nOutputs)
     op.updateAttribute("input_encoding", inputEncoding)
     op.updateAttribute("errors", errors.cName)
     op.updateAttribute("replacement_char", replacementChar)
     op.updateAttribute("replace_control_characters", replaceControlCharacters)
+    op.updateAttribute("Tsplits", Tsplits.tensorFlowDataType)
     op.addInput(input)
     return op.execute(Int(1), Int(1), Int(1))
 }
@@ -35455,16 +40680,16 @@ public static func unicodeDecodeWithOffsets(
 /// Returns a vector of strings, where `output[i]` is constructed by encoding the
 /// Unicode codepoints in `input_values[input_splits[i]:input_splits[i+1]]`
 /// using `output_encoding`.
-///
+/// 
 /// ---
-///
+/// 
 /// Example:
-///
+/// 
 /// ```
 /// input_values = [72, 101, 108, 108, 111, 87, 111, 114, 108, 100]
 /// input_splits = [0, 5, 10]
 /// output_encoding = 'UTF-8'
-///
+/// 
 /// output = ['Hello', 'World']
 /// ```
 ///
@@ -35491,9 +40716,9 @@ public static func unicodeDecodeWithOffsets(
 ///
 /// - Output output: The 1-D Tensor of strings encoded from the provided unicode codepoints.
 @inlinable @inline(__always)
-public static func unicodeEncode(
+public static func unicodeEncode<Tsplits: TensorFlowIndex>(
     inputValues: Tensor<Int32>,
-    inputSplits: Tensor<Int64>,
+    inputSplits: Tensor<Tsplits>,
     errors: Errors = .replace,
     outputEncoding: OutputEncoding,
     replacementChar: Int64 = 65533
@@ -35503,6 +40728,7 @@ public static func unicodeEncode(
     op.updateAttribute("errors", errors.cName)
     op.updateAttribute("output_encoding", outputEncoding.cName)
     op.updateAttribute("replacement_char", replacementChar)
+    op.updateAttribute("Tsplits", Tsplits.tensorFlowDataType)
     op.addInput(inputValues)
     op.addInput(inputSplits)
     return op.execute(Int(1))
@@ -35540,17 +40766,17 @@ public static func unicodeScript(
 /// invalid encoding positions in the input are skipped and not included in the
 /// output. If it set to `strict` then any invalid formatting will result in an
 /// InvalidArgument error.
-///
+/// 
 /// This operation can be used with `output_encoding = input_encoding` to enforce
 /// correct formatting for inputs even if they are already in the desired encoding.
-///
+/// 
 /// If the input is prefixed by a Byte Order Mark needed to determine encoding
 /// (e.g. if the encoding is UTF-16 and the BOM indicates big-endian), then that
 /// BOM will be consumed and not emitted into the output. If the input encoding
 /// is marked with an explicit endianness (e.g. UTF-16-BE), then the BOM is
 /// interpreted as a non-breaking-space and is preserved in the output (including
 /// always for UTF-8).
-///
+/// 
 /// The end result is that if the input is marked as an explicit endianness the
 /// transcoding is faithful to all codepoints in the source. If it is not marked
 /// with an explicit endianness, the BOM is not considered part of the string itself
@@ -35574,7 +40800,7 @@ public static func unicodeScript(
 ///         formatting in the input when `errors='replace'`. Any valid unicode codepoint may
 ///         be used. The default value is the default unicode replacement character is
 ///         0xFFFD or U+65533.)
-///
+///         
 ///         Note that for UTF-8, passing a replacement character expressible in 1 byte, such
 ///         as ' ', will preserve string alignment to the source since invalid bytes will be
 ///         replaced with a 1-byte replacement. For UTF-16-BE and UTF-16-LE, any 1 or 2 byte
@@ -35607,9 +40833,9 @@ public static func unicodeTranscode(
 ///
 /// See explanations of candidate sampling and the data formats at
 /// go/candidate-sampling.
-///
+/// 
 /// For each batch, this op picks a single set of sampled candidate labels.
-///
+/// 
 /// The advantages of sampling candidates per-batch are simplicity and the
 /// possibility of efficient dense matrix multiplication. The disadvantage is that
 /// the sampled candidates must be chosen independently of the context and of the
@@ -35665,19 +40891,26 @@ public static func uniformCandidateSampler(
 /// Finds unique elements in a 1-D tensor.
 ///
 /// This operation returns a tensor `y` containing all of the unique elements of `x`
-/// sorted in the same order that they occur in `x`. This operation also returns a
-/// tensor `idx` the same size as `x` that contains the index of each value of `x`
-/// in the unique output `y`. In other words:
-///
+/// sorted in the same order that they occur in `x`; `x` does not need to be sorted.
+/// This operation also returns a tensor `idx` the same size as `x` that contains
+/// the index of each value of `x` in the unique output `y`. In other words:
+/// 
 /// `y[idx[i]] = x[i] for i in [0, 1,...,rank(x) - 1]`
-///
-/// For example:
-///
+/// 
+/// Examples:
+/// 
 /// ```
 /// # tensor 'x' is [1, 1, 2, 4, 4, 4, 7, 8, 8]
 /// y, idx = unique(x)
 /// y ==> [1, 2, 4, 7, 8]
 /// idx ==> [0, 0, 1, 2, 2, 2, 3, 4, 4]
+/// ```
+/// 
+/// ```
+/// # tensor 'x' is [4, 5, 1, 2, 3, 3, 4, 5]
+/// y, idx = unique(x)
+/// y ==> [4, 5, 1, 2, 3]
+/// idx ==> [0, 1, 2, 3, 4, 4, 0, 1]
 /// ```
 ///
 /// - Parameter x: 1-D.
@@ -35700,6 +40933,21 @@ public static func unique<
     return op.execute(Int(1), Int(1))
 }
 
+/// Creates a dataset that contains the unique elements of `input_dataset`.
+@inlinable @inline(__always)
+public static func uniqueDataset(
+    inputDataset: VariantHandle,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?]
+) -> VariantHandle {
+  let nOutputs = Int(1)
+    let op = makeOp("UniqueDataset", nOutputs)
+    op.updateAttribute("output_types", outputTypes)
+    op.updateAttribute("output_shapes", outputShapes)
+    op.addInput(inputDataset)
+    return op.execute(Int(1))
+}
+
 /// Finds unique elements along an axis of a tensor.
 ///
 /// This operation either returns a tensor `y` containing unique elements
@@ -35709,20 +40957,20 @@ public static func unique<
 /// the number of the elements in `x` along the `axis` dimension. It
 /// contains the index in the unique output `y`.
 /// In other words, for an `1-D` tensor `x` with `axis = None:
-///
+/// 
 /// `y[idx[i]] = x[i] for i in [0, 1,...,rank(x) - 1]`
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// # tensor 'x' is [1, 1, 2, 4, 4, 4, 7, 8, 8]
 /// y, idx = unique(x)
 /// y ==> [1, 2, 4, 7, 8]
 /// idx ==> [0, 0, 1, 2, 2, 2, 3, 4, 4]
 /// ```
-///
+/// 
 /// For an `2-D` tensor `x` with `axis = 0`:
-///
+/// 
 /// ```
 /// # tensor 'x' is [[1, 0, 0],
 /// #                [1, 0, 0],
@@ -35732,9 +40980,9 @@ public static func unique<
 ///        [2, 0, 0]]
 /// idx ==> [0, 0, 1]
 /// ```
-///
+/// 
 /// For an `2-D` tensor `x` with `axis = 1`:
-///
+/// 
 /// ```
 /// # tensor 'x' is [[1, 0, 0],
 /// #                [1, 0, 0],
@@ -35781,11 +41029,11 @@ public static func uniqueV2<
 /// tensor `idx` the same size as `x` that contains the index of each value of `x`
 /// in the unique output `y`. Finally, it returns a third tensor `count` that
 /// contains the count of each element of `y` in `x`. In other words:
-///
+/// 
 /// `y[idx[i]] = x[i] for i in [0, 1,...,rank(x) - 1]`
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// # tensor 'x' is [1, 1, 2, 4, 4, 4, 7, 8, 8]
 /// y, idx, count = unique_with_counts(x)
@@ -35825,11 +41073,11 @@ public static func uniqueWithCounts<
 /// `axis` dimension. The `idx` contains the index in the unique output `y`
 /// and the `count` contains the count in the unique output `y`.
 /// In other words, for an `1-D` tensor `x` with `axis = None:
-///
+/// 
 /// `y[idx[i]] = x[i] for i in [0, 1,...,rank(x) - 1]`
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// # tensor 'x' is [1, 1, 2, 4, 4, 4, 7, 8, 8]
 /// y, idx, count = unique_with_counts(x)
@@ -35837,9 +41085,9 @@ public static func uniqueWithCounts<
 /// idx ==> [0, 0, 1, 2, 2, 2, 3, 4, 4]
 /// count ==> [2, 1, 3, 1, 2]
 /// ```
-///
+/// 
 /// For an `2-D` tensor `x` with `axis = 0`:
-///
+/// 
 /// ```
 /// # tensor 'x' is [[1, 0, 0],
 /// #                [1, 0, 0],
@@ -35850,9 +41098,9 @@ public static func uniqueWithCounts<
 /// idx ==> [0, 0, 1]
 /// count ==> [2, 1]
 /// ```
-///
+/// 
 /// For an `2-D` tensor `x` with `axis = 1`:
-///
+/// 
 /// ```
 /// # tensor 'x' is [[1, 0, 0],
 /// #                [1, 0, 0],
@@ -35898,15 +41146,15 @@ public static func uniqueWithCountsV2<
 ///
 /// Unpacks `num` tensors from `value` by chipping it along the `axis` dimension.
 /// For example, given a tensor of shape `(A, B, C, D)`;
-///
+/// 
 /// If `axis == 0` then the i'th tensor in `output` is the slice `value[i, :, :, :]`
 ///   and each tensor in `output` will have shape `(B, C, D)`. (Note that the
 ///   dimension unpacked along is gone, unlike `split`).
-///
+/// 
 /// If `axis == 1` then the i'th tensor in `output` is the slice `value[:, i, :, :]`
 ///   and each tensor in `output` will have shape `(A, C, D)`.
 /// Etc.
-///
+/// 
 /// This is the opposite of `pack`.
 ///
 /// - Parameter value: 1-D or higher, with `axis` dimension size equal to `num`.
@@ -35930,10 +41178,25 @@ public static func unpack<T: TensorFlowScalar>(
     return op.execute(Int(num))
 }
 
-/// Converts a flat index or array of flat indices into a tuple of
+/// Converts an array of flat indices into a tuple of coordinate arrays.
 ///
-/// coordinate arrays.
-///
+/// 
+/// Example:
+/// 
+/// ```
+/// y = tf.unravel_index(indices=[2, 5, 7], dims=[3, 3])
+/// # 'dims' represent a hypothetical (3, 3) tensor of indices:
+/// # [[0, 1, *2*],
+/// #  [3, 4, *5*],
+/// #  [6, *7*, 8]]
+/// # For each entry from 'indices', this operation returns
+/// # its coordinates (marked with '*'), such as
+/// # 2 ==> (0, 2)
+/// # 5 ==> (1, 2)
+/// # 7 ==> (2, 1)
+/// y ==> [[0, 1, 2], [2, 2, 1]]
+/// ```
+/// 
 /// @compatibility(numpy)
 /// Equivalent to np.unravel_index
 /// @end_compatibility
@@ -35959,39 +41222,96 @@ public static func unravelIndex<Tidx: TensorFlowIndex>(
     return op.execute(Int(1))
 }
 
+/// Joins the elements of `inputs` based on `segment_ids`.
+///
+/// Computes the string join along segments of a tensor.
+/// Given `segment_ids` with rank `N` and `data` with rank `N+M`:
+/// 
+///     `output[i, k1...kM] = strings.join([data[j1...jN, k1...kM])`
+/// 
+/// where the join is over all [j1...jN] such that segment_ids[j1...jN] = i.
+/// Strings are joined in row-major order.
+/// 
+/// For example:
+/// 
+/// ```python
+/// inputs = [['Y', 'q', 'c'], ['Y', '6', '6'], ['p', 'G', 'a']]
+/// output_array = string_ops.unsorted_segment_join(inputs=inputs,
+///                                                 segment_ids=[1, 0, 1],
+///                                                 num_segments=2,
+///                                                 separator=':'))
+/// # output_array ==> [['Y', '6', '6'], ['Y:p', 'q:G', 'c:a']]
+/// 
+/// 
+/// inputs = ['this', 'is', 'a', 'test']
+/// output_array = string_ops.unsorted_segment_join(inputs=inputs,
+///                                                 segment_ids=[0, 0, 0, 0],
+///                                                 num_segments=1,
+///                                                 separator=':'))
+/// # output_array ==> ['this:is:a:test']
+/// ```
+///
+/// - Parameters:
+///     - inputs: The input to be joined.
+///     - segment_ids: A tensor whose shape is a prefix of data.shape.  Negative segment ids are not
+///         supported.
+///     - num_segments: A scalar.
+///
+/// - Attr separator: The separator to use when joining.
+@inlinable @inline(__always)
+public static func unsortedSegmentJoin<
+    Tindices: TensorFlowIndex,
+    Tnumsegments: TensorFlowIndex
+>(
+    inputs: StringTensor,
+    segmentIds: Tensor<Tindices>,
+    numSegments: Tensor<Tnumsegments>,
+    separator: String
+) -> StringTensor {
+  let nOutputs = Int(1)
+    let op = makeOp("UnsortedSegmentJoin", nOutputs)
+    op.updateAttribute("separator", separator)
+    op.updateAttribute("Tindices", Tindices.tensorFlowDataType)
+    op.updateAttribute("Tnumsegments", Tnumsegments.tensorFlowDataType)
+    op.addInput(inputs)
+    op.addInput(segmentIds)
+    op.addInput(numSegments)
+    return op.execute(Int(1))
+}
+
 /// Computes the maximum along segments of a tensor.
 ///
 /// Read
 /// [the section on segmentation](https://tensorflow.org/api_docs/python/tf/math#Segmentation)
 /// for an explanation of segments.
-///
+/// 
 /// This operator is similar to the unsorted segment sum operator found
 /// [(here)](../../../api_docs/python/math_ops.md#UnsortedSegmentSum).
 /// Instead of computing the sum over segments, it computes the maximum such that:
-///
+/// 
 /// \\(output_i = \max_{j...} data[j...]\\) where max is over tuples `j...` such
 /// that `segment_ids[j...] == i`.
-///
+/// 
 /// If the maximum is empty for a given segment ID `i`, it outputs the smallest
 /// possible value for the specific numeric type,
 /// `output[i] = numeric_limits<T>::lowest()`.
-///
+/// 
 /// If the given segment ID `i` is negative, then the corresponding value is
 /// dropped, and will not be included in the result.
-///
+/// 
 /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
 /// <img style="width:100%" src="https://www.tensorflow.org/images/UnsortedSegmentMax.png" alt>
 /// </div>
-///
+/// 
 /// For example:
-///
+/// 
 /// ``` python
 /// c = tf.constant([[1,2,3,4], [5,6,7,8], [4,3,2,1]])
 /// tf.unsorted_segment_max(c, tf.constant([0, 1, 0]), num_segments=2)
 /// # ==> [[ 4,  3, 3, 4],
 /// #       [5,  6, 7, 8]]
 /// ```
-///
+/// 
 ///
 /// - Parameter segment_ids: A tensor whose shape is a prefix of `data.shape`.
 ///
@@ -36024,27 +41344,27 @@ public static func unsortedSegmentMax<
 /// Read
 /// [the section on segmentation](https://tensorflow.org/api_docs/python/tf/math#Segmentation)
 /// for an explanation of segments.
-///
+/// 
 /// This operator is similar to the unsorted segment sum operator found
 /// [(here)](../../../api_docs/python/math_ops.md#UnsortedSegmentSum).
 /// Instead of computing the sum over segments, it computes the minimum such that:
-///
+/// 
 /// \\(output_i = \min_{j...} data_[j...]\\) where min is over tuples `j...` such
 /// that `segment_ids[j...] == i`.
-///
+/// 
 /// If the minimum is empty for a given segment ID `i`, it outputs the largest
 /// possible value for the specific numeric type,
 /// `output[i] = numeric_limits<T>::max()`.
-///
+/// 
 /// For example:
-///
+/// 
 /// ``` python
 /// c = tf.constant([[1,2,3,4], [5,6,7,8], [4,3,2,1]])
 /// tf.unsorted_segment_min(c, tf.constant([0, 1, 0]), num_segments=2)
 /// # ==> [[ 1,  2, 2, 1],
 /// #       [5,  6, 7, 8]]
 /// ```
-///
+/// 
 /// If the given segment ID `i` is negative, then the corresponding value is
 /// dropped, and will not be included in the result.
 ///
@@ -36079,26 +41399,26 @@ public static func unsortedSegmentMin<
 /// Read
 /// [the section on segmentation](https://tensorflow.org/api_docs/python/tf/math#Segmentation)
 /// for an explanation of segments.
-///
+/// 
 /// This operator is similar to the unsorted segment sum operator found
 /// [(here)](../../../api_docs/python/math_ops.md#UnsortedSegmentSum).
 /// Instead of computing the sum over segments, it computes the product of all
 /// entries belonging to a segment such that:
-///
+/// 
 /// \\(output_i = \prod_{j...} data[j...]\\) where the product is over tuples
 /// `j...` such that `segment_ids[j...] == i`.
-///
+/// 
 /// For example:
-///
+/// 
 /// ``` python
 /// c = tf.constant([[1,2,3,4], [5,6,7,8], [4,3,2,1]])
 /// tf.unsorted_segment_prod(c, tf.constant([0, 1, 0]), num_segments=2)
 /// # ==> [[ 4,  6, 6, 4],
 /// #       [5,  6, 7, 8]]
 /// ```
-///
+/// 
 /// If there is no entry for a given segment ID `i`, it outputs 1.
-///
+/// 
 /// If the given segment ID `i` is negative, then the corresponding value is
 /// dropped, and will not be included in the result.
 ///
@@ -36133,30 +41453,30 @@ public static func unsortedSegmentProd<
 /// Read
 /// [the section on segmentation](https://tensorflow.org/api_docs/python/tf/math#Segmentation)
 /// for an explanation of segments.
-///
+/// 
 /// Computes a tensor such that
 /// \\(output[i] = \sum_{j...} data[j...]\\) where the sum is over tuples `j...` such
 /// that `segment_ids[j...] == i`.  Unlike `SegmentSum`, `segment_ids`
 /// need not be sorted and need not cover all values in the full
 /// range of valid values.
-///
+/// 
 /// If the sum is empty for a given segment ID `i`, `output[i] = 0`.
 /// If the given segment ID `i` is negative, the value is dropped and will not be
 /// added to the sum of the segment.
-///
+/// 
 /// `num_segments` should equal the number of distinct segment IDs.
-///
+/// 
 /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
 /// <img style="width:100%" src="https://www.tensorflow.org/images/UnsortedSegmentSum.png" alt>
 /// </div>
-///
+/// 
 /// ``` python
 /// c = tf.constant([[1,2,3,4], [5,6,7,8], [4,3,2,1]])
 /// tf.unsorted_segment_sum(c, tf.constant([0, 1, 0]), num_segments=2)
 /// # ==> [[ 5,  5, 5, 5],
 /// #       [5,  6, 7, 8]]
 /// ```
-///
+/// 
 ///
 /// - Parameter segment_ids: A tensor whose shape is a prefix of `data.shape`.
 ///
@@ -36220,18 +41540,18 @@ public static func unwrapDatasetVariant(
 /// Each set of rows with the same index in (sorted_inputs, values) is treated
 /// independently.  The resulting row is the equivalent of calling
 /// `np.searchsorted(sorted_inputs, values, side='right')`.
-///
-/// The result is not a global index to the entire 
+/// 
+/// The result is not a global index to the entire
 /// `Tensor`, but rather just the index in the last dimension.
-///
+/// 
 /// A 2-D example:
 ///   sorted_sequence = [[0, 3, 9, 9, 10],
 ///                      [1, 2, 3, 4, 5]]
 ///   values = [[2, 4, 9],
 ///             [0, 2, 6]]
-///
+/// 
 ///   result = UpperBound(sorted_sequence, values)
-///
+/// 
 ///   result == [[1, 2, 4],
 ///              [0, 2, 5]]
 ///
@@ -36303,9 +41623,9 @@ public static func varIsInitializedOp(
 /// Returns the shape of the variable pointed to by `resource`.
 ///
 /// This operation returns a 1-D integer tensor representing the shape of `input`.
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// # 't' is [[[1, 1, 1], [2, 2, 2]], [[3, 3, 3], [4, 4, 4]]]
 /// shape(t) ==> [2, 2, 3]
@@ -36329,9 +41649,9 @@ public static func variableShape<OutType: TensorFlowIndex>(
 /// represents the coordinates of the true elements. Keep in mind, the shape of
 /// the output tensor can vary depending on how many true values there are in
 /// `condition`. Indices are output in row-major order.
-///
+/// 
 /// For example:
-///
+/// 
 /// ```
 /// # 'input' tensor is [[True, False]
 /// #                    [True, False]]
@@ -36339,7 +41659,7 @@ public static func variableShape<OutType: TensorFlowIndex>(
 /// # 'input' has rank of 2, so coordinates have two indices.
 /// where(input) ==> [[0, 0],
 ///                   [1, 0]]
-///
+/// 
 /// # `condition` tensor is [[[True, False]
 /// #                     [True, False]]
 /// #                    [[False, True]
@@ -36353,7 +41673,7 @@ public static func variableShape<OutType: TensorFlowIndex>(
 ///                   [1, 0, 1],
 ///                   [1, 1, 1],
 ///                   [2, 1, 1]]
-///
+/// 
 /// # `condition` tensor is [[[1.5,  0.0]
 /// #                     [-0.5, 0.0]]
 /// #                    [[0.0,  0.25]
@@ -36367,7 +41687,7 @@ public static func variableShape<OutType: TensorFlowIndex>(
 ///                   [1, 0, 1],
 ///                   [1, 1, 1],
 ///                   [2, 1, 1]]
-///
+/// 
 /// # `condition` tensor is [[[1.5 + 0.0j, 0.0  + 0.0j]
 /// #                     [0.0 + 0.5j, 0.0  + 0.0j]]
 /// #                    [[0.0 + 0.0j, 0.25 + 1.5j]
@@ -36675,6 +41995,647 @@ public static func xdivy<T: FloatingPoint & TensorFlowScalar>(
     return op.execute(Int(1))
 }
 
+/// Helper operator for performing XLA-style broadcasts
+///
+/// Broadcasts `lhs` and `rhs` to the same rank, by adding size 1 dimensions to
+/// whichever of `lhs` and `rhs` has the lower rank, using XLA's broadcasting rules
+/// for binary operators.
+///
+/// - Parameters:
+///     - lhs: the LHS input tensor
+///     - rhs: the RHS input tensor
+///     - broadcast_dims: an XLA-style broadcast dimension specification
+///
+/// - Outputs:
+///     - lhs_output: the broadcasted LHS tensor
+///     - rhs_output: the broadcasted RHS tensor
+@inlinable @inline(__always)
+public static func xlaBroadcastHelper<
+    T: TensorFlowNumeric,
+    Tindices: TensorFlowIndex
+>(
+    lhs: Tensor<T>,
+    rhs: Tensor<T>,
+    broadcastDims: Tensor<Tindices>
+) -> (lhsOutput: Tensor<T>, rhsOutput: Tensor<T>) {
+  let nOutputs = Int(1) + Int(1)
+    let op = makeOp("XlaBroadcastHelper", nOutputs)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.updateAttribute("Tindices", Tindices.tensorFlowDataType)
+    op.addInput(lhs)
+    op.addInput(rhs)
+    op.addInput(broadcastDims)
+    return op.execute(Int(1), Int(1))
+}
+
+/// Wraps the XLA ConvGeneralDilated operator, documented at
+///
+///  https://www.tensorflow.org/performance/xla/operation_semantics#conv_convolution
+/// .
+///
+/// - Parameters:
+///     - lhs: the input tensor
+///     - rhs: the kernel tensor
+///     - window_strides: the inter-window strides
+///     - padding: the padding to apply at the start and end of each input dimensions
+///     - lhs_dilation: dilation to apply between input elements
+///     - rhs_dilation: dilation to apply between kernel elements
+///     - feature_group_count: number of feature groups for grouped convolution.
+///
+/// - Attrs:
+///     - dimension_numbers: a serialized xla::ConvolutionDimensionNumbers proto.
+///     - precision_config: a serialized xla::PrecisionConfig proto.
+@inlinable @inline(__always)
+public static func xlaConv<
+    T: TensorFlowNumeric,
+    Tindices: TensorFlowIndex
+>(
+    lhs: Tensor<T>,
+    rhs: Tensor<T>,
+    windowStrides: Tensor<Tindices>,
+    padding: Tensor<Tindices>,
+    lhsDilation: Tensor<Tindices>,
+    rhsDilation: Tensor<Tindices>,
+    featureGroupCount: Tensor<Tindices>,
+    dimensionNumbers: String,
+    precisionConfig: String
+) -> Tensor<T> {
+  let nOutputs = Int(1)
+    let op = makeOp("XlaConv", nOutputs)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.updateAttribute("Tindices", Tindices.tensorFlowDataType)
+    op.updateAttribute("dimension_numbers", dimensionNumbers)
+    op.updateAttribute("precision_config", precisionConfig)
+    op.addInput(lhs)
+    op.addInput(rhs)
+    op.addInput(windowStrides)
+    op.addInput(padding)
+    op.addInput(lhsDilation)
+    op.addInput(rhsDilation)
+    op.addInput(featureGroupCount)
+    return op.execute(Int(1))
+}
+
+/// Wraps the XLA DotGeneral operator, documented at
+///
+///  https://www.tensorflow.org/performance/xla/operation_semantics#dotgeneral
+/// .
+///
+/// - Parameters:
+///     - lhs: the LHS tensor
+///     - rhs: the RHS tensor
+///
+/// - Attrs:
+///     - dimension_numbers: a serialized xla::DotDimensionNumbers proto.
+///     - precision_config: a serialized xla::PrecisionConfig proto.
+@inlinable @inline(__always)
+public static func xlaDot<T: TensorFlowNumeric>(
+    lhs: Tensor<T>,
+    rhs: Tensor<T>,
+    dimensionNumbers: String,
+    precisionConfig: String
+) -> Tensor<T> {
+  let nOutputs = Int(1)
+    let op = makeOp("XlaDot", nOutputs)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.updateAttribute("dimension_numbers", dimensionNumbers)
+    op.updateAttribute("precision_config", precisionConfig)
+    op.addInput(lhs)
+    op.addInput(rhs)
+    return op.execute(Int(1))
+}
+
+/// Wraps the XLA DynamicSlice operator, documented at
+///
+///  https://www.tensorflow.org/performance/xla/operation_semantics#dynamicslice
+/// .
+///
+/// DynamicSlice extracts a sub-array from the input array at dynamic
+/// start_indices. The size of the slice in each dimension is passed in
+/// size_indices, which specify the end point of exclusive slice intervals in each
+/// dimension -- [start, start + size). The shape of start_indices must have rank 1,
+/// with dimension size equal to the rank of operand.
+///
+/// - Parameters:
+///     - input: A `Tensor` of type T.
+///     - start_indices: List of N integers containing the slice size for each
+///         dimension. Each value must be strictly greater than zero, and start + size
+///         must be less than or equal to the size of the dimension to avoid
+///         implementation defined behavior.
+@inlinable @inline(__always)
+public static func xlaDynamicSlice<
+    T: TensorFlowScalar,
+    Tindices: TensorFlowIndex
+>(
+    _ input: Tensor<T>,
+    startIndices: Tensor<Tindices>,
+    sizeIndices: Tensor<Tindices>
+) -> Tensor<T> {
+  let nOutputs = Int(1)
+    let op = makeOp("XlaDynamicSlice", nOutputs)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.updateAttribute("Tindices", Tindices.tensorFlowDataType)
+    op.addInput(input)
+    op.addInput(startIndices)
+    op.addInput(sizeIndices)
+    return op.execute(Int(1))
+}
+
+/// Wraps the XLA DynamicUpdateSlice operator, documented at
+///
+///  https://www.tensorflow.org/performance/xla/operation_semantics#dynamicupdateslice
+/// .
+///
+/// XlaDynamicUpdateSlice generates a result which is the value of the `input`
+/// operand, with a slice update overwritten at `indices`. The shape of `update`
+/// determines the shape of the sub-array of the result which is updated. The shape
+/// of indices must be rank == 1, with dimension size equal to the rank of `input`.
+///
+/// Handling of out-of-bounds slice indices is implementation-defined.
+///
+/// - Parameters:
+///     - input: A `Tensor` of type T.
+///     - update: A `Tensor` of type T. Same rank as `input`.
+///     - indices: A vector of indices into `input`. Must have length equal to the rank of
+///         `input`.
+///
+/// - Output output: A `Tensor` of type T.
+@inlinable @inline(__always)
+public static func xlaDynamicUpdateSlice<
+    T: TensorFlowScalar,
+    Tindices: TensorFlowIndex
+>(
+    _ input: Tensor<T>,
+    update: Tensor<T>,
+    indices: Tensor<Tindices>
+) -> Tensor<T> {
+  let nOutputs = Int(1)
+    let op = makeOp("XlaDynamicUpdateSlice", nOutputs)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.updateAttribute("Tindices", Tindices.tensorFlowDataType)
+    op.addInput(input)
+    op.addInput(update)
+    op.addInput(indices)
+    return op.execute(Int(1))
+}
+
+/// An op which supports basic einsum op with 2 inputs and 1 output.
+///
+/// This op has better TPU performnce since it doesn't have explicitly reshape and
+/// transpose operations as tf.einsum does.
+@inlinable @inline(__always)
+public static func xlaEinsum<T: FloatingPoint & TensorFlowScalar>(
+    _ a: Tensor<T>,
+    _ b: Tensor<T>,
+    equation: String
+) -> Tensor<T> {
+  let nOutputs = Int(1)
+    let op = makeOp("XlaEinsum", nOutputs)
+    op.updateAttribute("equation", equation)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.addInput(a)
+    op.addInput(b)
+    return op.execute(Int(1))
+}
+
+/// output = cond ? then_branch(inputs) : else_branch(inputs).
+///
+/// - Parameters:
+///     - cond: A boolean scalar.
+///     - inputs: A list of input tensors.
+///
+/// - Attrs:
+///     - then_branch: A function takes 'inputs' and returns a list of tensors,
+///         whose types are the same as what else_branch returns.
+///     - else_branch: A function takes 'inputs' and returns a list of tensors.
+///         whose types are the same as what then_branch returns.
+///
+/// - Output output: A list of tensors returned by either then_branch(inputs) or
+///     else_branch(inputs). The input shapes of the then_branch and
+///     else_branch must match.
+@inlinable @inline(__always)
+public static func xlaIf<
+    Tcond: TensorFlowScalar,
+    ThenbranchIn: TensorGroup,
+    ThenbranchOut: TensorGroup,
+    ElsebranchIn: TensorGroup,
+    ElsebranchOut: TensorGroup,
+    Tin: TensorArrayProtocol,
+    Tout: TensorGroup
+>(
+    cond: Tensor<Tcond>,
+    inputs: Tin,
+    thenBranch: (ThenbranchIn) -> ThenbranchOut,
+    elseBranch: (ElsebranchIn) -> ElsebranchOut
+) -> Tout {
+  let nOutputs = Int(Tout._typeList.count)
+    let op = makeOp("XlaIf", nOutputs)
+    op.updateAttribute("Tcond", Tcond.tensorFlowDataType)
+    op.updateAttribute("then_branch", thenBranch)
+    op.updateAttribute("else_branch", elseBranch)
+    op.updateAttribute("Tin", inputs._typeList)
+    op.updateAttribute("Tout", Tout._typeList)
+    op.addInput(cond)
+    op.addInputList(inputs)
+    return op.execute(Int(Tout._typeList.count))
+}
+
+/// Wraps the XLA Sort operator, documented at
+///
+///  https://www.tensorflow.org/performance/xla/operation_semantics#sort
+/// .
+///
+/// Sorts a tensor. Currently only sorts in ascending order are supported.
+///
+/// - Parameters:
+///     - keys: A `Tensor` of type K.
+///     - values: A `Tensor` of type V.
+///
+/// - Outputs:
+///     - sorted_keys: A `Tensor` of type K.
+///     - sorted_values: A `Tensor` of type V.
+@inlinable @inline(__always)
+public static func xlaKeyValueSort<
+    K: TensorFlowNumeric,
+    V: TensorFlowScalar
+>(
+    keys: Tensor<K>,
+    _ values: Tensor<V>
+) -> (sortedKeys: Tensor<K>, sortedValues: Tensor<V>) {
+  let nOutputs = Int(1) + Int(1)
+    let op = makeOp("XlaKeyValueSort", nOutputs)
+    op.updateAttribute("K", K.tensorFlowDataType)
+    op.updateAttribute("V", V.tensorFlowDataType)
+    op.addInput(keys)
+    op.addInput(values)
+    return op.execute(Int(1), Int(1))
+}
+
+/// Wraps the XLA Pad operator, documented at
+///
+///  https://www.tensorflow.org/performance/xla/operation_semantics#pad
+/// .
+///
+/// - Parameters:
+///     - input: A `Tensor` of type T.
+///     - padding_value: A scalar `Tensor` of type T.
+///     - padding_low: the padding to apply at the start of each input dimensions
+///     - padding_high: the padding to apply at the end of each input dimension.
+///     - padding_interior: the padding to apply between each input element.
+///
+/// - Output output: A `Tensor` of type T.
+@inlinable @inline(__always)
+public static func xlaPad<
+    T: TensorFlowScalar,
+    Tindices: TensorFlowIndex
+>(
+    _ input: Tensor<T>,
+    paddingValue: Tensor<T>,
+    paddingLow: Tensor<Tindices>,
+    paddingHigh: Tensor<Tindices>,
+    paddingInterior: Tensor<Tindices>
+) -> Tensor<T> {
+  let nOutputs = Int(1)
+    let op = makeOp("XlaPad", nOutputs)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.updateAttribute("Tindices", Tindices.tensorFlowDataType)
+    op.addInput(input)
+    op.addInput(paddingValue)
+    op.addInput(paddingLow)
+    op.addInput(paddingHigh)
+    op.addInput(paddingInterior)
+    return op.execute(Int(1))
+}
+
+/// Receives the named tensor from another XLA computation. Wraps the XLA Recv
+///
+/// operator documented at
+///  https://www.tensorflow.org/performance/xla/operation_semantics#recv .
+///
+/// - Attrs:
+///     - dtype: The type of the tensor.
+///     - tensor_name: A string key that identifies the channel.
+///     - shape: The shape of the tensor.
+///
+/// - Output tensor: The tensor to receive.
+@inlinable @inline(__always)
+public static func xlaRecv<Dtype: TensorFlowScalar>(
+    tensorName: String,
+    shape: TensorShape?
+) -> Tensor<Dtype> {
+  let nOutputs = Int(1)
+    let op = makeOp("XlaRecv", nOutputs)
+    op.updateAttribute("dtype", Dtype.tensorFlowDataType)
+    op.updateAttribute("tensor_name", tensorName)
+    op.updateAttribute("shape", shape)
+    return op.execute(Int(1))
+}
+
+/// Wraps the XLA Reduce operator, documented at
+///
+///  https://www.tensorflow.org/performance/xla/operation_semantics#reduce .
+///
+/// - Parameters:
+///     - input: the input tensor
+///     - init_value: a scalar representing the initial value for the reduction
+///
+/// - Attrs:
+///     - dimensions_to_reduce: dimension numbers over which to reduce
+///     - reducer: a reducer function to apply
+@inlinable @inline(__always)
+public static func xlaReduce<
+    T: TensorFlowNumeric,
+    ReducerIn: TensorGroup,
+    ReducerOut: TensorGroup
+>(
+    _ input: Tensor<T>,
+    initValue: Tensor<T>,
+    dimensionsToReduce: [Int32],
+    reducer: (ReducerIn) -> ReducerOut
+) -> Tensor<T> {
+  let nOutputs = Int(1)
+    let op = makeOp("XlaReduce", nOutputs)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.updateAttribute("dimensions_to_reduce", dimensionsToReduce)
+    op.updateAttribute("reducer", reducer)
+    op.addInput(input)
+    op.addInput(initValue)
+    return op.execute(Int(1))
+}
+
+/// Wraps the XLA ReduceWindow operator, documented at
+///
+///  https://www.tensorflow.org/performance/xla/operation_semantics#reducewindow .
+///
+/// - Parameters:
+///     - input: the input tensor
+///     - init_value: a scalar representing the initial value for the reduction
+///     - window_dimensions: the shape of the window
+///     - window_strides: the inter-window strides
+///     - padding: the padding to apply at the start and end of each input dimensions
+///
+/// - Attr computation: a reducer function to apply
+@inlinable @inline(__always)
+public static func xlaReduceWindow<
+    T: TensorFlowNumeric,
+    Tindices: TensorFlowIndex,
+    ComputationIn: TensorGroup,
+    ComputationOut: TensorGroup
+>(
+    _ input: Tensor<T>,
+    initValue: Tensor<T>,
+    windowDimensions: Tensor<Tindices>,
+    windowStrides: Tensor<Tindices>,
+    baseDilations: Tensor<Tindices>,
+    windowDilations: Tensor<Tindices>,
+    padding: Tensor<Tindices>,
+    computation: (ComputationIn) -> ComputationOut
+) -> Tensor<T> {
+  let nOutputs = Int(1)
+    let op = makeOp("XlaReduceWindow", nOutputs)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.updateAttribute("Tindices", Tindices.tensorFlowDataType)
+    op.updateAttribute("computation", computation)
+    op.addInput(input)
+    op.addInput(initValue)
+    op.addInput(windowDimensions)
+    op.addInput(windowStrides)
+    op.addInput(baseDilations)
+    op.addInput(windowDilations)
+    op.addInput(padding)
+    return op.execute(Int(1))
+}
+
+/// Replica ID.
+@inlinable @inline(__always)
+public static func xlaReplicaId(
+) -> Tensor<Int32> {
+  let nOutputs = Int(1)
+    let op = makeOp("XlaReplicaId", nOutputs)
+    
+    return op.execute(Int(1))
+}
+
+/// Wraps the XLA SelectAndScatter operator, documented at
+///
+///  https://www.tensorflow.org/performance/xla/operation_semantics#selectandscatter
+/// .
+///
+/// - Parameters:
+///     - operand: the input tensor
+///     - window_dimensions: the shape of the window
+///     - window_strides: the inter-window strides
+///     - padding: the padding to apply at the start and end of each input dimensions
+///     - source: a tensor of values to scatter
+///     - init_value: a scalar representing the initial value for the output tensor
+///
+/// - Attrs:
+///     - select: a selection function to apply
+///     - scatter: a scatter function to apply
+@inlinable @inline(__always)
+public static func xlaSelectAndScatter<
+    T: TensorFlowNumeric,
+    Tindices: TensorFlowIndex,
+    SelectIn: TensorGroup,
+    SelectOut: TensorGroup,
+    ScatterIn: TensorGroup,
+    ScatterOut: TensorGroup
+>(
+    operand: Tensor<T>,
+    windowDimensions: Tensor<Tindices>,
+    windowStrides: Tensor<Tindices>,
+    padding: Tensor<Tindices>,
+    source: Tensor<T>,
+    initValue: Tensor<T>,
+    select: (SelectIn) -> SelectOut,
+    scatter: (ScatterIn) -> ScatterOut
+) -> Tensor<T> {
+  let nOutputs = Int(1)
+    let op = makeOp("XlaSelectAndScatter", nOutputs)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.updateAttribute("Tindices", Tindices.tensorFlowDataType)
+    op.updateAttribute("select", select)
+    op.updateAttribute("scatter", scatter)
+    op.addInput(operand)
+    op.addInput(windowDimensions)
+    op.addInput(windowStrides)
+    op.addInput(padding)
+    op.addInput(source)
+    op.addInput(initValue)
+    return op.execute(Int(1))
+}
+
+/// Computes the eigen decomposition of a batch of self-adjoint matrices
+///
+/// (Note: Only real inputs are supported).
+///
+/// Computes the eigenvalues and eigenvectors of the innermost N-by-N matrices in
+/// tensor such that tensor[...,:,:] * v[..., :,i] = e[..., i] * v[...,:,i], for
+/// i=0...N-1.
+///
+/// - Parameter a: the input tensor.
+///
+/// - Attrs:
+///     - lower: a boolean specifies whether the calculation is done with the lower
+///         triangular part or the upper triangular part.
+///     - max_iter: maximum number of sweep update, i.e., the whole lower triangular
+///         part or upper triangular part based on parameter lower. Heuristically, it has
+///         been argued that approximatly logN sweeps are needed in practice (Ref: Golub &
+///         van Loan "Matrix Computation").
+///     - epsilon: the tolerance ratio.
+///
+/// - Outputs:
+///     - w: The eigenvalues in ascending order, each repeated according to its
+///         multiplicity.
+///     - v: The column v[..., :, i] is the normalized eigenvector corresponding to the
+///         eigenvalue w[..., i].
+@inlinable @inline(__always)
+public static func xlaSelfAdjointEig<T: TensorFlowNumeric>(
+    _ a: Tensor<T>,
+    lower: Bool,
+    maxIter: Int64,
+    epsilon: Double
+) -> (w: Tensor<T>, v: Tensor<T>) {
+  let nOutputs = Int(1) + Int(1)
+    let op = makeOp("XlaSelfAdjointEig", nOutputs)
+    op.updateAttribute("lower", lower)
+    op.updateAttribute("max_iter", maxIter)
+    op.updateAttribute("epsilon", epsilon)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.addInput(a)
+    return op.execute(Int(1), Int(1))
+}
+
+/// Sends the named tensor to another XLA computation. Wraps the XLA Send operator
+///
+/// documented at
+///  https://www.tensorflow.org/performance/xla/operation_semantics#send .
+///
+/// - Parameter tensor: The tensor to send.
+///
+/// - Attr tensor_name: A string key that identifies the channel.
+@inlinable @inline(__always)
+public static func xlaSend<T: TensorFlowScalar>(
+    _ tensor: Tensor<T>,
+    tensorName: String
+) {
+  let nOutputs = 0
+    let op = makeOp("XlaSend", nOutputs)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.updateAttribute("tensor_name", tensorName)
+    op.addInput(tensor)
+    op.execute()
+}
+
+/// An op which shards the input based on the given sharding attribute.
+@inlinable @inline(__always)
+public static func xlaSharding<T: TensorFlowScalar>(
+    _ input: Tensor<T>
+) -> Tensor<T> {
+  let nOutputs = Int(1)
+    let op = makeOp("XlaSharding", nOutputs)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.addInput(input)
+    return op.execute(Int(1))
+}
+
+/// Wraps the XLA Sort operator, documented at
+///
+///  https://www.tensorflow.org/performance/xla/operation_semantics#sort
+/// .
+///
+/// Sorts a tensor. Currently only sorts in ascending order are supported.
+///
+/// - Parameter input: A `Tensor` of type T.
+///
+/// - Output output: A `Tensor` of type T.
+@inlinable @inline(__always)
+public static func xlaSort<T: TensorFlowScalar>(
+    _ input: Tensor<T>
+) -> Tensor<T> {
+  let nOutputs = Int(1)
+    let op = makeOp("XlaSort", nOutputs)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.addInput(input)
+    return op.execute(Int(1))
+}
+
+/// Computes the eigen decomposition of a batch of self-adjoint matrices
+///
+/// (Note: Only real inputs are supported).
+///
+/// Computes the eigenvalues and eigenvectors of the innermost M-by-N matrices in
+/// tensor such that tensor[...,:,:] = u[..., :, :] * Diag(s[..., :]) * Transpose(v[...,:,:]).
+///
+/// - Parameter a: the input tensor.
+///
+/// - Attrs:
+///     - max_iter: maximum number of sweep update, i.e., the whole lower triangular
+///         part or upper triangular part based on parameter lower. Heuristically, it has
+///         been argued that approximatly log(min (M, N)) sweeps are needed in practice
+///         (Ref: Golub & van Loan "Matrix Computation").
+///     - epsilon: the tolerance ratio.
+///     - precision_config: a serialized xla::PrecisionConfig proto.
+///
+/// - Outputs:
+///     - s: Singular values. The values are sorted in reverse order of magnitude, so
+///         s[..., 0] is the largest value, s[..., 1] is the second largest, etc.
+///     - u: Left singular vectors.
+///     - v: Right singular vectors.
+@inlinable @inline(__always)
+public static func xlaSvd<T: TensorFlowNumeric>(
+    _ a: Tensor<T>,
+    maxIter: Int64,
+    epsilon: Double,
+    precisionConfig: String
+) -> (s: Tensor<T>, u: Tensor<T>, v: Tensor<T>) {
+  let nOutputs = Int(1) + Int(1) + Int(1)
+    let op = makeOp("XlaSvd", nOutputs)
+    op.updateAttribute("max_iter", maxIter)
+    op.updateAttribute("epsilon", epsilon)
+    op.updateAttribute("precision_config", precisionConfig)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.addInput(a)
+    return op.execute(Int(1), Int(1), Int(1))
+}
+
+/// output = input; While (Cond(output)) { output = Body(output) }
+///
+/// - Parameter input: A list of input tensors whose types are T.
+///
+/// - Attrs:
+///     - cond: A function takes 'input' and returns a tensor.  If the tensor is
+///         a scalar of non-boolean, the scalar is converted to a boolean
+///         according to the following rule: if the scalar is a numerical
+///         value, non-zero means True and zero means False; if the scalar is
+///         a string, non-empty means True and empty means False. If the
+///         tensor is not a scalar, non-emptiness means True and False
+///         otherwise.
+///     - body: A function that takes a list of tensors and returns another
+///         list of tensors. Both lists have the same types as specified by T.
+///
+/// - Output output: A list of output tensors whose types are T.
+@inlinable @inline(__always)
+public static func xlaWhile<
+    T: TensorArrayProtocol,
+    CondIn: TensorGroup,
+    CondOut: TensorGroup,
+    BodyIn: TensorGroup,
+    BodyOut: TensorGroup
+>(
+    _ input: T,
+    cond: (CondIn) -> CondOut,
+    body: (BodyIn) -> BodyOut
+) -> T {
+  let nOutputs = Int(input._typeList.count)
+    let op = makeOp("XlaWhile", nOutputs)
+    op.updateAttribute("T", input._typeList)
+    op.updateAttribute("cond", cond)
+    op.updateAttribute("body", body)
+    op.addInputList(input)
+    return op.execute(Int(input._typeList.count))
+}
+
 /// Returns 0 if x == 0, and x * log(y) otherwise, elementwise.
 @inlinable @inline(__always)
 public static func xlogy<T: FloatingPoint & TensorFlowScalar>(
@@ -36708,8 +42669,8 @@ public static func zerosLike<T: TensorFlowScalar>(
 /// Compute the Hurwitz zeta function \\(\zeta(x, q)\\).
 ///
 /// The Hurwitz zeta function is defined as:
-///
-///
+/// 
+/// 
 /// \\(\zeta(x, q) = \sum_{n=0}^{\infty} (q + n)^{-x}\\)
 @inlinable @inline(__always)
 public static func zeta<T: FloatingPoint & TensorFlowScalar>(
@@ -36725,6 +42686,16 @@ public static func zeta<T: FloatingPoint & TensorFlowScalar>(
 }
 
 /// Creates a dataset that zips together `input_datasets`.
+///
+/// The elements of the resulting dataset are created by zipping corresponding
+/// elements from each of the input datasets.
+/// 
+/// The size of the resulting dataset will match the size of the smallest input
+/// dataset, and no error will be raised if input datasets have different sizes.
+///
+/// - Parameter input_datasets: List of `N` variant Tensors representing datasets to be zipped together.
+///
+/// - Attr N: The length of `input_datasets`
 @inlinable @inline(__always)
 public static func zipDataset(
     inputDatasets: [VariantHandle],

@@ -563,4 +563,243 @@ internal struct TFE_Op: TFTensorOperation {
         return result
     }
 
+    @inlinable @inline(__always)
+    internal func execute<T0: TensorArrayProtocol, T1: TensorArrayProtocol, T2: TensorArrayProtocol, T3: TensorArrayProtocol, T4: TensorArrayProtocol, T5: TensorArrayProtocol, T6: TensorArrayProtocol, T7: TensorArrayProtocol, T8: TensorArrayProtocol, T9: TensorArrayProtocol, T10: TensorArrayProtocol>(
+        _ count0: Int,
+        _ count1: Int,
+        _ count2: Int,
+        _ count3: Int,
+        _ count4: Int,
+        _ count5: Int,
+        _ count6: Int,
+        _ count7: Int,
+        _ count8: Int,
+        _ count9: Int,
+        _ count10: Int
+    ) -> (T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10) {
+        let buffer = evaluateUnsafe()
+        let offset0 = Int32(0)
+        let offset1 = offset0 + Int32(count0)
+        let offset2 = offset1 + Int32(count1)
+        let offset3 = offset2 + Int32(count2)
+        let offset4 = offset3 + Int32(count3)
+        let offset5 = offset4 + Int32(count4)
+        let offset6 = offset5 + Int32(count5)
+        let offset7 = offset6 + Int32(count6)
+        let offset8 = offset7 + Int32(count7)
+        let offset9 = offset8 + Int32(count8)
+        let offset10 = offset9 + Int32(count9)
+        let result = (
+            T0.init(_owning: buffer.advanced(by: Int(offset0)), count: count0),
+            T1.init(_owning: buffer.advanced(by: Int(offset1)), count: count1),
+            T2.init(_owning: buffer.advanced(by: Int(offset2)), count: count2),
+            T3.init(_owning: buffer.advanced(by: Int(offset3)), count: count3),
+            T4.init(_owning: buffer.advanced(by: Int(offset4)), count: count4),
+            T5.init(_owning: buffer.advanced(by: Int(offset5)), count: count5),
+            T6.init(_owning: buffer.advanced(by: Int(offset6)), count: count6),
+            T7.init(_owning: buffer.advanced(by: Int(offset7)), count: count7),
+            T8.init(_owning: buffer.advanced(by: Int(offset8)), count: count8),
+            T9.init(_owning: buffer.advanced(by: Int(offset9)), count: count9),
+            T10.init(_owning: buffer.advanced(by: Int(offset10)), count: count10))
+        buffer.deallocate()
+        return result
+    }
+
+    @inlinable @inline(__always)
+    internal func execute<T0: TensorArrayProtocol, T1: TensorArrayProtocol, T2: TensorArrayProtocol, T3: TensorArrayProtocol, T4: TensorArrayProtocol, T5: TensorArrayProtocol, T6: TensorArrayProtocol, T7: TensorArrayProtocol, T8: TensorArrayProtocol, T9: TensorArrayProtocol, T10: TensorArrayProtocol, T11: TensorArrayProtocol>(
+        _ count0: Int,
+        _ count1: Int,
+        _ count2: Int,
+        _ count3: Int,
+        _ count4: Int,
+        _ count5: Int,
+        _ count6: Int,
+        _ count7: Int,
+        _ count8: Int,
+        _ count9: Int,
+        _ count10: Int,
+        _ count11: Int
+    ) -> (T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11) {
+        let buffer = evaluateUnsafe()
+        let offset0 = Int32(0)
+        let offset1 = offset0 + Int32(count0)
+        let offset2 = offset1 + Int32(count1)
+        let offset3 = offset2 + Int32(count2)
+        let offset4 = offset3 + Int32(count3)
+        let offset5 = offset4 + Int32(count4)
+        let offset6 = offset5 + Int32(count5)
+        let offset7 = offset6 + Int32(count6)
+        let offset8 = offset7 + Int32(count7)
+        let offset9 = offset8 + Int32(count8)
+        let offset10 = offset9 + Int32(count9)
+        let offset11 = offset10 + Int32(count10)
+        let result = (
+            T0.init(_owning: buffer.advanced(by: Int(offset0)), count: count0),
+            T1.init(_owning: buffer.advanced(by: Int(offset1)), count: count1),
+            T2.init(_owning: buffer.advanced(by: Int(offset2)), count: count2),
+            T3.init(_owning: buffer.advanced(by: Int(offset3)), count: count3),
+            T4.init(_owning: buffer.advanced(by: Int(offset4)), count: count4),
+            T5.init(_owning: buffer.advanced(by: Int(offset5)), count: count5),
+            T6.init(_owning: buffer.advanced(by: Int(offset6)), count: count6),
+            T7.init(_owning: buffer.advanced(by: Int(offset7)), count: count7),
+            T8.init(_owning: buffer.advanced(by: Int(offset8)), count: count8),
+            T9.init(_owning: buffer.advanced(by: Int(offset9)), count: count9),
+            T10.init(_owning: buffer.advanced(by: Int(offset10)), count: count10),
+            T11.init(_owning: buffer.advanced(by: Int(offset11)), count: count11))
+        buffer.deallocate()
+        return result
+    }
+
+    @inlinable @inline(__always)
+    internal func execute<T0: TensorArrayProtocol, T1: TensorArrayProtocol, T2: TensorArrayProtocol, T3: TensorArrayProtocol, T4: TensorArrayProtocol, T5: TensorArrayProtocol, T6: TensorArrayProtocol, T7: TensorArrayProtocol, T8: TensorArrayProtocol, T9: TensorArrayProtocol, T10: TensorArrayProtocol, T11: TensorArrayProtocol, T12: TensorArrayProtocol>(
+        _ count0: Int,
+        _ count1: Int,
+        _ count2: Int,
+        _ count3: Int,
+        _ count4: Int,
+        _ count5: Int,
+        _ count6: Int,
+        _ count7: Int,
+        _ count8: Int,
+        _ count9: Int,
+        _ count10: Int,
+        _ count11: Int,
+        _ count12: Int
+    ) -> (T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12) {
+        let buffer = evaluateUnsafe()
+        let offset0 = Int32(0)
+        let offset1 = offset0 + Int32(count0)
+        let offset2 = offset1 + Int32(count1)
+        let offset3 = offset2 + Int32(count2)
+        let offset4 = offset3 + Int32(count3)
+        let offset5 = offset4 + Int32(count4)
+        let offset6 = offset5 + Int32(count5)
+        let offset7 = offset6 + Int32(count6)
+        let offset8 = offset7 + Int32(count7)
+        let offset9 = offset8 + Int32(count8)
+        let offset10 = offset9 + Int32(count9)
+        let offset11 = offset10 + Int32(count10)
+        let offset12 = offset11 + Int32(count11)
+        let result = (
+            T0.init(_owning: buffer.advanced(by: Int(offset0)), count: count0),
+            T1.init(_owning: buffer.advanced(by: Int(offset1)), count: count1),
+            T2.init(_owning: buffer.advanced(by: Int(offset2)), count: count2),
+            T3.init(_owning: buffer.advanced(by: Int(offset3)), count: count3),
+            T4.init(_owning: buffer.advanced(by: Int(offset4)), count: count4),
+            T5.init(_owning: buffer.advanced(by: Int(offset5)), count: count5),
+            T6.init(_owning: buffer.advanced(by: Int(offset6)), count: count6),
+            T7.init(_owning: buffer.advanced(by: Int(offset7)), count: count7),
+            T8.init(_owning: buffer.advanced(by: Int(offset8)), count: count8),
+            T9.init(_owning: buffer.advanced(by: Int(offset9)), count: count9),
+            T10.init(_owning: buffer.advanced(by: Int(offset10)), count: count10),
+            T11.init(_owning: buffer.advanced(by: Int(offset11)), count: count11),
+            T12.init(_owning: buffer.advanced(by: Int(offset12)), count: count12))
+        buffer.deallocate()
+        return result
+    }
+
+    @inlinable @inline(__always)
+    internal func execute<T0: TensorArrayProtocol, T1: TensorArrayProtocol, T2: TensorArrayProtocol, T3: TensorArrayProtocol, T4: TensorArrayProtocol, T5: TensorArrayProtocol, T6: TensorArrayProtocol, T7: TensorArrayProtocol, T8: TensorArrayProtocol, T9: TensorArrayProtocol, T10: TensorArrayProtocol, T11: TensorArrayProtocol, T12: TensorArrayProtocol, T13: TensorArrayProtocol>(
+        _ count0: Int,
+        _ count1: Int,
+        _ count2: Int,
+        _ count3: Int,
+        _ count4: Int,
+        _ count5: Int,
+        _ count6: Int,
+        _ count7: Int,
+        _ count8: Int,
+        _ count9: Int,
+        _ count10: Int,
+        _ count11: Int,
+        _ count12: Int,
+        _ count13: Int
+    ) -> (T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13) {
+        let buffer = evaluateUnsafe()
+        let offset0 = Int32(0)
+        let offset1 = offset0 + Int32(count0)
+        let offset2 = offset1 + Int32(count1)
+        let offset3 = offset2 + Int32(count2)
+        let offset4 = offset3 + Int32(count3)
+        let offset5 = offset4 + Int32(count4)
+        let offset6 = offset5 + Int32(count5)
+        let offset7 = offset6 + Int32(count6)
+        let offset8 = offset7 + Int32(count7)
+        let offset9 = offset8 + Int32(count8)
+        let offset10 = offset9 + Int32(count9)
+        let offset11 = offset10 + Int32(count10)
+        let offset12 = offset11 + Int32(count11)
+        let offset13 = offset12 + Int32(count12)
+        let result = (
+            T0.init(_owning: buffer.advanced(by: Int(offset0)), count: count0),
+            T1.init(_owning: buffer.advanced(by: Int(offset1)), count: count1),
+            T2.init(_owning: buffer.advanced(by: Int(offset2)), count: count2),
+            T3.init(_owning: buffer.advanced(by: Int(offset3)), count: count3),
+            T4.init(_owning: buffer.advanced(by: Int(offset4)), count: count4),
+            T5.init(_owning: buffer.advanced(by: Int(offset5)), count: count5),
+            T6.init(_owning: buffer.advanced(by: Int(offset6)), count: count6),
+            T7.init(_owning: buffer.advanced(by: Int(offset7)), count: count7),
+            T8.init(_owning: buffer.advanced(by: Int(offset8)), count: count8),
+            T9.init(_owning: buffer.advanced(by: Int(offset9)), count: count9),
+            T10.init(_owning: buffer.advanced(by: Int(offset10)), count: count10),
+            T11.init(_owning: buffer.advanced(by: Int(offset11)), count: count11),
+            T12.init(_owning: buffer.advanced(by: Int(offset12)), count: count12),
+            T13.init(_owning: buffer.advanced(by: Int(offset13)), count: count13))
+        buffer.deallocate()
+        return result
+    } 
+
+    @inlinable @inline(__always)
+    internal func execute<T0: TensorArrayProtocol, T1: TensorArrayProtocol, T2: TensorArrayProtocol, T3: TensorArrayProtocol, T4: TensorArrayProtocol, T5: TensorArrayProtocol, T6: TensorArrayProtocol, T7: TensorArrayProtocol, T8: TensorArrayProtocol, T9: TensorArrayProtocol, T10: TensorArrayProtocol, T11: TensorArrayProtocol, T12: TensorArrayProtocol, T13: TensorArrayProtocol, T14: TensorArrayProtocol>(
+        _ count0: Int,
+        _ count1: Int,
+        _ count2: Int,
+        _ count3: Int,
+        _ count4: Int,
+        _ count5: Int,
+        _ count6: Int,
+        _ count7: Int,
+        _ count8: Int,
+        _ count9: Int,
+        _ count10: Int,
+        _ count11: Int,
+        _ count12: Int,
+        _ count13: Int,
+        _ count14: Int
+    ) -> (T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14) {
+        let buffer = evaluateUnsafe()
+        let offset0 = Int32(0)
+        let offset1 = offset0 + Int32(count0)
+        let offset2 = offset1 + Int32(count1)
+        let offset3 = offset2 + Int32(count2)
+        let offset4 = offset3 + Int32(count3)
+        let offset5 = offset4 + Int32(count4)
+        let offset6 = offset5 + Int32(count5)
+        let offset7 = offset6 + Int32(count6)
+        let offset8 = offset7 + Int32(count7)
+        let offset9 = offset8 + Int32(count8)
+        let offset10 = offset9 + Int32(count9)
+        let offset11 = offset10 + Int32(count10)
+        let offset12 = offset11 + Int32(count11)
+        let offset13 = offset12 + Int32(count12)
+        let offset14 = offset13 + Int32(count13)
+        let result = (
+            T0.init(_owning: buffer.advanced(by: Int(offset0)), count: count0),
+            T1.init(_owning: buffer.advanced(by: Int(offset1)), count: count1),
+            T2.init(_owning: buffer.advanced(by: Int(offset2)), count: count2),
+            T3.init(_owning: buffer.advanced(by: Int(offset3)), count: count3),
+            T4.init(_owning: buffer.advanced(by: Int(offset4)), count: count4),
+            T5.init(_owning: buffer.advanced(by: Int(offset5)), count: count5),
+            T6.init(_owning: buffer.advanced(by: Int(offset6)), count: count6),
+            T7.init(_owning: buffer.advanced(by: Int(offset7)), count: count7),
+            T8.init(_owning: buffer.advanced(by: Int(offset8)), count: count8),
+            T9.init(_owning: buffer.advanced(by: Int(offset9)), count: count9),
+            T10.init(_owning: buffer.advanced(by: Int(offset10)), count: count10),
+            T11.init(_owning: buffer.advanced(by: Int(offset11)), count: count11),
+            T12.init(_owning: buffer.advanced(by: Int(offset12)), count: count12),
+            T13.init(_owning: buffer.advanced(by: Int(offset13)), count: count13),
+            T14.init(_owning: buffer.advanced(by: Int(offset14)), count: count14))
+        buffer.deallocate()
+        return result
+    } 
 }

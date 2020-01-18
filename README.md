@@ -84,11 +84,31 @@ For more models, go to [**tensorflow/swift-models**](https://github.com/tensorfl
 
 ### Building and testing
 
+#### SwiftPM
+
 ```
 $ swift build
 ```
 ```
 $ swift test
+```
+
+#### CMake
+
+*Note: CMake support is experimental and under development.*
+
+In-tree builds are not supported.  The instructions here expect CMake 3.16
+or newer, although the minimum required version is 3.15.1.  Older releases
+will not allow the use of the `-B` option to specific the build tree and
+require that you are in the location of the build tree (and the `-B` option
+and its argument are elided).
+
+If `swiftc` is not in your `PATH`, you must specify the path to it using
+`-D CMAKE_Swift_COMPILER=`.
+
+```
+cmake -G Ninja -B out -S swift-apis
+cmake --build out
 ```
 
 ## Bugs

@@ -31,10 +31,24 @@
 
 #if os(macOS) || os(iOS) || os(watchOS) || os(tvOS)
 import Darwin
+#elseif os(Windows)
+import ucrt
 #else
 import Glibc
 #endif
+
 import CTensorFlow
+
+#if os(Windows)
+// NOTE: although the function is racy, we do not really care as the
+// usage here is to not override the value if the user specified one before
+// creating the process.
+@discardableResult
+func setenv(_ variable: String, _ value: String, _ `override`: Int) -> Int {
+  guard `override` > 0 || getenv(variable) == nil else { return 0 }
+  return Int(_putenv_s(variable, value))
+}
+#endif
 
 /// The configuration for the compiler runtime.
 // TODO(hongm): Revisit the longer-term design.
@@ -182,7 +196,7 @@ public final class _ExecutionContext {
     @usableFromInline let status: CTFStatus = TF_NewStatus()
 
     /// The mutex for preventing potential concurrent access.
-    private var mutex: pthread_mutex_t = pthread_mutex_t()
+    private var mutex: Mutex = Mutex()
 
     /// Initializes a new execution context by initializing available devices.
     @usableFromInline
@@ -266,7 +280,7 @@ public final class _ExecutionContext {
 
         if case .remote(let serverDef) = _RuntimeConfig.session {
             debugLog("Setting up the server def to \(serverDef)...")
-            let serverDef: UnsafeMutablePointer! = TFE_GetServerDef(serverDef, status)
+            let serverDef: UnsafeMutablePointer<TF_Buffer>! = TFE_GetServerDef(serverDef, status)
             checkOk(status)
             TFE_ContextSetServerDef(
                 eagerContext, /*keep_alive_secs*/0, serverDef.pointee.data,
@@ -291,8 +305,6 @@ public final class _ExecutionContext {
             debugLog("Device \(deviceId) has type \(deviceType) and name \(deviceName).")
             deviceNames.append(deviceName)
         }
-
-        pthread_mutex_init(&mutex, nil)
     }
 
     deinit {
@@ -301,7 +313,6 @@ public final class _ExecutionContext {
         TFE_DeleteContext(eagerContext)
         TF_DeleteBuffer(tensorFlowConfig)
         TF_DeleteStatus(status)
-        pthread_mutex_destroy(&mutex)
     }
 }
 
@@ -401,13 +412,11 @@ internal extension _ExecutionContext {
     /// Synchronously execute the body, preventing asynchronous computation from corrupting the
     /// context data.
     private func sync<Result>(execute body: () throws -> Result) rethrows -> Result {
-        let lockStatus = pthread_mutex_lock(&mutex)
+        let lockStatus = mutex.acquire()
         internalConsistencyCheck(lockStatus == 0)
         defer {
-            let unlockStatus = pthread_mutex_unlock(&mutex)
+            let unlockStatus = mutex.release()
             internalConsistencyCheck(unlockStatus == 0)
-            // Create a cancellation point.
-            pthread_testcancel()
         }
         return try body()
     }
@@ -518,25 +527,24 @@ class _ThreadLocalState {
     /// is enabled.
     private var lazyTensorEnabled: Bool? = nil
 
-    private static let key: pthread_key_t = {
-        var key = pthread_key_t()
-        pthread_key_create(&key) {
+    private static let key: ThreadLocalStorage.Key =
+        ThreadLocalStorage.Key {
 #if os(macOS) || os(iOS) || os(watchOS) || os(tvOS)
-            let _: AnyObject = Unmanaged.fromOpaque($0).takeRetainedValue()
+            Unmanaged<AnyObject>.fromOpaque($0).release()
 #else
-            let _: AnyObject = Unmanaged.fromOpaque($0!).takeRetainedValue()
+            Unmanaged<AnyObject>.fromOpaque($0!).release()
 #endif
         }
-        return key
-    }()
 
     @usableFromInline
     static var local: _ThreadLocalState {
-        if let state = pthread_getspecific(key) {
+        if let state = ThreadLocalStorage.get(for: key) {
             return Unmanaged.fromOpaque(state).takeUnretainedValue()
         }
+
         let state = _ThreadLocalState()
-        pthread_setspecific(key, Unmanaged.passRetained(state).toOpaque())
+        ThreadLocalStorage.set(value: Unmanaged.passRetained(state).toOpaque(),
+                               for: key)
         return state
     }
 }

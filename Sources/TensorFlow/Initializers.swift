@@ -34,7 +34,7 @@ public extension Tensor {
     ///   - repeatedValue: The scalar value to repeat.
     ///   - shape: The dimensions of the tensor.
     @inlinable
-    @differentiable(vjp: _vjpInit(repeating:shape:) where Scalar: TensorFlowFloatingPoint)
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
     init(repeating repeatedValue: Scalar, shape: TensorShape) {
         self = _Raw.fill(
             dims: Tensor<Int32>(shape.dimensions.map(Int32.init)),
@@ -60,10 +60,11 @@ public extension Tensor {
 
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
+    @derivative(of: init(repeating:shape:))
     static func _vjpInit(
         repeating repeatedValue: __owned Scalar,
         shape: __owned TensorShape
-    ) -> (Tensor, (Tensor) -> Scalar) {
+    ) -> (value: Tensor, pullback: (Tensor) -> Scalar) {
         return (Tensor(repeating: repeatedValue, shape: shape), {
             $0.sum().scalarized()
         })
@@ -83,8 +84,7 @@ public extension Tensor where Scalar: Numeric {
 
     /// Perform an element-wise conversion from another `Tensor`.
     @inlinable
-    @differentiable(
-        vjp: _vjpCast where Scalar: TensorFlowFloatingPoint, OtherScalar: TensorFlowFloatingPoint)
+    @differentiable(where Scalar: TensorFlowFloatingPoint, OtherScalar: TensorFlowFloatingPoint)
     init<OtherScalar: Numeric>(_ other: Tensor<OtherScalar>) {
         self = _Raw.cast(other)
     }
@@ -92,9 +92,10 @@ public extension Tensor where Scalar: Numeric {
 
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
+    @derivative(of: init(_:))
     static func _vjpCast<OtherScalar: TensorFlowFloatingPoint>(
         _ other: __owned Tensor<OtherScalar>
-    ) -> (Tensor, (Tensor) -> Tensor<OtherScalar>) {
+    ) -> (value: Tensor, pullback: (Tensor) -> Tensor<OtherScalar>) {
         (Tensor(other), { v in Tensor<OtherScalar>(v) })
     }
 }
@@ -106,7 +107,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
 public extension Tensor {
     /// Creates a tensor from an array of tensors (which may themselves be scalars).
     @inlinable
-    @differentiable(vjp: _vjpInitElements where Scalar: TensorFlowFloatingPoint)
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
     init(_ elements: [Tensor]) {
         self = _Raw.pack(elements)
     }
@@ -140,7 +141,7 @@ public extension Tensor {
     ///
     /// - Returns: The stacked tensor.
     @inlinable
-    @differentiable(vjp: _vjpStacking where Scalar: TensorFlowFloatingPoint)
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
     init(stacking tensors: [Tensor], alongAxis axis: Int = 0) {
         self = _Raw.pack(tensors, axis: Int64(axis))
     }
@@ -178,7 +179,7 @@ public extension Tensor {
     ///
     /// - Returns: The concatenated tensor.
     @inlinable
-    @differentiable(vjp: _vjpConcatenating where Scalar: TensorFlowFloatingPoint)
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
     init(concatenating tensors: [Tensor], alongAxis axis: Int = 0) {
         precondition(tensors.count > 0)
         self = _Raw.concatV2(tensors, axis: Tensor<Int32>(Int32(axis)))
@@ -187,27 +188,30 @@ public extension Tensor {
 
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
+    @derivative(of: init(_:))
     static func _vjpInitElements(
         _ elements: __owned [Tensor]
-    ) -> (Tensor, (Tensor) -> Array<Tensor>.DifferentiableView) {
+    ) -> (value: Tensor, pullback: (Tensor) -> Array<Tensor>.DifferentiableView) {
         _vjpStacking(stacking: elements)
     }
 
     @inlinable
+    @derivative(of: init(stacking:alongAxis:))
     static func _vjpStacking(
         stacking tensors: __owned [Tensor],
         alongAxis axis: __owned  Int = 0
-    ) -> (Tensor, (Tensor) -> Array<Tensor>.DifferentiableView) {
+    ) -> (value: Tensor, pullback: (Tensor) -> Array<Tensor>.DifferentiableView) {
         (Tensor(stacking: tensors, alongAxis: axis), { v in
             Array<Tensor>.DifferentiableView(v.unstacked(alongAxis: axis))
         })
     }
 
     @inlinable
+    @derivative(of: init(concatenating:alongAxis:))
     static func _vjpConcatenating(
         concatenating tensors: __owned [Tensor],
         alongAxis axis: __owned Int = 0
-    ) -> (Tensor, (Tensor) -> Array<Tensor>.DifferentiableView) {
+    ) -> (value: Tensor, pullback: (Tensor) -> Array<Tensor>.DifferentiableView) {
         let result = Tensor<Scalar>(concatenating: tensors, alongAxis: axis)
         let posAxis = axis < 0 ? axis + tensors[0].rank : axis
         let sizes = Tensor<Int32>(stacking: tensors.map { $0.shapeTensor[posAxis] })
@@ -453,6 +457,29 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 }
 
+public extension Tensor where Scalar: TensorFlowIndex {
+    /// Creates a tensor by drawing samples from a categorical distribution.
+    ///
+    /// - Parameters:
+    ///     - randomCategorialLogits: 2-D Tensor with shape `[batchSize, classCount]`.  Each slice `[i, :]`
+    ///         represents the unnormalized log probabilities for all classes.
+    ///     - sampleCount: 0-D.  Number of independent samples to draw for each row slice.
+    ///     - seed: The seed value.
+    ///
+    /// - Returns: 2-D Tensor with shape `[batchSize, sampleCount]`.  Each slice `[i, :]`
+    ///     contains the drawn class labels with range `[0, classCount)`.
+    init<T: TensorFlowNumeric>(
+        randomCategorialLogits: Tensor<T>,
+        sampleCount: Int32,
+        seed: TensorFlowSeed = Context.local.randomSeed
+    ) {
+        self = _Raw.statelessMultinomial(
+            logits: randomCategorialLogits, 
+            numSamples: Tensor<Int32>(sampleCount), 
+            seed: Tensor<Int32>([seed.graph, seed.op]))
+    }
+}
+
 //===------------------------------------------------------------------------------------------===//
 // Variance Scaling
 //===------------------------------------------------------------------------------------------===//
@@ -481,7 +508,7 @@ fileprivate extension TensorShape {
 }
 
 public extension Tensor where Scalar: TensorFlowFloatingPoint {
-    /// Creates a tensor with the specified shape by performing Glorot uniform initialization.
+    /// Creates a tensor with the specified shape by performing Glorot (Xavier) uniform initialization.
     ///
     /// It draws random samples from a uniform distribution between `-limit` and `limit`
     /// generated by the default random number generator, where `limit` is
@@ -493,16 +520,17 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     ///
     /// - Parameters:
     ///   - shape: The dimensions of the tensor.
+    ///   - seed: The seed value.
     init(glorotUniform shape: TensorShape, seed: TensorFlowSeed = Context.local.randomSeed) {
         let (fanIn, fanOut) = shape.fans()
         let limit = Tensor<Scalar>(Scalar.sqrt(6 / Scalar(fanIn + fanOut)))
         self.init(randomUniform: shape, lowerBound: -limit, upperBound: limit, seed: seed)
     }
 
-    /// Creates a tensor with the specified shape by performing Glorot normal initialization.
+    /// Creates a tensor with the specified shape by performing Glorot (Xavier) normal initialization.
     ///
     /// It draws random samples from a truncated normal distribution centered on `0` with
-    /// standard deviation `sqrt(2 / (fanIn + fanOut))`generated by the default random number
+    /// standard deviation `sqrt(2 / (fanIn + fanOut))` generated by the default random number
     /// generator, where `fanIn`/`fanOut` represent the number of input and output features
     /// multiplied by the receptive field size.
     ///
@@ -511,9 +539,102 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     ///
     /// - Parameters:
     ///   - shape: The dimensions of the tensor.
+    ///   - seed: The seed value.
     init(glorotNormal shape: TensorShape, seed: TensorFlowSeed = Context.local.randomSeed) {
         let (fanIn, fanOut) = shape.fans()
         var standardDeviation = Tensor<Scalar>(Scalar.sqrt(2 / Scalar(fanIn + fanOut)))
+        // Standard deviation of truncated standard normal between `-2` and `2` standard deviations.
+        let truncationDeviation = Tensor<Scalar>(0.87962566103423978)
+        standardDeviation /= truncationDeviation // Smooths the tails of the clipped normal.
+        self.init(
+            randomTruncatedNormal: shape,
+            mean: Tensor<Scalar>(0),
+            standardDeviation: standardDeviation,
+            seed: seed)
+    }
+}
+
+public extension Tensor where Scalar: TensorFlowFloatingPoint {
+    /// Creates a tensor with the specified shape by performing He (Kaiming) uniform initialization.
+    ///
+    /// It draws random samples from a uniform distribution between `-limit` and `limit`
+    /// generated by the default random number generator, where `limit` is
+    /// `sqrt(6 / fanIn)` and `fanIn` represents the number of input features multiplied by the 
+    /// receptive field size.
+    ///
+    /// Reference: ["Delving Deep into Rectifiers: Surpassing Human-Level Performance on ImageNet 
+    /// Classification"](https://www.cv-foundation.org/openaccess/content_iccv_2015/papers/He_Delving_Deep_into_ICCV_2015_paper.pdf)
+    ///
+    /// - Parameters:
+    ///   - shape: The dimensions of the tensor.
+    ///   - seed: The seed value.
+    init(heUniform shape: TensorShape, seed: TensorFlowSeed = Context.local.randomSeed) {
+        let (fanIn, _) = shape.fans()
+        let limit = Tensor<Scalar>(Scalar.sqrt(6 / Scalar(fanIn)))
+        self.init(randomUniform: shape, lowerBound: -limit, upperBound: limit, seed: seed)
+    }
+
+    /// Creates a tensor with the specified shape by performing He (Kaiming) normal initialization.
+    ///
+    /// It draws random samples from a truncated normal distribution centered on `0` with
+    /// standard deviation `sqrt(2 / fanIn))` generated by the default random number
+    /// generator, where `fanIn` represents the number of input features multiplied by the 
+    /// receptive field size.
+    ///
+    /// Reference: ["Delving Deep into Rectifiers: Surpassing Human-Level Performance on ImageNet 
+    /// Classification"](https://www.cv-foundation.org/openaccess/content_iccv_2015/papers/He_Delving_Deep_into_ICCV_2015_paper.pdf)
+    ///
+    /// - Parameters:
+    ///   - shape: The dimensions of the tensor.
+    ///   - seed: The seed value.
+    init(heNormal shape: TensorShape, seed: TensorFlowSeed = Context.local.randomSeed) {
+        let (fanIn, _) = shape.fans()
+        var standardDeviation = Tensor<Scalar>(Scalar.sqrt(2 / Scalar(fanIn)))
+        // Standard deviation of truncated standard normal between `-2` and `2` standard deviations.
+        let truncationDeviation = Tensor<Scalar>(0.87962566103423978)
+        standardDeviation /= truncationDeviation // Smooths the tails of the clipped normal.
+        self.init(
+            randomTruncatedNormal: shape,
+            mean: Tensor<Scalar>(0),
+            standardDeviation: standardDeviation,
+            seed: seed)
+    }
+}
+
+public extension Tensor where Scalar: TensorFlowFloatingPoint {
+    /// Creates a tensor with the specified shape by performing LeCun uniform initialization.
+    ///
+    /// It draws random samples from a uniform distribution between `-limit` and `limit`
+    /// generated by the default random number generator, where `limit` is
+    /// `sqrt(3 / fanIn)` and `fanIn` represents the number of input features multiplied
+    /// by the receptive field size.
+    ///
+    /// Reference: ["Efficient BackProp"](http://yann.lecun.com/exdb/publis/pdf/lecun-98b.pdf)
+    ///
+    /// - Parameters:
+    ///   - shape: The dimensions of the tensor.
+    ///   - seed: The seed value.
+    init(leCunUniform shape: TensorShape, seed: TensorFlowSeed = Context.local.randomSeed) {
+        let (fanIn, _) = shape.fans()
+        let limit = Tensor<Scalar>(Scalar.sqrt(3 / Scalar(fanIn)))
+        self.init(randomUniform: shape, lowerBound: -limit, upperBound: limit, seed: seed)
+    }
+
+    /// Creates a tensor with the specified shape by performing LeCun normal initialization.
+    ///
+    /// It draws random samples from a truncated normal distribution centered on `0` with
+    /// standard deviation `sqrt(1 / fanIn)` generated by the default random number
+    /// generator, where `fanIn` represents the number of input features multiplied by the 
+    /// receptive field size.
+    ///
+    /// Reference: ["Efficient BackProp"](http://yann.lecun.com/exdb/publis/pdf/lecun-98b.pdf)
+    ///
+    /// - Parameters:
+    ///   - shape: The dimensions of the tensor.
+    ///   - seed: The seed value.
+    init(leCunNormal shape: TensorShape, seed: TensorFlowSeed = Context.local.randomSeed) {
+        let (fanIn, _) = shape.fans()
+        var standardDeviation = Tensor<Scalar>(Scalar.sqrt(1 / Scalar(fanIn)))
         // Standard deviation of truncated standard normal between `-2` and `2` standard deviations.
         let truncationDeviation = Tensor<Scalar>(0.87962566103423978)
         standardDeviation /= truncationDeviation // Smooths the tails of the clipped normal.

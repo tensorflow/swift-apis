@@ -125,7 +125,7 @@ public extension Tensor {
     /// Reshape to scalar.
     /// - Precondition: The tensor has exactly one scalar.
     @inlinable
-    @differentiable(wrt: self, vjp: _vjpScalarized where Scalar: TensorFlowFloatingPoint)
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
     func scalarized() -> Scalar {
         precondition(shape.contiguousSize == 1,
            "This tensor must have exactly one scalar but contains \(shape.contiguousSize).")
@@ -135,7 +135,8 @@ public extension Tensor {
 
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
-    func _vjpScalarized() -> (Scalar, (Scalar) -> Tensor) {
+    @derivative(of: scalarized)
+    func _vjpScalarized() -> (value: Scalar, pullback: (Scalar) -> Tensor) {
         return (scalarized(), { v in Tensor(v) })
     }
 }
@@ -162,7 +163,7 @@ public extension Tensor {
     }
 
     @inlinable
-    @differentiable(vjp: _vjpScalars where Scalar: TensorFlowFloatingPoint)
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
     var scalars: [Scalar] {
         return array.scalars
     }
@@ -170,9 +171,10 @@ public extension Tensor {
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
+    @derivative(of: scalars)
     func _vjpScalars() -> (value: [Scalar], pullback: (Array<Scalar>.TangentVector) -> Tensor) {
-        (value: scalars, pullback: { [shape = self.shape] v in
-            Tensor(shape: shape, scalars: v.base)
+        (value: scalars, pullback: { [shape = self.shape, device = self.device] v in
+            Tensor(shape: shape, scalars: v.base, on: device)
         })
     }
 }
@@ -184,30 +186,35 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
 public extension Tensor {
     /// Creates a 0-D tensor from a scalar value.
     @inlinable
-    @differentiable(vjp: _vjpScalarInit where Scalar: TensorFlowFloatingPoint)
-    init(_ value: Scalar) {
-        self.init(shape: [], scalars: [value])
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
+    init(_ value: Scalar, on device: Device = .default) {
+        self.init(shape: [], scalars: [value], on: device)
     }
 }
 
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
-    static func _vjpScalarInit(_ value: __owned Scalar) -> (Tensor, (Tensor) -> Scalar) {
-        return (Tensor(value), { $0.scalarized() })
+    @derivative(of: init(_:on:))
+    static func _vjpScalarInit(_ value: __owned Scalar, on device: Device = .default) -> (
+        value: Tensor, pullback: (Tensor) -> Scalar
+    ) {
+        return (Tensor(value, on: device), { $0.scalarized() })
     }
 }
 
 public extension Tensor {
     /// Creates a 1D tensor from scalars.
     @inlinable
-    @differentiable(vjp: _vjpInit(_:) where Scalar: TensorFlowFloatingPoint)
-    init(_ scalars: [Scalar]) {
-        self.init(shape: [scalars.count], scalars: scalars)
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
+    init(_ scalars: [Scalar], on device: Device = .default) {
+        self.init(shape: [scalars.count], scalars: scalars, on: device)
     }
 
     /// Creates a 1D tensor from scalars.
     @inlinable
-    init<C: RandomAccessCollection>(_ vector: C) where C.Element == Scalar {
+    init<C: RandomAccessCollection>(
+        _ vector: C, on device: Device = .default
+    ) where C.Element == Scalar {
         let handle = TensorHandle<Scalar>(
             shape: [vector.count],
             scalarsInitializer: { addr in
@@ -227,15 +234,15 @@ public extension Tensor {
     ///   - scalars: The scalar contents of the tensor.
     /// - Precondition: The product of the dimensions of the shape must equal the number of scalars.
     @inlinable
-    @differentiable(vjp: _vjpInit(shape:scalars:) where Scalar: TensorFlowFloatingPoint)
-    init(shape: TensorShape, scalars: [Scalar]) {
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
+    init(shape: TensorShape, scalars: [Scalar], on device: Device = .default) {
         precondition(shape.contiguousSize == scalars.count,
             """
             The shape requires \(shape.contiguousSize) scalars but \(scalars.count) were \
             provided.
             """)
         self = scalars.withUnsafeBufferPointer { bufferPointer in
-            Tensor(shape: shape, scalars: bufferPointer)
+            Tensor(shape: shape, scalars: bufferPointer, on: device)
         }
     }
 
@@ -246,7 +253,11 @@ public extension Tensor {
     ///   - scalars: The scalar contents of the tensor.
     /// - Precondition: The product of the dimensions of the shape must equal the number of scalars.
     @inlinable
-    init(shape: TensorShape, scalars: UnsafeBufferPointer<Scalar>) {
+    init(
+        shape: TensorShape,
+        scalars: UnsafeBufferPointer<Scalar>,
+        on device: Device = .default
+    ) {
         precondition(shape.contiguousSize == scalars.count,
             """
             The shape requires \(shape.contiguousSize) scalars but \(scalars.count) were \
@@ -267,7 +278,9 @@ public extension Tensor {
     ///   - scalars: The scalar contents of the tensor.
     /// - Precondition: The product of the dimensions of the shape must equal the number of scalars.
     @inlinable
-    init<C: RandomAccessCollection>(shape: TensorShape, scalars: C) where C.Element == Scalar {
+    init<C: RandomAccessCollection>(
+        shape: TensorShape, scalars: C, on device: Device = .default
+    ) where C.Element == Scalar {
         precondition(shape.contiguousSize == scalars.count,
             """
             The shape requires \(shape.contiguousSize) scalars but \(scalars.count) were \
@@ -288,17 +301,23 @@ public extension Tensor {
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
-    static func _vjpInit(_ scalars: [Scalar]) -> (
+    @derivative(of: init(_:on:))
+    static func _vjpInit(_ scalars: [Scalar], on device: Device = .default) -> (
         value: Tensor, pullback: (Tensor) -> Array<Scalar>.TangentVector
     ) {
-        (value: Tensor(scalars), pullback: { v in Array<Scalar>.TangentVector(v.scalars) })
+        (value: Tensor(scalars, on: device), pullback: { v in
+            Array<Scalar>.TangentVector(v.scalars)
+        })
     }
 
     @inlinable
-    static func _vjpInit(shape: TensorShape, scalars: [Scalar]) -> (
-        value: Tensor, pullback: (Tensor) -> Array<Scalar>.TangentVector
-    ) {
-        (value: Tensor(scalars), pullback: { v in Array<Scalar>.TangentVector(v.scalars) })
+    @derivative(of: init(shape:scalars:on:))
+    static func _vjpInit(
+        shape: TensorShape, scalars: [Scalar], on device: Device = .default
+    ) -> (value: Tensor, pullback: (Tensor) -> Array<Scalar>.TangentVector) {
+        (value: Tensor(scalars, on: device), pullback: { v in
+            Array<Scalar>.TangentVector(v.scalars)
+        })
     }
 }
 
@@ -529,7 +548,7 @@ extension Tensor: AdditiveArithmetic where Scalar: Numeric {
     /// Adds two tensors and produces their sum.
     /// - Note: `+` supports broadcasting.
     @inlinable
-    @differentiable(vjp: _vjpAdd(lhs:rhs:) where Scalar: TensorFlowFloatingPoint)
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
     public static func + (lhs: Tensor, rhs: Tensor) -> Tensor {
         _Raw.addV2(lhs, rhs)
     }
@@ -537,7 +556,7 @@ extension Tensor: AdditiveArithmetic where Scalar: Numeric {
     /// Subtracts one tensor from another and produces their difference.
     /// - Note: `-` supports broadcasting.
     @inlinable
-    @differentiable(vjp: _vjpSubtract(lhs:rhs:) where Scalar: TensorFlowFloatingPoint)
+    @differentiable(where Scalar: TensorFlowFloatingPoint)
     public static func - (lhs: Tensor, rhs: Tensor) -> Tensor {
         _Raw.sub(lhs, rhs)
     }
@@ -545,7 +564,10 @@ extension Tensor: AdditiveArithmetic where Scalar: Numeric {
 
 internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
-    static func _vjpAdd(lhs: Tensor, rhs: Tensor) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
+    @derivative(of: +)
+    static func _vjpAdd(lhs: Tensor, rhs: Tensor) -> (
+        value: Tensor, pullback: (Tensor) -> (Tensor, Tensor)
+    ) {
         (lhs + rhs, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
             let lhsGrad = v
             let rhsGrad = lhsGrad
@@ -556,7 +578,10 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 
     @inlinable
-    static func _vjpSubtract(lhs: Tensor, rhs: Tensor) -> (Tensor, (Tensor) -> (Tensor, Tensor)) {
+    @derivative(of: -)
+    static func _vjpSubtract(lhs: Tensor, rhs: Tensor) -> (
+        value: Tensor, pullback: (Tensor) -> (Tensor, Tensor)
+    ) {
         (lhs - rhs, { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
             let lhsGrad = v
             let rhsGrad = -lhsGrad

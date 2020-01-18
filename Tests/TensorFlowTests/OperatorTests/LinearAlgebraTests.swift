@@ -43,9 +43,9 @@ final class LinearAlgebraTests: XCTestCase {
              [0.02154995, 0.2738613]],
             [[2.4748755, -0.7071073],
              [-0.7071073, 0.3535535]]])
-        assertEqual(computedGradient, expectedGradient, accuracy: 1e-5) 
+        assertEqual(computedGradient, expectedGradient, accuracy: 1e-5)
     }
-    
+
     func testQRDecompositionApproximation() {
         let shapes = [[5, 8], [3, 4, 4], [3, 3, 32, 64]]
         for shape in shapes {
@@ -59,9 +59,126 @@ final class LinearAlgebraTests: XCTestCase {
             assertEqual(aReconstitutedFull, a, accuracy: 1e-5)
         }
     }
+
+    func testSVD() {
+        let shapes = [[2, 2, 2], [3, 4, 4], [4, 4, 16, 32]]
+        for shape in shapes {
+            let a = Tensor<Float>(randomNormal: TensorShape(shape))
+            var (s, u, v) = a.svd()
+            var m = u!.shape.dimensions.last!
+            var n = v!.shape.dimensions.last!
+            if m <= n {
+                v = v![TensorRange.ellipsis, ..<m]
+            } else {
+                u = u![TensorRange.ellipsis, ..<n]
+            }
+            let aReconstituted = matmul(u!, matmul(s.diagonal(), 
+                                        transposed: false, v!, transposed: true))
+            assertEqual(aReconstituted, a, accuracy: 3e-5)
+
+            var (sFull, uFull, vFull) = a.svd(computeUV: true, fullMatrices: true)
+            m = uFull!.shape.dimensions.last!
+            n = vFull!.shape.dimensions.last!
+            if m <= n {
+                vFull = vFull![TensorRange.ellipsis, ..<m]
+            } else {
+                uFull = uFull![TensorRange.ellipsis, ..<n]
+            }
+            let aReconstitutedFull = matmul(uFull!, matmul(sFull.diagonal(), 
+                                            transposed: false, vFull!, transposed: true))
+            assertEqual(aReconstitutedFull, a, accuracy: 3e-5)
+        }
+    }
+
+    func testTrace() {
+        assertEqual(trace(Tensor<Float>(ones: [3, 3])), Tensor(3.0), accuracy: 1e-16)
+        assertEqual(trace(Tensor<Float>(ones: [5, 6])), Tensor(5.0), accuracy: 1e-16)
+        let shapes = [[1, 3, 3], [2, 4, 4], [2, 3, 5, 5]]
+        for shape in shapes {
+            let x = Tensor<Float>(ones: TensorShape(shape))
+            let computedTrace = trace(x)
+            let leadingShape = TensorShape(shape.dropLast(2))
+            let value = Float(shape.last!)
+            let expectedTrace = Tensor<Float>(repeating: value, shape: leadingShape)
+            assertEqual(computedTrace, expectedTrace, accuracy: 1e-16)
+        }
+    }
+
+    func testTraceGradient() {
+        let shape: TensorShape = [2, 4, 4]
+        let scalars = (0..<shape.contiguousSize).map(Float.init)
+        let x = Tensor<Float>(shape: shape, scalars: scalars)
+        let computedGradient = gradient(at: x) { (trace($0) * [2.0, 3.0]).sum() }
+        let a = Tensor<Float>(repeating: 2.0, shape: [4]).diagonal()
+        let b = Tensor<Float>(repeating: 3.0, shape: [4]).diagonal()
+        let expectedGradient = Tensor([a, b])
+        assertEqual(computedGradient, expectedGradient, accuracy: 1e-16)
+    }
+
+    func testDet() {
+        var matrix = Tensor<Float>(shape: [1, 4, 4], scalars: (0..<16).map(Float.init))
+        var computedDet = det(matrix)
+        var expectedDet = Tensor<Float>([0])
+        XCTAssertEqual(computedDet, expectedDet)
+
+        matrix = Tensor<Float>(shape: [2, 2, 2, 2], scalars: (0..<16).map(Float.init))
+        computedDet = det(matrix)
+        expectedDet = Tensor<Float>([[-2.0, -2.0], [-2.0, -2.0]])
+        assertEqual(computedDet, expectedDet, accuracy: 1e-5)
+    }
+
+    func testSlogdet() {
+        var input = Tensor<Float>(shape: [1, 2, 2], scalars: (0..<4).map(Float.init))
+        var expectedSigns = Tensor<Float>([-1])
+        var expectedLogs = Tensor<Float>([0.6931472])
+        var (computedSigns, computedLogs) = slogdet(input)
+        XCTAssertEqual(computedSigns, expectedSigns)
+        XCTAssertEqual(computedLogs, expectedLogs)
+        
+        input = Tensor<Float>(shape: [2, 2, 2, 2], scalars: (0..<16).map(Float.init))
+        expectedSigns = Tensor<Float>([[-1.0, -1.0], [-1.0, -1.0]])
+        expectedLogs = Tensor<Float>([[0.6931472, 0.6931462], [0.6931462, 0.6931435]])
+        (computedSigns, computedLogs) = slogdet(input)
+        XCTAssertEqual(computedSigns, expectedSigns)
+        XCTAssertEqual(computedLogs, expectedLogs)
+    }
+
+    func testLogdet() {
+        let input = Tensor<Float>([[[6.0, 4.0], [4.0, 6.0]], [[2.0, 6.0], [6.0, 20.0]]])
+        let expected = Tensor<Float>([2.9957323, 1.3862934])
+        let computed = logdet(input)
+        assertEqual(computed, expected, accuracy: 1e-5)
+    }
     
+    // The expected value of the gradient was computed using the following Python code:
+    // ```
+    // import tensorflow as tf
+    // x = tf.constant([[[6., 4.], [4., 6.]], [[2., 6.], [6., 20.]]])
+    // with tf.GradientTape() as tape:
+    //     tape.watch(x)
+    //     y = tf.reduce_sum(tf.linalg.logdet(x))
+    // print(tape.gradient(y, x))
+    // ```
+    func testLogdetGradient() {
+        let input = Tensor<Float>([[[6.0, 4.0], [4.0, 6.0]], [[2.0, 6.0], [6.0, 20.0]]])
+        let expectedGradient = Tensor<Float>([
+            [[ 0.29999998, -0.2       ],
+             [-0.2       ,  0.3       ]],
+            [[ 5.0000043 , -1.5000012 ],
+             [-1.5000012 ,  0.50000036]]])
+        let computedGradient = gradient(at: input) { logdet($0).sum() }
+        assertEqual(computedGradient, expectedGradient, accuracy: 1e-5)
+    }
+
     static var allTests = [
         ("testCholesky", testCholesky),
-        ("testQRDecompositionApproximation", testQRDecompositionApproximation)
+        ("testQRDecompositionApproximation", testQRDecompositionApproximation),
+        ("testSVD", testSVD),
+        ("testTrace", testTrace),
+        ("testTraceGradient", testTraceGradient),
+        ("testDet", testDet),
+        ("testSlogdet", testSlogdet),
+        ("testLogdet", testLogdet),
+        ("testLogdetGradient", testLogdetGradient)
     ]
 }

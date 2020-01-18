@@ -118,3 +118,15 @@ public extension StringTensor {
         return array.scalars
     }
 }
+
+//===------------------------------------------------------------------------------------------===//
+// Element-wise comparison.
+//===------------------------------------------------------------------------------------------===//
+public extension StringTensor {
+    /// Computes `self == other` element-wise.
+    /// - Note: `elementsEqual` supports broadcasting.
+    @inlinable
+    func elementsEqual(_ other: StringTensor) -> Tensor<Bool> {
+        return _Raw.equal(self, other)
+    }
+}
