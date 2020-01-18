@@ -341,7 +341,6 @@ internal func _vjpTriangularSolve<T: TensorFlowFloatingPoint>(
     return (x, triangularSolveGrad)
 }
 
-
 /// Returns leading dimension of two input tensors.
 /// Consider input tensors left and right, there are three major cases
 /// - Shape size of the left tensor shape is larger than shape size of the right tensor.
@@ -359,7 +358,7 @@ internal func _vjpTriangularSolve<T: TensorFlowFloatingPoint>(
 /// - Precondition: Left tensor rank cannot be lower than `ignoreLast`.
 /// - Precondition: Right tensor rank cannot be lower than `ignoreLast`.
 @inlinable
-internal func extractLeadingDims<T: TensorFlowNumeric>(
+func extractLeadingDims<T: TensorFlowNumeric>(
     _ left: Tensor<T>,
     _ right: Tensor<T>,
     ignoreLast: Int = 0
@@ -384,7 +383,7 @@ internal func extractLeadingDims<T: TensorFlowNumeric>(
 /// - Precondition: Left tensor rank cannot be lower than `ignoreLast`.
 /// - Precondition: Right tensor rank cannot be lower than `ignoreLast`.
 @inlinable
-internal func extractLeadingDims(_ left: TensorShape, _ right: TensorShape, ignoreLast: Int = 0) -> TensorShape {
+func extractLeadingDims(_ left: TensorShape, _ right: TensorShape, ignoreLast: Int = 0) -> TensorShape {
     precondition(left.rank >= ignoreLast, "The left tensor must have at least rank `ignoreLast`.")
     precondition(right.rank >= ignoreLast, "The right tensor must have at least rank `ignoreLast`.")
     let (smallShape, largeShape) = left.rank > right.rank ? (right, left) : (left, right)
