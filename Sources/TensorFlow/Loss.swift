@@ -13,8 +13,8 @@
 // limitations under the License.
 
 /// Returns the L1 loss between predictions and expectations.
-/// Given `y_pred` and `y_true` vectors, the L1 loss is computed as follows:
-///  `reduction(abs(y_pred - y_true))`
+/// Given`predicted` and `expected`, the L2 loss is computed as follows:
+///  `reduction(abs(predicted - expected))`
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
@@ -30,8 +30,8 @@ public func l1Loss<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// Returns the L2 loss between predictions and expectations.
-/// Given`y_pred` and `y_true`, the L2 loss is computed as follows:
-///  `reduction((y_pred - y_true)^2)`
+/// Given`predicted` and `expected`, the L2 loss is computed as follows:
+///  `reduction((predicted - expected)^2)`
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
@@ -109,9 +109,9 @@ public func meanAbsolutePercentageError<Scalar: TensorFlowFloatingPoint>(
     100 * abs((expected - predicted) / abs(expected)).mean()
 }
 
-/// Returns the hinge loss between predictions and expectations.
-/// Given the `y_pred` and `y_true`, the hinge loss is computed as follows:
-///  `reduction(max(0, 1 - y_pred * y_true))` 
+/// Computes the hinge loss between `predicted` and `expected`.
+///  `loss = reduction(max(0, 1 - predicted * expected))` 
+///  `expected` values are expected to be -1 or 1.
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
@@ -126,9 +126,9 @@ public func hingeLoss<Scalar: TensorFlowFloatingPoint>(
     reduction(max(Tensor(0), Tensor(1) - expected * predicted))
 }
 
-/// Returns the squared hinge loss between predictions and expectations.
-/// Given the `y_pred` and `y_true`, the hinge loss is computed as follows:
-///  `reduction(max(0, 1 - y_pred * y_true)^2)` 
+/// Computes the squared hinge loss between `predicted` and `expected`.
+///  `loss = reduction(square(max(0, 1 - predicted * expected)))`
+///  `expected` values are expected to be -1 or 1.
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
@@ -143,7 +143,10 @@ public func squaredHingeLoss<Scalar: TensorFlowFloatingPoint>(
     reduction(hingeLoss(predicted: predicted, expected: expected).squared())
 }
 
-/// Returns the hinge loss between predictions and expectations.
+/// Computes the categorical hinge loss between `predicted` and `expected`.
+///  `loss = maximum(negative - positive + 1, 0)`
+///   where `negative = max((1 - expected) * predicted)` and 
+///  `positive = sum(predicted * expected)`
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
