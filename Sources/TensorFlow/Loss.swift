@@ -110,7 +110,7 @@ public func meanAbsolutePercentageError<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// Returns the hinge loss between predictions and expectations.
-/// Given the `y_pred` and `y_true`, the Hinge loss is computed as follows:
+/// Given the `y_pred` and `y_true`, the hinge loss is computed as follows:
 ///  `reduction(max(0, 1 - y_pred * y_true))` 
 ///
 /// - Parameters:
@@ -127,7 +127,7 @@ public func hingeLoss<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// Returns the squared hinge loss between predictions and expectations.
-/// Given the `y_pred` and `y_true`, the Hinge loss is computed as follows:
+/// Given the `y_pred` and `y_true`, the hinge loss is computed as follows:
 ///  `reduction(max(0, 1 - y_pred * y_true)^2)` 
 ///
 /// - Parameters:
@@ -213,7 +213,7 @@ public func kullbackLeiblerDivergence<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// Returns the softmax cross entropy (categorical cross entropy) between logits and labels.
-/// 
+///
 /// - Parameters:
 ///   - logits: One-hot encoded outputs from a neural network.
 ///   - labels: Indices (zero-indexed) of the correct outputs.
@@ -247,8 +247,8 @@ func _vjpSoftmaxCrossEntropyHelper<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// Returns the softmax cross entropy (categorical cross entropy) between logits and labels.
-/// Given the logits and probabilites, the softmax cross entropy computes `reduction(-softmax(logits) * log(p))`
-/// Where softmax(x) = `exp(x)/sum(exp(x))`
+/// Given the logits and probabilities, the softmax cross entropy computes `reduction(-softmax(logits) * log(p))`
+/// Where softmax(x) = `exp(x) / sum(exp(x))`
 ///
 /// - Parameters:
 ///   - logits: Unscaled log probabilities from a neural network.
@@ -285,7 +285,7 @@ func _vjpSoftmaxCrossEntropyHelper<Scalar: TensorFlowFloatingPoint>(
 
 /// Returns the sigmoid cross entropy (binary cross entropy) between logits and labels.
 /// Given the logits and probabilites, the sigmoid cross entropy computes `reduction(-sigmoid(logits) * log(p))`
-/// Where sigmoid(x) = `1/(1 + exp(-x))`
+/// Where sigmoid(x) = `1 / (1 + exp(-x))`
 ///
 /// The reduction is reduced over all elements. If reduced over batch size is intended, please
 /// consider to scale the loss.
