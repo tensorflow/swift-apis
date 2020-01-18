@@ -161,8 +161,9 @@ public func categoricalHingeLoss<Scalar: TensorFlowFloatingPoint>(
     return reduction(max(Tensor(0), negative - positive + Tensor(1)))
 }
 
-/// Returns the logarithm of the hyperbolic cosine of the error between predictions and
-/// expectations.
+/// Computes the logarithm of the hyperbolic cosine of the prediction error.
+///  `logcosh = log((exp(x) + exp(-x))/2)`,
+///   where x is the error `predicted - expected`
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
@@ -178,9 +179,9 @@ public func logCoshLoss<Scalar: TensorFlowFloatingPoint>(
     return reduction(x + softplus(Tensor(-2) * x) - log(Tensor(2)))
 }
 
-/// Returns the Poisson loss between predictions and expectations.
-/// Given `y_pred` and `y_true`, the Poisson loss is computed as follows:
-///  `reduction(y_pred - y_true * log(y_pred))`
+/// Computes the Poisson loss between predicted and expected
+///  The Poisson loss is the mean of the elements of the `Tensor`
+///  `predicted - expected * log(predicted)`.
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
