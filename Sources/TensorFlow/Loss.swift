@@ -196,10 +196,8 @@ public func poissonLoss<Scalar: TensorFlowFloatingPoint>(
     reduction(predicted - expected * log(predicted))
 }
 
-/// Returns the Kullback-Leibler divergence (KL divergence) between between expectations and
-/// predictions. 
-/// Given two distributions `y_pred` and `y_true`, KL divergence is computed as follows:
-/// `reduction(y_true * log(y_true / y_pred))`
+/// Computes Kullback-Leibler divergence loss between `expected` and `predicted`.
+/// `loss = reduction(expected * log(expected / predicted))`
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
@@ -214,7 +212,10 @@ public func kullbackLeiblerDivergence<Scalar: TensorFlowFloatingPoint>(
     reduction(expected * log(expected / predicted))
 }
 
-/// Returns the softmax cross entropy (categorical cross entropy) between logits and labels.
+/// Computes the sparse softmax cross entropy (categorical cross entropy) between logits and labels.
+///  Use this crossentropy loss function when there are two or more label classes.
+///  We expect labels to be provided as integers. There should be `# classes` 
+///  floating point values per feature for `logits` and a single floating point value per feature for `expected`.
 ///
 /// - Parameters:
 ///   - logits: One-hot encoded outputs from a neural network.
@@ -248,9 +249,10 @@ func _vjpSoftmaxCrossEntropyHelper<Scalar: TensorFlowFloatingPoint>(
     return (loss, { $0.expandingShape(at: -1) * grad })
 }
 
-/// Returns the softmax cross entropy (categorical cross entropy) between logits and labels.
-/// Given the logits and probabilities, the softmax cross entropy computes `reduction(-softmax(logits) * log(p))`
-/// Where softmax(x) = `exp(x) / sum(exp(x))`
+/// Computes the sparse softmax cross entropy (categorical cross entropy) between logits and labels.
+///  Use this crossentropy loss function when there are two or more label classes.
+///  We expect labels to be provided provided in a `one_hot` representation. 
+///  There should be `# classes` floating point values per feature.
 ///
 /// - Parameters:
 ///   - logits: Unscaled log probabilities from a neural network.
@@ -285,12 +287,10 @@ func _vjpSoftmaxCrossEntropyHelper<Scalar: TensorFlowFloatingPoint>(
     return (loss, { $0.expandingShape(at: -1) * grad })
 }
 
-/// Returns the sigmoid cross entropy (binary cross entropy) between logits and labels.
-/// Given the logits and probabilites, the sigmoid cross entropy computes `reduction(-sigmoid(logits) * log(p))`
-/// Where sigmoid(x) = `1 / (1 + exp(-x))`
-///
-/// The reduction is reduced over all elements. If reduced over batch size is intended, please
-/// consider to scale the loss.
+/// Computes the sigmoid cross entropy (binary cross entropy) between logits and labels.
+///  Use this cross-entropy loss when there are only two label classes (assumed to
+///  be 0 and 1). For each example, there should be a single floating-point value
+///  per prediction.
 ///
 /// - Parameters:
 ///   - logits: The unscaled output of a neural network.
