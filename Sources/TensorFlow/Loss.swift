@@ -46,8 +46,8 @@ public func l2Loss<Scalar: TensorFlowFloatingPoint>(
     reduction((expected - predicted).squared())
 }
 
-/// Returns the mean absolute error between predictions and expectations.
-/// Applies the mean reduction to the l1 loss
+/// Computes the mean of absolute difference between labels and predictions.
+/// `loss = mean(abs(expected - predicted))`
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
@@ -60,8 +60,8 @@ public func meanAbsoluteError<Scalar: TensorFlowFloatingPoint>(
     l1Loss(predicted: predicted, expected: expected, reduction: _mean)
 }
 
-/// Returns the mean squared error between predictions and expectations.
-/// Applies the mean reduction to the l2 loss
+/// Computes the mean of squares of errors between labels and predictions.
+/// `loss = mean(square(expected - predicted))`
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
@@ -74,9 +74,8 @@ public func meanSquaredError<Scalar: TensorFlowFloatingPoint>(
     l2Loss(predicted: predicted, expected: expected, reduction: _mean)
 }
 
-/// Returns the mean squared logarithmic error between predictions and expectations.
-/// Given the `y_pred` and `y_true`, the mean squared logarithmic error is:
-///  `mean((log(y_pred) - log(y_true))^2)`
+/// Computes the mean squared logarithmic error between `predicted` and `expected`
+///  `loss = square(log(expected) - log(predicted))`
 ///
 /// - Note: Negative tensor entries will be clamped at `0` to avoid undefined
 ///   logarithmic behavior, as `log(_:)` is undefined for negative reals.
@@ -94,9 +93,8 @@ public func meanSquaredLogarithmicError<Scalar: TensorFlowFloatingPoint>(
     return l2Loss(predicted: logPredicted, expected: logExpected, reduction: _mean)
 }
 
-/// Returns the mean absolute percentage error between predictions and expectations.
-/// Given `y_pred` and `y_true` the mean absolute percentage error is:
-///  `100 * mean(abs((y_true - y_pred) / abs(y_true)))`
+/// Computes the mean absolute percentage error between `predicted` and `expected`.
+///  `loss = 100 * mean(abs((expected - predicted) / abs(expected)))`
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
