@@ -12,9 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// Returns the L1 loss between predictions and expectations.
-/// Given`predicted` and `expected`, the L2 loss is computed as follows:
-///  `reduction(abs(predicted - expected))`
+/// Computes the L1 loss between `expected` and `predicted`.
+/// `loss = reduction(abs(expected - predicted))`
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
@@ -29,9 +28,8 @@ public func l1Loss<Scalar: TensorFlowFloatingPoint>(
     reduction(abs(expected - predicted))
 }
 
-/// Returns the L2 loss between predictions and expectations.
-/// Given`predicted` and `expected`, the L2 loss is computed as follows:
-///  `reduction((predicted - expected)^2)`
+/// Computes the L2 loss between `expected` and `predicted`.
+/// `loss = reduction(square(expected - predicted))`
 ///
 /// - Parameters:
 ///   - predicted: Predicted outputs from a neural network.
@@ -308,10 +306,10 @@ public func sigmoidCrossEntropy<Scalar: TensorFlowFloatingPoint>(
     return reduction(maxLogitsWithZero - logits * labels + log1p(exp(-negAbsLogits)))
 }
 
-/// Returns the Huber loss between predictions and expectations.
+/// Computes the Huber loss between `predicted` and `expected`.
 ///
-/// For each value `x` in the difference `expected - predicted`, the loss is:
-/// - `0.5 * x^2` if `abs(x) <= δ`.
+/// For each value `x` in `errpr = expected - predicted`:
+/// - `0.5 * x^2` if `|x| <= δ`.
 /// - `0.5 * δ^2 + δ * (|x| - δ)` otherwise.
 ///
 /// - Source: [Wikipedia article](https://en.wikipedia.org/wiki/Huber_loss).
