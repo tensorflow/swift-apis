@@ -278,6 +278,7 @@ public final class _ExecutionContext {
         TFE_DeleteContextOptions(opts)
         checkOk(status)
 
+#if !os(Windows)
         if case .remote(let serverDef) = _RuntimeConfig.session {
             debugLog("Setting up the server def to \(serverDef)...")
             let serverDef: UnsafeMutablePointer<TF_Buffer>! = TFE_GetServerDef(serverDef, status)
@@ -288,6 +289,7 @@ public final class _ExecutionContext {
             checkOk(status)
             TF_DeleteBuffer(serverDef)
         }
+#endif
 
         let devices = TFE_ContextListDevices(eagerContext, status)
         checkOk(status)
