@@ -250,6 +250,13 @@ final class MathOperatorTests: XCTestCase {
         assertEqual(y, expectedY, accuracy: 1e-5)
     }
 
+    func testSwish() {
+        let x = Tensor<Float>([[-1.0, 2.0, 3.0]])
+        let y = swish(x)
+        let expectedY = Tensor<Float>([-0.26894143, 1.761594, 2.8577223])
+        assertEqual(y, expectedY, accuracy: 1e-5)
+    }
+
     func testIsFinite() {
         let x = Tensor<Float>([1, 2, 3, 4, -Float.infinity])
         let y = x.isFinite
@@ -606,6 +613,7 @@ final class MathOperatorTests: XCTestCase {
         ("testRelu6", testRelu6),
         ("testLeakyRelu", testLeakyRelu),
         ("testSelu", testSelu),
+        ("testSwish", testSwish),
         ("testIsFinite", testIsFinite),
         ("testIsInfinite", testIsInfinite),
         ("testIsNaN", testIsNaN),

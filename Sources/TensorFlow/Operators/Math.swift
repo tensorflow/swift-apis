@@ -1330,6 +1330,23 @@ func _vjpSelu<T: TensorFlowFloatingPoint>(
     })
 }
 
+@inlinable
+@differentiable
+public func swish<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    x * sigmoid(x)
+}
+
+@inlinable
+@derivative(of: swish)
+func _vjpSwish<T: TensorFlowFloatingPoint>(
+    _ x: Tensor<T>
+) -> (value: Tensor<T>, pullback: (Tensor<T>) -> Tensor<T>) {
+    return (swish(x), { v in 
+        let grad = sigmoid(x) * (1.0 + x * (1 - sigmoid(x)))
+        return grad * v
+      })
+}
+
 public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// Returns a boolean tensor indicating which elements of `x` are finite.
     @inlinable var isFinite: Tensor<Bool> { _Raw.isFinite(self) }
