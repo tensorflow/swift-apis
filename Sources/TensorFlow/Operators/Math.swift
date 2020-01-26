@@ -1330,6 +1330,11 @@ func _vjpSelu<T: TensorFlowFloatingPoint>(
     })
 }
 
+/// Returns a tensor by applying the swish activation function, namely
+/// `x * sigmoid(x)`.
+///
+/// Source: "Searching for Activation Functions" (Ramachandran et al. 2017)
+/// https://arxiv.org/abs/1710.05941
 @inlinable
 @differentiable
 public func swish<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
