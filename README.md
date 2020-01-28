@@ -23,22 +23,16 @@ import TensorFlow
 
 let hiddenSize: Int = 10
 
-struct Model: Layer {
-    var layer1 = Dense<Float>(inputSize: 4, outputSize: hiddenSize, activation: relu)
-    var layer2 = Dense<Float>(inputSize: hiddenSize, outputSize: hiddenSize, activation: relu)
-    var layer3 = Dense<Float>(inputSize: hiddenSize, outputSize: 3, activation: identity)
-    
-    @differentiable
-    func callAsFunction(_ input: Tensor<Float>) -> Tensor<Float> {
-        return input.sequenced(through: layer1, layer2, layer3)
-    }
+var classifier = Sequential {
+    Dense<Float>(inputSize: 4, outputSize: hiddenSize, activation: relu)
+    Dense<Float>(inputSize: hiddenSize, outputSize: hiddenSize, activation: relu)
+    Dense<Float>(inputSize: hiddenSize, outputSize: 3, activation: identity)
 }
 ```
 
 #### Initialize a model and an optimizer
 
 ```swift
-var classifier = Model()
 let optimizer = SGD(for: classifier, learningRate: 0.02)
 Context.local.learningPhase = .training
 let x: Tensor<Float> = ...
