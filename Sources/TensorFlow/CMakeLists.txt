@@ -62,3 +62,13 @@ set_target_properties(TensorFlow PROPERTIES
 target_link_libraries(TensorFlow PRIVATE
   CTensorFlow
   Tensor)
+
+install(TARGETS TensorFlow
+  ARCHIVE DESTINATION lib/swift/$<LOWER_CASE:${CMAKE_SYSTEM_NAME}>
+  LIBRARY DESTINATION lib/swift/$<LOWER_CASE:${CMAKE_SYSTEM_NAME}>
+  RUNTIME DESTINATION bin)
+get_swift_host_arch(swift_arch)
+install(FILES
+  $<TARGET_PROPERTY:TensorFlow,Swift_MODULE_DIRECTORY>/TensorFlow.swiftdoc
+  $<TARGET_PROPERTY:TensorFlow,Swift_MODULE_DIRECTORY>/TensorFlow.swiftmodule
+  DESTINATION lib/swift/${swift_arch})
