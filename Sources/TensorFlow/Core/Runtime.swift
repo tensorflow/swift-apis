@@ -431,16 +431,6 @@ func _TFCEagerExecute(
     _ retvalCount: UnsafeMutablePointer<Int32>,
     _ status: CTFStatus
 ) {
-    if _RuntimeConfig.printsDebugLog {
-        debugLog("Calling _TFCEagerExecute() over: ")
-        if let value = getenv("TF_CPP_MIN_LOG_LEVEL"),
-            String(cString: value) == "0" {
-            TFE_OpPrintDebugString(op)
-        } else {
-            debugLog("[Run with TF_CPP_MIN_LOG_LEVEL=0 to have TFEOps printed out]")
-        }
-    }
-    debugLog("Executing eager op \(op).")
     TFE_Execute(op, retvals, retvalCount, status)
 }
 
