@@ -25,7 +25,7 @@ public class SGD<Model: Differentiable>: Optimizer
     /// The momentum factor. It accelerates stochastic gradient descent in the relevant direction
     /// and dampens oscillations.
     public var momentum: Float
-    /// The weight decay.
+    /// The learning rate decay.
     public var decay: Float
     /// Use Nesterov momentum if true.
     public var nesterov: Bool
