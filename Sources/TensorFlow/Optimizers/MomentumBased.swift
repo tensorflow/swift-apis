@@ -30,7 +30,7 @@ public class RMSProp<Model: Differentiable>: Optimizer
     public var rho: Float
     /// A small scalar added to the denominator to improve numerical stability.
     public var epsilon: Float
-    /// The weight decay.
+    /// The learning rate decay.
     public var decay: Float
     /// The step count.
     public var step: Float = 0
