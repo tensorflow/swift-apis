@@ -14,7 +14,7 @@
 
 /// A layer that sequentially composes two or more other layers.
 ///
-/// ### Usage Example: ###
+/// ### Examples: ###
 ///
 /// - Build a simple 2-layer perceptron model for MNIST:
 ///
