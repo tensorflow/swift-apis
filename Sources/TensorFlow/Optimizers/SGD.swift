@@ -25,7 +25,7 @@ public class SGD<Model: Differentiable>: Optimizer
     /// The momentum factor. It accelerates stochastic gradient descent in the relevant direction
     /// and dampens oscillations.
     public var momentum: Float
-    /// The weight decay.
+    /// The learning rate decay.
     public var decay: Float
     /// Use Nesterov momentum if true.
     public var nesterov: Bool
@@ -43,7 +43,7 @@ public class SGD<Model: Differentiable>: Optimizer
     ) {
         precondition(learningRate >= 0, "Learning rate must be non-negative")
         precondition(momentum >= 0, "Momentum must be non-negative")
-        precondition(decay >= 0, "Weight decay must be non-negative")
+        precondition(decay >= 0, "Learning rate decay must be non-negative")
 
         self.learningRate = learningRate
         self.momentum = momentum

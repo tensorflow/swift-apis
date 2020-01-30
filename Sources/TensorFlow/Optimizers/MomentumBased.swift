@@ -30,7 +30,7 @@ public class RMSProp<Model: Differentiable>: Optimizer
     public var rho: Float
     /// A small scalar added to the denominator to improve numerical stability.
     public var epsilon: Float
-    /// The weight decay.
+    /// The learning rate decay.
     public var decay: Float
     /// The step count.
     public var step: Float = 0
@@ -46,7 +46,7 @@ public class RMSProp<Model: Differentiable>: Optimizer
     ) {
         precondition(learningRate >= 0, "Learning rate must be non-negative")
         precondition(rho >= 0, "Rho must be non-negative")
-        precondition(decay >= 0, "Weight decay must be non-negative")
+        precondition(decay >= 0, "Learning rate decay must be non-negative")
 
         self.learningRate = learningRate
         self.rho = rho
