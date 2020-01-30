@@ -308,7 +308,7 @@ public func sigmoidCrossEntropy<Scalar: TensorFlowFloatingPoint>(
 
 /// Computes the Huber loss between `predicted` and `expected`.
 ///
-/// For each value `x` in `errpr = expected - predicted`:
+/// For each value `x` in `error = expected - predicted`:
 /// - `0.5 * x^2` if `|x| <= δ`.
 /// - `0.5 * δ^2 + δ * (|x| - δ)` otherwise.
 ///
