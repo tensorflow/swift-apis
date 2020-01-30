@@ -46,7 +46,7 @@ public class RMSProp<Model: Differentiable>: Optimizer
     ) {
         precondition(learningRate >= 0, "Learning rate must be non-negative")
         precondition(rho >= 0, "Rho must be non-negative")
-        precondition(decay >= 0, "Weight decay must be non-negative")
+        precondition(decay >= 0, "Learning rate decay must be non-negative")
 
         self.learningRate = learningRate
         self.rho = rho
