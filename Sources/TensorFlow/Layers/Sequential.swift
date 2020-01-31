@@ -12,7 +12,37 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// A layer that sequentially composes two other layers.
+/// A layer that sequentially composes two or more other layers.
+///
+/// ### Examples: ###
+///
+/// - Build a simple 2-layer perceptron model for MNIST:
+///
+/// ````
+/// let inputSize = 28 * 28
+/// let hiddenSize = 300
+/// var classifier = Sequential {
+///      Dense<Float>(inputSize: inputSize, outputSize: hiddenSize, activation: relu)
+///      Dense<Float>(inputSize: hiddenSize, outputSize: 3, activation: identity)
+///  }
+/// ````
+///
+/// - Build an autoencoder for MNIST:
+///
+/// ````
+/// var autoencoder = Sequential {
+///     // The encoder.
+///     Dense<Float>(inputSize: 28 * 28, outputSize: 128, activation: relu)
+///     Dense<Float>(inputSize: 128, outputSize: 64, activation: relu)
+///     Dense<Float>(inputSize: 64, outputSize: 12, activation: relu)
+///     Dense<Float>(inputSize: 12, outputSize: 3, activation: relu)
+///     // The decoder.
+///     Dense<Float>(inputSize: 3, outputSize: 12, activation: relu)
+///     Dense<Float>(inputSize: 12, outputSize: 64, activation: relu)
+///     Dense<Float>(inputSize: 64, outputSize: 128, activation: relu)
+///     Dense<Float>(inputSize: 128, outputSize: imageHeight * imageWidth, activation: tanh)
+/// }
+/// ````
 public struct Sequential<Layer1: Module, Layer2: Layer>: Module
     where Layer1.Output == Layer2.Input,
           Layer1.TangentVector.VectorSpaceScalar == Layer2.TangentVector.VectorSpaceScalar {
