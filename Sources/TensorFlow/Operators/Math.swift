@@ -1347,7 +1347,8 @@ func _vjpSwish<T: TensorFlowFloatingPoint>(
     _ x: Tensor<T>
 ) -> (value: Tensor<T>, pullback: (Tensor<T>) -> Tensor<T>) {
     return (swish(x), { v in 
-        let grad = sigmoid(x) * (1.0 + x * (1 - sigmoid(x)))
+        let sigmoidFeatures = sigmoid(x)
+        let grad = sigmoidFeatures * (1.0 + x * (1 - sigmoidFeatures))
         return grad * v
       })
 }
