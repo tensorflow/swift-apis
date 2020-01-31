@@ -1341,6 +1341,10 @@ public func swish<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
     x * sigmoid(x)
 }
 
+/// Note: A custom vjp function for swish is required to avoid excessive 
+/// tensor memory consumption due to storing both `x` and `sigmoid(x)` for 
+/// backprop. This vjp recomputes `sigmoid(x)` during backprop, so that 
+/// the `sigmoid(x)` expression can be freed during the forward pass.
 @inlinable
 @derivative(of: swish)
 func _vjpSwish<T: TensorFlowFloatingPoint>(
