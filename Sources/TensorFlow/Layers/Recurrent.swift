@@ -379,7 +379,7 @@ public struct RNN<Cell: RNNCell>: Layer {
             -> (TangentVector, Array<Cell.TimeStepInput>.TangentVector)
     ) {
         let timeStepCount = inputs.count
-        var currentHiddenState = cell.zeroState(for: inputs[0])
+        var currentHiddenState = initialState
         var timeStepOutputs: [Cell.TimeStepOutput] = []
         timeStepOutputs.reserveCapacity(timeStepCount)
         var backpropagators: [Cell.Backpropagator] = []
@@ -411,7 +411,7 @@ public struct RNN<Cell: RNNCell>: Layer {
     @differentiable
     public func callAsFunction(_ inputs: [Cell.TimeStepInput]) -> [Cell.TimeStepOutput] {
         let initialState = withoutDerivative(at: cell.zeroState(for: inputs[0]))
-        return self(inputs, initialState: withoutDerivative(at: initialState))
+        return self(inputs, initialState: initialState)
     }
 
     @differentiable(wrt: (self, inputs))
