@@ -12,4 +12,4 @@ get_swift_host_arch(swift_arch)
 install(FILES
   $<TARGET_PROPERTY:Tensor,Swift_MODULE_DIRECTORY>/Tensor.swiftdoc
   $<TARGET_PROPERTY:Tensor,Swift_MODULE_DIRECTORY>/Tensor.swiftmodule
-  DESTINATION lib/swift/${swift_arch})
+  DESTINATION lib/swift/$<LOWER_CASE:${CMAKE_SYSTEM_NAME}>/${swift_arch})
