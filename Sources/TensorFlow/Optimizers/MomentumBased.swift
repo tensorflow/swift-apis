@@ -30,7 +30,7 @@ public class RMSProp<Model: Differentiable>: Optimizer
     public var rho: Float
     /// A small scalar added to the denominator to improve numerical stability.
     public var epsilon: Float
-    /// The weight decay.
+    /// The learning rate decay.
     public var decay: Float
     /// The step count.
     public var step: Float = 0
@@ -46,7 +46,7 @@ public class RMSProp<Model: Differentiable>: Optimizer
     ) {
         precondition(learningRate >= 0, "Learning rate must be non-negative")
         precondition(rho >= 0, "Rho must be non-negative")
-        precondition(decay >= 0, "Weight decay must be non-negative")
+        precondition(decay >= 0, "Learning rate decay must be non-negative")
 
         self.learningRate = learningRate
         self.rho = rho
@@ -211,8 +211,8 @@ public class Adam<Model: Differentiable>: Optimizer
         let learningRate = self.learningRate * 1 / (1 + decay * step)
         // Note: `stepSize` and `secondMoments` are split into two lines to avoid the "compiler is 
         // unable to type-check this expression in reasonable time" error.
-        var stepSize = learningRate * sqrt(1 - pow(beta2, step))
-        stepSize = stepSize / (1 - pow(beta1, step))
+        var stepSize = learningRate * sqrtf(1 - powf(beta2, step))
+        stepSize = stepSize / (1 - powf(beta1, step))
         firstMoments = firstMoments * beta1 + direction * (1 - beta1)
         secondMoments = secondMoments * beta2
         secondMoments += direction .* direction * (1 - beta2)
@@ -276,8 +276,8 @@ public class AdaMax<Model: Differentiable & KeyPathIterable>: Optimizer
         let learningRate = self.learningRate * 1 / (1 + decay * step)
         // Note: `stepSize` is split into two lines to avoid the "compiler is unable to type-check
         // this expression in reasonable time" error.
-        var stepSize = learningRate * sqrt(1 - pow(beta2, step))
-        stepSize = stepSize / (1 - pow(beta1, step))
+        var stepSize = learningRate * sqrtf(1 - powf(beta2, step))
+        stepSize = stepSize / (1 - powf(beta1, step))
         firstMoments = firstMoments * beta1 + direction * (1 - beta1)
 
         // Update `infinityNorm` using a key path approach because `max(_:_:)` cannot be 
@@ -350,13 +350,13 @@ public class AMSGrad<Model: Differentiable & KeyPathIterable>: Optimizer
     public func update(_ model: inout Model, along direction: Model.TangentVector) {
         step += 1
         let step = Float(self.step)
-        let beta1Power = pow(beta1, step)
-        let beta2Power = pow(beta2, step)
+        let beta1Power = powf(beta1, step)
+        let beta2Power = powf(beta2, step)
         let learningRate = self.learningRate * 1 / (1 + decay * step)
         // Note: `stepSize` and `secondMoments` are split into two lines to avoid the "compiler is 
         // unable to type-check this expression in reasonable time" error.
-        var stepSize = learningRate * sqrt(1 - pow(beta2Power, step))
-        stepSize = stepSize / (1 - pow(beta1Power, step))
+        var stepSize = learningRate * sqrtf(1 - powf(beta2Power, step))
+        stepSize = stepSize / (1 - powf(beta1Power, step))
         firstMoments = firstMoments * beta1 + direction * (1 - beta1)
         secondMoments = secondMoments * beta2
         secondMoments += direction .* direction * (1 - beta2)
@@ -429,8 +429,8 @@ public class RAdam<Model: Differentiable>: Optimizer
     public func update(_ model: inout Model, along direction: Model.TangentVector) {
         step += 1
         let step = Float(self.step)
-        let beta1Power = pow(beta1, step)
-        let beta2Power = pow(beta2, step)
+        let beta1Power = powf(beta1, step)
+        let beta2Power = powf(beta2, step)
         secondMoments = beta2 * secondMoments + direction .* direction * (1 - beta2)
         firstMoments = beta1 * firstMoments + direction * (1 - beta1)
         // Compute maximum length SMA, bias-corrected moving average and approximate length.
@@ -440,11 +440,11 @@ public class RAdam<Model: Differentiable>: Optimizer
         if N_sma_t > 5 {
             // Compute bias-corrected second moments, rectification and adapted momentum.
             let secondMoments_h = Model.TangentVector.sqrt(secondMoments) + epsilon
-            let stepSize = sqrt(
+            let stepSize = sqrtf(
                 (N_sma_t - 4) * (N_sma_t - 2) * N_sma_inf / (
                      (N_sma_inf - 4) * (N_sma_inf - 2) * (N_sma_t)
                 ))
-            model.move(along: -stepSize * sqrt(1 - beta2Power) * firstMoments ./ secondMoments_h)
+            model.move(along: -stepSize * sqrtf(1 - beta2Power) * firstMoments ./ secondMoments_h)
         } else {
             // Update with un-adapted momentum.
             let stepSize = self.learningRate * step / (1 - beta1Power)

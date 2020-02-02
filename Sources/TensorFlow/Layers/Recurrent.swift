@@ -202,7 +202,7 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
         self.fusedBias = Tensor(zeros: [4 * hiddenSize])
     }
 
-    public struct State: Differentiable {
+    public struct State: Equatable, Differentiable, VectorProtocol, KeyPathIterable {
         public var cell: Tensor<Scalar>
         public var hidden: Tensor<Scalar>
 
@@ -306,7 +306,7 @@ public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
 
     // TODO(TF-507): Revert to `typealias State = Tensor<Scalar>` after
     // SR-10697 is fixed.
-    public struct State: Differentiable {
+    public struct State: Equatable, Differentiable, VectorProtocol, KeyPathIterable {
         public var hidden: Tensor<Scalar>
 
         @differentiable
