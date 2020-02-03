@@ -71,4 +71,4 @@ get_swift_host_arch(swift_arch)
 install(FILES
   $<TARGET_PROPERTY:TensorFlow,Swift_MODULE_DIRECTORY>/TensorFlow.swiftdoc
   $<TARGET_PROPERTY:TensorFlow,Swift_MODULE_DIRECTORY>/TensorFlow.swiftmodule
-  DESTINATION lib/swift/${swift_arch})
+  DESTINATION lib/swift/$<LOWER_CASE:${CMAKE_SYSTEM_NAME}>/${swift_arch})
