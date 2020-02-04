@@ -1330,6 +1330,33 @@ func _vjpSelu<T: TensorFlowFloatingPoint>(
     })
 }
 
+/// Returns a tensor by applying the swish activation function, namely
+/// `x * sigmoid(x)`.
+///
+/// Source: "Searching for Activation Functions" (Ramachandran et al. 2017)
+/// https://arxiv.org/abs/1710.05941
+@inlinable
+@differentiable
+public func swish<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    x * sigmoid(x)
+}
+
+// Note: A custom vjp function for swish is required to avoid excessive 
+// tensor memory consumption due to storing both `x` and `sigmoid(x)` for 
+// backprop. This vjp recomputes `sigmoid(x)` during backprop, so that 
+// the `sigmoid(x)` expression can be freed during the forward pass.
+@inlinable
+@derivative(of: swish)
+func _vjpSwish<T: TensorFlowFloatingPoint>(
+    _ x: Tensor<T>
+) -> (value: Tensor<T>, pullback: (Tensor<T>) -> Tensor<T>) {
+    return (swish(x), { v in 
+        let sigmoidFeatures = sigmoid(x)
+        let grad = sigmoidFeatures * (1.0 + x * (1 - sigmoidFeatures))
+        return grad * v
+      })
+}
+
 public extension Tensor where Scalar: TensorFlowFloatingPoint {
     /// Returns a boolean tensor indicating which elements of `x` are finite.
     @inlinable var isFinite: Tensor<Bool> { _Raw.isFinite(self) }
