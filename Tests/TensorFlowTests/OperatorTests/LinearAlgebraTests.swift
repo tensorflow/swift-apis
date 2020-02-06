@@ -143,7 +143,7 @@ final class LinearAlgebraTests: XCTestCase {
     }
     
     /// Data generation function for the triangular solve test.
-    /// Value of the gradient was computed using the following code:
+    // The expected value of the gradient was computed using the following Python code:
     ///
     /// ```
     /// import tensorflow as tf
@@ -153,62 +153,61 @@ final class LinearAlgebraTests: XCTestCase {
     /// b = tf.Variable([[1.], [1.], [3.]])
     /// with tf.GradientTape() as tape:
     ///     x = tf.reduce_sum(tf.linalg.triangular_solve(a, b))
-    /// grad = tape.gradient(x, [a, b])
+    /// print(tape.gradient(x, [a, b]))
     /// ```
-    func triangularSolveTestData(
-    ) -> (
+    func makeTriangularSolveTestData() -> (
         a: Tensor<Float>,
         x: Tensor<Float>,
         b: Tensor<Float>,
         aGrad: Tensor<Float>,
         bGrad: Tensor<Float>,
-        leadingShapes: [([Int], [Int])]
+        leadingBatchDimensions: [([Int], [Int])]
     ) {
-        typealias IntList = [Int]
-        typealias PairIntList = (IntList, IntList)
-
         let a = Tensor<Float>([
             [1, 0, 0],
             [2, 1, 0],
             [3, 2, 1]
         ])
-        let b = Tensor<Float>([1,  1, 3]).reshaped(to: [-1, 1])
-        let x = Tensor<Float>([1, -1, 2]).reshaped(to: [-1, 1])
+        let b = Tensor<Float>([1,  1, 3]).reshaped(to: [3, 1])
+        let x = Tensor<Float>([1, -1, 2]).reshaped(to: [3, 1])
         let aGrad = Tensor<Float>([
             [ 0,  0,  0],
             [ 1, -1,  0],
             [-1,  1, -2]
         ])
-        let bGrad = Tensor<Float>([0, -1, 1]).reshaped(to: [-1, 1])
-        let dimEmpty: IntList = []
-        let dimOne: IntList = [2]
-        let dimTwo: IntList = [3, 2]
-        let dims: [IntList] = [dimEmpty, dimOne, dimTwo]
-        let leadingShapes: [PairIntList] = Array(zip(dims, dims))
-            + Array(zip([dimEmpty, dimEmpty, dimOne,   dimTwo],
-                        [dimOne,   dimTwo,   dimEmpty, dimEmpty]))
-            + Array(zip([dimOne, dimTwo],
-                        [dimTwo, dimOne]))
-        return (a, x, b, aGrad, bGrad, leadingShapes)
+        let bGrad = Tensor<Float>([0, -1, 1]).reshaped(to: [3, 1])
+        let leadingBatchDimensions: [([Int], [Int])] = [
+            ([], []),
+            ([2], [2]),
+            ([3, 2], [3, 2]),
+            ([], [2]),
+            ([], [3, 2]),
+            ([2], []),
+            ([3, 2], []),
+            ([2], [3, 2]),
+            ([3, 2], [2]),
+        ]
+        return (a, x, b, aGrad, bGrad, leadingBatchDimensions)
     }
     
     func testTriangularSolve() {
-        let (a, x, b, aGrad, bGrad, leadingShapes) = triangularSolveTestData()
-        for (aLeadingShape, bLeadingShape) in leadingShapes {
-            let aNewShape: TensorShape = aLeadingShape + a.shape
-            let bNewShape: TensorShape = bLeadingShape + b.shape
-            let aNew = a.broadcasted(to: aNewShape)
-            let bNew = b.broadcasted(to: bNewShape)
-            let multiplier = Float(extractLeadingDims(aNew, bNew, ignoreLast: 2).contiguousSize)
-            let xComputed = triangularSolve(matrix: aNew, rhs: bNew)
-            let (aGradComputed, bGradComputed) = gradient(at: aNew, bNew) {
+        let (a, x, b, aGrad, bGrad, leadingBatchDimensions) = makeTriangularSolveTestData()
+        for (aLeadingShape, bLeadingShape) in leadingBatchDimensions {
+            let aBatchedShape: TensorShape = aLeadingShape + a.shape
+            let bBatchedShape: TensorShape = bLeadingShape + b.shape
+            let a = a.broadcasted(to: aBatchedShape)
+            let b = b.broadcasted(to: bBatchedShape)
+            let multiplier = Float(
+                extractLeadingDimensions(a.shape.dropLast(2), b.shape.dropLast(2)).contiguousSize)
+            let xComputed = triangularSolve(matrix: a, rhs: b)
+            let (aGradComputed, bGradComputed) = gradient(at: a, b) {
                 triangularSolve(matrix: $0, rhs: $1).sum()
             }
 
-            let xExpectedShape: TensorShape = (aNew.rank > bNew.rank ? aLeadingShape : bLeadingShape) + x.shape
+            let xExpectedShape: TensorShape = (a.rank > b.rank ? aLeadingShape : bLeadingShape) + x.shape
             let xExpected = x.broadcasted(to: xExpectedShape)
-            let aGradExpected = (aNew.rank > bNew.rank ? aGrad : multiplier * aGrad).broadcasted(like: aNew)
-            let bGradExpected = (bNew.rank > aNew.rank ? bGrad : multiplier * bGrad).broadcasted(like: bNew)
+            let aGradExpected = (a.rank > b.rank ? aGrad : multiplier * aGrad).broadcasted(like: a)
+            let bGradExpected = (b.rank > a.rank ? bGrad : multiplier * bGrad).broadcasted(like: b)
 
             assertEqual(xComputed, xExpected, accuracy: 1e-16)
             assertEqual(aGradComputed, aGradExpected, accuracy: 1e-16)
@@ -216,34 +215,23 @@ final class LinearAlgebraTests: XCTestCase {
         }
     }
     
-    func testExtractLeadingDims() {
-        var a: TensorShape = []
-        var b: TensorShape = []
-        var computed1: TensorShape = extractLeadingDims(a, b)
-        var computed2: TensorShape = extractLeadingDims(b, a)
-        XCTAssertEqual(computed1, TensorShape())
-        XCTAssertEqual(computed2, TensorShape())
-        
-        a = [1]
-        b = [3, 2, 1]
-        computed1 = extractLeadingDims(a, b)
-        computed2 = extractLeadingDims(b, a)
-        XCTAssertEqual(computed1, TensorShape([3, 2]))
-        XCTAssertEqual(computed2, TensorShape([3, 2]))
+    // Test internal helper function.
+    func testExtractLeadingDimensions() {
+        XCTAssertEqual(extractLeadingDimensions([], []), [])
 
-        a = [3, 2, 1]
-        b = [4, 5, 6, 3, 20, 10]
-        computed1 = extractLeadingDims(a, b, ignoreLast: 2)
-        computed2 = extractLeadingDims(b, a, ignoreLast: 2)
-        XCTAssertEqual(computed1, TensorShape([4, 5, 6]))
-        XCTAssertEqual(computed2, TensorShape([4, 5, 6]))
+        do {
+            let a: TensorShape = [1]
+            let b: TensorShape = [3, 2, 1]
+            XCTAssertEqual(extractLeadingDimensions(a, b), [3, 2])
+            XCTAssertEqual(extractLeadingDimensions(b, a), [3, 2])
+        }
 
-        a = [3, 2, 1]
-        b = [30, 20, 10]
-        computed1 = extractLeadingDims(a, b, ignoreLast: 3)
-        computed2 = extractLeadingDims(b, a, ignoreLast: 3)
-        XCTAssertEqual(computed1, TensorShape())
-        XCTAssertEqual(computed2, TensorShape())
+        do {
+            let a: TensorShape = [3, 10]
+            let b: TensorShape = [4, 5, 6, 3, 10]
+            XCTAssertEqual(extractLeadingDimensions(a, b), [4, 5, 6])
+            XCTAssertEqual(extractLeadingDimensions(b, a), [4, 5, 6])
+        }
     }
     
     static var allTests = [
@@ -255,6 +243,6 @@ final class LinearAlgebraTests: XCTestCase {
         ("testLogdet", testLogdet),
         ("testLogdetGradient", testLogdetGradient),
         ("testTriangularSolve", testTriangularSolve),
-        ("testExtractLeadingDims", testExtractLeadingDims)
+        ("testExtractLeadingDimensions", testExtractLeadingDimensions)
     ]
 }
