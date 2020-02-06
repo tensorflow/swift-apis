@@ -344,7 +344,7 @@ public struct RNN<Cell: RNNCell>: Layer {
         self.cell = cell()
     }
 
-    @differentiable(wrt: (self, inputs))
+    @differentiable(wrt: (self, inputs, initialState))
     public func callAsFunction(
         _ inputs: [Cell.TimeStepInput],
         initialState: Cell.State
@@ -360,7 +360,7 @@ public struct RNN<Cell: RNNCell>: Layer {
         return timeStepOutputs
     }
 
-    @differentiable(wrt: (self, inputs))
+    @differentiable(wrt: (self, inputs, initialState))
     public func call(
         _ inputs: [Cell.TimeStepInput],
         initialState: Cell.State
@@ -369,14 +369,14 @@ public struct RNN<Cell: RNNCell>: Layer {
     }
 
     @usableFromInline
-    @derivative(of: callAsFunction, wrt: (self, inputs))
+    @derivative(of: callAsFunction, wrt: (self, inputs, initialState))
     internal func _vjpCallAsFunction(
         _ inputs: [Cell.TimeStepInput],
         initialState: Cell.State
     ) -> (
         value: [Cell.TimeStepOutput],
         pullback: (Array<Cell.TimeStepOutput>.TangentVector)
-            -> (TangentVector, Array<Cell.TimeStepInput>.TangentVector)
+            -> (TangentVector, Array<Cell.TimeStepInput>.TangentVector, Cell.State.TangentVector)
     ) {
         let timeStepCount = inputs.count
         var currentHiddenState = initialState
@@ -404,7 +404,7 @@ public struct RNN<Cell: RNNCell>: Layer {
                 𝛁state = 𝛁input.state
                 reversed𝛁inputs.append(𝛁input.input)
             }
-            return (.init(cell: 𝛁cell), .init(Array(reversed𝛁inputs.reversed())))
+            return (.init(cell: 𝛁cell), .init(Array(reversed𝛁inputs.reversed())), 𝛁state)
         })
     }
 
@@ -414,7 +414,7 @@ public struct RNN<Cell: RNNCell>: Layer {
         return self(inputs, initialState: initialState)
     }
 
-    @differentiable(wrt: (self, inputs))
+    @differentiable(wrt: (self, inputs, initialState))
     public func lastOutput(
         from inputs: [Cell.TimeStepInput],
         initialState: Cell.State
