@@ -98,7 +98,7 @@ extension TensorShape: Collection, MutableCollection {
     public var endIndex: Index {
         return dimensions.endIndex
     }
-    
+
     @inlinable
     public func index(after i: Index) -> Index {
         return dimensions.index(after: i)

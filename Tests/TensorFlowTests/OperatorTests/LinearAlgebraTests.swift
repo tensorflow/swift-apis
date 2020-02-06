@@ -169,7 +169,99 @@ final class LinearAlgebraTests: XCTestCase {
         let computedGradient = gradient(at: input) { logdet($0).sum() }
         assertEqual(computedGradient, expectedGradient, accuracy: 1e-5)
     }
+    
+    /// Data generation function for the triangular solve test.
+    // The expected value of the gradient was computed using the following Python code:
+    ///
+    /// ```
+    /// import tensorflow as tf
+    /// a = tf.Variable([[1., 0., 0.],
+    ///                  [2., 1., 0.],
+    ///                  [3., 2., 1.]])
+    /// b = tf.Variable([[1.], [1.], [3.]])
+    /// with tf.GradientTape() as tape:
+    ///     x = tf.reduce_sum(tf.linalg.triangular_solve(a, b))
+    /// print(tape.gradient(x, [a, b]))
+    /// ```
+    func makeTriangularSolveTestData() -> (
+        a: Tensor<Float>,
+        x: Tensor<Float>,
+        b: Tensor<Float>,
+        aGrad: Tensor<Float>,
+        bGrad: Tensor<Float>,
+        leadingBatchDimensions: [([Int], [Int])]
+    ) {
+        let a = Tensor<Float>([
+            [1, 0, 0],
+            [2, 1, 0],
+            [3, 2, 1]
+        ])
+        let b = Tensor<Float>([1,  1, 3]).reshaped(to: [3, 1])
+        let x = Tensor<Float>([1, -1, 2]).reshaped(to: [3, 1])
+        let aGrad = Tensor<Float>([
+            [ 0,  0,  0],
+            [ 1, -1,  0],
+            [-1,  1, -2]
+        ])
+        let bGrad = Tensor<Float>([0, -1, 1]).reshaped(to: [3, 1])
+        let leadingBatchDimensions: [([Int], [Int])] = [
+            ([], []),
+            ([2], [2]),
+            ([3, 2], [3, 2]),
+            ([], [2]),
+            ([], [3, 2]),
+            ([2], []),
+            ([3, 2], []),
+            ([2], [3, 2]),
+            ([3, 2], [2]),
+        ]
+        return (a, x, b, aGrad, bGrad, leadingBatchDimensions)
+    }
+    
+    func testTriangularSolve() {
+        let (a, x, b, aGrad, bGrad, leadingBatchDimensions) = makeTriangularSolveTestData()
+        for (aLeadingShape, bLeadingShape) in leadingBatchDimensions {
+            let aBatchedShape: TensorShape = aLeadingShape + a.shape
+            let bBatchedShape: TensorShape = bLeadingShape + b.shape
+            let a = a.broadcasted(to: aBatchedShape)
+            let b = b.broadcasted(to: bBatchedShape)
+            let multiplier = Float(
+                extractLeadingDimensions(a.shape.dropLast(2), b.shape.dropLast(2)).contiguousSize)
+            let xComputed = triangularSolve(matrix: a, rhs: b)
+            let (aGradComputed, bGradComputed) = gradient(at: a, b) {
+                triangularSolve(matrix: $0, rhs: $1).sum()
+            }
 
+            let xExpectedShape: TensorShape = (a.rank > b.rank ? aLeadingShape : bLeadingShape) + x.shape
+            let xExpected = x.broadcasted(to: xExpectedShape)
+            let aGradExpected = (a.rank > b.rank ? aGrad : multiplier * aGrad).broadcasted(like: a)
+            let bGradExpected = (b.rank > a.rank ? bGrad : multiplier * bGrad).broadcasted(like: b)
+
+            assertEqual(xComputed, xExpected, accuracy: 1e-16)
+            assertEqual(aGradComputed, aGradExpected, accuracy: 1e-16)
+            assertEqual(bGradComputed, bGradExpected, accuracy: 1e-16)
+        }
+    }
+    
+    // Test internal helper function.
+    func testExtractLeadingDimensions() {
+        XCTAssertEqual(extractLeadingDimensions([], []), [])
+
+        do {
+            let a: TensorShape = [1]
+            let b: TensorShape = [3, 2, 1]
+            XCTAssertEqual(extractLeadingDimensions(a, b), [3, 2])
+            XCTAssertEqual(extractLeadingDimensions(b, a), [3, 2])
+        }
+
+        do {
+            let a: TensorShape = [3, 10]
+            let b: TensorShape = [4, 5, 6, 3, 10]
+            XCTAssertEqual(extractLeadingDimensions(a, b), [4, 5, 6])
+            XCTAssertEqual(extractLeadingDimensions(b, a), [4, 5, 6])
+        }
+    }
+    
     static var allTests = [
         ("testCholesky", testCholesky),
         ("testQRDecompositionApproximation", testQRDecompositionApproximation),
@@ -179,6 +271,8 @@ final class LinearAlgebraTests: XCTestCase {
         ("testDet", testDet),
         ("testSlogdet", testSlogdet),
         ("testLogdet", testLogdet),
-        ("testLogdetGradient", testLogdetGradient)
+        ("testLogdetGradient", testLogdetGradient),
+        ("testTriangularSolve", testTriangularSolve),
+        ("testExtractLeadingDimensions", testExtractLeadingDimensions)
     ]
 }
