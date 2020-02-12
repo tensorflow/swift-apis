@@ -238,13 +238,13 @@ public class AdaDelta<Model: Differentiable>: Optimizer
 ///
 ///         // 2) Update the discriminator.
 ///         ...
-///         let discriminator = TensorFlow.gradient(at: generator) { generator -> Tensor<Float> in
+///         let 𝛁discriminator = TensorFlow.gradient(at: discriminator) { discriminator -> Tensor<Float> in
 ///             ...
 ///             return loss
 ///         }
-///         // Update the differentiable variables of the generator along the gradients (`𝛁discriminator`) 
+///         // Update the differentiable variables of the discriminator along the gradients (`𝛁discriminator`) 
 ///         // with the Adam optimizer.
-///         adamOptimizerD.update(&generator, along: 𝛁discriminator)
+///         adamOptimizerD.update(&discriminator, along: 𝛁discriminator)
 ///         }
 /// }       
 /// ````
