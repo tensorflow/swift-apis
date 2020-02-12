@@ -174,22 +174,6 @@ public extension Tensor {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func reshaped(toShape newShape: Tensor<Int32>) -> Tensor {
-        let totalNegative = newShape.scalars.filter({$0 == -1}).count
-        let positiveShapeSizes = newShape.scalars.filter({$0 > 0})
-        let newShapeScalarCount = positiveShapeSizes.reduce(1, {$0 * $1})
-
-        precondition(totalNegative <= 1, "Only one input size may be -1.")
-
-        if totalNegative == 1 {
-            precondition(
-                scalarCount % Int(newShapeScalarCount) == 0,
-                "The number of scalars must be a multiple of the new shape.")
-        } else {
-            precondition(
-                scalarCount == newShapeScalarCount,
-                "The number of scalars must match the new shape.")
-        }
-
         return _Raw.reshape(self, shape: newShape)
     }
 
