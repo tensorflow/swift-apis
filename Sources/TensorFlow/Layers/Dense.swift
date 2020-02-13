@@ -40,7 +40,7 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
 
     public init(
         weight: Tensor<Scalar>,
-        bias: Tensor<Scalar>?,
+        bias: Tensor<Scalar>? = nil,
         activation: @escaping Activation
     ) {
         precondition(weight.rank <= 3, "The rank of the 'weight' tensor must be less than 4.")

@@ -49,7 +49,7 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - dilation: The dilation factor for the temporal dimension.
     public init(
         filter: Tensor<Scalar>,
-        bias: Tensor<Scalar>?,
+        bias: Tensor<Scalar>? = nil,
         activation: @escaping Activation = identity,
         stride: Int = 1,
         padding: Padding = .valid,
@@ -163,7 +163,7 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///     (dilation height, dilation width).
     public init(
         filter: Tensor<Scalar>,
-        bias: Tensor<Scalar>?,
+        bias: Tensor<Scalar>? = nil,
         activation: @escaping Activation = identity,
         strides: (Int, Int) = (1, 1),
         padding: Padding = .valid,
@@ -286,7 +286,7 @@ public struct Conv3D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - dilations: The dilation factor for spatial/spatio-temporal dimensions.
     public init(
         filter: Tensor<Scalar>,
-        bias: Tensor<Scalar>?,
+        bias: Tensor<Scalar>? = nil,
         activation: @escaping Activation = identity,
         strides: (Int, Int, Int) = (1, 1, 1),
         padding: Padding = .valid,
@@ -412,7 +412,7 @@ public struct TransposedConv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - padding: The padding algorithm for convolution.
     public init(
         filter: Tensor<Scalar>,
-        bias: Tensor<Scalar>?,
+        bias: Tensor<Scalar>? = nil,
         activation: @escaping Activation = identity,
         stride: Int = 1,
         padding: Padding = .valid
@@ -514,7 +514,7 @@ public struct TransposedConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - padding: The padding algorithm for convolution.
     public init(
         filter: Tensor<Scalar>,
-        bias: Tensor<Scalar>?,
+        bias: Tensor<Scalar>? = nil,
         activation: @escaping Activation = identity,
         strides: (Int, Int) = (1, 1),
         padding: Padding = .valid
@@ -619,7 +619,7 @@ public struct TransposedConv3D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - padding: The padding algorithm for convolution.
     public init(
         filter: Tensor<Scalar>,
-        bias: Tensor<Scalar>?,
+        bias: Tensor<Scalar>? = nil,
         activation: @escaping Activation = identity,
         strides: (Int, Int, Int) = (1, 1, 1),
         padding: Padding = .valid
@@ -722,7 +722,7 @@ public struct DepthwiseConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - padding: The padding algorithm for convolution.
     public init(
         filter: Tensor<Scalar>,
-        bias: Tensor<Scalar>?,
+        bias: Tensor<Scalar>? = nil,
         activation: @escaping Activation = identity,
         strides: (Int, Int) = (1, 1),
         padding: Padding = .valid
@@ -918,7 +918,7 @@ public struct SeparableConv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     public init(
         depthwiseFilter: Tensor<Scalar>,
         pointwiseFilter: Tensor<Scalar>,
-        bias: Tensor<Scalar>?,
+        bias: Tensor<Scalar>? = nil,
         activation: @escaping Activation = identity,
         stride: Int = 1,
         padding: Padding = .valid
@@ -1029,7 +1029,7 @@ public struct SeparableConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     public init(
         depthwiseFilter: Tensor<Scalar>,
         pointwiseFilter: Tensor<Scalar>,
-        bias: Tensor<Scalar>?,
+        bias: Tensor<Scalar>? = nil,
         activation: @escaping Activation = identity,
         strides: (Int, Int) = (1, 1),
         padding: Padding = .valid
