@@ -1618,7 +1618,7 @@ public extension Tensor where Scalar == Bool {
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
     func all(squeezingAxes axes: Int...) -> Tensor {
-        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
+        preconditionCheck(axes: axes)
         let axes = axes.map(Int32.init)
         return _Raw.all(self, reductionIndices: Tensor<Int32>(axes), keepDims: false)
     }
@@ -1629,7 +1629,7 @@ public extension Tensor where Scalar == Bool {
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
     func any(squeezingAxes axes: Int...) -> Tensor {
-        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
+        preconditionCheck(axes: axes)
         let axes = axes.map(Int32.init)
         return _Raw.any(self, reductionIndices: Tensor<Int32>(axes), keepDims: false)
     }
@@ -1640,7 +1640,7 @@ public extension Tensor where Scalar == Bool {
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
     func all(alongAxes axes: Int...) -> Tensor {
-        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
+        preconditionCheck(axes: axes)
         let axes = axes.map(Int32.init)
         return _Raw.all(self, reductionIndices: Tensor<Int32>(axes), keepDims: true)
     }
@@ -1651,7 +1651,7 @@ public extension Tensor where Scalar == Bool {
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
     func any(alongAxes axes: Int...) -> Tensor {
-        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
+        preconditionCheck(axes: axes)
         let axes = axes.map(Int32.init)
         return _Raw.any(self, reductionIndices: Tensor<Int32>(axes), keepDims: true)
     }
@@ -1682,7 +1682,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func max(squeezingAxes axes: Tensor<Int32>) -> Tensor {
-        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
+        preconditionCheck(axes: axes)
         return _Raw.max(self, reductionIndices: axes, keepDims: false)
     }
 
@@ -1712,7 +1712,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func min(squeezingAxes axes: Tensor<Int32>) -> Tensor {
-        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
+        preconditionCheck(axes: axes)
         return _Raw.min(self, reductionIndices: axes, keepDims: false)
     }
 
@@ -1763,7 +1763,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func min(alongAxes axes: Tensor<Int32>) -> Tensor {
-        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
+        preconditionCheck(axes: axes)
         return _Raw.min(self, reductionIndices: axes, keepDims: true)
     }
 
@@ -1774,6 +1774,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func min(alongAxes axes: [Int]) -> Tensor {
+        preconditionCheck(axes: axes)
         // TODO(TF-433): Remove workaround for differentiating `map`.
         let axes = {axes.map(Int32.init)}()
         return min(alongAxes: Tensor<Int32>(axes))
@@ -1796,7 +1797,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func max(alongAxes axes: Tensor<Int32>) -> Tensor {
-        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
+        preconditionCheck(axes: axes)
         return _Raw.max(self, reductionIndices: axes, keepDims: true)
     }
 
@@ -1807,6 +1808,7 @@ public extension Tensor where Scalar: Numeric & Comparable {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func max(alongAxes axes: [Int]) -> Tensor {
+        preconditionCheck(axes: axes)
         // TODO(TF-433): Remove workaround for differentiating `map`.
         let axes = {axes.map(Int32.init)}()
         return max(alongAxes: Tensor<Int32>(axes))
@@ -1924,7 +1926,7 @@ public extension Tensor where Scalar: Numeric {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func sum(squeezingAxes axes: Tensor<Int32>) -> Tensor {
-        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
+        preconditionCheck(axes: axes)
         return _Raw.sum(self, reductionIndices: axes, keepDims: false)
     }
 
@@ -1960,7 +1962,7 @@ public extension Tensor where Scalar: Numeric {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func sum(alongAxes axes: Tensor<Int32>) -> Tensor {
-        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
+        preconditionCheck(axes: axes)
         return _Raw.sum(self, reductionIndices: axes, keepDims: true)
     }
 
@@ -1970,9 +1972,10 @@ public extension Tensor where Scalar: Numeric {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func sum(alongAxes axes: [Int]) -> Tensor {
+        preconditionCheck(axes: axes)
         // TODO(TF-433): Remove workaround for differentiating `map`.
         let axes = {axes.map(Int32.init)}()
-        return sum(alongAxes: Tensor<Int32>(axes))
+        return _Raw.sum(self, reductionIndices: Tensor<Int32>(axes), keepDims: true)
     }
 
     /// Returns the sum along the specified axes. The reduced dimensions are retained with value 1.
@@ -1993,7 +1996,7 @@ public extension Tensor where Scalar: Numeric {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func product(squeezingAxes axes: Tensor<Int32>) -> Tensor {
-        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
+        preconditionCheck(axes: axes)
         return _Raw.prod(self, reductionIndices: axes, keepDims: false)
     }
 
@@ -2031,7 +2034,7 @@ public extension Tensor where Scalar: Numeric {
     /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
     @inlinable
     func product(alongAxes axes: Tensor<Int32>) -> Tensor {
-        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
+        preconditionCheck(axes: axes)
         return _Raw.prod(self, reductionIndices: axes, keepDims: true)
     }
 
@@ -2063,7 +2066,7 @@ public extension Tensor where Scalar: Numeric {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func mean(squeezingAxes axes: Tensor<Int32>) -> Tensor {
-        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
+        preconditionCheck(axes: axes)
         return _Raw.mean(self, reductionIndices: axes, keepDims: false)
     }
 
@@ -2100,7 +2103,7 @@ public extension Tensor where Scalar: Numeric {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func mean(alongAxes axes: Tensor<Int32>) -> Tensor {
-        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
+        preconditionCheck(axes: axes)
         return _Raw.mean(self, reductionIndices: axes, keepDims: true)
     }
 
@@ -2135,7 +2138,7 @@ public extension Tensor where Scalar: Numeric {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func variance(squeezingAxes axes: Tensor<Int32>) -> Tensor {
-        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
+        preconditionCheck(axes: axes)
         let squaredDiff = squaredDifference(self, mean(alongAxes: axes))
         return squaredDiff.mean(squeezingAxes: axes)
     }
@@ -2177,7 +2180,7 @@ public extension Tensor where Scalar: Numeric {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func variance(alongAxes axes: Tensor<Int32>) -> Tensor {
-        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
+        preconditionCheck(axes: axes)
         let squaredDiff = squaredDifference(self, mean(alongAxes: axes))
         return squaredDiff.mean(alongAxes: axes)
     }
@@ -2364,6 +2367,13 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     }
 
     @inlinable
+    @derivative(of: sum(alongAxes:))
+    func _vjpSum(alongAxes axes: [Int]) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
+        let value = sum(alongAxes: axes)
+        return (value, { [shape = shapeTensor] in $0.broadcasted(toShape: shape) })
+    }
+
+    @inlinable
     @derivative(of: sum(squeezingAxes:))
     func _vjpSum(squeezingAxes axes: Tensor<Int32>) -> (
         value: Tensor, pullback: (Tensor) -> Tensor
@@ -2514,7 +2524,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func standardDeviation(squeezingAxes axes: Tensor<Int32>) -> Tensor {
-        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
+        preconditionCheck(axes: axes)
         return TensorFlow.sqrt(variance(squeezingAxes: axes))
     }
 
@@ -2526,7 +2536,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func standardDeviation(squeezingAxes axes: [Int]) -> Tensor {
-        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
+        preconditionCheck(axes: axes)
         return TensorFlow.sqrt(variance(squeezingAxes: axes))
     }
 
@@ -2560,7 +2570,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func standardDeviation(alongAxes axes: Tensor<Int32>) -> Tensor {
-        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
+        preconditionCheck(axes: axes)
         return TensorFlow.sqrt(variance(alongAxes: axes))
     }
 
@@ -2585,7 +2595,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func standardDeviation(alongAxes axes: Int...) -> Tensor {
-        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
+        preconditionCheck(axes: axes)
         return TensorFlow.sqrt(variance(alongAxes: axes))
     }
 
@@ -2600,7 +2610,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func logSumExp(squeezingAxes axes: Tensor<Int32>) -> Tensor {
-        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
+        preconditionCheck(axes: axes)
         let rawMax = max(alongAxes: axes)
         let offset = withoutDerivative(at: rawMax) { rawMax in
             Tensor<Scalar>(zerosLike: rawMax).replacing(
@@ -2665,7 +2675,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func logSumExp(alongAxes axes: Tensor<Int32>) -> Tensor {
-        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
+        preconditionCheck(axes: axes)
         let rawMax = max(alongAxes: axes)
         let offset = withoutDerivative(at: rawMax) { rawMax in
             Tensor<Scalar>(zerosLike: rawMax).replacing(
@@ -2732,7 +2742,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func moments(squeezingAxes axes: Tensor<Int32>) -> Moments<Scalar> {
-        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
+        preconditionCheck(axes: axes)
         let mean = self.mean(alongAxes: axes)
         let variance = squaredDifference(self, mean).mean(squeezingAxes: axes)
         return Moments(
@@ -2782,7 +2792,7 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
     @inlinable
     @differentiable(wrt: self)
     func moments(alongAxes axes: Tensor<Int32>) -> Moments<Scalar> {
-        precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
+        preconditionCheck(axes: axes)
         let mean = self.mean(alongAxes: axes)
         let variance = squaredDifference(self, mean).mean(alongAxes: axes)
         return Moments<Scalar>(mean: mean, variance: variance)
@@ -2880,5 +2890,39 @@ public extension Tensor where Scalar: Numeric {
     @differentiable(where Scalar: TensorFlowFloatingPoint)
     static func • (lhs: Tensor, rhs: Tensor) -> Tensor {
         matmul(lhs, rhs)
+    }
+}
+
+//===------------------------------------------------------------------------------------------===//
+// Precondition helpers.
+//===------------------------------------------------------------------------------------------===//
+
+internal extension Tensor {
+    @usableFromInline
+    func preconditionCheck(
+        axes: Tensor<Int32>,
+        function: StaticString = #function,
+        file: StaticString = #file,
+        line: UInt = #line
+    ) {
+        precondition(
+            areAxesInRange(axes),
+            "All axes must be in the range `[-rank, rank)` when calling \(function) (rank is: \(rank), axes: \(axes))",
+            file: file,
+            line: line)
+    }
+
+    @usableFromInline
+    func preconditionCheck(
+        axes: [Int],
+        function: StaticString = #function,
+        file: StaticString = #file,
+        line: UInt = #line
+    ) {
+        precondition(
+            areAxesInRange(axes),
+            "All axes must be in the range `[-rank, rank)` when calling \(function) (rank is: \(rank), axes: \(axes))",
+            file: file,
+            line: line)
     }
 }
