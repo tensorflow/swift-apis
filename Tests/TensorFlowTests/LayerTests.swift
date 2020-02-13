@@ -120,8 +120,8 @@ final class LayerTests: XCTestCase {
         let layerNoBias = Conv2D<Float>(filter: filter, bias: nil, activation: identity,
                                         strides: (2, 2), padding: .valid)
         let outputNoBias = layerNoBias.inferring(from: input)
-        let expectedNoBias = Tensor<Float>(shape: [2, 1, 1, 2],
-                                           scalars: [15, 15, 63, 63])
+        let expectedNoBias = Tensor<Float>(shape: [2, 1, 1, 1],
+                                           scalars: [14, 62])
         XCTAssertEqual(outputNoBias, expectedNoBias)
     }
 
@@ -215,8 +215,8 @@ final class LayerTests: XCTestCase {
         let layerNoBias = Conv3D<Float>(filter: filter, bias: nil, activation: identity,
                                         strides: (1, 2, 1), padding: .valid, dilations: (1, 1, 1))
         let outputNoBias = layerNoBias.inferring(from: input)
-        let expectedNoBias = Tensor<Float>(shape: [2, 2, 1, 1, 2],
-                                           scalars: [140, 140, 364, 364, 588, 588, 812, 812])
+        let expectedNoBias = Tensor<Float>(shape: [2, 2, 1, 1, 1],
+                                           scalars: [140, 364, 588, 812])
         XCTAssertEqual(outputNoBias, expectedNoBias)
     }
 
