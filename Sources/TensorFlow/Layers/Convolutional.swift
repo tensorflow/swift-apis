@@ -30,7 +30,7 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let padding: Padding
     /// The dilation factor for the temporal dimension.
     @noDerivative public let dilation: Int
-    /// Workaround optionals not being handled by AD
+    /// Note: `useBias` is a workaround for TF-1153: optional differentiation support.
     @noDerivative private let useBias: Bool
 
     /// The element-wise activation function type.
@@ -142,7 +142,7 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let padding: Padding
     /// The dilation factor for spatial dimensions.
     @noDerivative public let dilations: (Int, Int)
-    /// Workaround optionals not being handled by AD
+    /// Note: `useBias` is a workaround for TF-1153: optional differentiation support.
     @noDerivative private let useBias: Bool
 
     /// The element-wise activation function type.
@@ -265,7 +265,7 @@ public struct Conv3D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let padding: Padding
     /// The dilation factor for spatial/spatio temporal dimensions.
     @noDerivative public let dilations: (Int, Int, Int)
-    /// Workaround optionals not being handled by AD
+    /// Note: `useBias` is a workaround for TF-1153: optional differentiation support.
     @noDerivative private let useBias: Bool
 
     /// The element-wise activation function type.
@@ -395,7 +395,7 @@ public struct TransposedConv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let padding: Padding
     /// The paddingIndex property allows us to handle computation based on padding.
     @noDerivative public let paddingIndex: Int
-    /// Workaround optionals not being handled by AD
+    /// Note: `useBias` is a workaround for TF-1153: optional differentiation support.
     @noDerivative private let useBias: Bool
 
     /// The element-wise activation function type.
@@ -496,7 +496,7 @@ public struct TransposedConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let padding: Padding
     /// The paddingIndex property allows us to handle computation based on padding.
     @noDerivative public let paddingIndex: Int
-    /// Workaround optionals not being handled by AD
+    /// Note: `useBias` is a workaround for TF-1153: optional differentiation support.
     @noDerivative private let useBias: Bool
 
     /// The element-wise activation function type.
@@ -602,7 +602,7 @@ public struct TransposedConv3D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let padding: Padding
     /// The paddingIndex property allows us to handle computation based on padding.
     @noDerivative public let paddingIndex: Int
-    /// Workaround optionals not being handled by AD
+    /// Note: `useBias` is a workaround for TF-1153: optional differentiation support.
     @noDerivative private let useBias: Bool
 
     /// The element-wise activation function type.
@@ -705,7 +705,7 @@ public struct DepthwiseConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let strides: (Int, Int)
     /// The padding algorithm for convolution.
     @noDerivative public let padding: Padding
-    /// Workaround optionals not being handled by AD
+    /// Note: `useBias` is a workaround for TF-1153: optional differentiation support.
     @noDerivative private let useBias: Bool
 
     /// The element-wise activation function type.
@@ -897,7 +897,7 @@ public struct SeparableConv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let stride: Int
     /// The padding algorithm for convolution.
     @noDerivative public let padding: Padding
-    /// Workaround optionals not being handled by AD
+    /// Note: `useBias` is a workaround for TF-1153: optional differentiation support.
     @noDerivative private let useBias: Bool
 
     /// The element-wise activation function type.
@@ -1008,7 +1008,7 @@ public struct SeparableConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let strides: (Int, Int)
     /// The padding algorithm for convolution.
     @noDerivative public let padding: Padding
-    /// Workaround optionals not being handled by AD
+    /// Note: `useBias` is a workaround for TF-1153: optional differentiation support.
     @noDerivative private let useBias: Bool
 
     /// The element-wise activation function type.
