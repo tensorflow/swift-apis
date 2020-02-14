@@ -54,9 +54,9 @@ public class SGD<Model: Differentiable>: Optimizer
     public func update(_ model: inout Model, along direction: Model.TangentVector) {
         step += 1
         let learningRate = self.learningRate * 1 / (1 + decay * Float(step))
-        velocity = momentum * velocity - direction * learningRate
+        velocity = velocity.scaled(by: momentum) - direction.scaled(by: learningRate)
         if nesterov {
-            model.move(along: momentum * velocity - direction * learningRate)
+            model.move(along: velocity.scaled(by: momentum) - direction.scaled(by: learningRate))
         } else {
             model.move(along: velocity)
         }
