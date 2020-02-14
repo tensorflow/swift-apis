@@ -65,11 +65,63 @@ public class RMSProp<Model: Differentiable>: Optimizer
 
 /// AdaGrad optimizer.
 ///
-/// Individually adapts the learning rates of all model parameters by scaling them inversely 
+/// Implements the AdaGrad optimization algorithm. AdaGrad (adaptive gradient 
+/// algorithm) has parameter-specific learning rates, which are adapted relative 
+/// to how frequently a parameter gets updated during training. The more 
+/// updates a parameter receives, the smaller the learning rate.
+///
+/// AdaGrad individually adapts the learning rates of all model parameters by scaling them inversely 
 /// proportional to the square root of the sum of all the historical squared values of the gradient.
 ///
-/// Reference: ["Adaptive Subgradient Methods for Online Learning and Stochastic Optimization"](
-/// http://www.jmlr.org/papers/volume12/duchi11a/duchi11a.pdf)
+/// Reference: ["Adaptive Subgradient Methods for Online Learning and Stochastic 
+/// Optimization"](http://www.jmlr.org/papers/volume12/duchi11a/duchi11a.pdf) 
+/// (Duchi et al, 2011).
+///
+/// - Parameters:
+///     - learningRate: A Float. The learning rate (default value: 1e-3).
+///     - rho: A Float. The smoothing factor. Typical values are `0.5`, `0.9`, 
+///     and `0.99`, for smoothing over 2, 10, and 100 examples, respectively 
+///     (default value: 0.9).
+///     - epsilon: A Float. A small scalar added to the denominator to improve 
+///     numerical stability (default value: 1e-8).
+///
+/// ### Examples: ###
+/// 
+/// - Train an image classificaion network:
+/// 
+/// ````
+/// ...
+/// // Define a sequential model such as LeNet-5.
+/// var leNetClassifier = Sequential {
+///     Conv2D<Float>(filterShape: (5, 5, 1, 6), padding: .same, activation: relu)
+///     AvgPool2D<Float>(poolSize: (2, 2), strides: (2, 2))
+///     ...
+///     Dense<Float>(inputSize: 84), outputSize: 10)
+/// }
+/// // Define the AdaGrad optimizer with a learning rate set to 1e-3, rho - to 0.99,
+/// // and epsilon: 1e-8
+/// let adaGradOptimizer = AdaGrad(for: leNetClassifier, learningRate: 1e-3, 
+///                                rho: 0.99, epsilon: 1e-8)
+/// ...
+/// // Start the training loop over a certain number of epochs.
+/// for epoch in 1...epochCount {
+///     // Start the training phase.
+///     ...
+///     for batch in trainingShuffled.batched(batchSize) {
+///         ...
+///         // Implementing the gradient descent with the AdaGrad optimizer:
+///         // Compute the gradient.
+///         let 𝛁model = TensorFlow.gradient(at: leNetClassifier) { leNetClassifier 
+///         -> Tensor<Float> in
+///             ...
+///             return loss
+///             }
+///         // Update the differentiable variables of the model along the 
+///         gradients (`𝛁model`) with the AdaGrad optimizer.
+///         adaGradOptimizer.update(&leNetClassifier, along: 𝛁model)
+///     }
+/// }
+/// ````
 public class AdaGrad<Model: Differentiable>: Optimizer
     where Model.TangentVector: VectorProtocol & PointwiseMultiplicative & ElementaryFunctions,
           Model.TangentVector.VectorSpaceScalar == Float {
