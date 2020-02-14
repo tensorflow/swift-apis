@@ -100,8 +100,11 @@ public class RMSProp<Model: Differentiable>: Optimizer
 /// }
 /// // Define the AdaGrad optimizer with a learning rate set to 1e-3, rho - to 0.99,
 /// // and epsilon: 1e-8
-/// let adaGradOptimizer = AdaGrad(for: leNetClassifier, learningRate: 1e-3, 
-///                                rho: 0.99, epsilon: 1e-8)
+/// let adaGradOptimizer = AdaGrad(
+///     for: leNetClassifier,
+///     learningRate: 1e-3, 
+///     rho: 0.99,
+///     epsilon: 1e-8)
 /// ...
 /// // Start the training loop over a certain number of epochs.
 /// for epoch in 1...epochCount {
