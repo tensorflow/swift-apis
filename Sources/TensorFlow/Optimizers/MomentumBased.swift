@@ -87,7 +87,7 @@ public class RMSProp<Model: Differentiable>: Optimizer
 ///
 /// ### Examples: ###
 /// 
-/// - Train an image classificaion network:
+/// - Train an image classification network:
 /// 
 /// ````
 /// ...
