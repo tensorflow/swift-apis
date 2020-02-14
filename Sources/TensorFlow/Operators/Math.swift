@@ -220,38 +220,6 @@ extension Tensor: VectorProtocol where Scalar: TensorFlowFloatingPoint {
     }
 }
 
-extension VectorProtocol {
-    static func + (lhs: VectorSpaceScalar, rhs: Self) -> Self {
-        rhs.adding(lhs)
-    }
-
-    static func + (lhs: Self, rhs: VectorSpaceScalar) -> Self {
-        lhs.adding(rhs)
-    }
-
-    static func - (lhs: Self, rhs: VectorSpaceScalar) -> Self {
-        lhs.subtracting(rhs)
-    }
-
-    static func * (lhs: VectorSpaceScalar, rhs: Self) -> Self {
-        rhs.scaled(by: lhs)
-    }
-
-    static func * (lhs: Self, rhs: VectorSpaceScalar) -> Self {
-        lhs.scaled(by: rhs)
-    }
-}
-
-extension VectorProtocol where VectorSpaceScalar: SignedNumeric {
-    static prefix func - (x: Self) -> Self {
-        .zero - x
-    }
-
-    static func - (lhs: VectorSpaceScalar, rhs: Self) -> Self {
-        (-rhs).adding(lhs)
-    }
-}
-
 //===------------------------------------------------------------------------------------------===//
 // Additional Element-wise Operators
 //===------------------------------------------------------------------------------------------===//

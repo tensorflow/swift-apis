@@ -57,9 +57,9 @@ public class RMSProp<Model: Differentiable>: Optimizer
     public func update(_ model: inout Model, along direction: Model.TangentVector) {
         step += 1
         let learningRate = self.learningRate * 1 / (1 + decay * Float(step))
-        alpha = alpha * rho + direction .* direction * (1 - rho)
-        let denominator = Model.TangentVector.sqrt(alpha) + epsilon
-        model.move(along: -learningRate * direction ./ denominator)
+        alpha = alpha.scaled(by: rho) + (direction .* direction).scaled(by: 1 - rho)
+        let denominator = Model.TangentVector.sqrt(alpha).adding(epsilon)
+        model.move(along: (direction ./ denominator).scaled(by: -learningRate))
     }
 }
 
@@ -99,9 +99,9 @@ public class AdaGrad<Model: Differentiable>: Optimizer
     }
 
     public func update(_ model: inout Model, along direction: Model.TangentVector) {
-        alpha = rho + direction .* direction
-        let denominator = Model.TangentVector.sqrt(alpha) + epsilon
-        model.move(along: -learningRate * direction ./ denominator)
+        alpha = (direction .* direction).adding(rho)
+        let denominator = Model.TangentVector.sqrt(alpha).adding(epsilon)
+        model.move(along: (direction ./ denominator).scaled(by: -learningRate))
     }
 }
 
@@ -152,11 +152,11 @@ public class AdaDelta<Model: Differentiable>: Optimizer
     public func update(_ model: inout Model, along direction: Model.TangentVector) {
         step += 1
         let learningRate = self.learningRate / (1 + decay * Float(step))
-        averageSquared = rho * averageSquared + (1 - rho) * direction .* direction
-        var stepSize = direction .* Model.TangentVector.sqrt(accumulatedDelta + epsilon)
-        stepSize ./= Model.TangentVector.sqrt(averageSquared + epsilon)
-        model.move(along: -learningRate * stepSize)
-        accumulatedDelta = rho * accumulatedDelta + (1 - rho) * stepSize .* stepSize
+        averageSquared = averageSquared.scaled(by: rho) + (direction .* direction).scaled(by: 1 - rho)
+        var stepSize = direction .* Model.TangentVector.sqrt(accumulatedDelta.adding(epsilon))
+        stepSize ./= Model.TangentVector.sqrt(averageSquared.adding(epsilon))
+        model.move(along: stepSize.scaled(by: -learningRate))
+        accumulatedDelta = accumulatedDelta.scaled(by: rho) + (stepSize .* stepSize).scaled(by: 1 - rho)
     }
 }
 
@@ -293,15 +293,14 @@ public class Adam<Model: Differentiable>: Optimizer
         step += 1
         let step = Float(self.step)
         let learningRate = self.learningRate * 1 / (1 + decay * step)
-        // Note: `stepSize` and `secondMoments` are split into two lines to avoid the "compiler is 
-        // unable to type-check this expression in reasonable time" error.
+        // Note: `stepSize` is split into two lines to avoid the "compiler is unable to type-check
+        // this expression in reasonable time" error.
         var stepSize = learningRate * sqrtf(1 - powf(beta2, step))
         stepSize = stepSize / (1 - powf(beta1, step))
-        firstMoments = firstMoments * beta1 + direction * (1 - beta1)
-        secondMoments = secondMoments * beta2
-        secondMoments += direction .* direction * (1 - beta2)
-        let denominator = Model.TangentVector.sqrt(secondMoments) + epsilon
-        model.move(along: -stepSize * firstMoments ./ denominator)
+        firstMoments = firstMoments.scaled(by: beta1) + direction.scaled(by: 1 - beta1)
+        secondMoments = secondMoments.scaled(by: beta2) + (direction .* direction).scaled(by: 1 - beta2)
+        let denominator = Model.TangentVector.sqrt(secondMoments).adding(epsilon)
+        model.move(along: (firstMoments ./ denominator).scaled(by: -stepSize))
     }
 }
 
@@ -362,7 +361,7 @@ public class AdaMax<Model: Differentiable & KeyPathIterable>: Optimizer
         // this expression in reasonable time" error.
         var stepSize = learningRate * sqrtf(1 - powf(beta2, step))
         stepSize = stepSize / (1 - powf(beta1, step))
-        firstMoments = firstMoments * beta1 + direction * (1 - beta1)
+        firstMoments = firstMoments.scaled(by: beta1) + direction.scaled(by: 1 - beta1)
 
         // Update `infinityNorm` using a key path approach because `max(_:_:)` cannot be 
         // currently applied in a simpler manner.
@@ -375,8 +374,8 @@ public class AdaMax<Model: Differentiable & KeyPathIterable>: Optimizer
                 Double(beta2) * infinityNorm[keyPath: kp], abs(direction[keyPath: kp]))
         }
 
-        let denominator = infinityNorm + epsilon
-        model.move(along: -stepSize * firstMoments ./ denominator)
+        let denominator = infinityNorm.adding(epsilon)
+        model.move(along: (firstMoments ./ denominator).scaled(by: -stepSize))
     }
 }
 
@@ -437,13 +436,12 @@ public class AMSGrad<Model: Differentiable & KeyPathIterable>: Optimizer
         let beta1Power = powf(beta1, step)
         let beta2Power = powf(beta2, step)
         let learningRate = self.learningRate * 1 / (1 + decay * step)
-        // Note: `stepSize` and `secondMoments` are split into two lines to avoid the "compiler is 
-        // unable to type-check this expression in reasonable time" error.
+        // Note: `stepSize` is split into two lines to avoid the "compiler is unable to type-check
+        // this expression in reasonable time" error.
         var stepSize = learningRate * sqrtf(1 - powf(beta2Power, step))
         stepSize = stepSize / (1 - powf(beta1Power, step))
-        firstMoments = firstMoments * beta1 + direction * (1 - beta1)
-        secondMoments = secondMoments * beta2
-        secondMoments += direction .* direction * (1 - beta2)
+        firstMoments = firstMoments.scaled(by: beta1) + direction.scaled(by: 1 - beta1)
+        secondMoments = secondMoments.scaled(by: beta2) + (direction .* direction).scaled(by: 1 - beta2)
 
         // Update `secondMomentsMax` using a key path approach because `max(_:_:)` cannot be 
         // currently applied in a simpler manner.
@@ -456,8 +454,8 @@ public class AMSGrad<Model: Differentiable & KeyPathIterable>: Optimizer
                 secondMomentsMax[keyPath: kp], secondMoments[keyPath: kp])
         }
 
-        let denominator = Model.TangentVector.sqrt(secondMomentsMax) + epsilon
-        model.move(along: -stepSize * firstMoments ./ denominator)
+        let denominator = Model.TangentVector.sqrt(secondMomentsMax).adding(epsilon)
+        model.move(along: (firstMoments ./ denominator).scaled(by: -stepSize))
     }
 }
 
@@ -515,24 +513,24 @@ public class RAdam<Model: Differentiable>: Optimizer
         let step = Float(self.step)
         let beta1Power = powf(beta1, step)
         let beta2Power = powf(beta2, step)
-        secondMoments = beta2 * secondMoments + direction .* direction * (1 - beta2)
-        firstMoments = beta1 * firstMoments + direction * (1 - beta1)
+        secondMoments = secondMoments.scaled(by: beta2) + (direction .* direction).scaled(by: 1 - beta2)
+        firstMoments = firstMoments.scaled(by: beta1) + direction.scaled(by: 1 - beta1)
         // Compute maximum length SMA, bias-corrected moving average and approximate length.
         let N_sma_inf =  2 / (1 - beta2) - 1
         let N_sma_t = N_sma_inf - 2 * step * beta2Power / (1 - beta2Power)
 
         if N_sma_t > 5 {
             // Compute bias-corrected second moments, rectification and adapted momentum.
-            let secondMoments_h = Model.TangentVector.sqrt(secondMoments) + epsilon
+            let secondMoments_h = Model.TangentVector.sqrt(secondMoments).adding(epsilon)
             let stepSize = sqrtf(
                 (N_sma_t - 4) * (N_sma_t - 2) * N_sma_inf / (
                      (N_sma_inf - 4) * (N_sma_inf - 2) * (N_sma_t)
                 ))
-            model.move(along: -stepSize * sqrtf(1 - beta2Power) * firstMoments ./ secondMoments_h)
+            model.move(along: (firstMoments ./ secondMoments_h).scaled(by: -stepSize * sqrtf(1 - beta2Power)))
         } else {
             // Update with un-adapted momentum.
             let stepSize = self.learningRate * step / (1 - beta1Power)
-            model.move(along: -stepSize * firstMoments)
+            model.move(along: firstMoments.scaled(by: -stepSize))
         }
     }
 }
