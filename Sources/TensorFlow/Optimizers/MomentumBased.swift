@@ -105,20 +105,69 @@ public class AdaGrad<Model: Differentiable>: Optimizer
     }
 }
 
-/// ADADELTA optimizer.
+/// AdaDelta optimizer.
 ///
-/// ADADELTA is a more robust extension of AdaGrad. ADADELTA adapts learning rates based on a moving
-/// window of gradient updates rather than by accumulating all past gradient norms. It can thus 
-/// adapt faster to changing dynamics of the optimization problem space.
+/// Implements the AdaDelta optimization algorithm. AdaDelta is a stochastic 
+/// gradient descent method based on the first order information. It adapts 
+/// learning rates based on a moving window of gradient updates, instead of 
+/// accumulating all past gradients. Thus, AdaDelta continues learning even 
+/// when many updates have been done. It adapts faster to changing dynamics of 
+/// the optimization problem space.
 /// 
-/// Reference: ["ADADELTA: An Adaptive Learning Rate Method"](https://arxiv.org/abs/1212.5701)
+/// Reference: ["ADADELTA: An Adaptive Learning Rate Method"](
+/// https://arxiv.org/abs/1212.5701) (Zeiler, 2012).
+/// 
+/// ### Examples: ###
+/// 
+/// // - Train an autoencoder network:
+/// 
+/// ````
+/// ...
+/// // Define the model.
+/// var autoencoderModel = Sequential {
+///     // The encoder. 
+///     Dense<Float>(inputSize: 28 * 28, outputSize: 128, activation: relu)
+///     ...
+///     // The decoder.
+///     ...
+///     Dense<Float>(inputSize: 128, outputSize: 28 * 28, activation: tanh))
+/// }
+/// ...
+/// // Define the AdaDelta optimizer for the network with a learning rate set 
+/// // to  1, rho - to 0.95, epsilon - to 1e-6, and decay - to 0.
+/// let adaDeltaOptimizer = AdaDelta(
+///     for: autoencoderModel, 
+///     learningRate: 1,
+///     rho: 0.95, 
+///     epsilon: 1e-6,
+///     decay: 0)
+/// ...
+/// // Start the training loop over a certain number of epochs.
+/// for epoch in 1...epochCount {
+///     ...
+///     for batch in trainingShuffled.batched(batchSize) {
+///         ...
+///         // Implementing the gradient descent with the AdaDelta optimizer:
+///         // Compute the gradient.
+///         let 𝛁autoencoderModel = TensorFlow.gradient(at: autoencoderModel) {
+///             autoencoderModel -> Tensor<Float> in
+///             ...
+///             return loss
+///         }
+///         // Update the differentiable variables of the model along the gradients
+///         // (`𝛁autoencoderModel`) with the AdaDelta optimizer.
+///         adaDeltaOptimizer.update(&autoencoderModel, along: 𝛁autoencoderModel)
+///     }
+/// }
+/// ````
 public class AdaDelta<Model: Differentiable>: Optimizer
     where Model.TangentVector: VectorProtocol & PointwiseMultiplicative & ElementaryFunctions,
           Model.TangentVector.VectorSpaceScalar == Float {
     public typealias Model = Model
     /// The learning rate.
     public var learningRate: Float
-    /// The decay factor, corresponding to fraction of gradient to keep at each time step.
+    /// The decay factor of the previous parameter update/a fraction of gradient
+    /// to keep at each time step.
     public var rho: Float
     /// A small scalar added to the denominator to improve numerical stability.
     public var epsilon: Float
