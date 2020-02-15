@@ -220,37 +220,48 @@ extension Tensor: VectorProtocol where Scalar: TensorFlowFloatingPoint {
     }
 }
 
-extension VectorProtocol {
-    static func + (lhs: VectorSpaceScalar, rhs: Self) -> Self {
-        rhs.adding(lhs)
-    }
+// Note: previously, these `VectorProtocol` operator definitions were internal.
+// This was confusing to library users, since operators were unavailable.
+//
+// Publicly exposing these operator definitions is currently problematic due to
+// the negative impact on operator type-checking performance:
+// https://github.com/apple/swift/pull/29815
+//
+// Consider publicly exposing these operators when tensorflow/swift-apis is no
+// longer built as part of the Swift standard library,
+/*
+public extension VectorProtocol {	
+    static func + (lhs: VectorSpaceScalar, rhs: Self) -> Self {	
+        rhs.adding(lhs)	
+    }	
 
-    static func + (lhs: Self, rhs: VectorSpaceScalar) -> Self {
-        lhs.adding(rhs)
-    }
+    static func + (lhs: Self, rhs: VectorSpaceScalar) -> Self {	
+        lhs.adding(rhs)	
+    }	
 
-    static func - (lhs: Self, rhs: VectorSpaceScalar) -> Self {
-        lhs.subtracting(rhs)
-    }
+    static func - (lhs: Self, rhs: VectorSpaceScalar) -> Self {	
+        lhs.subtracting(rhs)	
+    }	
 
-    static func * (lhs: VectorSpaceScalar, rhs: Self) -> Self {
-        rhs.scaled(by: lhs)
-    }
+    static func * (lhs: VectorSpaceScalar, rhs: Self) -> Self {	
+        rhs.scaled(by: lhs)	
+    }	
 
-    static func * (lhs: Self, rhs: VectorSpaceScalar) -> Self {
-        lhs.scaled(by: rhs)
-    }
+    static func * (lhs: Self, rhs: VectorSpaceScalar) -> Self {	
+        lhs.scaled(by: rhs)	
+    }	
+}	
+
+public extension VectorProtocol where VectorSpaceScalar: SignedNumeric {	
+    static prefix func - (x: Self) -> Self {	
+        .zero - x	
+    }	
+
+    static func - (lhs: VectorSpaceScalar, rhs: Self) -> Self {	
+        (-rhs).adding(lhs)	
+    }	
 }
-
-extension VectorProtocol where VectorSpaceScalar: SignedNumeric {
-    static prefix func - (x: Self) -> Self {
-        .zero - x
-    }
-
-    static func - (lhs: VectorSpaceScalar, rhs: Self) -> Self {
-        (-rhs).adding(lhs)
-    }
-}
+*/
 
 //===------------------------------------------------------------------------------------------===//
 // Additional Element-wise Operators
@@ -1328,6 +1339,33 @@ func _vjpSelu<T: TensorFlowFloatingPoint>(
     return (result, { v in
         _Raw.seluGrad(gradients: v, outputs: result)
     })
+}
+
+/// Returns a tensor by applying the swish activation function, namely
+/// `x * sigmoid(x)`.
+///
+/// Source: "Searching for Activation Functions" (Ramachandran et al. 2017)
+/// https://arxiv.org/abs/1710.05941
+@inlinable
+@differentiable
+public func swish<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+    x * sigmoid(x)
+}
+
+// Note: A custom vjp function for swish is required to avoid excessive 
+// tensor memory consumption due to storing both `x` and `sigmoid(x)` for 
+// backprop. This vjp recomputes `sigmoid(x)` during backprop, so that 
+// the `sigmoid(x)` expression can be freed during the forward pass.
+@inlinable
+@derivative(of: swish)
+func _vjpSwish<T: TensorFlowFloatingPoint>(
+    _ x: Tensor<T>
+) -> (value: Tensor<T>, pullback: (Tensor<T>) -> Tensor<T>) {
+    return (swish(x), { v in 
+        let sigmoidFeatures = sigmoid(x)
+        let grad = sigmoidFeatures * (1.0 + x * (1 - sigmoidFeatures))
+        return grad * v
+      })
 }
 
 public extension Tensor where Scalar: TensorFlowFloatingPoint {

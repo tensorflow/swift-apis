@@ -57,7 +57,7 @@ make sure your changes are consistent with the guidelines.
 #### License
 
 Include a license at the top of new files.
-* [License example](https://github.com/tensorflow/swift-apis/blob/master/Sources/TensorFlow/Random.swift)
+* [License example](https://github.com/tensorflow/swift-apis/blob/master/Sources/TensorFlow/Layer.swift)
 
 #### Swift coding style
 

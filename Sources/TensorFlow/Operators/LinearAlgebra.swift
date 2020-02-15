@@ -291,3 +291,109 @@ public extension Tensor where Scalar: TensorFlowFloatingPoint {
         return (s, u, v)
     }
 }
+
+// MARK: Solvers
+
+// NOTE: broadcasting support was added to `_Raw.matrixTriangularSolve` in
+// https://github.com/tensorflow/tensorflow/commit/b105944eb6c563849a085a1765d6700ee2c0f35c.
+//
+// After `tensorflow` is updated beyond that commit in
+// https://github.com/apple/swift/blob/tensorflow/utils/update_checkout/update-checkout-config.json,
+// consider doing the following:
+// - Remove custom broadcasting support from `func triangularSolve`.
+// - Delete `func extractLeadingDimensions`.
+
+/// Returns the solution `x` to the system of linear equations represented by `Ax = b`.
+///
+/// - Parameters:
+///   - matrix: The input triangular coefficient matrix, representing `A` in `Ax = b`.
+///   - rhs: Right-hand side values, representing `b` in `Ax = b`.
+///   - lower: Whether `matrix` is lower triangular (`true`) or upper triangular (`false`). The
+///     default value is `true`.
+///   - adjoint: If `true`, solve with the adjoint of `matrix` instead of `matrix`. The default
+///     value is `false`.
+/// - Returns: The solution `x` to the system of linear equations represented by `Ax = b`.
+///   `x` has the same shape as `b`.
+/// - Precondition: `matrix` must be a tensor with shape `[..., M, M]`.
+/// - Precondition: `rhs` must be a tensor with shape `[..., M, K]`.
+@inlinable
+@differentiable
+public func triangularSolve<T: TensorFlowFloatingPoint>(
+    matrix: Tensor<T>,
+    rhs: Tensor<T>,
+    lower: Bool = true,
+    adjoint: Bool = false
+) -> Tensor<T> {
+    precondition(matrix.rank >= 2, "The matrix tensor must have at least rank 2.")
+    precondition(rhs.rank >= 2, "The rhs tensor must have at least rank 2.")
+    let leadingDimensions = extractLeadingDimensions(rhs.shape.dropLast(2), matrix.shape.dropLast(2))
+    let broadcastedMatrix: Tensor<T> =
+        matrix.rank < rhs.rank ? matrix.broadcasted(to: leadingDimensions + matrix.shape) : matrix
+    let broadcastedRhs: Tensor<T> =
+        matrix.rank > rhs.rank ? rhs.broadcasted(to: leadingDimensions + rhs.shape) : rhs
+    return _Raw.matrixTriangularSolve(
+        matrix: broadcastedMatrix, rhs: broadcastedRhs, lower: lower, adjoint: adjoint)
+}
+
+@inlinable
+@derivative(of: triangularSolve)
+internal func _vjpTriangularSolve<T: TensorFlowFloatingPoint>(
+    matrix: Tensor<T>,
+    rhs: Tensor<T>,
+    lower: Bool = true,
+    adjoint: Bool = false
+) -> (value: Tensor<T>, pullback: (Tensor<T>) -> (Tensor<T>, Tensor<T>)) {
+    let leadingDimensions = extractLeadingDimensions(rhs.shape.dropLast(2), matrix.shape.dropLast(2))
+    let broadcastMatrix: Bool = matrix.rank < rhs.rank
+    let broadcastRhs: Bool = matrix.rank > rhs.rank
+    let broadcastedMatrix: Tensor<T> =
+        broadcastMatrix ? matrix.broadcasted(to: leadingDimensions + matrix.shape) : matrix
+    let broadcastedRhs: Tensor<T> =
+        broadcastRhs ? rhs.broadcasted(to: leadingDimensions + rhs.shape) : rhs
+    let value = triangularSolve(
+        matrix: broadcastedMatrix, rhs: broadcastedRhs, lower: lower, adjoint: adjoint)
+    let pullback = { (v: Tensor<T>) -> (Tensor<T>, Tensor<T>) in
+        var rhsGrad = triangularSolve(
+            matrix: broadcastedMatrix, rhs: v, lower: lower, adjoint: !adjoint)
+        let (left, right) = adjoint ? (value, rhsGrad) : (rhsGrad, value)
+        let matrixGrad = -matmul(left, transposed: false, right, transposed: true)
+        var triMatrixGrad = lower
+            ? matrixGrad.bandPart(subdiagonalCount: -1, superdiagonalCount: 0)
+            : matrixGrad.bandPart(subdiagonalCount: 0, superdiagonalCount: -1)
+        if broadcastMatrix {
+            triMatrixGrad = triMatrixGrad.unbroadcasted(to: matrix.shape)
+        }
+        if broadcastRhs {
+            rhsGrad = rhsGrad.unbroadcasted(to: rhs.shape)
+        }
+        return (triMatrixGrad, rhsGrad)
+    }
+    return (value, pullback)
+}
+
+// MARK: Utilities
+
+/// Returns the leading dimensions of two input shapes, given that that they have the same trailing
+/// dimensions.
+///
+/// There are three cases:
+/// - If `lhs.count == rhs.count`, returns `[]`.
+/// - If `lhs.count < rhs.count`, returns `rhs.dropFirst(lhs.count)`.
+/// - If `lhs.count > rhs.count`, returns `lhs.dropFirst(rhs.count)`.
+///
+/// - Parameters:
+///   - lhs: An input shape.
+///   - rhs: An input shape.
+///   - droppingLast: The number of trailing dimensions to ignore. The default value is zero.
+/// - Precondition: `lhs` and `rhs` must have the same trailing dimensions.
+@inlinable
+func extractLeadingDimensions(_ lhs: TensorShape, _ rhs: TensorShape) -> TensorShape {
+    let (smallerShape, largerShape) = lhs.rank > rhs.rank ? (rhs, lhs) : (lhs, rhs)
+    func haveSameTrailingDimensions() -> Bool {
+        let countDifference = largerShape.count - smallerShape.count
+        return smallerShape == largerShape.dropFirst(countDifference)
+    }
+    precondition(haveSameTrailingDimensions(),
+                 "Shapes \(lhs) and \(rhs) must have the same trailing dimensions")
+    return largerShape.dropLast(smallerShape.count)
+}

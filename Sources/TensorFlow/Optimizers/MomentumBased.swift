@@ -30,7 +30,7 @@ public class RMSProp<Model: Differentiable>: Optimizer
     public var rho: Float
     /// A small scalar added to the denominator to improve numerical stability.
     public var epsilon: Float
-    /// The weight decay.
+    /// The learning rate decay.
     public var decay: Float
     /// The step count.
     public var step: Float = 0
@@ -46,7 +46,7 @@ public class RMSProp<Model: Differentiable>: Optimizer
     ) {
         precondition(learningRate >= 0, "Learning rate must be non-negative")
         precondition(rho >= 0, "Rho must be non-negative")
-        precondition(decay >= 0, "Weight decay must be non-negative")
+        precondition(decay >= 0, "Learning rate decay must be non-negative")
 
         self.learningRate = learningRate
         self.rho = rho
@@ -57,9 +57,9 @@ public class RMSProp<Model: Differentiable>: Optimizer
     public func update(_ model: inout Model, along direction: Model.TangentVector) {
         step += 1
         let learningRate = self.learningRate * 1 / (1 + decay * Float(step))
-        alpha = alpha * rho + direction .* direction * (1 - rho)
-        let denominator = Model.TangentVector.sqrt(alpha) + epsilon
-        model.move(along: -learningRate * direction ./ denominator)
+        alpha = alpha.scaled(by: rho) + (direction .* direction).scaled(by: 1 - rho)
+        let denominator = Model.TangentVector.sqrt(alpha).adding(epsilon)
+        model.move(along: (direction ./ denominator).scaled(by: -learningRate))
     }
 }
 
@@ -99,9 +99,9 @@ public class AdaGrad<Model: Differentiable>: Optimizer
     }
 
     public func update(_ model: inout Model, along direction: Model.TangentVector) {
-        alpha = rho + direction .* direction
-        let denominator = Model.TangentVector.sqrt(alpha) + epsilon
-        model.move(along: -learningRate * direction ./ denominator)
+        alpha = (direction .* direction).adding(rho)
+        let denominator = Model.TangentVector.sqrt(alpha).adding(epsilon)
+        model.move(along: (direction ./ denominator).scaled(by: -learningRate))
     }
 }
 
@@ -152,27 +152,111 @@ public class AdaDelta<Model: Differentiable>: Optimizer
     public func update(_ model: inout Model, along direction: Model.TangentVector) {
         step += 1
         let learningRate = self.learningRate / (1 + decay * Float(step))
-        averageSquared = rho * averageSquared + (1 - rho) * direction .* direction
-        var stepSize = direction .* Model.TangentVector.sqrt(accumulatedDelta + epsilon)
-        stepSize ./= Model.TangentVector.sqrt(averageSquared + epsilon)
-        model.move(along: -learningRate * stepSize)
-        accumulatedDelta = rho * accumulatedDelta + (1 - rho) * stepSize .* stepSize
+        averageSquared = averageSquared.scaled(by: rho) + (direction .* direction).scaled(by: 1 - rho)
+        var stepSize = direction .* Model.TangentVector.sqrt(accumulatedDelta.adding(epsilon))
+        stepSize ./= Model.TangentVector.sqrt(averageSquared.adding(epsilon))
+        model.move(along: stepSize.scaled(by: -learningRate))
+        accumulatedDelta = accumulatedDelta.scaled(by: rho) + (stepSize .* stepSize).scaled(by: 1 - rho)
     }
 }
 
 /// Adam optimizer.
 ///
-/// Reference: ["Adam - A Method for Stochastic Optimization"](
-/// https://arxiv.org/abs/1412.6980v8)
+/// Implements the Adam optimization algorithm. Adam is a stochastic gradient descent method that 
+/// computes individual adaptive learning rates for different parameters from estimates of first- 
+/// and second-order moments of the gradients.
+///
+/// Reference: ["Adam: A Method for Stochastic Optimization"](https://arxiv.org/abs/1412.6980v8) 
+/// (Kingma and Ba, 2014).
+///
+/// - Parameters:
+///   - learningRate: A Float. The learning rate (default value: 1e-3).
+///   - beta1: A Float. The exponentian decay rate for the 1st moment estimates (default value: 0.9).
+///   - beta2: A Float. The exponentian decay rate for the 2nd moment estimates (default value: 
+///     0.999).
+///   - epsilon: A Float. A small scalar added to the denominator to improve numerical stability 
+///     (default value: 1e-8).
+///   - decay: A Float. The learning rate decay (default value: 0).
+///
+/// ### Examples: ###
+///
+/// - Train a simple reinforcement learning agent:
+///
+/// ````
+/// ...
+/// // Instantiate an agent's policy - approximated by the neural network (`net`) after defining it 
+/// in advance.
+/// var net = Net(observationSize: Int(observationSize), hiddenSize: hiddenSize, actionCount: actionCount)
+/// // Define the Adam optimizer for the network with a learning rate set to 0.01.
+/// let optimizer = Adam(for: net, learningRate: 0.01)
+/// ...
+/// // Begin training the agent (over a certain number of episodes).
+/// while true {
+/// ...
+///     // Implementing the gradient descent with the Adam optimizer:
+///     // Define the gradients (use withLearningPhase to call a closure under a learning phase).
+///     let gradients = withLearningPhase(.training) {
+///         TensorFlow.gradient(at: net) { net -> Tensor<Float> in
+///             // Return a softmax (loss) function
+///             return loss = softmaxCrossEntropy(logits: net(input), probabilities: target)
+///         }
+///     }
+///     // Update the differentiable variables of the network (`net`) along the gradients with the Adam 
+/// optimizer.
+///     optimizer.update(&net, along: gradients)
+///     ...
+///     }
+/// }
+/// ````
+///
+/// - Train a generative adversarial network (GAN):
+///
+/// ````
+/// ...
+/// // Instantiate the generator and the discriminator networks after defining them.
+/// var generator = Generator()
+/// var discriminator = Discriminator()
+/// // Define the Adam optimizers for each network with a learning rate set to 2e-4 and beta1 - to 0.5.
+/// let adamOptimizerG = Adam(for: generator, learningRate: 2e-4, beta1: 0.5)
+/// let adamOptimizerD = Adam(for: discriminator, learningRate: 2e-4, beta1: 0.5)
+/// ...
+/// Start the training loop over a certain number of epochs (`epochCount`).
+/// for epoch in 1...epochCount {
+///     // Start the training phase.
+///     ...
+///     for batch in trainingShuffled.batched(batchSize) {
+///         // Implementing the gradient descent with the Adam optimizer:
+///         // 1) Update the generator.
+///         ...
+///         let 𝛁generator = TensorFlow.gradient(at: generator) { generator -> Tensor<Float> in
+///             ...
+///             return loss
+///             }
+///         // Update the differentiable variables of the generator along the gradients (`𝛁generator`) 
+///         // with the Adam optimizer.
+///         adamOptimizerG.update(&generator, along: 𝛁generator)
+///
+///         // 2) Update the discriminator.
+///         ...
+///         let 𝛁discriminator = TensorFlow.gradient(at: discriminator) { discriminator -> Tensor<Float> in
+///             ...
+///             return loss
+///         }
+///         // Update the differentiable variables of the discriminator along the gradients (`𝛁discriminator`) 
+///         // with the Adam optimizer.
+///         adamOptimizerD.update(&discriminator, along: 𝛁discriminator)
+///         }
+/// }       
+/// ````
 public class Adam<Model: Differentiable>: Optimizer
     where Model.TangentVector: VectorProtocol & PointwiseMultiplicative & ElementaryFunctions,
           Model.TangentVector.VectorSpaceScalar == Float {
     public typealias Model = Model
     /// The learning rate.
     public var learningRate: Float
-    /// A coefficient used to calculate the first and second moments of the gradients.
+    /// A coefficient used to calculate the first moments of the gradients.
     public var beta1: Float
-    /// A coefficient used to calculate the first and second moments of the gradients.
+    /// A coefficient used to calculate the second moments of the gradients.
     public var beta2: Float
     /// A small scalar added to the denominator to improve numerical stability.
     public var epsilon: Float
@@ -209,15 +293,14 @@ public class Adam<Model: Differentiable>: Optimizer
         step += 1
         let step = Float(self.step)
         let learningRate = self.learningRate * 1 / (1 + decay * step)
-        // Note: `stepSize` and `secondMoments` are split into two lines to avoid the "compiler is 
-        // unable to type-check this expression in reasonable time" error.
+        // Note: `stepSize` is split into two lines to avoid the "compiler is unable to type-check
+        // this expression in reasonable time" error.
         var stepSize = learningRate * sqrtf(1 - powf(beta2, step))
         stepSize = stepSize / (1 - powf(beta1, step))
-        firstMoments = firstMoments * beta1 + direction * (1 - beta1)
-        secondMoments = secondMoments * beta2
-        secondMoments += direction .* direction * (1 - beta2)
-        let denominator = Model.TangentVector.sqrt(secondMoments) + epsilon
-        model.move(along: -stepSize * firstMoments ./ denominator)
+        firstMoments = firstMoments.scaled(by: beta1) + direction.scaled(by: 1 - beta1)
+        secondMoments = secondMoments.scaled(by: beta2) + (direction .* direction).scaled(by: 1 - beta2)
+        let denominator = Model.TangentVector.sqrt(secondMoments).adding(epsilon)
+        model.move(along: (firstMoments ./ denominator).scaled(by: -stepSize))
     }
 }
 
@@ -278,7 +361,7 @@ public class AdaMax<Model: Differentiable & KeyPathIterable>: Optimizer
         // this expression in reasonable time" error.
         var stepSize = learningRate * sqrtf(1 - powf(beta2, step))
         stepSize = stepSize / (1 - powf(beta1, step))
-        firstMoments = firstMoments * beta1 + direction * (1 - beta1)
+        firstMoments = firstMoments.scaled(by: beta1) + direction.scaled(by: 1 - beta1)
 
         // Update `infinityNorm` using a key path approach because `max(_:_:)` cannot be 
         // currently applied in a simpler manner.
@@ -291,8 +374,8 @@ public class AdaMax<Model: Differentiable & KeyPathIterable>: Optimizer
                 Double(beta2) * infinityNorm[keyPath: kp], abs(direction[keyPath: kp]))
         }
 
-        let denominator = infinityNorm + epsilon
-        model.move(along: -stepSize * firstMoments ./ denominator)
+        let denominator = infinityNorm.adding(epsilon)
+        model.move(along: (firstMoments ./ denominator).scaled(by: -stepSize))
     }
 }
 
@@ -353,13 +436,12 @@ public class AMSGrad<Model: Differentiable & KeyPathIterable>: Optimizer
         let beta1Power = powf(beta1, step)
         let beta2Power = powf(beta2, step)
         let learningRate = self.learningRate * 1 / (1 + decay * step)
-        // Note: `stepSize` and `secondMoments` are split into two lines to avoid the "compiler is 
-        // unable to type-check this expression in reasonable time" error.
+        // Note: `stepSize` is split into two lines to avoid the "compiler is unable to type-check
+        // this expression in reasonable time" error.
         var stepSize = learningRate * sqrtf(1 - powf(beta2Power, step))
         stepSize = stepSize / (1 - powf(beta1Power, step))
-        firstMoments = firstMoments * beta1 + direction * (1 - beta1)
-        secondMoments = secondMoments * beta2
-        secondMoments += direction .* direction * (1 - beta2)
+        firstMoments = firstMoments.scaled(by: beta1) + direction.scaled(by: 1 - beta1)
+        secondMoments = secondMoments.scaled(by: beta2) + (direction .* direction).scaled(by: 1 - beta2)
 
         // Update `secondMomentsMax` using a key path approach because `max(_:_:)` cannot be 
         // currently applied in a simpler manner.
@@ -372,8 +454,8 @@ public class AMSGrad<Model: Differentiable & KeyPathIterable>: Optimizer
                 secondMomentsMax[keyPath: kp], secondMoments[keyPath: kp])
         }
 
-        let denominator = Model.TangentVector.sqrt(secondMomentsMax) + epsilon
-        model.move(along: -stepSize * firstMoments ./ denominator)
+        let denominator = Model.TangentVector.sqrt(secondMomentsMax).adding(epsilon)
+        model.move(along: (firstMoments ./ denominator).scaled(by: -stepSize))
     }
 }
 
@@ -431,24 +513,24 @@ public class RAdam<Model: Differentiable>: Optimizer
         let step = Float(self.step)
         let beta1Power = powf(beta1, step)
         let beta2Power = powf(beta2, step)
-        secondMoments = beta2 * secondMoments + direction .* direction * (1 - beta2)
-        firstMoments = beta1 * firstMoments + direction * (1 - beta1)
+        secondMoments = secondMoments.scaled(by: beta2) + (direction .* direction).scaled(by: 1 - beta2)
+        firstMoments = firstMoments.scaled(by: beta1) + direction.scaled(by: 1 - beta1)
         // Compute maximum length SMA, bias-corrected moving average and approximate length.
         let N_sma_inf =  2 / (1 - beta2) - 1
         let N_sma_t = N_sma_inf - 2 * step * beta2Power / (1 - beta2Power)
 
         if N_sma_t > 5 {
             // Compute bias-corrected second moments, rectification and adapted momentum.
-            let secondMoments_h = Model.TangentVector.sqrt(secondMoments) + epsilon
+            let secondMoments_h = Model.TangentVector.sqrt(secondMoments).adding(epsilon)
             let stepSize = sqrtf(
                 (N_sma_t - 4) * (N_sma_t - 2) * N_sma_inf / (
                      (N_sma_inf - 4) * (N_sma_inf - 2) * (N_sma_t)
                 ))
-            model.move(along: -stepSize * sqrtf(1 - beta2Power) * firstMoments ./ secondMoments_h)
+            model.move(along: (firstMoments ./ secondMoments_h).scaled(by: -stepSize * sqrtf(1 - beta2Power)))
         } else {
             // Update with un-adapted momentum.
             let stepSize = self.learningRate * step / (1 - beta1Power)
-            model.move(along: -stepSize * firstMoments)
+            model.move(along: firstMoments.scaled(by: -stepSize))
         }
     }
 }

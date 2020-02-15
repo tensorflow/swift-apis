@@ -68,7 +68,7 @@ for _ in 0..<1000 {
     let (ŷ, backprop) = classifier.appliedForBackpropagation(to: x)
     let (loss, 𝛁ŷ) = ŷ.valueWithGradient { ŷ in softmaxCrossEntropy(logits: ŷ, labels: y) }
     print("Model output: \(ŷ), Loss: \(loss)")
-    let 𝛁model = backprop(𝛁ŷ)
+    let (𝛁model, _) = backprop(𝛁ŷ)
     optimizer.update(&classifier, along: 𝛁model)
 }
 ```

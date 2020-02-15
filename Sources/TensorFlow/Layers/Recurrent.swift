@@ -202,7 +202,7 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
         self.fusedBias = Tensor(zeros: [4 * hiddenSize])
     }
 
-    public struct State: Differentiable {
+    public struct State: Equatable, Differentiable, VectorProtocol, KeyPathIterable {
         public var cell: Tensor<Scalar>
         public var hidden: Tensor<Scalar>
 
@@ -306,7 +306,7 @@ public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
 
     // TODO(TF-507): Revert to `typealias State = Tensor<Scalar>` after
     // SR-10697 is fixed.
-    public struct State: Differentiable {
+    public struct State: Equatable, Differentiable, VectorProtocol, KeyPathIterable {
         public var hidden: Tensor<Scalar>
 
         @differentiable
@@ -344,7 +344,7 @@ public struct RNN<Cell: RNNCell>: Layer {
         self.cell = cell()
     }
 
-    @differentiable(wrt: (self, inputs))
+    @differentiable(wrt: (self, inputs, initialState))
     public func callAsFunction(
         _ inputs: [Cell.TimeStepInput],
         initialState: Cell.State
@@ -360,7 +360,7 @@ public struct RNN<Cell: RNNCell>: Layer {
         return timeStepOutputs
     }
 
-    @differentiable(wrt: (self, inputs))
+    @differentiable(wrt: (self, inputs, initialState))
     public func call(
         _ inputs: [Cell.TimeStepInput],
         initialState: Cell.State
@@ -369,17 +369,17 @@ public struct RNN<Cell: RNNCell>: Layer {
     }
 
     @usableFromInline
-    @derivative(of: callAsFunction, wrt: (self, inputs))
+    @derivative(of: callAsFunction, wrt: (self, inputs, initialState))
     internal func _vjpCallAsFunction(
         _ inputs: [Cell.TimeStepInput],
         initialState: Cell.State
     ) -> (
         value: [Cell.TimeStepOutput],
         pullback: (Array<Cell.TimeStepOutput>.TangentVector)
-            -> (TangentVector, Array<Cell.TimeStepInput>.TangentVector)
+            -> (TangentVector, Array<Cell.TimeStepInput>.TangentVector, Cell.State.TangentVector)
     ) {
         let timeStepCount = inputs.count
-        var currentHiddenState = cell.zeroState(for: inputs[0])
+        var currentHiddenState = initialState
         var timeStepOutputs: [Cell.TimeStepOutput] = []
         timeStepOutputs.reserveCapacity(timeStepCount)
         var backpropagators: [Cell.Backpropagator] = []
@@ -404,17 +404,17 @@ public struct RNN<Cell: RNNCell>: Layer {
                 𝛁state = 𝛁input.state
                 reversed𝛁inputs.append(𝛁input.input)
             }
-            return (.init(cell: 𝛁cell), .init(Array(reversed𝛁inputs.reversed())))
+            return (.init(cell: 𝛁cell), .init(Array(reversed𝛁inputs.reversed())), 𝛁state)
         })
     }
 
     @differentiable
     public func callAsFunction(_ inputs: [Cell.TimeStepInput]) -> [Cell.TimeStepOutput] {
         let initialState = withoutDerivative(at: cell.zeroState(for: inputs[0]))
-        return self(inputs, initialState: withoutDerivative(at: initialState))
+        return self(inputs, initialState: initialState)
     }
 
-    @differentiable(wrt: (self, inputs))
+    @differentiable(wrt: (self, inputs, initialState))
     public func lastOutput(
         from inputs: [Cell.TimeStepInput],
         initialState: Cell.State

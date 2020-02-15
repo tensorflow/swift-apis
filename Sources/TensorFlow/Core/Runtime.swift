@@ -278,6 +278,7 @@ public final class _ExecutionContext {
         TFE_DeleteContextOptions(opts)
         checkOk(status)
 
+#if !os(Windows)
         if case .remote(let serverDef) = _RuntimeConfig.session {
             debugLog("Setting up the server def to \(serverDef)...")
             let serverDef: UnsafeMutablePointer<TF_Buffer>! = TFE_GetServerDef(serverDef, status)
@@ -288,6 +289,7 @@ public final class _ExecutionContext {
             checkOk(status)
             TF_DeleteBuffer(serverDef)
         }
+#endif
 
         let devices = TFE_ContextListDevices(eagerContext, status)
         checkOk(status)
@@ -429,16 +431,6 @@ func _TFCEagerExecute(
     _ retvalCount: UnsafeMutablePointer<Int32>,
     _ status: CTFStatus
 ) {
-    if _RuntimeConfig.printsDebugLog {
-        debugLog("Calling _TFCEagerExecute() over: ")
-        if let value = getenv("TF_CPP_MIN_LOG_LEVEL"),
-            String(cString: value) == "0" {
-            TFE_OpPrintDebugString(op)
-        } else {
-            debugLog("[Run with TF_CPP_MIN_LOG_LEVEL=0 to have TFEOps printed out]")
-        }
-    }
-    debugLog("Executing eager op \(op).")
     TFE_Execute(op, retvals, retvalCount, status)
 }
 

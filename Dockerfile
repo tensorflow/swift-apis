@@ -23,7 +23,7 @@ RUN echo 'deb https://apt.kitware.com/ubuntu/ bionic main' >> /etc/apt/sources.l
 RUN apt-get update
 RUN apt-get -yq install --no-install-recommends cmake ninja-build
 RUN cmake -G Ninja -D CMAKE_BUILD_TYPE=Release -D CMAKE_Swift_COMPILER=/swift-tensorflow-toolchain/usr/bin/swiftc -D USE_BUNDLED_CTENSORFLOW=YES -D TensorFlow_INCLUDE_DIR=/swift-tensorflow-toolchain/usr/lib/swift/linux/x86_64/modulemaps/CTensorFlow -D TensorFlow_LIBRARY=/swift-tensorflow-toolchain/usr/lib/swift/linux/libtensorflow.so -B /BinaryCache/tensorflow-swift-apis -S /swift-apis
-RUN cmake --build /BinaryCache/tensorflow-swift-apis
+RUN cmake --build /BinaryCache/tensorflow-swift-apis --verbose
 
 # Clean out existing artifacts.
 # TODO: move into bash scripts...
