@@ -30,6 +30,8 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let padding: Padding
     /// The dilation factor for the temporal dimension.
     @noDerivative public let dilation: Int
+    /// Note: `useBias` is a workaround for TF-1153: optional differentiation support.
+    @noDerivative private let useBias: Bool
 
     /// The element-wise activation function type.
     public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
@@ -47,18 +49,19 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - dilation: The dilation factor for the temporal dimension.
     public init(
         filter: Tensor<Scalar>,
-        bias: Tensor<Scalar>,
+        bias: Tensor<Scalar>? = nil,
         activation: @escaping Activation = identity,
         stride: Int = 1,
         padding: Padding = .valid,
         dilation: Int = 1
     ) {
         self.filter = filter
-        self.bias = bias
+        self.bias = bias ?? .zero
         self.activation = activation
         self.stride = stride
         self.padding = padding
         self.dilation = dilation
+        useBias = (bias != nil)
     }
 
     /// Returns the output obtained from applying the layer to the given input.
@@ -76,12 +79,13 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Note: Padding size equals zero when using `.valid`.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        activation(conv1D(
+        let conv = conv1D(
             input,
             filter: filter,
             stride: stride,
             padding: padding,
-            dilation: dilation) + bias)
+            dilation: dilation)
+        return activation(useBias ? (conv + bias) : conv)
     }
 }
 
@@ -104,6 +108,7 @@ public extension Conv1D where Scalar.RawSignificand: FixedWidthInteger {
         padding: Padding = .valid,
         dilation: Int = 1,
         activation: @escaping Activation = identity,
+        useBias: Bool = true,
         filterInitializer: ParameterInitializer<Scalar> = glorotUniform(),
         biasInitializer: ParameterInitializer<Scalar> = zeros()
     ) {
@@ -111,7 +116,7 @@ public extension Conv1D where Scalar.RawSignificand: FixedWidthInteger {
             filterShape.0, filterShape.1, filterShape.2])
         self.init(
             filter: filterInitializer(filterTensorShape),
-            bias: biasInitializer([filterShape.2]),
+            bias: useBias ? biasInitializer([filterShape.2]) : nil,
             activation: activation,
             stride: stride,
             padding: padding,
@@ -137,6 +142,8 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let padding: Padding
     /// The dilation factor for spatial dimensions.
     @noDerivative public let dilations: (Int, Int)
+    /// Note: `useBias` is a workaround for TF-1153: optional differentiation support.
+    @noDerivative private let useBias: Bool
 
     /// The element-wise activation function type.
     public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
@@ -156,18 +163,19 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///     (dilation height, dilation width).
     public init(
         filter: Tensor<Scalar>,
-        bias: Tensor<Scalar>,
+        bias: Tensor<Scalar>? = nil,
         activation: @escaping Activation = identity,
         strides: (Int, Int) = (1, 1),
         padding: Padding = .valid,
         dilations: (Int, Int) = (1, 1)
     ) {
         self.filter = filter
-        self.bias = bias
+        self.bias = bias ?? .zero
         self.activation = activation
         self.strides = strides
         self.padding = padding
         self.dilations = dilations
+        useBias = (bias != nil)
     }
 
     /// Returns the output obtained from applying the layer to the given input.
@@ -192,12 +200,13 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Note: Padding size equals zero when using `.valid`.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return activation(conv2D(
+        let conv = conv2D(
             input,
             filter: filter,
             strides: (1, strides.0, strides.1, 1),
             padding: padding,
-            dilations: (1, dilations.0, dilations.1, 1)) + bias)
+            dilations: (1, dilations.0, dilations.1, 1))
+        return activation(useBias ? (conv + bias) : conv)
     }
 }
 
@@ -222,6 +231,7 @@ public extension Conv2D {
         padding: Padding = .valid,
         dilations: (Int, Int) = (1, 1),
         activation: @escaping Activation = identity,
+        useBias: Bool = true,
         filterInitializer: ParameterInitializer<Scalar> = glorotUniform(),
         biasInitializer: ParameterInitializer<Scalar> = zeros()
     ) {
@@ -229,7 +239,7 @@ public extension Conv2D {
             filterShape.0, filterShape.1, filterShape.2, filterShape.3])
         self.init(
             filter: filterInitializer(filterTensorShape),
-            bias: biasInitializer([filterShape.3]),
+            bias: useBias ? biasInitializer([filterShape.3]) : nil,
             activation: activation,
             strides: strides,
             padding: padding,
@@ -255,6 +265,8 @@ public struct Conv3D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let padding: Padding
     /// The dilation factor for spatial/spatio temporal dimensions.
     @noDerivative public let dilations: (Int, Int, Int)
+    /// Note: `useBias` is a workaround for TF-1153: optional differentiation support.
+    @noDerivative private let useBias: Bool
 
     /// The element-wise activation function type.
     public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
@@ -274,7 +286,7 @@ public struct Conv3D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - dilations: The dilation factor for spatial/spatio-temporal dimensions.
     public init(
         filter: Tensor<Scalar>,
-        bias: Tensor<Scalar>,
+        bias: Tensor<Scalar>? = nil,
         activation: @escaping Activation = identity,
         strides: (Int, Int, Int) = (1, 1, 1),
         padding: Padding = .valid,
@@ -283,11 +295,12 @@ public struct Conv3D<Scalar: TensorFlowFloatingPoint>: Layer {
         precondition(dilations.2 == 1,
                      "Dilations in the depth dimension must be 1.")
         self.filter = filter
-        self.bias = bias
+        self.bias = bias ?? .zero
         self.activation = activation
         self.strides = strides
         self.padding = padding
         self.dilations = dilations
+        useBias = (bias != nil)
     }
 
     /// Returns the output obtained from applying the layer to the given input.
@@ -316,13 +329,13 @@ public struct Conv3D<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Note: Padding size equals zero when using `.valid`.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return activation(conv3D(
+        let conv = conv3D(
             input,
             filter: filter,
             strides: (1, strides.0, strides.1, strides.2, 1),
             padding: padding,
-            dilations: (1, dilations.0, dilations.1, dilations.2, 1)
-        ) + bias)
+            dilations: (1, dilations.0, dilations.1, dilations.2, 1))
+        return activation(useBias ? (conv + bias) : conv)
     }
 }
 
@@ -348,6 +361,7 @@ public extension Conv3D {
         padding: Padding = .valid,
         dilations: (Int, Int, Int) = (1, 1, 1),
         activation: @escaping Activation = identity,
+        useBias: Bool = true,
         filterInitializer: ParameterInitializer<Scalar> = glorotUniform(),
         biasInitializer: ParameterInitializer<Scalar> = zeros()
     ) {
@@ -355,7 +369,7 @@ public extension Conv3D {
             filterShape.0, filterShape.1, filterShape.2, filterShape.3, filterShape.4])
         self.init(
             filter: filterInitializer(filterTensorShape),
-            bias: biasInitializer([filterShape.4]),
+            bias: useBias ? biasInitializer([filterShape.4]) : nil,
             activation: activation,
             strides: strides,
             padding: padding,
@@ -381,6 +395,8 @@ public struct TransposedConv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let padding: Padding
     /// The paddingIndex property allows us to handle computation based on padding.
     @noDerivative public let paddingIndex: Int
+    /// Note: `useBias` is a workaround for TF-1153: optional differentiation support.
+    @noDerivative private let useBias: Bool
 
     /// The element-wise activation function type.
     public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
@@ -396,17 +412,18 @@ public struct TransposedConv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - padding: The padding algorithm for convolution.
     public init(
         filter: Tensor<Scalar>,
-        bias: Tensor<Scalar>,
+        bias: Tensor<Scalar>? = nil,
         activation: @escaping Activation = identity,
         stride: Int = 1,
         padding: Padding = .valid
     ) {
         self.filter = filter
-        self.bias = bias
+        self.bias = bias ?? .zero
         self.activation = activation
         self.stride = stride
         self.padding = padding
         self.paddingIndex = padding == .same ? 0 : 1
+        useBias = (bias != nil)
     }
 
     /// Returns the output obtained from applying the layer to the given input.
@@ -420,12 +437,13 @@ public struct TransposedConv1D<Scalar: TensorFlowFloatingPoint>: Layer {
             stride + (filter.shape[0] * paddingIndex)
         let c = filter.shape[2]
         let newShape = Tensor<Int32>([Int32(batchSize), 1, Int32(w), Int32(c)])
-        return activation(conv2DBackpropInput(
+        let conv = conv2DBackpropInput(
             input.expandingShape(at: 1),
             shape: newShape,
             filter: filter.expandingShape(at: 0),
             strides: (1, 1, stride, 1),
-            padding: padding) + bias)
+            padding: padding)
+        return activation(useBias ? (conv + bias) : conv)
     }
 }
 
@@ -445,6 +463,7 @@ public extension TransposedConv1D {
         stride: Int = 1,
         padding: Padding = .valid,
         activation: @escaping Activation = identity,
+        useBias: Bool = true,
         filterInitializer: ParameterInitializer<Scalar> = glorotUniform(),
         biasInitializer: ParameterInitializer<Scalar> = zeros()
     ) {
@@ -452,7 +471,7 @@ public extension TransposedConv1D {
             filterShape.0, filterShape.1, filterShape.2])
         self.init(
             filter: filterInitializer(filterTensorShape),
-            bias: biasInitializer([filterShape.2]),
+            bias: useBias ? biasInitializer([filterShape.2]) : nil,
             activation: activation,
             stride: stride,
             padding: padding)
@@ -477,6 +496,8 @@ public struct TransposedConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let padding: Padding
     /// The paddingIndex property allows us to handle computation based on padding.
     @noDerivative public let paddingIndex: Int
+    /// Note: `useBias` is a workaround for TF-1153: optional differentiation support.
+    @noDerivative private let useBias: Bool
 
     /// The element-wise activation function type.
     public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
@@ -493,17 +514,18 @@ public struct TransposedConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - padding: The padding algorithm for convolution.
     public init(
         filter: Tensor<Scalar>,
-        bias: Tensor<Scalar>,
+        bias: Tensor<Scalar>? = nil,
         activation: @escaping Activation = identity,
         strides: (Int, Int) = (1, 1),
         padding: Padding = .valid
     ) {
         self.filter = filter
-        self.bias = bias
+        self.bias = bias ?? .zero
         self.activation = activation
         self.strides = strides
         self.padding = padding
         self.paddingIndex = padding == .same ? 0 : 1
+        useBias = (bias != nil)
     }
 
     /// Returns the output obtained from applying the layer to the given input.
@@ -519,12 +541,13 @@ public struct TransposedConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
           strides.1 + (filter.shape[1] * paddingIndex)
         let c = filter.shape[2]
         let newShape = Tensor<Int32>([Int32(batchSize), Int32(h), Int32(w), Int32(c)])
-        return activation(conv2DBackpropInput(
+        let conv = conv2DBackpropInput(
             input,
             shape: newShape,
             filter: filter,
             strides: (1, strides.0, strides.1, 1),
-            padding: padding) + bias)
+            padding: padding)
+        return activation(useBias ? (conv + bias) : conv)
     }
 }
 
@@ -545,6 +568,7 @@ public extension TransposedConv2D {
         strides: (Int, Int) = (1, 1),
         padding: Padding = .valid,
         activation: @escaping Activation = identity,
+        useBias: Bool = true,
         filterInitializer: ParameterInitializer<Scalar> = glorotUniform(),
         biasInitializer: ParameterInitializer<Scalar> = zeros()
     ) {
@@ -552,7 +576,7 @@ public extension TransposedConv2D {
             filterShape.0, filterShape.1, filterShape.2, filterShape.3])
         self.init(
             filter: filterInitializer(filterTensorShape),
-            bias: biasInitializer([filterShape.2]),
+            bias: useBias ? biasInitializer([filterShape.2]) : nil,
             activation: activation,
             strides: strides,
             padding: padding)
@@ -578,6 +602,8 @@ public struct TransposedConv3D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let padding: Padding
     /// The paddingIndex property allows us to handle computation based on padding.
     @noDerivative public let paddingIndex: Int
+    /// Note: `useBias` is a workaround for TF-1153: optional differentiation support.
+    @noDerivative private let useBias: Bool
 
     /// The element-wise activation function type.
     public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
@@ -593,17 +619,18 @@ public struct TransposedConv3D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - padding: The padding algorithm for convolution.
     public init(
         filter: Tensor<Scalar>,
-        bias: Tensor<Scalar>,
+        bias: Tensor<Scalar>? = nil,
         activation: @escaping Activation = identity,
         strides: (Int, Int, Int) = (1, 1, 1),
         padding: Padding = .valid
     ) {
         self.filter = filter
-        self.bias = bias
+        self.bias = bias ?? .zero
         self.activation = activation
         self.strides = strides
         self.padding = padding
         self.paddingIndex = padding == .same ? 0 : 1
+        useBias = (bias != nil)
     }
 
     /// Returns the output obtained from applying the layer to the given input.
@@ -621,12 +648,13 @@ public struct TransposedConv3D<Scalar: TensorFlowFloatingPoint>: Layer {
             strides.2 + (filter.shape[2] * paddingIndex)
         let c = filter.shape[3]
         let newShape = Tensor<Int32>([Int32(batchSize), Int32(w), Int32(h), Int32(d), Int32(c)])
-        return activation(conv3DBackpropInput(
+        let conv = conv3DBackpropInput(
             input,
             shape: newShape,
             filter: filter,
             strides: (1, strides.0, strides.1, strides.2, 1),
-            padding: padding) + bias)
+            padding: padding)
+        return activation(useBias ? (conv + bias) : conv)
     }
 }
 
@@ -646,6 +674,7 @@ public extension TransposedConv3D {
         strides: (Int, Int, Int) = (1, 1, 1),
         padding: Padding = .valid,
         activation: @escaping Activation = identity,
+        useBias: Bool = true,
         filterInitializer: ParameterInitializer<Scalar> = glorotUniform(),
         biasInitializer: ParameterInitializer<Scalar> = zeros()
     ) {
@@ -653,7 +682,7 @@ public extension TransposedConv3D {
             filterShape.0, filterShape.1, filterShape.2, filterShape.3, filterShape.4])
         self.init(
             filter: filterInitializer(filterTensorShape),
-            bias: biasInitializer([filterShape.4]),
+            bias: useBias ? biasInitializer([filterShape.4]) : nil,
             activation: activation,
             strides: strides,
             padding: padding)
@@ -676,6 +705,8 @@ public struct DepthwiseConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let strides: (Int, Int)
     /// The padding algorithm for convolution.
     @noDerivative public let padding: Padding
+    /// Note: `useBias` is a workaround for TF-1153: optional differentiation support.
+    @noDerivative private let useBias: Bool
 
     /// The element-wise activation function type.
     public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
@@ -691,16 +722,17 @@ public struct DepthwiseConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   - padding: The padding algorithm for convolution.
     public init(
         filter: Tensor<Scalar>,
-        bias: Tensor<Scalar>,
+        bias: Tensor<Scalar>? = nil,
         activation: @escaping Activation = identity,
         strides: (Int, Int) = (1, 1),
         padding: Padding = .valid
     ) {
         self.filter = filter
-        self.bias = bias
+        self.bias = bias ?? .zero
         self.activation = activation
         self.strides = strides
         self.padding = padding
+        useBias = (bias != nil)
     }
 
     /// Returns the output obtained from applying the layer to the given input.
@@ -711,11 +743,12 @@ public struct DepthwiseConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     ///   [batch count, output height, output width, input channel count * channel multiplier]
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return activation(depthwiseConv2D(
+        let conv = depthwiseConv2D(
             input,
             filter: filter,
             strides: (1, strides.0, strides.1, 1),
-            padding: padding) + bias)
+            padding: padding)
+        return activation(useBias ? (conv + bias) : conv)
     }
 }
 
@@ -736,6 +769,7 @@ public extension DepthwiseConv2D {
         strides: (Int, Int) = (1, 1),
         padding: Padding = .valid,
         activation: @escaping Activation = identity,
+        useBias: Bool = true,
         filterInitializer: ParameterInitializer<Scalar> = glorotUniform(),
         biasInitializer: ParameterInitializer<Scalar> = zeros()
     ) {
@@ -743,7 +777,7 @@ public extension DepthwiseConv2D {
             filterShape.0, filterShape.1, filterShape.2, filterShape.3])
         self.init(
             filter: filterInitializer(filterTensorShape),
-            bias: biasInitializer([filterShape.2 * filterShape.3]),
+            bias: useBias ? biasInitializer([filterShape.2 * filterShape.3]) : nil,
             activation: activation,
             strides: strides,
             padding: padding)
@@ -863,6 +897,8 @@ public struct SeparableConv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let stride: Int
     /// The padding algorithm for convolution.
     @noDerivative public let padding: Padding
+    /// Note: `useBias` is a workaround for TF-1153: optional differentiation support.
+    @noDerivative private let useBias: Bool
 
     /// The element-wise activation function type.
     public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
@@ -882,17 +918,18 @@ public struct SeparableConv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     public init(
         depthwiseFilter: Tensor<Scalar>,
         pointwiseFilter: Tensor<Scalar>,
-        bias: Tensor<Scalar>,
+        bias: Tensor<Scalar>? = nil,
         activation: @escaping Activation = identity,
         stride: Int = 1,
         padding: Padding = .valid
     ) {
         self.depthwiseFilter = depthwiseFilter
         self.pointwiseFilter = pointwiseFilter
-        self.bias = bias
+        self.bias = bias ?? .zero
         self.activation = activation
         self.stride = stride
         self.padding = padding
+        useBias = (bias != nil)
     }
 
     /// Returns the output obtained from applying the layer to the given input.
@@ -912,7 +949,7 @@ public struct SeparableConv1D<Scalar: TensorFlowFloatingPoint>: Layer {
             strides: (1, 1, 1, 1),
             padding: padding,
             dilations: (1, 1, 1, 1))
-        return activation(x.squeezingShape(at: 1) + bias)
+        return activation(useBias ? (x.squeezingShape(at: 1) + bias) : x.squeezingShape(at: 1))
     }
 }
 
@@ -934,6 +971,7 @@ public extension SeparableConv1D {
         stride: Int = 1,
         padding: Padding = .valid,
         activation: @escaping Activation = identity,
+        useBias: Bool = true,
         depthwiseFilterInitializer: ParameterInitializer<Scalar> = glorotUniform(),
         pointwiseFilterInitializer: ParameterInitializer<Scalar> = glorotUniform(),
         biasInitializer: ParameterInitializer<Scalar> = zeros()
@@ -945,7 +983,7 @@ public extension SeparableConv1D {
         self.init(
             depthwiseFilter: depthwiseFilterInitializer(depthwiseFilterTensorShape),
             pointwiseFilter: pointwiseFilterInitializer(pointwiseFilterTensorShape),
-            bias: biasInitializer([pointwiseFilterShape.2]),
+            bias: useBias ? biasInitializer([pointwiseFilterShape.2]) : nil,
             activation: activation,
             stride: stride,
             padding: padding)
@@ -970,6 +1008,8 @@ public struct SeparableConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let strides: (Int, Int)
     /// The padding algorithm for convolution.
     @noDerivative public let padding: Padding
+    /// Note: `useBias` is a workaround for TF-1153: optional differentiation support.
+    @noDerivative private let useBias: Bool
 
     /// The element-wise activation function type.
     public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
@@ -989,17 +1029,18 @@ public struct SeparableConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     public init(
         depthwiseFilter: Tensor<Scalar>,
         pointwiseFilter: Tensor<Scalar>,
-        bias: Tensor<Scalar>,
+        bias: Tensor<Scalar>? = nil,
         activation: @escaping Activation = identity,
         strides: (Int, Int) = (1, 1),
         padding: Padding = .valid
     ) {
         self.depthwiseFilter = depthwiseFilter
         self.pointwiseFilter = pointwiseFilter
-        self.bias = bias
+        self.bias = bias ?? .zero
         self.activation = activation
         self.strides = strides
         self.padding = padding
+        useBias = (bias != nil)
     }
 
     /// Returns the output obtained from applying the layer to the given input.
@@ -1013,12 +1054,13 @@ public struct SeparableConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
             filter: depthwiseFilter,
             strides: (1, strides.0, strides.1, 1),
             padding: padding)
-        return activation(conv2D(
+        let conv = conv2D(
             depthwise,
             filter: pointwiseFilter,
             strides: (1, 1, 1, 1),
             padding: padding,
-            dilations: (1, 1, 1, 1)) + bias)
+            dilations: (1, 1, 1, 1))
+        return activation(useBias ? (conv + bias) : conv)
     }
 }
 
@@ -1040,6 +1082,7 @@ public extension SeparableConv2D {
         strides: (Int, Int) = (1, 1),
         padding: Padding = .valid,
         activation: @escaping Activation = identity,
+        useBias: Bool = true,
         depthwiseFilterInitializer: ParameterInitializer<Scalar> = glorotUniform(),
         pointwiseFilterInitializer: ParameterInitializer<Scalar> = glorotUniform(),
         biasInitializer: ParameterInitializer<Scalar> = zeros()
@@ -1053,7 +1096,7 @@ public extension SeparableConv2D {
         self.init(
             depthwiseFilter: depthwiseFilterInitializer(depthwiseFilterTensorShape),
             pointwiseFilter: pointwiseFilterInitializer(pointwiseFilterTensorShape),
-            bias: biasInitializer([pointwiseFilterShape.3]),
+            bias: useBias ? biasInitializer([pointwiseFilterShape.3]) : nil,
             activation: activation,
             strides: strides,
             padding: padding)
