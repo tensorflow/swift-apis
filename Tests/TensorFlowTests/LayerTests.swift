@@ -353,6 +353,7 @@ final class LayerTests: XCTestCase {
         let expected = Tensor<Float>(shape: [1, 4, 2, 1],
                                      scalars: [8, 12, 12, 28, 24, 64, 48, 112])
         XCTAssertEqual(output, expected)
+        
         let layerNoBias = TransposedConv2D(filter: filter, bias: nil, activation: identity,
                                            strides: (1, 1), padding: .same)
         let outputNoBias = layerNoBias.inferring(from: input)
