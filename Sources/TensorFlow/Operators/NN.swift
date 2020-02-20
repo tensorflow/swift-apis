@@ -142,8 +142,8 @@ func _vjpConv2D<Scalar: TensorFlowFloatingPoint>(
 ) -> (value: Tensor<Scalar>, pullback: (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
     let value = conv2D(x, filter: filter, strides: strides, padding: padding, dilations: dilations)
     return (value, { v in
-        (transposedConv2D(v, shape: x.shapeTensor, filter: filter,
-                          strides: strides, padding: padding, dilations: dilations),
+        (conv2DBackpropInput(v, shape: x.shapeTensor, filter: filter,
+                             strides: strides, padding: padding, dilations: dilations),
          conv2DBackpropFilter(v, input: x, filterSizes: filter.shapeTensor,
                               strides: strides, padding: padding, dilations: dilations))
     })
@@ -168,6 +168,21 @@ public func transposedConv2D<Scalar: TensorFlowFloatingPoint>(
     padding: Padding = .valid,
     dilations: (Int, Int, Int, Int) = (1, 1, 1, 1)
 ) -> Tensor<Scalar> {
+    conv2DBackpropInput(input, shape: shape, filter: filter,
+                        strides: strides, padding: padding, dilations: dilations)
+}
+
+/// TensorFlow builtin conv2d gradient helper for the input.
+@differentiable(wrt: (input, filter))
+@usableFromInline
+func conv2DBackpropInput<Scalar: TensorFlowFloatingPoint>(
+    _ input: Tensor<Scalar>,
+    shape: Tensor<Int32>,
+    filter: Tensor<Scalar>,
+    strides: (Int, Int, Int, Int) = (1, 1, 1, 1),
+    padding: Padding = .valid,
+    dilations: (Int, Int, Int, Int) = (1, 1, 1, 1)
+) -> Tensor<Scalar> {
     precondition(input.shape.rank == 4, "The input must have rank 4.")
     precondition(filter.shape.rank == 4, "The filter must have rank 4.")
     return _Raw.conv2DBackpropInput(
@@ -180,9 +195,9 @@ public func transposedConv2D<Scalar: TensorFlowFloatingPoint>(
         dilations: [Int32(dilations.0), Int32(dilations.1), Int32(dilations.2), Int32(dilations.3)])
 }
 
+@derivative(of: conv2DBackpropInput)
 @usableFromInline
-@derivative(of: transposedConv2D)
-func _vjpTransposedConv2D<Scalar: TensorFlowFloatingPoint>(
+func _vjpConv2DBackpropInput<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>,
     _ shape: Tensor<Int32>,
     _ filter: Tensor<Scalar>,
@@ -190,8 +205,8 @@ func _vjpTransposedConv2D<Scalar: TensorFlowFloatingPoint>(
     _ padding: Padding,
     _ dilations: (Int, Int, Int, Int)
 ) -> (value: Tensor<Scalar>, pullback: (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
-    let value = transposedConv2D(x, shape: shape, filter: filter,
-                                 strides: strides, padding: padding, dilations: dilations)
+    let value = conv2DBackpropInput(x, shape: shape, filter: filter,
+                                    strides: strides, padding: padding, dilations: dilations)
     return (value, { v in
         (conv2D(v, filter: filter, strides: strides, padding: padding, dilations: dilations),
          conv2DBackpropFilter(x, input: v, filterSizes: filter.shapeTensor, strides: strides,
@@ -234,8 +249,8 @@ func _vjpConv2DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
                                      strides: strides, padding: padding, dilations: dilations)
     return (value, { v in
         (conv2D(input, filter: v, strides: strides, padding: padding, dilations: dilations),
-         transposedConv2D(x, shape: x.shapeTensor, filter: v, strides: strides,
-                          padding: padding, dilations: dilations))
+         conv2DBackpropInput(x, shape: x.shapeTensor, filter: v, strides: strides,
+                             padding: padding, dilations: dilations))
     })
 }
 
