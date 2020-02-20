@@ -1156,6 +1156,14 @@ final class LayerTests: XCTestCase {
         let expectedBatched = Tensor<Float>([[4.0, 6.0, 8.0], [40.0, 46.0, 52.0]])
         XCTAssertEqual(outputBatched, expectedBatched)
         XCTAssertTrue(layerBatched.batched)
+        
+        let layerBatchedNoBias = Dense<Float>(weight: weightBatched,
+                                        bias: nil,
+                                        activation: identity)
+        let outputBatchedNoBias = layerBatchedNoBias.inferring(from: inputBatched)
+        let expectedBatchedNoBias = Tensor<Float>([[3.0, 4.0, 5.0], [39.0, 44.0, 49.0]])
+        XCTAssertEqual(outputBatchedNoBias, expectedBatchedNoBias)
+        XCTAssertTrue(layerBatchedNoBias.batched)
     }
 
     func testDenseGradient() {
