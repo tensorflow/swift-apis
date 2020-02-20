@@ -169,8 +169,10 @@ public func transposedConv2D<Scalar: TensorFlowFloatingPoint>(
     padding: Padding = .valid,
     dilations: (Int, Int, Int, Int) = (1, 1, 1, 1)
 ) -> Tensor<Scalar> {
-    conv2DBackpropInput(input, shape: shape, filter: filter,
-                        strides: strides, padding: padding, dilations: dilations)
+    precondition(input.shape.rank == 4, "The input must have rank 4.")
+    precondition(filter.shape.rank == 4, "The filter must have rank 4.")
+    return conv2DBackpropInput(input, shape: shape, filter: filter,
+                               strides: strides, padding: padding, dilations: dilations)
 }
 
 /// TensorFlow builtin conv2d gradient helper for the input.
@@ -184,8 +186,6 @@ func conv2DBackpropInput<Scalar: TensorFlowFloatingPoint>(
     padding: Padding = .valid,
     dilations: (Int, Int, Int, Int) = (1, 1, 1, 1)
 ) -> Tensor<Scalar> {
-    precondition(x.shape.rank == 4, "The input must have rank 4.")
-    precondition(filter.shape.rank == 4, "The filter must have rank 4.")
     return _Raw.conv2DBackpropInput(
         inputSizes: shape,
         filter: filter,
