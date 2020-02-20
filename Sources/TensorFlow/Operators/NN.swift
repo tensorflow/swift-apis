@@ -153,6 +153,7 @@ func _vjpConv2D<Scalar: TensorFlowFloatingPoint>(
 ///
 /// - Parameters:
 ///   - input: The input.
+///   - shape: The output shape of the deconvolution operation.
 ///   - filter: The convolution filter.
 ///   - strides: The strides of the sliding filter for each dimension of the input.
 ///   - padding: The padding for the operation
