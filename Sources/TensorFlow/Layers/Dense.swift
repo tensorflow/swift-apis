@@ -32,21 +32,24 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let activation: Activation
     /// Indicates whether this is a batched dense layer.
     @noDerivative internal let batched: Bool
+    /// Workaround optionals not being handled by AD
+    @noDerivative private let useBias: Bool
 
     /// The element-wise activation function type.
     public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
 
     public init(
         weight: Tensor<Scalar>,
-        bias: Tensor<Scalar>,
+        bias: Tensor<Scalar>? = nil,
         activation: @escaping Activation
     ) {
         precondition(weight.rank <= 3, "The rank of the 'weight' tensor must be less than 4.")
-        precondition(bias.rank <= 2, "The rank of the 'bias' tensor must be less than 3.")
+        precondition(bias == nil || bias!.rank <= 2, "The rank of the 'bias' tensor must be less than 3.")
         self.weight = weight
-        self.bias = bias
+        self.bias = bias ?? .zero
         self.activation = activation
         self.batched = weight.rank == 3
+        useBias = (bias != nil)
     }
 
     /// Returns the output obtained from applying the layer to the given input.
@@ -59,7 +62,7 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
             let hidden = matmul(input.expandingShape(at: 1), weight)
             return activation(hidden.squeezingShape(at: 1) + bias)
         }
-        return activation(matmul(input, weight) + bias)
+        return activation(useBias ? (matmul(input, weight) + bias) : matmul(input, weight))
     }
 }
 
@@ -78,12 +81,13 @@ public extension Dense {
         inputSize: Int,
         outputSize: Int,
         activation: @escaping Activation = identity,
+        useBias: Bool = true,
         weightInitializer: ParameterInitializer<Scalar> = glorotUniform(),
         biasInitializer: ParameterInitializer<Scalar> = zeros()
     ) {
         self.init(
             weight: weightInitializer([inputSize, outputSize]),
-            bias: biasInitializer([outputSize]),
+            bias: useBias ? biasInitializer([outputSize]) : nil,
             activation: activation)
     }
 }
