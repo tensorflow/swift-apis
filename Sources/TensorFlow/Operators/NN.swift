@@ -174,22 +174,22 @@ public func transposedConv2D<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// TensorFlow builtin conv2d gradient helper for the input.
-@differentiable(wrt: (input, filter))
+@differentiable(wrt: (x, filter))
 @usableFromInline
 func conv2DBackpropInput<Scalar: TensorFlowFloatingPoint>(
-    _ input: Tensor<Scalar>,
+    _ x: Tensor<Scalar>,
     shape: Tensor<Int32>,
     filter: Tensor<Scalar>,
     strides: (Int, Int, Int, Int) = (1, 1, 1, 1),
     padding: Padding = .valid,
     dilations: (Int, Int, Int, Int) = (1, 1, 1, 1)
 ) -> Tensor<Scalar> {
-    precondition(input.shape.rank == 4, "The input must have rank 4.")
+    precondition(x.shape.rank == 4, "The input must have rank 4.")
     precondition(filter.shape.rank == 4, "The filter must have rank 4.")
     return _Raw.conv2DBackpropInput(
         inputSizes: shape,
         filter: filter,
-        outBackprop: input,
+        outBackprop: x,
         strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2), Int32(strides.3)],
         padding: padding.raw2,
         explicitPaddings: [],
