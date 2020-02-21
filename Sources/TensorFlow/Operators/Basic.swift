@@ -165,6 +165,7 @@ public extension Tensor {
         precondition(
             rank == multiples.shapeTensor.scalarized(),
             "The shape of multiples must be [tensor.rank].")
+        precondition((multiples .>= 0).all(), "All scalars in multiples must be non-negative.")
         return _Raw.tile(self, multiples: multiples)
     }
 
