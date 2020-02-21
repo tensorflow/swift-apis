@@ -473,6 +473,16 @@ final class BasicOperatorTests: XCTestCase {
         XCTAssertEqual(grad.shape, [3, 2, 1])
         XCTAssertEqual(grad.scalars, [1, 1, 1, 1, 1, 1])
     }
+    
+    func testTile() {
+        let tensor = Tensor<Int32>([[0, 1, 2], [3, 4, 5]])
+        let tiled = tensor.tiled(multiples: [3, 2])
+        
+        XCTAssertEqual(tiled.shape, [6, 6])
+        XCTAssertEqual(tiled, [[0, 1, 2, 0, 1, 2], [3, 4, 5, 3, 4, 5],
+                               [0, 1, 2, 0, 1, 2], [3, 4, 5, 3, 4, 5],
+                               [0, 1, 2, 0, 1, 2], [3, 4, 5, 3, 4, 5]])
+    }
 
     func testReshape() {
         // 2 x 3 -> 1 x 3 x 1 x 2 x 1
@@ -690,6 +700,7 @@ final class BasicOperatorTests: XCTestCase {
         ("testConcatenation", testConcatenation),
         ("testVJPConcatenation", testVJPConcatenation),
         ("testTranspose", testTranspose),
+        ("testTile", testTile),
         ("testReshape", testReshape),
         ("testFlatten", testFlatten),
         ("testFlatten0D", testFlatten0D),

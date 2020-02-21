@@ -132,6 +132,22 @@ public extension Tensor {
             splitDim: Tensor<Int32>(Int32(axis)),
             numSplit: Int64(sizes.shape[0]))
     }
+    
+    /// Returns a tiled tensor, constructed by tiling this tensor.
+    ///
+    /// This constructor creates a new tensor by replicating this tensor `multiples` times. The
+    /// constructed tensor's `i`'th dimension has `self.shape[i] * multiples[i]` elements, and the
+    /// values of this tensor are replicated `multiples[i]` times along the `i`'th dimension. For
+    /// example, tiling `[a b c d]` by `[2]` produces `[a b c d a b c d]`.
+    ///
+    /// - Precondition: The expected `rank` of multiples must be `1`.
+    /// - Precondition: The shape of `multiples` must be `[tensor.rank]`.
+    @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+    func tiled(multiples: [Int]) -> Tensor {
+        // TODO(TF-433): Remove workaround for differentiating `map`.
+        tiled(multiples: Tensor<Int32>({multiples.map(Int32.init)}()))
+    }
 
     /// Returns a tiled tensor, constructed by tiling this tensor.
     ///
