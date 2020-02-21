@@ -29,7 +29,7 @@ public struct MaxPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     ///   - stride: The stride of the sliding window for temporal dimension.
     ///   - padding: The padding algorithm for pooling.
     public init(poolSize: Int, stride: Int, padding: Padding) {
-        precondition(poolSize > 0, "The pool size must be greater than 0.")
+        precondition(poolSize > 0, "The pooling window size must be greater than 0.")
         precondition(stride > 0, "The stride must be greater than 0.")
         self.poolSize = poolSize
         self.stride = stride
@@ -65,9 +65,9 @@ public struct MaxPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     /// Creates a max pooling layer.
     public init(poolSize: (Int, Int, Int, Int), strides: (Int, Int, Int, Int), padding: Padding) {
         precondition(poolSize.0 > 0 && poolSize.1 > 0 && poolSize.2 > 0 && poolSize.3 > 0,
-                     "The pool size must be greater than 0.")
+                     "Pooling window sizes must be greater than 0.")
         precondition(strides.0 > 0 && strides.1 > 0 && strides.2 > 0 && strides.3 > 0,
-                     "The strides must be greater than 0.")
+                     "Strides must be greater than 0.")
         self.poolSize = poolSize
         self.strides = strides
         self.padding = padding
@@ -117,11 +117,11 @@ public struct MaxPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     ) {
         precondition(
             poolSize.0 > 0 && poolSize.1 > 0 && poolSize.2 > 0 && poolSize.3 > 0 && poolSize.4 > 0,
-            "The pool size must be greater than 0."
+            "Pooling window sizes must be greater than 0."
         )
         precondition(
             strides.0 > 0 && strides.1 > 0 && strides.2 > 0 && strides.3 > 0 && strides.4 > 0,
-            "The strides must be greater than 0."
+            "Strides must be greater than 0."
         )
         self.poolSize = poolSize
         self.strides = strides
@@ -181,7 +181,7 @@ public struct AvgPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     ///   - stride: The stride of the sliding window for temporal dimension.
     ///   - padding: The padding algorithm for pooling.
     public init(poolSize: Int, stride: Int, padding: Padding) {
-        precondition(poolSize > 0, "The pool size must be greater than 0.")
+        precondition(poolSize > 0, "The pooling window size must be greater than 0.")
         precondition(stride > 0, "The stride must be greater than 0.")
         self.poolSize = poolSize
         self.stride = stride
@@ -217,9 +217,9 @@ public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     /// Creates an average pooling layer.
     public init(poolSize: (Int, Int, Int, Int), strides: (Int, Int, Int, Int), padding: Padding) {
         precondition(poolSize.0 > 0 && poolSize.1 > 0 && poolSize.2 > 0 && poolSize.3 > 0,
-                     "The pool size must be greater than 0.")
+                     "Pooling window sizes must be greater than 0.")
         precondition(strides.0 > 0 && strides.1 > 0 && strides.2 > 0 && strides.3 > 0,
-                     "The strides must be greater than 0.")
+                     "Strides must be greater than 0.")
         self.poolSize = poolSize
         self.strides = strides
         self.padding = padding
@@ -269,11 +269,11 @@ public struct AvgPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     ) {
         precondition(
             poolSize.0 > 0 && poolSize.1 > 0 && poolSize.2 > 0 && poolSize.3 > 0 && poolSize.4 > 0,
-            "The pool size must be greater than 0."
+            "Pooling window sizes must be greater than 0."
         )
         precondition(
             strides.0 > 0 && strides.1 > 0 && strides.2 > 0 && strides.3 > 0 && strides.4 > 0,
-            "The strides must be greater than 0."
+            "Strides must be greater than 0."
         )
         self.poolSize = poolSize
         self.strides = strides
