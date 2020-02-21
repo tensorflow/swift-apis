@@ -482,6 +482,15 @@ final class TensorAutoDiffTests: XCTestCase {
         XCTAssertEqual(pullback(at: [[3, 5]], in: f1)([1, 1]), [[6, 10]])
         XCTAssertEqual(pullback(at: [[3, 5]], in: f2)([1, 1]), [[6, 10]])
     }
+    
+    func testTiled() {
+        let input = Tensor<Float>([[1, 2, 3], [4, 5, 6]])
+        let tiledPullback = pullback(at: input) { (a: Tensor<Float>) in
+            a.tiled(multiples: [2, 1])
+        }
+        let tiled = Tensor<Float>([[1, 2, 3], [4, 5, 6], [1, 2, 3], [4, 5, 6]])
+        XCTAssertEqual(input * 2, tiledPullback(tiled))
+    }
 
     func testReshapedBackprop() {
         func f1(a: Tensor<Float>) -> Tensor<Float> { a.reshaped(toShape: Tensor<Int32>([2, 1])).squared() }
@@ -795,6 +804,7 @@ final class TensorAutoDiffTests: XCTestCase {
         ("testTensorInitStacking", testTensorInitStacking),
         ("testExpandingShape", testExpandingShape),
         ("testSqueezingShape", testSqueezingShape),
+        ("testTiled", testTiled),
         ("testReshapedBackprop", testReshapedBackprop),
         ("testReshaped", testReshaped),
         ("testConcatenationPlusPlus", testConcatenationPlusPlus),
