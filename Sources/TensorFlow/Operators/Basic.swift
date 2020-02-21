@@ -142,6 +142,7 @@ public extension Tensor {
     ///
     /// - Precondition: The expected `rank` of multiples must be `1`.
     /// - Precondition: The shape of `multiples` must be `[tensor.rank]`.
+    /// - Precondition: All scalars in `multiples` must be non-negative.
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func tiled(multiples: [Int]) -> Tensor {
@@ -158,6 +159,7 @@ public extension Tensor {
     ///
     /// - Precondition: The expected `rank` of multiples must be `1`.
     /// - Precondition: The shape of `multiples` must be `[tensor.rank]`.
+    /// - Precondition: All scalars in `multiples` must be non-negative.
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func tiled(multiples: Tensor<Int32>) -> Tensor {
