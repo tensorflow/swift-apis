@@ -29,6 +29,8 @@ public struct MaxPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     ///   - stride: The stride of the sliding window for temporal dimension.
     ///   - padding: The padding algorithm for pooling.
     public init(poolSize: Int, stride: Int, padding: Padding) {
+        precondition(poolSize > 0, "The pool size must be greater than 0.")
+        precondition(stride > 0, "The stride must be greater than 0.")
         self.poolSize = poolSize
         self.stride = stride
         self.padding = padding
@@ -62,6 +64,10 @@ public struct MaxPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
 
     /// Creates a max pooling layer.
     public init(poolSize: (Int, Int, Int, Int), strides: (Int, Int, Int, Int), padding: Padding) {
+        precondition(poolSize.0 > 0 && poolSize.1 > 0 && poolSize.2 > 0 && poolSize.3 > 0,
+                     "The pool size must be greater than 0.")
+        precondition(strides.0 > 0 && strides.1 > 0 && strides.2 > 0 && strides.3 > 0,
+                     "The strides must be greater than 0.")
         self.poolSize = poolSize
         self.strides = strides
         self.padding = padding
@@ -109,6 +115,14 @@ public struct MaxPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
         strides: (Int, Int, Int, Int, Int),
         padding: Padding
     ) {
+        precondition(
+            poolSize.0 > 0 && poolSize.1 > 0 && poolSize.2 > 0 && poolSize.3 > 0 && poolSize.4 > 0,
+            "The pool size must be greater than 0."
+        )
+        precondition(
+            strides.0 > 0 && strides.1 > 0 && strides.2 > 0 && strides.3 > 0 && strides.4 > 0,
+            "The strides must be greater than 0."
+        )
         self.poolSize = poolSize
         self.strides = strides
         self.padding = padding
@@ -167,6 +181,8 @@ public struct AvgPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     ///   - stride: The stride of the sliding window for temporal dimension.
     ///   - padding: The padding algorithm for pooling.
     public init(poolSize: Int, stride: Int, padding: Padding) {
+        precondition(poolSize > 0, "The pool size must be greater than 0.")
+        precondition(stride > 0, "The stride must be greater than 0.")
         self.poolSize = poolSize
         self.stride = stride
         self.padding = padding
@@ -200,6 +216,10 @@ public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
 
     /// Creates an average pooling layer.
     public init(poolSize: (Int, Int, Int, Int), strides: (Int, Int, Int, Int), padding: Padding) {
+        precondition(poolSize.0 > 0 && poolSize.1 > 0 && poolSize.2 > 0 && poolSize.3 > 0,
+                     "The pool size must be greater than 0.")
+        precondition(strides.0 > 0 && strides.1 > 0 && strides.2 > 0 && strides.3 > 0,
+                     "The strides must be greater than 0.")
         self.poolSize = poolSize
         self.strides = strides
         self.padding = padding
@@ -247,6 +267,14 @@ public struct AvgPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
         strides: (Int, Int, Int, Int, Int),
         padding: Padding
     ) {
+        precondition(
+            poolSize.0 > 0 && poolSize.1 > 0 && poolSize.2 > 0 && poolSize.3 > 0 && poolSize.4 > 0,
+            "The pool size must be greater than 0."
+        )
+        precondition(
+            strides.0 > 0 && strides.1 > 0 && strides.2 > 0 && strides.3 > 0 && strides.4 > 0,
+            "The strides must be greater than 0."
+        )
         self.poolSize = poolSize
         self.strides = strides
         self.padding = padding
@@ -300,7 +328,8 @@ public struct GlobalAvgPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        input.mean(squeezingAxes: 1)
+        precondition(input.rank == 3, "The rank of the input must be 3.")
+        return input.mean(squeezingAxes: 1)
     }
 }
 
@@ -316,7 +345,8 @@ public struct GlobalAvgPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        input.mean(squeezingAxes: [1, 2])
+        precondition(input.rank == 4, "The rank of the input must be 4.")
+        return input.mean(squeezingAxes: [1, 2])
     }
 }
 
@@ -332,7 +362,8 @@ public struct GlobalAvgPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        input.mean(squeezingAxes: [1, 2, 3])
+        precondition(input.rank == 5, "The rank of the input must be 5.")
+        return input.mean(squeezingAxes: [1, 2, 3])
     }
 }
 
@@ -351,7 +382,8 @@ public struct GlobalMaxPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        input.max(squeezingAxes: 1)
+        precondition(input.rank == 3, "The rank of the input must be 3.")
+        return input.max(squeezingAxes: 1)
     }
 }
 
@@ -367,7 +399,8 @@ public struct GlobalMaxPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        input.max(squeezingAxes: [1, 2])
+        precondition(input.rank == 4, "The rank of the input must be 4.")
+        return input.max(squeezingAxes: [1, 2])
     }
 }
 
@@ -383,6 +416,7 @@ public struct GlobalMaxPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        input.max(squeezingAxes: [1, 2, 3])
+        precondition(input.rank == 5, "The rank of the input must be 5.")
+        return input.max(squeezingAxes: [1, 2, 3])
     }
 }
