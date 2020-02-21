@@ -146,8 +146,10 @@ public extension Tensor {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func tiled(multiples: [Int]) -> Tensor {
+        precondition(multiples.allSatisfy { $0 >= 0 },
+                     "All scalars in multiples must be non-negative.")
         // TODO(TF-433): Remove workaround for differentiating `map`.
-        tiled(multiples: Tensor<Int32>({multiples.map(Int32.init)}()))
+        return tiled(multiples: Tensor<Int32>({multiples.map(Int32.init)}()))
     }
 
     /// Returns a tiled tensor, constructed by tiling this tensor.
@@ -159,7 +161,6 @@ public extension Tensor {
     ///
     /// - Precondition: The expected `rank` of multiples must be `1`.
     /// - Precondition: The shape of `multiples` must be `[tensor.rank]`.
-    /// - Precondition: All scalars in `multiples` must be non-negative.
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func tiled(multiples: Tensor<Int32>) -> Tensor {
@@ -167,7 +168,6 @@ public extension Tensor {
         precondition(
             rank == multiples.shapeTensor.scalarized(),
             "The shape of multiples must be [tensor.rank].")
-        precondition((multiples .>= 0).all(), "All scalars in multiples must be non-negative.")
         return _Raw.tile(self, multiples: multiples)
     }
 
