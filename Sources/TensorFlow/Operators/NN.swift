@@ -494,6 +494,7 @@ public func maxPool2D<Scalar: TensorFlowFloatingPoint>(
     strides: (Int, Int, Int, Int),
     padding: Padding
 ) -> Tensor<Scalar> {
+    precondition(input.rank == 4, "The rank of the input must be 4.")
     return _Raw.maxPoolV2(
         input,
         ksize: Tensor<Int32>([Int32(filterSize.0), Int32(filterSize.1),
@@ -542,6 +543,7 @@ public func maxPool3D<Scalar: TensorFlowFloatingPoint>(
     strides: (Int, Int, Int, Int, Int),
     padding: Padding
 ) -> Tensor<Scalar> {
+    precondition(input.rank == 5, "The rank of the input must be 5.")
     return _Raw.maxPool3D(
         input,
         ksize: [Int32(filterSize.0), Int32(filterSize.1),
@@ -591,6 +593,7 @@ public func avgPool2D<Scalar: TensorFlowFloatingPoint>(
     strides: (Int, Int, Int, Int),
     padding: Padding
 ) -> Tensor<Scalar> {
+    precondition(input.rank == 4, "The rank of the input must be 4.")
     return _Raw.avgPool(
         value: input,
         ksize: [Int32(filterSize.0), Int32(filterSize.1),
@@ -638,6 +641,7 @@ public func avgPool3D<Scalar: TensorFlowFloatingPoint>(
     strides: (Int, Int, Int, Int, Int),
     padding: Padding
 ) -> Tensor<Scalar> {
+    precondition(input.rank == 5, "The rank of the input must be 5.")
     return _Raw.avgPool3D(
         input,
         ksize: [Int32(filterSize.0), Int32(filterSize.1),
