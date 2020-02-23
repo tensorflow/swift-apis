@@ -51,7 +51,7 @@ extension RNNCellOutput: EuclideanDifferentiable
     where Output: EuclideanDifferentiable, State: EuclideanDifferentiable {}
 
 /// A recurrent neural network cell.
-public protocol RNNCell: Layer
+public protocol RNNCellProtocol: Layer
     where Input == RNNCellInput<TimeStepInput, State>,
           Output == RNNCellOutput<TimeStepOutput, State> {
     /// The input at a time step.
@@ -65,7 +65,7 @@ public protocol RNNCell: Layer
     func zeroState(for input: TimeStepInput) -> State
 }
 
-public extension RNNCell {
+public extension RNNCellProtocol {
     /// Returns the new state obtained from applying the RNN cell to the input at the current time
     /// step and the previous state.
     ///
@@ -88,7 +88,7 @@ public extension RNNCell {
 }
 
 /// A simple RNN cell.
-public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
+public struct RNNCell<Scalar: TensorFlowFloatingPoint>: RNNCellProtocol {
     public var weight: Tensor<Scalar>
     public var bias: Tensor<Scalar>
 
@@ -135,7 +135,7 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
 }
 
 /// An LSTM cell.
-public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
+public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCellProtocol {
     public var fusedWeight: Tensor<Scalar>
     public var fusedBias: Tensor<Scalar>
 
@@ -261,7 +261,7 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
 }
 
 /// An GRU cell.
-public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
+public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RNNCellProtocol {
     public var updateWeight1, updateWeight2: Tensor<Scalar>
     public var resetWeight1, resetWeight2: Tensor<Scalar>
     public var outputWeight1, outputWeight2: Tensor<Scalar>
@@ -334,7 +334,7 @@ public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     }
 }
 
-public struct RNN<Cell: RNNCell>: Layer {
+public struct RNN<Cell: RNNCellProtocol>: Layer {
     public typealias Input = [Cell.TimeStepInput]
     public typealias Output = [Cell.TimeStepOutput]
 
@@ -434,5 +434,5 @@ public struct RNN<Cell: RNNCell>: Layer {
 extension RNN: Equatable where Cell: Equatable {}
 extension RNN: AdditiveArithmetic where Cell: AdditiveArithmetic {}
 
-public typealias SimpleRNN<Scalar: TensorFlowFloatingPoint> = RNN<SimpleRNNCell<Scalar>>
+public typealias SimpleRNN<Scalar: TensorFlowFloatingPoint> = RNN<RNNCell<Scalar>>
 public typealias LSTM<Scalar: TensorFlowFloatingPoint> = RNN<LSTMCell<Scalar>>

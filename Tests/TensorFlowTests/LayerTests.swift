@@ -1116,15 +1116,15 @@ final class LayerTests: XCTestCase {
     func testSimpleRNNCell() {
         let weight = Tensor<Float>(ones: [7, 5]) * Tensor<Float>([0.3333, 1, 0.3333, 1, 0.3333])
         let bias = Tensor<Float>(ones: [5])
-        var cell = SimpleRNNCell<Float>(inputSize: 2, hiddenSize: 5)
+        var cell = RNNCell<Float>(inputSize: 2, hiddenSize: 5)
         cell.weight = weight
         cell.bias = bias
-        let state = SimpleRNNCell.State(
+        let state = RNNCell.State(
             Tensor<Float>(ones: [1, 5]) * Tensor<Float>([1, 0.2, 0.5, 2, 0.6])
         )
         let input = Tensor<Float>(ones: [1, 2]) * Tensor<Float>([0.3, 0.7])
         let output = cell(input: input, state: state).state
-        let expected = SimpleRNNCell.State(
+        let expected = RNNCell.State(
             Tensor<Float>([[0.9921227, 0.9999934, 0.9921227, 0.9999934, 0.9921227]])
         )
         XCTAssertEqual(output, expected)
@@ -1217,7 +1217,7 @@ final class LayerTests: XCTestCase {
     func testRNN() {
         let x = Tensor<Float>(rangeFrom: 0.0, to: 0.4, stride: 0.1).rankLifted()
         let inputs: [Tensor<Float>] = Array(repeating: x, count: 4)
-        let rnn = RNN(SimpleRNNCell<Float>(inputSize: 4, hiddenSize: 4, seed: (0xFeed, 0xBeef)))
+        let rnn = RNN(RNNCell<Float>(inputSize: 4, hiddenSize: 4, seed: (0xFeed, 0xBeef)))
         withTensorLeakChecking {
             let (outputs, pullback) = valueWithPullback(at: rnn, inputs) { rnn, inputs in
                 return rnn(inputs)
@@ -1229,7 +1229,7 @@ final class LayerTests: XCTestCase {
                  [ 0.23758979,  0.32101023, -0.20359215,  -0.1787096],
                  [ 0.24337786,   0.3389194, -0.21143384,  -0.1675081]],
                 accuracy: 1e-6)
-            let (𝛁rnn, _) = pullback(.init(inputs.map { SimpleRNNCell<Float>.State($0) }))
+            let (𝛁rnn, _) = pullback(.init(inputs.map { RNNCell<Float>.State($0) }))
             // TODO: Verify that RNN gradients are correct using a reference implementation.
             XCTAssertEqual(𝛁rnn.cell.weight,
                            [[         0.0,          0.0,          0.0,          0.0],
