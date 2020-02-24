@@ -87,8 +87,10 @@ public extension RNNCellProtocol {
     }
 }
 
+public typealias RNNCell = RNNCellProtocol
+
 /// A simple RNN cell.
-public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCellProtocol {
+public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     public var weight: Tensor<Scalar>
     public var bias: Tensor<Scalar>
 
@@ -135,7 +137,7 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCellProtocol {
 }
 
 /// An LSTM cell.
-public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCellProtocol {
+public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     public var fusedWeight: Tensor<Scalar>
     public var fusedBias: Tensor<Scalar>
 
@@ -261,7 +263,7 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCellProtocol {
 }
 
 /// An GRU cell.
-public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RNNCellProtocol {
+public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
     public var updateWeight1, updateWeight2: Tensor<Scalar>
     public var resetWeight1, resetWeight2: Tensor<Scalar>
     public var outputWeight1, outputWeight2: Tensor<Scalar>
@@ -334,7 +336,7 @@ public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RNNCellProtocol {
     }
 }
 
-public struct RNN<Cell: RNNCellProtocol>: Layer {
+public struct RNN<Cell: RNNCell>: Layer {
     public typealias Input = [Cell.TimeStepInput]
     public typealias Output = [Cell.TimeStepOutput]
 
