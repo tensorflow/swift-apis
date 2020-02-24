@@ -88,7 +88,7 @@ public extension RNNCellProtocol {
 }
 
 /// A simple RNN cell.
-public struct RNNCell<Scalar: TensorFlowFloatingPoint>: RNNCellProtocol {
+public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCellProtocol {
     public var weight: Tensor<Scalar>
     public var bias: Tensor<Scalar>
 
@@ -434,5 +434,5 @@ public struct RNN<Cell: RNNCellProtocol>: Layer {
 extension RNN: Equatable where Cell: Equatable {}
 extension RNN: AdditiveArithmetic where Cell: AdditiveArithmetic {}
 
-public typealias SimpleRNN<Scalar: TensorFlowFloatingPoint> = RNN<RNNCell<Scalar>>
+public typealias SimpleRNN<Scalar: TensorFlowFloatingPoint> = RNN<SimpleRNNCell<Scalar>>
 public typealias LSTM<Scalar: TensorFlowFloatingPoint> = RNN<LSTMCell<Scalar>>
