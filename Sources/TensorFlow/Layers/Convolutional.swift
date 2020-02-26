@@ -437,7 +437,7 @@ public struct TransposedConv1D<Scalar: TensorFlowFloatingPoint>: Layer {
             stride + (filter.shape[0] * paddingIndex)
         let c = filter.shape[2]
         let newShape = Tensor<Int32>([Int32(batchSize), 1, Int32(w), Int32(c)])
-        let conv = conv2DBackpropInput(
+        let conv = transposedConv2D(
             input.expandingShape(at: 1),
             shape: newShape,
             filter: filter.expandingShape(at: 0),
@@ -541,7 +541,7 @@ public struct TransposedConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
           strides.1 + (filter.shape[1] * paddingIndex)
         let c = filter.shape[2]
         let newShape = Tensor<Int32>([Int32(batchSize), Int32(h), Int32(w), Int32(c)])
-        let conv = conv2DBackpropInput(
+        let conv = transposedConv2D(
             input,
             shape: newShape,
             filter: filter,

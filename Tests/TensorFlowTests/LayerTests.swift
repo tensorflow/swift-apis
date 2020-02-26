@@ -360,8 +360,51 @@ final class LayerTests: XCTestCase {
         let expectedNoBias = Tensor<Float>(shape: [1, 4, 2, 1],
                                            scalars: [0, 4, 4, 20, 16, 56, 40, 104])
         XCTAssertEqual(outputNoBias, expectedNoBias)
-    }  
-
+    }
+    
+    func testTransposedConv2DGradient() {
+        let filter =  Tensor(shape: [3, 3, 2, 4], scalars: (0..<72).map(Float.init))
+        let bias = Tensor<Float>(zeros: [2])
+        let layer = TransposedConv2D<Float>(filter: filter,
+                                            bias: bias,
+                                            activation: identity,
+                                            strides: (2, 2),
+                                            padding: .same)
+        let input = Tensor(shape: [2, 2, 2, 4], scalars: (0..<32).map(Float.init))
+        let grads = gradient( at: input, layer) { $1($0).sum() }
+        // The expected value of the gradient was computed using the following Python code:
+        // ```
+        // import tensorflow as tf
+        // x = tf.reshape(tf.range(32, dtype=tf.float32), [2, 2, 2, 4])
+        // filter = tf.reshape(tf.range(72, dtype=tf.float32), [3, 3, 2, 4])
+        // bias = tf.zeros([2])
+        // with tf.GradientTape() as tape:
+        //     tape.watch([x, filter, bias])
+        //     y = tf.math.reduce_sum(tf.nn.conv2d_transpose(input=x,
+        //                                                   filters=filter,
+        //                                                   output_shape=[2, 4, 4, 2],
+        //                                                   strides=[1, 2, 2, 1],
+        //                                                   data_format="NHWC",
+        //                                                   padding="SAME") + bias)
+        // print(tape.gradient(y, [x, filter, bias]))
+        // ```
+        XCTAssertEqual(grads.0,
+                       [[[[612, 630, 648, 666], [360, 372, 384, 396]],
+                         [[264, 276, 288, 300], [144, 152, 160, 168]]],
+                        [[[612, 630, 648, 666], [360, 372, 384, 396]],
+                         [[264, 276, 288, 300], [144, 152, 160, 168]]]])
+        XCTAssertEqual(grads.1.filter,
+                       [[[[112, 120, 128, 136], [112, 120, 128, 136]],
+                         [[112, 120, 128, 136], [112, 120, 128, 136]],
+                         [[ 48,  52,  56,  60], [ 48,  52,  56,  60]]],
+                        [[[112, 120, 128, 136], [112, 120, 128, 136]],
+                         [[112, 120, 128, 136], [112, 120, 128, 136]],
+                         [[ 48,  52,  56,  60], [ 48,  52,  56,  60]]],
+                        [[[ 40,  44,  48,  52], [ 40,  44,  48,  52]],
+                         [[ 40,  44,  48,  52], [ 40,  44,  48,  52]],
+                         [[ 16,  18,  20,  22], [ 16,  18,  20,  22]]]])
+        XCTAssertEqual(grads.1.bias, [32, 32])
+    }
     
     func testTransposedConv3D() {
         let filter =  Tensor(shape: [2, 2, 2, 1, 1], scalars: (0..<8).map(Float.init))
@@ -1615,6 +1658,7 @@ final class LayerTests: XCTestCase {
         ("testConv3DGradient", testConv3DGradient),
         ("testTransposedConv1D", testTransposedConv1D),
         ("testTransposedConv2D", testTransposedConv2D),
+        ("testTransposedConv2DGradient", testTransposedConv2DGradient),
         ("testTransposedConv3D", testTransposedConv3D),
         ("testDepthwiseConv2D", testDepthwiseConv2D),
         ("testDepthwiseConv2DGradient", testDepthwiseConv2DGradient),

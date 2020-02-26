@@ -149,6 +149,32 @@ func _vjpConv2D<Scalar: TensorFlowFloatingPoint>(
     })
 }
 
+/// Returns a 2-D transposed convolution with the specified input, filter, strides, and padding.
+///
+/// - Parameters:
+///   - input: The input.
+///   - shape: The output shape of the deconvolution operation.
+///   - filter: The convolution filter.
+///   - strides: The strides of the sliding filter for each dimension of the input.
+///   - padding: The padding for the operation
+///   - dilations: The dilation factor for each dimension of the input.
+/// - Precondition: `input` must have rank `4`.
+/// - Precondition: `filter` must have rank 4.
+@differentiable(wrt: (input, filter))
+public func transposedConv2D<Scalar: TensorFlowFloatingPoint>(
+    _ input: Tensor<Scalar>,
+    shape: Tensor<Int32>,
+    filter: Tensor<Scalar>,
+    strides: (Int, Int, Int, Int) = (1, 1, 1, 1),
+    padding: Padding = .valid,
+    dilations: (Int, Int, Int, Int) = (1, 1, 1, 1)
+) -> Tensor<Scalar> {
+    precondition(input.shape.rank == 4, "The input must have rank 4.")
+    precondition(filter.shape.rank == 4, "The filter must have rank 4.")
+    return conv2DBackpropInput(input, shape: shape, filter: filter,
+                               strides: strides, padding: padding, dilations: dilations)
+}
+
 /// TensorFlow builtin conv2d gradient helper for the input.
 @differentiable(wrt: (x, filter))
 @usableFromInline
@@ -170,8 +196,8 @@ func conv2DBackpropInput<Scalar: TensorFlowFloatingPoint>(
         dilations: [Int32(dilations.0), Int32(dilations.1), Int32(dilations.2), Int32(dilations.3)])
 }
 
-@usableFromInline
 @derivative(of: conv2DBackpropInput)
+@usableFromInline
 func _vjpConv2DBackpropInput<Scalar: TensorFlowFloatingPoint>(
     _ x: Tensor<Scalar>,
     _ shape: Tensor<Int32>,
