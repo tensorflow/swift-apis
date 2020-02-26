@@ -26,11 +26,16 @@ final class BasicOperatorTests: XCTestCase {
         let x = Tensor<Float>([[
             [1.0, 2.0, 3.0],
             [4.0, 5.0, 6.0]]])
-        let y = x.batchGathering(
+        let y1 = x.batchGathering(
             atIndices: Tensor<Int32>([[[1], [0]]]),
             alongAxis: 2,
             batchDimensionCount: 2)
-        XCTAssertEqual(y, Tensor<Float>([[[2.0], [4.0]]]))
+        let y2 = x.batchGathering(
+            atIndices: Tensor<Int32>([[[1], [0]]]),
+            alongAxis: -1,
+            batchDimensionCount: 2)
+        XCTAssertEqual(y1, Tensor<Float>([[[2.0], [4.0]]]))
+        XCTAssertEqual(y2, Tensor<Float>([[[2.0], [4.0]]]))
     }
 
     func testPadded() {
