@@ -249,15 +249,25 @@ final class TensorAutoDiffTests: XCTestCase {
     func testMean() {
         let meanGradScalar = gradient { (a: Tensor<Float>) in a.mean().sum() }
         let meanGradSqueezingAxes = gradient { (a: Tensor<Float>) in
-            a.mean(squeezingAxes: 0, 1).sum()
+            a.mean(squeezingAxes: 0, -1).sum()
         }
-        let meanGradAlongAxes = gradient { (a: Tensor<Float>) in a.mean(alongAxes: 0, 1).sum() }
+        let meanGradSqueezingAxes2 = gradient { (a: Tensor<Float>) in
+            a.mean(squeezingAxes: Tensor<Int32>([0, -1])).sum()
+        }
+        let meanGradAlongAxes = gradient { (a: Tensor<Float>) in
+            a.mean(alongAxes: 0, -1).sum()
+        }
+        let meanGradAlongAxes2 = gradient { (a: Tensor<Float>) in
+            a.mean(alongAxes: Tensor<Int32>([0, -1])).sum()
+        }
 
         let input = Tensor<Float>(ones: [2, 2])
         let expected = Tensor<Float>(repeating: 0.25, shape: [2, 2])
         XCTAssertEqual(meanGradScalar(input), expected)
         XCTAssertEqual(meanGradSqueezingAxes(input), expected)
+        XCTAssertEqual(meanGradSqueezingAxes2(input), expected)
         XCTAssertEqual(meanGradAlongAxes(input), expected)
+        XCTAssertEqual(meanGradAlongAxes2(input), expected)
     }
 
     func testVariance() {

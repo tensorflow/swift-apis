@@ -2390,6 +2390,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @derivative(of: mean(alongAxes:))
     func _vjpMean(alongAxes axes: Tensor<Int32>) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
         let value = mean(alongAxes: axes)
+        let axes = (axes + Int32(self.rank)) % Int32(self.rank)
         let count = _Raw.gather(params: shapeTensor, indices: axes).product()
         return (value, { [shape = shapeTensor] in $0.broadcasted(toShape: shape) / Tensor(count) })
     }
@@ -2400,6 +2401,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
         value: Tensor, pullback: (Tensor) -> Tensor
     ) {
         let value = mean(squeezingAxes: axes)
+        let axes = (axes + Int32(self.rank)) % Int32(self.rank)
         let count = _Raw.gather(params: shapeTensor, indices: axes).product()
         return (value, { [shape = shapeTensor] v in
             let unsqueezed = v.expandingShape(at: axes.scalars.map { Int($0) })
@@ -2415,7 +2417,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
         let value = mean(alongAxes: axes)
         // Cache shape because it is a computed property.
         let cachedShape = shape
-        let count = axes.map { cachedShape[$0] }.reduce(1, *)
+        let count = axes.map { cachedShape[($0 + self.rank) % self.rank] }.reduce(1, *)
         return (value, { [shape = shapeTensor] in $0.broadcasted(toShape: shape) / Tensor(Scalar(count)) })
     }
 
@@ -2427,7 +2429,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
         let value = mean(squeezingAxes: axes)
         // Cache shape because it is a computed property.
         let cachedShape = shape
-        let count = axes.map { cachedShape[$0] }.reduce(1, *)
+        let count = axes.map { cachedShape[($0 + self.rank) % self.rank] }.reduce(1, *)
         return (value, { [shape = shapeTensor] v in
             let unsqueezed = v.expandingShape(at: axes)
             return unsqueezed.broadcasted(toShape: shape) / Tensor(Scalar(count))
