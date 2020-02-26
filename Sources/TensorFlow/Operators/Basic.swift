@@ -132,6 +132,25 @@ public extension Tensor {
             splitDim: Tensor<Int32>(Int32(axis)),
             numSplit: Int64(sizes.shape[0]))
     }
+    
+    /// Returns a tiled tensor, constructed by tiling this tensor.
+    ///
+    /// This constructor creates a new tensor by replicating this tensor `multiples` times. The
+    /// constructed tensor's `i`'th dimension has `self.shape[i] * multiples[i]` elements, and the
+    /// values of this tensor are replicated `multiples[i]` times along the `i`'th dimension. For
+    /// example, tiling `[a b c d]` by `[2]` produces `[a b c d a b c d]`.
+    ///
+    /// - Precondition: The expected `rank` of multiples must be `1`.
+    /// - Precondition: The shape of `multiples` must be `[tensor.rank]`.
+    /// - Precondition: All scalars in `multiples` must be non-negative.
+    @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+    func tiled(multiples: [Int]) -> Tensor {
+        precondition(multiples.allSatisfy { $0 >= 0 },
+                     "All scalars in multiples must be non-negative.")
+        // TODO(TF-433): Remove workaround for differentiating `map`.
+        return tiled(multiples: Tensor<Int32>({multiples.map(Int32.init)}()))
+    }
 
     /// Returns a tiled tensor, constructed by tiling this tensor.
     ///
@@ -174,22 +193,6 @@ public extension Tensor {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func reshaped(toShape newShape: Tensor<Int32>) -> Tensor {
-        let totalNegative = newShape.scalars.filter({$0 == -1}).count
-        let positiveShapeSizes = newShape.scalars.filter({$0 > 0})
-        let newShapeScalarCount = positiveShapeSizes.reduce(1, {$0 * $1})
-
-        precondition(totalNegative <= 1, "Only one input size may be -1.")
-
-        if totalNegative == 1 {
-            precondition(
-                scalarCount % Int(newShapeScalarCount) == 0,
-                "The number of scalars must be a multiple of the new shape.")
-        } else {
-            precondition(
-                scalarCount == newShapeScalarCount,
-                "The number of scalars must match the new shape.")
-        }
-
         return _Raw.reshape(self, shape: newShape)
     }
 
@@ -478,22 +481,22 @@ public extension Tensor {
                 "'batchDimensionCount' must be less than the tensor's rank.")
         }
 
+        // Adjust axis to be positive.
+        let axis = axis < 0 ? axis + rank : axis
+
         // Handle the axis argument by transposing the axis dimension so that it is the first
         // non-batch dimension, recursively calling `batchGathering` with `axis = 0`, and then
         // transposing the result to put the pre-axis dimensions before the indices dimensions.
         if axis != batchDimensionCount {
-            // Adjust axis to be positive.
-            let posAxis = axis < 0 ? axis + rank : axis
-
-            // TODO: precondition(posAxis >= 0 && posAxis < rank, "'axis' is out of range.")
-            // TODO: precondition(batchDimensionCount <= posAxis,
+            // TODO: precondition(axis >= 0 && axis < rank, "'axis' is out of range.")
+            // TODO: precondition(batchDimensionCount <= axis,
             //                    "'batchDimensionCount' must be less than or equal to 'axis'.")
 
             // Move self[axis] up to self[batchDimensionCount].
             let permutation = Tensor<Int32>(concatenating: [
                 Tensor<Int32>(rangeFrom: 0, to: Int32(batchDimensionCount), stride: 1),
                 Tensor<Int32>(Int32(axis)).rankLifted(),
-                Tensor<Int32>(rangeFrom: Int32(batchDimensionCount), to: Int32(posAxis), stride: 1),
+                Tensor<Int32>(rangeFrom: Int32(batchDimensionCount), to: Int32(axis), stride: 1),
                 Tensor<Int32>(rangeFrom: Int32(axis) + 1, to: Int32(rank), stride: 1)])
             let tensor = transposed(permutation: permutation)
             let result = tensor.batchGathering(
@@ -503,7 +506,7 @@ public extension Tensor {
 
             // Move the result dimensions corresponding to self[batchDimensionCount..<axis] to
             // just before the dimensions corresponding to indices[batchDimensionCount...].
-            let start = indices.rank + posAxis - batchDimensionCount
+            let start = indices.rank + axis - batchDimensionCount
             let resultPermutation = Tensor<Int32>(concatenating: [
                 Tensor<Int32>(rangeFrom: 0, to: Int32(batchDimensionCount), stride: 1),
                 Tensor<Int32>(rangeFrom: Int32(indices.rank), to: Int32(start), stride: 1),

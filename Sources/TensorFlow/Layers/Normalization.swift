@@ -56,6 +56,10 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
         runningMean: Tensor<Scalar>,
         runningVariance: Tensor<Scalar>
     ) {
+        precondition(offset.rank == 1, "The offset must have rank 1.")
+        precondition(scale.rank == 1, "The scale must have rank 1.")
+        precondition(offset.shape == scale.shape,
+                     "The offset and the scale must have same shape.")
         self.axis = axis
         self.momentum = momentum
         self.offset = offset
@@ -72,6 +76,8 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         let positiveAxis = (input.rank + axis) % input.rank
+        precondition(input.shape[positiveAxis] == offset.shape[0],
+                     "The number of features of the input and the offset doesn't match.")
         var offset = self.offset
         var scale = self.scale
         if positiveAxis != input.rank - 1 {
@@ -141,6 +147,10 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
         axis: Int,
         epsilon: Scalar
     ) {
+        precondition(offset.rank == 1, "The offset must have rank 1.")
+        precondition(scale.rank == 1, "The scale must have rank 1.")
+        precondition(offset.shape == scale.shape,
+                     "The offset and the scale must have same shape.")
         self.offset = offset
         self.scale = scale
         self.axis = axis
@@ -172,6 +182,8 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         let positiveAxis = (input.rank + axis) % input.rank
+        precondition(input.shape[positiveAxis] == offset.shape[0],
+                     "The number of features of the input and the offset doesn't match.")
         var broadcastShape = TensorShape(Array(repeating: 1, count: input.rank))
         broadcastShape[positiveAxis] = input.shape[positiveAxis]
         let offset = self.offset.reshaped(to: broadcastShape)

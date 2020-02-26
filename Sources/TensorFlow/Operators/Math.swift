@@ -220,37 +220,48 @@ extension Tensor: VectorProtocol where Scalar: TensorFlowFloatingPoint {
     }
 }
 
-extension VectorProtocol {
-    static func + (lhs: VectorSpaceScalar, rhs: Self) -> Self {
-        rhs.adding(lhs)
-    }
+// Note: previously, these `VectorProtocol` operator definitions were internal.
+// This was confusing to library users, since operators were unavailable.
+//
+// Publicly exposing these operator definitions is currently problematic due to
+// the negative impact on operator type-checking performance:
+// https://github.com/apple/swift/pull/29815
+//
+// Consider publicly exposing these operators when tensorflow/swift-apis is no
+// longer built as part of the Swift standard library,
+/*
+public extension VectorProtocol {	
+    static func + (lhs: VectorSpaceScalar, rhs: Self) -> Self {	
+        rhs.adding(lhs)	
+    }	
 
-    static func + (lhs: Self, rhs: VectorSpaceScalar) -> Self {
-        lhs.adding(rhs)
-    }
+    static func + (lhs: Self, rhs: VectorSpaceScalar) -> Self {	
+        lhs.adding(rhs)	
+    }	
 
-    static func - (lhs: Self, rhs: VectorSpaceScalar) -> Self {
-        lhs.subtracting(rhs)
-    }
+    static func - (lhs: Self, rhs: VectorSpaceScalar) -> Self {	
+        lhs.subtracting(rhs)	
+    }	
 
-    static func * (lhs: VectorSpaceScalar, rhs: Self) -> Self {
-        rhs.scaled(by: lhs)
-    }
+    static func * (lhs: VectorSpaceScalar, rhs: Self) -> Self {	
+        rhs.scaled(by: lhs)	
+    }	
 
-    static func * (lhs: Self, rhs: VectorSpaceScalar) -> Self {
-        lhs.scaled(by: rhs)
-    }
+    static func * (lhs: Self, rhs: VectorSpaceScalar) -> Self {	
+        lhs.scaled(by: rhs)	
+    }	
+}	
+
+public extension VectorProtocol where VectorSpaceScalar: SignedNumeric {	
+    static prefix func - (x: Self) -> Self {	
+        .zero - x	
+    }	
+
+    static func - (lhs: VectorSpaceScalar, rhs: Self) -> Self {	
+        (-rhs).adding(lhs)	
+    }	
 }
-
-extension VectorProtocol where VectorSpaceScalar: SignedNumeric {
-    static prefix func - (x: Self) -> Self {
-        .zero - x
-    }
-
-    static func - (lhs: VectorSpaceScalar, rhs: Self) -> Self {
-        (-rhs).adding(lhs)
-    }
-}
+*/
 
 //===------------------------------------------------------------------------------------------===//
 // Additional Element-wise Operators
@@ -2389,6 +2400,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @derivative(of: mean(alongAxes:))
     func _vjpMean(alongAxes axes: Tensor<Int32>) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
         let value = mean(alongAxes: axes)
+        let axes = (axes + Int32(self.rank)) % Int32(self.rank)
         let count = _Raw.gather(params: shapeTensor, indices: axes).product()
         return (value, { [shape = shapeTensor] in $0.broadcasted(toShape: shape) / Tensor(count) })
     }
@@ -2399,6 +2411,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
         value: Tensor, pullback: (Tensor) -> Tensor
     ) {
         let value = mean(squeezingAxes: axes)
+        let axes = (axes + Int32(self.rank)) % Int32(self.rank)
         let count = _Raw.gather(params: shapeTensor, indices: axes).product()
         return (value, { [shape = shapeTensor] v in
             let unsqueezed = v.expandingShape(at: axes.scalars.map { Int($0) })
@@ -2414,7 +2427,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
         let value = mean(alongAxes: axes)
         // Cache shape because it is a computed property.
         let cachedShape = shape
-        let count = axes.map { cachedShape[$0] }.reduce(1, *)
+        let count = axes.map { cachedShape[($0 + self.rank) % self.rank] }.reduce(1, *)
         return (value, { [shape = shapeTensor] in $0.broadcasted(toShape: shape) / Tensor(Scalar(count)) })
     }
 
@@ -2426,7 +2439,7 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
         let value = mean(squeezingAxes: axes)
         // Cache shape because it is a computed property.
         let cachedShape = shape
-        let count = axes.map { cachedShape[$0] }.reduce(1, *)
+        let count = axes.map { cachedShape[($0 + self.rank) % self.rank] }.reduce(1, *)
         return (value, { [shape = shapeTensor] v in
             let unsqueezed = v.expandingShape(at: axes)
             return unsqueezed.broadcasted(toShape: shape) / Tensor(Scalar(count))

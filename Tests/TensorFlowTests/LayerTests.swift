@@ -74,6 +74,14 @@ final class LayerTests: XCTestCase {
           shape: [2, 3, 2],
           scalars: [1.5, 4, 3, 7, 4.5, 10, 16.5, 34, 18, 37, 19.5, 40])
         XCTAssertEqual(output, expected)
+        
+        let layerNoBias = Conv1D<Float>(filter: filter, bias: nil, activation: identity, stride: 1,
+                                        padding: .valid)
+        let outputNoBias = layerNoBias.inferring(from: input)
+        let expectedNoBias = Tensor<Float>(
+          shape: [2, 3, 2],
+          scalars: [1.5, 3, 3, 6, 4.5, 9, 16.5, 33, 18, 36, 19.5, 39])
+        XCTAssertEqual(outputNoBias, expectedNoBias)
     }
 
     func testConv1DDilation() {
@@ -108,6 +116,13 @@ final class LayerTests: XCTestCase {
         let expected = Tensor<Float>(shape: [2, 1, 1, 2],
                                      scalars: [15, 16, 63, 64])
         XCTAssertEqual(output, expected)
+        
+        let layerNoBias = Conv2D<Float>(filter: filter, bias: nil, activation: identity,
+                                        strides: (2, 2), padding: .valid)
+        let outputNoBias = layerNoBias.inferring(from: input)
+        let expectedNoBias = Tensor<Float>(shape: [2, 1, 1, 1],
+                                           scalars: [14, 62])
+        XCTAssertEqual(outputNoBias, expectedNoBias)
     }
 
     func testConv2DGradient() {
@@ -196,6 +211,13 @@ final class LayerTests: XCTestCase {
         let expected = Tensor<Float>(shape: [2, 2, 1, 1, 2],
                                      scalars: [139, 141, 363, 365, 587, 589, 811, 813])
         XCTAssertEqual(output, expected)
+        
+        let layerNoBias = Conv3D<Float>(filter: filter, bias: nil, activation: identity,
+                                        strides: (1, 2, 1), padding: .valid, dilations: (1, 1, 1))
+        let outputNoBias = layerNoBias.inferring(from: input)
+        let expectedNoBias = Tensor<Float>(shape: [2, 2, 1, 1, 1],
+                                           scalars: [140, 364, 588, 812])
+        XCTAssertEqual(outputNoBias, expectedNoBias)
     }
 
     func testConv3DGradient() {
@@ -312,6 +334,13 @@ final class LayerTests: XCTestCase {
         let expected = Tensor<Float>(shape: [1, 1, 4, 1],
                                      scalars: [8, 9, 12, 18])
         XCTAssertEqual(output, expected)
+        
+        let layerNoBias = TransposedConv1D(filter: filter, bias: nil, activation: identity,
+                                           stride: 1, padding: .same)
+        let outputNoBias = layerNoBias.inferring(from: input)
+        let expectedNoBias = Tensor<Float>(shape: [1, 1, 4, 1],
+                                           scalars: [0, 1, 4, 10])
+        XCTAssertEqual(outputNoBias, expectedNoBias)
     }
 
     func testTransposedConv2D() {
@@ -324,8 +353,58 @@ final class LayerTests: XCTestCase {
         let expected = Tensor<Float>(shape: [1, 4, 2, 1],
                                      scalars: [8, 12, 12, 28, 24, 64, 48, 112])
         XCTAssertEqual(output, expected)
-    }  
-
+        
+        let layerNoBias = TransposedConv2D(filter: filter, bias: nil, activation: identity,
+                                           strides: (1, 1), padding: .same)
+        let outputNoBias = layerNoBias.inferring(from: input)
+        let expectedNoBias = Tensor<Float>(shape: [1, 4, 2, 1],
+                                           scalars: [0, 4, 4, 20, 16, 56, 40, 104])
+        XCTAssertEqual(outputNoBias, expectedNoBias)
+    }
+    
+    func testTransposedConv2DGradient() {
+        let filter =  Tensor(shape: [3, 3, 2, 4], scalars: (0..<72).map(Float.init))
+        let bias = Tensor<Float>(zeros: [2])
+        let layer = TransposedConv2D<Float>(filter: filter,
+                                            bias: bias,
+                                            activation: identity,
+                                            strides: (2, 2),
+                                            padding: .same)
+        let input = Tensor(shape: [2, 2, 2, 4], scalars: (0..<32).map(Float.init))
+        let grads = gradient( at: input, layer) { $1($0).sum() }
+        // The expected value of the gradient was computed using the following Python code:
+        // ```
+        // import tensorflow as tf
+        // x = tf.reshape(tf.range(32, dtype=tf.float32), [2, 2, 2, 4])
+        // filter = tf.reshape(tf.range(72, dtype=tf.float32), [3, 3, 2, 4])
+        // bias = tf.zeros([2])
+        // with tf.GradientTape() as tape:
+        //     tape.watch([x, filter, bias])
+        //     y = tf.math.reduce_sum(tf.nn.conv2d_transpose(input=x,
+        //                                                   filters=filter,
+        //                                                   output_shape=[2, 4, 4, 2],
+        //                                                   strides=[1, 2, 2, 1],
+        //                                                   data_format="NHWC",
+        //                                                   padding="SAME") + bias)
+        // print(tape.gradient(y, [x, filter, bias]))
+        // ```
+        XCTAssertEqual(grads.0,
+                       [[[[612, 630, 648, 666], [360, 372, 384, 396]],
+                         [[264, 276, 288, 300], [144, 152, 160, 168]]],
+                        [[[612, 630, 648, 666], [360, 372, 384, 396]],
+                         [[264, 276, 288, 300], [144, 152, 160, 168]]]])
+        XCTAssertEqual(grads.1.filter,
+                       [[[[112, 120, 128, 136], [112, 120, 128, 136]],
+                         [[112, 120, 128, 136], [112, 120, 128, 136]],
+                         [[ 48,  52,  56,  60], [ 48,  52,  56,  60]]],
+                        [[[112, 120, 128, 136], [112, 120, 128, 136]],
+                         [[112, 120, 128, 136], [112, 120, 128, 136]],
+                         [[ 48,  52,  56,  60], [ 48,  52,  56,  60]]],
+                        [[[ 40,  44,  48,  52], [ 40,  44,  48,  52]],
+                         [[ 40,  44,  48,  52], [ 40,  44,  48,  52]],
+                         [[ 16,  18,  20,  22], [ 16,  18,  20,  22]]]])
+        XCTAssertEqual(grads.1.bias, [32, 32])
+    }
     
     func testTransposedConv3D() {
         let filter =  Tensor(shape: [2, 2, 2, 1, 1], scalars: (0..<8).map(Float.init))
@@ -337,6 +416,13 @@ final class LayerTests: XCTestCase {
         let expected = Tensor<Float>(shape: [1, 2, 2, 2, 1],
                                      scalars: [8, 8, 8, 12, 8, 16, 24, 64])
         XCTAssertEqual(output, expected)
+        
+        let layerNoBias = TransposedConv3D(filter: filter, bias: nil, activation: identity,
+                                           strides: (1, 1, 1), padding: .same)
+        let outputNoBias = layerNoBias.inferring(from: input)
+        let expectedNoBias = Tensor<Float>(shape: [1, 2, 2, 2, 1],
+                                           scalars: [0, 0, 0, 4, 0, 8, 16, 56])
+        XCTAssertEqual(outputNoBias, expectedNoBias)
     }
 
     func testSeparableConv1D() {
@@ -353,6 +439,16 @@ final class LayerTests: XCTestCase {
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>(shape: [2, 2, 1], scalars: [17, 45, 73, 101])
         XCTAssertEqual(output, expected)
+        
+        let layerNoBias = SeparableConv1D<Float>(depthwiseFilter: depthwiseFilter,
+                                           pointwiseFilter: pointwiseFilter,
+                                           bias: nil,
+                                           activation: identity,
+                                           stride: 1,
+                                           padding: .same)
+        let outputNoBias = layerNoBias.inferring(from: input)
+        let expectedNoBias = Tensor<Float>(shape: [2, 2, 1], scalars: [13, 41, 69, 97])
+        XCTAssertEqual(outputNoBias, expectedNoBias)
     }
 
     func testSeparableConv2D() {
@@ -370,6 +466,17 @@ final class LayerTests: XCTestCase {
         let expected = Tensor<Float>(shape: [2, 1, 1, 1],
                                      scalars: [1016, 2616])
         XCTAssertEqual(output, expected)
+        
+        let layerNoBias = SeparableConv2D<Float>(depthwiseFilter: depthwiseFilter,
+                                           pointwiseFilter: pointwiseFilter,
+                                           bias: nil,
+                                           activation: identity,
+                                           strides: (2, 2),
+                                           padding: .valid)
+        let outputNoBias = layerNoBias.inferring(from: input)
+        let expectedNoBias = Tensor<Float>(shape: [2, 1, 1, 1],
+                                     scalars: [1012, 2612])
+        XCTAssertEqual(outputNoBias, expectedNoBias)
     }
 
     func testSeparableConv2DGradient() {
@@ -1075,6 +1182,12 @@ final class LayerTests: XCTestCase {
         let expected = Tensor<Float>([[11.0, 15.0]])
         XCTAssertEqual(output, expected)
         XCTAssertFalse(layer.batched)
+        
+        let layerNoBias = Dense<Float>(weight: weight, bias: nil, activation: identity)
+        let outputNoBias = layerNoBias.inferring(from: input)
+        let expectedNoBias = Tensor<Float>([[10.0, 13.0]])
+        XCTAssertEqual(outputNoBias, expectedNoBias)
+        XCTAssertFalse(layerNoBias.batched)
 
         let weightBatched = Tensor<Float>(shape: [2, 2, 3], scalars: (0..<12).map(Float.init))
         let biasBatched = Tensor<Float>([[1.0, 2.0, 3.0]])
@@ -1086,6 +1199,14 @@ final class LayerTests: XCTestCase {
         let expectedBatched = Tensor<Float>([[4.0, 6.0, 8.0], [40.0, 46.0, 52.0]])
         XCTAssertEqual(outputBatched, expectedBatched)
         XCTAssertTrue(layerBatched.batched)
+        
+        let layerBatchedNoBias = Dense<Float>(weight: weightBatched,
+                                        bias: nil,
+                                        activation: identity)
+        let outputBatchedNoBias = layerBatchedNoBias.inferring(from: inputBatched)
+        let expectedBatchedNoBias = Tensor<Float>([[3.0, 4.0, 5.0], [39.0, 44.0, 49.0]])
+        XCTAssertEqual(outputBatchedNoBias, expectedBatchedNoBias)
+        XCTAssertTrue(layerBatchedNoBias.batched)
     }
 
     func testDenseGradient() {
@@ -1537,6 +1658,7 @@ final class LayerTests: XCTestCase {
         ("testConv3DGradient", testConv3DGradient),
         ("testTransposedConv1D", testTransposedConv1D),
         ("testTransposedConv2D", testTransposedConv2D),
+        ("testTransposedConv2DGradient", testTransposedConv2DGradient),
         ("testTransposedConv3D", testTransposedConv3D),
         ("testDepthwiseConv2D", testDepthwiseConv2D),
         ("testDepthwiseConv2DGradient", testDepthwiseConv2DGradient),

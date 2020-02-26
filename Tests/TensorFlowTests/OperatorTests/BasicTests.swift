@@ -26,11 +26,16 @@ final class BasicOperatorTests: XCTestCase {
         let x = Tensor<Float>([[
             [1.0, 2.0, 3.0],
             [4.0, 5.0, 6.0]]])
-        let y = x.batchGathering(
+        let y1 = x.batchGathering(
             atIndices: Tensor<Int32>([[[1], [0]]]),
             alongAxis: 2,
             batchDimensionCount: 2)
-        XCTAssertEqual(y, Tensor<Float>([[[2.0], [4.0]]]))
+        let y2 = x.batchGathering(
+            atIndices: Tensor<Int32>([[[1], [0]]]),
+            alongAxis: -1,
+            batchDimensionCount: 2)
+        XCTAssertEqual(y1, Tensor<Float>([[[2.0], [4.0]]]))
+        XCTAssertEqual(y2, Tensor<Float>([[[2.0], [4.0]]]))
     }
 
     func testPadded() {
@@ -380,11 +385,13 @@ final class BasicOperatorTests: XCTestCase {
         XCTAssertEqual(array1D.shape, [2])
 
         /// Test scalars
-        XCTAssertEqual(array3D.scalars,
-                       [Float](stride(from: 20.0, to: 30, by: 2)) +
-                       [Float](stride(from: 45.0, to: 50, by: 1)) +
-                       [Float](stride(from: 30.0, to: 40, by: 2)) +
-                       [Float](stride(from: 55.0, to: 60, by: 1)))
+        var expected: [Float] = []
+        expected.append(contentsOf: stride(from: 20.0, to: 30, by: 2))
+        expected.append(contentsOf: stride(from: 45.0, to: 50, by: 1))
+        expected.append(contentsOf: stride(from: 30.0, to: 40, by: 2))
+        expected.append(contentsOf: stride(from: 55.0, to: 60, by: 1))
+        XCTAssertEqual(array3D.scalars, expected)
+        
         XCTAssertEqual(array2D.scalars, Array(stride(from: 20.0, to: 30, by: 1)))
         XCTAssertEqual(array1D.scalars, Array(stride(from: 3.0, to: 5, by: 1)))
     }
@@ -472,6 +479,16 @@ final class BasicOperatorTests: XCTestCase {
         XCTAssertEqual(grad.rank, 3)
         XCTAssertEqual(grad.shape, [3, 2, 1])
         XCTAssertEqual(grad.scalars, [1, 1, 1, 1, 1, 1])
+    }
+    
+    func testTile() {
+        let tensor = Tensor<Int32>([[0, 1, 2], [3, 4, 5]])
+        let tiled = tensor.tiled(multiples: [3, 2])
+        
+        XCTAssertEqual(tiled.shape, [6, 6])
+        XCTAssertEqual(tiled, [[0, 1, 2, 0, 1, 2], [3, 4, 5, 3, 4, 5],
+                               [0, 1, 2, 0, 1, 2], [3, 4, 5, 3, 4, 5],
+                               [0, 1, 2, 0, 1, 2], [3, 4, 5, 3, 4, 5]])
     }
 
     func testReshape() {
@@ -690,6 +707,7 @@ final class BasicOperatorTests: XCTestCase {
         ("testConcatenation", testConcatenation),
         ("testVJPConcatenation", testVJPConcatenation),
         ("testTranspose", testTranspose),
+        ("testTile", testTile),
         ("testReshape", testReshape),
         ("testFlatten", testFlatten),
         ("testFlatten0D", testFlatten0D),

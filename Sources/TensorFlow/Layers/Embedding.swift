@@ -28,8 +28,15 @@ public struct Embedding<Scalar: TensorFlowFloatingPoint>: Module {
     ///   - vocabularySize: The number of distinct indices (words) in the vocabulary. This number
     ///     should be the largest integer index plus one.
     ///   - embeddingSize: The number of entries in a single embedding vector representation.
-    public init(vocabularySize: Int, embeddingSize: Int) {
-        self.embeddings = Tensor(randomUniform: [vocabularySize, embeddingSize])
+    ///   - embeddingsInitializer: Initializer to use for the embedding parameters.
+    public init(
+        vocabularySize: Int,
+        embeddingSize: Int,
+        embeddingsInitializer: ParameterInitializer<Scalar> = { Tensor(randomUniform: $0) }
+    ) {
+        precondition(vocabularySize > 0, "The vocabulary size must be greater than 0.")
+        precondition(embeddingSize > 0, "The embedding size must be greater than 0.")
+        self.init(embeddings: embeddingsInitializer([vocabularySize, embeddingSize]))
     }
 
     /// Creates an `Embedding` layer from the provided embeddings. Useful for introducing 

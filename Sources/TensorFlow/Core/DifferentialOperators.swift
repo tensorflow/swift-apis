@@ -12,68 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//===------------------------------------------------------------------------------------------===//
-// Method-style differential operators
-//===------------------------------------------------------------------------------------------===//
-
-public extension Differentiable {
-    @available(*, deprecated, message: """
-        Method-style differential operators are deprecated and will be removed; use top-level \
-        function 'TensorFlow.gradient(at:in:)' instead
-        """)
-    @inlinable
-    func gradient<R: TensorFlowFloatingPoint>(
-        in f: @differentiable (Self) -> Tensor<R>
-    ) -> TangentVector {
-        return self.valueWithGradient(in: f).1
-    }
-
-    @available(*, deprecated, message: """
-        Method-style differential operators are deprecated and will be removed; use top-level \
-        function 'TensorFlow.valueWithGradient(at:in:)' instead
-        """)
-    @inlinable
-    func valueWithGradient<R: TensorFlowFloatingPoint>(
-        in f: @differentiable (Self) -> Tensor<R>
-    ) -> (value: Tensor<R>, gradient: TangentVector) {
-        let (y, pb) = self.valueWithPullback(in: f)
-        precondition(y.rank == 0, """
-            The function being differentiated produced a tensor with shape \(y.shape). \
-            You can only compute the gradient of functions that return scalar values.
-            """)
-        return (y, pb(Tensor<R>(1)))
-    }
-
-    @available(*, deprecated, message: """
-        Method-style differential operators are deprecated and will be removed; use top-level \
-        function 'TensorFlow.gradient(at:_:in:)' instead
-        """)
-    @inlinable
-    func gradient<T: Differentiable, R: TensorFlowFloatingPoint>(
-        at x: T,
-        in f: @differentiable (Self, T) -> Tensor<R>
-    ) -> (TangentVector, T.TangentVector) {
-        return self.valueWithGradient(at: x, in: f).1
-    }
-
-    @available(*, deprecated, message: """
-        Method-style differential operators are deprecated and will be removed; use top-level \
-        function 'TensorFlow.valueWithGradient(at:_:in:)' instead
-        """)
-    @inlinable
-    func valueWithGradient<T: Differentiable, R: TensorFlowFloatingPoint>(
-        at x: T,
-        in f: @differentiable (Self, T) -> Tensor<R>
-    ) -> (value: Tensor<R>, gradient: (TangentVector, T.TangentVector)) {
-        let (y, pb) = self.valueWithPullback(at: x, in: f)
-        precondition(y.rank == 0, """
-            The function being differentiated produced a tensor with shape \(y.shape). \
-            You can only compute the gradient of functions that return scalar values.
-            """)
-        return (y, pb(Tensor<R>(1)))
-    }
-}
-
 // ===------------------------------------------------------------------------------------------===//
 // Free-function-style differential operators
 // ===------------------------------------------------------------------------------------------===//
