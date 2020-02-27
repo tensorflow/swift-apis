@@ -192,17 +192,17 @@ public class AdaDelta<Model: Differentiable>: Optimizer
 /// ...
 /// // Begin training the agent (over a certain number of episodes).
 /// while true {
-/// ...
+///     ...
 ///     // Implementing the gradient descent with the Adam optimizer:
 ///     // Define the gradients (use withLearningPhase to call a closure under a learning phase).
 ///     let gradients = withLearningPhase(.training) {
-///         TensorFlow.gradient(at: net) { net -> Tensor<Float> in
+///         gradient(at: net) { net -> Tensor<Float> in
 ///             // Return a softmax (loss) function
 ///             return loss = softmaxCrossEntropy(logits: net(input), probabilities: target)
 ///         }
 ///     }
 ///     // Update the differentiable variables of the network (`net`) along the gradients with the Adam 
-/// optimizer.
+///     // optimizer.
 ///     optimizer.update(&net, along: gradients)
 ///     ...
 ///     }
@@ -228,17 +228,17 @@ public class AdaDelta<Model: Differentiable>: Optimizer
 ///         // Implementing the gradient descent with the Adam optimizer:
 ///         // 1) Update the generator.
 ///         ...
-///         let 𝛁generator = TensorFlow.gradient(at: generator) { generator -> Tensor<Float> in
+///         let 𝛁generator = gradient(at: generator) { generator -> Tensor<Float> in
 ///             ...
 ///             return loss
-///             }
+///         }
 ///         // Update the differentiable variables of the generator along the gradients (`𝛁generator`) 
 ///         // with the Adam optimizer.
 ///         adamOptimizerG.update(&generator, along: 𝛁generator)
 ///
 ///         // 2) Update the discriminator.
 ///         ...
-///         let 𝛁discriminator = TensorFlow.gradient(at: discriminator) { discriminator -> Tensor<Float> in
+///         let 𝛁discriminator = gradient(at: discriminator) { discriminator -> Tensor<Float> in
 ///             ...
 ///             return loss
 ///         }
