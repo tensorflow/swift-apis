@@ -29,7 +29,7 @@ where T: Differentiable, R: TensorFlowFloatingPoint {
         The function being differentiated produced a tensor with shape \(y.shape). \
         You can only compute the gradient of functions that return scalar values.
         """)
-    return (y, pullback(Tensor<R>(1)))
+    return (value: y, gradient: pullbackOfOneLikeY(y: y, pullback: pullback))
 }
 
 @inlinable
@@ -44,7 +44,7 @@ public func valueWithGradient<T, U, R>(
         The function being differentiated produced a tensor with shape \(y.shape). \
         You can only compute the gradient of functions that return scalar values.
         """)
-    return (y, pullback(Tensor<R>(1)))
+    return (value: y, gradient: pullbackOfOneLikeY(y: y, pullback: pullback))
 }
 
 @inlinable

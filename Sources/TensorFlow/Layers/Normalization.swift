@@ -88,18 +88,44 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
         }
         switch Context.local.learningPhase {
         case .training:
-          var normalizedAxes = Array(0..<input.rank)
-          normalizedAxes.remove(at: positiveAxis)
-          let moments = input.moments(alongAxes: normalizedAxes)
-          let decayMomentum = Tensor(1 - momentum, on: input.device)
-          runningMean.value += (moments.mean - runningMean.value) * decayMomentum
-          runningVariance.value += (moments.variance - runningVariance.value) * decayMomentum
-          let inv = rsqrt(moments.variance + Tensor(epsilon, on: input.device)) * scale
-          return (input - moments.mean) * inv + offset
+          return doTraining(input, offset: offset, scale: scale, axis: positiveAxis)
         case .inference:
-          let inv = rsqrt(runningVariance.value + Tensor(epsilon, on: input.device)) * scale
-          return (input - runningMean.value) * inv + offset
+          return doInference(input, offset: offset, scale: scale)
         }
+    }
+
+    private func doTraining(
+        _ input: Tensor<Scalar>, offset: Tensor<Scalar>, scale: Tensor<Scalar>, axis: Int
+    ) -> Tensor<Scalar> {
+        var normalizedAxes = Array(0..<input.rank)
+        normalizedAxes.remove(at: axis)
+        let moments = input.moments(alongAxes: normalizedAxes)
+        let decayMomentum = Tensor(1 - momentum, on: input.device)
+        let isReducedPrecision = withoutDerivative(at: input) { $0.isReducedPrecision }
+        var momentsMean = moments.mean
+        var momentsVariance = moments.variance
+        if isReducedPrecision {
+            momentsMean = momentsMean.toFullPrecision
+            momentsVariance = momentsVariance.toFullPrecision
+        }
+        runningMean.value += (momentsMean - runningMean.value) * decayMomentum
+        runningVariance.value += (momentsVariance - runningVariance.value) * decayMomentum
+        let eps = withoutDerivative(at: input) { Tensor(epsilon, deviceAndPrecisionLike: $0) }
+        let inv = rsqrt(moments.variance + eps) * scale
+        return (input - moments.mean) * inv + offset
+    }
+
+    private func doInference(
+        _ input: Tensor<Scalar>, offset: Tensor<Scalar>, scale: Tensor<Scalar>
+    ) -> Tensor<Scalar> {
+        let isReducedPrecision = withoutDerivative(at: input) { $0.isReducedPrecision }
+        let runningVarianceValue =
+          isReducedPrecision ? runningVariance.value.toReducedPrecision : runningVariance.value
+        let runningMeanValue =
+          isReducedPrecision ? runningMean.value.toReducedPrecision : runningMean.value
+        let eps = withoutDerivative(at: input) { Tensor(epsilon, deviceAndPrecisionLike: $0) }
+        let inv = rsqrt(runningVarianceValue + eps) * scale
+        return (input - runningMeanValue) * inv + offset
     }
 
     /// Creates a batch normalization layer.
@@ -181,6 +207,7 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     /// - Returns: The output.
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+        let epsilon = Tensor(self.epsilon, on: input.device)
         let positiveAxis = (input.rank + axis) % input.rank
         precondition(input.shape[positiveAxis] == offset.shape[0],
                      "The number of features of the input and the offset doesn't match.")

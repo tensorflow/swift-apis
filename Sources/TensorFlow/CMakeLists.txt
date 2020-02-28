@@ -13,6 +13,7 @@ add_library(TensorFlow SHARED
   Bindings/TFTensorOperation.swift
 
   Core/ArrayOps.swift
+  Core/CopyableToDevice.swift
   Core/DataTypes.swift
   Core/Device.swift
   Core/DifferentialOperators.swift
@@ -23,6 +24,7 @@ add_library(TensorFlow SHARED
   Core/LazyTensorTFFunctionBuilder.swift
   Core/LazyTensorTrace.swift
   Core/LazyTensorTraceCache.swift
+  Core/MixedPrecision.swift
   Core/PythonConversion.swift
   Core/Runtime.swift
   Core/Serialization.swift
