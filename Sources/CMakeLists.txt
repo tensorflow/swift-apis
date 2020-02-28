@@ -1,3 +1,6 @@
 add_subdirectory(CTensorFlow)
 add_subdirectory(Tensor)
 add_subdirectory(TensorFlow)
+if(X10_INCLUDE_DIR)
+  add_subdirectory(x10)
+endif()

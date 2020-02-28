@@ -1,0 +1,49 @@
+#pragma once
+
+#include "tensorflow/compiler/tf2xla/xla_tensor/ir.h"
+#include "tensorflow/compiler/tf2xla/kernels/conv_op_helpers.h"
+
+namespace swift_xla {
+namespace ir {
+namespace ops {
+
+class TfConv : public Node {
+ public:
+  TfConv(const Value& input, const Value& filter, bool depthwise,
+         std::vector<xla::int64> strides, tensorflow::Padding padding,
+         std::vector<xla::int64> explicit_paddings,
+         tensorflow::TensorFormat data_format,
+         std::vector<xla::int64> dilations);
+
+  NodePtr Clone(OpList operands) const override;
+
+  XlaOpVector Lower(LoweringContext* loctx) const override;
+
+  std::string ToString() const override;
+
+  bool depthwise() const { return depthwise_; }
+
+  const std::vector<xla::int64>& strides() const { return strides_; }
+
+  tensorflow::Padding padding() const { return padding_; }
+
+  const std::vector<xla::int64>& explicit_paddings() const {
+    return explicit_paddings_;
+  }
+
+  tensorflow::TensorFormat data_format() const { return data_format_; }
+
+  const std::vector<xla::int64>& dilations() const { return dilations_; }
+
+ private:
+  bool depthwise_;
+  std::vector<xla::int64> strides_;
+  tensorflow::Padding padding_;
+  std::vector<xla::int64> explicit_paddings_;
+  tensorflow::TensorFormat data_format_;
+  std::vector<xla::int64> dilations_;
+};
+
+}  // namespace ops
+}  // namespace ir
+}  // namespace swift_xla
