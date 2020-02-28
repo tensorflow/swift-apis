@@ -23,32 +23,116 @@ public func resize(
     method: ResizeMethod,
     antialias: Bool = false
 ) -> Tensor<Float> {
-    let scale = Tensor<Float>(size) / Tensor<Float>([Float(images.shape[1]), Float(images.shape[2])])
+    precondition(images.rank == 3 || images.rank == 4,
+                 "The images tensor must have rank 3 or 4.")
+    precondition(size.shape == [2], "The size must have shape [2].")
+    var images = images
+    let singleImage = images.rank == 3
+    if singleImage {
+        images = images.rankLifted()
+    }
     
+    let scale = Tensor<Float>(size) / Tensor<Float>([Float(images.shape[1]), Float(images.shape[2])])
     switch method {
     case .nearest:
-        return resizeNearestNeighbor(images: images, size: size, halfPixelCenters: true)
+        images = resizeNearestNeighbor(
+            images: images,
+            size: size,
+            halfPixelCenters: true)
     case .bilinear:
         if antialias {
-            return scaleAndTranslate(images: images, size: size, scale: scale, translation: Tensor(zeros: [2]), kernelType: "triangle")
+            images = scaleAndTranslate(
+                images: images,
+                size: size,
+                scale: scale,
+                translation: Tensor(zeros: [2]),
+                kernelType: "triangle")
         } else {
-            return resizeBilinear(images: images, size: size, halfPixelCenters: true)
+            images = resizeBilinear(
+                images: images,
+                size: size,
+                halfPixelCenters: true)
         }
     case .bicubic:
         if antialias {
-            return scaleAndTranslate(images: images, size: size, scale: scale, translation: Tensor(zeros: [2]), kernelType: "keyscubic")
+            images = scaleAndTranslate(
+                images: images,
+                size: size,
+                scale: scale,
+                translation: Tensor(zeros: [2]),
+                kernelType: "keyscubic")
         } else {
-            return resizeBicubic(images: images, size: size, halfPixelCenters: true)
+            images = resizeBicubic(
+                images: images,
+                size: size,
+                halfPixelCenters: true)
         }
     case .lanczos3:
-        return scaleAndTranslate(images: images, size: size, scale: scale, translation: Tensor(zeros: [2]), kernelType: "lanczos3", antialias: antialias)
+        images = scaleAndTranslate(
+            images: images,
+            size: size,
+            scale: scale,
+            translation: Tensor(zeros: [2]),
+            kernelType: "lanczos3",
+            antialias: antialias)
     case .lanczos5:
-        return scaleAndTranslate(images: images, size: size, scale: scale, translation: Tensor(zeros: [2]), kernelType: "lanczos5", antialias: antialias)
+        images = scaleAndTranslate(
+            images: images,
+            size: size,
+            scale: scale,
+            translation: Tensor(zeros: [2]),
+            kernelType: "lanczos5",
+            antialias: antialias)
     case .gaussian:
-        return scaleAndTranslate(images: images, size: size, scale: scale, translation: Tensor(zeros: [2]), kernelType: "gaussian", antialias: antialias)
+        images = scaleAndTranslate(
+            images: images,
+            size: size,
+            scale: scale,
+            translation: Tensor(zeros: [2]),
+            kernelType: "gaussian",
+            antialias: antialias)
     case .mitchellcubic:
-        return scaleAndTranslate(images: images, size: size, scale: scale, translation: Tensor(zeros: [2]), kernelType: "mitchellcubic", antialias: antialias)
+        images = scaleAndTranslate(
+            images: images,
+            size: size,
+            scale: scale,
+            translation: Tensor(zeros: [2]),
+            kernelType: "mitchellcubic",
+            antialias: antialias)
     }
+    
+    if singleImage {
+        images = images.squeezingShape(at: 0)
+    }
+    
+    return images
+}
+
+@inlinable
+public func resizeArea<Scalar: TensorFlowNumeric>(
+    images: Tensor<Scalar>,
+    size: Tensor<Int32>,
+    alignCorners: Bool = false
+) -> Tensor<Float> {
+    precondition(images.rank == 3 || images.rank == 4,
+                 "The images tensor must have rank 3 or 4.")
+    precondition(size.shape == [2], "The size must have shape [2].")
+    var images = images
+    let singleImage = images.rank == 3
+    if singleImage {
+        images = images.rankLifted()
+    }
+    
+    var resized = _Raw.resizeArea(
+        images: images,
+        size: size,
+        alignCorners: alignCorners)
+    
+    if singleImage {
+        resized = resized.squeezingShape(at: 0)
+    }
+    
+    return resized
 }
 
 @differentiable(wrt: images)
@@ -96,17 +180,6 @@ func _vjpScaleAndTranslate(
             kernelType: kernelType,
             antialias: antialias)
     })
-}
-
-@inlinable
-public func resizeArea<Scalar: TensorFlowNumeric>(
-    images: Tensor<Scalar>,
-    size: Tensor<Int32>,
-    alignCorners: Bool = false
-) -> Tensor<Float> {
-    _Raw.resizeArea(images: images,
-                    size: size,
-                    alignCorners: alignCorners)
 }
 
 @differentiable(wrt: images where Scalar: TensorFlowFloatingPoint)
