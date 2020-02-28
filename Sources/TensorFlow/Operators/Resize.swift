@@ -24,6 +24,7 @@ public enum ResizeMethod {
 ///   - method: ResizeMethod. Defaults to bilinear.
 ///   - antialias: Whether to use an anti-aliasing filter when downsampling an image.
 /// - Precondition: The images must have rank 3 or 4.
+/// - Precondition: The size must be positive.
 @differentiable(wrt: images)
 public func resize(
     images: Tensor<Float>,
@@ -33,6 +34,7 @@ public func resize(
 ) -> Tensor<Float> {
     precondition(images.rank == 3 || images.rank == 4,
                  "The images tensor must have rank 3 or 4.")
+    precondition(size.0 > 0 && size.1 > 0, "The size must be positive.")
     var images = images
     let singleImage = images.rank == 3
     if singleImage {
@@ -121,6 +123,7 @@ public func resize(
 ///   - images: 4-D Tensor of shape [batch, height, width, channels] or 3-D Tensor of shape [height, width, channels].
 ///   - size: A tuple of two Int: (new_height, new_width). The new size for the images.
 /// - Precondition: The images must have rank 3 or 4.
+/// - Precondition: The size must be positive.
 @inlinable
 public func resizeArea<Scalar: TensorFlowNumeric>(
     images: Tensor<Scalar>,
@@ -129,6 +132,7 @@ public func resizeArea<Scalar: TensorFlowNumeric>(
 ) -> Tensor<Float> {
     precondition(images.rank == 3 || images.rank == 4,
                  "The images tensor must have rank 3 or 4.")
+    precondition(size.0 > 0 && size.1 > 0, "The size must be positive.")
     var images = images
     let singleImage = images.rank == 3
     if singleImage {
