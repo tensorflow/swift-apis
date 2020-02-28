@@ -27,10 +27,10 @@ struct AddOne: ParameterlessLayer {
 final class SequencedTests: XCTestCase {
     % for count in counts:
     func testSequenced${count}() {
-        let input = Float(0)
-	let output = input.sequenced(
-	    through: ${', '.join(['AddOne()' for _ in range(count)])})
-	XCTAssertEqual(output, ${count})
+    let input = Float(0)
+    let output = input.sequenced(
+        through: ${', '.join(['AddOne()' for _ in range(count)])})
+    XCTAssertEqual(output, ${count})
     }
     % end
 
