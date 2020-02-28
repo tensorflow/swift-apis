@@ -21,7 +21,8 @@
 /// Reference: ["rmsprop: Divide the gradient by a running average of its recent magnitude"](
 /// http://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf)
 public class RMSProp<Model: Differentiable>: Optimizer
-    where Model.TangentVector: VectorProtocol & PointwiseMultiplicative & ElementaryFunctions,
+    where Model.TangentVector: VectorProtocol & PointwiseMultiplicative
+              & ElementaryFunctions & KeyPathIterable,
           Model.TangentVector.VectorSpaceScalar == Float {
     public typealias Model = Model
     /// The learning rate.
@@ -61,6 +62,15 @@ public class RMSProp<Model: Differentiable>: Optimizer
         let denominator = Model.TangentVector.sqrt(alpha).adding(epsilon)
         model.move(along: (direction ./ denominator).scaled(by: -learningRate))
     }
+
+    public required init(copying other: RMSProp, to device: Device) {
+        learningRate = other.learningRate
+        rho = other.rho
+        epsilon = other.epsilon
+        decay = other.decay
+        step = other.step
+        alpha = .init(copying: other.alpha, to: device)
+    }
 }
 
 /// AdaGrad optimizer.
@@ -71,7 +81,8 @@ public class RMSProp<Model: Differentiable>: Optimizer
 /// Reference: ["Adaptive Subgradient Methods for Online Learning and Stochastic Optimization"](
 /// http://www.jmlr.org/papers/volume12/duchi11a/duchi11a.pdf)
 public class AdaGrad<Model: Differentiable>: Optimizer
-    where Model.TangentVector: VectorProtocol & PointwiseMultiplicative & ElementaryFunctions,
+    where Model.TangentVector: VectorProtocol & PointwiseMultiplicative
+              & ElementaryFunctions & KeyPathIterable,
           Model.TangentVector.VectorSpaceScalar == Float {
     public typealias Model = Model
     /// The learning rate.
@@ -103,6 +114,13 @@ public class AdaGrad<Model: Differentiable>: Optimizer
         let denominator = Model.TangentVector.sqrt(alpha).adding(epsilon)
         model.move(along: (direction ./ denominator).scaled(by: -learningRate))
     }
+
+    public required init(copying other: AdaGrad, to device: Device) {
+        learningRate = other.learningRate
+        rho = other.rho
+        epsilon = other.epsilon
+        alpha = .init(copying: other.alpha, to: device)
+    }
 }
 
 /// ADADELTA optimizer.
@@ -113,7 +131,8 @@ public class AdaGrad<Model: Differentiable>: Optimizer
 /// 
 /// Reference: ["ADADELTA: An Adaptive Learning Rate Method"](https://arxiv.org/abs/1212.5701)
 public class AdaDelta<Model: Differentiable>: Optimizer
-    where Model.TangentVector: VectorProtocol & PointwiseMultiplicative & ElementaryFunctions,
+    where Model.TangentVector: VectorProtocol & PointwiseMultiplicative
+              & ElementaryFunctions & KeyPathIterable,
           Model.TangentVector.VectorSpaceScalar == Float {
     public typealias Model = Model
     /// The learning rate.
@@ -157,6 +176,16 @@ public class AdaDelta<Model: Differentiable>: Optimizer
         stepSize ./= Model.TangentVector.sqrt(averageSquared.adding(epsilon))
         model.move(along: stepSize.scaled(by: -learningRate))
         accumulatedDelta = accumulatedDelta.scaled(by: rho) + (stepSize .* stepSize).scaled(by: 1 - rho)
+    }
+
+    public required init(copying other: AdaDelta, to device: Device) {
+        learningRate = other.learningRate
+        rho = other.rho
+        epsilon = other.epsilon
+        decay = other.decay
+        step = other.step
+        averageSquared = .init(copying: other.averageSquared, to: device)
+        accumulatedDelta = .init(copying: other.accumulatedDelta, to: device)
     }
 }
 
@@ -249,7 +278,8 @@ public class AdaDelta<Model: Differentiable>: Optimizer
 /// }       
 /// ````
 public class Adam<Model: Differentiable>: Optimizer
-    where Model.TangentVector: VectorProtocol & PointwiseMultiplicative & ElementaryFunctions,
+    where Model.TangentVector: VectorProtocol & PointwiseMultiplicative
+              & ElementaryFunctions & KeyPathIterable,
           Model.TangentVector.VectorSpaceScalar == Float {
     public typealias Model = Model
     /// The learning rate.
@@ -302,6 +332,17 @@ public class Adam<Model: Differentiable>: Optimizer
         let denominator = Model.TangentVector.sqrt(secondMoments).adding(epsilon)
         model.move(along: (firstMoments ./ denominator).scaled(by: -stepSize))
     }
+
+    public required init(copying other: Adam, to device: Device) {
+        learningRate = other.learningRate
+        beta1 = other.beta1
+        beta2 = other.beta2
+        epsilon = other.epsilon
+        decay = other.decay
+        step = other.step
+        firstMoments = .init(copying: other.firstMoments, to: device)
+        secondMoments = .init(copying: other.secondMoments, to: device)
+    }
 }
 
 /// AdaMax optimizer.
@@ -311,7 +352,7 @@ public class Adam<Model: Differentiable>: Optimizer
 /// Reference: Section 7 of ["Adam - A Method for Stochastic Optimization"](
 /// https://arxiv.org/abs/1412.6980v8)
 public class AdaMax<Model: Differentiable & KeyPathIterable>: Optimizer
-    where Model.TangentVector: VectorProtocol & PointwiseMultiplicative & 
+    where Model.TangentVector: VectorProtocol & PointwiseMultiplicative &
                                ElementaryFunctions & KeyPathIterable,
           Model.TangentVector.VectorSpaceScalar == Float {
     public typealias Model = Model
@@ -377,6 +418,17 @@ public class AdaMax<Model: Differentiable & KeyPathIterable>: Optimizer
         let denominator = infinityNorm.adding(epsilon)
         model.move(along: (firstMoments ./ denominator).scaled(by: -stepSize))
     }
+
+    public required init(copying other: AdaMax, to device: Device) {
+        learningRate = other.learningRate
+        beta1 = other.beta1
+        beta2 = other.beta2
+        epsilon = other.epsilon
+        decay = other.decay
+        step = other.step
+        firstMoments = .init(copying: other.firstMoments, to: device)
+        infinityNorm = .init(copying: other.infinityNorm, to: device)
+    }
 }
 
 /// AMSGrad optimizer.
@@ -387,7 +439,7 @@ public class AdaMax<Model: Differentiable & KeyPathIterable>: Optimizer
 /// Reference: ["On the Convergence of Adam and Beyond"](
 /// https://openreview.net/pdf?id=ryQu7f-RZ)
 public class AMSGrad<Model: Differentiable & KeyPathIterable>: Optimizer
-    where Model.TangentVector: VectorProtocol & PointwiseMultiplicative & 
+    where Model.TangentVector: VectorProtocol & PointwiseMultiplicative &
                                ElementaryFunctions & KeyPathIterable,
           Model.TangentVector.VectorSpaceScalar == Float {
     public typealias Model = Model
@@ -456,6 +508,18 @@ public class AMSGrad<Model: Differentiable & KeyPathIterable>: Optimizer
 
         let denominator = Model.TangentVector.sqrt(secondMomentsMax).adding(epsilon)
         model.move(along: (firstMoments ./ denominator).scaled(by: -stepSize))
+    }
+
+    public required init(copying other: AMSGrad, to device: Device) {
+        learningRate = other.learningRate
+        beta1 = other.beta1
+        beta2 = other.beta2
+        epsilon = other.epsilon
+        decay = other.decay
+        step = other.step
+        firstMoments = .init(copying: other.firstMoments, to: device)
+        secondMoments = .init(copying: other.secondMoments, to: device)
+        secondMomentsMax = .init(copying: other.secondMomentsMax, to: device)
     }
 }
 
@@ -532,5 +596,16 @@ public class RAdam<Model: Differentiable>: Optimizer
             let stepSize = self.learningRate * step / (1 - beta1Power)
             model.move(along: firstMoments.scaled(by: -stepSize))
         }
+    }
+
+    public required init(copying other: RAdam, to device: Device) {
+        learningRate = other.learningRate
+        beta1 = other.beta1
+        beta2 = other.beta2
+        epsilon = other.epsilon
+        decay = other.decay
+        step = other.step
+        firstMoments = .init(copying: other.firstMoments, to: device)
+        secondMoments = .init(copying: other.secondMoments, to: device)
     }
 }

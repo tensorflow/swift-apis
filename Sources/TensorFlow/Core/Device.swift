@@ -14,3 +14,10 @@ extension Tensor {
         }
     }
 }
+
+extension _Raw {
+  static func toDevice<T: TensorFlowScalar>(_ x: Tensor<T>, _ device: Device) -> Tensor<T> {
+    // TODO: Actually copy to device...
+    return x
+  }
+}

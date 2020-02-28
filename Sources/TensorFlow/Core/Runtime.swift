@@ -567,6 +567,15 @@ struct DeviceScopes {
     }
 }
 
+// Evaluate the pullback on a one.
+@usableFromInline
+func pullbackOfOneLikeY<T: TensorFlowFloatingPoint, R>(
+    y: Tensor<T>,
+    pullback: (Tensor<T>) -> R
+) -> R {
+    pullback(Tensor<T>(1))
+}
+
 @usableFromInline
 func _TFCOpSetDeviceFromScope(_ op: CTFEOp, _ status: CTFStatus) {
     if let deviceName = _ExecutionContext.global.currentDeviceName {
