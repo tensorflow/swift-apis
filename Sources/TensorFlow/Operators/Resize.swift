@@ -23,6 +23,7 @@ public enum ResizeMethod {
 ///   - size: A tuple of two Int: (new_height, new_width). The new size for the images.
 ///   - method: ResizeMethod. Defaults to bilinear.
 ///   - antialias: Whether to use an anti-aliasing filter when downsampling an image.
+/// - Precondition: The images must have rank 3 or 4.
 @differentiable(wrt: images)
 public func resize(
     images: Tensor<Float>,
@@ -117,7 +118,9 @@ public func resize(
 /// Resize images to size using area interpolation.
 ///
 /// - Parameters:
-///   - images: 4-D Tensor of shape [batch, height, width, channels] or 3-D Tensor of shape [height, width, channels].///   - size: A tuple of two Int: (new_height, new_width). The new size for the images.
+///   - images: 4-D Tensor of shape [batch, height, width, channels] or 3-D Tensor of shape [height, width, channels].
+///   - size: A tuple of two Int: (new_height, new_width). The new size for the images.
+/// - Precondition: The images must have rank 3 or 4.
 @inlinable
 public func resizeArea<Scalar: TensorFlowNumeric>(
     images: Tensor<Scalar>,
