@@ -13,7 +13,7 @@
 // limitations under the License.
 
 public enum ResizeMethod {
-    case area, nearestNeighbor, bilinear, bicubic, lanczos3, lanczos5, gaussian, mitchellcubic
+    case area, nearest, bilinear, bicubic, lanczos3, lanczos5, gaussian, mitchellcubic
 }
 
 @differentiable(wrt: images)
@@ -21,14 +21,14 @@ public func resize(
     images: Tensor<Float>,
     size: Tensor<Int32>,
     method: ResizeMethod,
-    antialias: Bool = true
+    antialias: Bool = false
 ) -> Tensor<Float> {
     let scale = Tensor<Float>(size) / Tensor<Float>([Float(images.shape[1]), Float(images.shape[2])])
     
     switch method {
     case .area:
         return resizeArea(images: images, size: size)
-    case .nearestNeighbor:
+    case .nearest:
         return resizeNearestNeighbor(images: images, size: size, halfPixelCenters: true)
     case .bilinear:
         if antialias {
