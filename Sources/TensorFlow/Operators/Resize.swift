@@ -12,7 +12,46 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import Foundation
+public enum ResizeMethod {
+    case area, nearestNeighbor, bilinear, bicubic, lanczos3, lanczos5, gaussian, mitchellcubic
+}
+
+@differentiable(wrt: images)
+public func resize(
+    images: Tensor<Float>,
+    size: Tensor<Int32>,
+    method: ResizeMethod,
+    antialias: Bool = true
+) -> Tensor<Float> {
+    let scale = Tensor<Float>(size) / Tensor<Float>([Float(images.shape[1]), Float(images.shape[2])])
+    
+    switch method {
+    case .area:
+        return resizeArea(images: images, size: size)
+    case .nearestNeighbor:
+        return resizeNearestNeighbor(images: images, size: size, halfPixelCenters: true)
+    case .bilinear:
+        if antialias {
+            return scaleAndTranslate(images: images, size: size, scale: scale, translation: Tensor(zeros: [2]), kernelType: "triangle")
+        } else {
+            return resizeBilinear(images: images, size: size, halfPixelCenters: true)
+        }
+    case .bicubic:
+        if antialias {
+            return scaleAndTranslate(images: images, size: size, scale: scale, translation: Tensor(zeros: [2]), kernelType: "keyscubic")
+        } else {
+            return resizeBicubic(images: images, size: size, halfPixelCenters: true)
+        }
+    case .lanczos3:
+        return scaleAndTranslate(images: images, size: size, scale: scale, translation: Tensor(zeros: [2]), kernelType: "lanczos3", antialias: antialias)
+    case .lanczos5:
+        return scaleAndTranslate(images: images, size: size, scale: scale, translation: Tensor(zeros: [2]), kernelType: "lanczos5", antialias: antialias)
+    case .gaussian:
+        return scaleAndTranslate(images: images, size: size, scale: scale, translation: Tensor(zeros: [2]), kernelType: "gaussian", antialias: antialias)
+    case .mitchellcubic:
+        return scaleAndTranslate(images: images, size: size, scale: scale, translation: Tensor(zeros: [2]), kernelType: "mitchellcubic", antialias: antialias)
+    }
+}
 
 @differentiable(wrt: images)
 func scaleAndTranslate(
