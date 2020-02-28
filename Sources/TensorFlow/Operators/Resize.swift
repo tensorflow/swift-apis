@@ -13,7 +13,7 @@
 // limitations under the License.
 
 public enum ResizeMethod {
-    case area, nearest, bilinear, bicubic, lanczos3, lanczos5, gaussian, mitchellcubic
+    case nearest, bilinear, bicubic, lanczos3, lanczos5, gaussian, mitchellcubic
 }
 
 @differentiable(wrt: images)
@@ -26,8 +26,6 @@ public func resize(
     let scale = Tensor<Float>(size) / Tensor<Float>([Float(images.shape[1]), Float(images.shape[2])])
     
     switch method {
-    case .area:
-        return resizeArea(images: images, size: size)
     case .nearest:
         return resizeNearestNeighbor(images: images, size: size, halfPixelCenters: true)
     case .bilinear:
@@ -93,38 +91,22 @@ func _vjpScaleAndTranslate(
         _Raw.scaleAndTranslateGrad(
             grads: v,
             originalImage: images,
-            scale: scaled,
+            scale: scale,
             translation: translation,
             kernelType: kernelType,
             antialias: antialias)
     })
 }
 
-@differentiable(wrt: images)
-func resizeArea(
-    images: Tensor<Float>,
+@inlinable
+public func resizeArea<Scalar: TensorFlowNumeric>(
+    images: Tensor<Scalar>,
     size: Tensor<Int32>,
     alignCorners: Bool = false
 ) -> Tensor<Float> {
     _Raw.resizeArea(images: images,
                     size: size,
                     alignCorners: alignCorners)
-}
-
-@derivative(of: resizeArea)
-func _vjpResizeArea(
-    images: Tensor<Float>,
-    size: Tensor<Int32>,
-    alignCorners: Bool = false
-) -> (value: Tensor<Float>, pullback: (Tensor<Float>)->Tensor<Float>) {
-    let resized = resizeArea(images: images, size: size, alignCorners: alignCorners)
-    return (resized, { v in
-        let factor = Float(v.shape[1]*v.shape[2]) / Float(images.shape[1]*images.shape[2])
-        return resizeArea(
-            images: v,
-            size: Tensor<Int32>([Int32(images.shape[1]), Int32(images.shape[2])]),
-            alignCorners: alignCorners) * factor
-    })
 }
 
 @differentiable(wrt: images where Scalar: TensorFlowFloatingPoint)
@@ -159,7 +141,7 @@ func _vjpResizeNearestNeighbor<Scalar: TensorFlowFloatingPoint>(
     return (resized, { v in
         _Raw.resizeNearestNeighborGrad(
             grads: v,
-            size: size,
+            size: Tensor([Int32(images.shape[1]), Int32(images.shape[2])]),
             alignCorners: alignCorners,
             halfPixelCenters: halfPixelCenters
         )

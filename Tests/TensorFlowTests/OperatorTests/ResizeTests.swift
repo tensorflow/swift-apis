@@ -19,7 +19,7 @@ class ResizeTests: XCTestCase {
     func testResizeArea() {
         let image = Tensor<Float>(rangeFrom: 0, to: 16*16*3, stride: 1)
             .reshaped(to: [1, 16, 16, 3])
-        let resized = resize(images: image, size: [2, 2], method: .area)
+        let resized = resizeArea(images: image, size: [2, 2])
         
         // The expected value was computed using the following Python code:
         // ```
