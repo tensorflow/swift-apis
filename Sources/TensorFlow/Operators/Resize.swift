@@ -16,11 +16,18 @@ public enum ResizeMethod {
     case nearest, bilinear, bicubic, lanczos3, lanczos5, gaussian, mitchellcubic
 }
 
+/// Resize images to size using the specified method.
+///
+/// - Parameters:
+///   - images: 4-D Tensor of shape [batch, height, width, channels] or 3-D Tensor of shape [height, width, channels].
+///   - size: A 1-D int32 Tensor of 2 elements: new_height, new_width. The new size for the images.
+///   - method: ResizeMethod. Defaults to bilinear.
+///   - antialias: Whether to use an anti-aliasing filter when downsampling an image.
 @differentiable(wrt: images)
 public func resize(
     images: Tensor<Float>,
     size: Tensor<Int32>,
-    method: ResizeMethod,
+    method: ResizeMethod = .bilinear,
     antialias: Bool = false
 ) -> Tensor<Float> {
     precondition(images.rank == 3 || images.rank == 4,
@@ -108,6 +115,11 @@ public func resize(
     return images
 }
 
+/// Resize images to size using area interpolation.
+///
+/// - Parameters:
+///   - images: 4-D Tensor of shape [batch, height, width, channels] or 3-D Tensor of shape [height, width, channels].
+///   - size: A 1-D int32 Tensor of 2 elements: new_height, new_width. The new size for the images.
 @inlinable
 public func resizeArea<Scalar: TensorFlowNumeric>(
     images: Tensor<Scalar>,
