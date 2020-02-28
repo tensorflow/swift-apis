@@ -28,31 +28,31 @@ struct AddOne: ParameterlessLayer {
 final class SequencedTests: XCTestCase {
 // ###sourceLocation(file: "/usr/local/google/home/marcrasi/git/swift-apis/Tests/TensorFlowTests/SequencedTests.swift.gyb", line: 29)
     func testSequenced2() {
-        let input = Float(0)
-	let output = input.sequenced(
-	    through: AddOne(), AddOne())
-	XCTAssertEqual(output, 2)
+    let input = Float(0)
+    let output = input.sequenced(
+        through: AddOne(), AddOne())
+    XCTAssertEqual(output, 2)
     }
 // ###sourceLocation(file: "/usr/local/google/home/marcrasi/git/swift-apis/Tests/TensorFlowTests/SequencedTests.swift.gyb", line: 29)
     func testSequenced3() {
-        let input = Float(0)
-	let output = input.sequenced(
-	    through: AddOne(), AddOne(), AddOne())
-	XCTAssertEqual(output, 3)
+    let input = Float(0)
+    let output = input.sequenced(
+        through: AddOne(), AddOne(), AddOne())
+    XCTAssertEqual(output, 3)
     }
 // ###sourceLocation(file: "/usr/local/google/home/marcrasi/git/swift-apis/Tests/TensorFlowTests/SequencedTests.swift.gyb", line: 29)
     func testSequenced4() {
-        let input = Float(0)
-	let output = input.sequenced(
-	    through: AddOne(), AddOne(), AddOne(), AddOne())
-	XCTAssertEqual(output, 4)
+    let input = Float(0)
+    let output = input.sequenced(
+        through: AddOne(), AddOne(), AddOne(), AddOne())
+    XCTAssertEqual(output, 4)
     }
 // ###sourceLocation(file: "/usr/local/google/home/marcrasi/git/swift-apis/Tests/TensorFlowTests/SequencedTests.swift.gyb", line: 29)
     func testSequenced5() {
-        let input = Float(0)
-	let output = input.sequenced(
-	    through: AddOne(), AddOne(), AddOne(), AddOne(), AddOne())
-	XCTAssertEqual(output, 5)
+    let input = Float(0)
+    let output = input.sequenced(
+        through: AddOne(), AddOne(), AddOne(), AddOne(), AddOne())
+    XCTAssertEqual(output, 5)
     }
 // ###sourceLocation(file: "/usr/local/google/home/marcrasi/git/swift-apis/Tests/TensorFlowTests/SequencedTests.swift.gyb", line: 36)
 
