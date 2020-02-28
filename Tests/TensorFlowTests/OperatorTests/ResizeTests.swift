@@ -19,7 +19,7 @@ class ResizeTests: XCTestCase {
     func testResizeArea() {
         let image = Tensor<Float>(rangeFrom: 0, to: 16*16*3, stride: 1)
             .reshaped(to: [1, 16, 16, 3])
-        let resized = resizeArea(images: image, size: [2, 2])
+        let resized = resizeArea(images: image, size: (2, 2))
         
         // The expected value was computed using the following Python code:
         // ```
@@ -37,7 +37,7 @@ class ResizeTests: XCTestCase {
     func testResizeNearest() {
         let image = Tensor<Float>(rangeFrom: 0, to: 16*16*3, stride: 1)
             .reshaped(to: [1, 16, 16, 3])
-        let resized = resize(images: image, size: [2, 2], method: .nearest)
+        let resized = resize(images: image, size: (2, 2), method: .nearest)
         
         // The expected value was computed using the following Python code:
         // ```
@@ -55,7 +55,7 @@ class ResizeTests: XCTestCase {
     func testResizeBilinear() {
         let image = Tensor<Float>(rangeFrom: 0, to: 16*16*3, stride: 1)
             .reshaped(to: [1, 16, 16, 3])
-        let resized = resize(images: image, size: [2, 2], method: .bilinear)
+        let resized = resize(images: image, size: (2, 2), method: .bilinear)
         
         // The expected value was computed using the following Python code:
         // ```
@@ -73,7 +73,7 @@ class ResizeTests: XCTestCase {
     func testResizeBilinearAntialias() {
         let image = Tensor<Float>(rangeFrom: 0, to: 16*16*3, stride: 1)
             .reshaped(to: [1, 16, 16, 3])
-        let resized = resize(images: image, size: [2, 2], method: .bilinear, antialias: true)
+        let resized = resize(images: image, size: (2, 2), method: .bilinear, antialias: true)
         
         // The expected value was computed using the following Python code:
         // ```
@@ -93,7 +93,7 @@ class ResizeTests: XCTestCase {
     func testResizeBicubic() {
         let image = Tensor<Float>(rangeFrom: 0, to: 16*16*3, stride: 1)
             .reshaped(to: [1, 16, 16, 3])
-        let resized = resize(images: image, size: [2, 2], method: .bicubic)
+        let resized = resize(images: image, size: (2, 2), method: .bicubic)
         
         // The expected value was computed using the following Python code:
         // ```
@@ -111,7 +111,7 @@ class ResizeTests: XCTestCase {
     func testResizeBicubicAntialias() {
         let image = Tensor<Float>(rangeFrom: 0, to: 16*16*3, stride: 1)
             .reshaped(to: [1, 16, 16, 3])
-        let resized = resize(images: image, size: [2, 2], method: .bicubic, antialias: true)
+        let resized = resize(images: image, size: (2, 2), method: .bicubic, antialias: true)
         
         // The expected value was computed using the following Python code:
         // ```
@@ -131,7 +131,7 @@ class ResizeTests: XCTestCase {
     func testResizeLanczos3() {
         let image = Tensor<Float>(rangeFrom: 0, to: 16*16*3, stride: 1)
             .reshaped(to: [1, 16, 16, 3])
-        let resized = resize(images: image, size: [2, 2], method: .lanczos3)
+        let resized = resize(images: image, size: (2, 2), method: .lanczos3)
         
         // The expected value was computed using the following Python code:
         // ```
@@ -151,7 +151,7 @@ class ResizeTests: XCTestCase {
     func testResizeLanczos5() {
         let image = Tensor<Float>(rangeFrom: 0, to: 16*16*3, stride: 1)
             .reshaped(to: [1, 16, 16, 3])
-        let resized = resize(images: image, size: [2, 2], method: .lanczos5)
+        let resized = resize(images: image, size: (2, 2), method: .lanczos5)
         
         // The expected value was computed using the following Python code:
         // ```
@@ -171,7 +171,7 @@ class ResizeTests: XCTestCase {
     func testResizeGaussian() {
         let image = Tensor<Float>(rangeFrom: 0, to: 16*16*3, stride: 1)
             .reshaped(to: [1, 16, 16, 3])
-        let resized = resize(images: image, size: [2, 2], method: .gaussian)
+        let resized = resize(images: image, size: (2, 2), method: .gaussian)
         
         // The expected value was computed using the following Python code:
         // ```
@@ -191,7 +191,7 @@ class ResizeTests: XCTestCase {
     func testResizeMitchellcubic() {
         let image = Tensor<Float>(rangeFrom: 0, to: 16*16*3, stride: 1)
             .reshaped(to: [1, 16, 16, 3])
-        let resized = resize(images: image, size: [2, 2], method: .mitchellcubic)
+        let resized = resize(images: image, size: (2, 2), method: .mitchellcubic)
         
         // The expected value was computed using the following Python code:
         // ```

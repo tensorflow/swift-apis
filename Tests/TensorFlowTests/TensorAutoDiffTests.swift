@@ -786,7 +786,7 @@ final class TensorAutoDiffTests: XCTestCase {
     func testResizeNearest() {
         let images = Tensor<Float>(zeros: [1, 3, 3, 3])
         let computedGradient = gradient(at: images) { images in
-            resize(images: images, size: [2, 2], method: .nearest).sum()
+            resize(images: images, size: (2, 2), method: .nearest).sum()
         }
         
         // The expected gradient values were computed using the following Python code:
@@ -808,7 +808,7 @@ final class TensorAutoDiffTests: XCTestCase {
     func testResizeBilinear() {
         let images = Tensor<Float>(zeros: [1, 3, 3, 3])
         let computedGradient = gradient(at: images) { images in
-            resize(images: images, size: [2, 2], method: .bilinear).sum()
+            resize(images: images, size: (2, 2), method: .bilinear).sum()
         }
         
         // The expected gradient values were computed using the following Python code:
@@ -836,7 +836,7 @@ final class TensorAutoDiffTests: XCTestCase {
     func testResizeBicubic() {
         let images = Tensor<Float>(zeros: [1, 3, 3, 3])
         let computedGradient = gradient(at: images) { images in
-            resize(images: images, size: [2, 2], method: .bicubic).sum()
+            resize(images: images, size: (2, 2), method: .bicubic).sum()
         }
         
         // The expected gradient values were computed using the following Python code:
@@ -864,7 +864,7 @@ final class TensorAutoDiffTests: XCTestCase {
     func testResizeLanczos3() {
         let images = Tensor<Float>(zeros: [1, 3, 3, 3])
         let computedGradient = gradient(at: images) { images in
-            resize(images: images, size: [2, 2], method: .lanczos3).sum()
+            resize(images: images, size: (2, 2), method: .lanczos3).sum()
         }
         
         // The expected gradient values were computed using the following Python code:
@@ -892,7 +892,7 @@ final class TensorAutoDiffTests: XCTestCase {
     func testResizeLanczos5() {
         let images = Tensor<Float>(zeros: [1, 3, 3, 3])
         let computedGradient = gradient(at: images) { images in
-            resize(images: images, size: [2, 2], method: .lanczos5).sum()
+            resize(images: images, size: (2, 2), method: .lanczos5).sum()
         }
         
         // The expected gradient values were computed using the following Python code:
@@ -920,7 +920,7 @@ final class TensorAutoDiffTests: XCTestCase {
     func testResizeGaussian() {
         let images = Tensor<Float>(zeros: [1, 3, 3, 3])
         let computedGradient = gradient(at: images) { images in
-            resize(images: images, size: [2, 2], method: .gaussian).sum()
+            resize(images: images, size: (2, 2), method: .gaussian).sum()
         }
         
         // The expected gradient values were computed using the following Python code:
@@ -948,7 +948,7 @@ final class TensorAutoDiffTests: XCTestCase {
     func testResizeMitchellcubic() {
         let images = Tensor<Float>(zeros: [1, 3, 3, 3])
         let computedGradient = gradient(at: images) { images in
-            resize(images: images, size: [2, 2], method: .mitchellcubic).sum()
+            resize(images: images, size: (2, 2), method: .mitchellcubic).sum()
         }
         
         // The expected gradient values were computed using the following Python code:

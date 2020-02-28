@@ -20,25 +20,24 @@ public enum ResizeMethod {
 ///
 /// - Parameters:
 ///   - images: 4-D Tensor of shape [batch, height, width, channels] or 3-D Tensor of shape [height, width, channels].
-///   - size: A 1-D int32 Tensor of 2 elements: new_height, new_width. The new size for the images.
+///   - size: A tuple of two Int: (new_height, new_width). The new size for the images.
 ///   - method: ResizeMethod. Defaults to bilinear.
 ///   - antialias: Whether to use an anti-aliasing filter when downsampling an image.
 @differentiable(wrt: images)
 public func resize(
     images: Tensor<Float>,
-    size: Tensor<Int32>,
+    size: (Int, Int),
     method: ResizeMethod = .bilinear,
     antialias: Bool = false
 ) -> Tensor<Float> {
     precondition(images.rank == 3 || images.rank == 4,
                  "The images tensor must have rank 3 or 4.")
-    precondition(size.shape == [2], "The size must have shape [2].")
     var images = images
     let singleImage = images.rank == 3
     if singleImage {
         images = images.rankLifted()
     }
-    
+    let size = Tensor([Int32(size.0), Int32(size.1)])
     let scale = Tensor<Float>(size) / Tensor<Float>([Float(images.shape[1]), Float(images.shape[2])])
     switch method {
     case .nearest:
@@ -118,22 +117,21 @@ public func resize(
 /// Resize images to size using area interpolation.
 ///
 /// - Parameters:
-///   - images: 4-D Tensor of shape [batch, height, width, channels] or 3-D Tensor of shape [height, width, channels].
-///   - size: A 1-D int32 Tensor of 2 elements: new_height, new_width. The new size for the images.
+///   - images: 4-D Tensor of shape [batch, height, width, channels] or 3-D Tensor of shape [height, width, channels].///   - size: A tuple of two Int: (new_height, new_width). The new size for the images.
 @inlinable
 public func resizeArea<Scalar: TensorFlowNumeric>(
     images: Tensor<Scalar>,
-    size: Tensor<Int32>,
+    size: (Int, Int),
     alignCorners: Bool = false
 ) -> Tensor<Float> {
     precondition(images.rank == 3 || images.rank == 4,
                  "The images tensor must have rank 3 or 4.")
-    precondition(size.shape == [2], "The size must have shape [2].")
     var images = images
     let singleImage = images.rank == 3
     if singleImage {
         images = images.rankLifted()
     }
+    let size = Tensor([Int32(size.0), Int32(size.1)])
     
     var resized = _Raw.resizeArea(
         images: images,
