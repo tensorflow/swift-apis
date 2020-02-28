@@ -36,6 +36,7 @@ public func allTests() -> [XCTestCaseEntry] {
         testCase(LossTests.allTests),
         testCase(MathOperatorTests.allTests),
         testCase(OptimizerTests.allTests),
+        testCase(ResizeTests.allTests),
         testCase(RuntimeTests.allTests),
         // testCase(SequentialTests.allTests),
         testCase(TensorAutoDiffTests.allTests),
