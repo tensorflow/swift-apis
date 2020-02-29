@@ -74,7 +74,7 @@ final class LayerTests: XCTestCase {
           shape: [2, 3, 2],
           scalars: [1.5, 4, 3, 7, 4.5, 10, 16.5, 34, 18, 37, 19.5, 40])
         XCTAssertEqual(output, expected)
-        
+
         let layerNoBias = Conv1D<Float>(filter: filter, bias: nil, activation: identity, stride: 1,
                                         padding: .valid)
         let outputNoBias = layerNoBias.inferring(from: input)
@@ -116,7 +116,7 @@ final class LayerTests: XCTestCase {
         let expected = Tensor<Float>(shape: [2, 1, 1, 2],
                                      scalars: [15, 16, 63, 64])
         XCTAssertEqual(output, expected)
-        
+
         let layerNoBias = Conv2D<Float>(filter: filter, bias: nil, activation: identity,
                                         strides: (2, 2), padding: .valid)
         let outputNoBias = layerNoBias.inferring(from: input)
@@ -211,7 +211,7 @@ final class LayerTests: XCTestCase {
         let expected = Tensor<Float>(shape: [2, 2, 1, 1, 2],
                                      scalars: [139, 141, 363, 365, 587, 589, 811, 813])
         XCTAssertEqual(output, expected)
-        
+
         let layerNoBias = Conv3D<Float>(filter: filter, bias: nil, activation: identity,
                                         strides: (1, 2, 1), padding: .valid, dilations: (1, 1, 1))
         let outputNoBias = layerNoBias.inferring(from: input)
@@ -280,7 +280,7 @@ final class LayerTests: XCTestCase {
                                      scalars: [9, 12, 23, 28, 25, 36, 55, 68, 41, 60, 87, 108,
                                                57, 84, 119, 148])
         XCTAssertEqual(output, expected)
-        
+
         let channelMultiplier = 4
         let multiplierLayer = DepthwiseConv2D<Float>(
             filterShape: (2, 2, input.shape[3], channelMultiplier),
@@ -334,7 +334,7 @@ final class LayerTests: XCTestCase {
         let expected = Tensor<Float>(shape: [1, 1, 4, 1],
                                      scalars: [8, 9, 12, 18])
         XCTAssertEqual(output, expected)
-        
+
         let layerNoBias = TransposedConv1D(filter: filter, bias: nil, activation: identity,
                                            stride: 1, padding: .same)
         let outputNoBias = layerNoBias.inferring(from: input)
@@ -353,7 +353,7 @@ final class LayerTests: XCTestCase {
         let expected = Tensor<Float>(shape: [1, 4, 2, 1],
                                      scalars: [8, 12, 12, 28, 24, 64, 48, 112])
         XCTAssertEqual(output, expected)
-        
+
         let layerNoBias = TransposedConv2D(filter: filter, bias: nil, activation: identity,
                                            strides: (1, 1), padding: .same)
         let outputNoBias = layerNoBias.inferring(from: input)
@@ -361,7 +361,7 @@ final class LayerTests: XCTestCase {
                                            scalars: [0, 4, 4, 20, 16, 56, 40, 104])
         XCTAssertEqual(outputNoBias, expectedNoBias)
     }
-    
+
     func testTransposedConv2DGradient() {
         let filter =  Tensor(shape: [3, 3, 2, 4], scalars: (0..<72).map(Float.init))
         let bias = Tensor<Float>(zeros: [2])
@@ -405,7 +405,7 @@ final class LayerTests: XCTestCase {
                          [[ 16,  18,  20,  22], [ 16,  18,  20,  22]]]])
         XCTAssertEqual(grads.1.bias, [32, 32])
     }
-    
+
     func testTransposedConv3D() {
         let filter =  Tensor(shape: [2, 2, 2, 1, 1], scalars: (0..<8).map(Float.init))
         let bias = Tensor<Float>([8])
@@ -416,7 +416,7 @@ final class LayerTests: XCTestCase {
         let expected = Tensor<Float>(shape: [1, 2, 2, 2, 1],
                                      scalars: [8, 8, 8, 12, 8, 16, 24, 64])
         XCTAssertEqual(output, expected)
-        
+
         let layerNoBias = TransposedConv3D(filter: filter, bias: nil, activation: identity,
                                            strides: (1, 1, 1), padding: .same)
         let outputNoBias = layerNoBias.inferring(from: input)
@@ -439,7 +439,7 @@ final class LayerTests: XCTestCase {
         let output = layer.inferring(from: input)
         let expected = Tensor<Float>(shape: [2, 2, 1], scalars: [17, 45, 73, 101])
         XCTAssertEqual(output, expected)
-        
+
         let layerNoBias = SeparableConv1D<Float>(depthwiseFilter: depthwiseFilter,
                                            pointwiseFilter: pointwiseFilter,
                                            bias: nil,
@@ -466,7 +466,7 @@ final class LayerTests: XCTestCase {
         let expected = Tensor<Float>(shape: [2, 1, 1, 1],
                                      scalars: [1016, 2616])
         XCTAssertEqual(output, expected)
-        
+
         let layerNoBias = SeparableConv2D<Float>(depthwiseFilter: depthwiseFilter,
                                            pointwiseFilter: pointwiseFilter,
                                            bias: nil,
@@ -1182,7 +1182,7 @@ final class LayerTests: XCTestCase {
         let expected = Tensor<Float>([[11.0, 15.0]])
         XCTAssertEqual(output, expected)
         XCTAssertFalse(layer.batched)
-        
+
         let layerNoBias = Dense<Float>(weight: weight, bias: nil, activation: identity)
         let outputNoBias = layerNoBias.inferring(from: input)
         let expectedNoBias = Tensor<Float>([[10.0, 13.0]])
@@ -1199,7 +1199,7 @@ final class LayerTests: XCTestCase {
         let expectedBatched = Tensor<Float>([[4.0, 6.0, 8.0], [40.0, 46.0, 52.0]])
         XCTAssertEqual(outputBatched, expectedBatched)
         XCTAssertTrue(layerBatched.batched)
-        
+
         let layerBatchedNoBias = Dense<Float>(weight: weightBatched,
                                         bias: nil,
                                         activation: identity)
@@ -1455,9 +1455,9 @@ final class LayerTests: XCTestCase {
         let x = Tensor<Float>(rangeFrom: 0.0, to: 0.4, stride: 0.1).rankLifted()
         let inputs: [Tensor<Float>] = Array(repeating: x, count: 4)
         let gru = RNN(GRUCell<Float>(
-          inputSize: 4, 
-          hiddenSize: 4, 
-          weightInitializer: glorotUniform(seed: (0xFeed, 0xBeef)), 
+          inputSize: 4,
+          hiddenSize: 4,
+          weightInitializer: glorotUniform(seed: (0xFeed, 0xBeef)),
           biasInitializer: zeros())
         )
         withTensorLeakChecking {
@@ -1647,8 +1647,37 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(transformerTensor.shape, transformerResult.shape)
     }
 
+    func testConformArraytoLayer(){
+        var add_layer:[Dense<Float>] = []
+        let sizes = [(8, 7),(7, 6), (6, 5)]
+        for (inputSize, outputSize) in sizes {
+            let weight = Tensor<Float>(shape: [inputSize, outputSize], scalars: (0..<inputSize*outputSize).map(Float.init))
+            let bias = Tensor<Float>(shape: [1, outputSize], scalars: (0..<outputSize).map(Float.init))
+            add_layer.append(Dense<Float>(weight: weight, bias: bias, activation: identity))
+        }
+
+        var (inputSize, outputSize) = sizes[0]
+        var weight = Tensor<Float>(shape: [inputSize, outputSize], scalars: (0..<inputSize*outputSize).map(Float.init))
+        var bias = Tensor<Float>(shape: [1, outputSize], scalars: (0..<outputSize).map(Float.init))
+        let layer1 = Dense<Float>(weight: weight, bias: bias, activation: identity)
+        (inputSize, outputSize) = sizes[1]
+        weight = Tensor<Float>(shape: [inputSize, outputSize], scalars: (0..<inputSize*outputSize).map(Float.init))
+        bias = Tensor<Float>(shape: [1, outputSize], scalars: (0..<outputSize).map(Float.init))
+        let layer2 = Dense<Float>(weight: weight, bias: bias, activation: identity)
+        (inputSize, outputSize) = sizes[2]
+        weight = Tensor<Float>(shape: [inputSize, outputSize], scalars: (0..<inputSize*outputSize).map(Float.init))
+        bias = Tensor<Float>(shape: [1, outputSize], scalars: (0..<outputSize).map(Float.init))
+        let layer3 = Dense<Float>(weight: weight, bias: bias, activation: identity)
+        let input = Tensor<Float>(shape: [5, 8], scalars: (0..<40).map(Float.init))
+
+        let output = add_layer(input)
+        let expected = input.sequenced(through:layer1,layer2,layer3)
+        assertEqual(output, expected,accuracy: 1e-5)
+    }
+
     static var allTests = [
         ("testSequential", testSequential),
+        ("testConformArraytoLayer", testConformArraytoLayer),
         ("testConv1D", testConv1D),
         ("testConv1DDilation", testConv1DDilation),
         ("testConv2D", testConv2D),
