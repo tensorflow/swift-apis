@@ -1006,3 +1006,5 @@ extension Array: Module where Element: Layer, Element.Input == Element.Output {
         differentiableReduce(input) { $1($0) }
     }
 }
+
+extension Array: Layer where Element: Layer, Element.Input == Element.Output {}
