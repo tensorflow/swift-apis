@@ -1647,7 +1647,7 @@ final class LayerTests: XCTestCase {
         XCTAssertEqual(transformerTensor.shape, transformerResult.shape)
     }
 
-    func testArrayLayerConformance(){
+    func testArray(){
         var layers: [Dense<Float>] = []
         let sizes = [(8, 7),(7, 6), (6, 5)]
         for (inputSize, outputSize) in sizes {
@@ -1677,7 +1677,7 @@ final class LayerTests: XCTestCase {
 
     static var allTests = [
         ("testSequential", testSequential),
-        ("testArrayLayerConformance", testArrayLayerConformance),
+        ("testArray", testArray),
         ("testConv1D", testConv1D),
         ("testConv1DDilation", testConv1DDilation),
         ("testConv2D", testConv2D),
