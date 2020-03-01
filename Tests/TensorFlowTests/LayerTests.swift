@@ -1672,7 +1672,7 @@ final class LayerTests: XCTestCase {
 
         let output = layers(input)
         let expected = input.sequenced(through:layer1,layer2,layer3)
-        assertEqual(output, expected,accuracy: 1e-5)
+        assertEqual(output, expected, accuracy: 1e-5)
     }
 
     static var allTests = [
