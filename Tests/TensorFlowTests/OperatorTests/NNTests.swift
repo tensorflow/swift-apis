@@ -62,7 +62,7 @@ class NNTests: XCTestCase {
         XCTAssertEqual(spaceToDepthPullback(grad), input)
     }
     
-    static let addTests = [
+    static let allTests = [
         ("testDepthToSpace", testDepthToSpace),
         ("testDepthToSpaceGrad", testDepthToSpaceGrad),
         ("testSpaceToDepth", testSpaceToDepth),
