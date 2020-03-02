@@ -573,9 +573,11 @@ final class TensorAutoDiffTests: XCTestCase {
         let pullback1 = pullback(at: input) { $0.reversed(axes: [1]) }
         let reverse01 = Tensor<Float>([[5, 4], [3, 2], [1, 0]])
         let pullback01 = pullback(at: input) { $0.reversed(axes: [0, 1]) }
+        let pullbackNegative = pullback(at: input) { $0.reversed(axes: [-2, -1]) }
         XCTAssertEqual(input, pullback0(reverse0))
         XCTAssertEqual(input, pullback1(reverse1))
         XCTAssertEqual(input, pullback01(reverse01))
+        XCTAssertEqual(input, pullbackNegative(reverse01))
     }
 
     func testSigmoid() {

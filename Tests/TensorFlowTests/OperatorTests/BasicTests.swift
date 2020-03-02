@@ -489,6 +489,8 @@ final class BasicOperatorTests: XCTestCase {
         XCTAssertEqual(reverse1, [[2, 1], [4, 3], [6, 5]])
         let reverse01 = x.reversed(axes: [0, 1])
         XCTAssertEqual(reverse01, [[6, 5], [4, 3], [2, 1]])
+        let reverseNegative = x.reversed(axes: [-2, -1])
+        XCTAssertEqual(reverseNegative, [[6, 5], [4, 3], [2, 1]])
     }
     
     func testTile() {
