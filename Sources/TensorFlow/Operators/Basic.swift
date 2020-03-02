@@ -374,9 +374,23 @@ public extension Tensor {
     /// Returns a tensor with specified dimensions reversed.
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+    func reversed(axes: Tensor<Int32>) -> Tensor {
+        _Raw.reverseV2(self, axis: axes)
+    }
+    
+    /// Returns a tensor with specified dimensions reversed.
+    @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func reversed(axes: [Int]) -> Tensor {
-        let axes = {axes.map(Int32.init)}()
-        return _Raw.reverseV2(self, axis: Tensor<Int32>(axes))
+        let axes = axes.map(Int32.init)
+        return reversed(axes: Tensor<Int32>(axes))
+    }
+    
+    /// Returns a tensor with specified dimensions reversed.
+    @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+    func reversed(axes: Int...) -> Tensor {
+        return reversed(axes: axes)
     }
 
     /// Returns a concatenated tensor along the specified axis.
@@ -637,7 +651,19 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     
     @inlinable
     @derivative(of: reversed)
+    func _vjpReversed(axes: Tensor<Int32>) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
+        return (reversed(axes: axes), { $0.reversed(axes: axes) })
+    }
+    
+    @inlinable
+    @derivative(of: reversed)
     func _vjpReversed(axes: [Int]) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
+        return (reversed(axes: axes), { $0.reversed(axes: axes) })
+    }
+    
+    @inlinable
+    @derivative(of: reversed)
+    func _vjpReversed(axes: Int...) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
         return (reversed(axes: axes), { $0.reversed(axes: axes) })
     }
 
