@@ -466,7 +466,7 @@ final class BasicOperatorTests: XCTestCase {
         XCTAssertEqual(grads.1, b1)
     }
 
-    func testTranspose() {
+    func testTransposed() {
         // 3 x 2 x 1 -> 2 x 3 x 1
         let x = Tensor<Float>([[[1], [2]], [[3], [4]], [[5], [6]]])
         let xT = x.transposed(permutation: 1, 0, 2)
@@ -481,7 +481,7 @@ final class BasicOperatorTests: XCTestCase {
         XCTAssertEqual(grad.scalars, [1, 1, 1, 1, 1, 1])
     }
     
-    func testReverse() {
+    func testReversed() {
         let x = Tensor<Float>([[1, 2], [3, 4], [5, 6]])
         let reverse0 = x.reversed(axes: [0])
         XCTAssertEqual(reverse0, [[5, 6], [3, 4], [1, 2]])
@@ -493,7 +493,7 @@ final class BasicOperatorTests: XCTestCase {
         XCTAssertEqual(reverseNegative, [[6, 5], [4, 3], [2, 1]])
     }
     
-    func testTile() {
+    func testTiled() {
         let tensor = Tensor<Int32>([[0, 1, 2], [3, 4, 5]])
         let tiled = tensor.tiled(multiples: [3, 2])
         
@@ -503,7 +503,7 @@ final class BasicOperatorTests: XCTestCase {
                                [0, 1, 2, 0, 1, 2], [3, 4, 5, 3, 4, 5]])
     }
 
-    func testReshape() {
+    func testReshaped() {
         // 2 x 3 -> 1 x 3 x 1 x 2 x 1
         let matrix = Tensor<Int32>([[0, 1, 2], [3, 4, 5]])
         let reshaped = matrix.reshaped(to: [1, 3, 1, 2, 1])
@@ -512,7 +512,7 @@ final class BasicOperatorTests: XCTestCase {
         XCTAssertEqual(reshaped.scalars, Array(0..<6))
     }
 
-    func testFlatten() {
+    func testFlattened() {
         // 2 x 3 -> 6
         let matrix = Tensor<Int32>([[0, 1, 2], [3, 4, 5]])
         let flattened = matrix.flattened()
@@ -718,11 +718,11 @@ final class BasicOperatorTests: XCTestCase {
         ("testAdvancedIndexing", testAdvancedIndexing),
         ("testConcatenation", testConcatenation),
         ("testVJPConcatenation", testVJPConcatenation),
-        ("testTranspose", testTranspose),
-        ("testReverse", testReverse),
-        ("testTile", testTile),
-        ("testReshape", testReshape),
-        ("testFlatten", testFlatten),
+        ("testTransposed", testTransposed),
+        ("testReversed", testReversed),
+        ("testTiled", testTiled),
+        ("testReshaped", testReshaped),
+        ("testFlattened", testFlattened),
         ("testFlatten0D", testFlatten0D),
         ("testReshapeToScalar", testReshapeToScalar),
         ("testReshapeTensor", testReshapeTensor),
