@@ -481,7 +481,7 @@ final class BasicOperatorTests: XCTestCase {
         XCTAssertEqual(grad.scalars, [1, 1, 1, 1, 1, 1])
     }
     
-    func testReverse() {
+    func testReversed() {
         let x = Tensor<Float>([[1, 2], [3, 4], [5, 6]])
         let reverse0 = x.reversed(axes: [0])
         XCTAssertEqual(reverse0, [[5, 6], [3, 4], [1, 2]])
@@ -719,7 +719,7 @@ final class BasicOperatorTests: XCTestCase {
         ("testConcatenation", testConcatenation),
         ("testVJPConcatenation", testVJPConcatenation),
         ("testTranspose", testTranspose),
-        ("testReverse", testReverse),
+        ("testReversed", testReversed),
         ("testTile", testTile),
         ("testReshape", testReshape),
         ("testFlatten", testFlatten),
