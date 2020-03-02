@@ -390,7 +390,7 @@ public extension Tensor {
     @inlinable
     @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
     func reversed(axes: Int...) -> Tensor {
-        return reversed(axes: axes)
+        reversed(axes: axes)
     }
 
     /// Returns a concatenated tensor along the specified axis.
