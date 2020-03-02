@@ -15,7 +15,7 @@
 import XCTest
 import TensorFlow
 
-class ResizeTests: XCTestCase {
+class ImageTests: XCTestCase {
     func testResizeArea() {
         let image = Tensor<Float>(rangeFrom: 0, to: 16*16*3, stride: 1)
             .reshaped(to: [1, 16, 16, 3])
