@@ -700,3 +700,41 @@ func _vjpAvgPool3D<Scalar: TensorFlowFloatingPoint>(
         )
     })
 }
+
+//===------------------------------------------------------------------------------------------===//
+// Rearrange depth/space
+//===------------------------------------------------------------------------------------------===//
+
+/// Rearranges data from depth into blocks of spatial data.
+///
+/// - Precondition: The size must be greater than 1.
+@differentiable(wrt: input where Scalar: TensorFlowFloatingPoint)
+public func depthToSpace<Scalar>(_ input: Tensor<Scalar>, size: Int) -> Tensor<Scalar> {
+    precondition(size >= 2, "The size must be greater than 1.")
+    return _Raw.depthToSpace(input, blockSize: Int64(size))
+}
+
+@derivative(of: depthToSpace)
+func _vjpDepthToSpace<Scalar: TensorFlowFloatingPoint>(
+    _ input: Tensor<Scalar>,
+    size: Int
+) -> (value: Tensor<Scalar>, pullback: (Tensor<Scalar>) -> Tensor<Scalar>){
+    (depthToSpace(input, size: size), { spaceToDepth($0, size: size) })
+}
+
+/// Rearranges blocks of spatial data, into depth.
+///
+/// - Precondition: The size must be greater than 1.
+@differentiable(wrt: input where Scalar: TensorFlowFloatingPoint)
+public func spaceToDepth<Scalar>(_ input: Tensor<Scalar>, size: Int) -> Tensor<Scalar> {
+    precondition(size >= 2, "The size must be greater than 1.")
+    return _Raw.spaceToDepth(input, blockSize: Int64(size))
+}
+
+@derivative(of: spaceToDepth)
+func _vjpSpaceToDepth<Scalar: TensorFlowFloatingPoint>(
+    _ input: Tensor<Scalar>,
+    size: Int
+) -> (value: Tensor<Scalar>, pullback: (Tensor<Scalar>) -> Tensor<Scalar>){
+    (spaceToDepth(input, size: size), { depthToSpace($0, size: size) })
+}
