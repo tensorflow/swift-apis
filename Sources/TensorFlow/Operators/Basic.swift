@@ -370,6 +370,14 @@ public extension Tensor {
             rangeFrom: 0, to: Int32(rank), stride: 1)
         return transposed(permutation: Tensor<Int32>(defaultPermutations))
     }
+    
+    /// Returns a tensor with specified dimensions reversed.
+    @inlinable
+    @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+    func reversed(axes: [Int]) -> Tensor {
+        let axes = {axes.map(Int32.init)}()
+        return _Raw.reverseV2(self, axis: Tensor<Int32>(axes))
+    }
 
     /// Returns a concatenated tensor along the specified axis.
     /// - Precondition: The tensors must have the same dimensions, except for the
@@ -625,6 +633,12 @@ internal extension Tensor where Scalar: TensorFlowFloatingPoint {
     @derivative(of: transposed)
     func _vjpTransposed() -> (value: Tensor, pullback: (Tensor) -> Tensor) {
         return (transposed(), { $0.transposed() })
+    }
+    
+    @inlinable
+    @derivative(of: reversed)
+    func _vjpReversed(axes: [Int]) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
+        return (reversed(axes: axes), { $0.reversed(axes: axes) })
     }
 
     @inlinable
