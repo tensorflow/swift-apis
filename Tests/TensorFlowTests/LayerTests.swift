@@ -1649,7 +1649,7 @@ final class LayerTests: XCTestCase {
 
     func testArray(){
         var layers: [Dense<Float>] = []
-        let sizes = [(8, 7),(7, 6), (6, 5)]
+        let sizes = [(8, 7), (7, 6), (6, 5)]
         for (inputSize, outputSize) in sizes {
             let weight = Tensor<Float>(shape: [inputSize, outputSize], scalars: (0..<inputSize*outputSize).map(Float.init))
             let bias = Tensor<Float>(shape: [1, outputSize], scalars: (0..<outputSize).map(Float.init))
@@ -1671,7 +1671,7 @@ final class LayerTests: XCTestCase {
         let input = Tensor<Float>(shape: [5, 8], scalars: (0..<40).map(Float.init))
 
         let output = layers(input)
-        let expected = input.sequenced(through:layer1,layer2,layer3)
+        let expected = input.sequenced(through: layer1, layer2, layer3)
         assertEqual(output, expected, accuracy: 1e-5)
     }
 
