@@ -15,37 +15,37 @@
 import XCTest
 
 #if !os(macOS)
-public func allTests() -> [XCTestCaseEntry] {
+  public func allTests() -> [XCTestCaseEntry] {
     // Please ensure the test cases remain alphabetized.
     return [
-        testCase(BasicOperatorTests.allTests),
-        testCase(ComparisonOperatorTests.allTests),
-        testCase(ContextTests.allTests),
-        testCase(DatasetTests.allTests),
-        testCase(ImageTests.allTests),
-        testCase(InitializerTests.allTests),
-        testCase(LayerTests.allTests),
-        testCase(LazyTensorEvaluationTests.allTests),
-        testCase(LazyTensorTraceTests.allTests),
-        testCase(LazyTensorTraceCacheTests.allTests),
-        testCase(LazyTensorExplicitTraceTests.allTests),
-        testCase(LazyTensorHandleTests.allTests),
-        testCase(LazyTensorOperationTests.allTests),
-        testCase(LazyTensorShapeInferenceTests.allTests),
-        testCase(LazyTensorTFFunctionBuilderTests.allTests),
-        testCase(LazyTensorTraceTests.allTests),
-        testCase(LossTests.allTests),
-        testCase(MathOperatorTests.allTests),
-        testCase(OptimizerTests.allTests),
-        testCase(RuntimeTests.allTests),
-        // testCase(SequentialTests.allTests),
-        testCase(TensorAutoDiffTests.allTests),
-        testCase(TensorGroupTests.allTests),
-        testCase(TensorAutoDiffTests.allTests),
-        testCase(TensorTests.allTests),
-        testCase(TrivialModelTests.allTests),
-        testCase(LinearAlgebraTests.allTests),
-        testCase(MatrixTests.allTests)
+      testCase(BasicOperatorTests.allTests),
+      testCase(ComparisonOperatorTests.allTests),
+      testCase(ContextTests.allTests),
+      testCase(DatasetTests.allTests),
+      testCase(ImageTests.allTests),
+      testCase(InitializerTests.allTests),
+      testCase(LayerTests.allTests),
+      testCase(LazyTensorEvaluationTests.allTests),
+      testCase(LazyTensorTraceTests.allTests),
+      testCase(LazyTensorTraceCacheTests.allTests),
+      testCase(LazyTensorExplicitTraceTests.allTests),
+      testCase(LazyTensorHandleTests.allTests),
+      testCase(LazyTensorOperationTests.allTests),
+      testCase(LazyTensorShapeInferenceTests.allTests),
+      testCase(LazyTensorTFFunctionBuilderTests.allTests),
+      testCase(LazyTensorTraceTests.allTests),
+      testCase(LossTests.allTests),
+      testCase(MathOperatorTests.allTests),
+      testCase(OptimizerTests.allTests),
+      testCase(RuntimeTests.allTests),
+      // testCase(SequentialTests.allTests),
+      testCase(TensorAutoDiffTests.allTests),
+      testCase(TensorGroupTests.allTests),
+      testCase(TensorAutoDiffTests.allTests),
+      testCase(TensorTests.allTests),
+      testCase(TrivialModelTests.allTests),
+      testCase(LinearAlgebraTests.allTests),
+      testCase(MatrixTests.allTests),
     ]
-}
+  }
 #endif
