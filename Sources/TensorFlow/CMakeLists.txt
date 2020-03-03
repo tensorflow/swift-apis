@@ -11,6 +11,7 @@ add_library(TensorFlow SHARED
   Bindings/EagerExecution.swift
   Bindings/RawOpsGenerated.swift
   Bindings/TFTensorOperation.swift
+  Bindings/RawOpsAugmented.swift
 
   Core/ArrayOps.swift
   Core/CopyableToDevice.swift
@@ -24,6 +25,7 @@ add_library(TensorFlow SHARED
   Core/LazyTensorTFFunctionBuilder.swift
   Core/LazyTensorTrace.swift
   Core/LazyTensorTraceCache.swift
+  Core/BroadcastingPullback.swift
   Core/MixedPrecision.swift
   Core/PythonConversion.swift
   Core/Runtime.swift
