@@ -19,7 +19,7 @@ public enum ResizeMethod {
 /// Resize images to size using the specified method.
 ///
 /// - Parameters:
-///   - images: 4-D Tensor of shape [batch, height, width, channels] or 3-D Tensor of shape [height, width, channels].
+///   - images: 4-D Tensor of shape `[batch, height, width, channels]` or 3-D Tensor of shape `[height, width, channels]`.
 ///   - size: The new size of the images.
 ///   - method: ResizeMethod. Defaults to bilinear.
 ///   - antialias: Whether to use an anti-aliasing filter when downsampling an image.
