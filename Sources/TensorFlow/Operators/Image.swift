@@ -24,7 +24,7 @@ public enum ResizeMethod {
   case lanczos3
   /// Lanczos kernel with radius 5.
   case lanczos5
-  /// Gaussian kernel with radius 3, sigma = 1.5 / 3.0.
+  /// Gaussian kernel with radius `3`, sigma `1.5 / 3.0`.
   case gaussian
   /// Mitchell-Netravali Cubic non-interpolating filter.
   case mitchellcubic
