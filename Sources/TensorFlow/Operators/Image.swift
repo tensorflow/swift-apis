@@ -254,9 +254,9 @@ func _vjpResizeNearestNeighbor<Scalar: TensorFlowFloatingPoint>(
   )
 }
 
-@differentiable(wrt: images)
-func resizeBilinear(
-  images: Tensor<Float>,
+@differentiable(wrt: images where Scalar: TensorFlowFloatingPoint)
+func resizeBilinear<Scalar: TensorFlowNumeric>(
+  images: Tensor<Scalar>,
   size: Tensor<Int32>,
   alignCorners: Bool = false,
   halfPixelCenters: Bool = false
@@ -271,12 +271,12 @@ func resizeBilinear(
 
 @usableFromInline
 @derivative(of: resizeBilinear)
-func _vjpResizeBilinear(
-  images: Tensor<Float>,
+func _vjpResizeBilinear<Scalar: TensorFlowFloatingPoint>(
+  images: Tensor<Scalar>,
   size: Tensor<Int32>,
   alignCorners: Bool,
   halfPixelCenters: Bool
-) -> (value: Tensor<Float>, pullback: (Tensor<Float>) -> Tensor<Float>) {
+) -> (value: Tensor<Float>, pullback: (Tensor<Float>) -> Tensor<Scalar>) {
   let resized = resizeBilinear(
     images: images,
     size: size,
@@ -296,9 +296,9 @@ func _vjpResizeBilinear(
   )
 }
 
-@differentiable(wrt: images)
-func resizeBicubic(
-  images: Tensor<Float>,
+@differentiable(wrt: images where Scalar: TensorFlowFloatingPoint)
+func resizeBicubic<Scalar: TensorFlowFloatingPoint>(
+  images: Tensor<Scalar>,
   size: Tensor<Int32>,
   alignCorners: Bool = false,
   halfPixelCenters: Bool = false
@@ -313,12 +313,12 @@ func resizeBicubic(
 
 @usableFromInline
 @derivative(of: resizeBicubic)
-func _vjpResizeBicubic(
-  images: Tensor<Float>,
+func _vjpResizeBicubic<Scalar: TensorFlowFloatingPoint>(
+  images: Tensor<Scalar>,
   size: Tensor<Int32>,
   alignCorners: Bool,
   halfPixelCenters: Bool
-) -> (value: Tensor<Float>, pullback: (Tensor<Float>) -> Tensor<Float>) {
+) -> (value: Tensor<Float>, pullback: (Tensor<Float>) -> Tensor<Scalar>) {
   let resized = resizeBicubic(
     images: images,
     size: size,
