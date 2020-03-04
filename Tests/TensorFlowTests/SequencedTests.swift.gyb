@@ -41,10 +41,10 @@ final class SequencedTests: XCTestCase {
       $1($0)
     }
 
-    XCTAssertEqual(factorial(${count}), output)
-    XCTAssertEqual(factorial(${count}), gInput)
+    XCTAssertEqual(Float(factorial(${count})), output)
+    XCTAssertEqual(Float(factorial(${count})), gInput)
     % for i in range(1, count + 1):
-    XCTAssertEqual(factorial(${count}) / ${i}, gModel.multiply${i}.coefficient)
+    XCTAssertEqual(Float(factorial(${count}) / ${i}), gModel.multiply${i}.coefficient)
     % end
   }
   % end

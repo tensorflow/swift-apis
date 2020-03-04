@@ -65,10 +65,10 @@ struct Multiply: Layer {
     }
 }
 
-func factorial(_ n: Float) -> Float {
-    var result: Float = 1
-    for i in 2...Int(n) {
-        result *= Float(i)
+func factorial(_ n: Int) -> Int {
+    var result: Int = 1
+    for i in 2...n {
+        result *= i
     }
     return result
 }
