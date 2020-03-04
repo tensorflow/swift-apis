@@ -568,12 +568,12 @@ final class TensorAutoDiffTests: XCTestCase {
     func testReversed() {
         let input = Tensor<Float>([[0, 1], [2, 3], [4, 5]])
         let reverse0 = Tensor<Float>([[4, 5], [2, 3], [0, 1]])
-        let pullback0 = pullback(at: input) { $0.reversed(axes: [0]) }
+        let pullback0 = pullback(at: input) { $0.reversed(inAxes: [0]) }
         let reverse1 = Tensor<Float>([[1, 0], [3, 2], [5, 4]])
-        let pullback1 = pullback(at: input) { $0.reversed(axes: [1]) }
+        let pullback1 = pullback(at: input) { $0.reversed(inAxes: [1]) }
         let reverse01 = Tensor<Float>([[5, 4], [3, 2], [1, 0]])
-        let pullback01 = pullback(at: input) { $0.reversed(axes: [0, 1]) }
-        let pullbackNegative = pullback(at: input) { $0.reversed(axes: [-2, -1]) }
+        let pullback01 = pullback(at: input) { $0.reversed(inAxes: [0, 1]) }
+        let pullbackNegative = pullback(at: input) { $0.reversed(inAxes: [-2, -1]) }
         XCTAssertEqual(input, pullback0(reverse0))
         XCTAssertEqual(input, pullback1(reverse1))
         XCTAssertEqual(input, pullback01(reverse01))

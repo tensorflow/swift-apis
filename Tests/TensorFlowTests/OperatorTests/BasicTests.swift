@@ -483,13 +483,13 @@ final class BasicOperatorTests: XCTestCase {
     
     func testReversed() {
         let x = Tensor<Float>([[1, 2], [3, 4], [5, 6]])
-        let reverse0 = x.reversed(axes: [0])
+        let reverse0 = x.reversed(inAxes: [0])
         XCTAssertEqual(reverse0, [[5, 6], [3, 4], [1, 2]])
-        let reverse1 = x.reversed(axes: [1])
+        let reverse1 = x.reversed(inAxes: [1])
         XCTAssertEqual(reverse1, [[2, 1], [4, 3], [6, 5]])
-        let reverse01 = x.reversed(axes: [0, 1])
+        let reverse01 = x.reversed(inAxes: [0, 1])
         XCTAssertEqual(reverse01, [[6, 5], [4, 3], [2, 1]])
-        let reverseNegative = x.reversed(axes: [-2, -1])
+        let reverseNegative = x.reversed(inAxes: [-2, -1])
         XCTAssertEqual(reverseNegative, [[6, 5], [4, 3], [2, 1]])
     }
     
