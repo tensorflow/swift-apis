@@ -23,10 +23,10 @@
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 @differentiable(wrt: predicted)
 public func l1Loss<Scalar: TensorFlowFloatingPoint>(
-    predicted: Tensor<Scalar>,
-    expected: Tensor<Scalar>
+  predicted: Tensor<Scalar>,
+  expected: Tensor<Scalar>
 ) -> Tensor<Scalar> {
-    l1Loss(predicted: predicted, expected: expected, reduction: { $0.sum() })
+  l1Loss(predicted: predicted, expected: expected, reduction: { $0.sum() })
 }
 
 /// Returns the L2 loss between predictions and expectations.
@@ -36,10 +36,10 @@ public func l1Loss<Scalar: TensorFlowFloatingPoint>(
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 @differentiable(wrt: predicted)
 public func l2Loss<Scalar: TensorFlowFloatingPoint>(
-    predicted: Tensor<Scalar>,
-    expected: Tensor<Scalar>
+  predicted: Tensor<Scalar>,
+  expected: Tensor<Scalar>
 ) -> Tensor<Scalar> {
-    l2Loss(predicted: predicted, expected: expected, reduction: { $0.sum() })
+  l2Loss(predicted: predicted, expected: expected, reduction: { $0.sum() })
 }
 
 /// Returns the hinge loss between predictions and expectations.
@@ -49,10 +49,10 @@ public func l2Loss<Scalar: TensorFlowFloatingPoint>(
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 @differentiable(wrt: predicted)
 public func hingeLoss<Scalar: TensorFlowFloatingPoint>(
-    predicted: Tensor<Scalar>,
-    expected: Tensor<Scalar>
+  predicted: Tensor<Scalar>,
+  expected: Tensor<Scalar>
 ) -> Tensor<Scalar> {
-    hingeLoss(predicted: predicted, expected: expected, reduction: { $0.mean() })
+  hingeLoss(predicted: predicted, expected: expected, reduction: { $0.mean() })
 }
 
 /// Returns the squared hinge loss between predictions and expectations.
@@ -62,10 +62,10 @@ public func hingeLoss<Scalar: TensorFlowFloatingPoint>(
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 @differentiable(wrt: predicted)
 public func squaredHingeLoss<Scalar: TensorFlowFloatingPoint>(
-    predicted: Tensor<Scalar>,
-    expected: Tensor<Scalar>
+  predicted: Tensor<Scalar>,
+  expected: Tensor<Scalar>
 ) -> Tensor<Scalar> {
-    squaredHingeLoss(predicted: predicted, expected: expected, reduction: { $0.mean() })
+  squaredHingeLoss(predicted: predicted, expected: expected, reduction: { $0.mean() })
 }
 
 /// Returns the categorical hinge loss between predictions and expectations.
@@ -75,10 +75,10 @@ public func squaredHingeLoss<Scalar: TensorFlowFloatingPoint>(
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 @differentiable(wrt: predicted)
 public func categoricalHingeLoss<Scalar: TensorFlowFloatingPoint>(
-    predicted: Tensor<Scalar>,
-    expected: Tensor<Scalar>
+  predicted: Tensor<Scalar>,
+  expected: Tensor<Scalar>
 ) -> Tensor<Scalar> {
-    categoricalHingeLoss(predicted: predicted, expected: expected, reduction: { $0.mean() })
+  categoricalHingeLoss(predicted: predicted, expected: expected, reduction: { $0.mean() })
 }
 
 /// Returns the logarithm of the hyperbolic cosine of the error between predictions and
@@ -89,10 +89,10 @@ public func categoricalHingeLoss<Scalar: TensorFlowFloatingPoint>(
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 @differentiable(wrt: predicted)
 public func logCoshLoss<Scalar: TensorFlowFloatingPoint>(
-    predicted: Tensor<Scalar>,
-    expected: Tensor<Scalar>
+  predicted: Tensor<Scalar>,
+  expected: Tensor<Scalar>
 ) -> Tensor<Scalar> {
-    logCoshLoss(predicted: predicted, expected: expected, reduction: { $0.mean() })
+  logCoshLoss(predicted: predicted, expected: expected, reduction: { $0.mean() })
 }
 
 /// Returns the Poisson loss between predictions and expectations.
@@ -102,10 +102,10 @@ public func logCoshLoss<Scalar: TensorFlowFloatingPoint>(
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 @differentiable(wrt: predicted)
 public func poissonLoss<Scalar: TensorFlowFloatingPoint>(
-    predicted: Tensor<Scalar>,
-    expected: Tensor<Scalar>
+  predicted: Tensor<Scalar>,
+  expected: Tensor<Scalar>
 ) -> Tensor<Scalar> {
-    poissonLoss(predicted: predicted, expected: expected, reduction: { $0.mean() })
+  poissonLoss(predicted: predicted, expected: expected, reduction: { $0.mean() })
 }
 
 /// Returns the Kullback-Leibler divergence (KL divergence) between between expectations and
@@ -116,10 +116,10 @@ public func poissonLoss<Scalar: TensorFlowFloatingPoint>(
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 @differentiable(wrt: predicted)
 public func kullbackLeiblerDivergence<Scalar: TensorFlowFloatingPoint>(
-    predicted: Tensor<Scalar>,
-    expected: Tensor<Scalar>
+  predicted: Tensor<Scalar>,
+  expected: Tensor<Scalar>
 ) -> Tensor<Scalar> {
-    kullbackLeiblerDivergence(predicted: predicted, expected: expected, reduction: { $0.sum() })
+  kullbackLeiblerDivergence(predicted: predicted, expected: expected, reduction: { $0.sum() })
 }
 
 /// Returns the softmax cross entropy (categorical cross entropy) between logits and labels.
@@ -129,10 +129,10 @@ public func kullbackLeiblerDivergence<Scalar: TensorFlowFloatingPoint>(
 ///   - labels: Indices (zero-indexed) of the correct outputs.
 @differentiable(wrt: logits)
 public func softmaxCrossEntropy<Scalar: TensorFlowFloatingPoint>(
-    logits: Tensor<Scalar>,
-    probabilities: Tensor<Scalar>
+  logits: Tensor<Scalar>,
+  probabilities: Tensor<Scalar>
 ) -> Tensor<Scalar> {
-    softmaxCrossEntropy(logits: logits, probabilities: probabilities, reduction: { $0.mean() })
+  softmaxCrossEntropy(logits: logits, probabilities: probabilities, reduction: { $0.mean() })
 }
 
 /// Returns the sigmoid cross entropy (binary cross entropy) between logits and labels.
@@ -141,8 +141,8 @@ public func softmaxCrossEntropy<Scalar: TensorFlowFloatingPoint>(
 ///   - labels: Integer values that correspond to the correct output.
 @differentiable(wrt: logits)
 public func sigmoidCrossEntropy<Scalar: TensorFlowFloatingPoint>(
-    logits: Tensor<Scalar>,
-    labels: Tensor<Scalar>
+  logits: Tensor<Scalar>,
+  labels: Tensor<Scalar>
 ) -> Tensor<Scalar> {
-    sigmoidCrossEntropy(logits: logits, labels:labels, reduction: { $0.mean() })
+  sigmoidCrossEntropy(logits: logits, labels: labels, reduction: { $0.mean() })
 }
