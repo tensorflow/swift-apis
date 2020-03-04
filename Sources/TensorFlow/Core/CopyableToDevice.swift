@@ -43,7 +43,8 @@ extension CopyableToDevice {
   ) {
     guard let keyPath = rootKeyPath as? WritableKeyPath<Root, Self> else {
       fatalError(
-        "Failed conversion from \(rootKeyPath) to 'WritableKeyPath<\(Root.self), \(Self.self)>'")
+        "Failed conversion from \(rootKeyPath) to 'WritableKeyPath<\(Root.self), \(Self.self)>'"
+      )
     }
     root[keyPath: keyPath] = Self.init(copying: root[keyPath: keyPath], to: device)
   }
