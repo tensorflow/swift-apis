@@ -19,39 +19,39 @@ import TensorFlow
 
 % for count in counts:
 struct Model${count}: Layer {
-    % for i in range(1, count + 1):
-    var multiply${i}: Multiply = Multiply(coefficient: ${i})
-    % end
+  % for i in range(1, count + 1):
+  var multiply${i}: Multiply = Multiply(coefficient: ${i})
+  % end
 
-    @differentiable
-    func callAsFunction(_ input: Float) -> Float {
-        input.sequenced(
-            through: ${', '.join(['multiply%d' % i for i in range(1, count + 1)])}
-        )
-    }
+  @differentiable
+  func callAsFunction(_ input: Float) -> Float {
+    input.sequenced(
+      through: ${', '.join(['multiply%d' % i for i in range(1, count + 1)])}
+    )
+  }
 }
 % end
 
 final class SequencedTests: XCTestCase {
-    % for count in counts:
-    func testSequenced${count}() {
-        let input = Float(1)
-        let model = Model${count}()
-        let (output, (gInput, gModel)) = valueWithGradient(at: input, model) {
-            $1($0)
-        }
-
-        XCTAssertEqual(factorial(${count}), output)
-        XCTAssertEqual(factorial(${count}), gInput)
-        % for i in range(1, count + 1):
-        XCTAssertEqual(factorial(${count}) / ${i}, gModel.multiply${i}.coefficient)
-        % end
+  % for count in counts:
+  func testSequenced${count}() {
+    let input = Float(1)
+    let model = Model${count}()
+    let (output, (gInput, gModel)) = valueWithGradient(at: input, model) {
+      $1($0)
     }
-    % end
 
-    static var allTests = [
-        % for count in counts:
-        ("testSequenced${count}", testSequenced${count}),
-        % end
-    ]
+    XCTAssertEqual(factorial(${count}), output)
+    XCTAssertEqual(factorial(${count}), gInput)
+    % for i in range(1, count + 1):
+    XCTAssertEqual(factorial(${count}) / ${i}, gModel.multiply${i}.coefficient)
+    % end
+  }
+  % end
+
+  static var allTests = [
+    % for count in counts:
+    ("testSequenced${count}", testSequenced${count}),
+    % end
+  ]
 }
