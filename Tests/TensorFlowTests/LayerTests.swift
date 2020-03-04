@@ -1948,7 +1948,36 @@ final class LayerTests: XCTestCase {
     XCTAssertEqual(transformerTensor.shape, transformerResult.shape)
   }
 
+  func testArray() {
+    var layers: [Dense<Float>] = []
+    let sizes = [(8, 7), (7, 6), (6, 5)]
+    for (inputSize, outputSize) in sizes {
+      let weight = Tensor<Float>(shape: [inputSize, outputSize], scalars: (0..<inputSize*outputSize).map(Float.init))
+      let bias = Tensor<Float>(shape: [1, outputSize], scalars: (0..<outputSize).map(Float.init))
+      layers.append(Dense<Float>(weight: weight, bias: bias, activation: identity))
+    }
+
+    var (inputSize, outputSize) = sizes[0]
+    var weight = Tensor<Float>(shape: [inputSize, outputSize], scalars: (0..<inputSize*outputSize).map(Float.init))
+    var bias = Tensor<Float>(shape: [1, outputSize], scalars: (0..<outputSize).map(Float.init))
+    let layer1 = Dense<Float>(weight: weight, bias: bias, activation: identity)
+    (inputSize, outputSize) = sizes[1]
+    weight = Tensor<Float>(shape: [inputSize, outputSize], scalars: (0..<inputSize*outputSize).map(Float.init))
+    bias = Tensor<Float>(shape: [1, outputSize], scalars: (0..<outputSize).map(Float.init))
+    let layer2 = Dense<Float>(weight: weight, bias: bias, activation: identity)
+    (inputSize, outputSize) = sizes[2]
+    weight = Tensor<Float>(shape: [inputSize, outputSize], scalars: (0..<inputSize*outputSize).map(Float.init))
+    bias = Tensor<Float>(shape: [1, outputSize], scalars: (0..<outputSize).map(Float.init))
+    let layer3 = Dense<Float>(weight: weight, bias: bias, activation: identity)
+    let input = Tensor<Float>(shape: [5, 8], scalars: (0..<40).map(Float.init))
+
+    let output = layers(input)
+    let expected = input.sequenced(through: layer1, layer2, layer3)
+    assertEqual(output, expected, accuracy: 1e-5)
+  }
+
   static var allTests = [
+    ("testArray", testArray),
     ("testSequential", testSequential),
     ("testConv1D", testConv1D),
     ("testConv1DDilation", testConv1DDilation),
