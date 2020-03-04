@@ -20,7 +20,7 @@ public enum ResizeMethod {
   case bilinear
   /// Bicubic interpolation.
   case bicubic
-  /// Lanczos kernel with radius 3.
+  /// Lanczos kernel with radius `3`.
   case lanczos3
   /// Lanczos kernel with radius 5.
   case lanczos5
