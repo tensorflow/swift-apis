@@ -110,11 +110,9 @@ public func resize(
       kernelType: "mitchellcubic",
       antialias: antialias)
   }
-
   if singleImage {
     images = images.squeezingShape(at: 0)
   }
-
   return images
 }
 
@@ -141,16 +139,13 @@ public func resizeArea<Scalar: TensorFlowNumeric>(
     images = images.rankLifted()
   }
   let size = Tensor([Int32(size.0), Int32(size.1)])
-
   var resized = _Raw.resizeArea(
     images: images,
     size: size,
     alignCorners: alignCorners)
-
   if singleImage {
     resized = resized.squeezingShape(at: 0)
   }
-
   return resized
 }
 
@@ -189,7 +184,6 @@ func _vjpScaleAndTranslate(
     translation: translation,
     kernelType: kernelType,
     antialias: antialias)
-
   return (
     scaled,
     { v in
