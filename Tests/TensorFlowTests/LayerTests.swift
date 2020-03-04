@@ -1948,7 +1948,7 @@ final class LayerTests: XCTestCase {
     XCTAssertEqual(transformerTensor.shape, transformerResult.shape)
   }
 
-  func testArray(){
+  func testArray() {
     var layers: [Dense<Float>] = []
     let sizes = [(8, 7), (7, 6), (6, 5)]
     for (inputSize, outputSize) in sizes {
