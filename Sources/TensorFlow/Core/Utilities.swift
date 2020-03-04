@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#if os(macOS) || os(iOS) || os(watchOS) || os(tvOS)
-import Darwin
-#elseif os(Windows)
-import MSVCRT
-#else
-import Glibc
-#endif
-
 import CTensorFlow
+
+#if os(macOS) || os(iOS) || os(watchOS) || os(tvOS)
+  import Darwin
+#elseif os(Windows)
+  import MSVCRT
+#else
+  import Glibc
+#endif
 
 //===------------------------------------------------------------------------------------------===//
 // Runtime Checkers
@@ -31,27 +31,27 @@ import CTensorFlow
 /// replaced with plain assert() later, when we have a more mature code base.
 @usableFromInline
 internal func internalConsistencyCheck(
-    _ predicate: Bool,
-    _ errMessage: String = "TF runtime assertion failure",
-    file: StaticString = #file,
-    line: UInt = #line
+  _ predicate: Bool,
+  _ errMessage: String = "TF runtime assertion failure",
+  file: StaticString = #file,
+  line: UInt = #line
 ) {
-    guard predicate else {
-        fatalError(errMessage, file: file, line: line)
-    }
+  guard predicate else {
+    fatalError(errMessage, file: file, line: line)
+  }
 }
 
 @usableFromInline
 internal func checkOk(
-    _ s: CTFStatus?,
-    file: StaticString = #file,
-    line: UInt = #line
+  _ s: CTFStatus?,
+  file: StaticString = #file,
+  line: UInt = #line
 ) {
-    internalConsistencyCheck(
-        TF_GetCode(s) == TF_OK,
-        String(cString: TF_Message(s)),
-        file: file,
-        line: line)
+  internalConsistencyCheck(
+    TF_GetCode(s) == TF_OK,
+    String(cString: TF_Message(s)),
+    file: file,
+    line: line)
 }
 
 //===------------------------------------------------------------------------------------------===//
@@ -108,35 +108,35 @@ internal typealias CTFETraceContext = OpaquePointer
 //===------------------------------------------------------------------------------------------===//
 
 #if os(macOS) || os(iOS) || os(watchOS) || os(tvOS)
-@usableFromInline internal let stderr = __stderrp
-@usableFromInline internal  let stdout = __stdoutp
+  @usableFromInline internal let stderr = __stderrp
+  @usableFromInline internal let stdout = __stdoutp
 #endif
 
 /// Log to standard error.
 @usableFromInline
 internal func logToStderr(_ message: StaticString) {
-    message.utf8Start.withMemoryRebound(to: Int8.self, capacity: message.utf8CodeUnitCount) {
-        _ = fputs($0, stderr)
-    }
+  message.utf8Start.withMemoryRebound(to: Int8.self, capacity: message.utf8CodeUnitCount) {
+    _ = fputs($0, stderr)
+  }
 }
 
 /// Log to standard error.
 @usableFromInline
 internal func logToStderr(_ message: String) {
-    _ = fputs(message, stderr)
+  _ = fputs(message, stderr)
 }
 
 @usableFromInline
 internal func debugLog(
-    _ message: @autoclosure () -> String,
-    file: StaticString = #file,
-    line: UInt = #line
+  _ message: @autoclosure () -> String,
+  file: StaticString = #file,
+  line: UInt = #line
 ) {
-    if _RuntimeConfig.printsDebugLog {
-        print("[\(file):\(line)] \(message())")
-        // This helps dump more log before a crash.
-        fflush(stdout)
-    }
+  if _RuntimeConfig.printsDebugLog {
+    print("[\(file):\(line)] \(message())")
+    // This helps dump more log before a crash.
+    fflush(stdout)
+  }
 }
 
 //===------------------------------------------------------------------------------------------===//
@@ -146,9 +146,9 @@ internal func debugLog(
 /// Given the address of a `TF_Buffer` and a file path, write the buffer's contents to the file.
 @usableFromInline
 internal func writeContents(of buffer: UnsafePointer<TF_Buffer>, toFile path: String) {
-    let fp = fopen(path, "w+")
-    fwrite(buffer.pointee.data, /*size*/ 1, /*count*/ buffer.pointee.length, fp)
-    fclose(fp)
+  let fp = fopen(path, "w+")
+  fwrite(buffer.pointee.data, /*size*/ 1, /*count*/ buffer.pointee.length, fp)
+  fclose(fp)
 }
 
 //===------------------------------------------------------------------------------------------===//
@@ -158,14 +158,14 @@ internal func writeContents(of buffer: UnsafePointer<TF_Buffer>, toFile path: St
 // TODO: Consider revising the call sites where this is necessary to only need UnsafeMutablePointer
 // to optional when it is the actual c-api call site.
 extension UnsafeMutablePointer where Pointee == CTensorHandle? {
-    @usableFromInline
-    init(_ other: UnsafeMutablePointer<CTensorHandle>) {
-        self.init(other._rawValue)
-    }
+  @usableFromInline
+  init(_ other: UnsafeMutablePointer<CTensorHandle>) {
+    self.init(other._rawValue)
+  }
 
-    @usableFromInline
-    init?(_ other: UnsafeMutablePointer<CTensorHandle>?) {
-        guard let unwrapped = other else { return nil }
-        self.init(unwrapped)
-    }
+  @usableFromInline
+  init?(_ other: UnsafeMutablePointer<CTensorHandle>?) {
+    guard let unwrapped = other else { return nil }
+    self.init(unwrapped)
+  }
 }

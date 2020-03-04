@@ -18,37 +18,37 @@
 import PackageDescription
 
 let package = Package(
-    name: "TensorFlow",
-    products: [
-        .library(
-            name: "TensorFlow",
-            type: .dynamic,
-            targets: ["TensorFlow"]),
-        .library(
-            name: "Tensor",
-            type: .dynamic,
-            targets: ["Tensor"]),
-    ],
-    dependencies: [],
-    targets: [
-        .target(
-            name: "Tensor",
-            dependencies: []),
-        .target(
-            name: "TensorFlow",
-            dependencies: ["Tensor"]),
-        .target(
-            name: "Experimental",
-            dependencies: [],
-            path: "Sources/third_party/Experimental"),
-        .testTarget(
-            name: "ExperimentalTests",
-            dependencies: ["Experimental"]),
-        .testTarget(
-            name: "TensorTests",
-            dependencies: ["Tensor"]),
-        .testTarget(
-            name: "TensorFlowTests",
-            dependencies: ["TensorFlow"]),
-    ]
+  name: "TensorFlow",
+  products: [
+    .library(
+      name: "TensorFlow",
+      type: .dynamic,
+      targets: ["TensorFlow"]),
+    .library(
+      name: "Tensor",
+      type: .dynamic,
+      targets: ["Tensor"]),
+  ],
+  dependencies: [],
+  targets: [
+    .target(
+      name: "Tensor",
+      dependencies: []),
+    .target(
+      name: "TensorFlow",
+      dependencies: ["Tensor"]),
+    .target(
+      name: "Experimental",
+      dependencies: [],
+      path: "Sources/third_party/Experimental"),
+    .testTarget(
+      name: "ExperimentalTests",
+      dependencies: ["Experimental"]),
+    .testTarget(
+      name: "TensorTests",
+      dependencies: ["Tensor"]),
+    .testTarget(
+      name: "TensorFlowTests",
+      dependencies: ["TensorFlow"]),
+  ]
 )

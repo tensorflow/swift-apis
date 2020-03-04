@@ -17,67 +17,67 @@
 /// A flatten layer flattens the input when applied without affecting the batch size.
 @frozen
 public struct Flatten<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
-    /// Creates a flatten layer.
-    public init() {}
+  /// Creates a flatten layer.
+  public init() {}
 
-    /// Returns the output obtained from applying the layer to the given input.
-    ///
-    /// - Parameter input: The input to the layer.
-    /// - Returns: The output.
-    @differentiable
-    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        let batchSize = input.shape[0]
-        let remaining = input.shape[1..<input.rank].contiguousSize
-        return input.reshaped(to: [batchSize, remaining])
-    }
+  /// Returns the output obtained from applying the layer to the given input.
+  ///
+  /// - Parameter input: The input to the layer.
+  /// - Returns: The output.
+  @differentiable
+  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+    let batchSize = input.shape[0]
+    let remaining = input.shape[1..<input.rank].contiguousSize
+    return input.reshaped(to: [batchSize, remaining])
+  }
 }
 
 /// A reshape layer.
 @frozen
 public struct Reshape<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
-    /// The target shape.
-    @noDerivative public let shape: Tensor<Int32>
+  /// The target shape.
+  @noDerivative public let shape: Tensor<Int32>
 
-    // TF-331 workaround:
-    @usableFromInline
-    internal var _nontrivial = Tensor<Float>(0)
+  // TF-331 workaround:
+  @usableFromInline
+  internal var _nontrivial = Tensor<Float>(0)
 
-    /// Creates a reshape layer.
-    ///
-    /// - Parameter shape: The target shape, represented by a tensor.
-    public init(shape: Tensor<Int32>) {
-        self.shape = shape
-    }
+  /// Creates a reshape layer.
+  ///
+  /// - Parameter shape: The target shape, represented by a tensor.
+  public init(shape: Tensor<Int32>) {
+    self.shape = shape
+  }
 
-    /// Creates a reshape layer.
-    ///
-    /// - Parameter shape: The target shape.
-    public init(_ shape: TensorShape) {
-        self.init(shape: Tensor(shape.dimensions.map(Int32.init)))
-    }
+  /// Creates a reshape layer.
+  ///
+  /// - Parameter shape: The target shape.
+  public init(_ shape: TensorShape) {
+    self.init(shape: Tensor(shape.dimensions.map(Int32.init)))
+  }
 
-    /// Returns the output obtained from applying the layer to the given input.
-    ///
-    /// - Parameter input: The input to the layer.
-    /// - Returns: The output.
-    @differentiable
-    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        return input.reshaped(toShape: shape)
-    }
+  /// Returns the output obtained from applying the layer to the given input.
+  ///
+  /// - Parameter input: The input to the layer.
+  /// - Returns: The output.
+  @differentiable
+  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+    return input.reshaped(toShape: shape)
+  }
 }
 
 /// A layer that encloses a custom differentiable function.
 public struct Function<Input: Differentiable, Output: Differentiable>: ParameterlessLayer {
-    public typealias Body = @differentiable (Input) -> Output
+  public typealias Body = @differentiable (Input) -> Output
 
-    @noDerivative public let body: Body
+  @noDerivative public let body: Body
 
-    public init(_ body: @escaping Body) {
-        self.body = body
-    }
+  public init(_ body: @escaping Body) {
+    self.body = body
+  }
 
-    @differentiable
-    public func callAsFunction(_ input: Input) -> Output {
-        body(input)
-    }
+  @differentiable
+  public func callAsFunction(_ input: Input) -> Output {
+    body(input)
+  }
 }

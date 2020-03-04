@@ -13,34 +13,34 @@
 // limitations under the License.
 
 #if !COMPILING_TENSORFLOW_STDLIB_MODULE
-import Tensor
+  import Tensor
 #endif
 
 public typealias ParameterInitializer<Scalar: TensorFlowScalar> = (TensorShape) -> Tensor<Scalar>
 
 /// Returns a function that creates a tensor by initializing all its values to zeros.
 public func zeros<Scalar: TensorFlowFloatingPoint>() -> ParameterInitializer<Scalar> {
-    { Tensor(zeros: $0) }
+  { Tensor(zeros: $0) }
 }
 
 /// Returns a function that creates a tensor by initializing all its values to the provided value.
 public func constantInitializer<Scalar: TensorFlowFloatingPoint>(
-    value: Scalar
+  value: Scalar
 ) -> ParameterInitializer<Scalar> {
-    { Tensor(repeating: value, shape: $0) }
+  { Tensor(repeating: value, shape: $0) }
 }
 
 /// Returns a function that creates a tensor by initializing it to the provided value. Note that
 /// broadcasting of the provided value is *not* supported.
 public func constantInitializer<Scalar: TensorFlowFloatingPoint>(
-    value: Tensor<Scalar>
+  value: Tensor<Scalar>
 ) -> ParameterInitializer<Scalar> {
-    {
-        precondition(
-            value.shape == $0,
-            "The constant tensor shape (\(value.shape)) must match the requested shape \($0).")
-        return value
-    }
+  {
+    precondition(
+      value.shape == $0,
+      "The constant tensor shape (\(value.shape)) must match the requested shape \($0).")
+    return value
+  }
 }
 
 /// Returns a function that creates a tensor by performing Glorot (Xavier) uniform initialization 
@@ -49,9 +49,9 @@ public func constantInitializer<Scalar: TensorFlowFloatingPoint>(
 /// `sqrt(6 / (fanIn + fanOut))`, and `fanIn`/`fanOut` represent the number of input and output
 /// features multiplied by the receptive field, if present.
 public func glorotUniform<Scalar: TensorFlowFloatingPoint>(
-    seed: TensorFlowSeed = Context.local.randomSeed
+  seed: TensorFlowSeed = Context.local.randomSeed
 ) -> ParameterInitializer<Scalar> {
-    { Tensor<Scalar>(glorotUniform: $0, seed: seed) }
+  { Tensor<Scalar>(glorotUniform: $0, seed: seed) }
 }
 
 /// Returns a function that creates a tensor by performing Glorot (Xavier) normal initialization for
@@ -59,9 +59,9 @@ public func glorotUniform<Scalar: TensorFlowFloatingPoint>(
 /// on `0` with standard deviation `sqrt(2 / (fanIn + fanOut))`, where `fanIn`/`fanOut` represent 
 /// the number of input and output features multiplied by the receptive field size, if present.
 public func glorotNormal<Scalar: TensorFlowFloatingPoint>(
-    seed: TensorFlowSeed = Context.local.randomSeed
+  seed: TensorFlowSeed = Context.local.randomSeed
 ) -> ParameterInitializer<Scalar> {
-    { Tensor<Scalar>(glorotNormal: $0, seed: seed) }
+  { Tensor<Scalar>(glorotNormal: $0, seed: seed) }
 }
 
 /// Returns a function that creates a tensor by performing He (Kaiming) uniform initialization for 
@@ -70,9 +70,9 @@ public func glorotNormal<Scalar: TensorFlowFloatingPoint>(
 /// `sqrt(6 / fanIn)`, and `fanIn` represents the number of input features multiplied by the 
 /// receptive field, if present.
 public func heUniform<Scalar: TensorFlowFloatingPoint>(
-    seed: TensorFlowSeed = Context.local.randomSeed
+  seed: TensorFlowSeed = Context.local.randomSeed
 ) -> ParameterInitializer<Scalar> {
-    { Tensor<Scalar>(heUniform: $0, seed: seed) }
+  { Tensor<Scalar>(heUniform: $0, seed: seed) }
 }
 
 /// Returns a function that creates a tensor by performing He (Kaiming) normal initialization for the 
@@ -80,9 +80,9 @@ public func heUniform<Scalar: TensorFlowFloatingPoint>(
 /// on `0` with standard deviation `sqrt(2 / fanIn)`, where `fanIn` represents the number of input 
 /// features multiplied by the receptive field size, if present.
 public func heNormal<Scalar: TensorFlowFloatingPoint>(
-    seed: TensorFlowSeed = Context.local.randomSeed
+  seed: TensorFlowSeed = Context.local.randomSeed
 ) -> ParameterInitializer<Scalar> {
-    { Tensor<Scalar>(heNormal: $0, seed: seed) }
+  { Tensor<Scalar>(heNormal: $0, seed: seed) }
 }
 
 /// Returns a function that creates a tensor by performing LeCun uniform initialization for 
@@ -91,9 +91,9 @@ public func heNormal<Scalar: TensorFlowFloatingPoint>(
 /// `sqrt(3 / fanIn)`, and `fanIn` represents the number of input features multiplied by the 
 /// receptive field, if present.
 public func leCunUniform<Scalar: TensorFlowFloatingPoint>(
-    seed: TensorFlowSeed = Context.local.randomSeed
+  seed: TensorFlowSeed = Context.local.randomSeed
 ) -> ParameterInitializer<Scalar> {
-    { Tensor<Scalar>(leCunUniform: $0, seed: seed) }
+  { Tensor<Scalar>(leCunUniform: $0, seed: seed) }
 }
 
 /// Returns a function that creates a tensor by performing LeCun normal initialization for the 
@@ -101,9 +101,9 @@ public func leCunUniform<Scalar: TensorFlowFloatingPoint>(
 /// on `0` with standard deviation `sqrt(1 / fanIn)`, where `fanIn` represents the number of input 
 /// features multiplied by the receptive field size, if present.
 public func leCunNormal<Scalar: TensorFlowFloatingPoint>(
-    seed: TensorFlowSeed = Context.local.randomSeed
+  seed: TensorFlowSeed = Context.local.randomSeed
 ) -> ParameterInitializer<Scalar> {
-    { Tensor<Scalar>(leCunNormal: $0, seed: seed) }
+  { Tensor<Scalar>(leCunNormal: $0, seed: seed) }
 }
 
 /// Returns a function that creates a tensor by initializing all its values randomly from a
@@ -117,15 +117,15 @@ public func leCunNormal<Scalar: TensorFlowFloatingPoint>(
 ///
 ///- Returns: A truncated normal parameter initializer function.
 public func truncatedNormalInitializer<Scalar: TensorFlowFloatingPoint>(
-    mean: Tensor<Scalar> = Tensor<Scalar>(0),
-    standardDeviation: Tensor<Scalar> = Tensor<Scalar>(1),
-    seed: TensorFlowSeed = Context.local.randomSeed
+  mean: Tensor<Scalar> = Tensor<Scalar>(0),
+  standardDeviation: Tensor<Scalar> = Tensor<Scalar>(1),
+  seed: TensorFlowSeed = Context.local.randomSeed
 ) -> ParameterInitializer<Scalar> {
-    {
-        Tensor<Scalar>(
-            randomTruncatedNormal: $0,
-            mean: mean,
-            standardDeviation: standardDeviation,
-            seed: seed)
-    }
+  {
+    Tensor<Scalar>(
+      randomTruncatedNormal: $0,
+      mean: mean,
+      standardDeviation: standardDeviation,
+      seed: seed)
+  }
 }
