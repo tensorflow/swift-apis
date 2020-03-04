@@ -645,7 +645,7 @@ final class TensorAutoDiffTests: XCTestCase {
   }
 
   func testSideEffects() {
-    let foo: @differentiable(Tensor<Float>) -> Tensor<Float> = { x in
+    let foo: @differentiable (Tensor<Float>) -> Tensor<Float> = { x in
       var a = x
       a = a + x
       a = a + x
