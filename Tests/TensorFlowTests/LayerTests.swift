@@ -26,44 +26,6 @@ fileprivate struct Sigmoid<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
 }
 
 final class LayerTests: XCTestCase {
-  func testSequential() {
-    withRandomSeedForTensorFlow((12345, 12345)) {
-      let inputSize = 2
-      let hiddenSize = 4
-      var model = Sequential {
-        Dense<Float>(
-          inputSize: inputSize,
-          outputSize: hiddenSize,
-          weightInitializer: glorotUniform())
-        Sigmoid<Float>()
-        Dense<Float>(
-          inputSize: hiddenSize,
-          outputSize: 1,
-          weightInitializer: glorotUniform())
-      }
-      let optimizer = SGD(for: model)
-      let x = Tensor<Float>([[0, 0], [0, 1], [1, 0], [1, 1]])
-      let y = Tensor<Float>([0, 1, 1, 0])
-      let initialLoss = meanSquaredError(
-        predicted: model(x).squeezingShape(at: 1),
-        expected: y)
-      withTensorLeakChecking {
-        for _ in 0..<10 {
-          let 𝛁model = gradient(at: model) { model -> Tensor<Float> in
-            meanSquaredError(
-              predicted: model(x).squeezingShape(at: 1),
-              expected: y)
-          }
-          optimizer.update(&model, along: 𝛁model)
-        }
-      }
-      let updatedLoss = meanSquaredError(
-        predicted: model(x).squeezingShape(at: 1),
-        expected: y)
-      XCTAssertLessThan(updatedLoss.scalarized(), initialLoss.scalarized())
-    }
-  }
-
   func testConv1D() {
     let filter = Tensor<Float>(ones: [3, 1, 2]) * Tensor<Float>([[[0.5, 1]]])
     let bias = Tensor<Float>([0, 1])
@@ -1950,7 +1912,6 @@ final class LayerTests: XCTestCase {
   }
 
   static var allTests = [
-    ("testSequential", testSequential),
     ("testConv1D", testConv1D),
     ("testConv1DDilation", testConv1DDilation),
     ("testConv2D", testConv2D),

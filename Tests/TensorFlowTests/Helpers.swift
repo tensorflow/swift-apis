@@ -50,3 +50,25 @@ func withTensorLeakChecking(
   XCTAssertGreaterThanOrEqual(tensorCountDifference, 0, "Negative tensor count?")
   XCTAssertEqual(tensorCountDifference, 0, "Memory leaks found", file: file, line: line)
 }
+
+extension Float: PointwiseMultiplicative {
+  public var reciprocal: Float { 1 / self }
+  public static func .* (lhs: Float, rhs: Float) -> Float { lhs * rhs }
+}
+
+struct Multiply: Layer {
+    var coefficient: Float
+
+    @differentiable
+    func callAsFunction(_ input: Float) -> Float {
+        return coefficient * input
+    }
+}
+
+func factorial(_ n: Int) -> Int {
+    var result: Int = 1
+    for i in 2...n {
+        result *= i
+    }
+    return result
+}
