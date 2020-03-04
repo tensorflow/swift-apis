@@ -42,20 +42,20 @@ public enum ResizeMethod {
 @differentiable(wrt: images)
 public func resize(
   images: Tensor<Float>,
-  size: (Int, Int),
+  size: (newHeight: Int, newWidth: Int),
   method: ResizeMethod = .bilinear,
   antialias: Bool = false
 ) -> Tensor<Float> {
   precondition(
     images.rank == 3 || images.rank == 4,
     "The images tensor must have rank 3 or 4.")
-  precondition(size.0 > 0 && size.1 > 0, "The size must be positive.")
+  precondition(size.newHeight > 0 && size.newWidth > 0, "The size must be positive.")
   var images = images
   let singleImage = images.rank == 3
   if singleImage {
     images = images.rankLifted()
   }
-  let size = Tensor([Int32(size.0), Int32(size.1)])
+  let size = Tensor([Int32(size.newHeight), Int32(size.newWidth)])
   let scale = Tensor<Float>(size) / Tensor<Float>([Float(images.shape[1]), Float(images.shape[2])])
   switch method {
   case .nearest:
@@ -140,19 +140,19 @@ public func resize(
 @inlinable
 public func resizeArea<Scalar: TensorFlowNumeric>(
   images: Tensor<Scalar>,
-  size: (Int, Int),
+  size: (newHeight: Int, newWidth: Int),
   alignCorners: Bool = false
 ) -> Tensor<Float> {
   precondition(
     images.rank == 3 || images.rank == 4,
     "The images tensor must have rank 3 or 4.")
-  precondition(size.0 > 0 && size.1 > 0, "The size must be positive.")
+  precondition(size.newHeight > 0 && size.newWidth > 0, "The size must be positive.")
   var images = images
   let singleImage = images.rank == 3
   if singleImage {
     images = images.rankLifted()
   }
-  let size = Tensor([Int32(size.0), Int32(size.1)])
+  let size = Tensor([Int32(size.newHeight), Int32(size.newWidth)])
   var resized = _Raw.resizeArea(
     images: images,
     size: size,
