@@ -182,7 +182,7 @@ func scaleAndTranslate(
 }
 
 @usableFromInline
-@derivative(of: scaleAndTranslate wrt: images)
+@derivative(of: scaleAndTranslate, wrt: images)
 func _vjpScaleAndTranslate(
   images: Tensor<Float>,
   size: Tensor<Int32>,
