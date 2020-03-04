@@ -28,7 +28,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   ///   - scale: The scale, also known as gamma.
   ///   - epsilon: A small value added to the denominator for numerical stability.
   @inlinable
-  @differentiable(wrt: (self, offset, scale))
+  @differentiable(wrt: (self,offset,scale))
   public func batchNormalized(
     alongAxis axis: Int,
     offset: Tensor = Tensor(0),
@@ -82,7 +82,7 @@ extension Padding {
 ///   - dilation: The dilation factor.
 /// - Precondition: `input` must have rank `3`.
 /// - Precondition: `filter` must have rank 3.
-@differentiable(wrt: (input, filter))
+@differentiable(wrt: (input,filter))
 public func conv1D<Scalar: TensorFlowFloatingPoint>(
   _ input: Tensor<Scalar>,
   filter: Tensor<Scalar>,
@@ -111,7 +111,7 @@ public func conv1D<Scalar: TensorFlowFloatingPoint>(
 ///   - dilations: The dilation factor for each dimension of the input.
 /// - Precondition: `input` must have rank `4`.
 /// - Precondition: `filter` must have rank 4.
-@differentiable(wrt: (input, filter))
+@differentiable(wrt: (input,filter))
 public func conv2D<Scalar: TensorFlowFloatingPoint>(
   _ input: Tensor<Scalar>,
   filter: Tensor<Scalar>,
@@ -167,7 +167,7 @@ func _vjpConv2D<Scalar: TensorFlowFloatingPoint>(
 ///   - dilations: The dilation factor for each dimension of the input.
 /// - Precondition: `input` must have rank `4`.
 /// - Precondition: `filter` must have rank 4.
-@differentiable(wrt: (input, filter))
+@differentiable(wrt: (input,filter))
 public func transposedConv2D<Scalar: TensorFlowFloatingPoint>(
   _ input: Tensor<Scalar>,
   shape: Tensor<Int32>,
@@ -184,7 +184,7 @@ public func transposedConv2D<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// TensorFlow builtin conv2d gradient helper for the input.
-@differentiable(wrt: (x, filter))
+@differentiable(wrt: (x,filter))
 @usableFromInline
 func conv2DBackpropInput<Scalar: TensorFlowFloatingPoint>(
   _ x: Tensor<Scalar>,
@@ -231,7 +231,7 @@ func _vjpConv2DBackpropInput<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// TensorFlow builtin conv2d gradient helper for the filter.
-@differentiable(wrt: (x, input))
+@differentiable(wrt: (x,input))
 @usableFromInline
 func conv2DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
   _ x: Tensor<Scalar>,
@@ -287,7 +287,7 @@ func _vjpConv2DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
 ///   - dilations: The dilation factor for each dimension of the input.
 /// - Precondition: `input` must have rank `5`.
 /// - Precondition: `filter` must have rank 5.
-@differentiable(wrt: (input, filter))
+@differentiable(wrt: (input,filter))
 public func conv3D<Scalar: TensorFlowFloatingPoint>(
   _ input: Tensor<Scalar>,
   filter: Tensor<Scalar>,
@@ -340,7 +340,7 @@ func _vjpConv3D<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// TensorFlow builtin conv3d gradient helper for the input.
-@differentiable(wrt: (x, filter))
+@differentiable(wrt: (x,filter))
 @usableFromInline
 func conv3DBackpropInput<Scalar: TensorFlowFloatingPoint>(
   _ x: Tensor<Scalar>,
@@ -393,7 +393,7 @@ func _vjpConv3DBackpropInput<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// TensorFlow builtin conv3d gradient helper for the filter.
-@differentiable(wrt: (x, input))
+@differentiable(wrt: (x,input))
 @usableFromInline
 func conv3DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
   _ x: Tensor<Scalar>,
@@ -454,7 +454,7 @@ func _vjpConv3DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
 ///   - padding: The padding for the operation.
 /// - Precondition: `input` must have rank 4.
 /// - Precondition: `filter` must have rank 4.
-@differentiable(wrt: (input, filter))
+@differentiable(wrt: (input,filter))
 public func depthwiseConv2D<Scalar: TensorFlowFloatingPoint>(
   _ input: Tensor<Scalar>,
   filter: Tensor<Scalar>,
@@ -497,7 +497,7 @@ func _vjpDepthwiseConv2D<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// TensorFlow builtin depthwiseConv2D gradient helper for the input.
-@differentiable(wrt: (x, filter))
+@differentiable(wrt: (x,filter))
 @usableFromInline
 func depthwiseConv2dBackpropInput<Scalar: TensorFlowFloatingPoint>(
   _ x: Tensor<Scalar>,
@@ -541,7 +541,7 @@ func _vjpDepthwiseConv2dBackpropInput<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// TensorFlow builtin depthwiseConv2D gradient helper for the filter.
-@differentiable(wrt: (x, input))
+@differentiable(wrt: (x,input))
 @usableFromInline
 func depthwiseConv2dBackpropFilter<Scalar: TensorFlowFloatingPoint>(
   _ x: Tensor<Scalar>,
