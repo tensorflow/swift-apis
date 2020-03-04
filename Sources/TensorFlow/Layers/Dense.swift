@@ -38,6 +38,11 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
   /// The element-wise activation function type.
   public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
 
+  /// Creates an instance from the given weight, optional bias, and activation function.
+  ///
+  /// - Note: currently, `weight` is the only differentiability parameter. `bias` can be made a
+  ///   differentiability parameter after `Optional` conditionally conforms to `Differentiable`:
+  ///   TF-499.
   @differentiable(wrt: weight)
   public init(
     weight: Tensor<Scalar>,
