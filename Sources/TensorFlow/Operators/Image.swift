@@ -12,8 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/// A resize algorithm.
 public enum ResizeMethod {
-  case nearest, bilinear, bicubic, lanczos3, lanczos5, gaussian, mitchellcubic
+  // Nearest neighbor interpolation.
+  case nearest
+  // Bilinear interpolation.
+  case bilinear
+  // Bicubic interpolation.
+  case bicubic
+  // Lanczos kernel with radius 3.
+  case lanczos3
+  // Lanczos kernel with radius 5.
+  case lanczos5
+  // Gaussian kernel with radius 3, sigma = 1.5 / 3.0.
+  case gaussian
+  // Mitchell-Netravali Cubic non-interpolating filter.
+  case mitchellcubic
 }
 
 /// Resize images to size using the specified method.
