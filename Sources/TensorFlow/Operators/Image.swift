@@ -22,7 +22,7 @@ public enum ResizeMethod {
   case bicubic
   /// Lanczos kernel with radius `3`.
   case lanczos3
-  /// Lanczos kernel with radius 5.
+  /// Lanczos kernel with radius `5`.
   case lanczos5
   /// Gaussian kernel with radius `3`, sigma `1.5 / 3.0`.
   case gaussian
