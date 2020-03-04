@@ -1004,7 +1004,7 @@ extension Array: Module where Element: Layer, Element.Input == Element.Output {
 
   @differentiable
   public func callAsFunction(_ input: Input) -> Output {
-  differentiableReduce(input) { $1($0) }
+    differentiableReduce(input) { $1($0) }
   }
 }
 
