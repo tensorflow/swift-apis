@@ -1389,6 +1389,15 @@ final class LayerTests: XCTestCase {
   func testDenseGradient() {
     let weight = Tensor<Float>(shape: [4, 8], scalars: (0..<32).map(Float.init))
     let bias = Tensor<Float>(shape: [1, 8], scalars: (0..<8).map(Float.init))
+
+    // Test `Dense.init` derivative.
+    let denseInitPullback = pullback(at: weight) { weight in
+      Dense(weight: weight, bias: bias, activation: identity)
+    }
+    let weightGrad = denseInitPullback(.init(weight: Tensor(100), bias: Tensor(1)))
+    XCTAssertEqual(Tensor(100), weightGrad)
+
+    // Test `Dense.callAsFunction` derivative.
     let layer = Dense<Float>(weight: weight, bias: bias, activation: identity)
     let x = Tensor<Float>(shape: [2, 4], scalars: (0..<8).map(Float.init))
     let grad = gradient(at: x, layer) { $1($0).squared().sum() }
