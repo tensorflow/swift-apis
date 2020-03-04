@@ -378,6 +378,37 @@ extension Tensor {
     return transposed(permutation: Tensor<Int32>(defaultPermutations))
   }
 
+  /// Returns a tensor with specified dimensions reversed.
+  /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
+  /// - Precondition: There must be no duplication in `axes`.
+  @inlinable
+  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  func reversed(inAxes axes: Tensor<Int32>) -> Tensor {
+    precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
+    return _Raw.reverseV2(self, axis: axes)
+  }
+
+  /// Returns a tensor with specified dimensions reversed.
+  /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
+  /// - Precondition: There must be no duplication in `axes`.
+  @inlinable
+  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  func reversed(inAxes axes: [Int]) -> Tensor {
+      precondition(axes.count == Set(axes.map { $0 < 0 ? $0 + rank : $0 }).count,
+                   "There must be no duplication in axes.")
+      let axes = axes.map(Int32.init)
+      return reversed(inAxes: Tensor<Int32>(axes))
+  }
+
+  /// Returns a tensor with specified dimensions reversed.
+  /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
+  /// - Precondition: There must be no duplication in `axes`.
+  @inlinable
+  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  func reversed(inAxes axes: Int...) -> Tensor {
+      reversed(inAxes: axes)
+  }
+
   /// Returns a concatenated tensor along the specified axis.
   /// - Precondition: The tensors must have the same dimensions, except for the
   ///   specified axis.
@@ -638,6 +669,24 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   @derivative(of: transposed)
   func _vjpTransposed() -> (value: Tensor, pullback: (Tensor) -> Tensor) {
     return (transposed(), { $0.transposed() })
+  }
+
+  @inlinable
+  @derivative(of: reversed)
+  func _vjpReversed(inAxes axes: Tensor<Int32>) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
+    return (reversed(inAxes: axes), { $0.reversed(inAxes: axes) })
+  }
+
+  @inlinable
+  @derivative(of: reversed)
+  func _vjpReversed(inAxes axes: [Int]) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
+    return (reversed(inAxes: axes), { $0.reversed(inAxes: axes) })
+  }
+
+  @inlinable
+  @derivative(of: reversed)
+  func _vjpReversed(inAxes axes: Int...) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
+    return (reversed(inAxes: axes), { $0.reversed(inAxes: axes) })
   }
 
   @inlinable
