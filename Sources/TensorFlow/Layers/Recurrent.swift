@@ -31,7 +31,7 @@ public struct RNNCellInput<Input: Differentiable, State: Differentiable>: Differ
 }
 
 extension RNNCellInput: EuclideanDifferentiable
-where Input: EuclideanDifferentiable, State: EuclideanDifferentiable {}
+  where Input: EuclideanDifferentiable, State: EuclideanDifferentiable {}
 
 /// An output to a recurrent neural network.
 public struct RNNCellOutput<Output: Differentiable, State: Differentiable>: Differentiable {
@@ -48,12 +48,12 @@ public struct RNNCellOutput<Output: Differentiable, State: Differentiable>: Diff
 }
 
 extension RNNCellOutput: EuclideanDifferentiable
-where Output: EuclideanDifferentiable, State: EuclideanDifferentiable {}
+  where Output: EuclideanDifferentiable, State: EuclideanDifferentiable {}
 
 /// A recurrent neural network cell.
 public protocol RNNCellProtocol: Layer
   where Input == RNNCellInput<TimeStepInput, State>,
-Output == RNNCellOutput<TimeStepOutput, State> {
+        Output == RNNCellOutput<TimeStepOutput, State> {
   /// The input at a time step.
   associatedtype TimeStepInput: Differentiable
   /// The output at a time step.
