@@ -22,7 +22,7 @@ public enum ResizeMethod {
 ///   - images: 4-D Tensor of shape `[batch, height, width, channels]` or 3-D Tensor of shape `[height, width, channels]`.
 ///   - size: The new size of the images.
 ///   - method: The resize method. The default value is `.bilinear`.
-///   - antialias: Whether to use an anti-aliasing filter when downsampling an image.
+///   - antialias: Iff `true`, use an anti-aliasing filter when downsampling an image.
 /// - Precondition: The images must have rank 3 or 4.
 /// - Precondition: The size must be positive.
 @differentiable(wrt: images)
