@@ -13,15 +13,16 @@
 // limitations under the License.
 
 import XCTest
+
 @testable import TensorFlow
 
 fileprivate struct Sigmoid<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
-    public init() {}
+  public init() {}
 
-    @differentiable
-    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        sigmoid(input)
-    }
+  @differentiable
+  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+    sigmoid(input)
+  }
 }
 
 final class LayerTests: XCTestCase {

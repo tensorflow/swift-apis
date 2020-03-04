@@ -13,203 +13,208 @@
 // limitations under the License.
 
 #if os(macOS) || os(iOS) || os(watchOS) || os(tvOS)
-import Darwin
+  import Darwin
 #elseif os(Windows)
-import ucrt
-import WinSDK
+  import ucrt
+  import WinSDK
 #else
-import Glibc
+  import Glibc
 #endif
 
 struct ThreadLocalStorage {
-    struct Key {
-#if os(Windows)
-        var _value: DWORD
-#else
-        var _value: pthread_key_t
-#endif
+  struct Key {
+    #if os(Windows)
+      var _value: DWORD
+    #else
+      var _value: pthread_key_t
+    #endif
 
-#if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
-        typealias KeyDestructor = @convention(c) (UnsafeMutableRawPointer) -> Void
-#else
-        typealias KeyDestructor = @convention(c) (UnsafeMutableRawPointer?) -> Void
-#endif
+    #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
+      typealias KeyDestructor = @convention(c) (UnsafeMutableRawPointer) -> Void
+    #else
+      typealias KeyDestructor = @convention(c) (UnsafeMutableRawPointer?) -> Void
+    #endif
 
-        init(destructor: KeyDestructor?) {
-#if os(Windows)
-            _value = FlsAlloc(destructor)
-#else
-            _value = pthread_key_t()
-            pthread_key_create(&_value, destructor)
-#endif
-        }
+    init(destructor: KeyDestructor?) {
+      #if os(Windows)
+        _value = FlsAlloc(destructor)
+      #else
+        _value = pthread_key_t()
+        pthread_key_create(&_value, destructor)
+      #endif
     }
+  }
 
-    public static func get(for key: Key) -> UnsafeMutableRawPointer? {
-#if os(Windows)
-        return FlsGetValue(key._value)
-#else
-        return pthread_getspecific(key._value)
-#endif
-    }
+  public static func get(for key: Key) -> UnsafeMutableRawPointer? {
+    #if os(Windows)
+      return FlsGetValue(key._value)
+    #else
+      return pthread_getspecific(key._value)
+    #endif
+  }
 
-    public static func set(value: UnsafeMutableRawPointer?, for key: Key) {
-#if os(Windows)
-        FlsSetValue(key._value, value)
-#else
-        pthread_setspecific(key._value, value)
-#endif
-    }
+  public static func set(value: UnsafeMutableRawPointer?, for key: Key) {
+    #if os(Windows)
+      FlsSetValue(key._value, value)
+    #else
+      pthread_setspecific(key._value, value)
+    #endif
+  }
 }
 
 // A thread that runs the provided body.
 class Thread {
-#if os(Windows)
+  #if os(Windows)
     typealias Handle = HANDLE
-#else
-#if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
-    typealias Handle = pthread_t?
-#else
-    typealias Handle = pthread_t
-#endif
-#endif
+  #else
+    #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
+      typealias Handle = pthread_t?
+    #else
+      typealias Handle = pthread_t
+    #endif
+  #endif
 
-    static func _invalidHandle() -> Handle {
-#if os(Windows)
+  static func _invalidHandle() -> Handle {
+    #if os(Windows)
       return INVALID_HANDLE_VALUE
-#else
-#if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
-      return nil
-#else
-      return pthread_t()
-#endif
-#endif
+    #else
+      #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
+        return nil
+      #else
+        return pthread_t()
+      #endif
+    #endif
+  }
+
+  // NOTE: the `Procedure` abstraction is required as the use of the
+  // `Unmanaged` requires a `class` type for the reference counting purposes.
+  class Procedure {
+    let body: () -> Void
+
+    init(_ body: @escaping () -> Void) {
+      self.body = body
     }
 
-    // NOTE: the `Procedure` abstraction is required as the use of the
-    // `Unmanaged` requires a `class` type for the reference counting purposes.
-    class Procedure {
-        let body: () -> ()
-
-        init(_ body: @escaping () -> ()) {
-            self.body = body
-        }
-
-        func run() {
-            self.body()
-        }
+    func run() {
+      self.body()
     }
+  }
 
-    var thread: Handle = _invalidHandle()
+  var thread: Handle = _invalidHandle()
 
-    init(perform body: @escaping () -> ()) {
-        let context = Unmanaged.passRetained(Procedure(body)).toOpaque()
-#if os(Windows)
-        let status = _beginthreadex(nil, 0, {
-            let procedure: Thread.Procedure =
-                Unmanaged.fromOpaque($0!).takeRetainedValue()
-            procedure.run()
-            return 0
+  init(perform body: @escaping () -> Void) {
+    let context = Unmanaged.passRetained(Procedure(body)).toOpaque()
+    #if os(Windows)
+      let status = _beginthreadex(
+        nil, 0,
+        {
+          let procedure: Thread.Procedure =
+            Unmanaged.fromOpaque($0!).takeRetainedValue()
+          procedure.run()
+          return 0
         }, context, 0, nil)
-#else
-        let status = pthread_create(&self.thread, nil, {
-#if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
+    #else
+      let status = pthread_create(
+        &self.thread, nil,
+        {
+          #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
             let procedure: Thread.Procedure =
-                Unmanaged.fromOpaque($0).takeRetainedValue()
-#else
+              Unmanaged.fromOpaque($0).takeRetainedValue()
+          #else
             let procedure: Thread.Procedure =
-                Unmanaged.fromOpaque($0!).takeRetainedValue()
-#endif
-            procedure.run()
-            return nil
+              Unmanaged.fromOpaque($0!).takeRetainedValue()
+          #endif
+          procedure.run()
+          return nil
         }, context)
-#endif
-        internalConsistencyCheck(status == 0)
-    }
+    #endif
+    internalConsistencyCheck(status == 0)
+  }
 
-    func join() {
-#if os(Windows)
-        let result = WaitForSingleObject(thread, INFINITE)
-        internalConsistencyCheck(result == WAIT_OBJECT_0)
-        CloseHandle(self.thread)
-#else
-#if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
+  func join() {
+    #if os(Windows)
+      let result = WaitForSingleObject(thread, INFINITE)
+      internalConsistencyCheck(result == WAIT_OBJECT_0)
+      CloseHandle(self.thread)
+    #else
+      #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
         let status = pthread_join(thread!, nil)
-#else
+      #else
         let status = pthread_join(thread, nil)
-#endif
-        internalConsistencyCheck(status == 0)
-#endif
-    }
+      #endif
+      internalConsistencyCheck(status == 0)
+    #endif
+  }
 }
 
 /// A portable mutex for synchronization of a shared resource.
 class Mutex {
-#if os(Windows)
+  #if os(Windows)
     typealias MutexType = SRWLOCK
-#else
+  #else
     typealias MutexType = pthread_mutex_t
-#endif
+  #endif
 
-    var _mutex: MutexType
+  var _mutex: MutexType
 
-    init() {
-        _mutex = MutexType()
-#if os(Windows)
-        InitializeSRWLock(&_mutex)
-#else
-        pthread_mutex_init(&_mutex, nil)
-#endif
-    }
+  init() {
+    _mutex = MutexType()
+    #if os(Windows)
+      InitializeSRWLock(&_mutex)
+    #else
+      pthread_mutex_init(&_mutex, nil)
+    #endif
+  }
 
-    deinit {
-#if os(Windows)
-        // SRWLOCKs do not need explicit destruction
-#else
-        pthread_mutex_destroy(&_mutex)
-#endif
-    }
+  deinit {
+    #if os(Windows)
+      // SRWLOCKs do not need explicit destruction
+    #else
+      pthread_mutex_destroy(&_mutex)
+    #endif
+  }
 
-    // Acquire the mutex.
-    //
-    // Calling this function will block until it is safe to access the resource
-    // that the mutex is protecting, locking the mutex indicating ownership of
-    // the shared resource.
-    //
-    // Returns 0 on success.
-    func acquire() -> Int32 {
-#if os(Windows)
-        AcquireSRWLockExclusive(&_mutex)
-        return 0
-#else
-        return pthread_mutex_lock(&_mutex)
-#endif
-    }
+  // Acquire the mutex.
+  //
+  // Calling this function will block until it is safe to access the resource
+  // that the mutex is protecting, locking the mutex indicating ownership of
+  // the shared resource.
+  //
+  // Returns 0 on success.
+  func acquire() -> Int32 {
+    #if os(Windows)
+      AcquireSRWLockExclusive(&_mutex)
+      return 0
+    #else
+      return pthread_mutex_lock(&_mutex)
+    #endif
+  }
 
-    // Release the mutex.
-    //
-    // Calling this function unlocks the mutex, relinquishing control of the
-    // shared resource.
-    //
-    // Returns 0 on success.
-    func release() -> Int32 {
-#if os(Windows)
-        ReleaseSRWLockExclusive(&_mutex)
-        return 0
-#else
-        return pthread_mutex_unlock(&_mutex)
-#endif
-    }
+  // Release the mutex.
+  //
+  // Calling this function unlocks the mutex, relinquishing control of the
+  // shared resource.
+  //
+  // Returns 0 on success.
+  func release() -> Int32 {
+    #if os(Windows)
+      ReleaseSRWLockExclusive(&_mutex)
+      return 0
+    #else
+      return pthread_mutex_unlock(&_mutex)
+    #endif
+  }
 }
 
-public func _runOnNDevices(_ n: Int, perform body: @escaping (Int) -> ()) {
-    var threads = [] as [Thread]
-    for i in 0..<n {
-        threads.append(Thread {
-            body(i)
-        })
-    }
-    for t in threads {
-        t.join()
-    }
+public func _runOnNDevices(_ n: Int, perform body: @escaping (Int) -> Void) {
+  var threads = [] as [Thread]
+  for i in 0..<n {
+    threads.append(
+      Thread {
+        body(i)
+      })
+  }
+  for t in threads {
+    t.join()
+  }
 }

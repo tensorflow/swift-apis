@@ -13,38 +13,40 @@
 // limitations under the License.
 
 import XCTest
+
 @testable import TensorFlow
 
 internal func assertEqual<T: TensorFlowFloatingPoint>(
-    _ x: [T], _ y: [T], accuracy: T, _ message: String = "",
-    file: StaticString = #file, line: UInt = #line
+  _ x: [T], _ y: [T], accuracy: T, _ message: String = "",
+  file: StaticString = #file, line: UInt = #line
 ) {
-    for (x, y) in zip(x, y) {
-        if x.isNaN || y.isNaN {
-            XCTAssertTrue(x.isNaN && y.isNaN,
-                          "\(x) is not equal to \(y) - \(message)",
-                          file: file, line: line)
-            continue
-        }
-        XCTAssertEqual(x, y, accuracy: accuracy, message, file: file, line: line)
+  for (x, y) in zip(x, y) {
+    if x.isNaN || y.isNaN {
+      XCTAssertTrue(
+        x.isNaN && y.isNaN,
+        "\(x) is not equal to \(y) - \(message)",
+        file: file, line: line)
+      continue
     }
+    XCTAssertEqual(x, y, accuracy: accuracy, message, file: file, line: line)
+  }
 }
 
 internal func assertEqual<T: TensorFlowFloatingPoint>(
-    _ x: Tensor<T>, _ y: Tensor<T>, accuracy: T, _ message: String = "",
-    file: StaticString = #file, line: UInt = #line
+  _ x: Tensor<T>, _ y: Tensor<T>, accuracy: T, _ message: String = "",
+  file: StaticString = #file, line: UInt = #line
 ) {
-    assertEqual(x.scalars, y.scalars, accuracy: accuracy, message, file: file, line: line)
+  assertEqual(x.scalars, y.scalars, accuracy: accuracy, message, file: file, line: line)
 }
 
 func withTensorLeakChecking(
-    file: StaticString = #file,
-    line: UInt = #line,
-    _ body: () throws -> Void
+  file: StaticString = #file,
+  line: UInt = #line,
+  _ body: () throws -> Void
 ) rethrows {
-    let initialTensorCount = Context.local.globalTensorCount
-    try body()
-    let tensorCountDifference = Context.local.globalTensorCount - initialTensorCount
-    XCTAssertGreaterThanOrEqual(tensorCountDifference, 0, "Negative tensor count?")
-    XCTAssertEqual(tensorCountDifference, 0, "Memory leaks found", file: file, line: line)
+  let initialTensorCount = Context.local.globalTensorCount
+  try body()
+  let tensorCountDifference = Context.local.globalTensorCount - initialTensorCount
+  XCTAssertGreaterThanOrEqual(tensorCountDifference, 0, "Negative tensor count?")
+  XCTAssertEqual(tensorCountDifference, 0, "Memory leaks found", file: file, line: line)
 }
