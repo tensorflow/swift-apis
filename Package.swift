@@ -1,4 +1,4 @@
-// swift-tools-version:4.2
+// swift-tools-version:5.2
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 //
 // Copyright 2019 The TensorFlow Authors. All Rights Reserved.
@@ -19,6 +19,9 @@ import PackageDescription
 
 let package = Package(
   name: "TensorFlow",
+  platforms: [
+    .macOS(.v10_13),
+  ],
   products: [
     .library(
       name: "TensorFlow",
