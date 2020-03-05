@@ -185,8 +185,7 @@ extension Tensor {
   @inlinable
   @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
   public func reshaped(to newShape: TensorShape) -> Tensor {
-    // TODO(TF-433): Remove workaround for differentiating `map`.
-    reshaped(toShape: Tensor<Int32>({ newShape.dimensions.map(Int32.init) }()))
+    _Raw.reshape(self, shape: newShape.dimensions.map(Int64.init))
   }
 
   /// Reshape to the specified `Tensor` representing a shape.
@@ -217,9 +216,13 @@ extension Tensor {
   @inlinable
   @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
   public func expandingShape(at axes: [Int]) -> Tensor {
-    var result = self
-    for i in axes { result = _Raw.expandDims(result, dim: Tensor<Int32>(Int32(i))) }
-    return result
+    var resultShape = self.shape.dimensions.map { Int64($0) }
+    for i in axes {
+      var dim = i
+      if dim < 0 { dim += resultShape.count + 1 }
+      resultShape.insert(1, at: dim)
+    }
+    return _Raw.reshape(self, shape: resultShape)
   }
 
   /// Returns a rank-lifted `Tensor` with a leading dimension of 1.
@@ -297,6 +300,15 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   ) {
     let value = reshaped(toShape: newShape)
     return (value, { [shape = shapeTensor] v in v.reshaped(toShape: shape) })
+  }
+
+  @inlinable
+  @derivative(of: reshaped)
+  func _vjpReshaped(toShape newShape: TensorShape) -> (
+    value: Tensor, pullback: (Tensor) -> Tensor
+  ) {
+    let value = reshaped(to: newShape)
+    return (value, { [shape = shape] v in v.reshaped(to: shape) })
   }
 
   @inlinable
