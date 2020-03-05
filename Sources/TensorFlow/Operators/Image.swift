@@ -163,6 +163,7 @@ public func resizeArea<Scalar: TensorFlowNumeric>(
   return resized
 }
 
+@usableFromInline
 @differentiable(wrt: images)
 func scaleAndTranslate(
   images: Tensor<Float>,
@@ -212,6 +213,7 @@ func _vjpScaleAndTranslate(
   )
 }
 
+@usableFromInline
 @differentiable(wrt: images where Scalar: TensorFlowFloatingPoint)
 func resizeNearestNeighbor<Scalar: TensorFlowNumeric>(
   images: Tensor<Scalar>,
@@ -254,6 +256,7 @@ func _vjpResizeNearestNeighbor<Scalar: TensorFlowFloatingPoint>(
   )
 }
 
+@usableFromInline
 @differentiable(wrt: images where Scalar: TensorFlowFloatingPoint)
 func resizeBilinear<Scalar: TensorFlowNumeric>(
   images: Tensor<Scalar>,
@@ -296,6 +299,7 @@ func _vjpResizeBilinear<Scalar: TensorFlowFloatingPoint>(
   )
 }
 
+@usableFromInline
 @differentiable(wrt: images where Scalar: TensorFlowFloatingPoint)
 func resizeBicubic<Scalar: TensorFlowFloatingPoint>(
   images: Tensor<Scalar>,
