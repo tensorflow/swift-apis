@@ -33,7 +33,7 @@ RUN rm -f /swift-tensorflow-toolchain/usr/lib/swift/linux/x86_64/TensorFlow.swif
 RUN rm -f /swift-tensorflow-toolchain/usr/lib/swift/linux/libswiftTensorFlow.so
 
 # Benchmark compile times
-RUN python3 Tools/benchmark_compile.py /swift-tensorflow-toolchain/usr/bin/swift benchmark_results.xml
+RUN python3 Utilities/benchmark_compile.py /swift-tensorflow-toolchain/usr/bin/swift benchmark_results.xml
 
 # Run SwiftPM tests
 RUN /swift-tensorflow-toolchain/usr/bin/swift test

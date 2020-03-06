@@ -477,7 +477,7 @@ extension Tensor where Scalar: TensorFlowIndex {
   ///
   /// - Returns: 2-D Tensor with shape `[batchSize, sampleCount]`.  Each slice `[i, :]`
   ///     contains the drawn class labels with range `[0, classCount)`.
-  public init<T: TensorFlowNumeric>(
+  public init<T: TensorFlowFloatingPoint>(
     randomCategorialLogits: Tensor<T>,
     sampleCount: Int32,
     seed: TensorFlowSeed = Context.local.randomSeed
