@@ -89,7 +89,7 @@ extension RecurrentLayerCell {
   }
 }
 
-@available(*, deprecated, message: "Please use 'RecurrentLayerCell'.")
+@available(*, deprecated, renamed: "RecurrentLayerCell")
 public typealias RNNCell = RecurrentLayerCell
 
 /// A basic RNN cell.
@@ -139,7 +139,7 @@ public struct BasicRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
   }
 }
 
-@available(*, deprecated, message: "Please use 'BasicRNNCell'.")
+@available(*, deprecated, renamed: "BasicRNNCell")
 public typealias SimpleRNNCell = BasicRNNCell
 
 /// An LSTM cell.
@@ -359,7 +359,7 @@ public struct RecurrentLayer<Cell: RNNCell>: Layer {
     self.cell = cell()
   }
 
-  @differentiable(wrt: (self,inputs,initialState))
+  @differentiable(wrt: (self, inputs, initialState))
   public func callAsFunction(
     _ inputs: [Cell.TimeStepInput],
     initialState: Cell.State
@@ -375,7 +375,7 @@ public struct RecurrentLayer<Cell: RNNCell>: Layer {
     return timeStepOutputs
   }
 
-  @differentiable(wrt: (self,inputs,initialState))
+  @differentiable(wrt: (self, inputs, initialState))
   public func call(
     _ inputs: [Cell.TimeStepInput],
     initialState: Cell.State
@@ -384,7 +384,7 @@ public struct RecurrentLayer<Cell: RNNCell>: Layer {
   }
 
   @usableFromInline
-  @derivative(of: callAsFunction, wrt: (self,inputs,initialState))
+  @derivative(of: callAsFunction, wrt: (self, inputs, initialState))
   internal func _vjpCallAsFunction(
     _ inputs: [Cell.TimeStepInput],
     initialState: Cell.State
@@ -433,7 +433,7 @@ public struct RecurrentLayer<Cell: RNNCell>: Layer {
     return self(inputs, initialState: initialState)
   }
 
-  @differentiable(wrt: (self,inputs,initialState))
+  @differentiable(wrt: (self, inputs, initialState))
   public func lastOutput(
     from inputs: [Cell.TimeStepInput],
     initialState: Cell.State
@@ -442,7 +442,7 @@ public struct RecurrentLayer<Cell: RNNCell>: Layer {
     return self(inputs, initialState: initialState)[withoutDerivative(at: inputs.count - 1)]
   }
 
-  @differentiable(wrt: (self,inputs))
+  @differentiable(wrt: (self, inputs))
   public func lastOutput(from inputs: [Cell.TimeStepInput]) -> Cell.TimeStepOutput {
     precondition(!inputs.isEmpty, "'inputs' must be non-empty.")
     let initialState = withoutDerivative(at: cell.zeroState(for: inputs[0]))
@@ -453,12 +453,12 @@ public struct RecurrentLayer<Cell: RNNCell>: Layer {
 extension RecurrentLayer: Equatable where Cell: Equatable {}
 extension RecurrentLayer: AdditiveArithmetic where Cell: AdditiveArithmetic {}
 
-@available(*, deprecated, message: "Please use 'RecurrentLayer'.")
+@available(*, deprecated, renamed: "RecurrentLayer")
 public typealias RNN = RecurrentLayer
 
 public typealias BasicRNN<Scalar: TensorFlowFloatingPoint> = RNN<SimpleRNNCell<Scalar>>
 public typealias LSTM<Scalar: TensorFlowFloatingPoint> = RNN<LSTMCell<Scalar>>
 public typealias GRU<Scalar: TensorFlowFloatingPoint> = RNN<GRUCell<Scalar>>
 
-@available(*, deprecated, message: "Please use 'BasicRNN'.")
+@available(*, deprecated, renamed: "BasicRNN")
 public typealias SimpleRNN = BasicRNN
