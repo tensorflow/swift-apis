@@ -371,7 +371,7 @@ public enum _Raw {
       Tensor<Int64>(_xla: XLATensor.argmin(input.xlaTensor, Int64(dimension.scalarized()), false)))
   }
 
-  /// Computes the trignometric inverse sine of x element-wise.
+  /// Computes the trigonometric inverse sine of x element-wise.
   ///
   /// The `tf.math.asin` operation returns the inverse of `tf.math.sin`, such that
   /// if `y = tf.math.sin(x)` then, `x = tf.math.asin(y)`.
@@ -402,7 +402,7 @@ public enum _Raw {
     return Tensor(_xla: XLATensor.asinh(x.xlaTensor))
   }
 
-  /// Computes the trignometric inverse tangent of x element-wise.
+  /// Computes the trigonometric inverse tangent of x element-wise.
   ///
   /// The `tf.math.atan` operation returns the inverse of `tf.math.tan`, such that
   /// if `y = tf.math.tan(x)` then, `x = tf.math.atan(y)`.

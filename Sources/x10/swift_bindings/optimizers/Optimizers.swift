@@ -5,7 +5,7 @@ fileprivate func l2Norm(_ x: Tensor<Float>) -> Tensor<Float> {
 }
 
 extension ParameterGroupOptimizerBuilder {
-  /// Applies a sgdStep with momentem to the current parameter group optimization.
+  /// Applies a sgdStep with momentum to the current parameter group optimization.
   public mutating func sgdStep(
     nesterov: Bool, mom: GlobalAccessor, lr: GlobalAccessor, velocity: StateAccessor
   ) {

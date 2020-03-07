@@ -26,7 +26,7 @@ where
   /// and dampens oscillations.
   public var momentum: Float
 
-  /// The trust coefficient for trsut ratio computation
+  /// The trust coefficient for trust ratio computation
   public var trustCoefficient: Float
 
   /// Use Nesterov momentum if true.
