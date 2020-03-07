@@ -207,13 +207,12 @@ where
 /// (Kingma and Ba, 2014).
 ///
 /// - Parameters:
-///   - learningRate: A Float. The learning rate (default value: 1e-3).
-///   - beta1: A Float. The exponential decay rate for the 1st moment estimates (default value: 0.9).
-///   - beta2: A Float. The exponential decay rate for the 2nd moment estimates (default value:
-///     0.999).
-///   - epsilon: A Float. A small scalar added to the denominator to improve numerical stability 
-///     (default value: 1e-8).
-///   - decay: A Float. The learning rate decay (default value: 0).
+///   - learningRate: Learning rate. The default value is `1e-3`.
+///   - beta1: The exponential decay rate for the 1st moment estimates. The default value is `0.9`.
+///   - beta2: The exponential decay rate for the 2nd moment estimates. The default value is `0.999`.
+///   - epsilon: A small scalar added to the denominator to improve numerical stability.
+///     The default value is `1e-8`.
+///   - decay: Learning rate decay. The default value is `0`.
 ///
 /// ### Examples: ###
 ///
