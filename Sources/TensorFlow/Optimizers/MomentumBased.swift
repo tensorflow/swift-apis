@@ -206,15 +206,6 @@ where
 /// Reference: ["Adam: A Method for Stochastic Optimization"](https://arxiv.org/abs/1412.6980v8) 
 /// (Kingma and Ba, 2014).
 ///
-/// - Parameters:
-///   - learningRate: A Float. The learning rate (default value: 1e-3).
-///   - beta1: A Float. The exponentian decay rate for the 1st moment estimates (default value: 0.9).
-///   - beta2: A Float. The exponentian decay rate for the 2nd moment estimates (default value: 
-///     0.999).
-///   - epsilon: A Float. A small scalar added to the denominator to improve numerical stability 
-///     (default value: 1e-8).
-///   - decay: A Float. The learning rate decay (default value: 0).
-///
 /// ### Examples: ###
 ///
 /// - Train a simple reinforcement learning agent:
@@ -309,6 +300,13 @@ where
   /// The second moments of the weights.
   public var secondMoments: Model.TangentVector = .zero
 
+  /// - Parameters:
+  ///   - learningRate: The learning rate. The default value is `1e-3`.
+  ///   - beta1: The exponential decay rate for the 1st moment estimates. The default value is `0.9`.
+  ///   - beta2: The exponential decay rate for the 2nd moment estimates. The default value is `0.999`.
+  ///   - epsilon: A small scalar added to the denominator to improve numerical stability.
+  ///     The default value is `1e-8`.
+  ///   - decay: The learning rate decay. The default value is `0`.
   public init(
     for model: __shared Model,
     learningRate: Float = 1e-3,
