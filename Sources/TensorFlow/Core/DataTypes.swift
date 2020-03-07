@@ -80,7 +80,7 @@ extension Int64: TensorFlowIndex {}
 /// A floating-point data type that conforms to `Differentiable` and is compatible with TensorFlow.
 ///
 /// - Note: `Tensor` conditionally conforms to `Differentiable` when the `Scalar` associated type
-///   conforms `TensorFlowFloatingPoint`.
+///   conforms to `TensorFlowFloatingPoint`.
 public protocol TensorFlowFloatingPoint:
   TensorFlowScalar & BinaryFloatingPoint & Differentiable & ElementaryFunctions
 where
