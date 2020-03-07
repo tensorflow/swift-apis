@@ -206,14 +206,6 @@ where
 /// Reference: ["Adam: A Method for Stochastic Optimization"](https://arxiv.org/abs/1412.6980v8) 
 /// (Kingma and Ba, 2014).
 ///
-/// - Parameters:
-///   - learningRate: The learning rate. The default value is `1e-3`.
-///   - beta1: The exponential decay rate for the 1st moment estimates. The default value is `0.9`.
-///   - beta2: The exponential decay rate for the 2nd moment estimates. The default value is `0.999`.
-///   - epsilon: A small scalar added to the denominator to improve numerical stability.
-///     The default value is `1e-8`.
-///   - decay: The learning rate decay. The default value is `0`.
-///
 /// ### Examples: ###
 ///
 /// - Train a simple reinforcement learning agent:
@@ -316,6 +308,13 @@ where
     epsilon: Float = 1e-8,
     decay: Float = 0
   ) {
+    /// Parameters:
+    /// - learningRate: The learning rate. The default value is `1e-3`.
+    /// - beta1: The exponential decay rate for the 1st moment estimates. The default value is `0.9`.
+    /// - beta2: The exponential decay rate for the 2nd moment estimates. The default value is `0.999`.
+    /// - epsilon: A small scalar added to the denominator to improve numerical stability.
+    ///   The default value is `1e-8`.
+    /// - decay: The learning rate decay. The default value is `0`.
     precondition(learningRate >= 0, "Learning rate must be non-negative")
     precondition(0 <= beta1 && beta1 <= 1, "Beta parameter must be between 0 and 1")
     precondition(0 <= beta2 && beta2 <= 1, "Beta parameter must be between 0 and 1")
