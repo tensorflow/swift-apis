@@ -208,8 +208,8 @@ where
 ///
 /// - Parameters:
 ///   - learningRate: A Float. The learning rate (default value: 1e-3).
-///   - beta1: A Float. The exponentian decay rate for the 1st moment estimates (default value: 0.9).
-///   - beta2: A Float. The exponentian decay rate for the 2nd moment estimates (default value: 
+///   - beta1: A Float. The exponential decay rate for the 1st moment estimates (default value: 0.9).
+///   - beta2: A Float. The exponential decay rate for the 2nd moment estimates (default value:
 ///     0.999).
 ///   - epsilon: A Float. A small scalar added to the denominator to improve numerical stability 
 ///     (default value: 1e-8).
