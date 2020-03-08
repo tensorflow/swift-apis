@@ -70,7 +70,7 @@ where
   }
 
   public func update(_ model: inout Model, along direction: Model.TangentVector) {
-    step += 1
+    self.step += 1
     // Initialize step to `direction` (instead of `TangentVector.zero`) because otherwise the keypath returns an index error
     var step = direction
     for kp in keys {
