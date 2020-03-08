@@ -88,7 +88,7 @@ public typealias OptimizerCallback = (inout OptimizerWeightStepState, inout Opti
 /// An optimizer that works on a single parameter group.
 public struct ParameterGroupOptimizer {
   public init() {}
-  public var hyperparameters: HyperparameterDictionary = HyperparameterDictionary()
+  public var hyperparameters = HyperparameterDictionary()
   public var globals: [(HyperparameterDictionary, Device) -> Tensor<Float>] = []
   public var localCount: Int = 0
   public var callbacks: [(inout OptimizerWeightStepState, inout OptimizerState) -> Void] = []
