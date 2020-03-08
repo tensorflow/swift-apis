@@ -91,7 +91,7 @@ public struct ParameterGroupOptimizer {
   public var hyperparameters = HyperparameterDictionary()
   public var globals: [(HyperparameterDictionary, Device) -> Tensor<Float>] = []
   public var localCount: Int = 0
-  public var callbacks: [(inout OptimizerWeightStepState, inout OptimizerState) -> Void] = []
+  public var callbacks: [OptimizerCallback] = []
   public var stateCount: Int = 0
 }
 
