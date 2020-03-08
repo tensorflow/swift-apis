@@ -95,7 +95,7 @@ public struct ParameterGroupOptimizer {
   public var stateCount: Int = 0
 }
 
-/// Generic optimizer that should be able to express multiple possible optimizations.
+/// General optimizer that should be able to express multiple possible optimizations.
 /// The optimizer is composed of a mapping from ParameterGroup to ParameterGroupOptimizer.
 /// This optimizer also contains the number of elements working in a cross replica sum.
 /// This is for efficiency to prevent multiple inefficient iterations over the gradient.
