@@ -54,15 +54,15 @@ at::ScalarType SumAccumulationType(at::ScalarType dtype) {
 OpaqueXLATensor* tf_AvgPool(OpaqueXLATensor* value, Int64ArrayRef ksize,
                             Int64ArrayRef strides, enum TFPadding padding,
                             enum TFDataFormat data_format) {
-  const xla::Shape& value_shape = value->shape().get();
-  int num_spatial_dims = value_shape.rank() - 2;
+  const auto value_shape_ref = value->shape();
+  int num_spatial_dims = (*value_shape_ref).rank() - 2;
   xla::Padding xla_padding = ToXLAPadding(padding);
   xla::TensorFormat xla_data_format =
       XlaTensorFormat(x10::ToTFFormat(data_format), num_spatial_dims);
   auto kernel_size = XlaHelpers::I64List(ksize.slice());
   auto stride = XlaHelpers::I64List(strides.slice());
   auto spatial_padding = MakeSpatialPadding(
-      /*input_size=*/value_shape.dimensions(),
+      /*input_size=*/(*value_shape_ref).dimensions(),
       /*kernel_size=*/kernel_size,
       /*stride=*/stride, /*padding=*/xla_padding,
       /*data_format=*/xla_data_format);
