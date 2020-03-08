@@ -1,14 +1,13 @@
-/// Layerwise adaptive rate scaling (LARS) optimizer.
-///
-/// https://arxiv.org/abs/1708.03888
-/// Yang You, Igor Gitman, Boris Ginsburg
-
 import x10_device
 
 fileprivate func l2Norm(_ x: Tensor<Float>) -> Tensor<Float> {
   return sqrt(x.squared().sum())
 }
 
+/// Layerwise adaptive rate scaling (LARS) optimizer.
+///
+/// https://arxiv.org/abs/1708.03888
+/// Yang You, Igor Gitman, Boris Ginsburg
 public class LARS<Model: EuclideanDifferentiable & KeyPathIterable>: Optimizer
 where
   Model.TangentVector: VectorProtocol & PointwiseMultiplicative & ElementaryFunctions
