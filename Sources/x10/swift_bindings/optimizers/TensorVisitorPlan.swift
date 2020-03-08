@@ -191,7 +191,7 @@ where Child: Differentiable {
 /// TensorVisitorPlan approximates `[WritableKeyPath<Base, Tensor<Float>]` but
 /// is more efficient. This is useful for writing generic optimizers which want
 /// to map over the gradients, the existing weights, and an index which can be
-/// used to find auxillarily stored weights. This is slightly more efficient (~2x) but it could
+/// used to find auxiliarily stored weights. This is slightly more efficient (~2x) but it could
 /// be better because it trades off slightly higher overheads (extra pointer dereference)
 /// for not having to do O(depth_of_tree) work that is required with a plain list to track
 /// down each individual KeyPath.

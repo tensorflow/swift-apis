@@ -355,7 +355,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
 // Background story on `TensorElementLiteral` and why it's necessary:
 //
 // Very importantly, we want users to be able to implicitly convert an array
-// literal to a tensor. At first glance, a straightfoward implementation would
+// literal to a tensor. At first glance, a straightforward implementation would
 // be conforming `Tensor` to `ExpressibleByArrayLiteral` with
 // `ExpressibleBy(Float|Int|Bool)Literal` as a base case. However, it is not
 // that simple. We have binary operators that take `(Tensor, Scalar)`, `(Scalar,
@@ -375,7 +375,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
 // `Tensor(x)`, so there is no strong need for implicit conversion. But we need
 // to find a way to give `ExpressibleByArrayLiteral` a base case: what would the
 // `ArrayLiteralElement` be if we want to support both `[1,2,3]` and `[[[1,2],
-// [1,2]]]`? In the first case the array literal element is an interger, while
+// [1,2]]]`? In the first case the array literal element is an integer, while
 // in the second case the array literal itself should be a tensor. Based on this
 // observation, we come up with an intermediate type: `TensorElementLiteral` as
 // the `ArrayLiteralElement` of `Tensor`. By making `TensorElementLiteral`

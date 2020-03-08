@@ -15,7 +15,7 @@ private func TF<T>(_ x: x10_tensor.Tensor<T>) -> TensorFlow.Tensor<T> {
   return TensorFlow.Tensor<T>(shape: TensorFlow.TensorShape(x.shape.dimensions), scalars: x.scalars)
 }
 
-/// Returns true iff the absolute difference between all elemenents is at most `absTolerance`.
+/// Returns true iff the absolute difference between all elements is at most `absTolerance`.
 private func allClose(
   actual: TFTensor, expected: TFTensor, relTolerance: Float = 1e-5, absTolerance: Float = 1e-7
 ) -> Bool {

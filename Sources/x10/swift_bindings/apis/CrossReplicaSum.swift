@@ -14,7 +14,7 @@
 
 /// Implements crossReplicaSum.
 protocol CrossReplicaSummable {
-  /// A cross replica sum is an operation that runs simultainously on multiple threads on
+  /// A cross replica sum is an operation that runs simultaneously on multiple threads on
   /// multiple devices and replaces the value on each thread with a sum of all the other values.
   mutating func crossReplicaSum(_ scale: Double)
 }
