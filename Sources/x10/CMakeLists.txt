@@ -33,8 +33,6 @@ add_library(x10_tensor SHARED
   swift_bindings/TensorFlow/Core/Runtime.swift
   swift_bindings/TensorFlow/Core/Tensor.swift
 
-  swift_bindings/TensorFlow/Optimizers/LARS.swift
-
   swift_bindings/XLAScalarType.swift
   swift_bindings/XLATensor.swift)
 target_sources(x10_tensor PRIVATE
