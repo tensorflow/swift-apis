@@ -17,6 +17,24 @@ import XCTest
 
 final class OptimizerTests: XCTestCase {
     func testRAdam() {
+        // The expected value of the gradient was computed using the following Python code
+        // Requirements: Tensorflow >= 2.1.0 and tf-addons (see https://github.com/tensorflow/addons)
+        // ```
+        // import tensorflow as tf
+        // from tensorflow_addons.optimizers import RectifiedAdam
+        // var_0 = tf.Variable([1.0, 2.0], dtype=tf.dtypes.float32)
+        // grad_0 = tf.Variable([0.1, 0.2], dtype=tf.dtypes.float32)
+        // grads_and_vars = list(zip([grad_0], [var_0]))
+        // optimizer = RectifiedAdam(lr=1e-3, epsilon=1e-8)
+        // for _ in range(1000)
+        //     optimizer.apply_gradients(grads_and_vars)
+        // print(var_0.read_value())
+        // >>> [0.5553605, 1.5548599]
+        // Current implementation = [0.5543607, [1.55286]]
+        // Difference of [0.0009997, 0.0019999].
+        // ```
+
+
         struct Model: Layer {
             var w: Tensor<Float>
             var b: Tensor<Float>
@@ -36,16 +54,19 @@ final class OptimizerTests: XCTestCase {
         var model = Model(w: w, b: b)
         let optimizer = RAdam(for: model, learningRate: 1e-3)
         // To obtain gradient of type Model.TangentVector 
-        var gradient = model.gradient { model -> Tensor<Float> in 
-            return meanAbsoluteError(predicted: model(w.tranposed()), expected: Tensor<Float>(1.0))
+        var grad = gradient(at: model) { model -> Tensor<Float> in
+            let ŷ = model(w.transposed())
+            let y = Tensor<Float>(1.0)
+            let loss = meanAbsoluteError(predicted: ŷ, expected: y)
+            return loss
         }
         // Custom gradient passed to check optimizer validity
-        gradient.w = Tensor<Float>([[0.1], [0.2]])
+        grad.w = Tensor<Float>([[0.1], [0.2]])
         for _ in 0..<1000 {
-            optimizer.update(&model, along: gradient)
+            optimizer.update(&model, along: grad)
         }
         let expected_gradient = Tensor<Float>([[0.5543607], [1.55286]])
-        XCTAssertEqual(gradient.w, expected_gradient)
+        XCTAssertEqual(model.w, expected_gradient)
     }
 
     static var allTests = [
