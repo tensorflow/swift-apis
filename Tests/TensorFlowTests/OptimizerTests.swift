@@ -26,14 +26,13 @@ final class OptimizerTests: XCTestCase {
         // grad_0 = tf.Variable([0.1, 0.2], dtype=tf.dtypes.float32)
         // grads_and_vars = list(zip([grad_0], [var_0]))
         // optimizer = RectifiedAdam(lr=1e-3, epsilon=1e-8)
-        // for _ in range(1000)
-        //     optimizer.apply_gradients(grads_and_vars)
+        // for _ in range(1000):
+        //   optimizer.apply_gradients(grads_and_vars)
         // print(var_0.read_value())
         // >>> [0.5553605, 1.5548599]
         // Current implementation = [0.5543607, [1.55286]]
         // Difference of [0.0009997, 0.0019999].
         // ```
-
 
         struct Model: Layer {
             var w: Tensor<Float>
