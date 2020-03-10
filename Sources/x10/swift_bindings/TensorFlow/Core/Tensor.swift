@@ -17,20 +17,6 @@ import x10_device
 infix operator .==: ComparisonPrecedence
 infix operator .!=: ComparisonPrecedence
 
-/// A type-erased tensor for operating over tensors generically.
-public struct ErasedTensor {
-    init(_xla: XLATensor) {
-        xlaTensor = _xla
-    }
-    var xlaTensor: XLATensor
-
-    /// Prefetches a list of tensors to ensure that it is resident on its specified device.
-    public static func prefetch(_ tensors: [ErasedTensor]) {
-        XLATensor.prefetch(tensors.map { $0.xlaTensor })
-    }
-    public var erased: ErasedTensor { self }
-}
-
 /// A multidimensional array of elements that is a generalization of vectors and matrices to 
 /// potentially higher dimensions.
 ///
@@ -45,12 +31,6 @@ public struct Tensor<Scalar: TensorFlowScalar> {
       xlaTensor = _xla
     }
     var xlaTensor: XLATensor
-}
-
-extension Tensor {
-    public var erased: ErasedTensor { ErasedTensor(_xla: xlaTensor) }
-    /// Prefetches a tensor to ensure that it is resident on its specified device.
-    public func prefetch() { ErasedTensor.prefetch([erased]) }
 }
 
 //===------------------------------------------------------------------------------------------===//

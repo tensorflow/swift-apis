@@ -48,6 +48,23 @@ fileprivate func makeNibbleTensor(_ input: [Int], on device: Device) -> Tensor<F
   return Tensor<Float>(shape: [input.count, 16], scalars: scalars, on: device)
 }
 
+// Cross replica sum doesn't work on integers, so break up a single tensor integer
+// into multiple floats that can be added separately and cover different ranges
+// of the integer.  These `Float`s can be reassembled into the original integer
+// using `unpackNibbles`.
+fileprivate func makeNibbleTensor(_ input: Tensor<Int32>, on device: Device) -> Tensor<Float> {
+  precondition(input.rank == 1)
+  var nibbles = [Tensor<Int32>]()
+  var inputCopy = input
+  let divisor = Tensor<Int32>(16, on: device)
+  for _ in 0..<16 {
+    let nextICopy = inputCopy / divisor
+    nibbles.append(inputCopy - nextICopy * divisor)
+    inputCopy = nextICopy
+  }
+  return Tensor<Float>(Tensor<Int32>(stacking: nibbles, alongAxis: 1))
+}
+
 fileprivate func unpackNibbles(_ scalars: [Float]) -> Int {
   var out: Int = 0
   for i in 0..<scalars.count {
@@ -67,54 +84,25 @@ fileprivate func unpackNibbles(_ input: Tensor<Float>) -> [Int] {
   return out
 }
 
-fileprivate func crsHostStats(
-  _ stats: inout HostStatistics,
-  on device: Device, devices: [Device]
-) {
-  var ints = makeNibbleTensor(
-    [
-      stats.correctGuessCount,
-      stats.totalSamples,
-    ], on: device)
-  var floats = Tensor<Float>([stats.totalLoss], on: device)
-  ints.crossReplicaSum(1)
-  floats.crossReplicaSum(1)
-  LazyTensorBarrier(on: device, devices: devices, wait: true)
-  let intsScalars = unpackNibbles(ints)
-  let floatsScalars = floats.scalars
-
-  stats.correctGuessCount = Int(intsScalars[0])
-  stats.totalSamples = Int(intsScalars[1])
-  stats.totalLoss = floatsScalars[0]
-}
-
-public func summarizeStatistics(
-  _ stats: [(train: HostStatistics, test: HostStatistics)]
-) -> (train: HostStatistics, test: HostStatistics) {
-  var trainStats = HostStatistics()
-  var testStats = HostStatistics()
-  for result in stats {
-    trainStats += result.train
-    testStats += result.test
+public class EpochPipelineQueue {
+  var doNextEpoch: [() -> Void] = []
+  public init() {}
+  public func endEpoch() {
+    let tmp = doNextEpoch
+    doNextEpoch = []
+    for v in tmp { v() }
   }
-  // crs the stats if we're running multihost:
-  let crsDevices = Device.crossReplicaSumDevices
-  let trainingDevices = Device.trainingDevices
-  if crsDevices.count != trainingDevices.count {
-    let devices = stride(from: 0, to: crsDevices.count, by: trainingDevices.count).map {
-      crsDevices[$0]
-    }
-    let device = devices.first { !$0.isRemote }!
-    crsHostStats(&trainStats, on: device, devices: devices)
-    crsHostStats(&testStats, on: device, devices: devices)
+  public func append(_ value: @escaping () -> Void) {
+    doNextEpoch.append(value)
   }
-  return (train: trainStats, test: testStats)
+  public func flush() {
+    while !doNextEpoch.isEmpty { endEpoch() }
+  }
 }
 
 /// Creates a string summary of a list of training and testing stats.
-public func formatStatistics(_ stats: [(train: HostStatistics, test: HostStatistics)]) -> String {
-  let (trainStats, testStats) = summarizeStatistics(stats)
-  return formatStatistics(train: trainStats, test: testStats)
+public func formatStatistics(_ stats: (train: HostStatistics, test: HostStatistics)) -> String {
+  return formatStatistics(train: stats.train, test: stats.test)
 }
 public func formatStatistics(train trainStats: HostStatistics, test testStats: HostStatistics)
   -> String
@@ -148,6 +136,26 @@ struct Statistics {
   public init(on device: Device) {
     correctGuessCountTensor = Tensor<Int32>(0, on: device)
     totalLossTensor = Tensor<Float>(0, on: device)
+  }
+
+  public func crsHostStats(on device: Device, devices: [Device]) -> () -> HostStatistics {
+    var ints = makeNibbleTensor(
+      Tensor<Int32>(stacking: [
+        correctGuessCountTensor, Tensor<Int32>(Int32(totalSamples), on: device),
+      ]), on: device)
+    var floats = totalLossTensor.reshaped(to: [1])
+    ints.crossReplicaSum(1)
+    floats.crossReplicaSum(1)
+    LazyTensorBarrier(on: device, devices: devices, wait: true)
+    return {
+      let intsScalars = unpackNibbles(ints)
+      let floatsScalars = floats.scalars
+
+      return HostStatistics(
+        correctGuessCount: Int(intsScalars[0]),
+        totalSamples: Int(intsScalars[1]),
+        totalLoss: floatsScalars[0])
+    }
   }
 }
 
@@ -185,7 +193,7 @@ where
     lossFunction: @differentiable (Tensor<Float>, @noDerivative Tensor<Int32>) -> Tensor<Float> =
       _defaultLossFunction
   )
-    -> (train: HostStatistics, test: HostStatistics)
+    -> () -> (train: HostStatistics, test: HostStatistics)
   where Dataset.Iterator.Element == (x: Tensor<Float>, y: Tensor<Int32>) {
     let device = devices[threadId]
     let crsDevices = crossReplicaSumDevices ?? devices
@@ -250,7 +258,9 @@ where
       LazyTensorBarrier(on: device)
       DestroyAnnotationScope(scope)
     }
-    return (train: trainStats.hostStats, test: testStats.hostStats)
+    let trainStatsCb = trainStats.crsHostStats(on: device, devices: crsDevices)
+    let testStatsCb = testStats.crsHostStats(on: device, devices: crsDevices)
+    return { (train: trainStatsCb(), test: testStatsCb()) }
   }
 }
 

@@ -768,8 +768,5 @@ StridedSliceSpec* ComputeIndexingBoundsAndStrides(
 void PrintMetrics() {
   LOG(INFO) << "Metrics:\n" << xla::metrics::CreateMetricReport();
 }
-void PrefetchTensorToXLADevice(OpaqueXLATensorArrayRef arr) {
-  XLATensor::Prefetch(arr.array());
-}
 void DeleteString(OpaqueString* str) { delete str; }
 const char* GetStringCStr(OpaqueString* str) { return str->c_str(); }
