@@ -26,11 +26,10 @@ std::vector<const Node*> Util::ComputePostOrder(const Node* node,
   queue.push_back(node);
   while (!queue.empty()) {
     node = queue.back();
-    auto it = emap->find(node);
-    if (it == emap->end()) {
-      (*emap)[node] = kEmitting;
-
-      for (auto& output : node->operands()) {
+    auto emplace_result = emap->emplace(node, kEmitting);
+    auto it = emplace_result.first;
+    if (emplace_result.second) {
+      for (const auto& output : node->operands()) {
         auto oit = emap->find(output.node);
         if (oit == emap->end()) {
           queue.push_back(output.node);
@@ -38,13 +37,20 @@ std::vector<const Node*> Util::ComputePostOrder(const Node* node,
           XLA_ERROR() << "Graph loop found at " << *output.node;
         }
       }
+      if (node->operands().empty()) {
+        post_order.push_back(node);
+        it->second = kEmitted;
+        queue.pop_back();
+      }
     } else if (it->second == kEmitting) {
+#ifndef NDEBUG
       for (auto& output : node->operands()) {
         auto oit = emap->find(output.node);
         XLA_CHECK(oit != emap->end() && oit->second == kEmitted)
             << "Graph loop found at " << *output.node;
       }
-      (*emap)[node] = kEmitted;
+#endif
+      it->second = kEmitted;
       post_order.push_back(node);
       queue.pop_back();
     } else {

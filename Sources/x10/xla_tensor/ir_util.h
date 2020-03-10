@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "absl/types/span.h"
+#include "absl/container/flat_hash_map.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ir.h"
 
 namespace swift_xla {
@@ -35,7 +36,7 @@ class Util {
     kEmitted,
   };
 
-  using EmissionMap = std::unordered_map<const Node*, EmitStatus>;
+  using EmissionMap = absl::flat_hash_map<const Node*, EmitStatus>;
 
   // Computes the post order from the given node, without using recursion. The
   // emission map can be used as saved state, for multiple separate calls to

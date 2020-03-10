@@ -17,6 +17,7 @@
 #ifndef X10_XLA_CLIENT_COMPUTATION_CLIENT_H_
 #define X10_XLA_CLIENT_COMPUTATION_CLIENT_H_
 
+#include <algorithm>
 #include <cmath>
 #include <map>
 #include <memory>
@@ -37,6 +38,10 @@ class ComputationClient {
  public:
   class Data {
    public:
+    struct Info {
+      virtual ~Info() {}
+    };
+
     using OpaqueHandle = int64;
 
     Data(std::string device, Shape shape)
@@ -48,6 +53,13 @@ class ComputationClient {
 
     const Shape& shape() const { return shape_; }
 
+    Info* info() const { return info_.get(); }
+
+    std::shared_ptr<Info> SetInfo(std::shared_ptr<Info> info) {
+      std::swap(info, info_);
+      return info;
+    }
+
     virtual OpaqueHandle GetOpaqueHandle() = 0;
 
     virtual void Assign(const Data& data) = 0;
@@ -57,6 +69,7 @@ class ComputationClient {
    private:
     std::string device_;
     Shape shape_;
+    std::shared_ptr<Info> info_;
   };
 
   using DataPtr = std::shared_ptr<Data>;
