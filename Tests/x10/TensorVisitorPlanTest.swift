@@ -13,7 +13,6 @@
 // limitations under the License.
 
 import XCTest
-import base_swift_base
 import x10_device
 import x10_optimizers_tensor_visitor_plan
 import x10_tensor

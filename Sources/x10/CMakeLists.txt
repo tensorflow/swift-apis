@@ -120,6 +120,10 @@ target_link_libraries(keypathiterable_test PRIVATE
   x10_device
   x10_tensor)
 
+add_executable(tensor_visitor_plan_test ../../Tests/x10/TensorVisitorPlanTest.swift)
+target_link_libraries(tensor_visitor_plan_test PRIVATE
+  x10_optimizers_tensor_visitor_plan)
+
 get_swift_host_arch(swift_arch)
 get_swift_host_os(swift_os)
 
