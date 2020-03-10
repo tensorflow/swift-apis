@@ -406,8 +406,6 @@ StridedSliceSpec* ComputeIndexingBoundsAndStrides(
 
 void PrintMetrics();
 
-void PrefetchTensorToXLADevice(OpaqueXLATensorArrayRef arr);
-
 // Randomly shuffles the array defined by (data, size) by seed and then
 // returns the result.
 void SeededRandomShuffle(size_t* data, size_t size, int64_t seed);

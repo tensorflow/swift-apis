@@ -169,15 +169,6 @@ extension Optional where Wrapped == XLAScalarType.Type {
   }
 }
 
-extension XLATensor {
-  static func prefetch(_ tensors: [XLATensor]) {
-    defer { _fixLifetime(self) }
-    tensors.withArrayRef { tensors in
-      PrefetchTensorToXLADevice(tensors)
-    }
-  }
-}
-
 /// Add more op wrappers here:
 extension XLATensor {
   static func abs(_ a: XLATensor) -> XLATensor {
