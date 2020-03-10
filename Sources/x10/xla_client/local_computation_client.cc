@@ -119,28 +119,48 @@ class LocalComputationClient::Device {
         mesh_id_(mesh_id),
         is_cpu_(is_cpu),
         stream_(std::make_unique<se::Stream>(
+            client->backend().stream_executor(device_ordinal).ValueOrDie())),
+        transfer_from_device_stream_(std::make_unique<se::Stream>(
             client->backend().stream_executor(device_ordinal).ValueOrDie())) {
     stream_->Init();
+    transfer_from_device_stream_->Init();
   }
 
   xla::LocalClient* client() const { return client_; }
   int device_ordinal() const { return device_ordinal_; }
   int32_t mesh_id() const { return mesh_id_; }
   se::Stream* stream() const { return stream_.get(); }
+  se::Stream* transfer_from_device_stream() const {
+    return transfer_from_device_stream_.get();
+  }
   bool is_cpu() const { return is_cpu_; }
 
-  void RunAsyncStart() {
+  int64 RunAsyncStart() {
     mutex_.Lock();
     XLA_CHECK(mutex_.AwaitWithTimeout(
         Condition(this, &Device::HasAvailableComputationSlots),
         absl::Hours(2)))
         << "TPU DEADLOCKED or very slow computation...";
     --available_computation_slots_;
+    int64 result = next_computation_id_;
+    ++next_computation_id_;
     mutex_.Unlock();
+    return result;
   }
   void RunAsyncFinish() {
     mutex_.Lock();
     ++available_computation_slots_;
+    ++done_computation_id_;
+    mutex_.Unlock();
+  }
+
+  void WaitUntilComputationFinished(int64 computation_id) {
+    mutex_.Lock();
+    auto cond = [&]() EXCLUSIVE_LOCKS_REQUIRED(mutex_) {
+      return computation_id < done_computation_id_;
+    };
+    XLA_CHECK(mutex_.AwaitWithTimeout(Condition(&cond), absl::Hours(2)))
+        << "TPU DEADLOCKED or very slow computation...";
     mutex_.Unlock();
   }
 
@@ -152,26 +172,35 @@ class LocalComputationClient::Device {
   absl::Mutex mutex_;
   // This starts out as the number of allowable concurrent executions
   // on this particular device.
-  int64 available_computation_slots_ GUARDED_BY(mutex_) = 8;
+  int64 available_computation_slots_ GUARDED_BY(mutex_) = 64;
+  // computation id assigned to the next computation executed on stream_.
+  int64 next_computation_id_ GUARDED_BY(mutex_) = 0;
+  // Incremented when computations finish.
+  // `computation_id < done_computation_id_` checks if a particular computation
+  // is complete.
+  int64 done_computation_id_ GUARDED_BY(mutex_) = 0;
   xla::LocalClient* client_;
   int device_ordinal_;
   int32_t mesh_id_;
   bool is_cpu_;
   std::unique_ptr<se::Stream> stream_;
+  std::unique_ptr<se::Stream> transfer_from_device_stream_;
 };
 
 class LocalComputationClient::LocalData : public Data {
  public:
   LocalData(std::string device, Shape shape)
       : Data(std::move(device), std::move(shape)) {}
-  LocalData(std::string device, ScopedShapedBuffer buffer)
+  LocalData(std::string device, ScopedShapedBuffer buffer, int64 computation_id)
       : Data(std::move(device), buffer.on_host_shape()),
-        buffer_(std::make_shared<ScopedShapedBuffer>(std::move(buffer))) {}
+        buffer_(std::make_shared<ScopedShapedBuffer>(std::move(buffer))),
+        computation_id_(computation_id) {}
 
   void Assign(const Data& data) override {
     const LocalData& xrt_data = dynamic_cast<const LocalData&>(data);
     if (&xrt_data != this) {
       buffer_ = xrt_data.buffer_;
+      computation_id_ = xrt_data.computation_id_;
     }
   }
 
@@ -183,9 +212,12 @@ class LocalComputationClient::LocalData : public Data {
 
   const ShapedBuffer& buffer() const { return *buffer_; }
 
+  int64 computation_id() const { return computation_id_; }
+
  private:
   // TODO(parkers): Remove Assign() and allow buffer_ to be by value.
   std::shared_ptr<ScopedShapedBuffer> buffer_;
+  int64 computation_id_;
 };
 
 struct LocalComputationClient::LocalComputation : public Computation {
@@ -236,7 +268,7 @@ DataPtr LocalComputationClient::TransferToServer(
 
   device->stream()->ReturnSubStream(stream);
 
-  return std::make_shared<LocalData>(device_string, std::move(buffer));
+  return std::make_shared<LocalData>(device_string, std::move(buffer), -1);
 }
 
 std::vector<DataPtr> LocalComputationClient::TransferToServer(
@@ -306,7 +338,7 @@ std::vector<DataPtr> LocalComputationClient::TransferToServer(
         stream.get(), literal, buffer));
 
     out.push_back(
-        std::make_shared<LocalData>(tensor.device, std::move(buffer)));
+        std::make_shared<LocalData>(tensor.device, std::move(buffer), -1));
   }
 
   for (auto& stream : streams) {
@@ -320,14 +352,14 @@ std::vector<Literal> LocalComputationClient::TransferFromServer(
   tensorflow::profiler::TraceMe trace("TransferFromServer");
   metrics::TimedSection timed(TransferFromServerMetric());
   std::unordered_set<Device*> devices;
-  for (size_t i = 0; i < handles.size(); ++i) {
-    const auto& local_data = dynamic_cast<const LocalData&>(*handles[i]);
-    devices.insert(GetDevice(local_data.device()));
-  }
-
-  // Block until all compute is done before transfering from the server.
-  for (Device* device : devices) {
-    TF_CHECK_OK(device->stream()->BlockHostUntilDone());
+  {
+    tensorflow::profiler::TraceMe trace("Wait for transfer");
+    for (size_t i = 0; i < handles.size(); ++i) {
+      const auto& local_data = dynamic_cast<const LocalData&>(*handles[i]);
+      // Block until all compute is done before transfering from the server.
+      GetDevice(local_data.device())
+          ->WaitUntilComputationFinished(local_data.computation_id());
+    }
   }
 
   std::vector<Literal> out;
@@ -339,12 +371,12 @@ std::vector<Literal> LocalComputationClient::TransferFromServer(
     Device* device = GetDevice(local_data.device());
     xla::TransferManager* transfer_manager =
         device->client()->backend().transfer_manager();
-    transfer_manager->TransferLiteralFromDevice(device->stream(),
-                                                local_data.buffer(), &out[i],
-                                                [&mwait](Status status) {
-                                                  TF_CHECK_OK(status);
-                                                  mwait.Done();
-                                                });
+    transfer_manager->TransferLiteralFromDevice(
+        device->transfer_from_device_stream(), local_data.buffer(), &out[i],
+        [&mwait](Status status) {
+          TF_CHECK_OK(status);
+          mwait.Done();
+        });
   }
   mwait.Wait();
   return out;
@@ -450,9 +482,10 @@ std::vector<DataPtr> LocalComputationClient::ExecuteComputation(
   run_options.set_device_assignment(local_computation.assignment.get());
 
   bool is_cpu = device_ptr->is_cpu();
+  int64 computation_id = -1;
   if (!is_cpu) {
     tensorflow::profiler::TraceMe trace("Acquire Async slot");
-    device_ptr->RunAsyncStart();
+    computation_id = device_ptr->RunAsyncStart();
   }
   xla::ScopedShapedBuffer tmp =
       local_computation.handle->RunAsync(args, run_options).ValueOrDie();
@@ -461,7 +494,8 @@ std::vector<DataPtr> LocalComputationClient::ExecuteComputation(
   out.reserve(num_tuples);
   for (size_t i = 0; i < num_tuples; ++i) {
     out.push_back(std::make_shared<LocalData>(
-        device, tmp.TakeSubTree(ShapeIndex({static_cast<xla::int64>(i)}))));
+        device, tmp.TakeSubTree(ShapeIndex({static_cast<xla::int64>(i)})),
+        computation_id));
   }
 
   if (is_cpu) {

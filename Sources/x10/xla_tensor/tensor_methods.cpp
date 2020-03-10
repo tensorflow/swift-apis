@@ -84,6 +84,7 @@
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/nll_loss.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/nll_loss_backward.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/nonzero.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/ops/normal.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/not_supported.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/ops.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/permute.h"
@@ -1874,6 +1875,32 @@ XLATensor XLATensor::norm(const XLATensor& input, c10::optional<at::Scalar> p,
       XlaHelpers::GetCanonicalDimensionIndices(dim, input.shape().get().rank());
   return input.CreateFrom(
       ir::ops::Norm(input.GetIrValue(), p, dtype, canonical_dims, keepdim));
+}
+
+XLATensor XLATensor::normal(double mean, const XLATensor& std) {
+  return std.CreateFrom(ir::MakeNode<ir::ops::Normal>(
+      GetIrValueForScalar(mean, std.shape(), std.GetDevice()), std.GetIrValue(),
+      XlaHelpers::GenRngSeed()));
+}
+
+XLATensor XLATensor::normal(const XLATensor& mean, double std) {
+  return mean.CreateFrom(ir::MakeNode<ir::ops::Normal>(
+      mean.GetIrValue(),
+      GetIrValueForScalar(std, mean.shape(), mean.GetDevice()),
+      XlaHelpers::GenRngSeed()));
+}
+
+XLATensor XLATensor::normal(const XLATensor& mean, const XLATensor& std) {
+  return mean.CreateFrom(ir::MakeNode<ir::ops::Normal>(
+      mean.GetIrValue(), MaybeExpand(std.GetIrValue(), mean.shape()),
+      XlaHelpers::GenRngSeed()));
+}
+
+void XLATensor::normal_(XLATensor& input, double mean, double std) {
+  input.SetIrValue(ir::MakeNode<ir::ops::Normal>(
+      GetIrValueForScalar(mean, input.shape(), input.GetDevice()),
+      GetIrValueForScalar(std, input.shape(), input.GetDevice()),
+      XlaHelpers::GenRngSeed()));
 }
 
 XLATensor XLATensor::not_supported(std::string description, xla::Shape shape,

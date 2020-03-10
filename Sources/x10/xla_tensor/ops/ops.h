@@ -23,7 +23,6 @@
 
 #include "tensorflow/compiler/tf2xla/xla_tensor/ir.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/constant.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/device_data.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/generic.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/scalar.h"
 
@@ -40,11 +39,6 @@ inline NodePtr ScalarOp(at::Scalar value, xla::PrimitiveType type) {
 
 inline NodePtr ConstantOp(xla::Literal value) {
   return MakeNode<Constant>(std::move(value));
-}
-
-inline NodePtr DeviceDataOp(
-    std::shared_ptr<xla::ComputationClient::Data> data) {
-  return MakeNode<DeviceData>(std::move(data));
 }
 
 inline NodePtr GenericOp(OpKind op, absl::Span<const Value> operands,
