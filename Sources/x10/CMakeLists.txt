@@ -108,7 +108,8 @@ target_link_libraries(x10_training_loop PUBLIC
 add_executable(ops_test ../../Tests/x10/ops_test.swift)
 target_link_libraries(ops_test PRIVATE
   x10_device
-  x10_tensor)
+  x10_tensor
+  TensorFlow)
 
 add_executable(xla_tensor_test ../../Tests/x10/xla_tensor_test.swift)
 target_link_libraries(xla_tensor_test PRIVATE
