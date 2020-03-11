@@ -173,10 +173,9 @@ public extension Tensor {
 
 public extension Tensor {
     /// Creates a 0-D tensor from a scalar value.
-    @inlinable
     @differentiable(where Scalar: TensorFlowFloatingPoint)
     init(_ value: Scalar, on device: Device = .default) {
-        self.init(shape: [], scalars: [value], on: device)
+        self.init(_xla: XLATensor.make(value, on: device))
     }
 }
 

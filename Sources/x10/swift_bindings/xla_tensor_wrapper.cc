@@ -96,6 +96,13 @@ at::Scalar atScalar(XLAScalar s) {
   }
 }
 
+swift_xla::XLATensor* XLATensor_makeScalar(XLAScalar value,
+                                           enum XLATensorScalarType type,
+                                           const struct CDevice cdevice) {
+  return new swift_xla::XLATensor(swift_xla::XLATensor::Create(
+      atScalar(value), ToScalarType(type), ConvertDevice(cdevice)));
+}
+
 // TODO(parkers): reduce copying here...
 swift_xla::XLATensor* copyTensor(XLATensorScalarType type,
                                  const void* raw_value, size_t num_entries,

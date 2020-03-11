@@ -54,6 +54,13 @@ extension XLATensor {
     data.withUnsafeBufferPointer { data in return make(data, dims, on: device) }
   }
 
+  static func make<Scalar: XLAScalarType>(_ data: Scalar, on device: Device = Device.default)
+    -> XLATensor
+  {
+    return XLATensor(
+      _handle: XLATensor_makeScalar(data.xlaScalar, Scalar.xlaTensorScalarType, device.cdevice))
+  }
+
   static func make<Scalar: XLAScalarType>(
     _ data: UnsafeBufferPointer<Scalar>, _ dims: [Int], on device: Device = Device.default
   )
