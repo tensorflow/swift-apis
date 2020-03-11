@@ -47,6 +47,7 @@ typedef struct OpaqueString {
 XLAAnnotationScope* MakeAnnotationScope(const char* scope);
 void DestroyAnnotationScope(XLAAnnotationScope* scope);
 
+// Scalar utilities:
 #define LIST_SCALAR_TYPES(_)     \
   _(Bool, Bool, bool)            \
   _(Float, Float, float)         \
@@ -65,12 +66,24 @@ enum XLATensorScalarType {
 #undef DEFINE_ENUM_CASE
 };
 
+enum XLAScalarTypeTag { XLAScalarTypeTag_i, XLAScalarTypeTag_d };
+typedef struct XLAScalar {
+  enum XLAScalarTypeTag tag;
+  union Value {
+    int64_t i;
+    double d;
+  } value;
+} XLAScalar;
+
 #ifdef __cplusplus
 at::ScalarType ToScalarType(XLATensorScalarType type);
 XLATensorScalarType FromScalarType(at::ScalarType type);
 #endif
 
 // Tensor utilities:
+OpaqueXLATensor* XLATensor_makeScalar(XLAScalar value,
+                                      enum XLATensorScalarType type,
+                                      const struct CDevice cdevice);
 
 // TODO(parkers): Make aliasing constructor.
 OpaqueXLATensor* copyTensor(enum XLATensorScalarType type, const void* value,
@@ -101,16 +114,6 @@ OpaqueXLAShape* fetchTensorShape(OpaqueXLATensor* tensor);
 void destroyXLAShape(OpaqueXLAShape* shape);
 size_t XLAShape_getRank(OpaqueXLAShape* shape);
 const int64_t* XLAShape_getDimensions(OpaqueXLAShape* shape);
-
-// Scalar utilities:
-enum XLAScalarTypeTag { XLAScalarTypeTag_i, XLAScalarTypeTag_d };
-typedef struct XLAScalar {
-  enum XLAScalarTypeTag tag;
-  union Value {
-    int64_t i;
-    double d;
-  } value;
-} XLAScalar;
 
 enum TFPadding {
   TFPadding_VALID = 1,     // No padding.
