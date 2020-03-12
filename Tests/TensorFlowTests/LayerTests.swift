@@ -1727,27 +1727,42 @@ final class LayerTests: XCTestCase {
         accuracy: 1e-5)
       // TODO: Verify that GRU gradients are correct using a reference implementation.
       let (𝛁gru, _) = pullback(.init(inputs.map { GRUCell<Float>.State(hidden: $0) }))
-      XCTAssertEqual(
+      assertEqual(
         𝛁gru.cell.updateWeight1,
-        [[0.0], [-0.040293925], [-0.08058785], [-0.12088178]])
-      XCTAssertEqual(
+        [[0.0], [-0.040293925], [-0.08058785], [-0.12088178]],
+        accuracy: 1e-5)
+      assertEqual(
         𝛁gru.cell.updateWeight2,
-        [[-0.056792725], [-0.056792725], [-0.056792725], [-0.056792725]])
-      XCTAssertEqual(
+        [[-0.056792725], [-0.056792725], [-0.056792725], [-0.056792725]],
+        accuracy: 1e-5)
+      assertEqual(
         𝛁gru.cell.resetWeight1,
-        [[0.0], [0.0039126356], [0.007825271], [0.011737906]])
-      XCTAssertEqual(
+        [[0.0], [0.0039126356], [0.007825271], [0.011737906]],
+        accuracy: 1e-5)
+      assertEqual(
         𝛁gru.cell.resetWeight2,
-        [[0.0069182813], [0.0069182813], [0.0069182813], [0.0069182813]])
-      XCTAssertEqual(
+        [[0.0069182813], [0.0069182813], [0.0069182813], [0.0069182813]],
+        accuracy: 1e-5)
+      assertEqual(
         𝛁gru.cell.outputWeight1,
-        [[0.0], [0.1221647], [0.2443294], [0.3664941]])
-      XCTAssertEqual(
+        [[0.0], [0.1221647], [0.2443294], [0.3664941]],
+        accuracy: 1e-5)
+      assertEqual(
         𝛁gru.cell.outputWeight2,
-        [[0.08078343], [0.08078343], [0.08078343], [0.08078343]])
-      XCTAssertEqual(𝛁gru.cell.updateBias, [-0.016739635, -0.04493352, -0.13216142, -0.20910467])
-      XCTAssertEqual(𝛁gru.cell.resetBias, [0.023218961, -0.024303729, 0.010057628, 0.030153492])
-      XCTAssertEqual(𝛁gru.cell.outputBias, [0.06667276, 0.115095116, 0.39864573, 0.6412333])
+        [[0.08078343], [0.08078343], [0.08078343], [0.08078343]],
+        accuracy: 1e-5)
+      assertEqual(
+        𝛁gru.cell.updateBias,
+        [-0.016739635, -0.04493352, -0.13216142, -0.20910467],
+        accuracy: 1e-5)
+      assertEqual(
+        𝛁gru.cell.resetBias,
+        [0.023218961, -0.024303729, 0.010057628, 0.030153492],
+        accuracy: 1e-5)
+      assertEqual(
+        𝛁gru.cell.outputBias,
+        [0.06667276, 0.115095116, 0.39864573, 0.6412333],
+        accuracy: 1e-5)
     }
   }
 
