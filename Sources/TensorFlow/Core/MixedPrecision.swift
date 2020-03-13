@@ -14,7 +14,6 @@
 
 #if USING_X10_BACKEND
 import x10_xla_tensor_wrapper
-#endif
 
 /// A type whose nested floating-point tensor properties and elements can be converted from full
 /// precision to reduced precision and vice versa.
@@ -142,6 +141,7 @@ extension KeyPathIterable {
     return result
   }
 }
+#endif
 
 extension Tensor {
   /// Returns true if the physical scalar type is reduced precision.
@@ -164,10 +164,10 @@ extension Tensor {
   }
 }
 
+#if USING_X10_BACKEND
 extension Tensor: ReducedPrecisionConvertible, _ReducedPrecisionConvertible {
   /// Returns a copy of `self` converted to `BFloat16` physical scalar type.
   public var toReducedPrecision: Self {
-#if USING_X10_BACKEND
     if isReducedPrecision {
       fatalError("Must not already have reduced precision")
     }
@@ -175,15 +175,10 @@ extension Tensor: ReducedPrecisionConvertible, _ReducedPrecisionConvertible {
       fatalError("Reduced precision is only supported for Float tensors")
     }
     return _Raw.physicalCast(self, destType: XLATensorScalarType_BFloat16)
-#else
-    // TODO: Implement.
-    return self
-#endif
   }
 
   /// Returns a copy of `self` converted to `Scalar` physical scalar type.
   public var toFullPrecision: Self {
-#if USING_X10_BACKEND
     if !isReducedPrecision {
       fatalError("Must have reduced precision")
     }
@@ -191,12 +186,23 @@ extension Tensor: ReducedPrecisionConvertible, _ReducedPrecisionConvertible {
       fatalError("Reduced precision is only supported for Float tensors")
     }
     return _Raw.physicalCast(self, destType: Scalar.xlaTensorScalarType)
-#else
-    // TODO: Implement.
-    return self
-#endif
   }
 }
+#else
+extension Tensor {
+  /// Returns a copy of `self` converted to `BFloat16` physical scalar type.
+  public var toReducedPrecision: Self {
+    // TODO: Implement.
+    return self
+  }
+
+  /// Returns a copy of `self` converted to `Scalar` physical scalar type.
+  public var toFullPrecision: Self {
+    // TODO: Implement.
+    return self
+  }
+}
+#endif
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
   @derivative(of: toReducedPrecision)
