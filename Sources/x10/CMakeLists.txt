@@ -25,13 +25,10 @@ add_library(x10_tensor SHARED
   ../TensorFlow/Operators/Math.swift
 
   swift_bindings/apis/CrossReplicaSum.swift
-  swift_bindings/apis/DataTypes.swift
   swift_bindings/apis/DeviceScope.swift
-  swift_bindings/apis/MixedPrecision.swift
   swift_bindings/apis/RawOpsManual.swift
 
   swift_bindings/TensorFlow/Core/Runtime.swift
-  swift_bindings/TensorFlow/Core/Tensor.swift
 
   swift_bindings/XLAScalarType.swift
   swift_bindings/XLATensor.swift)
@@ -43,6 +40,9 @@ target_sources(x10_tensor PRIVATE
   ../TensorFlow/Core/TensorShape.swift
   ../TensorFlow/Core/Threading.swift
   ../TensorFlow/Core/Utilities.swift
+  ../TensorFlow/Core/Tensor.swift
+  ../TensorFlow/Core/DataTypes.swift
+  ../TensorFlow/Core/MixedPrecision.swift
 
   ../TensorFlow/Layers/Convolutional.swift
   ../TensorFlow/Layers/Core.swift
@@ -75,6 +75,8 @@ target_sources(x10_tensor PRIVATE
   ../TensorFlow/StdlibExtensions.swift)
 set_target_properties(x10_tensor PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_Swift_MODULE_DIRECTORY})
+target_compile_definitions(x10_tensor PRIVATE
+  USING_X10_BACKEND)
 target_link_libraries(x10_tensor PUBLIC
   x10_device
   Tensor)
