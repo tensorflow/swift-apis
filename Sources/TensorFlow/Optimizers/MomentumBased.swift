@@ -93,37 +93,34 @@ where
   public var learningRate: Float
   /// The smoothing factor (ρ). Typical values are `0.5`, `0.9`, and `0.99`, for smoothing over 2,
   /// 10, and 100 examples, respectively.
-  public var rho: Float
-  /// A small scalar added to the denominator to improve numerical stability.
   public var epsilon: Float
-  /// The alpha values for all model differentiable variables.
-  public var alpha: Model.TangentVector = .zero
+  /// The accumulator for square of gradient.
+  public var accumulator: Model.TangentVector
 
   public init(
     for model: __shared Model,
     learningRate: Float = 0.001,
-    rho: Float = 0.9,
+    initialAccumulatorValue: Float = 0.1,
     epsilon: Float = 1e-8
   ) {
     precondition(learningRate >= 0, "Learning rate must be non-negative")
-    precondition(rho >= 0, "Rho must be non-negative")
+    precondition(initialAccumulatorValue >= 0, "The initial accumulator value must be non-negative.")
 
     self.learningRate = learningRate
-    self.rho = rho
     self.epsilon = epsilon
+    self.accumulator = Model.TangentVector.one.scaled(by: initialAccumulatorValue)
   }
 
   public func update(_ model: inout Model, along direction: Model.TangentVector) {
-    alpha = (direction .* direction).adding(rho)
-    let denominator = Model.TangentVector.sqrt(alpha).adding(epsilon)
+    accumulator = accumulator + (direction .* direction)
+    let denominator = Model.TangentVector.sqrt(accumulator).adding(epsilon)
     model.move(along: (direction ./ denominator).scaled(by: -learningRate))
   }
 
   public required init(copying other: AdaGrad, to device: Device) {
     learningRate = other.learningRate
-    rho = other.rho
     epsilon = other.epsilon
-    alpha = .init(copying: other.alpha, to: device)
+    accumulator = .init(copying: other.accumulator, to: device)
   }
 }
 
