@@ -16,6 +16,7 @@
 
 #include <random>
 
+#include "tensorflow/compiler/tf2xla/xla_tensor/aten_compat.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/helpers.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ir_dump_util.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/layout_manager.h"
@@ -24,7 +25,6 @@
 #include "tensorflow/compiler/tf2xla/xla_tensor/strided_slice_helpers.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/tensor.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/tensor_util.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/aten_compat.h"
 #include "tensorflow/core/util/mirror_pad_mode.h"
 
 using swift_xla::XlaHelpers;
@@ -93,6 +93,8 @@ at::Scalar atScalar(XLAScalar s) {
       return at::Scalar(s.value.i);
     case XLAScalarTypeTag_d:
       return at::Scalar(s.value.d);
+    default:
+      LOG(FATAL) << "Invalid tag: " << s.tag;
   }
 }
 
@@ -121,6 +123,8 @@ swift_xla::XLATensor* copyTensor(XLATensorScalarType type,
   }
     LIST_SCALAR_TYPES(DEFINE_COPY_CASE)
 #undef DEFINE_COPY_CASE
+    default:
+      LOG(FATAL) << "Invalid type: " << type;
   }
 }
 OpaqueXLATensor* copyTensorAndMakeResident(enum XLATensorScalarType type,
@@ -192,6 +196,8 @@ at::ScalarType ToScalarType(XLATensorScalarType type) {
     return at::ScalarType::aten_name;
     LIST_SCALAR_TYPES(DEFINE_TYPE_CASE)
 #undef DEFINE_TYPE_CASE
+    default:
+      LOG(FATAL) << "Invalid type: " << type;
   }
 }
 
@@ -202,6 +208,8 @@ XLATensorScalarType FromScalarType(at::ScalarType type) {
     return XLATensorScalarType_##name;
     LIST_SCALAR_TYPES(DEFINE_TYPE_CASE)
 #undef DEFINE_TYPE_CASE
+    default:
+      LOG(FATAL) << "Invalid type: " << type;
   }
 }
 
