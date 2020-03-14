@@ -27,9 +27,13 @@ option(USE_BUNDLED_CTENSORFLOW
 
 find_package(TensorFlow REQUIRED)
 
+include(CTest)
 include(SwiftSupport)
 
 add_compile_options("$<$<COMPILE_LANGUAGE:Swift>:SHELL:-Xllvm -sil-inline-generics>")
 add_compile_options("$<$<COMPILE_LANGUAGE:Swift>:SHELL:-Xllvm -sil-partial-specialization>")
 
 add_subdirectory(Sources)
+if(BUILD_TESTING)
+  add_subdirectory(Tests)
+endif()

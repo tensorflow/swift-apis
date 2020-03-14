@@ -63,7 +63,10 @@ add_library(TensorFlow SHARED
   Optimizers/Optimizer.swift
   Optimizers/SGD.swift)
 set_target_properties(TensorFlow PROPERTIES
+  INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_Swift_MODULE_DIRECTORY}
   OUTPUT_NAME swiftTensorFlow)
+target_compile_options(TensorFlow PRIVATE
+  $<$<BOOL:${BUILD_TESTING}>:-enable-testing>)
 target_link_libraries(TensorFlow PRIVATE
   CTensorFlow
   Tensor)
