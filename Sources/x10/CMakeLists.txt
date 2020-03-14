@@ -41,6 +41,7 @@ target_sources(x10_tensor PRIVATE
   ../TensorFlow/Core/Threading.swift
   ../TensorFlow/Core/Utilities.swift
   ../TensorFlow/Core/Tensor.swift
+  ../TensorFlow/Core/TensorHandle.swift
   ../TensorFlow/Core/DataTypes.swift
   ../TensorFlow/Core/MixedPrecision.swift
 

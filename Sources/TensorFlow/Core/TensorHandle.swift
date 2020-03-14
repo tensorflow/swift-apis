@@ -57,7 +57,8 @@ public class TFETensorHandle: _AnyTensorHandle {
   public var rank: Int {
     @_semantics("autodiff.nonvarying")
     get {
-      let status = _ExecutionContext.global.status
+      let status = TF_NewStatus()
+      defer { TF_DeleteStatus(status) }
       let rank = TFE_TensorHandleNumDims(_cTensorHandle, status)
       checkOk(status)
       return Int(rank)
@@ -69,7 +70,8 @@ public class TFETensorHandle: _AnyTensorHandle {
   public var shape: TensorShape {
     @_semantics("autodiff.nonvarying")
     get {
-      let status = _ExecutionContext.global.status
+      let status = TF_NewStatus()
+      defer { TF_DeleteStatus(status) }
       let dims: [Int] = (0..<Int32(rank)).map { i in
         let dim = TFE_TensorHandleDim(_cTensorHandle, i, status)
         checkOk(status)
@@ -287,6 +289,7 @@ extension ShapedArray where Scalar: _TensorFlowDataTypeCompatible {
   }
 }
 
+#if !USING_X10_BACKEND
 // Tensor conversion.
 extension Tensor {
   public init(_ array: __owned ShapedArray<Scalar>) {
@@ -305,3 +308,4 @@ extension Tensor {
     }
   }
 }
+#endif
