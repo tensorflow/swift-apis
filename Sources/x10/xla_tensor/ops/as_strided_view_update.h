@@ -28,7 +28,9 @@ namespace ops {
 class AsStridedViewUpdate : public Node {
  public:
   AsStridedViewUpdate(const Value& target, const Value& input,
-                      std::vector<xla::int64> size, xla::int64 storage_offset);
+                      std::vector<xla::int64> size,
+                      std::vector<xla::int64> stride,
+                      xla::int64 storage_offset);
 
   std::string ToString() const override;
 
@@ -38,10 +40,13 @@ class AsStridedViewUpdate : public Node {
 
   const std::vector<xla::int64>& size() const { return size_; }
 
+  const std::vector<xla::int64>& stride() const { return stride_; }
+
   xla::int64 storage_offset() const { return storage_offset_; }
 
  private:
   std::vector<xla::int64> size_;
+  std::vector<xla::int64> stride_;
   xla::int64 storage_offset_;
 };
 
