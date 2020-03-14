@@ -17,6 +17,7 @@
 #ifndef X10_XLA_CLIENT_UTIL_H_
 #define X10_XLA_CLIENT_UTIL_H_
 
+#include <algorithm>
 #include <cstring>
 #include <exception>
 #include <functional>
@@ -222,6 +223,11 @@ std::vector<T> GetValuesVector(
     }
   }
   return result;
+}
+
+template <typename T, typename S>
+bool Equal(const T& v1, const S& v2) {
+  return std::equal(v1.begin(), v1.end(), v2.begin());
 }
 
 template <typename T>

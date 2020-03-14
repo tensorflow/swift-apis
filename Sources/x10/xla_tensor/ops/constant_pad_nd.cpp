@@ -68,7 +68,7 @@ XlaOpVector ConstantPadNd::Lower(LoweringContext* loctx) const {
 
 std::string ConstantPadNd::ToString() const {
   std::stringstream ss;
-  ss << Node::ToString() << ", pad=[" << absl::StrJoin(pad_, ", ") << "]"
+  ss << Node::ToString() << ", pad=(" << absl::StrJoin(pad_, ", ") << ")"
      << ", value=" << value_;
   return ss.str();
 }
