@@ -53,23 +53,34 @@ function(get_swift_host_os result_var_name)
 endfunction()
 
 function(_install_target module)
-  get_swift_host_arch(swift_arch)
   get_swift_host_os(swift_os)
+  get_target_property(type ${module} TYPE)
+
   install(TARGETS ${module}
     ARCHIVE DESTINATION lib/swift$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:_static>/${swift_os}
     LIBRARY DESTINATION lib/swift$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:_static>/${swift_os}
     RUNTIME DESTINATION bin)
+  if(type STREQUAL EXECUTABLE)
+    return()
+  endif()
+
+  get_swift_host_arch(swift_arch)
+  get_target_property(module_name ${module} Swift_MODULE_NAME)
+  if(NOT module_name)
+    set(module_name ${module})
+  endif()
+
   if(CMAKE_SYSTEM_NAME STREQUAL Darwin)
-    install(FILES $<TARGET_PROPERTY:${module},Swift_MODULE_DIRECTORY>/${module}.swiftdoc
-      DESTINATION lib/swift$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:_static>/${swift_os}/${mmodule}.swiftmodule
+    install(FILES $<TARGET_PROPERTY:${module},Swift_MODULE_DIRECTORY>/${module_name}.swiftdoc
+      DESTINATION lib/swift$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:_static>/${swift_os}/${module_name}.swiftmodule
       RENAME ${swift_arch}.swiftdoc)
-    install(FILES $<TARGET_PROPERTY:${module},Swift_MODULE_DIRECTORY>/${module}.swiftmodule
-      DESTINATION lib/swift$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:_static>/${swift_os}/${mmodule}.swiftmodule
+    install(FILES $<TARGET_PROPERTY:${module},Swift_MODULE_DIRECTORY>/${module_name}.swiftmodule
+      DESTINATION lib/swift$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:_static>/${swift_os}/${module_name}.swiftmodule
       RENAME ${swift_arch}.swiftmodule)
   else()
     install(FILES
-      $<TARGET_PROPERTY:${module},Swift_MODULE_DIRECTORY>/${module}.swiftdoc
-      $<TARGET_PROPERTY:${module},Swift_MODULE_DIRECTORY>/${module}.swiftmodule
+      $<TARGET_PROPERTY:${module},Swift_MODULE_DIRECTORY>/${module_name}.swiftdoc
+      $<TARGET_PROPERTY:${module},Swift_MODULE_DIRECTORY>/${module_name}.swiftmodule
       DESTINATION lib/swift$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:_static>/${swift_os}/${swift_arch})
   endif()
 endfunction()
