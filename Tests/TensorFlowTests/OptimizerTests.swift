@@ -174,6 +174,29 @@ class OptimizerTests: XCTestCase {
     XCTAssertEqual(model.tensor, [0, 0.98900014, 1.9889997])
   }
 
+  func testAdaDeltaNumerical() {
+    // The expected value was computed using the following Python code:
+    // ```
+    // import tensorflow as tf
+    // var = tf.Variable([0, 1, 2], dtype=tf.float32)
+    // grad = tf.Variable([0, 0.1, 0.2], dtype=tf.dtypes.float32)
+    // optimizer = tf.keras.optimizers.Adadelta()
+    // optimizer.apply_gradients(list(zip([grad], [var])))
+    // print(var.read_value())
+    // for i in range(10):
+    //     optimizer.apply_gradients(list(zip([grad], [var])))
+    // print(var.read_value())
+    // ```
+    var model = ModelNumerical()
+    let opt = AdaDelta(for: model, learningRate: 1e-3, epsilon: 1e-7)
+    opt.update(&model, along: ModelNumerical.grad)
+    XCTAssertEqual(model.tensor, [0, 0.99999857, 1.9999986])
+    for _ in 0..<10 {
+      opt.update(&model, along: ModelNumerical.grad)
+    }
+    XCTAssertEqual(model.tensor, [0, 0.99998385, 1.9999841])
+  }
+
   static var allTests = [
     ("testSGD", testSGD),
     ("testRMSProp", testRMSProp),
@@ -186,5 +209,6 @@ class OptimizerTests: XCTestCase {
     ("testSGDNumerical", testSGDNumerical),
     ("testRMSPropNumerical", testRMSPropNumerical),
     ("testAdamNumerical", testAdamNumerical),
+    ("testAdaDeltaNumerical", testAdaDeltaNumerical),
   ]
 }
