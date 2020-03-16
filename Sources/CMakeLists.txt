@@ -1,4 +1,5 @@
 add_subdirectory(CTensorFlow)
+add_subdirectory(third_party/Experimental)
 add_subdirectory(Tensor)
 add_subdirectory(TensorFlow)
 if(X10_INCLUDE_DIR)
