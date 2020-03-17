@@ -243,6 +243,9 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   }
 }
 
+/// A layer that applies group normalization over a mini-batch of inputs.
+///
+/// Reference: [Group Normalization](https://arxiv.org/abs/1803.08494).
 @frozen
 public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   /// The offset value, also known as beta.
@@ -334,6 +337,9 @@ public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   }
 }
 
+/// A layer that applies instance normalization over a mini-batch of inputs.
+///
+/// Reference: [Instance Normalization: The Missing Ingredient for Fast Stylization](https://arxiv.org/abs/1607.08022).
 @frozen
 public struct InstanceNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   /// Internal group normalization.
