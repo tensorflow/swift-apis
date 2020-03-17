@@ -333,3 +333,73 @@ public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     return normalized.reshaped(to: input.shape)
   }
 }
+
+@frozen
+public struct InstanceNorm<Scalar: TensorFlowFloatingPoint>: Layer {
+  /// Internal group normalization.
+  var groupNorm: GroupNorm<Scalar>
+
+  /// The offset value, also known as beta.
+  public var offset: Tensor<Scalar> {
+    _read { yield groupNorm.offset }
+    _modify { yield &groupNorm.offset }
+  }
+
+  /// The scale value, also known as gamma.
+  public var scale: Tensor<Scalar> {
+    _read { yield groupNorm.scale }
+    _modify { yield &groupNorm.scale }
+  }
+
+  /// The axis.
+  public var axis: Int {
+    get { groupNorm.axis }
+  }
+
+  /// The variance epsilon value.
+  public var epsilon: Scalar {
+    get { groupNorm.epsilon }
+  }
+
+  /// Creates a instance normalization layer.
+  public init(
+    offset: Tensor<Scalar>,
+    scale: Tensor<Scalar>,
+    axis: Int,
+    epsilon: Scalar
+  ) {
+    groupNorm = GroupNorm(
+      offset: offset,
+      scale: scale,
+      groups: offset.shape[0],
+      axis: axis,
+      epsilon: epsilon)
+  }
+
+  /// Creates a instance normalization layer.
+  ///
+  /// - Parameters:
+  ///   - featureCount: The number of features.
+  ///   - axis: The axis that should be normalized.
+  ///   - epsilon: The small scalar added to variance.
+  public init(
+    featureCount: Int,
+    axis: Int = -1,
+    epsilon: Scalar = 1e-3
+  ) {
+    groupNorm = GroupNorm(
+      featureCount: featureCount,
+      groups: featureCount,
+      axis: axis,
+      epsilon: epsilon)
+  }
+
+  /// Returns the output obtained from applying the layer to the given input.
+  ///
+  /// - Parameter input: The input to the layer.
+  /// - Returns: The output.
+  @differentiable
+  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+    groupNorm(input)
+  }
+}

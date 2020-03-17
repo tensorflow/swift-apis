@@ -1946,7 +1946,7 @@ final class LayerTests: XCTestCase {
     // ```
     let tensor = Tensor<Float>(rangeFrom: 0, to: 24, stride: 1)
       .reshaped(to: [2, 2, 1, 6])
-    let layer = GroupNorm<Float>(featureCount: 6, groups: 2, epsilon: 0.001)
+    let layer = GroupNorm<Float>(featureCount: 6, groups: 2)
     let output = layer(tensor)
     let expected: Tensor<Float> = [
       [
@@ -1959,6 +1959,32 @@ final class LayerTests: XCTestCase {
       ]
     ]
     XCTAssert(output.isAlmostEqual(to: expected))
+  }
+
+  func testInstanceNorm() {
+    // The expected values were computed using the following Python code:
+    // ```
+    // import tensorflow as tf
+    // import tensorflow_addons as tfa
+    // tensor = tf.reshape(tf.range(24, dtype=tf.float32), [2, 2, 1, 6])
+    // layer = tfa.layers.InstanceNormalization()
+    // print(layer(tensor))
+    // ```
+    let tensor = Tensor<Float>(rangeFrom: 0, to: 24, stride: 1)
+      .reshaped(to: [2, 2, 1, 6])
+    let layer = InstanceNorm<Float>(featureCount: 6)
+    let output = layer(tensor)
+    let expected: Tensor<Float> = [
+      [
+        [[-0.99994445, -0.99994445, -0.9999444, -0.99994445, -0.9999443, -0.99994445]],
+        [[0.99994445, 0.9999443, 0.99994445, 0.99994445, 0.99994445, 0.99994445]]
+      ],
+      [
+        [[-0.9999442, -0.9999442, -0.9999447, -0.9999447, -0.9999442, -0.9999442]],
+        [[0.9999447, 0.9999442, 0.9999442, 0.9999442, 0.9999447, 0.9999447]]
+      ]
+    ]
+    XCTAssertEqual(output, expected)
   }
 
   static var allTests = [
@@ -2032,5 +2058,6 @@ final class LayerTests: XCTestCase {
     ("testLayerNorm", testLayerNorm),
     ("testLayerNormInference", testLayerNormInference),
     ("testGroupNorm", testGroupNorm),
+    ("testInstanceNorm", testInstanceNorm)
   ]
 }
