@@ -12,6 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/// Normalizes a tensor by `mean` and `variance`, and applies a `scale` to it, as well as an `offset`.
+@differentiable
+func _batchNorm<Scalar: TensorFlowFloatingPoint>(
+    _ input: Tensor<Scalar>,
+    mean: Tensor<Scalar>,
+    variance: Tensor<Scalar>,
+    offset: Tensor<Scalar>,
+    scale: Tensor<Scalar>,
+    varianceEpsilon: Scalar
+) -> Tensor<Scalar> {
+    var inv = rsqrt(variance + varianceEpsilon)
+    inv = scale * inv
+    return input * inv + offset - mean * inv
+}
+
 /// A batch normalization layer.
 ///
 /// Normalizes the activations of the previous layer at each batch, i.e. applies a transformation
@@ -112,9 +127,10 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     }
     runningMean.value += (momentsMean - runningMean.value) * decayMomentum
     runningVariance.value += (momentsVariance - runningVariance.value) * decayMomentum
-    let eps = withoutDerivative(at: input) { Tensor(epsilon, deviceAndPrecisionLike: $0) }
-    let inv = rsqrt(moments.variance + eps) * scale
-    return (input - moments.mean) * inv + offset
+    return _batchNorm(input,
+                      mean: moments.mean, variance: moments.variance,
+                      offset: offset, scale: scale,
+                      varianceEpsilon: epsilon)
   }
 
   private func doInference(
@@ -125,9 +141,10 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
       isReducedPrecision ? runningVariance.value.toReducedPrecision : runningVariance.value
     let runningMeanValue =
       isReducedPrecision ? runningMean.value.toReducedPrecision : runningMean.value
-    let eps = withoutDerivative(at: input) { Tensor(epsilon, deviceAndPrecisionLike: $0) }
-    let inv = rsqrt(runningVarianceValue + eps) * scale
-    return (input - runningMeanValue) * inv + offset
+    return _batchNorm(input,
+                      mean: runningMeanValue, variance: runningVarianceValue,
+                      offset: offset, scale: scale,
+                      varianceEpsilon: epsilon)
   }
 
   /// Creates a batch normalization layer.
