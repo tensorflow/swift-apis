@@ -358,14 +358,9 @@ public struct InstanceNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   }
 
   /// The axis.
-  public var axis: Int {
-    get { groupNorm.axis }
-  }
-
+  public var axis: Int { groupNorm.axis }
   /// The variance epsilon value.
-  public var epsilon: Scalar {
-    get { groupNorm.epsilon }
-  }
+  public var epsilon: Scalar { groupNorm.epsilon }
 
   /// Creates a instance normalization layer.
   public init(
