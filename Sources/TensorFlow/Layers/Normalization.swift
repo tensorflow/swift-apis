@@ -15,16 +15,15 @@
 /// Normalizes a tensor by `mean` and `variance`, and applies a `scale` to it, as well as an `offset`.
 @differentiable
 func _batchNorm<Scalar: TensorFlowFloatingPoint>(
-    _ input: Tensor<Scalar>,
-    mean: Tensor<Scalar>,
-    variance: Tensor<Scalar>,
-    offset: Tensor<Scalar>,
-    scale: Tensor<Scalar>,
-    varianceEpsilon: Scalar
+  _ input: Tensor<Scalar>,
+  mean: Tensor<Scalar>,
+  variance: Tensor<Scalar>,
+  offset: Tensor<Scalar>,
+  scale: Tensor<Scalar>,
+  varianceEpsilon: Scalar
 ) -> Tensor<Scalar> {
-    var inv = rsqrt(variance + varianceEpsilon)
-    inv = scale * inv
-    return input * inv + offset - mean * inv
+  let inv = rsqrt(variance + varianceEpsilon)
+  return input * inv + (offset - mean * inv)
 }
 
 /// A batch normalization layer.
@@ -127,10 +126,11 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     }
     runningMean.value += (momentsMean - runningMean.value) * decayMomentum
     runningVariance.value += (momentsVariance - runningVariance.value) * decayMomentum
-    return _batchNorm(input,
-                      mean: moments.mean, variance: moments.variance,
-                      offset: offset, scale: scale,
-                      varianceEpsilon: epsilon)
+    return _batchNorm(
+      input,
+      mean: moments.mean, variance: moments.variance,
+      offset: offset, scale: scale,
+      varianceEpsilon: epsilon)
   }
 
   private func doInference(
@@ -141,10 +141,11 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
       isReducedPrecision ? runningVariance.value.toReducedPrecision : runningVariance.value
     let runningMeanValue =
       isReducedPrecision ? runningMean.value.toReducedPrecision : runningMean.value
-    return _batchNorm(input,
-                      mean: runningMeanValue, variance: runningVarianceValue,
-                      offset: offset, scale: scale,
-                      varianceEpsilon: epsilon)
+    return _batchNorm(
+      input,
+      mean: runningMeanValue, variance: runningVarianceValue,
+      offset: offset, scale: scale,
+      varianceEpsilon: epsilon)
   }
 
   /// Creates a batch normalization layer.
@@ -239,5 +240,96 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     let moments = input.moments(alongAxes: positiveAxis)
     let inv = rsqrt(moments.variance + epsilon) * scale
     return (input - moments.mean) * inv + offset
+  }
+}
+
+@frozen
+public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
+  /// The offset value, also known as beta.
+  public var offset: Tensor<Scalar>
+  /// The scale value, also known as gamma.
+  public var scale: Tensor<Scalar>
+  /// The number of groups.
+  @noDerivative public let groups: Int
+  /// The axis.
+  @noDerivative public let axis: Int
+  /// The variance epsilon value.
+  @noDerivative public let epsilon: Scalar
+
+  /// Creates a group normalization layer.
+  public init(
+    offset: Tensor<Scalar>,
+    scale: Tensor<Scalar>,
+    groups: Int,
+    axis: Int,
+    epsilon: Scalar
+  ) {
+    precondition(axis != 0, "The normalization axis cannot be batch axis.")
+    precondition(offset.rank == 1, "The offset must have rank 1.")
+    precondition(scale.rank == 1, "The scale must have rank 1.")
+    precondition(
+      offset.shape == scale.shape,
+      "The offset and the scale must have same shape.")
+    self.offset = offset
+    self.scale = scale
+    self.groups = groups
+    self.axis = axis
+    self.epsilon = epsilon
+  }
+
+  /// Creates a group normalization layer.
+  ///
+  /// - Parameters:
+  ///   - featureCount: The number of features.
+  ///   - groups: The number of groups.
+  ///   - axis: The axis that should be normalized.
+  ///   - epsilon: The small scalar added to variance.
+  public init(
+    featureCount: Int,
+    groups: Int,
+    axis: Int = -1,
+    epsilon: Scalar = 1e-3
+  ) {
+    precondition(
+      featureCount.isMultiple(of: groups),
+      "The feature count must be divisible by groups.")
+    self.init(
+      offset: Tensor(zeros: [featureCount]),
+      scale: Tensor(ones: [featureCount]),
+      groups: groups,
+      axis: axis,
+      epsilon: epsilon
+    )
+  }
+
+  /// Returns the output obtained from applying the layer to the given input.
+  ///
+  /// - Parameter input: The input to the layer.
+  /// - Returns: The output.
+  @differentiable
+  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+    let positiveAxis = (input.rank + axis) % input.rank
+    precondition(positiveAxis != 0, "The normalization axis cannot be batch axis.")
+    var offset = self.offset
+    var scale = self.scale
+    var broadcastShape = TensorShape([Int](repeating: 1, count: input.rank + 1))
+    broadcastShape[positiveAxis] = groups
+    broadcastShape[positiveAxis + 1] = input.shape[positiveAxis] / groups
+    offset = offset.reshaped(to: broadcastShape)
+    scale = scale.reshaped(to: broadcastShape)
+
+    var groupShape = input.shape
+    groupShape[positiveAxis] /= groups
+    groupShape.insert(groups, at: positiveAxis)
+    let grouped = input.reshaped(to: groupShape)
+    var normalizedAxes = Array(1..<grouped.rank)
+    normalizedAxes.remove(at: positiveAxis - 1)
+    let moments = grouped.moments(alongAxes: normalizedAxes)
+    let normalized = _batchNorm(
+      grouped,
+      mean: moments.mean, variance: moments.variance,
+      offset: offset, scale: scale,
+      varianceEpsilon: epsilon)
+    return normalized.reshaped(to: input.shape)
   }
 }

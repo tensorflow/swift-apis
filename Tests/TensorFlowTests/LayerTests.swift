@@ -1935,6 +1935,32 @@ final class LayerTests: XCTestCase {
     XCTAssertEqual(transformerTensor.shape, transformerResult.shape)
   }
 
+  func testGroupNorm() {
+    // The expected values were computed using the following Python code:
+    // ```
+    // import tensorflow as tf
+    // import tensorflow_addons as tfa
+    // tensor = tf.reshape(tf.range(24, dtype=tf.float32), [2, 2, 1, 6])
+    // layer = tfa.layers.GroupNormalization(groups=2)
+    // print(layer(tensor))
+    // ```
+    let tensor = Tensor<Float>(rangeFrom: 0, to: 24, stride: 1)
+      .reshaped(to: [2, 2, 1, 6])
+    let layer = GroupNorm<Float>(featureCount: 6, groups: 2, epsilon: 0.001)
+    let output = layer(tensor)
+    let expected: Tensor<Float> = [
+      [
+        [[-1.2864685, -0.9648514, -0.64323425, -1.2864685, -0.9648514, -0.64323425]],
+        [[0.64323425, 0.9648514, 1.2864685, 0.64323425, 0.9648514, 1.2864685]]
+      ],
+      [
+        [[-1.2864685, -0.9648514, -0.64323425, -1.2864685, -0.9648514, -0.64323425]],
+        [[0.64323425, 0.9648514, 1.2864685, 0.64323425, 0.9648514, 1.2864685]]
+      ]
+    ]
+    XCTAssert(output.isAlmostEqual(to: expected))
+  }
+
   static var allTests = [
     ("testConv1D", testConv1D),
     ("testConv1DDilation", testConv1DDilation),
@@ -2005,5 +2031,6 @@ final class LayerTests: XCTestCase {
     ("testBatchNormInference", testBatchNormInference),
     ("testLayerNorm", testLayerNorm),
     ("testLayerNormInference", testLayerNormInference),
+    ("testGroupNorm", testGroupNorm),
   ]
 }
