@@ -14,6 +14,7 @@
 
 import x10_device
 import x10_tensor
+@_implementationOnly
 import x10_xla_tensor_wrapper
 
 /// Collects correct prediction counters and loss totals.

@@ -16,7 +16,9 @@
 // support the current tensorflow API.
 
 import x10_device
+@_implementationOnly
 import x10_xla_tensor_tf_ops
+@_implementationOnly
 import x10_xla_tensor_wrapper
 
 @available(
