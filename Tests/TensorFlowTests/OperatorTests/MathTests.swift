@@ -649,6 +649,7 @@ final class MathOperatorTests: XCTestCase {
     ("testLeakyRelu", testLeakyRelu),
     ("testSelu", testSelu),
     ("testSwish", testSwish),
+    ("testHSigmoid", testHSigmoid),
     ("testHSwish", testHSwish),
     ("testIsFinite", testIsFinite),
     ("testIsInfinite", testIsInfinite),
