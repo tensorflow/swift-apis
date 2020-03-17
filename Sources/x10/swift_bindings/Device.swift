@@ -88,7 +88,7 @@ public struct Device {
     }
   }
 
-  public var cdevice: CDevice {
+  internal var cdevice: CDevice {
     return CDevice(hw_type: kind.deviceType, ordinal: Int32(ordinal))
   }
 
@@ -165,8 +165,8 @@ extension Device: CustomStringConvertible {
   public var description: String { "Device(kind: .\(kind.shortName), ordinal: \(ordinal))" }
 }
 
-extension CDevice {
-  public var device: Device {
+internal extension CDevice {
+  var device: Device {
     return Device(kind: hw_type.kind, ordinal: Int(ordinal))
   }
 }
