@@ -22,7 +22,7 @@ func _batchNorm<Scalar: TensorFlowFloatingPoint>(
   scale: Tensor<Scalar>,
   varianceEpsilon: Scalar
 ) -> Tensor<Scalar> {
-  let inv = rsqrt(variance + varianceEpsilon)
+  let inv = scale * rsqrt(variance + varianceEpsilon)
   return input * inv + (offset - mean * inv)
 }
 
