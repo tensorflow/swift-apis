@@ -395,7 +395,7 @@ extension Tensor {
   /// - Precondition: There must be no duplication in `axes`.
   @inlinable
   @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
-  func reversed(inAxes axes: Tensor<Int32>) -> Tensor {
+  public func reversed(inAxes axes: Tensor<Int32>) -> Tensor {
     precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
     return _Raw.reverseV2(self, axis: axes)
   }
@@ -405,7 +405,7 @@ extension Tensor {
   /// - Precondition: There must be no duplication in `axes`.
   @inlinable
   @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
-  func reversed(inAxes axes: [Int]) -> Tensor {
+  public func reversed(inAxes axes: [Int]) -> Tensor {
       precondition(axes.count == Set(axes.map { $0 < 0 ? $0 + rank : $0 }).count,
                    "There must be no duplication in axes.")
       let axes = axes.map(Int32.init)
@@ -417,7 +417,7 @@ extension Tensor {
   /// - Precondition: There must be no duplication in `axes`.
   @inlinable
   @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
-  func reversed(inAxes axes: Int...) -> Tensor {
+  public func reversed(inAxes axes: Int...) -> Tensor {
       reversed(inAxes: axes)
   }
 
