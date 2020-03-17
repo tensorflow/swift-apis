@@ -267,7 +267,7 @@ public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     axis: Int,
     epsilon: Scalar
   ) {
-    precondition(axis != 0, "The normalization axis cannot be batch axis.")
+    precondition(axis != 0, "The axis cannot be batch axis.")
     precondition(offset.rank == 1, "The offset must have rank 1.")
     precondition(scale.rank == 1, "The scale must have rank 1.")
     precondition(
@@ -312,7 +312,7 @@ public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   @differentiable
   public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     let positiveAxis = (input.rank + axis) % input.rank
-    precondition(positiveAxis != 0, "The normalization axis cannot be batch axis.")
+    precondition(positiveAxis != 0, "The axis cannot be batch axis.")
     var offset = self.offset
     var scale = self.scale
     var broadcastShape = TensorShape([Int](repeating: 1, count: input.rank + 1))
