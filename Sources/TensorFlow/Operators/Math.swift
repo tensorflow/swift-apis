@@ -1417,6 +1417,17 @@ func _vjpSwish<T: TensorFlowFloatingPoint>(
   )
 }
 
+/// Returns a tensor by applying the hard sigmoid activation function, namely
+/// `Relu6(x+3)/6`.
+///
+/// Source: "Searching for MobileNetV3" (Howard et al. 2019)
+/// https://arxiv.org/abs/1905.02244
+@inlinable
+@differentiable
+public func hsigmoid<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+  relu6(x + 3) / 6.0
+}
+
 /// Returns a tensor by applying the hard swish activation function, namely
 /// `x * Relu6(x+3)/6`.
 ///
@@ -1425,7 +1436,7 @@ func _vjpSwish<T: TensorFlowFloatingPoint>(
 @inlinable
 @differentiable
 public func hswish<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
-  x * relu6(x + 3) / 6.0
+  x * hsigmoid(x)
 }
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
