@@ -529,7 +529,7 @@ public class RAdam<Model: Differentiable>: Optimizer
             model.move(along: (firstMoments ./ secondMoments_h).scaled(by: -stepSize * sqrtf(1 - beta2Power)))
         } else {
             // Update with un-adapted momentum.
-            let stepSize = learningRate * step / (1 - beta1Power)
+            let stepSize = learningRate / (1 - beta1Power)
             model.move(along: firstMoments.scaled(by: -stepSize))
         }
     }
