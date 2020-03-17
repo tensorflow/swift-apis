@@ -2058,6 +2058,6 @@ final class LayerTests: XCTestCase {
     ("testLayerNorm", testLayerNorm),
     ("testLayerNormInference", testLayerNormInference),
     ("testGroupNorm", testGroupNorm),
-    ("testInstanceNorm", testInstanceNorm)
+    ("testInstanceNorm", testInstanceNorm),
   ]
 }
