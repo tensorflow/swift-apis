@@ -20,7 +20,7 @@ func _batchNorm<Scalar: TensorFlowFloatingPoint>(
   variance: Tensor<Scalar>,
   offset: Tensor<Scalar>,
   scale: Tensor<Scalar>,
-  varianceEpsilon: Scalar
+  varianceEpsilon: Tensor<Scalar>
 ) -> Tensor<Scalar> {
   let inv = scale * rsqrt(variance + varianceEpsilon)
   return input * inv + (offset - mean * inv)
@@ -126,11 +126,12 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     }
     runningMean.value += (momentsMean - runningMean.value) * decayMomentum
     runningVariance.value += (momentsVariance - runningVariance.value) * decayMomentum
+    let eps = withoutDerivative(at: input) { Tensor(epsilon, deviceAndPrecisionLike: $0) }
     return _batchNorm(
       input,
       mean: moments.mean, variance: moments.variance,
       offset: offset, scale: scale,
-      varianceEpsilon: epsilon)
+      varianceEpsilon: eps)
   }
 
   private func doInference(
@@ -141,11 +142,12 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
       isReducedPrecision ? runningVariance.value.toReducedPrecision : runningVariance.value
     let runningMeanValue =
       isReducedPrecision ? runningMean.value.toReducedPrecision : runningMean.value
+    let eps = withoutDerivative(at: input) { Tensor(epsilon, deviceAndPrecisionLike: $0) }
     return _batchNorm(
       input,
       mean: runningMeanValue, variance: runningVarianceValue,
       offset: offset, scale: scale,
-      varianceEpsilon: epsilon)
+      varianceEpsilon: eps)
   }
 
   /// Creates a batch normalization layer.
@@ -328,11 +330,12 @@ public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     var normalizedAxes = Array(1..<grouped.rank)
     normalizedAxes.remove(at: positiveAxis - 1)
     let moments = grouped.moments(alongAxes: normalizedAxes)
+    let eps = Tensor(epsilon)
     let normalized = _batchNorm(
       grouped,
       mean: moments.mean, variance: moments.variance,
       offset: offset, scale: scale,
-      varianceEpsilon: epsilon)
+      varianceEpsilon: eps)
     return normalized.reshaped(to: input.shape)
   }
 }
