@@ -35,4 +35,5 @@ add_library(TensorFlowTests
   OperatorTests/MatrixTests.swift)
 target_link_libraries(TensorFlowTests PUBLIC
   TensorFlow
+  Tensor
   XCTest)
