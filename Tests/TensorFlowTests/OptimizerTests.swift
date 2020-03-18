@@ -17,15 +17,15 @@ import XCTest
 
 class OptimizerTests: XCTestCase {
   struct Model: Layer {
-    var dense1 = Dense<Float>(weight: [[0.8]], bias: [0.8], activation: identity)
+    var dense = Dense<Float>(weight: [[0.8]], bias: [0.8], activation: identity)
 
     @differentiable
     func callAsFunction(_ input: Tensor<Float>) -> Tensor<Float> {
-      dense1(input)
+      dense(input)
     }
   }
 
-  func convergenceTest<Opt: Optimizer>(
+  func testConvergence<Opt: Optimizer>(
     optimizer: Opt,
     model: Model,
     stepCount: Int = 1000,
@@ -58,43 +58,43 @@ class OptimizerTests: XCTestCase {
   func testSGD() {
     let model = Model()
     let optimizer = SGD(for: model)
-    convergenceTest(optimizer: optimizer, model: model)
+    testConvergence(optimizer: optimizer, model: model)
   }
 
   func testRMSProp() {
     let model = Model()
     let optimizer = RMSProp(for: model)
-    convergenceTest(optimizer: optimizer, model: model)
+    testConvergence(optimizer: optimizer, model: model)
   }
 
   func testAdaGrad() {
     let model = Model()
     let optimizer = AdaGrad(for: model, learningRate: 0.01)
-    convergenceTest(optimizer: optimizer, model: model)
+    testConvergence(optimizer: optimizer, model: model)
   }
 
   func testAdaDelta() {
     let model = Model()
     let optimizer = AdaDelta(for: model)
-    convergenceTest(optimizer: optimizer, model: model)
+    testConvergence(optimizer: optimizer, model: model)
   }
 
   func testAdam() {
     let model = Model()
     let optimizer = Adam(for: model)
-    convergenceTest(optimizer: optimizer, model: model)
+    testConvergence(optimizer: optimizer, model: model)
   }
 
   func testAdaMax() {
     let model = Model()
     let optimizer = AdaMax(for: model)
-    convergenceTest(optimizer: optimizer, model: model)
+    testConvergence(optimizer: optimizer, model: model)
   }
 
   func testAMSGrad() {
     let model = Model()
     let optimizer = AMSGrad(for: model)
-    convergenceTest(optimizer: optimizer, model: model)
+    testConvergence(optimizer: optimizer, model: model)
   }
 
   func testRAdam() {
