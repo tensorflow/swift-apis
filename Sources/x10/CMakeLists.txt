@@ -108,26 +108,6 @@ set_target_properties(x10_training_loop PROPERTIES
 target_link_libraries(x10_training_loop PUBLIC
   x10_tensor)
 
-add_executable(ops_test ../../Tests/x10/ops_test.swift)
-target_link_libraries(ops_test PRIVATE
-  x10_device
-  x10_tensor
-  TensorFlow)
-
-add_executable(xla_tensor_test ../../Tests/x10/xla_tensor_test.swift)
-target_link_libraries(xla_tensor_test PRIVATE
-  x10_device
-  x10_tensor)
-
-add_executable(keypathiterable_test ../../Tests/x10/keypathiterable_test.swift)
-target_link_libraries(keypathiterable_test PRIVATE
-  x10_device
-  x10_tensor)
-
-add_executable(tensor_visitor_plan_test ../../Tests/x10/TensorVisitorPlanTest.swift)
-target_link_libraries(tensor_visitor_plan_test PRIVATE
-  x10_optimizers_tensor_visitor_plan)
-
 
 _install_target(x10_device)
 _install_target(x10_tensor)
