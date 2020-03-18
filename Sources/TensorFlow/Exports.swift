@@ -13,6 +13,6 @@
 // limitations under the License.
 
 #if !COMPILING_TENSORFLOW_STDLIB_MODULE
-// Re-export all public symbols in the Tensor library.
-@_exported import Tensor
+  // Re-export all public symbols in the Tensor library.
+  @_exported import Tensor
 #endif

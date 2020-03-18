@@ -1,4 +1,4 @@
-// swift-tools-version:4.2
+// swift-tools-version:5.2
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 //
 // Copyright 2019 The TensorFlow Authors. All Rights Reserved.
@@ -18,37 +18,40 @@
 import PackageDescription
 
 let package = Package(
-    name: "TensorFlow",
-    products: [
-        .library(
-            name: "TensorFlow",
-            type: .dynamic,
-            targets: ["TensorFlow"]),
-        .library(
-            name: "Tensor",
-            type: .dynamic,
-            targets: ["Tensor"]),
-    ],
-    dependencies: [],
-    targets: [
-        .target(
-            name: "Tensor",
-            dependencies: []),
-        .target(
-            name: "TensorFlow",
-            dependencies: ["Tensor"]),
-        .target(
-            name: "Experimental",
-            dependencies: [],
-            path: "Sources/third_party/Experimental"),
-        .testTarget(
-            name: "ExperimentalTests",
-            dependencies: ["Experimental"]),
-        .testTarget(
-            name: "TensorTests",
-            dependencies: ["Tensor"]),
-        .testTarget(
-            name: "TensorFlowTests",
-            dependencies: ["TensorFlow"]),
-    ]
+  name: "TensorFlow",
+  platforms: [
+    .macOS(.v10_13),
+  ],
+  products: [
+    .library(
+      name: "TensorFlow",
+      type: .dynamic,
+      targets: ["TensorFlow"]),
+    .library(
+      name: "Tensor",
+      type: .dynamic,
+      targets: ["Tensor"]),
+  ],
+  dependencies: [],
+  targets: [
+    .target(
+      name: "Tensor",
+      dependencies: []),
+    .target(
+      name: "TensorFlow",
+      dependencies: ["Tensor"]),
+    .target(
+      name: "Experimental",
+      dependencies: [],
+      path: "Sources/third_party/Experimental"),
+    .testTarget(
+      name: "ExperimentalTests",
+      dependencies: ["Experimental"]),
+    .testTarget(
+      name: "TensorTests",
+      dependencies: ["Tensor"]),
+    .testTarget(
+      name: "TensorFlowTests",
+      dependencies: ["TensorFlow"]),
+  ]
 )

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import XCTest
 import TensorFlow  // Note: not imported as @testable in order to test the public API.
+import XCTest
 
 final class RuntimeTests: XCTestCase {
   func testDeviceNames() {

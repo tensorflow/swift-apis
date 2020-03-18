@@ -14,12 +14,12 @@
 
 /// A TensorFlow device kind.
 public enum DeviceKind {
-    /// The CPU device kind.
-    case cpu
-    /// The GPU device kind.
-    case gpu
-    /// The TPU device kind.
-    case tpu
+  /// The CPU device kind.
+  case cpu
+  /// The GPU device kind.
+  case gpu
+  /// The TPU device kind.
+  case tpu
 }
 
 /// Executes a closure, making TensorFlow operations run on a specific kind of device.
@@ -30,11 +30,11 @@ public enum DeviceKind {
 ///   - body: A closure whose TensorFlow operations are to be executed on the
 ///     specified kind of device.
 public func withDevice<R>(
-    _ kind: DeviceKind,
-    _ index: UInt = 0,
-    perform body: () throws -> R
+  _ kind: DeviceKind,
+  _ index: UInt = 0,
+  perform body: () throws -> R
 ) rethrows -> R {
-    return try _ExecutionContext.global.withDevice(kind, index, perform: body)
+  return try _ExecutionContext.global.withDevice(kind, index, perform: body)
 }
 
 /// Executes a closure, making TensorFlow operations run on a device with
@@ -52,7 +52,7 @@ public func withDevice<R>(
 ///   - "/job:localhost/replica:0/task:0/device:GPU:1": Fully qualified name of
 ///     the second GPU of your machine that is visible to TensorFlow.
 public func withDevice<R>(named name: String, perform body: () throws -> R) rethrows -> R {
-    return try _ExecutionContext.global.withDevice(named: name, perform: body)
+  return try _ExecutionContext.global.withDevice(named: name, perform: body)
 }
 
 /// Executes a closure, allowing TensorFlow to place TensorFlow operations on any device. This
@@ -62,5 +62,5 @@ public func withDevice<R>(named name: String, perform body: () throws -> R) reth
 ///   - body: A closure whose TensorFlow operations are to be executed on the specified kind of
 ///     device.
 public func withDefaultDevice<R>(perform body: () throws -> R) rethrows -> R {
-    return try _ExecutionContext.global.withDefaultDevice(perform: body)
+  return try _ExecutionContext.global.withDefaultDevice(perform: body)
 }
