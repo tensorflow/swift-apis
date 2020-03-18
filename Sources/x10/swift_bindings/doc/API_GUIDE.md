@@ -1,7 +1,7 @@
 # X10: S4TF on XLA Devices
 
 S4TF runs on XLA devices, like TPUs, using the
-[X10 tensor library](https://github.com/tensorflow/swift-apis/Sources/x10).
+[X10 tensor library][x10_lib].
 This document describes how to run your models on these devices.
 
 ## Creating an X10 Tensor
@@ -115,9 +115,9 @@ and runs operations.
 ### Running on Multiple XLA Devices
 
 X10 offers support for
-[copying tensors, models and optimizers](https://github.com/tensorflow/swift-apis/Sources/TensorFlow/Core/CopyableToDevice.swift)
+[copying tensors, models and optimizers][copying]
 to a given device. On top of this low-level functionality, we provide a
-[training loop high-level API](https://github.com/tensorflow/swift-apis/Sources/x10/swift_bindings/training_loop.swift)
+[training loop high-level API][training]
 which automates a lot of the work for image models. In a nutshell,
 this helper does the following:
 
@@ -132,7 +132,7 @@ this helper does the following:
 
 Training with mixed precision is supported and we provide both low-level and
 high-level API to control it. The
-[low-level API](https://github.com/tensorflow/swift-apis/Sources/x10/swift_bindings/apis/MixedPrecision.swift)
+[low-level API][low-level]
 offers two computed properties: `toReducedPrecision` and `toFullPrecision` which
 convert between full and reduced precision, alongside with `isReducedPrecision`
 to query the precision. Besides tensors, models and optimizers can be converted
@@ -147,7 +147,7 @@ allowed. This avoids silent and unwanted promotion to `F32`, which would be hard
 to detect by the user.
 
 The
-[training loop high-level API](https://github.com/tensorflow/swift-apis/Sources/x10/swift_bindings/training_loop.swift)
+[training loop high-level API][training]
 we've mentioned earlier also provides a flag to allow for automatic mixed
 precision. In this mode, weights are kept in full precision but inputs and
 activations are reduced precision, following the precedent set by other
@@ -175,3 +175,8 @@ after the optimizer step explicitly synchronizes the CPU and the X10 device.
 
 The internal data representation of X10 tensors is opaque to the user. This
 allows XLA to control a tensor's memory layout for better performance.
+
+[x10_lib]: https://github.com/tensorflow/swift-apis/tree/master/Sources/x10
+[copying]: https://github.com/tensorflow/swift-apis/tree/master/Sources/TensorFlow/Core/CopyableToDevice.swift
+[training]: https://github.com/tensorflow/swift-apis/tree/master/Sources/x10/swift_bindings/training_loop.swift
+[low-level]: https://github.com/tensorflow/swift-apis/blob/master/Sources/TensorFlow/Core/MixedPrecision.swift
