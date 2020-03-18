@@ -1232,7 +1232,7 @@ extension Tensor {
     /// Returns `true` if all given axes are in the range `[-rank, rank)`.
     @usableFromInline
     internal func areAxesInRange<T: BinaryInteger>(_ axes: [T]) -> Bool {
-        return !axes.contains(where: { !isAxisInRange($0) }) && ensureNonDuplicated(axes)
+        return !axes.contains(where: { !isAxisInRange($0) })
     }
 
     /// Returns `true` if all scalars of the given 1-D tensor are in the range `[-rank, rank)`.
@@ -1241,26 +1241,4 @@ extension Tensor {
         precondition(axes.rank == 1, "Axes must have rank 1.")
         return areAxesInRange(axes.scalars)
     }
-}
-
-/// Checks to ensure elements within an array are distinct.
-///
-/// When reducing along axes (or other similar operations), it is undefined to
-/// provide the same axis multiple times. This function checks to ensure the
-/// specified axes are not duplicated.
-///
-/// Note: this function is on the critical path of operations, and so should be
-/// treated as performance sensitive. For a quick benchmark comparison between
-/// a naive implementation and this implementation, check out
-/// https://colab.research.google.com/drive/1xPS4JkU9YwgKFDUNgCvrqquUUe1R0cVS#scrollTo=kZRlD4utdPuX
-/// which shows a ~10x performance difference.
-@usableFromInline
-internal func ensureNonDuplicated<T: BinaryInteger>(_ axes: [T]) -> Bool {
-    guard axes.count < 5 else { return Set(axes).count == axes.count }  // Slow path.
-    for i in 0..<axes.count {
-        for j in (i+1)..<axes.count {
-            guard axes[i] != axes[j] else { return false }
-        }
-    }
-    return true
 }
