@@ -197,6 +197,30 @@ class OptimizerTests: XCTestCase {
     XCTAssertEqual(model.tensor, [0, 0.99998385, 1.9999841])
   }
 
+  func testAMSGradNumerical() {
+    // The expected value was computed using the following Python code:
+    // ```
+    // import tensorflow as tf
+    // var = tf.Variable([0, 1, 2], dtype=tf.float32)
+    // grad = tf.Variable([0, 0.1, 0.2], dtype=tf.dtypes.float32)
+    // optimizer = tf.keras.optimizers.Adam(amsgrad=True)
+    // optimizer.apply_gradients(list(zip([grad], [var])))
+    // print(var.read_value())
+    // for i in range(10):
+    //     optimizer.apply_gradients(list(zip([grad], [var])))
+    // print(var.read_value())
+    // ```
+    var model = ModelNumerical()
+    let opt = AMSGrad(for: model, epsilon: 1e-7)
+    opt.update(&model, along: ModelNumerical.grad)
+    XCTAssertEqual(model.tensor, [0, 0.999, 1.9990001])
+    for _ in 0..<10 {
+      opt.update(&model, along: ModelNumerical.grad)
+    }
+    XCTAssertEqual(model.tensor, [0, 0.98900014, 1.9889997])
+  }
+
+
   static var allTests = [
     ("testSGD", testSGD),
     ("testRMSProp", testRMSProp),
@@ -210,5 +234,6 @@ class OptimizerTests: XCTestCase {
     ("testRMSPropNumerical", testRMSPropNumerical),
     ("testAdamNumerical", testAdamNumerical),
     ("testAdaDeltaNumerical", testAdaDeltaNumerical),
+    ("testAMSGradNumerical", testAMSGradNumerical),
   ]
 }
