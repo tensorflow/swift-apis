@@ -17,7 +17,15 @@ import XCTest
 
 class OptimizerTests: XCTestCase {
   struct Model: Layer {
-    var dense = Dense<Float>(weight: [[0.8]], bias: [0.8], activation: identity)
+    var dense: Dense<Float>
+
+    init() {
+      self.init(weight: [[0.8]], bias: [0.8])
+    }
+
+    init(weight: Tensor<Float>, bias: Tensor<Float>) {
+      dense = Dense<Float>(weight: weight, bias: bias, activation: identity)
+    }
 
     @differentiable
     func callAsFunction(_ input: Tensor<Float>) -> Tensor<Float> {
@@ -25,6 +33,30 @@ class OptimizerTests: XCTestCase {
     }
   }
 
+  /// Check expected weight and bias after updating `model` with `optimizer` `stepCount` times.
+  ///
+  /// - Note: optimizer correctness reference implementations exist at
+  ///   `Utilities/ReferenceImplementations/optimizers.py`.
+  func testCorrectness<Opt: Optimizer>(
+    optimizer: Opt,
+    model: Model,
+    expectedWeight: Tensor<Float>,
+    expectedBias: Tensor<Float>,
+    stepCount: Int = 1000,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) where Opt.Model == Model {
+    var optimizer = optimizer
+    var model = model
+    let grad = Model.TangentVector(dense: .init(weight: [[0.1]], bias: [0.2]))
+    for _ in 0..<stepCount {
+      optimizer.update(&model, along: grad)
+    }
+    XCTAssertEqual(model.dense.weight, expectedWeight, file: file, line: line)
+    XCTAssertEqual(model.dense.bias, expectedBias, file: file, line: line)
+  }
+
+  /// Check that `model` converges after updating it with `optimizer` `stepCount` times.
   func testConvergence<Opt: Optimizer>(
     optimizer: Opt,
     model: Model,
@@ -99,8 +131,20 @@ class OptimizerTests: XCTestCase {
 
   func testRAdam() {
     let model = Model()
-    let optimizer = RAdam(for: model, learningRate: 1e-3)
-    convergenceTest(optimizer: optimizer, model: model, stepCount: 1400)
+
+    // Test convergence.
+    do {
+      let optimizer = RAdam(for: model)
+      testConvergence(optimizer: optimizer, model: model, stepCount: 1400)
+    }
+
+    // Test correctness.
+    do {
+      let optimizer = RAdam(for: model)
+      testCorrectness(
+        optimizer: optimizer, model: model,
+        expectedWeight: [[0.35536084]], expectedBias: [0.3548611])
+    }
   }
 
   static var allTests = [
