@@ -12,63 +12,105 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import TensorFlow
 import XCTest
-@testable import TensorFlow
 
-final class OptimizerTests: XCTestCase {
-    func testRAdam() {
-        // The expected value of the gradient was computed using the following Python code
-        // Requirements: Tensorflow >= 2.1.0 and tf-addons (see https://github.com/tensorflow/addons)
-        // ```
-        // import tensorflow as tf
-        // from tensorflow_addons.optimizers import RectifiedAdam
-        // var_0 = tf.Variable([1.0, 2.0], dtype=tf.dtypes.float32)
-        // grad_0 = tf.Variable([0.1, 0.2], dtype=tf.dtypes.float32)
-        // grads_and_vars = list(zip([grad_0], [var_0]))
-        // optimizer = RectifiedAdam(lr=1e-3, epsilon=1e-8)
-        // for _ in range(1000):
-        //   optimizer.apply_gradients(grads_and_vars)
-        // print(var_0.read_value())
-        // >>> [0.5553605, 1.5548599]
-        // Current implementation = [0.5543607, [1.55286]]
-        // Difference of [0.0009997, 0.0019999].
-        // ```
+class OptimizerTests: XCTestCase {
+  struct Model: Layer {
+    var dense1 = Dense<Float>(weight: [[0.8]], bias: [0.8], activation: identity)
 
-        struct Model: Layer {
-            var w: Tensor<Float>
-            var b: Tensor<Float>
+    @differentiable
+    func callAsFunction(_ input: Tensor<Float>) -> Tensor<Float> {
+      dense1(input)
+    }
+  }
 
-            public init(w: Tensor<Float>, b: Tensor<Float>) {
-                self.w = w
-                self.b = b
-            }
+  func convergenceTest<Opt: Optimizer>(
+    optimizer: Opt,
+    model: Model,
+    stepCount: Int = 1000,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) where Opt.Model == Model {
+    var optimizer = optimizer
+    var model = model
+    let x: Tensor<Float> = Tensor(rangeFrom: -1, to: 1, stride: 0.01)
+      .reshaped(to: [-1, 1])
+    let y: Tensor<Float> = x + 1
 
-            @differentiable
-            public func callAsFunction(_ input: Tensor<Float>) -> Tensor<Float> {
-                return matmul(input, w) + b
-            }
-        }
-        let w = Tensor<Float>([[1.0], [2.0]])
-        let b = Tensor<Float>([0.0])
-        var model = Model(w: w, b: b)
-        let optimizer = RAdam(for: model, learningRate: 1e-3)
-        // To obtain gradient of type Model.TangentVector 
-        var grad = gradient(at: model) { model -> Tensor<Float> in
-            let ŷ = model(w.transposed())
-            let y = Tensor<Float>(1.0)
-            let loss = meanAbsoluteError(predicted: ŷ, expected: y)
-            return loss
-        }
-        // Custom gradient passed to check optimizer validity
-        grad.w = Tensor<Float>([[0.1], [0.2]])
-        for _ in 0..<1000 {
-            optimizer.update(&model, along: grad)
-        }
-        let expected_gradient = Tensor<Float>([[0.5543607], [1.55286]])
-        XCTAssertEqual(model.w, expected_gradient)
+    for _ in 0..<stepCount {
+      let grad = gradient(at: model) { model -> Tensor<Float> in
+        let yy = model(x)
+        return meanSquaredError(predicted: yy, expected: y)
+      }
+      optimizer.update(&model, along: grad)
+
+      // Break if model has converged.
+      if model(x).isAlmostEqual(to: y) {
+        break
+      }
     }
 
-    static var allTests = [
-        ("testRAdam", testRAdam)
-    ]
+    // Check that model has converged.
+    XCTAssertTrue(model(x).isAlmostEqual(to: y), file: file, line: line)
+  }
+
+  func testSGD() {
+    let model = Model()
+    let optimizer = SGD(for: model)
+    convergenceTest(optimizer: optimizer, model: model)
+  }
+
+  func testRMSProp() {
+    let model = Model()
+    let optimizer = RMSProp(for: model)
+    convergenceTest(optimizer: optimizer, model: model)
+  }
+
+  func testAdaGrad() {
+    let model = Model()
+    let optimizer = AdaGrad(for: model, learningRate: 0.01)
+    convergenceTest(optimizer: optimizer, model: model)
+  }
+
+  func testAdaDelta() {
+    let model = Model()
+    let optimizer = AdaDelta(for: model)
+    convergenceTest(optimizer: optimizer, model: model)
+  }
+
+  func testAdam() {
+    let model = Model()
+    let optimizer = Adam(for: model)
+    convergenceTest(optimizer: optimizer, model: model)
+  }
+
+  func testAdaMax() {
+    let model = Model()
+    let optimizer = AdaMax(for: model)
+    convergenceTest(optimizer: optimizer, model: model)
+  }
+
+  func testAMSGrad() {
+    let model = Model()
+    let optimizer = AMSGrad(for: model)
+    convergenceTest(optimizer: optimizer, model: model)
+  }
+
+  func testRAdam() {
+    let model = Model()
+    let optimizer = RAdam(for: model, learningRate: 1e-3)
+    convergenceTest(optimizer: optimizer, model: model, stepCount: 1400)
+  }
+
+  static var allTests = [
+    ("testSGD", testSGD),
+    ("testRMSProp", testRMSProp),
+    ("testAdaGrad", testAdaGrad),
+    ("testAdaDelta", testAdaDelta),
+    ("testAdam", testAdam),
+    ("testAdaMax", testAdaMax),
+    ("testAMSGrad", testAMSGrad),
+    ("testRAdam", testRAdam),
+  ]
 }
