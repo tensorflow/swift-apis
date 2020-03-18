@@ -603,11 +603,12 @@ where
     if N_sma_t >= 5 {
       // Compute bias-corrected second moments, rectification and adapted momentum.
       let secondMoments_h = Model.TangentVector.sqrt(secondMoments).adding(epsilon)
-      let stepSize = sqrtf(
-        (N_sma_t - 4) * (N_sma_t - 2) * N_sma_inf / (
-           (N_sma_inf - 4) * (N_sma_inf - 2) * (N_sma_t)
-        )) * learningRate / (1 - beta1Power)
-      model.move(along: (firstMoments ./ secondMoments_h).scaled(by: -stepSize * sqrtf(1 - beta2Power)))
+      let stepSize =
+        sqrtf(
+          (N_sma_t - 4) * (N_sma_t - 2) * N_sma_inf
+            / ((N_sma_inf - 4) * (N_sma_inf - 2) * (N_sma_t))) * learningRate / (1 - beta1Power)
+      model.move(
+        along: (firstMoments ./ secondMoments_h).scaled(by: -stepSize * sqrtf(1 - beta2Power)))
     } else {
       // Update with un-adapted momentum.
       let stepSize = learningRate / (1 - beta1Power)
