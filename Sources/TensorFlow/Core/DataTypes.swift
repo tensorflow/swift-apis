@@ -28,6 +28,7 @@ public struct TensorDataType: Equatable {
   }
 }
 
+#if !USING_X10_BACKEND
 @usableFromInline
 internal func makeTensor(
   dataType: TensorDataType,
@@ -36,12 +37,12 @@ internal func makeTensor(
   switch dataType._cDataType {
   case TF_BOOL: return Tensor<Bool>(handle: TensorHandle(_owning: pointer))
   case TF_INT8: return Tensor<Int8>(handle: TensorHandle(_owning: pointer))
-  case TF_UINT8: return Tensor<UInt8>(handle: TensorHandle(_owning: pointer))
   case TF_INT16: return Tensor<Int16>(handle: TensorHandle(_owning: pointer))
-  case TF_UINT16: return Tensor<UInt16>(handle: TensorHandle(_owning: pointer))
   case TF_INT32: return Tensor<Int32>(handle: TensorHandle(_owning: pointer))
-  case TF_UINT32: return Tensor<UInt32>(handle: TensorHandle(_owning: pointer))
   case TF_INT64: return Tensor<Int64>(handle: TensorHandle(_owning: pointer))
+  case TF_UINT8: return Tensor<UInt8>(handle: TensorHandle(_owning: pointer))
+  case TF_UINT16: return Tensor<UInt16>(handle: TensorHandle(_owning: pointer))
+  case TF_UINT32: return Tensor<UInt32>(handle: TensorHandle(_owning: pointer))
   case TF_UINT64: return Tensor<UInt64>(handle: TensorHandle(_owning: pointer))
   case TF_BFLOAT16: return Tensor<BFloat16>(handle: TensorHandle(_owning: pointer))
   case TF_FLOAT: return Tensor<Float>(handle: TensorHandle(_owning: pointer))
@@ -50,6 +51,7 @@ internal func makeTensor(
   default: fatalError("Unhandled type: \(dataType)")
   }
 }
+#endif
 
 /// A data type compatible with TensorFlow.
 public protocol _TensorFlowDataTypeCompatible {
@@ -64,7 +66,11 @@ public protocol _TensorFlowDataTypeCompatible {
 /// `Tensor`.
 //
 // This includes all `_TensorFlowDataTypeCompatible` types except `String`.
+#if USING_X10_BACKEND
+public protocol TensorFlowScalar: XLAScalarType & _TensorFlowDataTypeCompatible {}
+#else
 public protocol TensorFlowScalar: _TensorFlowDataTypeCompatible {}
+#endif
 
 public typealias TensorFlowNumeric = TensorFlowScalar & Numeric
 public typealias TensorFlowSignedNumeric = TensorFlowScalar & SignedNumeric
@@ -105,24 +111,10 @@ extension Int8: TensorFlowScalar {
   }
 }
 
-extension UInt8: TensorFlowScalar {
-  @inlinable
-  public static var tensorFlowDataType: TensorDataType {
-    return TensorDataType(TF_UINT8)
-  }
-}
-
 extension Int16: TensorFlowScalar {
   @inlinable
   public static var tensorFlowDataType: TensorDataType {
     return TensorDataType(TF_INT16)
-  }
-}
-
-extension UInt16: TensorFlowScalar {
-  @inlinable
-  public static var tensorFlowDataType: TensorDataType {
-    return TensorDataType(TF_UINT16)
   }
 }
 
@@ -133,17 +125,32 @@ extension Int32: TensorFlowScalar {
   }
 }
 
-extension UInt32: TensorFlowScalar {
-  @inlinable
-  public static var tensorFlowDataType: TensorDataType {
-    return TensorDataType(TF_UINT32)
-  }
-}
-
 extension Int64: TensorFlowScalar {
   @inlinable
   public static var tensorFlowDataType: TensorDataType {
     return TensorDataType(TF_INT64)
+  }
+}
+
+#if !USING_X10_BACKEND
+extension UInt8: TensorFlowScalar {
+  @inlinable
+  public static var tensorFlowDataType: TensorDataType {
+    return TensorDataType(TF_UINT8)
+  }
+}
+
+extension UInt16: TensorFlowScalar {
+  @inlinable
+  public static var tensorFlowDataType: TensorDataType {
+    return TensorDataType(TF_UINT16)
+  }
+}
+
+extension UInt32: TensorFlowScalar {
+  @inlinable
+  public static var tensorFlowDataType: TensorDataType {
+    return TensorDataType(TF_UINT32)
   }
 }
 
@@ -166,6 +173,7 @@ extension BFloat16: TensorFlowScalar {
     return TensorDataType(TF_BFLOAT16)
   }
 }
+#endif
 
 extension Float: TensorFlowScalar {
   @inlinable

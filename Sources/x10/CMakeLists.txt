@@ -2,7 +2,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_library(x10 IMPORTED UNKNOWN)
 set_target_properties(x10 PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES ${X10_INCLUDE_DIR}
+  INTERFACE_INCLUDE_DIRECTORIES "${X10_INCLUDE_DIR}"
   IMPORTED_LOCATION ${TensorFlow_LIBRARY})
 
 add_library(x10_c_wrappers STATIC
@@ -25,13 +25,10 @@ add_library(x10_tensor SHARED
   ../TensorFlow/Operators/Math.swift
 
   swift_bindings/apis/CrossReplicaSum.swift
-  swift_bindings/apis/DataTypes.swift
   swift_bindings/apis/DeviceScope.swift
-  swift_bindings/apis/MixedPrecision.swift
   swift_bindings/apis/RawOpsManual.swift
 
   swift_bindings/TensorFlow/Core/Runtime.swift
-  swift_bindings/TensorFlow/Core/Tensor.swift
 
   swift_bindings/XLAScalarType.swift
   swift_bindings/XLATensor.swift)
@@ -43,6 +40,10 @@ target_sources(x10_tensor PRIVATE
   ../TensorFlow/Core/TensorShape.swift
   ../TensorFlow/Core/Threading.swift
   ../TensorFlow/Core/Utilities.swift
+  ../TensorFlow/Core/Tensor.swift
+  ../TensorFlow/Core/TensorHandle.swift
+  ../TensorFlow/Core/DataTypes.swift
+  ../TensorFlow/Core/MixedPrecision.swift
 
   ../TensorFlow/Layers/Convolutional.swift
   ../TensorFlow/Layers/Core.swift
@@ -75,6 +76,8 @@ target_sources(x10_tensor PRIVATE
   ../TensorFlow/StdlibExtensions.swift)
 set_target_properties(x10_tensor PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_Swift_MODULE_DIRECTORY})
+target_compile_definitions(x10_tensor PRIVATE
+  USING_X10_BACKEND)
 target_link_libraries(x10_tensor PUBLIC
   x10_device
   Tensor)
@@ -105,115 +108,9 @@ set_target_properties(x10_training_loop PROPERTIES
 target_link_libraries(x10_training_loop PUBLIC
   x10_tensor)
 
-add_executable(ops_test ../../Tests/x10/ops_test.swift)
-target_link_libraries(ops_test PRIVATE
-  x10_device
-  x10_tensor
-  TensorFlow)
 
-add_executable(xla_tensor_test ../../Tests/x10/xla_tensor_test.swift)
-target_link_libraries(xla_tensor_test PRIVATE
-  x10_device
-  x10_tensor)
-
-add_executable(keypathiterable_test ../../Tests/x10/keypathiterable_test.swift)
-target_link_libraries(keypathiterable_test PRIVATE
-  x10_device
-  x10_tensor)
-
-add_executable(tensor_visitor_plan_test ../../Tests/x10/TensorVisitorPlanTest.swift)
-target_link_libraries(tensor_visitor_plan_test PRIVATE
-  x10_optimizers_tensor_visitor_plan)
-
-get_swift_host_arch(swift_arch)
-get_swift_host_os(swift_os)
-
-install(TARGETS x10_device
-  ARCHIVE DESTINATION lib/swift/${swift_os}
-  LIBRARY DESTINATION lib/swift/${swift_os}
-  RUNTIME DESTINATION bin)
-if(CMAKE_SYSTEM_NAME STREQUAL Darwin)
-  install(FILES $<TARGET_PROPERTY:x10_device,Swift_MODULE_DIRECTORY>/x10_device.swiftdoc
-    DESTINATION lib/swift/${swift_os}/x10_device.swiftmodule
-    RENAME ${swift_arch}.swiftdoc)
-  install(FILES $<TARGET_PROPERTY:x10_device,Swift_MODULE_DIRECTORY>/x10_device.swiftmodule
-    DESTINATION lib/swift/${swift_os}/x10_device.swiftmodule
-    RENAME ${swift_arch}.swiftmodule)
-else()
-  install(FILES
-    $<TARGET_PROPERTY:x10_device,Swift_MODULE_DIRECTORY>/x10_device.swiftdoc
-    $<TARGET_PROPERTY:x10_device,Swift_MODULE_DIRECTORY>/x10_device.swiftmodule
-    DESTINATION lib/swift/${swift_os}/${swift_arch})
-endif()
-
-install(TARGETS x10_tensor
-  ARCHIVE DESTINATION lib/swift/${swift_os}
-  LIBRARY DESTINATION lib/swift/${swift_os}
-  RUNTIME DESTINATION bin)
-if(CMAKE_SYSTEM_NAME STREQUAL Darwin)
-  install(FILES $<TARGET_PROPERTY:x10_tensor,Swift_MODULE_DIRECTORY>/x10_tensor.swiftdoc
-    DESTINATION lib/swift/${swift_os}/x10_tensor.swiftmodule
-    RENAME ${swift_arch}.swiftdoc)
-  install(FILES $<TARGET_PROPERTY:x10_tensor,Swift_MODULE_DIRECTORY>/x10_tensor.swiftmodule
-    DESTINATION lib/swift/${swift_os}/x10_tensor.swiftmodule
-    RENAME ${swift_arch}.swiftmodule)
-else()
-  install(FILES
-    $<TARGET_PROPERTY:x10_tensor,Swift_MODULE_DIRECTORY>/x10_tensor.swiftdoc
-    $<TARGET_PROPERTY:x10_tensor,Swift_MODULE_DIRECTORY>/x10_tensor.swiftmodule
-    DESTINATION lib/swift/${swift_os}/${swift_arch})
-endif()
-
-install(TARGETS x10_optimizers_tensor_visitor_plan
-  ARCHIVE DESTINATION lib/swift/${swift_os}
-  LIBRARY DESTINATION lib/swift/${swift_os}
-  RUNTIME DESTINATION bin)
-if(CMAKE_SYSTEM_NAME STREQUAL Darwin)
-  install(FILES $<TARGET_PROPERTY:x10_optimizers_tensor_visitor_plan,Swift_MODULE_DIRECTORY>/x10_optimizers_tensor_visitor_plan.swiftdoc
-    DESTINATION lib/swift/${swift_os}/x10_optimizers_tensor_visitor_plan.swiftmodule
-    RENAME ${swift_arch}.swiftdoc)
-  install(FILES $<TARGET_PROPERTY:x10_optimizers_tensor_visitor_plan,Swift_MODULE_DIRECTORY>/x10_optimizers_tensor_visitor_plan.swiftmodule
-    DESTINATION lib/swift/${swift_os}/x10_optimizers_tensor_visitor_plan.swiftmodule
-    RENAME ${swift_arch}.swiftmodule)
-else()
-  install(FILES
-    $<TARGET_PROPERTY:x10_optimizers_tensor_visitor_plan,Swift_MODULE_DIRECTORY>/x10_optimizers_tensor_visitor_plan.swiftdoc
-    $<TARGET_PROPERTY:x10_optimizers_tensor_visitor_plan,Swift_MODULE_DIRECTORY>/x10_optimizers_tensor_visitor_plan.swiftmodule
-    DESTINATION lib/swift/${swift_os}/${swift_arch})
-endif()
-
-install(TARGETS x10_optimizers_optimizer
-  ARCHIVE DESTINATION lib/swift/${swift_os}
-  LIBRARY DESTINATION lib/swift/${swift_os}
-  RUNTIME DESTINATION bin)
-if(CMAKE_SYSTEM_NAME STREQUAL Darwin)
-  install(FILES $<TARGET_PROPERTY:x10_optimizers_optimizer,Swift_MODULE_DIRECTORY>/x10_optimizers_optimizer.swiftdoc
-    DESTINATION lib/swift/${swift_os}/x10_optimizers_optimizer.swiftmodule
-    RENAME ${swift_arch}.swiftdoc)
-  install(FILES $<TARGET_PROPERTY:x10_optimizers_optimizer,Swift_MODULE_DIRECTORY>/x10_optimizers_optimizer.swiftmodule
-    DESTINATION lib/swift/${swift_os}/x10_optimizers_optimizer.swiftmodule
-    RENAME ${swift_arch}.swiftmodule)
-else()
-  install(FILES
-    $<TARGET_PROPERTY:x10_optimizers_optimizer,Swift_MODULE_DIRECTORY>/x10_optimizers_optimizer.swiftdoc
-    $<TARGET_PROPERTY:x10_optimizers_optimizer,Swift_MODULE_DIRECTORY>/x10_optimizers_optimizer.swiftmodule
-    DESTINATION lib/swift/${swift_os}/${swift_arch})
-endif()
-
-install(TARGETS x10_training_loop
-  ARCHIVE DESTINATION lib/swift/${swift_os}
-  LIBRARY DESTINATION lib/swift/${swift_os}
-  RUNTIME DESTINATION bin)
-if(CMAKE_SYSTEM_NAME STREQUAL Darwin)
-  install(FILES $<TARGET_PROPERTY:x10_training_loop,Swift_MODULE_DIRECTORY>/x10_training_loop.swiftdoc
-    DESTINATION lib/swift/${swift_os}/x10_training_loop.swiftmodule
-    RENAME ${swift_arch}.swiftdoc)
-  install(FILES $<TARGET_PROPERTY:x10_training_loop,Swift_MODULE_DIRECTORY>/x10_training_loop.swiftmodule
-    DESTINATION lib/swift/${swift_os}/x10_training_loop.swiftmodule
-    RENAME ${swift_arch}.swiftmodule)
-else()
-  install(FILES
-    $<TARGET_PROPERTY:x10_training_loop,Swift_MODULE_DIRECTORY>/x10_training_loop.swiftdoc
-    $<TARGET_PROPERTY:x10_training_loop,Swift_MODULE_DIRECTORY>/x10_training_loop.swiftmodule
-    DESTINATION lib/swift/${swift_os}/${swift_arch})
-endif()
+_install_target(x10_device)
+_install_target(x10_tensor)
+_install_target(x10_optimizers_tensor_visitor_plan)
+_install_target(x10_optimizers_optimizer)
+_install_target(x10_training_loop)

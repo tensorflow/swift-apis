@@ -395,7 +395,7 @@ extension Tensor {
   /// - Precondition: There must be no duplication in `axes`.
   @inlinable
   @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
-  func reversed(inAxes axes: Tensor<Int32>) -> Tensor {
+  public func reversed(inAxes axes: Tensor<Int32>) -> Tensor {
     precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
     return _Raw.reverseV2(self, axis: axes)
   }
@@ -405,7 +405,7 @@ extension Tensor {
   /// - Precondition: There must be no duplication in `axes`.
   @inlinable
   @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
-  func reversed(inAxes axes: [Int]) -> Tensor {
+  public func reversed(inAxes axes: [Int]) -> Tensor {
       precondition(axes.count == Set(axes.map { $0 < 0 ? $0 + rank : $0 }).count,
                    "There must be no duplication in axes.")
       let axes = axes.map(Int32.init)
@@ -417,7 +417,7 @@ extension Tensor {
   /// - Precondition: There must be no duplication in `axes`.
   @inlinable
   @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
-  func reversed(inAxes axes: Int...) -> Tensor {
+  public func reversed(inAxes axes: Int...) -> Tensor {
       reversed(inAxes: axes)
   }
 
@@ -1334,8 +1334,12 @@ extension Tensor {
 
   /// Returns `true` if the given scalar tensor is in the range `[-rank, rank)`.
   @usableFromInline
-  internal func isAxisInRange(_ axis: Tensor<Int32>) -> Bool {
-    precondition(axis.rank == 0, "Axis must have rank 0.")
+  internal func isAxisInRange(
+    _ axis: Tensor<Int32>,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) -> Bool {
+    precondition(axis.rank == 0, "Axis must have rank 0.", file: file, line: line)
     return areAxesInRange(axis.scalars)
   }
 
@@ -1347,8 +1351,16 @@ extension Tensor {
 
   /// Returns `true` if all scalars of the given 1-D tensor are in the range `[-rank, rank)`.
   @usableFromInline
-  internal func areAxesInRange(_ axes: Tensor<Int32>) -> Bool {
-    precondition(axes.rank == 1, "Axes must have rank 1.")
+  internal func areAxesInRange(
+    _ axes: Tensor<Int32>,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) -> Bool {
+    precondition(
+        axes.rank < 2,
+        "Axes must have rank 0 or rank 1; axes has rank \(axes.rank) with values \(axes.scalars).",
+        file: file,
+        line: line)
     return areAxesInRange(axes.scalars)
   }
 }
