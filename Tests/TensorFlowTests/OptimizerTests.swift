@@ -105,6 +105,98 @@ class OptimizerTests: XCTestCase {
     static let grad = ModelNumerical.TangentVector(tensor: [0.0, 0.1, 0.2])
   }
 
+  func testSGDNumerical() {
+    // The expected value was computed using the following Python code:
+    // ```
+    // import tensorflow as tf
+    // var = tf.Variable([0, 1, 2], dtype=tf.float32)
+    // grad = tf.Variable([0, 0.1, 0.2], dtype=tf.dtypes.float32)
+    // optimizer = tf.keras.optimizers.SGD()
+    // optimizer.apply_gradients(list(zip([grad], [var])))
+    // print(var.read_value())
+    // for i in range(10):
+    //     optimizer.apply_gradients(list(zip([grad], [var])))
+    // print(var.read_value())
+    // ```
+    var model = ModelNumerical()
+    let opt = SGD(for: model)
+    opt.update(&model, along: ModelNumerical.grad)
+    XCTAssertEqual(model.tensor, [0, 0.999, 1.998])
+    for _ in 0..<10 {
+      opt.update(&model, along: ModelNumerical.grad)
+    }
+    XCTAssertEqual(model.tensor, [0, 0.98900014, 1.9780003])
+  }
+
+  func testRMSPropNumerical() {
+    // The expected value was computed using the following Python code:
+    // ```
+    // import tensorflow as tf
+    // var = tf.Variable([0, 1, 2], dtype=tf.float32)
+    // grad = tf.Variable([0, 0.1, 0.2], dtype=tf.dtypes.float32)
+    // optimizer = tf.keras.optimizers.RMSProp()
+    // optimizer.apply_gradients(list(zip([grad], [var])))
+    // print(var.read_value())
+    // for i in range(10):
+    //     optimizer.apply_gradients(list(zip([grad], [var])))
+    // print(var.read_value())
+    // ```
+    var model = ModelNumerical()
+    let opt = RMSProp(for: model, epsilon: 1e-7)
+    opt.update(&model, along: ModelNumerical.grad)
+    XCTAssertEqual(model.tensor, [0, 0.99683774, 1.9968377])
+    for _ in 0..<10 {
+      opt.update(&model, along: ModelNumerical.grad)
+    }
+    XCTAssertEqual(model.tensor, [0, 0.9814604, 1.9814601])
+  }
+
+  func testAdamNumerical() {
+    // The expected value was computed using the following Python code:
+    // ```
+    // import tensorflow as tf
+    // var = tf.Variable([0, 1, 2], dtype=tf.float32)
+    // grad = tf.Variable([0, 0.1, 0.2], dtype=tf.dtypes.float32)
+    // optimizer = tf.keras.optimizers.Adam()
+    // optimizer.apply_gradients(list(zip([grad], [var])))
+    // print(var.read_value())
+    // for i in range(10):
+    //     optimizer.apply_gradients(list(zip([grad], [var])))
+    // print(var.read_value())
+    // ```
+    var model = ModelNumerical()
+    let opt = Adam(for: model, epsilon: 1e-7)
+    opt.update(&model, along: ModelNumerical.grad)
+    XCTAssertEqual(model.tensor, [0, 0.999, 1.9990001])
+    for _ in 0..<10 {
+      opt.update(&model, along: ModelNumerical.grad)
+    }
+    XCTAssertEqual(model.tensor, [0, 0.98900014, 1.9889997])
+  }
+
+  func testAdaDeltaNumerical() {
+    // The expected value was computed using the following Python code:
+    // ```
+    // import tensorflow as tf
+    // var = tf.Variable([0, 1, 2], dtype=tf.float32)
+    // grad = tf.Variable([0, 0.1, 0.2], dtype=tf.dtypes.float32)
+    // optimizer = tf.keras.optimizers.Adadelta()
+    // optimizer.apply_gradients(list(zip([grad], [var])))
+    // print(var.read_value())
+    // for i in range(10):
+    //     optimizer.apply_gradients(list(zip([grad], [var])))
+    // print(var.read_value())
+    // ```
+    var model = ModelNumerical()
+    let opt = AdaDelta(for: model, learningRate: 1e-3, epsilon: 1e-7)
+    opt.update(&model, along: ModelNumerical.grad)
+    XCTAssertEqual(model.tensor, [0, 0.99999857, 1.9999986])
+    for _ in 0..<10 {
+      opt.update(&model, along: ModelNumerical.grad)
+    }
+    XCTAssertEqual(model.tensor, [0, 0.99998385, 1.9999841])
+  }
+
   func testAMSGradNumerical() {
     // The expected value was computed using the following Python code:
     // ```
@@ -128,6 +220,7 @@ class OptimizerTests: XCTestCase {
     XCTAssertEqual(model.tensor, [0, 0.98900014, 1.9889997])
   }
 
+
   static var allTests = [
     ("testSGD", testSGD),
     ("testRMSProp", testRMSProp),
@@ -137,6 +230,10 @@ class OptimizerTests: XCTestCase {
     ("testAdaMax", testAdaMax),
     ("testAMSGrad", testAMSGrad),
     ("testRAdam", testRAdam),
-    ("testAMSGradNumerical", testAMSGradNumerical)
+    ("testSGDNumerical", testSGDNumerical),
+    ("testRMSPropNumerical", testRMSPropNumerical),
+    ("testAdamNumerical", testAdamNumerical),
+    ("testAdaDeltaNumerical", testAdaDeltaNumerical),
+    ("testAMSGradNumerical", testAMSGradNumerical),
   ]
 }
