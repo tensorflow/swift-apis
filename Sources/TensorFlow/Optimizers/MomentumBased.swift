@@ -409,10 +409,7 @@ where
     step += 1
     let step = Float(self.step)
     let learningRate = self.learningRate * 1 / (1 + decay * step)
-    // Note: `stepSize` is split into two lines to avoid the "compiler is unable to type-check
-    // this expression in reasonable time" error.
-    var stepSize = learningRate * sqrtf(1 - powf(beta2, step))
-    stepSize = stepSize / (1 - powf(beta1, step))
+    let stepSize = learningRate / (1 - powf(beta1, step))
     firstMoments = firstMoments.scaled(by: beta1) + direction.scaled(by: 1 - beta1)
 
     // Update `infinityNorm` using a key path approach because `max(_:_:)` cannot be 
