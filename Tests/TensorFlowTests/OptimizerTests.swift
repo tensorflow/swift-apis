@@ -135,7 +135,7 @@ class OptimizerTests: XCTestCase {
   func testSGDNumerical() {
     let values = NumericalValues()
     let optimizer = SGD(for: values, learningRate: 1e-3)
-    // FIXME: Investigate large differences with Python reference implementation results:
+    // FIXME(TF-759): Investigate large differences with Python reference implementation results:
     // `[ 0.49999967, -0.00999999, -0.01999998]`.
     testNumericalCorrectness(
       optimizer: optimizer, startingValues: values,
@@ -145,7 +145,7 @@ class OptimizerTests: XCTestCase {
   func testRMSPropNumerical() {
     let values = NumericalValues()
     let optimizer = RMSProp(for: values, learningRate: 1e-3, epsilon: 1e-7)
-    // FIXME: Investigate small differences with Python reference implementation results:
+    // FIXME(TF-759): Investigate small differences with Python reference implementation results:
     // `[ 1.0091327, -1.0091326, -1.0091326]`.
     testNumericalCorrectness(
       optimizer: optimizer, startingValues: values,
@@ -155,7 +155,7 @@ class OptimizerTests: XCTestCase {
   func testAdamNumerical() {
     let values = NumericalValues()
     let optimizer = Adam(for: values, learningRate: 1e-3, epsilon: 1e-7)
-    // FIXME: Investigate small differences with Python reference implementation results:
+    // FIXME(TF-759): Investigate small differences with Python reference implementation results:
     // `[ 0.9999907, -0.9999898, -0.9999904]`.
     testNumericalCorrectness(
       optimizer: optimizer, startingValues: values,
@@ -165,7 +165,7 @@ class OptimizerTests: XCTestCase {
   func testAdaDeltaNumerical() {
     let values = NumericalValues()
     let optimizer = AdaDelta(for: values, learningRate: 1e-3, epsilon: 1e-7)
-    // FIXME: Investigate small differences with Python reference implementation results:
+    // FIXME(TF-759): Investigate small differences with Python reference implementation results:
     // `[ 0.00215183, -0.00215151, -0.00215175]`.
     testNumericalCorrectness(
       optimizer: optimizer, startingValues: values,
@@ -175,7 +175,7 @@ class OptimizerTests: XCTestCase {
   func testAMSGradNumerical() {
     let values = NumericalValues()
     let optimizer = AMSGrad(for: values, learningRate: 1e-3, epsilon: 1e-7)
-    // FIXME: Investigate small differences with Python reference implementation results:
+    // FIXME(TF-759): Investigate small differences with Python reference implementation results:
     // `[ 0.9999907, -0.9999898, -0.9999904]`.
     testNumericalCorrectness(
       optimizer: optimizer, startingValues: values,
@@ -185,7 +185,7 @@ class OptimizerTests: XCTestCase {
   func testAdaMaxNumerical() {
     let values = NumericalValues()
     let optimizer = AdaMax(for: values, learningRate: 1e-3, epsilon: 1e-7)
-    // FIXME: Investigate small differences with Python reference implementation results:
+    // FIXME(TF-759): Investigate small differences with Python reference implementation results:
     // `[ 0.99999076, -0.99999064, -0.99999064]`.
     testNumericalCorrectness(
       optimizer: optimizer, startingValues: values,
@@ -195,7 +195,7 @@ class OptimizerTests: XCTestCase {
   func testAdaGradNumerical() {
     let values = NumericalValues()
     let optimizer = AdaGrad(for: values, learningRate: 1e-3, epsilon: 1e-7)
-    // FIXME: Investigate large differences with Python reference implementation results:
+    // FIXME(TF-759): Investigate large differences with Python reference implementation results:
     // `[ 0.06179592, -0.05709525, -0.05987222]`.
     testNumericalCorrectness(
       optimizer: optimizer, startingValues: values,
@@ -205,7 +205,7 @@ class OptimizerTests: XCTestCase {
   func testRAdamNumerical() {
     let values = NumericalValues()
     let optimizer = RAdam(for: values, learningRate: 1e-3, epsilon: 1e-7)
-    // FIXME: Investigate large differences with Python reference implementation results:
+    // FIXME(TF-759): Investigate large differences with Python reference implementation results:
     // `[ 0.46914074, -0.44463935, -0.44513944]`.
     // Pending fix: https://github.com/tensorflow/swift-apis/pull/700
     testNumericalCorrectness(
