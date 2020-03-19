@@ -14,7 +14,7 @@
 
 /// Normalizes a tensor by `mean` and `variance`, and applies a `scale` to it, as well as an `offset`.
 @differentiable
-func _batchNorm<Scalar: TensorFlowFloatingPoint>(
+private func normalize<Scalar: TensorFlowFloatingPoint>(
   _ input: Tensor<Scalar>,
   mean: Tensor<Scalar>,
   variance: Tensor<Scalar>,
@@ -127,7 +127,7 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     runningMean.value += (momentsMean - runningMean.value) * decayMomentum
     runningVariance.value += (momentsVariance - runningVariance.value) * decayMomentum
     let eps = withoutDerivative(at: input) { Tensor(epsilon, deviceAndPrecisionLike: $0) }
-    return _batchNorm(
+    return normalize(
       input,
       mean: moments.mean, variance: moments.variance,
       offset: offset, scale: scale,
@@ -143,7 +143,7 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     let runningMeanValue =
       isReducedPrecision ? runningMean.value.toReducedPrecision : runningMean.value
     let eps = withoutDerivative(at: input) { Tensor(epsilon, deviceAndPrecisionLike: $0) }
-    return _batchNorm(
+    return normalize(
       input,
       mean: runningMeanValue, variance: runningVarianceValue,
       offset: offset, scale: scale,
@@ -331,7 +331,7 @@ public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     normalizedAxes.remove(at: positiveAxis - 1)
     let moments = grouped.moments(alongAxes: normalizedAxes)
     let eps = Tensor(epsilon)
-    let normalized = _batchNorm(
+    let normalized = normalize(
       grouped,
       mean: moments.mean, variance: moments.variance,
       offset: offset, scale: scale,
