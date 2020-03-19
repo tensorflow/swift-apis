@@ -332,10 +332,14 @@ public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   ///
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
+  /// - Precondition: The axis cannot be batch axis.
+  /// - Precondition: The numbers of features of the input and the offset must be same.
   @differentiable
   public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     let positiveAxis = (input.rank + axis) % input.rank
     precondition(positiveAxis != 0, "The axis cannot be batch axis.")
+    precondition(input.shape[positiveAxis] == offset.shape[0],
+                 "The numbers of features of the input and the offset must be same.")
     var offset = self.offset
     var scale = self.scale
     var broadcastShape = TensorShape([Int](repeating: 1, count: input.rank + 1))
@@ -416,6 +420,7 @@ public struct InstanceNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   ///   - axis: The axis where the features lie. The default value is -1.
   ///   - epsilon: The small scalar added to variance. The default value is 0.001.
   /// - Precondition: The axis cannot be batch axis.
+  /// - Precondition: The numbers of features of the input and the offset must be same.
   public init(
     featureCount: Int,
     axis: Int = -1,
