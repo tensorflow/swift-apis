@@ -3018,37 +3018,3 @@ extension Tensor where Scalar: Numeric {
     matmul(lhs, rhs)
   }
 }
-
-//===------------------------------------------------------------------------------------------===//
-// Precondition helpers.
-//===------------------------------------------------------------------------------------------===//
-
-internal extension Tensor {
-    @usableFromInline
-    func ensureValid(
-        axes: Tensor<Int32>,
-        function: StaticString = #function,
-        file: StaticString = #file,
-        line: UInt = #line
-    ) {
-        precondition(
-            areAxesInRange(axes, file: file, line: line),
-            "All axes must be in the range `[-rank, rank)` when calling \(function) (rank is: \(rank), axes: \(axes))",
-            file: file,
-            line: line)
-    }
-
-    @usableFromInline
-    func ensureValid(
-        axes: [Int],
-        function: StaticString = #function,
-        file: StaticString = #file,
-        line: UInt = #line
-    ) {
-        precondition(
-            areAxesInRange(axes),
-            "All axes must be in the range `[-rank, rank)` when calling \(function) (rank is: \(rank), axes: \(axes))",
-            file: file,
-            line: line)
-    }
-}
