@@ -12,7 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// Normalizes a tensor by `mean` and `variance`, and applies a `scale` to it, as well as an `offset`.
+/// Returns normalized `input`.
+///
+/// - Parameters:
+///   - input: The tensor to be normalized.
+///   - mean: The mean tensor.
+///   - variance: The variance tensor.
+///   - offset: The tensor to be added to normalized tensor.
+///   - scale: The tensor to be applied to normalized tensor.
+///   - varianceEpsilon: The small number to avoid dividing by 0.
 @differentiable(wrt: (input, mean, variance, offset, scale))
 private func normalize<Scalar: TensorFlowFloatingPoint>(
   _ input: Tensor<Scalar>,
