@@ -1424,7 +1424,7 @@ func _vjpSwish<T: TensorFlowFloatingPoint>(
 /// https://arxiv.org/abs/1905.02244
 @inlinable
 @differentiable
-public func hsigmoid<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+public func hardSigmoid<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
   relu6(x + 3) / 6.0
 }
 
@@ -1435,8 +1435,8 @@ public func hsigmoid<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
 /// https://arxiv.org/abs/1905.02244
 @inlinable
 @differentiable
-public func hswish<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
-  x * hsigmoid(x)
+public func hardSwish<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+  x * hardSigmoid(x)
 }
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
