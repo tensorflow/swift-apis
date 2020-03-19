@@ -278,7 +278,7 @@ public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   ///   - epsilon: The variance epsilon value.
   /// - Precondition: The axis cannot be batch axis.
   /// - Precondition: The offset must have rank 1.
-  /// - Precondition: The scale must have rank 1.
+  /// - Precondition: The number of elements of the offset must be divisible by groups.
   /// - Precondition: The offset and the scale must have same shape.
   public init(
     offset: Tensor<Scalar>,
@@ -289,10 +289,11 @@ public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   ) {
     precondition(axis != 0, "The axis cannot be batch axis.")
     precondition(offset.rank == 1, "The offset must have rank 1.")
-    precondition(scale.rank == 1, "The scale must have rank 1.")
+    precondition(offset.shape[0].isMultiple(of: groups),
+                 "The number of elements of the offset must be divisible by groups.")
     precondition(
-      offset.shape == scale.shape,
-      "The offset and the scale must have same shape.")
+        offset.shape == scale.shape,
+        "The offset and the scale must have same shape.")
     self.offset = offset
     self.scale = scale
     self.groups = groups
@@ -306,7 +307,7 @@ public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   ///   - featureCount: The number of features.
   ///   - groups: The number of groups.
   ///   - axis: The axis where the features lie. The default value is -1.
-  ///   - epsilon: The small scalar added to variance. The default value is 0.001
+  ///   - epsilon: The small scalar added to variance. The default value is 0.001.
   public init(
     featureCount: Int,
     groups: Int,
@@ -391,7 +392,6 @@ public struct InstanceNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   ///   - epsilon: The variance epsilon value.
   /// - Precondition: The axis cannot be batch axis.
   /// - Precondition: The offset must have rank 1.
-  /// - Precondition: The scale must have rank 1.
   /// - Precondition: The offset and the scale must have same shape.
   public init(
     offset: Tensor<Scalar>,
@@ -412,7 +412,7 @@ public struct InstanceNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   /// - Parameters:
   ///   - featureCount: The number of features.
   ///   - axis: The axis where the features lie. The default value is -1.
-  ///   - epsilon: The small scalar added to variance. The default value is 0.001
+  ///   - epsilon: The small scalar added to variance. The default value is 0.001.
   public init(
     featureCount: Int,
     axis: Int = -1,
