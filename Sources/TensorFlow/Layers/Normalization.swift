@@ -370,7 +370,7 @@ public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
 /// Reference: [Instance Normalization: The Missing Ingredient for Fast Stylization](https://arxiv.org/abs/1607.08022).
 @frozen
 public struct InstanceNorm<Scalar: TensorFlowFloatingPoint>: Layer {
-  /// Internal group normalization.
+  /// The general normalization layer of which `self` is a special case.
   var delegate: GroupNorm<Scalar>
 
   /// The offset value, also known as beta.
