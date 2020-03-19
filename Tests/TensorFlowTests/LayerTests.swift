@@ -1950,7 +1950,7 @@ final class LayerTests: XCTestCase {
     // ```
     let tensor = Tensor<Float>(rangeFrom: 0, to: 24, stride: 1)
       .reshaped(to: [2, 2, 1, 6])
-    let layer = GroupNorm<Float>(featureCount: 6, groups: 2)
+    let layer = GroupNorm<Float>(featureCount: 6, groupCount: 2)
     let output = layer(tensor)
     let expectedOutput: Tensor<Float> = [
       [

@@ -263,7 +263,7 @@ public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   /// The scale value, also known as gamma.
   public var scale: Tensor<Scalar>
   /// The number of groups.
-  @noDerivative public let groups: Int
+  @noDerivative public let groupCount: Int
   /// The axis where the features lie.
   @noDerivative public let axis: Int
   /// The variance epsilon value.
@@ -273,7 +273,7 @@ public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   /// - Parameters:
   ///   - offset: The initial offset value.
   ///   - scale: The initial scale value.
-  ///   - groups: The number of groups.
+  ///   - groupCount: The number of groups.
   ///   - axis: The axis where the features lie.
   ///   - epsilon: The variance epsilon value.
   /// - Precondition: The axis cannot be batch axis.
@@ -283,20 +283,20 @@ public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   public init(
     offset: Tensor<Scalar>,
     scale: Tensor<Scalar>,
-    groups: Int,
+    groupCount: Int,
     axis: Int,
     epsilon: Scalar
   ) {
     precondition(axis != 0, "The axis cannot be batch axis.")
     precondition(offset.rank == 1, "The offset must have rank 1.")
-    precondition(offset.shape[0].isMultiple(of: groups),
-                 "The number of elements of the offset must be divisible by groups.")
+    precondition(offset.shape[0].isMultiple(of: groupCount),
+                 "The number of elements of the offset must be divisible by the group count.")
     precondition(
         offset.shape == scale.shape,
         "The offset and the scale must have same shape.")
     self.offset = offset
     self.scale = scale
-    self.groups = groups
+    self.groupCount = groupCount
     self.axis = axis
     self.epsilon = epsilon
   }
@@ -305,22 +305,22 @@ public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   ///
   /// - Parameters:
   ///   - featureCount: The number of features.
-  ///   - groups: The number of groups.
+  ///   - groupCount: The number of groups.
   ///   - axis: The axis where the features lie. The default value is -1.
   ///   - epsilon: The small scalar added to variance. The default value is 0.001.
   public init(
     featureCount: Int,
-    groups: Int,
+    groupCount: Int,
     axis: Int = -1,
     epsilon: Scalar = 1e-3
   ) {
     precondition(
-      featureCount.isMultiple(of: groups),
+      featureCount.isMultiple(of: groupCount),
       "The feature count must be divisible by groups.")
     self.init(
       offset: Tensor(zeros: [featureCount]),
       scale: Tensor(ones: [featureCount]),
-      groups: groups,
+      groupCount: groupCount,
       axis: axis,
       epsilon: epsilon
     )
@@ -337,14 +337,14 @@ public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     var offset = self.offset
     var scale = self.scale
     var broadcastShape = TensorShape([Int](repeating: 1, count: input.rank + 1))
-    broadcastShape[positiveAxis] = groups
-    broadcastShape[positiveAxis + 1] = input.shape[positiveAxis] / groups
+    broadcastShape[positiveAxis] = groupCount
+    broadcastShape[positiveAxis + 1] = input.shape[positiveAxis] / groupCount
     offset = offset.reshaped(to: broadcastShape)
     scale = scale.reshaped(to: broadcastShape)
 
     var groupShape = input.shape
-    groupShape[positiveAxis] /= groups
-    groupShape.insert(groups, at: positiveAxis)
+    groupShape[positiveAxis] /= groupCount
+    groupShape.insert(groupCount, at: positiveAxis)
     let grouped = input.reshaped(to: groupShape)
     var normalizedAxes = Array(1..<grouped.rank)
     normalizedAxes.remove(at: positiveAxis - 1)
@@ -402,7 +402,7 @@ public struct InstanceNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     groupNorm = GroupNorm(
       offset: offset,
       scale: scale,
-      groups: offset.shape[0],
+      groupCount: offset.shape[0],
       axis: axis,
       epsilon: epsilon)
   }
@@ -420,7 +420,7 @@ public struct InstanceNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   ) {
     groupNorm = GroupNorm(
       featureCount: featureCount,
-      groups: featureCount,
+      groupCount: featureCount,
       axis: axis,
       epsilon: epsilon)
   }
