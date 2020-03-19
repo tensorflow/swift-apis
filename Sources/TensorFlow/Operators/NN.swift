@@ -827,6 +827,57 @@ func _vjpAvgPool3D<Scalar: TensorFlowFloatingPoint>(
 
 /// Returns `input` rearranged from depth into blocks of spatial data.
 ///
+/// For example, given an input of shape `[1, 2, 2, 1]`, data_format = "NHWC" and
+/// block_size = 2:
+///
+/// ```
+/// x = [[[[1], [2]],
+///       [[3], [4]]]]
+/// ```
+///
+/// This operation will output a tensor of shape `[1, 1, 1, 4]`:
+///
+/// ```
+/// [[[[1, 2, 3, 4]]]]
+/// ```
+///
+/// Here, the input has a batch of 1 and each batch element has shape `[2, 2, 1]`,
+/// the corresponding output will have a single element (i.e. width and height are
+/// both 1) and will have a depth of 4 channels (1 * block_size * block_size).
+/// The output element shape is `[1, 1, 4]`.
+///
+/// For an input tensor with larger depth, here of shape `[1, 2, 2, 3]`, e.g.
+///
+/// ```
+/// x = [[[[1, 2, 3], [4, 5, 6]],
+///       [[7, 8, 9], [10, 11, 12]]]]
+/// ```
+///
+/// This operation, for block_size of 2, will return the following tensor of shape
+/// `[1, 1, 1, 12]`
+///
+/// ```
+/// [[[[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]]]]
+/// ```
+///
+/// Similarly, for the following input of shape `[1 4 4 1]`, and a block size of 2:
+///
+/// ```
+/// x = [[[[1],   [2],  [5],  [6]],
+///       [[3],   [4],  [7],  [8]],
+///       [[9],  [10], [13],  [14]],
+///       [[11], [12], [15],  [16]]]]
+/// ```
+///
+/// the operator will return the following tensor of shape `[1 2 2 4]`:
+///
+/// ```
+/// x = [[[[1, 2, 3, 4],
+///        [5, 6, 7, 8]],
+///       [[9, 10, 11, 12],
+///        [13, 14, 15, 16]]]]
+/// ```
+///
 /// - Parameters:
 ///   - input: The tensor to be rearranged.
 ///   - blockSize: The size of the spatial block.
@@ -848,6 +899,57 @@ func _vjpDepthToSpace<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// Returns `input` rearranged from blocks of spatial data into depth.
+/// 
+/// For example, given an input of shape `[1, 2, 2, 1]`, data_format = "NHWC" and
+/// block_size = 2:
+///
+/// ```
+/// x = [[[[1], [2]],
+///       [[3], [4]]]]
+/// ```
+///
+/// This operation will output a tensor of shape `[1, 1, 1, 4]`:
+///
+/// ```
+/// [[[[1, 2, 3, 4]]]]
+/// ```
+///
+/// Here, the input has a batch of 1 and each batch element has shape `[2, 2, 1]`,
+/// the corresponding output will have a single element (i.e. width and height are
+/// both 1) and will have a depth of 4 channels (1 * block_size * block_size).
+/// The output element shape is `[1, 1, 4]`.
+///
+/// For an input tensor with larger depth, here of shape `[1, 2, 2, 3]`, e.g.
+///
+/// ```
+/// x = [[[[1, 2, 3], [4, 5, 6]],
+///       [[7, 8, 9], [10, 11, 12]]]]
+/// ```
+///
+/// This operation, for block_size of 2, will return the following tensor of shape
+/// `[1, 1, 1, 12]`
+///
+/// ```
+/// [[[[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]]]]
+/// ```
+///
+/// Similarly, for the following input of shape `[1 4 4 1]`, and a block size of 2:
+///
+/// ```
+/// x = [[[[1],   [2],  [5],  [6]],
+///       [[3],   [4],  [7],  [8]],
+///       [[9],  [10], [13],  [14]],
+///       [[11], [12], [15],  [16]]]]
+/// ```
+///
+/// the operator will return the following tensor of shape `[1 2 2 4]`:
+///
+/// ```
+/// x = [[[[1, 2, 3, 4],
+///        [5, 6, 7, 8]],
+///       [[9, 10, 11, 12],
+///        [13, 14, 15, 16]]]]
+/// ```
 ///
 /// - Parameters:
 ///   - input: The tensor to be rearranged.
