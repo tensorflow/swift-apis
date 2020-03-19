@@ -2028,13 +2028,13 @@ final class LayerTests: XCTestCase {
     ]
     XCTAssert(grad.0.isAlmostEqual(to: expectedGrad))
     XCTAssert(
-      grad.1.groupNorm.scale
+      grad.1.delegate.scale
         .isAlmostEqual(to: [
           7.999111, 7.9991093, 7.9991107,
           7.9991117, 7.999111, 7.99911
         ]))
     XCTAssert(
-      grad.1.groupNorm.offset
+      grad.1.delegate.offset
         .isAlmostEqual(to: [
           9.5367432e-07, -2.3841858e-07, -8.3446503e-07,
           -9.5367432e-07, 1.1920929e-06, 9.5367432e-07

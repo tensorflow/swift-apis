@@ -367,24 +367,24 @@ public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
 @frozen
 public struct InstanceNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   /// Internal group normalization.
-  var groupNorm: GroupNorm<Scalar>
+  var delegate: GroupNorm<Scalar>
 
   /// The offset value, also known as beta.
   public var offset: Tensor<Scalar> {
-    _read { yield groupNorm.offset }
-    _modify { yield &groupNorm.offset }
+    _read { yield delegate.offset }
+    _modify { yield &delegate.offset }
   }
 
   /// The scale value, also known as gamma.
   public var scale: Tensor<Scalar> {
-    _read { yield groupNorm.scale }
-    _modify { yield &groupNorm.scale }
+    _read { yield delegate.scale }
+    _modify { yield &delegate.scale }
   }
 
   /// The axis where the features lie.
-  public var axis: Int { groupNorm.axis }
+  public var axis: Int { delegate.axis }
   /// The variance epsilon value.
-  public var epsilon: Scalar { groupNorm.epsilon }
+  public var epsilon: Scalar { delegate.epsilon }
 
   /// Creates a instance normalization layer.
   /// - Parameters:
@@ -401,7 +401,7 @@ public struct InstanceNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     axis: Int,
     epsilon: Scalar
   ) {
-    groupNorm = GroupNorm(
+    delegate = GroupNorm(
       offset: offset,
       scale: scale,
       groupCount: offset.shape[0],
@@ -421,7 +421,7 @@ public struct InstanceNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     axis: Int = -1,
     epsilon: Scalar = 1e-3
   ) {
-    groupNorm = GroupNorm(
+    delegate = GroupNorm(
       featureCount: featureCount,
       groupCount: featureCount,
       axis: axis,
@@ -434,6 +434,6 @@ public struct InstanceNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   /// - Returns: The output.
   @differentiable
   public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-    groupNorm(input)
+    delegate(input)
   }
 }
