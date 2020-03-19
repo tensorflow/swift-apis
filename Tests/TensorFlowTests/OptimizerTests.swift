@@ -147,6 +147,172 @@ class OptimizerTests: XCTestCase {
     }
   }
 
+  struct ModelNumerical: Differentiable, KeyPathIterable {
+    var tensor = Tensor<Float>([0, 1, 2])
+    static let grad = ModelNumerical.TangentVector(tensor: [0.0, 0.1, 0.2])
+  }
+
+  func testSGDNumerical() {
+    // The expected value was computed using the following Python code:
+    // ```
+    // import tensorflow as tf
+    // var = tf.Variable([0, 1, 2], dtype=tf.float32)
+    // grad = tf.Variable([0, 0.1, 0.2], dtype=tf.dtypes.float32)
+    // optimizer = tf.keras.optimizers.SGD()
+    // optimizer.apply_gradients(list(zip([grad], [var])))
+    // print(var.read_value())
+    // for i in range(10):
+    //     optimizer.apply_gradients(list(zip([grad], [var])))
+    // print(var.read_value())
+    // ```
+    var model = ModelNumerical()
+    let opt = SGD(for: model)
+    opt.update(&model, along: ModelNumerical.grad)
+    XCTAssertEqual(model.tensor, [0, 0.999, 1.998])
+    for _ in 0..<10 {
+      opt.update(&model, along: ModelNumerical.grad)
+    }
+    XCTAssertEqual(model.tensor, [0, 0.98900014, 1.9780003])
+  }
+
+  func testRMSPropNumerical() {
+    // The expected value was computed using the following Python code:
+    // ```
+    // import tensorflow as tf
+    // var = tf.Variable([0, 1, 2], dtype=tf.float32)
+    // grad = tf.Variable([0, 0.1, 0.2], dtype=tf.dtypes.float32)
+    // optimizer = tf.keras.optimizers.RMSProp()
+    // optimizer.apply_gradients(list(zip([grad], [var])))
+    // print(var.read_value())
+    // for i in range(10):
+    //     optimizer.apply_gradients(list(zip([grad], [var])))
+    // print(var.read_value())
+    // ```
+    var model = ModelNumerical()
+    let opt = RMSProp(for: model, epsilon: 1e-7)
+    opt.update(&model, along: ModelNumerical.grad)
+    XCTAssertEqual(model.tensor, [0, 0.99683774, 1.9968377])
+    for _ in 0..<10 {
+      opt.update(&model, along: ModelNumerical.grad)
+    }
+    XCTAssertEqual(model.tensor, [0, 0.9814604, 1.9814601])
+  }
+
+  func testAdamNumerical() {
+    // The expected value was computed using the following Python code:
+    // ```
+    // import tensorflow as tf
+    // var = tf.Variable([0, 1, 2], dtype=tf.float32)
+    // grad = tf.Variable([0, 0.1, 0.2], dtype=tf.dtypes.float32)
+    // optimizer = tf.keras.optimizers.Adam()
+    // optimizer.apply_gradients(list(zip([grad], [var])))
+    // print(var.read_value())
+    // for i in range(10):
+    //     optimizer.apply_gradients(list(zip([grad], [var])))
+    // print(var.read_value())
+    // ```
+    var model = ModelNumerical()
+    let opt = Adam(for: model, epsilon: 1e-7)
+    opt.update(&model, along: ModelNumerical.grad)
+    XCTAssertEqual(model.tensor, [0, 0.999, 1.9990001])
+    for _ in 0..<10 {
+      opt.update(&model, along: ModelNumerical.grad)
+    }
+    XCTAssertEqual(model.tensor, [0, 0.98900014, 1.9889997])
+  }
+
+  func testAdaDeltaNumerical() {
+    // The expected value was computed using the following Python code:
+    // ```
+    // import tensorflow as tf
+    // var = tf.Variable([0, 1, 2], dtype=tf.float32)
+    // grad = tf.Variable([0, 0.1, 0.2], dtype=tf.dtypes.float32)
+    // optimizer = tf.keras.optimizers.Adadelta()
+    // optimizer.apply_gradients(list(zip([grad], [var])))
+    // print(var.read_value())
+    // for i in range(10):
+    //     optimizer.apply_gradients(list(zip([grad], [var])))
+    // print(var.read_value())
+    // ```
+    var model = ModelNumerical()
+    let opt = AdaDelta(for: model, learningRate: 1e-3, epsilon: 1e-7)
+    opt.update(&model, along: ModelNumerical.grad)
+    XCTAssertEqual(model.tensor, [0, 0.99999857, 1.9999986])
+    for _ in 0..<10 {
+      opt.update(&model, along: ModelNumerical.grad)
+    }
+    XCTAssertEqual(model.tensor, [0, 0.99998385, 1.9999841])
+  }
+
+  func testAMSGradNumerical() {
+    // The expected value was computed using the following Python code:
+    // ```
+    // import tensorflow as tf
+    // var = tf.Variable([0, 1, 2], dtype=tf.float32)
+    // grad = tf.Variable([0, 0.1, 0.2], dtype=tf.dtypes.float32)
+    // optimizer = tf.keras.optimizers.Adam(amsgrad=True)
+    // optimizer.apply_gradients(list(zip([grad], [var])))
+    // print(var.read_value())
+    // for i in range(10):
+    //     optimizer.apply_gradients(list(zip([grad], [var])))
+    // print(var.read_value())
+    // ```
+    var model = ModelNumerical()
+    let opt = AMSGrad(for: model, epsilon: 1e-7)
+    opt.update(&model, along: ModelNumerical.grad)
+    XCTAssertEqual(model.tensor, [0, 0.999, 1.9990001])
+    for _ in 0..<10 {
+      opt.update(&model, along: ModelNumerical.grad)
+    }
+    XCTAssertEqual(model.tensor, [0, 0.98900014, 1.9889997])
+  }
+
+  func testAdaMaxNumerical() {
+    // The expected value was computed using the following Python code:
+    // ```
+    // import tensorflow as tf
+    // var = tf.Variable([0, 1, 2], dtype=tf.float32)
+    // grad = tf.Variable([0, 0.1, 0.2], dtype=tf.dtypes.float32)
+    // optimizer = tf.keras.optimizers.Adamax()
+    // optimizer.apply_gradients(list(zip([grad], [var])))
+    // print(var.read_value())
+    // for i in range(10):
+    //     optimizer.apply_gradients(list(zip([grad], [var])))
+    // print(var.read_value())
+    // ```
+    var model = ModelNumerical()
+    let opt = AdaMax(for: model, learningRate: 1e-3, epsilon: 1e-7)
+    opt.update(&model, along: ModelNumerical.grad)
+    XCTAssertEqual(model.tensor, [0, 0.999, 1.999])
+    for _ in 0..<10 {
+      opt.update(&model, along: ModelNumerical.grad)
+    }
+    XCTAssertEqual(model.tensor, [0, 0.98900014, 1.9889995])
+  }
+
+  func testAdaGradNumerical() {
+    // The expected value was computed using the following Python code:
+    // ```
+    // import tensorflow as tf
+    // var = tf.Variable([0, 1, 2], dtype=tf.float32)
+    // grad = tf.Variable([0, 0.1, 0.2], dtype=tf.dtypes.float32)
+    // optimizer = tf.keras.optimizers.Adagrad()
+    // optimizer.apply_gradients(list(zip([grad], [var])))
+    // print(var.read_value())
+    // for i in range(10):
+    //     optimizer.apply_gradients(list(zip([grad], [var])))
+    // print(var.read_value())
+    // ```
+    var model = ModelNumerical()
+    let opt = AdaGrad(for: model, learningRate: 1e-3, epsilon: 1e-7)
+    opt.update(&model, along: ModelNumerical.grad)
+    XCTAssertEqual(model.tensor, [0, 0.99969846, 1.9994655])
+    for _ in 0..<10 {
+      opt.update(&model, along: ModelNumerical.grad)
+    }
+    XCTAssertEqual(model.tensor, [0, 0.9972076, 1.9959843])
+  }
+
   static var allTests = [
     ("testSGD", testSGD),
     ("testRMSProp", testRMSProp),
@@ -156,5 +322,12 @@ class OptimizerTests: XCTestCase {
     ("testAdaMax", testAdaMax),
     ("testAMSGrad", testAMSGrad),
     ("testRAdam", testRAdam),
+    ("testSGDNumerical", testSGDNumerical),
+    ("testRMSPropNumerical", testRMSPropNumerical),
+    ("testAdamNumerical", testAdamNumerical),
+    ("testAdaDeltaNumerical", testAdaDeltaNumerical),
+    ("testAMSGradNumerical", testAMSGradNumerical),
+    ("testAdaMaxNumerical", testAdaMaxNumerical),
+    ("testAdaGradNumerical", testAdaGradNumerical),
   ]
 }
