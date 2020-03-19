@@ -825,8 +825,11 @@ func _vjpAvgPool3D<Scalar: TensorFlowFloatingPoint>(
 // Rearrange depth/space
 //===------------------------------------------------------------------------------------------===//
 
-/// Rearranges data from depth into blocks of spatial data.
+/// Returns `input` rearranged from depth into blocks of spatial data.
 ///
+/// - Parameters:
+///   - input: The tensor to be rearranged.
+///   - blockSize: The size of the spatial block.
 /// - Precondition: The input must have rank 4.
 /// - Precondition: The block size must be greater than 1.
 @differentiable(wrt: input where Scalar: TensorFlowFloatingPoint)
@@ -844,8 +847,11 @@ func _vjpDepthToSpace<Scalar: TensorFlowFloatingPoint>(
   (depthToSpace(input, blockSize: blockSize), { spaceToDepth($0, blockSize: blockSize) })
 }
 
-/// Rearranges blocks of spatial data, into depth.
+/// Returns `input` rearranged from blocks of spatial data into depth.
 ///
+/// - Parameters:
+///   - input: The tensor to be rearranged.
+///   - blockSize: The size of the spatial block.
 /// - Precondition: The input must have rank 4.
 /// - Precondition: The block size must be greater than 1.
 @differentiable(wrt: input where Scalar: TensorFlowFloatingPoint)
