@@ -270,6 +270,16 @@ public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   @noDerivative public let epsilon: Scalar
 
   /// Creates a group normalization layer.
+  /// - Parameters:
+  ///   - offset: The initial offset value.
+  ///   - scale: The initial scale value.
+  ///   - groups: The number of groups.
+  ///   - axis: The axis where the features lie.
+  ///   - epsilon: The variance epsilon value.
+  /// - Precondition: The axis cannot be batch axis.
+  /// - Precondition: The offset must have rank 1.
+  /// - Precondition: The scale must have rank 1.
+  /// - Precondition: The offset and the scale must have same shape.
   public init(
     offset: Tensor<Scalar>,
     scale: Tensor<Scalar>,
@@ -295,8 +305,8 @@ public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   /// - Parameters:
   ///   - featureCount: The number of features.
   ///   - groups: The number of groups.
-  ///   - axis: The axis that should be normalized.
-  ///   - epsilon: The small scalar added to variance.
+  ///   - axis: The axis where the features lie. The default value is -1.
+  ///   - epsilon: The small scalar added to variance. The default value is 0.001
   public init(
     featureCount: Int,
     groups: Int,
@@ -374,6 +384,15 @@ public struct InstanceNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   public var epsilon: Scalar { groupNorm.epsilon }
 
   /// Creates a instance normalization layer.
+  /// - Parameters:
+  ///   - offset: The initial offset value.
+  ///   - scale: The initial scale value.
+  ///   - axis: The axis where the features lie.
+  ///   - epsilon: The variance epsilon value.
+  /// - Precondition: The axis cannot be batch axis.
+  /// - Precondition: The offset must have rank 1.
+  /// - Precondition: The scale must have rank 1.
+  /// - Precondition: The offset and the scale must have same shape.
   public init(
     offset: Tensor<Scalar>,
     scale: Tensor<Scalar>,
@@ -392,8 +411,8 @@ public struct InstanceNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   ///
   /// - Parameters:
   ///   - featureCount: The number of features.
-  ///   - axis: The axis that should be normalized.
-  ///   - epsilon: The small scalar added to variance.
+  ///   - axis: The axis where the features lie. The default value is -1.
+  ///   - epsilon: The small scalar added to variance. The default value is 0.001
   public init(
     featureCount: Int,
     axis: Int = -1,
