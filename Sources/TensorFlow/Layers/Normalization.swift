@@ -264,7 +264,7 @@ public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   public var scale: Tensor<Scalar>
   /// The number of groups.
   @noDerivative public let groups: Int
-  /// The axis.
+  /// The axis where the features lie.
   @noDerivative public let axis: Int
   /// The variance epsilon value.
   @noDerivative public let epsilon: Scalar
@@ -368,7 +368,7 @@ public struct InstanceNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     _modify { yield &groupNorm.scale }
   }
 
-  /// The axis.
+  /// The axis where the features lie.
   public var axis: Int { groupNorm.axis }
   /// The variance epsilon value.
   public var epsilon: Scalar { groupNorm.epsilon }
