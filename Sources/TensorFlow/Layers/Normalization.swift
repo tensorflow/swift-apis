@@ -308,6 +308,8 @@ public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   ///   - groupCount: The number of groups.
   ///   - axis: The axis where the features lie. The default value is -1.
   ///   - epsilon: The small scalar added to variance. The default value is 0.001.
+  /// - Precondition: The axis cannot be batch axis.
+  /// - Precondition: The feature count must be divisible by groups.
   public init(
     featureCount: Int,
     groupCount: Int,
@@ -413,6 +415,7 @@ public struct InstanceNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   ///   - featureCount: The number of features.
   ///   - axis: The axis where the features lie. The default value is -1.
   ///   - epsilon: The small scalar added to variance. The default value is 0.001.
+  /// - Precondition: The axis cannot be batch axis.
   public init(
     featureCount: Int,
     axis: Int = -1,
