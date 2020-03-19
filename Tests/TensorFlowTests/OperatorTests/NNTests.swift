@@ -28,7 +28,7 @@ class NNTests: XCTestCase {
         [[2], [3], [6], [7]]
       ]
     ])
-    XCTAssertEqual(depthToSpace(input, size: 2), expected)
+    XCTAssertEqual(depthToSpace(input, blockSize: 2), expected)
   }
 
   func testDepthToSpaceGrad() {
@@ -43,7 +43,7 @@ class NNTests: XCTestCase {
         [[2], [3], [6], [7]]
       ]
     ])
-    let depthToSpacePullback = pullback(at: input) { depthToSpace($0, size: 2) }
+    let depthToSpacePullback = pullback(at: input) { depthToSpace($0, blockSize: 2) }
     XCTAssertEqual(depthToSpacePullback(grad), input)
   }
 
@@ -59,7 +59,7 @@ class NNTests: XCTestCase {
         [[0, 1, 2, 3], [4, 5, 6, 7]]
       ]
     ])
-    XCTAssertEqual(spaceToDepth(input, size: 2), expected)
+    XCTAssertEqual(spaceToDepth(input, blockSize: 2), expected)
   }
 
   func testSpaceToDepthGrad() {
@@ -74,7 +74,7 @@ class NNTests: XCTestCase {
         [[0, 1, 2, 3], [4, 5, 6, 7]]
       ]
     ])
-    let spaceToDepthPullback = pullback(at: input) { spaceToDepth($0, size: 2) }
+    let spaceToDepthPullback = pullback(at: input) { spaceToDepth($0, blockSize: 2) }
     XCTAssertEqual(spaceToDepthPullback(grad), input)
   }
 
