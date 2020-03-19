@@ -1436,7 +1436,7 @@ public func hardSigmoid<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T>
 @inlinable
 @differentiable
 public func hardSwish<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
-  x * hsigmoid(x)
+  x * hardSigmoid(x)
 }
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
