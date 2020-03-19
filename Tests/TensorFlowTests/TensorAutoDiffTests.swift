@@ -596,6 +596,21 @@ final class TensorAutoDiffTests: XCTestCase {
     XCTAssertEqual(input, transposedVariadicsPullback(transposed))
   }
 
+  func testReversed() {
+    let input = Tensor<Float>([[0, 1], [2, 3], [4, 5]])
+    let reverse0 = Tensor<Float>([[4, 5], [2, 3], [0, 1]])
+    let pullback0 = pullback(at: input) { $0.reversed(inAxes: [0]) }
+    let reverse1 = Tensor<Float>([[1, 0], [3, 2], [5, 4]])
+    let pullback1 = pullback(at: input) { $0.reversed(inAxes: [1]) }
+    let reverse01 = Tensor<Float>([[5, 4], [3, 2], [1, 0]])
+    let pullback01 = pullback(at: input) { $0.reversed(inAxes: [0, 1]) }
+    let pullbackNegative = pullback(at: input) { $0.reversed(inAxes: [-2, -1]) }
+    XCTAssertEqual(input, pullback0(reverse0))
+    XCTAssertEqual(input, pullback1(reverse1))
+    XCTAssertEqual(input, pullback01(reverse01))
+    XCTAssertEqual(input, pullbackNegative(reverse01))
+  }
+
   func testSigmoid() {
     func f(a: Tensor<Float>) -> Tensor<Float> { sigmoid(a).sum() }
     assertEqual(gradient(at: [-1, 0, 1], in: f), [0.1966119, 0.25, 0.1966119], accuracy: 0.0001)
@@ -828,6 +843,267 @@ final class TensorAutoDiffTests: XCTestCase {
       [[[0, 8640], [0, 5760], [0, 4320]], [[0, 6912], [1575, 5760], [0, 5760]]])
   }
 
+  func testResizeNearest() {
+    let images = Tensor<Float>(zeros: [1, 3, 3, 3])
+    let computedGradient = gradient(at: images) { images in
+      resize(images: images, size: (2, 2), method: .nearest).sum()
+    }
+
+    // The expected gradient values were computed using the following Python code:
+    // ```
+    // import tensorflow as tf
+    // x = tf.zeros([1, 3, 3, 3])
+    // with tf.GradientTape() as t:
+    //     t.watch(x)
+    //     y = tf.image.resize(x, [2, 2], "nearest")
+    // print(t.gradient(y, x))
+    // ```
+
+    XCTAssertEqual(
+      computedGradient,
+      [
+        [
+          [[1, 1, 1], [0, 0, 0], [1, 1, 1]],
+          [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
+          [[1, 1, 1], [0, 0, 0], [1, 1, 1]],
+        ]
+      ])
+  }
+
+  func testResizeBilinear() {
+    let images = Tensor<Float>(zeros: [1, 3, 3, 3])
+    let computedGradient = gradient(at: images) { images in
+      resize(images: images, size: (2, 2), method: .bilinear).sum()
+    }
+
+    // The expected gradient values were computed using the following Python code:
+    // ```
+    // import tensorflow as tf
+    // x = tf.zeros([1, 3, 3, 3])
+    // with tf.GradientTape() as t:
+    //     t.watch(x)
+    //     y = tf.image.resize(x, [2, 2], "bilinear")
+    // print(t.gradient(y, x))
+    // ```
+
+    XCTAssertEqual(
+      computedGradient,
+      [
+        [
+          [
+            [0.5625, 0.5625, 0.5625],
+            [0.375, 0.375, 0.375],
+            [0.5625, 0.5625, 0.5625],
+          ],
+          [
+            [0.375, 0.375, 0.375],
+            [0.25, 0.25, 0.25],
+            [0.375, 0.375, 0.375],
+          ],
+          [
+            [0.5625, 0.5625, 0.5625],
+            [0.375, 0.375, 0.375],
+            [0.5625, 0.5625, 0.5625],
+          ],
+        ]
+      ])
+  }
+
+  func testResizeBicubic() {
+    let images = Tensor<Float>(zeros: [1, 3, 3, 3])
+    let computedGradient = gradient(at: images) { images in
+      resize(images: images, size: (2, 2), method: .bicubic).sum()
+    }
+
+    // The expected gradient values were computed using the following Python code:
+    // ```
+    // import tensorflow as tf
+    // x = tf.zeros([1, 3, 3, 3])
+    // with tf.GradientTape() as t:
+    //     t.watch(x)
+    //     y = tf.image.resize(x, [2, 2], "bicubic")
+    // print(t.gradient(y, x))
+    // ```
+
+    XCTAssertEqual(
+      computedGradient,
+      [
+        [
+          [
+            [0.62145025, 0.62145025, 0.62145025],
+            [0.3337418, 0.3337418, 0.3337418],
+            [0.62145025, 0.62145025, 0.62145025],
+          ],
+          [
+            [0.3337418, 0.3337418, 0.3337418],
+            [0.17923172, 0.17923172, 0.17923172],
+            [0.3337418, 0.3337418, 0.3337418],
+          ],
+          [
+            [0.62145025, 0.62145025, 0.62145025],
+            [0.3337418, 0.3337418, 0.3337418],
+            [0.6214503, 0.6214503, 0.6214503],
+          ],
+        ]
+      ])
+  }
+
+  func testResizeLanczos3() {
+    let images = Tensor<Float>(zeros: [1, 3, 3, 3])
+    let computedGradient = gradient(at: images) { images in
+      resize(images: images, size: (2, 2), method: .lanczos3).sum()
+    }
+
+    // The expected gradient values were computed using the following Python code:
+    // ```
+    // import tensorflow as tf
+    // x = tf.zeros([1, 3, 3, 3])
+    // with tf.GradientTape() as t:
+    //     t.watch(x)
+    //     y = tf.image.resize(x, [2, 2], "lanczos3")
+    // print(t.gradient(y, x))
+    // ```
+
+    XCTAssertEqual(
+      computedGradient,
+      [
+        [
+          [
+            [0.56652546, 0.56652546, 0.56652546],
+            [0.3723068, 0.3723068, 0.3723068],
+            [0.56652546, 0.56652546, 0.56652546],
+          ],
+          [
+            [0.3723068, 0.3723068, 0.3723068],
+            [0.24467099, 0.24467099, 0.24467099],
+            [0.3723068, 0.3723068, 0.3723068],
+          ],
+          [
+            [0.56652546, 0.56652546, 0.56652546],
+            [0.3723068, 0.3723068, 0.3723068],
+            [0.56652546, 0.56652546, 0.56652546],
+          ],
+        ]
+      ])
+  }
+
+  func testResizeLanczos5() {
+    let images = Tensor<Float>(zeros: [1, 3, 3, 3])
+    let computedGradient = gradient(at: images) { images in
+      resize(images: images, size: (2, 2), method: .lanczos5).sum()
+    }
+
+    // The expected gradient values were computed using the following Python code:
+    // ```
+    // import tensorflow as tf
+    // x = tf.zeros([1, 3, 3, 3])
+    // with tf.GradientTape() as t:
+    //     t.watch(x)
+    //     y = tf.image.resize(x, [2, 2], "lanczos5")
+    // print(t.gradient(y, x))
+    // ```
+
+    XCTAssertEqual(
+      computedGradient,
+      [
+        [
+          [
+            [0.5368068, 0.5368068, 0.5368068],
+            [0.3917284, 0.3917284, 0.3917284],
+            [0.5368068, 0.5368068, 0.5368068],
+          ],
+          [
+            [0.3917284, 0.3917284, 0.3917284],
+            [0.28585914, 0.28585914, 0.28585914],
+            [0.3917284, 0.3917284, 0.3917284],
+          ],
+          [
+            [0.5368068, 0.5368068, 0.5368068],
+            [0.3917284, 0.3917284, 0.3917284],
+            [0.5368068, 0.5368068, 0.5368068],
+          ],
+        ]
+      ])
+  }
+
+  func testResizeGaussian() {
+    let images = Tensor<Float>(zeros: [1, 3, 3, 3])
+    let computedGradient = gradient(at: images) { images in
+      resize(images: images, size: (2, 2), method: .gaussian).sum()
+    }
+
+    // The expected gradient values were computed using the following Python code:
+    // ```
+    // import tensorflow as tf
+    // x = tf.zeros([1, 3, 3, 3])
+    // with tf.GradientTape() as t:
+    //     t.watch(x)
+    //     y = tf.image.resize(x, [2, 2], "gaussian")
+    // print(t.gradient(y, x))
+    // ```
+
+    XCTAssertEqual(
+      computedGradient,
+      [
+        [
+          [
+            [0.5344466, 0.5344466, 0.5344466],
+            [0.39322382, 0.39322382, 0.39322382],
+            [0.5344466, 0.5344466, 0.5344466],
+          ],
+          [
+            [0.39322382, 0.39322382, 0.39322382],
+            [0.2893179, 0.2893179, 0.2893179],
+            [0.39322382, 0.39322382, 0.39322382],
+          ],
+          [
+            [0.5344466, 0.5344466, 0.5344466],
+            [0.39322382, 0.39322382, 0.39322382],
+            [0.5344466, 0.5344466, 0.5344466],
+          ],
+        ]
+      ])
+  }
+
+  func testResizeMitchellcubic() {
+    let images = Tensor<Float>(zeros: [1, 3, 3, 3])
+    let computedGradient = gradient(at: images) { images in
+      resize(images: images, size: (2, 2), method: .mitchellcubic).sum()
+    }
+
+    // The expected gradient values were computed using the following Python code:
+    // ```
+    // import tensorflow as tf
+    // x = tf.zeros([1, 3, 3, 3])
+    // with tf.GradientTape() as t:
+    //     t.watch(x)
+    //     y = tf.image.resize(x, [2, 2], "mitchellcubic")
+    // print(t.gradient(y, x))
+    // ```
+
+    XCTAssertEqual(
+      computedGradient,
+      [
+        [
+          [
+            [0.562182, 0.562182, 0.562182],
+            [0.37521198, 0.37521198, 0.37521198],
+            [0.56218195, 0.56218195, 0.56218195],
+          ],
+          [
+            [0.375212, 0.375212, 0.375212],
+            [0.25042433, 0.25042433, 0.25042433],
+            [0.37521198, 0.37521198, 0.37521198],
+          ],
+          [
+            [0.56218195, 0.56218195, 0.56218195],
+            [0.37521195, 0.37521195, 0.37521195],
+            [0.5621819, 0.5621819, 0.5621819],
+          ],
+        ]
+      ])
+  }
+
   static var allTests = [
     ("testSimpleGrad", testSimpleGrad),
     ("testGenericGrad", testGenericGrad),
@@ -865,6 +1141,7 @@ final class TensorAutoDiffTests: XCTestCase {
     ("testConcatenationPlusPlus", testConcatenationPlusPlus),
     ("testConcatenated", testConcatenated),
     ("testTransposed", testTransposed),
+    ("testReversed", testReversed),
     ("testSigmoid", testSigmoid),
     ("testRelu", testRelu),
     ("testSoftmax", testSoftmax),
@@ -880,5 +1157,12 @@ final class TensorAutoDiffTests: XCTestCase {
     ("testUnbroadcastLike", testUnbroadcastLike),
     ("testBatchNormalized", testBatchNormalized),
     ("testProductGrad", testProductGrad),
+    ("testResizeNearest", testResizeNearest),
+    ("testResizeBilinear", testResizeBilinear),
+    ("testResizeBicubic", testResizeBicubic),
+    ("testResizeLanczos3", testResizeLanczos3),
+    ("testResizeLanczos5", testResizeLanczos5),
+    ("testResizeGaussian", testResizeGaussian),
+    ("testResizeMitchellcubic", testResizeMitchellcubic),
   ]
 }

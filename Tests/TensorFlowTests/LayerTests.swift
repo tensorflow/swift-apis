@@ -26,44 +26,6 @@ fileprivate struct Sigmoid<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
 }
 
 final class LayerTests: XCTestCase {
-  func testSequential() {
-    withRandomSeedForTensorFlow((12345, 12345)) {
-      let inputSize = 2
-      let hiddenSize = 4
-      var model = Sequential {
-        Dense<Float>(
-          inputSize: inputSize,
-          outputSize: hiddenSize,
-          weightInitializer: glorotUniform())
-        Sigmoid<Float>()
-        Dense<Float>(
-          inputSize: hiddenSize,
-          outputSize: 1,
-          weightInitializer: glorotUniform())
-      }
-      let optimizer = SGD(for: model)
-      let x = Tensor<Float>([[0, 0], [0, 1], [1, 0], [1, 1]])
-      let y = Tensor<Float>([0, 1, 1, 0])
-      let initialLoss = meanSquaredError(
-        predicted: model(x).squeezingShape(at: 1),
-        expected: y)
-      withTensorLeakChecking {
-        for _ in 0..<10 {
-          let 𝛁model = gradient(at: model) { model -> Tensor<Float> in
-            meanSquaredError(
-              predicted: model(x).squeezingShape(at: 1),
-              expected: y)
-          }
-          optimizer.update(&model, along: 𝛁model)
-        }
-      }
-      let updatedLoss = meanSquaredError(
-        predicted: model(x).squeezingShape(at: 1),
-        expected: y)
-      XCTAssertLessThan(updatedLoss.scalarized(), initialLoss.scalarized())
-    }
-  }
-
   func testConv1D() {
     let filter = Tensor<Float>(ones: [3, 1, 2]) * Tensor<Float>([[[0.5, 1]]])
     let bias = Tensor<Float>([0, 1])
@@ -1427,6 +1389,15 @@ final class LayerTests: XCTestCase {
   func testDenseGradient() {
     let weight = Tensor<Float>(shape: [4, 8], scalars: (0..<32).map(Float.init))
     let bias = Tensor<Float>(shape: [1, 8], scalars: (0..<8).map(Float.init))
+
+    // Test `Dense.init` derivative.
+    let denseInitPullback = pullback(at: weight) { weight in
+      Dense(weight: weight, bias: bias, activation: identity)
+    }
+    let weightGrad = denseInitPullback(.init(weight: Tensor(100), bias: Tensor(1)))
+    XCTAssertEqual(Tensor(100), weightGrad)
+
+    // Test `Dense.callAsFunction` derivative.
     let layer = Dense<Float>(weight: weight, bias: bias, activation: identity)
     let x = Tensor<Float>(shape: [2, 4], scalars: (0..<8).map(Float.init))
     let grad = gradient(at: x, layer) { $1($0).squared().sum() }
@@ -1756,27 +1727,42 @@ final class LayerTests: XCTestCase {
         accuracy: 1e-5)
       // TODO: Verify that GRU gradients are correct using a reference implementation.
       let (𝛁gru, _) = pullback(.init(inputs.map { GRUCell<Float>.State(hidden: $0) }))
-      XCTAssertEqual(
+      assertEqual(
         𝛁gru.cell.updateWeight1,
-        [[0.0], [-0.040293925], [-0.08058785], [-0.12088178]])
-      XCTAssertEqual(
+        [[0.0], [-0.040293925], [-0.08058785], [-0.12088178]],
+        accuracy: 1e-5)
+      assertEqual(
         𝛁gru.cell.updateWeight2,
-        [[-0.056792725], [-0.056792725], [-0.056792725], [-0.056792725]])
-      XCTAssertEqual(
+        [[-0.056792725], [-0.056792725], [-0.056792725], [-0.056792725]],
+        accuracy: 1e-5)
+      assertEqual(
         𝛁gru.cell.resetWeight1,
-        [[0.0], [0.0039126356], [0.007825271], [0.011737906]])
-      XCTAssertEqual(
+        [[0.0], [0.0039126356], [0.007825271], [0.011737906]],
+        accuracy: 1e-5)
+      assertEqual(
         𝛁gru.cell.resetWeight2,
-        [[0.0069182813], [0.0069182813], [0.0069182813], [0.0069182813]])
-      XCTAssertEqual(
+        [[0.0069182813], [0.0069182813], [0.0069182813], [0.0069182813]],
+        accuracy: 1e-5)
+      assertEqual(
         𝛁gru.cell.outputWeight1,
-        [[0.0], [0.1221647], [0.2443294], [0.3664941]])
-      XCTAssertEqual(
+        [[0.0], [0.1221647], [0.2443294], [0.3664941]],
+        accuracy: 1e-5)
+      assertEqual(
         𝛁gru.cell.outputWeight2,
-        [[0.08078343], [0.08078343], [0.08078343], [0.08078343]])
-      XCTAssertEqual(𝛁gru.cell.updateBias, [-0.016739635, -0.04493352, -0.13216142, -0.20910467])
-      XCTAssertEqual(𝛁gru.cell.resetBias, [0.023218961, -0.024303729, 0.010057628, 0.030153492])
-      XCTAssertEqual(𝛁gru.cell.outputBias, [0.06667276, 0.115095116, 0.39864573, 0.6412333])
+        [[0.08078343], [0.08078343], [0.08078343], [0.08078343]],
+        accuracy: 1e-5)
+      assertEqual(
+        𝛁gru.cell.updateBias,
+        [-0.016739635, -0.04493352, -0.13216142, -0.20910467],
+        accuracy: 1e-5)
+      assertEqual(
+        𝛁gru.cell.resetBias,
+        [0.023218961, -0.024303729, 0.010057628, 0.030153492],
+        accuracy: 1e-5)
+      assertEqual(
+        𝛁gru.cell.outputBias,
+        [0.06667276, 0.115095116, 0.39864573, 0.6412333],
+        accuracy: 1e-5)
     }
   }
 
@@ -1950,7 +1936,6 @@ final class LayerTests: XCTestCase {
   }
 
   static var allTests = [
-    ("testSequential", testSequential),
     ("testConv1D", testConv1D),
     ("testConv1DDilation", testConv1DDilation),
     ("testConv2D", testConv2D),

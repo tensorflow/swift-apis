@@ -17,6 +17,25 @@ import CTensorFlow
 infix operator .==: ComparisonPrecedence
 infix operator .!=: ComparisonPrecedence
 
+#if USING_X10_BACKEND
+/// A multidimensional array of elements that is a generalization of vectors and matrices to 
+/// potentially higher dimensions.
+///
+/// The generic parameter `Scalar` describes the type of scalars in the tensor (such as `Int32`,
+///  `Float`, etc).
+public struct Tensor<Scalar: TensorFlowScalar> {
+
+  init(_xla: XLATensor) {
+    precondition(
+      _xla.dtype == Scalar.xlaTensorScalarType,
+      "Type mismatch constructing from XLATensor:"
+        + "\(_xla.dtype) vs \(Scalar.xlaTensorScalarType)")
+    xlaTensor = _xla
+  }
+  var xlaTensor: XLATensor
+}
+
+#else
 /// Special protocol for calling tensorflow operations that take heterogeneous arrays as input.
 public protocol AnyTensor {
   var _rawTensorHandle: CTensorHandle { get }
@@ -44,6 +63,7 @@ extension Tensor: AnyTensor {
   public var _rawTensorHandle: CTensorHandle { return handle._cTensorHandle }
   public var _tensorFlowDataType: TensorDataType { return Scalar.tensorFlowDataType }
 }
+#endif
 
 //===------------------------------------------------------------------------------------------===//
 // Tensor Properties
@@ -51,20 +71,39 @@ extension Tensor: AnyTensor {
 
 extension Tensor {
   /// The number of dimensions of the `Tensor`.
-  @inlinable
+#if USING_X10_BACKEND
+  public var rank: Int {
+    @_semantics("autodiff.nonvarying")
+    get { xlaTensor.shape.count }
+  }
+#else
   public var rank: Int {
     @_semantics("autodiff.nonvarying")
     get { handle.rank }
   }
+#endif
 
   /// The shape of the `Tensor`.
-  @inlinable
+#if USING_X10_BACKEND
+  public var shape: TensorShape {
+    @_semantics("autodiff.nonvarying")
+    get { TensorShape(xlaTensor.shape) }
+  }
+#else
   public var shape: TensorShape {
     @_semantics("autodiff.nonvarying")
     get { handle.shape }
   }
+#endif
 
   /// The number of scalars in the `Tensor`.
+#if USING_X10_BACKEND
+  @inlinable
+  public var scalarCount: Int {
+    @_semantics("autodiff.nonvarying")
+    get { shape.contiguousSize }
+  }
+#else
   @inlinable
   public var scalarCount: Int {
     @_semantics("autodiff.nonvarying")
@@ -75,6 +114,7 @@ extension Tensor {
       return Int(size)
     }
   }
+#endif
 
   /// The rank of the tensor, represented as a `Tensor<Int32>`.
   @inlinable
@@ -119,7 +159,7 @@ extension Tensor {
   /// otherwise.
   @inlinable
   public var scalar: Scalar? {
-    return handle.makeHostCopy().scalar
+    isScalar ? scalars[0] : nil
   }
 
   /// Reshape to scalar.
@@ -130,7 +170,7 @@ extension Tensor {
     precondition(
       shape.contiguousSize == 1,
       "This tensor must have exactly one scalar but contains \(shape.contiguousSize).")
-    return reshaped(to: []).scalar!
+    return scalars[0]
   }
 }
 
@@ -160,13 +200,21 @@ extension Tensor {
   @inlinable
   public var array: ShapedArray<Scalar> {
     debugLog("Returning a host copy of array.")
+#if USING_X10_BACKEND
+    return ShapedArray<Scalar>(shape: shape.dimensions, scalars: scalars)
+#else
     return handle.makeHostCopy()
+#endif
   }
 
-  @inlinable
   @differentiable( where Scalar: TensorFlowFloatingPoint)
   public var scalars: [Scalar] {
+#if USING_X10_BACKEND
+    let (storage, _) = xlaTensor.fetchTensorValues(Scalar.self)
+    return storage
+#else
     return array.scalars
+#endif
   }
 }
 
@@ -183,16 +231,28 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 }
 
+#if USING_X10_BACKEND
+// Tensor conversion.
+extension Tensor {
+  public init(_ array: __owned ShapedArray<Scalar>) {
+    self.init(shape: TensorShape(array.shape), scalars: array.scalars)
+  }
+}
+#endif
+
 //===------------------------------------------------------------------------------------------===//
 // Initialization
 //===------------------------------------------------------------------------------------------===//
 
 extension Tensor {
   /// Creates a 0-D tensor from a scalar value.
-  @inlinable
   @differentiable( where Scalar: TensorFlowFloatingPoint)
   public init(_ value: Scalar, on device: Device = .default) {
+#if USING_X10_BACKEND
+    self.init(_xla: XLATensor.make(value, on: device))
+#else
     self.init(shape: [], scalars: [value], on: device)
+#endif
   }
 }
 
@@ -219,6 +279,9 @@ extension Tensor {
   public init<C: RandomAccessCollection>(
     _ vector: C, on device: Device = .default
   ) where C.Element == Scalar {
+#if USING_X10_BACKEND
+    self.init([Scalar](vector), on: device)
+#else
     let handle = TensorHandle<Scalar>(
       shape: [vector.count],
       scalarsInitializer: { addr in
@@ -229,6 +292,7 @@ extension Tensor {
         }
       })
     self.init(handle: handle)
+#endif
   }
 
   /// Creates a tensor with the specified shape and contiguous scalars in row-major order.
@@ -257,7 +321,6 @@ extension Tensor {
   ///   - shape: The shape of the tensor.
   ///   - scalars: The scalar contents of the tensor.
   /// - Precondition: The product of the dimensions of the shape must equal the number of scalars.
-  @inlinable
   public init(
     shape: TensorShape,
     scalars: UnsafeBufferPointer<Scalar>,
@@ -269,12 +332,43 @@ extension Tensor {
       The shape requires \(shape.contiguousSize) scalars but \(scalars.count) were \
       provided.
       """)
+#if USING_X10_BACKEND
+    self.init(_xla: XLATensor.make(scalars, shape.dimensions, on: device))
+#else
     let handle = TensorHandle<Scalar>(
       shape: shape.dimensions,
       scalarsInitializer: { address in
         address.initialize(from: scalars.baseAddress!, count: shape.contiguousSize)
       })
     self.init(handle: handle)
+#endif
+  }
+
+#if USING_X10_BACKEND
+  /// Creates a tensor with the specified shape and contiguous scalars in row-major order.
+  ///
+  /// - Parameters:
+  ///   - shape: The shape of the tensor.
+  ///   - scalars: The scalar contents of the tensor.
+  /// - Precondition: The product of the dimensions of the shape must equal the number of scalars.
+  @inlinable
+  public init(
+    shape: TensorShape,
+    scalars: [Scalar],
+    toReducedPrecision: Bool,
+    directlyOn device: Device
+  ) {
+    precondition(
+      shape.contiguousSize == scalars.count,
+      """
+      The shape requires \(shape.contiguousSize) scalars but \(scalars.count) were \
+      provided.
+      """)
+    self = scalars.withUnsafeBufferPointer { bufferPointer in
+      Tensor(
+        shape: shape, scalars: bufferPointer, toReducedPrecision: toReducedPrecision,
+        directlyOn: device)
+    }
   }
 
   /// Creates a tensor with the specified shape and contiguous scalars in row-major order.
@@ -283,7 +377,31 @@ extension Tensor {
   ///   - shape: The shape of the tensor.
   ///   - scalars: The scalar contents of the tensor.
   /// - Precondition: The product of the dimensions of the shape must equal the number of scalars.
-  @inlinable
+  public init(
+    shape: TensorShape,
+    scalars: UnsafeBufferPointer<Scalar>,
+    toReducedPrecision: Bool,
+    directlyOn device: Device
+  ) {
+    precondition(
+      shape.contiguousSize == scalars.count,
+      """
+      The shape requires \(shape.contiguousSize) scalars but \(scalars.count) were \
+      provided.
+      """)
+    self.init(
+      _xla: XLATensor.make(
+        scalars, shape.dimensions, toReducedPrecision: toReducedPrecision,
+        directlyOn: device))
+  }
+#endif
+
+  /// Creates a tensor with the specified shape and contiguous scalars in row-major order.
+  ///
+  /// - Parameters:
+  ///   - shape: The shape of the tensor.
+  ///   - scalars: The scalar contents of the tensor.
+  /// - Precondition: The product of the dimensions of the shape must equal the number of scalars.
   public init<C: RandomAccessCollection>(
     shape: TensorShape, scalars: C, on device: Device = .default
   ) where C.Element == Scalar {
@@ -293,6 +411,9 @@ extension Tensor {
       The shape requires \(shape.contiguousSize) scalars but \(scalars.count) were \
       provided.
       """)
+#if USING_X10_BACKEND
+    self.init(shape: shape, scalars: [Scalar](scalars), on: device)
+#else
     let handle = TensorHandle<Scalar>(
       shape: shape.dimensions,
       scalarsInitializer: { addr in
@@ -303,6 +424,7 @@ extension Tensor {
         }
       })
     self.init(handle: handle)
+#endif
   }
 }
 
@@ -337,7 +459,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
 // Background story on `TensorElementLiteral` and why it's necessary:
 //
 // Very importantly, we want users to be able to implicitly convert an array
-// literal to a tensor. At first glance, a straightfoward implementation would
+// literal to a tensor. At first glance, a straightforward implementation would
 // be conforming `Tensor` to `ExpressibleByArrayLiteral` with
 // `ExpressibleBy(Float|Int|Bool)Literal` as a base case. However, it is not
 // that simple. We have binary operators that take `(Tensor, Scalar)`, `(Scalar,
@@ -357,7 +479,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
 // `Tensor(x)`, so there is no strong need for implicit conversion. But we need
 // to find a way to give `ExpressibleByArrayLiteral` a base case: what would the
 // `ArrayLiteralElement` be if we want to support both `[1,2,3]` and `[[[1,2],
-// [1,2]]]`? In the first case the array literal element is an interger, while
+// [1,2]]]`? In the first case the array literal element is an integer, while
 // in the second case the array literal itself should be a tensor. Based on this
 // observation, we come up with an intermediate type: `TensorElementLiteral` as
 // the `ArrayLiteralElement` of `Tensor`. By making `TensorElementLiteral`
@@ -508,6 +630,10 @@ extension Tensor {
       return array.fullDescription
     }
   }
+
+#if USING_X10_BACKEND
+  public var irText: String { XLATensor.irText(xlaTensor) }
+#endif
 }
 
 // Xcode Playground display conversion.
@@ -555,8 +681,18 @@ extension Tensor: Codable where Scalar: Codable {
 
 extension Tensor: AdditiveArithmetic where Scalar: Numeric {
   /// The scalar zero tensor.
+#if USING_X10_BACKEND
+  public static var zero: Tensor {
+    var zero = Tensor(0, on: _ThreadLocalState.local.currentDevice)
+    if _ThreadLocalState.local.isReducedPrecision {
+      zero = zero.toReducedPrecision
+    }
+    return zero
+  }
+#else
   @inlinable
   public static var zero: Tensor { Tensor(0) }
+#endif
 
   /// Adds two tensors and produces their sum.
   /// - Note: `+` supports broadcasting.
@@ -583,14 +719,8 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   ) {
     (
       lhs + rhs,
-      { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
-        let lhsGrad = v
-        let rhsGrad = lhsGrad
-        let (lhsAxes, rhsAxes) = _Raw.broadcastGradientArgs(s0: lhsShape, s1: rhsShape)
-        return (
-          lhsGrad.sum(squeezingAxes: lhsAxes).reshaped(toShape: lhsShape),
-          rhsGrad.sum(squeezingAxes: rhsAxes).reshaped(toShape: rhsShape)
-        )
+      { [broadcastPb = BroadcastingPullback(lhs, rhs)] v in
+        return broadcastPb(v, v)
       }
     )
   }
@@ -602,14 +732,8 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   ) {
     (
       lhs - rhs,
-      { [lhsShape = lhs.shapeTensor, rhsShape = rhs.shapeTensor] v in
-        let lhsGrad = v
-        let rhsGrad = -lhsGrad
-        let (lhsAxes, rhsAxes) = _Raw.broadcastGradientArgs(s0: lhsShape, s1: rhsShape)
-        return (
-          lhsGrad.sum(squeezingAxes: lhsAxes).reshaped(toShape: lhsShape),
-          rhsGrad.sum(squeezingAxes: rhsAxes).reshaped(toShape: rhsShape)
-        )
+      { [broadcastPb = BroadcastingPullback(lhs, rhs)] v in
+        return broadcastPb(v, -v)
       }
     )
   }
@@ -642,3 +766,19 @@ extension Tensor: PointwiseMultiplicative where Scalar: Numeric {
 extension Tensor: Differentiable & EuclideanDifferentiable where Scalar: TensorFlowFloatingPoint {
   public typealias TangentVector = Tensor
 }
+
+//===------------------------------------------------------------------------------------------===//
+// Multi-device support
+//===------------------------------------------------------------------------------------------===//
+
+#if USING_X10_BACKEND
+extension Tensor {
+  /// The device on which `self` is allocated.
+  public var device: Device {
+    @_semantics("autodiff.nonvarying")
+    get {
+      return xlaTensor.device
+    }
+  }
+}
+#endif

@@ -185,8 +185,7 @@ extension Tensor {
   @inlinable
   @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
   public func reshaped(to newShape: TensorShape) -> Tensor {
-    // TODO(TF-433): Remove workaround for differentiating `map`.
-    reshaped(toShape: Tensor<Int32>({ newShape.dimensions.map(Int32.init) }()))
+    _Raw.reshape(self, shape: newShape.dimensions.map(Int64.init))
   }
 
   /// Reshape to the specified `Tensor` representing a shape.
@@ -217,9 +216,13 @@ extension Tensor {
   @inlinable
   @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
   public func expandingShape(at axes: [Int]) -> Tensor {
-    var result = self
-    for i in axes { result = _Raw.expandDims(result, dim: Tensor<Int32>(Int32(i))) }
-    return result
+    var resultShape = self.shape.dimensions.map { Int64($0) }
+    for i in axes {
+      var dim = i
+      if dim < 0 { dim += resultShape.count + 1 }
+      resultShape.insert(1, at: dim)
+    }
+    return _Raw.reshape(self, shape: resultShape)
   }
 
   /// Returns a rank-lifted `Tensor` with a leading dimension of 1.
@@ -300,6 +303,15 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
+  @derivative(of: reshaped)
+  func _vjpReshaped(toShape newShape: TensorShape) -> (
+    value: Tensor, pullback: (Tensor) -> Tensor
+  ) {
+    let value = reshaped(to: newShape)
+    return (value, { [shape = shape] v in v.reshaped(to: shape) })
+  }
+
+  @inlinable
   @derivative(of: expandingShape)
   func _vjpExpandingShape(at axes: [Int]) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
     let value = self.expandingShape(at: axes)
@@ -376,6 +388,37 @@ extension Tensor {
       - Tensor<Int32>(
         rangeFrom: 0, to: Int32(rank), stride: 1)
     return transposed(permutation: Tensor<Int32>(defaultPermutations))
+  }
+
+  /// Returns a tensor with specified dimensions reversed.
+  /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
+  /// - Precondition: There must be no duplication in `axes`.
+  @inlinable
+  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  public func reversed(inAxes axes: Tensor<Int32>) -> Tensor {
+    precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
+    return _Raw.reverseV2(self, axis: axes)
+  }
+
+  /// Returns a tensor with specified dimensions reversed.
+  /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
+  /// - Precondition: There must be no duplication in `axes`.
+  @inlinable
+  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  public func reversed(inAxes axes: [Int]) -> Tensor {
+      precondition(axes.count == Set(axes.map { $0 < 0 ? $0 + rank : $0 }).count,
+                   "There must be no duplication in axes.")
+      let axes = axes.map(Int32.init)
+      return reversed(inAxes: Tensor<Int32>(axes))
+  }
+
+  /// Returns a tensor with specified dimensions reversed.
+  /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
+  /// - Precondition: There must be no duplication in `axes`.
+  @inlinable
+  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  public func reversed(inAxes axes: Int...) -> Tensor {
+      reversed(inAxes: axes)
   }
 
   /// Returns a concatenated tensor along the specified axis.
@@ -638,6 +681,24 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   @derivative(of: transposed)
   func _vjpTransposed() -> (value: Tensor, pullback: (Tensor) -> Tensor) {
     return (transposed(), { $0.transposed() })
+  }
+
+  @inlinable
+  @derivative(of: reversed)
+  func _vjpReversed(inAxes axes: Tensor<Int32>) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
+    return (reversed(inAxes: axes), { $0.reversed(inAxes: axes) })
+  }
+
+  @inlinable
+  @derivative(of: reversed)
+  func _vjpReversed(inAxes axes: [Int]) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
+    return (reversed(inAxes: axes), { $0.reversed(inAxes: axes) })
+  }
+
+  @inlinable
+  @derivative(of: reversed)
+  func _vjpReversed(inAxes axes: Int...) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
+    return (reversed(inAxes: axes), { $0.reversed(inAxes: axes) })
   }
 
   @inlinable
@@ -1273,8 +1334,12 @@ extension Tensor {
 
   /// Returns `true` if the given scalar tensor is in the range `[-rank, rank)`.
   @usableFromInline
-  internal func isAxisInRange(_ axis: Tensor<Int32>) -> Bool {
-    precondition(axis.rank == 0, "Axis must have rank 0.")
+  internal func isAxisInRange(
+    _ axis: Tensor<Int32>,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) -> Bool {
+    precondition(axis.rank == 0, "Axis must have rank 0.", file: file, line: line)
     return areAxesInRange(axis.scalars)
   }
 
@@ -1286,8 +1351,16 @@ extension Tensor {
 
   /// Returns `true` if all scalars of the given 1-D tensor are in the range `[-rank, rank)`.
   @usableFromInline
-  internal func areAxesInRange(_ axes: Tensor<Int32>) -> Bool {
-    precondition(axes.rank == 1, "Axes must have rank 1.")
+  internal func areAxesInRange(
+    _ axes: Tensor<Int32>,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) -> Bool {
+    precondition(
+        axes.rank < 2,
+        "Axes must have rank 0 or rank 1; axes has rank \(axes.rank) with values \(axes.scalars).",
+        file: file,
+        line: line)
     return areAxesInRange(axes.scalars)
   }
 }

@@ -146,10 +146,10 @@ func _vjpConv2D<Scalar: TensorFlowFloatingPoint>(
     { v in
       (
         conv2DBackpropInput(
-          v, shape: x.shapeTensor, filter: filter,
+          v, shape: x.shape.dimensions.map { Int64($0) }, filter: filter,
           strides: strides, padding: padding, dilations: dilations),
         conv2DBackpropFilter(
-          v, input: x, filterSizes: filter.shapeTensor,
+          v, input: x, filterSizes: filter.shape.dimensions.map { Int64($0) },
           strides: strides, padding: padding, dilations: dilations)
       )
     }
@@ -170,7 +170,7 @@ func _vjpConv2D<Scalar: TensorFlowFloatingPoint>(
 @differentiable(wrt: (input,filter))
 public func transposedConv2D<Scalar: TensorFlowFloatingPoint>(
   _ input: Tensor<Scalar>,
-  shape: Tensor<Int32>,
+  shape: [Int64],
   filter: Tensor<Scalar>,
   strides: (Int, Int, Int, Int) = (1, 1, 1, 1),
   padding: Padding = .valid,
@@ -188,7 +188,7 @@ public func transposedConv2D<Scalar: TensorFlowFloatingPoint>(
 @usableFromInline
 func conv2DBackpropInput<Scalar: TensorFlowFloatingPoint>(
   _ x: Tensor<Scalar>,
-  shape: Tensor<Int32>,
+  shape: [Int64],
   filter: Tensor<Scalar>,
   strides: (Int, Int, Int, Int) = (1, 1, 1, 1),
   padding: Padding = .valid,
@@ -208,7 +208,7 @@ func conv2DBackpropInput<Scalar: TensorFlowFloatingPoint>(
 @usableFromInline
 func _vjpConv2DBackpropInput<Scalar: TensorFlowFloatingPoint>(
   _ x: Tensor<Scalar>,
-  _ shape: Tensor<Int32>,
+  _ shape: [Int64],
   _ filter: Tensor<Scalar>,
   _ strides: (Int, Int, Int, Int),
   _ padding: Padding,
@@ -223,7 +223,7 @@ func _vjpConv2DBackpropInput<Scalar: TensorFlowFloatingPoint>(
       (
         conv2D(v, filter: filter, strides: strides, padding: padding, dilations: dilations),
         conv2DBackpropFilter(
-          x, input: v, filterSizes: filter.shapeTensor, strides: strides,
+          x, input: v, filterSizes: filter.shape.dimensions.map { Int64($0) }, strides: strides,
           padding: padding, dilations: dilations)
       )
     }
@@ -236,7 +236,7 @@ func _vjpConv2DBackpropInput<Scalar: TensorFlowFloatingPoint>(
 func conv2DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
   _ x: Tensor<Scalar>,
   input: Tensor<Scalar>,
-  filterSizes: Tensor<Int32>,
+  filterSizes: [Int64],
   strides: (Int, Int, Int, Int) = (1, 1, 1, 1),
   padding: Padding = .valid,
   dilations: (Int, Int, Int, Int) = (1, 1, 1, 1)
@@ -256,7 +256,7 @@ func conv2DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
 func _vjpConv2DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
   _ x: Tensor<Scalar>,
   _ input: Tensor<Scalar>,
-  _ filterSizes: Tensor<Int32>,
+  _ filterSizes: [Int64],
   _ strides: (Int, Int, Int, Int),
   _ padding: Padding,
   _ dilations: (Int, Int, Int, Int)
@@ -270,7 +270,7 @@ func _vjpConv2DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
       (
         conv2D(input, filter: v, strides: strides, padding: padding, dilations: dilations),
         conv2DBackpropInput(
-          x, shape: x.shapeTensor, filter: v, strides: strides,
+          x, shape: x.shape.dimensions.map { Int64($0) }, filter: v, strides: strides,
           padding: padding, dilations: dilations)
       )
     }
@@ -601,14 +601,14 @@ public func maxPool2D<Scalar: TensorFlowFloatingPoint>(
   precondition(input.rank == 4, "The rank of the input must be 4.")
   return _Raw.maxPoolV2(
     input,
-    ksize: Tensor<Int32>([
-      Int32(filterSize.0), Int32(filterSize.1),
-      Int32(filterSize.2), Int32(filterSize.3),
-    ]),
-    strides: Tensor<Int32>([
-      Int32(strides.0), Int32(strides.1),
-      Int32(strides.2), Int32(strides.3),
-    ]),
+    ksize: [
+      Int64(filterSize.0), Int64(filterSize.1),
+      Int64(filterSize.2), Int64(filterSize.3),
+    ],
+    strides: [
+      Int64(strides.0), Int64(strides.1),
+      Int64(strides.2), Int64(strides.3),
+    ],
     padding: padding.raw)
 }
 
@@ -630,14 +630,14 @@ func _vjpMaxPool2D<Scalar: TensorFlowFloatingPoint>(
         origInput: x,
         origOutput: value,
         grad: v,
-        ksize: Tensor<Int32>([
-          Int32(filterSize.0), Int32(filterSize.1),
-          Int32(filterSize.2), Int32(filterSize.3),
-        ]),
-        strides: Tensor<Int32>([
-          Int32(strides.0), Int32(strides.1),
-          Int32(strides.2), Int32(strides.3),
-        ]),
+        ksize: [
+          Int64(filterSize.0), Int64(filterSize.1),
+          Int64(filterSize.2), Int64(filterSize.3),
+        ],
+        strides: [
+          Int64(strides.0), Int64(strides.1),
+          Int64(strides.2), Int64(strides.3),
+        ],
         padding: padding.raw)
     }
   )

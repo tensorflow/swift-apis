@@ -38,6 +38,12 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
   /// The element-wise activation function type.
   public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
 
+  /// Creates an instance from the given weight, optional bias, and activation function.
+  ///
+  /// - Note: currently, `weight` is the only differentiability parameter. `bias` can be made a
+  ///   differentiability parameter after `Optional` conditionally conforms to `Differentiable`:
+  ///   TF-499.
+  @differentiable(wrt: weight)
   public init(
     weight: Tensor<Scalar>,
     bias: Tensor<Scalar>? = nil,
@@ -51,6 +57,18 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
     self.activation = activation
     self.batched = weight.rank == 3
     useBias = (bias != nil)
+  }
+
+  // TODO(TF-433): Remove custom derivative after `try_apply` differentiation is supported.
+  @derivative(of: init)
+  @usableFromInline
+  static func vjpInit(
+    weight: Tensor<Scalar>,
+    bias: Tensor<Scalar>? = nil,
+    activation: @escaping Activation
+  ) -> (value: Self, pullback: (TangentVector) -> Tensor<Scalar>) {
+    let value = Dense(weight: weight, bias: bias, activation: activation)
+    return (value, { v in v.weight })
   }
 
   /// Returns the output obtained from applying the layer to the given input.

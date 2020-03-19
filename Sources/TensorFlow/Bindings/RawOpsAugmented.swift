@@ -68,4 +68,68 @@ extension _Raw {
   ) -> Tensor<T> {
     broadcastTo(input, shape: Tensor<Int32>(shape.map { Int32($0) }))
   }
+
+  public static func conv2DBackpropFilter<T: FloatingPoint & TensorFlowScalar>(
+    _ input: Tensor<T>,
+    filterSizes: [Int64],
+    outBackprop: Tensor<T>,
+    strides: [Int32],
+    useCudnnOnGpu: Bool = true,
+    padding: Padding2,
+    explicitPaddings: [Int32],
+    dataFormat: DataFormat = .nhwc,
+    dilations: [Int32] = [1, 1, 1, 1]
+  ) -> Tensor<T> {
+    conv2DBackpropFilter(
+      input, filterSizes: Tensor<Int32>(filterSizes.map { Int32($0) }),
+      outBackprop: outBackprop, strides: strides, useCudnnOnGpu: useCudnnOnGpu,
+      padding: padding, explicitPaddings: explicitPaddings, dataFormat: dataFormat,
+      dilations: dilations)
+  }
+
+  public static func conv2DBackpropInput<T: FloatingPoint & TensorFlowScalar>(
+    inputSizes: [Int64],
+    filter: Tensor<T>,
+    outBackprop: Tensor<T>,
+    strides: [Int32],
+    useCudnnOnGpu: Bool = true,
+    padding: Padding2,
+    explicitPaddings: [Int32],
+    dataFormat: DataFormat = .nhwc,
+    dilations: [Int32] = [1, 1, 1, 1]
+  ) -> Tensor<T> {
+    conv2DBackpropInput(
+      inputSizes: Tensor<Int32>(inputSizes.map { Int32($0) }), filter: filter,
+      outBackprop: outBackprop,
+      strides: strides, useCudnnOnGpu: useCudnnOnGpu, padding: padding,
+      explicitPaddings: explicitPaddings, dataFormat: dataFormat, dilations: dilations)
+  }
+
+  public static func maxPoolV2<T: TensorFlowNumeric>(
+    _ input: Tensor<T>,
+    ksize: [Int64],
+    strides: [Int64],
+    padding: Padding,
+    dataFormat: DataFormat5 = .nhwc
+  ) -> Tensor<T> {
+    maxPoolV2(
+      input, ksize: Tensor<Int32>(ksize.map { Int32($0) }),
+      strides: Tensor<Int32>(strides.map { Int32($0) }), padding: padding, dataFormat: dataFormat)
+  }
+
+  public static func maxPoolGradV2<T: TensorFlowNumeric>(
+    origInput: Tensor<T>,
+    origOutput: Tensor<T>,
+    grad: Tensor<T>,
+    ksize: [Int64],
+    strides: [Int64],
+    padding: Padding,
+    dataFormat: DataFormat = .nhwc
+  ) -> Tensor<T> {
+    maxPoolGradV2(
+      origInput: origInput, origOutput: origOutput, grad: grad,
+      ksize: Tensor<Int32>(ksize.map { Int32($0) }),
+      strides: Tensor<Int32>(strides.map { Int32($0) }),
+      padding: padding, dataFormat: dataFormat)
+  }
 }
