@@ -32,7 +32,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
       """
         This API will be removed after Swift for TensorFlow 0.6.
         For dropout, use the `Dropout` layer.
-        """
+      """
   )
   @differentiable(wrt: self where Scalar: Differentiable)
   public func droppingOut(probability: Double) -> Tensor {
@@ -47,7 +47,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
 @frozen
 public struct Dropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   @noDerivative public let probability: Double
-
+  
   /// Creates a dropout layer.
   ///
   /// - Parameter probability: The probability of a node dropping out.
@@ -58,7 +58,7 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
       "Probability must be a value between 0 and 1 (inclusive) but is \(probability)")
     self.probability = probability
   }
-
+  
   /// Returns the output obtained from applying the layer to the given input.
   ///
   /// - Parameter input: The input to the layer.
@@ -68,6 +68,34 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     switch Context.local.learningPhase {
     case .training:
       return input._droppingOut(probability: probability)
+    case .inference:
+      return input
+    }
+  }
+}
+
+public struct GaussianDropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  @noDerivative
+  public let probability: Double
+  
+  @noDerivative
+  public let standardDeviation: Tensor<Scalar>
+  
+  public init(probability: Double, standardDeviation: Scalar) {
+    precondition(
+      0...1 ~= probability,
+      "Probability must be a value between 0 and 1 (inclusive) but is \(probability)")
+    self.probability = probability
+    self.standardDeviation = Tensor<Scalar>(standardDeviation)
+  }
+  
+  @differentiable
+  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+    switch Context.local.learningPhase {
+    case .training:
+      let noise = Tensor<Scalar>(randomNormal: input.shape, mean: Tensor<Scalar>(0),
+                                 standardDeviation: self.standardDeviation)
+      return input + noise
     case .inference:
       return input
     }
