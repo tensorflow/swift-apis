@@ -493,7 +493,7 @@ extension Tensor {
     atIndices indices: Tensor<Index>,
     alongAxis axis: Int = 0
   ) -> Tensor {
-    precondition(isInRange(axis: axis), "Axis must be in the range `[-rank, rank)`.")
+    ensureValid(axis: axis)
     return _Raw.gatherV2(params: self, indices: indices, axis: Tensor<Int32>(Int32(axis)))
   }
 
@@ -1325,76 +1325,62 @@ extension Tensor.IndexPath {
 //===------------------------------------------------------------------------------------------===//
 
 extension Tensor {
-  /// Returns `true` if `axis` is in `-rank..<rank`, indicating it refers to an axis of `self`.
+  /// Returns `true` iff `axis` can refer to an axis of `self`.
   @usableFromInline
-  internal func isInRange<T: BinaryInteger>(axis: T) -> Bool {
+  internal func isValid<T: BinaryInteger>(axis: T) -> Bool {
     let axis = Int(axis)
     return axis >= -rank && axis < rank
   }
 
-  /// Returns `true` iff all elements in `axis` are in `-rank..<rank`, indicating they refer to an
-  /// axis of `self`.
+  /// Returns `true` iff all scalars can refer to an axis of `self`.
   @usableFromInline
-  internal func isInRange(
-    axis: Tensor<Int32>,
-    file: StaticString = #file,
-    line: UInt = #line
-  ) -> Bool {
-    precondition(axis.rank == 0, "Axis must have rank 0.", file: file, line: line)
-    return isInRange(axes: axis.scalars)
+  internal func areValid<T: BinaryInteger>(axes: [T]) -> Bool {
+    return axes.allSatisfy { isValid(axis: $0) }
   }
 
-  /// Returns `true` iff all elements in `axis` are in `-rank..<rank`, indicating they refer to an
-  /// axis of `self`.
+  /// Returns `true` iff all scalars can refer to an axis of `self`.
   @usableFromInline
-  internal func isInRange<T: BinaryInteger>(axes: [T]) -> Bool {
-    return !axes.contains { !isInRange(axis: $0) }
-  }
-
-  /// Returns `true` iff all scalars of the 1-D tensor `axis` are in `-rank..<rank`, indicating they
-  /// refer to an axis of `self`.
-  @usableFromInline
-  internal func isInRange(
+  internal func areValid(
     axes: Tensor<Int32>,
     file: StaticString = #file,
     line: UInt = #line
   ) -> Bool {
     precondition(
-        axes.rank < 2,
-        "Axes must have rank 0 or rank 1; axes has rank \(axes.rank) with values \(axes.scalars).",
-        file: file,
-        line: line)
-    return isInRange(axes: axes.scalars)
+      axes.rank < 2,
+      "Axes must have rank 0 or rank 1; axes has rank \(axes.rank) with values \(axes.scalars).",
+      file: file,
+      line: line)
+    return areValid(axes: axes.scalars)
   }
 
   /// Ensures the provided axes refer to axis of `self` (are in range `-rank..<rank`).
   @usableFromInline
   func ensureValid(
-      axes: Tensor<Int32>,
-      function: StaticString = #function,
-      file: StaticString = #file,
-      line: UInt = #line
+    axes: Tensor<Int32>,
+    function: StaticString = #function,
+    file: StaticString = #file,
+    line: UInt = #line
   ) {
-      precondition(
-          isInRange(axes: axes, file: file, line: line),
-          "All axes must be in `-rank..<rank` when calling \(function) (rank: \(rank), axes: \(axes))",
-          file: file,
-          line: line)
+    precondition(
+      areValid(axes: axes, file: file, line: line),
+      "All axes must be in `-rank..<rank` when calling \(function) (rank: \(rank), axes: \(axes))",
+      file: file,
+      line: line)
   }
 
   /// Ensures the provided axes refer to axis of `self` (are in range `-rank..<rank`).
   @usableFromInline
   func ensureValid(
-      axes: [Int],
-      function: StaticString = #function,
-      file: StaticString = #file,
-      line: UInt = #line
+    axes: [Int],
+    function: StaticString = #function,
+    file: StaticString = #file,
+    line: UInt = #line
   ) {
-      precondition(
-          isInRange(axes: axes),
-          "All axes must be in `-rank..<rank` when calling \(function) (rank: \(rank), axes: \(axes))",
-          file: file,
-          line: line)
+    precondition(
+      areValid(axes: axes),
+      "All axes must be in `-rank..<rank` when calling \(function) (rank: \(rank), axes: \(axes))",
+      file: file,
+      line: line)
   }
 
   @usableFromInline
@@ -1405,7 +1391,7 @@ extension Tensor {
     line: UInt = #line
   ) {
     precondition(
-      isInRange(axis: axis),
+      isValid(axis: axis),
       "Axis must be in `-rank..<rank` when calling \(function) (rank: \(rank), axis: \(axis))",
       file: file,
       line: line)
