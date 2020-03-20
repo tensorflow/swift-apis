@@ -19,18 +19,42 @@ class OptimizerTests: XCTestCase {
   /// A dense layer for testing optimizer convergence.
   // TODO: Consider replacing users with `Dense`.
   struct Model: Layer {
-    var dense1 = Dense<Float>(weight: [[0.8]], bias: [0.8], activation: identity)
+    var dense = Dense<Float>(weight: [[0.8]], bias: [0.8], activation: identity)
 
     @differentiable
     func callAsFunction(_ input: Tensor<Float>) -> Tensor<Float> {
-      dense1(input)
+      dense(input)
     }
+  }
+
+  /// Check expected weight and bias after updating `model` with `optimizer` `stepCount` times.
+  ///
+  /// - Note: optimizer correctness reference implementations exist at
+  ///   `Utilities/ReferenceImplementations/optimizers.py`.
+  func testCorrectness<Opt: Optimizer>(
+    optimizer: Opt,
+    model: Model,
+    expectedWeight: Tensor<Float>,
+    expectedBias: Tensor<Float>,
+    stepCount: Int = 1000,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) where Opt.Model == Model {
+    var optimizer = optimizer
+    var model = model
+    let grad = Model.TangentVector(dense: .init(weight: [[0.1]], bias: [0.2]))
+    for _ in 0..<stepCount {
+      optimizer.update(&model, along: grad)
+    }
+    XCTAssertEqual(model.dense.weight, expectedWeight, file: file, line: line)
+    XCTAssertEqual(model.dense.bias, expectedBias, file: file, line: line)
   }
 
   /// Check that `model` converges after updating it with `optimizer` `stepCount` times.
   func testConvergence<Opt: Optimizer>(
     optimizer: Opt,
     model: Model,
+    stepCount: Int = 1000,
     file: StaticString = #file,
     line: UInt = #line
   ) where Opt.Model == Model {
@@ -40,7 +64,7 @@ class OptimizerTests: XCTestCase {
       .reshaped(to: [-1, 1])
     let y: Tensor<Float> = x + 1
 
-    for _ in 0..<1000 {
+    for _ in 0..<stepCount {
       let grad = gradient(at: model) { model -> Tensor<Float> in
         let yy = model(x)
         return meanSquaredError(predicted: yy, expected: y)
@@ -102,7 +126,7 @@ class OptimizerTests: XCTestCase {
   func testRAdam() {
     let model = Model()
     let optimizer = RAdam(for: model)
-    testConvergence(optimizer: optimizer, model: model)
+    testConvergence(optimizer: optimizer, model: model, stepCount: 1400)
   }
 
   /// A `Tensor<Float>` wrapper for testing optimizer numerical correctness.
@@ -207,10 +231,9 @@ class OptimizerTests: XCTestCase {
     let optimizer = RAdam(for: values, learningRate: 1e-3, epsilon: 1e-7)
     // FIXME(TF-759): Investigate large differences with Python reference implementation results:
     // `[ 0.46914074, -0.44463935, -0.44513944]`.
-    // Pending fix: https://github.com/tensorflow/swift-apis/pull/700
     testNumericalCorrectness(
       optimizer: optimizer, startingValues: values,
-      expectedValues: [ 443.81192, -443.80478, -443.85016])
+      expectedValues: [ 0.44664007, -0.44463903, -0.45914108])
   }
 
   static var allTests = [
