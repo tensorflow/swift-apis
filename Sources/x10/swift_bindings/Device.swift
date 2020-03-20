@@ -52,9 +52,26 @@ public struct Device {
   /// The device ordinal value.
   public let ordinal: Int
 
-  public init(kind: Kind, ordinal: Int) {
+  /// The backend used to dispatch the tensor operations.
+  public let backend: Backend
+
+  public init(kind: Kind, ordinal: Int, backend: Backend = .XLA) {
     self.kind = kind
     self.ordinal = ordinal
+    self.backend = backend
+  }
+
+  /// Backend used to dispatch the tensor operations.
+  public enum Backend {
+    case TF_EAGER
+    case XLA
+
+    fileprivate var shortName: String {
+      switch self {
+      case .TF_EAGER: return "TF_EAGER"
+      case .XLA: return "XLA"
+      }
+    }
   }
 
   /// A device kind.
@@ -99,6 +116,12 @@ public struct Device {
   public static var `default`: Device {
     let cdevice = DefaultDevice()
     return cdevice.device
+  }
+
+  /// Run using the current TF Eager device.
+  public static var defaultTFEager: Device {
+    // TODO: Pull this from withDevice() {} mechanism?
+    return Device(kind: .CPU, ordinal: 0, backend: .TF_EAGER)
   }
 
   /// An array of all devices.
@@ -161,7 +184,9 @@ extension Device: Equatable {
 }
 
 extension Device: CustomStringConvertible {
-  public var description: String { "Device(kind: .\(kind.shortName), ordinal: \(ordinal))" }
+  public var description: String {
+    "Device(kind: .\(kind.shortName), ordinal: \(ordinal), backend: .\(backend.shortName))"
+  }
 }
 
 extension CDevice {
