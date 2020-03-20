@@ -29,6 +29,9 @@ class NNTests: XCTestCase {
       ]
     ])
     XCTAssertEqual(depthToSpace(input, blockSize: 2), expected)
+    
+    let emptyInput = Tensor<Float>(zeros: [0, 1, 2, 8])
+    XCTAssertEqual(depthToSpace(emptyInput, blockSize: 2), Tensor(zeros: [0, 2, 4, 2]))
   }
 
   func testDepthToSpaceGrad() {
@@ -45,6 +48,9 @@ class NNTests: XCTestCase {
     ])
     let depthToSpacePullback = pullback(at: input) { depthToSpace($0, blockSize: 2) }
     XCTAssertEqual(depthToSpacePullback(grad), input)
+    
+    let emptyGrad = Tensor<Float>(zeros: [0, 2, 4, 2])
+    XCTAssertEqual(depthToSpacePullback(emptyGrad), Tensor(zeros: [0, 1, 2, 8]))
   }
 
   func testSpaceToDepth() {
@@ -60,6 +66,9 @@ class NNTests: XCTestCase {
       ]
     ])
     XCTAssertEqual(spaceToDepth(input, blockSize: 2), expected)
+    
+    let emptyInput = Tensor<Float>(zeros: [0, 2, 4, 2])
+    XCTAssertEqual(spaceToDepth(emptyInput, blockSize: 2), Tensor(zeros: [0, 1, 2, 8]))
   }
 
   func testSpaceToDepthGrad() {
@@ -76,6 +85,9 @@ class NNTests: XCTestCase {
     ])
     let spaceToDepthPullback = pullback(at: input) { spaceToDepth($0, blockSize: 2) }
     XCTAssertEqual(spaceToDepthPullback(grad), input)
+    
+    let emptyGrad = Tensor<Float>(zeros: [0, 1, 2, 8])
+    XCTAssertEqual(spaceToDepthPullback(emptyGrad), Tensor(zeros: [0, 2, 4, 2]))
   }
 
   static let allTests = [
