@@ -1325,74 +1325,79 @@ extension Tensor.IndexPath {
 //===------------------------------------------------------------------------------------------===//
 
 extension Tensor {
-  /// Returns `true` iff `axis` can refer to an axis of `self`.
+  /// Returns `true` iff `k` denotes an axis of `self`.
   @usableFromInline
-  internal func isValid<T: BinaryInteger>(axis: T) -> Bool {
-    let axis = Int(axis)
+  internal func isValid<T: BinaryInteger>(axis k: T) -> Bool {
+    let axis = Int(k)
     return axis >= -rank && axis < rank
   }
 
-  /// Returns `true` iff all scalars can refer to an axis of `self`.
+  /// Returns `true` iff each element of `dims` denotes an axis of `self`.
   @usableFromInline
-  internal func areValid<T: BinaryInteger>(axes: [T]) -> Bool {
-    return axes.allSatisfy { isValid(axis: $0) }
+  internal func areValid<T: BinaryInteger>(axes dims: [T]) -> Bool {
+    return dims.allSatisfy { isValid(axis: $0) }
   }
 
-  /// Returns `true` iff all scalars can refer to an axis of `self`.
+  /// Returns `true` iff each element of `dims` denotes an axis of `self`.
+  ///
+  /// - Precondition: `dims` is rank 0 or rank 1.
   @usableFromInline
   internal func areValid(
-    axes: Tensor<Int32>,
+    axes dims: Tensor<Int32>,
     file: StaticString = #file,
     line: UInt = #line
   ) -> Bool {
     precondition(
-      axes.rank < 2,
-      "Axes must have rank 0 or rank 1; axes has rank \(axes.rank) with values \(axes.scalars).",
+      dims.rank < 2,
+      "Axes must have rank 0 or rank 1; axes has rank \(dims.rank) with values \(dims.scalars).",
       file: file,
       line: line)
-    return areValid(axes: axes.scalars)
+    return areValid(axes: dims.scalars)
   }
 
-  /// Ensures the provided axes refer to axis of `self` (are in range `-rank..<rank`).
+  /// Checks that each element of `dims` denotes an axis of `self`, and stops the program with a
+  /// diagnostic otherwise.
   @usableFromInline
   func ensureValid(
-    axes: Tensor<Int32>,
+    axes dims: Tensor<Int32>,
     function: StaticString = #function,
     file: StaticString = #file,
     line: UInt = #line
   ) {
     precondition(
-      areValid(axes: axes, file: file, line: line),
-      "All axes must be in `-rank..<rank` when calling \(function) (rank: \(rank), axes: \(axes))",
+      areValid(axes: dims, file: file, line: line),
+      "All axes must be in `-rank..<rank` when calling \(function) (rank: \(rank), axes: \(dims))",
       file: file,
       line: line)
   }
 
-  /// Ensures the provided axes refer to axis of `self` (are in range `-rank..<rank`).
+  /// Checks that each element of `dims` denotes an axis of `self`, and stops the program with a
+  /// diagnostic otherwise.
   @usableFromInline
   func ensureValid(
-    axes: [Int],
+    axes dims: [Int],
     function: StaticString = #function,
     file: StaticString = #file,
     line: UInt = #line
   ) {
     precondition(
-      areValid(axes: axes),
-      "All axes must be in `-rank..<rank` when calling \(function) (rank: \(rank), axes: \(axes))",
+      areValid(axes: dims),
+      "All axes must be in `-rank..<rank` when calling \(function) (rank: \(rank), axes: \(dims))",
       file: file,
       line: line)
   }
 
+  /// Checks that `k` denotes an axis of `self`, and stops the program with a diagnostic otherwise.
   @usableFromInline
   func ensureValid(
-    axis: Int,
+    axis k: Int,
     function: StaticString = #function,
     file: StaticString = #file,
     line: UInt = #line
   ) {
     precondition(
-      isValid(axis: axis),
-      "Axis must be in `-rank..<rank` when calling \(function) (rank: \(rank), axis: \(axis))",
+      isValid(axis: k),
+      "Axis must be in `-rank..<rank` when calling \(function) (rank: \(rank), axis: \(k))",
       file: file,
       line: line)
   }
