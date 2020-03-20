@@ -22,7 +22,7 @@
 
 /// Keeps around the current device to place AD zero tensors until AD can switch over to using
 /// instance zeros.
-class _ThreadLocalState {
+class _DeviceThreadLocalState {
   var deviceStack: [Device] = []
 
   var currentDevice: Device { return deviceStack.last ?? .default }
@@ -42,11 +42,11 @@ class _ThreadLocalState {
   }()
 
   @usableFromInline
-  static var local: _ThreadLocalState {
+  static var local: _DeviceThreadLocalState {
     if let state = pthread_getspecific(key) {
       return Unmanaged.fromOpaque(state).takeUnretainedValue()
     }
-    let state = _ThreadLocalState()
+    let state = _DeviceThreadLocalState()
     pthread_setspecific(key, Unmanaged.passRetained(state).toOpaque())
     return state
   }
@@ -59,11 +59,11 @@ func pullbackOfOneLikeY<T: TensorFlowFloatingPoint, R>(
     pullback: (Tensor<T>) -> R
 ) -> R {
     let adDevice = y.device
-    _ThreadLocalState.local.deviceStack.append(adDevice)
-    let savedPrecision = _ThreadLocalState.local.isReducedPrecision
-    _ThreadLocalState.local.isReducedPrecision = y.isReducedPrecision
+    _DeviceThreadLocalState.local.deviceStack.append(adDevice)
+    let savedPrecision = _DeviceThreadLocalState.local.isReducedPrecision
+    _DeviceThreadLocalState.local.isReducedPrecision = y.isReducedPrecision
     let result = pullback(Tensor<T>(1, deviceAndPrecisionLike: y))
-    _ThreadLocalState.local.isReducedPrecision = savedPrecision
-    precondition(_ThreadLocalState.local.deviceStack.popLast() != nil)
+    _DeviceThreadLocalState.local.isReducedPrecision = savedPrecision
+    precondition(_DeviceThreadLocalState.local.deviceStack.popLast() != nil)
     return result
 }

@@ -76,6 +76,13 @@ extension Int8: XLAScalarType {
     return XLATensorScalarType_Int8
   }
 }
+extension UInt8: XLAScalarType {
+  public var xlaScalar: XLAScalar { XLAScalar(Int64(self)) }
+
+  static public var xlaTensorScalarType: XLATensorScalarType {
+    return XLATensorScalarType_UInt8
+  }
+}
 
 extension Bool: XLAScalarType {
   public var xlaScalar: XLAScalar { XLAScalar(Int64(self ? 1 : 0)) }

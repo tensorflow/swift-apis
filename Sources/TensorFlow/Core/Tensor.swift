@@ -672,8 +672,8 @@ extension Tensor: AdditiveArithmetic where Scalar: Numeric {
   /// The scalar zero tensor.
   #if USING_X10_BACKEND
     public static var zero: Tensor {
-      var zero = Tensor(0, on: _ThreadLocalState.local.currentDevice)
-      if _ThreadLocalState.local.isReducedPrecision {
+      var zero = Tensor(0, on: _DeviceThreadLocalState.local.currentDevice)
+      if _DeviceThreadLocalState.local.isReducedPrecision {
         zero = zero.toReducedPrecision
       }
       return zero
