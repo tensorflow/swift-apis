@@ -20,10 +20,6 @@ target_link_libraries(x10_device PRIVATE
   x10_c_wrappers)
 
 add_library(x10_tensor SHARED
-  ../TensorFlow/Core/BroadcastingPullback.swift
-
-  ../TensorFlow/Operators/Math.swift
-
   swift_bindings/apis/CrossReplicaSum.swift
   swift_bindings/apis/DeviceScope.swift
   swift_bindings/apis/RawOpsManual.swift
@@ -33,6 +29,7 @@ add_library(x10_tensor SHARED
   swift_bindings/XLAScalarType.swift
   swift_bindings/XLATensor.swift)
 target_sources(x10_tensor PRIVATE
+  ../TensorFlow/Core/BroadcastingPullback.swift
   ../TensorFlow/Core/CopyableToDevice.swift
   ../TensorFlow/Core/DifferentialOperators.swift
   ../TensorFlow/Core/PythonConversion.swift
@@ -60,6 +57,7 @@ target_sources(x10_tensor PRIVATE
   ../TensorFlow/Operators/Basic.swift
   ../TensorFlow/Operators/Comparison.swift
   ../TensorFlow/Operators/LinearAlgebra.swift
+  ../TensorFlow/Operators/Math.swift
   ../TensorFlow/Operators/NN.swift
 
   ../TensorFlow/Optimizers/MomentumBased.swift
