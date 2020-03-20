@@ -16,16 +16,10 @@ import TensorFlow
 import XCTest
 
 class OptimizerTests: XCTestCase {
+  /// A dense layer for testing optimizer convergence.
+  // TODO: Consider replacing users with `Dense`.
   struct Model: Layer {
-    var dense: Dense<Float>
-
-    init() {
-      self.init(weight: [[0.8]], bias: [0.8])
-    }
-
-    init(weight: Tensor<Float>, bias: Tensor<Float>) {
-      dense = Dense<Float>(weight: weight, bias: bias, activation: identity)
-    }
+    var dense = Dense<Float>(weight: [[0.8]], bias: [0.8], activation: identity)
 
     @differentiable
     func callAsFunction(_ input: Tensor<Float>) -> Tensor<Float> {
@@ -131,186 +125,116 @@ class OptimizerTests: XCTestCase {
 
   func testRAdam() {
     let model = Model()
-
-    // Test convergence.
-    do {
-      let optimizer = RAdam(for: model)
-      testConvergence(optimizer: optimizer, model: model, stepCount: 1400)
-    }
-
-    // Test correctness.
-    do {
-      let optimizer = RAdam(for: model)
-      testCorrectness(
-        optimizer: optimizer, model: model,
-        expectedWeight: [[0.35536084]], expectedBias: [0.3548611])
-    }
+    let optimizer = RAdam(for: model)
+    testConvergence(optimizer: optimizer, model: model, stepCount: 1400)
   }
 
-  struct ModelNumerical: Differentiable, KeyPathIterable {
-    var tensor = Tensor<Float>([0, 1, 2])
-    static let grad = ModelNumerical.TangentVector(tensor: [0.0, 0.1, 0.2])
+  /// A `Tensor<Float>` wrapper for testing optimizer numerical correctness.
+  /// - Note: `KeyPathIterable` conformance is needed for `SGD`.
+  struct NumericalValues: Differentiable & KeyPathIterable {
+    var value = Tensor<Float>([0, 0, 0])
+  }
+
+  /// Check expected weight and bias after updating `model` with `optimizer` `stepCount` times.
+  ///
+  /// - Note: optimizer correctness reference implementations exist at
+  ///   `Utilities/ReferenceImplementations/optimizers.py`.
+  func testNumericalCorrectness<Opt: Optimizer>(
+    optimizer: Opt,
+    startingValues: NumericalValues,
+    expectedValues: Tensor<Float>,
+    stepCount: Int = 1000,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) where Opt.Model == NumericalValues {
+    var optimizer = optimizer
+    var values = startingValues
+    let gradient = NumericalValues.TangentVector(value: [-0.5, 0.1, 3])
+    for _ in 0..<stepCount {
+      optimizer.update(&values, along: gradient)
+    }
+    XCTAssertEqual(values.value, expectedValues, file: file, line: line)
   }
 
   func testSGDNumerical() {
-    // The expected value was computed using the following Python code:
-    // ```
-    // import tensorflow as tf
-    // var = tf.Variable([0, 1, 2], dtype=tf.float32)
-    // grad = tf.Variable([0, 0.1, 0.2], dtype=tf.dtypes.float32)
-    // optimizer = tf.keras.optimizers.SGD()
-    // optimizer.apply_gradients(list(zip([grad], [var])))
-    // print(var.read_value())
-    // for i in range(10):
-    //     optimizer.apply_gradients(list(zip([grad], [var])))
-    // print(var.read_value())
-    // ```
-    var model = ModelNumerical()
-    let opt = SGD(for: model)
-    opt.update(&model, along: ModelNumerical.grad)
-    XCTAssertEqual(model.tensor, [0, 0.999, 1.998])
-    for _ in 0..<10 {
-      opt.update(&model, along: ModelNumerical.grad)
-    }
-    XCTAssertEqual(model.tensor, [0, 0.98900014, 1.9780003])
+    let values = NumericalValues()
+    let optimizer = SGD(for: values, learningRate: 1e-3)
+    // FIXME(TF-759): Investigate large differences with Python reference implementation results:
+    // `[ 0.49999967, -0.00999999, -0.01999998]`.
+    testNumericalCorrectness(
+      optimizer: optimizer, startingValues: values,
+      expectedValues: [0.49999535, -0.10000112, -3.000017])
   }
 
   func testRMSPropNumerical() {
-    // The expected value was computed using the following Python code:
-    // ```
-    // import tensorflow as tf
-    // var = tf.Variable([0, 1, 2], dtype=tf.float32)
-    // grad = tf.Variable([0, 0.1, 0.2], dtype=tf.dtypes.float32)
-    // optimizer = tf.keras.optimizers.RMSProp()
-    // optimizer.apply_gradients(list(zip([grad], [var])))
-    // print(var.read_value())
-    // for i in range(10):
-    //     optimizer.apply_gradients(list(zip([grad], [var])))
-    // print(var.read_value())
-    // ```
-    var model = ModelNumerical()
-    let opt = RMSProp(for: model, epsilon: 1e-7)
-    opt.update(&model, along: ModelNumerical.grad)
-    XCTAssertEqual(model.tensor, [0, 0.99683774, 1.9968377])
-    for _ in 0..<10 {
-      opt.update(&model, along: ModelNumerical.grad)
-    }
-    XCTAssertEqual(model.tensor, [0, 0.9814604, 1.9814601])
+    let values = NumericalValues()
+    let optimizer = RMSProp(for: values, learningRate: 1e-3, epsilon: 1e-7)
+    // FIXME(TF-759): Investigate small differences with Python reference implementation results:
+    // `[ 1.0091327, -1.0091326, -1.0091326]`.
+    testNumericalCorrectness(
+      optimizer: optimizer, startingValues: values,
+      expectedValues: [1.0091327, -1.0091326, -1.0091327])
   }
 
   func testAdamNumerical() {
-    // The expected value was computed using the following Python code:
-    // ```
-    // import tensorflow as tf
-    // var = tf.Variable([0, 1, 2], dtype=tf.float32)
-    // grad = tf.Variable([0, 0.1, 0.2], dtype=tf.dtypes.float32)
-    // optimizer = tf.keras.optimizers.Adam()
-    // optimizer.apply_gradients(list(zip([grad], [var])))
-    // print(var.read_value())
-    // for i in range(10):
-    //     optimizer.apply_gradients(list(zip([grad], [var])))
-    // print(var.read_value())
-    // ```
-    var model = ModelNumerical()
-    let opt = Adam(for: model, epsilon: 1e-7)
-    opt.update(&model, along: ModelNumerical.grad)
-    XCTAssertEqual(model.tensor, [0, 0.999, 1.9990001])
-    for _ in 0..<10 {
-      opt.update(&model, along: ModelNumerical.grad)
-    }
-    XCTAssertEqual(model.tensor, [0, 0.98900014, 1.9889997])
+    let values = NumericalValues()
+    let optimizer = Adam(for: values, learningRate: 1e-3, epsilon: 1e-7)
+    // FIXME(TF-759): Investigate small differences with Python reference implementation results:
+    // `[ 0.9999907, -0.9999898, -0.9999904]`.
+    testNumericalCorrectness(
+      optimizer: optimizer, startingValues: values,
+      expectedValues: [0.9999906, -0.9999898, -0.99999064])
   }
 
   func testAdaDeltaNumerical() {
-    // The expected value was computed using the following Python code:
-    // ```
-    // import tensorflow as tf
-    // var = tf.Variable([0, 1, 2], dtype=tf.float32)
-    // grad = tf.Variable([0, 0.1, 0.2], dtype=tf.dtypes.float32)
-    // optimizer = tf.keras.optimizers.Adadelta()
-    // optimizer.apply_gradients(list(zip([grad], [var])))
-    // print(var.read_value())
-    // for i in range(10):
-    //     optimizer.apply_gradients(list(zip([grad], [var])))
-    // print(var.read_value())
-    // ```
-    var model = ModelNumerical()
-    let opt = AdaDelta(for: model, learningRate: 1e-3, epsilon: 1e-7)
-    opt.update(&model, along: ModelNumerical.grad)
-    XCTAssertEqual(model.tensor, [0, 0.99999857, 1.9999986])
-    for _ in 0..<10 {
-      opt.update(&model, along: ModelNumerical.grad)
-    }
-    XCTAssertEqual(model.tensor, [0, 0.99998385, 1.9999841])
+    let values = NumericalValues()
+    let optimizer = AdaDelta(for: values, learningRate: 1e-3, epsilon: 1e-7)
+    // FIXME(TF-759): Investigate small differences with Python reference implementation results:
+    // `[ 0.00215183, -0.00215151, -0.00215175]`.
+    testNumericalCorrectness(
+      optimizer: optimizer, startingValues: values,
+      expectedValues: [0.0021518078, -0.002151505, -0.0021518408])
   }
 
   func testAMSGradNumerical() {
-    // The expected value was computed using the following Python code:
-    // ```
-    // import tensorflow as tf
-    // var = tf.Variable([0, 1, 2], dtype=tf.float32)
-    // grad = tf.Variable([0, 0.1, 0.2], dtype=tf.dtypes.float32)
-    // optimizer = tf.keras.optimizers.Adam(amsgrad=True)
-    // optimizer.apply_gradients(list(zip([grad], [var])))
-    // print(var.read_value())
-    // for i in range(10):
-    //     optimizer.apply_gradients(list(zip([grad], [var])))
-    // print(var.read_value())
-    // ```
-    var model = ModelNumerical()
-    let opt = AMSGrad(for: model, epsilon: 1e-7)
-    opt.update(&model, along: ModelNumerical.grad)
-    XCTAssertEqual(model.tensor, [0, 0.999, 1.9990001])
-    for _ in 0..<10 {
-      opt.update(&model, along: ModelNumerical.grad)
-    }
-    XCTAssertEqual(model.tensor, [0, 0.98900014, 1.9889997])
+    let values = NumericalValues()
+    let optimizer = AMSGrad(for: values, learningRate: 1e-3, epsilon: 1e-7)
+    // FIXME(TF-759): Investigate small differences with Python reference implementation results:
+    // `[ 0.9999907, -0.9999898, -0.9999904]`.
+    testNumericalCorrectness(
+      optimizer: optimizer, startingValues: values,
+      expectedValues: [0.9999906, -0.9999898, -0.99999064])
   }
 
   func testAdaMaxNumerical() {
-    // The expected value was computed using the following Python code:
-    // ```
-    // import tensorflow as tf
-    // var = tf.Variable([0, 1, 2], dtype=tf.float32)
-    // grad = tf.Variable([0, 0.1, 0.2], dtype=tf.dtypes.float32)
-    // optimizer = tf.keras.optimizers.Adamax()
-    // optimizer.apply_gradients(list(zip([grad], [var])))
-    // print(var.read_value())
-    // for i in range(10):
-    //     optimizer.apply_gradients(list(zip([grad], [var])))
-    // print(var.read_value())
-    // ```
-    var model = ModelNumerical()
-    let opt = AdaMax(for: model, learningRate: 1e-3, epsilon: 1e-7)
-    opt.update(&model, along: ModelNumerical.grad)
-    XCTAssertEqual(model.tensor, [0, 0.999, 1.999])
-    for _ in 0..<10 {
-      opt.update(&model, along: ModelNumerical.grad)
-    }
-    XCTAssertEqual(model.tensor, [0, 0.98900014, 1.9889995])
+    let values = NumericalValues()
+    let optimizer = AdaMax(for: values, learningRate: 1e-3, epsilon: 1e-7)
+    // FIXME(TF-759): Investigate small differences with Python reference implementation results:
+    // `[ 0.99999076, -0.99999064, -0.99999064]`.
+    testNumericalCorrectness(
+      optimizer: optimizer, startingValues: values,
+      expectedValues: [0.9999907, -0.99999064, -0.9999907])
   }
 
   func testAdaGradNumerical() {
-    // The expected value was computed using the following Python code:
-    // ```
-    // import tensorflow as tf
-    // var = tf.Variable([0, 1, 2], dtype=tf.float32)
-    // grad = tf.Variable([0, 0.1, 0.2], dtype=tf.dtypes.float32)
-    // optimizer = tf.keras.optimizers.Adagrad()
-    // optimizer.apply_gradients(list(zip([grad], [var])))
-    // print(var.read_value())
-    // for i in range(10):
-    //     optimizer.apply_gradients(list(zip([grad], [var])))
-    // print(var.read_value())
-    // ```
-    var model = ModelNumerical()
-    let opt = AdaGrad(for: model, learningRate: 1e-3, epsilon: 1e-7)
-    opt.update(&model, along: ModelNumerical.grad)
-    XCTAssertEqual(model.tensor, [0, 0.99969846, 1.9994655])
-    for _ in 0..<10 {
-      opt.update(&model, along: ModelNumerical.grad)
-    }
-    XCTAssertEqual(model.tensor, [0, 0.9972076, 1.9959843])
+    let values = NumericalValues()
+    let optimizer = AdaGrad(for: values, learningRate: 1e-3, epsilon: 1e-7)
+    // FIXME(TF-759): Investigate large differences with Python reference implementation results:
+    // `[ 0.06179592, -0.05709525, -0.05987222]`.
+    testNumericalCorrectness(
+      optimizer: optimizer, startingValues: values,
+      expectedValues: [0.061354622, -0.057095252, -0.061786927])
+  }
+
+  func testRAdamNumerical() {
+    let values = NumericalValues()
+    let optimizer = RAdam(for: values, learningRate: 1e-3, epsilon: 1e-7)
+    // FIXME(TF-759): Investigate large differences with Python reference implementation results:
+    // `[ 0.46914074, -0.44463935, -0.44513944]`.
+    // Pending fix: https://github.com/tensorflow/swift-apis/pull/700
+    testNumericalCorrectness(
+      optimizer: optimizer, startingValues: values,
+      expectedValues: [ 0.44664007, -0.44463903, -0.45914108])
   }
 
   static var allTests = [
