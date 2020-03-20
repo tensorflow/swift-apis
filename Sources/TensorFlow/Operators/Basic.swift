@@ -1332,57 +1332,57 @@ extension Tensor {
     return axis >= -rank && axis < rank
   }
 
-  /// Returns `true` iff each element of `dims` denotes an axis of `self`.
+  /// Returns `true` iff each element of `axes` denotes an axis of `self`.
   @usableFromInline
-  internal func areValid<T: BinaryInteger>(axes dims: [T]) -> Bool {
-    return dims.allSatisfy { isValid(axis: $0) }
+  internal func areValid<T: BinaryInteger>(axes: [T]) -> Bool {
+    return axes.allSatisfy { isValid(axis: $0) }
   }
 
-  /// Returns `true` iff each element of `dims` denotes an axis of `self`.
+  /// Returns `true` iff each element of `axes` denotes an axis of `self`.
   ///
-  /// - Precondition: `dims` is rank 0 or rank 1.
+  /// - Precondition: `axes` has rank 0 or rank 1.
   @usableFromInline
   internal func areValid(
-    axes dims: Tensor<Int32>,
+    axes: Tensor<Int32>,
     file: StaticString = #file,
     line: UInt = #line
   ) -> Bool {
     precondition(
-      dims.rank < 2,
-      "Axes must have rank 0 or rank 1; axes has rank \(dims.rank) with values \(dims.scalars).",
+      axes.rank < 2,
+      "Axes must have rank 0 or rank 1; axes has rank \(axes.rank) with values \(axes.scalars).",
       file: file,
       line: line)
-    return areValid(axes: dims.scalars)
+    return areValid(axes: axes.scalars)
   }
 
-  /// Checks that each element of `dims` denotes an axis of `self`, and stops the program with a
+  /// Checks that each element of `axes` denotes an axis of `self`, and stops the program with a
   /// diagnostic otherwise.
   @usableFromInline
   func ensureValid(
-    axes dims: Tensor<Int32>,
+    axes: Tensor<Int32>,
     function: StaticString = #function,
     file: StaticString = #file,
     line: UInt = #line
   ) {
     precondition(
-      areValid(axes: dims, file: file, line: line),
-      "All axes must be in `-rank..<rank` when calling \(function) (rank: \(rank), axes: \(dims))",
+      areValid(axes: axes, file: file, line: line),
+      "All axes must be in `-rank..<rank` when calling \(function) (rank: \(rank), axes: \(axes))",
       file: file,
       line: line)
   }
 
-  /// Checks that each element of `dims` denotes an axis of `self`, and stops the program with a
+  /// Checks that each element of `axes` denotes an axis of `self`, and stops the program with a
   /// diagnostic otherwise.
   @usableFromInline
   func ensureValid(
-    axes dims: [Int],
+    axes: [Int],
     function: StaticString = #function,
     file: StaticString = #file,
     line: UInt = #line
   ) {
     precondition(
-      areValid(axes: dims),
-      "All axes must be in `-rank..<rank` when calling \(function) (rank: \(rank), axes: \(dims))",
+      areValid(axes: axes),
+      "All axes must be in `-rank..<rank` when calling \(function) (rank: \(rank), axes: \(axes))",
       file: file,
       line: line)
   }
