@@ -24,6 +24,7 @@ namespace ops {
 
 class Cast : public Node {
  public:
+  Cast(const Value& input, xla::PrimitiveType type);
   Cast(const Value& input, at::ScalarType dtype);
 
   std::string ToString() const override;
@@ -32,10 +33,10 @@ class Cast : public Node {
 
   XlaOpVector Lower(LoweringContext* loctx) const override;
 
-  at::ScalarType dtype() const { return dtype_; }
+  xla::PrimitiveType type() const { return type_; }
 
  private:
-  at::ScalarType dtype_;
+  xla::PrimitiveType type_;
 };
 
 }  // namespace ops

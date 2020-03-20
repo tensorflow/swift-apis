@@ -61,7 +61,7 @@ std::string ToQualString(at::aten::SymbolKind kind) {
       xla::XlaOp xla_input = loctx->GetOutputOp(node.operand(0)); \
       return node.ReturnOp(xla_fn(xla_input), loctx);             \
     };                                                            \
-    return GenericOp(OpKind(sym), OpList{input}, input.shape(),   \
+    return GenericOp(OpKind(sym), {input}, input.shape(),         \
                      std::move(lower_fn));                        \
   }
 
@@ -79,7 +79,7 @@ std::string ToQualString(at::aten::SymbolKind kind) {
       return node.ReturnOp(xla_fn(promoted.first, promoted.second), loctx);    \
     };                                                                         \
     return GenericOp(                                                          \
-        OpKind(sym), OpList{input0, input1},                                   \
+        OpKind(sym), {input0, input1},                                         \
         [&]() {                                                                \
           return InferOutputShape({input0.shape(), input1.shape()}, shape_fn); \
         },                                                                     \
@@ -138,7 +138,7 @@ NodePtr LogBase(const Value& input, OpKind op, double base) {
         1.0 / std::log(base), node.shape().element_type(), xla_input.builder());
     return node.ReturnOp(result * ln_base, loctx);
   };
-  return GenericOp(op, OpList{input}, input.shape(), std::move(lower_fn),
+  return GenericOp(op, {input}, input.shape(), std::move(lower_fn),
                    /*num_outputs=*/1, xla::util::MHash(base));
 }
 
@@ -147,7 +147,7 @@ NodePtr ReciprocalOp(const Value& input) {
     xla::XlaOp xla_input = loctx->GetOutputOp(node.operand(0));
     return node.ReturnOp(BuildReciprocal(xla_input), loctx);
   };
-  return GenericOp(OpKind(at::aten::reciprocal), OpList{input}, input.shape(),
+  return GenericOp(OpKind(at::aten::reciprocal), {input}, input.shape(),
                    std::move(lower_fn));
 }
 
@@ -156,7 +156,7 @@ NodePtr SignOp(const Value& input) {
     xla::XlaOp xla_input = loctx->GetOutputOp(node.operand(0));
     return node.ReturnOp(BuildSign(xla_input), loctx);
   };
-  return GenericOp(OpKind(at::aten::sign), OpList{input}, input.shape(),
+  return GenericOp(OpKind(at::aten::sign), {input}, input.shape(),
                    std::move(lower_fn));
 }
 
@@ -165,7 +165,7 @@ NodePtr Abs(const Value& input) {
     xla::XlaOp xla_input = loctx->GetOutputOp(node.operand(0));
     return node.ReturnOp(BuildAbs(xla_input), loctx);
   };
-  return GenericOp(OpKind(at::aten::abs), OpList{input}, input.shape(),
+  return GenericOp(OpKind(at::aten::abs), {input}, input.shape(),
                    std::move(lower_fn));
 }
 
@@ -181,7 +181,7 @@ NodePtr ReluOp(const Value& input) {
     return BuildRelu(operands[0]);
   };
   return GenericOp(
-      OpKind(at::aten::relu), OpList{input},
+      OpKind(at::aten::relu), {input},
       [&]() { return InferOutputShape({input.shape()}, lower_for_shape_fn); },
       std::move(lower_fn));
 }
@@ -219,7 +219,7 @@ NodePtr Sigmoid(const Value& input) {
     xla::XlaOp xla_input = loctx->GetOutputOp(node.operand(0));
     return node.ReturnOp(BuildSigmoid(xla_input), loctx);
   };
-  return GenericOp(OpKind(at::aten::sigmoid), OpList{input}, input.shape(),
+  return GenericOp(OpKind(at::aten::sigmoid), {input}, input.shape(),
                    std::move(lower_fn));
 }
 
@@ -248,63 +248,43 @@ NodePtr Clamp(const Value& input, const Value& min, const Value& max) {
     xla::XlaOp xla_max = loctx->GetOutputOp(node.operand(2));
     return node.ReturnOp(xla::Clamp(xla_min, xla_input, xla_max), loctx);
   };
-  return GenericOp(OpKind(at::aten::clamp), OpList{input, min, max},
-                   input.shape(), std::move(lower_fn));
+  return GenericOp(OpKind(at::aten::clamp), {input, min, max}, input.shape(),
+                   std::move(lower_fn));
 }
 
 NodePtr AddMatMulOp(const Value& input, const Value& weight,
                     const Value& bias) {
-  const xla::PrecisionConfig::Precision precision_level =
-      XlaHelpers::mat_mul_precision();
-  auto lower_fn = [precision_level](const Node& node,
-                                    LoweringContext* loctx) -> XlaOpVector {
+  auto lower_fn = [](const Node& node, LoweringContext* loctx) -> XlaOpVector {
     XLA_CHECK_EQ(node.operands().size(), 3) << "Unexpected number of operands";
     xla::XlaOp xla_input = loctx->GetOutputOp(node.operand(0));
     xla::XlaOp xla_weight = loctx->GetOutputOp(node.operand(1));
     xla::XlaOp xla_bias = loctx->GetOutputOp(node.operand(2));
-    const auto bias_sizes = XlaHelpers::SizesOfXlaOp(xla_bias);
-    xla::PrecisionConfig precision_config =
-        XlaHelpers::BuildPrecisionConfig(precision_level);
-    xla::XlaOp xla_dot = xla::Dot(xla_input, xla_weight, &precision_config);
-    const auto dot_sizes = XlaHelpers::SizesOfXlaOp(xla_dot);
-    if (bias_sizes != dot_sizes) {
-      xla_bias = BuildExpand(xla_bias, dot_sizes);
-    }
-    xla::XlaOp xla_output = xla_dot + xla_bias;
-    return node.ReturnOp(xla_output, loctx);
+    return node.ReturnOp(BuildMatMul(xla_input, xla_weight, xla_bias), loctx);
   };
   auto lower_for_shape_fn =
       [](absl::Span<const xla::XlaOp> operands) -> xla::XlaOp {
-    XLA_CHECK_EQ(operands.size(), 2) << "Unexpected number of operands";
-    return xla::Dot(operands[0], operands[1]);
+    return BuildMatMul(operands[0], operands[1], operands[2]);
   };
-  return GenericOp(OpKind(at::aten::addmm), OpList{input, weight, bias},
+  return GenericOp(OpKind(at::aten::addmm), {input, weight, bias},
                    [&]() {
-                     return InferOutputShape({input.shape(), weight.shape()},
-                                             lower_for_shape_fn);
+                     return InferOutputShape(
+                         {input.shape(), weight.shape(), bias.shape()},
+                         lower_for_shape_fn);
                    },
                    std::move(lower_fn));
 }
 
 NodePtr Dot(const Value& input, const Value& weight) {
-  const xla::PrecisionConfig::Precision precision_level =
-      XlaHelpers::mat_mul_precision();
-  auto lower_fn = [precision_level](const Node& node,
-                                    LoweringContext* loctx) -> XlaOpVector {
-    XLA_CHECK_EQ(node.operands().size(), 2) << "Unexpected number of operands";
+  auto lower_fn = [](const Node& node, LoweringContext* loctx) -> XlaOpVector {
     xla::XlaOp xla_input = loctx->GetOutputOp(node.operand(0));
     xla::XlaOp xla_weight = loctx->GetOutputOp(node.operand(1));
-    xla::PrecisionConfig precision_config =
-        XlaHelpers::BuildPrecisionConfig(precision_level);
-    return node.ReturnOp(xla::Dot(xla_input, xla_weight, &precision_config),
-                         loctx);
+    return node.ReturnOp(BuildDot(xla_input, xla_weight), loctx);
   };
   auto lower_for_shape_fn =
       [](absl::Span<const xla::XlaOp> operands) -> xla::XlaOp {
-    XLA_CHECK_EQ(operands.size(), 2) << "Unexpected number of operands";
-    return xla::Dot(operands[0], operands[1]);
+    return BuildDot(operands[0], operands[1]);
   };
-  return GenericOp(OpKind(at::aten::mm), OpList{input, weight},
+  return GenericOp(OpKind(at::aten::mm), {input, weight},
                    [&]() {
                      return InferOutputShape({input.shape(), weight.shape()},
                                              lower_for_shape_fn);
@@ -316,6 +296,8 @@ NodePtr MatMul(const Value& lhs, const Value& rhs) {
   auto lower_fn = [](const Node& node, LoweringContext* loctx) -> XlaOpVector {
     xla::XlaOp xla_lhs = loctx->GetOutputOp(node.operand(0));
     xla::XlaOp xla_rhs = loctx->GetOutputOp(node.operand(1));
+    std::tie(xla_lhs, xla_rhs) = XlaHelpers::PromoteValues(xla_lhs, xla_rhs);
+
     return node.ReturnOp(CreateMatMul(xla_lhs, xla_rhs), loctx);
   };
   auto lower_for_shape_fn =
@@ -323,7 +305,7 @@ NodePtr MatMul(const Value& lhs, const Value& rhs) {
     return CreateMatMul(operands[0], operands[1]);
   };
   return GenericOp(
-      OpKind(at::aten::matmul), OpList{lhs, rhs},
+      OpKind(at::aten::matmul), {lhs, rhs},
       [&]() {
         return InferOutputShape({lhs.shape(), rhs.shape()}, lower_for_shape_fn);
       },
@@ -345,14 +327,13 @@ NodePtr AdaptiveAvgPool2dBackward(const Value& grad_output,
     return BuildAdaptiveAvgPool2dBackward(/*out_backprop=*/operands[0],
                                           /*input=*/operands[1]);
   };
-  return GenericOp(OpKind(at::aten::adaptive_avg_pool2d_backward),
-                   OpList{grad_output, input},
-                   [&]() {
-                     return InferOutputShape(
-                         {grad_output.shape(), input.shape()},
-                         lower_for_shape_fn);
-                   },
-                   std::move(lower_fn));
+  return GenericOp(
+      OpKind(at::aten::adaptive_avg_pool2d_backward), {grad_output, input},
+      [&]() {
+        return InferOutputShape({grad_output.shape(), input.shape()},
+                                lower_for_shape_fn);
+      },
+      std::move(lower_fn));
 }
 
 NodePtr ComparisonOp(c10::Symbol kind, const Value& input, const Value& other) {

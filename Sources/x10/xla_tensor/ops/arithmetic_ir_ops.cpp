@@ -30,8 +30,8 @@ NodePtr operator+(const Value& node1, const Value& node2) {
     return node.ReturnOp(XlaHelpers::PromotedAdd(op0, op1), loctx);
   };
   return ops::GenericOp(
-      OpKind(at::aten::add), OpList{node1, node2},
-      XlaHelpers::GetPromotedShape(node1.shape(), node2.shape()),
+      OpKind(at::aten::add), {node1, node2},
+      XlaHelpers::GetPromotedBinaryOpShape(node1.shape(), node2.shape()),
       std::move(lower_fn));
 }
 
@@ -42,8 +42,8 @@ NodePtr operator-(const Value& node1, const Value& node2) {
     return node.ReturnOp(XlaHelpers::PromotedSub(op0, op1), loctx);
   };
   return ops::GenericOp(
-      OpKind(at::aten::sub), OpList{node1, node2},
-      XlaHelpers::GetPromotedShape(node1.shape(), node2.shape()),
+      OpKind(at::aten::sub), {node1, node2},
+      XlaHelpers::GetPromotedBinaryOpShape(node1.shape(), node2.shape()),
       std::move(lower_fn));
 }
 
@@ -54,8 +54,8 @@ NodePtr operator*(const Value& node1, const Value& node2) {
     return node.ReturnOp(XlaHelpers::PromotedMul(op0, op1), loctx);
   };
   return ops::GenericOp(
-      OpKind(at::aten::mul), OpList{node1, node2},
-      XlaHelpers::GetPromotedShape(node1.shape(), node2.shape()),
+      OpKind(at::aten::mul), {node1, node2},
+      XlaHelpers::GetPromotedBinaryOpShape(node1.shape(), node2.shape()),
       std::move(lower_fn));
 }
 
@@ -66,8 +66,8 @@ NodePtr operator/(const Value& node1, const Value& node2) {
     return node.ReturnOp(XlaHelpers::PromotedDiv(op0, op1), loctx);
   };
   return ops::GenericOp(
-      OpKind(at::aten::div), OpList{node1, node2},
-      XlaHelpers::GetPromotedShape(node1.shape(), node2.shape()),
+      OpKind(at::aten::div), {node1, node2},
+      XlaHelpers::GetPromotedBinaryOpShape(node1.shape(), node2.shape()),
       std::move(lower_fn));
 }
 
