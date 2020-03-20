@@ -16,7 +16,7 @@
 // shape attributes rather than requiring that they be passed as `Int32` tensors.
 // This is useful for implementations that do not require the parameters be
 // passed as Tensors.
-extension _Raw {
+extension _RawTFEager {
   public static func argMax<
     T: TensorFlowNumeric,
     OutputType: TensorFlowIndex

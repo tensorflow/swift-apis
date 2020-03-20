@@ -19,16 +19,7 @@ import x10_device
 import x10_xla_tensor_tf_ops
 import x10_xla_tensor_wrapper
 
-@available(
-  *, deprecated, renamed: "_Raw",
-  message:
-    """
-  'Raw' has been renamed to '_Raw' to indicate that it is not a guaranteed/stable API.
-  """
-)
-public typealias Raw = _Raw
-
-public enum _Raw {
+public enum _RawXLA {
 
   // @_frozen // SR-9739
   public enum DataFormat {

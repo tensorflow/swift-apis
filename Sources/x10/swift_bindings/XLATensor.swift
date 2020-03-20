@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import x10_device
+@_exported import x10_device
 import x10_xla_tensor_tf_ops
 import x10_xla_tensor_wrapper
 

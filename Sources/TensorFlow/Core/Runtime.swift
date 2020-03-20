@@ -332,12 +332,17 @@ extension _ExecutionContext {
   static func makeOp(
     _ name: String, _ outputCount: Int
   ) -> TFTensorOperation {
+#if !USING_X10_BACKEND
     return _ThreadLocalState.useLazyTensor
       ? LazyTensorOperation(name, outputCount)
       : TFE_Op(name, outputCount)
+#else
+    return TFE_Op(name, outputCount)
+#endif
   }
 }
 
+#if !USING_X10_BACKEND
 internal func _trace<In: TensorGroup, Out: TensorGroup>(_ fn: (In) -> Out) -> TFFunction {
   let useLazyTensor = _ThreadLocalState.useLazyTensor
   defer { _ThreadLocalState.useLazyTensor = useLazyTensor }
@@ -359,12 +364,17 @@ public func _graph<In: TensorGroup, Out: TensorGroup>(
     return Out(_handles: outputHandles)
   }
 }
+#endif
 
 /// Trace the given function and return the name of the corresponding `TF_Function: In -> Out` that
 /// was created.
 public func _tffunc<In: TensorGroup, Out: TensorGroup>(_ fn: (In) -> Out) -> String {
+#if !USING_X10_BACKEND
   let tffunc = _trace(fn)
   return tffunc.name
+#else
+  fatalError("Tracing not supported in x10.")
+#endif
 }
 
 extension _ExecutionContext {
@@ -509,7 +519,9 @@ func _TFCOpSetAttrTypeArray(
 class _ThreadLocalState {
   var deviceScopes = DeviceScopes()
 
+#if !USING_X10_BACKEND
   var lazyTensorContext = LazyTensorContext()
+#endif
 
   static var useLazyTensor: Bool {
     get {
@@ -574,6 +586,7 @@ struct DeviceScopes {
   }
 }
 
+#if !USING_X10_BACKEND
 // Evaluate the pullback on a one.
 @usableFromInline
 func pullbackOfOneLikeY<T: TensorFlowFloatingPoint, R>(
@@ -582,6 +595,7 @@ func pullbackOfOneLikeY<T: TensorFlowFloatingPoint, R>(
 ) -> R {
   pullback(Tensor<T>(1))
 }
+#endif
 
 @usableFromInline
 func _TFCOpSetDeviceFromScope(_ op: CTFEOp, _ status: CTFStatus) {

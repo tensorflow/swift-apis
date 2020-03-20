@@ -24,16 +24,22 @@ add_library(x10_tensor SHARED
   swift_bindings/apis/DeviceScope.swift
   swift_bindings/apis/RawOpsManual.swift
 
-  swift_bindings/TensorFlow/Core/Runtime.swift
 
   swift_bindings/XLAScalarType.swift
   swift_bindings/XLATensor.swift)
 target_sources(x10_tensor PRIVATE
+  ../TensorFlow/Bindings/EagerExecution.swift
+  ../TensorFlow/Bindings/RawOpsGenerated.swift
+  ../TensorFlow/Bindings/RawOpsAugmented.swift
+  ../TensorFlow/Bindings/RawOpsDispatching.swift
+  ../TensorFlow/Bindings/TFTensorOperation.swift
+
   ../TensorFlow/Core/BroadcastingPullback.swift
   ../TensorFlow/Core/CopyableToDevice.swift
   ../TensorFlow/Core/DifferentialOperators.swift
   ../TensorFlow/Core/PythonConversion.swift
   ../TensorFlow/Core/ShapedArray.swift
+  ../TensorFlow/Core/Execution.swift
   ../TensorFlow/Core/TensorShape.swift
   ../TensorFlow/Core/Threading.swift
   ../TensorFlow/Core/Utilities.swift
@@ -41,6 +47,9 @@ target_sources(x10_tensor PRIVATE
   ../TensorFlow/Core/TensorHandle.swift
   ../TensorFlow/Core/DataTypes.swift
   ../TensorFlow/Core/MixedPrecision.swift
+  ../TensorFlow/Core/Runtime.swift
+  ../TensorFlow/Core/StringTensor.swift
+  ../TensorFlow/Core/TensorGroup.swift
 
   ../TensorFlow/Layers/Convolutional.swift
   ../TensorFlow/Layers/Core.swift

@@ -12,6 +12,7 @@ add_library(TensorFlow SHARED
   Bindings/RawOpsGenerated.swift
   Bindings/TFTensorOperation.swift
   Bindings/RawOpsAugmented.swift
+  Bindings/RawOpsDispatching.swift
 
   Core/ArrayOps.swift
   Core/CopyableToDevice.swift

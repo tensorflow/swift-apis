@@ -132,7 +132,6 @@ extension Int64: TensorFlowScalar {
   }
 }
 
-#if !USING_X10_BACKEND
 extension UInt8: TensorFlowScalar {
   @inlinable
   public static var tensorFlowDataType: TensorDataType {
@@ -140,6 +139,7 @@ extension UInt8: TensorFlowScalar {
   }
 }
 
+#if !USING_X10_BACKEND
 extension UInt16: TensorFlowScalar {
   @inlinable
   public static var tensorFlowDataType: TensorDataType {

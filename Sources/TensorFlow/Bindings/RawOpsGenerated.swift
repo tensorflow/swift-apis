@@ -21,16 +21,7 @@ func makeOp(_ name: String, _ nOutputs: Int) -> TFTensorOperation {
   _ExecutionContext.makeOp(name, nOutputs)
 }
 
-@available(
-  *, deprecated, renamed: "_Raw",
-  message:
-    """
-  'Raw' has been renamed to '_Raw' to indicate that it is not a guaranteed/stable API.
-  """
-)
-public typealias Raw = _Raw
-
-public enum _Raw {
+public enum _RawTFEager {
 
   static let generatedTensorFlowVersion = "2.1.0"
   static let generatedTensorFlowGitVersion = "v2.1.0-rc2-17-ge5bf8de410"
