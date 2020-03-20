@@ -19,13 +19,13 @@ class NNTests: XCTestCase {
   func testDepthToSpace() {
     let input = Tensor<Float>([
       [
-        [[0, 1, 2, 3], [4, 5, 6, 7]]
+        [[0, 1, 2, 3, 4, 5, 6, 7], [8, 9, 10, 11, 12, 13, 14 ,15]]
       ]
     ])
     let expected = Tensor<Float>([
       [
-        [[0], [1], [4], [5]],
-        [[2], [3], [6], [7]]
+        [[0, 1], [2, 3], [8, 9], [10, 11]],
+        [[4, 5], [6, 7], [12, 13], [14, 15]]
       ]
     ])
     XCTAssertEqual(depthToSpace(input, blockSize: 2), expected)
@@ -34,13 +34,13 @@ class NNTests: XCTestCase {
   func testDepthToSpaceGrad() {
     let input = Tensor<Float>([
       [
-        [[0, 1, 2, 3], [4, 5, 6, 7]]
+        [[0, 1, 2, 3, 4, 5, 6, 7], [8, 9, 10, 11, 12, 13, 14 ,15]]
       ]
     ])
     let grad = Tensor<Float>([
       [
-        [[0], [1], [4], [5]],
-        [[2], [3], [6], [7]]
+        [[0, 1], [2, 3], [8, 9], [10, 11]],
+        [[4, 5], [6, 7], [12, 13], [14, 15]]
       ]
     ])
     let depthToSpacePullback = pullback(at: input) { depthToSpace($0, blockSize: 2) }
@@ -50,13 +50,13 @@ class NNTests: XCTestCase {
   func testSpaceToDepth() {
     let input = Tensor<Float>([
       [
-        [[0], [1], [4], [5]],
-        [[2], [3], [6], [7]]
+        [[0, 1], [2, 3], [8, 9], [10, 11]],
+        [[4, 5], [6, 7], [12, 13], [14, 15]]
       ]
     ])
     let expected = Tensor<Float>([
       [
-        [[0, 1, 2, 3], [4, 5, 6, 7]]
+        [[0, 1, 2, 3, 4, 5, 6, 7], [8, 9, 10, 11, 12, 13, 14 ,15]]
       ]
     ])
     XCTAssertEqual(spaceToDepth(input, blockSize: 2), expected)
@@ -65,13 +65,13 @@ class NNTests: XCTestCase {
   func testSpaceToDepthGrad() {
     let input = Tensor<Float>([
       [
-        [[0], [1], [4], [5]],
-        [[2], [3], [6], [7]]
+        [[0, 1], [2, 3], [8, 9], [10, 11]],
+        [[4, 5], [6, 7], [12, 13], [14, 15]]
       ]
     ])
     let grad = Tensor<Float>([
       [
-        [[0, 1, 2, 3], [4, 5, 6, 7]]
+        [[0, 1, 2, 3, 4, 5, 6, 7], [8, 9, 10, 11, 12, 13, 14 ,15]]
       ]
     ])
     let spaceToDepthPullback = pullback(at: input) { spaceToDepth($0, blockSize: 2) }
