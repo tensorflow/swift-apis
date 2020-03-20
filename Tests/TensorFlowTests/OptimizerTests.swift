@@ -231,7 +231,6 @@ class OptimizerTests: XCTestCase {
     let optimizer = RAdam(for: values, learningRate: 1e-3, epsilon: 1e-7)
     // FIXME(TF-759): Investigate large differences with Python reference implementation results:
     // `[ 0.46914074, -0.44463935, -0.44513944]`.
-    // Pending fix: https://github.com/tensorflow/swift-apis/pull/700
     testNumericalCorrectness(
       optimizer: optimizer, startingValues: values,
       expectedValues: [ 0.44664007, -0.44463903, -0.45914108])
