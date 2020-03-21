@@ -825,7 +825,7 @@ func _vjpAvgPool3D<Scalar: TensorFlowFloatingPoint>(
 // Rearrange depth/space
 //===------------------------------------------------------------------------------------------===//
 
-/// Returns `input` rearranged from depth into blocks of spatial data of specified block size.
+/// Returns `input` rearranged from depth into spatial data blocks of size `b`.
 ///
 /// For example, given an input of shape `[1, 2, 2, 1]`, data_format = "NHWC" and
 /// block_size = 2:
@@ -878,30 +878,26 @@ func _vjpAvgPool3D<Scalar: TensorFlowFloatingPoint>(
 ///        [13, 14, 15, 16]]]]
 /// ```
 ///
-/// - Parameters:
-///   - input: The tensor to be rearranged.
-///   - blockSize: The size of the spatial block.
-/// - Precondition: The input must have rank 4.
-/// - Precondition: The block size must be greater than 1.
-/// - Precondition: The number of the features must be divisible by square of the block size.
+/// - Precondition: `input.rank == 4 && b >= 2`.
+/// - Precondition: The number of the features must be divisible by square of `b`.
 @differentiable(wrt: input where Scalar: TensorFlowFloatingPoint)
-public func depthToSpace<Scalar>(_ input: Tensor<Scalar>, blockSize: Int) -> Tensor<Scalar> {
+public func depthToSpace<Scalar>(_ input: Tensor<Scalar>, blockSize b: Int) -> Tensor<Scalar> {
   precondition(input.rank == 4, "The input must have rank 4.")
-  precondition(blockSize >= 2, "The size must be greater than 1.")
-  precondition(input.shape[3].isMultiple(of: blockSize*blockSize),
+  precondition(b >= 2, "The size must be greater than 1.")
+  precondition(input.shape[3].isMultiple(of: b*b),
                "The number of the features must be divisible by square of the block size.")
-  return _Raw.depthToSpace(input, blockSize: Int64(blockSize))
+  return _Raw.depthToSpace(input, blockSize: Int64(b))
 }
 
 @derivative(of: depthToSpace)
 func _vjpDepthToSpace<Scalar: TensorFlowFloatingPoint>(
   _ input: Tensor<Scalar>,
-  blockSize: Int
+  blockSize b: Int
 ) -> (value: Tensor<Scalar>, pullback: (Tensor<Scalar>) -> Tensor<Scalar>) {
-  (depthToSpace(input, blockSize: blockSize), { spaceToDepth($0, blockSize: blockSize) })
+  (depthToSpace(input, blockSize: b), { spaceToDepth($0, blockSize: b) })
 }
 
-/// Returns `input` rearranged from blocks of spatial data of specified block size into depth.
+/// Returns `input` rearranged from spatial data blocks of size `b` into depth.
 ///
 /// For example, given an input of shape `[1, 2, 2, 1]`, data_format = "NHWC" and
 /// block_size = 2:
@@ -954,28 +950,24 @@ func _vjpDepthToSpace<Scalar: TensorFlowFloatingPoint>(
 ///        [13, 14, 15, 16]]]]
 /// ```
 ///
-/// - Parameters:
-///   - input: The tensor to be rearranged.
-///   - blockSize: The size of the spatial block.
-/// - Precondition: The input must have rank 4.
-/// - Precondition: The block size must be greater than 1.
-/// - Precondition: The height of the input mus be divisible by the block size.
-/// - Precondition: The width of the input mus be divisible by the block size.
+/// - Precondition: `input.rank == 4 && b >= 2`.
+/// - Precondition: The height of the input must be divisible by `b`.
+/// - Precondition: The width of the input must be divisible by `b`.
 @differentiable(wrt: input where Scalar: TensorFlowFloatingPoint)
-public func spaceToDepth<Scalar>(_ input: Tensor<Scalar>, blockSize: Int) -> Tensor<Scalar> {
+public func spaceToDepth<Scalar>(_ input: Tensor<Scalar>, blockSize b: Int) -> Tensor<Scalar> {
   precondition(input.rank == 4, "The input must have rank 4.")
-  precondition(blockSize >= 2, "The block size must be greater than 1.")
-  precondition(input.shape[1].isMultiple(of: blockSize),
-               "The height of the input mus be divisible by the block size.")
-  precondition(input.shape[2].isMultiple(of: blockSize),
-               "The width of the input mus be divisible by the block size.")
-  return _Raw.spaceToDepth(input, blockSize: Int64(blockSize))
+  precondition(b >= 2, "The block size must be greater than 1.")
+  precondition(input.shape[1].isMultiple(of: b),
+               "The height of the input must be divisible by the block size.")
+  precondition(input.shape[2].isMultiple(of: b),
+               "The width of the input must be divisible by the block size.")
+  return _Raw.spaceToDepth(input, blockSize: Int64(b))
 }
 
 @derivative(of: spaceToDepth)
 func _vjpSpaceToDepth<Scalar: TensorFlowFloatingPoint>(
   _ input: Tensor<Scalar>,
-  blockSize: Int
+  blockSize b: Int
 ) -> (value: Tensor<Scalar>, pullback: (Tensor<Scalar>) -> Tensor<Scalar>) {
-  (spaceToDepth(input, blockSize: blockSize), { depthToSpace($0, blockSize: blockSize) })
+  (spaceToDepth(input, blockSize: b), { depthToSpace($0, blockSize: b) })
 }
