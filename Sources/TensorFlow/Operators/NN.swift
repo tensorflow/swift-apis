@@ -825,7 +825,7 @@ func _vjpAvgPool3D<Scalar: TensorFlowFloatingPoint>(
 // Rearrange depth/space
 //===------------------------------------------------------------------------------------------===//
 
-/// Returns `input` rearranged from depth into spatial data blocks of size `b`.
+/// Returns a copy of `input` where values from the depth dimension are moved in spatial blocks to the height and width dimensions.
 ///
 /// For example, given an input of shape `[1, 2, 2, 1]`, data_format = "NHWC" and
 /// block_size = 2:
@@ -897,7 +897,7 @@ func _vjpDepthToSpace<Scalar: TensorFlowFloatingPoint>(
   (depthToSpace(input, blockSize: b), { spaceToDepth($0, blockSize: b) })
 }
 
-/// Returns `input` rearranged from spatial data blocks of size `b` into depth.
+/// Returns a copy of `input` where values from the height and width dimensions are moved to the depth dimension.
 ///
 /// For example, given an input of shape `[1, 2, 2, 1]`, data_format = "NHWC" and
 /// block_size = 2:
