@@ -39,6 +39,7 @@
 #include "tensorflow/compiler/tf2xla/xla_tensor/ir_util.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/layout_manager.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/op_by_op_executor.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/ops/cast.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/device_data.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/expand.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/ops.h"
@@ -57,9 +58,13 @@ struct HashDevice {
 };
 
 struct TlsData {
-  size_t trim_counter = 0;
+  void Reset() {
+    trim_counter = 0;
+    seed_round = 0;
+  }
 
-  void Reset() { trim_counter = 0; }
+  size_t trim_counter = 0;
+  xla::uint64 seed_round = 0;
 };
 
 thread_local TlsData g_tls_data;
@@ -517,10 +522,10 @@ xla::util::MaybeRef<xla::Shape> XLATensor::shape() const {
 }
 
 xla::Shape XLATensor::shape_with_layout() const {
-  auto tensor_shape = shape();
+  auto xla_shape = shape();
   return MakeArrayShapeFromDimensions(
-      tensor_shape.get().dimensions(), tensor_shape.get().dynamic_dimensions(),
-      tensor_shape.get().element_type(), GetDevice().hw_type);
+      xla_shape.get().dimensions(), xla_shape.get().dynamic_dimensions(),
+      xla_shape.get().element_type(), GetDevice().hw_type);
 }
 
 const Device& XLATensor::GetDevice() const { return data()->device; }
@@ -613,6 +618,15 @@ void XLATensor::SetIrValue(ir::Value ir_value) {
     AssignIrValue(std::move(ir_value));
     TryLimitGraphSize();
   }
+}
+
+void XLATensor::SetInPlaceIrValue(ir::Value ir_value) {
+  auto xla_shape = shape();
+  if (xla_shape.get().element_type() != ir_value.shape().element_type()) {
+    ir_value =
+        ir::MakeNode<ir::ops::Cast>(ir_value, xla_shape.get().element_type());
+  }
+  SetIrValue(std::move(ir_value));
 }
 
 void XLATensor::AssignIrValue(ir::Value ir_value) const {
@@ -942,11 +956,6 @@ ir::Value XLATensor::CreateTensorNode(
     xla::ComputationClient::DataPtr data) const {
   data->SetInfo(std::make_shared<DeviceDataInfo>(GetUniqueId()));
   return ir::MakeNode<ir::ops::DeviceData>(std::move(data));
-}
-
-xla::int64 XLATensor::GetNextTensorId() {
-  static std::atomic<xla::int64>* id_generator = new std::atomic<xla::int64>(1);
-  return id_generator->fetch_add(1);
 }
 
 std::vector<XLATensor> XLATensor::MakeOutputTensors(ir::NodePtr node) const {
@@ -1367,8 +1376,9 @@ void XLATensor::BuildInputOutputAliases(const std::vector<XLATensor>& tensors,
       auto it = output_tensor_id_map.find(data_info->tensor_id);
       if (it != output_tensor_id_map.end()) {
         size_t output_index = it->second;
-        size_t tensor_index = indices[output_index];
-        if (parameters_data[i]->shape() == tensors[tensor_index].shape() &&
+        xla::XlaOp root = lowering_ctx->GetResult(output_index);
+        const xla::Shape& root_shape = XlaHelpers::ShapeOfXlaOp(root);
+        if (parameters_data[i]->shape() == root_shape &&
             alias_map[output_index] < 0) {
           lowering_ctx->builder()->SetUpAlias(
               {static_cast<xla::int64>(output_index)}, i, {});
@@ -1481,6 +1491,16 @@ std::shared_ptr<XLATensor::Async> XLATensor::SyncTensorsGraphInternal(
   return ScheduleSyncTensorsGraph(
       tensors, &coll, std::move(compile_result.parameters_data),
       compile_result.device.ToString(), std::move(cached_computation));
+}
+
+xla::int64 XLATensor::GetNextTensorId() {
+  static std::atomic<xla::int64>* id_generator = new std::atomic<xla::int64>(1);
+  return id_generator->fetch_add(1);
+}
+
+xla::uint64 XLATensor::GenRngSeed() {
+  static const xla::uint64 kBaseSeed = 0x78ab6952ca3893e7;
+  return ++g_tls_data.seed_round * kBaseSeed;
 }
 
 }  // namespace swift_xla

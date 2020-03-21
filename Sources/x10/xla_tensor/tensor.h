@@ -1285,6 +1285,7 @@ class XLATensor {
   void SetXlaData(xla::ComputationClient::DataPtr xla_data, bool sync);
 
   void SetIrValue(ir::Value ir_value);
+  void SetInPlaceIrValue(ir::Value ir_value);
 
   void AssignIrValue(ir::Value ir_value) const;
 
@@ -1397,6 +1398,8 @@ class XLATensor {
       const SyncTensorsConfig& config);
 
   static xla::int64 GetNextTensorId();
+
+  static xla::uint64 GenRngSeed();
 
   std::shared_ptr<Data> data_;
 };
