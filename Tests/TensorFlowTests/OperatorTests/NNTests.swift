@@ -19,7 +19,7 @@ class NNTests: XCTestCase {
   func testDepthToSpace() {
     let input = Tensor<Float>([
       [
-        [[0, 1, 2, 3, 4, 5, 6, 7], [8, 9, 10, 11, 12, 13, 14 ,15]]
+        [[0, 1, 2, 3, 4, 5, 6, 7], [8, 9, 10, 11, 12, 13, 14, 15]]
       ]
     ])
     let expected = Tensor<Float>([
@@ -37,7 +37,7 @@ class NNTests: XCTestCase {
   func testDepthToSpaceGrad() {
     let input = Tensor<Float>([
       [
-        [[0, 1, 2, 3, 4, 5, 6, 7], [8, 9, 10, 11, 12, 13, 14 ,15]]
+        [[0, 1, 2, 3, 4, 5, 6, 7], [8, 9, 10, 11, 12, 13, 14, 15]]
       ]
     ])
     let grad = Tensor<Float>([
@@ -62,7 +62,7 @@ class NNTests: XCTestCase {
     ])
     let expected = Tensor<Float>([
       [
-        [[0, 1, 2, 3, 4, 5, 6, 7], [8, 9, 10, 11, 12, 13, 14 ,15]]
+        [[0, 1, 2, 3, 4, 5, 6, 7], [8, 9, 10, 11, 12, 13, 14, 15]]
       ]
     ])
     XCTAssertEqual(spaceToDepth(input, blockSize: 2), expected)
@@ -80,7 +80,7 @@ class NNTests: XCTestCase {
     ])
     let grad = Tensor<Float>([
       [
-        [[0, 1, 2, 3, 4, 5, 6, 7], [8, 9, 10, 11, 12, 13, 14 ,15]]
+        [[0, 1, 2, 3, 4, 5, 6, 7], [8, 9, 10, 11, 12, 13, 14, 15]]
       ]
     ])
     let spaceToDepthPullback = pullback(at: input) { spaceToDepth($0, blockSize: 2) }
