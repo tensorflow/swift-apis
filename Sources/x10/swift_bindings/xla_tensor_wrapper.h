@@ -20,7 +20,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include "swift_bindings/device_wrapper.h"
+#include "device_wrapper.h"
 
 #ifdef __cplusplus
 #include "tensorflow/compiler/tf2xla/xla_tensor/tensor.h"
