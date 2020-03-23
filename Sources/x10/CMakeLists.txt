@@ -1,8 +1,23 @@
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
+add_library(x10 IMPORTED UNKNOWN)
+set_target_properties(x10 PROPERTIES
+  INTERFACE_INCLUDE_DIRECTORIES "${X10_INCLUDE_DIR}"
+  IMPORTED_LOCATION ${TensorFlow_LIBRARY})
+
+add_library(x10_c_wrappers STATIC
+  swift_bindings/device_wrapper.cc
+  swift_bindings/xla_tensor_tf_ops.cc
+  swift_bindings/xla_tensor_wrapper.cc)
+set_target_properties(x10_c_wrappers PROPERTIES
+  POSITION_INDEPENDENT_CODE ON)
+target_link_libraries(x10_c_wrappers PUBLIC
+  x10)
 
 add_library(x10_device SHARED
   swift_bindings/Device.swift)
 target_link_libraries(x10_device PRIVATE
-  CX10)
+  x10_c_wrappers)
 
 add_library(x10_tensor SHARED
   swift_bindings/apis/CrossReplicaSum.swift
@@ -75,7 +90,7 @@ target_link_libraries(x10_tensor PUBLIC
   Tensor)
 target_link_libraries(x10_tensor PRIVATE
   x10
-  CX10)
+  x10_c_wrappers)
 
 add_library(x10_optimizers_tensor_visitor_plan SHARED
   swift_bindings/optimizers/TensorVisitorPlan.swift)
