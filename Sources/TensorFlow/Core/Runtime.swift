@@ -250,9 +250,11 @@ public final class _ExecutionContext {
         }
 
         stringAddrs.withUnsafeMutableBufferPointer { stringAddrsBuffer in
-          var cArgsCount = Int32(args.count)
-          var cArgs = stringAddrsBuffer.baseAddress.map(UnsafeMutablePointer.init)
-          TF_InitMain(nil, &cArgsCount, &cArgs)
+          #if !USING_X10_BACKEND
+            var cArgsCount = Int32(args.count)
+            var cArgs = stringAddrsBuffer.baseAddress.map(UnsafeMutablePointer.init)
+            TF_InitMain(nil, &cArgsCount, &cArgs)
+          #endif
         }
       }
       _RuntimeConfig.tensorFlowRuntimeInitialized = true
@@ -332,49 +334,49 @@ extension _ExecutionContext {
   static func makeOp(
     _ name: String, _ outputCount: Int
   ) -> TFTensorOperation {
-#if !USING_X10_BACKEND
-    return _ThreadLocalState.useLazyTensor
-      ? LazyTensorOperation(name, outputCount)
-      : TFE_Op(name, outputCount)
-#else
-    return TFE_Op(name, outputCount)
-#endif
+    #if !USING_X10_BACKEND
+      return _ThreadLocalState.useLazyTensor
+        ? LazyTensorOperation(name, outputCount)
+        : TFE_Op(name, outputCount)
+    #else
+      return TFE_Op(name, outputCount)
+    #endif
   }
 }
 
 #if !USING_X10_BACKEND
-internal func _trace<In: TensorGroup, Out: TensorGroup>(_ fn: (In) -> Out) -> TFFunction {
-  let useLazyTensor = _ThreadLocalState.useLazyTensor
-  defer { _ThreadLocalState.useLazyTensor = useLazyTensor }
-  _ThreadLocalState.useLazyTensor = true
-  let trace = LazyTensorTraceBuilder.trace(fn)
-  return TFFunction(trace: trace)
-}
-
-// Trace the given function to generate a TF graph and return a closure that can be used to launch
-// the graph.
-public func _graph<In: TensorGroup, Out: TensorGroup>(
-  _ fn: (In) -> Out,
-  useXLA: Bool = false
-) -> (In) -> Out {
-  let tffunc = _trace(fn)
-  return { input in
-    let inputHandles = input._tensorHandles.map { $0._tfeTensorHandle }
-    let outputHandles = tffunc.execute(inputHandles, usingXLA: useXLA)
-    return Out(_handles: outputHandles)
+  internal func _trace<In: TensorGroup, Out: TensorGroup>(_ fn: (In) -> Out) -> TFFunction {
+    let useLazyTensor = _ThreadLocalState.useLazyTensor
+    defer { _ThreadLocalState.useLazyTensor = useLazyTensor }
+    _ThreadLocalState.useLazyTensor = true
+    let trace = LazyTensorTraceBuilder.trace(fn)
+    return TFFunction(trace: trace)
   }
-}
+
+  // Trace the given function to generate a TF graph and return a closure that can be used to launch
+  // the graph.
+  public func _graph<In: TensorGroup, Out: TensorGroup>(
+    _ fn: (In) -> Out,
+    useXLA: Bool = false
+  ) -> (In) -> Out {
+    let tffunc = _trace(fn)
+    return { input in
+      let inputHandles = input._tensorHandles.map { $0._tfeTensorHandle }
+      let outputHandles = tffunc.execute(inputHandles, usingXLA: useXLA)
+      return Out(_handles: outputHandles)
+    }
+  }
 #endif
 
 /// Trace the given function and return the name of the corresponding `TF_Function: In -> Out` that
 /// was created.
 public func _tffunc<In: TensorGroup, Out: TensorGroup>(_ fn: (In) -> Out) -> String {
-#if !USING_X10_BACKEND
-  let tffunc = _trace(fn)
-  return tffunc.name
-#else
-  fatalError("Tracing not supported in x10.")
-#endif
+  #if !USING_X10_BACKEND
+    let tffunc = _trace(fn)
+    return tffunc.name
+  #else
+    fatalError("Tracing not supported in x10.")
+  #endif
 }
 
 extension _ExecutionContext {
@@ -519,9 +521,9 @@ func _TFCOpSetAttrTypeArray(
 class _ThreadLocalState {
   var deviceScopes = DeviceScopes()
 
-#if !USING_X10_BACKEND
-  var lazyTensorContext = LazyTensorContext()
-#endif
+  #if !USING_X10_BACKEND
+    var lazyTensorContext = LazyTensorContext()
+  #endif
 
   static var useLazyTensor: Bool {
     get {
@@ -587,14 +589,14 @@ struct DeviceScopes {
 }
 
 #if !USING_X10_BACKEND
-// Evaluate the pullback on a one.
-@usableFromInline
-func pullbackOfOneLikeY<T: TensorFlowFloatingPoint, R>(
-  y: Tensor<T>,
-  pullback: (Tensor<T>) -> R
-) -> R {
-  pullback(Tensor<T>(1))
-}
+  // Evaluate the pullback on a one.
+  @usableFromInline
+  func pullbackOfOneLikeY<T: TensorFlowFloatingPoint, R>(
+    y: Tensor<T>,
+    pullback: (Tensor<T>) -> R
+  ) -> R {
+    pullback(Tensor<T>(1))
+  }
 #endif
 
 @usableFromInline

@@ -64,7 +64,7 @@ extension Padding {
   }
 
   @inlinable
-  internal var raw2: _Raw.Padding2 {
+  internal var raw2: _Raw.Padding1 {
     switch self {
     case .same: return .same
     case .valid: return .valid

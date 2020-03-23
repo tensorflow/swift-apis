@@ -237,6 +237,12 @@ final class TensorTests: XCTestCase {
     }
   }
 
+  func testAddInterop() throws {
+    let x = X10Tensor(shape: [2], scalars: [1, 2], on: Device.defaultTFEager)
+    let y = X10Tensor(shape: [2], scalars: [7, 19], on: Device.defaultTFEager)
+    XCTAssertEqual((x + y).scalars, [8, 21])
+  }
+
   func testAll() throws {
     let x: X10Tensor_<Bool> = X10Tensor.randint(0, 2, [2, 3, 4])
     for axis in -x.rank..<x.rank {
@@ -454,7 +460,8 @@ final class TensorTests: XCTestCase {
           var x = X10Tensor.rand([4, 28, 28, 1])
           let outShape = avgPool2D(
             TF(x), filterSize: (1, 2, 2, 1), strides: (1, stride, stride, 1),
-            padding: padSame ? Padding.same : Padding.valid).shape
+            padding: padSame ? Padding.same : Padding.valid
+          ).shape
           var outGrad = X10Tensor.rand(outShape.dimensions)
           if useReducedPrecision {
             x = x.toReducedPrecision
@@ -484,7 +491,8 @@ final class TensorTests: XCTestCase {
           var x = X10Tensor.rand([4, 28, 28, 28, 1])
           let outShape = avgPool3D(
             TF(x), filterSize: (1, 2, 2, 2, 1), strides: (1, stride, stride, stride, 1),
-            padding: padSame ? Padding.same : Padding.valid).shape
+            padding: padSame ? Padding.same : Padding.valid
+          ).shape
           var outGrad = X10Tensor.rand(outShape.dimensions)
           if useReducedPrecision {
             x = x.toReducedPrecision
@@ -898,8 +906,9 @@ final class TensorTests: XCTestCase {
           var filter = X10Tensor.rand([kernelSize, kernelSize, inChannels, outChannels])
           let outShape = conv2D(
             TF(input), filter: TF(filter), strides: (1, stride, stride, 1),
-            padding: padSame ? Padding.same : Padding.valid, dilations: (1, dilation, dilation, 1))
-            .shape
+            padding: padSame ? Padding.same : Padding.valid, dilations: (1, dilation, dilation, 1)
+          )
+          .shape
           var outGrad = X10Tensor.rand(outShape.dimensions)
           if useReducedPrecision {
             input = input.toReducedPrecision
@@ -941,8 +950,9 @@ final class TensorTests: XCTestCase {
           var filter = X10Tensor.rand([kernelSize, kernelSize, kernelSize, inChannels, outChannels])
           let outShape = conv3D(
             TF(input), filter: TF(filter), strides: (1, stride, stride, stride, 1),
-            padding: padSame ? Padding.same : Padding.valid)
-            .shape
+            padding: padSame ? Padding.same : Padding.valid
+          )
+          .shape
           var outGrad = X10Tensor.rand(outShape.dimensions)
           if useReducedPrecision {
             input = input.toReducedPrecision
@@ -1066,8 +1076,9 @@ final class TensorTests: XCTestCase {
           var filter = X10Tensor.rand([kernelSize, kernelSize, inChannels, channelMultiplier])
           let outShape = depthwiseConv2D(
             TF(input), filter: TF(filter), strides: (1, stride, stride, 1),
-            padding: padSame ? Padding.same : Padding.valid)
-            .shape
+            padding: padSame ? Padding.same : Padding.valid
+          )
+          .shape
           var outGrad = X10Tensor.rand(outShape.dimensions)
           if useReducedPrecision {
             input = input.toReducedPrecision
@@ -2188,7 +2199,8 @@ final class TensorTests: XCTestCase {
           var x = X10Tensor.rand([4, 28, 28, 1])
           let outShape = maxPool2D(
             TF(x), filterSize: (1, 2, 2, 1), strides: (1, stride, stride, 1),
-            padding: padSame ? Padding.same : Padding.valid).shape
+            padding: padSame ? Padding.same : Padding.valid
+          ).shape
           var outGrad = X10Tensor.rand(outShape.dimensions)
           if useReducedPrecision {
             x = x.toReducedPrecision
@@ -2223,7 +2235,8 @@ final class TensorTests: XCTestCase {
           var x = input
           let outShape = maxPool3D(
             TF(x), filterSize: (1, 2, 2, 2, 1), strides: (1, stride, stride, stride, 1),
-            padding: padSame ? Padding.same : Padding.valid).shape
+            padding: padSame ? Padding.same : Padding.valid
+          ).shape
           var outGrad = X10Tensor(repeating: 1.0, shape: TensorShape(outShape.dimensions))
           if useReducedPrecision {
             x = x.toReducedPrecision
@@ -3453,6 +3466,7 @@ extension TensorTests {
     ("testAcos", testAcos),
     ("testAcosh", testAcosh),
     ("testAdd", testAdd),
+    ("testAddInterop", testAddInterop),
     ("testAll", testAll),
     ("testAny", testAny),
     ("testApproximateEqual", testApproximateEqual),
