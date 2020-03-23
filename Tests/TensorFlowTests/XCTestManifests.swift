@@ -36,6 +36,7 @@ import XCTest
       testCase(LazyTensorTraceTests.allTests),
       testCase(LossTests.allTests),
       testCase(MathOperatorTests.allTests),
+      testCase(NNTests.allTests),
       testCase(OptimizerTests.allTests),
       testCase(RuntimeTests.allTests),
       testCase(SequencedTests.allTests),
