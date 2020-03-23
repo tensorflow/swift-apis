@@ -17,7 +17,7 @@
 #ifndef X10_XLA_TENSOR_TF_OPS_H_
 #define X10_XLA_TENSOR_TF_OPS_H_
 
-#include "swift_bindings/xla_tensor_wrapper.h"
+#include "xla_tensor_wrapper.h"
 
 #ifdef __cplusplus
 extern "C" {

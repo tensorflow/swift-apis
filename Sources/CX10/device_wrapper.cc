@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "swift_bindings/device_wrapper.h"
+#include "device_wrapper.h"
 
 #include "tensorflow/compiler/tf2xla/xla_tensor/tensor.h"
 #include "xla_client/computation_client.h"
