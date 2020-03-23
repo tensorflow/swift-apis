@@ -1,7 +1,7 @@
 FROM gcr.io/swift-tensorflow/base-deps-cuda10.1-cudnn7-ubuntu18.04
 
 # Allows the caller to specify the toolchain to use.
-ARG swift_tf_url=https://storage.googleapis.com/swift-tensorflow-artifacts/nightlies/latest/swift-tensorflow-DEVELOPMENT-cuda10.1-cudnn7-ubuntu18.04.tar.gz
+ARG swift_tf_url=https://storage.googleapis.com/swift-tensorflow-artifacts/nightlies/latest/swift-tensorflow-DEVELOPMENT-x10-ubuntu18.04.tar.gz
 
 # Download and extract S4TF
 WORKDIR /swift-tensorflow-toolchain
@@ -24,11 +24,13 @@ RUN apt-get update
 RUN apt-get -yq install --no-install-recommends cmake ninja-build
 RUN cmake                                                                       \
       -B /BinaryCache/tensorflow-swift-apis                                     \
+      -D BUILD_X10=TRUE                                                         \
       -D CMAKE_BUILD_TYPE=Release                                               \
       -D CMAKE_Swift_COMPILER=/swift-tensorflow-toolchain/usr/bin/swiftc        \
       -D TensorFlow_INCLUDE_DIR=/swift-tensorflow-toolchain/usr/lib/swift/linux/x86_64/modulemaps/CTensorFlow \
       -D TensorFlow_LIBRARY=/swift-tensorflow-toolchain/usr/lib/swift/linux/libtensorflow.so \
       -D USE_BUNDLED_CTENSORFLOW=YES                                            \
+      -D X10_INCLUDE_DIR=/swift-tensorflow-toolchain/usr/lib/swift/x10/include  \
       -G Ninja                                                                  \
       -S /swift-apis
 RUN cmake --build /BinaryCache/tensorflow-swift-apis --verbose
