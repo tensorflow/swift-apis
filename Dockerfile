@@ -22,18 +22,27 @@ RUN curl -qL https://apt.kitware.com/keys/kitware-archive-latest.asc | apt-key a
 RUN echo 'deb https://apt.kitware.com/ubuntu/ bionic main' >> /etc/apt/sources.list
 RUN apt-get update
 RUN apt-get -yq install --no-install-recommends cmake ninja-build
-RUN cmake -G Ninja -D CMAKE_BUILD_TYPE=Release -D CMAKE_Swift_COMPILER=/swift-tensorflow-toolchain/usr/bin/swiftc -D USE_BUNDLED_CTENSORFLOW=YES -D TensorFlow_INCLUDE_DIR=/swift-tensorflow-toolchain/usr/lib/swift/linux/x86_64/modulemaps/CTensorFlow -D TensorFlow_LIBRARY=/swift-tensorflow-toolchain/usr/lib/swift/linux/libtensorflow.so -B /BinaryCache/tensorflow-swift-apis -S /swift-apis
+RUN cmake                                                                       \
+      -B /BinaryCache/tensorflow-swift-apis                                     \
+      -D CMAKE_BUILD_TYPE=Release                                               \
+      -D CMAKE_Swift_COMPILER=/swift-tensorflow-toolchain/usr/bin/swiftc        \
+      -D TensorFlow_INCLUDE_DIR=/swift-tensorflow-toolchain/usr/lib/swift/linux/x86_64/modulemaps/CTensorFlow \
+      -D TensorFlow_LIBRARY=/swift-tensorflow-toolchain/usr/lib/swift/linux/libtensorflow.so \
+      -D USE_BUNDLED_CTENSORFLOW=YES                                            \
+      -G Ninja                                                                  \
+      -S /swift-apis
 RUN cmake --build /BinaryCache/tensorflow-swift-apis --verbose
+RUN cmake --build /BinaryCache/tensorflow-swift-apis --target test
 
 # Clean out existing artifacts.
 # TODO: move into bash scripts...
-RUN rm /swift-tensorflow-toolchain/usr/lib/swift/linux/x86_64/TensorFlow.swiftinterface
-RUN rm /swift-tensorflow-toolchain/usr/lib/swift/linux/x86_64/TensorFlow.swiftdoc
-RUN rm /swift-tensorflow-toolchain/usr/lib/swift/linux/x86_64/TensorFlow.swiftmodule
-RUN rm /swift-tensorflow-toolchain/usr/lib/swift/linux/libswiftTensorFlow.so
+RUN rm -f /swift-tensorflow-toolchain/usr/lib/swift/linux/x86_64/TensorFlow.swiftinterface
+RUN rm -f /swift-tensorflow-toolchain/usr/lib/swift/linux/x86_64/TensorFlow.swiftdoc
+RUN rm -f /swift-tensorflow-toolchain/usr/lib/swift/linux/x86_64/TensorFlow.swiftmodule
+RUN rm -f /swift-tensorflow-toolchain/usr/lib/swift/linux/libswiftTensorFlow.so
 
 # Benchmark compile times
-RUN python3 Tools/benchmark_compile.py /swift-tensorflow-toolchain/usr/bin/swift benchmark_results.xml
+RUN python3 Utilities/benchmark_compile.py /swift-tensorflow-toolchain/usr/bin/swift benchmark_results.xml
 
 # Run SwiftPM tests
 RUN /swift-tensorflow-toolchain/usr/bin/swift test

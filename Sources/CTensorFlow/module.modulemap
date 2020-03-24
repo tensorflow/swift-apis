@@ -3,3 +3,15 @@ module CTensorFlow {
 
   link "tensorflow"
 }
+
+module x10_device_wrapper {
+  header "x10/device_wrapper.h"
+}
+
+module x10_xla_tensor_tf_ops {
+  header "x10/xla_tensor_tf_ops.h"
+}
+
+module x10_xla_tensor_wrapper {
+  header "x10/xla_tensor_wrapper.h"
+}

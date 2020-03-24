@@ -375,7 +375,7 @@ public struct RecurrentLayer<Cell: RNNCell>: Layer {
     return timeStepOutputs
   }
 
-  @differentiable(wrt: (self, inputs, initialState))
+  @differentiable(wrt: (self,inputs,initialState))
   public func call(
     _ inputs: [Cell.TimeStepInput],
     initialState: Cell.State
@@ -453,12 +453,12 @@ public struct RecurrentLayer<Cell: RNNCell>: Layer {
 extension RecurrentLayer: Equatable where Cell: Equatable {}
 extension RecurrentLayer: AdditiveArithmetic where Cell: AdditiveArithmetic {}
 
-@available(*, deprecated, renamed: "RecurrentLayer")
-public typealias RNN = RecurrentLayer
-
 public typealias BasicRNN<Scalar: TensorFlowFloatingPoint> = RNN<SimpleRNNCell<Scalar>>
 public typealias LSTM<Scalar: TensorFlowFloatingPoint> = RNN<LSTMCell<Scalar>>
 public typealias GRU<Scalar: TensorFlowFloatingPoint> = RNN<GRUCell<Scalar>>
+
+@available(*, deprecated, renamed: "RecurrentLayer")
+public typealias RNN = RecurrentLayer
 
 @available(*, deprecated, renamed: "BasicRNN")
 public typealias SimpleRNN = BasicRNN
