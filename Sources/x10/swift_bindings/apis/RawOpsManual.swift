@@ -20,131 +20,12 @@ import x10_xla_tensor_tf_ops
 import x10_xla_tensor_wrapper
 
 public enum _RawXLA {
-
-  // @_frozen // SR-9739
-  public enum DataFormat {
-    case nchw
-    case nhwc
-
-    @inlinable
-    var cName: String {
-      @inline(__always)
-      get {
-        switch self {
-        case .nchw: return "NCHW"
-        case .nhwc: return "NHWC"
-        }
-      }
-    }
-  }
-
-  // @_frozen // SR-9739
-  public enum DataFormat1 {
-    case ncdhw
-    case ndhwc
-
-    @inlinable
-    var cName: String {
-      @inline(__always)
-      get {
-        switch self {
-        case .ncdhw: return "NCDHW"
-        case .ndhwc: return "NDHWC"
-        }
-      }
-    }
-  }
-
-  // @_frozen // SR-9739
-  public enum DataFormat4 {
-    case nchw
-    case nchwVectC
-    case nhwc
-
-    @inlinable
-    var cName: String {
-      @inline(__always)
-      get {
-        switch self {
-        case .nchw: return "NCHW"
-        case .nchwVectC: return "NCHW_VECT_C"
-        case .nhwc: return "NHWC"
-        }
-      }
-    }
-  }
-
-  // @_frozen // SR-9739
-  public enum DataFormat5 {
-    case nchw
-    case nchwVectC
-    case nhwc
-
-    @inlinable
-    var cName: String {
-      @inline(__always)
-      get {
-        switch self {
-        case .nchw: return "NCHW"
-        case .nchwVectC: return "NCHW_VECT_C"
-        case .nhwc: return "NHWC"
-        }
-      }
-    }
-  }
-
-  // @_frozen // SR-9739
-  public enum Padding {
-    case same
-    case valid
-
-    @inlinable
-    var cName: String {
-      @inline(__always)
-      get {
-        switch self {
-        case .same: return "SAME"
-        case .valid: return "VALID"
-        }
-      }
-    }
-  }
-
-  // @_frozen // SR-9739
-  public enum Padding2 {
-    case explicit
-    case same
-    case valid
-
-    @inlinable
-    var cName: String {
-      @inline(__always)
-      get {
-        switch self {
-        case .explicit: return "EXPLICIT"
-        case .same: return "SAME"
-        case .valid: return "VALID"
-        }
-      }
-    }
-  }
-
-  // @_frozen // SR-9739
-  public enum Mode5 {
-    case reflect
-    case symmetric
-
-    @inlinable
-    var cName: String {
-      @inline(__always)
-      get {
-        switch self {
-        case .reflect: return "REFLECT"
-        case .symmetric: return "SYMMETRIC"
-        }
-      }
-    }
-  }
+  public typealias DataFormat = _RawTFEager.DataFormat
+  public typealias DataFormat1 = _RawTFEager.DataFormat1
+  public typealias DataFormat4 = _RawTFEager.DataFormat2
+  public typealias Padding = _RawTFEager.Padding
+  public typealias Padding1 = _RawTFEager.Padding1
+  public typealias Mode5 = _RawTFEager.Mode1
 
   private static func canonicalDims(_ dims: [Int64], _ rank: Int64) -> [Int64] {
     dims.map { $0 < 0 ? $0 + rank : $0 }
@@ -352,7 +233,7 @@ public enum _RawXLA {
     _ input: Tensor<T>,
     dimension: Int64
   ) -> Tensor<OutputType> {
-    return _Raw.cast(
+    return _RawXLA.cast(
       Tensor<Int64>(_xla: XLATensor.argmax(input.xlaTensor, dimension, false)))
   }
   public static func argMax<
@@ -391,7 +272,7 @@ public enum _RawXLA {
     _ input: Tensor<T>,
     dimension: Tensor<Tidx>
   ) -> Tensor<OutputType> {
-    return _Raw.cast(
+    return _RawXLA.cast(
       Tensor<Int64>(_xla: XLATensor.argmin(input.xlaTensor, Int64(dimension.scalarized()), false)))
   }
 
@@ -464,7 +345,7 @@ public enum _RawXLA {
     }
   }
 
-  private static func convertPadding2(_ padding: Padding2) -> TFPadding {
+  private static func convertPadding1(_ padding: Padding1) -> TFPadding {
     switch padding {
     case .explicit: return TFPadding_EXPLICIT
     case .same: return TFPadding_SAME
@@ -890,12 +771,12 @@ public enum _RawXLA {
   ///
   /// - Output output: A 4-D tensor. The dimension order is determined by the value of
   ///     `data_format`, see below for details.
-  public static func conv2D<T: FloatingPoint & TensorFlowScalar>(
+  public static func conv2D<T: TensorFlowNumeric>(
     _ input: Tensor<T>,
     filter: Tensor<T>,
     strides: [Int32],
     useCudnnOnGpu: Bool = true,
-    padding: Padding2,
+    padding: Padding1,
     explicitPaddings: [Int32],
     dataFormat: DataFormat = .nhwc,
     dilations: [Int32] = [1, 1, 1, 1]
@@ -905,7 +786,7 @@ public enum _RawXLA {
     return Tensor(
       _xla: XLATensor.tf_Conv(
         input.xlaTensor, filter.xlaTensor, false, strides.map { Int64($0) },
-        convertPadding2(padding),
+        convertPadding1(padding),
         explicitPaddings.map { Int64($0) }, convertDataFormat(dataFormat),
         dilations.map { Int64($0) }))
   }
@@ -949,7 +830,7 @@ public enum _RawXLA {
     outBackprop: Tensor<T>,
     strides: [Int32],
     useCudnnOnGpu: Bool = true,
-    padding: Padding2,
+    padding: Padding1,
     explicitPaddings: [Int32],
     dataFormat: DataFormat = .nhwc,
     dilations: [Int32] = [1, 1, 1, 1]
@@ -960,7 +841,7 @@ public enum _RawXLA {
       _xla: XLATensor.tf_ConvBackpropFilter(
         input.xlaTensor, filterSizes,
         outBackprop.xlaTensor, false, strides.map { Int64($0) },
-        convertPadding2(padding), explicitPaddings.map { Int64($0) },
+        convertPadding1(padding), explicitPaddings.map { Int64($0) },
         convertDataFormat(dataFormat), dilations.map { Int64($0) }))
   }
   public static func conv2DBackpropFilter<T: FloatingPoint & TensorFlowScalar>(
@@ -969,7 +850,7 @@ public enum _RawXLA {
     outBackprop: Tensor<T>,
     strides: [Int32],
     useCudnnOnGpu: Bool = true,
-    padding: Padding2,
+    padding: Padding1,
     explicitPaddings: [Int32],
     dataFormat: DataFormat = .nhwc,
     dilations: [Int32] = [1, 1, 1, 1]
@@ -980,7 +861,7 @@ public enum _RawXLA {
       _xla: XLATensor.tf_ConvBackpropFilter(
         input.xlaTensor, filterSizes.scalars.map { Int64($0) },
         outBackprop.xlaTensor, false, strides.map { Int64($0) },
-        convertPadding2(padding), explicitPaddings.map { Int64($0) },
+        convertPadding1(padding), explicitPaddings.map { Int64($0) },
         convertDataFormat(dataFormat), dilations.map { Int64($0) }))
   }
 
@@ -1022,7 +903,7 @@ public enum _RawXLA {
     outBackprop: Tensor<T>,
     strides: [Int32],
     useCudnnOnGpu: Bool = true,
-    padding: Padding2,
+    padding: Padding1,
     explicitPaddings: [Int32],
     dataFormat: DataFormat = .nhwc,
     dilations: [Int32] = [1, 1, 1, 1]
@@ -1033,16 +914,16 @@ public enum _RawXLA {
       _xla: XLATensor.tf_ConvBackpropInput(
         inputSizes, filter.xlaTensor,
         outBackprop.xlaTensor, false, strides.map { Int64($0) },
-        convertPadding2(padding), explicitPaddings.map { Int64($0) },
+        convertPadding1(padding), explicitPaddings.map { Int64($0) },
         convertDataFormat(dataFormat), dilations.map { Int64($0) }))
   }
-  public static func conv2DBackpropInput<T: FloatingPoint & TensorFlowScalar>(
+  public static func conv2DBackpropInput<T: TensorFlowNumeric>(
     inputSizes: Tensor<Int32>,
     filter: Tensor<T>,
     outBackprop: Tensor<T>,
     strides: [Int32],
     useCudnnOnGpu: Bool = true,
-    padding: Padding2,
+    padding: Padding1,
     explicitPaddings: [Int32],
     dataFormat: DataFormat = .nhwc,
     dilations: [Int32] = [1, 1, 1, 1]
@@ -1053,7 +934,7 @@ public enum _RawXLA {
       _xla: XLATensor.tf_ConvBackpropInput(
         inputSizes.scalars.map { Int64($0) }, filter.xlaTensor,
         outBackprop.xlaTensor, false, strides.map { Int64($0) },
-        convertPadding2(padding), explicitPaddings.map { Int64($0) },
+        convertPadding1(padding), explicitPaddings.map { Int64($0) },
         convertDataFormat(dataFormat), dilations.map { Int64($0) }))
   }
 
@@ -1328,108 +1209,6 @@ public enum _RawXLA {
         exclusive: exclusive, reverse: reverse))
   }
 
-  /// DepthToSpace for tensors of type T.
-  ///
-  /// Rearranges data from depth into blocks of spatial data.
-  /// This is the reverse transformation of SpaceToDepth. More specifically,
-  /// this op outputs a copy of the input tensor where values from the `depth`
-  /// dimension are moved in spatial blocks to the `height` and `width` dimensions.
-  /// The attr `block_size` indicates the input block size and how the data is moved.
-  /// 
-  ///   * Chunks of data of size `block_size * block_size` from depth are rearranged
-  ///     into non-overlapping blocks of size `block_size x block_size`
-  ///   * The width the output tensor is `input_depth * block_size`, whereas the
-  ///     height is `input_height * block_size`.
-  ///   * The Y, X coordinates within each block of the output image are determined
-  ///     by the high order component of the input channel index.
-  ///   * The depth of the input tensor must be divisible by
-  ///     `block_size * block_size`.
-  /// 
-  /// The `data_format` attr specifies the layout of the input and output tensors
-  /// with the following options:
-  ///   "NHWC": `[ batch, height, width, channels ]`
-  ///   "NCHW": `[ batch, channels, height, width ]`
-  ///   "NCHW_VECT_C":
-  ///       `qint8 [ batch, channels / 4, height, width, 4 ]`
-  /// 
-  /// It is useful to consider the operation as transforming a 6-D Tensor.
-  /// e.g. for data_format = NHWC,
-  ///      Each element in the input tensor can be specified via 6 coordinates,
-  ///      ordered by decreasing memory layout significance as:
-  ///      n,iY,iX,bY,bX,oC  (where n=batch index, iX, iY means X or Y coordinates
-  ///                         within the input image, bX, bY means coordinates
-  ///                         within the output block, oC means output channels).
-  ///      The output would be the input transposed to the following layout:
-  ///      n,iY,bY,iX,bX,oC
-  /// 
-  /// This operation is useful for resizing the activations between convolutions
-  /// (but keeping all data), e.g. instead of pooling. It is also useful for training
-  /// purely convolutional models.
-  /// 
-  /// For example, given an input of shape `[1, 1, 1, 4]`, data_format = "NHWC" and
-  /// block_size = 2:
-  /// 
-  /// ```
-  /// x = [[[[1, 2, 3, 4]]]]
-  /// 
-  /// ```
-  /// 
-  /// This operation will output a tensor of shape `[1, 2, 2, 1]`:
-  /// 
-  /// ```
-  ///    [[[[1], [2]],
-  ///      [[3], [4]]]]
-  /// ```
-  /// 
-  /// Here, the input has a batch of 1 and each batch element has shape `[1, 1, 4]`,
-  /// the corresponding output will have 2x2 elements and will have a depth of
-  /// 1 channel (1 = `4 / (block_size * block_size)`).
-  /// The output element shape is `[2, 2, 1]`.
-  /// 
-  /// For an input tensor with larger depth, here of shape `[1, 1, 1, 12]`, e.g.
-  /// 
-  /// ```
-  /// x = [[[[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]]]]
-  /// ```
-  /// 
-  /// This operation, for block size of 2, will return the following tensor of shape
-  /// `[1, 2, 2, 3]`
-  /// 
-  /// ```
-  ///    [[[[1, 2, 3], [4, 5, 6]],
-  ///      [[7, 8, 9], [10, 11, 12]]]]
-  /// 
-  /// ```
-  /// 
-  /// Similarly, for the following input of shape `[1 2 2 4]`, and a block size of 2:
-  /// 
-  /// ```
-  /// x =  [[[[1, 2, 3, 4],
-  ///        [5, 6, 7, 8]],
-  ///       [[9, 10, 11, 12],
-  ///        [13, 14, 15, 16]]]]
-  /// ```
-  /// 
-  /// the operator will return the following tensor of shape `[1 4 4 1]`:
-  /// 
-  /// ```
-  /// x = [[[ [1],   [2],  [5],  [6]],
-  ///       [ [3],   [4],  [7],  [8]],
-  ///       [ [9],  [10], [13],  [14]],
-  ///       [ [11], [12], [15],  [16]]]]
-  /// 
-  /// ```
-  ///
-  /// - Attr block_size: The size of the spatial block, same as in Space2Depth.
-  @inlinable @inline(__always)
-  public static func depthToSpace<T: TensorFlowScalar>(
-    _ input: Tensor<T>,
-    blockSize: Int64,
-    dataFormat: DataFormat5 = .nhwc
-  ) -> Tensor<T> {
-    fatalError("implement depthToSpace")
-  }
-
   /// Computes a 2-D depthwise convolution given 4-D `input` and `filter` tensors.
   ///
   /// Given an input tensor of shape `[batch, in_height, in_width, in_channels]`
@@ -1621,7 +1400,7 @@ public enum _RawXLA {
       let flatDims = outputDims.reduce(1, *)
       return Tensor<T>(
         _xla: XLATensor.resize_value(
-          _Raw.diagPart(
+          _RawXLA.diagPart(
             Tensor<T>(_xla: XLATensor.resize_value(input.xlaTensor, [flatDims, flatDims]))
           ).xlaTensor,
           [Int64](outputDims)))
@@ -1649,10 +1428,10 @@ public enum _RawXLA {
   public static func elu<T: FloatingPoint & TensorFlowScalar>(
     features: Tensor<T>
   ) -> Tensor<T> {
-    _Raw.select(
-      condition: _Raw.greater(features, _Raw.zerosLike(features)),
+    _RawXLA.select(
+      condition: _RawXLA.greater(features, _RawXLA.zerosLike(features)),
       t: features,
-      e: _Raw.expm1(features))
+      e: _RawXLA.expm1(features))
   }
 
   /// Computes gradients for the exponential linear (Elu) operation.
@@ -1669,10 +1448,10 @@ public enum _RawXLA {
   ) -> Tensor<T> {
     checkSameDevice(gradients, outputs)
     checkSamePrecision(gradients, outputs)
-    return _Raw.select(
-      condition: _Raw.greater(outputs, _Raw.zerosLike(outputs)),
+    return _RawXLA.select(
+      condition: _RawXLA.greater(outputs, _RawXLA.zerosLike(outputs)),
       t: gradients,
-      e: _Raw.mul(gradients, _Raw.addV2(outputs, _Raw.onesLike(outputs))))
+      e: _RawXLA.mul(gradients, _RawXLA.addV2(outputs, _RawXLA.onesLike(outputs))))
   }
 
   /// Returns the truth value of (x == y) element-wise.
@@ -1681,8 +1460,10 @@ public enum _RawXLA {
   /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
   public static func equal<T: TensorFlowScalar>(
     _ x: Tensor<T>,
-    _ y: Tensor<T>
+    _ y: Tensor<T>,
+    incompatibleShapeError: Bool = true
   ) -> Tensor<Bool> {
+    precondition(incompatibleShapeError)
     checkSameDevice(x, y)
     checkSamePrecision(x, y)
     return Tensor(_xla: XLATensor.eq(x.xlaTensor, y.xlaTensor))
@@ -1905,8 +1686,10 @@ public enum _RawXLA {
   >(
     params: Tensor<Tparams>,
     indices: Tensor<Tindices>,
-    axis: Tensor<Taxis>
+    axis: Tensor<Taxis>,
+    batchDims: Int64 = 0
   ) -> Tensor<Tparams> {
+    precondition(batchDims == 0)
     checkSameDevice(params.device, indices.device)
     let canonicalAxis = canonicalDims(axis.scalars.map { Int64($0) }, Int64(params.rank)).first!
     return Tensor(_xla: XLATensor.index(params.xlaTensor, [indices.xlaTensor], canonicalAxis))
@@ -2024,10 +1807,10 @@ public enum _RawXLA {
     if features.isReducedPrecision {
       alphaTensor = alphaTensor.toReducedPrecision
     }
-    return _Raw.select(
-      condition: _Raw.greater(features, _Raw.zerosLike(features)),
+    return _RawXLA.select(
+      condition: _RawXLA.greater(features, _RawXLA.zerosLike(features)),
       t: features,
-      e: _Raw.mul(features, alphaTensor))
+      e: _RawXLA.mul(features, alphaTensor))
   }
 
   /// Computes rectified linear gradients for a LeakyRelu operation.
@@ -2051,10 +1834,10 @@ public enum _RawXLA {
     if gradients.isReducedPrecision {
       alphaTensor = alphaTensor.toReducedPrecision
     }
-    return _Raw.select(
-      condition: _Raw.greater(features, _Raw.zerosLike(features)),
+    return _RawXLA.select(
+      condition: _RawXLA.greater(features, _RawXLA.zerosLike(features)),
       t: gradients,
-      e: _Raw.mul(
+      e: _RawXLA.mul(
         gradients,
         alphaTensor))
   }
@@ -2159,31 +1942,6 @@ public enum _RawXLA {
     _ x: Tensor<T>
   ) -> Tensor<T> {
     return Tensor(_xla: XLATensor.log1p(x.xlaTensor))
-  }
-
-  /// Computes the sign and the log of the absolute value of the determinant of
-  ///
-  /// one or more square matrices.
-  ///
-  /// The input is a tensor of shape `[N, M, M]` whose inner-most 2 dimensions
-  /// form square matrices. The outputs are two tensors containing the signs and
-  /// absolute values of the log determinants for all N input submatrices
-  /// `[..., :, :]` such that the determinant = sign*exp(log_abs_determinant).
-  /// The log_abs_determinant is computed as det(P)*sum(log(diag(LU))) where LU
-  /// is the LU decomposition of the input and P is the corresponding
-  /// permutation matrix.
-  ///
-  /// - Parameter input: Shape is `[N, M, M]`.
-  ///
-  /// - Outputs:
-  ///     - sign: The signs of the log determinants of the inputs. Shape is `[N]`.
-  ///     - log_abs_determinant: The logs of the absolute values of the determinants
-  ///         of the N input matrices.  Shape is `[N]`.
-  @inlinable @inline(__always)
-  public static func logMatrixDeterminant<T: FloatingPoint & TensorFlowScalar>(
-    _ input: Tensor<T>
-  ) -> (sign: Tensor<T>, logAbsDeterminant: Tensor<T>) {
-    fatalError("implement logMatrixDeterminant")
   }
 
   /// Computes log softmax activations.
@@ -2703,8 +2461,10 @@ public enum _RawXLA {
   /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
   public static func notEqual<T: TensorFlowScalar>(
     _ x: Tensor<T>,
-    _ y: Tensor<T>
+    _ y: Tensor<T>,
+    incompatibleShapeError: Bool = true
   ) -> Tensor<Bool> {
+    precondition(incompatibleShapeError)
     checkSameDevice(x, y)
     checkSamePrecision(x, y)
     return Tensor(_xla: XLATensor.ne(x.xlaTensor, y.xlaTensor))
@@ -2849,7 +2609,7 @@ public enum _RawXLA {
   /// - Parameter x: a tensor of type T.
   ///
   /// - Output y: a tensor of the same shape and type as x but filled with ones.
-  public static func onesLike<T: TensorFlowNumeric>(
+  public static func onesLike<T: TensorFlowScalar>(
     _ x: Tensor<T>
   ) -> Tensor<T> {
     let t = Tensor<T>(
@@ -3129,8 +2889,8 @@ public enum _RawXLA {
   public static func relu6<T: TensorFlowNumeric>(
     features: Tensor<T>
   ) -> Tensor<T> {
-    return _Raw.minimum(
-      _Raw.maximum(features, Tensor<T>(0, deviceAndPrecisionLike: features)),
+    return _RawXLA.minimum(
+      _RawXLA.maximum(features, Tensor<T>(0, deviceAndPrecisionLike: features)),
       Tensor<T>(6, deviceAndPrecisionLike: features))
   }
 
@@ -3150,10 +2910,10 @@ public enum _RawXLA {
     checkSameDevice(gradients, features)
     checkSamePrecision(gradients, features)
     let features_shape = features.shape.dimensions.map { Int64($0) }
-    return _Raw.select(
-      condition: _Raw.logicalAnd(
-        _Raw.greater(features, Tensor<T>(0, deviceAndPrecisionLike: features)),
-        _Raw.less(features, Tensor<T>(6, deviceAndPrecisionLike: features))),
+    return _RawXLA.select(
+      condition: _RawXLA.logicalAnd(
+        _RawXLA.greater(features, Tensor<T>(0, deviceAndPrecisionLike: features)),
+        _RawXLA.less(features, Tensor<T>(6, deviceAndPrecisionLike: features))),
       t: gradients,
       e: Tensor(
         _xla: XLATensor.expand(
@@ -3357,8 +3117,8 @@ public enum _RawXLA {
   ) -> Tensor<T> {
     checkSameDevice(y, dy)
     checkSamePrecision(y, dy)
-    return _Raw.mul(
-      _Raw.mul(_Raw.mul(y, y), y), _Raw.div(dy, Tensor<T>(-2, deviceAndPrecisionLike: y)))
+    return _RawXLA.mul(
+      _RawXLA.mul(_RawXLA.mul(y, y), y), _RawXLA.div(dy, Tensor<T>(-2, deviceAndPrecisionLike: y)))
   }
 
   /// Selects elements from `x` or `y`, depending on `condition`.
@@ -3454,10 +3214,10 @@ public enum _RawXLA {
       scale = scale.toReducedPrecision
       scale_alpha = scale_alpha.toReducedPrecision
     }
-    return _Raw.select(
-      condition: _Raw.greater(features, _Raw.zerosLike(features)),
-      t: _Raw.mul(scale, features),
-      e: _Raw.mul(scale_alpha, _Raw.expm1(features)))
+    return _RawXLA.select(
+      condition: _RawXLA.greater(features, _RawXLA.zerosLike(features)),
+      t: _RawXLA.mul(scale, features),
+      e: _RawXLA.mul(scale_alpha, _RawXLA.expm1(features)))
   }
 
   /// Computes gradients for the scaled exponential linear (Selu) operation.
@@ -3484,10 +3244,10 @@ public enum _RawXLA {
       scale = scale.toReducedPrecision
       scale_alpha = scale_alpha.toReducedPrecision
     }
-    return _Raw.select(
-      condition: _Raw.greater(outputs, _Raw.zerosLike(outputs)),
-      t: _Raw.mul(scale, gradients),
-      e: _Raw.mul(gradients, _Raw.addV2(outputs, scale_alpha)))
+    return _RawXLA.select(
+      condition: _RawXLA.greater(outputs, _RawXLA.zerosLike(outputs)),
+      t: _RawXLA.mul(scale, gradients),
+      e: _RawXLA.mul(gradients, _RawXLA.addV2(outputs, scale_alpha)))
   }
 
   /// Returns the shape of a tensor.
@@ -3529,7 +3289,7 @@ public enum _RawXLA {
   ) -> Tensor<T> {
     checkSameDevice(y, dy)
     checkSamePrecision(y, dy)
-    return _Raw.mul(_Raw.mul(dy, y), _Raw.sub(_Raw.onesLike(y), y))
+    return _RawXLA.mul(_RawXLA.mul(dy, y), _RawXLA.sub(_RawXLA.onesLike(y), y))
   }
 
   /// Returns an element-wise indication of the sign of a number.
@@ -3654,15 +3414,15 @@ public enum _RawXLA {
     checkSamePrecision(features, labels)
     let logits = features
     let logits_max = Tensor<T>(_xla: XLATensor.max(logits.xlaTensor, 1, true))
-    let shifted_logits = _Raw.sub(logits, logits_max)
-    let exp = _Raw.exp(shifted_logits)
-    let sum_exp = _Raw.sum(exp, reductionIndices: Tensor<Int64>([1]), keepDims: true)
-    let log_sum_exp = _Raw.log(sum_exp)
+    let shifted_logits = _RawXLA.sub(logits, logits_max)
+    let exp = _RawXLA.exp(shifted_logits)
+    let sum_exp = _RawXLA.sum(exp, reductionIndices: Tensor<Int64>([1]), keepDims: true)
+    let log_sum_exp = _RawXLA.log(sum_exp)
     return (
-      loss: _Raw.sum(
-        _Raw.mul(-labels, shifted_logits - log_sum_exp),
+      loss: _RawXLA.sum(
+        _RawXLA.mul(-labels, shifted_logits - log_sum_exp),
         reductionIndices: Tensor<Int64>([1])),
-      backprop: _Raw.sub(_Raw.div(exp, sum_exp), labels)
+      backprop: _RawXLA.sub(_RawXLA.div(exp, sum_exp), labels)
     )
   }
 
@@ -3670,9 +3430,9 @@ public enum _RawXLA {
   public static func softplus<T: FloatingPoint & TensorFlowScalar>(
     features: Tensor<T>
   ) -> Tensor<T> {
-    _Raw.addV2(
-      _Raw.maximum(features, _Raw.zerosLike(features)),
-      _Raw.log1p(_Raw.exp(-_Raw.abs(features))))
+    _RawXLA.addV2(
+      _RawXLA.maximum(features, _RawXLA.zerosLike(features)),
+      _RawXLA.log1p(_RawXLA.exp(-_RawXLA.abs(features))))
   }
 
   /// Computes softplus gradients for a softplus operation.
@@ -3694,15 +3454,15 @@ public enum _RawXLA {
     if gradients.isReducedPrecision {
       half = half.toReducedPrecision
     }
-    return _Raw.mul(
-      gradients, _Raw.addV2(half, _Raw.mul(half, _Raw.tanh(_Raw.mul(half, features)))))
+    return _RawXLA.mul(
+      gradients, _RawXLA.addV2(half, _RawXLA.mul(half, _RawXLA.tanh(_RawXLA.mul(half, features)))))
   }
 
   /// Computes softsign: `features / (abs(features) + 1)`.
   public static func softsign<T: FloatingPoint & TensorFlowScalar>(
     features: Tensor<T>
   ) -> Tensor<T> {
-    _Raw.div(features, (_Raw.addV2(_Raw.abs(features), _Raw.onesLike(features))))
+    _RawXLA.div(features, (_RawXLA.addV2(_RawXLA.abs(features), _RawXLA.onesLike(features))))
   }
 
   /// Computes softsign gradients for a softsign operation.
@@ -3718,103 +3478,8 @@ public enum _RawXLA {
   ) -> Tensor<T> {
     checkSameDevice(gradients, features)
     checkSamePrecision(gradients, features)
-    return _Raw.div(gradients, _Raw.square(_Raw.addV2(_Raw.abs(features), _Raw.onesLike(features))))
-  }
-
-  /// SpaceToDepth for tensors of type T.
-  ///
-  /// Rearranges blocks of spatial data, into depth. More specifically,
-  /// this op outputs a copy of the input tensor where values from the `height`
-  /// and `width` dimensions are moved to the `depth` dimension.
-  /// The attr `block_size` indicates the input block size.
-  /// 
-  ///   * Non-overlapping blocks of size `block_size x block size` are rearranged
-  ///     into depth at each location.
-  ///   * The depth of the output tensor is `block_size * block_size * input_depth`.
-  ///   * The Y, X coordinates within each block of the input become the high order
-  ///     component of the output channel index.
-  ///   * The input tensor's height and width must be divisible by block_size.
-  /// 
-  /// The `data_format` attr specifies the layout of the input and output tensors
-  /// with the following options:
-  ///   "NHWC": `[ batch, height, width, channels ]`
-  ///   "NCHW": `[ batch, channels, height, width ]`
-  ///   "NCHW_VECT_C":
-  ///       `qint8 [ batch, channels / 4, height, width, 4 ]`
-  /// 
-  /// It is useful to consider the operation as transforming a 6-D Tensor.
-  /// e.g. for data_format = NHWC,
-  ///      Each element in the input tensor can be specified via 6 coordinates,
-  ///      ordered by decreasing memory layout significance as:
-  ///      n,oY,bY,oX,bX,iC  (where n=batch index, oX, oY means X or Y coordinates
-  ///                         within the output image, bX, bY means coordinates
-  ///                         within the input block, iC means input channels).
-  ///      The output would be a transpose to the following layout:
-  ///      n,oY,oX,bY,bX,iC
-  /// 
-  /// This operation is useful for resizing the activations between convolutions
-  /// (but keeping all data), e.g. instead of pooling. It is also useful for training
-  /// purely convolutional models.
-  /// 
-  /// For example, given an input of shape `[1, 2, 2, 1]`, data_format = "NHWC" and
-  /// block_size = 2:
-  /// 
-  /// ```
-  /// x = [[[[1], [2]],
-  ///       [[3], [4]]]]
-  /// ```
-  /// 
-  /// This operation will output a tensor of shape `[1, 1, 1, 4]`:
-  /// 
-  /// ```
-  /// [[[[1, 2, 3, 4]]]]
-  /// ```
-  /// 
-  /// Here, the input has a batch of 1 and each batch element has shape `[2, 2, 1]`,
-  /// the corresponding output will have a single element (i.e. width and height are
-  /// both 1) and will have a depth of 4 channels (1 * block_size * block_size).
-  /// The output element shape is `[1, 1, 4]`.
-  /// 
-  /// For an input tensor with larger depth, here of shape `[1, 2, 2, 3]`, e.g.
-  /// 
-  /// ```
-  /// x = [[[[1, 2, 3], [4, 5, 6]],
-  ///       [[7, 8, 9], [10, 11, 12]]]]
-  /// ```
-  /// 
-  /// This operation, for block_size of 2, will return the following tensor of shape
-  /// `[1, 1, 1, 12]`
-  /// 
-  /// ```
-  /// [[[[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]]]]
-  /// ```
-  /// 
-  /// Similarly, for the following input of shape `[1 4 4 1]`, and a block size of 2:
-  /// 
-  /// ```
-  /// x = [[[[1],   [2],  [5],  [6]],
-  ///       [[3],   [4],  [7],  [8]],
-  ///       [[9],  [10], [13],  [14]],
-  ///       [[11], [12], [15],  [16]]]]
-  /// ```
-  /// 
-  /// the operator will return the following tensor of shape `[1 2 2 4]`:
-  /// 
-  /// ```
-  /// x = [[[[1, 2, 3, 4],
-  ///        [5, 6, 7, 8]],
-  ///       [[9, 10, 11, 12],
-  ///        [13, 14, 15, 16]]]]
-  /// ```
-  ///
-  /// - Attr block_size: The size of the spatial block.
-  @inlinable @inline(__always)
-  public static func spaceToDepth<T: TensorFlowScalar>(
-    _ input: Tensor<T>,
-    blockSize: Int64,
-    dataFormat: DataFormat5 = .nhwc
-  ) -> Tensor<T> {
-    fatalError("implement spaceToDepth")
+    return _RawXLA.div(
+      gradients, _RawXLA.square(_RawXLA.addV2(_RawXLA.abs(features), _RawXLA.onesLike(features))))
   }
 
   /// Computes softmax cross entropy cost and gradients to backpropagate.
@@ -3843,17 +3508,17 @@ public enum _RawXLA {
   ) -> (loss: Tensor<T>, backprop: Tensor<T>) {
     checkSameDevice(features.device, labels.device)
     let device = labels.device
-    let tmp_output = _Raw.logSoftmax(logits: features)
-    var one_hot = _Raw.neg(
-      _Raw.oneHot(
+    let tmp_output = _RawXLA.logSoftmax(logits: features)
+    var one_hot = _RawXLA.neg(
+      _RawXLA.oneHot(
         indices: labels, depth: Int64(features.shape[1]),
         onValue: Tensor<T>(1, on: device),
         offValue: Tensor<T>(0, on: device)))
     if features.isReducedPrecision {
       one_hot = one_hot.toReducedPrecision
     }
-    let loss = _Raw.sum(
-      _Raw.mul(one_hot, tmp_output),
+    let loss = _RawXLA.sum(
+      _RawXLA.mul(one_hot, tmp_output),
       reductionIndices: [Int64(1)])
     // one_hot stands in for the backprop gradient as it has the right shape
     // and will multiplied on the backwards pass.
@@ -3969,7 +3634,7 @@ public enum _RawXLA {
   public static func square<T: TensorFlowNumeric>(
     _ x: Tensor<T>
   ) -> Tensor<T> {
-    _Raw.mul(x, x)
+    _RawXLA.mul(x, x)
   }
 
   /// Returns (x - y)(x - y) element-wise.
@@ -3982,7 +3647,7 @@ public enum _RawXLA {
   ) -> Tensor<T> {
     checkSameDevice(x, y)
     checkSamePrecision(x, y)
-    return _Raw.square(_Raw.sub(x, y))
+    return _RawXLA.square(_RawXLA.sub(x, y))
   }
 
   /// Removes dimensions of size 1 from the shape of a tensor.
@@ -4537,47 +4202,6 @@ public enum _RawXLA {
     sum(input, reductionIndices: reductionIndices.scalars.map { Int64($0) }, keepDims: keepDims)
   }
 
-  /// Computes the singular value decompositions of one or more matrices.
-  ///
-  /// Computes the SVD of each inner matrix in `input` such that
-  /// `input[..., :, :] = u[..., :, :] * diag(s[..., :, :]) * transpose(v[..., :, :])`
-  ///
-  /// ```python
-  /// # a is a tensor containing a batch of matrices.
-  /// # s is a tensor of singular values for each matrix.
-  /// # u is the tensor containing of left singular vectors for each matrix.
-  /// # v is the tensor containing of right singular vectors for each matrix.
-  /// s, u, v = svd(a)
-  /// s, _, _ = svd(a, compute_uv=False)
-  /// ```
-  ///
-  /// - Parameter input: A tensor of shape `[..., M, N]` whose inner-most 2 dimensions
-  ///     form matrices of size `[M, N]`. Let `P` be the minimum of `M` and `N`.
-  ///
-  /// - Attrs:
-  ///     - compute_uv: If true, left and right singular vectors will be
-  ///         computed and returned in `u` and `v`, respectively.
-  ///         If false, `u` and `v` are not set and should never referenced.
-  ///     - full_matrices: If true, compute full-sized `u` and `v`. If false
-  ///         (the default), compute only the leading `P` singular vectors.
-  ///         Ignored if `compute_uv` is `False`.
-  ///
-  /// - Outputs:
-  ///     - s: Singular values. Shape is `[..., P]`.
-  ///     - u: Left singular vectors. If `full_matrices` is `False` then shape is
-  ///         `[..., M, P]`; if `full_matrices` is `True` then shape is
-  ///         `[..., M, M]`. Undefined if `compute_uv` is `False`.
-  ///     - v: Left singular vectors. If `full_matrices` is `False` then shape is
-  ///         `[..., N, P]`. If `full_matrices` is `True` then shape is `[..., N, N]`.
-  ///         Undefined if `compute_uv` is false.
-  public static func svd<T: FloatingPoint & TensorFlowScalar>(
-    _ input: Tensor<T>,
-    computeUv: Bool = true,
-    fullMatrices: Bool = false
-  ) -> (s: Tensor<T>, u: Tensor<T>, v: Tensor<T>) {
-    fatalError("implement svd")
-  }
-
   /// Computes tan of x element-wise.
   public static func tan<T: TensorFlowNumeric>(
     _ x: Tensor<T>
@@ -4812,73 +4436,6 @@ public enum _RawXLA {
         data.xlaTensor, segmentIds.xlaTensor, Int64(numSegments.scalarized())))
   }
 
-  /// Returns locations of nonzero / true values in a tensor.
-  ///
-  /// This operation returns the coordinates of true elements in `condition`. The
-  /// coordinates are returned in a 2-D tensor where the first dimension (rows)
-  /// represents the number of true elements, and the second dimension (columns)
-  /// represents the coordinates of the true elements. Keep in mind, the shape of
-  /// the output tensor can vary depending on how many true values there are in
-  /// `condition`. Indices are output in row-major order.
-  ///
-  /// For example:
-  ///
-  /// ```
-  /// # 'input' tensor is [[True, False]
-  /// #                    [True, False]]
-  /// # 'input' has two true values, so output has two coordinates.
-  /// # 'input' has rank of 2, so coordinates have two indices.
-  /// where(input) ==> [[0, 0],
-  ///                   [1, 0]]
-  ///
-  /// # `condition` tensor is [[[True, False]
-  /// #                     [True, False]]
-  /// #                    [[False, True]
-  /// #                     [False, True]]
-  /// #                    [[False, False]
-  /// #                     [False, True]]]
-  /// # 'input' has 5 true values, so output has 5 coordinates.
-  /// # 'input' has rank of 3, so coordinates have three indices.
-  /// where(input) ==> [[0, 0, 0],
-  ///                   [0, 1, 0],
-  ///                   [1, 0, 1],
-  ///                   [1, 1, 1],
-  ///                   [2, 1, 1]]
-  ///
-  /// # `condition` tensor is [[[1.5,  0.0]
-  /// #                     [-0.5, 0.0]]
-  /// #                    [[0.0,  0.25]
-  /// #                     [0.0,  0.75]]
-  /// #                    [[0.0,  0.0]
-  /// #                     [0.0,  0.01]]]
-  /// # 'input' has 5 nonzero values, so output has 5 coordinates.
-  /// # 'input' has rank of 3, so coordinates have three indices.
-  /// where(input) ==> [[0, 0, 0],
-  ///                   [0, 1, 0],
-  ///                   [1, 0, 1],
-  ///                   [1, 1, 1],
-  ///                   [2, 1, 1]]
-  ///
-  /// # `condition` tensor is [[[1.5 + 0.0j, 0.0  + 0.0j]
-  /// #                     [0.0 + 0.5j, 0.0  + 0.0j]]
-  /// #                    [[0.0 + 0.0j, 0.25 + 1.5j]
-  /// #                     [0.0 + 0.0j, 0.75 + 0.0j]]
-  /// #                    [[0.0 + 0.0j, 0.0  + 0.0j]
-  /// #                     [0.0 + 0.0j, 0.01 + 0.0j]]]
-  /// # 'input' has 5 nonzero magnitude values, so output has 5 coordinates.
-  /// # 'input' has rank of 3, so coordinates have three indices.
-  /// where(input) ==> [[0, 0, 0],
-  ///                   [0, 1, 0],
-  ///                   [1, 0, 1],
-  ///                   [1, 1, 1],
-  ///                   [2, 1, 1]]
-  /// ```
-  public static func where_<T: TensorFlowScalar>(
-    _ input: Tensor<T>
-  ) -> Tensor<Int64> {
-    fatalError("implement where_")
-  }
-
   /// Returns 0 if x == 0, and x / y otherwise, elementwise.
   public static func xdivy<T: FloatingPoint & TensorFlowScalar>(
     _ x: Tensor<T>,
@@ -4889,11 +4446,11 @@ public enum _RawXLA {
     let (axla, bxla) = XLATensor.broadcast_tensors(x.xlaTensor, y.xlaTensor)
     let xbroadcast = Tensor<T>(_xla: axla)
     let ybroadcast = Tensor<T>(_xla: bxla)
-    let zero = _Raw.zerosLike(xbroadcast)
-    return _Raw.select(
-      condition: _Raw.equal(xbroadcast, zero),
+    let zero = _RawXLA.zerosLike(xbroadcast)
+    return _RawXLA.select(
+      condition: _RawXLA.equal(xbroadcast, zero),
       t: zero,
-      e: _Raw.div(xbroadcast, ybroadcast))
+      e: _RawXLA.div(xbroadcast, ybroadcast))
   }
 
   /// Returns a tensor of zeros with the same shape and type as x.
@@ -4901,7 +4458,7 @@ public enum _RawXLA {
   /// - Parameter x: a tensor of type T.
   ///
   /// - Output y: a tensor of the same shape and type as x but filled with zeros.
-  public static func zerosLike<T: TensorFlowNumeric>(
+  public static func zerosLike<T: TensorFlowScalar>(
     _ x: Tensor<T>
   ) -> Tensor<T> {
     let t = Tensor<T>(
@@ -4916,312 +4473,5 @@ public enum _RawXLA {
   // Currently only used for deterministic testing.
   public static func rand(_ dims: [Int], _ seed: Int) -> Tensor<Float> {
     Tensor(_xla: XLATensor.rand(dims.map { Int64($0) }, Int64(seed)))
-  }
-
-  /// Computes the Cholesky decomposition of one or more square matrices.
-  ///
-  /// The input is a tensor of shape `[..., M, M]` whose inner-most 2 dimensions
-  /// form square matrices.
-  ///
-  /// The input has to be symmetric and positive definite. Only the lower-triangular
-  /// part of the input will be used for this operation. The upper-triangular part
-  /// will not be read.
-  ///
-  /// The output is a tensor of the same shape as the input
-  /// containing the Cholesky decompositions for all input submatrices `[..., :, :]`.
-  ///
-  /// **Note**: The gradient computation on GPU is faster for large matrices but
-  /// not for large batch dimensions when the submatrices are small. In this
-  /// case it might be faster to use the CPU.
-  ///
-  /// - Parameter input: Shape is `[..., M, M]`.
-  ///
-  /// - Output output: Shape is `[..., M, M]`.
-  @inlinable @inline(__always)
-  public static func cholesky<T: FloatingPoint & TensorFlowScalar>(
-    _ input: Tensor<T>
-  ) -> Tensor<T> {
-    fatalError("Implement cholesky")
-  }
-
-  /// Computes the reverse mode backpropagated gradient of the Cholesky algorithm.
-  ///
-  /// For an explanation see "Differentiation of the Cholesky algorithm" by
-  /// Iain Murray http://arxiv.org/abs/1602.07527.
-  ///
-  /// - Parameters:
-  ///     - l: Output of batch Cholesky algorithm l = cholesky(A). Shape is `[..., M, M]`.
-  ///         Algorithm depends only on lower triangular part of the innermost matrices of
-  ///         this tensor.
-  ///     - grad: df/dl where f is some scalar function. Shape is `[..., M, M]`.
-  ///         Algorithm depends only on lower triangular part of the innermost matrices of
-  ///         this tensor.
-  ///
-  /// - Output output: Symmetrized version of df/dA . Shape is `[..., M, M]`
-  @inlinable @inline(__always)
-  public static func choleskyGrad<T: FloatingPoint & TensorFlowScalar>(
-    l: Tensor<T>,
-    grad: Tensor<T>
-  ) -> Tensor<T> {
-    fatalError("Implement choleskyGrad")
-  }
-
-  /// Copy a tensor setting everything outside a central band in each innermost matrix
-  ///
-  /// to zero.
-  ///
-  /// The `band` part is computed as follows:
-  /// Assume `input` has `k` dimensions `[I, J, K, ..., M, N]`, then the output is a
-  /// tensor with the same shape where
-  ///
-  /// `band[i, j, k, ..., m, n] = in_band(m, n) * input[i, j, k, ..., m, n]`.
-  ///
-  /// The indicator function
-  ///
-  /// `in_band(m, n) = (num_lower < 0 || (m-n) <= num_lower)) &&
-  ///                  (num_upper < 0 || (n-m) <= num_upper)`.
-  ///
-  /// For example:
-  ///
-  /// ```
-  /// # if 'input' is [[ 0,  1,  2, 3]
-  ///                  [-1,  0,  1, 2]
-  ///                  [-2, -1,  0, 1]
-  ///                  [-3, -2, -1, 0]],
-  ///
-  /// tf.matrix_band_part(input, 1, -1) ==> [[ 0,  1,  2, 3]
-  ///                                        [-1,  0,  1, 2]
-  ///                                        [ 0, -1,  0, 1]
-  ///                                        [ 0,  0, -1, 0]],
-  ///
-  /// tf.matrix_band_part(input, 2, 1) ==> [[ 0,  1,  0, 0]
-  ///                                       [-1,  0,  1, 0]
-  ///                                       [-2, -1,  0, 1]
-  ///                                       [ 0, -2, -1, 0]]
-  /// ```
-  ///
-  /// Useful special cases:
-  ///
-  /// ```
-  ///  tf.matrix_band_part(input, 0, -1) ==> Upper triangular part.
-  ///  tf.matrix_band_part(input, -1, 0) ==> Lower triangular part.
-  ///  tf.matrix_band_part(input, 0, 0) ==> Diagonal.
-  /// ```
-  ///
-  /// - Parameters:
-  ///     - input: Rank `k` tensor.
-  ///     - num_lower: 0-D tensor. Number of subdiagonals to keep. If negative, keep entire
-  ///         lower triangle.
-  ///     - num_upper: 0-D tensor. Number of superdiagonals to keep. If negative, keep
-  ///         entire upper triangle.
-  ///
-  /// - Output band: Rank `k` tensor of the same shape as input. The extracted banded tensor.
-  @inlinable @inline(__always)
-  public static func matrixBandPart<
-    T: TensorFlowScalar,
-    Tindex: TensorFlowIndex
-  >(
-    _ input: Tensor<T>,
-    numLower: Tensor<Tindex>,
-    numUpper: Tensor<Tindex>
-  ) -> Tensor<T> {
-    fatalError("Implement matrixBandPart")
-  }
-
-  /// Computes the determinant of one or more square matrices.
-  ///
-  /// The input is a tensor of shape `[..., M, M]` whose inner-most 2 dimensions
-  /// form square matrices. The output is a tensor containing the determinants
-  /// for all input submatrices `[..., :, :]`.
-  ///
-  /// - Parameter input: Shape is `[..., M, M]`.
-  ///
-  /// - Output output: Shape is `[...]`.
-  @inlinable @inline(__always)
-  public static func matrixDeterminant<T: FloatingPoint & TensorFlowScalar>(
-    _ input: Tensor<T>
-  ) -> Tensor<T> {
-    fatalError("implement matrixDeterminant")
-  }
-
-  /// Returns a batched diagonal tensor with a given batched diagonal values.
-  ///
-  /// Given a `diagonal`, this operation returns a tensor with the `diagonal` and
-  /// everything else padded with zeros. The diagonal is computed as follows:
-  ///
-  /// Assume `diagonal` has `k` dimensions `[I, J, K, ..., N]`, then the output is a
-  /// tensor of rank `k+1` with dimensions [I, J, K, ..., N, N]` where:
-  ///
-  /// `output[i, j, k, ..., m, n] = 1{m=n} * diagonal[i, j, k, ..., n]`.
-  ///
-  /// For example:
-  ///
-  /// ```
-  /// # 'diagonal' is [[1, 2, 3, 4], [5, 6, 7, 8]]
-  ///
-  /// and diagonal.shape = (2, 4)
-  ///
-  /// tf.matrix_diag(diagonal) ==> [[[1, 0, 0, 0]
-  ///                                      [0, 2, 0, 0]
-  ///                                      [0, 0, 3, 0]
-  ///                                      [0, 0, 0, 4]],
-  ///                                     [[5, 0, 0, 0]
-  ///                                      [0, 6, 0, 0]
-  ///                                      [0, 0, 7, 0]
-  ///                                      [0, 0, 0, 8]]]
-  ///
-  /// which has shape (2, 4, 4)
-  /// ```
-  ///
-  /// - Parameter diagonal: Rank `k`, where `k >= 1`.
-  ///
-  /// - Output output: Rank `k+1`, with `output.shape = diagonal.shape + [diagonal.shape[-1]]`.
-  @inlinable @inline(__always)
-  public static func matrixDiag<T: TensorFlowScalar>(
-    diagonal: Tensor<T>
-  ) -> Tensor<T> {
-    fatalError("Implement matrixDiag")
-  }
-
-  /// Returns the batched diagonal part of a batched tensor.
-  ///
-  /// This operation returns a tensor with the `diagonal` part
-  /// of the batched `input`. The `diagonal` part is computed as follows:
-  ///
-  /// Assume `input` has `k` dimensions `[I, J, K, ..., M, N]`, then the output is a
-  /// tensor of rank `k - 1` with dimensions `[I, J, K, ..., min(M, N)]` where:
-  ///
-  /// `diagonal[i, j, k, ..., n] = input[i, j, k, ..., n, n]`.
-  ///
-  /// The input must be at least a matrix.
-  ///
-  /// For example:
-  ///
-  /// ```
-  /// # 'input' is [[[1, 0, 0, 0]
-  ///                [0, 2, 0, 0]
-  ///                [0, 0, 3, 0]
-  ///                [0, 0, 0, 4]],
-  ///               [[5, 0, 0, 0]
-  ///                [0, 6, 0, 0]
-  ///                [0, 0, 7, 0]
-  ///                [0, 0, 0, 8]]]
-  ///
-  /// and input.shape = (2, 4, 4)
-  ///
-  /// tf.matrix_diag_part(input) ==> [[1, 2, 3, 4], [5, 6, 7, 8]]
-  ///
-  /// which has shape (2, 4)
-  /// ```
-  ///
-  /// - Parameter input: Rank `k` tensor where `k >= 2`.
-  ///
-  /// - Output diagonal: The extracted diagonal(s) having shape
-  ///     `diagonal.shape = input.shape[:-2] + [min(input.shape[-2:])]`.
-  @inlinable @inline(__always)
-  public static func matrixDiagPart<T: TensorFlowScalar>(
-    _ input: Tensor<T>
-  ) -> Tensor<T> {
-    fatalError("Implement matrixDiagPart")
-  }
-
-  /// Returns a batched matrix tensor with new batched diagonal values.
-  ///
-  /// Given `input` and `diagonal`, this operation returns a tensor with the
-  /// same shape and values as `input`, except for the main diagonal of the
-  /// innermost matrices.  These will be overwritten by the values in `diagonal`.
-  ///
-  /// The output is computed as follows:
-  ///
-  /// Assume `input` has `k+1` dimensions `[I, J, K, ..., M, N]` and `diagonal` has
-  /// `k` dimensions `[I, J, K, ..., min(M, N)]`.  Then the output is a
-  /// tensor of rank `k+1` with dimensions `[I, J, K, ..., M, N]` where:
-  ///
-  ///   * `output[i, j, k, ..., m, n] = diagonal[i, j, k, ..., n]` for `m == n`.
-  ///   * `output[i, j, k, ..., m, n] = input[i, j, k, ..., m, n]` for `m != n`.
-  ///
-  /// - Parameters:
-  ///     - input: Rank `k+1`, where `k >= 1`.
-  ///     - diagonal: Rank `k`, where `k >= 1`.
-  ///
-  /// - Output output: Rank `k+1`, with `output.shape = input.shape`.
-  @inlinable @inline(__always)
-  public static func matrixSetDiag<T: TensorFlowScalar>(
-    _ input: Tensor<T>,
-    diagonal: Tensor<T>
-  ) -> Tensor<T> {
-    fatalError("implement matrixSetDiag")
-  }
-
-  /// Solves systems of linear equations with upper or lower triangular matrices by backsubstitution.
-  ///
-  ///
-  /// `matrix` is a tensor of shape `[..., M, M]` whose inner-most 2 dimensions form
-  /// square matrices. If `lower` is `True` then the strictly upper triangular part
-  /// of each inner-most matrix is assumed to be zero and not accessed.
-  /// If `lower` is False then the strictly lower triangular part of each inner-most
-  /// matrix is assumed to be zero and not accessed.
-  /// `rhs` is a tensor of shape `[..., M, K]`.
-  ///
-  /// The output is a tensor of shape `[..., M, K]`. If `adjoint` is
-  /// `True` then the innermost matrices in `output` satisfy matrix equations
-  /// `matrix[..., :, :] * output[..., :, :] = rhs[..., :, :]`.
-  /// If `adjoint` is `False` then the strictly then the  innermost matrices in
-  /// `output` satisfy matrix equations
-  /// `adjoint(matrix[..., i, k]) * output[..., k, j] = rhs[..., i, j]`.
-  ///
-  /// Example:
-  /// ```python
-  ///
-  /// a = tf.constant([[3,  0,  0,  0],
-  ///                  [2,  1,  0,  0],
-  ///                  [1,  0,  1,  0],
-  ///                  [1,  1,  1,  1]], dtype=tf.float32)
-  ///
-  /// b = tf.constant([[4],
-  ///                  [2],
-  ///                  [4],
-  ///                  [2]], dtype=tf.float32)
-  ///
-  /// x = tf.linalg.triangular_solve(a, b, lower=True)
-  /// x
-  /// # <tf.Tensor: shape=(4, 1), dtype=float32, numpy=
-  /// # array([[ 1.3333334 ],
-  /// #        [-0.66666675],
-  /// #        [ 2.6666665 ],
-  /// #        [-1.3333331 ]], dtype=float32)>
-  ///
-  /// # in python3 one can use `a@x`
-  /// tf.matmul(a, x)
-  /// # <tf.Tensor: shape=(4, 1), dtype=float32, numpy=
-  /// # array([[4.       ],
-  /// #        [2.       ],
-  /// #        [4.       ],
-  /// #        [1.9999999]], dtype=float32)>
-  /// ```
-  ///
-  /// - Parameters:
-  ///     - matrix: Shape is `[..., M, M]`.
-  ///     - rhs: Shape is `[..., M, K]`.
-  ///
-  /// - Attrs:
-  ///     - lower: Boolean indicating whether the innermost matrices in `matrix` are
-  ///         lower or upper triangular.
-  ///     - adjoint: Boolean indicating whether to solve with `matrix` or its (block-wise)
-  ///                  adjoint.
-  ///
-  ///         @compatibility(numpy)
-  ///         Equivalent to scipy.linalg.solve_triangular
-  ///         @end_compatibility
-  ///
-  /// - Output output: Shape is `[..., M, K]`.
-  @inlinable @inline(__always)
-  public static func matrixTriangularSolve<T: FloatingPoint & TensorFlowScalar>(
-    matrix: Tensor<T>,
-    rhs: Tensor<T>,
-    lower: Bool = true,
-    adjoint: Bool = false
-  ) -> Tensor<T> {
-    fatalError("implement matrixTriangularSolve")
   }
 }
