@@ -68,12 +68,12 @@ where
 }
 
 extension RecurrentLayerCell {
-  /// Returns the new state obtained from applying the RNN cell to the input at the current time
-  /// step and the previous state.
+  /// Returns the new state obtained from applying the recurrent layer cell to the input at the
+  /// current time step and the previous state.
   ///
   /// - Parameters:
   ///   - timeStepInput: The input at the current time step.
-  ///   - previousState: The previous state of the RNN cell.
+  ///   - previousState: The previous state of the recurrent layer cell.
   /// - Returns: The output.
   @differentiable
   public func callAsFunction(
@@ -89,11 +89,8 @@ extension RecurrentLayerCell {
   }
 }
 
-@available(*, deprecated, renamed: "RecurrentLayerCell")
-public typealias RNNCell = RecurrentLayerCell
-
 /// A basic RNN cell.
-public struct BasicRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
+public struct BasicRNNCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell {
   public var weight: Tensor<Scalar>
   public var bias: Tensor<Scalar>
 
@@ -139,11 +136,8 @@ public struct BasicRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
   }
 }
 
-@available(*, deprecated, renamed: "BasicRNNCell")
-public typealias SimpleRNNCell = BasicRNNCell
-
 /// An LSTM cell.
-public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
+public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell {
   public var fusedWeight: Tensor<Scalar>
   public var fusedBias: Tensor<Scalar>
 
@@ -273,7 +267,7 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
 }
 
 /// An GRU cell.
-public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
+public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell {
   public var updateWeight1, updateWeight2: Tensor<Scalar>
   public var resetWeight1, resetWeight2: Tensor<Scalar>
   public var outputWeight1, outputWeight2: Tensor<Scalar>
@@ -349,7 +343,7 @@ public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
   }
 }
 
-public struct RecurrentLayer<Cell: RNNCell>: Layer {
+public struct RecurrentLayer<Cell: RecurrentLayerCell>: Layer {
   public typealias Input = [Cell.TimeStepInput]
   public typealias Output = [Cell.TimeStepOutput]
 
@@ -453,12 +447,20 @@ public struct RecurrentLayer<Cell: RNNCell>: Layer {
 extension RecurrentLayer: Equatable where Cell: Equatable {}
 extension RecurrentLayer: AdditiveArithmetic where Cell: AdditiveArithmetic {}
 
-public typealias BasicRNN<Scalar: TensorFlowFloatingPoint> = RNN<SimpleRNNCell<Scalar>>
-public typealias LSTM<Scalar: TensorFlowFloatingPoint> = RNN<LSTMCell<Scalar>>
-public typealias GRU<Scalar: TensorFlowFloatingPoint> = RNN<GRUCell<Scalar>>
+public typealias BasicRNN<Scalar: TensorFlowFloatingPoint> = RecurrentLayer<BasicRNNCell<Scalar>>
+public typealias LSTM<Scalar: TensorFlowFloatingPoint> = RecurrentLayer<LSTMCell<Scalar>>
+public typealias GRU<Scalar: TensorFlowFloatingPoint> = RecurrentLayer<GRUCell<Scalar>>
+
+// - MARK: Deprecated names
+
+@available(*, deprecated, renamed: "RecurrentLayerCell")
+public typealias RNNCell = RecurrentLayerCell
 
 @available(*, deprecated, renamed: "RecurrentLayer")
 public typealias RNN = RecurrentLayer
+
+@available(*, deprecated, renamed: "BasicRNNCell")
+public typealias SimpleRNNCell = BasicRNNCell
 
 @available(*, deprecated, renamed: "BasicRNN")
 public typealias SimpleRNN = BasicRNN
