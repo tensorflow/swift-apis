@@ -1331,18 +1331,18 @@ final class LayerTests: XCTestCase {
     XCTAssertEqual(grad.embeddings, expected)
   }
 
-  func testSimpleRNNCell() {
+  func testBasicRNNCell() {
     let weight = Tensor<Float>(ones: [7, 5]) * Tensor<Float>([0.3333, 1, 0.3333, 1, 0.3333])
     let bias = Tensor<Float>(ones: [5])
-    var cell = SimpleRNNCell<Float>(inputSize: 2, hiddenSize: 5)
+    var cell = BasicRNNCell<Float>(inputSize: 2, hiddenSize: 5)
     cell.weight = weight
     cell.bias = bias
-    let state = SimpleRNNCell.State(
+    let state = BasicRNNCell.State(
       Tensor<Float>(ones: [1, 5]) * Tensor<Float>([1, 0.2, 0.5, 2, 0.6])
     )
     let input = Tensor<Float>(ones: [1, 2]) * Tensor<Float>([0.3, 0.7])
     let output = cell(input: input, state: state).state
-    let expected = SimpleRNNCell.State(
+    let expected = BasicRNNCell.State(
       Tensor<Float>([[0.9921227, 0.9999934, 0.9921227, 0.9999934, 0.9921227]])
     )
     XCTAssertEqual(output, expected)
@@ -1448,11 +1448,11 @@ final class LayerTests: XCTestCase {
       accuracy: 1e-5)
   }
 
-  // TODO(TF-507): Remove references to `SimpleRNNCell.State` after SR-10697 is fixed.
+  // TODO(TF-507): Remove references to `BasicRNNCell.State` after SR-10697 is fixed.
   func testRNN() {
     let x = Tensor<Float>(rangeFrom: 0.0, to: 0.4, stride: 0.1).rankLifted()
     let inputs: [Tensor<Float>] = Array(repeating: x, count: 4)
-    let rnn = RNN(SimpleRNNCell<Float>(inputSize: 4, hiddenSize: 4, seed: (0xFeed, 0xBeef)))
+    let rnn = BasicRNN<Float>(BasicRNNCell(inputSize: 4, hiddenSize: 4, seed: (0xFeed, 0xBeef)))
     withTensorLeakChecking {
       let (outputs, pullback) = valueWithPullback(at: rnn, inputs) { rnn, inputs in
         return rnn(inputs)
@@ -1466,7 +1466,7 @@ final class LayerTests: XCTestCase {
           [0.24337786, 0.3389194, -0.21143384, -0.1675081],
         ],
         accuracy: 1e-6)
-      let (𝛁rnn, _) = pullback(.init(inputs.map { SimpleRNNCell<Float>.State($0) }))
+      let (𝛁rnn, _) = pullback(.init(inputs.map { BasicRNNCell<Float>.State($0) }))
       // TODO: Verify that RNN gradients are correct using a reference implementation.
       XCTAssertEqual(
         𝛁rnn.cell.weight,
@@ -1653,7 +1653,7 @@ final class LayerTests: XCTestCase {
     }
 
     withTensorLeakChecking {
-      var lstm = RNN(LSTMCell<Float>(inputSize: 4, hiddenSize: 4))
+      var lstm = LSTM<Float>(LSTMCell(inputSize: 4, hiddenSize: 4))
       lstm.cell.fusedWeight =
         swapForgetUpdate(Tensor(concatenating: [kernel, recurrentKernel]))
       lstm.cell.fusedBias = swapForgetUpdate(bias)
@@ -1705,8 +1705,7 @@ final class LayerTests: XCTestCase {
   func testGRU() {
     let x = Tensor<Float>(rangeFrom: 0.0, to: 0.4, stride: 0.1).rankLifted()
     let inputs: [Tensor<Float>] = Array(repeating: x, count: 4)
-    let gru = RNN(
-      GRUCell<Float>(
+    let gru = GRU<Float>(GRUCell(
         inputSize: 4,
         hiddenSize: 4,
         weightInitializer: glorotUniform(seed: (0xFeed, 0xBeef)),
@@ -1994,7 +1993,7 @@ final class LayerTests: XCTestCase {
     ("testFlattenGradient", testFlattenGradient),
     ("testEmbedding", testEmbedding),
     ("testEmbeddingGradient", testEmbeddingGradient),
-    ("testSimpleRNNCell", testSimpleRNNCell),
+    ("testBasicRNNCell", testBasicRNNCell),
     ("testDense", testDense),
     ("testDenseGradient", testDenseGradient),
     ("testRNN", testRNN),
