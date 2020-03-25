@@ -361,13 +361,18 @@ public static func {name}{generics}({input_args}
 
   def _swift_dispatch_body(self, x10_supported=False):
     names = []
+    tensors = []
     backends = []
+    device_source = None
     for arg in self.input_args:
       names.append(arg.swift_name)
-      if arg.is_list:
-        backends.append("commonBackend(" + arg.swift_name + ")")
-      else:
-        backends.append(arg.swift_name + ".handle.backend")
+      if arg.is_tensor_type(self.string_valued):
+        tensors.append(arg)
+        if arg.is_list:
+          backends.append("commonBackend(" + arg.swift_name + ")")
+        else:
+          device_source = arg
+          backends.append(arg.swift_name + ".handle.backend")
     for attr in self.attrs:
       if not attr.is_inferred_type_attr and not attr.is_inferred_number_attr:
         names.append(attr.swift_name)
@@ -380,10 +385,27 @@ public static func {name}{generics}({input_args}
     dispatch = self._swift_name() + "(" + (", ".join(names_filtered)) + ")"
     if len(backends) == 0 and x10_supported:
       print("x10 unsupported: " + str(self.swift_name()))
-    if not x10_supported or len(backends) == 0:
-      return "_RawTFEager." + dispatch
+    def do_conversion(arg):
+      return ("\n      let {name} = {typename}(copying: {name}, to: .defaultTFEager)"
+              .format(name=arg.swift_name,
+                      typename=str(arg.swift_type(self.string_valued))))
     def get_common_backend(x, y):
       return "commonBackend({}, {})".format(x, y)
+    if len(backends) == 0 or (not x10_supported and (len(self.output_args) != 1
+      or not self.output_args[0].is_tensor_type(self.string_valued) or not device_source)):
+      return "_RawTFEager." + dispatch
+    if not x10_supported:
+      return """switch {backends} {{
+    case .XLA:{convert_tensors}
+      return {convert_type}(copying: _RawTFEager.{dispatch}, to: {convert_device}.device)
+    case .TF_EAGER:
+      return _RawTFEager.{dispatch}
+  }}
+""".format(dispatch=dispatch,
+           convert_type=str(self.output_args[0].swift_type(self.string_valued)),
+           convert_device=str(device_source.swift_name),
+           convert_tensors = "".join(map(do_conversion, tensors)),
+           backends=reduce(get_common_backend, backends))
     return """switch {backends} {{
     case .XLA:
       return _RawXLA.{dispatch}
@@ -461,6 +483,10 @@ class Argument(object):
       return Type('VariantHandle', number=number)
     raise UnableToGenerateCodeError(
       'Unsupported type for argument "%s".' % self.name)
+
+  def is_tensor_type(self, string_valued=False):
+    return self.type.kind == 'Tensor' and not (
+        (self.allows_string and string_valued) or self.type.base_type == 'String')
 
   @property
   def allows_string(self):

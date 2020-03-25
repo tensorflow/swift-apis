@@ -384,6 +384,14 @@ final class TensorTests: XCTestCase {
     }
   }
 
+  func testAtan2() throws {
+    let y = X10Tensor([3, 5])
+    let x = X10Tensor([2, 3])
+    let actual = _Raw.atan2(y, x)
+    let expected = _Raw.atan2(TF(y), TF(x))
+    XCTAssert(allClose(actual: TF(actual), expected: expected))
+  }
+
   func testAtan() throws {
     var x = X10Tensor.rand([3, 2])
     let expected = atan(TF(x))
@@ -3474,6 +3482,7 @@ extension TensorTests {
     ("testArgmin", testArgmin),
     ("testAsin", testAsin),
     ("testAsinh", testAsinh),
+    ("testAtan2", testAtan2),
     ("testAtan", testAtan),
     ("testAtanh", testAtanh),
     ("testAvgPool", testAvgPool),
