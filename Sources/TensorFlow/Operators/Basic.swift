@@ -59,7 +59,7 @@ extension Tensor {
   @inlinable
   @differentiable( where Scalar: TensorFlowFloatingPoint)
   public func unstacked(alongAxis axis: Int = 0) -> [Tensor] {
-    precondition(isAxisInRange(axis), "Axis must be in the range `[-rank, rank)`.")
+    ensureValid(axis: axis)
     let posAxis = axis < 0 ? axis + rank : axis
     return _Raw.unpack(value: self, num: Int64(shape[posAxis]), axis: Int64(posAxis))
   }
@@ -89,7 +89,7 @@ extension Tensor {
   @inlinable
   @differentiable( where Scalar: TensorFlowFloatingPoint)
   public func split(count: Int, alongAxis axis: Int = 0) -> [Tensor] {
-    precondition(isAxisInRange(axis), "Axis must be in the range `[-rank, rank)`.")
+    ensureValid(axis: axis)
     precondition(
       shapeTensor[axis].scalarized() % Int32(count) == 0,
       "Number of ways to split should evenly divide the split dimension.")
@@ -122,7 +122,7 @@ extension Tensor {
   @inlinable
   @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
   public func split(sizes: Tensor<Int32>, alongAxis axis: Int = 0) -> [Tensor] {
-    precondition(isAxisInRange(axis), "Axis must be in the range `[-rank, rank)`.")
+    ensureValid(axis: axis)
     precondition(
       shapeTensor[axis] == sizes.sum(),
       "The values in sizes must add up to the size of dimension axis.")
@@ -396,7 +396,7 @@ extension Tensor {
   @inlinable
   @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
   public func reversed(inAxes axes: Tensor<Int32>) -> Tensor {
-    precondition(areAxesInRange(axes), "All axes must be in the range `[-rank, rank)`.")
+    ensureValid(axes: axes)
     return _Raw.reverseV2(self, axis: axes)
   }
 
@@ -493,7 +493,7 @@ extension Tensor {
     atIndices indices: Tensor<Index>,
     alongAxis axis: Int = 0
   ) -> Tensor {
-    precondition(isAxisInRange(axis), "Axis must be in the range `[-rank, rank)`.")
+    ensureValid(axis: axis)
     return _Raw.gatherV2(params: self, indices: indices, axis: Tensor<Int32>(Int32(axis)))
   }
 
@@ -1325,42 +1325,80 @@ extension Tensor.IndexPath {
 //===------------------------------------------------------------------------------------------===//
 
 extension Tensor {
-  /// Returns `true` if the given axis is in the range `[-rank, rank)`.
+  /// Returns `true` iff `k` denotes an axis of `self`.
   @usableFromInline
-  internal func isAxisInRange<T: BinaryInteger>(_ axis: T) -> Bool {
-    let axis = Int(axis)
+  internal func isValid<T: BinaryInteger>(axis k: T) -> Bool {
+    let axis = Int(k)
     return axis >= -rank && axis < rank
   }
 
-  /// Returns `true` if the given scalar tensor is in the range `[-rank, rank)`.
+  /// Returns `true` iff each element of `axes` denotes an axis of `self`.
   @usableFromInline
-  internal func isAxisInRange(
-    _ axis: Tensor<Int32>,
-    file: StaticString = #file,
-    line: UInt = #line
-  ) -> Bool {
-    precondition(axis.rank == 0, "Axis must have rank 0.", file: file, line: line)
-    return areAxesInRange(axis.scalars)
+  internal func areValid<T: BinaryInteger>(axes: [T]) -> Bool {
+    return axes.allSatisfy { isValid(axis: $0) }
   }
 
-  /// Returns `true` if all given axes are in the range `[-rank, rank)`.
+  /// Returns `true` iff each element of `axes` denotes an axis of `self`.
+  ///
+  /// - Precondition: `axes` has rank 0 or rank 1.
   @usableFromInline
-  internal func areAxesInRange<T: BinaryInteger>(_ axes: [T]) -> Bool {
-    return !axes.contains(where: { !isAxisInRange($0) })
-  }
-
-  /// Returns `true` if all scalars of the given 1-D tensor are in the range `[-rank, rank)`.
-  @usableFromInline
-  internal func areAxesInRange(
-    _ axes: Tensor<Int32>,
+  internal func areValid(
+    axes: Tensor<Int32>,
     file: StaticString = #file,
     line: UInt = #line
   ) -> Bool {
     precondition(
-        axes.rank < 2,
-        "Axes must have rank 0 or rank 1; axes has rank \(axes.rank) with values \(axes.scalars).",
-        file: file,
-        line: line)
-    return areAxesInRange(axes.scalars)
+      axes.rank < 2,
+      "Axes must have rank 0 or rank 1; axes has rank \(axes.rank) with values \(axes.scalars).",
+      file: file,
+      line: line)
+    return areValid(axes: axes.scalars)
+  }
+
+  /// Checks that each element of `axes` denotes an axis of `self`, and stops the program with a
+  /// diagnostic otherwise.
+  @usableFromInline
+  func ensureValid(
+    axes: Tensor<Int32>,
+    function: StaticString = #function,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) {
+    precondition(
+      areValid(axes: axes, file: file, line: line),
+      "All axes must be in `-rank..<rank` when calling \(function) (rank: \(rank), axes: \(axes))",
+      file: file,
+      line: line)
+  }
+
+  /// Checks that each element of `axes` denotes an axis of `self`, and stops the program with a
+  /// diagnostic otherwise.
+  @usableFromInline
+  func ensureValid(
+    axes: [Int],
+    function: StaticString = #function,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) {
+    precondition(
+      areValid(axes: axes),
+      "All axes must be in `-rank..<rank` when calling \(function) (rank: \(rank), axes: \(axes))",
+      file: file,
+      line: line)
+  }
+
+  /// Checks that `k` denotes an axis of `self`, and stops the program with a diagnostic otherwise.
+  @usableFromInline
+  func ensureValid(
+    axis k: Int,
+    function: StaticString = #function,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) {
+    precondition(
+      isValid(axis: k),
+      "Axis must be in `-rank..<rank` when calling \(function) (rank: \(rank), axis: \(k))",
+      file: file,
+      line: line)
   }
 }
