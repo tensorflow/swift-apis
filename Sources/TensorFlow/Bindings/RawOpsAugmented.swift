@@ -158,7 +158,12 @@ extension _RawTFEager {
       _ input: Tensor<T>,
       dimension: Int64
     ) -> Tensor<OutputType> {
-      argMax(input, dimension: Tensor<Int32>(Int32(dimension)))
+      switch input.handle.backend {
+      case .XLA:
+        return _RawXLA.argMax(input, dimension: dimension)
+      case .TF_EAGER:
+        return _RawTFEager.argMax(input, dimension: Tensor<Int32>(Int32(dimension)))
+      }
     }
 
     public static func mean<
@@ -168,9 +173,16 @@ extension _RawTFEager {
       reductionIndices: [Int64],
       keepDims: Bool = false
     ) -> Tensor<T> {
-      mean(
-        input, reductionIndices: Tensor<Int32>(reductionIndices.map { Int32($0) }),
-        keepDims: keepDims)
+      switch input.handle.backend {
+      case .XLA:
+        return _RawXLA.mean(
+          input, reductionIndices: reductionIndices,
+          keepDims: keepDims)
+      case .TF_EAGER:
+        return _RawTFEager.mean(
+          input, reductionIndices: Tensor<Int32>(reductionIndices.map { Int32($0) }),
+          keepDims: keepDims)
+      }
     }
 
     public static func reshape<
@@ -179,7 +191,12 @@ extension _RawTFEager {
       _ tensor: Tensor<T>,
       shape: [Int64]
     ) -> Tensor<T> {
-      reshape(tensor, shape: Tensor<Int32>(shape.map { Int32($0) }))
+      switch tensor.handle.backend {
+      case .XLA:
+        return _RawXLA.reshape(tensor, shape: shape)
+      case .TF_EAGER:
+        return _RawTFEager.reshape(tensor, shape: Tensor<Int32>(shape.map { Int32($0) }))
+      }
     }
 
     public static func sum<
@@ -189,9 +206,16 @@ extension _RawTFEager {
       reductionIndices: [Int64],
       keepDims: Bool = false
     ) -> Tensor<T> {
-      sum(
-        input, reductionIndices: Tensor<Int32>(reductionIndices.map { Int32($0) }),
-        keepDims: keepDims)
+      switch input.handle.backend {
+      case .XLA:
+        return _RawXLA.sum(
+          input, reductionIndices: reductionIndices,
+          keepDims: keepDims)
+      case .TF_EAGER:
+        return _RawTFEager.sum(
+          input, reductionIndices: Tensor<Int32>(reductionIndices.map { Int32($0) }),
+          keepDims: keepDims)
+      }
     }
 
     public static func broadcastTo<
@@ -200,7 +224,12 @@ extension _RawTFEager {
       _ input: Tensor<T>,
       shape: [Int64]
     ) -> Tensor<T> {
-      broadcastTo(input, shape: Tensor<Int32>(shape.map { Int32($0) }))
+      switch input.handle.backend {
+      case .XLA:
+        return _RawXLA.broadcastTo(input, shape: shape)
+      case .TF_EAGER:
+        return _RawTFEager.broadcastTo(input, shape: Tensor<Int32>(shape.map { Int32($0) }))
+      }
     }
 
     public static func conv2DBackpropFilter<T: FloatingPoint & TensorFlowScalar>(
@@ -214,11 +243,20 @@ extension _RawTFEager {
       dataFormat: DataFormat = .nhwc,
       dilations: [Int32] = [1, 1, 1, 1]
     ) -> Tensor<T> {
-      conv2DBackpropFilter(
-        input, filterSizes: Tensor<Int32>(filterSizes.map { Int32($0) }),
-        outBackprop: outBackprop, strides: strides, useCudnnOnGpu: useCudnnOnGpu,
-        padding: padding, explicitPaddings: explicitPaddings, dataFormat: dataFormat,
-        dilations: dilations)
+      switch commonBackend(input.handle.backend, outBackprop.handle.backend) {
+      case .XLA:
+        return _RawXLA.conv2DBackpropFilter(
+          input, filterSizes: filterSizes,
+          outBackprop: outBackprop, strides: strides, useCudnnOnGpu: useCudnnOnGpu,
+          padding: padding, explicitPaddings: explicitPaddings, dataFormat: dataFormat,
+          dilations: dilations)
+      case .TF_EAGER:
+        return _RawTFEager.conv2DBackpropFilter(
+          input, filterSizes: Tensor<Int32>(filterSizes.map { Int32($0) }),
+          outBackprop: outBackprop, strides: strides, useCudnnOnGpu: useCudnnOnGpu,
+          padding: padding, explicitPaddings: explicitPaddings, dataFormat: dataFormat,
+          dilations: dilations)
+      }
     }
 
     public static func conv2DBackpropInput<T: FloatingPoint & TensorFlowScalar>(
@@ -232,11 +270,20 @@ extension _RawTFEager {
       dataFormat: DataFormat = .nhwc,
       dilations: [Int32] = [1, 1, 1, 1]
     ) -> Tensor<T> {
-      conv2DBackpropInput(
-        inputSizes: Tensor<Int32>(inputSizes.map { Int32($0) }), filter: filter,
-        outBackprop: outBackprop,
-        strides: strides, useCudnnOnGpu: useCudnnOnGpu, padding: padding,
-        explicitPaddings: explicitPaddings, dataFormat: dataFormat, dilations: dilations)
+      switch commonBackend(filter.handle.backend, outBackprop.handle.backend) {
+      case .XLA:
+        return _RawXLA.conv2DBackpropInput(
+          inputSizes: inputSizes, filter: filter,
+          outBackprop: outBackprop,
+          strides: strides, useCudnnOnGpu: useCudnnOnGpu, padding: padding,
+          explicitPaddings: explicitPaddings, dataFormat: dataFormat, dilations: dilations)
+      case .TF_EAGER:
+        return _RawTFEager.conv2DBackpropInput(
+          inputSizes: Tensor<Int32>(inputSizes.map { Int32($0) }), filter: filter,
+          outBackprop: outBackprop,
+          strides: strides, useCudnnOnGpu: useCudnnOnGpu, padding: padding,
+          explicitPaddings: explicitPaddings, dataFormat: dataFormat, dilations: dilations)
+      }
     }
 
     public static func maxPoolV2<T: TensorFlowNumeric>(
@@ -246,9 +293,17 @@ extension _RawTFEager {
       padding: Padding,
       dataFormat: DataFormat2 = .nhwc
     ) -> Tensor<T> {
-      maxPoolV2(
-        input, ksize: Tensor<Int32>(ksize.map { Int32($0) }),
-        strides: Tensor<Int32>(strides.map { Int32($0) }), padding: padding, dataFormat: dataFormat)
+      switch input.handle.backend {
+      case .XLA:
+        return _RawXLA.maxPoolV2(
+          input, ksize: ksize,
+          strides: strides, padding: padding, dataFormat: dataFormat)
+      case .TF_EAGER:
+        return _RawTFEager.maxPoolV2(
+          input, ksize: Tensor<Int32>(ksize.map { Int32($0) }),
+          strides: Tensor<Int32>(strides.map { Int32($0) }), padding: padding,
+          dataFormat: dataFormat)
+      }
     }
 
     public static func maxPoolGradV2<T: TensorFlowNumeric>(
@@ -260,11 +315,20 @@ extension _RawTFEager {
       padding: Padding,
       dataFormat: DataFormat = .nhwc
     ) -> Tensor<T> {
-      maxPoolGradV2(
-        origInput: origInput, origOutput: origOutput, grad: grad,
-        ksize: Tensor<Int32>(ksize.map { Int32($0) }),
-        strides: Tensor<Int32>(strides.map { Int32($0) }),
-        padding: padding, dataFormat: dataFormat)
+      switch commonBackend(origInput.handle.backend, origOutput.handle.backend) {
+      case .XLA:
+        return _RawXLA.maxPoolGradV2(
+          origInput: origInput, origOutput: origOutput, grad: grad,
+          ksize: ksize,
+          strides: strides,
+          padding: padding, dataFormat: dataFormat)
+      case .TF_EAGER:
+        return _RawTFEager.maxPoolGradV2(
+          origInput: origInput, origOutput: origOutput, grad: grad,
+          ksize: Tensor<Int32>(ksize.map { Int32($0) }),
+          strides: Tensor<Int32>(strides.map { Int32($0) }),
+          padding: padding, dataFormat: dataFormat)
+      }
     }
 
     /// A simplified version of cross replica sum, with scaling.
@@ -278,7 +342,10 @@ extension _RawTFEager {
     /// Transfer a tensor to a different device.
     public static func toDevice<T: TensorFlowScalar>(_ x: Tensor<T>, _ device: Device) -> Tensor<T>
     {
-      _RawXLA.toDevice(x, device)
+      if x.handle.backend == device.backend && device.backend == .XLA {
+        return _RawXLA.toDevice(x, device)
+      }
+      return Tensor(shape: x.shape, scalars: x.scalars, on: device)
     }
 
     public static func physicalCast<T: TensorFlowScalar>(
