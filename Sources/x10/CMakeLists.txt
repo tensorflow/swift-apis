@@ -1,10 +1,5 @@
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-add_library(x10 IMPORTED UNKNOWN)
-set_target_properties(x10 PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES "${X10_INCLUDE_DIR}"
-  IMPORTED_LOCATION ${X10_LIBRARY})
-
 add_library(x10_c_wrappers STATIC
   swift_bindings/device_wrapper.cc
   swift_bindings/xla_tensor_tf_ops.cc
