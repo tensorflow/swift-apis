@@ -42,6 +42,16 @@ final class BasicOperatorTests: XCTestCase {
     XCTAssertEqual(y2, Tensor<Float>([[[2.0], [4.0]]]))
   }
 
+  func testBatchGatheringAcrossBatch() {
+    let x = Tensor<Float>([
+      [1.0, 2.0, 3.0, 4.0],
+      [10, 20, 30, 40],
+    ])
+    let y = x.batchGathering(
+      atIndices: Tensor<Int32>([[0, 1, 3]])) // Simulate flattened upper triangular.
+    XCTAssertEqual(y, Tensor([[1.0, 2.0, 4.0], [10, 20, 40]]))
+  }
+
   func testPadded() {
     let x = Tensor<Float>(ones: [2, 2])
     let target = Tensor<Float>([[3, 3, 3], [1, 1, 3], [1, 1, 3]])
@@ -714,6 +724,7 @@ final class BasicOperatorTests: XCTestCase {
   static var allTests = [
     ("testGathering", testGathering),
     ("testBatchGathering", testBatchGathering),
+    ("testBatchGatheringAcrossBatch", testBatchGatheringAcrossBatch),
     ("testPadded", testPadded),
     ("testPaddedConstant", testPaddedConstant),
     ("testPaddedReflect", testPaddedReflect),
