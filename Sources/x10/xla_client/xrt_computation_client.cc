@@ -1708,8 +1708,8 @@ std::map<std::string, Metric> XrtComputationClient::GetMetrics() const {
         metric_name = xrt_metric.name();
       }
       if (options_.workers_map.size() > 1) {
-        metric_name = absl::StrCat(metric_name, ".", worker_target.first.name,
-                                   ".", worker_target.first.task_no);
+        absl::StrAppend(&metric_name, ".", worker_target.first.name, ".",
+                        worker_target.first.task_no);
       }
       metrics_data.emplace(std::move(metric_name), std::move(metric));
     }
