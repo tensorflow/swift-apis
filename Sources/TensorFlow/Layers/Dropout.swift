@@ -74,21 +74,22 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   }
 }
 
-public struct GaussianDropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
-  @noDerivative
-  public let probability: Double
+/// A gaussian noise layer
+///
+/// Gaussian Noise adds noise sampled from a normal distribution with mean zero
+public struct GaussianNoise<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  @noDerivative public let standardDeviation: Tensor<Scalar>
   
-  @noDerivative
-  public let standardDeviation: Tensor<Scalar>
-  
-  public init(probability: Double, standardDeviation: Scalar) {
-    precondition(
-      0...1 ~= probability,
-      "Probability must be a value between 0 and 1 (inclusive) but is \(probability)")
-    self.probability = probability
+  /// Creates a Gaussian noise layer
+  ///
+  /// - Parameter standardDeviation: Standard deviation of the Guassian distribution
+  public init(standardDeviation: Scalar) {
     self.standardDeviation = Tensor<Scalar>(standardDeviation)
   }
   
+  /// Returns output obtained by adding noise
+  /// - Parameter input: The input to the layer
+  /// - Returns: The output
   @differentiable
   public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     switch Context.local.learningPhase {
@@ -96,6 +97,42 @@ public struct GaussianDropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
       let noise = Tensor<Scalar>(randomNormal: input.shape, mean: Tensor<Scalar>(0),
                                  standardDeviation: self.standardDeviation)
       return input + noise
+    case .inference:
+      return input
+    }
+  }
+}
+
+/// A gaussian dropout layer
+///
+/// GaussianDropout multiplies the input with the noise sampled from a normal distribution with mean 1.0.
+public struct GaussianDropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  @noDerivative public let probability: Scalar
+  @noDerivative public let standardDeviation: Tensor<Scalar>
+  
+  /// Creates a Gaussian dropout layer.
+  ///
+  /// - Parameter probability: The probability of a node dropping out.
+  /// - Precondition: probability must be a value between 0 and 1 (inclusive).
+  public init(probability: Scalar) {
+    precondition(
+      0...1 ~= probability,
+      "Probability must be a value between 0 and 1 (inclusive) but is \(probability)")
+    self.probability = probability
+    standardDeviation = Tensor<Scalar>(sqrt(probability / (1.0 - probability)))
+  }
+  
+  /// Returns the output obtained from applying the layer to the given input.
+  ///
+  /// - Parameter input: The input to the layer.
+  /// - Returns: The output.
+  @differentiable
+  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+    switch Context.local.learningPhase {
+    case .training:
+      let noise = Tensor<Scalar>(randomNormal: input.shape, mean: Tensor<Scalar>(1.0),
+                                 standardDeviation: standardDeviation)
+      return input * noise
     case .inference:
       return input
     }
