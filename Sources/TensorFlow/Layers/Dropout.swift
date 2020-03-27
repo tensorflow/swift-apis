@@ -73,3 +73,52 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
     }
   }
 }
+
+/// An Alpha dropout layer.
+///
+/// Alpha Dropout is a `Dropout` that keeps mean and variance of inputs to their 
+/// original values, in order to ensure the self-normalizing property even after this
+/// dropout. Alpha Dropout fits well to Scaled Exponential Linear Units by randomly
+/// setting activations to the negative saturation value.
+///
+/// Source : Self-Normalizing Neural Networks: https://arxiv.org/abs/1706.02515
+@frozen
+public struct AlphaDropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  @noDerivative public let probability: Double
+  //@noDerivative public let rate: Double
+
+
+  /// Creates a dropout layer.
+  ///
+  /// - Parameter probability: The probability of a node dropping out.
+  /// - Precondition: probability must be a value between 0 and 1 (inclusive). 
+  public init(probability: Double) {
+    precondition(
+      0...1 ~= probability,
+      "Probability must be a value between 0 and 1 (inclusive) but is \(probability)")
+    self.probability = probability
+  }
+
+  /// Returns the output obtained from applying the layer to the given input.
+  ///
+  /// - Parameter input: The input to the layer.
+  /// - Returns: The output.
+  @differentiable
+  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+    switch Context.local.learningPhase {
+    case .training:
+      let alpha = 1.6732632423543772848170429916717
+      let scale = 1.0507009873554804934193349852946
+      let alpha_p = -alpha * scale
+      let uniform = Tensor<Scalar>(randomUniform: input.shape)
+      let noise = uniform .>= Scalar(probability)
+      let a = pow(((1 - probability) * (1 + probability * pow(alpha_p, 2))), -0.5)
+      let b = -a * alpha_p * probability
+      var x = input * Tensor(noise) 
+      x = x + Scalar(alpha_p) * (1 - Tensor(noise))
+      return Scalar(a) * x  + Scalar(b)
+    case .inference:
+      return input
+    }
+  }
+}

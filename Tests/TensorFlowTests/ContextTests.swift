@@ -50,8 +50,24 @@ final class ContextTests: XCTestCase {
     }
   }
 
+  func testAlphaDropout() {
+    Context.local.learningPhase = .inference
+    let dropout = AlphaDropout<Float>(probability: 0.5)
+    let x = Tensor<Float>(repeating: 1.0, shape: [4, 4])
+    XCTAssertEqual(dropout(x), x)
+    withLearningPhase(LearningPhase.inference) {
+      XCTAssertEqual(dropout(x), x)
+      withLearningPhase(LearningPhase.training) {
+        XCTAssertNotEqual(dropout(x), x)
+      }
+      XCTAssertEqual(dropout(x), x)
+    }
+    XCTAssertEqual(dropout(x), x)
+  }
+
   static var allTests = [
     ("testDropout", testDropout),
     ("testMultithreadedDropout", testMultithreadedDropout),
+    ("testAlphaDropout", testAlphaDropout),
   ]
 }
