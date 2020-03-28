@@ -2634,7 +2634,6 @@ void XLATensor::triu_(XLATensor& input, xla::int64 diagonal) {
 
 XLATensor XLATensor::true_divide(const XLATensor& input,
                                  const XLATensor& other) {
-  at::ScalarType scalar_type = at::ScalarType::Float;
   ir::Value input_value = input.GetIrValue();
   ir::Value other_value = other.GetIrValue();
   if (!xla::primitive_util::IsFloatingPointType(
@@ -2651,7 +2650,6 @@ XLATensor XLATensor::true_divide(const XLATensor& input,
 }
 
 XLATensor XLATensor::true_divide(const XLATensor& input, at::Scalar other) {
-  at::ScalarType scalar_type = at::ScalarType::Float;
   ir::Value input_value = input.GetIrValue();
   ir::Value other_value =
       GetIrValueForScalar(other, xla::PrimitiveType::F32, input.GetDevice());
