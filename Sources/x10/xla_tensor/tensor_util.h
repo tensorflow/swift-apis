@@ -50,7 +50,7 @@ xla::ComputationClient::DataPtr TensorToXlaData(const at::Tensor& tensor,
 xla::ComputationClient::TensorSource TensorToTensorSource(
     const at::Tensor& tensor, const Device& device);
 
-size_t TensorHash(const at::Tensor& tensor);
+xla::hash_t TensorHash(const at::Tensor& tensor);
 
 // Retrieves the device data handles by parallel uploading data onto the
 // corresponding devices.
@@ -79,6 +79,8 @@ xla::Shape CreateComputationShapeFromTensor(const at::Tensor& tensor,
                                             const Device* device);
 
 at::ScalarType TensorTypeFromXlaType(xla::PrimitiveType xla_type);
+
+xla::PrimitiveType TensorTypeToRawXlaType(at::ScalarType scalar_type);
 
 // Maps an XLA type to the one which can be used on the given device (or the
 // default device, id device is nullptr).

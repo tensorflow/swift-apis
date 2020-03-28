@@ -36,7 +36,7 @@ xla::Shape NodeOutputShape(const Value& operand, const Value& padding_value,
                           lower_for_shape_fn);
 }
 
-size_t PaddingConfigHash(const xla::PaddingConfig& padding_config) {
+xla::hash_t PaddingConfigHash(const xla::PaddingConfig& padding_config) {
   std::vector<xla::int64> low;
   std::vector<xla::int64> high;
   std::vector<xla::int64> interior;

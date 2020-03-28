@@ -29,6 +29,7 @@
 #include "tensorflow/compiler/tf2xla/xla_tensor/cross_replica_reduces.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/device.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ir.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/ir_util.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/lowering_context.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/view.h"
 #include "tensorflow/compiler/xla/client/lib/pooling.h"
@@ -1073,6 +1074,10 @@ class XLATensor {
   // In-place version of the method above.
   static void triu_(XLATensor& input, xla::int64 diagonal);
 
+  static XLATensor true_divide(const XLATensor& input, const XLATensor& other);
+
+  static XLATensor true_divide(const XLATensor& input, at::Scalar other);
+
   static XLATensor trunc(const XLATensor& input);
   static void trunc_(XLATensor& input);
 
@@ -1182,11 +1187,20 @@ class XLATensor {
   };
 
   struct SyncTensorCollection {
+    SyncTensorCollection() : hash(0) {}
+
     SyncTensorsConfig config;
     std::vector<size_t> indices;
-    size_t hash = 0;
+    xla::hash_t hash;
     std::vector<xla::util::ExceptionCleanup> unlocker;
-    std::string device;
+    Device device;
+  };
+
+  struct PostOrderData {
+    std::vector<const ir::Node*> post_order;
+    ir::Util::EmissionMap emission_map;
+    std::vector<xla::ComputationClient::DataPtr> parameters_data;
+    std::vector<size_t> parameter_sequence;
   };
 
   struct CompilationResult {
@@ -1198,15 +1212,14 @@ class XLATensor {
 
   struct CachedComputation {
     CachedComputation(
-        std::shared_ptr<xla::ComputationClient::Computation> computation,
-        size_t num_parameters)
-        : computation(std::move(computation)), num_parameters(num_parameters) {}
+        std::shared_ptr<xla::ComputationClient::Computation> computation)
+        : computation(std::move(computation)) {}
 
     std::shared_ptr<xla::ComputationClient::Computation> computation;
-    size_t num_parameters;
   };
 
-  using ComputationCache = xla::util::Cache<size_t, CachedComputation>;
+  using ComputationCache =
+      xla::util::Cache<xla::hash_t, CachedComputation, xla::util::HashReducer>;
 
   struct Async {
     Async(SyncTensorCollection* coll,
@@ -1373,17 +1386,15 @@ class XLATensor {
       std::vector<xla::ComputationClient::DataPtr> parameters_data,
       std::string device, ComputationCache::TypePtr cached_computation);
 
-  static std::vector<xla::ComputationClient::DataPtr> FetchParameters(
-      const std::vector<XLATensor>& tensors, absl::Span<const size_t> indices,
-      size_t* graph_size);
+  static PostOrderData RunPostOrder(const std::vector<XLATensor>& tensors,
+                                    absl::Span<const size_t> indices);
 
   static ComputationCache::TypePtr LookupCachedCompile(
-      const std::vector<XLATensor>& tensors, size_t hash,
-      absl::Span<const size_t> indices,
-      std::vector<xla::ComputationClient::DataPtr>* parameters_data);
+      const std::vector<XLATensor>& tensors, const xla::hash_t& hash);
 
   static std::shared_ptr<Async> TryRunCachedSync(
-      std::vector<XLATensor>* tensors, SyncTensorCollection* coll);
+      std::vector<XLATensor>* tensors, SyncTensorCollection* coll,
+      PostOrderData* po_data);
 
   static void BuildInputOutputAliases(const std::vector<XLATensor>& tensors,
                                       absl::Span<const size_t> indices,
@@ -1391,7 +1402,8 @@ class XLATensor {
 
   static CompilationResult Compile(const std::vector<XLATensor>& tensors,
                                    absl::Span<const std::string> devices,
-                                   const SyncTensorCollection& coll);
+                                   const SyncTensorCollection& coll,
+                                   PostOrderData* po_data);
 
   static std::shared_ptr<Async> SyncTensorsGraphInternal(
       std::vector<XLATensor>* tensors, absl::Span<const std::string> devices,
