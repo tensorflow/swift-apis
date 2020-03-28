@@ -69,6 +69,7 @@ tf_cc_shared_object(
     name = "libx10.so",
     linkopts = [
         "-z defs",
+        "-s",
         "-Wl,--version-script,$(location :tf_version_script.lds)",
     ],
     visibility = ["//visibility:public"],
