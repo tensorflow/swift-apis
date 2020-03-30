@@ -26,7 +26,11 @@ option(BUILD_X10 "enable the x10 tensor library" OFF)
 option(USE_BUNDLED_CTENSORFLOW
   "Use the CTensorFlow module bundled in the active Swift toolchain" OFF)
 
-find_package(TensorFlow REQUIRED)
+if(BUILD_X10)
+  find_package(X10 REQUIRED)
+else()
+  find_package(TensorFlow REQUIRED)
+endif()
 
 include(CTest)
 include(SwiftSupport)
