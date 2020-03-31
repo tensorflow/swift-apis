@@ -521,9 +521,7 @@ func _TFCOpSetAttrTypeArray(
 class _ThreadLocalState {
   var deviceScopes = DeviceScopes()
 
-  #if !USING_X10_BACKEND
-    var lazyTensorContext = LazyTensorContext()
-  #endif
+  var lazyTensorContext = LazyTensorContext()
 
   static var useLazyTensor: Bool {
     get {

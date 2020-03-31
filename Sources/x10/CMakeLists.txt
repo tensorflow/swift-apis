@@ -51,6 +51,18 @@ target_sources(x10_tensor PRIVATE
   ../TensorFlow/Core/StringTensor.swift
   ../TensorFlow/Core/TensorGroup.swift
 
+  ../TensorFlow/Core/ArrayOps.swift
+  ../TensorFlow/Core/Device.swift
+  ../TensorFlow/Core/LazyTensorContext.swift
+  ../TensorFlow/Core/LazyTensorOperation.swift
+  ../TensorFlow/Core/LazyTensorOperation.swift
+  ../TensorFlow/Core/LazyTensorShapeInference.swift
+  ../TensorFlow/Core/LazyTensorTFFunctionBuilder.swift
+  ../TensorFlow/Core/LazyTensorTrace.swift
+  ../TensorFlow/Core/LazyTensorTraceCache.swift
+  ../TensorFlow/Core/Serialization.swift
+  ../TensorFlow/Core/TensorProtocol.swift
+
   ../TensorFlow/Layers/Convolutional.swift
   ../TensorFlow/Layers/Core.swift
   ../TensorFlow/Layers/Dense.swift
@@ -65,6 +77,8 @@ target_sources(x10_tensor PRIVATE
 
   ../TensorFlow/Operators/Basic.swift
   ../TensorFlow/Operators/Comparison.swift
+  ../TensorFlow/Operators/Dataset.swift
+  ../TensorFlow/Operators/Image.swift
   ../TensorFlow/Operators/LinearAlgebra.swift
   ../TensorFlow/Operators/Math.swift
   ../TensorFlow/Operators/NN.swift

@@ -91,3 +91,32 @@ extension Bool: XLAScalarType {
     return XLATensorScalarType_Bool
   }
 }
+
+/// Error implementations
+extension BFloat16: XLAScalarType {
+  public var xlaScalar: XLAScalar { fatalError("BFloat16 not suported") }
+  static public var xlaTensorScalarType: XLATensorScalarType {
+    fatalError("BFloat16 not suported")
+  }
+}
+
+extension UInt64: XLAScalarType {
+  public var xlaScalar: XLAScalar { fatalError("UInt64 not suported") }
+  static public var xlaTensorScalarType: XLATensorScalarType {
+    fatalError("UInt64 not suported")
+  }
+}
+
+extension UInt32: XLAScalarType {
+  public var xlaScalar: XLAScalar { fatalError("UInt32 not suported") }
+  static public var xlaTensorScalarType: XLATensorScalarType {
+    fatalError("UInt32 not suported")
+  }
+}
+
+extension UInt16: XLAScalarType {
+  public var xlaScalar: XLAScalar { fatalError("UInt16 not suported") }
+  static public var xlaTensorScalarType: XLATensorScalarType {
+    fatalError("UInt16 not suported")
+  }
+}

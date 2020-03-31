@@ -225,6 +225,20 @@ public struct Zip2TensorGroup<T: TensorGroup, U: TensorGroup>: TensorGroup {
     self.second = second
   }
 
+  public static var _typeList: [TensorDataType] { return T._typeList + U._typeList }
+
+  public init(_owning tensorHandles: UnsafePointer<CTensorHandle>?) {
+    first = .init(_owning: tensorHandles)
+    second = .init(_owning: tensorHandles?.advanced(by: Int(T._tensorHandleCount)))
+  }
+
+  public func _unpackTensorHandles(into address: UnsafeMutablePointer<CTensorHandle>?) {
+    var ptr = address
+    first._unpackTensorHandles(into: ptr)
+    ptr = ptr!.advanced(by: Int(first._tensorHandleCount))
+    second._unpackTensorHandles(into: ptr)
+  }
+
   public var _tensorHandles: [_AnyTensorHandle] {
     first._tensorHandles + second._tensorHandles
   }
