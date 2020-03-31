@@ -61,7 +61,6 @@ target_sources(x10_tensor PRIVATE
   ../TensorFlow/Core/LazyTensorTrace.swift
   ../TensorFlow/Core/LazyTensorTraceCache.swift
   ../TensorFlow/Core/Serialization.swift
-  ../TensorFlow/Core/TensorProtocol.swift
 
   ../TensorFlow/Layers/Convolutional.swift
   ../TensorFlow/Layers/Core.swift
