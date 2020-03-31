@@ -52,7 +52,6 @@ target_sources(x10_tensor PRIVATE
   ../TensorFlow/Core/TensorGroup.swift
 
   ../TensorFlow/Core/ArrayOps.swift
-  ../TensorFlow/Core/Device.swift
   ../TensorFlow/Core/LazyTensorContext.swift
   ../TensorFlow/Core/LazyTensorOperation.swift
   ../TensorFlow/Core/LazyTensorOperation.swift
