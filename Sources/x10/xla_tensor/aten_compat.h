@@ -1138,13 +1138,13 @@ using unique_t = uint32_t;
 struct Symbol {
   constexpr operator unique_t() const { return value; }  // NOLINT
 
-  Symbol(at::aten::SymbolKind value) : value(value) {}  // NOLINT
+  constexpr Symbol(at::aten::SymbolKind value) : value(value) {}  // NOLINT
 
-  Symbol(at::prim::SymbolKind value) : value(value) {}  // NOLINT
+  constexpr Symbol(at::prim::SymbolKind value) : value(value) {}  // NOLINT
 
-  Symbol(swift_xla::xla_symbols::SymbolKind value) : value(value) {}  // NOLINT
+  constexpr Symbol(swift_xla::xla_symbols::SymbolKind value) : value(value) {}  // NOLINT
 
-  Symbol() : value(at::prim::END_Symbol) {}
+  constexpr Symbol() : value(at::prim::END_Symbol) {}
 
   const char* toQualString() const;
 
