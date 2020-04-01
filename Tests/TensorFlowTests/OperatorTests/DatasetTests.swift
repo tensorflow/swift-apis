@@ -21,6 +21,7 @@ struct SimpleOutput: TensorGroup {
   let b: TensorHandle<Int32>
 }
 
+@available(*, deprecated)
 final class DatasetTests: XCTestCase {
   func testMultiValue() {
     let elements1: Tensor<Int32> = [0, 1, 2]
