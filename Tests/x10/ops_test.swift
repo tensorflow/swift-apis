@@ -625,10 +625,9 @@ final class TensorTests: XCTestCase {
   }
 
   func testBF16Construct() {
-    let device = x10_device.Device.default
     let scalars: [Float] = [1, 2, 3, 4, 5, 6]
-    var actual = X10Tensor(
-      shape: [3, 2], scalars: scalars, toReducedPrecision: true, directlyOn: device)
+    var actual = X10Tensor(shape: [3, 2], scalars: scalars,
+                           toReducedPrecision: true, directlyOn: .default)
     XCTAssert(actual.isReducedPrecision)
     actual = actual.toFullPrecision
     XCTAssert(!actual.isReducedPrecision)
@@ -1965,7 +1964,6 @@ final class TensorTests: XCTestCase {
   }
 
   func testLinSpace() throws {
-    let device = x10_device.Device.default
     func testRanges(start: Float, stop: Float, num: Int32, useReducedPrecision: Bool) {
       var startTensor = X10Tensor(start)
       var stopTensor = X10Tensor(stop)
@@ -1975,7 +1973,7 @@ final class TensorTests: XCTestCase {
       }
       var x10 = _Raw.linSpace(
         start: startTensor, stop: stopTensor, num: X10Tensor_<Int32>(num),
-        device: device)
+        device: .default)
       if useReducedPrecision {
         XCTAssert(x10.isReducedPrecision)
         x10 = x10.toFullPrecision
