@@ -75,11 +75,11 @@ performance and completeness caveats:
     (currently just `nonZeroIndices`) or lack of known use cases (several linear
     algebra operations and multinomial initialization). While the second
     category is easy to address as needed, the first category can only be
-    addressed through interoperability with the CPU, non-XLA implementation. We
-    plan to add interoperability very soon, but that doesn't address the
-    performance implications of host round-trips and fragmenting a fully fused
-    model in multiple traces. Users are therefore advised to avoid using
-    `nonZeroIndices` in their models.
+    addressed through interoperability with the CPU, non-XLA implementation.
+    Using interoperability too often has significant performance implications
+    because of host round-trips and fragmenting a fully fused model in multiple
+    traces. Users are therefore advised to avoid using such operations in their
+    models.
 
 ## More Debugging Tools
 
