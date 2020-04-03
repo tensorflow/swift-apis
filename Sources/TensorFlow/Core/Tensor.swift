@@ -199,15 +199,6 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 }
 
-#if USING_X10_BACKEND
-  // Tensor conversion.
-  extension Tensor {
-    public init(_ array: __owned ShapedArray<Scalar>) {
-      self.init(shape: TensorShape(array.shape), scalars: array.scalars)
-    }
-  }
-#endif
-
 //===------------------------------------------------------------------------------------------===//
 // Initialization
 //===------------------------------------------------------------------------------------------===//
