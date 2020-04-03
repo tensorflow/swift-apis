@@ -15,4 +15,8 @@ cd /tensorflow
 yes "" | ./configure
 export TF_NEED_CUDA=1
 export CUDNN_INSTALL_PATH=/usr/lib/x86_64-linux-gnu
-bazel build -c opt --config=cuda --define framework_shared_object=false //tensorflow/compiler/tf2xla/xla_tensor:libx10.so
+bazel build -c opt --config=cuda --define framework_shared_object=false //tensorflow/compiler/tf2xla/xla_tensor:libx10.so \
+ --remote_cache=grpcs://remotebuildexecution.googleapis.com \
+ --auth_enabled=true \
+ --remote_instance_name=projects/tensorflow-swift/instances/s4tf-remote-bazel-caching \
+ --host_platform_remote_properties_override='properties:{name:"cache-silo-key" value:"s4tf-basic-cache-key"}'

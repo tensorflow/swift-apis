@@ -3,6 +3,8 @@
 set -exuo pipefail
 
 sudo apt-get install -y docker.io
+gcloud auth list
+gcloud beta auth configure-docker
 
 # Sets 'swift_tf_url' to the public url corresponding to
 # 'swift_tf_bigstore_gfile', if it exists.
@@ -11,6 +13,7 @@ if [[ ! -z ${swift_tf_bigstore_gfile+x} ]]; then
 fi
 
 cd github/swift-apis
+cp -R /opt/google-cloud-sdk .
 sudo -E docker build -t build-img -f Dockerfile --build-arg swift_tf_url .
 
 sudo docker create --name build-container build-img
