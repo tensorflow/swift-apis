@@ -1555,7 +1555,7 @@ void XLATensor::lt_(XLATensor& input, const XLATensor& other) {
 
 void XLATensor::masked_fill_(XLATensor& input, const XLATensor& mask,
                              at::Scalar value) {
-  ir::ScopePusher ir_scope("aten::masked_fill");
+  ir::ScopePusher ir_scope("x10::masked_fill");
   input.SetIrValue(ir::MakeNode<ir::ops::MaskedFill>(
       input.GetIrValue(), MaybeExpand(mask.GetIrValue(), input.shape()),
       value));
@@ -1563,7 +1563,7 @@ void XLATensor::masked_fill_(XLATensor& input, const XLATensor& mask,
 
 void XLATensor::masked_scatter_(XLATensor& input, const XLATensor& mask,
                                 const XLATensor& source) {
-  ir::ScopePusher ir_scope("aten::masked_scatter");
+  ir::ScopePusher ir_scope("x10::masked_scatter");
   input.SetIrValue(ir::MakeNode<ir::ops::MaskedScatter>(
       input.GetIrValue(), MaybeExpand(mask.GetIrValue(), input.shape()),
       source.GetIrValue()));
