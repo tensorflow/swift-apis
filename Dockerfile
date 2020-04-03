@@ -3,27 +3,8 @@ FROM gcr.io/swift-tensorflow/base-deps-cuda10.1-cudnn7-ubuntu18.04
 # Allows the caller to specify the toolchain to use.
 ARG swift_tf_url=https://storage.googleapis.com/swift-tensorflow-artifacts/nightlies/latest/swift-tensorflow-DEVELOPMENT-x10-cuda10.1-cudnn7-ubuntu18.04.tar.gz
 
-# Add bazel and cmake repositories.
-RUN curl -qL https://apt.kitware.com/keys/kitware-archive-latest.asc | apt-key add -
-RUN echo 'deb https://apt.kitware.com/ubuntu/ bionic main' >> /etc/apt/sources.list
-RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add -
-RUN echo "deb [arch=amd64] https://storage.googleapis.com/bazel-apt stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list
-RUN apt-get update
-
-WORKDIR /opt
-COPY google-cloud-sdk /opt/google-cloud-sdk
-
-RUN /opt/google-cloud-sdk/bin/gcloud auth list
-
 # Copy the kernel into the container
-WORKDIR /swift-apis
-COPY . .
-
-RUN git diff master Sources/x10 | wc -l > /.SHOULD_BUILD_X10_CPP
-
-# Build C++ x10 parts.
-WORKDIR /
-RUN if [ "$(cat /.SHOULD_BUILD_X10_CPP)" -gt 0 ]; then /swift-apis/Sources/x10/docker_scripts/build_x10_cpp.sh; fi
+COPY . /swift-apis
 
 # Download and extract S4TF
 WORKDIR /swift-tensorflow-toolchain
@@ -32,33 +13,42 @@ RUN curl -fSsL $swift_tf_url -o swift.tar.gz \
     && tar -xzf swift.tar.gz --directory=usr --strip-components=1 \
     && rm swift.tar.gz
 
-# Copy over x10 parts.
-RUN if [ "$(cat /.SHOULD_BUILD_X10_CPP)" -gt 0 ]; then /swift-apis/Sources/x10/docker_scripts/copy_x10_cpp.sh; fi
+# Add bazel and cmake repositories.
+RUN curl -qL https://apt.kitware.com/keys/kitware-archive-latest.asc | apt-key add -
+RUN echo 'deb https://apt.kitware.com/ubuntu/ bionic main' >> /etc/apt/sources.list
 
-WORKDIR /swift-apis
+RUN curl -qL https://bazel.build/bazel-release.pub.gpg | apt-key add -
+RUN echo 'deb [arch=amd64] https://storage.googleapis.com/bazel-apt stable jdk1.8' >> /etc/apt/sources.list.d/bazel.list
+
+# Install bazel, cmake, ninja, python, and python dependencies
+ARG DEBIAN_FRONTEND=noninteractive
+ARG DEBCONF_NONINTERACTIVE_SEEN=true
+RUN apt-get -yq update                                                          \
+ && apt-get -yq upgrade                                                         \
+ && apt-get -yq install --no-install-recommends bazel-2.0.0 cmake ninja-build   \
+ && apt-get -yq install --no-install-recommends python-dev python-pip           \
+ && apt-get clean                                                               \
+ && rm -rf /tmp/* /var/tmp/* /var/lib/apt/archive/* /var/lib/apt/lists/*
+RUN ln -s /usr/bin/bazel-2.0.0 /usr/bin/bazel
+RUN pip install -U pip six numpy wheel setuptools mock 'future>=0.17.1'         \
+ && pip install -U --no-deps keras_applications keras_preprocessing
 
 # Print out swift version for better debugging for toolchain problems
 RUN /swift-tensorflow-toolchain/usr/bin/swift --version
 
 # Perform CMake based build
-RUN if [ "$(cat /.SHOULD_BUILD_X10_CPP)" -gt 0 ];                          \
-        then echo '/x10_include';                                          \
-        else echo '/swift-tensorflow-toolchain/usr/lib/swift/x10/include'; \
-    fi > /.X10_INCLUDE_DIR
-RUN apt-get -yq install --no-install-recommends cmake ninja-build
 RUN cmake                                                                       \
       -B /BinaryCache/tensorflow-swift-apis                                     \
       -D CMAKE_BUILD_TYPE=Release                                               \
       -D CMAKE_Swift_COMPILER=/swift-tensorflow-toolchain/usr/bin/swiftc        \
-      -D TensorFlow_INCLUDE_DIR=/swift-tensorflow-toolchain/usr/lib/swift/linux/x86_64/modulemaps/CTensorFlow \
-      -D TensorFlow_LIBRARY=/swift-tensorflow-toolchain/usr/lib/swift/linux/libtensorflow.so \
       -D USE_BUNDLED_CTENSORFLOW=YES                                            \
       -D BUILD_X10=YES                                                          \
-      -D X10_INCLUDE_DIR=`cat /.X10_INCLUDE_DIR`                                \
       -G Ninja                                                                  \
       -S /swift-apis
 RUN cmake --build /BinaryCache/tensorflow-swift-apis --verbose
 RUN cmake --build /BinaryCache/tensorflow-swift-apis --target test
+
+WORKDIR /swift-apis
 
 # Clean out existing artifacts.
 # TODO: move into bash scripts...
