@@ -20,6 +20,7 @@ namespace swift_xla {
 namespace ir {
 namespace ops {
 
+const OpKindWrapper xla_all_to_all(xla_symbols::all_to_all);
 const OpKindWrapper xla_as_strided_view_update(
     xla_symbols::as_strided_view_update);
 const OpKindWrapper xla_cast(xla_symbols::cast);

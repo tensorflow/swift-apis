@@ -206,6 +206,12 @@ class XLATensor {
       AllReduceType reduce_type, double scale,
       const std::vector<std::vector<xla::int64>>& groups);
 
+  static std::pair<XLATensor, ir::Value> all_to_all(
+      const XLATensor& input, const ir::Value& token,
+      xla::int64 split_dimension, xla::int64 concat_dimension,
+      xla::int64 split_count,
+      const std::vector<std::vector<xla::int64>>& groups);
+
   static XLATensor get_dimensions_size(const XLATensor& input,
                                        std::vector<xla::int64> dimensions);
 
@@ -591,7 +597,7 @@ class XLATensor {
   static XLATensor kl_div_backward(const XLATensor& grad_output,
                                    const XLATensor& input,
                                    const XLATensor& target,
-                                   xla::int64 reduction);
+                                   xla::int64 reduction, bool log_target);
 
   static std::tuple<XLATensor, XLATensor> kthvalue(const XLATensor& input,
                                                    xla::int64 k, xla::int64 dim,

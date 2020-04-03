@@ -637,9 +637,9 @@ void XLATensor::AssignIrValue(ir::Value ir_value) const {
 
 void XLATensor::TryLimitGraphSize() {
   static const size_t kCheckFrequency =
-      xla::sys_util::GetEnvInt("TRIM_GRAPH_CHECK_FREQUENCY", 5000);
+      xla::sys_util::GetEnvInt("XLA_TRIM_GRAPH_CHECK_FREQUENCY", 5000);
   static const size_t kMaxPendingGraphSize =
-      xla::sys_util::GetEnvInt("TRIM_GRAPH_SIZE", 100000);
+      xla::sys_util::GetEnvInt("XLA_TRIM_GRAPH_SIZE", 100000);
   if (data()->ir_value && ++g_tls_data.trim_counter % kCheckFrequency == 0) {
     size_t graph_size = ir::Util::GetGraphSize({data()->ir_value.node.get()});
     if (graph_size > kMaxPendingGraphSize) {
@@ -1091,7 +1091,7 @@ XLATensor::ComputationCache::TypePtr XLATensor::LookupCachedCompile(
     XLA_COUNTER("UncachedCompile", 1);
     return nullptr;
   }
-  TF_VLOG(4) << "Graph hash " << xla::util::HexHash(hash)
+  TF_VLOG(5) << "Graph hash " << xla::util::HexHash(hash)
              << " is computation hash "
              << xla::util::HexHash(xla::util::Hash(
                     cached_computation->computation->computation()
@@ -1277,8 +1277,8 @@ void XLATensor::SyncLiveTensorsGraph(const Device* device,
                                      absl::Span<const std::string> devices,
                                      bool wait) {
   auto tensors = GetLiveTensors(device);
-  TF_VLOG(4) << tensors.size() << " live tensors: devices=["
-             << absl::StrJoin(devices, ",") << "]";
+  TF_VLOG(4) << tensors.size() << " live tensors: devices=("
+             << absl::StrJoin(devices, ",") << ")";
   SyncTensorsGraph(&tensors, devices, wait, /*sync_xla_data=*/true);
 }
 
@@ -1460,7 +1460,7 @@ XLATensor::CompilationResult XLATensor::Compile(
           xla::ComputationClient::Get()->Compile(std::move(instances));
   TF_VLOG(3) << "Compiling IR graph hash " << xla::util::HexHash(coll.hash)
              << " on device " << coll.device << " done!";
-  TF_VLOG(4)
+  TF_VLOG(5)
       << "Graph hash " << xla::util::HexHash(coll.hash)
       << " is computation hash "
       << xla::util::HexHash(xla::util::Hash(
@@ -1487,6 +1487,8 @@ std::shared_ptr<XLATensor::Async> XLATensor::SyncTensorsGraphInternal(
   PostOrderData po_data = RunPostOrder(*tensors, coll.indices);
   coll.hash = xla::util::HashCombine(
       coll.hash, xla::util::Hash(po_data.parameter_sequence));
+  TF_VLOG(4) << "Parameter sequence raph hash "
+             << xla::util::HexHash(coll.hash);
   std::shared_ptr<Async> async = TryRunCachedSync(tensors, &coll, &po_data);
   if (async != nullptr) {
     return async;
