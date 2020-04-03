@@ -3,6 +3,17 @@
 /// Currently, this is a stub because TensorFlow transfers tensors between devices on demand.
 public struct Device {
   public static var `default`: Device { Device() }
+
+  /// Backend used to dispatch the tensor operations.
+  public enum Backend {
+    case TF_EAGER
+
+    fileprivate var shortName: String {
+      switch self {
+      case .TF_EAGER: return "TF_EAGER"
+      }
+    }
+  }
 }
 
 extension Tensor {

@@ -100,10 +100,8 @@ class LazyTensorHandle: _AnyTensorHandle {
     }
   }
 
-  #if USING_X10_BACKEND
-    @usableFromInline
-    var backend: Device.Backend { return .TF_EAGER }
-  #endif
+  @usableFromInline
+  var backend: Device.Backend { return .TF_EAGER }
 
   // Liveness tracking for LazyTensorOperations
   //

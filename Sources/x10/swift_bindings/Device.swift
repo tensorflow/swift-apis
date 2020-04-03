@@ -114,8 +114,12 @@ public struct Device {
 
   /// The default `Device`.
   public static var `default`: Device {
+  #if DEFAULT_BACKEND_EAGER
+    return Device.defaultTFEager
+  #else
     let cdevice = DefaultDevice()
     return cdevice.device
+  #endif
   }
 
   /// Run using the current TF Eager device.

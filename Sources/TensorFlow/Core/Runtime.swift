@@ -334,17 +334,12 @@ extension _ExecutionContext {
   static func makeOp(
     _ name: String, _ outputCount: Int
   ) -> TFTensorOperation {
-    #if !USING_X10_BACKEND
-      return _ThreadLocalState.useLazyTensor
-        ? LazyTensorOperation(name, outputCount)
-        : TFE_Op(name, outputCount)
-    #else
-      return TFE_Op(name, outputCount)
-    #endif
+    return _ThreadLocalState.useLazyTensor
+      ? LazyTensorOperation(name, outputCount)
+      : TFE_Op(name, outputCount)
   }
 }
 
-#if !USING_X10_BACKEND
   internal func _trace<In: TensorGroup, Out: TensorGroup>(_ fn: (In) -> Out) -> TFFunction {
     let useLazyTensor = _ThreadLocalState.useLazyTensor
     defer { _ThreadLocalState.useLazyTensor = useLazyTensor }
@@ -366,17 +361,12 @@ extension _ExecutionContext {
       return Out(_handles: outputHandles)
     }
   }
-#endif
 
 /// Trace the given function and return the name of the corresponding `TF_Function: In -> Out` that
 /// was created.
 public func _tffunc<In: TensorGroup, Out: TensorGroup>(_ fn: (In) -> Out) -> String {
-  #if !USING_X10_BACKEND
     let tffunc = _trace(fn)
     return tffunc.name
-  #else
-    fatalError("Tracing not supported in x10.")
-  #endif
 }
 
 extension _ExecutionContext {
