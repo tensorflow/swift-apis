@@ -531,7 +531,7 @@ NodePtr EluBackward(const Value& grad_output, const Value& output,
 }
 
 NodePtr Gelu(const Value& input) {
-  ScopePusher ir_scope("aten::gelu");
+  ScopePusher ir_scope("x10::gelu");
   // input * 0.5 * (1.0 + erf(input / math.sqrt(2.0)))
   const xla::Shape& shape = input.shape();
   return input * ScalarOp(0.5, shape) *
@@ -539,7 +539,7 @@ NodePtr Gelu(const Value& input) {
 }
 
 NodePtr GeluBackward(const Value& grad, const Value& input) {
-  ScopePusher ir_scope("aten::gelu_backward");
+  ScopePusher ir_scope("x10::gelu_backward");
   const float kAlpha = M_2_SQRTPI * M_SQRT1_2 * 0.5;
   const xla::Shape& shape = input.shape();
   NodePtr scratch = Erf(input * ScalarOp(M_SQRT1_2, shape));

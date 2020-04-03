@@ -20,7 +20,7 @@ const char* Symbol::toQualString() const {
   switch (value) {
 #define HANDLE_KEY(ns, s) \
   case at::aten::s:       \
-    return "aten::" #s;
+    return "x10::" #s;
     FORALL_ATEN_BASE_SYMBOLS(HANDLE_KEY)
 #undef HANDLE_KEY
 #define HANDLE_KEY(ns, s)         \
