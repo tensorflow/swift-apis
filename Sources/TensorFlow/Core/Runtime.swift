@@ -326,6 +326,13 @@ public final class _ExecutionContext {
   }
 }
 
+@available(
+  *, deprecated, message: "makeOp will go away in favor of directly dispatching custom ops."
+)
+public func _makeOp(_ name: String, _ nOutputs: Int) -> TFTensorOperation {
+  _ExecutionContext.makeOp(name, nOutputs)
+}
+
 extension _ExecutionContext {
   // The execution mode is effectively encoded in the TensorOperation.
   // We can use this to switch between different execution modes.
