@@ -29,6 +29,7 @@
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/adaptive_avg_pool2d.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/all.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/all_reduce.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/ops/all_to_all.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/any.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/arg_max.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/arg_min.h"
@@ -157,15 +158,15 @@ MinMaxValues GetMinMaxValues(const XLATensor& tensor,
                              c10::optional<at::Scalar> max) {
   XLA_CHECK(min || max)
       << "At least one of \'min\' or \'max\' must not be None";
-  auto shape = tensor.shape();
-  XlaHelpers::MinMax min_max =
-      XlaHelpers::MinMaxValues(shape.get().element_type());
+  xla::PrimitiveType raw_element_type = TensorTypeToRawXlaType(tensor.dtype());
+  XlaHelpers::MinMax min_max = XlaHelpers::MinMaxValues(raw_element_type);
   if (!min) {
     min = min_max.min;
   }
   if (!max) {
     max = min_max.max;
   }
+  auto shape = tensor.shape();
   return {XLATensor::GetIrValueForScalar(*min, shape.get().element_type(),
                                          tensor.GetDevice()),
           XLATensor::GetIrValueForScalar(*max, shape.get().element_type(),
@@ -361,6 +362,16 @@ ir::Value XLATensor::all_reduce_(
     (*inputs)[i].SetInPlaceIrValue(ir::Value(node, i));
   }
   return ir::Value(node, inputs->size());
+}
+
+std::pair<XLATensor, ir::Value> XLATensor::all_to_all(
+    const XLATensor& input, const ir::Value& token, xla::int64 split_dimension,
+    xla::int64 concat_dimension, xla::int64 split_count,
+    const std::vector<std::vector<xla::int64>>& groups) {
+  ir::NodePtr node = ir::MakeNode<ir::ops::AllToAll>(
+      input.GetIrValue(), token, split_dimension, concat_dimension, split_count,
+      groups);
+  return {input.CreateFrom(ir::Value(node, 0)), ir::Value(node, 1)};
 }
 
 XLATensor XLATensor::get_dimensions_size(const XLATensor& input,
@@ -1340,9 +1351,9 @@ XLATensor XLATensor::inverse(const XLATensor& input) {
 XLATensor XLATensor::kl_div_backward(const XLATensor& grad_output,
                                      const XLATensor& input,
                                      const XLATensor& target,
-                                     xla::int64 reduction) {
+                                     xla::int64 reduction, bool log_target) {
   return tensor_ops::KlDivBackward(grad_output, input, target,
-                                   GetXlaReductionMode(reduction));
+                                   GetXlaReductionMode(reduction), log_target);
 }
 
 std::tuple<XLATensor, XLATensor> XLATensor::kthvalue(const XLATensor& input,

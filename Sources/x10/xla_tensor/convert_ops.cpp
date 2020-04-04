@@ -132,4 +132,10 @@ xla::XlaOp CastToScalarType(xla::XlaOp input,
   }
 }
 
+xla::XlaOp MaybeConvertTo(xla::XlaOp input, xla::PrimitiveType type) {
+  return XlaHelpers::TypeOfXlaOp(input) != type
+             ? xla::ConvertElementType(input, type)
+             : input;
+}
+
 }  // namespace swift_xla

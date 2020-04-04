@@ -39,4 +39,6 @@ xla::XlaOp ConvertToNumeric(xla::XlaOp op);
 xla::XlaOp CastToScalarType(xla::XlaOp input,
                             c10::optional<at::ScalarType> dtype);
 
+xla::XlaOp MaybeConvertTo(xla::XlaOp input, xla::PrimitiveType type);
+
 }  // namespace swift_xla

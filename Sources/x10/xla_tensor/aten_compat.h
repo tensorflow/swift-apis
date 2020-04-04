@@ -762,7 +762,8 @@
   _(aten, xla_is_nan)
 
 #define FORALL_XLA_SYMBOLS(_, __) \
-  __(xla, as_strided_view_update) \
+  __(xla, all_to_all)             \
+  _(xla, as_strided_view_update)  \
   _(xla, cast)                    \
   _(xla, cross_replica_sum)       \
   _(xla, device_data)             \
