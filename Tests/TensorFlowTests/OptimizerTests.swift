@@ -149,7 +149,7 @@ class OptimizerTests: XCTestCase {
   ) where Opt.Model == NumericalValues {
     var optimizer = optimizer
     var values = startingValues
-    let gradient = NumericalValues.TangentVector(value: [-0.5, 0.1, 3])
+    let gradient = NumericalValues.TangentVector(value: [-5, 0.1, 0.2])
     for _ in 0..<stepCount {
       optimizer.update(&values, along: gradient)
     }
@@ -159,21 +159,17 @@ class OptimizerTests: XCTestCase {
   func testSGDNumerical() {
     let values = NumericalValues()
     let optimizer = SGD(for: values, learningRate: 1e-3)
-    // FIXME(TF-759): Investigate large differences with Python reference implementation results:
-    // `[ 0.49999967, -0.00999999, -0.01999998]`.
     testNumericalCorrectness(
       optimizer: optimizer, startingValues: values,
-      expectedValues: [0.49999535, -0.10000112, -3.000017])
+      expectedValues: [5.0000668 , -0.10000112, -0.20000224])
   }
 
   func testRMSPropNumerical() {
     let values = NumericalValues()
     let optimizer = RMSProp(for: values, learningRate: 1e-3, epsilon: 1e-7)
-    // FIXME(TF-759): Investigate small differences with Python reference implementation results:
-    // `[ 1.0091327, -1.0091326, -1.0091326]`.
     testNumericalCorrectness(
       optimizer: optimizer, startingValues: values,
-      expectedValues: [1.0091327, -1.0091326, -1.0091327])
+      expectedValues: [1.0091327, -1.0091326, -1.0091326])
   }
 
   func testAdamNumerical() {
@@ -183,7 +179,7 @@ class OptimizerTests: XCTestCase {
     // `[ 0.9999907, -0.9999898, -0.9999904]`.
     testNumericalCorrectness(
       optimizer: optimizer, startingValues: values,
-      expectedValues: [0.9999906, -0.9999898, -0.99999064])
+      expectedValues: [0.99999064, -0.9999898, -0.9999905])
   }
 
   func testAdaDeltaNumerical() {
@@ -193,7 +189,7 @@ class OptimizerTests: XCTestCase {
     // `[ 0.00215183, -0.00215151, -0.00215175]`.
     testNumericalCorrectness(
       optimizer: optimizer, startingValues: values,
-      expectedValues: [0.0021518078, -0.002151505, -0.0021518408])
+      expectedValues: [0.0021518273, -0.002151505, -0.0021517489])
   }
 
   func testAMSGradNumerical() {
@@ -203,7 +199,7 @@ class OptimizerTests: XCTestCase {
     // `[ 0.9999907, -0.9999898, -0.9999904]`.
     testNumericalCorrectness(
       optimizer: optimizer, startingValues: values,
-      expectedValues: [0.9999906, -0.9999898, -0.99999064])
+      expectedValues: [0.99999064, -0.9999898, -0.9999905])
   }
 
   func testAdaMaxNumerical() {
@@ -213,27 +209,27 @@ class OptimizerTests: XCTestCase {
     // `[ 0.99999076, -0.99999064, -0.99999064]`.
     testNumericalCorrectness(
       optimizer: optimizer, startingValues: values,
-      expectedValues: [0.9999907, -0.99999064, -0.9999907])
+      expectedValues: [0.9999907, -0.99999064, -0.99999064])
   }
 
   func testAdaGradNumerical() {
     let values = NumericalValues()
     let optimizer = AdaGrad(for: values, learningRate: 1e-3, epsilon: 1e-7)
-    // FIXME(TF-759): Investigate large differences with Python reference implementation results:
+    // FIXME(TF-759): Investigate small differences with Python reference implementation results:
     // `[ 0.06179592, -0.05709525, -0.05987222]`.
     testNumericalCorrectness(
       optimizer: optimizer, startingValues: values,
-      expectedValues: [0.061354622, -0.057095252, -0.061786927])
+      expectedValues: [0.06179592, -0.057095252, -0.059872225])
   }
 
   func testRAdamNumerical() {
     let values = NumericalValues()
     let optimizer = RAdam(for: values, learningRate: 1e-3, epsilon: 1e-7)
-    // FIXME(TF-759): Investigate large differences with Python reference implementation results:
+    // FIXME(TF-759): Investigate small differences with Python reference implementation results:
     // `[ 0.46914074, -0.44463935, -0.44513944]`.
     testNumericalCorrectness(
       optimizer: optimizer, startingValues: values,
-      expectedValues: [ 0.44664007, -0.44463903, -0.45914108])
+      expectedValues: [0.46914074, -0.44463903, -0.44513932])
   }
 
   static var allTests = [
