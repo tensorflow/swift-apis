@@ -186,7 +186,7 @@ class OptimizerTests: XCTestCase {
     let values = NumericalValues()
     let optimizer = AdaDelta(for: values, learningRate: 1e-3, epsilon: 1e-7)
     // FIXME(TF-759): Investigate small differences with Python reference implementation results:
-    // `[ 0.00215183, -0.00215151, -0.00215175]`.
+    // `[ 0.0021518278, -0.0021515056, -0.0021517489]`.
     testNumericalCorrectness(
       optimizer: optimizer, startingValues: values,
       expectedValues: [0.0021518273, -0.002151505, -0.0021517489])
@@ -216,7 +216,7 @@ class OptimizerTests: XCTestCase {
     let values = NumericalValues()
     let optimizer = AdaGrad(for: values, learningRate: 1e-3, epsilon: 1e-7)
     // FIXME(TF-759): Investigate small differences with Python reference implementation results:
-    // `[ 0.06179592, -0.05709525, -0.05987222]`.
+    // `[ 0.061795924, -0.057095252, -0.059872225]`.
     testNumericalCorrectness(
       optimizer: optimizer, startingValues: values,
       expectedValues: [0.06179592, -0.057095252, -0.059872225])
