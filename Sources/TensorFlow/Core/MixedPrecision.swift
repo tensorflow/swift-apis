@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #if USING_X10_BACKEND
-  import x10_xla_tensor_wrapper
+  @_implementationOnly import x10_xla_tensor_wrapper
 
   /// A type whose nested floating-point tensor properties and elements can be converted from full
   /// precision to reduced precision and vice versa.
@@ -175,7 +175,7 @@ extension Tensor {
       if Scalar.self != Float.self {
         fatalError("Reduced precision is only supported for Float tensors")
       }
-      return _Raw.physicalCast(self, destType: XLATensorScalarType_BFloat16)
+      return _Raw.physicalCast(self, destType: BFloat16.self)
     }
 
     /// Returns a copy of `self` converted to `Scalar` physical scalar type.
@@ -186,7 +186,7 @@ extension Tensor {
       if Scalar.self != Float.self {
         fatalError("Reduced precision is only supported for Float tensors")
       }
-      return _Raw.physicalCast(self, destType: Scalar.xlaTensorScalarType)
+      return _Raw.physicalCast(self, destType: Scalar.self)
     }
   }
 #else
