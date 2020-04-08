@@ -93,7 +93,8 @@ extension Tensor {
     precondition(
       shapeTensor[axis].scalarized() % Int32(count) == 0,
       "Number of ways to split should evenly divide the split dimension.")
-    return _Raw.split(splitDim: Tensor<Int32>(Int32(axis)), value: self, numSplit: Int64(count))
+    return _Raw.split(
+      splitDim: Tensor<Int32>(Int32(axis), on: device), value: self, numSplit: Int64(count))
   }
 
   /// Splits a tensor into multiple tensors. The tensor is split  into `sizes.shape[0]` pieces.
@@ -129,7 +130,7 @@ extension Tensor {
     return _Raw.splitV(
       value: self,
       sizeSplits: sizes,
-      splitDim: Tensor<Int32>(Int32(axis)),
+      splitDim: Tensor<Int32>(Int32(axis), on: device),
       numSplit: Int64(sizes.shape[0]))
   }
 
@@ -150,7 +151,7 @@ extension Tensor {
       multiples.allSatisfy { $0 >= 0 },
       "All scalars in multiples must be non-negative.")
     // TODO(TF-433): Remove workaround for differentiating `map`.
-    return tiled(multiples: Tensor<Int32>({ multiples.map(Int32.init) }()))
+    return tiled(multiples: Tensor<Int32>({ multiples.map(Int32.init) }(), on: device))
   }
 
   /// Returns a tiled tensor, constructed by tiling this tensor.
@@ -267,7 +268,8 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
       { [shape = shapeTensor] v in
         let splitShape = Tensor<Int32>(stacking: [multiples, shape]).transposed()
           .flattened()
-        let axes = Tensor<Int32>(rangeFrom: 0, to: Int32(splitShape.scalarCount), stride: 2)
+        let axes = Tensor<Int32>(
+          rangeFrom: 0, to: Int32(splitShape.scalarCount), stride: 2, on: device)
         return v.reshaped(toShape: splitShape).sum(squeezingAxes: axes)
       }
     )
@@ -353,7 +355,7 @@ extension Tensor {
   @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
   public func transposed(permutation: [Int]) -> Tensor {
     let permutation = permutation.map(Int32.init)
-    return transposed(permutation: Tensor<Int32>(permutation))
+    return transposed(permutation: Tensor<Int32>(permutation, on: device))
   }
 
   /// Returns a transposed tensor, with dimensions permuted in the specified order.
@@ -386,7 +388,7 @@ extension Tensor {
     let defaultPermutations =
       rankTensor - 1
       - Tensor<Int32>(
-        rangeFrom: 0, to: Int32(rank), stride: 1)
+        rangeFrom: 0, to: Int32(rank), stride: 1, on: device)
     return transposed(permutation: Tensor<Int32>(defaultPermutations))
   }
 
@@ -406,10 +408,11 @@ extension Tensor {
   @inlinable
   @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
   public func reversed(inAxes axes: [Int]) -> Tensor {
-      precondition(axes.count == Set(axes.map { $0 < 0 ? $0 + rank : $0 }).count,
-                   "There must be no duplication in axes.")
-      let axes = axes.map(Int32.init)
-      return reversed(inAxes: Tensor<Int32>(axes))
+    precondition(
+      axes.count == Set(axes.map { $0 < 0 ? $0 + rank : $0 }).count,
+      "There must be no duplication in axes.")
+    let axes = axes.map(Int32.init)
+    return reversed(inAxes: Tensor<Int32>(axes, on: device))
   }
 
   /// Returns a tensor with specified dimensions reversed.
@@ -418,7 +421,7 @@ extension Tensor {
   @inlinable
   @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
   public func reversed(inAxes axes: Int...) -> Tensor {
-      reversed(inAxes: axes)
+    reversed(inAxes: axes)
   }
 
   /// Returns a concatenated tensor along the specified axis.
@@ -494,7 +497,8 @@ extension Tensor {
     alongAxis axis: Int = 0
   ) -> Tensor {
     ensureValid(axis: axis)
-    return _Raw.gatherV2(params: self, indices: indices, axis: Tensor<Int32>(Int32(axis)))
+    return _Raw.gatherV2(
+      params: self, indices: indices, axis: Tensor<Int32>(Int32(axis), on: device))
   }
 
   /// Returns slices of this tensor at `indices` along the `axis` dimension, while ignoring the
@@ -533,6 +537,7 @@ extension Tensor {
 
     // Adjust axis to be positive.
     let axis = axis < 0 ? axis + rank : axis
+    let device = self.device
 
     // Handle the axis argument by transposing the axis dimension so that it is the first
     // non-batch dimension, recursively calling `batchGathering` with `axis = 0`, and then
@@ -544,10 +549,11 @@ extension Tensor {
 
       // Move self[axis] up to self[batchDimensionCount].
       let permutation = Tensor<Int32>(concatenating: [
-        Tensor<Int32>(rangeFrom: 0, to: Int32(batchDimensionCount), stride: 1),
-        Tensor<Int32>(Int32(axis)).rankLifted(),
-        Tensor<Int32>(rangeFrom: Int32(batchDimensionCount), to: Int32(axis), stride: 1),
-        Tensor<Int32>(rangeFrom: Int32(axis) + 1, to: Int32(rank), stride: 1),
+        Tensor<Int32>(rangeFrom: 0, to: Int32(batchDimensionCount), stride: 1, on: device),
+        Tensor<Int32>(Int32(axis), on: device).rankLifted(),
+        Tensor<Int32>(
+          rangeFrom: Int32(batchDimensionCount), to: Int32(axis), stride: 1, on: device),
+        Tensor<Int32>(rangeFrom: Int32(axis) + 1, to: Int32(rank), stride: 1, on: device),
       ])
       let tensor = transposed(permutation: permutation)
       let result = tensor.batchGathering(
@@ -559,13 +565,13 @@ extension Tensor {
       // just before the dimensions corresponding to indices[batchDimensionCount...].
       let start = indices.rank + axis - batchDimensionCount
       let resultPermutation = Tensor<Int32>(concatenating: [
-        Tensor<Int32>(rangeFrom: 0, to: Int32(batchDimensionCount), stride: 1),
-        Tensor<Int32>(rangeFrom: Int32(indices.rank), to: Int32(start), stride: 1),
+        Tensor<Int32>(rangeFrom: 0, to: Int32(batchDimensionCount), stride: 1, on: device),
+        Tensor<Int32>(rangeFrom: Int32(indices.rank), to: Int32(start), stride: 1, on: device),
         Tensor<Int32>(
           rangeFrom: Int32(batchDimensionCount),
           to: Int32(indices.rank),
-          stride: 1),
-        Tensor<Int32>(rangeFrom: Int32(start), to: Int32(result.rank), stride: 1),
+          stride: 1, on: device),
+        Tensor<Int32>(rangeFrom: Int32(start), to: Int32(result.rank), stride: 1, on: device),
       ])
       return result.transposed(permutation: resultPermutation)
     }
@@ -584,9 +590,9 @@ extension Tensor {
               stride: Tensor<Index>(ones: [])
             ) * accumulated
           let dShape = Tensor<Int32>(concatenating: [
-            Tensor<Int32>([Int32](repeating: 1, count: d - 1)),
+            Tensor<Int32>([Int32](repeating: 1, count: d - 1), on: device),
             dValue.rankLifted(),
-            Tensor<Int32>([Int32](repeating: 1, count: indices.rank - d)),
+            Tensor<Int32>([Int32](repeating: 1, count: indices.rank - d), on: device),
           ])
           batchIndices += dIndices.reshaped(toShape: dShape)
         }
@@ -664,7 +670,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   @inlinable
   @derivative(of: transposed(permutation:))
   func _vjpTransposed(permutation: [Int]) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
-    let permutation = Tensor<Int32>(permutation.map(Int32.init))
+    let permutation = Tensor<Int32>(permutation.map(Int32.init), on: device)
     let value = transposed(permutation: permutation)
     return (value, { $0.transposed(permutation: _Raw.invertPermutation(permutation)) })
   }
@@ -672,7 +678,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   @inlinable
   @derivative(of: transposed(permutation:))
   func _vjpTransposed(permutation: Int...) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
-    let permutation = Tensor<Int32>(permutation.map(Int32.init))
+    let permutation = Tensor<Int32>(permutation.map(Int32.init), on: device)
     let value = transposed(permutation: permutation)
     return (value, { $0.transposed(permutation: _Raw.invertPermutation(permutation)) })
   }
@@ -727,6 +733,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
     let result = gathering(atIndices: indices, alongAxis: axis)
     let posAxis = axis < 0 ? axis + rank : axis
 
+    let device = self.device
     // We have a fast gradient implementation for the case when `posAxis == 0`.
     if posAxis == 0 {
       return (
@@ -747,16 +754,16 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
     return (
       result,
       { [shape = shapeTensor] v in
-        let indicesSize = Tensor<Int32>(Int32(indices.scalarCount)).rankLifted()
+        let indicesSize = Tensor<Int32>(Int32(indices.scalarCount), on: device).rankLifted()
         let outerShape = shape[..<posAxis]
         let outerSize = outerShape.scalarCount
         let innerShape = shape[(posAxis + 1)...]
         let innerSize = innerShape.scalarCount
-        let outerIndices = Tensor<Int32>(rangeFrom: 0, to: Int32(outerSize), stride: 1)
+        let outerIndices = Tensor<Int32>(rangeFrom: 0, to: Int32(outerSize), stride: 1, on: device)
         let innerIndices = Tensor<Int32>(
           rangeFrom: Int32(outerSize) + 1,
           to: Int32(outerSize) + 1 + Int32(innerSize),
-          stride: 1)
+          stride: 1, on: device)
         let valuesShape = Tensor<Int32>(concatenating: [outerShape, indicesSize, innerShape]
         )
         let values = v.reshaped(toShape: valuesShape)
@@ -768,7 +775,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
         // `unsortedSegmentSum` to build a `[gatherAxis, outerAxes, innerAxes]` tensor with all
         // the gradients affecting each index in `gatherAxis` summed up.
         let permutations = Tensor<Int32>(concatenating: [
-          Tensor<Int32>([Int32(outerSize)]),
+          Tensor<Int32>([Int32(outerSize)], on: device),
           outerIndices,
           innerIndices,
         ])
@@ -782,7 +789,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
         // original position.
         let inversePermutations = Tensor<Int32>(concatenating: [
           outerIndices + 1,
-          Tensor<Int32>([0]),
+          Tensor<Int32>([0], on: device),
           innerIndices,
         ])
         return gradient.transposed(permutation: inversePermutations)
@@ -843,7 +850,7 @@ extension Tensor {
   @inlinable
   @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
   public func broadcasted(to shape: TensorShape) -> Tensor {
-    return broadcasted(toShape: Tensor<Int32>({ shape.dimensions.map(Int32.init) }()))
+    return broadcasted(toShape: Tensor<Int32>({ shape.dimensions.map(Int32.init) }(), on: device))
   }
 
   /// Broadcast to the same shape as the specified `Tensor`.
@@ -966,10 +973,10 @@ extension Tensor where Scalar: Numeric {
   public func padded(forSizes sizes: [(before: Int, after: Int)], mode: PaddingMode) -> Tensor {
     let paddings = Tensor<Int32>(
       shape: [sizes.count, 2],
-      scalars: sizes.flatMap { [Int32($0.before), Int32($0.after)] })
+      scalars: sizes.flatMap { [Int32($0.before), Int32($0.after)] }, on: device)
     switch mode {
     case .constant(let constantValue):
-      return _Raw.padV2(self, paddings: paddings, constantValues: Tensor(constantValue))
+      return _Raw.padV2(self, paddings: paddings, constantValues: Tensor(constantValue, on: device))
     case .reflect:
       return _Raw.mirrorPad(self, paddings: paddings, mode: .reflect)
     case .symmetric:
@@ -988,16 +995,17 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
     let result = padded(forSizes: sizes, mode: mode)
     return (
       result,
-      { [rank = rankTensor, shape = shapeTensor] v in
+      { [rank = rank, shape = shapeTensor] v in
+        let device = v.device
         let paddings = Tensor<Int32>(
           shape: [sizes.count, 2],
-          scalars: sizes.flatMap { [Int32($0.before), Int32($0.after)] })
+          scalars: sizes.flatMap { [Int32($0.before), Int32($0.after)] }, on: device)
         switch mode {
         case .constant:
           let padBefore = _Raw.slice(
             paddings,
-            begin: Tensor<Int32>([0, 0]),
-            size: Tensor<Int32>(stacking: [rank, Tensor<Int32>(1)]))
+            begin: Tensor<Int32>([0, 0], on: device),
+            size: Tensor<Int32>([Int32(rank), 1], on: device))
           let begin = padBefore.reshaped(to: [-1])
           return v.slice(lowerBounds: begin, sizes: shape)
         case .reflect:
@@ -1028,8 +1036,8 @@ extension Tensor {
     // TODO: Precondition `lowerBounds.count == upperBounds.count`,
     // preferably in graph.
     // TODO: Differentiating control flow is not supported yet, thus the thunks.
-    let lowerBoundsTensor = Tensor<Int32>({ lowerBounds.map(Int32.init) }())
-    let upperBoundsTensor = Tensor<Int32>({ upperBounds.map(Int32.init) }())
+    let lowerBoundsTensor = Tensor<Int32>({ lowerBounds.map(Int32.init) }(), on: device)
+    let upperBoundsTensor = Tensor<Int32>({ upperBounds.map(Int32.init) }(), on: device)
     return slice(lowerBounds: lowerBoundsTensor, sizes: upperBoundsTensor - lowerBoundsTensor)
   }
 
@@ -1182,14 +1190,14 @@ extension Tensor {
   @frozen @usableFromInline
   internal struct IndexPath {
     @usableFromInline
-    let begin, end, strides: Tensor<Int32>
+    let begin, end, strides: [Int32]
 
     @usableFromInline
     let beginMask, endMask, ellipsisMask, newAxisMask, squeezeAxisMask: Int64
 
     @inlinable
     public init(
-      begin: Tensor<Int32>, end: Tensor<Int32>, strides: Tensor<Int32>,
+      begin: [Int32], end: [Int32], strides: [Int32],
       beginMask: Int64, endMask: Int64, ellipsisMask: Int64, newAxisMask: Int64,
       squeezeAxisMask: Int64
     ) {
@@ -1208,17 +1216,21 @@ extension Tensor {
   @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
   internal subscript(_ indexPath: IndexPath) -> Tensor {
     get {
+      let device = self.device
       return _Raw.stridedSlice(
-        self, begin: indexPath.begin, end: indexPath.end,
-        strides: indexPath.strides, beginMask: indexPath.beginMask,
+        self, begin: Tensor<Int32>(indexPath.begin, on: device),
+        end: Tensor<Int32>(indexPath.end, on: device),
+        strides: Tensor<Int32>(indexPath.strides, on: device), beginMask: indexPath.beginMask,
         endMask: indexPath.endMask, ellipsisMask: indexPath.ellipsisMask,
         newAxisMask: indexPath.newAxisMask,
         shrinkAxisMask: indexPath.squeezeAxisMask)
     }
     set {
+      let device = self.device
       self = _Raw.tensorStridedSliceUpdate(
-        self, begin: indexPath.begin, end: indexPath.end,
-        strides: indexPath.strides, value: newValue,
+        self, begin: Tensor<Int32>(indexPath.begin, on: device),
+        end: Tensor<Int32>(indexPath.end, on: device),
+        strides: Tensor<Int32>(indexPath.strides, on: device), value: newValue,
         beginMask: indexPath.beginMask, endMask: indexPath.endMask,
         ellipsisMask: indexPath.ellipsisMask,
         newAxisMask: indexPath.newAxisMask,
@@ -1248,8 +1260,10 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
       self[indexPath],
       { [shape = shapeTensor] v in
         _Raw.stridedSliceGrad(
-          shape: shape, begin: indexPath.begin, end: indexPath.end,
-          strides: indexPath.strides, dy: v, beginMask: indexPath.beginMask,
+          shape: shape, begin: Tensor<Int32>(indexPath.begin, on: device),
+          end: Tensor<Int32>(indexPath.end, on: device),
+          strides: Tensor<Int32>(indexPath.strides, on: device), dy: v,
+          beginMask: indexPath.beginMask,
           endMask: indexPath.endMask, ellipsisMask: indexPath.ellipsisMask,
           newAxisMask: indexPath.newAxisMask,
           shrinkAxisMask: indexPath.squeezeAxisMask)
@@ -1309,9 +1323,9 @@ extension Tensor.IndexPath {
       }
     }
 
-    self.begin = Tensor<Int32>(begin)
-    self.end = Tensor<Int32>(end)
-    self.strides = Tensor<Int32>(strides)
+    self.begin = begin
+    self.end = end
+    self.strides = strides
     self.beginMask = beginMask
     self.endMask = endMask
     self.ellipsisMask = ellipsisMask

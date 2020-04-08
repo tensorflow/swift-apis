@@ -35,10 +35,13 @@ extension Tensor {
   ///   - shape: The dimensions of the tensor.
   @inlinable
   @differentiable( where Scalar: TensorFlowFloatingPoint)
-  public init(repeating repeatedValue: Scalar, shape: TensorShape) {
+  public init(
+    repeating repeatedValue: Scalar, shape: TensorShape,
+    on device: Device = .default
+  ) {
     self = _Raw.fill(
-      dims: Tensor<Int32>(shape.dimensions.map(Int32.init)),
-      value: Tensor(repeatedValue))
+      dims: Tensor<Int32>(shape.dimensions.map(Int32.init), on: device),
+      value: Tensor(repeatedValue, on: device))
   }
 
   /// Creates a tensor by broadcasting the given scalar to a given rank with
@@ -60,13 +63,14 @@ extension Tensor {
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
   @inlinable
-  @derivative(of: init(repeating:shape:))
+  @derivative(of: init(repeating:shape:on:))
   static func _vjpInit(
     repeating repeatedValue: __owned Scalar,
-    shape: __owned TensorShape
+    shape: __owned TensorShape,
+    on device: Device
   ) -> (value: Tensor, pullback: (Tensor) -> Scalar) {
     return (
-      Tensor(repeating: repeatedValue, shape: shape),
+      Tensor(repeating: repeatedValue, shape: shape, on: device),
       {
         $0.sum().scalarized()
       }
@@ -185,7 +189,7 @@ extension Tensor {
   @differentiable( where Scalar: TensorFlowFloatingPoint)
   public init(concatenating tensors: [Tensor], alongAxis axis: Int = 0) {
     precondition(tensors.count > 0)
-    self = _Raw.concatV2(tensors, axis: Tensor<Int32>(Int32(axis)))
+    self = _Raw.concatV2(tensors, axis: Tensor<Int32>(Int32(axis), on: tensors.first!.device))
   }
 }
 
@@ -282,8 +286,13 @@ extension Tensor where Scalar: Numeric {
   ///   - stride: The amount to step by with each iteration. `stride` must be
   ///     positive.
   @inlinable
-  public init(rangeFrom start: Scalar, to end: Scalar, stride: Scalar) {
-    self = _Raw.range(start: Tensor(start), limit: Tensor(end), delta: Tensor(stride))
+  public init(
+    rangeFrom start: Scalar, to end: Scalar, stride: Scalar,
+    on device: Device = .default
+  ) {
+    self = _Raw.range(
+      start: Tensor(start, on: device), limit: Tensor(end, on: device),
+      delta: Tensor(stride, on: device))
   }
 
   /// Creates a 1-D tensor representing a sequence from a starting value to, but not including, an
@@ -335,11 +344,12 @@ extension Tensor where Scalar: Numeric {
     offValue: Scalar = 0,
     axis: Int = -1
   ) {
+    let device = indices.device
     self = _Raw.oneHot(
       indices: indices,
-      depth: Tensor<Int32>(Int32(depth)),
-      onValue: Tensor(onValue),
-      offValue: Tensor(offValue),
+      depth: Tensor<Int32>(Int32(depth), on: device),
+      onValue: Tensor(onValue, on: device),
+      offValue: Tensor(offValue, on: device),
       axis: Int64(axis))
   }
 }
@@ -394,11 +404,12 @@ extension Tensor where Scalar: TensorFlowIndex {
     randomUniform shape: TensorShape,
     lowerBound: Tensor<Scalar> = Tensor<Scalar>(0),
     upperBound: Tensor<Scalar> = Tensor<Scalar>(1),
-    seed: TensorFlowSeed = Context.local.randomSeed
+    seed: TensorFlowSeed = Context.local.randomSeed,
+    on device: Device = .default
   ) {
     self = _Raw.statelessRandomUniformInt(
-      shape: Tensor<Int32>((0..<shape.rank).map { Int32(shape[$0]) }),
-      seed: Tensor<Int32>([seed.graph, seed.op]),
+      shape: Tensor<Int32>((0..<shape.rank).map { Int32(shape[$0]) }, on: device),
+      seed: Tensor<Int32>([seed.graph, seed.op], on: device),
       minval: lowerBound,
       maxval: upperBound)
   }
@@ -417,11 +428,12 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
     randomUniform shape: TensorShape,
     lowerBound: Tensor<Scalar> = Tensor<Scalar>(0),
     upperBound: Tensor<Scalar> = Tensor<Scalar>(1),
-    seed: TensorFlowSeed = Context.local.randomSeed
+    seed: TensorFlowSeed = Context.local.randomSeed,
+    on device: Device = .default
   ) {
     let sample: Tensor<Scalar> = _Raw.statelessRandomUniform(
-      shape: Tensor<Int32>((0..<shape.rank).map { Int32(shape[$0]) }),
-      seed: Tensor<Int32>([seed.graph, seed.op]))
+      shape: Tensor<Int32>((0..<shape.rank).map { Int32(shape[$0]) }, on: device),
+      seed: Tensor<Int32>([seed.graph, seed.op], on: device))
     self = (upperBound - lowerBound) * sample + lowerBound
   }
 
@@ -437,7 +449,8 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
     randomNormal shape: TensorShape,
     mean: Tensor<Scalar> = Tensor<Scalar>(0),
     standardDeviation: Tensor<Scalar> = Tensor<Scalar>(1),
-    seed: TensorFlowSeed = Context.local.randomSeed
+    seed: TensorFlowSeed = Context.local.randomSeed,
+    on device: Device = .default
   ) {
     let sample: Tensor<Scalar> = _Raw.statelessRandomNormal(
       shape: Tensor<Int32>((0..<shape.rank).map { Int32(shape[$0]) }),
@@ -457,11 +470,12 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
     randomTruncatedNormal shape: TensorShape,
     mean: Tensor<Scalar> = Tensor<Scalar>(0),
     standardDeviation: Tensor<Scalar> = Tensor<Scalar>(1),
-    seed: TensorFlowSeed = Context.local.randomSeed
+    seed: TensorFlowSeed = Context.local.randomSeed,
+    on device: Device = .default
   ) {
     let sample: Tensor<Scalar> = _Raw.statelessTruncatedNormal(
-      shape: Tensor<Int32>((0..<shape.rank).map { Int32(shape[$0]) }),
-      seed: Tensor<Int32>([seed.graph, seed.op]))
+      shape: Tensor<Int32>((0..<shape.rank).map { Int32(shape[$0]) }, on: device),
+      seed: Tensor<Int32>([seed.graph, seed.op], on: device))
     self = standardDeviation * sample + mean
   }
 }
