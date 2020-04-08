@@ -114,15 +114,20 @@ public struct Device {
 
   /// The default `Device`.
   public static var `default`: Device {
-  #if DEFAULT_BACKEND_EAGER
-    return Device.defaultTFEager
-  #else
-    let cdevice = DefaultDevice()
-    return cdevice.device
-  #endif
+    #if DEFAULT_BACKEND_EAGER
+      return Device.defaultTFEager
+    #else
+      return Device.defaultXLA
+    #endif
   }
 
-  /// Run using the current TF Eager device.
+  /// The default XLA device.
+  public static var defaultXLA: Device {
+    let cdevice = DefaultDevice()
+    return cdevice.device
+  }
+
+  /// The current TF Eager device.
   public static var defaultTFEager: Device {
     // TODO: Pull this from withDevice() {} mechanism?
     return Device(kind: .CPU, ordinal: 0, backend: .TF_EAGER)
