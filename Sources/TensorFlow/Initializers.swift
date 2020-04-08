@@ -402,11 +402,13 @@ extension Tensor where Scalar: TensorFlowIndex {
   ///   - seed: The seed value.
   public init(
     randomUniform shape: TensorShape,
-    lowerBound: Tensor<Scalar> = Tensor<Scalar>(0),
-    upperBound: Tensor<Scalar> = Tensor<Scalar>(1),
+    lowerBound: Tensor<Scalar>? = nil,
+    upperBound: Tensor<Scalar>? = nil,
     seed: TensorFlowSeed = Context.local.randomSeed,
     on device: Device = .default
   ) {
+    let lowerBound = lowerBound ?? Tensor<Scalar>(0, on: device)
+    let upperBound = upperBound ?? Tensor<Scalar>(1, on: device)
     self = _Raw.statelessRandomUniformInt(
       shape: Tensor<Int32>((0..<shape.rank).map { Int32(shape[$0]) }, on: device),
       seed: Tensor<Int32>([seed.graph, seed.op], on: device),
@@ -426,11 +428,13 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   ///   - seed: The seed value.
   public init(
     randomUniform shape: TensorShape,
-    lowerBound: Tensor<Scalar> = Tensor<Scalar>(0),
-    upperBound: Tensor<Scalar> = Tensor<Scalar>(1),
+    lowerBound: Tensor<Scalar>? = nil,
+    upperBound: Tensor<Scalar>? = nil,
     seed: TensorFlowSeed = Context.local.randomSeed,
     on device: Device = .default
   ) {
+    let lowerBound = lowerBound ?? Tensor<Scalar>(0, on: device)
+    let upperBound = upperBound ?? Tensor<Scalar>(1, on: device)
     let sample: Tensor<Scalar> = _Raw.statelessRandomUniform(
       shape: Tensor<Int32>((0..<shape.rank).map { Int32(shape[$0]) }, on: device),
       seed: Tensor<Int32>([seed.graph, seed.op], on: device))
@@ -447,15 +451,17 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   ///   - seed: The seed value.
   public init(
     randomNormal shape: TensorShape,
-    mean: Tensor<Scalar> = Tensor<Scalar>(0),
-    standardDeviation: Tensor<Scalar> = Tensor<Scalar>(1),
+    mean: Tensor<Scalar>? = nil,
+    standardDeviation: Tensor<Scalar>? = nil,
     seed: TensorFlowSeed = Context.local.randomSeed,
     on device: Device = .default
   ) {
     let sample: Tensor<Scalar> = _Raw.statelessRandomNormal(
-      shape: Tensor<Int32>((0..<shape.rank).map { Int32(shape[$0]) }),
-      seed: Tensor<Int32>([seed.graph, seed.op]))
-    self = standardDeviation * sample + mean
+      shape: Tensor<Int32>((0..<shape.rank).map { Int32(shape[$0]) }, on: device),
+      seed: Tensor<Int32>([seed.graph, seed.op], on: device))
+    self =
+      (standardDeviation ?? Tensor<Scalar>(1, on: device)) * sample
+      + (mean ?? Tensor<Scalar>(0, on: device))
   }
 
   /// Creates a tensor with the specified shape, randomly sampling scalar values from a truncated
@@ -468,15 +474,17 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   ///   - seed: The seed value.
   public init(
     randomTruncatedNormal shape: TensorShape,
-    mean: Tensor<Scalar> = Tensor<Scalar>(0),
-    standardDeviation: Tensor<Scalar> = Tensor<Scalar>(1),
+    mean: Tensor<Scalar>? = nil,
+    standardDeviation: Tensor<Scalar>? = nil,
     seed: TensorFlowSeed = Context.local.randomSeed,
     on device: Device = .default
   ) {
     let sample: Tensor<Scalar> = _Raw.statelessTruncatedNormal(
       shape: Tensor<Int32>((0..<shape.rank).map { Int32(shape[$0]) }, on: device),
       seed: Tensor<Int32>([seed.graph, seed.op], on: device))
-    self = standardDeviation * sample + mean
+    self =
+      (standardDeviation ?? Tensor<Scalar>(1, on: device)) * sample
+      + (mean ?? Tensor<Scalar>(0, on: device))
   }
 }
 
