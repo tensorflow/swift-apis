@@ -581,12 +581,13 @@ final class TensorTests: XCTestCase {
     LazyTensorBarrier(on: input.device)
     let outChannels = 1
     let model = Conv2D<Float>(
-      filterShape: (5, 5, inChannels, outChannels), padding: .same, activation: relu,
-      filterInitializer: { shape in
-        Tensor<Float>(
-          shape: shape, scalars: [Float](repeating: 0.5, count: shape.dimensions.reduce(1, *)),
-          on: x10)
-      })
+      copying: Conv2D<Float>(
+        filterShape: (5, 5, inChannels, outChannels), padding: .same, activation: relu,
+        filterInitializer: { shape in
+          Tensor<Float>(
+            shape: shape, scalars: [Float](repeating: 0.5, count: shape.dimensions.reduce(1, *)),
+            on: x10)
+        }), to: x10)
     // Materialize the model weights to reflect the steady state by leaving random initialization
     // out of the interesting computation.
     LazyTensorBarrier(on: input.device)
@@ -627,12 +628,13 @@ final class TensorTests: XCTestCase {
     LazyTensorBarrier(on: input.device)
     let outChannels = 1
     let model = Conv2D<Float>(
-      filterShape: (5, 5, inChannels, outChannels), padding: .same, activation: relu,
-      filterInitializer: { shape in
-        Tensor(
-          shape: shape, scalars: [Float](repeating: 0.5, count: shape.dimensions.reduce(1, *)),
-          on: x10)
-      })
+      copying: Conv2D<Float>(
+        filterShape: (5, 5, inChannels, outChannels), padding: .same, activation: relu,
+        filterInitializer: { shape in
+          Tensor(
+            shape: shape, scalars: [Float](repeating: 0.5, count: shape.dimensions.reduce(1, *)),
+            on: x10)
+        }), to: x10)
     // Materialize the model weights to reflect the steady state by leaving random initialization
     // out of the interesting computation.
     LazyTensorBarrier(on: input.device)
