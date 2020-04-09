@@ -3,4 +3,14 @@ VERS_1.0 {
   global:
     *TF_*;
     *TFE_*;
+    *swift_xla*;
+    *g_trace_level*;
+    *xla*primitive_util*;
+    *xla*MakeSpatialPadding*;
+    *xla*PaddingConfig*;
+    *google*protobuf*internal*;
+
+  # Hide everything else.
+  local:
+    *;
 };
