@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #if USING_X10_BACKEND
-  import x10_xla_tensor_wrapper
+  @_implementationOnly import x10_xla_tensor_wrapper
 #endif
 
 // Augment the `_Raw` interface with ops that take Swift integers for the
@@ -361,8 +361,8 @@ extension _RawTFEager {
       return Tensor(shape: x.shape, scalars: x.scalars, on: device)
     }
 
-    public static func physicalCast<T: TensorFlowScalar>(
-      _ input: Tensor<T>, destType: XLATensorScalarType
+    public static func physicalCast<T: TensorFlowScalar, R: TensorFlowScalar>(
+      _ input: Tensor<T>, destType: R.Type
     ) -> Tensor<T> {
       _RawXLA.physicalCast(input, destType: destType)
     }

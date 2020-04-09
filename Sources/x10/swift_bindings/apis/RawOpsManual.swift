@@ -16,8 +16,8 @@
 // support the current tensorflow API.
 
 import x10_device
-import x10_xla_tensor_tf_ops
-import x10_xla_tensor_wrapper
+@_implementationOnly import x10_xla_tensor_tf_ops
+@_implementationOnly import x10_xla_tensor_wrapper
 
 public enum _RawXLA {
   public typealias DataFormat = _RawTFEager.DataFormat
@@ -2736,10 +2736,10 @@ public enum _RawXLA {
         input.xlaTensor, reversedPaddings(linearizedPaddings), constantValues.scalarized()))
   }
 
-  public static func physicalCast<T: TensorFlowScalar>(
-    _ input: Tensor<T>, destType: XLATensorScalarType
+  public static func physicalCast<T: TensorFlowScalar, R: TensorFlowScalar>(
+    _ input: Tensor<T>, destType: R.Type
   ) -> Tensor<T> {
-    Tensor(_xla: XLATensor.physicalCast(input.xlaTensor, destType: destType))
+    Tensor(_xla: XLATensor.physicalCast(input.xlaTensor, destType: destType.xlaTensorScalarType))
   }
 
   /// Computes the power of one value to another.
