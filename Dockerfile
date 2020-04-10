@@ -6,6 +6,16 @@ ARG swift_tf_url=https://storage.googleapis.com/swift-tensorflow-artifacts/night
 # Copy the kernel into the container
 COPY . /swift-apis
 
+RUN if test -d google-cloud-sdk; then \
+  mv google-cloud-sdk /opt/google-cloud-sdk; \
+  /opt/google-cloud-sdk/bin/gcloud auth list; \
+  echo "build --remote_cache=grpcs://remotebuildexecution.googleapis.com \
+    --auth_enabled=true \
+    --remote_instance_name=projects/tensorflow-swift/instances/s4tf-remote-bazel-caching \
+    --host_platform_remote_properties_override='properties:{name:\"cache-silo-key\" value:\"s4tf-basic-cache-key\"}'" >> ~/.bazelrc; \
+  cat ~/.bazelrc; \
+fi
+
 # Download and extract S4TF
 WORKDIR /swift-tensorflow-toolchain
 RUN curl -fSsL $swift_tf_url -o swift.tar.gz \
