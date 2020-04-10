@@ -6,8 +6,8 @@ ARG swift_tf_url=https://storage.googleapis.com/swift-tensorflow-artifacts/night
 # Copy the kernel into the container
 COPY . /swift-apis
 
-RUN if test -d google-cloud-sdk; then \
-  mv google-cloud-sdk /opt/google-cloud-sdk; \
+RUN if test -d /swift-apis/google-cloud-sdk; then \
+  mv /swift-apis/google-cloud-sdk /opt/google-cloud-sdk; \
   /opt/google-cloud-sdk/bin/gcloud auth list; \
   echo "build --remote_cache=grpcs://remotebuildexecution.googleapis.com \
     --auth_enabled=true \
