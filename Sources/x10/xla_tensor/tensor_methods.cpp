@@ -43,6 +43,7 @@
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/cast.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/cat.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/cholesky.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/ops/collective_permute.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/constant.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/constant_pad_nd.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/convolution_backward_overrideable.h"
@@ -126,6 +127,7 @@
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/triangular_solve.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/tril.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/triu.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/ops/uniform.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/unsqueeze.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/update_slice.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/upsample_bilinear2d.h"
@@ -311,24 +313,24 @@ ViewInfo CreateAsStridedViewInfo(const xla::Shape& input_shape,
 //////////////////////////////////////////////////////////////////////////////
 std::pair<XLATensor, ir::Value> XLATensor::all_reduce(
     const XLATensor& input, const ir::Value& token, AllReduceType reduce_type,
-    double scale, const std::vector<std::vector<xla::int64>>& groups) {
+    double scale, std::vector<std::vector<xla::int64>> groups) {
   std::vector<ir::Value> input_values({input.GetIrValue()});
-  ir::NodePtr node = ir::MakeNode<ir::ops::AllReduce>(reduce_type, input_values,
-                                                      token, scale, groups);
+  ir::NodePtr node = ir::MakeNode<ir::ops::AllReduce>(
+      reduce_type, input_values, token, scale, std::move(groups));
   return {input.CreateFrom(ir::Value(node, 0)), ir::Value(node, 1)};
 }
 
 std::pair<std::vector<XLATensor>, ir::Value> XLATensor::all_reduce(
     const std::vector<XLATensor>& inputs, const ir::Value& token,
     AllReduceType reduce_type, double scale,
-    const std::vector<std::vector<xla::int64>>& groups) {
+    std::vector<std::vector<xla::int64>> groups) {
   std::vector<ir::Value> input_values;
   input_values.reserve(inputs.size());
   for (const XLATensor& input : inputs) {
     input_values.push_back(input.GetIrValue());
   }
-  ir::NodePtr node = ir::MakeNode<ir::ops::AllReduce>(reduce_type, input_values,
-                                                      token, scale, groups);
+  ir::NodePtr node = ir::MakeNode<ir::ops::AllReduce>(
+      reduce_type, input_values, token, scale, std::move(groups));
   std::vector<XLATensor> results;
   std::vector<ir::Value> tokens;
   for (size_t i = 0; i < inputs.size(); ++i) {
@@ -337,27 +339,27 @@ std::pair<std::vector<XLATensor>, ir::Value> XLATensor::all_reduce(
   return {results, ir::Value(node, inputs.size())};
 }
 
-ir::Value XLATensor::all_reduce_(
-    XLATensor& input, const ir::Value& token, AllReduceType reduce_type,
-    double scale, const std::vector<std::vector<xla::int64>>& groups) {
+ir::Value XLATensor::all_reduce_(XLATensor& input, const ir::Value& token,
+                                 AllReduceType reduce_type, double scale,
+                                 std::vector<std::vector<xla::int64>> groups) {
   std::vector<ir::Value> input_values({input.GetIrValue()});
-  ir::NodePtr node = ir::MakeNode<ir::ops::AllReduce>(reduce_type, input_values,
-                                                      token, scale, groups);
+  ir::NodePtr node = ir::MakeNode<ir::ops::AllReduce>(
+      reduce_type, input_values, token, scale, std::move(groups));
   input.SetInPlaceIrValue(ir::Value(node, 0));
   return ir::Value(node, 1);
 }
 
-ir::Value XLATensor::all_reduce_(
-    std::vector<XLATensor>* inputs, const ir::Value& token,
-    AllReduceType reduce_type, double scale,
-    const std::vector<std::vector<xla::int64>>& groups) {
+ir::Value XLATensor::all_reduce_(std::vector<XLATensor>* inputs,
+                                 const ir::Value& token,
+                                 AllReduceType reduce_type, double scale,
+                                 std::vector<std::vector<xla::int64>> groups) {
   std::vector<ir::Value> input_values;
   input_values.reserve(inputs->size());
   for (auto& input : *inputs) {
     input_values.push_back(input.GetIrValue());
   }
-  ir::NodePtr node = ir::MakeNode<ir::ops::AllReduce>(reduce_type, input_values,
-                                                      token, scale, groups);
+  ir::NodePtr node = ir::MakeNode<ir::ops::AllReduce>(
+      reduce_type, input_values, token, scale, std::move(groups));
   for (size_t i = 0; i < inputs->size(); ++i) {
     (*inputs)[i].SetInPlaceIrValue(ir::Value(node, i));
   }
@@ -367,10 +369,18 @@ ir::Value XLATensor::all_reduce_(
 std::pair<XLATensor, ir::Value> XLATensor::all_to_all(
     const XLATensor& input, const ir::Value& token, xla::int64 split_dimension,
     xla::int64 concat_dimension, xla::int64 split_count,
-    const std::vector<std::vector<xla::int64>>& groups) {
+    std::vector<std::vector<xla::int64>> groups) {
   ir::NodePtr node = ir::MakeNode<ir::ops::AllToAll>(
       input.GetIrValue(), token, split_dimension, concat_dimension, split_count,
-      groups);
+      std::move(groups));
+  return {input.CreateFrom(ir::Value(node, 0)), ir::Value(node, 1)};
+}
+
+std::pair<XLATensor, ir::Value> XLATensor::collective_permute(
+    const XLATensor& input, const ir::Value& token,
+    std::vector<std::pair<xla::int64, xla::int64>> source_target_pairs) {
+  ir::NodePtr node = ir::MakeNode<ir::ops::CollectivePermute>(
+      input.GetIrValue(), token, std::move(source_target_pairs));
   return {input.CreateFrom(ir::Value(node, 0)), ir::Value(node, 1)};
 }
 
@@ -1230,6 +1240,10 @@ XLATensor XLATensor::gelu_backward(const XLATensor& grad,
                                    const XLATensor& input) {
   return input.CreateFrom(
       ir::ops::GeluBackward(grad.GetIrValue(), input.GetIrValue()));
+}
+
+XLATensor XLATensor::ger(const XLATensor& input, const XLATensor& vec2) {
+  return input.CreateFrom(ir::ops::Ger(input.GetIrValue(), vec2.GetIrValue()));
 }
 
 XLATensor XLATensor::gt(const XLATensor& input, at::Scalar other) {
@@ -2123,11 +2137,11 @@ void XLATensor::copy_(XLATensor& input, XLATensor& src) {
     input.SetIrValue(MaybeExpand(copy_value, input.shape()));
   } else {
     auto input_shape = input.shape();
-    at::Tensor src_tensor = src.ToTensor();
+    at::Tensor src_tensor = src.ToTensor(/*detached=*/true);
     XLA_CHECK(
         xla::util::Equal(src_tensor.shape(), input_shape.get().dimensions()))
         << "Incompatible shapes";
-    input.UpdateFromTensor(std::move(src_tensor));
+    input.UpdateFromTensor(std::move(src_tensor), /*sync=*/false);
   }
 }
 
@@ -2692,6 +2706,17 @@ std::vector<XLATensor> XLATensor::unbind(const XLATensor& input,
   return slices;
 }
 
+void XLATensor::uniform_(XLATensor& input, double from, double to) {
+  XLA_CHECK_LE(from, to);
+  auto input_shape = input.shape();
+  input.SetInPlaceIrValue(ir::MakeNode<ir::ops::Uniform>(
+      GetIrValueForScalar(from, input_shape.get().element_type(),
+                          input.GetDevice()),
+      GetIrValueForScalar(to, input_shape.get().element_type(),
+                          input.GetDevice()),
+      input_shape, GenRngSeed()));
+}
+
 XLATensor XLATensor::unsqueeze(const XLATensor& input, xla::int64 dim) {
   auto input_shape = input.shape();
   xla::int64 squeeze_dim =
@@ -2834,7 +2859,8 @@ XLATensor XLATensor::xla_avg_pool(
 
 XLATensor XLATensor::xla_avg_pool_grad(
     const XLATensor& out_backprop, absl::Span<const xla::int64> gradients_size,
-    absl::Span<const xla::int64> kernel_size, absl::Span<const xla::int64> stride,
+    absl::Span<const xla::int64> kernel_size,
+    absl::Span<const xla::int64> stride,
     absl::Span<const std::pair<xla::int64, xla::int64>> spatial_padding,
     const xla::TensorFormat& data_format, const bool counts_include_padding) {
   return out_backprop.CreateFrom(ir::MakeNode<ir::ops::XlaAvgPoolGrad>(
