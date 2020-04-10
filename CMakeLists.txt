@@ -47,7 +47,7 @@ if(BUILD_X10)
       COMMAND
         ${CMAKE_COMMAND} -E rm -Rrf <SOURCE_DIR>/bazel-bin
       COMMAND
-        bazel build -c opt --define framework_shared_object=false //tensorflow/compiler/tf2xla/xla_tensor:libx10.so
+        bazel build -c opt --config=cuda --define framework_shared_object=false //tensorflow/compiler/tf2xla/xla_tensor:libx10.so
       COMMAND
         bazel shutdown
     INSTALL_COMMAND
