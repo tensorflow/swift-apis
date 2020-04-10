@@ -10,20 +10,23 @@ RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add -
 RUN echo "deb [arch=amd64] https://storage.googleapis.com/bazel-apt stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list
 RUN apt-get update
 
-WORKDIR /opt
-COPY google-cloud-sdk /opt/google-cloud-sdk
-
-RUN /opt/google-cloud-sdk/bin/gcloud auth list
-
 # Copy the kernel into the container
 WORKDIR /swift-apis
 COPY . .
 
-RUN git diff master Sources/x10 | wc -l > /.SHOULD_BUILD_X10_CPP
+RUN if test -d google-cloud-sdk; then \
+  mv google-cloud-sdk /opt/google-cloud-sdk; \
+  /opt/google-cloud-sdk/bin/gcloud auth list; \
+  echo "build --remote_cache=grpcs://remotebuildexecution.googleapis.com \
+    --auth_enabled=true \
+    --remote_instance_name=projects/tensorflow-swift/instances/s4tf-remote-bazel-caching \
+    --host_platform_remote_properties_override='properties:{name:\"cache-silo-key\" value:\"s4tf-basic-cache-key\"}'" >> ~/.bazelrc; \
+  cat ~/.bazelrc; \
+fi
 
 # Build C++ x10 parts.
 WORKDIR /
-RUN if [ "$(cat /.SHOULD_BUILD_X10_CPP)" -gt 0 ]; then /swift-apis/Sources/x10/docker_scripts/build_x10_cpp.sh; fi
+RUN /swift-apis/Sources/x10/docker_scripts/build_x10_cpp.sh
 
 # Download and extract S4TF
 WORKDIR /swift-tensorflow-toolchain
@@ -33,7 +36,7 @@ RUN curl -fSsL $swift_tf_url -o swift.tar.gz \
     && rm swift.tar.gz
 
 # Copy over x10 parts.
-RUN if [ "$(cat /.SHOULD_BUILD_X10_CPP)" -gt 0 ]; then /swift-apis/Sources/x10/docker_scripts/copy_x10_cpp.sh; fi
+RUN /swift-apis/Sources/x10/docker_scripts/copy_x10_cpp.sh
 
 WORKDIR /swift-apis
 
@@ -41,10 +44,6 @@ WORKDIR /swift-apis
 RUN /swift-tensorflow-toolchain/usr/bin/swift --version
 
 # Perform CMake based build
-RUN if [ "$(cat /.SHOULD_BUILD_X10_CPP)" -gt 0 ];                          \
-        then echo '/x10_include';                                          \
-        else echo '/swift-tensorflow-toolchain/usr/lib/swift/x10/include'; \
-    fi > /.X10_INCLUDE_DIR
 RUN apt-get -yq install --no-install-recommends cmake ninja-build
 RUN cmake                                                                       \
       -B /BinaryCache/tensorflow-swift-apis                                     \
@@ -54,7 +53,7 @@ RUN cmake                                                                       
       -D TensorFlow_LIBRARY=/swift-tensorflow-toolchain/usr/lib/swift/linux/libtensorflow.so \
       -D USE_BUNDLED_CTENSORFLOW=YES                                            \
       -D BUILD_X10=YES                                                          \
-      -D X10_INCLUDE_DIR=`cat /.X10_INCLUDE_DIR`                                \
+      -D X10_INCLUDE_DIR='/x10_include'                                         \
       -G Ninja                                                                  \
       -S /swift-apis
 RUN cmake --build /BinaryCache/tensorflow-swift-apis --verbose
@@ -80,7 +79,7 @@ RUN cp /swift-apis/.build/debug/TensorFlow.swiftmodule /swift-tensorflow-toolcha
 RUN cp /swift-apis/.build/debug/Tensor.swiftmodule /swift-tensorflow-toolchain/usr/lib/swift/linux/x86_64/
 RUN cp /swift-apis/.build/debug/libTensorFlow.so /swift-tensorflow-toolchain/usr/lib/swift/linux/
 RUN cp /swift-apis/.build/debug/libTensor.so /swift-tensorflow-toolchain/usr/lib/swift/linux/
-RUN if [ "$(cat /.SHOULD_BUILD_X10_CPP)" -gt 0 ]; then /swift-apis/Sources/x10/docker_scripts/copy_x10_swift.sh; fi
+RUN /swift-apis/Sources/x10/docker_scripts/copy_x10_swift.sh
 
 # Run x10 tests
 RUN XRT_WORKERS='localservice:0;grpc://localhost:40935' /BinaryCache/tensorflow-swift-apis/Sources/x10/ops_test
