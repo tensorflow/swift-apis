@@ -36,18 +36,6 @@ RUN pip install -U pip six numpy wheel setuptools mock 'future>=0.17.1'         
 # Print out swift version for better debugging for toolchain problems
 RUN /swift-tensorflow-toolchain/usr/bin/swift --version
 
-# Perform CMake based build
-RUN cmake                                                                       \
-      -B /BinaryCache/tensorflow-swift-apis                                     \
-      -D CMAKE_BUILD_TYPE=Release                                               \
-      -D CMAKE_Swift_COMPILER=/swift-tensorflow-toolchain/usr/bin/swiftc        \
-      -D USE_BUNDLED_CTENSORFLOW=YES                                            \
-      -D BUILD_X10=YES                                                          \
-      -G Ninja                                                                  \
-      -S /swift-apis
-RUN cmake --build /BinaryCache/tensorflow-swift-apis --verbose
-RUN cmake --build /BinaryCache/tensorflow-swift-apis --target test
-
 WORKDIR /swift-apis
 
 # Clean out existing artifacts.
@@ -63,14 +51,20 @@ RUN python3 Utilities/benchmark_compile.py /swift-tensorflow-toolchain/usr/bin/s
 # Run SwiftPM tests
 RUN /swift-tensorflow-toolchain/usr/bin/swift test
 
-# Install into toolchain
-# TODO: Unify this with testing. (currently there is a demangling bug).
-RUN /swift-tensorflow-toolchain/usr/bin/swift build -Xswiftc -module-link-name -Xswiftc TensorFlow
-RUN cp /swift-apis/.build/debug/TensorFlow.swiftmodule /swift-tensorflow-toolchain/usr/lib/swift/linux/x86_64/
-RUN cp /swift-apis/.build/debug/Tensor.swiftmodule /swift-tensorflow-toolchain/usr/lib/swift/linux/x86_64/
-RUN cp /swift-apis/.build/debug/libTensorFlow.so /swift-tensorflow-toolchain/usr/lib/swift/linux/
-RUN cp /swift-apis/.build/debug/libTensor.so /swift-tensorflow-toolchain/usr/lib/swift/linux/
-RUN if [ "$(cat /.SHOULD_BUILD_X10_CPP)" -gt 0 ]; then /swift-apis/Sources/x10/docker_scripts/copy_x10_swift.sh; fi
+# Perform CMake based build
+RUN cmake                                                                       \
+      -B /BinaryCache/tensorflow-swift-apis                                     \
+      -D BUILD_SHARED_LIBS=YES                                                  \
+      -D CMAKE_BUILD_TYPE=Release                                               \
+      -D CMAKE_INSTALL_PREFIX=/swift-tensorflow-toolchain/usr                   \
+      -D CMAKE_Swift_COMPILER=/swift-tensorflow-toolchain/usr/bin/swiftc        \
+      -D USE_BUNDLED_CTENSORFLOW=YES                                            \
+      -D BUILD_X10=YES                                                          \
+      -G Ninja                                                                  \
+      -S /swift-apis
+RUN cmake --build /BinaryCache/tensorflow-swift-apis --verbose
+RUN cmake --build /BinaryCache/tensorflow-swift-apis --target test
+RUN cmake --build /BinaryCache/tensorflow-swift-apis --target install
 
 # Run x10 tests
 RUN XRT_WORKERS='localservice:0;grpc://localhost:40935' /BinaryCache/tensorflow-swift-apis/Sources/x10/ops_test
