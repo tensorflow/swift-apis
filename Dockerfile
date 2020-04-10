@@ -34,7 +34,6 @@ RUN echo 'deb [arch=amd64] https://storage.googleapis.com/bazel-apt stable jdk1.
 ARG DEBIAN_FRONTEND=noninteractive
 ARG DEBCONF_NONINTERACTIVE_SEEN=true
 RUN apt-get -yq update                                                          \
- && apt-get -yq upgrade                                                         \
  && apt-get -yq install --no-install-recommends bazel-2.0.0 cmake ninja-build   \
  && apt-get -yq install --no-install-recommends python-dev python-pip           \
  && apt-get clean                                                               \
