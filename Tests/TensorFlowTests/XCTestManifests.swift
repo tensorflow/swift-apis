@@ -21,6 +21,7 @@ import XCTest
       testCase(BasicOperatorTests.allTests),
       testCase(ComparisonOperatorTests.allTests),
       testCase(ContextTests.allTests),
+      testCase(DatasetTests.allTests),
       testCase(ImageTests.allTests),
       testCase(InitializerTests.allTests),
       testCase(LayerTests.allTests),
