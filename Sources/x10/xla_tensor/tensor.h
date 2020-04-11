@@ -68,14 +68,14 @@ class XLATensor {
 
   xla::int64 size(xla::int64 dim) const;
 
-  at::Tensor ToTensor();
+  at::Tensor ToTensor(bool detached);
 
   void ShallowCopyTo(XLATensor* dest) const;
 
   // Assigns the tensor value to the XLA tensor.
   void SetTensor(at::Tensor tensor);
 
-  void UpdateFromTensor(at::Tensor tensor);
+  void UpdateFromTensor(at::Tensor tensor, bool sync);
   void UpdateFromTensorOut(at::Tensor tensor);
   void UpdateFromTensorOut(const XLATensor& tensor);
 
@@ -190,27 +190,30 @@ class XLATensor {
   //////////////////////////////////////////////////////////////////////////////
   static std::pair<XLATensor, ir::Value> all_reduce(
       const XLATensor& input, const ir::Value& token, AllReduceType reduce_type,
-      double scale, const std::vector<std::vector<xla::int64>>& groups);
+      double scale, std::vector<std::vector<xla::int64>> groups);
 
   static std::pair<std::vector<XLATensor>, ir::Value> all_reduce(
       const std::vector<XLATensor>& inputs, const ir::Value& token,
       AllReduceType reduce_type, double scale,
-      const std::vector<std::vector<xla::int64>>& groups);
+      std::vector<std::vector<xla::int64>> groups);
 
-  static ir::Value all_reduce_(
-      XLATensor& input, const ir::Value& token, AllReduceType reduce_type,
-      double scale, const std::vector<std::vector<xla::int64>>& groups);
+  static ir::Value all_reduce_(XLATensor& input, const ir::Value& token,
+                               AllReduceType reduce_type, double scale,
+                               std::vector<std::vector<xla::int64>> groups);
 
-  static ir::Value all_reduce_(
-      std::vector<XLATensor>* inputs, const ir::Value& token,
-      AllReduceType reduce_type, double scale,
-      const std::vector<std::vector<xla::int64>>& groups);
+  static ir::Value all_reduce_(std::vector<XLATensor>* inputs,
+                               const ir::Value& token,
+                               AllReduceType reduce_type, double scale,
+                               std::vector<std::vector<xla::int64>> groups);
 
   static std::pair<XLATensor, ir::Value> all_to_all(
       const XLATensor& input, const ir::Value& token,
       xla::int64 split_dimension, xla::int64 concat_dimension,
-      xla::int64 split_count,
-      const std::vector<std::vector<xla::int64>>& groups);
+      xla::int64 split_count, std::vector<std::vector<xla::int64>> groups);
+
+  static std::pair<XLATensor, ir::Value> collective_permute(
+      const XLATensor& input, const ir::Value& token,
+      std::vector<std::pair<xla::int64, xla::int64>> source_target_pairs);
 
   static XLATensor get_dimensions_size(const XLATensor& input,
                                        std::vector<xla::int64> dimensions);
@@ -531,6 +534,8 @@ class XLATensor {
 
   static XLATensor gelu(const XLATensor& input);
   static XLATensor gelu_backward(const XLATensor& grad, const XLATensor& input);
+
+  static XLATensor ger(const XLATensor& input, const XLATensor& vec2);
 
   static XLATensor gt(const XLATensor& input, at::Scalar other);
   static void gt_(XLATensor& input, at::Scalar other);
@@ -1091,6 +1096,8 @@ class XLATensor {
   // removed.
   static std::vector<XLATensor> unbind(const XLATensor& input, xla::int64 dim);
 
+  static void uniform_(XLATensor& input, double from, double to);
+
   // Insert a dimension of size one at the specified position.
   static XLATensor unsqueeze(const XLATensor& input, xla::int64 dim);
 
@@ -1155,8 +1162,10 @@ class XLATensor {
       const xla::TensorFormat& data_format, const bool counts_include_padding);
 
   static XLATensor xla_avg_pool_grad(
-      const XLATensor& out_backprop, absl::Span<const xla::int64> gradients_size,
-      absl::Span<const xla::int64> kernel_size, absl::Span<const xla::int64> stride,
+      const XLATensor& out_backprop,
+      absl::Span<const xla::int64> gradients_size,
+      absl::Span<const xla::int64> kernel_size,
+      absl::Span<const xla::int64> stride,
       absl::Span<const std::pair<xla::int64, xla::int64>> spatial_padding,
       const xla::TensorFormat& data_format, const bool counts_include_padding);
 

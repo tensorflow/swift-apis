@@ -784,17 +784,33 @@ XLATensor XLATensor::CreateViewTensor(ViewInfo view_info) const {
   return Create(CreateView(std::move(view_info)), GetDevice(), dtype());
 }
 
-at::Tensor XLATensor::ToTensor() {
+at::Tensor XLATensor::ToTensor(bool detached) {
+  at::Tensor tensor(std::unique_ptr<at::AnyScalarBuffer>(nullptr), {});
   c10::optional<at::Tensor> tensor_data = CurrentTensorData();
   if (!tensor_data) {
     // The GetXlaData() call will trigger an ApplyPendingGraph() if an IR Node
     // is available on the tensor.
-    std::vector<xla::Literal> literals =
-        xla::ComputationClient::Get()->TransferFromServer({GetXlaData()});
-    tensor_data = MakeTensorFromXlaLiteral(literals.front(), dtype());
-    SetTensorData(*tensor_data);
+    std::vector<at::Tensor> tensors = XlaDataToTensors({GetXlaData()}, dtype());
+    tensor = std::move(tensors.front());
+    if (!detached) {
+      SetTensorData(tensor);
+    }
+  } else {
+    tensor = *tensor_data;
+    if (detached) {
+      if (data()->ir_value || data()->xla_data != nullptr ||
+          data()->view != nullptr) {
+        // If we have other authoritive sources, just drop our reference and
+        // transfer it to the caller.
+        data()->tensor_data = absl::nullopt;
+      } else {
+        // Otherwise we need to make a copy to prevent the caller changing our
+        // version.
+        tensor = tensor.dup();
+      }
+    }
   }
-  return *tensor_data;
+  return tensor;
 }
 
 void XLATensor::ShallowCopyTo(XLATensor* dest) const {
@@ -813,13 +829,19 @@ void XLATensor::SetTensor(at::Tensor tensor) {
   AssignIrValue(ir::Value());
 }
 
-void XLATensor::UpdateFromTensor(at::Tensor tensor) {
-  SetTensorData(tensor);
-  data()->xla_data = nullptr;
-  AssignIrValue(ir::Value());
-  if (data()->view != nullptr) {
-    ir::Value ir_value = GetIrValueForTensor(tensor, GetDevice());
-    data()->view = UpdateView(data()->view, std::move(ir_value));
+void XLATensor::UpdateFromTensor(at::Tensor tensor, bool sync) {
+  if (sync) {
+    at::Tensor typed_tensor = tensor.dup();
+    SetIrValue(GetIrValueForTensor(typed_tensor, GetDevice()));
+  } else {
+    at::Tensor coyped_tensor = tensor.dup();
+    SetTensorData(coyped_tensor);
+    data()->xla_data = nullptr;
+    AssignIrValue(ir::Value());
+    if (data()->view != nullptr) {
+      ir::Value ir_value = GetIrValueForTensor(coyped_tensor, GetDevice());
+      data()->view = UpdateView(data()->view, std::move(ir_value));
+    }
   }
 }
 
@@ -828,7 +850,7 @@ void XLATensor::UpdateFromTensorOut(at::Tensor tensor) {
   if (data()->view != nullptr && xla::ShapeUtil::ElementsIn(shape()) != numel) {
     data()->view = nullptr;
   }
-  UpdateFromTensor(std::move(tensor));
+  UpdateFromTensor(std::move(tensor), /*sync=*/false);
 }
 
 void XLATensor::UpdateFromTensorOut(const XLATensor& tensor) {
@@ -971,7 +993,7 @@ std::vector<XLATensor> XLATensor::MakeOutputTensors(ir::NodePtr node) const {
 
 XLATensor XLATensor::CopyTensorToDevice(const Device& device) {
   // TODO: This can be optimized via proper XRT/XLA computation.
-  return Create(ToTensor(), device);
+  return Create(ToTensor(/*detached=*/true), device);
 }
 
 XLATensor XLATensor::CreateFrom(ir::Value ir_value) const {
@@ -1414,7 +1436,7 @@ XLATensor::CompilationResult XLATensor::Compile(
     lowering_ctx.AddResult(root);
     unique_device.set(tensors[index].GetDevice());
   }
-  if (enable_aliasing && coll.config.force_xla_data) {
+  if (enable_aliasing && coll.config.sync_xla_data) {
     // We can only alias at the step barrier, when force_xla_data is true.
     // Consider the case:
     //   1. Tensor A(DEVICE_DATA)
@@ -1487,7 +1509,7 @@ std::shared_ptr<XLATensor::Async> XLATensor::SyncTensorsGraphInternal(
   PostOrderData po_data = RunPostOrder(*tensors, coll.indices);
   coll.hash = xla::util::HashCombine(
       coll.hash, xla::util::Hash(po_data.parameter_sequence));
-  TF_VLOG(4) << "Parameter sequence raph hash "
+  TF_VLOG(4) << "Parameter sequence graph hash "
              << xla::util::HexHash(coll.hash);
   std::shared_ptr<Async> async = TryRunCachedSync(tensors, &coll, &po_data);
   if (async != nullptr) {

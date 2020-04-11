@@ -175,7 +175,7 @@ OpaqueMaterializedTensor* XLATensor_materialize(OpaqueXLATensor* t) {
   auto current_tensor = t->CurrentTensorData();
   if (current_tensor) return new at::Tensor(std::move(*current_tensor));
   t->ApplyPendingGraph();
-  return new at::Tensor(t->ToTensor());
+  return new at::Tensor(t->ToTensor(/*detached=*/false));
 }
 
 enum XLATensorScalarType MaterializedTensor_getType(
