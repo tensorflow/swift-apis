@@ -58,7 +58,7 @@ extension TensorArrayProtocol {
     let status = TF_NewStatus()
     defer { TF_DeleteStatus(status) }
     let count = Int(_tensorHandleCount)
-    var buffer = UnsafeMutableBufferPointer<CTensorHandle>.allocate(capacity: count)
+    let buffer = UnsafeMutableBufferPointer<CTensorHandle>.allocate(capacity: count)
     defer { buffer.deallocate() }
     self._unpackTensorHandles(into: buffer.baseAddress)
     let result: [TFETensorHandle] = (0..<count).map {
