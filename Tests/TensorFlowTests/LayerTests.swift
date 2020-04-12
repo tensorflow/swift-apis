@@ -1097,6 +1097,35 @@ final class LayerTests: XCTestCase {
       ])
   }
 
+  func testFractionalMaxPool() {
+    let layer = FractionalMaxPool<Float>(poolingRatio: (1.0, 1.4, 1.5, 1.0), pseudoRandom: false)
+    let input = Tensor(shape: [1, 2, 2, 1], scalars: (0..<4).map(Float.init))
+    let output = layer.inferring(from: input)
+    let expected = Tensor<Float>([[[[3]]]])
+    XCTAssertEqual(output, expected)
+  }
+
+  func testFractionalMaxPoolGrad() {
+    let layer = FractionalMaxPool<Float>(poolingRatio: (1.0, 1.4, 1.5, 1.0), pseudoRandom: false)
+    let x = Tensor(shape: [1, 2, 2, 1], scalars: (0..<4).map(Float.init))
+    let computedGradient = gradient(at: x, layer) { $1($0).sum() }
+    // The expected value of the gradient was computed using the following Python code:
+    // ```
+    // import tensorflow as tf
+    // x = tf.reshape(tf.range(4, dtype=tf.float32), [1, 2, 2, 1])
+    // with tf.GradientTape() as tape:
+    //     tape.watch(x)
+    //     y = tf.math.reduce_sum(tf.nn.fractional_max_pool(a, pooling_ratio=[1, 1.4, 1.5, 1], pseudo_random=False)[0])
+    // print(tape.gradient(y, x))
+    let expectedGradient = Tensor<Float>([
+      [[[0.0],
+        [0.0]],
+       [[0.0],
+        [1.0]]]
+    ])
+    XCTAssertEqual(computedGradient.0, expectedGradient)
+  }
+
   func testUpSampling1D() {
     let size = 6
     let layer = UpSampling1D<Float>(size: size)
