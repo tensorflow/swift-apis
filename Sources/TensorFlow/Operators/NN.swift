@@ -890,7 +890,7 @@ func _vjpFractionalMaxPool<Scalar: TensorFlowFloatingPoint>(
       _Raw.fractionalMaxPoolGrad(
         origInput: x,
         origOutput: value,
-        outBackprop: value,
+        outBackprop: v,
         rowPoolingSequence: rowPoolingSequence,
         colPoolingSequence: colPoolingSequence,
         overlapping: overlapping
