@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import x10_device
 @_exported import x10_optimizers_tensor_visitor_plan
 import x10_tensor
 
