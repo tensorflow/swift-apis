@@ -47,7 +47,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
 @frozen
 public struct Dropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   @noDerivative public let probability: Double
-  
+
   /// Creates a dropout layer.
   ///
   /// - Parameter probability: The probability of a node dropping out.
@@ -74,9 +74,9 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   }
 }
 
-/// A gaussian noise layer
+/// `GaussianNoise` adds noise sampled from a normal distribution.
 ///
-/// Gaussian Noise adds noise sampled from a normal distribution with mean zero
+/// The noise added always has mean zero, but has a configurable standard deviation.
 public struct GaussianNoise<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   @noDerivative public let standardDeviation: Tensor<Scalar>
   
@@ -87,9 +87,7 @@ public struct GaussianNoise<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer
     self.standardDeviation = Tensor<Scalar>(standardDeviation)
   }
   
-  /// Returns output obtained by adding noise
-  /// - Parameter input: The input to the layer
-  /// - Returns: The output
+  /// Returns a tensor obtained by adding noise to `input`
   @differentiable
   public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     switch Context.local.learningPhase {
@@ -103,9 +101,10 @@ public struct GaussianNoise<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer
   }
 }
 
-/// A gaussian dropout layer
+/// `GaussianDropout` multiplies the input with the noise sampled from a normal distribution with mean 1.0.
 ///
-/// GaussianDropout multiplies the input with the noise sampled from a normal distribution with mean 1.0.
+/// Because this is a regularization layer, it is only active during training time. During inference,
+/// `GaussianDropout` passes through the input unmodified.
 public struct GaussianDropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   @noDerivative public let probability: Scalar
   @noDerivative public let standardDeviation: Tensor<Scalar>
@@ -122,10 +121,7 @@ public struct GaussianDropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
     standardDeviation = Tensor<Scalar>(sqrt(probability / (1.0 - probability)))
   }
   
-  /// Returns the output obtained from applying the layer to the given input.
-  ///
-  /// - Parameter input: The input to the layer.
-  /// - Returns: The output.
+  /// Applies multiplicative 1-centered Gaussian noise to the input during training only.
   @differentiable
   public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     switch Context.local.learningPhase {
