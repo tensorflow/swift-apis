@@ -441,8 +441,12 @@ public struct FractionalMaxPool<Scalar: TensorFlowFloatingPoint>: ParameterlessL
   /// Creates a fractional max pooling layer.
   public init(poolingRatio: (Double, Double, Double, Double), pseudoRandom: Bool = false,
   overlapping :Bool = false, seed: Int64 = 0, seed2: Int64 = 0) {
-    precondition(poolingRatio.0 == 1.0 && poolingRatio.3 == 1.0, "Pooling on batch and channels dimensions not supported.")
-    precondition(poolingRatio.1 >= 1.0 && poolingRatio.2 >= 1.0, "Pooling ratio for height and width dimensions must be at least 1.0")
+    precondition(
+      poolingRatio.0 == 1.0 && poolingRatio.3 == 1.0,
+      "Pooling on batch and channels dimensions not supported.")
+    precondition(
+      poolingRatio.1 >= 1.0 && poolingRatio.2 >= 1.0,
+      "Pooling ratio for height and width dimensions must be at least 1.0")
     self.poolingRatio = poolingRatio
     self.pseudoRandom = pseudoRandom
     self.overlapping = overlapping
@@ -456,11 +460,12 @@ public struct FractionalMaxPool<Scalar: TensorFlowFloatingPoint>: ParameterlessL
   /// - Returns: The output.
   @differentiable
   public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-    fractionalMaxPool(input,
-                      poolingRatio: poolingRatio, 
-                      pseudoRandom: pseudoRandom,
-                      overlapping: overlapping,
-                      seed: seed,
-                      seed2: seed2)
+    fractionalMaxPool(
+      input,
+      poolingRatio: poolingRatio, 
+      pseudoRandom: pseudoRandom,
+      overlapping: overlapping,
+      seed: seed,
+      seed2: seed2)
   }
 }
