@@ -42,7 +42,7 @@ if(BUILD_X10)
       COMMAND
         ${CMAKE_COMMAND} -E create_symlink ${PROJECT_SOURCE_DIR}/Sources/x10/xla_tensor <SOURCE_DIR>/tensorflow/compiler/tf2xla/xla_tensor
       COMMAND
-        TF_NEED_CUDA=1 CUDNN_INSTALL_PATH=/usr/lib/x86_64-linux-gnu <SOURCE_DIR>/configure
+        `yes ""` | TF_NEED_CUDA=1 <SOURCE_DIR>/configure
     BUILD_COMMAND
       COMMAND
         ${CMAKE_COMMAND} -E rm -Rrf <SOURCE_DIR>/bazel-bin
