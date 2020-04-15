@@ -1117,6 +1117,7 @@ final class LayerTests: XCTestCase {
     //     tape.watch(x)
     //     y = tf.math.reduce_sum(tf.nn.fractional_max_pool(x, pooling_ratio=[1, 1.4, 1.5, 1], pseudo_random=False)[0])
     // print(tape.gradient(y, x))
+    // ```
     let expectedGradient = Tensor<Float>([
       [[[0.0],
         [0.0]],
