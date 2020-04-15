@@ -12,63 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// RMSProp optimizer.
+/// A RMSProp optimizer.
 ///
-/// Implements the RMSProp optimization algorithm. It is a form of stochastic 
-/// gradient descent where the gradients are divided by a running average of 
-/// their recent magnitude. RMSProp keeps a moving average of the squared 
-/// gradient for each weight.
+/// Implements the RMSProp optimization algorithm. RMSProp is a form of stochastic gradient descent
+/// where the gradients are divided by a running average of their recent magnitude. RMSProp keeps a
+/// moving average of the squared gradient for each weight.
 ///
-/// Reference: ["Lecture 6.5 - rmsprop: Divide the gradient by a running average 
+/// References:
+/// - ["Lecture 6.5 - rmsprop: Divide the gradient by a running average
 /// of its recent magnitude"](
 /// http://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf) 
-/// (Tieleman and Hinton, 2012) and ["Generating Sequences With Recurrent Neural 
-/// Networks"](https://arxiv.org/abs/1308.0850) (Graves, 2013).
-///
-/// - Parameters:
-///     - learningRate: A float. The learning rate (default value: 1e-3)
-///     - rho: A float. The gradient moving average decay factor or the 
-///     discounting factor for the history/coming gradient (default value: 
-///     0.9).
-///     - epsilon: A float. A small scalar added to the denominator to improve 
-///     numerical stability (default value: 1e-8). 
-///     - decay: A float. The learning rate decay (default value: 0).
-///
-/// ### Examples: ###
-/// 
-/// // - Train an image classification network:
-/// 
-/// ````
-/// ...
-/// // Instantiate the convolutional neural network after defining it.
-/// var cifarClassifierModel = CifarClassifierModel()
-/// // Define the RMS optimizer for the network with a learning rate set to 1e-3, 
-/// // rho - to 0.9, epsilon - to 1e-8, and decay - to 0.
-/// let rmsPropOptimizer = RMSProp(
-///     for: cifarClassifierModel, 
-///     learningRate: 1e-3, 
-///     rho: 0.9, 
-///     epsilon: 1e-8, 
-///     decay: 0)
-/// ...
-/// // Start the training loop over a certain number of epochs.
-/// for epoch in 1...epochCount {
-///     ...
-///     for batch in trainingShuffled.batched(batchSize) {
-///         ...
-///         // Implementing the gradient descent with the RMSProp optimizer:
-///         // Compute the gradient.
-///         let (loss, 𝛁cifarClassifierModel) = valueWithGradient(
-///             at: cifarClassifierModel) { cifarClassifierModel 
-///             -> Tensor<Float> in
-///             ...
-///             return loss
-///         // Update the differentiable variables of the model along the gradients 
-///         // (`𝛁cifarClassifierModel`) with the RMSProp optimizer.
-///         rmsPropOptimizer.update(&cifarClassifierModel, along: 𝛁cifarClassifierModel)
-///     }
-/// }
-/// ````
+/// (Tieleman and Hinton, 2012)
+/// - ["Generating Sequences With Recurrent Neural Networks"](
+/// https://arxiv.org/abs/1308.0850) (Graves, 2013)
 public class RMSProp<Model: Differentiable>: Optimizer
 where
   Model.TangentVector: VectorProtocol & PointwiseMultiplicative
@@ -78,7 +34,7 @@ where
   public typealias Model = Model
   /// The learning rate.
   public var learningRate: Float
-  // TODO: Document `rho`. Keras doesn't document `rho`.
+  /// The gradient moving average decay factor.
   public var rho: Float
   /// A small scalar added to the denominator to improve numerical stability.
   public var epsilon: Float
@@ -89,9 +45,17 @@ where
   /// The alpha values for all model differentiable variables.
   public var alpha: Model.TangentVector = .zero
 
+  /// Creates an instance for `model`.
+  ///
+  /// - Parameters:
+  ///   - learningRate: The learning rate. The default value is `1e-3`.
+  ///   - rho: The gradient moving average decay factor. The default value is `0.9`.
+  ///   - epsilon: A small scalar added to the denominator to improve numerical stability. The
+  ///     default value is `1e-8`.
+  ///   - decay: The learning rate decay. The default value is `0`.
   public init(
     for model: __shared Model,
-    learningRate: Float = 0.001,
+    learningRate: Float = 1e-3,
     rho: Float = 0.9,
     epsilon: Float = 1e-8,
     decay: Float = 0
