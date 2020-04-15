@@ -81,6 +81,10 @@ performance and completeness caveats:
     traces. Users are therefore advised to avoid using such operations in their
     models.
 
+    On Linux, use `XLA_SAVE_TENSORS_FILE` (documented in the next section) to
+    get the Swift stack trace which called the unsupported operation. Function
+    names can be manually demangled using `swift-demangle`.
+
 ## More Debugging Tools
 
 We don't expect users to use the tools in this section to debug their models,
