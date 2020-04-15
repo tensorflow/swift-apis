@@ -124,13 +124,17 @@ where
   }
 }
 
-/// ADADELTA optimizer.
+/// An AdaDelta optimizer.
 ///
-/// ADADELTA is a more robust extension of AdaGrad. ADADELTA adapts learning rates based on a moving
-/// window of gradient updates rather than by accumulating all past gradient norms. It can thus 
-/// adapt faster to changing dynamics of the optimization problem space.
+/// Implements the AdaDelta optimization algorithm. AdaDelta is a stochastic
+/// gradient descent method based on the first order information. It adapts
+/// learning rates based on a moving window of gradient updates, instead of
+/// accumulating all past gradients. Thus, AdaDelta continues learning even
+/// when many updates have been done. It adapts faster to changing dynamics of
+/// the optimization problem space.
 /// 
-/// Reference: ["ADADELTA: An Adaptive Learning Rate Method"](https://arxiv.org/abs/1212.5701)
+/// Reference: ["ADADELTA: An Adaptive Learning Rate Method"](
+/// https://arxiv.org/abs/1212.5701) (Zeiler, 2012)
 public class AdaDelta<Model: Differentiable>: Optimizer
 where
   Model.TangentVector: VectorProtocol & PointwiseMultiplicative
@@ -140,7 +144,7 @@ where
   public typealias Model = Model
   /// The learning rate.
   public var learningRate: Float
-  /// The decay factor, corresponding to fraction of gradient to keep at each time step.
+  /// The decay factor, corresponding to the fraction of gradient to keep at each time step.
   public var rho: Float
   /// A small scalar added to the denominator to improve numerical stability.
   public var epsilon: Float
@@ -153,6 +157,14 @@ where
   /// The accumulated parameter updates.
   public var accumulatedDelta: Model.TangentVector = .zero
 
+  /// Creates an instance for `model`.
+  ///
+  /// - Parameters:
+  ///   - learningRate: The learning rate. The default value is `1`.
+  ///   - rho: The decay factor. The default value is `0.95`.
+  ///   - epsilon: A small scalar added to the denominator to improve numerical stability. The
+  ///     default value is `1e-6`.
+  ///   - decay: The learning rate decay. The defalut value is `0`.
   public init(
     for model: __shared Model,
     learningRate: Float = 1,
