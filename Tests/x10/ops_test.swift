@@ -1,5 +1,9 @@
 import XCTest
+#if !IMPORT_X10_AS_TENSORFLOW
 import x10_tensor
+#else
+import TensorFlow
+#endif
 import x10_xla_tensor_wrapper
 
 // TODO(b/130689556): Remove this environment setting once the bug is fixed.
@@ -639,14 +643,14 @@ final class TensorTests: XCTestCase {
     // out of the interesting computation.
     LazyTensorBarrier(on: input.device)
     let mixedPrecisionModel = model.toReducedPrecision
-    let 𝛁model = x10_tensor.gradient(
+    let 𝛁model = gradient(
       at: mixedPrecisionModel,
       in: { mixedPrecisionModel -> Tensor<Float> in
         let ŷ = mixedPrecisionModel(inputBF16)
         let loss = ŷ.sum()
         return loss
       })
-    let 𝛁modelViaBF16 = x10_tensor.gradient(
+    let 𝛁modelViaBF16 = gradient(
       at: model,
       in: { model -> Tensor<Float> in
         let ŷ = model(inputF32)
