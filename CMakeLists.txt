@@ -47,7 +47,7 @@ if(BUILD_X10)
       COMMAND
         ${CMAKE_COMMAND} -E remove_directory -Rrf <SOURCE_DIR>/bazel-bin
       COMMAND
-        bazel build -c opt --config=cuda --define framework_shared_object=false //tensorflow/compiler/tf2xla/xla_tensor:libx10.so
+        bazel build -c opt --config=cuda --define framework_shared_object=false //tensorflow/compiler/tf2xla/xla_tensor:x10
       COMMAND
         bazel shutdown
     INSTALL_COMMAND
@@ -55,7 +55,7 @@ if(BUILD_X10)
     BUILD_IN_SOURCE
       TRUE
     BUILD_BYPRODUCTS
-      <SOURCE_DIR>/bazel-bin/tensorflow/compiler/tf2xla/xla_tensor/libx10.so
+      <SOURCE_DIR>/bazel-bin/tensorflow/compiler/tf2xla/xla_tensor/${CMAKE_SHARED_LIBRARY_PREFIX}x10${CMAKE_SHARED_LIBRARY_SUFFIX}
     USES_TERMINAL_BUILD
       TRUE
     STEP_TARGETS
@@ -65,7 +65,7 @@ if(BUILD_X10)
   add_library(x10 IMPORTED UNKNOWN)
   set_target_properties(x10 PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES "${SOURCE_DIR};${SOURCE_DIR}/bazel-bin;${SOURCE_DIR}/bazel-tensorflow/external/com_google_absl;${SOURCE_DIR}/bazel-tensorflow/external/com_google_protobuf/src;${SOURCE_DIR}/bazel-tensorflow/external/eigen_archive"
-    IMPORTED_LOCATION ${SOURCE_DIR}/bazel-bin/tensorflow/compiler/tf2xla/xla_tensor/libx10.so)
+    IMPORTED_LOCATION ${SOURCE_DIR}/bazel-bin/tensorflow/compiler/tf2xla/xla_tensor/${CMAKE_SHARED_LIBRARY_PREFIX}x10${CMAKE_SHARED_LIBRARY_SUFFIX})
   add_dependencies(x10
     tensorflow-build)
 
