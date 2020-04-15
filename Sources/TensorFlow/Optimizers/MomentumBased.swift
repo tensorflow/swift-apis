@@ -12,14 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// RMSProp optimizer.
+/// A RMSProp optimizer.
 ///
-/// It is recommended to leave the parameters of this optimizer at their default values (except for 
-/// the learning rate, which can be freely tuned). This optimizer is usually a good choice for 
-/// recurrent neural networks.
+/// Implements the RMSProp optimization algorithm. RMSProp is a form of stochastic gradient descent
+/// where the gradients are divided by a running average of their recent magnitude. RMSProp keeps a
+/// moving average of the squared gradient for each weight.
 ///
-/// Reference: ["rmsprop: Divide the gradient by a running average of its recent magnitude"](
-/// http://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf)
+/// References:
+/// - ["Lecture 6.5 - rmsprop: Divide the gradient by a running average
+/// of its recent magnitude"](
+/// http://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf) 
+/// (Tieleman and Hinton, 2012)
+/// - ["Generating Sequences With Recurrent Neural Networks"](
+/// https://arxiv.org/abs/1308.0850) (Graves, 2013)
 public class RMSProp<Model: Differentiable>: Optimizer
 where
   Model.TangentVector: VectorProtocol & PointwiseMultiplicative
@@ -29,7 +34,7 @@ where
   public typealias Model = Model
   /// The learning rate.
   public var learningRate: Float
-  // TODO: Document `rho`. Keras doesn't document `rho`.
+  /// The gradient moving average decay factor.
   public var rho: Float
   /// A small scalar added to the denominator to improve numerical stability.
   public var epsilon: Float
@@ -40,9 +45,17 @@ where
   /// The alpha values for all model differentiable variables.
   public var alpha: Model.TangentVector = .zero
 
+  /// Creates an instance for `model`.
+  ///
+  /// - Parameters:
+  ///   - learningRate: The learning rate. The default value is `1e-3`.
+  ///   - rho: The gradient moving average decay factor. The default value is `0.9`.
+  ///   - epsilon: A small scalar added to the denominator to improve numerical stability. The
+  ///     default value is `1e-8`.
+  ///   - decay: The learning rate decay. The default value is `0`.
   public init(
     for model: __shared Model,
-    learningRate: Float = 0.001,
+    learningRate: Float = 1e-3,
     rho: Float = 0.9,
     epsilon: Float = 1e-8,
     decay: Float = 0
