@@ -75,68 +75,18 @@ where
   }
 }
 
-/// AdaGrad optimizer.
+/// An AdaGrad optimizer.
 ///
-/// Implements the AdaGrad optimization algorithm. AdaGrad (adaptive gradient 
-/// algorithm) has parameter-specific learning rates, which are adapted relative 
-/// to how frequently a parameter gets updated during training. The more 
-/// updates a parameter receives, the smaller the learning rate.
+/// Implements the AdaGrad (adaptive gradient) optimization algorithm. AdaGrad has
+/// parameter-specific learning rates, which are adapted relative to how frequently parameters
+/// gets updated during training. Parameters that receive more updates have smaller learning rates.
 ///
-/// AdaGrad individually adapts the learning rates of all model parameters by scaling them inversely 
-/// proportional to the square root of the sum of all the historical squared values of the gradient.
+/// AdaGrad individually adapts the learning rates of all model parameters by scaling them inversely
+/// proportional to the square root of the running sum of squares of gradient norms.
 ///
 /// Reference: ["Adaptive Subgradient Methods for Online Learning and Stochastic 
 /// Optimization"](http://www.jmlr.org/papers/volume12/duchi11a/duchi11a.pdf) 
-/// (Duchi et al, 2011).
-///
-/// - Parameters:
-///     - learningRate: A Float. The learning rate (default value: 1e-3).
-///     - rho: A Float. The smoothing factor. Typical values are `0.5`, `0.9`, 
-///     and `0.99`, for smoothing over 2, 10, and 100 examples, respectively 
-///     (default value: 0.9).
-///     - epsilon: A Float. A small scalar added to the denominator to improve 
-///     numerical stability (default value: 1e-8).
-///
-/// ### Examples: ###
-/// 
-/// - Train an image classification network:
-/// 
-/// ````
-/// ...
-/// // Define a sequential model such as LeNet-5.
-/// var leNetClassifier = Sequential {
-///     Conv2D<Float>(filterShape: (5, 5, 1, 6), padding: .same, activation: relu)
-///     AvgPool2D<Float>(poolSize: (2, 2), strides: (2, 2))
-///     ...
-///     Dense<Float>(inputSize: 84), outputSize: 10)
-/// }
-/// // Define the AdaGrad optimizer with a learning rate set to 1e-3, rho - to 0.99,
-/// // and epsilon: 1e-8
-/// let adaGradOptimizer = AdaGrad(
-///     for: leNetClassifier,
-///     learningRate: 1e-3, 
-///     rho: 0.99,
-///     epsilon: 1e-8)
-/// ...
-/// // Start the training loop over a certain number of epochs.
-/// for epoch in 1...epochCount {
-///     // Start the training phase.
-///     ...
-///     for batch in trainingShuffled.batched(batchSize) {
-///         ...
-///         // Implementing the gradient descent with the AdaGrad optimizer:
-///         // Compute the gradient.
-///         let 𝛁model = TensorFlow.gradient(at: leNetClassifier) { leNetClassifier 
-///         -> Tensor<Float> in
-///             ...
-///             return loss
-///             }
-///         // Update the differentiable variables of the model along the 
-///         gradients (`𝛁model`) with the AdaGrad optimizer.
-///         adaGradOptimizer.update(&leNetClassifier, along: 𝛁model)
-///     }
-/// }
-/// ````
+/// (Duchi et al, 2011)
 public class AdaGrad<Model: Differentiable>: Optimizer
 where
   Model.TangentVector: VectorProtocol & PointwiseMultiplicative
@@ -146,15 +96,22 @@ where
   public typealias Model = Model
   /// The learning rate.
   public var learningRate: Float
-  /// The smoothing factor (ρ). Typical values are `0.5`, `0.9`, and `0.99`, for smoothing over 2,
-  /// 10, and 100 examples, respectively.
+  /// A small scalar added to the denominator to improve numerical stability.
   public var epsilon: Float
-  /// The accumulator for square of gradient.
+  /// The running sum of squares of gradient norms.
   public var accumulator: Model.TangentVector
 
+  /// Creates an instance for `model`.
+  ///
+  /// - Parameters:
+  ///   - learningRate: The learning rate. The default value is `1e-3`.
+  ///   - initialAccumulatorValue: The starting value for the running sum of squares of gradient
+  ///     norms. The default value is `0.1`.
+  ///   - epsilon: A small scalar added to the denominator to improve numerical stability. The
+  ///     default value is `1e-8`.
   public init(
     for model: __shared Model,
-    learningRate: Float = 0.001,
+    learningRate: Float = 1e-3,
     initialAccumulatorValue: Float = 0.1,
     epsilon: Float = 1e-8
   ) {
