@@ -28,7 +28,6 @@ public struct TensorDataType: Equatable {
   }
 }
 
-#if !USING_X10_BACKEND
 @usableFromInline
 internal func makeTensor(
   dataType: TensorDataType,
@@ -51,7 +50,6 @@ internal func makeTensor(
   default: fatalError("Unhandled type: \(dataType)")
   }
 }
-#endif
 
 /// A data type compatible with TensorFlow.
 public protocol _TensorFlowDataTypeCompatible {
@@ -67,9 +65,9 @@ public protocol _TensorFlowDataTypeCompatible {
 //
 // This includes all `_TensorFlowDataTypeCompatible` types except `String`.
 #if USING_X10_BACKEND
-public protocol TensorFlowScalar: XLAScalarType & _TensorFlowDataTypeCompatible {}
+  public protocol TensorFlowScalar: XLAScalarType & _TensorFlowDataTypeCompatible {}
 #else
-public protocol TensorFlowScalar: _TensorFlowDataTypeCompatible {}
+  public protocol TensorFlowScalar: _TensorFlowDataTypeCompatible {}
 #endif
 
 public typealias TensorFlowNumeric = TensorFlowScalar & Numeric
@@ -139,7 +137,6 @@ extension UInt8: TensorFlowScalar {
   }
 }
 
-#if !USING_X10_BACKEND
 extension UInt16: TensorFlowScalar {
   @inlinable
   public static var tensorFlowDataType: TensorDataType {
@@ -173,7 +170,6 @@ extension BFloat16: TensorFlowScalar {
     return TensorDataType(TF_BFLOAT16)
   }
 }
-#endif
 
 extension Float: TensorFlowScalar {
   @inlinable

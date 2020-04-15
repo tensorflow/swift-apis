@@ -246,9 +246,32 @@ NodePtr Clamp(const Value& input, const Value& min, const Value& max) {
     xla::XlaOp xla_input = loctx->GetOutputOp(node.operand(0));
     xla::XlaOp xla_min = loctx->GetOutputOp(node.operand(1));
     xla::XlaOp xla_max = loctx->GetOutputOp(node.operand(2));
+    xla::PrimitiveType input_type = XlaHelpers::TypeOfXlaOp(xla_input);
+    xla_min = ConvertTo(xla_min, XlaHelpers::TypeOfXlaOp(xla_min), input_type,
+                        /*device=*/nullptr);
+    xla_max = ConvertTo(xla_max, XlaHelpers::TypeOfXlaOp(xla_max), input_type,
+                        /*device=*/nullptr);
     return node.ReturnOp(xla::Clamp(xla_min, xla_input, xla_max), loctx);
   };
   return GenericOp(OpKind(at::aten::clamp), {input, min, max}, input.shape(),
+                   std::move(lower_fn));
+}
+
+NodePtr Ger(const Value& input, const Value& other) {
+  auto lower_fn = [](const Node& node, LoweringContext* loctx) -> XlaOpVector {
+    xla::XlaOp xla_input = loctx->GetOutputOp(node.operand(0));
+    xla::XlaOp xla_other = loctx->GetOutputOp(node.operand(1));
+    return node.ReturnOp(BuildGer(xla_input, xla_other), loctx);
+  };
+  auto lower_for_shape_fn =
+      [](absl::Span<const xla::XlaOp> operands) -> xla::XlaOp {
+    return BuildGer(operands[0], operands[1]);
+  };
+  return GenericOp(OpKind(at::aten::ger), {input, other},
+                   [&]() {
+                     return InferOutputShape({input.shape(), other.shape()},
+                                             lower_for_shape_fn);
+                   },
                    std::move(lower_fn));
 }
 
@@ -410,13 +433,25 @@ NodePtr ARange(at::Scalar start, at::Scalar end, at::Scalar step,
       values = XlaHelpers::Range<xla::int16>(start.toShort(), end.toShort(),
                                              step.toShort());
       break;
+    case xla::PrimitiveType::U16:
+      values = XlaHelpers::Range<xla::uint16>(start.toInt(), end.toInt(),
+                                              step.toInt());
+      break;
     case xla::PrimitiveType::S32:
       values = XlaHelpers::Range<xla::int32>(start.toInt(), end.toInt(),
                                              step.toInt());
       break;
+    case xla::PrimitiveType::U32:
+      values = XlaHelpers::Range<xla::uint32>(start.toLong(), end.toLong(),
+                                              step.toLong());
+      break;
     case xla::PrimitiveType::S64:
       values = XlaHelpers::Range<xla::int64>(start.toLong(), end.toLong(),
                                              step.toLong());
+      break;
+    case xla::PrimitiveType::U64:
+      values = XlaHelpers::Range<xla::uint64>(start.toLong(), end.toLong(),
+                                              step.toLong());
       break;
     default:
       XLA_ERROR() << "XLA type not supported: " << type;
@@ -514,7 +549,7 @@ NodePtr EluBackward(const Value& grad_output, const Value& output,
 }
 
 NodePtr Gelu(const Value& input) {
-  ScopePusher ir_scope("aten::gelu");
+  ScopePusher ir_scope("x10::gelu");
   // input * 0.5 * (1.0 + erf(input / math.sqrt(2.0)))
   const xla::Shape& shape = input.shape();
   return input * ScalarOp(0.5, shape) *
@@ -522,7 +557,7 @@ NodePtr Gelu(const Value& input) {
 }
 
 NodePtr GeluBackward(const Value& grad, const Value& input) {
-  ScopePusher ir_scope("aten::gelu_backward");
+  ScopePusher ir_scope("x10::gelu_backward");
   const float kAlpha = M_2_SQRTPI * M_SQRT1_2 * 0.5;
   const xla::Shape& shape = input.shape();
   NodePtr scratch = Erf(input * ScalarOp(M_SQRT1_2, shape));

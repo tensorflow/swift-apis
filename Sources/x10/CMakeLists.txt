@@ -1,10 +1,5 @@
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-add_library(x10 IMPORTED UNKNOWN)
-set_target_properties(x10 PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES "${X10_INCLUDE_DIR}"
-  IMPORTED_LOCATION ${TensorFlow_LIBRARY})
-
 add_library(x10_c_wrappers STATIC
   swift_bindings/device_wrapper.cc
   swift_bindings/xla_tensor_tf_ops.cc
@@ -51,6 +46,16 @@ target_sources(x10_tensor PRIVATE
   ../TensorFlow/Core/StringTensor.swift
   ../TensorFlow/Core/TensorGroup.swift
 
+  ../TensorFlow/Core/ArrayOps.swift
+  ../TensorFlow/Core/LazyTensorContext.swift
+  ../TensorFlow/Core/LazyTensorOperation.swift
+  ../TensorFlow/Core/LazyTensorOperation.swift
+  ../TensorFlow/Core/LazyTensorShapeInference.swift
+  ../TensorFlow/Core/LazyTensorTFFunctionBuilder.swift
+  ../TensorFlow/Core/LazyTensorTrace.swift
+  ../TensorFlow/Core/LazyTensorTraceCache.swift
+  ../TensorFlow/Core/Serialization.swift
+
   ../TensorFlow/Layers/Convolutional.swift
   ../TensorFlow/Layers/Core.swift
   ../TensorFlow/Layers/Dense.swift
@@ -65,6 +70,8 @@ target_sources(x10_tensor PRIVATE
 
   ../TensorFlow/Operators/Basic.swift
   ../TensorFlow/Operators/Comparison.swift
+  ../TensorFlow/Operators/Dataset.swift
+  ../TensorFlow/Operators/Image.swift
   ../TensorFlow/Operators/LinearAlgebra.swift
   ../TensorFlow/Operators/Math.swift
   ../TensorFlow/Operators/NN.swift

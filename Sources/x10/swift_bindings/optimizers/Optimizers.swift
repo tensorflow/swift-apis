@@ -12,7 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#if !IMPORT_X10_AS_TENSORFLOW
 import x10_tensor
+#else
+import TensorFlow
+#endif
 
 fileprivate func l2Norm(_ x: Tensor<Float>) -> Tensor<Float> {
   return sqrt(x.squared().sum())

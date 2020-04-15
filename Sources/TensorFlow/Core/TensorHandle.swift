@@ -24,9 +24,7 @@ public protocol _AnyTensorHandle: class {
   var _tfeTensorHandle: TFETensorHandle { get }
   var rank: Int { get }
   var shape: TensorShape { get }
-  #if USING_X10_BACKEND
-    var backend: Device.Backend { get }
-  #endif
+  var backend: Device.Backend { get }
 }
 
 extension _AnyTensorHandle {
@@ -84,9 +82,7 @@ public class TFETensorHandle: _AnyTensorHandle {
     }
   }
 
-  #if USING_X10_BACKEND
     public var backend: Device.Backend { .TF_EAGER }
-  #endif
 }
 
 /// `TensorHandle` is the type used by ops. It includes a `Scalar` type, which
@@ -177,14 +173,12 @@ extension TensorHandle {
     get { handle.shape }
   }
 
-  #if USING_X10_BACKEND
     /// The backend used to dispatch ops.
     @inlinable
     public var backend: Device.Backend {
       @_semantics("autodiff.nonvarying")
       get { handle.backend }
     }
-  #endif
 }
 
 extension TensorHandle {
@@ -305,23 +299,21 @@ extension ShapedArray where Scalar: _TensorFlowDataTypeCompatible {
   }
 }
 
-#if !USING_X10_BACKEND
-  // Tensor conversion.
-  extension Tensor {
-    public init(_ array: __owned ShapedArray<Scalar>) {
-      precondition(
-        array.rank <= Int(Int32.max),
-        "Conversion to TensorHandle is undefined when rank exceeds `Int32.max`.")
-      precondition(
-        array.shape.allSatisfy { $0 <= Int(Int32.max) },
-        "Conversion to TensorHandle is undefined when shape dimensions exceed `Int32.max`.")
-      if let buffer = array.buffer as? CTensorTensorBuffer<Scalar> {
-        self = Tensor(handle: TensorHandle(copyingFromCTensor: buffer.cTensor))
-      } else {
-        self = array.buffer.withUnsafeBufferPointer { buffer in
-          return Tensor(shape: TensorShape(array.shape), scalars: buffer)
-        }
+// Tensor conversion.
+extension Tensor {
+  public init(_ array: __owned ShapedArray<Scalar>) {
+    precondition(
+      array.rank <= Int(Int32.max),
+      "Conversion to TensorHandle is undefined when rank exceeds `Int32.max`.")
+    precondition(
+      array.shape.allSatisfy { $0 <= Int(Int32.max) },
+      "Conversion to TensorHandle is undefined when shape dimensions exceed `Int32.max`.")
+    if let buffer = array.buffer as? CTensorTensorBuffer<Scalar> {
+      self = Tensor(handle: TensorHandle(copyingFromCTensor: buffer.cTensor))
+    } else {
+      self = array.buffer.withUnsafeBufferPointer { buffer in
+        return Tensor(shape: TensorShape(array.shape), scalars: buffer)
       }
     }
   }
-#endif
+}

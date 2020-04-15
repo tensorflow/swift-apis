@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #if USING_X10_BACKEND
-  import x10_xla_tensor_wrapper
+  @_implementationOnly import x10_xla_tensor_wrapper
 #endif
 
 // Augment the `_Raw` interface with ops that take Swift integers for the
@@ -28,7 +28,7 @@ extension _RawTFEager {
     _ input: Tensor<T>,
     dimension: Int64
   ) -> Tensor<OutputType> {
-    argMax(input, dimension: Tensor<Int32>(Int32(dimension)))
+    argMax(input, dimension: Tensor<Int32>(Int32(dimension), on: .defaultTFEager))
   }
 
   public static func mean<
@@ -39,7 +39,8 @@ extension _RawTFEager {
     keepDims: Bool = false
   ) -> Tensor<T> {
     mean(
-      input, reductionIndices: Tensor<Int32>(reductionIndices.map { Int32($0) }),
+      input,
+      reductionIndices: Tensor<Int32>(reductionIndices.map { Int32($0) }, on: .defaultTFEager),
       keepDims: keepDims)
   }
 
@@ -49,7 +50,7 @@ extension _RawTFEager {
     _ tensor: Tensor<T>,
     shape: [Int64]
   ) -> Tensor<T> {
-    reshape(tensor, shape: Tensor<Int32>(shape.map { Int32($0) }))
+    reshape(tensor, shape: Tensor<Int32>(shape.map { Int32($0) }, on: .defaultTFEager))
   }
 
   public static func sum<
@@ -60,7 +61,8 @@ extension _RawTFEager {
     keepDims: Bool = false
   ) -> Tensor<T> {
     sum(
-      input, reductionIndices: Tensor<Int32>(reductionIndices.map { Int32($0) }),
+      input,
+      reductionIndices: Tensor<Int32>(reductionIndices.map { Int32($0) }, on: .defaultTFEager),
       keepDims: keepDims)
   }
 
@@ -70,7 +72,7 @@ extension _RawTFEager {
     _ input: Tensor<T>,
     shape: [Int64]
   ) -> Tensor<T> {
-    broadcastTo(input, shape: Tensor<Int32>(shape.map { Int32($0) }))
+    broadcastTo(input, shape: Tensor<Int32>(shape.map { Int32($0) }, on: .defaultTFEager))
   }
 
   public static func conv2DBackpropFilter<T: FloatingPoint & TensorFlowScalar>(
@@ -85,7 +87,7 @@ extension _RawTFEager {
     dilations: [Int32] = [1, 1, 1, 1]
   ) -> Tensor<T> {
     conv2DBackpropFilter(
-      input, filterSizes: Tensor<Int32>(filterSizes.map { Int32($0) }),
+      input, filterSizes: Tensor<Int32>(filterSizes.map { Int32($0) }, on: .defaultTFEager),
       outBackprop: outBackprop, strides: strides, useCudnnOnGpu: useCudnnOnGpu,
       padding: padding, explicitPaddings: explicitPaddings, dataFormat: dataFormat,
       dilations: dilations)
@@ -103,7 +105,7 @@ extension _RawTFEager {
     dilations: [Int32] = [1, 1, 1, 1]
   ) -> Tensor<T> {
     conv2DBackpropInput(
-      inputSizes: Tensor<Int32>(inputSizes.map { Int32($0) }), filter: filter,
+      inputSizes: Tensor<Int32>(inputSizes.map { Int32($0) }, on: .defaultTFEager), filter: filter,
       outBackprop: outBackprop,
       strides: strides, useCudnnOnGpu: useCudnnOnGpu, padding: padding,
       explicitPaddings: explicitPaddings, dataFormat: dataFormat, dilations: dilations)
@@ -117,8 +119,9 @@ extension _RawTFEager {
     dataFormat: DataFormat2 = .nhwc
   ) -> Tensor<T> {
     maxPoolV2(
-      input, ksize: Tensor<Int32>(ksize.map { Int32($0) }),
-      strides: Tensor<Int32>(strides.map { Int32($0) }), padding: padding, dataFormat: dataFormat)
+      input, ksize: Tensor<Int32>(ksize.map { Int32($0) }, on: .defaultTFEager),
+      strides: Tensor<Int32>(strides.map { Int32($0) }, on: .defaultTFEager), padding: padding,
+      dataFormat: dataFormat)
   }
 
   public static func maxPoolGradV2<T: TensorFlowNumeric>(
@@ -132,16 +135,20 @@ extension _RawTFEager {
   ) -> Tensor<T> {
     maxPoolGradV2(
       origInput: origInput, origOutput: origOutput, grad: grad,
-      ksize: Tensor<Int32>(ksize.map { Int32($0) }),
-      strides: Tensor<Int32>(strides.map { Int32($0) }),
+      ksize: Tensor<Int32>(ksize.map { Int32($0) }, on: .defaultTFEager),
+      strides: Tensor<Int32>(strides.map { Int32($0) }, on: .defaultTFEager),
       padding: padding, dataFormat: dataFormat)
   }
 }
 
 #if USING_X10_BACKEND
   extension _Raw {
-    public static func commonBackend(_ a: Device.Backend, _ b: Device.Backend) -> Device.Backend {
-      if a != b { fatalError("Op must have the same backend type: \(a) vs \(b)") }
+    public static func commonBackend(
+      _ a: Device.Backend, _ b: Device.Backend, file: StaticString = #file, line: UInt = #line
+    ) -> Device.Backend {
+      if a != b {
+        fatalError("Op must have the same backend type: \(a) vs \(b)", file: file, line: line)
+      }
       return a
     }
 
@@ -162,7 +169,8 @@ extension _RawTFEager {
       case .XLA:
         return _RawXLA.argMax(input, dimension: dimension)
       case .TF_EAGER:
-        return _RawTFEager.argMax(input, dimension: Tensor<Int32>(Int32(dimension)))
+        return _RawTFEager.argMax(
+          input, dimension: Tensor<Int32>(Int32(dimension), on: .defaultTFEager))
       }
     }
 
@@ -180,7 +188,8 @@ extension _RawTFEager {
           keepDims: keepDims)
       case .TF_EAGER:
         return _RawTFEager.mean(
-          input, reductionIndices: Tensor<Int32>(reductionIndices.map { Int32($0) }),
+          input,
+          reductionIndices: Tensor<Int32>(reductionIndices.map { Int32($0) }, on: .defaultTFEager),
           keepDims: keepDims)
       }
     }
@@ -195,7 +204,8 @@ extension _RawTFEager {
       case .XLA:
         return _RawXLA.reshape(tensor, shape: shape)
       case .TF_EAGER:
-        return _RawTFEager.reshape(tensor, shape: Tensor<Int32>(shape.map { Int32($0) }))
+        return _RawTFEager.reshape(
+          tensor, shape: Tensor<Int32>(shape.map { Int32($0) }, on: .defaultTFEager))
       }
     }
 
@@ -213,7 +223,8 @@ extension _RawTFEager {
           keepDims: keepDims)
       case .TF_EAGER:
         return _RawTFEager.sum(
-          input, reductionIndices: Tensor<Int32>(reductionIndices.map { Int32($0) }),
+          input,
+          reductionIndices: Tensor<Int32>(reductionIndices.map { Int32($0) }, on: .defaultTFEager),
           keepDims: keepDims)
       }
     }
@@ -228,7 +239,8 @@ extension _RawTFEager {
       case .XLA:
         return _RawXLA.broadcastTo(input, shape: shape)
       case .TF_EAGER:
-        return _RawTFEager.broadcastTo(input, shape: Tensor<Int32>(shape.map { Int32($0) }))
+        return _RawTFEager.broadcastTo(
+          input, shape: Tensor<Int32>(shape.map { Int32($0) }, on: .defaultTFEager))
       }
     }
 
@@ -252,7 +264,7 @@ extension _RawTFEager {
           dilations: dilations)
       case .TF_EAGER:
         return _RawTFEager.conv2DBackpropFilter(
-          input, filterSizes: Tensor<Int32>(filterSizes.map { Int32($0) }),
+          input, filterSizes: Tensor<Int32>(filterSizes.map { Int32($0) }, on: .defaultTFEager),
           outBackprop: outBackprop, strides: strides, useCudnnOnGpu: useCudnnOnGpu,
           padding: padding, explicitPaddings: explicitPaddings, dataFormat: dataFormat,
           dilations: dilations)
@@ -279,7 +291,8 @@ extension _RawTFEager {
           explicitPaddings: explicitPaddings, dataFormat: dataFormat, dilations: dilations)
       case .TF_EAGER:
         return _RawTFEager.conv2DBackpropInput(
-          inputSizes: Tensor<Int32>(inputSizes.map { Int32($0) }), filter: filter,
+          inputSizes: Tensor<Int32>(inputSizes.map { Int32($0) }, on: .defaultTFEager),
+          filter: filter,
           outBackprop: outBackprop,
           strides: strides, useCudnnOnGpu: useCudnnOnGpu, padding: padding,
           explicitPaddings: explicitPaddings, dataFormat: dataFormat, dilations: dilations)
@@ -300,8 +313,8 @@ extension _RawTFEager {
           strides: strides, padding: padding, dataFormat: dataFormat)
       case .TF_EAGER:
         return _RawTFEager.maxPoolV2(
-          input, ksize: Tensor<Int32>(ksize.map { Int32($0) }),
-          strides: Tensor<Int32>(strides.map { Int32($0) }), padding: padding,
+          input, ksize: Tensor<Int32>(ksize.map { Int32($0) }, on: .defaultTFEager),
+          strides: Tensor<Int32>(strides.map { Int32($0) }, on: .defaultTFEager), padding: padding,
           dataFormat: dataFormat)
       }
     }
@@ -325,8 +338,8 @@ extension _RawTFEager {
       case .TF_EAGER:
         return _RawTFEager.maxPoolGradV2(
           origInput: origInput, origOutput: origOutput, grad: grad,
-          ksize: Tensor<Int32>(ksize.map { Int32($0) }),
-          strides: Tensor<Int32>(strides.map { Int32($0) }),
+          ksize: Tensor<Int32>(ksize.map { Int32($0) }, on: .defaultTFEager),
+          strides: Tensor<Int32>(strides.map { Int32($0) }, on: .defaultTFEager),
           padding: padding, dataFormat: dataFormat)
       }
     }
@@ -348,8 +361,8 @@ extension _RawTFEager {
       return Tensor(shape: x.shape, scalars: x.scalars, on: device)
     }
 
-    public static func physicalCast<T: TensorFlowScalar>(
-      _ input: Tensor<T>, destType: XLATensorScalarType
+    public static func physicalCast<T: TensorFlowScalar, R: TensorFlowScalar>(
+      _ input: Tensor<T>, destType: R.Type
     ) -> Tensor<T> {
       _RawXLA.physicalCast(input, destType: destType)
     }

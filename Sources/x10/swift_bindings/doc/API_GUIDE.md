@@ -10,7 +10,6 @@ X10 exposes device type and ordinals to S4TF. Device type can be TPU, CPU or
 GPU. For example, here's how to create and print an X10 tensor on a CPU device:
 
 ```swift
-import x10_device
 import x10_tensor
 
 let device = Device(kind: .CPU, ordinal: 0)
@@ -31,7 +30,6 @@ Device(kind: .CPU, ordinal: 0)
 On a machine without TPU, the following snippet will have the same behavior:
 
 ```swift
-import x10_device
 import x10_tensor
 
 let t = Tensor(shape: [3, 2], scalars: [1, 2, 3, 4, 5, 6])

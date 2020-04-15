@@ -15,9 +15,8 @@
 // These are just the ops that should have manual lowerings to XLA in order to
 // support the current tensorflow API.
 
-import x10_device
-import x10_xla_tensor_tf_ops
-import x10_xla_tensor_wrapper
+@_implementationOnly import x10_xla_tensor_tf_ops
+@_implementationOnly import x10_xla_tensor_wrapper
 
 public enum _RawXLA {
   public typealias DataFormat = _RawTFEager.DataFormat
@@ -196,7 +195,7 @@ public enum _RawXLA {
     checkSameDevice(x, y)
     checkSamePrecision(x, y)
     let absDiff: Tensor<T> = abs(x - y)
-    let dims = Tensor<Int32>(absDiff.shape.dimensions.map { Int32($0) }, on: Device.default)
+    let dims = Tensor<Int32>(absDiff.shape.dimensions.map { Int32($0) }, on: Device.defaultXLA)
     var value = Tensor<T>(Tensor(tolerance, on: x.device))
     if absDiff.isReducedPrecision {
       value = value.toReducedPrecision
@@ -605,7 +604,7 @@ public enum _RawXLA {
     }
     reduceIdx0.reverse()
     reduceIdx1.reverse()
-    let device = Device.default
+    let device = Device.defaultXLA
     return (r0: Tensor(reduceIdx0, on: device), r1: Tensor(reduceIdx1, on: device))
   }
 
@@ -1590,7 +1589,7 @@ public enum _RawXLA {
     dims: Tensor<IndexType>,
     value: Tensor<T>
   ) -> Tensor<T> {
-    let device = Device.default
+    let device = Device.defaultXLA
     return fill(dims: dims, value: value, device: device)
   }
 
@@ -1922,7 +1921,7 @@ public enum _RawXLA {
     stop: Tensor<T>,
     num: Tensor<Tidx>
   ) -> Tensor<T> {
-    let device = Device.default
+    let device = Device.defaultXLA
     return linSpace(start: start, stop: stop, num: num, device: device)
   }
 
@@ -2736,10 +2735,10 @@ public enum _RawXLA {
         input.xlaTensor, reversedPaddings(linearizedPaddings), constantValues.scalarized()))
   }
 
-  public static func physicalCast<T: TensorFlowScalar>(
-    _ input: Tensor<T>, destType: XLATensorScalarType
+  public static func physicalCast<T: TensorFlowScalar, R: TensorFlowScalar>(
+    _ input: Tensor<T>, destType: R.Type
   ) -> Tensor<T> {
-    Tensor(_xla: XLATensor.physicalCast(input.xlaTensor, destType: destType))
+    Tensor(_xla: XLATensor.physicalCast(input.xlaTensor, destType: destType.xlaTensorScalarType))
   }
 
   /// Computes the power of one value to another.
@@ -2875,7 +2874,7 @@ public enum _RawXLA {
   public static func rank<T: TensorFlowScalar>(
     _ input: Tensor<T>
   ) -> Tensor<Int32> {
-    return Tensor<Int32>(Int32(input.shape.rank), on: Device.default)
+    return Tensor<Int32>(Int32(input.shape.rank), on: Device.defaultXLA)
   }
 
   /// Computes rectified linear: `max(features, 0)`.
@@ -3180,11 +3179,11 @@ public enum _RawXLA {
     var broadcastedCondition = condition
     while broadcastedCondition.rank < t.rank {
       broadcastedCondition = expandDims(
-        broadcastedCondition, dim: Tensor(Int64(broadcastedCondition.rank), on: Device.default))
+        broadcastedCondition, dim: Tensor(Int64(broadcastedCondition.rank), on: Device.defaultXLA))
     }
     broadcastedCondition = broadcastTo(
       broadcastedCondition,
-      shape: Tensor<Int32>(t.shape.dimensions.map { Int32($0) }, on: Device.default))
+      shape: Tensor<Int32>(t.shape.dimensions.map { Int32($0) }, on: Device.defaultXLA))
     return Tensor(_xla: XLATensor.where_(broadcastedCondition.xlaTensor, t.xlaTensor, e.xlaTensor))
   }
 
@@ -3267,7 +3266,7 @@ public enum _RawXLA {
     _ input: Tensor<T>
   ) -> Tensor<OutType> {
     let shape = input.xlaTensor.shape
-    return Tensor(shape.map { OutType($0) })
+    return Tensor(shape.map { OutType($0) }, on: Device.defaultXLA)
   }
 
   /// Computes sigmoid of `x` element-wise.
@@ -3334,7 +3333,7 @@ public enum _RawXLA {
   >(
     _ input: Tensor<T>
   ) -> Tensor<OutType> {
-    return Tensor<OutType>(OutType(input.shape.contiguousSize), on: Device.default)
+    return Tensor<OutType>(OutType(input.shape.contiguousSize), on: Device.defaultXLA)
   }
 
   /// Return a slice from 'input'.
@@ -3752,7 +3751,7 @@ public enum _RawXLA {
     shape: Tensor<T>,
     seed: Tensor<Tseed>
   ) -> Tensor<Dtype> {
-    let device = Device.default
+    let device = Device.defaultXLA
     return statelessRandomNormal(shape: shape, seed: seed, device: device)
   }
 
@@ -3794,7 +3793,7 @@ public enum _RawXLA {
     shape: Tensor<T>,
     seed: Tensor<Tseed>
   ) -> Tensor<Dtype> {
-    let device = Device.default
+    let device = Device.defaultXLA
     return statelessRandomUniform(shape: shape, seed: seed, device: device)
   }
 
@@ -3841,7 +3840,7 @@ public enum _RawXLA {
     minval: Tensor<Dtype>,
     maxval: Tensor<Dtype>
   ) -> Tensor<Dtype> {
-    let device = Device.default
+    let device = Device.defaultXLA
     return statelessRandomUniformInt(
       shape: shape, seed: seed, minval: minval, maxval: maxval, device: device)
   }
@@ -3887,7 +3886,7 @@ public enum _RawXLA {
     shape: Tensor<T>,
     seed: Tensor<Tseed>
   ) -> Tensor<Dtype> {
-    let device = Device.default
+    let device = Device.defaultXLA
     return statelessTruncatedNormal(shape: shape, seed: seed, device: device)
   }
 

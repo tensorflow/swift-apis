@@ -20,9 +20,11 @@ namespace swift_xla {
 namespace ir {
 namespace ops {
 
+const OpKindWrapper xla_all_to_all(xla_symbols::all_to_all);
 const OpKindWrapper xla_as_strided_view_update(
     xla_symbols::as_strided_view_update);
 const OpKindWrapper xla_cast(xla_symbols::cast);
+const OpKindWrapper xla_collective_permute(xla_symbols::collective_permute);
 const OpKindWrapper xla_cross_replica_sum(xla_symbols::cross_replica_sum);
 const OpKindWrapper xla_device_data(xla_symbols::device_data);
 const OpKindWrapper xla_diagonal_view_update(xla_symbols::diagonal_view_update);

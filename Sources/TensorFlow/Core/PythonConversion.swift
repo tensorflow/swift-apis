@@ -12,13 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#if canImport(Python) || canImport(PythonKit)
+#if canImport(PythonKit)
 
-  #if canImport(PythonKit)
-    import PythonKit
-  #else
-    import Python
-  #endif
+  import PythonKit
 
   /// The `numpy` Python module.
   /// Note: Global variables are lazy, so the following declaration won't produce
@@ -177,4 +173,4 @@
     }
   }
 
-#endif  // canImport(Python)
+#endif  // canImport(PythonKit)

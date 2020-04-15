@@ -762,8 +762,10 @@
   _(aten, xla_is_nan)
 
 #define FORALL_XLA_SYMBOLS(_, __) \
-  __(xla, as_strided_view_update) \
+  __(xla, all_to_all)             \
+  _(xla, as_strided_view_update)  \
   _(xla, cast)                    \
+  _(xla, collective_permute)      \
   _(xla, cross_replica_sum)       \
   _(xla, device_data)             \
   _(xla, diagonal_view_update)    \
@@ -1165,11 +1167,6 @@ template <typename T, typename S>
 T OptionalOr(const c10::optional<S>& value, T defval) {
   return value ? static_cast<T>(*value) : defval;
 }
-
-at::Tensor CopyTensor(const at::Tensor& ref);
-
-// Same as above, with an additional cast.
-at::Tensor CopyTensor(const at::Tensor& ref, at::ScalarType dest_type);
 
 // Return at::ScalarType from at::Scalar
 inline at::ScalarType GetScalarType(at::Scalar scalar) {

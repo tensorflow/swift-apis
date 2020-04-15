@@ -29,6 +29,7 @@
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/adaptive_avg_pool2d.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/all.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/all_reduce.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/ops/all_to_all.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/any.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/arg_max.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/arg_min.h"
@@ -42,6 +43,7 @@
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/cast.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/cat.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/cholesky.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/ops/collective_permute.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/constant.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/constant_pad_nd.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/convolution_backward_overrideable.h"
@@ -125,6 +127,7 @@
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/triangular_solve.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/tril.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/triu.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/ops/uniform.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/unsqueeze.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/update_slice.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/upsample_bilinear2d.h"
@@ -157,15 +160,15 @@ MinMaxValues GetMinMaxValues(const XLATensor& tensor,
                              c10::optional<at::Scalar> max) {
   XLA_CHECK(min || max)
       << "At least one of \'min\' or \'max\' must not be None";
-  auto shape = tensor.shape();
-  XlaHelpers::MinMax min_max =
-      XlaHelpers::MinMaxValues(shape.get().element_type());
+  xla::PrimitiveType raw_element_type = TensorTypeToRawXlaType(tensor.dtype());
+  XlaHelpers::MinMax min_max = XlaHelpers::MinMaxValues(raw_element_type);
   if (!min) {
     min = min_max.min;
   }
   if (!max) {
     max = min_max.max;
   }
+  auto shape = tensor.shape();
   return {XLATensor::GetIrValueForScalar(*min, shape.get().element_type(),
                                          tensor.GetDevice()),
           XLATensor::GetIrValueForScalar(*max, shape.get().element_type(),
@@ -310,24 +313,24 @@ ViewInfo CreateAsStridedViewInfo(const xla::Shape& input_shape,
 //////////////////////////////////////////////////////////////////////////////
 std::pair<XLATensor, ir::Value> XLATensor::all_reduce(
     const XLATensor& input, const ir::Value& token, AllReduceType reduce_type,
-    double scale, const std::vector<std::vector<xla::int64>>& groups) {
+    double scale, std::vector<std::vector<xla::int64>> groups) {
   std::vector<ir::Value> input_values({input.GetIrValue()});
-  ir::NodePtr node = ir::MakeNode<ir::ops::AllReduce>(reduce_type, input_values,
-                                                      token, scale, groups);
+  ir::NodePtr node = ir::MakeNode<ir::ops::AllReduce>(
+      reduce_type, input_values, token, scale, std::move(groups));
   return {input.CreateFrom(ir::Value(node, 0)), ir::Value(node, 1)};
 }
 
 std::pair<std::vector<XLATensor>, ir::Value> XLATensor::all_reduce(
     const std::vector<XLATensor>& inputs, const ir::Value& token,
     AllReduceType reduce_type, double scale,
-    const std::vector<std::vector<xla::int64>>& groups) {
+    std::vector<std::vector<xla::int64>> groups) {
   std::vector<ir::Value> input_values;
   input_values.reserve(inputs.size());
   for (const XLATensor& input : inputs) {
     input_values.push_back(input.GetIrValue());
   }
-  ir::NodePtr node = ir::MakeNode<ir::ops::AllReduce>(reduce_type, input_values,
-                                                      token, scale, groups);
+  ir::NodePtr node = ir::MakeNode<ir::ops::AllReduce>(
+      reduce_type, input_values, token, scale, std::move(groups));
   std::vector<XLATensor> results;
   std::vector<ir::Value> tokens;
   for (size_t i = 0; i < inputs.size(); ++i) {
@@ -336,31 +339,49 @@ std::pair<std::vector<XLATensor>, ir::Value> XLATensor::all_reduce(
   return {results, ir::Value(node, inputs.size())};
 }
 
-ir::Value XLATensor::all_reduce_(
-    XLATensor& input, const ir::Value& token, AllReduceType reduce_type,
-    double scale, const std::vector<std::vector<xla::int64>>& groups) {
+ir::Value XLATensor::all_reduce_(XLATensor& input, const ir::Value& token,
+                                 AllReduceType reduce_type, double scale,
+                                 std::vector<std::vector<xla::int64>> groups) {
   std::vector<ir::Value> input_values({input.GetIrValue()});
-  ir::NodePtr node = ir::MakeNode<ir::ops::AllReduce>(reduce_type, input_values,
-                                                      token, scale, groups);
+  ir::NodePtr node = ir::MakeNode<ir::ops::AllReduce>(
+      reduce_type, input_values, token, scale, std::move(groups));
   input.SetInPlaceIrValue(ir::Value(node, 0));
   return ir::Value(node, 1);
 }
 
-ir::Value XLATensor::all_reduce_(
-    std::vector<XLATensor>* inputs, const ir::Value& token,
-    AllReduceType reduce_type, double scale,
-    const std::vector<std::vector<xla::int64>>& groups) {
+ir::Value XLATensor::all_reduce_(std::vector<XLATensor>* inputs,
+                                 const ir::Value& token,
+                                 AllReduceType reduce_type, double scale,
+                                 std::vector<std::vector<xla::int64>> groups) {
   std::vector<ir::Value> input_values;
   input_values.reserve(inputs->size());
   for (auto& input : *inputs) {
     input_values.push_back(input.GetIrValue());
   }
-  ir::NodePtr node = ir::MakeNode<ir::ops::AllReduce>(reduce_type, input_values,
-                                                      token, scale, groups);
+  ir::NodePtr node = ir::MakeNode<ir::ops::AllReduce>(
+      reduce_type, input_values, token, scale, std::move(groups));
   for (size_t i = 0; i < inputs->size(); ++i) {
     (*inputs)[i].SetInPlaceIrValue(ir::Value(node, i));
   }
   return ir::Value(node, inputs->size());
+}
+
+std::pair<XLATensor, ir::Value> XLATensor::all_to_all(
+    const XLATensor& input, const ir::Value& token, xla::int64 split_dimension,
+    xla::int64 concat_dimension, xla::int64 split_count,
+    std::vector<std::vector<xla::int64>> groups) {
+  ir::NodePtr node = ir::MakeNode<ir::ops::AllToAll>(
+      input.GetIrValue(), token, split_dimension, concat_dimension, split_count,
+      std::move(groups));
+  return {input.CreateFrom(ir::Value(node, 0)), ir::Value(node, 1)};
+}
+
+std::pair<XLATensor, ir::Value> XLATensor::collective_permute(
+    const XLATensor& input, const ir::Value& token,
+    std::vector<std::pair<xla::int64, xla::int64>> source_target_pairs) {
+  ir::NodePtr node = ir::MakeNode<ir::ops::CollectivePermute>(
+      input.GetIrValue(), token, std::move(source_target_pairs));
+  return {input.CreateFrom(ir::Value(node, 0)), ir::Value(node, 1)};
 }
 
 XLATensor XLATensor::get_dimensions_size(const XLATensor& input,
@@ -1221,6 +1242,10 @@ XLATensor XLATensor::gelu_backward(const XLATensor& grad,
       ir::ops::GeluBackward(grad.GetIrValue(), input.GetIrValue()));
 }
 
+XLATensor XLATensor::ger(const XLATensor& input, const XLATensor& vec2) {
+  return input.CreateFrom(ir::ops::Ger(input.GetIrValue(), vec2.GetIrValue()));
+}
+
 XLATensor XLATensor::gt(const XLATensor& input, at::Scalar other) {
   return DispatchComparisonOp(at::aten::gt, input, other);
 }
@@ -1340,9 +1365,9 @@ XLATensor XLATensor::inverse(const XLATensor& input) {
 XLATensor XLATensor::kl_div_backward(const XLATensor& grad_output,
                                      const XLATensor& input,
                                      const XLATensor& target,
-                                     xla::int64 reduction) {
+                                     xla::int64 reduction, bool log_target) {
   return tensor_ops::KlDivBackward(grad_output, input, target,
-                                   GetXlaReductionMode(reduction));
+                                   GetXlaReductionMode(reduction), log_target);
 }
 
 std::tuple<XLATensor, XLATensor> XLATensor::kthvalue(const XLATensor& input,
@@ -1555,7 +1580,7 @@ void XLATensor::lt_(XLATensor& input, const XLATensor& other) {
 
 void XLATensor::masked_fill_(XLATensor& input, const XLATensor& mask,
                              at::Scalar value) {
-  ir::ScopePusher ir_scope("aten::masked_fill");
+  ir::ScopePusher ir_scope("x10::masked_fill");
   input.SetIrValue(ir::MakeNode<ir::ops::MaskedFill>(
       input.GetIrValue(), MaybeExpand(mask.GetIrValue(), input.shape()),
       value));
@@ -1563,7 +1588,7 @@ void XLATensor::masked_fill_(XLATensor& input, const XLATensor& mask,
 
 void XLATensor::masked_scatter_(XLATensor& input, const XLATensor& mask,
                                 const XLATensor& source) {
-  ir::ScopePusher ir_scope("aten::masked_scatter");
+  ir::ScopePusher ir_scope("x10::masked_scatter");
   input.SetIrValue(ir::MakeNode<ir::ops::MaskedScatter>(
       input.GetIrValue(), MaybeExpand(mask.GetIrValue(), input.shape()),
       source.GetIrValue()));
@@ -2112,11 +2137,11 @@ void XLATensor::copy_(XLATensor& input, XLATensor& src) {
     input.SetIrValue(MaybeExpand(copy_value, input.shape()));
   } else {
     auto input_shape = input.shape();
-    at::Tensor src_tensor = src.ToTensor();
+    at::Tensor src_tensor = src.ToTensor(/*detached=*/true);
     XLA_CHECK(
         xla::util::Equal(src_tensor.shape(), input_shape.get().dimensions()))
         << "Incompatible shapes";
-    input.UpdateFromTensor(std::move(src_tensor));
+    input.UpdateFromTensor(std::move(src_tensor), /*sync=*/false);
   }
 }
 
@@ -2632,6 +2657,35 @@ void XLATensor::triu_(XLATensor& input, xla::int64 diagonal) {
   input.SetIrValue(ir::MakeNode<ir::ops::Triu>(input.GetIrValue(), diagonal));
 }
 
+XLATensor XLATensor::true_divide(const XLATensor& input,
+                                 const XLATensor& other) {
+  ir::Value input_value = input.GetIrValue();
+  ir::Value other_value = other.GetIrValue();
+  if (!xla::primitive_util::IsFloatingPointType(
+          input_value.shape().element_type())) {
+    input_value =
+        ir::MakeNode<ir::ops::Cast>(input_value, at::ScalarType::Float);
+  }
+  if (!xla::primitive_util::IsFloatingPointType(
+          other_value.shape().element_type())) {
+    other_value =
+        ir::MakeNode<ir::ops::Cast>(other_value, at::ScalarType::Float);
+  }
+  return input.CreateFrom(input_value / other_value);
+}
+
+XLATensor XLATensor::true_divide(const XLATensor& input, at::Scalar other) {
+  ir::Value input_value = input.GetIrValue();
+  ir::Value other_value =
+      GetIrValueForScalar(other, xla::PrimitiveType::F32, input.GetDevice());
+  if (!xla::primitive_util::IsFloatingPointType(
+          input_value.shape().element_type())) {
+    input_value =
+        ir::MakeNode<ir::ops::Cast>(input_value, at::ScalarType::Float);
+  }
+  return input.CreateFrom(input_value / other_value);
+}
+
 XLATensor XLATensor::trunc(const XLATensor& input) {
   return input.CreateFrom(ir::ops::Trunc(input.GetIrValue()));
 }
@@ -2650,6 +2704,17 @@ std::vector<XLATensor> XLATensor::unbind(const XLATensor& input,
     slices.push_back(select(input, dim, index));
   }
   return slices;
+}
+
+void XLATensor::uniform_(XLATensor& input, double from, double to) {
+  XLA_CHECK_LE(from, to);
+  auto input_shape = input.shape();
+  input.SetInPlaceIrValue(ir::MakeNode<ir::ops::Uniform>(
+      GetIrValueForScalar(from, input_shape.get().element_type(),
+                          input.GetDevice()),
+      GetIrValueForScalar(to, input_shape.get().element_type(),
+                          input.GetDevice()),
+      input_shape, GenRngSeed()));
 }
 
 XLATensor XLATensor::unsqueeze(const XLATensor& input, xla::int64 dim) {
@@ -2794,7 +2859,8 @@ XLATensor XLATensor::xla_avg_pool(
 
 XLATensor XLATensor::xla_avg_pool_grad(
     const XLATensor& out_backprop, absl::Span<const xla::int64> gradients_size,
-    absl::Span<const xla::int64> kernel_size, absl::Span<const xla::int64> stride,
+    absl::Span<const xla::int64> kernel_size,
+    absl::Span<const xla::int64> stride,
     absl::Span<const std::pair<xla::int64, xla::int64>> spatial_padding,
     const xla::TensorFormat& data_format, const bool counts_include_padding) {
   return out_backprop.CreateFrom(ir::MakeNode<ir::ops::XlaAvgPoolGrad>(

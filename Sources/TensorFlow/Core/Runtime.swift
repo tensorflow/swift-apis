@@ -326,6 +326,13 @@ public final class _ExecutionContext {
   }
 }
 
+@available(
+  *, deprecated, message: "makeOp will go away in favor of directly dispatching custom ops."
+)
+public func _makeOp(_ name: String, _ nOutputs: Int) -> TFTensorOperation {
+  _ExecutionContext.makeOp(name, nOutputs)
+}
+
 extension _ExecutionContext {
   // The execution mode is effectively encoded in the TensorOperation.
   // We can use this to switch between different execution modes.
@@ -334,17 +341,12 @@ extension _ExecutionContext {
   static func makeOp(
     _ name: String, _ outputCount: Int
   ) -> TFTensorOperation {
-    #if !USING_X10_BACKEND
-      return _ThreadLocalState.useLazyTensor
-        ? LazyTensorOperation(name, outputCount)
-        : TFE_Op(name, outputCount)
-    #else
-      return TFE_Op(name, outputCount)
-    #endif
+    return _ThreadLocalState.useLazyTensor
+      ? LazyTensorOperation(name, outputCount)
+      : TFE_Op(name, outputCount)
   }
 }
 
-#if !USING_X10_BACKEND
   internal func _trace<In: TensorGroup, Out: TensorGroup>(_ fn: (In) -> Out) -> TFFunction {
     let useLazyTensor = _ThreadLocalState.useLazyTensor
     defer { _ThreadLocalState.useLazyTensor = useLazyTensor }
@@ -366,17 +368,12 @@ extension _ExecutionContext {
       return Out(_handles: outputHandles)
     }
   }
-#endif
 
 /// Trace the given function and return the name of the corresponding `TF_Function: In -> Out` that
 /// was created.
 public func _tffunc<In: TensorGroup, Out: TensorGroup>(_ fn: (In) -> Out) -> String {
-  #if !USING_X10_BACKEND
     let tffunc = _trace(fn)
     return tffunc.name
-  #else
-    fatalError("Tracing not supported in x10.")
-  #endif
 }
 
 extension _ExecutionContext {
@@ -521,9 +518,7 @@ func _TFCOpSetAttrTypeArray(
 class _ThreadLocalState {
   var deviceScopes = DeviceScopes()
 
-  #if !USING_X10_BACKEND
-    var lazyTensorContext = LazyTensorContext()
-  #endif
+  var lazyTensorContext = LazyTensorContext()
 
   static var useLazyTensor: Bool {
     get {

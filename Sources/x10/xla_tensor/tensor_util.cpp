@@ -162,6 +162,12 @@ struct CopyType<true> {
 };
 
 template <typename D, typename S>
+void CheckedMemcpy(D* dest, const S* source, xla::int64 n) {
+  static_assert(sizeof(S) == sizeof(D), "Types size mismatch");
+  std::memcpy(dest, source, n * sizeof(S));
+}
+
+template <typename D, typename S>
 void CopyData(D* dest, const S* source, xla::int64 n, const CopyDirect&) {
   std::copy(source, source + n, dest);
 }
@@ -172,22 +178,19 @@ void CopyData(D* dest, const S* source, xla::int64 n, const CopyCasted&) {
   // convert from/to bfloat16.
   StridedCopy(dest, 1, source, 1, n);
 }
+
 template <>
 void CopyData<at::BFloat16, tensorflow::bfloat16>(
     at::BFloat16* dest, const tensorflow::bfloat16* source, xla::int64 n,
     const CopyCasted&) {
-  static_assert(sizeof(at::BFloat16) == sizeof(tensorflow::bfloat16),
-                "Mismatching size for bfloat16 types");
-  std::memcpy(dest, source, n * sizeof(at::BFloat16));
+  CheckedMemcpy<at::BFloat16, tensorflow::bfloat16>(dest, source, n);
 }
 template <>
 void CopyData<tensorflow::bfloat16, at::BFloat16>(tensorflow::bfloat16* dest,
                                                   const at::BFloat16* source,
                                                   xla::int64 n,
                                                   const CopyCasted&) {
-  static_assert(sizeof(at::BFloat16) == sizeof(tensorflow::bfloat16),
-                "Mismatching size for bfloat16 types");
-  std::memcpy(dest, source, n * sizeof(at::BFloat16));
+  CheckedMemcpy<tensorflow::bfloat16, at::BFloat16>(dest, source, n);
 }
 
 std::vector<xla::int64> GetIterationDimensions(const xla::Shape& shape) {
@@ -366,13 +369,25 @@ void TensorToBufferSType(const at::Tensor& tensor, const xla::Shape& dest_shape,
       TensorToBuffer<SType, xla::int16>(tensor, dest_shape, dest_buffer,
                                         dest_buffer_size, device);
       break;
+    case xla::PrimitiveType::U16:
+      TensorToBuffer<SType, xla::uint16>(tensor, dest_shape, dest_buffer,
+                                         dest_buffer_size, device);
+      break;
     case xla::PrimitiveType::S32:
       TensorToBuffer<SType, xla::int32>(tensor, dest_shape, dest_buffer,
                                         dest_buffer_size, device);
       break;
+    case xla::PrimitiveType::U32:
+      TensorToBuffer<SType, xla::uint32>(tensor, dest_shape, dest_buffer,
+                                         dest_buffer_size, device);
+      break;
     case xla::PrimitiveType::S64:
       TensorToBuffer<SType, xla::int64>(tensor, dest_shape, dest_buffer,
                                         dest_buffer_size, device);
+      break;
+    case xla::PrimitiveType::U64:
+      TensorToBuffer<SType, xla::uint64>(tensor, dest_shape, dest_buffer,
+                                         dest_buffer_size, device);
       break;
     default:
       XLA_ERROR() << "Destination shape type not supported: " << dest_shape;
@@ -508,10 +523,16 @@ at::Tensor MakeTensorFromXlaLiteral(const xla::Literal& literal,
       return XlaLiteralToTensorHelper<xla::int8>(literal, dest_element_type);
     case xla::PrimitiveType::S16:
       return XlaLiteralToTensorHelper<xla::int16>(literal, dest_element_type);
+    case xla::PrimitiveType::U16:
+      return XlaLiteralToTensorHelper<xla::uint16>(literal, dest_element_type);
     case xla::PrimitiveType::S32:
       return XlaLiteralToTensorHelper<xla::int32>(literal, dest_element_type);
+    case xla::PrimitiveType::U32:
+      return XlaLiteralToTensorHelper<xla::uint32>(literal, dest_element_type);
     case xla::PrimitiveType::S64:
       return XlaLiteralToTensorHelper<xla::int64>(literal, dest_element_type);
+    case xla::PrimitiveType::U64:
+      return XlaLiteralToTensorHelper<xla::uint64>(literal, dest_element_type);
     default:
       XLA_ERROR() << "Unsupported literal type: " << literal.shape();
   }
@@ -595,7 +616,20 @@ xla::Literal GetTensorLiteral(const at::Tensor& tensor, const xla::Shape* shape,
   return literal;
 }
 
-size_t TensorHash(const at::Tensor& tensor) {
+std::vector<at::Tensor> XlaDataToTensors(
+    absl::Span<const xla::ComputationClient::DataPtr> xla_data,
+    at::ScalarType dest_element_type) {
+  std::vector<xla::Literal> literals =
+      xla::ComputationClient::Get()->TransferFromServer(xla_data);
+  std::vector<at::Tensor> tensors;
+  tensors.reserve(literals.size());
+  for (auto& literal : literals) {
+    tensors.push_back(MakeTensorFromXlaLiteral(literal, dest_element_type));
+  }
+  return tensors;
+}
+
+xla::hash_t TensorHash(const at::Tensor& tensor) {
   int64_t size =
       tensor.buffer().size() * at::internal::GetSizeof(tensor.scalar_type());
   switch (tensor.scalar_type()) {
@@ -690,6 +724,31 @@ at::ScalarType TensorTypeFromXlaType(xla::PrimitiveType xla_type) {
   }
 }
 
+xla::PrimitiveType TensorTypeToRawXlaType(at::ScalarType scalar_type) {
+  switch (scalar_type) {
+    case at::ScalarType::Double:
+      return xla::PrimitiveType::F64;
+    case at::ScalarType::Float:
+      return xla::PrimitiveType::F32;
+    case at::ScalarType::BFloat16:
+      return xla::PrimitiveType::BF16;
+    case at::ScalarType::Bool:
+      return xla::PrimitiveType::PRED;
+    case at::ScalarType::Byte:
+      return xla::PrimitiveType::U8;
+    case at::ScalarType::Char:
+      return xla::PrimitiveType::S8;
+    case at::ScalarType::Short:
+      return xla::PrimitiveType::S16;
+    case at::ScalarType::Int:
+      return xla::PrimitiveType::S32;
+    case at::ScalarType::Long:
+      return xla::PrimitiveType::S64;
+    default:
+      XLA_ERROR() << "Type not supported: " << scalar_type;
+  }
+}
+
 xla::PrimitiveType GetDevicePrimitiveType(xla::PrimitiveType type,
                                           const Device* device) {
   Device xla_device = GetDeviceOrCurrent(device);
@@ -706,13 +765,13 @@ xla::PrimitiveType GetDevicePrimitiveType(xla::PrimitiveType type,
       return UseBF16() ? xla::PrimitiveType::BF16 : xla::PrimitiveType::F32;
     case xla::PrimitiveType::U8:
       return xla_device.hw_type != DeviceType::TPU ? xla::PrimitiveType::U8
-                                                   : xla::PrimitiveType::S32;
+                                                   : xla::PrimitiveType::U32;
     case xla::PrimitiveType::S8:
       return xla_device.hw_type != DeviceType::TPU ? xla::PrimitiveType::S8
                                                    : xla::PrimitiveType::S32;
     case xla::PrimitiveType::U16:
       return xla_device.hw_type != DeviceType::TPU ? xla::PrimitiveType::U16
-                                                   : xla::PrimitiveType::S32;
+                                                   : xla::PrimitiveType::U32;
     case xla::PrimitiveType::S16:
       return xla_device.hw_type != DeviceType::TPU ? xla::PrimitiveType::S16
                                                    : xla::PrimitiveType::S32;
@@ -720,6 +779,9 @@ xla::PrimitiveType GetDevicePrimitiveType(xla::PrimitiveType type,
       return Use32BitLong() ? xla::PrimitiveType::S32 : xla::PrimitiveType::S64;
     case xla::PrimitiveType::U64:
       return Use32BitLong() ? xla::PrimitiveType::U32 : xla::PrimitiveType::U64;
+    case xla::PrimitiveType::C128:
+      return xla_device.hw_type != DeviceType::TPU ? xla::PrimitiveType::C128
+                                                   : xla::PrimitiveType::C64;
     default:
       return type;
   }
