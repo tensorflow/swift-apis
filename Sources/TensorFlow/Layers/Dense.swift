@@ -24,66 +24,89 @@
 /// weight and bias for each element in input batch.
 @frozen
 public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
-    /// The weight matrix.
-    public var weight: Tensor<Scalar>
-    /// The bias vector.
-    public var bias: Tensor<Scalar>
-    /// The element-wise activation function.
-    @noDerivative public let activation: Activation
-    /// Indicates whether this is a batched dense layer.
-    @noDerivative internal let batched: Bool
+  /// The weight matrix.
+  public var weight: Tensor<Scalar>
+  /// The bias vector.
+  public var bias: Tensor<Scalar>
+  /// The element-wise activation function.
+  @noDerivative public let activation: Activation
+  /// Indicates whether this is a batched dense layer.
+  @noDerivative internal let batched: Bool
+  /// Workaround optionals not being handled by AD
+  @noDerivative private let useBias: Bool
 
-    /// The element-wise activation function type.
-    public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
+  /// The element-wise activation function type.
+  public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
 
-    public init(
-        weight: Tensor<Scalar>,
-        bias: Tensor<Scalar>,
-        activation: @escaping Activation
-    ) {
-        precondition(weight.rank <= 3, "The rank of the 'weight' tensor must be less than 4.")
-        precondition(bias.rank <= 2, "The rank of the 'bias' tensor must be less than 3.")
-        self.weight = weight
-        self.bias = bias
-        self.activation = activation
-        self.batched = weight.rank == 3
+  /// Creates an instance from the given weight, optional bias, and activation function.
+  ///
+  /// - Note: currently, `weight` is the only differentiability parameter. `bias` can be made a
+  ///   differentiability parameter after `Optional` conditionally conforms to `Differentiable`:
+  ///   TF-499.
+  @differentiable(wrt: weight)
+  public init(
+    weight: Tensor<Scalar>,
+    bias: Tensor<Scalar>? = nil,
+    activation: @escaping Activation
+  ) {
+    precondition(weight.rank <= 3, "The rank of the 'weight' tensor must be less than 4.")
+    precondition(
+      bias == nil || bias!.rank <= 2, "The rank of the 'bias' tensor must be less than 3.")
+    self.weight = weight
+    self.bias = bias ?? .zero
+    self.activation = activation
+    self.batched = weight.rank == 3
+    useBias = (bias != nil)
+  }
+
+  // TODO(TF-433): Remove custom derivative after `try_apply` differentiation is supported.
+  @derivative(of: init)
+  @usableFromInline
+  static func vjpInit(
+    weight: Tensor<Scalar>,
+    bias: Tensor<Scalar>? = nil,
+    activation: @escaping Activation
+  ) -> (value: Self, pullback: (TangentVector) -> Tensor<Scalar>) {
+    let value = Dense(weight: weight, bias: bias, activation: activation)
+    return (value, { v in v.weight })
+  }
+
+  /// Returns the output obtained from applying the layer to the given input.
+  ///
+  /// - Parameter input: The input to the layer.
+  /// - Returns: The output.
+  @differentiable
+  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+    if batched {
+      let hidden = matmul(input.expandingShape(at: 1), weight).squeezingShape(at: 1)
+      return activation(useBias ? hidden + bias : hidden)
     }
-
-    /// Returns the output obtained from applying the layer to the given input.
-    ///
-    /// - Parameter input: The input to the layer.
-    /// - Returns: The output.
-    @differentiable
-    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        if batched {
-            let hidden = matmul(input.expandingShape(at: 1), weight)
-            return activation(hidden.squeezingShape(at: 1) + bias)
-        }
-        return activation(matmul(input, weight) + bias)
-    }
+    return activation(useBias ? (matmul(input, weight) + bias) : matmul(input, weight))
+  }
 }
 
-public extension Dense {
-    /// Creates a `Dense` layer with the specified input size, output size, and element-wise
-    /// activation function. The weight matrix is created with shape `[inputSize, outputSize]` and
-    /// the bias vector is created with shape `[outputSize]`.
-    ///
-    /// - Parameters:
-    ///   - inputSize: The dimensionality of the input space.
-    ///   - outputSize: The dimensionality of the output space.
-    ///   - activation: The activation function to use. The default value is `identity(_:)`.
-    ///   - weightInitializer: Initializer to use for `weight`.
-    ///   - biasInitializer: Initializer to use for `bias`.
-    init(
-        inputSize: Int,
-        outputSize: Int,
-        activation: @escaping Activation = identity,
-        weightInitializer: ParameterInitializer<Scalar> = glorotUniform(),
-        biasInitializer: ParameterInitializer<Scalar> = zeros()
-    ) {
-        self.init(
-            weight: weightInitializer([inputSize, outputSize]),
-            bias: biasInitializer([outputSize]),
-            activation: activation)
-    }
+extension Dense {
+  /// Creates a `Dense` layer with the specified input size, output size, and element-wise
+  /// activation function. The weight matrix is created with shape `[inputSize, outputSize]` and
+  /// the bias vector is created with shape `[outputSize]`.
+  ///
+  /// - Parameters:
+  ///   - inputSize: The dimensionality of the input space.
+  ///   - outputSize: The dimensionality of the output space.
+  ///   - activation: The activation function to use. The default value is `identity(_:)`.
+  ///   - weightInitializer: Initializer to use for `weight`.
+  ///   - biasInitializer: Initializer to use for `bias`.
+  public init(
+    inputSize: Int,
+    outputSize: Int,
+    activation: @escaping Activation = identity,
+    useBias: Bool = true,
+    weightInitializer: ParameterInitializer<Scalar> = glorotUniform(),
+    biasInitializer: ParameterInitializer<Scalar> = zeros()
+  ) {
+    self.init(
+      weight: weightInitializer([inputSize, outputSize]),
+      bias: useBias ? biasInitializer([outputSize]) : nil,
+      activation: activation)
+  }
 }

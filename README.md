@@ -41,17 +41,18 @@ struct Model: Layer {
 var classifier = Model()
 let optimizer = SGD(for: classifier, learningRate: 0.02)
 Context.local.learningPhase = .training
-let x: Tensor<Float> = ...
-let y: Tensor<Int32> = ...
+// Dummy data.
+let x: Tensor<Float> = Tensor(randomNormal: [100, 4])
+let y: Tensor<Int32> = Tensor(randomUniform: [100])
 ```
 
 #### Run a training loop
 
-One way to define a training epoch is to use the [`Differentiable.gradient(in:)`](https://github.com/apple/swift/blob/652523f49581a42986ef2b6b04a593ed47496122/stdlib/public/core/AutoDiff.swift#L214) method.
+One way to define a training epoch is to use the [`gradient(at:in:)`](https://www.tensorflow.org/swift/api_docs/Functions#/s:10TensorFlow8gradient2at2in13TangentVectorQzx_AA0A0Vyq_GxXEtAA14DifferentiableRzAA0aB13FloatingPointR_r0_lF) function.
 
 ```swift
 for _ in 0..<1000 {
-    let 𝛁model = classifier.gradient { classifier -> Tensor<Float> in
+    let 𝛁model = gradient(at: classifier) { classifier -> Tensor<Float> in
         let ŷ = classifier(x)
         let loss = softmaxCrossEntropy(logits: ŷ, labels: y)
         print("Loss: \(loss)")
@@ -66,7 +67,7 @@ Another way is to make use of methods on `Differentiable` or `Layer` that produc
 ```swift
 for _ in 0..<1000 {
     let (ŷ, backprop) = classifier.appliedForBackpropagation(to: x)
-    let (loss, 𝛁ŷ) = ŷ.valueWithGradient { ŷ in softmaxCrossEntropy(logits: ŷ, labels: y) }
+    let (loss, 𝛁ŷ) = valueWithGradient(at: ŷ) { ŷ in softmaxCrossEntropy(logits: ŷ, labels: y) }
     print("Model output: \(ŷ), Loss: \(loss)")
     let (𝛁model, _) = backprop(𝛁ŷ)
     optimizer.update(&classifier, along: 𝛁model)
