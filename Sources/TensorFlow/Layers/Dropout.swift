@@ -85,10 +85,8 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
 @frozen
 public struct AlphaDropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   @noDerivative public let probability: Double
-  //@noDerivative public let rate: Double
-
-
-  /// Creates a dropout layer.
+  
+  /// Initializes an `AlphaDropout` layer with a configurable `probability`.
   ///
   /// - Parameter probability: The probability of a node dropping out.
   /// - Precondition: probability must be a value between 0 and 1 (inclusive). 
@@ -99,10 +97,7 @@ public struct AlphaDropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
     self.probability = probability
   }
 
-  /// Returns the output obtained from applying the layer to the given input.
-  ///
-  /// - Parameter input: The input to the layer.
-  /// - Returns: The output.
+  /// Adds noise to `input` during training, and is a no-op during inference.
   @differentiable
   public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     switch Context.local.learningPhase {
@@ -112,10 +107,16 @@ public struct AlphaDropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
       let alpha_p = -alpha * scale
       let uniform = Tensor<Scalar>(randomUniform: input.shape)
       let noise = uniform .>= Scalar(probability)
+
+      // Get affine transformation params
       let a = pow(((1 - probability) * (1 + probability * pow(alpha_p, 2))), -0.5)
       let b = -a * alpha_p * probability
+
+      // Apply mask
       var x = input * Tensor(noise) 
       x = x + Scalar(alpha_p) * (1 - Tensor(noise))
+
+      // Do affine transformation
       return Scalar(a) * x  + Scalar(b)
     case .inference:
       return input
