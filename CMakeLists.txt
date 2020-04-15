@@ -45,7 +45,7 @@ if(BUILD_X10)
         `yes ""` | TF_NEED_CUDA=1 <SOURCE_DIR>/configure
     BUILD_COMMAND
       COMMAND
-        ${CMAKE_COMMAND} -E remove_directory -Rrf <SOURCE_DIR>/bazel-bin
+        rm -rf <SOURCE_DIR>/bazel-bin # ${CMAKE_COMMAND} -E rm -Rrf <SOURCE_DIR>/bazel-bin
       COMMAND
         bazel build -c opt --config=cuda --define framework_shared_object=false //tensorflow/compiler/tf2xla/xla_tensor:libx10.so
       COMMAND
