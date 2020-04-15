@@ -65,13 +65,39 @@ cc_library(
     ],
 )
 
+filegroup(
+    name = "get_x10_dll_import_lib",
+    srcs = [":x10.dll"],
+    output_group = "interface_library",
+    visibility = ["//visibility:public"],
+)
+
+genrule(
+    name = "x10_dll_import_lib",
+    srcs = [":get_x10_dll_import_lib"],
+    outs = ["x10.lib"],
+    cmd = select({
+        "//tensorflow:windows": "cp -f $< $@",
+        "//conditions:defualt": "touch $@",  # Just a placeholder for Unix platforms
+    }),
+    visibility = ["//visibility:public"],
+)
+
 tf_cc_shared_object(
-    name = "libx10.so",
-    linkopts = [
-        "-z defs",
-        "-s",
-        "-Wl,--version-script,$(location :tf_version_script.lds)",
-    ],
+    name = "x10",
+    linkopts = select({
+        "//tensorflow:macos": [
+            # TODO
+        ],
+        "//tensorflow:windows": [
+        ],
+        "//conditions:default": [
+            "-z defs",
+            "-s",
+            "-Wl,--version-script,$(location :tf_version_script.lds)",
+        ],
+    }),
+    per_os_targets = True,
     visibility = ["//visibility:public"],
     deps = [
         ":tensor",

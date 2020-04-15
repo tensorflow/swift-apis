@@ -132,9 +132,15 @@ class TensorAllocator : public tensorflow::Allocator {
   void* NewBlock(AllocBlocks* alloc_blocks) {
     // We allocate an extra alignment sized area to store the AllocBlocks
     // pointer.
+#if defined(_WIN32)
+    void* ptr = _aligned_malloc(
+        alloc_blocks->alloc_key.alignment,
+        alloc_blocks->alloc_key.alignment + alloc_blocks->alloc_key.num_bytes);
+#else
     void* ptr = ::aligned_alloc(
         alloc_blocks->alloc_key.alignment,
         alloc_blocks->alloc_key.alignment + alloc_blocks->alloc_key.num_bytes);
+#endif
     XLA_CHECK(ptr != nullptr);
     ptr = reinterpret_cast<char*>(ptr) + alloc_blocks->alloc_key.alignment;
     // Store the pointer to AllocBlocks right before the user memory.
@@ -145,7 +151,12 @@ class TensorAllocator : public tensorflow::Allocator {
 
   void FreeBlock(void* ptr, AllocBlocks* alloc_blocks) {
     size_ -= alloc_blocks->alloc_key.num_bytes;
+#if defined(_WIN32)
+    _aligned_free(
+        reinterpret_cast<char*>(ptr) - alloc_blocks->alloc_key.alignment);
+#else
     std::free(reinterpret_cast<char*>(ptr) - alloc_blocks->alloc_key.alignment);
+#endif
   }
 
   void TrimCache(size_t num_bytes) {
