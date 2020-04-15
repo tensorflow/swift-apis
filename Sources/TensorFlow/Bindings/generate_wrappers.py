@@ -17,7 +17,9 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+from builtins import bytes
 
+import json
 import os
 import six
 import tensorflow.compat.v1 as tf
@@ -35,6 +37,11 @@ flags.DEFINE_string(
 
 flags.DEFINE_string(
   'output_path',
+  None,
+  'path for the generated swift file')
+
+flags.DEFINE_string(
+  'dispatching_output_path',
   None,
   'path for the generated swift file')
 
@@ -58,6 +65,22 @@ _HEADER = """// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 
 """
 
+_DISPATCHER_TEMPLATE = '''@available(
+  *, deprecated, renamed: "_Raw",
+  message:
+    """
+  'Raw' has been renamed to '_Raw' to indicate that it is not a guaranteed/stable API.
+  """
+)
+public typealias Raw = _Raw
+
+#if USING_X10_BACKEND
+{raw_dispatching_enum}
+#else
+public typealias _Raw = _RawTFEager
+#endif
+'''
+
 _OUTPUT_FILE = 'RawOpsGenerated.swift'
 _RENAMED_KEYWORDS = {
   '': 'empty',
@@ -66,6 +89,7 @@ _RENAMED_KEYWORDS = {
   'where': 'where_',
   'if': 'if_',
   'for': 'for_',
+  'Int': 'Intt',
   'while': 'while_',
   'switch': 'switch_',
   'protocol': 'protocol_',
@@ -136,6 +160,45 @@ _OMITTED_PARAMETER_NAMES = {
 
 _START_COMMENT = '///'
 
+X10_OPS = {
+  "CanonicalDims", "CheckSameDevice", "CheckSameDevice", "CheckSameDevice",
+  "CheckSameDevice", "CheckSamePrecision", "CheckSamePrecision",
+  "CheckSamePrecision", "CheckSamePrecision",
+  "Abs", "Acos", "Acosh", "AddV2", "All", "Any", "ApproximateEqual", "ArgMax",
+  "ArgMax", "ArgMin", "Asin", "Asinh", "Atan", "Atanh", "ConvertPadding",
+  "ConvertPadding2", "ConvertDataFormat", "ConvertDataFormat1",
+  "ConvertDataFormat4", "ConvertMirrorPadMode", "ReversedPaddings",
+  "AvgPool", "AvgPool3D", "AvgPool3DGrad", "AvgPoolGrad", "BatchMatMulV2",
+  "BroadcastGradientArgs", "BroadcastTo", "BroadcastTo", "Cast", "Ceil",
+  "ClipByValue", "ConcatV2", "Conv2D", "Conv2DBackpropFilter",
+  "Conv2DBackpropFilter", "Conv2DBackpropInput", "Conv2DBackpropInput",
+  "Conv3D", "Conv3DBackpropFilterV2", "Conv3DBackpropInputV2", "Cos", "Cosh",
+  "Cumprod", "Cumsum", "DepthwiseConv2dNative",
+  "DepthwiseConv2dNativeBackpropFilter", "DepthwiseConv2dNativeBackpropInput",
+  "DiagPart", "Div", "Elu", "EluGrad", "Equal", "Exp", "ExpandDims", "Expm1",
+  "Fill", "Fill", "Floor", "Gather", "GatherV2", "Greater", "GreaterEqual",
+  "InvertPermutation", "IsFinite", "IsInf", "IsNan", "LeakyRelu",
+  "LeakyReluGrad", "Less", "LessEqual", "LinSpace", "LinSpace", "Log", "Log1p",
+   "LogSoftmax", "LogicalAnd", "LogicalNot", "LogicalOr",
+  "MatMul", "Max", "MaxPool3D", "MaxPool3DGrad", "MaxPoolGradV2",
+  "MaxPoolGradV2", "MaxPoolV2", "MaxPoolV2", "Maximum", "Mean", "Mean", "Min",
+  "Minimum", "MirrorPad", "MirrorPadGrad", "Mod", "Mul", "Neg", "NotEqual",
+  "OneHot", "OneHot", "OnesLike", "Pack", "Pad", "PadV2", "PhysicalCast", "Pow",
+  "Prod", "Qr", "Range", "Rank", "Relu", "Relu6", "Relu6Grad", "ReluGrad",
+  "Reshape", "Reshape", "ReverseV2", "Round", "Rsqrt", "RsqrtGrad", "Select",
+  "Selu", "SeluGrad", "Shape", "Sigmoid", "SigmoidGrad", "Sign", "Sin", "Sinh",
+  "Size", "Slice", "Softmax", "SoftmaxCrossEntropyWithLogits", "Softplus",
+  "SoftplusGrad", "Softsign", "SoftsignGrad",
+  "SparseSoftmaxCrossEntropyWithLogits", "Split", "SplitV", "Sqrt", "Square",
+  "SquaredDifference", "Squeeze", "StatelessMultinomial",
+  "StatelessRandomNormal", "StatelessRandomNormal", "StatelessRandomUniform",
+  "StatelessRandomUniform", "StatelessRandomUniformInt",
+  "StatelessRandomUniformInt", "StatelessTruncatedNormal",
+  "StatelessTruncatedNormal", "StridedSlice", "StridedSliceGrad", "Sub", "Sum",
+  "Sum", "Tan", "Tanh", "TensorStridedSliceUpdate", "Tile", "ToDevice",
+  "Transpose", "Unpack", "UnsortedSegmentSum", "Xdivy", "ZerosLike",
+  "Rand",
+}
 
 class UnableToGenerateCodeError(Exception):
   def __init__(self, details):
@@ -183,6 +246,20 @@ public static func {name}{generics}({input_args}
       input_args=self._swift_input_args(),
       return_type=self._swift_return_type(),
       body=self._swift_body())
+
+  def swift_dispatch_function(self, x10_supported=False):
+    return '''
+{documentation}@inlinable @inline(__always)
+public static func {name}{generics}({input_args}
+){return_type} {{
+  {body}
+}}'''.format(
+      documentation=self._swift_documentation(),
+      name=self._swift_name(),
+      generics=self._swift_generics(),
+      input_args=self._swift_input_args(),
+      return_type=self._swift_return_type(),
+      body=self._swift_dispatch_body(x10_supported=x10_supported))
 
   def _swift_documentation(self):
     def comment_block(text, indent_level):
@@ -282,13 +359,69 @@ public static func {name}{generics}({input_args}
     body += '\n    return op.execute({})'.format(', '.join(counts))
     return body
 
+  def _swift_dispatch_body(self, x10_supported=False):
+    names = []
+    tensors = []
+    backends = []
+    device_source = None
+    for arg in self.input_args:
+      names.append(arg.swift_name)
+      if arg.is_tensor_type(self.string_valued):
+        tensors.append(arg)
+        if arg.is_list:
+          backends.append("commonBackend(" + arg.swift_name + ")")
+        else:
+          device_source = arg
+          backends.append(arg.swift_name + ".handle.backend")
+    for attr in self.attrs:
+      if not attr.is_inferred_type_attr and not attr.is_inferred_number_attr:
+        names.append(attr.swift_name)
+    names_filtered = []
+    for name in names:
+      if name in _OMITTED_PARAMETER_NAMES:
+        names_filtered.append(name)
+      else:
+        names_filtered.append(name + ": " + name)
+    dispatch = self._swift_name() + "(" + (", ".join(names_filtered)) + ")"
+    if len(backends) == 0 and x10_supported:
+      print("x10 unsupported: " + str(self.swift_name()))
+    def do_conversion(arg):
+      return ("\n      let {name} = {typename}(copying: {name}, to: .defaultTFEager)"
+              .format(name=arg.swift_name,
+                      typename=str(arg.swift_type(self.string_valued))))
+    def get_common_backend(x, y):
+      return "commonBackend({}, {})".format(x, y)
+    if len(backends) == 0 or (not x10_supported and (len(self.output_args) != 1
+      or not self.output_args[0].is_tensor_type(self.string_valued) or not device_source)):
+      return "_RawTFEager." + dispatch
+    if not x10_supported:
+      return """switch {backends} {{
+    case .XLA:{convert_tensors}
+      return {convert_type}(copying: _RawTFEager.{dispatch}, to: {convert_device}.device)
+    case .TF_EAGER:
+      return _RawTFEager.{dispatch}
+  }}
+""".format(dispatch=dispatch,
+           convert_type=str(self.output_args[0].swift_type(self.string_valued)),
+           convert_device=str(device_source.swift_name),
+           convert_tensors = "".join(map(do_conversion, tensors)),
+           backends=reduce(get_common_backend, backends))
+    return """switch {backends} {{
+    case .XLA:
+      return _RawXLA.{dispatch}
+    case .TF_EAGER:
+      return _RawTFEager.{dispatch}
+  }}
+""".format(dispatch=dispatch,
+           backends=reduce(get_common_backend, backends))
+
 
 class Argument(object):
   def __init__(self, arg_def, op):
     self.arg_def = arg_def
     self.op = op
-    self.is_list = arg_def.number_attr is not '' \
-                   or arg_def.type_list_attr is not ''
+    self.is_list = arg_def.number_attr is not u'' \
+                   or arg_def.type_list_attr is not u''
 
   @property
   def name(self):
@@ -350,6 +483,10 @@ class Argument(object):
       return Type('VariantHandle', number=number)
     raise UnableToGenerateCodeError(
       'Unsupported type for argument "%s".' % self.name)
+
+  def is_tensor_type(self, string_valued=False):
+    return self.type.kind == 'Tensor' and not (
+        (self.allows_string and string_valued) or self.type.base_type == 'String')
 
   @property
   def allows_string(self):
@@ -488,9 +625,9 @@ class Attribute(object):
       elif default_value.HasField('f'):
         default_value = swift_float(default_value.f)
       elif default_value.HasField('s') and default_value.s:
-        s = str(default_value.s, encoding='utf-8')
+        s = str(default_value.s)
         default_value = '.' + swift_compatible_identifier(s.lower()) \
-          if self._use_enum else '"' + s + '"'
+            if self._use_enum else json.dumps(s) # '"' + s + '"'
       elif default_value.HasField('list'):
         if default_value.list.i:
           default_values = [str(s) for s in default_value.list.i]
@@ -576,21 +713,22 @@ class Attribute(object):
 
 def swift_compatible_identifier(s, capitalize=False):
   """Transforms an identifier to be more swift idiomatic."""
-  if s in _RENAMED_KEYWORDS:
-    return _RENAMED_KEYWORDS[s]
   if capitalize:
     s = s.capitalize()
   without_underscores = []
   capitalize_next_char = False
   for c in s:
-    if c == '-' or c == '_' or c == '(' or c == ')':
+    if c == '-' or c == '_' or c == '(' or c == ')' or c == '<' or c == '>':
       capitalize_next_char = True
     elif capitalize_next_char:
       capitalize_next_char = False
       without_underscores.append(c.upper())
     else:
       without_underscores.append(c)
-  return ''.join(without_underscores)
+  s = ''.join(without_underscores)
+  if s in _RENAMED_KEYWORDS:
+    return _RENAMED_KEYWORDS[s]
+  return s
 
 
 class EnumStore(object):
@@ -599,46 +737,54 @@ class EnumStore(object):
   def __init__(self):
     self._entries = {}
     self._type_names = set()
-    self._counter = 1
 
   def enum_codes(self):
     """Generates the swift code for enums."""
     codes = []
     entries = list(six.iteritems(self._entries))
     for allowed_values, type_name in sorted(entries, key=lambda x: x[1]):
-      allowed_values = [str(a, encoding='utf-8') for a in allowed_values]
+      allowed_values = [str(a) for a in allowed_values]
       codes.append(
           # FIXME: Re-add `@_frozen` after SR-9739 is resolved.
           # https://bugs.swift.org/browse/SR-9739
           # '@_frozen\n' +
-          '// @_frozen // SR-9739\n' +
-          'public enum {} {{\n'.format(type_name) +
+          '  // @_frozen // SR-9739\n' +
+          '  public enum {} {{\n'.format(type_name) +
           '\n'.join(['    case {}'.format(
             swift_compatible_identifier(a.lower()))
             for a in allowed_values]) +
           '\n\n' +
           '    @inlinable\n' +
           '    var cName: String {\n' +
-          '        @inline(__always)\n' +
-          '        get {\n' +
-          '            switch self {\n' +
-          '\n'.join(['            case .{}: return "{}"'.format(
+          '      @inline(__always)\n' +
+          '      get {\n' +
+          '        switch self {\n' +
+          '\n'.join(['        case .{}: return "{}"'.format(
             swift_compatible_identifier(a.lower()), a)
             for a in allowed_values]) +
           '\n' +
-          '            }\n' +
           '        }\n' +
+          '      }\n' +
           '    }\n' +
-          '}')
+          '  }')
+    return codes
+
+  def enum_codes_forwarding(self):
+    codes = []
+    entries = list(six.iteritems(self._entries))
+    for allowed_values, type_name in sorted(entries, key=lambda x: x[1]):
+      codes.append('  public typealias {} = _RawTFEager.{}'.format(type_name, type_name))
     return codes
 
   def maybe_add(self, allowed_values, attr_def_name):
     if allowed_values in self._entries:
       return self._entries[allowed_values]
     type_name = swift_compatible_identifier(attr_def_name, capitalize=True)
+    base_typename = type_name
+    counter = 1
     while type_name in self._type_names:
-      type_name += str(self._counter)
-      self._counter += 1
+      type_name = base_typename + str(counter)
+      counter += 1
     self._type_names.add(type_name)
     self._entries[allowed_values] = type_name
     return type_name
@@ -652,6 +798,7 @@ def main(argv):
   api_def_map = c_api_util.ApiDefMap()
 
   op_codes = []
+  op_codes_forwarding = []
   enum_store = EnumStore()
   op_names = api_def_map.op_names()
   if FLAGS.api_def_path is not None:
@@ -684,16 +831,25 @@ def main(argv):
       default_code = default_op.swift_function()
       string_valued_code = string_valued_op.swift_function()
       op_codes.append(default_code)
+      string_valued_op_different = False
       if string_valued_code != default_code:
+        string_valued_op_different = True
         op_codes.append(string_valued_code)
+
+      default_code = default_op.swift_dispatch_function(x10_supported=op_name in X10_OPS)
+      string_valued_code = string_valued_op.swift_dispatch_function()
+      op_codes_forwarding.append(default_code)
+      if string_valued_op_different:
+        op_codes_forwarding.append(string_valued_code)
+
       num_generated += 1
     except UnableToGenerateCodeError as e:
       print('Cannot generate code for %s: %s' % (op_name, e.details))
   print('Generated code for %d/%d ops.' % (num_generated, len(op_names)))
 
   version_codes = [
-      'static let generatedTensorFlowVersion = "%s"' % tf.__version__,
-      'static let generatedTensorFlowGitVersion = "%s"' % tf.__git_version__]
+      '  static let generatedTensorFlowVersion = "%s"' % tf.__version__,
+      '  static let generatedTensorFlowGitVersion = "%s"' % tf.__git_version__]
 
   swift_code = (
       _WARNING +
@@ -701,9 +857,9 @@ def main(argv):
       'import CTensorFlow\n\n' +
       '@inlinable @inline(__always)\n' +
       'func makeOp(_ name: String, _ nOutputs: Int) -> TFTensorOperation {\n' +
-      '    _ExecutionContext.makeOp(name, nOutputs)\n' +
+      '  _ExecutionContext.makeOp(name, nOutputs)\n' +
       '}\n'+
-      '\npublic enum Raw {\n\n' +
+      '\n\npublic enum _RawTFEager {\n\n' +
       '\n'.join(version_codes) +
       '\n\n' +
       '\n\n'.join(enum_store.enum_codes()) +
@@ -712,6 +868,20 @@ def main(argv):
       '\n\n}\n')
   with tf.gfile.Open(FLAGS.output_path, 'w') as f:
     f.write(swift_code)
+
+  swift_code = (
+      _WARNING +
+      _HEADER +
+      _DISPATCHER_TEMPLATE.format(raw_dispatching_enum=
+      'public enum _Raw {\n\n' +
+      '\n'.join(version_codes) +
+      '\n\n' +
+      '\n\n'.join(enum_store.enum_codes_forwarding()) +
+      '\n\n' +
+      '\n'.join(op_codes_forwarding) + '\n\n}'))
+  if FLAGS.dispatching_output_path:
+    with tf.gfile.Open(FLAGS.dispatching_output_path, 'w') as f:
+      f.write(swift_code)
 
 
 if __name__ == '__main__':

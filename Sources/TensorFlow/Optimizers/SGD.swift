@@ -17,48 +17,59 @@
 /// An optimizer that implements stochastic gradient descent, with support for momentum, learning
 /// rate decay, and Nesterov momentum.
 public class SGD<Model: Differentiable>: Optimizer
-    where Model.TangentVector: VectorProtocol & ElementaryFunctions,
-          Model.TangentVector.VectorSpaceScalar == Float {
-    public typealias Model = Model
-    /// The learning rate.
-    public var learningRate: Float
-    /// The momentum factor. It accelerates stochastic gradient descent in the relevant direction
-    /// and dampens oscillations.
-    public var momentum: Float
-    /// The learning rate decay.
-    public var decay: Float
-    /// Use Nesterov momentum if true.
-    public var nesterov: Bool
-    /// The velocity state of the model.
-    public var velocity: Model.TangentVector = .zero
-    /// The set of steps taken.
-    public var step: Int = 0
+where
+  Model.TangentVector: VectorProtocol & ElementaryFunctions & KeyPathIterable,
+  Model.TangentVector.VectorSpaceScalar == Float
+{
+  public typealias Model = Model
+  /// The learning rate.
+  public var learningRate: Float
+  /// The momentum factor. It accelerates stochastic gradient descent in the relevant direction
+  /// and dampens oscillations.
+  public var momentum: Float
+  /// The learning rate decay.
+  public var decay: Float
+  /// Use Nesterov momentum if true.
+  public var nesterov: Bool
+  /// The velocity state of the model.
+  public var velocity: Model.TangentVector = .zero
+  /// The set of steps taken.
+  public var step: Int = 0
 
-    public init(
-        for model: __shared Model,
-        learningRate: Float = 0.01,
-        momentum: Float = 0,
-        decay: Float = 0,
-        nesterov: Bool = false
-    ) {
-        precondition(learningRate >= 0, "Learning rate must be non-negative")
-        precondition(momentum >= 0, "Momentum must be non-negative")
-        precondition(decay >= 0, "Learning rate decay must be non-negative")
+  public init(
+    for model: __shared Model,
+    learningRate: Float = 0.01,
+    momentum: Float = 0,
+    decay: Float = 0,
+    nesterov: Bool = false
+  ) {
+    precondition(learningRate >= 0, "Learning rate must be non-negative")
+    precondition(momentum >= 0, "Momentum must be non-negative")
+    precondition(decay >= 0, "Learning rate decay must be non-negative")
 
-        self.learningRate = learningRate
-        self.momentum = momentum
-        self.decay = decay
-        self.nesterov = nesterov
+    self.learningRate = learningRate
+    self.momentum = momentum
+    self.decay = decay
+    self.nesterov = nesterov
+  }
+
+  public func update(_ model: inout Model, along direction: Model.TangentVector) {
+    step += 1
+    let learningRate = self.learningRate * 1 / (1 + decay * Float(step))
+    velocity = velocity.scaled(by: momentum) - direction.scaled(by: learningRate)
+    if nesterov {
+      model.move(along: velocity.scaled(by: momentum) - direction.scaled(by: learningRate))
+    } else {
+      model.move(along: velocity)
     }
+  }
 
-    public func update(_ model: inout Model, along direction: Model.TangentVector) {
-        step += 1
-        let learningRate = self.learningRate * 1 / (1 + decay * Float(step))
-        velocity = velocity.scaled(by: momentum) - direction.scaled(by: learningRate)
-        if nesterov {
-            model.move(along: velocity.scaled(by: momentum) - direction.scaled(by: learningRate))
-        } else {
-            model.move(along: velocity)
-        }
-    }
+  public required init(copying other: SGD, to device: Device) {
+    learningRate = other.learningRate
+    momentum = other.momentum
+    decay = other.decay
+    nesterov = other.nesterov
+    velocity = .init(copying: other.velocity, to: device)
+    step = other.step
+  }
 }
