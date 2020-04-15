@@ -20,42 +20,42 @@ import CTensorFlow
 // `TF_DataType` without importing CTensorFlow, which pollutes the namespace
 // with TensorFlow C API declarations.
 public struct TensorDataType: Equatable {
-    public var _cDataType: TF_DataType
+  public var _cDataType: TF_DataType
 
-    @usableFromInline
-    internal init(_ cDataType: TF_DataType) {
-        self._cDataType = cDataType
-    }
+  @usableFromInline
+  internal init(_ cDataType: TF_DataType) {
+    self._cDataType = cDataType
+  }
 }
 
 @usableFromInline
 internal func makeTensor(
-    dataType: TensorDataType,
-    owning pointer: CTensorHandle
+  dataType: TensorDataType,
+  owning pointer: CTensorHandle
 ) -> AnyTensor {
-    switch dataType._cDataType {
-    case TF_BOOL: return Tensor<Bool>(handle: TensorHandle(_owning: pointer))
-    case TF_INT8: return Tensor<Int8>(handle: TensorHandle(_owning: pointer))
-    case TF_UINT8: return Tensor<UInt8>(handle: TensorHandle(_owning: pointer))
-    case TF_INT16: return Tensor<Int16>(handle: TensorHandle(_owning: pointer))
-    case TF_UINT16: return Tensor<UInt16>(handle: TensorHandle(_owning: pointer))
-    case TF_INT32: return Tensor<Int32>(handle: TensorHandle(_owning: pointer))
-    case TF_UINT32: return Tensor<UInt32>(handle: TensorHandle(_owning: pointer))
-    case TF_INT64: return Tensor<Int64>(handle: TensorHandle(_owning: pointer))
-    case TF_UINT64: return Tensor<UInt64>(handle: TensorHandle(_owning: pointer))
-    case TF_BFLOAT16: return Tensor<BFloat16>(handle: TensorHandle(_owning: pointer))
-    case TF_FLOAT: return Tensor<Float>(handle: TensorHandle(_owning: pointer))
-    case TF_DOUBLE: return Tensor<Double>(handle: TensorHandle(_owning: pointer))
-    case TF_STRING: fatalError("StringTensor does not conform to AnyTensor")
-    default: fatalError("Unhandled type: \(dataType)")
-    }
+  switch dataType._cDataType {
+  case TF_BOOL: return Tensor<Bool>(handle: TensorHandle(_owning: pointer))
+  case TF_INT8: return Tensor<Int8>(handle: TensorHandle(_owning: pointer))
+  case TF_INT16: return Tensor<Int16>(handle: TensorHandle(_owning: pointer))
+  case TF_INT32: return Tensor<Int32>(handle: TensorHandle(_owning: pointer))
+  case TF_INT64: return Tensor<Int64>(handle: TensorHandle(_owning: pointer))
+  case TF_UINT8: return Tensor<UInt8>(handle: TensorHandle(_owning: pointer))
+  case TF_UINT16: return Tensor<UInt16>(handle: TensorHandle(_owning: pointer))
+  case TF_UINT32: return Tensor<UInt32>(handle: TensorHandle(_owning: pointer))
+  case TF_UINT64: return Tensor<UInt64>(handle: TensorHandle(_owning: pointer))
+  case TF_BFLOAT16: return Tensor<BFloat16>(handle: TensorHandle(_owning: pointer))
+  case TF_FLOAT: return Tensor<Float>(handle: TensorHandle(_owning: pointer))
+  case TF_DOUBLE: return Tensor<Double>(handle: TensorHandle(_owning: pointer))
+  case TF_STRING: fatalError("StringTensor does not conform to AnyTensor")
+  default: fatalError("Unhandled type: \(dataType)")
+  }
 }
 
 /// A data type compatible with TensorFlow.
 public protocol _TensorFlowDataTypeCompatible {
-    /// The underlying TensorFlow data type.
-    @inlinable
-    static var tensorFlowDataType: TensorDataType { get }
+  /// The underlying TensorFlow data type.
+  @inlinable
+  static var tensorFlowDataType: TensorDataType { get }
 }
 
 /// A scalar data type compatible with TensorFlow.
@@ -64,7 +64,11 @@ public protocol _TensorFlowDataTypeCompatible {
 /// `Tensor`.
 //
 // This includes all `_TensorFlowDataTypeCompatible` types except `String`.
-public protocol TensorFlowScalar: _TensorFlowDataTypeCompatible {}
+#if USING_X10_BACKEND
+  public protocol TensorFlowScalar: XLAScalarType & _TensorFlowDataTypeCompatible {}
+#else
+  public protocol TensorFlowScalar: _TensorFlowDataTypeCompatible {}
+#endif
 
 public typealias TensorFlowNumeric = TensorFlowScalar & Numeric
 public typealias TensorFlowSignedNumeric = TensorFlowScalar & SignedNumeric
@@ -80,108 +84,110 @@ extension Int64: TensorFlowIndex {}
 /// A floating-point data type that conforms to `Differentiable` and is compatible with TensorFlow.
 ///
 /// - Note: `Tensor` conditionally conforms to `Differentiable` when the `Scalar` associated type
-///   conforms `TensorFlowFloatingPoint`.
+///   conforms to `TensorFlowFloatingPoint`.
 public protocol TensorFlowFloatingPoint:
-    TensorFlowScalar & BinaryFloatingPoint & Differentiable & ElementaryFunctions
-    where Self.RawSignificand: FixedWidthInteger,
-          Self == Self.TangentVector {}
+  TensorFlowScalar & BinaryFloatingPoint & Differentiable & ElementaryFunctions
+where
+  Self.RawSignificand: FixedWidthInteger,
+  Self == Self.TangentVector
+{}
 
 extension Float: TensorFlowFloatingPoint {}
 extension Double: TensorFlowFloatingPoint {}
 
 extension Bool: TensorFlowScalar {
-    @inlinable
-    public static var tensorFlowDataType: TensorDataType {
-        return TensorDataType(TF_BOOL)
-    }
+  @inlinable
+  public static var tensorFlowDataType: TensorDataType {
+    return TensorDataType(TF_BOOL)
+  }
 }
 
 extension Int8: TensorFlowScalar {
-    @inlinable
-    public static var tensorFlowDataType: TensorDataType {
-        return TensorDataType(TF_INT8)
-    }
-}
-
-extension UInt8: TensorFlowScalar {
-    @inlinable
-    public static var tensorFlowDataType: TensorDataType {
-        return TensorDataType(TF_UINT8)
-    }
+  @inlinable
+  public static var tensorFlowDataType: TensorDataType {
+    return TensorDataType(TF_INT8)
+  }
 }
 
 extension Int16: TensorFlowScalar {
-    @inlinable
-    public static var tensorFlowDataType: TensorDataType {
-        return TensorDataType(TF_INT16)
-    }
-}
-
-extension UInt16: TensorFlowScalar {
-    @inlinable
-    public static var tensorFlowDataType: TensorDataType {
-        return TensorDataType(TF_UINT16)
-    }
+  @inlinable
+  public static var tensorFlowDataType: TensorDataType {
+    return TensorDataType(TF_INT16)
+  }
 }
 
 extension Int32: TensorFlowScalar {
-    @inlinable
-    public static var tensorFlowDataType: TensorDataType {
-        return TensorDataType(TF_INT32)
-    }
-}
-
-extension UInt32: TensorFlowScalar {
-    @inlinable
-    public static var tensorFlowDataType: TensorDataType {
-        return TensorDataType(TF_UINT32)
-    }
+  @inlinable
+  public static var tensorFlowDataType: TensorDataType {
+    return TensorDataType(TF_INT32)
+  }
 }
 
 extension Int64: TensorFlowScalar {
-    @inlinable
-    public static var tensorFlowDataType: TensorDataType {
-        return TensorDataType(TF_INT64)
-    }
+  @inlinable
+  public static var tensorFlowDataType: TensorDataType {
+    return TensorDataType(TF_INT64)
+  }
+}
+
+extension UInt8: TensorFlowScalar {
+  @inlinable
+  public static var tensorFlowDataType: TensorDataType {
+    return TensorDataType(TF_UINT8)
+  }
+}
+
+extension UInt16: TensorFlowScalar {
+  @inlinable
+  public static var tensorFlowDataType: TensorDataType {
+    return TensorDataType(TF_UINT16)
+  }
+}
+
+extension UInt32: TensorFlowScalar {
+  @inlinable
+  public static var tensorFlowDataType: TensorDataType {
+    return TensorDataType(TF_UINT32)
+  }
 }
 
 extension UInt64: TensorFlowScalar {
-    @inlinable
-    public static var tensorFlowDataType: TensorDataType {
-        return TensorDataType(TF_UINT64)
-    }
+  @inlinable
+  public static var tensorFlowDataType: TensorDataType {
+    return TensorDataType(TF_UINT64)
+  }
 }
 
 @frozen
 public struct BFloat16 {
-    @usableFromInline var data: Int16 = 0
-    private init() {}
+  @usableFromInline var data: Int16 = 0
+  private init() {}
 }
 
 extension BFloat16: TensorFlowScalar {
-    @inlinable
-    public static var tensorFlowDataType: TensorDataType {
-        return TensorDataType(TF_BFLOAT16)
-    }
+  @inlinable
+  public static var tensorFlowDataType: TensorDataType {
+    return TensorDataType(TF_BFLOAT16)
+  }
 }
 
 extension Float: TensorFlowScalar {
-    @inlinable
-    public static var tensorFlowDataType: TensorDataType {
-        return TensorDataType(TF_FLOAT)
-    }
+  @inlinable
+  public static var tensorFlowDataType: TensorDataType {
+    return TensorDataType(TF_FLOAT)
+  }
 }
 
 extension Double: TensorFlowScalar {
-    @inlinable
-    public static var tensorFlowDataType: TensorDataType {
-        return TensorDataType(TF_DOUBLE)
-    }
+  @inlinable
+  public static var tensorFlowDataType: TensorDataType {
+    return TensorDataType(TF_DOUBLE)
+  }
 }
 
 extension String: _TensorFlowDataTypeCompatible {
-    @inlinable
-    public static var tensorFlowDataType: TensorDataType {
-        return TensorDataType(TF_STRING)
-    }
+  @inlinable
+  public static var tensorFlowDataType: TensorDataType {
+    return TensorDataType(TF_STRING)
+  }
 }

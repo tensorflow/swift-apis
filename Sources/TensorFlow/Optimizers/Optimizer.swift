@@ -15,13 +15,13 @@
 /// A numerical optimizer.
 ///
 /// Optimizers apply an optimization algorithm to update a differentiable model.
-public protocol Optimizer {
-    /// The type of the model to optimize.
-    associatedtype Model: Differentiable
-    /// The scalar parameter type.
-    associatedtype Scalar: FloatingPoint
-    /// The learning rate.
-    var learningRate: Scalar { get set }
-    /// Updates the given model along the given direction.
-    mutating func update(_ model: inout Model, along direction: Model.TangentVector)
+public protocol Optimizer: CopyableToDevice {
+  /// The type of the model to optimize.
+  associatedtype Model: Differentiable
+  /// The scalar parameter type.
+  associatedtype Scalar: FloatingPoint
+  /// The learning rate.
+  var learningRate: Scalar { get set }
+  /// Updates the given model along the given direction.
+  mutating func update(_ model: inout Model, along direction: Model.TangentVector)
 }
