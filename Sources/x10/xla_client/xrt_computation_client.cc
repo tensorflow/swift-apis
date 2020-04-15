@@ -136,6 +136,10 @@ class TensorAllocator : public tensorflow::Allocator {
     void* ptr = _aligned_malloc(
         alloc_blocks->alloc_key.alignment,
         alloc_blocks->alloc_key.alignment + alloc_blocks->alloc_key.num_bytes);
+#elif defined(__APPLE__)
+    void* ptr = nullptr;
+    posix_memalign(&ptr, alloc_blocks->alloc_key.alignment,
+        alloc_blocks->alloc_key.alignment + alloc_blocks->alloc_key.num_bytes);
 #else
     void* ptr = ::aligned_alloc(
         alloc_blocks->alloc_key.alignment,
