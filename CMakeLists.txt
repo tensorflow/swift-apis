@@ -21,12 +21,15 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_Swift_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/swift)
+set(X10_TOOLCHAIN_PATH "" CACHE STRING "Toolchain location")
 
 option(BUILD_X10 "enable the x10 tensor library" OFF)
 option(USE_BUNDLED_CTENSORFLOW
   "Use the CTensorFlow module bundled in the active Swift toolchain" OFF)
 
-if(BUILD_X10)
+if (NOT X10_TOOLCHAIN_PATH STREQUAL "")
+  find_package(X10)
+elseif(BUILD_X10)
   include(ExternalProject)
 
   ExternalProject_Add(tensorflow
