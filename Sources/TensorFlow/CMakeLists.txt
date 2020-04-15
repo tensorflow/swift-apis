@@ -11,8 +11,11 @@ add_library(TensorFlow SHARED
   Bindings/EagerExecution.swift
   Bindings/RawOpsGenerated.swift
   Bindings/TFTensorOperation.swift
+  Bindings/RawOpsAugmented.swift
+  Bindings/RawOpsDispatching.swift
 
   Core/ArrayOps.swift
+  Core/CopyableToDevice.swift
   Core/DataTypes.swift
   Core/Device.swift
   Core/DifferentialOperators.swift
@@ -23,6 +26,8 @@ add_library(TensorFlow SHARED
   Core/LazyTensorTFFunctionBuilder.swift
   Core/LazyTensorTrace.swift
   Core/LazyTensorTraceCache.swift
+  Core/BroadcastingPullback.swift
+  Core/MixedPrecision.swift
   Core/PythonConversion.swift
   Core/Runtime.swift
   Core/Serialization.swift
@@ -50,6 +55,7 @@ add_library(TensorFlow SHARED
   Operators/Basic.swift
   Operators/Comparison.swift
   Operators/Dataset.swift
+  Operators/Image.swift
   Operators/LinearAlgebra.swift
   Operators/Math.swift
   Operators/NN.swift
@@ -58,17 +64,12 @@ add_library(TensorFlow SHARED
   Optimizers/Optimizer.swift
   Optimizers/SGD.swift)
 set_target_properties(TensorFlow PROPERTIES
+  INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_Swift_MODULE_DIRECTORY}
   OUTPUT_NAME swiftTensorFlow)
+target_compile_options(TensorFlow PRIVATE
+  $<$<BOOL:${BUILD_TESTING}>:-enable-testing>)
 target_link_libraries(TensorFlow PRIVATE
   CTensorFlow
   Tensor)
 
-install(TARGETS TensorFlow
-  ARCHIVE DESTINATION lib/swift/$<LOWER_CASE:${CMAKE_SYSTEM_NAME}>
-  LIBRARY DESTINATION lib/swift/$<LOWER_CASE:${CMAKE_SYSTEM_NAME}>
-  RUNTIME DESTINATION bin)
-get_swift_host_arch(swift_arch)
-install(FILES
-  $<TARGET_PROPERTY:TensorFlow,Swift_MODULE_DIRECTORY>/TensorFlow.swiftdoc
-  $<TARGET_PROPERTY:TensorFlow,Swift_MODULE_DIRECTORY>/TensorFlow.swiftmodule
-  DESTINATION lib/swift/$<LOWER_CASE:${CMAKE_SYSTEM_NAME}>/${swift_arch})
+_install_target(TensorFlow)
