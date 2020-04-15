@@ -12,75 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// Stochastic gradient descent (SGD) optimizer.
+/// A stochastic gradient descent (SGD) optimizer.
 ///
-/// Implements the stochastic gradient descent optimizer algorithm with support 
-/// for momentum, learning rate decay, and Nesterov momentum. Momentum and 
-/// Nesterov momentum (a.k.a. the Nesterov accelerated gradient method) are 
-/// first-order optimization methods that can improve the training speed and the
+/// Implements the stochastic gradient descent algorithm with support for momentum, learning rate
+/// decay, and Nesterov momentum. Momentum and Nesterov momentum (a.k.a. the Nesterov accelerated
+/// gradient method) are first-order optimization methods that can improve the training speed and
 /// convergence rate of gradient descent.
 ///
-/// Reference: ["A Stochastic Approximation Method"](
-/// https://projecteuclid.org/euclid.aoms/1177729586) (Robbins and Monro, 1951), 
-/// ["On the Stochastic Approximation Method of Robbins and Monro"](
-/// https://projecteuclid.org/euclid.aoms/1177729391) (Wolfowitz, 1952) and
-/// ["Stochastic Estimation of the Maximum of a Regression Function"](
-/// https://projecteuclid.org/euclid.aoms/1177729392) (Kiefer and Wolfowitz, 1952), 
-/// ["Some methods of speeding up the convergence of iteration method"](
-/// https://vsokolov.org/courses/750/2018/files/polyak64.pdf) (Polyak, 1964),
-/// ["A method for unconstrained convex minimization problem with the rate of 
-/// convergence"](http://mpawankumar.info/teaching/cdt-big-data/nesterov83.pdf) 
-/// (Nesterov, 1983).
-/// 
-/// - Parameters:
-///     - learningRate: A float. The learning rate (default value: 0.01).
-///     - momentum: The momentum factor. It accelerates stochastic gradient 
-///     descent in the relevant direction and dampens oscillations (default 
-///     value: 0).
-///     - decay: A float. The learning rate decay (default value: 0).
-///     - nesterov: A boolean. The Nesterov’s accelerated gradient method. 
-///     (default value: true).
-///
-/// ### Examples: ###
-///  
-/// // - Transfer learning from pre-trained VGG19 weights:
-/// 
-/// ````
-/// ...
-/// // Define the base model architecture of VGG19.
-/// var vgg19 = VGG19 { ... }
-/// // Define new classifier layers.
-/// struct Classifier: Layer { ... }
-/// ...
-/// // Initialize the base model.
-/// let vgg = VGG19()
-/// // Instantiate the added classifier layers that you're adding to the base model.
-/// var transferLearningModel = Classifier()
-/// // Define the SGD optimizer for the network with a learning rate set to  1e-3 
-/// // and the Nesterov momentum enabled.
-/// let sgdOptimizer = SGD(for: transferLearningModel, learningRate: 1e-3, nesterov: true)
-/// ...
-/// // Start the training loop over a certain number of epochs.
-/// for epoch in 1...epochCount {
-///     ...
-///     for i in batchCount {
-///         ...
-///         // Define a feature extractor. 
-///         let features = vgg(someBatchSize)
-///         // Implementing the gradient descent with the AdaDelta optimizer:
-///         // Compute the loss and gradient.
-///         let (loss, 𝛁transferLearningModel = valueWithgradient(at: transferLearningModel) {
-///             transferLearningModel -> Tensor<Float> in
-///             ...
-///             return loss
-///         }
-///         // Update the differentiable variables of the model along the gradients
-///         // (`𝛁transferLearningModel`) with the SGD optimizer.
-///         sgdOptimizer.update(&transferLearningModel, along: 𝛁transferLearningModel)
-///     }
-///     ...
-/// }
-/// ````
+/// References:
+/// - ["A Stochastic Approximation Method"](
+/// https://projecteuclid.org/euclid.aoms/1177729586) (Robbins and Monro, 1951)
+/// - ["On the Stochastic Approximation Method of Robbins and Monro"](
+/// https://projecteuclid.org/euclid.aoms/1177729391) (Wolfowitz, 1952)
+/// - ["Stochastic Estimation of the Maximum of a Regression Function"](
+/// https://projecteuclid.org/euclid.aoms/1177729392) (Kiefer and Wolfowitz, 1952)
+/// - ["Some methods of speeding up the convergence of iteration method"](
+/// https://vsokolov.org/courses/750/2018/files/polyak64.pdf) (Polyak, 1964)
+/// - ["A method for unconstrained convex minimization problem with the rate of
+/// convergence"](http://mpawankumar.info/teaching/cdt-big-data/nesterov83.pdf)
+/// (Nesterov, 1983)
 public class SGD<Model: Differentiable>: Optimizer
 where
   Model.TangentVector: VectorProtocol & ElementaryFunctions & KeyPathIterable,
@@ -89,8 +39,8 @@ where
   public typealias Model = Model
   /// The learning rate.
   public var learningRate: Float
-  /// The momentum factor. It accelerates stochastic gradient descent in the relevant direction
-  /// and dampens oscillations.
+  /// The momentum factor. It accelerates stochastic gradient descent in the relevant direction and
+  /// dampens oscillations.
   public var momentum: Float
   /// The learning rate decay.
   public var decay: Float
@@ -101,6 +51,14 @@ where
   /// The set of steps taken.
   public var step: Int = 0
 
+  /// Creates an instance for `model`.
+  ///
+  /// - Parameters:
+  ///   - learningRate: The learning rate. The default value is `0.01`.
+  ///   - momentum: The momentum factor that accelerates stochastic gradient descent in the relevant
+  ///     direction and dampens oscillations. The default value is `0`.
+  ///   - decay: The learning rate decay. The default value is `0`.
+  ///   - nesterov: Use Nesterov momentum iff `true`. The default value is `true`.
   public init(
     for model: __shared Model,
     learningRate: Float = 0.01,
