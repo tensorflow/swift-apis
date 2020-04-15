@@ -12,10 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// Stochastic gradient descent (SGD) optimizer.
+/// A stochastic gradient descent (SGD) optimizer.
 ///
-/// An optimizer that implements stochastic gradient descent, with support for momentum, learning
-/// rate decay, and Nesterov momentum.
+/// Implements the stochastic gradient descent algorithm with support for momentum, learning rate
+/// decay, and Nesterov momentum. Momentum and Nesterov momentum (a.k.a. the Nesterov accelerated
+/// gradient method) are first-order optimization methods that can improve the training speed and
+/// convergence rate of gradient descent.
+///
+/// References:
+/// - ["A Stochastic Approximation Method"](
+/// https://projecteuclid.org/euclid.aoms/1177729586) (Robbins and Monro, 1951)
+/// - ["On the Stochastic Approximation Method of Robbins and Monro"](
+/// https://projecteuclid.org/euclid.aoms/1177729391) (Wolfowitz, 1952)
+/// - ["Stochastic Estimation of the Maximum of a Regression Function"](
+/// https://projecteuclid.org/euclid.aoms/1177729392) (Kiefer and Wolfowitz, 1952)
+/// - ["Some methods of speeding up the convergence of iteration method"](
+/// https://vsokolov.org/courses/750/2018/files/polyak64.pdf) (Polyak, 1964)
+/// - ["A method for unconstrained convex minimization problem with the rate of
+/// convergence"](http://mpawankumar.info/teaching/cdt-big-data/nesterov83.pdf)
+/// (Nesterov, 1983)
 public class SGD<Model: Differentiable>: Optimizer
 where
   Model.TangentVector: VectorProtocol & ElementaryFunctions & KeyPathIterable,
@@ -24,8 +39,8 @@ where
   public typealias Model = Model
   /// The learning rate.
   public var learningRate: Float
-  /// The momentum factor. It accelerates stochastic gradient descent in the relevant direction
-  /// and dampens oscillations.
+  /// The momentum factor. It accelerates stochastic gradient descent in the relevant direction and
+  /// dampens oscillations.
   public var momentum: Float
   /// The learning rate decay.
   public var decay: Float
@@ -36,6 +51,14 @@ where
   /// The set of steps taken.
   public var step: Int = 0
 
+  /// Creates an instance for `model`.
+  ///
+  /// - Parameters:
+  ///   - learningRate: The learning rate. The default value is `0.01`.
+  ///   - momentum: The momentum factor that accelerates stochastic gradient descent in the relevant
+  ///     direction and dampens oscillations. The default value is `0`.
+  ///   - decay: The learning rate decay. The default value is `0`.
+  ///   - nesterov: Use Nesterov momentum iff `true`. The default value is `true`.
   public init(
     for model: __shared Model,
     learningRate: Float = 0.01,
