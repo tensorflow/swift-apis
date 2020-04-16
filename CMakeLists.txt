@@ -42,12 +42,18 @@ if(BUILD_X10)
       COMMAND
         ${CMAKE_COMMAND} -E create_symlink ${PROJECT_SOURCE_DIR}/Sources/x10/xla_tensor <SOURCE_DIR>/tensorflow/compiler/tf2xla/xla_tensor
       COMMAND
-        sh -c "yes '' | TF_NEED_CUDA=1 <SOURCE_DIR>/configure"
+        # Note that the configure script is affected by the following environment variables:
+        #   TF_CUDA_VERSION
+        #   TF_NEED_CUDA
+        #   TF_CUDNN_VERSION
+        #   CUDA_TOOLKIT_PATH
+        #   CUDNN_INSTALL_PATH
+        sh -c "yes '' | <SOURCE_DIR>/configure"
     BUILD_COMMAND
       COMMAND
         rm -rf <SOURCE_DIR>/bazel-bin # ${CMAKE_COMMAND} -E rm -Rrf <SOURCE_DIR>/bazel-bin
       COMMAND
-        bazel build -c opt --config=cuda --define framework_shared_object=false //tensorflow/compiler/tf2xla/xla_tensor:x10
+        bazel build -c opt --define framework_shared_object=false //tensorflow/compiler/tf2xla/xla_tensor:x10
       COMMAND
         bazel shutdown
     INSTALL_COMMAND
