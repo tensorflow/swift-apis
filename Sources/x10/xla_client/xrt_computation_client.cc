@@ -43,6 +43,28 @@ namespace {
 
 thread_local std::vector<std::string> g_replication_devices;  // NOLINT
 
+struct TensorAllocatorTraits {
+  static void *allocate(size_t size, size_t alignment) {
+#if defined(_WIN32)
+    return ::_aligned_malloc(alignment, size);
+#elif defined(__APPLE__)
+    void *ptr;
+    ::posix_memalign(&ptr, alignment, size);
+    return ptr;
+#else
+    return ::aligned_alloc(alignment, size);
+#endif
+  }
+
+  static void deallocate(void *allocation) {
+#if defined(_WIN32)
+    return ::_aligned_free(allocation);
+#else
+    return ::free(allocation);
+#endif
+  }
+};
+
 // A simple Tensorflow Allocator which caches Tensor allocations in order to
 // avoid paying the kernel's clear_page_c() price.
 class TensorAllocator : public tensorflow::Allocator {
@@ -132,19 +154,9 @@ class TensorAllocator : public tensorflow::Allocator {
   void* NewBlock(AllocBlocks* alloc_blocks) {
     // We allocate an extra alignment sized area to store the AllocBlocks
     // pointer.
-#if defined(_WIN32)
-    void* ptr = _aligned_malloc(
-        alloc_blocks->alloc_key.alignment,
-        alloc_blocks->alloc_key.alignment + alloc_blocks->alloc_key.num_bytes);
-#elif defined(__APPLE__)
-    void* ptr = nullptr;
-    posix_memalign(&ptr, alloc_blocks->alloc_key.alignment,
-        alloc_blocks->alloc_key.alignment + alloc_blocks->alloc_key.num_bytes);
-#else
-    void* ptr = ::aligned_alloc(
-        alloc_blocks->alloc_key.alignment,
-        alloc_blocks->alloc_key.alignment + alloc_blocks->alloc_key.num_bytes);
-#endif
+    void *ptr = TensorAllocatorTraits::allocate(
+        alloc_blocks->alloc_key.alignment + alloc_blocks->alloc_key.num_bytes,
+        alloc_blocks->alloc_key.alignment);
     XLA_CHECK(ptr != nullptr);
     ptr = reinterpret_cast<char*>(ptr) + alloc_blocks->alloc_key.alignment;
     // Store the pointer to AllocBlocks right before the user memory.
@@ -155,12 +167,8 @@ class TensorAllocator : public tensorflow::Allocator {
 
   void FreeBlock(void* ptr, AllocBlocks* alloc_blocks) {
     size_ -= alloc_blocks->alloc_key.num_bytes;
-#if defined(_WIN32)
-    _aligned_free(
+    TensorAllocatorTraits::deallocate(
         reinterpret_cast<char*>(ptr) - alloc_blocks->alloc_key.alignment);
-#else
-    std::free(reinterpret_cast<char*>(ptr) - alloc_blocks->alloc_key.alignment);
-#endif
   }
 
   void TrimCache(size_t num_bytes) {
