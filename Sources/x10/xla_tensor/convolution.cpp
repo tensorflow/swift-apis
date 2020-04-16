@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/convolution.h"
+#include "xla_tensor/convolution.h"
 
-#include "tensorflow/compiler/xla/xla_client/debug_macros.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/helpers.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/tensor.h"
+#include "xla_client/debug_macros.h"
+#include "xla_tensor/helpers.h"
+#include "xla_tensor/tensor.h"
 #include "tensorflow/compiler/tf2xla/kernels/conv_op_helpers.h"
 #include "tensorflow/compiler/xla/client/lib/constants.h"
 #include "tensorflow/core/framework/tensor_shape.h"

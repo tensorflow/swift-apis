@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tensorflow/compiler/xla/xla_client/multi_wait.h"
+#include "xla_client/multi_wait.h"
 
 #include <chrono>
 #include <exception>
 
-#include "tensorflow/compiler/xla/xla_client/debug_macros.h"
+#include "xla_client/debug_macros.h"
 
 namespace xla {
 namespace util {

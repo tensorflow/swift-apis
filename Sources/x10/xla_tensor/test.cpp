@@ -13,9 +13,9 @@
 // limitations under the License.
 
 #include "absl/strings/str_format.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/token.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/tensor.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/tensor_util.h"
+#include "xla_tensor/ops/token.h"
+#include "xla_tensor/tensor.h"
+#include "xla_tensor/tensor_util.h"
 
 // clang-format off
 // For TPU, run with:

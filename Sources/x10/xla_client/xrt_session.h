@@ -24,7 +24,7 @@
 #include <utility>
 
 #include "absl/types/span.h"
-#include "tensorflow/compiler/xla/xla_client/debug_macros.h"
+#include "xla_client/debug_macros.h"
 #include "tensorflow/cc/client/client_session.h"
 #include "tensorflow/cc/framework/ops.h"
 #include "tensorflow/cc/framework/scope.h"

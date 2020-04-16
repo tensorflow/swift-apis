@@ -21,7 +21,7 @@
 
 #include "absl/types/span.h"
 #include "absl/container/flat_hash_map.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ir.h"
+#include "xla_tensor/ir.h"
 
 namespace swift_xla {
 namespace ir {

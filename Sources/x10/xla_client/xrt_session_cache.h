@@ -25,7 +25,7 @@
 #include <string>
 #include <utility>
 
-#include "tensorflow/compiler/xla/xla_client/xrt_session.h"
+#include "xla_client/xrt_session.h"
 #include "tensorflow/compiler/xla/types.h"
 
 namespace xla {

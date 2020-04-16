@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/aten_compat.h"
+#include "xla_tensor/aten_compat.h"
 #include "tensorflow/compiler/xla/client/xla_builder.h"
 
 namespace swift_xla {

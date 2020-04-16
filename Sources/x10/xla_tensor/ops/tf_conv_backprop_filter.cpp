@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/tf_conv_backprop_filter.h"
+#include "xla_tensor/ops/tf_conv_backprop_filter.h"
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/helpers.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/lowering_context.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/infer_output_shape.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/tf_create_conv_attrs.h"
+#include "xla_tensor/helpers.h"
+#include "xla_tensor/lowering_context.h"
+#include "xla_tensor/ops/infer_output_shape.h"
+#include "xla_tensor/ops/tf_create_conv_attrs.h"
 #include "tensorflow/compiler/tf2xla/kernels/conv_op_helpers.h"
 
 namespace swift_xla {

@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tensorflow/compiler/xla/xla_client/thread_pool.h"
+#include "xla_client/thread_pool.h"
 
 #include <condition_variable>
 #include <deque>
 #include <exception>
 #include <mutex>
 
-#include "tensorflow/compiler/xla/xla_client/metrics.h"
-#include "tensorflow/compiler/xla/xla_client/tf_logging.h"
+#include "xla_client/metrics.h"
+#include "xla_client/tf_logging.h"
 
 namespace xla {
 namespace env {

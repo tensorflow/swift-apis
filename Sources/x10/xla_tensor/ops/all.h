@@ -18,7 +18,7 @@
 
 #include <vector>
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/ir.h"
+#include "xla_tensor/ir.h"
 #include "tensorflow/compiler/xla/types.h"
 
 namespace swift_xla {

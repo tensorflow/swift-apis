@@ -21,7 +21,7 @@
 #include <vector>
 
 #include "absl/types/span.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/tensor.h"
+#include "xla_tensor/tensor.h"
 
 namespace swift_xla {
 

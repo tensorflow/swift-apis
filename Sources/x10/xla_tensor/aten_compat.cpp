@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/aten_compat.h"
+#include "xla_tensor/aten_compat.h"
 
 namespace c10 {
 

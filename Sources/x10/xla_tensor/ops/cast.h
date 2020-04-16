@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/ir.h"
+#include "xla_tensor/ir.h"
 
 #include <optional>
 

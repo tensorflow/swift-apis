@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/constant.h"
+#include "xla_tensor/ops/constant.h"
 
 #include <algorithm>
 #include <sstream>
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/lowering_context.h"
+#include "xla_tensor/lowering_context.h"
 
 namespace swift_xla {
 namespace ir {

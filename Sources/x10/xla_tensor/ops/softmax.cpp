@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/softmax.h"
+#include "xla_tensor/ops/softmax.h"
 
-#include "tensorflow/compiler/xla/xla_client/util.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/convert_ops.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/lowering_context.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/softmax_builder.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/tensor_util.h"
+#include "xla_client/util.h"
+#include "xla_tensor/convert_ops.h"
+#include "xla_tensor/lowering_context.h"
+#include "xla_tensor/softmax_builder.h"
+#include "xla_tensor/tensor_util.h"
 
 namespace swift_xla {
 namespace ir {

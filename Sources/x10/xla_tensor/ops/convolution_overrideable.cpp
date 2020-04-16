@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/convolution_overrideable.h"
+#include "xla_tensor/ops/convolution_overrideable.h"
 
 #include "absl/strings/str_join.h"
-#include "tensorflow/compiler/xla/xla_client/debug_macros.h"
-#include "tensorflow/compiler/xla/xla_client/util.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/convolution.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/lowering_context.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/infer_output_shape.h"
+#include "xla_client/debug_macros.h"
+#include "xla_client/util.h"
+#include "xla_tensor/convolution.h"
+#include "xla_tensor/lowering_context.h"
+#include "xla_tensor/ops/infer_output_shape.h"
 
 namespace swift_xla {
 namespace ir {

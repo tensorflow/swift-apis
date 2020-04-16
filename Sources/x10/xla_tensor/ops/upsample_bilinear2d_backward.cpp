@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/upsample_bilinear2d_backward.h"
+#include "xla_tensor/ops/upsample_bilinear2d_backward.h"
 
 #include "absl/strings/str_join.h"
-#include "tensorflow/compiler/xla/xla_client/debug_macros.h"
-#include "tensorflow/compiler/xla/xla_client/util.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/lowering_context.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/resize_ops.h"
+#include "xla_client/debug_macros.h"
+#include "xla_client/util.h"
+#include "xla_tensor/lowering_context.h"
+#include "xla_tensor/resize_ops.h"
 
 namespace swift_xla {
 namespace ir {

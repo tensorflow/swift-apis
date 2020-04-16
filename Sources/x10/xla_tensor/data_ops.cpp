@@ -12,19 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/data_ops.h"
+#include "xla_tensor/data_ops.h"
 
 #include <algorithm>
 #include <functional>
 #include <numeric>
 
 #include "absl/strings/str_join.h"
-#include "tensorflow/compiler/xla/xla_client/debug_macros.h"
-#include "tensorflow/compiler/xla/xla_client/sys_util.h"
-#include "tensorflow/compiler/xla/xla_client/util.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/convert_ops.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/helpers.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/tensor_util.h"
+#include "xla_client/debug_macros.h"
+#include "xla_client/sys_util.h"
+#include "xla_client/util.h"
+#include "xla_tensor/convert_ops.h"
+#include "xla_tensor/helpers.h"
+#include "xla_tensor/tensor_util.h"
 #include "tensorflow/compiler/xla/client/lib/constants.h"
 #include "tensorflow/compiler/xla/client/lib/slicing.h"
 #include "tensorflow/compiler/xla/shape_util.h"

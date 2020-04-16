@@ -1,11 +1,11 @@
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/collective_permute.h"
+#include "xla_tensor/ops/collective_permute.h"
 
 #include "absl/strings/str_join.h"
 #include "tensorflow/compiler/xla/shape_util.h"
-#include "tensorflow/compiler/xla/xla_client/util.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/lowering_context.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/infer_output_shape.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/xla_ops.h"
+#include "xla_client/util.h"
+#include "xla_tensor/lowering_context.h"
+#include "xla_tensor/ops/infer_output_shape.h"
+#include "xla_tensor/ops/xla_ops.h"
 
 namespace swift_xla {
 namespace ir {

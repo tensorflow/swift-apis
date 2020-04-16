@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/ir_util.h"
+#include "xla_tensor/ir_util.h"
 
-#include "tensorflow/compiler/xla/xla_client/debug_macros.h"
+#include "xla_client/debug_macros.h"
 
 namespace swift_xla {
 namespace ir {

@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/xla_max_pool_grad.h"
+#include "xla_tensor/ops/xla_max_pool_grad.h"
 
-#include "tensorflow/compiler/xla/xla_client/debug_macros.h"
-#include "tensorflow/compiler/xla/xla_client/util.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/helpers.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/lowering_context.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/infer_output_shape.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/pooling.h"
+#include "xla_client/debug_macros.h"
+#include "xla_client/util.h"
+#include "xla_tensor/helpers.h"
+#include "xla_tensor/lowering_context.h"
+#include "xla_tensor/ops/infer_output_shape.h"
+#include "xla_tensor/pooling.h"
 #include "tensorflow/compiler/xla/client/lib/arithmetic.h"
 
 namespace swift_xla {

@@ -21,10 +21,10 @@
 
 #include <memory>
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/ir.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/constant.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/generic.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/scalar.h"
+#include "xla_tensor/ir.h"
+#include "xla_tensor/ops/constant.h"
+#include "xla_tensor/ops/generic.h"
+#include "xla_tensor/ops/scalar.h"
 
 namespace swift_xla {
 namespace ir {

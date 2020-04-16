@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/infer_output_shape.h"
+#include "xla_tensor/ops/infer_output_shape.h"
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/helpers.h"
+#include "xla_tensor/helpers.h"
 
 namespace swift_xla {
 namespace ir {

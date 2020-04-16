@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/tensor_util.h"
+#include "xla_tensor/tensor_util.h"
 
 #include <algorithm>
 #include <functional>
@@ -20,14 +20,14 @@
 #include <numeric>
 #include <thread>
 
-#include "tensorflow/compiler/xla/xla_client/debug_macros.h"
-#include "tensorflow/compiler/xla/xla_client/multi_wait.h"
-#include "tensorflow/compiler/xla/xla_client/sys_util.h"
-#include "tensorflow/compiler/xla/xla_client/tf_logging.h"
-#include "tensorflow/compiler/xla/xla_client/thread_pool.h"
-#include "tensorflow/compiler/xla/xla_client/util.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/helpers.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/layout_manager.h"
+#include "xla_client/debug_macros.h"
+#include "xla_client/multi_wait.h"
+#include "xla_client/sys_util.h"
+#include "xla_client/tf_logging.h"
+#include "xla_client/thread_pool.h"
+#include "xla_client/util.h"
+#include "xla_tensor/helpers.h"
+#include "xla_tensor/layout_manager.h"
 #include "tensorflow/compiler/xla/literal_util.h"
 #include "tensorflow/compiler/xla/shape_util.h"
 #include "tensorflow/core/lib/bfloat16/bfloat16.h"

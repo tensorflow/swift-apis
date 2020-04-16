@@ -12,16 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/cross_replica_reduces.h"
+#include "xla_tensor/cross_replica_reduces.h"
 
 #include <map>
 
-#include "tensorflow/compiler/xla/xla_client/debug_macros.h"
-#include "tensorflow/compiler/xla/xla_client/util.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/convert_ops.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/device.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/helpers.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/layout_manager.h"
+#include "xla_client/debug_macros.h"
+#include "xla_client/util.h"
+#include "xla_tensor/convert_ops.h"
+#include "xla_tensor/device.h"
+#include "xla_tensor/helpers.h"
+#include "xla_tensor/layout_manager.h"
 #include "tensorflow/compiler/xla/shape_util.h"
 
 namespace swift_xla {

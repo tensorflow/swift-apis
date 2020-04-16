@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/batch_norm.h"
+#include "xla_tensor/batch_norm.h"
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/helpers.h"
+#include "xla_tensor/helpers.h"
 #include "tensorflow/compiler/xla/client/lib/constants.h"
 
 namespace swift_xla {

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tensorflow/compiler/xla/xla_client/mesh_service.h"
+#include "xla_client/mesh_service.h"
 
 #include <grpc/grpc.h>
 #include <grpcpp/channel.h>
@@ -30,25 +30,13 @@
 #include <unordered_map>
 
 #include "absl/strings/str_cat.h"
-#include "tensorflow/compiler/xla/xla_client/debug_macros.h"
-#include "tensorflow/compiler/xla/xla_client/mesh_service.grpc.pb.h"
-#include "tensorflow/compiler/xla/xla_client/multi_wait.h"
-#include "tensorflow/compiler/xla/xla_client/sys_util.h"
-#include "tensorflow/compiler/xla/xla_client/thread_pool.h"
-#include "tensorflow/compiler/xla/xla_client/util.h"
+#include "xla_client/debug_macros.h"
+#include "xla_client/mesh_service.grpc.pb.h"
+#include "xla_client/multi_wait.h"
+#include "xla_client/sys_util.h"
+#include "xla_client/thread_pool.h"
+#include "xla_client/util.h"
 #include "tensorflow/compiler/xla/status.h"
-
-namespace std {
-std::ostream& operator<<(std::ostream& ostrm, const ::grpc::Status& status) {
-  if (status.ok()) {
-    ostrm << "OK";
-  } else {
-    ostrm << status.error_message() << " ("
-          << static_cast<int>(status.error_code()) << ")";
-  }
-  return ostrm;
-}
-}
 
 namespace xla {
 namespace service {
@@ -67,6 +55,16 @@ namespace {
              ? ::grpc::Status::OK
              : ::grpc::Status(static_cast<::grpc::StatusCode>(status.code()),
                               status.error_message());
+}
+
+std::ostream& operator<<(std::ostream& ostrm, const ::grpc::Status& status) {
+  if (status.ok()) {
+    ostrm << "OK";
+  } else {
+    ostrm << status.error_message() << " ("
+          << static_cast<int>(status.error_code()) << ")";
+  }
+  return ostrm;
 }
 
 class MeshServiceImpl : public grpc::MeshService::Service {

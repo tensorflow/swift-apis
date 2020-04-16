@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/segment_reduction_ops.h"
+#include "xla_tensor/segment_reduction_ops.h"
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/helpers.h"
+#include "xla_tensor/helpers.h"
 #include "tensorflow/compiler/tf2xla/lib/scatter.h"
 
 namespace swift_xla {

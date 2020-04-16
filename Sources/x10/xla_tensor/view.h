@@ -20,7 +20,7 @@
 #include <vector>
 
 #include "absl/types/optional.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ir.h"
+#include "xla_tensor/ir.h"
 #include "tensorflow/compiler/xla/shape.h"
 #include "tensorflow/compiler/xla/types.h"
 

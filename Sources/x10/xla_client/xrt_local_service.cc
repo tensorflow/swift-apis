@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tensorflow/compiler/xla/xla_client/xrt_local_service.h"
+#include "xla_client/xrt_local_service.h"
 
 #include <vector>
 

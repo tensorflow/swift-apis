@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/cross_replica_reduces.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ir.h"
+#include "xla_tensor/cross_replica_reduces.h"
+#include "xla_tensor/ir.h"
 
 namespace swift_xla {
 namespace ir {

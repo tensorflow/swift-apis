@@ -16,9 +16,9 @@
 
 #pragma once
 
-#include "tensorflow/compiler/xla/xla_client/util.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ir.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/tf_bit_generator.h"
+#include "xla_client/util.h"
+#include "xla_tensor/ir.h"
+#include "xla_tensor/ops/tf_bit_generator.h"
 
 namespace swift_xla {
 namespace ir {

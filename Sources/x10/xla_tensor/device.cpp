@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/device.h"
+#include "xla_tensor/device.h"
 
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
-#include "tensorflow/compiler/xla/xla_client/computation_client.h"
-#include "tensorflow/compiler/xla/xla_client/debug_macros.h"
+#include "xla_client/computation_client.h"
+#include "xla_client/debug_macros.h"
 
 namespace swift_xla {
 namespace {

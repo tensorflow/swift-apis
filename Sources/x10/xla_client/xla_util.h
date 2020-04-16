@@ -24,7 +24,7 @@
 #include "tensorflow/compiler/xla/service/hlo.pb.h"
 #include "tensorflow/compiler/xla/service/hlo_module.h"
 #include "tensorflow/compiler/xla/status_macros.h"
-#include "tensorflow/compiler/xla/xla_client/types.h"
+#include "xla_client/types.h"
 
 namespace xla {
 namespace util {

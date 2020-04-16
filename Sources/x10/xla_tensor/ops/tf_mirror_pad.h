@@ -19,7 +19,7 @@
 
 #include <vector>
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/ir.h"
+#include "xla_tensor/ir.h"
 #include "tensorflow/core/util/mirror_pad_mode.h"
 
 namespace swift_xla {

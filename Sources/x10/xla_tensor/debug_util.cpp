@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/debug_util.h"
+#include "xla_tensor/debug_util.h"
 
 #include <fstream>
 #include <mutex>
@@ -20,12 +20,11 @@
 #include <unordered_set>
 
 #include "absl/strings/str_split.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ir.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ir_dump_util.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ir_util.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/swift_backtrace.h"
-#include "tensorflow/compiler/xla/xla_client/debug_macros.h"
-#include "tensorflow/compiler/xla/xla_client/sys_util.h"
+#include "xla_client/debug_macros.h"
+#include "xla_client/sys_util.h"
+#include "xla_tensor/ir.h"
+#include "xla_tensor/ir_dump_util.h"
+#include "xla_tensor/ir_util.h"
 
 namespace swift_xla {
 namespace {
@@ -88,7 +87,6 @@ std::string DebugUtil::GetTensorsGraphInfo(absl::Span<const XLATensor> tensors,
   }
   std::stringstream ss;
   ss << "TensorsGraphInfo:\n";
-  ss << GetSwiftFrames();
   ss << "\nHashes: (";
   for (size_t i = 0; i < root_hashes.size(); ++i) {
     if (i > 0) {

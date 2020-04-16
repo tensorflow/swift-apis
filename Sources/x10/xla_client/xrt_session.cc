@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tensorflow/compiler/xla/xla_client/xrt_session.h"
+#include "xla_client/xrt_session.h"
 
 #include "absl/strings/str_cat.h"
 

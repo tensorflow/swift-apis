@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tensorflow/compiler/xla/xla_client/xrt_session_cache.h"
+#include "xla_client/xrt_session_cache.h"
 
-#include "tensorflow/compiler/xla/xla_client/metrics.h"
-#include "tensorflow/compiler/xla/xla_client/sys_util.h"
+#include "xla_client/metrics.h"
+#include "xla_client/sys_util.h"
 
 namespace xla {
 

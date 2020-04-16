@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/tf_stateless_random_uniform.h"
+#include "xla_tensor/ops/tf_stateless_random_uniform.h"
 
-#include "tensorflow/compiler/xla/xla_client/debug_macros.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/lowering_context.h"
+#include "xla_client/debug_macros.h"
+#include "xla_tensor/lowering_context.h"
 #include "tensorflow/compiler/xla/client/lib/constants.h"
 #include "tensorflow/compiler/xla/client/lib/math.h"
 #include "tensorflow/compiler/xla/client/lib/prng.h"

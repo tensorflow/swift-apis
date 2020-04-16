@@ -12,17 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/ir_dump_util.h"
+#include "xla_tensor/ir_dump_util.h"
 
 #include <regex>
 #include <sstream>
 #include <unordered_map>
 
 #include "absl/types/optional.h"
-#include "tensorflow/compiler/xla/xla_client/debug_macros.h"
-#include "tensorflow/compiler/xla/xla_client/xla_util.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ir_util.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/lowering_context.h"
+#include "xla_client/debug_macros.h"
+#include "xla_client/xla_util.h"
+#include "xla_tensor/ir_util.h"
+#include "xla_tensor/lowering_context.h"
 
 namespace swift_xla {
 namespace ir {

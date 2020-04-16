@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/lowering_context.h"
+#include "xla_tensor/lowering_context.h"
 
 #include <sstream>
 #include <stdexcept>
 
 #include "absl/strings/str_cat.h"
-#include "tensorflow/compiler/xla/xla_client/debug_macros.h"
-#include "tensorflow/compiler/xla/xla_client/sys_util.h"
+#include "xla_client/debug_macros.h"
+#include "xla_client/sys_util.h"
 
 namespace swift_xla {
 namespace ir {

@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/leaky_relu_backward.h"
+#include "xla_tensor/ops/leaky_relu_backward.h"
 
-#include "tensorflow/compiler/xla/xla_client/util.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/elementwise.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/lowering_context.h"
+#include "xla_client/util.h"
+#include "xla_tensor/elementwise.h"
+#include "xla_tensor/lowering_context.h"
 
 namespace swift_xla {
 namespace ir {

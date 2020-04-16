@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/nll_loss.h"
+#include "xla_tensor/nll_loss.h"
 
 #include "absl/types/span.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/data_ops.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/helpers.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/tensor_util.h"
+#include "xla_tensor/data_ops.h"
+#include "xla_tensor/helpers.h"
+#include "xla_tensor/tensor_util.h"
 #include "tensorflow/compiler/xla/client/lib/constants.h"
 
 namespace swift_xla {

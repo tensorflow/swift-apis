@@ -1,9 +1,8 @@
 licenses(["notice"])  # Apache 2.0
 
 load(
-    "//tensorflow:tensorflow.bzl",
-    "tf_cc_binary",
-    "tf_cc_shared_object",
+    "//utils:tensorflow.bzl",
+    "s4tf_cc_shared_object",
 )
 
 cc_library(
@@ -20,45 +19,42 @@ cc_library(
         "ops/*.h",
     ]),
     deps = [
-        "//tensorflow/c:c_api",
-        "//tensorflow/c:c_api_experimental",
-        "//tensorflow/c/eager:c_api",
-        "//tensorflow/c/eager:c_api_experimental",
-        "//tensorflow/compiler/tf2xla:common",
-        "//tensorflow/compiler/tf2xla/kernels:conv_op_helpers",
-        "//tensorflow/compiler/tf2xla/lib:random",
-        "//tensorflow/compiler/tf2xla/lib:scatter",
-        "//tensorflow/compiler/xla:literal",
-        "//tensorflow/compiler/xla:literal_util",
-        "//tensorflow/compiler/xla:shape_util",
-        "//tensorflow/compiler/xla:status",
-        "//tensorflow/compiler/xla:types",
-        "//tensorflow/compiler/xla:util",
-        "//tensorflow/compiler/xla:xla_data_proto_cc",
-        "//tensorflow/compiler/xla/client:padding",
-        "//tensorflow/compiler/xla/client:xla_builder",
-        "//tensorflow/compiler/xla/client/lib:arithmetic",
-        "//tensorflow/compiler/xla/client/lib:comparators",
-        "//tensorflow/compiler/xla/client/lib:constants",
-        "//tensorflow/compiler/xla/client/lib:logdet",
-        "//tensorflow/compiler/xla/client/lib:math",
-        "//tensorflow/compiler/xla/client/lib:matrix",
-        "//tensorflow/compiler/xla/client/lib:pooling",
-        "//tensorflow/compiler/xla/client/lib:prng",
-        "//tensorflow/compiler/xla/client/lib:qr",
-        "//tensorflow/compiler/xla/client/lib:self_adjoint_eig",
-        "//tensorflow/compiler/xla/client/lib:slicing",
-        "//tensorflow/compiler/xla/client/lib:svd",
-        "//tensorflow/compiler/xla/service:hlo",
-        "//tensorflow/compiler/xla/xla_client:xrt_computation_client",
-        "//tensorflow/core:core_cpu_lib",
-        "//tensorflow/core:framework",
-        "//tensorflow/core:lib",
-        "//tensorflow/core/kernels:conv_ops",
-        "@com_google_absl//absl/base",
+        "@org_tensorflow//tensorflow/c:c_api",
+        "@org_tensorflow//tensorflow/c:c_api_experimental",
+        "@org_tensorflow//tensorflow/c/eager:c_api",
+        "@org_tensorflow//tensorflow/c/eager:c_api_experimental",
+        "@org_tensorflow//tensorflow/compiler/tf2xla:common",
+        "@org_tensorflow//tensorflow/compiler/tf2xla/kernels:conv_op_helpers",
+        "@org_tensorflow//tensorflow/compiler/tf2xla/lib:random",
+        "@org_tensorflow//tensorflow/compiler/tf2xla/lib:scatter",
+        "@org_tensorflow//tensorflow/compiler/xla:literal",
+        "@org_tensorflow//tensorflow/compiler/xla:literal_util",
+        "@org_tensorflow//tensorflow/compiler/xla:shape_util",
+        "@org_tensorflow//tensorflow/compiler/xla:status",
+        "@org_tensorflow//tensorflow/compiler/xla:types",
+        "@org_tensorflow//tensorflow/compiler/xla:util",
+        "@org_tensorflow//tensorflow/compiler/xla:xla_data_proto_cc",
+        "@org_tensorflow//tensorflow/compiler/xla/client:padding",
+        "@org_tensorflow//tensorflow/compiler/xla/client:xla_builder",
+        "@org_tensorflow//tensorflow/compiler/xla/client/lib:arithmetic",
+        "@org_tensorflow//tensorflow/compiler/xla/client/lib:comparators",
+        "@org_tensorflow//tensorflow/compiler/xla/client/lib:constants",
+        "@org_tensorflow//tensorflow/compiler/xla/client/lib:logdet",
+        "@org_tensorflow//tensorflow/compiler/xla/client/lib:math",
+        "@org_tensorflow//tensorflow/compiler/xla/client/lib:matrix",
+        "@org_tensorflow//tensorflow/compiler/xla/client/lib:pooling",
+        "@org_tensorflow//tensorflow/compiler/xla/client/lib:prng",
+        "@org_tensorflow//tensorflow/compiler/xla/client/lib:qr",
+        "@org_tensorflow//tensorflow/compiler/xla/client/lib:self_adjoint_eig",
+        "@org_tensorflow//tensorflow/compiler/xla/client/lib:slicing",
+        "@org_tensorflow//tensorflow/compiler/xla/client/lib:svd",
+        "@org_tensorflow//tensorflow/compiler/xla/service:hlo",
+        "//xla_client:xrt_computation_client",
+        "@org_tensorflow//tensorflow/core:core_cpu_lib",
+        "@org_tensorflow//tensorflow/core:framework",
+        "@org_tensorflow//tensorflow/core:lib",
+        "@org_tensorflow//tensorflow/core/kernels:conv_ops",
         "@com_google_absl//absl/container:inlined_vector",
-        "@com_google_absl//absl/debugging:stacktrace",
-        "@com_google_absl//absl/debugging:symbolize",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
@@ -68,39 +64,13 @@ cc_library(
     ],
 )
 
-filegroup(
-    name = "get_x10_dll_import_lib",
-    srcs = [":x10.dll"],
-    output_group = "interface_library",
-    visibility = ["//visibility:public"],
-)
-
-genrule(
-    name = "x10_dll_import_lib",
-    srcs = [":get_x10_dll_import_lib"],
-    outs = ["x10.lib"],
-    cmd = select({
-        "//tensorflow:windows": "cp -f $< $@",
-        "//conditions:default": "touch $@",  # Just a placeholder for Unix platforms
-    }),
-    visibility = ["//visibility:public"],
-)
-
-tf_cc_shared_object(
-    name = "x10",
-    linkopts = select({
-        "//tensorflow:macos": [
-            # TODO
-        ],
-        "//tensorflow:windows": [
-        ],
-        "//conditions:default": [
-            "-z defs",
-            "-s",
-            "-Wl,--version-script,$(location :tf_version_script.lds)",
-        ],
-    }),
-    per_os_targets = True,
+s4tf_cc_shared_object(
+    name = "libx10.so",
+    linkopts = [
+        "-z defs",
+        "-s",
+        "-Wl,--version-script,$(location :tf_version_script.lds)",
+    ],
     visibility = ["//visibility:public"],
     deps = [
         ":tensor",
@@ -109,12 +79,3 @@ tf_cc_shared_object(
     ],
 )
 
-tf_cc_binary(
-    name = "test",
-    srcs = ["test.cpp"],
-    deps = [
-        ":tensor",
-        "//tensorflow/stream_executor/host:host_platform",
-        "@com_google_absl//absl/strings:str_format",
-    ],
-)

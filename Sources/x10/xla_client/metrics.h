@@ -24,7 +24,7 @@
 #include <vector>
 
 #include "absl/strings/str_cat.h"
-#include "tensorflow/compiler/xla/xla_client/sys_util.h"
+#include "xla_client/sys_util.h"
 #include "tensorflow/compiler/xla/types.h"
 
 namespace xla {

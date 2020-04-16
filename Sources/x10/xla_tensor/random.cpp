@@ -12,16 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/random.h"
+#include "xla_tensor/random.h"
 
 #include <string>
 #include <tuple>
 
 #include "tensorflow/compiler/xla/client/lib/constants.h"
 #include "tensorflow/compiler/xla/client/lib/prng.h"
-#include "tensorflow/compiler/xla/xla_client/debug_macros.h"
-#include "tensorflow/compiler/xla/xla_client/sys_util.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/helpers.h"
+#include "xla_client/debug_macros.h"
+#include "xla_client/sys_util.h"
+#include "xla_tensor/helpers.h"
 
 namespace swift_xla {
 namespace {

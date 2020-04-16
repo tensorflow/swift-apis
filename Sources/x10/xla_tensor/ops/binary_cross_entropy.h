@@ -17,8 +17,8 @@
 #pragma once
 
 #include "absl/types/optional.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ir.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/reduction.h"
+#include "xla_tensor/ir.h"
+#include "xla_tensor/reduction.h"
 
 namespace swift_xla {
 namespace ir {

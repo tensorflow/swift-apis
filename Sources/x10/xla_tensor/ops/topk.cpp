@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/topk.h"
+#include "xla_tensor/ops/topk.h"
 
-#include "tensorflow/compiler/xla/xla_client/util.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/lowering_context.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/infer_output_shape.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/xla_lower_util.h"
+#include "xla_client/util.h"
+#include "xla_tensor/lowering_context.h"
+#include "xla_tensor/ops/infer_output_shape.h"
+#include "xla_tensor/xla_lower_util.h"
 
 namespace swift_xla {
 namespace ir {

@@ -17,7 +17,7 @@
 #ifndef X10_XLA_TENSOR_OPS_TF_UNSORTED_SEGMENT_SUM_H_
 #define X10_XLA_TENSOR_OPS_TF_UNSORTED_SEGMENT_SUM_H_
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/ir.h"
+#include "xla_tensor/ir.h"
 
 namespace swift_xla {
 namespace ir {

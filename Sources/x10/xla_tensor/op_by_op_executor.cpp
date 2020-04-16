@@ -12,22 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/op_by_op_executor.h"
+#include "xla_tensor/op_by_op_executor.h"
 
 #include <list>
 #include <unordered_map>
 
 #include "absl/strings/str_cat.h"
-#include "tensorflow/compiler/xla/xla_client/debug_macros.h"
-#include "tensorflow/compiler/xla/xla_client/metrics.h"
-#include "tensorflow/compiler/xla/xla_client/sys_util.h"
-#include "tensorflow/compiler/xla/xla_client/util.h"
-#include "tensorflow/compiler/xla/xla_client/xla_util.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/device.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ir_util.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/lowering_context.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/device_data.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/tensor_util.h"
+#include "xla_client/debug_macros.h"
+#include "xla_client/metrics.h"
+#include "xla_client/sys_util.h"
+#include "xla_client/util.h"
+#include "xla_client/xla_util.h"
+#include "xla_tensor/device.h"
+#include "xla_tensor/ir_util.h"
+#include "xla_tensor/lowering_context.h"
+#include "xla_tensor/ops/device_data.h"
+#include "xla_tensor/tensor_util.h"
 #include "tensorflow/compiler/xla/client/xla_builder.h"
 
 namespace swift_xla {

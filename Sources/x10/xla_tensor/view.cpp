@@ -12,27 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/view.h"
+#include "xla_tensor/view.h"
 
 #include <algorithm>
 #include <functional>
 #include <numeric>
 
-#include "tensorflow/compiler/xla/xla_client/debug_macros.h"
-#include "tensorflow/compiler/xla/xla_client/util.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/helpers.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/as_strided.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/as_strided_view_update.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/diagonal.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/diagonal_view_update.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/generic_slice.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/ops.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/permute.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/resize.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/select.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/unselect.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/update_slice.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/view.h"
+#include "xla_client/debug_macros.h"
+#include "xla_client/util.h"
+#include "xla_tensor/helpers.h"
+#include "xla_tensor/ops/as_strided.h"
+#include "xla_tensor/ops/as_strided_view_update.h"
+#include "xla_tensor/ops/diagonal.h"
+#include "xla_tensor/ops/diagonal_view_update.h"
+#include "xla_tensor/ops/generic_slice.h"
+#include "xla_tensor/ops/ops.h"
+#include "xla_tensor/ops/permute.h"
+#include "xla_tensor/ops/resize.h"
+#include "xla_tensor/ops/select.h"
+#include "xla_tensor/ops/unselect.h"
+#include "xla_tensor/ops/update_slice.h"
+#include "xla_tensor/ops/view.h"
 #include "tensorflow/compiler/xla/shape_util.h"
 #include "tensorflow/compiler/xla/util.h"
 

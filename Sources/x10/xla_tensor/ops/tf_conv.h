@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/ir.h"
+#include "xla_tensor/ir.h"
 #include "tensorflow/compiler/tf2xla/kernels/conv_op_helpers.h"
 
 namespace swift_xla {

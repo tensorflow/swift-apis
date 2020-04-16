@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/reduction.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/tensor.h"
+#include "xla_tensor/reduction.h"
+#include "xla_tensor/tensor.h"
 
 // Certain tensor operations can be expressed in terms of other tensor
 // operations. Add their implementations here instead of the main XLATensor

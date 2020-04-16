@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/tf_bit_generator.h"
+#include "xla_tensor/ops/tf_bit_generator.h"
 
 namespace swift_xla {
 namespace ir {

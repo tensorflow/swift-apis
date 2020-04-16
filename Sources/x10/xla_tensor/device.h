@@ -19,7 +19,7 @@
 #include <iostream>
 #include <string>
 
-#include "tensorflow/compiler/xla/xla_client/util.h"
+#include "xla_client/util.h"
 
 namespace swift_xla {
 

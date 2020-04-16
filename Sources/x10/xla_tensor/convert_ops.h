@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/device.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/aten_compat.h"
+#include "xla_tensor/device.h"
+#include "xla_tensor/aten_compat.h"
 #include "tensorflow/compiler/xla/client/xla_builder.h"
 #include "tensorflow/compiler/xla/types.h"
 

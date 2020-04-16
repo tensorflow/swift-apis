@@ -1,9 +1,9 @@
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/uniform.h"
+#include "xla_tensor/ops/uniform.h"
 
-#include "tensorflow/compiler/xla/xla_client/util.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/helpers.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/lowering_context.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/random.h"
+#include "xla_client/util.h"
+#include "xla_tensor/helpers.h"
+#include "xla_tensor/lowering_context.h"
+#include "xla_tensor/random.h"
 
 namespace swift_xla {
 namespace ir {

@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/resize_ops.h"
+#include "xla_tensor/resize_ops.h"
 
 #include "absl/strings/str_cat.h"
-#include "tensorflow/compiler/xla/xla_client/debug_macros.h"
-#include "tensorflow/compiler/xla/xla_client/sys_util.h"
-#include "tensorflow/compiler/xla/xla_client/util.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/helpers.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/shape_builder.h"
+#include "xla_client/debug_macros.h"
+#include "xla_client/sys_util.h"
+#include "xla_client/util.h"
+#include "xla_tensor/helpers.h"
+#include "xla_tensor/shape_builder.h"
 #include "tensorflow/compiler/xla/client/lib/constants.h"
 #include "tensorflow/compiler/xla/shape_util.h"
 #include "tensorflow/compiler/xla/util.h"

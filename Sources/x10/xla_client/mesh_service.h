@@ -21,7 +21,7 @@
 #include <string>
 #include <vector>
 
-#include "tensorflow/compiler/xla/xla_client/mesh_service.pb.h"
+#include "xla_client/mesh_service.pb.h"
 #include "tensorflow/compiler/xla/types.h"
 
 namespace xla {

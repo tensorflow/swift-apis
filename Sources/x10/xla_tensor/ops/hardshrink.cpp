@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/hardshrink.h"
+#include "xla_tensor/ops/hardshrink.h"
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/elementwise.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/helpers.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/lowering_context.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/scalar.h"
+#include "xla_tensor/elementwise.h"
+#include "xla_tensor/helpers.h"
+#include "xla_tensor/lowering_context.h"
+#include "xla_tensor/ops/scalar.h"
 
 namespace swift_xla {
 namespace ir {

@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/unsqueeze.h"
+#include "xla_tensor/ops/unsqueeze.h"
 
-#include "tensorflow/compiler/xla/xla_client/util.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/data_ops.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/lowering_context.h"
+#include "xla_client/util.h"
+#include "xla_tensor/data_ops.h"
+#include "xla_tensor/lowering_context.h"
 
 namespace swift_xla {
 namespace ir {

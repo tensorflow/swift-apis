@@ -12,16 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tensorflow/compiler/xla/xla_client/local_computation_client.h"
+#include "xla_client/local_computation_client.h"
 
 #include <tuple>
 
 #include "platforms/deepsea/executor/deepsea_platform.h"
 #include "absl/strings/str_cat.h"
-#include "tensorflow/compiler/xla/xla_client/debug_macros.h"
-#include "tensorflow/compiler/xla/xla_client/multi_wait.h"
-#include "tensorflow/compiler/xla/xla_client/thread_pool.h"
-#include "tensorflow/compiler/xla/xla_client/util.h"
+#include "xla_client/debug_macros.h"
+#include "xla_client/multi_wait.h"
+#include "xla_client/thread_pool.h"
+#include "xla_client/util.h"
 #include "tensorflow/compiler/xla/service/platform_util.h"
 #include "tensorflow/core/profiler/lib/traceme.h"
 
