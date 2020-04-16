@@ -61,6 +61,7 @@ RUN python3 Utilities/benchmark_compile.py /swift-tensorflow-toolchain/usr/bin/s
 RUN /swift-tensorflow-toolchain/usr/bin/swift test
 
 # Perform CMake based build
+ENV TF_NEED_CUDA=1
 RUN cmake                                                                       \
       -B /BinaryCache/tensorflow-swift-apis                                     \
       -D BUILD_SHARED_LIBS=YES                                                  \
