@@ -81,7 +81,7 @@ genrule(
     outs = ["x10.lib"],
     cmd = select({
         "//tensorflow:windows": "cp -f $< $@",
-        "//conditions:defualt": "touch $@",  # Just a placeholder for Unix platforms
+        "//conditions:default": "touch $@",  # Just a placeholder for Unix platforms
     }),
     visibility = ["//visibility:public"],
 )
