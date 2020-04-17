@@ -1,18 +1,9 @@
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-add_library(x10_c_wrappers STATIC
-  swift_bindings/device_wrapper.cc
-  swift_bindings/xla_tensor_tf_ops.cc
-  swift_bindings/xla_tensor_wrapper.cc)
-set_target_properties(x10_c_wrappers PROPERTIES
-  POSITION_INDEPENDENT_CODE ON)
-target_link_libraries(x10_c_wrappers PUBLIC
-  x10)
-
 add_library(x10_device SHARED
   swift_bindings/Device.swift)
 target_link_libraries(x10_device PRIVATE
-  x10_c_wrappers)
+  x10)
 
 add_library(x10_tensor SHARED
   swift_bindings/apis/CrossReplicaSum.swift
@@ -96,8 +87,7 @@ target_link_libraries(x10_tensor PUBLIC
   x10_device
   Tensor)
 target_link_libraries(x10_tensor PRIVATE
-  x10
-  x10_c_wrappers)
+  x10)
 
 add_library(x10_optimizers_tensor_visitor_plan SHARED
   swift_bindings/optimizers/TensorVisitorPlan.swift)
@@ -124,22 +114,26 @@ target_link_libraries(x10_training_loop PUBLIC
 
 add_executable(ops_test ../../Tests/x10/ops_test.swift)
 target_link_libraries(ops_test PRIVATE
+  x10
   x10_device
   x10_tensor
   TensorFlow)
 
 add_executable(xla_tensor_test ../../Tests/x10/xla_tensor_test.swift)
 target_link_libraries(xla_tensor_test PRIVATE
+  x10
   x10_device
   x10_tensor)
 
 add_executable(keypathiterable_test ../../Tests/x10/keypathiterable_test.swift)
 target_link_libraries(keypathiterable_test PRIVATE
+  x10
   x10_device
   x10_tensor)
 
 add_executable(tensor_visitor_plan_test ../../Tests/x10/TensorVisitorPlanTest.swift)
 target_link_libraries(tensor_visitor_plan_test PRIVATE
+  x10
   x10_optimizers_tensor_visitor_plan)
 
 

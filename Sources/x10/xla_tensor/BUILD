@@ -19,6 +19,7 @@ cc_library(
         "*.h",
         "ops/*.h",
     ]),
+    visibility = ["//visibility:public"],
     deps = [
         "//tensorflow/c:c_api",
         "//tensorflow/c:c_api_experimental",
@@ -103,6 +104,9 @@ tf_cc_shared_object(
     per_os_targets = True,
     visibility = ["//visibility:public"],
     deps = [
+        "//swift_bindings:device_wrapper",
+        "//swift_bindings:xla_tensor_wrapper",
+        "//swift_bindings:xla_tensor_tf_ops",
         ":tensor",
         ":tf_exported_symbols.lds",
         ":tf_version_script.lds",
