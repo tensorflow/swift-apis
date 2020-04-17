@@ -18,6 +18,12 @@
 #include "tensorflow/compiler/tf2xla/xla_tensor/tensor.h"
 #include "tensorflow/compiler/xla/client/lib/pooling.h"
 
+#if defined(_WIN32)
+#define XLA_API __declspec(dllexport)
+#else
+#define XLA_API __attribute__((__visibility__("default")))
+#endif
+
 using swift_xla::XlaHelpers;
 using swift_xla::XLATensor;
 
@@ -65,9 +71,9 @@ at::ScalarType SumAccumulationType(at::ScalarType dtype) {
 
 }  // namespace
 
-OpaqueXLATensor* tf_AvgPool(OpaqueXLATensor* value, Int64ArrayRef ksize,
-                            Int64ArrayRef strides, enum TFPadding padding,
-                            enum TFDataFormat data_format) {
+OpaqueXLATensor* XLA_API tf_AvgPool(OpaqueXLATensor* value, Int64ArrayRef ksize,
+                                    Int64ArrayRef strides, enum TFPadding padding,
+                                    enum TFDataFormat data_format) {
   const auto value_shape_ref = value->shape();
   int num_spatial_dims = (*value_shape_ref).rank() - 2;
   xla::Padding xla_padding = ToXLAPadding(padding);
@@ -91,10 +97,10 @@ OpaqueXLATensor* tf_AvgPool(OpaqueXLATensor* value, Int64ArrayRef ksize,
   return new XLATensor(XLATensor::to(avg_pool, absl::nullopt, value->dtype()));
 }
 
-OpaqueXLATensor* tf_AvgPoolGrad(Int64ArrayRef origInputShape,
-                                OpaqueXLATensor* grad, Int64ArrayRef ksize,
-                                Int64ArrayRef strides, enum TFPadding padding,
-                                enum TFDataFormat data_format) {
+OpaqueXLATensor* XLA_API tf_AvgPoolGrad(Int64ArrayRef origInputShape,
+                                        OpaqueXLATensor* grad, Int64ArrayRef ksize,
+                                        Int64ArrayRef strides, enum TFPadding padding,
+                                        enum TFDataFormat data_format) {
   xla::Padding xla_padding = ToXLAPadding(padding);
   int num_spatial_dims = ksize.size - 2;
   xla::TensorFormat xla_data_format =
@@ -118,9 +124,9 @@ OpaqueXLATensor* tf_AvgPoolGrad(Int64ArrayRef origInputShape,
       XLATensor::to(in_backprop, absl::nullopt, grad->dtype()));
 }
 
-OpaqueXLATensor* tf_MaxPool(OpaqueXLATensor* input, Int64ArrayRef ksize,
-                            Int64ArrayRef strides, enum TFPadding padding,
-                            enum TFDataFormat data_format) {
+OpaqueXLATensor* XLA_API tf_MaxPool(OpaqueXLATensor* input, Int64ArrayRef ksize,
+                                    Int64ArrayRef strides, enum TFPadding padding,
+                                    enum TFDataFormat data_format) {
   xla::Padding xla_padding = ToXLAPadding(padding);
   int num_spatial_dims = ksize.size - 2;
   xla::TensorFormat xla_data_format =
@@ -132,9 +138,9 @@ OpaqueXLATensor* tf_MaxPool(OpaqueXLATensor* input, Int64ArrayRef ksize,
       /*padding=*/xla_padding, /*data_format=*/xla_data_format));
 }
 
-OpaqueXLATensor* tf_MaxPoolGrad(OpaqueXLATensor* input, OpaqueXLATensor* grad,
-                                Int64ArrayRef ksize, Int64ArrayRef strides,
-                                enum TFPadding padding) {
+OpaqueXLATensor* XLA_API tf_MaxPoolGrad(OpaqueXLATensor* input, OpaqueXLATensor* grad,
+                                        Int64ArrayRef ksize, Int64ArrayRef strides,
+                                        enum TFPadding padding) {
   xla::Padding xla_padding = ToXLAPadding(padding);
   auto kernel_size = XlaHelpers::I64List(ksize.slice());
   auto stride = XlaHelpers::I64List(strides.slice());
