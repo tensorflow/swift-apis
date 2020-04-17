@@ -428,7 +428,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
     shape: TensorShape, scalars: [Scalar], on device: Device = .default
   ) -> (value: Tensor, pullback: (Tensor) -> Array<Scalar>.TangentVector) {
     (
-      value: Tensor(scalars, on: device),
+      value: Tensor(shape: shape, scalars: scalars, on: device),
       pullback: { v in
         Array<Scalar>.TangentVector(v.scalars)
       }

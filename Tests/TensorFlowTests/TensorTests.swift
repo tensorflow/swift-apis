@@ -90,6 +90,36 @@ final class TensorTests: XCTestCase {
     XCTAssertTrue(shape3 == (shape2 + shape2))
   }
 
+  func testInitShapeScalars() {
+    XCTAssertEqual(
+      Tensor<Float>(shape: [2, 2], scalars: [1, 2, 3, 4]),
+      Tensor<Float>([[1, 2], [3, 4]])
+    )
+  }
+
+  func testInitShapeScalarsDerivative() {
+    let (value, pullback) = valueWithPullback(at: [1, 2, 3, 4]) {
+      Tensor<Float>(shape: [2, 2], scalars: $0)
+    }
+    XCTAssertEqual(value, Tensor<Float>([[1, 2], [3, 4]]))
+    XCTAssertEqual(
+      pullback(Tensor([[1, 0], [0, 0]])),
+      Array.DifferentiableView([1, 0, 0, 0])
+    )
+    XCTAssertEqual(
+      pullback(Tensor([[0, 1], [0, 0]])),
+      Array.DifferentiableView([0, 1, 0, 0])
+    )
+    XCTAssertEqual(
+      pullback(Tensor([[0, 0], [1, 0]])),
+      Array.DifferentiableView([0, 0, 1, 0])
+    )
+    XCTAssertEqual(
+      pullback(Tensor([[0, 0], [0, 1]])),
+      Array.DifferentiableView([0, 0, 0, 1])
+    )
+  }
+
   static var allTests = [
     ("testSimpleCond", testSimpleCond),
     ("testRankGetter", testRankGetter),
@@ -97,5 +127,7 @@ final class TensorTests: XCTestCase {
     ("testTensorShapeDescription", testTensorShapeDescription),
     ("testEquality", testEquality),
     ("testTensorShapeCollectionOperations", testTensorShapeCollectionOperations),
+    ("testInitShapeScalars", testInitShapeScalars),
+    ("testInitShapeScalarsDerivative", testInitShapeScalarsDerivative)
   ]
 }
