@@ -426,6 +426,7 @@ public struct GlobalMaxPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
 }
 
 /// A fractional max pooling layer for spatial data.
+/// Note: `FractionalMaxPool` does not have an XLA implementation, and thus may have performance implications.
 @frozen
 public struct FractionalMaxPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   /// Pooling ratios for each dimension of input of shape (batch, height, width, channels).
