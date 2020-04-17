@@ -107,7 +107,7 @@ public struct GaussianNoise<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer
 /// `GaussianDropout` passes through the input unmodified.
 public struct GaussianDropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   @noDerivative public let probability: Scalar
-  @noDerivative public let standardDeviation: Tensor<Scalar>
+  @noDerivative public let standardDeviation: Scalar
   
   /// Creates a Gaussian dropout layer.
   ///
@@ -118,7 +118,7 @@ public struct GaussianDropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
       0...1 ~= probability,
       "Probability must be a value between 0 and 1 (inclusive) but is \(probability)")
     self.probability = probability
-    standardDeviation = Tensor<Scalar>(sqrt(probability / (1.0 - probability)))
+    standardDeviation = sqrt(probability / (1.0 - probability))
   }
   
   /// Applies multiplicative 1-centered Gaussian noise to the input during training only.
@@ -127,7 +127,7 @@ public struct GaussianDropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
     switch Context.local.learningPhase {
     case .training:
       let noise = Tensor<Scalar>(randomNormal: input.shape, mean: Tensor<Scalar>(1.0),
-                                 standardDeviation: standardDeviation)
+                                 standardDeviation: Tensor<Scalar>(standardDeviation))
       return input * noise
     case .inference:
       return input
