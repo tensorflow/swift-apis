@@ -1963,6 +1963,21 @@ final class LayerTests: XCTestCase {
     XCTAssertEqual(transformerTensor.shape, transformerResult.shape)
   }
 
+  func testAlphaDropout() {
+    Context.local.learningPhase = .inference
+    let dropout = AlphaDropout<Float>(probability: 0.5)
+    let x = Tensor<Float>(repeating: 1.0, shape: [4, 4])
+    XCTAssertEqual(dropout(x), x)
+    withLearningPhase(LearningPhase.inference) {
+      XCTAssertEqual(dropout(x), x)
+      withLearningPhase(LearningPhase.training) {
+        XCTAssertNotEqual(dropout(x), x)
+      }
+      XCTAssertEqual(dropout(x), x)
+    }
+    XCTAssertEqual(dropout(x), x)
+  }
+
   static var allTests = [
     ("testConv1D", testConv1D),
     ("testConv1DDilation", testConv1DDilation),
@@ -2035,5 +2050,6 @@ final class LayerTests: XCTestCase {
     ("testBatchNormInference", testBatchNormInference),
     ("testLayerNorm", testLayerNorm),
     ("testLayerNormInference", testLayerNormInference),
+    ("testAlphaDropout", testAlphaDropout),
   ]
 }

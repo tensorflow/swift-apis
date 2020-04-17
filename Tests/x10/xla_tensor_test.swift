@@ -1,5 +1,4 @@
 import XCTest
-import x10_device
 import x10_tensor
 import x10_xla_tensor_wrapper
 

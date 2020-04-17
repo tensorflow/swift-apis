@@ -12,14 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// RMSProp optimizer.
+/// A RMSProp optimizer.
 ///
-/// It is recommended to leave the parameters of this optimizer at their default values (except for 
-/// the learning rate, which can be freely tuned). This optimizer is usually a good choice for 
-/// recurrent neural networks.
+/// Implements the RMSProp optimization algorithm. RMSProp is a form of stochastic gradient descent
+/// where the gradients are divided by a running average of their recent magnitude. RMSProp keeps a
+/// moving average of the squared gradient for each weight.
 ///
-/// Reference: ["rmsprop: Divide the gradient by a running average of its recent magnitude"](
-/// http://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf)
+/// References:
+/// - ["Lecture 6.5 - rmsprop: Divide the gradient by a running average
+/// of its recent magnitude"](
+/// http://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf) 
+/// (Tieleman and Hinton, 2012)
+/// - ["Generating Sequences With Recurrent Neural Networks"](
+/// https://arxiv.org/abs/1308.0850) (Graves, 2013)
 public class RMSProp<Model: Differentiable>: Optimizer
 where
   Model.TangentVector: VectorProtocol & PointwiseMultiplicative
@@ -29,7 +34,7 @@ where
   public typealias Model = Model
   /// The learning rate.
   public var learningRate: Float
-  // TODO: Document `rho`. Keras doesn't document `rho`.
+  /// The gradient moving average decay factor.
   public var rho: Float
   /// A small scalar added to the denominator to improve numerical stability.
   public var epsilon: Float
@@ -40,9 +45,17 @@ where
   /// The alpha values for all model differentiable variables.
   public var alpha: Model.TangentVector = .zero
 
+  /// Creates an instance for `model`.
+  ///
+  /// - Parameters:
+  ///   - learningRate: The learning rate. The default value is `1e-3`.
+  ///   - rho: The gradient moving average decay factor. The default value is `0.9`.
+  ///   - epsilon: A small scalar added to the denominator to improve numerical stability. The
+  ///     default value is `1e-8`.
+  ///   - decay: The learning rate decay. The default value is `0`.
   public init(
     for model: __shared Model,
-    learningRate: Float = 0.001,
+    learningRate: Float = 1e-3,
     rho: Float = 0.9,
     epsilon: Float = 1e-8,
     decay: Float = 0
@@ -75,13 +88,18 @@ where
   }
 }
 
-/// AdaGrad optimizer.
+/// An AdaGrad optimizer.
 ///
-/// Individually adapts the learning rates of all model parameters by scaling them inversely 
-/// proportional to the square root of the sum of all the historical squared values of the gradient.
+/// Implements the AdaGrad (adaptive gradient) optimization algorithm. AdaGrad has
+/// parameter-specific learning rates, which are adapted relative to how frequently parameters
+/// gets updated during training. Parameters that receive more updates have smaller learning rates.
 ///
-/// Reference: ["Adaptive Subgradient Methods for Online Learning and Stochastic Optimization"](
-/// http://www.jmlr.org/papers/volume12/duchi11a/duchi11a.pdf)
+/// AdaGrad individually adapts the learning rates of all model parameters by scaling them inversely
+/// proportional to the square root of the running sum of squares of gradient norms.
+///
+/// Reference: ["Adaptive Subgradient Methods for Online Learning and Stochastic 
+/// Optimization"](http://www.jmlr.org/papers/volume12/duchi11a/duchi11a.pdf) 
+/// (Duchi et al, 2011)
 public class AdaGrad<Model: Differentiable>: Optimizer
 where
   Model.TangentVector: VectorProtocol & PointwiseMultiplicative
@@ -91,15 +109,22 @@ where
   public typealias Model = Model
   /// The learning rate.
   public var learningRate: Float
-  /// The smoothing factor (ρ). Typical values are `0.5`, `0.9`, and `0.99`, for smoothing over 2,
-  /// 10, and 100 examples, respectively.
+  /// A small scalar added to the denominator to improve numerical stability.
   public var epsilon: Float
-  /// The accumulator for square of gradient.
+  /// The running sum of squares of gradient norms.
   public var accumulator: Model.TangentVector
 
+  /// Creates an instance for `model`.
+  ///
+  /// - Parameters:
+  ///   - learningRate: The learning rate. The default value is `1e-3`.
+  ///   - initialAccumulatorValue: The starting value for the running sum of squares of gradient
+  ///     norms. The default value is `0.1`.
+  ///   - epsilon: A small scalar added to the denominator to improve numerical stability. The
+  ///     default value is `1e-8`.
   public init(
     for model: __shared Model,
-    learningRate: Float = 0.001,
+    learningRate: Float = 1e-3,
     initialAccumulatorValue: Float = 0.1,
     epsilon: Float = 1e-8
   ) {
@@ -124,13 +149,17 @@ where
   }
 }
 
-/// ADADELTA optimizer.
+/// An AdaDelta optimizer.
 ///
-/// ADADELTA is a more robust extension of AdaGrad. ADADELTA adapts learning rates based on a moving
-/// window of gradient updates rather than by accumulating all past gradient norms. It can thus 
-/// adapt faster to changing dynamics of the optimization problem space.
+/// Implements the AdaDelta optimization algorithm. AdaDelta is a stochastic
+/// gradient descent method based on the first order information. It adapts
+/// learning rates based on a moving window of gradient updates, instead of
+/// accumulating all past gradients. Thus, AdaDelta continues learning even
+/// when many updates have been done. It adapts faster to changing dynamics of
+/// the optimization problem space.
 /// 
-/// Reference: ["ADADELTA: An Adaptive Learning Rate Method"](https://arxiv.org/abs/1212.5701)
+/// Reference: ["ADADELTA: An Adaptive Learning Rate Method"](
+/// https://arxiv.org/abs/1212.5701) (Zeiler, 2012)
 public class AdaDelta<Model: Differentiable>: Optimizer
 where
   Model.TangentVector: VectorProtocol & PointwiseMultiplicative
@@ -140,7 +169,7 @@ where
   public typealias Model = Model
   /// The learning rate.
   public var learningRate: Float
-  /// The decay factor, corresponding to fraction of gradient to keep at each time step.
+  /// The decay factor, corresponding to the fraction of gradient to keep at each time step.
   public var rho: Float
   /// A small scalar added to the denominator to improve numerical stability.
   public var epsilon: Float
@@ -153,6 +182,14 @@ where
   /// The accumulated parameter updates.
   public var accumulatedDelta: Model.TangentVector = .zero
 
+  /// Creates an instance for `model`.
+  ///
+  /// - Parameters:
+  ///   - learningRate: The learning rate. The default value is `1`.
+  ///   - rho: The decay factor. The default value is `0.95`.
+  ///   - epsilon: A small scalar added to the denominator to improve numerical stability. The
+  ///     default value is `1e-6`.
+  ///   - decay: The learning rate decay. The defalut value is `0`.
   public init(
     for model: __shared Model,
     learningRate: Float = 1,

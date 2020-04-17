@@ -38,6 +38,18 @@
 #include "tensorflow/compiler/xla/xla_client/util.h"
 #include "tensorflow/compiler/xla/status.h"
 
+namespace std {
+std::ostream& operator<<(std::ostream& ostrm, const ::grpc::Status& status) {
+  if (status.ok()) {
+    ostrm << "OK";
+  } else {
+    ostrm << status.error_message() << " ("
+          << static_cast<int>(status.error_code()) << ")";
+  }
+  return ostrm;
+}
+}
+
 namespace xla {
 namespace service {
 namespace {
@@ -55,16 +67,6 @@ namespace {
              ? ::grpc::Status::OK
              : ::grpc::Status(static_cast<::grpc::StatusCode>(status.code()),
                               status.error_message());
-}
-
-std::ostream& operator<<(std::ostream& ostrm, const ::grpc::Status& status) {
-  if (status.ok()) {
-    ostrm << "OK";
-  } else {
-    ostrm << status.error_message() << " ("
-          << static_cast<int>(status.error_code()) << ")";
-  }
-  return ostrm;
 }
 
 class MeshServiceImpl : public grpc::MeshService::Service {
