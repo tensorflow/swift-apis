@@ -832,12 +832,12 @@ func _vjpAvgPool3D<Scalar: TensorFlowFloatingPoint>(
 ///   - overlapping: An optional `Bool`. Defaults to `false`. When set to `true`, it means
 ///     when pooling, the values at the boundary of adjacent pooling cells are used by both cells.
 ///   - deterministic: An Optional `Bool`. When set to `true`, a fixed pooling region will be
-///     used when iterating over a fractionalMaxPool node in the computation graph.
+///     used when iterating over a fractionalMaxPool2D node in the computation graph.
 ///   - seed: An optional `Int64`. Defaults to `0`. If set to be non-zero, the random number
 ///     generator is seeded by the given seed.
 ///   - seed2: An optional `Int64`. Defaults to `0`. A second seed to avoid seed collision.
 @differentiable(wrt: input)
-public func fractionalMaxPool<Scalar: TensorFlowFloatingPoint>(
+public func fractionalMaxPool2D<Scalar: TensorFlowFloatingPoint>(
   _ input: Tensor<Scalar>,
   poolingRatio: (Double, Double, Double, Double),
   pseudoRandom: Bool = false,
@@ -861,7 +861,7 @@ public func fractionalMaxPool<Scalar: TensorFlowFloatingPoint>(
 }
 
 @usableFromInline
-@derivative(of: fractionalMaxPool)
+@derivative(of: fractionalMaxPool2D)
 func _vjpFractionalMaxPool<Scalar: TensorFlowFloatingPoint>(
   _ x: Tensor<Scalar>,
   poolingRatio: (Double, Double, Double, Double),

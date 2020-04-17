@@ -1097,16 +1097,16 @@ final class LayerTests: XCTestCase {
       ])
   }
 
-  func testFractionalMaxPool() {
-    let layer = FractionalMaxPool<Float>(poolingRatio: (1.0, 1.4, 1.5, 1.0), pseudoRandom: false)
+  func testFractionalMaxPool2D() {
+    let layer = FractionalMaxPool2D<Float>(poolingRatio: (1.4, 1.5), pseudoRandom: false)
     let input = Tensor(shape: [1, 2, 2, 1], scalars: (0..<4).map(Float.init))
     let output = layer.inferring(from: input)
     let expected = Tensor<Float>([[[[3]]]])
     XCTAssertEqual(output, expected)
   }
 
-  func testFractionalMaxPoolGradient() {
-    let layer = FractionalMaxPool<Float>(poolingRatio: (1.0, 1.4, 1.5, 1.0), pseudoRandom: false)
+  func testFractionalMaxPool2DGradient() {
+    let layer = FractionalMaxPool2D<Float>(poolingRatio: (1.4, 1.5), pseudoRandom: false)
     let x = Tensor(shape: [1, 2, 2, 1], scalars: (0..<4).map(Float.init))
     let computedGradient = gradient(at: x, layer) { $1($0).sum() }
     // The expected value of the gradient was computed using the following Python code:
@@ -2025,8 +2025,8 @@ final class LayerTests: XCTestCase {
     ("testGlobalMaxPool2DGradient", testGlobalMaxPool2DGradient),
     ("testGlobalMaxPool3D", testGlobalMaxPool3D),
     ("testGlobalMaxPool3DGradient", testGlobalMaxPool3DGradient),
-    ("testFractionalMaxPool", testFractionalMaxPool),
-    ("testFractionalMaxPoolGradient", testFractionalMaxPoolGradient),
+    ("testFractionalMaxPool2D", testFractionalMaxPool2D),
+    ("testFractionalMaxPool2DGradient", testFractionalMaxPool2DGradient),
     ("testUpSampling1D", testUpSampling1D),
     ("testUpSampling1DGradient", testUpSampling1DGradient),
     ("testUpSampling2D", testUpSampling2D),
