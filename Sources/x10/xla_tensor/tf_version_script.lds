@@ -3,6 +3,23 @@ VERS_1.0 {
   global:
     *TF_*;
     *TFE_*;
+    tf_*;
+    *XLATensor_*;
+    copyTensor*;
+    destroy*;
+    DefaultDevice;
+    getAllDevices;
+    setReplicationDevices;
+    getReplicationDevices;
+    syncLiveTensorsForDevices;
+    ComputeIndexingBoundsAndStrides;
+    DeleteString;
+    GetStringCStr;
+    MaterializedTensor_getData;
+    MaterializedTensor_getType;
+    XLAShape_*;
+    SetMatMulPrecision;
+    fetchTensorShape;
     *swift_xla*;
     *g_trace_level*;
     *xla*primitive_util*;

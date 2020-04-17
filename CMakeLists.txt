@@ -42,6 +42,8 @@ if(BUILD_X10)
         TRUE
       CONFIGURE_COMMAND
         COMMAND
+          ${CMAKE_COMMAND} -E create_symlink ${PROJECT_SOURCE_DIR}/Sources/x10/swift_bindings <SOURCE_DIR>/swift_bindings
+        COMMAND
           ${CMAKE_COMMAND} -E create_symlink ${PROJECT_SOURCE_DIR}/Sources/x10/xla_client <SOURCE_DIR>/tensorflow/compiler/xla/xla_client
         COMMAND
           ${CMAKE_COMMAND} -E create_symlink ${PROJECT_SOURCE_DIR}/Sources/x10/xla_tensor <SOURCE_DIR>/tensorflow/compiler/tf2xla/xla_tensor
@@ -57,7 +59,7 @@ if(BUILD_X10)
         COMMAND
           rm -rf <SOURCE_DIR>/bazel-bin # ${CMAKE_COMMAND} -E rm -Rrf <SOURCE_DIR>/bazel-bin
         COMMAND
-          bazel build -c opt --define framework_shared_object=false //tensorflow/compiler/tf2xla/xla_tensor:x10
+          bazel build -c opt --define framework_shared_object=false //tensorflow/compiler/tf2xla/xla_tensor:x10 --nocheck_visibility
         COMMAND
           bazel shutdown
       INSTALL_COMMAND

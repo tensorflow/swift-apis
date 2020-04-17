@@ -15,8 +15,8 @@
 #include "device_wrapper.h"
 
 #include "tensorflow/compiler/tf2xla/xla_tensor/tensor.h"
-#include "xla_client/computation_client.h"
-#include "xla_client/multi_wait.h"
+#include "tensorflow/compiler/xla/xla_client/computation_client.h"
+#include "tensorflow/compiler/xla/xla_client/multi_wait.h"
 
 DeviceType ConvertDeviceType(swift_xla::DeviceType device_type) {
   switch (device_type) {
