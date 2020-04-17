@@ -55,7 +55,7 @@ public struct Device {
   /// The backend used to dispatch the tensor operations.
   public let backend: Backend
 
-  public init(kind: Kind, ordinal: Int, backend: Backend = .XLA) {
+  public init(kind: Kind, ordinal: Int, backend: Backend = defaultBackend) {
     self.kind = kind
     self.ordinal = ordinal
     self.backend = backend
@@ -112,13 +112,22 @@ public struct Device {
     return self.kind == .REMOTE_TPU
   }
 
+  public static var defaultBackend: Backend {
+    #if DEFAULT_BACKEND_EAGER
+      return .TF_EAGER
+    #else
+      return .XLA
+    #endif
+  }
+
   /// The default `Device`.
   public static var `default`: Device {
-    #if DEFAULT_BACKEND_EAGER
+    switch defaultBackend {
+    case .TF_EAGER:
       return Device.defaultTFEager
-    #else
+    case .XLA:
       return Device.defaultXLA
-    #endif
+    }
   }
 
   /// The default XLA device.
