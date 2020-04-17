@@ -28,6 +28,7 @@
 
 #include "absl/types/span.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/aten_compat.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/swift_backtrace.h"
 #include "tensorflow/compiler/xla/client/xla_builder.h"
 #include "tensorflow/compiler/xla/xla_client/types.h"
 #include "tensorflow/core/lib/gtl/inlined_vector.h"
@@ -50,6 +51,7 @@ struct UserMetaData {
 
 struct MetaData {
   std::string scope;
+  std::vector<SourceLocation> frame_info;
 };
 
 // Represents a specific output produced by a node. Since the output of a node
@@ -233,6 +235,9 @@ class Node {
   xla::hash_t hash_ = 0;
   // The IR specific metadata attached to the IR node.
   MetaData metadata_;
+
+ public:
+  static bool s_log_graph_changes_;
 };
 
 // RAII data structure to be used a stack variable to enter a new IR scope. IR

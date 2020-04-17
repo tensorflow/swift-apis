@@ -108,6 +108,9 @@ std::string DebugUtil::GetTensorsGraphInfo(absl::Span<const XLATensor> tensors,
     XLA_ERROR() << "Invalid graph format: " << format;
   }
   ss << "\n## BEGIN_GRAPH\n" << graph_str << "\n## END_GRAPH\n\n";
+  if (ir::Node::s_log_graph_changes_) {
+    ss << ir::DumpUtil::GetGraphChangeLog(root_nodes) << "\n";
+  }
   return ss.str();
 }
 

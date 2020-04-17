@@ -37,6 +37,8 @@ class DumpUtil {
                                      absl::Span<const Node* const> roots);
 
   static std::string ToHlo(absl::Span<const Value> values);
+
+  static std::string GetGraphChangeLog(absl::Span<const Node* const> roots);
 };
 
 }  // namespace ir
