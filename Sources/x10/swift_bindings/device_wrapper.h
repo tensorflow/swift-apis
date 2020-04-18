@@ -20,6 +20,10 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#if !defined(XLA_API)
+#define XLA_API
+#endif
+
 #ifdef __cplusplus
 #include "tensorflow/compiler/tf2xla/xla_tensor/device.h"
 
@@ -41,28 +45,29 @@ struct DeviceList {
 #endif
 };
 
-void destroyDeviceList(struct DeviceList* device_list);
+XLA_API void destroyDeviceList(struct DeviceList* device_list);
 
 // Gets all available devices.
-struct DeviceList* getAllDevices();
+XLA_API struct DeviceList* getAllDevices();
 
 // Gets the default device.
-struct CDevice DefaultDevice();
+XLA_API struct CDevice DefaultDevice();
 
 // Set device replication for cross-device gradient reduction.
-void setReplicationDevices(struct DeviceList* device_list);
+XLA_API void setReplicationDevices(struct DeviceList* device_list);
 
 // Get current device replication for cross-device gradient reduction.
-struct DeviceList* getReplicationDevices();
+XLA_API struct DeviceList* getReplicationDevices();
 
 // Execute outstanding operations for all live tensors across the provided
 // devices, in parallel.
-void syncLiveTensorsForDevices(struct DeviceList* device_list);
+XLA_API void syncLiveTensorsForDevices(struct DeviceList* device_list);
 
 // Marks step and synchronizes a single device out of a list of devices.
 // For use in a multi-threaded environment.
-void XLATensor_LazyTensorBarrier(const struct CDevice* device,
-                                 struct DeviceList* device_list, bool wait);
+XLA_API void XLATensor_LazyTensorBarrier(const struct CDevice* device,
+                                         struct DeviceList* device_list,
+                                         bool wait);
 
 #ifdef __cplusplus
 }  // extern "C"

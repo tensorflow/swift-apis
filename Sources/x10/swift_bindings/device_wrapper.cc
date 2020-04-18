@@ -12,17 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#if defined(_WIN32)
+#define XLA_API __declspec(dllexport)
+#endif
+
 #include "device_wrapper.h"
 
 #include "tensorflow/compiler/tf2xla/xla_tensor/tensor.h"
 #include "tensorflow/compiler/xla/xla_client/computation_client.h"
 #include "tensorflow/compiler/xla/xla_client/multi_wait.h"
-
-#if defined(_WIN32)
-#define XLA_API __declspec(dllexport)
-#else
-#define XLA_API __attribute__((__visbility__("defualt")))
-#endif
 
 DeviceType ConvertDeviceType(swift_xla::DeviceType device_type) {
   switch (device_type) {
@@ -101,28 +99,28 @@ std::vector<std::string> DeviceListToStrings(DeviceList* device_list) {
 
 }  // namespace
 
-void XLA_API destroyDeviceList(DeviceList* device_list) { delete device_list; }
+void destroyDeviceList(DeviceList* device_list) { delete device_list; }
 
-DeviceList* XLA_API getAllDevices() {
+DeviceList* getAllDevices() {
   return DeviceListFromStrings(xla::ComputationClient::Get()->GetAllDevices());
 }
 
-CDevice XLA_API DefaultDevice() {
+CDevice DefaultDevice() {
   auto device = swift_xla::GetDefaultDevice();
   return {ConvertDeviceType(device->hw_type), device->ordinal};
 }
 
-void XLA_API setReplicationDevices(struct DeviceList* device_list) {
+void setReplicationDevices(struct DeviceList* device_list) {
   const auto device_strings = DeviceListToStrings(device_list);
   xla::ComputationClient::Get()->SetReplicationDevices(device_strings);
 }
 
-struct DeviceList* XLA_API getReplicationDevices() {
+struct DeviceList* getReplicationDevices() {
   return DeviceListFromStrings(
       xla::ComputationClient::Get()->GetReplicationDevices());
 }
 
-void XLA_API syncLiveTensorsForDevices(struct DeviceList* device_list) {
+void syncLiveTensorsForDevices(struct DeviceList* device_list) {
   const auto device_strings = DeviceListToStrings(device_list);
   xla::util::MultiWait mwait(device_strings.size());
   for (size_t i = 0; i < device_strings.size(); ++i) {
@@ -139,8 +137,8 @@ void XLA_API syncLiveTensorsForDevices(struct DeviceList* device_list) {
   mwait.Wait();
 }
 
-void XLA_API XLATensor_LazyTensorBarrier(const struct CDevice* device,
-                                         struct DeviceList* device_list, bool wait) {
+void XLATensor_LazyTensorBarrier(const struct CDevice* device,
+                                 struct DeviceList* device_list, bool wait) {
   const auto device_strings = DeviceListToStrings(device_list);
   swift_xla::Device tmp_device;
   if (device) tmp_device = ConvertDevice(*device);
