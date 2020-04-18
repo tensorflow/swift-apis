@@ -3,21 +3,8 @@ licenses(["notice"])  # Apache 2.0
 package(default_visibility = ["//tensorflow:internal"])
 
 load(
-    "//tensorflow:tensorflow.bzl",
-    "tf_cc_binary",
-    "tf_cc_shared_object",
-    "tf_cc_test",
-)
-load(
     "//tensorflow/core/platform/default:build_config.bzl",
-    "tf_additional_all_protos",
-    "tf_proto_library",
     "tf_proto_library_cc",
-    "tf_proto_library_py",
-)
-load(
-    "//tensorflow/core/platform/default:cuda_build_defs.bzl",
-    "if_cuda_is_configured",
 )
 
 tf_proto_library_cc(
@@ -43,6 +30,7 @@ cc_library(
         "tf_logging.cc",
         "thread_pool.cc",
         "triggered_task.cc",
+        "util.cc",
         "xla_util.cc",
         "xrt_computation_client.cc",
         "xrt_local_service.cc",
@@ -80,7 +68,6 @@ cc_library(
         "//tensorflow/cc:client_session",
         "//tensorflow/cc:ops",
         "//tensorflow/cc:scope",
-        "//tensorflow/compiler/jit:xla_cpu_device",
         "//tensorflow/compiler/xla:literal_util",
         "//tensorflow/compiler/xla:shape_util",
         "//tensorflow/compiler/xla:status",
@@ -105,6 +92,7 @@ cc_library(
         "//tensorflow/core/kernels:data_flow",
         "//tensorflow/core/protobuf/tpu:topology_proto_cc",
         "@com_google_absl//absl/memory",
+        "@com_google_absl//absl/numeric:int128",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/types:optional",
         "@com_google_absl//absl/types:span",

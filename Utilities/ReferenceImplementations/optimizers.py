@@ -11,6 +11,7 @@ import tensorflow as tf
 from tensorflow.keras.optimizers import Adam, Adadelta, Adagrad, Adamax, RMSprop, SGD
 from tensorflow_addons.optimizers import RectifiedAdam
 
+np.set_printoptions(precision=None, floatmode="unique")
 
 def test_optimizer(optimizer, step_count=1000):
     var = tf.Variable([0, 0, 0], dtype=tf.float32)

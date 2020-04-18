@@ -18,6 +18,7 @@
 #include "tensorflow/compiler/tf2xla/xla_tensor/data_ops.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/helpers.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/lowering_context.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/ops/select.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/xla_ops.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/tensor_util.h"
 
@@ -42,8 +43,8 @@ NodePtr Unselect::Clone(OpList operands) const {
 XlaOpVector Unselect::Lower(LoweringContext* loctx) const {
   xla::XlaOp target = loctx->GetOutputOp(operand(0));
   xla::XlaOp source = loctx->GetOutputOp(operand(1));
-  xla::XlaOp output =
-      BuildUnselect(target, source, dim_, start_, end_, stride_);
+  xla::XlaOp output = BuildUnselect(target, source, dim_, start_, end_,
+                                    Select::GetStride(start_, end_, stride_));
   return ReturnOp(output, loctx);
 }
 

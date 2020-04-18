@@ -26,6 +26,10 @@ namespace swift_xla {
 xla::XlaOp ConvertTo(xla::XlaOp op, xla::PrimitiveType from,
                      xla::PrimitiveType to, const Device* device);
 
+xla::XlaOp ConvertToRaw(xla::XlaOp op, xla::PrimitiveType from,
+                        xla::PrimitiveType to, xla::PrimitiveType raw_to,
+                        const Device* device);
+
 xla::XlaOp ConvertToNumeric(xla::XlaOp op, xla::PrimitiveType from);
 
 xla::XlaOp ConvertToNumeric(xla::XlaOp op);
@@ -34,5 +38,7 @@ xla::XlaOp ConvertToNumeric(xla::XlaOp op);
 // of predicates, which are converted to 8-bit unsigned integers.
 xla::XlaOp CastToScalarType(xla::XlaOp input,
                             c10::optional<at::ScalarType> dtype);
+
+xla::XlaOp MaybeConvertTo(xla::XlaOp input, xla::PrimitiveType type);
 
 }  // namespace swift_xla

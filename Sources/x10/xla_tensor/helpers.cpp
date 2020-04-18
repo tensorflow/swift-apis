@@ -77,11 +77,6 @@ xla::XlaOp XlaHelpers::CreateReturnValue(
   }
 }
 
-xla::uint64 XlaHelpers::GenRngSeed() {
-  // TODO(asuhan): Implement RNG seed.
-  return 42;
-}
-
 std::vector<xla::int64> XlaHelpers::DropDimensions(
     absl::Span<const xla::int64> sizes,
     absl::Span<const xla::int64> drop_dims) {
@@ -412,46 +407,84 @@ xla::XlaOp XlaHelpers::LinearInterpolation(xla::XlaOp value0, xla::XlaOp value1,
   return value0 * alpha_value + value1 * (one - alpha_value);
 }
 
+xla::PrimitiveType XlaHelpers::PromoteType(xla::PrimitiveType type1,
+                                           xla::PrimitiveType type2) {
+  if (type1 == type2) {
+    return type1;
+  }
+  xla::int64 size1 = xla::ShapeUtil::ByteSizeOfPrimitiveType(type1);
+  xla::int64 size2 = xla::ShapeUtil::ByteSizeOfPrimitiveType(type2);
+  if (xla::primitive_util::IsComplexType(type1)) {
+    return (!xla::primitive_util::IsComplexType(type2) || size1 >= size2)
+               ? type1
+               : type2;
+  }
+  if (xla::primitive_util::IsComplexType(type2)) {
+    return type2;
+  }
+  if (xla::primitive_util::IsFloatingPointType(type1)) {
+    return (!xla::primitive_util::IsFloatingPointType(type2) || size1 >= size2)
+               ? type1
+               : type2;
+  }
+  if (xla::primitive_util::IsFloatingPointType(type2) || size2 > size1) {
+    return type2;
+  }
+  if (xla::primitive_util::IsIntegralType(type1) &&
+      xla::primitive_util::IsIntegralType(type2)) {
+    if (size1 > size2) {
+      return type1;
+    }
+    if (size2 > size1) {
+      return type2;
+    }
+    // At this point, they are not the same type, they are both integers, and
+    // they have the same size. One of them must be unsigned and the other
+    // signed, convert to unsigned.
+    return xla::primitive_util::UnsignedIntegralTypeForBitWidth(
+        xla::primitive_util::BitWidth(type1));
+  }
+  if (type1 == xla::PrimitiveType::PRED) {
+    return type2;
+  }
+  if (type2 == xla::PrimitiveType::PRED) {
+    return type1;
+  }
+  // If nothing matches the above logic, first operand wins.
+  return type1;
+}
+
 std::pair<xla::XlaOp, xla::XlaOp> XlaHelpers::PromoteValues(xla::XlaOp op1,
                                                             xla::XlaOp op2) {
   xla::PrimitiveType type1 = TypeOfXlaOp(op1);
   xla::PrimitiveType type2 = TypeOfXlaOp(op2);
-  if (type1 == type2) {
-    return std::pair<xla::XlaOp, xla::XlaOp>(op1, op2);
+  xla::PrimitiveType result_type = PromoteType(type1, type2);
+  if (type1 != result_type) {
+    op1 = ConvertTo(op1, type1, result_type, /*device=*/nullptr);
   }
-  xla::int64 size1 = xla::ShapeUtil::ByteSizeOfPrimitiveType(type1);
-  xla::int64 size2 = xla::ShapeUtil::ByteSizeOfPrimitiveType(type2);
-  if (xla::primitive_util::IsFloatingPointType(type1)) {
-    if (!xla::primitive_util::IsFloatingPointType(type2) || size1 >= size2) {
-      return std::pair<xla::XlaOp, xla::XlaOp>(
-          op1, ConvertTo(op2, type2, type1, /*device=*/nullptr));
-    }
-    return std::pair<xla::XlaOp, xla::XlaOp>(
-        ConvertTo(op1, type1, type2, /*device=*/nullptr), op2);
+  if (type2 != result_type) {
+    op2 = ConvertTo(op2, type2, result_type, /*device=*/nullptr);
   }
-  if (xla::primitive_util::IsFloatingPointType(type2) || size2 >= size1) {
-    return std::pair<xla::XlaOp, xla::XlaOp>(
-        ConvertTo(op1, type1, type2, /*device=*/nullptr), op2);
+  return std::pair<xla::XlaOp, xla::XlaOp>(op1, op2);
+}
+
+std::tuple<xla::XlaOp, xla::XlaOp, xla::XlaOp> XlaHelpers::PromoteValues(
+    xla::XlaOp op1, xla::XlaOp op2, xla::XlaOp op3) {
+  xla::PrimitiveType type1 = TypeOfXlaOp(op1);
+  xla::PrimitiveType type2 = TypeOfXlaOp(op2);
+  xla::PrimitiveType type3 = TypeOfXlaOp(op3);
+  xla::PrimitiveType result_type =
+      PromoteType(PromoteType(type1, type2), type3);
+  if (type1 != result_type) {
+    op1 = ConvertTo(op1, type1, result_type, /*device=*/nullptr);
   }
-  if (xla::primitive_util::IsIntegralType(type1) &&
-      xla::primitive_util::IsIntegralType(type2)) {
-    if (size1 >= size2) {
-      return std::pair<xla::XlaOp, xla::XlaOp>(
-          op1, ConvertTo(op2, type2, type1, /*device=*/nullptr));
-    }
-    return std::pair<xla::XlaOp, xla::XlaOp>(
-        ConvertTo(op1, type1, type2, /*device=*/nullptr), op2);
+  if (type2 != result_type) {
+    op2 = ConvertTo(op2, type2, result_type, /*device=*/nullptr);
   }
-  if (type1 == xla::PrimitiveType::PRED) {
-    return std::pair<xla::XlaOp, xla::XlaOp>(
-        ConvertTo(op1, type1, type2, /*device=*/nullptr), op2);
+  if (type3 != result_type) {
+    op3 = ConvertTo(op3, type3, result_type, /*device=*/nullptr);
   }
-  if (type2 == xla::PrimitiveType::PRED) {
-    return std::pair<xla::XlaOp, xla::XlaOp>(
-        op1, ConvertTo(op2, type2, type1, /*device=*/nullptr));
-  }
-  return std::pair<xla::XlaOp, xla::XlaOp>(
-      op1, ConvertTo(op2, type2, type1, /*device=*/nullptr));
+  return std::tuple<xla::XlaOp, xla::XlaOp, xla::XlaOp>(op1, op2, op3);
 }
 
 std::pair<xla::XlaOp, xla::XlaOp> XlaHelpers::PromoteSecondValue(
@@ -504,6 +537,13 @@ xla::Shape XlaHelpers::GetPromotedShape(const xla::Shape& shape1,
                                         const xla::Shape& shape2) {
   return xla::ShapeUtil::MakeShape(
       shape1.element_type(),
+      GetPromotedShape(shape1.dimensions(), shape2.dimensions()));
+}
+
+xla::Shape XlaHelpers::GetPromotedBinaryOpShape(const xla::Shape& shape1,
+                                                const xla::Shape& shape2) {
+  return xla::ShapeUtil::MakeShape(
+      PromoteType(shape1.element_type(), shape2.element_type()),
       GetPromotedShape(shape1.dimensions(), shape2.dimensions()));
 }
 
@@ -579,8 +619,7 @@ xla::XlaOp XlaHelpers::PromotedBinaryOp(
     const std::function<xla::XlaOp(xla::XlaOp, xla::XlaOp)>& bin_op) {
   xla::XlaOp numeric_op1 = ConvertToNumeric(op1);
   xla::XlaOp numeric_op2 = ConvertToNumeric(op2);
-  std::pair<xla::XlaOp, xla::XlaOp> vops =
-      PromoteSecond(numeric_op1, numeric_op2);
+  std::pair<xla::XlaOp, xla::XlaOp> vops = Promote(numeric_op1, numeric_op2);
   xla::XlaOp result = bin_op(vops.first, vops.second);
   return ConvertBinaryOpResult(op1, op2, result);
 }

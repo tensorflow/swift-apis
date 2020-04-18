@@ -12,11 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "swift_bindings/device_wrapper.h"
+#if defined(_WIN32)
+#define XLA_API __declspec(dllexport)
+#endif
+
+#include "device_wrapper.h"
 
 #include "tensorflow/compiler/tf2xla/xla_tensor/tensor.h"
-#include "xla_client/computation_client.h"
-#include "xla_client/multi_wait.h"
+#include "tensorflow/compiler/xla/xla_client/computation_client.h"
+#include "tensorflow/compiler/xla/xla_client/multi_wait.h"
 
 DeviceType ConvertDeviceType(swift_xla::DeviceType device_type) {
   switch (device_type) {

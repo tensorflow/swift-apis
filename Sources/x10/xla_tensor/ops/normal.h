@@ -14,8 +14,6 @@
 
 #pragma once
 
-#include <vector>
-
 #include "tensorflow/compiler/tf2xla/xla_tensor/ir.h"
 
 namespace swift_xla {

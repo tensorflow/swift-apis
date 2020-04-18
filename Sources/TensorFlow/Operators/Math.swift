@@ -1229,7 +1229,7 @@ public func softmax<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
 @differentiable
 public func softmax<T: TensorFlowFloatingPoint>(_ x: Tensor<T>, alongAxis axis: Int) -> Tensor<T> {
   let xExp = exp(x)
-  return xExp / xExp.sum(alongAxes: Tensor<Int32>(Int32(axis)))
+  return xExp / xExp.sum(alongAxes: Tensor<Int32>(Int32(axis), on: xExp.device))
 }
 
 @inlinable
@@ -1674,7 +1674,7 @@ extension Tensor where Scalar == Bool {
   // `all(squeezingAxes:)` with zero indices.
   @inlinable
   public func all() -> Bool {
-    let axes = Tensor<Int32>(rangeFrom: 0, to: Int32(rank), stride: 1)
+    let axes = Tensor<Int32>(rangeFrom: 0, to: Int32(rank), stride: 1, on: device)
     return _Raw.all(self, reductionIndices: axes).scalarized()
   }
 
@@ -1683,7 +1683,7 @@ extension Tensor where Scalar == Bool {
   // `any(squeezingAxes:)` with zero indices.
   @inlinable
   public func any() -> Bool {
-    let axes = Tensor<Int32>(rangeFrom: 0, to: Int32(rank), stride: 1)
+    let axes = Tensor<Int32>(rangeFrom: 0, to: Int32(rank), stride: 1, on: device)
     return _Raw.any(self, reductionIndices: axes).scalarized()
   }
 
@@ -1695,7 +1695,7 @@ extension Tensor where Scalar == Bool {
   public func all(squeezingAxes axes: Int...) -> Tensor {
     ensureValid(axes: axes)
     let axes = axes.map(Int32.init)
-    return _Raw.all(self, reductionIndices: Tensor<Int32>(axes), keepDims: false)
+    return _Raw.all(self, reductionIndices: Tensor<Int32>(axes, on: device), keepDims: false)
   }
 
   /// Performs a logical AND operation along the specified axes. The reduced dimensions are
@@ -1706,7 +1706,7 @@ extension Tensor where Scalar == Bool {
   public func any(squeezingAxes axes: Int...) -> Tensor {
     ensureValid(axes: axes)
     let axes = axes.map(Int32.init)
-    return _Raw.any(self, reductionIndices: Tensor<Int32>(axes), keepDims: false)
+    return _Raw.any(self, reductionIndices: Tensor<Int32>(axes, on: device), keepDims: false)
   }
 
   /// Performs a logical AND operation along the specified axes. The reduced dimensions are
@@ -1717,7 +1717,7 @@ extension Tensor where Scalar == Bool {
   public func all(alongAxes axes: Int...) -> Tensor {
     ensureValid(axes: axes)
     let axes = axes.map(Int32.init)
-    return _Raw.all(self, reductionIndices: Tensor<Int32>(axes), keepDims: true)
+    return _Raw.all(self, reductionIndices: Tensor<Int32>(axes, on: device), keepDims: true)
   }
 
   /// Performs a logical OR operation along the specified axes. The reduced
@@ -1728,7 +1728,7 @@ extension Tensor where Scalar == Bool {
   public func any(alongAxes axes: Int...) -> Tensor {
     ensureValid(axes: axes)
     let axes = axes.map(Int32.init)
-    return _Raw.any(self, reductionIndices: Tensor<Int32>(axes), keepDims: true)
+    return _Raw.any(self, reductionIndices: Tensor<Int32>(axes, on: device), keepDims: true)
   }
 }
 
@@ -1738,7 +1738,7 @@ extension Tensor where Scalar: Numeric & Comparable {
   @inlinable
   @differentiable( where Scalar: TensorFlowFloatingPoint)
   public func min() -> Tensor {
-    let axes = Tensor<Int32>(rangeFrom: 0, to: Int32(rank), stride: 1)
+    let axes = Tensor<Int32>(rangeFrom: 0, to: Int32(rank), stride: 1, on: device)
     return min(squeezingAxes: axes)
   }
 
@@ -1747,7 +1747,7 @@ extension Tensor where Scalar: Numeric & Comparable {
   @inlinable
   @differentiable( where Scalar: TensorFlowFloatingPoint)
   public func max() -> Tensor {
-    let axes = Tensor<Int32>(rangeFrom: 0, to: Int32(rank), stride: 1)
+    let axes = Tensor<Int32>(rangeFrom: 0, to: Int32(rank), stride: 1, on: device)
     return max(squeezingAxes: axes)
   }
 
@@ -1769,7 +1769,7 @@ extension Tensor where Scalar: Numeric & Comparable {
   public func max(squeezingAxes axes: [Int]) -> Tensor {
     // TODO(TF-433): Remove workaround for differentiating `map`.
     let axes = { axes.map(Int32.init) }()
-    return max(squeezingAxes: Tensor<Int32>(axes))
+    return max(squeezingAxes: Tensor<Int32>(axes, on: device))
   }
 
   /// Returns the maximum values along the specified axes. The reduced dimensions are removed.
@@ -1799,7 +1799,7 @@ extension Tensor where Scalar: Numeric & Comparable {
   public func min(squeezingAxes axes: [Int]) -> Tensor {
     // TODO(TF-433): Remove workaround for differentiating `map`.
     let axes = { axes.map(Int32.init) }()
-    return min(squeezingAxes: Tensor<Int32>(axes))
+    return min(squeezingAxes: Tensor<Int32>(axes, on: device))
   }
 
   /// Returns the minimum values along the specified axes. The reduced dimensions are removed.
@@ -1828,7 +1828,7 @@ extension Tensor where Scalar: Numeric & Comparable {
   @inlinable
   public func argmin(squeezingAxis axis: Int) -> Tensor<Int32> {
     ensureValid(axes: [axis])
-    return _Raw.argMin(self, dimension: Tensor<Int32>(Int32(axis)))
+    return _Raw.argMin(self, dimension: Tensor<Int32>(Int32(axis), on: device))
   }
 
   /// Returns the minimum along the specified axes. The reduced dimensions are retained with
@@ -1851,7 +1851,7 @@ extension Tensor where Scalar: Numeric & Comparable {
   public func min(alongAxes axes: [Int]) -> Tensor {
     // TODO(TF-433): Remove workaround for differentiating `map`.
     let axes = { axes.map(Int32.init) }()
-    return min(alongAxes: Tensor<Int32>(axes))
+    return min(alongAxes: Tensor<Int32>(axes, on: device))
   }
 
   /// Returns the minimum along the specified axes. The reduced dimensions are retained with
@@ -1884,7 +1884,7 @@ extension Tensor where Scalar: Numeric & Comparable {
   public func max(alongAxes axes: [Int]) -> Tensor {
     // TODO(TF-433): Remove workaround for differentiating `map`.
     let axes = { axes.map(Int32.init) }()
-    return max(alongAxes: Tensor<Int32>(axes))
+    return max(alongAxes: Tensor<Int32>(axes, on: device))
   }
 
   /// Returns the minimum along the specified axes. The reduced dimensions are retained with
@@ -2093,7 +2093,7 @@ extension Tensor where Scalar: Numeric {
   public func product(squeezingAxes axes: [Int]) -> Tensor {
     // TODO(TF-433): Remove workaround for differentiating `map`.
     let axes = { axes.map(Int32.init) }()
-    return product(squeezingAxes: Tensor<Int32>(axes))
+    return product(squeezingAxes: Tensor<Int32>(axes, on: device))
   }
 
   /// Returns the product along the specified axes. The reduced dimensions are removed.
@@ -2130,7 +2130,7 @@ extension Tensor where Scalar: Numeric {
   public func product(alongAxes axes: [Int]) -> Tensor {
     // TODO(TF-433): Remove workaround for differentiating `map`.
     let axes = { axes.map(Int32.init) }()
-    return product(alongAxes: Tensor<Int32>(axes))
+    return product(alongAxes: Tensor<Int32>(axes, on: device))
   }
 
   /// Returns the product along the specified axes. The reduced dimensions are retained with
@@ -2236,7 +2236,7 @@ extension Tensor where Scalar: Numeric {
   public func variance(squeezingAxes axes: [Int]) -> Tensor {
     // TODO(TF-433): Remove workaround for differentiating `map`.
     let axes = { axes.map(Int32.init) }()
-    return variance(squeezingAxes: Tensor<Int32>(axes))
+    return variance(squeezingAxes: Tensor<Int32>(axes, on: device))
   }
 
   /// Returns the variance along the specified axes. The reduced dimensions are retained with
@@ -2278,7 +2278,7 @@ extension Tensor where Scalar: Numeric {
   public func variance(alongAxes axes: [Int]) -> Tensor {
     // TODO(TF-433): Remove workaround for differentiating `map`.
     let axes = { axes.map(Int32.init) }()
-    return variance(alongAxes: Tensor<Int32>(axes))
+    return variance(alongAxes: Tensor<Int32>(axes, on: device))
   }
 
   /// Returns the variance along the specified axes. The reduced dimensions are retained with
@@ -2324,7 +2324,7 @@ extension Tensor where Scalar: Numeric {
     reverse: Bool = false
   ) -> Tensor {
     cumulativeSum(
-      alongAxis: Tensor<Int32>(Int32(axis)),
+      alongAxis: Tensor<Int32>(Int32(axis), on: device),
       exclusive: exclusive,
       reverse: reverse)
   }
@@ -2399,7 +2399,7 @@ extension Tensor where Scalar: Numeric {
     reverse: Bool = false
   ) -> Tensor {
     cumulativeProduct(
-      alongAxis: Tensor<Int32>(Int32(axis)),
+      alongAxis: Tensor<Int32>(Int32(axis), on: device),
       exclusive: exclusive,
       reverse: reverse)
   }
@@ -2604,9 +2604,9 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
 
         // Pack all reduced dimensions into a single one, so we can perform the
         // `cumulativeProduct` operations.
-        let idx = Tensor<Int32>(0..<Int32(self.rank))
+        let idx = Tensor<Int32>(0..<Int32(self.rank), on: device)
         let other = Tensor<Int32>(
-          Array(Set(idx.scalars).symmetricDifference(reductionIndices.scalars)))
+          Array(Set(idx.scalars).symmetricDifference(reductionIndices.scalars)), on: device)
         let perm = reductionIndices.concatenated(with: other)
         let reducedNum = Int(
           self.shapeTensor.gathering(atIndices: reductionIndices).product().scalarized())
@@ -2700,7 +2700,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   public func standardDeviation(alongAxes axes: [Int]) -> Tensor {
     // TODO(TF-433): Remove workaround for differentiating `map`.
     let axes = { axes.map(Int32.init) }()
-    return standardDeviation(alongAxes: Tensor<Int32>(axes))
+    return standardDeviation(alongAxes: Tensor<Int32>(axes, on: device))
   }
 
   /// Returns the standard deviation of the elements along the specified axes. The reduced
@@ -2751,7 +2751,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   public func logSumExp(squeezingAxes axes: [Int]) -> Tensor {
     // TODO(TF-433): Remove workaround for differentiating `map`.
     let axes = withoutDerivative(at: axes) { $0.map(Int32.init) }
-    return logSumExp(squeezingAxes: Tensor<Int32>(axes))
+    return logSumExp(squeezingAxes: Tensor<Int32>(axes, on: device))
   }
 
   /// Returns `log(exp(self).sum(squeezingAxes: axes))`. The reduced dimensions are removed.
@@ -2816,7 +2816,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   public func logSumExp(alongAxes axes: [Int]) -> Tensor {
     // TODO(TF-433): Remove workaround for differentiating `map`.
     let axes = withoutDerivative(at: axes) { $0.map(Int32.init) }
-    return logSumExp(alongAxes: Tensor<Int32>(axes))
+    return logSumExp(alongAxes: Tensor<Int32>(axes, on: device))
   }
 
   /// Returns `log(exp(self).sum(alongAxes: axes))`. The reduced dimensions are retained with
@@ -3017,38 +3017,4 @@ extension Tensor where Scalar: Numeric {
   public static func • (lhs: Tensor, rhs: Tensor) -> Tensor {
     matmul(lhs, rhs)
   }
-}
-
-//===------------------------------------------------------------------------------------------===//
-// Precondition helpers.
-//===------------------------------------------------------------------------------------------===//
-
-internal extension Tensor {
-    @usableFromInline
-    func ensureValid(
-        axes: Tensor<Int32>,
-        function: StaticString = #function,
-        file: StaticString = #file,
-        line: UInt = #line
-    ) {
-        precondition(
-            areAxesInRange(axes, file: file, line: line),
-            "All axes must be in the range `[-rank, rank)` when calling \(function) (rank is: \(rank), axes: \(axes))",
-            file: file,
-            line: line)
-    }
-
-    @usableFromInline
-    func ensureValid(
-        axes: [Int],
-        function: StaticString = #function,
-        file: StaticString = #file,
-        line: UInt = #line
-    ) {
-        precondition(
-            areAxesInRange(axes),
-            "All axes must be in the range `[-rank, rank)` when calling \(function) (rank is: \(rank), axes: \(axes))",
-            file: file,
-            line: line)
-    }
 }

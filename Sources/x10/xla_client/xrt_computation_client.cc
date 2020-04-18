@@ -43,13 +43,35 @@ namespace {
 
 thread_local std::vector<std::string> g_replication_devices;  // NOLINT
 
+struct TensorAllocatorTraits {
+  static void *allocate(size_t size, size_t alignment) {
+#if defined(_WIN32)
+    return ::_aligned_malloc(alignment, size);
+#elif defined(__APPLE__)
+    void *ptr;
+    ::posix_memalign(&ptr, alignment, size);
+    return ptr;
+#else
+    return ::aligned_alloc(alignment, size);
+#endif
+  }
+
+  static void deallocate(void *allocation) {
+#if defined(_WIN32)
+    return ::_aligned_free(allocation);
+#else
+    return ::free(allocation);
+#endif
+  }
+};
+
 // A simple Tensorflow Allocator which caches Tensor allocations in order to
 // avoid paying the kernel's clear_page_c() price.
 class TensorAllocator : public tensorflow::Allocator {
   struct AllocKey {
     struct Hash {
       size_t operator()(const AllocKey& hk) const {
-        return util::HashCombine(hk.alignment, hk.num_bytes);
+        return util::StdHashCombine(hk.alignment, hk.num_bytes);
       }
     };
 
@@ -132,9 +154,9 @@ class TensorAllocator : public tensorflow::Allocator {
   void* NewBlock(AllocBlocks* alloc_blocks) {
     // We allocate an extra alignment sized area to store the AllocBlocks
     // pointer.
-    void* ptr = ::aligned_alloc(
-        alloc_blocks->alloc_key.alignment,
-        alloc_blocks->alloc_key.alignment + alloc_blocks->alloc_key.num_bytes);
+    void *ptr = TensorAllocatorTraits::allocate(
+        alloc_blocks->alloc_key.alignment + alloc_blocks->alloc_key.num_bytes,
+        alloc_blocks->alloc_key.alignment);
     XLA_CHECK(ptr != nullptr);
     ptr = reinterpret_cast<char*>(ptr) + alloc_blocks->alloc_key.alignment;
     // Store the pointer to AllocBlocks right before the user memory.
@@ -145,7 +167,8 @@ class TensorAllocator : public tensorflow::Allocator {
 
   void FreeBlock(void* ptr, AllocBlocks* alloc_blocks) {
     size_ -= alloc_blocks->alloc_key.num_bytes;
-    std::free(reinterpret_cast<char*>(ptr) - alloc_blocks->alloc_key.alignment);
+    TensorAllocatorTraits::deallocate(
+        reinterpret_cast<char*>(ptr) - alloc_blocks->alloc_key.alignment);
   }
 
   void TrimCache(size_t num_bytes) {
@@ -544,7 +567,7 @@ std::vector<ComputationClient::DataPtr> XrtComputationClient::TransferToServer(
       size_t base_index = partitions[i];
       size_t length = (i + 1 < partitions.size())
                           ? partitions[i + 1] - base_index
-                          : partitions.size() - base_index;
+                          : tensors.size() - base_index;
       auto partitions_results =
           TransferToServerInternal(tensors.subspan(base_index, length));
       for (size_t r = 0; r < length; ++r) {
@@ -1708,8 +1731,8 @@ std::map<std::string, Metric> XrtComputationClient::GetMetrics() const {
         metric_name = xrt_metric.name();
       }
       if (options_.workers_map.size() > 1) {
-        metric_name = absl::StrCat(metric_name, ".", worker_target.first.name,
-                                   ".", worker_target.first.task_no);
+        absl::StrAppend(&metric_name, ".", worker_target.first.name, ".",
+                        worker_target.first.task_no);
       }
       metrics_data.emplace(std::move(metric_name), std::move(metric));
     }
@@ -1913,30 +1936,34 @@ const XrtSession::CachedNode& XrtComputationClient::GetSubTupleNode(
 tensorflow::DataType XrtComputationClient::XlaTypeToDataType(
     PrimitiveType dtype) {
   switch (dtype) {
-    case PRED:
+    case PrimitiveType::PRED:
       return tensorflow::DT_BOOL;
-    case S8:
+    case PrimitiveType::S8:
       return tensorflow::DT_INT8;
-    case U8:
+    case PrimitiveType::U8:
       return tensorflow::DT_UINT8;
-    case S16:
+    case PrimitiveType::S16:
       return tensorflow::DT_INT16;
-    case U16:
+    case PrimitiveType::U16:
       return tensorflow::DT_UINT16;
-    case S32:
+    case PrimitiveType::S32:
       return tensorflow::DT_INT32;
-    case U32:
+    case PrimitiveType::U32:
       return tensorflow::DT_UINT32;
-    case S64:
+    case PrimitiveType::S64:
       return tensorflow::DT_INT64;
-    case U64:
+    case PrimitiveType::U64:
       return tensorflow::DT_UINT64;
-    case F32:
+    case PrimitiveType::F32:
       return tensorflow::DT_FLOAT;
-    case F64:
+    case PrimitiveType::F64:
       return tensorflow::DT_DOUBLE;
-    case BF16:
+    case PrimitiveType::BF16:
       return tensorflow::DT_BFLOAT16;
+    case PrimitiveType::C64:
+      return tensorflow::DT_COMPLEX64;
+    case PrimitiveType::C128:
+      return tensorflow::DT_COMPLEX128;
     default:
       break;
   }

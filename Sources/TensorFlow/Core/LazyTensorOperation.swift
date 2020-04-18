@@ -100,6 +100,9 @@ class LazyTensorHandle: _AnyTensorHandle {
     }
   }
 
+  @usableFromInline
+  var backend: Device.Backend { return .TF_EAGER }
+
   // Liveness tracking for LazyTensorOperations
   //
   static func isLive(_ op: LazyTensorOperation) -> Bool {

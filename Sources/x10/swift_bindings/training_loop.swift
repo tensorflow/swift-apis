@@ -12,9 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import x10_device
+#if !IMPORT_X10_AS_TENSORFLOW
 import x10_tensor
-import x10_xla_tensor_wrapper
+#else
+import TensorFlow
+#endif
+@_implementationOnly import x10_xla_tensor_wrapper
 
 /// Collects correct prediction counters and loss totals.
 public struct HostStatistics {

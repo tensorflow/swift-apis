@@ -34,7 +34,7 @@ std::string GetEnvOrdinalPath(const char* name, const std::string& defval,
   if (!path.empty()) {
     int64 ordinal = GetEnvInt(ordinal_env, -1);
     if (ordinal >= 0) {
-      path = absl::StrCat(path, ".", ordinal);
+      absl::StrAppend(&path, ".", ordinal);
     }
   }
   return path;

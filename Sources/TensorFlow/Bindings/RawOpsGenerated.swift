@@ -21,19 +21,10 @@ func makeOp(_ name: String, _ nOutputs: Int) -> TFTensorOperation {
   _ExecutionContext.makeOp(name, nOutputs)
 }
 
-@available(
-  *, deprecated, renamed: "_Raw",
-  message:
-    """
-  'Raw' has been renamed to '_Raw' to indicate that it is not a guaranteed/stable API.
-  """
-)
-public typealias Raw = _Raw
-
-public enum _Raw {
+public enum _RawTFEager {
 
   static let generatedTensorFlowVersion = "2.1.0"
-  static let generatedTensorFlowGitVersion = "v2.1.0-rc2-17-ge5bf8de410"
+  static let generatedTensorFlowGitVersion = "v2.1.0-rc2-17-ge5bf8de"
 
   // @_frozen // SR-9739
   public enum A {
@@ -87,7 +78,7 @@ public enum _Raw {
   }
 
   // @_frozen // SR-9739
-  public enum DataFormat5 {
+  public enum DataFormat2 {
     case nchw
     case nchwVectC
     case nhwc
@@ -292,7 +283,7 @@ public enum _Raw {
   }
 
   // @_frozen // SR-9739
-  public enum Method4 {
+  public enum Method1 {
     case bilinear
 
     @inlinable
@@ -326,7 +317,7 @@ public enum _Raw {
   }
 
   // @_frozen // SR-9739
-  public enum Mode6 {
+  public enum Mode1 {
     case reflect
     case symmetric
 
@@ -379,7 +370,7 @@ public enum _Raw {
   }
 
   // @_frozen // SR-9739
-  public enum Padding2 {
+  public enum Padding1 {
     case explicit
     case same
     case valid
@@ -392,6 +383,25 @@ public enum _Raw {
         case .explicit: return "EXPLICIT"
         case .same: return "SAME"
         case .valid: return "VALID"
+        }
+      }
+    }
+  }
+
+  // @_frozen // SR-9739
+  public enum PrecisionMode {
+    case fp16
+    case fp32
+    case int8
+
+    @inlinable
+    var cName: String {
+      @inline(__always)
+      get {
+        switch self {
+        case .fp16: return "FP16"
+        case .fp32: return "FP32"
+        case .int8: return "INT8"
         }
       }
     }
@@ -474,7 +484,7 @@ public enum _Raw {
   }
 
   // @_frozen // SR-9739
-  public enum RoundMode7 {
+  public enum RoundMode1 {
     case halfAwayFromZero
     case halfToEven
 
@@ -508,7 +518,7 @@ public enum _Raw {
   }
 
   // @_frozen // SR-9739
-  public enum SplitType2 {
+  public enum SplitType1 {
     case inequality
 
     @inlinable
@@ -551,7 +561,7 @@ public enum _Raw {
   ///
   /// If exit_without_error is true, the process will exit normally,
   /// otherwise it will exit with a SIGABORT signal.
-  /// 
+  ///
   /// Returns nothing but an exception.
   ///
   /// - Attr error_msg: A string which is the message associated with the exception.
@@ -589,9 +599,9 @@ public enum _Raw {
   /// wait for all of its inputs to be ready before beginning to sum. This can
   /// save memory if inputs are ready at different times, since minimum temporary
   /// storage is proportional to the output size rather than the inputs size.
-  /// 
+  ///
   /// Unlike the original `accumulate_n`, `accumulate_n_v2` is differentiable.
-  /// 
+  ///
   /// Returns a `Tensor` of same shape and type as the elements of `inputs`.
   ///
   /// - Parameter inputs: A list of `Tensor` objects, each with same shape and type.
@@ -627,7 +637,7 @@ public enum _Raw {
   ///
   /// Given an input tensor, the function computes inverse hyperbolic cosine of every element.
   /// Input range is `[1, inf]`. It returns `nan` if the input lies outside the range.
-  /// 
+  ///
   /// ```python
   /// x = tf.constant([-2, -0.5, 1, 1.2, 200, 10000, float("inf")])
   /// tf.math.acosh(x) ==> [nan nan 0. 0.62236255 5.9914584 9.903487 inf]
@@ -681,19 +691,19 @@ public enum _Raw {
   ///
   /// A `SparseTensor` of rank `R` is represented by three tensors: `sparse_indices`,
   /// `sparse_values`, and `sparse_shape`, where
-  /// 
+  ///
   /// ```sparse_indices.shape[1] == sparse_shape.shape[0] == R```
-  /// 
+  ///
   /// An `N`-minibatch of `SparseTensor` objects is represented as a `SparseTensor`
   /// having a first `sparse_indices` column taking values between `[0, N)`, where
   /// the minibatch size `N == sparse_shape[0]`.
-  /// 
+  ///
   /// The input `SparseTensor` must have rank `R` greater than 1, and the first
   /// dimension is treated as the minibatch dimension.  Elements of the `SparseTensor`
   /// must be sorted in increasing order of this first dimension.  The stored
   /// `SparseTensor` objects pointed to by each row of the output `sparse_handles`
   /// will have rank `R-1`.
-  /// 
+  ///
   /// The `SparseTensor` values can then be read out as part of a minibatch by passing
   /// the given keys as vector elements to `TakeManySparseFromTensorsMap`.  To ensure
   /// the correct `SparseTensorsMap` is accessed, ensure that the same
@@ -738,7 +748,7 @@ public enum _Raw {
   /// Add all input tensors element wise.
   ///
   ///   Inputs must be of same size and shape.
-  /// 
+  ///
   ///   ```python
   ///   x = [9, 7, 10]
   ///   tf.math.add_n(x) ==> 26
@@ -759,11 +769,11 @@ public enum _Raw {
   ///
   /// A `SparseTensor` is represented by three tensors: `sparse_indices`,
   /// `sparse_values`, and `sparse_shape`.
-  /// 
+  ///
   /// This operator takes the given `SparseTensor` and adds it to a container
   /// object (a `SparseTensorsMap`).  A unique key within this container is generated
   /// in the form of an `int64`, and this is the value that is returned.
-  /// 
+  ///
   /// The `SparseTensor` can then be read out as part of a minibatch by passing
   /// the key as a vector element to `TakeManySparseFromTensorsMap`.  To ensure
   /// the correct `SparseTensorsMap` is accessed, ensure that the same
@@ -843,9 +853,9 @@ public enum _Raw {
   /// `images` is a tensor of at least 3 dimensions.  The last 3 dimensions are
   /// interpreted as `[height, width, channels]`.  The other dimensions only
   /// represent a collection of images, such as `[batch, height, width, channels].`
-  /// 
+  ///
   /// Contrast is adjusted independently for each channel of each image.
-  /// 
+  ///
   /// For each channel, the Op first computes the mean of the image pixels in the
   /// channel and then adjusts each component of each pixel to
   /// `(x - mean) * contrast_factor + mean`.
@@ -872,7 +882,7 @@ public enum _Raw {
   ///
   /// `images` is a tensor of at least 3 dimensions.  The last dimension is
   /// interpretted as channels, and must be three.
-  /// 
+  ///
   /// The input image is considered in the RGB colorspace. Conceptually, the RGB
   /// colors are first mapped into HSV. A delta is then applied all the hue values,
   /// and then remapped back to RGB colorspace.
@@ -899,7 +909,7 @@ public enum _Raw {
   ///
   /// `images` is a tensor of at least 3 dimensions.  The last dimension is
   /// interpretted as channels, and must be three.
-  /// 
+  ///
   /// The input image is considered in the RGB colorspace. Conceptually, the RGB
   /// colors are first mapped into HSV. A scale is then applied all the saturation
   /// values, and then remapped back to RGB colorspace.
@@ -956,9 +966,9 @@ public enum _Raw {
   ///
   /// See explanations of candidate sampling and the data formats at
   /// go/candidate-sampling.
-  /// 
+  ///
   /// For each batch, this op picks a single set of sampled candidate labels.
-  /// 
+  ///
   /// The advantages of sampling candidates per-batch are simplicity and the
   /// possibility of efficient dense matrix multiplication. The disadvantage is that
   /// the sampled candidates must be chosen independently of the context and of the
@@ -1017,16 +1027,16 @@ public enum _Raw {
   /// `split_dimension` and send to the other replicas given group_assignment. After
   /// receiving `split_count` - 1 blocks from other replicas, we concatenate the
   /// blocks along `concat_dimension` as the output.
-  /// 
+  ///
   /// For example, suppose there are 2 TPU replicas:
   /// replica 0 receives input: `[[A, B]]`
   /// replica 1 receives input: `[[C, D]]`
-  /// 
+  ///
   /// group_assignment=`[[0, 1]]`
   /// concat_dimension=0
   /// split_dimension=1
   /// split_count=2
-  /// 
+  ///
   /// replica 0's output: `[[A], [C]]`
   /// replica 1's output: `[[B], [D]]`
   ///
@@ -1069,16 +1079,16 @@ public enum _Raw {
   /// type `float` that is the argument of each element in `input`. All elements in
   /// `input` must be complex numbers of the form \\(a + bj\\), where *a*
   /// is the real part and *b* is the imaginary part.
-  /// 
+  ///
   /// The argument returned by this operation is of the form \\(atan2(b, a)\\).
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # tensor 'input' is [-2.25 + 4.75j, 3.25 + 5.75j]
   /// tf.angle(input) ==> [2.0132, 1.056]
   /// ```
-  /// 
+  ///
   /// @compatibility(numpy)
   /// Equivalent to np.angle.
   /// @end_compatibility
@@ -1226,7 +1236,7 @@ public enum _Raw {
   /// Returns the index with the largest value across dimensions of a tensor.
   ///
   /// Note that in case of ties the identity of the return value is not guaranteed.
-  /// 
+  ///
   /// Usage:
   ///   ```python
   ///   import tensorflow as tf
@@ -1262,7 +1272,7 @@ public enum _Raw {
   /// Returns the index with the smallest value across dimensions of a tensor.
   ///
   /// Note that in case of ties the identity of the return value is not guaranteed.
-  /// 
+  ///
   /// Usage:
   ///   ```python
   ///   import tensorflow as tf
@@ -1298,10 +1308,17 @@ public enum _Raw {
   /// Converts each entry in the given tensor to strings.
   ///
   /// Supports many numeric types and boolean.
-  /// 
+  ///
   /// For Unicode, see the
   /// [https://www.tensorflow.org/tutorials/representation/unicode](Working with Unicode text)
   /// tutorial.
+  ///
+  /// Examples:
+  ///
+  /// >>> tf.strings.as_string([3, 2])
+  /// <tf.Tensor: shape=(2,), dtype=string, numpy=array([b'3', b'2'], dtype=object)>
+  /// >>> tf.strings.as_string([3.1415926, 2.71828], precision=2).numpy()
+  /// array([b'3.14', b'2.72'], dtype=object)
   ///
   /// - Attrs:
   ///     - precision: The post-decimal precision to use for floating point numbers.
@@ -1339,20 +1356,20 @@ public enum _Raw {
   ///
   /// The `tf.math.asin` operation returns the inverse of `tf.math.sin`, such that
   /// if `y = tf.math.sin(x)` then, `x = tf.math.asin(y)`.
-  /// 
+  ///
   /// **Note**: The output of `tf.math.asin` will lie within the invertible range
   /// of sine, i.e [-pi/2, pi/2].
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```python
   /// # Note: [1.047, 0.785] ~= [(pi/3), (pi/4)]
   /// x = tf.constant([1.047, 0.785])
   /// y = tf.math.sin(x) # [0.8659266, 0.7068252]
-  /// 
+  ///
   /// tf.math.asin(y) # [1.047, 0.785] = x
   /// ```
-  /// 
+  ///
   @inlinable @inline(__always)
   public static func asin<T: TensorFlowNumeric>(
     _ x: Tensor<T>
@@ -1369,7 +1386,7 @@ public enum _Raw {
   ///   Given an input tensor, this function computes inverse hyperbolic sine
   ///   for every element in the tensor. Both input and output has a range of
   ///   `[-inf, inf]`.
-  /// 
+  ///
   ///   ```python
   ///   x = tf.constant([-float("inf"), -2, -0.5, 1, 1.2, 200, 10000, float("inf")])
   ///   tf.math.asinh(x) ==> [-inf -1.4436355 -0.4812118 0.8813736 1.0159732 5.991471 9.903487 inf]
@@ -1416,7 +1433,7 @@ public enum _Raw {
   /// "flat_map") of the transformations following this transformation match the list
   /// of names in the `transformations` argument. If there is a mismatch, the
   /// transformation raises an exception.
-  /// 
+  ///
   /// The check occurs when iterating over the contents of the dataset, which
   /// means that the check happens *after* any static optimizations are applied
   /// to the dataset graph.
@@ -1515,20 +1532,20 @@ public enum _Raw {
   ///
   /// The `tf.math.atan` operation returns the inverse of `tf.math.tan`, such that
   /// if `y = tf.math.tan(x)` then, `x = tf.math.atan(y)`.
-  /// 
+  ///
   /// **Note**: The output of `tf.math.atan` will lie within the invertible range
   /// of tan, i.e (-pi/2, pi/2).
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```python
   /// # Note: [1.047, 0.785] ~= [(pi/3), (pi/4)]
   /// x = tf.constant([1.047, 0.785])
   /// y = tf.math.tan(x) # [1.731261, 0.99920404]
-  /// 
+  ///
   /// tf.math.atan(y) # [1.047, 0.785] = x
   /// ```
-  /// 
+  ///
   @inlinable @inline(__always)
   public static func atan<T: TensorFlowNumeric>(
     _ x: Tensor<T>
@@ -1567,7 +1584,7 @@ public enum _Raw {
   ///   `[-inf, inf]`. If input is `-1`, output will be `-inf` and if the
   ///   input is `1`, output will be `inf`. Values outside the range will have
   ///   `nan` as output.
-  /// 
+  ///
   ///   ```python
   ///   x = tf.constant([-float("inf"), -1, -0.5, 1, 0, 0.5, 10, float("inf")])
   ///   tf.math.atanh(x) ==> [nan -inf -0.54930615 inf  0. 0.54930615 nan nan]
@@ -1858,7 +1875,7 @@ public enum _Raw {
   /// slices of frequency information, one slice for each window of time. By joining
   /// these together into a sequence, they form a distinctive fingerprint of the sound
   /// over time.
-  /// 
+  ///
   /// This op expects to receive audio data as an input, stored as floats in the range
   /// -1 to 1, together with a window width in samples, and a stride specifying how
   /// far to move the window between slices. From this it generates a three
@@ -1866,16 +1883,16 @@ public enum _Raw {
   /// stereo audio input would have two here for example. The second dimension is time,
   /// with successive frequency slices. The third dimension has an amplitude value for
   /// each frequency during that time slice.
-  /// 
+  ///
   /// This means the layout when converted and saved as an image is rotated 90 degrees
   /// clockwise from a typical spectrogram. Time is descending down the Y axis, and
   /// the frequency decreases from left to right.
-  /// 
+  ///
   /// Each value in the result represents the square root of the sum of the real and
   /// imaginary parts of an FFT on the current window of samples. In this way, the
   /// lowest dimension represents the power of each frequency in the current window,
   /// and adjacent windows are concatenated in the next dimension.
-  /// 
+  ///
   /// To get a more intuitive and visual look at what this operation does, you can run
   /// tensorflow/examples/wav_to_spectrogram to read in an audio file and save out the
   /// resulting spectrogram as a PNG image.
@@ -1912,10 +1929,10 @@ public enum _Raw {
   /// audio is built from `tensor` which must be 3-D with shape `[batch_size,
   /// frames, channels]` or 2-D with shape `[batch_size, frames]`. The values are
   /// assumed to be in the range of `[-1.0, 1.0]` with a sample rate of `sample_rate`.
-  /// 
+  ///
   /// The `tag` argument is a scalar `Tensor` of type `string`.  It is used to
   /// build the `tag` of the summary values:
-  /// 
+  ///
   /// *  If `max_outputs` is 1, the summary value tag is '*tag*/audio'.
   /// *  If `max_outputs` is greater than 1, the summary value tags are
   ///    generated sequentially as '*tag*/audio/0', '*tag*/audio/1', etc.
@@ -1951,10 +1968,10 @@ public enum _Raw {
   /// audio is built from `tensor` which must be 3-D with shape `[batch_size,
   /// frames, channels]` or 2-D with shape `[batch_size, frames]`. The values are
   /// assumed to be in the range of `[-1.0, 1.0]` with a sample rate of `sample_rate`.
-  /// 
+  ///
   /// The `tag` argument is a scalar `Tensor` of type `string`.  It is used to
   /// build the `tag` of the summary values:
-  /// 
+  ///
   /// *  If `max_outputs` is 1, the summary value tag is '*tag*/audio'.
   /// *  If `max_outputs` is greater than 1, the summary value tags are
   ///    generated sequentially as '*tag*/audio/0', '*tag*/audio/1', etc.
@@ -1989,7 +2006,7 @@ public enum _Raw {
   /// sharded dataset for the index-th worker. This attempts to automatically shard
   /// a dataset by examining the Dataset graph and inserting a shard op before the
   /// inputs to a reader Dataset (e.g. CSVDataset, TFRecordDataset).
-  /// 
+  ///
   /// This dataset will throw a NotFound error if we cannot shard the dataset
   /// automatically.
   ///
@@ -2182,20 +2199,20 @@ public enum _Raw {
   /// When many instances of this Op are being run concurrently with the same
   /// container/shared_name in the same device, some will output zero-shaped Tensors
   /// and others will output Tensors of size up to max_batch_size.
-  /// 
+  ///
   /// All Tensors in in_tensors are batched together (so, for example, labels and
   /// features should be batched with a single instance of this operation.
-  /// 
+  ///
   /// Each invocation of batch emits an `id` scalar which will be used to identify
   /// this particular invocation when doing unbatch or its gradient.
-  /// 
+  ///
   /// Each op which emits a non-empty batch will also emit a non-empty batch_index
   /// Tensor, which, is a [K, 3] matrix where each row contains the invocation's id,
   /// start, and length of elements of each set of Tensors present in batched_tensors.
-  /// 
+  ///
   /// Batched tensors are concatenated along the first dimension, and all tensors in
   /// in_tensors must have the first dimension of the same size.
-  /// 
+  ///
   /// in_tensors: The tensors to be batched.
   /// num_batch_threads: Number of scheduling threads for processing batches of work.
   ///  Determines the number of batches processed in parallel.
@@ -2317,16 +2334,16 @@ public enum _Raw {
   /// Batches all the inputs tensors to the computation done by the function.
   ///
   /// So, for example, in the following code
-  /// 
+  ///
   ///   ```python
-  /// 
+  ///
   ///   # This input will be captured.
   ///   y = tf.placeholder_with_default(1.0, shape=[])
-  /// 
+  ///
   ///   @tf.Defun(tf.float32)
   ///   def computation(a):
   ///     return tf.matmul(a, a) + y
-  /// 
+  ///
   ///   b = gen_batch_ops.batch_function(
   ///           f=computation
   ///           in_tensors=[a],
@@ -2337,19 +2354,19 @@ public enum _Raw {
   ///           batch_timeout_micros=100000,  # 100ms
   ///           allowed_batch_sizes=[3, 10],
   ///           batching_queue="")
-  /// 
+  ///
   /// If more than one session.run call is simultaneously trying to compute `b`
   /// the values of `a` will be gathered, non-deterministically concatenated
   /// along the first axis, and only one thread will run the computation.
-  /// 
+  ///
   /// Assumes that all arguments of the function are Tensors which will be batched
   /// along their first dimension.
-  /// 
+  ///
   /// Arguments that are captured, are not batched. The session.run call which does
   /// the concatenation, will use the values of the captured tensors available to it.
   /// Therefore, typical uses of captured tensors should involve values which remain
   /// unchanged across session.run calls. Inference is a good example of this.
-  /// 
+  ///
   /// SparseTensor is not supported. The return value of the decorated function
   /// must be a Tensor or a list/tuple of Tensors.
   ///
@@ -2425,17 +2442,17 @@ public enum _Raw {
   /// individual slices can optionally be adjointed (to adjoint a matrix
   /// means to transpose and conjugate it) before multiplication by setting
   /// the `adj_x` or `adj_y` flag to `True`, which are by default `False`.
-  /// 
+  ///
   /// The input tensors `x` and `y` are 2-D or higher with shape `[..., r_x, c_x]`
   /// and `[..., r_y, c_y]`.
-  /// 
+  ///
   /// The output tensor is 2-D or higher with shape `[..., r_o, c_o]`, where:
-  /// 
+  ///
   ///     r_o = c_x if adj_x else r_x
   ///     c_o = r_y if adj_y else c_y
-  /// 
+  ///
   /// It is computed as:
-  /// 
+  ///
   ///     output[..., :, :] = matrix(x[..., :, :]) * matrix(y[..., :, :])
   ///
   /// - Parameters:
@@ -2472,23 +2489,23 @@ public enum _Raw {
   /// individual slices can optionally be adjointed (to adjoint a matrix
   /// means to transpose and conjugate it) before multiplication by setting
   /// the `adj_x` or `adj_y` flag to `True`, which are by default `False`.
-  /// 
+  ///
   /// The input tensors `x` and `y` are 2-D or higher with shape `[..., r_x, c_x]`
   /// and `[..., r_y, c_y]`.
-  /// 
+  ///
   /// The output tensor is 2-D or higher with shape `[..., r_o, c_o]`, where:
-  /// 
+  ///
   ///     r_o = c_x if adj_x else r_x
   ///     c_o = r_y if adj_y else c_y
-  /// 
+  ///
   /// It is computed as:
-  /// 
+  ///
   ///     output[..., :, :] = matrix(x[..., :, :]) * matrix(y[..., :, :])
-  /// 
+  ///
   /// *NOTE*: `BatchMatMulV2` supports broadcasting in the batch dimensions. More
   /// about broadcasting
   /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html).
-  /// 
+  ///
   ///
   /// - Parameters:
   ///     - x: 2-D or higher with shape `[..., r_x, c_x]`.
@@ -2777,7 +2794,7 @@ public enum _Raw {
   /// BatchToSpace for 4-D tensors of type T.
   ///
   /// This is a legacy version of the more general BatchToSpaceND.
-  /// 
+  ///
   /// Rearranges (permutes) data from batch into blocks of spatial data, followed by
   /// cropping. This is the reverse transformation of SpaceToBatch. More specifically,
   /// this op outputs a copy of the input tensor where values from the `batch`
@@ -2792,70 +2809,70 @@ public enum _Raw {
   ///     - crops: 2-D tensor of non-negative integers with shape `[2, 2]`. It specifies
   ///         how many elements to crop from the intermediate result across the spatial
   ///         dimensions as follows:
-  ///         
+  ///
   ///             crops = [[crop_top, crop_bottom], [crop_left, crop_right]]
   ///
   /// - Output output: 4-D with shape `[batch, height, width, depth]`, where:
-  ///     
+  ///
   ///           height = height_pad - crop_top - crop_bottom
   ///           width = width_pad - crop_left - crop_right
-  ///     
+  ///
   ///     The attr `block_size` must be greater than one. It indicates the block size.
-  ///     
+  ///
   ///     Some examples:
-  ///     
+  ///
   ///     (1) For the following input of shape `[4, 1, 1, 1]` and block_size of 2:
-  ///     
+  ///
   ///     ```
   ///     [[[[1]]], [[[2]]], [[[3]]], [[[4]]]]
   ///     ```
-  ///     
+  ///
   ///     The output tensor has shape `[1, 2, 2, 1]` and value:
-  ///     
+  ///
   ///     ```
   ///     x = [[[[1], [2]], [[3], [4]]]]
   ///     ```
-  ///     
+  ///
   ///     (2) For the following input of shape `[4, 1, 1, 3]` and block_size of 2:
-  ///     
+  ///
   ///     ```
   ///     [[[[1, 2, 3]]], [[[4, 5, 6]]], [[[7, 8, 9]]], [[[10, 11, 12]]]]
   ///     ```
-  ///     
+  ///
   ///     The output tensor has shape `[1, 2, 2, 3]` and value:
-  ///     
+  ///
   ///     ```
   ///     x = [[[[1, 2, 3], [4, 5, 6]],
   ///           [[7, 8, 9], [10, 11, 12]]]]
   ///     ```
-  ///     
+  ///
   ///     (3) For the following input of shape `[4, 2, 2, 1]` and block_size of 2:
-  ///     
+  ///
   ///     ```
   ///     x = [[[[1], [3]], [[9], [11]]],
   ///          [[[2], [4]], [[10], [12]]],
   ///          [[[5], [7]], [[13], [15]]],
   ///          [[[6], [8]], [[14], [16]]]]
   ///     ```
-  ///     
+  ///
   ///     The output tensor has shape `[1, 4, 4, 1]` and value:
-  ///     
+  ///
   ///     ```
   ///     x = [[[[1],   [2],  [3],  [4]],
   ///          [[5],   [6],  [7],  [8]],
   ///          [[9],  [10], [11],  [12]],
   ///          [[13], [14], [15],  [16]]]]
   ///     ```
-  ///     
+  ///
   ///     (4) For the following input of shape `[8, 1, 2, 1]` and block_size of 2:
-  ///     
+  ///
   ///     ```
   ///     x = [[[[1], [3]]], [[[9], [11]]], [[[2], [4]]], [[[10], [12]]],
   ///          [[[5], [7]]], [[[13], [15]]], [[[6], [8]]], [[[14], [16]]]]
   ///     ```
-  ///     
+  ///
   ///     The output tensor has shape `[2, 2, 4, 1]` and value:
-  ///     
+  ///
   ///     ```
   ///     x = [[[[1], [3]], [[5], [7]]],
   ///          [[[2], [4]], [[10], [12]]],
@@ -2899,104 +2916,104 @@ public enum _Raw {
   ///           dimension `i + 1`, which corresponds to spatial dimension `i`.  It is
   ///           required that
   ///           `crop_start[i] + crop_end[i] <= block_shape[i] * input_shape[i + 1]`.
-  ///         
+  ///
   ///         This operation is equivalent to the following steps:
-  ///         
+  ///
   ///         1. Reshape `input` to `reshaped` of shape:
   ///              [block_shape[0], ..., block_shape[M-1],
   ///               batch / prod(block_shape),
   ///               input_shape[1], ..., input_shape[N-1]]
-  ///         
+  ///
   ///         2. Permute dimensions of `reshaped` to produce `permuted` of shape
   ///              [batch / prod(block_shape),
-  ///         
+  ///
   ///               input_shape[1], block_shape[0],
   ///               ...,
   ///               input_shape[M], block_shape[M-1],
-  ///         
+  ///
   ///               input_shape[M+1], ..., input_shape[N-1]]
-  ///         
+  ///
   ///         3. Reshape `permuted` to produce `reshaped_permuted` of shape
   ///              [batch / prod(block_shape),
-  ///         
+  ///
   ///               input_shape[1] * block_shape[0],
   ///               ...,
   ///               input_shape[M] * block_shape[M-1],
-  ///         
+  ///
   ///               input_shape[M+1],
   ///               ...,
   ///               input_shape[N-1]]
-  ///         
+  ///
   ///         4. Crop the start and end of dimensions `[1, ..., M]` of
   ///            `reshaped_permuted` according to `crops` to produce the output of shape:
   ///              [batch / prod(block_shape),
-  ///         
+  ///
   ///               input_shape[1] * block_shape[0] - crops[0,0] - crops[0,1],
   ///               ...,
   ///               input_shape[M] * block_shape[M-1] - crops[M-1,0] - crops[M-1,1],
-  ///         
+  ///
   ///               input_shape[M+1], ..., input_shape[N-1]]
-  ///         
+  ///
   ///         Some examples:
-  ///         
+  ///
   ///         (1) For the following input of shape `[4, 1, 1, 1]`, `block_shape = [2, 2]`, and
   ///             `crops = [[0, 0], [0, 0]]`:
-  ///         
+  ///
   ///         ```
   ///         [[[[1]]], [[[2]]], [[[3]]], [[[4]]]]
   ///         ```
-  ///         
+  ///
   ///         The output tensor has shape `[1, 2, 2, 1]` and value:
-  ///         
+  ///
   ///         ```
   ///         x = [[[[1], [2]], [[3], [4]]]]
   ///         ```
-  ///         
+  ///
   ///         (2) For the following input of shape `[4, 1, 1, 3]`, `block_shape = [2, 2]`, and
   ///             `crops = [[0, 0], [0, 0]]`:
-  ///         
+  ///
   ///         ```
   ///         [[[[1, 2, 3]]], [[[4, 5, 6]]], [[[7, 8, 9]]], [[[10, 11, 12]]]]
   ///         ```
-  ///         
+  ///
   ///         The output tensor has shape `[1, 2, 2, 3]` and value:
-  ///         
+  ///
   ///         ```
   ///         x = [[[[1, 2, 3], [4, 5, 6]],
   ///               [[7, 8, 9], [10, 11, 12]]]]
   ///         ```
-  ///         
+  ///
   ///         (3) For the following input of shape `[4, 2, 2, 1]`, `block_shape = [2, 2]`, and
   ///             `crops = [[0, 0], [0, 0]]`:
-  ///         
+  ///
   ///         ```
   ///         x = [[[[1], [3]], [[9], [11]]],
   ///              [[[2], [4]], [[10], [12]]],
   ///              [[[5], [7]], [[13], [15]]],
   ///              [[[6], [8]], [[14], [16]]]]
   ///         ```
-  ///         
+  ///
   ///         The output tensor has shape `[1, 4, 4, 1]` and value:
-  ///         
+  ///
   ///         ```
   ///         x = [[[[1],   [2],  [3],  [4]],
   ///              [[5],   [6],  [7],  [8]],
   ///              [[9],  [10], [11],  [12]],
   ///              [[13], [14], [15],  [16]]]]
   ///         ```
-  ///         
+  ///
   ///         (4) For the following input of shape `[8, 1, 3, 1]`, `block_shape = [2, 2]`, and
   ///             `crops = [[0, 0], [2, 0]]`:
-  ///         
+  ///
   ///         ```
   ///         x = [[[[0], [1], [3]]], [[[0], [9], [11]]],
   ///              [[[0], [2], [4]]], [[[0], [10], [12]]],
   ///              [[[0], [5], [7]]], [[[0], [13], [15]]],
   ///              [[[0], [6], [8]]], [[[0], [14], [16]]]]
   ///         ```
-  ///         
+  ///
   ///         The output tensor has shape `[2, 2, 4, 1]` and value:
-  ///         
+  ///
   ///         ```
   ///         x = [[[[1],   [2],  [3],  [4]],
   ///               [[5],   [6],  [7],  [8]]],
@@ -3028,7 +3045,7 @@ public enum _Raw {
   ///
   /// Exponentially scaled modified Bessel function of order 0 defined as
   /// `bessel_i0e(x) = exp(-abs(x)) bessel_i0(x)`.
-  /// 
+  ///
   /// This function is faster and numerically stabler than `bessel_i0(x)`.
   @inlinable @inline(__always)
   public static func besselI0e<T: FloatingPoint & TensorFlowScalar>(
@@ -3045,7 +3062,7 @@ public enum _Raw {
   ///
   /// Exponentially scaled modified Bessel function of order 0 defined as
   /// `bessel_i1e(x) = exp(-abs(x)) bessel_i1(x)`.
-  /// 
+  ///
   /// This function is faster and numerically stabler than `bessel_i1(x)`.
   @inlinable @inline(__always)
   public static func besselI1e<T: FloatingPoint & TensorFlowScalar>(
@@ -3061,16 +3078,16 @@ public enum _Raw {
   /// Compute the regularized incomplete beta integral \\(I_x(a, b)\\).
   ///
   /// The regularized incomplete beta integral is defined as:
-  /// 
-  /// 
+  ///
+  ///
   /// \\(I_x(a, b) = \frac{B(x; a, b)}{B(a, b)}\\)
-  /// 
+  ///
   /// where
-  /// 
-  /// 
+  ///
+  ///
   /// \\(B(x; a, b) = \int_0^x t^{a-1} (1 - t)^{b-1} dt\\)
-  /// 
-  /// 
+  ///
+  ///
   /// is the incomplete beta function and \\(B(a, b)\\) is the *complete*
   /// beta function.
   @inlinable @inline(__always)
@@ -3154,7 +3171,7 @@ public enum _Raw {
   /// Adds `bias` to `value`.
   ///
   /// This is a deprecated version of BiasAdd and will be soon removed.
-  /// 
+  ///
   /// This is a special case of `tf.add` where `bias` is restricted to be 1-D.
   /// Broadcasting is supported, so `value` may have any number of dimensions.
   ///
@@ -3196,7 +3213,7 @@ public enum _Raw {
   /// counted in `arr`. If `weights` are non-empty, then index `i` stores the sum of
   /// the value in `weights` at each index where the corresponding value in `arr` is
   /// `i`.
-  /// 
+  ///
   /// Values in `arr` outside of the range [0, size) are ignored.
   ///
   /// - Parameters:
@@ -3227,21 +3244,21 @@ public enum _Raw {
   ///
   /// Given a tensor `input`, this operation returns a tensor that has the same buffer
   /// data as `input` with datatype `type`.
-  /// 
+  ///
   /// If the input datatype `T` is larger than the output datatype `type` then the
   /// shape changes from [...] to [..., sizeof(`T`)/sizeof(`type`)].
-  /// 
+  ///
   /// If `T` is smaller than `type`, the operator requires that the rightmost
   /// dimension be equal to sizeof(`type`)/sizeof(`T`). The shape then goes from
   /// [..., sizeof(`type`)/sizeof(`T`)] to [...].
-  /// 
+  ///
   /// tf.bitcast() and tf.cast() work differently when real dtype is casted as a complex dtype
   /// (e.g. tf.complex64 or tf.complex128) as tf.cast() make imaginary part 0 while tf.bitcast()
   /// gives module error.
   /// For example,
-  /// 
+  ///
   /// Example 1:
-  /// 
+  ///
   /// >>> a = [1., 2., 3.]
   /// >>> equality_bitcast = tf.bitcast(a, tf.complex128)
   /// Traceback (most recent call last):
@@ -3250,14 +3267,14 @@ public enum _Raw {
   /// >>> equality_cast = tf.cast(a, tf.complex128)
   /// >>> print(equality_cast)
   /// tf.Tensor([1.+0.j 2.+0.j 3.+0.j], shape=(3,), dtype=complex128)
-  /// 
+  ///
   /// Example 2:
-  /// 
+  ///
   /// >>> tf.bitcast(tf.constant(0xffffffff, dtype=tf.uint32), tf.uint8)
   /// <tf.Tensor: shape=(4,), dtype=uint8, numpy=array([255, 255, 255, 255], dtype=uint8)>
-  /// 
+  ///
   /// Example 3:
-  /// 
+  ///
   /// >>> x = [1., 2., 3.]
   /// >>> y = [0., 2., 3.]
   /// >>> equality= tf.equal(x,y)
@@ -3272,7 +3289,7 @@ public enum _Raw {
   ///     [[  0   0   0   0]
   ///      [  0   0 128  63]
   ///      [  0   0 128  63]], shape=(3, 4), dtype=uint8)
-  /// 
+  ///
   /// *NOTE*: Bitcast is implemented as a low-level cast, so machines with different
   /// endian orderings will give different results.
   @inlinable @inline(__always)
@@ -3294,24 +3311,24 @@ public enum _Raw {
   ///
   /// The result will have those bits set, that are set in both `x` and `y`. The
   /// computation is performed on the underlying representations of `x` and `y`.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```python
   /// import tensorflow as tf
   /// from tensorflow.python.ops import bitwise_ops
   /// dtype_list = [tf.int8, tf.int16, tf.int32, tf.int64,
   ///               tf.uint8, tf.uint16, tf.uint32, tf.uint64]
-  /// 
+  ///
   /// for dtype in dtype_list:
   ///   lhs = tf.constant([0, 5, 3, 14], dtype=dtype)
   ///   rhs = tf.constant([5, 0, 7, 11], dtype=dtype)
   ///   exp = tf.constant([0, 0, 3, 10], dtype=tf.float32)
-  /// 
+  ///
   ///   res = bitwise_ops.bitwise_and(lhs, rhs)
   ///   tf.assert_equal(tf.cast(res, tf.float32), exp) # TRUE
   /// ```
-  /// 
+  ///
   @inlinable @inline(__always)
   public static func bitwiseAnd<T: TensorFlowInteger>(
     _ x: Tensor<T>,
@@ -3329,24 +3346,24 @@ public enum _Raw {
   ///
   /// The result will have those bits set, that are set in `x`, `y` or both. The
   /// computation is performed on the underlying representations of `x` and `y`.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```python
   /// import tensorflow as tf
   /// from tensorflow.python.ops import bitwise_ops
   /// dtype_list = [tf.int8, tf.int16, tf.int32, tf.int64,
   ///               tf.uint8, tf.uint16, tf.uint32, tf.uint64]
-  /// 
+  ///
   /// for dtype in dtype_list:
   ///   lhs = tf.constant([0, 5, 3, 14], dtype=dtype)
   ///   rhs = tf.constant([5, 0, 7, 11], dtype=dtype)
   ///   exp = tf.constant([5, 5, 7, 15], dtype=tf.float32)
-  /// 
+  ///
   ///   res = bitwise_ops.bitwise_or(lhs, rhs)
   ///   tf.assert_equal(tf.cast(res,  tf.float32), exp)  # TRUE
   /// ```
-  /// 
+  ///
   @inlinable @inline(__always)
   public static func bitwiseOr<T: TensorFlowInteger>(
     _ x: Tensor<T>,
@@ -3364,24 +3381,24 @@ public enum _Raw {
   ///
   /// The result will have those bits set, that are different in `x` and `y`. The
   /// computation is performed on the underlying representations of `x` and `y`.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```python
   /// import tensorflow as tf
   /// from tensorflow.python.ops import bitwise_ops
   /// dtype_list = [tf.int8, tf.int16, tf.int32, tf.int64,
   ///               tf.uint8, tf.uint16, tf.uint32, tf.uint64]
-  /// 
+  ///
   /// for dtype in dtype_list:
   ///   lhs = tf.constant([0, 5, 3, 14], dtype=dtype)
   ///   rhs = tf.constant([5, 0, 7, 11], dtype=dtype)
   ///   exp = tf.constant([5, 5, 4, 5],  dtype=tf.float32)
-  /// 
+  ///
   ///   res = bitwise_ops.bitwise_xor(lhs, rhs)
   ///   tf.assert_equal(tf.cast(res, tf.float32), exp) # TRUE
   /// ```
-  /// 
+  ///
   @inlinable @inline(__always)
   public static func bitwiseXor<T: TensorFlowInteger>(
     _ x: Tensor<T>,
@@ -3398,7 +3415,7 @@ public enum _Raw {
   /// Computes the LSTM cell forward propagation for all the time steps.
   ///
   /// This is equivalent to applying LSTMBlockCell in a loop, like so:
-  /// 
+  ///
   /// ```python
   /// for x1 in unpack(x):
   ///   i1, cs1, f1, o1, ci1, co1, h1 = LSTMBlock(
@@ -3651,7 +3668,7 @@ public enum _Raw {
   /// Computes the LSTM cell forward propagation for all the time steps.
   ///
   /// This is equivalent to applying LSTMBlockCell in a loop, like so:
-  /// 
+  ///
   /// ```python
   /// for x1 in unpack(x):
   ///   i1, cs1, f1, o1, ci1, co1, h1 = LSTMBlock(
@@ -3666,7 +3683,7 @@ public enum _Raw {
   ///   co.append(co1)
   ///   h.append(h1)
   /// return pack(i), pack(cs), pack(f), pack(o), pack(ci), pack(ch), pack(h)
-  /// 
+  ///
   /// Note that unlike LSTMBlockCell (and BlockLSTM) which uses ICFO gate layout,
   /// this op uses IFCO. So in order for the following snippet to be equivalent
   /// all gate-related outputs should be reordered.
@@ -3795,11 +3812,11 @@ public enum _Raw {
   /// Calculates gains for each feature and returns the best possible split information for the feature.
   ///
   /// The split information is the best threshold (bucket id), gains and left/right node contributions per node for each feature.
-  /// 
+  ///
   /// It is possible that not all nodes can be split on each feature. Hence, the list of possible nodes can differ between the features. Therefore, we return `node_ids_list` for each feature, containing the list of nodes that this feature can be used to split.
-  /// 
+  ///
   /// In this manner, the output is the best split per features and per node, so that it needs to be combined later to produce the best split for each node (among all possible features).
-  /// 
+  ///
   /// The output shapes are compatible in a way that the first dimension of all tensors are the same and equal to the number of possible split nodes for each feature.
   ///
   /// - Parameters:
@@ -3809,7 +3826,7 @@ public enum _Raw {
   ///     - l1: l1 regularization factor on leaf weights, per instance based.
   ///     - l2: l2 regularization factor on leaf weights, per instance based.
   ///     - tree_complexity: adjustment to the gain, per leaf based.
-  ///     - min_node_weight: mininum avg of hessians in a node before required for the node to be considered for splitting.
+  ///     - min_node_weight: minimum avg of hessians in a node before required for the node to be considered for splitting.
   ///
   /// - Attrs:
   ///     - logits_dimension: The dimension of logit, i.e., number of classes.
@@ -3836,8 +3853,8 @@ public enum _Raw {
     splitType: SplitType = .inequality
   ) -> (
     nodeIds: Tensor<Int32>, gains: Tensor<Float>, featureDimensions: Tensor<Int32>,
-    thresholds: Tensor<Int32>, leftNodeContribs: Tensor<Float>,
-    rightNodeContribs: Tensor<Float>, splitWithDefaultDirections: StringTensor
+    thresholds: Tensor<Int32>, leftNodeContribs: Tensor<Float>, rightNodeContribs: Tensor<Float>,
+    splitWithDefaultDirections: StringTensor
   ) {
     let nOutputs = Int(1) + Int(1) + Int(1) + Int(1) + Int(1) + Int(1) + Int(1)
     let op = makeOp("BoostedTreesCalculateBestFeatureSplit", nOutputs)
@@ -3855,11 +3872,11 @@ public enum _Raw {
   /// Calculates gains for each feature and returns the best possible split information for the feature.
   ///
   /// The split information is the best threshold (bucket id), gains and left/right node contributions per node for each feature.
-  /// 
+  ///
   /// It is possible that not all nodes can be split on each feature. Hence, the list of possible nodes can differ between the features. Therefore, we return `node_ids_list` for each feature, containing the list of nodes that this feature can be used to split.
-  /// 
+  ///
   /// In this manner, the output is the best split per features and per node, so that it needs to be combined later to produce the best split for each node (among all possible features).
-  /// 
+  ///
   /// The length of output lists are all of the same length, `num_features`.
   /// The output shapes are compatible in a way that the first dimension of all tensors of all lists are the same and equal to the number of possible split nodes for each feature.
   ///
@@ -3869,7 +3886,7 @@ public enum _Raw {
   ///     - l1: l1 regularization factor on leaf weights, per instance based.
   ///     - l2: l2 regularization factor on leaf weights, per instance based.
   ///     - tree_complexity: adjustment to the gain, per leaf based.
-  ///     - min_node_weight: mininum avg of hessians in a node before required for the node to be considered for splitting.
+  ///     - min_node_weight: minimum avg of hessians in a node before required for the node to be considered for splitting.
   ///
   /// - Attrs:
   ///     - max_splits: the number of nodes that can be split in the whole tree. Used as a dimension of output tensors.
@@ -4374,11 +4391,11 @@ public enum _Raw {
   /// Calculates gains for each feature and returns the best possible split information for the feature.
   ///
   /// The split information is the best threshold (bucket id), gains and left/right node contributions per node for each feature.
-  /// 
+  ///
   /// It is possible that not all nodes can be split on each feature. Hence, the list of possible nodes can differ between the features. Therefore, we return `node_ids_list` for each feature, containing the list of nodes that this feature can be used to split.
-  /// 
+  ///
   /// In this manner, the output is the best split per features and per node, so that it needs to be combined later to produce the best split for each node (among all possible features).
-  /// 
+  ///
   /// The output shapes are compatible in a way that the first dimension of all tensors are the same and equal to the number of possible split nodes for each feature.
   ///
   /// - Parameters:
@@ -4390,7 +4407,7 @@ public enum _Raw {
   ///     - l1: l1 regularization factor on leaf weights, per instance based.
   ///     - l2: l2 regularization factor on leaf weights, per instance based.
   ///     - tree_complexity: adjustment to the gain, per leaf based.
-  ///     - min_node_weight: mininum avg of hessians in a node before required for the node to be considered for splitting.
+  ///     - min_node_weight: minimum avg of hessians in a node before required for the node to be considered for splitting.
   ///
   /// - Attrs:
   ///     - logits_dimension: The dimension of logit, i.e., number of classes.
@@ -4417,11 +4434,11 @@ public enum _Raw {
     treeComplexity: Tensor<Float>,
     minNodeWeight: Tensor<Float>,
     logitsDimension: Int64,
-    splitType: SplitType2 = .inequality
+    splitType: SplitType1 = .inequality
   ) -> (
     nodeIds: Tensor<Int32>, gains: Tensor<Float>, featureDimensions: Tensor<Int32>,
-    thresholds: Tensor<Int32>, leftNodeContribs: Tensor<Float>,
-    rightNodeContribs: Tensor<Float>, splitWithDefaultDirections: StringTensor
+    thresholds: Tensor<Int32>, leftNodeContribs: Tensor<Float>, rightNodeContribs: Tensor<Float>,
+    splitWithDefaultDirections: StringTensor
   ) {
     let nOutputs = Int(1) + Int(1) + Int(1) + Int(1) + Int(1) + Int(1) + Int(1)
     let op = makeOp("BoostedTreesSparseCalculateBestFeatureSplit", nOutputs)
@@ -4536,9 +4553,6 @@ public enum _Raw {
     op.execute()
   }
 
-  /// Updates the tree ensemble by adding a layer to the last tree being grown
-  ///
-  /// or by starting a new tree.
   ///
   /// - Parameters:
   ///     - tree_ensemble_handle: Handle to the ensemble variable.
@@ -4640,9 +4654,9 @@ public enum _Raw {
   /// dimension pair they are either equal or one of them is one. When trying
   /// to broadcast a Tensor to a shape, it starts with the trailing dimensions,
   /// and works its way forward.
-  /// 
+  ///
   /// For example,
-  /// 
+  ///
   /// >>> x = tf.constant([1, 2, 3])
   /// >>> y = tf.broadcast_to(x, [3, 3])
   /// >>> print(y)
@@ -4650,7 +4664,7 @@ public enum _Raw {
   ///     [[1 2 3]
   ///      [1 2 3]
   ///      [1 2 3]], shape=(3, 3), dtype=int32)
-  /// 
+  ///
   /// In the above example, the input Tensor with the shape of `[1, 3]`
   /// is broadcasted to output Tensor with shape of `[3, 3]`.
   ///
@@ -4683,7 +4697,7 @@ public enum _Raw {
   ///     input = [[-5, 10000]
   ///              [150,   10]
   ///              [5,    100]]
-  /// 
+  ///
   /// then the output will be
   ///     output = [[0, 3]
   ///               [3, 2]
@@ -4694,7 +4708,7 @@ public enum _Raw {
   /// - Attr boundaries: A sorted list of floats gives the boundary of the buckets.
   ///
   /// - Output output: Same shape with 'input', each value of input replaced with bucket index.
-  ///     
+  ///
   ///     @compatibility(numpy)
   ///     Equivalent to np.digitize.
   ///     @end_compatibility
@@ -4855,8 +4869,8 @@ public enum _Raw {
     topPaths: Int64,
     mergeRepeated: Bool = true
   ) -> (
-    decodedIndices: [Tensor<Int64>], decodedValues: [Tensor<Int64>],
-    decodedShape: [Tensor<Int64>], logProbability: Tensor<T>
+    decodedIndices: [Tensor<Int64>], decodedValues: [Tensor<Int64>], decodedShape: [Tensor<Int64>],
+    logProbability: Tensor<T>
   ) {
     let nOutputs = Int(topPaths) + Int(topPaths) + Int(topPaths) + Int(1)
     let op = makeOp("CTCBeamSearchDecoder", nOutputs)
@@ -4876,7 +4890,7 @@ public enum _Raw {
   /// these is emitted.  Labeling the blank '*', the sequence "A B B * B B"
   /// becomes "A B B" if merge_repeated = True and "A B B B B" if
   /// merge_repeated = False.
-  /// 
+  ///
   /// Regardless of the value of merge_repeated, if the maximum index of a given
   /// time and batch corresponds to the blank, index `(num_classes - 1)`, no new
   /// element is emitted.
@@ -5060,14 +5074,14 @@ public enum _Raw {
   ///
   /// The input is a tensor of shape `[..., M, M]` whose inner-most 2 dimensions
   /// form square matrices.
-  /// 
+  ///
   /// The input has to be symmetric and positive definite. Only the lower-triangular
   /// part of the input will be used for this operation. The upper-triangular part
   /// will not be read.
-  /// 
+  ///
   /// The output is a tensor of the same shape as the input
   /// containing the Cholesky decompositions for all input submatrices `[..., :, :]`.
-  /// 
+  ///
   /// **Note**: The gradient computation on GPU is faster for large matrices but
   /// not for large batch dimensions when the submatrices are small. In this
   /// case it might be faster to use the CPU.
@@ -5237,7 +5251,7 @@ public enum _Raw {
   /// An Op to permute tensors across replicated TPU instances.
   ///
   /// Each instance supplies its own input.
-  /// 
+  ///
   /// For example, suppose there are 4 TPU instances: `[A, B, C, D]`. Passing
   /// source_target_pairs=`[[0,1],[1,2],[2,3],[3,0]]` gets the outputs:
   /// `[D, A, B, C]`.
@@ -5373,11 +5387,11 @@ public enum _Raw {
   ///
   /// Each comparison returns a boolean `true` (if `input_value > threshold`)
   /// or and `false` otherwise.
-  /// 
+  ///
   /// This operation is useful for Locality-Sensitive-Hashing (LSH) and other
   /// algorithms that use hashing approximations of cosine and `L2` distances;
   /// codes can be generated from an input via:
-  /// 
+  ///
   /// ```python
   /// codebook_size = 50
   /// codebook_bits = codebook_size * 32
@@ -5388,10 +5402,10 @@ public enum _Raw {
   /// codes = tf.bitcast(codes, tf.int32)  # go from uint8 to int32
   /// # now codes has shape x.shape[:-1] + [codebook_size]
   /// ```
-  /// 
+  ///
   /// **NOTE**: Currently, the innermost dimension of the tensor must be divisible
   /// by 8.
-  /// 
+  ///
   /// Given an `input` shaped `[s0, s1, ..., s_n]`, the output is
   /// a `uint8` tensor shaped `[s0, s1, ..., s_n / 8]`.
   ///
@@ -5421,11 +5435,11 @@ public enum _Raw {
   /// tensor `imag` representing the imaginary part of a complex number, this
   /// operation returns complex numbers elementwise of the form \\(a + bj\\), where
   /// *a* represents the `real` part and *b* represents the `imag` part.
-  /// 
+  ///
   /// The input tensors `real` and `imag` must have the same shape.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # tensor 'real' is [2.25, 3.25]
   /// # tensor `imag` is [4.75, 5.75]
@@ -5552,14 +5566,14 @@ public enum _Raw {
   /// Computes offsets of concat inputs within its output.
   ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # 'x' is [2, 2, 7]
   /// # 'y' is [2, 3, 7]
   /// # 'z' is [2, 5, 7]
   /// concat_offset(2, [x, y, z]) => [0, 0, 0], [0, 2, 0], [0, 5, 0]
   /// ```
-  /// 
+  ///
   /// This is typically used by gradient computations for a concat operation.
   ///
   /// - Parameters:
@@ -5675,11 +5689,11 @@ public enum _Raw {
   /// complex numbers that are the complex conjugate of each element in `input`. The
   /// complex numbers in `input` must be of the form \\(a + bj\\), where *a* is the
   /// real part and *b* is the imaginary part.
-  /// 
+  ///
   /// The complex conjugate returned by this operation is of the form \\(a - bj\\).
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # tensor 'input' is [-2.25 + 4.75j, 3.25 + 5.75j]
   /// tf.conj(input) ==> [-2.25 - 4.75j, 3.25 - 5.75j]
@@ -5731,7 +5745,7 @@ public enum _Raw {
   /// direct control dependencies).  It should be the only that consumes the tensor,
   /// and will raise an error if it is not.  Its only purpose is to keep the
   /// mutex lock tensor alive until it is consumed by this op.
-  /// 
+  ///
   /// **NOTE**: This operation must run on the same device as its input.  This may
   /// be enforced via the `colocate_with` mechanism.
   ///
@@ -5763,7 +5777,7 @@ public enum _Raw {
   /// and a filter / kernel tensor of shape
   /// `[filter_height, filter_width, in_channels, out_channels]`, this op
   /// performs the following:
-  /// 
+  ///
   /// 1. Flattens the filter to a 2-D matrix with shape
   ///    `[filter_height * filter_width * in_channels, output_channels]`.
   /// 2. Extracts image patches from the input tensor to form a *virtual*
@@ -5771,13 +5785,13 @@ public enum _Raw {
   ///    filter_height * filter_width * in_channels]`.
   /// 3. For each patch, right-multiplies the filter matrix and the image patch
   ///    vector.
-  /// 
+  ///
   /// In detail, with the default NHWC format,
-  /// 
+  ///
   ///     output[b, i, j, k] =
   ///         sum_{di, dj, q} input[b, strides[1] * i + di, strides[2] * j + dj, q] *
   ///                         filter[di, dj, q, k]
-  /// 
+  ///
   /// Must have `strides[0] = strides[3] = 1`.  For the most common case of the same
   /// horizontal and vertices strides, `strides = [1, stride, stride, 1]`.
   ///
@@ -5815,7 +5829,7 @@ public enum _Raw {
     filter: Tensor<T>,
     strides: [Int32],
     useCudnnOnGpu: Bool = true,
-    padding: Padding2,
+    padding: Padding1,
     explicitPaddings: [Int32],
     dataFormat: DataFormat = .nhwc,
     dilations: [Int32] = [1, 1, 1, 1]
@@ -5874,7 +5888,7 @@ public enum _Raw {
     outBackprop: Tensor<T>,
     strides: [Int32],
     useCudnnOnGpu: Bool = true,
-    padding: Padding2,
+    padding: Padding1,
     explicitPaddings: [Int32],
     dataFormat: DataFormat = .nhwc,
     dilations: [Int32] = [1, 1, 1, 1]
@@ -5933,7 +5947,7 @@ public enum _Raw {
     outBackprop: Tensor<T>,
     strides: [Int32],
     useCudnnOnGpu: Bool = true,
-    padding: Padding2,
+    padding: Padding1,
     explicitPaddings: [Int32],
     dataFormat: DataFormat = .nhwc,
     dilations: [Int32] = [1, 1, 1, 1]
@@ -5958,7 +5972,7 @@ public enum _Raw {
   /// In signal processing, cross-correlation is a measure of similarity of
   /// two waveforms as a function of a time-lag applied to one of them. This
   /// is also known as a sliding dot product or sliding inner-product.
-  /// 
+  ///
   /// Our Conv3D implements a form of cross-correlation.
   ///
   /// - Parameters:
@@ -6176,7 +6190,7 @@ public enum _Raw {
   /// N.B.: If the all downstream attached debug ops are disabled given the current
   /// gRPC gating status, the output will simply forward the input tensor without
   /// deep-copying. See the documentation of Debug* ops for more details.
-  /// 
+  ///
   /// Unlike the CopyHost Op, this op does not have HostMemory constraint on its
   /// input or output.
   ///
@@ -6210,7 +6224,7 @@ public enum _Raw {
   /// N.B.: If the all downstream attached debug ops are disabled given the current
   /// gRPC gating status, the output will simply forward the input tensor without
   /// deep-copying. See the documentation of Debug* ops for more details.
-  /// 
+  ///
   /// Unlike the Copy Op, this op has HostMemory constraint on its input or output.
   ///
   /// - Parameter input: Input tensor.
@@ -6254,7 +6268,7 @@ public enum _Raw {
   ///   element in the tensor. Input range is `(-inf, inf)` and
   ///   output range is `[-1,1]`. If input lies outside the boundary, `nan`
   ///   is returned.
-  /// 
+  ///
   ///   ```python
   ///   x = tf.constant([-float("inf"), -9, -0.5, 1, 1.2, 200, 10000, float("inf")])
   ///   tf.math.cos(x) ==> [nan -0.91113025 0.87758255 0.5403023 0.36235774 0.48718765 -0.95215535 nan]
@@ -6275,7 +6289,7 @@ public enum _Raw {
   ///   Given an input tensor, this function computes hyperbolic cosine of every
   ///   element in the tensor. Input range is `[-inf, inf]` and output range
   ///   is `[1, inf]`.
-  /// 
+  ///
   ///   ```python
   ///   x = tf.constant([-float("inf"), -9, -0.5, 1, 1.2, 2, 10, float("inf")])
   ///   tf.math.cosh(x) ==> [inf 4.0515420e+03 1.1276259e+00 1.5430807e+00 1.8106556e+00 3.7621956e+00 1.1013233e+04 inf]
@@ -6327,6 +6341,16 @@ public enum _Raw {
     op.execute()
   }
 
+  @inlinable @inline(__always)
+  public static func createTRTResourceHandle(
+    resourceName: String
+  ) -> ResourceHandle {
+    let nOutputs = Int(1)
+    let op = makeOp("CreateTRTResourceHandle", nOutputs)
+    op.updateAttribute("resource_name", resourceName)
+    return op.execute(Int(1))
+  }
+
   /// Extracts crops from the input image tensor and resizes them.
   ///
   /// Extracts crops from the input image tensor and resizes them using bilinear
@@ -6334,7 +6358,7 @@ public enum _Raw {
   /// common output size specified by `crop_size`. This is more general than the
   /// `crop_to_bounding_box` op which extracts a fixed size slice from the input image
   /// and does not allow resizing or aspect ratio change.
-  /// 
+  ///
   /// Returns a tensor with `crops` from the input `image` at positions defined at the
   /// bounding box locations in `boxes`. The cropped boxes are all resized (with
   /// bilinear or nearest neighbor interpolation) to a fixed
@@ -6422,7 +6446,7 @@ public enum _Raw {
     image: Tensor<T>,
     boxes: Tensor<Float>,
     boxInd: Tensor<Int32>,
-    method: Method4 = .bilinear
+    method: Method1 = .bilinear
   ) -> Tensor<Float> {
     let nOutputs = Int(1)
     let op = makeOp("CropAndResizeGradBoxes", nOutputs)
@@ -6505,7 +6529,7 @@ public enum _Raw {
   /// An Op to sum inputs across replicated TPU instances.
   ///
   /// Each instance supplies its own input.
-  /// 
+  ///
   /// For example, suppose there are 8 TPU instances: `[A, B, C, D, E, F, G, H]`.
   /// Passing group_assignment=`[[0,2,4,6],[1,3,5,7]]` sets `A, C, E, G` as group 0,
   /// and `B, D, F, H` as group 1. Thus we get the outputs:
@@ -6537,7 +6561,7 @@ public enum _Raw {
   ///
   /// Computes the RNN from the input and initial states, with respect to the params
   /// buffer.
-  /// 
+  ///
   /// rnn_mode: Indicates the type of the RNN model.
   /// input_mode: Indicate whether there is a linear projection between the input and
   ///   the actual computation before the first layer. 'skip_input' is only allowed
@@ -6599,7 +6623,7 @@ public enum _Raw {
   /// Backprop step of CudnnRNN.
   ///
   /// Compute the backprop of both data and weights in a RNN.
-  /// 
+  ///
   /// rnn_mode: Indicates the type of the RNN model.
   /// input_mode: Indicate whether there is a linear projection between the input and
   ///     the actual computation before the first layer. 'skip_input' is only allowed
@@ -6688,7 +6712,7 @@ public enum _Raw {
   /// Compute the backprop of both data and weights in a RNN. Takes an extra
   ///     "host_reserved" inupt than CudnnRNNBackprop, which is used to determine RNN
   ///     cudnnRNNAlgo_t and cudnnMathType_t.
-  /// 
+  ///
   /// rnn_mode: Indicates the type of the RNN model.
   /// input_mode: Indicates whether there is a linear projection between the input and
   ///     the actual computation before the first layer. 'skip_input' is only allowed
@@ -6779,7 +6803,7 @@ public enum _Raw {
   ///
   /// Compute the backprop of both data and weights in a RNN. Takes an extra
   ///     "sequence_lengths" input than CudnnRNNBackprop.
-  /// 
+  ///
   /// rnn_mode: Indicates the type of the RNN model.
   /// input_mode: Indicates whether there is a linear projection between the input and
   ///     the actual computation before the first layer. 'skip_input' is only allowed
@@ -6882,11 +6906,11 @@ public enum _Raw {
   ///
   /// Writes a set of weights into the opaque params buffer so they can be used in
   /// upcoming training or inferences.
-  /// 
+  ///
   /// Note that the params buffer may not be compatible across different GPUs. So any
   /// save and restoration should be converted to and from the canonical weights and
   /// biases.
-  /// 
+  ///
   /// num_layers: Specifies the number of layers in the RNN model.
   /// num_units: Specifies the size of the hidden state.
   /// input_size: Specifies the size of the input state.
@@ -6945,11 +6969,11 @@ public enum _Raw {
   ///
   /// Writes a set of weights into the opaque params buffer so they can be used in
   /// upcoming training or inferences.
-  /// 
+  ///
   /// Note that the params buffer may not be compatible across different GPUs. So any
   /// save and restoration should be converted to and from the canonical weights and
   /// biases.
-  /// 
+  ///
   /// num_layers: Specifies the number of layers in the RNN model.
   /// num_units: Specifies the size of the hidden state.
   /// input_size: Specifies the size of the input state.
@@ -6959,7 +6983,7 @@ public enum _Raw {
   /// biases: the canonical form of biases that can be used for saving
   ///     and restoration. They are more likely to be compatible across different
   ///     generations.
-  /// num_params_weigths: number of weight parameter matrix for all layers.
+  /// num_params_weights: number of weight parameter matrix for all layers.
   /// num_params_biases: number of bias parameter vector for all layers.
   /// rnn_mode: Indicates the type of the RNN model.
   /// input_mode: Indicate whether there is a linear projection between the input and
@@ -7012,7 +7036,7 @@ public enum _Raw {
   ///
   /// Return the params size that can be used by the Cudnn RNN model. Subsequent
   /// weight allocation and initialization should use this size.
-  /// 
+  ///
   /// num_layers: Specifies the number of layers in the RNN model.
   /// num_units: Specifies the size of the hidden state.
   /// input_size: Specifies the size of the input state.
@@ -7066,11 +7090,11 @@ public enum _Raw {
   ///
   /// Retrieves a set of weights from the opaque params buffer that can be saved and
   /// restored in a way compatible with future runs.
-  /// 
+  ///
   /// Note that the params buffer may not be compatible across different GPUs. So any
   /// save and restoration should be converted to and from the canonical weights and
   /// biases.
-  /// 
+  ///
   /// num_layers: Specifies the number of layers in the RNN model.
   /// num_units: Specifies the size of the hidden state.
   /// input_size: Specifies the size of the input state.
@@ -7128,15 +7152,15 @@ public enum _Raw {
   ///
   /// Retrieves a set of weights from the opaque params buffer that can be saved and
   /// restored in a way compatible with future runs.
-  /// 
+  ///
   /// Note that the params buffer may not be compatible across different GPUs. So any
   /// save and restoration should be converted to and from the canonical weights and
   /// biases.
-  /// 
+  ///
   /// num_layers: Specifies the number of layers in the RNN model.
   /// num_units: Specifies the size of the hidden state.
   /// input_size: Specifies the size of the input state.
-  /// num_params_weigths: number of weight parameter matrix for all layers.
+  /// num_params_weights: number of weight parameter matrix for all layers.
   /// num_params_biases: number of bias parameter vector for all layers.
   /// weights: the canonical form of weights that can be used for saving
   ///     and restoration. They are more likely to be compatible across different
@@ -7195,7 +7219,7 @@ public enum _Raw {
   ///
   /// Computes the RNN from the input and initial states, with respect to the params
   /// buffer. Produces one extra output "host_reserved" than CudnnRNN.
-  /// 
+  ///
   /// rnn_mode: Indicates the type of the RNN model.
   /// input_mode: Indicates whether there is a linear projection between the input and
   ///   the actual computation before the first layer. 'skip_input' is only allowed
@@ -7264,7 +7288,7 @@ public enum _Raw {
   ///
   /// Computes the RNN from the input and initial states, with respect to the params
   /// buffer. Accepts one extra input "sequence_lengths" than CudnnRNN.
-  /// 
+  ///
   /// rnn_mode: Indicates the type of the RNN model.
   /// input_mode: Indicates whether there is a linear projection between the input and
   ///   the actual computation before the first layer. 'skip_input' is only allowed
@@ -7343,29 +7367,29 @@ public enum _Raw {
   ///
   /// By default, this op performs an inclusive cumprod, which means that the first
   /// element of the input is identical to the first element of the output:
-  /// 
+  ///
   /// ```python
   /// tf.cumprod([a, b, c])  # => [a, a * b, a * b * c]
   /// ```
-  /// 
+  ///
   /// By setting the `exclusive` kwarg to `True`, an exclusive cumprod is
   /// performed instead:
-  /// 
+  ///
   /// ```python
   /// tf.cumprod([a, b, c], exclusive=True)  # => [1, a, a * b]
   /// ```
-  /// 
+  ///
   /// By setting the `reverse` kwarg to `True`, the cumprod is performed in the
   /// opposite direction:
-  /// 
+  ///
   /// ```python
   /// tf.cumprod([a, b, c], reverse=True)  # => [a * b * c, b * c, c]
   /// ```
-  /// 
+  ///
   /// This is more efficient than using separate `tf.reverse` ops.
-  /// 
+  ///
   /// The `reverse` and `exclusive` kwargs can also be combined:
-  /// 
+  ///
   /// ```python
   /// tf.cumprod([a, b, c], exclusive=True, reverse=True)  # => [b * c, c, 1]
   /// ```
@@ -7405,29 +7429,29 @@ public enum _Raw {
   ///
   /// By default, this op performs an inclusive cumsum, which means that the first
   /// element of the input is identical to the first element of the output:
-  /// 
+  ///
   /// ```python
   /// tf.cumsum([a, b, c])  # => [a, a + b, a + b + c]
   /// ```
-  /// 
+  ///
   /// By setting the `exclusive` kwarg to `True`, an exclusive cumsum is
   /// performed instead:
-  /// 
+  ///
   /// ```python
   /// tf.cumsum([a, b, c], exclusive=True)  # => [0, a, a + b]
   /// ```
-  /// 
+  ///
   /// By setting the `reverse` kwarg to `True`, the cumsum is performed in the
   /// opposite direction:
-  /// 
+  ///
   /// ```python
   /// tf.cumsum([a, b, c], reverse=True)  # => [a + b + c, b + c, c]
   /// ```
-  /// 
+  ///
   /// This is more efficient than using separate `tf.reverse` ops.
-  /// 
+  ///
   /// The `reverse` and `exclusive` kwargs can also be combined:
-  /// 
+  ///
   /// ```python
   /// tf.cumsum([a, b, c], exclusive=True, reverse=True)  # => [b + c, c, 0]
   /// ```
@@ -7471,7 +7495,7 @@ public enum _Raw {
   /// ```python
   /// tf.math.cumulative_logsumexp([a, b, c])  # => [a, log(exp(a) + exp(b)), log(exp(a) + exp(b) + exp(c))]
   /// ```
-  /// 
+  ///
   /// By setting the `exclusive` kwarg to `True`, an exclusive cumulative log-sum-exp is
   /// performed instead:
   /// ```python
@@ -7480,7 +7504,7 @@ public enum _Raw {
   /// Note that the neutral element of the log-sum-exp operation is `-inf`,
   /// however, for performance reasons, the minimal value representable by the
   /// floating point type is used instead.
-  /// 
+  ///
   /// By setting the `reverse` kwarg to `True`, the cumulative log-sum-exp is performed in the
   /// opposite direction.
   ///
@@ -7740,7 +7764,7 @@ public enum _Raw {
   ///
   /// Provides an identity mapping from input to output, while writing the content of
   /// the input tensor by calling DebugEventsWriter.
-  /// 
+  ///
   /// The semantics of the input tensor depends on tensor_debug_mode. In typical
   /// usage, the input tensor comes directly from the user computation only when
   /// graph_debug_mode is FULL_TENSOR (see protobuf/debug_event.proto for a
@@ -7818,7 +7842,7 @@ public enum _Raw {
   /// Debug Numeric Summary Op.
   ///
   /// Provide a basic summary of numeric value types, range and distribution.
-  /// 
+  ///
   /// output: A double tensor of shape [14 + nDimensions], where nDimensions is the
   ///   the number of dimensions of the tensor's shape. The elements of output are:
   ///   [0]: is initialized (1.0) or not (0.0).
@@ -7846,7 +7870,7 @@ public enum _Raw {
   ///         proto for more details.
   ///   [13]: Number of dimensions of the tensor (ndims).
   ///   [14+]: Sizes of the dimensions.
-  /// 
+  ///
   ///
   /// - Parameter input: Input tensor, non-Reference type.
   ///
@@ -7899,18 +7923,18 @@ public enum _Raw {
   ///     - tensor_debug_mode: Tensor debug mode: the mode in which the input tensor is summarized
   ///           by the op. See the TensorDebugMode enum in
   ///           tensorflow/core/protobuf/debug_event.proto for details.
-  ///         
+  ///
   ///         Supported values:
   ///           2 (CURT_HEALTH): Output a float32/64 tensor of shape [2]. The 1st
   ///           element is the tensor_id, if provided, and -1 otherwise. The 2nd
   ///           element is a bit which is set to 1 if the input tensor has an
   ///           infinity or nan value, or zero otherwise.
-  ///         
-  ///           3 (CONCISE_HEALTH): Ouput a float32/64 tensor of shape [5]. The 1st
+  ///
+  ///           3 (CONCISE_HEALTH): Output a float32/64 tensor of shape [5]. The 1st
   ///           element is the tensor_id, if provided, and -1 otherwise. The
   ///           remaining four slots are the total number of elements, -infs,
   ///           +infs, and nans in the input tensor respectively.
-  ///         
+  ///
   ///           4 (FULL_HEALTH): Output a float32/64 tensor of shape [11]. The 1st
   ///           element is the tensor_id, if provided, and -1 otherwise. The 2nd
   ///           element is the device_id, if provided, and -1 otherwise. The 3rd
@@ -7919,7 +7943,7 @@ public enum _Raw {
   ///           The remaining elements hold the total number of elements, -infs,
   ///           +infs, nans, negative finite numbers, zeros, and positive finite
   ///           numbers in the input tensor respectively.
-  ///         
+  ///
   ///           5 (SHAPE): Output a float32/64 tensor of shape [10]. The 1st
   ///           element is the tensor_id, if provided, and -1 otherwise. The 2nd
   ///           element holds the datatype value of the input tensor as according
@@ -7929,7 +7953,7 @@ public enum _Raw {
   ///           elements hold the shape of the tensor. If the rank of the tensor
   ///           is lower than 6, the shape is right padded with zeros. If the rank
   ///           is greater than 6, the head of the shape is truncated.
-  ///         
+  ///
   ///           6 (FULL_NUMERICS): Output a float32/64 tensor of shape [22]. The 1st
   ///           element is the tensor_id, if provided, and -1 otherwise. The 2nd
   ///           element is the device_id, if provided, and -1 otherwise. The 3rd
@@ -7944,7 +7968,7 @@ public enum _Raw {
   ///           finite numbers in the input tensor respectively. The final four
   ///           elements hold the min value, max value, mean, and variance of the
   ///           input tensor.
-  ///         
+  ///
   ///           8 (REDUCE_INF_NAN_THREE_SLOTS): Output a float32/64 tensor of shape
   ///           [3]. The 1st element is -inf if any elements of the input tensor
   ///           is -inf, or zero otherwise. The 2nd element is +inf if any elements
@@ -7970,21 +7994,21 @@ public enum _Raw {
   ///
   /// The attr `channels` indicates the desired number of color channels for the
   /// decoded image.
-  /// 
+  ///
   /// Accepted values are:
-  /// 
+  ///
   /// *   0: Use the number of channels in the JPEG-encoded image.
   /// *   1: output a grayscale image.
   /// *   3: output an RGB image.
-  /// 
+  ///
   /// If needed, the JPEG-encoded image is transformed to match the requested number
   /// of color channels.
-  /// 
+  ///
   /// The attr `ratio` allows downscaling the image by an integer factor during
   /// decoding.  Allowed values are: 1, 2, 4, and 8.  This is much faster than
   /// downscaling the image later.
-  /// 
-  /// 
+  ///
+  ///
   /// It is equivalent to a combination of decode and crop, but much faster by only
   /// decoding partial jpeg image.
   ///
@@ -8054,9 +8078,9 @@ public enum _Raw {
   ///
   /// The attr `channels` indicates the desired number of color channels for the
   /// decoded image.
-  /// 
+  ///
   /// Accepted values are:
-  /// 
+  ///
   /// *   0: Use the number of channels in the BMP-encoded image.
   /// *   3: output an RGB image.
   /// *   4: output an RGBA image.
@@ -8122,7 +8146,7 @@ public enum _Raw {
   ///
   /// This op decompresses each element of the `bytes` input `Tensor`, which
   /// is assumed to be compressed using the given `compression_type`.
-  /// 
+  ///
   /// The `output` is a string `Tensor` of the same shape as `bytes`,
   /// each element containing the decompressed data from the corresponding
   /// element in `bytes`.
@@ -8151,9 +8175,9 @@ public enum _Raw {
   /// GIF images with frame or transparency compression are not supported.
   /// On Linux and MacOS systems, convert animated GIFs from compressed to
   /// uncompressed by running:
-  /// 
+  ///
   ///     convert $src.gif -coalesce $dst.gif
-  /// 
+  ///
   /// This op also supports decoding JPEGs and PNGs, though it is cleaner to use
   /// `tf.image.decode_image`.
   ///
@@ -8198,21 +8222,21 @@ public enum _Raw {
   ///
   /// The attr `channels` indicates the desired number of color channels for the
   /// decoded image.
-  /// 
+  ///
   /// Accepted values are:
-  /// 
+  ///
   /// *   0: Use the number of channels in the JPEG-encoded image.
   /// *   1: output a grayscale image.
   /// *   3: output an RGB image.
-  /// 
+  ///
   /// If needed, the JPEG-encoded image is transformed to match the requested number
   /// of color channels.
-  /// 
+  ///
   /// The attr `ratio` allows downscaling the image by an integer factor during
   /// decoding.  Allowed values are: 1, 2, 4, and 8.  This is much faster than
   /// downscaling the image later.
-  /// 
-  /// 
+  ///
+  ///
   /// This op also supports decoding PNGs and non-animated GIFs since the interface is
   /// the same, though it is cleaner to use `tf.image.decode_image`.
   ///
@@ -8288,17 +8312,17 @@ public enum _Raw {
   ///
   /// The attr `channels` indicates the desired number of color channels for the
   /// decoded image.
-  /// 
+  ///
   /// Accepted values are:
-  /// 
+  ///
   /// *   0: Use the number of channels in the PNG-encoded image.
   /// *   1: output a grayscale image.
   /// *   3: output an RGB image.
   /// *   4: output an RGBA image.
-  /// 
+  ///
   /// If needed, the PNG-encoded image is transformed to match the requested number
   /// of color channels.
-  /// 
+  ///
   /// This op also supports decoding JPEGs and non-animated GIFs since the interface
   /// is the same, though it is cleaner to use `tf.image.decode_image`.
   ///
@@ -8325,12 +8349,12 @@ public enum _Raw {
   /// The `decode_proto` op extracts fields from a serialized protocol buffers
   /// message into tensors.  The fields in `field_names` are decoded and converted
   /// to the corresponding `output_types` if possible.
-  /// 
+  ///
   /// A `message_type` name must be provided to give context for the field names.
   /// The actual message descriptor can be looked up either in the linked-in
   /// descriptor pool or a filename provided by the caller using the
   /// `descriptor_source` attribute.
-  /// 
+  ///
   /// Each output tensor is a dense tensor. This means that it is padded to hold
   /// the largest number of repeated elements seen in the input minibatch. (The
   /// shape is also padded by one to prevent zero-sized dimensions). The actual
@@ -8338,35 +8362,35 @@ public enum _Raw {
   /// output. In many cases the output of `decode_proto` is fed immediately into
   /// tf.squeeze if missing values are not a concern. When using tf.squeeze, always
   /// pass the squeeze dimension explicitly to avoid surprises.
-  /// 
+  ///
   /// For the most part, the mapping between Proto field types and TensorFlow dtypes
   /// is straightforward. However, there are a few special cases:
-  /// 
+  ///
   /// - A proto field that contains a submessage or group can only be converted
   /// to `DT_STRING` (the serialized submessage). This is to reduce the complexity
   /// of the API. The resulting string can be used as input to another instance of
   /// the decode_proto op.
-  /// 
+  ///
   /// - TensorFlow lacks support for unsigned integers. The ops represent uint64
   /// types as a `DT_INT64` with the same twos-complement bit pattern (the obvious
   /// way). Unsigned int32 values can be represented exactly by specifying type
   /// `DT_INT64`, or using twos-complement if the caller specifies `DT_INT32` in
   /// the `output_types` attribute.
-  /// 
+  ///
   /// Both binary and text proto serializations are supported, and can be
   /// chosen using the `format` attribute.
-  /// 
+  ///
   /// The `descriptor_source` attribute selects the source of protocol
   /// descriptors to consult when looking up `message_type`. This may be:
-  /// 
+  ///
   /// - An empty string  or "local://", in which case protocol descriptors are
   /// created for C++ (not Python) proto definitions linked to the binary.
-  /// 
+  ///
   /// - A file, in which case protocol descriptors are created from the file,
   /// which is expected to contain a `FileDescriptorSet` serialized as a string.
   /// NOTE: You can build a `descriptor_source` file using the `--descriptor_set_out`
   /// and `--include_imports` options to the protocol compiler `protoc`.
-  /// 
+  ///
   /// - A "bytes://<bytes>", in which protocol descriptors are created from `<bytes>`,
   /// which is expected to be a `FileDescriptorSet` serialized as a string.
   ///
@@ -8437,15 +8461,15 @@ public enum _Raw {
   /// Decode a 16-bit PCM WAV file to a float tensor.
   ///
   /// The -32768 to 32767 signed 16-bit values will be scaled to -1.0 to 1.0 in float.
-  /// 
+  ///
   /// When desired_channels is set, if the input contains fewer channels than this
   /// then the last channel will be duplicated to give the requested number, else if
   /// the input has more channels than requested then the additional channels will be
   /// ignored.
-  /// 
+  ///
   /// If desired_samples is set, then the audio will be cropped or padded with zeroes
   /// to the requested length.
-  /// 
+  ///
   /// The first output contains a Tensor with the content of the audio samples. The
   /// lowest dimension will be the number of channels, and the second will be the
   /// number of samples. For example, a ten-sample-long stereo WAV file should give an
@@ -8589,7 +8613,7 @@ public enum _Raw {
   /// Applies set operation along last dimension of 2 `Tensor` inputs.
   ///
   /// See SetOperationOp::SetOperationFromContext for values of `set_operation`.
-  /// 
+  ///
   /// Output `result` is a `SparseTensor` represented by `result_indices`,
   /// `result_values`, and `result_shape`. For `set1` and `set2` ranked `n`, this
   /// has rank `n` and the same 1st `n-1` dimensions as `set1` and `set2`. The `nth`
@@ -8628,7 +8652,7 @@ public enum _Raw {
   /// Applies set operation along last dimension of 2 `Tensor` inputs.
   ///
   /// See SetOperationOp::SetOperationFromContext for values of `set_operation`.
-  /// 
+  ///
   /// Output `result` is a `SparseTensor` represented by `result_indices`,
   /// `result_values`, and `result_shape`. For `set1` and `set2` ranked `n`, this
   /// has rank `n` and the same 1st `n-1` dimensions as `set1` and `set2`. The `nth`
@@ -8694,15 +8718,15 @@ public enum _Raw {
   /// Applies set operation along last dimension of `Tensor` and `SparseTensor`.
   ///
   /// See SetOperationOp::SetOperationFromContext for values of `set_operation`.
-  /// 
+  ///
   /// Input `set2` is a `SparseTensor` represented by `set2_indices`, `set2_values`,
   /// and `set2_shape`. For `set2` ranked `n`, 1st `n-1` dimensions must be the same
   /// as `set1`. Dimension `n` contains values in a set, duplicates are allowed but
   /// ignored.
-  /// 
+  ///
   /// If `validate_indices` is `True`, this op validates the order and range of `set2`
   /// indices.
-  /// 
+  ///
   /// Output `result` is a `SparseTensor` represented by `result_indices`,
   /// `result_values`, and `result_shape`. For `set1` and `set2` ranked `n`, this
   /// has rank `n` and the same 1st `n-1` dimensions as `set1` and `set2`. The `nth`
@@ -8750,15 +8774,15 @@ public enum _Raw {
   /// Applies set operation along last dimension of `Tensor` and `SparseTensor`.
   ///
   /// See SetOperationOp::SetOperationFromContext for values of `set_operation`.
-  /// 
+  ///
   /// Input `set2` is a `SparseTensor` represented by `set2_indices`, `set2_values`,
   /// and `set2_shape`. For `set2` ranked `n`, 1st `n-1` dimensions must be the same
   /// as `set1`. Dimension `n` contains values in a set, duplicates are allowed but
   /// ignored.
-  /// 
+  ///
   /// If `validate_indices` is `True`, this op validates the order and range of `set2`
   /// indices.
-  /// 
+  ///
   /// Output `result` is a `SparseTensor` represented by `result_indices`,
   /// `result_values`, and `result_shape`. For `set1` and `set2` ranked `n`, this
   /// has rank `n` and the same 1st `n-1` dimensions as `set1` and `set2`. The `nth`
@@ -8810,7 +8834,7 @@ public enum _Raw {
   /// this op outputs a copy of the input tensor where values from the `depth`
   /// dimension are moved in spatial blocks to the `height` and `width` dimensions.
   /// The attr `block_size` indicates the input block size and how the data is moved.
-  /// 
+  ///
   ///   * Chunks of data of size `block_size * block_size` from depth are rearranged
   ///     into non-overlapping blocks of size `block_size x block_size`
   ///   * The width the output tensor is `input_depth * block_size`, whereas the
@@ -8819,14 +8843,14 @@ public enum _Raw {
   ///     by the high order component of the input channel index.
   ///   * The depth of the input tensor must be divisible by
   ///     `block_size * block_size`.
-  /// 
+  ///
   /// The `data_format` attr specifies the layout of the input and output tensors
   /// with the following options:
   ///   "NHWC": `[ batch, height, width, channels ]`
   ///   "NCHW": `[ batch, channels, height, width ]`
   ///   "NCHW_VECT_C":
   ///       `qint8 [ batch, channels / 4, height, width, 4 ]`
-  /// 
+  ///
   /// It is useful to consider the operation as transforming a 6-D Tensor.
   /// e.g. for data_format = NHWC,
   ///      Each element in the input tensor can be specified via 6 coordinates,
@@ -8836,63 +8860,63 @@ public enum _Raw {
   ///                         within the output block, oC means output channels).
   ///      The output would be the input transposed to the following layout:
   ///      n,iY,bY,iX,bX,oC
-  /// 
+  ///
   /// This operation is useful for resizing the activations between convolutions
   /// (but keeping all data), e.g. instead of pooling. It is also useful for training
   /// purely convolutional models.
-  /// 
+  ///
   /// For example, given an input of shape `[1, 1, 1, 4]`, data_format = "NHWC" and
   /// block_size = 2:
-  /// 
+  ///
   /// ```
   /// x = [[[[1, 2, 3, 4]]]]
-  /// 
+  ///
   /// ```
-  /// 
+  ///
   /// This operation will output a tensor of shape `[1, 2, 2, 1]`:
-  /// 
+  ///
   /// ```
   ///    [[[[1], [2]],
   ///      [[3], [4]]]]
   /// ```
-  /// 
+  ///
   /// Here, the input has a batch of 1 and each batch element has shape `[1, 1, 4]`,
   /// the corresponding output will have 2x2 elements and will have a depth of
   /// 1 channel (1 = `4 / (block_size * block_size)`).
   /// The output element shape is `[2, 2, 1]`.
-  /// 
+  ///
   /// For an input tensor with larger depth, here of shape `[1, 1, 1, 12]`, e.g.
-  /// 
+  ///
   /// ```
   /// x = [[[[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]]]]
   /// ```
-  /// 
+  ///
   /// This operation, for block size of 2, will return the following tensor of shape
   /// `[1, 2, 2, 3]`
-  /// 
+  ///
   /// ```
   ///    [[[[1, 2, 3], [4, 5, 6]],
   ///      [[7, 8, 9], [10, 11, 12]]]]
-  /// 
+  ///
   /// ```
-  /// 
+  ///
   /// Similarly, for the following input of shape `[1 2 2 4]`, and a block size of 2:
-  /// 
+  ///
   /// ```
   /// x =  [[[[1, 2, 3, 4],
   ///        [5, 6, 7, 8]],
   ///       [[9, 10, 11, 12],
   ///        [13, 14, 15, 16]]]]
   /// ```
-  /// 
+  ///
   /// the operator will return the following tensor of shape `[1 4 4 1]`:
-  /// 
+  ///
   /// ```
   /// x = [[[ [1],   [2],  [5],  [6]],
   ///       [ [3],   [4],  [7],  [8]],
   ///       [ [9],  [10], [13],  [14]],
   ///       [ [11], [12], [15],  [16]]]]
-  /// 
+  ///
   /// ```
   ///
   /// - Attr block_size: The size of the spatial block, same as in Space2Depth.
@@ -8900,7 +8924,7 @@ public enum _Raw {
   public static func depthToSpace<T: TensorFlowScalar>(
     _ input: Tensor<T>,
     blockSize: Int64,
-    dataFormat: DataFormat5 = .nhwc
+    dataFormat: DataFormat2 = .nhwc
   ) -> Tensor<T> {
     let nOutputs = Int(1)
     let op = makeOp("DepthToSpace", nOutputs)
@@ -8920,7 +8944,7 @@ public enum _Raw {
   /// a different filter to each input channel (expanding from 1 channel to
   /// `channel_multiplier` channels for each), then concatenates the results
   /// together. Thus, the output has `in_channels * channel_multiplier` channels.
-  /// 
+  ///
   /// ```
   /// for k in 0..in_channels-1
   ///   for q in 0..channel_multiplier-1
@@ -8928,7 +8952,7 @@ public enum _Raw {
   ///       sum_{di, dj} input[b, strides[1] * i + di, strides[2] * j + dj, k] *
   ///                         filter[di, dj, k, q]
   /// ```
-  /// 
+  ///
   /// Must have `strides[0] = strides[3] = 1`.  For the most common case of the same
   /// horizontal and vertices strides, `strides = [1, stride, stride, 1]`.
   ///
@@ -9128,34 +9152,34 @@ public enum _Raw {
   /// must all match.  When the final `SparseTensor` is created, it has rank one
   /// higher than the ranks of the incoming `SparseTensor` objects
   /// (they have been concatenated along a new row dimension).
-  /// 
+  ///
   /// The output `SparseTensor` object's shape values for all dimensions but the
   /// first are the max across the input `SparseTensor` objects' shape values
   /// for the corresponding dimensions.  Its first shape value is `N`, the minibatch
   /// size.
-  /// 
+  ///
   /// The input `SparseTensor` objects' indices are assumed ordered in
   /// standard lexicographic order.  If this is not the case, after this
   /// step run `SparseReorder` to restore index ordering.
-  /// 
+  ///
   /// For example, if the serialized input is a `[2 x 3]` matrix representing two
   /// original `SparseTensor` objects:
-  /// 
+  ///
   ///     index = [ 0]
   ///             [10]
   ///             [20]
   ///     values = [1, 2, 3]
   ///     shape = [50]
-  /// 
+  ///
   /// and
-  /// 
+  ///
   ///     index = [ 2]
   ///             [10]
   ///     values = [4, 5]
   ///     shape = [30]
-  /// 
+  ///
   /// then the final deserialized `SparseTensor` will be:
-  /// 
+  ///
   ///     index = [0  0]
   ///             [0 10]
   ///             [0 20]
@@ -9188,33 +9212,33 @@ public enum _Raw {
   /// created, its rank is the rank of the incoming `SparseTensor` objects plus N;
   /// the sparse tensors have been concatenated along new dimensions, one for each
   /// batch.
-  /// 
+  ///
   /// The output `SparseTensor` object's shape values for the original dimensions
   /// are the max across the input `SparseTensor` objects' shape values for the
   /// corresponding dimensions. The new dimensions match the size of the batch.
-  /// 
+  ///
   /// The input `SparseTensor` objects' indices are assumed ordered in
   /// standard lexicographic order.  If this is not the case, after this
   /// step run `SparseReorder` to restore index ordering.
-  /// 
+  ///
   /// For example, if the serialized input is a `[2 x 3]` matrix representing two
   /// original `SparseTensor` objects:
-  /// 
+  ///
   ///     index = [ 0]
   ///             [10]
   ///             [20]
   ///     values = [1, 2, 3]
   ///     shape = [50]
-  /// 
+  ///
   /// and
-  /// 
+  ///
   ///     index = [ 2]
   ///             [10]
   ///     values = [4, 5]
   ///     shape = [30]
-  /// 
+  ///
   /// then the final deserialized `SparseTensor` will be:
-  /// 
+  ///
   ///     index = [0  0]
   ///             [0 10]
   ///             [0 20]
@@ -9251,33 +9275,33 @@ public enum _Raw {
   /// created, its rank is the rank of the incoming `SparseTensor` objects plus N;
   /// the sparse tensors have been concatenated along new dimensions, one for each
   /// batch.
-  /// 
+  ///
   /// The output `SparseTensor` object's shape values for the original dimensions
   /// are the max across the input `SparseTensor` objects' shape values for the
   /// corresponding dimensions. The new dimensions match the size of the batch.
-  /// 
+  ///
   /// The input `SparseTensor` objects' indices are assumed ordered in
   /// standard lexicographic order.  If this is not the case, after this
   /// step run `SparseReorder` to restore index ordering.
-  /// 
+  ///
   /// For example, if the serialized input is a `[2 x 3]` matrix representing two
   /// original `SparseTensor` objects:
-  /// 
+  ///
   ///     index = [ 0]
   ///             [10]
   ///             [20]
   ///     values = [1, 2, 3]
   ///     shape = [50]
-  /// 
+  ///
   /// and
-  /// 
+  ///
   ///     index = [ 2]
   ///             [10]
   ///     values = [4, 5]
   ///     shape = [30]
-  /// 
+  ///
   /// then the final deserialized `SparseTensor` will be:
-  /// 
+  ///
   ///     index = [0  0]
   ///             [0 10]
   ///             [0 20]
@@ -9335,14 +9359,14 @@ public enum _Raw {
   ///
   /// Given a `diagonal`, this operation returns a tensor with the `diagonal` and
   /// everything else padded with zeros. The diagonal is computed as follows:
-  /// 
+  ///
   /// Assume `diagonal` has dimensions [D1,..., Dk], then the output is a tensor of
   /// rank 2k with dimensions [D1,..., Dk, D1,..., Dk] where:
-  /// 
+  ///
   /// `output[i1,..., ik, i1,..., ik] = diagonal[i1, ..., ik]` and 0 everywhere else.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # 'diagonal' is [1, 2, 3, 4]
   /// tf.diag(diagonal) ==> [[1, 0, 0, 0]
@@ -9367,20 +9391,20 @@ public enum _Raw {
   ///
   /// This operation returns a tensor with the `diagonal` part
   /// of the `input`. The `diagonal` part is computed as follows:
-  /// 
+  ///
   /// Assume `input` has dimensions `[D1,..., Dk, D1,..., Dk]`, then the output is a
   /// tensor of rank `k` with dimensions `[D1,..., Dk]` where:
-  /// 
+  ///
   /// `diagonal[i1,..., ik] = input[i1, ..., ik, i1,..., ik]`.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # 'input' is [[1, 0, 0, 0]
   ///               [0, 2, 0, 0]
   ///               [0, 0, 3, 0]
   ///               [0, 0, 0, 4]]
-  /// 
+  ///
   /// tf.diag_part(input) ==> [1, 2, 3, 4]
   /// ```
   ///
@@ -9421,20 +9445,20 @@ public enum _Raw {
   /// `[batch, out_height, out_width, depth]`. The spatial dimensions of the output
   /// tensor depend on the `padding` algorithm. We currently only support the default
   /// "NHWC" `data_format`.
-  /// 
+  ///
   /// In detail, the grayscale morphological 2-D dilation is the max-sum correlation
   /// (for consistency with `conv2d`, we use unmirrored filters):
-  /// 
+  ///
   ///     output[b, y, x, c] =
   ///        max_{dy, dx} input[b,
   ///                           strides[1] * y + rates[1] * dy,
   ///                           strides[2] * x + rates[2] * dx,
   ///                           c] +
   ///                     filter[dy, dx, c]
-  /// 
+  ///
   /// Max-pooling is a special case when the filter has size equal to the pooling
   /// kernel size and contains all zeros.
-  /// 
+  ///
   /// Note on duality: The dilation of `input` by the `filter` is equal to the
   /// negation of the erosion of `-input` by the reflected `filter`.
   ///
@@ -9584,7 +9608,7 @@ public enum _Raw {
 
   /// Returns 0 if the denominator is zero.
   ///
-  /// 
+  ///
   /// *NOTE*: `DivNoNan` supports broadcasting. More about broadcasting
   /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
   @inlinable @inline(__always)
@@ -9607,11 +9631,11 @@ public enum _Raw {
   /// bounding box in `boxes` are encoded as `[y_min, x_min, y_max, x_max]`. The
   /// bounding box coordinates are floats in `[0.0, 1.0]` relative to the width and
   /// height of the underlying image.
-  /// 
+  ///
   /// For example, if an image is 100 x 200 pixels (height x width) and the bounding
   /// box is `[0.1, 0.2, 0.5, 0.9]`, the upper-left and bottom-right coordinates of
   /// the bounding box will be `(40, 10)` to `(180, 50)` (in (x,y) coordinates).
-  /// 
+  ///
   /// Parts of the bounding box may fall outside the image.
   ///
   /// - Parameters:
@@ -9641,11 +9665,11 @@ public enum _Raw {
   /// bounding box in `boxes` are encoded as `[y_min, x_min, y_max, x_max]`. The
   /// bounding box coordinates are floats in `[0.0, 1.0]` relative to the width and
   /// height of the underlying image.
-  /// 
+  ///
   /// For example, if an image is 100 x 200 pixels (height x width) and the bounding
   /// box is `[0.1, 0.2, 0.5, 0.9]`, the upper-left and bottom-right coordinates of
   /// the bounding box will be `(40, 10)` to `(100, 50)` (in (x,y) coordinates).
-  /// 
+  ///
   /// Parts of the bounding box may fall outside the image.
   ///
   /// - Parameters:
@@ -9678,17 +9702,17 @@ public enum _Raw {
   /// are placed in `outputs[i]` in lexicographic order of `js`, and the first
   /// dimension of `outputs[i]` is the number of entries in `partitions` equal to `i`.
   /// In detail,
-  /// 
+  ///
   /// ```python
   ///     outputs[i].shape = [sum(partitions == i)] + data.shape[partitions.ndim:]
-  /// 
+  ///
   ///     outputs[i] = pack([data[js, ...] for js if partitions[js] == i])
   /// ```
-  /// 
+  ///
   /// `data.shape` must start with `partitions.shape`.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```python
   ///     # Scalar partitions.
   ///     partitions = 1
@@ -9696,7 +9720,7 @@ public enum _Raw {
   ///     data = [10, 20]
   ///     outputs[0] = []  # Empty with shape [0, 2]
   ///     outputs[1] = [[10, 20]]
-  /// 
+  ///
   ///     # Vector partitions.
   ///     partitions = [0, 0, 1, 1, 0]
   ///     num_partitions = 2
@@ -9704,9 +9728,9 @@ public enum _Raw {
   ///     outputs[0] = [10, 20, 50]
   ///     outputs[1] = [30, 40]
   /// ```
-  /// 
+  ///
   /// See `dynamic_stitch` for an example on how to merge partitions back.
-  /// 
+  ///
   /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
   /// <img style="width:100%" src="https://www.tensorflow.org/images/DynamicPartition.png" alt>
   /// </div>
@@ -9732,35 +9756,35 @@ public enum _Raw {
   /// Interleave the values from the `data` tensors into a single tensor.
   ///
   /// Builds a merged tensor such that
-  /// 
+  ///
   /// ```python
   ///     merged[indices[m][i, ..., j], ...] = data[m][i, ..., j, ...]
   /// ```
-  /// 
+  ///
   /// For example, if each `indices[m]` is scalar or vector, we have
-  /// 
+  ///
   /// ```python
   ///     # Scalar indices:
   ///     merged[indices[m], ...] = data[m][...]
-  /// 
+  ///
   ///     # Vector indices:
   ///     merged[indices[m][i], ...] = data[m][i, ...]
   /// ```
-  /// 
+  ///
   /// Each `data[i].shape` must start with the corresponding `indices[i].shape`,
   /// and the rest of `data[i].shape` must be constant w.r.t. `i`.  That is, we
   /// must have `data[i].shape = indices[i].shape + constant`.  In terms of this
   /// `constant`, the output shape is
-  /// 
+  ///
   ///     merged.shape = [max(indices)] + constant
-  /// 
+  ///
   /// Values are merged in order, so if an index appears in both `indices[m][i]` and
   /// `indices[n][j]` for `(m,i) < (n,j)` the slice `data[n][j]` will appear in the
   /// merged result. If you do not need this guarantee, ParallelDynamicStitch might
   /// perform better on some devices.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```python
   ///     indices[0] = 6
   ///     indices[1] = [4, 1]
@@ -9771,10 +9795,10 @@ public enum _Raw {
   ///     merged = [[1, 2], [11, 12], [21, 22], [31, 32], [41, 42],
   ///               [51, 52], [61, 62]]
   /// ```
-  /// 
+  ///
   /// This method can be used to merge partitions created by `dynamic_partition`
   /// as illustrated on the following example:
-  /// 
+  ///
   /// ```python
   ///     # Apply function (increments x_i) on elements for which a certain condition
   ///     # apply (x_i != -1 in this example).
@@ -9789,7 +9813,7 @@ public enum _Raw {
   ///     # Here x=[1.1, -1., 6.2, 5.3, -1, 8.4], the -1. values remain
   ///     # unchanged.
   /// ```
-  /// 
+  ///
   /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
   /// <img style="width:100%" src="https://www.tensorflow.org/images/DynamicStitch.png" alt>
   /// </div>
@@ -9836,7 +9860,7 @@ public enum _Raw {
   ///   (hypothesis_indices, hypothesis_values, hypothesis_shape)
   /// and
   ///   (truth_indices, truth_values, truth_shape).
-  /// 
+  ///
   /// The inputs are:
   ///
   /// - Parameters:
@@ -9853,13 +9877,13 @@ public enum _Raw {
   ///     - truth_shape: truth indices, vector.
   ///
   /// - Attr normalize: boolean (if true, edit distances are normalized by length of truth).
-  ///     
+  ///
   ///     The output is:
   ///
   /// - Output output: A dense float tensor with rank R - 1.
-  ///     
+  ///
   ///     For the example input:
-  ///     
+  ///
   ///         // hypothesis represents a 2x1 matrix with variable-length values:
   ///         //   (0,0) = ["a"]
   ///         //   (1,0) = ["b"]
@@ -9867,7 +9891,7 @@ public enum _Raw {
   ///                               [1, 0, 0]]
   ///         hypothesis_values = ["a", "b"]
   ///         hypothesis_shape = [2, 1, 1]
-  ///     
+  ///
   ///         // truth represents a 2x2 matrix with variable-length values:
   ///         //   (0,0) = []
   ///         //   (0,1) = ["a"]
@@ -9880,9 +9904,9 @@ public enum _Raw {
   ///         truth_values = ["a", "b", "c", "a"]
   ///         truth_shape = [2, 2, 2]
   ///         normalize = true
-  ///     
+  ///
   ///     The output will be:
-  ///     
+  ///
   ///         // output is a 2x2 matrix with edit distances normalized by truth lengths.
   ///         output = [[inf, 1.0],  // (0,0): no truth, (0,1): no hypothesis
   ///                   [0.5, 1.0]]  // (1,0): addition, (1,1): no hypothesis
@@ -9914,7 +9938,7 @@ public enum _Raw {
   /// Computes the eigenvalues and (optionally) right eigenvectors of each inner matrix in
   /// `input` such that `input[..., :, :] = v[..., :, :] * diag(e[..., :])`. The eigenvalues
   /// are sorted in non-decreasing order.
-  /// 
+  ///
   /// ```python
   /// # a is a tensor.
   /// # e is a tensor of eigenvalues.
@@ -9955,43 +9979,43 @@ public enum _Raw {
   /// side of the equation. The right-hand side of the equation consists of the
   /// output subscript. The input subscripts and the output subscript should consist
   /// of zero or more named axis labels and at most one ellipsis (`...`).
-  /// 
+  ///
   /// The named axis labels may be any single character other than those having
   /// special meaning, namely `,.->`. The behavior of this Op is undefined if it
   /// receives an ill-formatted equation; since the validation is done at
   /// graph-building time, we omit format validation checks at runtime.
-  /// 
+  ///
   /// Note: This Op is *not* intended to be called by the user; instead users should
   /// call `tf.einsum` directly. It is a hidden Op used by `tf.einsum`.
-  /// 
+  ///
   /// Operations are applied to the input(s) according to the following rules:
-  /// 
+  ///
   ///  (a) Generalized Diagonals: For input dimensions corresponding to axis labels
   ///      appearing more than once in the same input subscript, we take the
   ///      generalized (`k`-dimensional) diagonal.
   ///      For example, in the equation `iii->i` with input shape `[3, 3, 3]`, the
   ///      generalized diagonal would consist of `3` elements at indices `(0, 0, 0)`,
   ///      `(1, 1, 1)` and `(2, 2, 2)` to create a Tensor of shape `[3]`.
-  /// 
+  ///
   ///  (b) Reduction: Axes corresponding to labels appearing only in one input
   ///      subscript but not in the output subscript are summed over prior to Tensor
   ///      contraction.
   ///      For example, in the equation `ab,bc->b`, the axis labels `a` and `c` are
   ///      the reduction axis labels.
-  /// 
+  ///
   ///  (c) Batch Dimensions: Axes corresponding to labels appearing in each of the
   ///      input subscripts and also in the output subscript make up the batch
   ///      dimensions in Tensor contraction. Unnamed axis labels corresponding to
   ///      ellipsis (`...`) also correspond to batch dimensions.
   ///      For example, for the equation denoting batch matrix multiplication,
   ///      `bij,bjk->bik`, the axis label `b` corresponds to a batch dimension.
-  /// 
+  ///
   ///  (d) Contraction: In case of binary einsum, axes corresponding to labels
   ///      appearing in two different inputs (and not in the output) are contracted
   ///      against each other.
   ///      Considering the batch matrix multiplication equation again
   ///      (`bij,bjk->bik`), the contracted axis label is `j`.
-  /// 
+  ///
   ///  (e) Expand Diagonal: If the output subscripts contain repeated (explicit) axis
   ///      labels, the opposite operation of (a) is applied. For example, in the
   ///      equation `i->iii`, and input shape `[3]`, the output of shape `[3, 3, 3]`
@@ -9999,33 +10023,33 @@ public enum _Raw {
   ///      with values from the input.
   ///      Note: This operation is not supported by `np.einsum` or `tf.einsum`; it is
   ///      provided to enable computing the symbolic gradient of `tf.einsum`.
-  /// 
+  ///
   /// The output subscripts must contain only labels appearing in at least one of the
   /// input subscripts. Furthermore, all dimensions mapping to the same axis label
   /// must be equal.
-  /// 
+  ///
   /// Any of the input and output subscripts may contain at most a single ellipsis
   /// (`...`). These ellipsis are mapped against dimensions not corresponding to any
   /// named axis label. If two inputs contain ellipsis, then they are broadcasted
   /// according to standard NumPy broadcasting
   /// [rules](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html).
-  /// 
+  ///
   /// The broadcasted dimensions are placed in the corresponding location of the
   /// ellipsis in the output subscript. If the broadcasted dimensions are non-empty
   /// and the output subscripts do not contain ellipsis, then an InvalidArgument error
   /// is raised.
-  /// 
+  ///
   /// @compatibility(numpy)
   /// Similar to [`numpy.einsum`](https://docs.scipy.org/doc/numpy/reference/generated/numpy.einsum.html).
-  /// 
+  ///
   /// Comparison with `numpy.einsum`:
-  /// 
+  ///
   ///  * This Op only supports unary and binary forms of `numpy.einsum`.
   ///  * This Op does not support implicit form. (i.e. equations without `->`).
   ///  * This Op also supports repeated indices in the output subscript, which is not
   ///    supported by `numpy.einsum`.
   /// @end_compatibility
-  /// 
+  ///
   ///
   /// - Parameter inputs: List of 1 or 2 Tensors.
   ///
@@ -10083,7 +10107,7 @@ public enum _Raw {
   }
 
   /// Creates a tensor with the given shape.
-  /// 
+  ///
   /// This operation creates a tensor of `shape` and `dtype`.
   ///
   /// - Parameter shape: 1-D. Represents the shape of the output tensor.
@@ -10108,7 +10132,7 @@ public enum _Raw {
   ///
   /// All list elements must be tensors of dtype element_dtype and shape compatible
   /// with element_shape.
-  /// 
+  ///
   /// handle: an empty tensor list.
   /// element_dtype: the type of elements in the list.
   /// element_shape: a shape compatible with that of elements in the list.
@@ -10133,7 +10157,7 @@ public enum _Raw {
   /// en.wikipedia.org/wiki/Base64. Base64 strings may have padding with '=' at the
   /// end so that the encoded has length multiple of 4. See Padding section of the
   /// link above.
-  /// 
+  ///
   /// Web-safe means that the encoder uses - and _ instead of + and /.
   ///
   /// - Parameter input: Strings to be encoded.
@@ -10156,19 +10180,19 @@ public enum _Raw {
   /// JPEG-encode an image.
   ///
   /// `image` is a 3-D uint8 Tensor of shape `[height, width, channels]`.
-  /// 
+  ///
   /// The attr `format` can be used to override the color format of the encoded
   /// output.  Values can be:
-  /// 
+  ///
   /// *   `''`: Use a default format based on the number of channels in the image.
   /// *   `grayscale`: Output a grayscale JPEG image.  The `channels` dimension
   ///     of `image` must be 1.
   /// *   `rgb`: Output an RGB JPEG image. The `channels` dimension
   ///     of `image` must be 3.
-  /// 
+  ///
   /// If `format` is not specified or is the empty string, a default format is picked
   /// in function of the number of channels in `image`:
-  /// 
+  ///
   /// *   1: Output a grayscale image.
   /// *   3: Output an RGB image.
   ///
@@ -10219,7 +10243,7 @@ public enum _Raw {
   ///
   /// `image` is a 3-D uint8 Tensor of shape `[height, width, channels]`.
   /// `quality` is an int32 jpeg compression quality value between 0 and 100.
-  /// 
+  ///
   ///
   /// - Parameters:
   ///     - images: Images to adjust.  At least 3-D.
@@ -10242,12 +10266,12 @@ public enum _Raw {
   ///
   /// `image` is a 3-D uint8 or uint16 Tensor of shape `[height, width, channels]`
   /// where `channels` is:
-  /// 
+  ///
   /// *   1: for grayscale.
   /// *   2: for grayscale + alpha.
   /// *   3: for RGB.
   /// *   4: for RGBA.
-  /// 
+  ///
   /// The ZLIB compression level, `compression`, can be -1 for the PNG-encoder
   /// default or a value from 0 to 9.  9 is the highest compression level, generating
   /// the smallest output, but is slower.
@@ -10275,41 +10299,41 @@ public enum _Raw {
   /// The types of the tensors in `values` must match the schema for the fields
   /// specified in `field_names`. All the tensors in `values` must have a common
   /// shape prefix, *batch_shape*.
-  /// 
+  ///
   /// The `sizes` tensor specifies repeat counts for each field.  The repeat count
   /// (last dimension) of a each tensor in `values` must be greater than or equal
   /// to corresponding repeat count in `sizes`.
-  /// 
+  ///
   /// A `message_type` name must be provided to give context for the field names.
   /// The actual message descriptor can be looked up either in the linked-in
   /// descriptor pool or a filename provided by the caller using the
   /// `descriptor_source` attribute.
-  /// 
+  ///
   /// For the most part, the mapping between Proto field types and TensorFlow dtypes
   /// is straightforward. However, there are a few special cases:
-  /// 
+  ///
   /// - A proto field that contains a submessage or group can only be converted
   /// to `DT_STRING` (the serialized submessage). This is to reduce the complexity
   /// of the API. The resulting string can be used as input to another instance of
   /// the decode_proto op.
-  /// 
+  ///
   /// - TensorFlow lacks support for unsigned integers. The ops represent uint64
   /// types as a `DT_INT64` with the same twos-complement bit pattern (the obvious
   /// way). Unsigned int32 values can be represented exactly by specifying type
   /// `DT_INT64`, or using twos-complement if the caller specifies `DT_INT32` in
   /// the `output_types` attribute.
-  /// 
+  ///
   /// The `descriptor_source` attribute selects the source of protocol
   /// descriptors to consult when looking up `message_type`. This may be:
-  /// 
+  ///
   /// - An empty string  or "local://", in which case protocol descriptors are
   /// created for C++ (not Python) proto definitions linked to the binary.
-  /// 
+  ///
   /// - A file, in which case protocol descriptors are created from the file,
   /// which is expected to contain a `FileDescriptorSet` serialized as a string.
   /// NOTE: You can build a `descriptor_source` file using the `--descriptor_set_out`
   /// and `--include_imports` options to the protocol compiler `protoc`.
-  /// 
+  ///
   /// - A "bytes://<bytes>", in which protocol descriptors are created from `<bytes>`,
   /// which is expected to be a `FileDescriptorSet` serialized as a string.
   ///
@@ -10348,7 +10372,7 @@ public enum _Raw {
   /// audio file. It will be encoded in the 16-bit PCM format. It takes in float
   /// values in the range -1.0f to 1.0f, and any outside that value will be clamped to
   /// that range.
-  /// 
+  ///
   /// `audio` is a 2-D float Tensor of shape `[length, channels]`.
   /// `sample_rate` is a scalar Tensor holding the rate to use (e.g. 44100).
   ///
@@ -10403,7 +10427,7 @@ public enum _Raw {
   /// embedding_lookup_sparse() is required to produce the arguments to this Op,
   /// since only a single EnqueueTPUEmbeddingSparseBatch Op is allowed per training
   /// step.
-  /// 
+  ///
   /// The tensors at corresponding positions in the three input lists
   /// must have the same shape, i.e. rank 1 with dim_size() equal to the total
   /// number of lookups into the table described by the corresponding table_id.
@@ -10464,7 +10488,7 @@ public enum _Raw {
   /// sample_indices[i], embedding_indices[i] and aggregation_weights[i] correspond
   /// to the ith feature. table_ids[i] indicates which embedding table to look up ith
   /// feature.
-  /// 
+  ///
   /// The tensors at corresponding positions in the three input lists (sample_indices,
   /// embedding_indices and aggregation_weights) must have the same shape, i.e. rank 1
   /// with dim_size() equal to the total number of lookups into the table described by
@@ -10590,12 +10614,12 @@ public enum _Raw {
   ///
   /// *NOTE*: `Equal` supports broadcasting. More about broadcasting
   /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-  /// 
+  ///
   /// ```python
   /// x = tf.constant([2, 4])
   /// y = tf.constant(2)
   /// tf.math.equal(x, y) ==> array([True, False])
-  /// 
+  ///
   /// x = tf.constant([2, 4])
   /// y = tf.constant([2, 4])
   /// tf.math.equal(x, y) ==> array([True,  True])
@@ -10619,12 +10643,12 @@ public enum _Raw {
   ///
   /// *NOTE*: `Equal` supports broadcasting. More about broadcasting
   /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-  /// 
+  ///
   /// ```python
   /// x = tf.constant([2, 4])
   /// y = tf.constant(2)
   /// tf.math.equal(x, y) ==> array([True, False])
-  /// 
+  ///
   /// x = tf.constant([2, 4])
   /// y = tf.constant([2, 4])
   /// tf.math.equal(x, y) ==> array([True,  True])
@@ -10737,24 +10761,24 @@ public enum _Raw {
   ///   i.e. `exp(x)` or `e^(x)`, where `x` is the input tensor.
   ///   `e` denotes Euler's number and is approximately equal to 2.718281.
   ///   Output is positive for any real input.
-  /// 
+  ///
   ///   ```python
   ///   x = tf.constant(2.0)
   ///   tf.math.exp(x) ==> 7.389056
-  /// 
+  ///
   ///   x = tf.constant([2.0, 8.0])
   ///   tf.math.exp(x) ==> array([7.389056, 2980.958], dtype=float32)
   ///   ```
-  /// 
+  ///
   ///   For complex numbers, the exponential value is calculated as follows:
-  /// 
+  ///
   ///   ```
   ///   e^(x+iy) = e^x * e^iy = e^x * (cos y + i sin y)
   ///   ```
-  /// 
+  ///
   ///   Let's consider complex number 1+1j as an example.
   ///   e^1 * (cos 1 + i sin 1) = 2.7182818284590 * (0.54030230586+0.8414709848j)
-  /// 
+  ///
   ///   ```python
   ///   x = tf.constant(1 + 1j)
   ///   tf.math.exp(x) ==> 1.4686939399158851+2.2873552871788423j
@@ -10776,30 +10800,30 @@ public enum _Raw {
   /// dimension index `axis` of `input`'s shape. The dimension index `axis` starts at
   /// zero; if you specify a negative number for `axis` it is counted backward from
   /// the end.
-  /// 
+  ///
   /// This operation is useful if you want to add a batch dimension to a single
   /// element. For example, if you have a single image of shape `[height, width,
   /// channels]`, you can make it a batch of 1 image with `expand_dims(image, 0)`,
   /// which will make the shape `[1, height, width, channels]`.
-  /// 
+  ///
   /// Other examples:
-  /// 
+  ///
   /// ```
   /// # 't' is a tensor of shape [2]
   /// shape(expand_dims(t, 0)) ==> [1, 2]
   /// shape(expand_dims(t, 1)) ==> [2, 1]
   /// shape(expand_dims(t, -1)) ==> [2, 1]
-  /// 
+  ///
   /// # 't2' is a tensor of shape [2, 3, 5]
   /// shape(expand_dims(t2, 0)) ==> [1, 2, 3, 5]
   /// shape(expand_dims(t2, 2)) ==> [2, 3, 1, 5]
   /// shape(expand_dims(t2, 3)) ==> [2, 3, 5, 1]
   /// ```
-  /// 
+  ///
   /// This operation requires that:
-  /// 
+  ///
   /// `-1-input.dims() <= dim <= input.dims()`
-  /// 
+  ///
   /// This operation is related to `squeeze()`, which removes dimensions of
   /// size 1.
   ///
@@ -10848,7 +10872,7 @@ public enum _Raw {
   /// sharded dataset for the index-th worker. This attempts to automatically shard
   /// a dataset by examining the Dataset graph and inserting a shard op before the
   /// inputs to a reader Dataset (e.g. CSVDataset, TFRecordDataset).
-  /// 
+  ///
   /// This dataset will throw a NotFound error if we cannot shard the dataset
   /// automatically.
   ///
@@ -11134,8 +11158,7 @@ public enum _Raw {
     op.updateAttribute("window_size_func", windowSizeFunc)
     op.updateAttribute("Tkey_func_other_arguments", keyFuncOtherArguments._typeList)
     op.updateAttribute("Treduce_func_other_arguments", reduceFuncOtherArguments._typeList)
-    op.updateAttribute(
-      "Twindow_size_func_other_arguments", windowSizeFuncOtherArguments._typeList)
+    op.updateAttribute("Twindow_size_func_other_arguments", windowSizeFuncOtherArguments._typeList)
     op.updateAttribute("output_types", outputTypes)
     op.updateAttribute("output_shapes", outputShapes)
     op.addInput(inputDataset)
@@ -11206,7 +11229,7 @@ public enum _Raw {
   ///
   /// Creates a dataset that applies `f` to the outputs of `input_dataset` and then
   /// batches `batch_size` of them.
-  /// 
+  ///
   /// Unlike a "MapDataset", which applies `f` sequentially, this dataset invokes up
   /// to `batch_size * num_parallel_batches` copies of `f` in parallel.
   ///
@@ -11333,7 +11356,7 @@ public enum _Raw {
   /// block, it will skip that input dataset. This dataset is especially useful
   /// when loading data from a variable-latency datastores (e.g. HDFS, GCS), as it
   /// allows the training step to proceed so long as some data is available.
-  /// 
+  ///
   /// !! WARNING !! This dataset is not deterministic!
   ///
   /// - Attr f: A function mapping elements of `input_dataset`, concatenated with
@@ -11388,7 +11411,7 @@ public enum _Raw {
   ///     - Tdense: A list of DTypes of the same length as `dense_keys`.
   ///         Only `tf.float32` (`FloatList`), `tf.int64` (`Int64List`),
   ///         and `tf.string` (`BytesList`) are supported.
-  ///         
+  ///
   ///     - dense_shapes: List of tuples with the same length as `dense_keys`.
   ///         The shape of the data for each dense feature referenced by `dense_keys`.
   ///         Required for any input tensors identified by `dense_keys`.  Must be
@@ -11646,7 +11669,7 @@ public enum _Raw {
   ///
   /// The `predicate` function must return a scalar boolean and accept the
   /// following arguments:
-  /// 
+  ///
   /// * One tensor for each component of an element of `input_dataset`.
   /// * One tensor for each value in `other_arguments`.
   ///
@@ -11760,14 +11783,14 @@ public enum _Raw {
   ///
   ///   i.e. `exp(x) - 1` or `e^(x) - 1`, where `x` is the input tensor.
   ///   `e` denotes Euler's number and is approximately equal to 2.718281.
-  /// 
+  ///
   ///   ```python
   ///   x = tf.constant(2.0)
   ///   tf.math.expm1(x) ==> 6.389056
-  /// 
+  ///
   ///   x = tf.constant([2.0, 8.0])
   ///   tf.math.expm1(x) ==> array([6.389056, 2979.958], dtype=float32)
-  /// 
+  ///
   ///   x = tf.constant(1 + 1j)
   ///   tf.math.expm1(x) ==> (0.46869393991588515+2.2873552871788423j)
   ///   ```
@@ -11788,14 +11811,14 @@ public enum _Raw {
   /// `offsets` from the input tensor. If the windows only partially
   /// overlaps the inputs, the non overlapping areas will be filled with
   /// random noise.
-  /// 
+  ///
   /// The result is a 4-D tensor of shape `[batch_size, glimpse_height,
   /// glimpse_width, channels]`. The channels and batch dimensions are the
   /// same as that of the input tensor. The height and width of the output
   /// windows are specified in the `size` parameter.
-  /// 
+  ///
   /// The argument `normalized` and `centered` controls how the windows are built:
-  /// 
+  ///
   /// * If the coordinates are normalized but not centered, 0.0 and 1.0
   ///   correspond to the minimum and maximum of each height and width
   ///   dimension.
@@ -11919,9 +11942,9 @@ public enum _Raw {
   ///     - strides: 1-D of length 5. How far the centers of two consecutive patches are in
   ///         `input`. Must be: `[1, stride_planes, stride_rows, stride_cols, 1]`.
   ///     - padding: The type of padding algorithm to use.
-  ///         
+  ///
   ///         We specify the size-related attributes as:
-  ///         
+  ///
   ///         ```python
   ///               ksizes = [1, ksize_planes, ksize_rows, ksize_cols, 1]
   ///               strides = [1, stride_planes, strides_rows, strides_cols, 1]
@@ -11958,7 +11981,7 @@ public enum _Raw {
   ///
   /// - Output output: A complex tensor of the same shape as `input`. The inner-most
   ///       dimension of `input` is replaced with its 1D Fourier transform.
-  ///     
+  ///
   ///     @compatibility(numpy)
   ///     Equivalent to np.fft.fft
   ///     @end_compatibility
@@ -11982,7 +12005,7 @@ public enum _Raw {
   ///
   /// - Output output: A complex tensor of the same shape as `input`. The inner-most 2
   ///       dimensions of `input` are replaced with their 2D Fourier transform.
-  ///     
+  ///
   ///     @compatibility(numpy)
   ///     Equivalent to np.fft.fft2
   ///     @end_compatibility
@@ -12006,7 +12029,7 @@ public enum _Raw {
   ///
   /// - Output output: A complex tensor of the same shape as `input`. The inner-most 3
   ///       dimensions of `input` are replaced with their 3D Fourier transform.
-  ///     
+  ///
   ///     @compatibility(numpy)
   ///     Equivalent to np.fft.fftn with 3 dimensions.
   ///     @end_compatibility
@@ -12093,7 +12116,7 @@ public enum _Raw {
   /// when `narrow_range` is false and `[1; 2^num_bits - 1]` when it is true) and
   /// then de-quantized and output as floats in `[min; max]` interval.
   /// `num_bits` is the bitwidth of the quantization; between 2 and 16, inclusive.
-  /// 
+  ///
   /// Before quantization, `min` and `max` values are adjusted with the following
   /// logic.
   /// It is suggested to have `min <= 0 <= max`. If `0` is not in the range of values,
@@ -12102,7 +12125,7 @@ public enum _Raw {
   /// If `min < max < 0`: `min_adj = min - max` and `max_adj = 0`.
   /// If `min <= 0 <= max`: `scale = (max - min) / (2^num_bits - 1) `,
   /// `min_adj = scale * round(min / scale)` and `max_adj = max + min_adj - min`.
-  /// 
+  ///
   /// Quantization is called fake since the output is still in floating point.
   @inlinable @inline(__always)
   public static func fakeQuantWithMinMaxArgs(
@@ -12153,13 +12176,13 @@ public enum _Raw {
   /// Fake-quantize the 'inputs' tensor of type float via global float scalars `min`
   ///
   /// and `max` to 'outputs' tensor of same shape as `inputs`.
-  /// 
+  ///
   /// `[min; max]` define the clamping range for the `inputs` data.
   /// `inputs` values are quantized into the quantization range (`[0; 2^num_bits - 1]`
   /// when `narrow_range` is false and `[1; 2^num_bits - 1]` when it is true) and
   /// then de-quantized and output as floats in `[min; max]` interval.
   /// `num_bits` is the bitwidth of the quantization; between 2 and 16, inclusive.
-  /// 
+  ///
   /// Before quantization, `min` and `max` values are adjusted with the following
   /// logic.
   /// It is suggested to have `min <= 0 <= max`. If `0` is not in the range of values,
@@ -12168,7 +12191,7 @@ public enum _Raw {
   /// If `min < max < 0`: `min_adj = min - max` and `max_adj = 0`.
   /// If `min <= 0 <= max`: `scale = (max - min) / (2^num_bits - 1) `,
   /// `min_adj = scale * round(min / scale)` and `max_adj = max + min_adj - min`.
-  /// 
+  ///
   /// This operation has a gradient and thus allows for training `min` and `max`
   /// values.
   @inlinable @inline(__always)
@@ -12216,8 +12239,7 @@ public enum _Raw {
     numBits: Int64 = 8,
     narrowRange: Bool = false
   ) -> (
-    backpropsWrtInput: Tensor<Float>, backpropWrtMin: Tensor<Float>,
-    backpropWrtMax: Tensor<Float>
+    backpropsWrtInput: Tensor<Float>, backpropWrtMin: Tensor<Float>, backpropWrtMax: Tensor<Float>
   ) {
     let nOutputs = Int(1) + Int(1) + Int(1)
     let op = makeOp("FakeQuantWithMinMaxVarsGradient", nOutputs)
@@ -12234,13 +12256,13 @@ public enum _Raw {
   ///
   /// `[b, d]` `[b, h, w, d]` via per-channel floats `min` and `max` of shape `[d]`
   /// to 'outputs' tensor of same shape as `inputs`.
-  /// 
+  ///
   /// `[min; max]` define the clamping range for the `inputs` data.
   /// `inputs` values are quantized into the quantization range (`[0; 2^num_bits - 1]`
   /// when `narrow_range` is false and `[1; 2^num_bits - 1]` when it is true) and
   /// then de-quantized and output as floats in `[min; max]` interval.
   /// `num_bits` is the bitwidth of the quantization; between 2 and 16, inclusive.
-  /// 
+  ///
   /// Before quantization, `min` and `max` values are adjusted with the following
   /// logic.
   /// It is suggested to have `min <= 0 <= max`. If `0` is not in the range of values,
@@ -12249,7 +12271,7 @@ public enum _Raw {
   /// If `min < max < 0`: `min_adj = min - max` and `max_adj = 0`.
   /// If `min <= 0 <= max`: `scale = (max - min) / (2^num_bits - 1) `,
   /// `min_adj = scale * round(min / scale)` and `max_adj = max + min_adj - min`.
-  /// 
+  ///
   /// This operation has a gradient and thus allows for training `min` and `max`
   /// values.
   @inlinable @inline(__always)
@@ -12300,8 +12322,7 @@ public enum _Raw {
     numBits: Int64 = 8,
     narrowRange: Bool = false
   ) -> (
-    backpropsWrtInput: Tensor<Float>, backpropWrtMin: Tensor<Float>,
-    backpropWrtMax: Tensor<Float>
+    backpropsWrtInput: Tensor<Float>, backpropWrtMin: Tensor<Float>, backpropWrtMax: Tensor<Float>
   ) {
     let nOutputs = Int(1) + Int(1) + Int(1)
     let op = makeOp("FakeQuantWithMinMaxVarsPerChannelGradient", nOutputs)
@@ -12317,17 +12338,17 @@ public enum _Raw {
   /// Creates a tensor filled with a scalar value.
   ///
   /// This operation creates a tensor of shape `dims` and fills it with `value`.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # Output tensor has shape [2, 3].
   /// fill([2, 3], 9) ==> [[9, 9, 9]
   ///                      [9, 9, 9]]
   /// ```
-  /// 
+  ///
   /// `tf.fill` differs from `tf.constant` in a few ways:
-  /// 
+  ///
   /// *   `tf.fill` only supports scalar contents, whereas `tf.constant` supports
   ///     Tensor values.
   /// *   `tf.fill` creates an Op in the computation graph that constructs the actual
@@ -12339,7 +12360,7 @@ public enum _Raw {
   /// - Parameters:
   ///     - dims: 1-D. Represents the shape of the output tensor.
   ///     - value: 0-D (scalar). Value to fill the returned tensor.
-  ///         
+  ///
   ///         @compatibility(numpy)
   ///         Equivalent to np.full
   ///         @end_compatibility
@@ -12379,7 +12400,7 @@ public enum _Raw {
   ///
   /// The `predicate` function must return a scalar boolean and accept the
   /// following arguments:
-  /// 
+  ///
   /// * One tensor for each component of an element of `input_dataset`.
   /// * One tensor for each value in `other_arguments`.
   ///
@@ -12413,33 +12434,33 @@ public enum _Raw {
   /// Generates fingerprint values.
   ///
   /// Generates fingerprint values of `data`.
-  /// 
+  ///
   /// Fingerprint op considers the first dimension of `data` as the batch dimension,
   /// and `output[i]` contains the fingerprint value generated from contents in
   /// `data[i, ...]` for all `i`.
-  /// 
+  ///
   /// Fingerprint op writes fingerprint values as byte arrays. For example, the
   /// default method `farmhash64` generates a 64-bit fingerprint value at a time.
   /// This 8-byte value is written out as an `uint8` array of size 8, in little-endian
   /// order.
-  /// 
+  ///
   /// For example, suppose that `data` has data type `DT_INT32` and shape (2, 3, 4),
   /// and that the fingerprint method is `farmhash64`. In this case, the output shape
   /// is (2, 8), where 2 is the batch dimension size of `data`, and 8 is the size of
   /// each fingerprint value in bytes. `output[0, :]` is generated from 12 integers in
   /// `data[0, :, :]` and similarly `output[1, :]` is generated from other 12 integers
   /// in `data[1, :, :]`.
-  /// 
+  ///
   /// Note that this op fingerprints the raw underlying buffer, and it does not
   /// fingerprint Tensor's metadata such as data type and/or shape. For example, the
   /// fingerprint values are invariant under reshapes and bitcasts as long as the
   /// batch dimension remain the same:
-  /// 
+  ///
   /// ```
   /// Fingerprint(data) == Fingerprint(Reshape(data, ...))
   /// Fingerprint(data) == Fingerprint(Bitcast(data, ...))
   /// ```
-  /// 
+  ///
   /// For string data, one should expect `Fingerprint(data) !=
   /// Fingerprint(ReduceJoin(data))` in general.
   ///
@@ -12569,12 +12590,12 @@ public enum _Raw {
   /// file or passed in as an in-memory array instead of building up the distribution
   /// from data on the fly. There is also an option to skew the distribution by
   /// applying a distortion power to the weights.
-  /// 
+  ///
   /// The vocabulary file should be in CSV-like format, with the last field
   /// being the weight associated with the word.
-  /// 
+  ///
   /// For each batch, this op picks a single set of sampled candidate labels.
-  /// 
+  ///
   /// The advantages of sampling candidates per-batch are simplicity and the
   /// possibility of efficient dense matrix multiplication. The disadvantage is that
   /// the sampled candidates must be chosen independently of the context and of the
@@ -12756,7 +12777,7 @@ public enum _Raw {
   ///
   /// true, this follows Python semantics in that the result here is consistent
   /// with a flooring divide. E.g. `floor(x / y) * y + mod(x, y) = x`.
-  /// 
+  ///
   /// *NOTE*: `FloorMod` supports broadcasting. More about broadcasting
   /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
   @inlinable @inline(__always)
@@ -12887,11 +12908,11 @@ public enum _Raw {
   ///         difference between pseudorandom and random.
   ///     - overlapping: When set to True, it means when pooling, the values at the boundary
   ///         of adjacent pooling cells are used by both cells. For example:
-  ///         
+  ///
   ///         `index  0  1  2  3  4`
-  ///         
+  ///
   ///         `value  20 5  16 3  7`
-  ///         
+  ///
   ///         If the pooling sequence is [0, 2, 4], then 16, at index 2 will be used twice.
   ///         The result would be [41/3, 26/3] for fractional avg pooling.
   ///     - deterministic: When set to True, a fixed pooling region will be used when
@@ -12948,11 +12969,11 @@ public enum _Raw {
   ///
   /// - Attr overlapping: When set to True, it means when pooling, the values at the boundary
   ///     of adjacent pooling cells are used by both cells. For example:
-  ///     
+  ///
   ///     `index  0  1  2  3  4`
-  ///     
+  ///
   ///     `value  20 5  16 3  7`
-  ///     
+  ///
   ///     If the pooling sequence is [0, 2, 4], then 16, at index 2 will be used twice.
   ///     The result would be [41/3, 26/3] for fractional avg pooling.
   ///
@@ -12984,26 +13005,26 @@ public enum _Raw {
   /// a factor of N, where N is an integer.  Fractional max pooling, as you might
   /// expect from the word "fractional", means that the overall reduction ratio N
   /// does not have to be an integer.
-  /// 
+  ///
   /// The sizes of the pooling regions are generated randomly but are fairly uniform.
   /// For example, let's look at the height dimension, and the constraints on the
   /// list of rows that will be pool boundaries.
-  /// 
+  ///
   /// First we define the following:
-  /// 
+  ///
   /// 1.  input_row_length : the number of rows from the input set
   /// 2.  output_row_length : which will be smaller than the input
   /// 3.  alpha = input_row_length / output_row_length : our reduction ratio
   /// 4.  K = floor(alpha)
   /// 5.  row_pooling_sequence : this is the result list of pool boundary rows
-  /// 
+  ///
   /// Then, row_pooling_sequence should satisfy:
-  /// 
+  ///
   /// 1.  a[0] = 0 : the first value of the sequence is 0
   /// 2.  a[end] = input_row_length : the last value of the sequence is the size
   /// 3.  K <= (a[i+1] - a[i]) <= K+1 : all intervals are K or K+1 size
   /// 4.  length(row_pooling_sequence) = output_row_length+1
-  /// 
+  ///
   /// For more details on fractional max pooling, see this paper:
   /// [Benjamin Graham, Fractional Max-Pooling](http://arxiv.org/abs/1412.6071)
   ///
@@ -13022,11 +13043,11 @@ public enum _Raw {
   ///         difference between pseudorandom and random.
   ///     - overlapping: When set to True, it means when pooling, the values at the boundary
   ///         of adjacent pooling cells are used by both cells. For example:
-  ///         
+  ///
   ///         `index  0  1  2  3  4`
-  ///         
+  ///
   ///         `value  20 5  16 3  7`
-  ///         
+  ///
   ///         If the pooling sequence is [0, 2, 4], then 16, at index 2 will be used twice.
   ///         The result would be [20, 16] for fractional max pooling.
   ///     - deterministic: When set to True, a fixed pooling region will be used when
@@ -13078,11 +13099,11 @@ public enum _Raw {
   ///
   /// - Attr overlapping: When set to True, it means when pooling, the values at the boundary
   ///     of adjacent pooling cells are used by both cells. For example:
-  ///     
+  ///
   ///     `index  0  1  2  3  4`
-  ///     
+  ///
   ///     `value  20 5  16 3  7`
-  ///     
+  ///
   ///     If the pooling sequence is [0, 2, 4], then 16, at index 2 will be used twice.
   ///     The result would be [20, 16] for fractional max pooling.
   ///
@@ -13541,7 +13562,7 @@ public enum _Raw {
     _ input: Tensor<T>,
     paddings: Tensor<Int32>,
     filter: Tensor<T>,
-    mode: Mode6,
+    mode: Mode1,
     strides: [Int32],
     padding: Padding
   ) -> Tensor<T> {
@@ -13592,7 +13613,7 @@ public enum _Raw {
     paddings: Tensor<Int32>,
     filter: Tensor<T>,
     resizeAlignCorners: Bool = false,
-    mode: Mode6,
+    mode: Mode1,
     strides: [Int32],
     padding: Padding
   ) -> Tensor<T> {
@@ -13619,41 +13640,41 @@ public enum _Raw {
   ///     w_c: Weight matrix for the cell connection gate.
   ///     b_ru: Bias vector for the reset and update gate.
   ///     b_c: Bias vector for the cell connection gate.
-  /// 
+  ///
   /// Returns
   ///     r: Output of the reset gate.
   ///     u: Output of the update gate.
   ///     c: Output of the cell connection gate.
   ///     h: Current state of the GRU cell.
-  /// 
+  ///
   /// Note on notation of the variables:
-  /// 
+  ///
   /// Concatenation of a and b is represented by a_b
   /// Element-wise dot product of a and b is represented by ab
   /// Element-wise dot product is represented by \circ
   /// Matrix multiplication is represented by *
-  /// 
+  ///
   /// Biases are initialized with :
   /// `b_ru` - constant_initializer(1.0)
   /// `b_c` - constant_initializer(0.0)
-  /// 
+  ///
   /// This kernel op implements the following mathematical equations:
-  /// 
+  ///
   /// ```
   /// x_h_prev = [x, h_prev]
-  /// 
+  ///
   /// [r_bar u_bar] = x_h_prev * w_ru + b_ru
-  /// 
+  ///
   /// r = sigmoid(r_bar)
   /// u = sigmoid(u_bar)
-  /// 
+  ///
   /// h_prevr = h_prev \circ r
-  /// 
+  ///
   /// x_h_prevr = [x h_prevr]
-  /// 
+  ///
   /// c_bar = x_h_prevr * w_c + b_c
   /// c = tanh(c_bar)
-  /// 
+  ///
   /// h = (1-u) \circ c + u \circ h_prev
   /// ```
   @inlinable @inline(__always)
@@ -13690,24 +13711,24 @@ public enum _Raw {
   ///     u: Output of the update gate.
   ///     c: Output of the cell connection gate.
   ///     d_h: Gradients of the h_new wrt to objective function.
-  /// 
+  ///
   /// Returns
   ///     d_x: Gradients of the x wrt to objective function.
   ///     d_h_prev: Gradients of the h wrt to objective function.
   ///     d_c_bar Gradients of the c_bar wrt to objective function.
   ///     d_r_bar_u_bar Gradients of the r_bar & u_bar wrt to objective function.
-  /// 
+  ///
   /// This kernel op implements the following mathematical equations:
-  /// 
+  ///
   /// Note on notation of the variables:
-  /// 
+  ///
   /// Concatenation of a and b is represented by a_b
   /// Element-wise dot product of a and b is represented by ab
   /// Element-wise dot product is represented by \circ
   /// Matrix multiplication is represented by *
-  /// 
+  ///
   /// Additional notes for clarity:
-  /// 
+  ///
   /// `w_ru` can be segmented into 4 different matrices.
   /// ```
   /// w_ru = [w_r_x w_u_x
@@ -13725,38 +13746,38 @@ public enum _Raw {
   /// Another note on notation:
   /// ```
   /// d_x = d_x_component_1 + d_x_component_2
-  /// 
+  ///
   /// where d_x_component_1 = d_r_bar * w_r_x^T + d_u_bar * w_r_x^T
   /// and d_x_component_2 = d_c_bar * w_c_x^T
-  /// 
+  ///
   /// d_h_prev = d_h_prev_component_1 + d_h_prevr \circ r + d_h \circ u
   /// where d_h_prev_componenet_1 = d_r_bar * w_r_h_prev^T + d_u_bar * w_r_h_prev^T
   /// ```
-  /// 
+  ///
   /// Mathematics behind the Gradients below:
   /// ```
   /// d_c_bar = d_h \circ (1-u) \circ (1-c \circ c)
   /// d_u_bar = d_h \circ (h-c) \circ u \circ (1-u)
-  /// 
+  ///
   /// d_r_bar_u_bar = [d_r_bar d_u_bar]
-  /// 
+  ///
   /// [d_x_component_1 d_h_prev_component_1] = d_r_bar_u_bar * w_ru^T
-  /// 
+  ///
   /// [d_x_component_2 d_h_prevr] = d_c_bar * w_c^T
-  /// 
+  ///
   /// d_x = d_x_component_1 + d_x_component_2
-  /// 
+  ///
   /// d_h_prev = d_h_prev_component_1 + d_h_prevr \circ r + u
   /// ```
   /// Below calculation is performed in the python wrapper for the Gradients
   /// (not in the gradient kernel.)
   /// ```
   /// d_w_ru = x_h_prevr^T * d_c_bar
-  /// 
+  ///
   /// d_w_c = x_h_prev^T * d_r_bar_u_bar
-  /// 
+  ///
   /// d_b_ru = sum of d_r_bar_u_bar along axis = 0
-  /// 
+  ///
   /// d_b_c = sum of d_c_bar along axis = 0
   /// ```
   @inlinable @inline(__always)
@@ -13792,26 +13813,26 @@ public enum _Raw {
   ///
   /// `indices` must be an integer tensor of any dimension (usually 0-D or 1-D).
   /// Produces an output tensor with shape `indices.shape + params.shape[1:]` where:
-  /// 
+  ///
   /// ```python
   ///     # Scalar indices
   ///     output[:, ..., :] = params[indices, :, ... :]
-  /// 
+  ///
   ///     # Vector indices
   ///     output[i, :, ..., :] = params[indices[i], :, ... :]
-  /// 
+  ///
   ///     # Higher rank indices
   ///     output[i, ..., j, :, ... :] = params[indices[i, ..., j], :, ..., :]
   /// ```
-  /// 
+  ///
   /// If `indices` is a permutation and `len(indices) == params.shape[0]` then
   /// this operation will permute `params` accordingly.
-  /// 
+  ///
   /// `validate_indices`: DEPRECATED. If this operation is assigned to CPU, values in
   /// `indices` are always validated to be within range. If assigned to GPU,
   /// out-of-bound indices result in safe but unspecified behavior, which may include
   /// raising an error.
-  /// 
+  ///
   /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
   /// <img style="width:100%" src="https://www.tensorflow.org/images/Gather.png" alt>
   /// </div>
@@ -13839,106 +13860,106 @@ public enum _Raw {
   /// `indices` is a K-dimensional integer tensor, best thought of as a
   /// (K-1)-dimensional tensor of indices into `params`, where each element defines a
   /// slice of `params`:
-  /// 
+  ///
   ///     output[\\(i_0, ..., i_{K-2}\\)] = params[indices[\\(i_0, ..., i_{K-2}\\)]]
-  /// 
+  ///
   /// Whereas in `tf.gather` `indices` defines slices into the `axis`
   /// dimension of `params`, in `tf.gather_nd`, `indices` defines slices into the
   /// first `N` dimensions of `params`, where `N = indices.shape[-1]`.
-  /// 
+  ///
   /// The last dimension of `indices` can be at most the rank of
   /// `params`:
-  /// 
+  ///
   ///     indices.shape[-1] <= params.rank
-  /// 
+  ///
   /// The last dimension of `indices` corresponds to elements
   /// (if `indices.shape[-1] == params.rank`) or slices
   /// (if `indices.shape[-1] < params.rank`) along dimension `indices.shape[-1]`
   /// of `params`.  The output tensor has shape
-  /// 
+  ///
   ///     indices.shape[:-1] + params.shape[indices.shape[-1]:]
-  /// 
+  ///
   /// Note that on CPU, if an out of bound index is found, an error is returned.
   /// On GPU, if an out of bound index is found, a 0 is stored in the
   /// corresponding output value.
-  /// 
+  ///
   /// Some examples below.
-  /// 
+  ///
   /// Simple indexing into a matrix:
-  /// 
+  ///
   /// ```python
   ///     indices = [[0, 0], [1, 1]]
   ///     params = [['a', 'b'], ['c', 'd']]
   ///     output = ['a', 'd']
   /// ```
-  /// 
+  ///
   /// Slice indexing into a matrix:
-  /// 
+  ///
   /// ```python
   ///     indices = [[1], [0]]
   ///     params = [['a', 'b'], ['c', 'd']]
   ///     output = [['c', 'd'], ['a', 'b']]
   /// ```
-  /// 
+  ///
   /// Indexing into a 3-tensor:
-  /// 
+  ///
   /// ```python
   ///     indices = [[1]]
   ///     params = [[['a0', 'b0'], ['c0', 'd0']],
   ///               [['a1', 'b1'], ['c1', 'd1']]]
   ///     output = [[['a1', 'b1'], ['c1', 'd1']]]
-  /// 
-  /// 
+  ///
+  ///
   ///     indices = [[0, 1], [1, 0]]
   ///     params = [[['a0', 'b0'], ['c0', 'd0']],
   ///               [['a1', 'b1'], ['c1', 'd1']]]
   ///     output = [['c0', 'd0'], ['a1', 'b1']]
-  /// 
-  /// 
+  ///
+  ///
   ///     indices = [[0, 0, 1], [1, 0, 1]]
   ///     params = [[['a0', 'b0'], ['c0', 'd0']],
   ///               [['a1', 'b1'], ['c1', 'd1']]]
   ///     output = ['b0', 'b1']
   /// ```
-  /// 
+  ///
   /// Batched indexing into a matrix:
-  /// 
+  ///
   /// ```python
   ///     indices = [[[0, 0]], [[0, 1]]]
   ///     params = [['a', 'b'], ['c', 'd']]
   ///     output = [['a'], ['b']]
   /// ```
-  /// 
+  ///
   /// Batched slice indexing into a matrix:
-  /// 
+  ///
   /// ```python
   ///     indices = [[[1]], [[0]]]
   ///     params = [['a', 'b'], ['c', 'd']]
   ///     output = [[['c', 'd']], [['a', 'b']]]
   /// ```
-  /// 
+  ///
   /// Batched indexing into a 3-tensor:
-  /// 
+  ///
   /// ```python
   ///     indices = [[[1]], [[0]]]
   ///     params = [[['a0', 'b0'], ['c0', 'd0']],
   ///               [['a1', 'b1'], ['c1', 'd1']]]
   ///     output = [[[['a1', 'b1'], ['c1', 'd1']]],
   ///               [[['a0', 'b0'], ['c0', 'd0']]]]
-  /// 
+  ///
   ///     indices = [[[0, 1], [1, 0]], [[0, 0], [1, 1]]]
   ///     params = [[['a0', 'b0'], ['c0', 'd0']],
   ///               [['a1', 'b1'], ['c1', 'd1']]]
   ///     output = [[['c0', 'd0'], ['a1', 'b1']],
   ///               [['a0', 'b0'], ['c1', 'd1']]]
-  /// 
-  /// 
+  ///
+  ///
   ///     indices = [[[0, 0, 1], [1, 0, 1]], [[0, 1, 1], [1, 1, 0]]]
   ///     params = [[['a0', 'b0'], ['c0', 'd0']],
   ///               [['a1', 'b1'], ['c1', 'd1']]]
   ///     output = [['b0', 'b1'], ['d0', 'c1']]
   /// ```
-  /// 
+  ///
   /// See also `tf.gather` and `tf.batch_gather`.
   ///
   /// - Parameters:
@@ -13969,29 +13990,29 @@ public enum _Raw {
   /// `indices` must be an integer tensor of any dimension (usually 0-D or 1-D).
   /// Produces an output tensor with shape `params.shape[:axis] + indices.shape +
   /// params.shape[axis + 1:]` where:
-  /// 
+  ///
   /// ```python
   ///     # Scalar indices (output is rank(params) - 1).
   ///     output[a_0, ..., a_n, b_0, ..., b_n] =
   ///       params[a_0, ..., a_n, indices, b_0, ..., b_n]
-  /// 
+  ///
   ///     # Vector indices (output is rank(params)).
   ///     output[a_0, ..., a_n, i, b_0, ..., b_n] =
   ///       params[a_0, ..., a_n, indices[i], b_0, ..., b_n]
-  /// 
+  ///
   ///     # Higher rank indices (output is rank(params) + rank(indices) - 1).
   ///     output[a_0, ..., a_n, i, ..., j, b_0, ... b_n] =
   ///       params[a_0, ..., a_n, indices[i, ..., j], b_0, ..., b_n]
   /// ```
-  /// 
+  ///
   /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
   /// <img style="width:100%" src="https://www.tensorflow.org/images/Gather.png" alt>
   /// </div>
-  /// 
+  ///
   /// Note that on CPU, if an out of bound index is found, an error is returned.
   /// On GPU, if an out of bound index is found, a 0 is stored in the
   /// corresponding output value.
-  /// 
+  ///
   /// See also `tf.batch_gather` and `tf.gather_nd`.
   ///
   /// - Parameters:
@@ -14089,21 +14110,21 @@ public enum _Raw {
   /// in the new vocabulary is not in the old vocabulary.  The old vocabulary is
   /// constrained to the first `old_vocab_size` entries if `old_vocab_size` is not the
   /// default value of -1.
-  /// 
+  ///
   /// `num_vocab_offset` enables
   /// use in the partitioned variable case, and should generally be set through
   /// examining partitioning info.  The format of the files should be a text file,
   /// with each line containing a single entity within the vocabulary.
-  /// 
+  ///
   /// For example, with `new_vocab_file` a text file containing each of the following
   /// elements on a single line: `[f0, f1, f2, f3]`, old_vocab_file = [f1, f0, f3],
   /// `num_new_vocab = 3, new_vocab_offset = 1`, the returned remapping would be
   /// `[0, -1, 2]`.
-  /// 
+  ///
   /// The op also returns a count of how many entries in the new vocabulary
   /// were present in the old vocabulary, which is used to calculate the number of
   /// values to initialize in a weight matrix remapping
-  /// 
+  ///
   /// This functionality can be used to remap both row vocabularies (typically,
   /// features) and column vocabularies (typically, classes) from TensorFlow
   /// checkpoints.  Note that the partitioning logic relies on contiguous vocabularies
@@ -14183,6 +14204,17 @@ public enum _Raw {
     return op.execute(Int(1))
   }
 
+  /// Returns calibration data for the given resource name
+  @inlinable @inline(__always)
+  public static func getCalibrationDataOp(
+    resourceName: StringTensor
+  ) -> StringTensor {
+    let nOutputs = Int(1)
+    let op = makeOp("GetCalibrationDataOp", nOutputs)
+    op.addInput(resourceName)
+    return op.execute(Int(1))
+  }
+
   /// Store the input tensor in the state of the current session.
   ///
   /// - Parameter value: The tensor to be stored.
@@ -14247,14 +14279,14 @@ public enum _Raw {
   ///
   /// *NOTE*: `Greater` supports broadcasting. More about broadcasting
   /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-  /// 
+  ///
   /// Example:
-  /// 
+  ///
   /// ```python
   /// x = tf.constant([5, 4, 6])
   /// y = tf.constant([5, 2, 5])
   /// tf.math.greater(x, y) ==> [False, True, True]
-  /// 
+  ///
   /// x = tf.constant([5, 4, 6])
   /// y = tf.constant([5])
   /// tf.math.greater(x, y) ==> [False, False, True]
@@ -14276,14 +14308,14 @@ public enum _Raw {
   ///
   /// *NOTE*: `GreaterEqual` supports broadcasting. More about broadcasting
   /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-  /// 
+  ///
   /// Example:
-  /// 
+  ///
   /// ```python
   /// x = tf.constant([5, 4, 6, 7])
   /// y = tf.constant([5, 2, 5, 10])
   /// tf.math.greater_equal(x, y) ==> [True, True, True, False]
-  /// 
+  ///
   /// x = tf.constant([5, 4, 6, 7])
   /// y = tf.constant([5])
   /// tf.math.greater_equal(x, y) ==> [True, False, True, True]
@@ -14406,8 +14438,7 @@ public enum _Raw {
     op.updateAttribute("window_size_func", windowSizeFunc)
     op.updateAttribute("Tkey_func_other_arguments", keyFuncOtherArguments._typeList)
     op.updateAttribute("Treduce_func_other_arguments", reduceFuncOtherArguments._typeList)
-    op.updateAttribute(
-      "Twindow_size_func_other_arguments", windowSizeFuncOtherArguments._typeList)
+    op.updateAttribute("Twindow_size_func_other_arguments", windowSizeFuncOtherArguments._typeList)
     op.updateAttribute("output_types", outputTypes)
     op.updateAttribute("output_shapes", outputShapes)
     op.addInput(inputDataset)
@@ -14420,10 +14451,10 @@ public enum _Raw {
   /// Gives a guarantee to the TF runtime that the input tensor is a constant.
   ///
   /// The runtime is then free to make optimizations based on this.
-  /// 
+  ///
   /// Only accepts value typed tensors as inputs and rejects resource variable handles
   /// as input.
-  /// 
+  ///
   /// Returns the input tensor without modification.
   @inlinable @inline(__always)
   public static func guaranteeConst<T: TensorFlowScalar>(
@@ -14441,7 +14472,7 @@ public enum _Raw {
   /// Outputs a tensor of the same shape as the `images` tensor, containing the RGB
   /// value of the pixels. The output is only well defined if the value in `images`
   /// are in `[0,1]`.
-  /// 
+  ///
   /// See `rgb_to_hsv` for a description of the HSV encoding.
   ///
   /// - Parameter images: 1-D or higher rank. HSV data to convert. Last dimension must be size 3.
@@ -14498,13 +14529,13 @@ public enum _Raw {
   /// Given the tensor `values`, this operation returns a rank 1 histogram counting
   /// the number of entries in `values` that fall into every bin.  The bins are
   /// equal width and determined by the arguments `value_range` and `nbins`.
-  /// 
+  ///
   /// ```python
   /// # Bins will be:  (-inf, 1), [1, 2), [2, 3), [3, 4), [4, inf)
   /// nbins = 5
   /// value_range = [0.0, 5.0]
   /// new_values = [-1.0, 0.0, 1.5, 2.0, 5.0, 15]
-  /// 
+  ///
   /// with tf.get_default_session() as sess:
   ///   hist = tf.histogram_fixed_width(new_values, value_range, nbins=5)
   ///   variables.global_variables_initializer().run()
@@ -14543,7 +14574,7 @@ public enum _Raw {
   /// The generated
   /// [`Summary`](https://www.tensorflow.org/code/tensorflow/core/framework/summary.proto)
   /// has one summary value containing a histogram for `values`.
-  /// 
+  ///
   /// This op reports an `InvalidArgument` error if any value is not finite.
   ///
   /// - Parameters:
@@ -14573,7 +14604,7 @@ public enum _Raw {
   ///
   /// - Output output: A complex tensor of the same shape as `input`. The inner-most
   ///       dimension of `input` is replaced with its inverse 1D Fourier transform.
-  ///     
+  ///
   ///     @compatibility(numpy)
   ///     Equivalent to np.fft.ifft
   ///     @end_compatibility
@@ -14597,7 +14628,7 @@ public enum _Raw {
   ///
   /// - Output output: A complex tensor of the same shape as `input`. The inner-most 2
   ///       dimensions of `input` are replaced with their inverse 2D Fourier transform.
-  ///     
+  ///
   ///     @compatibility(numpy)
   ///     Equivalent to np.fft.ifft2
   ///     @end_compatibility
@@ -14621,7 +14652,7 @@ public enum _Raw {
   ///
   /// - Output output: A complex tensor of the same shape as `input`. The inner-most 3
   ///       dimensions of `input` are replaced with their inverse 3D Fourier transform.
-  ///     
+  ///
   ///     @compatibility(numpy)
   ///     Equivalent to np.fft.ifftn with 3 dimensions.
   ///     @end_compatibility
@@ -14640,14 +14671,14 @@ public enum _Raw {
   ///
   /// Computes the inverse 1-dimensional discrete Fourier transform of a real-valued
   /// signal over the inner-most dimension of `input`.
-  /// 
+  ///
   /// The inner-most dimension of `input` is assumed to be the result of `RFFT`: the
   /// `fft_length / 2 + 1` unique components of the DFT of a real-valued signal. If
   /// `fft_length` is not provided, it is computed from the size of the inner-most
   /// dimension of `input` (`fft_length = 2 * (inner - 1)`). If the FFT length used to
   /// compute `input` is odd, it should be provided since it cannot be inferred
   /// properly.
-  /// 
+  ///
   /// Along the axis `IRFFT` is computed on, if `fft_length / 2 + 1` is smaller
   /// than the corresponding dimension of `input`, the dimension is cropped. If it is
   /// larger, the dimension is padded with zeros.
@@ -14659,7 +14690,7 @@ public enum _Raw {
   /// - Output output: A float32 tensor of the same rank as `input`. The inner-most
   ///       dimension of `input` is replaced with the `fft_length` samples of its inverse
   ///       1D Fourier transform.
-  ///     
+  ///
   ///     @compatibility(numpy)
   ///     Equivalent to np.fft.irfft
   ///     @end_compatibility
@@ -14684,14 +14715,14 @@ public enum _Raw {
   ///
   /// Computes the inverse 2-dimensional discrete Fourier transform of a real-valued
   /// signal over the inner-most 2 dimensions of `input`.
-  /// 
+  ///
   /// The inner-most 2 dimensions of `input` are assumed to be the result of `RFFT2D`:
   /// The inner-most dimension contains the `fft_length / 2 + 1` unique components of
   /// the DFT of a real-valued signal. If `fft_length` is not provided, it is computed
   /// from the size of the inner-most 2 dimensions of `input`. If the FFT length used
   /// to compute `input` is odd, it should be provided since it cannot be inferred
   /// properly.
-  /// 
+  ///
   /// Along each axis `IRFFT2D` is computed on, if `fft_length` (or
   /// `fft_length / 2 + 1` for the inner-most dimension) is smaller than the
   /// corresponding dimension of `input`, the dimension is cropped. If it is larger,
@@ -14704,7 +14735,7 @@ public enum _Raw {
   /// - Output output: A float32 tensor of the same rank as `input`. The inner-most 2
   ///       dimensions of `input` are replaced with the `fft_length` samples of their
   ///       inverse 2D Fourier transform.
-  ///     
+  ///
   ///     @compatibility(numpy)
   ///     Equivalent to np.fft.irfft2
   ///     @end_compatibility
@@ -14729,14 +14760,14 @@ public enum _Raw {
   ///
   /// Computes the inverse 3-dimensional discrete Fourier transform of a real-valued
   /// signal over the inner-most 3 dimensions of `input`.
-  /// 
+  ///
   /// The inner-most 3 dimensions of `input` are assumed to be the result of `RFFT3D`:
   /// The inner-most dimension contains the `fft_length / 2 + 1` unique components of
   /// the DFT of a real-valued signal. If `fft_length` is not provided, it is computed
   /// from the size of the inner-most 3 dimensions of `input`. If the FFT length used
   /// to compute `input` is odd, it should be provided since it cannot be inferred
   /// properly.
-  /// 
+  ///
   /// Along each axis `IRFFT3D` is computed on, if `fft_length` (or
   /// `fft_length / 2 + 1` for the inner-most dimension) is smaller than the
   /// corresponding dimension of `input`, the dimension is cropped. If it is larger,
@@ -14749,7 +14780,7 @@ public enum _Raw {
   /// - Output output: A float32 tensor of the same rank as `input`. The inner-most 3
   ///       dimensions of `input` are replaced with the `fft_length` samples of their
   ///       inverse 3D real Fourier transform.
-  ///     
+  ///
   ///     @compatibility(numpy)
   ///     Equivalent to np.irfftn with 3 dimensions.
   ///     @end_compatibility
@@ -14785,16 +14816,16 @@ public enum _Raw {
   /// Returns a list of tensors with the same shapes and contents as the input
   ///
   /// tensors.
-  /// 
+  ///
   /// This op can be used to override the gradient for complicated functions. For
   /// example, suppose y = f(x) and we wish to apply a custom function g for backprop
   /// such that dx = g(dy). In Python,
-  /// 
+  ///
   /// ```python
   /// with tf.get_default_graph().gradient_override_map(
   ///     {'IdentityN': 'OverrideGradientWithG'}):
   ///   y, _ = identity_n([f(x), x])
-  /// 
+  ///
   /// @tf.RegisterGradient('OverrideGradientWithG')
   /// def ApplyG(op, dy, _):
   ///   return [None, g(dy)]  # Do not backprop to f(x).
@@ -14886,16 +14917,16 @@ public enum _Raw {
   /// Compute the lower regularized incomplete Gamma function `P(a, x)`.
   ///
   /// The lower regularized incomplete Gamma function is defined as:
-  /// 
-  /// 
+  ///
+  ///
   /// \\(P(a, x) = gamma(a, x) / Gamma(a) = 1 - Q(a, x)\\)
-  /// 
+  ///
   /// where
-  /// 
+  ///
   /// \\(gamma(a, x) = \\int_{0}^{x} t^{a-1} exp(-t) dt\\)
-  /// 
+  ///
   /// is the lower incomplete Gamma function.
-  /// 
+  ///
   /// Note, above `Q(a, x)` (`Igammac`) is the upper regularized complete
   /// Gamma function.
   @inlinable @inline(__always)
@@ -14928,15 +14959,15 @@ public enum _Raw {
   /// Compute the upper regularized incomplete Gamma function `Q(a, x)`.
   ///
   /// The upper regularized incomplete Gamma function is defined as:
-  /// 
+  ///
   /// \\(Q(a, x) = Gamma(a, x) / Gamma(a) = 1 - P(a, x)\\)
-  /// 
+  ///
   /// where
-  /// 
+  ///
   /// \\(Gamma(a, x) = int_{x}^{\infty} t^{a-1} exp(-t) dt\\)
-  /// 
+  ///
   /// is the upper incomplete Gama function.
-  /// 
+  ///
   /// Note, above `P(a, x)` (`Igamma`) is the lower regularized complete
   /// Gamma function.
   @inlinable @inline(__always)
@@ -14973,9 +15004,9 @@ public enum _Raw {
   /// type `float` that is the imaginary part of each element in `input`. All
   /// elements in `input` must be complex numbers of the form \\(a + bj\\), where *a*
   /// is the real part and *b* is the imaginary part returned by this operation.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # tensor 'input' is [-2.25 + 4.75j, 3.25 + 5.75j]
   /// tf.imag(input) ==> [4.75, 5.75]
@@ -15052,13 +15083,13 @@ public enum _Raw {
   /// from the `TopK` op in its handling of ties; if multiple classes have the
   /// same prediction value and straddle the top-`k` boundary, all of those
   /// classes are considered to be in the top `k`.
-  /// 
+  ///
   /// More formally, let
-  /// 
+  ///
   ///   \\(predictions_i\\) be the predictions for all classes for example `i`,
   ///   \\(targets_i\\) be the target class for example `i`,
   ///   \\(out_i\\) be the output for example `i`,
-  /// 
+  ///
   /// $$out_i = predictions_{i, targets_i} \in TopKIncludingTies(predictions_i)$$
   ///
   /// - Parameters:
@@ -15091,13 +15122,13 @@ public enum _Raw {
   /// from the `TopK` op in its handling of ties; if multiple classes have the
   /// same prediction value and straddle the top-`k` boundary, all of those
   /// classes are considered to be in the top `k`.
-  /// 
+  ///
   /// More formally, let
-  /// 
+  ///
   ///   \\(predictions_i\\) be the predictions for all classes for example `i`,
   ///   \\(targets_i\\) be the target class for example `i`,
   ///   \\(out_i\\) be the output for example `i`,
-  /// 
+  ///
   /// $$out_i = predictions_{i, targets_i} \in TopKIncludingTies(predictions_i)$$
   ///
   /// - Parameters:
@@ -15236,6 +15267,20 @@ public enum _Raw {
     op.execute()
   }
 
+  @inlinable @inline(__always)
+  public static func initializeTRTResource(
+    resourceHandle: ResourceHandle,
+    filename: StringTensor,
+    maxCachedEnginesCount: Int64 = 1
+  ) {
+    let nOutputs = 0
+    let op = makeOp("InitializeTRTResource", nOutputs)
+    op.updateAttribute("max_cached_engines_count", maxCachedEnginesCount)
+    op.addInput(resourceHandle)
+    op.addInput(filename)
+    op.execute()
+  }
+
   /// Initializes a table from a text file.
   ///
   /// It inserts one key-value pair into the table for each line of the file.
@@ -15243,7 +15288,7 @@ public enum _Raw {
   /// split line based on `delimiter` or the line number (starting from zero).
   /// Where to extract the key and value from a line is specified by `key_index` and
   /// `value_index`.
-  /// 
+  ///
   /// - A value of -1 means use the line number(starting from zero), expects `int64`.
   /// - A value of -2 means use the whole line content, expects `string`.
   /// - A value >= 0 means use the index (starting at zero) of the split line based
@@ -15305,7 +15350,7 @@ public enum _Raw {
   }
 
   ///     Adds v into specified rows of x.
-  /// 
+  ///
   ///     Computes y = x; y[i, :] += v; return y.
   ///
   /// - Parameters:
@@ -15330,7 +15375,7 @@ public enum _Raw {
   }
 
   ///     Subtracts `v` into specified rows of `x`.
-  /// 
+  ///
   ///     Computes y = x; y[i, :] -= v; return y.
   ///
   /// - Parameters:
@@ -15355,7 +15400,7 @@ public enum _Raw {
   }
 
   ///     Updates specified rows with values in `v`.
-  /// 
+  ///
   ///     Computes `x[i, :] = v; return x`.
   ///
   /// - Parameters:
@@ -15518,18 +15563,18 @@ public enum _Raw {
   ///
   /// Flip each bit of supported types.  For example, type `int8` (decimal 2) binary 00000010 becomes (decimal -3) binary 11111101.
   /// This operation is performed on each element of the tensor argument `x`.
-  /// 
+  ///
   /// Example:
   /// ```python
   /// import tensorflow as tf
   /// from tensorflow.python.ops import bitwise_ops
-  /// 
+  ///
   /// # flip 2 (00000010) to -3 (11111101)
   /// tf.assert_equal(-3, bitwise_ops.invert(2))
-  /// 
+  ///
   /// dtype_list = [dtypes.int8, dtypes.int16, dtypes.int32, dtypes.int64,
   ///               dtypes.uint8, dtypes.uint16, dtypes.uint32, dtypes.uint64]
-  /// 
+  ///
   /// inputs = [0, 5, 3, 14]
   /// for dtype in dtype_list:
   ///   # Because of issues with negative numbers, let's test this indirectly.
@@ -15542,13 +15587,13 @@ public enum _Raw {
   ///                                       input_tensor, bitwise_ops.invert(input_tensor)),
   ///                                     bitwise_ops.invert(
   ///                                       tf.constant(0, dtype=dtype))]
-  /// 
+  ///
   ///   expected = tf.constant([0, 0, 0, 0], dtype=tf.float32)
   ///   tf.assert_equal(tf.cast(not_a_and_a, tf.float32), expected)
-  /// 
+  ///
   ///   expected = tf.cast([not_0] * 4, tf.float32)
   ///   tf.assert_equal(tf.cast(not_a_or_a, tf.float32), expected)
-  /// 
+  ///
   ///   # For unsigned dtypes let's also check the result directly.
   ///   if dtype.is_unsigned:
   ///     inverted = bitwise_ops.invert(input_tensor)
@@ -15572,13 +15617,13 @@ public enum _Raw {
   /// integer tensor `x`, which represents the indices of a zero-based array, and
   /// swaps each value with its index position. In other words, for an output tensor
   /// `y` and an input tensor `x`, this operation computes the following:
-  /// 
+  ///
   /// `y[x[i]] = i for i in [0, 1, ..., len(x) - 1]`
-  /// 
+  ///
   /// The values must include 0. There can be no duplicate values or negative values.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # tensor `x` is [3, 4, 0, 2, 1]
   /// invert_permutation(x) ==> [2, 4, 3, 0, 1]
@@ -15600,7 +15645,7 @@ public enum _Raw {
 
   /// Checks whether a tree ensemble has been initialized.
   ///
-  /// - Parameter tree_ensemble_handle: Handle to the tree ensemble resouce.
+  /// - Parameter tree_ensemble_handle: Handle to the tree ensemble resource.
   ///
   /// - Output is_initialized: output boolean on whether it is initialized or not.
   @inlinable @inline(__always)
@@ -15635,9 +15680,9 @@ public enum _Raw {
   /// @compatibility(numpy)
   /// Equivalent to np.isfinite
   /// @end_compatibility
-  /// 
+  ///
   /// Example:
-  /// 
+  ///
   /// ```python
   /// x = tf.constant([5.0, 4.8, 6.8, np.inf, np.nan])
   /// tf.math.is_finite(x) ==> [True, True, True, False, False]
@@ -15658,9 +15703,9 @@ public enum _Raw {
   /// @compatibility(numpy)
   /// Equivalent to np.isinf
   /// @end_compatibility
-  /// 
+  ///
   /// Example:
-  /// 
+  ///
   /// ```python
   /// x = tf.constant([5.0, np.inf, 6.8, np.inf])
   /// tf.math.is_inf(x) ==> [False, True, False, True]
@@ -15681,9 +15726,9 @@ public enum _Raw {
   /// @compatibility(numpy)
   /// Equivalent to np.isnan
   /// @end_compatibility
-  /// 
+  ///
   /// Example:
-  /// 
+  ///
   /// ```python
   /// x = tf.constant([5.0, np.nan, 6.8, np.nan, np.inf])
   /// tf.math.is_nan(x) ==> [False, True, False, True, False]
@@ -15927,7 +15972,7 @@ public enum _Raw {
   /// L2 Loss.
   ///
   /// Computes half the L2 norm of a tensor without the `sqrt`:
-  /// 
+  ///
   ///     output = sum(t ** 2) / 2
   ///
   /// - Parameter t: Typically 2-D, but may have any dimensions.
@@ -15949,11 +15994,11 @@ public enum _Raw {
   /// The Lightning Memory-Mapped Database Manager, or LMDB, is an embedded binary
   /// key-value database. This dataset can read the contents of LMDB database files,
   /// the names of which generally have the `.mdb` suffix.
-  /// 
+  ///
   /// Each output element consists of a key-value pair represented as a pair of
   /// scalar string `Tensor`s, where the first `Tensor` contains the key and the
   /// second `Tensor` contains the value.
-  /// 
+  ///
   /// LMDB uses different file formats on big- and little-endian machines.
   /// `LMDBDataset` can only read files in the format of the host machine.
   ///
@@ -15979,11 +16024,11 @@ public enum _Raw {
   /// dimension), and each vector is normalized independently.  Within a given vector,
   /// each component is divided by the weighted, squared sum of inputs within
   /// `depth_radius`.  In detail,
-  /// 
+  ///
   ///     sqr_sum[a, b, c, d] =
   ///         sum(input[a, b, c, d - depth_radius : d + depth_radius + 1] ** 2)
   ///     output = input / (bias + alpha * sqr_sum) ** beta
-  /// 
+  ///
   /// For details, see [Krizhevsky et al., ImageNet classification with deep
   /// convolutional neural networks (NIPS 2012)](http://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks).
   ///
@@ -16054,24 +16099,24 @@ public enum _Raw {
   ///
   /// This implementation uses 1 weight matrix and 1 bias vector, and there's an
   /// optional peephole connection.
-  /// 
+  ///
   /// This kernel op implements the following mathematical equations:
-  /// 
+  ///
   /// ```python
   /// xh = [x, h_prev]
   /// [i, f, ci, o] = xh * w + b
   /// f = f + forget_bias
-  /// 
+  ///
   /// if not use_peephole:
   ///   wci = wcf = wco = 0
-  /// 
+  ///
   /// i = sigmoid(cs_prev * wci + i)
   /// f = sigmoid(cs_prev * wcf + f)
   /// ci = tanh(ci)
-  /// 
+  ///
   /// cs = ci .* i + cs_prev .* f
   /// cs = clip(cs, cell_clip)
-  /// 
+  ///
   /// o = sigmoid(cs * wco + o)
   /// co = tanh(cs)
   /// h = co .* o
@@ -16268,9 +16313,9 @@ public enum _Raw {
   ///
   /// See explanations of candidate sampling and the data formats at
   /// go/candidate-sampling.
-  /// 
+  ///
   /// For each batch, this op picks a single set of sampled candidate labels.
-  /// 
+  ///
   /// The advantages of sampling candidates per-batch are simplicity and the
   /// possibility of efficient dense matrix multiplication. The disadvantage is that
   /// the sampled candidates must be chosen independently of the context and of the
@@ -16330,35 +16375,35 @@ public enum _Raw {
   ///
   /// If `y` is negative, or greater than or equal to the width of `x` in bits the
   /// result is implementation defined.
-  /// 
+  ///
   /// Example:
-  /// 
+  ///
   /// ```python
   /// import tensorflow as tf
   /// from tensorflow.python.ops import bitwise_ops
   /// import numpy as np
   /// dtype_list = [tf.int8, tf.int16, tf.int32, tf.int64]
-  /// 
+  ///
   /// for dtype in dtype_list:
   ///   lhs = tf.constant([-1, -5, -3, -14], dtype=dtype)
   ///   rhs = tf.constant([5, 0, 7, 11], dtype=dtype)
-  /// 
+  ///
   ///   left_shift_result = bitwise_ops.left_shift(lhs, rhs)
-  /// 
+  ///
   ///   print(left_shift_result)
-  /// 
+  ///
   /// # This will print:
   /// # tf.Tensor([ -32   -5 -128    0], shape=(4,), dtype=int8)
   /// # tf.Tensor([   -32     -5   -384 -28672], shape=(4,), dtype=int16)
   /// # tf.Tensor([   -32     -5   -384 -28672], shape=(4,), dtype=int32)
   /// # tf.Tensor([   -32     -5   -384 -28672], shape=(4,), dtype=int64)
-  /// 
+  ///
   /// lhs = np.array([-2, 64, 101, 32], dtype=np.int8)
   /// rhs = np.array([-1, -5, -3, -14], dtype=np.int8)
   /// bitwise_ops.left_shift(lhs, rhs)
   /// # <tf.Tensor: shape=(4,), dtype=int8, numpy=array([ -2,  64, 101,  32], dtype=int8)>
   /// ```
-  /// 
+  ///
   @inlinable @inline(__always)
   public static func leftShift<T: TensorFlowInteger>(
     _ x: Tensor<T>,
@@ -16376,14 +16421,14 @@ public enum _Raw {
   ///
   /// *NOTE*: `Less` supports broadcasting. More about broadcasting
   /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-  /// 
+  ///
   /// Example:
-  /// 
+  ///
   /// ```python
   /// x = tf.constant([5, 4, 6])
   /// y = tf.constant([5])
   /// tf.math.less(x, y) ==> [False, True, False]
-  /// 
+  ///
   /// x = tf.constant([5, 4, 6])
   /// y = tf.constant([5, 6, 7])
   /// tf.math.less(x, y) ==> [False, True, True]
@@ -16405,14 +16450,14 @@ public enum _Raw {
   ///
   /// *NOTE*: `LessEqual` supports broadcasting. More about broadcasting
   /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-  /// 
+  ///
   /// Example:
-  /// 
+  ///
   /// ```python
   /// x = tf.constant([5, 4, 6])
   /// y = tf.constant([5])
   /// tf.math.less_equal(x, y) ==> [True, True, False]
-  /// 
+  ///
   /// x = tf.constant([5, 4, 6])
   /// y = tf.constant([5, 6, 6])
   /// tf.math.less_equal(x, y) ==> [True, True, True]
@@ -16434,9 +16479,9 @@ public enum _Raw {
   ///
   ///   For positive numbers, this function computes log((input - 1)!) for every element in the tensor.
   ///   `lgamma(5) = log((5-1)!) = log(4!) = log(24) = 3.1780539`
-  /// 
+  ///
   /// Example:
-  /// 
+  ///
   /// ```python
   /// x = tf.constant([0, 0.5, 1, 4.5, -4, -5.6])
   /// tf.math.lgamma(x) ==> [inf, 0.5723649, 0., 2.4537368, inf, -4.6477685]
@@ -16457,9 +16502,9 @@ public enum _Raw {
   /// A sequence of `num` evenly-spaced values are generated beginning at `start`.
   /// If `num > 1`, the values in the sequence increase by `stop - start / num - 1`,
   /// so that the last one is exactly `stop`.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// tf.linspace(10.0, 12.0, 3, name="linspace") => [ 10.0  11.0  12.0]
   /// ```
@@ -16496,18 +16541,18 @@ public enum _Raw {
   /// is sorted in the same order that the numbers appear in `x` (duplicates are
   /// preserved). This operation also returns a list `idx` that represents the
   /// position of each `out` element in `x`. In other words:
-  /// 
+  ///
   /// `out[i] = x[idx[i]] for i in [0, 1, ..., len(out) - 1]`
-  /// 
+  ///
   /// For example, given this input:
-  /// 
+  ///
   /// ```
   /// x = [1, 2, 3, 4, 5, 6]
   /// y = [1, 3, 5]
   /// ```
-  /// 
+  ///
   /// This operation would return:
-  /// 
+  ///
   /// ```
   /// out ==> [2, 4, 6]
   /// idx ==> [1, 3, 5]
@@ -16561,13 +16606,13 @@ public enum _Raw {
   ///
   /// at `ckpt_path` and potentially reorders its rows and columns using the
   /// specified remappings.
-  /// 
+  ///
   /// Most users should use one of the wrapper initializers (such as
   /// `tf.contrib.framework.load_and_remap_matrix_initializer`) instead of this
   /// function directly.
-  /// 
+  ///
   /// The remappings are 1-D tensors with the following properties:
-  /// 
+  ///
   /// * `row_remapping` must have exactly `num_rows` entries. Row `i` of the output
   ///   matrix will be initialized from the row corresponding to index
   ///   `row_remapping[i]` in the old `Tensor` from the checkpoint.
@@ -16580,16 +16625,16 @@ public enum _Raw {
   ///   missing row or column. If `row_remapping` has `r` missing entries and
   ///   `col_remapping` has `c` missing entries, then the following condition must be
   ///   true:
-  /// 
+  ///
   /// `(r * num_cols) + (c * num_rows) - (r * c) == len(initializing_values)`
-  /// 
+  ///
   /// The remapping tensors can be generated using the GenerateVocabRemapping op.
-  /// 
+  ///
   /// As an example, with row_remapping = [1, 0, -1], col_remapping = [0, 2, -1],
   /// initializing_values = [0.5, -0.5, 0.25, -0.25, 42], and w(i, j) representing
   /// the value from row i, column j of the old tensor in the checkpoint, the output
   /// matrix will look like the following:
-  /// 
+  ///
   /// [[w(1, 0),  w(1, 2),  0.5],
   ///  [w(0, 0),  w(0, 2), -0.5],
   ///  [0.25,    -0.25,      42]]
@@ -17259,9 +17304,9 @@ public enum _Raw {
   /// Computes natural logarithm of x element-wise.
   ///
   /// I.e., \\(y = \log_e x\\).
-  /// 
+  ///
   /// Example:
-  /// 
+  ///
   /// ```python
   /// x = tf.constant([0, 0.5, 1, 5])
   /// tf.math.log(x) ==> [-inf, -0.6931472,  0. ,  1.609438]
@@ -17280,9 +17325,9 @@ public enum _Raw {
   /// Computes natural logarithm of (1 + x) element-wise.
   ///
   /// I.e., \\(y = \log_e (1 + x)\\).
-  /// 
+  ///
   /// Example:
-  /// 
+  ///
   /// ```python
   /// x = tf.constant([0, 0.5, 1, 5])
   /// tf.math.log1p(x) ==> [0., 0.4054651, 0.6931472, 1.7917595]
@@ -17301,7 +17346,7 @@ public enum _Raw {
   /// Computes the sign and the log of the absolute value of the determinant of
   ///
   /// one or more square matrices.
-  /// 
+  ///
   /// The input is a tensor of shape `[N, M, M]` whose inner-most 2 dimensions
   /// form square matrices. The outputs are two tensors containing the signs and
   /// absolute values of the log determinants for all N input submatrices
@@ -17330,7 +17375,7 @@ public enum _Raw {
   /// Computes log softmax activations.
   ///
   /// For each batch `i` and class `j` we have
-  /// 
+  ///
   ///     logsoftmax[i, j] = logits[i, j] - log(sum(exp(logits[i])))
   ///
   /// - Parameter logits: 2-D with shape `[batch_size, num_classes]`.
@@ -17351,9 +17396,9 @@ public enum _Raw {
   ///
   /// See explanations of candidate sampling and the data formats at
   /// go/candidate-sampling.
-  /// 
+  ///
   /// For each batch, this op picks a single set of sampled candidate labels.
-  /// 
+  ///
   /// The advantages of sampling candidates per-batch are simplicity and the
   /// possibility of efficient dense matrix multiplication. The disadvantage is that
   /// the sampled candidates must be chosen independently of the context and of the
@@ -17482,7 +17527,7 @@ public enum _Raw {
   ///
   /// The tensor `keys` must of the same type as the keys of the table.
   /// The output `values` is of the type of the table values.
-  /// 
+  ///
   /// The scalar `default_value` is the value output for keys not present in the
   /// table. It must also be of the same type as the table values.
   ///
@@ -17626,18 +17671,18 @@ public enum _Raw {
   /// Each set of rows with the same index in (sorted_inputs, values) is treated
   /// independently.  The resulting row is the equivalent of calling
   /// `np.searchsorted(sorted_inputs, values, side='left')`.
-  /// 
+  ///
   /// The result is not a global index to the entire
   /// `Tensor`, but rather just the index in the last dimension.
-  /// 
+  ///
   /// A 2-D example:
   ///   sorted_sequence = [[0, 3, 9, 9, 10],
   ///                      [1, 2, 3, 4, 5]]
   ///   values = [[2, 4, 9],
   ///             [0, 2, 6]]
-  /// 
+  ///
   ///   result = LowerBound(sorted_sequence, values)
-  /// 
+  ///
   ///   result == [[1, 2, 2],
   ///              [0, 1, 5]]
   ///
@@ -17670,18 +17715,18 @@ public enum _Raw {
   ///
   /// The input is a tensor of shape `[..., M, M]` whose inner-most 2 dimensions
   /// form square matrices.
-  /// 
+  ///
   /// The input has to be invertible.
-  /// 
+  ///
   /// The output consists of two tensors LU and P containing the LU decomposition
   /// of all input submatrices `[..., :, :]`. LU encodes the lower triangular and
   /// upper triangular factors.
-  /// 
+  ///
   /// For each input submatrix of shape `[M, M]`, L is a lower triangular matrix of
   /// shape `[M, M]` with unit diagonal whose entries correspond to the strictly lower
   /// triangular part of LU. U is a upper triangular matrix of shape `[M, M]` whose
   /// entries correspond to the upper triangular part, including the diagonal, of LU.
-  /// 
+  ///
   /// P represents a permutation matrix encoded as a list of indices each between `0`
   /// and `M-1`, inclusive. If P_mat denotes the permutation matrix corresponding to
   /// P, then the L, U and P satisfies P_mat * input = L * U.
@@ -17736,7 +17781,7 @@ public enum _Raw {
   ///
   /// Creates a dataset that applies `f` to the outputs of `input_dataset` and then
   /// batches `batch_size` of them.
-  /// 
+  ///
   /// Unlike a "MapDataset", which applies `f` sequentially, this dataset invokes up
   /// to `batch_size * num_parallel_batches` copies of `f` in parallel.
   ///
@@ -17836,12 +17881,12 @@ public enum _Raw {
   ///   The function given by `f` is assumed to be stateless, and is executed
   ///   concurrently on all the slices; up to batch_size (i.e. the size of the 0th
   ///   dimension of each argument) functions will be scheduled at once.
-  /// 
+  ///
   ///   The `max_intra_op_parallelism` attr, which defaults to 1, can be used to
   ///   limit the intra op parallelism. To limit inter-op parallelism, a user can
   ///   set a private threadpool on the dataset using `tf.data.Options`'s
   ///   `ThreadingOptions`.
-  /// 
+  ///
   ///   Note that this op is not exposed to users directly, but is invoked in tf.data
   ///   rewrites.
   ///
@@ -18042,7 +18087,7 @@ public enum _Raw {
   /// "a" (after being transposed if transpose_a is true) must match the
   /// outer dimension of "b" (after being transposed if transposed_b is
   /// true).
-  /// 
+  ///
   /// *Note*: The default kernel implementation for MatMul on GPUs uses
   /// cublas.
   ///
@@ -18098,39 +18143,39 @@ public enum _Raw {
   /// Copy a tensor setting everything outside a central band in each innermost matrix
   ///
   /// to zero.
-  /// 
+  ///
   /// The `band` part is computed as follows:
   /// Assume `input` has `k` dimensions `[I, J, K, ..., M, N]`, then the output is a
   /// tensor with the same shape where
-  /// 
+  ///
   /// `band[i, j, k, ..., m, n] = in_band(m, n) * input[i, j, k, ..., m, n]`.
-  /// 
+  ///
   /// The indicator function
-  /// 
+  ///
   /// `in_band(m, n) = (num_lower < 0 || (m-n) <= num_lower)) &&
   ///                  (num_upper < 0 || (n-m) <= num_upper)`.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # if 'input' is [[ 0,  1,  2, 3]
   ///                  [-1,  0,  1, 2]
   ///                  [-2, -1,  0, 1]
   ///                  [-3, -2, -1, 0]],
-  /// 
+  ///
   /// tf.matrix_band_part(input, 1, -1) ==> [[ 0,  1,  2, 3]
   ///                                        [-1,  0,  1, 2]
   ///                                        [ 0, -1,  0, 1]
   ///                                        [ 0,  0, -1, 0]],
-  /// 
+  ///
   /// tf.matrix_band_part(input, 2, 1) ==> [[ 0,  1,  0, 0]
   ///                                       [-1,  0,  1, 0]
   ///                                       [-2, -1,  0, 1]
   ///                                       [ 0, -2, -1, 0]]
   /// ```
-  /// 
+  ///
   /// Useful special cases:
-  /// 
+  ///
   /// ```
   ///  tf.matrix_band_part(input, 0, -1) ==> Upper triangular part.
   ///  tf.matrix_band_part(input, -1, 0) ==> Lower triangular part.
@@ -18188,19 +18233,19 @@ public enum _Raw {
   ///
   /// Given a `diagonal`, this operation returns a tensor with the `diagonal` and
   /// everything else padded with zeros. The diagonal is computed as follows:
-  /// 
+  ///
   /// Assume `diagonal` has `k` dimensions `[I, J, K, ..., N]`, then the output is a
   /// tensor of rank `k+1` with dimensions [I, J, K, ..., N, N]` where:
-  /// 
+  ///
   /// `output[i, j, k, ..., m, n] = 1{m=n} * diagonal[i, j, k, ..., n]`.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # 'diagonal' is [[1, 2, 3, 4], [5, 6, 7, 8]]
-  /// 
+  ///
   /// and diagonal.shape = (2, 4)
-  /// 
+  ///
   /// tf.matrix_diag(diagonal) ==> [[[1, 0, 0, 0]
   ///                                      [0, 2, 0, 0]
   ///                                      [0, 0, 3, 0]
@@ -18209,7 +18254,7 @@ public enum _Raw {
   ///                                      [0, 6, 0, 0]
   ///                                      [0, 0, 7, 0]
   ///                                      [0, 0, 0, 8]]]
-  /// 
+  ///
   /// which has shape (2, 4, 4)
   /// ```
   ///
@@ -18231,16 +18276,16 @@ public enum _Raw {
   ///
   /// This operation returns a tensor with the `diagonal` part
   /// of the batched `input`. The `diagonal` part is computed as follows:
-  /// 
+  ///
   /// Assume `input` has `k` dimensions `[I, J, K, ..., M, N]`, then the output is a
   /// tensor of rank `k - 1` with dimensions `[I, J, K, ..., min(M, N)]` where:
-  /// 
+  ///
   /// `diagonal[i, j, k, ..., n] = input[i, j, k, ..., n, n]`.
-  /// 
+  ///
   /// The input must be at least a matrix.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # 'input' is [[[1, 0, 0, 0]
   ///                [0, 2, 0, 0]
@@ -18250,11 +18295,11 @@ public enum _Raw {
   ///                [0, 6, 0, 0]
   ///                [0, 0, 7, 0]
   ///                [0, 0, 0, 8]]]
-  /// 
+  ///
   /// and input.shape = (2, 4, 4)
-  /// 
+  ///
   /// tf.matrix_diag_part(input) ==> [[1, 2, 3, 4], [5, 6, 7, 8]]
-  /// 
+  ///
   /// which has shape (2, 4)
   /// ```
   ///
@@ -18277,37 +18322,37 @@ public enum _Raw {
   ///
   /// Returns a tensor with the `k[0]`-th to `k[1]`-th diagonals of the batched
   /// `input`.
-  /// 
+  ///
   /// Assume `input` has `r` dimensions `[I, J, ..., L, M, N]`.
   /// Let `max_diag_len` be the maximum length among all diagonals to be extracted,
   /// `max_diag_len = min(M + min(k[1], 0), N + min(-k[0], 0))`
   /// Let `num_diags` be the number of diagonals to extract,
   /// `num_diags = k[1] - k[0] + 1`.
-  /// 
+  ///
   /// If `num_diags == 1`, the output tensor is of rank `r - 1` with shape
   /// `[I, J, ..., L, max_diag_len]` and values:
-  /// 
+  ///
   /// ```
   /// diagonal[i, j, ..., l, n]
   ///   = input[i, j, ..., l, n+y, n+x] ; if 0 <= n+y < M and 0 <= n+x < N,
   ///     padding_value                 ; otherwise.
   /// ```
   /// where `y = max(-k[1], 0)`, `x = max(k[1], 0)`.
-  /// 
+  ///
   /// Otherwise, the output tensor has rank `r` with dimensions
   /// `[I, J, ..., L, num_diags, max_diag_len]` with values:
-  /// 
+  ///
   /// ```
   /// diagonal[i, j, ..., l, m, n]
   ///   = input[i, j, ..., l, n+y, n+x] ; if 0 <= n+y < M and 0 <= n+x < N,
   ///     padding_value                 ; otherwise.
   /// ```
   /// where `d = k[1] - m`, `y = max(-d, 0)`, and `x = max(d, 0)`.
-  /// 
+  ///
   /// The input must be at least a matrix.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// input = np.array([[[1, 2, 3, 4],  # Input shape: (2, 3, 4)
   ///                    [5, 6, 7, 8],
@@ -18315,16 +18360,16 @@ public enum _Raw {
   ///                   [[5, 4, 3, 2],
   ///                    [1, 2, 3, 4],
   ///                    [5, 6, 7, 8]]])
-  /// 
+  ///
   /// # A main diagonal from each batch.
   /// tf.matrix_diag_part(input) ==> [[1, 6, 7],  # Output shape: (2, 3)
   ///                                 [5, 2, 7]]
-  /// 
+  ///
   /// # A superdiagonal from each batch.
   /// tf.matrix_diag_part(input, k = 1)
   ///   ==> [[2, 7, 6],  # Output shape: (2, 3)
   ///        [4, 3, 8]]
-  /// 
+  ///
   /// # A tridiagonal band from each batch.
   /// tf.matrix_diag_part(input, k = (-1, 1))
   ///   ==> [[[2, 7, 6],  # Output shape: (2, 3, 3)
@@ -18333,7 +18378,7 @@ public enum _Raw {
   ///        [[4, 3, 8],
   ///         [5, 2, 7],
   ///         [1, 6, 0]]]
-  /// 
+  ///
   /// # Padding value = 9
   /// tf.matrix_diag_part(input, k = (1, 3), padding_value = 9)
   ///   ==> [[[4, 9, 9],  # Output shape: (2, 3, 3)
@@ -18378,34 +18423,34 @@ public enum _Raw {
   /// its size from `k` and the innermost dimension of `diagonal`. If only one of them
   /// is specified, the op assumes the unspecified value is the smallest possible
   /// based on other criteria.
-  /// 
+  ///
   /// Let `diagonal` have `r` dimensions `[I, J, ..., L, M, N]`. The output tensor has
   /// rank `r+1` with shape `[I, J, ..., L, M, num_rows, num_cols]` when only one
   /// diagonal is given (`k` is an integer or `k[0] == k[1]`). Otherwise, it has rank
   /// `r` with shape `[I, J, ..., L, num_rows, num_cols]`.
-  /// 
+  ///
   /// The second innermost dimension of `diagonal` has double meaning.
   /// When `k` is scalar or `k[0] == k[1]`, `M` is part of the batch size
   /// [I, J, ..., M], and the output tensor is:
-  /// 
+  ///
   /// ```
   /// output[i, j, ..., l, m, n]
   ///   = diagonal[i, j, ..., l, n-max(d_upper, 0)] ; if n - m == d_upper
   ///     padding_value                             ; otherwise
   /// ```
-  /// 
+  ///
   /// Otherwise, `M` is treated as the number of diagonals for the matrix in the
   /// same batch (`M = k[1]-k[0]+1`), and the output tensor is:
-  /// 
+  ///
   /// ```
   /// output[i, j, ..., l, m, n]
   ///   = diagonal[i, j, ..., l, diag_index, index_in_diag] ; if k[0] <= d <= k[1]
   ///     padding_value                                     ; otherwise
   /// ```
   /// where `d = n - m`, `diag_index = k[1] - d`, and `index_in_diag = n - max(d, 0)`.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # The main diagonal.
   /// diagonal = np.array([[1, 2, 3, 4],            # Input shape: (2, 4)
@@ -18418,7 +18463,7 @@ public enum _Raw {
   ///                                [0, 6, 0, 0],
   ///                                [0, 0, 7, 0],
   ///                                [0, 0, 0, 8]]]
-  /// 
+  ///
   /// # A superdiagonal (per batch).
   /// diagonal = np.array([[1, 2, 3],  # Input shape: (2, 3)
   ///                      [4, 5, 6]])
@@ -18431,7 +18476,7 @@ public enum _Raw {
   ///         [0, 0, 5, 0],
   ///         [0, 0, 0, 6],
   ///         [0, 0, 0, 0]]]
-  /// 
+  ///
   /// # A band of diagonals.
   /// diagonals = np.array([[[1, 2, 3],  # Input shape: (2, 2, 3)
   ///                        [4, 5, 0]],
@@ -18444,14 +18489,14 @@ public enum _Raw {
   ///        [[6, 0, 0],
   ///         [9, 7, 0],
   ///         [0, 1, 9]]]
-  /// 
+  ///
   /// # Rectangular matrix.
   /// diagonal = np.array([1, 2])  # Input shape: (2)
   /// tf.matrix_diag(diagonal, k = -1, num_rows = 3, num_cols = 4)
   ///   ==> [[0, 0, 0, 0],  # Output shape: (3, 4)
   ///        [1, 0, 0, 0],
   ///        [0, 2, 0, 0]]
-  /// 
+  ///
   /// # Rectangular matrix with inferred num_cols and padding_value = 9.
   /// tf.matrix_diag(diagonal, k = -1, num_rows = 3, padding_value = 9)
   ///   ==> [[9, 9],  # Output shape: (3, 2)
@@ -18509,13 +18554,13 @@ public enum _Raw {
   /// Computes the inverse of one or more square invertible matrices or their
   ///
   /// adjoints (conjugate transposes).
-  /// 
+  ///
   /// The input is a tensor of shape `[..., M, M]` whose inner-most 2 dimensions
   /// form square matrices. The output is a tensor of the same shape as the input
   /// containing the inverse for all input submatrices `[..., :, :]`.
-  /// 
+  ///
   /// The op uses LU decomposition with partial pivoting to compute the inverses.
-  /// 
+  ///
   /// If a matrix is not invertible there is no guarantee what the op does. It
   /// may detect the condition and raise an exception or it may simply return a
   /// garbage result.
@@ -18523,7 +18568,7 @@ public enum _Raw {
   /// - Parameter input: Shape is `[..., M, M]`.
   ///
   /// - Output output: Shape is `[..., M, M]`.
-  ///     
+  ///
   ///     @compatibility(numpy)
   ///     Equivalent to np.linalg.inv
   ///     @end_compatibility
@@ -18542,18 +18587,18 @@ public enum _Raw {
 
   /// Computes the matrix logarithm of one or more square matrices:
   ///
-  /// 
+  ///
   /// \\(log(exp(A)) = A\\)
-  /// 
+  ///
   /// This op is only defined for complex matrices. If A is positive-definite and
   /// real, then casting to a complex matrix, taking the logarithm and casting back
   /// to a real matrix will give the correct result.
-  /// 
+  ///
   /// This function computes the matrix logarithm using the Schur-Parlett algorithm.
   /// Details of the algorithm can be found in Section 11.6.2 of:
   /// Nicholas J. Higham, Functions of Matrices: Theory and Computation, SIAM 2008.
   /// ISBN 978-0-898716-46-7.
-  /// 
+  ///
   /// The input is a tensor of shape `[..., M, M]` whose inner-most 2 dimensions
   /// form square matrices. The output is a tensor of the same shape as the input
   /// containing the exponential for all input submatrices `[..., :, :]`.
@@ -18561,7 +18606,7 @@ public enum _Raw {
   /// - Parameter input: Shape is `[..., M, M]`.
   ///
   /// - Output output: Shape is `[..., M, M]`.
-  ///     
+  ///
   ///     @compatibility(scipy)
   ///     Equivalent to scipy.linalg.logm
   ///     @end_compatibility
@@ -18581,13 +18626,13 @@ public enum _Raw {
   /// Given `input` and `diagonal`, this operation returns a tensor with the
   /// same shape and values as `input`, except for the main diagonal of the
   /// innermost matrices.  These will be overwritten by the values in `diagonal`.
-  /// 
+  ///
   /// The output is computed as follows:
-  /// 
+  ///
   /// Assume `input` has `k+1` dimensions `[I, J, K, ..., M, N]` and `diagonal` has
   /// `k` dimensions `[I, J, K, ..., min(M, N)]`.  Then the output is a
   /// tensor of rank `k+1` with dimensions `[I, J, K, ..., M, N]` where:
-  /// 
+  ///
   ///   * `output[i, j, k, ..., m, n] = diagonal[i, j, k, ..., n]` for `m == n`.
   ///   * `output[i, j, k, ..., m, n] = input[i, j, k, ..., m, n]` for `m != n`.
   ///
@@ -18614,34 +18659,34 @@ public enum _Raw {
   /// Given `input` and `diagonal`, this operation returns a tensor with the
   /// same shape and values as `input`, except for the specified diagonals of the
   /// innermost matrices. These will be overwritten by the values in `diagonal`.
-  /// 
+  ///
   /// `input` has `r+1` dimensions `[I, J, ..., L, M, N]`. When `k` is scalar or
   /// `k[0] == k[1]`, `diagonal` has `r` dimensions `[I, J, ..., L, max_diag_len]`.
   /// Otherwise, it has `r+1` dimensions `[I, J, ..., L, num_diags, max_diag_len]`.
   /// `num_diags` is the number of diagonals, `num_diags = k[1] - k[0] + 1`.
   /// `max_diag_len` is the longest diagonal in the range `[k[0], k[1]]`,
   /// `max_diag_len = min(M + min(k[1], 0), N + min(-k[0], 0))`
-  /// 
+  ///
   /// The output is a tensor of rank `k+1` with dimensions `[I, J, ..., L, M, N]`.
   /// If `k` is scalar or `k[0] == k[1]`:
-  /// 
+  ///
   /// ```
   /// output[i, j, ..., l, m, n]
   ///   = diagonal[i, j, ..., l, n-max(k[1], 0)] ; if n - m == k[1]
   ///     input[i, j, ..., l, m, n]              ; otherwise
   /// ```
-  /// 
+  ///
   /// Otherwise,
-  /// 
+  ///
   /// ```
   /// output[i, j, ..., l, m, n]
   ///   = diagonal[i, j, ..., l, diag_index, index_in_diag] ; if k[0] <= d <= k[1]
   ///     input[i, j, ..., l, m, n]                         ; otherwise
   /// ```
   /// where `d = n - m`, `diag_index = k[1] - d`, and `index_in_diag = n - max(d, 0)`.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # The main diagonal.
   /// input = np.array([[[7, 7, 7, 7],              # Input shape: (2, 3, 4)
@@ -18658,7 +18703,7 @@ public enum _Raw {
   ///                                   [[4, 7, 7, 7],
   ///                                    [7, 5, 7, 7],
   ///                                    [7, 7, 6, 7]]]
-  /// 
+  ///
   /// # A superdiagonal (per batch).
   /// tf.matrix_set_diag(diagonal, k = 1)
   ///   ==> [[[7, 1, 7, 7],  # Output shape: (2, 3, 4)
@@ -18667,7 +18712,7 @@ public enum _Raw {
   ///        [[7, 4, 7, 7],
   ///         [7, 7, 5, 7],
   ///         [7, 7, 7, 6]]]
-  /// 
+  ///
   /// # A band of diagonals.
   /// diagonals = np.array([[[1, 2, 3],  # Diagonal shape: (2, 2, 3)
   ///                        [4, 5, 0]],
@@ -18680,7 +18725,7 @@ public enum _Raw {
   ///        [[6, 7, 7, 7],
   ///         [3, 1, 7, 7],
   ///         [7, 4, 2, 7]]]
-  /// 
+  ///
   /// ```
   ///
   /// - Parameters:
@@ -18749,15 +18794,15 @@ public enum _Raw {
   /// each of the equations
   /// `matrix[..., :, :]` * `output[..., :, :]` = `rhs[..., :, :]`
   /// in the least squares sense.
-  /// 
+  ///
   /// We use the following notation for (complex) matrix and right-hand sides
   /// in the batch:
-  /// 
+  ///
   /// `matrix`=\\(A \in \mathbb{C}^{m \times n}\\),
   /// `rhs`=\\(B  \in \mathbb{C}^{m \times k}\\),
   /// `output`=\\(X  \in \mathbb{C}^{n \times k}\\),
   /// `l2_regularizer`=\\(\lambda \in \mathbb{R}\\).
-  /// 
+  ///
   /// If `fast` is `True`, then the solution is computed by solving the normal
   /// equations using Cholesky decomposition. Specifically, if \\(m \ge n\\) then
   /// \\(X = (A^H A + \lambda I)^{-1} A^H B\\), which solves the least-squares
@@ -18770,7 +18815,7 @@ public enum _Raw {
   /// when \\(A\\) is numerically full rank and has a condition number
   /// \\(\mathrm{cond}(A) \lt \frac{1}{\sqrt{\epsilon_{mach} } }\\) or \\(\lambda\\) is
   /// sufficiently large.
-  /// 
+  ///
   /// If `fast` is `False` an algorithm based on the numerically robust complete
   /// orthogonal decomposition is used. This computes the minimum-norm
   /// least-squares solution, even when \\(A\\) is rank deficient. This path is
@@ -18781,7 +18826,7 @@ public enum _Raw {
   ///     - matrix: Shape is `[..., M, N]`.
   ///     - rhs: Shape is `[..., M, K]`.
   ///     - l2_regularizer: Scalar tensor.
-  ///         
+  ///
   ///         @compatibility(numpy)
   ///         Equivalent to np.linalg.lstsq
   ///         @end_compatibility
@@ -18807,17 +18852,17 @@ public enum _Raw {
   /// Computes the matrix square root of one or more square matrices:
   ///
   /// matmul(sqrtm(A), sqrtm(A)) = A
-  /// 
+  ///
   /// The input matrix should be invertible. If the input matrix is real, it should
   /// have no eigenvalues which are real and negative (pairs of complex conjugate
   /// eigenvalues are allowed).
-  /// 
+  ///
   /// The matrix square root is computed by first reducing the matrix to
   /// quasi-triangular form with the real Schur decomposition. The square root
   /// of the quasi-triangular matrix is then computed directly. Details of
   /// the algorithm can be found in: Nicholas J. Higham, "Computing real
   /// square roots of a real matrix", Linear Algebra Appl., 1987.
-  /// 
+  ///
   /// The input is a tensor of shape `[..., M, M]` whose inner-most 2 dimensions
   /// form square matrices. The output is a tensor of the same shape as the input
   /// containing the matrix square root for all input submatrices `[..., :, :]`.
@@ -18825,7 +18870,7 @@ public enum _Raw {
   /// - Parameter input: Shape is `[..., M, M]`.
   ///
   /// - Output output: Shape is `[..., M, M]`.
-  ///     
+  ///
   ///     @compatibility(scipy)
   ///     Equivalent to scipy.linalg.sqrtm
   ///     @end_compatibility
@@ -18842,34 +18887,36 @@ public enum _Raw {
 
   /// Solves systems of linear equations with upper or lower triangular matrices by backsubstitution.
   ///
-  /// 
+  ///
   /// `matrix` is a tensor of shape `[..., M, M]` whose inner-most 2 dimensions form
   /// square matrices. If `lower` is `True` then the strictly upper triangular part
   /// of each inner-most matrix is assumed to be zero and not accessed.
   /// If `lower` is False then the strictly lower triangular part of each inner-most
   /// matrix is assumed to be zero and not accessed.
-  /// `rhs` is a tensor of shape `[..., M, K]`.
-  /// 
-  /// The output is a tensor of shape `[..., M, K]`. If `adjoint` is
+  /// `rhs` is a tensor of shape `[..., M, N]`.
+  ///
+  /// The output is a tensor of shape `[..., M, N]`. If `adjoint` is
   /// `True` then the innermost matrices in `output` satisfy matrix equations
   /// `matrix[..., :, :] * output[..., :, :] = rhs[..., :, :]`.
   /// If `adjoint` is `False` then the strictly then the  innermost matrices in
   /// `output` satisfy matrix equations
   /// `adjoint(matrix[..., i, k]) * output[..., k, j] = rhs[..., i, j]`.
-  /// 
+  ///
+  /// Note, the batch shapes for the inputs only need to broadcast.
+  ///
   /// Example:
   /// ```python
-  /// 
+  ///
   /// a = tf.constant([[3,  0,  0,  0],
   ///                  [2,  1,  0,  0],
   ///                  [1,  0,  1,  0],
   ///                  [1,  1,  1,  1]], dtype=tf.float32)
-  /// 
+  ///
   /// b = tf.constant([[4],
   ///                  [2],
   ///                  [4],
   ///                  [2]], dtype=tf.float32)
-  /// 
+  ///
   /// x = tf.linalg.triangular_solve(a, b, lower=True)
   /// x
   /// # <tf.Tensor: shape=(4, 1), dtype=float32, numpy=
@@ -18877,7 +18924,7 @@ public enum _Raw {
   /// #        [-0.66666675],
   /// #        [ 2.6666665 ],
   /// #        [-1.3333331 ]], dtype=float32)>
-  /// 
+  ///
   /// # in python3 one can use `a@x`
   /// tf.matmul(a, x)
   /// # <tf.Tensor: shape=(4, 1), dtype=float32, numpy=
@@ -18896,7 +18943,7 @@ public enum _Raw {
   ///         lower or upper triangular.
   ///     - adjoint: Boolean indicating whether to solve with `matrix` or its (block-wise)
   ///                  adjoint.
-  ///         
+  ///
   ///         @compatibility(numpy)
   ///         Equivalent to scipy.linalg.solve_triangular
   ///         @end_compatibility
@@ -18994,7 +19041,7 @@ public enum _Raw {
     ksize: [Int32],
     strides: [Int32],
     padding: Padding,
-    dataFormat: DataFormat5 = .nhwc
+    dataFormat: DataFormat2 = .nhwc
   ) -> Tensor<T> {
     let nOutputs = Int(1)
     let op = makeOp("MaxPool", nOutputs)
@@ -19408,7 +19455,7 @@ public enum _Raw {
     ksize: Tensor<Int32>,
     strides: Tensor<Int32>,
     padding: Padding,
-    dataFormat: DataFormat5 = .nhwc
+    dataFormat: DataFormat2 = .nhwc
   ) -> Tensor<T> {
     let nOutputs = Int(1)
     let op = makeOp("MaxPoolV2", nOutputs)
@@ -19427,7 +19474,7 @@ public enum _Raw {
   /// `[b, y, x, c]` becomes flattened index:
   /// `(y * width + x) * channels + c` if `include_batch_in_index` is False;
   /// `((b * height + y) * width + x) * channels + c` if `include_batch_in_index` is True.
-  /// 
+  ///
   /// The indices returned are always in `[0, height) x [0, width)` before flattening,
   /// even if padding is involved and the mathematically correct answer is outside
   /// (either negative or too large).  This is a bug, but fixing it is difficult to do
@@ -19523,7 +19570,7 @@ public enum _Raw {
   ///
   /// `Merge` waits for at least one of the tensors in `inputs` to become available.
   /// It is usually combined with `Switch` to implement branching.
-  /// 
+  ///
   /// `Merge` forwards the first tensor to become available to `output`, and sets
   /// `value_index` to its index in `inputs`.
   ///
@@ -19550,7 +19597,7 @@ public enum _Raw {
   /// [`Summary`](https://www.tensorflow.org/code/tensorflow/core/framework/summary.proto)
   /// protocol buffer that contains the union of all the values in the input
   /// summaries.
-  /// 
+  ///
   /// When the Op is run, it reports an `InvalidArgument` error if multiple values
   /// in the summaries to merge use the same tag.
   ///
@@ -19573,9 +19620,9 @@ public enum _Raw {
   ///
   /// result is one logical checkpoint, with one physical metadata file and renamed
   /// data files.
-  /// 
+  ///
   /// Intended for "grouping" multiple checkpoints in a sharded checkpoint setup.
-  /// 
+  ///
   /// If delete_old_dirs is true, attempts to delete recursively the dirname of each
   /// path in the input checkpoint_prefixes.  This is useful when those paths are non
   /// user-facing temporary locations.
@@ -19702,13 +19749,13 @@ public enum _Raw {
   /// in that dimension. Both `paddings[D, 0]` and `paddings[D, 1]` must be no greater
   /// than `input.dim_size(D)` (or `input.dim_size(D) - 1`) if `copy_border` is true
   /// (if false, respectively).
-  /// 
+  ///
   /// The padded size of each dimension D of the output is:
-  /// 
+  ///
   /// `paddings(D, 0) + input.dim_size(D) + paddings(D, 1)`
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # 't' is [[1, 2, 3], [4, 5, 6]].
   /// # 'paddings' is [[1, 1]], [2, 2]].
@@ -19739,7 +19786,7 @@ public enum _Raw {
   >(
     _ input: Tensor<T>,
     paddings: Tensor<Tpaddings>,
-    mode: Mode6
+    mode: Mode1
   ) -> Tensor<T> {
     let nOutputs = Int(1)
     let op = makeOp("MirrorPad", nOutputs)
@@ -19756,13 +19803,13 @@ public enum _Raw {
   /// This operation folds the padded areas of `input` by `MirrorPad` according to the
   /// `paddings` you specify. `paddings` must be the same as `paddings` argument
   /// given to the corresponding `MirrorPad` op.
-  /// 
+  ///
   /// The folded size of each dimension D of the output is:
-  /// 
+  ///
   /// `input.dim_size(D) - paddings(D, 0) - paddings(D, 1)`
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # 't' is [[1, 2, 3], [4, 5, 6], [7, 8, 9]].
   /// # 'paddings' is [[0, 1]], [0, 1]].
@@ -19787,7 +19834,7 @@ public enum _Raw {
   >(
     _ input: Tensor<T>,
     paddings: Tensor<Tpaddings>,
-    mode: Mode6
+    mode: Mode1
   ) -> Tensor<T> {
     let nOutputs = Int(1)
     let op = makeOp("MirrorPadGrad", nOutputs)
@@ -19822,22 +19869,22 @@ public enum _Raw {
   /// main() function and the returned values of the main function mapped to the
   /// outputs.
   /// Example usage:
-  /// 
+  ///
   /// ```
   /// import tensorflow as tf
   /// from tensorflow.compiler.mlir.tensorflow.gen_mlir_passthrough_op import mlir_passthrough_op
-  /// 
+  ///
   /// mlir_module = '''python
   /// func @main(%arg0 : tensor<10xf32>, %arg1 : tensor<10xf32>) -> tensor<10x10xf32> {
   ///    %add = "magic.op"(%arg0, %arg1) : (tensor<10xf32>, tensor<10xf32>) -> tensor<10x10xf32>
   ///    return %ret : tensor<10x10xf32>
   /// }
   /// '''
-  /// 
+  ///
   /// @tf.function
   /// def foo(x, y):
   ///   return = mlir_passthrough_op([x, y], mlir_module, Toutputs=[tf.float32])
-  /// 
+  ///
   /// graph_def = foo.get_concrete_function(tf.TensorSpec([10], tf.float32), tf.TensorSpec([10], tf.float32)).graph.as_graph_def()
   /// ```
   @inlinable @inline(__always)
@@ -19861,7 +19908,7 @@ public enum _Raw {
   ///
   /// the result here is consistent with a truncating divide. E.g.
   /// `tf.truncatediv(x, y) * y + truncate_mod(x, y) = x`.
-  /// 
+  ///
   /// *NOTE*: `Mod` supports broadcasting. More about broadcasting
   /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
   @inlinable @inline(__always)
@@ -20093,7 +20140,7 @@ public enum _Raw {
   ///
   /// It uses "open addressing" with quadratic reprobing to resolve
   /// collisions.
-  /// 
+  ///
   /// This op creates a mutable hash table, specifying the type of its keys and
   /// values. Each value must be a scalar. Data can be inserted into the table using
   /// the insert operations. It does not support the initialization operation.
@@ -20215,41 +20262,41 @@ public enum _Raw {
   /// Locks a mutex resource.  The output is the lock.  So long as the lock tensor
   ///
   /// is alive, any other request to use `MutexLock` with this mutex will wait.
-  /// 
+  ///
   /// This is particularly useful for creating a critical section when used in
   /// conjunction with `MutexLockIdentity`:
-  /// 
+  ///
   /// ```python
-  /// 
+  ///
   /// mutex = mutex_v2(
   ///   shared_name=handle_name, container=container, name=name)
-  /// 
+  ///
   /// def execute_in_critical_section(fn, *args, **kwargs):
   ///   lock = gen_resource_variable_ops.mutex_lock(mutex)
-  /// 
+  ///
   ///   with ops.control_dependencies([lock]):
   ///     r = fn(*args, **kwargs)
-  /// 
+  ///
   ///   with ops.control_dependencies(nest.flatten(r)):
   ///     with ops.colocate_with(mutex):
   ///       ensure_lock_exists = mutex_lock_identity(lock)
-  /// 
+  ///
   ///     # Make sure that if any element of r is accessed, all of
   ///     # them are executed together.
   ///     r = nest.map_structure(tf.identity, r)
-  /// 
+  ///
   ///   with ops.control_dependencies([ensure_lock_exists]):
   ///     return nest.map_structure(tf.identity, r)
   /// ```
-  /// 
+  ///
   /// While `fn` is running in the critical section, no other functions which wish to
   /// use this critical section may run.
-  /// 
+  ///
   /// Often the use case is that two executions of the same graph, in parallel,
   /// wish to run `fn`; and we wish to ensure that only one of them executes
   /// at a time.  This is especially important if `fn` modifies one or more
   /// variables at a time.
-  /// 
+  ///
   /// It is also useful if two separate functions must share a resource, but we
   /// wish to ensure the usage is exclusive.
   ///
@@ -20450,7 +20497,7 @@ public enum _Raw {
     _ input: Tensor<Float>
   ) -> (output1: Tensor<Float>, output2: StringTensor) {
     let nOutputs = Int(1) + Int(1)
-    let op = makeOp("NamespaceTestStringOutput", nOutputs)
+    let op = makeOp("Namespace>TestStringOutput", nOutputs)
     op.addInput(input)
     return op.execute(Int(1), Int(1))
   }
@@ -20459,11 +20506,11 @@ public enum _Raw {
   ///
   /// Outputs a tensor containing the reduction across all input tensors passed to ops
   /// within the same `shared_name.
-  /// 
+  ///
   /// The graph should be constructed so if one op runs with shared_name value `c`,
   /// then `num_devices` ops will run with shared_name value `c`.  Failure to do so
   /// will cause the graph execution to fail to complete.
-  /// 
+  ///
   /// input: the input to the reduction
   /// data: the value of the reduction across all `num_devices` devices.
   /// reduction: the reduction operation to perform.
@@ -20489,14 +20536,14 @@ public enum _Raw {
   /// Sends `input` to all devices that are connected to the output.
   ///
   /// Sends `input` to all devices that are connected to the output.
-  /// 
+  ///
   /// The graph should be constructed so that all ops connected to the output have a
   /// valid device assignment, and the op itself is assigned one of these devices.
-  /// 
+  ///
   /// input: The input to the broadcast.
   /// output: The same as input.
   /// shape: The shape of the input tensor.
-  /// 
+  ///
   @inlinable @inline(__always)
   public static func ncclBroadcast<T: TensorFlowNumeric>(
     _ input: Tensor<T>,
@@ -20513,10 +20560,10 @@ public enum _Raw {
   /// Reduces `input` from `num_devices` using `reduction` to a single device.
   ///
   /// Reduces `input` from `num_devices` using `reduction` to a single device.
-  /// 
+  ///
   /// The graph should be constructed so that all inputs have a valid device
   /// assignment, and the op itself is assigned one of these devices.
-  /// 
+  ///
   /// input: The input to the reduction.
   /// data: the value of the reduction across all `num_devices` devices.
   /// reduction: the reduction operation to perform.
@@ -20593,9 +20640,9 @@ public enum _Raw {
   /// Returns the next representable value of `x1` in the direction of `x2`, element-wise.
   ///
   /// This operation returns the same result as the C++ std::nextafter function.
-  /// 
+  ///
   /// It can also return a subnormal number.
-  /// 
+  ///
   /// @compatibility(cpp)
   /// Equivalent to C++ std::nextafter function.
   /// @end_compatibility
@@ -20719,12 +20766,12 @@ public enum _Raw {
   /// algorithm is invariant to orthogonal transformations and translations
   /// of the coordinate system; thus translating or reflections of the coordinate
   /// system result in the same boxes being selected by the algorithm.
-  /// 
+  ///
   /// The output of this operation is a set of integers indexing into the input
   /// collection of bounding boxes representing the selected boxes.  The bounding
   /// box coordinates corresponding to the selected indices can then be obtained
   /// using the `tf.gather operation`.  For example:
-  /// 
+  ///
   ///   selected_indices = tf.image.non_max_suppression_v2(
   ///       boxes, scores, max_output_size, iou_threshold)
   ///   selected_boxes = tf.gather(boxes, selected_indices)
@@ -20962,12 +21009,12 @@ public enum _Raw {
   /// `score_threshold` are removed. N-by-n overlap values are supplied as square matrix,
   /// which allows for defining a custom overlap criterium (eg. intersection over union,
   /// intersection over area, etc.).
-  /// 
+  ///
   /// The output of this operation is a set of integers indexing into the input
   /// collection of bounding boxes representing the selected boxes.  The bounding
   /// box coordinates corresponding to the selected indices can then be obtained
   /// using the `tf.gather operation`.  For example:
-  /// 
+  ///
   ///   selected_indices = tf.image.non_max_suppression_with_overlaps(
   ///       overlaps, scores, max_output_size, overlap_threshold, score_threshold)
   ///   selected_boxes = tf.gather(boxes, selected_indices)
@@ -21068,10 +21115,10 @@ public enum _Raw {
   ///
   /// If the input is a vector (rank-1), finds the entries which is the nth-smallest
   /// value in the vector and outputs their values as scalar tensor.
-  /// 
+  ///
   /// For matrices (resp. higher rank input), computes the entries which is the
   /// nth-smallest value in each row (resp. vector along the last dimension). Thus,
-  /// 
+  ///
   ///     values.shape = input.shape[:-1]
   ///
   /// - Parameters:
@@ -21110,19 +21157,19 @@ public enum _Raw {
   ///
   /// The locations represented by indices in `indices` take value `on_value`,
   /// while all other locations take value `off_value`.
-  /// 
+  ///
   /// If the input `indices` is rank `N`, the output will have rank `N+1`,
   /// The new axis is created at dimension `axis` (default: the new axis is
   /// appended at the end).
-  /// 
+  ///
   /// If `indices` is a scalar the output shape will be a vector of length `depth`.
-  /// 
+  ///
   /// If `indices` is a vector of length `features`, the output shape will be:
   /// ```
   ///   features x depth if axis == -1
   ///   depth x features if axis == 0
   /// ```
-  /// 
+  ///
   /// If `indices` is a matrix (batch) with shape `[batch, features]`,
   /// the output shape will be:
   /// ```
@@ -21130,11 +21177,11 @@ public enum _Raw {
   ///   batch x depth x features if axis == 1
   ///   depth x batch x features if axis == 0
   /// ```
-  /// 
-  /// 
+  ///
+  ///
   /// Examples
   /// =========
-  /// 
+  ///
   /// Suppose that
   /// ```
   ///   indices = [0, 2, -1, 1]
@@ -21143,7 +21190,7 @@ public enum _Raw {
   ///   off_value = 0.0
   ///   axis = -1
   /// ```
-  /// 
+  ///
   /// Then output is `[4 x 3]`:
   /// ```
   /// output =
@@ -21152,7 +21199,7 @@ public enum _Raw {
   ///   [0.0 0.0 0.0]  // one_hot(-1)
   ///   [0.0 5.0 0.0]  // one_hot(1)
   /// ```
-  /// 
+  ///
   /// Suppose that
   /// ```
   ///   indices = [0, 2, -1, 1]
@@ -21161,7 +21208,7 @@ public enum _Raw {
   ///   off_value = 3.0
   ///   axis = 0
   /// ```
-  /// 
+  ///
   /// Then output is `[3 x 4]`:
   /// ```
   /// output =
@@ -21174,7 +21221,7 @@ public enum _Raw {
   /// //          ^        one_hot(-1)
   /// //              ^    one_hot(1)
   /// ```
-  /// 
+  ///
   /// Suppose that
   /// ```
   ///   indices = [[0, 2], [1, -1]]
@@ -21183,7 +21230,7 @@ public enum _Raw {
   ///   off_value = 0.0
   ///   axis = -1
   /// ```
-  /// 
+  ///
   /// Then output is `[2 x 2 x 3]`:
   /// ```
   /// output =
@@ -21234,15 +21281,15 @@ public enum _Raw {
   /// the state of the iterator in a single op, which allows simple input
   /// pipelines to be defined without an additional initialization
   /// ("MakeIterator") step.
-  /// 
+  ///
   /// One-shot iterators have the following limitations:
-  /// 
+  ///
   /// * They do not support parameterization: all logic for creating the underlying
   ///   dataset must be bundled in the `dataset_factory` function.
   /// * They are not resettable. Once a one-shot iterator reaches the end of its
   ///   underlying dataset, subsequent "IteratorGetNext" operations on that
   ///   iterator will always produce an `OutOfRange` error.
-  /// 
+  ///
   /// For greater flexibility, use "Iterator" and "MakeIterator" to define
   /// an iterator using an arbitrary subgraph, which may capture tensors
   /// (including fed values) as parameters, and which may be reset multiple
@@ -21659,13 +21706,13 @@ public enum _Raw {
   /// Packs the `N` tensors in `values` into a tensor with rank one higher than each
   /// tensor in `values`, by packing them along the `axis` dimension.
   /// Given a list of tensors of shape `(A, B, C)`;
-  /// 
+  ///
   /// if `axis == 0` then the `output` tensor will have the shape `(N, A, B, C)`.
   /// if `axis == 1` then the `output` tensor will have the shape `(A, N, B, C)`.
   /// Etc.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # 'x' is [1, 4]
   /// # 'y' is [2, 5]
@@ -21673,7 +21720,7 @@ public enum _Raw {
   /// pack([x, y, z]) => [[1, 4], [2, 5], [3, 6]]  # Pack along first dim.
   /// pack([x, y, z], axis=1) => [[1, 2, 3], [4, 5, 6]]
   /// ```
-  /// 
+  ///
   /// This is the opposite of `unpack`.
   ///
   /// - Parameter values: Must be of same shape and type.
@@ -21704,13 +21751,13 @@ public enum _Raw {
   /// how many zeros to add before the contents of `input` in that dimension, and
   /// `paddings[D, 1]` indicates how many zeros to add after the contents of `input`
   /// in that dimension.
-  /// 
+  ///
   /// The padded size of each dimension D of the output is:
-  /// 
+  ///
   /// `paddings(D, 0) + input.dim_size(D) + paddings(D, 1)`
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # 't' is [[1, 1], [2, 2]]
   /// # 'paddings' is [[1, 1], [2, 2]]
@@ -21720,7 +21767,7 @@ public enum _Raw {
   ///                       [0, 0, 2, 2, 0, 0]
   ///                       [0, 0, 0, 0, 0, 0]]
   /// ```
-  /// 
+  ///
   @inlinable @inline(__always)
   public static func pad<
     T: TensorFlowScalar,
@@ -21747,13 +21794,13 @@ public enum _Raw {
   /// and `paddings[D, 1]` indicates how many padding values to add after the contents
   /// of `input` in that dimension. `constant_values` is a scalar tensor of the same
   /// type as `input` that indicates the value to use for padding `input`.
-  /// 
+  ///
   /// The padded size of each dimension D of the output is:
-  /// 
+  ///
   /// `paddings(D, 0) + input.dim_size(D) + paddings(D, 1)`
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # 't' is [[1, 1], [2, 2]]
   /// # 'paddings' is [[1, 1], [2, 2]]
@@ -21896,16 +21943,16 @@ public enum _Raw {
   /// Concatenates a list of `N` tensors along the first dimension.
   ///
   /// The input tensors are all required to have size 1 in the first dimension.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # 'x' is [[1, 4]]
   /// # 'y' is [[2, 5]]
   /// # 'z' is [[3, 6]]
   /// parallel_concat([x, y, z]) => [[1, 4], [2, 5], [3, 6]]  # Pack along first dim.
   /// ```
-  /// 
+  ///
   /// The difference between concat and parallel_concat is that concat requires all
   /// of the inputs be computed before the operation will begin but doesn't require
   /// that the input shapes be known during graph construction.  Parallel concat
@@ -21936,34 +21983,34 @@ public enum _Raw {
   /// Interleave the values from the `data` tensors into a single tensor.
   ///
   /// Builds a merged tensor such that
-  /// 
+  ///
   /// ```python
   ///     merged[indices[m][i, ..., j], ...] = data[m][i, ..., j, ...]
   /// ```
-  /// 
+  ///
   /// For example, if each `indices[m]` is scalar or vector, we have
-  /// 
+  ///
   /// ```python
   ///     # Scalar indices:
   ///     merged[indices[m], ...] = data[m][...]
-  /// 
+  ///
   ///     # Vector indices:
   ///     merged[indices[m][i], ...] = data[m][i, ...]
   /// ```
-  /// 
+  ///
   /// Each `data[i].shape` must start with the corresponding `indices[i].shape`,
   /// and the rest of `data[i].shape` must be constant w.r.t. `i`.  That is, we
   /// must have `data[i].shape = indices[i].shape + constant`.  In terms of this
   /// `constant`, the output shape is
-  /// 
+  ///
   ///     merged.shape = [max(indices)] + constant
-  /// 
+  ///
   /// Values may be merged in parallel, so if an index appears in both `indices[m][i]`
   /// and `indices[n][j]`, the result may be invalid. This differs from the normal
   /// DynamicStitch operator that defines the behavior in that case.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```python
   ///     indices[0] = 6
   ///     indices[1] = [4, 1]
@@ -21974,10 +22021,10 @@ public enum _Raw {
   ///     merged = [[1, 2], [11, 12], [21, 22], [31, 32], [41, 42],
   ///               [51, 52], [61, 62]]
   /// ```
-  /// 
+  ///
   /// This method can be used to merge partitions created by `dynamic_partition`
   /// as illustrated on the following example:
-  /// 
+  ///
   /// ```python
   ///     # Apply function (increments x_i) on elements for which a certain condition
   ///     # apply (x_i != -1 in this example).
@@ -21992,7 +22039,7 @@ public enum _Raw {
   ///     # Here x=[1.1, -1., 6.2, 5.3, -1, 8.4], the -1. values remain
   ///     # unchanged.
   /// ```
-  /// 
+  ///
   /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
   /// <img style="width:100%" src="https://www.tensorflow.org/images/DynamicStitch.png" alt>
   /// </div>
@@ -22017,13 +22064,13 @@ public enum _Raw {
   /// block, it will skip that input dataset. This dataset is especially useful
   /// when loading data from a variable-latency datastores (e.g. HDFS, GCS), as it
   /// allows the training step to proceed so long as some data is available.
-  /// 
+  ///
   /// !! WARNING !! If the `sloppy` parameter is set to `True`, the operation of this
   /// dataset will not be deterministic!
-  /// 
+  ///
   /// This dataset has been superseded by `ParallelInterleaveDatasetV2`.  New code
   /// should use `ParallelInterleaveDatasetV2`.
-  /// 
+  ///
   /// The Python API `tf.data.experimental.parallel_interleave` creates instances of
   /// this op. `tf.data.experimental.parallel_interleave` is a deprecated API.
   ///
@@ -22088,11 +22135,11 @@ public enum _Raw {
   ///
   /// The resulting dataset is similar to the `InterleaveDataset`, except that the
   /// dataset will fetch records from the interleaved datasets in parallel.
-  /// 
+  ///
   /// The `tf.data` Python API creates instances of this op from
   /// `Dataset.interleave()` when the `num_parallel_calls` parameter of that method
   /// is set to any value other than `None`.
-  /// 
+  ///
   /// By default, the output of this dataset will be deterministic, which may result
   /// in the dataset blocking if the next data item to be returned isn't available.
   /// In order to avoid head-of-line blocking, one can set the
@@ -22329,7 +22376,7 @@ public enum _Raw {
   ///     - Tdense: A list of DTypes of the same length as `dense_keys`.
   ///         Only `tf.float32` (`FloatList`), `tf.int64` (`Int64List`),
   ///         and `tf.string` (`BytesList`) are supported.
-  ///         
+  ///
   ///     - dense_shapes: List of tuples with the same length as `dense_keys`.
   ///         The shape of the data for each dense feature referenced by `dense_keys`.
   ///         Required for any input tensors identified by `dense_keys`.  Must be
@@ -22579,17 +22626,11 @@ public enum _Raw {
     op.addInput(serialized)
     op.addInput(debugName)
     op.addInputList(contextDenseDefaults)
-    let ncontextSparse = Int(ncontextSparse)
-    let contextSparseTypesCounts = Int(ContextSparseTypes._typeList.count)
-    let contextDenseDefaultsCounts = Int(contextDenseDefaults._typeList.count)
-    let nfeatureListSparse = Int(nfeatureListSparse)
-    let nfeaturelistSparseTypesCounts = Int(FeatureListSparseTypes._typeList.count)
-    let FeatureListDenseTypesCounts = Int(FeatureListDenseTypes._typeList.count)
-    let nfeatureListDense = Int(nfeatureListDense)
     return op.execute(
-      ncontextSparse, contextSparseTypesCounts, ncontextSparse, contextDenseDefaultsCounts,
-      nfeatureListSparse, nfeaturelistSparseTypesCounts, nfeatureListSparse,
-      FeatureListDenseTypesCounts, nfeatureListDense)
+      Int(ncontextSparse), Int(ContextSparseTypes._typeList.count), Int(ncontextSparse),
+      Int(contextDenseDefaults._typeList.count), Int(nfeatureListSparse),
+      Int(FeatureListSparseTypes._typeList.count), Int(nfeatureListSparse),
+      Int(FeatureListDenseTypes._typeList.count), Int(nfeatureListDense))
   }
 
   /// Transforms a vector of tf.io.SequenceExample protos (as strings) into
@@ -22676,18 +22717,16 @@ public enum _Raw {
   ) -> (
     contextSparseIndices: [Tensor<Int64>], contextSparseValues: ContextSparseTypes,
     contextSparseShapes: [Tensor<Int64>], contextDenseValues: TcontextDense,
-    contextRaggedValues: ContextRaggedValueTypes,
-    contextRaggedRowSplits: ContextRaggedSplitTypes, featureListSparseIndices: [Tensor<Int64>],
-    featureListSparseValues: FeatureListSparseTypes, featureListSparseShapes: [Tensor<Int64>],
-    featureListDenseValues: FeatureListDenseTypes, featureListDenseLengths: [Tensor<Int64>],
-    featureListRaggedValues: FeatureListRaggedValueTypes,
+    contextRaggedValues: ContextRaggedValueTypes, contextRaggedRowSplits: ContextRaggedSplitTypes,
+    featureListSparseIndices: [Tensor<Int64>], featureListSparseValues: FeatureListSparseTypes,
+    featureListSparseShapes: [Tensor<Int64>], featureListDenseValues: FeatureListDenseTypes,
+    featureListDenseLengths: [Tensor<Int64>], featureListRaggedValues: FeatureListRaggedValueTypes,
     featureListRaggedOuterSplits: FeatureListRaggedSplitTypes,
     featureListRaggedInnerSplits: FeatureListRaggedSplitTypes
   ) {
     let nOutputs =
       Int(ncontextSparse) + Int(ContextSparseTypes._typeList.count) + Int(ncontextSparse)
-      + Int(contextDenseDefaults._typeList.count)
-      + Int(ContextRaggedValueTypes._typeList.count)
+      + Int(contextDenseDefaults._typeList.count) + Int(ContextRaggedValueTypes._typeList.count)
       + Int(ContextRaggedSplitTypes._typeList.count) + Int(nfeatureListSparse)
       + Int(FeatureListSparseTypes._typeList.count) + Int(nfeatureListSparse)
       + Int(FeatureListDenseTypes._typeList.count) + Int(nfeatureListDense)
@@ -22718,23 +22757,15 @@ public enum _Raw {
     op.addInput(featureListRaggedKeys)
     op.addInput(featureListDenseMissingAssumedEmpty)
     op.addInputList(contextDenseDefaults)
-    let ncontextSparse = Int(ncontextSparse)
-    let contextSparseTypesCount = Int(ContextSparseTypes._typeList.count)
-    let contextDenseDefaultsCount = Int(contextDenseDefaults._typeList.count)
-    let contextRaggedValueTypesCount = Int(ContextRaggedValueTypes._typeList.count)
-    let contextRaggedSplitTypesCount = Int(ContextRaggedSplitTypes._typeList.count)
-    let nfeatureListSparse = Int(nfeatureListSparse)
-    let featureListSparseTypesCount = Int(FeatureListSparseTypes._typeList.count)
-    let featureListDenseTypesCount = Int(FeatureListDenseTypes._typeList.count)
-    let nfeatureListDense = Int(nfeatureListDense)
-    let featureListRaggedValueTypesCount = Int(FeatureListRaggedValueTypes._typeList.count)
-    let featureListRaggedSplitTypesCount = Int(FeatureListRaggedSplitTypes._typeList.count)
     return op.execute(
-      ncontextSparse, contextSparseTypesCount, ncontextSparse, contextDenseDefaultsCount,
-      contextRaggedValueTypesCount, contextRaggedSplitTypesCount, nfeatureListSparse,
-      featureListSparseTypesCount, nfeatureListSparse, featureListDenseTypesCount,
-      nfeatureListDense, featureListRaggedValueTypesCount, featureListRaggedSplitTypesCount,
-      featureListRaggedSplitTypesCount)
+      Int(ncontextSparse), Int(ContextSparseTypes._typeList.count), Int(ncontextSparse),
+      Int(contextDenseDefaults._typeList.count), Int(ContextRaggedValueTypes._typeList.count),
+      Int(ContextRaggedSplitTypes._typeList.count), Int(nfeatureListSparse),
+      Int(FeatureListSparseTypes._typeList.count), Int(nfeatureListSparse),
+      Int(FeatureListDenseTypes._typeList.count), Int(nfeatureListDense),
+      Int(FeatureListRaggedValueTypes._typeList.count),
+      Int(FeatureListRaggedSplitTypes._typeList.count),
+      Int(FeatureListRaggedSplitTypes._typeList.count))
   }
 
   /// Transforms a tf.Example proto (as a string) into typed tensors.
@@ -23043,10 +23074,10 @@ public enum _Raw {
   /// Compute the polygamma function \\(\psi^{(n)}(x)\\).
   ///
   /// The polygamma function is defined as:
-  /// 
-  /// 
+  ///
+  ///
   /// \\(\psi^{(a)}(x) = \frac{d^a}{dx^a} \psi(x)\\)
-  /// 
+  ///
   /// where \\(\psi(x)\\) is the digamma function.
   /// The polygamma function is defined only for non-negative integer orders \\a\\.
   @inlinable @inline(__always)
@@ -23093,7 +23124,7 @@ public enum _Raw {
   ///
   /// For each entry in `x`, calculates the number of `1` (on) bits in the binary
   /// representation of that entry.
-  /// 
+  ///
   /// **NOTE**: It is more efficient to first `tf.bitcast` your tensors into
   /// `int32` or `int64` and perform the bitcount on the result, than to feed in
   /// 8- or 16-bit inputs and then aggregate the resulting counts.
@@ -23112,7 +23143,7 @@ public enum _Raw {
   ///
   /// Given a tensor `x` and a tensor `y`, this operation computes \\(x^y\\) for
   /// corresponding elements in `x` and `y`. For example:
-  /// 
+  ///
   /// ```
   /// # tensor 'x' is [[2, 2]], [3, 3]]
   /// # tensor 'y' is [[8, 16], [2, 3]]
@@ -23209,7 +23240,7 @@ public enum _Raw {
   /// An identity op that triggers an error if a gradient is requested.
   ///
   /// When executed in a graph, this op outputs its input tensor as-is.
-  /// 
+  ///
   /// When building ops to compute gradients, the TensorFlow gradient system
   /// will return an error when trying to lookup the gradient of this op,
   /// because no gradient must ever be registered for this function.  This
@@ -23283,7 +23314,7 @@ public enum _Raw {
   public static func printV2(
     _ input: StringTensor,
     outputStream: String = "stderr",
-    end: String = ""
+    end: String = "\n"
   ) {
     let nOutputs = 0
     let op = makeOp("PrintV2", nOutputs)
@@ -23439,7 +23470,7 @@ public enum _Raw {
   ///
   /// Computes the QR decomposition of each inner matrix in `tensor` such that
   /// `tensor[..., :, :] = q[..., :, :] * r[..., :,:])`
-  /// 
+  ///
   /// ```python
   /// # a is a tensor.
   /// # q is a tensor of orthonormal matrices.
@@ -23498,41 +23529,41 @@ public enum _Raw {
   /// Quantizes then dequantizes a tensor.
   ///
   /// This op simulates the precision loss from the quantized forward pass by:
-  /// 
+  ///
   /// 1. Quantizing the tensor to fixed point numbers, which should match the target
   ///    quantization method when it is used in inference.
   /// 2. Dequantizing it back to floating point numbers for the following ops, most
   ///    likely matmul.
-  /// 
+  ///
   /// There are different ways to quantize. This version uses only scaling, so 0.0
   /// maps to 0.
-  /// 
+  ///
   /// From the specified 'num_bits' in the quantized output type, it determines
   /// minimum and maximum representable quantized values.
-  /// 
+  ///
   /// e.g.
-  /// 
+  ///
   /// *   [-128, 127] for signed, num_bits = 8, or
   /// *   [0, 255] for unsigned, num_bits = 8.
-  /// 
+  ///
   /// If range_given == False, the initial input_min, input_max will be determined
   /// automatically as the minimum and maximum values in the input tensor, otherwise
   /// the specified values of input_min, input_max are used.
-  /// 
+  ///
   /// Note: If the input_min, input_max are specified, they do not need to equal the
   /// actual minimum and maximum values in the tensor. e.g. in some cases it may be
   /// beneficial to specify these values such that the low probability extremes of the
   /// input distribution are clipped.
-  /// 
+  ///
   /// This op determines the maximum scale_factor that would map the initial
   /// [input_min, input_max] range to a range that lies within the representable
   /// quantized range.
-  /// 
+  ///
   /// It determines the scale from one of input_min and input_max, then updates the
   /// other one to maximize the representable range.
-  /// 
+  ///
   /// e.g.
-  /// 
+  ///
   /// *   if the output is signed, num_bits = 8, [input_min, input_max] = [-10.0,
   ///     5.0]: it would use a scale_factor of -128 / -10.0 = 12.8 In this case, it
   ///     would update input_max to be 127 / 12.8 = 9.921875
@@ -23541,14 +23572,14 @@ public enum _Raw {
   ///     would update input_min to be 128.0 / 12.7 = -10.07874
   /// *   if the output is unsigned, input_min is forced to be 0, and only the
   ///     specified input_max is used.
-  /// 
+  ///
   /// After determining the scale_factor and updating the input range, it applies the
   /// following to each value in the 'input' tensor.
-  /// 
+  ///
   /// output = round(clamp(value, input_min, input_max) * scale_factor) / scale_factor.
-  /// 
+  ///
   /// The above round function rounds the value based on the given round_mode.
-  /// 
+  ///
   ///
   /// - Parameters:
   ///     - input: Tensor to quantize and then dequantize.
@@ -23567,11 +23598,11 @@ public enum _Raw {
   ///     - round_mode: The 'round_mode' attribute controls which rounding tie-breaking algorithm is
   ///         used when rounding float values to their quantized equivalents. The following
   ///         rounding modes are currently supported:
-  ///         
+  ///
   ///         *   HALF_TO_EVEN: this is the default round_mode.
   ///         *   HALF_UP: round towards positive. In this mode 7.5 rounds up to 8 and -7.5
   ///             rounds up to -7.
-  ///         
+  ///
   ///     - narrow_range: If True, then the absolute value of the quantized minimum value is the same as
   ///         the quantized maximum value, instead of 1 greater.
   ///         i.e. for 8 bit quantization, the minimum value is -127 instead of -128.
@@ -23637,12 +23668,12 @@ public enum _Raw {
   ///
   /// actual distribution of the values to maximize the usage of the lower bit depth
   /// and adjusting the output min and max ranges accordingly.
-  /// 
+  ///
   /// [input_min, input_max] are scalar floats that specify the range for the float
   /// interpretation of the 'input' data. For example, if input_min is -1.0f and
   /// input_max is 1.0f, and we are dealing with quint16 quantized data, then a 0
   /// value in the 16-bit data should be interpreted as -1.0f, and a 65535 means 1.0f.
-  /// 
+  ///
   /// This operator tries to squeeze as much precision as possible into an output with
   /// a lower bit depth by calculating the actual min and max values found in the
   /// data. For example, maybe that quint16 input has no values lower than 16,384 and
@@ -23650,7 +23681,7 @@ public enum _Raw {
   /// the float interpretations are between -0.5f and 0.5f, so if we want to compress
   /// the data into a quint8 output, we can use that range rather than the theoretical
   /// -1.0f to 1.0f that is suggested by the input min and max.
-  /// 
+  ///
   /// In practice, this is most useful for taking output from operations like
   /// QuantizedMatMul that can produce higher bit-depth outputs than their inputs and
   /// may have large potential output ranges, but in practice have a distribution of
@@ -23695,29 +23726,29 @@ public enum _Raw {
   /// used to convert the float values to their quantized equivalents.  The
   /// 'round_mode' attribute controls which rounding tie-breaking algorithm is used
   /// when rounding float values to their quantized equivalents.
-  /// 
+  ///
   /// In 'MIN_COMBINED' mode, each value of the tensor will undergo the following:
-  /// 
+  ///
   /// ```
   /// out[i] = (in[i] - min_range) * range(T) / (max_range - min_range)
   /// if T == qint8: out[i] -= (range(T) + 1) / 2.0
   /// ```
-  /// 
+  ///
   /// here `range(T) = numeric_limits<T>::max() - numeric_limits<T>::min()`
-  /// 
+  ///
   /// *MIN_COMBINED Mode Example*
-  /// 
+  ///
   /// Assume the input is type float and has a possible range of [0.0, 6.0] and the
   /// output type is quint8 ([0, 255]). The min_range and max_range values should be
   /// specified as 0.0 and 6.0. Quantizing from float to quint8 will multiply each
   /// value of the input by 255/6 and cast to quint8.
-  /// 
+  ///
   /// If the output type was qint8 ([-128, 127]), the operation will additionally
   /// subtract each value by 128 prior to casting, so that the range of values aligns
   /// with the range of qint8.
-  /// 
+  ///
   /// If the mode is 'MIN_FIRST', then this approach is used:
-  /// 
+  ///
   /// ```
   /// num_discrete_values = 1 << (# of bits in T)
   /// range_adjust = num_discrete_values / (num_discrete_values - 1)
@@ -23728,92 +23759,92 @@ public enum _Raw {
   /// quantized = max(quantized, numeric_limits<T>::min())
   /// quantized = min(quantized, numeric_limits<T>::max())
   /// ```
-  /// 
+  ///
   /// The biggest difference between this and MIN_COMBINED is that the minimum range
   /// is rounded first, before it's subtracted from the rounded value. With
   /// MIN_COMBINED, a small bias is introduced where repeated iterations of quantizing
   /// and dequantizing will introduce a larger and larger error.
-  /// 
+  ///
   /// *SCALED mode Example*
-  /// 
+  ///
   /// `SCALED` mode matches the quantization approach used in
   /// `QuantizeAndDequantize{V2|V3}`.
-  /// 
+  ///
   /// If the mode is `SCALED`, the quantization is performed by multiplying each
   /// input value by a scaling_factor.
   /// The scaling_factor is determined from `min_range` and `max_range` to be as large
   /// as possible such that the range from `min_range` to `max_range` is representable
   /// within values of type T.
-  /// 
+  ///
   /// ```c++
-  /// 
+  ///
   ///   const int min_T = std::numeric_limits<T>::min();
   ///   const int max_T = std::numeric_limits<T>::max();
   ///   const float max_float = std::numeric_limits<float>::max();
-  /// 
+  ///
   ///   const float scale_factor_from_min_side =
   ///       (min_T * min_range > 0) ? min_T / min_range : max_float;
   ///   const float scale_factor_from_max_side =
   ///       (max_T * max_range > 0) ? max_T / max_range : max_float;
-  /// 
+  ///
   ///   const float scale_factor = std::min(scale_factor_from_min_side,
   ///                                       scale_factor_from_max_side);
   /// ```
-  /// 
+  ///
   /// We next use the scale_factor to adjust min_range and max_range as follows:
-  /// 
+  ///
   /// ```c++
   ///       min_range = min_T / scale_factor;
   ///       max_range = max_T / scale_factor;
   /// ```
-  /// 
-  /// 
+  ///
+  ///
   /// e.g. if T = qint8, and initially min_range = -10, and max_range = 9, we would
   /// compare -128/-10.0 = 12.8 to 127/9.0 = 14.11, and set scaling_factor = 12.8
   /// In this case, min_range would remain -10, but max_range would be adjusted to
   /// 127 / 12.8 = 9.921875
-  /// 
+  ///
   /// So we will quantize input values in the range (-10, 9.921875) to (-128, 127).
-  /// 
+  ///
   /// The input tensor can now be quantized by clipping values to the range
   /// `min_range` to `max_range`, then multiplying by scale_factor as follows:
-  /// 
+  ///
   /// ```c++
   /// result = round(min(max_range, max(min_range, input)) * scale_factor)
   /// ```
-  /// 
+  ///
   /// The adjusted `min_range` and `max_range` are returned as outputs 2 and 3 of
   /// this operation. These outputs should be used as the range for any further
   /// calculations.
-  /// 
-  /// 
+  ///
+  ///
   /// *narrow_range (bool) attribute*
-  /// 
+  ///
   /// If true, we do not use the minimum quantized value.
   /// i.e. for int8 the quantized output, it would be restricted to the range
   /// -127..127 instead of the full -128..127 range.
   /// This is provided for compatibility with certain inference backends.
   /// (Only applies to SCALED mode)
-  /// 
-  /// 
+  ///
+  ///
   /// *axis (int) attribute*
-  /// 
+  ///
   /// An optional `axis` attribute can specify a dimension index of the input tensor,
   /// such that quantization ranges will be calculated and applied separately for each
   /// slice of the tensor along that dimension. This is useful for per-channel
   /// quantization.
-  /// 
+  ///
   /// If axis is specified, min_range and max_range
-  /// 
+  ///
   /// if `axis`=None, per-tensor quantization is performed as normal.
-  /// 
-  /// 
+  ///
+  ///
   /// *ensure_minimum_range (float) attribute*
-  /// 
+  ///
   /// Ensures the minimum quantization range is at least this value.
   /// The legacy default value for this is 0.01, but it is strongly suggested to
   /// set it to 0 for new uses.
-  /// 
+  ///
   ///
   /// - Parameters:
   ///     - min_range: The minimum value of the quantization range. This value may be adjusted by the
@@ -23841,7 +23872,7 @@ public enum _Raw {
     minRange: Tensor<Float>,
     maxRange: Tensor<Float>,
     mode: Mode = .minCombined,
-    roundMode: RoundMode7 = .halfAwayFromZero,
+    roundMode: RoundMode1 = .halfAwayFromZero,
     narrowRange: Bool = false,
     axis: Int64 = -1,
     ensureMinimumRange: Double = 0.01
@@ -23871,7 +23902,7 @@ public enum _Raw {
   /// - Outputs:
   ///     - min_z: The float value that the lowest quantized output value represents.
   ///     - max_z: The float value that the highest quantized output value represents.
-  ///         
+  ///
   ///         *NOTE*: `QuantizedAdd` supports limited forms of broadcasting. More about
   ///         broadcasting [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
   @inlinable @inline(__always)
@@ -25205,7 +25236,7 @@ public enum _Raw {
   /// - Outputs:
   ///     - min_z: The float value that the lowest quantized output value represents.
   ///     - max_z: The float value that the highest quantized output value represents.
-  ///         
+  ///
   ///         *NOTE*: `QuantizedMul` supports limited forms of broadcasting. More about
   ///         broadcasting [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
   @inlinable @inline(__always)
@@ -25253,9 +25284,8 @@ public enum _Raw {
     features: Tensor<Tinput>,
     minFeatures: Tensor<Float>,
     maxFeatures: Tensor<Float>
-  ) -> (
-    activations: Tensor<OutType>, minActivations: Tensor<Float>, maxActivations: Tensor<Float>
-  ) {
+  ) -> (activations: Tensor<OutType>, minActivations: Tensor<Float>, maxActivations: Tensor<Float>)
+  {
     let nOutputs = Int(1) + Int(1) + Int(1)
     let op = makeOp("QuantizedRelu", nOutputs)
     op.updateAttribute("Tinput", Tinput.tensorFlowDataType)
@@ -25284,9 +25314,8 @@ public enum _Raw {
     features: Tensor<Tinput>,
     minFeatures: Tensor<Float>,
     maxFeatures: Tensor<Float>
-  ) -> (
-    activations: Tensor<OutType>, minActivations: Tensor<Float>, maxActivations: Tensor<Float>
-  ) {
+  ) -> (activations: Tensor<OutType>, minActivations: Tensor<Float>, maxActivations: Tensor<Float>)
+  {
     let nOutputs = Int(1) + Int(1) + Int(1)
     let op = makeOp("QuantizedRelu6", nOutputs)
     op.updateAttribute("Tinput", Tinput.tensorFlowDataType)
@@ -25316,9 +25345,8 @@ public enum _Raw {
     maxValue: Tensor<Float>,
     minFeatures: Tensor<Float>,
     maxFeatures: Tensor<Float>
-  ) -> (
-    activations: Tensor<OutType>, minActivations: Tensor<Float>, maxActivations: Tensor<Float>
-  ) {
+  ) -> (activations: Tensor<OutType>, minActivations: Tensor<Float>, maxActivations: Tensor<Float>)
+  {
     let nOutputs = Int(1) + Int(1) + Int(1)
     let op = makeOp("QuantizedReluX", nOutputs)
     op.updateAttribute("Tinput", Tinput.tensorFlowDataType)
@@ -25426,15 +25454,15 @@ public enum _Raw {
   ///
   /// If the queue is closed and there are fewer than `n` elements, then an
   /// OutOfRange error is returned.
-  /// 
+  ///
   /// This operation concatenates queue-element component tensors along the
   /// 0th dimension to make a single component tensor.  All of the components
   /// in the dequeued tuple will have size `n` in the 0th dimension.
-  /// 
+  ///
   /// This operation has `k` outputs, where `k` is the number of components in
   /// the tuples stored in the given queue, and output `i` is the ith
   /// component of the dequeued tuple.
-  /// 
+  ///
   /// N.B. If the queue is empty, this operation will block until `n` elements
   /// have been dequeued (or 'timeout_ms' elapses, if specified).
   ///
@@ -25468,18 +25496,18 @@ public enum _Raw {
   ///
   /// This operation is not supported by all queues.  If a queue does not support
   /// DequeueUpTo, then an Unimplemented error is returned.
-  /// 
+  ///
   /// If the queue is closed and there are more than 0 but less than `n`
   /// elements remaining, then instead of returning an OutOfRange error like
   /// QueueDequeueMany, less than `n` elements are returned immediately.  If
   /// the queue is closed and there are 0 elements left in the queue, then
   /// an OutOfRange error is returned just like in QueueDequeueMany.
   /// Otherwise the behavior is identical to QueueDequeueMany:
-  /// 
+  ///
   /// This operation concatenates queue-element component tensors along the
   /// 0th dimension to make a single component tensor.  All of the components
   /// in the dequeued tuple will have size n in the 0th dimension.
-  /// 
+  ///
   /// This operation has `k` outputs, where `k` is the number of components in
   /// the tuples stored in the given queue, and output `i` is the ith
   /// component of the dequeued tuple.
@@ -25515,7 +25543,7 @@ public enum _Raw {
   /// This operation has k outputs, where k is the number of components
   /// in the tuples stored in the given queue, and output i is the ith
   /// component of the dequeued tuple.
-  /// 
+  ///
   /// N.B. If the queue is empty, this operation will block until an element
   /// has been dequeued (or 'timeout_ms' elapses, if specified).
   ///
@@ -25546,10 +25574,10 @@ public enum _Raw {
   /// This operation slices each component tensor along the 0th dimension to
   /// make multiple queue elements. All of the tuple components must have the
   /// same size in the 0th dimension.
-  /// 
+  ///
   /// The components input has k elements, which correspond to the components of
   /// tuples stored in the given queue.
-  /// 
+  ///
   /// N.B. If the queue is full, this operation will block until the given
   /// elements have been enqueued (or 'timeout_ms' elapses, if specified).
   ///
@@ -25580,7 +25608,7 @@ public enum _Raw {
   ///
   /// The components input has k elements, which correspond to the components of
   /// tuples stored in the given queue.
-  /// 
+  ///
   /// N.B. If the queue is full, this operation will block until the given
   /// element has been enqueued (or 'timeout_ms' elapses, if specified).
   ///
@@ -25641,11 +25669,11 @@ public enum _Raw {
   ///
   /// Computes the 1-dimensional discrete Fourier transform of a real-valued signal
   /// over the inner-most dimension of `input`.
-  /// 
+  ///
   /// Since the DFT of a real signal is Hermitian-symmetric, `RFFT` only returns the
   /// `fft_length / 2 + 1` unique components of the FFT: the zero-frequency term,
   /// followed by the `fft_length / 2` positive-frequency terms.
-  /// 
+  ///
   /// Along the axis `RFFT` is computed on, if `fft_length` is smaller than the
   /// corresponding dimension of `input`, the dimension is cropped. If it is larger,
   /// the dimension is padded with zeros.
@@ -25657,7 +25685,7 @@ public enum _Raw {
   /// - Output output: A complex64 tensor of the same rank as `input`. The inner-most
   ///       dimension of `input` is replaced with the `fft_length / 2 + 1` unique
   ///       frequency components of its 1D Fourier transform.
-  ///     
+  ///
   ///     @compatibility(numpy)
   ///     Equivalent to np.fft.rfft
   ///     @end_compatibility
@@ -25682,12 +25710,12 @@ public enum _Raw {
   ///
   /// Computes the 2-dimensional discrete Fourier transform of a real-valued signal
   /// over the inner-most 2 dimensions of `input`.
-  /// 
+  ///
   /// Since the DFT of a real signal is Hermitian-symmetric, `RFFT2D` only returns the
   /// `fft_length / 2 + 1` unique components of the FFT for the inner-most dimension
   /// of `output`: the zero-frequency term, followed by the `fft_length / 2`
   /// positive-frequency terms.
-  /// 
+  ///
   /// Along each axis `RFFT2D` is computed on, if `fft_length` is smaller than the
   /// corresponding dimension of `input`, the dimension is cropped. If it is larger,
   /// the dimension is padded with zeros.
@@ -25700,7 +25728,7 @@ public enum _Raw {
   ///       dimensions of `input` are replaced with their 2D Fourier transform. The
   ///       inner-most dimension contains `fft_length / 2 + 1` unique frequency
   ///       components.
-  ///     
+  ///
   ///     @compatibility(numpy)
   ///     Equivalent to np.fft.rfft2
   ///     @end_compatibility
@@ -25725,12 +25753,12 @@ public enum _Raw {
   ///
   /// Computes the 3-dimensional discrete Fourier transform of a real-valued signal
   /// over the inner-most 3 dimensions of `input`.
-  /// 
+  ///
   /// Since the DFT of a real signal is Hermitian-symmetric, `RFFT3D` only returns the
   /// `fft_length / 2 + 1` unique components of the FFT for the inner-most dimension
   /// of `output`: the zero-frequency term, followed by the `fft_length / 2`
   /// positive-frequency terms.
-  /// 
+  ///
   /// Along each axis `RFFT3D` is computed on, if `fft_length` is smaller than the
   /// corresponding dimension of `input`, the dimension is cropped. If it is larger,
   /// the dimension is padded with zeros.
@@ -25743,7 +25771,7 @@ public enum _Raw {
   ///       dimensions of `input` are replaced with the their 3D Fourier transform. The
   ///       inner-most dimension contains `fft_length / 2 + 1` unique frequency
   ///       components.
-  ///     
+  ///
   ///     @compatibility(numpy)
   ///     Equivalent to np.fft.rfftn with 3 dimensions.
   ///     @end_compatibility
@@ -25769,10 +25797,22 @@ public enum _Raw {
   /// Outputs a tensor of the same shape as the `images` tensor, containing the HSV
   /// value of the pixels. The output is only well defined if the value in `images`
   /// are in `[0,1]`.
-  /// 
+  ///
   /// `output[..., 0]` contains hue, `output[..., 1]` contains saturation, and
   /// `output[..., 2]` contains value. All HSV values are in `[0,1]`. A hue of 0
   /// corresponds to pure red, hue 1/3 is pure green, and 2/3 is pure blue.
+  ///
+  /// Usage Example:
+  ///
+  /// >>> blue_image = tf.stack([
+  /// ...    tf.zeros([5,5]),
+  /// ...    tf.zeros([5,5]),
+  /// ...    tf.ones([5,5])],
+  /// ...    axis=-1)
+  /// >>> blue_hsv_image = tf.image.rgb_to_hsv(blue_image)
+  /// >>> blue_hsv_image[0,0].numpy()
+  /// array([0.6666667, 1. , 1. ], dtype=float32)
+  ///
   ///
   /// - Parameter images: 1-D or higher rank. RGB data to convert. Last dimension must be size 3.
   ///
@@ -25792,15 +25832,15 @@ public enum _Raw {
   ///
   /// Outputs a `RaggedTensor` output composed from `output_dense_values` and
   /// `output_nested_splits`, such that:
-  /// 
+  ///
   /// ```python
   /// output.shape = indices.shape + params.shape[1:]
   /// output.ragged_rank = indices.shape.ndims + params.ragged_rank
   /// output[i...j, d0...dn] = params[indices[i...j], d0...dn]
   /// ```
-  /// 
+  ///
   /// where
-  /// 
+  ///
   /// * `params =
   ///    ragged.from_nested_row_splits(params_dense_values, params_nested_splits)`
   ///    provides the values that should be gathered.
@@ -25809,10 +25849,10 @@ public enum _Raw {
   /// * `output =
   ///    ragged.from_nested_row_splits(output_dense_values, output_nested_splits)`
   ///    is the output tensor.
-  /// 
+  ///
   /// (Note: This c++ op is used to implement the higher-level python
   /// `tf.ragged.gather` op, which also supports ragged indices.)
-  /// 
+  ///
   ///
   /// - Parameters:
   ///     - params_nested_splits: The `nested_row_splits` tensors that define the row-partitioning for the
@@ -25861,11 +25901,11 @@ public enum _Raw {
 
   /// Returns a `RaggedTensor` containing the specified sequences of numbers.
   ///
-  /// 
+  ///
   /// Returns a `RaggedTensor` `result` composed from `rt_dense_values` and
   /// `rt_nested_splits`, such that
   /// `result[i] = range(starts[i], limits[i], deltas[i])`.
-  /// 
+  ///
   /// ```python
   /// (rt_nested_splits, rt_dense_values) = ragged_range(
   ///       starts=[2, 5, 8], limits=[3, 5, 12], deltas=1)
@@ -25873,7 +25913,7 @@ public enum _Raw {
   /// print(result)
   /// <tf.RaggedTensor [[2], [], [8, 9, 10, 11]] >
   /// ```
-  /// 
+  ///
   /// The input tensors `starts`, `limits`, and `deltas` may be scalars or vectors.
   /// The vector inputs must all have the same size.  Scalar inputs are broadcast
   /// to match the size of the vector inputs.
@@ -25918,7 +25958,7 @@ public enum _Raw {
   /// values of the decoded `RaggedTensor`. If `input_ragged_rank` is -1, then it is
   /// inferred as `output_ragged_rank` - `rank(encoded_ragged)`. See
   /// `RaggedTensorToVariant` for the corresponding encoding logic.
-  /// 
+  ///
   ///
   /// - Parameter encoded_ragged: A `variant` Tensor containing encoded `RaggedTensor`s.
   ///
@@ -25994,11 +26034,11 @@ public enum _Raw {
   /// minimal shape required to contain all the elements in the ragged tensor (the
   /// natural shape) will be used. If some dimensions are left unspecified, then the
   /// size of the natural shape is used in that dimension.
-  /// 
+  ///
   /// The default_value will be broadcast to the output shape. After that, the values
   /// from the ragged tensor overwrite the default values. Note that the default_value
   /// must have less dimensions than the value.
-  /// 
+  ///
   /// The row partition tensors are in the order of the dimensions.
   /// At present, the types can be:
   /// * "ROW_SPLITS": the row_splits tensor from the ragged tensor.
@@ -26011,22 +26051,22 @@ public enum _Raw {
   ///         the minimal shape required to contain all the elements in the ragged tensor
   ///         (the natural shape) will be used. If some dimensions are left unspecified, then
   ///         the size of the natural shape is used in that dimension.
-  ///         
+  ///
   ///         Note that dense dimensions cannot be modified by the shape argument. Trying to
   ///         change the size of a dense dimension will cause the op to fail.
   ///         Examples:
   ///         natural shape: [4, 5, 6]
   ///         shape: -1
   ///         output shape: [4, 5, 6]
-  ///         
+  ///
   ///         natural shape: [4, 5, 6]
   ///         shape: [3, -1, 2]
   ///         output shape: [3, 5, 2]
-  ///         
+  ///
   ///         natural shape: [4, 5, 6]
   ///         shape: [3, 7, 2]
   ///         output shape: [3, 7, 2]
-  ///         
+  ///
   ///     - values: A 1D tensor representing the values of the ragged tensor.
   ///     - default_value: The default_value when the shape is larger than the ragged tensor. The
   ///         default_value is broadcast until it is the shape of the output tensor, and
@@ -26070,7 +26110,7 @@ public enum _Raw {
 
   /// Encodes a `RaggedTensor` into a `variant` Tensor.
   ///
-  /// 
+  ///
   /// Encodes the given `RaggedTensor` and returns a `variant` Tensor. If
   /// `batched_input` is True, then input `RaggedTensor` is unbatched along the
   /// zero-th dimension, each component `RaggedTensor` is encoded into a scalar
@@ -26081,7 +26121,7 @@ public enum _Raw {
   /// splits and values Tensors of the `RaggedTensor`. Then the 1-D `variant` Tensor
   /// is wrapped in a scalar `variant` Tensor. See `RaggedTensorFromVariant` for the
   /// corresponding decoding logic.
-  /// 
+  ///
   ///
   /// - Parameters:
   ///     - rt_nested_splits: A list of one or more Tensors representing the splits of the input
@@ -26115,7 +26155,7 @@ public enum _Raw {
   ///
   /// `size` is a 1-D int64 tensor with 2 elements representing the crop height and
   /// width.  The values must be non negative.
-  /// 
+  ///
   /// This Op picks a random location in `image` and crops a `height` by `width`
   /// rectangle from that location.  The random location is picked so the cropped
   /// area will fit inside the original image.
@@ -26152,10 +26192,10 @@ public enum _Raw {
   ///
   /// Creates a Dataset that returns a stream of uniformly distributed
   /// pseudorandom 64-bit signed integers.
-  /// 
+  ///
   /// In the TensorFlow Python API, you can instantiate this dataset via the
   /// class `tf.data.experimental.RandomDataset`.
-  /// 
+  ///
   /// Instances of this dataset are also created as a result of the
   /// `hoist_random_uniform` static optimization. Whether this optimization is
   /// performed is determined by the `experimental_optimization.hoist_random_uniform`
@@ -26266,7 +26306,7 @@ public enum _Raw {
   /// the algorithm by Hormann is used to acquire samples via
   /// transformation-rejection.
   /// See http://www.sciencedirect.com/science/article/pii/0167668793909974.
-  /// 
+  ///
   /// Otherwise, Knuth's algorithm is used to acquire samples via multiplying uniform
   /// random variables.
   /// See Donald E. Knuth (1969). Seminumerical Algorithms. The Art of Computer
@@ -26315,7 +26355,7 @@ public enum _Raw {
   ///   The tensor is shuffled along dimension 0, such that each `value[j]` is mapped
   ///   to one and only one `output[i]`. For example, a mapping that might occur for a
   ///   3x2 tensor is:
-  /// 
+  ///
   /// ```
   /// [[1, 2],       [[5, 6],
   ///  [3, 4],  ==>   [1, 2],
@@ -26465,7 +26505,7 @@ public enum _Raw {
   /// The generated values are uniform integers in the range `[minval, maxval)`.
   /// The lower bound `minval` is included in the range, while the upper bound
   /// `maxval` is excluded.
-  /// 
+  ///
   /// The random integers are slightly biased unless `maxval - minval` is an exact
   /// power of two.  The bias is small for values of `maxval - minval` significantly
   /// smaller than the range of the output (either `2^32` or `2^64`).
@@ -26509,9 +26549,9 @@ public enum _Raw {
   ///
   /// This operation creates a sequence of numbers that begins at `start` and
   /// extends by increments of `delta` up to but not including `limit`.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # 'start' is 3
   /// # 'limit' is 18
@@ -26567,15 +26607,15 @@ public enum _Raw {
   /// Returns the rank of a tensor.
   ///
   /// This operation returns an integer representing the rank of `input`.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # 't' is [[[1, 1, 1], [2, 2, 2]], [[3, 3, 3], [4, 4, 4]]]
   /// # shape of tensor 't' is [2, 2, 3]
   /// rank(t) ==> 3
   /// ```
-  /// 
+  ///
   /// **Note**: The rank of a tensor is not the same as the rank of a matrix. The rank
   /// of a tensor is the number of indices required to uniquely select each element
   /// of the tensor. Rank is also known as "order", "degree", or "ndims."
@@ -26604,7 +26644,7 @@ public enum _Raw {
   /// Reads the value of a variable.
   ///
   /// The tensor returned by this operation is immutable.
-  /// 
+  ///
   /// The value returned by this operation is guaranteed to be influenced by all the
   /// writes on which this operation depends directly or indirectly, and to not be
   /// influenced by any of the writes which depend directly or indirectly on this
@@ -26763,9 +26803,9 @@ public enum _Raw {
   /// type `float` that is the real part of each element in `input`. All elements in
   /// `input` must be complex numbers of the form \\(a + bj\\), where *a* is the real
   ///  part returned by this operation and *b* is the imaginary part.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # tensor 'input' is [-2.25 + 4.75j, 3.25 + 5.75j]
   /// tf.real(input) ==> [-2.25, 3.25]
@@ -26788,7 +26828,7 @@ public enum _Raw {
   /// Returns x / y element-wise for real types.
   ///
   /// If `x` and `y` are reals, this will return the floating-point division.
-  /// 
+  ///
   /// *NOTE*: `Div` supports broadcasting. More about broadcasting
   /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
   @inlinable @inline(__always)
@@ -27006,9 +27046,9 @@ public enum _Raw {
   /// counted backwards from the end, with `-1` being equivalent to `n - 1`.  If
   /// indices are not specified, joins across all dimensions beginning from `n - 1`
   /// through `0`.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```python
   /// # tensor `a` is [["a", "b"], ["c", "d"]]
   /// tf.reduce_join(a, 0) ==> ["ac", "bd"]
@@ -27058,8 +27098,15 @@ public enum _Raw {
   /// string tensor which is applied to every element of the input tensor.
   /// The boolean values (True or False) of the output tensor indicate
   /// if the input matches the regex pattern provided.
-  /// 
+  ///
   /// The pattern follows the re2 syntax (https://github.com/google/re2/wiki/Syntax)
+  ///
+  /// Examples:
+  ///
+  /// >>> tf.strings.regex_full_match(["TF lib", "lib TF"], ".*lib$")
+  /// <tf.Tensor: shape=(2,), dtype=bool, numpy=array([ True, False])>
+  /// >>> tf.strings.regex_full_match(["TF lib", "lib TF"], ".*TF$")
+  /// <tf.Tensor: shape=(2,), dtype=bool, numpy=array([False,  True])>
   ///
   /// - Parameters:
   ///     - input: A string tensor of the text to be processed.
@@ -27336,7 +27383,7 @@ public enum _Raw {
   ///
   /// Converts the quantized `input` tensor into a lower-precision `output`, using the
   /// output range specified with `requested_output_min` and `requested_output_max`.
-  /// 
+  ///
   /// `[input_min, input_max]` are scalar floats that specify the range for the float
   /// interpretation of the `input` data. For example, if `input_min` is -1.0f and
   /// `input_max` is 1.0f, and we are dealing with `quint16` quantized data, then a 0
@@ -27450,33 +27497,33 @@ public enum _Raw {
   ///
   /// Given `tensor`, this operation returns a tensor that has the same values
   /// as `tensor` with shape `shape`.
-  /// 
+  ///
   /// If one component of 1-D tensor `shape` is the special value -1, the size of that
   /// dimension is computed so that the total size remains constant.  In particular, a
   /// `shape` of `[-1]` flattens into 1-D.  At most one component of `shape` may be
   /// unknown.
-  /// 
+  ///
   /// The `shape` must be 1-D and the operation returns a tensor with shape
   /// `shape` filled with the values of `tensor`. In this case, the number of elements
   /// implied by `shape` must be the same as the number of elements in `tensor`.
-  /// 
+  ///
   /// It is an error if `shape` is not 1-D.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # tensor 't' is [1, 2, 3, 4, 5, 6, 7, 8, 9]
   /// # tensor 't' has shape [9]
   /// reshape(t, [3, 3]) ==> [[1, 2, 3],
   ///                         [4, 5, 6],
   ///                         [7, 8, 9]]
-  /// 
+  ///
   /// # tensor 't' is [[[1, 1], [2, 2]],
   /// #                [[3, 3], [4, 4]]]
   /// # tensor 't' has shape [2, 2, 2]
   /// reshape(t, [2, 4]) ==> [[1, 1, 2, 2],
   ///                         [3, 3, 4, 4]]
-  /// 
+  ///
   /// # tensor 't' is [[[1, 1, 1],
   /// #                 [2, 2, 2]],
   /// #                [[3, 3, 3],
@@ -27486,9 +27533,9 @@ public enum _Raw {
   /// # tensor 't' has shape [3, 2, 3]
   /// # pass '[-1]' to flatten 't'
   /// reshape(t, [-1]) ==> [1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6]
-  /// 
+  ///
   /// # -1 can also be used to infer the shape
-  /// 
+  ///
   /// # -1 is inferred to be 9:
   /// reshape(t, [2, -1]) ==> [[1, 1, 1, 2, 2, 2, 3, 3, 3],
   ///                          [4, 4, 4, 5, 5, 5, 6, 6, 6]]
@@ -27502,7 +27549,7 @@ public enum _Raw {
   ///                              [[4, 4, 4],
   ///                               [5, 5, 5],
   ///                               [6, 6, 6]]]
-  /// 
+  ///
   /// # tensor 't' is [7]
   /// # shape `[]` reshapes to a scalar
   /// reshape(t, []) ==> 7
@@ -27529,12 +27576,12 @@ public enum _Raw {
   /// Resize `images` to `size` using area interpolation.
   ///
   /// Input images can be of different types but output images are always float.
-  /// 
+  ///
   /// The range of pixel values for the output image might be slightly different
   /// from the range for the input image because of limited numerical precision.
   /// To guarantee an output range, for example `[0.0, 1.0]`, apply
   /// `tf.clip_by_value` to the output.
-  /// 
+  ///
   /// Each output pixel is computed by first transforming the pixel's footprint into
   /// the input tensor and then averaging the pixels that intersect the footprint. An
   /// input pixel's contribution to the average is weighted by the fraction of its
@@ -28204,16 +28251,16 @@ public enum _Raw {
   /// (i.e., the variance) for normalization, as opposed to regular RMSProp, which
   /// uses the (uncentered) second moment. This often helps with training, but is
   /// slightly more expensive in terms of computation and memory.
-  /// 
+  ///
   /// Note that in dense implementation of this algorithm, mg, ms, and mom will
   /// update even if the grad is zero, but in this sparse implementation, mg, ms,
   /// and mom will not update in iterations during which the grad is zero.
-  /// 
+  ///
   /// mean_square = decay * mean_square + (1-decay) * gradient ** 2
   /// mean_grad = decay * mean_grad + (1-decay) * gradient
-  /// 
+  ///
   /// Delta = learning_rate * gradient / sqrt(mean_square + epsilon - mean_grad ** 2)
-  /// 
+  ///
   /// mg <- rho * mg_{t-1} + (1-rho) * grad
   /// ms <- rho * ms_{t-1} + (1-rho) * grad * grad
   /// mom <- momentum * mom_{t-1} + lr * grad / sqrt(ms - mg * mg + epsilon)
@@ -28275,8 +28322,8 @@ public enum _Raw {
   ///     - linear: Should be from a Variable().
   ///     - grad: The gradient.
   ///     - lr: Scaling factor. Must be a scalar.
-  ///     - l1: L1 regulariation. Must be a scalar.
-  ///     - l2: L2 regulariation. Must be a scalar.
+  ///     - l1: L1 regularization. Must be a scalar.
+  ///     - l2: L2 regularization. Must be a scalar.
   ///     - lr_power: Scaling factor. Must be a scalar.
   ///
   /// - Attr use_locking: If `True`, updating of the var and accum tensors will be protected
@@ -28325,8 +28372,8 @@ public enum _Raw {
   ///     - linear: Should be from a Variable().
   ///     - grad: The gradient.
   ///     - lr: Scaling factor. Must be a scalar.
-  ///     - l1: L1 regulariation. Must be a scalar.
-  ///     - l2: L2 shrinkage regulariation. Must be a scalar.
+  ///     - l1: L1 regularization. Must be a scalar.
+  ///     - l2: L2 shrinkage regularization. Must be a scalar.
   ///     - lr_power: Scaling factor. Must be a scalar.
   ///
   /// - Attr use_locking: If `True`, updating of the var and accum tensors will be protected
@@ -28390,7 +28437,7 @@ public enum _Raw {
   /// Update '*var' according to the momentum scheme.
   ///
   /// Set use_nesterov = True if you want to use Nesterov momentum.
-  /// 
+  ///
   /// accum = accum * momentum - lr * grad
   /// var += accum
   ///
@@ -28434,7 +28481,7 @@ public enum _Raw {
   /// Update '*var' according to the momentum scheme. Set use_nesterov = True if you
   ///
   /// want to use Nesterov momentum.
-  /// 
+  ///
   /// accum = accum * momentum + grad
   /// var -= lr * accum
   ///
@@ -28597,10 +28644,10 @@ public enum _Raw {
   /// Note that in dense implementation of this algorithm, ms and mom will
   /// update even if the grad is zero, but in this sparse implementation, ms
   /// and mom will not update in iterations during which the grad is zero.
-  /// 
+  ///
   /// mean_square = decay * mean_square + (1-decay) * gradient ** 2
   /// Delta = learning_rate * gradient / sqrt(mean_square + epsilon)
-  /// 
+  ///
   /// ms <- rho * ms_{t-1} + (1-rho) * grad * grad
   /// mom <- momentum * mom_{t-1} + lr * grad / sqrt(ms + epsilon)
   /// var <- var - mom
@@ -28718,14 +28765,14 @@ public enum _Raw {
   ///
   /// `indices` must be an integer tensor of any dimension (usually 0-D or 1-D).
   /// Produces an output tensor with shape `indices.shape + params.shape[1:]` where:
-  /// 
+  ///
   /// ```python
   ///     # Scalar indices
   ///     output[:, ..., :] = params[indices, :, ... :]
-  /// 
+  ///
   ///     # Vector indices
   ///     output[i, :, ..., :] = params[indices[i], :, ... :]
-  /// 
+  ///
   ///     # Higher rank indices
   ///     output[i, ..., j, :, ... :] = params[indices[i, ..., j], :, ..., :]
   /// ```
@@ -28780,21 +28827,21 @@ public enum _Raw {
   /// Adds sparse updates to the variable referenced by `resource`.
   ///
   /// This operation computes
-  /// 
+  ///
   ///     # Scalar indices
   ///     ref[indices, ...] += updates[...]
-  /// 
+  ///
   ///     # Vector indices (for each i)
   ///     ref[indices[i], ...] += updates[i, ...]
-  /// 
+  ///
   ///     # High rank indices (for each i, ..., j)
   ///     ref[indices[i, ..., j], ...] += updates[i, ..., j, ...]
-  /// 
+  ///
   /// Duplicate entries are handled correctly: if multiple `indices` reference
   /// the same location, their contributions add.
-  /// 
+  ///
   /// Requires `updates.shape = indices.shape + ref.shape[1:]` or `updates.shape = []`.
-  /// 
+  ///
   /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
   /// <img style="width:100%" src='https://www.tensorflow.org/images/ScatterAdd.png' alt>
   /// </div>
@@ -28825,21 +28872,21 @@ public enum _Raw {
   /// Divides sparse updates into the variable referenced by `resource`.
   ///
   /// This operation computes
-  /// 
+  ///
   ///     # Scalar indices
   ///     ref[indices, ...] /= updates[...]
-  /// 
+  ///
   ///     # Vector indices (for each i)
   ///     ref[indices[i], ...] /= updates[i, ...]
-  /// 
+  ///
   ///     # High rank indices (for each i, ..., j)
   ///     ref[indices[i, ..., j], ...] /= updates[i, ..., j, ...]
-  /// 
+  ///
   /// Duplicate entries are handled correctly: if multiple `indices` reference
   /// the same location, their contributions multiply.
-  /// 
+  ///
   /// Requires `updates.shape = indices.shape + ref.shape[1:]` or `updates.shape = []`.
-  /// 
+  ///
   /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
   /// <img style="width:100%" src='https://www.tensorflow.org/images/ScatterAdd.png' alt>
   /// </div>
@@ -28870,21 +28917,21 @@ public enum _Raw {
   /// Reduces sparse updates into the variable referenced by `resource` using the `max` operation.
   ///
   /// This operation computes
-  /// 
+  ///
   ///     # Scalar indices
   ///     ref[indices, ...] = max(ref[indices, ...], updates[...])
-  /// 
+  ///
   ///     # Vector indices (for each i)
   ///     ref[indices[i], ...] = max(ref[indices[i], ...], updates[i, ...])
-  /// 
+  ///
   ///     # High rank indices (for each i, ..., j)
   ///     ref[indices[i, ..., j], ...] = max(ref[indices[i, ..., j], ...], updates[i, ..., j, ...])
-  /// 
+  ///
   /// Duplicate entries are handled correctly: if multiple `indices` reference
   /// the same location, their contributions are combined.
-  /// 
+  ///
   /// Requires `updates.shape = indices.shape + ref.shape[1:]` or `updates.shape = []`.
-  /// 
+  ///
   /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
   /// <img style="width:100%" src='https://www.tensorflow.org/images/ScatterAdd.png' alt>
   /// </div>
@@ -28915,21 +28962,21 @@ public enum _Raw {
   /// Reduces sparse updates into the variable referenced by `resource` using the `min` operation.
   ///
   /// This operation computes
-  /// 
+  ///
   ///     # Scalar indices
   ///     ref[indices, ...] = min(ref[indices, ...], updates[...])
-  /// 
+  ///
   ///     # Vector indices (for each i)
   ///     ref[indices[i], ...] = min(ref[indices[i], ...], updates[i, ...])
-  /// 
+  ///
   ///     # High rank indices (for each i, ..., j)
   ///     ref[indices[i, ..., j], ...] = min(ref[indices[i, ..., j], ...], updates[i, ..., j, ...])
-  /// 
+  ///
   /// Duplicate entries are handled correctly: if multiple `indices` reference
   /// the same location, their contributions are combined.
-  /// 
+  ///
   /// Requires `updates.shape = indices.shape + ref.shape[1:]` or `updates.shape = []`.
-  /// 
+  ///
   /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
   /// <img style="width:100%" src='https://www.tensorflow.org/images/ScatterAdd.png' alt>
   /// </div>
@@ -28960,21 +29007,21 @@ public enum _Raw {
   /// Multiplies sparse updates into the variable referenced by `resource`.
   ///
   /// This operation computes
-  /// 
+  ///
   ///     # Scalar indices
   ///     ref[indices, ...] *= updates[...]
-  /// 
+  ///
   ///     # Vector indices (for each i)
   ///     ref[indices[i], ...] *= updates[i, ...]
-  /// 
+  ///
   ///     # High rank indices (for each i, ..., j)
   ///     ref[indices[i, ..., j], ...] *= updates[i, ..., j, ...]
-  /// 
+  ///
   /// Duplicate entries are handled correctly: if multiple `indices` reference
   /// the same location, their contributions multiply.
-  /// 
+  ///
   /// Requires `updates.shape = indices.shape + ref.shape[1:]` or `updates.shape = []`.
-  /// 
+  ///
   /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
   /// <img style="width:100%" src='https://www.tensorflow.org/images/ScatterAdd.png' alt>
   /// </div>
@@ -29005,23 +29052,23 @@ public enum _Raw {
   /// Applies sparse addition to individual values or slices in a Variable.
   ///
   /// `ref` is a `Tensor` with rank `P` and `indices` is a `Tensor` of rank `Q`.
-  /// 
+  ///
   /// `indices` must be integer tensor, containing indices into `ref`.
   /// It must be shape `[d_0, ..., d_{Q-2}, K]` where `0 < K <= P`.
-  /// 
+  ///
   /// The innermost dimension of `indices` (with length `K`) corresponds to
   /// indices into elements (if `K = P`) or slices (if `K < P`) along the `K`th
   /// dimension of `ref`.
-  /// 
+  ///
   /// `updates` is `Tensor` of rank `Q-1+P-K` with shape:
-  /// 
+  ///
   /// ```
   /// [d_0, ..., d_{Q-2}, ref.shape[K], ..., ref.shape[P-1]]
   /// ```
-  /// 
+  ///
   /// For example, say we want to add 4 scattered elements to a rank-1 tensor to
   /// 8 elements. In Python, that addition would look like this:
-  /// 
+  ///
   /// ```python
   /// ref = tf.Variable([1, 2, 3, 4, 5, 6, 7, 8], use_resource=True)
   /// indices = tf.constant([[4], [3], [1], [7]])
@@ -29030,11 +29077,11 @@ public enum _Raw {
   /// with tf.Session() as sess:
   ///   print sess.run(add)
   /// ```
-  /// 
+  ///
   /// The resulting update to ref would look like this:
-  /// 
+  ///
   ///     [1, 13, 3, 14, 14, 6, 7, 20]
-  /// 
+  ///
   /// See `tf.scatter_nd` for more details about how to make updates to
   /// slices.
   ///
@@ -29072,23 +29119,23 @@ public enum _Raw {
   /// Applies sparse subtraction to individual values or slices in a Variable.
   ///
   /// `ref` is a `Tensor` with rank `P` and `indices` is a `Tensor` of rank `Q`.
-  /// 
+  ///
   /// `indices` must be integer tensor, containing indices into `ref`.
   /// It must be shape `[d_0, ..., d_{Q-2}, K]` where `0 < K <= P`.
-  /// 
+  ///
   /// The innermost dimension of `indices` (with length `K`) corresponds to
   /// indices into elements (if `K = P`) or slices (if `K < P`) along the `K`th
   /// dimension of `ref`.
-  /// 
+  ///
   /// `updates` is `Tensor` of rank `Q-1+P-K` with shape:
-  /// 
+  ///
   /// ```
   /// [d_0, ..., d_{Q-2}, ref.shape[K], ..., ref.shape[P-1]]
   /// ```
-  /// 
+  ///
   /// For example, say we want to subtract 4 scattered elements from a rank-1 tensor
   /// with 8 elements. In Python, that subtraction would look like this:
-  /// 
+  ///
   /// ```python
   /// ref = tf.Variable([1, 2, 3, 4, 5, 6, 7, 8], use_resource=True)
   /// indices = tf.constant([[4], [3], [1], [7]])
@@ -29097,11 +29144,11 @@ public enum _Raw {
   /// with tf.Session() as sess:
   ///   print sess.run(sub)
   /// ```
-  /// 
+  ///
   /// The resulting update to ref would look like this:
-  /// 
+  ///
   ///     [1, -9, 3, -6, -4, 6, 7, -4]
-  /// 
+  ///
   /// See `tf.scatter_nd` for more details about how to make updates to
   /// slices.
   ///
@@ -29139,25 +29186,25 @@ public enum _Raw {
   /// Applies sparse `updates` to individual values or slices within a given
   ///
   /// variable according to `indices`.
-  /// 
+  ///
   /// `ref` is a `Tensor` with rank `P` and `indices` is a `Tensor` of rank `Q`.
-  /// 
+  ///
   /// `indices` must be integer tensor, containing indices into `ref`.
   /// It must be shape `[d_0, ..., d_{Q-2}, K]` where `0 < K <= P`.
-  /// 
+  ///
   /// The innermost dimension of `indices` (with length `K`) corresponds to
   /// indices into elements (if `K = P`) or slices (if `K < P`) along the `K`th
   /// dimension of `ref`.
-  /// 
+  ///
   /// `updates` is `Tensor` of rank `Q-1+P-K` with shape:
-  /// 
+  ///
   /// ```
   /// [d_0, ..., d_{Q-2}, ref.shape[K], ..., ref.shape[P-1]].
   /// ```
-  /// 
+  ///
   /// For example, say we want to update 4 scattered elements to a rank-1 tensor to
   /// 8 elements. In Python, that update would look like this:
-  /// 
+  ///
   /// ```python
   ///     ref = tf.Variable([1, 2, 3, 4, 5, 6, 7, 8])
   ///     indices = tf.constant([[4], [3], [1] ,[7]])
@@ -29166,11 +29213,11 @@ public enum _Raw {
   ///     with tf.Session() as sess:
   ///       print sess.run(update)
   /// ```
-  /// 
+  ///
   /// The resulting update to ref would look like this:
-  /// 
+  ///
   ///     [1, 11, 3, 10, 9, 6, 7, 12]
-  /// 
+  ///
   /// See `tf.scatter_nd` for more details about how to make updates to
   /// slices.
   ///
@@ -29208,21 +29255,21 @@ public enum _Raw {
   /// Subtracts sparse updates from the variable referenced by `resource`.
   ///
   /// This operation computes
-  /// 
+  ///
   ///     # Scalar indices
   ///     ref[indices, ...] -= updates[...]
-  /// 
+  ///
   ///     # Vector indices (for each i)
   ///     ref[indices[i], ...] -= updates[i, ...]
-  /// 
+  ///
   ///     # High rank indices (for each i, ..., j)
   ///     ref[indices[i, ..., j], ...] -= updates[i, ..., j, ...]
-  /// 
+  ///
   /// Duplicate entries are handled correctly: if multiple `indices` reference
   /// the same location, their contributions add.
-  /// 
+  ///
   /// Requires `updates.shape = indices.shape + ref.shape[1:]` or `updates.shape = []`.
-  /// 
+  ///
   /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
   /// <img style="width:100%" src='https://www.tensorflow.org/images/ScatterAdd.png' alt>
   /// </div>
@@ -29253,13 +29300,13 @@ public enum _Raw {
   /// Assigns sparse updates to the variable referenced by `resource`.
   ///
   /// This operation computes
-  /// 
+  ///
   ///     # Scalar indices
   ///     ref[indices, ...] = updates[...]
-  /// 
+  ///
   ///     # Vector indices (for each i)
   ///     ref[indices[i], ...] = updates[i, ...]
-  /// 
+  ///
   ///     # High rank indices (for each i, ..., j)
   ///     ref[indices[i, ..., j], ...] = updates[i, ..., j, ...]
   ///
@@ -29473,15 +29520,15 @@ public enum _Raw {
   /// (i.e., the variance) for normalization, as opposed to regular RMSProp, which
   /// uses the (uncentered) second moment. This often helps with training, but is
   /// slightly more expensive in terms of computation and memory.
-  /// 
+  ///
   /// Note that in dense implementation of this algorithm, mg, ms, and mom will
   /// update even if the grad is zero, but in this sparse implementation, mg, ms,
   /// and mom will not update in iterations during which the grad is zero.
-  /// 
+  ///
   /// mean_square = decay * mean_square + (1-decay) * gradient ** 2
   /// mean_grad = decay * mean_grad + (1-decay) * gradient
   /// Delta = learning_rate * gradient / sqrt(mean_square + epsilon - mean_grad ** 2)
-  /// 
+  ///
   /// ms <- rho * ms_{t-1} + (1-rho) * grad * grad
   /// mom <- momentum * mom_{t-1} + lr * grad / sqrt(ms + epsilon)
   /// var <- var - mom
@@ -29610,7 +29657,7 @@ public enum _Raw {
   ///     - indices: A vector of indices into the first dimension of var and accum.
   ///     - lr: Scaling factor. Must be a scalar.
   ///     - l1: L1 regularization. Must be a scalar.
-  ///     - l2: L2 shrinkage regulariation. Must be a scalar.
+  ///     - l2: L2 shrinkage regularization. Must be a scalar.
   ///     - lr_power: Scaling factor. Must be a scalar.
   ///
   /// - Attr use_locking: If `True`, updating of the var and accum tensors will be protected
@@ -29654,9 +29701,9 @@ public enum _Raw {
   /// Update relevant entries in '*var' and '*accum' according to the momentum scheme.
   ///
   /// Set use_nesterov = True if you want to use Nesterov momentum.
-  /// 
+  ///
   /// That is for rows we have grad for, we update var and accum as follows:
-  /// 
+  ///
   /// accum = accum * momentum - lr * grad
   /// var += accum
   ///
@@ -29707,9 +29754,9 @@ public enum _Raw {
   /// Update relevant entries in '*var' and '*accum' according to the momentum scheme.
   ///
   /// Set use_nesterov = True if you want to use Nesterov momentum.
-  /// 
+  ///
   /// That is for rows we have grad for, we update var and accum as follows:
-  /// 
+  ///
   /// accum = accum * momentum + grad
   /// var -= lr * accum
   ///
@@ -29853,10 +29900,10 @@ public enum _Raw {
   /// Note that in dense implementation of this algorithm, ms and mom will
   /// update even if the grad is zero, but in this sparse implementation, ms
   /// and mom will not update in iterations during which the grad is zero.
-  /// 
+  ///
   /// mean_square = decay * mean_square + (1-decay) * gradient ** 2
   /// Delta = learning_rate * gradient / sqrt(mean_square + epsilon)
-  /// 
+  ///
   /// ms <- rho * ms_{t-1} + (1-rho) * grad * grad
   /// mom <- momentum * mom_{t-1} + lr * grad / sqrt(ms + epsilon)
   /// var <- var - mom
@@ -29912,7 +29959,7 @@ public enum _Raw {
   /// The values of `value` are assigned to the positions in the variable
   /// `ref` that are selected by the slice parameters. The slice parameters
   /// `begin, `end`, `strides`, etc. work exactly as in `StridedSlice`.
-  /// 
+  ///
   /// NOTE this op currently does not support broadcasting and so `value`'s
   /// shape must be exactly the shape produced by the slice of `ref`.
   @inlinable @inline(__always)
@@ -29964,7 +30011,7 @@ public enum _Raw {
   /// instance because a tensor was saved as slices), `file_pattern` may contain
   /// wildcard symbols (`*` and `?`) in the filename portion only, not in the
   /// directory portion.
-  /// 
+  ///
   /// If a `file_pattern` matches several files, `preferred_shard` can be used to hint
   /// in which file the requested tensor is likely to be found. This op will first
   /// open the file at index `preferred_shard` in the list of matching files and try
@@ -29974,7 +30021,7 @@ public enum _Raw {
   /// of a matching `Save` Op may speed up Restore.  This attribute only affects
   /// performance, not correctness.  The default value -1 means files are processed in
   /// order.
-  /// 
+  ///
   /// See also `RestoreSlice`.
   ///
   /// - Parameters:
@@ -30009,7 +30056,7 @@ public enum _Raw {
   /// This is like `Restore` except that restored tensor can be listed as filling
   /// only a slice of a larger tensor.  `shape_and_slice` specifies the shape of the
   /// larger tensor and the slice that the restored tensor covers.
-  /// 
+  ///
   /// The `shape_and_slice` input has the same format as the
   /// elements of the `shapes_and_slices` input of the `SaveSlices` op.
   ///
@@ -30053,11 +30100,11 @@ public enum _Raw {
   ///   - Otherwise the V1 read path is invoked.
   /// Relying on this behavior is not recommended, as the ability to fall back to read
   /// V1 might be deprecated and eventually removed.
-  /// 
+  ///
   /// By default, restores the named tensors in full.  If the caller wishes to restore
   /// specific slices of stored tensors, "shape_and_slices" should be non-empty
   /// strings and correspondingly well-formed.
-  /// 
+  ///
   /// Callers must ensure all the named tensors are indeed stored in the checkpoint.
   ///
   /// - Parameters:
@@ -30278,9 +30325,8 @@ public enum _Raw {
     numShards: Int64,
     shardId: Int64,
     config: String
-  ) -> (
-    parameters: Tensor<Float>, accumulators: Tensor<Float>, gradientAccumulators: Tensor<Float>
-  ) {
+  ) -> (parameters: Tensor<Float>, accumulators: Tensor<Float>, gradientAccumulators: Tensor<Float>)
+  {
     let nOutputs = Int(1) + Int(1) + Int(1)
     let op = makeOp("RetrieveTPUEmbeddingAdagradParametersGradAccumDebug", nOutputs)
     op.updateAttribute("table_id", tableId)
@@ -30519,9 +30565,8 @@ public enum _Raw {
     numShards: Int64,
     shardId: Int64,
     config: String
-  ) -> (
-    parameters: Tensor<Float>, accumulators: Tensor<Float>, gradientAccumulators: Tensor<Float>
-  ) {
+  ) -> (parameters: Tensor<Float>, accumulators: Tensor<Float>, gradientAccumulators: Tensor<Float>)
+  {
     let nOutputs = Int(1) + Int(1) + Int(1)
     let op = makeOp("RetrieveTPUEmbeddingProximalAdagradParametersGradAccumDebug", nOutputs)
     op.updateAttribute("table_id", tableId)
@@ -30625,14 +30670,14 @@ public enum _Raw {
   /// Given a `tensor`, and a `bool` tensor `dims` representing the dimensions
   /// of `tensor`, this operation reverses each dimension i of `tensor` where
   /// `dims[i]` is `True`.
-  /// 
+  ///
   /// `tensor` can have up to 8 dimensions. The number of dimensions
   /// of `tensor` must equal the number of elements in `dims`. In other words:
-  /// 
+  ///
   /// `rank(tensor) = size(dims)`
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # tensor 't' is [[[[ 0,  1,  2,  3],
   /// #                  [ 4,  5,  6,  7],
@@ -30641,7 +30686,7 @@ public enum _Raw {
   /// #                  [16, 17, 18, 19],
   /// #                  [20, 21, 22, 23]]]]
   /// # tensor 't' shape is [1, 2, 3, 4]
-  /// 
+  ///
   /// # 'dims' is [False, False, False, True]
   /// reverse(t, dims) ==> [[[[ 3,  2,  1,  0],
   ///                         [ 7,  6,  5,  4],
@@ -30649,7 +30694,7 @@ public enum _Raw {
   ///                        [[15, 14, 13, 12],
   ///                         [19, 18, 17, 16],
   ///                         [23, 22, 21, 20]]]]
-  /// 
+  ///
   /// # 'dims' is [False, True, False, False]
   /// reverse(t, dims) ==> [[[[12, 13, 14, 15],
   ///                         [16, 17, 18, 19],
@@ -30657,7 +30702,7 @@ public enum _Raw {
   ///                        [[ 0,  1,  2,  3],
   ///                         [ 4,  5,  6,  7],
   ///                         [ 8,  9, 10, 11]]]]
-  /// 
+  ///
   /// # 'dims' is [False, False, True, False]
   /// reverse(t, dims) ==> [[[[8, 9, 10, 11],
   ///                         [4, 5, 6, 7],
@@ -30690,14 +30735,14 @@ public enum _Raw {
   /// Given a `tensor`, and a `bool` tensor `dims` representing the dimensions
   /// of `tensor`, this operation reverses each dimension i of `tensor` where
   /// `dims[i]` is `True`.
-  /// 
+  ///
   /// `tensor` can have up to 8 dimensions. The number of dimensions
   /// of `tensor` must equal the number of elements in `dims`. In other words:
-  /// 
+  ///
   /// `rank(tensor) = size(dims)`
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # tensor 't' is [[[[ 0,  1,  2,  3],
   /// #                  [ 4,  5,  6,  7],
@@ -30706,7 +30751,7 @@ public enum _Raw {
   /// #                  [16, 17, 18, 19],
   /// #                  [20, 21, 22, 23]]]]
   /// # tensor 't' shape is [1, 2, 3, 4]
-  /// 
+  ///
   /// # 'dims' is [False, False, False, True]
   /// reverse(t, dims) ==> [[[[ 3,  2,  1,  0],
   ///                         [ 7,  6,  5,  4],
@@ -30714,7 +30759,7 @@ public enum _Raw {
   ///                        [[15, 14, 13, 12],
   ///                         [19, 18, 17, 16],
   ///                         [23, 22, 21, 20]]]]
-  /// 
+  ///
   /// # 'dims' is [False, True, False, False]
   /// reverse(t, dims) ==> [[[[12, 13, 14, 15],
   ///                         [16, 17, 18, 19],
@@ -30722,7 +30767,7 @@ public enum _Raw {
   ///                        [[ 0,  1,  2,  3],
   ///                         [ 4,  5,  6,  7],
   ///                         [ 8,  9, 10, 11]]]]
-  /// 
+  ///
   /// # 'dims' is [False, False, True, False]
   /// reverse(t, dims) ==> [[[[8, 9, 10, 11],
   ///                         [4, 5, 6, 7],
@@ -30755,51 +30800,51 @@ public enum _Raw {
   /// This op first slices `input` along the dimension `batch_dim`, and for each
   /// slice `i`, reverses the first `seq_lengths[i]` elements along
   /// the dimension `seq_dim`.
-  /// 
+  ///
   /// The elements of `seq_lengths` must obey `seq_lengths[i] <= input.dims[seq_dim]`,
   /// and `seq_lengths` must be a vector of length `input.dims[batch_dim]`.
-  /// 
+  ///
   /// The output slice `i` along dimension `batch_dim` is then given by input
   /// slice `i`, with the first `seq_lengths[i]` slices along dimension
   /// `seq_dim` reversed.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # Given this:
   /// batch_dim = 0
   /// seq_dim = 1
   /// input.dims = (4, 8, ...)
   /// seq_lengths = [7, 2, 3, 5]
-  /// 
+  ///
   /// # then slices of input are reversed on seq_dim, but only up to seq_lengths:
   /// output[0, 0:7, :, ...] = input[0, 7:0:-1, :, ...]
   /// output[1, 0:2, :, ...] = input[1, 2:0:-1, :, ...]
   /// output[2, 0:3, :, ...] = input[2, 3:0:-1, :, ...]
   /// output[3, 0:5, :, ...] = input[3, 5:0:-1, :, ...]
-  /// 
+  ///
   /// # while entries past seq_lens are copied through:
   /// output[0, 7:, :, ...] = input[0, 7:, :, ...]
   /// output[1, 2:, :, ...] = input[1, 2:, :, ...]
   /// output[2, 3:, :, ...] = input[2, 3:, :, ...]
   /// output[3, 2:, :, ...] = input[3, 2:, :, ...]
   /// ```
-  /// 
+  ///
   /// In contrast, if:
-  /// 
+  ///
   /// ```
   /// # Given this:
   /// batch_dim = 2
   /// seq_dim = 0
   /// input.dims = (8, ?, 4, ...)
   /// seq_lengths = [7, 2, 3, 5]
-  /// 
+  ///
   /// # then slices of input are reversed on seq_dim, but only up to seq_lengths:
   /// output[0:7, :, 0, :, ...] = input[7:0:-1, :, 0, :, ...]
   /// output[0:2, :, 1, :, ...] = input[2:0:-1, :, 1, :, ...]
   /// output[0:3, :, 2, :, ...] = input[3:0:-1, :, 2, :, ...]
   /// output[0:5, :, 3, :, ...] = input[5:0:-1, :, 3, :, ...]
-  /// 
+  ///
   /// # while entries past seq_lens are copied through:
   /// output[7:, :, 0, :, ...] = input[7:, :, 0, :, ...]
   /// output[2:, :, 1, :, ...] = input[2:, :, 1, :, ...]
@@ -30842,17 +30887,17 @@ public enum _Raw {
   ///
   /// NOTE `tf.reverse` has now changed behavior in preparation for 1.0.
   /// `tf.reverse_v2` is currently an alias that will be deprecated before TF 1.0.
-  /// 
+  ///
   /// Given a `tensor`, and a `int32` tensor `axis` representing the set of
   /// dimensions of `tensor` to reverse. This operation reverses each dimension
   /// `i` for which there exists `j` s.t. `axis[j] == i`.
-  /// 
+  ///
   /// `tensor` can have up to 8 dimensions. The number of dimensions specified
   /// in `axis` may be 0 or more entries. If an index is specified more than
   /// once, a InvalidArgument error is raised.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # tensor 't' is [[[[ 0,  1,  2,  3],
   /// #                  [ 4,  5,  6,  7],
@@ -30861,7 +30906,7 @@ public enum _Raw {
   /// #                  [16, 17, 18, 19],
   /// #                  [20, 21, 22, 23]]]]
   /// # tensor 't' shape is [1, 2, 3, 4]
-  /// 
+  ///
   /// # 'dims' is [3] or 'dims' is [-1]
   /// reverse(t, dims) ==> [[[[ 3,  2,  1,  0],
   ///                         [ 7,  6,  5,  4],
@@ -30869,7 +30914,7 @@ public enum _Raw {
   ///                        [[15, 14, 13, 12],
   ///                         [19, 18, 17, 16],
   ///                         [23, 22, 21, 20]]]]
-  /// 
+  ///
   /// # 'dims' is '[1]' (or 'dims' is '[-3]')
   /// reverse(t, dims) ==> [[[[12, 13, 14, 15],
   ///                         [16, 17, 18, 19],
@@ -30877,7 +30922,7 @@ public enum _Raw {
   ///                        [[ 0,  1,  2,  3],
   ///                         [ 4,  5,  6,  7],
   ///                         [ 8,  9, 10, 11]]]]
-  /// 
+  ///
   /// # 'dims' is '[2]' (or 'dims' is '[-2]')
   /// reverse(t, dims) ==> [[[[8, 9, 10, 11],
   ///                         [4, 5, 6, 7],
@@ -30914,17 +30959,17 @@ public enum _Raw {
   ///
   /// NOTE `tf.reverse` has now changed behavior in preparation for 1.0.
   /// `tf.reverse_v2` is currently an alias that will be deprecated before TF 1.0.
-  /// 
+  ///
   /// Given a `tensor`, and a `int32` tensor `axis` representing the set of
   /// dimensions of `tensor` to reverse. This operation reverses each dimension
   /// `i` for which there exists `j` s.t. `axis[j] == i`.
-  /// 
+  ///
   /// `tensor` can have up to 8 dimensions. The number of dimensions specified
   /// in `axis` may be 0 or more entries. If an index is specified more than
   /// once, a InvalidArgument error is raised.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # tensor 't' is [[[[ 0,  1,  2,  3],
   /// #                  [ 4,  5,  6,  7],
@@ -30933,7 +30978,7 @@ public enum _Raw {
   /// #                  [16, 17, 18, 19],
   /// #                  [20, 21, 22, 23]]]]
   /// # tensor 't' shape is [1, 2, 3, 4]
-  /// 
+  ///
   /// # 'dims' is [3] or 'dims' is [-1]
   /// reverse(t, dims) ==> [[[[ 3,  2,  1,  0],
   ///                         [ 7,  6,  5,  4],
@@ -30941,7 +30986,7 @@ public enum _Raw {
   ///                        [[15, 14, 13, 12],
   ///                         [19, 18, 17, 16],
   ///                         [23, 22, 21, 20]]]]
-  /// 
+  ///
   /// # 'dims' is '[1]' (or 'dims' is '[-3]')
   /// reverse(t, dims) ==> [[[[12, 13, 14, 15],
   ///                         [16, 17, 18, 19],
@@ -30949,7 +30994,7 @@ public enum _Raw {
   ///                        [[ 0,  1,  2,  3],
   ///                         [ 4,  5,  6,  7],
   ///                         [ 8,  9, 10, 11]]]]
-  /// 
+  ///
   /// # 'dims' is '[2]' (or 'dims' is '[-2]')
   /// reverse(t, dims) ==> [[[[8, 9, 10, 11],
   ///                         [4, 5, 6, 7],
@@ -30983,38 +31028,38 @@ public enum _Raw {
   ///
   /// Performs a logical shift for unsigned integer types, and an arithmetic shift
   /// for signed integer types.
-  /// 
+  ///
   /// If `y` is negative, or greater than or equal to than the width of `x` in bits
   /// the result is implementation defined.
-  /// 
+  ///
   /// Example:
-  /// 
+  ///
   /// ```python
   /// import tensorflow as tf
   /// from tensorflow.python.ops import bitwise_ops
   /// import numpy as np
   /// dtype_list = [tf.int8, tf.int16, tf.int32, tf.int64]
-  /// 
+  ///
   /// for dtype in dtype_list:
   ///   lhs = tf.constant([-1, -5, -3, -14], dtype=dtype)
   ///   rhs = tf.constant([5, 0, 7, 11], dtype=dtype)
-  /// 
+  ///
   ///   right_shift_result = bitwise_ops.right_shift(lhs, rhs)
-  /// 
+  ///
   ///   print(right_shift_result)
-  /// 
+  ///
   /// # This will print:
   /// # tf.Tensor([-1 -5 -1 -1], shape=(4,), dtype=int8)
   /// # tf.Tensor([-1 -5 -1 -1], shape=(4,), dtype=int16)
   /// # tf.Tensor([-1 -5 -1 -1], shape=(4,), dtype=int32)
   /// # tf.Tensor([-1 -5 -1 -1], shape=(4,), dtype=int64)
-  /// 
+  ///
   /// lhs = np.array([-2, 64, 101, 32], dtype=np.int8)
   /// rhs = np.array([-1, -5, -3, -14], dtype=np.int8)
   /// bitwise_ops.right_shift(lhs, rhs)
   /// # <tf.Tensor: shape=(4,), dtype=int8, numpy=array([ -2,  64, 101,  32], dtype=int8)>
   /// ```
-  /// 
+  ///
   @inlinable @inline(__always)
   public static func rightShift<T: TensorFlowInteger>(
     _ x: Tensor<T>,
@@ -31033,7 +31078,7 @@ public enum _Raw {
   /// If the result is midway between two representable values,
   /// the even representable is chosen.
   /// For example:
-  /// 
+  ///
   /// ```
   /// rint(-1.5) ==> -2.0
   /// rint(0.5000001) ==> 1.0
@@ -31082,17 +31127,17 @@ public enum _Raw {
   /// elements in the opposite direction. Elements that roll passed the last position
   /// will wrap around to the first and vice versa. Multiple shifts along multiple
   /// axes may be specified.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # 't' is [0, 1, 2, 3, 4]
   /// roll(t, shift=2, axis=0) ==> [3, 4, 0, 1, 2]
-  /// 
+  ///
   /// # shifting along multiple dimensions
   /// # 't' is [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]
   /// roll(t, shift=[1, -2], axis=[0, 1]) ==> [[7, 8, 9, 5, 6], [2, 3, 4, 0, 1]]
-  /// 
+  ///
   /// # shifting along the same axis multiple times
   /// # 't' is [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]
   /// roll(t, shift=[2, -3], axis=[1, 1]) ==> [[1, 2, 3, 4, 0], [6, 7, 8, 9, 5]]
@@ -31151,50 +31196,50 @@ public enum _Raw {
   ///
   /// This op asynchronously performs either a single RPC request, or a batch
   /// of requests.  RPC requests are defined by three main parameters:
-  /// 
+  ///
   ///   - `address` (the host+port or BNS address of the request)
   ///   - `method` (the RPC method name for the request)
   ///   - `request` (the serialized proto string, or vector of strings,
   ///      of the RPC request argument).
-  /// 
+  ///
   /// For example, if you have an RPC service running on port localhost:2345,
   /// and its interface is configured with the following proto declaration:
-  /// 
+  ///
   /// ```
   /// service MyService {
   ///   rpc MyMethod(MyRequestProto) returns (MyResponseProto) {
   ///   }
   /// };
   /// ```
-  /// 
+  ///
   /// then call this op with arguments:
-  /// 
+  ///
   /// ```
   /// address = "localhost:2345"
   /// method = "MyService/MyMethod"
   /// ```
-  /// 
+  ///
   /// The `request` tensor is a string tensor representing serialized `MyRequestProto`
   /// strings; and the output string tensor `response` will have the same shape
   /// and contain (upon successful completion) corresponding serialized
   /// `MyResponseProto` strings.
-  /// 
+  ///
   /// For example, to send a single, empty, `MyRequestProto`, call
   /// this op with `request = ""`.  To send 5 **parallel** empty requests,
   /// call this op with `request = ["", "", "", "", ""]`.
-  /// 
+  ///
   /// More generally, one can create a batch of `MyRequestProto` serialized protos
   /// from regular batched tensors using the `encode_proto` op, and convert
   /// the response `MyResponseProto` serialized protos to batched tensors
   /// using the `decode_proto` op.
-  /// 
+  ///
   /// **NOTE** Working with serialized proto strings is faster than instantiating
   /// actual proto objects in memory, so no performance degradation is expected
   /// compared to writing custom kernels for this workflow.
-  /// 
+  ///
   /// If the connection fails or the remote worker returns an error
   /// status, the op reraises this exception locally.
-  /// 
+  ///
   /// See the `TryRpc` op if you prefer to handle RPC failures manually in the graph.
   ///
   /// - Parameters:
@@ -31278,34 +31323,34 @@ public enum _Raw {
   /// its content, i.e. *data augmentation*. This Op outputs a randomly distorted
   /// localization of an object, i.e. bounding box, given an `image_size`,
   /// `bounding_boxes` and a series of constraints.
-  /// 
+  ///
   /// The output of this Op is a single bounding box that may be used to crop the
   /// original image. The output is returned as 3 tensors: `begin`, `size` and
   /// `bboxes`. The first 2 tensors can be fed directly into `tf.slice` to crop the
   /// image. The latter may be supplied to `tf.image.draw_bounding_boxes` to visualize
   /// what the bounding box looks like.
-  /// 
+  ///
   /// Bounding boxes are supplied and returned as `[y_min, x_min, y_max, x_max]`. The
   /// bounding box coordinates are floats in `[0.0, 1.0]` relative to the width and
   /// height of the underlying image.
-  /// 
+  ///
   /// For example,
-  /// 
+  ///
   /// ```python
   ///     # Generate a single distorted bounding box.
   ///     begin, size, bbox_for_draw = tf.image.sample_distorted_bounding_box(
   ///         tf.shape(image),
   ///         bounding_boxes=bounding_boxes)
-  /// 
+  ///
   ///     # Draw the bounding box in an image summary.
   ///     image_with_box = tf.image.draw_bounding_boxes(tf.expand_dims(image, 0),
   ///                                                   bbox_for_draw)
   ///     tf.summary.image('images_with_box', image_with_box)
-  /// 
+  ///
   ///     # Employ the bounding box to distort the image.
   ///     distorted_image = tf.slice(image, begin, size)
   /// ```
-  /// 
+  ///
   /// Note that if no bounding box information is available, setting
   /// `use_image_if_no_bounding_boxes = true` will assume there is a single implicit
   /// bounding box covering the whole image. If `use_image_if_no_bounding_boxes` is
@@ -31378,34 +31423,34 @@ public enum _Raw {
   /// its content, i.e. *data augmentation*. This Op outputs a randomly distorted
   /// localization of an object, i.e. bounding box, given an `image_size`,
   /// `bounding_boxes` and a series of constraints.
-  /// 
+  ///
   /// The output of this Op is a single bounding box that may be used to crop the
   /// original image. The output is returned as 3 tensors: `begin`, `size` and
   /// `bboxes`. The first 2 tensors can be fed directly into `tf.slice` to crop the
   /// image. The latter may be supplied to `tf.image.draw_bounding_boxes` to visualize
   /// what the bounding box looks like.
-  /// 
+  ///
   /// Bounding boxes are supplied and returned as `[y_min, x_min, y_max, x_max]`. The
   /// bounding box coordinates are floats in `[0.0, 1.0]` relative to the width and
   /// height of the underlying image.
-  /// 
+  ///
   /// For example,
-  /// 
+  ///
   /// ```python
   ///     # Generate a single distorted bounding box.
   ///     begin, size, bbox_for_draw = tf.image.sample_distorted_bounding_box(
   ///         tf.shape(image),
   ///         bounding_boxes=bounding_boxes)
-  /// 
+  ///
   ///     # Draw the bounding box in an image summary.
   ///     image_with_box = tf.image.draw_bounding_boxes(tf.expand_dims(image, 0),
   ///                                                   bbox_for_draw)
   ///     tf.summary.image('images_with_box', image_with_box)
-  /// 
+  ///
   ///     # Employ the bounding box to distort the image.
   ///     distorted_image = tf.slice(image, begin, size)
   /// ```
-  /// 
+  ///
   /// Note that if no bounding box information is available, setting
   /// `use_image_if_no_bounding_boxes = true` will assume there is a single implicit
   /// bounding box covering the whole image. If `use_image_if_no_bounding_boxes` is
@@ -31507,7 +31552,7 @@ public enum _Raw {
   ///
   /// The size of `tensor_names` must match the number of tensors in `data`. `data[i]`
   /// is written to `filename` with name `tensor_names[i]`.
-  /// 
+  ///
   /// See also `SaveSlices`.
   ///
   /// - Parameters:
@@ -31536,22 +31581,22 @@ public enum _Raw {
   /// a slice of a larger tensor.  `shapes_and_slices` specifies the shape of the
   /// larger tensor and the slice that this tensor covers. `shapes_and_slices` must
   /// have as many elements as `tensor_names`.
-  /// 
+  ///
   /// Elements of the `shapes_and_slices` input must either be:
-  /// 
+  ///
   /// *  The empty string, in which case the corresponding tensor is
   ///    saved normally.
   /// *  A string of the form `dim0 dim1 ... dimN-1 slice-spec` where the
   ///    `dimI` are the dimensions of the larger tensor and `slice-spec`
   ///    specifies what part is covered by the tensor to save.
-  /// 
+  ///
   /// `slice-spec` itself is a `:`-separated list: `slice0:slice1:...:sliceN-1`
   /// where each `sliceI` is either:
-  /// 
+  ///
   /// *  The string `-` meaning that the slice covers all indices of this dimension
   /// *  `start,length` where `start` and `length` are integers.  In that
   ///    case the slice covers `length` indices starting at `start`.
-  /// 
+  ///
   /// See also `Save`.
   ///
   /// - Parameters:
@@ -31711,40 +31756,40 @@ public enum _Raw {
   /// slices within a tensor (initially zero for numeric, empty for string) of
   /// the given `shape` according to indices.  This operator is the inverse of the
   /// `tf.gather_nd` operator which extracts values or slices from a given tensor.
-  /// 
+  ///
   /// This operation is similar to tensor_scatter_add, except that the tensor is
   /// zero-initialized. Calling `tf.scatter_nd(indices, values, shape)` is identical
   /// to `tensor_scatter_add(tf.zeros(shape, values.dtype), indices, values)`
-  /// 
+  ///
   /// If `indices` contains duplicates, then their updates are accumulated (summed).
-  /// 
+  ///
   /// **WARNING**: The order in which updates are applied is nondeterministic, so the
   /// output will be nondeterministic if `indices` contains duplicates -- because
   /// of some numerical approximation issues, numbers summed in different order
   /// may yield different results.
-  /// 
+  ///
   /// `indices` is an integer tensor containing indices into a new tensor of shape
   /// `shape`.  The last dimension of `indices` can be at most the rank of `shape`:
-  /// 
+  ///
   ///     indices.shape[-1] <= shape.rank
-  /// 
+  ///
   /// The last dimension of `indices` corresponds to indices into elements
   /// (if `indices.shape[-1] = shape.rank`) or slices
   /// (if `indices.shape[-1] < shape.rank`) along dimension `indices.shape[-1]` of
   /// `shape`.  `updates` is a tensor with shape
-  /// 
+  ///
   ///     indices.shape[:-1] + shape[indices.shape[-1]:]
-  /// 
+  ///
   /// The simplest form of scatter is to insert individual elements in a tensor by
   /// index. For example, say we want to insert 4 scattered elements in a rank-1
   /// tensor with 8 elements.
-  /// 
+  ///
   /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
   /// <img style="width:100%" src="https://www.tensorflow.org/images/ScatterNd1.png" alt>
   /// </div>
-  /// 
+  ///
   /// In Python, this scatter operation would look like this:
-  /// 
+  ///
   /// ```python
   ///     indices = tf.constant([[4], [3], [1], [7]])
   ///     updates = tf.constant([9, 10, 11, 12])
@@ -31752,21 +31797,21 @@ public enum _Raw {
   ///     scatter = tf.scatter_nd(indices, updates, shape)
   ///     print(scatter)
   /// ```
-  /// 
+  ///
   /// The resulting tensor would look like this:
-  /// 
+  ///
   ///     [0, 11, 0, 10, 9, 0, 0, 12]
-  /// 
+  ///
   /// We can also, insert entire slices of a higher rank tensor all at once. For
   /// example, if we wanted to insert two slices in the first dimension of a
   /// rank-3 tensor with two matrices of new values.
-  /// 
+  ///
   /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
   /// <img style="width:100%" src="https://www.tensorflow.org/images/ScatterNd2.png" alt>
   /// </div>
-  /// 
+  ///
   /// In Python, this scatter operation would look like this:
-  /// 
+  ///
   /// ```python
   ///     indices = tf.constant([[0], [2]])
   ///     updates = tf.constant([[[5, 5, 5, 5], [6, 6, 6, 6],
@@ -31777,14 +31822,14 @@ public enum _Raw {
   ///     scatter = tf.scatter_nd(indices, updates, shape)
   ///     print(scatter)
   /// ```
-  /// 
+  ///
   /// The resulting tensor would look like this:
-  /// 
+  ///
   ///     [[[5, 5, 5, 5], [6, 6, 6, 6], [7, 7, 7, 7], [8, 8, 8, 8]],
   ///      [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
   ///      [[5, 5, 5, 5], [6, 6, 6, 6], [7, 7, 7, 7], [8, 8, 8, 8]],
   ///      [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]]
-  /// 
+  ///
   /// Note that on CPU, if an out of bound index is found, an error is returned.
   /// On GPU, if an out of bound index is found, the index is ignored.
   ///
@@ -31820,34 +31865,34 @@ public enum _Raw {
   /// `input` is only modified in-place if no other operations will use it.
   /// Otherwise, a copy of `input` is made.  This operation has a gradient with
   /// respect to both `input` and `updates`.
-  /// 
+  ///
   /// `input` is a `Tensor` with rank `P` and `indices` is a `Tensor` of rank `Q`.
-  /// 
+  ///
   /// `indices` must be integer tensor, containing indices into `input`.
   /// It must be shape \\([d_0, ..., d_{Q-2}, K]\\) where `0 < K <= P`.
-  /// 
+  ///
   /// The innermost dimension of `indices` (with length `K`) corresponds to
   /// indices into elements (if `K = P`) or `(P-K)`-dimensional slices
   /// (if `K < P`) along the `K`th dimension of `input`.
-  /// 
+  ///
   /// `updates` is `Tensor` of rank `Q-1+P-K` with shape:
-  /// 
+  ///
   /// $$[d_0, ..., d_{Q-2}, input.shape[K], ..., input.shape[P-1]].$$
-  /// 
+  ///
   /// For example, say we want to add 4 scattered elements to a rank-1 tensor to 8
   /// elements. In Python, that addition would look like this:
-  /// 
+  ///
   ///     input = tf.constant([1, 2, 3, 4, 5, 6, 7, 8])
   ///     indices = tf.constant([[4], [3], [1], [7]])
   ///     updates = tf.constant([9, 10, 11, 12])
   ///     output = tf.scatter_nd_non_aliasing_add(input, indices, updates)
   ///     with tf.Session() as sess:
   ///       print(sess.run(output))
-  /// 
+  ///
   /// The resulting value `output` would look like this:
-  /// 
+  ///
   ///     [1, 13, 3, 14, 14, 6, 7, 20]
-  /// 
+  ///
   /// See `tf.scatter_nd` for more details about how to make updates to slices.
   ///
   /// - Parameters:
@@ -31901,16 +31946,16 @@ public enum _Raw {
   /// optimizer applies each update one example at a time. Examples are sampled
   /// uniformly, and the optimizer is learning rate free and enjoys linear convergence
   /// rate.
-  /// 
+  ///
   /// [Proximal Stochastic Dual Coordinate Ascent](http://arxiv.org/pdf/1211.2717v1.pdf).<br>
   /// Shai Shalev-Shwartz, Tong Zhang. 2012
-  /// 
+  ///
   /// $$Loss Objective = \sum f_{i} (wx_{i}) + (l2 / 2) * |w|^2 + l1 * |w|$$
-  /// 
+  ///
   /// [Adding vs. Averaging in Distributed Primal-Dual Optimization](http://arxiv.org/abs/1502.03508).<br>
   /// Chenxin Ma, Virginia Smith, Martin Jaggi, Michael I. Jordan,
   /// Peter Richtarik, Martin Takac. 2015
-  /// 
+  ///
   /// [Stochastic Dual Coordinate Ascent with Adaptive Probabilities](https://arxiv.org/abs/1502.08053).<br>
   /// Dominik Csiba, Zheng Qu, Peter Richtarik. 2015
   ///
@@ -32006,16 +32051,16 @@ public enum _Raw {
   /// optimizer applies each update one example at a time. Examples are sampled
   /// uniformly, and the optimizer is learning rate free and enjoys linear convergence
   /// rate.
-  /// 
+  ///
   /// [Proximal Stochastic Dual Coordinate Ascent](http://arxiv.org/pdf/1211.2717v1.pdf).<br>
   /// Shai Shalev-Shwartz, Tong Zhang. 2012
-  /// 
+  ///
   /// $$Loss Objective = \sum f_{i} (wx_{i}) + (l2 / 2) * |w|^2 + l1 * |w|$$
-  /// 
+  ///
   /// [Adding vs. Averaging in Distributed Primal-Dual Optimization](http://arxiv.org/abs/1502.03508).<br>
   /// Chenxin Ma, Virginia Smith, Martin Jaggi, Michael I. Jordan,
   /// Peter Richtarik, Martin Takac. 2015
-  /// 
+  ///
   /// [Stochastic Dual Coordinate Ascent with Adaptive Probabilities](https://arxiv.org/abs/1502.08053).<br>
   /// Dominik Csiba, Zheng Qu, Peter Richtarik. 2015
   ///
@@ -32109,26 +32154,26 @@ public enum _Raw {
   /// Read
   /// [the section on segmentation](https://tensorflow.org/api_docs/python/tf/math#Segmentation)
   /// for an explanation of segments.
-  /// 
+  ///
   /// Computes a tensor such that
   /// \\(output_i = \max_j(data_j)\\) where `max` is over `j` such
   /// that `segment_ids[j] == i`.
-  /// 
+  ///
   /// If the max is empty for a given segment ID `i`, `output[i] = 0`.
-  /// 
+  ///
   /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
   /// <img style="width:100%" src="https://www.tensorflow.org/images/SegmentMax.png" alt>
   /// </div>
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// c = tf.constant([[1,2,3,4], [4, 3, 2, 1], [5,6,7,8]])
   /// tf.segment_max(c, tf.constant([0, 0, 1]))
   /// # ==> [[4, 3, 3, 4],
   /// #      [5, 6, 7, 8]]
   /// ```
-  /// 
+  ///
   ///
   /// - Parameter segment_ids: A 1-D tensor whose size is equal to the size of `data`'s
   ///     first dimension.  Values should be sorted and can be repeated.
@@ -32157,27 +32202,27 @@ public enum _Raw {
   /// Read
   /// [the section on segmentation](https://tensorflow.org/api_docs/python/tf/math#Segmentation)
   /// for an explanation of segments.
-  /// 
+  ///
   /// Computes a tensor such that
   /// \\(output_i = \frac{\sum_j data_j}{N}\\) where `mean` is
   /// over `j` such that `segment_ids[j] == i` and `N` is the total number of
   /// values summed.
-  /// 
+  ///
   /// If the mean is empty for a given segment ID `i`, `output[i] = 0`.
-  /// 
+  ///
   /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
   /// <img style="width:100%" src="https://www.tensorflow.org/images/SegmentMean.png" alt>
   /// </div>
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// c = tf.constant([[1.0,2,3,4], [4, 3, 2, 1], [5,6,7,8]])
   /// tf.segment_mean(c, tf.constant([0, 0, 1]))
   /// # ==> [[2.5, 2.5, 2.5, 2.5],
   /// #      [5, 6, 7, 8]]
   /// ```
-  /// 
+  ///
   ///
   /// - Parameter segment_ids: A 1-D tensor whose size is equal to the size of `data`'s
   ///     first dimension.  Values should be sorted and can be repeated.
@@ -32206,19 +32251,19 @@ public enum _Raw {
   /// Read
   /// [the section on segmentation](https://tensorflow.org/api_docs/python/tf/math#Segmentation)
   /// for an explanation of segments.
-  /// 
+  ///
   /// Computes a tensor such that
   /// \\(output_i = \min_j(data_j)\\) where `min` is over `j` such
   /// that `segment_ids[j] == i`.
-  /// 
+  ///
   /// If the min is empty for a given segment ID `i`, `output[i] = 0`.
-  /// 
+  ///
   /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
   /// <img style="width:100%" src="https://www.tensorflow.org/images/SegmentMin.png" alt>
   /// </div>
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// c = tf.constant([[1,2,3,4], [4, 3, 2, 1], [5,6,7,8]])
   /// tf.segment_min(c, tf.constant([0, 0, 1]))
@@ -32253,26 +32298,26 @@ public enum _Raw {
   /// Read
   /// [the section on segmentation](https://tensorflow.org/api_docs/python/tf/math#Segmentation)
   /// for an explanation of segments.
-  /// 
+  ///
   /// Computes a tensor such that
   /// \\(output_i = \prod_j data_j\\) where the product is over `j` such
   /// that `segment_ids[j] == i`.
-  /// 
+  ///
   /// If the product is empty for a given segment ID `i`, `output[i] = 1`.
-  /// 
+  ///
   /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
   /// <img style="width:100%" src="https://www.tensorflow.org/images/SegmentProd.png" alt>
   /// </div>
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// c = tf.constant([[1,2,3,4], [4, 3, 2, 1], [5,6,7,8]])
   /// tf.segment_prod(c, tf.constant([0, 0, 1]))
   /// # ==> [[4, 6, 6, 4],
   /// #      [5, 6, 7, 8]]
   /// ```
-  /// 
+  ///
   ///
   /// - Parameter segment_ids: A 1-D tensor whose size is equal to the size of `data`'s
   ///     first dimension.  Values should be sorted and can be repeated.
@@ -32301,26 +32346,26 @@ public enum _Raw {
   /// Read
   /// [the section on segmentation](https://tensorflow.org/api_docs/python/tf/math#Segmentation)
   /// for an explanation of segments.
-  /// 
+  ///
   /// Computes a tensor such that
   /// \\(output_i = \sum_j data_j\\) where sum is over `j` such
   /// that `segment_ids[j] == i`.
-  /// 
+  ///
   /// If the sum is empty for a given segment ID `i`, `output[i] = 0`.
-  /// 
+  ///
   /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
   /// <img style="width:100%" src="https://www.tensorflow.org/images/SegmentSum.png" alt>
   /// </div>
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// c = tf.constant([[1,2,3,4], [4, 3, 2, 1], [5,6,7,8]])
   /// tf.segment_sum(c, tf.constant([0, 0, 1]))
   /// # ==> [[5, 5, 5, 5],
   /// #      [5, 6, 7, 8]]
   /// ```
-  /// 
+  ///
   ///
   /// - Parameter segment_ids: A 1-D tensor whose size is equal to the size of `data`'s
   ///     first dimension.  Values should be sorted and can be repeated.
@@ -32348,23 +32393,23 @@ public enum _Raw {
   ///
   /// The `x`, and `y` tensors must all have the same shape, and the
   /// output will also have that shape.
-  /// 
+  ///
   /// The `condition` tensor must be a scalar if `x` and `y` are scalars.
   /// If `x` and `y` are vectors or higher rank, then `condition` must be either a
   /// scalar, a vector with size matching the first dimension of `x`, or must have
   /// the same shape as `x`.
-  /// 
+  ///
   /// The `condition` tensor acts as a mask that chooses, based on the value at each
   /// element, whether the corresponding element / row in the output should be
   /// taken from `x` (if true) or `y` (if false).
-  /// 
+  ///
   /// If `condition` is a vector and `x` and `y` are higher rank matrices, then
   /// it chooses which row (outer dimension) to copy from `x` and `y`.
   /// If `condition` has the same shape as `x` and `y`, then it chooses which
   /// element to copy from `x` and `y`.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```python
   /// # 'condition' tensor is [[True,  False]
   /// #                        [False, True]]
@@ -32373,8 +32418,8 @@ public enum _Raw {
   /// # 'e' is [[5, 6],
   /// #         [7, 8]]
   /// select(condition, t, e)  # => [[1, 6], [7, 4]]
-  /// 
-  /// 
+  ///
+  ///
   /// # 'condition' tensor is [True, False]
   /// # 't' is [[1, 2],
   /// #         [3, 4]]
@@ -32382,7 +32427,7 @@ public enum _Raw {
   /// #         [7, 8]]
   /// select(condition, t, e) ==> [[1, 2],
   ///                              [7, 8]]
-  /// 
+  ///
   /// ```
   ///
   /// - Parameters:
@@ -32427,7 +32472,7 @@ public enum _Raw {
   /// The input is a tensor of shape `[..., M, M]` whose inner-most 2 dimensions
   /// form square matrices, with the same constraints as the single matrix
   /// SelfAdjointEig.
-  /// 
+  ///
   /// The result is a [..., M+1, M] matrix with [..., 0,:] containing the
   /// eigenvalues, and subsequent [...,1:, :] containing the eigenvectors. The eigenvalues
   /// are sorted in non-decreasing order.
@@ -32451,7 +32496,7 @@ public enum _Raw {
   /// Computes the eigenvalues and (optionally) eigenvectors of each inner matrix in
   /// `input` such that `input[..., :, :] = v[..., :, :] * diag(e[..., :])`. The eigenvalues
   /// are sorted in non-decreasing order.
-  /// 
+  ///
   /// ```python
   /// # a is a tensor.
   /// # e is a tensor of eigenvalues.
@@ -32484,11 +32529,11 @@ public enum _Raw {
   /// Computes scaled exponential linear: `scale * alpha * (exp(features) - 1)`
   ///
   /// if < 0, `scale * features` otherwise.
-  /// 
+  ///
   /// To be used together with
   /// `initializer = tf.variance_scaling_initializer(factor=1.0, mode='FAN_IN')`.
   /// For correct dropout, use `tf.contrib.nn.alpha_dropout`.
-  /// 
+  ///
   /// See [Self-Normalizing Neural Networks](https://arxiv.org/abs/1706.02515)
   @inlinable @inline(__always)
   public static func selu<T: FloatingPoint & TensorFlowScalar>(
@@ -32612,7 +32657,7 @@ public enum _Raw {
   /// must be sorted in increasing order of this first dimension.  The serialized
   /// `SparseTensor` objects going into each row of `serialized_sparse` will have
   /// rank `R-1`.
-  /// 
+  ///
   /// The minibatch size `N` is extracted from `sparse_shape[0]`.
   ///
   /// - Parameters:
@@ -32648,7 +32693,7 @@ public enum _Raw {
   /// must be sorted in increasing order of this first dimension.  The serialized
   /// `SparseTensor` objects going into each row of `serialized_sparse` will have
   /// rank `R-1`.
-  /// 
+  ///
   /// The minibatch size `N` is extracted from `sparse_shape[0]`.
   ///
   /// - Parameters:
@@ -32727,6 +32772,20 @@ public enum _Raw {
     return op.execute(Int(1))
   }
 
+  @inlinable @inline(__always)
+  public static func serializeTRTResource(
+    resourceName: StringTensor,
+    filename: StringTensor,
+    deleteResource: Bool = false
+  ) {
+    let nOutputs = 0
+    let op = makeOp("SerializeTRTResource", nOutputs)
+    op.updateAttribute("delete_resource", deleteResource)
+    op.addInput(resourceName)
+    op.addInput(filename)
+    op.execute()
+  }
+
   /// Transforms a Tensor into a serialized TensorProto proto.
   ///
   /// - Parameter tensor: A Tensor of type `T`.
@@ -32750,7 +32809,7 @@ public enum _Raw {
   /// Input `set` is a `SparseTensor` represented by `set_indices`, `set_values`,
   /// and `set_shape`. The last dimension contains values in a set, duplicates are
   /// allowed but ignored.
-  /// 
+  ///
   /// If `validate_indices` is `True`, this op validates the order and range of `set`
   /// indices.
   ///
@@ -32784,7 +32843,7 @@ public enum _Raw {
   /// Input `set` is a `SparseTensor` represented by `set_indices`, `set_values`,
   /// and `set_shape`. The last dimension contains values in a set, duplicates are
   /// allowed but ignored.
-  /// 
+  ///
   /// If `validate_indices` is `True`, this op validates the order and range of `set`
   /// indices.
   ///
@@ -32836,9 +32895,9 @@ public enum _Raw {
   /// Returns the shape of a tensor.
   ///
   /// This operation returns a 1-D integer tensor representing the shape of `input`.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # 't' is [[[1, 1, 1], [2, 2, 2]], [[3, 3, 3], [4, 4, 4]]]
   /// shape(t) ==> [2, 2, 3]
@@ -33069,9 +33128,9 @@ public enum _Raw {
   /// Returns an element-wise indication of the sign of a number.
   ///
   /// `y = sign(x) = -1` if `x < 0`; 0 if `x == 0`; 1 if `x > 0`.
-  /// 
+  ///
   /// For complex numbers, `y = sign(x) = x / |x|` if `x != 0`, otherwise `y = 0`.
-  /// 
+  ///
   /// Example usage:
   /// >>> tf.math.sign([0., 2., -3.])
   /// <tf.Tensor: shape=(3,), dtype=float32, numpy=array([ 0.,  1., -1.], dtype=float32)>
@@ -33111,7 +33170,7 @@ public enum _Raw {
   ///   Given an input tensor, this function computes sine of every
   ///   element in the tensor. Input range is `(-inf, inf)` and
   ///   output range is `[-1,1]`.
-  /// 
+  ///
   ///   ```python
   ///   x = tf.constant([-float("inf"), -9, -0.5, 1, 1.2, 200, 10, float("inf")])
   ///   tf.math.sin(x) ==> [nan -0.4121185 -0.47942555 0.84147096 0.9320391 -0.87329733 -0.54402107 nan]
@@ -33132,7 +33191,7 @@ public enum _Raw {
   ///   Given an input tensor, this function computes hyperbolic sine of every
   ///   element in the tensor. Input range is `[-inf,inf]` and output range
   ///   is `[-inf,inf]`.
-  /// 
+  ///
   ///   ```python
   ///   x = tf.constant([-float("inf"), -9, -0.5, 1, 1.2, 2, 10, float("inf")])
   ///   tf.math.sinh(x) ==> [-inf -4.0515420e+03 -5.2109528e-01 1.1752012e+00 1.5094614e+00 3.6268604e+00 1.1013232e+04 inf]
@@ -33152,9 +33211,9 @@ public enum _Raw {
   ///
   /// This operation returns an integer representing the number of elements in
   /// `input`.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # 't' is [[[1, 1,, 1], [2, 2, 2]], [[3, 3, 3], [4, 4, 4]]]]
   /// size(t) ==> 12
@@ -33256,7 +33315,7 @@ public enum _Raw {
   /// The output tensor is a tensor with dimensions described by 'size'
   /// whose values are extracted from 'input' starting at the offsets in
   /// 'begin'.
-  /// 
+  ///
   /// *Requirements*:
   ///   0 <= begin[i] <= begin[i] + size[i] <= Di  for i in [0, n)
   ///
@@ -33380,7 +33439,7 @@ public enum _Raw {
   /// Computes softmax activations.
   ///
   /// For each batch `i` and class `j` we have
-  /// 
+  ///
   ///     $$softmax[i, j] = exp(logits[i, j]) / sum_j(exp(logits[i, j]))$$
   ///
   /// - Parameter logits: 2-D with shape `[batch_size, num_classes]`.
@@ -33490,7 +33549,7 @@ public enum _Raw {
   /// SpaceToBatch for 4-D tensors of type T.
   ///
   /// This is a legacy version of the more general SpaceToBatchND.
-  /// 
+  ///
   /// Zero-pads and then rearranges (permutes) blocks of spatial data into batch.
   /// More specifically, this op outputs a copy of the input tensor where values from
   /// the `height` and `width` dimensions are moved to the `batch` dimension. After
@@ -33501,87 +33560,87 @@ public enum _Raw {
   ///     - input: 4-D with shape `[batch, height, width, depth]`.
   ///     - paddings: 2-D tensor of non-negative integers with shape `[2, 2]`. It specifies
   ///           the padding of the input with zeros across the spatial dimensions as follows:
-  ///         
+  ///
   ///               paddings = [[pad_top, pad_bottom], [pad_left, pad_right]]
-  ///         
+  ///
   ///           The effective spatial dimensions of the zero-padded input tensor will be:
-  ///         
+  ///
   ///               height_pad = pad_top + height + pad_bottom
   ///               width_pad = pad_left + width + pad_right
-  ///         
+  ///
   ///         The attr `block_size` must be greater than one. It indicates the block size.
-  ///         
+  ///
   ///           * Non-overlapping blocks of size `block_size x block size` in the height and
   ///             width dimensions are rearranged into the batch dimension at each location.
   ///           * The batch of the output tensor is `batch * block_size * block_size`.
   ///           * Both height_pad and width_pad must be divisible by block_size.
-  ///         
+  ///
   ///         The shape of the output will be:
-  ///         
+  ///
   ///             [batch*block_size*block_size, height_pad/block_size, width_pad/block_size,
   ///              depth]
-  ///         
+  ///
   ///         Some examples:
-  ///         
+  ///
   ///         (1) For the following input of shape `[1, 2, 2, 1]` and block_size of 2:
-  ///         
+  ///
   ///         ```
   ///         x = [[[[1], [2]], [[3], [4]]]]
   ///         ```
-  ///         
+  ///
   ///         The output tensor has shape `[4, 1, 1, 1]` and value:
-  ///         
+  ///
   ///         ```
   ///         [[[[1]]], [[[2]]], [[[3]]], [[[4]]]]
   ///         ```
-  ///         
+  ///
   ///         (2) For the following input of shape `[1, 2, 2, 3]` and block_size of 2:
-  ///         
+  ///
   ///         ```
   ///         x = [[[[1, 2, 3], [4, 5, 6]],
   ///               [[7, 8, 9], [10, 11, 12]]]]
   ///         ```
-  ///         
+  ///
   ///         The output tensor has shape `[4, 1, 1, 3]` and value:
-  ///         
+  ///
   ///         ```
   ///         [[[[1, 2, 3]]], [[[4, 5, 6]]], [[[7, 8, 9]]], [[[10, 11, 12]]]]
   ///         ```
-  ///         
+  ///
   ///         (3) For the following input of shape `[1, 4, 4, 1]` and block_size of 2:
-  ///         
+  ///
   ///         ```
   ///         x = [[[[1],   [2],  [3],  [4]],
   ///               [[5],   [6],  [7],  [8]],
   ///               [[9],  [10], [11],  [12]],
   ///               [[13], [14], [15],  [16]]]]
   ///         ```
-  ///         
+  ///
   ///         The output tensor has shape `[4, 2, 2, 1]` and value:
-  ///         
+  ///
   ///         ```
   ///         x = [[[[1], [3]], [[9], [11]]],
   ///              [[[2], [4]], [[10], [12]]],
   ///              [[[5], [7]], [[13], [15]]],
   ///              [[[6], [8]], [[14], [16]]]]
   ///         ```
-  ///         
+  ///
   ///         (4) For the following input of shape `[2, 2, 4, 1]` and block_size of 2:
-  ///         
+  ///
   ///         ```
   ///         x = [[[[1],   [2],  [3],  [4]],
   ///               [[5],   [6],  [7],  [8]]],
   ///              [[[9],  [10], [11],  [12]],
   ///               [[13], [14], [15],  [16]]]]
   ///         ```
-  ///         
+  ///
   ///         The output tensor has shape `[8, 1, 2, 1]` and value:
-  ///         
+  ///
   ///         ```
   ///         x = [[[[1], [3]]], [[[9], [11]]], [[[2], [4]]], [[[10], [12]]],
   ///              [[[5], [7]]], [[[13], [15]]], [[[6], [8]]], [[[14], [16]]]]
   ///         ```
-  ///         
+  ///
   ///         Among others, this operation is useful for reducing atrous convolution into
   ///         regular convolution.
   @inlinable @inline(__always)
@@ -33622,14 +33681,14 @@ public enum _Raw {
   ///           `paddings[i] = [pad_start, pad_end]` specifies the padding for input dimension
   ///           `i + 1`, which corresponds to spatial dimension `i`.  It is required that
   ///           `block_shape[i]` divides `input_shape[i + 1] + pad_start + pad_end`.
-  ///         
+  ///
   ///         This operation is equivalent to the following steps:
-  ///         
+  ///
   ///         1. Zero-pad the start and end of dimensions `[1, ..., M]` of the
   ///            input according to `paddings` to produce `padded` of shape `padded_shape`.
-  ///         
+  ///
   ///         2. Reshape `padded` to `reshaped_padded` of shape:
-  ///         
+  ///
   ///              [batch] +
   ///              [padded_shape[1] / block_shape[0],
   ///                block_shape[0],
@@ -33637,93 +33696,93 @@ public enum _Raw {
   ///               padded_shape[M] / block_shape[M-1],
   ///               block_shape[M-1]] +
   ///              remaining_shape
-  ///         
+  ///
   ///         3. Permute dimensions of `reshaped_padded` to produce
   ///            `permuted_reshaped_padded` of shape:
-  ///         
+  ///
   ///              block_shape +
   ///              [batch] +
   ///              [padded_shape[1] / block_shape[0],
   ///               ...,
   ///               padded_shape[M] / block_shape[M-1]] +
   ///              remaining_shape
-  ///         
+  ///
   ///         4. Reshape `permuted_reshaped_padded` to flatten `block_shape` into the batch
   ///            dimension, producing an output tensor of shape:
-  ///         
+  ///
   ///              [batch * prod(block_shape)] +
   ///              [padded_shape[1] / block_shape[0],
   ///               ...,
   ///               padded_shape[M] / block_shape[M-1]] +
   ///              remaining_shape
-  ///         
+  ///
   ///         Some examples:
-  ///         
+  ///
   ///         (1) For the following input of shape `[1, 2, 2, 1]`, `block_shape = [2, 2]`, and
   ///             `paddings = [[0, 0], [0, 0]]`:
-  ///         
+  ///
   ///         ```
   ///         x = [[[[1], [2]], [[3], [4]]]]
   ///         ```
-  ///         
+  ///
   ///         The output tensor has shape `[4, 1, 1, 1]` and value:
-  ///         
+  ///
   ///         ```
   ///         [[[[1]]], [[[2]]], [[[3]]], [[[4]]]]
   ///         ```
-  ///         
+  ///
   ///         (2) For the following input of shape `[1, 2, 2, 3]`, `block_shape = [2, 2]`, and
   ///             `paddings = [[0, 0], [0, 0]]`:
-  ///         
+  ///
   ///         ```
   ///         x = [[[[1, 2, 3], [4, 5, 6]],
   ///               [[7, 8, 9], [10, 11, 12]]]]
   ///         ```
-  ///         
+  ///
   ///         The output tensor has shape `[4, 1, 1, 3]` and value:
-  ///         
+  ///
   ///         ```
   ///         [[[[1, 2, 3]]], [[[4, 5, 6]]], [[[7, 8, 9]]], [[[10, 11, 12]]]]
   ///         ```
-  ///         
+  ///
   ///         (3) For the following input of shape `[1, 4, 4, 1]`, `block_shape = [2, 2]`, and
   ///             `paddings = [[0, 0], [0, 0]]`:
-  ///         
+  ///
   ///         ```
   ///         x = [[[[1],   [2],  [3],  [4]],
   ///               [[5],   [6],  [7],  [8]],
   ///               [[9],  [10], [11],  [12]],
   ///               [[13], [14], [15],  [16]]]]
   ///         ```
-  ///         
+  ///
   ///         The output tensor has shape `[4, 2, 2, 1]` and value:
-  ///         
+  ///
   ///         ```
   ///         x = [[[[1], [3]], [[9], [11]]],
   ///              [[[2], [4]], [[10], [12]]],
   ///              [[[5], [7]], [[13], [15]]],
   ///              [[[6], [8]], [[14], [16]]]]
   ///         ```
-  ///         
+  ///
   ///         (4) For the following input of shape `[2, 2, 4, 1]`, block_shape = `[2, 2]`, and
   ///             paddings = `[[0, 0], [2, 0]]`:
-  ///         
+  ///
   ///         ```
   ///         x = [[[[1],   [2],  [3],  [4]],
   ///               [[5],   [6],  [7],  [8]]],
   ///              [[[9],  [10], [11],  [12]],
   ///               [[13], [14], [15],  [16]]]]
   ///         ```
-  ///         
+  ///
   ///         The output tensor has shape `[8, 1, 3, 1]` and value:
-  ///         
+  ///
   ///         ```
   ///         x = [[[[0], [1], [3]]], [[[0], [9], [11]]],
   ///              [[[0], [2], [4]]], [[[0], [10], [12]]],
   ///              [[[0], [5], [7]]], [[[0], [13], [15]]],
   ///              [[[0], [6], [8]]], [[[0], [14], [16]]]]
   ///         ```
-  ///         
+  ///
   ///         Among others, this operation is useful for reducing atrous convolution into
   ///         regular convolution.
   @inlinable @inline(__always)
@@ -33753,21 +33812,21 @@ public enum _Raw {
   /// this op outputs a copy of the input tensor where values from the `height`
   /// and `width` dimensions are moved to the `depth` dimension.
   /// The attr `block_size` indicates the input block size.
-  /// 
+  ///
   ///   * Non-overlapping blocks of size `block_size x block size` are rearranged
   ///     into depth at each location.
   ///   * The depth of the output tensor is `block_size * block_size * input_depth`.
   ///   * The Y, X coordinates within each block of the input become the high order
   ///     component of the output channel index.
   ///   * The input tensor's height and width must be divisible by block_size.
-  /// 
+  ///
   /// The `data_format` attr specifies the layout of the input and output tensors
   /// with the following options:
   ///   "NHWC": `[ batch, height, width, channels ]`
   ///   "NCHW": `[ batch, channels, height, width ]`
   ///   "NCHW_VECT_C":
   ///       `qint8 [ batch, channels / 4, height, width, 4 ]`
-  /// 
+  ///
   /// It is useful to consider the operation as transforming a 6-D Tensor.
   /// e.g. for data_format = NHWC,
   ///      Each element in the input tensor can be specified via 6 coordinates,
@@ -33777,55 +33836,55 @@ public enum _Raw {
   ///                         within the input block, iC means input channels).
   ///      The output would be a transpose to the following layout:
   ///      n,oY,oX,bY,bX,iC
-  /// 
+  ///
   /// This operation is useful for resizing the activations between convolutions
   /// (but keeping all data), e.g. instead of pooling. It is also useful for training
   /// purely convolutional models.
-  /// 
+  ///
   /// For example, given an input of shape `[1, 2, 2, 1]`, data_format = "NHWC" and
   /// block_size = 2:
-  /// 
+  ///
   /// ```
   /// x = [[[[1], [2]],
   ///       [[3], [4]]]]
   /// ```
-  /// 
+  ///
   /// This operation will output a tensor of shape `[1, 1, 1, 4]`:
-  /// 
+  ///
   /// ```
   /// [[[[1, 2, 3, 4]]]]
   /// ```
-  /// 
+  ///
   /// Here, the input has a batch of 1 and each batch element has shape `[2, 2, 1]`,
   /// the corresponding output will have a single element (i.e. width and height are
   /// both 1) and will have a depth of 4 channels (1 * block_size * block_size).
   /// The output element shape is `[1, 1, 4]`.
-  /// 
+  ///
   /// For an input tensor with larger depth, here of shape `[1, 2, 2, 3]`, e.g.
-  /// 
+  ///
   /// ```
   /// x = [[[[1, 2, 3], [4, 5, 6]],
   ///       [[7, 8, 9], [10, 11, 12]]]]
   /// ```
-  /// 
+  ///
   /// This operation, for block_size of 2, will return the following tensor of shape
   /// `[1, 1, 1, 12]`
-  /// 
+  ///
   /// ```
   /// [[[[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]]]]
   /// ```
-  /// 
+  ///
   /// Similarly, for the following input of shape `[1 4 4 1]`, and a block size of 2:
-  /// 
+  ///
   /// ```
   /// x = [[[[1],   [2],  [5],  [6]],
   ///       [[3],   [4],  [7],  [8]],
   ///       [[9],  [10], [13],  [14]],
   ///       [[11], [12], [15],  [16]]]]
   /// ```
-  /// 
+  ///
   /// the operator will return the following tensor of shape `[1 2 2 4]`:
-  /// 
+  ///
   /// ```
   /// x = [[[[1, 2, 3, 4],
   ///        [5, 6, 7, 8]],
@@ -33838,7 +33897,7 @@ public enum _Raw {
   public static func spaceToDepth<T: TensorFlowScalar>(
     _ input: Tensor<T>,
     blockSize: Int64,
-    dataFormat: DataFormat5 = .nhwc
+    dataFormat: DataFormat2 = .nhwc
   ) -> Tensor<T> {
     let nOutputs = Int(1)
     let op = makeOp("SpaceToDepth", nOutputs)
@@ -33854,7 +33913,7 @@ public enum _Raw {
   /// The input `SparseTensor` objects' indices are assumed ordered in standard
   /// lexicographic order.  If this is not the case, before this step run
   /// `SparseReorder` to restore index ordering.
-  /// 
+  ///
   /// By default, if two values sum to zero at some index, the output `SparseTensor`
   /// would still include that particular location in its index, storing a zero in the
   /// corresponding value slot.  To override this, callers can specify `thresh`,
@@ -33862,7 +33921,7 @@ public enum _Raw {
   /// corresponding value and index would then not be included.  In particular,
   /// `thresh == 0` (default) means everything is kept and actual thresholding happens
   /// only for a positive value.
-  /// 
+  ///
   /// In the following shapes, `nnz` is the count after taking `thresh` into account.
   ///
   /// - Parameters:
@@ -33943,42 +34002,42 @@ public enum _Raw {
   /// Concatenation is with respect to the dense versions of these sparse tensors.
   /// It is assumed that each input is a `SparseTensor` whose elements are ordered
   /// along increasing dimension number.
-  /// 
+  ///
   /// All inputs' shapes must match, except for the concat dimension.  The
   /// `indices`, `values`, and `shapes` lists must have the same length.
-  /// 
+  ///
   /// The output shape is identical to the inputs', except along the concat
   /// dimension, where it is the sum of the inputs' sizes along that dimension.
-  /// 
+  ///
   /// The output elements will be resorted to preserve the sort order along
   /// increasing dimension number.
-  /// 
+  ///
   /// This op runs in `O(M log M)` time, where `M` is the total number of non-empty
   /// values across all inputs. This is due to the need for an internal sort in
   /// order to concatenate efficiently across an arbitrary dimension.
-  /// 
+  ///
   /// For example, if `concat_dim = 1` and the inputs are
-  /// 
+  ///
   ///     sp_inputs[0]: shape = [2, 3]
   ///     [0, 2]: "a"
   ///     [1, 0]: "b"
   ///     [1, 1]: "c"
-  /// 
+  ///
   ///     sp_inputs[1]: shape = [2, 4]
   ///     [0, 1]: "d"
   ///     [0, 2]: "e"
-  /// 
+  ///
   /// then the output will be
-  /// 
+  ///
   ///     shape = [2, 7]
   ///     [0, 2]: "a"
   ///     [0, 4]: "d"
   ///     [0, 5]: "e"
   ///     [1, 0]: "b"
   ///     [1, 1]: "c"
-  /// 
+  ///
   /// Graphically this is equivalent to doing
-  /// 
+  ///
   ///     [    a] concat [  d e  ] = [    a   d e  ]
   ///     [b c  ]        [       ]   [b c          ]
   ///
@@ -34017,29 +34076,29 @@ public enum _Raw {
   /// The op takes two lists, one of 2D `SparseTensor` and one of 2D `Tensor`, each
   /// representing features of one feature column. It outputs a 2D `SparseTensor` with
   /// the batchwise crosses of these features.
-  /// 
+  ///
   /// For example, if the inputs are
-  /// 
+  ///
   ///     inputs[0]: SparseTensor with shape = [2, 2]
   ///     [0, 0]: "a"
   ///     [1, 0]: "b"
   ///     [1, 1]: "c"
-  /// 
+  ///
   ///     inputs[1]: SparseTensor with shape = [2, 1]
   ///     [0, 0]: "d"
   ///     [1, 0]: "e"
-  /// 
+  ///
   ///     inputs[2]: Tensor [["f"], ["g"]]
-  /// 
+  ///
   /// then the output will be
-  /// 
+  ///
   ///     shape = [2, 2]
   ///     [0, 0]: "a_X_d_X_f"
   ///     [1, 0]: "b_X_e_X_g"
   ///     [1, 1]: "c_X_e_X_g"
-  /// 
+  ///
   /// if hashed_output=true then the output will be
-  /// 
+  ///
   ///     shape = [2, 2]
   ///     [0, 0]: FingerprintCat64(
   ///                 Fingerprint64("f"), FingerprintCat64(
@@ -34107,29 +34166,29 @@ public enum _Raw {
   /// The op takes two lists, one of 2D `SparseTensor` and one of 2D `Tensor`, each
   /// representing features of one feature column. It outputs a 2D `SparseTensor` with
   /// the batchwise crosses of these features.
-  /// 
+  ///
   /// For example, if the inputs are
-  /// 
+  ///
   ///     inputs[0]: SparseTensor with shape = [2, 2]
   ///     [0, 0]: "a"
   ///     [1, 0]: "b"
   ///     [1, 1]: "c"
-  /// 
+  ///
   ///     inputs[1]: SparseTensor with shape = [2, 1]
   ///     [0, 0]: "d"
   ///     [1, 0]: "e"
-  /// 
+  ///
   ///     inputs[2]: Tensor [["f"], ["g"]]
-  /// 
+  ///
   /// then the output will be
-  /// 
+  ///
   ///     shape = [2, 2]
   ///     [0, 0]: "a_X_d_X_f"
   ///     [1, 0]: "b_X_e_X_g"
   ///     [1, 1]: "c_X_e_X_g"
-  /// 
+  ///
   /// if hashed_output=true then the output will be
-  /// 
+  ///
   ///     shape = [2, 2]
   ///     [0, 0]: FingerprintCat64(
   ///                 Fingerprint64("f"), FingerprintCat64(
@@ -34197,7 +34256,7 @@ public enum _Raw {
   ///     eligible;
   /// (2) Then, only the dense values pointed to by the indices of the SparseTensor
   ///     participate in the cwise addition.
-  /// 
+  ///
   /// By these rules, the result is a logical SparseTensor with exactly the same
   /// indices and shape, but possibly with different non-zero values.  The output of
   /// this Op is the resultant non-zero values.
@@ -34262,7 +34321,7 @@ public enum _Raw {
   /// The output locations corresponding to the implicitly zero elements in the sparse
   /// tensor will be zero (i.e., will not take up storage space), regardless of the
   /// contents of the dense tensor (even if it's +/-INF and that INF*0 == NaN).
-  /// 
+  ///
   /// *Limitation*: this Op only broadcasts the dense side to the sparse side, but not
   /// the other direction.
   ///
@@ -34297,37 +34356,37 @@ public enum _Raw {
   /// (`indices`, `values`, `dense_shape`).  The output `SparseTensor` has the
   /// same `dense_shape` but with indices `output_indices` and values
   /// `output_values`.
-  /// 
+  ///
   /// This op inserts a single entry for every row that doesn't have any values.
   /// The index is created as `[row, 0, ..., 0]` and the inserted value
   /// is `default_value`.
-  /// 
+  ///
   /// For example, suppose `sp_input` has shape `[5, 6]` and non-empty values:
-  /// 
+  ///
   ///     [0, 1]: a
   ///     [0, 3]: b
   ///     [2, 0]: c
   ///     [3, 1]: d
-  /// 
+  ///
   /// Rows 1 and 4 are empty, so the output will be of shape `[5, 6]` with values:
-  /// 
+  ///
   ///     [0, 1]: a
   ///     [0, 3]: b
   ///     [1, 0]: default_value
   ///     [2, 0]: c
   ///     [3, 1]: d
   ///     [4, 0]: default_value
-  /// 
+  ///
   /// The output `SparseTensor` will be in row-major order and will have the
   /// same shape as the input.
-  /// 
+  ///
   /// This op also returns an indicator vector shaped `[dense_shape[0]]` such that
-  /// 
+  ///
   ///     empty_row_indicator[i] = True iff row i was an empty row.
-  /// 
+  ///
   /// And a reverse index map vector shaped `[indices.shape[0]]` that is used during
   /// backpropagation,
-  /// 
+  ///
   ///     reverse_index_map[j] = out_j s.t. indices[j, :] == output_indices[out_j, :]
   ///
   /// - Parameters:
@@ -34369,7 +34428,7 @@ public enum _Raw {
   /// shaped `[N_full]`, where `N_full >= N` and copies data into either
   /// `d_values` or `d_default_value`.  Here `d_values` is shaped `[N]` and
   /// `d_default_value` is a scalar.
-  /// 
+  ///
   ///   d_values[j] = grad_values[reverse_index_map[j]]
   ///   d_default_value = sum_{k : 0 .. N_full - 1} (
   ///      grad_values[k] * 1{k not in reverse_index_map})
@@ -34402,7 +34461,7 @@ public enum _Raw {
   /// "b" is sparse, in the sense that they have a large proportion of zero values.
   /// The breakeven for using this versus a dense matrix multiply on one platform was
   /// 30% zero values in the sparse matrix.
-  /// 
+  ///
   /// The gradient computation of this operation will only take advantage of sparsity
   /// in the input gradient when that gradient comes from a Relu.
   @inlinable @inline(__always)
@@ -34463,24 +34522,24 @@ public enum _Raw {
   ///
   /// Returns a dense matrix.
   /// For inputs A and B, where A is CSR and B is dense; this op returns a dense C;
-  /// 
+  ///
   /// If transpose_output is false, returns:
   /// ```
   ///   C = A . B
   /// ```
-  /// 
+  ///
   /// If transpose_output is `true`, returns:
   /// ```
   ///   C = transpose(A . B) = transpose(B) . transpose(A)
   /// ```
   /// where the transposition is performed along the two innermost (matrix)
   /// dimensions.
-  /// 
+  ///
   /// If conjugate_output is `true`, returns:
   /// ```
   ///   C = conjugate(A . B) = conjugate(A) . conjugate(B)
   /// ```
-  /// 
+  ///
   /// If both conjugate_output and transpose_output are `true`, returns:
   /// ```
   ///   C = conjugate(transpose(A . B)) = conjugate(transpose(B)) .
@@ -34528,11 +34587,11 @@ public enum _Raw {
   /// Element-wise multiplication of a sparse matrix with a dense tensor.
   ///
   /// Returns a sparse matrix.
-  /// 
+  ///
   /// The dense tensor `b` may be either a scalar; otherwise `a` must be a rank-3
   /// `SparseMatrix`; in this case `b` must be shaped `[batch_size, 1, 1]` and the
   /// multiply operation broadcasts.
-  /// 
+  ///
   /// **NOTE** even if `b` is zero, the sparsity structure of the output does not
   /// change.
   ///
@@ -34572,53 +34631,53 @@ public enum _Raw {
   /// Computes the Approximate Minimum Degree (AMD) ordering of `input`.
   ///
   /// Computes the Approximate Minimum Degree (AMD) ordering for a sparse matrix.
-  /// 
+  ///
   /// The returned permutation may be used to permute the rows and columns of the
   /// given sparse matrix. This typically results in permuted sparse matrix's sparse
   /// Cholesky (or other decompositions) in having fewer zero fill-in compared to
   /// decomposition of the original matrix.
-  /// 
+  ///
   /// The input sparse matrix may have rank 2 or rank 3. The output Tensor,
   /// representing would then have rank 1 or 2 respectively, with the same batch
   /// shape as the input.
-  /// 
+  ///
   /// Each component of the input sparse matrix must represent a square symmetric
   /// matrix; only the lower triangular part of the matrix is read. The values of the
   /// sparse matrix does not affect the returned permutation, only the sparsity
   /// pattern of the sparse matrix is used. Hence, a single AMD ordering may be
   /// reused for the Cholesky decompositions of sparse matrices with the same sparsity
   /// pattern but with possibly different values.
-  /// 
+  ///
   /// Each batch component of the output permutation represents a permutation of `N`
   /// elements, where the input sparse matrix components each have `N` rows. That is,
   /// the component contains each of the integers `{0, .. N-1}` exactly once. The
   /// `i`th element represents the row index that the `i`th row maps to.
-  /// 
+  ///
   /// Usage example:
-  /// 
+  ///
   /// ```python
   ///     from tensorflow.python.ops.linalg.sparse import sparse_csr_matrix_ops
-  /// 
+  ///
   ///     a_indices = np.array([[0, 0], [1, 1], [2, 1], [2, 2], [3, 3]])
   ///     a_values = np.array([1.0, 2.0, 1.0, 3.0, 4.0], np.float32)
   ///     a_dense_shape = [4, 4]
-  /// 
+  ///
   ///     with tf.Session() as sess:
   ///       # Define (COO format) SparseTensor over Numpy array.
   ///       a_st = tf.SparseTensor(a_indices, a_values, a_dense_shape)
-  /// 
+  ///
   ///       # Convert SparseTensors to CSR SparseMatrix.
   ///       a_sm = sparse_csr_matrix_ops.sparse_tensor_to_csr_sparse_matrix(
   ///           a_st.indices, a_st.values, a_st.dense_shape)
-  /// 
+  ///
   ///       # Obtain the AMD Ordering for the CSR SparseMatrix.
   ///       ordering_amd = sparse_csr_matrix_ops.sparse_matrix_ordering_amd(sparse_matrix)
-  /// 
+  ///
   ///       ordering_amd_value = sess.run(ordering_amd)
   /// ```
-  /// 
+  ///
   /// `ordering_amd_value` stores the AMD ordering: `[1 2 3 0]`.
-  /// 
+  ///
   /// input: A `CSRSparseMatrix`.
   ///
   /// - Parameter input: A `CSRSparseMatrix`.
@@ -34637,7 +34696,7 @@ public enum _Raw {
   /// Calculates the softmax of a CSRSparseMatrix.
   ///
   /// Calculate the softmax of the innermost dimensions of a SparseMatrix.
-  /// 
+  ///
   /// Missing values are treated as `-inf` (i.e., logits of zero probability); and
   /// the output has the same sparsity structure as the input (though missing values
   /// in the output may now be treated as having probability zero).
@@ -34682,78 +34741,78 @@ public enum _Raw {
   ///
   /// Computes the Sparse Cholesky decomposition of a sparse matrix, with the given
   /// fill-in reducing permutation.
-  /// 
+  ///
   /// The input sparse matrix and the fill-in reducing permutation `permutation` must
   /// have compatible shapes. If the sparse matrix has rank 3; with the batch
   /// dimension `B`, then the `permutation` must be of rank 2; with the same batch
   /// dimension `B`. There is no support for broadcasting.
-  /// 
+  ///
   /// Furthermore, each component vector of `permutation` must be of length `N`,
   /// containing each of the integers {0, 1, ..., N - 1} exactly once, where `N` is
   /// the number of rows of each component of the sparse matrix.
-  /// 
+  ///
   /// Each component of the input sparse matrix must represent a symmetric positive
   /// definite (SPD) matrix; although only the lower triangular part of the matrix is
   /// read. If any individual component is not SPD, then an InvalidArgument error is
   /// thrown.
-  /// 
+  ///
   /// The returned sparse matrix has the same dense shape as the input sparse matrix.
   /// For each component `A` of the input sparse matrix, the corresponding output
   /// sparse matrix represents `L`, the lower triangular Cholesky factor satisfying
   /// the following identity:
-  /// 
+  ///
   /// ```
   ///   A = L * Lt
   /// ```
-  /// 
+  ///
   /// where Lt denotes the transpose of L (or its conjugate transpose, if `type` is
   /// `complex64` or `complex128`).
-  /// 
+  ///
   /// The `type` parameter denotes the type of the matrix elements. The supported
   /// types are: `float32`, `float64`, `complex64` and `complex128`.
-  /// 
+  ///
   /// Usage example:
-  /// 
+  ///
   /// ```python
   ///     from tensorflow.python.ops.linalg.sparse import sparse_csr_matrix_ops
-  /// 
+  ///
   ///     a_indices = np.array([[0, 0], [1, 1], [2, 1], [2, 2], [3, 3]])
   ///     a_values = np.array([1.0, 2.0, 1.0, 3.0, 4.0], np.float32)
   ///     a_dense_shape = [4, 4]
-  /// 
+  ///
   ///     with tf.Session() as sess:
   ///       # Define (COO format) SparseTensor over Numpy array.
   ///       a_st = tf.SparseTensor(a_indices, a_values, a_dense_shape)
-  /// 
+  ///
   ///       # Convert SparseTensors to CSR SparseMatrix.
   ///       a_sm = sparse_csr_matrix_ops.sparse_tensor_to_csr_sparse_matrix(
   ///           a_st.indices, a_st.values, a_st.dense_shape)
-  /// 
+  ///
   ///       # Obtain the Sparse Cholesky factor using AMD Ordering for reducing zero
   ///       # fill-in (number of structural non-zeros in the sparse Cholesky factor).
   ///       ordering_amd = sparse_csr_matrix_ops.sparse_matrix_ordering_amd(sparse_matrix)
   ///       cholesky_sparse_matrices = (
   ///           sparse_csr_matrix_ops.sparse_matrix_sparse_cholesky(
   ///               sparse_matrix, ordering_amd, type=tf.float32))
-  /// 
+  ///
   ///       # Convert the CSRSparseMatrix Cholesky factor to a dense Tensor
   ///       dense_cholesky = sparse_csr_matrix_ops.csr_sparse_matrix_to_dense(
   ///           cholesky_sparse_matrices, tf.float32)
-  /// 
+  ///
   ///       # Evaluate the dense Tensor value.
   ///       dense_cholesky_value = sess.run(dense_cholesky)
   /// ```
-  /// 
+  ///
   /// `dense_cholesky_value` stores the dense Cholesky factor:
-  /// 
+  ///
   /// ```
   ///     [[  1.  0.    0.    0.]
   ///      [  0.  1.41  0.    0.]
   ///      [  0.  0.70  1.58  0.]
   ///      [  0.  0.    0.    2.]]
   /// ```
-  /// 
-  /// 
+  ///
+  ///
   /// input: A `CSRSparseMatrix`.
   /// permutation: A `Tensor`.
   /// type: The type of `input`.
@@ -34782,72 +34841,72 @@ public enum _Raw {
   /// Performs a matrix multiplication of a sparse matrix `a` with a sparse matrix
   /// `b`; returns a sparse matrix `a * b`, unless either `a` or `b` is transposed or
   /// adjointed.
-  /// 
+  ///
   /// Each matrix may be transposed or adjointed (conjugated and transposed)
   /// according to the Boolean parameters `transpose_a`, `adjoint_a`, `transpose_b`
   /// and `adjoint_b`. At most one of `transpose_a` or `adjoint_a` may be True.
   /// Similarly, at most one of `transpose_b` or `adjoint_b` may be True.
-  /// 
+  ///
   /// The inputs must have compatible shapes. That is, the inner dimension of `a`
   /// must be equal to the outer dimension of `b`. This requirement is adjusted
   /// according to whether either `a` or `b` is transposed or adjointed.
-  /// 
+  ///
   /// The `type` parameter denotes the type of the matrix elements. Both `a` and `b`
   /// must have the same type. The supported types are: `float32`, `float64`,
   /// `complex64` and `complex128`.
-  /// 
+  ///
   /// Both `a` and `b` must have the same rank. Broadcasting is not supported. If they
   /// have rank 3, each batch of 2D CSRSparseMatrices within `a` and `b` must have the
   /// same dense shape.
-  /// 
+  ///
   /// The sparse matrix product may have numeric (non-structural) zeros.
   /// TODO(anudhyan): Consider adding a boolean attribute to control whether to prune
   /// zeros.
-  /// 
+  ///
   /// Usage example:
-  /// 
+  ///
   /// ```python
   ///     from tensorflow.python.ops.linalg.sparse import sparse_csr_matrix_ops
-  /// 
+  ///
   ///     a_indices = np.array([[0, 0], [2, 3], [2, 4], [3, 0]])
   ///     a_values = np.array([1.0, 5.0, -1.0, -2.0], np.float32)
   ///     a_dense_shape = [4, 5]
-  /// 
+  ///
   ///     b_indices = np.array([[0, 0], [3, 0], [3, 1]])
   ///     b_values = np.array([2.0, 7.0, 8.0], np.float32)
   ///     b_dense_shape = [5, 3]
-  /// 
+  ///
   ///     with tf.Session() as sess:
   ///       # Define (COO format) Sparse Tensors over Numpy arrays
   ///       a_st = tf.SparseTensor(a_indices, a_values, a_dense_shape)
   ///       b_st = tf.SparseTensor(b_indices, b_values, b_dense_shape)
-  /// 
+  ///
   ///       # Convert SparseTensors to CSR SparseMatrix
   ///       a_sm = sparse_csr_matrix_ops.sparse_tensor_to_csr_sparse_matrix(
   ///           a_st.indices, a_st.values, a_st.dense_shape)
   ///       b_sm = sparse_csr_matrix_ops.sparse_tensor_to_csr_sparse_matrix(
   ///           b_st.indices, b_st.values, b_st.dense_shape)
-  /// 
+  ///
   ///       # Compute the CSR SparseMatrix matrix multiplication
   ///       c_sm = sparse_csr_matrix_ops.sparse_matrix_sparse_mat_mul(
   ///           a=a_sm, b=b_sm, type=tf.float32)
-  /// 
+  ///
   ///       # Convert the CSR SparseMatrix product to a dense Tensor
   ///       c_sm_dense = sparse_csr_matrix_ops.csr_sparse_matrix_to_dense(
   ///           c_sm, tf.float32)
   ///       # Evaluate the dense Tensor value
   ///       c_sm_dense_value = sess.run(c_sm_dense)
   /// ```
-  /// 
+  ///
   /// `c_sm_dense_value` stores the dense matrix product:
-  /// 
+  ///
   /// ```
   ///     [[  2.   0.   0.]
   ///      [  0.   0.   0.]
   ///      [ 35.  40.   0.]
   ///      [ -4.   0.   0.]]
   /// ```
-  /// 
+  ///
   /// a: A `CSRSparseMatrix`.
   /// b: A `CSRSparseMatrix` with the same type and rank as `a`.
   /// type: The type of both `a` and `b`.
@@ -34935,12 +34994,12 @@ public enum _Raw {
   /// This Op takes a SparseTensor and is the sparse counterpart to
   /// `tf.reduce_max()`.  In particular, this Op also returns a dense `Tensor`
   /// instead of a sparse one.
-  /// 
+  ///
   /// Reduces `sp_input` along the dimensions given in `reduction_axes`.  Unless
   /// `keep_dims` is true, the rank of the tensor is reduced by 1 for each entry in
   /// `reduction_axes`. If `keep_dims` is true, the reduced dimensions are retained
   /// with length 1.
-  /// 
+  ///
   /// If `reduction_axes` has no entries, all dimensions are reduced, and a tensor
   /// with a single element is returned.  Additionally, the axes can be negative,
   /// which are interpreted according to the indexing rules in Python.
@@ -34979,12 +35038,12 @@ public enum _Raw {
   /// This Op takes a SparseTensor and is the sparse counterpart to
   /// `tf.reduce_max()`.  In contrast to SparseReduceMax, this Op returns a
   /// SparseTensor.
-  /// 
+  ///
   /// Reduces `sp_input` along the dimensions given in `reduction_axes`.  Unless
   /// `keep_dims` is true, the rank of the tensor is reduced by 1 for each entry in
   /// `reduction_axes`. If `keep_dims` is true, the reduced dimensions are retained
   /// with length 1.
-  /// 
+  ///
   /// If `reduction_axes` has no entries, all dimensions are reduced, and a tensor
   /// with a single element is returned.  Additionally, the axes can be negative,
   /// which are interpreted according to the indexing rules in Python.
@@ -35021,12 +35080,12 @@ public enum _Raw {
   /// This Op takes a SparseTensor and is the sparse counterpart to
   /// `tf.reduce_sum()`.  In particular, this Op also returns a dense `Tensor`
   /// instead of a sparse one.
-  /// 
+  ///
   /// Reduces `sp_input` along the dimensions given in `reduction_axes`.  Unless
   /// `keep_dims` is true, the rank of the tensor is reduced by 1 for each entry in
   /// `reduction_axes`. If `keep_dims` is true, the reduced dimensions are retained
   /// with length 1.
-  /// 
+  ///
   /// If `reduction_axes` has no entries, all dimensions are reduced, and a tensor
   /// with a single element is returned.  Additionally, the axes can be negative,
   /// which are interpreted according to the indexing rules in Python.
@@ -35065,12 +35124,12 @@ public enum _Raw {
   /// This Op takes a SparseTensor and is the sparse counterpart to
   /// `tf.reduce_sum()`.  In contrast to SparseReduceSum, this Op returns a
   /// SparseTensor.
-  /// 
+  ///
   /// Reduces `sp_input` along the dimensions given in `reduction_axes`.  Unless
   /// `keep_dims` is true, the rank of the tensor is reduced by 1 for each entry in
   /// `reduction_axes`. If `keep_dims` is true, the reduced dimensions are retained
   /// with length 1.
-  /// 
+  ///
   /// If `reduction_axes` has no entries, all dimensions are reduced, and a tensor
   /// with a single element is returned.  Additionally, the axes can be negative,
   /// which are interpreted according to the indexing rules in Python.
@@ -35107,9 +35166,9 @@ public enum _Raw {
   /// Note that by convention, all sparse ops preserve the canonical ordering along
   /// increasing dimension number. The only time ordering can be violated is during
   /// manual manipulation of the indices and values vectors to add entries.
-  /// 
+  ///
   /// Reordering does not affect the shape of the SparseTensor.
-  /// 
+  ///
   /// If the tensor has rank `R` and `N` non-empty values, `input_indices` has
   /// shape `[N, R]`, input_values has length `N`, and input_shape has length `R`.
   ///
@@ -35142,15 +35201,15 @@ public enum _Raw {
   ///
   /// This operation has the same semantics as reshape on the represented dense
   /// tensor.  The `input_indices` are recomputed based on the requested `new_shape`.
-  /// 
+  ///
   /// If one component of `new_shape` is the special value -1, the size of that
   /// dimension is computed so that the total dense size remains constant.  At
   /// most one component of `new_shape` can be -1.  The number of dense elements
   /// implied by `new_shape` must be the same as the number of dense elements
   /// originally implied by `input_shape`.
-  /// 
+  ///
   /// Reshaping does not affect the order of values in the SparseTensor.
-  /// 
+  ///
   /// If the input tensor has rank `R_in` and `N` non-empty values, and `new_shape`
   /// has length `R_out`, then `input_indices` has shape `[N, R_in]`,
   /// `input_shape` has length `R_in`, `output_indices` has shape `[N, R_out]`, and
@@ -35185,7 +35244,7 @@ public enum _Raw {
   /// Computes the mean along sparse segments of a tensor.
   ///
   /// See `tf.sparse.segment_sum` for usage examples.
-  /// 
+  ///
   /// Like `SegmentMean`, but `segment_ids` can have rank less than `data`'s first
   /// dimension, selecting a subset of dimension 0, specified by `indices`.
   ///
@@ -35249,7 +35308,7 @@ public enum _Raw {
   ///
   /// Like `SparseSegmentMean`, but allows missing ids in `segment_ids`. If an id is
   /// misisng, the `output` tensor at that position will be zeroed.
-  /// 
+  ///
   /// Read
   /// [the section on segmentation](https://tensorflow.org/api_docs/python/tf/math#Segmentation)
   /// for an explanation of segments.
@@ -35287,9 +35346,9 @@ public enum _Raw {
   /// Computes the sum along sparse segments of a tensor divided by the sqrt of N.
   ///
   /// N is the size of the segment being reduced.
-  /// 
+  ///
   /// See `tf.sparse.segment_sum` for usage examples.
-  /// 
+  ///
   ///
   /// - Parameters:
   ///     - indices: A 1-D tensor. Has same rank as `segment_ids`.
@@ -35350,10 +35409,10 @@ public enum _Raw {
   /// Computes the sum along sparse segments of a tensor divided by the sqrt of N.
   ///
   /// N is the size of the segment being reduced.
-  /// 
+  ///
   /// Like `SparseSegmentSqrtN`, but allows missing ids in `segment_ids`. If an id is
   /// misisng, the `output` tensor at that position will be zeroed.
-  /// 
+  ///
   /// Read
   /// [the section on segmentation](https://tensorflow.org/api_docs/python/tf/math#Segmentation)
   /// for an explanation of segments.
@@ -35393,29 +35452,29 @@ public enum _Raw {
   /// Read
   /// [the section on segmentation](https://tensorflow.org/api_docs/python/tf/math#Segmentation)
   /// for an explanation of segments.
-  /// 
+  ///
   /// Like `SegmentSum`, but `segment_ids` can have rank less than `data`'s first
   /// dimension, selecting a subset of dimension 0, specified by `indices`.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```python
   /// c = tf.constant([[1,2,3,4], [-1,-2,-3,-4], [5,6,7,8]])
-  /// 
+  ///
   /// # Select two rows, one segment.
   /// tf.sparse_segment_sum(c, tf.constant([0, 1]), tf.constant([0, 0]))
   /// # => [[0 0 0 0]]
-  /// 
+  ///
   /// # Select two rows, two segment.
   /// tf.sparse_segment_sum(c, tf.constant([0, 1]), tf.constant([0, 1]))
   /// # => [[ 1  2  3  4]
   /// #     [-1 -2 -3 -4]]
-  /// 
+  ///
   /// # Select all rows, two segments.
   /// tf.sparse_segment_sum(c, tf.constant([0, 1, 2]), tf.constant([0, 0, 1]))
   /// # => [[0 0 0 0]
   /// #     [5 6 7 8]]
-  /// 
+  ///
   /// # Which is equivalent to:
   /// tf.segment_sum(c, tf.constant([0, 0, 1]))
   /// ```
@@ -35449,22 +35508,22 @@ public enum _Raw {
   ///
   /// Like `SparseSegmentSum`, but allows missing ids in `segment_ids`. If an id is
   /// misisng, the `output` tensor at that position will be zeroed.
-  /// 
+  ///
   /// Read
   /// [the section on segmentation](https://tensorflow.org/api_docs/python/tf/sparse#Segmentation)
   /// for an explanation of segments.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```python
   /// c = tf.constant([[1,2,3,4], [-1,-2,-3,-4], [5,6,7,8]])
-  /// 
+  ///
   /// tf.sparse_segment_sum_with_num_segments(
   ///     c, tf.constant([0, 1]), tf.constant([0, 0]), num_segments=3)
   /// # => [[0 0 0 0]
   /// #     [0 0 0 0]
   /// #     [0 0 0 0]]
-  /// 
+  ///
   /// tf.sparse_segment_sum_with_num_segments(c,
   ///                                         tf.constant([0, 1]),
   ///                                         tf.constant([0, 2],
@@ -35508,17 +35567,17 @@ public enum _Raw {
   /// Slice a `SparseTensor` based on the `start` and `size`.
   ///
   /// For example, if the input is
-  /// 
+  ///
   ///     input_tensor = shape = [2, 7]
   ///     [    a   d e  ]
   ///     [b c          ]
-  /// 
+  ///
   /// Graphically the output tensors are:
-  /// 
+  ///
   ///     sparse_slice([0, 0], [2, 4]) = shape = [2, 4]
   ///     [    a  ]
   ///     [b c    ]
-  /// 
+  ///
   ///     sparse_slice([0, 4], [2, 3]) = shape = [2, 3]
   ///     [ d e  ]
   ///     [      ]
@@ -35591,17 +35650,17 @@ public enum _Raw {
   ///
   /// The inputs represent an N-D SparseTensor  with logical shape `[..., B, C]`
   /// (where `N >= 2`), and with indices sorted in the canonical lexicographic order.
-  /// 
+  ///
   /// This op is equivalent to applying the normal `tf.nn.softmax()` to each innermost
   /// logical submatrix with shape `[B, C]`, but with the catch that *the implicitly
   /// zero elements do not participate*.  Specifically, the algorithm is equivalent
   /// to the following:
-  /// 
+  ///
   ///   (1) Applies `tf.nn.softmax()` to a densified view of each innermost submatrix
   ///       with shape `[B, C]`, along the size-C dimension;
   ///   (2) Masks out the original implicitly-zero locations;
   ///   (3) Renormalizes the remaining elements.
-  /// 
+  ///
   /// Hence, the `SparseTensor` result has exactly the same non-zero indices and
   /// shape.
   ///
@@ -35633,7 +35692,7 @@ public enum _Raw {
   /// a matrix of label probabilities, but rather a single label per row
   /// of features.  This label is considered to have probability 1.0 for the
   /// given row.
-  /// 
+  ///
   /// Inputs are the logits, not probabilities.
   ///
   /// - Parameters:
@@ -35740,17 +35799,17 @@ public enum _Raw {
   /// If the `shape[split_dim]` is not an integer multiple of `num_split`. Slices
   /// `[0 : shape[split_dim] % num_split]` gets one extra dimension.
   /// For example, if `split_dim = 1` and `num_split = 2` and the input is
-  /// 
+  ///
   ///     input_tensor = shape = [2, 7]
   ///     [    a   d e  ]
   ///     [b c          ]
-  /// 
+  ///
   /// Graphically the output tensors are:
-  /// 
+  ///
   ///     output_tensor[0] = shape = [2, 4]
   ///     [    a  ]
   ///     [b c    ]
-  /// 
+  ///
   ///     output_tensor[1] = shape = [2, 3]
   ///     [ d e  ]
   ///     [      ]
@@ -35824,7 +35883,7 @@ public enum _Raw {
   ///
   /// No validity checking is performed on the indices of A.  However, the following
   /// input format is recommended for optimal behavior:
-  /// 
+  ///
   /// if adjoint_a == false:
   ///   A should be sorted in lexicographically increasing order.  Use SparseReorder
   ///   if you're not sure.
@@ -35910,21 +35969,21 @@ public enum _Raw {
   /// Converts a sparse representation into a dense tensor.
   ///
   /// Builds an array `dense` with shape `output_shape` such that
-  /// 
+  ///
   /// ```
   /// # If sparse_indices is scalar
   /// dense[i] = (i == sparse_indices ? sparse_values : default_value)
-  /// 
+  ///
   /// # If sparse_indices is a vector, then for each i
   /// dense[sparse_indices[i]] = sparse_values[i]
-  /// 
+  ///
   /// # If sparse_indices is an n by d matrix, then for each i in [0, n)
   /// dense[sparse_indices[i][0], ..., sparse_indices[i][d-1]] = sparse_values[i]
   /// ```
-  /// 
+  ///
   /// All other values in `dense` are set to `default_value`.  If `sparse_values` is a
   /// scalar, all sparse indices are set to this single value.
-  /// 
+  ///
   /// Indices should be sorted in lexicographic order, and indices must not
   /// contain any repeats. If `validate_indices` is true, these properties
   /// are checked during execution.
@@ -35968,23 +36027,23 @@ public enum _Raw {
   /// Applies set operation along last dimension of 2 `SparseTensor` inputs.
   ///
   /// See SetOperationOp::SetOperationFromContext for values of `set_operation`.
-  /// 
+  ///
   /// If `validate_indices` is `True`, `SparseToSparseSetOperation` validates the
   /// order and range of `set1` and `set2` indices.
-  /// 
+  ///
   /// Input `set1` is a `SparseTensor` represented by `set1_indices`, `set1_values`,
   /// and `set1_shape`. For `set1` ranked `n`, 1st `n-1` dimensions must be the same
   /// as `set2`. Dimension `n` contains values in a set, duplicates are allowed but
   /// ignored.
-  /// 
+  ///
   /// Input `set2` is a `SparseTensor` represented by `set2_indices`, `set2_values`,
   /// and `set2_shape`. For `set2` ranked `n`, 1st `n-1` dimensions must be the same
   /// as `set1`. Dimension `n` contains values in a set, duplicates are allowed but
   /// ignored.
-  /// 
+  ///
   /// If `validate_indices` is `True`, this op validates the order and range of `set1`
   /// and `set2` indices.
-  /// 
+  ///
   /// Output `result` is a `SparseTensor` represented by `result_indices`,
   /// `result_values`, and `result_shape`. For `set1` and `set2` ranked `n`, this
   /// has rank `n` and the same 1st `n-1` dimensions as `set1` and `set2`. The `nth`
@@ -36041,23 +36100,23 @@ public enum _Raw {
   /// Applies set operation along last dimension of 2 `SparseTensor` inputs.
   ///
   /// See SetOperationOp::SetOperationFromContext for values of `set_operation`.
-  /// 
+  ///
   /// If `validate_indices` is `True`, `SparseToSparseSetOperation` validates the
   /// order and range of `set1` and `set2` indices.
-  /// 
+  ///
   /// Input `set1` is a `SparseTensor` represented by `set1_indices`, `set1_values`,
   /// and `set1_shape`. For `set1` ranked `n`, 1st `n-1` dimensions must be the same
   /// as `set2`. Dimension `n` contains values in a set, duplicates are allowed but
   /// ignored.
-  /// 
+  ///
   /// Input `set2` is a `SparseTensor` represented by `set2_indices`, `set2_values`,
   /// and `set2_shape`. For `set2` ranked `n`, 1st `n-1` dimensions must be the same
   /// as `set1`. Dimension `n` contains values in a set, duplicates are allowed but
   /// ignored.
-  /// 
+  ///
   /// If `validate_indices` is `True`, this op validates the order and range of `set1`
   /// and `set2` indices.
-  /// 
+  ///
   /// Output `result` is a `SparseTensor` represented by `result_indices`,
   /// `result_values`, and `result_shape`. For `set1` and `set2` ranked `n`, this
   /// has rank `n` and the same 1st `n-1` dimensions as `set1` and `set2`. The `nth`
@@ -36265,16 +36324,16 @@ public enum _Raw {
   /// all dimensions of size 1 removed. If you don't want to remove all size 1
   /// dimensions, you can remove specific size 1 dimensions by specifying
   /// `axis`.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # 't' is a tensor of shape [1, 2, 1, 3, 1, 1]
   /// shape(squeeze(t)) ==> [2, 3]
   /// ```
-  /// 
+  ///
   /// Or, to remove specific size 1 dimensions:
-  /// 
+  ///
   /// ```
   /// # 't' is a tensor of shape [1, 2, 1, 3, 1, 1]
   /// shape(squeeze(t, [2, 4])) ==> [1, 2, 3, 1]
@@ -36702,7 +36761,7 @@ public enum _Raw {
   /// The generated values are uniform integers in the range `[minval, maxval)`.
   /// The lower bound `minval` is included in the range, while the upper bound
   /// `maxval` is excluded.
-  /// 
+  ///
   /// The random integers are slightly biased unless `maxval - minval` is an exact
   /// power of two.  The bias is small for values of `maxval - minval` significantly
   /// smaller than the range of the output (either `2^32` or `2^64`).
@@ -36749,7 +36808,7 @@ public enum _Raw {
   ///               `True` and zero means False; if the scalar is a string, non-empty
   ///               means `True` and empty means `False`. If the tensor is not a scalar,
   ///               being empty means False and being non-empty means True.
-  ///         
+  ///
   ///               This should only be used when the if then/else body functions do not
   ///               have stateful ops.
   ///     - input: A list of input tensors.
@@ -36826,7 +36885,7 @@ public enum _Raw {
   /// Outputs deterministic pseudorandom values from a normal distribution.
   ///
   /// The generated values will have mean 0 and standard deviation 1.
-  /// 
+  ///
   /// The outputs are a deterministic function of `shape` and `seed`.
   ///
   /// - Parameters:
@@ -36859,7 +36918,7 @@ public enum _Raw {
   ///
   /// The generated values follow a uniform distribution in the range `[0, 1)`. The
   /// lower bound 0 is included in the range, while the upper bound 1 is excluded.
-  /// 
+  ///
   /// The outputs are a deterministic function of `shape` and `seed`.
   ///
   /// - Parameters:
@@ -36891,7 +36950,7 @@ public enum _Raw {
   /// Outputs deterministic pseudorandom random integers from a uniform distribution.
   ///
   /// The generated values follow a uniform distribution in the range `[minval, maxval)`.
-  /// 
+  ///
   /// The outputs are a deterministic function of `shape`, `seed`, `minval`, and `maxval`.
   ///
   /// - Parameters:
@@ -36931,7 +36990,7 @@ public enum _Raw {
   /// The generated values follow a normal distribution with mean 0 and standard
   /// deviation 1, except that values whose magnitude is more than 2 standard
   /// deviations from the mean are dropped and re-picked.
-  /// 
+  ///
   /// The outputs are a deterministic function of `shape` and `seed`.
   ///
   /// - Parameters:
@@ -36973,7 +37032,7 @@ public enum _Raw {
   ///               a string, non-empty means True and empty means False. If the
   ///               tensor is not a scalar, non-emptiness means True and False
   ///               otherwise.
-  ///         
+  ///
   ///               This should only be used when the while condition and body functions
   ///               do not have stateful ops.
   ///     - body:       A function that takes a list of tensors and returns another
@@ -37012,7 +37071,7 @@ public enum _Raw {
   /// regular expression to be matched with every element of the input tensor.
   /// The boolean values (True or False) of the output tensor indicate
   /// if the input matches the regex pattern provided.
-  /// 
+  ///
   /// The pattern follows the re2 syntax (https://github.com/google/re2/wiki/Syntax)
   ///
   /// - Parameter input: A string tensor of the text to be processed.
@@ -37113,17 +37172,17 @@ public enum _Raw {
   /// Stops gradient computation.
   ///
   /// When executed in a graph, this op outputs its input tensor as-is.
-  /// 
+  ///
   /// When building ops to compute gradients, this op prevents the contribution of
   /// its inputs to be taken into account.  Normally, the gradient generator adds ops
   /// to a graph to compute the derivatives of a specified 'loss' by recursively
   /// finding out inputs that contributed to its computation.  If you insert this op
   /// in the graph it inputs are masked from the gradient generator.  They are not
   /// taken into account for computing gradients.
-  /// 
+  ///
   /// This is useful any time you want to compute a value with TensorFlow but need
   /// to pretend that the value was a constant. Some examples include:
-  /// 
+  ///
   /// *  The *EM* algorithm where the *M-step* should not involve backpropagation
   ///    through the output of the *E-step*.
   /// *  Contrastive divergence training of Boltzmann machines where, when
@@ -37146,23 +37205,23 @@ public enum _Raw {
   ///
   /// Note, most python users will want to use the Python `Tensor.__getitem__`
   /// or `Variable.__getitem__` rather than this op directly.
-  /// 
+  ///
   /// The goal of this op is to produce a new tensor with a subset of
   /// the elements from the `n` dimensional `input` tensor. The subset is chosen using
   /// a sequence of `m` sparse range specifications encoded into the arguments
   /// of this function. Note, in some cases
   /// `m` could be equal to `n`, but this need not be the case. Each
   /// range specification entry can be one of the following:
-  /// 
+  ///
   /// - An ellipsis (...). Ellipses are used to imply zero or more
   ///   dimensions of full-dimension selection and are produced using
   ///   `ellipsis_mask`. For example, `foo[...]` is the identity slice.
-  /// 
+  ///
   /// - A new axis. This is used to insert a new shape=1 dimension and is
   ///   produced using `new_axis_mask`. For example, `foo[:, ...]` where
   ///   `foo` is shape `(3, 4)` produces a `(1, 3, 4)` tensor.
-  /// 
-  /// 
+  ///
+  ///
   /// - A range `begin:end:stride`. This is used to specify how much to choose from
   ///   a given dimension. `stride` can be any integer but 0.  `begin` is an integer
   ///   which represents the index of the first value to select while `end` represents
@@ -37178,17 +37237,17 @@ public enum _Raw {
   ///   and `end` of `0` and `2`. Another example is `foo[-2::-1]` which reverses the
   ///   first dimension of a tensor while dropping the last two (in the original
   ///   order elements). For example `foo = [1,2,3,4]; foo[-2::-1]` is `[4,3]`.
-  /// 
+  ///
   /// - A single index. This is used to keep only elements that have a given
   ///   index. For example (`foo[2, :]` on a shape `(5,6)` tensor produces a
   ///   shape `(6,)` tensor. This is encoded in `begin` and `end` and
   ///   `shrink_axis_mask`.
-  /// 
+  ///
   /// Each conceptual range specification is encoded in the op's argument. This
   /// encoding is best understand by considering a non-trivial example. In
   /// particular,
   /// `foo[1, 2:4, None, ..., :-3:-1, :]` will be encoded as
-  /// 
+  ///
   /// ```
   /// begin = [1, 2, x, x, 0, x] # x denotes don't care (usually 0)
   /// end = [2, 4, x, x, -3, x]
@@ -37199,37 +37258,37 @@ public enum _Raw {
   /// new_axis_mask = 1<<2 4
   /// shrink_axis_mask = 1<<0
   /// ```
-  /// 
+  ///
   /// In this case if `foo.shape` is (5, 5, 5, 5, 5, 5) the final shape of
   /// the slice becomes (2, 1, 5, 5, 2, 5).
   /// Let us walk step by step through each argument specification.
-  /// 
+  ///
   /// 1.  The first argument in the example slice is turned into `begin = 1` and
   /// `end = begin + 1 = 2`. To disambiguate from the original spec `2:4` we
   /// also set the appropriate bit in `shrink_axis_mask`.
-  /// 
+  ///
   /// 2. `2:4` is contributes 2, 4, 1 to begin, end, and stride. All masks have
   /// zero bits contributed.
-  /// 
+  ///
   /// 3. None is a synonym for `tf.newaxis`. This means insert a dimension of size 1
   /// dimension in the final shape. Dummy values are contributed to begin,
   /// end and stride, while the new_axis_mask bit is set.
-  /// 
+  ///
   /// 4. `...` grab the full ranges from as many dimensions as needed to
   /// fully specify a slice for every dimension of the input shape.
-  /// 
+  ///
   /// 5. `:-3:-1` shows the use of negative indices. A negative index `i` associated
   /// with a dimension that has shape `s` is converted to a positive index
   /// `s + i`. So `-1` becomes `s-1` (i.e. the last element). This conversion
   /// is done internally so begin, end and strides receive x, -3, and -1.
   /// The appropriate begin_mask bit is set to indicate the start range is the
   /// full range (ignoring the x).
-  /// 
+  ///
   /// 6. `:` indicates that the entire contents of the corresponding dimension
   /// is selected. This is equivalent to `::` or `0::1`. begin, end, and strides
   /// receive 0, 0, and 1, respectively. The appropriate bits in `begin_mask` and
   /// `end_mask` are also set.
-  /// 
+  ///
   /// *Requirements*:
   ///   `0 != strides[i] for i in [0, m)`
   ///   `ellipsis_mask must be a power of two (only one ellipsis)`
@@ -37306,7 +37365,7 @@ public enum _Raw {
   /// `shape`, its gradient will have the same shape (which is passed here
   /// as `shape`). The gradient will be zero in any element that the slice
   /// does not select.
-  /// 
+  ///
   /// Arguments are the same as StridedSliceGrad with the exception that
   /// `dy` is the input gradient to be propagated and `shape` is the
   /// shape of `StridedSlice`'s `input`.
@@ -37376,6 +37435,12 @@ public enum _Raw {
   ///
   /// with the given separator (default is an empty separator).
   ///
+  /// Examples:
+  ///
+  /// >>> s = ["hello", "world", "tensorflow"]
+  /// >>> tf.strings.join(s, " ")
+  /// <tf.Tensor: shape=(), dtype=string, numpy=b'hello world tensorflow'>
+  ///
   /// - Parameter inputs: A list of string tensors.  The tensors must all have the same shape,
   ///     or be scalars.  Scalars may be mixed in; these will be broadcast to the shape
   ///     of non-scalar inputs.
@@ -37397,13 +37462,13 @@ public enum _Raw {
   /// String lengths of `input`.
   ///
   /// Computes the length of each string given in the input tensor.
-  /// 
+  ///
   /// >>> strings = tf.constant(['Hello','TensorFlow', '\U0001F642'])
   /// >>> tf.strings.length(strings).numpy() # default counts bytes
   /// array([ 5, 10, 4], dtype=int32)
   /// >>> tf.strings.length(strings, unit="UTF8_CHAR").numpy()
   /// array([ 5, 10, 1], dtype=int32)
-  /// 
+  ///
   ///
   /// - Parameter input: The strings for which to compute the length for each element.
   ///
@@ -37439,8 +37504,13 @@ public enum _Raw {
     op.execute()
   }
 
+  /// Converts all uppercase characters into their respective lowercase replacements.
   ///
-  /// Converts each string in the input Tensor to lowercase.
+  /// Example:
+  ///
+  /// >>> tf.strings.lower("CamelCase string and ALL CAPS")
+  /// <tf.Tensor: shape=(), dtype=string, numpy=b'camelcase string and all caps'>
+  ///
   @inlinable @inline(__always)
   public static func stringLower(
     _ input: StringTensor,
@@ -37509,16 +37579,16 @@ public enum _Raw {
   /// Let N be the size of source (typically N will be the batch size). Split each
   /// element of `input` based on `delimiter` and return a `SparseTensor`
   /// containing the splitted tokens. Empty tokens are ignored.
-  /// 
+  ///
   /// `delimiter` can be empty, or a string of split characters. If `delimiter` is an
   ///  empty string, each element of `input` is split into individual single-byte
   ///  character strings, including splitting of UTF-8 multibyte sequences. Otherwise
   ///  every character of `delimiter` is a potential split point.
-  /// 
+  ///
   /// For example:
   ///   N = 2, input[0] is 'hello world' and input[1] is 'a b c', then the output
   ///   will be
-  /// 
+  ///
   ///   indices = [0, 0;
   ///              0, 1;
   ///              1, 0;
@@ -37558,7 +37628,7 @@ public enum _Raw {
   /// Let N be the size of source (typically N will be the batch size). Split each
   /// element of `source` based on `sep` and return a `SparseTensor`
   /// containing the split tokens. Empty tokens are ignored.
-  /// 
+  ///
   /// For example, N = 2, source[0] is 'hello world' and source[1] is 'a b c',
   /// then the output will be
   /// ```
@@ -37570,14 +37640,14 @@ public enum _Raw {
   /// st.shape = [2, 3]
   /// st.values = ['hello', 'world', 'a', 'b', 'c']
   /// ```
-  /// 
+  ///
   /// If `sep` is given, consecutive delimiters are not grouped together and are
   /// deemed to delimit empty strings. For example, source of `"1<>2<><>3"` and
   /// sep of `"<>"` returns `["1", "2", "", "3"]`. If `sep` is None or an empty
   /// string, consecutive whitespace are regarded as a single separator, and the
   /// result will contain no empty strings at the startor end if the string has
   /// leading or trailing whitespace.
-  /// 
+  ///
   /// Note that the above mentioned behavior matches python's str.split.
   ///
   /// - Parameters:
@@ -37604,6 +37674,11 @@ public enum _Raw {
   /// - Parameter input: A string `Tensor` of any shape.
   ///
   /// - Output output: A string `Tensor` of the same shape as the input.
+  ///
+  ///     Examples:
+  ///
+  ///     >>> tf.strings.strip(["\nTensorFlow", "     The python library    "]).numpy()
+  ///     array([b'TensorFlow', b'The python library'], dtype=object)
   @inlinable @inline(__always)
   public static func stringStrip(
     _ input: StringTensor
@@ -37618,7 +37693,7 @@ public enum _Raw {
   ///
   /// The hash function is deterministic on the content of the string within the
   /// process.
-  /// 
+  ///
   /// Note that the hash function may change from time to time.
   /// This functionality will be deprecated and it's recommended to use
   /// `tf.string_to_hash_bucket_fast()` or `tf.string_to_hash_bucket_strong()`.
@@ -37647,6 +37722,11 @@ public enum _Raw {
   /// to the same bucket. To prevent this problem, use a strong hash function with
   /// `tf.string_to_hash_bucket_strong`.
   ///
+  /// Examples:
+  ///
+  /// >>> tf.strings.to_hash_bucket_fast(["Hello", "TensorFlow", "2.x"], 3).numpy()
+  /// array([0, 2, 2])
+  ///
   /// - Parameter input: The strings to assign a hash bucket.
   ///
   /// - Attr num_buckets: The number of buckets.
@@ -37669,16 +37749,21 @@ public enum _Raw {
   /// The hash function is deterministic on the content of the string within the
   /// process. The hash function is a keyed hash function, where attribute `key`
   /// defines the key of the hash function. `key` is an array of 2 elements.
-  /// 
+  ///
   /// A strong hash is important when inputs may be malicious, e.g. URLs with
   /// additional components. Adversaries could try to make their inputs hash to the
   /// same bucket for a denial-of-service attack or to skew the results. A strong
   /// hash can be used to make it difficult to find inputs with a skewed hash value
   /// distribution over buckets. This requires that the hash function is
   /// seeded by a high-entropy (random) "key" unknown to the adversary.
-  /// 
+  ///
   /// The additional robustness comes at a cost of roughly 4x higher compute
   /// time than `tf.string_to_hash_bucket_fast`.
+  ///
+  /// Examples:
+  ///
+  /// >>> tf.strings.to_hash_bucket_strong(["Hello", "TF"], 3, [1, 2]).numpy()
+  /// array([2, 0])
   ///
   /// - Parameter input: The strings to assign a hash bucket.
   ///
@@ -37706,13 +37791,13 @@ public enum _Raw {
   ///
   /// (Note that int32 overflow results in an error while float overflow
   /// results in a rounded value.)
-  /// 
+  ///
   /// Example:
-  /// 
+  ///
   /// >>> strings = ["5.0", "3.0", "7.0"]
   /// >>> tf.strings.to_number(strings)
   /// <tf.Tensor: shape=(3,), dtype=float32, numpy=array([5., 3., 7.], dtype=float32)>
-  /// 
+  ///
   ///
   /// - Attr out_type: The numeric type to interpret each string in `string_tensor` as.
   ///
@@ -37728,8 +37813,13 @@ public enum _Raw {
     return op.execute(Int(1))
   }
 
+  /// Converts all lowercase characters into their respective uppercase replacements.
   ///
-  /// Converts each string in the input Tensor to uppercase.
+  /// Example:
+  ///
+  /// >>> tf.strings.upper("CamelCase string and ALL CAPS")
+  /// <tf.Tensor: shape=(), dtype=string, numpy=b'CAMELCASE STRING AND ALL CAPS'>
+  ///
   @inlinable @inline(__always)
   public static func stringUpper(
     _ input: StringTensor,
@@ -37775,38 +37865,38 @@ public enum _Raw {
   ///
   /// For each string in the input `Tensor`, creates a substring starting at index
   /// `pos` with a total length of `len`.
-  /// 
+  ///
   /// If `len` defines a substring that would extend beyond the length of the input
   /// string, or if `len` is negative, then as many characters as possible are used.
-  /// 
+  ///
   /// A negative `pos` indicates distance within the string backwards from the end.
-  /// 
+  ///
   /// If `pos` specifies an index which is out of range for any of the input strings,
   /// then an `InvalidArgumentError` is thrown.
-  /// 
+  ///
   /// `pos` and `len` must have the same shape, otherwise a `ValueError` is thrown on
   /// Op creation.
-  /// 
+  ///
   /// *NOTE*: `Substr` supports broadcasting up to two dimensions. More about
   /// broadcasting
   /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-  /// 
+  ///
   /// ---
-  /// 
+  ///
   /// Examples
-  /// 
+  ///
   /// Using scalar `pos` and `len`:
-  /// 
+  ///
   /// ```python
   /// input = [b'Hello', b'World']
   /// position = 1
   /// length = 3
-  /// 
+  ///
   /// output = [b'ell', b'orl']
   /// ```
-  /// 
+  ///
   /// Using `pos` and `len` with same shape as `input`:
-  /// 
+  ///
   /// ```python
   /// input = [[b'ten', b'eleven', b'twelve'],
   ///          [b'thirteen', b'fourteen', b'fifteen'],
@@ -37817,14 +37907,14 @@ public enum _Raw {
   /// length =   [[2, 3, 4],
   ///             [4, 3, 2],
   ///             [5, 5, 5]]
-  /// 
+  ///
   /// output = [[b'en', b'eve', b'lve'],
   ///           [b'hirt', b'urt', b'te'],
   ///           [b'ixtee', b'vente', b'hteen']]
   /// ```
-  /// 
+  ///
   /// Broadcasting `pos` and `len` onto `input`:
-  /// 
+  ///
   /// ```
   /// input = [[b'ten', b'eleven', b'twelve'],
   ///          [b'thirteen', b'fourteen', b'fifteen'],
@@ -37832,22 +37922,30 @@ public enum _Raw {
   ///          [b'nineteen', b'twenty', b'twentyone']]
   /// position = [1, 2, 3]
   /// length =   [1, 2, 3]
-  /// 
+  ///
   /// output = [[b'e', b'ev', b'lve'],
   ///           [b'h', b'ur', b'tee'],
   ///           [b'i', b've', b'hte'],
   ///           [b'i', b'en', b'nty']]
   /// ```
-  /// 
+  ///
   /// Broadcasting `input` onto `pos` and `len`:
-  /// 
+  ///
   /// ```
   /// input = b'thirteen'
   /// position = [1, 5, 7]
   /// length =   [3, 2, 1]
-  /// 
+  ///
   /// output = [b'hir', b'ee', b'n']
   /// ```
+  ///
+  /// Raises:
+  ///
+  ///   * `ValueError`: If the first argument cannot be converted to a
+  ///      Tensor of `dtype string`.
+  ///   * `InvalidArgumentError`: If indicies are out of range.
+  ///   * `ValueError`: If `pos` and `len` are not the same shape.
+  ///
   ///
   /// - Parameters:
   ///     - input: Tensor of strings
@@ -37928,7 +38026,7 @@ public enum _Raw {
   ///
   /// Computes the SVD of each inner matrix in `input` such that
   /// `input[..., :, :] = u[..., :, :] * diag(s[..., :, :]) * transpose(v[..., :, :])`
-  /// 
+  ///
   /// ```python
   /// # a is a tensor containing a batch of matrices.
   /// # s is a tensor of singular values for each matrix.
@@ -37976,7 +38074,7 @@ public enum _Raw {
   ///
   /// If `pred` is true, the `data` input is forwarded to `output_true`. Otherwise,
   /// the data goes to `output_false`.
-  /// 
+  ///
   /// See also `RefSwitch` and `Merge`.
   ///
   /// - Parameters:
@@ -38007,22 +38105,22 @@ public enum _Raw {
   ///     - Tin: the type list for the input list.
   ///     - Tout: the type list for the input list.
   ///     - f: The function we want to compute the gradient for.
-  ///         
+  ///
   ///         The function 'f' must be a numerical function which takes N inputs and
   ///         produces M outputs. Its gradient function 'g', which is computed by
   ///         this SymbolicGradient op is a function taking N + M inputs and
   ///         produces N outputs.
-  ///         
+  ///
   ///         I.e. if we have
   ///            (y1, y2, ..., y_M) = f(x1, x2, ..., x_N),
   ///         then, g is
   ///            (dL/dx1, dL/dx2, ..., dL/dx_N) = g(x1, x2, ..., x_N,
   ///                                              dL/dy1, dL/dy2, ..., dL/dy_M),
-  ///         
+  ///
   ///         where L is a scalar-value function of (x1, x2, ..., xN) (e.g., the
   ///         loss function). dL/dx_i is the partial derivative of L with respect
   ///         to x_i.
-  ///         
+  ///
   ///         (Needs some math expert to say the comment above better.)
   ///
   /// - Output output: a list of output tensors of size N;
@@ -38230,7 +38328,7 @@ public enum _Raw {
   ///
   /// This operation holds a replicated input to a `tpu.replicate()` computation subgraph.
   /// Each replicated input has the same shape and type alongside the output.
-  /// 
+  ///
   /// For example:
   /// ```
   /// %a = "tf.opA"()
@@ -38259,7 +38357,7 @@ public enum _Raw {
   ///
   /// This operation holds a replicated output from a `tpu.replicate()` computation subgraph.
   /// Each replicated output has the same shape and type alongside the input.
-  /// 
+  ///
   /// For example:
   /// ```
   /// %computation = "tf.Computation"()
@@ -38277,6 +38375,49 @@ public enum _Raw {
     op.updateAttribute("T", T.tensorFlowDataType)
     op.addInput(input)
     return op.execute(Int(numReplicas))
+  }
+
+  @inlinable @inline(__always)
+  public static func tRTEngineOp<
+    SegmentfuncIn: TensorGroup,
+    SegmentfuncOut: TensorGroup,
+    Intt: TensorArrayProtocol,
+    Outt: TensorGroup
+  >(
+    inTensor: Intt,
+    serializedSegment: String,
+    segmentFunc: (SegmentfuncIn) -> SegmentfuncOut,
+    maxCachedEnginesCount: Int64 = 1,
+    workspaceSizeBytes: Int64,
+    precisionMode: PrecisionMode,
+    calibrationData: String,
+    useCalibration: Bool = true,
+    segmentFuncdefName: String,
+    cachedEngineBatches: [Int32],
+    fixedInputSize: Bool = true,
+    inputShapes: [TensorShape?],
+    outputShapes: [TensorShape?],
+    staticEngine: Bool = true
+  ) -> Outt {
+    let nOutputs = Int(Outt._typeList.count)
+    let op = makeOp("TRTEngineOp", nOutputs)
+    op.updateAttribute("serialized_segment", serializedSegment)
+    op.updateAttribute("segment_func", segmentFunc)
+    op.updateAttribute("InT", inTensor._typeList)
+    op.updateAttribute("OutT", Outt._typeList)
+    op.updateAttribute("max_cached_engines_count", maxCachedEnginesCount)
+    op.updateAttribute("workspace_size_bytes", workspaceSizeBytes)
+    op.updateAttribute("precision_mode", precisionMode.cName)
+    op.updateAttribute("calibration_data", calibrationData)
+    op.updateAttribute("use_calibration", useCalibration)
+    op.updateAttribute("segment_funcdef_name", segmentFuncdefName)
+    op.updateAttribute("cached_engine_batches", cachedEngineBatches)
+    op.updateAttribute("fixed_input_size", fixedInputSize)
+    op.updateAttribute("input_shapes", inputShapes)
+    op.updateAttribute("output_shapes", outputShapes)
+    op.updateAttribute("static_engine", staticEngine)
+    op.addInputList(inTensor)
+    return op.execute(Int(Outt._typeList.count))
   }
 
   /// Creates a dataset that contains `count` elements from the `input_dataset`.
@@ -38309,19 +38450,19 @@ public enum _Raw {
   /// match.  When the final `SparseTensor` is created, it has rank one
   /// higher than the ranks of the incoming `SparseTensor` objects
   /// (they have been concatenated along a new row dimension on the left).
-  /// 
+  ///
   /// The output `SparseTensor` object's shape values for all dimensions but the
   /// first are the max across the input `SparseTensor` objects' shape values
   /// for the corresponding dimensions.  Its first shape value is `N`, the minibatch
   /// size.
-  /// 
+  ///
   /// The input `SparseTensor` objects' indices are assumed ordered in
   /// standard lexicographic order.  If this is not the case, after this
   /// step run `SparseReorder` to restore index ordering.
-  /// 
+  ///
   /// For example, if the handles represent an input, which is a `[2, 3]` matrix
   /// representing two original `SparseTensor` objects:
-  /// 
+  ///
   /// ```
   ///     index = [ 0]
   ///             [10]
@@ -38329,18 +38470,18 @@ public enum _Raw {
   ///     values = [1, 2, 3]
   ///     shape = [50]
   /// ```
-  /// 
+  ///
   /// and
-  /// 
+  ///
   /// ```
   ///     index = [ 2]
   ///             [10]
   ///     values = [4, 5]
   ///     shape = [30]
   /// ```
-  /// 
+  ///
   /// then the final `SparseTensor` will be:
-  /// 
+  ///
   /// ```
   ///     index = [0  0]
   ///             [0 10]
@@ -38385,7 +38526,7 @@ public enum _Raw {
   ///
   /// The `predicate` function must return a scalar boolean and accept the
   /// following arguments:
-  /// 
+  ///
   /// * One tensor for each component of an element of `input_dataset`.
   /// * One tensor for each value in `other_arguments`.
   ///
@@ -38422,7 +38563,7 @@ public enum _Raw {
   ///   element in the tensor. Input range is `(-inf, inf)` and
   ///   output range is `(-inf, inf)`. If input lies outside the boundary, `nan`
   ///   is returned.
-  /// 
+  ///
   ///   ```python
   ///   x = tf.constant([-float("inf"), -9, -0.5, 1, 1.2, 200, 10000, float("inf")])
   ///   tf.math.tan(x) ==> [nan 0.45231566 -0.5463025 1.5574077 2.572152 -1.7925274 0.32097113 nan]
@@ -38443,7 +38584,7 @@ public enum _Raw {
   ///   Given an input tensor, this function computes hyperbolic tangent of every
   ///   element in the tensor. Input range is `[-inf, inf]` and
   ///   output range is `[-1,1]`.
-  /// 
+  ///
   ///   ```python
   ///   x = tf.constant([-float("inf"), -5, -0.5, 1, 1.2, 2, 3, float("inf")])
   ///   tf.math.tanh(x) ==> [-1. -0.99990916 -0.46211717 0.7615942 0.8336547 0.9640276 0.9950547 1.]
@@ -38522,15 +38663,15 @@ public enum _Raw {
   /// Concat the elements from the TensorArray into value `value`.
   ///
   /// Takes `T` elements of shapes
-  /// 
+  ///
   ///   ```
   ///   (n0 x d0 x d1 x ...), (n1 x d0 x d1 x ...), ..., (n(T-1) x d0 x d1 x ...)
   ///   ```
-  /// 
+  ///
   /// and concatenates them into a Tensor of shape:
-  /// 
+  ///
   ///   ```(n0 + n1 + ... + n(T-1) x d0 x d1 x ...)```
-  /// 
+  ///
   /// All elements must have the same shape (excepting the first dimension).
   ///
   /// - Parameters:
@@ -38635,11 +38776,11 @@ public enum _Raw {
   /// Creates a TensorArray for storing the gradients of values in the given handle.
   ///
   /// If the given TensorArray gradient already exists, returns a reference to it.
-  /// 
+  ///
   /// Locks the size of the original TensorArray by disabling its dynamic size flag.
-  /// 
+  ///
   /// **A note about the input flow_in:**
-  /// 
+  ///
   /// The handle flow_in forces the execution of the gradient lookup to occur
   /// only after certain other operations have occurred.  For example, when
   /// the forward TensorArray is dynamically sized, writes to this TensorArray
@@ -38648,25 +38789,25 @@ public enum _Raw {
   /// Furthermore, the size of the forward TensorArray is frozen by this call.
   /// As a result, the flow is used to ensure that the call to generate the gradient
   /// TensorArray only happens after all writes are executed.
-  /// 
+  ///
   /// In the case of dynamically sized TensorArrays, gradient computation should
   /// only be performed on read operations that have themselves been chained via
   /// flow to occur only after all writes have executed. That way the final size
   /// of the forward TensorArray is known when this operation is called.
-  /// 
+  ///
   /// **A note about the source attribute:**
-  /// 
+  ///
   /// TensorArray gradient calls use an accumulator TensorArray object.  If
   /// multiple gradients are calculated and run in the same session, the multiple
   /// gradient nodes may accidentally flow through the same accumulator TensorArray.
   /// This double counts and generally breaks the TensorArray gradient flow.
-  /// 
+  ///
   /// The solution is to identify which gradient call this particular
   /// TensorArray gradient is being called in.  This is performed by identifying
   /// a unique string (e.g. "gradients", "gradients_1", ...) from the input
   /// gradient Tensor's name.  This string is used as a suffix when creating
   /// the TensorArray gradient object here (the attribute `source`).
-  /// 
+  ///
   /// The attribute `source` is added as a suffix to the forward TensorArray's
   /// name when performing the creation / lookup, so that each separate gradient
   /// calculation gets its own TensorArray accumulator.
@@ -38862,21 +39003,21 @@ public enum _Raw {
   /// Split the data from the input value into TensorArray elements.
   ///
   /// Assuming that `lengths` takes on values
-  /// 
+  ///
   ///   ```(n0, n1, ..., n(T-1))```
-  /// 
+  ///
   /// and that `value` has shape
-  /// 
+  ///
   ///   ```(n0 + n1 + ... + n(T-1) x d0 x d1 x ...)```,
-  /// 
+  ///
   /// this splits values into a TensorArray with T tensors.
-  /// 
+  ///
   /// TensorArray index t will be the subtensor of values with starting position
-  /// 
+  ///
   ///   ```(n0 + n1 + ... + n(t-1), 0, 0, ...)```
-  /// 
+  ///
   /// and having size
-  /// 
+  ///
   ///   ```nt x d0 x d1 x ...```
   ///
   /// - Parameters:
@@ -39152,11 +39293,11 @@ public enum _Raw {
   /// Concats all tensors in the list along the 0th dimension.
   ///
   /// Requires that all tensors have the same shape except the first dimension.
-  /// 
+  ///
   /// input_handle: The input list.
   /// tensor: The concated result.
   /// lengths: Output tensor containing sizes of the 0th dimension of tensors in the list, used for computing the gradient.
-  /// 
+  ///
   @inlinable @inline(__always)
   public static func tensorListConcat<ElementDtype: TensorFlowScalar>(
     inputHandle: VariantHandle,
@@ -39187,7 +39328,7 @@ public enum _Raw {
   /// Concats all tensors in the list along the 0th dimension.
   ///
   /// Requires that all tensors have the same shape except the first dimension.
-  /// 
+  ///
   /// input_handle: The input list.
   /// element_shape: The shape of the uninitialized elements in the list. If the first
   ///   dimension is not -1, it is assumed that all list elements have the same
@@ -39197,7 +39338,7 @@ public enum _Raw {
   ///   is not already set.
   /// tensor: The concated result.
   /// lengths: Output tensor containing sizes of the 0th dimension of tensors in the list, used for computing the gradient.
-  /// 
+  ///
   @inlinable @inline(__always)
   public static func tensorListConcatV2<
     ElementDtype: TensorFlowScalar,
@@ -39235,7 +39376,7 @@ public enum _Raw {
   /// Creates a TensorList which, when stacked, has the value of `tensor`.
   ///
   /// Each tensor in the result list corresponds to one row of the input tensor.
-  /// 
+  ///
   /// tensor: The input tensor.
   /// output_handle: The list.
   @inlinable @inline(__always)
@@ -39259,7 +39400,7 @@ public enum _Raw {
   ///
   /// Each row in the produced Tensor corresponds to the element in the TensorList
   /// specified by the given index (see `tf.gather`).
-  /// 
+  ///
   /// input_handle: The input tensor list.
   /// indices: The indices used to index into the list.
   /// values: The tensor.
@@ -39310,7 +39451,7 @@ public enum _Raw {
   /// Returns the last element of the input list as well as a list with all but that element.
   ///
   /// Fails if the list is empty.
-  /// 
+  ///
   /// input_handle: the input list
   /// tensor: the withdrawn last element of the list
   /// element_dtype: the type of elements in the list
@@ -39384,10 +39525,10 @@ public enum _Raw {
 
   /// Resizes the list.
   ///
-  /// 
+  ///
   /// input_handle: the input list
   /// size: size of the output list
-  /// 
+  ///
   @inlinable @inline(__always)
   public static func tensorListResize(
     inputHandle: VariantHandle,
@@ -39404,7 +39545,7 @@ public enum _Raw {
   ///
   /// Each member of the TensorList corresponds to one row of the input tensor,
   /// specified by the given index (see `tf.gather`).
-  /// 
+  ///
   /// tensor: The input tensor.
   /// indices: The indices used to index into the list.
   /// element_shape: The shape of the elements in the list (can be less specified than
@@ -39433,7 +39574,7 @@ public enum _Raw {
   ///
   /// Each member of the TensorList corresponds to one row of the input tensor,
   /// specified by the given index (see `tf.gather`).
-  /// 
+  ///
   /// input_handle: The list to scatter into.
   /// tensor: The input tensor.
   /// indices: The indices used to index into the list.
@@ -39457,7 +39598,7 @@ public enum _Raw {
   ///
   /// Each member of the TensorList corresponds to one row of the input tensor,
   /// specified by the given index (see `tf.gather`).
-  /// 
+  ///
   /// tensor: The input tensor.
   /// indices: The indices used to index into the list.
   /// element_shape: The shape of the elements in the list (can be less specified than
@@ -39506,7 +39647,7 @@ public enum _Raw {
   ///
   /// list[i] corresponds to lengths[i] tensors from the input tensor.
   /// The tensor must have rank at least 1 and contain exactly sum(lengths) elements.
-  /// 
+  ///
   /// tensor: The input tensor.
   /// element_shape: A shape compatible with that of elements in the tensor.
   /// lengths: Vector of sizes of the 0th dimension of tensors in the list.
@@ -39533,11 +39674,11 @@ public enum _Raw {
   /// Stacks all tensors in the list.
   ///
   /// Requires that all tensors have the same shape.
-  /// 
+  ///
   /// input_handle: the input list
   /// tensor: the gathered result
   /// num_elements: optional. If not -1, the number of elements in the list.
-  /// 
+  ///
   @inlinable @inline(__always)
   public static func tensorListStack<ElementDtype: TensorFlowScalar>(
     inputHandle: VariantHandle,
@@ -39560,25 +39701,25 @@ public enum _Raw {
   /// This operation is very similar to `tf.scatter_nd_add`, except that the updates
   /// are added onto an existing tensor (as opposed to a variable). If the memory
   /// for the existing tensor cannot be re-used, a copy is made and updated.
-  /// 
+  ///
   /// `indices` is an integer tensor containing indices into a new tensor of shape
   /// `shape`.  The last dimension of `indices` can be at most the rank of `shape`:
-  /// 
+  ///
   ///     indices.shape[-1] <= shape.rank
-  /// 
+  ///
   /// The last dimension of `indices` corresponds to indices into elements
   /// (if `indices.shape[-1] = shape.rank`) or slices
   /// (if `indices.shape[-1] < shape.rank`) along dimension `indices.shape[-1]` of
   /// `shape`.  `updates` is a tensor with shape
-  /// 
+  ///
   ///     indices.shape[:-1] + shape[indices.shape[-1]:]
-  /// 
+  ///
   /// The simplest form of tensor_scatter_add is to add individual elements to a
   /// tensor by index. For example, say we want to add 4 elements in a rank-1
   /// tensor with 8 elements.
-  /// 
+  ///
   /// In Python, this scatter add operation would look like this:
-  /// 
+  ///
   /// ```python
   ///     indices = tf.constant([[4], [3], [1], [7]])
   ///     updates = tf.constant([9, 10, 11, 12])
@@ -39586,17 +39727,17 @@ public enum _Raw {
   ///     updated = tf.tensor_scatter_nd_add(tensor, indices, updates)
   ///     print(updated)
   /// ```
-  /// 
+  ///
   /// The resulting tensor would look like this:
-  /// 
+  ///
   ///     [1, 12, 1, 11, 10, 1, 1, 13]
-  /// 
+  ///
   /// We can also, insert entire slices of a higher rank tensor all at once. For
   /// example, if we wanted to insert two slices in the first dimension of a
   /// rank-3 tensor with two matrices of new values.
-  /// 
+  ///
   /// In Python, this scatter add operation would look like this:
-  /// 
+  ///
   /// ```python
   ///     indices = tf.constant([[0], [2]])
   ///     updates = tf.constant([[[5, 5, 5, 5], [6, 6, 6, 6],
@@ -39607,14 +39748,14 @@ public enum _Raw {
   ///     updated = tf.tensor_scatter_nd_add(tensor, indices, updates)
   ///     print(updated)
   /// ```
-  /// 
+  ///
   /// The resulting tensor would look like this:
-  /// 
+  ///
   ///     [[[6, 6, 6, 6], [7, 7, 7, 7], [8, 8, 8, 8], [9, 9, 9, 9]],
   ///      [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]],
   ///      [[6, 6, 6, 6], [7, 7, 7, 7], [8, 8, 8, 8], [9, 9, 9, 9]],
   ///      [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]]]
-  /// 
+  ///
   /// Note that on CPU, if an out of bound index is found, an error is returned.
   /// On GPU, if an out of bound index is found, the index is ignored.
   ///
@@ -39650,25 +39791,25 @@ public enum _Raw {
   /// This operation is very similar to `tf.scatter_nd_sub`, except that the updates
   /// are subtracted from an existing tensor (as opposed to a variable). If the memory
   /// for the existing tensor cannot be re-used, a copy is made and updated.
-  /// 
+  ///
   /// `indices` is an integer tensor containing indices into a new tensor of shape
   /// `shape`.  The last dimension of `indices` can be at most the rank of `shape`:
-  /// 
+  ///
   ///     indices.shape[-1] <= shape.rank
-  /// 
+  ///
   /// The last dimension of `indices` corresponds to indices into elements
   /// (if `indices.shape[-1] = shape.rank`) or slices
   /// (if `indices.shape[-1] < shape.rank`) along dimension `indices.shape[-1]` of
   /// `shape`.  `updates` is a tensor with shape
-  /// 
+  ///
   ///     indices.shape[:-1] + shape[indices.shape[-1]:]
-  /// 
+  ///
   /// The simplest form of tensor_scatter_sub is to subtract individual elements
   /// from a tensor by index. For example, say we want to insert 4 scattered elements
   /// in a rank-1 tensor with 8 elements.
-  /// 
+  ///
   /// In Python, this scatter subtract operation would look like this:
-  /// 
+  ///
   /// ```python
   ///     indices = tf.constant([[4], [3], [1], [7]])
   ///     updates = tf.constant([9, 10, 11, 12])
@@ -39676,17 +39817,17 @@ public enum _Raw {
   ///     updated = tf.tensor_scatter_nd_sub(tensor, indices, updates)
   ///     print(updated)
   /// ```
-  /// 
+  ///
   /// The resulting tensor would look like this:
-  /// 
+  ///
   ///     [1, -10, 1, -9, -8, 1, 1, -11]
-  /// 
+  ///
   /// We can also, insert entire slices of a higher rank tensor all at once. For
   /// example, if we wanted to insert two slices in the first dimension of a
   /// rank-3 tensor with two matrices of new values.
-  /// 
+  ///
   /// In Python, this scatter add operation would look like this:
-  /// 
+  ///
   /// ```python
   ///     indices = tf.constant([[0], [2]])
   ///     updates = tf.constant([[[5, 5, 5, 5], [6, 6, 6, 6],
@@ -39697,14 +39838,14 @@ public enum _Raw {
   ///     updated = tf.tensor_scatter_nd_sub(tensor, indices, updates)
   ///     print(updated)
   /// ```
-  /// 
+  ///
   /// The resulting tensor would look like this:
-  /// 
+  ///
   ///     [[[-4, -4, -4, -4], [-5, -5, -5, -5], [-6, -6, -6, -6], [-7, -7, -7, -7]],
   ///      [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]],
   ///      [[-4, -4, -4, -4], [-5, -5, -5, -5], [-6, -6, -6, -6], [-7, -7, -7, -7]],
   ///      [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]]]
-  /// 
+  ///
   /// Note that on CPU, if an out of bound index is found, an error is returned.
   /// On GPU, if an out of bound index is found, the index is ignored.
   ///
@@ -39740,48 +39881,48 @@ public enum _Raw {
   /// This operation is very similar to `tf.scatter_nd`, except that the updates are
   /// scattered onto an existing tensor (as opposed to a zero-tensor). If the memory
   /// for the existing tensor cannot be re-used, a copy is made and updated.
-  /// 
+  ///
   /// If `indices` contains duplicates, then their updates are accumulated (summed).
-  /// 
+  ///
   /// **WARNING**: The order in which updates are applied is nondeterministic, so the
   /// output will be nondeterministic if `indices` contains duplicates -- because
   /// of some numerical approximation issues, numbers summed in different order
   /// may yield different results.
-  /// 
+  ///
   /// `indices` is an integer tensor containing indices into a new tensor of shape
   /// `shape`.  The last dimension of `indices` can be at most the rank of `shape`:
-  /// 
+  ///
   ///     indices.shape[-1] <= shape.rank
-  /// 
+  ///
   /// The last dimension of `indices` corresponds to indices into elements
   /// (if `indices.shape[-1] = shape.rank`) or slices
   /// (if `indices.shape[-1] < shape.rank`) along dimension `indices.shape[-1]` of
   /// `shape`.  `updates` is a tensor with shape
-  /// 
+  ///
   ///     indices.shape[:-1] + shape[indices.shape[-1]:]
-  /// 
+  ///
   /// The simplest form of scatter is to insert individual elements in a tensor by
   /// index. For example, say we want to insert 4 scattered elements in a rank-1
   /// tensor with 8 elements.
-  /// 
+  ///
   /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
   /// <img style="width:100%" src="https://www.tensorflow.org/images/ScatterNd1.png" alt>
   /// </div>
-  /// 
+  ///
   /// In Python, this scatter operation would look like this:
-  /// 
+  ///
   ///     >>> indices = tf.constant([[4], [3], [1], [7]])
   ///     >>> updates = tf.constant([9, 10, 11, 12])
   ///     >>> tensor = tf.ones([8], dtype=tf.int32)
   ///     >>> print(tf.tensor_scatter_nd_update(tensor, indices, updates))
   ///     tf.Tensor([ 1 11  1 10  9  1  1 12], shape=(8,), dtype=int32)
-  /// 
+  ///
   /// We can also, insert entire slices of a higher rank tensor all at once. For
   /// example, if we wanted to insert two slices in the first dimension of a
   /// rank-3 tensor with two matrices of new values.
-  /// 
+  ///
   /// In Python, this scatter operation would look like this:
-  /// 
+  ///
   ///     >>> indices = tf.constant([[0], [2]])
   ///     >>> updates = tf.constant([[[5, 5, 5, 5], [6, 6, 6, 6],
   ///     ...                         [7, 7, 7, 7], [8, 8, 8, 8]],
@@ -39805,7 +39946,7 @@ public enum _Raw {
   ///       [1 1 1 1]
   ///       [1 1 1 1]
   ///       [1 1 1 1]]]
-  /// 
+  ///
   /// Note that on CPU, if an out of bound index is found, an error is returned.
   /// On GPU, if an out of bound index is found, the index is ignored.
   ///
@@ -39854,7 +39995,7 @@ public enum _Raw {
   /// The values of `value` are assigned to the positions in the tensor `input` that
   /// are selected by the slice parameters. The slice parameters `begin` `end`
   /// `strides` etc. work exactly as in `StridedSlice`.
-  /// 
+  ///
   /// NOTE this op currently does not support broadcasting and so `value`'s shape
   /// must be exactly the shape produced by the slice of `input`.
   @inlinable @inline(__always)
@@ -40058,9 +40199,9 @@ public enum _Raw {
   ///
   /// See explanations of candidate sampling and the data formats at
   /// go/candidate-sampling.
-  /// 
+  ///
   /// For each batch, this op picks a single set of sampled candidate labels.
-  /// 
+  ///
   /// The advantages of sampling candidates per-batch are simplicity and the
   /// possibility of efficient dense matrix multiplication. The disadvantage is that
   /// the sampled candidates must be chosen independently of the context and of the
@@ -40123,7 +40264,7 @@ public enum _Raw {
   /// and the values of `input` are replicated `multiples[i]` times along the 'i'th
   /// dimension. For example, tiling `[a b c d]` by `[2]` produces
   /// `[a b c d a b c d]`.
-  /// 
+  ///
   /// >>> a = tf.constant([[1,2,3],[4,5,6]], tf.int32)
   /// >>> b = tf.constant([1,2], tf.int32)
   /// >>> tf.tile(a, b)
@@ -40186,7 +40327,7 @@ public enum _Raw {
   /// Provides the time since epoch in seconds.
   ///
   /// Returns the timestamp as a `float64` for seconds since the Unix epoch.
-  /// 
+  ///
   /// Note: the timestamp is computed when the op is executed, not when it is added
   /// to the graph.
   @inlinable @inline(__always)
@@ -40202,14 +40343,14 @@ public enum _Raw {
   /// If the input is a vector (rank-1), finds the `k` largest entries in the vector
   /// and outputs their values and indices as vectors.  Thus `values[j]` is the
   /// `j`-th largest entry in `input`, and its index is `indices[j]`.
-  /// 
+  ///
   /// For matrices (resp. higher rank input), computes the top `k` entries in each
   /// row (resp. vector along the last dimension).  Thus,
-  /// 
+  ///
   ///     values.shape = indices.shape = input.shape[:-1] + [k]
-  /// 
+  ///
   /// If two elements are equal, the lower-index element appears first.
-  /// 
+  ///
   /// If `k` varies dynamically, use `TopKV2` below.
   ///
   /// - Parameter input: 1-D or higher with last dimension at least `k`.
@@ -40243,12 +40384,12 @@ public enum _Raw {
   /// If the input is a vector (rank-1), finds the `k` largest entries in the vector
   /// and outputs their values and indices as vectors.  Thus `values[j]` is the
   /// `j`-th largest entry in `input`, and its index is `indices[j]`.
-  /// 
+  ///
   /// For matrices (resp. higher rank input), computes the top `k` entries in each
   /// row (resp. vector along the last dimension).  Thus,
-  /// 
+  ///
   ///     values.shape = indices.shape = input.shape[:-1] + [k]
-  /// 
+  ///
   /// If two elements are equal, the lower-index element appears first.
   ///
   /// - Parameters:
@@ -40304,11 +40445,11 @@ public enum _Raw {
   ///
   /// - Parameters:
   ///     - superdiag: Tensor of shape `[..., 1, M]`, representing superdiagonals of
-  ///         tri-diagonal matrices to the left of multiplication. Last element is ingored.
+  ///         tri-diagonal matrices to the left of multiplication. Last element is ignored.
   ///     - maindiag: Tensor of shape `[..., 1, M]`, representing main diagonals of tri-diagonal
   ///         matrices to the left of multiplication.
   ///     - subdiag: Tensor of shape `[..., 1, M]`, representing subdiagonals of tri-diagonal
-  ///         matrices to the left of multiplication. First element is ingored.
+  ///         matrices to the left of multiplication. First element is ignored.
   ///     - rhs: Tensor of shape `[..., M, N]`, representing MxN matrices to the right of
   ///         multiplication.
   ///
@@ -40372,7 +40513,7 @@ public enum _Raw {
   /// toward zero. I.e. -7 / 5 = -1. This matches C semantics but it is different
   /// than Python semantics. See `FloorDiv` for a division function that matches
   /// Python Semantics.
-  /// 
+  ///
   /// *NOTE*: `TruncateDiv` supports broadcasting. More about broadcasting
   /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
   @inlinable @inline(__always)
@@ -40392,7 +40533,7 @@ public enum _Raw {
   ///
   /// the result here is consistent with a truncating divide. E.g. `truncate(x / y) *
   /// y + truncate_mod(x, y) = x`.
-  /// 
+  ///
   /// *NOTE*: `TruncateMod` supports broadcasting. More about broadcasting
   /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
   @inlinable @inline(__always)
@@ -40448,47 +40589,47 @@ public enum _Raw {
   ///
   /// This op asynchronously performs either a single RPC request, or a batch
   /// of requests.  RPC requests are defined by three main parameters:
-  /// 
+  ///
   ///   - `address` (the host+port or BNS address of the request)
   ///   - `method` (the method name for the request)
   ///   - `request` (the serialized proto string, or vector of strings,
   ///      of the RPC request argument).
-  /// 
+  ///
   /// For example, if you have an RPC service running on port localhost:2345,
   /// and its interface is configured with the following proto declaration:
-  /// 
+  ///
   /// ```
   /// service MyService {
   ///   rpc MyMethod(MyRequestProto) returns (MyResponseProto) {
   ///   }
   /// };
   /// ```
-  /// 
+  ///
   /// then call this op with arguments:
-  /// 
+  ///
   /// ```
   /// address = "localhost:2345"
   /// method = "MyService/MyMethod"
   /// ```
-  /// 
+  ///
   /// The `request` tensor is a string tensor representing serialized `MyRequestProto`
   /// strings; and the output string tensor `response` will have the same shape
   /// and contain (upon successful completion) corresponding serialized
   /// `MyResponseProto` strings.
-  /// 
+  ///
   /// For example, to send a single, empty, `MyRequestProto`, call
   /// this op with `request = ""`.  To send 5 **parallel** empty requests,
   /// call this op with `request = ["", "", "", "", ""]`.
-  /// 
+  ///
   /// More generally, one can create a batch of `MyRequestProto` serialized protos
   /// from regular batched tensors using the `encode_proto` op, and convert
   /// the response `MyResponseProto` serialized protos to batched tensors
   /// using the `decode_proto` op.
-  /// 
+  ///
   /// **NOTE** Working with serialized proto strings is faster than instantiating
   /// actual proto objects in memory, so no performance degradation is expected
   /// compared to writing custom kernels for this workflow.
-  /// 
+  ///
   /// Unlike the standard `Rpc` op, if the connection fails or the remote worker
   /// returns an error status, this op does **not** reraise the exception.
   /// Instead, the `status_code` and `status_message` entry for the corresponding RPC
@@ -40659,7 +40800,7 @@ public enum _Raw {
   /// running instance of Unbatch with the same container and shared_name, or receives
   /// a non-empty batched_tensor in which case it finalizes all other concurrently
   /// running instances and outputs its own element from the batch.
-  /// 
+  ///
   /// batched_tensor: The possibly transformed output of Batch. The size of the first
   ///  dimension should remain unchanged by the transformations for the operation to
   ///  work.
@@ -40713,7 +40854,7 @@ public enum _Raw {
   /// Acts like Batch but using the given batch_index index of batching things as they
   /// become available. This ensures that the gradients are propagated back in the
   /// same session which did the forward pass.
-  /// 
+  ///
   /// original_input: The input to the Unbatch operation this is the gradient of.
   /// batch_index: The batch_index given to the Unbatch operation this is the gradient
   /// of.
@@ -40749,13 +40890,13 @@ public enum _Raw {
   ///
   /// The character codepoints for all strings are returned using a single vector
   /// `char_values`, with strings expanded to characters in row-major order.
-  /// 
+  ///
   /// The `row_splits` tensor indicates where the codepoints for
   /// each input string begin and end within the `char_values` tensor.
   /// In particular, the values for the `i`th
   /// string (in row-major order) are stored in the slice
   /// `[row_splits[i]:row_splits[i+1]]`. Thus:
-  /// 
+  ///
   /// * `char_values[row_splits[i]+j]` is the Unicode codepoint for the `j`th
   ///   character in the `i`th string (in row-major order).
   /// * `row_splits[i+1] - row_splits[i]` is the number of characters in the `i`th
@@ -40809,13 +40950,13 @@ public enum _Raw {
   /// `char_values`, with strings expanded to characters in row-major order.
   /// Similarly, the character start byte offsets are returned using a single vector
   /// `char_to_byte_starts`, with strings expanded in row-major order.
-  /// 
+  ///
   /// The `row_splits` tensor indicates where the codepoints and start offsets for
   /// each input string begin and end within the `char_values` and
   /// `char_to_byte_starts` tensors.  In particular, the values for the `i`th
   /// string (in row-major order) are stored in the slice
   /// `[row_splits[i]:row_splits[i+1]]`. Thus:
-  /// 
+  ///
   /// * `char_values[row_splits[i]+j]` is the Unicode codepoint for the `j`th
   ///   character in the `i`th string (in row-major order).
   /// * `char_to_bytes_starts[row_splits[i]+j]` is the start byte offset for the `j`th
@@ -40872,16 +41013,16 @@ public enum _Raw {
   /// Returns a vector of strings, where `output[i]` is constructed by encoding the
   /// Unicode codepoints in `input_values[input_splits[i]:input_splits[i+1]]`
   /// using `output_encoding`.
-  /// 
+  ///
   /// ---
-  /// 
+  ///
   /// Example:
-  /// 
+  ///
   /// ```
   /// input_values = [72, 101, 108, 108, 111, 87, 111, 114, 108, 100]
   /// input_splits = [0, 5, 10]
   /// output_encoding = 'UTF-8'
-  /// 
+  ///
   /// output = ['Hello', 'World']
   /// ```
   ///
@@ -40934,6 +41075,11 @@ public enum _Raw {
   /// Returns -1 (USCRIPT_INVALID_CODE) for invalid codepoints. Output shape will
   /// match input shape.
   ///
+  /// Examples:
+  ///
+  /// >>> tf.strings.unicode_script([1, 31, 38])
+  /// <tf.Tensor: shape=(3,), dtype=int32, numpy=array([0, 0, 0], dtype=int32)>
+  ///
   /// - Parameter input: A Tensor of int32 Unicode code points.
   ///
   /// - Output output: A Tensor of int32 script codes corresponding to each input code point.
@@ -40958,21 +41104,31 @@ public enum _Raw {
   /// invalid encoding positions in the input are skipped and not included in the
   /// output. If it set to `strict` then any invalid formatting will result in an
   /// InvalidArgument error.
-  /// 
+  ///
   /// This operation can be used with `output_encoding = input_encoding` to enforce
   /// correct formatting for inputs even if they are already in the desired encoding.
-  /// 
+  ///
   /// If the input is prefixed by a Byte Order Mark needed to determine encoding
   /// (e.g. if the encoding is UTF-16 and the BOM indicates big-endian), then that
   /// BOM will be consumed and not emitted into the output. If the input encoding
   /// is marked with an explicit endianness (e.g. UTF-16-BE), then the BOM is
   /// interpreted as a non-breaking-space and is preserved in the output (including
   /// always for UTF-8).
-  /// 
+  ///
   /// The end result is that if the input is marked as an explicit endianness the
   /// transcoding is faithful to all codepoints in the source. If it is not marked
   /// with an explicit endianness, the BOM is not considered part of the string itself
   /// but as metadata, and so is not preserved in the output.
+  ///
+  /// Examples:
+  ///
+  /// >>> tf.strings.unicode_transcode(["Hello", "TensorFlow", "2.x"], "UTF-8", "UTF-16-BE")
+  /// <tf.Tensor: shape=(3,), dtype=string, numpy=
+  /// array([b'\x00H\x00e\x00l\x00l\x00o',
+  ///        b'\x00T\x00e\x00n\x00s\x00o\x00r\x00F\x00l\x00o\x00w',
+  ///        b'\x002\x00.\x00x'], dtype=object)>
+  /// >>> tf.strings.unicode_transcode(["A", "B", "C"], "US ASCII", "UTF-8").numpy()
+  /// array([b'A', b'B', b'C'], dtype=object)
   ///
   /// - Parameter input: The text to be processed. Can have any shape.
   ///
@@ -40992,7 +41148,7 @@ public enum _Raw {
   ///         formatting in the input when `errors='replace'`. Any valid unicode codepoint may
   ///         be used. The default value is the default unicode replacement character is
   ///         0xFFFD or U+65533.)
-  ///         
+  ///
   ///         Note that for UTF-8, passing a replacement character expressible in 1 byte, such
   ///         as ' ', will preserve string alignment to the source since invalid bytes will be
   ///         replaced with a 1-byte replacement. For UTF-16-BE and UTF-16-LE, any 1 or 2 byte
@@ -41025,9 +41181,9 @@ public enum _Raw {
   ///
   /// See explanations of candidate sampling and the data formats at
   /// go/candidate-sampling.
-  /// 
+  ///
   /// For each batch, this op picks a single set of sampled candidate labels.
-  /// 
+  ///
   /// The advantages of sampling candidates per-batch are simplicity and the
   /// possibility of efficient dense matrix multiplication. The disadvantage is that
   /// the sampled candidates must be chosen independently of the context and of the
@@ -41089,18 +41245,18 @@ public enum _Raw {
   /// sorted in the same order that they occur in `x`; `x` does not need to be sorted.
   /// This operation also returns a tensor `idx` the same size as `x` that contains
   /// the index of each value of `x` in the unique output `y`. In other words:
-  /// 
+  ///
   /// `y[idx[i]] = x[i] for i in [0, 1,...,rank(x) - 1]`
-  /// 
+  ///
   /// Examples:
-  /// 
+  ///
   /// ```
   /// # tensor 'x' is [1, 1, 2, 4, 4, 4, 7, 8, 8]
   /// y, idx = unique(x)
   /// y ==> [1, 2, 4, 7, 8]
   /// idx ==> [0, 0, 1, 2, 2, 2, 3, 4, 4]
   /// ```
-  /// 
+  ///
   /// ```
   /// # tensor 'x' is [4, 5, 1, 2, 3, 3, 4, 5]
   /// y, idx = unique(x)
@@ -41152,20 +41308,20 @@ public enum _Raw {
   /// the number of the elements in `x` along the `axis` dimension. It
   /// contains the index in the unique output `y`.
   /// In other words, for an `1-D` tensor `x` with `axis = None:
-  /// 
+  ///
   /// `y[idx[i]] = x[i] for i in [0, 1,...,rank(x) - 1]`
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # tensor 'x' is [1, 1, 2, 4, 4, 4, 7, 8, 8]
   /// y, idx = unique(x)
   /// y ==> [1, 2, 4, 7, 8]
   /// idx ==> [0, 0, 1, 2, 2, 2, 3, 4, 4]
   /// ```
-  /// 
+  ///
   /// For an `2-D` tensor `x` with `axis = 0`:
-  /// 
+  ///
   /// ```
   /// # tensor 'x' is [[1, 0, 0],
   /// #                [1, 0, 0],
@@ -41175,9 +41331,9 @@ public enum _Raw {
   ///        [2, 0, 0]]
   /// idx ==> [0, 0, 1]
   /// ```
-  /// 
+  ///
   /// For an `2-D` tensor `x` with `axis = 1`:
-  /// 
+  ///
   /// ```
   /// # tensor 'x' is [[1, 0, 0],
   /// #                [1, 0, 0],
@@ -41224,11 +41380,11 @@ public enum _Raw {
   /// tensor `idx` the same size as `x` that contains the index of each value of `x`
   /// in the unique output `y`. Finally, it returns a third tensor `count` that
   /// contains the count of each element of `y` in `x`. In other words:
-  /// 
+  ///
   /// `y[idx[i]] = x[i] for i in [0, 1,...,rank(x) - 1]`
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # tensor 'x' is [1, 1, 2, 4, 4, 4, 7, 8, 8]
   /// y, idx, count = unique_with_counts(x)
@@ -41268,11 +41424,11 @@ public enum _Raw {
   /// `axis` dimension. The `idx` contains the index in the unique output `y`
   /// and the `count` contains the count in the unique output `y`.
   /// In other words, for an `1-D` tensor `x` with `axis = None:
-  /// 
+  ///
   /// `y[idx[i]] = x[i] for i in [0, 1,...,rank(x) - 1]`
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # tensor 'x' is [1, 1, 2, 4, 4, 4, 7, 8, 8]
   /// y, idx, count = unique_with_counts(x)
@@ -41280,9 +41436,9 @@ public enum _Raw {
   /// idx ==> [0, 0, 1, 2, 2, 2, 3, 4, 4]
   /// count ==> [2, 1, 3, 1, 2]
   /// ```
-  /// 
+  ///
   /// For an `2-D` tensor `x` with `axis = 0`:
-  /// 
+  ///
   /// ```
   /// # tensor 'x' is [[1, 0, 0],
   /// #                [1, 0, 0],
@@ -41293,9 +41449,9 @@ public enum _Raw {
   /// idx ==> [0, 0, 1]
   /// count ==> [2, 1]
   /// ```
-  /// 
+  ///
   /// For an `2-D` tensor `x` with `axis = 1`:
-  /// 
+  ///
   /// ```
   /// # tensor 'x' is [[1, 0, 0],
   /// #                [1, 0, 0],
@@ -41341,15 +41497,15 @@ public enum _Raw {
   ///
   /// Unpacks `num` tensors from `value` by chipping it along the `axis` dimension.
   /// For example, given a tensor of shape `(A, B, C, D)`;
-  /// 
+  ///
   /// If `axis == 0` then the i'th tensor in `output` is the slice `value[i, :, :, :]`
   ///   and each tensor in `output` will have shape `(B, C, D)`. (Note that the
   ///   dimension unpacked along is gone, unlike `split`).
-  /// 
+  ///
   /// If `axis == 1` then the i'th tensor in `output` is the slice `value[:, i, :, :]`
   ///   and each tensor in `output` will have shape `(A, C, D)`.
   /// Etc.
-  /// 
+  ///
   /// This is the opposite of `pack`.
   ///
   /// - Parameter value: 1-D or higher, with `axis` dimension size equal to `num`.
@@ -41375,9 +41531,9 @@ public enum _Raw {
 
   /// Converts an array of flat indices into a tuple of coordinate arrays.
   ///
-  /// 
+  ///
   /// Example:
-  /// 
+  ///
   /// ```
   /// y = tf.unravel_index(indices=[2, 5, 7], dims=[3, 3])
   /// # 'dims' represent a hypothetical (3, 3) tensor of indices:
@@ -41391,7 +41547,7 @@ public enum _Raw {
   /// # 7 ==> (2, 1)
   /// y ==> [[0, 1, 2], [2, 2, 1]]
   /// ```
-  /// 
+  ///
   /// @compatibility(numpy)
   /// Equivalent to np.unravel_index
   /// @end_compatibility
@@ -41421,14 +41577,14 @@ public enum _Raw {
   ///
   /// Computes the string join along segments of a tensor.
   /// Given `segment_ids` with rank `N` and `data` with rank `N+M`:
-  /// 
+  ///
   ///     `output[i, k1...kM] = strings.join([data[j1...jN, k1...kM])`
-  /// 
+  ///
   /// where the join is over all [j1...jN] such that segment_ids[j1...jN] = i.
   /// Strings are joined in row-major order.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```python
   /// inputs = [['Y', 'q', 'c'], ['Y', '6', '6'], ['p', 'G', 'a']]
   /// output_array = string_ops.unsorted_segment_join(inputs=inputs,
@@ -41436,8 +41592,8 @@ public enum _Raw {
   ///                                                 num_segments=2,
   ///                                                 separator=':'))
   /// # output_array ==> [['Y', '6', '6'], ['Y:p', 'q:G', 'c:a']]
-  /// 
-  /// 
+  ///
+  ///
   /// inputs = ['this', 'is', 'a', 'test']
   /// output_array = string_ops.unsorted_segment_join(inputs=inputs,
   ///                                                 segment_ids=[0, 0, 0, 0],
@@ -41479,34 +41635,34 @@ public enum _Raw {
   /// Read
   /// [the section on segmentation](https://tensorflow.org/api_docs/python/tf/math#Segmentation)
   /// for an explanation of segments.
-  /// 
+  ///
   /// This operator is similar to the unsorted segment sum operator found
   /// [(here)](../../../api_docs/python/math_ops.md#UnsortedSegmentSum).
   /// Instead of computing the sum over segments, it computes the maximum such that:
-  /// 
+  ///
   /// \\(output_i = \max_{j...} data[j...]\\) where max is over tuples `j...` such
   /// that `segment_ids[j...] == i`.
-  /// 
+  ///
   /// If the maximum is empty for a given segment ID `i`, it outputs the smallest
   /// possible value for the specific numeric type,
   /// `output[i] = numeric_limits<T>::lowest()`.
-  /// 
+  ///
   /// If the given segment ID `i` is negative, then the corresponding value is
   /// dropped, and will not be included in the result.
-  /// 
+  ///
   /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
   /// <img style="width:100%" src="https://www.tensorflow.org/images/UnsortedSegmentMax.png" alt>
   /// </div>
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ``` python
   /// c = tf.constant([[1,2,3,4], [5,6,7,8], [4,3,2,1]])
   /// tf.unsorted_segment_max(c, tf.constant([0, 1, 0]), num_segments=2)
   /// # ==> [[ 4,  3, 3, 4],
   /// #       [5,  6, 7, 8]]
   /// ```
-  /// 
+  ///
   ///
   /// - Parameter segment_ids: A tensor whose shape is a prefix of `data.shape`.
   ///
@@ -41539,27 +41695,27 @@ public enum _Raw {
   /// Read
   /// [the section on segmentation](https://tensorflow.org/api_docs/python/tf/math#Segmentation)
   /// for an explanation of segments.
-  /// 
+  ///
   /// This operator is similar to the unsorted segment sum operator found
   /// [(here)](../../../api_docs/python/math_ops.md#UnsortedSegmentSum).
   /// Instead of computing the sum over segments, it computes the minimum such that:
-  /// 
+  ///
   /// \\(output_i = \min_{j...} data_[j...]\\) where min is over tuples `j...` such
   /// that `segment_ids[j...] == i`.
-  /// 
+  ///
   /// If the minimum is empty for a given segment ID `i`, it outputs the largest
   /// possible value for the specific numeric type,
   /// `output[i] = numeric_limits<T>::max()`.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ``` python
   /// c = tf.constant([[1,2,3,4], [5,6,7,8], [4,3,2,1]])
   /// tf.unsorted_segment_min(c, tf.constant([0, 1, 0]), num_segments=2)
   /// # ==> [[ 1,  2, 2, 1],
   /// #       [5,  6, 7, 8]]
   /// ```
-  /// 
+  ///
   /// If the given segment ID `i` is negative, then the corresponding value is
   /// dropped, and will not be included in the result.
   ///
@@ -41594,26 +41750,26 @@ public enum _Raw {
   /// Read
   /// [the section on segmentation](https://tensorflow.org/api_docs/python/tf/math#Segmentation)
   /// for an explanation of segments.
-  /// 
+  ///
   /// This operator is similar to the unsorted segment sum operator found
   /// [(here)](../../../api_docs/python/math_ops.md#UnsortedSegmentSum).
   /// Instead of computing the sum over segments, it computes the product of all
   /// entries belonging to a segment such that:
-  /// 
+  ///
   /// \\(output_i = \prod_{j...} data[j...]\\) where the product is over tuples
   /// `j...` such that `segment_ids[j...] == i`.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ``` python
   /// c = tf.constant([[1,2,3,4], [5,6,7,8], [4,3,2,1]])
   /// tf.unsorted_segment_prod(c, tf.constant([0, 1, 0]), num_segments=2)
   /// # ==> [[ 4,  6, 6, 4],
   /// #       [5,  6, 7, 8]]
   /// ```
-  /// 
+  ///
   /// If there is no entry for a given segment ID `i`, it outputs 1.
-  /// 
+  ///
   /// If the given segment ID `i` is negative, then the corresponding value is
   /// dropped, and will not be included in the result.
   ///
@@ -41648,30 +41804,30 @@ public enum _Raw {
   /// Read
   /// [the section on segmentation](https://tensorflow.org/api_docs/python/tf/math#Segmentation)
   /// for an explanation of segments.
-  /// 
+  ///
   /// Computes a tensor such that
   /// \\(output[i] = \sum_{j...} data[j...]\\) where the sum is over tuples `j...` such
   /// that `segment_ids[j...] == i`.  Unlike `SegmentSum`, `segment_ids`
   /// need not be sorted and need not cover all values in the full
   /// range of valid values.
-  /// 
+  ///
   /// If the sum is empty for a given segment ID `i`, `output[i] = 0`.
   /// If the given segment ID `i` is negative, the value is dropped and will not be
   /// added to the sum of the segment.
-  /// 
+  ///
   /// `num_segments` should equal the number of distinct segment IDs.
-  /// 
+  ///
   /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
   /// <img style="width:100%" src="https://www.tensorflow.org/images/UnsortedSegmentSum.png" alt>
   /// </div>
-  /// 
+  ///
   /// ``` python
   /// c = tf.constant([[1,2,3,4], [5,6,7,8], [4,3,2,1]])
   /// tf.unsorted_segment_sum(c, tf.constant([0, 1, 0]), num_segments=2)
   /// # ==> [[ 5,  5, 5, 5],
   /// #       [5,  6, 7, 8]]
   /// ```
-  /// 
+  ///
   ///
   /// - Parameter segment_ids: A tensor whose shape is a prefix of `data.shape`.
   ///
@@ -41735,18 +41891,18 @@ public enum _Raw {
   /// Each set of rows with the same index in (sorted_inputs, values) is treated
   /// independently.  The resulting row is the equivalent of calling
   /// `np.searchsorted(sorted_inputs, values, side='right')`.
-  /// 
+  ///
   /// The result is not a global index to the entire
   /// `Tensor`, but rather just the index in the last dimension.
-  /// 
+  ///
   /// A 2-D example:
   ///   sorted_sequence = [[0, 3, 9, 9, 10],
   ///                      [1, 2, 3, 4, 5]]
   ///   values = [[2, 4, 9],
   ///             [0, 2, 6]]
-  /// 
+  ///
   ///   result = UpperBound(sorted_sequence, values)
-  /// 
+  ///
   ///   result == [[1, 2, 4],
   ///              [0, 2, 5]]
   ///
@@ -41818,9 +41974,9 @@ public enum _Raw {
   /// Returns the shape of the variable pointed to by `resource`.
   ///
   /// This operation returns a 1-D integer tensor representing the shape of `input`.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # 't' is [[[1, 1, 1], [2, 2, 2]], [[3, 3, 3], [4, 4, 4]]]
   /// shape(t) ==> [2, 2, 3]
@@ -41844,9 +42000,9 @@ public enum _Raw {
   /// represents the coordinates of the true elements. Keep in mind, the shape of
   /// the output tensor can vary depending on how many true values there are in
   /// `condition`. Indices are output in row-major order.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # 'input' tensor is [[True, False]
   /// #                    [True, False]]
@@ -41854,7 +42010,7 @@ public enum _Raw {
   /// # 'input' has rank of 2, so coordinates have two indices.
   /// where(input) ==> [[0, 0],
   ///                   [1, 0]]
-  /// 
+  ///
   /// # `condition` tensor is [[[True, False]
   /// #                     [True, False]]
   /// #                    [[False, True]
@@ -41868,7 +42024,7 @@ public enum _Raw {
   ///                   [1, 0, 1],
   ///                   [1, 1, 1],
   ///                   [2, 1, 1]]
-  /// 
+  ///
   /// # `condition` tensor is [[[1.5,  0.0]
   /// #                     [-0.5, 0.0]]
   /// #                    [[0.0,  0.25]
@@ -41882,7 +42038,7 @@ public enum _Raw {
   ///                   [1, 0, 1],
   ///                   [1, 1, 1],
   ///                   [2, 1, 1]]
-  /// 
+  ///
   /// # `condition` tensor is [[[1.5 + 0.0j, 0.0  + 0.0j]
   /// #                     [0.0 + 0.5j, 0.0  + 0.0j]]
   /// #                    [[0.0 + 0.0j, 0.25 + 1.5j]
@@ -41975,16 +42131,61 @@ public enum _Raw {
     return op.execute(Int(1))
   }
 
-  /// A dataset that creates window datasets from the input dataset.
+  ///   Combines (nests of) input elements into a dataset of (nests of) windows.
+  ///
+  ///   A "window" is a finite dataset of flat elements of size `size` (or possibly
+  ///   fewer if there are not enough input elements to fill the window and
+  ///   `drop_remainder` evaluates to false).
+  ///
+  ///   The `shift` argument determines the number of input elements by which
+  ///   the window moves on each iteration.  The first element in the `k`th window
+  ///   will be element
+  ///
+  ///   ```
+  ///   1 + (k-1) * shift
+  ///   ```
+  ///
+  ///   of the input dataset. In particular, the first element of the first window
+  ///   will always be the first element of the input dataset.  
+  ///
+  ///   If the `stride` parameter is greater than 1, then each window will skip
+  ///   `(stride - 1)` input elements between each element that appears in the
+  ///   window. Output windows will still contain `size` elements regardless of
+  ///   the value of `stride`.
+  ///
+  ///   The `stride` argument determines the stride of the input elements, and the
+  ///   `shift` argument determines the shift of the window.
+  ///
+  ///   For example, letting `{...}` to represent a Dataset:
+  ///
+  ///   - `tf.data.Dataset.range(7).window(2)` produces
+  ///     `{{0, 1}, {2, 3}, {4, 5}, {6}}`
+  ///   - `tf.data.Dataset.range(7).window(3, 2, 1, True)` produces
+  ///     `{{0, 1, 2}, {2, 3, 4}, {4, 5, 6}}`
+  ///   - `tf.data.Dataset.range(7).window(3, 1, 2, True)` produces
+  ///     `{{0, 2, 4}, {1, 3, 5}, {2, 4, 6}}`
+  ///
+  ///   Note that when the `window` transformation is applied to a dataset of
+  ///   nested elements, it produces a dataset of nested windows.
+  ///
+  ///   For example:
+  ///
+  ///   - `tf.data.Dataset.from_tensor_slices((range(4), range(4))).window(2)`
+  ///     produces `{({0, 1}, {0, 1}), ({2, 3}, {2, 3})}`
+  ///   - `tf.data.Dataset.from_tensor_slices({"a": range(4)}).window(2)`
+  ///     produces `{{"a": {0, 1}}, {"a": {2, 3}}}`
   ///
   /// - Parameters:
-  ///     - size: A scalar representing the number of elements to accumulate in a window.
-  ///     - shift: A scalar representing the steps moving the sliding window forward in one
-  ///         iteration. It must be positive.
-  ///     - stride: A scalar representing the stride of the input elements of the sliding window.
-  ///         It must be positive.
-  ///     - drop_remainder: A scalar representing whether a window should be dropped in case its size is
-  ///         smaller than desired.
+  ///     - size: An integer scalar, representing the number of elements
+  ///         of the input dataset to combine into a window. Must be positive.
+  ///     - shift: An integer scalar, representing the number of input elements
+  ///         by which the window moves in each iteration.  Defaults to `size`.
+  ///         Must be positive.
+  ///     - stride: An integer scalar, representing the stride of the input elements
+  ///         in the sliding window. Must be positive. The default value of 1 means
+  ///         "retain every input element".
+  ///     - drop_remainder: A Boolean scalar, representing whether the last window should be
+  ///         dropped if its size is smaller than `window_size`.
   @inlinable @inline(__always)
   public static func windowDataset(
     inputDataset: VariantHandle,
@@ -42221,6 +42422,18 @@ public enum _Raw {
     op.addInput(rhs)
     op.addInput(broadcastDims)
     return op.execute(Int(1), Int(1))
+  }
+
+  /// Operator that connects the output of an XLA computation to other consumer graph nodes.
+  @inlinable @inline(__always)
+  public static func xlaClusterOutput<T: TensorFlowScalar>(
+    _ input: Tensor<T>
+  ) -> Tensor<T> {
+    let nOutputs = Int(1)
+    let op = makeOp("XlaClusterOutput", nOutputs)
+    op.updateAttribute("T", T.tensorFlowDataType)
+    op.addInput(input)
+    return op.execute(Int(1))
   }
 
   /// Wraps the XLA ConvGeneralDilated operator, documented at
@@ -42464,6 +42677,33 @@ public enum _Raw {
     op.addInput(keys)
     op.addInput(values)
     return op.execute(Int(1), Int(1))
+  }
+
+  /// XLA Launch Op. For use by the XLA JIT only.
+  @inlinable @inline(__always)
+  public static func xlaLaunch<
+    Tconstants: TensorArrayProtocol,
+    Targs: TensorArrayProtocol,
+    Tresults: TensorGroup,
+    FunctionIn: TensorGroup,
+    FunctionOut: TensorGroup
+  >(
+    constants: Tconstants,
+    args: Targs,
+    resources: [ResourceHandle],
+    function: (FunctionIn) -> FunctionOut
+  ) -> Tresults {
+    let nOutputs = Int(Tresults._typeList.count)
+    let op = makeOp("XlaLaunch", nOutputs)
+    op.updateAttribute("Tconstants", constants._typeList)
+    op.updateAttribute("Targs", args._typeList)
+    op.updateAttribute("Nresources", resources.count)
+    op.updateAttribute("Tresults", Tresults._typeList)
+    op.updateAttribute("function", function)
+    op.addInputList(constants)
+    op.addInputList(args)
+    op.addInputList(resources)
+    return op.execute(Int(Tresults._typeList.count))
   }
 
   /// Wraps the XLA Pad operator, documented at
@@ -42863,8 +43103,8 @@ public enum _Raw {
   /// Compute the Hurwitz zeta function \\(\zeta(x, q)\\).
   ///
   /// The Hurwitz zeta function is defined as:
-  /// 
-  /// 
+  ///
+  ///
   /// \\(\zeta(x, q) = \sum_{n=0}^{\infty} (q + n)^{-x}\\)
   @inlinable @inline(__always)
   public static func zeta<T: FloatingPoint & TensorFlowScalar>(
@@ -42883,7 +43123,7 @@ public enum _Raw {
   ///
   /// The elements of the resulting dataset are created by zipping corresponding
   /// elements from each of the input datasets.
-  /// 
+  ///
   /// The size of the resulting dataset will match the size of the smallest input
   /// dataset, and no error will be raised if input datasets have different sizes.
   ///

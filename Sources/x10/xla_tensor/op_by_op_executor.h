@@ -23,6 +23,7 @@
 #include "tensorflow/compiler/xla/xla_client/async_task.h"
 #include "tensorflow/compiler/xla/xla_client/cache.h"
 #include "tensorflow/compiler/xla/xla_client/computation_client.h"
+#include "tensorflow/compiler/xla/xla_client/util.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ir.h"
 #include "tensorflow/compiler/xla/types.h"
 
@@ -53,7 +54,8 @@ class OpByOpExecutor {
 
  private:
   using CompileCache =
-      xla::util::Cache<size_t, xla::ComputationClient::Computation>;
+      xla::util::Cache<xla::hash_t, xla::ComputationClient::Computation,
+                       xla::util::HashReducer>;
 
   explicit OpByOpExecutor(size_t compile_cache_size);
 

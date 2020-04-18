@@ -12,9 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import x10_device
-import x10_xla_tensor_tf_ops
-import x10_xla_tensor_wrapper
+@_implementationOnly import x10_xla_tensor_tf_ops
+@_implementationOnly import x10_xla_tensor_wrapper
 
 /// Type-erased tensor type on which the fundamental operators are implemented.
 struct XLATensor {

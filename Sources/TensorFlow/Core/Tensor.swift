@@ -199,15 +199,6 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 }
 
-#if USING_X10_BACKEND
-  // Tensor conversion.
-  extension Tensor {
-    public init(_ array: __owned ShapedArray<Scalar>) {
-      self.init(shape: TensorShape(array.shape), scalars: array.scalars)
-    }
-  }
-#endif
-
 //===------------------------------------------------------------------------------------------===//
 // Initialization
 //===------------------------------------------------------------------------------------------===//
@@ -437,7 +428,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
     shape: TensorShape, scalars: [Scalar], on device: Device = .default
   ) -> (value: Tensor, pullback: (Tensor) -> Array<Scalar>.TangentVector) {
     (
-      value: Tensor(scalars, on: device),
+      value: Tensor(shape: shape, scalars: scalars, on: device),
       pullback: { v in
         Array<Scalar>.TangentVector(v.scalars)
       }
@@ -672,8 +663,8 @@ extension Tensor: AdditiveArithmetic where Scalar: Numeric {
   /// The scalar zero tensor.
   #if USING_X10_BACKEND
     public static var zero: Tensor {
-      var zero = Tensor(0, on: _ThreadLocalState.local.currentDevice)
-      if _ThreadLocalState.local.isReducedPrecision {
+      var zero = Tensor(0, on: _DeviceThreadLocalState.local.currentDevice)
+      if _DeviceThreadLocalState.local.isReducedPrecision {
         zero = zero.toReducedPrecision
       }
       return zero

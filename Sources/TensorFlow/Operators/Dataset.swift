@@ -15,6 +15,7 @@
 /// The default graph seed.
 ///
 /// - Note: See TensorFlow's `python.framework.random_seed.DEFAULT_GRAPH_SEED`.
+@available(*, deprecated, message: "Graph-level tracing will be removed in S4TF v0.10")
 @usableFromInline let _defaultGraphSeed: Int64 = 87_654_321
 
 /// Returns the local seeds an operation should use given an op-specific seed.
@@ -27,6 +28,7 @@
 ///
 // TODO: There's no support for TF's "global seed" yet, so we always use the default graph seed as
 // the first seed. Need to investigate the best way to model TF's "global seed".
+@available(*, deprecated, message: "Graph-level tracing will be removed in S4TF v0.10")
 @usableFromInline
 func _tensorSeeds(_ seed: Tensor<Int64>) -> (Tensor<Int64>, Tensor<Int64>) {
   return (Tensor(_defaultGraphSeed), seed)
@@ -39,6 +41,9 @@ func _tensorSeeds(_ seed: Tensor<Int64>) -> (Tensor<Int64>, Tensor<Int64>) {
 /// Represents a potentially large set of elements.
 ///
 /// A `Dataset` can be used to represent an input pipeline as a collection of element tensors.
+@available(*, deprecated, message: """
+  Datasets will be removed in S4TF v0.10. Please use the new Batches API instead.
+  """)
 @frozen
 public struct Dataset<Element: TensorGroup> {
   public let _handle: VariantHandle
@@ -49,6 +54,7 @@ public struct Dataset<Element: TensorGroup> {
   }
 }
 
+@available(*, deprecated)
 extension Dataset {
   @inlinable
   public init(randomSeed: Int64) {
@@ -62,6 +68,7 @@ extension Dataset {
   }
 }
 
+@available(*, deprecated)
 extension Dataset {
   /// Creates a dataset from a batch of elements as a tensor.
   @inlinable
@@ -73,6 +80,7 @@ extension Dataset {
   }
 }
 
+@available(*, deprecated)
 extension Dataset: Sequence {
   public typealias Iterator = DatasetIterator<Element>
 
@@ -87,6 +95,7 @@ extension Dataset: Sequence {
   }
 }
 
+@available(*, deprecated)
 extension Dataset {
   // Note that this Dataset API implementation uses an experimental tracing feature, which is not
   // robust and does not have great diagnostics yet.
@@ -135,6 +144,7 @@ extension Dataset {
   }
 }
 
+@available(*, deprecated)
 extension Dataset {
   @inlinable
   public func prefetched(count: Int) -> Dataset {
@@ -186,6 +196,7 @@ extension Dataset {
 }
 
 /// The type that allows iteration over a dataset's elements.
+@available(*, deprecated)
 @frozen
 public struct DatasetIterator<Element: TensorGroup> {
   @usableFromInline let _handle: ResourceHandle
@@ -196,6 +207,7 @@ public struct DatasetIterator<Element: TensorGroup> {
   }
 }
 
+@available(*, deprecated)
 extension DatasetIterator: IteratorProtocol {
   /// Advances to the next element and returns it, or `nil` if no next element exists.
   @inlinable
@@ -225,6 +237,20 @@ public struct Zip2TensorGroup<T: TensorGroup, U: TensorGroup>: TensorGroup {
     self.second = second
   }
 
+  public static var _typeList: [TensorDataType] { return T._typeList + U._typeList }
+
+  public init(_owning tensorHandles: UnsafePointer<CTensorHandle>?) {
+    first = .init(_owning: tensorHandles)
+    second = .init(_owning: tensorHandles?.advanced(by: Int(T._tensorHandleCount)))
+  }
+
+  public func _unpackTensorHandles(into address: UnsafeMutablePointer<CTensorHandle>?) {
+    var ptr = address
+    first._unpackTensorHandles(into: ptr)
+    ptr = ptr!.advanced(by: Int(first._tensorHandleCount))
+    second._unpackTensorHandles(into: ptr)
+  }
+
   public var _tensorHandles: [_AnyTensorHandle] {
     first._tensorHandles + second._tensorHandles
   }
@@ -241,6 +267,7 @@ public struct Zip2TensorGroup<T: TensorGroup, U: TensorGroup>: TensorGroup {
 }
 
 // TODO(SR-9156): This does not work in graph mode.
+@available(*, deprecated, message: "Graph-level tracing will be removed in S4TF v0.10")
 @inlinable
 public func zip<T: TensorGroup, U: TensorGroup>(
   _ dataset1: Dataset<T>, _ dataset2: Dataset<U>
