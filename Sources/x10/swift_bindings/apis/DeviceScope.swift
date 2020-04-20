@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-@_exported import x10_device
-
 #if os(macOS) || os(iOS) || os(watchOS) || os(tvOS)
   import Darwin
 #else
