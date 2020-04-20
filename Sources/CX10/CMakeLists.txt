@@ -20,3 +20,5 @@ install(DIRECTORY $<TARGET_PROPERTY:tensorflow,INTERFACE_INCLUDE_DIRECTORIES>/te
     PATTERN tf_status.h
     PATTERN tf_tensor.h
     PATTERN eager/c_api.h)
+install(DIRECTORY x10
+  DESTINATION lib/swift/tensorflow)
