@@ -106,8 +106,8 @@ extension Tensor where Scalar: TensorFlowNumeric {
   @differentiable( where Scalar: TensorFlowFloatingPoint)
   public func bandPart(subdiagonalCount: Int, superdiagonalCount: Int) -> Tensor {
     precondition(rank >= 2, "The tensor must have at least rank 2.")
-    let lower = Tensor<Int32>(Int32(subdiagonalCount))
-    let upper = Tensor<Int32>(Int32(superdiagonalCount))
+    let lower = Tensor<Int32>(Int32(subdiagonalCount), on: self.device)
+    let upper = Tensor<Int32>(Int32(superdiagonalCount), on: self.device)
     return _Raw.matrixBandPart(self, numLower: lower, numUpper: upper)
   }
 }

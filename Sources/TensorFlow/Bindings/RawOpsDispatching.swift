@@ -1977,12 +1977,13 @@ public typealias Raw = _Raw
         commonBackend(input.handle.backend, numLower.handle.backend), numUpper.handle.backend)
       {
       case .XLA:
+        let device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let numLower = Tensor<Int64>(copying: numLower, to: .defaultTFEager)
         let numUpper = Tensor<Int64>(copying: numUpper, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.batchMatrixBandPart(input, numLower: numLower, numUpper: numUpper),
-          to: numUpper.device)
+          to: device)
       case .TF_EAGER:
         return _RawTFEager.batchMatrixBandPart(input, numLower: numLower, numUpper: numUpper)
       }
@@ -16735,12 +16736,13 @@ public typealias Raw = _Raw
         commonBackend(input.handle.backend, numLower.handle.backend), numUpper.handle.backend)
       {
       case .XLA:
+        let device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let numLower = Tensor<Tindex>(copying: numLower, to: .defaultTFEager)
         let numUpper = Tensor<Tindex>(copying: numUpper, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.matrixBandPart(input, numLower: numLower, numUpper: numUpper),
-          to: numUpper.device)
+          to: device)
       case .TF_EAGER:
         return _RawTFEager.matrixBandPart(input, numLower: numLower, numUpper: numUpper)
       }
