@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import x10_device_wrapper
+@_implementationOnly import x10_device_wrapper
 
 extension DeviceType {
   fileprivate var kind: Device.Kind {
@@ -104,7 +104,7 @@ public struct Device {
     }
   }
 
-  public var cdevice: CDevice {
+  var cdevice: CDevice {
     return CDevice(hw_type: kind.deviceType, ordinal: Int32(ordinal))
   }
 
@@ -207,7 +207,7 @@ extension Device: CustomStringConvertible {
 }
 
 extension CDevice {
-  public var device: Device {
+  var device: Device {
     return Device(kind: hw_type.kind, ordinal: Int(ordinal))
   }
 }
