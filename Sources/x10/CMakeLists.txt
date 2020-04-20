@@ -3,6 +3,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 add_library(x10_device SHARED
   swift_bindings/Device.swift)
 target_link_libraries(x10_device PRIVATE
+  CTensorFlow
   x10)
 
 add_library(x10_tensor SHARED
@@ -84,6 +85,7 @@ set_target_properties(x10_tensor PROPERTIES
 target_compile_definitions(x10_tensor PRIVATE
   USING_X10_BACKEND)
 target_link_libraries(x10_tensor PUBLIC
+  CTensorFlow
   x10_device
   Tensor)
 target_link_libraries(x10_tensor PRIVATE
