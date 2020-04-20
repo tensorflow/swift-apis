@@ -166,7 +166,7 @@ public struct Device {
   private static func deviceListToArray(_ deviceList: DeviceListHandle) -> [Device] {
     return (0..<deviceList.handle.pointee.count).map { i in
       let device = deviceList.handle.pointee.devices[i]
-      return Device(kind: device.hw_type.kind, ordinal: Int(device.ordinal))
+      return Device(kind: device.hw_type.kind, ordinal: Int(device.ordinal), backend: .XLA)
     }
   }
 
@@ -208,7 +208,7 @@ extension Device: CustomStringConvertible {
 
 extension CDevice {
   var device: Device {
-    return Device(kind: hw_type.kind, ordinal: Int(ordinal))
+    return Device(kind: hw_type.kind, ordinal: Int(ordinal), backend: .XLA)
   }
 }
 
