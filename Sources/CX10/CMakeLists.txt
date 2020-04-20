@@ -3,6 +3,8 @@ if(NOT USE_BUNDLED_CTENSORFLOW)
   target_include_directories(CTensorFlow INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR})
 endif()
+target_link_directories(CTensorFlow INTERFACE
+  $<TARGET_FILE_DIR:x10>)
 target_link_libraries(CTensorFlow INTERFACE
   x10)
 
