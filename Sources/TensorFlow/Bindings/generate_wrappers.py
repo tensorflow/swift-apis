@@ -391,19 +391,22 @@ public static func {name}{generics}({input_args}
                       typename=str(arg.swift_type(self.string_valued))))
     def get_common_backend(x, y):
       return "commonBackend({}, {})".format(x, y)
+    def record_output_device():
+      return "let output_device = {}.device".format(self.input_args[0].swift_name)
     if len(backends) == 0 or (not x10_supported and (len(self.output_args) != 1
       or not self.output_args[0].is_tensor_type(self.string_valued) or not device_source)):
       return "_RawTFEager." + dispatch
     if not x10_supported:
       return """switch {backends} {{
-    case .XLA:{convert_tensors}
-      return {convert_type}(copying: _RawTFEager.{dispatch}, to: {convert_device}.device)
+    case .XLA:{record_device}{convert_tensors}
+      return {convert_type}(copying: _RawTFEager.{dispatch}, to: output_device)
     case .TF_EAGER:
       return _RawTFEager.{dispatch}
   }}
 """.format(dispatch=dispatch,
            convert_type=str(self.output_args[0].swift_type(self.string_valued)),
            convert_device=str(device_source.swift_name),
+           record_device=str(record_output_device()),
            convert_tensors = "".join(map(do_conversion, tensors)),
            backends=reduce(get_common_backend, backends))
     return """switch {backends} {{
