@@ -62,6 +62,7 @@ RUN /swift-tensorflow-toolchain/usr/bin/swift test
 
 # Perform CMake based build
 ENV TF_NEED_CUDA=1
+ENV CTEST_OUTPUT_ON_FAILURE=1
 RUN cmake                                                                       \
       -B /BinaryCache/tensorflow-swift-apis                                     \
       -D BUILD_SHARED_LIBS=YES                                                  \
