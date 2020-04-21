@@ -60,6 +60,8 @@ RUN python3 Utilities/benchmark_compile.py /swift-tensorflow-toolchain/usr/bin/s
 # Run SwiftPM tests
 RUN /swift-tensorflow-toolchain/usr/bin/swift test
 
+RUN rm -f /swift-tensorflow-toolchain/usr/lib/swift/tensorflow/module.modulemap
+
 # Perform CMake based build
 ENV TF_NEED_CUDA=1
 RUN cmake                                                                       \
@@ -68,7 +70,6 @@ RUN cmake                                                                       
       -D CMAKE_BUILD_TYPE=Release                                               \
       -D CMAKE_INSTALL_PREFIX=/swift-tensorflow-toolchain/usr                   \
       -D CMAKE_Swift_COMPILER=/swift-tensorflow-toolchain/usr/bin/swiftc        \
-      -D USE_BUNDLED_CTENSORFLOW=YES                                            \
       -D BUILD_X10=YES                                                          \
       -G Ninja                                                                  \
       -S /swift-apis

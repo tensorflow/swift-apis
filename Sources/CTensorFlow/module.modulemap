@@ -1,5 +1,4 @@
 module CTensorFlow {
   header "CTensorFlow.h"
-
-  link "tensorflow"
+  link "x10"
 }

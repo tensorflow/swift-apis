@@ -1,1 +1,0 @@
-../../x10/swift_bindings/xla_tensor_wrapper.h
