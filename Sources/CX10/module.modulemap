@@ -1,17 +1,11 @@
-module CTensorFlow {
-  header "CTensorFlow.h"
-
-  link "x10"
-}
-
 module x10_device_wrapper {
-  header "x10/device_wrapper.h"
+  header "device_wrapper.h"
 }
 
 module x10_xla_tensor_tf_ops {
-  header "x10/xla_tensor_tf_ops.h"
+  header "xla_tensor_tf_ops.h"
 }
 
 module x10_xla_tensor_wrapper {
-  header "x10/xla_tensor_wrapper.h"
+  header "xla_tensor_wrapper.h"
 }
