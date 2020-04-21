@@ -108,7 +108,7 @@ If `swiftc` is not in your `PATH`, you must specify the path to it using
 `-D CMAKE_Swift_COMPILER=`.
 
 ```
-cmake -G Ninja -B out -S swift-apis
+cmake -G Ninja -B out -S swift-apis -D BUILD_X10=yes
 cmake --build out
 ```
 
