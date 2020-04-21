@@ -109,8 +109,13 @@ If `swiftc` is not in your `PATH`, you must specify the path to it using
 
 ```
 cmake -G Ninja -B out -S swift-apis -D BUILD_X10=yes
-cmake --build out
+cmake --build out  # Alternate spellings of this command are below.
 ```
+
+> Note: `cmake --build out` can be alternatively spelled:
+>  - `cd out && ninja`: This runs `ninja` inside the `out` directory.
+>  - `ninja -C out`: This tells `ninja` to `cd` into `out` first and then
+>    run.
 
 ## Bugs
 
