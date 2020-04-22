@@ -39,6 +39,15 @@ add_library(TensorFlow SHARED
   Core/TensorShape.swift
   Core/Threading.swift
   Core/Utilities.swift
+  
+  Epochs/Algorithms.swift
+  Epochs/Backend.swift
+  Epochs/Collatable.swift
+  Epochs/LazilySelected.swift
+  Epochs/NonuniformTrainingEpochs.swift
+  Epochs/Slices.swift
+  Epochs/StdlibAdditions.swift
+  Epochs/TrainingEpochs.swift
 
   Layers/Convolutional.swift
   Layers/Core.swift
