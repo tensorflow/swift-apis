@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import TensorFlow
-
 /// Types whose elements can be collated in some higher-rank element of the same
 /// type (example: tensors, tuple of tensors)
 public protocol Collatable {
