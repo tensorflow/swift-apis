@@ -110,31 +110,6 @@ target_link_libraries(x10_training_loop PUBLIC
 target_link_libraries(x10_training_loop PRIVATE
   CX10)
 
-add_executable(ops_test ../../Tests/x10/ops_test.swift)
-target_link_libraries(ops_test PRIVATE
-  x10
-  x10_tensor
-  TensorFlow)
-add_test(NAME ops_test COMMAND ops_test)
-
-add_executable(xla_tensor_test ../../Tests/x10/xla_tensor_test.swift)
-target_link_libraries(xla_tensor_test PRIVATE
-  x10
-  x10_tensor)
-add_test(NAME xla_tensor_test COMMAND xla_tensor_test)
-
-add_executable(keypathiterable_test ../../Tests/x10/keypathiterable_test.swift)
-target_link_libraries(keypathiterable_test PRIVATE
-  x10
-  x10_tensor)
-add_test(NAME keypathiterable_test COMMAND keypathiterable_test)
-
-add_executable(tensor_visitor_plan_test ../../Tests/x10/TensorVisitorPlanTest.swift)
-target_link_libraries(tensor_visitor_plan_test PRIVATE
-  x10
-  x10_optimizers_tensor_visitor_plan)
-add_test(NAME tensor_visitor_plan_test COMMAND tensor_visitor_plan_test)
-
 
 _install_target(x10_tensor)
 _install_target(x10_optimizers_tensor_visitor_plan)
