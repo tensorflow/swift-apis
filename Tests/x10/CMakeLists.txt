@@ -4,7 +4,7 @@ target_link_libraries(ops_test PRIVATE
   x10
   x10_tensor
   TensorFlow)
-add_test(NAME ops_test
+add_test(NAME X10.Operations
   COMMAND ops_test)
 
 add_executable(xla_tensor_test
@@ -12,7 +12,7 @@ add_executable(xla_tensor_test
 target_link_libraries(xla_tensor_test PRIVATE
   x10
   x10_tensor)
-add_test(NAME xla_tensor_test
+add_test(NAME X10.XLATensor
   COMMAND xla_tensor_test)
 
 add_executable(keypathiterable_test
@@ -20,7 +20,7 @@ add_executable(keypathiterable_test
 target_link_libraries(keypathiterable_test PRIVATE
   x10
   x10_tensor)
-add_test(NAME keypathiterable_test
+add_test(NAME X10.KeyPathIterable
   COMMAND keypathiterable_test)
 
 add_executable(tensor_visitor_plan_test
@@ -28,6 +28,6 @@ add_executable(tensor_visitor_plan_test
 target_link_libraries(tensor_visitor_plan_test PRIVATE
   x10
   x10_optimizers_tensor_visitor_plan)
-add_test(NAME tensor_visitor_plan_test
+add_test(NAME X10.TensorVisitorPlan
   COMMAND tensor_visitor_plan_test)
 
