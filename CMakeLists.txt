@@ -119,6 +119,6 @@ endif()
 
 if(BUILD_X10)
   get_swift_host_os(host_os)
-  install(FILES ${SOURCE_DIR}/bazel-bin/tensorflow/compiler/tf2xla/xla_tensor/libx10.so
+  install(FILES ${SOURCE_DIR}/bazel-bin/tensorflow/compiler/tf2xla/xla_tensor/${CMAKE_SHARED_LIBRARY_PREFIX}x10${CMAKE_SHARED_LIBRARY_SUFFIX}
     DESTINATION lib/swift/${host_os})
 endif()
