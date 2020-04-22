@@ -195,9 +195,10 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(x.handle.backend, y.handle.backend) {
       case .XLA:
+        let output_device = y.device
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
         let y = Tensor<T>(copying: y, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.add(x, y), to: y.device)
+        return Tensor<T>(copying: _RawTFEager.add(x, y), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.add(x, y)
       }
@@ -268,13 +269,14 @@ public typealias Raw = _Raw
         sparseShape.handle.backend)
       {
       case .XLA:
+        let output_device = sparseShape.device
         let sparseIndices = Tensor<Int64>(copying: sparseIndices, to: .defaultTFEager)
         let sparseValues = Tensor<T>(copying: sparseValues, to: .defaultTFEager)
         let sparseShape = Tensor<Int64>(copying: sparseShape, to: .defaultTFEager)
         return Tensor<Int64>(
           copying: _RawTFEager.addManySparseToTensorsMap(
             sparseIndices: sparseIndices, sparseValues: sparseValues, sparseShape: sparseShape,
-            container: container, sharedName: sharedName), to: sparseShape.device)
+            container: container, sharedName: sharedName), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.addManySparseToTensorsMap(
           sparseIndices: sparseIndices, sparseValues: sparseValues, sparseShape: sparseShape,
@@ -340,13 +342,14 @@ public typealias Raw = _Raw
         sparseShape.handle.backend)
       {
       case .XLA:
+        let output_device = sparseShape.device
         let sparseIndices = Tensor<Int64>(copying: sparseIndices, to: .defaultTFEager)
         let sparseValues = Tensor<T>(copying: sparseValues, to: .defaultTFEager)
         let sparseShape = Tensor<Int64>(copying: sparseShape, to: .defaultTFEager)
         return Tensor<Int64>(
           copying: _RawTFEager.addSparseToTensorsMap(
             sparseIndices: sparseIndices, sparseValues: sparseValues, sparseShape: sparseShape,
-            container: container, sharedName: sharedName), to: sparseShape.device)
+            container: container, sharedName: sharedName), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.addSparseToTensorsMap(
           sparseIndices: sparseIndices, sparseValues: sparseValues, sparseShape: sparseShape,
@@ -387,6 +390,7 @@ public typealias Raw = _Raw
           minValue.handle.backend), maxValue.handle.backend)
       {
       case .XLA:
+        let output_device = maxValue.device
         let images = Tensor<T>(copying: images, to: .defaultTFEager)
         let contrastFactor = Tensor<Float>(copying: contrastFactor, to: .defaultTFEager)
         let minValue = Tensor<Float>(copying: minValue, to: .defaultTFEager)
@@ -394,7 +398,7 @@ public typealias Raw = _Raw
         return Tensor<Float>(
           copying: _RawTFEager.adjustContrast(
             images: images, contrastFactor: contrastFactor, minValue: minValue, maxValue: maxValue),
-          to: maxValue.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.adjustContrast(
           images: images, contrastFactor: contrastFactor, minValue: minValue, maxValue: maxValue)
@@ -426,11 +430,12 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(images.handle.backend, contrastFactor.handle.backend) {
       case .XLA:
+        let output_device = contrastFactor.device
         let images = Tensor<T>(copying: images, to: .defaultTFEager)
         let contrastFactor = Tensor<Float>(copying: contrastFactor, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.adjustContrastv2(images: images, contrastFactor: contrastFactor),
-          to: contrastFactor.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.adjustContrastv2(images: images, contrastFactor: contrastFactor)
       }
@@ -458,10 +463,11 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(images.handle.backend, delta.handle.backend) {
       case .XLA:
+        let output_device = delta.device
         let images = Tensor<T>(copying: images, to: .defaultTFEager)
         let delta = Tensor<Float>(copying: delta, to: .defaultTFEager)
         return Tensor<T>(
-          copying: _RawTFEager.adjustHue(images: images, delta: delta), to: delta.device)
+          copying: _RawTFEager.adjustHue(images: images, delta: delta), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.adjustHue(images: images, delta: delta)
       }
@@ -489,10 +495,11 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(images.handle.backend, scale.handle.backend) {
       case .XLA:
+        let output_device = scale.device
         let images = Tensor<T>(copying: images, to: .defaultTFEager)
         let scale = Tensor<Float>(copying: scale, to: .defaultTFEager)
         return Tensor<T>(
-          copying: _RawTFEager.adjustSaturation(images: images, scale: scale), to: scale.device)
+          copying: _RawTFEager.adjustSaturation(images: images, scale: scale), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.adjustSaturation(images: images, scale: scale)
       }
@@ -625,12 +632,13 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(input.handle.backend, groupAssignment.handle.backend) {
       case .XLA:
+        let output_device = groupAssignment.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let groupAssignment = Tensor<Int32>(copying: groupAssignment, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.allToAll(
             input, groupAssignment: groupAssignment, concatDimension: concatDimension,
-            splitDimension: splitDimension, splitCount: splitCount), to: groupAssignment.device)
+            splitDimension: splitDimension, splitCount: splitCount), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.allToAll(
           input, groupAssignment: groupAssignment, concatDimension: concatDimension,
@@ -667,8 +675,9 @@ public typealias Raw = _Raw
     ) -> Tensor<Tout> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
-        return Tensor<Tout>(copying: _RawTFEager.angle(input), to: input.device)
+        return Tensor<Tout>(copying: _RawTFEager.angle(input), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.angle(input)
       }
@@ -1092,9 +1101,10 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(y.handle.backend, x.handle.backend) {
       case .XLA:
+        let output_device = x.device
         let y = Tensor<T>(copying: y, to: .defaultTFEager)
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.atan2(y, x), to: x.device)
+        return Tensor<T>(copying: _RawTFEager.atan2(y, x), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.atan2(y, x)
       }
@@ -1314,6 +1324,7 @@ public typealias Raw = _Raw
     ) -> Tensor<OutType> {
       switch audio.handle.backend {
       case .XLA:
+        let output_device = audio.device
         let audio = Tensor<Int16>(copying: audio, to: .defaultTFEager)
         return Tensor<OutType>(
           copying: _RawTFEager.audioMicrofrontend(
@@ -1325,7 +1336,7 @@ public typealias Raw = _Raw
             pcanStrength: pcanStrength, pcanOffset: pcanOffset, gainBits: gainBits,
             enableLog: enableLog, scaleShift: scaleShift, leftContext: leftContext,
             rightContext: rightContext, frameStride: frameStride, zeroPadding: zeroPadding,
-            outScale: outScale), to: audio.device)
+            outScale: outScale), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.audioMicrofrontend(
           audio: audio, sampleRate: sampleRate, windowSize: windowSize, windowStep: windowStep,
@@ -1387,11 +1398,12 @@ public typealias Raw = _Raw
     ) -> Tensor<Float> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<Float>(copying: input, to: .defaultTFEager)
         return Tensor<Float>(
           copying: _RawTFEager.audioSpectrogram(
             input, windowSize: windowSize, stride: stride, magnitudeSquared: magnitudeSquared),
-          to: input.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.audioSpectrogram(
           input, windowSize: windowSize, stride: stride, magnitudeSquared: magnitudeSquared)
@@ -1715,8 +1727,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.batchCholesky(input), to: input.device)
+        return Tensor<T>(copying: _RawTFEager.batchCholesky(input), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.batchCholesky(input)
       }
@@ -1730,9 +1743,11 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(l.handle.backend, grad.handle.backend) {
       case .XLA:
+        let output_device = grad.device
         let l = Tensor<T>(copying: l, to: .defaultTFEager)
         let grad = Tensor<T>(copying: grad, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.batchCholeskyGrad(l: l, grad: grad), to: grad.device)
+        return Tensor<T>(
+          copying: _RawTFEager.batchCholeskyGrad(l: l, grad: grad), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.batchCholeskyGrad(l: l, grad: grad)
       }
@@ -1906,10 +1921,11 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(x.handle.backend, y.handle.backend) {
       case .XLA:
+        let output_device = y.device
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
         let y = Tensor<T>(copying: y, to: .defaultTFEager)
         return Tensor<T>(
-          copying: _RawTFEager.batchMatMul(x, y, adjX: adjX, adjY: adjY), to: y.device)
+          copying: _RawTFEager.batchMatMul(x, y, adjX: adjX, adjY: adjY), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.batchMatMul(x, y, adjX: adjX, adjY: adjY)
       }
@@ -1977,13 +1993,13 @@ public typealias Raw = _Raw
         commonBackend(input.handle.backend, numLower.handle.backend), numUpper.handle.backend)
       {
       case .XLA:
-        let device = input.device
+        let output_device = numUpper.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let numLower = Tensor<Int64>(copying: numLower, to: .defaultTFEager)
         let numUpper = Tensor<Int64>(copying: numUpper, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.batchMatrixBandPart(input, numLower: numLower, numUpper: numUpper),
-          to: device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.batchMatrixBandPart(input, numLower: numLower, numUpper: numUpper)
       }
@@ -1996,8 +2012,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.batchMatrixDeterminant(input), to: input.device)
+        return Tensor<T>(copying: _RawTFEager.batchMatrixDeterminant(input), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.batchMatrixDeterminant(input)
       }
@@ -2010,9 +2027,10 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch diagonal.handle.backend {
       case .XLA:
+        let output_device = diagonal.device
         let diagonal = Tensor<T>(copying: diagonal, to: .defaultTFEager)
         return Tensor<T>(
-          copying: _RawTFEager.batchMatrixDiag(diagonal: diagonal), to: diagonal.device)
+          copying: _RawTFEager.batchMatrixDiag(diagonal: diagonal), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.batchMatrixDiag(diagonal: diagonal)
       }
@@ -2025,8 +2043,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.batchMatrixDiagPart(input), to: input.device)
+        return Tensor<T>(copying: _RawTFEager.batchMatrixDiagPart(input), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.batchMatrixDiagPart(input)
       }
@@ -2040,9 +2059,10 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         return Tensor<T>(
-          copying: _RawTFEager.batchMatrixInverse(input, adjoint: adjoint), to: input.device)
+          copying: _RawTFEager.batchMatrixInverse(input, adjoint: adjoint), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.batchMatrixInverse(input, adjoint: adjoint)
       }
@@ -2056,10 +2076,11 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(input.handle.backend, diagonal.handle.backend) {
       case .XLA:
+        let output_device = diagonal.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let diagonal = Tensor<T>(copying: diagonal, to: .defaultTFEager)
         return Tensor<T>(
-          copying: _RawTFEager.batchMatrixSetDiag(input, diagonal: diagonal), to: diagonal.device)
+          copying: _RawTFEager.batchMatrixSetDiag(input, diagonal: diagonal), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.batchMatrixSetDiag(input, diagonal: diagonal)
       }
@@ -2074,11 +2095,12 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(matrix.handle.backend, rhs.handle.backend) {
       case .XLA:
+        let output_device = rhs.device
         let matrix = Tensor<T>(copying: matrix, to: .defaultTFEager)
         let rhs = Tensor<T>(copying: rhs, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.batchMatrixSolve(matrix: matrix, rhs: rhs, adjoint: adjoint),
-          to: rhs.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.batchMatrixSolve(matrix: matrix, rhs: rhs, adjoint: adjoint)
       }
@@ -2096,13 +2118,13 @@ public typealias Raw = _Raw
         commonBackend(matrix.handle.backend, rhs.handle.backend), l2Regularizer.handle.backend)
       {
       case .XLA:
+        let output_device = l2Regularizer.device
         let matrix = Tensor<T>(copying: matrix, to: .defaultTFEager)
         let rhs = Tensor<T>(copying: rhs, to: .defaultTFEager)
         let l2Regularizer = Tensor<Double>(copying: l2Regularizer, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.batchMatrixSolveLs(
-            matrix: matrix, rhs: rhs, l2Regularizer: l2Regularizer, fast: fast),
-          to: l2Regularizer.device)
+            matrix: matrix, rhs: rhs, l2Regularizer: l2Regularizer, fast: fast), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.batchMatrixSolveLs(
           matrix: matrix, rhs: rhs, l2Regularizer: l2Regularizer, fast: fast)
@@ -2119,11 +2141,12 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(matrix.handle.backend, rhs.handle.backend) {
       case .XLA:
+        let output_device = rhs.device
         let matrix = Tensor<T>(copying: matrix, to: .defaultTFEager)
         let rhs = Tensor<T>(copying: rhs, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.batchMatrixTriangularSolve(
-            matrix: matrix, rhs: rhs, lower: lower, adjoint: adjoint), to: rhs.device)
+            matrix: matrix, rhs: rhs, lower: lower, adjoint: adjoint), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.batchMatrixTriangularSolve(
           matrix: matrix, rhs: rhs, lower: lower, adjoint: adjoint)
@@ -2169,6 +2192,7 @@ public typealias Raw = _Raw
           beta.handle.backend), gamma.handle.backend)
       {
       case .XLA:
+        let output_device = gamma.device
         let t = Tensor<T>(copying: t, to: .defaultTFEager)
         let m = Tensor<T>(copying: m, to: .defaultTFEager)
         let v = Tensor<T>(copying: v, to: .defaultTFEager)
@@ -2177,7 +2201,7 @@ public typealias Raw = _Raw
         return Tensor<T>(
           copying: _RawTFEager.batchNormWithGlobalNormalization(
             t: t, m: m, v: v, beta: beta, gamma: gamma, varianceEpsilon: varianceEpsilon,
-            scaleAfterNormalization: scaleAfterNormalization), to: gamma.device)
+            scaleAfterNormalization: scaleAfterNormalization), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.batchNormWithGlobalNormalization(
           t: t, m: m, v: v, beta: beta, gamma: gamma, varianceEpsilon: varianceEpsilon,
@@ -2235,8 +2259,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.batchSelfAdjointEig(input), to: input.device)
+        return Tensor<T>(copying: _RawTFEager.batchSelfAdjointEig(input), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.batchSelfAdjointEig(input)
       }
@@ -2359,11 +2384,12 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(input.handle.backend, crops.handle.backend) {
       case .XLA:
+        let output_device = crops.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let crops = Tensor<Tidx>(copying: crops, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.batchToSpace(input, crops: crops, blockSize: blockSize),
-          to: crops.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.batchToSpace(input, crops: crops, blockSize: blockSize)
       }
@@ -2506,12 +2532,13 @@ public typealias Raw = _Raw
         commonBackend(input.handle.backend, blockShape.handle.backend), crops.handle.backend)
       {
       case .XLA:
+        let output_device = crops.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let blockShape = Tensor<TblockShape>(copying: blockShape, to: .defaultTFEager)
         let crops = Tensor<Tcrops>(copying: crops, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.batchToSpaceND(input, blockShape: blockShape, crops: crops),
-          to: crops.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.batchToSpaceND(input, blockShape: blockShape, crops: crops)
       }
@@ -2530,8 +2557,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch x.handle.backend {
       case .XLA:
+        let output_device = x.device
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.besselI0e(x), to: x.device)
+        return Tensor<T>(copying: _RawTFEager.besselI0e(x), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.besselI0e(x)
       }
@@ -2550,8 +2578,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch x.handle.backend {
       case .XLA:
+        let output_device = x.device
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.besselI1e(x), to: x.device)
+        return Tensor<T>(copying: _RawTFEager.besselI1e(x), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.besselI1e(x)
       }
@@ -2581,10 +2610,11 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(commonBackend(a.handle.backend, b.handle.backend), x.handle.backend) {
       case .XLA:
+        let output_device = x.device
         let a = Tensor<T>(copying: a, to: .defaultTFEager)
         let b = Tensor<T>(copying: b, to: .defaultTFEager)
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.betainc(a, b, x), to: x.device)
+        return Tensor<T>(copying: _RawTFEager.betainc(a, b, x), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.betainc(a, b, x)
       }
@@ -2617,11 +2647,12 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(value.handle.backend, bias.handle.backend) {
       case .XLA:
+        let output_device = bias.device
         let value = Tensor<T>(copying: value, to: .defaultTFEager)
         let bias = Tensor<T>(copying: bias, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.biasAdd(value: value, bias: bias, dataFormat: dataFormat),
-          to: bias.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.biasAdd(value: value, bias: bias, dataFormat: dataFormat)
       }
@@ -2652,10 +2683,11 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch outBackprop.handle.backend {
       case .XLA:
+        let output_device = outBackprop.device
         let outBackprop = Tensor<T>(copying: outBackprop, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.biasAddGrad(outBackprop: outBackprop, dataFormat: dataFormat),
-          to: outBackprop.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.biasAddGrad(outBackprop: outBackprop, dataFormat: dataFormat)
       }
@@ -2681,9 +2713,11 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(value.handle.backend, bias.handle.backend) {
       case .XLA:
+        let output_device = bias.device
         let value = Tensor<T>(copying: value, to: .defaultTFEager)
         let bias = Tensor<T>(copying: bias, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.biasAddV1(value: value, bias: bias), to: bias.device)
+        return Tensor<T>(
+          copying: _RawTFEager.biasAddV1(value: value, bias: bias), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.biasAddV1(value: value, bias: bias)
       }
@@ -2697,9 +2731,10 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(a.handle.backend, b.handle.backend) {
       case .XLA:
+        let output_device = b.device
         let a = Tensor<T>(copying: a, to: .defaultTFEager)
         let b = Tensor<T>(copying: b, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.binary(a, b), to: b.device)
+        return Tensor<T>(copying: _RawTFEager.binary(a, b), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.binary(a, b)
       }
@@ -2735,11 +2770,12 @@ public typealias Raw = _Raw
         commonBackend(arr.handle.backend, size.handle.backend), weights.handle.backend)
       {
       case .XLA:
+        let output_device = weights.device
         let arr = Tensor<Int32>(copying: arr, to: .defaultTFEager)
         let size = Tensor<Int32>(copying: size, to: .defaultTFEager)
         let weights = Tensor<T>(copying: weights, to: .defaultTFEager)
         return Tensor<T>(
-          copying: _RawTFEager.bincount(arr: arr, size: size, weights: weights), to: weights.device)
+          copying: _RawTFEager.bincount(arr: arr, size: size, weights: weights), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.bincount(arr: arr, size: size, weights: weights)
       }
@@ -2807,8 +2843,9 @@ public typealias Raw = _Raw
     ) -> Tensor<Type> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
-        return Tensor<Type>(copying: _RawTFEager.bitcast(input), to: input.device)
+        return Tensor<Type>(copying: _RawTFEager.bitcast(input), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.bitcast(input)
       }
@@ -2844,9 +2881,10 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(x.handle.backend, y.handle.backend) {
       case .XLA:
+        let output_device = y.device
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
         let y = Tensor<T>(copying: y, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.bitwiseAnd(x, y), to: y.device)
+        return Tensor<T>(copying: _RawTFEager.bitwiseAnd(x, y), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.bitwiseAnd(x, y)
       }
@@ -2882,9 +2920,10 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(x.handle.backend, y.handle.backend) {
       case .XLA:
+        let output_device = y.device
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
         let y = Tensor<T>(copying: y, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.bitwiseOr(x, y), to: y.device)
+        return Tensor<T>(copying: _RawTFEager.bitwiseOr(x, y), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.bitwiseOr(x, y)
       }
@@ -2920,9 +2959,10 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(x.handle.backend, y.handle.backend) {
       case .XLA:
+        let output_device = y.device
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
         let y = Tensor<T>(copying: y, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.bitwiseXor(x, y), to: y.device)
+        return Tensor<T>(copying: _RawTFEager.bitwiseXor(x, y), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.bitwiseXor(x, y)
       }
@@ -3232,6 +3272,7 @@ public typealias Raw = _Raw
         feature.handle.backend)
       {
       case .XLA:
+        let output_device = feature.device
         let nodeIds = Tensor<Int32>(copying: nodeIds, to: .defaultTFEager)
         let gradients = Tensor<Float>(copying: gradients, to: .defaultTFEager)
         let hessians = Tensor<Float>(copying: hessians, to: .defaultTFEager)
@@ -3239,7 +3280,7 @@ public typealias Raw = _Raw
         return Tensor<Float>(
           copying: _RawTFEager.boostedTreesAggregateStats(
             nodeIds: nodeIds, gradients: gradients, hessians: hessians, feature: feature,
-            maxSplits: maxSplits, numBuckets: numBuckets), to: feature.device)
+            maxSplits: maxSplits, numBuckets: numBuckets), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.boostedTreesAggregateStats(
           nodeIds: nodeIds, gradients: gradients, hessians: hessians, feature: feature,
@@ -3394,6 +3435,7 @@ public typealias Raw = _Raw
           l1.handle.backend), l2.handle.backend)
       {
       case .XLA:
+        let output_device = l2.device
         let meanGradients = Tensor<Float>(copying: meanGradients, to: .defaultTFEager)
         let meanHessians = Tensor<Float>(copying: meanHessians, to: .defaultTFEager)
         let l1 = Tensor<Float>(copying: l1, to: .defaultTFEager)
@@ -3401,7 +3443,7 @@ public typealias Raw = _Raw
         return Tensor<Bool>(
           copying: _RawTFEager.boostedTreesCenterBias(
             treeEnsembleHandle: treeEnsembleHandle, meanGradients: meanGradients,
-            meanHessians: meanHessians, l1: l1, l2: l2), to: l2.device)
+            meanHessians: meanHessians, l1: l1, l2: l2), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.boostedTreesCenterBias(
           treeEnsembleHandle: treeEnsembleHandle, meanGradients: meanGradients,
@@ -3564,13 +3606,14 @@ public typealias Raw = _Raw
         epsilon.handle.backend)
       {
       case .XLA:
+        let output_device = epsilon.device
         let floatValues = [Tensor<Float>](copying: floatValues, to: .defaultTFEager)
         let exampleWeights = Tensor<Float>(copying: exampleWeights, to: .defaultTFEager)
         let epsilon = Tensor<Float>(copying: epsilon, to: .defaultTFEager)
         return [Tensor<Float>](
           copying: _RawTFEager.boostedTreesMakeQuantileSummaries(
             floatValues: floatValues, exampleWeights: exampleWeights, epsilon: epsilon),
-          to: epsilon.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.boostedTreesMakeQuantileSummaries(
           floatValues: floatValues, exampleWeights: exampleWeights, epsilon: epsilon)
@@ -3609,6 +3652,7 @@ public typealias Raw = _Raw
         commonBackend(bucketizedFeaturesList))
       {
       case .XLA:
+        let output_device = hessians.device
         let nodeIds = Tensor<Int32>(copying: nodeIds, to: .defaultTFEager)
         let gradients = Tensor<Float>(copying: gradients, to: .defaultTFEager)
         let hessians = Tensor<Float>(copying: hessians, to: .defaultTFEager)
@@ -3618,7 +3662,7 @@ public typealias Raw = _Raw
           copying: _RawTFEager.boostedTreesMakeStatsSummary(
             nodeIds: nodeIds, gradients: gradients, hessians: hessians,
             bucketizedFeaturesList: bucketizedFeaturesList, maxSplits: maxSplits,
-            numBuckets: numBuckets), to: hessians.device)
+            numBuckets: numBuckets), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.boostedTreesMakeStatsSummary(
           nodeIds: nodeIds, gradients: gradients, hessians: hessians,
@@ -4014,9 +4058,10 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(s0.handle.backend, s1.handle.backend) {
       case .XLA:
+        let output_device = s1.device
         let s0 = Tensor<T>(copying: s0, to: .defaultTFEager)
         let s1 = Tensor<T>(copying: s1, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.broadcastArgs(s0: s0, s1: s1), to: s1.device)
+        return Tensor<T>(copying: _RawTFEager.broadcastArgs(s0: s0, s1: s1), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.broadcastArgs(s0: s0, s1: s1)
       }
@@ -4112,9 +4157,10 @@ public typealias Raw = _Raw
     ) -> Tensor<Int32> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         return Tensor<Int32>(
-          copying: _RawTFEager.bucketize(input, boundaries: boundaries), to: input.device)
+          copying: _RawTFEager.bucketize(input, boundaries: boundaries), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.bucketize(input, boundaries: boundaries)
       }
@@ -4408,9 +4454,10 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch tensor.handle.backend {
       case .XLA:
+        let output_device = tensor.device
         let tensor = Tensor<T>(copying: tensor, to: .defaultTFEager)
         return Tensor<T>(
-          copying: _RawTFEager.checkNumerics(tensor, message: message), to: tensor.device)
+          copying: _RawTFEager.checkNumerics(tensor, message: message), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.checkNumerics(tensor, message: message)
       }
@@ -4442,8 +4489,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.cholesky(input), to: input.device)
+        return Tensor<T>(copying: _RawTFEager.cholesky(input), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.cholesky(input)
       }
@@ -4471,9 +4519,10 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(l.handle.backend, grad.handle.backend) {
       case .XLA:
+        let output_device = grad.device
         let l = Tensor<T>(copying: l, to: .defaultTFEager)
         let grad = Tensor<T>(copying: grad, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.choleskyGrad(l: l, grad: grad), to: grad.device)
+        return Tensor<T>(copying: _RawTFEager.choleskyGrad(l: l, grad: grad), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.choleskyGrad(l: l, grad: grad)
       }
@@ -4557,11 +4606,12 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.collectiveBcastSend(
             input, groupSize: groupSize, groupKey: groupKey, instanceKey: instanceKey, shape: shape,
-            communicationHint: communicationHint), to: input.device)
+            communicationHint: communicationHint), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.collectiveBcastSend(
           input, groupSize: groupSize, groupKey: groupKey, instanceKey: instanceKey, shape: shape,
@@ -4582,11 +4632,12 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.collectiveGather(
             input, groupSize: groupSize, groupKey: groupKey, instanceKey: instanceKey, shape: shape,
-            communicationHint: communicationHint), to: input.device)
+            communicationHint: communicationHint), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.collectiveGather(
           input, groupSize: groupSize, groupKey: groupKey, instanceKey: instanceKey, shape: shape,
@@ -4618,11 +4669,12 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(input.handle.backend, sourceTargetPairs.handle.backend) {
       case .XLA:
+        let output_device = sourceTargetPairs.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let sourceTargetPairs = Tensor<Int32>(copying: sourceTargetPairs, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.collectivePermute(input, sourceTargetPairs: sourceTargetPairs),
-          to: sourceTargetPairs.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.collectivePermute(input, sourceTargetPairs: sourceTargetPairs)
       }
@@ -4644,12 +4696,13 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.collectiveReduce(
             input, groupSize: groupSize, groupKey: groupKey, instanceKey: instanceKey,
             mergeOp: mergeOp, finalOp: finalOp, subdivOffsets: subdivOffsets, waitFor: waitFor,
-            communicationHint: communicationHint), to: input.device)
+            communicationHint: communicationHint), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.collectiveReduce(
           input, groupSize: groupSize, groupKey: groupKey, instanceKey: instanceKey,
@@ -4770,10 +4823,11 @@ public typealias Raw = _Raw
     ) -> Tensor<UInt8> {
       switch commonBackend(input.handle.backend, threshold.handle.backend) {
       case .XLA:
+        let output_device = threshold.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let threshold = Tensor<T>(copying: threshold, to: .defaultTFEager)
         return Tensor<UInt8>(
-          copying: _RawTFEager.compareAndBitpack(input, threshold: threshold), to: threshold.device)
+          copying: _RawTFEager.compareAndBitpack(input, threshold: threshold), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.compareAndBitpack(input, threshold: threshold)
       }
@@ -4806,9 +4860,10 @@ public typealias Raw = _Raw
     ) -> Tensor<Tout> {
       switch commonBackend(real.handle.backend, imag.handle.backend) {
       case .XLA:
+        let output_device = imag.device
         let real = Tensor<T>(copying: real, to: .defaultTFEager)
         let imag = Tensor<T>(copying: imag, to: .defaultTFEager)
-        return Tensor<Tout>(copying: _RawTFEager.complex(real: real, imag: imag), to: imag.device)
+        return Tensor<Tout>(copying: _RawTFEager.complex(real: real, imag: imag), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.complex(real: real, imag: imag)
       }
@@ -4830,8 +4885,9 @@ public typealias Raw = _Raw
     ) -> Tensor<Tout> {
       switch x.handle.backend {
       case .XLA:
+        let output_device = x.device
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
-        return Tensor<Tout>(copying: _RawTFEager.complexAbs(x), to: x.device)
+        return Tensor<Tout>(copying: _RawTFEager.complexAbs(x), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.complexAbs(x)
       }
@@ -4901,10 +4957,11 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(concatDim.handle.backend, commonBackend(values)) {
       case .XLA:
+        let output_device = concatDim.device
         let concatDim = Tensor<Int32>(copying: concatDim, to: .defaultTFEager)
         let values = [Tensor<T>](copying: values, to: .defaultTFEager)
         return Tensor<T>(
-          copying: _RawTFEager.concat(concatDim: concatDim, values), to: concatDim.device)
+          copying: _RawTFEager.concat(concatDim: concatDim, values), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.concat(concatDim: concatDim, values)
       }
@@ -4937,11 +4994,11 @@ public typealias Raw = _Raw
     ) -> [Tensor<Int32>] {
       switch commonBackend(concatDim.handle.backend, commonBackend(shape)) {
       case .XLA:
+        let output_device = concatDim.device
         let concatDim = Tensor<Int32>(copying: concatDim, to: .defaultTFEager)
         let shape = [Tensor<Int32>](copying: shape, to: .defaultTFEager)
         return [Tensor<Int32>](
-          copying: _RawTFEager.concatOffset(concatDim: concatDim, shape: shape),
-          to: concatDim.device)
+          copying: _RawTFEager.concatOffset(concatDim: concatDim, shape: shape), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.concatOffset(concatDim: concatDim, shape: shape)
       }
@@ -5045,8 +5102,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.conj(input), to: input.device)
+        return Tensor<T>(copying: _RawTFEager.conj(input), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.conj(input)
       }
@@ -5068,9 +5126,10 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(x.handle.backend, perm.handle.backend) {
       case .XLA:
+        let output_device = perm.device
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
         let perm = Tensor<Tperm>(copying: perm, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.conjugateTranspose(x, perm: perm), to: perm.device)
+        return Tensor<T>(copying: _RawTFEager.conjugateTranspose(x, perm: perm), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.conjugateTranspose(x, perm: perm)
       }
@@ -5382,13 +5441,14 @@ public typealias Raw = _Raw
         commonBackend(input.handle.backend, filter.handle.backend), outBackprop.handle.backend)
       {
       case .XLA:
+        let output_device = outBackprop.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let filter = Tensor<T>(copying: filter, to: .defaultTFEager)
         let outBackprop = Tensor<T>(copying: outBackprop, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.conv3DBackpropFilter(
             input, filter: filter, outBackprop: outBackprop, strides: strides, padding: padding,
-            dilations: dilations), to: outBackprop.device)
+            dilations: dilations), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.conv3DBackpropFilter(
           input, filter: filter, outBackprop: outBackprop, strides: strides, padding: padding,
@@ -5473,13 +5533,14 @@ public typealias Raw = _Raw
         commonBackend(input.handle.backend, filter.handle.backend), outBackprop.handle.backend)
       {
       case .XLA:
+        let output_device = outBackprop.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let filter = Tensor<T>(copying: filter, to: .defaultTFEager)
         let outBackprop = Tensor<T>(copying: outBackprop, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.conv3DBackpropInput(
             input, filter: filter, outBackprop: outBackprop, strides: strides, padding: padding,
-            dilations: dilations), to: outBackprop.device)
+            dilations: dilations), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.conv3DBackpropInput(
           input, filter: filter, outBackprop: outBackprop, strides: strides, padding: padding,
@@ -5569,10 +5630,11 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.copy(input, tensorName: tensorName, debugOpsSpec: debugOpsSpec),
-          to: input.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.copy(input, tensorName: tensorName, debugOpsSpec: debugOpsSpec)
       }
@@ -5605,10 +5667,11 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.copyHost(input, tensorName: tensorName, debugOpsSpec: debugOpsSpec),
-          to: input.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.copyHost(input, tensorName: tensorName, debugOpsSpec: debugOpsSpec)
       }
@@ -5621,8 +5684,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch a.handle.backend {
       case .XLA:
+        let output_device = a.device
         let a = Tensor<T>(copying: a, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.copyOp(a), to: a.device)
+        return Tensor<T>(copying: _RawTFEager.copyOp(a), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.copyOp(a)
       }
@@ -5769,6 +5833,7 @@ public typealias Raw = _Raw
         cropSize.handle.backend)
       {
       case .XLA:
+        let output_device = cropSize.device
         let image = Tensor<T>(copying: image, to: .defaultTFEager)
         let boxes = Tensor<Float>(copying: boxes, to: .defaultTFEager)
         let boxInd = Tensor<Int32>(copying: boxInd, to: .defaultTFEager)
@@ -5776,7 +5841,7 @@ public typealias Raw = _Raw
         return Tensor<Float>(
           copying: _RawTFEager.cropAndResize(
             image: image, boxes: boxes, boxInd: boxInd, cropSize: cropSize, method: method,
-            extrapolationValue: extrapolationValue), to: cropSize.device)
+            extrapolationValue: extrapolationValue), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.cropAndResize(
           image: image, boxes: boxes, boxInd: boxInd, cropSize: cropSize, method: method,
@@ -5822,6 +5887,7 @@ public typealias Raw = _Raw
         boxInd.handle.backend)
       {
       case .XLA:
+        let output_device = boxInd.device
         let grads = Tensor<Float>(copying: grads, to: .defaultTFEager)
         let image = Tensor<T>(copying: image, to: .defaultTFEager)
         let boxes = Tensor<Float>(copying: boxes, to: .defaultTFEager)
@@ -5829,7 +5895,7 @@ public typealias Raw = _Raw
         return Tensor<Float>(
           copying: _RawTFEager.cropAndResizeGradBoxes(
             grads: grads, image: image, boxes: boxes, boxInd: boxInd, method: method),
-          to: boxInd.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.cropAndResizeGradBoxes(
           grads: grads, image: image, boxes: boxes, boxInd: boxInd, method: method)
@@ -5875,6 +5941,7 @@ public typealias Raw = _Raw
         imageSize.handle.backend)
       {
       case .XLA:
+        let output_device = imageSize.device
         let grads = Tensor<Float>(copying: grads, to: .defaultTFEager)
         let boxes = Tensor<Float>(copying: boxes, to: .defaultTFEager)
         let boxInd = Tensor<Int32>(copying: boxInd, to: .defaultTFEager)
@@ -5882,7 +5949,7 @@ public typealias Raw = _Raw
         return Tensor<T>(
           copying: _RawTFEager.cropAndResizeGradImage(
             grads: grads, boxes: boxes, boxInd: boxInd, imageSize: imageSize, method: method),
-          to: imageSize.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.cropAndResizeGradImage(
           grads: grads, boxes: boxes, boxInd: boxInd, imageSize: imageSize, method: method)
@@ -5908,9 +5975,10 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(a.handle.backend, b.handle.backend) {
       case .XLA:
+        let output_device = b.device
         let a = Tensor<T>(copying: a, to: .defaultTFEager)
         let b = Tensor<T>(copying: b, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.cross(a, b), to: b.device)
+        return Tensor<T>(copying: _RawTFEager.cross(a, b), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.cross(a, b)
       }
@@ -5942,11 +6010,12 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(input.handle.backend, groupAssignment.handle.backend) {
       case .XLA:
+        let output_device = groupAssignment.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let groupAssignment = Tensor<Int32>(copying: groupAssignment, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.crossReplicaSum(input, groupAssignment: groupAssignment),
-          to: groupAssignment.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.crossReplicaSum(input, groupAssignment: groupAssignment)
       }
@@ -6289,6 +6358,7 @@ public typealias Raw = _Raw
             inputSize.handle.backend), commonBackend(weights)), commonBackend(biases))
       {
       case .XLA:
+        let output_device = inputSize.device
         let numLayers = Tensor<Int32>(copying: numLayers, to: .defaultTFEager)
         let numUnits = Tensor<Int32>(copying: numUnits, to: .defaultTFEager)
         let inputSize = Tensor<Int32>(copying: inputSize, to: .defaultTFEager)
@@ -6298,7 +6368,7 @@ public typealias Raw = _Raw
           copying: _RawTFEager.cudnnRNNCanonicalToParams(
             numLayers: numLayers, numUnits: numUnits, inputSize: inputSize, weights: weights,
             biases: biases, rnnMode: rnnMode, inputMode: inputMode, direction: direction,
-            dropout: dropout, seed: seed, seed2: seed2), to: inputSize.device)
+            dropout: dropout, seed: seed, seed2: seed2), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.cudnnRNNCanonicalToParams(
           numLayers: numLayers, numUnits: numUnits, inputSize: inputSize, weights: weights,
@@ -6362,6 +6432,7 @@ public typealias Raw = _Raw
             inputSize.handle.backend), commonBackend(weights)), commonBackend(biases))
       {
       case .XLA:
+        let output_device = inputSize.device
         let numLayers = Tensor<Int32>(copying: numLayers, to: .defaultTFEager)
         let numUnits = Tensor<Int32>(copying: numUnits, to: .defaultTFEager)
         let inputSize = Tensor<Int32>(copying: inputSize, to: .defaultTFEager)
@@ -6371,7 +6442,7 @@ public typealias Raw = _Raw
           copying: _RawTFEager.cudnnRNNCanonicalToParamsV2(
             numLayers: numLayers, numUnits: numUnits, inputSize: inputSize, weights: weights,
             biases: biases, rnnMode: rnnMode, inputMode: inputMode, direction: direction,
-            dropout: dropout, seed: seed, seed2: seed2, numProj: numProj), to: inputSize.device)
+            dropout: dropout, seed: seed, seed2: seed2, numProj: numProj), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.cudnnRNNCanonicalToParamsV2(
           numLayers: numLayers, numUnits: numUnits, inputSize: inputSize, weights: weights,
@@ -6422,6 +6493,7 @@ public typealias Raw = _Raw
         commonBackend(numLayers.handle.backend, numUnits.handle.backend), inputSize.handle.backend)
       {
       case .XLA:
+        let output_device = inputSize.device
         let numLayers = Tensor<Int32>(copying: numLayers, to: .defaultTFEager)
         let numUnits = Tensor<Int32>(copying: numUnits, to: .defaultTFEager)
         let inputSize = Tensor<Int32>(copying: inputSize, to: .defaultTFEager)
@@ -6429,7 +6501,7 @@ public typealias Raw = _Raw
           copying: _RawTFEager.cudnnRNNParamsSize(
             numLayers: numLayers, numUnits: numUnits, inputSize: inputSize, t: t, rnnMode: rnnMode,
             inputMode: inputMode, direction: direction, dropout: dropout, seed: seed, seed2: seed2,
-            numProj: numProj), to: inputSize.device)
+            numProj: numProj), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.cudnnRNNParamsSize(
           numLayers: numLayers, numUnits: numUnits, inputSize: inputSize, t: t, rnnMode: rnnMode,
@@ -6829,11 +6901,12 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(x.handle.backend, axis.handle.backend) {
       case .XLA:
+        let output_device = axis.device
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
         let axis = Tensor<Tidx>(copying: axis, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.cumulativeLogsumexp(
-            x, axis: axis, exclusive: exclusive, reverse: reverse), to: axis.device)
+            x, axis: axis, exclusive: exclusive, reverse: reverse), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.cumulativeLogsumexp(
           x, axis: axis, exclusive: exclusive, reverse: reverse)
@@ -6861,10 +6934,11 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch x.handle.backend {
       case .XLA:
+        let output_device = x.device
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.dataFormatDimMap(x, srcFormat: srcFormat, dstFormat: dstFormat),
-          to: x.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.dataFormatDimMap(x, srcFormat: srcFormat, dstFormat: dstFormat)
       }
@@ -6890,10 +6964,11 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch x.handle.backend {
       case .XLA:
+        let output_device = x.device
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.dataFormatVecPermute(x, srcFormat: srcFormat, dstFormat: dstFormat),
-          to: x.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.dataFormatVecPermute(x, srcFormat: srcFormat, dstFormat: dstFormat)
       }
@@ -7007,8 +7082,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.debugGradientIdentity(input), to: input.device)
+        return Tensor<T>(copying: _RawTFEager.debugGradientIdentity(input), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.debugGradientIdentity(input)
       }
@@ -7042,11 +7118,12 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.debugIdentity(
             input, deviceName: deviceName, tensorName: tensorName, debugUrls: debugUrls,
-            gatedGrpc: gatedGrpc), to: input.device)
+            gatedGrpc: gatedGrpc), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.debugIdentity(
           input, deviceName: deviceName, tensorName: tensorName, debugUrls: debugUrls,
@@ -7089,11 +7166,12 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.debugIdentityV2(
             input, tfdbgContextId: tfdbgContextId, opName: opName, outputSlot: outputSlot,
-            tensorDebugMode: tensorDebugMode, debugUrls: debugUrls), to: input.device)
+            tensorDebugMode: tensorDebugMode, debugUrls: debugUrls), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.debugIdentityV2(
           input, tfdbgContextId: tfdbgContextId, opName: opName, outputSlot: outputSlot,
@@ -7128,11 +7206,12 @@ public typealias Raw = _Raw
     ) -> Tensor<Int64> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         return Tensor<Int64>(
           copying: _RawTFEager.debugNanCount(
             input, deviceName: deviceName, tensorName: tensorName, debugUrls: debugUrls,
-            gatedGrpc: gatedGrpc), to: input.device)
+            gatedGrpc: gatedGrpc), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.debugNanCount(
           input, deviceName: deviceName, tensorName: tensorName, debugUrls: debugUrls,
@@ -7206,12 +7285,13 @@ public typealias Raw = _Raw
     ) -> Tensor<Double> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         return Tensor<Double>(
           copying: _RawTFEager.debugNumericSummary(
             input, deviceName: deviceName, tensorName: tensorName, debugUrls: debugUrls,
             lowerBound: lowerBound, upperBound: upperBound, muteIfHealthy: muteIfHealthy,
-            gatedGrpc: gatedGrpc), to: input.device)
+            gatedGrpc: gatedGrpc), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.debugNumericSummary(
           input, deviceName: deviceName, tensorName: tensorName, debugUrls: debugUrls,
@@ -7288,10 +7368,11 @@ public typealias Raw = _Raw
     ) -> Tensor<Float> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         return Tensor<Float>(
           copying: _RawTFEager.debugNumericSummaryV2(
-            input, tensorDebugMode: tensorDebugMode, tensorId: tensorId), to: input.device)
+            input, tensorDebugMode: tensorDebugMode, tensorId: tensorId), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.debugNumericSummaryV2(
           input, tensorDebugMode: tensorDebugMode, tensorId: tensorId)
@@ -7354,12 +7435,13 @@ public typealias Raw = _Raw
     ) -> Tensor<UInt8> {
       switch cropWindow.handle.backend {
       case .XLA:
+        let output_device = cropWindow.device
         let cropWindow = Tensor<Int32>(copying: cropWindow, to: .defaultTFEager)
         return Tensor<UInt8>(
           copying: _RawTFEager.decodeAndCropJpeg(
             contents: contents, cropWindow: cropWindow, channels: channels, ratio: ratio,
             fancyUpscaling: fancyUpscaling, tryRecoverTruncated: tryRecoverTruncated,
-            acceptableFraction: acceptableFraction, dctMethod: dctMethod), to: cropWindow.device)
+            acceptableFraction: acceptableFraction, dctMethod: dctMethod), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.decodeAndCropJpeg(
           contents: contents, cropWindow: cropWindow, channels: channels, ratio: ratio,
@@ -7584,11 +7666,12 @@ public typealias Raw = _Raw
     ) -> Tensor<OutType> {
       switch fixedLength.handle.backend {
       case .XLA:
+        let output_device = fixedLength.device
         let fixedLength = Tensor<Int32>(copying: fixedLength, to: .defaultTFEager)
         return Tensor<OutType>(
           copying: _RawTFEager.decodePaddedRaw(
             inputBytes: inputBytes, fixedLength: fixedLength, littleEndian: littleEndian),
-          to: fixedLength.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.decodePaddedRaw(
           inputBytes: inputBytes, fixedLength: fixedLength, littleEndian: littleEndian)
@@ -7777,8 +7860,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch x.handle.backend {
       case .XLA:
+        let output_device = x.device
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.deepCopy(x), to: x.device)
+        return Tensor<T>(copying: _RawTFEager.deepCopy(x), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.deepCopy(x)
       }
@@ -8142,10 +8226,11 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.depthToSpace(input, blockSize: blockSize, dataFormat: dataFormat),
-          to: input.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.depthToSpace(input, blockSize: blockSize, dataFormat: dataFormat)
       }
@@ -8340,13 +8425,14 @@ public typealias Raw = _Raw
         commonBackend(input.handle.backend, minRange.handle.backend), maxRange.handle.backend)
       {
       case .XLA:
+        let output_device = maxRange.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let minRange = Tensor<Float>(copying: minRange, to: .defaultTFEager)
         let maxRange = Tensor<Float>(copying: maxRange, to: .defaultTFEager)
         return Tensor<Float>(
           copying: _RawTFEager.dequantize(
             input, minRange: minRange, maxRange: maxRange, mode: mode, narrowRange: narrowRange,
-            axis: axis), to: maxRange.device)
+            axis: axis), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.dequantize(
           input, minRange: minRange, maxRange: maxRange, mode: mode, narrowRange: narrowRange,
@@ -8586,8 +8672,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch diagonal.handle.backend {
       case .XLA:
+        let output_device = diagonal.device
         let diagonal = Tensor<T>(copying: diagonal, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.diag(diagonal: diagonal), to: diagonal.device)
+        return Tensor<T>(copying: _RawTFEager.diag(diagonal: diagonal), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.diag(diagonal: diagonal)
       }
@@ -8640,8 +8727,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch x.handle.backend {
       case .XLA:
+        let output_device = x.device
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.digamma(x), to: x.device)
+        return Tensor<T>(copying: _RawTFEager.digamma(x), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.digamma(x)
       }
@@ -8696,12 +8784,13 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(input.handle.backend, filter.handle.backend) {
       case .XLA:
+        let output_device = filter.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let filter = Tensor<T>(copying: filter, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.dilation2D(
             input, filter: filter, strides: strides, rates: rates, padding: padding),
-          to: filter.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.dilation2D(
           input, filter: filter, strides: strides, rates: rates, padding: padding)
@@ -8737,13 +8826,14 @@ public typealias Raw = _Raw
         commonBackend(input.handle.backend, filter.handle.backend), outBackprop.handle.backend)
       {
       case .XLA:
+        let output_device = outBackprop.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let filter = Tensor<T>(copying: filter, to: .defaultTFEager)
         let outBackprop = Tensor<T>(copying: outBackprop, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.dilation2DBackpropFilter(
             input, filter: filter, outBackprop: outBackprop, strides: strides, rates: rates,
-            padding: padding), to: outBackprop.device)
+            padding: padding), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.dilation2DBackpropFilter(
           input, filter: filter, outBackprop: outBackprop, strides: strides, rates: rates,
@@ -8780,13 +8870,14 @@ public typealias Raw = _Raw
         commonBackend(input.handle.backend, filter.handle.backend), outBackprop.handle.backend)
       {
       case .XLA:
+        let output_device = outBackprop.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let filter = Tensor<T>(copying: filter, to: .defaultTFEager)
         let outBackprop = Tensor<T>(copying: outBackprop, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.dilation2DBackpropInput(
             input, filter: filter, outBackprop: outBackprop, strides: strides, rates: rates,
-            padding: padding), to: outBackprop.device)
+            padding: padding), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.dilation2DBackpropInput(
           input, filter: filter, outBackprop: outBackprop, strides: strides, rates: rates,
@@ -8844,9 +8935,10 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(x.handle.backend, y.handle.backend) {
       case .XLA:
+        let output_device = y.device
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
         let y = Tensor<T>(copying: y, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.divNoNan(x, y), to: y.device)
+        return Tensor<T>(copying: _RawTFEager.divNoNan(x, y), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.divNoNan(x, y)
       }
@@ -8881,10 +8973,11 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(images.handle.backend, boxes.handle.backend) {
       case .XLA:
+        let output_device = boxes.device
         let images = Tensor<T>(copying: images, to: .defaultTFEager)
         let boxes = Tensor<Float>(copying: boxes, to: .defaultTFEager)
         return Tensor<T>(
-          copying: _RawTFEager.drawBoundingBoxes(images: images, boxes: boxes), to: boxes.device)
+          copying: _RawTFEager.drawBoundingBoxes(images: images, boxes: boxes), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.drawBoundingBoxes(images: images, boxes: boxes)
       }
@@ -8923,12 +9016,13 @@ public typealias Raw = _Raw
         commonBackend(images.handle.backend, boxes.handle.backend), colors.handle.backend)
       {
       case .XLA:
+        let output_device = colors.device
         let images = Tensor<T>(copying: images, to: .defaultTFEager)
         let boxes = Tensor<Float>(copying: boxes, to: .defaultTFEager)
         let colors = Tensor<Float>(copying: colors, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.drawBoundingBoxesV2(images: images, boxes: boxes, colors: colors),
-          to: colors.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.drawBoundingBoxesV2(images: images, boxes: boxes, colors: colors)
       }
@@ -8986,12 +9080,12 @@ public typealias Raw = _Raw
     ) -> [Tensor<T>] {
       switch commonBackend(data.handle.backend, partitions.handle.backend) {
       case .XLA:
+        let output_device = partitions.device
         let data = Tensor<T>(copying: data, to: .defaultTFEager)
         let partitions = Tensor<Int32>(copying: partitions, to: .defaultTFEager)
         return [Tensor<T>](
           copying: _RawTFEager.dynamicPartition(
-            data: data, partitions: partitions, numPartitions: numPartitions), to: partitions.device
-        )
+            data: data, partitions: partitions, numPartitions: numPartitions), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.dynamicPartition(
           data: data, partitions: partitions, numPartitions: numPartitions)
@@ -9162,6 +9256,7 @@ public typealias Raw = _Raw
           truthValues.handle.backend), truthShape.handle.backend)
       {
       case .XLA:
+        let output_device = truthShape.device
         let hypothesisIndices = Tensor<Int64>(copying: hypothesisIndices, to: .defaultTFEager)
         let hypothesisValues = Tensor<T>(copying: hypothesisValues, to: .defaultTFEager)
         let hypothesisShape = Tensor<Int64>(copying: hypothesisShape, to: .defaultTFEager)
@@ -9172,7 +9267,7 @@ public typealias Raw = _Raw
           copying: _RawTFEager.editDistance(
             hypothesisIndices: hypothesisIndices, hypothesisValues: hypothesisValues,
             hypothesisShape: hypothesisShape, truthIndices: truthIndices, truthValues: truthValues,
-            truthShape: truthShape, normalize: normalize), to: truthShape.device)
+            truthShape: truthShape, normalize: normalize), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.editDistance(
           hypothesisIndices: hypothesisIndices, hypothesisValues: hypothesisValues,
@@ -9362,9 +9457,10 @@ public typealias Raw = _Raw
     ) -> Tensor<Dtype> {
       switch shape.handle.backend {
       case .XLA:
+        let output_device = shape.device
         let shape = Tensor<Int32>(copying: shape, to: .defaultTFEager)
         return Tensor<Dtype>(
-          copying: _RawTFEager.empty(shape: shape, init_: init_), to: shape.device)
+          copying: _RawTFEager.empty(shape: shape, init_: init_), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.empty(shape: shape, init_: init_)
       }
@@ -9753,8 +9849,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.ensureShape(input, shape: shape), to: input.device)
+        return Tensor<T>(copying: _RawTFEager.ensureShape(input, shape: shape), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.ensureShape(input, shape: shape)
       }
@@ -9786,11 +9883,12 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch data.handle.backend {
       case .XLA:
+        let output_device = data.device
         let data = Tensor<T>(copying: data, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.enter(
             data: data, frameName: frameName, isConstant: isConstant,
-            parallelIterations: parallelIterations), to: data.device)
+            parallelIterations: parallelIterations), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.enter(
           data: data, frameName: frameName, isConstant: isConstant,
@@ -9858,8 +9956,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch x.handle.backend {
       case .XLA:
+        let output_device = x.device
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.erf(x), to: x.device)
+        return Tensor<T>(copying: _RawTFEager.erf(x), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.erf(x)
       }
@@ -9873,8 +9972,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch x.handle.backend {
       case .XLA:
+        let output_device = x.device
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.erfc(x), to: x.device)
+        return Tensor<T>(copying: _RawTFEager.erfc(x), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.erfc(x)
       }
@@ -9887,8 +9987,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch x.handle.backend {
       case .XLA:
+        let output_device = x.device
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.erfinv(x), to: x.device)
+        return Tensor<T>(copying: _RawTFEager.erfinv(x), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.erfinv(x)
       }
@@ -9921,12 +10022,12 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(input.handle.backend, reductionIndices.handle.backend) {
       case .XLA:
+        let output_device = reductionIndices.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let reductionIndices = Tensor<Tidx>(copying: reductionIndices, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.euclideanNorm(
-            input, reductionIndices: reductionIndices, keepDims: keepDims),
-          to: reductionIndices.device)
+            input, reductionIndices: reductionIndices, keepDims: keepDims), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.euclideanNorm(
           input, reductionIndices: reductionIndices, keepDims: keepDims)
@@ -9947,8 +10048,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch data.handle.backend {
       case .XLA:
+        let output_device = data.device
         let data = Tensor<T>(copying: data, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.exit(data: data), to: data.device)
+        return Tensor<T>(copying: _RawTFEager.exit(data: data), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.exit(data: data)
       }
@@ -10869,13 +10971,14 @@ public typealias Raw = _Raw
         commonBackend(input.handle.backend, size.handle.backend), offsets.handle.backend)
       {
       case .XLA:
+        let output_device = offsets.device
         let input = Tensor<Float>(copying: input, to: .defaultTFEager)
         let size = Tensor<Int32>(copying: size, to: .defaultTFEager)
         let offsets = Tensor<Float>(copying: offsets, to: .defaultTFEager)
         return Tensor<Float>(
           copying: _RawTFEager.extractGlimpse(
             input, size: size, offsets: offsets, centered: centered, normalized: normalized,
-            uniformNoise: uniformNoise, noise: noise), to: offsets.device)
+            uniformNoise: uniformNoise, noise: noise), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.extractGlimpse(
           input, size: size, offsets: offsets, centered: centered, normalized: normalized,
@@ -10914,11 +11017,12 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch images.handle.backend {
       case .XLA:
+        let output_device = images.device
         let images = Tensor<T>(copying: images, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.extractImagePatches(
             images: images, ksizes: ksizes, strides: strides, rates: rates, padding: padding),
-          to: images.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.extractImagePatches(
           images: images, ksizes: ksizes, strides: strides, rates: rates, padding: padding)
@@ -10974,10 +11078,11 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.extractVolumePatches(
-            input, ksizes: ksizes, strides: strides, padding: padding), to: input.device)
+            input, ksizes: ksizes, strides: strides, padding: padding), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.extractVolumePatches(
           input, ksizes: ksizes, strides: strides, padding: padding)
@@ -11004,8 +11109,9 @@ public typealias Raw = _Raw
     ) -> Tensor<Tcomplex> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<Tcomplex>(copying: input, to: .defaultTFEager)
-        return Tensor<Tcomplex>(copying: _RawTFEager.fFT(input), to: input.device)
+        return Tensor<Tcomplex>(copying: _RawTFEager.fFT(input), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.fFT(input)
       }
@@ -11031,8 +11137,9 @@ public typealias Raw = _Raw
     ) -> Tensor<Tcomplex> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<Tcomplex>(copying: input, to: .defaultTFEager)
-        return Tensor<Tcomplex>(copying: _RawTFEager.fFT2D(input), to: input.device)
+        return Tensor<Tcomplex>(copying: _RawTFEager.fFT2D(input), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.fFT2D(input)
       }
@@ -11058,8 +11165,9 @@ public typealias Raw = _Raw
     ) -> Tensor<Tcomplex> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<Tcomplex>(copying: input, to: .defaultTFEager)
-        return Tensor<Tcomplex>(copying: _RawTFEager.fFT3D(input), to: input.device)
+        return Tensor<Tcomplex>(copying: _RawTFEager.fFT3D(input), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.fFT3D(input)
       }
@@ -11147,11 +11255,12 @@ public typealias Raw = _Raw
     ) -> Tensor<Float> {
       switch inputs.handle.backend {
       case .XLA:
+        let output_device = inputs.device
         let inputs = Tensor<Float>(copying: inputs, to: .defaultTFEager)
         return Tensor<Float>(
           copying: _RawTFEager.fakeQuantWithMinMaxArgs(
             inputs: inputs, min: min, max: max, numBits: numBits, narrowRange: narrowRange),
-          to: inputs.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.fakeQuantWithMinMaxArgs(
           inputs: inputs, min: min, max: max, numBits: numBits, narrowRange: narrowRange)
@@ -11178,12 +11287,13 @@ public typealias Raw = _Raw
     ) -> Tensor<Float> {
       switch commonBackend(gradients.handle.backend, inputs.handle.backend) {
       case .XLA:
+        let output_device = inputs.device
         let gradients = Tensor<Float>(copying: gradients, to: .defaultTFEager)
         let inputs = Tensor<Float>(copying: inputs, to: .defaultTFEager)
         return Tensor<Float>(
           copying: _RawTFEager.fakeQuantWithMinMaxArgsGradient(
             gradients: gradients, inputs: inputs, min: min, max: max, numBits: numBits,
-            narrowRange: narrowRange), to: inputs.device)
+            narrowRange: narrowRange), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.fakeQuantWithMinMaxArgsGradient(
           gradients: gradients, inputs: inputs, min: min, max: max, numBits: numBits,
@@ -11225,13 +11335,14 @@ public typealias Raw = _Raw
         commonBackend(inputs.handle.backend, min.handle.backend), max.handle.backend)
       {
       case .XLA:
+        let output_device = max.device
         let inputs = Tensor<Float>(copying: inputs, to: .defaultTFEager)
         let min = Tensor<Float>(copying: min, to: .defaultTFEager)
         let max = Tensor<Float>(copying: max, to: .defaultTFEager)
         return Tensor<Float>(
           copying: _RawTFEager.fakeQuantWithMinMaxVars(
             inputs: inputs, min: min, max: max, numBits: numBits, narrowRange: narrowRange),
-          to: max.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.fakeQuantWithMinMaxVars(
           inputs: inputs, min: min, max: max, numBits: numBits, narrowRange: narrowRange)
@@ -11307,13 +11418,14 @@ public typealias Raw = _Raw
         commonBackend(inputs.handle.backend, min.handle.backend), max.handle.backend)
       {
       case .XLA:
+        let output_device = max.device
         let inputs = Tensor<Float>(copying: inputs, to: .defaultTFEager)
         let min = Tensor<Float>(copying: min, to: .defaultTFEager)
         let max = Tensor<Float>(copying: max, to: .defaultTFEager)
         return Tensor<Float>(
           copying: _RawTFEager.fakeQuantWithMinMaxVarsPerChannel(
             inputs: inputs, min: min, max: max, numBits: numBits, narrowRange: narrowRange),
-          to: max.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.fakeQuantWithMinMaxVarsPerChannel(
           inputs: inputs, min: min, max: max, numBits: numBits, narrowRange: narrowRange)
@@ -11494,9 +11606,10 @@ public typealias Raw = _Raw
     ) -> Tensor<UInt8> {
       switch data.handle.backend {
       case .XLA:
+        let output_device = data.device
         let data = Tensor<T>(copying: data, to: .defaultTFEager)
         return Tensor<UInt8>(
-          copying: _RawTFEager.fingerprint(data: data, method: method), to: data.device)
+          copying: _RawTFEager.fingerprint(data: data, method: method), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.fingerprint(data: data, method: method)
       }
@@ -11738,9 +11851,10 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(x.handle.backend, y.handle.backend) {
       case .XLA:
+        let output_device = y.device
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
         let y = Tensor<T>(copying: y, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.floorDiv(x, y), to: y.device)
+        return Tensor<T>(copying: _RawTFEager.floorDiv(x, y), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.floorDiv(x, y)
       }
@@ -11761,9 +11875,10 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(x.handle.backend, y.handle.backend) {
       case .XLA:
+        let output_device = y.device
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
         let y = Tensor<T>(copying: y, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.floorMod(x, y), to: y.device)
+        return Tensor<T>(copying: _RawTFEager.floorMod(x, y), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.floorMod(x, y)
       }
@@ -11935,6 +12050,7 @@ public typealias Raw = _Raw
           rowPoolingSequence.handle.backend), colPoolingSequence.handle.backend)
       {
       case .XLA:
+        let output_device = colPoolingSequence.device
         let origInputTensorShape = Tensor<Int64>(copying: origInputTensorShape, to: .defaultTFEager)
         let outBackprop = Tensor<T>(copying: outBackprop, to: .defaultTFEager)
         let rowPoolingSequence = Tensor<Int64>(copying: rowPoolingSequence, to: .defaultTFEager)
@@ -11943,7 +12059,7 @@ public typealias Raw = _Raw
           copying: _RawTFEager.fractionalAvgPoolGrad(
             origInputTensorShape: origInputTensorShape, outBackprop: outBackprop,
             rowPoolingSequence: rowPoolingSequence, colPoolingSequence: colPoolingSequence,
-            overlapping: overlapping), to: colPoolingSequence.device)
+            overlapping: overlapping), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.fractionalAvgPoolGrad(
           origInputTensorShape: origInputTensorShape, outBackprop: outBackprop,
@@ -12073,6 +12189,7 @@ public typealias Raw = _Raw
         colPoolingSequence.handle.backend)
       {
       case .XLA:
+        let output_device = colPoolingSequence.device
         let origInput = Tensor<T>(copying: origInput, to: .defaultTFEager)
         let origOutput = Tensor<T>(copying: origOutput, to: .defaultTFEager)
         let outBackprop = Tensor<T>(copying: outBackprop, to: .defaultTFEager)
@@ -12082,7 +12199,7 @@ public typealias Raw = _Raw
           copying: _RawTFEager.fractionalMaxPoolGrad(
             origInput: origInput, origOutput: origOutput, outBackprop: outBackprop,
             rowPoolingSequence: rowPoolingSequence, colPoolingSequence: colPoolingSequence,
-            overlapping: overlapping), to: colPoolingSequence.device)
+            overlapping: overlapping), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.fractionalMaxPoolGrad(
           origInput: origInput, origOutput: origOutput, outBackprop: outBackprop,
@@ -12474,13 +12591,14 @@ public typealias Raw = _Raw
         commonBackend(input.handle.backend, paddings.handle.backend), filter.handle.backend)
       {
       case .XLA:
+        let output_device = filter.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let paddings = Tensor<Int32>(copying: paddings, to: .defaultTFEager)
         let filter = Tensor<T>(copying: filter, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.fusedPadConv2D(
             input, paddings: paddings, filter: filter, mode: mode, strides: strides,
-            padding: padding), to: filter.device)
+            padding: padding), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.fusedPadConv2D(
           input, paddings: paddings, filter: filter, mode: mode, strides: strides, padding: padding)
@@ -12533,6 +12651,7 @@ public typealias Raw = _Raw
         filter.handle.backend)
       {
       case .XLA:
+        let output_device = filter.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let size = Tensor<Int32>(copying: size, to: .defaultTFEager)
         let paddings = Tensor<Int32>(copying: paddings, to: .defaultTFEager)
@@ -12541,7 +12660,7 @@ public typealias Raw = _Raw
           copying: _RawTFEager.fusedResizeAndPadConv2D(
             input, size: size, paddings: paddings, filter: filter,
             resizeAlignCorners: resizeAlignCorners, mode: mode, strides: strides, padding: padding),
-          to: filter.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.fusedResizeAndPadConv2D(
           input, size: size, paddings: paddings, filter: filter,
@@ -12876,10 +12995,11 @@ public typealias Raw = _Raw
     ) -> Tensor<Tparams> {
       switch commonBackend(params.handle.backend, indices.handle.backend) {
       case .XLA:
+        let output_device = indices.device
         let params = Tensor<Tparams>(copying: params, to: .defaultTFEager)
         let indices = Tensor<Tindices>(copying: indices, to: .defaultTFEager)
         return Tensor<Tparams>(
-          copying: _RawTFEager.gatherNd(params: params, indices: indices), to: indices.device)
+          copying: _RawTFEager.gatherNd(params: params, indices: indices), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.gatherNd(params: params, indices: indices)
       }
@@ -13305,8 +13425,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.guaranteeConst(input), to: input.device)
+        return Tensor<T>(copying: _RawTFEager.guaranteeConst(input), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.guaranteeConst(input)
       }
@@ -13330,8 +13451,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch images.handle.backend {
       case .XLA:
+        let output_device = images.device
         let images = Tensor<T>(copying: images, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.hSVToRGB(images: images), to: images.device)
+        return Tensor<T>(copying: _RawTFEager.hSVToRGB(images: images), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.hSVToRGB(images: images)
       }
@@ -13407,12 +13529,13 @@ public typealias Raw = _Raw
         commonBackend(values.handle.backend, valueRange.handle.backend), nbins.handle.backend)
       {
       case .XLA:
+        let output_device = nbins.device
         let values = Tensor<T>(copying: values, to: .defaultTFEager)
         let valueRange = Tensor<T>(copying: valueRange, to: .defaultTFEager)
         let nbins = Tensor<Int32>(copying: nbins, to: .defaultTFEager)
         return Tensor<Dtype>(
           copying: _RawTFEager.histogramFixedWidth(values, valueRange: valueRange, nbins: nbins),
-          to: nbins.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.histogramFixedWidth(values, valueRange: valueRange, nbins: nbins)
       }
@@ -13459,8 +13582,9 @@ public typealias Raw = _Raw
     ) -> Tensor<Tcomplex> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<Tcomplex>(copying: input, to: .defaultTFEager)
-        return Tensor<Tcomplex>(copying: _RawTFEager.iFFT(input), to: input.device)
+        return Tensor<Tcomplex>(copying: _RawTFEager.iFFT(input), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.iFFT(input)
       }
@@ -13486,8 +13610,9 @@ public typealias Raw = _Raw
     ) -> Tensor<Tcomplex> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<Tcomplex>(copying: input, to: .defaultTFEager)
-        return Tensor<Tcomplex>(copying: _RawTFEager.iFFT2D(input), to: input.device)
+        return Tensor<Tcomplex>(copying: _RawTFEager.iFFT2D(input), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.iFFT2D(input)
       }
@@ -13513,8 +13638,9 @@ public typealias Raw = _Raw
     ) -> Tensor<Tcomplex> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<Tcomplex>(copying: input, to: .defaultTFEager)
-        return Tensor<Tcomplex>(copying: _RawTFEager.iFFT3D(input), to: input.device)
+        return Tensor<Tcomplex>(copying: _RawTFEager.iFFT3D(input), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.iFFT3D(input)
       }
@@ -13558,10 +13684,11 @@ public typealias Raw = _Raw
     ) -> Tensor<Treal> {
       switch commonBackend(input.handle.backend, fftLength.handle.backend) {
       case .XLA:
+        let output_device = fftLength.device
         let input = Tensor<Tcomplex>(copying: input, to: .defaultTFEager)
         let fftLength = Tensor<Int32>(copying: fftLength, to: .defaultTFEager)
         return Tensor<Treal>(
-          copying: _RawTFEager.iRFFT(input, fftLength: fftLength), to: fftLength.device)
+          copying: _RawTFEager.iRFFT(input, fftLength: fftLength), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.iRFFT(input, fftLength: fftLength)
       }
@@ -13606,10 +13733,11 @@ public typealias Raw = _Raw
     ) -> Tensor<Treal> {
       switch commonBackend(input.handle.backend, fftLength.handle.backend) {
       case .XLA:
+        let output_device = fftLength.device
         let input = Tensor<Tcomplex>(copying: input, to: .defaultTFEager)
         let fftLength = Tensor<Int32>(copying: fftLength, to: .defaultTFEager)
         return Tensor<Treal>(
-          copying: _RawTFEager.iRFFT2D(input, fftLength: fftLength), to: fftLength.device)
+          copying: _RawTFEager.iRFFT2D(input, fftLength: fftLength), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.iRFFT2D(input, fftLength: fftLength)
       }
@@ -13654,10 +13782,11 @@ public typealias Raw = _Raw
     ) -> Tensor<Treal> {
       switch commonBackend(input.handle.backend, fftLength.handle.backend) {
       case .XLA:
+        let output_device = fftLength.device
         let input = Tensor<Tcomplex>(copying: input, to: .defaultTFEager)
         let fftLength = Tensor<Int32>(copying: fftLength, to: .defaultTFEager)
         return Tensor<Treal>(
-          copying: _RawTFEager.iRFFT3D(input, fftLength: fftLength), to: fftLength.device)
+          copying: _RawTFEager.iRFFT3D(input, fftLength: fftLength), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.iRFFT3D(input, fftLength: fftLength)
       }
@@ -13671,8 +13800,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.identity(input), to: input.device)
+        return Tensor<T>(copying: _RawTFEager.identity(input), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.identity(input)
       }
@@ -13786,9 +13916,10 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(a.handle.backend, x.handle.backend) {
       case .XLA:
+        let output_device = x.device
         let a = Tensor<T>(copying: a, to: .defaultTFEager)
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.igamma(a, x), to: x.device)
+        return Tensor<T>(copying: _RawTFEager.igamma(a, x), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.igamma(a, x)
       }
@@ -13803,9 +13934,10 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(a.handle.backend, x.handle.backend) {
       case .XLA:
+        let output_device = x.device
         let a = Tensor<T>(copying: a, to: .defaultTFEager)
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.igammaGradA(a, x), to: x.device)
+        return Tensor<T>(copying: _RawTFEager.igammaGradA(a, x), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.igammaGradA(a, x)
       }
@@ -13833,9 +13965,10 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(a.handle.backend, x.handle.backend) {
       case .XLA:
+        let output_device = x.device
         let a = Tensor<T>(copying: a, to: .defaultTFEager)
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.igammac(a, x), to: x.device)
+        return Tensor<T>(copying: _RawTFEager.igammac(a, x), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.igammac(a, x)
       }
@@ -13875,8 +14008,9 @@ public typealias Raw = _Raw
     ) -> Tensor<Tout> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
-        return Tensor<Tout>(copying: _RawTFEager.imag(input), to: input.device)
+        return Tensor<Tout>(copying: _RawTFEager.imag(input), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.imag(input)
       }
@@ -13948,11 +14082,12 @@ public typealias Raw = _Raw
     ) -> Tensor<Bool> {
       switch commonBackend(predictions.handle.backend, targets.handle.backend) {
       case .XLA:
+        let output_device = targets.device
         let predictions = Tensor<Float>(copying: predictions, to: .defaultTFEager)
         let targets = Tensor<T>(copying: targets, to: .defaultTFEager)
         return Tensor<Bool>(
           copying: _RawTFEager.inTopK(predictions: predictions, targets: targets, k: k),
-          to: targets.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.inTopK(predictions: predictions, targets: targets, k: k)
       }
@@ -13992,12 +14127,13 @@ public typealias Raw = _Raw
         commonBackend(predictions.handle.backend, targets.handle.backend), k.handle.backend)
       {
       case .XLA:
+        let output_device = k.device
         let predictions = Tensor<Float>(copying: predictions, to: .defaultTFEager)
         let targets = Tensor<T>(copying: targets, to: .defaultTFEager)
         let k = Tensor<T>(copying: k, to: .defaultTFEager)
         return Tensor<Bool>(
           copying: _RawTFEager.inTopKV2(predictions: predictions, targets: targets, k: k),
-          to: k.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.inTopKV2(predictions: predictions, targets: targets, k: k)
       }
@@ -14178,10 +14314,11 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(commonBackend(x.handle.backend, i.handle.backend), v.handle.backend) {
       case .XLA:
+        let output_device = v.device
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
         let i = Tensor<Int32>(copying: i, to: .defaultTFEager)
         let v = Tensor<T>(copying: v, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.inplaceAdd(x, i: i, v: v), to: v.device)
+        return Tensor<T>(copying: _RawTFEager.inplaceAdd(x, i: i, v: v), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.inplaceAdd(x, i: i, v: v)
       }
@@ -14206,10 +14343,11 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(commonBackend(x.handle.backend, i.handle.backend), v.handle.backend) {
       case .XLA:
+        let output_device = v.device
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
         let i = Tensor<Int32>(copying: i, to: .defaultTFEager)
         let v = Tensor<T>(copying: v, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.inplaceSub(x, i: i, v: v), to: v.device)
+        return Tensor<T>(copying: _RawTFEager.inplaceSub(x, i: i, v: v), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.inplaceSub(x, i: i, v: v)
       }
@@ -14234,10 +14372,11 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(commonBackend(x.handle.backend, i.handle.backend), v.handle.backend) {
       case .XLA:
+        let output_device = v.device
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
         let i = Tensor<Int32>(copying: i, to: .defaultTFEager)
         let v = Tensor<T>(copying: v, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.inplaceUpdate(x, i: i, v: v), to: v.device)
+        return Tensor<T>(copying: _RawTFEager.inplaceUpdate(x, i: i, v: v), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.inplaceUpdate(x, i: i, v: v)
       }
@@ -14277,8 +14416,9 @@ public typealias Raw = _Raw
     ) -> Tensor<Int32> {
       switch a.handle.backend {
       case .XLA:
+        let output_device = a.device
         let a = Tensor<Int32>(copying: a, to: .defaultTFEager)
-        return Tensor<Int32>(copying: _RawTFEager.intInputIntOutput(a), to: a.device)
+        return Tensor<Int32>(copying: _RawTFEager.intInputIntOutput(a), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.intInputIntOutput(a)
       }
@@ -14334,8 +14474,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch x.handle.backend {
       case .XLA:
+        let output_device = x.device
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.inv(x), to: x.device)
+        return Tensor<T>(copying: _RawTFEager.inv(x), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.inv(x)
       }
@@ -14353,9 +14494,10 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(y.handle.backend, dy.handle.backend) {
       case .XLA:
+        let output_device = dy.device
         let y = Tensor<T>(copying: y, to: .defaultTFEager)
         let dy = Tensor<T>(copying: dy, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.invGrad(y, dy: dy), to: dy.device)
+        return Tensor<T>(copying: _RawTFEager.invGrad(y, dy: dy), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.invGrad(y, dy: dy)
       }
@@ -14409,8 +14551,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch x.handle.backend {
       case .XLA:
+        let output_device = x.device
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.invert(x), to: x.device)
+        return Tensor<T>(copying: _RawTFEager.invert(x), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.invert(x)
       }
@@ -14686,11 +14829,12 @@ public typealias Raw = _Raw
     ) -> Tensor<Int64> {
       switch commonBackend(distances.handle.backend, seed.handle.backend) {
       case .XLA:
+        let output_device = seed.device
         let distances = Tensor<Float>(copying: distances, to: .defaultTFEager)
         let seed = Tensor<Int64>(copying: seed, to: .defaultTFEager)
         return Tensor<Int64>(
           copying: _RawTFEager.kMC2ChainInitialization(distances: distances, seed: seed),
-          to: seed.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.kMC2ChainInitialization(distances: distances, seed: seed)
       }
@@ -14739,6 +14883,7 @@ public typealias Raw = _Raw
         numRetriesPerSample.handle.backend)
       {
       case .XLA:
+        let output_device = numRetriesPerSample.device
         let points = Tensor<Float>(copying: points, to: .defaultTFEager)
         let numToSample = Tensor<Int64>(copying: numToSample, to: .defaultTFEager)
         let seed = Tensor<Int64>(copying: seed, to: .defaultTFEager)
@@ -14746,7 +14891,7 @@ public typealias Raw = _Raw
         return Tensor<Float>(
           copying: _RawTFEager.kmeansPlusPlusInitialization(
             points: points, numToSample: numToSample, seed: seed,
-            numRetriesPerSample: numRetriesPerSample), to: numRetriesPerSample.device)
+            numRetriesPerSample: numRetriesPerSample), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.kmeansPlusPlusInitialization(
           points: points, numToSample: numToSample, seed: seed,
@@ -14770,8 +14915,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch t.handle.backend {
       case .XLA:
+        let output_device = t.device
         let t = Tensor<T>(copying: t, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.l2Loss(t: t), to: t.device)
+        return Tensor<T>(copying: _RawTFEager.l2Loss(t: t), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.l2Loss(t: t)
       }
@@ -14834,11 +14980,12 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.lRN(
-            input, depthRadius: depthRadius, bias: bias, alpha: alpha, beta: beta), to: input.device
-        )
+            input, depthRadius: depthRadius, bias: bias, alpha: alpha, beta: beta),
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.lRN(
           input, depthRadius: depthRadius, bias: bias, alpha: alpha, beta: beta)
@@ -14875,13 +15022,14 @@ public typealias Raw = _Raw
         outputImage.handle.backend)
       {
       case .XLA:
+        let output_device = outputImage.device
         let inputGrads = Tensor<T>(copying: inputGrads, to: .defaultTFEager)
         let inputImage = Tensor<T>(copying: inputImage, to: .defaultTFEager)
         let outputImage = Tensor<T>(copying: outputImage, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.lRNGrad(
             inputGrads: inputGrads, inputImage: inputImage, outputImage: outputImage,
-            depthRadius: depthRadius, bias: bias, alpha: alpha, beta: beta), to: outputImage.device)
+            depthRadius: depthRadius, bias: bias, alpha: alpha, beta: beta), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.lRNGrad(
           inputGrads: inputGrads, inputImage: inputImage, outputImage: outputImage,
@@ -15165,9 +15313,10 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(x.handle.backend, y.handle.backend) {
       case .XLA:
+        let output_device = y.device
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
         let y = Tensor<T>(copying: y, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.leftShift(x, y), to: y.device)
+        return Tensor<T>(copying: _RawTFEager.leftShift(x, y), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.leftShift(x, y)
       }
@@ -15251,8 +15400,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch x.handle.backend {
       case .XLA:
+        let output_device = x.device
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.lgamma(x), to: x.device)
+        return Tensor<T>(copying: _RawTFEager.lgamma(x), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.lgamma(x)
       }
@@ -15428,6 +15578,7 @@ public typealias Raw = _Raw
         initializingValues.handle.backend)
       {
       case .XLA:
+        let output_device = initializingValues.device
         let rowRemapping = Tensor<Int64>(copying: rowRemapping, to: .defaultTFEager)
         let colRemapping = Tensor<Int64>(copying: colRemapping, to: .defaultTFEager)
         let initializingValues = Tensor<Float>(copying: initializingValues, to: .defaultTFEager)
@@ -15435,7 +15586,7 @@ public typealias Raw = _Raw
           copying: _RawTFEager.loadAndRemapMatrix(
             ckptPath: ckptPath, oldTensorName: oldTensorName, rowRemapping: rowRemapping,
             colRemapping: colRemapping, initializingValues: initializingValues, numRows: numRows,
-            numCols: numCols, maxRowsInMemory: maxRowsInMemory), to: initializingValues.device)
+            numCols: numCols, maxRowsInMemory: maxRowsInMemory), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.loadAndRemapMatrix(
           ckptPath: ckptPath, oldTensorName: oldTensorName, rowRemapping: rowRemapping,
@@ -16174,12 +16325,12 @@ public typealias Raw = _Raw
     ) -> Tensor<Tout> {
       switch commonBackend(keys.handle.backend, defaultValue.handle.backend) {
       case .XLA:
+        let output_device = defaultValue.device
         let keys = Tensor<Tin>(copying: keys, to: .defaultTFEager)
         let defaultValue = Tensor<Tout>(copying: defaultValue, to: .defaultTFEager)
         return Tensor<Tout>(
           copying: _RawTFEager.lookupTableFindV2(
-            tableHandle: tableHandle, keys: keys, defaultValue: defaultValue),
-          to: defaultValue.device)
+            tableHandle: tableHandle, keys: keys, defaultValue: defaultValue), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.lookupTableFindV2(
           tableHandle: tableHandle, keys: keys, defaultValue: defaultValue)
@@ -16271,8 +16422,9 @@ public typealias Raw = _Raw
     ) -> Tensor<Bool> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<Bool>(copying: input, to: .defaultTFEager)
-        return Tensor<Bool>(copying: _RawTFEager.loopCond(input), to: input.device)
+        return Tensor<Bool>(copying: _RawTFEager.loopCond(input), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.loopCond(input)
       }
@@ -16317,10 +16469,11 @@ public typealias Raw = _Raw
     ) -> Tensor<OutType> {
       switch commonBackend(sortedInputs.handle.backend, values.handle.backend) {
       case .XLA:
+        let output_device = values.device
         let sortedInputs = Tensor<T>(copying: sortedInputs, to: .defaultTFEager)
         let values = Tensor<T>(copying: values, to: .defaultTFEager)
         return Tensor<OutType>(
-          copying: _RawTFEager.lowerBound(sortedInputs: sortedInputs, values), to: values.device)
+          copying: _RawTFEager.lowerBound(sortedInputs: sortedInputs, values), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.lowerBound(sortedInputs: sortedInputs, values)
       }
@@ -16736,13 +16889,13 @@ public typealias Raw = _Raw
         commonBackend(input.handle.backend, numLower.handle.backend), numUpper.handle.backend)
       {
       case .XLA:
-        let device = input.device
+        let output_device = numUpper.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let numLower = Tensor<Tindex>(copying: numLower, to: .defaultTFEager)
         let numUpper = Tensor<Tindex>(copying: numUpper, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.matrixBandPart(input, numLower: numLower, numUpper: numUpper),
-          to: device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.matrixBandPart(input, numLower: numLower, numUpper: numUpper)
       }
@@ -16764,8 +16917,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.matrixDeterminant(input), to: input.device)
+        return Tensor<T>(copying: _RawTFEager.matrixDeterminant(input), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.matrixDeterminant(input)
       }
@@ -16810,8 +16964,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch diagonal.handle.backend {
       case .XLA:
+        let output_device = diagonal.device
         let diagonal = Tensor<T>(copying: diagonal, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.matrixDiag(diagonal: diagonal), to: diagonal.device)
+        return Tensor<T>(copying: _RawTFEager.matrixDiag(diagonal: diagonal), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.matrixDiag(diagonal: diagonal)
       }
@@ -16859,8 +17014,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.matrixDiagPart(input), to: input.device)
+        return Tensor<T>(copying: _RawTFEager.matrixDiagPart(input), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.matrixDiagPart(input)
       }
@@ -16958,12 +17114,13 @@ public typealias Raw = _Raw
         commonBackend(input.handle.backend, k.handle.backend), paddingValue.handle.backend)
       {
       case .XLA:
+        let output_device = paddingValue.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let k = Tensor<Int32>(copying: k, to: .defaultTFEager)
         let paddingValue = Tensor<T>(copying: paddingValue, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.matrixDiagPartV2(input, k: k, paddingValue: paddingValue),
-          to: paddingValue.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.matrixDiagPartV2(input, k: k, paddingValue: paddingValue)
       }
@@ -17091,6 +17248,7 @@ public typealias Raw = _Raw
           numCols.handle.backend), paddingValue.handle.backend)
       {
       case .XLA:
+        let output_device = paddingValue.device
         let diagonal = Tensor<T>(copying: diagonal, to: .defaultTFEager)
         let k = Tensor<Int32>(copying: k, to: .defaultTFEager)
         let numRows = Tensor<Int32>(copying: numRows, to: .defaultTFEager)
@@ -17099,7 +17257,7 @@ public typealias Raw = _Raw
         return Tensor<T>(
           copying: _RawTFEager.matrixDiagV2(
             diagonal: diagonal, k: k, numRows: numRows, numCols: numCols, paddingValue: paddingValue
-          ), to: paddingValue.device)
+          ), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.matrixDiagV2(
           diagonal: diagonal, k: k, numRows: numRows, numCols: numCols, paddingValue: paddingValue)
@@ -17114,8 +17272,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.matrixExponential(input), to: input.device)
+        return Tensor<T>(copying: _RawTFEager.matrixExponential(input), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.matrixExponential(input)
       }
@@ -17150,9 +17309,10 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         return Tensor<T>(
-          copying: _RawTFEager.matrixInverse(input, adjoint: adjoint), to: input.device)
+          copying: _RawTFEager.matrixInverse(input, adjoint: adjoint), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.matrixInverse(input, adjoint: adjoint)
       }
@@ -17190,8 +17350,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.matrixLogarithm(input), to: input.device)
+        return Tensor<T>(copying: _RawTFEager.matrixLogarithm(input), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.matrixLogarithm(input)
       }
@@ -17225,10 +17386,11 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(input.handle.backend, diagonal.handle.backend) {
       case .XLA:
+        let output_device = diagonal.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let diagonal = Tensor<T>(copying: diagonal, to: .defaultTFEager)
         return Tensor<T>(
-          copying: _RawTFEager.matrixSetDiag(input, diagonal: diagonal), to: diagonal.device)
+          copying: _RawTFEager.matrixSetDiag(input, diagonal: diagonal), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.matrixSetDiag(input, diagonal: diagonal)
       }
@@ -17329,11 +17491,12 @@ public typealias Raw = _Raw
         commonBackend(input.handle.backend, diagonal.handle.backend), k.handle.backend)
       {
       case .XLA:
+        let output_device = k.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let diagonal = Tensor<T>(copying: diagonal, to: .defaultTFEager)
         let k = Tensor<Int32>(copying: k, to: .defaultTFEager)
         return Tensor<T>(
-          copying: _RawTFEager.matrixSetDiagV2(input, diagonal: diagonal, k: k), to: k.device)
+          copying: _RawTFEager.matrixSetDiagV2(input, diagonal: diagonal, k: k), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.matrixSetDiagV2(input, diagonal: diagonal, k: k)
       }
@@ -17365,11 +17528,12 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(matrix.handle.backend, rhs.handle.backend) {
       case .XLA:
+        let output_device = rhs.device
         let matrix = Tensor<T>(copying: matrix, to: .defaultTFEager)
         let rhs = Tensor<T>(copying: rhs, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.matrixSolve(matrix: matrix, rhs: rhs, adjoint: adjoint),
-          to: rhs.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.matrixSolve(matrix: matrix, rhs: rhs, adjoint: adjoint)
       }
@@ -17434,13 +17598,13 @@ public typealias Raw = _Raw
         commonBackend(matrix.handle.backend, rhs.handle.backend), l2Regularizer.handle.backend)
       {
       case .XLA:
+        let output_device = l2Regularizer.device
         let matrix = Tensor<T>(copying: matrix, to: .defaultTFEager)
         let rhs = Tensor<T>(copying: rhs, to: .defaultTFEager)
         let l2Regularizer = Tensor<Double>(copying: l2Regularizer, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.matrixSolveLs(
-            matrix: matrix, rhs: rhs, l2Regularizer: l2Regularizer, fast: fast),
-          to: l2Regularizer.device)
+            matrix: matrix, rhs: rhs, l2Regularizer: l2Regularizer, fast: fast), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.matrixSolveLs(
           matrix: matrix, rhs: rhs, l2Regularizer: l2Regularizer, fast: fast)
@@ -17479,8 +17643,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.matrixSquareRoot(input), to: input.device)
+        return Tensor<T>(copying: _RawTFEager.matrixSquareRoot(input), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.matrixSquareRoot(input)
       }
@@ -17560,11 +17725,12 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(matrix.handle.backend, rhs.handle.backend) {
       case .XLA:
+        let output_device = rhs.device
         let matrix = Tensor<T>(copying: matrix, to: .defaultTFEager)
         let rhs = Tensor<T>(copying: rhs, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.matrixTriangularSolve(
-            matrix: matrix, rhs: rhs, lower: lower, adjoint: adjoint), to: rhs.device)
+            matrix: matrix, rhs: rhs, lower: lower, adjoint: adjoint), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.matrixTriangularSolve(
           matrix: matrix, rhs: rhs, lower: lower, adjoint: adjoint)
@@ -17646,11 +17812,12 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.maxPool(
             input, ksize: ksize, strides: strides, padding: padding, dataFormat: dataFormat),
-          to: input.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.maxPool(
           input, ksize: ksize, strides: strides, padding: padding, dataFormat: dataFormat)
@@ -17774,13 +17941,14 @@ public typealias Raw = _Raw
         commonBackend(origInput.handle.backend, origOutput.handle.backend), grad.handle.backend)
       {
       case .XLA:
+        let output_device = grad.device
         let origInput = Tensor<T>(copying: origInput, to: .defaultTFEager)
         let origOutput = Tensor<T>(copying: origOutput, to: .defaultTFEager)
         let grad = Tensor<T>(copying: grad, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.maxPool3DGradGrad(
             origInput: origInput, origOutput: origOutput, grad: grad, ksize: ksize,
-            strides: strides, padding: padding, dataFormat: dataFormat), to: grad.device)
+            strides: strides, padding: padding, dataFormat: dataFormat), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.maxPool3DGradGrad(
           origInput: origInput, origOutput: origOutput, grad: grad, ksize: ksize, strides: strides,
@@ -17822,13 +17990,14 @@ public typealias Raw = _Raw
         commonBackend(origInput.handle.backend, origOutput.handle.backend), grad.handle.backend)
       {
       case .XLA:
+        let output_device = grad.device
         let origInput = Tensor<T>(copying: origInput, to: .defaultTFEager)
         let origOutput = Tensor<T>(copying: origOutput, to: .defaultTFEager)
         let grad = Tensor<T>(copying: grad, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.maxPoolGrad(
             origInput: origInput, origOutput: origOutput, grad: grad, ksize: ksize,
-            strides: strides, padding: padding, dataFormat: dataFormat), to: grad.device)
+            strides: strides, padding: padding, dataFormat: dataFormat), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.maxPoolGrad(
           origInput: origInput, origOutput: origOutput, grad: grad, ksize: ksize, strides: strides,
@@ -17870,13 +18039,14 @@ public typealias Raw = _Raw
         commonBackend(origInput.handle.backend, origOutput.handle.backend), grad.handle.backend)
       {
       case .XLA:
+        let output_device = grad.device
         let origInput = Tensor<T>(copying: origInput, to: .defaultTFEager)
         let origOutput = Tensor<T>(copying: origOutput, to: .defaultTFEager)
         let grad = Tensor<T>(copying: grad, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.maxPoolGradGrad(
             origInput: origInput, origOutput: origOutput, grad: grad, ksize: ksize,
-            strides: strides, padding: padding, dataFormat: dataFormat), to: grad.device)
+            strides: strides, padding: padding, dataFormat: dataFormat), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.maxPoolGradGrad(
           origInput: origInput, origOutput: origOutput, grad: grad, ksize: ksize, strides: strides,
@@ -17921,6 +18091,7 @@ public typealias Raw = _Raw
           ksize.handle.backend), strides.handle.backend)
       {
       case .XLA:
+        let output_device = strides.device
         let origInput = Tensor<T>(copying: origInput, to: .defaultTFEager)
         let origOutput = Tensor<T>(copying: origOutput, to: .defaultTFEager)
         let grad = Tensor<T>(copying: grad, to: .defaultTFEager)
@@ -17929,7 +18100,7 @@ public typealias Raw = _Raw
         return Tensor<T>(
           copying: _RawTFEager.maxPoolGradGradV2(
             origInput: origInput, origOutput: origOutput, grad: grad, ksize: ksize,
-            strides: strides, padding: padding, dataFormat: dataFormat), to: strides.device)
+            strides: strides, padding: padding, dataFormat: dataFormat), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.maxPoolGradGradV2(
           origInput: origInput, origOutput: origOutput, grad: grad, ksize: ksize, strides: strides,
@@ -17971,13 +18142,14 @@ public typealias Raw = _Raw
         commonBackend(input.handle.backend, grad.handle.backend), argmax.handle.backend)
       {
       case .XLA:
+        let output_device = argmax.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let grad = Tensor<T>(copying: grad, to: .defaultTFEager)
         let argmax = Tensor<Targmax>(copying: argmax, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.maxPoolGradGradWithArgmax(
             input, grad: grad, argmax: argmax, ksize: ksize, strides: strides, padding: padding,
-            includeBatchInIndex: includeBatchInIndex), to: argmax.device)
+            includeBatchInIndex: includeBatchInIndex), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.maxPoolGradGradWithArgmax(
           input, grad: grad, argmax: argmax, ksize: ksize, strides: strides, padding: padding,
@@ -18066,13 +18238,14 @@ public typealias Raw = _Raw
         commonBackend(input.handle.backend, grad.handle.backend), argmax.handle.backend)
       {
       case .XLA:
+        let output_device = argmax.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let grad = Tensor<T>(copying: grad, to: .defaultTFEager)
         let argmax = Tensor<Targmax>(copying: argmax, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.maxPoolGradWithArgmax(
             input, grad: grad, argmax: argmax, ksize: ksize, strides: strides, padding: padding,
-            includeBatchInIndex: includeBatchInIndex), to: argmax.device)
+            includeBatchInIndex: includeBatchInIndex), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.maxPoolGradWithArgmax(
           input, grad: grad, argmax: argmax, ksize: ksize, strides: strides, padding: padding,
@@ -18311,6 +18484,7 @@ public typealias Raw = _Raw
     ) -> Tensor<Float> {
       switch commonBackend(spectrogram.handle.backend, sampleRate.handle.backend) {
       case .XLA:
+        let output_device = sampleRate.device
         let spectrogram = Tensor<Float>(copying: spectrogram, to: .defaultTFEager)
         let sampleRate = Tensor<Int32>(copying: sampleRate, to: .defaultTFEager)
         return Tensor<Float>(
@@ -18318,7 +18492,7 @@ public typealias Raw = _Raw
             spectrogram: spectrogram, sampleRate: sampleRate,
             upperFrequencyLimit: upperFrequencyLimit, lowerFrequencyLimit: lowerFrequencyLimit,
             filterbankChannelCount: filterbankChannelCount, dctCoefficientCount: dctCoefficientCount
-          ), to: sampleRate.device)
+          ), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.mfcc(
           spectrogram: spectrogram, sampleRate: sampleRate,
@@ -18601,9 +18775,10 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(x.handle.backend, y.handle.backend) {
       case .XLA:
+        let output_device = y.device
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
         let y = Tensor<T>(copying: y, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.mulNoNan(x, y), to: y.device)
+        return Tensor<T>(copying: _RawTFEager.mulNoNan(x, y), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.mulNoNan(x, y)
       }
@@ -18695,11 +18870,12 @@ public typealias Raw = _Raw
     ) -> Tensor<Int64> {
       switch maxBufferSize.handle.backend {
       case .XLA:
+        let output_device = maxBufferSize.device
         let maxBufferSize = Tensor<Int64>(copying: maxBufferSize, to: .defaultTFEager)
         return Tensor<Int64>(
           copying: _RawTFEager.multiDeviceIteratorInit(
             dataset: dataset, multiDeviceIterator: multiDeviceIterator, maxBufferSize: maxBufferSize
-          ), to: maxBufferSize.device)
+          ), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.multiDeviceIteratorInit(
           dataset: dataset, multiDeviceIterator: multiDeviceIterator, maxBufferSize: maxBufferSize)
@@ -18745,12 +18921,12 @@ public typealias Raw = _Raw
     ) -> Tensor<OutputDtype> {
       switch commonBackend(logits.handle.backend, numSamples.handle.backend) {
       case .XLA:
+        let output_device = numSamples.device
         let logits = Tensor<T>(copying: logits, to: .defaultTFEager)
         let numSamples = Tensor<Int32>(copying: numSamples, to: .defaultTFEager)
         return Tensor<OutputDtype>(
           copying: _RawTFEager.multinomial(
-            logits: logits, numSamples: numSamples, seed: seed, seed2: seed2), to: numSamples.device
-        )
+            logits: logits, numSamples: numSamples, seed: seed, seed2: seed2), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.multinomial(
           logits: logits, numSamples: numSamples, seed: seed, seed2: seed2)
@@ -19058,11 +19234,12 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.ncclAllReduce(
             input, reduction: reduction, numDevices: numDevices, sharedName: sharedName),
-          to: input.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.ncclAllReduce(
           input, reduction: reduction, numDevices: numDevices, sharedName: sharedName)
@@ -19088,8 +19265,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.ncclBroadcast(input, shape: shape), to: input.device)
+        return Tensor<T>(copying: _RawTFEager.ncclBroadcast(input, shape: shape), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.ncclBroadcast(input, shape: shape)
       }
@@ -19120,8 +19298,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch x.handle.backend {
       case .XLA:
+        let output_device = x.device
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.ndtri(x), to: x.device)
+        return Tensor<T>(copying: _RawTFEager.ndtri(x), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.ndtri(x)
       }
@@ -19186,9 +19365,10 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(x1.handle.backend, x2.handle.backend) {
       case .XLA:
+        let output_device = x2.device
         let x1 = Tensor<T>(copying: x1, to: .defaultTFEager)
         let x2 = Tensor<T>(copying: x2, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.nextAfter(x1: x1, x2: x2), to: x2.device)
+        return Tensor<T>(copying: _RawTFEager.nextAfter(x1: x1, x2: x2), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.nextAfter(x1: x1, x2: x2)
       }
@@ -19206,8 +19386,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch data.handle.backend {
       case .XLA:
+        let output_device = data.device
         let data = Tensor<T>(copying: data, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.nextIteration(data: data), to: data.device)
+        return Tensor<T>(copying: _RawTFEager.nextIteration(data: data), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.nextIteration(data: data)
       }
@@ -19238,9 +19419,10 @@ public typealias Raw = _Raw
     ) -> Tensor<Dtype> {
       switch shape.handle.backend {
       case .XLA:
+        let output_device = shape.device
         let shape = Tensor<ShapeDtype>(copying: shape, to: .defaultTFEager)
         return Tensor<Dtype>(
-          copying: _RawTFEager.nonDeterministicInts(shape: shape), to: shape.device)
+          copying: _RawTFEager.nonDeterministicInts(shape: shape), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.nonDeterministicInts(shape: shape)
       }
@@ -19289,13 +19471,14 @@ public typealias Raw = _Raw
         commonBackend(boxes.handle.backend, scores.handle.backend), maxOutputSize.handle.backend)
       {
       case .XLA:
+        let output_device = maxOutputSize.device
         let boxes = Tensor<Float>(copying: boxes, to: .defaultTFEager)
         let scores = Tensor<Float>(copying: scores, to: .defaultTFEager)
         let maxOutputSize = Tensor<Int32>(copying: maxOutputSize, to: .defaultTFEager)
         return Tensor<Int32>(
           copying: _RawTFEager.nonMaxSuppression(
             boxes: boxes, scores: scores, maxOutputSize: maxOutputSize, iouThreshold: iouThreshold),
-          to: maxOutputSize.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.nonMaxSuppression(
           boxes: boxes, scores: scores, maxOutputSize: maxOutputSize, iouThreshold: iouThreshold)
@@ -19351,6 +19534,7 @@ public typealias Raw = _Raw
         iouThreshold.handle.backend)
       {
       case .XLA:
+        let output_device = iouThreshold.device
         let boxes = Tensor<T>(copying: boxes, to: .defaultTFEager)
         let scores = Tensor<T>(copying: scores, to: .defaultTFEager)
         let maxOutputSize = Tensor<Int32>(copying: maxOutputSize, to: .defaultTFEager)
@@ -19358,7 +19542,7 @@ public typealias Raw = _Raw
         return Tensor<Int32>(
           copying: _RawTFEager.nonMaxSuppressionV2(
             boxes: boxes, scores: scores, maxOutputSize: maxOutputSize, iouThreshold: iouThreshold),
-          to: iouThreshold.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.nonMaxSuppressionV2(
           boxes: boxes, scores: scores, maxOutputSize: maxOutputSize, iouThreshold: iouThreshold)
@@ -19417,6 +19601,7 @@ public typealias Raw = _Raw
           ), iouThreshold.handle.backend), scoreThreshold.handle.backend)
       {
       case .XLA:
+        let output_device = scoreThreshold.device
         let boxes = Tensor<T>(copying: boxes, to: .defaultTFEager)
         let scores = Tensor<T>(copying: scores, to: .defaultTFEager)
         let maxOutputSize = Tensor<Int32>(copying: maxOutputSize, to: .defaultTFEager)
@@ -19425,7 +19610,7 @@ public typealias Raw = _Raw
         return Tensor<Int32>(
           copying: _RawTFEager.nonMaxSuppressionV3(
             boxes: boxes, scores: scores, maxOutputSize: maxOutputSize, iouThreshold: iouThreshold,
-            scoreThreshold: scoreThreshold), to: scoreThreshold.device)
+            scoreThreshold: scoreThreshold), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.nonMaxSuppressionV3(
           boxes: boxes, scores: scores, maxOutputSize: maxOutputSize, iouThreshold: iouThreshold,
@@ -19604,6 +19789,7 @@ public typealias Raw = _Raw
         scoreThreshold.handle.backend)
       {
       case .XLA:
+        let output_device = scoreThreshold.device
         let overlaps = Tensor<Float>(copying: overlaps, to: .defaultTFEager)
         let scores = Tensor<Float>(copying: scores, to: .defaultTFEager)
         let maxOutputSize = Tensor<Int32>(copying: maxOutputSize, to: .defaultTFEager)
@@ -19612,8 +19798,7 @@ public typealias Raw = _Raw
         return Tensor<Int32>(
           copying: _RawTFEager.nonMaxSuppressionWithOverlaps(
             overlaps: overlaps, scores: scores, maxOutputSize: maxOutputSize,
-            overlapThreshold: overlapThreshold, scoreThreshold: scoreThreshold),
-          to: scoreThreshold.device)
+            overlapThreshold: overlapThreshold, scoreThreshold: scoreThreshold), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.nonMaxSuppressionWithOverlaps(
           overlaps: overlaps, scores: scores, maxOutputSize: maxOutputSize,
@@ -19696,10 +19881,11 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(input.handle.backend, n.handle.backend) {
       case .XLA:
+        let output_device = n.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let n = Tensor<Int32>(copying: n, to: .defaultTFEager)
         return Tensor<T>(
-          copying: _RawTFEager.nthElement(input, n: n, reverse: reverse), to: n.device)
+          copying: _RawTFEager.nthElement(input, n: n, reverse: reverse), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.nthElement(input, n: n, reverse: reverse)
       }
@@ -20679,6 +20865,7 @@ public typealias Raw = _Raw
           minvals.handle.backend), maxvals.handle.backend)
       {
       case .XLA:
+        let output_device = maxvals.device
         let shape = Tensor<T>(copying: shape, to: .defaultTFEager)
         let means = Tensor<Dtype>(copying: means, to: .defaultTFEager)
         let stdevs = Tensor<Dtype>(copying: stdevs, to: .defaultTFEager)
@@ -20687,7 +20874,7 @@ public typealias Raw = _Raw
         return Tensor<Dtype>(
           copying: _RawTFEager.parameterizedTruncatedNormal(
             shape: shape, means: means, stdevs: stdevs, minvals: minvals, maxvals: maxvals,
-            seed: seed, seed2: seed2), to: maxvals.device)
+            seed: seed, seed2: seed2), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.parameterizedTruncatedNormal(
           shape: shape, means: means, stdevs: stdevs, minvals: minvals, maxvals: maxvals,
@@ -21329,9 +21516,10 @@ public typealias Raw = _Raw
     ) -> Tensor<Dtype> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<Dtype>(copying: input, to: .defaultTFEager)
         return Tensor<Dtype>(
-          copying: _RawTFEager.placeholderWithDefault(input, shape: shape), to: input.device)
+          copying: _RawTFEager.placeholderWithDefault(input, shape: shape), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.placeholderWithDefault(input, shape: shape)
       }
@@ -21354,9 +21542,10 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(a.handle.backend, x.handle.backend) {
       case .XLA:
+        let output_device = x.device
         let a = Tensor<T>(copying: a, to: .defaultTFEager)
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.polygamma(a, x), to: x.device)
+        return Tensor<T>(copying: _RawTFEager.polygamma(a, x), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.polygamma(a, x)
       }
@@ -21369,8 +21558,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch a.handle.backend {
       case .XLA:
+        let output_device = a.device
         let a = Tensor<T>(copying: a, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.polymorphic(a), to: a.device)
+        return Tensor<T>(copying: _RawTFEager.polymorphic(a), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.polymorphic(a)
       }
@@ -21401,8 +21591,9 @@ public typealias Raw = _Raw
     ) -> Tensor<UInt8> {
       switch x.handle.backend {
       case .XLA:
+        let output_device = x.device
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
-        return Tensor<UInt8>(copying: _RawTFEager.populationCount(x), to: x.device)
+        return Tensor<UInt8>(copying: _RawTFEager.populationCount(x), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.populationCount(x)
       }
@@ -21513,9 +21704,10 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         return Tensor<T>(
-          copying: _RawTFEager.preventGradient(input, message: message), to: input.device)
+          copying: _RawTFEager.preventGradient(input, message: message), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.preventGradient(input, message: message)
       }
@@ -21549,11 +21741,12 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.print(
             input, data: data, message: message, firstN: firstN, summarize: summarize),
-          to: input.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.print(
           input, data: data, message: message, firstN: firstN, summarize: summarize)
@@ -21748,11 +21941,12 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.quantizeAndDequantize(
             input, signedInput: signedInput, numBits: numBits, rangeGiven: rangeGiven,
-            inputMin: inputMin, inputMax: inputMax), to: input.device)
+            inputMin: inputMin, inputMax: inputMax), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.quantizeAndDequantize(
           input, signedInput: signedInput, numBits: numBits, rangeGiven: rangeGiven,
@@ -21859,6 +22053,7 @@ public typealias Raw = _Raw
         commonBackend(input.handle.backend, inputMin.handle.backend), inputMax.handle.backend)
       {
       case .XLA:
+        let output_device = inputMax.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let inputMin = Tensor<T>(copying: inputMin, to: .defaultTFEager)
         let inputMax = Tensor<T>(copying: inputMax, to: .defaultTFEager)
@@ -21866,7 +22061,7 @@ public typealias Raw = _Raw
           copying: _RawTFEager.quantizeAndDequantizeV2(
             input, inputMin: inputMin, inputMax: inputMax, signedInput: signedInput,
             numBits: numBits, rangeGiven: rangeGiven, roundMode: roundMode,
-            narrowRange: narrowRange, axis: axis), to: inputMax.device)
+            narrowRange: narrowRange, axis: axis), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.quantizeAndDequantizeV2(
           input, inputMin: inputMin, inputMax: inputMax, signedInput: signedInput, numBits: numBits,
@@ -21896,6 +22091,7 @@ public typealias Raw = _Raw
         numBits.handle.backend)
       {
       case .XLA:
+        let output_device = numBits.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let inputMin = Tensor<T>(copying: inputMin, to: .defaultTFEager)
         let inputMax = Tensor<T>(copying: inputMax, to: .defaultTFEager)
@@ -21904,7 +22100,7 @@ public typealias Raw = _Raw
           copying: _RawTFEager.quantizeAndDequantizeV3(
             input, inputMin: inputMin, inputMax: inputMax, numBits: numBits,
             signedInput: signedInput, rangeGiven: rangeGiven, narrowRange: narrowRange, axis: axis),
-          to: numBits.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.quantizeAndDequantizeV3(
           input, inputMin: inputMin, inputMax: inputMax, numBits: numBits, signedInput: signedInput,
@@ -23512,10 +23708,11 @@ public typealias Raw = _Raw
     ) -> Tensor<Tcomplex> {
       switch commonBackend(input.handle.backend, fftLength.handle.backend) {
       case .XLA:
+        let output_device = fftLength.device
         let input = Tensor<Treal>(copying: input, to: .defaultTFEager)
         let fftLength = Tensor<Int32>(copying: fftLength, to: .defaultTFEager)
         return Tensor<Tcomplex>(
-          copying: _RawTFEager.rFFT(input, fftLength: fftLength), to: fftLength.device)
+          copying: _RawTFEager.rFFT(input, fftLength: fftLength), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.rFFT(input, fftLength: fftLength)
       }
@@ -23558,10 +23755,11 @@ public typealias Raw = _Raw
     ) -> Tensor<Tcomplex> {
       switch commonBackend(input.handle.backend, fftLength.handle.backend) {
       case .XLA:
+        let output_device = fftLength.device
         let input = Tensor<Treal>(copying: input, to: .defaultTFEager)
         let fftLength = Tensor<Int32>(copying: fftLength, to: .defaultTFEager)
         return Tensor<Tcomplex>(
-          copying: _RawTFEager.rFFT2D(input, fftLength: fftLength), to: fftLength.device)
+          copying: _RawTFEager.rFFT2D(input, fftLength: fftLength), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.rFFT2D(input, fftLength: fftLength)
       }
@@ -23604,10 +23802,11 @@ public typealias Raw = _Raw
     ) -> Tensor<Tcomplex> {
       switch commonBackend(input.handle.backend, fftLength.handle.backend) {
       case .XLA:
+        let output_device = fftLength.device
         let input = Tensor<Treal>(copying: input, to: .defaultTFEager)
         let fftLength = Tensor<Int32>(copying: fftLength, to: .defaultTFEager)
         return Tensor<Tcomplex>(
-          copying: _RawTFEager.rFFT3D(input, fftLength: fftLength), to: fftLength.device)
+          copying: _RawTFEager.rFFT3D(input, fftLength: fftLength), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.rFFT3D(input, fftLength: fftLength)
       }
@@ -23645,8 +23844,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch images.handle.backend {
       case .XLA:
+        let output_device = images.device
         let images = Tensor<T>(copying: images, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.rGBToHSV(images: images), to: images.device)
+        return Tensor<T>(copying: _RawTFEager.rGBToHSV(images: images), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.rGBToHSV(images: images)
       }
@@ -23898,6 +24098,7 @@ public typealias Raw = _Raw
         commonBackend(rowPartitionTensors))
       {
       case .XLA:
+        let output_device = defaultValue.device
         let shape = Tensor<Tshape>(copying: shape, to: .defaultTFEager)
         let values = Tensor<T>(copying: values, to: .defaultTFEager)
         let defaultValue = Tensor<T>(copying: defaultValue, to: .defaultTFEager)
@@ -23907,7 +24108,7 @@ public typealias Raw = _Raw
           copying: _RawTFEager.raggedTensorToTensor(
             shape: shape, values, defaultValue: defaultValue,
             rowPartitionTensors: rowPartitionTensors, rowPartitionTypes: rowPartitionTypes),
-          to: defaultValue.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.raggedTensorToTensor(
           shape: shape, values, defaultValue: defaultValue,
@@ -23981,11 +24182,12 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(image.handle.backend, size.handle.backend) {
       case .XLA:
+        let output_device = size.device
         let image = Tensor<T>(copying: image, to: .defaultTFEager)
         let size = Tensor<Int64>(copying: size, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.randomCrop(image: image, size: size, seed: seed, seed2: seed2),
-          to: size.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.randomCrop(image: image, size: size, seed: seed, seed2: seed2)
       }
@@ -24054,11 +24256,12 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(shape.handle.backend, alpha.handle.backend) {
       case .XLA:
+        let output_device = alpha.device
         let shape = Tensor<S>(copying: shape, to: .defaultTFEager)
         let alpha = Tensor<T>(copying: alpha, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.randomGamma(shape: shape, alpha: alpha, seed: seed, seed2: seed2),
-          to: alpha.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.randomGamma(shape: shape, alpha: alpha, seed: seed, seed2: seed2)
       }
@@ -24073,10 +24276,11 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(alpha.handle.backend, sample.handle.backend) {
       case .XLA:
+        let output_device = sample.device
         let alpha = Tensor<T>(copying: alpha, to: .defaultTFEager)
         let sample = Tensor<T>(copying: sample, to: .defaultTFEager)
         return Tensor<T>(
-          copying: _RawTFEager.randomGammaGrad(alpha: alpha, sample: sample), to: sample.device)
+          copying: _RawTFEager.randomGammaGrad(alpha: alpha, sample: sample), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.randomGammaGrad(alpha: alpha, sample: sample)
       }
@@ -24096,11 +24300,12 @@ public typealias Raw = _Raw
     ) -> Tensor<Dtype> {
       switch commonBackend(shape.handle.backend, rate.handle.backend) {
       case .XLA:
+        let output_device = rate.device
         let shape = Tensor<S>(copying: shape, to: .defaultTFEager)
         let rate = Tensor<Dtype>(copying: rate, to: .defaultTFEager)
         return Tensor<Dtype>(
           copying: _RawTFEager.randomPoisson(shape: shape, rate: rate, seed: seed, seed2: seed2),
-          to: rate.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.randomPoisson(shape: shape, rate: rate, seed: seed, seed2: seed2)
       }
@@ -24147,11 +24352,12 @@ public typealias Raw = _Raw
     ) -> Tensor<Dtype> {
       switch commonBackend(shape.handle.backend, rate.handle.backend) {
       case .XLA:
+        let output_device = rate.device
         let shape = Tensor<S>(copying: shape, to: .defaultTFEager)
         let rate = Tensor<R>(copying: rate, to: .defaultTFEager)
         return Tensor<Dtype>(
           copying: _RawTFEager.randomPoissonV2(shape: shape, rate: rate, seed: seed, seed2: seed2),
-          to: rate.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.randomPoissonV2(shape: shape, rate: rate, seed: seed, seed2: seed2)
       }
@@ -24188,10 +24394,11 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch value.handle.backend {
       case .XLA:
+        let output_device = value.device
         let value = Tensor<T>(copying: value, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.randomShuffle(value: value, seed: seed, seed2: seed2),
-          to: value.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.randomShuffle(value: value, seed: seed, seed2: seed2)
       }
@@ -24262,10 +24469,11 @@ public typealias Raw = _Raw
     ) -> Tensor<Dtype> {
       switch shape.handle.backend {
       case .XLA:
+        let output_device = shape.device
         let shape = Tensor<T>(copying: shape, to: .defaultTFEager)
         return Tensor<Dtype>(
           copying: _RawTFEager.randomStandardNormal(shape: shape, seed: seed, seed2: seed2),
-          to: shape.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.randomStandardNormal(shape: shape, seed: seed, seed2: seed2)
       }
@@ -24298,10 +24506,11 @@ public typealias Raw = _Raw
     ) -> Tensor<Dtype> {
       switch shape.handle.backend {
       case .XLA:
+        let output_device = shape.device
         let shape = Tensor<T>(copying: shape, to: .defaultTFEager)
         return Tensor<Dtype>(
           copying: _RawTFEager.randomUniform(shape: shape, seed: seed, seed2: seed2),
-          to: shape.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.randomUniform(shape: shape, seed: seed, seed2: seed2)
       }
@@ -24345,13 +24554,14 @@ public typealias Raw = _Raw
         commonBackend(shape.handle.backend, minval.handle.backend), maxval.handle.backend)
       {
       case .XLA:
+        let output_device = maxval.device
         let shape = Tensor<T>(copying: shape, to: .defaultTFEager)
         let minval = Tensor<Tout>(copying: minval, to: .defaultTFEager)
         let maxval = Tensor<Tout>(copying: maxval, to: .defaultTFEager)
         return Tensor<Tout>(
           copying: _RawTFEager.randomUniformInt(
             shape: shape, minval: minval, maxval: maxval, seed: seed, seed2: seed2),
-          to: maxval.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.randomUniformInt(
           shape: shape, minval: minval, maxval: maxval, seed: seed, seed2: seed2)
@@ -24600,8 +24810,9 @@ public typealias Raw = _Raw
     ) -> Tensor<Tout> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
-        return Tensor<Tout>(copying: _RawTFEager.real(input), to: input.device)
+        return Tensor<Tout>(copying: _RawTFEager.real(input), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.real(input)
       }
@@ -24621,9 +24832,10 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(x.handle.backend, y.handle.backend) {
       case .XLA:
+        let output_device = y.device
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
         let y = Tensor<T>(copying: y, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.realDiv(x, y), to: y.device)
+        return Tensor<T>(copying: _RawTFEager.realDiv(x, y), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.realDiv(x, y)
       }
@@ -24662,8 +24874,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch x.handle.backend {
       case .XLA:
+        let output_device = x.device
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.reciprocal(x), to: x.device)
+        return Tensor<T>(copying: _RawTFEager.reciprocal(x), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.reciprocal(x)
       }
@@ -24681,9 +24894,10 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(y.handle.backend, dy.handle.backend) {
       case .XLA:
+        let output_device = dy.device
         let y = Tensor<T>(copying: y, to: .defaultTFEager)
         let dy = Tensor<T>(copying: dy, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.reciprocalGrad(y, dy: dy), to: dy.device)
+        return Tensor<T>(copying: _RawTFEager.reciprocalGrad(y, dy: dy), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.reciprocalGrad(y, dy: dy)
       }
@@ -25310,11 +25524,12 @@ public typealias Raw = _Raw
     ) -> Tensor<Float> {
       switch commonBackend(images.handle.backend, size.handle.backend) {
       case .XLA:
+        let output_device = size.device
         let images = Tensor<T>(copying: images, to: .defaultTFEager)
         let size = Tensor<Int32>(copying: size, to: .defaultTFEager)
         return Tensor<Float>(
           copying: _RawTFEager.resizeArea(images: images, size: size, alignCorners: alignCorners),
-          to: size.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.resizeArea(images: images, size: size, alignCorners: alignCorners)
       }
@@ -25344,12 +25559,13 @@ public typealias Raw = _Raw
     ) -> Tensor<Float> {
       switch commonBackend(images.handle.backend, size.handle.backend) {
       case .XLA:
+        let output_device = size.device
         let images = Tensor<T>(copying: images, to: .defaultTFEager)
         let size = Tensor<Int32>(copying: size, to: .defaultTFEager)
         return Tensor<Float>(
           copying: _RawTFEager.resizeBicubic(
             images: images, size: size, alignCorners: alignCorners,
-            halfPixelCenters: halfPixelCenters), to: size.device)
+            halfPixelCenters: halfPixelCenters), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.resizeBicubic(
           images: images, size: size, alignCorners: alignCorners, halfPixelCenters: halfPixelCenters
@@ -25380,12 +25596,13 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(grads.handle.backend, originalImage.handle.backend) {
       case .XLA:
+        let output_device = originalImage.device
         let grads = Tensor<Float>(copying: grads, to: .defaultTFEager)
         let originalImage = Tensor<T>(copying: originalImage, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.resizeBicubicGrad(
             grads: grads, originalImage: originalImage, alignCorners: alignCorners,
-            halfPixelCenters: halfPixelCenters), to: originalImage.device)
+            halfPixelCenters: halfPixelCenters), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.resizeBicubicGrad(
           grads: grads, originalImage: originalImage, alignCorners: alignCorners,
@@ -25417,12 +25634,13 @@ public typealias Raw = _Raw
     ) -> Tensor<Float> {
       switch commonBackend(images.handle.backend, size.handle.backend) {
       case .XLA:
+        let output_device = size.device
         let images = Tensor<T>(copying: images, to: .defaultTFEager)
         let size = Tensor<Int32>(copying: size, to: .defaultTFEager)
         return Tensor<Float>(
           copying: _RawTFEager.resizeBilinear(
             images: images, size: size, alignCorners: alignCorners,
-            halfPixelCenters: halfPixelCenters), to: size.device)
+            halfPixelCenters: halfPixelCenters), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.resizeBilinear(
           images: images, size: size, alignCorners: alignCorners, halfPixelCenters: halfPixelCenters
@@ -25453,12 +25671,13 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(grads.handle.backend, originalImage.handle.backend) {
       case .XLA:
+        let output_device = originalImage.device
         let grads = Tensor<Float>(copying: grads, to: .defaultTFEager)
         let originalImage = Tensor<T>(copying: originalImage, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.resizeBilinearGrad(
             grads: grads, originalImage: originalImage, alignCorners: alignCorners,
-            halfPixelCenters: halfPixelCenters), to: originalImage.device)
+            halfPixelCenters: halfPixelCenters), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.resizeBilinearGrad(
           grads: grads, originalImage: originalImage, alignCorners: alignCorners,
@@ -25488,12 +25707,13 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(images.handle.backend, size.handle.backend) {
       case .XLA:
+        let output_device = size.device
         let images = Tensor<T>(copying: images, to: .defaultTFEager)
         let size = Tensor<Int32>(copying: size, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.resizeNearestNeighbor(
             images: images, size: size, alignCorners: alignCorners,
-            halfPixelCenters: halfPixelCenters), to: size.device)
+            halfPixelCenters: halfPixelCenters), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.resizeNearestNeighbor(
           images: images, size: size, alignCorners: alignCorners, halfPixelCenters: halfPixelCenters
@@ -25523,12 +25743,13 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(grads.handle.backend, size.handle.backend) {
       case .XLA:
+        let output_device = size.device
         let grads = Tensor<T>(copying: grads, to: .defaultTFEager)
         let size = Tensor<Int32>(copying: size, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.resizeNearestNeighborGrad(
             grads: grads, size: size, alignCorners: alignCorners, halfPixelCenters: halfPixelCenters
-          ), to: size.device)
+          ), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.resizeNearestNeighborGrad(
           grads: grads, size: size, alignCorners: alignCorners, halfPixelCenters: halfPixelCenters)
@@ -25608,10 +25829,11 @@ public typealias Raw = _Raw
     ) -> Tensor<Dtype> {
       switch numRequired.handle.backend {
       case .XLA:
+        let output_device = numRequired.device
         let numRequired = Tensor<Int32>(copying: numRequired, to: .defaultTFEager)
         return Tensor<Dtype>(
           copying: _RawTFEager.resourceAccumulatorTakeGradient(
-            handle: handle, numRequired: numRequired), to: numRequired.device)
+            handle: handle, numRequired: numRequired), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.resourceAccumulatorTakeGradient(handle: handle, numRequired: numRequired)
       }
@@ -26343,11 +26565,12 @@ public typealias Raw = _Raw
     ) -> Tensor<Dtype> {
       switch indices.handle.backend {
       case .XLA:
+        let output_device = indices.device
         let indices = Tensor<Tindices>(copying: indices, to: .defaultTFEager)
         return Tensor<Dtype>(
           copying: _RawTFEager.resourceGather(
             resource: resource, indices: indices, batchDims: batchDims,
-            validateIndices: validateIndices), to: indices.device)
+            validateIndices: validateIndices), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.resourceGather(
           resource: resource, indices: indices, batchDims: batchDims,
@@ -26366,10 +26589,11 @@ public typealias Raw = _Raw
     ) -> Tensor<Dtype> {
       switch indices.handle.backend {
       case .XLA:
+        let output_device = indices.device
         let indices = Tensor<Tindices>(copying: indices, to: .defaultTFEager)
         return Tensor<Dtype>(
           copying: _RawTFEager.resourceGatherNd(resource: resource, indices: indices),
-          to: indices.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.resourceGatherNd(resource: resource, indices: indices)
       }
@@ -27469,8 +27693,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch a.handle.backend {
       case .XLA:
+        let output_device = a.device
         let a = Tensor<T>(copying: a, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.restrict(a), to: a.device)
+        return Tensor<T>(copying: _RawTFEager.restrict(a), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.restrict(a)
       }
@@ -27970,9 +28195,10 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(tensor.handle.backend, dims.handle.backend) {
       case .XLA:
+        let output_device = dims.device
         let tensor = Tensor<T>(copying: tensor, to: .defaultTFEager)
         let dims = Tensor<Bool>(copying: dims, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.reverse(tensor, dims: dims), to: dims.device)
+        return Tensor<T>(copying: _RawTFEager.reverse(tensor, dims: dims), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.reverse(tensor, dims: dims)
       }
@@ -28118,12 +28344,12 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(input.handle.backend, seqLengths.handle.backend) {
       case .XLA:
+        let output_device = seqLengths.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let seqLengths = Tensor<Tlen>(copying: seqLengths, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.reverseSequence(
-            input, seqLengths: seqLengths, seqDim: seqDim, batchDim: batchDim),
-          to: seqLengths.device)
+            input, seqLengths: seqLengths, seqDim: seqDim, batchDim: batchDim), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.reverseSequence(
           input, seqLengths: seqLengths, seqDim: seqDim, batchDim: batchDim)
@@ -28309,9 +28535,10 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(x.handle.backend, y.handle.backend) {
       case .XLA:
+        let output_device = y.device
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
         let y = Tensor<T>(copying: y, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.rightShift(x, y), to: y.device)
+        return Tensor<T>(copying: _RawTFEager.rightShift(x, y), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.rightShift(x, y)
       }
@@ -28335,8 +28562,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch x.handle.backend {
       case .XLA:
+        let output_device = x.device
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.rint(x), to: x.device)
+        return Tensor<T>(copying: _RawTFEager.rint(x), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.rint(x)
       }
@@ -28413,11 +28641,12 @@ public typealias Raw = _Raw
         commonBackend(input.handle.backend, shift.handle.backend), axis.handle.backend)
       {
       case .XLA:
+        let output_device = axis.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let shift = Tensor<Tshift>(copying: shift, to: .defaultTFEager)
         let axis = Tensor<Taxis>(copying: axis, to: .defaultTFEager)
         return Tensor<T>(
-          copying: _RawTFEager.roll(input, shift: shift, axis: axis), to: axis.device)
+          copying: _RawTFEager.roll(input, shift: shift, axis: axis), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.roll(input, shift: shift, axis: axis)
       }
@@ -28891,6 +29120,7 @@ public typealias Raw = _Raw
         translation.handle.backend)
       {
       case .XLA:
+        let output_device = translation.device
         let images = Tensor<T>(copying: images, to: .defaultTFEager)
         let size = Tensor<Int32>(copying: size, to: .defaultTFEager)
         let scale = Tensor<Float>(copying: scale, to: .defaultTFEager)
@@ -28898,7 +29128,7 @@ public typealias Raw = _Raw
         return Tensor<Float>(
           copying: _RawTFEager.scaleAndTranslate(
             images: images, size: size, scale: scale, translation: translation,
-            kernelType: kernelType, antialias: antialias), to: translation.device)
+            kernelType: kernelType, antialias: antialias), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.scaleAndTranslate(
           images: images, size: size, scale: scale, translation: translation,
@@ -28922,6 +29152,7 @@ public typealias Raw = _Raw
         translation.handle.backend)
       {
       case .XLA:
+        let output_device = translation.device
         let grads = Tensor<T>(copying: grads, to: .defaultTFEager)
         let originalImage = Tensor<T>(copying: originalImage, to: .defaultTFEager)
         let scale = Tensor<Float>(copying: scale, to: .defaultTFEager)
@@ -28929,7 +29160,7 @@ public typealias Raw = _Raw
         return Tensor<T>(
           copying: _RawTFEager.scaleAndTranslateGrad(
             grads: grads, originalImage: originalImage, scale: scale, translation: translation,
-            kernelType: kernelType, antialias: antialias), to: translation.device)
+            kernelType: kernelType, antialias: antialias), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.scaleAndTranslateGrad(
           grads: grads, originalImage: originalImage, scale: scale, translation: translation,
@@ -29064,12 +29295,13 @@ public typealias Raw = _Raw
         commonBackend(indices.handle.backend, updates.handle.backend), shape.handle.backend)
       {
       case .XLA:
+        let output_device = shape.device
         let indices = Tensor<Tindices>(copying: indices, to: .defaultTFEager)
         let updates = Tensor<T>(copying: updates, to: .defaultTFEager)
         let shape = Tensor<Tindices>(copying: shape, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.scatterNd(indices: indices, updates: updates, shape: shape),
-          to: shape.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.scatterNd(indices: indices, updates: updates, shape: shape)
       }
@@ -29134,12 +29366,13 @@ public typealias Raw = _Raw
         commonBackend(input.handle.backend, indices.handle.backend), updates.handle.backend)
       {
       case .XLA:
+        let output_device = updates.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let indices = Tensor<Tindices>(copying: indices, to: .defaultTFEager)
         let updates = Tensor<T>(copying: updates, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.scatterNdNonAliasingAdd(input, indices: indices, updates: updates),
-          to: updates.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.scatterNdNonAliasingAdd(input, indices: indices, updates: updates)
       }
@@ -29380,11 +29613,11 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(data.handle.backend, segmentIds.handle.backend) {
       case .XLA:
+        let output_device = segmentIds.device
         let data = Tensor<T>(copying: data, to: .defaultTFEager)
         let segmentIds = Tensor<Tindices>(copying: segmentIds, to: .defaultTFEager)
         return Tensor<T>(
-          copying: _RawTFEager.segmentMax(data: data, segmentIds: segmentIds), to: segmentIds.device
-        )
+          copying: _RawTFEager.segmentMax(data: data, segmentIds: segmentIds), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.segmentMax(data: data, segmentIds: segmentIds)
       }
@@ -29433,11 +29666,11 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(data.handle.backend, segmentIds.handle.backend) {
       case .XLA:
+        let output_device = segmentIds.device
         let data = Tensor<T>(copying: data, to: .defaultTFEager)
         let segmentIds = Tensor<Tindices>(copying: segmentIds, to: .defaultTFEager)
         return Tensor<T>(
-          copying: _RawTFEager.segmentMean(data: data, segmentIds: segmentIds),
-          to: segmentIds.device)
+          copying: _RawTFEager.segmentMean(data: data, segmentIds: segmentIds), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.segmentMean(data: data, segmentIds: segmentIds)
       }
@@ -29484,11 +29717,11 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(data.handle.backend, segmentIds.handle.backend) {
       case .XLA:
+        let output_device = segmentIds.device
         let data = Tensor<T>(copying: data, to: .defaultTFEager)
         let segmentIds = Tensor<Tindices>(copying: segmentIds, to: .defaultTFEager)
         return Tensor<T>(
-          copying: _RawTFEager.segmentMin(data: data, segmentIds: segmentIds), to: segmentIds.device
-        )
+          copying: _RawTFEager.segmentMin(data: data, segmentIds: segmentIds), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.segmentMin(data: data, segmentIds: segmentIds)
       }
@@ -29536,11 +29769,11 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(data.handle.backend, segmentIds.handle.backend) {
       case .XLA:
+        let output_device = segmentIds.device
         let data = Tensor<T>(copying: data, to: .defaultTFEager)
         let segmentIds = Tensor<Tindices>(copying: segmentIds, to: .defaultTFEager)
         return Tensor<T>(
-          copying: _RawTFEager.segmentProd(data: data, segmentIds: segmentIds),
-          to: segmentIds.device)
+          copying: _RawTFEager.segmentProd(data: data, segmentIds: segmentIds), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.segmentProd(data: data, segmentIds: segmentIds)
       }
@@ -29588,11 +29821,11 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(data.handle.backend, segmentIds.handle.backend) {
       case .XLA:
+        let output_device = segmentIds.device
         let data = Tensor<T>(copying: data, to: .defaultTFEager)
         let segmentIds = Tensor<Tindices>(copying: segmentIds, to: .defaultTFEager)
         return Tensor<T>(
-          copying: _RawTFEager.segmentSum(data: data, segmentIds: segmentIds), to: segmentIds.device
-        )
+          copying: _RawTFEager.segmentSum(data: data, segmentIds: segmentIds), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.segmentSum(data: data, segmentIds: segmentIds)
       }
@@ -29674,11 +29907,12 @@ public typealias Raw = _Raw
         commonBackend(condition.handle.backend, t.handle.backend), e.handle.backend)
       {
       case .XLA:
+        let output_device = e.device
         let condition = Tensor<Bool>(copying: condition, to: .defaultTFEager)
         let t = Tensor<T>(copying: t, to: .defaultTFEager)
         let e = Tensor<T>(copying: e, to: .defaultTFEager)
         return Tensor<T>(
-          copying: _RawTFEager.selectV2(condition: condition, t: t, e: e), to: e.device)
+          copying: _RawTFEager.selectV2(condition: condition, t: t, e: e), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.selectV2(condition: condition, t: t, e: e)
       }
@@ -29704,8 +29938,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.selfAdjointEig(input), to: input.device)
+        return Tensor<T>(copying: _RawTFEager.selfAdjointEig(input), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.selfAdjointEig(input)
       }
@@ -29885,13 +30120,14 @@ public typealias Raw = _Raw
         sparseShape.handle.backend)
       {
       case .XLA:
+        let output_device = sparseShape.device
         let sparseIndices = Tensor<Int64>(copying: sparseIndices, to: .defaultTFEager)
         let sparseValues = Tensor<T>(copying: sparseValues, to: .defaultTFEager)
         let sparseShape = Tensor<Int64>(copying: sparseShape, to: .defaultTFEager)
         return Tensor<OutType>(
           copying: _RawTFEager.serializeManySparse(
             sparseIndices: sparseIndices, sparseValues: sparseValues, sparseShape: sparseShape),
-          to: sparseShape.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.serializeManySparse(
           sparseIndices: sparseIndices, sparseValues: sparseValues, sparseShape: sparseShape)
@@ -29949,13 +30185,14 @@ public typealias Raw = _Raw
         sparseShape.handle.backend)
       {
       case .XLA:
+        let output_device = sparseShape.device
         let sparseIndices = Tensor<Int64>(copying: sparseIndices, to: .defaultTFEager)
         let sparseValues = Tensor<T>(copying: sparseValues, to: .defaultTFEager)
         let sparseShape = Tensor<Int64>(copying: sparseShape, to: .defaultTFEager)
         return Tensor<OutType>(
           copying: _RawTFEager.serializeSparse(
             sparseIndices: sparseIndices, sparseValues: sparseValues, sparseShape: sparseShape),
-          to: sparseShape.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.serializeSparse(
           sparseIndices: sparseIndices, sparseValues: sparseValues, sparseShape: sparseShape)
@@ -30034,13 +30271,14 @@ public typealias Raw = _Raw
         commonBackend(setIndices.handle.backend, setValues.handle.backend), setShape.handle.backend)
       {
       case .XLA:
+        let output_device = setShape.device
         let setIndices = Tensor<Int64>(copying: setIndices, to: .defaultTFEager)
         let setValues = Tensor<T>(copying: setValues, to: .defaultTFEager)
         let setShape = Tensor<Int64>(copying: setShape, to: .defaultTFEager)
         return Tensor<Int32>(
           copying: _RawTFEager.setSize(
             setIndices: setIndices, setValues: setValues, setShape: setShape,
-            validateIndices: validateIndices), to: setShape.device)
+            validateIndices: validateIndices), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.setSize(
           setIndices: setIndices, setValues: setValues, setShape: setShape,
@@ -30075,12 +30313,13 @@ public typealias Raw = _Raw
     ) -> Tensor<Int32> {
       switch commonBackend(setIndices.handle.backend, setShape.handle.backend) {
       case .XLA:
+        let output_device = setShape.device
         let setIndices = Tensor<Int64>(copying: setIndices, to: .defaultTFEager)
         let setShape = Tensor<Int64>(copying: setShape, to: .defaultTFEager)
         return Tensor<Int32>(
           copying: _RawTFEager.setSize(
             setIndices: setIndices, setValues: setValues, setShape: setShape,
-            validateIndices: validateIndices), to: setShape.device)
+            validateIndices: validateIndices), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.setSize(
           setIndices: setIndices, setValues: setValues, setShape: setShape,
@@ -30326,8 +30565,9 @@ public typealias Raw = _Raw
     ) -> Tensor<Float> {
       switch a.handle.backend {
       case .XLA:
+        let output_device = a.device
         let a = Tensor<Int32>(copying: a, to: .defaultTFEager)
-        return Tensor<Float>(copying: _RawTFEager.simple(a), to: a.device)
+        return Tensor<Float>(copying: _RawTFEager.simple(a), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.simple(a)
       }
@@ -30544,8 +30784,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.snapshot(input), to: input.device)
+        return Tensor<T>(copying: _RawTFEager.snapshot(input), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.snapshot(input)
       }
@@ -30818,11 +31059,12 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(input.handle.backend, paddings.handle.backend) {
       case .XLA:
+        let output_device = paddings.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let paddings = Tensor<Tpaddings>(copying: paddings, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.spaceToBatch(input, paddings: paddings, blockSize: blockSize),
-          to: paddings.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.spaceToBatch(input, paddings: paddings, blockSize: blockSize)
       }
@@ -30966,12 +31208,13 @@ public typealias Raw = _Raw
         commonBackend(input.handle.backend, blockShape.handle.backend), paddings.handle.backend)
       {
       case .XLA:
+        let output_device = paddings.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let blockShape = Tensor<TblockShape>(copying: blockShape, to: .defaultTFEager)
         let paddings = Tensor<Tpaddings>(copying: paddings, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.spaceToBatchND(input, blockShape: blockShape, paddings: paddings),
-          to: paddings.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.spaceToBatchND(input, blockShape: blockShape, paddings: paddings)
       }
@@ -31073,10 +31316,11 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.spaceToDepth(input, blockSize: blockSize, dataFormat: dataFormat),
-          to: input.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.spaceToDepth(input, blockSize: blockSize, dataFormat: dataFormat)
       }
@@ -31413,6 +31657,7 @@ public typealias Raw = _Raw
         dense.handle.backend)
       {
       case .XLA:
+        let output_device = dense.device
         let spIndices = Tensor<Int64>(copying: spIndices, to: .defaultTFEager)
         let spValues = Tensor<T>(copying: spValues, to: .defaultTFEager)
         let spShape = Tensor<Int64>(copying: spShape, to: .defaultTFEager)
@@ -31420,7 +31665,7 @@ public typealias Raw = _Raw
         return Tensor<T>(
           copying: _RawTFEager.sparseDenseCwiseAdd(
             spIndices: spIndices, spValues: spValues, spShape: spShape, dense: dense),
-          to: dense.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.sparseDenseCwiseAdd(
           spIndices: spIndices, spValues: spValues, spShape: spShape, dense: dense)
@@ -31454,6 +31699,7 @@ public typealias Raw = _Raw
         dense.handle.backend)
       {
       case .XLA:
+        let output_device = dense.device
         let spIndices = Tensor<Int64>(copying: spIndices, to: .defaultTFEager)
         let spValues = Tensor<T>(copying: spValues, to: .defaultTFEager)
         let spShape = Tensor<Int64>(copying: spShape, to: .defaultTFEager)
@@ -31461,7 +31707,7 @@ public typealias Raw = _Raw
         return Tensor<T>(
           copying: _RawTFEager.sparseDenseCwiseDiv(
             spIndices: spIndices, spValues: spValues, spShape: spShape, dense: dense),
-          to: dense.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.sparseDenseCwiseDiv(
           spIndices: spIndices, spValues: spValues, spShape: spShape, dense: dense)
@@ -31499,6 +31745,7 @@ public typealias Raw = _Raw
         dense.handle.backend)
       {
       case .XLA:
+        let output_device = dense.device
         let spIndices = Tensor<Int64>(copying: spIndices, to: .defaultTFEager)
         let spValues = Tensor<T>(copying: spValues, to: .defaultTFEager)
         let spShape = Tensor<Int64>(copying: spShape, to: .defaultTFEager)
@@ -31506,7 +31753,7 @@ public typealias Raw = _Raw
         return Tensor<T>(
           copying: _RawTFEager.sparseDenseCwiseMul(
             spIndices: spIndices, spValues: spValues, spShape: spShape, dense: dense),
-          to: dense.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.sparseDenseCwiseMul(
           spIndices: spIndices, spValues: spValues, spShape: spShape, dense: dense)
@@ -31631,12 +31878,13 @@ public typealias Raw = _Raw
     ) -> Tensor<Float> {
       switch commonBackend(a.handle.backend, b.handle.backend) {
       case .XLA:
+        let output_device = b.device
         let a = Tensor<Ta>(copying: a, to: .defaultTFEager)
         let b = Tensor<Tb>(copying: b, to: .defaultTFEager)
         return Tensor<Float>(
           copying: _RawTFEager.sparseMatMul(
             a, b, transposeA: transposeA, transposeB: transposeB, aIsSparse: aIsSparse,
-            bIsSparse: bIsSparse), to: b.device)
+            bIsSparse: bIsSparse), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.sparseMatMul(
           a, b, transposeA: transposeA, transposeB: transposeB, aIsSparse: aIsSparse,
@@ -31721,12 +31969,13 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch b.handle.backend {
       case .XLA:
+        let output_device = b.device
         let b = Tensor<T>(copying: b, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.sparseMatrixMatMul(
             a, b, transposeA: transposeA, transposeB: transposeB, adjointA: adjointA,
             adjointB: adjointB, transposeOutput: transposeOutput, conjugateOutput: conjugateOutput),
-          to: b.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.sparseMatrixMatMul(
           a, b, transposeA: transposeA, transposeB: transposeB, adjointA: adjointA,
@@ -32138,6 +32387,7 @@ public typealias Raw = _Raw
           inputShape.handle.backend), reductionAxes.handle.backend)
       {
       case .XLA:
+        let output_device = reductionAxes.device
         let inputIndices = Tensor<Int64>(copying: inputIndices, to: .defaultTFEager)
         let inputValues = Tensor<T>(copying: inputValues, to: .defaultTFEager)
         let inputShape = Tensor<Int64>(copying: inputShape, to: .defaultTFEager)
@@ -32145,7 +32395,7 @@ public typealias Raw = _Raw
         return Tensor<T>(
           copying: _RawTFEager.sparseReduceMax(
             inputIndices: inputIndices, inputValues: inputValues, inputShape: inputShape,
-            reductionAxes: reductionAxes, keepDims: keepDims), to: reductionAxes.device)
+            reductionAxes: reductionAxes, keepDims: keepDims), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.sparseReduceMax(
           inputIndices: inputIndices, inputValues: inputValues, inputShape: inputShape,
@@ -32229,6 +32479,7 @@ public typealias Raw = _Raw
           inputShape.handle.backend), reductionAxes.handle.backend)
       {
       case .XLA:
+        let output_device = reductionAxes.device
         let inputIndices = Tensor<Int64>(copying: inputIndices, to: .defaultTFEager)
         let inputValues = Tensor<T>(copying: inputValues, to: .defaultTFEager)
         let inputShape = Tensor<Int64>(copying: inputShape, to: .defaultTFEager)
@@ -32236,7 +32487,7 @@ public typealias Raw = _Raw
         return Tensor<T>(
           copying: _RawTFEager.sparseReduceSum(
             inputIndices: inputIndices, inputValues: inputValues, inputShape: inputShape,
-            reductionAxes: reductionAxes, keepDims: keepDims), to: reductionAxes.device)
+            reductionAxes: reductionAxes, keepDims: keepDims), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.sparseReduceSum(
           inputIndices: inputIndices, inputValues: inputValues, inputShape: inputShape,
@@ -32378,12 +32629,13 @@ public typealias Raw = _Raw
         commonBackend(data.handle.backend, indices.handle.backend), segmentIds.handle.backend)
       {
       case .XLA:
+        let output_device = segmentIds.device
         let data = Tensor<T>(copying: data, to: .defaultTFEager)
         let indices = Tensor<Tidx>(copying: indices, to: .defaultTFEager)
         let segmentIds = Tensor<Int32>(copying: segmentIds, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.sparseSegmentMean(
-            data: data, indices: indices, segmentIds: segmentIds), to: segmentIds.device)
+            data: data, indices: indices, segmentIds: segmentIds), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.sparseSegmentMean(data: data, indices: indices, segmentIds: segmentIds)
       }
@@ -32416,6 +32668,7 @@ public typealias Raw = _Raw
         outputDim0.handle.backend)
       {
       case .XLA:
+        let output_device = outputDim0.device
         let grad = Tensor<T>(copying: grad, to: .defaultTFEager)
         let indices = Tensor<Tidx>(copying: indices, to: .defaultTFEager)
         let segmentIds = Tensor<Int32>(copying: segmentIds, to: .defaultTFEager)
@@ -32423,7 +32676,7 @@ public typealias Raw = _Raw
         return Tensor<T>(
           copying: _RawTFEager.sparseSegmentMeanGrad(
             grad: grad, indices: indices, segmentIds: segmentIds, outputDim0: outputDim0),
-          to: outputDim0.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.sparseSegmentMeanGrad(
           grad: grad, indices: indices, segmentIds: segmentIds, outputDim0: outputDim0)
@@ -32464,6 +32717,7 @@ public typealias Raw = _Raw
         numSegments.handle.backend)
       {
       case .XLA:
+        let output_device = numSegments.device
         let data = Tensor<T>(copying: data, to: .defaultTFEager)
         let indices = Tensor<Tidx>(copying: indices, to: .defaultTFEager)
         let segmentIds = Tensor<Int32>(copying: segmentIds, to: .defaultTFEager)
@@ -32471,7 +32725,7 @@ public typealias Raw = _Raw
         return Tensor<T>(
           copying: _RawTFEager.sparseSegmentMeanWithNumSegments(
             data: data, indices: indices, segmentIds: segmentIds, numSegments: numSegments),
-          to: numSegments.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.sparseSegmentMeanWithNumSegments(
           data: data, indices: indices, segmentIds: segmentIds, numSegments: numSegments)
@@ -32505,12 +32759,13 @@ public typealias Raw = _Raw
         commonBackend(data.handle.backend, indices.handle.backend), segmentIds.handle.backend)
       {
       case .XLA:
+        let output_device = segmentIds.device
         let data = Tensor<T>(copying: data, to: .defaultTFEager)
         let indices = Tensor<Tidx>(copying: indices, to: .defaultTFEager)
         let segmentIds = Tensor<Int32>(copying: segmentIds, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.sparseSegmentSqrtN(
-            data: data, indices: indices, segmentIds: segmentIds), to: segmentIds.device)
+            data: data, indices: indices, segmentIds: segmentIds), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.sparseSegmentSqrtN(data: data, indices: indices, segmentIds: segmentIds)
       }
@@ -32543,6 +32798,7 @@ public typealias Raw = _Raw
         outputDim0.handle.backend)
       {
       case .XLA:
+        let output_device = outputDim0.device
         let grad = Tensor<T>(copying: grad, to: .defaultTFEager)
         let indices = Tensor<Tidx>(copying: indices, to: .defaultTFEager)
         let segmentIds = Tensor<Int32>(copying: segmentIds, to: .defaultTFEager)
@@ -32550,7 +32806,7 @@ public typealias Raw = _Raw
         return Tensor<T>(
           copying: _RawTFEager.sparseSegmentSqrtNGrad(
             grad: grad, indices: indices, segmentIds: segmentIds, outputDim0: outputDim0),
-          to: outputDim0.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.sparseSegmentSqrtNGrad(
           grad: grad, indices: indices, segmentIds: segmentIds, outputDim0: outputDim0)
@@ -32593,6 +32849,7 @@ public typealias Raw = _Raw
         numSegments.handle.backend)
       {
       case .XLA:
+        let output_device = numSegments.device
         let data = Tensor<T>(copying: data, to: .defaultTFEager)
         let indices = Tensor<Tidx>(copying: indices, to: .defaultTFEager)
         let segmentIds = Tensor<Int32>(copying: segmentIds, to: .defaultTFEager)
@@ -32600,7 +32857,7 @@ public typealias Raw = _Raw
         return Tensor<T>(
           copying: _RawTFEager.sparseSegmentSqrtNWithNumSegments(
             data: data, indices: indices, segmentIds: segmentIds, numSegments: numSegments),
-          to: numSegments.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.sparseSegmentSqrtNWithNumSegments(
           data: data, indices: indices, segmentIds: segmentIds, numSegments: numSegments)
@@ -32659,12 +32916,13 @@ public typealias Raw = _Raw
         commonBackend(data.handle.backend, indices.handle.backend), segmentIds.handle.backend)
       {
       case .XLA:
+        let output_device = segmentIds.device
         let data = Tensor<T>(copying: data, to: .defaultTFEager)
         let indices = Tensor<Tidx>(copying: indices, to: .defaultTFEager)
         let segmentIds = Tensor<Int32>(copying: segmentIds, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.sparseSegmentSum(
-            data: data, indices: indices, segmentIds: segmentIds), to: segmentIds.device)
+            data: data, indices: indices, segmentIds: segmentIds), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.sparseSegmentSum(data: data, indices: indices, segmentIds: segmentIds)
       }
@@ -32725,6 +32983,7 @@ public typealias Raw = _Raw
         numSegments.handle.backend)
       {
       case .XLA:
+        let output_device = numSegments.device
         let data = Tensor<T>(copying: data, to: .defaultTFEager)
         let indices = Tensor<Tidx>(copying: indices, to: .defaultTFEager)
         let segmentIds = Tensor<Int32>(copying: segmentIds, to: .defaultTFEager)
@@ -32732,7 +32991,7 @@ public typealias Raw = _Raw
         return Tensor<T>(
           copying: _RawTFEager.sparseSegmentSumWithNumSegments(
             data: data, indices: indices, segmentIds: segmentIds, numSegments: numSegments),
-          to: numSegments.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.sparseSegmentSumWithNumSegments(
           data: data, indices: indices, segmentIds: segmentIds, numSegments: numSegments)
@@ -32810,6 +33069,7 @@ public typealias Raw = _Raw
           inputStart.handle.backend), outputIndices.handle.backend)
       {
       case .XLA:
+        let output_device = outputIndices.device
         let backpropValGrad = Tensor<T>(copying: backpropValGrad, to: .defaultTFEager)
         let inputIndices = Tensor<Int64>(copying: inputIndices, to: .defaultTFEager)
         let inputStart = Tensor<Int64>(copying: inputStart, to: .defaultTFEager)
@@ -32817,7 +33077,7 @@ public typealias Raw = _Raw
         return Tensor<T>(
           copying: _RawTFEager.sparseSliceGrad(
             backpropValGrad: backpropValGrad, inputIndices: inputIndices, inputStart: inputStart,
-            outputIndices: outputIndices), to: outputIndices.device)
+            outputIndices: outputIndices), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.sparseSliceGrad(
           backpropValGrad: backpropValGrad, inputIndices: inputIndices, inputStart: inputStart,
@@ -32861,12 +33121,13 @@ public typealias Raw = _Raw
         commonBackend(spIndices.handle.backend, spValues.handle.backend), spShape.handle.backend)
       {
       case .XLA:
+        let output_device = spShape.device
         let spIndices = Tensor<Int64>(copying: spIndices, to: .defaultTFEager)
         let spValues = Tensor<T>(copying: spValues, to: .defaultTFEager)
         let spShape = Tensor<Int64>(copying: spShape, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.sparseSoftmax(
-            spIndices: spIndices, spValues: spValues, spShape: spShape), to: spShape.device)
+            spIndices: spIndices, spValues: spValues, spShape: spShape), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.sparseSoftmax(spIndices: spIndices, spValues: spValues, spShape: spShape)
       }
@@ -33040,13 +33301,14 @@ public typealias Raw = _Raw
         b.handle.backend)
       {
       case .XLA:
+        let output_device = b.device
         let aIndices = Tensor<Tindices>(copying: aIndices, to: .defaultTFEager)
         let aValues = Tensor<T>(copying: aValues, to: .defaultTFEager)
         let aShape = Tensor<Tindices>(copying: aShape, to: .defaultTFEager)
         let b = Tensor<T>(copying: b, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.sparseTensorDenseAdd(
-            aIndices: aIndices, aValues: aValues, aShape: aShape, b), to: b.device)
+            aIndices: aIndices, aValues: aValues, aShape: aShape, b), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.sparseTensorDenseAdd(
           aIndices: aIndices, aValues: aValues, aShape: aShape, b)
@@ -33095,6 +33357,7 @@ public typealias Raw = _Raw
         b.handle.backend)
       {
       case .XLA:
+        let output_device = b.device
         let aIndices = Tensor<Tindices>(copying: aIndices, to: .defaultTFEager)
         let aValues = Tensor<T>(copying: aValues, to: .defaultTFEager)
         let aShape = Tensor<Int64>(copying: aShape, to: .defaultTFEager)
@@ -33102,7 +33365,7 @@ public typealias Raw = _Raw
         return Tensor<T>(
           copying: _RawTFEager.sparseTensorDenseMatMul(
             aIndices: aIndices, aValues: aValues, aShape: aShape, b, adjointA: adjointA,
-            adjointB: adjointB), to: b.device)
+            adjointB: adjointB), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.sparseTensorDenseMatMul(
           aIndices: aIndices, aValues: aValues, aShape: aShape, b, adjointA: adjointA,
@@ -33190,6 +33453,7 @@ public typealias Raw = _Raw
           sparseValues.handle.backend), defaultValue.handle.backend)
       {
       case .XLA:
+        let output_device = defaultValue.device
         let sparseIndices = Tensor<Tindices>(copying: sparseIndices, to: .defaultTFEager)
         let outputShape = Tensor<Tindices>(copying: outputShape, to: .defaultTFEager)
         let sparseValues = Tensor<T>(copying: sparseValues, to: .defaultTFEager)
@@ -33197,7 +33461,7 @@ public typealias Raw = _Raw
         return Tensor<T>(
           copying: _RawTFEager.sparseToDense(
             sparseIndices: sparseIndices, outputShape: outputShape, sparseValues: sparseValues,
-            defaultValue: defaultValue, validateIndices: validateIndices), to: defaultValue.device)
+            defaultValue: defaultValue, validateIndices: validateIndices), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.sparseToDense(
           sparseIndices: sparseIndices, outputShape: outputShape, sparseValues: sparseValues,
@@ -33446,9 +33710,10 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(y.handle.backend, dy.handle.backend) {
       case .XLA:
+        let output_device = dy.device
         let y = Tensor<T>(copying: y, to: .defaultTFEager)
         let dy = Tensor<T>(copying: dy, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.sqrtGrad(y, dy: dy), to: dy.device)
+        return Tensor<T>(copying: _RawTFEager.sqrtGrad(y, dy: dy), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.sqrtGrad(y, dy: dy)
       }
@@ -33573,10 +33838,11 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch elem.handle.backend {
       case .XLA:
+        let output_device = elem.device
         let elem = Tensor<T>(copying: elem, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.stackPushV2(handle: handle, elem: elem, swapMemory: swapMemory),
-          to: elem.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.stackPushV2(handle: handle, elem: elem, swapMemory: swapMemory)
       }
@@ -33727,6 +33993,7 @@ public typealias Raw = _Raw
         probs.handle.backend)
       {
       case .XLA:
+        let output_device = probs.device
         let algorithm = Tensor<Int64>(copying: algorithm, to: .defaultTFEager)
         let shape = Tensor<S>(copying: shape, to: .defaultTFEager)
         let counts = Tensor<T>(copying: counts, to: .defaultTFEager)
@@ -33734,7 +34001,7 @@ public typealias Raw = _Raw
         return Tensor<Dtype>(
           copying: _RawTFEager.statefulRandomBinomial(
             resource: resource, algorithm: algorithm, shape: shape, counts: counts, probs: probs),
-          to: probs.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.statefulRandomBinomial(
           resource: resource, algorithm: algorithm, shape: shape, counts: counts, probs: probs)
@@ -33763,10 +34030,11 @@ public typealias Raw = _Raw
     ) -> Tensor<Dtype> {
       switch shape.handle.backend {
       case .XLA:
+        let output_device = shape.device
         let shape = Tensor<ShapeDtype>(copying: shape, to: .defaultTFEager)
         return Tensor<Dtype>(
           copying: _RawTFEager.statefulStandardNormal(resource: resource, shape: shape),
-          to: shape.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.statefulStandardNormal(resource: resource, shape: shape)
       }
@@ -33796,11 +34064,12 @@ public typealias Raw = _Raw
     ) -> Tensor<Dtype> {
       switch commonBackend(algorithm.handle.backend, shape.handle.backend) {
       case .XLA:
+        let output_device = shape.device
         let algorithm = Tensor<Int64>(copying: algorithm, to: .defaultTFEager)
         let shape = Tensor<ShapeDtype>(copying: shape, to: .defaultTFEager)
         return Tensor<Dtype>(
           copying: _RawTFEager.statefulStandardNormalV2(
-            resource: resource, algorithm: algorithm, shape: shape), to: shape.device)
+            resource: resource, algorithm: algorithm, shape: shape), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.statefulStandardNormalV2(
           resource: resource, algorithm: algorithm, shape: shape)
@@ -33833,11 +34102,12 @@ public typealias Raw = _Raw
     ) -> Tensor<Dtype> {
       switch commonBackend(algorithm.handle.backend, shape.handle.backend) {
       case .XLA:
+        let output_device = shape.device
         let algorithm = Tensor<Int64>(copying: algorithm, to: .defaultTFEager)
         let shape = Tensor<ShapeDtype>(copying: shape, to: .defaultTFEager)
         return Tensor<Dtype>(
           copying: _RawTFEager.statefulTruncatedNormal(
-            resource: resource, algorithm: algorithm, shape: shape), to: shape.device)
+            resource: resource, algorithm: algorithm, shape: shape), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.statefulTruncatedNormal(
           resource: resource, algorithm: algorithm, shape: shape)
@@ -33869,11 +34139,12 @@ public typealias Raw = _Raw
     ) -> Tensor<Dtype> {
       switch commonBackend(algorithm.handle.backend, shape.handle.backend) {
       case .XLA:
+        let output_device = shape.device
         let algorithm = Tensor<Int64>(copying: algorithm, to: .defaultTFEager)
         let shape = Tensor<ShapeDtype>(copying: shape, to: .defaultTFEager)
         return Tensor<Dtype>(
           copying: _RawTFEager.statefulUniform(
-            resource: resource, algorithm: algorithm, shape: shape), to: shape.device)
+            resource: resource, algorithm: algorithm, shape: shape), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.statefulUniform(resource: resource, algorithm: algorithm, shape: shape)
       }
@@ -33903,11 +34174,12 @@ public typealias Raw = _Raw
     ) -> Tensor<Dtype> {
       switch commonBackend(algorithm.handle.backend, shape.handle.backend) {
       case .XLA:
+        let output_device = shape.device
         let algorithm = Tensor<Int64>(copying: algorithm, to: .defaultTFEager)
         let shape = Tensor<ShapeDtype>(copying: shape, to: .defaultTFEager)
         return Tensor<Dtype>(
           copying: _RawTFEager.statefulUniformFullInt(
-            resource: resource, algorithm: algorithm, shape: shape), to: shape.device)
+            resource: resource, algorithm: algorithm, shape: shape), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.statefulUniformFullInt(
           resource: resource, algorithm: algorithm, shape: shape)
@@ -33952,6 +34224,7 @@ public typealias Raw = _Raw
         maxval.handle.backend)
       {
       case .XLA:
+        let output_device = maxval.device
         let algorithm = Tensor<Int64>(copying: algorithm, to: .defaultTFEager)
         let shape = Tensor<ShapeDtype>(copying: shape, to: .defaultTFEager)
         let minval = Tensor<Dtype>(copying: minval, to: .defaultTFEager)
@@ -33959,7 +34232,7 @@ public typealias Raw = _Raw
         return Tensor<Dtype>(
           copying: _RawTFEager.statefulUniformInt(
             resource: resource, algorithm: algorithm, shape: shape, minval: minval, maxval: maxval),
-          to: maxval.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.statefulUniformInt(
           resource: resource, algorithm: algorithm, shape: shape, minval: minval, maxval: maxval)
@@ -34327,8 +34600,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.stopGradient(input), to: input.device)
+        return Tensor<T>(copying: _RawTFEager.stopGradient(input), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.stopGradient(input)
       }
@@ -35258,12 +35532,13 @@ public typealias Raw = _Raw
     ) -> Tensor<Float> {
       switch commonBackend(embeddingVariable.handle.backend, slicedActivations.handle.backend) {
       case .XLA:
+        let output_device = slicedActivations.device
         let embeddingVariable = Tensor<Float>(copying: embeddingVariable, to: .defaultTFEager)
         let slicedActivations = Tensor<Float>(copying: slicedActivations, to: .defaultTFEager)
         return Tensor<Float>(
           copying: _RawTFEager.tPUEmbeddingActivations(
             embeddingVariable: embeddingVariable, slicedActivations: slicedActivations,
-            tableId: tableId, lookupId: lookupId), to: slicedActivations.device)
+            tableId: tableId, lookupId: lookupId), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.tPUEmbeddingActivations(
           embeddingVariable: embeddingVariable, slicedActivations: slicedActivations,
@@ -35384,10 +35659,11 @@ public typealias Raw = _Raw
     ) -> [Tensor<T>] {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         return [Tensor<T>](
           copying: _RawTFEager.tPUReplicatedOutput(input, numReplicas: numReplicas),
-          to: input.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.tPUReplicatedOutput(input, numReplicas: numReplicas)
       }
@@ -35605,9 +35881,10 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(y.handle.backend, dy.handle.backend) {
       case .XLA:
+        let output_device = dy.device
         let y = Tensor<T>(copying: y, to: .defaultTFEager)
         let dy = Tensor<T>(copying: dy, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.tanhGrad(y, dy: dy), to: dy.device)
+        return Tensor<T>(copying: _RawTFEager.tanhGrad(y, dy: dy), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.tanhGrad(y, dy: dy)
       }
@@ -35697,12 +35974,13 @@ public typealias Raw = _Raw
     ) -> Tensor<Dtype> {
       switch commonBackend(indices.handle.backend, flowIn.handle.backend) {
       case .XLA:
+        let output_device = flowIn.device
         let indices = Tensor<Int32>(copying: indices, to: .defaultTFEager)
         let flowIn = Tensor<Float>(copying: flowIn, to: .defaultTFEager)
         return Tensor<Dtype>(
           copying: _RawTFEager.tensorArrayGatherV2(
             handle: handle, indices: indices, flowIn: flowIn, elementShape: elementShape),
-          to: flowIn.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.tensorArrayGatherV2(
           handle: handle, indices: indices, flowIn: flowIn, elementShape: elementShape)
@@ -35736,12 +36014,13 @@ public typealias Raw = _Raw
     ) -> Tensor<Dtype> {
       switch commonBackend(indices.handle.backend, flowIn.handle.backend) {
       case .XLA:
+        let output_device = flowIn.device
         let indices = Tensor<Int32>(copying: indices, to: .defaultTFEager)
         let flowIn = Tensor<Float>(copying: flowIn, to: .defaultTFEager)
         return Tensor<Dtype>(
           copying: _RawTFEager.tensorArrayGatherV3(
             handle: handle, indices: indices, flowIn: flowIn, elementShape: elementShape),
-          to: flowIn.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.tensorArrayGatherV3(
           handle: handle, indices: indices, flowIn: flowIn, elementShape: elementShape)
@@ -35849,11 +36128,12 @@ public typealias Raw = _Raw
     ) -> Tensor<Dtype> {
       switch commonBackend(index.handle.backend, flowIn.handle.backend) {
       case .XLA:
+        let output_device = flowIn.device
         let index = Tensor<Int32>(copying: index, to: .defaultTFEager)
         let flowIn = Tensor<Float>(copying: flowIn, to: .defaultTFEager)
         return Tensor<Dtype>(
           copying: _RawTFEager.tensorArrayReadV2(handle: handle, index: index, flowIn: flowIn),
-          to: flowIn.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.tensorArrayReadV2(handle: handle, index: index, flowIn: flowIn)
       }
@@ -35877,11 +36157,12 @@ public typealias Raw = _Raw
     ) -> Tensor<Dtype> {
       switch commonBackend(index.handle.backend, flowIn.handle.backend) {
       case .XLA:
+        let output_device = flowIn.device
         let index = Tensor<Int32>(copying: index, to: .defaultTFEager)
         let flowIn = Tensor<Float>(copying: flowIn, to: .defaultTFEager)
         return Tensor<Dtype>(
           copying: _RawTFEager.tensorArrayReadV3(handle: handle, index: index, flowIn: flowIn),
-          to: flowIn.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.tensorArrayReadV3(handle: handle, index: index, flowIn: flowIn)
       }
@@ -35900,12 +36181,13 @@ public typealias Raw = _Raw
         commonBackend(indices.handle.backend, value.handle.backend), flowIn.handle.backend)
       {
       case .XLA:
+        let output_device = flowIn.device
         let indices = Tensor<Int32>(copying: indices, to: .defaultTFEager)
         let value = Tensor<T>(copying: value, to: .defaultTFEager)
         let flowIn = Tensor<Float>(copying: flowIn, to: .defaultTFEager)
         return Tensor<Float>(
           copying: _RawTFEager.tensorArrayScatterV2(
-            handle: handle, indices: indices, value: value, flowIn: flowIn), to: flowIn.device)
+            handle: handle, indices: indices, value: value, flowIn: flowIn), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.tensorArrayScatterV2(
           handle: handle, indices: indices, value: value, flowIn: flowIn)
@@ -35935,12 +36217,13 @@ public typealias Raw = _Raw
         commonBackend(indices.handle.backend, value.handle.backend), flowIn.handle.backend)
       {
       case .XLA:
+        let output_device = flowIn.device
         let indices = Tensor<Int32>(copying: indices, to: .defaultTFEager)
         let value = Tensor<T>(copying: value, to: .defaultTFEager)
         let flowIn = Tensor<Float>(copying: flowIn, to: .defaultTFEager)
         return Tensor<Float>(
           copying: _RawTFEager.tensorArrayScatterV3(
-            handle: handle, indices: indices, value: value, flowIn: flowIn), to: flowIn.device)
+            handle: handle, indices: indices, value: value, flowIn: flowIn), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.tensorArrayScatterV3(
           handle: handle, indices: indices, value: value, flowIn: flowIn)
@@ -35956,9 +36239,10 @@ public typealias Raw = _Raw
     ) -> Tensor<Int32> {
       switch flowIn.handle.backend {
       case .XLA:
+        let output_device = flowIn.device
         let flowIn = Tensor<Float>(copying: flowIn, to: .defaultTFEager)
         return Tensor<Int32>(
-          copying: _RawTFEager.tensorArraySizeV2(handle: handle, flowIn: flowIn), to: flowIn.device)
+          copying: _RawTFEager.tensorArraySizeV2(handle: handle, flowIn: flowIn), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.tensorArraySizeV2(handle: handle, flowIn: flowIn)
       }
@@ -35979,9 +36263,10 @@ public typealias Raw = _Raw
     ) -> Tensor<Int32> {
       switch flowIn.handle.backend {
       case .XLA:
+        let output_device = flowIn.device
         let flowIn = Tensor<Float>(copying: flowIn, to: .defaultTFEager)
         return Tensor<Int32>(
-          copying: _RawTFEager.tensorArraySizeV3(handle: handle, flowIn: flowIn), to: flowIn.device)
+          copying: _RawTFEager.tensorArraySizeV3(handle: handle, flowIn: flowIn), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.tensorArraySizeV3(handle: handle, flowIn: flowIn)
       }
@@ -36000,12 +36285,13 @@ public typealias Raw = _Raw
         commonBackend(value.handle.backend, lengths.handle.backend), flowIn.handle.backend)
       {
       case .XLA:
+        let output_device = flowIn.device
         let value = Tensor<T>(copying: value, to: .defaultTFEager)
         let lengths = Tensor<Int64>(copying: lengths, to: .defaultTFEager)
         let flowIn = Tensor<Float>(copying: flowIn, to: .defaultTFEager)
         return Tensor<Float>(
           copying: _RawTFEager.tensorArraySplitV2(
-            handle: handle, value: value, lengths: lengths, flowIn: flowIn), to: flowIn.device)
+            handle: handle, value: value, lengths: lengths, flowIn: flowIn), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.tensorArraySplitV2(
           handle: handle, value: value, lengths: lengths, flowIn: flowIn)
@@ -36052,12 +36338,13 @@ public typealias Raw = _Raw
         commonBackend(value.handle.backend, lengths.handle.backend), flowIn.handle.backend)
       {
       case .XLA:
+        let output_device = flowIn.device
         let value = Tensor<T>(copying: value, to: .defaultTFEager)
         let lengths = Tensor<Int64>(copying: lengths, to: .defaultTFEager)
         let flowIn = Tensor<Float>(copying: flowIn, to: .defaultTFEager)
         return Tensor<Float>(
           copying: _RawTFEager.tensorArraySplitV3(
-            handle: handle, value: value, lengths: lengths, flowIn: flowIn), to: flowIn.device)
+            handle: handle, value: value, lengths: lengths, flowIn: flowIn), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.tensorArraySplitV3(
           handle: handle, value: value, lengths: lengths, flowIn: flowIn)
@@ -36137,12 +36424,13 @@ public typealias Raw = _Raw
         commonBackend(index.handle.backend, value.handle.backend), flowIn.handle.backend)
       {
       case .XLA:
+        let output_device = flowIn.device
         let index = Tensor<Int32>(copying: index, to: .defaultTFEager)
         let value = Tensor<T>(copying: value, to: .defaultTFEager)
         let flowIn = Tensor<Float>(copying: flowIn, to: .defaultTFEager)
         return Tensor<Float>(
           copying: _RawTFEager.tensorArrayWriteV2(
-            handle: handle, index: index, value: value, flowIn: flowIn), to: flowIn.device)
+            handle: handle, index: index, value: value, flowIn: flowIn), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.tensorArrayWriteV2(
           handle: handle, index: index, value: value, flowIn: flowIn)
@@ -36170,12 +36458,13 @@ public typealias Raw = _Raw
         commonBackend(index.handle.backend, value.handle.backend), flowIn.handle.backend)
       {
       case .XLA:
+        let output_device = flowIn.device
         let index = Tensor<Int32>(copying: index, to: .defaultTFEager)
         let value = Tensor<T>(copying: value, to: .defaultTFEager)
         let flowIn = Tensor<Float>(copying: flowIn, to: .defaultTFEager)
         return Tensor<Float>(
           copying: _RawTFEager.tensorArrayWriteV3(
-            handle: handle, index: index, value: value, flowIn: flowIn), to: flowIn.device)
+            handle: handle, index: index, value: value, flowIn: flowIn), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.tensorArrayWriteV3(
           handle: handle, index: index, value: value, flowIn: flowIn)
@@ -36247,11 +36536,12 @@ public typealias Raw = _Raw
     ) -> Tensor<Float> {
       switch denseFeatures.handle.backend {
       case .XLA:
+        let output_device = denseFeatures.device
         let denseFeatures = Tensor<Float>(copying: denseFeatures, to: .defaultTFEager)
         return Tensor<Float>(
           copying: _RawTFEager.tensorForestTreePredict(
             treeHandle: treeHandle, denseFeatures: denseFeatures, logitsDimension: logitsDimension),
-          to: denseFeatures.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.tensorForestTreePredict(
           treeHandle: treeHandle, denseFeatures: denseFeatures, logitsDimension: logitsDimension)
@@ -36388,12 +36678,13 @@ public typealias Raw = _Raw
     ) -> Tensor<ElementDtype> {
       switch commonBackend(indices.handle.backend, elementShape.handle.backend) {
       case .XLA:
+        let output_device = elementShape.device
         let indices = Tensor<Int32>(copying: indices, to: .defaultTFEager)
         let elementShape = Tensor<Int32>(copying: elementShape, to: .defaultTFEager)
         return Tensor<ElementDtype>(
           copying: _RawTFEager.tensorListGather(
             inputHandle: inputHandle, indices: indices, elementShape: elementShape),
-          to: elementShape.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.tensorListGather(
           inputHandle: inputHandle, indices: indices, elementShape: elementShape)
@@ -36409,12 +36700,12 @@ public typealias Raw = _Raw
     ) -> Tensor<ElementDtype> {
       switch commonBackend(index.handle.backend, elementShape.handle.backend) {
       case .XLA:
+        let output_device = elementShape.device
         let index = Tensor<Int32>(copying: index, to: .defaultTFEager)
         let elementShape = Tensor<Int32>(copying: elementShape, to: .defaultTFEager)
         return Tensor<ElementDtype>(
           copying: _RawTFEager.tensorListGetItem(
-            inputHandle: inputHandle, index: index, elementShape: elementShape),
-          to: elementShape.device)
+            inputHandle: inputHandle, index: index, elementShape: elementShape), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.tensorListGetItem(
           inputHandle: inputHandle, index: index, elementShape: elementShape)
@@ -36616,11 +36907,12 @@ public typealias Raw = _Raw
     ) -> Tensor<ElementDtype> {
       switch elementShape.handle.backend {
       case .XLA:
+        let output_device = elementShape.device
         let elementShape = Tensor<Int32>(copying: elementShape, to: .defaultTFEager)
         return Tensor<ElementDtype>(
           copying: _RawTFEager.tensorListStack(
             inputHandle: inputHandle, elementShape: elementShape, numElements: numElements),
-          to: elementShape.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.tensorListStack(
           inputHandle: inputHandle, elementShape: elementShape, numElements: numElements)
@@ -36712,12 +37004,13 @@ public typealias Raw = _Raw
         commonBackend(tensor.handle.backend, indices.handle.backend), updates.handle.backend)
       {
       case .XLA:
+        let output_device = updates.device
         let tensor = Tensor<T>(copying: tensor, to: .defaultTFEager)
         let indices = Tensor<Tindices>(copying: indices, to: .defaultTFEager)
         let updates = Tensor<T>(copying: updates, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.tensorScatterAdd(tensor, indices: indices, updates: updates),
-          to: updates.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.tensorScatterAdd(tensor, indices: indices, updates: updates)
       }
@@ -36808,12 +37101,13 @@ public typealias Raw = _Raw
         commonBackend(tensor.handle.backend, indices.handle.backend), updates.handle.backend)
       {
       case .XLA:
+        let output_device = updates.device
         let tensor = Tensor<T>(copying: tensor, to: .defaultTFEager)
         let indices = Tensor<Tindices>(copying: indices, to: .defaultTFEager)
         let updates = Tensor<T>(copying: updates, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.tensorScatterSub(tensor, indices: indices, updates: updates),
-          to: updates.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.tensorScatterSub(tensor, indices: indices, updates: updates)
       }
@@ -36916,12 +37210,13 @@ public typealias Raw = _Raw
         commonBackend(tensor.handle.backend, indices.handle.backend), updates.handle.backend)
       {
       case .XLA:
+        let output_device = updates.device
         let tensor = Tensor<T>(copying: tensor, to: .defaultTFEager)
         let indices = Tensor<Tindices>(copying: indices, to: .defaultTFEager)
         let updates = Tensor<T>(copying: updates, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.tensorScatterUpdate(tensor, indices: indices, updates: updates),
-          to: updates.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.tensorScatterUpdate(tensor, indices: indices, updates: updates)
       }
@@ -37227,10 +37522,11 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(input.handle.backend, multiples.handle.backend) {
       case .XLA:
+        let output_device = multiples.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let multiples = Tensor<Int32>(copying: multiples, to: .defaultTFEager)
         return Tensor<T>(
-          copying: _RawTFEager.tileGrad(input, multiples: multiples), to: multiples.device)
+          copying: _RawTFEager.tileGrad(input, multiples: multiples), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.tileGrad(input, multiples: multiples)
       }
@@ -37365,13 +37661,15 @@ public typealias Raw = _Raw
         rhs.handle.backend)
       {
       case .XLA:
+        let output_device = rhs.device
         let superdiag = Tensor<T>(copying: superdiag, to: .defaultTFEager)
         let maindiag = Tensor<T>(copying: maindiag, to: .defaultTFEager)
         let subdiag = Tensor<T>(copying: subdiag, to: .defaultTFEager)
         let rhs = Tensor<T>(copying: rhs, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.tridiagonalMatMul(
-            superdiag: superdiag, maindiag: maindiag, subdiag: subdiag, rhs: rhs), to: rhs.device)
+            superdiag: superdiag, maindiag: maindiag, subdiag: subdiag, rhs: rhs), to: output_device
+        )
       case .TF_EAGER:
         return _RawTFEager.tridiagonalMatMul(
           superdiag: superdiag, maindiag: maindiag, subdiag: subdiag, rhs: rhs)
@@ -37408,11 +37706,12 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(diagonals.handle.backend, rhs.handle.backend) {
       case .XLA:
+        let output_device = rhs.device
         let diagonals = Tensor<T>(copying: diagonals, to: .defaultTFEager)
         let rhs = Tensor<T>(copying: rhs, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.tridiagonalSolve(
-            diagonals: diagonals, rhs: rhs, partialPivoting: partialPivoting), to: rhs.device)
+            diagonals: diagonals, rhs: rhs, partialPivoting: partialPivoting), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.tridiagonalSolve(
           diagonals: diagonals, rhs: rhs, partialPivoting: partialPivoting)
@@ -37436,9 +37735,10 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(x.handle.backend, y.handle.backend) {
       case .XLA:
+        let output_device = y.device
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
         let y = Tensor<T>(copying: y, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.truncateDiv(x, y), to: y.device)
+        return Tensor<T>(copying: _RawTFEager.truncateDiv(x, y), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.truncateDiv(x, y)
       }
@@ -37459,9 +37759,10 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(x.handle.backend, y.handle.backend) {
       case .XLA:
+        let output_device = y.device
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
         let y = Tensor<T>(copying: y, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.truncateMod(x, y), to: y.device)
+        return Tensor<T>(copying: _RawTFEager.truncateMod(x, y), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.truncateMod(x, y)
       }
@@ -37496,10 +37797,11 @@ public typealias Raw = _Raw
     ) -> Tensor<Dtype> {
       switch shape.handle.backend {
       case .XLA:
+        let output_device = shape.device
         let shape = Tensor<T>(copying: shape, to: .defaultTFEager)
         return Tensor<Dtype>(
           copying: _RawTFEager.truncatedNormal(shape: shape, seed: seed, seed2: seed2),
-          to: shape.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.truncatedNormal(shape: shape, seed: seed, seed2: seed2)
       }
@@ -37613,9 +37915,11 @@ public typealias Raw = _Raw
     ) -> Tensor<Float> {
       switch commonBackend(a.handle.backend, b.handle.backend) {
       case .XLA:
+        let output_device = b.device
         let a = Tensor<Float>(copying: a, to: .defaultTFEager)
         let b = Tensor<Float>(copying: b, to: .defaultTFEager)
-        return Tensor<Float>(copying: _RawTFEager.twoFloatInputsFloatOutput(a, b), to: b.device)
+        return Tensor<Float>(
+          copying: _RawTFEager.twoFloatInputsFloatOutput(a, b), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.twoFloatInputsFloatOutput(a, b)
       }
@@ -37629,9 +37933,10 @@ public typealias Raw = _Raw
     ) -> Tensor<Int32> {
       switch commonBackend(a.handle.backend, b.handle.backend) {
       case .XLA:
+        let output_device = b.device
         let a = Tensor<Float>(copying: a, to: .defaultTFEager)
         let b = Tensor<Float>(copying: b, to: .defaultTFEager)
-        return Tensor<Int32>(copying: _RawTFEager.twoFloatInputsIntOutput(a, b), to: b.device)
+        return Tensor<Int32>(copying: _RawTFEager.twoFloatInputsIntOutput(a, b), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.twoFloatInputsIntOutput(a, b)
       }
@@ -37684,8 +37989,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch a.handle.backend {
       case .XLA:
+        let output_device = a.device
         let a = Tensor<T>(copying: a, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.unary(a), to: a.device)
+        return Tensor<T>(copying: _RawTFEager.unary(a), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.unary(a)
       }
@@ -37725,6 +38031,7 @@ public typealias Raw = _Raw
         commonBackend(batchedTensor.handle.backend, batchIndex.handle.backend), id.handle.backend)
       {
       case .XLA:
+        let output_device = id.device
         let batchedTensor = Tensor<T>(copying: batchedTensor, to: .defaultTFEager)
         let batchIndex = Tensor<Int64>(copying: batchIndex, to: .defaultTFEager)
         let id = Tensor<Int64>(copying: id, to: .defaultTFEager)
@@ -37732,7 +38039,7 @@ public typealias Raw = _Raw
           copying: _RawTFEager.unbatch(
             batchedTensor: batchedTensor, batchIndex: batchIndex, id: id,
             timeoutMicros: timeoutMicros, container: container, sharedName: sharedName),
-          to: id.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.unbatch(
           batchedTensor: batchedTensor, batchIndex: batchIndex, id: id,
@@ -37783,6 +38090,7 @@ public typealias Raw = _Raw
           grad.handle.backend), id.handle.backend)
       {
       case .XLA:
+        let output_device = id.device
         let originalInput = Tensor<T>(copying: originalInput, to: .defaultTFEager)
         let batchIndex = Tensor<Int64>(copying: batchIndex, to: .defaultTFEager)
         let grad = Tensor<T>(copying: grad, to: .defaultTFEager)
@@ -37790,7 +38098,7 @@ public typealias Raw = _Raw
         return Tensor<T>(
           copying: _RawTFEager.unbatchGrad(
             originalInput: originalInput, batchIndex: batchIndex, grad: grad, id: id,
-            container: container, sharedName: sharedName), to: id.device)
+            container: container, sharedName: sharedName), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.unbatchGrad(
           originalInput: originalInput, batchIndex: batchIndex, grad: grad, id: id,
@@ -37984,8 +38292,9 @@ public typealias Raw = _Raw
     ) -> Tensor<Int32> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<Int32>(copying: input, to: .defaultTFEager)
-        return Tensor<Int32>(copying: _RawTFEager.unicodeScript(input), to: input.device)
+        return Tensor<Int32>(copying: _RawTFEager.unicodeScript(input), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.unicodeScript(input)
       }
@@ -38425,10 +38734,11 @@ public typealias Raw = _Raw
     ) -> Tensor<Tidx> {
       switch commonBackend(indices.handle.backend, dims.handle.backend) {
       case .XLA:
+        let output_device = dims.device
         let indices = Tensor<Tidx>(copying: indices, to: .defaultTFEager)
         let dims = Tensor<Tidx>(copying: dims, to: .defaultTFEager)
         return Tensor<Tidx>(
-          copying: _RawTFEager.unravelIndex(indices: indices, dims: dims), to: dims.device)
+          copying: _RawTFEager.unravelIndex(indices: indices, dims: dims), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.unravelIndex(indices: indices, dims: dims)
       }
@@ -38538,12 +38848,13 @@ public typealias Raw = _Raw
         commonBackend(data.handle.backend, segmentIds.handle.backend), numSegments.handle.backend)
       {
       case .XLA:
+        let output_device = numSegments.device
         let data = Tensor<T>(copying: data, to: .defaultTFEager)
         let segmentIds = Tensor<Tindices>(copying: segmentIds, to: .defaultTFEager)
         let numSegments = Tensor<Tnumsegments>(copying: numSegments, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.unsortedSegmentMax(
-            data: data, segmentIds: segmentIds, numSegments: numSegments), to: numSegments.device)
+            data: data, segmentIds: segmentIds, numSegments: numSegments), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.unsortedSegmentMax(
           data: data, segmentIds: segmentIds, numSegments: numSegments)
@@ -38599,12 +38910,13 @@ public typealias Raw = _Raw
         commonBackend(data.handle.backend, segmentIds.handle.backend), numSegments.handle.backend)
       {
       case .XLA:
+        let output_device = numSegments.device
         let data = Tensor<T>(copying: data, to: .defaultTFEager)
         let segmentIds = Tensor<Tindices>(copying: segmentIds, to: .defaultTFEager)
         let numSegments = Tensor<Tnumsegments>(copying: numSegments, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.unsortedSegmentMin(
-            data: data, segmentIds: segmentIds, numSegments: numSegments), to: numSegments.device)
+            data: data, segmentIds: segmentIds, numSegments: numSegments), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.unsortedSegmentMin(
           data: data, segmentIds: segmentIds, numSegments: numSegments)
@@ -38659,12 +38971,13 @@ public typealias Raw = _Raw
         commonBackend(data.handle.backend, segmentIds.handle.backend), numSegments.handle.backend)
       {
       case .XLA:
+        let output_device = numSegments.device
         let data = Tensor<T>(copying: data, to: .defaultTFEager)
         let segmentIds = Tensor<Tindices>(copying: segmentIds, to: .defaultTFEager)
         let numSegments = Tensor<Tnumsegments>(copying: numSegments, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.unsortedSegmentProd(
-            data: data, segmentIds: segmentIds, numSegments: numSegments), to: numSegments.device)
+            data: data, segmentIds: segmentIds, numSegments: numSegments), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.unsortedSegmentProd(
           data: data, segmentIds: segmentIds, numSegments: numSegments)
@@ -38790,10 +39103,11 @@ public typealias Raw = _Raw
     ) -> Tensor<OutType> {
       switch commonBackend(sortedInputs.handle.backend, values.handle.backend) {
       case .XLA:
+        let output_device = values.device
         let sortedInputs = Tensor<T>(copying: sortedInputs, to: .defaultTFEager)
         let values = Tensor<T>(copying: values, to: .defaultTFEager)
         return Tensor<OutType>(
-          copying: _RawTFEager.upperBound(sortedInputs: sortedInputs, values), to: values.device)
+          copying: _RawTFEager.upperBound(sortedInputs: sortedInputs, values), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.upperBound(sortedInputs: sortedInputs, values)
       }
@@ -38916,8 +39230,9 @@ public typealias Raw = _Raw
     ) -> Tensor<Int64> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
-        return Tensor<Int64>(copying: _RawTFEager.where_(input), to: input.device)
+        return Tensor<Int64>(copying: _RawTFEager.where_(input), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.where_(input)
       }
@@ -39213,8 +39528,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.xlaClusterOutput(input), to: input.device)
+        return Tensor<T>(copying: _RawTFEager.xlaClusterOutput(input), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.xlaClusterOutput(input)
       }
@@ -39263,6 +39579,7 @@ public typealias Raw = _Raw
         featureGroupCount.handle.backend)
       {
       case .XLA:
+        let output_device = featureGroupCount.device
         let lhs = Tensor<T>(copying: lhs, to: .defaultTFEager)
         let rhs = Tensor<T>(copying: rhs, to: .defaultTFEager)
         let windowStrides = Tensor<Tindices>(copying: windowStrides, to: .defaultTFEager)
@@ -39275,7 +39592,7 @@ public typealias Raw = _Raw
             lhs: lhs, rhs: rhs, windowStrides: windowStrides, padding: padding,
             lhsDilation: lhsDilation, rhsDilation: rhsDilation,
             featureGroupCount: featureGroupCount, dimensionNumbers: dimensionNumbers,
-            precisionConfig: precisionConfig), to: featureGroupCount.device)
+            precisionConfig: precisionConfig), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.xlaConv(
           lhs: lhs, rhs: rhs, windowStrides: windowStrides, padding: padding,
@@ -39306,12 +39623,13 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(lhs.handle.backend, rhs.handle.backend) {
       case .XLA:
+        let output_device = rhs.device
         let lhs = Tensor<T>(copying: lhs, to: .defaultTFEager)
         let rhs = Tensor<T>(copying: rhs, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.xlaDot(
             lhs: lhs, rhs: rhs, dimensionNumbers: dimensionNumbers, precisionConfig: precisionConfig
-          ), to: rhs.device)
+          ), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.xlaDot(
           lhs: lhs, rhs: rhs, dimensionNumbers: dimensionNumbers, precisionConfig: precisionConfig)
@@ -39349,12 +39667,13 @@ public typealias Raw = _Raw
         commonBackend(input.handle.backend, startIndices.handle.backend), sizeIndices.handle.backend
       ) {
       case .XLA:
+        let output_device = sizeIndices.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let startIndices = Tensor<Tindices>(copying: startIndices, to: .defaultTFEager)
         let sizeIndices = Tensor<Tindices>(copying: sizeIndices, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.xlaDynamicSlice(
-            input, startIndices: startIndices, sizeIndices: sizeIndices), to: sizeIndices.device)
+            input, startIndices: startIndices, sizeIndices: sizeIndices), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.xlaDynamicSlice(
           input, startIndices: startIndices, sizeIndices: sizeIndices)
@@ -39394,12 +39713,13 @@ public typealias Raw = _Raw
         commonBackend(input.handle.backend, update.handle.backend), indices.handle.backend)
       {
       case .XLA:
+        let output_device = indices.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let update = Tensor<T>(copying: update, to: .defaultTFEager)
         let indices = Tensor<Tindices>(copying: indices, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.xlaDynamicUpdateSlice(input, update: update, indices: indices),
-          to: indices.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.xlaDynamicUpdateSlice(input, update: update, indices: indices)
       }
@@ -39418,9 +39738,11 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(a.handle.backend, b.handle.backend) {
       case .XLA:
+        let output_device = b.device
         let a = Tensor<T>(copying: a, to: .defaultTFEager)
         let b = Tensor<T>(copying: b, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.xlaEinsum(a, b, equation: equation), to: b.device)
+        return Tensor<T>(
+          copying: _RawTFEager.xlaEinsum(a, b, equation: equation), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.xlaEinsum(a, b, equation: equation)
       }
@@ -39534,6 +39856,7 @@ public typealias Raw = _Raw
             paddingLow.handle.backend), paddingHigh.handle.backend), paddingInterior.handle.backend)
       {
       case .XLA:
+        let output_device = paddingInterior.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let paddingValue = Tensor<T>(copying: paddingValue, to: .defaultTFEager)
         let paddingLow = Tensor<Tindices>(copying: paddingLow, to: .defaultTFEager)
@@ -39542,7 +39865,7 @@ public typealias Raw = _Raw
         return Tensor<T>(
           copying: _RawTFEager.xlaPad(
             input, paddingValue: paddingValue, paddingLow: paddingLow, paddingHigh: paddingHigh,
-            paddingInterior: paddingInterior), to: paddingInterior.device)
+            paddingInterior: paddingInterior), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.xlaPad(
           input, paddingValue: paddingValue, paddingLow: paddingLow, paddingHigh: paddingHigh,
@@ -39594,12 +39917,13 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(input.handle.backend, initValue.handle.backend) {
       case .XLA:
+        let output_device = initValue.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let initValue = Tensor<T>(copying: initValue, to: .defaultTFEager)
         return Tensor<T>(
           copying: _RawTFEager.xlaReduce(
             input, initValue: initValue, dimensionsToReduce: dimensionsToReduce, reducer: reducer),
-          to: initValue.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.xlaReduce(
           input, initValue: initValue, dimensionsToReduce: dimensionsToReduce, reducer: reducer)
@@ -39645,6 +39969,7 @@ public typealias Raw = _Raw
             baseDilations.handle.backend), windowDilations.handle.backend), padding.handle.backend)
       {
       case .XLA:
+        let output_device = padding.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
         let initValue = Tensor<T>(copying: initValue, to: .defaultTFEager)
         let windowDimensions = Tensor<Tindices>(copying: windowDimensions, to: .defaultTFEager)
@@ -39657,7 +39982,7 @@ public typealias Raw = _Raw
             input, initValue: initValue, windowDimensions: windowDimensions,
             windowStrides: windowStrides, baseDilations: baseDilations,
             windowDilations: windowDilations, padding: padding, computation: computation),
-          to: padding.device)
+          to: output_device)
       case .TF_EAGER:
         return _RawTFEager.xlaReduceWindow(
           input, initValue: initValue, windowDimensions: windowDimensions,
@@ -39716,6 +40041,7 @@ public typealias Raw = _Raw
         initValue.handle.backend)
       {
       case .XLA:
+        let output_device = initValue.device
         let operand = Tensor<T>(copying: operand, to: .defaultTFEager)
         let windowDimensions = Tensor<Tindices>(copying: windowDimensions, to: .defaultTFEager)
         let windowStrides = Tensor<Tindices>(copying: windowStrides, to: .defaultTFEager)
@@ -39726,7 +40052,7 @@ public typealias Raw = _Raw
           copying: _RawTFEager.xlaSelectAndScatter(
             operand: operand, windowDimensions: windowDimensions, windowStrides: windowStrides,
             padding: padding, source: source, initValue: initValue, select: select, scatter: scatter
-          ), to: initValue.device)
+          ), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.xlaSelectAndScatter(
           operand: operand, windowDimensions: windowDimensions, windowStrides: windowStrides,
@@ -39792,8 +40118,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.xlaSharding(input), to: input.device)
+        return Tensor<T>(copying: _RawTFEager.xlaSharding(input), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.xlaSharding(input)
       }
@@ -39816,8 +40143,9 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch input.handle.backend {
       case .XLA:
+        let output_device = input.device
         let input = Tensor<T>(copying: input, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.xlaSort(input), to: input.device)
+        return Tensor<T>(copying: _RawTFEager.xlaSort(input), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.xlaSort(input)
       }
@@ -39895,9 +40223,10 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(x.handle.backend, y.handle.backend) {
       case .XLA:
+        let output_device = y.device
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
         let y = Tensor<T>(copying: y, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.xlogy(x, y), to: y.device)
+        return Tensor<T>(copying: _RawTFEager.xlogy(x, y), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.xlogy(x, y)
       }
@@ -39935,9 +40264,10 @@ public typealias Raw = _Raw
     ) -> Tensor<T> {
       switch commonBackend(x.handle.backend, q.handle.backend) {
       case .XLA:
+        let output_device = q.device
         let x = Tensor<T>(copying: x, to: .defaultTFEager)
         let q = Tensor<T>(copying: q, to: .defaultTFEager)
-        return Tensor<T>(copying: _RawTFEager.zeta(x, q: q), to: q.device)
+        return Tensor<T>(copying: _RawTFEager.zeta(x, q: q), to: output_device)
       case .TF_EAGER:
         return _RawTFEager.zeta(x, q: q)
       }
