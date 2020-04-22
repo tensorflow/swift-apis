@@ -93,6 +93,7 @@ public protocol Layer: Module where Input: Differentiable {
 }
 
 extension Layer {
+  @available(*, deprecated, renamed: "callAsFunction(_:)")
   @differentiable
   public func call(_ input: Input) -> Output {
     callAsFunction(input)

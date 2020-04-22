@@ -12,12 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#if os(macOS) || os(iOS) || os(watchOS) || os(tvOS)
-  import Darwin
-#else
-  import Glibc
-#endif
-
 /// Keeps around the current device to place AD zero tensors until AD can switch over to using
 /// instance zeros.
 class _DeviceThreadLocalState {
@@ -27,25 +21,25 @@ class _DeviceThreadLocalState {
 
   var isReducedPrecision: Bool = false
 
-  private static let key: pthread_key_t = {
-    var key = pthread_key_t()
-    pthread_key_create(&key) {
+  private static let key: ThreadLocalStorage.Key =
+    ThreadLocalStorage.Key {
       #if os(macOS) || os(iOS) || os(watchOS) || os(tvOS)
         let _: AnyObject = Unmanaged.fromOpaque($0).takeRetainedValue()
       #else
         let _: AnyObject = Unmanaged.fromOpaque($0!).takeRetainedValue()
       #endif
     }
-    return key
-  }()
 
   @usableFromInline
   static var local: _DeviceThreadLocalState {
-    if let state = pthread_getspecific(key) {
+    if let state = ThreadLocalStorage.get(for: key) {
       return Unmanaged.fromOpaque(state).takeUnretainedValue()
     }
+
     let state = _DeviceThreadLocalState()
-    pthread_setspecific(key, Unmanaged.passRetained(state).toOpaque())
+    ThreadLocalStorage.set(
+      value: Unmanaged.passRetained(state).toOpaque(),
+      for: key)
     return state
   }
 }
