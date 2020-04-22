@@ -57,7 +57,11 @@ public protocol XLAScalarType {
 extension XLAScalarType {
   var xlaScalar: XLAScalar { xlaScalarWrapper.xlaScalar }
   static var xlaTensorScalarType: XLATensorScalarType {
-    return XLATensorScalarType(rawValue: xlaTensorScalarTypeRawValue)
+#if os(Windows)
+    return XLATensorScalarType(rawValue: Int32(xlaTensorScalarTypeRawValue))
+#else
+    return XLATensorScalarType(rawValue: UInt32(xlaTensorScalarTypeRawValue))
+#endif
   }
 }
 
@@ -65,49 +69,49 @@ extension Float: XLAScalarType {
   public var xlaScalarWrapper: XLAScalarWrapper { XLAScalarWrapper(Double(self)) }
 
   static public var xlaTensorScalarTypeRawValue: UInt32 {
-    return XLATensorScalarType_Float.rawValue
+    return UInt32(XLATensorScalarType_Float.rawValue)
   }
 }
 extension Double: XLAScalarType {
   public var xlaScalarWrapper: XLAScalarWrapper { XLAScalarWrapper(self) }
 
   static public var xlaTensorScalarTypeRawValue: UInt32 {
-    return XLATensorScalarType_Double.rawValue
+    return UInt32(XLATensorScalarType_Double.rawValue)
   }
 }
 extension Int64: XLAScalarType {
   public var xlaScalarWrapper: XLAScalarWrapper { XLAScalarWrapper(self) }
 
   static public var xlaTensorScalarTypeRawValue: UInt32 {
-    return XLATensorScalarType_Int64.rawValue
+    return UInt32(XLATensorScalarType_Int64.rawValue)
   }
 }
 extension Int32: XLAScalarType {
   public var xlaScalarWrapper: XLAScalarWrapper { XLAScalarWrapper(Int64(self)) }
 
   static public var xlaTensorScalarTypeRawValue: UInt32 {
-    return XLATensorScalarType_Int32.rawValue
+    return UInt32(XLATensorScalarType_Int32.rawValue)
   }
 }
 extension Int16: XLAScalarType {
   public var xlaScalarWrapper: XLAScalarWrapper { XLAScalarWrapper(Int64(self)) }
 
   static public var xlaTensorScalarTypeRawValue: UInt32 {
-    return XLATensorScalarType_Int16.rawValue
+    return UInt32(XLATensorScalarType_Int16.rawValue)
   }
 }
 extension Int8: XLAScalarType {
   public var xlaScalarWrapper: XLAScalarWrapper { XLAScalarWrapper(Int64(self)) }
 
   static public var xlaTensorScalarTypeRawValue: UInt32 {
-    return XLATensorScalarType_Int8.rawValue
+    return UInt32(XLATensorScalarType_Int8.rawValue)
   }
 }
 extension UInt8: XLAScalarType {
   public var xlaScalarWrapper: XLAScalarWrapper { XLAScalarWrapper(Int64(self)) }
 
   static public var xlaTensorScalarTypeRawValue: UInt32 {
-    return XLATensorScalarType_UInt8.rawValue
+    return UInt32(XLATensorScalarType_UInt8.rawValue)
   }
 }
 
@@ -115,7 +119,7 @@ extension Bool: XLAScalarType {
   public var xlaScalarWrapper: XLAScalarWrapper { XLAScalarWrapper(Int64(self ? 1 : 0)) }
 
   static public var xlaTensorScalarTypeRawValue: UInt32 {
-    return XLATensorScalarType_Bool.rawValue
+    return UInt32(XLATensorScalarType_Bool.rawValue)
   }
 }
 
@@ -123,7 +127,7 @@ extension Bool: XLAScalarType {
 extension BFloat16: XLAScalarType {
   public var xlaScalarWrapper: XLAScalarWrapper { fatalError("BFloat16 not suported") }
   static public var xlaTensorScalarTypeRawValue: UInt32 {
-    return XLATensorScalarType_BFloat16.rawValue
+    return UInt32(XLATensorScalarType_BFloat16.rawValue)
   }
 }
 
