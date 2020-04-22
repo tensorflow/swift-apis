@@ -108,9 +108,26 @@ If `swiftc` is not in your `PATH`, you must specify the path to it using
 `-D CMAKE_Swift_COMPILER=`.
 
 ```
-cmake -G Ninja -B out -S swift-apis
+cmake -B out -D USE_BUNDLED_CTENSORFLOW=YES -D BUILD_X10=YES -G Ninja -S swift-apis
 cmake --build out
 ```
+
+If you are intending to develop X10, we recommend that you pass the
+`-no-stdlib-rpath` flag during compilation:
+
+```
+cmake -B out -D BUILD_X10=YES -D USE_BUNDLED_CTENSORFLOW=YES -D CMAKE_Swift_FLAGS="-no-stdlib-rpath" -G Ninja -S swift-apis
+cmake --build out
+```
+
+If you are not intending to develop X10, we recommend that you use the bundled
+X10 by passing `-D USE_BUNDLED_X10=YES`:
+
+```
+cmake -B out -D BUILD_X10=YES -D USE_BUNDLED_CTENSORFLOW=YES -D USE_BUNDLED_X10=YES -D CMAKE_Swift_FLAGS="-no-stdlib-rpath" -G Ninja -S swift-apis
+cmake --build out
+```
+
 
 ## Bugs
 
