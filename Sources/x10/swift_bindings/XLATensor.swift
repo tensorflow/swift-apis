@@ -242,6 +242,17 @@ extension XLATensor {
     }
   }
 
+  static func annotate(_ a: XLATensor, _ annotation: String) -> XLATensor {
+    return XLATensor(_handle: XLATensor_annotate(a.handle, annotation))
+  }
+
+  static func annotations(_ a: XLATensor) -> String {
+    // TODO(michellecasbon): Format with header.
+    let str = XLATensor_get_annotations(a.handle)
+    defer { DeleteString(str) }
+    return String(cString: GetStringCStr(str))
+  }
+
   static func any(_ input: XLATensor, _ reductionIndices: [Int64], _ keepDims: Bool) -> XLATensor {
     defer { _fixLifetime(input) }
     return reductionIndices.withArrayRef { reductionIndices in
@@ -472,6 +483,12 @@ extension XLATensor {
     return indices.withArrayRef { indices in
       XLATensor(_handle: XLATensor_index(input.handle, indices, startDim))
     }
+  }
+
+  static func irText(_ a: XLATensor) -> String {
+    let str = XLATensor_ir_text(a.handle)
+    defer { DeleteString(str) }
+    return String(cString: GetStringCStr(str))
   }
 
   static func isFinite(_ input: XLATensor) -> XLATensor {
@@ -805,12 +822,6 @@ extension XLATensor {
     tensors.withArrayRef { tensors in
       XLATensor(_handle: XLATensor_stack(tensors, dim))
     }
-  }
-
-  static func irText(_ a: XLATensor) -> String {
-    let str = XLATensor_ir_text(a.handle)
-    defer { DeleteString(str) }
-    return String(cString: GetStringCStr(str))
   }
 
   static func sub(_ a: XLATensor, _ b: XLATensor) -> XLATensor {

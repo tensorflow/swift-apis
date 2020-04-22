@@ -16,30 +16,32 @@
 
 #pragma once
 
-#include <string>
+// #include <vector>
 
-#include "absl/types/span.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ir.h"
 
 namespace swift_xla {
 namespace ir {
+namespace ops {
 
-class DumpUtil {
+// IR node for collecting layer statistics.
+class Annotate : public Node {
  public:
-  static std::string ToDot(absl::Span<const Node* const> nodes);
+  Annotate(const Value& input, std::string annotation);
 
-  static std::string PostOrderToDot(absl::Span<const Node* const> post_order,
-                                    absl::Span<const Node* const> roots);
+  NodePtr Clone(OpList operands) const override;
 
-  static std::string ToText(absl::Span<const Node* const> nodes);
+  XlaOpVector Lower(LoweringContext* loctx) const override;
 
-  static std::string PostOrderToText(absl::Span<const Node* const> post_order,
-                                     absl::Span<const Node* const> roots);
+  std::string ToString() const override;
 
-  static std::string ToHlo(absl::Span<const Value> values);
+  const std::string& annotation() const { return annotation_; }
 
-  static std::string GetAnnotations(absl::Span<const Node* const> nodes);
+ private:
+  std::string annotation_;
 };
 
+}  // namespace ops
 }  // namespace ir
 }  // namespace swift_xla
+

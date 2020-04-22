@@ -40,6 +40,70 @@ public struct Tensor<Scalar: TensorFlowScalar> {
   }
 }
 
+public protocol TensorProtocol {
+  associatedtype Scalar: TensorFlowScalar
+  init(repeating repeatedValue: Scalar, shape: TensorShape, on device: Device)
+  var annotations: String { get }
+  var shape: TensorShape { get }
+  var summary: String { get }
+}
+
+public protocol DifferentiableTensorProtocol:
+  TensorProtocol & Differentiable & EuclideanDifferentiable
+  where Scalar: TensorFlowFloatingPoint {
+  @differentiable(wrt: self)
+  func annotate(_ annotation: String) -> Self
+}
+
+extension Tensor: TensorProtocol & DifferentiableTensorProtocol where Scalar: TensorFlowFloatingPoint {
+
+  public var annotations: String {
+    #if USING_X10_BACKEND
+      switch handle.backend {
+      case .XLA:
+        let rawAnnotations = XLATensor.annotations(xlaTensor)
+
+        // TODO(michellecasbon): Add formatting.
+
+        let formattedAnnotations = """
+        Layer                         Output Shape         Attributes
+        ============================= ==================== ======================
+        \(rawAnnotations)
+        """
+
+        return formattedAnnotations
+
+      case .TF_EAGER:
+        return Device.defaultTFEager.annotationsAvailable
+      }
+    #else
+      return ""
+    #endif
+  }
+
+  public var summary: String { annotations }
+
+  @differentiable(wrt: self)
+  public func annotate(_ annotation: String) -> Tensor<Scalar> {
+    #if USING_X10_BACKEND
+      switch handle.backend {
+      case .XLA:
+        return Tensor<Scalar>(_xla: XLATensor.annotate(xlaTensor, annotation))
+      case .TF_EAGER:
+        return self
+      }
+    #else
+      return self
+    #endif
+  }
+
+  @derivative(of: annotate)
+  @usableFromInline
+  func vjpAnnotate(_ annotation: String) -> (value: Tensor<Scalar>, pullback: (Tensor<Scalar>) -> Tensor<Scalar>) {
+    (annotate(annotation), { $0 })
+  }
+}
+
 extension Tensor: AnyTensor {
   public var _rawTensorHandle: CTensorHandle { return handle._cTensorHandle }
   public var _tensorFlowDataType: TensorDataType { return Scalar.tensorFlowDataType }

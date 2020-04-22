@@ -72,6 +72,13 @@ public struct Device {
       case .XLA: return "XLA"
       }
     }
+
+    var annotationsAvailable: String {
+      switch self {
+      case .TF_EAGER: return "Annotations not availabile in TF_EAGER."
+      case .XLA: return "Annotations available in XLA."
+      }
+    }
   }
 
   /// A device kind.
@@ -203,6 +210,12 @@ extension Device: Equatable {
 extension Device: CustomStringConvertible {
   public var description: String {
     "Device(kind: .\(kind.shortName), ordinal: \(ordinal), backend: .\(backend.shortName))"
+  }
+}
+
+extension Device {
+  public var annotationsAvailable: String {
+    "\(backend.annotationsAvailable)"
   }
 }
 

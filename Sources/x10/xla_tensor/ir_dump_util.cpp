@@ -186,6 +186,22 @@ std::string GenerateTextNodeSpec(const Node* node, const NodeIdMap& id_map) {
   return ss.str();
 }
 
+std::string GenerateTextAnnotation(const Node* node) {
+  // TODO(michellecasbon): Use json.
+  std::stringstream ss;
+  ss << "  shape=[";
+  size_t i = 0;
+  for (auto& dimension : node->shape().dimensions()) {
+    if ((i++) != 0) ss << ", ";
+    ss << dimension;
+  }
+  ss << "] ";
+  for (auto& tag : GetNodeTags(node)) {
+    ss << tag.value;
+  }
+  return ss.str();
+}
+
 }  // namespace
 
 std::string DumpUtil::ToDot(absl::Span<const Node* const> nodes) {
@@ -259,6 +275,22 @@ std::string DumpUtil::ToHlo(absl::Span<const Value> values) {
   }
   xla::XlaComputation computation = ConsumeValue(lowering_ctx.Build());
   return ConsumeValue(xla::util::GetComputationHloText(computation));
+}
+
+std::string DumpUtil::GetAnnotations(absl::Span<const Node* const> nodes) {
+  auto post_order = Util::ComputePostOrder(nodes);
+
+  NodeIdMap id_map = GenerateIdMap(post_order);
+  std::stringstream ss;
+  ss << "{\n";
+  for (auto node : post_order) {
+    // Only process annotations
+    if (node->op().ToString() != "x10::annotate") continue;
+
+    ss << GenerateTextAnnotation(node) << "\n";
+  }
+  ss << "}\n";
+  return ss.str();
 }
 
 }  // namespace ir
