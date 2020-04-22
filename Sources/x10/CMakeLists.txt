@@ -82,6 +82,7 @@ target_link_libraries(x10_tensor PUBLIC
   CTensorFlow
   Tensor)
 target_link_libraries(x10_tensor PRIVATE
+  CX10
   x10)
 
 add_library(x10_optimizers_tensor_visitor_plan SHARED
@@ -106,6 +107,8 @@ set_target_properties(x10_training_loop PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_Swift_MODULE_DIRECTORY})
 target_link_libraries(x10_training_loop PUBLIC
   x10_tensor)
+target_link_libraries(x10_training_loop PRIVATE
+  CX10)
 
 add_executable(ops_test ../../Tests/x10/ops_test.swift)
 target_link_libraries(ops_test PRIVATE
