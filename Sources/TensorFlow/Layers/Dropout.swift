@@ -20,7 +20,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
     let noise = Tensor(randomUniform: shape)
     let keepMask = noise .>= Scalar(probability)
     let keepProbability = Scalar(1.0 - probability)
-    return self * Tensor(keepMask) / Tensor(keepProbability)
+    return self * Tensor(copying: Tensor(keepMask), to: device) / Tensor(keepProbability, on: device)
   }
 }
 
