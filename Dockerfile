@@ -12,7 +12,7 @@ RUN if test -d /swift-apis/google-cloud-sdk; then \
   echo "build --remote_cache=grpcs://remotebuildexecution.googleapis.com \
     --auth_enabled=true \
     --remote_instance_name=projects/tensorflow-swift/instances/s4tf-remote-bazel-caching \
-    --host_platform_remote_properties_override='properties:{name:\"cache-silo-key\" value:\"s4tf-basic-cache-key\"}'" >> ~/.bazelrc; \
+    --host_platform_remote_properties_override='properties:{name:\"cache-silo-key\" value:\"s4tf-basic-cache-key-cuda-10.2\"}'" >> ~/.bazelrc; \
   cat ~/.bazelrc; \
 fi
 
