@@ -75,6 +75,7 @@ if (BUILD_X10)
     USING_X10_BACKEND
     DEFAULT_BACKEND_EAGER)
   target_link_libraries(TensorFlow PRIVATE
+    CX10
     x10)
 else()
   target_sources(TensorFlow PRIVATE
