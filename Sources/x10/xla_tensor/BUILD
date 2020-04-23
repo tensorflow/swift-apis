@@ -112,13 +112,3 @@ tf_cc_shared_object(
         ":tf_version_script.lds",
     ],
 )
-
-tf_cc_binary(
-    name = "test",
-    srcs = ["test.cpp"],
-    deps = [
-        ":tensor",
-        "//tensorflow/stream_executor/host:host_platform",
-        "@com_google_absl//absl/strings:str_format",
-    ],
-)

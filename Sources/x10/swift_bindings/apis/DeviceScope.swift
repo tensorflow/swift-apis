@@ -12,12 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#if os(macOS) || os(iOS) || os(watchOS) || os(tvOS)
-  import Darwin
-#else
-  import Glibc
-#endif
-
 /// Keeps around the current device to place AD zero tensors until AD can switch over to using
 /// instance zeros.
 class _DeviceThreadLocalState {
@@ -27,25 +21,25 @@ class _DeviceThreadLocalState {
 
   var isReducedPrecision: Bool = false
 
-  private static let key: pthread_key_t = {
-    var key = pthread_key_t()
-    pthread_key_create(&key) {
+  private static let key: ThreadLocalStorage.Key =
+    ThreadLocalStorage.Key {
       #if os(macOS) || os(iOS) || os(watchOS) || os(tvOS)
         let _: AnyObject = Unmanaged.fromOpaque($0).takeRetainedValue()
       #else
         let _: AnyObject = Unmanaged.fromOpaque($0!).takeRetainedValue()
       #endif
     }
-    return key
-  }()
 
   @usableFromInline
   static var local: _DeviceThreadLocalState {
-    if let state = pthread_getspecific(key) {
+    if let state = ThreadLocalStorage.get(for: key) {
       return Unmanaged.fromOpaque(state).takeUnretainedValue()
     }
+
     let state = _DeviceThreadLocalState()
-    pthread_setspecific(key, Unmanaged.passRetained(state).toOpaque())
+    ThreadLocalStorage.set(
+      value: Unmanaged.passRetained(state).toOpaque(),
+      for: key)
     return state
   }
 }
@@ -53,15 +47,15 @@ class _DeviceThreadLocalState {
 // Evaluate the pullback on a one with the same device and precision as y.
 @usableFromInline
 func pullbackOfOneLikeY<T: TensorFlowFloatingPoint, R>(
-    y: Tensor<T>,
-    pullback: (Tensor<T>) -> R
+  y: Tensor<T>,
+  pullback: (Tensor<T>) -> R
 ) -> R {
-    let adDevice = y.device
-    _DeviceThreadLocalState.local.deviceStack.append(adDevice)
-    let savedPrecision = _DeviceThreadLocalState.local.isReducedPrecision
-    _DeviceThreadLocalState.local.isReducedPrecision = y.isReducedPrecision
-    let result = pullback(Tensor<T>(1, deviceAndPrecisionLike: y))
-    _DeviceThreadLocalState.local.isReducedPrecision = savedPrecision
-    precondition(_DeviceThreadLocalState.local.deviceStack.popLast() != nil)
-    return result
+  let adDevice = y.device
+  _DeviceThreadLocalState.local.deviceStack.append(adDevice)
+  let savedPrecision = _DeviceThreadLocalState.local.isReducedPrecision
+  _DeviceThreadLocalState.local.isReducedPrecision = y.isReducedPrecision
+  let result = pullback(Tensor<T>(1, deviceAndPrecisionLike: y))
+  _DeviceThreadLocalState.local.isReducedPrecision = savedPrecision
+  precondition(_DeviceThreadLocalState.local.deviceStack.popLast() != nil)
+  return result
 }

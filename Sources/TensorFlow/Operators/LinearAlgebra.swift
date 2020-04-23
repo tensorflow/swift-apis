@@ -30,7 +30,7 @@ extension Tensor where Scalar: TensorFlowNumeric {
   /// // [1, 2, 3, 4]
   /// ```
   @inlinable
-  @differentiable( where Scalar: TensorFlowFloatingPoint)
+  @differentiable(where Scalar: TensorFlowFloatingPoint)
   public func diagonalPart() -> Tensor {
     precondition(rank >= 2, "The tensor must have at least rank 2.")
     return _Raw.matrixDiagPart(self)
@@ -51,7 +51,7 @@ extension Tensor where Scalar: TensorFlowNumeric {
   /// //  [0, 0, 0, 4]]
   /// ```
   @inlinable
-  @differentiable( where Scalar: TensorFlowFloatingPoint)
+  @differentiable(where Scalar: TensorFlowFloatingPoint)
   public func diagonal() -> Tensor {
     _Raw.matrixDiag(diagonal: self)
   }
@@ -103,7 +103,7 @@ extension Tensor where Scalar: TensorFlowNumeric {
   ///   - superdiagonalCount: The number of superdiagonals to keep. If negative, keep entire upper
   ///     triangle.
   @inlinable
-  @differentiable( where Scalar: TensorFlowFloatingPoint)
+  @differentiable(where Scalar: TensorFlowFloatingPoint)
   public func bandPart(subdiagonalCount: Int, superdiagonalCount: Int) -> Tensor {
     precondition(rank >= 2, "The tensor must have at least rank 2.")
     let lower = Tensor<Int32>(Int32(subdiagonalCount), on: self.device)

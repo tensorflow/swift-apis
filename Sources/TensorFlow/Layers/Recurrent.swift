@@ -369,7 +369,7 @@ public struct RecurrentLayer<Cell: RecurrentLayerCell>: Layer {
     return timeStepOutputs
   }
 
-  @differentiable(wrt: (self,inputs,initialState))
+  @differentiable(wrt: (self, inputs, initialState))
   public func call(
     _ inputs: [Cell.TimeStepInput],
     initialState: Cell.State

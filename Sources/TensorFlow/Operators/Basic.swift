@@ -16,7 +16,7 @@ infix operator .!=: ComparisonPrecedence
 
 /// Returns a tensor with the same shape and scalars as the specified tensor.
 @inlinable
-@differentiable( where Scalar: TensorFlowFloatingPoint)
+@differentiable(where Scalar: TensorFlowFloatingPoint)
 public func identity<Scalar>(_ x: Tensor<Scalar>) -> Tensor<Scalar> {
   x
 }
@@ -57,7 +57,7 @@ extension Tensor {
   ///
   /// - Returns: Array containing the unstacked tensors.
   @inlinable
-  @differentiable( where Scalar: TensorFlowFloatingPoint)
+  @differentiable(where Scalar: TensorFlowFloatingPoint)
   public func unstacked(alongAxis axis: Int = 0) -> [Tensor] {
     ensureValid(axis: axis)
     let posAxis = axis < 0 ? axis + rank : axis
@@ -87,7 +87,7 @@ extension Tensor {
   ///
   /// - Returns: An array containing the tensors part.
   @inlinable
-  @differentiable( where Scalar: TensorFlowFloatingPoint)
+  @differentiable(where Scalar: TensorFlowFloatingPoint)
   public func split(count: Int, alongAxis axis: Int = 0) -> [Tensor] {
     ensureValid(axis: axis)
     precondition(
@@ -429,7 +429,7 @@ extension Tensor {
   ///   specified axis.
   /// - Precondition: The axis must be in the range `-rank..<rank`.
   @inlinable
-  @differentiable( where Scalar: TensorFlowFloatingPoint)
+  @differentiable(where Scalar: TensorFlowFloatingPoint)
   public func concatenated(with other: Tensor, alongAxis axis: Int = 0) -> Tensor {
     return Tensor(concatenating: [self, other], alongAxis: axis)
   }
@@ -440,7 +440,7 @@ extension Tensor {
   ///   and may be controversial. The existence/naming of `++` will be discussed
   ///   during a later API design phase.
   @inlinable
-  @differentiable( where Scalar: TensorFlowFloatingPoint)
+  @differentiable(where Scalar: TensorFlowFloatingPoint)
   public static func ++ (lhs: Tensor, rhs: Tensor) -> Tensor {
     return lhs.concatenated(with: rhs)
   }

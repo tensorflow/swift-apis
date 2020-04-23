@@ -1,7 +1,7 @@
 FROM gcr.io/swift-tensorflow/base-deps-cuda10.2-cudnn7-ubuntu18.04
 
 # Allows the caller to specify the toolchain to use.
-ARG swift_tf_url=https://storage.googleapis.com/swift-tensorflow-artifacts/nightlies/latest/swift-tensorflow-DEVELOPMENT-x10-cuda10.2-cudnn7-ubuntu18.04.tar.gz
+ARG swift_tf_url=https://storage.googleapis.com/swift-tensorflow-artifacts/nightlies/latest/swift-tensorflow-DEVELOPMENT-cuda10.2-cudnn7-ubuntu18.04.tar.gz
 
 # Copy the kernel into the container
 COPY . /swift-apis
@@ -75,11 +75,8 @@ RUN cmake                                                                       
       -G Ninja                                                                  \
       -S /swift-apis
 RUN cmake --build /BinaryCache/tensorflow-swift-apis --verbose
-RUN cmake --build /BinaryCache/tensorflow-swift-apis --target test
 RUN cmake --build /BinaryCache/tensorflow-swift-apis --target install
-
-# Run x10 tests
-RUN XRT_WORKERS='localservice:0;grpc://localhost:40935' /BinaryCache/tensorflow-swift-apis/Sources/x10/ops_test
+RUN XRT_WORKERS='localservice:0;grpc://localhost:40935' cmake --build /BinaryCache/tensorflow-swift-apis --target test
 
 WORKDIR /
 RUN git clone https://github.com/tensorflow/swift-models.git

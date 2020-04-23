@@ -41,9 +41,13 @@ func _tensorSeeds(_ seed: Tensor<Int64>) -> (Tensor<Int64>, Tensor<Int64>) {
 /// Represents a potentially large set of elements.
 ///
 /// A `Dataset` can be used to represent an input pipeline as a collection of element tensors.
-@available(*, deprecated, message: """
+@available(
+  *, deprecated,
+  message:
+    """
   Datasets will be removed in S4TF v0.10. Please use the new Batches API instead.
-  """)
+  """
+)
 @frozen
 public struct Dataset<Element: TensorGroup> {
   public let _handle: VariantHandle

@@ -4,9 +4,13 @@ if(NOT USE_BUNDLED_CTENSORFLOW)
     ${CMAKE_CURRENT_SOURCE_DIR})
 endif()
 if(BUILD_X10)
+  target_link_directories(CTensorFlow INTERFACE
+    $<TARGET_FILE_DIR:x10>)
   target_link_libraries(CTensorFlow INTERFACE
     x10)
 else()
+  target_link_directories(CTensorFlow INTERFACE
+    $<TARGET_FILE_DIR:tensorflow>)
   target_link_libraries(CTensorFlow INTERFACE
     tensorflow)
 endif()
