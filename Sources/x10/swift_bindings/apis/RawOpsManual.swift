@@ -1589,8 +1589,7 @@ public enum _RawXLA {
     dims: Tensor<IndexType>,
     value: Tensor<T>
   ) -> Tensor<T> {
-    let device = Device.defaultXLA
-    return fill(dims: dims, value: value, device: device)
+    return fill(dims: dims, value: value, device: value.device)
   }
 
   /// Returns element-wise largest integer not greater than x.
