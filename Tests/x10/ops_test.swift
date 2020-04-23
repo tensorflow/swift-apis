@@ -1980,7 +1980,7 @@ final class TensorTests: XCTestCase {
       }
       var tx10 = _Raw.linSpace(
         start: start, stop: stop, num: Tensor<Int32>(num, on: x10),
-        device: .default)
+        device: x10)
       if useReducedPrecision {
         XCTAssert(tx10.isReducedPrecision)
         tx10 = tx10.toFullPrecision
