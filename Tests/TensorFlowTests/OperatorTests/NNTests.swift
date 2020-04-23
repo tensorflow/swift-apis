@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import XCTest
 import TensorFlow
+import XCTest
 
 class NNTests: XCTestCase {
   func testDepthToSpace() {
@@ -25,11 +25,11 @@ class NNTests: XCTestCase {
     let expected = Tensor<Float>([
       [
         [[0, 1], [2, 3], [8, 9], [10, 11]],
-        [[4, 5], [6, 7], [12, 13], [14, 15]]
+        [[4, 5], [6, 7], [12, 13], [14, 15]],
       ]
     ])
     XCTAssertEqual(depthToSpace(input, blockSize: 2), expected)
-    
+
     let emptyInput = Tensor<Float>(zeros: [0, 1, 2, 8])
     XCTAssertEqual(depthToSpace(emptyInput, blockSize: 2), Tensor(zeros: [0, 2, 4, 2]))
   }
@@ -43,12 +43,12 @@ class NNTests: XCTestCase {
     let grad = Tensor<Float>([
       [
         [[0, 1], [2, 3], [8, 9], [10, 11]],
-        [[4, 5], [6, 7], [12, 13], [14, 15]]
+        [[4, 5], [6, 7], [12, 13], [14, 15]],
       ]
     ])
     let depthToSpacePullback = pullback(at: input) { depthToSpace($0, blockSize: 2) }
     XCTAssertEqual(depthToSpacePullback(grad), input)
-    
+
     let emptyGrad = Tensor<Float>(zeros: [0, 2, 4, 2])
     XCTAssertEqual(depthToSpacePullback(emptyGrad), Tensor(zeros: [0, 1, 2, 8]))
   }
@@ -57,7 +57,7 @@ class NNTests: XCTestCase {
     let input = Tensor<Float>([
       [
         [[0, 1], [2, 3], [8, 9], [10, 11]],
-        [[4, 5], [6, 7], [12, 13], [14, 15]]
+        [[4, 5], [6, 7], [12, 13], [14, 15]],
       ]
     ])
     let expected = Tensor<Float>([
@@ -66,7 +66,7 @@ class NNTests: XCTestCase {
       ]
     ])
     XCTAssertEqual(spaceToDepth(input, blockSize: 2), expected)
-    
+
     let emptyInput = Tensor<Float>(zeros: [0, 2, 4, 2])
     XCTAssertEqual(spaceToDepth(emptyInput, blockSize: 2), Tensor(zeros: [0, 1, 2, 8]))
   }
@@ -75,7 +75,7 @@ class NNTests: XCTestCase {
     let input = Tensor<Float>([
       [
         [[0, 1], [2, 3], [8, 9], [10, 11]],
-        [[4, 5], [6, 7], [12, 13], [14, 15]]
+        [[4, 5], [6, 7], [12, 13], [14, 15]],
       ]
     ])
     let grad = Tensor<Float>([
@@ -85,7 +85,7 @@ class NNTests: XCTestCase {
     ])
     let spaceToDepthPullback = pullback(at: input) { spaceToDepth($0, blockSize: 2) }
     XCTAssertEqual(spaceToDepthPullback(grad), input)
-    
+
     let emptyGrad = Tensor<Float>(zeros: [0, 1, 2, 8])
     XCTAssertEqual(spaceToDepthPullback(emptyGrad), Tensor(zeros: [0, 2, 4, 2]))
   }

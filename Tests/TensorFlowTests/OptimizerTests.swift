@@ -161,7 +161,7 @@ class OptimizerTests: XCTestCase {
     let optimizer = SGD(for: values, learningRate: 1e-3)
     testNumericalCorrectness(
       optimizer: optimizer, startingValues: values,
-      expectedValues: [5.0000668 , -0.10000112, -0.20000224])
+      expectedValues: [5.0000668, -0.10000112, -0.20000224])
   }
 
   func testRMSPropNumerical() {

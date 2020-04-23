@@ -75,6 +75,6 @@ final class FreezableTests: XCTestCase {
   }
 
   static var allTests = [
-    ("testFreezableParameters", testFreezableParameters),
+    ("testFreezableParameters", testFreezableParameters)
   ]
 }

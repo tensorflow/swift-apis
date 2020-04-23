@@ -57,18 +57,18 @@ extension Float: PointwiseMultiplicative {
 }
 
 struct Multiply: Layer {
-    var coefficient: Float
+  var coefficient: Float
 
-    @differentiable
-    func callAsFunction(_ input: Float) -> Float {
-        return coefficient * input
-    }
+  @differentiable
+  func callAsFunction(_ input: Float) -> Float {
+    return coefficient * input
+  }
 }
 
 func factorial(_ n: Int) -> Int {
-    var result: Int = 1
-    for i in 2...n {
-        result *= i
-    }
-    return result
+  var result: Int = 1
+  for i in 2...n {
+    result *= i
+  }
+  return result
 }

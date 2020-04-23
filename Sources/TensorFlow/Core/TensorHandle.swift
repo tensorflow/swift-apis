@@ -82,7 +82,7 @@ public class TFETensorHandle: _AnyTensorHandle {
     }
   }
 
-    public var backend: Device.Backend { .TF_EAGER }
+  public var backend: Device.Backend { .TF_EAGER }
 }
 
 /// `TensorHandle` is the type used by ops. It includes a `Scalar` type, which
@@ -173,12 +173,12 @@ extension TensorHandle {
     get { handle.shape }
   }
 
-    /// The backend used to dispatch ops.
-    @inlinable
-    public var backend: Device.Backend {
-      @_semantics("autodiff.nonvarying")
-      get { handle.backend }
-    }
+  /// The backend used to dispatch ops.
+  @inlinable
+  public var backend: Device.Backend {
+    @_semantics("autodiff.nonvarying")
+    get { handle.backend }
+  }
 }
 
 extension TensorHandle {
