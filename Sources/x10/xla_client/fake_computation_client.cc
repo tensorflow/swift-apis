@@ -141,6 +141,11 @@ std::string FakeComputationClient::GetDefaultDevice() const {
   return default_device_;
 }
 
+ComputationClient::DeviceKind FakeComputationClient::GetDefaultDeviceKind()
+    const {
+  return DeviceKind::CPU;
+}
+
 size_t FakeComputationClient::GetNumDevices() const {
   return device_names_.size();
 }

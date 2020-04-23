@@ -50,8 +50,8 @@ XLA_API void destroyDeviceList(struct DeviceList* device_list);
 // Gets all available devices.
 XLA_API struct DeviceList* getAllDevices();
 
-// Gets the default device.
-XLA_API struct CDevice DefaultDevice();
+// Gets the best default device type.
+XLA_API enum DeviceType getDefaultDeviceType();
 
 // Set device replication for cross-device gradient reduction.
 XLA_API void setReplicationDevices(struct DeviceList* device_list);
