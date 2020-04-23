@@ -2,7 +2,6 @@ add_executable(ops_test
   ops_test.swift)
 target_link_libraries(ops_test PRIVATE
   x10
-  x10_tensor
   TensorFlow)
 add_test(NAME X10.Operations
   COMMAND ops_test)
@@ -11,7 +10,7 @@ add_executable(xla_tensor_test
   xla_tensor_test.swift)
 target_link_libraries(xla_tensor_test PRIVATE
   x10
-  x10_tensor)
+  TensorFlow)
 add_test(NAME X10.XLATensor
   COMMAND xla_tensor_test)
 
@@ -19,7 +18,7 @@ add_executable(keypathiterable_test
   keypathiterable_test.swift)
 target_link_libraries(keypathiterable_test PRIVATE
   x10
-  x10_tensor)
+  TensorFlow)
 add_test(NAME X10.KeyPathIterable
   COMMAND keypathiterable_test)
 

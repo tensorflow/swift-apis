@@ -1,7 +1,7 @@
 /// Test `KeyPathIterable` extensions.
 
+import TensorFlow
 import XCTest
-import x10_tensor
 import x10_xla_tensor_wrapper
 
 extension KeyPathIterable {
@@ -33,9 +33,9 @@ struct Wrapper<T>: KeyPathIterable {
 extension Wrapper where T == Tensor<Float> {
   static var fullPrecisionExample: Wrapper {
     let scalars = (0..<10).map(Float.init)
-    let tensors = scalars.map { Tensor($0) }
+    let tensors = scalars.map { Tensor($0, on: Device.defaultXLA) }
     return Wrapper<Tensor<Float>>(
-      item: Tensor(0),
+      item: Tensor(0, on: Device.defaultXLA),
       array: tensors,
       // FIXME: `Dictionary.allKeyPaths` does not return `WritableKeyPaths`.
       // Fixed in https://github.com/apple/swift/pull/29066.
@@ -120,5 +120,5 @@ extension KeyPathIterableTests {
 }
 
 XCTMain([
-  testCase(KeyPathIterableTests.allTests),
+  testCase(KeyPathIterableTests.allTests)
 ])
