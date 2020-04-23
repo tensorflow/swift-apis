@@ -35,6 +35,7 @@
 #include "tensorflow/compiler/xla/shape_util.h"
 #include "tensorflow/compiler/xla/util.h"
 #include "tensorflow/core/framework/allocator.h"
+#include "tensorflow/core/platform/net.h"
 #include "tensorflow/core/protobuf/cluster.pb.h"
 #include "tensorflow/core/util/device_name_utils.h"
 
@@ -463,8 +464,9 @@ std::unique_ptr<ComputationClient> ComputationClient::Create() {
       }
       options.global_device_map.emplace(parts[0], parts[1]);
     }
+    int port = tensorflow::internal::PickUnusedPortOrDie();
     std::string workers_spec = sys_util::GetEnvString(
-        "XRT_WORKERS", "localservice:0;grpc://localhost:0");
+        "XRT_WORKERS", absl::StrCat("localservice:0;grpc://localhost:", port));
     for (const auto& name_target : absl::StrSplit(workers_spec, '|')) {
       std::vector<std::string> parts = absl::StrSplit(name_target, ';');
       XLA_CHECK_EQ(parts.size(), 2) << name_target;
