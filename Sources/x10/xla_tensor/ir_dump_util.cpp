@@ -18,6 +18,7 @@
 #include <sstream>
 #include <unordered_map>
 
+#include "absl/container/node_hash_map.h"
 #include "absl/types/optional.h"
 #include "tensorflow/compiler/xla/xla_client/debug_macros.h"
 #include "tensorflow/compiler/xla/xla_client/xla_util.h"
@@ -28,7 +29,7 @@ namespace swift_xla {
 namespace ir {
 namespace {
 
-using NodeIdMap = std::unordered_map<const Node*, size_t>;
+using NodeIdMap = absl::node_hash_map<const Node*, size_t>;
 
 struct AttrTag {
   std::string name;
