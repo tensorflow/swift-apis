@@ -37,7 +37,7 @@ public struct _Freezable<Value: Differentiable> {
   }
 
   @usableFromInline
-  @derivative(of: wrappedValue)
+  @derivative(of:wrappedValue)
   func _vjpValue() -> (value: Value, pullback: (Value.TangentVector) -> TangentVector) {
     return (
       _value,

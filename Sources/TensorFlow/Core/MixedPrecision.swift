@@ -157,7 +157,7 @@ extension Tensor {
   }
 
   /// Promotes a scalar to a tensor with the same device and precision as the given tensor.
-  @differentiable( where Scalar: TensorFlowFloatingPoint)
+  @differentiable(where Scalar: TensorFlowFloatingPoint)
   public init(_ value: Scalar, deviceAndPrecisionLike tensor: Tensor) {
     let device = tensor.device
     let tmp = Tensor(value, on: device)
@@ -206,12 +206,12 @@ extension Tensor {
 #endif
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
-  @derivative(of: toReducedPrecision)
+  @derivative(of:toReducedPrecision)
   func _vjpToReducedPrecision() -> (value: Tensor, pullback: (Tensor) -> Tensor) {
     (toReducedPrecision, { $0.toFullPrecision })
   }
 
-  @derivative(of: toFullPrecision)
+  @derivative(of:toFullPrecision)
   func _vjpToFullPrecision() -> (value: Tensor, pullback: (Tensor) -> Tensor) {
     (toFullPrecision, { $0.toReducedPrecision })
   }

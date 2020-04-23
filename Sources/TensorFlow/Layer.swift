@@ -94,7 +94,7 @@ extension Layer {
 
   // TODO(TF-433, SR-11882): Remove this custom derivative when
   // differentiation supports `rethrows` functions and currying.
-  @derivative(of: inferring(from:))
+  @derivative(of:inferring(from:))
   @usableFromInline
   internal func _vjpInferring(from input: Input)
     -> (

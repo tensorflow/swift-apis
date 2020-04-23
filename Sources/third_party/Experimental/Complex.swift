@@ -47,7 +47,7 @@ struct Complex<T: FloatingPoint> {
   var real: T
   var imaginary: T
 
-  @differentiable( where T: Differentiable, T == T.TangentVector)
+  @differentiable(where T: Differentiable, T == T.TangentVector)
   init(real: T = 0, imaginary: T = 0) {
     self.real = real
     self.imaginary = imaginary
@@ -117,7 +117,7 @@ extension Complex: AdditiveArithmetic {
     lhs.imaginary += rhs.imaginary
   }
 
-  @differentiable( where T: Differentiable)
+  @differentiable(where T: Differentiable)
   static func - (lhs: Complex, rhs: Complex) -> Complex {
     var temp = lhs
     temp -= rhs
@@ -155,7 +155,7 @@ extension Complex: Numeric {
     )
   }
 
-  @differentiable( where T: Differentiable)
+  @differentiable(where T: Differentiable)
   static func * (lhs: Complex, rhs: Complex) -> Complex {
     var a = lhs.real
     var b = lhs.imaginary
@@ -204,7 +204,7 @@ extension Complex: Numeric {
 }
 
 extension Complex: SignedNumeric {
-  @differentiable( where T: Differentiable)
+  @differentiable(where T: Differentiable)
   static prefix func - (operand: Complex) -> Complex {
     return Complex(real: -operand.real, imaginary: -operand.imaginary)
   }
@@ -216,7 +216,7 @@ extension Complex: SignedNumeric {
 }
 
 extension Complex {
-  @differentiable( where T: Differentiable)
+  @differentiable(where T: Differentiable)
   static func / (lhs: Complex, rhs: Complex) -> Complex {
     var a = lhs.real
     var b = lhs.imaginary
@@ -260,7 +260,7 @@ extension Complex {
 }
 
 extension Complex {
-  @differentiable( where T: Differentiable)
+  @differentiable(where T: Differentiable)
   func complexConjugate() -> Complex {
     return Complex(real: real, imaginary: -imaginary)
   }
@@ -271,28 +271,28 @@ func abs<T>(_ z: Complex<T>) -> Complex<T> {
 }
 
 extension Complex {
-  @differentiable( where T: Differentiable, T == T.TangentVector)
+  @differentiable(where T: Differentiable, T == T.TangentVector)
   func adding(real: T) -> Complex {
     var c = self
     c.real += real
     return c
   }
 
-  @differentiable( where T: Differentiable, T == T.TangentVector)
+  @differentiable(where T: Differentiable, T == T.TangentVector)
   func subtracting(real: T) -> Complex {
     var c = self
     c.real -= real
     return c
   }
 
-  @differentiable( where T: Differentiable, T == T.TangentVector)
+  @differentiable(where T: Differentiable, T == T.TangentVector)
   func adding(imaginary: T) -> Complex {
     var c = self
     c.imaginary += imaginary
     return c
   }
 
-  @differentiable( where T: Differentiable, T == T.TangentVector)
+  @differentiable(where T: Differentiable, T == T.TangentVector)
   func subtracting(imaginary: T) -> Complex {
     var c = self
     c.imaginary -= imaginary
@@ -301,69 +301,69 @@ extension Complex {
 }
 
 extension Complex where T: Differentiable, T.TangentVector == T {
-  @derivative(of: init(real:imaginary:))
+  @derivative(of:init(real:imaginary:))
   static func _vjpInit(real: T, imaginary: T) -> (value: Complex, pullback: (Complex) -> (T, T)) {
     return (Complex(real: real, imaginary: imaginary), { ($0.real, $0.imaginary) })
   }
 }
 
 extension Complex where T: Differentiable {
-  @derivative(of: +)
+  @derivative(of:+)
   static func _vjpAdd(lhs: Complex, rhs: Complex)
     -> (value: Complex, pullback: (Complex) -> (Complex, Complex))
   {
     return (lhs + rhs, { v in (v, v) })
   }
 
-  @derivative(of: -)
+  @derivative(of:-)
   static func _vjpSubtract(lhs: Complex, rhs: Complex)
     -> (value: Complex, pullback: (Complex) -> (Complex, Complex))
   {
     return (lhs - rhs, { v in (v, -v) })
   }
 
-  @derivative(of: *)
+  @derivative(of:*)
   static func _vjpMultiply(lhs: Complex, rhs: Complex)
     -> (value: Complex, pullback: (Complex) -> (Complex, Complex))
   {
     return (lhs * rhs, { v in (rhs * v, lhs * v) })
   }
 
-  @derivative(of: /)
+  @derivative(of:/)
   static func _vjpDivide(lhs: Complex, rhs: Complex)
     -> (value: Complex, pullback: (Complex) -> (Complex, Complex))
   {
     return (lhs / rhs, { v in (v / rhs, -lhs / (rhs * rhs) * v) })
   }
 
-  @derivative(of: -)
+  @derivative(of:-)
   static func _vjpNegate(operand: Complex) -> (value: Complex, pullback: (Complex) -> Complex) {
     return (-operand, { -$0 })
   }
 
-  @derivative(of: complexConjugate)
+  @derivative(of:complexConjugate)
   func _vjpComplexConjugate() -> (value: Complex, pullback: (Complex) -> Complex) {
     return (complexConjugate(), { v in v.complexConjugate() })
   }
 }
 
 extension Complex where T: Differentiable, T.TangentVector == T {
-  @derivative(of: adding(real:))
+  @derivative(of:adding(real:))
   func _vjpAdding(real: T) -> (value: Complex, pullback: (Complex) -> (Complex, T)) {
     return (self.adding(real: real), { ($0, $0.real) })
   }
 
-  @derivative(of: subtracting(real:))
+  @derivative(of:subtracting(real:))
   func _vjpSubtracting(real: T) -> (value: Complex, pullback: (Complex) -> (Complex, T)) {
     return (self.subtracting(real: real), { ($0, -$0.real) })
   }
 
-  @derivative(of: adding(imaginary:))
+  @derivative(of:adding(imaginary:))
   func _vjpAdding(imaginary: T) -> (value: Complex, pullback: (Complex) -> (Complex, T)) {
     return (self.adding(real: real), { ($0, $0.imaginary) })
   }
 
-  @derivative(of: subtracting(imaginary:))
+  @derivative(of:subtracting(imaginary:))
   func _vjpSubtracting(imaginary: T) -> (value: Complex, pullback: (Complex) -> (Complex, T)) {
     return (self.subtracting(real: real), { ($0, -$0.imaginary) })
   }

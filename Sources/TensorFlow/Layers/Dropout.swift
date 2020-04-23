@@ -85,7 +85,7 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
 @frozen
 public struct AlphaDropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   @noDerivative public let probability: Double
-  
+
   /// Initializes an `AlphaDropout` layer with a configurable `probability`.
   ///
   /// - Parameter probability: The probability of a node dropping out.
@@ -113,11 +113,11 @@ public struct AlphaDropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
       let b = -a * alpha_p * probability
 
       // Apply mask
-      var x = input * Tensor(noise) 
+      var x = input * Tensor(noise)
       x = x + Scalar(alpha_p) * (1 - Tensor(noise))
 
       // Do affine transformation
-      return Scalar(a) * x  + Scalar(b)
+      return Scalar(a) * x + Scalar(b)
     case .inference:
       return input
     }

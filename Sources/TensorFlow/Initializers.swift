@@ -34,7 +34,7 @@ extension Tensor {
   ///   - repeatedValue: The scalar value to repeat.
   ///   - shape: The dimensions of the tensor.
   @inlinable
-  @differentiable( where Scalar: TensorFlowFloatingPoint)
+  @differentiable(where Scalar: TensorFlowFloatingPoint)
   public init(
     repeating repeatedValue: Scalar, shape: TensorShape,
     on device: Device = .default
@@ -63,7 +63,7 @@ extension Tensor {
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
   @inlinable
-  @derivative(of: init(repeating:shape:on:))
+  @derivative(of:init(repeating:shape:on:))
   static func _vjpInit(
     repeating repeatedValue: __owned Scalar,
     shape: __owned TensorShape,
@@ -91,7 +91,7 @@ extension Tensor where Scalar: Numeric {
 
   /// Perform an element-wise conversion from another `Tensor`.
   @inlinable
-  @differentiable( where Scalar: TensorFlowFloatingPoint, OtherScalar: TensorFlowFloatingPoint)
+  @differentiable(where Scalar: TensorFlowFloatingPoint, OtherScalar: TensorFlowFloatingPoint)
   public init<OtherScalar: Numeric>(_ other: Tensor<OtherScalar>) {
     self = _Raw.cast(other)
   }
@@ -99,7 +99,7 @@ extension Tensor where Scalar: Numeric {
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
   @inlinable
-  @derivative(of: init(_:))
+  @derivative(of:init(_:))
   static func _vjpCast<OtherScalar: TensorFlowFloatingPoint>(
     _ other: __owned Tensor<OtherScalar>
   ) -> (value: Tensor, pullback: (Tensor) -> Tensor<OtherScalar>) {
@@ -114,7 +114,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
 extension Tensor {
   /// Creates a tensor from an array of tensors (which may themselves be scalars).
   @inlinable
-  @differentiable( where Scalar: TensorFlowFloatingPoint)
+  @differentiable(where Scalar: TensorFlowFloatingPoint)
   public init(_ elements: [Tensor]) {
     self = _Raw.pack(elements)
   }
@@ -148,7 +148,7 @@ extension Tensor {
   ///
   /// - Returns: The stacked tensor.
   @inlinable
-  @differentiable( where Scalar: TensorFlowFloatingPoint)
+  @differentiable(where Scalar: TensorFlowFloatingPoint)
   public init(stacking tensors: [Tensor], alongAxis axis: Int = 0) {
     self = _Raw.pack(tensors, axis: Int64(axis))
   }
@@ -186,7 +186,7 @@ extension Tensor {
   ///
   /// - Returns: The concatenated tensor.
   @inlinable
-  @differentiable( where Scalar: TensorFlowFloatingPoint)
+  @differentiable(where Scalar: TensorFlowFloatingPoint)
   public init(concatenating tensors: [Tensor], alongAxis axis: Int = 0) {
     precondition(tensors.count > 0)
     self = _Raw.concatV2(tensors, axis: Tensor<Int32>(Int32(axis), on: tensors.first!.device))
@@ -195,7 +195,7 @@ extension Tensor {
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
   @inlinable
-  @derivative(of: init(_:))
+  @derivative(of:init(_:))
   static func _vjpInitElements(
     _ elements: __owned [Tensor]
   ) -> (value: Tensor, pullback: (Tensor) -> Array<Tensor>.DifferentiableView) {
@@ -203,7 +203,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of: init(stacking:alongAxis:))
+  @derivative(of:init(stacking:alongAxis:))
   static func _vjpStacking(
     stacking tensors: __owned [Tensor],
     alongAxis axis: __owned Int = 0
@@ -217,7 +217,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of: init(concatenating:alongAxis:))
+  @derivative(of:init(concatenating:alongAxis:))
   static func _vjpConcatenating(
     concatenating tensors: __owned [Tensor],
     alongAxis axis: __owned Int = 0

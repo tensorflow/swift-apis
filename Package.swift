@@ -20,7 +20,7 @@ import PackageDescription
 let package = Package(
   name: "TensorFlow",
   platforms: [
-    .macOS(.v10_13),
+    .macOS(.v10_13)
   ],
   products: [
     .library(

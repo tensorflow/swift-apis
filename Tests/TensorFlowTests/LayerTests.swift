@@ -1119,10 +1119,16 @@ final class LayerTests: XCTestCase {
     // print(tape.gradient(y, x))
     // ```
     let expectedGradient = Tensor<Float>([
-      [[[0.0],
-        [0.0]],
-       [[0.0],
-        [1.0]]]
+      [
+        [
+          [0.0],
+          [0.0],
+        ],
+        [
+          [0.0],
+          [1.0],
+        ],
+      ]
     ])
     XCTAssertEqual(computedGradient.0, expectedGradient)
   }
@@ -1735,7 +1741,8 @@ final class LayerTests: XCTestCase {
   func testGRU() {
     let x = Tensor<Float>(rangeFrom: 0.0, to: 0.4, stride: 0.1).rankLifted()
     let inputs: [Tensor<Float>] = Array(repeating: x, count: 4)
-    let gru = GRU<Float>(GRUCell(
+    let gru = GRU<Float>(
+      GRUCell(
         inputSize: 4,
         hiddenSize: 4,
         weightInitializer: glorotUniform(seed: (0xFeed, 0xBeef)),

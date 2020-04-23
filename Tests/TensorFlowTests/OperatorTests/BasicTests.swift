@@ -48,7 +48,7 @@ final class BasicOperatorTests: XCTestCase {
       [10, 20, 30, 40],
     ])
     let y = x.batchGathering(
-      atIndices: Tensor<Int32>([[0, 1, 3]])) // Simulate flattened upper triangular.
+      atIndices: Tensor<Int32>([[0, 1, 3]]))  // Simulate flattened upper triangular.
     XCTAssertEqual(y, Tensor([[1.0, 2.0, 4.0], [10, 20, 40]]))
   }
 
