@@ -17,10 +17,10 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   // TODO: Remove the underscore once `droppingOut(probability:)` has been removed.
   @differentiable(wrt: self where Scalar: Differentiable)
   fileprivate func _droppingOut(probability: Double) -> Tensor {
-    let noise = Tensor(randomUniform: shape)
+    let noise = Tensor(randomUniform: shape, on: device)
     let keepMask = noise .>= Scalar(probability)
     let keepProbability = Scalar(1.0 - probability)
-    return self * Tensor(copying: Tensor(keepMask), to: device) / Tensor(keepProbability, on: device)
+    return self * Tensor(keepMask) / Tensor(keepProbability, on: device)
   }
 }
 
