@@ -142,7 +142,7 @@ extension Tensor {
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
   @inlinable
-  @derivative(of:scalarized)
+  @derivative(of: scalarized)
   func _vjpScalarized() -> (value: Scalar, pullback: (Scalar) -> Tensor) {
     return (scalarized(), { v in Tensor(v) })
   }
@@ -188,7 +188,7 @@ extension Tensor {
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
   @inlinable
-  @derivative(of:scalars)
+  @derivative(of: scalars)
   func _vjpScalars() -> (value: [Scalar], pullback: (Array<Scalar>.TangentVector) -> Tensor) {
     (
       value: scalars,
@@ -222,7 +222,7 @@ extension Tensor {
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
   @inlinable
-  @derivative(of:init(_:on:))
+  @derivative(of: init(_:on:))
   static func _vjpScalarInit(_ value: __owned Scalar, on device: Device = .default) -> (
     value: Tensor, pullback: (Tensor) -> Scalar
   ) {
@@ -410,7 +410,7 @@ extension Tensor {
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
   @inlinable
-  @derivative(of:init(_:on:))
+  @derivative(of: init(_:on:))
   static func _vjpInit(_ scalars: [Scalar], on device: Device = .default) -> (
     value: Tensor, pullback: (Tensor) -> Array<Scalar>.TangentVector
   ) {
@@ -423,7 +423,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:init(shape:scalars:on:))
+  @derivative(of: init(shape:scalars:on:))
   static func _vjpInit(
     shape: TensorShape, scalars: [Scalar], on device: Device = .default
   ) -> (value: Tensor, pullback: (Tensor) -> Array<Scalar>.TangentVector) {
@@ -693,7 +693,7 @@ extension Tensor: AdditiveArithmetic where Scalar: Numeric {
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
   @inlinable
-  @derivative(of:+)
+  @derivative(of: +)
   static func _vjpAdd(lhs: Tensor, rhs: Tensor) -> (
     value: Tensor, pullback: (Tensor) -> (Tensor, Tensor)
   ) {
@@ -706,7 +706,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:-)
+  @derivative(of: -)
   static func _vjpSubtract(lhs: Tensor, rhs: Tensor) -> (
     value: Tensor, pullback: (Tensor) -> (Tensor, Tensor)
   ) {

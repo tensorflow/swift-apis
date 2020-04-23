@@ -91,7 +91,7 @@ public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
     return Tensor<Scalar>(concatenating: repeated, alongAxis: axis)
   }
 
-  @derivative(of:repeatingElements)
+  @derivative(of: repeatingElements)
   private func _vjpRepeatingElements(
     _ input: Tensor<Scalar>, alongAxis axis: Int, count: Int
   ) -> (value: Tensor<Scalar>, pullback: (Tensor<Scalar>) -> (TangentVector, Tensor<Scalar>)) {

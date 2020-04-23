@@ -63,7 +63,7 @@ extension Tensor {
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
   @inlinable
-  @derivative(of:init(repeating:shape:on:))
+  @derivative(of: init(repeating:shape:on:))
   static func _vjpInit(
     repeating repeatedValue: __owned Scalar,
     shape: __owned TensorShape,
@@ -99,7 +99,7 @@ extension Tensor where Scalar: Numeric {
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
   @inlinable
-  @derivative(of:init(_:))
+  @derivative(of: init(_:))
   static func _vjpCast<OtherScalar: TensorFlowFloatingPoint>(
     _ other: __owned Tensor<OtherScalar>
   ) -> (value: Tensor, pullback: (Tensor) -> Tensor<OtherScalar>) {
@@ -195,7 +195,7 @@ extension Tensor {
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
   @inlinable
-  @derivative(of:init(_:))
+  @derivative(of: init(_:))
   static func _vjpInitElements(
     _ elements: __owned [Tensor]
   ) -> (value: Tensor, pullback: (Tensor) -> Array<Tensor>.DifferentiableView) {
@@ -203,7 +203,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:init(stacking:alongAxis:))
+  @derivative(of: init(stacking:alongAxis:))
   static func _vjpStacking(
     stacking tensors: __owned [Tensor],
     alongAxis axis: __owned Int = 0
@@ -217,7 +217,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:init(concatenating:alongAxis:))
+  @derivative(of: init(concatenating:alongAxis:))
   static func _vjpConcatenating(
     concatenating tensors: __owned [Tensor],
     alongAxis axis: __owned Int = 0

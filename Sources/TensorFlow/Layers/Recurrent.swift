@@ -378,7 +378,7 @@ public struct RecurrentLayer<Cell: RecurrentLayerCell>: Layer {
   }
 
   @usableFromInline
-  @derivative(of:callAsFunction,wrt: (self, inputs, initialState))
+  @derivative(of: callAsFunction, wrt: (self, inputs, initialState))
   internal func _vjpCallAsFunction(
     _ inputs: [Cell.TimeStepInput],
     initialState: Cell.State

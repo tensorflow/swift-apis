@@ -252,7 +252,7 @@ extension Tensor {
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
   @inlinable
-  @derivative(of:unstacked)
+  @derivative(of: unstacked)
   func _vjpUnstacked(
     alongAxis axis: Int = 0
   ) -> (value: [Tensor], pullback: (Array<Tensor>.TangentVector) -> Tensor) {
@@ -261,7 +261,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:tiled)
+  @derivative(of: tiled)
   func _vjpTiled(multiples: Tensor<Int32>) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
     (
       tiled(multiples: multiples),
@@ -276,7 +276,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:split)
+  @derivative(of: split)
   func _vjpSplit(
     count: Int,
     alongAxis axis: Int = 0
@@ -286,7 +286,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:split)
+  @derivative(of: split)
   func _vjpSplit(
     sizes: Tensor<Int32>,
     alongAxis axis: Int = 0
@@ -296,7 +296,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:reshaped)
+  @derivative(of: reshaped)
   func _vjpReshaped(toShape newShape: Tensor<Int32>) -> (
     value: Tensor, pullback: (Tensor) -> Tensor
   ) {
@@ -305,7 +305,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:reshaped)
+  @derivative(of: reshaped)
   func _vjpReshaped(toShape newShape: TensorShape) -> (
     value: Tensor, pullback: (Tensor) -> Tensor
   ) {
@@ -314,14 +314,14 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:expandingShape)
+  @derivative(of: expandingShape)
   func _vjpExpandingShape(at axes: [Int]) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
     let value = self.expandingShape(at: axes)
     return (value, { v in v.squeezingShape(at: axes) })
   }
 
   @inlinable
-  @derivative(of:squeezingShape)
+  @derivative(of: squeezingShape)
   func _vjpSqueezingShape(at axes: [Int]) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
     let value = squeezingShape(at: axes)
     return (value, { [shape = shapeTensor] v in v.reshaped(toShape: shape) })
@@ -659,7 +659,7 @@ extension Tensor {
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
   @inlinable
-  @derivative(of:transposed(permutation:))
+  @derivative(of: transposed(permutation:))
   func _vjpTransposed(permutation: Tensor<Int32>) -> (
     value: Tensor, pullback: (Tensor) -> Tensor
   ) {
@@ -668,7 +668,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:transposed(permutation:))
+  @derivative(of: transposed(permutation:))
   func _vjpTransposed(permutation: [Int]) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
     let permutation = Tensor<Int32>(permutation.map(Int32.init), on: device)
     let value = transposed(permutation: permutation)
@@ -676,7 +676,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:transposed(permutation:))
+  @derivative(of: transposed(permutation:))
   func _vjpTransposed(permutation: Int...) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
     let permutation = Tensor<Int32>(permutation.map(Int32.init), on: device)
     let value = transposed(permutation: permutation)
@@ -684,31 +684,31 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:transposed)
+  @derivative(of: transposed)
   func _vjpTransposed() -> (value: Tensor, pullback: (Tensor) -> Tensor) {
     return (transposed(), { $0.transposed() })
   }
 
   @inlinable
-  @derivative(of:reversed)
+  @derivative(of: reversed)
   func _vjpReversed(inAxes axes: Tensor<Int32>) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
     return (reversed(inAxes: axes), { $0.reversed(inAxes: axes) })
   }
 
   @inlinable
-  @derivative(of:reversed)
+  @derivative(of: reversed)
   func _vjpReversed(inAxes axes: [Int]) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
     return (reversed(inAxes: axes), { $0.reversed(inAxes: axes) })
   }
 
   @inlinable
-  @derivative(of:reversed)
+  @derivative(of: reversed)
   func _vjpReversed(inAxes axes: Int...) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
     return (reversed(inAxes: axes), { $0.reversed(inAxes: axes) })
   }
 
   @inlinable
-  @derivative(of:concatenated)
+  @derivative(of: concatenated)
   func _vjpConcatenated(
     with other: Tensor,
     alongAxis axis: Int
@@ -725,7 +725,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:gathering)
+  @derivative(of: gathering)
   func _vjpGathering<Index: TensorFlowIndex>(
     atIndices indices: Tensor<Index>,
     alongAxis axis: Int = 0
@@ -917,7 +917,7 @@ extension Tensor where Scalar: Numeric {
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
   @inlinable
-  @derivative(of:broadcasted)
+  @derivative(of: broadcasted)
   func _vjpBroadcasted(toShape shape: Tensor<Int32>) -> (
     value: Tensor, pullback: (Tensor) -> Tensor
   ) {
@@ -930,7 +930,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:unbroadcasted)
+  @derivative(of: unbroadcasted)
   func _vjpUnbroadcasted(to shape: TensorShape) -> (
     value: Tensor, pullback: (Tensor) -> Tensor
   ) {
@@ -987,7 +987,7 @@ extension Tensor where Scalar: Numeric {
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
   @inlinable
-  @derivative(of:padded)
+  @derivative(of: padded)
   func _vjpPadded(
     forSizes sizes: [(before: Int, after: Int)],
     mode: PaddingMode
@@ -1050,7 +1050,7 @@ extension Tensor {
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
   @inlinable
-  @derivative(of:slice)
+  @derivative(of: slice)
   internal func _vjpSlice(
     lowerBounds: Tensor<Int32>,
     sizes: Tensor<Int32>
@@ -1252,7 +1252,7 @@ extension Tensor {
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
   @usableFromInline
-  @derivative(of:subscript)
+  @derivative(of: subscript)
   internal func _vjpSubscript(
     _ indexPath: IndexPath
   ) -> (value: Tensor, pullback: (Tensor) -> Tensor) {

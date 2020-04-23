@@ -114,19 +114,19 @@ extension Tensor where Scalar: TensorFlowNumeric {
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
   @inlinable
-  @derivative(of:diagonalPart)
+  @derivative(of: diagonalPart)
   func _vjpDiagonalPart() -> (value: Tensor, pullback: (Tensor) -> Tensor) {
     (diagonalPart(), { $0.diagonal() })
   }
 
   @inlinable
-  @derivative(of:diagonal)
+  @derivative(of: diagonal)
   func _vjpDiagonal() -> (value: Tensor, pullback: (Tensor) -> Tensor) {
     (diagonal(), { $0.diagonalPart() })
   }
 
   @inlinable
-  @derivative(of:bandPart(subdiagonalCount:superdiagonalCount:))
+  @derivative(of: bandPart(subdiagonalCount:superdiagonalCount:))
   func _vjpBandPart(subdiagonalCount: Int, superdiagonalCount: Int) -> (
     value: Tensor, pullback: (Tensor) -> Tensor
   ) {
@@ -238,7 +238,7 @@ public func cholesky<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
 }
 
 @inlinable
-@derivative(of:cholesky)
+@derivative(of: cholesky)
 internal func _vjpCholesky<T: TensorFlowFloatingPoint>(
   _ x: Tensor<T>
 ) -> (value: Tensor<T>, pullback: (Tensor<T>) -> Tensor<T>) {
@@ -343,7 +343,7 @@ public func triangularSolve<T: TensorFlowFloatingPoint>(
 }
 
 @inlinable
-@derivative(of:triangularSolve)
+@derivative(of: triangularSolve)
 internal func _vjpTriangularSolve<T: TensorFlowFloatingPoint>(
   matrix: Tensor<T>,
   rhs: Tensor<T>,

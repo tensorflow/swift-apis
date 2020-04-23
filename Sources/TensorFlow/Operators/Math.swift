@@ -50,7 +50,7 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:sqrt)
+  @derivative(of: sqrt)
   internal static func _vjpSqrt(
     _ x: Tensor
   ) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
@@ -65,7 +65,7 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:cos)
+  @derivative(of: cos)
   internal static func _vjpCos(
     _ x: Tensor
   ) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
@@ -79,7 +79,7 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:sin)
+  @derivative(of: sin)
   internal static func _vjpSin(
     _ x: Tensor
   ) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
@@ -93,7 +93,7 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:tan)
+  @derivative(of: tan)
   internal static func _vjpTan(
     _ x: Tensor
   ) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
@@ -108,7 +108,7 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:acos)
+  @derivative(of: acos)
   internal static func _vjpAcos(
     _ x: Tensor
   ) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
@@ -122,7 +122,7 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:asin)
+  @derivative(of: asin)
   internal static func _vjpAsin(
     _ x: Tensor
   ) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
@@ -136,7 +136,7 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:atan)
+  @derivative(of: atan)
   internal static func _vjpAtan(
     _ x: Tensor
   ) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
@@ -150,7 +150,7 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:cosh)
+  @derivative(of: cosh)
   internal static func _vjpCosh(
     _ x: Tensor
   ) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
@@ -164,7 +164,7 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:sinh)
+  @derivative(of: sinh)
   internal static func _vjpSinh(
     _ x: Tensor
   ) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
@@ -178,7 +178,7 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:tanh)
+  @derivative(of: tanh)
   internal static func _vjpTanh(
     _ x: Tensor
   ) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
@@ -193,7 +193,7 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:acosh)
+  @derivative(of: acosh)
   internal static func _vjpAcosh(
     _ x: Tensor
   ) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
@@ -207,7 +207,7 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:asinh)
+  @derivative(of: asinh)
   internal static func _vjpAsinh(
     _ x: Tensor
   ) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
@@ -221,7 +221,7 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:atanh)
+  @derivative(of: atanh)
   internal static func _vjpAtanh(
     _ x: Tensor
   ) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
@@ -235,7 +235,7 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:exp)
+  @derivative(of: exp)
   internal static func _vjpExp(
     _ x: Tensor
   ) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
@@ -262,7 +262,7 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:expm1)
+  @derivative(of: expm1)
   internal static func _vjpExpm1(
     _ x: Tensor
   ) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
@@ -277,7 +277,7 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:log)
+  @derivative(of: log)
   internal static func _vjpLog(
     _ x: Tensor
   ) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
@@ -303,7 +303,7 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:log1p)
+  @derivative(of: log1p)
   internal static func _vjpLog1p(
     _ x: Tensor
   ) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
@@ -321,7 +321,7 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:pow)
+  @derivative(of: pow)
   internal static func _vjpPow(
     _ x: Tensor, _ y: Tensor
   ) -> (value: Tensor, pullback: (Tensor) -> (Tensor, Tensor)) {
@@ -595,7 +595,7 @@ extension Tensor where Scalar: Numeric {
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
   @inlinable
-  @derivative(of:+)
+  @derivative(of: +)
   static func _vjpAdd(lhs: Tensor, rhs: Scalar) -> (
     value: Tensor, pullback: (Tensor) -> (Tensor, Scalar)
   ) {
@@ -603,7 +603,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:+)
+  @derivative(of: +)
   static func _vjpAdd(lhs: Scalar, rhs: Tensor) -> (
     value: Tensor, pullback: (Tensor) -> (Scalar, Tensor)
   ) {
@@ -611,7 +611,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:-)
+  @derivative(of: -)
   static func _vjpSubtract(lhs: Tensor, rhs: Scalar) -> (
     value: Tensor, pullback: (Tensor) -> (Tensor, Scalar)
   ) {
@@ -619,7 +619,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:-)
+  @derivative(of: -)
   static func _vjpSubtract(lhs: Scalar, rhs: Tensor) -> (
     value: Tensor, pullback: (Tensor) -> (Scalar, Tensor)
   ) {
@@ -627,7 +627,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:*)
+  @derivative(of: *)
   static func _vjpMultiply(lhs: Tensor, rhs: Tensor) -> (
     value: Tensor, pullback: (Tensor) -> (Tensor, Tensor)
   ) {
@@ -640,7 +640,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:*)
+  @derivative(of: *)
   static func _vjpMultiply(lhs: Tensor, rhs: Scalar) -> (
     value: Tensor, pullback: (Tensor) -> (Tensor, Scalar)
   ) {
@@ -648,7 +648,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:*)
+  @derivative(of: *)
   static func _vjpMultiply(lhs: Scalar, rhs: Tensor) -> (
     value: Tensor, pullback: (Tensor) -> (Scalar, Tensor)
   ) {
@@ -656,7 +656,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:/)
+  @derivative(of: /)
   static func _vjpDivide(lhs: Tensor, rhs: Tensor) -> (
     value: Tensor, pullback: (Tensor) -> (Tensor, Tensor)
   ) {
@@ -669,7 +669,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:/)
+  @derivative(of: /)
   static func _vjpDivide(lhs: Tensor, rhs: Scalar) -> (
     value: Tensor, pullback: (Tensor) -> (Tensor, Scalar)
   ) {
@@ -685,7 +685,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:/)
+  @derivative(of: /)
   static func _vjpDivide(lhs: Scalar, rhs: Tensor) -> (
     value: Tensor, pullback: (Tensor) -> (Scalar, Tensor)
   ) {
@@ -760,7 +760,7 @@ extension Tensor where Scalar: TensorFlowNumeric {
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
   @inlinable
-  @derivative(of:clipped)
+  @derivative(of: clipped)
   func _vjpClipped(min: Tensor, max: Tensor) -> (
     value: Tensor, pullback: (Tensor) -> (Tensor, Tensor, Tensor)
   ) {
@@ -880,7 +880,7 @@ extension Tensor where Scalar: SignedNumeric {
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
   @inlinable
-  @derivative(of:-)
+  @derivative(of: -)
   static func _vjpNegate(_ x: Tensor) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
     return (-x, { v in -v })
   }
@@ -894,7 +894,7 @@ public func abs<T: SignedNumeric>(_ x: Tensor<T>) -> Tensor<T> {
 }
 
 @inlinable
-@derivative(of:abs)
+@derivative(of: abs)
 internal func _vjpAbs<T: TensorFlowFloatingPoint>(
   _ x: Tensor<T>
 ) -> (value: Tensor<T>, pullback: (Tensor<T>) -> Tensor<T>) {
@@ -1040,7 +1040,7 @@ extension Tensor where Scalar: Numeric {
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
   @inlinable
-  @derivative(of:squared)
+  @derivative(of: squared)
   func _vjpSquared() -> (value: Tensor, pullback: (Tensor) -> Tensor) {
     (squared(), { 2 * self * $0 })
   }
@@ -1061,7 +1061,7 @@ public func rsqrt<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
 }
 
 @inlinable
-@derivative(of:rsqrt)
+@derivative(of: rsqrt)
 internal func _vjpRsqrt<T: TensorFlowFloatingPoint>(
   _ x: Tensor<T>
 ) -> (value: Tensor<T>, pullback: (Tensor<T>) -> Tensor<T>) {
@@ -1105,7 +1105,7 @@ public func round<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
 }
 
 @inlinable
-@derivative(of:round)
+@derivative(of: round)
 internal func _vjpRound<T: TensorFlowFloatingPoint>(
   _ x: Tensor<T>
 ) -> (value: Tensor<T>, pullback: (Tensor<T>) -> Tensor<T>) {
@@ -1120,7 +1120,7 @@ public func ceil<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
 }
 
 @inlinable
-@derivative(of:ceil)
+@derivative(of: ceil)
 internal func _vjpCeil<T: TensorFlowFloatingPoint>(
   _ x: Tensor<T>
 ) -> (value: Tensor<T>, pullback: (Tensor<T>) -> Tensor<T>) {
@@ -1135,7 +1135,7 @@ public func floor<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
 }
 
 @inlinable
-@derivative(of:floor)
+@derivative(of: floor)
 internal func _vjpFloor<T: TensorFlowFloatingPoint>(
   _ x: Tensor<T>
 ) -> (value: Tensor<T>, pullback: (Tensor<T>) -> Tensor<T>) {
@@ -1151,7 +1151,7 @@ public func sign<T: Numeric>(_ x: Tensor<T>) -> Tensor<T> {
 }
 
 @inlinable
-@derivative(of:sign)
+@derivative(of: sign)
 internal func _vjpSign<T: TensorFlowFloatingPoint>(
   _ x: Tensor<T>
 ) -> (value: Tensor<T>, pullback: (Tensor<T>) -> Tensor<T>) {
@@ -1167,7 +1167,7 @@ public func sigmoid<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
 }
 
 @inlinable
-@derivative(of:sigmoid)
+@derivative(of: sigmoid)
 internal func _vjpSigmoid<T: TensorFlowFloatingPoint>(
   _ x: Tensor<T>
 ) -> (value: Tensor<T>, pullback: (Tensor<T>) -> Tensor<T>) {
@@ -1192,7 +1192,7 @@ public func softplus<T: TensorFlowFloatingPoint>(_ features: Tensor<T>) -> Tenso
 }
 
 @inlinable
-@derivative(of:softplus)
+@derivative(of: softplus)
 internal func _vjpSoftplus<T: TensorFlowFloatingPoint>(
   _ features: Tensor<T>
 ) -> (value: Tensor<T>, pullback: (Tensor<T>) -> Tensor<T>) {
@@ -1208,7 +1208,7 @@ public func softsign<T: TensorFlowFloatingPoint>(_ features: Tensor<T>) -> Tenso
 }
 
 @inlinable
-@derivative(of:softsign)
+@derivative(of: softsign)
 internal func _vjpSoftsign<T: TensorFlowFloatingPoint>(
   _ features: Tensor<T>
 ) -> (value: Tensor<T>, pullback: (Tensor<T>) -> Tensor<T>) {
@@ -1233,7 +1233,7 @@ public func softmax<T: TensorFlowFloatingPoint>(_ x: Tensor<T>, alongAxis axis: 
 }
 
 @inlinable
-@derivative(of:softmax)
+@derivative(of: softmax)
 func _vjpSoftmax<T: TensorFlowFloatingPoint>(
   _ x: Tensor<T>
 ) -> (value: Tensor<T>, pullback: (Tensor<T>) -> Tensor<T>) {
@@ -1255,7 +1255,7 @@ public func logSoftmax<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> 
 }
 
 @inlinable
-@derivative(of:logSoftmax)
+@derivative(of: logSoftmax)
 func _vjpLogSoftmax<T: TensorFlowFloatingPoint>(
   _ x: Tensor<T>
 ) -> (value: Tensor<T>, pullback: (Tensor<T>) -> Tensor<T>) {
@@ -1274,7 +1274,7 @@ public func elu<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
 }
 
 @inlinable
-@derivative(of:elu)
+@derivative(of: elu)
 func _vjpElu<T: TensorFlowFloatingPoint>(
   _ x: Tensor<T>
 ) -> (value: Tensor<T>, pullback: (Tensor<T>) -> Tensor<T>) {
@@ -1313,7 +1313,7 @@ public func relu<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
 }
 
 @inlinable
-@derivative(of:relu)
+@derivative(of: relu)
 func _vjpRelu<T: TensorFlowFloatingPoint>(
   _ x: Tensor<T>
 ) -> (value: Tensor<T>, pullback: (Tensor<T>) -> Tensor<T>) {
@@ -1328,7 +1328,7 @@ public func relu6<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
 }
 
 @inlinable
-@derivative(of:relu6)
+@derivative(of: relu6)
 func _vjpRelu6<T: TensorFlowFloatingPoint>(
   _ x: Tensor<T>
 ) -> (value: Tensor<T>, pullback: (Tensor<T>) -> Tensor<T>) {
@@ -1348,7 +1348,7 @@ public func leakyRelu<T: TensorFlowFloatingPoint>(
 }
 
 @inlinable
-@derivative(of:leakyRelu,wrt: x)
+@derivative(of: leakyRelu, wrt: x)
 func _vjpLeakyRelu<T: TensorFlowFloatingPoint>(
   _ x: Tensor<T>,
   alpha: Double
@@ -1374,7 +1374,7 @@ public func selu<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
 }
 
 @inlinable
-@derivative(of:selu)
+@derivative(of: selu)
 func _vjpSelu<T: TensorFlowFloatingPoint>(
   _ x: Tensor<T>
 ) -> (value: Tensor<T>, pullback: (Tensor<T>) -> Tensor<T>) {
@@ -1403,7 +1403,7 @@ public func swish<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
 // backprop. This vjp recomputes `sigmoid(x)` during backprop, so that 
 // the `sigmoid(x)` expression can be freed during the forward pass.
 @inlinable
-@derivative(of:swish)
+@derivative(of: swish)
 func _vjpSwish<T: TensorFlowFloatingPoint>(
   _ x: Tensor<T>
 ) -> (value: Tensor<T>, pullback: (Tensor<T>) -> Tensor<T>) {
@@ -1498,7 +1498,7 @@ public func squaredDifference<T: TensorFlowNumeric>(_ x: Tensor<T>, _ y: Tensor<
 }
 
 @inlinable
-@derivative(of:squaredDifference)
+@derivative(of: squaredDifference)
 internal func _vjpSquaredDifference<T: TensorFlowFloatingPoint>(
   _ x: Tensor<T>,
   _ y: Tensor<T>
@@ -1521,7 +1521,7 @@ public func max<T>(_ lhs: Tensor<T>, _ rhs: Tensor<T>) -> Tensor<T> where T: Num
 }
 
 @inlinable
-@derivative(of:max)
+@derivative(of: max)
 internal func _vjpMax<T: TensorFlowFloatingPoint>(
   _ x: Tensor<T>,
   _ y: Tensor<T>
@@ -1558,7 +1558,7 @@ public func min<T>(_ lhs: Tensor<T>, _ rhs: Tensor<T>) -> Tensor<T> where T: Num
 }
 
 @inlinable
-@derivative(of:min)
+@derivative(of: min)
 internal func _vjpMin<T: TensorFlowFloatingPoint>(
   _ x: Tensor<T>,
   _ y: Tensor<T>
@@ -1649,7 +1649,7 @@ extension Tensor {
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
   @inlinable
-  @derivative(of:replacing)
+  @derivative(of: replacing)
   func _vjpReplacing(
     with other: Tensor,
     where mask: Tensor<Bool>
@@ -1932,7 +1932,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:max(squeezingAxes:))
+  @derivative(of: max(squeezingAxes:))
   func _vjpMax(squeezingAxes axes: Tensor<Int32>) -> (
     value: Tensor, pullback: (Tensor) -> Tensor
   ) {
@@ -1946,7 +1946,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:min(squeezingAxes:))
+  @derivative(of: min(squeezingAxes:))
   func _vjpMin(squeezingAxes axes: Tensor<Int32>) -> (
     value: Tensor, pullback: (Tensor) -> Tensor
   ) {
@@ -1976,7 +1976,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:max(alongAxes:))
+  @derivative(of: max(alongAxes:))
   func _vjpMax(alongAxes axes: Tensor<Int32>) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
     let result = max(alongAxes: axes)
     return (
@@ -1988,7 +1988,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:min(alongAxes:))
+  @derivative(of: min(alongAxes:))
   func _vjpMin(alongAxes axes: Tensor<Int32>) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
     let result = min(alongAxes: axes)
     return (
@@ -2444,13 +2444,13 @@ extension Tensor where Scalar: Numeric {
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
   @inlinable
-  @derivative(of:sum(alongAxes:))
+  @derivative(of: sum(alongAxes:))
   func _vjpSum(alongAxes axes: Tensor<Int32>) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
     return _vjpSum(alongAxes: axes.scalars.map { Int($0) })
   }
 
   @inlinable
-  @derivative(of:sum(squeezingAxes:))
+  @derivative(of: sum(squeezingAxes:))
   func _vjpSum(squeezingAxes axes: Tensor<Int32>) -> (
     value: Tensor, pullback: (Tensor) -> Tensor
   ) {
@@ -2458,7 +2458,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:sum(alongAxes:))
+  @derivative(of: sum(alongAxes:))
   func _vjpSum(alongAxes axes: [Int]) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
     let value = sum(alongAxes: axes)
     let m = shape.dimensions.map { Int64($0) }
@@ -2466,7 +2466,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:sum(squeezingAxes:))
+  @derivative(of: sum(squeezingAxes:))
   func _vjpSum(squeezingAxes axes: [Int]) -> (
     value: Tensor, pullback: (Tensor) -> Tensor
   ) {
@@ -2484,13 +2484,13 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:mean(alongAxes:))
+  @derivative(of: mean(alongAxes:))
   func _vjpMean(alongAxes axes: Tensor<Int32>) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
     return _vjpMean(alongAxes: axes.scalars.map { Int($0) })
   }
 
   @inlinable
-  @derivative(of:mean(squeezingAxes:))
+  @derivative(of: mean(squeezingAxes:))
   func _vjpMean(squeezingAxes axes: Tensor<Int32>) -> (
     value: Tensor, pullback: (Tensor) -> Tensor
   ) {
@@ -2500,7 +2500,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   // Specialization to avoid _Raw.gather on shapes when axes is known to be
   // [Int].
   @inlinable
-  @derivative(of:mean(alongAxes:))
+  @derivative(of: mean(alongAxes:))
   func _vjpMean(alongAxes axes: [Int]) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
     let value = mean(alongAxes: axes)
     // Cache shape because it is a computed property.
@@ -2519,7 +2519,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   // Specialization to avoid _Raw.gather on shapes when axes is known to be
   // [Int].
   @inlinable
-  @derivative(of:mean(squeezingAxes:))
+  @derivative(of: mean(squeezingAxes:))
   func _vjpMean(squeezingAxes axes: [Int]) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
     let value = mean(squeezingAxes: axes)
     // Cache shape because it is a computed property.
@@ -2541,7 +2541,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:cumulativeSum)
+  @derivative(of: cumulativeSum)
   func _vjpCumulativeSum(
     alongAxis axis: Tensor<Int32>,
     exclusive: Bool = false,
@@ -2556,7 +2556,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of:cumulativeProduct)
+  @derivative(of: cumulativeProduct)
   func _vjpCumulativeProduct(
     alongAxis axis: Tensor<Int32>,
     exclusive: Bool = false,
@@ -2578,7 +2578,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   // Adapted from `_ProdGrad` in Python TensorFlow:
   // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/ops/math_grad.py
   @inlinable
-  @derivative(of:product(squeezingAxes:))
+  @derivative(of: product(squeezingAxes:))
   func _vjpProduct(squeezingAxes axes: Tensor<Int32>) -> (
     value: Tensor, pullback: (Tensor) -> Tensor
   ) {
@@ -2964,7 +2964,7 @@ public func matmul<Scalar: Numeric>(
 }
 
 @inlinable
-@derivative(of:matmul)
+@derivative(of: matmul)
 internal func _vjpMatmul<Scalar: TensorFlowFloatingPoint>(
   _ lhs: Tensor<Scalar>,
   transposed transposeLhs: Bool = false,

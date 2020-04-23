@@ -183,7 +183,7 @@ func scaleAndTranslate(
 }
 
 @usableFromInline
-@derivative(of:scaleAndTranslate,wrt: images)
+@derivative(of: scaleAndTranslate, wrt: images)
 func _vjpScaleAndTranslate(
   images: Tensor<Float>,
   size: Tensor<Int32>,
@@ -230,7 +230,7 @@ func resizeNearestNeighbor<Scalar: TensorFlowNumeric>(
 }
 
 @usableFromInline
-@derivative(of:resizeNearestNeighbor)
+@derivative(of: resizeNearestNeighbor)
 func _vjpResizeNearestNeighbor<Scalar: TensorFlowFloatingPoint>(
   images: Tensor<Scalar>,
   size: Tensor<Int32>,
@@ -273,7 +273,7 @@ func resizeBilinear<Scalar: TensorFlowNumeric>(
 }
 
 @usableFromInline
-@derivative(of:resizeBilinear)
+@derivative(of: resizeBilinear)
 func _vjpResizeBilinear<Scalar: TensorFlowFloatingPoint>(
   images: Tensor<Scalar>,
   size: Tensor<Int32>,
@@ -316,7 +316,7 @@ func resizeBicubic<Scalar: TensorFlowFloatingPoint>(
 }
 
 @usableFromInline
-@derivative(of:resizeBicubic)
+@derivative(of: resizeBicubic)
 func _vjpResizeBicubic<Scalar: TensorFlowFloatingPoint>(
   images: Tensor<Scalar>,
   size: Tensor<Int32>,

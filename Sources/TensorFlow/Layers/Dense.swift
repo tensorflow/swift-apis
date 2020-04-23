@@ -60,7 +60,7 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
   }
 
   // TODO(TF-433): Remove custom derivative after `try_apply` differentiation is supported.
-  @derivative(of:init)
+  @derivative(of: init)
   @usableFromInline
   static func vjpInit(
     weight: Tensor<Scalar>,
