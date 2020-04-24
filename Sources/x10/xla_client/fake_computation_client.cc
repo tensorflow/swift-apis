@@ -16,7 +16,6 @@
 
 #include <tuple>
 
-#include "platforms/deepsea/executor/deepsea_platform.h"
 #include "absl/strings/str_cat.h"
 #include "tensorflow/compiler/xla/xla_client/debug_macros.h"
 #include "tensorflow/compiler/xla/xla_client/multi_wait.h"
