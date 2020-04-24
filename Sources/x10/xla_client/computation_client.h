@@ -26,6 +26,7 @@
 
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
+#include "tensorflow/compiler/xla/xla_client/device.h"
 #include "tensorflow/compiler/xla/xla_client/metrics.h"
 #include "tensorflow/compiler/xla/xla_client/types.h"
 #include "tensorflow/compiler/xla/client/xla_computation.h"
@@ -256,7 +257,7 @@ class ComputationClient {
 
   enum class DeviceKind { CPU, GPU, TPU };
 
-  virtual DeviceKind GetDefaultDeviceKind() const = 0;
+  virtual swift_xla::Device GetDefaultDeviceStruct() const = 0;
 
   virtual size_t GetNumDevices() const = 0;
 

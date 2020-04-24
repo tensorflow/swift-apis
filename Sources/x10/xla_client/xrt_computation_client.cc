@@ -462,19 +462,6 @@ bool GpuIsAvailable() {
   return false;
 }
 
-ComputationClient::DeviceKind ParseDeviceKind(const std::string& device) {
-  std::vector<std::string> device_parts = absl::StrSplit(device, ":");
-  XLA_CHECK_EQ(device_parts.size(), 2) << device;
-  if (device_parts[0] == "TPU") {
-    return ComputationClient::DeviceKind::TPU;
-  }
-  if (device_parts[0] == "GPU") {
-    return ComputationClient::DeviceKind::GPU;
-  }
-  XLA_CHECK_EQ(device_parts[0], "CPU");
-  return ComputationClient::DeviceKind::CPU;
-}
-
 }  // namespace
 
 std::unique_ptr<ComputationClient> ComputationClient::Create() {
@@ -2071,10 +2058,8 @@ std::string XrtComputationClient::GetMultiProcessingDevice() {
   return sys_util::GetEnvString("XRT_MULTI_PROCESSING_DEVICE", "");
 }
 
-ComputationClient::DeviceKind XrtComputationClient::GetDefaultDeviceKind()
-    const {
-  static DeviceKind device_kind = ParseDeviceKind(options_.default_device);
-  return device_kind;
+swift_xla::Device XrtComputationClient::GetDefaultDeviceStruct() const {
+  return *swift_xla::GetDefaultDevice();
 }
 
 }  // namespace xla

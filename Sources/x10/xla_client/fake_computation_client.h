@@ -72,7 +72,7 @@ class FakeComputationClient : public ComputationClient {
 
   std::string GetDefaultDevice() const override;
 
-  DeviceKind GetDefaultDeviceKind() const override;
+  swift_xla::Device GetDefaultDeviceStruct() const override;
 
   size_t GetNumDevices() const override;
 

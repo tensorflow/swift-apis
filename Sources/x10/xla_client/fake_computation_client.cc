@@ -141,9 +141,8 @@ std::string FakeComputationClient::GetDefaultDevice() const {
   return default_device_;
 }
 
-ComputationClient::DeviceKind FakeComputationClient::GetDefaultDeviceKind()
-    const {
-  return DeviceKind::CPU;
+swift_xla::Device FakeComputationClient::GetDefaultDeviceStruct() const {
+  return swift_xla::Device(swift_xla::DeviceType::CPU, 0);
 }
 
 size_t FakeComputationClient::GetNumDevices() const {
