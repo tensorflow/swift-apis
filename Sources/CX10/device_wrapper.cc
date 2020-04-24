@@ -105,21 +105,8 @@ DeviceList* getAllDevices() {
   return DeviceListFromStrings(xla::ComputationClient::Get()->GetAllDevices());
 }
 
-DeviceType getDefaultDeviceType() {
-  xla::ComputationClient::DeviceKind kind =
-      xla::ComputationClient::Get()->GetDefaultDeviceKind();
-  switch (kind) {
-    case xla::ComputationClient::DeviceKind::CPU: {
-      return CPU_DEVICE;
-    }
-    case xla::ComputationClient::DeviceKind::GPU: {
-      return GPU_DEVICE;
-    }
-    case xla::ComputationClient::DeviceKind::TPU: {
-      return TPU_DEVICE;
-    }
-    default: { LOG(FATAL) << "Invalid device"; }
-  }
+CDevice getDefaultDevice() {
+  return ConvertDevice(xla::ComputationClient::Get()->GetDefaultDeviceStruct());
 }
 
 void setReplicationDevices(struct DeviceList* device_list) {

@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-#pragma once
+#ifndef X10_XLA_CLIENT_DEVICE_H_
+#define X10_XLA_CLIENT_DEVICE_H_
 
 #include <iostream>
 #include <string>
@@ -71,3 +72,5 @@ static inline Device GetDeviceOrCurrent(const Device* device) {
 }
 
 }  // namespace swift_xla
+
+#endif  // X10_XLA_CLIENT_DEVICE_H_

@@ -9,7 +9,7 @@ VERS_1.0 {
     destroy*;
     DefaultDevice;
     getAllDevices;
-    getDefaultDeviceType;
+    getDefaultDevice;
     setReplicationDevices;
     getReplicationDevices;
     syncLiveTensorsForDevices;

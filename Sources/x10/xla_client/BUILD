@@ -22,6 +22,7 @@ cc_library(
     name = "xrt_computation_client",
     srcs = [
         "computation_client.cc",
+        "device.cc",
         "mesh_service.cc",
         "metrics.cc",
         "metrics_reader.cc",
@@ -42,6 +43,7 @@ cc_library(
         "cache.h",
         "computation_client.h",
         "debug_macros.h",
+        "device.h",
         "mesh_service.h",
         "metrics.h",
         "metrics_reader.h",

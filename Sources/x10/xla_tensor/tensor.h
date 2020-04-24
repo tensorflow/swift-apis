@@ -22,7 +22,6 @@
 #include <unordered_map>
 
 #include "tensorflow/compiler/tf2xla/xla_tensor/cross_replica_reduces.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/device.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ir.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ir_util.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/lowering_context.h"
@@ -34,6 +33,7 @@
 #include "tensorflow/compiler/xla/xla_client/async_task.h"
 #include "tensorflow/compiler/xla/xla_client/cache.h"
 #include "tensorflow/compiler/xla/xla_client/computation_client.h"
+#include "tensorflow/compiler/xla/xla_client/device.h"
 #include "tensorflow/compiler/xla/xla_client/multi_wait.h"
 #include "tensorflow/compiler/xla/xla_client/util.h"
 #include "tensorflow/core/util/mirror_pad_mode.h"
