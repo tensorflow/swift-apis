@@ -249,6 +249,36 @@ extension Conv2D {
   }
 }
 
+extension Conv2D: ShapedLayer where Scalar == Float {
+  public struct HyperParameters {
+    // TODO: FIX ME! (Add strides, padding, etc.)
+    let filterHeight: Int
+    let filterWidth: Int
+    let outputChannels: Int
+
+    public init(filterHeight: Int, filterWidth: Int, outputChannels: Int) {
+      self.filterHeight = filterHeight
+      self.filterWidth = filterWidth
+      self.outputChannels = outputChannels
+    }
+
+    public init(_ height: Int, _ width: Int? = nil, channels: Int) {
+      self.filterHeight = height
+      self.filterWidth = width ?? height  // Default to square.
+      self.outputChannels = channels
+    }
+  }
+
+  public init(hparams: HyperParameters, inputShape: TensorShape) {
+    precondition(inputShape.rank == 4, "Unexpected input shape: \(inputShape).")  // THIS REQUIRES WORKING VMAP!
+    let inputChannels = inputShape[3]  // Assuming channels last.
+    let filterShape = (
+      hparams.filterHeight, hparams.filterWidth, inputChannels, hparams.outputChannels
+    )
+    self.init(filterShape: filterShape)
+  }
+}
+
 /// A 3-D convolution layer for spatial/spatio-temporal convolution over images.
 ///
 /// This layer creates a convolution filter that is convolved with the layer input to produce a

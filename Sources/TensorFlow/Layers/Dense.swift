@@ -110,3 +110,26 @@ extension Dense {
       activation: activation)
   }
 }
+
+extension Dense: ShapedLayer where Scalar == Float {
+  public struct HyperParameters {
+    let outputSize: Int
+    let useBias: Bool
+    let activation: Activation
+    // TODO: figure out how to handle random init of params from a given seed / etc.
+
+    public init(outputSize: Int, useBias: Bool = false, activation: @escaping Activation = identity)
+    {
+      self.outputSize = outputSize
+      self.useBias = useBias
+      self.activation = activation
+    }
+  }
+
+  public init(hparams: HyperParameters, inputShape: TensorShape) {
+    precondition(inputShape.rank == 2, "Wrong input shape; got \(inputShape)")
+    self.init(
+      inputSize: inputShape[1], outputSize: hparams.outputSize, activation: hparams.activation,
+      useBias: hparams.useBias)
+  }
+}

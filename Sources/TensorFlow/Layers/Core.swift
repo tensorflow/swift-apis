@@ -32,6 +32,13 @@ public struct Flatten<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   }
 }
 
+extension Flatten: ShapedLayer where Scalar == Float {
+  public init(hparams: (), inputShape: TensorShape) {
+    precondition(inputShape.rank > 1, "Unexpected shape: \(inputShape); must have rank > 1.")
+    self.init()
+  }
+}
+
 /// A reshape layer.
 @frozen
 public struct Reshape<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {

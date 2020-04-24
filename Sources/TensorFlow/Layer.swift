@@ -53,6 +53,24 @@ extension Layer {
   }
 }
 
+// TODO: clean up the Input & Output requirements.
+public protocol ShapedLayer: Layer where Input == Tensor<Float>, Output == Tensor<Float> {
+  /// The hyper parameters required to initialize `Self`.
+  associatedtype HyperParameters
+
+  /// Initializes `self` with the given hyper parameters to process inputs shaped `inputShape`.
+  init(hparams: HyperParameters, inputShape: TensorShape)
+
+  init(hparams: HyperParameters, _ shapeTrackingTensor: inout Tensor<Float>)
+}
+
+extension ShapedLayer {
+  public init(hparams: HyperParameters, _ shapeTrackingTensor: inout Tensor<Float>) {
+    self.init(hparams: hparams, inputShape: shapeTrackingTensor.shape)
+    shapeTrackingTensor = self(shapeTrackingTensor)
+  }
+}
+
 /// An empty struct representing empty `TangentVector`s for parameterless layers.
 public struct EmptyTangentVector: EuclideanDifferentiable, VectorProtocol, ElementaryFunctions,
   PointwiseMultiplicative, KeyPathIterable
