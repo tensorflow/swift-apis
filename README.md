@@ -107,17 +107,19 @@ and its argument are elided).
 If `swiftc` is not in your `PATH`, you must specify the path to it using
 `-D CMAKE_Swift_COMPILER=`.
 
-If you are intending to develop X10, pass `-D BUILD_X10=YES`
+This will build X10 as part of the build.  Ensure that you do not have the
+x10 modules in the toolchain that you are using to develop here.
 
-```
+```shell
 cmake -B out -D BUILD_X10=YES -G Ninja -S swift-apis
 cmake --build out
 ```
 
-If you are not intending to develop X10, we recommend that you use the bundled
-X10 by passing `-D USE_BUNDLED_X10=YES`:
+If you are not intending to develop X10, you can reduce the build times by
+using the bundled X10 in the toolchain using
+`-D USE_BUNDLED_X10=YES -D USE_BUNDLED_CTENSORFLOW=YES`:
 
-```
+```shell
 cmake -B out -D BUILD_X10=YES -D USE_BUNDLED_CTENSORFLOW=YES -D USE_BUNDLED_X10=YES -G Ninja -S swift-apis
 cmake --build out
 ```
