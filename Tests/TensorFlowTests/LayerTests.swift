@@ -1970,6 +1970,36 @@ final class LayerTests: XCTestCase {
     let transformerResult = transformerLayerNorm(transformerTensor)
     XCTAssertEqual(transformerTensor.shape, transformerResult.shape)
   }
+  
+  func testGaussianNoise() {
+    Context.local.learningPhase = .inference
+    let gaussianNoise = GaussianNoise<Float>(standardDeviation: 1.0)
+    let x = Tensor<Float>(repeating: 1.0, shape: [5, 5])
+    XCTAssertEqual(gaussianNoise(x), x)
+    withLearningPhase(LearningPhase.inference) {
+      XCTAssertEqual(gaussianNoise(x), x)
+      withLearningPhase(LearningPhase.training) {
+        XCTAssertNotEqual(gaussianNoise(x), x)
+      }
+      XCTAssertEqual(gaussianNoise(x), x)
+    }
+    XCTAssertEqual(gaussianNoise(x), x)
+  }
+
+  func testGaussianDropout() {
+    Context.local.learningPhase = .inference
+    let dropout = GaussianDropout<Float>(probability: 0.5)
+    let x = Tensor<Float>(repeating: 1.0, shape: [5, 5])
+    XCTAssertEqual(dropout(x), x)
+    withLearningPhase(LearningPhase.inference) {
+      XCTAssertEqual(dropout(x), x)
+      withLearningPhase(LearningPhase.training) {
+        XCTAssertNotEqual(dropout(x), x)
+      }
+      XCTAssertEqual(dropout(x), x)
+    }
+    XCTAssertEqual(dropout(x), x)
+  }
 
   func testAlphaDropout() {
     Context.local.learningPhase = .inference
@@ -2058,6 +2088,8 @@ final class LayerTests: XCTestCase {
     ("testBatchNormInference", testBatchNormInference),
     ("testLayerNorm", testLayerNorm),
     ("testLayerNormInference", testLayerNormInference),
+    ("testGaussianNoise", testGaussianNoise),
+    ("testGaussianDropout", testGaussianDropout),
     ("testAlphaDropout", testAlphaDropout),
   ]
 }
