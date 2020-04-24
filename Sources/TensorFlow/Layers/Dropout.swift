@@ -30,8 +30,8 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
     *, deprecated,
     message:
       """
-        This API will be removed after Swift for TensorFlow 0.6.
-        For dropout, use the `Dropout` layer.
+      This API will be removed after Swift for TensorFlow 0.6.
+      For dropout, use the `Dropout` layer.
       """
   )
   @differentiable(wrt: self where Scalar: Differentiable)
