@@ -18,6 +18,7 @@
 #include <sstream>
 
 #include "tensorflow/compiler/xla/xla_client/debug_macros.h"
+#include "tensorflow/compiler/xla/xla_client/util.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/helpers.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/lowering_context.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/aten_compat.h"
@@ -100,6 +101,15 @@ XlaOpVector Scalar::Lower(LoweringContext* loctx) const {
     op = xla::Broadcast(op, shape().dimensions());
   }
   return ReturnOp(op, loctx);
+}
+
+xla::hash_t ScalarHash(at::Scalar s) {
+  return s.isFloatingPoint() ? xla::util::Hash(s.toDouble())
+                             : xla::util::Hash(s.toLong());
+}
+
+std::ostream& operator<<(std::ostream& ostrm, at::Scalar s) {
+  return ostrm << (s.isFloatingPoint() ? s.toDouble() : s.toLong());
 }
 
 }  // namespace ops

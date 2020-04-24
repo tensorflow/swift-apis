@@ -36,9 +36,17 @@ namespace swift_xla {
 namespace {
 
 bool ShouldUseBF16() {
-  bool use_fp16 = xla::sys_util::GetEnvBool("XLA_USE_BF16", false);
-  if (use_fp16) {
+  bool use_bf16 = xla::sys_util::GetEnvBool("XLA_USE_BF16", false);
+  if (use_bf16) {
     TF_LOG(INFO) << "Using BF16 data type for floating point values";
+  }
+  return use_bf16;
+}
+
+bool ShouldUseF16() {
+  bool use_fp16 = xla::sys_util::GetEnvBool("XLA_USE_FP16", false);
+  if (use_fp16) {
+    TF_LOG(INFO) << "Using F16 data type for floating point values";
   }
   return use_fp16;
 }
@@ -52,7 +60,12 @@ bool ShouldUse32BitLong() {
 }
 
 bool UseBF16() {
-  static bool use_fp16 = ShouldUseBF16();
+  static bool use_bf16 = ShouldUseBF16();
+  return use_bf16;
+}
+
+bool UseF16() {
+  static bool use_fp16 = ShouldUseF16();
   return use_fp16;
 }
 
@@ -71,6 +84,8 @@ xla::PrimitiveType XlaTypeFromTensorType(at::ScalarType scalar_type,
       return xla::PrimitiveType::F32;
     case at::ScalarType::BFloat16:
       return xla::PrimitiveType::BF16;
+    case at::ScalarType::Half:
+      return xla::PrimitiveType::F16;
     case at::ScalarType::Bool:
       return xla::PrimitiveType::PRED;
     case at::ScalarType::Byte:
@@ -106,6 +121,20 @@ template <>
 struct Caster<tensorflow::bfloat16> {
   template <typename D>
   D cast(const tensorflow::bfloat16& value) const {
+    return static_cast<D>(static_cast<float>(value));
+  }
+};
+template <>
+struct Caster<at::Half> {
+  template <typename D>
+  D cast(const at::Half& value) const {
+    return static_cast<D>(static_cast<float>(value));
+  }
+};
+template <>
+struct Caster<xla::half> {
+  template <typename D>
+  D cast(const xla::half& value) const {
     return static_cast<D>(static_cast<float>(value));
   }
 };
@@ -149,6 +178,14 @@ struct NeedCast<tensorflow::bfloat16> {
 };
 template <>
 struct NeedCast<at::BFloat16> {
+  static constexpr bool value = true;
+};
+template <>
+struct NeedCast<xla::half> {
+  static constexpr bool value = true;
+};
+template <>
+struct NeedCast<at::Half> {
   static constexpr bool value = true;
 };
 
@@ -345,6 +382,10 @@ void TensorToBufferSType(const at::Tensor& tensor, const xla::Shape& dest_shape,
       TensorToBuffer<SType, tensorflow::bfloat16>(
           tensor, dest_shape, dest_buffer, dest_buffer_size, device);
       break;
+    case xla::PrimitiveType::F16:
+      TensorToBuffer<SType, xla::half>(tensor, dest_shape, dest_buffer,
+                                       dest_buffer_size, device);
+      break;
     case xla::PrimitiveType::F32:
       TensorToBuffer<SType, float>(tensor, dest_shape, dest_buffer,
                                    dest_buffer_size, device);
@@ -409,6 +450,10 @@ void PopulateTensorBuffer(const at::Tensor& tensor,
     case at::ScalarType::BFloat16:
       TensorToBufferSType<at::BFloat16>(tensor, dest_shape, dest_buffer,
                                         dest_buffer_size, device);
+      break;
+    case at::ScalarType::Half:
+      TensorToBufferSType<at::Half>(tensor, dest_shape, dest_buffer,
+                                    dest_buffer_size, device);
       break;
     case at::ScalarType::Bool:
       TensorToBufferSType<bool>(tensor, dest_shape, dest_buffer,
@@ -479,6 +524,8 @@ at::Tensor XlaLiteralToTensorHelper(const xla::Literal& literal,
     case at::ScalarType::BFloat16:
       return XlaLiteralToTensor<SType, at::BFloat16>(literal,
                                                      dest_element_type);
+    case at::ScalarType::Half:
+      return XlaLiteralToTensor<SType, at::Half>(literal, dest_element_type);
     default:
       XLA_ERROR() << "Unsupported scalar type: " << dest_element_type;
   }
@@ -513,6 +560,8 @@ at::Tensor MakeTensorFromXlaLiteral(const xla::Literal& literal,
     case xla::PrimitiveType::BF16:
       return XlaLiteralToTensorHelper<tensorflow::bfloat16>(literal,
                                                             dest_element_type);
+    case xla::PrimitiveType::F16:
+      return XlaLiteralToTensorHelper<xla::half>(literal, dest_element_type);
     case xla::PrimitiveType::F32:
       return XlaLiteralToTensorHelper<float>(literal, dest_element_type);
     case xla::PrimitiveType::F64:
@@ -651,6 +700,8 @@ xla::hash_t TensorHash(const at::Tensor& tensor) {
       return xla::util::DataHash(tensor.data<double>().data(), size);
     case at::ScalarType::BFloat16:
       return xla::util::DataHash(tensor.data<at::BFloat16>().data(), size);
+    case at::ScalarType::Half:
+      return xla::util::DataHash(tensor.data<at::Half>().data(), size);
     default:
       XLA_ERROR() << "Unsupported scalar type: " << tensor.scalar_type();
   }
@@ -696,10 +747,9 @@ xla::Shape CreateComputationShapeFromTensor(const at::Tensor& tensor,
 at::ScalarType TensorTypeFromXlaType(xla::PrimitiveType xla_type) {
   switch (xla_type) {
     case xla::PrimitiveType::BF16:
-      if (!UseBF16()) {
-        return at::ScalarType::BFloat16;
-      }
-      TF_FALLTHROUGH_INTENDED;
+      return UseBF16() ? at::ScalarType::Float : at::ScalarType::BFloat16;
+    case xla::PrimitiveType::F16:
+      return UseF16() ? at::ScalarType::Float : at::ScalarType::Half;
     case xla::PrimitiveType::F32:
       return at::ScalarType::Float;
     case xla::PrimitiveType::F64:
@@ -732,6 +782,8 @@ xla::PrimitiveType TensorTypeToRawXlaType(at::ScalarType scalar_type) {
       return xla::PrimitiveType::F32;
     case at::ScalarType::BFloat16:
       return xla::PrimitiveType::BF16;
+    case at::ScalarType::Half:
+      return xla::PrimitiveType::F16;
     case at::ScalarType::Bool:
       return xla::PrimitiveType::PRED;
     case at::ScalarType::Byte:
@@ -754,6 +806,9 @@ xla::PrimitiveType GetDevicePrimitiveType(xla::PrimitiveType type,
   Device xla_device = GetDeviceOrCurrent(device);
   switch (type) {
     case xla::PrimitiveType::F64:
+      if (UseF16()) {
+        return xla::PrimitiveType::F16;
+      }
       if (UseBF16()) {
         return xla::PrimitiveType::BF16;
       }
@@ -762,6 +817,9 @@ xla::PrimitiveType GetDevicePrimitiveType(xla::PrimitiveType type,
     case xla::PrimitiveType::F32:
       // When S4TF will support native BF16 type, the global configuration can
       // be replaced (or augmented) with the proper mapping.
+      if (UseF16()) {
+        return xla::PrimitiveType::F16;
+      }
       return UseBF16() ? xla::PrimitiveType::BF16 : xla::PrimitiveType::F32;
     case xla::PrimitiveType::U8:
       return xla_device.hw_type != DeviceType::TPU ? xla::PrimitiveType::U8
@@ -796,6 +854,8 @@ xla::PrimitiveType MakeXlaPrimitiveType(at::ScalarType scalar_type,
       return GetDevicePrimitiveType(xla::PrimitiveType::F32, device);
     case at::ScalarType::BFloat16:
       return GetDevicePrimitiveType(xla::PrimitiveType::BF16, device);
+    case at::ScalarType::Half:
+      return GetDevicePrimitiveType(xla::PrimitiveType::F16, device);
     case at::ScalarType::Bool:
       return GetDevicePrimitiveType(xla::PrimitiveType::PRED, device);
     case at::ScalarType::Byte:

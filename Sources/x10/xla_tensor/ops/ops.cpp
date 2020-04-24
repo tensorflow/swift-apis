@@ -192,6 +192,26 @@ NodePtr TransposeOp(const Value& input, xla::int64 dim0, xla::int64 dim1) {
                                       /*rank=*/input.shape().rank()));
 }
 
+NodePtr HardSigmoid(const Value& input) {
+  auto lower_fn = [](const Node& node, LoweringContext* loctx) -> XlaOpVector {
+    xla::XlaOp xla_input = loctx->GetOutputOp(node.operand(0));
+    return node.ReturnOp(BuildHardSigmoid(xla_input), loctx);
+  };
+  return GenericOp(OpKind(at::aten::hardsigmoid), {input}, input.shape(),
+                   std::move(lower_fn));
+}
+
+NodePtr HardSigmoidBackward(const Value& grad_output, const Value& input) {
+  auto lower_fn = [](const Node& node, LoweringContext* loctx) -> XlaOpVector {
+    xla::XlaOp xla_grad_output = loctx->GetOutputOp(node.operand(0));
+    xla::XlaOp xla_input = loctx->GetOutputOp(node.operand(1));
+    return node.ReturnOp(BuildHardSigmoidBackward(xla_grad_output, xla_input),
+                         loctx);
+  };
+  return GenericOp(OpKind(at::aten::hardsigmoid_backward), {grad_output, input},
+                   input.shape(), std::move(lower_fn));
+}
+
 std::tuple<NodePtr, NodePtr> LogSigmoid(const Value& input) {
   ScopePusher ir_scope(ToQualString(at::aten::log_sigmoid));
   // Use log-sum-exp trick to avoid overflow.
@@ -629,20 +649,6 @@ NodePtr MinUnary(const Value& input) {
   return GenericOp(OpKind(at::aten::min), {input},
                    xla::ShapeUtil::MakeShape(input.shape().element_type(), {}),
                    std::move(lower_fn));
-}
-
-NodePtr Bernoulli(const Value& input, const Value& probability) {
-  auto lower_fn = [](const Node& node, LoweringContext* loctx) -> XlaOpVector {
-    xla::XlaOp xla_input = loctx->GetOutputOp(node.operand(0));
-    xla::XlaOp xla_probability = loctx->GetOutputOp(node.operand(1));
-    xla::XlaOp result =
-        BuildBernoulli(xla_probability, XlaHelpers::ShapeOfXlaOp(xla_input));
-    return node.ReturnOp(result, loctx);
-  };
-  NodePtr probability_expanded = MakeNode<Expand>(
-      probability, xla::util::ToVector<xla::int64>(input.shape().dimensions()));
-  return GenericOp(OpKind(at::aten::bernoulli), {input, probability_expanded},
-                   input.shape(), std::move(lower_fn));
 }
 
 NodePtr Take(const Value& input, const Value& index) {

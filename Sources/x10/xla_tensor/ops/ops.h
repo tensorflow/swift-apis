@@ -145,6 +145,10 @@ NodePtr IsNan(const Value& input);
 
 NodePtr TransposeOp(const Value& input, xla::int64 dim0, xla::int64 dim1);
 
+NodePtr HardSigmoid(const Value& input);
+
+NodePtr HardSigmoidBackward(const Value& grad_output, const Value& input);
+
 std::tuple<NodePtr, NodePtr> LogSigmoid(const Value& input);
 
 NodePtr LogSigmoidBackward(const Value& grad_output, const Value& input,
@@ -219,8 +223,6 @@ NodePtr Remainder(const Value& input, const Value& divisor);
 NodePtr MaxUnary(const Value& input);
 
 NodePtr MinUnary(const Value& input);
-
-NodePtr Bernoulli(const Value& input, const Value& probability);
 
 NodePtr Take(const Value& input, const Value& index);
 

@@ -33,6 +33,7 @@
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/as_strided.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/avg_pool_nd.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/avg_pool_nd_backward.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/ops/bernoulli.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/binary_cross_entropy.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/binary_cross_entropy_backward.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/bitwise_ir_ops.h"
@@ -697,25 +698,28 @@ XLATensor XLATensor::avg_pool_nd_backward(
 }
 
 XLATensor XLATensor::bernoulli(const XLATensor& input, double probability) {
-  return input.CreateFrom(ir::ops::Bernoulli(
-      input.GetIrValue(),
-      GetIrValueForScalar(probability, input.shape(), input.GetDevice())));
+  auto input_shape = input.shape();
+  return input.CreateFrom(ir::MakeNode<ir::ops::Bernoulli>(
+      GetIrValueForScalar(probability, input_shape, input.GetDevice()),
+      GetRngSeed(input.GetDevice()), input_shape.get()));
 }
 
 XLATensor XLATensor::bernoulli(const XLATensor& input) {
-  return input.CreateFrom(
-      ir::ops::Bernoulli(input.GetIrValue(), input.GetIrValue()));
+  return input.CreateFrom(ir::MakeNode<ir::ops::Bernoulli>(
+      input.GetIrValue(), GetRngSeed(input.GetDevice()), input.shape().get()));
 }
 
 void XLATensor::bernoulli_(XLATensor& input, double probability) {
-  input.SetInPlaceIrValue(ir::ops::Bernoulli(
-      input.GetIrValue(),
-      GetIrValueForScalar(probability, input.shape(), input.GetDevice())));
+  auto input_shape = input.shape();
+  input.SetInPlaceIrValue(ir::MakeNode<ir::ops::Bernoulli>(
+      GetIrValueForScalar(probability, input_shape, input.GetDevice()),
+      GetRngSeed(input.GetDevice()), input_shape.get()));
 }
 
 void XLATensor::bernoulli_(XLATensor& input, const XLATensor& probability) {
-  input.SetInPlaceIrValue(
-      ir::ops::Bernoulli(input.GetIrValue(), probability.GetIrValue()));
+  input.SetInPlaceIrValue(ir::MakeNode<ir::ops::Bernoulli>(
+      probability.GetIrValue(), GetRngSeed(input.GetDevice()),
+      input.shape().get()));
 }
 
 XLATensor XLATensor::binary_cross_entropy(const XLATensor& input,
@@ -1454,6 +1458,20 @@ XLATensor XLATensor::hardshrink_backward(const XLATensor& grad_out,
       input.GetIrValue(), lambda));
 }
 
+XLATensor XLATensor::hardsigmoid(const XLATensor& input) {
+  return input.CreateFrom(ir::ops::HardSigmoid(input.GetIrValue()));
+}
+
+void XLATensor::hardsigmoid_(XLATensor& input) {
+  input.SetIrValue(ir::ops::HardSigmoid(input.GetIrValue()));
+}
+
+XLATensor XLATensor::hardsigmoid_backward(const XLATensor& grad_output,
+                                          const XLATensor& input) {
+  return input.CreateFrom(ir::ops::HardSigmoidBackward(grad_output.GetIrValue(),
+                                                       input.GetIrValue()));
+}
+
 XLATensor XLATensor::hardtanh_backward(const XLATensor& grad_output,
                                        const XLATensor& input,
                                        at::Scalar min_val, at::Scalar max_val) {
@@ -1940,26 +1958,27 @@ XLATensor XLATensor::norm(const XLATensor& input, c10::optional<at::Scalar> p,
 XLATensor XLATensor::normal(double mean, const XLATensor& std) {
   return std.CreateFrom(ir::MakeNode<ir::ops::Normal>(
       GetIrValueForScalar(mean, std.shape(), std.GetDevice()), std.GetIrValue(),
-      GenRngSeed()));
+      GetRngSeed(std.GetDevice())));
 }
 
 XLATensor XLATensor::normal(const XLATensor& mean, double std) {
   return mean.CreateFrom(ir::MakeNode<ir::ops::Normal>(
       mean.GetIrValue(),
-      GetIrValueForScalar(std, mean.shape(), mean.GetDevice()), GenRngSeed()));
+      GetIrValueForScalar(std, mean.shape(), mean.GetDevice()),
+      GetRngSeed(mean.GetDevice())));
 }
 
 XLATensor XLATensor::normal(const XLATensor& mean, const XLATensor& std) {
   return mean.CreateFrom(ir::MakeNode<ir::ops::Normal>(
       mean.GetIrValue(), MaybeExpand(std.GetIrValue(), mean.shape()),
-      GenRngSeed()));
+      GetRngSeed(mean.GetDevice())));
 }
 
 void XLATensor::normal_(XLATensor& input, double mean, double std) {
   input.SetIrValue(ir::MakeNode<ir::ops::Normal>(
       GetIrValueForScalar(mean, input.shape(), input.GetDevice()),
       GetIrValueForScalar(std, input.shape(), input.GetDevice()),
-      GenRngSeed()));
+      GetRngSeed(input.GetDevice())));
 }
 
 XLATensor XLATensor::not_supported(std::string description, xla::Shape shape,
@@ -2114,7 +2133,8 @@ XLATensor XLATensor::rrelu_with_noise(const XLATensor& input, XLATensor& noise,
                                       at::Scalar lower, at::Scalar upper,
                                       bool training) {
   ir::NodePtr output_node = ir::MakeNode<ir::ops::RreluWithNoise>(
-      input.GetIrValue(), lower, upper, training, GenRngSeed());
+      input.GetIrValue(), GetRngSeed(input.GetDevice()), lower, upper,
+      training);
   noise.SetIrValue(ir::Value(output_node, 1));
   return input.CreateFrom(ir::Value(output_node, 0));
 }
@@ -2747,7 +2767,7 @@ void XLATensor::uniform_(XLATensor& input, double from, double to) {
                           input.GetDevice()),
       GetIrValueForScalar(to, input_shape.get().element_type(),
                           input.GetDevice()),
-      input_shape, GenRngSeed()));
+      GetRngSeed(input.GetDevice()), input_shape));
 }
 
 XLATensor XLATensor::unsqueeze(const XLATensor& input, xla::int64 dim) {
