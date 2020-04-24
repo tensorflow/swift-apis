@@ -144,7 +144,8 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   @inlinable
   @derivative(of: scalarized)
   func _vjpScalarized() -> (value: Scalar, pullback: (Scalar) -> Tensor) {
-    return (scalarized(), { v in Tensor(v) })
+    let device = self.device
+    return (scalarized(), { v in Tensor(v, on: device) })
   }
 }
 

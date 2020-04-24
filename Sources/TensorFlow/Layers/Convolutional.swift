@@ -646,7 +646,8 @@ public struct TransposedConv3D<Scalar: TensorFlowFloatingPoint>: Layer {
     let h = (input.shape[2] - (1 * paddingIndex)) * strides.1 + (filter.shape[1] * paddingIndex)
     let d = (input.shape[3] - (1 * paddingIndex)) * strides.2 + (filter.shape[2] * paddingIndex)
     let c = filter.shape[3]
-    let newShape = Tensor<Int32>([Int32(batchSize), Int32(w), Int32(h), Int32(d), Int32(c)])
+    let newShape = Tensor<Int32>(
+      [Int32(batchSize), Int32(w), Int32(h), Int32(d), Int32(c)], on: input.device)
     let conv = conv3DBackpropInput(
       input,
       shape: newShape,

@@ -17,10 +17,10 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   // TODO: Remove the underscore once `droppingOut(probability:)` has been removed.
   @differentiable(wrt: self where Scalar: Differentiable)
   fileprivate func _droppingOut(probability: Double) -> Tensor {
-    let noise = Tensor(randomUniform: shape)
+    let noise = Tensor(randomUniform: shape, on: device)
     let keepMask = noise .>= Scalar(probability)
     let keepProbability = Scalar(1.0 - probability)
-    return self * Tensor(keepMask) / Tensor(keepProbability)
+    return self * Tensor(keepMask) / Tensor(keepProbability, on: device)
   }
 }
 
@@ -105,7 +105,7 @@ public struct AlphaDropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
       let alpha = 1.6732632423543772848170429916717
       let scale = 1.0507009873554804934193349852946
       let alpha_p = -alpha * scale
-      let uniform = Tensor<Scalar>(randomUniform: input.shape)
+      let uniform = Tensor<Scalar>(randomUniform: input.shape, on: input.device)
       let noise = uniform .>= Scalar(probability)
 
       // Get affine transformation params

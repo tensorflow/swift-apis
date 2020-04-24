@@ -55,8 +55,10 @@ public func resize(
   if singleImage {
     images = images.rankLifted()
   }
-  let size = Tensor([Int32(size.newHeight), Int32(size.newWidth)])
-  let scale = Tensor<Float>(size) / Tensor<Float>([Float(images.shape[1]), Float(images.shape[2])])
+  let size = Tensor([Int32(size.newHeight), Int32(size.newWidth)], on: .defaultTFEager)
+  let scale =
+    Tensor<Float>(size)
+    / Tensor<Float>([Float(images.shape[1]), Float(images.shape[2])], on: .defaultTFEager)
   switch method {
   case .nearest:
     images = resizeNearestNeighbor(
@@ -69,7 +71,7 @@ public func resize(
         images: images,
         size: size,
         scale: scale,
-        translation: Tensor(zeros: [2]),
+        translation: Tensor(zeros: [2], on: .defaultTFEager),
         kernelType: "triangle")
     } else {
       images = resizeBilinear(
@@ -83,7 +85,7 @@ public func resize(
         images: images,
         size: size,
         scale: scale,
-        translation: Tensor(zeros: [2]),
+        translation: Tensor(zeros: [2], on: .defaultTFEager),
         kernelType: "keyscubic")
     } else {
       images = resizeBicubic(
@@ -96,7 +98,7 @@ public func resize(
       images: images,
       size: size,
       scale: scale,
-      translation: Tensor(zeros: [2]),
+      translation: Tensor(zeros: [2], on: .defaultTFEager),
       kernelType: "lanczos3",
       antialias: antialias)
   case .lanczos5:
@@ -104,7 +106,7 @@ public func resize(
       images: images,
       size: size,
       scale: scale,
-      translation: Tensor(zeros: [2]),
+      translation: Tensor(zeros: [2], on: .defaultTFEager),
       kernelType: "lanczos5",
       antialias: antialias)
   case .gaussian:
@@ -112,7 +114,7 @@ public func resize(
       images: images,
       size: size,
       scale: scale,
-      translation: Tensor(zeros: [2]),
+      translation: Tensor(zeros: [2], on: .defaultTFEager),
       kernelType: "gaussian",
       antialias: antialias)
   case .mitchellcubic:
@@ -120,7 +122,7 @@ public func resize(
       images: images,
       size: size,
       scale: scale,
-      translation: Tensor(zeros: [2]),
+      translation: Tensor(zeros: [2], on: .defaultTFEager),
       kernelType: "mitchellcubic",
       antialias: antialias)
   }
@@ -152,7 +154,7 @@ public func resizeArea<Scalar: TensorFlowNumeric>(
   if singleImage {
     images = images.rankLifted()
   }
-  let size = Tensor([Int32(size.newHeight), Int32(size.newWidth)])
+  let size = Tensor([Int32(size.newHeight), Int32(size.newWidth)], on: .defaultTFEager)
   var resized = _Raw.resizeArea(
     images: images,
     size: size,
@@ -248,7 +250,7 @@ func _vjpResizeNearestNeighbor<Scalar: TensorFlowFloatingPoint>(
     { v in
       _Raw.resizeNearestNeighborGrad(
         grads: v,
-        size: Tensor([Int32(images.shape[1]), Int32(images.shape[2])]),
+        size: Tensor([Int32(images.shape[1]), Int32(images.shape[2])], on: .defaultTFEager),
         alignCorners: alignCorners,
         halfPixelCenters: halfPixelCenters
       )

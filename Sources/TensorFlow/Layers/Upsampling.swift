@@ -32,7 +32,7 @@ public struct UpSampling1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
   public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     let shape = input.shape
     let (batchSize, timesteps, channels) = (shape[0], shape[1], shape[2])
-    let scaleOnes = Tensor<Scalar>(ones: [1, 1, size, 1])
+    let scaleOnes = Tensor<Scalar>(ones: [1, 1, size, 1], on: input.device)
     let upSampling = input.reshaped(to: [batchSize, timesteps, 1, channels]) * scaleOnes
     return upSampling.reshaped(to: [batchSize, timesteps * size, channels])
   }
@@ -56,9 +56,10 @@ public struct UpSampling2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
   /// - Returns: The output.
   @differentiable
   public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+    let device = input.device
     let shape = input.shape
     let (batchSize, height, width, channels) = (shape[0], shape[1], shape[2], shape[3])
-    let scaleOnes = Tensor<Scalar>(ones: [1, 1, size, 1, size, 1])
+    let scaleOnes = Tensor<Scalar>(ones: [1, 1, size, 1, size, 1], on: device)
     let upSampling = input.reshaped(to: [batchSize, height, 1, width, 1, channels]) * scaleOnes
     return upSampling.reshaped(to: [batchSize, height * size, width * size, channels])
   }
@@ -84,7 +85,7 @@ public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
     _ input: Tensor<Scalar>, alongAxis axis: Int, count: Int
   ) -> Tensor<Scalar> {
     let splits = _Raw.split(
-      splitDim: Tensor<Int32>(Int32(axis)),
+      splitDim: Tensor<Int32>(Int32(axis), on: input.device),
       value: input,
       numSplit: Int64(input.shape[axis]))
     let repeated = splits.flatMap { x in Array(repeating: x, count: count) }
@@ -100,7 +101,7 @@ public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
       value,
       { v in
         let splits = _Raw.split(
-          splitDim: Tensor<Int32>(Int32(axis)),
+          splitDim: Tensor<Int32>(Int32(axis), on: v.device),
           value: v,
           numSplit: Int64(input.shape[axis]))
         let summed = splits.map { x in x.sum(alongAxes: axis) }

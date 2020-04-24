@@ -28,8 +28,8 @@ public func identity<Scalar>(_ x: Tensor<Scalar>) -> Tensor<Scalar> {
 extension TensorFlowScalar {
   /// Convert to a tensor with the specified rank, with all dimensions equal to `1`.
   @inlinable
-  public func makeTensor(rank: Int) -> Tensor<Self> {
-    return Tensor(repeating: self, shape: TensorShape(rank))
+  public func makeTensor(rank: Int, on device: Device = .default) -> Tensor<Self> {
+    return Tensor(repeating: self, shape: TensorShape(rank), on: device)
   }
 }
 
@@ -579,15 +579,15 @@ extension Tensor {
     let batchIndices: Tensor<Index> = withoutDerivative(
       at: {
         var batchIndices = indices
-        var accumulated = Tensor<Index>(ones: [])
+        var accumulated = Tensor<Index>(ones: [], on: device)
         for d in (1...batchDimensionCount).reversed() {
           accumulated *= Tensor<Index>(self.shapeTensor[d])
           let dValue = self.shapeTensor[d - 1]
           let dIndices =
             Tensor<Index>(
-              rangeFrom: Tensor<Index>(zeros: []),
+              rangeFrom: Tensor<Index>(zeros: [], on: device),
               to: Tensor<Index>(dValue),
-              stride: Tensor<Index>(ones: [])
+              stride: Tensor<Index>(ones: [], on: device)
             ) * accumulated
           let dShape = Tensor<Int32>(concatenating: [
             Tensor<Int32>([Int32](repeating: 1, count: d - 1), on: device),

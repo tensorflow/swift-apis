@@ -152,17 +152,18 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
 public func eye<Scalar: Numeric>(
   rowCount: Int,
   columnCount: Int? = nil,
-  batchShape: [Int] = []
+  batchShape: [Int] = [],
+  on device: Device = .default
 ) -> Tensor<Scalar> {
   let columnCount = columnCount ?? rowCount
   let diagonalSize = min(rowCount, columnCount)
   let diagonalShape = batchShape + [diagonalSize]
-  let diagonalOnes = Tensor<Scalar>(ones: TensorShape(diagonalShape))
+  let diagonalOnes = Tensor<Scalar>(ones: TensorShape(diagonalShape), on: device)
   if rowCount == columnCount {
     return diagonalOnes.diagonal()
   }
   let shape = batchShape + [rowCount, columnCount]
-  let zeroMatrix = Tensor<Scalar>(zeros: TensorShape(shape))
+  let zeroMatrix = Tensor<Scalar>(zeros: TensorShape(shape), on: device)
   return zeroMatrix.withDiagonal(diagonalOnes)
 }
 
