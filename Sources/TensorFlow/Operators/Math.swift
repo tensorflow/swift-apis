@@ -246,13 +246,13 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   /// Two raised to to power `x`.
   @differentiable
   public static func exp2(_ x: Self) -> Self {
-    pow(Tensor(2), x)
+    pow(Tensor(2, on: x.device), x)
   }
 
   /// Ten raised to to power `x`.
   @differentiable
   public static func exp10(_ x: Self) -> Self {
-    pow(Tensor(10), x)
+    pow(Tensor(10, on: x.device), x)
   }
 
   /// `exp(x) - 1` evaluated so as to preserve accuracy close to zero.
@@ -347,7 +347,7 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   /// The product of `n` copies of `x`.
   @differentiable
   public static func pow(_ x: Self, _ n: Int) -> Self {
-    pow(x, Tensor(Scalar(n)))
+    pow(x, Tensor(Scalar(n), on: x.device))
   }
 
   /// The `n`th root of `x`.
@@ -356,7 +356,7 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   /// For complex types, there is a branch cut along the negative real axis.
   @differentiable
   public static func root(_ x: Self, _ n: Int) -> Self {
-    sign(x) * pow(abs(x), Tensor(Scalar(1) / Scalar(n)))
+    sign(x) * pow(abs(x), Tensor(Scalar(1) / Scalar(n), on: x.device))
   }
 }
 
@@ -1139,7 +1139,7 @@ public func floor<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
 internal func _vjpFloor<T: TensorFlowFloatingPoint>(
   _ x: Tensor<T>
 ) -> (value: Tensor<T>, pullback: (Tensor<T>) -> Tensor<T>) {
-  (floor(x), { _ in Tensor(0).broadcasted(like: x) })
+  (floor(x), { v in Tensor(0, on: v.device).broadcasted(like: x) })
 }
 
 /// Returns an indication of the sign of the specified tensor element-wise.
