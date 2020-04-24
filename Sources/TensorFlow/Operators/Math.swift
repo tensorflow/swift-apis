@@ -647,12 +647,40 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
     return (lhs * rhs, { v in (v * rhs, (v * lhs).sum().scalarized()) })
   }
 
+  /// - Note: this derivative for `(lhs: Tensor) * (rhs: Scalar)` copies the one above, but is only
+  ///   with respect to only `lhs`.
+  ///
+  ///   This exists to prevent unnecessary X10 tensor materialization in the pullback. Computing the
+  ///   derivative with respect to `rhs` requires a call to `Tensor.scalarized()`, but that value is
+  ///   discarded when differentiating only with respect to `lhs`.
+  @inlinable
+  @derivative(of: *, wrt: lhs)
+  static func _vjpMultiply(lhs: Tensor, rhs: Scalar) -> (
+    value: Tensor, pullback: (Tensor) -> Tensor
+  ) {
+    return (lhs * rhs, { v in v * rhs })
+  }
+
   @inlinable
   @derivative(of: *)
   static func _vjpMultiply(lhs: Scalar, rhs: Tensor) -> (
     value: Tensor, pullback: (Tensor) -> (Scalar, Tensor)
   ) {
     return (lhs * rhs, { v in ((v * rhs).sum().scalarized(), v * lhs) })
+  }
+
+  /// - Note: this derivative for `(lhs: Tensor) * (rhs: Scalar)` copies the one above, but is only
+  ///   with respect to only `rhs`.
+  ///
+  ///   This exists to prevent unnecessary X10 tensor materialization in the pullback. Computing the
+  ///   derivative with respect to `lhs` requires a call to `Tensor.scalarized()`, but that value is
+  ///   discarded when differentiating only with respect to `rhs`.
+  @inlinable
+  @derivative(of: *, wrt: rhs)
+  static func _vjpMultiply(lhs: Scalar, rhs: Tensor) -> (
+    value: Tensor, pullback: (Tensor) -> Tensor
+  ) {
+    return (lhs * rhs, { v in v * lhs })
   }
 
   @inlinable
