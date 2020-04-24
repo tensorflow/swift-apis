@@ -693,6 +693,80 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   }
 }
 
+// MARK: Optimized derivatives for tensor-scalar operations
+
+// Note: these derivatives for `(Tensor, Scalar) -> Tensor` binary operations copy ones from above,
+// but are differentiable only with respect to the `Tensor` argument.
+//
+// This avoids unnecessary work to compute the derivative with respect to `Scalar` arguments, which
+// involves calling `Tensor.scalarized()` and thereby triggering X10 tensor materialization.
+
+extension Tensor where Scalar: TensorFlowFloatingPoint {
+  @inlinable
+  @derivative(of: +, wrt: lhs)
+  static func _vjpAdd(lhs: Tensor, rhs: Scalar) -> (
+    value: Tensor, pullback: (Tensor) -> Tensor
+  ) {
+    return (lhs + rhs, { v in v })
+  }
+
+  @inlinable
+  @derivative(of: +, wrt: rhs)
+  static func _vjpAdd(lhs: Scalar, rhs: Tensor) -> (
+    value: Tensor, pullback: (Tensor) -> Tensor
+  ) {
+    return (lhs + rhs, { v in v })
+  }
+
+  @inlinable
+  @derivative(of: -, wrt: lhs)
+  static func _vjpSubtract(lhs: Tensor, rhs: Scalar) -> (
+    value: Tensor, pullback: (Tensor) -> Tensor
+  ) {
+    return (lhs - rhs, { v in v })
+  }
+
+  @inlinable
+  @derivative(of: -, wrt: rhs)
+  static func _vjpSubtract(lhs: Scalar, rhs: Tensor) -> (
+    value: Tensor, pullback: (Tensor) -> Tensor
+  ) {
+    return (lhs - rhs, { v in -v })
+  }
+
+  @inlinable
+  @derivative(of: *, wrt: lhs)
+  static func _vjpMultiply(lhs: Tensor, rhs: Scalar) -> (
+    value: Tensor, pullback: (Tensor) -> Tensor
+  ) {
+    return (lhs * rhs, { v in v * rhs })
+  }
+
+  @inlinable
+  @derivative(of: *, wrt: rhs)
+  static func _vjpMultiply(lhs: Scalar, rhs: Tensor) -> (
+    value: Tensor, pullback: (Tensor) -> Tensor
+  ) {
+    return (lhs * rhs, { v in v * lhs })
+  }
+
+  @inlinable
+  @derivative(of: /, wrt: lhs)
+  static func _vjpDivide(lhs: Tensor, rhs: Scalar) -> (
+    value: Tensor, pullback: (Tensor) -> Tensor
+  ) {
+    return (lhs / rhs, { v in v / rhs })
+  }
+
+  @inlinable
+  @derivative(of: /, wrt: rhs)
+  static func _vjpDivide(lhs: Scalar, rhs: Tensor) -> (
+    value: Tensor, pullback: (Tensor) -> Tensor
+  ) {
+    return (lhs / rhs, { v in v * -lhs / rhs.squared() })
+  }
+}
+
 extension Tensor where Scalar == Bool {
   /// Returns `!self` element-wise.
   @inlinable
