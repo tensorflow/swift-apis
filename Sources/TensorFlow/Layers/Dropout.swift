@@ -18,7 +18,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   @differentiable(wrt: self where Scalar: Differentiable)
   fileprivate func _droppingOut(probability: Double) -> Tensor {
     let noise = Tensor(randomUniform: shape, on: device)
-    let keepMask = noise .>= Scalar(probability)
+    let keepMask = noise .>= Tensor(Scalar(probability), on: device)
     let keepProbability = Scalar(1.0 - probability)
     return self * Tensor(keepMask) / Tensor(keepProbability, on: device)
   }
