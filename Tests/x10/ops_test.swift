@@ -893,6 +893,9 @@ final class TensorTests: XCTestCase {
     // Dilated convolution gradients aren't supported by classic (no XLA) TF.
     let dilation = 1
     for useReducedPrecision in [false, true] {
+      if useReducedPrecision && Device.defaultXLA.kind == .GPU {
+        continue
+      }
       for stride in 1..<4 {
         for padSame in [false, true] {
           var input = Tensor<Float>.rand([batch, inputSize, inputSize, inChannels])

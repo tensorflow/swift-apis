@@ -72,6 +72,8 @@ class FakeComputationClient : public ComputationClient {
 
   std::string GetDefaultDevice() const override;
 
+  DeviceKind GetDefaultDeviceKind() const override;
+
   size_t GetNumDevices() const override;
 
   std::map<std::string, Metric> GetMetrics() const override;

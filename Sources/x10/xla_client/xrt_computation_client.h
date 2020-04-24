@@ -184,6 +184,8 @@ class XrtComputationClient : public ComputationClient {
 
   std::string GetDefaultDevice() const override;
 
+  DeviceKind GetDefaultDeviceKind() const override;
+
   size_t GetNumDevices() const override;
 
   std::vector<std::string> GetLocalDevices() const override;
