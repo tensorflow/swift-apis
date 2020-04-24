@@ -54,12 +54,11 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   /// - Precondition: probability must be a value between 0 and 1 (inclusive). 
   public init(probability: Double) {
     precondition(
-      
       0...1 ~= probability,
       "Probability must be a value between 0 and 1 (inclusive) but is \(probability)")
     self.probability = probability
   }
-  
+
   /// Returns the output obtained from applying the layer to the given input.
   ///
   /// - Parameter input: The input to the layer.
