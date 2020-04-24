@@ -130,6 +130,10 @@ class XLATensor {
                                        const xla::Shape& shape,
                                        const Device& device);
 
+  static ir::Value GetRngSeed(const Device& device);
+
+  static void SetRngSeed(const Device* device, xla::uint64 seed);
+
   // Dispatches a comparison operator, setting the logical type of the result
   // appropriately.
   static XLATensor DispatchComparisonOp(c10::Symbol kind,
@@ -646,6 +650,13 @@ class XLATensor {
   static XLATensor hardshrink_backward(const XLATensor& grad_out,
                                        const XLATensor& input,
                                        at::Scalar lambda);
+
+  static XLATensor hardsigmoid(const XLATensor& input);
+
+  static void hardsigmoid_(XLATensor& input);
+
+  static XLATensor hardsigmoid_backward(const XLATensor& grad_output,
+                                        const XLATensor& input);
 
   static XLATensor hardtanh_backward(const XLATensor& grad_output,
                                      const XLATensor& input, at::Scalar min_val,
@@ -1452,8 +1463,6 @@ class XLATensor {
       const SyncTensorsConfig& config);
 
   static xla::int64 GetNextTensorId();
-
-  static xla::uint64 GenRngSeed();
 
   std::shared_ptr<Data> data_;
 };

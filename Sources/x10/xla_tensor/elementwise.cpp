@@ -81,15 +81,32 @@ xla::XlaOp BuildRelu(xla::XlaOp input) {
 
 xla::XlaOp BuildHardshrink(xla::XlaOp input, at::Scalar lambda) {
   const xla::Shape& shape = XlaHelpers::ShapeOfXlaOp(input);
-  return xla::Select(Between(input, -lambda, lambda),
-                     XlaHelpers::ScalarBroadcast(0, shape, input.builder()),
-                     input);
+  xla::XlaOp zero = xla::Zero(input.builder(), shape.element_type());
+  return xla::Select(Between(input, -lambda, lambda), zero, input);
+}
+
+xla::XlaOp BuildHardSigmoid(xla::XlaOp input) {
+  const xla::Shape& shape = XlaHelpers::ShapeOfXlaOp(input);
+  xla::XlaOp zero = xla::Zero(input.builder(), shape.element_type());
+  xla::XlaOp three = XlaHelpers::ScalarValue<float>(3.0, shape.element_type(),
+                                                    input.builder());
+  xla::XlaOp six = XlaHelpers::ScalarValue<float>(6.0, shape.element_type(),
+                                                  input.builder());
+  return xla::Min(xla::Max(input + three, zero), six) / six;
+}
+
+xla::XlaOp BuildHardSigmoidBackward(xla::XlaOp grad_output, xla::XlaOp input) {
+  const xla::Shape& shape = XlaHelpers::ShapeOfXlaOp(input);
+  xla::XlaOp six = XlaHelpers::ScalarValue<float>(6.0, shape.element_type(),
+                                                  input.builder());
+  xla::XlaOp zero = xla::Zero(input.builder(), shape.element_type());
+  return xla::Select(Between(input, -3.0, 3.0), grad_output / six, zero);
 }
 
 xla::XlaOp BuildSoftshrink(xla::XlaOp input, at::Scalar lambda) {
   xla::XlaBuilder* builder = input.builder();
   const xla::Shape& shape = XlaHelpers::ShapeOfXlaOp(input);
-  xla::XlaOp zero = XlaHelpers::ScalarBroadcast(0, shape, builder);
+  xla::XlaOp zero = xla::Zero(input.builder(), shape.element_type());
   xla::XlaOp xla_lambd =
       XlaHelpers::ScalarBroadcast(lambda.to<double>(), shape, builder);
   xla::XlaOp le_lambda_branch =
@@ -101,17 +118,14 @@ xla::XlaOp BuildSoftshrink(xla::XlaOp input, at::Scalar lambda) {
 xla::XlaOp BuildShrinkBackward(xla::XlaOp grad_output, xla::XlaOp input,
                                at::Scalar lambda) {
   const xla::Shape& shape = XlaHelpers::ShapeOfXlaOp(input);
-  return xla::Select(Between(input, -lambda, lambda),
-                     XlaHelpers::ScalarBroadcast(0, shape, input.builder()),
-                     grad_output);
+  xla::XlaOp zero = xla::Zero(input.builder(), shape.element_type());
+  return xla::Select(Between(input, -lambda, lambda), zero, grad_output);
 }
 
 xla::XlaOp BuildHardtanhBackward(xla::XlaOp grad_output, xla::XlaOp input,
                                  at::Scalar min_val, at::Scalar max_val) {
   const xla::Shape& shape = XlaHelpers::ShapeOfXlaOp(grad_output);
-  xla::XlaOp zero =
-      xla::Broadcast(xla::Zero(grad_output.builder(), shape.element_type()),
-                     shape.dimensions());
+  xla::XlaOp zero = xla::Zero(input.builder(), shape.element_type());
   return xla::Select(Between(input, min_val, max_val), grad_output, zero);
 }
 

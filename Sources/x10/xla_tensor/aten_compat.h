@@ -383,6 +383,8 @@
   _(aten, hann_window)                                      \
   _(aten, hardshrink)                                       \
   _(aten, hardshrink_backward)                              \
+  _(aten, hardsigmoid)                                      \
+  _(aten, hardsigmoid_backward)                             \
   _(aten, hardtanh)                                         \
   _(aten, hardtanh_backward)                                \
   _(aten, hardtanh_forward)                                 \
@@ -822,6 +824,7 @@ enum SymbolKind : uint32_t {
 namespace at {
 
 using BFloat16 = int16_t;
+using Half = uint16_t;
 
 #define LIST_SCALAR_TYPES(_)     \
   _(Bool, Bool, bool)            \
@@ -925,6 +928,10 @@ inline ScalarType GetScalarType<int8_t>() {
 }
 template <>
 inline ScalarType GetScalarType<int16_t>() {
+  return ScalarType::Short;
+}
+template <>
+inline ScalarType GetScalarType<uint16_t>() {
   return ScalarType::Short;
 }
 template <>

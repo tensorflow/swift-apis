@@ -22,6 +22,7 @@
 #include "tensorflow/compiler/tf2xla/xla_tensor/convert_ops.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/data_ops.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/helpers.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/random.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/tensor_util.h"
 #include "tensorflow/compiler/xla/client/lib/arithmetic.h"
 #include "tensorflow/compiler/xla/client/lib/comparators.h"
@@ -390,12 +391,12 @@ xla::XlaOp CreateMatMul(xla::XlaOp lhs, xla::XlaOp rhs) {
   if ((lhs_shape.rank() == 1 && rhs_shape.rank() == 1) ||
       (lhs_shape.rank() == 2 && rhs_shape.rank() == 2) ||
       (lhs_shape.rank() == 2 && rhs_shape.rank() == 1)) {
-    return xla::Dot(lhs, rhs);
+    return BuildDot(lhs, rhs);
   }
   if (lhs_shape.rank() == 1 && rhs_shape.rank() == 2) {
     xla::XlaOp reshaped_lhs =
         XlaHelpers::DynamicReshape(lhs, {1, lhs_shape.dimensions(0)});
-    return XlaHelpers::DynamicReshape(xla::Dot(reshaped_lhs, rhs),
+    return XlaHelpers::DynamicReshape(BuildDot(reshaped_lhs, rhs),
                                       {rhs_shape.dimensions(1)});
   }
   if (lhs_shape.rank() >= 1 && rhs_shape.rank() >= 1 &&
@@ -435,9 +436,7 @@ xla::XlaOp BuildGer(xla::XlaOp lhs, xla::XlaOp rhs) {
 }
 
 xla::XlaOp BuildMatMul(xla::XlaOp lhs, xla::XlaOp rhs, xla::XlaOp bias) {
-  xla::PrecisionConfig precision_config =
-      XlaHelpers::BuildPrecisionConfig(XlaHelpers::mat_mul_precision());
-  xla::XlaOp dot = xla::Dot(lhs, rhs, &precision_config);
+  xla::XlaOp dot = BuildDot(lhs, rhs);
   const xla::Shape& dot_shape = XlaHelpers::ShapeOfXlaOp(dot);
   const xla::Shape& bias_shape = XlaHelpers::ShapeOfXlaOp(bias);
   if (bias_shape.dimensions() != dot_shape.dimensions()) {
@@ -452,22 +451,22 @@ xla::XlaOp BuildDot(xla::XlaOp lhs, xla::XlaOp rhs) {
   return xla::Dot(lhs, rhs, &precision_config);
 }
 
-xla::XlaOp BuildBernoulli(xla::XlaOp probability, const xla::Shape& shape) {
+xla::XlaOp BuildBernoulli(xla::XlaOp probability, xla::XlaOp seed,
+                          xla::PrimitiveType type) {
   const xla::Shape& probability_shape = XlaHelpers::ShapeOfXlaOp(probability);
   xla::XlaOp zero =
       xla::Zero(probability.builder(), probability_shape.element_type());
   xla::XlaOp one =
       xla::One(probability.builder(), probability_shape.element_type());
-  xla::XlaOp noise = xla::RngUniform(zero, one, probability_shape);
-  return xla::ConvertElementType(xla::Lt(noise, probability),
-                                 shape.element_type());
+  xla::XlaOp noise = RngUniform(seed, probability_shape, zero, one);
+  return xla::ConvertElementType(xla::Lt(noise, probability), type);
 }
 
-xla::XlaOp BuildDropout(xla::XlaOp input, float probability) {
+xla::XlaOp BuildDropout(xla::XlaOp input, float probability, xla::XlaOp seed) {
   const xla::Shape& shape = XlaHelpers::ShapeOfXlaOp(input);
   xla::XlaOp prob =
       XlaHelpers::ScalarBroadcast<float>(probability, shape, input.builder());
-  xla::XlaOp mask = BuildBernoulli(prob, shape);
+  xla::XlaOp mask = BuildBernoulli(prob, seed, shape.element_type());
   if (probability > 0.0f) {
     mask = mask / prob;
   }
