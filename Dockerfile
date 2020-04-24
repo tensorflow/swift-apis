@@ -76,7 +76,7 @@ RUN cmake                                                                       
       -S /swift-apis
 RUN cmake --build /BinaryCache/tensorflow-swift-apis --verbose
 RUN cmake --build /BinaryCache/tensorflow-swift-apis --target install
-RUN XRT_WORKERS='localservice:0;grpc://localhost:40935' cmake --build /BinaryCache/tensorflow-swift-apis --target test
+RUN cmake --build /BinaryCache/tensorflow-swift-apis --target test
 
 WORKDIR /
 RUN git clone https://github.com/tensorflow/swift-models.git
