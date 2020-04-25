@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#if os(Windows)
+import func MSVCRT.sqrt
+#endif
+
 extension Tensor where Scalar: TensorFlowFloatingPoint {
   /// Computes dropout given a probability.
   // TODO: Remove the underscore once `droppingOut(probability:)` has been removed.
