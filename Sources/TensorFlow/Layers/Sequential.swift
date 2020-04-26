@@ -201,8 +201,7 @@ public struct LayerBuilder {
     -> Sequential<
       L1,
       Sequential<
-        L2,
-        Sequential<L3, Sequential<L4, Sequential<L5, Sequential<L6, Sequential<L7, L8>>>>>
+        L2, Sequential<L3, Sequential<L4, Sequential<L5, Sequential<L6, Sequential<L7, L8>>>>>
       >
     >
   where
@@ -224,8 +223,7 @@ public struct LayerBuilder {
     Sequential(
       l1,
       Sequential(
-        l2,
-        Sequential(l3, Sequential(l4, Sequential(l5, Sequential(l6, Sequential(l7, l8)))))))
+        l2, Sequential(l3, Sequential(l4, Sequential(l5, Sequential(l6, Sequential(l7, l8)))))))
   }
 
   public static func buildBlock<
@@ -244,10 +242,7 @@ public struct LayerBuilder {
       Sequential<
         L2,
         Sequential<
-          L3,
-          Sequential<
-            L4, Sequential<L5, Sequential<L6, Sequential<L7, Sequential<L8, L9>>>>
-          >
+          L3, Sequential<L4, Sequential<L5, Sequential<L6, Sequential<L7, Sequential<L8, L9>>>>>
         >
       >
     >
@@ -274,9 +269,7 @@ public struct LayerBuilder {
       Sequential(
         l2,
         Sequential(
-          l3,
-          Sequential(
-            l4, Sequential(l5, Sequential(l6, Sequential(l7, Sequential(l8, l9))))))))
+          l3, Sequential(l4, Sequential(l5, Sequential(l6, Sequential(l7, Sequential(l8, l9))))))))
   }
 
   public static func buildBlock<
@@ -301,10 +294,7 @@ public struct LayerBuilder {
         Sequential<
           L3,
           Sequential<
-            L4,
-            Sequential<
-              L5, Sequential<L6, Sequential<L7, Sequential<L8, Sequential<L9, L10>>>>
-            >
+            L4, Sequential<L5, Sequential<L6, Sequential<L7, Sequential<L8, Sequential<L9, L10>>>>>
           >
         >
       >
@@ -336,10 +326,8 @@ public struct LayerBuilder {
         Sequential(
           l3,
           Sequential(
-            l4,
-            Sequential(
-              l5, Sequential(l6, Sequential(l7, Sequential(l8, Sequential(l9, l10)))))
-          ))))
+            l4, Sequential(l5, Sequential(l6, Sequential(l7, Sequential(l8, Sequential(l9, l10))))))
+        )))
   }
 
 }
