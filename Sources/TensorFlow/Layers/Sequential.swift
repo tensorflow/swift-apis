@@ -73,6 +73,68 @@ extension Sequential: Layer where Layer1: Layer {
   }
 }
 
+/// A layer that sequentially composes 3 layers.
+public typealias Sequential3<L1: Module, L2: Layer, L3: Layer> = Sequential<L1, Sequential<L2, L3>>
+
+/// A layer that sequentially composes 4 layers.
+public typealias Sequential4<L1: Module, L2: Layer, L3: Layer, L4: Layer> = Sequential<
+  L1, Sequential<L2, Sequential<L3, L4>>
+>
+
+/// A layer that sequentially composes 5 layers.
+public typealias Sequential5<L1: Module, L2: Layer, L3: Layer, L4: Layer, L5: Layer> = Sequential<
+  L1, Sequential<L2, Sequential<L3, Sequential<L4, L5>>>
+>
+
+/// A layer that sequentially composes 6 layers.
+public typealias Sequential6<L1: Module, L2: Layer, L3: Layer, L4: Layer, L5: Layer, L6: Layer> =
+  Sequential<L1, Sequential<L2, Sequential<L3, Sequential<L4, Sequential<L5, L6>>>>>
+
+/// A layer that sequentially composes 7 layers.
+public typealias Sequential7<
+  L1: Module, L2: Layer, L3: Layer, L4: Layer, L5: Layer, L6: Layer, L7: Layer
+> = Sequential<
+  L1, Sequential<L2, Sequential<L3, Sequential<L4, Sequential<L5, Sequential<L6, L7>>>>>
+>
+
+/// A layer that sequentially composes 8 layers.
+public typealias Sequential8<
+  L1: Module, L2: Layer, L3: Layer, L4: Layer, L5: Layer, L6: Layer, L7: Layer, L8: Layer
+> = Sequential<
+  L1,
+  Sequential<L2, Sequential<L3, Sequential<L4, Sequential<L5, Sequential<L6, Sequential<L7, L8>>>>>>
+>
+
+/// A layer that sequentially composes 9 layers.
+public typealias Sequential9<
+  L1: Module, L2: Layer, L3: Layer, L4: Layer, L5: Layer, L6: Layer, L7: Layer, L8: Layer, L9: Layer
+> = Sequential<
+  L1,
+  Sequential<
+    L2,
+    Sequential<
+      L3, Sequential<L4, Sequential<L5, Sequential<L6, Sequential<L7, Sequential<L8, L9>>>>>
+    >
+  >
+>
+
+/// A layer that sequentially composes 10 layers.
+public typealias Sequential10<
+  L1: Module, L2: Layer, L3: Layer, L4: Layer, L5: Layer, L6: Layer, L7: Layer, L8: Layer,
+  L9: Layer, L10: Layer
+> = Sequential<
+  L1,
+  Sequential<
+    L2,
+    Sequential<
+      L3,
+      Sequential<
+        L4, Sequential<L5, Sequential<L6, Sequential<L7, Sequential<L8, Sequential<L9, L10>>>>>
+      >
+    >
+  >
+>
+
 @_functionBuilder
 public struct LayerBuilder {
   public static func buildBlock<L1: Module, L2: Layer>(_ l1: L1, _ l2: L2) -> Sequential<L1, L2>
