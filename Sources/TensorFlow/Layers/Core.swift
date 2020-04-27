@@ -36,7 +36,7 @@ public struct Flatten<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
 @frozen
 public struct Reshape<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   /// The target shape.
-  @noDerivative public let shape: Tensor<Int32>
+  @noDerivative public var shape: Tensor<Int32>
 
   // TF-331 workaround:
   @usableFromInline

@@ -40,10 +40,10 @@ public enum XLAScalarWrapper {
   case i(Int64)
   var xlaScalar: XLAScalar {
     switch self {
-      case .d(let v):
-        return XLAScalar(v)
-      case .i(let v):
-        return XLAScalar(v)
+    case .d(let v):
+      return XLAScalar(v)
+    case .i(let v):
+      return XLAScalar(v)
     }
   }
 }
@@ -57,11 +57,11 @@ public protocol XLAScalarType {
 extension XLAScalarType {
   var xlaScalar: XLAScalar { xlaScalarWrapper.xlaScalar }
   static var xlaTensorScalarType: XLATensorScalarType {
-#if os(Windows)
-    return XLATensorScalarType(rawValue: Int32(xlaTensorScalarTypeRawValue))
-#else
-    return XLATensorScalarType(rawValue: UInt32(xlaTensorScalarTypeRawValue))
-#endif
+    #if os(Windows)
+      return XLATensorScalarType(rawValue: Int32(xlaTensorScalarTypeRawValue))
+    #else
+      return XLATensorScalarType(rawValue: UInt32(xlaTensorScalarTypeRawValue))
+    #endif
   }
 }
 

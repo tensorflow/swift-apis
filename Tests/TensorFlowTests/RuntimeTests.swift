@@ -26,6 +26,6 @@ final class RuntimeTests: XCTestCase {
 
 extension RuntimeTests {
   static var allTests = [
-    ("testDeviceNames", testDeviceNames),
+    ("testDeviceNames", testDeviceNames)
   ]
 }

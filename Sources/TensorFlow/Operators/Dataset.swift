@@ -31,7 +31,7 @@
 @available(*, deprecated, message: "Graph-level tracing will be removed in S4TF v0.10")
 @usableFromInline
 func _tensorSeeds(_ seed: Tensor<Int64>) -> (Tensor<Int64>, Tensor<Int64>) {
-  return (Tensor(_defaultGraphSeed), seed)
+  return (Tensor(_defaultGraphSeed, on: .defaultTFEager), seed)
 }
 
 //===------------------------------------------------------------------------------------------===//
@@ -41,9 +41,13 @@ func _tensorSeeds(_ seed: Tensor<Int64>) -> (Tensor<Int64>, Tensor<Int64>) {
 /// Represents a potentially large set of elements.
 ///
 /// A `Dataset` can be used to represent an input pipeline as a collection of element tensors.
-@available(*, deprecated, message: """
+@available(
+  *, deprecated,
+  message:
+    """
   Datasets will be removed in S4TF v0.10. Please use the new Batches API instead.
-  """)
+  """
+)
 @frozen
 public struct Dataset<Element: TensorGroup> {
   public let _handle: VariantHandle
@@ -58,7 +62,7 @@ public struct Dataset<Element: TensorGroup> {
 extension Dataset {
   @inlinable
   public init(randomSeed: Int64) {
-    let (seed1, seed2) = _tensorSeeds(Tensor(randomSeed))
+    let (seed1, seed2) = _tensorSeeds(Tensor(randomSeed, on: .defaultTFEager))
     self.init(
       _handle: _Raw.experimentalRandomDataset(
         seed: seed1,
@@ -106,7 +110,7 @@ extension Dataset {
     return Dataset<ResultElement>(
       _handle: _Raw.mapDataset(
         inputDataset: _handle,
-        otherArguments: Tensor<Int32>(0),
+        otherArguments: Tensor<Int32>(0, on: .defaultTFEager),
         f: transform,
         outputTypes: ResultElement._typeList,
         outputShapes: ResultElement._unknownShapeList,
@@ -122,8 +126,8 @@ extension Dataset {
     return Dataset<ResultElement>(
       _handle: _Raw.parallelMapDataset(
         inputDataset: _handle,
-        otherArguments: Tensor<Int32>(0),
-        numParallelCalls: Tensor<Int32>(Int32(parallelCallCount)),
+        otherArguments: Tensor<Int32>(0, on: .defaultTFEager),
+        numParallelCalls: Tensor<Int32>(Int32(parallelCallCount), on: .defaultTFEager),
         f: transform,
         outputTypes: ResultElement._typeList,
         outputShapes: ResultElement._unknownShapeList,
@@ -137,7 +141,7 @@ extension Dataset {
     return Dataset(
       _handle: _Raw.filterDataset(
         inputDataset: _handle,
-        otherArguments: Tensor<Int32>(0),
+        otherArguments: Tensor<Int32>(0, on: .defaultTFEager),
         predicate: isIncluded,
         outputTypes: Element._typeList,
         outputShapes: Element._unknownShapeList))
@@ -151,7 +155,7 @@ extension Dataset {
     return Dataset(
       _handle: _Raw.prefetchDataset(
         inputDataset: _handle,
-        bufferSize: Tensor(Int64(count)),
+        bufferSize: Tensor(Int64(count), on: .defaultTFEager),
         outputTypes: Element._typeList,
         outputShapes: Element._unknownShapeList))
   }
@@ -162,11 +166,11 @@ extension Dataset {
     randomSeed: Int64,
     reshuffleForEachIterator: Bool = true
   ) -> Dataset {
-    let (seed1, seed2) = _tensorSeeds(Tensor(randomSeed))
+    let (seed1, seed2) = _tensorSeeds(Tensor(randomSeed, on: .defaultTFEager))
     return Dataset(
       _handle: _Raw.shuffleDataset(
         inputDataset: _handle,
-        bufferSize: Tensor(Int64(sampleCount)),
+        bufferSize: Tensor(Int64(sampleCount), on: .defaultTFEager),
         seed: seed1,
         seed2: seed2,
         reshuffleEachIteration: reshuffleForEachIterator,
@@ -179,7 +183,7 @@ extension Dataset {
     return Dataset(
       _handle: _Raw.batchDataset(
         inputDataset: _handle,
-        batchSize: Tensor(Int64(batchSize)),
+        batchSize: Tensor(Int64(batchSize), on: .defaultTFEager),
         outputTypes: Element._typeList,
         outputShapes: Element._unknownShapeList))
   }
@@ -189,7 +193,7 @@ extension Dataset {
     return Dataset(
       _handle: _Raw.repeatDataset(
         inputDataset: _handle,
-        count: Tensor(Int64(count ?? -1)),
+        count: Tensor(Int64(count ?? -1), on: .defaultTFEager),
         outputTypes: Element._typeList,
         outputShapes: Element._unknownShapeList))
   }

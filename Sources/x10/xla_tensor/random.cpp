@@ -21,6 +21,7 @@
 #include "tensorflow/compiler/xla/client/lib/prng.h"
 #include "tensorflow/compiler/xla/xla_client/debug_macros.h"
 #include "tensorflow/compiler/xla/xla_client/sys_util.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/convert_ops.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/helpers.h"
 
 namespace swift_xla {
@@ -40,55 +41,82 @@ xla::BitGeneratorTy GetBitGenerator() {
   XLA_ERROR() << "Unknow random bit generator: " << *bit_generator;
 }
 
+xla::XlaOp MakeSeed(xla::XlaOp seed) {
+  const xla::Shape& rng_shape = XlaHelpers::ShapeOfXlaOp(seed);
+  if (rng_shape.element_type() == xla::PrimitiveType::U64) {
+    return seed;
+  }
+  return xla::ConvertElementType(seed, xla::PrimitiveType::U64);
+}
+
+xla::XlaOp MakeUniformBoundaryValue(xla::XlaOp val) {
+  xla::PrimitiveType element_type = XlaHelpers::TypeOfXlaOp(val);
+  if (element_type == xla::PrimitiveType::BF16) {
+    return xla::ConvertElementType(val, xla::PrimitiveType::F32);
+  } else if (xla::primitive_util::IsComplexType(element_type)) {
+    return xla::Real(val);
+  }
+  return val;
+}
+
+xla::Shape MakeRngShape(const xla::Shape& shape) {
+  xla::PrimitiveType element_type = shape.element_type();
+  xla::Shape rng_shape(shape);
+  if (element_type == xla::PrimitiveType::BF16) {
+    rng_shape.set_element_type(xla::PrimitiveType::F32);
+  } else if (xla::primitive_util::IsComplexType(element_type)) {
+    rng_shape.set_element_type(
+        xla::primitive_util::ComplexComponentType(element_type));
+  }
+  return rng_shape;
+}
+
 }  // namespace
 
 xla::XlaOp RngUniform(xla::XlaOp seed, const xla::Shape& shape,
                       xla::XlaOp minval, xla::XlaOp maxval) {
-  xla::XlaOp initial_state = xla::Zero(seed.builder(), xla::PrimitiveType::U64);
+  xla::XlaOp rng_seed = MakeSeed(seed);
+  xla::Shape rng_shape = MakeRngShape(shape);
+  xla::XlaOp rng_minval = MakeUniformBoundaryValue(minval);
+  xla::XlaOp rng_maxval = MakeUniformBoundaryValue(maxval);
+  xla::XlaOp initial_state =
+      xla::Zero(rng_seed.builder(), xla::PrimitiveType::U64);
   switch (shape.element_type()) {
     case xla::PrimitiveType::BF16: {
-      xla::Shape f32_shape(shape);
-      f32_shape.set_element_type(xla::PrimitiveType::F32);
-      xla::XlaOp f32_minval =
-          xla::ConvertElementType(minval, xla::PrimitiveType::F32);
-      xla::XlaOp f32_maxval =
-          xla::ConvertElementType(maxval, xla::PrimitiveType::F32);
       xla::XlaOp rng = xla::UniformFloatingPointDistribution(
-                           seed, initial_state, GetBitGenerator(), f32_minval,
-                           f32_maxval, f32_shape)
+                           rng_seed, initial_state, GetBitGenerator(),
+                           rng_minval, rng_maxval, rng_shape)
                            .value;
       return xla::ConvertElementType(rng, xla::PrimitiveType::BF16);
     }
     case xla::PrimitiveType::F32:
     case xla::PrimitiveType::F64:
       return xla::UniformFloatingPointDistribution(
-                 seed, initial_state, GetBitGenerator(), minval, maxval, shape)
+                 rng_seed, initial_state, GetBitGenerator(), rng_minval,
+                 rng_maxval, rng_shape)
           .value;
     case xla::PrimitiveType::C64:
     case xla::PrimitiveType::C128: {
       xla::XlaOp k_seed = XlaHelpers::ScalarValue<xla::uint64>(
-          17, XlaHelpers::TypeOfXlaOp(seed), seed.builder());
-      xla::Shape rng_shape(shape);
-      rng_shape.set_element_type(xla::PrimitiveType::F32);
-      xla::XlaOp rng_real =
-          xla::UniformFloatingPointDistribution(
-              seed, initial_state, GetBitGenerator(), minval, maxval, rng_shape)
-              .value;
-      xla::XlaOp rng_imag = xla::UniformFloatingPointDistribution(
-                                seed * k_seed, initial_state, GetBitGenerator(),
-                                minval, maxval, rng_shape)
+          17, XlaHelpers::TypeOfXlaOp(rng_seed), rng_seed.builder());
+      xla::XlaOp rng_real = xla::UniformFloatingPointDistribution(
+                                rng_seed, initial_state, GetBitGenerator(),
+                                rng_minval, rng_maxval, rng_shape)
                                 .value;
-      xla::XlaOp rng = xla::Complex(rng_real, rng_imag);
-      return shape.element_type() == xla::PrimitiveType::C64
-                 ? rng
-                 : xla::ConvertElementType(rng, xla::PrimitiveType::C128);
+      xla::XlaOp rng_imag =
+          xla::UniformFloatingPointDistribution(
+              rng_seed * k_seed, initial_state, GetBitGenerator(), rng_minval,
+              rng_maxval, rng_shape)
+              .value;
+      return xla::Complex(rng_real, rng_imag);
     }
     case xla::PrimitiveType::S32:
     case xla::PrimitiveType::U32:
     case xla::PrimitiveType::S64:
     case xla::PrimitiveType::U64:
-      return xla::UniformIntDistribution(seed, initial_state, GetBitGenerator(),
-                                         minval, maxval, shape)
+      return xla::UniformIntDistribution(rng_seed, initial_state,
+                                         GetBitGenerator(), rng_minval,
+                                         rng_maxval, rng_shape)
           .value;
     default:
       XLA_ERROR() << "RngUniform not implemented for type "
@@ -99,47 +127,48 @@ xla::XlaOp RngUniform(xla::XlaOp seed, const xla::Shape& shape,
 
 xla::XlaOp RngNormal(xla::XlaOp seed, const xla::Shape& shape, xla::XlaOp mean,
                      xla::XlaOp std) {
-  xla::XlaOp initial_state = xla::Zero(seed.builder(), xla::PrimitiveType::U64);
+  xla::XlaOp rng_seed = MakeSeed(seed);
+  xla::Shape rng_shape = MakeRngShape(shape);
+  xla::XlaOp initial_state =
+      xla::Zero(rng_seed.builder(), xla::PrimitiveType::U64);
   switch (shape.element_type()) {
     case xla::PrimitiveType::BF16: {
-      xla::Shape f32_shape(shape);
-      f32_shape.set_element_type(xla::PrimitiveType::F32);
-      xla::XlaOp f32_mean =
-          xla::ConvertElementType(mean, xla::PrimitiveType::F32);
-      xla::XlaOp f32_std =
-          xla::ConvertElementType(std, xla::PrimitiveType::F32);
-      xla::XlaOp rng = xla::NormalFloatingPointDistribution(
-                           seed, initial_state, GetBitGenerator(), f32_shape)
-                           .value;
+      xla::XlaOp f32_mean = MaybeConvertTo(mean, xla::PrimitiveType::F32);
+      xla::XlaOp f32_std = MaybeConvertTo(std, xla::PrimitiveType::F32);
+      xla::XlaOp rng =
+          xla::NormalFloatingPointDistribution(rng_seed, initial_state,
+                                               GetBitGenerator(), rng_shape)
+              .value;
       return xla::ConvertElementType(f32_mean + rng * f32_std,
                                      xla::PrimitiveType::BF16);
     }
     case xla::PrimitiveType::F32:
     case xla::PrimitiveType::F64: {
-      xla::XlaOp rng = xla::NormalFloatingPointDistribution(
-                           seed, initial_state, GetBitGenerator(), shape)
-                           .value;
+      xla::XlaOp rng =
+          xla::NormalFloatingPointDistribution(rng_seed, initial_state,
+                                               GetBitGenerator(), rng_shape)
+              .value;
       return XlaHelpers::PromotedAdd(mean, XlaHelpers::PromotedMul(rng, std));
     }
     case xla::PrimitiveType::C64:
     case xla::PrimitiveType::C128: {
       xla::XlaOp k_seed = XlaHelpers::ScalarValue<xla::uint64>(
-          17, XlaHelpers::TypeOfXlaOp(seed), seed.builder());
-      xla::Shape rng_shape(shape);
-      rng_shape.set_element_type(xla::PrimitiveType::F32);
+          17, XlaHelpers::TypeOfXlaOp(rng_seed), rng_seed.builder());
       xla::XlaOp rng_real =
-          xla::NormalFloatingPointDistribution(seed, initial_state,
+          xla::NormalFloatingPointDistribution(rng_seed, initial_state,
                                                GetBitGenerator(), rng_shape)
               .value;
       xla::XlaOp rng_imag =
-          xla::NormalFloatingPointDistribution(seed * k_seed, initial_state,
+          xla::NormalFloatingPointDistribution(rng_seed * k_seed, initial_state,
                                                GetBitGenerator(), rng_shape)
               .value;
       xla::XlaOp rng = xla::Complex(rng_real, rng_imag);
-      if (shape.element_type() == xla::PrimitiveType::C128) {
-        rng = xla::ConvertElementType(rng, xla::PrimitiveType::C128);
-      }
-      return XlaHelpers::PromotedAdd(mean, XlaHelpers::PromotedMul(rng, std));
+      // Variance for normal distribution of the real and imaginary values is
+      // half of the input variance.
+      xla::XlaOp sqrtTwo = XlaHelpers::ScalarValue(
+          std::sqrt(2), XlaHelpers::TypeOfXlaOp(std), rng_seed.builder());
+      return XlaHelpers::PromotedAdd(
+          mean, XlaHelpers::PromotedMul(rng, std / sqrtTwo));
     }
     default:
       XLA_ERROR() << "RngNormal not implemented for type "

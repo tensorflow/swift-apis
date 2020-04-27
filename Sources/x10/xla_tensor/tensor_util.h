@@ -21,7 +21,7 @@
 
 #include "absl/types/span.h"
 #include "tensorflow/compiler/xla/xla_client/computation_client.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/device.h"
+#include "tensorflow/compiler/xla/xla_client/device.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/aten_compat.h"
 #include "tensorflow/compiler/xla/literal.h"
 #include "tensorflow/compiler/xla/shape.h"

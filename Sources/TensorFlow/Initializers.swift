@@ -34,7 +34,7 @@ extension Tensor {
   ///   - repeatedValue: The scalar value to repeat.
   ///   - shape: The dimensions of the tensor.
   @inlinable
-  @differentiable( where Scalar: TensorFlowFloatingPoint)
+  @differentiable(where Scalar: TensorFlowFloatingPoint)
   public init(
     repeating repeatedValue: Scalar, shape: TensorShape,
     on device: Device = .default
@@ -48,16 +48,16 @@ extension Tensor {
   /// all dimensions being 1.
   @inlinable
   // @differentiable(where Scalar: TensorFlowFloatingPoint)
-  public init(broadcasting scalar: Scalar, rank: Int) {
-    self = Tensor(scalar).reshaped(to: TensorShape(repeating: 1, count: rank))
+  public init(broadcasting scalar: Scalar, rank: Int, on device: Device = .default) {
+    self = Tensor(scalar, on: device).reshaped(to: TensorShape(repeating: 1, count: rank))
   }
 
   /// Creates a tensor of shape `[4]` from a 4-tuple.
   /// - Note: This is intended for internal use, for example, to initialize a
   ///   tensor attribute from `convolved2D`'s `strides` argument.
   @inlinable
-  internal init(_ scalars: (Scalar, Scalar, Scalar, Scalar)) {
-    self.init([scalars.0, scalars.1, scalars.2, scalars.3])
+  internal init(_ scalars: (Scalar, Scalar, Scalar, Scalar), on device: Device = .default) {
+    self.init([scalars.0, scalars.1, scalars.2, scalars.3], on: device)
   }
 }
 
@@ -91,7 +91,7 @@ extension Tensor where Scalar: Numeric {
 
   /// Perform an element-wise conversion from another `Tensor`.
   @inlinable
-  @differentiable( where Scalar: TensorFlowFloatingPoint, OtherScalar: TensorFlowFloatingPoint)
+  @differentiable(where Scalar: TensorFlowFloatingPoint, OtherScalar: TensorFlowFloatingPoint)
   public init<OtherScalar: Numeric>(_ other: Tensor<OtherScalar>) {
     self = _Raw.cast(other)
   }
@@ -114,7 +114,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
 extension Tensor {
   /// Creates a tensor from an array of tensors (which may themselves be scalars).
   @inlinable
-  @differentiable( where Scalar: TensorFlowFloatingPoint)
+  @differentiable(where Scalar: TensorFlowFloatingPoint)
   public init(_ elements: [Tensor]) {
     self = _Raw.pack(elements)
   }
@@ -148,7 +148,7 @@ extension Tensor {
   ///
   /// - Returns: The stacked tensor.
   @inlinable
-  @differentiable( where Scalar: TensorFlowFloatingPoint)
+  @differentiable(where Scalar: TensorFlowFloatingPoint)
   public init(stacking tensors: [Tensor], alongAxis axis: Int = 0) {
     self = _Raw.pack(tensors, axis: Int64(axis))
   }
@@ -186,7 +186,7 @@ extension Tensor {
   ///
   /// - Returns: The concatenated tensor.
   @inlinable
-  @differentiable( where Scalar: TensorFlowFloatingPoint)
+  @differentiable(where Scalar: TensorFlowFloatingPoint)
   public init(concatenating tensors: [Tensor], alongAxis axis: Int = 0) {
     precondition(tensors.count > 0)
     self = _Raw.concatV2(tensors, axis: Tensor<Int32>(Int32(axis), on: tensors.first!.device))
@@ -245,16 +245,16 @@ extension Tensor where Scalar: Numeric {
   ///
   /// - Parameter shape: Shape of the tensor.
   @inlinable
-  public init(zeros shape: TensorShape) {
-    self.init(repeating: 0, shape: shape)
+  public init(zeros shape: TensorShape, on device: Device = .default) {
+    self.init(repeating: 0, shape: shape, on: device)
   }
 
   /// Creates a tensor with all scalars set to one.
   ///
   /// - Parameter shape: Shape of the tensor.
   @inlinable
-  public init(ones shape: TensorShape) {
-    self.init(repeating: 1, shape: shape)
+  public init(ones shape: TensorShape, on device: Device = .default) {
+    self.init(repeating: 1, shape: shape, on: device)
   }
 
   /// Creates a tensor with all scalars set to zero that has the same shape and type as the provided
@@ -365,9 +365,12 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   ///     sequence.
   ///   - count: The number of values in the resulting sequence. `count` must be positive.
   @inlinable
-  public init(linearSpaceFrom start: Scalar, to end: Scalar, count: Int) {
+  public init(
+    linearSpaceFrom start: Scalar, to end: Scalar, count: Int, on device: Device = .default
+  ) {
     self = _Raw.linSpace(
-      start: Tensor(start), stop: Tensor(end), num: Tensor<Int32>(Int32(count)))
+      start: Tensor(start, on: device), stop: Tensor(end, on: device),
+      num: Tensor<Int32>(Int32(count), on: device))
   }
 
   /// Creates a 1-D tensor representing a sequence from a starting value, up to and
@@ -504,10 +507,11 @@ extension Tensor where Scalar: TensorFlowIndex {
     sampleCount: Int32,
     seed: TensorFlowSeed = Context.local.randomSeed
   ) {
+    let device = randomCategorialLogits.device
     self = _Raw.statelessMultinomial(
       logits: randomCategorialLogits,
-      numSamples: Tensor<Int32>(sampleCount),
-      seed: Tensor<Int32>([seed.graph, seed.op]))
+      numSamples: Tensor<Int32>(sampleCount, on: device),
+      seed: Tensor<Int32>([seed.graph, seed.op], on: device))
   }
 }
 
@@ -552,10 +556,13 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   /// - Parameters:
   ///   - shape: The dimensions of the tensor.
   ///   - seed: The seed value.
-  public init(glorotUniform shape: TensorShape, seed: TensorFlowSeed = Context.local.randomSeed) {
+  public init(
+    glorotUniform shape: TensorShape, seed: TensorFlowSeed = Context.local.randomSeed,
+    on device: Device = .default
+  ) {
     let (fanIn, fanOut) = shape.fans()
-    let limit = Tensor<Scalar>(Scalar.sqrt(6 / Scalar(fanIn + fanOut)))
-    self.init(randomUniform: shape, lowerBound: -limit, upperBound: limit, seed: seed)
+    let limit = Tensor<Scalar>(Scalar.sqrt(6 / Scalar(fanIn + fanOut)), on: device)
+    self.init(randomUniform: shape, lowerBound: -limit, upperBound: limit, seed: seed, on: device)
   }
 
   /// Creates a tensor with the specified shape by performing Glorot (Xavier) normal initialization.
@@ -571,17 +578,20 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   /// - Parameters:
   ///   - shape: The dimensions of the tensor.
   ///   - seed: The seed value.
-  public init(glorotNormal shape: TensorShape, seed: TensorFlowSeed = Context.local.randomSeed) {
+  public init(
+    glorotNormal shape: TensorShape, seed: TensorFlowSeed = Context.local.randomSeed,
+    on device: Device = .default
+  ) {
     let (fanIn, fanOut) = shape.fans()
-    var standardDeviation = Tensor<Scalar>(Scalar.sqrt(2 / Scalar(fanIn + fanOut)))
+    var standardDeviation = Tensor<Scalar>(Scalar.sqrt(2 / Scalar(fanIn + fanOut)), on: device)
     // Standard deviation of truncated standard normal between `-2` and `2` standard deviations.
-    let truncationDeviation = Tensor<Scalar>(0.87962566103423978)
+    let truncationDeviation = Tensor<Scalar>(0.87962566103423978, on: device)
     standardDeviation /= truncationDeviation  // Smooths the tails of the clipped normal.
     self.init(
       randomTruncatedNormal: shape,
-      mean: Tensor<Scalar>(0),
+      mean: Tensor<Scalar>(0, on: device),
       standardDeviation: standardDeviation,
-      seed: seed)
+      seed: seed, on: device)
   }
 }
 
@@ -599,10 +609,13 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   /// - Parameters:
   ///   - shape: The dimensions of the tensor.
   ///   - seed: The seed value.
-  public init(heUniform shape: TensorShape, seed: TensorFlowSeed = Context.local.randomSeed) {
+  public init(
+    heUniform shape: TensorShape, seed: TensorFlowSeed = Context.local.randomSeed,
+    on device: Device = .default
+  ) {
     let (fanIn, _) = shape.fans()
-    let limit = Tensor<Scalar>(Scalar.sqrt(6 / Scalar(fanIn)))
-    self.init(randomUniform: shape, lowerBound: -limit, upperBound: limit, seed: seed)
+    let limit = Tensor<Scalar>(Scalar.sqrt(6 / Scalar(fanIn)), on: device)
+    self.init(randomUniform: shape, lowerBound: -limit, upperBound: limit, seed: seed, on: device)
   }
 
   /// Creates a tensor with the specified shape by performing He (Kaiming) normal initialization.
@@ -618,17 +631,20 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   /// - Parameters:
   ///   - shape: The dimensions of the tensor.
   ///   - seed: The seed value.
-  public init(heNormal shape: TensorShape, seed: TensorFlowSeed = Context.local.randomSeed) {
+  public init(
+    heNormal shape: TensorShape, seed: TensorFlowSeed = Context.local.randomSeed,
+    on device: Device = .default
+  ) {
     let (fanIn, _) = shape.fans()
-    var standardDeviation = Tensor<Scalar>(Scalar.sqrt(2 / Scalar(fanIn)))
+    var standardDeviation = Tensor<Scalar>(Scalar.sqrt(2 / Scalar(fanIn)), on: device)
     // Standard deviation of truncated standard normal between `-2` and `2` standard deviations.
-    let truncationDeviation = Tensor<Scalar>(0.87962566103423978)
+    let truncationDeviation = Tensor<Scalar>(0.87962566103423978, on: device)
     standardDeviation /= truncationDeviation  // Smooths the tails of the clipped normal.
     self.init(
       randomTruncatedNormal: shape,
-      mean: Tensor<Scalar>(0),
+      mean: Tensor<Scalar>(0, on: device),
       standardDeviation: standardDeviation,
-      seed: seed)
+      seed: seed, on: device)
   }
 }
 
@@ -645,10 +661,13 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   /// - Parameters:
   ///   - shape: The dimensions of the tensor.
   ///   - seed: The seed value.
-  public init(leCunUniform shape: TensorShape, seed: TensorFlowSeed = Context.local.randomSeed) {
+  public init(
+    leCunUniform shape: TensorShape, seed: TensorFlowSeed = Context.local.randomSeed,
+    on device: Device = .default
+  ) {
     let (fanIn, _) = shape.fans()
-    let limit = Tensor<Scalar>(Scalar.sqrt(3 / Scalar(fanIn)))
-    self.init(randomUniform: shape, lowerBound: -limit, upperBound: limit, seed: seed)
+    let limit = Tensor<Scalar>(Scalar.sqrt(3 / Scalar(fanIn)), on: device)
+    self.init(randomUniform: shape, lowerBound: -limit, upperBound: limit, seed: seed, on: device)
   }
 
   /// Creates a tensor with the specified shape by performing LeCun normal initialization.
@@ -663,17 +682,20 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   /// - Parameters:
   ///   - shape: The dimensions of the tensor.
   ///   - seed: The seed value.
-  public init(leCunNormal shape: TensorShape, seed: TensorFlowSeed = Context.local.randomSeed) {
+  public init(
+    leCunNormal shape: TensorShape, seed: TensorFlowSeed = Context.local.randomSeed,
+    on device: Device = .default
+  ) {
     let (fanIn, _) = shape.fans()
-    var standardDeviation = Tensor<Scalar>(Scalar.sqrt(1 / Scalar(fanIn)))
+    var standardDeviation = Tensor<Scalar>(Scalar.sqrt(1 / Scalar(fanIn)), on: device)
     // Standard deviation of truncated standard normal between `-2` and `2` standard deviations.
-    let truncationDeviation = Tensor<Scalar>(0.87962566103423978)
+    let truncationDeviation = Tensor<Scalar>(0.87962566103423978, on: device)
     standardDeviation /= truncationDeviation  // Smooths the tails of the clipped normal.
     self.init(
       randomTruncatedNormal: shape,
-      mean: Tensor<Scalar>(0),
+      mean: Tensor<Scalar>(0, on: device),
       standardDeviation: standardDeviation,
-      seed: seed)
+      seed: seed, on: device)
   }
 }
 

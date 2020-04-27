@@ -29,6 +29,7 @@
 #include "tensorflow/compiler/xla/xla_client/cache.h"
 #include "tensorflow/compiler/xla/xla_client/computation_client.h"
 #include "tensorflow/compiler/xla/xla_client/debug_macros.h"
+#include "tensorflow/compiler/xla/xla_client/device.h"
 #include "tensorflow/compiler/xla/xla_client/mesh_service.h"
 #include "tensorflow/compiler/xla/xla_client/metrics.h"
 #include "tensorflow/compiler/xla/xla_client/triggered_task.h"
@@ -183,6 +184,8 @@ class XrtComputationClient : public ComputationClient {
   std::string GetResourceDomain(const std::string& device) const override;
 
   std::string GetDefaultDevice() const override;
+
+  swift_xla::Device GetDefaultDeviceStruct() const override;
 
   size_t GetNumDevices() const override;
 

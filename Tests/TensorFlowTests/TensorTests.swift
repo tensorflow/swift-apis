@@ -128,6 +128,6 @@ final class TensorTests: XCTestCase {
     ("testEquality", testEquality),
     ("testTensorShapeCollectionOperations", testTensorShapeCollectionOperations),
     ("testInitShapeScalars", testInitShapeScalars),
-    ("testInitShapeScalarsDerivative", testInitShapeScalarsDerivative)
+    ("testInitShapeScalarsDerivative", testInitShapeScalarsDerivative),
   ]
 }

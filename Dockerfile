@@ -1,7 +1,7 @@
-FROM gcr.io/swift-tensorflow/base-deps-cuda10.1-cudnn7-ubuntu18.04
+FROM gcr.io/swift-tensorflow/base-deps-cuda10.2-cudnn7-ubuntu18.04
 
 # Allows the caller to specify the toolchain to use.
-ARG swift_tf_url=https://storage.googleapis.com/swift-tensorflow-artifacts/nightlies/latest/swift-tensorflow-DEVELOPMENT-cuda10.1-cudnn7-ubuntu18.04.tar.gz
+ARG swift_tf_url=https://storage.googleapis.com/swift-tensorflow-artifacts/nightlies/latest/swift-tensorflow-DEVELOPMENT-notf-ubuntu18.04.tar.gz
 
 # Copy the kernel into the container
 COPY . /swift-apis
@@ -12,7 +12,7 @@ RUN if test -d /swift-apis/google-cloud-sdk; then \
   echo "build --remote_cache=grpcs://remotebuildexecution.googleapis.com \
     --auth_enabled=true \
     --remote_instance_name=projects/tensorflow-swift/instances/s4tf-remote-bazel-caching \
-    --host_platform_remote_properties_override='properties:{name:\"cache-silo-key\" value:\"s4tf-basic-cache-key\"}'" >> ~/.bazelrc; \
+    --host_platform_remote_properties_override='properties:{name:\"cache-silo-key\" value:\"s4tf-basic-cache-key-cuda-10.2\"}'" >> ~/.bazelrc; \
   cat ~/.bazelrc; \
 fi
 
@@ -47,21 +47,6 @@ RUN /swift-tensorflow-toolchain/usr/bin/swift --version
 
 WORKDIR /swift-apis
 
-# Clean out existing artifacts.
-# TODO: move into bash scripts...
-RUN rm -f /swift-tensorflow-toolchain/usr/lib/swift/linux/x86_64/TensorFlow.swiftinterface
-RUN rm -f /swift-tensorflow-toolchain/usr/lib/swift/linux/x86_64/TensorFlow.swiftdoc
-RUN rm -f /swift-tensorflow-toolchain/usr/lib/swift/linux/x86_64/TensorFlow.swiftmodule
-RUN rm -f /swift-tensorflow-toolchain/usr/lib/swift/linux/libswiftTensorFlow.so
-
-# Benchmark compile times
-RUN python3 Utilities/benchmark_compile.py /swift-tensorflow-toolchain/usr/bin/swift benchmark_results.xml
-
-# Run SwiftPM tests
-RUN /swift-tensorflow-toolchain/usr/bin/swift test
-
-RUN rm -f /swift-tensorflow-toolchain/usr/lib/swift/tensorflow/module.modulemap
-
 # Perform CMake based build
 ENV TF_NEED_CUDA=1
 ENV CTEST_OUTPUT_ON_FAILURE=1
@@ -76,7 +61,7 @@ RUN cmake                                                                       
       -S /swift-apis
 RUN cmake --build /BinaryCache/tensorflow-swift-apis --verbose
 RUN cmake --build /BinaryCache/tensorflow-swift-apis --target install
-RUN XRT_WORKERS='localservice:0;grpc://localhost:40935' cmake --build /BinaryCache/tensorflow-swift-apis --target test
+RUN cmake --build /BinaryCache/tensorflow-swift-apis --target test
 
 WORKDIR /
 RUN git clone https://github.com/tensorflow/swift-models.git
@@ -94,4 +79,17 @@ RUN /swift-tensorflow-toolchain/usr/bin/swift build
 RUN /swift-tensorflow-toolchain/usr/bin/swift build -c release
 
 WORKDIR /open_spiel
+RUN /swift-tensorflow-toolchain/usr/bin/swift test
+
+WORKDIR /swift-apis
+# TODO: move into bash scripts...
+RUN rm -f /swift-tensorflow-toolchain/usr/lib/swift/linux/x86_64/TensorFlow.swiftinterface
+RUN rm -f /swift-tensorflow-toolchain/usr/lib/swift/linux/x86_64/TensorFlow.swiftdoc
+RUN rm -f /swift-tensorflow-toolchain/usr/lib/swift/linux/x86_64/TensorFlow.swiftmodule
+RUN rm -f /swift-tensorflow-toolchain/usr/lib/swift/linux/libswiftTensorFlow.so
+
+# Benchmark compile times
+RUN python3 Utilities/benchmark_compile.py /swift-tensorflow-toolchain/usr/bin/swift benchmark_results.xml
+
+# Run SwiftPM tests
 RUN /swift-tensorflow-toolchain/usr/bin/swift test

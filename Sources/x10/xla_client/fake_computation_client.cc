@@ -16,7 +16,6 @@
 
 #include <tuple>
 
-#include "platforms/deepsea/executor/deepsea_platform.h"
 #include "absl/strings/str_cat.h"
 #include "tensorflow/compiler/xla/xla_client/debug_macros.h"
 #include "tensorflow/compiler/xla/xla_client/multi_wait.h"
@@ -140,6 +139,10 @@ std::string FakeComputationClient::GetResourceDomain(
 
 std::string FakeComputationClient::GetDefaultDevice() const {
   return default_device_;
+}
+
+swift_xla::Device FakeComputationClient::GetDefaultDeviceStruct() const {
+  return swift_xla::Device(swift_xla::DeviceType::CPU, 0);
 }
 
 size_t FakeComputationClient::GetNumDevices() const {

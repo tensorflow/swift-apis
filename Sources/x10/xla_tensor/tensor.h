@@ -22,7 +22,6 @@
 #include <unordered_map>
 
 #include "tensorflow/compiler/tf2xla/xla_tensor/cross_replica_reduces.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/device.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ir.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ir_util.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/lowering_context.h"
@@ -34,6 +33,7 @@
 #include "tensorflow/compiler/xla/xla_client/async_task.h"
 #include "tensorflow/compiler/xla/xla_client/cache.h"
 #include "tensorflow/compiler/xla/xla_client/computation_client.h"
+#include "tensorflow/compiler/xla/xla_client/device.h"
 #include "tensorflow/compiler/xla/xla_client/multi_wait.h"
 #include "tensorflow/compiler/xla/xla_client/util.h"
 #include "tensorflow/core/util/mirror_pad_mode.h"
@@ -129,6 +129,10 @@ class XLATensor {
   static ir::Value GetIrValueForScalar(at::Scalar value,
                                        const xla::Shape& shape,
                                        const Device& device);
+
+  static ir::Value GetRngSeed(const Device& device);
+
+  static void SetRngSeed(const Device* device, xla::uint64 seed);
 
   // Dispatches a comparison operator, setting the logical type of the result
   // appropriately.
@@ -648,6 +652,13 @@ class XLATensor {
   static XLATensor hardshrink_backward(const XLATensor& grad_out,
                                        const XLATensor& input,
                                        at::Scalar lambda);
+
+  static XLATensor hardsigmoid(const XLATensor& input);
+
+  static void hardsigmoid_(XLATensor& input);
+
+  static XLATensor hardsigmoid_backward(const XLATensor& grad_output,
+                                        const XLATensor& input);
 
   static XLATensor hardtanh_backward(const XLATensor& grad_output,
                                      const XLATensor& input, at::Scalar min_val,
@@ -1454,8 +1465,6 @@ class XLATensor {
       const SyncTensorsConfig& config);
 
   static xla::int64 GetNextTensorId();
-
-  static xla::uint64 GenRngSeed();
 
   std::shared_ptr<Data> data_;
 };

@@ -47,15 +47,15 @@ class _DeviceThreadLocalState {
 // Evaluate the pullback on a one with the same device and precision as y.
 @usableFromInline
 func pullbackOfOneLikeY<T: TensorFlowFloatingPoint, R>(
-    y: Tensor<T>,
-    pullback: (Tensor<T>) -> R
+  y: Tensor<T>,
+  pullback: (Tensor<T>) -> R
 ) -> R {
-    let adDevice = y.device
-    _DeviceThreadLocalState.local.deviceStack.append(adDevice)
-    let savedPrecision = _DeviceThreadLocalState.local.isReducedPrecision
-    _DeviceThreadLocalState.local.isReducedPrecision = y.isReducedPrecision
-    let result = pullback(Tensor<T>(1, deviceAndPrecisionLike: y))
-    _DeviceThreadLocalState.local.isReducedPrecision = savedPrecision
-    precondition(_DeviceThreadLocalState.local.deviceStack.popLast() != nil)
-    return result
+  let adDevice = y.device
+  _DeviceThreadLocalState.local.deviceStack.append(adDevice)
+  let savedPrecision = _DeviceThreadLocalState.local.isReducedPrecision
+  _DeviceThreadLocalState.local.isReducedPrecision = y.isReducedPrecision
+  let result = pullback(Tensor<T>(1, deviceAndPrecisionLike: y))
+  _DeviceThreadLocalState.local.isReducedPrecision = savedPrecision
+  precondition(_DeviceThreadLocalState.local.deviceStack.popLast() != nil)
+  return result
 }

@@ -139,7 +139,9 @@ public struct Device {
 
   /// The default XLA device.
   public static var defaultXLA: Device {
-    return Device(kind: .CPU, ordinal: 0, backend: .XLA)
+    let defaultDevice = getDefaultDevice()
+    return Device(
+      kind: defaultDevice.hw_type.kind, ordinal: Int(defaultDevice.ordinal), backend: .XLA)
   }
 
   /// The current TF Eager device.

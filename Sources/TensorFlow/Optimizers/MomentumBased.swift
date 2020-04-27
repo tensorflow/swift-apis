@@ -129,7 +129,8 @@ where
     epsilon: Float = 1e-8
   ) {
     precondition(learningRate >= 0, "Learning rate must be non-negative")
-    precondition(initialAccumulatorValue >= 0, "The initial accumulator value must be non-negative.")
+    precondition(
+      initialAccumulatorValue >= 0, "The initial accumulator value must be non-negative.")
 
     self.learningRate = learningRate
     self.epsilon = epsilon

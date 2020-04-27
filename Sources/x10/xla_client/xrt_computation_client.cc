@@ -34,7 +34,9 @@
 #include "tensorflow/cc/ops/const_op.h"
 #include "tensorflow/compiler/xla/shape_util.h"
 #include "tensorflow/compiler/xla/util.h"
+#include "tensorflow/core/common_runtime/device_factory.h"
 #include "tensorflow/core/framework/allocator.h"
+#include "tensorflow/core/platform/net.h"
 #include "tensorflow/core/protobuf/cluster.pb.h"
 #include "tensorflow/core/util/device_name_utils.h"
 
@@ -445,6 +447,21 @@ int64 GetMaxTensorsPartitionSize() {
   return max_partition_size;
 }
 
+bool GpuIsAvailable() {
+  std::vector<string> devices;
+  tensorflow::Status s =
+      tensorflow::DeviceFactory::ListAllPhysicalDevices(&devices);
+  XLA_CHECK_OK(s);
+  for (const std::string& device : devices) {
+    std::vector<std::string> device_parts = absl::StrSplit(device, ':');
+    XLA_CHECK_EQ(device_parts.size(), 3) << device;
+    if (device_parts[1] == "GPU") {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 std::unique_ptr<ComputationClient> ComputationClient::Create() {
@@ -452,9 +469,12 @@ std::unique_ptr<ComputationClient> ComputationClient::Create() {
   std::unique_ptr<tensorflow::tpu::TopologyProto> topology_proto;
   if (!ParseEnvBasedTpuClusterConfig(&options) &&
       !ParseMeshConfig(&options, &topology_proto)) {
-    std::string device_spec = sys_util::GetEnvString(
-        "XRT_DEVICE_MAP",
-        "CPU:0;/job:localservice/replica:0/task:0/device:XLA_CPU:0");
+    std::string device = GpuIsAvailable() ? "GPU" : "CPU";
+    std::string default_device_spec = absl::StrFormat(
+        "%s:0;/job:localservice/replica:0/task:0/device:XLA_%s:0", device,
+        device);
+    std::string device_spec =
+        sys_util::GetEnvString("XRT_DEVICE_MAP", default_device_spec);
     for (const auto& device_target : absl::StrSplit(device_spec, '|')) {
       std::vector<std::string> parts = absl::StrSplit(device_target, ';');
       XLA_CHECK_EQ(parts.size(), 2) << device_target;
@@ -463,8 +483,9 @@ std::unique_ptr<ComputationClient> ComputationClient::Create() {
       }
       options.global_device_map.emplace(parts[0], parts[1]);
     }
+    int port = tensorflow::internal::PickUnusedPortOrDie();
     std::string workers_spec = sys_util::GetEnvString(
-        "XRT_WORKERS", "localservice:0;grpc://localhost:0");
+        "XRT_WORKERS", absl::StrCat("localservice:0;grpc://localhost:", port));
     for (const auto& name_target : absl::StrSplit(workers_spec, '|')) {
       std::vector<std::string> parts = absl::StrSplit(name_target, ';');
       XLA_CHECK_EQ(parts.size(), 2) << name_target;
@@ -1960,6 +1981,8 @@ tensorflow::DataType XrtComputationClient::XlaTypeToDataType(
       return tensorflow::DT_DOUBLE;
     case PrimitiveType::BF16:
       return tensorflow::DT_BFLOAT16;
+    case PrimitiveType::F16:
+      return tensorflow::DT_HALF;
     case PrimitiveType::C64:
       return tensorflow::DT_COMPLEX64;
     case PrimitiveType::C128:
@@ -2035,6 +2058,10 @@ void XrtComputationClient::MaybeCreateLocalService(
 
 std::string XrtComputationClient::GetMultiProcessingDevice() {
   return sys_util::GetEnvString("XRT_MULTI_PROCESSING_DEVICE", "");
+}
+
+swift_xla::Device XrtComputationClient::GetDefaultDeviceStruct() const {
+  return *swift_xla::GetDefaultDevice();
 }
 
 }  // namespace xla

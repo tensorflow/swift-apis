@@ -121,7 +121,7 @@ public struct BasicRNNCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell 
 
   /// Returns a zero-valued state with shape compatible with the provided input.
   public func zeroState(for input: Tensor<Scalar>) -> State {
-    State(Tensor(zeros: [input.shape[0], weight.shape[1]]))
+    State(Tensor(zeros: [input.shape[0], weight.shape[1]], on: input.device))
   }
 
   /// Returns the output obtained from applying the layer to the given input.
@@ -219,8 +219,8 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell {
   public func zeroState(for input: Tensor<Scalar>) -> State {
     let hiddenSize = fusedWeight.shape[1] / 4
     return State(
-      cell: Tensor(zeros: [input.shape[0], hiddenSize]),
-      hidden: Tensor(zeros: [input.shape[0], hiddenSize]))
+      cell: Tensor(zeros: [input.shape[0], hiddenSize], on: input.device),
+      hidden: Tensor(zeros: [input.shape[0], hiddenSize], on: input.device))
   }
 
   /// Returns the output obtained from applying the layer to the given input.
@@ -278,7 +278,7 @@ public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell {
   }
 
   public func zeroState(for input: Tensor<Scalar>) -> State {
-    return State(hidden: Tensor(zeros: stateShape))
+    return State(hidden: Tensor(zeros: stateShape, on: input.device))
   }
 
   public typealias TimeStepInput = Tensor<Scalar>
@@ -369,7 +369,7 @@ public struct RecurrentLayer<Cell: RecurrentLayerCell>: Layer {
     return timeStepOutputs
   }
 
-  @differentiable(wrt: (self,inputs,initialState))
+  @differentiable(wrt: (self, inputs, initialState))
   public func call(
     _ inputs: [Cell.TimeStepInput],
     initialState: Cell.State

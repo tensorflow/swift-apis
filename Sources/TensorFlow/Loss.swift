@@ -86,8 +86,8 @@ public func meanSquaredLogarithmicError<Scalar: TensorFlowFloatingPoint>(
   predicted: Tensor<Scalar>,
   expected: Tensor<Scalar>
 ) -> Tensor<Scalar> {
-  let logPredicted = log(max(predicted, Tensor(0)) + 1)
-  let logExpected = log(max(expected, Tensor(0)) + 1)
+  let logPredicted = log(max(predicted, Tensor(0, on: predicted.device)) + 1)
+  let logExpected = log(max(expected, Tensor(0, on: expected.device)) + 1)
   return l2Loss(predicted: logPredicted, expected: logExpected, reduction: _mean)
 }
 
@@ -119,7 +119,8 @@ public func hingeLoss<Scalar: TensorFlowFloatingPoint>(
   expected: Tensor<Scalar>,
   reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = _mean
 ) -> Tensor<Scalar> {
-  reduction(max(Tensor(0), Tensor(1) - expected * predicted))
+  let device = predicted.device
+  return reduction(max(Tensor(0, on: device), Tensor(1, on: device) - expected * predicted))
 }
 
 /// Computes the squared hinge loss between `predicted` and `expected`.
@@ -154,9 +155,10 @@ public func categoricalHingeLoss<Scalar: TensorFlowFloatingPoint>(
   expected: Tensor<Scalar>,
   reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = _mean
 ) -> Tensor<Scalar> {
+  let device = predicted.device
   let positive = (expected * predicted).sum(alongAxes: -1)
-  let negative = ((Tensor(1) - expected) * predicted).max(alongAxes: -1)
-  return reduction(max(Tensor(0), negative - positive + Tensor(1)))
+  let negative = ((Tensor(1, on: device) - expected) * predicted).max(alongAxes: -1)
+  return reduction(max(Tensor(0, on: device), negative - positive + Tensor(1, on: device)))
 }
 
 /// Computes the logarithm of the hyperbolic cosine of the prediction error.
@@ -173,8 +175,9 @@ public func logCoshLoss<Scalar: TensorFlowFloatingPoint>(
   expected: Tensor<Scalar>,
   reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = _mean
 ) -> Tensor<Scalar> {
+  let device = predicted.device
   let x = predicted - expected
-  return reduction(x + softplus(Tensor(-2) * x) - log(Tensor(2)))
+  return reduction(x + softplus(Tensor(-2, on: device) * x) - log(Tensor(2, on: device)))
 }
 
 /// Computes the Poisson loss between predicted and expected
@@ -300,8 +303,9 @@ public func sigmoidCrossEntropy<Scalar: TensorFlowFloatingPoint>(
   labels: Tensor<Scalar>,
   reduction: @differentiable (Tensor<Scalar>) -> Tensor<Scalar> = _mean
 ) -> Tensor<Scalar> {
+  let device = logits.device
   // This numerically stable implementation is based on the TensorFlow Python API.
-  let maxLogitsWithZero = max(logits, Tensor(0))
+  let maxLogitsWithZero = max(logits, Tensor(0, on: device))
   let negAbsLogits = max(logits, -logits)  // Custom `abs` to compute gradients at `0`.
   return reduction(maxLogitsWithZero - logits * labels + log1p(exp(-negAbsLogits)))
 }

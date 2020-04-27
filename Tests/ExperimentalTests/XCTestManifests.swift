@@ -18,7 +18,7 @@ import XCTest
   public func allTests() -> [XCTestCaseEntry] {
     // Please ensure the test cases remain alphabetized.
     return [
-      testCase(ComplexTests.allTests),
+      testCase(ComplexTests.allTests)
     ]
   }
 #endif

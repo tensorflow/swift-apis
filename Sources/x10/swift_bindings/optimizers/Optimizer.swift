@@ -12,12 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-@_exported import x10_optimizers_tensor_visitor_plan
-#if !IMPORT_X10_AS_TENSORFLOW
-import x10_tensor
-#else
 import TensorFlow
-#endif
+@_exported import x10_optimizers_tensor_visitor_plan
 
 /// State for a single step of a single weight inside an optimizer.
 public struct OptimizerWeightStepState {
