@@ -16,8 +16,8 @@
 // REQUIRES: executable_test
 
 #if USE_STDLIBUNITTEST
-import Swift
-import StdlibUnittest
+  import Swift
+  import StdlibUnittest
 #endif
 
 //===--- Rotate -----------------------------------------------------------===//
@@ -30,9 +30,8 @@ import StdlibUnittest
 /// of a collection to `MutableCollectionAlgorithms` to get these customization
 /// points to be used from other algorithms defined on
 /// `MutableCollectionAlgorithms`.
-public protocol MutableCollectionAlgorithms : MutableCollection
-  where SubSequence : MutableCollectionAlgorithms
-{
+public protocol MutableCollectionAlgorithms: MutableCollection
+where SubSequence: MutableCollectionAlgorithms {
   /// Rotates the elements of the collection so that the element
   /// at `middle` ends up first.
   ///
@@ -45,10 +44,10 @@ public protocol MutableCollectionAlgorithms : MutableCollection
 
 // Conformances of common collection types to MutableCollectionAlgorithms.
 // If rotate was a requirement of MutableCollection, these would not be needed.
-extension Array : MutableCollectionAlgorithms {  }
-extension ArraySlice : MutableCollectionAlgorithms {  }
-extension Slice : MutableCollectionAlgorithms
-  where Base: MutableCollection { }
+extension Array: MutableCollectionAlgorithms {}
+extension ArraySlice: MutableCollectionAlgorithms {}
+extension Slice: MutableCollectionAlgorithms
+where Base: MutableCollection {}
 
 extension MutableCollection {
   /// Swaps the elements of the two given subranges, up to the upper bound of
@@ -83,8 +82,7 @@ extension MutableCollection {
       swapAt(p, q)
       formIndex(after: &p)
       formIndex(after: &q)
-    }
-    while p != lhs.upperBound && q != rhs.upperBound
+    } while p != lhs.upperBound && q != rhs.upperBound
     return (p, q)
   }
 
@@ -96,7 +94,8 @@ extension MutableCollection {
   /// - Complexity: O(*n*)
   @discardableResult
   public mutating func rotate(shiftingToStart middle: Index) -> Index {
-    var m = middle, s = startIndex
+    var m = middle
+    var s = startIndex
     let e = endIndex
 
     // Handle the trivial cases
@@ -112,7 +111,7 @@ extension MutableCollection {
     //   ^             ^     ^        ^     ^             ^
     //   s             m     e        s     m             e
     //
-    var ret = e // start with a known incorrect result.
+    var ret = e  // start with a known incorrect result.
     while true {
       // Exchange the leading elements of each region (up to the
       // length of the shorter region).
@@ -248,8 +247,8 @@ extension MutableCollection where Self: RandomAccessCollection {
   /// - Complexity: O(*n*)
   @discardableResult
   public mutating func rotateRandomAccess(
-    shiftingToStart middle: Index) -> Index
-  {
+    shiftingToStart middle: Index
+  ) -> Index {
     if middle == startIndex { return endIndex }
     if middle == endIndex { return startIndex }
 
@@ -283,8 +282,7 @@ extension MutableCollection where Self: RandomAccessCollection {
 
 /// A concatenation of two sequences with the same element type.
 public struct Concatenation<Base1: Sequence, Base2: Sequence>: Sequence
-  where Base1.Element == Base2.Element
-{
+where Base1.Element == Base2.Element {
   let _base1: Base1
   let _base2: Base2
 
@@ -292,21 +290,21 @@ public struct Concatenation<Base1: Sequence, Base2: Sequence>: Sequence
     self._base1 = _base1
     self._base2 = base2
   }
-  
+
   public struct Iterator: IteratorProtocol {
     var _iterator1: Base1.Iterator
     var _iterator2: Base2.Iterator
-    
+
     init(_ concatenation: Concatenation) {
       _iterator1 = concatenation._base1.makeIterator()
       _iterator2 = concatenation._base2.makeIterator()
     }
-    
+
     public mutating func next() -> Base1.Element? {
       return _iterator1.next() ?? _iterator2.next()
     }
   }
-  
+
   public func makeIterator() -> Iterator {
     Iterator(self)
   }
@@ -314,8 +312,8 @@ public struct Concatenation<Base1: Sequence, Base2: Sequence>: Sequence
 
 extension Concatenation: Collection where Base1: Collection, Base2: Collection {
   /// A position in a `Concatenation`.
-  public struct Index : Comparable {
-    internal enum _Representation : Equatable {
+  public struct Index: Comparable {
+    internal enum _Representation: Equatable {
       case first(Base1.Index)
       case second(Base2.Index)
     }
@@ -381,9 +379,8 @@ extension Concatenation: Collection where Base1: Collection, Base2: Collection {
   }
 }
 
-extension Concatenation : BidirectionalCollection
-  where Base1: BidirectionalCollection, Base2: BidirectionalCollection
-{
+extension Concatenation: BidirectionalCollection
+where Base1: BidirectionalCollection, Base2: BidirectionalCollection {
   public func index(before i: Index) -> Index {
     assert(i != startIndex, "Can't advance before startIndex")
     switch i._position {
@@ -397,9 +394,8 @@ extension Concatenation : BidirectionalCollection
   }
 }
 
-extension Concatenation : RandomAccessCollection
-  where Base1: RandomAccessCollection, Base2: RandomAccessCollection
-{
+extension Concatenation: RandomAccessCollection
+where Base1: RandomAccessCollection, Base2: RandomAccessCollection {
   public func index(_ i: Index, offsetBy n: Int) -> Index {
     if n == 0 { return i }
     return n > 0 ? _offsetForward(i, by: n) : _offsetBackward(i, by: -n)
@@ -444,7 +440,8 @@ extension Concatenation : RandomAccessCollection
 /// first collection and then the elements of the second collection.
 func concatenate<S1: Sequence, S2: Sequence>(
   _ first: S1,
-  _ second: S2)
+  _ second: S2
+)
   -> Concatenation<S1, S2> where S1.Element == S2.Element
 {
   return Concatenation(_base1: first, base2: second)
@@ -452,8 +449,7 @@ func concatenate<S1: Sequence, S2: Sequence>(
 
 extension Sequence {
   func followed<S: Sequence>(by other: S) -> Concatenation<Self, S>
-    where Element == S.Element
-  {
+  where Element == S.Element {
     return concatenate(self, other)
   }
 }
@@ -462,7 +458,7 @@ extension Sequence {
 //===----------------------------------------------------------------------===//
 
 /// A rotated view onto a collection.
-public struct RotatedCollection<Base : Collection> : Collection {
+public struct RotatedCollection<Base: Collection>: Collection {
   let _base: Base
   let _indices: Concatenation<Base.Indices, Base.Indices>
 
@@ -472,9 +468,8 @@ public struct RotatedCollection<Base : Collection> : Collection {
   }
 
   /// A position in a rotated collection.
-  public struct Index : Comparable {
-    internal let _index:
-      Concatenation<Base.Indices, Base.Indices>.Index
+  public struct Index: Comparable {
+    internal let _index: Concatenation<Base.Indices, Base.Indices>.Index
 
     public static func < (lhs: Index, rhs: Index) -> Bool {
       return lhs._index < rhs._index
@@ -518,15 +513,15 @@ public struct RotatedCollection<Base : Collection> : Collection {
   }
 }
 
-extension RotatedCollection : BidirectionalCollection
-  where Base : BidirectionalCollection {
+extension RotatedCollection: BidirectionalCollection
+where Base: BidirectionalCollection {
   public func index(before i: Index) -> Index {
     return Index(_index: _indices.index(before: i._index))
   }
 }
 
-extension RotatedCollection : RandomAccessCollection
-  where Base : RandomAccessCollection {}
+extension RotatedCollection: RandomAccessCollection
+where Base: RandomAccessCollection {}
 
 extension Collection {
   /// Returns a view of this collection with the elements reordered such the
@@ -572,13 +567,14 @@ extension MutableCollectionAlgorithms {
   /// - Complexity: O(n) where n is the number of elements.
   /// - Precondition: `n == self.count`
   fileprivate mutating func stablePartition(
-    count n: Int, isSuffixElement: (Element) throws-> Bool
+    count n: Int, isSuffixElement: (Element) throws -> Bool
   ) rethrows -> Index {
     if n == 0 { return startIndex }
     if n == 1 {
       return try isSuffixElement(self[startIndex]) ? startIndex : endIndex
     }
-    let h = n / 2, i = index(startIndex, offsetBy: h)
+    let h = n / 2
+    let i = index(startIndex, offsetBy: h)
     let j = try self[..<i].stablePartition(
       count: h, isSuffixElement: isSuffixElement)
     let k = try self[i...].stablePartition(

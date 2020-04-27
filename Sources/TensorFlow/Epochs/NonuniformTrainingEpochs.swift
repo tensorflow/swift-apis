@@ -28,9 +28,9 @@
 public final class NonuniformTrainingEpochs<
   Samples: Collection,
   Entropy: RandomNumberGenerator
-> : Sequence, IteratorProtocol {
+>: Sequence, IteratorProtocol {
   private let samples: Samples
-  
+
   /// The number of samples in a batch.
   let batchSize: Int
 
@@ -41,8 +41,7 @@ public final class NonuniformTrainingEpochs<
   private let batchesPerSort: Int
 
   /// A sorting predicate used to group samples of similar size.
-  private let areInAscendingSizeOrder:
-    (Samples.Element, Samples.Element) -> Bool
+  private let areInAscendingSizeOrder: (Samples.Element, Samples.Element) -> Bool
 
   // TODO: Figure out how to handle non-threasafe PRNGs with a parallel shuffle
   // algorithm.
@@ -84,17 +83,18 @@ public final class NonuniformTrainingEpochs<
 
   /// The type of each epoch, a collection of batches of samples.
   public typealias Element = Slices<
-    LazilySelected<Samples, Array<Samples.Index>.SubSequence>>
+    LazilySelected<Samples, Array<Samples.Index>.SubSequence>
+  >
 
   /// Returns the next epoch in sequence.
   public func next() -> Element? {
     let remainder = sampleOrder.count % batchSize
-    
+
     sampleOrder.withUnsafeMutableBufferPointer { order in
       // TODO: use a parallel shuffle like mergeshuffle
       // (http://ceur-ws.org/Vol-2113/paper3.pdf)
       order.shuffle(using: &entropy)
-      
+
       // The indices of samples used in this epoch
       var epochSampleOrder = order.dropLast(remainder)
 
@@ -110,11 +110,12 @@ public final class NonuniformTrainingEpochs<
         epochSampleOrder[lastOfFirstBatch...leader]
           .rotate(shiftingToStart: leader)
       }
-      
+
       // The regions of usedOrder to be sorted by descending batch size
-      let megabatches = epochSampleOrder
+      let megabatches =
+        epochSampleOrder
         .inBatches(of: batchSize * batchesPerSort)
-      
+
       for var megabatch in megabatches {
         // TODO: fully sorting is overkill; we should use introselect here.
         // Also, parallelize.
@@ -126,9 +127,9 @@ public final class NonuniformTrainingEpochs<
   }
 }
 
-public extension NonuniformTrainingEpochs 
+extension NonuniformTrainingEpochs
 where Entropy == SystemRandomNumberGenerator {
-   /// Creates an instance drawing samples from `samples` into batches of size
+  /// Creates an instance drawing samples from `samples` into batches of size
   /// `batchSize`.
   ///
   /// - Parameters:
@@ -140,7 +141,7 @@ where Entropy == SystemRandomNumberGenerator {
   ///     to inefficiency.
   ///   - areInAscendingSizeOrder: a predicate that returns `true` iff the size
   ///     of the first parameter is less than that of the second.
-  convenience init(
+  public convenience init(
     samples: Samples,
     batchSize: Int,
     batchesPerSort: Int? = nil,
@@ -149,7 +150,7 @@ where Entropy == SystemRandomNumberGenerator {
   ) {
     self.init(
       samples: samples,
-      batchSize: batchSize, 
+      batchSize: batchSize,
       entropy: SystemRandomNumberGenerator(),
       batchesPerSort: batchesPerSort,
       areInAscendingSizeOrder: areInAscendingSizeOrder
@@ -166,12 +167,13 @@ where Entropy == SystemRandomNumberGenerator {
 ///
 /// Sorts `samples` without loading every sample in memory in a single array.
 public func nonuniformInferenceBatches<Samples: Collection>(
-  samples: Samples, batchSize: Int, areInAscendingSizeOrder:
-      @escaping (Samples.Element, Samples.Element) -> Bool
-) -> Slices<LazilySelected<Samples, [Samples.Index]>>{
+  samples: Samples, batchSize: Int,
+  areInAscendingSizeOrder:
+    @escaping (Samples.Element, Samples.Element) -> Bool
+) -> Slices<LazilySelected<Samples, [Samples.Index]>> {
   // The order of the samples.
-  let sampleOrder = Array(samples.indices).sorted { 
-      areInAscendingSizeOrder(samples[$1], samples[$0])
+  let sampleOrder = Array(samples.indices).sorted {
+    areInAscendingSizeOrder(samples[$1], samples[$0])
   }
   return samples.selecting(sampleOrder).inBatches(of: batchSize)
 }

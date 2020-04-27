@@ -24,9 +24,9 @@
 public final class TrainingEpochs<
   Samples: Collection,
   Entropy: RandomNumberGenerator
-> : Sequence, IteratorProtocol {
+>: Sequence, IteratorProtocol {
   private let samples: Samples
-  
+
   /// The number of samples in a batch.
   let batchSize: Int
 
@@ -59,7 +59,8 @@ public final class TrainingEpochs<
 
   /// The type of each epoch, a collection of batches of samples.
   public typealias Element = Slices<
-    LazilySelected<Samples, Array<Samples.Index>.SubSequence>>
+    LazilySelected<Samples, Array<Samples.Index>.SubSequence>
+  >
 
   /// Returns the next epoch in sequence.
   public func next() -> Element? {
@@ -68,20 +69,21 @@ public final class TrainingEpochs<
     // TODO: use a parallel shuffle like mergeshuffle
     // (http://ceur-ws.org/Vol-2113/paper3.pdf)
     sampleOrder.shuffle(using: &entropy)
-    
+
     return samples.selecting(sampleOrder.dropLast(remainder))
       .inBatches(of: batchSize)
   }
 }
 
-public extension TrainingEpochs where Entropy == SystemRandomNumberGenerator {
-   /// Creates an instance drawing samples from `samples` into batches of size
+extension TrainingEpochs where Entropy == SystemRandomNumberGenerator {
+  /// Creates an instance drawing samples from `samples` into batches of size
   /// `batchSize`.
-  convenience init(
+  public convenience init(
     samples: Samples,
     batchSize: Int
   ) {
-    self.init(samples: samples, batchSize: batchSize,
-         entropy: SystemRandomNumberGenerator())
+    self.init(
+      samples: samples, batchSize: batchSize,
+      entropy: SystemRandomNumberGenerator())
   }
 }

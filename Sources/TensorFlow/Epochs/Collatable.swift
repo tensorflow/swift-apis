@@ -15,16 +15,16 @@
 /// Types whose elements can be collated in some higher-rank element of the same
 /// type (example: tensors, tuple of tensors)
 public protocol Collatable {
-  init<BatchSamples: Collection>(collating: BatchSamples) 
-  where BatchSamples.Element==Self
+  init<BatchSamples: Collection>(collating: BatchSamples)
+  where BatchSamples.Element == Self
 }
 
 // Tensor are collated using stacking
 extension Tensor: Collatable {
   public init<BatchSamples: Collection>(collating samples: BatchSamples)
-  where BatchSamples.Element==Self { 
+  where BatchSamples.Element == Self {
     let batchSamples = samples.indices.concurrentMap { samples[$0] }
-    self.init(stacking: batchSamples) 
+    self.init(stacking: batchSamples)
   }
 }
 
@@ -36,21 +36,20 @@ extension Collection where Element: Collatable {
 
   /// Returns the elements of `self`, padded to maximal shape with `padValue`
   /// and collated.
-  public func paddedAndCollated<Scalar : Numeric>(
-      with padValue: Scalar, padFirst: Bool = false
+  public func paddedAndCollated<Scalar: Numeric>(
+    with padValue: Scalar, padFirst: Bool = false
   ) -> Element
-  where Element == Tensor<Scalar>
-  {
+  where Element == Tensor<Scalar> {
     let firstShape = self.first!.shapeTensor
     let otherShapes = self.dropFirst().lazy.map(\.shapeTensor)
-    let paddedShape
-        = otherShapes.reduce(firstShape) { TensorFlow.max($0, $1) }
-        .scalars.lazy.map { Int($0) }
+    let paddedShape = otherShapes.reduce(firstShape) { TensorFlow.max($0, $1) }
+      .scalars.lazy.map { Int($0) }
 
     let r = self.lazy.map { t in
       t.padded(
         forSizes: zip(t.shape, paddedShape).map {
-          return (before: padFirst ? $1 - $0 : 0, after: padFirst ? 0 : $1 - $0)},
+          return (before: padFirst ? $1 - $0 : 0, after: padFirst ? 0 : $1 - $0)
+        },
         with: padValue)
     }
     return r.collated

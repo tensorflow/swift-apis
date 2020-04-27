@@ -21,7 +21,7 @@
 public struct Slices<Base: Collection> {
   /// The collection from which slices will be drawn.
   private let base: Base
-  
+
   /// The maximum length of the slices.
   private let batchSize: Int
 
@@ -31,9 +31,9 @@ public struct Slices<Base: Collection> {
   }
 }
 
-extension Slices : Collection {
+extension Slices: Collection {
   /// A position in `Slices`.
-  public struct Index : Comparable {
+  public struct Index: Comparable {
     /// The range of base indices covered by the element at this position.
     var focus: Range<Base.Index>
 
@@ -52,7 +52,7 @@ extension Slices : Collection {
     base.index(i, offsetBy: batchSize, limitedBy: base.endIndex)
       ?? base.endIndex
   }
-  
+
   /// Returns the index after `i`.
   public func index(after i: Index) -> Index {
     Index(focus: i.focus.upperBound..<sliceBoundary(after: i.focus.upperBound))
