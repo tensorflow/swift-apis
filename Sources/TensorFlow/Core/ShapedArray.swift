@@ -996,3 +996,16 @@ extension _ShapedArrayProtocol where Scalar: Equatable {
       }
   }
 }
+
+// conditional conformance of array to module and layer
+extension Array: Module where Element: Layer, Element.Input == Element.Output {
+  public typealias Input = Element.Input
+  public typealias Output = Element.Output
+
+  @differentiable
+  public func callAsFunction(_ input: Input) -> Output {
+    differentiableReduce(input) { $1($0) }
+  }
+}
+
+extension Array: Layer where Element: Layer, Element.Input == Element.Output {}
