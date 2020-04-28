@@ -83,7 +83,7 @@ final class EpochsTests: XCTestCase {
     // `TrainingEpochs` automatically drops the remainder batch if it has
     // less than `batchSize` elements.
     let dataset = (0..<500).lazy.map { (i: Int32) -> Tensor<Int32> in
-      return Tensor<Int32>(zeros: [32, 32, 3]) + i
+      Tensor<Int32>(zeros: [32, 32, 3]) + i
     }
     let epochs = TrainingEpochs(
       samples: dataset, batchSize: 64,
