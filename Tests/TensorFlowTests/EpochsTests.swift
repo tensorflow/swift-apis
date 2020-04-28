@@ -21,7 +21,7 @@ var rng = ARC4RandomNumberGenerator(seed: [42])
 final class EpochsTests: XCTestCase {
   func testBaseUse() {
     // A mock item type that tracks if it was accessed or not
-    class Tracker {
+    class AccessTracker {
       var accessed: Bool = false
     }
 
