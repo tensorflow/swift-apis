@@ -82,6 +82,10 @@ For more models, go to [**tensorflow/swift-models**](https://github.com/tensorfl
 
 * [Swift for TensorFlow toolchain](https://github.com/tensorflow/swift/blob/master/Installation.md).
 * An environment that can run the Swift for TensorFlow toolchains: Linux 18.04 or macOS with Xcode 10.
+* Bazel. This can be installed [manually](https://docs.bazel.build/versions/master/install.html) or with
+[Baselisk](https://github.com/bazelbuild/bazelisk). You will need a version supported by TensorFlow
+(between `_TF_MIN_BAZEL_VERSION` and `_TF_MAX_BAZEL_VERSION` as specified in
+[tensorflow/configure.py](https://github.com/tensorflow/tensorflow/blob/master/configure.py)).
 
 ### Building and testing
 
