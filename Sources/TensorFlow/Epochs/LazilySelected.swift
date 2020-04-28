@@ -66,7 +66,10 @@ where Selection: BidirectionalCollection {
 }
 
 extension Collection {
-  /// Returns elements selected from `self` according to `selection`.
+  /// Returns a collection of elements of `self` at the positions and in the order
+  /// specified by `selection` without reading the elements of either collection.
+  ///
+  /// - Complexity: O(1)
   public func sampled<Selection: Collection>(at selection: Selection)
     -> LazilySelected<Self, Selection>
   {
