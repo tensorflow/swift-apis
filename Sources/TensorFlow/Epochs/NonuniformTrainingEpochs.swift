@@ -161,7 +161,7 @@ where Entropy == SystemRandomNumberGenerator {
 /// Build batches for inference drawing samples from `samples` into batches of 
 /// `batchSize`.
 ///
-/// - Parameters:
+/// - Parameter areInAscendingSizeOrder: a predicate that      ...
 ///   - areInAscendingSizeOrder: a predicate that returns `true` iff the size
 ///     of the first parameter is less than that of the second.
 ///
