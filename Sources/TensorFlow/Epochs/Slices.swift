@@ -59,7 +59,7 @@ extension Slices: Collection {
     Index(focus: i.focus.upperBound..<sliceBoundary(after: i.focus.upperBound))
   }
 
-  /// Returns the first position ini `self`.
+  /// Returns the first position in `self`.
   public var startIndex: Index {
     Index(focus: base.startIndex..<sliceBoundary(after: base.startIndex))
   }
