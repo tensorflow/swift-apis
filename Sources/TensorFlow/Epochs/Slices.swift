@@ -71,7 +71,7 @@ extension Slices: Collection {
 
 extension Collection {
   /// Returns the longest non-overlapping slices of `self`, starting with its
-  /// first element, and having a maximum length of `batchSize`.
+  /// first element, having a maximum length of `batchSize`.
   public func inBatches(of batchSize: Int) -> Slices<Self> {
     Slices(self, batchSize: batchSize)
   }
