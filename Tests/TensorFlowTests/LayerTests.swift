@@ -1373,14 +1373,10 @@ final class LayerTests: XCTestCase {
     var cell = BasicRNNCell<Float>(inputSize: 2, hiddenSize: 5)
     cell.weight = weight
     cell.bias = bias
-    let state = BasicRNNCell.State(
-      Tensor<Float>(ones: [1, 5]) * Tensor<Float>([1, 0.2, 0.5, 2, 0.6])
-    )
+    let state = Tensor<Float>(ones: [1, 5]) * Tensor<Float>([1, 0.2, 0.5, 2, 0.6])
     let input = Tensor<Float>(ones: [1, 2]) * Tensor<Float>([0.3, 0.7])
     let output = cell(input: input, state: state).state
-    let expected = BasicRNNCell.State(
-      Tensor<Float>([[0.9921227, 0.9999934, 0.9921227, 0.9999934, 0.9921227]])
-    )
+    let expected = Tensor<Float>([[0.9921227, 0.9999934, 0.9921227, 0.9999934, 0.9921227]])
     XCTAssertEqual(output, expected)
   }
 
@@ -1484,7 +1480,6 @@ final class LayerTests: XCTestCase {
       accuracy: 1e-5)
   }
 
-  // TODO(TF-507): Remove references to `BasicRNNCell.State` after SR-10697 is fixed.
   func testRNN() {
     let x = Tensor<Float>(rangeFrom: 0.0, to: 0.4, stride: 0.1).rankLifted()
     let inputs: [Tensor<Float>] = Array(repeating: x, count: 4)
@@ -1494,7 +1489,7 @@ final class LayerTests: XCTestCase {
         return rnn(inputs)
       }
       assertEqual(
-        outputs.map { $0.value.squeezingShape(at: 0) }[0],
+        outputs.map { $0 }[0],
         [
           [0.20775771, 0.20080023, -0.13768704, -0.18534681],
           [0.22666009, 0.30019346, -0.19720285, -0.14683801],
@@ -1502,7 +1497,7 @@ final class LayerTests: XCTestCase {
           [0.24337786, 0.3389194, -0.21143384, -0.1675081],
         ],
         accuracy: 1e-6)
-      let (𝛁rnn, _) = pullback(.init(inputs.map { BasicRNNCell<Float>.State($0) }))
+      let (𝛁rnn, _) = pullback(.init(inputs))
       // TODO: Verify that RNN gradients are correct using a reference implementation.
       XCTAssertEqual(
         𝛁rnn.cell.weight,
@@ -1753,7 +1748,7 @@ final class LayerTests: XCTestCase {
         return gru(inputs)
       }
       assertEqual(
-        outputs.map { $0.hidden }[0],
+        outputs.map { $0 }[0],
         [
           [0.1193780, 0.1193780, 0.1193780, 0.1193780],
           [0.1887644, 0.1887644, 0.1887644, 0.1887644],
@@ -1762,7 +1757,7 @@ final class LayerTests: XCTestCase {
         ],
         accuracy: 1e-5)
       // TODO: Verify that GRU gradients are correct using a reference implementation.
-      let (𝛁gru, _) = pullback(.init(inputs.map { GRUCell<Float>.State(hidden: $0) }))
+      let (𝛁gru, _) = pullback(.init(inputs))
       assertEqual(
         𝛁gru.cell.updateWeight1,
         [[0.0], [-0.040293925], [-0.08058785], [-0.12088178]],
