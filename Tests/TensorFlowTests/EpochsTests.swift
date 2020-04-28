@@ -21,7 +21,7 @@ var rng = ARC4RandomNumberGenerator(seed: [42])
 final class EpochsTests: XCTestCase {
   func testBaseUse() {
     // A mock item type that tracks if it was accessed or not
-    class AccessTracker {
+    class Tracker {
       var accessed: Bool = false
     }
 
@@ -61,7 +61,7 @@ final class EpochsTests: XCTestCase {
         let collatedBatch = batch.collated
         XCTAssertEqual(collatedBatch.shape, TensorShape([64, 32, 32, 3]))
 
-        newAccessed +=(0..<64).lazy.map {
+        newAccessed += (0..<64).lazy.map {
           Int(collatedBatch[$0, 0, 0, 0].scalarized())
         }
       }
@@ -125,9 +125,9 @@ final class EpochsTests: XCTestCase {
     return dataset
   }()
 
-  func paddingTest(padValue: Int32, padFirst: Bool) {
+  func paddingTest(padValue: Int32, atStart: Bool) {
     let batches = nonuniformDataset.inBatches(of: 64)
-      .lazy.map { $0.paddedAndCollated(with: padValue) }
+      .lazy.map { $0.paddedAndCollated(with: padValue, atStart: atStart) }
     for (i, b) in batches.enumerated() {
       let shapes = nonuniformDataset[(i * 64)..<((i + 1) * 64)]
         .map { Int($0.shape[0]) }
@@ -136,8 +136,9 @@ final class EpochsTests: XCTestCase {
 
       for k in 0..<64 {
         let currentShape = nonuniformDataset[i * 64 + k].shape[0]
+        let paddedPart = atStart ? b[k, 0..<(expectedShape-currentShape)] : b[k, currentShape..<expectedShape]
         XCTAssertEqual(
-          b[k, currentShape..<expectedShape],
+          paddedPart,
           Tensor<Int32>(
             repeating: padValue,
             shape: [expectedShape - currentShape]))
@@ -146,10 +147,10 @@ final class EpochsTests: XCTestCase {
   }
 
   func testAllPadding() {
-    paddingTest(padValue: 0, padFirst: false)
-    paddingTest(padValue: 42, padFirst: false)
-    paddingTest(padValue: 0, padFirst: true)
-    paddingTest(padValue: -1, padFirst: true)
+    paddingTest(padValue: 0, atStart: false)
+    paddingTest(padValue: 42, atStart: false)
+    paddingTest(padValue: 0, atStart: true)
+    paddingTest(padValue: -1, atStart: true)
   }
 
   // Use with a sampler

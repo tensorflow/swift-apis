@@ -83,7 +83,7 @@ public final class NonuniformTrainingEpochs<
 
   /// The type of each epoch, a collection of batches of samples.
   public typealias Element = Slices<
-    LazilySelected<Samples, Array<Samples.Index>.SubSequence>
+    Sampling<Samples, Array<Samples.Index>.SubSequence>
   >
 
   /// Returns the next epoch in sequence.
@@ -170,7 +170,7 @@ public func nonuniformInferenceBatches<Samples: Collection>(
   samples: Samples, batchSize: Int,
   areInAscendingSizeOrder:
     @escaping (Samples.Element, Samples.Element) -> Bool
-) -> Slices<LazilySelected<Samples, [Samples.Index]>> {
+) -> Slices<Sampling<Samples, [Samples.Index]>> {
   // The order of the samples.
   let sampleOrder = Array(samples.indices).sorted {
     areInAscendingSizeOrder(samples[$1], samples[$0])

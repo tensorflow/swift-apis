@@ -41,11 +41,10 @@ public final class TrainingEpochs<
   /// Creates an instance drawing samples from `samples` into batches of size
   /// `batchSize`.
   ///
-  /// - Parameters:
-  ///   - entropy: a source of randomness used to shuffle sample ordering.  It
-  ///     will be stored in `self`, so if it is only pseudorandom and has value
-  ///     semantics, the sequence of epochs is determinstic and not dependent on
-  ///     other operations.
+  /// - Parameter entropy: a source of randomness used to shuffle sample 
+  ///   ordering.  It  will be stored in `self`, so if it is only pseudorandom 
+  ///   and has value semantics, the sequence of epochs is determinstic and not 
+  ///   dependent on other operations.
   public init(
     samples: Samples,
     batchSize: Int,
@@ -59,7 +58,7 @@ public final class TrainingEpochs<
 
   /// The type of each epoch, a collection of batches of samples.
   public typealias Element = Slices<
-    LazilySelected<Samples, Array<Samples.Index>.SubSequence>
+    Sampling<Samples, Array<Samples.Index>.SubSequence>
   >
 
   /// Returns the next epoch in sequence.

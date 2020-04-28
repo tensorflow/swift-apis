@@ -35,9 +35,9 @@ extension Collection where Element: Collatable {
   public var collated: Element { .init(collating: self) }
 
   /// Returns the elements of `self`, padded to maximal shape with `padValue`
-  /// and collated.
+  /// and collated. Padding is added at the end unless `atStart` is `true`.
   public func paddedAndCollated<Scalar: Numeric>(
-    with padValue: Scalar, padFirst: Bool = false
+    with padValue: Scalar, atStart: Bool = false
   ) -> Element
   where Element == Tensor<Scalar> {
     let firstShape = self.first!.shapeTensor
@@ -48,7 +48,7 @@ extension Collection where Element: Collatable {
     let r = self.lazy.map { t in
       t.padded(
         forSizes: zip(t.shape, paddedShape).map {
-          (before: padFirst ? $1 - $0 : 0, after: padFirst ? 0 : $1 - $0)
+          (before: atStart ? $1 - $0 : 0, after: atStart ? 0 : $1 - $0)
         },
         with: padValue)
     }
