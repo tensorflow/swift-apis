@@ -48,7 +48,7 @@ extension Collection where Element: Collatable {
     let r = self.lazy.map { t in
       t.padded(
         forSizes: zip(t.shape, paddedShape).map {
-          return (before: padFirst ? $1 - $0 : 0, after: padFirst ? 0 : $1 - $0)
+          (before: padFirst ? $1 - $0 : 0, after: padFirst ? 0 : $1 - $0)
         },
         with: padValue)
     }
