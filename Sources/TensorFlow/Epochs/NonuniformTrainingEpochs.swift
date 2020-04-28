@@ -122,7 +122,7 @@ public final class NonuniformTrainingEpochs<
         megabatch.sort { areInAscendingSizeOrder(samples[$1], samples[$0]) }
       }
     }
-    return samples.selecting(sampleOrder.dropLast(remainder))
+    return samples.sampled(at: sampleOrder.dropLast(remainder))
       .inBatches(of: batchSize)
   }
 }
@@ -175,5 +175,5 @@ public func nonuniformInferenceBatches<Samples: Collection>(
   let sampleOrder = Array(samples.indices).sorted {
     areInAscendingSizeOrder(samples[$1], samples[$0])
   }
-  return samples.selecting(sampleOrder).inBatches(of: batchSize)
+  return samples.sampled(at: sampleOrder).inBatches(of: batchSize)
 }

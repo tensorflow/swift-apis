@@ -67,7 +67,7 @@ where Selection: BidirectionalCollection {
 
 extension Collection {
   /// Returns elements selected from `self` according to `selection`.
-  public func selecting<Selection: Collection>(_ selection: Selection)
+  public func sampled<Selection: Collection>(at selection: Selection)
     -> LazilySelected<Self, Selection>
   {
     .init(base: self, selection: selection)

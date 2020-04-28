@@ -70,7 +70,7 @@ public final class TrainingEpochs<
     // (http://ceur-ws.org/Vol-2113/paper3.pdf)
     sampleOrder.shuffle(using: &entropy)
 
-    return samples.selecting(sampleOrder.dropLast(remainder))
+    return samples.sampled(at: sampleOrder.dropLast(remainder))
       .inBatches(of: batchSize)
   }
 }

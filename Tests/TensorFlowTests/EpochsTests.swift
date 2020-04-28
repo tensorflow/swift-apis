@@ -194,7 +194,7 @@ final class EpochsTests: XCTestCase {
     let sequences = texts.joined()
       .inBatches(of: sequenceLength)
     let indices = preBatchTranspose(sequences, for: batchSize)
-    let batches = sequences.selecting(indices).inBatches(of: batchSize)
+    let batches = sequences.sampled(at: indices).inBatches(of: batchSize)
 
     var results: [[Int32]] = [[], []]
     for batch in batches {
@@ -226,7 +226,7 @@ final class EpochsTests: XCTestCase {
     let sequences = texts.shuffled().joined()
       .inBatches(of: sequenceLength)
     let indices = preBatchTranspose(sequences, for: batchSize)
-    let batches = sequences.selecting(indices).inBatches(of: batchSize)
+    let batches = sequences.sampled(at: indices).inBatches(of: batchSize)
 
     var results: [[Int32]] = [[], []]
     for batch in batches {
