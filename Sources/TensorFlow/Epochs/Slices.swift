@@ -38,7 +38,7 @@ extension Slices: Collection {
     /// The range of base indices covered by the element at this position.
     var focus: Range<Base.Index>
 
-    /// Returns true if `l` precedes `r` in the collection.
+    /// Returns true iff `l` precedes `r` in the collection.
     public static func < (l: Index, r: Index) -> Bool {
       l.focus.lowerBound < r.focus.lowerBound
     }
