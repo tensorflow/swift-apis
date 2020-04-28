@@ -62,7 +62,7 @@ final class EpochsTests: XCTestCase {
         let collatedBatch = batch.collated
         XCTAssertEqual(collatedBatch.shape, TensorShape([64, 32, 32, 3]))
 
-        newAccessed += Array(0..<64).map {
+        newAccessed +=(0..<64).lazy.map {
           Int(collatedBatch[$0, 0, 0, 0].scalarized())
         }
       }
