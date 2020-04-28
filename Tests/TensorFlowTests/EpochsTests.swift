@@ -44,7 +44,6 @@ final class EpochsTests: XCTestCase {
     }
   }
 
-  // Tests with shuffle
   func testShuffle() {
     // Using `dataset.shuffled()` would break the laziness. Plus we would need
     // to do it at each new epoch. `TrainingEpochs` automatically handles
