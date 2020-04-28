@@ -17,7 +17,8 @@
 /// length.
 ///
 /// The elements of this collection, except for the last, all have a `count` of
-/// `batchSize`.  The last one's `count` is `base.count % batchSize.`
+/// `batchSize`, unless `Base.count % batchSize !=0`, in which case
+/// the last batch's `count` is `base.count % batchSize.`
 public struct Slices<Base: Collection> {
   /// The collection from which slices will be drawn.
   private let base: Base
