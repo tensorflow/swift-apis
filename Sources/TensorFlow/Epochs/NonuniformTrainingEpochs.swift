@@ -13,7 +13,7 @@
 // limitations under the License.
 
 /// An infinite sequence of collections of sample batches suitable for training
-/// a DNN when samples are nonuniform (e.g. not all of the same "size").
+/// a DNN when samples are not uniformly sized.
 ///
 /// - Parameter `Samples`: the type of collection from which samples will be
 ///   drawn.
