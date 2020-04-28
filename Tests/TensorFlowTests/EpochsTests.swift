@@ -73,7 +73,7 @@ final class EpochsTests: XCTestCase {
       accessed = newAccessed
       let uniqueSamples = Set(accessed)
       XCTAssertEqual(
-        uniqueSamples.count, 512,
+        uniqueSamples.count, accessed.count,
         "Every epoch sample should be drawn from a different input sample.")
     }
   }
