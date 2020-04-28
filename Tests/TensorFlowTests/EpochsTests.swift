@@ -27,7 +27,7 @@ final class EpochsTests: XCTestCase {
 
     // `inBatches` splits our dataset in batches, the `collated` property is
     // defined for any struct conforming to `Collatable`
-    let rawItems = Array(0..<512).map { _ in Tracker() }
+    let rawItems = (0..<512).map { _ in Tracker() }
     let dataset = rawItems.lazy.map { (x: Tracker) -> Tensor<Float> in
       x.accessed = true
       // Using a random tensor here is not thread-safe and will result in race
