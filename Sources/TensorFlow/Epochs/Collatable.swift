@@ -35,7 +35,10 @@ extension Collection where Element: Collatable {
   public var collated: Element { .init(collating: self) }
 
   /// Returns the elements of `self`, padded to maximal shape with `padValue`
-  /// and collated. Padding is added at the end unless `atStart` is `true`.
+  /// and collated.
+  /// 
+  /// - Parameter atStart: adds the padding at the beginning if this is `true`
+  ///   and the end otherwise. The default value is `false`.
   public func paddedAndCollated<Scalar: Numeric>(
     with padValue: Scalar, atStart: Bool = false
   ) -> Element
