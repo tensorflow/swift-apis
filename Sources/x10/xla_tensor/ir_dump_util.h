@@ -38,6 +38,8 @@ class DumpUtil {
 
   static std::string ToHlo(absl::Span<const Value> values);
 
+  static std::string GetGraphChangeLog(absl::Span<const Node* const> roots);
+
   static std::string GetAnnotations(absl::Span<const Node* const> nodes);
 };
 

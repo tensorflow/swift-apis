@@ -18,11 +18,11 @@
 #include <sstream>
 
 #include "absl/strings/str_cat.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/lowering_context.h"
 #include "tensorflow/compiler/xla/xla_client/cache.h"
 #include "tensorflow/compiler/xla/xla_client/debug_macros.h"
 #include "tensorflow/compiler/xla/xla_client/sys_util.h"
 #include "tensorflow/compiler/xla/xla_client/util.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/lowering_context.h"
 
 namespace swift_xla {
 namespace ir {
@@ -115,6 +115,9 @@ OpKind OpKind::Get(const std::string& name) {
 
 xla::hash_t OpKind::hash() const { return static_cast<c10::unique_t>(op); }
 
+bool Node::s_log_graph_changes_ =
+    xla::sys_util::GetEnvInt("XLA_LOG_GRAPH_CHANGES", 0);
+
 Node::Node(OpKind op, OpList operands, xla::Shape shape, size_t num_outputs,
            xla::hash_t hash_seed)
     : op_(std::move(op)),
@@ -123,6 +126,9 @@ Node::Node(OpKind op, OpList operands, xla::Shape shape, size_t num_outputs,
       node_hash_(xla::util::HashCombine(op_.hash(), hash_seed)),
       hash_(node_hash_) {
   metadata_.scope = GetCurrentScope();
+  if (s_log_graph_changes_) {
+    metadata_.frame_info = GetSwiftFrames();
+  }
   for (auto& operand : operands) {
     AddOperand(operand.node, operand.index);
     hash_ = xla::util::HashCombine(hash_, operand.hash());
@@ -146,6 +152,9 @@ Node::Node(OpKind op, xla::Shape shape, size_t num_outputs,
       node_hash_(GetOpHash(op_, shape_, hash_seed)),
       hash_(node_hash_) {
   metadata_.scope = GetCurrentScope();
+  if (s_log_graph_changes_) {
+    metadata_.frame_info = GetSwiftFrames();
+  }
 }
 
 const xla::Shape& Node::shape(size_t output_index) const {
