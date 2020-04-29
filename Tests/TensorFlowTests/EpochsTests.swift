@@ -28,6 +28,11 @@ final class EpochsTests: XCTestCase {
   // A struct keeping track of when its elements have been first accessed. We 
   // use it in the tests to check whether methods that are not supposed to break
   // the laziness work as intended.
+  /// An adapted collection that presents the elements of `Base` but 
+  /// tracks whether elements have been read.
+  ///
+  /// - Warning: distinct elements may be read concurrently, but reading
+  ///   the same element from two threads is a race condition.
   struct ReadTracker<Base: RandomAccessCollection> : RandomAccessCollection {
     let base: Base
     let accessed_: [AccessTracker]
