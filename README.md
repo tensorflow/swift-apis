@@ -87,9 +87,6 @@ For more models, go to [**tensorflow/swift-models**](https://github.com/tensorfl
 (between `_TF_MIN_BAZEL_VERSION` and `_TF_MAX_BAZEL_VERSION` as specified in
 [tensorflow/configure.py](https://github.com/tensorflow/tensorflow/blob/master/configure.py)).
 * Python3 with [numpy](https://numpy.org/).
-[Pyenv](https://github.com/pyenv/pyenv) with
-[pyenv-virtualenv](https://github.com/pyenv/pyenv-virtualenv)
-is recommended for managing Python installations.
 
 ### Building and testing
 
