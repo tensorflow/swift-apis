@@ -46,7 +46,6 @@ add_library(TensorFlow SHARED
   Epochs/NonuniformTrainingEpochs.swift
   Epochs/Sampling.swift
   Epochs/Slices.swift
-  Epochs/StdlibAdditions.swift
   Epochs/TrainingEpochs.swift
 
   Layers/Convolutional.swift
