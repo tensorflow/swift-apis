@@ -26,7 +26,11 @@ public struct Slices<Base: Collection> {
   /// The maximum length of the slices.
   private let batchSize: Int
     
-  /// Creates on instance on `base` with `batchSize`.
+  /// Creates an instance that divides `base` into batches 
+  /// of size `n`.
+  ///
+  /// If `base.count % n != 0` the `count` of the last batch
+  /// will be `base.count % n`
   public init(_ base: Base, batchSize: Int) {
     self.base = base
     self.batchSize = batchSize
