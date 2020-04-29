@@ -31,7 +31,7 @@ public struct Slices<Base: Collection> {
   ///
   /// If `base.count % n != 0` the `count` of the last batch
   /// will be `base.count % n`
-  public init(_ base: Base, batchSize: Int) {
+  public init(_ base: Base, batchSize n: Int) {
     self.base = base
     self.batchSize = batchSize
   }
