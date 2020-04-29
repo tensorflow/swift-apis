@@ -33,7 +33,7 @@ public struct Slices<Base: Collection> {
   /// will be `base.count % n`
   public init(_ base: Base, batchSize n: Int) {
     self.base = base
-    self.batchSize = batchSize
+    batchSize = n
   }
 }
 
