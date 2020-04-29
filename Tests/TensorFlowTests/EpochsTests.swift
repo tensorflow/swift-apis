@@ -19,95 +19,156 @@ import XCTest
 var rng = ARC4RandomNumberGenerator(seed: [42])
 
 final class EpochsTests: XCTestCase {
-  func testBaseUse() {
-    // A mock item type that tracks if it was accessed or not
-    class Tracker {
+ 
+  // An element that keeps track of when it was first accessed.
+  class AccessTracker {
       var accessed: Bool = false
-    }
+  }
+  
+  // A struct keeping track of when its elements have been first accessed. We 
+  // use it in the tests to check whether methods that are not supposed to break
+  // the laziness work as intended.
+  struct ReadTracker<Base: RandomAccessCollection> : RandomAccessCollection {
+    let base: Base
+    let accessed_: [AccessTracker]
+      
+    public typealias Element = Base.Element
+    /// A type whose instances represent positions in `self`.
+    public typealias Index = Base.Index
+    /// The position of the first element.
+    public var startIndex: Index { base.startIndex }
+    /// The position one past the last element.
+    public var endIndex: Index { base.endIndex }
+    /// Returns the position after `i`.
+    public func index(after i: Index) -> Index { base.index(after: i) }
+    /// Returns the position after `i`.
+    public func index(before i: Index) -> Index { base.index(before: i) }
 
-    // `inBatches` splits our dataset in batches, the `collated` property is
-    // defined for any struct conforming to `Collatable`
-    let rawItems = (0..<512).map { _ in Tracker() }
-    let dataset = rawItems.lazy.map { (x: Tracker) -> Tensor<Float> in
-      x.accessed = true
-      // Using a random tensor here is not thread-safe and will result in race
-      // conditions.
-      return Tensor<Float>(randomNormal: [224, 224, 3])
+    init(_ base: Base) { 
+      self.base = base
+      accessed_ = (0..<base.count).map { _ in AccessTracker() } 
+    }  
+    
+    subscript(i: Base.Index) -> Base.Element {
+      accessed_[base.distance(from: base.startIndex, to: i)].accessed = true
+      return base[i]
     }
-    let batches = dataset.inBatches(of: 64).lazy.map(\.collated)
+    
+    var accessed: LazyMapCollection<[AccessTracker], Bool> {
+      accessed_.lazy.map(\.accessed)
+    }
+  }
+    
+  func testBaseUse() {
+    let batchSize = 64
+    let dataset = (0..<512).map { (_) -> Tensor<Float> in 
+      Tensor<Float>(randomNormal: [224, 224, 3]) 
+    } 
+    let batches = dataset.inBatches(of: batchSize).lazy.map(\.collated)
 
+    XCTAssertEqual(batches.count, dataset.count / batchSize,
+                   "Incorrect number of batches.")
+    for batch in batches {
+      XCTAssertEqual(batch.shape, TensorShape([64, 224, 224, 3]),
+        "Wrong shape for batch: \(batch.shape), should be [64, 224, 224, 3]")
+    }
+  }
+    
+  func testInBatchesIsLazy() {
+    let batchSize = 64
+    let items = Array(0..<512)
+    let dataset = ReadTracker(items)
+    let batches = dataset.inBatches(of: batchSize)
+      
+    // `inBatches` is lazy so no elements were accessed.
+    XCTAssert(dataset.accessed.allSatisfy(){ !$0 },
+              "No elements should have been accessed yet.")
     for (i, batch) in batches.enumerated() {
-      XCTAssertEqual(batch.shape, TensorShape([64, 224, 224, 3]))
-      let limit = (i + 1) * 64
-      XCTAssert(rawItems[..<limit].allSatisfy(\.accessed))
-      XCTAssert(rawItems[limit...].allSatisfy({ !$0.accessed }))
+      // Elements are not accessed until we do something with `batch` so only
+      // the elements up to `i * batchSize` have been accessed yet.
+      XCTAssert(dataset.accessed[..<(i * batchSize)].allSatisfy(){ $0 },
+        "Not all elements prior to \(i * batchSize) have been accessed.")
+      XCTAssert(dataset.accessed[(i * batchSize)...].allSatisfy(){ !$0 },
+        "Some elements after \(i * batchSize) have been accessed.")
+      let _ = Array(batch)
+      let limit = (i + 1) * batchSize
+      // We accessed elements up to `limit` but no further.
+      XCTAssert(dataset.accessed[..<limit].allSatisfy(){ $0 },
+                "Not all elements prior to \(limit) have been accessed.")
+      XCTAssert(dataset.accessed[limit...].allSatisfy(){ !$0 },
+                "Some elements after \(limit) have been accessed.")
     }
   }
 
-  func testShuffle() {
-    // Using `dataset.shuffled()` would break the laziness. Plus we would need
-    // to do it at each new epoch. `TrainingEpochs` automatically handles
-    // shuffling (and re-shuffling at each epoch) without breaking the laziness.
-    let dataset = (0..<512).lazy.map { (i: Int32) -> Tensor<Int32> in
-      return Tensor<Int32>(zeros: [32, 32, 3]) + i
-    }
-
-    let epochs = TrainingEpochs(samples: dataset, batchSize: 64, entropy: rng)
-    var accessed = Array(0..<512)
-    for batches in epochs.prefix(10) {
-      var newAccessed: [Int] = []
+  func testTrainingEpochsShuffles() {
+    let batchSize = 64
+    let dataset = Array(0..<512)
+    let epochs = TrainingEpochs(samples: dataset, batchSize: batchSize, 
+                                entropy: rng).prefix(10)
+    var lastEpochSampleOrder = Array(0..<512)
+    for batches in epochs {
+      var newEpochSampleOrder: [Int] = []
       for batch in batches {
-        XCTAssertEqual(batches.count, 8)
-        let collatedBatch = batch.collated
-        XCTAssertEqual(collatedBatch.shape, TensorShape([64, 32, 32, 3]))
+        XCTAssertEqual(batches.count, 8, "Incorrect number of batches.")
+        let samples = Array(batch)
+        XCTAssertEqual(samples.count, batchSize,
+                       "This batch doesn't have batchSize elements.")
 
-        newAccessed += (0..<64).lazy.map {
-          Int(collatedBatch[$0, 0, 0, 0].scalarized())
-        }
+        newEpochSampleOrder += samples
       }
       XCTAssertNotEqual(
-        accessed, newAccessed,
+        lastEpochSampleOrder, newEpochSampleOrder,
         "Dataset should have been reshuffled.")
 
-      accessed = newAccessed
-      let uniqueSamples = Set(accessed)
+      lastEpochSampleOrder = newEpochSampleOrder
+      let uniqueSamples = Set(lastEpochSampleOrder)
       XCTAssertEqual(
-        uniqueSamples.count, accessed.count,
+        uniqueSamples.count, lastEpochSampleOrder.count,
         "Every epoch sample should be drawn from a different input sample.")
     }
   }
 
-  // Tests with shuffle
-  func testRemainderDropped() {
-    // `TrainingEpochs` automatically drops the remainder batch if it has
-    // less than `batchSize` elements.
-    let dataset = (0..<500).lazy.map { (i: Int32) -> Tensor<Int32> in
-      Tensor<Int32>(zeros: [32, 32, 3]) + i
-    }
-    let epochs = TrainingEpochs(
-      samples: dataset, batchSize: 64,
-      entropy: rng)
-    let samplesCount = 500 - 500 % 64
-    var accessed = Array(0..<samplesCount)
-    for batches in epochs.prefix(2) {
-      XCTAssertEqual(batches.count, 7)
-      var newAccessed: [Int] = []
+  func testTrainingEpochsDropsRemainder() {
+    let batchSize = 64
+    let dataset = Array(0..<500)
+    let epochs = TrainingEpochs(samples: dataset, batchSize: batchSize, 
+                                entropy: rng).prefix(1)
+    let samplesCount = dataset.count - dataset.count % 64
+    for batches in epochs {
+      XCTAssertEqual(batches.count, 7, "Incorrect number of batches.")
+      var count = 0
       for batch in batches {
-        let collatedBatch = batch.collated
-        XCTAssertEqual(collatedBatch.shape, TensorShape([64, 32, 32, 3]))
-        newAccessed += Array(0..<64).map {
-          Int(collatedBatch[$0, 0, 0, 0].scalarized())
-        }
+        let samples = Array(batch)
+        XCTAssertEqual(samples.count, batchSize,
+                       "This batch doesn't have batchSize elements.")
+        count += samples.count
       }
-      XCTAssertNotEqual(
-        accessed, newAccessed,
-        "Dataset should have been reshuffled.")
-
-      accessed = newAccessed
-      let uniqueSamples = Set(accessed)
-      XCTAssertEqual(
-        uniqueSamples.count, samplesCount,
-        "Every epoch sample should be drawn from a different input sample.")
+      XCTAssertEqual(count, samplesCount,
+                     "Didn't access the right number of samples.")
+    }
+  }
+    
+  func testTrainingEpochsIsLazy() {
+    let batchSize = 64
+    let items = Array(0..<512)
+    let dataset = ReadTracker(items)
+    let epochs = TrainingEpochs(samples: dataset, batchSize: batchSize, 
+                                 entropy: rng).prefix(1)
+      
+    // `inBatches` is lazy so no elements were accessed.
+    XCTAssert(dataset.accessed.allSatisfy(){ !$0 },
+              "No elements should have been accessed yet.")
+    for batches in epochs{
+      for (i, batch) in batches.enumerated() {
+        // Elements are not accessed until we do something with `batch` so only
+        // `i * batchSize` elements have been accessed yet.
+        XCTAssertEqual(dataset.accessed.filter(){ $0 }.count, i * batchSize,
+          "Should have accessed \(i * batchSize) elements.")
+        let _ = Array(batch)
+        XCTAssertEqual(
+          dataset.accessed.filter(){ $0 }.count, (i + 1) * batchSize,
+          "Should have accessed \((i + 1) * batchSize) elements.")
+      }
     }
   }
 
@@ -132,16 +193,19 @@ final class EpochsTests: XCTestCase {
       let shapes = nonuniformDataset[(i * 64)..<((i + 1) * 64)]
         .map { Int($0.shape[0]) }
       let expectedShape = shapes.reduce(0) { max($0, $1) }
-      XCTAssertEqual(Int(b.shape[1]), expectedShape)
+      XCTAssertEqual(Int(b.shape[1]), expectedShape,
+        "The batch does not have the expected shape: \(expectedShape).")
 
       for k in 0..<64 {
         let currentShape = nonuniformDataset[i * 64 + k].shape[0]
-        let paddedPart = atStart ? b[k, 0..<(expectedShape-currentShape)] : b[k, currentShape..<expectedShape]
+        let paddedPart = atStart ? b[k, 0..<(expectedShape-currentShape)] : (
+          b[k, currentShape..<expectedShape])
         XCTAssertEqual(
           paddedPart,
           Tensor<Int32>(
             repeating: padValue,
-            shape: [expectedShape - currentShape]))
+            shape: [expectedShape - currentShape]),
+          "Padding was not found where it should be.")
       }
     }
   }
@@ -151,24 +215,6 @@ final class EpochsTests: XCTestCase {
     paddingTest(padValue: 42, atStart: false)
     paddingTest(padValue: 0, atStart: true)
     paddingTest(padValue: -1, atStart: true)
-  }
-
-  // Use with a sampler
-  // In our previous example, another way to be memory efficient is to batch
-  // samples of roughly the same lengths.
-  func testSortAndPadding() {
-    // `nonUniformInferenceBatches` lazily sorts the samples
-    let batches = nonuniformInferenceBatches(
-      samples: nonuniformDataset, batchSize: 64
-    ) { $0.shape[0] < $1.shape[0] }
-    var previousSize: Int? = nil
-    for batchSamples in batches {
-      let batch = batchSamples.paddedAndCollated(with: 0)
-      if let size = previousSize {
-        XCTAssert(size >= batch.shape[1])
-      }
-      previousSize = Int(batch.shape[1])
-    }
   }
 
   let cuts = [0, 5, 8, 15, 24, 30]
@@ -243,17 +289,45 @@ final class EpochsTests: XCTestCase {
     XCTAssertEqual(stream.count, 30)
     XCTAssert(texts.allSatisfy { isSubset($0, from: stream) })
   }
-
-  func testNonuniformTrainingEpochs() {
-    class Sample {
-      init(size: Int) { self.size = size }
-      var size: Int
-    }
-
+  
+  class SizedSample {
+    init(size: Int) { self.size = size }
+    var size: Int
+  }
+  
+  func testNonuniformInferenceBatches() {
     let sampleCount = 503
     let batchSize = 7
     let samples = (0..<sampleCount).map {
-      _ in Sample.init(size: Int.random(in: 0..<1000, using: &rng))
+      _ in SizedSample.init(size: Int.random(in: 0..<1000, using: &rng))
+    }
+    let batches = nonuniformInferenceBatches(
+      samples: samples, batchSize: batchSize
+    ) { $0.size < $1.size }
+    
+    XCTAssertEqual(batches.count, sampleCount / batchSize + 1,
+                   "Wrong number of batches")
+    var previousSize: Int? = nil
+    for (i, batchSamples) in batches.enumerated() {
+      let batch = Array(batchSamples)
+      XCTAssertEqual(
+        batch.count, 
+        i == batches.count - 1 ? sampleCount % batchSize : batchSize,
+        "Wrong number of samples in this batch.")
+      let newSize = batch.map(\.size).max()!
+      if let size = previousSize {
+        XCTAssert(size >= newSize, 
+                 "Batch should be sorted through size.")
+      }
+      previousSize = Int(newSize)
+    }
+  }
+  
+  func testNonuniformTrainingEpochs() {
+    let sampleCount = 503
+    let batchSize = 7
+    let samples = (0..<sampleCount).map {
+      _ in SizedSample.init(size: Int.random(in: 0..<1000, using: &rng))
     }
 
     let epochs = NonuniformTrainingEpochs(
@@ -296,12 +370,14 @@ final class EpochsTests: XCTestCase {
 extension EpochsTests {
   static var allTests = [
     ("testAllPadding", testAllPadding),
+    ("testInBatchesIsLazy", testInBatchesIsLazy),
     ("testBaseUse", testBaseUse),
-    ("testShuffle", testShuffle),
-    ("testRemainderDropped", testRemainderDropped),
-    ("testSortAndPadding", testSortAndPadding),
+    ("testTrainingEpochsShuffles", testTrainingEpochsShuffles),
+    ("testTrainingEpochsDropsRemainder", testTrainingEpochsDropsRemainder),
+    ("testTrainingEpochsIsLazy", testTrainingEpochsIsLazy),
     ("testLanguageModel", testLanguageModel),
     ("testLanguageModelShuffled", testLanguageModelShuffled),
+    ("testNonuniformInferenceBatches", testNonuniformInferenceBatches),
     ("testNonuniformTrainingEpochs", testNonuniformTrainingEpochs),
   ]
 }
