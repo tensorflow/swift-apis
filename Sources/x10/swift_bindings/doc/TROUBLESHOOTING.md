@@ -6,13 +6,13 @@ report.
 
 ## Get A Metrics Report
 
-To print a report, add a `PrintMetrics` call to your program:
+To print a report, add a `PrintX10Metrics` call to your program:
 
 ```swift
-import x10_xla_tensor_wrapper
+import TensorFlow
 
 ...
-PrintMetrics()
+PrintX10Metrics()
 ...
 ```
 
