@@ -17,6 +17,7 @@
 #include <list>
 #include <unordered_map>
 
+#include "absl/container/node_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "tensorflow/compiler/xla/xla_client/debug_macros.h"
 #include "tensorflow/compiler/xla/xla_client/device.h"
@@ -108,7 +109,7 @@ std::vector<xla::ComputationClient::ExecuteChainedOp> OpByOpExecutor::BuildOps(
   XLA_VALUE_METRIC("OpByOpGraphSize", post_order.size());
   TF_VLOG(5) << "TensorsGraphSize=" << post_order.size();
 
-  std::unordered_map<const ir::Node*, size_t> node_to_index;
+  absl::node_hash_map<const ir::Node*, size_t> node_to_index;
   node_to_index.reserve(post_order.size());
   for (size_t i = 0; i < post_order.size(); ++i) {
     node_to_index[post_order[i]] = i;
