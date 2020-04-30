@@ -160,13 +160,13 @@ where Entropy == SystemRandomNumberGenerator {
 
 /// A collection of batches suitable for inference, drawing samples from
 /// `samples` into batches of `batchSize`.
-typealias NonuniformInferenceBatches<Samples: Collection> 
+public typealias NonuniformInferenceBatches<Samples: Collection> 
   = Slices<Sampling<Samples, [Samples.Index]>>
 
 /// An implementation detail used to work around the fact that Swift can't
 /// express a generic constraint that some type must be an instance of
 /// `Sampling`.
-protocol SamplingProtocol : Collection {
+public protocol SamplingProtocol : Collection {
   associatedtype Samples: Collection
   associatedtype Selection: Collection where Selection.Element == Samples.Index
   /// Creates an instance from `base` and `selection`.
@@ -184,7 +184,7 @@ extension Slices
   ///
   /// - Parameter areInAscendingSizeOrder: returns `true` iff the memory
   ///   footprint of the first parameter is less than that of the second.
-  init(
+  public init(
     samples: Base.Samples, batchSize n: Int,
     areInAscendingSizeOrder:
       @escaping (Base.Samples.Element, Base.Samples.Element) -> Bool
@@ -206,7 +206,7 @@ extension Slices
   ///   footprint of the sample at the first parameter is less than that of the
   ///   sample at the second parameter.
   ///
-  init(
+  public init(
     samples: Base.Samples, batchSize n: Int,
     samplesAreInAscendingSizeOrder:
       @escaping (Base.Samples.Index, Base.Samples.Index) -> Bool
