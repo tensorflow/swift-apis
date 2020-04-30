@@ -158,22 +158,61 @@ where Entropy == SystemRandomNumberGenerator {
   }
 }
 
-/// Build batches for inference drawing samples from `samples` into batches of 
-/// `batchSize`.
-///
-/// - Parameter areInAscendingSizeOrder: a predicate that      ...
-///   - areInAscendingSizeOrder: a predicate that returns `true` iff the size
-///     of the first parameter is less than that of the second.
-///
-/// Sorts `samples` without loading every sample in memory in a single array.
-public func nonuniformInferenceBatches<Samples: Collection>(
-  samples: Samples, batchSize: Int,
-  areInAscendingSizeOrder:
-    @escaping (Samples.Element, Samples.Element) -> Bool
-) -> Slices<Sampling<Samples, [Samples.Index]>> {
-  // The order of the samples.
-  let sampleOrder = Array(samples.indices).sorted {
-    areInAscendingSizeOrder(samples[$1], samples[$0])
+/// A collection of batches suitable for inference, drawing samples from
+/// `samples` into batches of `batchSize`.
+typealias NonuniformInferenceBatches<Samples: Collection> 
+  = Slices<Sampling<Samples, [Samples.Index]>>
+
+/// An implementation detail used to work around the fact that Swift can't
+/// express a generic constraint that some type must be an instance of
+/// `Sampling`.
+protocol SamplingProtocol : Collection {
+  associatedtype Samples: Collection
+  associatedtype Selection: Collection where Selection.Element == Samples.Index
+  /// Creates an instance from `base` and `selection`.
+  init(base: Samples, selection: Selection)
+}
+extension Sampling : SamplingProtocol {}
+
+extension Slices 
+  // This constraint matches when Self == NonuniformInferenceBatches<T>.
+  where Base: SamplingProtocol, Base.Selection == [Base.Samples.Index] 
+{
+  /// Creates an instance containing batches of `n` elements of `samples` where
+  /// the size of the largest sample in successive batches is strictly
+  /// descending.
+  ///
+  /// - Parameter areInAscendingSizeOrder: returns `true` iff the memory
+  ///   footprint of the first parameter is less than that of the second.
+  init(
+    samples: Base.Samples, batchSize n: Int,
+    areInAscendingSizeOrder:
+      @escaping (Base.Samples.Element, Base.Samples.Element) -> Bool
+  ) {
+    self.init(samples: samples, batchSize: n) { 
+      areInAscendingSizeOrder(samples[$0], samples[$1]) 
+    }
   }
-  return samples.sampled(at: sampleOrder).inBatches(of: batchSize)
+
+  /// Creates an instance containing batches of `n` elements of `samples` where
+  /// the size of the largest sample in successive batches is strictly
+  /// descending, with batch size determined by sample index.
+  ///
+  /// This initializer doesn't read elements from `samples`, so will preserve
+  /// any underlying laziness.
+  ///
+  /// - Parameter samplesAreInAscendingSizeOrder: returns `true` iff the memory
+  ///   footprint of the sample at the first parameter is less than that of the
+  ///   sample at the second parameter.
+  ///
+  init(
+    samples: Base.Samples, batchSize n: Int,
+    samplesAreInAscendingSizeOrder:
+      @escaping (Base.Samples.Index, Base.Samples.Index) -> Bool
+  ) {
+    let sampleOrder = samples.indices
+      .sorted { samplesAreInAscendingSizeOrder($1, $0) }
+    self = Base(base: samples, selection: sampleOrder).inBatches(of: n)
+  }
+  // TODO: Test the laziness of the result.
 }
