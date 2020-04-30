@@ -1970,7 +1970,7 @@ final class LayerTests: XCTestCase {
     let transformerResult = transformerLayerNorm(transformerTensor)
     XCTAssertEqual(transformerTensor.shape, transformerResult.shape)
   }
-  
+
   func testGaussianNoise() {
     Context.local.learningPhase = .inference
     let gaussianNoise = GaussianNoise<Float>(standardDeviation: 1.0)
