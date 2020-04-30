@@ -31,9 +31,10 @@ jobs:
           cd ..
 
       - name: lint
-        uses: compnerd/lint-action@swift-format
+        uses: compnerd/lint-action@s4tf
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          auto_fix: true
           appleswiftformat: true
 
   # build:
