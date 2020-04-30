@@ -306,7 +306,7 @@ final class EpochsTests: XCTestCase {
     let samples = (0..<sampleCount).map {
       _ in SizedSample.init(size: Int.random(in: 0..<1000, using: &rng))
     }
-    let batches = nonuniformInferenceBatches(
+    let batches = NonuniformInferenceBatches(
       samples: samples, batchSize: batchSize
     ) { $0.size < $1.size }
     
