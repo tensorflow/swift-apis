@@ -199,7 +199,8 @@ extension Slices
   /// descending, with batch size determined by sample index.
   ///
   /// This initializer doesn't read elements from `samples`, so will preserve
-  /// any underlying laziness.
+  /// any underlying laziness as long as `samplesAreInAscendingSizeOrder`
+  /// doesn't access them.
   ///
   /// - Parameter samplesAreInAscendingSizeOrder: returns `true` iff the memory
   ///   footprint of the sample at the first parameter is less than that of the
