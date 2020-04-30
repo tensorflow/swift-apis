@@ -160,7 +160,7 @@ where Entropy == SystemRandomNumberGenerator {
 
 /// A collection of batches suitable for inference, drawing samples from
 /// `samples` into batches of `batchSize`.
-public typealias NonuniformInferenceBatches<Samples: Collection> 
+public typealias NonuniformInferenceBatches<Samples: Collection>
   = Slices<Sampling<Samples, [Samples.Index]>>
 
 /// An implementation detail used to work around the fact that Swift can't
@@ -174,9 +174,9 @@ public protocol SamplingProtocol : Collection {
 }
 extension Sampling : SamplingProtocol {}
 
-extension Slices 
+extension Slices
   // This constraint matches when Self == NonuniformInferenceBatches<T>.
-  where Base: SamplingProtocol, Base.Selection == [Base.Samples.Index] 
+  where Base: SamplingProtocol, Base.Selection == [Base.Samples.Index]
 {
   /// Creates an instance containing batches of `n` elements of `samples` where
   /// the size of the largest sample in successive batches is strictly
@@ -189,8 +189,8 @@ extension Slices
     areInAscendingSizeOrder:
       @escaping (Base.Samples.Element, Base.Samples.Element) -> Bool
   ) {
-    self.init(samples: samples, batchSize: n) { 
-      areInAscendingSizeOrder(samples[$0], samples[$1]) 
+    self.init(samples: samples, batchSize: n) {
+      areInAscendingSizeOrder(samples[$0], samples[$1])
     }
   }
 
