@@ -22,7 +22,7 @@ final class EpochsTests: XCTestCase {
 
   // An element that keeps track of when it was first accessed.
   class AccessTracker {
-      var accessed: Bool = false
+    var accessed: Bool = false
   }
 
   // A struct keeping track of when its elements have been first accessed. We
@@ -33,7 +33,7 @@ final class EpochsTests: XCTestCase {
   ///
   /// - Warning: distinct elements may be read concurrently, but reading
   ///   the same element from two threads is a race condition.
-  struct ReadTracker<Base: RandomAccessCollection> : RandomAccessCollection {
+  struct ReadTracker<Base: RandomAccessCollection>: RandomAccessCollection {
     let base: Base
     let accessed_: [AccessTracker]
 
@@ -71,10 +71,12 @@ final class EpochsTests: XCTestCase {
     }
     let batches = dataset.inBatches(of: batchSize).lazy.map(\.collated)
 
-    XCTAssertEqual(batches.count, dataset.count / batchSize,
-                   "Incorrect number of batches.")
+    XCTAssertEqual(
+      batches.count, dataset.count / batchSize,
+      "Incorrect number of batches.")
     for batch in batches {
-      XCTAssertEqual(batch.shape, TensorShape([64, 224, 224, 3]),
+      XCTAssertEqual(
+        batch.shape, TensorShape([64, 224, 224, 3]),
         "Wrong shape for batch: \(batch.shape), should be [64, 224, 224, 3]")
     }
   }
@@ -86,38 +88,46 @@ final class EpochsTests: XCTestCase {
     let batches = dataset.inBatches(of: batchSize)
 
     // `inBatches` is lazy so no elements were accessed.
-    XCTAssert(dataset.accessed.allSatisfy(){ !$0 },
-              "No elements should have been accessed yet.")
+    XCTAssert(
+      dataset.accessed.allSatisfy(){ !$0 },
+      "No elements should have been accessed yet.")
     for (i, batch) in batches.enumerated() {
       // Elements are not accessed until we do something with `batch` so only
       // the elements up to `i * batchSize` have been accessed yet.
-      XCTAssert(dataset.accessed[..<(i * batchSize)].allSatisfy(){ $0 },
+      XCTAssert(
+        dataset.accessed[..<(i * batchSize)].allSatisfy(){ $0 },
         "Not all elements prior to \(i * batchSize) have been accessed.")
-      XCTAssert(dataset.accessed[(i * batchSize)...].allSatisfy(){ !$0 },
+      XCTAssert(
+        dataset.accessed[(i * batchSize)...].allSatisfy(){ !$0 },
         "Some elements after \(i * batchSize) have been accessed.")
       let _ = Array(batch)
       let limit = (i + 1) * batchSize
       // We accessed elements up to `limit` but no further.
-      XCTAssert(dataset.accessed[..<limit].allSatisfy(){ $0 },
-                "Not all elements prior to \(limit) have been accessed.")
-      XCTAssert(dataset.accessed[limit...].allSatisfy(){ !$0 },
-                "Some elements after \(limit) have been accessed.")
+      XCTAssert(
+        dataset.accessed[..<limit].allSatisfy(){ $0 },
+        "Not all elements prior to \(limit) have been accessed.")
+      XCTAssert(
+        dataset.accessed[limit...].allSatisfy(){ !$0 },
+        "Some elements after \(limit) have been accessed.")
     }
   }
 
   func testTrainingEpochsShuffles() {
     let batchSize = 64
     let dataset = Array(0..<512)
-    let epochs = TrainingEpochs(samples: dataset, batchSize: batchSize,
-                                entropy: rng).prefix(10)
+    let epochs = TrainingEpochs(
+      samples: dataset, batchSize: batchSize,
+      entropy: rng
+    ).prefix(10)
     var lastEpochSampleOrder = Array(0..<512)
     for batches in epochs {
       var newEpochSampleOrder: [Int] = []
       for batch in batches {
         XCTAssertEqual(batches.count, 8, "Incorrect number of batches.")
         let samples = Array(batch)
-        XCTAssertEqual(samples.count, batchSize,
-                       "This batch doesn't have batchSize elements.")
+        XCTAssertEqual(
+          samples.count, batchSize,
+          "This batch doesn't have batchSize elements.")
 
         newEpochSampleOrder += samples
       }
@@ -136,20 +146,24 @@ final class EpochsTests: XCTestCase {
   func testTrainingEpochsDropsRemainder() {
     let batchSize = 64
     let dataset = Array(0..<500)
-    let epochs = TrainingEpochs(samples: dataset, batchSize: batchSize,
-                                entropy: rng).prefix(1)
+    let epochs = TrainingEpochs(
+      samples: dataset, batchSize: batchSize,
+      entropy: rng
+    ).prefix(1)
     let samplesCount = dataset.count - dataset.count % 64
     for batches in epochs {
       XCTAssertEqual(batches.count, 7, "Incorrect number of batches.")
       var count = 0
       for batch in batches {
         let samples = Array(batch)
-        XCTAssertEqual(samples.count, batchSize,
-                       "This batch doesn't have batchSize elements.")
+        XCTAssertEqual(
+          samples.count, batchSize,
+          "This batch doesn't have batchSize elements.")
         count += samples.count
       }
-      XCTAssertEqual(count, samplesCount,
-                     "Didn't access the right number of samples.")
+      XCTAssertEqual(
+        count, samplesCount,
+        "Didn't access the right number of samples.")
     }
   }
 
@@ -157,21 +171,25 @@ final class EpochsTests: XCTestCase {
     let batchSize = 64
     let items = Array(0..<512)
     let dataset = ReadTracker(items)
-    let epochs = TrainingEpochs(samples: dataset, batchSize: batchSize,
-                                 entropy: rng).prefix(1)
+    let epochs = TrainingEpochs(
+      samples: dataset, batchSize: batchSize,
+      entropy: rng
+    ).prefix(1)
 
     // `inBatches` is lazy so no elements were accessed.
-    XCTAssert(dataset.accessed.allSatisfy(){ !$0 },
-              "No elements should have been accessed yet.")
-    for batches in epochs{
+    XCTAssert(
+      dataset.accessed.allSatisfy(){ !$0 },
+      "No elements should have been accessed yet.")
+    for batches in epochs {
       for (i, batch) in batches.enumerated() {
         // Elements are not accessed until we do something with `batch` so only
         // `i * batchSize` elements have been accessed yet.
-        XCTAssertEqual(dataset.accessed.filter(){ $0 }.count, i * batchSize,
+        XCTAssertEqual(
+          dataset.accessed.filter() { $0 }.count, i * batchSize,
           "Should have accessed \(i * batchSize) elements.")
         let _ = Array(batch)
         XCTAssertEqual(
-          dataset.accessed.filter(){ $0 }.count, (i + 1) * batchSize,
+          dataset.accessed.filter() { $0 }.count, (i + 1) * batchSize,
           "Should have accessed \((i + 1) * batchSize) elements.")
       }
     }
@@ -198,13 +216,14 @@ final class EpochsTests: XCTestCase {
       let shapes = nonuniformDataset[(i * 64)..<((i + 1) * 64)]
         .map { Int($0.shape[0]) }
       let expectedShape = shapes.reduce(0) { max($0, $1) }
-      XCTAssertEqual(Int(b.shape[1]), expectedShape,
+      XCTAssertEqual(
+        Int(b.shape[1]), expectedShape,
         "The batch does not have the expected shape: \(expectedShape).")
 
       for k in 0..<64 {
         let currentShape = nonuniformDataset[i * 64 + k].shape[0]
-        let paddedPart = atStart ? b[k, 0..<(expectedShape-currentShape)] : (
-          b[k, currentShape..<expectedShape])
+        let paddedPart =
+          atStart ? b[k, 0..<(expectedShape-currentShape)] : (b[k, currentShape..<expectedShape])
         XCTAssertEqual(
           paddedPart,
           Tensor<Int32>(
@@ -310,8 +329,9 @@ final class EpochsTests: XCTestCase {
       samples: samples, batchSize: batchSize
     ) { $0.size < $1.size }
 
-    XCTAssertEqual(batches.count, sampleCount / batchSize + 1,
-                   "Wrong number of batches")
+    XCTAssertEqual(
+      batches.count, sampleCount / batchSize + 1,
+      "Wrong number of batches")
     var previousSize: Int? = nil
     for (i, batchSamples) in batches.enumerated() {
       let batch = Array(batchSamples)
@@ -321,8 +341,9 @@ final class EpochsTests: XCTestCase {
         "Wrong number of samples in this batch.")
       let newSize = batch.map(\.size).max()!
       if let size = previousSize {
-        XCTAssert(size >= newSize,
-                 "Batch should be sorted through size.")
+        XCTAssert(
+          size >= newSize,
+          "Batch should be sorted through size.")
       }
       previousSize = Int(newSize)
     }
