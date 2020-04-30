@@ -28,9 +28,9 @@ final class LazyTensorShapeInferenceTests: LazyTensorTestCase {
     let b = Tensor<Float>(shape: [1, 3], scalars: [1.0, 2.0, 3.0])
     let c = Tensor<Float>(shape: [1, 3], scalars: [4.0, 5.0, 6.0])
     let w = a * b
-    let wLazyTensorOperation = w._lazyTensor!.lazyTensorOperation!
+    let wLazyTensorOperation = w._lazyTensorHandle!.lazyTensorOperation!
     let x = w * c
-    let xLazyTensorOperation = x._lazyTensor!.lazyTensorOperation!
+    let xLazyTensorOperation = x._lazyTensorHandle!.lazyTensorOperation!
 
     // Make sure that `w` and `x` are not materialized.
     XCTAssertFalse(wLazyTensorOperation.isMaterialized)
@@ -60,7 +60,7 @@ final class LazyTensorShapeInferenceTests: LazyTensorTestCase {
     let a = Tensor<Float>(shape: [3, 1], scalars: [1.0, 2.0, 3.0])
     let b = a.reshaped(toShape: [1, 3])
 
-    let bLazyTensorOperation = b._lazyTensor!.lazyTensorOperation!
+    let bLazyTensorOperation = b._lazyTensorHandle!.lazyTensorOperation!
     XCTAssertFalse(bLazyTensorOperation.isMaterialized)
 
     let bShape = b.shape
@@ -69,7 +69,7 @@ final class LazyTensorShapeInferenceTests: LazyTensorTestCase {
     XCTAssertFalse(bLazyTensorOperation.isMaterialized)
 
     let c = Tensor<Float>(repeating: 5, shape: [4, 5, 6])
-    let cLazyTensorOperation = c._lazyTensor!.lazyTensorOperation!
+    let cLazyTensorOperation = c._lazyTensorHandle!.lazyTensorOperation!
     XCTAssertFalse(cLazyTensorOperation.isMaterialized)
 
     let cShape = c.shape
@@ -91,7 +91,7 @@ final class LazyTensorShapeInferenceTests: LazyTensorTestCase {
     let dims = a + b
     let m = _Raw.fill(dims: dims, value: Tensor<Float>(1.0))
     let result = _Raw.matMul(m, m)
-    let mLazyTensorOperation = m._lazyTensor!.lazyTensorOperation!
+    let mLazyTensorOperation = m._lazyTensorHandle!.lazyTensorOperation!
     // Note that we have not triggered materialization yet. So, it should not have happened
     // implicitly during shape inference.
     XCTAssertFalse(mLazyTensorOperation.isMaterialized)
