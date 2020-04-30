@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #if os(Windows)
-import func MSVCRT.sqrt
+  import func MSVCRT.sqrt
 #endif
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
@@ -96,8 +96,9 @@ public struct GaussianNoise<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer
   public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     switch Context.local.learningPhase {
     case .training:
-      let noise = Tensor<Scalar>(randomNormal: input.shape, mean: Tensor<Scalar>(0),
-                                 standardDeviation: self.standardDeviation)
+      let noise = Tensor<Scalar>(
+        randomNormal: input.shape, mean: Tensor<Scalar>(0),
+        standardDeviation: self.standardDeviation)
       return input + noise
     case .inference:
       return input
@@ -130,8 +131,9 @@ public struct GaussianDropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
   public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     switch Context.local.learningPhase {
     case .training:
-      let noise = Tensor<Scalar>(randomNormal: input.shape, mean: Tensor<Scalar>(1.0),
-                                 standardDeviation: Tensor<Scalar>(standardDeviation))
+      let noise = Tensor<Scalar>(
+        randomNormal: input.shape, mean: Tensor<Scalar>(1.0),
+        standardDeviation: Tensor<Scalar>(standardDeviation))
       return input * noise
     case .inference:
       return input
