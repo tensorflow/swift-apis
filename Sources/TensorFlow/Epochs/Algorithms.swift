@@ -30,8 +30,8 @@
 /// of a collection to `MutableCollectionAlgorithms` to get these customization
 /// points to be used from other algorithms defined on
 /// `MutableCollectionAlgorithms`.
-public protocol MutableCollectionAlgorithms : MutableCollection
-where SubSequence : MutableCollectionAlgorithms
+public protocol MutableCollectionAlgorithms: MutableCollection
+where SubSequence: MutableCollectionAlgorithms
 {
   /// Rotates the elements of the collection so that the element
   /// at `middle` ends up first.
@@ -45,9 +45,9 @@ where SubSequence : MutableCollectionAlgorithms
 
 // Conformances of common collection types to MutableCollectionAlgorithms.
 // If rotate was a requirement of MutableCollection, these would not be needed.
-extension Array : MutableCollectionAlgorithms {}
-extension ArraySlice : MutableCollectionAlgorithms {}
-extension Slice : MutableCollectionAlgorithms
+extension Array: MutableCollectionAlgorithms {}
+extension ArraySlice: MutableCollectionAlgorithms {}
+extension Slice: MutableCollectionAlgorithms
 where Base: MutableCollection {}
 
 extension MutableCollection {
@@ -380,7 +380,7 @@ extension Concatenation: Collection where Base1: Collection, Base2: Collection {
   }
 }
 
-extension Concatenation : BidirectionalCollection
+extension Concatenation: BidirectionalCollection
 where Base1: BidirectionalCollection, Base2: BidirectionalCollection {
   public func index(before i: Index) -> Index {
     assert(i != startIndex, "Can't advance before startIndex")
@@ -395,9 +395,8 @@ where Base1: BidirectionalCollection, Base2: BidirectionalCollection {
   }
 }
 
-extension Concatenation : RandomAccessCollection
-  where Base1: RandomAccessCollection, Base2: RandomAccessCollection
-{
+extension Concatenation: RandomAccessCollection
+where Base1: RandomAccessCollection, Base2: RandomAccessCollection {
   public func index(_ i: Index, offsetBy n: Int) -> Index {
     if n == 0 { return i }
     return n > 0 ? _offsetForward(i, by: n) : _offsetBackward(i, by: -n)
@@ -520,7 +519,7 @@ where Base: BidirectionalCollection {
   }
 }
 
-extension RotatedCollection : RandomAccessCollection
+extension RotatedCollection: RandomAccessCollection
 where Base: RandomAccessCollection {}
 
 extension Collection {
