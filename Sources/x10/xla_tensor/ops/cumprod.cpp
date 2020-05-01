@@ -20,6 +20,7 @@
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/infer_output_shape.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/reduction.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/tensor_util.h"
+#include "tensorflow/compiler/xla/client/lib/constants.h"
 
 namespace swift_xla {
 namespace ir {
@@ -31,8 +32,8 @@ xla::XlaOp LowerCumProd(xla::XlaOp input, xla::int64 dim,
                         bool reverse) {
   xla::XlaOp casted_input = CastToScalarType(input, dtype);
   const xla::Shape& input_shape = XlaHelpers::ShapeOfXlaOp(casted_input);
-  xla::XlaOp init = XlaHelpers::ScalarValue<float>(
-      1, input_shape.element_type(), casted_input.builder());
+  xla::XlaOp init =
+      xla::One(casted_input.builder(), input_shape.element_type());
   xla::XlaComputation reducer =
       XlaHelpers::CreateMulComputation(input_shape.element_type());
   return BuildCumulativeComputation(casted_input, dim, reducer, init, exclusive,
@@ -75,9 +76,11 @@ XlaOpVector CumProd::Lower(LoweringContext* loctx) const {
 
 std::string CumProd::ToString() const {
   std::stringstream ss;
-  ss << Node::ToString() << ", dim=" << dim_
-     << ", dtype=" << OptionalOr<int>(dtype_, -1)
-     << ", exclusive=" << exclusive_ << ", reverse=" << reverse_;
+  ss << Node::ToString() << ", dim=" << dim_;
+  if (dtype_) {
+    ss << ", dtype=" << *dtype_;
+  }
+  ss << ", exclusive=" << exclusive_ << ", reverse=" << reverse_;
   return ss.str();
 }
 
