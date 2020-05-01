@@ -1080,3 +1080,7 @@ extension XLATensor {
     }
   }
 }
+
+public func PrintX10Metrics() {
+  PrintMetrics()
+}

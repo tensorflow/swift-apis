@@ -58,9 +58,9 @@ where Selection: BidirectionalCollection {
   public func index(_ i: Index, offsetBy n: Int) -> Index {
     selection.index(before: i)
   }
-  
+
   // Needed because of https://bugs.swift.org/browse/SR-12692
-  /// Returns `i` offset by `distance` unless that requires passing `limit`, in 
+  /// Returns `i` offset by `distance` unless that requires passing `limit`, in
   /// which case `nil` is returned.
   @inlinable
   public func index(

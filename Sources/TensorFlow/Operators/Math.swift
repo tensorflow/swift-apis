@@ -393,36 +393,36 @@ extension Tensor: VectorProtocol where Scalar: TensorFlowFloatingPoint {
 // Consider publicly exposing these operators when tensorflow/swift-apis is no
 // longer built as part of the Swift standard library,
 /*
-public extension VectorProtocol {	
-    static func + (lhs: VectorSpaceScalar, rhs: Self) -> Self {	
-        rhs.adding(lhs)	
-    }	
+public extension VectorProtocol {
+    static func + (lhs: VectorSpaceScalar, rhs: Self) -> Self {
+        rhs.adding(lhs)
+    }
 
-    static func + (lhs: Self, rhs: VectorSpaceScalar) -> Self {	
-        lhs.adding(rhs)	
-    }	
+    static func + (lhs: Self, rhs: VectorSpaceScalar) -> Self {
+        lhs.adding(rhs)
+    }
 
-    static func - (lhs: Self, rhs: VectorSpaceScalar) -> Self {	
-        lhs.subtracting(rhs)	
-    }	
+    static func - (lhs: Self, rhs: VectorSpaceScalar) -> Self {
+        lhs.subtracting(rhs)
+    }
 
-    static func * (lhs: VectorSpaceScalar, rhs: Self) -> Self {	
-        rhs.scaled(by: lhs)	
-    }	
+    static func * (lhs: VectorSpaceScalar, rhs: Self) -> Self {
+        rhs.scaled(by: lhs)
+    }
 
-    static func * (lhs: Self, rhs: VectorSpaceScalar) -> Self {	
-        lhs.scaled(by: rhs)	
-    }	
-}	
+    static func * (lhs: Self, rhs: VectorSpaceScalar) -> Self {
+        lhs.scaled(by: rhs)
+    }
+}
 
-public extension VectorProtocol where VectorSpaceScalar: SignedNumeric {	
-    static prefix func - (x: Self) -> Self {	
-        .zero - x	
-    }	
+public extension VectorProtocol where VectorSpaceScalar: SignedNumeric {
+    static prefix func - (x: Self) -> Self {
+        .zero - x
+    }
 
-    static func - (lhs: VectorSpaceScalar, rhs: Self) -> Self {	
-        (-rhs).adding(lhs)	
-    }	
+    static func - (lhs: VectorSpaceScalar, rhs: Self) -> Self {
+        (-rhs).adding(lhs)
+    }
 }
 */
 
@@ -1472,9 +1472,9 @@ public func swish<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
   x * sigmoid(x)
 }
 
-// Note: A custom vjp function for swish is required to avoid excessive 
-// tensor memory consumption due to storing both `x` and `sigmoid(x)` for 
-// backprop. This vjp recomputes `sigmoid(x)` during backprop, so that 
+// Note: A custom vjp function for swish is required to avoid excessive
+// tensor memory consumption due to storing both `x` and `sigmoid(x)` for
+// backprop. This vjp recomputes `sigmoid(x)` during backprop, so that
 // the `sigmoid(x)` expression can be freed during the forward pass.
 @inlinable
 @derivative(of: swish)

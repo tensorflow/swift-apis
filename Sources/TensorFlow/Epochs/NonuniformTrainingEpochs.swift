@@ -160,24 +160,24 @@ where Entropy == SystemRandomNumberGenerator {
 
 /// A collection of batches suitable for inference, drawing samples from
 /// `samples` into batches of `batchSize`.
-public typealias NonuniformInferenceBatches<Samples: Collection> 
-  = Slices<Sampling<Samples, [Samples.Index]>>
+public typealias NonuniformInferenceBatches<Samples: Collection> = Slices<
+  Sampling<Samples, [Samples.Index]>
+>
 
 /// An implementation detail used to work around the fact that Swift can't
 /// express a generic constraint that some type must be an instance of
 /// `Sampling`.
-public protocol SamplingProtocol : Collection {
+public protocol SamplingProtocol: Collection {
   associatedtype Samples: Collection
   associatedtype Selection: Collection where Selection.Element == Samples.Index
   /// Creates an instance from `base` and `selection`.
   init(base: Samples, selection: Selection)
 }
-extension Sampling : SamplingProtocol {}
+extension Sampling: SamplingProtocol {}
 
-extension Slices 
-  // This constraint matches when Self == NonuniformInferenceBatches<T>.
-  where Base: SamplingProtocol, Base.Selection == [Base.Samples.Index] 
-{
+extension Slices
+// This constraint matches when Self == NonuniformInferenceBatches<T>.
+where Base: SamplingProtocol, Base.Selection == [Base.Samples.Index] {
   /// Creates an instance containing batches of `n` elements of `samples` where
   /// the size of the largest sample in successive batches is strictly
   /// descending.
@@ -189,8 +189,8 @@ extension Slices
     areInAscendingSizeOrder:
       @escaping (Base.Samples.Element, Base.Samples.Element) -> Bool
   ) {
-    self.init(samples: samples, batchSize: n) { 
-      areInAscendingSizeOrder(samples[$0], samples[$1]) 
+    self.init(samples: samples, batchSize: n) {
+      areInAscendingSizeOrder(samples[$0], samples[$1])
     }
   }
 

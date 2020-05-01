@@ -18,6 +18,7 @@ VERS_1.0 {
     GetStringCStr;
     MaterializedTensor_getData;
     MaterializedTensor_getType;
+    PrintMetrics;
     XLAShape_*;
     SetMatMulPrecision;
     fetchTensorShape;
