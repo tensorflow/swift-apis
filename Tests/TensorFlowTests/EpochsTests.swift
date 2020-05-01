@@ -89,25 +89,25 @@ final class EpochsTests: XCTestCase {
 
     // `inBatches` is lazy so no elements were accessed.
     XCTAssert(
-      dataset.accessed.allSatisfy(){ !$0 },
+      dataset.accessed.allSatisfy { !$0 },
       "No elements should have been accessed yet.")
     for (i, batch) in batches.enumerated() {
       // Elements are not accessed until we do something with `batch` so only
       // the elements up to `i * batchSize` have been accessed yet.
       XCTAssert(
-        dataset.accessed[..<(i * batchSize)].allSatisfy(){ $0 },
+        dataset.accessed[..<(i * batchSize)].allSatisfy { $0 },
         "Not all elements prior to \(i * batchSize) have been accessed.")
       XCTAssert(
-        dataset.accessed[(i * batchSize)...].allSatisfy(){ !$0 },
+        dataset.accessed[(i * batchSize)...].allSatisfy { !$0 },
         "Some elements after \(i * batchSize) have been accessed.")
       let _ = Array(batch)
       let limit = (i + 1) * batchSize
       // We accessed elements up to `limit` but no further.
       XCTAssert(
-        dataset.accessed[..<limit].allSatisfy(){ $0 },
+        dataset.accessed[..<limit].allSatisfy { $0 },
         "Not all elements prior to \(limit) have been accessed.")
       XCTAssert(
-        dataset.accessed[limit...].allSatisfy(){ !$0 },
+        dataset.accessed[limit...].allSatisfy { !$0 },
         "Some elements after \(limit) have been accessed.")
     }
   }
@@ -178,7 +178,7 @@ final class EpochsTests: XCTestCase {
 
     // `inBatches` is lazy so no elements were accessed.
     XCTAssert(
-      dataset.accessed.allSatisfy(){ !$0 },
+      dataset.accessed.allSatisfy { !$0 },
       "No elements should have been accessed yet.")
     for batches in epochs {
       for (i, batch) in batches.enumerated() {
@@ -223,7 +223,7 @@ final class EpochsTests: XCTestCase {
       for k in 0..<64 {
         let currentShape = nonuniformDataset[i * 64 + k].shape[0]
         let paddedPart =
-          atStart ? b[k, 0..<(expectedShape-currentShape)] : (b[k, currentShape..<expectedShape])
+          atStart ? b[k, 0..<(expectedShape - currentShape)] : (b[k, currentShape..<expectedShape])
         XCTAssertEqual(
           paddedPart,
           Tensor<Int32>(
