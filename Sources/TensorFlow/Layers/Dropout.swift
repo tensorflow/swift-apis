@@ -83,14 +83,14 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
 /// The noise added always has mean zero, but has a configurable standard deviation.
 public struct GaussianNoise<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   @noDerivative public let standardDeviation: Tensor<Scalar>
-  
+
   /// Creates a Gaussian noise layer
   ///
   /// - Parameter standardDeviation: Standard deviation of the Guassian distribution
   public init(standardDeviation: Scalar) {
     self.standardDeviation = Tensor<Scalar>(standardDeviation)
   }
-  
+
   /// Returns a tensor obtained by adding noise to `input`
   @differentiable
   public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
