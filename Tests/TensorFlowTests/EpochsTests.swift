@@ -90,25 +90,25 @@ final class EpochsTests: XCTestCase {
     // `inBatches` is lazy so no elements were accessed.
     XCTAssert(
       dataset.accessed.allSatisfy { !$0 },
-      "No elements should have been accessed yet.")
+      "Laziness failure: no elements should have been accessed yet.")
     for (i, batch) in batches.enumerated() {
       // Elements are not accessed until we do something with `batch` so only
       // the elements up to `i * batchSize` have been accessed yet.
       XCTAssert(
         dataset.accessed[..<(i * batchSize)].allSatisfy { $0 },
-        "Not all elements prior to \(i * batchSize) have been accessed.")
+        "Some samples in a prior batch were unexpectedly skipped.")
       XCTAssert(
         dataset.accessed[(i * batchSize)...].allSatisfy { !$0 },
-        "Some elements after \(i * batchSize) have been accessed.")
+        "Laziness failure: some samples were read prematurely.")
       let _ = Array(batch)
       let limit = (i + 1) * batchSize
       // We accessed elements up to `limit` but no further.
       XCTAssert(
         dataset.accessed[..<limit].allSatisfy { $0 },
-        "Not all elements prior to \(limit) have been accessed.")
+        "Some samples in a prior batch were unexpectedly skipped.")
       XCTAssert(
         dataset.accessed[limit...].allSatisfy { !$0 },
-        "Some elements after \(limit) have been accessed.")
+        "Laziness failure: some samples were read prematurely.")
     }
   }
 
@@ -119,7 +119,7 @@ final class EpochsTests: XCTestCase {
       samples: dataset, batchSize: batchSize,
       entropy: rng
     ).prefix(10)
-    var lastEpochSampleOrder = Array(0..<512)
+    var lastEpochSampleOrder: [Int]? = nil
     for batches in epochs {
       var newEpochSampleOrder: [Int] = []
       for batch in batches {
@@ -131,39 +131,41 @@ final class EpochsTests: XCTestCase {
 
         newEpochSampleOrder += samples
       }
-      XCTAssertNotEqual(
-        lastEpochSampleOrder, newEpochSampleOrder,
-        "Dataset should have been reshuffled.")
+      if let l = lastEpochSampleOrder {
+        XCTAssertNotEqual(
+          l, newEpochSampleOrder,
+          "Dataset should have been reshuffled.")
+      }
 
-      lastEpochSampleOrder = newEpochSampleOrder
-      let uniqueSamples = Set(lastEpochSampleOrder)
+      let uniqueSamples = Set(newEpochSampleOrder)
       XCTAssertEqual(
-        uniqueSamples.count, lastEpochSampleOrder.count,
+        uniqueSamples.count, newEpochSampleOrder.count,
         "Every epoch sample should be drawn from a different input sample.")
+      lastEpochSampleOrder = newEpochSampleOrder
     }
   }
 
-  func testTrainingEpochsDropsRemainder() {
+  func testTrainingEpochsShapes() {
     let batchSize = 64
-    let dataset = Array(0..<500)
+    let dataset = 0..<500
     let epochs = TrainingEpochs(
       samples: dataset, batchSize: batchSize,
       entropy: rng
     ).prefix(1)
-    let samplesCount = dataset.count - dataset.count % 64
-    for batches in epochs {
-      XCTAssertEqual(batches.count, 7, "Incorrect number of batches.")
-      var count = 0
-      for batch in batches {
-        let samples = Array(batch)
+
+    for epochBatches in epochs {
+      XCTAssertEqual(epochBatches.count, 7, "Incorrect number of batches.")
+      var epochSampleCount = 0
+      for batch in epochBatches {
         XCTAssertEqual(
-          samples.count, batchSize,
-          "This batch doesn't have batchSize elements.")
-        count += samples.count
+           batch.count, batchSize, "unexpected batch size: \(batch.count)")
+        epochSampleCount += batch.count
       }
+      let expectedDropCount = dataset.count % 64
+      let actualDropCount = dataset.count - epochSampleCount
       XCTAssertEqual(
-        count, samplesCount,
-        "Didn't access the right number of samples.")
+        expectedDropCount, actualDropCount,
+        "Dropped \(actualDropCount) samples but expected \(expectedDropCount).")
     }
   }
 
@@ -399,7 +401,7 @@ extension EpochsTests {
     ("testInBatchesIsLazy", testInBatchesIsLazy),
     ("testBaseUse", testBaseUse),
     ("testTrainingEpochsShuffles", testTrainingEpochsShuffles),
-    ("testTrainingEpochsDropsRemainder", testTrainingEpochsDropsRemainder),
+    ("testTrainingEpochsShapes", testTrainingEpochsShapes),
     ("testTrainingEpochsIsLazy", testTrainingEpochsIsLazy),
     ("testLanguageModel", testLanguageModel),
     ("testLanguageModelShuffled", testLanguageModelShuffled),
