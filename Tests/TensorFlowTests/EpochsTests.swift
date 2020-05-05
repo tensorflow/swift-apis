@@ -187,11 +187,11 @@ final class EpochsTests: XCTestCase {
         // Elements are not accessed until we do something with `batch` so only
         // `i * batchSize` elements have been accessed yet.
         XCTAssertEqual(
-          dataset.accessed.filter() { $0 }.count, i * batchSize,
+          dataset.accessed.filter { $0 }.count, i * batchSize,
           "Should have accessed \(i * batchSize) elements.")
         let _ = Array(batch)
         XCTAssertEqual(
-          dataset.accessed.filter() { $0 }.count, (i + 1) * batchSize,
+          dataset.accessed.filter { $0 }.count, (i + 1) * batchSize,
           "Should have accessed \((i + 1) * batchSize) elements.")
       }
     }
