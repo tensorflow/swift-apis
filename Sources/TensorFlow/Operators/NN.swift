@@ -971,6 +971,7 @@ public func depthToSpace<Scalar>(_ input: Tensor<Scalar>, blockSize b: Int) -> T
   return _Raw.depthToSpace(input, blockSize: Int64(b))
 }
 
+@usableFromInline
 @derivative(of: depthToSpace)
 func _vjpDepthToSpace<Scalar: TensorFlowFloatingPoint>(
   _ input: Tensor<Scalar>,
@@ -1048,6 +1049,7 @@ public func spaceToDepth<Scalar>(_ input: Tensor<Scalar>, blockSize b: Int) -> T
   return _Raw.spaceToDepth(input, blockSize: Int64(b))
 }
 
+@usableFromInline
 @derivative(of: spaceToDepth)
 func _vjpSpaceToDepth<Scalar: TensorFlowFloatingPoint>(
   _ input: Tensor<Scalar>,

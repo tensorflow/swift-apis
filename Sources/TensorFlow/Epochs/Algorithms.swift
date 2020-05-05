@@ -31,8 +31,7 @@
 /// points to be used from other algorithms defined on
 /// `MutableCollectionAlgorithms`.
 public protocol MutableCollectionAlgorithms: MutableCollection
-where SubSequence: MutableCollectionAlgorithms
-{
+where SubSequence: MutableCollectionAlgorithms {
   /// Rotates the elements of the collection so that the element
   /// at `middle` ends up first.
   ///

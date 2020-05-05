@@ -1,0 +1,40 @@
+name: swift-format
+
+on:
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  swift-format:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v2.1.0
+
+      - uses: actions/checkout@v2.1.0
+        with:
+          repository: apple/swift-format
+          path: ${{ github.workspace }}/swift-format
+          ref: swift-5.2-branch
+
+      - uses: actions/cache@v1.1.2
+        with:
+          path: ${{ github.workspace }}/swift-format/.build
+          key: ${{ runner.os }}-swift-format-${{ hashFiles('**/Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-swift-format-
+
+      - name: build swift-format
+        run: |
+          pushd ${{ github.workspace }}/swift-format
+          swift build -c release
+          echo "::add-path::${PWD}/.build/release"
+          popd
+
+      - uses: samuelmeuli/lint-action@v1.5.0
+        with:
+          auto_fix: true
+          swift_format_official: true
+          git_name: Swift for TensorFlow
+          git_email: ainu-bot@google.com
+          github_token: ${{ secrets.GITHUB_TOKEN }}
