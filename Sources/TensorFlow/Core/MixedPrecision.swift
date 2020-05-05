@@ -206,11 +206,13 @@ extension Tensor {
 #endif
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
+  @usableFromInline
   @derivative(of: toReducedPrecision)
   func _vjpToReducedPrecision() -> (value: Tensor, pullback: (Tensor) -> Tensor) {
     (toReducedPrecision, { $0.toFullPrecision })
   }
 
+  @usableFromInline
   @derivative(of: toFullPrecision)
   func _vjpToFullPrecision() -> (value: Tensor, pullback: (Tensor) -> Tensor) {
     (toFullPrecision, { $0.toReducedPrecision })
