@@ -2075,7 +2075,7 @@ final class LayerTests: XCTestCase {
           9.5367432e-07, -2.3841858e-07, -8.3446503e-07,
           -9.5367432e-07, 1.1920929e-06, 9.5367432e-07
         ]))
-
+  }
   func testGaussianNoise() {
     Context.local.learningPhase = .inference
     let gaussianNoise = GaussianNoise<Float>(standardDeviation: 1.0)
