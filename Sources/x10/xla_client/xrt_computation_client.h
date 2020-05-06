@@ -29,6 +29,7 @@
 #include "tensorflow/compiler/xla/xla_client/cache.h"
 #include "tensorflow/compiler/xla/xla_client/computation_client.h"
 #include "tensorflow/compiler/xla/xla_client/debug_macros.h"
+#include "tensorflow/compiler/xla/xla_client/device.h"
 #include "tensorflow/compiler/xla/xla_client/mesh_service.h"
 #include "tensorflow/compiler/xla/xla_client/metrics.h"
 #include "tensorflow/compiler/xla/xla_client/triggered_task.h"
@@ -107,6 +108,14 @@ class XrtComputationClient : public ComputationClient {
   };
 
  public:
+  struct Device {
+    Device() = default;
+    Device(const std::string& device_str);
+
+    std::string kind;
+    int ordinal = 0;
+  };
+
   struct Worker {
     Worker(std::string name, int task_no)
         : name(std::move(name)), task_no(task_no) {}
@@ -184,6 +193,8 @@ class XrtComputationClient : public ComputationClient {
 
   std::string GetDefaultDevice() const override;
 
+  swift_xla::Device GetDefaultDeviceStruct() const override;
+
   size_t GetNumDevices() const override;
 
   std::vector<std::string> GetLocalDevices() const override;
@@ -198,6 +209,8 @@ class XrtComputationClient : public ComputationClient {
 
   std::map<std::string, Metric> GetMetrics() const override;
 
+  static Worker ParseWorker(const std::string& worker);
+
   static std::string GetMultiProcessingDevice();
 
  private:
@@ -208,8 +221,9 @@ class XrtComputationClient : public ComputationClient {
     struct Hash {
       size_t operator()(const CompilationCacheKey& entry) const {
         util::PartialHasher<std::string, 4096> hasher;
-        return tensorflow::Hash64(entry.domain.data(), entry.domain.size(),
-                                  hasher(entry.serialized_computation));
+        hash_t h = util::DataHash(entry.domain.data(), entry.domain.size());
+        return util::HashReduce(
+            util::HashCombine(h, hasher(entry.serialized_computation)));
       }
     };
 
@@ -321,7 +335,8 @@ class XrtComputationClient : public ComputationClient {
   void InitializeDevices(
       std::unique_ptr<tensorflow::tpu::TopologyProto> topology_proto);
 
-  void CreateMeshService(const tensorflow::tpu::TopologyProto& topology_proto);
+  void CreateMeshService(const std::string& address,
+                         const tensorflow::tpu::TopologyProto* topology_proto);
 
   std::vector<DataPtr> GetComputationResults(
       const tensorflow::Tensor& xrt_result, const Shape& result_shape,
@@ -474,9 +489,10 @@ class XrtComputationClient : public ComputationClient {
       const std::string& job, int task_no, const std::string& worker_host_port,
       const tensorflow::ConfigProto& config);
 
+  static std::string GetLocalTarget(const Options& options);
+
   // Checks whether a local GRPC service is required, and starts it if need it.
-  static void MaybeCreateLocalService(
-      const XrtComputationClient::Options& options);
+  static void MaybeCreateLocalService(const Options& options);
 
   Options options_;
   std::mutex lock_;

@@ -58,6 +58,6 @@ final class TrivialModelTests: XCTestCase {
   }
 
   static var allTests = [
-    ("testXOR", testXOR),
+    ("testXOR", testXOR)
   ]
 }

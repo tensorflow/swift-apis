@@ -17,8 +17,9 @@
 #include <map>
 
 #include "tensorflow/compiler/xla/xla_client/debug_macros.h"
+#include "tensorflow/compiler/xla/xla_client/device.h"
 #include "tensorflow/compiler/xla/xla_client/util.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/device.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/convert_ops.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/helpers.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/layout_manager.h"
 #include "tensorflow/compiler/xla/shape_util.h"
@@ -80,11 +81,7 @@ xla::XlaComputation GetReduceComutation(AllReduceType reduce_type,
               << xla::util::GetEnumValue(reduce_type);
 }
 
-}  // namespace
-
-std::vector<xla::XlaOp> BuildAllReduce(
-    AllReduceType reduce_type, absl::Span<const xla::XlaOp> operands,
-    xla::XlaOp token, double scale,
+std::vector<xla::ReplicaGroup> CreateReduceGroups(
     const std::vector<std::vector<xla::int64>>& groups) {
   std::vector<xla::ReplicaGroup> reduce_groups;
   for (auto& group : groups) {
@@ -94,6 +91,24 @@ std::vector<xla::XlaOp> BuildAllReduce(
     }
     reduce_groups.push_back(std::move(rgroup));
   }
+  return reduce_groups;
+}
+
+xla::XlaOp SliceOneToken(xla::XlaOp input) {
+  const xla::Shape& input_shape = XlaHelpers::ShapeOfXlaOp(input);
+  if (input_shape.rank() == 0) {
+    return input;
+  }
+  return xla::SliceInDim(input, 0, 1, 1, 0);
+}
+
+}  // namespace
+
+std::vector<xla::XlaOp> BuildAllReduce(
+    AllReduceType reduce_type, absl::Span<const xla::XlaOp> operands,
+    xla::XlaOp token, double scale,
+    const std::vector<std::vector<xla::int64>>& groups) {
+  std::vector<xla::ReplicaGroup> reduce_groups = CreateReduceGroups(groups);
   // TODO: We use pseudo-tokens ATM, which are real values. This need to be
   // switched to use the real XLA Token once support has been added to XLA
   // AllReduce().
@@ -101,8 +116,7 @@ std::vector<xla::XlaOp> BuildAllReduce(
   ReduceContext redux = GetReduceContext(operands);
   std::vector<xla::XlaOp> result(operands.size());
   for (auto& type_ctx : redux.contexts) {
-    xla::XlaOp token_op =
-        xla::ConvertElementType(chained_token, type_ctx.first);
+    xla::XlaOp token_op = MaybeConvertTo(chained_token, type_ctx.first);
     type_ctx.second.ops.push_back(token_op);
     type_ctx.second.operand_shapes.push_back(
         XlaHelpers::ShapeOfXlaOp(token_op));
@@ -127,8 +141,42 @@ std::vector<xla::XlaOp> BuildAllReduce(
         xla::GetTupleElement(reduce, type_ctx.second.indices.size());
   }
   result.push_back(
-      xla::ConvertElementType(chained_token, XlaHelpers::TypeOfXlaOp(token)));
+      MaybeConvertTo(chained_token, XlaHelpers::TypeOfXlaOp(token)));
   return result;
+}
+
+AllToAllResult BuildAllToAll(
+    xla::XlaOp input, xla::XlaOp token, xla::int64 split_dimension,
+    xla::int64 concat_dimension, xla::int64 split_count,
+    const std::vector<std::vector<xla::int64>>& groups) {
+  std::vector<xla::ReplicaGroup> reduce_groups = CreateReduceGroups(groups);
+  const xla::Shape& input_shape = XlaHelpers::ShapeOfXlaOp(input);
+  xla::XlaOp affine_token = MaybeConvertTo(token, input_shape.element_type());
+  // TODO: This is missing layout pinning ATM. If XLA scheduling is not exactly
+  // the same (graphs on cores differ), XLA could assign different layouts and
+  // things will break.
+  xla::XlaOp reduce_result =
+      xla::AllToAll(input + affine_token, split_dimension, concat_dimension,
+                    split_count, reduce_groups);
+  xla::XlaOp chained_token =
+      MaybeConvertTo(affine_token * SliceOneToken(reduce_result),
+                     XlaHelpers::TypeOfXlaOp(token));
+  return {reduce_result, chained_token};
+}
+
+CollectivePermuteResult BuildCollectivePermute(
+    xla::XlaOp input, xla::XlaOp token,
+    const std::vector<std::pair<xla::int64, xla::int64>>& source_target_pairs) {
+  const xla::Shape& input_shape = XlaHelpers::ShapeOfXlaOp(input);
+  xla::XlaOp affine_token = MaybeConvertTo(token, input_shape.element_type());
+  // TODO: This is missing layout pinning ATM. If XLA scheduling is not exactly
+  // the same (graphs on cores differ), XLA could assign different layouts and
+  // things will break.
+  xla::XlaOp result =
+      xla::CollectivePermute(input + affine_token, source_target_pairs);
+  xla::XlaOp chained_token = MaybeConvertTo(
+      affine_token * SliceOneToken(result), XlaHelpers::TypeOfXlaOp(token));
+  return {result, chained_token};
 }
 
 }  // namespace swift_xla

@@ -61,6 +61,17 @@ class HloMetadataSetter {
 
 }  // namespace
 
+LoweringContext::LoweringContext(const std::string& name) : builder_(name) {}
+
+LoweringContext::LoweringContext(const std::string& name,
+                                 absl::Span<const Node* const> post_order,
+                                 Util::EmissionMap emit_status)
+    : builder_(name), emit_status_(std::move(emit_status)) {
+  for (auto node : post_order) {
+    LowerNode(node);
+  }
+}
+
 xla::XlaOp LoweringContext::GetParameter(
     const std::shared_ptr<xla::ComputationClient::Data>& data) {
   xla::ComputationClient::Data::OpaqueHandle handle = data->GetOpaqueHandle();
@@ -69,15 +80,34 @@ xla::XlaOp LoweringContext::GetParameter(
     xla::XlaOp param =
         xla::Parameter(builder(), parameters_.size(), data->shape(),
                        absl::StrCat("p", parameters_.size()));
+    it = parameters_map_.emplace(handle, Parameter{param, parameters_.size()})
+             .first;
     parameters_.push_back(data);
-    it = parameters_map_.emplace(handle, param).first;
   }
-  return it->second;
+  parameter_sequence_.push_back(it->second.index);
+  return it->second.param;
 }
 
-xla::int64 LoweringContext::AddResult(xla::XlaOp op) {
+const std::vector<xla::ComputationClient::DataPtr>&
+LoweringContext::GetParametersData() const {
+  return parameters_;
+}
+
+const std::vector<size_t>& LoweringContext::GetParameterSequence() const {
+  return parameter_sequence_;
+}
+
+size_t LoweringContext::AddResult(xla::XlaOp op) {
   root_tuple_.push_back(std::move(op));
   return root_tuple_.size() - 1;
+}
+
+xla::XlaOp LoweringContext::GetResult(size_t index) const {
+  return root_tuple_.at(index);
+}
+
+void LoweringContext::SetResult(size_t index, xla::XlaOp op) {
+  root_tuple_.at(index) = std::move(op);
 }
 
 xla::StatusOr<xla::XlaComputation> LoweringContext::Build() {
@@ -94,7 +124,7 @@ xla::StatusOr<xla::XlaComputation> LoweringContext::Build(xla::XlaOp root) {
 }
 
 void LoweringContext::AssignOutputOp(const Output& output, xla::XlaOp op) {
-  emitted_outputs_[output] = op;
+  emitted_outputs_[output] = std::move(op);
 }
 
 xla::XlaOp LoweringContext::GetOutputOp(const Output& output) {

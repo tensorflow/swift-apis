@@ -19,6 +19,7 @@ cc_library(
         "*.h",
         "ops/*.h",
     ]),
+    visibility = ["//visibility:public"],
     deps = [
         "//tensorflow/c:c_api",
         "//tensorflow/c:c_api_experimental",
@@ -55,7 +56,11 @@ cc_library(
         "//tensorflow/core:framework",
         "//tensorflow/core:lib",
         "//tensorflow/core/kernels:conv_ops",
+        "@com_google_absl//absl/base",
         "@com_google_absl//absl/container:inlined_vector",
+        "@com_google_absl//absl/container:node_hash_map",
+        "@com_google_absl//absl/debugging:stacktrace",
+        "@com_google_absl//absl/debugging:symbolize",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
@@ -65,26 +70,46 @@ cc_library(
     ],
 )
 
+filegroup(
+    name = "get_x10_dll_import_lib",
+    srcs = [":x10.dll"],
+    output_group = "interface_library",
+    visibility = ["//visibility:public"],
+)
+
+genrule(
+    name = "x10_dll_import_lib",
+    srcs = [":get_x10_dll_import_lib"],
+    outs = ["x10.lib"],
+    cmd = select({
+        "//tensorflow:windows": "cp -f $< $@",
+        "//conditions:default": "touch $@",  # Just a placeholder for Unix platforms
+    }),
+    visibility = ["//visibility:public"],
+)
+
 tf_cc_shared_object(
-    name = "libx10.so",
-    linkopts = [
-        "-z defs",
-        "-Wl,--version-script,$(location :tf_version_script.lds)",
-    ],
+    name = "x10",
+    linkopts = select({
+        "//tensorflow:macos": [
+            # TODO
+        ],
+        "//tensorflow:windows": [
+        ],
+        "//conditions:default": [
+            "-z defs",
+            "-s",
+            "-Wl,--version-script,$(location :tf_version_script.lds)",
+        ],
+    }),
+    per_os_targets = True,
     visibility = ["//visibility:public"],
     deps = [
+        "//swift_bindings:device_wrapper",
+        "//swift_bindings:xla_tensor_wrapper",
+        "//swift_bindings:xla_tensor_tf_ops",
         ":tensor",
         ":tf_exported_symbols.lds",
         ":tf_version_script.lds",
-    ],
-)
-
-tf_cc_binary(
-    name = "test",
-    srcs = ["test.cpp"],
-    deps = [
-        ":tensor",
-        "//tensorflow/stream_executor/host:host_platform",
-        "@com_google_absl//absl/strings:str_format",
     ],
 )

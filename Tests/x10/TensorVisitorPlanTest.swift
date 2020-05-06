@@ -12,10 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import TensorFlow
 import XCTest
-import x10_device
 import x10_optimizers_tensor_visitor_plan
-import x10_tensor
 
 struct Classifier: Layer {
   var layers = [Dense<Float>(inputSize: 784, outputSize: 30, activation: relu)]
@@ -98,5 +97,5 @@ extension TensorVisitorPlanTests {
 }
 
 XCTMain([
-  testCase(TensorVisitorPlanTests.allTests),
+  testCase(TensorVisitorPlanTests.allTests)
 ])

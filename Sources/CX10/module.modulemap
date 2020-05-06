@@ -1,0 +1,11 @@
+module x10_device_wrapper {
+  header "device_wrapper.h"
+}
+
+module x10_xla_tensor_tf_ops {
+  header "xla_tensor_tf_ops.h"
+}
+
+module x10_xla_tensor_wrapper {
+  header "xla_tensor_wrapper.h"
+}

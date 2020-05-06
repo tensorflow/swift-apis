@@ -50,8 +50,8 @@ public struct RNNCellOutput<Output: Differentiable, State: Differentiable>: Diff
 extension RNNCellOutput: EuclideanDifferentiable
 where Output: EuclideanDifferentiable, State: EuclideanDifferentiable {}
 
-/// A recurrent neural network cell.
-public protocol RNNCell: Layer
+/// A recurrent layer cell.
+public protocol RecurrentLayerCell: Layer
 where
   Input == RNNCellInput<TimeStepInput, State>,
   Output == RNNCellOutput<TimeStepOutput, State>
@@ -67,13 +67,13 @@ where
   func zeroState(for input: TimeStepInput) -> State
 }
 
-extension RNNCell {
-  /// Returns the new state obtained from applying the RNN cell to the input at the current time
-  /// step and the previous state.
+extension RecurrentLayerCell {
+  /// Returns the new state obtained from applying the recurrent layer cell to the input at the
+  /// current time step and the previous state.
   ///
   /// - Parameters:
   ///   - timeStepInput: The input at the current time step.
-  ///   - previousState: The previous state of the RNN cell.
+  ///   - previousState: The previous state of the recurrent layer cell.
   /// - Returns: The output.
   @differentiable
   public func callAsFunction(
@@ -89,8 +89,8 @@ extension RNNCell {
   }
 }
 
-/// A simple RNN cell.
-public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
+/// A basic RNN cell.
+public struct BasicRNNCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell {
   public var weight: Tensor<Scalar>
   public var bias: Tensor<Scalar>
 
@@ -121,7 +121,7 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
 
   /// Returns a zero-valued state with shape compatible with the provided input.
   public func zeroState(for input: Tensor<Scalar>) -> State {
-    State(Tensor(zeros: [input.shape[0], weight.shape[1]]))
+    State(Tensor(zeros: [input.shape[0], weight.shape[1]], on: input.device))
   }
 
   /// Returns the output obtained from applying the layer to the given input.
@@ -137,7 +137,7 @@ public struct SimpleRNNCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
 }
 
 /// An LSTM cell.
-public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
+public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell {
   public var fusedWeight: Tensor<Scalar>
   public var fusedBias: Tensor<Scalar>
 
@@ -219,8 +219,8 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
   public func zeroState(for input: Tensor<Scalar>) -> State {
     let hiddenSize = fusedWeight.shape[1] / 4
     return State(
-      cell: Tensor(zeros: [input.shape[0], hiddenSize]),
-      hidden: Tensor(zeros: [input.shape[0], hiddenSize]))
+      cell: Tensor(zeros: [input.shape[0], hiddenSize], on: input.device),
+      hidden: Tensor(zeros: [input.shape[0], hiddenSize], on: input.device))
   }
 
   /// Returns the output obtained from applying the layer to the given input.
@@ -267,7 +267,7 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
 }
 
 /// An GRU cell.
-public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
+public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell {
   public var updateWeight1, updateWeight2: Tensor<Scalar>
   public var resetWeight1, resetWeight2: Tensor<Scalar>
   public var outputWeight1, outputWeight2: Tensor<Scalar>
@@ -278,7 +278,7 @@ public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
   }
 
   public func zeroState(for input: Tensor<Scalar>) -> State {
-    return State(hidden: Tensor(zeros: stateShape))
+    return State(hidden: Tensor(zeros: stateShape, on: input.device))
   }
 
   public typealias TimeStepInput = Tensor<Scalar>
@@ -343,7 +343,7 @@ public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RNNCell {
   }
 }
 
-public struct RNN<Cell: RNNCell>: Layer {
+public struct RecurrentLayer<Cell: RecurrentLayerCell>: Layer {
   public typealias Input = [Cell.TimeStepInput]
   public typealias Output = [Cell.TimeStepOutput]
 
@@ -353,7 +353,7 @@ public struct RNN<Cell: RNNCell>: Layer {
     self.cell = cell()
   }
 
-  @differentiable(wrt: (self,inputs,initialState))
+  @differentiable(wrt: (self, inputs, initialState))
   public func callAsFunction(
     _ inputs: [Cell.TimeStepInput],
     initialState: Cell.State
@@ -369,7 +369,7 @@ public struct RNN<Cell: RNNCell>: Layer {
     return timeStepOutputs
   }
 
-  @differentiable(wrt: (self,inputs,initialState))
+  @differentiable(wrt: (self, inputs, initialState))
   public func call(
     _ inputs: [Cell.TimeStepInput],
     initialState: Cell.State
@@ -378,7 +378,7 @@ public struct RNN<Cell: RNNCell>: Layer {
   }
 
   @usableFromInline
-  @derivative(of: callAsFunction, wrt: (self,inputs,initialState))
+  @derivative(of: callAsFunction, wrt: (self, inputs, initialState))
   internal func _vjpCallAsFunction(
     _ inputs: [Cell.TimeStepInput],
     initialState: Cell.State
@@ -427,7 +427,7 @@ public struct RNN<Cell: RNNCell>: Layer {
     return self(inputs, initialState: initialState)
   }
 
-  @differentiable(wrt: (self,inputs,initialState))
+  @differentiable(wrt: (self, inputs, initialState))
   public func lastOutput(
     from inputs: [Cell.TimeStepInput],
     initialState: Cell.State
@@ -436,7 +436,7 @@ public struct RNN<Cell: RNNCell>: Layer {
     return self(inputs, initialState: initialState)[withoutDerivative(at: inputs.count - 1)]
   }
 
-  @differentiable(wrt: (self,inputs))
+  @differentiable(wrt: (self, inputs))
   public func lastOutput(from inputs: [Cell.TimeStepInput]) -> Cell.TimeStepOutput {
     precondition(!inputs.isEmpty, "'inputs' must be non-empty.")
     let initialState = withoutDerivative(at: cell.zeroState(for: inputs[0]))
@@ -444,8 +444,23 @@ public struct RNN<Cell: RNNCell>: Layer {
   }
 }
 
-extension RNN: Equatable where Cell: Equatable {}
-extension RNN: AdditiveArithmetic where Cell: AdditiveArithmetic {}
+extension RecurrentLayer: Equatable where Cell: Equatable {}
+extension RecurrentLayer: AdditiveArithmetic where Cell: AdditiveArithmetic {}
 
-public typealias SimpleRNN<Scalar: TensorFlowFloatingPoint> = RNN<SimpleRNNCell<Scalar>>
-public typealias LSTM<Scalar: TensorFlowFloatingPoint> = RNN<LSTMCell<Scalar>>
+public typealias BasicRNN<Scalar: TensorFlowFloatingPoint> = RecurrentLayer<BasicRNNCell<Scalar>>
+public typealias LSTM<Scalar: TensorFlowFloatingPoint> = RecurrentLayer<LSTMCell<Scalar>>
+public typealias GRU<Scalar: TensorFlowFloatingPoint> = RecurrentLayer<GRUCell<Scalar>>
+
+// - MARK: Deprecated names
+
+@available(*, deprecated, renamed: "RecurrentLayerCell")
+public typealias RNNCell = RecurrentLayerCell
+
+@available(*, deprecated, renamed: "RecurrentLayer")
+public typealias RNN = RecurrentLayer
+
+@available(*, deprecated, renamed: "BasicRNNCell")
+public typealias SimpleRNNCell = BasicRNNCell
+
+@available(*, deprecated, renamed: "BasicRNN")
+public typealias SimpleRNN = BasicRNN

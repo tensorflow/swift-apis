@@ -17,13 +17,14 @@
 #include <list>
 #include <unordered_map>
 
+#include "absl/container/node_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "tensorflow/compiler/xla/xla_client/debug_macros.h"
+#include "tensorflow/compiler/xla/xla_client/device.h"
 #include "tensorflow/compiler/xla/xla_client/metrics.h"
 #include "tensorflow/compiler/xla/xla_client/sys_util.h"
 #include "tensorflow/compiler/xla/xla_client/util.h"
 #include "tensorflow/compiler/xla/xla_client/xla_util.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/device.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ir_util.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/lowering_context.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/device_data.h"
@@ -49,16 +50,16 @@ const xla::Shape& GetParameterShape(const ir::Output& operand,
   // See comment in GetOutputIndex() about device data WRT computation outpout
   // shape handling.
   const ir::ops::DeviceData* device_data =
-      dynamic_cast<const ir::ops::DeviceData*>(operand.node);
+      ir::ops::DeviceData::Cast(operand.node);
   return device_data != nullptr
              ? input_shape
              : xla::ShapeUtil::GetTupleElementShape(input_shape, operand.index);
 }
 
-size_t ComputeNodeKey(const ir::Node* node,
-                      absl::Span<const xla::Shape* const> input_shapes,
-                      size_t seed) {
-  size_t key = seed;
+xla::hash_t ComputeNodeKey(const ir::Node* node,
+                           absl::Span<const xla::Shape* const> input_shapes,
+                           const xla::hash_t& seed) {
+  xla::hash_t key = seed;
   const auto& operands = node->operands();
   for (size_t i = 0; i < operands.size(); ++i) {
     key = xla::util::HashCombine(key, xla::util::ShapeHash(GetParameterShape(
@@ -85,8 +86,8 @@ xla::XlaComputation BuildNodeComputation(
   return ConsumeValue(loctx.Build());
 }
 
-size_t GetNodesKeySeed(const std::string& device,
-                       absl::Span<const std::string> devices) {
+xla::hash_t GetNodesKeySeed(const std::string& device,
+                            absl::Span<const std::string> devices) {
   return xla::util::MHash(device, devices);
 }
 
@@ -108,7 +109,7 @@ std::vector<xla::ComputationClient::ExecuteChainedOp> OpByOpExecutor::BuildOps(
   XLA_VALUE_METRIC("OpByOpGraphSize", post_order.size());
   TF_VLOG(5) << "TensorsGraphSize=" << post_order.size();
 
-  std::unordered_map<const ir::Node*, size_t> node_to_index;
+  absl::node_hash_map<const ir::Node*, size_t> node_to_index;
   node_to_index.reserve(post_order.size());
   for (size_t i = 0; i < post_order.size(); ++i) {
     node_to_index[post_order[i]] = i;
@@ -116,11 +117,13 @@ std::vector<xla::ComputationClient::ExecuteChainedOp> OpByOpExecutor::BuildOps(
 
   auto compilation_devices =
       xla::ComputationClient::Get()->GetCompilationDevices(device, devices);
-  size_t nodes_key_seed = GetNodesKeySeed(device, compilation_devices);
+  xla::hash_t nodes_key_seed = GetNodesKeySeed(device, compilation_devices);
   Device exec_device(device);
-  std::vector<size_t> cache_keys;
-  std::unordered_map<size_t, std::vector<size_t>> compile_indices;
-  std::unordered_map<size_t, size_t> cache_keys_instance;
+  std::vector<xla::hash_t> cache_keys;
+  std::unordered_map<xla::hash_t, std::vector<size_t>, xla::util::HashReducer>
+      compile_indices;
+  std::unordered_map<xla::hash_t, size_t, xla::util::HashReducer>
+      cache_keys_instance;
   std::list<xla::Shape> compile_shapes;
   std::vector<bool> device_data_ops(post_order.size());
   std::vector<const xla::Shape*> ops_shapes(post_order.size());
@@ -130,8 +133,7 @@ std::vector<xla::ComputationClient::ExecuteChainedOp> OpByOpExecutor::BuildOps(
   for (size_t i = 0; i < post_order.size(); ++i) {
     const ir::Node* node = post_order[i];
     xla::ComputationClient::ExecuteChainedOp& cxop = chained_exec_ops[i];
-    const ir::ops::DeviceData* device_data =
-        dynamic_cast<const ir::ops::DeviceData*>(node);
+    const ir::ops::DeviceData* device_data = ir::ops::DeviceData::Cast(node);
     if (device_data != nullptr) {
       cxop.device_data = device_data->data();
       ops_shapes[i] = &cxop.device_data->shape();
@@ -146,7 +148,8 @@ std::vector<xla::ComputationClient::ExecuteChainedOp> OpByOpExecutor::BuildOps(
         op_input_shapes.push_back(ops_shapes[op_index]);
       }
 
-      size_t cache_key = ComputeNodeKey(node, op_input_shapes, nodes_key_seed);
+      xla::hash_t cache_key =
+          ComputeNodeKey(node, op_input_shapes, nodes_key_seed);
       cxop.computation = compile_cache_.Get(cache_key);
       if (cxop.computation == nullptr) {
         XLA_COUNTER("OpByOpCompileCacheMiss", 1);

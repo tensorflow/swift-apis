@@ -12,7 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "swift_bindings/xla_tensor_tf_ops.h"
+#if defined(_WIN32)
+#define XLA_API __declspec(dllexport)
+#endif
+
+#include "xla_tensor_tf_ops.h"
 
 #include "tensorflow/compiler/tf2xla/xla_tensor/helpers.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/tensor.h"

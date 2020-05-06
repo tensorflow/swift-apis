@@ -34,7 +34,7 @@ class LazyTensorTestCase: XCTestCase {
 
 protocol _LazyTensorCompatible {
   /// The underlying `LazyTensorHandle` (if any).
-  var _lazyTensor: LazyTensorHandle? { get }
+  var _lazyTensorHandle: LazyTensorHandle? { get }
 
   /// Returns `Self` that wraps a concrete `LazyTensorHandle`.
   /// (Triggers materialization if needed.)
@@ -47,7 +47,7 @@ protocol _LazyTensorCompatible {
 }
 
 extension _AnyTensorHandle {
-  var _lazyTensor: LazyTensorHandle? {
+  var _lazyTensorHandle: LazyTensorHandle? {
     if let handle = self as? LazyTensorHandle {
       return handle
     } else {
@@ -58,35 +58,35 @@ extension _AnyTensorHandle {
 }
 
 extension TensorHandle: _LazyTensorCompatible {
-  var _lazyTensor: LazyTensorHandle? { handle._lazyTensor }
+  var _lazyTensorHandle: LazyTensorHandle? { handle._lazyTensorHandle }
   public var _concreteLazyTensor: TensorHandle {
     TensorHandle(handle: handle._concreteLazyTensor)
   }
 }
 
 extension Tensor: _LazyTensorCompatible {
-  var _lazyTensor: LazyTensorHandle? { handle._lazyTensor }
+  var _lazyTensorHandle: LazyTensorHandle? { handle._lazyTensorHandle }
   public var _concreteLazyTensor: Tensor {
     Tensor(handle: handle._concreteLazyTensor)
   }
 }
 
 extension StringTensor: _LazyTensorCompatible {
-  var _lazyTensor: LazyTensorHandle? { handle._lazyTensor }
+  var _lazyTensorHandle: LazyTensorHandle? { handle._lazyTensorHandle }
   public var _concreteLazyTensor: StringTensor {
     StringTensor(handle: handle._concreteLazyTensor)
   }
 }
 
 extension VariantHandle: _LazyTensorCompatible {
-  var _lazyTensor: LazyTensorHandle? { handle._lazyTensor }
+  var _lazyTensorHandle: LazyTensorHandle? { handle._lazyTensorHandle }
   public var _concreteLazyTensor: VariantHandle {
     VariantHandle(handle: handle._concreteLazyTensor)
   }
 }
 
 extension ResourceHandle: _LazyTensorCompatible {
-  var _lazyTensor: LazyTensorHandle? { handle._lazyTensor }
+  var _lazyTensorHandle: LazyTensorHandle? { handle._lazyTensorHandle }
   public var _concreteLazyTensor: ResourceHandle {
     ResourceHandle(handle: handle._concreteLazyTensor)
   }

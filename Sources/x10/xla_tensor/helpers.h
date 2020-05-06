@@ -17,6 +17,7 @@
 #pragma once
 
 #include <functional>
+#include <tuple>
 #include <vector>
 
 #include "absl/types/optional.h"
@@ -58,7 +59,11 @@ class XlaHelpers {
         return xla::LiteralUtil::CreateR0<float>(scalar_value);
       case xla::PrimitiveType::BF16:
         return xla::LiteralUtil::CreateR0<tensorflow::bfloat16>(
-            static_cast<tensorflow::bfloat16>(scalar_value));
+            static_cast<tensorflow::bfloat16>(
+                static_cast<float>(scalar_value)));
+      case xla::PrimitiveType::F16:
+        return xla::LiteralUtil::CreateR0<xla::half>(
+            static_cast<xla::half>(static_cast<float>(scalar_value)));
       case xla::PrimitiveType::S64:
         return xla::LiteralUtil::CreateR0<xla::int64>(scalar_value);
       case xla::PrimitiveType::U64:
@@ -77,6 +82,10 @@ class XlaHelpers {
         return xla::LiteralUtil::CreateR0<xla::uint8>(scalar_value);
       case xla::PrimitiveType::PRED:
         return xla::LiteralUtil::CreateR0<bool>(scalar_value);
+      case xla::PrimitiveType::C64:
+        return xla::LiteralUtil::CreateR0<xla::complex64>(scalar_value);
+      case xla::PrimitiveType::C128:
+        return xla::LiteralUtil::CreateR0<xla::complex128>(scalar_value);
       default:
         return xla::LiteralUtil::CreateR0<T>(scalar_value);
     }
@@ -105,8 +114,6 @@ class XlaHelpers {
     return ScalarValue(static_cast<xla::int64>(scalar_value.toLong()), type,
                        builder);
   }
-
-  static xla::uint64 GenRngSeed();
 
   // Performa a linear interpolation between value0 and value1, by calculating:
   //   result = value0 * alpha + value1 * (1 - alpha)
@@ -253,9 +260,15 @@ class XlaHelpers {
                                                           xla::int64 dim1,
                                                           xla::int64 rank);
 
+  static xla::PrimitiveType PromoteType(xla::PrimitiveType type1,
+                                        xla::PrimitiveType type2);
+
   // Performs type promotion to make sure both operations return the same type.
   static std::pair<xla::XlaOp, xla::XlaOp> PromoteValues(xla::XlaOp op1,
                                                          xla::XlaOp op2);
+
+  static std::tuple<xla::XlaOp, xla::XlaOp, xla::XlaOp> PromoteValues(
+      xla::XlaOp op1, xla::XlaOp op2, xla::XlaOp op3);
 
   // Performs type promotion, by casting the second operation to the type of the
   // first, if different.
@@ -293,6 +306,9 @@ class XlaHelpers {
 
   static xla::Shape GetPromotedShape(const xla::Shape& shape1,
                                      const xla::Shape& shape2);
+
+  static xla::Shape GetPromotedBinaryOpShape(const xla::Shape& shape1,
+                                             const xla::Shape& shape2);
 
   // Returns a new operations which broadcast the input operation into the
   // shape. The op_shape is the shape of the op operation, while shape should be

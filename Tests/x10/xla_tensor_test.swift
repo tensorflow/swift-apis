@@ -1,12 +1,11 @@
+import TensorFlow
 import XCTest
-import x10_device
-import x10_tensor
 import x10_xla_tensor_wrapper
 
 /// Direct tests of xla tensor.
 final class XLATensorTests: XCTestCase {
   func testLazyTensorBarrier() throws {
-    let x = Tensor<Float>(20) * Tensor<Float>(30)
+    let x = Tensor<Float>(20, on: Device.defaultXLA) * Tensor<Float>(30, on: Device.defaultXLA)
     LazyTensorBarrier()
     XCTAssertEqual(x.scalarized(), 20 * 30)
   }
@@ -14,7 +13,7 @@ final class XLATensorTests: XCTestCase {
 
 extension XLATensorTests {
   static var allTests = [
-    ("testLazyTensorBarrier", testLazyTensorBarrier),
+    ("testLazyTensorBarrier", testLazyTensorBarrier)
   ]
 }
 
@@ -30,7 +29,7 @@ final class MultiDeviceAPITests: XCTestCase {
     let seed = 47
     let content = _Raw.rand(dims, seed)
     if tpuDevices.isEmpty {
-      let cpuDevice = Device(kind: .CPU, ordinal: 0)
+      let cpuDevice = Device(kind: .CPU, ordinal: 0, backend: .XLA)
       XCTAssertEqual(content.device, cpuDevice)
     }
     let tpuTensors = tpuDevices.map { _Raw.toDevice(content, $0) }
@@ -62,8 +61,8 @@ final class MultiDeviceAPITests: XCTestCase {
     let tpuTensors = tpuDevices.map { tpuDevice in content.map { _Raw.toDevice($0, tpuDevice) } }
     let results = tpuTensors.map { _Raw.crossReplicaSum($0, 1.0) }
     Device.syncLiveTensorsForDevices(tpuDevices)
-    let count = Tensor(Float(tpuDevices.count))
-    let axes = Tensor<Int32>(0..<Int32(content[0].rank))
+    let count = Tensor(Float(tpuDevices.count), on: Device.defaultXLA)
+    let axes = Tensor<Int32>(0..<Int32(content[0].rank), on: Device.defaultXLA)
     for (result, tpuDev) in zip(results, tpuDevices) {
       for i in 0..<content.count {
         let countDev = _Raw.toDevice(count, tpuDev)

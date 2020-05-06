@@ -6,13 +6,13 @@ report.
 
 ## Get A Metrics Report
 
-To print a report, add a `PrintMetrics` call to your program:
+To print a report, add a `PrintX10Metrics` call to your program:
 
 ```swift
-import x10_xla_tensor_wrapper
+import TensorFlow
 
 ...
-PrintMetrics()
+PrintX10Metrics()
 ...
 ```
 
@@ -75,11 +75,15 @@ performance and completeness caveats:
     (currently just `nonZeroIndices`) or lack of known use cases (several linear
     algebra operations and multinomial initialization). While the second
     category is easy to address as needed, the first category can only be
-    addressed through interoperability with the CPU, non-XLA implementation. We
-    plan to add interoperability very soon, but that doesn't address the
-    performance implications of host round-trips and fragmenting a fully fused
-    model in multiple traces. Users are therefore advised to avoid using
-    `nonZeroIndices` in their models.
+    addressed through interoperability with the CPU, non-XLA implementation.
+    Using interoperability too often has significant performance implications
+    because of host round-trips and fragmenting a fully fused model in multiple
+    traces. Users are therefore advised to avoid using such operations in their
+    models.
+
+    On Linux, use `XLA_SAVE_TENSORS_FILE` (documented in the next section) to
+    get the Swift stack trace which called the unsupported operation. Function
+    names can be manually demangled using `swift-demangle`.
 
 ## More Debugging Tools
 
@@ -99,6 +103,9 @@ the S4TF software stack:
 *   `XLA_SAVE_TENSORS_FMT`: The format of the graphs stored within the
     `XLA_SAVE_TENSORS_FILE` file. Can be `text` (the default), `dot` (Graphviz
     format) or `hlo`.
+
+*   `XLA_LOG_GRAPH_CHANGES`: If set to 1 and `XLA_SAVE_TENSORS_FILE` is set,
+    log a summary of graph changes and the stack traces which created them.
 
 *   `XLA_USE_BF16`: If set to 1, transforms all the `Float` values to BF16.
     Should only be used for debugging since we offer automatic mixed precision.

@@ -14,11 +14,15 @@
 
 #include "tensorflow/compiler/tf2xla/xla_tensor/convert_ops.h"
 
+#include <climits>
+
 #include "tensorflow/compiler/xla/xla_client/debug_macros.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/helpers.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/tensor_util.h"
 #include "tensorflow/compiler/xla/client/lib/constants.h"
 #include "tensorflow/compiler/xla/literal_util.h"
+#include "tensorflow/compiler/xla/primitive_util.h"
+#include "tensorflow/compiler/xla/shape_util.h"
 
 namespace swift_xla {
 namespace {
@@ -26,6 +30,38 @@ namespace {
 xla::XlaOp ExplicitBooleanConvert(xla::XlaOp op, xla::PrimitiveType from) {
   xla::XlaOp zero = xla::Zero(op.builder(), from);
   return xla::Ne(op, zero);
+}
+
+xla::XlaOp CreateRawMask(xla::XlaOp op, xla::PrimitiveType type,
+                         xla::int64 to_size, xla::int64 raw_to_size) {
+  xla::uint64 mask_value =
+      (static_cast<xla::uint64>(1) << raw_to_size * CHAR_BIT) - 1;
+  xla::XlaOp mask = XlaHelpers::ScalarValue(mask_value, type, op.builder());
+  if (xla::primitive_util::IsSignedIntegralType(type)) {
+    // Sign extend the truncation.
+    xla::XlaOp shift = XlaHelpers::ScalarValue<xla::int32>(
+        (to_size - raw_to_size) * CHAR_BIT, op.builder());
+    mask = (mask << shift) >> shift;
+  }
+  const xla::Shape& op_shape = XlaHelpers::ShapeOfXlaOp(op);
+  return op_shape.rank() > 0 ? xla::Broadcast(mask, op_shape.dimensions())
+                             : mask;
+}
+
+xla::XlaOp ConvertData(xla::XlaOp op, xla::PrimitiveType to,
+                       xla::PrimitiveType raw_to) {
+  if (!xla::primitive_util::IsIntegralType(to) ||
+      !xla::primitive_util::IsIntegralType(raw_to)) {
+    return op;
+  }
+  xla::int64 to_size = xla::ShapeUtil::ByteSizeOfPrimitiveType(to);
+  xla::int64 raw_to_size = xla::ShapeUtil::ByteSizeOfPrimitiveType(raw_to);
+  XLA_CHECK_GE(to_size, raw_to_size);
+  if (to_size == raw_to_size) {
+    return op;
+  }
+  xla::XlaOp mask = CreateRawMask(op, to, to_size, raw_to_size);
+  return op & mask;
 }
 
 }  // namespace
@@ -64,14 +100,21 @@ xla::XlaOp ConvertTo(xla::XlaOp op, xla::PrimitiveType from,
   }
 }
 
+xla::XlaOp ConvertToRaw(xla::XlaOp op, xla::PrimitiveType from,
+                        xla::PrimitiveType to, xla::PrimitiveType raw_to,
+                        const Device* device) {
+  xla::XlaOp result = ConvertTo(op, from, to, device);
+  return to == raw_to ? result : ConvertData(result, to, raw_to);
+}
+
 xla::XlaOp ConvertToNumeric(xla::XlaOp op, xla::PrimitiveType from) {
-  Device xla_device = GetCurrentDevice();
-  return from != xla::PrimitiveType::PRED
-             ? op
-             : ConvertTo(
-                   op, from,
+  if (from == xla::PrimitiveType::PRED) {
+    Device xla_device = GetCurrentDevice();
+    op = ConvertTo(op, from,
                    GetDevicePrimitiveType(xla::PrimitiveType::U8, &xla_device),
                    &xla_device);
+  }
+  return op;
 }
 
 xla::XlaOp ConvertToNumeric(xla::XlaOp op) {
@@ -87,6 +130,12 @@ xla::XlaOp CastToScalarType(xla::XlaOp input,
   } else {
     return ConvertToNumeric(input, XlaHelpers::TypeOfXlaOp(input));
   }
+}
+
+xla::XlaOp MaybeConvertTo(xla::XlaOp input, xla::PrimitiveType type) {
+  return XlaHelpers::TypeOfXlaOp(input) != type
+             ? xla::ConvertElementType(input, type)
+             : input;
 }
 
 }  // namespace swift_xla

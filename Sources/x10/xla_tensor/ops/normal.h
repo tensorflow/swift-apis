@@ -14,8 +14,6 @@
 
 #pragma once
 
-#include <vector>
-
 #include "tensorflow/compiler/tf2xla/xla_tensor/ir.h"
 
 namespace swift_xla {
@@ -24,18 +22,11 @@ namespace ops {
 
 class Normal : public Node {
  public:
-  Normal(const Value& mean, const Value& std, xla::uint64 seed);
-
-  std::string ToString() const override;
+  Normal(const Value& mean, const Value& std, const Value& seed);
 
   NodePtr Clone(OpList operands) const override;
 
   XlaOpVector Lower(LoweringContext* loctx) const override;
-
-  xla::uint64 seed() const { return seed_; }
-
- private:
-  xla::uint64 seed_;
 };
 
 }  // namespace ops

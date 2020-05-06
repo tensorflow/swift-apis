@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import x10_tensor
+import TensorFlow
 
 typealias GradMapFn = (inout Tensor<Float>, Tensor<Float>, Int) -> Void
 // A partially type erased base-class that essentially provides a

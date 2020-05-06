@@ -15,6 +15,7 @@
 #include "tensorflow/compiler/tf2xla/xla_tensor/elementwise.h"
 
 #include "tensorflow/compiler/xla/xla_client/debug_macros.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/convert_ops.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/helpers.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/random.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/tensor_util.h"
@@ -38,22 +39,21 @@ xla::XlaOp Between(xla::XlaOp input, at::Scalar min_val, at::Scalar max_val) {
 
 }  // namespace
 
-xla::XlaOp BuildComparisonOp(c10::Symbol kind, xla::XlaOp input,
-                             xla::XlaOp other) {
-  std::pair<xla::XlaOp, xla::XlaOp> ops = XlaHelpers::Promote(input, other);
+xla::XlaOp BuildComparisonOp(c10::Symbol kind, xla::XlaOp lhs, xla::XlaOp rhs) {
+  std::tie(lhs, rhs) = XlaHelpers::Promote(lhs, rhs);
   switch (kind) {
     case at::aten::ne:
-      return xla::Ne(ops.first, ops.second);
+      return xla::Ne(lhs, rhs);
     case at::aten::eq:
-      return xla::Eq(ops.first, ops.second);
+      return xla::Eq(lhs, rhs);
     case at::aten::ge:
-      return xla::Ge(ops.first, ops.second);
+      return xla::Ge(lhs, rhs);
     case at::aten::le:
-      return xla::Le(ops.first, ops.second);
+      return xla::Le(lhs, rhs);
     case at::aten::gt:
-      return xla::Gt(ops.first, ops.second);
+      return xla::Gt(lhs, rhs);
     case at::aten::lt:
-      return xla::Lt(ops.first, ops.second);
+      return xla::Lt(lhs, rhs);
     default:
       XLA_ERROR() << "Invalid comparison operator kind: "
                   << kind.toQualString();
@@ -81,15 +81,32 @@ xla::XlaOp BuildRelu(xla::XlaOp input) {
 
 xla::XlaOp BuildHardshrink(xla::XlaOp input, at::Scalar lambda) {
   const xla::Shape& shape = XlaHelpers::ShapeOfXlaOp(input);
-  return xla::Select(Between(input, -lambda, lambda),
-                     XlaHelpers::ScalarBroadcast(0, shape, input.builder()),
-                     input);
+  xla::XlaOp zero = xla::Zero(input.builder(), shape.element_type());
+  return xla::Select(Between(input, -lambda, lambda), zero, input);
+}
+
+xla::XlaOp BuildHardSigmoid(xla::XlaOp input) {
+  const xla::Shape& shape = XlaHelpers::ShapeOfXlaOp(input);
+  xla::XlaOp zero = xla::Zero(input.builder(), shape.element_type());
+  xla::XlaOp three = XlaHelpers::ScalarValue<float>(3.0, shape.element_type(),
+                                                    input.builder());
+  xla::XlaOp six = XlaHelpers::ScalarValue<float>(6.0, shape.element_type(),
+                                                  input.builder());
+  return xla::Min(xla::Max(input + three, zero), six) / six;
+}
+
+xla::XlaOp BuildHardSigmoidBackward(xla::XlaOp grad_output, xla::XlaOp input) {
+  const xla::Shape& shape = XlaHelpers::ShapeOfXlaOp(input);
+  xla::XlaOp six = XlaHelpers::ScalarValue<float>(6.0, shape.element_type(),
+                                                  input.builder());
+  xla::XlaOp zero = xla::Zero(input.builder(), shape.element_type());
+  return xla::Select(Between(input, -3.0, 3.0), grad_output / six, zero);
 }
 
 xla::XlaOp BuildSoftshrink(xla::XlaOp input, at::Scalar lambda) {
   xla::XlaBuilder* builder = input.builder();
   const xla::Shape& shape = XlaHelpers::ShapeOfXlaOp(input);
-  xla::XlaOp zero = XlaHelpers::ScalarBroadcast(0, shape, builder);
+  xla::XlaOp zero = xla::Zero(input.builder(), shape.element_type());
   xla::XlaOp xla_lambd =
       XlaHelpers::ScalarBroadcast(lambda.to<double>(), shape, builder);
   xla::XlaOp le_lambda_branch =
@@ -101,17 +118,14 @@ xla::XlaOp BuildSoftshrink(xla::XlaOp input, at::Scalar lambda) {
 xla::XlaOp BuildShrinkBackward(xla::XlaOp grad_output, xla::XlaOp input,
                                at::Scalar lambda) {
   const xla::Shape& shape = XlaHelpers::ShapeOfXlaOp(input);
-  return xla::Select(Between(input, -lambda, lambda),
-                     XlaHelpers::ScalarBroadcast(0, shape, input.builder()),
-                     grad_output);
+  xla::XlaOp zero = xla::Zero(input.builder(), shape.element_type());
+  return xla::Select(Between(input, -lambda, lambda), zero, grad_output);
 }
 
 xla::XlaOp BuildHardtanhBackward(xla::XlaOp grad_output, xla::XlaOp input,
                                  at::Scalar min_val, at::Scalar max_val) {
   const xla::Shape& shape = XlaHelpers::ShapeOfXlaOp(grad_output);
-  xla::XlaOp zero =
-      xla::Broadcast(xla::Zero(grad_output.builder(), shape.element_type()),
-                     shape.dimensions());
+  xla::XlaOp zero = xla::Zero(input.builder(), shape.element_type());
   return xla::Select(Between(input, min_val, max_val), grad_output, zero);
 }
 
@@ -187,13 +201,15 @@ xla::XlaOp BuildReciprocal(xla::XlaOp input) {
 }
 
 xla::XlaOp BuildSign(xla::XlaOp input) {
-  const xla::Shape& shape = XlaHelpers::ShapeOfXlaOp(input);
-  xla::XlaOp zero = xla::Zero(input.builder(), shape.element_type());
+  xla::XlaOp num_input = ConvertToNumeric(input);
+  const xla::Shape& shape = XlaHelpers::ShapeOfXlaOp(num_input);
+  xla::XlaOp zero = xla::Zero(num_input.builder(), shape.element_type());
   xla::XlaOp sign =
       xla::primitive_util::IsUnsignedIntegralType(shape.element_type())
-          ? xla::ConvertElementType(xla::Gt(input, zero), shape.element_type())
-          : xla::Sign(input);
-  return xla::Select(xla::Ne(input, input),
+          ? xla::ConvertElementType(xla::Gt(num_input, zero),
+                                    shape.element_type())
+          : xla::Sign(num_input);
+  return xla::Select(xla::Ne(num_input, num_input),
                      xla::Broadcast(zero, shape.dimensions()), sign);
 }
 

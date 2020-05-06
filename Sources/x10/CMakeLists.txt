@@ -1,42 +1,26 @@
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-add_library(x10 IMPORTED UNKNOWN)
-set_target_properties(x10 PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES ${X10_INCLUDE_DIR}
-  IMPORTED_LOCATION ${TensorFlow_LIBRARY})
-
-add_library(x10_c_wrappers STATIC
-  swift_bindings/device_wrapper.cc
-  swift_bindings/xla_tensor_tf_ops.cc
-  swift_bindings/xla_tensor_wrapper.cc)
-set_target_properties(x10_c_wrappers PROPERTIES
-  POSITION_INDEPENDENT_CODE ON)
-target_link_libraries(x10_c_wrappers PUBLIC
-  x10)
-
-add_library(x10_device SHARED
-  swift_bindings/Device.swift)
-target_link_libraries(x10_device PRIVATE
-  x10_c_wrappers)
-
 add_library(x10_tensor SHARED
-  ../TensorFlow/Core/BroadcastingPullback.swift
-
-  ../TensorFlow/Operators/Math.swift
-
   swift_bindings/apis/CrossReplicaSum.swift
   swift_bindings/apis/DeviceScope.swift
   swift_bindings/apis/RawOpsManual.swift
 
-  swift_bindings/TensorFlow/Core/Runtime.swift
-
+  swift_bindings/Device.swift
   swift_bindings/XLAScalarType.swift
   swift_bindings/XLATensor.swift)
 target_sources(x10_tensor PRIVATE
+  ../TensorFlow/Bindings/EagerExecution.swift
+  ../TensorFlow/Bindings/RawOpsGenerated.swift
+  ../TensorFlow/Bindings/RawOpsAugmented.swift
+  ../TensorFlow/Bindings/RawOpsDispatching.swift
+  ../TensorFlow/Bindings/TFTensorOperation.swift
+
+  ../TensorFlow/Core/BroadcastingPullback.swift
   ../TensorFlow/Core/CopyableToDevice.swift
   ../TensorFlow/Core/DifferentialOperators.swift
   ../TensorFlow/Core/PythonConversion.swift
   ../TensorFlow/Core/ShapedArray.swift
+  ../TensorFlow/Core/Execution.swift
   ../TensorFlow/Core/TensorShape.swift
   ../TensorFlow/Core/Threading.swift
   ../TensorFlow/Core/Utilities.swift
@@ -44,6 +28,19 @@ target_sources(x10_tensor PRIVATE
   ../TensorFlow/Core/TensorHandle.swift
   ../TensorFlow/Core/DataTypes.swift
   ../TensorFlow/Core/MixedPrecision.swift
+  ../TensorFlow/Core/Runtime.swift
+  ../TensorFlow/Core/StringTensor.swift
+  ../TensorFlow/Core/TensorGroup.swift
+
+  ../TensorFlow/Core/ArrayOps.swift
+  ../TensorFlow/Core/LazyTensorContext.swift
+  ../TensorFlow/Core/LazyTensorOperation.swift
+  ../TensorFlow/Core/LazyTensorOperation.swift
+  ../TensorFlow/Core/LazyTensorShapeInference.swift
+  ../TensorFlow/Core/LazyTensorTFFunctionBuilder.swift
+  ../TensorFlow/Core/LazyTensorTrace.swift
+  ../TensorFlow/Core/LazyTensorTraceCache.swift
+  ../TensorFlow/Core/Serialization.swift
 
   ../TensorFlow/Layers/Convolutional.swift
   ../TensorFlow/Layers/Core.swift
@@ -59,7 +56,10 @@ target_sources(x10_tensor PRIVATE
 
   ../TensorFlow/Operators/Basic.swift
   ../TensorFlow/Operators/Comparison.swift
+  ../TensorFlow/Operators/Dataset.swift
+  ../TensorFlow/Operators/Image.swift
   ../TensorFlow/Operators/LinearAlgebra.swift
+  ../TensorFlow/Operators/Math.swift
   ../TensorFlow/Operators/NN.swift
 
   ../TensorFlow/Optimizers/MomentumBased.swift
@@ -79,18 +79,18 @@ set_target_properties(x10_tensor PROPERTIES
 target_compile_definitions(x10_tensor PRIVATE
   USING_X10_BACKEND)
 target_link_libraries(x10_tensor PUBLIC
-  x10_device
+  CTensorFlow
   Tensor)
 target_link_libraries(x10_tensor PRIVATE
-  x10
-  x10_c_wrappers)
+  CX10
+  x10)
 
 add_library(x10_optimizers_tensor_visitor_plan SHARED
   swift_bindings/optimizers/TensorVisitorPlan.swift)
 set_target_properties(x10_optimizers_tensor_visitor_plan PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_Swift_MODULE_DIRECTORY})
 target_link_libraries(x10_optimizers_tensor_visitor_plan PUBLIC
-  x10_tensor)
+  TensorFlow)
 
 add_library(x10_optimizers_optimizer SHARED
   swift_bindings/optimizers/Optimizer.swift
@@ -99,38 +99,18 @@ set_target_properties(x10_optimizers_optimizer PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_Swift_MODULE_DIRECTORY})
 target_link_libraries(x10_optimizers_optimizer PUBLIC
   x10_optimizers_tensor_visitor_plan
-  x10_tensor)
+  TensorFlow)
 
 add_library(x10_training_loop SHARED
   swift_bindings/training_loop.swift)
 set_target_properties(x10_training_loop PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_Swift_MODULE_DIRECTORY})
 target_link_libraries(x10_training_loop PUBLIC
-  x10_tensor)
-
-add_executable(ops_test ../../Tests/x10/ops_test.swift)
-target_link_libraries(ops_test PRIVATE
-  x10_device
-  x10_tensor
   TensorFlow)
-
-add_executable(xla_tensor_test ../../Tests/x10/xla_tensor_test.swift)
-target_link_libraries(xla_tensor_test PRIVATE
-  x10_device
-  x10_tensor)
-
-add_executable(keypathiterable_test ../../Tests/x10/keypathiterable_test.swift)
-target_link_libraries(keypathiterable_test PRIVATE
-  x10_device
-  x10_tensor)
-
-add_executable(tensor_visitor_plan_test ../../Tests/x10/TensorVisitorPlanTest.swift)
-target_link_libraries(tensor_visitor_plan_test PRIVATE
-  x10_optimizers_tensor_visitor_plan)
+target_link_libraries(x10_training_loop PRIVATE
+  CX10)
 
 
-_install_target(x10_device)
-_install_target(x10_tensor)
 _install_target(x10_optimizers_tensor_visitor_plan)
 _install_target(x10_optimizers_optimizer)
 _install_target(x10_training_loop)

@@ -20,11 +20,12 @@
 #include <unordered_set>
 
 #include "absl/strings/str_split.h"
-#include "tensorflow/compiler/xla/xla_client/debug_macros.h"
-#include "tensorflow/compiler/xla/xla_client/sys_util.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ir.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ir_dump_util.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ir_util.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/swift_backtrace.h"
+#include "tensorflow/compiler/xla/xla_client/debug_macros.h"
+#include "tensorflow/compiler/xla/xla_client/sys_util.h"
 
 namespace swift_xla {
 namespace {
@@ -65,11 +66,13 @@ std::string DebugUtil::GetTensorsGraphInfo(absl::Span<const XLATensor> tensors,
                                            GraphFormat format) {
   std::vector<const ir::Node*> root_nodes;
   std::vector<ir::Value> root_values;
+  std::vector<xla::hash_t> root_hashes;
   if (indices != nullptr) {
     for (auto index : *indices) {
       ir::Value ir_value = tensors[index].CurrentIrValue();
       if (ir_value) {
         root_nodes.push_back(ir_value.node.get());
+        root_hashes.push_back(ir_value.hash());
         root_values.push_back(std::move(ir_value));
       }
     }
@@ -78,12 +81,22 @@ std::string DebugUtil::GetTensorsGraphInfo(absl::Span<const XLATensor> tensors,
       ir::Value ir_value = tensor.CurrentIrValue();
       if (ir_value) {
         root_nodes.push_back(ir_value.node.get());
+        root_hashes.push_back(ir_value.hash());
         root_values.push_back(std::move(ir_value));
       }
     }
   }
   std::stringstream ss;
   ss << "TensorsGraphInfo:\n";
+  ss << GetSwiftFrames();
+  ss << "\nHashes: (";
+  for (size_t i = 0; i < root_hashes.size(); ++i) {
+    if (i > 0) {
+      ss << ", ";
+    }
+    ss << xla::util::HexHash(root_hashes[i]);
+  }
+  ss << ")\n";
   std::string graph_str;
   if (format == GraphFormat::kText) {
     graph_str = ir::DumpUtil::ToText(root_nodes);
@@ -95,6 +108,9 @@ std::string DebugUtil::GetTensorsGraphInfo(absl::Span<const XLATensor> tensors,
     XLA_ERROR() << "Invalid graph format: " << format;
   }
   ss << "\n## BEGIN_GRAPH\n" << graph_str << "\n## END_GRAPH\n\n";
+  if (ir::Node::s_log_graph_changes_) {
+    ss << ir::DumpUtil::GetGraphChangeLog(root_nodes) << "\n";
+  }
   return ss.str();
 }
 

@@ -12,14 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// RMSProp optimizer.
+/// A RMSProp optimizer.
 ///
-/// It is recommended to leave the parameters of this optimizer at their default values (except for 
-/// the learning rate, which can be freely tuned). This optimizer is usually a good choice for 
-/// recurrent neural networks.
+/// Implements the RMSProp optimization algorithm. RMSProp is a form of stochastic gradient descent
+/// where the gradients are divided by a running average of their recent magnitude. RMSProp keeps a
+/// moving average of the squared gradient for each weight.
 ///
-/// Reference: ["rmsprop: Divide the gradient by a running average of its recent magnitude"](
-/// http://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf)
+/// References:
+/// - ["Lecture 6.5 - rmsprop: Divide the gradient by a running average
+/// of its recent magnitude"](
+/// http://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf) 
+/// (Tieleman and Hinton, 2012)
+/// - ["Generating Sequences With Recurrent Neural Networks"](
+/// https://arxiv.org/abs/1308.0850) (Graves, 2013)
 public class RMSProp<Model: Differentiable>: Optimizer
 where
   Model.TangentVector: VectorProtocol & PointwiseMultiplicative
@@ -29,7 +34,7 @@ where
   public typealias Model = Model
   /// The learning rate.
   public var learningRate: Float
-  // TODO: Document `rho`. Keras doesn't document `rho`.
+  /// The gradient moving average decay factor.
   public var rho: Float
   /// A small scalar added to the denominator to improve numerical stability.
   public var epsilon: Float
@@ -40,9 +45,17 @@ where
   /// The alpha values for all model differentiable variables.
   public var alpha: Model.TangentVector = .zero
 
+  /// Creates an instance for `model`.
+  ///
+  /// - Parameters:
+  ///   - learningRate: The learning rate. The default value is `1e-3`.
+  ///   - rho: The gradient moving average decay factor. The default value is `0.9`.
+  ///   - epsilon: A small scalar added to the denominator to improve numerical stability. The
+  ///     default value is `1e-8`.
+  ///   - decay: The learning rate decay. The default value is `0`.
   public init(
     for model: __shared Model,
-    learningRate: Float = 0.001,
+    learningRate: Float = 1e-3,
     rho: Float = 0.9,
     epsilon: Float = 1e-8,
     decay: Float = 0
@@ -75,13 +88,18 @@ where
   }
 }
 
-/// AdaGrad optimizer.
+/// An AdaGrad optimizer.
 ///
-/// Individually adapts the learning rates of all model parameters by scaling them inversely 
-/// proportional to the square root of the sum of all the historical squared values of the gradient.
+/// Implements the AdaGrad (adaptive gradient) optimization algorithm. AdaGrad has
+/// parameter-specific learning rates, which are adapted relative to how frequently parameters
+/// gets updated during training. Parameters that receive more updates have smaller learning rates.
 ///
-/// Reference: ["Adaptive Subgradient Methods for Online Learning and Stochastic Optimization"](
-/// http://www.jmlr.org/papers/volume12/duchi11a/duchi11a.pdf)
+/// AdaGrad individually adapts the learning rates of all model parameters by scaling them inversely
+/// proportional to the square root of the running sum of squares of gradient norms.
+///
+/// Reference: ["Adaptive Subgradient Methods for Online Learning and Stochastic 
+/// Optimization"](http://www.jmlr.org/papers/volume12/duchi11a/duchi11a.pdf) 
+/// (Duchi et al, 2011)
 public class AdaGrad<Model: Differentiable>: Optimizer
 where
   Model.TangentVector: VectorProtocol & PointwiseMultiplicative
@@ -91,49 +109,58 @@ where
   public typealias Model = Model
   /// The learning rate.
   public var learningRate: Float
-  /// The smoothing factor (ρ). Typical values are `0.5`, `0.9`, and `0.99`, for smoothing over 2,
-  /// 10, and 100 examples, respectively.
-  public var rho: Float
   /// A small scalar added to the denominator to improve numerical stability.
   public var epsilon: Float
-  /// The alpha values for all model differentiable variables.
-  public var alpha: Model.TangentVector = .zero
+  /// The running sum of squares of gradient norms.
+  public var accumulator: Model.TangentVector
 
+  /// Creates an instance for `model`.
+  ///
+  /// - Parameters:
+  ///   - learningRate: The learning rate. The default value is `1e-3`.
+  ///   - initialAccumulatorValue: The starting value for the running sum of squares of gradient
+  ///     norms. The default value is `0.1`.
+  ///   - epsilon: A small scalar added to the denominator to improve numerical stability. The
+  ///     default value is `1e-8`.
   public init(
     for model: __shared Model,
-    learningRate: Float = 0.001,
-    rho: Float = 0.9,
+    learningRate: Float = 1e-3,
+    initialAccumulatorValue: Float = 0.1,
     epsilon: Float = 1e-8
   ) {
     precondition(learningRate >= 0, "Learning rate must be non-negative")
-    precondition(rho >= 0, "Rho must be non-negative")
+    precondition(
+      initialAccumulatorValue >= 0, "The initial accumulator value must be non-negative.")
 
     self.learningRate = learningRate
-    self.rho = rho
     self.epsilon = epsilon
+    self.accumulator = Model.TangentVector.one.scaled(by: initialAccumulatorValue)
   }
 
   public func update(_ model: inout Model, along direction: Model.TangentVector) {
-    alpha = (direction .* direction).adding(rho)
-    let denominator = Model.TangentVector.sqrt(alpha).adding(epsilon)
+    accumulator = accumulator + (direction .* direction)
+    let denominator = Model.TangentVector.sqrt(accumulator).adding(epsilon)
     model.move(along: (direction ./ denominator).scaled(by: -learningRate))
   }
 
   public required init(copying other: AdaGrad, to device: Device) {
     learningRate = other.learningRate
-    rho = other.rho
     epsilon = other.epsilon
-    alpha = .init(copying: other.alpha, to: device)
+    accumulator = .init(copying: other.accumulator, to: device)
   }
 }
 
-/// ADADELTA optimizer.
+/// An AdaDelta optimizer.
 ///
-/// ADADELTA is a more robust extension of AdaGrad. ADADELTA adapts learning rates based on a moving
-/// window of gradient updates rather than by accumulating all past gradient norms. It can thus 
-/// adapt faster to changing dynamics of the optimization problem space.
+/// Implements the AdaDelta optimization algorithm. AdaDelta is a stochastic
+/// gradient descent method based on the first order information. It adapts
+/// learning rates based on a moving window of gradient updates, instead of
+/// accumulating all past gradients. Thus, AdaDelta continues learning even
+/// when many updates have been done. It adapts faster to changing dynamics of
+/// the optimization problem space.
 /// 
-/// Reference: ["ADADELTA: An Adaptive Learning Rate Method"](https://arxiv.org/abs/1212.5701)
+/// Reference: ["ADADELTA: An Adaptive Learning Rate Method"](
+/// https://arxiv.org/abs/1212.5701) (Zeiler, 2012)
 public class AdaDelta<Model: Differentiable>: Optimizer
 where
   Model.TangentVector: VectorProtocol & PointwiseMultiplicative
@@ -143,7 +170,7 @@ where
   public typealias Model = Model
   /// The learning rate.
   public var learningRate: Float
-  /// The decay factor, corresponding to fraction of gradient to keep at each time step.
+  /// The decay factor, corresponding to the fraction of gradient to keep at each time step.
   public var rho: Float
   /// A small scalar added to the denominator to improve numerical stability.
   public var epsilon: Float
@@ -156,6 +183,14 @@ where
   /// The accumulated parameter updates.
   public var accumulatedDelta: Model.TangentVector = .zero
 
+  /// Creates an instance for `model`.
+  ///
+  /// - Parameters:
+  ///   - learningRate: The learning rate. The default value is `1`.
+  ///   - rho: The decay factor. The default value is `0.95`.
+  ///   - epsilon: A small scalar added to the denominator to improve numerical stability. The
+  ///     default value is `1e-6`.
+  ///   - decay: The learning rate decay. The defalut value is `0`.
   public init(
     for model: __shared Model,
     learningRate: Float = 1,
@@ -409,10 +444,7 @@ where
     step += 1
     let step = Float(self.step)
     let learningRate = self.learningRate * 1 / (1 + decay * step)
-    // Note: `stepSize` is split into two lines to avoid the "compiler is unable to type-check
-    // this expression in reasonable time" error.
-    var stepSize = learningRate * sqrtf(1 - powf(beta2, step))
-    stepSize = stepSize / (1 - powf(beta1, step))
+    let stepSize = learningRate / (1 - powf(beta1, step))
     firstMoments = firstMoments.scaled(by: beta1) + direction.scaled(by: 1 - beta1)
 
     // Update `infinityNorm` using a key path approach because `max(_:_:)` cannot be 
@@ -498,13 +530,11 @@ where
   public func update(_ model: inout Model, along direction: Model.TangentVector) {
     step += 1
     let step = Float(self.step)
-    let beta1Power = powf(beta1, step)
-    let beta2Power = powf(beta2, step)
     let learningRate = self.learningRate * 1 / (1 + decay * step)
     // Note: `stepSize` is split into two lines to avoid the "compiler is unable to type-check
     // this expression in reasonable time" error.
-    var stepSize = learningRate * sqrtf(1 - powf(beta2Power, step))
-    stepSize = stepSize / (1 - powf(beta1Power, step))
+    var stepSize = learningRate * sqrtf(1 - powf(beta2, step))
+    stepSize = stepSize / (1 - powf(beta1, step))
     firstMoments = firstMoments.scaled(by: beta1) + direction.scaled(by: 1 - beta1)
     secondMoments =
       secondMoments.scaled(by: beta2) + (direction .* direction).scaled(by: 1 - beta2)
@@ -600,18 +630,18 @@ where
     let N_sma_inf = 2 / (1 - beta2) - 1
     let N_sma_t = N_sma_inf - 2 * step * beta2Power / (1 - beta2Power)
 
-    if N_sma_t > 5 {
+    if N_sma_t >= 5 {
       // Compute bias-corrected second moments, rectification and adapted momentum.
       let secondMoments_h = Model.TangentVector.sqrt(secondMoments).adding(epsilon)
-      let stepSize = sqrtf(
-        (N_sma_t - 4) * (N_sma_t - 2) * N_sma_inf
-          / ((N_sma_inf - 4) * (N_sma_inf - 2) * (N_sma_t)))
+      let stepSize =
+        sqrtf(
+          (N_sma_t - 4) * (N_sma_t - 2) * N_sma_inf
+            / ((N_sma_inf - 4) * (N_sma_inf - 2) * (N_sma_t))) * learningRate / (1 - beta1Power)
       model.move(
-        along: (firstMoments ./ secondMoments_h).scaled(
-          by: -stepSize * sqrtf(1 - beta2Power)))
+        along: (firstMoments ./ secondMoments_h).scaled(by: -stepSize * sqrtf(1 - beta2Power)))
     } else {
       // Update with un-adapted momentum.
-      let stepSize = self.learningRate * step / (1 - beta1Power)
+      let stepSize = learningRate / (1 - beta1Power)
       model.move(along: firstMoments.scaled(by: -stepSize))
     }
   }

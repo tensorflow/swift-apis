@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import x10_device_wrapper
+@_implementationOnly import x10_device_wrapper
 
 extension DeviceType {
   fileprivate var kind: Device.Kind {
@@ -52,9 +52,26 @@ public struct Device {
   /// The device ordinal value.
   public let ordinal: Int
 
-  public init(kind: Kind, ordinal: Int) {
+  /// The backend used to dispatch the tensor operations.
+  public let backend: Backend
+
+  public init(kind: Kind, ordinal: Int, backend: Backend = defaultBackend) {
     self.kind = kind
     self.ordinal = ordinal
+    self.backend = backend
+  }
+
+  /// Backend used to dispatch the tensor operations.
+  public enum Backend {
+    case TF_EAGER
+    case XLA
+
+    fileprivate var shortName: String {
+      switch self {
+      case .TF_EAGER: return "TF_EAGER"
+      case .XLA: return "XLA"
+      }
+    }
   }
 
   /// A device kind.
@@ -87,7 +104,7 @@ public struct Device {
     }
   }
 
-  public var cdevice: CDevice {
+  var cdevice: CDevice {
     return CDevice(hw_type: kind.deviceType, ordinal: Int32(ordinal))
   }
 
@@ -95,10 +112,35 @@ public struct Device {
     return self.kind == .REMOTE_TPU
   }
 
+  public static var defaultBackend: Backend {
+    #if DEFAULT_BACKEND_EAGER
+      return .TF_EAGER
+    #else
+      return .XLA
+    #endif
+  }
+
   /// The default `Device`.
   public static var `default`: Device {
-    let cdevice = DefaultDevice()
-    return cdevice.device
+    switch defaultBackend {
+    case .TF_EAGER:
+      return Device.defaultTFEager
+    case .XLA:
+      return Device.defaultXLA
+    }
+  }
+
+  /// The default XLA device.
+  public static var defaultXLA: Device {
+    let defaultDevice = getDefaultDevice()
+    return Device(
+      kind: defaultDevice.hw_type.kind, ordinal: Int(defaultDevice.ordinal), backend: .XLA)
+  }
+
+  /// The current TF Eager device.
+  public static var defaultTFEager: Device {
+    // TODO: Pull this from withDevice() {} mechanism?
+    return Device(kind: .CPU, ordinal: 0, backend: .TF_EAGER)
   }
 
   /// An array of all devices.
@@ -126,7 +168,7 @@ public struct Device {
   private static func deviceListToArray(_ deviceList: DeviceListHandle) -> [Device] {
     return (0..<deviceList.handle.pointee.count).map { i in
       let device = deviceList.handle.pointee.devices[i]
-      return Device(kind: device.hw_type.kind, ordinal: Int(device.ordinal))
+      return Device(kind: device.hw_type.kind, ordinal: Int(device.ordinal), backend: .XLA)
     }
   }
 
@@ -161,12 +203,14 @@ extension Device: Equatable {
 }
 
 extension Device: CustomStringConvertible {
-  public var description: String { "Device(kind: .\(kind.shortName), ordinal: \(ordinal))" }
+  public var description: String {
+    "Device(kind: .\(kind.shortName), ordinal: \(ordinal), backend: .\(backend.shortName))"
+  }
 }
 
 extension CDevice {
-  public var device: Device {
-    return Device(kind: hw_type.kind, ordinal: Int(ordinal))
+  var device: Device {
+    return Device(kind: hw_type.kind, ordinal: Int(ordinal), backend: .XLA)
   }
 }
 

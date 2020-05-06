@@ -17,9 +17,9 @@
 #pragma once
 
 #include "absl/types/span.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/device.h"
 #include "tensorflow/compiler/xla/shape.h"
 #include "tensorflow/compiler/xla/types.h"
+#include "tensorflow/compiler/xla/xla_client/device.h"
 
 namespace swift_xla {
 

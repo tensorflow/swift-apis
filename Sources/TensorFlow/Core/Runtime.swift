@@ -250,9 +250,11 @@ public final class _ExecutionContext {
         }
 
         stringAddrs.withUnsafeMutableBufferPointer { stringAddrsBuffer in
-          var cArgsCount = Int32(args.count)
-          var cArgs = stringAddrsBuffer.baseAddress.map(UnsafeMutablePointer.init)
-          TF_InitMain(nil, &cArgsCount, &cArgs)
+          #if !USING_X10_BACKEND
+            var cArgsCount = Int32(args.count)
+            var cArgs = stringAddrsBuffer.baseAddress.map(UnsafeMutablePointer.init)
+            TF_InitMain(nil, &cArgsCount, &cArgs)
+          #endif
         }
       }
       _RuntimeConfig.tensorFlowRuntimeInitialized = true
@@ -322,6 +324,13 @@ public final class _ExecutionContext {
     TF_DeleteBuffer(tensorFlowConfig)
     TF_DeleteStatus(status)
   }
+}
+
+@available(
+  *, deprecated, message: "makeOp will go away in favor of directly dispatching custom ops."
+)
+public func _makeOp(_ name: String, _ nOutputs: Int) -> TFTensorOperation {
+  _ExecutionContext.makeOp(name, nOutputs)
 }
 
 extension _ExecutionContext {
@@ -574,14 +583,16 @@ struct DeviceScopes {
   }
 }
 
-// Evaluate the pullback on a one.
-@usableFromInline
-func pullbackOfOneLikeY<T: TensorFlowFloatingPoint, R>(
-  y: Tensor<T>,
-  pullback: (Tensor<T>) -> R
-) -> R {
-  pullback(Tensor<T>(1))
-}
+#if !USING_X10_BACKEND
+  // Evaluate the pullback on a one.
+  @usableFromInline
+  func pullbackOfOneLikeY<T: TensorFlowFloatingPoint, R>(
+    y: Tensor<T>,
+    pullback: (Tensor<T>) -> R
+  ) -> R {
+    pullback(Tensor<T>(1))
+  }
+#endif
 
 @usableFromInline
 func _TFCOpSetDeviceFromScope(_ op: CTFEOp, _ status: CTFStatus) {

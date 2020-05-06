@@ -12,14 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import x10_device
-import x10_xla_tensor_tf_ops
-import x10_xla_tensor_wrapper
+@_implementationOnly import x10_xla_tensor_tf_ops
+@_implementationOnly import x10_xla_tensor_wrapper
 
 /// Type-erased tensor type on which the fundamental operators are implemented.
 struct XLATensor {
   init(_handle: UnsafeMutablePointer<OpaqueXLATensor>) {
     handleDeleter = Handle(_handle: _handle)
+  }
+
+  init(_ handle: Handle) {
+    handleDeleter = handle
+  }
+
+  init?(_ handle: _AnyTensorHandle) {
+    if let handle = handle as? Handle {
+      self.init(handle)
+    } else {
+      return nil
+    }
   }
 
   /// The device on which `self` is allocated.
@@ -33,7 +44,7 @@ struct XLATensor {
   }
 
   // Implementation detail for deleting the pointer.
-  class Handle {
+  class Handle: _AnyTensorHandle {
     init(_handle: UnsafeMutablePointer<OpaqueXLATensor>) {
       handle = _handle
     }
@@ -41,9 +52,34 @@ struct XLATensor {
     deinit { destroyTensor(handle) }
 
     let handle: UnsafeMutablePointer<OpaqueXLATensor>
+    var xlaTensor: XLATensor { XLATensor(self) }
+
+    var _tfeTensorHandle: TFETensorHandle { fatalError("Not a tf handle") }
+    var rank: Int { xlaTensor.shape.count }
+    var shape: TensorShape { TensorShape(xlaTensor.shape) }
+
+    public var backend: Device.Backend { .XLA }
   }
 
+  var tensorHandle: _AnyTensorHandle { handleDeleter }
+
   let handleDeleter: Handle
+}
+
+extension Tensor {
+  init(_xla: XLATensor) {
+    precondition(
+      _xla.dtype == Scalar.xlaTensorScalarType,
+      "Type mismatch constructing from XLATensor:"
+        + "\(_xla.dtype) vs \(Scalar.xlaTensorScalarType)")
+    handle = TensorHandle(handle: _xla.tensorHandle)
+  }
+  var xlaTensor: XLATensor {
+    guard let xlaTensor = XLATensor(handle.handle) else {
+      fatalError("Must be an XLATensor to convert to XlaTensor")
+    }
+    return xlaTensor
+  }
 }
 
 extension XLATensor {
@@ -345,7 +381,8 @@ extension XLATensor {
     reverse: Bool = false
   ) -> XLATensor {
     defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_cumprod(a.handle, dim, dtype.xlaOptionalType, exclusive, reverse))
+    return XLATensor(
+      _handle: XLATensor_cumprod(a.handle, dim, dtype.xlaOptionalType, exclusive, reverse))
   }
 
   static func cumsum(
@@ -353,7 +390,8 @@ extension XLATensor {
     reverse: Bool = false
   ) -> XLATensor {
     defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_cumsum(a.handle, dim, dtype.xlaOptionalType, exclusive, reverse))
+    return XLATensor(
+      _handle: XLATensor_cumsum(a.handle, dim, dtype.xlaOptionalType, exclusive, reverse))
   }
 
   static func diagonal_value(
@@ -496,7 +534,8 @@ extension XLATensor {
   {
     defer { _fixLifetime(grad_output) }
     defer { _fixLifetime(output) }
-    return XLATensor(_handle: XLATensor_log_softmax_backward(grad_output.handle, output.handle, dim))
+    return XLATensor(
+      _handle: XLATensor_log_softmax_backward(grad_output.handle, output.handle, dim))
   }
 
   static func logicalAnd(_ a: XLATensor, _ b: XLATensor) -> XLATensor {
@@ -921,7 +960,8 @@ extension XLATensor {
   {
     defer { _fixLifetime(grad_output) }
     defer { _fixLifetime(input) }
-    return XLATensor(_handle: XLATensor_threshold_backward(grad_output.handle, input.handle, threshold))
+    return XLATensor(
+      _handle: XLATensor_threshold_backward(grad_output.handle, input.handle, threshold))
   }
 
   static func truncatedNormal(_ input: XLATensor) -> XLATensor {
@@ -1028,4 +1068,8 @@ extension XLATensor {
       XLATensor(_handle: XLATensor_rand(dims, seed))
     }
   }
+}
+
+public func PrintX10Metrics() {
+  PrintMetrics()
 }

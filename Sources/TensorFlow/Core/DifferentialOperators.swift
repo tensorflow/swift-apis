@@ -61,7 +61,7 @@ public func valueWithGradient<T, U, V, R>(
 where T: Differentiable, U: Differentiable, V: Differentiable, R: TensorFlowFloatingPoint {
   let (y, pullback) = valueWithPullback(at: x, y, z, in: f)
   precondition(y.rank == 0)
-  return (y, pullback(Tensor<R>(1)))
+  return (y, pullbackOfOneLikeY(y: y, pullback: pullback))
 }
 
 // Value with gradient (curried)

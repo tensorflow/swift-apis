@@ -1,5 +1,6 @@
 add_library(TensorFlowTests
   ContextTests.swift
+  EpochsTests.swift
   FreezableTests.swift
   Helpers.swift
   InitializerTests.swift
@@ -32,7 +33,10 @@ add_library(TensorFlowTests
   OperatorTests/ImageTests.swift
   OperatorTests/LinearAlgebraTests.swift
   OperatorTests/MathTests.swift
-  OperatorTests/MatrixTests.swift)
+  OperatorTests/MatrixTests.swift
+  OperatorTests/NNTests.swift)
 target_link_libraries(TensorFlowTests PUBLIC
+  CTensorFlow
   TensorFlow
+  Tensor
   XCTest)
