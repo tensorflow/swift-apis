@@ -89,6 +89,14 @@ def sequential_type(arity):
     )
 }%
 
+%for n in SEQUENTIAL_ARITY_RANGE:
+/// A layer that sequentially composes ${n} layers.
+public typealias Sequential${n}<${generic_parameters(n, ", ")}> = ${sequential_type(n)}
+  where ${", ".join(["L{}.Output == L{}.Input".format(i, i+1) for i in range(1, n)])},
+        ${", ".join(["L{}.TangentVector.VectorSpaceScalar == L{}.TangentVector.VectorSpaceScalar".format(i, i+1) for i in range(1, n)])}
+
+%end
+
 @_functionBuilder
 public struct LayerBuilder {
     public static func buildBlock<L1: Module, L2: Layer>(_ l1: L1, _ l2: L2) -> Sequential<L1, L2>
