@@ -2,7 +2,7 @@
 
 Get a taste of *protocol-oriented differentiable programming*.
 
-This repository hosts [Swift for TensorFlow](https://github.com/tensorflow/swift)'s deep learning library, available both as a part of Swift for TensorFlow toolchains and as a Swift package. 
+This repository hosts [Swift for TensorFlow](https://github.com/tensorflow/swift)'s deep learning library, available both as a part of Swift for TensorFlow toolchains and as a Swift package.
 
 ## Usage
 
@@ -111,6 +111,8 @@ and its argument are elided).
 
 If `swiftc` is not in your `PATH`, you must specify the path to it using
 `-D CMAKE_Swift_COMPILER=`.
+
+To enable CUDA support, run `export TF_NEED_CUDA=1` before the steps below.
 
 ```
 cmake -G Ninja -B out -S swift-apis
