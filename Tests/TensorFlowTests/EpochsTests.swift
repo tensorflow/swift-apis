@@ -158,7 +158,7 @@ final class EpochsTests: XCTestCase {
       var epochSampleCount = 0
       for batch in epochBatches {
         XCTAssertEqual(
-           batch.count, batchSize, "unexpected batch size: \(batch.count)")
+          batch.count, batchSize, "unexpected batch size: \(batch.count)")
         epochSampleCount += batch.count
       }
       let expectedDropCount = dataset.count % 64
