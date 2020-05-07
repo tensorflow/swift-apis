@@ -121,6 +121,8 @@ and its argument are elided).
 If `swiftc` is not in your `PATH`, you must specify the path to it using
 `-D CMAKE_Swift_COMPILER=`.
 
+To enable CUDA support, run `export TF_NEED_CUDA=1` before the steps below.
+
 ```
 cmake -G Ninja -B out -S swift-apis
 cmake --build out
