@@ -95,7 +95,7 @@ For more models, go to [**tensorflow/swift-models**][swift-models].
 [Bazelisk][bazelisk]. You will need a version supported by TensorFlow
 (between `_TF_MIN_BAZEL_VERSION` and `_TF_MAX_BAZEL_VERSION` as specified in
 [tensorflow/configure.py][configure.py]).
-* Python3 with [numpy][numpy.org].
+* Python3 with [numpy][numpy].
 
 ### Building and testing
 
