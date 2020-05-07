@@ -289,11 +289,12 @@ public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   ) {
     precondition(axis != 0, "The axis cannot be batch axis.")
     precondition(offset.rank == 1, "The offset must have rank 1.")
-    precondition(offset.shape[0].isMultiple(of: groupCount),
-                 "The number of elements of the offset must be divisible by the group count.")
     precondition(
-        offset.shape == scale.shape,
-        "The offset and the scale must have same shape.")
+      offset.shape[0].isMultiple(of: groupCount),
+      "The number of elements of the offset must be divisible by the group count.")
+    precondition(
+      offset.shape == scale.shape,
+      "The offset and the scale must have same shape.")
     self.offset = offset
     self.scale = scale
     self.groupCount = groupCount
@@ -338,8 +339,9 @@ public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     let positiveAxis = (input.rank + axis) % input.rank
     precondition(positiveAxis != 0, "The axis cannot be batch axis.")
-    precondition(input.shape[positiveAxis] == offset.shape[0],
-                 "The numbers of features of the input and the offset must be same.")
+    precondition(
+      input.shape[positiveAxis] == offset.shape[0],
+      "The numbers of features of the input and the offset must be same.")
     var offset = self.offset
     var scale = self.scale
     var broadcastShape = TensorShape([Int](repeating: 1, count: input.rank + 1))
