@@ -1971,6 +1971,111 @@ final class LayerTests: XCTestCase {
     XCTAssertEqual(transformerTensor.shape, transformerResult.shape)
   }
 
+  func testGroupNorm() {
+    // The expected values were computed using the following Python code:
+    // ```
+    // import tensorflow as tf
+    // import tensorflow_addons as tfa
+    // x = tf.reshape(tf.range(24, dtype=tf.float32), [2, 2, 1, 6])
+    // layer = tfa.layers.GroupNormalization(groups=2)
+    // with tf.GradientTape() as tape:
+    //     tape.watch(x)
+    //     y = layer(x)
+    //     z = tf.math.reduce_sum(tf.math.square(y))
+    // print(y, tape.gradient(z, [x] + layer.trainable_variables))
+    // ```
+    let tensor = Tensor<Float>(rangeFrom: 0, to: 24, stride: 1)
+      .reshaped(to: [2, 2, 1, 6])
+    let layer = GroupNorm<Float>(featureCount: 6, groupCount: 2)
+    let output = layer(tensor)
+    let expectedOutput: Tensor<Float> = [
+      [
+        [[-1.2864685, -0.9648514, -0.64323425, -1.2864685, -0.9648514, -0.64323425]],
+        [[0.64323425, 0.9648514, 1.2864685, 0.64323425, 0.9648514, 1.2864685]]
+      ],
+      [
+        [[-1.2864685, -0.9648514, -0.64323425, -1.2864685, -0.9648514, -0.64323425]],
+        [[0.64323425, 0.9648514, 1.2864685, 0.64323425, 0.9648514, 1.2864685]]
+      ]
+    ]
+    XCTAssert(output.isAlmostEqual(to: expectedOutput))
+    let grad = gradient(at: tensor, layer) { $1($0).squared().sum() }
+    let expectedGrad: Tensor<Float> = [
+      [[[-8.5592270e-05, -6.4194202e-05, -4.2796135e-05,
+         -8.5592270e-05, -6.4194202e-05, -4.2796135e-05]],
+       [[4.2796135e-05, 6.4194202e-05, 8.5592270e-05,
+         4.2796135e-05, 6.4194202e-05, 8.5592270e-05]]],
+      [[[-8.5592270e-05, -6.4194202e-05, -4.2796135e-05,
+         -8.5592270e-05, -6.4194202e-05, -4.2796135e-05]],
+       [[4.2796135e-05, 6.4194202e-05, 8.5592270e-05,
+         4.2796135e-05, 6.4194202e-05, 8.5592270e-05]]]
+    ]
+    XCTAssert(grad.0.isAlmostEqual(to: expectedGrad))
+    XCTAssert(
+      grad.1.scale.isAlmostEqual(to: [
+        8.275006, 7.4475055, 8.275006,
+        8.275006, 7.4475055, 8.275006
+      ]))
+    XCTAssert(
+      grad.1.offset.isAlmostEqual(to: [
+        -2.572937, 0, 2.572937,
+        -2.572937, 0, 2.572937
+      ]))
+  }
+
+  func testInstanceNorm() {
+    // The expected values were computed using the following Python code:
+    // ```
+    // import tensorflow as tf
+    // import tensorflow_addons as tfa
+    // x = tf.reshape(tf.range(24, dtype=tf.float32), [2, 2, 1, 6])
+    // layer = tfa.layers.InstanceNormalization()
+    // with tf.GradientTape() as tape:
+    //     tape.watch(x)
+    //     y = layer(x)
+    //     z = tf.math.reduce_sum(tf.math.square(y))
+    // print(y, tape.gradient(z, [x] + layer.trainable_variables))
+    // ```
+    let tensor = Tensor<Float>(rangeFrom: 0, to: 24, stride: 1)
+      .reshaped(to: [2, 2, 1, 6])
+    let layer = InstanceNorm<Float>(featureCount: 6)
+    let output = layer(tensor)
+    let expected: Tensor<Float> = [
+      [
+        [[-0.99994445, -0.99994445, -0.9999444, -0.99994445, -0.9999443, -0.99994445]],
+        [[0.99994445, 0.9999443, 0.99994445, 0.99994445, 0.99994445, 0.99994445]]
+      ],
+      [
+        [[-0.9999442, -0.9999442, -0.9999447, -0.9999447, -0.9999442, -0.9999442]],
+        [[0.9999447, 0.9999442, 0.9999442, 0.9999442, 0.9999447, 0.9999447]]
+      ]
+    ]
+    XCTAssertEqual(output, expected)
+    let grad = gradient(at: tensor, layer) { $1($0).squared().sum() }
+    let expectedGrad: Tensor<Float> = [
+      [[[-7.4148178e-05, -7.4108444e-05, -7.4108444e-05,
+         -7.4088573e-05, -7.4068703e-05, -7.4148178e-05]],
+       [[7.4148178e-05, 7.4068703e-05, 7.4128307e-05,
+         7.4088573e-05, 7.4108444e-05, 7.4148178e-05]]],
+      [[[-7.4128300e-05, -7.4207783e-05, -7.4108451e-05,
+         -7.4048847e-05, -7.4128300e-05, -7.4128300e-05]],
+       [[7.4108451e-05, 7.4207783e-05, 7.4128300e-05,
+         7.4068696e-05, 7.4108451e-05, 7.4108451e-05]]]
+    ]
+    XCTAssert(grad.0.isAlmostEqual(to: expectedGrad))
+    XCTAssert(
+      grad.1.delegate.scale
+        .isAlmostEqual(to: [
+          7.999111, 7.9991093, 7.9991107,
+          7.9991117, 7.999111, 7.99911
+        ]))
+    XCTAssert(
+      grad.1.delegate.offset
+        .isAlmostEqual(to: [
+          9.5367432e-07, -2.3841858e-07, -8.3446503e-07,
+          -9.5367432e-07, 1.1920929e-06, 9.5367432e-07
+        ]))
+  }
   func testGaussianNoise() {
     Context.local.learningPhase = .inference
     let gaussianNoise = GaussianNoise<Float>(standardDeviation: 1.0)
@@ -2088,6 +2193,8 @@ final class LayerTests: XCTestCase {
     ("testBatchNormInference", testBatchNormInference),
     ("testLayerNorm", testLayerNorm),
     ("testLayerNormInference", testLayerNormInference),
+    ("testGroupNorm", testGroupNorm),
+    ("testInstanceNorm", testInstanceNorm),
     ("testGaussianNoise", testGaussianNoise),
     ("testGaussianDropout", testGaussianDropout),
     ("testAlphaDropout", testAlphaDropout),
