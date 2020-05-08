@@ -20,6 +20,7 @@
 
 #include "absl/types/span.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ir.h"
+#include "tensorflow/compiler/xla/xla_client/device.h"
 
 namespace swift_xla {
 namespace ir {
@@ -36,7 +37,8 @@ class DumpUtil {
   static std::string PostOrderToText(absl::Span<const Node* const> post_order,
                                      absl::Span<const Node* const> roots);
 
-  static std::string ToHlo(absl::Span<const Value> values);
+  static std::string ToHlo(absl::Span<const Value> values,
+                           const Device& device);
 
   static std::string GetGraphChangeLog(absl::Span<const Node* const> roots);
 };
