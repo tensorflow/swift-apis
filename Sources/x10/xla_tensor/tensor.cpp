@@ -186,8 +186,7 @@ class XlaDataCacheArena {
   struct TensorComparer {
     bool operator()(const at::Tensor& tensor1,
                     const at::Tensor& tensor2) const {
-      return tensor1.scalar_type() == tensor2.scalar_type() &&
-             tensor1.equal(tensor2);
+      return tensor1.equal(tensor2);
     }
   };
 
@@ -253,6 +252,7 @@ xla::ComputationClient::DataPtr GetDeviceData(const at::Tensor& tensor,
     at::Tensor tensor_copy = tensor.dup();
     device_data = TensorToXlaData(tensor_copy, device);
     cache->Add(std::move(tensor_copy), device_data);
+    XLA_COUNTER("DeviceDataCacheMiss", 1);
   }
   return device_data;
 }
@@ -614,7 +614,8 @@ std::string XLATensor::DumpHloComputation(
       ir_values.push_back(std::move(ir_value));
     }
   }
-  return !ir_values.empty() ? ir::DumpUtil::ToHlo(ir_values) : std::string();
+  return !ir_values.empty() ? ir::DumpUtil::ToHlo(ir_values, GetCurrentDevice())
+                            : std::string();
 }
 
 void XLATensor::SetXlaData(xla::ComputationClient::DataPtr xla_data) {
@@ -832,6 +833,7 @@ at::Tensor XLATensor::ToTensor(bool detached) {
   at::Tensor tensor(std::unique_ptr<at::AnyScalarBuffer>(nullptr), {});
   c10::optional<at::Tensor> tensor_data = CurrentTensorData();
   if (!tensor_data) {
+    DeviceBarrier(GetDevice());
     // The GetXlaData() call will trigger an ApplyPendingGraph() if an IR Node
     // is available on the tensor.
     std::vector<at::Tensor> tensors = XlaDataToTensors({GetXlaData()}, dtype());
@@ -1473,7 +1475,9 @@ XLATensor::CompilationResult XLATensor::Compile(
   static const bool enable_aliasing =
       xla::sys_util::GetEnvBool("XLA_ENABLE_PARAM_ALIASING", false);
   xla::util::Unique<Device> unique_device;
-  ir::LoweringContext lowering_ctx("SyncTensorsGraph");
+  ir::LoweringContext lowering_ctx("SyncTensorsGraph", coll.device,
+                                   po_data->post_order,
+                                   std::move(po_data->emission_map));
   for (auto index : coll.indices) {
     ir::Value ir_value = tensors[index].CurrentIrValue();
     xla::XlaOp root = lowering_ctx.GetOutputOp(ir_value);
