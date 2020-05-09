@@ -342,11 +342,14 @@ void AddXrtHostDevices(const std::string& worker_name, int task_no,
     int count;
   } const devices[] = {
       {"TPU", "TPU",
-       sys_util::GetEnvInt(env::kEnvNumTpu, device_counts.num_tpus)},
+       static_cast<int>(
+           sys_util::GetEnvInt(env::kEnvNumTpu, device_counts.num_tpus))},
       {"GPU", "XLA_GPU",
-       sys_util::GetEnvInt(env::kEnvNumGpu, device_counts.num_gpus)},
+       static_cast<int>(
+           sys_util::GetEnvInt(env::kEnvNumGpu, device_counts.num_gpus))},
       {"CPU", "XLA_CPU",
-       sys_util::GetEnvInt(env::kEnvNumCpu, device_counts.num_cpus)},
+       static_cast<int>(
+           sys_util::GetEnvInt(env::kEnvNumCpu, device_counts.num_cpus))},
   };
   options->workers_map.emplace(
       XrtComputationClient::Worker(worker_name, task_no),
