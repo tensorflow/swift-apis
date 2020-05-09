@@ -95,17 +95,12 @@ public struct BasicRNNCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell 
   public var bias: Tensor<Scalar>
 
   // TODO(TF-507): Revert to `typealias State = Tensor<Scalar>` after SR-10697 is fixed.
-  public struct State: Equatable, Differentiable, VectorProtocol, KeyPathIterable, Mergable {
+  public struct State: Equatable, Differentiable, VectorProtocol, KeyPathIterable {
     public var value: Tensor<Scalar>
 
     @differentiable
     public init(_ value: Tensor<Scalar>) {
       self.value = value
-    }
-
-    @differentiable
-    public static func +(lhs: Self, rhs: Self) -> Self {
-      return Self(lhs.value + rhs.value)
     }
   }
 
@@ -451,29 +446,45 @@ public struct RecurrentLayer<Cell: RecurrentLayerCell>: Layer {
   }
 }
 
-public protocol Mergable 
-where Self: Differentiable {
-  @differentiable
-  static func +(lhs: Self, rhs: Self) -> Self
+@differentiable
+public func sum<Scalar: TensorFlowFloatingPoint>(
+  _ firstOutput: BasicRNNCell<Scalar>.TimeStepOutput, 
+  _ secondOutput: BasicRNNCell<Scalar>.TimeStepOutput
+) -> BasicRNNCell<Scalar>.TimeStepOutput {
+  return BasicRNNCell<Scalar>.TimeStepOutput(firstOutput.value + secondOutput.value)
 }
 
-public enum MergeMode {
-  case sum
+@differentiable
+public func sum<Scalar: TensorFlowFloatingPoint>(
+  _ firstOutput: LSTMCell<Scalar>.TimeStepOutput,
+  _ secondOutput: LSTMCell<Scalar>.TimeStepOutput
+) -> LSTMCell<Scalar>.TimeStepOutput {
+  return LSTMCell<Scalar>.TimeStepOutput(
+    cell: firstOutput.cell + secondOutput.cell, 
+    hidden: firstOutput.hidden + secondOutput.hidden
+  )
 }
 
-public struct BidirectionalRecurrentLayer<Cell: RecurrentLayerCell>: Layer 
-where Cell.TimeStepOutput: Mergable {
+@differentiable
+public func sum<Scalar: TensorFlowFloatingPoint>(
+  _ firstOutput: GRUCell<Scalar>.TimeStepOutput,
+  _ secondOutput: GRUCell<Scalar>.TimeStepOutput
+) -> GRUCell<Scalar>.TimeStepOutput {
+  return GRUCell<Scalar>.TimeStepOutput(hidden: firstOutput.hidden + secondOutput.hidden)
+}
+
+public struct BidirectionalRecurrentLayer<Cell: RecurrentLayerCell>: Layer {
   public typealias Input = [Cell.TimeStepInput]
   public typealias Output = [Cell.TimeStepOutput]
-  public typealias Merge = @differentiable (Cell.TimeStepOutput, Cell.TimeStepOutput) -> Cell.TimeStepOutput
+  public typealias MergeFunction = @differentiable (Cell.TimeStepOutput, Cell.TimeStepOutput) -> Cell.TimeStepOutput
 
-  @noDerivative public let mergeMode: MergeMode
+  @noDerivative public let merging: MergeFunction
   public var forward, backward: RecurrentLayer<Cell>
 
-  public init(_ cell: @autoclosure () -> Cell, mergeMode: MergeMode = .sum) {
+  public init(_ cell: @autoclosure () -> Cell, merge: @escaping MergeFunction) {
     forward = RecurrentLayer(cell())
     backward = RecurrentLayer(cell())
-    self.mergeMode = mergeMode
+    merging = merge
   }
 
   @differentiable
@@ -486,10 +497,7 @@ where Cell.TimeStepOutput: Mergable {
     var outputs = Output()
 
     for i in  0 ..< withoutDerivative(at: inputs.count) {
-      switch mergeMode {
-      case .sum:
-        outputs.append(forwardOutputs[i] + backwardOutputs[i])
-      }
+        outputs.append(merging(forwardOutputs[i], backwardOutputs[i]))
     }
 
     return outputs
@@ -505,9 +513,11 @@ extension RecurrentLayer: Equatable where Cell: Equatable {}
 extension RecurrentLayer: AdditiveArithmetic where Cell: AdditiveArithmetic {}
 
 public typealias BasicRNN<Scalar: TensorFlowFloatingPoint> = RecurrentLayer<BasicRNNCell<Scalar>>
-public typealias BidirectionalBasicRNN<Scalar: TensorFlowFloatingPoint> = BidirectionalRecurrentLayer<BasicRNNCell<Scalar>>
 public typealias LSTM<Scalar: TensorFlowFloatingPoint> = RecurrentLayer<LSTMCell<Scalar>>
 public typealias GRU<Scalar: TensorFlowFloatingPoint> = RecurrentLayer<GRUCell<Scalar>>
+public typealias BidirectionalBasicRNN<Scalar: TensorFlowFloatingPoint> = BidirectionalRecurrentLayer<BasicRNNCell<Scalar>>
+public typealias BidirectionalLSTM<Scalar: TensorFlowFloatingPoint> = BidirectionalRecurrentLayer<LSTMCell<Scalar>>
+public typealias BidirectionalGRU<Scalar: TensorFlowFloatingPoint> = BidirectionalRecurrentLayer<GRUCell<Scalar>>
 
 // - MARK: Deprecated names
 

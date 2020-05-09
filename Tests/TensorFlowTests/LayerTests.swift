@@ -1520,10 +1520,10 @@ final class LayerTests: XCTestCase {
     }
   }
 
-  func testBiBasicRNN() {
+  func testBidirectionalBasicRNN() {
     let x = Tensor<Float>(rangeFrom: 0.0, to: 0.4, stride: 0.1).rankLifted()
     let inputs: [Tensor<Float>] = Array(repeating: x, count: 4)
-    let birnn = BiBasicRNN<Float>(BasicRNNCell(inputSize: 4, hiddenSize: 4, seed: (0xFeed, 0xBeef)), mergeMode: .sum)
+    let birnn = BidirectionalBasicRNN<Float>(BasicRNNCell(inputSize: 4, hiddenSize: 4, seed: (0xFeed, 0xBeef)), merge: sum)
     withTensorLeakChecking {
       let outputs = birnn(inputs)
       assertEqual(
@@ -2204,7 +2204,7 @@ final class LayerTests: XCTestCase {
     ("testDense", testDense),
     ("testDenseGradient", testDenseGradient),
     ("testRNN", testRNN),
-    ("testBiBasicRNN", testBiBasicRNN),
+    ("testBidirectionalBasicRNN", testBidirectionalBasicRNN),
     ("testLSTM", testLSTM),
     ("testGRU", testGRU),
     ("testFunction", testFunction),
