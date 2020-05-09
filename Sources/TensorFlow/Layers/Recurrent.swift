@@ -95,10 +95,17 @@ public struct BasicRNNCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell 
   public var bias: Tensor<Scalar>
 
   // TODO(TF-507): Revert to `typealias State = Tensor<Scalar>` after SR-10697 is fixed.
-  public struct State: Equatable, Differentiable, VectorProtocol, KeyPathIterable {
+  public struct State: Equatable, Differentiable, VectorProtocol, KeyPathIterable, Mergable {
     public var value: Tensor<Scalar>
+
+    @differentiable
     public init(_ value: Tensor<Scalar>) {
       self.value = value
+    }
+
+    @differentiable
+    public static func +(lhs: Self, rhs: Self) -> Self {
+      return Self(lhs.value + rhs.value)
     }
   }
 
@@ -444,10 +451,61 @@ public struct RecurrentLayer<Cell: RecurrentLayerCell>: Layer {
   }
 }
 
+public protocol Mergable 
+where Self: Differentiable {
+  @differentiable
+  static func +(lhs: Self, rhs: Self) -> Self
+}
+
+public enum MergeMode {
+  case sum
+}
+
+public struct BidirectionalRecurrentLayer<Cell: RecurrentLayerCell>: Layer 
+where Cell.TimeStepOutput: Mergable {
+  public typealias Input = [Cell.TimeStepInput]
+  public typealias Output = [Cell.TimeStepOutput]
+  public typealias Merge = @differentiable (Cell.TimeStepOutput, Cell.TimeStepOutput) -> Cell.TimeStepOutput
+
+  @noDerivative public let mergeMode: MergeMode
+  public var forward, backward: RecurrentLayer<Cell>
+
+  public init(_ cell: @autoclosure () -> Cell, mergeMode: MergeMode = .sum) {
+    forward = RecurrentLayer(cell())
+    backward = RecurrentLayer(cell())
+    self.mergeMode = mergeMode
+  }
+
+  @differentiable
+  public func callAsFunction(_ inputs: Input) -> Output {
+    let inputsReversed = withoutDerivative(at: Array(inputs.reversed()))
+
+    let forwardOutputs = forward(inputs)
+    let backwardOutputs = backward(inputsReversed)
+
+    var outputs = Output()
+
+    for i in  0 ..< withoutDerivative(at: inputs.count) {
+      switch mergeMode {
+      case .sum:
+        outputs.append(forwardOutputs[i] + backwardOutputs[i])
+      }
+    }
+
+    return outputs
+  }
+
+  @differentiable
+  public func lastOutput(_ inputs: Input) -> Cell.TimeStepOutput {
+    self(inputs)[withoutDerivative(at: inputs.count - 1)]
+  }
+}
+
 extension RecurrentLayer: Equatable where Cell: Equatable {}
 extension RecurrentLayer: AdditiveArithmetic where Cell: AdditiveArithmetic {}
 
 public typealias BasicRNN<Scalar: TensorFlowFloatingPoint> = RecurrentLayer<BasicRNNCell<Scalar>>
+public typealias BiBasicRNN<Scalar: TensorFlowFloatingPoint> = BidirectionalRecurrentLayer<BasicRNNCell<Scalar>>
 public typealias LSTM<Scalar: TensorFlowFloatingPoint> = RecurrentLayer<LSTMCell<Scalar>>
 public typealias GRU<Scalar: TensorFlowFloatingPoint> = RecurrentLayer<GRUCell<Scalar>>
 
