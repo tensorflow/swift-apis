@@ -505,7 +505,7 @@ extension RecurrentLayer: Equatable where Cell: Equatable {}
 extension RecurrentLayer: AdditiveArithmetic where Cell: AdditiveArithmetic {}
 
 public typealias BasicRNN<Scalar: TensorFlowFloatingPoint> = RecurrentLayer<BasicRNNCell<Scalar>>
-public typealias BiBasicRNN<Scalar: TensorFlowFloatingPoint> = BidirectionalRecurrentLayer<BasicRNNCell<Scalar>>
+public typealias BidirectionalBasicRNN<Scalar: TensorFlowFloatingPoint> = BidirectionalRecurrentLayer<BasicRNNCell<Scalar>>
 public typealias LSTM<Scalar: TensorFlowFloatingPoint> = RecurrentLayer<LSTMCell<Scalar>>
 public typealias GRU<Scalar: TensorFlowFloatingPoint> = RecurrentLayer<GRUCell<Scalar>>
 
