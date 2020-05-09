@@ -24,6 +24,8 @@
 #include <set>
 #include <stdexcept>
 
+#include "absl/container/node_hash_map.h"
+#include "absl/container/node_hash_set.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/str_join.h"
 #include "tensorflow/compiler/xla/xla_client/cache.h"
@@ -65,6 +67,24 @@ struct TlsData {
 };
 
 thread_local TlsData g_tls_data;
+
+thread_local absl::node_hash_map<xla::hash_t, std::vector<xla::hash_t>>
+    g_tracelet_prefix;
+thread_local absl::node_hash_set<xla::hash_t> g_tracelet_cutpoint;
+thread_local xla::int64 g_prev_uncached_compile = 0;
+
+c10::optional<size_t> FindTraceDivergence(
+    absl::Span<const xla::hash_t> trace1,
+    absl::Span<const xla::hash_t> trace2) {
+  if (trace2.size() > trace1.size()) {
+    std::swap(trace1, trace2);
+  }
+  auto result = std::mismatch(trace1.begin(), trace1.end(), trace2.begin());
+  if (result.first != trace1.end()) {
+    return result.first - trace1.begin();
+  }
+  return absl::nullopt;
+}
 
 // Locking:
 // We perform two kinds of operations of tensors, synchronous and asynchronous.
@@ -680,6 +700,13 @@ void XLATensor::AssignIrValue(ir::Value ir_value) const {
 }
 
 void XLATensor::TryLimitGraphSize() {
+  if (data()->ir_value) {
+    xla::hash_t hash = data()->ir_value.node->hash();
+    if (g_tracelet_cutpoint.find(hash) != g_tracelet_cutpoint.end()) {
+      ApplyPendingGraph();
+      return;
+    }
+  }
   static const size_t kCheckFrequency =
       xla::sys_util::GetEnvInt("XLA_TRIM_GRAPH_CHECK_FREQUENCY", 5000);
   static const size_t kMaxPendingGraphSize =
@@ -1575,6 +1602,43 @@ std::shared_ptr<XLATensor::Async> XLATensor::SyncTensorsGraphInternal(
                                   &coll.indices);
 
   PostOrderData po_data = RunPostOrder(*tensors, coll.indices);
+  xla::metrics::CounterData* mark_step = xla::metrics::GetCounter("MarkStep");
+  xla::int64 steps = mark_step ? mark_step->Value() : 0;
+  if (steps == 3) {
+    xla::metrics::CounterData* uncached_compile =
+        xla::metrics::GetCounter("UncachedCompile");
+    g_prev_uncached_compile = uncached_compile->Value();
+  }
+  if (steps >= 4) {
+    xla::metrics::CounterData* uncached_compile =
+        xla::metrics::GetCounter("UncachedCompile");
+    if (uncached_compile &&
+        uncached_compile->Value() > g_prev_uncached_compile) {
+      XLA_CHECK(!po_data.post_order.empty());
+      // TODO(asuhan): Consider all nodes as possible trace starts?
+      xla::hash_t trace_key = po_data.post_order.front()->hash();
+      std::vector<xla::hash_t> new_trace;
+      for (const ir::Node* node : po_data.post_order) {
+        new_trace.push_back(node->hash());
+      }
+      const auto trace_it = g_tracelet_prefix.find(trace_key);
+      if (trace_it != g_tracelet_prefix.end()) {
+        const auto& old_trace = trace_it->second;
+        const auto divergent = FindTraceDivergence(old_trace, new_trace);
+        if (divergent &&
+            po_data.post_order[*divergent]->op() != ir::ops::xla_device_data) {
+          const auto cutpoint_it = new_trace.begin() + *divergent;
+          g_tracelet_prefix[trace_key] =
+              std::vector<xla::hash_t>(new_trace.begin(), cutpoint_it);
+          g_tracelet_cutpoint.insert(*(cutpoint_it - 1));
+        }
+      } else {
+        const auto trace_it_ok =
+            g_tracelet_prefix.emplace(trace_key, new_trace);
+        XLA_CHECK(trace_it_ok.second);
+      }
+    }
+  }
   coll.hash = xla::util::HashCombine(
       coll.hash, xla::util::Hash(po_data.parameter_sequence));
   TF_VLOG(4) << "Parameter sequence graph hash "
