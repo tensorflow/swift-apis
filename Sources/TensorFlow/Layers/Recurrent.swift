@@ -461,8 +461,7 @@ public struct RecurrentLayer<Cell: RecurrentLayerCell>: Layer {
   }
 }
 
-public protocol Mergeable 
-where Self: Differentiable {
+public protocol Mergeable: Differentiable, AdditiveArithmetic {
   @differentiable
   static func +(lhs: Self, rhs: Self) -> Self
 }
