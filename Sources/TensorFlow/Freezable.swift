@@ -12,64 +12,49 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// A wrapper around a differentiable value with "freezable" derivatives.
+/// A wrapper around a value whose value can be frozen.
 ///
-/// When `isFrozen` is true, accesses to `wrappedValue` have a derivative of zero.
+/// When `isFrozen` is true, assignments to `wrappedValue` will do nothing.
 @propertyWrapper
-public struct _Freezable<Value: Differentiable> {
-  @noDerivative public var isFrozen: Bool = false
+public struct _Freezable<Value> {
   private var _value: Value
+
+  /// True iff the value is frozen.
+  public var isFrozen: Bool = false
 
   public init(wrappedValue: Value) {
     _value = wrappedValue
   }
 
   public var projectedValue: Self {
-    get { return self }
+    get { self }
     set { self = newValue }
   }
 
-  /// The wrapped differentiable value.
-  @differentiable
+  /// The wrapped value.
   public var wrappedValue: Value {
     get { _value }
-    set { _value = newValue }
-  }
-
-  @usableFromInline
-  @derivative(of: wrappedValue)
-  func _vjpValue() -> (value: Value, pullback: (Value.TangentVector) -> TangentVector) {
-    return (
-      _value,
-      { [isFrozen = self.isFrozen] v in
-        isFrozen ? .zero : v
-      }
-    )
+    set {
+      // If frozen, do not update the value.
+      if isFrozen { return }
+      // Otherwise, update the value.
+      _value = newValue
+    }
   }
 }
 
 extension _Freezable {
-  /// Freeze derivatives for `wrappedValue`. Accesses to `wrappedValue` will always have a
-  /// derivative of zero.
+  /// Freeze the value of `wrappedValue`.
+  ///
+  /// While frozen, assignments to `wrappedValue` will do nothing.
   public mutating func freeze() {
     isFrozen = true
   }
 
-  /// Unfreeze derivatives for `wrappedValue`.
+  /// Unfreeze the value of `wrappedValue`.
+  ///
+  /// Assignments to `wrappedValue` will behave as normal.
   public mutating func unfreeze() {
     isFrozen = false
-  }
-}
-
-extension _Freezable: Differentiable {
-  public typealias TangentVector = Value.TangentVector
-  public mutating func move(along direction: TangentVector) {
-    _value.move(along: direction)
-  }
-}
-
-extension _Freezable: EuclideanDifferentiable where Value: EuclideanDifferentiable {
-  public var differentiableVectorView: TangentVector {
-    return _value.differentiableVectorView
   }
 }
