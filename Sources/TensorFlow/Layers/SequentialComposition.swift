@@ -15,8 +15,9 @@
 /// The sequential composition of the elements of some base collection of
 /// layers.
 ///
-/// The elements of the base collection are applied in the order in which they
-/// appear.
+/// The first element of the base collection is applied first by the composite,
+/// so it is the inner call of the composition or the last in the sequence of
+/// composed layers in “f ∘ g” notation.
 public struct SequentialComposition<Base: Collection>
   where Base.Element : Layer, Base.Element.Input == Base.Element.Output
 {
