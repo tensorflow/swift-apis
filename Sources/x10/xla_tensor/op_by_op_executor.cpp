@@ -72,7 +72,7 @@ xla::hash_t ComputeNodeKey(const ir::Node* node,
 xla::XlaComputation BuildNodeComputation(
     const ir::Node* node, absl::Span<const xla::Shape* const> input_shapes,
     const Device& device) {
-  ir::LoweringContext loctx("BuildNodeComputation");
+  ir::LoweringContext loctx("BuildNodeComputation", device);
   const auto& operands = node->operands();
   for (size_t i = 0; i < operands.size(); ++i) {
     xla::XlaOp param = xla::Parameter(
@@ -120,9 +120,9 @@ std::vector<xla::ComputationClient::ExecuteChainedOp> OpByOpExecutor::BuildOps(
   xla::hash_t nodes_key_seed = GetNodesKeySeed(device, compilation_devices);
   Device exec_device(device);
   std::vector<xla::hash_t> cache_keys;
-  std::unordered_map<xla::hash_t, std::vector<size_t>, xla::util::HashReducer>
+  absl::node_hash_map<xla::hash_t, std::vector<size_t>, xla::util::HashReducer>
       compile_indices;
-  std::unordered_map<xla::hash_t, size_t, xla::util::HashReducer>
+  absl::node_hash_map<xla::hash_t, size_t, xla::util::HashReducer>
       cache_keys_instance;
   std::list<xla::Shape> compile_shapes;
   std::vector<bool> device_data_ops(post_order.size());

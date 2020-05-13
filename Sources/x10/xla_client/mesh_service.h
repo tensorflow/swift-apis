@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/types/span.h"
 #include "tensorflow/compiler/xla/xla_client/mesh_service.pb.h"
 #include "tensorflow/compiler/xla/types.h"
 
@@ -51,6 +52,8 @@ class MeshClient {
 
   std::vector<std::string> Rendezvous(int ordinal, const std::string& tag,
                                       const std::string& payload) const;
+
+  std::string GetNcclUniqueUid(absl::Span<const int64> replicas) const;
 
  private:
   explicit MeshClient(const std::string& address);
