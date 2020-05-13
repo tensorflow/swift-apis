@@ -57,7 +57,7 @@ message GetNcclUniqueUidRequest {
 }
 
 message GetNcclUniqueUidResponse {
-  required bytes uid = 1;
+  optional bytes uid = 1;
 }
 
 service MeshService {
