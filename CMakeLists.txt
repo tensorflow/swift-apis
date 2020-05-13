@@ -6,6 +6,7 @@ if(CMAKE_VERSION VERSION_LESS 3.17)
   if(NOT CMAKE_SYSTEM_NAME STREQUAL Windows)
     set(CMAKE_EXECUTABLE_RUNTIME_Swift_FLAG "-Xlinker -rpath -Xlinker ")
     set(CMAKE_SHARED_LIBRARY_RUNTIME_Swift_FLAG "-Xlinker -rpath -Xlinker ")
+	set(VISIBILITY_FLAGS --cxxopt=-fvisibility=hidden --cxxopt=-fvisibility-inlines-hidden)
     if(CMAKE_SYSTEM_NAME STREQUAL Darwin)
       set(CMAKE_EXECUTABLE_RUNTIME_Swift_FLAG_SEP "")
       set(CMAKE_SHARED_LIBRARY_RUNTIME_Swift_FLAG_SEP "")
@@ -13,6 +14,8 @@ if(CMAKE_VERSION VERSION_LESS 3.17)
       set(CMAKE_EXECUTABLE_RUNTIME_Swift_FLAG_SEP ":")
       set(CMAKE_SHARED_LIBRARY_RUNTIME_Swift_FLAG_SEP ":")
     endif()
+  else()
+    set(VISIBILITY_FLAGS "")
   endif()
 endif()
 
@@ -59,7 +62,7 @@ if(BUILD_X10)
         COMMAND
           rm -rf <SOURCE_DIR>/bazel-bin # ${CMAKE_COMMAND} -E rm -Rrf <SOURCE_DIR>/bazel-bin
         COMMAND
-          bazel build -c opt --define framework_shared_object=false //tensorflow/compiler/tf2xla/xla_tensor:x10 --nocheck_visibility
+          bazel build ${VISIBILITY_FLAGS} -c opt --define framework_shared_object=false //tensorflow/compiler/tf2xla/xla_tensor:x10 --nocheck_visibility
         COMMAND
           bazel shutdown
       INSTALL_COMMAND
