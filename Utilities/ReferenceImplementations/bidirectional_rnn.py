@@ -27,10 +27,10 @@ def swift_tensor(name, tensor):
 
 # Initialize the keras model with the Bidirectional RNN.
 forward = tf.keras.layers.SimpleRNN(
-    units=4, activation="tanh", 
+    units=4, activation='tanh', 
     return_sequences=True, return_state=True)
 backward = tf.keras.layers.SimpleRNN(
-    units=4, activation="tanh", 
+    units=4, activation='tanh', 
     return_sequences=True, return_state=True, 
     go_backwards=True)
 bidirectional = tf.keras.layers.Bidirectional(
@@ -79,6 +79,7 @@ with tf.GradientTape() as tape:
 [grad_kernel_forward, grad_recurrent_kernel_forward, grad_bias_forward,
  grad_kernel_backward, grad_recurrent_kernel_backward, grad_bias_backward] = grad_model
 [grad_initial_state_forward, grad_initial_state_backward] = grad_initial_state
+print(swift_tensor('expectedSum', sum_output))
 print(swift_tensor('expectedStates', states))
 print(swift_tensor('expectedFinalStateForward', final_state_forward))
 print(swift_tensor('expectedFinalStateBackward', final_state_backward))

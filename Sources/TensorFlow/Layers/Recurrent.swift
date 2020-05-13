@@ -104,7 +104,7 @@ public struct BasicRNNCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell 
     }
 
     @differentiable
-    static public func + (lhs: Self, rhs: Self) -> Self {
+    public static func +(lhs: Self, rhs: Self) -> Self {
       Self(lhs.value + rhs.value)
     }
   }
@@ -222,7 +222,7 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell {
     }
 
     @differentiable
-    static public func + (lhs: Self, rhs: Self) -> Self {
+    public static func +(lhs: Self, rhs: Self) -> Self {
       Self(cell: lhs.cell + rhs.cell, hidden: lhs.hidden + rhs.hidden)
     }
   }
@@ -333,7 +333,7 @@ public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell {
     }
 
     @differentiable
-    static public func + (lhs: Self, rhs: Self) -> Self {
+    public static func +(lhs: Self, rhs: Self) -> Self {
       Self(hidden: lhs.hidden + rhs.hidden)
     }
   }
@@ -365,9 +365,11 @@ public struct RecurrentLayer<Cell: RecurrentLayerCell>: Layer {
   public typealias Output = [Cell.TimeStepOutput]
 
   public var cell: Cell
+  @noDerivative public let backwardDirection: Bool 
 
-  public init(_ cell: @autoclosure () -> Cell) {
+  public init(_ cell: @autoclosure () -> Cell, backwardDirection: Bool = false) {
     self.cell = cell()
+    self.backwardDirection = backwardDirection
   }
 
   @differentiable(wrt: (self, inputs, initialState))
@@ -378,7 +380,9 @@ public struct RecurrentLayer<Cell: RecurrentLayerCell>: Layer {
     if inputs.isEmpty { return [Cell.TimeStepOutput]() }
     var currentHiddenState = initialState
     var timeStepOutputs: [Cell.TimeStepOutput] = []
-    for timeStepInput in inputs {
+    for index in 0 ..< inputs.count {
+      let timeStepIndex = backwardDirection ? inputs.count - 1 - index : index
+      let timeStepInput = inputs[timeStepIndex]
       let output = cell(input: timeStepInput, state: currentHiddenState)
       currentHiddenState = output.state
       timeStepOutputs.append(output.output)
@@ -410,7 +414,9 @@ public struct RecurrentLayer<Cell: RecurrentLayerCell>: Layer {
     timeStepOutputs.reserveCapacity(timeStepCount)
     var backpropagators: [Cell.Backpropagator] = []
     backpropagators.reserveCapacity(timeStepCount)
-    for timestep in inputs {
+    for index in 0 ..< timeStepCount {
+      let timestepIndex = backwardDirection ? timeStepCount - 1 - index : index
+      let timestep = inputs[timestepIndex]
       let (output, backpropagator) = cell.appliedForBackpropagation(
         to: .init(input: timestep, state: currentHiddenState))
       currentHiddenState = output.state
@@ -433,14 +439,14 @@ public struct RecurrentLayer<Cell: RecurrentLayerCell>: Layer {
           𝛁state = 𝛁input.state
           reversed𝛁inputs.append(𝛁input.input)
         }
-        return (.init(cell: 𝛁cell), .init(Array(reversed𝛁inputs.reversed())), 𝛁state)
+        return (.init(cell: 𝛁cell), .init(Array(backwardDirection ? reversed𝛁inputs : reversed𝛁inputs.reversed())), 𝛁state)
       }
     )
   }
 
   @differentiable
   public func callAsFunction(_ inputs: [Cell.TimeStepInput]) -> [Cell.TimeStepOutput] {
-    let initialState = withoutDerivative(at: cell.zeroState(for: inputs[0]))
+    let initialState = withoutDerivative(at: cell.zeroState(for: backwardDirection ? inputs.last! : inputs.first!))
     return self(inputs, initialState: initialState)
   }
 
@@ -456,7 +462,7 @@ public struct RecurrentLayer<Cell: RecurrentLayerCell>: Layer {
   @differentiable(wrt: (self, inputs))
   public func lastOutput(from inputs: [Cell.TimeStepInput]) -> Cell.TimeStepOutput {
     precondition(!inputs.isEmpty, "'inputs' must be non-empty.")
-    let initialState = withoutDerivative(at: cell.zeroState(for: inputs[0]))
+    let initialState = withoutDerivative(at: cell.zeroState(for: backwardDirection ? inputs.last! : inputs.first!))
     return lastOutput(from: inputs, initialState: initialState)
   }
 }
@@ -467,11 +473,11 @@ public protocol Mergeable: Differentiable, AdditiveArithmetic {
 }
 
 @differentiable
-public func sum<TimeStepOutput: Mergeable>(
-  _ first: TimeStepOutput, 
-  _ second: TimeStepOutput
-) -> TimeStepOutput {
-  return first + second
+public func sum<T: Mergeable>(
+  _ first: T, 
+  _ second: T
+) -> T {
+  first + second
 }
 
 public struct BidirectionalRecurrentLayer<Cell: RecurrentLayerCell>: Layer
@@ -486,9 +492,9 @@ where Cell.TimeStepOutput: Mergeable {
 
   public init(_ cell: @autoclosure () -> Cell, merge: @escaping MergeFunction = sum) {
     forward = RecurrentLayer(cell())
-    backward = RecurrentLayer(cell())
+    backward = RecurrentLayer(cell(), backwardDirection: true)
     // TODO: Runtime crash when I try to set `sum` function to property
-    // self.merge = sum
+    // self.merge = merge
   }
 
   @differentiable
@@ -497,17 +503,16 @@ where Cell.TimeStepOutput: Mergeable {
     initialStateForward: Cell.State,
     initialStateBackward: Cell.State
   ) -> Output {
-    let inputsReversed = withoutDerivative(at: Array(inputs.reversed()))
-
     let forwardOutputs = forward(
       inputs, initialState: initialStateForward)
     let backwardOutputs = backward(
-      inputsReversed, initialState: initialStateBackward)
+      inputs, initialState: initialStateBackward)
 
     var outputs = Output()
 
     for forwardIndex in  0 ..< withoutDerivative(at: inputs.count) {
         let backwardIndex = withoutDerivative(at: inputs.count - 1 - forwardIndex)
+        // TODO: Replace with merge function
         outputs.append(sum(forwardOutputs[forwardIndex], backwardOutputs[backwardIndex]))
     }
 
@@ -516,8 +521,10 @@ where Cell.TimeStepOutput: Mergeable {
 
   @differentiable
   public func callAsFunction(_ inputs: Input) -> Output {
-    let initialStateForward = withoutDerivative(at: forward.cell.zeroState(for: inputs[0]))
-    let initialStateBackward = withoutDerivative(at: backward.cell.zeroState(for: inputs[0]))
+    let initialStateForward = withoutDerivative(
+      at: forward.cell.zeroState(for: inputs.first!))
+    let initialStateBackward = withoutDerivative(
+      at: backward.cell.zeroState(for: inputs.last!))
     return self(
       inputs, 
       initialStateForward: initialStateForward, 
@@ -545,7 +552,22 @@ where Cell.TimeStepOutput: Mergeable {
 }
 
 extension RecurrentLayer: Equatable where Cell: Equatable {}
-extension RecurrentLayer: AdditiveArithmetic where Cell: AdditiveArithmetic {}
+
+extension RecurrentLayer: AdditiveArithmetic where Cell: AdditiveArithmetic {
+  public static var zero: Self {
+    return Self(Cell.zero)
+  }
+
+  public static func +(lhs: Self, rhs: Self) -> Self {
+    precondition(lhs.backwardDirection == rhs.backwardDirection)
+    return Self(lhs.cell + rhs.cell, backwardDirection: lhs.backwardDirection)
+  }
+
+  public static func -(lhs: Self, rhs: Self) -> Self {
+    precondition(lhs.backwardDirection == rhs.backwardDirection)
+    return Self(lhs.cell - rhs.cell, backwardDirection: lhs.backwardDirection)
+  }
+}
 
 public typealias BasicRNN<Scalar: TensorFlowFloatingPoint> = RecurrentLayer<BasicRNNCell<Scalar>>
 public typealias LSTM<Scalar: TensorFlowFloatingPoint> = RecurrentLayer<LSTMCell<Scalar>>
