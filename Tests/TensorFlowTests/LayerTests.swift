@@ -2130,22 +2130,9 @@ final class LayerTests: XCTestCase {
       layers.append(Dense<Float>(weight: weight, bias: bias, activation: identity))
     }
 
-    var (inputSize, outputSize) = sizes[0]
-    var weight = Tensor<Float>(shape: [inputSize, outputSize], scalars: (0..<inputSize*outputSize).map(Float.init))
-    var bias = Tensor<Float>(shape: [1, outputSize], scalars: (0..<outputSize).map(Float.init))
-    let layer1 = Dense<Float>(weight: weight, bias: bias, activation: identity)
-    (inputSize, outputSize) = sizes[1]
-    weight = Tensor<Float>(shape: [inputSize, outputSize], scalars: (0..<inputSize*outputSize).map(Float.init))
-    bias = Tensor<Float>(shape: [1, outputSize], scalars: (0..<outputSize).map(Float.init))
-    let layer2 = Dense<Float>(weight: weight, bias: bias, activation: identity)
-    (inputSize, outputSize) = sizes[2]
-    weight = Tensor<Float>(shape: [inputSize, outputSize], scalars: (0..<inputSize*outputSize).map(Float.init))
-    bias = Tensor<Float>(shape: [1, outputSize], scalars: (0..<outputSize).map(Float.init))
-    let layer3 = Dense<Float>(weight: weight, bias: bias, activation: identity)
     let input = Tensor<Float>(shape: [5, 8], scalars: (0..<40).map(Float.init))
-
     let output = layers.sequentiallyComposed(input)
-    let expected = input.sequenced(through: layer1, layer2, layer3)
+    let expected = input.sequenced(through: layers[0], layers[1], layers[2])
     assertEqual(output, expected, accuracy: 1e-5)
   }
 
