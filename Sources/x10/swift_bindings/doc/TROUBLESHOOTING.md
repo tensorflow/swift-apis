@@ -6,13 +6,13 @@ report.
 
 ## Get A Metrics Report
 
-To print a report, add a `PrintMetrics` call to your program:
+To print a report, add a `PrintX10Metrics` call to your program:
 
 ```swift
-import x10_xla_tensor_wrapper
+import TensorFlow
 
 ...
-PrintMetrics()
+PrintX10Metrics()
 ...
 ```
 
@@ -103,6 +103,9 @@ the S4TF software stack:
 *   `XLA_SAVE_TENSORS_FMT`: The format of the graphs stored within the
     `XLA_SAVE_TENSORS_FILE` file. Can be `text` (the default), `dot` (Graphviz
     format) or `hlo`.
+
+*   `XLA_LOG_GRAPH_CHANGES`: If set to 1 and `XLA_SAVE_TENSORS_FILE` is set,
+    log a summary of graph changes and the stack traces which created them.
 
 *   `XLA_USE_BF16`: If set to 1, transforms all the `Float` values to BF16.
     Should only be used for debugging since we offer automatic mixed precision.

@@ -1,5 +1,6 @@
 add_library(TensorFlowTests
   ContextTests.swift
+  EpochsTests.swift
   FreezableTests.swift
   Helpers.swift
   InitializerTests.swift

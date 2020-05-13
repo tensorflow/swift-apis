@@ -108,6 +108,14 @@ class XrtComputationClient : public ComputationClient {
   };
 
  public:
+  struct Device {
+    Device() = default;
+    Device(const std::string& device_str);
+
+    std::string kind;
+    int ordinal = 0;
+  };
+
   struct Worker {
     Worker(std::string name, int task_no)
         : name(std::move(name)), task_no(task_no) {}
@@ -200,6 +208,8 @@ class XrtComputationClient : public ComputationClient {
   void SetRngSeed(size_t seed) override;
 
   std::map<std::string, Metric> GetMetrics() const override;
+
+  static Worker ParseWorker(const std::string& worker);
 
   static std::string GetMultiProcessingDevice();
 
@@ -325,7 +335,10 @@ class XrtComputationClient : public ComputationClient {
   void InitializeDevices(
       std::unique_ptr<tensorflow::tpu::TopologyProto> topology_proto);
 
-  void CreateMeshService(const tensorflow::tpu::TopologyProto& topology_proto);
+  void CreateMeshService(const std::string& address,
+                         const tensorflow::tpu::TopologyProto* topology_proto);
+
+  void SetupGpuRuntime();
 
   std::vector<DataPtr> GetComputationResults(
       const tensorflow::Tensor& xrt_result, const Shape& result_shape,
@@ -478,9 +491,10 @@ class XrtComputationClient : public ComputationClient {
       const std::string& job, int task_no, const std::string& worker_host_port,
       const tensorflow::ConfigProto& config);
 
+  static std::string GetLocalTarget(const Options& options);
+
   // Checks whether a local GRPC service is required, and starts it if need it.
-  static void MaybeCreateLocalService(
-      const XrtComputationClient::Options& options);
+  static void MaybeCreateLocalService(const Options& options);
 
   Options options_;
   std::mutex lock_;

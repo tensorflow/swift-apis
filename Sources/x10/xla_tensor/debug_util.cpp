@@ -25,7 +25,9 @@
 #include "tensorflow/compiler/tf2xla/xla_tensor/ir_util.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/swift_backtrace.h"
 #include "tensorflow/compiler/xla/xla_client/debug_macros.h"
+#include "tensorflow/compiler/xla/xla_client/device.h"
 #include "tensorflow/compiler/xla/xla_client/sys_util.h"
+#include "tensorflow/compiler/xla/xla_client/unique.h"
 
 namespace swift_xla {
 namespace {
@@ -67,13 +69,16 @@ std::string DebugUtil::GetTensorsGraphInfo(absl::Span<const XLATensor> tensors,
   std::vector<const ir::Node*> root_nodes;
   std::vector<ir::Value> root_values;
   std::vector<xla::hash_t> root_hashes;
+  xla::util::Unique<Device> unique_device;
   if (indices != nullptr) {
     for (auto index : *indices) {
-      ir::Value ir_value = tensors[index].CurrentIrValue();
+      const XLATensor& tensor = tensors[index];
+      ir::Value ir_value = tensor.CurrentIrValue();
       if (ir_value) {
         root_nodes.push_back(ir_value.node.get());
         root_hashes.push_back(ir_value.hash());
         root_values.push_back(std::move(ir_value));
+        unique_device.set(tensor.GetDevice());
       }
     }
   } else {
@@ -83,6 +88,7 @@ std::string DebugUtil::GetTensorsGraphInfo(absl::Span<const XLATensor> tensors,
         root_nodes.push_back(ir_value.node.get());
         root_hashes.push_back(ir_value.hash());
         root_values.push_back(std::move(ir_value));
+        unique_device.set(tensor.GetDevice());
       }
     }
   }
@@ -103,11 +109,15 @@ std::string DebugUtil::GetTensorsGraphInfo(absl::Span<const XLATensor> tensors,
   } else if (format == GraphFormat::kDot) {
     graph_str = ir::DumpUtil::ToDot(root_nodes);
   } else if (format == GraphFormat::kHlo) {
-    graph_str = ir::DumpUtil::ToHlo(root_values);
+    graph_str = ir::DumpUtil::ToHlo(
+        root_values, unique_device ? *unique_device : GetCurrentDevice());
   } else {
     XLA_ERROR() << "Invalid graph format: " << format;
   }
   ss << "\n## BEGIN_GRAPH\n" << graph_str << "\n## END_GRAPH\n\n";
+  if (ir::Node::s_log_graph_changes_) {
+    ss << ir::DumpUtil::GetGraphChangeLog(root_nodes) << "\n";
+  }
   return ss.str();
 }
 

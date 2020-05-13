@@ -20,10 +20,11 @@
 
 #include "absl/container/node_hash_map.h"
 #include "absl/types/optional.h"
-#include "tensorflow/compiler/xla/xla_client/debug_macros.h"
-#include "tensorflow/compiler/xla/xla_client/xla_util.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/debug_util.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ir_util.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/lowering_context.h"
+#include "tensorflow/compiler/xla/xla_client/debug_macros.h"
+#include "tensorflow/compiler/xla/xla_client/xla_util.h"
 
 namespace swift_xla {
 namespace ir {
@@ -166,9 +167,13 @@ std::string GenerateDotNodeSpec(
   return ss.str();
 }
 
-std::string GenerateTextNodeSpec(const Node* node, const NodeIdMap& id_map) {
+std::string GenerateTextNodeSpec(const Node* node, const NodeIdMap& id_map,
+                                 bool with_shape) {
   std::stringstream ss;
-  ss << node->shape() << " " << node->op() << "(";
+  if (with_shape) {
+    ss << node->shape() << " ";
+  }
+  ss << node->op() << "(";
   size_t count = 0;
   for (auto& output : node->operands()) {
     if (count > 0) {
@@ -186,6 +191,18 @@ std::string GenerateTextNodeSpec(const Node* node, const NodeIdMap& id_map) {
   }
   return ss.str();
 }
+
+std::string GenerateTextNodeSpec(const Node* node, const NodeIdMap& id_map) {
+  return GenerateTextNodeSpec(node, id_map, true);
+}
+
+struct ChangeLogNode {
+  std::string text;
+  xla::Shape shape;
+  std::vector<SourceLocation> backtrace;
+};
+
+thread_local std::map<xla::hash_t, std::vector<ChangeLogNode>> g_change_logs;
 
 }  // namespace
 
@@ -252,14 +269,58 @@ std::string DumpUtil::PostOrderToText(absl::Span<const Node* const> post_order,
   return ss.str();
 }
 
-std::string DumpUtil::ToHlo(absl::Span<const Value> values) {
-  ir::LoweringContext lowering_ctx("IrToHlo");
+std::string DumpUtil::ToHlo(absl::Span<const Value> values,
+                            const Device& device) {
+  ir::LoweringContext lowering_ctx("IrToHlo", device);
   for (auto& ir_value : values) {
     xla::XlaOp root = lowering_ctx.GetOutputOp(ir_value);
     lowering_ctx.AddResult(root);
   }
   xla::XlaComputation computation = ConsumeValue(lowering_ctx.Build());
   return ConsumeValue(xla::util::GetComputationHloText(computation));
+}
+
+std::string DumpUtil::GetGraphChangeLog(absl::Span<const Node* const> roots) {
+  auto post_order = Util::ComputePostOrder(roots);
+  std::unordered_map<const Node*, size_t> roots_ids = GetRootsIds(roots);
+  NodeIdMap id_map = GenerateIdMap(post_order);
+  std::vector<ChangeLogNode> change_log;
+  xla::hash_t h = 0x85ebca77c2b2ae63;
+  for (auto node : post_order) {
+    auto opt_root_id = GetRootNodeId(node, roots_ids);
+    ChangeLogNode change_log_node;
+    std::stringstream node_serializer;
+    node_serializer << "%" << id_map.at(node) << " = "
+                    << GenerateTextNodeSpec(node, id_map, false);
+    if (opt_root_id) {
+      node_serializer << ", ROOT=" << *opt_root_id;
+    }
+    change_log_node.text = node_serializer.str();
+    h = xla::util::HashCombine(h, xla::util::Hash(change_log_node.text));
+    change_log_node.shape = node->shape();
+    change_log_node.backtrace = node->metadata().frame_info;
+    change_log.push_back(change_log_node);
+  }
+  std::stringstream ss;
+  const auto old_it = g_change_logs.find(h);
+  if (old_it == g_change_logs.end()) {
+    ss << "New graph structure";
+  } else {
+    const auto& old_change_log = old_it->second;
+    for (size_t i = 0; i < post_order.size(); ++i) {
+      const auto crt = change_log[i];
+      const auto old = old_change_log[i];
+      if (crt.shape != old.shape) {
+        ss << "Found different shape: " << crt.shape << " vs " << old.shape
+           << " for:\n  " << crt.text << "\n";
+        ss << "Current trace:\n" << crt.backtrace;
+        ss << "Previous trace:\n" << old.backtrace;
+        break;
+      }
+    }
+  }
+  g_change_logs.emplace(h, change_log);
+  return ss.str();
 }
 
 }  // namespace ir
