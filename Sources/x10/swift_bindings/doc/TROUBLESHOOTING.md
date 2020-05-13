@@ -98,7 +98,9 @@ the S4TF software stack:
 *   `XLA_SAVE_TENSORS_FILE`: The path to which IR graphs will be logged during
     execution. Note that the file can become really big if the option is left
     enabled for long running programs. Remove the file before each run if you
-    only want logging from the current run.
+    only want logging from the current run. Note that setting this variable has
+    a substantial negative impact on performance, especially when combined with
+    `XLA_LOG_GRAPH_CHANGES`.
 
 *   `XLA_SAVE_TENSORS_FMT`: The format of the graphs stored within the
     `XLA_SAVE_TENSORS_FILE` file. Can be `text` (the default), `dot` (Graphviz
