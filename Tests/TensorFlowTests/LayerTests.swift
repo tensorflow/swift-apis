@@ -2150,7 +2150,7 @@ final class LayerTests: XCTestCase {
     XCTAssertEqual(dropout(x), x)
   }
 
-  func testArray() {
+  func testDynamicSequential() {
     var layers: [Dense<Float>] = []
     let sizes = [(8, 7), (7, 6), (6, 5)]
     for (inputSize, outputSize) in sizes {
@@ -2173,13 +2173,13 @@ final class LayerTests: XCTestCase {
     let layer3 = Dense<Float>(weight: weight, bias: bias, activation: identity)
     let input = Tensor<Float>(shape: [5, 8], scalars: (0..<40).map(Float.init))
 
-    let output = layers(input)
+    let output = layers.sequentiallyComposed(input)
     let expected = input.sequenced(through: layer1, layer2, layer3)
     assertEqual(output, expected, accuracy: 1e-5)
   }
 
   static var allTests = [
-    ("testArray", testArray),
+    ("testArray", testDynamicSequential),
     ("testSequential", testSequential),
     ("testConv1D", testConv1D),
     ("testConv1DDilation", testConv1DDilation),

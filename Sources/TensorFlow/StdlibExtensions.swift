@@ -12,11 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-extension Collection {
-  func index(atOffset n: Int) -> Index { index(startIndex, offsetBy: n) }
-  func offset(of i: Index) -> Int { distance(from: startIndex, to: i) }
-}
-
 extension Zip2Sequence: Collection 
   where Sequence1: Collection, Sequence2: Collection 
 {
@@ -371,4 +366,7 @@ where Element: Differentiable & PointwiseMultiplicative {
 extension Collection {
   /// Returns the `n`th position in `self`.
   func index(atOffset n: Int) -> Index { index(startIndex, offsetBy: n) }
+  
+  /// Returns the offset of `i` in `self` from `self.startIndex`.
+  func offset(of i: Index) -> Int { distance(from: startIndex, to: i) }
 }
