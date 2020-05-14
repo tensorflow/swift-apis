@@ -1,8 +1,12 @@
-# Computes expected results for `testLSTM()` in `Tests/TensorFlowTests/LayerTests.swift`.
+# Computes expected results for `testLSTM()` or `testReversedLSTM()` in `Tests/TensorFlowTests/LayerTests.swift`.
 # Requires 'tensorflow>=2.0.0a0' (e.g. "pip install tensorflow==2.0.0b1").
 
+import sys
 import numpy
 import tensorflow as tf
+
+# Set random seed for repetable results
+tf.random.set_seed(0)
 
 def indented(s):
     return '\n'.join(['    ' + l for l in s.split('\n')])
@@ -22,8 +26,10 @@ def swift_tensor(name, tensor):
         name,
         indented(numpy.array2string(tensor, separator=',', formatter=formatter)))
 
+go_backwards = "go_backwards" in sys.argv
+
 # Initialize the keras model with the LSTM.
-lstm = tf.keras.layers.LSTM(units=4, return_sequences=True, return_state=True)
+lstm = tf.keras.layers.LSTM(units=4, return_sequences=True, return_state=True, go_backwards=go_backwards)
 x_input = tf.keras.Input(shape=[4, 4])
 initial_state_hidden_input = tf.keras.Input(shape=[4])
 initial_state_cell_input = tf.keras.Input(shape=[4])
