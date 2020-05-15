@@ -93,6 +93,8 @@
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/reflection_pad2d.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/reflection_pad2d_backward.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/repeat.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/ops/replication_pad.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/ops/replication_pad_backward.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/resize.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/rrelu_with_noise.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/rrelu_with_noise_backward.h"
@@ -2109,6 +2111,32 @@ XLATensor XLATensor::repeat(const XLATensor& input,
                             std::vector<xla::int64> repeats) {
   return input.CreateFrom(
       ir::MakeNode<ir::ops::Repeat>(input.GetIrValue(), std::move(repeats)));
+}
+
+XLATensor XLATensor::replication_pad1d(const XLATensor& input,
+                                       std::vector<xla::int64> padding) {
+  return input.CreateFrom(ir::MakeNode<ir::ops::ReplicationPad>(
+      input.GetIrValue(), std::move(padding)));
+}
+
+XLATensor XLATensor::replication_pad1d_backward(
+    const XLATensor& grad_output, const XLATensor& input,
+    std::vector<xla::int64> padding) {
+  return input.CreateFrom(ir::MakeNode<ir::ops::ReplicationPadBackward>(
+      grad_output.GetIrValue(), input.GetIrValue(), std::move(padding)));
+}
+
+XLATensor XLATensor::replication_pad2d(const XLATensor& input,
+                                       std::vector<xla::int64> padding) {
+  return input.CreateFrom(ir::MakeNode<ir::ops::ReplicationPad>(
+      input.GetIrValue(), std::move(padding)));
+}
+
+XLATensor XLATensor::replication_pad2d_backward(
+    const XLATensor& grad_output, const XLATensor& input,
+    std::vector<xla::int64> padding) {
+  return input.CreateFrom(ir::MakeNode<ir::ops::ReplicationPadBackward>(
+      grad_output.GetIrValue(), input.GetIrValue(), std::move(padding)));
 }
 
 void XLATensor::resize_(XLATensor& input, std::vector<xla::int64> size) {
