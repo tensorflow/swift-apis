@@ -891,6 +891,18 @@ class XLATensor {
   static XLATensor repeat(const XLATensor& input,
                           std::vector<xla::int64> repeats);
 
+  static XLATensor replication_pad1d(const XLATensor& input,
+                                     std::vector<xla::int64> padding);
+  static XLATensor replication_pad1d_backward(const XLATensor& grad_output,
+                                              const XLATensor& input,
+                                              std::vector<xla::int64> padding);
+
+  static XLATensor replication_pad2d(const XLATensor& input,
+                                     std::vector<xla::int64> padding);
+  static XLATensor replication_pad2d_backward(const XLATensor& grad_output,
+                                              const XLATensor& input,
+                                              std::vector<xla::int64> padding);
+
   static void resize_(XLATensor& input, std::vector<xla::int64> size);
 
   static XLATensor round_to_even(const XLATensor& input);

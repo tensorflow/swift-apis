@@ -763,22 +763,24 @@
   _(aten, xla_is_inf)                                       \
   _(aten, xla_is_nan)
 
-#define FORALL_XLA_SYMBOLS(_, __) \
-  __(xla, all_to_all)             \
-  _(xla, as_strided_view_update)  \
-  _(xla, cast)                    \
-  _(xla, collective_permute)      \
-  _(xla, cross_replica_sum)       \
-  _(xla, device_data)             \
-  _(xla, diagonal_view_update)    \
-  _(xla, generic_slice)           \
-  _(xla, get_dimensions_size)     \
-  _(xla, moving_average)          \
-  _(xla, not_supported)           \
-  _(xla, select)                  \
-  _(xla, tensor_data)             \
-  _(xla, token)                   \
-  _(xla, unselect)                \
+#define FORALL_XLA_SYMBOLS(_, __)  \
+  __(xla, all_to_all)              \
+  _(xla, as_strided_view_update)   \
+  _(xla, cast)                     \
+  _(xla, collective_permute)       \
+  _(xla, cross_replica_sum)        \
+  _(xla, device_data)              \
+  _(xla, diagonal_view_update)     \
+  _(xla, generic_slice)            \
+  _(xla, get_dimensions_size)      \
+  _(xla, moving_average)           \
+  _(xla, not_supported)            \
+  _(xla, replication_pad)          \
+  _(xla, replication_pad_backward) \
+  _(xla, select)                   \
+  _(xla, tensor_data)              \
+  _(xla, token)                    \
+  _(xla, unselect)                 \
   _(xla, update_slice)
 
 namespace at {

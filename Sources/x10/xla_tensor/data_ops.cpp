@@ -24,6 +24,7 @@
 #include "tensorflow/compiler/xla/xla_client/util.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/convert_ops.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/helpers.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/reduction.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/tensor_util.h"
 #include "tensorflow/compiler/xla/client/lib/constants.h"
 #include "tensorflow/compiler/xla/client/lib/slicing.h"
@@ -43,29 +44,21 @@ bool IsSparseGather(const xla::Shape& input_shape,
   return index_elements < input_elements / dense_gather_factor;
 }
 
-std::vector<xla::int64> GetReflectionPad2dSpatialDims(xla::int64 rank) {
-  if (rank == 3) {
-    return {2, 1};
-  } else if (rank == 4) {
-    return {3, 2};
-  }
-  XLA_ERROR() << "Invalid input shape for reflection_pad2d: rank=" << rank;
-}
-
 xla::XlaOp MirrorPadInDimensions(xla::XlaOp input,
                                  absl::Span<const xla::int64> padding,
-                                 absl::Span<const xla::int64> spatial_dims,
                                  tensorflow::MirrorPadMode mode) {
   const xla::Shape& input_shape = XlaHelpers::ShapeOfXlaOp(input);
+  XLA_CHECK_GE(2 * input_shape.rank(), padding.size());
+  XLA_CHECK_EQ(padding.size() % 2, 0) << "Uneven padding: " << padding.size();
 
   xla::int64 excluded_edges =
       mode == tensorflow::MirrorPadMode::REFLECT ? 1 : 0;
   xla::XlaOp result = input;
-  for (xla::int64 i = 0; i < spatial_dims.size(); ++i) {
-    xla::int64 dim = spatial_dims[i];
+  for (size_t i = 0; i < padding.size(); i += 2) {
+    xla::int64 dim = input_shape.rank() - 1 - i / 2;
     xla::int64 dim_size = input_shape.dimensions(dim);
-    xla::int64 lhs_padding = padding[2 * i];
-    xla::int64 rhs_padding = padding[2 * i + 1];
+    xla::int64 lhs_padding = padding[i];
+    xla::int64 rhs_padding = padding[i + 1];
 
     XLA_CHECK(lhs_padding >= 0 && lhs_padding <= dim_size - excluded_edges);
     XLA_CHECK(rhs_padding >= 0 && rhs_padding <= dim_size - excluded_edges);
@@ -83,18 +76,19 @@ xla::XlaOp MirrorPadInDimensions(xla::XlaOp input,
 
 xla::XlaOp MirrorPadInDimensionsBackward(
     xla::XlaOp grad_output, absl::Span<const xla::int64> input_size,
-    absl::Span<const xla::int64> padding,
-    absl::Span<const xla::int64> spatial_dims, tensorflow::MirrorPadMode mode) {
+    absl::Span<const xla::int64> padding, tensorflow::MirrorPadMode mode) {
   const xla::Shape& grad_output_shape = XlaHelpers::ShapeOfXlaOp(grad_output);
+  XLA_CHECK_GE(2 * grad_output_shape.rank(), padding.size());
+  XLA_CHECK_EQ(padding.size() % 2, 0) << "Uneven padding: " << padding.size();
 
   xla::int64 excluded_edges =
       mode == tensorflow::MirrorPadMode::REFLECT ? 1 : 0;
   xla::XlaOp grad = grad_output;
-  for (xla::int64 i = 0; i < spatial_dims.size(); ++i) {
-    xla::int64 dim = spatial_dims[i];
+  for (size_t i = 0; i < padding.size(); i += 2) {
+    xla::int64 dim = grad_output_shape.rank() - 1 - i / 2;
     xla::int64 dim_size = grad_output_shape.dimensions(dim);
-    xla::int64 lhs_padding = padding[2 * i];
-    xla::int64 rhs_padding = padding[2 * i + 1];
+    xla::int64 lhs_padding = padding[i];
+    xla::int64 rhs_padding = padding[i + 1];
 
     XLA_CHECK(lhs_padding >= 0 && lhs_padding <= dim_size - excluded_edges);
     XLA_CHECK(rhs_padding >= 0 && rhs_padding <= dim_size - excluded_edges);
@@ -291,7 +285,7 @@ std::vector<xla::XlaOp> BuildSplit(xla::XlaOp input,
     if (index + size > dim_size) {
       break;
     }
-    splits.emplace_back(SliceInDim(input, index, index + size, 1, dim));
+    splits.emplace_back(xla::SliceInDim(input, index, index + size, 1, dim));
     index += size;
   }
   return splits;
@@ -415,12 +409,7 @@ xla::XlaOp BuildUnselect(xla::XlaOp target, xla::XlaOp source, xla::int64 dim,
 xla::XlaOp BuildMirrorPad(xla::XlaOp input,
                           absl::Span<const xla::int64> padding,
                           tensorflow::MirrorPadMode mode) {
-  const xla::Shape& input_shape = XlaHelpers::ShapeOfXlaOp(input);
-  std::vector<xla::int64> spatial_dims;
-  for (xla::int64 dim = input_shape.rank() - 1; dim >= 0; --dim) {
-    spatial_dims.push_back(dim);
-  }
-  return MirrorPadInDimensions(input, padding, spatial_dims, mode);
+  return MirrorPadInDimensions(input, padding, mode);
 }
 
 xla::XlaOp BuildMirrorPadBackward(xla::XlaOp grad_output,
@@ -432,29 +421,92 @@ xla::XlaOp BuildMirrorPadBackward(xla::XlaOp grad_output,
   for (xla::int64 dim = grad_output_shape.rank() - 1; dim >= 0; --dim) {
     spatial_dims.push_back(dim);
   }
-  return MirrorPadInDimensionsBackward(grad_output, input_size, padding,
-                                       spatial_dims, mode);
+  return MirrorPadInDimensionsBackward(grad_output, input_size, padding, mode);
 }
 
 xla::XlaOp BuildReflectionPad2d(xla::XlaOp input,
                                 absl::Span<const xla::int64> padding) {
-  const xla::Shape& input_shape = XlaHelpers::ShapeOfXlaOp(input);
-  std::vector<xla::int64> spatial_dims =
-      GetReflectionPad2dSpatialDims(input_shape.rank());
-  return MirrorPadInDimensions(input, padding, spatial_dims,
+  return MirrorPadInDimensions(input, padding,
                                tensorflow::MirrorPadMode::REFLECT);
 }
 
-xla::XlaOp BuildReflectionPad2dBackward(xla::XlaOp grad_output,
-                                        xla::XlaOp input,
-                                        absl::Span<const xla::int64> padding) {
-  const xla::Shape& grad_output_shape = XlaHelpers::ShapeOfXlaOp(grad_output);
-  std::vector<xla::int64> spatial_dims =
-      GetReflectionPad2dSpatialDims(grad_output_shape.rank());
+xla::XlaOp BuildReflectionPadBackward(xla::XlaOp grad_output, xla::XlaOp input,
+                                      absl::Span<const xla::int64> padding) {
   const xla::Shape& input_shape = XlaHelpers::ShapeOfXlaOp(input);
   return MirrorPadInDimensionsBackward(grad_output, input_shape.dimensions(),
-                                       padding, spatial_dims,
+                                       padding,
                                        tensorflow::MirrorPadMode::REFLECT);
+}
+
+xla::XlaOp BuildReplicationPad(xla::XlaOp input,
+                               absl::Span<const xla::int64> padding) {
+  const xla::Shape& input_shape = XlaHelpers::ShapeOfXlaOp(input);
+  XLA_CHECK_GE(2 * input_shape.rank(), padding.size());
+  XLA_CHECK_EQ(padding.size() % 2, 0) << "Uneven padding: " << padding.size();
+  xla::XlaOp result = input;
+  for (size_t i = 0; i < padding.size(); i += 2) {
+    xla::int64 dim = input_shape.rank() - 1 - i / 2;
+    if ((padding[i] != 0 || padding[i + 1] != 0) &&
+        input_shape.dimensions(dim) > 0) {
+      std::vector<xla::XlaOp> parts;
+      if (padding[i] != 0) {
+        xla::XlaOp pad1 = xla::SliceInDim(result, 0, 1, 1, dim);
+        parts.push_back(
+            XlaHelpers::BroadcastDimensions(pad1, {dim}, {padding[i]}));
+      }
+      parts.push_back(result);
+      if (padding[i + 1] != 0) {
+        xla::XlaOp pad1 =
+            xla::SliceInDim(result, input_shape.dimensions(dim) - 1,
+                            input_shape.dimensions(dim), 1, dim);
+        parts.push_back(
+            XlaHelpers::BroadcastDimensions(pad1, {dim}, {padding[i + 1]}));
+      }
+      result = xla::ConcatInDim(result.builder(), parts, dim);
+    }
+  }
+  return result;
+}
+
+xla::XlaOp BuildReplicationPadBackward(xla::XlaOp grad_output, xla::XlaOp input,
+                                       absl::Span<const xla::int64> padding) {
+  const xla::Shape& input_shape = XlaHelpers::ShapeOfXlaOp(input);
+  const xla::Shape& grad_output_shape = XlaHelpers::ShapeOfXlaOp(grad_output);
+  XLA_CHECK_GE(2 * grad_output_shape.rank(), padding.size());
+  XLA_CHECK_EQ(padding.size() % 2, 0) << "Uneven padding: " << padding.size();
+
+  xla::XlaOp grad = grad_output;
+  for (size_t i = 0; i < padding.size(); i += 2) {
+    xla::int64 dim = grad_output_shape.rank() - 1 - i / 2;
+    xla::int64 dim_size = grad_output_shape.dimensions(dim);
+    xla::int64 lhs_padding = padding[i];
+    xla::int64 rhs_padding = padding[i + 1];
+
+    XLA_CHECK(lhs_padding >= 0 && lhs_padding <= dim_size - 1);
+    XLA_CHECK(rhs_padding >= 0 && rhs_padding <= dim_size - 1);
+
+    xla::XlaOp lhs_pad = xla::SliceInDim(grad, 0, lhs_padding, 1, dim);
+    xla::XlaOp reduced_lhs_pad =
+        BuildSum(lhs_pad, {dim}, /*keep_reduced_dimensions=*/true);
+    xla::XlaOp padded_lhs_pad =
+        PadInDim(reduced_lhs_pad, dim,
+                 /*pad_lo=*/0,
+                 /*pad_hi=*/input_shape.dimensions(dim) - 1);
+
+    xla::XlaOp rhs_pad =
+        xla::SliceInDim(grad, dim_size - rhs_padding, dim_size, 1, dim);
+    xla::XlaOp reduced_rhs_pad =
+        BuildSum(rhs_pad, {dim}, /*keep_reduced_dimensions=*/true);
+    xla::XlaOp padded_rhs_pad =
+        PadInDim(reduced_rhs_pad, dim,
+                 /*pad_lo=*/input_shape.dimensions(dim) - 1,
+                 /*pad_hi=*/0);
+
+    xla::XlaOp grad_core =
+        xla::SliceInDim(grad, lhs_padding, dim_size - rhs_padding, 1, dim);
+    grad = padded_lhs_pad + grad_core + padded_rhs_pad;
+  }
+  return grad;
 }
 
 xla::XlaOp PadInDim(xla::XlaOp input, xla::int64 dim, xla::int64 pad_lo,

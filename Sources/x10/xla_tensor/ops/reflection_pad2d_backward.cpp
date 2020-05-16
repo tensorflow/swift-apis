@@ -29,7 +29,7 @@ xla::Shape NodeOutputShape(const Value& grad_output, const Value& input,
                            absl::Span<const xla::int64> padding) {
   auto lower_for_shape_fn =
       [&](absl::Span<const xla::XlaOp> operands) -> xla::XlaOp {
-    return BuildReflectionPad2dBackward(operands[0], operands[1], padding);
+    return BuildReflectionPadBackward(operands[0], operands[1], padding);
   };
   return InferOutputShape({grad_output.shape(), input.shape()},
                           lower_for_shape_fn);
@@ -53,8 +53,7 @@ NodePtr ReflectionPad2dBackward::Clone(OpList operands) const {
 XlaOpVector ReflectionPad2dBackward::Lower(LoweringContext* loctx) const {
   xla::XlaOp grad_output = loctx->GetOutputOp(operand(0));
   xla::XlaOp input = loctx->GetOutputOp(operand(1));
-  xla::XlaOp output =
-      BuildReflectionPad2dBackward(grad_output, input, padding_);
+  xla::XlaOp output = BuildReflectionPadBackward(grad_output, input, padding_);
   return ReturnOp(output, loctx);
 }
 
