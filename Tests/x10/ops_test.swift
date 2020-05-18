@@ -3578,6 +3578,8 @@ extension TensorTests {
     ("testFloor", testFloor),
     ("testGather", testGather),
     ("testGatherV2", testGatherV2),
+    ("testGelu", testGelu),
+    ("testGeluGrad", testGeluGrad)
     ("testGreater", testGreater),
     ("testGreaterEqual", testGreaterEqual),
     ("testIndexAdvanced", testIndexAdvanced),
