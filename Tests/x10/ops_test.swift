@@ -1273,6 +1273,46 @@ final class TensorTests: XCTestCase {
       }
     }
   }
+    
+  func testGelu() throws {
+    var x = Tensor<Float>(shape: [4], scalars: [-0.5, -0.25, 0.5, 3.0], on: x10)
+    let expected = gelu(TF(x))
+    for useReducedPrecision in [false, true] {
+      if useReducedPrecision {
+        x = x.toReducedPrecision
+      }
+      var actual = gelu(x)
+      if useReducedPrecision {
+        XCTAssert(actual.isReducedPrecision)
+        actual = actual.toFullPrecision
+      }
+      XCTAssert(!actual.isReducedPrecision)
+      let relTolerance: Float = useReducedPrecision ? 1e-3 : 1e-5
+      XCTAssert(
+        allClose(
+          actual: TF(actual), expected: expected, relTolerance: relTolerance))
+    }
+  }
+
+  func testGeluGrad() throws {
+    func geluX10(_ arg: Tensor<Float>) -> Tensor<Float> {
+      return gelu(arg)
+    }
+    func geluTF(_ arg: Tensor<Float>) -> Tensor<Float> {
+      return gelu(arg)
+    }
+    var x = Tensor<Float>(shape: [4], scalars: [-0.5, -0.25, 0.5, 3.0], on: x10)
+    var outGrad = Tensor<Float>(shape: [4], scalars: [1.5, 1.0, 2.5, 2.0], on: x10)
+    for useReducedPrecision in [false, true] {
+      if useReducedPrecision {
+        x = x.toReducedPrecision
+        outGrad = outGrad.toReducedPrecision
+      }
+      let relTolerance: Float = useReducedPrecision ? 1e-2 : 1e-5
+      assertEqualUnaryOperationGradients(
+        geluX10, geluTF, x, outGrad, relTolerance: relTolerance)
+    }
+  }
 
   func testGreater() throws {
     let originalDims = [3, 2, 4]
@@ -3538,6 +3578,8 @@ extension TensorTests {
     ("testFloor", testFloor),
     ("testGather", testGather),
     ("testGatherV2", testGatherV2),
+    ("testGelu", testGelu),
+    ("testGeluGrad", testGeluGrad),
     ("testGreater", testGreater),
     ("testGreaterEqual", testGreaterEqual),
     ("testIndexAdvanced", testIndexAdvanced),
