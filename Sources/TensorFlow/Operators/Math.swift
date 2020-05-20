@@ -1365,16 +1365,14 @@ func _vjpElu<T: TensorFlowFloatingPoint>(
 @inlinable
 @differentiable
 public func gelu<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
-  let xWithoutDerivative = withoutDerivative(at: x) { $0 }
-  // An approximation of √(2/π).
-  let ratio1 = Tensor<T>(0.7978845608, deviceAndPrecisionLike: xWithoutDerivative)
+  let ratio1 = Tensor<T>(0.7978845608, deviceAndPrecisionLike: x) // An approximation of √(2/π).
   // An approximation of the Gauss error function.
   // NOTE: This is needed because the compiler otherwise gives an "unable to type-check this
   // in reasonable time" error when the below expressions are written on a single line.
-  let ratio2 = Tensor<T>(0.044715, deviceAndPrecisionLike: xWithoutDerivative)
-  let half = Tensor<T>(0.5, deviceAndPrecisionLike: xWithoutDerivative)
-  let one = Tensor<T>(1, deviceAndPrecisionLike: xWithoutDerivative)
-  let three = Tensor<T>(3, deviceAndPrecisionLike: xWithoutDerivative)
+  let ratio2 = Tensor<T>(0.044715, deviceAndPrecisionLike: x)
+  let half = Tensor<T>(0.5, deviceAndPrecisionLike: x)
+  let one = Tensor<T>(1, deviceAndPrecisionLike: x)
+  let three = Tensor<T>(3, deviceAndPrecisionLike: x)
   let approximateErf = tanh(ratio1 * (x + ratio2 * pow(x, three)))
   let cdf = half * (one + approximateErf)
   return x * cdf
