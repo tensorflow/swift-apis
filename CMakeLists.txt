@@ -22,7 +22,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_Swift_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/swift)
 
-option(BUILD_X10 "enable the x10 tensor library" ON)
+option(BUILD_X10 "enable the x10 tensor library" OFF)
 option(USE_BUNDLED_X10
   "Use the x10 library bundled in the active Swift toolchain" OFF)
 option(USE_BUNDLED_CTENSORFLOW
