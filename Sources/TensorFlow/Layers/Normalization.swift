@@ -125,7 +125,7 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     normalizedAxes.remove(at: axis)
     let moments = input.moments(alongAxes: normalizedAxes)
     let decayMomentum = Tensor(1 - momentum, on: input.device)
-    let isReducedPrecision = withoutDerivative(at: input) { $0.isReducedPrecision }
+    let isReducedPrecision = input.isReducedPrecision
     var momentsMean = moments.mean
     var momentsVariance = moments.variance
     if isReducedPrecision {
@@ -134,7 +134,7 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     }
     runningMean.value += (momentsMean - runningMean.value) * decayMomentum
     runningVariance.value += (momentsVariance - runningVariance.value) * decayMomentum
-    let eps = withoutDerivative(at: input) { Tensor(epsilon, deviceAndPrecisionLike: $0) }
+    let eps = Tensor(epsilon, deviceAndPrecisionLike: input)
     return normalize(
       input,
       mean: moments.mean, variance: moments.variance,
@@ -145,12 +145,12 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   private func doInference(
     _ input: Tensor<Scalar>, offset: Tensor<Scalar>, scale: Tensor<Scalar>
   ) -> Tensor<Scalar> {
-    let isReducedPrecision = withoutDerivative(at: input) { $0.isReducedPrecision }
+    let isReducedPrecision = input.isReducedPrecision
     let runningVarianceValue =
       isReducedPrecision ? runningVariance.value.toReducedPrecision : runningVariance.value
     let runningMeanValue =
       isReducedPrecision ? runningMean.value.toReducedPrecision : runningMean.value
-    let eps = withoutDerivative(at: input) { Tensor(epsilon, deviceAndPrecisionLike: $0) }
+    let eps = Tensor(epsilon, deviceAndPrecisionLike: input)
     return normalize(
       input,
       mean: runningMeanValue, variance: runningVarianceValue,
