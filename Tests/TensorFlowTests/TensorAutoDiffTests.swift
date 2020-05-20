@@ -1103,7 +1103,20 @@ final class TensorAutoDiffTests: XCTestCase {
         ]
       ])
   }
-
+  
+  func testGelu() {
+    // The expected gradient values were computed using the following Python code:
+    // ```
+    // import torch
+    // x = torch.autograd.Variable(torch.tensor([5.0, -5.0, 0.0]), requires_grad=True)
+    // y = torch.sum(torch.nn.GELU()(x))
+    // y.backward(torch.tensor(1.0))
+    // print(x.grad)
+    // ```
+    func f(a: Tensor<Float>) -> Tensor<Float> { gelu(a).sum() }
+    XCTAssertEqual(gradient(at: [5, -5, 0], in: f), [1, -7.1356e-06,  0.5])
+  }
+    
   static var allTests = [
     ("testSimpleGrad", testSimpleGrad),
     ("testGenericGrad", testGenericGrad),
@@ -1164,5 +1177,6 @@ final class TensorAutoDiffTests: XCTestCase {
     ("testResizeLanczos5", testResizeLanczos5),
     ("testResizeGaussian", testResizeGaussian),
     ("testResizeMitchellcubic", testResizeMitchellcubic),
+    ("testGelu", testGelu),
   ]
 }
