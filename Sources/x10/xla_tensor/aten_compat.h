@@ -774,6 +774,7 @@
   _(xla, generic_slice)            \
   _(xla, get_dimensions_size)      \
   _(xla, moving_average)           \
+  _(xla, nms)                      \
   _(xla, not_supported)            \
   _(xla, replication_pad)          \
   _(xla, replication_pad_backward) \
