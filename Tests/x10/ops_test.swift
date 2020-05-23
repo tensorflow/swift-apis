@@ -1287,7 +1287,7 @@ final class TensorTests: XCTestCase {
         actual = actual.toFullPrecision
       }
       XCTAssert(!actual.isReducedPrecision)
-      let relTolerance: Float = useReducedPrecision ? 1e-3 : 1e-5
+      let relTolerance: Float = useReducedPrecision ? 1e-2 : 1e-5
       XCTAssert(
         allClose(
           actual: TF(actual), expected: expected, relTolerance: relTolerance))
@@ -1302,7 +1302,8 @@ final class TensorTests: XCTestCase {
       return gelu(arg)
     }
     var x = Tensor<Float>(shape: [4], scalars: [-0.5, -0.25, 0.5, 3.0], on: x10)
-    var outGrad = Tensor<Float>(shape: [4], scalars: [1.5, 1.0, 2.5, 2.0], on: x10)
+    var outGrad = Tensor<Float>(
+            shape: [4], scalars: [0.1326301,  0.3046459, 0.86736995,  1.0115846], on: x10)
     for useReducedPrecision in [false, true] {
       if useReducedPrecision {
         x = x.toReducedPrecision
