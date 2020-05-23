@@ -1303,7 +1303,7 @@ final class TensorTests: XCTestCase {
     }
     var x = Tensor<Float>(shape: [4], scalars: [-0.5, -0.25, 0.5, 3.0], on: x10)
     var outGrad = Tensor<Float>(
-            shape: [4], scalars: [0.1326301,  0.3046459, 0.86736995,  1.0115846], on: x10)
+            shape: [4], scalars: [1.5, 1.0, 2.5, 2.0], on: x10)
     for useReducedPrecision in [false, true] {
       if useReducedPrecision {
         x = x.toReducedPrecision
