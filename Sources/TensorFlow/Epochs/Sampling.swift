@@ -48,15 +48,15 @@ extension Sampling: Collection {
 
 extension Sampling: BidirectionalCollection
 where Selection: BidirectionalCollection {
-  /// Returns the position after `i`.
+  /// Returns the position before `i`.
   public func index(before i: Index) -> Index { selection.index(before: i) }
 }
 
 extension Sampling: RandomAccessCollection
-where Selection: BidirectionalCollection {
+where Selection: RandomAccessCollection {
   /// Returns the position `n` places from `i`.
   public func index(_ i: Index, offsetBy n: Int) -> Index {
-    selection.index(before: i)
+    selection.index(i, offsetBy: n)
   }
 
   // Needed because of https://bugs.swift.org/browse/SR-12692
@@ -66,15 +66,12 @@ where Selection: BidirectionalCollection {
   public func index(
     _ i: Index, offsetBy distance: Int, limitedBy limit: Index
   ) -> Index? {
-    // FIXME: swift-3-indexing-model: tests.
-    let l = self.distance(from: i, to: limit)
-    if distance > 0 ? l >= 0 && l < distance : l <= 0 && distance < l {
-      return nil
-    }
-    return index(i, offsetBy: distance)
+    selection.index(i, offsetBy: distance, limitedBy: limit)
   }
 
-  /// Returns the number of elements in `self[start..<end]`.
+  /// Returns the number of forward steps required to convert `start` into `end`.
+  ///
+  /// A negative result indicates that `end < start`.
   public func distance(from start: Index, to end: Index) -> Int {
     selection.distance(from: start, to: end)
   }
