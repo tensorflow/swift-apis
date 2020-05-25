@@ -62,7 +62,6 @@ where Selection: RandomAccessCollection {
   // Needed because of https://bugs.swift.org/browse/SR-12692
   /// Returns `i` offset by `distance` unless that requires passing `limit`, in
   /// which case `nil` is returned.
-  @inlinable
   public func index(
     _ i: Index, offsetBy distance: Int, limitedBy limit: Index
   ) -> Index? {
