@@ -43,6 +43,7 @@ import XCTest
       testCase(SamplingTests.allTests),
       testCase(SequencedTests.allTests),
       testCase(SequentialTests.allTests),
+      testCase(SlicesTests.allTests),
       testCase(TensorAutoDiffTests.allTests),
       testCase(TensorGroupTests.allTests),
       testCase(TensorAutoDiffTests.allTests),
