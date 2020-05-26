@@ -139,6 +139,8 @@ class XLATensor {
 
   static void SetRngSeed(const Device* device, xla::uint64 seed);
 
+  static xla::uint64 GetRunningSeed(const Device& device);
+
   // Dispatches a comparison operator, setting the logical type of the result
   // appropriately.
   static XLATensor DispatchComparisonOp(c10::Symbol kind,
@@ -825,6 +827,12 @@ class XLATensor {
                                      const XLATensor& weight,
                                      xla::int64 reduction, int ignore_index,
                                      const XLATensor& total_weight);
+
+  static std::pair<XLATensor, XLATensor> nms(const XLATensor& boxes,
+                                             const XLATensor& scores,
+                                             const XLATensor& score_threshold,
+                                             const XLATensor& iou_threshold,
+                                             xla::int64 output_size);
 
   static XLATensor nonzero(const XLATensor& input);
 

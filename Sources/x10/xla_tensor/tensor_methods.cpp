@@ -82,6 +82,7 @@
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/native_batch_norm_forward.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/nll_loss.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/nll_loss_backward.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/ops/nms.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/nonzero.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/normal.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/not_supported.h"
@@ -1941,6 +1942,19 @@ XLATensor XLATensor::nll_loss_backward(const XLATensor& grad_output,
       grad_output.GetIrValue(), input.GetIrValue(), target.GetIrValue(),
       GetOptionalIrValue(weight), GetOptionalIrValue(total_weight),
       GetXlaReductionMode(reduction), ignore_index));
+}
+
+std::pair<XLATensor, XLATensor> XLATensor::nms(const XLATensor& boxes,
+                                               const XLATensor& scores,
+                                               const XLATensor& score_threshold,
+                                               const XLATensor& iou_threshold,
+                                               xla::int64 output_size) {
+  ir::NodePtr node = ir::MakeNode<ir::ops::Nms>(
+      boxes.GetIrValue(), scores.GetIrValue(), score_threshold.GetIrValue(),
+      iou_threshold.GetIrValue(), output_size);
+  return std::pair<XLATensor, XLATensor>(
+      Create(ir::Value(node, 0), boxes.GetDevice(), at::ScalarType::Int),
+      Create(ir::Value(node, 1), boxes.GetDevice(), at::ScalarType::Int));
 }
 
 XLATensor XLATensor::nonzero(const XLATensor& input) {
