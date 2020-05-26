@@ -17,7 +17,6 @@ add_library(TensorFlow SHARED
   Core/ArrayOps.swift
   Core/CopyableToDevice.swift
   Core/DataTypes.swift
-  Core/Device.swift
   Core/DifferentialOperators.swift
   Core/Execution.swift
   Core/LazyTensorContext.swift
@@ -39,6 +38,14 @@ add_library(TensorFlow SHARED
   Core/TensorShape.swift
   Core/Threading.swift
   Core/Utilities.swift
+  
+  Epochs/Algorithms.swift
+  Epochs/Backend.swift
+  Epochs/Collatable.swift
+  Epochs/NonuniformTrainingEpochs.swift
+  Epochs/Sampling.swift
+  Epochs/Slices.swift
+  Epochs/TrainingEpochs.swift
 
   Layers/Convolutional.swift
   Layers/Core.swift
@@ -63,12 +70,31 @@ add_library(TensorFlow SHARED
   Optimizers/MomentumBased.swift
   Optimizers/Optimizer.swift
   Optimizers/SGD.swift)
+if (BUILD_X10)
+  target_sources(TensorFlow PRIVATE
+    ../x10/swift_bindings/apis/CrossReplicaSum.swift
+    ../x10/swift_bindings/apis/DeviceScope.swift
+    ../x10/swift_bindings/apis/RawOpsManual.swift
+
+    ../x10/swift_bindings/Device.swift
+    ../x10/swift_bindings/XLAScalarType.swift
+    ../x10/swift_bindings/XLATensor.swift)
+  target_compile_definitions(TensorFlow PRIVATE
+    USING_X10_BACKEND
+    DEFAULT_BACKEND_EAGER)
+  target_link_libraries(TensorFlow PRIVATE
+    CX10
+    x10)
+else()
+  target_sources(TensorFlow PRIVATE
+    Core/Device.swift)
+endif()
 set_target_properties(TensorFlow PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_Swift_MODULE_DIRECTORY}
   OUTPUT_NAME swiftTensorFlow)
 target_compile_options(TensorFlow PRIVATE
   $<$<BOOL:${BUILD_TESTING}>:-enable-testing>)
-target_link_libraries(TensorFlow PRIVATE
+target_link_libraries(TensorFlow PUBLIC
   CTensorFlow
   Tensor)
 

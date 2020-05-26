@@ -26,6 +26,7 @@
 
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
+#include "tensorflow/compiler/xla/xla_client/device.h"
 #include "tensorflow/compiler/xla/xla_client/metrics.h"
 #include "tensorflow/compiler/xla/xla_client/types.h"
 #include "tensorflow/compiler/xla/client/xla_computation.h"
@@ -253,6 +254,10 @@ class ComputationClient {
   virtual std::string GetResourceDomain(const std::string& device) const = 0;
 
   virtual std::string GetDefaultDevice() const = 0;
+
+  enum class DeviceKind { CPU, GPU, TPU };
+
+  virtual swift_xla::Device GetDefaultDeviceStruct() const = 0;
 
   virtual size_t GetNumDevices() const = 0;
 

@@ -105,9 +105,8 @@ DeviceList* getAllDevices() {
   return DeviceListFromStrings(xla::ComputationClient::Get()->GetAllDevices());
 }
 
-CDevice DefaultDevice() {
-  auto device = swift_xla::GetDefaultDevice();
-  return {ConvertDeviceType(device->hw_type), device->ordinal};
+CDevice getDefaultDevice() {
+  return ConvertDevice(xla::ComputationClient::Get()->GetDefaultDeviceStruct());
 }
 
 void setReplicationDevices(struct DeviceList* device_list) {

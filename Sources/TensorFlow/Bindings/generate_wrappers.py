@@ -396,8 +396,9 @@ public static func {name}{generics}({input_args}
       return "_RawTFEager." + dispatch
     if not x10_supported:
       return """switch {backends} {{
-    case .XLA:{convert_tensors}
-      return {convert_type}(copying: _RawTFEager.{dispatch}, to: {convert_device}.device)
+    case .XLA:
+      let output_device = {convert_device}.device{convert_tensors}
+      return {convert_type}(copying: _RawTFEager.{dispatch}, to: output_device)
     case .TF_EAGER:
       return _RawTFEager.{dispatch}
   }}

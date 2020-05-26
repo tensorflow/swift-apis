@@ -17,13 +17,14 @@
 #include <list>
 #include <unordered_map>
 
+#include "absl/container/node_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "tensorflow/compiler/xla/xla_client/debug_macros.h"
+#include "tensorflow/compiler/xla/xla_client/device.h"
 #include "tensorflow/compiler/xla/xla_client/metrics.h"
 #include "tensorflow/compiler/xla/xla_client/sys_util.h"
 #include "tensorflow/compiler/xla/xla_client/util.h"
 #include "tensorflow/compiler/xla/xla_client/xla_util.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/device.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ir_util.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/lowering_context.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/device_data.h"
@@ -71,7 +72,7 @@ xla::hash_t ComputeNodeKey(const ir::Node* node,
 xla::XlaComputation BuildNodeComputation(
     const ir::Node* node, absl::Span<const xla::Shape* const> input_shapes,
     const Device& device) {
-  ir::LoweringContext loctx("BuildNodeComputation");
+  ir::LoweringContext loctx("BuildNodeComputation", device);
   const auto& operands = node->operands();
   for (size_t i = 0; i < operands.size(); ++i) {
     xla::XlaOp param = xla::Parameter(
@@ -108,7 +109,7 @@ std::vector<xla::ComputationClient::ExecuteChainedOp> OpByOpExecutor::BuildOps(
   XLA_VALUE_METRIC("OpByOpGraphSize", post_order.size());
   TF_VLOG(5) << "TensorsGraphSize=" << post_order.size();
 
-  std::unordered_map<const ir::Node*, size_t> node_to_index;
+  absl::node_hash_map<const ir::Node*, size_t> node_to_index;
   node_to_index.reserve(post_order.size());
   for (size_t i = 0; i < post_order.size(); ++i) {
     node_to_index[post_order[i]] = i;
@@ -119,9 +120,9 @@ std::vector<xla::ComputationClient::ExecuteChainedOp> OpByOpExecutor::BuildOps(
   xla::hash_t nodes_key_seed = GetNodesKeySeed(device, compilation_devices);
   Device exec_device(device);
   std::vector<xla::hash_t> cache_keys;
-  std::unordered_map<xla::hash_t, std::vector<size_t>, xla::util::HashReducer>
+  absl::node_hash_map<xla::hash_t, std::vector<size_t>, xla::util::HashReducer>
       compile_indices;
-  std::unordered_map<xla::hash_t, size_t, xla::util::HashReducer>
+  absl::node_hash_map<xla::hash_t, size_t, xla::util::HashReducer>
       cache_keys_instance;
   std::list<xla::Shape> compile_shapes;
   std::vector<bool> device_data_ops(post_order.size());

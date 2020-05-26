@@ -1,5 +1,7 @@
 add_library(TensorFlowTests
+  CollectionTesting.swift
   ContextTests.swift
+  EpochsTests.swift
   FreezableTests.swift
   Helpers.swift
   InitializerTests.swift
@@ -16,6 +18,7 @@ add_library(TensorFlowTests
   LossTests.swift
   OptimizerTests.swift
   RuntimeTests.swift
+  SamplingTests.swift
   SequencedTests.swift
   SequencedTests.swift.gyb
   SequentialTests.swift

@@ -30,7 +30,7 @@ extension Tensor where Scalar: TensorFlowNumeric {
   /// // [1, 2, 3, 4]
   /// ```
   @inlinable
-  @differentiable( where Scalar: TensorFlowFloatingPoint)
+  @differentiable(where Scalar: TensorFlowFloatingPoint)
   public func diagonalPart() -> Tensor {
     precondition(rank >= 2, "The tensor must have at least rank 2.")
     return _Raw.matrixDiagPart(self)
@@ -51,7 +51,7 @@ extension Tensor where Scalar: TensorFlowNumeric {
   /// //  [0, 0, 0, 4]]
   /// ```
   @inlinable
-  @differentiable( where Scalar: TensorFlowFloatingPoint)
+  @differentiable(where Scalar: TensorFlowFloatingPoint)
   public func diagonal() -> Tensor {
     _Raw.matrixDiag(diagonal: self)
   }
@@ -103,7 +103,7 @@ extension Tensor where Scalar: TensorFlowNumeric {
   ///   - superdiagonalCount: The number of superdiagonals to keep. If negative, keep entire upper
   ///     triangle.
   @inlinable
-  @differentiable( where Scalar: TensorFlowFloatingPoint)
+  @differentiable(where Scalar: TensorFlowFloatingPoint)
   public func bandPart(subdiagonalCount: Int, superdiagonalCount: Int) -> Tensor {
     precondition(rank >= 2, "The tensor must have at least rank 2.")
     let lower = Tensor<Int32>(Int32(subdiagonalCount), on: self.device)
@@ -152,17 +152,18 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
 public func eye<Scalar: Numeric>(
   rowCount: Int,
   columnCount: Int? = nil,
-  batchShape: [Int] = []
+  batchShape: [Int] = [],
+  on device: Device = .default
 ) -> Tensor<Scalar> {
   let columnCount = columnCount ?? rowCount
   let diagonalSize = min(rowCount, columnCount)
   let diagonalShape = batchShape + [diagonalSize]
-  let diagonalOnes = Tensor<Scalar>(ones: TensorShape(diagonalShape))
+  let diagonalOnes = Tensor<Scalar>(ones: TensorShape(diagonalShape), on: device)
   if rowCount == columnCount {
     return diagonalOnes.diagonal()
   }
   let shape = batchShape + [rowCount, columnCount]
-  let zeroMatrix = Tensor<Scalar>(zeros: TensorShape(shape))
+  let zeroMatrix = Tensor<Scalar>(zeros: TensorShape(shape), on: device)
   return zeroMatrix.withDiagonal(diagonalOnes)
 }
 

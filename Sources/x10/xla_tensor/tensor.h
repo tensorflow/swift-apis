@@ -22,7 +22,6 @@
 #include <unordered_map>
 
 #include "tensorflow/compiler/tf2xla/xla_tensor/cross_replica_reduces.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/device.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ir.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ir_util.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/lowering_context.h"
@@ -34,6 +33,7 @@
 #include "tensorflow/compiler/xla/xla_client/async_task.h"
 #include "tensorflow/compiler/xla/xla_client/cache.h"
 #include "tensorflow/compiler/xla/xla_client/computation_client.h"
+#include "tensorflow/compiler/xla/xla_client/device.h"
 #include "tensorflow/compiler/xla/xla_client/multi_wait.h"
 #include "tensorflow/compiler/xla/xla_client/util.h"
 #include "tensorflow/core/util/mirror_pad_mode.h"
@@ -123,12 +123,23 @@ class XLATensor {
   static ir::Value GetIrValueForScalar(at::Scalar value,
                                        xla::PrimitiveType type,
                                        const Device& device);
-
   static ir::Value GetIrValueForScalar(at::Scalar value, const Device& device);
-
+  static ir::Value GetIrValueForScalar(at::Scalar value,
+                                       xla::PrimitiveType type,
+                                       absl::Span<const xla::int64> dimensions,
+                                       const Device& device);
   static ir::Value GetIrValueForScalar(at::Scalar value,
                                        const xla::Shape& shape,
                                        const Device& device);
+  static ir::Value GetIrValueForScalar(
+      at::Scalar value, const xla::Shape& shape,
+      c10::optional<at::ScalarType> logical_element_type, const Device& device);
+
+  static ir::Value GetRngSeed(const Device& device);
+
+  static void SetRngSeed(const Device* device, xla::uint64 seed);
+
+  static xla::uint64 GetRunningSeed(const Device& device);
 
   // Dispatches a comparison operator, setting the logical type of the result
   // appropriately.
@@ -647,6 +658,13 @@ class XLATensor {
                                        const XLATensor& input,
                                        at::Scalar lambda);
 
+  static XLATensor hardsigmoid(const XLATensor& input);
+
+  static void hardsigmoid_(XLATensor& input);
+
+  static XLATensor hardsigmoid_backward(const XLATensor& grad_output,
+                                        const XLATensor& input);
+
   static XLATensor hardtanh_backward(const XLATensor& grad_output,
                                      const XLATensor& input, at::Scalar min_val,
                                      at::Scalar max_val);
@@ -810,6 +828,12 @@ class XLATensor {
                                      xla::int64 reduction, int ignore_index,
                                      const XLATensor& total_weight);
 
+  static std::pair<XLATensor, XLATensor> nms(const XLATensor& boxes,
+                                             const XLATensor& scores,
+                                             const XLATensor& score_threshold,
+                                             const XLATensor& iou_threshold,
+                                             xla::int64 output_size);
+
   static XLATensor nonzero(const XLATensor& input);
 
   static XLATensor norm(const XLATensor& input, c10::optional<at::Scalar> p,
@@ -874,6 +898,18 @@ class XLATensor {
   // repeats.
   static XLATensor repeat(const XLATensor& input,
                           std::vector<xla::int64> repeats);
+
+  static XLATensor replication_pad1d(const XLATensor& input,
+                                     std::vector<xla::int64> padding);
+  static XLATensor replication_pad1d_backward(const XLATensor& grad_output,
+                                              const XLATensor& input,
+                                              std::vector<xla::int64> padding);
+
+  static XLATensor replication_pad2d(const XLATensor& input,
+                                     std::vector<xla::int64> padding);
+  static XLATensor replication_pad2d_backward(const XLATensor& grad_output,
+                                              const XLATensor& input,
+                                              std::vector<xla::int64> padding);
 
   static void resize_(XLATensor& input, std::vector<xla::int64> size);
 
@@ -1452,8 +1488,6 @@ class XLATensor {
       const SyncTensorsConfig& config);
 
   static xla::int64 GetNextTensorId();
-
-  static xla::uint64 GenRngSeed();
 
   std::shared_ptr<Data> data_;
 };

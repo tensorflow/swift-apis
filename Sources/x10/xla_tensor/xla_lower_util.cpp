@@ -22,6 +22,7 @@
 #include "tensorflow/compiler/tf2xla/xla_tensor/convert_ops.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/data_ops.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/helpers.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/random.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/tensor_util.h"
 #include "tensorflow/compiler/xla/client/lib/arithmetic.h"
 #include "tensorflow/compiler/xla/client/lib/comparators.h"
@@ -73,13 +74,16 @@ xla::XlaOp GetPromotedR1Mask(xla::XlaOp mask, const xla::Shape& input_shape) {
   return XlaHelpers::Flatten(GetPromotedMask(mask, input_shape));
 }
 
-bool ShouldUseDenseScatter(const xla::Shape& input_shape,
+bool ShouldUseDenseScatter(const Device& device, const xla::Shape& input_shape,
                            const xla::Shape& index_shape) {
   static int dense_scatter_factor =
       xla::sys_util::GetEnvInt("XLA_DENSE_SCATTER_FACTOR", 100);
-  xla::int64 input_elements = xla::ShapeUtil::ElementsIn(input_shape);
-  xla::int64 index_elements = xla::ShapeUtil::ElementsIn(index_shape);
-  return index_elements * dense_scatter_factor >= input_elements;
+  if (device.hw_type == DeviceType::TPU) {
+    xla::int64 input_elements = xla::ShapeUtil::ElementsIn(input_shape);
+    xla::int64 index_elements = xla::ShapeUtil::ElementsIn(index_shape);
+    return index_elements * dense_scatter_factor >= input_elements;
+  }
+  return false;
 }
 
 xla::XlaOp DotExpand(xla::XlaOp op, const xla::Shape& op_shape,
@@ -390,12 +394,12 @@ xla::XlaOp CreateMatMul(xla::XlaOp lhs, xla::XlaOp rhs) {
   if ((lhs_shape.rank() == 1 && rhs_shape.rank() == 1) ||
       (lhs_shape.rank() == 2 && rhs_shape.rank() == 2) ||
       (lhs_shape.rank() == 2 && rhs_shape.rank() == 1)) {
-    return xla::Dot(lhs, rhs);
+    return BuildDot(lhs, rhs);
   }
   if (lhs_shape.rank() == 1 && rhs_shape.rank() == 2) {
     xla::XlaOp reshaped_lhs =
         XlaHelpers::DynamicReshape(lhs, {1, lhs_shape.dimensions(0)});
-    return XlaHelpers::DynamicReshape(xla::Dot(reshaped_lhs, rhs),
+    return XlaHelpers::DynamicReshape(BuildDot(reshaped_lhs, rhs),
                                       {rhs_shape.dimensions(1)});
   }
   if (lhs_shape.rank() >= 1 && rhs_shape.rank() >= 1 &&
@@ -435,9 +439,7 @@ xla::XlaOp BuildGer(xla::XlaOp lhs, xla::XlaOp rhs) {
 }
 
 xla::XlaOp BuildMatMul(xla::XlaOp lhs, xla::XlaOp rhs, xla::XlaOp bias) {
-  xla::PrecisionConfig precision_config =
-      XlaHelpers::BuildPrecisionConfig(XlaHelpers::mat_mul_precision());
-  xla::XlaOp dot = xla::Dot(lhs, rhs, &precision_config);
+  xla::XlaOp dot = BuildDot(lhs, rhs);
   const xla::Shape& dot_shape = XlaHelpers::ShapeOfXlaOp(dot);
   const xla::Shape& bias_shape = XlaHelpers::ShapeOfXlaOp(bias);
   if (bias_shape.dimensions() != dot_shape.dimensions()) {
@@ -452,22 +454,22 @@ xla::XlaOp BuildDot(xla::XlaOp lhs, xla::XlaOp rhs) {
   return xla::Dot(lhs, rhs, &precision_config);
 }
 
-xla::XlaOp BuildBernoulli(xla::XlaOp probability, const xla::Shape& shape) {
+xla::XlaOp BuildBernoulli(xla::XlaOp probability, xla::XlaOp seed,
+                          xla::PrimitiveType type) {
   const xla::Shape& probability_shape = XlaHelpers::ShapeOfXlaOp(probability);
   xla::XlaOp zero =
       xla::Zero(probability.builder(), probability_shape.element_type());
   xla::XlaOp one =
       xla::One(probability.builder(), probability_shape.element_type());
-  xla::XlaOp noise = xla::RngUniform(zero, one, probability_shape);
-  return xla::ConvertElementType(xla::Lt(noise, probability),
-                                 shape.element_type());
+  xla::XlaOp noise = RngUniform(seed, probability_shape, zero, one);
+  return xla::ConvertElementType(xla::Lt(noise, probability), type);
 }
 
-xla::XlaOp BuildDropout(xla::XlaOp input, float probability) {
+xla::XlaOp BuildDropout(xla::XlaOp input, float probability, xla::XlaOp seed) {
   const xla::Shape& shape = XlaHelpers::ShapeOfXlaOp(input);
   xla::XlaOp prob =
       XlaHelpers::ScalarBroadcast<float>(probability, shape, input.builder());
-  xla::XlaOp mask = BuildBernoulli(prob, shape);
+  xla::XlaOp mask = BuildBernoulli(prob, seed, shape.element_type());
   if (probability > 0.0f) {
     mask = mask / prob;
   }
@@ -612,8 +614,9 @@ XlaOpCombiner NumericAddCombiner() {
   };
 }
 
-xla::XlaOp CreateScatter(xla::XlaOp input, xla::XlaOp index, xla::XlaOp source,
-                         xla::int64 dim, const XlaOpCombiner& combiner) {
+xla::XlaOp CreateScatter(const Device& device, xla::XlaOp input,
+                         xla::XlaOp index, xla::XlaOp source, xla::int64 dim,
+                         const XlaOpCombiner& combiner) {
   const xla::Shape& input_shape = XlaHelpers::ShapeOfXlaOp(input);
   xla::Shape index_shape = XlaHelpers::ShapeOfXlaOp(index);
   const xla::Shape& source_shape = XlaHelpers::ShapeOfXlaOp(source);
@@ -623,7 +626,7 @@ xla::XlaOp CreateScatter(xla::XlaOp input, xla::XlaOp index, xla::XlaOp source,
     std::vector<xla::int64> base_indices(source_shape.rank(), 0);
     source_op = BuildSlice(source_op, base_indices, index_shape.dimensions());
   }
-  if (ShouldUseDenseScatter(input_shape, index_shape)) {
+  if (ShouldUseDenseScatter(device, input_shape, index_shape)) {
     return XlaDenseScatter(input, index, source_op, dim, combiner);
   }
 
@@ -652,8 +655,8 @@ xla::XlaOp CreateScatter(xla::XlaOp input, xla::XlaOp index, xla::XlaOp source,
       scatter_dnums);
 }
 
-xla::XlaOp CreatePut(xla::XlaOp input, xla::XlaOp index, xla::XlaOp source,
-                     bool accumulate) {
+xla::XlaOp CreatePut(const Device& device, xla::XlaOp input, xla::XlaOp index,
+                     xla::XlaOp source, bool accumulate) {
   xla::Shape input_shape;
   xla::XlaOp r1_input = XlaHelpers::Flatten(input, &input_shape);
   xla::Shape index_shape;
@@ -667,8 +670,8 @@ xla::XlaOp CreatePut(xla::XlaOp input, xla::XlaOp index, xla::XlaOp source,
   if (accumulate) {
     combiner = NumericAddCombiner();
   }
-  xla::XlaOp r1_scatter =
-      CreateScatter(r1_input, bound_index, r1_source, /*dim=*/0, combiner);
+  xla::XlaOp r1_scatter = CreateScatter(device, r1_input, bound_index,
+                                        r1_source, /*dim=*/0, combiner);
   return XlaHelpers::DynamicReshapeAs(r1_scatter, input_shape);
 }
 

@@ -82,6 +82,7 @@ target_link_libraries(x10_tensor PUBLIC
   CTensorFlow
   Tensor)
 target_link_libraries(x10_tensor PRIVATE
+  CX10
   x10)
 
 add_library(x10_optimizers_tensor_visitor_plan SHARED
@@ -89,7 +90,7 @@ add_library(x10_optimizers_tensor_visitor_plan SHARED
 set_target_properties(x10_optimizers_tensor_visitor_plan PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_Swift_MODULE_DIRECTORY})
 target_link_libraries(x10_optimizers_tensor_visitor_plan PUBLIC
-  x10_tensor)
+  TensorFlow)
 
 add_library(x10_optimizers_optimizer SHARED
   swift_bindings/optimizers/Optimizer.swift
@@ -98,38 +99,18 @@ set_target_properties(x10_optimizers_optimizer PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_Swift_MODULE_DIRECTORY})
 target_link_libraries(x10_optimizers_optimizer PUBLIC
   x10_optimizers_tensor_visitor_plan
-  x10_tensor)
+  TensorFlow)
 
 add_library(x10_training_loop SHARED
   swift_bindings/training_loop.swift)
 set_target_properties(x10_training_loop PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_Swift_MODULE_DIRECTORY})
 target_link_libraries(x10_training_loop PUBLIC
-  x10_tensor)
-
-add_executable(ops_test ../../Tests/x10/ops_test.swift)
-target_link_libraries(ops_test PRIVATE
-  x10
-  x10_tensor
   TensorFlow)
-
-add_executable(xla_tensor_test ../../Tests/x10/xla_tensor_test.swift)
-target_link_libraries(xla_tensor_test PRIVATE
-  x10
-  x10_tensor)
-
-add_executable(keypathiterable_test ../../Tests/x10/keypathiterable_test.swift)
-target_link_libraries(keypathiterable_test PRIVATE
-  x10
-  x10_tensor)
-
-add_executable(tensor_visitor_plan_test ../../Tests/x10/TensorVisitorPlanTest.swift)
-target_link_libraries(tensor_visitor_plan_test PRIVATE
-  x10
-  x10_optimizers_tensor_visitor_plan)
+target_link_libraries(x10_training_loop PRIVATE
+  CX10)
 
 
-_install_target(x10_tensor)
 _install_target(x10_optimizers_tensor_visitor_plan)
 _install_target(x10_optimizers_optimizer)
 _install_target(x10_training_loop)

@@ -82,7 +82,7 @@ public class TFETensorHandle: _AnyTensorHandle {
     }
   }
 
-    public var backend: Device.Backend { .TF_EAGER }
+  public var backend: Device.Backend { .TF_EAGER }
 }
 
 /// `TensorHandle` is the type used by ops. It includes a `Scalar` type, which
@@ -173,12 +173,12 @@ extension TensorHandle {
     get { handle.shape }
   }
 
-    /// The backend used to dispatch ops.
-    @inlinable
-    public var backend: Device.Backend {
-      @_semantics("autodiff.nonvarying")
-      get { handle.backend }
-    }
+  /// The backend used to dispatch ops.
+  @inlinable
+  public var backend: Device.Backend {
+    @_semantics("autodiff.nonvarying")
+    get { handle.backend }
+  }
 }
 
 extension TensorHandle {
@@ -301,7 +301,7 @@ extension ShapedArray where Scalar: _TensorFlowDataTypeCompatible {
 
 // Tensor conversion.
 extension Tensor {
-  public init(_ array: __owned ShapedArray<Scalar>) {
+  public init(_ array: __owned ShapedArray<Scalar>, on device: Device = .default) {
     precondition(
       array.rank <= Int(Int32.max),
       "Conversion to TensorHandle is undefined when rank exceeds `Int32.max`.")
@@ -309,10 +309,15 @@ extension Tensor {
       array.shape.allSatisfy { $0 <= Int(Int32.max) },
       "Conversion to TensorHandle is undefined when shape dimensions exceed `Int32.max`.")
     if let buffer = array.buffer as? CTensorTensorBuffer<Scalar> {
-      self = Tensor(handle: TensorHandle(copyingFromCTensor: buffer.cTensor))
+      #if USING_X10_BACKEND
+        let tmp = Tensor(handle: TensorHandle(copyingFromCTensor: buffer.cTensor))
+        self = tmp.device == device ? tmp : Tensor(copying: tmp, to: device)
+      #else
+        self = Tensor(handle: TensorHandle(copyingFromCTensor: buffer.cTensor))
+      #endif
     } else {
       self = array.buffer.withUnsafeBufferPointer { buffer in
-        return Tensor(shape: TensorShape(array.shape), scalars: buffer)
+        return Tensor(shape: TensorShape(array.shape), scalars: buffer, on: device)
       }
     }
   }

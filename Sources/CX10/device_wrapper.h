@@ -25,7 +25,7 @@
 #endif
 
 #ifdef __cplusplus
-#include "tensorflow/compiler/tf2xla/xla_tensor/device.h"
+#include "tensorflow/compiler/xla/xla_client/device.h"
 
 extern "C" {
 #endif
@@ -50,8 +50,8 @@ XLA_API void destroyDeviceList(struct DeviceList* device_list);
 // Gets all available devices.
 XLA_API struct DeviceList* getAllDevices();
 
-// Gets the default device.
-XLA_API struct CDevice DefaultDevice();
+// Gets the best default device.
+XLA_API struct CDevice getDefaultDevice();
 
 // Set device replication for cross-device gradient reduction.
 XLA_API void setReplicationDevices(struct DeviceList* device_list);

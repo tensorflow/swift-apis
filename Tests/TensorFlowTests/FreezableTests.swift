@@ -38,43 +38,26 @@ final class FreezableTests: XCTestCase {
     }
 
     var dense = FreezableDense(weight: Tensor(2), bias: Tensor(3))
-    let x = Tensor<Float>(4)
-    do {
-      let (value, gradient) = valueWithGradient(at: dense, x) { dense, x in dense(x) }
-      XCTAssertEqual(Tensor(11), value)
-      // The gradient of `dense.weight` should be non-zero.
-      XCTAssertEqual(
-        FreezableDense.TangentVector(_weight: Tensor(4), _bias: Tensor(1)),
-        gradient.0)
-      XCTAssertEqual(Tensor(2), gradient.1)
-    }
+    let grad = FreezableDense.TangentVector(weight: Tensor(4), bias: Tensor(1))
 
-    // Freeze derivatives for `dense.weight`.
+    dense.move(along: grad)
+    XCTAssertEqual(Tensor(6), dense.weight)
+    XCTAssertEqual(Tensor(4), dense.bias)
+
+    // Freeze `dense.weight`: its value cannot be updated.
     dense.$weight.freeze()
-    do {
-      let (value, gradient) = valueWithGradient(at: dense, x) { dense, x in dense(x) }
-      // The gradient of `dense.weight` should now be zero.
-      XCTAssertEqual(Tensor(11), value)
-      XCTAssertEqual(
-        FreezableDense.TangentVector(_weight: Tensor(0), _bias: Tensor(1)),
-        gradient.0)
-      XCTAssertEqual(Tensor(2), gradient.1)
-    }
+    dense.move(along: grad)
+    XCTAssertEqual(Tensor(6), dense.weight)
+    XCTAssertEqual(Tensor(5), dense.bias)
 
-    // Unfreeze derivatives for `dense.weight`.
+    // Unfreeze `dense.weight`: its value can be updated again.
     dense.$weight.unfreeze()
-    do {
-      let (value, gradient) = valueWithGradient(at: dense, x) { dense, x in dense(x) }
-      XCTAssertEqual(Tensor(11), value)
-      // The gradient of `dense.weight` should now be non-zero.
-      XCTAssertEqual(
-        FreezableDense.TangentVector(_weight: Tensor(4), _bias: Tensor(1)),
-        gradient.0)
-      XCTAssertEqual(Tensor(2), gradient.1)
-    }
+    dense.move(along: grad)
+    XCTAssertEqual(Tensor(10), dense.weight)
+    XCTAssertEqual(Tensor(6), dense.bias)
   }
 
   static var allTests = [
-    ("testFreezableParameters", testFreezableParameters),
+    ("testFreezableParameters", testFreezableParameters)
   ]
 }

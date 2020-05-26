@@ -12,11 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#if !IMPORT_X10_AS_TENSORFLOW
-import x10_tensor
-#else
 import TensorFlow
-#endif
 @_implementationOnly import x10_xla_tensor_wrapper
 
 /// Collects correct prediction counters and loss totals.

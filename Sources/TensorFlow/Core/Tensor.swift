@@ -131,7 +131,7 @@ extension Tensor {
   /// Reshape to scalar.
   /// - Precondition: The tensor has exactly one scalar.
   @inlinable
-  @differentiable( where Scalar: TensorFlowFloatingPoint)
+  @differentiable(where Scalar: TensorFlowFloatingPoint)
   public func scalarized() -> Scalar {
     precondition(
       shape.contiguousSize == 1,
@@ -144,7 +144,8 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   @inlinable
   @derivative(of: scalarized)
   func _vjpScalarized() -> (value: Scalar, pullback: (Scalar) -> Tensor) {
-    return (scalarized(), { v in Tensor(v) })
+    let device = self.device
+    return (scalarized(), { v in Tensor(v, on: device) })
   }
 }
 
@@ -174,7 +175,7 @@ extension Tensor {
     return handle.makeHostCopy()
   }
 
-  @differentiable( where Scalar: TensorFlowFloatingPoint)
+  @differentiable(where Scalar: TensorFlowFloatingPoint)
   public var scalars: [Scalar] {
     #if USING_X10_BACKEND
       if handle.backend == .XLA {
@@ -205,7 +206,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
 
 extension Tensor {
   /// Creates a 0-D tensor from a scalar value.
-  @differentiable( where Scalar: TensorFlowFloatingPoint)
+  @differentiable(where Scalar: TensorFlowFloatingPoint)
   public init(_ value: Scalar, on device: Device = .default) {
     #if USING_X10_BACKEND
       switch device.backend {
@@ -233,7 +234,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
 extension Tensor {
   /// Creates a 1D tensor from scalars.
   @inlinable
-  @differentiable( where Scalar: TensorFlowFloatingPoint)
+  @differentiable(where Scalar: TensorFlowFloatingPoint)
   public init(_ scalars: [Scalar], on device: Device = .default) {
     self.init(shape: [scalars.count], scalars: scalars, on: device)
   }
@@ -266,7 +267,7 @@ extension Tensor {
   ///   - scalars: The scalar contents of the tensor.
   /// - Precondition: The product of the dimensions of the shape must equal the number of scalars.
   @inlinable
-  @differentiable( where Scalar: TensorFlowFloatingPoint)
+  @differentiable(where Scalar: TensorFlowFloatingPoint)
   public init(shape: TensorShape, scalars: [Scalar], on device: Device = .default) {
     precondition(
       shape.contiguousSize == scalars.count,
@@ -677,7 +678,7 @@ extension Tensor: AdditiveArithmetic where Scalar: Numeric {
   /// Adds two tensors and produces their sum.
   /// - Note: `+` supports broadcasting.
   @inlinable
-  @differentiable( where Scalar: TensorFlowFloatingPoint)
+  @differentiable(where Scalar: TensorFlowFloatingPoint)
   public static func + (lhs: Tensor, rhs: Tensor) -> Tensor {
     _Raw.addV2(lhs, rhs)
   }
@@ -685,7 +686,7 @@ extension Tensor: AdditiveArithmetic where Scalar: Numeric {
   /// Subtracts one tensor from another and produces their difference.
   /// - Note: `-` supports broadcasting.
   @inlinable
-  @differentiable( where Scalar: TensorFlowFloatingPoint)
+  @differentiable(where Scalar: TensorFlowFloatingPoint)
   public static func - (lhs: Tensor, rhs: Tensor) -> Tensor {
     _Raw.sub(lhs, rhs)
   }

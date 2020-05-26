@@ -383,6 +383,8 @@
   _(aten, hann_window)                                      \
   _(aten, hardshrink)                                       \
   _(aten, hardshrink_backward)                              \
+  _(aten, hardsigmoid)                                      \
+  _(aten, hardsigmoid_backward)                             \
   _(aten, hardtanh)                                         \
   _(aten, hardtanh_backward)                                \
   _(aten, hardtanh_forward)                                 \
@@ -761,22 +763,25 @@
   _(aten, xla_is_inf)                                       \
   _(aten, xla_is_nan)
 
-#define FORALL_XLA_SYMBOLS(_, __) \
-  __(xla, all_to_all)             \
-  _(xla, as_strided_view_update)  \
-  _(xla, cast)                    \
-  _(xla, collective_permute)      \
-  _(xla, cross_replica_sum)       \
-  _(xla, device_data)             \
-  _(xla, diagonal_view_update)    \
-  _(xla, generic_slice)           \
-  _(xla, get_dimensions_size)     \
-  _(xla, moving_average)          \
-  _(xla, not_supported)           \
-  _(xla, select)                  \
-  _(xla, tensor_data)             \
-  _(xla, token)                   \
-  _(xla, unselect)                \
+#define FORALL_XLA_SYMBOLS(_, __)  \
+  __(xla, all_to_all)              \
+  _(xla, as_strided_view_update)   \
+  _(xla, cast)                     \
+  _(xla, collective_permute)       \
+  _(xla, cross_replica_sum)        \
+  _(xla, device_data)              \
+  _(xla, diagonal_view_update)     \
+  _(xla, generic_slice)            \
+  _(xla, get_dimensions_size)      \
+  _(xla, moving_average)           \
+  _(xla, nms)                      \
+  _(xla, not_supported)            \
+  _(xla, replication_pad)          \
+  _(xla, replication_pad_backward) \
+  _(xla, select)                   \
+  _(xla, tensor_data)              \
+  _(xla, token)                    \
+  _(xla, unselect)                 \
   _(xla, update_slice)
 
 namespace at {
@@ -822,6 +827,7 @@ enum SymbolKind : uint32_t {
 namespace at {
 
 using BFloat16 = int16_t;
+using Half = uint16_t;
 
 #define LIST_SCALAR_TYPES(_)     \
   _(Bool, Bool, bool)            \
@@ -925,6 +931,10 @@ inline ScalarType GetScalarType<int8_t>() {
 }
 template <>
 inline ScalarType GetScalarType<int16_t>() {
+  return ScalarType::Short;
+}
+template <>
+inline ScalarType GetScalarType<uint16_t>() {
   return ScalarType::Short;
 }
 template <>

@@ -22,3 +22,7 @@ add_test(NAME SwiftAPIsTests
 # the `DT_RUNPATH` on the binary is set properly.
 set_tests_properties(SwiftAPIsTests PROPERTIES
   ENVIRONMENT LD_LIBRARY_PATH=$<TARGET_FILE_DIR:Tensor>:$<TARGET_FILE_DIR:TensorFlow>)
+
+if(BUILD_X10)
+  add_subdirectory(x10)
+endif()

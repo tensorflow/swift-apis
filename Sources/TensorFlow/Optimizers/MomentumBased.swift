@@ -129,7 +129,8 @@ where
     epsilon: Float = 1e-8
   ) {
     precondition(learningRate >= 0, "Learning rate must be non-negative")
-    precondition(initialAccumulatorValue >= 0, "The initial accumulator value must be non-negative.")
+    precondition(
+      initialAccumulatorValue >= 0, "The initial accumulator value must be non-negative.")
 
     self.learningRate = learningRate
     self.epsilon = epsilon
@@ -571,8 +572,8 @@ where
 /// Rectified Adam, a variant of Adam that introduces a term to rectify the adaptive learning rate
 /// variance.
 /// 
-/// Reference: ["On the Variance of the Adaptive Learning Rate and Beyond"]
-/// https://arxiv.org/pdf/1908.03265.pdf
+/// Reference: ["On the Variance of the Adaptive Learning Rate and Beyond"](
+/// https://arxiv.org/pdf/1908.03265.pdf)
 public class RAdam<Model: Differentiable>: Optimizer
 where
   Model.TangentVector: VectorProtocol & PointwiseMultiplicative & ElementaryFunctions

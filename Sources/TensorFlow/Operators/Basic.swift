@@ -16,7 +16,7 @@ infix operator .!=: ComparisonPrecedence
 
 /// Returns a tensor with the same shape and scalars as the specified tensor.
 @inlinable
-@differentiable( where Scalar: TensorFlowFloatingPoint)
+@differentiable(where Scalar: TensorFlowFloatingPoint)
 public func identity<Scalar>(_ x: Tensor<Scalar>) -> Tensor<Scalar> {
   x
 }
@@ -28,8 +28,8 @@ public func identity<Scalar>(_ x: Tensor<Scalar>) -> Tensor<Scalar> {
 extension TensorFlowScalar {
   /// Convert to a tensor with the specified rank, with all dimensions equal to `1`.
   @inlinable
-  public func makeTensor(rank: Int) -> Tensor<Self> {
-    return Tensor(repeating: self, shape: TensorShape(rank))
+  public func makeTensor(rank: Int, on device: Device = .default) -> Tensor<Self> {
+    return Tensor(repeating: self, shape: TensorShape(rank), on: device)
   }
 }
 
@@ -57,7 +57,7 @@ extension Tensor {
   ///
   /// - Returns: Array containing the unstacked tensors.
   @inlinable
-  @differentiable( where Scalar: TensorFlowFloatingPoint)
+  @differentiable(where Scalar: TensorFlowFloatingPoint)
   public func unstacked(alongAxis axis: Int = 0) -> [Tensor] {
     ensureValid(axis: axis)
     let posAxis = axis < 0 ? axis + rank : axis
@@ -87,7 +87,7 @@ extension Tensor {
   ///
   /// - Returns: An array containing the tensors part.
   @inlinable
-  @differentiable( where Scalar: TensorFlowFloatingPoint)
+  @differentiable(where Scalar: TensorFlowFloatingPoint)
   public func split(count: Int, alongAxis axis: Int = 0) -> [Tensor] {
     ensureValid(axis: axis)
     precondition(
@@ -429,7 +429,7 @@ extension Tensor {
   ///   specified axis.
   /// - Precondition: The axis must be in the range `-rank..<rank`.
   @inlinable
-  @differentiable( where Scalar: TensorFlowFloatingPoint)
+  @differentiable(where Scalar: TensorFlowFloatingPoint)
   public func concatenated(with other: Tensor, alongAxis axis: Int = 0) -> Tensor {
     return Tensor(concatenating: [self, other], alongAxis: axis)
   }
@@ -440,7 +440,7 @@ extension Tensor {
   ///   and may be controversial. The existence/naming of `++` will be discussed
   ///   during a later API design phase.
   @inlinable
-  @differentiable( where Scalar: TensorFlowFloatingPoint)
+  @differentiable(where Scalar: TensorFlowFloatingPoint)
   public static func ++ (lhs: Tensor, rhs: Tensor) -> Tensor {
     return lhs.concatenated(with: rhs)
   }
@@ -579,15 +579,15 @@ extension Tensor {
     let batchIndices: Tensor<Index> = withoutDerivative(
       at: {
         var batchIndices = indices
-        var accumulated = Tensor<Index>(ones: [])
+        var accumulated = Tensor<Index>(ones: [], on: device)
         for d in (1...batchDimensionCount).reversed() {
           accumulated *= Tensor<Index>(self.shapeTensor[d])
           let dValue = self.shapeTensor[d - 1]
           let dIndices =
             Tensor<Index>(
-              rangeFrom: Tensor<Index>(zeros: []),
+              rangeFrom: Tensor<Index>(zeros: [], on: device),
               to: Tensor<Index>(dValue),
-              stride: Tensor<Index>(ones: [])
+              stride: Tensor<Index>(ones: [], on: device)
             ) * accumulated
           let dShape = Tensor<Int32>(concatenating: [
             Tensor<Int32>([Int32](repeating: 1, count: d - 1), on: device),

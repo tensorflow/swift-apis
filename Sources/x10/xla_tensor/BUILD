@@ -58,6 +58,7 @@ cc_library(
         "//tensorflow/core/kernels:conv_ops",
         "@com_google_absl//absl/base",
         "@com_google_absl//absl/container:inlined_vector",
+        "@com_google_absl//absl/container:node_hash_map",
         "@com_google_absl//absl/debugging:stacktrace",
         "@com_google_absl//absl/debugging:symbolize",
         "@com_google_absl//absl/memory",
@@ -110,15 +111,5 @@ tf_cc_shared_object(
         ":tensor",
         ":tf_exported_symbols.lds",
         ":tf_version_script.lds",
-    ],
-)
-
-tf_cc_binary(
-    name = "test",
-    srcs = ["test.cpp"],
-    deps = [
-        ":tensor",
-        "//tensorflow/stream_executor/host:host_platform",
-        "@com_google_absl//absl/strings:str_format",
     ],
 )

@@ -21,6 +21,7 @@
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "tensorflow/compiler/xla/client/xla_builder.h"
+#include "tensorflow/compiler/xla/xla_client/device.h"
 
 namespace swift_xla {
 
@@ -41,9 +42,10 @@ xla::XlaOp BuildMatMul(xla::XlaOp lhs, xla::XlaOp rhs, xla::XlaOp bias);
 
 xla::XlaOp BuildDot(xla::XlaOp lhs, xla::XlaOp rhs);
 
-xla::XlaOp BuildBernoulli(xla::XlaOp probability, const xla::Shape& shape);
+xla::XlaOp BuildBernoulli(xla::XlaOp probability, xla::XlaOp seed,
+                          xla::PrimitiveType type);
 
-xla::XlaOp BuildDropout(xla::XlaOp input, float probability);
+xla::XlaOp BuildDropout(xla::XlaOp input, float probability, xla::XlaOp seed);
 
 std::vector<xla::XlaOp> CreateBroadcastTensors(
     absl::Span<const xla::XlaOp> operands);
@@ -72,11 +74,12 @@ using XlaOpCombiner = std::function<xla::XlaOp(xla::XlaOp, xla::XlaOp)>;
 XlaOpCombiner NumericAddCombiner();
 
 // Used to lower scatter and scatter_add.
-xla::XlaOp CreateScatter(xla::XlaOp input, xla::XlaOp index, xla::XlaOp source,
-                         xla::int64 dim, const XlaOpCombiner& combiner);
+xla::XlaOp CreateScatter(const Device& device, xla::XlaOp input,
+                         xla::XlaOp index, xla::XlaOp source, xla::int64 dim,
+                         const XlaOpCombiner& combiner);
 
-xla::XlaOp CreatePut(xla::XlaOp input, xla::XlaOp index, xla::XlaOp source,
-                     bool accumulate);
+xla::XlaOp CreatePut(const Device& device, xla::XlaOp input, xla::XlaOp index,
+                     xla::XlaOp source, bool accumulate);
 
 std::vector<xla::XlaOp> BuildNonZero(xla::XlaOp input);
 

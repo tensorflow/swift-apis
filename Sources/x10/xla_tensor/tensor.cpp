@@ -39,6 +39,7 @@
 #include "tensorflow/compiler/tf2xla/xla_tensor/ir_util.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/layout_manager.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/op_by_op_executor.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/ops/arithmetic_ir_ops.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/cast.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/device_data.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/expand.h"
@@ -58,13 +59,9 @@ struct HashDevice {
 };
 
 struct TlsData {
-  void Reset() {
-    trim_counter = 0;
-    seed_round = 0;
-  }
+  void Reset() { trim_counter = 0; }
 
   size_t trim_counter = 0;
-  xla::uint64 seed_round = 0;
 };
 
 thread_local TlsData g_tls_data;
@@ -189,8 +186,7 @@ class XlaDataCacheArena {
   struct TensorComparer {
     bool operator()(const at::Tensor& tensor1,
                     const at::Tensor& tensor2) const {
-      return tensor1.scalar_type() == tensor2.scalar_type() &&
-             tensor1.equal(tensor2);
+      return tensor1.equal(tensor2);
     }
   };
 
@@ -228,18 +224,6 @@ XlaDataCacheArena::XlaDataCache* GetXlaDataCache(const Device& device) {
   return arena->Get(device);
 }
 
-xla::ComputationClient::DataPtr GetDeviceData(const at::Tensor& tensor,
-                                              const Device& device) {
-  XlaDataCacheArena::XlaDataCache* cache = GetXlaDataCache(device);
-  xla::ComputationClient::DataPtr device_data = cache->Get(tensor);
-  if (device_data == nullptr) {
-    at::Tensor tensor_copy = tensor.dup();
-    device_data = TensorToXlaData(tensor_copy, device);
-    cache->Add(std::move(tensor_copy), device_data);
-  }
-  return device_data;
-}
-
 static at::Tensor ToTensor(at::Scalar value, at::ScalarType scalar_type) {
   switch (scalar_type) {
 #define TO_TENSOR_CASE(name, aten_name, DType)   \
@@ -251,6 +235,26 @@ static at::Tensor ToTensor(at::Scalar value, at::ScalarType scalar_type) {
     LIST_SCALAR_TYPES(TO_TENSOR_CASE)
 #undef TO_TENSOR_CASE
   }
+}
+
+ir::Value IrValueFromScalar(at::Scalar value, at::ScalarType scalar_type,
+                            const Device& device) {
+  at::Tensor tensor = ToTensor(value, scalar_type);
+  xla::ComputationClient::DataPtr device_data = TensorToXlaData(tensor, device);
+  return ir::MakeNode<ir::ops::DeviceData>(nullptr);
+}
+
+xla::ComputationClient::DataPtr GetDeviceData(const at::Tensor& tensor,
+                                              const Device& device) {
+  XlaDataCacheArena::XlaDataCache* cache = GetXlaDataCache(device);
+  xla::ComputationClient::DataPtr device_data = cache->Get(tensor);
+  if (device_data == nullptr) {
+    at::Tensor tensor_copy = tensor.dup();
+    device_data = TensorToXlaData(tensor_copy, device);
+    cache->Add(std::move(tensor_copy), device_data);
+    XLA_COUNTER("DeviceDataCacheMiss", 1);
+  }
+  return device_data;
 }
 
 xla::ComputationClient::DataPtr GetDeviceData(at::Scalar value,
@@ -288,7 +292,9 @@ class XLATensor::DeviceContextArena {
   struct DeviceContext {
     std::mutex lock;
     absl::flat_hash_map<xla::int64, std::weak_ptr<Data>> tensors_data;
-    std::set<xla::hash_t> sync_hashes;
+    xla::uint64 seed = 101;
+    xla::uint64 running_seed = 101;
+    ir::Value seed_ir_value;
   };
 
  public:
@@ -338,18 +344,53 @@ class XLATensor::DeviceContextArena {
     return tensors;
   }
 
-  void ClearProfileData(const Device* device) {
+  ir::Value GetRngSeed(const Device& device) {
+    static const at::ScalarType kSeedType = at::ScalarType::Long;
+    static const xla::uint64 kSeedMul = 214013;
+    static const xla::uint64 kSeedAdd = 2531011;
+    DeviceContext* devctx = GetDeviceContext(device);
+    std::lock_guard<std::mutex> lock(devctx->lock);
+    if (!devctx->seed_ir_value) {
+      at::Scalar seed_scalar(static_cast<uint64_t>(devctx->seed));
+      devctx->seed_ir_value = IrValueFromScalar(seed_scalar, kSeedType, device);
+    }
+    // Keep the running seed as scalar as well, so we can return it directly
+    // without executing graphs.
+    devctx->running_seed = kSeedAdd + kSeedMul * devctx->running_seed;
+    // Compose new seeds from the root seed, to avoid creating too many XLA
+    // computation parameters which might overflow the TPU capacity.
+    ir::Value k = ir::ops::ScalarOp(at::Scalar(static_cast<uint64_t>(kSeedMul)),
+                                    MakeXlaPrimitiveType(kSeedType, &device));
+    ir::Value b = ir::ops::ScalarOp(at::Scalar(static_cast<uint64_t>(kSeedAdd)),
+                                    MakeXlaPrimitiveType(kSeedType, &device));
+    devctx->seed_ir_value = b + k * devctx->seed_ir_value;
+    return devctx->seed_ir_value;
+  }
+
+  xla::uint64 GetRunningSeed(const Device& device) {
+    DeviceContext* devctx = GetDeviceContext(device);
+    std::lock_guard<std::mutex> lock(devctx->lock);
+    return devctx->running_seed;
+  }
+
+  void SetRngSeed(const Device* device, xla::uint64 seed) {
     auto fn = [&](DeviceContext* devctx) {
       std::lock_guard<std::mutex> lock(devctx->lock);
-      devctx->sync_hashes.clear();
+      devctx->seed = seed;
+      devctx->running_seed = devctx->seed;
+      devctx->seed_ir_value = ir::Value();
     };
     ForAllDeviceContexts(fn, device);
   }
 
-  void AddSyncedHash(const Device& device, const xla::hash_t& hash) {
-    DeviceContext* devctx = GetDeviceContext(device);
-    std::lock_guard<std::mutex> lock(devctx->lock);
-    devctx->sync_hashes.insert(hash);
+  void StepRngSeed(const Device* device) {
+    auto fn = [&](DeviceContext* devctx) {
+      std::lock_guard<std::mutex> lock(devctx->lock);
+      devctx->seed = 1012031 + devctx->seed * 7012063;
+      devctx->running_seed = devctx->seed;
+      devctx->seed_ir_value = ir::Value();
+    };
+    ForAllDeviceContexts(fn, device);
   }
 
  private:
@@ -587,7 +628,8 @@ std::string XLATensor::DumpHloComputation(
       ir_values.push_back(std::move(ir_value));
     }
   }
-  return ir::DumpUtil::ToHlo(ir_values);
+  return !ir_values.empty() ? ir::DumpUtil::ToHlo(ir_values, GetCurrentDevice())
+                            : std::string();
 }
 
 void XLATensor::SetXlaData(xla::ComputationClient::DataPtr xla_data) {
@@ -724,15 +766,32 @@ ir::Value XLATensor::GetIrValueForScalar(at::Scalar value,
       value, MakeXlaPrimitiveType(GetScalarType(value), &device), device);
 }
 
+ir::Value XLATensor::GetIrValueForScalar(
+    at::Scalar value, xla::PrimitiveType type,
+    absl::Span<const xla::int64> dimensions, const Device& device) {
+  ir::Value ir_value = GetIrValueForScalar(value, type, device);
+  if (!dimensions.empty()) {
+    ir_value = ir::MakeNode<ir::ops::Expand>(
+        ir_value, xla::util::ToVector<xla::int64>(dimensions));
+  }
+  return ir_value;
+}
+
 ir::Value XLATensor::GetIrValueForScalar(at::Scalar value,
                                          const xla::Shape& shape,
                                          const Device& device) {
-  ir::Value ir_value = GetIrValueForScalar(value, shape.element_type(), device);
-  if (shape.rank() > 0) {
-    ir_value = ir::MakeNode<ir::ops::Expand>(
-        ir_value, xla::util::ToVector<xla::int64>(shape.dimensions()));
-  }
-  return ir_value;
+  return GetIrValueForScalar(value, shape.element_type(), shape.dimensions(),
+                             device);
+}
+
+ir::Value XLATensor::GetIrValueForScalar(
+    at::Scalar value, const xla::Shape& shape,
+    c10::optional<at::ScalarType> logical_element_type, const Device& device) {
+  xla::PrimitiveType type =
+      logical_element_type
+          ? MakeXlaPrimitiveType(*logical_element_type, &device)
+          : shape.element_type();
+  return GetIrValueForScalar(value, type, shape.dimensions(), device);
 }
 
 View::IrNode XLATensor::GetViewUpdate(const std::shared_ptr<View>& view) const {
@@ -788,6 +847,7 @@ at::Tensor XLATensor::ToTensor(bool detached) {
   at::Tensor tensor(std::unique_ptr<at::AnyScalarBuffer>(nullptr), {});
   c10::optional<at::Tensor> tensor_data = CurrentTensorData();
   if (!tensor_data) {
+    DeviceBarrier(GetDevice());
     // The GetXlaData() call will trigger an ApplyPendingGraph() if an IR Node
     // is available on the tensor.
     std::vector<at::Tensor> tensors = XlaDataToTensors({GetXlaData()}, dtype());
@@ -1306,7 +1366,7 @@ void XLATensor::SyncLiveTensorsGraph(const Device* device,
 
 void XLATensor::MarkStep(const Device* device) {
   XLA_COUNTER("MarkStep", 1);
-  DeviceContextArena::Get()->ClearProfileData(device);
+  DeviceContextArena::Get()->StepRngSeed(device);
   ir::ScopePusher::ResetScopes();
   g_tls_data.Reset();
 }
@@ -1429,7 +1489,9 @@ XLATensor::CompilationResult XLATensor::Compile(
   static const bool enable_aliasing =
       xla::sys_util::GetEnvBool("XLA_ENABLE_PARAM_ALIASING", false);
   xla::util::Unique<Device> unique_device;
-  ir::LoweringContext lowering_ctx("SyncTensorsGraph");
+  ir::LoweringContext lowering_ctx("SyncTensorsGraph", coll.device,
+                                   po_data->post_order,
+                                   std::move(po_data->emission_map));
   for (auto index : coll.indices) {
     ir::Value ir_value = tensors[index].CurrentIrValue();
     xla::XlaOp root = lowering_ctx.GetOutputOp(ir_value);
@@ -1535,9 +1597,16 @@ xla::int64 XLATensor::GetNextTensorId() {
   return id_generator->fetch_add(1);
 }
 
-xla::uint64 XLATensor::GenRngSeed() {
-  static const xla::uint64 kBaseSeed = 0x78ab6952ca3893e7;
-  return ++g_tls_data.seed_round * kBaseSeed;
+ir::Value XLATensor::GetRngSeed(const Device& device) {
+  return DeviceContextArena::Get()->GetRngSeed(device);
+}
+
+void XLATensor::SetRngSeed(const Device* device, xla::uint64 seed) {
+  DeviceContextArena::Get()->SetRngSeed(device, seed);
+}
+
+xla::uint64 XLATensor::GetRunningSeed(const Device& device) {
+  return DeviceContextArena::Get()->GetRunningSeed(device);
 }
 
 }  // namespace swift_xla

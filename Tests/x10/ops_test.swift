@@ -1,9 +1,5 @@
-import XCTest
-#if !IMPORT_X10_AS_TENSORFLOW
-import x10_tensor
-#else
 import TensorFlow
-#endif
+import XCTest
 import x10_xla_tensor_wrapper
 
 // TODO(b/130689556): Remove this environment setting once the bug is fixed.
@@ -897,6 +893,9 @@ final class TensorTests: XCTestCase {
     // Dilated convolution gradients aren't supported by classic (no XLA) TF.
     let dilation = 1
     for useReducedPrecision in [false, true] {
+      if useReducedPrecision && Device.defaultXLA.kind == .GPU {
+        continue
+      }
       for stride in 1..<4 {
         for padSame in [false, true] {
           var input = Tensor<Float>.rand([batch, inputSize, inputSize, inChannels])
@@ -1984,7 +1983,7 @@ final class TensorTests: XCTestCase {
       }
       var tx10 = _Raw.linSpace(
         start: start, stop: stop, num: Tensor<Int32>(num, on: x10),
-        device: .default)
+        device: x10)
       if useReducedPrecision {
         XCTAssert(tx10.isReducedPrecision)
         tx10 = tx10.toFullPrecision
@@ -2068,7 +2067,8 @@ final class TensorTests: XCTestCase {
 
   func testLogSoftmax() throws {
     var x = Tensor<Float>(
-      shape: [2, 5], scalars: [0.98, 0.65, 0.832, 0.324, 0.3676, 0.777, 0.244, 0.950, 0.544, 0.445],
+      shape: [2, 5],
+      scalars: [0.98, 0.65, 0.832, 0.324, 0.3676, 0.777, 0.244, 0.950, 0.544, 0.445],
       on: x10)
     let expected = logSoftmax(TF(x))
     for useReducedPrecision in [false, true] {
@@ -3053,7 +3053,8 @@ final class TensorTests: XCTestCase {
   func testSparseSoftmaxCrossEntropyWithLogits() throws {
     let labels = Tensor<Int32>(shape: [2], scalars: [3, 4], on: x10)
     var logits = Tensor<Float>(
-      shape: [2, 5], scalars: [0.98, 0.65, 0.832, 0.324, 0.3676, 0.777, 0.244, 0.950, 0.544, 0.445],
+      shape: [2, 5],
+      scalars: [0.98, 0.65, 0.832, 0.324, 0.3676, 0.777, 0.244, 0.950, 0.544, 0.445],
       on: x10)
     let expected = _Raw.sparseSoftmaxCrossEntropyWithLogits(
       features: TF(logits), labels: TF(labels))
@@ -3229,7 +3230,9 @@ final class TensorTests: XCTestCase {
 
   func testSqueeze() throws {
     for useReducedPrecision in [false, true] {
-      for (dims, onesDims) in [([1, 3, 4, 1], [0, 3]), ([2, 1, 2, 3], [1]), ([3, 1, 1, 2], [2])] {
+      for (dims, onesDims) in [
+        ([1, 3, 4, 1], [0, 3]), ([2, 1, 2, 3], [1]), ([3, 1, 1, 2], [2]),
+      ] {
         var x = Tensor<Float>.rand(dims)
         let expected = TF(x).squeezingShape(at: onesDims)
         if useReducedPrecision {
@@ -3646,5 +3649,5 @@ extension TensorTests {
 // export XRT_WORKERS="localservice:0;grpc://localhost:40934"
 
 XCTMain([
-  testCase(TensorTests.allTests),
+  testCase(TensorTests.allTests)
 ])
