@@ -40,6 +40,7 @@ import XCTest
       testCase(NNTests.allTests),
       testCase(OptimizerTests.allTests),
       testCase(RuntimeTests.allTests),
+      testCase(SamplingTests.allTests),
       testCase(SequencedTests.allTests),
       testCase(SequentialTests.allTests),
       testCase(TensorAutoDiffTests.allTests),
