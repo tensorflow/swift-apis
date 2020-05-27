@@ -23,6 +23,7 @@ add_library(TensorFlowTests
   SequencedTests.swift.gyb
   SequentialTests.swift
   SequentialTests.swift.gyb
+  SlicesTests.swift
   TensorAutoDiffTests.swift
   TensorGroupTests.swift
   TensorTests.swift
