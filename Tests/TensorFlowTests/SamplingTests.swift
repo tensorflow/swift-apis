@@ -54,7 +54,6 @@ final class SamplingTests: XCTestCase {
     // properly, though.
     let b = Array(0...20)
     let d = Sampling(base: b, selection: b.indices)
-    print(type(of: b.indices))
     d.checkRandomAccessCollectionConformance(expectedValues: b)
     XCTAssert(d.isBidirectional)
     XCTAssert(d.isRandomAccess)

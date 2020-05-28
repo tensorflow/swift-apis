@@ -57,7 +57,6 @@ extension Sampling: Collection {
     selection.index(i, offsetBy: n)
   }
 
-  // 
   /// Returns `i` offset by `distance` unless that requires passing `limit`, in
   /// which case `nil` is returned.
   public func index(
@@ -73,27 +72,6 @@ extension Sampling: BidirectionalCollection
   /// Returns the position before `i`.
   public func index(before i: Index) -> Index {
     selection.index(before: i)
-  }
-
-  /// Returns the number of forward steps required to convert `start` into `end`.
-  ///
-  /// A negative result indicates that `end < start`.
-  public func distance(from start: Index, to end: Index) -> Int {
-    selection.distance(from: start, to: end)
-  }
-
-  /// Returns the position `n` places from `i`.
-  public func index(_ i: Index, offsetBy n: Int) -> Index {
-    selection.index(i, offsetBy: n)
-  }
-
-  // 
-  /// Returns `i` offset by `distance` unless that requires passing `limit`, in
-  /// which case `nil` is returned.
-  public func index(
-    _ i: Index, offsetBy distance: Int, limitedBy limit: Index
-  ) -> Index? {
-    selection.index(i, offsetBy: distance, limitedBy: limit)
   }
 }
 
