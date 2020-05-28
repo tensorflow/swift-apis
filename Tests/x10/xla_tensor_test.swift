@@ -1,6 +1,5 @@
 import TensorFlow
 import XCTest
-import x10_xla_tensor_wrapper
 
 /// Direct tests of xla tensor.
 final class XLATensorTests: XCTestCase {

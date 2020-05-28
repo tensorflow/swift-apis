@@ -2,7 +2,6 @@
 
 import TensorFlow
 import XCTest
-import x10_xla_tensor_wrapper
 
 extension KeyPathIterable {
   func recursivelyAllProperties<T>(withType type: T.Type) -> [T] {
