@@ -147,7 +147,7 @@ extension Tensor {
   /// Returns true if the physical scalar type is reduced precision.
   ///
   /// Currently, reduced precision physical scalar types include only `BFloat16`.
-  @noDerivative public var isReducedPrecision: Bool {
+  public var isReducedPrecision: Bool {
     #if USING_X10_BACKEND
       return device.backend == .XLA && xlaTensor.physicalScalarType == XLATensorScalarType_BFloat16
     #else
