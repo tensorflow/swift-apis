@@ -285,6 +285,7 @@ public final class _ExecutionContext {
     TFE_DeleteContextOptions(opts)
     checkOk(status)
 
+    #if !os(Windows)
     if case .remote(let serverDef) = _RuntimeConfig.session {
       debugLog("Setting up the server def to \(serverDef)...")	
       serverDef.utf8CString.withUnsafeBufferPointer { ptr in
@@ -294,6 +295,7 @@ public final class _ExecutionContext {
         checkOk(status)
       }
     }
+    #endif
 
     let devices = TFE_ContextListDevices(eagerContext, status)
     checkOk(status)
