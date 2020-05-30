@@ -21,6 +21,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "tensorflow/compiler/tf2xla/xla_tensor/computation.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/cross_replica_reduces.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ir.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ir_util.h"
@@ -228,6 +229,10 @@ class XLATensor {
 
   static XLATensor get_dimensions_size(const XLATensor& input,
                                        std::vector<xla::int64> dimensions);
+
+  static std::vector<XLATensor> user_computation(
+      const std::string& opname, absl::Span<const XLATensor> inputs,
+      ComputationPtr computation);
 
   //////////////////////////////////////////////////////////////////////////////
   // ATEN operators follows here, listed in alphabetical order.
@@ -518,6 +523,8 @@ class XLATensor {
 
   static XLATensor expm1(const XLATensor& input);
   static void expm1_(XLATensor& input);
+
+  static void exponential_(XLATensor& input, double lambd);
 
   // Returns a 2-D tensor with ones on the diagonal and zeros elsewhere.
   static XLATensor eye(xla::int64 lines, xla::int64 cols, const Device& device,
@@ -1382,7 +1389,8 @@ class XLATensor {
 
   void SetTensorData(at::Tensor tensor_data);
 
-  ir::Value CreateTensorNode(xla::ComputationClient::DataPtr data) const;
+  ir::Value CreateTensorNode(xla::ComputationClient::DataPtr data,
+                             bool read_only) const;
 
   View::IrNode GetViewUpdate(const std::shared_ptr<View>& view) const;
 
