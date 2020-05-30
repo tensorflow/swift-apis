@@ -51,6 +51,7 @@
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/diagonal.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/einsum.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/expand.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/ops/exponential.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/flip.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/gather.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/generic.h"
@@ -134,6 +135,7 @@
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/upsample_bilinear2d_backward.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/upsample_nearest2d.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/upsample_nearest2d_backward.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/ops/user_computation.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/view.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/xla_avg_pool.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/xla_avg_pool_grad.h"
@@ -393,6 +395,19 @@ XLATensor XLATensor::get_dimensions_size(const XLATensor& input,
   return input.CreateFrom(ir::MakeNode<ir::ops::GetDimensionsSize>(
                               input.GetIrValue(), std::move(dimensions)),
                           at::ScalarType::Int);
+}
+
+std::vector<XLATensor> XLATensor::user_computation(
+    const std::string& opname, absl::Span<const XLATensor> inputs,
+    ComputationPtr computation) {
+  XLA_CHECK(!inputs.empty());
+  std::vector<ir::Value> input_values;
+  for (auto& input : inputs) {
+    input_values.push_back(input.GetIrValue());
+  }
+  ir::NodePtr node = ir::MakeNode<ir::ops::UserComputation>(
+      ir::OpKind::Get(opname), input_values, std::move(computation));
+  return inputs.front().MakeOutputTensors(node);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1134,6 +1149,14 @@ XLATensor XLATensor::expm1(const XLATensor& input) {
 
 void XLATensor::expm1_(XLATensor& input) {
   input.SetInPlaceIrValue(ir::ops::Expm1(input.GetIrValue()));
+}
+
+void XLATensor::exponential_(XLATensor& input, double lambd) {
+  auto input_shape = input.shape();
+  input.SetInPlaceIrValue(ir::MakeNode<ir::ops::Exponential>(
+      GetIrValueForScalar(lambd, input_shape.get().element_type(),
+                          input.GetDevice()),
+      GetRngSeed(input.GetDevice()), input_shape.get()));
 }
 
 XLATensor XLATensor::eye(xla::int64 lines, xla::int64 cols,
