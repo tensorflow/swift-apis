@@ -1036,14 +1036,20 @@ extension Tensor {
     // TODO: Precondition `lowerBounds.count == upperBounds.count`,
     // preferably in graph.
     // TODO: Differentiating control flow is not supported yet, thus the thunks.
-    let lowerBoundsTensor = Tensor<Int32>({ lowerBounds.map(Int32.init) }(), on: device)
-    let upperBoundsTensor = Tensor<Int32>({ upperBounds.map(Int32.init) }(), on: device)
-    return slice(lowerBounds: lowerBoundsTensor, sizes: upperBoundsTensor - lowerBoundsTensor)
+    let zipped = zip(upperBounds, lowerBounds)
+    let sizes = withoutDerivative(at: zipped) { zipped in zipped.map { $0 - $1 } }
+    return slice(lowerBounds: lowerBounds, sizes: sizes)
   }
 
   @inlinable
   @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
   public func slice(lowerBounds: Tensor<Int32>, sizes: Tensor<Int32>) -> Tensor {
+    return _Raw.slice(self, begin: lowerBounds, size: sizes)
+  }
+
+  @inlinable
+  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  public func slice(lowerBounds: [Int], sizes: [Int]) -> Tensor {
     return _Raw.slice(self, begin: lowerBounds, size: sizes)
   }
 }
@@ -1055,16 +1061,23 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
     lowerBounds: Tensor<Int32>,
     sizes: Tensor<Int32>
   ) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
+    _vjpSlice(
+      lowerBounds: lowerBounds.scalars.map { Int($0) }, sizes: sizes.scalars.map { Int($0) })
+  }
+
+  @inlinable
+  @derivative(of: slice(lowerBounds:sizes:))
+  internal func _vjpSlice(
+    lowerBounds: [Int],
+    sizes: [Int]
+  ) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
     let value = slice(lowerBounds: lowerBounds, sizes: sizes)
-    let afterPaddings = shapeTensor - value.shapeTensor - lowerBounds
+    let afterPaddings = zip(zip(shape, value.shape).map { $0 - $1 }, lowerBounds).map { $0 - $1 }
     return (
       value,
-      { [after = afterPaddings] v in
-        let beforePaddings = lowerBounds.expandingShape(at: 1)
-        let afterPaddings = after.expandingShape(at: 1)
-        let paddings = Tensor<Int32>(
-          concatenating: [beforePaddings, afterPaddings], alongAxis: 1)
-        return _Raw.pad(v, paddings: paddings)
+      { v in
+        let linearizedPaddings = zip(lowerBounds, afterPaddings).flatMap { [$0, $1] }
+        return _Raw.pad(v, paddings: linearizedPaddings)
       }
     )
   }
