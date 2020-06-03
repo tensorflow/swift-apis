@@ -3593,15 +3593,27 @@ public enum _RawXLA {
           + "\(sizeSplits.shape.contiguousSize) elements"
       )
     }
-    let inferredIndices = sizeSplits.scalars.indices.filter { sizeSplits.scalars[$0] == -1 }
+    return splitV(
+      value: value, sizeSplits: sizeSplits.scalars.map { Int($0) },
+      splitDim: Int(splitDim.scalarized()))
+  }
+
+  public static func splitV<
+    T: TensorFlowScalar
+  >(
+    value: Tensor<T>,
+    sizeSplits: [Int],
+    splitDim: Int
+  ) -> [Tensor<T>] {
+    let inferredIndices = sizeSplits.indices.filter { sizeSplits[$0] == -1 }
     guard inferredIndices.count <= 1 else {
       fatalError(
         "Only one dimensions can have a value of -1. Second one found at dimension "
           + String(inferredIndices[1])
       )
     }
-    let totalSplitSize = sizeSplits.scalars.filter { $0 != -1 }.reduce(0, +)
-    let canonicalSplitDim = canonicalDims(splitDim.scalars.map { Int64($0) }, Int64(value.rank))
+    let totalSplitSize = sizeSplits.filter { $0 != -1 }.reduce(0, +)
+    let canonicalSplitDim = canonicalDims([Int64(splitDim)], Int64(value.rank))
       .first!
     let splitDimSize = value.shape.dimensions[Int(canonicalSplitDim)]
     guard
@@ -3614,12 +3626,12 @@ public enum _RawXLA {
           + "specified. Got: \(totalSplitSize)"
       )
     }
-    var completeSizeSplits = sizeSplits.scalars.map { Int64($0) }
+    var completeSizeSplits = sizeSplits.map { Int64($0) }
     if inferredIndices.count == 1 {
       completeSizeSplits[inferredIndices.first!] = Int64(splitDimSize) - Int64(totalSplitSize)
     }
     let chunkHandles = XLATensor.splitWithSizes(
-      value.xlaTensor, completeSizeSplits, Int64(splitDim.scalarized()))
+      value.xlaTensor, completeSizeSplits, Int64(splitDim))
     return chunkHandles.map { Tensor(_xla: $0) }
   }
 

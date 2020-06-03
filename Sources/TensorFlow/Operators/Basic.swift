@@ -134,6 +134,20 @@ extension Tensor {
       numSplit: Int64(sizes.shape[0]))
   }
 
+  @inlinable
+  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  public func split(sizes: [Int], alongAxis axis: Int = 0) -> [Tensor] {
+    ensureValid(axis: axis)
+    let canonicalAxis = axis < 0 ? axis + rank : axis
+    precondition(
+      shape[canonicalAxis] == sizes.reduce(0, +),
+      "The values in sizes must add up to the size of dimension axis.")
+    return _Raw.splitV(
+      value: self,
+      sizeSplits: sizes,
+      splitDim: canonicalAxis)
+  }
+
   /// Returns a tiled tensor, constructed by tiling this tensor.
   ///
   /// This constructor creates a new tensor by replicating this tensor `multiples` times. The
@@ -289,6 +303,16 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   @derivative(of: split)
   func _vjpSplit(
     sizes: Tensor<Int32>,
+    alongAxis axis: Int = 0
+  ) -> (value: [Tensor], pullback: (Array<Tensor>.TangentVector) -> Tensor) {
+    let result = split(sizes: sizes, alongAxis: axis)
+    return (result, { v in Tensor(concatenating: v.base, alongAxis: axis) })
+  }
+
+  @inlinable
+  @derivative(of: split)
+  func _vjpSplit(
+    sizes: [Int],
     alongAxis axis: Int = 0
   ) -> (value: [Tensor], pullback: (Array<Tensor>.TangentVector) -> Tensor) {
     let result = split(sizes: sizes, alongAxis: axis)
@@ -747,7 +771,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
     alongAxis axis: Int
   ) -> (value: Tensor, pullback: (Tensor) -> (Tensor, Tensor)) {
     let posAxis = axis < 0 ? axis + rank : axis
-    let splits = Tensor<Int32>([shapeTensor[posAxis], other.shapeTensor[posAxis]])
+    let splits = [shape[posAxis], other.shape[posAxis]]
     return (
       concatenated(with: other, alongAxis: axis),
       { result in
