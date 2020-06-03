@@ -33,6 +33,12 @@ if(BUILD_X10)
   if(NOT X10_FOUND AND NOT USE_BUNDLED_X10)
     include(ExternalProject)
 
+    if(CMAKE_SYSTEM_NAME STREQUAL Windows)
+      set(VISIBILITY_FLAGS "")
+    else()
+      set(VISIBILITY_FLAGS --cxxopt=-fvisibility=hidden --cxxopt=-fvisibility-inlines-hidden)
+    endif()
+
     ExternalProject_Add(libtensorflow
       GIT_REPOSITORY
         git://github.com/tensorflow/tensorflow
@@ -59,7 +65,7 @@ if(BUILD_X10)
         COMMAND
           rm -rf <SOURCE_DIR>/bazel-bin # ${CMAKE_COMMAND} -E rm -Rrf <SOURCE_DIR>/bazel-bin
         COMMAND
-          bazel build -c opt --define framework_shared_object=false //tensorflow/compiler/tf2xla/xla_tensor:x10 --nocheck_visibility
+          bazel build ${VISIBILITY_FLAGS} -c opt --define framework_shared_object=false //tensorflow/compiler/tf2xla/xla_tensor:x10 --nocheck_visibility
         COMMAND
           bazel shutdown
       INSTALL_COMMAND

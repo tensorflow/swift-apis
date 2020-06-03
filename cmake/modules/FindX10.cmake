@@ -2,7 +2,13 @@
 if(DEFINED CMAKE_Swift_COMPILER)
   get_filename_component(_Swift_TOOLCHAIN ${CMAKE_Swift_COMPILER} DIRECTORY)
   get_filename_component(_Swift_TOOLCHAIN ${_Swift_TOOLCHAIN} DIRECTORY)
-  file(TO_CMAKE_PATH ${_Swift_TOOLCHAIN}/usr/lib/swift _Swift_LIBDIR)
+  get_filename_component(_Swift_TOOLCHAIN ${_Swift_TOOLCHAIN} DIRECTORY)
+  if(CMAKE_SYSTEM_NAME STREQUAL Darwin)
+    set(system_lc macosx)
+  else()
+    string(TOLOWER ${CMAKE_SYSTEM_NAME} system_lc)
+  endif()
+  file(TO_CMAKE_PATH ${_Swift_TOOLCHAIN}/usr/lib/swift/${system_lc} _Swift_LIBDIR)
 endif()
 
 find_library(X10_LIBRARY
