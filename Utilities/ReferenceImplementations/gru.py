@@ -1,4 +1,4 @@
-# Computes expected results for `testGRU()` in `Tests/TensorFlowTests/LayerTests.swift`.
+# Computes expected results for `testGRU()` and `testBackwardGRU()` in `Tests/TensorFlowTests/LayerTests.swift`.
 # Requires 'tensorflow>=2.0.0a0' (e.g. "pip install tensorflow==2.2.0").
 
 import sys
