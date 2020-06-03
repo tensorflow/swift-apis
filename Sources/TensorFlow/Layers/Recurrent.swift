@@ -268,13 +268,15 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell {
 
 /// An GRU cell.
 public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell {
-  public var updateWeight1, updateWeight2: Tensor<Scalar>
-  public var resetWeight1, resetWeight2: Tensor<Scalar>
-  public var outputWeight1, outputWeight2: Tensor<Scalar>
-  public var updateBias, outputBias, resetBias: Tensor<Scalar>
+  public var updateKernel, updateRecurrentKernel: Tensor<Scalar>
+  public var resetKernel, resetRecurrentKernel: Tensor<Scalar>
+  public var outputKernel, outputRecurrentKernel: Tensor<Scalar>
+  public var updateBias, updateRecurrentBias: Tensor<Scalar>
+  public var resetBias, resetRecurrentBias: Tensor<Scalar>
+  public var outputBias, outputRecurrentBias: Tensor<Scalar>
 
   @noDerivative public var stateShape: TensorShape {
-    [1, updateWeight1.shape[0]]
+    [1, updateKernel.shape[0]]
   }
 
   public func zeroState(for input: Tensor<Scalar>) -> State {
@@ -294,20 +296,24 @@ public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell {
   public init(
     inputSize: Int,
     hiddenSize: Int,
-    weightInitializer: ParameterInitializer<Scalar> = glorotUniform(),
+    kernelInitializer: ParameterInitializer<Scalar> = glorotUniform(),
     biasInitializer: ParameterInitializer<Scalar> = zeros()
   ) {
-    let gateWeightShape = TensorShape([inputSize, 1])
+    let gateKernelShape = TensorShape([inputSize, hiddenSize])
+    let gateRecurrentKernelShape = TensorShape([hiddenSize, hiddenSize])
     let gateBiasShape = TensorShape([hiddenSize])
-    self.updateWeight1 = weightInitializer(gateWeightShape)
-    self.updateWeight2 = weightInitializer(gateWeightShape)
+    self.updateKernel = kernelInitializer(gateKernelShape)
+    self.updateRecurrentKernel = kernelInitializer(gateRecurrentKernelShape)
     self.updateBias = biasInitializer(gateBiasShape)
-    self.resetWeight1 = weightInitializer(gateWeightShape)
-    self.resetWeight2 = weightInitializer(gateWeightShape)
+    self.updateRecurrentBias = biasInitializer(gateBiasShape)
+    self.resetKernel = kernelInitializer(gateKernelShape)
+    self.resetRecurrentKernel = kernelInitializer(gateRecurrentKernelShape)
     self.resetBias = biasInitializer(gateBiasShape)
-    self.outputWeight1 = weightInitializer(gateWeightShape)
-    self.outputWeight2 = weightInitializer(gateWeightShape)
+    self.resetRecurrentBias = biasInitializer(gateBiasShape)
+    self.outputKernel = kernelInitializer(gateKernelShape)
+    self.outputRecurrentKernel = kernelInitializer(gateRecurrentKernelShape)
     self.outputBias = biasInitializer(gateBiasShape)
+    self.outputRecurrentBias = biasInitializer(gateBiasShape)
   }
 
   // TODO(TF-507): Revert to `typealias State = Tensor<Scalar>` after
@@ -327,18 +333,23 @@ public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell {
   /// - Returns: The hidden state.
   @differentiable
   public func callAsFunction(_ input: Input) -> Output {
-    let resetGate = sigmoid(
-      matmul(input.input, resetWeight1) + matmul(input.state.hidden, resetWeight2) + resetBias
-    )
     let updateGate = sigmoid(
-      matmul(input.input, updateWeight1) + matmul(input.state.hidden, updateWeight2)
-        + updateBias)
+      (matmul(input.input, updateKernel) + updateBias)
+      + (matmul(input.state.hidden, updateRecurrentKernel) + updateRecurrentBias)
+    )
+    let resetGate = sigmoid(
+      (matmul(input.input, resetKernel) + resetBias)
+      + (matmul(input.state.hidden, resetRecurrentKernel) + resetRecurrentBias)
+    )
     let outputGate = tanh(
-      matmul(input.input, outputWeight1)
-        + matmul(resetGate * input.state.hidden, outputWeight2) + outputBias)
-    let updateHidden = (1 - updateGate) * input.state.hidden
+      (matmul(input.input, outputKernel) + outputBias)
+      + resetGate * (matmul(input.state.hidden, outputRecurrentKernel) + outputRecurrentBias)
+    )
+
+    let updateHidden = updateGate * input.state.hidden
     let updateOutput = (1 - updateGate) * outputGate
     let newState = State(hidden: updateHidden + updateOutput)
+
     return Output(output: newState, state: newState)
   }
 }
