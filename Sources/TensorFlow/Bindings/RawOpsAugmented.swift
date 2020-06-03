@@ -92,6 +92,15 @@ extension _RawTFEager {
       keepDims: keepDims)
   }
 
+  public static func transpose<
+    T: TensorFlowScalar
+  >(
+    _ x: Tensor<T>,
+    perm: [Int]
+  ) -> Tensor<T> {
+    transpose(x, perm: Tensor<Int32>(perm.map { Int32($0) }, on: .defaultTFEager))
+  }
+
   public static func broadcastTo<
     T: TensorFlowScalar
   >(
@@ -283,6 +292,21 @@ extension _RawTFEager {
           input,
           reductionIndices: Tensor<Int32>(reductionIndices.map { Int32($0) }, on: .defaultTFEager),
           keepDims: keepDims)
+      }
+    }
+
+    public static func transpose<
+      T: TensorFlowScalar
+    >(
+      _ x: Tensor<T>,
+      perm: [Int]
+    ) -> Tensor<T> {
+      switch x.handle.backend {
+      case .XLA:
+        return _RawXLA.transpose(x, perm: perm)
+      case .TF_EAGER:
+        return _RawTFEager.transpose(
+          x, perm: Tensor<Int32>(perm.map { Int32($0) }, on: .defaultTFEager))
       }
     }
 

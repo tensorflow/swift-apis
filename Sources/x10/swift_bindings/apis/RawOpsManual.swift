@@ -1747,20 +1747,8 @@ public enum _RawXLA {
     if x.rank != 1 {
       fatalError("Input should be rank 1, got \(x.rank)")
     }
-    let size = x.scalarCount
-    var inverted = [T](repeating: -1, count: size)
-    let perm = x.scalars
-    for i in 0..<size {
-      let d = perm[i]
-      if d < 0 || d >= size {
-        fatalError("\(d) is not between 0 and \(size)")
-      }
-      if inverted[Int(d)] != -1 {
-        fatalError("\(d) is duplicated in the input.")
-      }
-      inverted[Int(d)] = T(i)
-    }
-    return Tensor<T>(shape: [inverted.count], scalars: inverted, on: x.device)
+    let scalars = invertPermutationArray(x.scalars)
+    return Tensor<T>(shape: [scalars.count], scalars: scalars, on: x.device)
   }
 
   /// Returns which elements of x are finite.
@@ -4356,6 +4344,15 @@ public enum _RawXLA {
     perm: Tensor<Tperm>
   ) -> Tensor<T> {
     return Tensor(_xla: XLATensor.permute_value(x.xlaTensor, perm.scalars.map(Int64.init)))
+  }
+
+  public static func transpose<
+    T: TensorFlowScalar
+  >(
+    _ x: Tensor<T>,
+    perm: [Int]
+  ) -> Tensor<T> {
+    return Tensor(_xla: XLATensor.permute_value(x.xlaTensor, perm.map(Int64.init)))
   }
 
   /// Unpacks a given dimension of a rank-`R` tensor into `num` rank-`(R-1)` tensors.
