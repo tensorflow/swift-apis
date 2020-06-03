@@ -2808,8 +2808,8 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
         where: rawMax.isFinite)
     }
     let result = Tensor.log(Tensor.exp(self - offset).sum(squeezingAxes: axes))
-    let resultShape = withoutDerivative(at: result.shapeTensor)
-    return result + offset.reshaped(toShape: resultShape)
+    let resultShape = withoutDerivative(at: result.shape)
+    return result + offset.reshaped(to: resultShape)
   }
 
   /// Returns `log(exp(self).sum(squeezingAxes: axes))`. The reduced dimensions are removed.
