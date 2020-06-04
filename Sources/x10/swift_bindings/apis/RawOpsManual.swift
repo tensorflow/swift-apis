@@ -2688,10 +2688,18 @@ public enum _RawXLA {
     _ input: Tensor<T>,
     paddings: Tensor<Tpaddings>
   ) -> Tensor<T> {
-    let linearizedPaddings = paddings.scalars.map { Int64($0) }
-    return Tensor(
+    pad(input, paddings: paddings.scalars.map { Int($0) })
+  }
+
+  public static func pad<
+    T: TensorFlowScalar
+  >(
+    _ input: Tensor<T>,
+    paddings: [Int]
+  ) -> Tensor<T> {
+    Tensor(
       _xla: XLATensor.constantPad(
-        input.xlaTensor, reversedPaddings(linearizedPaddings), 0))
+        input.xlaTensor, reversedPaddings(paddings.map { Int64($0) }), 0))
   }
 
   /// Pads a tensor.
@@ -3361,8 +3369,18 @@ public enum _RawXLA {
   ) -> Tensor<T> {
     let inputRank = input.rank
     precondition(begin.shape[0] == inputRank && size.shape[0] == inputRank)
+    return slice(input, begin: begin.scalars.map { Int($0) }, size: size.scalars.map { Int($0) })
+  }
+
+  public static func slice<T: TensorFlowScalar>(
+    _ input: Tensor<T>,
+    begin: [Int],
+    size: [Int]
+  ) -> Tensor<T> {
+    let inputRank = input.rank
+    precondition(begin.count == inputRank && size.count == inputRank)
     var output = input.xlaTensor
-    for (axis, (begin, size)) in zip(begin.scalars, size.scalars).enumerated() {
+    for (axis, (begin, size)) in zip(begin, size).enumerated() {
       let dimensionSize = input.shape.dimensions[axis]
       if size != -1 {
         if size < 0 || size > dimensionSize {

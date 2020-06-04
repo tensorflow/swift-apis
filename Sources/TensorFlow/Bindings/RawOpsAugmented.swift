@@ -44,6 +44,20 @@ extension _RawTFEager {
       keepDims: keepDims)
   }
 
+  public static func pad<
+    T: TensorFlowScalar
+  >(
+    _ input: Tensor<T>,
+    paddings: [Int]
+  ) -> Tensor<T> {
+    precondition(paddings.count % 2 == 0, "Length of linearized paddings must be even")
+    let paddings2D = Tensor(
+      shape: [paddings.count / 2, 2],
+      scalars: paddings.map { Int32($0) },
+      on: .defaultTFEager)
+    return pad(input, paddings: paddings2D)
+  }
+
   public static func reshape<
     T: TensorFlowScalar
   >(
@@ -51,6 +65,18 @@ extension _RawTFEager {
     shape: [Int64]
   ) -> Tensor<T> {
     reshape(tensor, shape: Tensor<Int32>(shape.map { Int32($0) }, on: .defaultTFEager))
+  }
+
+  public static func slice<
+    T: TensorFlowScalar
+  >(
+    _ input: Tensor<T>,
+    begin: [Int],
+    size: [Int]
+  ) -> Tensor<T> {
+    slice(
+      input, begin: Tensor<Int32>(begin.map { Int32($0) }, on: .defaultTFEager),
+      size: Tensor<Int32>(size.map { Int32($0) }, on: .defaultTFEager))
   }
 
   public static func sum<
@@ -194,6 +220,20 @@ extension _RawTFEager {
       }
     }
 
+    public static func pad<
+      T: TensorFlowScalar
+    >(
+      _ input: Tensor<T>,
+      paddings: [Int]
+    ) -> Tensor<T> {
+      switch input.handle.backend {
+      case .XLA:
+        return _RawXLA.pad(input, paddings: paddings)
+      case .TF_EAGER:
+        return _RawTFEager.pad(input, paddings: paddings)
+      }
+    }
+
     public static func reshape<
       T: TensorFlowScalar
     >(
@@ -206,6 +246,23 @@ extension _RawTFEager {
       case .TF_EAGER:
         return _RawTFEager.reshape(
           tensor, shape: Tensor<Int32>(shape.map { Int32($0) }, on: .defaultTFEager))
+      }
+    }
+
+    public static func slice<
+      T: TensorFlowScalar
+    >(
+      _ input: Tensor<T>,
+      begin: [Int],
+      size: [Int]
+    ) -> Tensor<T> {
+      switch input.handle.backend {
+      case .XLA:
+        return _RawXLA.slice(input, begin: begin, size: size)
+      case .TF_EAGER:
+        return _RawTFEager.slice(
+          input, begin: Tensor<Int32>(begin.map { Int32($0) }, on: .defaultTFEager),
+          size: Tensor<Int32>(size.map { Int32($0) }, on: .defaultTFEager))
       }
     }
 
