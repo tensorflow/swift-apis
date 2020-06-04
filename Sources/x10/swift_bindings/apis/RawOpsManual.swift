@@ -4324,19 +4324,28 @@ public enum _RawXLA {
     guard multiples.rank == 1 else {
       fatalError("Expected multiples to be 1-D, but got shape \(multiples.shape)")
     }
-    guard input.rank == multiples.shape.contiguousSize else {
+    return tile(input, multiples: multiples.scalars.map { Int($0) })
+  }
+
+  public static func tile<
+    T: TensorFlowScalar
+  >(
+    _ input: Tensor<T>,
+    multiples: [Int]
+  ) -> Tensor<T> {
+    guard input.rank == multiples.count else {
       fatalError(
         "Expected multiples argument to be a vector of length \(input.rank) but got length "
-          + String(multiples.shape.contiguousSize)
+          + String(multiples.count)
       )
     }
-    for (index, multiply) in multiples.scalars.enumerated() {
+    for (index, multiply) in multiples.enumerated() {
       guard multiply >= 0 else {
         fatalError("Expected multiples[\(index)] >= 0, but got \(multiply)")
       }
     }
     return Tensor(
-      _xla: XLATensor.tile(input.xlaTensor, repetitions: multiples.scalars.map { Int64($0) }))
+      _xla: XLATensor.tile(input.xlaTensor, repetitions: multiples.map { Int64($0) }))
   }
 
   /// Transfer a tensor to a different device.

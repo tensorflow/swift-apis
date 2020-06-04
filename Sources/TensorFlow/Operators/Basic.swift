@@ -164,8 +164,7 @@ extension Tensor {
     precondition(
       multiples.allSatisfy { $0 >= 0 },
       "All scalars in multiples must be non-negative.")
-    // TODO(TF-433): Remove workaround for differentiating `map`.
-    return tiled(multiples: Tensor<Int32>({ multiples.map(Int32.init) }(), on: device))
+    return _Raw.tile(self, multiples: multiples)
   }
 
   /// Returns a tiled tensor, constructed by tiling this tensor.
@@ -285,6 +284,19 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
         let axes = Tensor<Int32>(
           rangeFrom: 0, to: Int32(splitShape.scalarCount), stride: 2, on: device)
         return v.reshaped(toShape: splitShape).sum(squeezingAxes: axes)
+      }
+    )
+  }
+
+  @inlinable
+  @derivative(of: tiled)
+  func _vjpTiled(multiples: [Int]) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
+    (
+      tiled(multiples: multiples),
+      { v in
+        let splits = zip(multiples, shape.dimensions).flatMap { [$0, $1] }
+        let axes = Array(stride(from: 0, to: splits.count, by: 2))
+        return v.reshaped(to: TensorShape(splits)).sum(squeezingAxes: axes)
       }
     )
   }
