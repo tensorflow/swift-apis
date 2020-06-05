@@ -3549,19 +3549,24 @@ public enum _RawXLA {
     value: Tensor<T>,
     numSplit: Int64
   ) -> [Tensor<T>] {
-    let canonicalSplitDim = canonicalDims(splitDim.scalars.map { Int64($0) }, Int64(value.rank))
-      .first!
+    split(splitDim: Int(splitDim.scalarized()), value: value, numSplit: numSplit)
+  }
+
+  public static func split<T: TensorFlowScalar>(
+    splitDim: Int,
+    value: Tensor<T>,
+    numSplit: Int64
+  ) -> [Tensor<T>] {
+    let canonicalSplitDim = canonicalDims([Int64(splitDim)], Int64(value.rank)).first!
     let splitDimSize = value.shape.dimensions[Int(canonicalSplitDim)]
     if Int64(splitDimSize) % numSplit != 0 {
       fatalError(
         "Number of ways to split should evenly divide the split dimension, but got splitDim "
-          + "\(splitDim.scalarized()) (size = \(splitDimSize)) and numSplit \(numSplit)")
+          + "\(splitDim) (size = \(splitDimSize)) and numSplit \(numSplit)")
     }
-    let chunkSize = Int32(Int64(splitDimSize) / numSplit)
-    let sizeSplits: [Int32] = Array(repeating: chunkSize, count: Int(numSplit))
-    return splitV(
-      value: value, sizeSplits: Tensor<Int32>(shape: [Int(numSplit)], scalars: sizeSplits),
-      splitDim: splitDim, numSplit: numSplit)
+    let chunkSize = Int(Int64(splitDimSize) / numSplit)
+    let sizeSplits = Array(repeating: chunkSize, count: Int(numSplit))
+    return splitV(value: value, sizeSplits: sizeSplits, splitDim: splitDim)
   }
 
   /// Splits a tensor into `num_split` tensors along one dimension.
