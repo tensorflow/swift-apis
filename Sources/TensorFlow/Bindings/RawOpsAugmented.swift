@@ -79,6 +79,20 @@ extension _RawTFEager {
       size: Tensor<Int32>(size.map { Int32($0) }, on: .defaultTFEager))
   }
 
+  public static func splitV<
+    T: TensorFlowScalar
+  >(
+    value: Tensor<T>,
+    sizeSplits: [Int],
+    splitDim: Int
+  ) -> [Tensor<T>] {
+    splitV(
+      value: value,
+      sizeSplits: Tensor<Int32>(sizeSplits.map { Int32($0) }, on: .defaultTFEager),
+      splitDim: Tensor<Int32>(Int32(splitDim), on: .defaultTFEager),
+      numSplit: Int64(sizeSplits.count))
+  }
+
   public static func sum<
     T: TensorFlowNumeric
   >(
@@ -90,6 +104,15 @@ extension _RawTFEager {
       input,
       reductionIndices: Tensor<Int32>(reductionIndices.map { Int32($0) }, on: .defaultTFEager),
       keepDims: keepDims)
+  }
+
+  public static func tile<
+    T: TensorFlowScalar
+  >(
+    _ input: Tensor<T>,
+    multiples: [Int]
+  ) -> Tensor<T> {
+    tile(input, multiples: Tensor<Int32>(multiples.map { Int32($0) }, on: .defaultTFEager))
   }
 
   public static func transpose<
@@ -272,6 +295,39 @@ extension _RawTFEager {
         return _RawTFEager.slice(
           input, begin: Tensor<Int32>(begin.map { Int32($0) }, on: .defaultTFEager),
           size: Tensor<Int32>(size.map { Int32($0) }, on: .defaultTFEager))
+      }
+    }
+
+    public static func splitV<
+      T: TensorFlowScalar
+    >(
+      value: Tensor<T>,
+      sizeSplits: [Int],
+      splitDim: Int
+    ) -> [Tensor<T>] {
+      switch value.handle.backend {
+      case .XLA:
+        return _RawXLA.splitV(value: value, sizeSplits: sizeSplits, splitDim: splitDim)
+      case .TF_EAGER:
+        return _RawTFEager.splitV(
+          value: value,
+          sizeSplits: Tensor<Int32>(sizeSplits.map { Int32($0) }, on: .defaultTFEager),
+          splitDim: Tensor<Int32>(Int32(splitDim), on: .defaultTFEager),
+          numSplit: Int64(sizeSplits.count))
+      }
+    }
+
+    public static func tile<
+      T: TensorFlowScalar
+    >(
+      _ input: Tensor<T>,
+      multiples: [Int]
+    ) -> Tensor<T> {
+      switch input.handle.backend {
+      case .XLA:
+        return _RawXLA.tile(input, multiples: multiples)
+      case .TF_EAGER:
+        return _RawTFEager.tile(input, multiples: multiples)
       }
     }
 

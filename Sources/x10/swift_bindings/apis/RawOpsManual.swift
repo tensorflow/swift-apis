@@ -3593,15 +3593,27 @@ public enum _RawXLA {
           + "\(sizeSplits.shape.contiguousSize) elements"
       )
     }
-    let inferredIndices = sizeSplits.scalars.indices.filter { sizeSplits.scalars[$0] == -1 }
+    return splitV(
+      value: value, sizeSplits: sizeSplits.scalars.map { Int($0) },
+      splitDim: Int(splitDim.scalarized()))
+  }
+
+  public static func splitV<
+    T: TensorFlowScalar
+  >(
+    value: Tensor<T>,
+    sizeSplits: [Int],
+    splitDim: Int
+  ) -> [Tensor<T>] {
+    let inferredIndices = sizeSplits.indices.filter { sizeSplits[$0] == -1 }
     guard inferredIndices.count <= 1 else {
       fatalError(
         "Only one dimensions can have a value of -1. Second one found at dimension "
           + String(inferredIndices[1])
       )
     }
-    let totalSplitSize = sizeSplits.scalars.filter { $0 != -1 }.reduce(0, +)
-    let canonicalSplitDim = canonicalDims(splitDim.scalars.map { Int64($0) }, Int64(value.rank))
+    let totalSplitSize = sizeSplits.filter { $0 != -1 }.reduce(0, +)
+    let canonicalSplitDim = canonicalDims([Int64(splitDim)], Int64(value.rank))
       .first!
     let splitDimSize = value.shape.dimensions[Int(canonicalSplitDim)]
     guard
@@ -3614,12 +3626,12 @@ public enum _RawXLA {
           + "specified. Got: \(totalSplitSize)"
       )
     }
-    var completeSizeSplits = sizeSplits.scalars.map { Int64($0) }
+    var completeSizeSplits = sizeSplits.map { Int64($0) }
     if inferredIndices.count == 1 {
       completeSizeSplits[inferredIndices.first!] = Int64(splitDimSize) - Int64(totalSplitSize)
     }
     let chunkHandles = XLATensor.splitWithSizes(
-      value.xlaTensor, completeSizeSplits, Int64(splitDim.scalarized()))
+      value.xlaTensor, completeSizeSplits, Int64(splitDim))
     return chunkHandles.map { Tensor(_xla: $0) }
   }
 
@@ -4312,19 +4324,28 @@ public enum _RawXLA {
     guard multiples.rank == 1 else {
       fatalError("Expected multiples to be 1-D, but got shape \(multiples.shape)")
     }
-    guard input.rank == multiples.shape.contiguousSize else {
+    return tile(input, multiples: multiples.scalars.map { Int($0) })
+  }
+
+  public static func tile<
+    T: TensorFlowScalar
+  >(
+    _ input: Tensor<T>,
+    multiples: [Int]
+  ) -> Tensor<T> {
+    guard input.rank == multiples.count else {
       fatalError(
         "Expected multiples argument to be a vector of length \(input.rank) but got length "
-          + String(multiples.shape.contiguousSize)
+          + String(multiples.count)
       )
     }
-    for (index, multiply) in multiples.scalars.enumerated() {
+    for (index, multiply) in multiples.enumerated() {
       guard multiply >= 0 else {
         fatalError("Expected multiples[\(index)] >= 0, but got \(multiply)")
       }
     }
     return Tensor(
-      _xla: XLATensor.tile(input.xlaTensor, repetitions: multiples.scalars.map { Int64($0) }))
+      _xla: XLATensor.tile(input.xlaTensor, repetitions: multiples.map { Int64($0) }))
   }
 
   /// Transfer a tensor to a different device.
