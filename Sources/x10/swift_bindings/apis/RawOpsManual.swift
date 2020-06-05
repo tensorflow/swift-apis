@@ -4451,6 +4451,18 @@ public enum _RawXLA {
     segmentIds: Tensor<Tindices>,
     numSegments: Tensor<Tnumsegments>
   ) -> Tensor<T> {
+    unsortedSegmentSum(
+      data: data, segmentIds: segmentIds, numSegments: Int(numSegments.scalarized()))
+  }
+
+  public static func unsortedSegmentSum<
+    T: TensorFlowNumeric,
+    Tindices: TensorFlowIndex
+  >(
+    data: Tensor<T>,
+    segmentIds: Tensor<Tindices>,
+    numSegments: Int
+  ) -> Tensor<T> {
     checkSameDevice(data.device, segmentIds.device)
     if segmentIds.rank > data.rank {
       fatalError(
@@ -4467,7 +4479,7 @@ public enum _RawXLA {
     }
     return Tensor(
       _xla: XLATensor.tf_UnsortedSegmentSum(
-        data.xlaTensor, segmentIds.xlaTensor, Int64(numSegments.scalarized())))
+        data.xlaTensor, segmentIds.xlaTensor, Int64(numSegments)))
   }
 
   /// Returns 0 if x == 0, and x / y otherwise, elementwise.

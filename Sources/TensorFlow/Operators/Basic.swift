@@ -815,7 +815,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
           return _Raw.unsortedSegmentSum(
             data: values,
             segmentIds: valueIndices,
-            numSegments: Tensor<Int32>(Int32(shape[0]), on: device))
+            numSegments: shape[0])
         }
       )
     }

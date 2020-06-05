@@ -124,6 +124,19 @@ extension _RawTFEager {
     transpose(x, perm: Tensor<Int32>(perm.map { Int32($0) }, on: .defaultTFEager))
   }
 
+  public static func unsortedSegmentSum<
+    T: TensorFlowNumeric,
+    Tindices: TensorFlowIndex
+  >(
+    data: Tensor<T>,
+    segmentIds: Tensor<Tindices>,
+    numSegments: Int
+  ) -> Tensor<T> {
+    unsortedSegmentSum(
+      data: data, segmentIds: segmentIds,
+      numSegments: Tensor(Int32(numSegments), on: .defaultTFEager))
+  }
+
   public static func broadcastTo<
     T: TensorFlowScalar
   >(
@@ -363,6 +376,25 @@ extension _RawTFEager {
       case .TF_EAGER:
         return _RawTFEager.transpose(
           x, perm: Tensor<Int32>(perm.map { Int32($0) }, on: .defaultTFEager))
+      }
+    }
+
+    public static func unsortedSegmentSum<
+      T: TensorFlowNumeric,
+      Tindices: TensorFlowIndex
+    >(
+      data: Tensor<T>,
+      segmentIds: Tensor<Tindices>,
+      numSegments: Int
+    ) -> Tensor<T> {
+      switch data.handle.backend {
+      case .XLA:
+        return _RawXLA.unsortedSegmentSum(
+          data: data, segmentIds: segmentIds, numSegments: numSegments)
+      case .TF_EAGER:
+        return _RawTFEager.unsortedSegmentSum(
+          data: data, segmentIds: segmentIds,
+          numSegments: Tensor(Int32(numSegments), on: .defaultTFEager))
       }
     }
 
