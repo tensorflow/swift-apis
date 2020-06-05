@@ -807,11 +807,11 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
     if posAxis == 0 {
       return (
         result,
-        { [shape = shapeTensor] v in
-          let indicesCount = indices.scalarCountTensor.rankLifted()
-          let valuesShape = Tensor<Int32>(concatenating: [indicesCount, shape[1...]])
-          let values = v.reshaped(toShape: valuesShape)
-          let valueIndices = indices.reshaped(toShape: indicesCount)
+        { v in
+          var valuesShape = shape[1...]
+          valuesShape.insert(indices.scalarCount, at: 0)
+          let values = v.reshaped(to: valuesShape)
+          let valueIndices = indices.reshaped(to: [indices.scalarCount])
           return _Raw.unsortedSegmentSum(
             data: values,
             segmentIds: valueIndices,
