@@ -1373,14 +1373,10 @@ final class LayerTests: XCTestCase {
     var cell = BasicRNNCell<Float>(inputSize: 2, hiddenSize: 5)
     cell.weight = weight
     cell.bias = bias
-    let state = BasicRNNCell.State(
-      Tensor<Float>(ones: [1, 5]) * Tensor<Float>([1, 0.2, 0.5, 2, 0.6])
-    )
+    let state = Tensor<Float>(ones: [1, 5]) * Tensor<Float>([1, 0.2, 0.5, 2, 0.6])
     let input = Tensor<Float>(ones: [1, 2]) * Tensor<Float>([0.3, 0.7])
     let output = cell(input: input, state: state).state
-    let expected = BasicRNNCell.State(
-      Tensor<Float>([[0.9921227, 0.9999934, 0.9921227, 0.9999934, 0.9921227]])
-    )
+    let expected = Tensor<Float>([[0.9921227, 0.9999934, 0.9921227, 0.9999934, 0.9921227]])
     XCTAssertEqual(output, expected)
   }
 
@@ -1566,11 +1562,11 @@ final class LayerTests: XCTestCase {
         initialState: initialState
       )
       assertEqual(
-        Tensor(concatenating: outputs.map { $0.value }),
+        Tensor(concatenating: outputs.map { $0 }),
         expectedStates,
         accuracy: 1e-6)
       assertEqual(
-        outputs.last!.value,
+        outputs.last!,
         expectedFinalState,
         accuracy: 1e-6)
 
@@ -1579,7 +1575,7 @@ final class LayerTests: XCTestCase {
           rnn.lastOutput(
             from: inputs, 
             initialState: initialState
-          ).value.sum()
+          ).sum()
         }
       assertEqual(
         outputSum,
@@ -1598,7 +1594,7 @@ final class LayerTests: XCTestCase {
         expectedGradX,
         accuracy: 1e-6)
       assertEqual(
-        gradInitialState.value,
+        gradInitialState,
         expectedGradInitialState,
         accuracy: 1e-6)
     }
@@ -1991,15 +1987,15 @@ final class LayerTests: XCTestCase {
       gru.cell.outputRecurrentBias = outputRecurrentBias
       
       let inputs = x.squeezingShape(at: 0).unstacked().map { $0.rankLifted() }
-      let initialState = GRUCell<Float>.State(hidden: initialState)
+      let initialState = GRUCell<Float>.State(initialState)
 
       let outputs = gru(inputs, initialState: initialState)
       assertEqual(
-        Tensor(concatenating: outputs.map { $0.hidden }),
+        Tensor(concatenating: outputs.map { $0 }),
         expectedStates,
         accuracy: 1e-6)
       assertEqual(
-        outputs.last!.hidden,
+        outputs.last!,
         expectedFinalState,
         accuracy: 1e-6)
 
@@ -2008,7 +2004,7 @@ final class LayerTests: XCTestCase {
           gru.lastOutput(
             from: inputs, 
             initialState: initialState
-          ).hidden.sum()
+          ).sum()
         }
       assertEqual(
         outputSum,
@@ -2019,7 +2015,7 @@ final class LayerTests: XCTestCase {
         expectedGradX,
         accuracy: 1e-6)
       assertEqual(
-        gradInitialState.hidden,
+        gradInitialState,
         expectedGradInitialState,
         accuracy: 1e-6)
       assertEqual(
