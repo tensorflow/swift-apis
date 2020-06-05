@@ -354,8 +354,7 @@ extension Tensor {
   @inlinable
   @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
   public func transposed(permutation: [Int]) -> Tensor {
-    let permutation = permutation.map(Int32.init)
-    return transposed(permutation: Tensor<Int32>(permutation, on: device))
+    _Raw.transpose(self, perm: permutation)
   }
 
   /// Returns a transposed tensor, with dimensions permuted in the specified order.
@@ -385,11 +384,7 @@ extension Tensor {
   @inlinable
   @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
   public func transposed() -> Tensor {
-    let defaultPermutations =
-      rankTensor - 1
-      - Tensor<Int32>(
-        rangeFrom: 0, to: Int32(rank), stride: 1, on: device)
-    return transposed(permutation: Tensor<Int32>(defaultPermutations))
+    return transposed(permutation: Array(stride(from: Int(rank - 1), to: -1, by: -1)))
   }
 
   /// Returns a tensor with specified dimensions reversed.
@@ -657,6 +652,44 @@ extension Tensor {
   }
 }
 
+/// Computes the inverse permutation of an array.
+///
+/// This operation computes the inverse of an index permutation. It takes an array `permutation`
+/// and swaps each value with its index position. In other words, for an output array `y` and an
+/// input array `x`, this operation computes the following:
+///
+/// `y[x[i]] = i for i in [0, 1, ..., len(x) - 1]`
+///
+/// The values must include 0. There can be no duplicate values or negative values.
+///
+/// For example:
+///
+/// ```
+/// # array `x` is [3, 4, 0, 2, 1]
+/// invertPermutationArray(x) ==> [2, 4, 3, 0, 1]
+/// ```
+///
+/// - Parameter x: The input permutation.
+///
+/// - Returns: The inverse of x.
+@usableFromInline
+@noDerivative
+internal func invertPermutationArray<T: TensorFlowIndex>(_ permutation: [T]) -> [T] {
+  let size = permutation.count
+  var inverted = [T](repeating: -1, count: size)
+  for i in 0..<size {
+    let d = permutation[i]
+    if d < 0 || d >= size {
+      fatalError("\(d) is not between 0 and \(size)")
+    }
+    if inverted[Int(d)] != -1 {
+      fatalError("\(d) is duplicated in the input.")
+    }
+    inverted[Int(d)] = T(i)
+  }
+  return inverted
+}
+
 extension Tensor where Scalar: TensorFlowFloatingPoint {
   @inlinable
   @derivative(of: transposed(permutation:))
@@ -670,17 +703,17 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   @inlinable
   @derivative(of: transposed(permutation:))
   func _vjpTransposed(permutation: [Int]) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
-    let permutation = Tensor<Int32>(permutation.map(Int32.init), on: device)
     let value = transposed(permutation: permutation)
-    return (value, { $0.transposed(permutation: _Raw.invertPermutation(permutation)) })
+    let inverted = invertPermutationArray(permutation.map { Int64($0) })
+    return (value, { $0.transposed(permutation: inverted.map { Int($0) }) })
   }
 
   @inlinable
   @derivative(of: transposed(permutation:))
   func _vjpTransposed(permutation: Int...) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
-    let permutation = Tensor<Int32>(permutation.map(Int32.init), on: device)
     let value = transposed(permutation: permutation)
-    return (value, { $0.transposed(permutation: _Raw.invertPermutation(permutation)) })
+    let inverted = invertPermutationArray(permutation.map { Int64($0) })
+    return (value, { $0.transposed(permutation: inverted.map { Int($0) }) })
   }
 
   @inlinable
