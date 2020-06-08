@@ -112,6 +112,9 @@ else()
   find_package(TensorFlow REQUIRED)
 endif()
 
+find_package(dispatch CONFIG QUIET)
+find_package(Foundation CONFIG QUIET)
+
 include(CTest)
 include(SwiftSupport)
 

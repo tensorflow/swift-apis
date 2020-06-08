@@ -96,6 +96,8 @@ target_compile_options(TensorFlow PRIVATE
   $<$<BOOL:${BUILD_TESTING}>:-enable-testing>)
 target_link_libraries(TensorFlow PUBLIC
   CTensorFlow
+  $<$<NOT:$<PLATFORM_ID:Darwin>>:dispatch>
+  $<$<NOT:$<PLATFORM_ID:Darwin>>:Foundation>
   Tensor)
 
 _install_target(TensorFlow)
