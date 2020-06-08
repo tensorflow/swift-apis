@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import _Differentiation
 #if !COMPILING_TENSORFLOW_STDLIB_MODULE
   import Tensor
 #endif
