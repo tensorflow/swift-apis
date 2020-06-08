@@ -90,11 +90,11 @@ extension Tensor {
   @differentiable(where Scalar: TensorFlowFloatingPoint)
   public func split(count: Int, alongAxis axis: Int = 0) -> [Tensor] {
     ensureValid(axis: axis)
+    let canonicalAxis = axis < 0 ? axis + rank : axis
     precondition(
-      shapeTensor[axis].scalarized() % Int32(count) == 0,
+      shape[canonicalAxis] % count == 0,
       "Number of ways to split should evenly divide the split dimension.")
-    return _Raw.split(
-      splitDim: Tensor<Int32>(Int32(axis), on: device), value: self, numSplit: Int64(count))
+    return _Raw.split(splitDim: canonicalAxis, value: self, numSplit: Int64(count))
   }
 
   /// Splits a tensor into multiple tensors. The tensor is split  into `sizes.shape[0]` pieces.
