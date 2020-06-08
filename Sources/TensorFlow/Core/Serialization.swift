@@ -15,6 +15,9 @@
 import CTensorFlow
 
 /// A TensorFlow checkpoint file reader.
+@available(*, deprecated, message: """
+  TensorFlowCheckpointReader will be removed in S4TF v0.11. Please use CheckpointReader instead.
+  """)
 public class TensorFlowCheckpointReader {
   internal let status: OpaquePointer
   internal let handle: OpaquePointer
