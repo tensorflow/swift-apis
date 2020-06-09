@@ -43,6 +43,8 @@
 /// ("not a number"). Complex functions in different languages may return
 /// different results when working with special values.
 
+import _Differentiation
+
 struct Complex<T: FloatingPoint> {
   var real: T
   var imaginary: T
