@@ -226,8 +226,6 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell {
     let gateInput = input.input.concatenated(with: input.state.hidden, alongAxis: 1)
 
     let fused = matmul(gateInput, fusedWeight) + fusedBias
-    let batchSize = fused.shape[0]
-    let hiddenSize = fused.shape[1] / 4
     let fusedParts = fused.split(count: 4, alongAxis: 1)
     let inputGate = sigmoid(fusedParts[0])
     let updateGate = tanh(fusedParts[1])
