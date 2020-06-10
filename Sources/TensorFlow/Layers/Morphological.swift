@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// A 2-D morpholocai dilation layer
+/// A 2-D morphological dilation layer
 ///
 /// This layer returns the morphogical dilation of the input tensor with the provided filters
 @frozen
@@ -151,5 +151,4 @@ public struct `Erosion2D`<Scalar: TensorFlowFloatingPoint>: Layer {
     return eroded
   }
 }
-
 
