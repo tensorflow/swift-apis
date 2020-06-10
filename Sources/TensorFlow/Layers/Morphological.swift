@@ -82,7 +82,7 @@ public struct `Dilation2D`<Scalar: TensorFlowFloatingPoint>: Layer {
   }
 }
 
-/// A 2-D morpholocai erosion layer
+/// A 2-D morphological erosion layer
 ///
 /// This layer returns the morphogical erosion of the input tensor with the provided filters
 @frozen
@@ -151,4 +151,3 @@ public struct `Erosion2D`<Scalar: TensorFlowFloatingPoint>: Layer {
     return eroded
   }
 }
-
