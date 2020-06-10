@@ -287,6 +287,10 @@ XLA_API OpaqueXLATensor* XLATensor_is_inf(OpaqueXLATensor* input);
 XLA_API OpaqueXLATensor* XLATensor_is_nan(OpaqueXLATensor* input);
 XLA_API OpaqueXLATensor* XLATensor_le(OpaqueXLATensor* x, OpaqueXLATensor* y);
 XLA_API OpaqueXLATensor* XLATensor_lt(OpaqueXLATensor* x, OpaqueXLATensor* y);
+XLA_API OpaqueXLATensor* XLATensor_linspace(XLAScalar start, XLAScalar stop,
+                                            int64_t num,
+                                            const struct CDevice device,
+                                            enum XLATensorScalarType type);
 XLA_API OpaqueXLATensor* XLATensor_log(OpaqueXLATensor* a);
 XLA_API OpaqueXLATensor* XLATensor_log1p(OpaqueXLATensor* a);
 XLA_API OpaqueXLATensor* XLATensor_log_softmax(OpaqueXLATensor* a, int64_t dim);

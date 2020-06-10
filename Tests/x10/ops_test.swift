@@ -1974,7 +1974,9 @@ final class TensorTests: XCTestCase {
   }
 
   func testLinSpace() throws {
-    func testRanges(start: Float, stop: Float, num: Int32, useReducedPrecision: Bool) {
+    func testRanges(
+      start: Float, stop: Float, num: Int32, useReducedPrecision: Bool, absTolerance: Float = 1e-5
+    ) {
       var start = Tensor(start, on: x10)
       var stop = Tensor(stop, on: x10)
       if useReducedPrecision {
@@ -1991,7 +1993,7 @@ final class TensorTests: XCTestCase {
       XCTAssert(!tx10.isReducedPrecision)
       let tf = _Raw.linSpace(
         start: TF(start), stop: TF(stop), num: TF(Tensor<Int32>(num, on: x10)))
-      XCTAssert(allClose(actual: TF(tx10), expected: tf, absTolerance: 1e-5))
+      XCTAssert(allClose(actual: TF(tx10), expected: tf, absTolerance: absTolerance))
     }
     for useReducedPrecision in [false, true] {
       testRanges(start: 0.0, stop: 5.0, num: 6, useReducedPrecision: useReducedPrecision)
@@ -1999,6 +2001,9 @@ final class TensorTests: XCTestCase {
       testRanges(start: 0.0, stop: 0.0, num: 1, useReducedPrecision: useReducedPrecision)
       testRanges(start: 2.0, stop: 0.0, num: 1, useReducedPrecision: useReducedPrecision)
       testRanges(start: 20.0, stop: 0.0, num: 1, useReducedPrecision: useReducedPrecision)
+      testRanges(
+        start: -1.0, stop: 2.0, num: 1024, useReducedPrecision: useReducedPrecision,
+        absTolerance: 4e-3)
     }
   }
 

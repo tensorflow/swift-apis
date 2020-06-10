@@ -514,6 +514,19 @@ extension XLATensor {
         start.xlaScalar, stop.xlaScalar, step.xlaScalar, cdevice, type))
   }
 
+  static func linspace(
+    _ start: XLAScalarType,
+    _ stop: XLAScalarType,
+    _ num: Int64,
+    _ type: XLATensorScalarType,
+    _ device: Device
+  ) -> XLATensor {
+    let cdevice = device.cdevice
+    return XLATensor(
+      _handle: XLATensor_linspace(
+        start.xlaScalar, stop.xlaScalar, num, cdevice, type))
+  }
+
   static func log(_ a: XLATensor) -> XLATensor {
     defer { _fixLifetime(a) }
     return XLATensor(_handle: XLATensor_log(a.handle))

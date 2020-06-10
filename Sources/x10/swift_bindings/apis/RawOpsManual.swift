@@ -1889,11 +1889,9 @@ public enum _RawXLA {
     if numScalarized == 1 { return start }
     let startScalar: T = start.scalarized()
     let stopScalar: T = stop.scalarized()
-    let numScalarizedMinusOne = T(numScalarized - 1)
-    let stepScalar: T = (stopScalar - startScalar) / numScalarizedMinusOne
     var linspace = Tensor<T>(
-      _xla: XLATensor.arange(
-        startScalar, stopScalar + stepScalar, stepScalar, T.xlaTensorScalarType, device))
+      _xla: XLATensor.linspace(
+        startScalar, stopScalar, Int64(numScalarized), T.xlaTensorScalarType, device))
     if start.isReducedPrecision {
       linspace = linspace.toReducedPrecision
     }
