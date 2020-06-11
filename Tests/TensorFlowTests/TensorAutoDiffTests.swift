@@ -1106,7 +1106,7 @@ final class TensorAutoDiffTests: XCTestCase {
 
   func testGelu() {
     func f(a: Tensor<Float>) -> Tensor<Float> { gelu(a).sum() }
-    XCTAssertEqual(gradient(at: [5, -5, 0], in: f), [1, 0, 0.5])
+    XCTAssertTrue(gradient(at: [5, -5, 0], in: f).isAlmostEqual(to: [1, 0, 0.5], tolerance: 1e-5))
   }
     
   static var allTests = [
