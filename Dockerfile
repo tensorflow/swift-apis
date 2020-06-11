@@ -56,7 +56,6 @@ RUN cmake                                                                       
       -D CMAKE_BUILD_TYPE=Release                                               \
       -D CMAKE_INSTALL_PREFIX=/swift-tensorflow-toolchain/usr                   \
       -D CMAKE_Swift_COMPILER=/swift-tensorflow-toolchain/usr/bin/swiftc        \
-      -D BUILD_X10=YES                                                          \
       -G Ninja                                                                  \
       -S /swift-apis
 RUN cmake --build /BinaryCache/tensorflow-swift-apis --verbose
