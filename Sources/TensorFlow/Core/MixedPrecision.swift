@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import _Differentiation
+
 #if USING_X10_BACKEND
   @_implementationOnly import x10_xla_tensor_wrapper
 
@@ -147,7 +149,7 @@ extension Tensor {
   /// Returns true if the physical scalar type is reduced precision.
   ///
   /// Currently, reduced precision physical scalar types include only `BFloat16`.
-  @noDerivative public var isReducedPrecision: Bool {
+  public var isReducedPrecision: Bool {
     #if USING_X10_BACKEND
       return device.backend == .XLA && xlaTensor.physicalScalarType == XLATensorScalarType_BFloat16
     #else

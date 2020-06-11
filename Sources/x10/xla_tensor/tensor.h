@@ -21,6 +21,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "tensorflow/compiler/tf2xla/xla_tensor/computation.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/cross_replica_reduces.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ir.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ir_util.h"
@@ -139,6 +140,8 @@ class XLATensor {
 
   static void SetRngSeed(const Device* device, xla::uint64 seed);
 
+  static xla::uint64 GetRunningSeed(const Device& device);
+
   // Dispatches a comparison operator, setting the logical type of the result
   // appropriately.
   static XLATensor DispatchComparisonOp(c10::Symbol kind,
@@ -226,6 +229,10 @@ class XLATensor {
 
   static XLATensor get_dimensions_size(const XLATensor& input,
                                        std::vector<xla::int64> dimensions);
+
+  static std::vector<XLATensor> user_computation(
+      const std::string& opname, absl::Span<const XLATensor> inputs,
+      ComputationPtr computation);
 
   //////////////////////////////////////////////////////////////////////////////
   // ATEN operators follows here, listed in alphabetical order.
@@ -517,6 +524,8 @@ class XLATensor {
   static XLATensor expm1(const XLATensor& input);
   static void expm1_(XLATensor& input);
 
+  static void exponential_(XLATensor& input, double lambd);
+
   // Returns a 2-D tensor with ones on the diagonal and zeros elsewhere.
   static XLATensor eye(xla::int64 lines, xla::int64 cols, const Device& device,
                        at::ScalarType element_type);
@@ -677,6 +686,9 @@ class XLATensor {
                                        double negative_slope);
   static void leaky_relu_(XLATensor& input, double negative_slope);
 
+  static void linspace_out(XLATensor& out, at::Scalar start, at::Scalar stop,
+                           xla::int64 num, at::ScalarType scalar_type);
+
   static XLATensor log(const XLATensor& input);
   static void log_(XLATensor& input);
 
@@ -825,6 +837,12 @@ class XLATensor {
                                      const XLATensor& weight,
                                      xla::int64 reduction, int ignore_index,
                                      const XLATensor& total_weight);
+
+  static std::pair<XLATensor, XLATensor> nms(const XLATensor& boxes,
+                                             const XLATensor& scores,
+                                             const XLATensor& score_threshold,
+                                             const XLATensor& iou_threshold,
+                                             xla::int64 output_size);
 
   static XLATensor nonzero(const XLATensor& input);
 
@@ -1374,7 +1392,8 @@ class XLATensor {
 
   void SetTensorData(at::Tensor tensor_data);
 
-  ir::Value CreateTensorNode(xla::ComputationClient::DataPtr data) const;
+  ir::Value CreateTensorNode(xla::ComputationClient::DataPtr data,
+                             bool read_only) const;
 
   View::IrNode GetViewUpdate(const std::shared_ptr<View>& view) const;
 

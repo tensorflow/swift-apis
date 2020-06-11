@@ -15,7 +15,7 @@
 #if defined(_WIN32)
 #define XLA_API __declspec(dllexport)
 #else
-#define XLA_API
+#define XLA_API __attribute__((__visibility__("default")))
 #endif
 
 #include "xla_tensor_wrapper.h"
@@ -453,6 +453,14 @@ OpaqueXLATensor* XLATensor_is_nan(OpaqueXLATensor* input) {
 }
 OpaqueXLATensor* XLATensor_le(OpaqueXLATensor* x, OpaqueXLATensor* y) {
   return new XLATensor(XLATensor::le(*x, *y));
+}
+OpaqueXLATensor* XLATensor_linspace(XLAScalar start, XLAScalar stop,
+                                    int64_t num, const CDevice device,
+                                    enum XLATensorScalarType type) {
+  XLATensor out = MakeEmpty(ToScalarType(type), ConvertDevice(device));
+  XLATensor::linspace_out(out, atScalar(start), atScalar(stop), num,
+                          ToScalarType(type));
+  return new XLATensor(out);
 }
 OpaqueXLATensor* XLATensor_lt(OpaqueXLATensor* x, OpaqueXLATensor* y) {
   return new XLATensor(XLATensor::lt(*x, *y));

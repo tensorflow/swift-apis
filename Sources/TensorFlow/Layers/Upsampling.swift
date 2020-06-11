@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import _Differentiation
+
 /// An upsampling layer for 1-D inputs.
 @frozen
 public struct UpSampling1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {

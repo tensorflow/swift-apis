@@ -215,6 +215,21 @@ std::vector<T> Iota(size_t size, T init = 0, T incr = 1) {
 }
 
 template <typename T>
+std::vector<T> LinSpace(T start, T stop, xla::int64 num) {
+  std::vector<T> result(num);
+  result[0] = start;
+  if (num > 1) {
+    const T step = (stop - start) / (num - 1);
+    for (xla::int64 i = 1; i < num - 1; ++i) {
+      result[i] = start + step * i;
+    }
+    // Ensure final value == stop; float arithmetic won't guarantee this.
+    result[num - 1] = stop;
+  }
+  return result;
+}
+
+template <typename T>
 std::vector<T> Range(T start, T end, T step = 1) {
   std::vector<T> result;
   result.reserve(static_cast<size_t>((end - start) / step));

@@ -293,6 +293,7 @@ class XLATensor::DeviceContextArena {
     std::mutex lock;
     absl::flat_hash_map<xla::int64, std::weak_ptr<Data>> tensors_data;
     xla::uint64 seed = 101;
+    xla::uint64 running_seed = 101;
     ir::Value seed_ir_value;
   };
 
@@ -345,26 +346,38 @@ class XLATensor::DeviceContextArena {
 
   ir::Value GetRngSeed(const Device& device) {
     static const at::ScalarType kSeedType = at::ScalarType::Long;
+    static const xla::uint64 kSeedMul = 214013;
+    static const xla::uint64 kSeedAdd = 2531011;
     DeviceContext* devctx = GetDeviceContext(device);
     std::lock_guard<std::mutex> lock(devctx->lock);
     if (!devctx->seed_ir_value) {
-      devctx->seed_ir_value = IrValueFromScalar(
-          static_cast<int64_t>(devctx->seed), kSeedType, device);
+      at::Scalar seed_scalar(static_cast<uint64_t>(devctx->seed));
+      devctx->seed_ir_value = IrValueFromScalar(seed_scalar, kSeedType, device);
     }
+    // Keep the running seed as scalar as well, so we can return it directly
+    // without executing graphs.
+    devctx->running_seed = kSeedAdd + kSeedMul * devctx->running_seed;
     // Compose new seeds from the root seed, to avoid creating too many XLA
     // computation parameters which might overflow the TPU capacity.
-    ir::Value k =
-        ir::ops::ScalarOp(214013, MakeXlaPrimitiveType(kSeedType, &device));
-    ir::Value b =
-        ir::ops::ScalarOp(2531011, MakeXlaPrimitiveType(kSeedType, &device));
+    ir::Value k = ir::ops::ScalarOp(at::Scalar(static_cast<uint64_t>(kSeedMul)),
+                                    MakeXlaPrimitiveType(kSeedType, &device));
+    ir::Value b = ir::ops::ScalarOp(at::Scalar(static_cast<uint64_t>(kSeedAdd)),
+                                    MakeXlaPrimitiveType(kSeedType, &device));
     devctx->seed_ir_value = b + k * devctx->seed_ir_value;
     return devctx->seed_ir_value;
+  }
+
+  xla::uint64 GetRunningSeed(const Device& device) {
+    DeviceContext* devctx = GetDeviceContext(device);
+    std::lock_guard<std::mutex> lock(devctx->lock);
+    return devctx->running_seed;
   }
 
   void SetRngSeed(const Device* device, xla::uint64 seed) {
     auto fn = [&](DeviceContext* devctx) {
       std::lock_guard<std::mutex> lock(devctx->lock);
       devctx->seed = seed;
+      devctx->running_seed = devctx->seed;
       devctx->seed_ir_value = ir::Value();
     };
     ForAllDeviceContexts(fn, device);
@@ -373,7 +386,8 @@ class XLATensor::DeviceContextArena {
   void StepRngSeed(const Device* device) {
     auto fn = [&](DeviceContext* devctx) {
       std::lock_guard<std::mutex> lock(devctx->lock);
-      devctx->seed = 2531011 + devctx->seed * 214013;
+      devctx->seed = 1012031 + devctx->seed * 7012063;
+      devctx->running_seed = devctx->seed;
       devctx->seed_ir_value = ir::Value();
     };
     ForAllDeviceContexts(fn, device);
@@ -411,9 +425,11 @@ class XLATensor::DeviceContextArena {
 };
 
 struct DeviceDataInfo : public xla::ComputationClient::Data::Info {
-  explicit DeviceDataInfo(xla::int64 tensor_id) : tensor_id(tensor_id) {}
+  DeviceDataInfo(xla::int64 tensor_id, bool read_only)
+      : tensor_id(tensor_id), read_only(read_only) {}
 
   xla::int64 tensor_id = 0;
+  bool read_only = false;
 };
 
 XLATensor::Data::~Data() { DeviceContextArena::Get()->UnregisterTensor(this); }
@@ -690,7 +706,7 @@ ir::Value XLATensor::GetIrValue() const {
     // will still collapse them all into a single XLA parameter op). So call
     // which wants the XLA data will still find it, w/out having to fetch it via
     // a computation client from-server call.
-    AssignIrValue(CreateTensorNode(xla_data));
+    AssignIrValue(CreateTensorNode(xla_data, /*read_only=*/false));
     return data()->ir_value;
   }
   c10::optional<at::Tensor> tensor_data = CurrentTensorData();
@@ -720,6 +736,7 @@ c10::optional<at::Tensor> XLATensor::CurrentTensorData() const {
 ir::Value XLATensor::GetIrValueForTensor(const at::Tensor& tensor,
                                          const Device& device) const {
   xla::ComputationClient::DataPtr data;
+  bool read_only = false;
   if (tensor.rank() == 0) {
     at::Scalar value = tensor.item();
     if (IsSpecialScalar(value)) {
@@ -728,11 +745,12 @@ ir::Value XLATensor::GetIrValueForTensor(const at::Tensor& tensor,
           MakeXlaPrimitiveType(tensor.scalar_type(), &device));
     }
     data = GetDeviceData(tensor, device);
+    read_only = true;
   } else {
     XLA_TIMED("IrValueTensorToXlaData");
     data = TensorToXlaData(tensor, device);
   }
-  return CreateTensorNode(std::move(data));
+  return CreateTensorNode(std::move(data), read_only);
 }
 
 ir::Value XLATensor::GetIrValueForScalar(at::Scalar value,
@@ -743,6 +761,8 @@ ir::Value XLATensor::GetIrValueForScalar(at::Scalar value,
   }
   xla::ComputationClient::DataPtr data =
       GetDeviceData(value, TensorTypeFromXlaType(type), device);
+  data->SetInfo(
+      std::make_shared<DeviceDataInfo>(/*tensor_id=*/-1, /*read_only=*/true));
   return ir::MakeNode<ir::ops::DeviceData>(std::move(data));
 }
 
@@ -1022,9 +1042,9 @@ std::vector<XLATensor> XLATensor::CreateTensors(
   return xla_tensors;
 }
 
-ir::Value XLATensor::CreateTensorNode(
-    xla::ComputationClient::DataPtr data) const {
-  data->SetInfo(std::make_shared<DeviceDataInfo>(GetUniqueId()));
+ir::Value XLATensor::CreateTensorNode(xla::ComputationClient::DataPtr data,
+                                      bool read_only) const {
+  data->SetInfo(std::make_shared<DeviceDataInfo>(GetUniqueId(), read_only));
   return ir::MakeNode<ir::ops::DeviceData>(std::move(data));
 }
 
@@ -1447,7 +1467,7 @@ void XLATensor::BuildInputOutputAliases(const std::vector<XLATensor>& tensors,
   for (size_t i = 0; i < parameters_data.size(); ++i) {
     DeviceDataInfo* data_info =
         dynamic_cast<DeviceDataInfo*>(parameters_data[i]->info());
-    if (data_info != nullptr) {
+    if (data_info != nullptr && !data_info->read_only) {
       auto it = output_tensor_id_map.find(data_info->tensor_id);
       if (it != output_tensor_id_map.end()) {
         size_t output_index = it->second;
@@ -1589,6 +1609,10 @@ ir::Value XLATensor::GetRngSeed(const Device& device) {
 
 void XLATensor::SetRngSeed(const Device* device, xla::uint64 seed) {
   DeviceContextArena::Get()->SetRngSeed(device, seed);
+}
+
+xla::uint64 XLATensor::GetRunningSeed(const Device& device) {
+  return DeviceContextArena::Get()->GetRunningSeed(device);
 }
 
 }  // namespace swift_xla

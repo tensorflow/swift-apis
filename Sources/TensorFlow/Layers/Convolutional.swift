@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import _Differentiation
+
 /// A 1-D convolution layer (e.g. temporal convolution over a time-series).
 ///
 /// This layer creates a convolution filter that is convolved with the layer input to produce a

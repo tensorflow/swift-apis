@@ -51,6 +51,7 @@
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/diagonal.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/einsum.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/expand.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/ops/exponential.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/flip.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/gather.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/generic.h"
@@ -82,6 +83,7 @@
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/native_batch_norm_forward.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/nll_loss.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/nll_loss_backward.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/ops/nms.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/nonzero.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/normal.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/not_supported.h"
@@ -133,6 +135,7 @@
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/upsample_bilinear2d_backward.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/upsample_nearest2d.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/upsample_nearest2d_backward.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/ops/user_computation.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/view.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/xla_avg_pool.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/xla_avg_pool_grad.h"
@@ -392,6 +395,19 @@ XLATensor XLATensor::get_dimensions_size(const XLATensor& input,
   return input.CreateFrom(ir::MakeNode<ir::ops::GetDimensionsSize>(
                               input.GetIrValue(), std::move(dimensions)),
                           at::ScalarType::Int);
+}
+
+std::vector<XLATensor> XLATensor::user_computation(
+    const std::string& opname, absl::Span<const XLATensor> inputs,
+    ComputationPtr computation) {
+  XLA_CHECK(!inputs.empty());
+  std::vector<ir::Value> input_values;
+  for (auto& input : inputs) {
+    input_values.push_back(input.GetIrValue());
+  }
+  ir::NodePtr node = ir::MakeNode<ir::ops::UserComputation>(
+      ir::OpKind::Get(opname), input_values, std::move(computation));
+  return inputs.front().MakeOutputTensors(node);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1135,6 +1151,14 @@ void XLATensor::expm1_(XLATensor& input) {
   input.SetInPlaceIrValue(ir::ops::Expm1(input.GetIrValue()));
 }
 
+void XLATensor::exponential_(XLATensor& input, double lambd) {
+  auto input_shape = input.shape();
+  input.SetInPlaceIrValue(ir::MakeNode<ir::ops::Exponential>(
+      GetIrValueForScalar(lambd, input_shape.get().element_type(),
+                          input.GetDevice()),
+      GetRngSeed(input.GetDevice()), input_shape.get()));
+}
+
 XLATensor XLATensor::eye(xla::int64 lines, xla::int64 cols,
                          const Device& device, at::ScalarType element_type) {
   return XLATensor::Create(
@@ -1511,6 +1535,12 @@ XLATensor XLATensor::leaky_relu_backward(const XLATensor& grad_output,
 void XLATensor::leaky_relu_(XLATensor& input, double negative_slope) {
   input.SetInPlaceIrValue(
       ir::MakeNode<ir::ops::LeakyRelu>(input.GetIrValue(), negative_slope));
+}
+
+void XLATensor::linspace_out(XLATensor& out, at::Scalar start, at::Scalar stop,
+                             xla::int64 num, at::ScalarType scalar_type) {
+  out.SetIrValue(ir::ops::LinSpace(start, stop, num, scalar_type));
+  out.SetScalarType(scalar_type);
 }
 
 XLATensor XLATensor::log(const XLATensor& input) {
@@ -1941,6 +1971,19 @@ XLATensor XLATensor::nll_loss_backward(const XLATensor& grad_output,
       grad_output.GetIrValue(), input.GetIrValue(), target.GetIrValue(),
       GetOptionalIrValue(weight), GetOptionalIrValue(total_weight),
       GetXlaReductionMode(reduction), ignore_index));
+}
+
+std::pair<XLATensor, XLATensor> XLATensor::nms(const XLATensor& boxes,
+                                               const XLATensor& scores,
+                                               const XLATensor& score_threshold,
+                                               const XLATensor& iou_threshold,
+                                               xla::int64 output_size) {
+  ir::NodePtr node = ir::MakeNode<ir::ops::Nms>(
+      boxes.GetIrValue(), scores.GetIrValue(), score_threshold.GetIrValue(),
+      iou_threshold.GetIrValue(), output_size);
+  return std::pair<XLATensor, XLATensor>(
+      Create(ir::Value(node, 0), boxes.GetDevice(), at::ScalarType::Int),
+      Create(ir::Value(node, 1), boxes.GetDevice(), at::ScalarType::Int));
 }
 
 XLATensor XLATensor::nonzero(const XLATensor& input) {

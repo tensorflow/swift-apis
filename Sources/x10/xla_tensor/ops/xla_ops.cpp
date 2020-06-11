@@ -31,6 +31,7 @@ const OpKindWrapper xla_diagonal_view_update(xla_symbols::diagonal_view_update);
 const OpKindWrapper xla_generic_slice(xla_symbols::generic_slice);
 const OpKindWrapper xla_get_dimensions_size(xla_symbols::get_dimensions_size);
 const OpKindWrapper xla_moving_average(xla_symbols::moving_average);
+const OpKindWrapper xla_nms(xla_symbols::nms);
 const OpKindWrapper xla_not_supported(xla_symbols::not_supported);
 const OpKindWrapper xla_replication_pad(xla_symbols::replication_pad);
 const OpKindWrapper xla_replication_pad_backward(
