@@ -1273,7 +1273,7 @@ final class TensorTests: XCTestCase {
       }
     }
   }
-    
+
   func testGelu() throws {
     var x = Tensor<Float>(shape: [4], scalars: [-0.5, -0.25, 0.5, 3.0], on: x10)
     let expected = gelu(TF(x))
