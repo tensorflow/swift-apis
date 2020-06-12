@@ -47,14 +47,6 @@ public protocol Layer: Module where Input: Differentiable {
   func callAsFunction(_ input: Input) -> Output
 }
 
-extension Layer {
-  @available(*, deprecated, renamed: "callAsFunction(_:)")
-  @differentiable
-  public func call(_ input: Input) -> Output {
-    callAsFunction(input)
-  }
-}
-
 /// An empty struct representing empty `TangentVector`s for parameterless layers.
 public struct EmptyTangentVector: EuclideanDifferentiable, VectorProtocol, ElementaryFunctions,
   PointwiseMultiplicative, KeyPathIterable
