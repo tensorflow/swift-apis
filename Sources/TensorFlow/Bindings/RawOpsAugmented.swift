@@ -79,6 +79,16 @@ extension _RawTFEager {
       size: Tensor<Int32>(size.map { Int32($0) }, on: .defaultTFEager))
   }
 
+  public static func split<T: TensorFlowScalar>(
+    splitDim: Int,
+    value: Tensor<T>,
+    numSplit: Int64
+  ) -> [Tensor<T>] {
+    split(
+      splitDim: Tensor<Int32>(Int32(splitDim), on: .defaultTFEager), value: value,
+      numSplit: numSplit)
+  }
+
   public static func splitV<
     T: TensorFlowScalar
   >(
@@ -308,6 +318,21 @@ extension _RawTFEager {
         return _RawTFEager.slice(
           input, begin: Tensor<Int32>(begin.map { Int32($0) }, on: .defaultTFEager),
           size: Tensor<Int32>(size.map { Int32($0) }, on: .defaultTFEager))
+      }
+    }
+
+    public static func split<T: TensorFlowScalar>(
+      splitDim: Int,
+      value: Tensor<T>,
+      numSplit: Int64
+    ) -> [Tensor<T>] {
+      switch value.handle.backend {
+      case .XLA:
+        return _RawXLA.split(splitDim: splitDim, value: value, numSplit: numSplit)
+      case .TF_EAGER:
+        return _RawTFEager.split(
+          splitDim: Tensor<Int32>(Int32(splitDim), on: .defaultTFEager), value: value,
+          numSplit: numSplit)
       }
     }
 

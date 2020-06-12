@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import _Differentiation
+
 /// An embedding layer.
 ///
 /// `Embedding` is effectively a lookup table that maps indices from a fixed vocabulary to fixed-size

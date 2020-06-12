@@ -16,6 +16,8 @@
 // Free-function-style differential operators
 // ===------------------------------------------------------------------------------------------===//
 
+import _Differentiation
+
 // Value with gradient
 
 @inlinable
