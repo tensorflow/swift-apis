@@ -90,7 +90,7 @@ For more models, go to [**tensorflow/swift-models**][swift-models].
 ### Requirements
 
 * [Swift for TensorFlow toolchain][toolchain].
-* An environment that can run the Swift for TensorFlow toolchains: Ubuntu 18.04, macOS with Xcode 10 or Windows 10.
+* An environment that can run the Swift for TensorFlow toolchains: Ubuntu 18.04, macOS with Xcode 10, or Windows 10.
 * Bazel. This can be installed [manually][bazel] or with
 [Bazelisk][bazelisk]. You will need a version supported by TensorFlow
 (between `_TF_MIN_BAZEL_VERSION` and `_TF_MAX_BAZEL_VERSION` as specified in
