@@ -1537,6 +1537,12 @@ void XLATensor::leaky_relu_(XLATensor& input, double negative_slope) {
       ir::MakeNode<ir::ops::LeakyRelu>(input.GetIrValue(), negative_slope));
 }
 
+void XLATensor::linspace_out(XLATensor& out, at::Scalar start, at::Scalar stop,
+                             xla::int64 num, at::ScalarType scalar_type) {
+  out.SetIrValue(ir::ops::LinSpace(start, stop, num, scalar_type));
+  out.SetScalarType(scalar_type);
+}
+
 XLATensor XLATensor::log(const XLATensor& input) {
   return input.CreateFrom(ir::ops::Log(input.GetIrValue()));
 }

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import _Differentiation
 #if !COMPILING_TENSORFLOW_STDLIB_MODULE
   import Tensor
 #endif
@@ -225,8 +226,6 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell {
     let gateInput = input.input.concatenated(with: input.state.hidden, alongAxis: 1)
 
     let fused = matmul(gateInput, fusedWeight) + fusedBias
-    let batchSize = fused.shape[0]
-    let hiddenSize = fused.shape[1] / 4
     let fusedParts = fused.split(count: 4, alongAxis: 1)
     let inputGate = sigmoid(fusedParts[0])
     let updateGate = tanh(fusedParts[1])
