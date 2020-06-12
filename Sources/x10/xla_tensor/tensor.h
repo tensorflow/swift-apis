@@ -748,11 +748,10 @@ class XLATensor {
   static void max_out(XLATensor& max, XLATensor& max_values,
                       const XLATensor& input, xla::int64 dim, bool keepdim);
 
-  static XLATensor max_pool_nd(const XLATensor& input,
-                               xla::int64 spatial_dim_count,
-                               std::vector<xla::int64> kernel_size,
-                               std::vector<xla::int64> stride,
-                               std::vector<xla::int64> padding, bool ceil_mode);
+  static std::tuple<XLATensor, XLATensor> max_pool_nd(
+      const XLATensor& input, xla::int64 spatial_dim_count,
+      std::vector<xla::int64> kernel_size, std::vector<xla::int64> stride,
+      std::vector<xla::int64> padding, bool ceil_mode);
 
   static XLATensor max_pool_nd_backward(const XLATensor& out_backprop,
                                         const XLATensor& input,
@@ -761,6 +760,14 @@ class XLATensor {
                                         std::vector<xla::int64> stride,
                                         std::vector<xla::int64> padding,
                                         bool ceil_mode);
+
+  static XLATensor max_unpool(const XLATensor& input, const XLATensor& indices,
+                              std::vector<xla::int64> output_size);
+
+  static XLATensor max_unpool_backward(const XLATensor& grad_output,
+                                       const XLATensor& input,
+                                       const XLATensor& indices,
+                                       std::vector<xla::int64> output_size);
 
   static XLATensor mean(const XLATensor& input,
                         std::vector<xla::int64> dimensions,
