@@ -545,12 +545,12 @@ func _vjpErosion2D<Scalar: TensorFlowFloatingPoint>(
     value,
     { v in
       (
-        -dilation2DBackpropInput(
+        dilation2DBackpropInput(
           v, input: negatedInput, filter: reversedFilter,
           strides: strides, rates: rates, padding: padding),
         -dilation2DBackpropFilter(
           v, input: negatedInput, filter: reversedFilter,
-          strides: strides, rates: rates, padding: padding)
+            strides: strides, rates: rates, padding: padding).reversed(inAxes: [0, 1])
       )
     }
   )
