@@ -79,7 +79,12 @@ if(NOT X10_FOUND AND NOT USE_BUNDLED_X10)
   ExternalProject_Get_Property(libtensorflow SOURCE_DIR)
 
   set(X10_LIBRARY ${SOURCE_DIR}/bazel-bin/tensorflow/compiler/tf2xla/xla_tensor/${CMAKE_SHARED_LIBRARY_PREFIX}x10${CMAKE_SHARED_LIBRARY_SUFFIX})
-  set(X10_INCLUDE_DIRS "${SOURCE_DIR};${SOURCE_DIR}/bazel-bin;${SOURCE_DIR}/bazel-libtensorflow/external/com_google_absl;${SOURCE_DIR}/bazel-libtensorflow/external/com_google_protobuf/src;${SOURCE_DIR}/bazel-libtensorflow/external/eigen_archive")
+  set(X10_INCLUDE_DIRS
+    ${SOURCE_DIR}
+    ${SOURCE_DIR}/bazel-bin
+    ${SOURCE_DIR}/bazel-libtensorflow/external/com_google_absl
+    ${SOURCE_DIR}/bazel-libtensorflow/external/com_google_protobuf/src
+    ${SOURCE_DIR}/bazel-libtensorflow/external/eigen_archive)
   add_library(x10 IMPORTED UNKNOWN)
   set_target_properties(x10 PROPERTIES
     IMPORTED_LOCATION ${X10_LIBRARY}
@@ -87,8 +92,7 @@ if(NOT X10_FOUND AND NOT USE_BUNDLED_X10)
   add_dependencies(x10
     libtensorflow-build)
 
-  get_target_property(DIRECTORIES x10 INTERFACE_INCLUDE_DIRECTORIES)
-  foreach(directory ${DIRECTORIES})
+  foreach(directory ${X10_INCLUDE_DIRS})
     file(MAKE_DIRECTORY ${directory})
   endforeach()
 endif()
