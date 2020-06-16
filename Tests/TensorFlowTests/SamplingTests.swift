@@ -50,7 +50,7 @@ final class SamplingTests: XCTestCase {
 
   func test_RandomAccessCollection() {
     // Can't use 0...20 directly because of
-    // https://bugs.swift.org/browse/SR-1288.  Array's Indices seem to work
+    // https://bugs.swift.org/browse/SR-12881.  Array's Indices seem to work
     // properly, though.
     let b = Array(0...20)
     let d = Sampling(base: b, selection: b.indices)
