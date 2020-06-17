@@ -59,6 +59,10 @@ public struct Device {
     self.kind = kind
     self.ordinal = ordinal
     self.backend = backend
+
+    // For GPU devices, the following is necessary to set TF to not use all GPU memory for the
+    // eager runtime or XLA. This needs to be here for manually-specified XLA devices.
+    let _ = _ExecutionContext.global
   }
 
   /// Backend used to dispatch the tensor operations.
@@ -132,6 +136,10 @@ public struct Device {
 
   /// The default XLA device.
   public static var defaultXLA: Device {
+    // For GPU devices, the following is necessary to set TF to not use all GPU memory for the
+    // eager runtime or XLA. This needs to be placed before getDefaultDevice() for default devices.
+    let _ = _ExecutionContext.global
+
     let defaultDevice = getDefaultDevice()
     return Device(
       kind: defaultDevice.hw_type.kind, ordinal: Int(defaultDevice.ordinal), backend: .XLA)
