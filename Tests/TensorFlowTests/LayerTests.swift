@@ -1831,8 +1831,6 @@ final class LayerTests: XCTestCase {
     withTensorLeakChecking {
       var rnn = BidirectionalBasicRNN<Float>(
         BasicRNNCell(inputSize: 4, hiddenSize: 4)
-        // TODO: ld: symbol(s) not found for architecture x86_64
-        // merge: sum
       )
 
       rnn.forward.cell.weight = Tensor(concatenating: [kernelForward, recurrentKernelForward])

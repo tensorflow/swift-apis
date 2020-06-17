@@ -498,15 +498,31 @@ where Cell.TimeStepOutput: Mergeable {
   public typealias Output = [Cell.TimeStepOutput]
   public typealias MergeFunction = @differentiable (Cell.TimeStepOutput, Cell.TimeStepOutput) -> Cell.TimeStepOutput
 
-  // TODO: Runtime crash when I try to set `sum` function to property
-  // @noDerivative public let merge: MergeFunction
-  public var forward, backward: RecurrentLayer<Cell>
+  /// A wrapper around a `@differentiable` merge function.
+  ///
+  /// - Note: this exists as a workaround for runtime crashes regarding `@differentiable`function
+  ///   stored properties (TF-1122).
+  private class _MergeFunction {
+    var function: MergeFunction
+    init(_ function: @escaping MergeFunction) {
+      self.function = function
+    }
+  }
 
-  public init(_ cell: @autoclosure () -> Cell, merge: @escaping MergeFunction = sum) {
+  @noDerivative private let _mergeFunction: _MergeFunction
+
+  public var forward: RecurrentLayer<Cell>
+
+  public var backward: RecurrentLayer<Cell>
+
+  @noDerivative public var mergeFunction: MergeFunction {
+    _mergeFunction.function
+  }
+
+  public init(_ cell: @autoclosure () -> Cell, mergeFunction: @escaping MergeFunction = sum) {
     forward = RecurrentLayer(cell())
     backward = RecurrentLayer(cell(), backwardDirection: true)
-    // TODO: Runtime crash when I try to set `sum` function to property
-    // self.merge = merge
+    _mergeFunction = .init(mergeFunction)
   }
 
   @differentiable
