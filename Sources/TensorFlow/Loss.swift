@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import _Differentiation
+
 /// Computes the L1 loss between `expected` and `predicted`.
 /// `loss = reduction(abs(expected - predicted))`
 ///

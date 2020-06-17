@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import _Differentiation
+
 public protocol Module: EuclideanDifferentiable, KeyPathIterable
 where
   TangentVector: VectorProtocol & ElementaryFunctions & PointwiseMultiplicative & KeyPathIterable
@@ -43,14 +45,6 @@ public protocol Layer: Module where Input: Differentiable {
   /// - Returns: The output.
   @differentiable
   func callAsFunction(_ input: Input) -> Output
-}
-
-extension Layer {
-  @available(*, deprecated, renamed: "callAsFunction(_:)")
-  @differentiable
-  public func call(_ input: Input) -> Output {
-    callAsFunction(input)
-  }
 }
 
 /// An empty struct representing empty `TangentVector`s for parameterless layers.

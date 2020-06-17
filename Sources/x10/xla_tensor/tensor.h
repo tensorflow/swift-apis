@@ -686,6 +686,9 @@ class XLATensor {
                                        double negative_slope);
   static void leaky_relu_(XLATensor& input, double negative_slope);
 
+  static void linspace_out(XLATensor& out, at::Scalar start, at::Scalar stop,
+                           xla::int64 num, at::ScalarType scalar_type);
+
   static XLATensor log(const XLATensor& input);
   static void log_(XLATensor& input);
 

@@ -90,7 +90,7 @@ For more models, go to [**tensorflow/swift-models**][swift-models].
 ### Requirements
 
 * [Swift for TensorFlow toolchain][toolchain].
-* An environment that can run the Swift for TensorFlow toolchains: Linux 18.04 or macOS with Xcode 10.
+* An environment that can run the Swift for TensorFlow toolchains: Ubuntu 18.04, macOS with Xcode 10, or Windows 10.
 * Bazel. This can be installed [manually][bazel] or with
 [Bazelisk][bazelisk]. You will need a version supported by TensorFlow
 (between `_TF_MIN_BAZEL_VERSION` and `_TF_MAX_BAZEL_VERSION` as specified in
@@ -127,7 +127,7 @@ This will build X10 as part of the build.  Ensure that you do not have the
 x10 modules in the toolchain that you are using to develop here.
 
 ```shell
-cmake -B out -D BUILD_X10=YES -G Ninja -S swift-apis
+cmake -B out -G Ninja -S swift-apis
 cmake --build out
 ```
 
@@ -136,7 +136,7 @@ using the bundled X10 in the toolchain using
 `-D USE_BUNDLED_X10=YES -D USE_BUNDLED_CTENSORFLOW=YES`:
 
 ```shell
-cmake -B out -D BUILD_X10=YES -D USE_BUNDLED_CTENSORFLOW=YES -D USE_BUNDLED_X10=YES -G Ninja -S swift-apis
+cmake -B out -D USE_BUNDLED_CTENSORFLOW=YES -D USE_BUNDLED_X10=YES -G Ninja -S swift-apis
 cmake --build out
 ```
 

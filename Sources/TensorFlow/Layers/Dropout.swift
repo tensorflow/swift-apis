@@ -12,35 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import _Differentiation
 #if os(Windows)
   import func MSVCRT.sqrt
 #endif
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
   /// Computes dropout given a probability.
-  // TODO: Remove the underscore once `droppingOut(probability:)` has been removed.
   @differentiable(wrt: self where Scalar: Differentiable)
-  fileprivate func _droppingOut(probability: Double) -> Tensor {
+  fileprivate func droppingOut(probability: Double) -> Tensor {
     let noise = Tensor(randomUniform: shape, on: device)
     let keepMask = noise .>= Scalar(probability)
     let keepProbability = Scalar(1.0 - probability)
     return self * Tensor(keepMask) / Tensor(keepProbability, on: device)
-  }
-}
-
-extension Tensor where Scalar: TensorFlowFloatingPoint {
-  /// Computes dropout given a probability.
-  @available(
-    *, deprecated,
-    message:
-      """
-      This API will be removed after Swift for TensorFlow 0.6.
-      For dropout, use the `Dropout` layer.
-      """
-  )
-  @differentiable(wrt: self where Scalar: Differentiable)
-  public func droppingOut(probability: Double) -> Tensor {
-    _droppingOut(probability: probability)
   }
 }
 
@@ -71,7 +55,7 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     switch Context.local.learningPhase {
     case .training:
-      return input._droppingOut(probability: probability)
+      return input.droppingOut(probability: probability)
     case .inference:
       return input
     }

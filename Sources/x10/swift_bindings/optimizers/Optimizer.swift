@@ -122,7 +122,7 @@ where
   public var step: Int = 0
 
   /// Used to determine the scaling factor of the cross replica sum.
-  public var crossReplicaSumCount: Int = 1
+  public var crossReplicaSumCount: Int? = nil
 
   /// global optimizer state.
   public var optimizerState: OptimizerState
@@ -211,7 +211,7 @@ where
       pg.globals.map { globalInit in globalInit(pg.hyperparameters, device) }
     }
     var step = direction
-    let crsScale = 1.0 / Double(crossReplicaSumCount)
+    let crsScale : Double? = crossReplicaSumCount.map { 1.0 / Double($0) }
     // step plays dual-duties as an inout parameter for efficiency.
     let _ = kpPlan.mapTensors(&step, model.differentiableVectorView) {
       (step: inout Tensor<Float>, weight: Tensor<Float>, i: Int) in
@@ -219,7 +219,9 @@ where
       let paramGroup = parameterGroups[selector]
       var state = OptimizerWeightStepState(
         globals: globals[selector], grad: step, weight: weight, weightId: i)
-      state.grad = _Raw.crossReplicaSum([state.grad], crsScale).first!
+      if let crsScale = crsScale {
+        state.grad = _Raw.crossReplicaSum([state.grad], crsScale).first!
+      }
       for cb in paramGroup.callbacks { cb(&state, &optimizerState) }
       step = state.step ?? Tensor<Float>(zerosLike: step)
     }

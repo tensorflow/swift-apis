@@ -1104,6 +1104,11 @@ final class TensorAutoDiffTests: XCTestCase {
       ])
   }
 
+  func testGelu() {
+    func f(a: Tensor<Float>) -> Tensor<Float> { gelu(a).sum() }
+    XCTAssertTrue(gradient(at: [5, -5, 0], in: f).isAlmostEqual(to: [1, 0, 0.5], tolerance: 1e-5))
+  }
+    
   static var allTests = [
     ("testSimpleGrad", testSimpleGrad),
     ("testGenericGrad", testGenericGrad),
@@ -1164,5 +1169,6 @@ final class TensorAutoDiffTests: XCTestCase {
     ("testResizeLanczos5", testResizeLanczos5),
     ("testResizeGaussian", testResizeGaussian),
     ("testResizeMitchellcubic", testResizeMitchellcubic),
+    ("testGelu", testGelu),
   ]
 }

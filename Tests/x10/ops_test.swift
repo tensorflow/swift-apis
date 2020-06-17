@@ -1274,6 +1274,47 @@ final class TensorTests: XCTestCase {
     }
   }
 
+  func testGelu() throws {
+    var x = Tensor<Float>(shape: [4], scalars: [-0.5, -0.25, 0.5, 3.0], on: x10)
+    let expected = gelu(TF(x))
+    for useReducedPrecision in [false, true] {
+      if useReducedPrecision {
+        x = x.toReducedPrecision
+      }
+      var actual = gelu(x)
+      if useReducedPrecision {
+        XCTAssert(actual.isReducedPrecision)
+        actual = actual.toFullPrecision
+      }
+      XCTAssert(!actual.isReducedPrecision)
+      let relTolerance: Float = useReducedPrecision ? 1e-2 : 1e-5
+      XCTAssert(
+        allClose(
+          actual: TF(actual), expected: expected, relTolerance: relTolerance))
+    }
+  }
+
+  func testGeluGrad() throws {
+    func geluX10(_ arg: Tensor<Float>) -> Tensor<Float> {
+      return gelu(arg)
+    }
+    func geluTF(_ arg: Tensor<Float>) -> Tensor<Float> {
+      return gelu(arg)
+    }
+    var x = Tensor<Float>(shape: [4], scalars: [-0.5, -0.25, 0.5, 3.0], on: x10)
+    var outGrad = Tensor<Float>(
+            shape: [4], scalars: [1.5, 1.0, 2.5, 2.0], on: x10)
+    for useReducedPrecision in [false, true] {
+      if useReducedPrecision {
+        x = x.toReducedPrecision
+        outGrad = outGrad.toReducedPrecision
+      }
+      let relTolerance: Float = useReducedPrecision ? 1e-2 : 1e-5
+      assertEqualUnaryOperationGradients(
+        geluX10, geluTF, x, outGrad, relTolerance: relTolerance)
+    }
+  }
+
   func testGreater() throws {
     let originalDims = [3, 2, 4]
     for useReducedPrecision in [false, true] {
@@ -1974,7 +2015,9 @@ final class TensorTests: XCTestCase {
   }
 
   func testLinSpace() throws {
-    func testRanges(start: Float, stop: Float, num: Int32, useReducedPrecision: Bool) {
+    func testRanges(
+      start: Float, stop: Float, num: Int32, useReducedPrecision: Bool, absTolerance: Float = 1e-5
+    ) {
       var start = Tensor(start, on: x10)
       var stop = Tensor(stop, on: x10)
       if useReducedPrecision {
@@ -1991,7 +2034,7 @@ final class TensorTests: XCTestCase {
       XCTAssert(!tx10.isReducedPrecision)
       let tf = _Raw.linSpace(
         start: TF(start), stop: TF(stop), num: TF(Tensor<Int32>(num, on: x10)))
-      XCTAssert(allClose(actual: TF(tx10), expected: tf, absTolerance: 1e-5))
+      XCTAssert(allClose(actual: TF(tx10), expected: tf, absTolerance: absTolerance))
     }
     for useReducedPrecision in [false, true] {
       testRanges(start: 0.0, stop: 5.0, num: 6, useReducedPrecision: useReducedPrecision)
@@ -1999,6 +2042,9 @@ final class TensorTests: XCTestCase {
       testRanges(start: 0.0, stop: 0.0, num: 1, useReducedPrecision: useReducedPrecision)
       testRanges(start: 2.0, stop: 0.0, num: 1, useReducedPrecision: useReducedPrecision)
       testRanges(start: 20.0, stop: 0.0, num: 1, useReducedPrecision: useReducedPrecision)
+      testRanges(
+        start: -1.0, stop: 2.0, num: 1024, useReducedPrecision: useReducedPrecision,
+        absTolerance: 4e-3)
     }
   }
 
@@ -3538,6 +3584,8 @@ extension TensorTests {
     ("testFloor", testFloor),
     ("testGather", testGather),
     ("testGatherV2", testGatherV2),
+    ("testGelu", testGelu),
+    ("testGeluGrad", testGeluGrad),
     ("testGreater", testGreater),
     ("testGreaterEqual", testGreaterEqual),
     ("testIndexAdvanced", testIndexAdvanced),

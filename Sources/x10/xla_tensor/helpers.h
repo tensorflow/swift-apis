@@ -354,6 +354,12 @@ class XlaHelpers {
     return xla::LiteralUtil::CreateR1<T>(xla::util::Range<T>(start, end, step));
   }
 
+  template <typename T>
+  static xla::Literal LinSpace(T start, T stop, xla::int64 num) {
+    return xla::LiteralUtil::CreateR1<T>(
+        xla::util::LinSpace<T>(start, stop, num));
+  }
+
   static xla::PrecisionConfig::Precision mat_mul_precision() {
     return s_mat_mul_precision;
   }
