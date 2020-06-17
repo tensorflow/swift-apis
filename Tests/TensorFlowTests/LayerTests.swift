@@ -2488,8 +2488,6 @@ final class LayerTests: XCTestCase {
     withTensorLeakChecking {
       var lstm = BidirectionalLSTM<Float>(
         LSTMCell(inputSize: 3, hiddenSize: 4)
-        // TODO: ld: symbol(s) not found for architecture x86_64
-        // merge: sum
       )
 
       lstm.forward.cell.fusedWeight =
@@ -3209,7 +3207,7 @@ final class LayerTests: XCTestCase {
           [-0.37719586,-0.22458386,0.3951493,-0.43688574],
           [-0.6900477,-0.26849592,0.795504,-0.9006538]]]
     )
-    // TODO: Modify BidirectionalRecurrentLayer to return those four and test it
+    // TODO: Modify BidirectionalRecurrentLayer to return those two and test it
     let expectedFinalStateForward = Tensor<Float>(
         [[0.08708767,0.49491018,0.019275323,-0.13219076]]
     )
@@ -3334,8 +3332,6 @@ final class LayerTests: XCTestCase {
     withTensorLeakChecking {
       var gru = BidirectionalGRU<Float>(
         GRUCell(inputSize: 3, hiddenSize: 4)
-        // TODO: ld: symbol(s) not found for architecture x86_64
-        // merge: sum
       )
 
       XCTAssertEqual(gru.forward.cell.updateKernel.shape, updateKernelForward.shape)
