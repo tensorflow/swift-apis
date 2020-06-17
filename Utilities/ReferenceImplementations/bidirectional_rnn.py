@@ -27,11 +27,11 @@ def swift_tensor(name, tensor):
 
 # Initialize the keras model with the Bidirectional RNN.
 forward = tf.keras.layers.SimpleRNN(
-    units=4, activation='tanh', 
+    units=4, activation='tanh',
     return_sequences=True, return_state=True)
 backward = tf.keras.layers.SimpleRNN(
-    units=4, activation='tanh', 
-    return_sequences=True, return_state=True, 
+    units=4, activation='tanh',
+    return_sequences=True, return_state=True,
     go_backwards=True)
 bidirectional = tf.keras.layers.Bidirectional(
     forward,
@@ -49,7 +49,7 @@ output = bidirectional(x_input, initial_state=initial_state_input)
 model = tf.keras.Model(inputs=[x_input, initial_state_input], outputs=[output])
 
 # Print the Bidirectional RNN weights.
-[kernel_forward, recurrent_kernel_forward, bias_forward, 
+[kernel_forward, recurrent_kernel_forward, bias_forward,
  kernel_backward, recurrent_kernel_backward, bias_backward] = bidirectional.get_weights()
 print(swift_tensor('kernelForward', kernel_forward))
 print(swift_tensor('recurrentKernelForward', recurrent_kernel_forward))

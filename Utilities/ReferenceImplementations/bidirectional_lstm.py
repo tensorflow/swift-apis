@@ -31,11 +31,11 @@ units = 4
 
 # Initialize the keras model with the Bidirectional RNN.
 forward = tf.keras.layers.LSTM(
-    input_dim=input_dim, units=units, activation='tanh', 
+    input_dim=input_dim, units=units, activation='tanh',
     return_sequences=True, return_state=True)
 backward = tf.keras.layers.LSTM(
-    input_dim=input_dim, units=units, activation='tanh', 
-    return_sequences=True, return_state=True, 
+    input_dim=input_dim, units=units, activation='tanh',
+    return_sequences=True, return_state=True,
     go_backwards=True)
 bidirectional = tf.keras.layers.Bidirectional(
     forward,
@@ -50,7 +50,7 @@ initial_state_cell_forward = tf.keras.Input(shape=[units])
 initial_state_hidden_backward = tf.keras.Input(shape=[units])
 initial_state_cell_backward = tf.keras.Input(shape=[units])
 initial_state_input = [
-    initial_state_hidden_forward, initial_state_cell_forward, 
+    initial_state_hidden_forward, initial_state_cell_forward,
     initial_state_hidden_backward, initial_state_cell_backward
 ]
 
@@ -58,7 +58,7 @@ output = bidirectional(x_input, initial_state=initial_state_input)
 model = tf.keras.Model(inputs=[x_input, initial_state_input], outputs=[output])
 
 # Print the Bidirectional RNN weights.
-[kernel_forward, recurrent_kernel_forward, bias_forward, 
+[kernel_forward, recurrent_kernel_forward, bias_forward,
  kernel_backward, recurrent_kernel_backward, bias_backward] = bidirectional.get_weights()
 print(swift_tensor('kernelForward', kernel_forward))
 print(swift_tensor('recurrentKernelForward', recurrent_kernel_forward))
@@ -85,8 +85,8 @@ print(swift_tensor('initialStateCellBackward', initial_state[3]))
 with tf.GradientTape() as tape:
     tape.watch(x)
     tape.watch(initial_state)
-    [[states, 
-      final_state_hidden_forward, final_state_cell_forward, 
+    [[states,
+      final_state_hidden_forward, final_state_cell_forward,
       final_state_hidden_backward, final_state_cell_backward]] = model([x, initial_state])
     sum_output = tf.reduce_sum(states[0][-1])
 

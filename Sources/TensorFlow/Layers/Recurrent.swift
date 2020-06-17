@@ -8,6 +8,7 @@
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
+
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
@@ -376,7 +377,7 @@ public struct RecurrentLayer<Cell: RecurrentLayerCell>: Layer {
   public typealias Output = [Cell.TimeStepOutput]
 
   public var cell: Cell
-  @noDerivative public let backwardDirection: Bool 
+  @noDerivative public let backwardDirection: Bool
 
   public init(_ cell: @autoclosure () -> Cell, backwardDirection: Bool = false) {
     self.cell = cell()
@@ -485,7 +486,7 @@ public protocol Mergeable: Differentiable, AdditiveArithmetic {
 
 @differentiable
 public func sum<T: Mergeable>(
-  _ first: T, 
+  _ first: T,
   _ second: T
 ) -> T {
   first + second
@@ -537,8 +538,8 @@ where Cell.TimeStepOutput: Mergeable {
     let initialStateBackward = withoutDerivative(
       at: backward.cell.zeroState(for: inputs.last!))
     return self(
-      inputs, 
-      initialStateForward: initialStateForward, 
+      inputs,
+      initialStateForward: initialStateForward,
       initialStateBackward: initialStateBackward
     )
   }
@@ -550,8 +551,8 @@ where Cell.TimeStepOutput: Mergeable {
     initialStateBackward: Cell.State
   ) -> Cell.TimeStepOutput {
     self(
-      inputs, 
-      initialStateForward: initialStateForward, 
+      inputs,
+      initialStateForward: initialStateForward,
       initialStateBackward: initialStateBackward
     )[withoutDerivative(at: inputs.count - 1)]
   }

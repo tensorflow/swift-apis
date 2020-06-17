@@ -1577,7 +1577,7 @@ final class LayerTests: XCTestCase {
       let (outputSum, (gradRNN, gradInputs, gradInitialState)) =
         valueWithGradient(at: rnn, inputs, initialState) { rnn, inputs, initialState in
           rnn.lastOutput(
-            from: inputs, 
+            from: inputs,
             initialState: initialState
           ).value.sum()
         }
@@ -1697,7 +1697,7 @@ final class LayerTests: XCTestCase {
       let (outputSum, (gradRNN, gradInputs, gradInitialState)) =
         valueWithGradient(at: rnn, inputs, initialState) { rnn, inputs, initialState in
           rnn.lastOutput(
-            from: inputs, 
+            from: inputs,
             initialState: initialState
           ).value.sum()
         }
@@ -1858,8 +1858,8 @@ final class LayerTests: XCTestCase {
       let (outputSum, (gradRNN)) =
         valueWithGradient(at: rnn) { rnn in
           rnn.lastOutput(
-            from: inputs, 
-            initialStateForward: initialStateForward, 
+            from: inputs,
+            initialStateForward: initialStateForward,
             initialStateBackward: initialStateBackward
           ).value.sum()
         }
@@ -1883,13 +1883,13 @@ final class LayerTests: XCTestCase {
         gradRNN.backward.cell.bias,
         expectedGradBiasBackward,
         accuracy: 1e-6)
-      
+
       let (gradInputs, gradInitialStateForward, gradInitialStateBackward) =
         gradient(at: inputs, initialStateForward, initialStateBackward) {
           inputs, initialStateForward, initialStateBackward in
           rnn.lastOutput(
-            from: inputs, 
-            initialStateForward: initialStateForward, 
+            from: inputs,
+            initialStateForward: initialStateForward,
             initialStateBackward: initialStateBackward
           ).value.sum()
         }
@@ -2512,7 +2512,7 @@ final class LayerTests: XCTestCase {
         hidden: initialStateHiddenBackward)
 
       let outputs = lstm(
-        inputs, 
+        inputs,
         initialStateForward: initialStateForward,
         initialStateBackward: initialStateBackward
       )
@@ -2524,8 +2524,8 @@ final class LayerTests: XCTestCase {
       let (outputSum, (gradLSTM)) =
         valueWithGradient(at: lstm) { lstm in
           lstm.lastOutput(
-            from: inputs, 
-            initialStateForward: initialStateForward, 
+            from: inputs,
+            initialStateForward: initialStateForward,
             initialStateBackward: initialStateBackward
           ).hidden.sum()
         }
@@ -2549,13 +2549,13 @@ final class LayerTests: XCTestCase {
         gradLSTM.backward.cell.fusedBias,
         swapForgetUpdate(expectedGradBiasBackward),
         accuracy: 1e-6)
-      
+
       let (gradInputs, gradInitialStateForward, gradInitialStateBackward) =
         gradient(at: inputs, initialStateForward, initialStateBackward) {
           inputs, initialStateForward, initialStateBackward in
           lstm.lastOutput(
-            from: inputs, 
-            initialStateForward: initialStateForward, 
+            from: inputs,
+            initialStateForward: initialStateForward,
             initialStateBackward: initialStateBackward
           ).hidden.sum()
         }
@@ -2749,7 +2749,7 @@ final class LayerTests: XCTestCase {
       gru.cell.resetRecurrentBias = resetRecurrentBias
       gru.cell.outputBias = outputBias
       gru.cell.outputRecurrentBias = outputRecurrentBias
-      
+
       let inputs = x.squeezingShape(at: 0).unstacked().map { $0.rankLifted() }
       let initialState = GRUCell<Float>.State(hidden: initialState)
 
@@ -2766,7 +2766,7 @@ final class LayerTests: XCTestCase {
       let (outputSum, (gradGRU, gradInputs, gradInitialState)) =
         valueWithGradient(at: gru, inputs, initialState) { gru, inputs, initialState in
           gru.lastOutput(
-            from: inputs, 
+            from: inputs,
             initialState: initialState
           ).hidden.sum()
         }
@@ -3001,7 +3001,7 @@ final class LayerTests: XCTestCase {
       gru.cell.resetRecurrentBias = resetRecurrentBias
       gru.cell.outputBias = outputBias
       gru.cell.outputRecurrentBias = outputRecurrentBias
-      
+
       let inputs = x.squeezingShape(at: 0).unstacked().map { $0.rankLifted() }
       let initialState = GRUCell<Float>.State(hidden: initialState)
 
@@ -3018,7 +3018,7 @@ final class LayerTests: XCTestCase {
       let (outputSum, (gradGRU, gradInputs, gradInitialState)) =
         valueWithGradient(at: gru, inputs, initialState) { gru, inputs, initialState in
           gru.lastOutput(
-            from: inputs, 
+            from: inputs,
             initialState: initialState
           ).hidden.sum()
         }
@@ -3393,7 +3393,7 @@ final class LayerTests: XCTestCase {
       gru.backward.cell.resetRecurrentBias = resetRecurrentBiasBackward
       gru.backward.cell.outputBias = outputBiasBackward
       gru.backward.cell.outputRecurrentBias = outputRecurrentBiasBackward
-    
+
       let inputs = x.squeezingShape(at: 0).unstacked().map { $0.rankLifted() }
       let initialStateForward = GRUCell<Float>.State(hidden: initialStateForward)
       let initialStateBackward = GRUCell<Float>.State(hidden: initialStateBackward)
@@ -3411,8 +3411,8 @@ final class LayerTests: XCTestCase {
       let (outputSum, (gradGRU)) =
         valueWithGradient(at: gru) { gru in
           gru.lastOutput(
-            from: inputs, 
-            initialStateForward: initialStateForward, 
+            from: inputs,
+            initialStateForward: initialStateForward,
             initialStateBackward: initialStateBackward
           ).hidden.sum()
         }
@@ -3521,8 +3521,8 @@ final class LayerTests: XCTestCase {
         gradient(at: inputs, initialStateForward, initialStateBackward) {
           inputs, initialStateForward, initialStateBackward in
           gru.lastOutput(
-            from: inputs, 
-            initialStateForward: initialStateForward, 
+            from: inputs,
+            initialStateForward: initialStateForward,
             initialStateBackward: initialStateBackward
           ).hidden.sum()
         }
