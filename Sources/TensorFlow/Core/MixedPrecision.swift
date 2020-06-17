@@ -159,11 +159,32 @@ extension Tensor {
   }
 
   /// Promotes a scalar to a tensor with the same device and precision as the given tensor.
+  // TODO (SR-12968): Mark `tensor` with `@noDerivative` and remove custom vjp below.
   @differentiable(where Scalar: TensorFlowFloatingPoint)
   public init(_ value: Scalar, deviceAndPrecisionLike tensor: Tensor) {
     let device = tensor.device
     let tmp = Tensor(value, on: device)
     self = tensor.isReducedPrecision ? tmp.toReducedPrecision : tmp
+  }
+}
+
+extension Tensor where Scalar: TensorFlowFloatingPoint {
+  // TODO (SR-12968): Remove when `tensor` can be marked `@noDerivative` in `init`.
+  // This currently places the pullback results of `tensor` on the correct device.
+  @usableFromInline
+  @derivative(of: init(_:deviceAndPrecisionLike:))
+  static func vjpInitDeviceAndPrecisionLike(
+    _ value: Scalar,
+    deviceAndPrecisionLike tensor: Tensor
+  ) -> (value: Tensor, pullback: (Tensor) -> (Scalar, Tensor)) {
+    // Get device and precision in forward pass to avoid capturing `tensor` in pullback.
+    let device = tensor.device
+    let useReducedPrecision = tensor.isReducedPrecision
+    let result = Tensor(value, on: device)
+    return (useReducedPrecision ? result.toReducedPrecision : result, {
+      let tmp = Tensor(0, on: device)
+      return ($0.scalarized(), useReducedPrecision ? tmp.toReducedPrecision : tmp)
+    })
   }
 }
 
