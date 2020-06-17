@@ -53,6 +53,7 @@ add_library(TensorFlow SHARED
   Layers/Dropout.swift
   Layers/Embedding.swift
   Layers/Initialization.swift
+  Layers/Morphological.swift
   Layers/Normalization.swift
   Layers/Pooling.swift
   Layers/Recurrent.swift

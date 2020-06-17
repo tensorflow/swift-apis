@@ -2388,6 +2388,186 @@ final class LayerTests: XCTestCase {
     XCTAssertEqual(dropout(x), x)
   }
 
+  func testDilation2D() {
+    let filter = Tensor(shape: [2, 2, 3], scalars: (0..<12).map(Float.init))
+    let layer = Dilation2D<Float>(
+      filter: filter, strides: (2, 2), padding: .valid)
+    let input = Tensor(shape: [2, 2, 2, 3], scalars: (0..<24).map(Float.init))
+    let output = layer.inferring(from: input)
+    let expected = Tensor<Float>(
+      shape: [2, 1, 1, 3],
+      scalars: [18, 20, 22, 30, 32, 34])
+    XCTAssertEqual(output, expected)
+  }
+    
+func testDilation2DGradient() {
+   let filter = Tensor(shape: [3, 2, 4], scalars: (0..<24).map(Float.init))
+   let layer = Dilation2D<Float>(
+     filter: filter,
+     strides: (1, 1),
+     rates: (1, 1),
+     padding: .valid)
+   let input = Tensor(shape: [2, 4, 4, 4], scalars: (0..<128).map(Float.init))
+   let grads = gradient(at: input, layer) { $1($0).sum() }
+   // The expected value of the gradient was computed using the following Python code:
+   // ```
+   // filters = tf.reshape(tf.range(24, dtype=tf.float32), [3, 2, 4])
+   // image = tf.reshape(tf.range(128, dtype=tf.float32), [2, 4, 4, 4])
+   // with tf.GradientTape() as tape:
+   //    tape.watch([image, filters])
+   //    y = tf.nn.dilation2d(
+   //        image, filters, [1, 1, 1, 1], "VALID", "NHWC", [1, 1, 1, 1], name=None)
+   //    print(tape.gradient(y, [image, filters]))
+   // ```
+   XCTAssertEqual(
+     grads.0,
+   [
+    [[[0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0]],
+
+   [[0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0]],
+
+   [[0, 0, 0, 0],
+    [1, 1, 1, 1],
+    [1, 1, 1, 1],
+    [1, 1, 1, 1]],
+
+   [[0, 0, 0, 0],
+    [1, 1, 1, 1],
+    [1, 1, 1, 1],
+    [1, 1, 1, 1]]],
+
+   [[[0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0]],
+
+   [[0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0]],
+
+   [[0, 0, 0, 0],
+    [1, 1, 1, 1],
+    [1, 1, 1, 1],
+    [1, 1, 1, 1]],
+
+   [[0, 0, 0, 0],
+    [1, 1, 1, 1],
+    [1, 1, 1, 1],
+    [1, 1, 1, 1]]]
+   ]
+    )
+   XCTAssertEqual(
+     grads.1.filter,
+     [
+        [[0, 0, 0, 0],
+         [0, 0, 0, 0]],
+      
+        [[0, 0, 0, 0],
+        [0, 0, 0, 0]],
+
+        [[0, 0, 0, 0],
+         [12, 12, 12, 12]],
+     ]
+
+    )
+ }
+    
+ func testErosion2D() {
+    let filter = Tensor(shape: [2, 2, 3], scalars: (0..<12).map(Float.init))
+    let layer = Erosion2D<Float>(
+      filter: filter, strides: (2, 2), padding: .valid)
+    let input = Tensor(shape: [2, 2, 2, 3], scalars: (0..<24).map(Float.init))
+    let output = layer.inferring(from: input)
+    let expected = Tensor<Float>(
+      shape: [2, 1, 1, 3],
+      scalars: [-9, -9, -9, 3, 3, 3])
+    XCTAssertEqual(output, expected)
+  }
+    
+func testErosion2DGradient() {
+   let filter = Tensor(shape: [3, 2, 4], scalars: (0..<24).map(Float.init))
+   let layer = Erosion2D<Float>(
+     filter: filter,
+     strides: (1, 1),
+     rates: (1, 1),
+     padding: .valid)
+   let input = Tensor(shape: [2, 4, 4, 4], scalars: (0..<128).map(Float.init))
+   let grads = gradient(at: input, layer) { $1($0).sum() }
+   // The expected value of the gradient was computed using the following Python code:
+   // ```
+   // filters = tf.reshape(tf.range(24, dtype=tf.float32), [3, 2, 4])
+   // image = tf.reshape(tf.range(128, dtype=tf.float32), [2, 4, 4, 4])
+   // with tf.GradientTape() as tape:
+   //    tape.watch([image, filters])
+   //    y = tf.nn.erosion2d(
+   //        image, filters, [1, 1, 1, 1], "VALID", "NHWC", [1, 1, 1, 1], name=None)
+   //    print(tape.gradient(y, [image, filters]))
+   // ```
+   XCTAssertEqual(
+     grads.0,
+   [[[[1, 1, 1, 1],
+     [1, 1, 1, 1],
+     [1, 1, 1, 1],
+     [0, 0, 0, 0]],
+
+    [[1, 1, 1, 1],
+     [1, 1, 1, 1],
+     [1, 1, 1, 1],
+     [0, 0, 0, 0]],
+
+    [[0, 0, 0, 0],
+     [0, 0, 0, 0],
+     [0, 0, 0, 0],
+     [0, 0, 0, 0]],
+
+    [[0, 0, 0, 0],
+     [0, 0, 0, 0],
+     [0, 0, 0, 0],
+     [0, 0, 0, 0]]],
+
+
+    [[[1, 1, 1, 1],
+     [1, 1, 1, 1],
+     [1, 1, 1, 1],
+     [0, 0, 0, 0]],
+
+    [[1, 1, 1, 1],
+     [1, 1, 1, 1],
+     [1, 1, 1, 1],
+     [0, 0, 0, 0]],
+
+    [[0, 0, 0, 0],
+     [0, 0, 0, 0],
+     [0, 0, 0, 0],
+     [0, 0, 0, 0]],
+
+    [[0, 0, 0, 0],
+     [0, 0, 0, 0],
+     [0, 0, 0, 0],
+     [0, 0, 0, 0]]]]
+    )
+   XCTAssertEqual(
+     grads.1.filter,
+     [[[0, 0, 0, 0],
+       [0, 0, 0, 0]],
+      
+        [[0, 0, 0, 0],
+        [0, 0, 0, 0]],
+
+        [[0, 0, 0, 0],
+         [-12, -12, -12, -12]],
+     ]
+
+    )
+ }
+
   static var allTests = [
     ("testConv1D", testConv1D),
     ("testConv1DDilation", testConv1DDilation),
@@ -2465,5 +2645,9 @@ final class LayerTests: XCTestCase {
     ("testGaussianNoise", testGaussianNoise),
     ("testGaussianDropout", testGaussianDropout),
     ("testAlphaDropout", testAlphaDropout),
+    ("testDilation2D", testDilation2D),
+    ("testDilation2DGradient", testDilation2DGradient),
+    ("testErosion2D", testErosion2D),
+    ("testErosion2DGradient", testErosion2DGradient)
   ]
 }
