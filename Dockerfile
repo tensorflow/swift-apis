@@ -18,8 +18,11 @@ fi
 
 # Download and extract S4TF
 WORKDIR /swift-tensorflow-toolchain
-RUN curl -fSsL $swift_tf_url -o swift.tar.gz \
-    && mkdir usr \
+RUN if ! curl -fSsL --retry 5 $swift_tf_url -o swift.tar.gz; \
+    then sleep 30 && curl -fSsL --retry 5 $swift_tf_url -o swift.tar.gz; \
+    fi;
+
+RUN mkdir usr \
     && tar -xzf swift.tar.gz --directory=usr --strip-components=1 \
     && rm swift.tar.gz
 
