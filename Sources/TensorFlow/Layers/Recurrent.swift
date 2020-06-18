@@ -481,7 +481,9 @@ where Cell.TimeStepOutput: Mergeable {
     _mergeFunction.function
   }
 
-  public init(_ cell: @autoclosure () -> Cell, mergeFunction: @escaping MergeFunction = sum) {
+  /// - Note: Default merge mode in Keras is `concat`, which is not supported right now.
+  ///   When `concat` mode is added, it can be used as default value to not confuse users.
+  public init(_ cell: @autoclosure () -> Cell, mergeFunction: @escaping MergeFunction) {
     forward = RecurrentLayer(cell())
     backward = RecurrentLayer(cell(), backwardDirection: true)
     _mergeFunction = .init(mergeFunction)

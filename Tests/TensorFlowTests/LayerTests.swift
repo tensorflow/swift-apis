@@ -1826,7 +1826,8 @@ final class LayerTests: XCTestCase {
     // END GENERATED CODE
     withTensorLeakChecking {
       var rnn = BidirectionalBasicRNN<Float>(
-        BasicRNNCell(inputSize: 4, hiddenSize: 4)
+        BasicRNNCell(inputSize: 4, hiddenSize: 4),
+        mergeFunction: BasicRNNCell<Float>.State.sum
       )
 
       rnn.forward.cell.weight = Tensor(concatenating: [kernelForward, recurrentKernelForward])
@@ -2483,7 +2484,8 @@ final class LayerTests: XCTestCase {
 
     withTensorLeakChecking {
       var lstm = BidirectionalLSTM<Float>(
-        LSTMCell(inputSize: 3, hiddenSize: 4)
+        LSTMCell(inputSize: 3, hiddenSize: 4),
+        mergeFunction: LSTMCell<Float>.State.sum
       )
 
       lstm.forward.cell.fusedWeight =
@@ -3327,7 +3329,8 @@ final class LayerTests: XCTestCase {
     // END GENERATED CODE
     withTensorLeakChecking {
       var gru = BidirectionalGRU<Float>(
-        GRUCell(inputSize: 3, hiddenSize: 4)
+        GRUCell(inputSize: 3, hiddenSize: 4),
+        mergeFunction: GRUCell<Float>.State.sum
       )
 
       XCTAssertEqual(gru.forward.cell.updateKernel.shape, updateKernelForward.shape)
