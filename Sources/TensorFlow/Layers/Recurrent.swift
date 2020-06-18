@@ -502,8 +502,7 @@ where Cell.TimeStepOutput: Mergeable {
 
     for forwardIndex in  0 ..< withoutDerivative(at: inputs.count) {
         let backwardIndex = withoutDerivative(at: inputs.count - 1 - forwardIndex)
-        // TODO: Replace with merge function
-        outputs.append(sum(forwardOutputs[forwardIndex], backwardOutputs[backwardIndex]))
+        outputs.append(mergeFunction(forwardOutputs[forwardIndex], backwardOutputs[backwardIndex]))
     }
 
     return outputs
