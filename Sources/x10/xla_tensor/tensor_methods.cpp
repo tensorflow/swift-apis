@@ -95,6 +95,7 @@
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/reflection_pad2d.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/reflection_pad2d_backward.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/repeat.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/ops/replica_id.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/replication_pad.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/replication_pad_backward.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/resize.h"
@@ -3035,6 +3036,10 @@ XLATensor XLATensor::xla_slice(const XLATensor& input,
 
 XLATensor XLATensor::xla_truncated_normal(const XLATensor& input) {
   return input.CreateFrom(ir::ops::XlaTruncatedNormal(input.GetIrValue()));
+}
+
+XLATensor XLATensor::xla_replica_id(const Device& device) {
+  return XLATensor::Create(ir::MakeNode<ir::ops::ReplicaId>(), device);
 }
 
 }  // namespace swift_xla

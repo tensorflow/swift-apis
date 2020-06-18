@@ -341,6 +341,7 @@ XLA_API OpaqueXLATensor* XLATensor_relu(OpaqueXLATensor* a);
 XLA_API OpaqueXLATensor* XLATensor_rem(OpaqueXLATensor* a, OpaqueXLATensor* b);
 XLA_API OpaqueXLATensor* XLATensor_repeat(OpaqueXLATensor* input,
                                           Int64ArrayRef repeats);
+XLA_API OpaqueXLATensor* XLATensor_replica_id(const struct CDevice device);
 XLA_API OpaqueXLATensor*
 XLATensor_resize_value(OpaqueXLATensor* a, Int64ArrayRef arr);
 XLA_API OpaqueXLATensor* XLATensor_round_to_even(OpaqueXLATensor* a);

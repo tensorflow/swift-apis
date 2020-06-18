@@ -1264,6 +1264,8 @@ class XLATensor {
 
   static XLATensor xla_truncated_normal(const XLATensor& input);
 
+  static XLATensor xla_replica_id(const Device& device);
+
  private:
   struct SyncTensorsConfig {
     // Whether we want to force XLA data on the target tensors (hence trimming

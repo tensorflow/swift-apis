@@ -572,6 +572,9 @@ OpaqueXLATensor* XLATensor_repeat(OpaqueXLATensor* input,
   return new XLATensor(
       XLATensor::repeat(*input, XlaHelpers::I64List(repeats.slice())));
 }
+OpaqueXLATensor* XLATensor_replica_id(const struct CDevice device) {
+  return new XLATensor(XLATensor::xla_replica_id(ConvertDevice(device)));
+}
 OpaqueXLATensor* XLATensor_resize_value(OpaqueXLATensor* a, Int64ArrayRef arr) {
   return new XLATensor(
       XLATensor::resize_value(*a, XlaHelpers::I64List(arr.slice())));
