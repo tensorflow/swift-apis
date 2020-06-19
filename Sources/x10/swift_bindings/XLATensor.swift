@@ -743,6 +743,10 @@ extension XLATensor {
     return XLATensor(_handle: XLATensor_relu(a.handle))
   }
 
+  static func replica_id(_ device: Device) -> XLATensor {
+    return XLATensor(_handle: XLATensor_replica_id(device.cdevice));
+  }
+
   static func resize_value(_ value: XLATensor, _ dims: [Int64]) -> XLATensor {
     defer { _fixLifetime(value) }
     return dims.withArrayRef { dims in

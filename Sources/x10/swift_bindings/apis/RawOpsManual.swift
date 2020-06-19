@@ -2929,6 +2929,10 @@ public enum _RawXLA {
     return Tensor(_xla: XLATensor.threshold_backward(gradients.xlaTensor, features.xlaTensor, 0))
   }
 
+  public static func replicaId(_ device: Device) -> Tensor<Int32> {
+    return Tensor(_xla: XLATensor.replica_id(device))
+  }
+
   /// Reshapes a tensor.
   ///
   /// Given `tensor`, this operation returns a tensor that has the same values
