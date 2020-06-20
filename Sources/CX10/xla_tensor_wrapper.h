@@ -266,6 +266,12 @@ XLA_API OpaqueXLATensor* XLATensor_diagonal_value(OpaqueXLATensor* a,
                                                   int64_t offset, int64_t dim1,
                                                   int64_t dim2);
 XLA_API OpaqueXLATensor* XLATensor_div(OpaqueXLATensor* a, OpaqueXLATensor* b);
+XLA_API OpaqueXLATensor* XLATensor_dynamic_slice(
+    OpaqueXLATensor* base,
+    OpaqueXLATensorArrayRef start_indices, Int64ArrayRef slice_shapes);
+XLA_API OpaqueXLATensor* XLATensor_dynamic_update_slice(
+    OpaqueXLATensor* base, OpaqueXLATensor* update,
+    OpaqueXLATensorArrayRef inputs);
 XLA_API OpaqueXLATensor* XLATensor_eq(OpaqueXLATensor* a, OpaqueXLATensor* b);
 XLA_API OpaqueXLATensor* XLATensor_exp(OpaqueXLATensor* a);
 XLA_API OpaqueXLATensor*

@@ -482,6 +482,13 @@ class XLATensor {
   static void div_(XLATensor& input, const XLATensor& other);
   static void div_(XLATensor& input, at::Scalar other);
 
+  static XLATensor dynamic_slice(
+      const XLATensor& base, absl::Span<const XLATensor> start_indices,
+      absl::Span<const xla::int64> slice_shapes);
+  static XLATensor dynamic_update_slice(
+      const XLATensor& base, const XLATensor& update,
+      absl::Span<const XLATensor> start_indices);
+
   // A generalized contraction between tensors of arbitrary dimension defined by
   // the given equation and applied to the input tensors.
   static XLATensor einsum(const std::string& equation,
