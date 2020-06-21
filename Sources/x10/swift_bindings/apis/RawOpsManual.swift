@@ -1420,6 +1420,26 @@ public enum _RawXLA {
     return Tensor(_xla: XLATensor.div(x.xlaTensor, y.xlaTensor))
   }
 
+  public static func dynamicSlice<T: TensorFlowNumeric>(
+    _ base: Tensor<T>,
+    _ startIndices: [Tensor<Int32>],
+    _ sliceShape: [Int64]
+  ) -> Tensor<T> {
+    return Tensor(_xla: XLATensor.dynamic_slice(base.xlaTensor, startIndices.map { $0.xlaTensor }, sliceShape))
+  }
+
+  public static func dynamicUpdateSlice<T: TensorFlowNumeric>(
+    _ base: Tensor<T>,
+    _ update: Tensor<T>,
+    _ startIndices: [Tensor<Int32>]
+  ) -> Tensor<T> {
+    checkSameDevice(base, update)
+    checkSamePrecision(base, update)
+    return Tensor(
+      _xla: XLATensor.dynamic_update_slice(
+        base.xlaTensor, update.xlaTensor, startIndices.map { $0.xlaTensor }))
+  }
+
   /// Computes exponential linear: `exp(features) - 1` if < 0, `features` otherwise.
   ///
   /// See [Fast and Accurate Deep Network Learning by Exponential Linear Units (ELUs)

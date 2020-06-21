@@ -49,6 +49,8 @@
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/cumsum.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/device_data.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/diagonal.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/ops/dynamic_slice.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/ops/dynamic_update_slice.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/einsum.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/expand.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/exponential.h"
@@ -1040,6 +1042,33 @@ void XLATensor::div_(XLATensor& input, at::Scalar other) {
   ir::Value constant =
       GetIrValueForScalar(other, input.shape(), input.GetDevice());
   input.SetInPlaceIrValue(input.GetIrValue() / constant);
+}
+
+XLATensor XLATensor::dynamic_slice(
+    const XLATensor& base,
+    absl::Span<const XLATensor> start_indices,
+    absl::Span<const xla::int64> slice_shapes) {
+  XLA_CHECK_GT(start_indices.size(), 0);
+  std::vector<ir::Value> values;
+  for (auto& tensor : start_indices) {
+    values.push_back(tensor.GetIrValue());
+  }
+  return base.CreateFrom(ir::MakeNode<ir::ops::DynamicSlice>(
+      base.GetIrValue(),
+      absl::Span<const ir::Value>(values), slice_shapes));
+}
+
+XLATensor XLATensor::dynamic_update_slice(
+    const XLATensor& base, const XLATensor& update,
+    absl::Span<const XLATensor> start_indices) {
+  XLA_CHECK_GT(start_indices.size(), 0);
+  std::vector<ir::Value> values;
+  for (auto& tensor : start_indices) {
+    values.push_back(tensor.GetIrValue());
+  }
+  return base.CreateFrom(ir::MakeNode<ir::ops::DynamicUpdateSlice>(
+      base.GetIrValue(), update.GetIrValue(),
+      absl::Span<const ir::Value>(values)));
 }
 
 XLATensor XLATensor::eq(const XLATensor& input, at::Scalar other) {

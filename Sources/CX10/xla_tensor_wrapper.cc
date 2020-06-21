@@ -400,6 +400,18 @@ OpaqueXLATensor* XLATensor_diagonal_value(OpaqueXLATensor* a, int64_t offset,
 OpaqueXLATensor* XLATensor_div(OpaqueXLATensor* a, OpaqueXLATensor* b) {
   return new XLATensor(XLATensor::div(*a, *b));
 }
+OpaqueXLATensor* XLATensor_dynamic_slice(
+    OpaqueXLATensor* base,
+    OpaqueXLATensorArrayRef start_indices, Int64ArrayRef slice_shapes) {
+  return new XLATensor(
+      XLATensor::dynamic_slice(*base, start_indices.array(), XlaHelpers::I64List(slice_shapes.slice())));
+}
+OpaqueXLATensor* XLATensor_dynamic_update_slice(
+    OpaqueXLATensor* base, OpaqueXLATensor* update,
+    OpaqueXLATensorArrayRef inputs) {
+  return new XLATensor(
+      XLATensor::dynamic_update_slice(*base, *update, inputs.array()));
+}
 OpaqueXLATensor* XLATensor_eq(OpaqueXLATensor* a, OpaqueXLATensor* b) {
   return new XLATensor(XLATensor::eq(*a, *b));
 }
