@@ -14,7 +14,7 @@
 
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/dynamic_update_slice.h"
 
-#include "third_party/absl/strings/str_join.h"
+#include "absl/strings/str_join.h"
 #include "tensorflow/compiler/xla/xla_client/util.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/data_ops.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/lowering_context.h"
