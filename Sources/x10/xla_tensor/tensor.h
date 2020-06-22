@@ -1509,6 +1509,18 @@ class XLATensor {
 
   static xla::int64 GetNextTensorId();
 
+  // Check if the current node is a cutpoint (by hash) and apply pending graph -
+  // in other words, cut the trace - and return true iff that's the case.
+  bool ApplyTraceletCutpoint();
+
+  // Detect when new compilations are triggered after first few steps and
+  // attempt to find common portions, after which the trace is cut. This is
+  // meant to address variable upper bound loops, which lead to different
+  // unrolled sequences of code despite the body being identical. The hope is to
+  // reach a steady state in which no new tracelets are created after a
+  // relatively small number of cuts.
+  static void InsertTraceletCutpoint(const PostOrderData& po_data);
+
   std::shared_ptr<Data> data_;
 };
 
