@@ -3061,9 +3061,9 @@ internal func _vjpMatmul<Scalar: TensorFlowFloatingPoint>(
         rhsGrad = matmul(lhs, transposed: true, v, transposed: false)
       case (false, true):
         lhsGrad = matmul(v, rhs)
-        rhsGrad = matmul(lhs, transposed: true, v, transposed: false)
+        rhsGrad = matmul(v, transposed: true, lhs, transposed: false)
       case (true, false):
-        lhsGrad = matmul(v, transposed: false, rhs, transposed: true)
+        lhsGrad = matmul(rhs, transposed: false, v, transposed: true)
         rhsGrad = matmul(lhs, v)
       case (true, true):
         lhsGrad = matmul(v, transposed: true, rhs, transposed: true)
