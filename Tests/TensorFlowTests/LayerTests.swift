@@ -2568,6 +2568,56 @@ func testErosion2DGradient() {
     )
  }
 
+  func testSequentialComposition() {
+    var layers: [Dense<Float>] = []
+    let sizes = [(8, 7), (7, 6), (6, 5)]
+    for (inputSize, outputSize) in sizes {
+      let weight = Tensor<Float>(
+        shape: [inputSize, outputSize], scalars: (0..<inputSize * outputSize).map(Float.init))
+      let bias = Tensor<Float>(shape: [1, outputSize], scalars: (0..<outputSize).map(Float.init))
+      layers.append(Dense<Float>(weight: weight, bias: bias, activation: identity))
+    }
+
+    let input = Tensor<Float>(shape: [5, 8], scalars: (0..<40).map(Float.init))
+    let (output, grad) = valueWithGradient(at: layers, input) { $0.sequentiallyComposed($1).sum() }
+    let (layersGrad, inputGrad) = grad
+
+    // Ideal code: requires arity-4 `valueWithGradient`.
+    /*
+    let (expectedOutput, expectedGrad) = valueWithGradient(at: input, layers[0], layers[1], layers[2]) {
+      $0.sequenced(through: $1, $2, $3)
+    }
+    let (expectedInputGrad, expectedLayer0Grad, expectedLayer1Grad, expectedLayer2Grad) = expectedGrad
+    */
+    // Workaround for lack of arity-4 `valueWithGradient`.
+    // START WORKAROUND
+    struct Layers: Differentiable {
+      var layer0: Dense<Float>
+      var layer1: Dense<Float>
+      var layer2: Dense<Float>
+
+      init(_ layer0: Dense<Float>, _ layer1: Dense<Float>, _ layer2: Dense<Float>) {
+        self.layer0 = layer0
+        self.layer1 = layer1
+        self.layer2 = layer2
+      }
+    }
+    let (expectedOutput, expectedGrad) = valueWithGradient(at: input, Layers(layers[0], layers[1], layers[2])) {
+      $0.sequenced(through: $1.layer0, $1.layer1, $1.layer2).sum()
+    }
+    let (expectedInputGrad, expectedLayersGrad) = expectedGrad
+    let expectedLayer0Grad = expectedLayersGrad.layer0
+    let expectedLayer1Grad = expectedLayersGrad.layer1
+    let expectedLayer2Grad = expectedLayersGrad.layer2
+    // END WORKAROUND
+
+    XCTAssertEqual(output, expectedOutput)
+    XCTAssertEqual(inputGrad, expectedInputGrad)
+    XCTAssertEqual(layersGrad[0], expectedLayer0Grad)
+    XCTAssertEqual(layersGrad[1], expectedLayer1Grad)
+    XCTAssertEqual(layersGrad[2], expectedLayer2Grad)
+  }
+
   static var allTests = [
     ("testConv1D", testConv1D),
     ("testConv1DDilation", testConv1DDilation),
@@ -2648,6 +2698,7 @@ func testErosion2DGradient() {
     ("testDilation2D", testDilation2D),
     ("testDilation2DGradient", testDilation2DGradient),
     ("testErosion2D", testErosion2D),
-    ("testErosion2DGradient", testErosion2DGradient)
+    ("testErosion2DGradient", testErosion2DGradient),
+    ("testSequentialComposition", testSequentialComposition)
   ]
 }
