@@ -198,7 +198,7 @@ public struct Device {
 
 extension Device: Equatable {
   public static func == (lhs: Device, rhs: Device) -> Bool {
-    return lhs.kind == rhs.kind && lhs.ordinal == rhs.ordinal
+    return lhs.kind == rhs.kind && lhs.ordinal == rhs.ordinal && lhs.backend == rhs.backend
   }
 }
 
@@ -218,6 +218,8 @@ extension CDevice {
 /// If wait is set to true, this call blocks until the computation is complete.
 public func LazyTensorBarrier(on device: Device? = nil, devices: [Device] = [], wait: Bool = false)
 {
+  if device == Device.defaultTFEager { return }
+
   devices.withDeviceList { devices in
     if var cdevice = device?.cdevice {
       XLATensor_LazyTensorBarrier(&cdevice, &devices, wait)
