@@ -79,13 +79,13 @@ final class KeyPathIterableTests: XCTestCase {
   func testMoveToDevice() throws {
     // Testing is possible only when there are multiple devices.
     // Skip test if only one device is available.
-    guard let otherDevice = Device.allDevices.first(where: { $0 != Device.default }) else {
+    guard let otherDevice = Device.allDevices.first(where: { $0 != Device.defaultXLA }) else {
       return
     }
 
     var example = Wrapper<Tensor<Float>>.reducedPrecisionExample
     example.assertRecursivelyAllProperties(
-      withType: Tensor<Float>.self, { $0.device == Device.default })
+      withType: Tensor<Float>.self, { $0.device == Device.defaultXLA })
     example.move(to: otherDevice)
     example.assertRecursivelyAllProperties(
       withType: Tensor<Float>.self, { $0.device == otherDevice })
@@ -94,13 +94,13 @@ final class KeyPathIterableTests: XCTestCase {
   func testCopyingToDevice() throws {
     // Testing is possible only when there are multiple devices.
     // Skip test if only one device is available.
-    guard let otherDevice = Device.allDevices.first(where: { $0 != Device.default }) else {
+    guard let otherDevice = Device.allDevices.first(where: { $0 != Device.defaultXLA }) else {
       return
     }
 
     let example = Wrapper<Tensor<Float>>.reducedPrecisionExample
     example.assertRecursivelyAllProperties(
-      withType: Tensor<Float>.self, { $0.device == Device.default })
+      withType: Tensor<Float>.self, { $0.device == Device.defaultXLA })
     let copiedExample = Wrapper<Tensor<Float>>(copying: example, to: otherDevice)
     copiedExample.assertRecursivelyAllProperties(
       withType: Tensor<Float>.self, { $0.device == otherDevice })
