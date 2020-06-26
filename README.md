@@ -138,6 +138,9 @@ cmake --build out
 
 To run tests:
 
+*Note: To view failure output, run `export CTEST_OUTPUT_ON_FAILURE=1` before
+running tests.*
+
 ```shell
 cmake --build out --target test
 ```
