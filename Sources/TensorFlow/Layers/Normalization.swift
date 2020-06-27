@@ -357,7 +357,7 @@ public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     var normalizedAxes = Array(1..<grouped.rank)
     normalizedAxes.remove(at: positiveAxis - 1)
     let moments = grouped.moments(alongAxes: normalizedAxes)
-    let eps = Tensor(epsilon)
+    let eps = Tensor(copying: Tensor(epsilon), to: self.offset.device)
     let normalized = normalize(
       grouped,
       mean: moments.mean, variance: moments.variance,
