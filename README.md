@@ -155,6 +155,15 @@ cmake --build out
 cmake --build out --target test
 ```
 
+#### macOS
+
+On macOS, passing `-D BUILD_TESTING=NO` is currently necessary to skip building
+tests. This avoids an error: `cannot load underlying module for 'XCTest'`.
+
+```shell
+cmake -B out -D USE_BUNDLED_CTENSORFLOW=YES -D USE_BUNDLED_X10=YES -D BUILD_TESTING=NO -G Ninja -S swift-apis
+cmake --build out
+```
 
 ## Bugs
 
