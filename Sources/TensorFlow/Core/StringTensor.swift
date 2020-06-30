@@ -66,6 +66,7 @@ extension StringTensor {
             dataAddr = dataAddr.advanced(by: 1)
           }
         })
+      self.init(handle: handle)
     #else
       let tfEncodedSizes = cStrings.map { TF_StringEncodedSize($0.count) }
 
