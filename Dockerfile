@@ -81,6 +81,7 @@ RUN /swift-tensorflow-toolchain/usr/bin/swift build
 RUN /swift-tensorflow-toolchain/usr/bin/swift build -c release
 
 WORKDIR /open_spiel
+RUN rm -f Package.resolved
 RUN /swift-tensorflow-toolchain/usr/bin/swift test
 
 WORKDIR /swift-apis
