@@ -77,6 +77,7 @@ RUN /swift-tensorflow-toolchain/usr/bin/swift build -c release
 
 WORKDIR /fastai_dev/swift/FastaiNotebook_11_imagenette
 
+RUN rm Package.resolved
 RUN /swift-tensorflow-toolchain/usr/bin/swift build
 RUN /swift-tensorflow-toolchain/usr/bin/swift build -c release
 
