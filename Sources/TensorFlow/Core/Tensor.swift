@@ -36,8 +36,7 @@ public struct Tensor<Scalar: TensorFlowScalar> {
   public let handle: TensorHandle<Scalar>
 
   /// An internal marker to identify scalar zero tensors, for use in optimizations.
-  @usableFromInline
-  internal var _isScalarZero = false
+  public var _isScalarZero = false
   
   @inlinable
   public init(handle: TensorHandle<Scalar>) {
