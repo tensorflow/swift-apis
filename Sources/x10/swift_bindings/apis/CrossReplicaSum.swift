@@ -36,7 +36,7 @@ extension Tensor: CrossReplicaSummable where Scalar: TensorFlowNumeric {
   /// Runs a cross replica sum for this tensor. The same cross replica sum
   /// must happen on each of the other devices participating in the sum.
   public mutating func crossReplicaSum(_ scale: Double) {
-    self = _Raw.crossReplicaSum([self], scale).first!
+    fatalError()
   }
 }
 

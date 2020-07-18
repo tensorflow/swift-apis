@@ -58,11 +58,7 @@ import _Differentiation
     public static func _convertToReducedPrecision<Root>(
       _ root: inout Root, _ rootKeyPath: PartialKeyPath<Root>
     ) {
-      guard let keyPath = rootKeyPath as? WritableKeyPath<Root, Self> else {
-        fatalError(
-          "Failed conversion from \(rootKeyPath) to 'WritableKeyPath<\(Root.self), \(Self.self)>'")
-      }
-      root[keyPath: keyPath] = root[keyPath: keyPath].toReducedPrecision
+      fatalError()
     }
 
     /// Given an `inout Root` root value and a `PartialKeyPath<Root>` key path, converts the physical
@@ -74,11 +70,7 @@ import _Differentiation
     public static func _convertToFullPrecision<Root>(
       _ root: inout Root, _ rootKeyPath: PartialKeyPath<Root>
     ) {
-      guard let keyPath = rootKeyPath as? WritableKeyPath<Root, Self> else {
-        fatalError(
-          "Failed conversion from \(rootKeyPath) to 'WritableKeyPath<\(Root.self), \(Self.self)>'")
-      }
-      root[keyPath: keyPath] = root[keyPath: keyPath].toFullPrecision
+      fatalError()
     }
   }
 
@@ -88,14 +80,7 @@ import _Differentiation
     public func _convertToReducedPrecision<Root>(
       _ root: inout Root, _ rootKeyPath: PartialKeyPath<Root>
     ) {
-      for kp in _allKeyPathsTypeErased {
-        let joinedKeyPath = rootKeyPath.appending(path: kp)!
-        if let valueType = type(of: joinedKeyPath).valueType as? _ReducedPrecisionConvertible.Type {
-          valueType._convertToReducedPrecision(&root, joinedKeyPath)
-        } else if let nested = self[keyPath: kp] as? _KeyPathIterableBase {
-          nested._convertToReducedPrecision(&root, joinedKeyPath)
-        }
-      }
+      fatalError()
     }
 
     /// Recursively converts all `_ReducedPrecisionConvertible`-conforming nested properties and
@@ -103,14 +88,7 @@ import _Differentiation
     public func _convertToFullPrecision<Root>(
       _ root: inout Root, _ rootKeyPath: PartialKeyPath<Root>
     ) {
-      for kp in _allKeyPathsTypeErased {
-        let joinedKeyPath = rootKeyPath.appending(path: kp)!
-        if let valueType = type(of: joinedKeyPath).valueType as? _ReducedPrecisionConvertible.Type {
-          valueType._convertToFullPrecision(&root, joinedKeyPath)
-        } else if let nested = self[keyPath: kp] as? _KeyPathIterableBase {
-          nested._convertToFullPrecision(&root, joinedKeyPath)
-        }
-      }
+      fatalError()
     }
   }
 
@@ -118,29 +96,25 @@ import _Differentiation
     /// Recursively converts all `_ReducedPrecisionConvertible`-conforming nested properties and elements
     /// to reduced precision.
     public mutating func convertToReducedPrecision() {
-      _convertToReducedPrecision(&self, \.self)
+      fatalError()
     }
 
     /// Recursively converts all `_ReducedPrecisionConvertible`-conforming nested properties and elements
     /// to full precision.
     public mutating func convertToFullPrecision() {
-      _convertToFullPrecision(&self, \.self)
+      fatalError()
     }
 
     /// Returns a copy of `self`, converting all `_ReducedPrecisionConvertible`-conforming nested
     /// properties and elements to reduced precision.
     public var toReducedPrecision: Self {
-      var result = self
-      result.convertToReducedPrecision()
-      return result
+      fatalError()
     }
 
     /// Returns a copy of `self`, converting all `_ReducedPrecisionConvertible`-conforming nested
     /// properties and elements to full precision.
     public var toFullPrecision: Self {
-      var result = self
-      result.convertToFullPrecision()
-      return result
+      fatalError()
     }
   }
 #endif
@@ -150,21 +124,14 @@ extension Tensor {
   ///
   /// Currently, reduced precision physical scalar types include only `BFloat16`.
   public var isReducedPrecision: Bool {
-    #if USING_X10_BACKEND
-      return device.backend == .XLA && xlaTensor.physicalScalarType == XLATensorScalarType_BFloat16
-    #else
-      // TODO: Implement.
-      return false
-    #endif
+    fatalError()
   }
 
   /// Promotes a scalar to a tensor with the same device and precision as the given tensor.
   // TODO (SR-12968): Mark `tensor` with `@noDerivative` and remove custom vjp below.
   @differentiable(where Scalar: TensorFlowFloatingPoint)
   public init(_ value: Scalar, deviceAndPrecisionLike tensor: Tensor) {
-    let device = tensor.device
-    let tmp = Tensor(value, on: device)
-    self = tensor.isReducedPrecision ? tmp.toReducedPrecision : tmp
+    fatalError()
   }
 }
 
@@ -177,14 +144,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
     _ value: Scalar,
     deviceAndPrecisionLike tensor: Tensor
   ) -> (value: Tensor, pullback: (Tensor) -> (Scalar, Tensor)) {
-    // Get device and precision in forward pass to avoid capturing `tensor` in pullback.
-    let device = tensor.device
-    let useReducedPrecision = tensor.isReducedPrecision
-    let result = Tensor(value, on: device)
-    return (useReducedPrecision ? result.toReducedPrecision : result, {
-      let tmp = Tensor(0, on: device)
-      return ($0.scalarized(), useReducedPrecision ? tmp.toReducedPrecision : tmp)
-    })
+    fatalError()
   }
 }
 
@@ -192,38 +152,24 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   extension Tensor: ReducedPrecisionConvertible, _ReducedPrecisionConvertible {
     /// Returns a copy of `self` converted to `BFloat16` physical scalar type.
     public var toReducedPrecision: Self {
-      if isReducedPrecision {
-        fatalError("Must not already have reduced precision")
-      }
-      if Scalar.self != Float.self {
-        fatalError("Reduced precision is only supported for Float tensors")
-      }
-      return _Raw.physicalCast(self, destType: BFloat16.self)
+      fatalError()
     }
 
     /// Returns a copy of `self` converted to `Scalar` physical scalar type.
     public var toFullPrecision: Self {
-      if !isReducedPrecision {
-        fatalError("Must have reduced precision")
-      }
-      if Scalar.self != Float.self {
-        fatalError("Reduced precision is only supported for Float tensors")
-      }
-      return _Raw.physicalCast(self, destType: Scalar.self)
+      fatalError()
     }
   }
 #else
   extension Tensor {
     /// Returns a copy of `self` converted to `BFloat16` physical scalar type.
     public var toReducedPrecision: Self {
-      // TODO: Implement.
-      return self
+      fatalError()
     }
 
     /// Returns a copy of `self` converted to `Scalar` physical scalar type.
     public var toFullPrecision: Self {
-      // TODO: Implement.
-      return self
+      fatalError()
     }
   }
 #endif
@@ -232,12 +178,12 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   @usableFromInline
   @derivative(of: toReducedPrecision)
   func _vjpToReducedPrecision() -> (value: Tensor, pullback: (Tensor) -> Tensor) {
-    (toReducedPrecision, { $0.toFullPrecision })
+    fatalError()
   }
 
   @usableFromInline
   @derivative(of: toFullPrecision)
   func _vjpToFullPrecision() -> (value: Tensor, pullback: (Tensor) -> Tensor) {
-    (toFullPrecision, { $0.toReducedPrecision })
+    fatalError()
   }
 }

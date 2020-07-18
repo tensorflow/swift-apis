@@ -339,18 +339,8 @@ extension _ExecutionContext {
   static func makeOp(
     _ name: String, _ outputCount: Int
   ) -> TFTensorOperation {
-    return _ThreadLocalState.useLazyTensor
-      ? LazyTensorOperation(name, outputCount)
-      : TFE_Op(name, outputCount)
+    fatalError()
   }
-}
-
-internal func _trace<In: TensorGroup, Out: TensorGroup>(_ fn: (In) -> Out) -> TFFunction {
-  let useLazyTensor = _ThreadLocalState.useLazyTensor
-  defer { _ThreadLocalState.useLazyTensor = useLazyTensor }
-  _ThreadLocalState.useLazyTensor = true
-  let trace = LazyTensorTraceBuilder.trace(fn)
-  return TFFunction(trace: trace)
 }
 
 // Trace the given function to generate a TF graph and return a closure that can be used to launch
@@ -359,19 +349,13 @@ public func _graph<In: TensorGroup, Out: TensorGroup>(
   _ fn: (In) -> Out,
   useXLA: Bool = false
 ) -> (In) -> Out {
-  let tffunc = _trace(fn)
-  return { input in
-    let inputHandles = input._tensorHandles.map { $0._tfeTensorHandle }
-    let outputHandles = tffunc.execute(inputHandles, usingXLA: useXLA)
-    return Out(_handles: outputHandles)
-  }
+  fatalError()
 }
 
 /// Trace the given function and return the name of the corresponding `TF_Function: In -> Out` that
 /// was created.
 public func _tffunc<In: TensorGroup, Out: TensorGroup>(_ fn: (In) -> Out) -> String {
-  let tffunc = _trace(fn)
-  return tffunc.name
+  fatalError()
 }
 
 extension _ExecutionContext {
@@ -515,8 +499,6 @@ func _TFCOpSetAttrTypeArray(
 ///  - LazyTensorContext
 class _ThreadLocalState {
   var deviceScopes = DeviceScopes()
-
-  var lazyTensorContext = LazyTensorContext()
 
   static var useLazyTensor: Bool {
     get {

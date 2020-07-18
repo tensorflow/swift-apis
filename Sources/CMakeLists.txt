@@ -1,6 +1,6 @@
 add_subdirectory(CTensorFlow)
-add_subdirectory(third_party/Experimental)
+# add_subdirectory(third_party/Experimental)
 add_subdirectory(Tensor)
 add_subdirectory(TensorFlow)
 add_subdirectory(CX10)
-add_subdirectory(x10)
+# add_subdirectory(x10)

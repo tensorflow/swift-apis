@@ -105,9 +105,6 @@ add_compile_options("$<$<COMPILE_LANGUAGE:Swift>:SHELL:-Xllvm -sil-inline-generi
 add_compile_options("$<$<COMPILE_LANGUAGE:Swift>:SHELL:-Xllvm -sil-partial-specialization>")
 
 add_subdirectory(Sources)
-if(BUILD_TESTING)
-  add_subdirectory(Tests)
-endif()
 
 if(NOT X10_FOUND AND NOT USE_BUNDLED_X10)
   get_swift_host_os(host_os)

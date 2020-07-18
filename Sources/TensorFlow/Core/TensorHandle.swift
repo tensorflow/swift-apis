@@ -311,7 +311,7 @@ extension Tensor {
     if let buffer = array.buffer as? CTensorTensorBuffer<Scalar> {
       #if USING_X10_BACKEND
         let tmp = Tensor(handle: TensorHandle(copyingFromCTensor: buffer.cTensor))
-        self = tmp.device == device ? tmp : Tensor(copying: tmp, to: device)
+        self = tmp
       #else
         self = Tensor(handle: TensorHandle(copyingFromCTensor: buffer.cTensor))
       #endif

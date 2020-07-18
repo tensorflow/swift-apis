@@ -50,7 +50,7 @@ func pullbackOfOneLikeY<T: TensorFlowFloatingPoint, R>(
   y: Tensor<T>,
   pullback: (Tensor<T>) -> R
 ) -> R {
-  let adDevice = y.device
+  let adDevice = Device.default
   _DeviceThreadLocalState.local.deviceStack.append(adDevice)
   let savedPrecision = _DeviceThreadLocalState.local.isReducedPrecision
   _DeviceThreadLocalState.local.isReducedPrecision = y.isReducedPrecision
