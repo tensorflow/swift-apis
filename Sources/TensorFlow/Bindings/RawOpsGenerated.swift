@@ -18,7 +18,7 @@ import CTensorFlow
 
 @inlinable @inline(__always)
 func makeOp(_ name: String, _ nOutputs: Int) -> TFTensorOperation {
-  _ExecutionContext.makeOp(name, nOutputs)
+  fatalError()
 }
 
 public struct _TFE_Op {

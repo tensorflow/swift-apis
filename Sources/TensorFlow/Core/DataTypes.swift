@@ -66,7 +66,7 @@ public protocol _TensorFlowDataTypeCompatible {
 //
 // This includes all `_TensorFlowDataTypeCompatible` types except `String`.
 #if USING_X10_BACKEND
-  public protocol TensorFlowScalar: XLAScalarType & _TensorFlowDataTypeCompatible {}
+  public protocol TensorFlowScalar: _TensorFlowDataTypeCompatible {}
 #else
   public protocol TensorFlowScalar: _TensorFlowDataTypeCompatible {}
 #endif

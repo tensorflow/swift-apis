@@ -34,16 +34,11 @@ extension Tensor {
     get { handle.rank }
   }
 
-  public var shape: TensorShape {
-    @_semantics("autodiff.nonvarying")
-    get { handle.shape }
-  }
-
   #if USING_X10_BACKEND
     @inlinable
     public var scalarCount: Int {
       @_semantics("autodiff.nonvarying")
-      get { shape.contiguousSize }
+      get { 0 }
     }
   #else
     @inlinable
@@ -98,9 +93,6 @@ extension Tensor {
   @inlinable
   @differentiable(where Scalar: TensorFlowFloatingPoint)
   public func scalarized() -> Scalar {
-    precondition(
-      shape.contiguousSize == 1,
-      "This tensor must have exactly one scalar but contains \(shape.contiguousSize).")
     return scalars[0]
   }
 }
@@ -125,51 +117,16 @@ extension TensorFlowScalar {
 
 
 extension Tensor {
-  @inlinable
-  public var array: ShapedArray<Scalar> {
-    debugLog("Returning a host copy of array.")
-    #if USING_X10_BACKEND
-      if handle.backend == .XLA {
-        return ShapedArray<Scalar>(shape: shape.dimensions, scalars: scalars)
-      }
-    #endif
-    return handle.makeHostCopy()
-  }
-
   @differentiable(where Scalar: TensorFlowFloatingPoint)
   public var scalars: [Scalar] {
-    #if USING_X10_BACKEND
-      if handle.backend == .XLA {
-        let (storage, _) = xlaTensor.fetchTensorValues(Scalar.self)
-        return storage
-      }
-    #endif
-    return array.scalars
+    return []
   }
 }
-
-extension Tensor where Scalar: TensorFlowFloatingPoint {
-  @inlinable
-  @derivative(of: scalars)
-  func _vjpScalars() -> (value: [Scalar], pullback: (Array<Scalar>.TangentVector) -> Tensor) {
-    fatalError()
-  }
-}
-
 
 extension Tensor {
   @differentiable(where Scalar: TensorFlowFloatingPoint)
   public init(_ value: Scalar, on device: Device = .default) {
-    #if USING_X10_BACKEND
-      switch device.backend {
-      case .XLA:
-        self.init(_xla: XLATensor.make(value, on: device))
-      case .TF_EAGER:
-        self.init(shape: [], scalars: [value], on: device)
-      }
-    #else
-      self.init(shape: [], scalars: [value], on: device)
-    #endif
+    fatalError()
   }
 }
 
@@ -187,7 +144,7 @@ extension Tensor {
   @inlinable
   @differentiable(where Scalar: TensorFlowFloatingPoint)
   public init(_ scalars: [Scalar], on device: Device = .default) {
-    self.init(shape: [scalars.count], scalars: scalars, on: device)
+    fatalError()
   }
 
   @inlinable
@@ -210,123 +167,6 @@ extension Tensor {
     #endif
   }
 
-  @inlinable
-  @differentiable(where Scalar: TensorFlowFloatingPoint)
-  public init(shape: TensorShape, scalars: [Scalar], on device: Device = .default) {
-    precondition(
-      shape.contiguousSize == scalars.count,
-      """
-      The shape requires \(shape.contiguousSize) scalars but \(scalars.count) were \
-      provided.
-      """)
-    self = scalars.withUnsafeBufferPointer { bufferPointer in
-      Tensor(shape: shape, scalars: bufferPointer, on: device)
-    }
-  }
-
-  public init(
-    shape: TensorShape,
-    scalars: UnsafeBufferPointer<Scalar>,
-    on device: Device = .default
-  ) {
-    precondition(
-      shape.contiguousSize == scalars.count,
-      """
-      The shape requires \(shape.contiguousSize) scalars but \(scalars.count) were \
-      provided.
-      """)
-    #if USING_X10_BACKEND
-      switch device.backend {
-      case .XLA:
-        self.init(_xla: XLATensor.make(scalars, shape.dimensions, on: device))
-      case .TF_EAGER:
-        let handle = TensorHandle<Scalar>(
-          shape: shape.dimensions,
-          scalarsInitializer: { address in
-            address.initialize(from: scalars.baseAddress!, count: shape.contiguousSize)
-          })
-        self.init(handle: handle)
-      }
-    #else
-      let handle = TensorHandle<Scalar>(
-        shape: shape.dimensions,
-        scalarsInitializer: { address in
-          address.initialize(from: scalars.baseAddress!, count: shape.contiguousSize)
-        })
-      self.init(handle: handle)
-    #endif
-  }
-
-  #if USING_X10_BACKEND
-    @inlinable
-    public init(
-      shape: TensorShape,
-      scalars: [Scalar],
-      toReducedPrecision: Bool,
-      directlyOn device: Device
-    ) {
-      precondition(
-        shape.contiguousSize == scalars.count,
-        """
-        The shape requires \(shape.contiguousSize) scalars but \(scalars.count) were \
-        provided.
-        """)
-      self = scalars.withUnsafeBufferPointer { bufferPointer in
-        Tensor(
-          shape: shape, scalars: bufferPointer, toReducedPrecision: toReducedPrecision,
-          directlyOn: device)
-      }
-    }
-
-    public init(
-      shape: TensorShape,
-      scalars: UnsafeBufferPointer<Scalar>,
-      toReducedPrecision: Bool,
-      directlyOn device: Device
-    ) {
-      precondition(
-        shape.contiguousSize == scalars.count,
-        """
-        The shape requires \(shape.contiguousSize) scalars but \(scalars.count) were \
-        provided.
-        """)
-      switch device.backend {
-      case .XLA:
-        self.init(
-          _xla: XLATensor.make(
-            scalars, shape.dimensions, toReducedPrecision: toReducedPrecision,
-            directlyOn: device))
-      case .TF_EAGER:
-        precondition(!toReducedPrecision)
-        self = .init(shape: shape, scalars: scalars, on: device)
-      }
-    }
-  #endif
-
-  public init<C: RandomAccessCollection>(
-    shape: TensorShape, scalars: C, on device: Device = .default
-  ) where C.Element == Scalar {
-    precondition(
-      shape.contiguousSize == scalars.count,
-      """
-      The shape requires \(shape.contiguousSize) scalars but \(scalars.count) were \
-      provided.
-      """)
-    #if USING_X10_BACKEND
-      self.init(shape: shape, scalars: [Scalar](scalars), on: device)
-    #else
-      let handle = TensorHandle<Scalar>(
-        shape: shape.dimensions,
-        scalarsInitializer: { addr in
-          var currentAddr = addr
-          for scalar in scalars {
-            currentAddr.initialize(to: scalar)
-            currentAddr = currentAddr.advanced(by: 1)
-          }
-        })
-      self.init(handle: handle)
-    #endif
-  }
 }
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
@@ -337,19 +177,6 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   ) {
     (
       value: Tensor(scalars, on: device),
-      pullback: { v in
-        Array<Scalar>.TangentVector(v.scalars)
-      }
-    )
-  }
-
-  @inlinable
-  @derivative(of: init(shape:scalars:on:))
-  static func _vjpInit(
-    shape: TensorShape, scalars: [Scalar], on device: Device = .default
-  ) -> (value: Tensor, pullback: (Tensor) -> Array<Scalar>.TangentVector) {
-    (
-      value: Tensor(shape: shape, scalars: scalars, on: device),
       pullback: { v in
         Array<Scalar>.TangentVector(v.scalars)
       }
@@ -425,75 +252,6 @@ extension Tensor: Equatable where Scalar: Equatable {
     fatalError()
   }
 }
-
-
-extension Tensor: CustomStringConvertible {
-  public var description: String {
-    @_semantics("autodiff.nonvarying")
-    get {
-      return array.description
-    }
-  }
-}
-
-extension Tensor {
-  public func description(
-    lineWidth: Int = 80,
-    edgeElementCount: Int = 3,
-    summarizing: Bool = false
-  ) -> String {
-    return array.description(
-      lineWidth: lineWidth,
-      edgeElementCount: edgeElementCount,
-      summarizing: summarizing)
-  }
-
-  public var fullDescription: String {
-    @_semantics("autodiff.nonvarying")
-    get {
-      return array.fullDescription
-    }
-  }
-
-  #if USING_X10_BACKEND
-    public var irText: String { XLATensor.irText(xlaTensor) }
-  #endif
-}
-
-extension Tensor: CustomPlaygroundDisplayConvertible {
-  public var playgroundDescription: Any {
-    @_semantics("autodiff.nonvarying")
-    get {
-      return description
-    }
-  }
-}
-
-extension Tensor: CustomReflectable {
-  public var customMirror: Mirror {
-    @_semantics("autodiff.nonvarying")
-    get {
-      return Mirror(self, children: [], displayStyle: .struct)
-    }
-  }
-}
-
-
-extension Tensor: Codable where Scalar: Codable {
-  @inlinable
-  public func encode(to encoder: Encoder) throws {
-    var container = encoder.singleValueContainer()
-    try container.encode(array)
-  }
-
-  @inlinable
-  public init(from decoder: Decoder) throws {
-    let container = try decoder.singleValueContainer()
-    let array = try container.decode(ShapedArray<Scalar>.self)
-    self.init(array)
-  }
-}
-
 
 extension Tensor: AdditiveArithmetic where Scalar: Numeric {
   @inlinable
