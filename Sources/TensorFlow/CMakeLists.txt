@@ -99,7 +99,8 @@ target_link_libraries(TensorFlow PUBLIC
   $<$<NOT:$<PLATFORM_ID:Darwin>>:Foundation>
   Tensor)
 if(ENABLE_PYTHON_SUPPORT)
-  add_dependencies(TensorFlow PythonKit)
+  target_link_libraries(TensorFlow PUBLIC
+    PythonKit)
 endif()
 
 _install_target(TensorFlow)
