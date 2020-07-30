@@ -22,6 +22,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "absl/container/node_hash_map.h"
 #include "absl/strings/str_split.h"
 #include "tensorflow/compiler/xla/xla_client/debug_macros.h"
 #include "tensorflow/compiler/xla/xla_client/sys_util.h"
@@ -58,8 +59,8 @@ class LayoutManager {
   };
 
   using LayoutMap =
-      std::unordered_map<absl::Span<const xla::int64>,
-                         std::shared_ptr<LayoutEntry>, DimensionsHasher>;
+      absl::node_hash_map<absl::Span<const xla::int64>,
+                          std::shared_ptr<LayoutEntry>, DimensionsHasher>;
 
   LayoutManager() { PopulateLayouts(); }
 
