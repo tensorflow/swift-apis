@@ -111,10 +111,11 @@ final class DatasetTests: XCTestCase {
   func testMapToDifferentType() {
     let scalars = Tensor<Float>(rangeFrom: 0, to: 5, stride: 1)
     let dataset = Dataset(elements: scalars)
-    let shuffled = dataset.shuffled(sampleCount: 5, randomSeed: 42)
-    XCTAssertEqual([0, 4, 1, 3, 2], shuffled.map { $0.scalar! })
+    let shuffled = dataset.shuffled(sampleCount: 5, randomSeed: 42,
+                                    reshuffleForEachIterator: false)
+    XCTAssertEqual([2, 1, 3, 4, 2], shuffled.map { $0.scalar! })
     let evens = shuffled.map { Tensor($0 % 2) .== Tensor(0) }
-    XCTAssertEqual(evens.map { $0.scalar! }, [true, true, false, false, true])
+    XCTAssertEqual(evens.map { $0.scalar! }, [true, false, false, true, true])
   }
 
   func testSingleValueBatched() {
