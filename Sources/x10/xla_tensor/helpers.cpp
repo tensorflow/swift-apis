@@ -400,6 +400,32 @@ xla::XlaOp XlaHelpers::Flatten(xla::XlaOp input, xla::Shape* input_shape) {
   return DynamicReshape(input, {input_elements});
 }
 
+xla::XlaOp XlaHelpers::FlattenDimRange(xla::XlaOp input, xla::int64 start,
+                                       xla::int64 range,
+                                       xla::Shape* input_shape) {
+  xla::util::MaybePtr<xla::Shape> input_shape_tmp(input_shape);
+  *input_shape_tmp = ShapeOfXlaOp(input);
+
+  std::vector<xla::int64> sizes;
+  xla::int64 flat_size = -1;
+  for (xla::int64 dim = 0; dim < input_shape_tmp->rank(); ++dim) {
+    if (dim < start || dim >= start + range) {
+      if (flat_size >= 0) {
+        sizes.push_back(flat_size);
+        flat_size = -1;
+      }
+      sizes.push_back(input_shape_tmp->dimensions(dim));
+    } else {
+      flat_size =
+          (flat_size < 0 ? 1 : flat_size) * input_shape_tmp->dimensions(dim);
+    }
+  }
+  if (flat_size >= 0) {
+    sizes.push_back(flat_size);
+  }
+  return DynamicReshape(input, sizes);
+}
+
 std::vector<xla::int64> XlaHelpers::MakeTransposePermutation(xla::int64 dim0,
                                                              xla::int64 dim1,
                                                              xla::int64 rank) {
@@ -535,7 +561,7 @@ std::vector<xla::int64> XlaHelpers::GetPromotedShape(
     xla::int64 dim2 = shape2_dims[shape2_dims.size() - min_size + i];
     XLA_CHECK(dim1 == dim2 || dim1 == 1 || dim2 == 1)
         << "(" << absl::StrJoin(shape1_dims, ", ") << ") and ("
-        << absl::StrJoin(shape1_dims, ", ") << ")";
+        << absl::StrJoin(shape2_dims, ", ") << ")";
     if (dim1 == 0 || dim2 == 0) {
       dimensions.push_back(0);
     } else {

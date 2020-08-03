@@ -27,7 +27,6 @@ add_library(TensorFlow SHARED
   Core/LazyTensorTraceCache.swift
   Core/BroadcastingPullback.swift
   Core/MixedPrecision.swift
-  Core/PythonConversion.swift
   Core/Runtime.swift
   Core/Serialization.swift
   Core/ShapedArray.swift
@@ -79,6 +78,10 @@ target_sources(TensorFlow PRIVATE
   ../x10/swift_bindings/Device.swift
   ../x10/swift_bindings/XLAScalarType.swift
   ../x10/swift_bindings/XLATensor.swift)
+if(ENABLE_PYTHON_SUPPORT)
+  target_sources(TensorFlow PRIVATE
+    Core/PythonConversion.swift)
+endif()
 target_compile_definitions(TensorFlow PRIVATE
   USING_X10_BACKEND
   DEFAULT_BACKEND_EAGER)
@@ -95,5 +98,9 @@ target_link_libraries(TensorFlow PUBLIC
   $<$<NOT:$<PLATFORM_ID:Darwin>>:dispatch>
   $<$<NOT:$<PLATFORM_ID:Darwin>>:Foundation>
   Tensor)
+if(ENABLE_PYTHON_SUPPORT)
+  target_link_libraries(TensorFlow PUBLIC
+    PythonKit)
+endif()
 
 _install_target(TensorFlow)

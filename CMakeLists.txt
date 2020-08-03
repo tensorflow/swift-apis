@@ -24,6 +24,48 @@ option(USE_BUNDLED_X10
   "Use the x10 library bundled in the active Swift toolchain" OFF)
 option(USE_BUNDLED_CTENSORFLOW
   "Use the CTensorFlow module bundled in the active Swift toolchain" OFF)
+option(ENABLE_PYTHON_SUPPORT
+  "Enable Python interop using PythonKit" ON)
+
+if(ENABLE_PYTHON_SUPPORT)
+  include(ExternalProject)
+
+  ExternalProject_Add(python-kit
+    GIT_REPOSITORY
+      git://github.com/pvieito/PythonKit
+    GIT_TAG
+      master
+    CMAKE_ARGS
+      -D BUILD_SHARED_LIBS=YES
+      -D CMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}
+      -D CMAKE_Swift_COMPILER=${CMAKE_Swift_COMPILER}
+      -D CMAKE_Swift_COMPILER_TARGET=${CMAKE_Swift_COMPILER_TARGET}
+      -D CMAKE_Swift_FLAGS=${CMAKE_Swift_FLAGS}
+    INSTALL_COMMAND
+      COMMAND
+        ${CMAKE_COMMAND} -E copy_if_different <BINARY_DIR>/swift/PythonKit.swiftmodule ${CMAKE_Swift_MODULE_DIRECTORY}/
+      COMMAND
+        ${CMAKE_COMMAND} -E copy_if_different <BINARY_DIR>/swift/PythonKit.swiftdoc ${CMAKE_Swift_MODULE_DIRECTORY}/
+    BUILD_BYPRODUCTS
+      <BINARY_DIR>/PythonKit/${CMAKE_SHARED_LIBRARY_PREFIX}PythonKit${CMAKE_SHARED_LIBRARY_SUFFIX}
+    UPDATE_DISCONNECTED
+      TRUE
+    STEP_TARGETS
+      install)
+  ExternalProject_Get_Property(python-kit BINARY_DIR)
+  ExternalProject_Get_Property(python-kit SOURCE_DIR)
+
+  add_library(PythonKit IMPORTED UNKNOWN)
+  set_target_properties(PythonKit PROPERTIES
+    IMPORTED_LOCATION ${BINARY_DIR}/PythonKit/${CMAKE_SHARED_LIBRARY_PREFIX}PythonKit${CMAKE_SHARED_LIBRARY_SUFFIX}
+    IMPORTED_IMPLIB ${BINARY_DIR}/PythonKit/${CMAKE_IMPORT_LIBRARY_PREFIX}PythonKit${CMAKE_IMPORT_LIBRARY_SUFFIX}
+    INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_Swift_MODULE_DIRECTORY}"
+    INTERFACE_LINK_DIRECTORIES ${BINARY_DIR}/PythonKit)
+  add_dependencies(PythonKit
+    python-kit-install)
+
+  file(MAKE_DIRECTORY ${CMAKE_Swift_MODULE_DIRECTORY})
+endif()
 
 find_package(X10)
 if(NOT X10_FOUND AND NOT USE_BUNDLED_X10)
@@ -111,6 +153,31 @@ endif()
 
 if(NOT X10_FOUND AND NOT USE_BUNDLED_X10)
   get_swift_host_os(host_os)
-  install(FILES ${SOURCE_DIR}/bazel-bin/tensorflow/compiler/tf2xla/xla_tensor/${CMAKE_SHARED_LIBRARY_PREFIX}x10${CMAKE_SHARED_LIBRARY_SUFFIX}
+  install(FILES $<TARGET_PROPERTY:x10,IMPORTED_LOCATION>
     DESTINATION lib/swift/${host_os})
+endif()
+if(ENABLE_PYTHON_SUPPORT)
+  get_swift_host_os(swift_os)
+  get_swift_host_arch(swift_arch)
+
+  install(FILES $<TARGET_PROPERTY:PythonKit,IMPORTED_LOCATION>
+    DESTINATION lib/swift/${swift_os})
+  if(CMAKE_SYSTEM_NAME STREQUAL Windows)
+    install(FILES $<TARGET_PROPERTY:PythonKit,IMPORTED_IMPLIB>
+      DESTINATION lib/swift/${swift_os})
+  endif()
+
+  if(CMAKE_SYSTEM_NAME STREQUAL Darwin)
+    install(FILES ${CMAKE_Swift_MODULE_DIRECTORY}/PythonKit.swiftdoc
+      DESTINATION lib/swift/${swift_os}/PythonKit.swiftmodule
+      RENAME ${swift_arch}.swiftdoc)
+    install(FILES ${CMAKE_Swift_MODULE_DIRECTORY}/PythonKit.swiftmodule
+      DESTINATION lib/swift/${swift_os}/PythonKit.swiftmodule
+      RENAME ${swift_arch}.swiftmodule)
+  else()
+    install(FILES
+      ${CMAKE_Swift_MODULE_DIRECTORY}/PythonKit.swiftdoc
+      ${CMAKE_Swift_MODULE_DIRECTORY}/PythonKit.swiftmodule
+      DESTINATION lib/swift/${swift_os}/${swift_arch})
+  endif()
 endif()

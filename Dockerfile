@@ -3,9 +3,6 @@ FROM gcr.io/swift-tensorflow/base-deps-cuda10.2-cudnn7-ubuntu18.04
 # Allows the caller to specify the toolchain to use.
 ARG swift_tf_url=https://storage.googleapis.com/swift-tensorflow-artifacts/nightlies/latest/swift-tensorflow-DEVELOPMENT-notf-ubuntu18.04.tar.gz
 
-# Copy the kernel into the container
-COPY . /swift-apis
-
 RUN if test -d /swift-apis/google-cloud-sdk; then \
   mv /swift-apis/google-cloud-sdk /opt/google-cloud-sdk; \
   /opt/google-cloud-sdk/bin/gcloud auth list; \
@@ -49,6 +46,9 @@ RUN pip install -U pip six numpy wheel setuptools mock 'future>=0.17.1'         
 RUN /swift-tensorflow-toolchain/usr/bin/swift --version
 
 WORKDIR /swift-apis
+
+# Copy the kernel into the container
+COPY . /swift-apis
 
 # Perform CMake based build
 ENV TF_NEED_CUDA=1

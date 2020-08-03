@@ -31,6 +31,7 @@
 #include <set>
 #include <unordered_map>
 
+#include "absl/container/node_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "tensorflow/compiler/xla/xla_client/debug_macros.h"
@@ -170,7 +171,7 @@ class MeshServiceImpl : public grpc::MeshService::Service {
 
   std::mutex lock_;
   grpc::Config config_;
-  std::unordered_map<std::string, std::shared_ptr<RendezvousData>>
+  absl::node_hash_map<std::string, std::shared_ptr<RendezvousData>>
       rendezvous_map_;
 };
 
