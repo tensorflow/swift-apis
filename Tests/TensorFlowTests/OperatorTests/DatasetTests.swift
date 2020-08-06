@@ -113,7 +113,7 @@ final class DatasetTests: XCTestCase {
     let dataset = Dataset(elements: scalars)
     let shuffled = dataset.shuffled(sampleCount: 5, randomSeed: 42,
                                     reshuffleForEachIterator: false)
-    XCTAssertEqual([2, 1, 3, 4, 2], shuffled.map { $0.scalar! })
+    XCTAssertEqual([2, 1, 3, 4, 0], shuffled.map { $0.scalar! })
     let evens = shuffled.map { Tensor($0 % 2) .== Tensor(0) }
     XCTAssertEqual(evens.map { $0.scalar! }, [true, false, false, true, true])
   }
