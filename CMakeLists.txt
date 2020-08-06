@@ -26,6 +26,53 @@ option(USE_BUNDLED_CTENSORFLOW
   "Use the CTensorFlow module bundled in the active Swift toolchain" OFF)
 option(ENABLE_PYTHON_SUPPORT
   "Enable Python interop using PythonKit" ON)
+option(ENABLE_SWIFT_NUMERICS
+  "Enable integrating swift-numerics" YES)
+
+if(ENABLE_SWIFT_NUMERICS)
+  include(ExternalProject)
+
+  function(import_module module_name build_dir build_target)
+    add_library(${module_name} IMPORTED UNKNOWN)
+    if(CMAKE_SYSTEM_NAME STREQUAL Windows)
+      set_target_properties(${module_name} PROPERTIES
+        IMPORTED_LOCATION ${build_dir}/bin/${CMAKE_SHARED_LIBRARY_PREFIX}${module_name}${CMAKE_SHARED_LIBRARY_SUFFIX}
+        IMPORTED_IMPLIB ${build_dir}/lib/${CMAKE_IMPORT_LIBRARY_PREFIX}${module_name}${CMAKE_IMPORT_LIBRARY_SUFFIX}
+        INTERFACE_INCLUDE_DIRECTORIES ${build_dir}/swift)
+    else()
+      set_target_properties(${module_name} PROPERTIES
+        IMPORTED_LOCATION ${build_dir}/lib/${CMAKE_SHARED_LIBRARY_PREFIX}${module_name}${CMAKE_SHARED_LIBRARY_SUFFIX}
+        INTERFACE_INCLUDE_DIRECTORIES ${build_dir}/swift)
+    endif()
+    add_dependencies(${module_name} ${build_target})
+  endfunction()
+
+  ExternalProject_Add(swift-numerics
+    GIT_REPOSITORY
+      git://github.com/apple/swift-numerics
+    GIT_TAG
+      master
+    CMAKE_ARGS
+      -D BUILD_SHARED_LIBS=YES
+      -D BUILD_TESTING=NO
+      -D CMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}
+      -D CMAKE_Swift_COMPILER=${CMAKE_Swift_COMPILER}
+      -D CMAKE_Swift_COMPILER_TARGET=${CMAKE_Swift_COMPILER_TARGET}
+      -D CMAKE_Swift_FLAGS=${CMAKE_Swift_FLAGS}
+    INSTALL_COMMAND
+      ""
+    BUILD_BYPRODUCTS
+      <BINARY_DIR>/bin/${CMAKE_SHARED_LIBRARY_PREFIX}Numerics${CMAKE_SHARED_LIBRARY_SUFFIX}
+    UPDATE_DISCONNECTED
+      TRUE
+    STEP_TARGETS
+      build)
+  ExternalProject_Get_Property(swift-numerics BINARY_DIR)
+
+  import_module(Numerics ${BINARY_DIR} swift-numerics-build)
+  import_module(ComplexModule ${BINARY_DIR} swift-numerics-build)
+  import_module(RealModule ${BINARY_DIR} swift-numerics-build)
+endif()
 
 if(ENABLE_PYTHON_SUPPORT)
   include(ExternalProject)
@@ -180,4 +227,31 @@ if(ENABLE_PYTHON_SUPPORT)
       ${CMAKE_Swift_MODULE_DIRECTORY}/PythonKit.swiftmodule
       DESTINATION lib/swift/${swift_os}/${swift_arch})
   endif()
+endif()
+if(ENABLE_SWIFT_NUMERICS)
+  get_swift_host_os(swift_os)
+  get_swift_host_arch(swift_arch)
+
+  foreach(module Numerics;ComplexModule;RealModule)
+    install(FILES $<TARGET_PROPERTY:${module},IMPORTED_LOCATION>
+      DESTINATION lib/swift/${swift_os})
+    if(CMAKE_SYSTEM_NAME STREQUAL Windows)
+      install(FILES $<TARGET_PROPERTY:${module},IMPORTED_IMPLIB>
+        DESTINATION lib/swift/${swift_os})
+    endif()
+
+    if(CMAKE_SYSTEM_NAME STREQUAL Darwin)
+      install(FILES $<TARGET_PROPERTY:${module},INTERFACE_INCLUDE_DIRECTORIES>/${module}.swiftdoc
+        DESTINATION lib/swift/${swift_os}/${module}.swiftmodule
+        RENAME ${swift_arch}.swiftdoc)
+      install(FILES $<TARGET_PROPERTY:${module},INTERFACE_INCLUDE_DIRECTORIES>/${module}.swiftmodule
+        DESTINATION lib/swift/${swift_os}/${module}.swiftmodule
+        RENAME ${swift_arch}.swiftmodule)
+    else()
+      install(FILES
+        $<TARGET_PROPERTY:${module},INTERFACE_INCLUDE_DIRECTORIES>/${module}.swiftdoc
+        $<TARGET_PROPERTY:${module},INTERFACE_INCLUDE_DIRECTORIES>/${module}.swiftmodule
+        DESTINATION lib/swift/${swift_os}/${swift_arch})
+    endif()
+  endforeach()
 endif()
