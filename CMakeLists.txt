@@ -34,7 +34,7 @@ if(ENABLE_PYTHON_SUPPORT)
     GIT_REPOSITORY
       git://github.com/pvieito/PythonKit
     GIT_TAG
-      master
+      a0817e0d68f0a50a631fc5fab0b8d219fd010241
     CMAKE_ARGS
       -D BUILD_SHARED_LIBS=YES
       -D CMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}
