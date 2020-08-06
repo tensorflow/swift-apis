@@ -3,9 +3,6 @@ FROM gcr.io/swift-tensorflow/base-deps-cuda10.2-cudnn7-ubuntu18.04
 # Allows the caller to specify the toolchain to use.
 ARG swift_tf_url=https://storage.googleapis.com/swift-tensorflow-artifacts/nightlies/latest/swift-tensorflow-DEVELOPMENT-notf-ubuntu18.04.tar.gz
 
-# Copy the kernel into the container
-COPY . /swift-apis
-
 RUN if test -d /swift-apis/google-cloud-sdk; then \
   mv /swift-apis/google-cloud-sdk /opt/google-cloud-sdk; \
   /opt/google-cloud-sdk/bin/gcloud auth list; \
@@ -18,8 +15,11 @@ fi
 
 # Download and extract S4TF
 WORKDIR /swift-tensorflow-toolchain
-RUN curl -fSsL $swift_tf_url -o swift.tar.gz \
-    && mkdir usr \
+RUN if ! curl -fSsL --retry 5 $swift_tf_url -o swift.tar.gz; \
+    then sleep 30 && curl -fSsL --retry 5 $swift_tf_url -o swift.tar.gz; \
+    fi;
+
+RUN mkdir usr \
     && tar -xzf swift.tar.gz --directory=usr --strip-components=1 \
     && rm swift.tar.gz
 
@@ -47,6 +47,9 @@ RUN /swift-tensorflow-toolchain/usr/bin/swift --version
 
 WORKDIR /swift-apis
 
+# Copy the kernel into the container
+COPY . /swift-apis
+
 # Perform CMake based build
 ENV TF_NEED_CUDA=1
 ENV CTEST_OUTPUT_ON_FAILURE=1
@@ -56,7 +59,6 @@ RUN cmake                                                                       
       -D CMAKE_BUILD_TYPE=Release                                               \
       -D CMAKE_INSTALL_PREFIX=/swift-tensorflow-toolchain/usr                   \
       -D CMAKE_Swift_COMPILER=/swift-tensorflow-toolchain/usr/bin/swiftc        \
-      -D BUILD_X10=YES                                                          \
       -G Ninja                                                                  \
       -S /swift-apis
 RUN cmake --build /BinaryCache/tensorflow-swift-apis --verbose
@@ -79,6 +81,7 @@ RUN /swift-tensorflow-toolchain/usr/bin/swift build
 RUN /swift-tensorflow-toolchain/usr/bin/swift build -c release
 
 WORKDIR /open_spiel
+RUN rm -f Package.resolved
 RUN /swift-tensorflow-toolchain/usr/bin/swift test
 
 WORKDIR /swift-apis

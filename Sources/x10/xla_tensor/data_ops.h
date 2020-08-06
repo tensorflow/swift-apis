@@ -113,9 +113,14 @@ xla::XlaOp BuildMirrorPadBackward(xla::XlaOp grad_output,
 xla::XlaOp BuildReflectionPad2d(xla::XlaOp input,
                                 absl::Span<const xla::int64> padding);
 
-xla::XlaOp BuildReflectionPad2dBackward(xla::XlaOp grad_output,
-                                        xla::XlaOp input,
-                                        absl::Span<const xla::int64> padding);
+xla::XlaOp BuildReflectionPadBackward(xla::XlaOp grad_output, xla::XlaOp input,
+                                      absl::Span<const xla::int64> padding);
+
+xla::XlaOp BuildReplicationPad(xla::XlaOp input,
+                               absl::Span<const xla::int64> padding);
+
+xla::XlaOp BuildReplicationPadBackward(xla::XlaOp grad_output, xla::XlaOp input,
+                                       absl::Span<const xla::int64> padding);
 
 xla::XlaOp PadInDim(xla::XlaOp input, xla::int64 dim, xla::int64 pad_lo,
                     xla::int64 pad_hi, const xla::XlaOp* pad_value = nullptr);

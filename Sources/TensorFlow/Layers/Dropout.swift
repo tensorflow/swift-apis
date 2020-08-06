@@ -12,35 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import _Differentiation
 #if os(Windows)
   import func MSVCRT.sqrt
 #endif
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
   /// Computes dropout given a probability.
-  // TODO: Remove the underscore once `droppingOut(probability:)` has been removed.
   @differentiable(wrt: self where Scalar: Differentiable)
-  fileprivate func _droppingOut(probability: Double) -> Tensor {
+  fileprivate func droppingOut(probability: Double) -> Tensor {
     let noise = Tensor(randomUniform: shape, on: device)
     let keepMask = noise .>= Scalar(probability)
     let keepProbability = Scalar(1.0 - probability)
     return self * Tensor(keepMask) / Tensor(keepProbability, on: device)
-  }
-}
-
-extension Tensor where Scalar: TensorFlowFloatingPoint {
-  /// Computes dropout given a probability.
-  @available(
-    *, deprecated,
-    message:
-      """
-      This API will be removed after Swift for TensorFlow 0.6.
-      For dropout, use the `Dropout` layer.
-      """
-  )
-  @differentiable(wrt: self where Scalar: Differentiable)
-  public func droppingOut(probability: Double) -> Tensor {
-    _droppingOut(probability: probability)
   }
 }
 
@@ -50,6 +34,8 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
 /// training time, which helps prevent overfitting.
 @frozen
 public struct Dropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  public typealias TangentVector = EmptyTangentVector
+
   @noDerivative public let probability: Double
 
   /// Creates a dropout layer.
@@ -71,7 +57,7 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     switch Context.local.learningPhase {
     case .training:
-      return input._droppingOut(probability: probability)
+      return input.droppingOut(probability: probability)
     case .inference:
       return input
     }
@@ -82,6 +68,8 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
 ///
 /// The noise added always has mean zero, but has a configurable standard deviation.
 public struct GaussianNoise<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  public typealias TangentVector = EmptyTangentVector
+
   @noDerivative public let standardDeviation: Tensor<Scalar>
 
   /// Creates a Gaussian noise layer
@@ -111,6 +99,8 @@ public struct GaussianNoise<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer
 /// Because this is a regularization layer, it is only active during training time. During inference,
 /// `GaussianDropout` passes through the input unmodified.
 public struct GaussianDropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  public typealias TangentVector = EmptyTangentVector
+
   @noDerivative public let probability: Scalar
   @noDerivative public let standardDeviation: Scalar
 
@@ -151,6 +141,8 @@ public struct GaussianDropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
 /// Source : Self-Normalizing Neural Networks: https://arxiv.org/abs/1706.02515
 @frozen
 public struct AlphaDropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  public typealias TangentVector = EmptyTangentVector
+
   @noDerivative public let probability: Double
 
   /// Initializes an `AlphaDropout` layer with a configurable `probability`.

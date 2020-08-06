@@ -44,6 +44,20 @@ extension _RawTFEager {
       keepDims: keepDims)
   }
 
+  public static func pad<
+    T: TensorFlowScalar
+  >(
+    _ input: Tensor<T>,
+    paddings: [Int]
+  ) -> Tensor<T> {
+    precondition(paddings.count % 2 == 0, "Length of linearized paddings must be even")
+    let paddings2D = Tensor(
+      shape: [paddings.count / 2, 2],
+      scalars: paddings.map { Int32($0) },
+      on: .defaultTFEager)
+    return pad(input, paddings: paddings2D)
+  }
+
   public static func reshape<
     T: TensorFlowScalar
   >(
@@ -51,6 +65,42 @@ extension _RawTFEager {
     shape: [Int64]
   ) -> Tensor<T> {
     reshape(tensor, shape: Tensor<Int32>(shape.map { Int32($0) }, on: .defaultTFEager))
+  }
+
+  public static func slice<
+    T: TensorFlowScalar
+  >(
+    _ input: Tensor<T>,
+    begin: [Int],
+    size: [Int]
+  ) -> Tensor<T> {
+    slice(
+      input, begin: Tensor<Int32>(begin.map { Int32($0) }, on: .defaultTFEager),
+      size: Tensor<Int32>(size.map { Int32($0) }, on: .defaultTFEager))
+  }
+
+  public static func split<T: TensorFlowScalar>(
+    splitDim: Int,
+    value: Tensor<T>,
+    numSplit: Int64
+  ) -> [Tensor<T>] {
+    split(
+      splitDim: Tensor<Int32>(Int32(splitDim), on: .defaultTFEager), value: value,
+      numSplit: numSplit)
+  }
+
+  public static func splitV<
+    T: TensorFlowScalar
+  >(
+    value: Tensor<T>,
+    sizeSplits: [Int],
+    splitDim: Int
+  ) -> [Tensor<T>] {
+    splitV(
+      value: value,
+      sizeSplits: Tensor<Int32>(sizeSplits.map { Int32($0) }, on: .defaultTFEager),
+      splitDim: Tensor<Int32>(Int32(splitDim), on: .defaultTFEager),
+      numSplit: Int64(sizeSplits.count))
   }
 
   public static func sum<
@@ -64,6 +114,37 @@ extension _RawTFEager {
       input,
       reductionIndices: Tensor<Int32>(reductionIndices.map { Int32($0) }, on: .defaultTFEager),
       keepDims: keepDims)
+  }
+
+  public static func tile<
+    T: TensorFlowScalar
+  >(
+    _ input: Tensor<T>,
+    multiples: [Int]
+  ) -> Tensor<T> {
+    tile(input, multiples: Tensor<Int32>(multiples.map { Int32($0) }, on: .defaultTFEager))
+  }
+
+  public static func transpose<
+    T: TensorFlowScalar
+  >(
+    _ x: Tensor<T>,
+    perm: [Int]
+  ) -> Tensor<T> {
+    transpose(x, perm: Tensor<Int32>(perm.map { Int32($0) }, on: .defaultTFEager))
+  }
+
+  public static func unsortedSegmentSum<
+    T: TensorFlowNumeric,
+    Tindices: TensorFlowIndex
+  >(
+    data: Tensor<T>,
+    segmentIds: Tensor<Tindices>,
+    numSegments: Int
+  ) -> Tensor<T> {
+    unsortedSegmentSum(
+      data: data, segmentIds: segmentIds,
+      numSegments: Tensor(Int32(numSegments), on: .defaultTFEager))
   }
 
   public static func broadcastTo<
@@ -194,6 +275,20 @@ extension _RawTFEager {
       }
     }
 
+    public static func pad<
+      T: TensorFlowScalar
+    >(
+      _ input: Tensor<T>,
+      paddings: [Int]
+    ) -> Tensor<T> {
+      switch input.handle.backend {
+      case .XLA:
+        return _RawXLA.pad(input, paddings: paddings)
+      case .TF_EAGER:
+        return _RawTFEager.pad(input, paddings: paddings)
+      }
+    }
+
     public static func reshape<
       T: TensorFlowScalar
     >(
@@ -206,6 +301,71 @@ extension _RawTFEager {
       case .TF_EAGER:
         return _RawTFEager.reshape(
           tensor, shape: Tensor<Int32>(shape.map { Int32($0) }, on: .defaultTFEager))
+      }
+    }
+
+    public static func slice<
+      T: TensorFlowScalar
+    >(
+      _ input: Tensor<T>,
+      begin: [Int],
+      size: [Int]
+    ) -> Tensor<T> {
+      switch input.handle.backend {
+      case .XLA:
+        return _RawXLA.slice(input, begin: begin, size: size)
+      case .TF_EAGER:
+        return _RawTFEager.slice(
+          input, begin: Tensor<Int32>(begin.map { Int32($0) }, on: .defaultTFEager),
+          size: Tensor<Int32>(size.map { Int32($0) }, on: .defaultTFEager))
+      }
+    }
+
+    public static func split<T: TensorFlowScalar>(
+      splitDim: Int,
+      value: Tensor<T>,
+      numSplit: Int64
+    ) -> [Tensor<T>] {
+      switch value.handle.backend {
+      case .XLA:
+        return _RawXLA.split(splitDim: splitDim, value: value, numSplit: numSplit)
+      case .TF_EAGER:
+        return _RawTFEager.split(
+          splitDim: Tensor<Int32>(Int32(splitDim), on: .defaultTFEager), value: value,
+          numSplit: numSplit)
+      }
+    }
+
+    public static func splitV<
+      T: TensorFlowScalar
+    >(
+      value: Tensor<T>,
+      sizeSplits: [Int],
+      splitDim: Int
+    ) -> [Tensor<T>] {
+      switch value.handle.backend {
+      case .XLA:
+        return _RawXLA.splitV(value: value, sizeSplits: sizeSplits, splitDim: splitDim)
+      case .TF_EAGER:
+        return _RawTFEager.splitV(
+          value: value,
+          sizeSplits: Tensor<Int32>(sizeSplits.map { Int32($0) }, on: .defaultTFEager),
+          splitDim: Tensor<Int32>(Int32(splitDim), on: .defaultTFEager),
+          numSplit: Int64(sizeSplits.count))
+      }
+    }
+
+    public static func tile<
+      T: TensorFlowScalar
+    >(
+      _ input: Tensor<T>,
+      multiples: [Int]
+    ) -> Tensor<T> {
+      switch input.handle.backend {
+      case .XLA:
+        return _RawXLA.tile(input, multiples: multiples)
+      case .TF_EAGER:
+        return _RawTFEager.tile(input, multiples: multiples)
       }
     }
 
@@ -226,6 +386,40 @@ extension _RawTFEager {
           input,
           reductionIndices: Tensor<Int32>(reductionIndices.map { Int32($0) }, on: .defaultTFEager),
           keepDims: keepDims)
+      }
+    }
+
+    public static func transpose<
+      T: TensorFlowScalar
+    >(
+      _ x: Tensor<T>,
+      perm: [Int]
+    ) -> Tensor<T> {
+      switch x.handle.backend {
+      case .XLA:
+        return _RawXLA.transpose(x, perm: perm)
+      case .TF_EAGER:
+        return _RawTFEager.transpose(
+          x, perm: Tensor<Int32>(perm.map { Int32($0) }, on: .defaultTFEager))
+      }
+    }
+
+    public static func unsortedSegmentSum<
+      T: TensorFlowNumeric,
+      Tindices: TensorFlowIndex
+    >(
+      data: Tensor<T>,
+      segmentIds: Tensor<Tindices>,
+      numSegments: Int
+    ) -> Tensor<T> {
+      switch data.handle.backend {
+      case .XLA:
+        return _RawXLA.unsortedSegmentSum(
+          data: data, segmentIds: segmentIds, numSegments: numSegments)
+      case .TF_EAGER:
+        return _RawTFEager.unsortedSegmentSum(
+          data: data, segmentIds: segmentIds,
+          numSegments: Tensor(Int32(numSegments), on: .defaultTFEager))
       }
     }
 

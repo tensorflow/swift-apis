@@ -12,9 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import _Differentiation
+
 /// A max pooling layer for temporal data.
 @frozen
 public struct MaxPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  public typealias TangentVector = EmptyTangentVector
+
   /// The size of the sliding reduction window for pooling.
   @noDerivative public let poolSize: Int
   /// The stride of the sliding window for temporal dimension.
@@ -54,6 +58,8 @@ public struct MaxPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
 /// A max pooling layer for spatial data.
 @frozen
 public struct MaxPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  public typealias TangentVector = EmptyTangentVector
+
   /// The size of the sliding reduction window for pooling.
   @noDerivative public let poolSize: (Int, Int, Int, Int)
   /// The strides of the sliding window for each dimension of a 4-D input.
@@ -103,6 +109,8 @@ extension MaxPool2D {
 /// A max pooling layer for spatial or spatio-temporal data.
 @frozen
 public struct MaxPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  public typealias TangentVector = EmptyTangentVector
+
   /// The size of the sliding reduction window for pooling.
   @noDerivative public let poolSize: (Int, Int, Int, Int, Int)
   /// The strides of the sliding window for each dimension of a 5-D input.
@@ -169,6 +177,8 @@ extension MaxPool3D {
 /// An average pooling layer for temporal data.
 @frozen
 public struct AvgPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  public typealias TangentVector = EmptyTangentVector
+
   /// The size of the sliding reduction window for pooling.
   @noDerivative public let poolSize: Int
   /// The stride of the sliding window for temporal dimension.
@@ -208,6 +218,8 @@ public struct AvgPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
 /// An average pooling layer for spatial data.
 @frozen
 public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  public typealias TangentVector = EmptyTangentVector
+
   /// The size of the sliding reduction window for pooling.
   @noDerivative public let poolSize: (Int, Int, Int, Int)
   /// The strides of the sliding window for each dimension of a 4-D input.
@@ -257,6 +269,8 @@ extension AvgPool2D {
 /// An average pooling layer for spatial or spatio-temporal data.
 @frozen
 public struct AvgPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  public typealias TangentVector = EmptyTangentVector
+
   /// The size of the sliding reduction window for pooling.
   @noDerivative public let poolSize: (Int, Int, Int, Int, Int)
   /// The strides of the sliding window for each dimension of a 5-D input.
@@ -323,6 +337,8 @@ extension AvgPool3D {
 /// A global average pooling layer for temporal data.
 @frozen
 public struct GlobalAvgPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  public typealias TangentVector = EmptyTangentVector
+
   /// Creates a global average pooling layer.
   public init() {}
 
@@ -340,6 +356,8 @@ public struct GlobalAvgPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
 /// A global average pooling layer for spatial data.
 @frozen
 public struct GlobalAvgPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  public typealias TangentVector = EmptyTangentVector
+
   /// Creates a global average pooling layer.
   public init() {}
 
@@ -357,6 +375,8 @@ public struct GlobalAvgPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
 /// A global average pooling layer for spatial and spatio-temporal data.
 @frozen
 public struct GlobalAvgPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  public typealias TangentVector = EmptyTangentVector
+
   /// Creates a global average pooling layer.
   public init() {}
 
@@ -374,6 +394,8 @@ public struct GlobalAvgPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
 /// A global max pooling layer for temporal data.
 @frozen
 public struct GlobalMaxPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  public typealias TangentVector = EmptyTangentVector
+
   /// Creates a global max pooling layer.
   public init() {}
 
@@ -394,6 +416,8 @@ public struct GlobalMaxPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
 /// A global max pooling layer for spatial data.
 @frozen
 public struct GlobalMaxPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  public typealias TangentVector = EmptyTangentVector
+
   /// Creates a global max pooling layer.
   public init() {}
 
@@ -411,6 +435,8 @@ public struct GlobalMaxPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
 /// A global max pooling layer for spatial and spatio-temporal data.
 @frozen
 public struct GlobalMaxPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  public typealias TangentVector = EmptyTangentVector
+
   /// Creates a global max pooling layer.
   public init() {}
 
@@ -429,6 +455,8 @@ public struct GlobalMaxPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
 /// Note: `FractionalMaxPool` does not have an XLA implementation, and thus may have performance implications.
 @frozen
 public struct FractionalMaxPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  public typealias TangentVector = EmptyTangentVector
+
   /// Pooling ratios for each dimension of input of shape (batch, height, width, channels).
   /// Currently pooling in only height and width is supported.
   @noDerivative public let poolingRatio: (Double, Double, Double, Double)

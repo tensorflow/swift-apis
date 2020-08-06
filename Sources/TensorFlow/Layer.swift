@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import _Differentiation
+
 public protocol Module: EuclideanDifferentiable, KeyPathIterable
 where
   TangentVector: VectorProtocol & ElementaryFunctions & PointwiseMultiplicative & KeyPathIterable
@@ -93,12 +95,6 @@ public protocol Layer: Module where Input: Differentiable {
 }
 
 extension Layer {
-  @available(*, deprecated, renamed: "callAsFunction(_:)")
-  @differentiable
-  public func call(_ input: Input) -> Output {
-    callAsFunction(input)
-  }
-
   @differentiable
   public func forward(_ input: Input) -> Output {
     return callAsFunction(input)

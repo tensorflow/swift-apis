@@ -137,6 +137,10 @@ class XlaHelpers {
     return xla::util::Iota<xla::int64>(shape.rank());
   }
 
+  static xla::XlaOp BroadcastDimensions(xla::XlaOp input,
+                                        absl::Span<const xla::int64> dimensions,
+                                        absl::Span<const xla::int64> sizes);
+
   static xla::XlaOp CreateReturnValue(xla::XlaBuilder* builder,
                                       const std::vector<xla::XlaOp>& outputs);
 
@@ -238,6 +242,10 @@ class XlaHelpers {
 
   static xla::XlaOp Flatten(xla::XlaOp input,
                             xla::Shape* input_shape = nullptr);
+
+  static xla::XlaOp FlattenDimRange(xla::XlaOp input, xla::int64 start,
+                                    xla::int64 range,
+                                    xla::Shape* input_shape = nullptr);
 
   // Gathers the input using the order specified by the permutation. For each i,
   // output[i] = input[permutation[i]]. The given permutation must be the same
@@ -348,6 +356,12 @@ class XlaHelpers {
   template <typename T>
   static xla::Literal Range(T start, T end, T step) {
     return xla::LiteralUtil::CreateR1<T>(xla::util::Range<T>(start, end, step));
+  }
+
+  template <typename T>
+  static xla::Literal LinSpace(T start, T stop, xla::int64 num) {
+    return xla::LiteralUtil::CreateR1<T>(
+        xla::util::LinSpace<T>(start, stop, num));
   }
 
   static xla::PrecisionConfig::Precision mat_mul_precision() {

@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import _Differentiation
+
 /// Computes the L1 loss between `expected` and `predicted`.
 /// `loss = reduction(abs(expected - predicted))`
 ///
@@ -20,6 +22,7 @@
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 ///   - reduction: Reduction to apply on the computed element-wise loss values.
 @differentiable(wrt: predicted)
+@differentiable(wrt: (predicted, expected))
 public func l1Loss<Scalar: TensorFlowFloatingPoint>(
   predicted: Tensor<Scalar>,
   expected: Tensor<Scalar>,
@@ -36,6 +39,7 @@ public func l1Loss<Scalar: TensorFlowFloatingPoint>(
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 ///   - reduction: Reduction to apply on the computed element-wise loss values.
 @differentiable(wrt: predicted)
+@differentiable(wrt: (predicted, expected))
 public func l2Loss<Scalar: TensorFlowFloatingPoint>(
   predicted: Tensor<Scalar>,
   expected: Tensor<Scalar>,
@@ -51,6 +55,7 @@ public func l2Loss<Scalar: TensorFlowFloatingPoint>(
 ///   - predicted: Predicted outputs from a neural network.
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 @differentiable(wrt: predicted)
+@differentiable(wrt: (predicted, expected))
 public func meanAbsoluteError<Scalar: TensorFlowFloatingPoint>(
   predicted: Tensor<Scalar>,
   expected: Tensor<Scalar>
@@ -65,6 +70,7 @@ public func meanAbsoluteError<Scalar: TensorFlowFloatingPoint>(
 ///   - predicted: Predicted outputs from a neural network.
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 @differentiable(wrt: predicted)
+@differentiable(wrt: (predicted, expected))
 public func meanSquaredError<Scalar: TensorFlowFloatingPoint>(
   predicted: Tensor<Scalar>,
   expected: Tensor<Scalar>
@@ -82,6 +88,7 @@ public func meanSquaredError<Scalar: TensorFlowFloatingPoint>(
 ///   - predicted: Predicted outputs from a neural network.
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 @differentiable(wrt: predicted)
+@differentiable(wrt: (predicted, expected))
 public func meanSquaredLogarithmicError<Scalar: TensorFlowFloatingPoint>(
   predicted: Tensor<Scalar>,
   expected: Tensor<Scalar>
@@ -98,6 +105,7 @@ public func meanSquaredLogarithmicError<Scalar: TensorFlowFloatingPoint>(
 ///   - predicted: Predicted outputs from a neural network.
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 @differentiable(wrt: predicted)
+@differentiable(wrt: (predicted, expected))
 public func meanAbsolutePercentageError<Scalar: TensorFlowFloatingPoint>(
   predicted: Tensor<Scalar>,
   expected: Tensor<Scalar>
@@ -114,6 +122,7 @@ public func meanAbsolutePercentageError<Scalar: TensorFlowFloatingPoint>(
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 ///   - reduction: Reduction to apply on the computed element-wise loss values.
 @differentiable(wrt: predicted)
+@differentiable(wrt: (predicted, expected))
 public func hingeLoss<Scalar: TensorFlowFloatingPoint>(
   predicted: Tensor<Scalar>,
   expected: Tensor<Scalar>,
@@ -132,6 +141,7 @@ public func hingeLoss<Scalar: TensorFlowFloatingPoint>(
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 ///   - reduction: Reduction to apply on the computed element-wise loss values.
 @differentiable(wrt: predicted)
+@differentiable(wrt: (predicted, expected))
 public func squaredHingeLoss<Scalar: TensorFlowFloatingPoint>(
   predicted: Tensor<Scalar>,
   expected: Tensor<Scalar>,
@@ -150,6 +160,7 @@ public func squaredHingeLoss<Scalar: TensorFlowFloatingPoint>(
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 ///   - reduction: Reduction to apply on the computed element-wise loss values.
 @differentiable(wrt: predicted)
+@differentiable(wrt: (predicted, expected))
 public func categoricalHingeLoss<Scalar: TensorFlowFloatingPoint>(
   predicted: Tensor<Scalar>,
   expected: Tensor<Scalar>,
@@ -170,6 +181,7 @@ public func categoricalHingeLoss<Scalar: TensorFlowFloatingPoint>(
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 ///   - reduction: Reduction to apply on the computed element-wise loss values.
 @differentiable(wrt: predicted)
+@differentiable(wrt: (predicted, expected))
 public func logCoshLoss<Scalar: TensorFlowFloatingPoint>(
   predicted: Tensor<Scalar>,
   expected: Tensor<Scalar>,
@@ -189,6 +201,7 @@ public func logCoshLoss<Scalar: TensorFlowFloatingPoint>(
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 ///   - reduction: Reduction to apply on the computed element-wise loss values.
 @differentiable(wrt: predicted)
+@differentiable(wrt: (predicted, expected))
 public func poissonLoss<Scalar: TensorFlowFloatingPoint>(
   predicted: Tensor<Scalar>,
   expected: Tensor<Scalar>,
@@ -205,6 +218,7 @@ public func poissonLoss<Scalar: TensorFlowFloatingPoint>(
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 ///   - reduction: Reduction to apply on the computed element-wise loss values.
 @differentiable(wrt: predicted)
+@differentiable(wrt: (predicted, expected))
 public func kullbackLeiblerDivergence<Scalar: TensorFlowFloatingPoint>(
   predicted: Tensor<Scalar>,
   expected: Tensor<Scalar>,
@@ -298,6 +312,7 @@ func _vjpSoftmaxCrossEntropyHelper<Scalar: TensorFlowFloatingPoint>(
 ///   - labels: Integer values that correspond to the correct output.
 ///   - reduction: Reduction to apply on the computed element-wise loss values.
 @differentiable(wrt: logits)
+@differentiable(wrt: (logits, labels))
 public func sigmoidCrossEntropy<Scalar: TensorFlowFloatingPoint>(
   logits: Tensor<Scalar>,
   labels: Tensor<Scalar>,
@@ -325,6 +340,7 @@ public func sigmoidCrossEntropy<Scalar: TensorFlowFloatingPoint>(
 ///     from quadratic to linear.
 ///   - reduction: Reduction to apply on the computed element-wise loss values.
 @differentiable(wrt: predicted)
+@differentiable(wrt: (predicted, expected))
 public func huberLoss<Scalar: TensorFlowFloatingPoint>(
   predicted: Tensor<Scalar>,
   expected: Tensor<Scalar>,

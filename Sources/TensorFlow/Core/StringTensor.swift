@@ -46,50 +46,73 @@ extension StringTensor {
 
     // utf8CString is null-terminated. TF APIs want the strings without null-terminators.
     let cStrings = scalars.map { $0.utf8CString.dropLast() }
-    let tfEncodedSizes = cStrings.map { TF_StringEncodedSize($0.count) }
 
-    // Format information copied from tensorflow/c/c_api.h:
-    // The format for TF_STRING tensors is:
-    //   start_offset: array[uint64]
-    //   data:         byte[...]
-    //
-    //   The string length (as a varint), followed by the contents of the string is encoded at
-    //   data[start_offset[i]]].
-    // The size of the "start_offset" region.
-    let startOffsetsByteCount = scalars.count * MemoryLayout<UInt64>.stride
+    // Note: `TENSORFLOW_MASTER` changes below are necessary for the new TensorFlow ABI-stable
+    // unified string tensor design.
+    #if TENSORFLOW_MASTER
+      let byteCount = scalars.count * MemoryLayout<TF_TString>.stride
 
-    // The size of the "data" region.
-    let dataByteCount = tfEncodedSizes.reduce(0, +) * MemoryLayout<UInt8>.stride
-
-    let handle = TensorHandle<String>(
-      shape: shape.dimensions,
-      byteCount: startOffsetsByteCount + dataByteCount,
-      bufferInitializer: { tensorBuffer in
-        // Initialize the "start_offset" region.
-        var startOffset: UInt64 = 0
-        var startOffsetAddr =
-          tensorBuffer.bindMemory(to: UInt64.self, capacity: scalars.count)
-        for tfEncodedSize in tfEncodedSizes {
-          startOffsetAddr.initialize(to: startOffset)
-          startOffsetAddr = startOffsetAddr.advanced(by: 1)
-          startOffset = startOffset + UInt64(tfEncodedSize)
-        }
-
-        // Initialize the "data" region.
-        var dataAddr = tensorBuffer.advanced(by: startOffsetsByteCount)
-          .bindMemory(to: Int8.self, capacity: dataByteCount)
-        let status = TF_NewStatus()
-        for (cString, tfEncodedSize) in zip(cStrings, tfEncodedSizes) {
-          _ = cString.withUnsafeBufferPointer { buffer in
-            TF_StringEncode(
-              buffer.baseAddress, buffer.count, dataAddr, tfEncodedSize, status)
+      let handle = TensorHandle<String>(
+        shape: shape.dimensions,
+        byteCount: byteCount,
+        bufferInitializer: { tensorBuffer in
+          var dataAddr =
+            tensorBuffer.bindMemory(to: TF_TString.self, capacity: scalars.count)
+          for cString in cStrings {
+            TF_TString_Init(dataAddr)
+            cString.withUnsafeBufferPointer { buffer in
+              TF_TString_Copy(dataAddr, buffer.baseAddress, buffer.count)
+            }
+            dataAddr = dataAddr.advanced(by: 1)
           }
-          checkOk(status)
-          dataAddr = dataAddr.advanced(by: tfEncodedSize)
-        }
-        TF_DeleteStatus(status)
-      })
-    self.init(handle: handle)
+        })
+      self.init(handle: handle)
+    #else
+      let tfEncodedSizes = cStrings.map { TF_StringEncodedSize($0.count) }
+
+      // Format information copied from tensorflow/c/c_api.h:
+      // The format for TF_STRING tensors is:
+      //   start_offset: array[uint64]
+      //   data:         byte[...]
+      //
+      //   The string length (as a varint), followed by the contents of the string is encoded at
+      //   data[start_offset[i]]].
+      // The size of the "start_offset" region.
+      let startOffsetsByteCount = scalars.count * MemoryLayout<UInt64>.stride
+
+      // The size of the "data" region.
+      let dataByteCount = tfEncodedSizes.reduce(0, +) * MemoryLayout<UInt8>.stride
+
+      let handle = TensorHandle<String>(
+        shape: shape.dimensions,
+        byteCount: startOffsetsByteCount + dataByteCount,
+        bufferInitializer: { tensorBuffer in
+          // Initialize the "start_offset" region.
+          var startOffset: UInt64 = 0
+          var startOffsetAddr =
+            tensorBuffer.bindMemory(to: UInt64.self, capacity: scalars.count)
+          for tfEncodedSize in tfEncodedSizes {
+            startOffsetAddr.initialize(to: startOffset)
+            startOffsetAddr = startOffsetAddr.advanced(by: 1)
+            startOffset = startOffset + UInt64(tfEncodedSize)
+          }
+
+          // Initialize the "data" region.
+          var dataAddr = tensorBuffer.advanced(by: startOffsetsByteCount)
+            .bindMemory(to: Int8.self, capacity: dataByteCount)
+          let status = TF_NewStatus()
+          for (cString, tfEncodedSize) in zip(cStrings, tfEncodedSizes) {
+            _ = cString.withUnsafeBufferPointer { buffer in
+              TF_StringEncode(
+                buffer.baseAddress, buffer.count, dataAddr, tfEncodedSize, status)
+            }
+            checkOk(status)
+            dataAddr = dataAddr.advanced(by: tfEncodedSize)
+          }
+          TF_DeleteStatus(status)
+        })
+      self.init(handle: handle)
+    #endif
   }
 
   /// Creates a 0-D `StringTensor` from a scalar value.

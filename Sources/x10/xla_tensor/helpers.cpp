@@ -41,6 +41,17 @@ xla::XlaOp ConvertBinaryOpResult(xla::XlaOp op1, xla::XlaOp op2,
   return result;
 }
 
+xla::XlaComputation CreateComputation(
+    const std::string& name, xla::PrimitiveType type,
+    const std::function<xla::XlaOp(xla::XlaOp, xla::XlaOp)>& op) {
+  xla::XlaBuilder builder(name);
+  xla::XlaOp x =
+      xla::Parameter(&builder, 0, xla::ShapeUtil::MakeShape(type, {}), "x");
+  xla::XlaOp y =
+      xla::Parameter(&builder, 1, xla::ShapeUtil::MakeShape(type, {}), "y");
+  return ConsumeValue(builder.Build(op(x, y)));
+}
+
 }  // namespace
 
 xla::PrecisionConfig::Precision XlaHelpers::s_mat_mul_precision =
@@ -55,15 +66,16 @@ xla::PrecisionConfig XlaHelpers::BuildPrecisionConfig(
   return precision_config;
 }
 
-xla::XlaComputation CreateComputation(
-    const std::string& name, xla::PrimitiveType type,
-    const std::function<xla::XlaOp(xla::XlaOp, xla::XlaOp)>& op) {
-  xla::XlaBuilder builder(name);
-  xla::XlaOp x =
-      xla::Parameter(&builder, 0, xla::ShapeUtil::MakeShape(type, {}), "x");
-  xla::XlaOp y =
-      xla::Parameter(&builder, 1, xla::ShapeUtil::MakeShape(type, {}), "y");
-  return ConsumeValue(builder.Build(op(x, y)));
+xla::XlaOp XlaHelpers::BroadcastDimensions(
+    xla::XlaOp input, absl::Span<const xla::int64> dimensions,
+    absl::Span<const xla::int64> sizes) {
+  XLA_CHECK_EQ(dimensions.size(), sizes.size());
+  std::vector<xla::int64> bcast_sizes = SizesOfXlaOp(input);
+  for (size_t i = 0; i < dimensions.size(); ++i) {
+    bcast_sizes.at(dimensions[i]) = sizes[i];
+  }
+  return xla::BroadcastInDim(input, bcast_sizes,
+                             GetAllDimensions(bcast_sizes.size()));
 }
 
 xla::XlaOp XlaHelpers::CreateReturnValue(
@@ -388,6 +400,32 @@ xla::XlaOp XlaHelpers::Flatten(xla::XlaOp input, xla::Shape* input_shape) {
   return DynamicReshape(input, {input_elements});
 }
 
+xla::XlaOp XlaHelpers::FlattenDimRange(xla::XlaOp input, xla::int64 start,
+                                       xla::int64 range,
+                                       xla::Shape* input_shape) {
+  xla::util::MaybePtr<xla::Shape> input_shape_tmp(input_shape);
+  *input_shape_tmp = ShapeOfXlaOp(input);
+
+  std::vector<xla::int64> sizes;
+  xla::int64 flat_size = -1;
+  for (xla::int64 dim = 0; dim < input_shape_tmp->rank(); ++dim) {
+    if (dim < start || dim >= start + range) {
+      if (flat_size >= 0) {
+        sizes.push_back(flat_size);
+        flat_size = -1;
+      }
+      sizes.push_back(input_shape_tmp->dimensions(dim));
+    } else {
+      flat_size =
+          (flat_size < 0 ? 1 : flat_size) * input_shape_tmp->dimensions(dim);
+    }
+  }
+  if (flat_size >= 0) {
+    sizes.push_back(flat_size);
+  }
+  return DynamicReshape(input, sizes);
+}
+
 std::vector<xla::int64> XlaHelpers::MakeTransposePermutation(xla::int64 dim0,
                                                              xla::int64 dim1,
                                                              xla::int64 rank) {
@@ -523,7 +561,7 @@ std::vector<xla::int64> XlaHelpers::GetPromotedShape(
     xla::int64 dim2 = shape2_dims[shape2_dims.size() - min_size + i];
     XLA_CHECK(dim1 == dim2 || dim1 == 1 || dim2 == 1)
         << "(" << absl::StrJoin(shape1_dims, ", ") << ") and ("
-        << absl::StrJoin(shape1_dims, ", ") << ")";
+        << absl::StrJoin(shape2_dims, ", ") << ")";
     if (dim1 == 0 || dim2 == 0) {
       dimensions.push_back(0);
     } else {

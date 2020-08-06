@@ -15,7 +15,7 @@
 #if defined(_WIN32)
 #define XLA_API __declspec(dllexport)
 #else
-#define XLA_API
+#define XLA_API __attribute__((__visibility__("default")))
 #endif
 
 #include "xla_tensor_wrapper.h"
@@ -404,6 +404,18 @@ OpaqueXLATensor* XLATensor_diagonal_value(OpaqueXLATensor* a, int64_t offset,
 OpaqueXLATensor* XLATensor_div(OpaqueXLATensor* a, OpaqueXLATensor* b) {
   return new XLATensor(XLATensor::div(*a, *b));
 }
+OpaqueXLATensor* XLATensor_dynamic_slice(
+    OpaqueXLATensor* base,
+    OpaqueXLATensorArrayRef start_indices, Int64ArrayRef slice_shapes) {
+  return new XLATensor(
+      XLATensor::dynamic_slice(*base, start_indices.array(), XlaHelpers::I64List(slice_shapes.slice())));
+}
+OpaqueXLATensor* XLATensor_dynamic_update_slice(
+    OpaqueXLATensor* base, OpaqueXLATensor* update,
+    OpaqueXLATensorArrayRef inputs) {
+  return new XLATensor(
+      XLATensor::dynamic_update_slice(*base, *update, inputs.array()));
+}
 OpaqueXLATensor* XLATensor_eq(OpaqueXLATensor* a, OpaqueXLATensor* b) {
   return new XLATensor(XLATensor::eq(*a, *b));
 }
@@ -462,6 +474,14 @@ OpaqueXLATensor* XLATensor_is_nan(OpaqueXLATensor* input) {
 }
 OpaqueXLATensor* XLATensor_le(OpaqueXLATensor* x, OpaqueXLATensor* y) {
   return new XLATensor(XLATensor::le(*x, *y));
+}
+OpaqueXLATensor* XLATensor_linspace(XLAScalar start, XLAScalar stop,
+                                    int64_t num, const CDevice device,
+                                    enum XLATensorScalarType type) {
+  XLATensor out = MakeEmpty(ToScalarType(type), ConvertDevice(device));
+  XLATensor::linspace_out(out, atScalar(start), atScalar(stop), num,
+                          ToScalarType(type));
+  return new XLATensor(out);
 }
 OpaqueXLATensor* XLATensor_lt(OpaqueXLATensor* x, OpaqueXLATensor* y) {
   return new XLATensor(XLATensor::lt(*x, *y));
@@ -572,6 +592,9 @@ OpaqueXLATensor* XLATensor_repeat(OpaqueXLATensor* input,
                                   Int64ArrayRef repeats) {
   return new XLATensor(
       XLATensor::repeat(*input, XlaHelpers::I64List(repeats.slice())));
+}
+OpaqueXLATensor* XLATensor_replica_id(const struct CDevice device) {
+  return new XLATensor(XLATensor::xla_replica_id(ConvertDevice(device)));
 }
 OpaqueXLATensor* XLATensor_resize_value(OpaqueXLATensor* a, Int64ArrayRef arr) {
   return new XLATensor(

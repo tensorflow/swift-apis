@@ -21,6 +21,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "tensorflow/compiler/tf2xla/xla_tensor/computation.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/cross_replica_reduces.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ir.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ir_util.h"
@@ -139,6 +140,8 @@ class XLATensor {
 
   static void SetRngSeed(const Device* device, xla::uint64 seed);
 
+  static xla::uint64 GetRunningSeed(const Device& device);
+
   // Dispatches a comparison operator, setting the logical type of the result
   // appropriately.
   static XLATensor DispatchComparisonOp(c10::Symbol kind,
@@ -226,6 +229,10 @@ class XLATensor {
 
   static XLATensor get_dimensions_size(const XLATensor& input,
                                        std::vector<xla::int64> dimensions);
+
+  static std::vector<XLATensor> user_computation(
+      const std::string& opname, absl::Span<const XLATensor> inputs,
+      ComputationPtr computation);
 
   //////////////////////////////////////////////////////////////////////////////
   // ATEN operators follows here, listed in alphabetical order.
@@ -477,6 +484,13 @@ class XLATensor {
   static void div_(XLATensor& input, const XLATensor& other);
   static void div_(XLATensor& input, at::Scalar other);
 
+  static XLATensor dynamic_slice(
+      const XLATensor& base, absl::Span<const XLATensor> start_indices,
+      absl::Span<const xla::int64> slice_shapes);
+  static XLATensor dynamic_update_slice(
+      const XLATensor& base, const XLATensor& update,
+      absl::Span<const XLATensor> start_indices);
+
   // A generalized contraction between tensors of arbitrary dimension defined by
   // the given equation and applied to the input tensors.
   static XLATensor einsum(const std::string& equation,
@@ -518,6 +532,8 @@ class XLATensor {
 
   static XLATensor expm1(const XLATensor& input);
   static void expm1_(XLATensor& input);
+
+  static void exponential_(XLATensor& input, double lambd);
 
   // Returns a 2-D tensor with ones on the diagonal and zeros elsewhere.
   static XLATensor eye(xla::int64 lines, xla::int64 cols, const Device& device,
@@ -679,6 +695,9 @@ class XLATensor {
                                        double negative_slope);
   static void leaky_relu_(XLATensor& input, double negative_slope);
 
+  static void linspace_out(XLATensor& out, at::Scalar start, at::Scalar stop,
+                           xla::int64 num, at::ScalarType scalar_type);
+
   static XLATensor log(const XLATensor& input);
   static void log_(XLATensor& input);
 
@@ -738,11 +757,10 @@ class XLATensor {
   static void max_out(XLATensor& max, XLATensor& max_values,
                       const XLATensor& input, xla::int64 dim, bool keepdim);
 
-  static XLATensor max_pool_nd(const XLATensor& input,
-                               xla::int64 spatial_dim_count,
-                               std::vector<xla::int64> kernel_size,
-                               std::vector<xla::int64> stride,
-                               std::vector<xla::int64> padding, bool ceil_mode);
+  static std::tuple<XLATensor, XLATensor> max_pool_nd(
+      const XLATensor& input, xla::int64 spatial_dim_count,
+      std::vector<xla::int64> kernel_size, std::vector<xla::int64> stride,
+      std::vector<xla::int64> padding, bool ceil_mode);
 
   static XLATensor max_pool_nd_backward(const XLATensor& out_backprop,
                                         const XLATensor& input,
@@ -751,6 +769,14 @@ class XLATensor {
                                         std::vector<xla::int64> stride,
                                         std::vector<xla::int64> padding,
                                         bool ceil_mode);
+
+  static XLATensor max_unpool(const XLATensor& input, const XLATensor& indices,
+                              std::vector<xla::int64> output_size);
+
+  static XLATensor max_unpool_backward(const XLATensor& grad_output,
+                                       const XLATensor& input,
+                                       const XLATensor& indices,
+                                       std::vector<xla::int64> output_size);
 
   static XLATensor mean(const XLATensor& input,
                         std::vector<xla::int64> dimensions,
@@ -828,6 +854,12 @@ class XLATensor {
                                      xla::int64 reduction, int ignore_index,
                                      const XLATensor& total_weight);
 
+  static std::pair<XLATensor, XLATensor> nms(const XLATensor& boxes,
+                                             const XLATensor& scores,
+                                             const XLATensor& score_threshold,
+                                             const XLATensor& iou_threshold,
+                                             xla::int64 output_size);
+
   static XLATensor nonzero(const XLATensor& input);
 
   static XLATensor norm(const XLATensor& input, c10::optional<at::Scalar> p,
@@ -892,6 +924,18 @@ class XLATensor {
   // repeats.
   static XLATensor repeat(const XLATensor& input,
                           std::vector<xla::int64> repeats);
+
+  static XLATensor replication_pad1d(const XLATensor& input,
+                                     std::vector<xla::int64> padding);
+  static XLATensor replication_pad1d_backward(const XLATensor& grad_output,
+                                              const XLATensor& input,
+                                              std::vector<xla::int64> padding);
+
+  static XLATensor replication_pad2d(const XLATensor& input,
+                                     std::vector<xla::int64> padding);
+  static XLATensor replication_pad2d_backward(const XLATensor& grad_output,
+                                              const XLATensor& input,
+                                              std::vector<xla::int64> padding);
 
   static void resize_(XLATensor& input, std::vector<xla::int64> size);
 
@@ -1236,6 +1280,8 @@ class XLATensor {
 
   static XLATensor xla_truncated_normal(const XLATensor& input);
 
+  static XLATensor xla_replica_id(const Device& device);
+
  private:
   struct SyncTensorsConfig {
     // Whether we want to force XLA data on the target tensors (hence trimming
@@ -1364,7 +1410,8 @@ class XLATensor {
 
   void SetTensorData(at::Tensor tensor_data);
 
-  ir::Value CreateTensorNode(xla::ComputationClient::DataPtr data) const;
+  ir::Value CreateTensorNode(xla::ComputationClient::DataPtr data,
+                             bool read_only) const;
 
   View::IrNode GetViewUpdate(const std::shared_ptr<View>& view) const;
 
@@ -1470,6 +1517,18 @@ class XLATensor {
       const SyncTensorsConfig& config);
 
   static xla::int64 GetNextTensorId();
+
+  // Check if the current node is a cutpoint (by hash) and apply pending graph -
+  // in other words, cut the trace - and return true iff that's the case.
+  bool ApplyTraceletCutpoint();
+
+  // Detect when new compilations are triggered after first few steps and
+  // attempt to find common portions, after which the trace is cut. This is
+  // meant to address variable upper bound loops, which lead to different
+  // unrolled sequences of code despite the body being identical. The hope is to
+  // reach a steady state in which no new tracelets are created after a
+  // relatively small number of cuts.
+  static void InsertTraceletCutpoint(const PostOrderData& po_data);
 
   std::shared_ptr<Data> data_;
 };

@@ -191,6 +191,9 @@ NodePtr Where(const Value& condition, const Value& input, const Value& other);
 NodePtr ARange(at::Scalar start, at::Scalar end, at::Scalar step,
                at::ScalarType scalar_type);
 
+NodePtr LinSpace(at::Scalar start, at::Scalar stop, xla::int64 num,
+                 at::ScalarType scalar_type);
+
 NodePtr BroadcastTensors(absl::Span<const Value> tensors);
 
 NodePtr Norm(const Value& input, c10::optional<at::Scalar> p,

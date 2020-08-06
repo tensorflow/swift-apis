@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import _Differentiation
+
 /// A densely-connected neural network layer.
 ///
 /// `Dense` implements the operation `activation(matmul(input, weight) + bias)`, where `weight` is
@@ -62,7 +64,7 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
   }
 
   // TODO(TF-433): Remove custom derivative after `try_apply` differentiation is supported.
-  @derivative(of: init)
+  @derivative(of: init, wrt: weight)
   @usableFromInline
   static func vjpInit(
     weight: Tensor<Scalar>,

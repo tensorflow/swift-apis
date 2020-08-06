@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import _Differentiation
+
 //===------------------------------------------------------------------------------------------===//
 // Losses
 //===------------------------------------------------------------------------------------------===//
@@ -22,6 +24,7 @@
 ///   - predicted: Predicted outputs from a neural network.
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 @differentiable(wrt: predicted)
+@differentiable(wrt: (predicted, expected))
 public func l1Loss<Scalar: TensorFlowFloatingPoint>(
   predicted: Tensor<Scalar>,
   expected: Tensor<Scalar>
@@ -35,6 +38,7 @@ public func l1Loss<Scalar: TensorFlowFloatingPoint>(
 ///   - predicted: Predicted outputs from a neural network.
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 @differentiable(wrt: predicted)
+@differentiable(wrt: (predicted, expected))
 public func l2Loss<Scalar: TensorFlowFloatingPoint>(
   predicted: Tensor<Scalar>,
   expected: Tensor<Scalar>
@@ -48,6 +52,7 @@ public func l2Loss<Scalar: TensorFlowFloatingPoint>(
 ///   - predicted: Predicted outputs from a neural network.
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 @differentiable(wrt: predicted)
+@differentiable(wrt: (predicted, expected))
 public func hingeLoss<Scalar: TensorFlowFloatingPoint>(
   predicted: Tensor<Scalar>,
   expected: Tensor<Scalar>
@@ -61,6 +66,7 @@ public func hingeLoss<Scalar: TensorFlowFloatingPoint>(
 ///   - predicted: Predicted outputs from a neural network.
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 @differentiable(wrt: predicted)
+@differentiable(wrt: (predicted, expected))
 public func squaredHingeLoss<Scalar: TensorFlowFloatingPoint>(
   predicted: Tensor<Scalar>,
   expected: Tensor<Scalar>
@@ -74,6 +80,7 @@ public func squaredHingeLoss<Scalar: TensorFlowFloatingPoint>(
 ///   - predicted: Predicted outputs from a neural network.
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 @differentiable(wrt: predicted)
+@differentiable(wrt: (predicted, expected))
 public func categoricalHingeLoss<Scalar: TensorFlowFloatingPoint>(
   predicted: Tensor<Scalar>,
   expected: Tensor<Scalar>
@@ -88,6 +95,7 @@ public func categoricalHingeLoss<Scalar: TensorFlowFloatingPoint>(
 ///   - predicted: Predicted outputs from a neural network.
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 @differentiable(wrt: predicted)
+@differentiable(wrt: (predicted, expected))
 public func logCoshLoss<Scalar: TensorFlowFloatingPoint>(
   predicted: Tensor<Scalar>,
   expected: Tensor<Scalar>
@@ -101,6 +109,7 @@ public func logCoshLoss<Scalar: TensorFlowFloatingPoint>(
 ///   - predicted: Predicted outputs from a neural network.
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 @differentiable(wrt: predicted)
+@differentiable(wrt: (predicted, expected))
 public func poissonLoss<Scalar: TensorFlowFloatingPoint>(
   predicted: Tensor<Scalar>,
   expected: Tensor<Scalar>
@@ -115,6 +124,7 @@ public func poissonLoss<Scalar: TensorFlowFloatingPoint>(
 ///   - predicted: Predicted outputs from a neural network.
 ///   - expected: Expected values, i.e. targets, that correspond to the correct output.
 @differentiable(wrt: predicted)
+@differentiable(wrt: (predicted, expected))
 public func kullbackLeiblerDivergence<Scalar: TensorFlowFloatingPoint>(
   predicted: Tensor<Scalar>,
   expected: Tensor<Scalar>
@@ -140,6 +150,7 @@ public func softmaxCrossEntropy<Scalar: TensorFlowFloatingPoint>(
 ///   - logits: The unscaled output of a neural network.
 ///   - labels: Integer values that correspond to the correct output.
 @differentiable(wrt: logits)
+@differentiable(wrt: (logits, labels))
 public func sigmoidCrossEntropy<Scalar: TensorFlowFloatingPoint>(
   logits: Tensor<Scalar>,
   labels: Tensor<Scalar>

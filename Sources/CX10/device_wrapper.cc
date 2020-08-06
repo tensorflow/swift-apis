@@ -14,6 +14,8 @@
 
 #if defined(_WIN32)
 #define XLA_API __declspec(dllexport)
+#else
+#define XLA_API __attribute__((__visibility__("default")))
 #endif
 
 #include "device_wrapper.h"

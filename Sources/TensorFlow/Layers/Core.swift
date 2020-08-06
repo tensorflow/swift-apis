@@ -12,11 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import _Differentiation
+
 /// A flatten layer.
 ///
 /// A flatten layer flattens the input when applied without affecting the batch size.
 @frozen
 public struct Flatten<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  public typealias TangentVector = EmptyTangentVector
+
   /// Creates a flatten layer.
   public init() {}
 
@@ -35,6 +39,8 @@ public struct Flatten<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
 /// A reshape layer.
 @frozen
 public struct Reshape<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  public typealias TangentVector = EmptyTangentVector
+
   /// The target shape.
   @noDerivative public var shape: Tensor<Int32>
 
@@ -68,6 +74,7 @@ public struct Reshape<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
 
 /// A layer that encloses a custom differentiable function.
 public struct Function<Input: Differentiable, Output: Differentiable>: ParameterlessLayer {
+  public typealias TangentVector = EmptyTangentVector
   public typealias Body = @differentiable (Input) -> Output
 
   @noDerivative public let body: Body

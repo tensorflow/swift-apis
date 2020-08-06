@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import _Differentiation
+
 /// A resize algorithm.
 public enum ResizeMethod {
   /// Nearest neighbor interpolation.
@@ -339,6 +341,216 @@ func _vjpResizeBicubic<Scalar: TensorFlowFloatingPoint>(
         originalImage: images,
         alignCorners: alignCorners,
         halfPixelCenters: halfPixelCenters
+      )
+    }
+  )
+}
+
+/// Returns a 2-D dilation with the specified input, filter, strides, and padding.
+///
+/// - Parameters:
+///   - input: The input.
+///   - filter: The dilation filter.
+///   - strides: The strides of the sliding filter for each dimension of the input.
+///   - padding: The padding for the operation
+///   - rates: The dilation rates for each dimension of the input.
+/// - Precondition: `input` must have rank `4`.
+/// - Precondition: `filter` must have rank `3`.
+@differentiable(wrt: (input, filter))
+public func dilation2D<Scalar: TensorFlowFloatingPoint>(
+  _ input: Tensor<Scalar>,
+  filter: Tensor<Scalar>,
+  strides: (Int, Int, Int, Int) = (1, 1, 1, 1),
+  rates: (Int, Int, Int, Int) = (1, 1, 1, 1),
+  padding: Padding = .valid
+) -> Tensor<Scalar> {
+  precondition(input.shape.rank == 4, "The input must have rank 4.")
+  precondition(filter.shape.rank == 3, "The filter must have rank 3.")
+  return _Raw.dilation2D(
+    input,
+    filter: filter,
+    strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2), Int32(strides.3)],
+    rates: [Int32(rates.0), Int32(rates.1), Int32(rates.2), Int32(rates.3)],
+    padding: padding.raw
+  )
+}
+
+@usableFromInline
+@derivative(of: dilation2D)
+func _vjpDilation2D<Scalar: TensorFlowFloatingPoint>(
+  _ input: Tensor<Scalar>,
+  filter: Tensor<Scalar>,
+  strides: (Int, Int, Int, Int),
+  rates: (Int, Int, Int, Int),
+  padding: Padding
+) -> (value: Tensor<Scalar>, pullback: (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
+  let value = dilation2D(input, filter: filter, strides: strides, rates: rates, padding: padding)
+  return (
+    value,
+    { v in
+      (
+        dilation2DBackpropInput(
+          v, input: input, filter: filter,
+          strides: strides, rates: rates, padding: padding),
+        dilation2DBackpropFilter(
+          v, input: input, filter: filter,
+          strides: strides, rates: rates, padding: padding)
+      )
+    }
+  )
+}
+
+/// TensorFlow builtin dilation2d gradient helper for the input.
+@differentiable(wrt: (x, filter))
+@usableFromInline
+func dilation2DBackpropInput<Scalar: TensorFlowFloatingPoint>(
+  _ x: Tensor<Scalar>,
+  input: Tensor<Scalar>,
+  filter: Tensor<Scalar>,
+  strides: (Int, Int, Int, Int) = (1, 1, 1, 1),
+  rates: (Int, Int, Int, Int) = (1, 1, 1, 1),
+  padding: Padding = .valid
+) -> Tensor<Scalar> {
+    return _Raw.dilation2DBackpropInput(
+    input,
+    filter: filter,
+    outBackprop: x,
+    strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2), Int32(strides.3)],
+    rates: [Int32(rates.0), Int32(rates.1), Int32(rates.2), Int32(rates.3)],
+    padding: padding.raw)
+}
+
+@usableFromInline
+@derivative(of: dilation2DBackpropInput, wrt: (x, filter))
+func _vjpDilation2DBackpropInput<Scalar: TensorFlowFloatingPoint>(
+  _ x: Tensor<Scalar>,
+  input: Tensor<Scalar>,
+  filter: Tensor<Scalar>,
+  strides: (Int, Int, Int, Int) = (1, 1, 1, 1),
+  rates: (Int, Int, Int, Int) = (1, 1, 1, 1),
+  padding: Padding = .valid
+) -> (value: Tensor<Scalar>, pullback: (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
+    let value = dilation2DBackpropInput(
+            x,
+            input: input,
+            filter: filter,
+            strides: strides,
+            rates: rates,
+            padding: padding)
+    return (
+      value,
+      { v in
+        (
+          dilation2D(v, filter: filter, strides: strides, rates: rates, padding: padding),
+          dilation2DBackpropFilter(
+            x, input: v, filter: filter, strides: strides, rates: rates,
+            padding: padding)
+        )
+      }
+    )
+}
+
+/// TensorFlow builtin dilation2d gradient helper for the input.
+@differentiable(wrt: (x, input))
+@usableFromInline
+func dilation2DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
+  _ x: Tensor<Scalar>,
+  input: Tensor<Scalar>,
+  filter: Tensor<Scalar>,
+  strides: (Int, Int, Int, Int) = (1, 1, 1, 1),
+  rates: (Int, Int, Int, Int) = (1, 1, 1, 1),
+  padding: Padding = .valid
+) -> Tensor<Scalar> {
+  return _Raw.dilation2DBackpropFilter(
+    input,
+    filter: filter,
+    outBackprop: x,
+    strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2), Int32(strides.3)],
+    rates: [Int32(rates.0), Int32(rates.1), Int32(rates.2), Int32(rates.3)],
+    padding: padding.raw)
+}
+
+@usableFromInline
+@derivative(of: dilation2DBackpropFilter, wrt:(x, input))
+func _vjpDilation2DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
+  _ x: Tensor<Scalar>,
+  input: Tensor<Scalar>,
+  filter: Tensor<Scalar>,
+  strides: (Int, Int, Int, Int) = (1, 1, 1, 1),
+  rates: (Int, Int, Int, Int) = (1, 1, 1, 1),
+  padding: Padding = .valid
+) -> (value: Tensor<Scalar>, pullback: (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
+    let value = dilation2DBackpropFilter(
+            x,
+            input: input,
+            filter: filter,
+            strides: strides,
+            rates: rates,
+            padding: padding)
+    return (
+      value,
+      { v in
+        (
+          dilation2D(input, filter: v, strides: strides, rates: rates, padding: padding),
+          dilation2DBackpropInput(
+            x, input: input, filter: v, strides: strides, rates: rates,
+            padding: padding)
+        )
+      }
+    )
+}
+
+/// Returns a 2-D erosion with the specified input, filter, strides, and padding.
+///
+/// - Parameters:
+///   - input: The input.
+///   - filter: The erosion filter.
+///   - strides: The strides of the sliding filter for each dimension of the input.
+///   - padding: The padding for the operation
+///   - rates: The dilation rates for each dimension of the input.
+/// - Precondition: `input` must have rank `4`.
+/// - Precondition: `filter` must have rank 3.
+@differentiable(wrt: (input, filter))
+public func erosion2D<Scalar: TensorFlowFloatingPoint>(
+  _ input: Tensor<Scalar>,
+  filter: Tensor<Scalar>,
+  strides: (Int, Int, Int, Int) = (1, 1, 1, 1),
+  rates: (Int, Int, Int, Int) = (1, 1, 1, 1),
+  padding: Padding = .valid
+) -> Tensor<Scalar> {
+  precondition(input.shape.rank == 4, "The input must have rank 4.")
+  precondition(filter.shape.rank == 3, "The filter must have rank 3.")
+  return -_Raw.dilation2D(
+    -input,
+    filter: filter.reversed(inAxes: [0, 1]),
+    strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2), Int32(strides.3)],
+    rates: [Int32(rates.0), Int32(rates.1), Int32(rates.2), Int32(rates.3)],
+    padding: padding.raw
+  )
+}
+
+@usableFromInline
+@derivative(of: erosion2D)
+func _vjpErosion2D<Scalar: TensorFlowFloatingPoint>(
+  _ input: Tensor<Scalar>,
+  filter: Tensor<Scalar>,
+  strides: (Int, Int, Int, Int),
+  rates: (Int, Int, Int, Int),
+  padding: Padding
+) -> (value: Tensor<Scalar>, pullback: (Tensor<Scalar>) -> (Tensor<Scalar>, Tensor<Scalar>)) {
+  let negatedInput = -input
+  let reversedFilter = filter.reversed(inAxes: [0, 1])
+  let value = erosion2D(input, filter: filter, strides: strides, rates: rates, padding: padding)
+  return (
+    value,
+    { v in
+      (
+        dilation2DBackpropInput(
+          v, input: negatedInput, filter: reversedFilter,
+          strides: strides, rates: rates, padding: padding),
+        -dilation2DBackpropFilter(
+          v, input: negatedInput, filter: reversedFilter,
+            strides: strides, rates: rates, padding: padding).reversed(inAxes: [0, 1])
       )
     }
   )

@@ -286,17 +286,15 @@ public final class _ExecutionContext {
     checkOk(status)
 
     #if !os(Windows)
-      if case .remote(let serverDef) = _RuntimeConfig.session {
-        debugLog("Setting up the server def to \(serverDef)...")
-        let serverDef: UnsafeMutablePointer<TF_Buffer>! = TFE_GetServerDef(
-          serverDef, status)
-        checkOk(status)
+    if case .remote(let serverDef) = _RuntimeConfig.session {
+      debugLog("Setting up the server def to \(serverDef)...")	
+      serverDef.utf8CString.withUnsafeBufferPointer { ptr in
         TFE_ContextSetServerDef(
-          eagerContext, /*keep_alive_secs*/ 0, serverDef.pointee.data,
-          serverDef.pointee.length, status)
+          eagerContext, /*keep_alive_secs*/ 0, ptr.baseAddress,
+          serverDef.utf8CString.count, status)
         checkOk(status)
-        TF_DeleteBuffer(serverDef)
       }
+    }
     #endif
 
     let devices = TFE_ContextListDevices(eagerContext, status)

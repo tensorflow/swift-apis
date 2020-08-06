@@ -1420,6 +1420,26 @@ public enum _RawXLA {
     return Tensor(_xla: XLATensor.div(x.xlaTensor, y.xlaTensor))
   }
 
+  public static func dynamicSlice<T: TensorFlowNumeric>(
+    _ base: Tensor<T>,
+    _ startIndices: [Tensor<Int32>],
+    _ sliceShape: [Int64]
+  ) -> Tensor<T> {
+    return Tensor(_xla: XLATensor.dynamic_slice(base.xlaTensor, startIndices.map { $0.xlaTensor }, sliceShape))
+  }
+
+  public static func dynamicUpdateSlice<T: TensorFlowNumeric>(
+    _ base: Tensor<T>,
+    _ update: Tensor<T>,
+    _ startIndices: [Tensor<Int32>]
+  ) -> Tensor<T> {
+    checkSameDevice(base, update)
+    checkSamePrecision(base, update)
+    return Tensor(
+      _xla: XLATensor.dynamic_update_slice(
+        base.xlaTensor, update.xlaTensor, startIndices.map { $0.xlaTensor }))
+  }
+
   /// Computes exponential linear: `exp(features) - 1` if < 0, `features` otherwise.
   ///
   /// See [Fast and Accurate Deep Network Learning by Exponential Linear Units (ELUs)
@@ -1747,20 +1767,8 @@ public enum _RawXLA {
     if x.rank != 1 {
       fatalError("Input should be rank 1, got \(x.rank)")
     }
-    let size = x.scalarCount
-    var inverted = [T](repeating: -1, count: size)
-    let perm = x.scalars
-    for i in 0..<size {
-      let d = perm[i]
-      if d < 0 || d >= size {
-        fatalError("\(d) is not between 0 and \(size)")
-      }
-      if inverted[Int(d)] != -1 {
-        fatalError("\(d) is duplicated in the input.")
-      }
-      inverted[Int(d)] = T(i)
-    }
-    return Tensor<T>(shape: [inverted.count], scalars: inverted, on: x.device)
+    let scalars = invertPermutationArray(x.scalars)
+    return Tensor<T>(shape: [scalars.count], scalars: scalars, on: x.device)
   }
 
   /// Returns which elements of x are finite.
@@ -1901,11 +1909,9 @@ public enum _RawXLA {
     if numScalarized == 1 { return start }
     let startScalar: T = start.scalarized()
     let stopScalar: T = stop.scalarized()
-    let numScalarizedMinusOne = T(numScalarized - 1)
-    let stepScalar: T = (stopScalar - startScalar) / numScalarizedMinusOne
     var linspace = Tensor<T>(
-      _xla: XLATensor.arange(
-        startScalar, stopScalar + stepScalar, stepScalar, T.xlaTensorScalarType, device))
+      _xla: XLATensor.linspace(
+        startScalar, stopScalar, Int64(numScalarized), T.xlaTensorScalarType, device))
     if start.isReducedPrecision {
       linspace = linspace.toReducedPrecision
     }
@@ -2688,10 +2694,18 @@ public enum _RawXLA {
     _ input: Tensor<T>,
     paddings: Tensor<Tpaddings>
   ) -> Tensor<T> {
-    let linearizedPaddings = paddings.scalars.map { Int64($0) }
-    return Tensor(
+    pad(input, paddings: paddings.scalars.map { Int($0) })
+  }
+
+  public static func pad<
+    T: TensorFlowScalar
+  >(
+    _ input: Tensor<T>,
+    paddings: [Int]
+  ) -> Tensor<T> {
+    Tensor(
       _xla: XLATensor.constantPad(
-        input.xlaTensor, reversedPaddings(linearizedPaddings), 0))
+        input.xlaTensor, reversedPaddings(paddings.map { Int64($0) }), 0))
   }
 
   /// Pads a tensor.
@@ -2933,6 +2947,10 @@ public enum _RawXLA {
     checkSameDevice(gradients, features)
     checkSamePrecision(gradients, features)
     return Tensor(_xla: XLATensor.threshold_backward(gradients.xlaTensor, features.xlaTensor, 0))
+  }
+
+  public static func replicaId(_ device: Device) -> Tensor<Int32> {
+    return Tensor(_xla: XLATensor.replica_id(device))
   }
 
   /// Reshapes a tensor.
@@ -3361,8 +3379,18 @@ public enum _RawXLA {
   ) -> Tensor<T> {
     let inputRank = input.rank
     precondition(begin.shape[0] == inputRank && size.shape[0] == inputRank)
+    return slice(input, begin: begin.scalars.map { Int($0) }, size: size.scalars.map { Int($0) })
+  }
+
+  public static func slice<T: TensorFlowScalar>(
+    _ input: Tensor<T>,
+    begin: [Int],
+    size: [Int]
+  ) -> Tensor<T> {
+    let inputRank = input.rank
+    precondition(begin.count == inputRank && size.count == inputRank)
     var output = input.xlaTensor
-    for (axis, (begin, size)) in zip(begin.scalars, size.scalars).enumerated() {
+    for (axis, (begin, size)) in zip(begin, size).enumerated() {
       let dimensionSize = input.shape.dimensions[axis]
       if size != -1 {
         if size < 0 || size > dimensionSize {
@@ -3543,19 +3571,24 @@ public enum _RawXLA {
     value: Tensor<T>,
     numSplit: Int64
   ) -> [Tensor<T>] {
-    let canonicalSplitDim = canonicalDims(splitDim.scalars.map { Int64($0) }, Int64(value.rank))
-      .first!
+    split(splitDim: Int(splitDim.scalarized()), value: value, numSplit: numSplit)
+  }
+
+  public static func split<T: TensorFlowScalar>(
+    splitDim: Int,
+    value: Tensor<T>,
+    numSplit: Int64
+  ) -> [Tensor<T>] {
+    let canonicalSplitDim = canonicalDims([Int64(splitDim)], Int64(value.rank)).first!
     let splitDimSize = value.shape.dimensions[Int(canonicalSplitDim)]
     if Int64(splitDimSize) % numSplit != 0 {
       fatalError(
         "Number of ways to split should evenly divide the split dimension, but got splitDim "
-          + "\(splitDim.scalarized()) (size = \(splitDimSize)) and numSplit \(numSplit)")
+          + "\(splitDim) (size = \(splitDimSize)) and numSplit \(numSplit)")
     }
-    let chunkSize = Int32(Int64(splitDimSize) / numSplit)
-    let sizeSplits: [Int32] = Array(repeating: chunkSize, count: Int(numSplit))
-    return splitV(
-      value: value, sizeSplits: Tensor<Int32>(shape: [Int(numSplit)], scalars: sizeSplits),
-      splitDim: splitDim, numSplit: numSplit)
+    let chunkSize = Int(Int64(splitDimSize) / numSplit)
+    let sizeSplits = Array(repeating: chunkSize, count: Int(numSplit))
+    return splitV(value: value, sizeSplits: sizeSplits, splitDim: splitDim)
   }
 
   /// Splits a tensor into `num_split` tensors along one dimension.
@@ -3587,15 +3620,27 @@ public enum _RawXLA {
           + "\(sizeSplits.shape.contiguousSize) elements"
       )
     }
-    let inferredIndices = sizeSplits.scalars.indices.filter { sizeSplits.scalars[$0] == -1 }
+    return splitV(
+      value: value, sizeSplits: sizeSplits.scalars.map { Int($0) },
+      splitDim: Int(splitDim.scalarized()))
+  }
+
+  public static func splitV<
+    T: TensorFlowScalar
+  >(
+    value: Tensor<T>,
+    sizeSplits: [Int],
+    splitDim: Int
+  ) -> [Tensor<T>] {
+    let inferredIndices = sizeSplits.indices.filter { sizeSplits[$0] == -1 }
     guard inferredIndices.count <= 1 else {
       fatalError(
         "Only one dimensions can have a value of -1. Second one found at dimension "
           + String(inferredIndices[1])
       )
     }
-    let totalSplitSize = sizeSplits.scalars.filter { $0 != -1 }.reduce(0, +)
-    let canonicalSplitDim = canonicalDims(splitDim.scalars.map { Int64($0) }, Int64(value.rank))
+    let totalSplitSize = sizeSplits.filter { $0 != -1 }.reduce(0, +)
+    let canonicalSplitDim = canonicalDims([Int64(splitDim)], Int64(value.rank))
       .first!
     let splitDimSize = value.shape.dimensions[Int(canonicalSplitDim)]
     guard
@@ -3608,12 +3653,12 @@ public enum _RawXLA {
           + "specified. Got: \(totalSplitSize)"
       )
     }
-    var completeSizeSplits = sizeSplits.scalars.map { Int64($0) }
+    var completeSizeSplits = sizeSplits.map { Int64($0) }
     if inferredIndices.count == 1 {
       completeSizeSplits[inferredIndices.first!] = Int64(splitDimSize) - Int64(totalSplitSize)
     }
     let chunkHandles = XLATensor.splitWithSizes(
-      value.xlaTensor, completeSizeSplits, Int64(splitDim.scalarized()))
+      value.xlaTensor, completeSizeSplits, Int64(splitDim))
     return chunkHandles.map { Tensor(_xla: $0) }
   }
 
@@ -4306,19 +4351,28 @@ public enum _RawXLA {
     guard multiples.rank == 1 else {
       fatalError("Expected multiples to be 1-D, but got shape \(multiples.shape)")
     }
-    guard input.rank == multiples.shape.contiguousSize else {
+    return tile(input, multiples: multiples.scalars.map { Int($0) })
+  }
+
+  public static func tile<
+    T: TensorFlowScalar
+  >(
+    _ input: Tensor<T>,
+    multiples: [Int]
+  ) -> Tensor<T> {
+    guard input.rank == multiples.count else {
       fatalError(
         "Expected multiples argument to be a vector of length \(input.rank) but got length "
-          + String(multiples.shape.contiguousSize)
+          + String(multiples.count)
       )
     }
-    for (index, multiply) in multiples.scalars.enumerated() {
+    for (index, multiply) in multiples.enumerated() {
       guard multiply >= 0 else {
         fatalError("Expected multiples[\(index)] >= 0, but got \(multiply)")
       }
     }
     return Tensor(
-      _xla: XLATensor.tile(input.xlaTensor, repetitions: multiples.scalars.map { Int64($0) }))
+      _xla: XLATensor.tile(input.xlaTensor, repetitions: multiples.map { Int64($0) }))
   }
 
   /// Transfer a tensor to a different device.
@@ -4338,6 +4392,15 @@ public enum _RawXLA {
     perm: Tensor<Tperm>
   ) -> Tensor<T> {
     return Tensor(_xla: XLATensor.permute_value(x.xlaTensor, perm.scalars.map(Int64.init)))
+  }
+
+  public static func transpose<
+    T: TensorFlowScalar
+  >(
+    _ x: Tensor<T>,
+    perm: [Int]
+  ) -> Tensor<T> {
+    return Tensor(_xla: XLATensor.permute_value(x.xlaTensor, perm.map(Int64.init)))
   }
 
   /// Unpacks a given dimension of a rank-`R` tensor into `num` rank-`(R-1)` tensors.
@@ -4415,6 +4478,18 @@ public enum _RawXLA {
     segmentIds: Tensor<Tindices>,
     numSegments: Tensor<Tnumsegments>
   ) -> Tensor<T> {
+    unsortedSegmentSum(
+      data: data, segmentIds: segmentIds, numSegments: Int(numSegments.scalarized()))
+  }
+
+  public static func unsortedSegmentSum<
+    T: TensorFlowNumeric,
+    Tindices: TensorFlowIndex
+  >(
+    data: Tensor<T>,
+    segmentIds: Tensor<Tindices>,
+    numSegments: Int
+  ) -> Tensor<T> {
     checkSameDevice(data.device, segmentIds.device)
     if segmentIds.rank > data.rank {
       fatalError(
@@ -4431,7 +4506,7 @@ public enum _RawXLA {
     }
     return Tensor(
       _xla: XLATensor.tf_UnsortedSegmentSum(
-        data.xlaTensor, segmentIds.xlaTensor, Int64(numSegments.scalarized())))
+        data.xlaTensor, segmentIds.xlaTensor, Int64(numSegments)))
   }
 
   /// Returns 0 if x == 0, and x / y otherwise, elementwise.

@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import _Differentiation
+
 infix operator .>: ComparisonPrecedence
 infix operator .==: ComparisonPrecedence
 
@@ -1365,14 +1367,17 @@ func _vjpElu<T: TensorFlowFloatingPoint>(
 @inlinable
 @differentiable
 public func gelu<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
-  let ratio1 = Tensor<T>(0.7978845608, on: x.device)  // An approximation of √(2/π).
+  // Use withoutDerivative to prevent device mismatch in pullback.
+  let xWithoutDerivative = withoutDerivative(at: x)
+  // An approximation of √(2/π).
+  let ratio1 = Tensor<T>(0.7978845608, deviceAndPrecisionLike: xWithoutDerivative)
   // An approximation of the Gauss error function.
   // NOTE: This is needed because the compiler otherwise gives an "unable to type-check this
   // in reasonable time" error when the below expressions are written on a single line.
-  let ratio2 = Tensor<T>(0.044715, on: x.device)
-  let half = Tensor<T>(0.5, on: x.device)
-  let one = Tensor<T>(1, on: x.device)
-  let three = Tensor<T>(3, on: x.device)
+  let ratio2 = Tensor<T>(0.044715, deviceAndPrecisionLike: xWithoutDerivative)
+  let half = Tensor<T>(0.5, deviceAndPrecisionLike: xWithoutDerivative)
+  let one = Tensor<T>(1, deviceAndPrecisionLike: xWithoutDerivative)
+  let three = Tensor<T>(3, deviceAndPrecisionLike: xWithoutDerivative)
   let approximateErf = tanh(ratio1 * (x + ratio2 * pow(x, three)))
   let cdf = half * (one + approximateErf)
   return x * cdf
@@ -2808,8 +2813,8 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
         where: rawMax.isFinite)
     }
     let result = Tensor.log(Tensor.exp(self - offset).sum(squeezingAxes: axes))
-    let resultShape = withoutDerivative(at: result.shapeTensor)
-    return result + offset.reshaped(toShape: resultShape)
+    let resultShape = withoutDerivative(at: result.shape)
+    return result + offset.reshaped(to: resultShape)
   }
 
   /// Returns `log(exp(self).sum(squeezingAxes: axes))`. The reduced dimensions are removed.
@@ -3056,9 +3061,9 @@ internal func _vjpMatmul<Scalar: TensorFlowFloatingPoint>(
         rhsGrad = matmul(lhs, transposed: true, v, transposed: false)
       case (false, true):
         lhsGrad = matmul(v, rhs)
-        rhsGrad = matmul(lhs, transposed: true, v, transposed: false)
+        rhsGrad = matmul(v, transposed: true, lhs, transposed: false)
       case (true, false):
-        lhsGrad = matmul(v, transposed: false, rhs, transposed: true)
+        lhsGrad = matmul(rhs, transposed: false, v, transposed: true)
         rhsGrad = matmul(lhs, v)
       case (true, true):
         lhsGrad = matmul(v, transposed: true, rhs, transposed: true)

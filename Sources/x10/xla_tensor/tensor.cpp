@@ -24,6 +24,8 @@
 #include <set>
 #include <stdexcept>
 
+#include "absl/container/node_hash_map.h"
+#include "absl/container/node_hash_set.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/str_join.h"
 #include "tensorflow/compiler/xla/xla_client/cache.h"
@@ -65,6 +67,27 @@ struct TlsData {
 };
 
 thread_local TlsData g_tls_data;
+
+struct TraceletState {
+  absl::node_hash_map<xla::hash_t, std::vector<xla::hash_t>> tracelet_by_prefix;
+  absl::node_hash_set<xla::hash_t> cutpoints;
+  xla::int64 prev_uncached_compile = 0;
+};
+
+thread_local TraceletState g_tracelet_state;
+
+c10::optional<size_t> FindTraceDivergence(
+    absl::Span<const xla::hash_t> trace1,
+    absl::Span<const xla::hash_t> trace2) {
+  if (trace2.size() > trace1.size()) {
+    std::swap(trace1, trace2);
+  }
+  auto result = std::mismatch(trace1.begin(), trace1.end(), trace2.begin());
+  if (result.first != trace1.end()) {
+    return result.first - trace1.begin();
+  }
+  return absl::nullopt;
+}
 
 // Locking:
 // We perform two kinds of operations of tensors, synchronous and asynchronous.
@@ -186,8 +209,7 @@ class XlaDataCacheArena {
   struct TensorComparer {
     bool operator()(const at::Tensor& tensor1,
                     const at::Tensor& tensor2) const {
-      return tensor1.scalar_type() == tensor2.scalar_type() &&
-             tensor1.equal(tensor2);
+      return tensor1.equal(tensor2);
     }
   };
 
@@ -253,6 +275,7 @@ xla::ComputationClient::DataPtr GetDeviceData(const at::Tensor& tensor,
     at::Tensor tensor_copy = tensor.dup();
     device_data = TensorToXlaData(tensor_copy, device);
     cache->Add(std::move(tensor_copy), device_data);
+    XLA_COUNTER("DeviceDataCacheMiss", 1);
   }
   return device_data;
 }
@@ -293,6 +316,7 @@ class XLATensor::DeviceContextArena {
     std::mutex lock;
     absl::flat_hash_map<xla::int64, std::weak_ptr<Data>> tensors_data;
     xla::uint64 seed = 101;
+    xla::uint64 running_seed = 101;
     ir::Value seed_ir_value;
   };
 
@@ -345,26 +369,38 @@ class XLATensor::DeviceContextArena {
 
   ir::Value GetRngSeed(const Device& device) {
     static const at::ScalarType kSeedType = at::ScalarType::Long;
+    static const xla::uint64 kSeedMul = 214013;
+    static const xla::uint64 kSeedAdd = 2531011;
     DeviceContext* devctx = GetDeviceContext(device);
     std::lock_guard<std::mutex> lock(devctx->lock);
     if (!devctx->seed_ir_value) {
-      devctx->seed_ir_value = IrValueFromScalar(
-          static_cast<int64_t>(devctx->seed), kSeedType, device);
+      at::Scalar seed_scalar(static_cast<uint64_t>(devctx->seed));
+      devctx->seed_ir_value = IrValueFromScalar(seed_scalar, kSeedType, device);
     }
+    // Keep the running seed as scalar as well, so we can return it directly
+    // without executing graphs.
+    devctx->running_seed = kSeedAdd + kSeedMul * devctx->running_seed;
     // Compose new seeds from the root seed, to avoid creating too many XLA
     // computation parameters which might overflow the TPU capacity.
-    ir::Value k =
-        ir::ops::ScalarOp(214013, MakeXlaPrimitiveType(kSeedType, &device));
-    ir::Value b =
-        ir::ops::ScalarOp(2531011, MakeXlaPrimitiveType(kSeedType, &device));
+    ir::Value k = ir::ops::ScalarOp(at::Scalar(static_cast<uint64_t>(kSeedMul)),
+                                    MakeXlaPrimitiveType(kSeedType, &device));
+    ir::Value b = ir::ops::ScalarOp(at::Scalar(static_cast<uint64_t>(kSeedAdd)),
+                                    MakeXlaPrimitiveType(kSeedType, &device));
     devctx->seed_ir_value = b + k * devctx->seed_ir_value;
     return devctx->seed_ir_value;
+  }
+
+  xla::uint64 GetRunningSeed(const Device& device) {
+    DeviceContext* devctx = GetDeviceContext(device);
+    std::lock_guard<std::mutex> lock(devctx->lock);
+    return devctx->running_seed;
   }
 
   void SetRngSeed(const Device* device, xla::uint64 seed) {
     auto fn = [&](DeviceContext* devctx) {
       std::lock_guard<std::mutex> lock(devctx->lock);
       devctx->seed = seed;
+      devctx->running_seed = devctx->seed;
       devctx->seed_ir_value = ir::Value();
     };
     ForAllDeviceContexts(fn, device);
@@ -373,7 +409,8 @@ class XLATensor::DeviceContextArena {
   void StepRngSeed(const Device* device) {
     auto fn = [&](DeviceContext* devctx) {
       std::lock_guard<std::mutex> lock(devctx->lock);
-      devctx->seed = 2531011 + devctx->seed * 214013;
+      devctx->seed = 1012031 + devctx->seed * 7012063;
+      devctx->running_seed = devctx->seed;
       devctx->seed_ir_value = ir::Value();
     };
     ForAllDeviceContexts(fn, device);
@@ -411,9 +448,11 @@ class XLATensor::DeviceContextArena {
 };
 
 struct DeviceDataInfo : public xla::ComputationClient::Data::Info {
-  explicit DeviceDataInfo(xla::int64 tensor_id) : tensor_id(tensor_id) {}
+  DeviceDataInfo(xla::int64 tensor_id, bool read_only)
+      : tensor_id(tensor_id), read_only(read_only) {}
 
   xla::int64 tensor_id = 0;
+  bool read_only = false;
 };
 
 XLATensor::Data::~Data() { DeviceContextArena::Get()->UnregisterTensor(this); }
@@ -614,7 +653,8 @@ std::string XLATensor::DumpHloComputation(
       ir_values.push_back(std::move(ir_value));
     }
   }
-  return !ir_values.empty() ? ir::DumpUtil::ToHlo(ir_values) : std::string();
+  return !ir_values.empty() ? ir::DumpUtil::ToHlo(ir_values, GetCurrentDevice())
+                            : std::string();
 }
 
 void XLATensor::SetXlaData(xla::ComputationClient::DataPtr xla_data) {
@@ -663,6 +703,9 @@ void XLATensor::AssignIrValue(ir::Value ir_value) const {
 }
 
 void XLATensor::TryLimitGraphSize() {
+  if (ApplyTraceletCutpoint()) {
+    return;
+  }
   static const size_t kCheckFrequency =
       xla::sys_util::GetEnvInt("XLA_TRIM_GRAPH_CHECK_FREQUENCY", 5000);
   static const size_t kMaxPendingGraphSize =
@@ -689,7 +732,7 @@ ir::Value XLATensor::GetIrValue() const {
     // will still collapse them all into a single XLA parameter op). So call
     // which wants the XLA data will still find it, w/out having to fetch it via
     // a computation client from-server call.
-    AssignIrValue(CreateTensorNode(xla_data));
+    AssignIrValue(CreateTensorNode(xla_data, /*read_only=*/false));
     return data()->ir_value;
   }
   c10::optional<at::Tensor> tensor_data = CurrentTensorData();
@@ -719,6 +762,7 @@ c10::optional<at::Tensor> XLATensor::CurrentTensorData() const {
 ir::Value XLATensor::GetIrValueForTensor(const at::Tensor& tensor,
                                          const Device& device) const {
   xla::ComputationClient::DataPtr data;
+  bool read_only = false;
   if (tensor.rank() == 0) {
     at::Scalar value = tensor.item();
     if (IsSpecialScalar(value)) {
@@ -727,11 +771,12 @@ ir::Value XLATensor::GetIrValueForTensor(const at::Tensor& tensor,
           MakeXlaPrimitiveType(tensor.scalar_type(), &device));
     }
     data = GetDeviceData(tensor, device);
+    read_only = true;
   } else {
     XLA_TIMED("IrValueTensorToXlaData");
     data = TensorToXlaData(tensor, device);
   }
-  return CreateTensorNode(std::move(data));
+  return CreateTensorNode(std::move(data), read_only);
 }
 
 ir::Value XLATensor::GetIrValueForScalar(at::Scalar value,
@@ -742,6 +787,8 @@ ir::Value XLATensor::GetIrValueForScalar(at::Scalar value,
   }
   xla::ComputationClient::DataPtr data =
       GetDeviceData(value, TensorTypeFromXlaType(type), device);
+  data->SetInfo(
+      std::make_shared<DeviceDataInfo>(/*tensor_id=*/-1, /*read_only=*/true));
   return ir::MakeNode<ir::ops::DeviceData>(std::move(data));
 }
 
@@ -832,6 +879,7 @@ at::Tensor XLATensor::ToTensor(bool detached) {
   at::Tensor tensor(std::unique_ptr<at::AnyScalarBuffer>(nullptr), {});
   c10::optional<at::Tensor> tensor_data = CurrentTensorData();
   if (!tensor_data) {
+    DeviceBarrier(GetDevice());
     // The GetXlaData() call will trigger an ApplyPendingGraph() if an IR Node
     // is available on the tensor.
     std::vector<at::Tensor> tensors = XlaDataToTensors({GetXlaData()}, dtype());
@@ -1020,9 +1068,9 @@ std::vector<XLATensor> XLATensor::CreateTensors(
   return xla_tensors;
 }
 
-ir::Value XLATensor::CreateTensorNode(
-    xla::ComputationClient::DataPtr data) const {
-  data->SetInfo(std::make_shared<DeviceDataInfo>(GetUniqueId()));
+ir::Value XLATensor::CreateTensorNode(xla::ComputationClient::DataPtr data,
+                                      bool read_only) const {
+  data->SetInfo(std::make_shared<DeviceDataInfo>(GetUniqueId(), read_only));
   return ir::MakeNode<ir::ops::DeviceData>(std::move(data));
 }
 
@@ -1343,6 +1391,9 @@ void XLATensor::SyncLiveTensorsGraph(const Device* device,
                                      absl::Span<const std::string> devices,
                                      bool wait) {
   auto tensors = GetLiveTensors(device);
+  if (tensors.empty()) {
+    return;
+  }
   TF_VLOG(4) << tensors.size() << " live tensors: devices=("
              << absl::StrJoin(devices, ",") << ")";
   SyncTensorsGraph(&tensors, devices, wait, /*sync_xla_data=*/true);
@@ -1445,7 +1496,7 @@ void XLATensor::BuildInputOutputAliases(const std::vector<XLATensor>& tensors,
   for (size_t i = 0; i < parameters_data.size(); ++i) {
     DeviceDataInfo* data_info =
         dynamic_cast<DeviceDataInfo*>(parameters_data[i]->info());
-    if (data_info != nullptr) {
+    if (data_info != nullptr && !data_info->read_only) {
       auto it = output_tensor_id_map.find(data_info->tensor_id);
       if (it != output_tensor_id_map.end()) {
         size_t output_index = it->second;
@@ -1473,7 +1524,9 @@ XLATensor::CompilationResult XLATensor::Compile(
   static const bool enable_aliasing =
       xla::sys_util::GetEnvBool("XLA_ENABLE_PARAM_ALIASING", false);
   xla::util::Unique<Device> unique_device;
-  ir::LoweringContext lowering_ctx("SyncTensorsGraph");
+  ir::LoweringContext lowering_ctx("SyncTensorsGraph", coll.device,
+                                   po_data->post_order,
+                                   std::move(po_data->emission_map));
   for (auto index : coll.indices) {
     ir::Value ir_value = tensors[index].CurrentIrValue();
     xla::XlaOp root = lowering_ctx.GetOutputOp(ir_value);
@@ -1551,6 +1604,7 @@ std::shared_ptr<XLATensor::Async> XLATensor::SyncTensorsGraphInternal(
                                   &coll.indices);
 
   PostOrderData po_data = RunPostOrder(*tensors, coll.indices);
+  InsertTraceletCutpoint(po_data);
   coll.hash = xla::util::HashCombine(
       coll.hash, xla::util::Hash(po_data.parameter_sequence));
   TF_VLOG(4) << "Parameter sequence graph hash "
@@ -1585,6 +1639,91 @@ ir::Value XLATensor::GetRngSeed(const Device& device) {
 
 void XLATensor::SetRngSeed(const Device* device, xla::uint64 seed) {
   DeviceContextArena::Get()->SetRngSeed(device, seed);
+}
+
+xla::uint64 XLATensor::GetRunningSeed(const Device& device) {
+  return DeviceContextArena::Get()->GetRunningSeed(device);
+}
+
+bool XLATensor::ApplyTraceletCutpoint() {
+  static const bool tracelets =
+      xla::sys_util::GetEnvBool("XLA_TRACELETS", false);
+  if (!tracelets) {
+    return false;
+  }
+  if (!data()->ir_value) {
+    return false;
+  }
+  xla::hash_t hash = data()->ir_value.node->hash();
+  if (g_tracelet_state.cutpoints.find(hash) !=
+      g_tracelet_state.cutpoints.end()) {
+    ApplyPendingGraph();
+    return true;
+  }
+  return false;
+}
+
+void XLATensor::InsertTraceletCutpoint(const PostOrderData& po_data) {
+  // Wait for steady state: don't trigger any tracelet detection for the first
+  // two steps.
+  static const xla::int64 kSteadyStateStep = 3;
+  static const bool tracelets =
+      xla::sys_util::GetEnvBool("XLA_TRACELETS", false);
+  if (!tracelets) {
+    return;
+  }
+  xla::metrics::CounterData* mark_step = xla::metrics::GetCounter("MarkStep");
+  xla::int64 steps = mark_step ? mark_step->Value() : 0;
+  if (steps < kSteadyStateStep) {
+    return;
+  }
+  // For the first steady state step, just record number of compilations seen so
+  // far and return.
+  if (steps == kSteadyStateStep) {
+    xla::metrics::CounterData* uncached_compile =
+        xla::metrics::GetCounter("UncachedCompile");
+    if (uncached_compile) {
+      g_tracelet_state.prev_uncached_compile = uncached_compile->Value();
+    }
+    return;
+  }
+  xla::metrics::CounterData* uncached_compile =
+      xla::metrics::GetCounter("UncachedCompile");
+  XLA_CHECK_GE(uncached_compile->Value(),
+               g_tracelet_state.prev_uncached_compile);
+  if (!uncached_compile ||
+      uncached_compile->Value() == g_tracelet_state.prev_uncached_compile) {
+    // No new compilations, nothing to do.
+    return;
+  }
+  XLA_CHECK(!po_data.post_order.empty());
+  // Construct the new tracelet out of post-order nodes.
+  // TODO(asuhan): Consider all nodes as possible tracelet start?
+  std::vector<xla::hash_t> po_trace;
+  for (const ir::Node* node : po_data.post_order) {
+    po_trace.push_back(node->hash());
+  }
+  xla::hash_t trace_key = po_data.post_order.front()->hash();
+  const auto tracelet_it = g_tracelet_state.tracelet_by_prefix.find(trace_key);
+  if (tracelet_it != g_tracelet_state.tracelet_by_prefix.end()) {
+    // Old tracelet found starting with the same prefix as current trace. We
+    // might need to check if the two diverge and shorten it further, up to the
+    // point of divergence.
+    const auto divergent_node =
+        FindTraceDivergence(tracelet_it->second, po_trace);
+    if (divergent_node &&
+        po_data.post_order[*divergent_node]->op() != ir::ops::xla_device_data) {
+      const auto cutpoint_it = po_trace.begin() + *divergent_node;
+      g_tracelet_state.tracelet_by_prefix[trace_key] =
+          std::vector<xla::hash_t>(po_trace.begin(), cutpoint_it);
+      g_tracelet_state.cutpoints.insert(*(cutpoint_it - 1));
+    }
+  } else {
+    const auto tracelet_it_ok =
+        g_tracelet_state.tracelet_by_prefix.emplace(trace_key, po_trace);
+    XLA_CHECK(tracelet_it_ok.second);
+  }
+  g_tracelet_state.prev_uncached_compile = uncached_compile->Value();
 }
 
 }  // namespace swift_xla

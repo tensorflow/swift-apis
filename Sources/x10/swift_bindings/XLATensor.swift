@@ -418,6 +418,23 @@ extension XLATensor {
     return XLATensor(_handle: XLATensor_div(a.handle, b.handle))
   }
 
+  static func dynamic_slice(_ base: XLATensor, _ start_indices: [XLATensor], _ slice_shape: [Int64]) -> XLATensor {
+    start_indices.withArrayRef { start_indices in
+      slice_shape.withArrayRef { slice_shape in
+        return XLATensor(_handle: XLATensor_dynamic_slice(base.handle, start_indices, slice_shape))
+      }
+    }
+  }
+
+  static func dynamic_update_slice(
+    _ base: XLATensor, _ update: XLATensor, _ start_indices: [XLATensor]
+  ) -> XLATensor {
+    start_indices.withArrayRef { start_indices in
+      return XLATensor(
+        _handle: XLATensor_dynamic_update_slice(base.handle, update.handle, start_indices))
+    }
+  }
+
   static func eq(_ a: XLATensor, _ b: XLATensor) -> XLATensor {
     defer { _fixLifetime(a) }
     defer { _fixLifetime(b) }
@@ -529,6 +546,19 @@ extension XLATensor {
     return XLATensor(
       _handle: XLATensor_arange(
         start.xlaScalar, stop.xlaScalar, step.xlaScalar, cdevice, type))
+  }
+
+  static func linspace(
+    _ start: XLAScalarType,
+    _ stop: XLAScalarType,
+    _ num: Int64,
+    _ type: XLATensorScalarType,
+    _ device: Device
+  ) -> XLATensor {
+    let cdevice = device.cdevice
+    return XLATensor(
+      _handle: XLATensor_linspace(
+        start.xlaScalar, stop.xlaScalar, num, cdevice, type))
   }
 
   static func log(_ a: XLATensor) -> XLATensor {
@@ -745,6 +775,10 @@ extension XLATensor {
   static func relu(_ a: XLATensor) -> XLATensor {
     defer { _fixLifetime(a) }
     return XLATensor(_handle: XLATensor_relu(a.handle))
+  }
+
+  static func replica_id(_ device: Device) -> XLATensor {
+    return XLATensor(_handle: XLATensor_replica_id(device.cdevice));
   }
 
   static func resize_value(_ value: XLATensor, _ dims: [Int64]) -> XLATensor {

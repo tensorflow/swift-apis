@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import _Differentiation
 #if !COMPILING_TENSORFLOW_STDLIB_MODULE
   import Tensor
 #endif
@@ -94,14 +95,7 @@ public struct BasicRNNCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell 
   public var weight: Tensor<Scalar>
   public var bias: Tensor<Scalar>
 
-  // TODO(TF-507): Revert to `typealias State = Tensor<Scalar>` after SR-10697 is fixed.
-  public struct State: Equatable, Differentiable, VectorProtocol, KeyPathIterable {
-    public var value: Tensor<Scalar>
-    public init(_ value: Tensor<Scalar>) {
-      self.value = value
-    }
-  }
-
+  public typealias State = Tensor<Scalar>
   public typealias TimeStepInput = Tensor<Scalar>
   public typealias TimeStepOutput = State
   public typealias Input = RNNCellInput<TimeStepInput, State>
@@ -121,7 +115,7 @@ public struct BasicRNNCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell 
 
   /// Returns a zero-valued state with shape compatible with the provided input.
   public func zeroState(for input: Tensor<Scalar>) -> State {
-    State(Tensor(zeros: [input.shape[0], weight.shape[1]], on: input.device))
+    Tensor(zeros: [input.shape[0], weight.shape[1]], on: input.device)
   }
 
   /// Returns the output obtained from applying the layer to the given input.
@@ -130,8 +124,8 @@ public struct BasicRNNCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell 
   /// - Returns: The hidden state.
   @differentiable
   public func callAsFunction(_ input: Input) -> Output {
-    let concatenatedInput = input.input.concatenated(with: input.state.value, alongAxis: 1)
-    let newState = State(tanh(matmul(concatenatedInput, weight) + bias))
+    let concatenatedInput = input.input.concatenated(with: input.state, alongAxis: 1)
+    let newState = tanh(matmul(concatenatedInput, weight) + bias)
     return Output(output: newState, state: newState)
   }
 }
@@ -232,30 +226,11 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell {
     let gateInput = input.input.concatenated(with: input.state.hidden, alongAxis: 1)
 
     let fused = matmul(gateInput, fusedWeight) + fusedBias
-    let batchSize = fused.shape[0]
-    let hiddenSize = fused.shape[1] / 4
-    let inputGate = sigmoid(
-      fused.slice(
-        lowerBounds: [0, 0],
-        upperBounds: [batchSize, hiddenSize]))
-    let updateGate = tanh(
-      fused.slice(
-        lowerBounds: [0, hiddenSize],
-        upperBounds: [batchSize, 2 * hiddenSize]))
-    let forgetGate = sigmoid(
-      fused.slice(
-        lowerBounds: [0, 2 * hiddenSize],
-        upperBounds: [batchSize, 3 * hiddenSize]))
-    let outputGate = sigmoid(
-      fused.slice(
-        lowerBounds: [0, 3 * hiddenSize],
-        upperBounds: [batchSize, 4 * hiddenSize]))
-    // TODO(SR-10697/TF-507): Replace with the following once it does not crash the compiler.
-    // let fusedParts = fused.split(count: 4, alongAxis: 1)
-    // let inputGate = sigmoid(fusedParts[0])
-    // let updateGate = tanh(fusedParts[1])
-    // let forgetGate = sigmoid(fusedParts[2])
-    // let outputGate = sigmoid(fusedParts[3])
+    let fusedParts = fused.split(count: 4, alongAxis: 1)
+    let inputGate = sigmoid(fusedParts[0])
+    let updateGate = tanh(fusedParts[1])
+    let forgetGate = sigmoid(fusedParts[2])
+    let outputGate = sigmoid(fusedParts[3])
 
     let newCellState = input.state.cell * forgetGate + inputGate * updateGate
     let newHiddenState = tanh(newCellState) * outputGate
@@ -268,19 +243,22 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell {
 
 /// An GRU cell.
 public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell {
-  public var updateWeight1, updateWeight2: Tensor<Scalar>
-  public var resetWeight1, resetWeight2: Tensor<Scalar>
-  public var outputWeight1, outputWeight2: Tensor<Scalar>
-  public var updateBias, outputBias, resetBias: Tensor<Scalar>
+  public var updateKernel, updateRecurrentKernel: Tensor<Scalar>
+  public var resetKernel, resetRecurrentKernel: Tensor<Scalar>
+  public var outputKernel, outputRecurrentKernel: Tensor<Scalar>
+  public var updateBias, updateRecurrentBias: Tensor<Scalar>
+  public var resetBias, resetRecurrentBias: Tensor<Scalar>
+  public var outputBias, outputRecurrentBias: Tensor<Scalar>
 
   @noDerivative public var stateShape: TensorShape {
-    [1, updateWeight1.shape[0]]
+    [1, updateKernel.shape[0]]
   }
 
   public func zeroState(for input: Tensor<Scalar>) -> State {
-    return State(hidden: Tensor(zeros: stateShape, on: input.device))
+    return Tensor(zeros: stateShape, on: input.device)
   }
 
+  public typealias State = Tensor<Scalar>
   public typealias TimeStepInput = Tensor<Scalar>
   public typealias TimeStepOutput = State
   public typealias Input = RNNCellInput<TimeStepInput, State>
@@ -294,31 +272,24 @@ public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell {
   public init(
     inputSize: Int,
     hiddenSize: Int,
-    weightInitializer: ParameterInitializer<Scalar> = glorotUniform(),
+    kernelInitializer: ParameterInitializer<Scalar> = glorotUniform(),
     biasInitializer: ParameterInitializer<Scalar> = zeros()
   ) {
-    let gateWeightShape = TensorShape([inputSize, 1])
+    let gateKernelShape = TensorShape([inputSize, hiddenSize])
+    let gateRecurrentKernelShape = TensorShape([hiddenSize, hiddenSize])
     let gateBiasShape = TensorShape([hiddenSize])
-    self.updateWeight1 = weightInitializer(gateWeightShape)
-    self.updateWeight2 = weightInitializer(gateWeightShape)
+    self.updateKernel = kernelInitializer(gateKernelShape)
+    self.updateRecurrentKernel = kernelInitializer(gateRecurrentKernelShape)
     self.updateBias = biasInitializer(gateBiasShape)
-    self.resetWeight1 = weightInitializer(gateWeightShape)
-    self.resetWeight2 = weightInitializer(gateWeightShape)
+    self.updateRecurrentBias = biasInitializer(gateBiasShape)
+    self.resetKernel = kernelInitializer(gateKernelShape)
+    self.resetRecurrentKernel = kernelInitializer(gateRecurrentKernelShape)
     self.resetBias = biasInitializer(gateBiasShape)
-    self.outputWeight1 = weightInitializer(gateWeightShape)
-    self.outputWeight2 = weightInitializer(gateWeightShape)
+    self.resetRecurrentBias = biasInitializer(gateBiasShape)
+    self.outputKernel = kernelInitializer(gateKernelShape)
+    self.outputRecurrentKernel = kernelInitializer(gateRecurrentKernelShape)
     self.outputBias = biasInitializer(gateBiasShape)
-  }
-
-  // TODO(TF-507): Revert to `typealias State = Tensor<Scalar>` after
-  // SR-10697 is fixed.
-  public struct State: Equatable, Differentiable, VectorProtocol, KeyPathIterable {
-    public var hidden: Tensor<Scalar>
-
-    @differentiable
-    public init(hidden: Tensor<Scalar>) {
-      self.hidden = hidden
-    }
+    self.outputRecurrentBias = biasInitializer(gateBiasShape)
   }
 
   /// Returns the output obtained from applying the layer to the given input.
@@ -327,18 +298,23 @@ public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell {
   /// - Returns: The hidden state.
   @differentiable
   public func callAsFunction(_ input: Input) -> Output {
-    let resetGate = sigmoid(
-      matmul(input.input, resetWeight1) + matmul(input.state.hidden, resetWeight2) + resetBias
-    )
     let updateGate = sigmoid(
-      matmul(input.input, updateWeight1) + matmul(input.state.hidden, updateWeight2)
-        + updateBias)
+      (matmul(input.input, updateKernel) + updateBias)
+      + (matmul(input.state, updateRecurrentKernel) + updateRecurrentBias)
+    )
+    let resetGate = sigmoid(
+      (matmul(input.input, resetKernel) + resetBias)
+      + (matmul(input.state, resetRecurrentKernel) + resetRecurrentBias)
+    )
     let outputGate = tanh(
-      matmul(input.input, outputWeight1)
-        + matmul(resetGate * input.state.hidden, outputWeight2) + outputBias)
-    let updateHidden = (1 - updateGate) * input.state.hidden
+      (matmul(input.input, outputKernel) + outputBias)
+      + resetGate * (matmul(input.state, outputRecurrentKernel) + outputRecurrentBias)
+    )
+
+    let updateHidden = updateGate * input.state
     let updateOutput = (1 - updateGate) * outputGate
-    let newState = State(hidden: updateHidden + updateOutput)
+    let newState = State(updateHidden + updateOutput)
+
     return Output(output: newState, state: newState)
   }
 }

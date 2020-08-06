@@ -754,32 +754,38 @@
   _(aten, zeros_like)                                       \
   _(aten, xla_avg_pool)                                     \
   _(aten, xla_avg_pool_grad)                                \
+  _(aten, xla_dynamic_update_slice)                         \
+  _(aten, xla_dynamic_slice)                                \
   _(aten, xla_max_pool)                                     \
   _(aten, xla_max_pool_grad)                                \
   _(aten, xla_pad)                                          \
   _(aten, xla_rem)                                          \
+  _(aten, xla_replica_id)                                   \
   _(aten, xla_slice)                                        \
   _(aten, xla_truncated_normal)                             \
   _(aten, xla_is_finite)                                    \
   _(aten, xla_is_inf)                                       \
   _(aten, xla_is_nan)
 
-#define FORALL_XLA_SYMBOLS(_, __) \
-  __(xla, all_to_all)             \
-  _(xla, as_strided_view_update)  \
-  _(xla, cast)                    \
-  _(xla, collective_permute)      \
-  _(xla, cross_replica_sum)       \
-  _(xla, device_data)             \
-  _(xla, diagonal_view_update)    \
-  _(xla, generic_slice)           \
-  _(xla, get_dimensions_size)     \
-  _(xla, moving_average)          \
-  _(xla, not_supported)           \
-  _(xla, select)                  \
-  _(xla, tensor_data)             \
-  _(xla, token)                   \
-  _(xla, unselect)                \
+#define FORALL_XLA_SYMBOLS(_, __)  \
+  __(xla, all_to_all)              \
+  _(xla, as_strided_view_update)   \
+  _(xla, cast)                     \
+  _(xla, collective_permute)       \
+  _(xla, cross_replica_sum)        \
+  _(xla, device_data)              \
+  _(xla, diagonal_view_update)     \
+  _(xla, generic_slice)            \
+  _(xla, get_dimensions_size)      \
+  _(xla, moving_average)           \
+  _(xla, nms)                      \
+  _(xla, not_supported)            \
+  _(xla, replication_pad)          \
+  _(xla, replication_pad_backward) \
+  _(xla, select)                   \
+  _(xla, tensor_data)              \
+  _(xla, token)                    \
+  _(xla, unselect)                 \
   _(xla, update_slice)
 
 namespace at {

@@ -479,6 +479,59 @@ NodePtr ARange(at::Scalar start, at::Scalar end, at::Scalar step,
   return MakeNode<Constant>(std::move(values));
 }
 
+NodePtr LinSpace(at::Scalar start, at::Scalar stop, xla::int64 num,
+                 at::ScalarType scalar_type) {
+  XLA_CHECK_GT(num, 0) << "Requires num > 0: " << num;
+  xla::PrimitiveType type = MakeXlaPrimitiveType(scalar_type,
+                                                 /*device=*/nullptr);
+  xla::Literal values;
+  switch (type) {
+    case xla::PrimitiveType::F32:
+      values =
+          XlaHelpers::LinSpace<float>(start.toFloat(), stop.toFloat(), num);
+      break;
+    case xla::PrimitiveType::F64:
+      values =
+          XlaHelpers::LinSpace<double>(start.toDouble(), stop.toDouble(), num);
+      break;
+    case xla::PrimitiveType::U8:
+      values =
+          XlaHelpers::LinSpace<xla::uint8>(start.toByte(), stop.toByte(), num);
+      break;
+    case xla::PrimitiveType::S8:
+      values =
+          XlaHelpers::LinSpace<xla::int8>(start.toChar(), stop.toChar(), num);
+      break;
+    case xla::PrimitiveType::S16:
+      values = XlaHelpers::LinSpace<xla::int16>(start.toShort(), stop.toShort(),
+                                                num);
+      break;
+    case xla::PrimitiveType::U16:
+      values =
+          XlaHelpers::LinSpace<xla::uint16>(start.toInt(), stop.toInt(), num);
+      break;
+    case xla::PrimitiveType::S32:
+      values =
+          XlaHelpers::LinSpace<xla::int32>(start.toInt(), stop.toInt(), num);
+      break;
+    case xla::PrimitiveType::U32:
+      values =
+          XlaHelpers::LinSpace<xla::uint32>(start.toLong(), stop.toLong(), num);
+      break;
+    case xla::PrimitiveType::S64:
+      values =
+          XlaHelpers::LinSpace<xla::int64>(start.toLong(), stop.toLong(), num);
+      break;
+    case xla::PrimitiveType::U64:
+      values =
+          XlaHelpers::LinSpace<xla::uint64>(start.toLong(), stop.toLong(), num);
+      break;
+    default:
+      XLA_ERROR() << "XLA type not supported: " << type;
+  }
+  return MakeNode<Constant>(std::move(values));
+}
+
 NodePtr BroadcastTensors(absl::Span<const Value> tensors) {
   auto lower_fn = [](const Node& node, LoweringContext* loctx) -> XlaOpVector {
     std::vector<xla::XlaOp> xla_operands;
