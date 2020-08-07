@@ -102,7 +102,7 @@ if(ENABLE_PYTHON_SUPPORT)
   ExternalProject_Get_Property(python-kit BINARY_DIR)
   ExternalProject_Get_Property(python-kit SOURCE_DIR)
 
-  add_library(PythonKit IMPORTED UNKNOWN)
+  add_library(PythonKit SHARED IMPORTED)
   set_target_properties(PythonKit PROPERTIES
     IMPORTED_LOCATION ${BINARY_DIR}/PythonKit/${CMAKE_SHARED_LIBRARY_PREFIX}PythonKit${CMAKE_SHARED_LIBRARY_SUFFIX}
     IMPORTED_IMPLIB ${BINARY_DIR}/PythonKit/${CMAKE_IMPORT_LIBRARY_PREFIX}PythonKit${CMAKE_IMPORT_LIBRARY_SUFFIX}
@@ -172,7 +172,7 @@ if(NOT X10_FOUND AND NOT USE_BUNDLED_X10)
     ${SOURCE_DIR}/bazel-libtensorflow/external/com_google_absl
     ${SOURCE_DIR}/bazel-libtensorflow/external/com_google_protobuf/src
     ${SOURCE_DIR}/bazel-libtensorflow/external/eigen_archive)
-  add_library(x10 IMPORTED UNKNOWN)
+  add_library(x10 SHARED IMPORTED)
   set_target_properties(x10 PROPERTIES
     IMPORTED_LOCATION ${X10_LIBRARY}
     INTERFACE_INCLUDE_DIRECTORIES "${X10_INCLUDE_DIRS}")
