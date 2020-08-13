@@ -26,8 +26,16 @@ option(USE_BUNDLED_CTENSORFLOW
   "Use the CTensorFlow module bundled in the active Swift toolchain" OFF)
 option(ENABLE_PYTHON_SUPPORT
   "Enable Python interop using PythonKit" ON)
+
+# FIXME: disable swift-numerics on Darwin as `-force-autoload-symbol` and
+# `-incremental` do not play well together on Darwin.
+if(CMAKE_SYSTEM_NAME STREQUAL Darwin)
+  set(ENABLE_SWIFT_NUMERICS_default NO)
+else()
+  set(ENABLE_SWIFT_NUMERICS_default YES)
+endif()
 option(ENABLE_SWIFT_NUMERICS
-  "Enable integrating swift-numerics" YES)
+  "Enable integrating swift-numerics" ${ENABLE_SWIFT_NUMERICS_default})
 
 if(ENABLE_SWIFT_NUMERICS)
   include(ExternalProject)
