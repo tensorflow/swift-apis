@@ -120,6 +120,18 @@ final class TensorTests: XCTestCase {
     )
   }
 
+  func testZeroTangentVectorInitializer() {
+    let shape: TensorShape = [4, 5, 6]
+    let tensor = Tensor<Float>(randomUniform: shape)
+    XCTAssertEqual(tensor.zeroTangentVector, Tensor(zeros: shape))
+
+    struct TensorWrapper: Differentiable {
+      var tensor: Tensor<Float>
+    }
+    let model = TensorWrapper(tensor: tensor)
+    XCTAssertEqual(model.zeroTangentVector, .init(tensor: Tensor(zeros: shape)))
+  }
+
   static var allTests = [
     ("testSimpleCond", testSimpleCond),
     ("testRankGetter", testRankGetter),
@@ -129,5 +141,6 @@ final class TensorTests: XCTestCase {
     ("testTensorShapeCollectionOperations", testTensorShapeCollectionOperations),
     ("testInitShapeScalars", testInitShapeScalars),
     ("testInitShapeScalarsDerivative", testInitShapeScalarsDerivative),
+    ("testZeroTangentVectorInitializer", testZeroTangentVectorInitializer),
   ]
 }
