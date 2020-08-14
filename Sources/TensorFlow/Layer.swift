@@ -29,50 +29,6 @@ where
   /// - Returns: The output.
   @differentiable(wrt: self)
   func callAsFunction(_ input: Input) -> Output
-
-  @differentiable(wrt: self)
-  func forward(_ input: Input) -> Output
-}
-
-extension Module {
-  @differentiable(wrt: self)
-  public func forward(_ input: Input) -> Output {
-    return callAsFunction(input)
-  }
-}
-
-extension Module where Input: TensorProtocol, Output: DifferentiableTensorProtocol {
-  @differentiable(wrt: self)
-  public func callAsFunction(_ input: Input) -> Output {
-    let activation = forward(input)
-
-    return annotated(activation)
-  }
-
-  @differentiable
-  public func annotated(_ output: Output) -> Output {
-    #if USING_X10_BACKEND
-      let selfType = String(describing: Self.self)
-      let annotation = "type=" + selfType
-      let annotated = output.annotate(annotation)
-      return annotated
-    #else
-      return output
-    #endif
-  }
-
-  /// Returns the annotations obtained from applying the layer to the given input.
-  ///
-  /// - Parameter input: The input to the layer.
-  /// - Returns: All collected annotations from the XLA graph.
-  public func annotations(input: Input) -> String {
-    let output = self.callAsFunction(input)
-    return output.annotations
-  }
-
-  public func summary(input: Input) -> String {
-    return self.annotations(input: input)
-  }
 }
 
 /// A neural network layer.
@@ -89,54 +45,6 @@ public protocol Layer: Module where Input: Differentiable {
   /// - Returns: The output.
   @differentiable
   func callAsFunction(_ input: Input) -> Output
-
-  @differentiable
-  func forward(_ input: Input) -> Output
-}
-
-extension Layer {
-  @differentiable
-  public func forward(_ input: Input) -> Output {
-    return callAsFunction(input)
-  }
-}
-
-extension Layer where Input: DifferentiableTensorProtocol, Output: DifferentiableTensorProtocol {
-  @differentiable
-  public func callAsFunction(_ input: Input) -> Output {
-    let activation = forward(input)
-
-    return annotated(activation)
-  }
-
-  /// Returns the annotations obtained from applying the layer to the given input.
-  ///
-  /// - Parameter input: The input to the layer.
-  /// - Returns: All collected annotations from the XLA graph.
-  public func annotations(input: Input) -> String {
-    return self.annotations(inputShape: input.shape)
-  }
-
-  /// Returns the annotations obtained from applying the layer to the given input.
-  ///
-  /// - Parameter input: The shape of the input to the layer.
-  /// - Returns: All collected annotations from the XLA graph.
-  public func annotations(inputShape: TensorShape) -> String {
-    #if USING_X10_BACKEND
-      LazyTensorBarrier()
-      let zeros = Input.init(repeating: 0, shape: inputShape, on: Device.defaultXLA)
-      let model = Self.self.init(copying: self, to: Device.defaultXLA)
-      let output = model(zeros)
-
-      return output.annotations
-    #else
-      return ""
-    #endif
-  }
-
-  public func summary(inputShape: TensorShape) -> String {
-    return self.annotations(inputShape: inputShape)
-  }
 }
 
 /// An empty struct representing empty `TangentVector`s for parameterless layers.
