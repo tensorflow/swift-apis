@@ -26,8 +26,16 @@ option(USE_BUNDLED_CTENSORFLOW
   "Use the CTensorFlow module bundled in the active Swift toolchain" OFF)
 option(ENABLE_PYTHON_SUPPORT
   "Enable Python interop using PythonKit" ON)
+
+# FIXME: disable swift-numerics on Darwin as `-force-autoload-symbol` and
+# `-incremental` do not play well together on Darwin.
+if(CMAKE_SYSTEM_NAME STREQUAL Darwin)
+  set(ENABLE_SWIFT_NUMERICS_default NO)
+else()
+  set(ENABLE_SWIFT_NUMERICS_default YES)
+endif()
 option(ENABLE_SWIFT_NUMERICS
-  "Enable integrating swift-numerics" YES)
+  "Enable integrating swift-numerics" ${ENABLE_SWIFT_NUMERICS_default})
 
 if(ENABLE_SWIFT_NUMERICS)
   include(ExternalProject)
@@ -95,6 +103,7 @@ if(ENABLE_PYTHON_SUPPORT)
         ${CMAKE_COMMAND} -E copy_if_different <BINARY_DIR>/swift/PythonKit.swiftdoc ${CMAKE_Swift_MODULE_DIRECTORY}/
     BUILD_BYPRODUCTS
       <BINARY_DIR>/PythonKit/${CMAKE_SHARED_LIBRARY_PREFIX}PythonKit${CMAKE_SHARED_LIBRARY_SUFFIX}
+      <BINARY_DIR>/PythonKit/${CMAKE_IMPORT_LIBRARY_PREFIX}PythonKit${CMAKE_IMPORT_LIBRARY_SUFFIX}
     UPDATE_DISCONNECTED
       TRUE
     STEP_TARGETS
@@ -102,7 +111,7 @@ if(ENABLE_PYTHON_SUPPORT)
   ExternalProject_Get_Property(python-kit BINARY_DIR)
   ExternalProject_Get_Property(python-kit SOURCE_DIR)
 
-  add_library(PythonKit IMPORTED UNKNOWN)
+  add_library(PythonKit SHARED IMPORTED)
   set_target_properties(PythonKit PROPERTIES
     IMPORTED_LOCATION ${BINARY_DIR}/PythonKit/${CMAKE_SHARED_LIBRARY_PREFIX}PythonKit${CMAKE_SHARED_LIBRARY_SUFFIX}
     IMPORTED_IMPLIB ${BINARY_DIR}/PythonKit/${CMAKE_IMPORT_LIBRARY_PREFIX}PythonKit${CMAKE_IMPORT_LIBRARY_SUFFIX}
@@ -128,7 +137,7 @@ if(NOT X10_FOUND AND NOT USE_BUNDLED_X10)
     GIT_REPOSITORY
       git://github.com/tensorflow/tensorflow
     GIT_TAG
-      r2.2
+      r2.3
     UPDATE_DISCONNECTED
       TRUE
     CONFIGURE_COMMAND
@@ -172,7 +181,7 @@ if(NOT X10_FOUND AND NOT USE_BUNDLED_X10)
     ${SOURCE_DIR}/bazel-libtensorflow/external/com_google_absl
     ${SOURCE_DIR}/bazel-libtensorflow/external/com_google_protobuf/src
     ${SOURCE_DIR}/bazel-libtensorflow/external/eigen_archive)
-  add_library(x10 IMPORTED UNKNOWN)
+  add_library(x10 SHARED IMPORTED)
   set_target_properties(x10 PROPERTIES
     IMPORTED_LOCATION ${X10_LIBRARY}
     INTERFACE_INCLUDE_DIRECTORIES "${X10_INCLUDE_DIRS}")
