@@ -28,17 +28,24 @@ import _Differentiation
 public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
   /// The weight matrix.
   public var weight: Tensor<Scalar>
-  /// The bias vector.
-  public var bias: Tensor<Scalar>
+  /// The optional bias vector.
+  public var optionalBias: Tensor<Scalar>?
   /// The element-wise activation function.
   @noDerivative public let activation: Activation
   /// Indicates whether this is a batched dense layer.
   @noDerivative internal let batched: Bool
-  /// Workaround optionals not being handled by AD
-  @noDerivative private let useBias: Bool
 
   /// The element-wise activation function type.
   public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
+
+  /// The bias vector.
+  ///
+  /// - Note: returns `Tensor.zero` if the underlying `optionalBias`  does not exist.
+  //@differentiable
+  public var bias: Tensor<Scalar> {
+    get { optionalBias ?? .zero }
+    set { optionalBias = newValue }
+  }
 
   /// Creates an instance from the given weight, optional bias, and activation function.
   ///
@@ -55,10 +62,9 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
     precondition(
       bias == nil || bias!.rank <= 2, "The rank of the 'bias' tensor must be less than 3.")
     self.weight = weight
-    self.bias = bias ?? .zero
+    self.optionalBias = bias
     self.activation = activation
     self.batched = weight.rank == 3
-    useBias = (bias != nil)
   }
 
   // TODO(TF-433): Remove custom derivative after `try_apply` differentiation is supported.
@@ -81,9 +87,15 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
   public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     if batched {
       let hidden = matmul(input.expandingShape(at: 1), weight).squeezingShape(at: 1)
-      return activation(useBias ? hidden + bias : hidden)
+      if let bias = optionalBias {
+        return activation(hidden + bias)
+      }
+      return activation(hidden)
     }
-    return activation(useBias ? (matmul(input, weight) + bias) : matmul(input, weight))
+    if let bias = optionalBias {
+      return activation(matmul(input, weight) + bias)
+    }
+    return activation(matmul(input, weight))
   }
 }
 
@@ -106,9 +118,68 @@ extension Dense {
     weightInitializer: ParameterInitializer<Scalar> = glorotUniform(),
     biasInitializer: ParameterInitializer<Scalar> = zeros()
   ) {
+    print("Init OLD")
     self.init(
       weight: weightInitializer([inputSize, outputSize]),
       bias: useBias ? biasInitializer([outputSize]) : nil,
       activation: activation)
   }
+
+  /// Creates a `Dense` layer with the specified input size, output size, and element-wise
+  /// activation function. The weight matrix is created with shape `[inputSize, outputSize]` and
+  /// the bias vector is created with shape `[outputSize]`.
+  ///
+  /// - Parameters:
+  ///   - inputSize: The dimensionality of the input space.
+  ///   - outputSize: The dimensionality of the output space.
+  ///   - activation: The activation function to use. The default value is `identity(_:)`.
+  ///   - weightInitializer: Initializer to use for `weight`.
+  ///   - biasInitializer: Initializer to use for `bias`.
+  public init(
+    inputSize: Int,
+    outputSize: Int,
+    activation: @escaping Activation = identity,
+    weightInitializer: ParameterInitializer<Scalar> = glorotUniform(),
+    biasInitializer: ParameterInitializer<Scalar>? = nil
+  ) {
+    print("Init NEW")
+    self.init(
+      weight: weightInitializer([inputSize, outputSize]),
+      bias: biasInitializer?([outputSize]),
+      activation: activation)
+  }
 }
+
+extension Dense.TangentVector {
+  public init(
+    weight: Tensor<Scalar>,
+    bias: Tensor<Scalar>
+  ) {
+    self.init(weight: weight, optionalBias: .init(bias))
+  }
+  
+  /// The bias vector.
+  ///
+  /// - Note: returns `Tensor.zero` if the underlying `optionalBias`  does not exist.
+  //@differentiable
+  public var bias: Tensor<Scalar> {
+    get { optionalBias.value ?? .zero }
+    set { optionalBias.value = newValue }
+  }
+}
+
+/* extension Optional : KeyPathIterable {
+  public var allKeyPaths: [PartialKeyPath<Self>] {
+    if self != nil {
+      return [ \Optional.unsafelyUnwrapped ]
+    }
+    return []
+  }
+
+  public typealias AllKeyPaths = [PartialKeyPath<Self>]
+}
+
+extension Optional.TangentVector : KeyPathIterable
+{
+  
+}*/
