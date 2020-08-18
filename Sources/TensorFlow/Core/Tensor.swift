@@ -242,7 +242,7 @@ extension Tensor {
 
   /// Creates a 1D tensor from scalars.
   @inlinable
-  public init<C: RandomAccessCollection>(
+  public init<C: Collection>(
     _ vector: C, on device: Device = .default
   ) where C.Element == Scalar {
     #if USING_X10_BACKEND
@@ -384,7 +384,7 @@ extension Tensor {
   ///   - shape: The shape of the tensor.
   ///   - scalars: The scalar contents of the tensor.
   /// - Precondition: The product of the dimensions of the shape must equal the number of scalars.
-  public init<C: RandomAccessCollection>(
+  public init<C: Collection>(
     shape: TensorShape, scalars: C, on device: Device = .default
   ) where C.Element == Scalar {
     precondition(
