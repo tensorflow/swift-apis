@@ -134,9 +134,9 @@ final class TensorTests: XCTestCase {
 
   func testAnnotationsTFEager() {
     let tensor = Tensor<Float>(repeating: 0, shape: [1, 2, 3], on: Device.defaultTFEager)
-    XCTAssertEqual(tensor.annotations, "")
+    XCTAssertEqual(tensor.annotations, "Annotations not available in TF_EAGER.")
     let annotated = tensor.annotate("annotation")
-    XCTAssertEqual(annotated.annotations, "")
+    XCTAssertEqual(annotated.annotations, "Annotations not available in TF_EAGER.")
   }
 
   static var allTests = [

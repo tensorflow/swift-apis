@@ -11,9 +11,9 @@ final class XLATensorTests: XCTestCase {
 
   func testAnnotationsTFEager() throws {
     let tensor = Tensor<Float>(repeating: 0, shape: [1, 2, 3], on: Device.defaultTFEager)
-    XCTAssertEqual(tensor.annotations, "")
+    XCTAssertEqual(tensor.annotations, "Annotations not available in TF_EAGER.")
     let annotated = tensor.annotate("type=Tensor<Float>")
-    XCTAssertEqual(annotated.annotations, "")
+    XCTAssertEqual(annotated.annotations, "Annotations not available in TF_EAGER.")
   }
 
   func testAnnotationsXLA() throws {

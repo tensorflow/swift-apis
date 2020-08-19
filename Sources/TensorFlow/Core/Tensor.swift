@@ -70,10 +70,10 @@ where Scalar: TensorFlowFloatingPoint {
         return rawAnnotations
 
       case .TF_EAGER:
-        return ""
+        return Device.defaultTFEager.annotationsAvailable
       }
     #else
-      return ""
+      return "Annotations not available in TF_EAGER."
     #endif
   }
 
