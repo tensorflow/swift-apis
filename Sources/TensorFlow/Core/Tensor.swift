@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import _Differentiation
 import CTensorFlow
+import _Differentiation
 
 infix operator .==: ComparisonPrecedence
 infix operator .!=: ComparisonPrecedence
@@ -24,7 +24,7 @@ public protocol AnyTensor {
   var _tensorFlowDataType: TensorDataType { get }
 }
 
-/// A multidimensional array of elements that is a generalization of vectors and matrices to 
+/// A multidimensional array of elements that is a generalization of vectors and matrices to
 /// potentially higher dimensions.
 ///
 /// The generic parameter `Scalar` describes the type of scalars in the tensor (such as `Int32`,

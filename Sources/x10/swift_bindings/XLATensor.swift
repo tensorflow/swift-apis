@@ -418,7 +418,9 @@ extension XLATensor {
     return XLATensor(_handle: XLATensor_div(a.handle, b.handle))
   }
 
-  static func dynamic_slice(_ base: XLATensor, _ start_indices: [XLATensor], _ slice_shape: [Int64]) -> XLATensor {
+  static func dynamic_slice(_ base: XLATensor, _ start_indices: [XLATensor], _ slice_shape: [Int64])
+    -> XLATensor
+  {
     start_indices.withArrayRef { start_indices in
       slice_shape.withArrayRef { slice_shape in
         return XLATensor(_handle: XLATensor_dynamic_slice(base.handle, start_indices, slice_shape))
@@ -778,7 +780,7 @@ extension XLATensor {
   }
 
   static func replica_id(_ device: Device) -> XLATensor {
-    return XLATensor(_handle: XLATensor_replica_id(device.cdevice));
+    return XLATensor(_handle: XLATensor_replica_id(device.cdevice))
   }
 
   static func resize_value(_ value: XLATensor, _ dims: [Int64]) -> XLATensor {
