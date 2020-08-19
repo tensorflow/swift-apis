@@ -96,6 +96,7 @@ For more models, go to [**tensorflow/swift-models**][swift-models].
 (between `_TF_MIN_BAZEL_VERSION` and `_TF_MAX_BAZEL_VERSION` as specified in
 [tensorflow/configure.py][configure.py]).
 * Python3 with [numpy][numpy].
+* CMake.  CMake 3.16 or newer is required to build with CMake.
 
 ### Building and testing
 
@@ -117,11 +118,7 @@ $ swift test
 
 *Note: CMake is required for building X10 modules.*
 
-In-tree builds are not supported.  The instructions here expect CMake 3.16
-or newer, although the minimum required version is 3.15.1.  Older releases
-will not allow the use of the `-B` option to specific the build tree and
-require that you are in the location of the build tree (and the `-B` option
-and its argument are elided).
+In-tree builds are not supported.  
 
 *Note: To enable CUDA support, run `export TF_NEED_CUDA=1` before the steps below.*
 
