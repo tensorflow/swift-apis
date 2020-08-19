@@ -8,11 +8,27 @@ final class XLATensorTests: XCTestCase {
     LazyTensorBarrier()
     XCTAssertEqual(x.scalarized(), 20 * 30)
   }
+
+  func testAnnotationsTFEager() throws {
+    let tensor = Tensor<Float>(repeating: 0, shape: [1, 2, 3], on: Device.defaultTFEager)
+    XCTAssertEqual(tensor.annotations, "")
+    let annotated = tensor.annotate("type=Tensor<Float>")
+    XCTAssertEqual(annotated.annotations, "")
+  }
+
+  func testAnnotationsXLA() throws {
+    let tensor = Tensor<Float>(repeating: 0, shape: [1, 2, 3], on: Device.defaultXLA)
+    XCTAssertEqual(tensor.annotations, "{\n}")
+    let annotated = tensor.annotate("type=Tensor<Float>")
+    XCTAssertEqual(annotated.annotations, "{\n  shape=[1, 2, 3] type=Tensor<Float>\n}")
+  }
 }
 
 extension XLATensorTests {
   static var allTests = [
-    ("testLazyTensorBarrier", testLazyTensorBarrier)
+    ("testLazyTensorBarrier", testLazyTensorBarrier),
+    ("testAnnotationsTFEager", testAnnotationsTFEager),
+    ("testAnnotationsXLA", testAnnotationsXLA),
   ]
 }
 

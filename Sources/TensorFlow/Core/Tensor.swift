@@ -67,16 +67,10 @@ where Scalar: TensorFlowFloatingPoint {
 
         // TODO(michellecasbon): Add formatting.
 
-        let formattedAnnotations = """
-          Layer                         Output Shape         Attributes
-          ============================= ==================== ======================
-          \(rawAnnotations)
-          """
-
-        return formattedAnnotations
+        return rawAnnotations
 
       case .TF_EAGER:
-        return Device.defaultTFEager.annotationsAvailable
+        return ""
       }
     #else
       return ""

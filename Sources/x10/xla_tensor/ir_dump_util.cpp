@@ -344,14 +344,14 @@ std::string DumpUtil::GetAnnotations(absl::Span<const Node* const> nodes) {
 
   NodeIdMap id_map = GenerateIdMap(post_order);
   std::stringstream ss;
-  ss << "{\n";
+  ss << "{";
   for (auto node : post_order) {
     // Only process annotations
     if (node->op().ToString() != "x10::annotate") continue;
 
-    ss << GenerateTextAnnotation(node) << "\n";
+    ss << "\n" << GenerateTextAnnotation(node);
   }
-  ss << "}\n";
+  ss << "\n" << "}";
   return ss.str();
 }
 
