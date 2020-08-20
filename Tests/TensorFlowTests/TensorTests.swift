@@ -132,6 +132,13 @@ final class TensorTests: XCTestCase {
     XCTAssertEqual(model.zeroTangentVector, .init(tensor: Tensor(zeros: shape)))
   }
 
+  func testAnnotationsTFEager() {
+    let tensor = Tensor<Float>(repeating: 0, shape: [1, 2, 3], on: Device.defaultTFEager)
+    XCTAssertEqual(tensor.annotations, "Annotations not available in TF_EAGER.")
+    let annotated = tensor.annotate("annotation")
+    XCTAssertEqual(annotated.annotations, "Annotations not available in TF_EAGER.")
+  }
+
   static var allTests = [
     ("testSimpleCond", testSimpleCond),
     ("testRankGetter", testRankGetter),
@@ -142,5 +149,6 @@ final class TensorTests: XCTestCase {
     ("testInitShapeScalars", testInitShapeScalars),
     ("testInitShapeScalarsDerivative", testInitShapeScalarsDerivative),
     ("testZeroTangentVectorInitializer", testZeroTangentVectorInitializer),
+    ("testAnnotationsTFEager", testAnnotationsTFEager),
   ]
 }

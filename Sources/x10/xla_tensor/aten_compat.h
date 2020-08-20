@@ -219,6 +219,7 @@
   _(aten, all)                                              \
   _(aten, allclose)                                         \
   _(aten, alpha_dropout)                                    \
+  _(aten, annotate)                                         \
   _(aten, any)                                              \
   _(aten, arange)                                           \
   _(aten, argmax)                                           \
