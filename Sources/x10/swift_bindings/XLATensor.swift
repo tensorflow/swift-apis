@@ -887,6 +887,12 @@ extension XLATensor {
     return XLATensor(_handle: XLATensor_tanh(a.handle))
   }
 
+  static func topk(_ a: XLATensor, k: Int64, dim: Int64, largest: Bool) -> (XLATensor, XLATensor) {
+    defer { _fixLifetime(a) }
+    let output = XLATensor_topk(a.handle, k, dim, largest)
+    return (XLATensor(_handle: output.x), XLATensor(_handle: output.y))
+  }
+
   static func tf_Conv(
     _ input: XLATensor, _ filter: XLATensor, _ depthwise: Bool, _ strides: [Int64],
     _ padding: TFPadding, _ explicit_paddings: [Int64],
