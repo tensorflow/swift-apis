@@ -26,6 +26,7 @@
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/all.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/all_reduce.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/all_to_all.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/ops/annotate.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/any.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/arg_max.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/arg_min.h"
@@ -585,6 +586,11 @@ XLATensor XLATensor::all(const XLATensor& input,
                                  XlaHelpers::GetCanonicalDimensionIndices(
                                      dimensions, input.shape().get().rank()),
                                  keep_reduced_dimensions));
+}
+
+XLATensor XLATensor::annotate(const XLATensor& input, std::string annotation) {
+  return input.CreateFrom(
+      ir::MakeNode<ir::ops::Annotate>(input.GetIrValue(), annotation));
 }
 
 XLATensor XLATensor::any(const XLATensor& input,

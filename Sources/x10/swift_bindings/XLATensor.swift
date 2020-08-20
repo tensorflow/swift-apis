@@ -242,6 +242,17 @@ extension XLATensor {
     }
   }
 
+  static func annotate(_ a: XLATensor, _ annotation: String) -> XLATensor {
+    return XLATensor(_handle: XLATensor_annotate(a.handle, annotation))
+  }
+
+  static func annotations(_ a: XLATensor) -> String {
+    // TODO(michellecasbon): Format with header.
+    let str = XLATensor_get_annotations(a.handle)
+    defer { DeleteString(str) }
+    return String(cString: GetStringCStr(str))
+  }
+
   static func any(_ input: XLATensor, _ reductionIndices: [Int64], _ keepDims: Bool) -> XLATensor {
     defer { _fixLifetime(input) }
     return reductionIndices.withArrayRef { reductionIndices in
@@ -407,7 +418,9 @@ extension XLATensor {
     return XLATensor(_handle: XLATensor_div(a.handle, b.handle))
   }
 
-  static func dynamic_slice(_ base: XLATensor, _ start_indices: [XLATensor], _ slice_shape: [Int64]) -> XLATensor {
+  static func dynamic_slice(_ base: XLATensor, _ start_indices: [XLATensor], _ slice_shape: [Int64])
+    -> XLATensor
+  {
     start_indices.withArrayRef { start_indices in
       slice_shape.withArrayRef { slice_shape in
         return XLATensor(_handle: XLATensor_dynamic_slice(base.handle, start_indices, slice_shape))
@@ -489,6 +502,12 @@ extension XLATensor {
     return indices.withArrayRef { indices in
       XLATensor(_handle: XLATensor_index(input.handle, indices, startDim))
     }
+  }
+
+  static func irText(_ a: XLATensor) -> String {
+    let str = XLATensor_ir_text(a.handle)
+    defer { DeleteString(str) }
+    return String(cString: GetStringCStr(str))
   }
 
   static func isFinite(_ input: XLATensor) -> XLATensor {
@@ -761,7 +780,7 @@ extension XLATensor {
   }
 
   static func replica_id(_ device: Device) -> XLATensor {
-    return XLATensor(_handle: XLATensor_replica_id(device.cdevice));
+    return XLATensor(_handle: XLATensor_replica_id(device.cdevice))
   }
 
   static func resize_value(_ value: XLATensor, _ dims: [Int64]) -> XLATensor {
@@ -839,12 +858,6 @@ extension XLATensor {
     tensors.withArrayRef { tensors in
       XLATensor(_handle: XLATensor_stack(tensors, dim))
     }
-  }
-
-  static func irText(_ a: XLATensor) -> String {
-    let str = XLATensor_ir_text(a.handle)
-    defer { DeleteString(str) }
-    return String(cString: GetStringCStr(str))
   }
 
   static func sub(_ a: XLATensor, _ b: XLATensor) -> XLATensor {

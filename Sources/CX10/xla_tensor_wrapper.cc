@@ -315,6 +315,10 @@ OpaqueXLATensor* XLATensor_all(OpaqueXLATensor* input, Int64ArrayRef dimensions,
                                       XlaHelpers::I64List(dimensions.slice()),
                                       keep_reduced_dimensions));
 }
+OpaqueXLATensor* XLATensor_annotate(OpaqueXLATensor* a,
+                                    const char* annotation) {
+  return new XLATensor(XLATensor::annotate(*a, std::string(annotation)));
+}
 OpaqueXLATensor* XLATensor_any(OpaqueXLATensor* input, Int64ArrayRef dimensions,
                                bool keep_reduced_dimensions) {
   return new XLATensor(XLATensor::any(*input,
@@ -440,6 +444,11 @@ OpaqueXLATensor* XLATensor_full(Int64ArrayRef size, XLAScalar value,
 }
 OpaqueXLATensor* XLATensor_ge(OpaqueXLATensor* x, OpaqueXLATensor* y) {
   return new XLATensor(XLATensor::ge(*x, *y));
+}
+OpaqueString* XLATensor_get_annotations(OpaqueXLATensor* a) {
+  std::string ir_dag_text =
+      swift_xla::ir::DumpUtil::GetAnnotations({a->GetIrValue().node.get()});
+  return new std::string(ir_dag_text);
 }
 OpaqueXLATensor* XLATensor_gt(OpaqueXLATensor* x, OpaqueXLATensor* y) {
   return new XLATensor(XLATensor::gt(*x, *y));

@@ -204,6 +204,22 @@ struct ChangeLogNode {
 
 thread_local std::map<xla::hash_t, std::vector<ChangeLogNode>> g_change_logs;
 
+std::string GenerateTextAnnotation(const Node* node) {
+  // TODO(michellecasbon): Use json.
+  std::stringstream ss;
+  ss << "  shape=[";
+  size_t i = 0;
+  for (auto& dimension : node->shape().dimensions()) {
+    if ((i++) != 0) ss << ", ";
+    ss << dimension;
+  }
+  ss << "] ";
+  for (auto& tag : GetNodeTags(node)) {
+    ss << tag.value;
+  }
+  return ss.str();
+}
+
 }  // namespace
 
 std::string DumpUtil::ToDot(absl::Span<const Node* const> nodes) {
@@ -320,6 +336,22 @@ std::string DumpUtil::GetGraphChangeLog(absl::Span<const Node* const> roots) {
     }
   }
   g_change_logs.emplace(h, change_log);
+  return ss.str();
+}
+
+std::string DumpUtil::GetAnnotations(absl::Span<const Node* const> nodes) {
+  auto post_order = Util::ComputePostOrder(nodes);
+
+  NodeIdMap id_map = GenerateIdMap(post_order);
+  std::stringstream ss;
+  ss << "{";
+  for (auto node : post_order) {
+    // Only process annotations
+    if (node->op().ToString() != "x10::annotate") continue;
+
+    ss << "\n" << GenerateTextAnnotation(node);
+  }
+  ss << "\n" << "}";
   return ss.str();
 }
 

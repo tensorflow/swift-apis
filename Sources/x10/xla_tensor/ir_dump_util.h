@@ -41,6 +41,8 @@ class DumpUtil {
                            const Device& device);
 
   static std::string GetGraphChangeLog(absl::Span<const Node* const> roots);
+
+  static std::string GetAnnotations(absl::Span<const Node* const> nodes);
 };
 
 }  // namespace ir
