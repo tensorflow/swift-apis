@@ -660,6 +660,11 @@ OpaqueXLATensor* XLATensor_tan(OpaqueXLATensor* a) {
 OpaqueXLATensor* XLATensor_tanh(OpaqueXLATensor* a) {
   return new XLATensor(XLATensor::tanh(*a));
 }
+OpaqueXLATensor_pair XLATensor_topk(OpaqueXLATensor* a, int64_t k,
+                                            int64_t dim, bool largest) {
+  auto result = XLATensor::topk(*a, k, dim, largest, false);
+  return {new XLATensor(std::get<0>(result)), new XLATensor(std::get<1>(result))};
+}
 OpaqueXLATensor* XLATensor_tf_Conv(OpaqueXLATensor* input,
                                    OpaqueXLATensor* filter, bool depthwise,
                                    Int64ArrayRef strides, TFPadding padding,

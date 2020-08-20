@@ -376,6 +376,8 @@ XLA_API OpaqueXLATensor* XLATensor_sum(OpaqueXLATensor* a, Int64ArrayRef dims,
                                        Optional_XLAScalarType dtype);
 XLA_API OpaqueXLATensor* XLATensor_tan(OpaqueXLATensor* a);
 XLA_API OpaqueXLATensor* XLATensor_tanh(OpaqueXLATensor* a);
+XLA_API OpaqueXLATensor_pair XLATensor_topk(OpaqueXLATensor* a, int64_t k,
+                                            int64_t dim, bool largest);
 XLA_API OpaqueXLATensor*
 XLATensor_tf_Conv(OpaqueXLATensor* input, OpaqueXLATensor* filter, bool depthwise,
                   Int64ArrayRef strides, enum TFPadding padding,
