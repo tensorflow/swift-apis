@@ -75,7 +75,7 @@ public struct Device {
 
     var annotationsAvailable: String {
       switch self {
-      case .TF_EAGER: return "Annotations not availabile in TF_EAGER."
+      case .TF_EAGER: return "Annotations not available in TF_EAGER."
       case .XLA: return "Annotations available in XLA."
       }
     }

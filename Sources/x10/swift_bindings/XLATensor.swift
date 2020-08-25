@@ -418,7 +418,9 @@ extension XLATensor {
     return XLATensor(_handle: XLATensor_div(a.handle, b.handle))
   }
 
-  static func dynamic_slice(_ base: XLATensor, _ start_indices: [XLATensor], _ slice_shape: [Int64]) -> XLATensor {
+  static func dynamic_slice(_ base: XLATensor, _ start_indices: [XLATensor], _ slice_shape: [Int64])
+    -> XLATensor
+  {
     start_indices.withArrayRef { start_indices in
       slice_shape.withArrayRef { slice_shape in
         return XLATensor(_handle: XLATensor_dynamic_slice(base.handle, start_indices, slice_shape))
@@ -778,7 +780,7 @@ extension XLATensor {
   }
 
   static func replica_id(_ device: Device) -> XLATensor {
-    return XLATensor(_handle: XLATensor_replica_id(device.cdevice));
+    return XLATensor(_handle: XLATensor_replica_id(device.cdevice))
   }
 
   static func resize_value(_ value: XLATensor, _ dims: [Int64]) -> XLATensor {
@@ -883,6 +885,12 @@ extension XLATensor {
   static func tanh(_ a: XLATensor) -> XLATensor {
     defer { _fixLifetime(a) }
     return XLATensor(_handle: XLATensor_tanh(a.handle))
+  }
+
+  static func topk(_ a: XLATensor, k: Int64, dim: Int64, largest: Bool) -> (XLATensor, XLATensor) {
+    defer { _fixLifetime(a) }
+    let output = XLATensor_topk(a.handle, k, dim, largest)
+    return (XLATensor(_handle: output.x), XLATensor(_handle: output.y))
   }
 
   static func tf_Conv(

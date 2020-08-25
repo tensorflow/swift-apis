@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import _Differentiation
 import CTensorFlow
+import _Differentiation
 
 infix operator .==: ComparisonPrecedence
 infix operator .!=: ComparisonPrecedence
@@ -24,7 +24,7 @@ public protocol AnyTensor {
   var _tensorFlowDataType: TensorDataType { get }
 }
 
-/// A multidimensional array of elements that is a generalization of vectors and matrices to 
+/// A multidimensional array of elements that is a generalization of vectors and matrices to
 /// potentially higher dimensions.
 ///
 /// The generic parameter `Scalar` describes the type of scalars in the tensor (such as `Int32`,
@@ -67,19 +67,13 @@ where Scalar: TensorFlowFloatingPoint {
 
         // TODO(michellecasbon): Add formatting.
 
-        let formattedAnnotations = """
-          Layer                         Output Shape         Attributes
-          ============================= ==================== ======================
-          \(rawAnnotations)
-          """
-
-        return formattedAnnotations
+        return rawAnnotations
 
       case .TF_EAGER:
         return Device.defaultTFEager.annotationsAvailable
       }
     #else
-      return ""
+      return "Annotations not available in TF_EAGER."
     #endif
   }
 
@@ -309,7 +303,7 @@ extension Tensor {
 
   /// Creates a 1D tensor from scalars.
   @inlinable
-  public init<C: RandomAccessCollection>(
+  public init<C: Collection>(
     _ vector: C, on device: Device = .default
   ) where C.Element == Scalar {
     #if USING_X10_BACKEND
@@ -451,7 +445,7 @@ extension Tensor {
   ///   - shape: The shape of the tensor.
   ///   - scalars: The scalar contents of the tensor.
   /// - Precondition: The product of the dimensions of the shape must equal the number of scalars.
-  public init<C: RandomAccessCollection>(
+  public init<C: Collection>(
     shape: TensorShape, scalars: C, on device: Device = .default
   ) where C.Element == Scalar {
     precondition(
