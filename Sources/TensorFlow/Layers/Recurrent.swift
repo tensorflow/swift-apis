@@ -474,7 +474,7 @@ where Cell.TimeStepOutput: Mergeable {
   @noDerivative private let _mergeFunction: _MergeFunction
   /// The forward recurrent layer.
   public var forward: RecurrentLayer<Cell>
-
+  /// The backward recurrent layer.
   public var backward: RecurrentLayer<Cell>
 
   @noDerivative public var mergeFunction: MergeFunction {
