@@ -476,7 +476,7 @@ where Cell.TimeStepOutput: Mergeable {
   public var forward: RecurrentLayer<Cell>
   /// The backward recurrent layer.
   public var backward: RecurrentLayer<Cell>
-
+  /// The differentiable function used for merging forward and backward recurrent layer outputs.
   @noDerivative public var mergeFunction: MergeFunction {
     _mergeFunction.function
   }
