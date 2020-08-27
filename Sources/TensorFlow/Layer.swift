@@ -95,6 +95,8 @@ public protocol Layer: Module where Input: Differentiable {
 }
 
 extension Layer {
+  // Workaround for SR-13455: autodiff undefined symbol linker error.
+  @differentiable(wrt: self)
   @differentiable
   public func forward(_ input: Input) -> Output {
     return callAsFunction(input)
@@ -102,10 +104,11 @@ extension Layer {
 }
 
 extension Layer where Input: DifferentiableTensorProtocol, Output: DifferentiableTensorProtocol {
+  // Workaround for SR-13455: autodiff undefined symbol linker error.
+  @differentiable(wrt: self)
   @differentiable
   public func callAsFunction(_ input: Input) -> Output {
     let activation = forward(input)
-
     return annotated(activation)
   }
 
@@ -124,8 +127,8 @@ extension Layer where Input: DifferentiableTensorProtocol, Output: Differentiabl
   public func annotations(inputShape: TensorShape) -> String {
     #if USING_X10_BACKEND
       LazyTensorBarrier()
-      let zeros = Input.init(repeating: 0, shape: inputShape, on: Device.defaultXLA)
-      let model = Self.self.init(copying: self, to: Device.defaultXLA)
+      let zeros = Input(repeating: 0, shape: inputShape, on: Device.defaultXLA)
+      let model = Self(copying: self, to: Device.defaultXLA)
       let output = model(zeros)
 
       return output.annotations
