@@ -5,7 +5,7 @@ import sys
 import numpy
 import tensorflow as tf
 
-# Set random seed for repetable results
+# Set random seed for repeatable results.
 tf.random.set_seed(0)
 
 def indented(s):
