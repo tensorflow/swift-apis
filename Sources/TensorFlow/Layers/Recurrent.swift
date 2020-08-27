@@ -481,8 +481,10 @@ where Cell.TimeStepOutput: Mergeable {
     _mergeFunction.function
   }
 
-  /// - Note: Default merge mode in Keras is `concat`, which is not supported right now.
-  ///   When `concat` mode is added, it can be used as default value to not confuse users.
+  /// Creates an instance from the given recurrent layer cell and merge function.
+  ///
+  /// - Note: The default merge mode in Keras is `concat`, which is not currently supported.
+  ///   When the `concat` mode is added, it can be used as the default value.
   public init(_ cell: @autoclosure () -> Cell, mergeFunction: @escaping MergeFunction) {
     forward = RecurrentLayer(cell())
     backward = RecurrentLayer(cell(), backwardDirection: true)
