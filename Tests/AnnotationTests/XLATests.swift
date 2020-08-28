@@ -39,12 +39,6 @@ final class AnnotationXLATests: XCTestCase {
   lazy var model: SummaryNet = { SummaryNet(copying: model0, to: device) }()
   lazy var inputShape: TensorShape = { TensorShape([1, 4, 1, 1]) }()
   lazy var input: Tensor<Float> = { Tensor<Float>(repeating: 1, shape: inputShape, on: device) }()
-  lazy var summaryHeader: String = {
-    """
-    Layer                         Output Shape         Attributes
-    ============================= ==================== ======================
-    """
-  }()
 
   override func setUp() {
     super.setUp()
@@ -58,8 +52,6 @@ final class AnnotationXLATests: XCTestCase {
       return false
     }
 
-    let header = Array(lines[0..<2]).joined(separator: "\n")
-
     // Isolate layers.
     var contents: [String] = Array()
     for line in lines {
@@ -68,7 +60,7 @@ final class AnnotationXLATests: XCTestCase {
       }
     }
 
-    return header == summaryHeader && contents.count == 3
+    return contents.count == 3
   }
 
   func testLayerAnnotationsTensor() {
@@ -78,7 +70,6 @@ final class AnnotationXLATests: XCTestCase {
 
   func testLayerSummaryTensor() {
     let annotations = model.summary(input: input)
-    print(annotations)
     XCTAssert(validateAnnotations(annotations))
   }
 
@@ -93,7 +84,6 @@ final class AnnotationXLATests: XCTestCase {
   }
 
   func testTensorAnnotations() {
-
     let output = model(input)
     let annotations = output.annotations
     XCTAssert(validateAnnotations(annotations))
@@ -104,7 +94,6 @@ final class AnnotationXLATests: XCTestCase {
     let annotations = output.summary
     XCTAssert(validateAnnotations(annotations))
   }
-
 }
 
 extension AnnotationXLATests {
@@ -117,3 +106,7 @@ extension AnnotationXLATests {
     ("testTensorAnnotationsSummary", testTensorAnnotationsSummary),
   ]
 }
+
+XCTMain([
+  testCase(AnnotationXLATests.allTests)
+])
