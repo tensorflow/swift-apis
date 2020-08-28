@@ -329,11 +329,9 @@ public struct RecurrentLayer<Cell: RecurrentLayerCell>: Layer {
   public typealias Output = [Cell.TimeStepOutput]
 
   public var cell: Cell
-  @noDerivative public let backwardDirection: Bool
 
-  public init(_ cell: @autoclosure () -> Cell, backwardDirection: Bool = false) {
+  public init(_ cell: @autoclosure () -> Cell) {
     self.cell = cell()
-    self.backwardDirection = backwardDirection
   }
 
   @differentiable(wrt: (self, inputs, initialState))
@@ -345,8 +343,7 @@ public struct RecurrentLayer<Cell: RecurrentLayerCell>: Layer {
     var currentHiddenState = initialState
     var timeStepOutputs: [Cell.TimeStepOutput] = []
     for index in 0 ..< inputs.count {
-      let timeStepIndex = backwardDirection ? inputs.count - 1 - index : index
-      let timeStepInput = inputs[timeStepIndex]
+      let timeStepInput = inputs[index]
       let output = cell(input: timeStepInput, state: currentHiddenState)
       currentHiddenState = output.state
       timeStepOutputs.append(output.output)
@@ -379,8 +376,7 @@ public struct RecurrentLayer<Cell: RecurrentLayerCell>: Layer {
     var backpropagators: [Cell.Backpropagator] = []
     backpropagators.reserveCapacity(timeStepCount)
     for index in 0 ..< timeStepCount {
-      let timestepIndex = backwardDirection ? timeStepCount - 1 - index : index
-      let timestep = inputs[timestepIndex]
+      let timestep = inputs[index]
       let (output, backpropagator) = cell.appliedForBackpropagation(
         to: .init(input: timestep, state: currentHiddenState))
       currentHiddenState = output.state
@@ -403,14 +399,14 @@ public struct RecurrentLayer<Cell: RecurrentLayerCell>: Layer {
           𝛁state = 𝛁input.state
           reversed𝛁inputs.append(𝛁input.input)
         }
-        return (.init(cell: 𝛁cell), .init(Array(backwardDirection ? reversed𝛁inputs : reversed𝛁inputs.reversed())), 𝛁state)
+        return (.init(cell: 𝛁cell), .init(Array(reversed𝛁inputs.reversed())), 𝛁state)
       }
     )
   }
 
   @differentiable
   public func callAsFunction(_ inputs: [Cell.TimeStepInput]) -> [Cell.TimeStepOutput] {
-    let initialState = withoutDerivative(at: cell.zeroState(for: backwardDirection ? inputs.last! : inputs.first!))
+    let initialState = withoutDerivative(at: cell.zeroState(for: inputs.first!))
     return self(inputs, initialState: initialState)
   }
 
@@ -426,7 +422,7 @@ public struct RecurrentLayer<Cell: RecurrentLayerCell>: Layer {
   @differentiable(wrt: (self, inputs))
   public func lastOutput(from inputs: [Cell.TimeStepInput]) -> Cell.TimeStepOutput {
     precondition(!inputs.isEmpty, "'inputs' must be non-empty.")
-    let initialState = withoutDerivative(at: cell.zeroState(for: backwardDirection ? inputs.last! : inputs.first!))
+    let initialState = withoutDerivative(at: cell.zeroState(for: inputs.first!))
     return lastOutput(from: inputs, initialState: initialState)
   }
 }
@@ -561,13 +557,11 @@ extension RecurrentLayer: AdditiveArithmetic where Cell: AdditiveArithmetic {
   }
 
   public static func +(lhs: Self, rhs: Self) -> Self {
-    precondition(lhs.backwardDirection == rhs.backwardDirection)
-    return Self(lhs.cell + rhs.cell, backwardDirection: lhs.backwardDirection)
+    return Self(lhs.cell + rhs.cell)
   }
 
   public static func -(lhs: Self, rhs: Self) -> Self {
-    precondition(lhs.backwardDirection == rhs.backwardDirection)
-    return Self(lhs.cell - rhs.cell, backwardDirection: lhs.backwardDirection)
+    return Self(lhs.cell - rhs.cell)
   }
 }
 
