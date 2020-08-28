@@ -487,7 +487,7 @@ where Cell.TimeStepOutput: Mergeable {
   ///   When the `concat` mode is added, it can be used as the default value.
   public init(_ cell: @autoclosure () -> Cell, mergeFunction: @escaping MergeFunction) {
     forward = RecurrentLayer(cell())
-    backward = RecurrentLayer(cell(), backwardDirection: true)
+    backward = RecurrentLayer(cell())
     _mergeFunction = .init(mergeFunction)
   }
 
@@ -499,8 +499,17 @@ where Cell.TimeStepOutput: Mergeable {
   ) -> Output {
     let forwardOutputs = forward(
       inputs, initialState: initialForwardLayerState)
+    
+    // TODO: Replace with inputs.reversed() after it become differentiable.
+    var inputsReversed = Input()
+    
+    for forwardIndex in 0 ..< withoutDerivative(at: inputs.count) {
+        let backwardIndex = withoutDerivative(at: inputs.count - 1 - forwardIndex)
+        inputsReversed.append(inputs[backwardIndex])
+    }
+    
     let backwardOutputs = backward(
-      inputs, initialState: initialBackwardLayerState)
+        inputsReversed, initialState: initialBackwardLayerState)
 
     var outputs = Output()
 
