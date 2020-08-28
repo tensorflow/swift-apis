@@ -298,6 +298,8 @@ class XLATensor {
                        std::vector<xla::int64> dimensions,
                        bool keep_reduced_dimensions);
 
+  static XLATensor annotate(const XLATensor& input, std::string annotation);
+
   static XLATensor any(const XLATensor& input,
                        std::vector<xla::int64> dimensions,
                        bool keep_reduced_dimensions);
@@ -481,6 +483,13 @@ class XLATensor {
       c10::optional<at::ScalarType> logical_element_type = absl::nullopt);
   static void div_(XLATensor& input, const XLATensor& other);
   static void div_(XLATensor& input, at::Scalar other);
+
+  static XLATensor dynamic_slice(
+      const XLATensor& base, absl::Span<const XLATensor> start_indices,
+      absl::Span<const xla::int64> slice_shapes);
+  static XLATensor dynamic_update_slice(
+      const XLATensor& base, const XLATensor& update,
+      absl::Span<const XLATensor> start_indices);
 
   // A generalized contraction between tensors of arbitrary dimension defined by
   // the given equation and applied to the input tensors.
@@ -748,11 +757,10 @@ class XLATensor {
   static void max_out(XLATensor& max, XLATensor& max_values,
                       const XLATensor& input, xla::int64 dim, bool keepdim);
 
-  static XLATensor max_pool_nd(const XLATensor& input,
-                               xla::int64 spatial_dim_count,
-                               std::vector<xla::int64> kernel_size,
-                               std::vector<xla::int64> stride,
-                               std::vector<xla::int64> padding, bool ceil_mode);
+  static std::tuple<XLATensor, XLATensor> max_pool_nd(
+      const XLATensor& input, xla::int64 spatial_dim_count,
+      std::vector<xla::int64> kernel_size, std::vector<xla::int64> stride,
+      std::vector<xla::int64> padding, bool ceil_mode);
 
   static XLATensor max_pool_nd_backward(const XLATensor& out_backprop,
                                         const XLATensor& input,
@@ -761,6 +769,14 @@ class XLATensor {
                                         std::vector<xla::int64> stride,
                                         std::vector<xla::int64> padding,
                                         bool ceil_mode);
+
+  static XLATensor max_unpool(const XLATensor& input, const XLATensor& indices,
+                              std::vector<xla::int64> output_size);
+
+  static XLATensor max_unpool_backward(const XLATensor& grad_output,
+                                       const XLATensor& input,
+                                       const XLATensor& indices,
+                                       std::vector<xla::int64> output_size);
 
   static XLATensor mean(const XLATensor& input,
                         std::vector<xla::int64> dimensions,
@@ -1264,6 +1280,8 @@ class XLATensor {
 
   static XLATensor xla_truncated_normal(const XLATensor& input);
 
+  static XLATensor xla_replica_id(const Device& device);
+
  private:
   struct SyncTensorsConfig {
     // Whether we want to force XLA data on the target tensors (hence trimming
@@ -1499,6 +1517,18 @@ class XLATensor {
       const SyncTensorsConfig& config);
 
   static xla::int64 GetNextTensorId();
+
+  // Check if the current node is a cutpoint (by hash) and apply pending graph -
+  // in other words, cut the trace - and return true iff that's the case.
+  bool ApplyTraceletCutpoint();
+
+  // Detect when new compilations are triggered after first few steps and
+  // attempt to find common portions, after which the trace is cut. This is
+  // meant to address variable upper bound loops, which lead to different
+  // unrolled sequences of code despite the body being identical. The hope is to
+  // reach a steady state in which no new tracelets are created after a
+  // relatively small number of cuts.
+  static void InsertTraceletCutpoint(const PostOrderData& po_data);
 
   std::shared_ptr<Data> data_;
 };

@@ -101,6 +101,7 @@ cc_library(
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/numeric:int128",
         "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/container:node_hash_map",
         "@com_google_absl//absl/types:optional",
         "@com_google_absl//absl/types:span",
     ],

@@ -16,34 +16,25 @@
 
 #pragma once
 
-#include <string>
-
 #include "absl/types/span.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ir.h"
-#include "tensorflow/compiler/xla/xla_client/device.h"
 
 namespace swift_xla {
 namespace ir {
+namespace ops {
 
-class DumpUtil {
+class DynamicUpdateSlice : public Node {
  public:
-  static std::string ToDot(absl::Span<const Node* const> nodes);
+  DynamicUpdateSlice(const Value& base, const Value& update,
+                     absl::Span<const Value> start_indices);
 
-  static std::string PostOrderToDot(absl::Span<const Node* const> post_order,
-                                    absl::Span<const Node* const> roots);
+  NodePtr Clone(OpList operands) const override;
 
-  static std::string ToText(absl::Span<const Node* const> nodes);
+  XlaOpVector Lower(LoweringContext* loctx) const override;
 
-  static std::string PostOrderToText(absl::Span<const Node* const> post_order,
-                                     absl::Span<const Node* const> roots);
-
-  static std::string ToHlo(absl::Span<const Value> values,
-                           const Device& device);
-
-  static std::string GetGraphChangeLog(absl::Span<const Node* const> roots);
-
-  static std::string GetAnnotations(absl::Span<const Node* const> nodes);
+  std::string ToString() const override;
 };
 
+}  // namespace ops
 }  // namespace ir
 }  // namespace swift_xla

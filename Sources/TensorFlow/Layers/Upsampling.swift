@@ -17,6 +17,8 @@ import _Differentiation
 /// An upsampling layer for 1-D inputs.
 @frozen
 public struct UpSampling1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  public typealias TangentVector = EmptyTangentVector
+
   @noDerivative public let size: Int
 
   /// Creates an upsampling layer.
@@ -43,6 +45,8 @@ public struct UpSampling1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
 /// An upsampling layer for 2-D inputs.
 @frozen
 public struct UpSampling2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  public typealias TangentVector = EmptyTangentVector
+
   @noDerivative public let size: Int
 
   /// Creates an upsampling layer.
@@ -70,6 +74,8 @@ public struct UpSampling2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
 /// An upsampling layer for 3-D inputs.
 @frozen
 public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  public typealias TangentVector = EmptyTangentVector
+
   @noDerivative public let size: Int
 
   /// Creates an upsampling layer.

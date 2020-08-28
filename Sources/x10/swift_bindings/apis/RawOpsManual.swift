@@ -1420,6 +1420,27 @@ public enum _RawXLA {
     return Tensor(_xla: XLATensor.div(x.xlaTensor, y.xlaTensor))
   }
 
+  public static func dynamicSlice<T: TensorFlowNumeric>(
+    _ base: Tensor<T>,
+    _ startIndices: [Tensor<Int32>],
+    _ sliceShape: [Int64]
+  ) -> Tensor<T> {
+    return Tensor(
+      _xla: XLATensor.dynamic_slice(base.xlaTensor, startIndices.map { $0.xlaTensor }, sliceShape))
+  }
+
+  public static func dynamicUpdateSlice<T: TensorFlowNumeric>(
+    _ base: Tensor<T>,
+    _ update: Tensor<T>,
+    _ startIndices: [Tensor<Int32>]
+  ) -> Tensor<T> {
+    checkSameDevice(base, update)
+    checkSamePrecision(base, update)
+    return Tensor(
+      _xla: XLATensor.dynamic_update_slice(
+        base.xlaTensor, update.xlaTensor, startIndices.map { $0.xlaTensor }))
+  }
+
   /// Computes exponential linear: `exp(features) - 1` if < 0, `features` otherwise.
   ///
   /// See [Fast and Accurate Deep Network Learning by Exponential Linear Units (ELUs)
@@ -2929,6 +2950,10 @@ public enum _RawXLA {
     return Tensor(_xla: XLATensor.threshold_backward(gradients.xlaTensor, features.xlaTensor, 0))
   }
 
+  public static func replicaId(_ device: Device) -> Tensor<Int32> {
+    return Tensor(_xla: XLATensor.replica_id(device))
+  }
+
   /// Reshapes a tensor.
   ///
   /// Given `tensor`, this operation returns a tensor that has the same values
@@ -3018,17 +3043,17 @@ public enum _RawXLA {
   ///
   /// NOTE `tf.reverse` has now changed behavior in preparation for 1.0.
   /// `tf.reverse_v2` is currently an alias that will be deprecated before TF 1.0.
-  /// 
+  ///
   /// Given a `tensor`, and a `int32` tensor `axis` representing the set of
   /// dimensions of `tensor` to reverse. This operation reverses each dimension
   /// `i` for which there exists `j` s.t. `axis[j] == i`.
-  /// 
+  ///
   /// `tensor` can have up to 8 dimensions. The number of dimensions specified
   /// in `axis` may be 0 or more entries. If an index is specified more than
   /// once, a InvalidArgument error is raised.
-  /// 
+  ///
   /// For example:
-  /// 
+  ///
   /// ```
   /// # tensor 't' is [[[[ 0,  1,  2,  3],
   /// #                  [ 4,  5,  6,  7],
@@ -3037,7 +3062,7 @@ public enum _RawXLA {
   /// #                  [16, 17, 18, 19],
   /// #                  [20, 21, 22, 23]]]]
   /// # tensor 't' shape is [1, 2, 3, 4]
-  /// 
+  ///
   /// # 'dims' is [3] or 'dims' is [-1]
   /// reverse(t, dims) ==> [[[[ 3,  2,  1,  0],
   ///                         [ 7,  6,  5,  4],
@@ -3045,7 +3070,7 @@ public enum _RawXLA {
   ///                        [[15, 14, 13, 12],
   ///                         [19, 18, 17, 16],
   ///                         [23, 22, 21, 20]]]]
-  /// 
+  ///
   /// # 'dims' is '[1]' (or 'dims' is '[-3]')
   /// reverse(t, dims) ==> [[[[12, 13, 14, 15],
   ///                         [16, 17, 18, 19],
@@ -3053,7 +3078,7 @@ public enum _RawXLA {
   ///                        [[ 0,  1,  2,  3],
   ///                         [ 4,  5,  6,  7],
   ///                         [ 8,  9, 10, 11]]]]
-  /// 
+  ///
   /// # 'dims' is '[2]' (or 'dims' is '[-2]')
   /// reverse(t, dims) ==> [[[[8, 9, 10, 11],
   ///                         [4, 5, 6, 7],
@@ -4233,6 +4258,13 @@ public enum _RawXLA {
     _ x: Tensor<T>
   ) -> Tensor<T> {
     return Tensor(_xla: XLATensor.tanh(x.xlaTensor))
+  }
+
+  public static func topk<T: FloatingPoint & TensorFlowScalar>(
+    _ a: Tensor<T>, k: Int64, dim: Int64, largest: Bool
+  ) -> (Tensor<T>, Tensor<Int64>) {
+    let (r0, r1) = XLATensor.topk(a.xlaTensor, k: k, dim: dim, largest: largest)
+    return (Tensor(_xla: r0), Tensor(_xla: r1))
   }
 
   /// Assign `value` to the sliced l-value reference of `input`.

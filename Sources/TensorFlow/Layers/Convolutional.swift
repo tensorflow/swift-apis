@@ -790,6 +790,8 @@ extension DepthwiseConv2D {
 
 /// A layer for adding zero-padding in the temporal dimension.
 public struct ZeroPadding1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  public typealias TangentVector = EmptyTangentVector
+
   /// The padding values along the temporal dimension.
   @noDerivative public let padding: (Int, Int)
 
@@ -821,6 +823,8 @@ public struct ZeroPadding1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer
 
 /// A layer for adding zero-padding in the spatial dimensions.
 public struct ZeroPadding2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  public typealias TangentVector = EmptyTangentVector
+
   /// The padding values along the spatial dimensions.
   @noDerivative public let padding: ((Int, Int), (Int, Int))
 
@@ -853,6 +857,8 @@ public struct ZeroPadding2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer
 
 /// A layer for adding zero-padding in the spatial/spatio-temporal dimensions.
 public struct ZeroPadding3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  public typealias TangentVector = EmptyTangentVector
+
   /// The padding values along the spatial/spatio-temporal dimensions.
   @noDerivative public let padding: ((Int, Int), (Int, Int), (Int, Int))
 

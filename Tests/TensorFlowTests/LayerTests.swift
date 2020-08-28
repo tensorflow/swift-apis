@@ -17,10 +17,10 @@ import XCTest
 @testable import TensorFlow
 
 fileprivate struct Sigmoid<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
-  public init() {}
+  typealias TangentVector = EmptyTangentVector
 
   @differentiable
-  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     sigmoid(input)
   }
 }

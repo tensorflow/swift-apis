@@ -16,34 +16,31 @@
 
 #pragma once
 
-#include <string>
-
 #include "absl/types/span.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ir.h"
-#include "tensorflow/compiler/xla/xla_client/device.h"
 
 namespace swift_xla {
 namespace ir {
+namespace ops {
 
-class DumpUtil {
+class DynamicSlice : public Node {
  public:
-  static std::string ToDot(absl::Span<const Node* const> nodes);
+  DynamicSlice(const Value& base,
+               absl::Span<const Value> start_indices,
+               absl::Span<const xla::int64> slice_shapes);
 
-  static std::string PostOrderToDot(absl::Span<const Node* const> post_order,
-                                    absl::Span<const Node* const> roots);
+  NodePtr Clone(OpList operands) const override;
 
-  static std::string ToText(absl::Span<const Node* const> nodes);
+  XlaOpVector Lower(LoweringContext* loctx) const override;
 
-  static std::string PostOrderToText(absl::Span<const Node* const> post_order,
-                                     absl::Span<const Node* const> roots);
+  std::string ToString() const override;
 
-  static std::string ToHlo(absl::Span<const Value> values,
-                           const Device& device);
+  const std::vector<xla::int64>& slice_shapes() const { return slice_shapes_; }
 
-  static std::string GetGraphChangeLog(absl::Span<const Node* const> roots);
-
-  static std::string GetAnnotations(absl::Span<const Node* const> nodes);
+ private:
+  std::vector<xla::int64> slice_shapes_;
 };
 
+}  // namespace ops
 }  // namespace ir
 }  // namespace swift_xla

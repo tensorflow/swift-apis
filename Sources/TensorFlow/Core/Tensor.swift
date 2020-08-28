@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import _Differentiation
 import CTensorFlow
+import _Differentiation
 
 infix operator .==: ComparisonPrecedence
 infix operator .!=: ComparisonPrecedence
@@ -24,7 +24,7 @@ public protocol AnyTensor {
   var _tensorFlowDataType: TensorDataType { get }
 }
 
-/// A multidimensional array of elements that is a generalization of vectors and matrices to 
+/// A multidimensional array of elements that is a generalization of vectors and matrices to
 /// potentially higher dimensions.
 ///
 /// The generic parameter `Scalar` describes the type of scalars in the tensor (such as `Int32`,
@@ -38,6 +38,67 @@ public struct Tensor<Scalar: TensorFlowScalar> {
   @inlinable
   public init(handle: TensorHandle<Scalar>) {
     self.handle = handle
+  }
+}
+
+public protocol TensorProtocol {
+  associatedtype Scalar: TensorFlowScalar
+  init(repeating repeatedValue: Scalar, shape: TensorShape, on device: Device)
+  var annotations: String { get }
+  var shape: TensorShape { get }
+  var summary: String { get }
+}
+
+public protocol DifferentiableTensorProtocol:
+  TensorProtocol & Differentiable & EuclideanDifferentiable
+where Scalar: TensorFlowFloatingPoint {
+  @differentiable(wrt: self)
+  func annotate(_ annotation: String) -> Self
+}
+
+extension Tensor: TensorProtocol & DifferentiableTensorProtocol
+where Scalar: TensorFlowFloatingPoint {
+
+  public var annotations: String {
+    #if USING_X10_BACKEND
+      switch handle.backend {
+      case .XLA:
+        let rawAnnotations = XLATensor.annotations(xlaTensor)
+
+        // TODO(michellecasbon): Add formatting.
+
+        return rawAnnotations
+
+      case .TF_EAGER:
+        return Device.defaultTFEager.annotationsAvailable
+      }
+    #else
+      return "Annotations not available in TF_EAGER."
+    #endif
+  }
+
+  public var summary: String { annotations }
+
+  @differentiable(wrt: self)
+  public func annotate(_ annotation: String) -> Tensor<Scalar> {
+    #if USING_X10_BACKEND
+      switch handle.backend {
+      case .XLA:
+        return Tensor<Scalar>(_xla: XLATensor.annotate(xlaTensor, annotation))
+      case .TF_EAGER:
+        return self
+      }
+    #else
+      return self
+    #endif
+  }
+
+  @derivative(of: annotate)
+  @usableFromInline
+  func vjpAnnotate(_ annotation: String) -> (
+    value: Tensor<Scalar>, pullback: (Tensor<Scalar>) -> Tensor<Scalar>
+  ) {
+    (annotate(annotation), { $0 })
   }
 }
 
@@ -242,7 +303,7 @@ extension Tensor {
 
   /// Creates a 1D tensor from scalars.
   @inlinable
-  public init<C: RandomAccessCollection>(
+  public init<C: Collection>(
     _ vector: C, on device: Device = .default
   ) where C.Element == Scalar {
     #if USING_X10_BACKEND
@@ -384,7 +445,7 @@ extension Tensor {
   ///   - shape: The shape of the tensor.
   ///   - scalars: The scalar contents of the tensor.
   /// - Precondition: The product of the dimensions of the shape must equal the number of scalars.
-  public init<C: RandomAccessCollection>(
+  public init<C: Collection>(
     shape: TensorShape, scalars: C, on device: Device = .default
   ) where C.Element == Scalar {
     precondition(
@@ -747,6 +808,11 @@ extension Tensor: PointwiseMultiplicative where Scalar: Numeric {
 
 extension Tensor: Differentiable & EuclideanDifferentiable where Scalar: TensorFlowFloatingPoint {
   public typealias TangentVector = Tensor
+
+  public var zeroTangentVectorInitializer: () -> TangentVector {
+    let shape = self.shape
+    return { Tensor(zeros: shape) }
+  }
 }
 
 //===------------------------------------------------------------------------------------------===//

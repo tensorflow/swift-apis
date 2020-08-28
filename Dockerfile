@@ -2,9 +2,7 @@ FROM gcr.io/swift-tensorflow/base-deps-cuda10.2-cudnn7-ubuntu18.04
 
 # Allows the caller to specify the toolchain to use.
 ARG swift_tf_url=https://storage.googleapis.com/swift-tensorflow-artifacts/nightlies/latest/swift-tensorflow-DEVELOPMENT-notf-ubuntu18.04.tar.gz
-
-# Copy the kernel into the container
-COPY . /swift-apis
+ARG bazel_version=3.1.0
 
 RUN if test -d /swift-apis/google-cloud-sdk; then \
   mv /swift-apis/google-cloud-sdk /opt/google-cloud-sdk; \
@@ -37,11 +35,12 @@ RUN echo 'deb [arch=amd64] https://storage.googleapis.com/bazel-apt stable jdk1.
 ARG DEBIAN_FRONTEND=noninteractive
 ARG DEBCONF_NONINTERACTIVE_SEEN=true
 RUN apt-get -yq update                                                          \
- && apt-get -yq install --no-install-recommends bazel-2.0.0 cmake ninja-build   \
+ && apt-get -yq install --no-install-recommends cmake ninja-build               \
  && apt-get -yq install --no-install-recommends python-dev python-pip           \
+ && apt-get -yq install --no-install-recommends bazel-$bazel_version            \
  && apt-get clean                                                               \
  && rm -rf /tmp/* /var/tmp/* /var/lib/apt/archive/* /var/lib/apt/lists/*
-RUN ln -s /usr/bin/bazel-2.0.0 /usr/bin/bazel
+RUN ln -s /usr/bin/bazel-$bazel_version /usr/bin/bazel
 RUN pip install -U pip six numpy wheel setuptools mock 'future>=0.17.1'         \
  && pip install -U --no-deps keras_applications keras_preprocessing
 
@@ -49,6 +48,9 @@ RUN pip install -U pip six numpy wheel setuptools mock 'future>=0.17.1'         
 RUN /swift-tensorflow-toolchain/usr/bin/swift --version
 
 WORKDIR /swift-apis
+
+# Copy the kernel into the container
+COPY . /swift-apis
 
 # Perform CMake based build
 ENV TF_NEED_CUDA=1
@@ -81,6 +83,7 @@ RUN /swift-tensorflow-toolchain/usr/bin/swift build
 RUN /swift-tensorflow-toolchain/usr/bin/swift build -c release
 
 WORKDIR /open_spiel
+RUN rm -f Package.resolved
 RUN /swift-tensorflow-toolchain/usr/bin/swift test
 
 WORKDIR /swift-apis

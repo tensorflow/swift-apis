@@ -72,6 +72,13 @@ public struct Device {
       case .XLA: return "XLA"
       }
     }
+
+    var annotationsAvailable: String {
+      switch self {
+      case .TF_EAGER: return "Annotations not available in TF_EAGER."
+      case .XLA: return "Annotations available in XLA."
+      }
+    }
   }
 
   /// A device kind.
@@ -198,13 +205,19 @@ public struct Device {
 
 extension Device: Equatable {
   public static func == (lhs: Device, rhs: Device) -> Bool {
-    return lhs.kind == rhs.kind && lhs.ordinal == rhs.ordinal
+    return lhs.kind == rhs.kind && lhs.ordinal == rhs.ordinal && lhs.backend == rhs.backend
   }
 }
 
 extension Device: CustomStringConvertible {
   public var description: String {
     "Device(kind: .\(kind.shortName), ordinal: \(ordinal), backend: .\(backend.shortName))"
+  }
+}
+
+extension Device {
+  public var annotationsAvailable: String {
+    "\(backend.annotationsAvailable)"
   }
 }
 
@@ -218,6 +231,8 @@ extension CDevice {
 /// If wait is set to true, this call blocks until the computation is complete.
 public func LazyTensorBarrier(on device: Device? = nil, devices: [Device] = [], wait: Bool = false)
 {
+  if device == Device.defaultTFEager { return }
+
   devices.withDeviceList { devices in
     if var cdevice = device?.cdevice {
       XLATensor_LazyTensorBarrier(&cdevice, &devices, wait)

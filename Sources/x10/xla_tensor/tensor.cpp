@@ -24,6 +24,8 @@
 #include <set>
 #include <stdexcept>
 
+#include "absl/container/node_hash_map.h"
+#include "absl/container/node_hash_set.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/str_join.h"
 #include "tensorflow/compiler/xla/xla_client/cache.h"
@@ -65,6 +67,27 @@ struct TlsData {
 };
 
 thread_local TlsData g_tls_data;
+
+struct TraceletState {
+  absl::node_hash_map<xla::hash_t, std::vector<xla::hash_t>> tracelet_by_prefix;
+  absl::node_hash_set<xla::hash_t> cutpoints;
+  xla::int64 prev_uncached_compile = 0;
+};
+
+thread_local TraceletState g_tracelet_state;
+
+c10::optional<size_t> FindTraceDivergence(
+    absl::Span<const xla::hash_t> trace1,
+    absl::Span<const xla::hash_t> trace2) {
+  if (trace2.size() > trace1.size()) {
+    std::swap(trace1, trace2);
+  }
+  auto result = std::mismatch(trace1.begin(), trace1.end(), trace2.begin());
+  if (result.first != trace1.end()) {
+    return result.first - trace1.begin();
+  }
+  return absl::nullopt;
+}
 
 // Locking:
 // We perform two kinds of operations of tensors, synchronous and asynchronous.
@@ -680,6 +703,9 @@ void XLATensor::AssignIrValue(ir::Value ir_value) const {
 }
 
 void XLATensor::TryLimitGraphSize() {
+  if (ApplyTraceletCutpoint()) {
+    return;
+  }
   static const size_t kCheckFrequency =
       xla::sys_util::GetEnvInt("XLA_TRIM_GRAPH_CHECK_FREQUENCY", 5000);
   static const size_t kMaxPendingGraphSize =
@@ -1365,6 +1391,9 @@ void XLATensor::SyncLiveTensorsGraph(const Device* device,
                                      absl::Span<const std::string> devices,
                                      bool wait) {
   auto tensors = GetLiveTensors(device);
+  if (tensors.empty()) {
+    return;
+  }
   TF_VLOG(4) << tensors.size() << " live tensors: devices=("
              << absl::StrJoin(devices, ",") << ")";
   SyncTensorsGraph(&tensors, devices, wait, /*sync_xla_data=*/true);
@@ -1575,6 +1604,7 @@ std::shared_ptr<XLATensor::Async> XLATensor::SyncTensorsGraphInternal(
                                   &coll.indices);
 
   PostOrderData po_data = RunPostOrder(*tensors, coll.indices);
+  InsertTraceletCutpoint(po_data);
   coll.hash = xla::util::HashCombine(
       coll.hash, xla::util::Hash(po_data.parameter_sequence));
   TF_VLOG(4) << "Parameter sequence graph hash "
@@ -1613,6 +1643,87 @@ void XLATensor::SetRngSeed(const Device* device, xla::uint64 seed) {
 
 xla::uint64 XLATensor::GetRunningSeed(const Device& device) {
   return DeviceContextArena::Get()->GetRunningSeed(device);
+}
+
+bool XLATensor::ApplyTraceletCutpoint() {
+  static const bool tracelets =
+      xla::sys_util::GetEnvBool("XLA_TRACELETS", false);
+  if (!tracelets) {
+    return false;
+  }
+  if (!data()->ir_value) {
+    return false;
+  }
+  xla::hash_t hash = data()->ir_value.node->hash();
+  if (g_tracelet_state.cutpoints.find(hash) !=
+      g_tracelet_state.cutpoints.end()) {
+    ApplyPendingGraph();
+    return true;
+  }
+  return false;
+}
+
+void XLATensor::InsertTraceletCutpoint(const PostOrderData& po_data) {
+  // Wait for steady state: don't trigger any tracelet detection for the first
+  // two steps.
+  static const xla::int64 kSteadyStateStep = 3;
+  static const bool tracelets =
+      xla::sys_util::GetEnvBool("XLA_TRACELETS", false);
+  if (!tracelets) {
+    return;
+  }
+  xla::metrics::CounterData* mark_step = xla::metrics::GetCounter("MarkStep");
+  xla::int64 steps = mark_step ? mark_step->Value() : 0;
+  if (steps < kSteadyStateStep) {
+    return;
+  }
+  // For the first steady state step, just record number of compilations seen so
+  // far and return.
+  if (steps == kSteadyStateStep) {
+    xla::metrics::CounterData* uncached_compile =
+        xla::metrics::GetCounter("UncachedCompile");
+    if (uncached_compile) {
+      g_tracelet_state.prev_uncached_compile = uncached_compile->Value();
+    }
+    return;
+  }
+  xla::metrics::CounterData* uncached_compile =
+      xla::metrics::GetCounter("UncachedCompile");
+  XLA_CHECK_GE(uncached_compile->Value(),
+               g_tracelet_state.prev_uncached_compile);
+  if (!uncached_compile ||
+      uncached_compile->Value() == g_tracelet_state.prev_uncached_compile) {
+    // No new compilations, nothing to do.
+    return;
+  }
+  XLA_CHECK(!po_data.post_order.empty());
+  // Construct the new tracelet out of post-order nodes.
+  // TODO(asuhan): Consider all nodes as possible tracelet start?
+  std::vector<xla::hash_t> po_trace;
+  for (const ir::Node* node : po_data.post_order) {
+    po_trace.push_back(node->hash());
+  }
+  xla::hash_t trace_key = po_data.post_order.front()->hash();
+  const auto tracelet_it = g_tracelet_state.tracelet_by_prefix.find(trace_key);
+  if (tracelet_it != g_tracelet_state.tracelet_by_prefix.end()) {
+    // Old tracelet found starting with the same prefix as current trace. We
+    // might need to check if the two diverge and shorten it further, up to the
+    // point of divergence.
+    const auto divergent_node =
+        FindTraceDivergence(tracelet_it->second, po_trace);
+    if (divergent_node &&
+        po_data.post_order[*divergent_node]->op() != ir::ops::xla_device_data) {
+      const auto cutpoint_it = po_trace.begin() + *divergent_node;
+      g_tracelet_state.tracelet_by_prefix[trace_key] =
+          std::vector<xla::hash_t>(po_trace.begin(), cutpoint_it);
+      g_tracelet_state.cutpoints.insert(*(cutpoint_it - 1));
+    }
+  } else {
+    const auto tracelet_it_ok =
+        g_tracelet_state.tracelet_by_prefix.emplace(trace_key, po_trace);
+    XLA_CHECK(tracelet_it_ok.second);
+  }
+  g_tracelet_state.prev_uncached_compile = uncached_compile->Value();
 }
 
 }  // namespace swift_xla

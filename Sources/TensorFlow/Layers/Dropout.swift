@@ -34,6 +34,8 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
 /// training time, which helps prevent overfitting.
 @frozen
 public struct Dropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  public typealias TangentVector = EmptyTangentVector
+
   @noDerivative public let probability: Double
 
   /// Creates a dropout layer.
@@ -66,6 +68,8 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
 ///
 /// The noise added always has mean zero, but has a configurable standard deviation.
 public struct GaussianNoise<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  public typealias TangentVector = EmptyTangentVector
+
   @noDerivative public let standardDeviation: Tensor<Scalar>
 
   /// Creates a Gaussian noise layer
@@ -95,6 +99,8 @@ public struct GaussianNoise<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer
 /// Because this is a regularization layer, it is only active during training time. During inference,
 /// `GaussianDropout` passes through the input unmodified.
 public struct GaussianDropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  public typealias TangentVector = EmptyTangentVector
+
   @noDerivative public let probability: Scalar
   @noDerivative public let standardDeviation: Scalar
 
@@ -135,6 +141,8 @@ public struct GaussianDropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
 /// Source : Self-Normalizing Neural Networks: https://arxiv.org/abs/1706.02515
 @frozen
 public struct AlphaDropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  public typealias TangentVector = EmptyTangentVector
+
   @noDerivative public let probability: Double
 
   /// Initializes an `AlphaDropout` layer with a configurable `probability`.

@@ -315,6 +315,10 @@ OpaqueXLATensor* XLATensor_all(OpaqueXLATensor* input, Int64ArrayRef dimensions,
                                       XlaHelpers::I64List(dimensions.slice()),
                                       keep_reduced_dimensions));
 }
+OpaqueXLATensor* XLATensor_annotate(OpaqueXLATensor* a,
+                                    const char* annotation) {
+  return new XLATensor(XLATensor::annotate(*a, std::string(annotation)));
+}
 OpaqueXLATensor* XLATensor_any(OpaqueXLATensor* input, Int64ArrayRef dimensions,
                                bool keep_reduced_dimensions) {
   return new XLATensor(XLATensor::any(*input,
@@ -400,6 +404,18 @@ OpaqueXLATensor* XLATensor_diagonal_value(OpaqueXLATensor* a, int64_t offset,
 OpaqueXLATensor* XLATensor_div(OpaqueXLATensor* a, OpaqueXLATensor* b) {
   return new XLATensor(XLATensor::div(*a, *b));
 }
+OpaqueXLATensor* XLATensor_dynamic_slice(
+    OpaqueXLATensor* base,
+    OpaqueXLATensorArrayRef start_indices, Int64ArrayRef slice_shapes) {
+  return new XLATensor(
+      XLATensor::dynamic_slice(*base, start_indices.array(), XlaHelpers::I64List(slice_shapes.slice())));
+}
+OpaqueXLATensor* XLATensor_dynamic_update_slice(
+    OpaqueXLATensor* base, OpaqueXLATensor* update,
+    OpaqueXLATensorArrayRef inputs) {
+  return new XLATensor(
+      XLATensor::dynamic_update_slice(*base, *update, inputs.array()));
+}
 OpaqueXLATensor* XLATensor_eq(OpaqueXLATensor* a, OpaqueXLATensor* b) {
   return new XLATensor(XLATensor::eq(*a, *b));
 }
@@ -428,6 +444,11 @@ OpaqueXLATensor* XLATensor_full(Int64ArrayRef size, XLAScalar value,
 }
 OpaqueXLATensor* XLATensor_ge(OpaqueXLATensor* x, OpaqueXLATensor* y) {
   return new XLATensor(XLATensor::ge(*x, *y));
+}
+OpaqueString* XLATensor_get_annotations(OpaqueXLATensor* a) {
+  std::string ir_dag_text =
+      swift_xla::ir::DumpUtil::GetAnnotations({a->GetIrValue().node.get()});
+  return new std::string(ir_dag_text);
 }
 OpaqueXLATensor* XLATensor_gt(OpaqueXLATensor* x, OpaqueXLATensor* y) {
   return new XLATensor(XLATensor::gt(*x, *y));
@@ -572,6 +593,9 @@ OpaqueXLATensor* XLATensor_repeat(OpaqueXLATensor* input,
   return new XLATensor(
       XLATensor::repeat(*input, XlaHelpers::I64List(repeats.slice())));
 }
+OpaqueXLATensor* XLATensor_replica_id(const struct CDevice device) {
+  return new XLATensor(XLATensor::xla_replica_id(ConvertDevice(device)));
+}
 OpaqueXLATensor* XLATensor_resize_value(OpaqueXLATensor* a, Int64ArrayRef arr) {
   return new XLATensor(
       XLATensor::resize_value(*a, XlaHelpers::I64List(arr.slice())));
@@ -635,6 +659,11 @@ OpaqueXLATensor* XLATensor_tan(OpaqueXLATensor* a) {
 }
 OpaqueXLATensor* XLATensor_tanh(OpaqueXLATensor* a) {
   return new XLATensor(XLATensor::tanh(*a));
+}
+OpaqueXLATensor_pair XLATensor_topk(OpaqueXLATensor* a, int64_t k,
+                                            int64_t dim, bool largest) {
+  auto result = XLATensor::topk(*a, k, dim, largest, false);
+  return {new XLATensor(std::get<0>(result)), new XLATensor(std::get<1>(result))};
 }
 OpaqueXLATensor* XLATensor_tf_Conv(OpaqueXLATensor* input,
                                    OpaqueXLATensor* filter, bool depthwise,

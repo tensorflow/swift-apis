@@ -242,6 +242,17 @@ extension XLATensor {
     }
   }
 
+  static func annotate(_ a: XLATensor, _ annotation: String) -> XLATensor {
+    return XLATensor(_handle: XLATensor_annotate(a.handle, annotation))
+  }
+
+  static func annotations(_ a: XLATensor) -> String {
+    // TODO(michellecasbon): Format with header.
+    let str = XLATensor_get_annotations(a.handle)
+    defer { DeleteString(str) }
+    return String(cString: GetStringCStr(str))
+  }
+
   static func any(_ input: XLATensor, _ reductionIndices: [Int64], _ keepDims: Bool) -> XLATensor {
     defer { _fixLifetime(input) }
     return reductionIndices.withArrayRef { reductionIndices in
@@ -407,6 +418,25 @@ extension XLATensor {
     return XLATensor(_handle: XLATensor_div(a.handle, b.handle))
   }
 
+  static func dynamic_slice(_ base: XLATensor, _ start_indices: [XLATensor], _ slice_shape: [Int64])
+    -> XLATensor
+  {
+    start_indices.withArrayRef { start_indices in
+      slice_shape.withArrayRef { slice_shape in
+        return XLATensor(_handle: XLATensor_dynamic_slice(base.handle, start_indices, slice_shape))
+      }
+    }
+  }
+
+  static func dynamic_update_slice(
+    _ base: XLATensor, _ update: XLATensor, _ start_indices: [XLATensor]
+  ) -> XLATensor {
+    start_indices.withArrayRef { start_indices in
+      return XLATensor(
+        _handle: XLATensor_dynamic_update_slice(base.handle, update.handle, start_indices))
+    }
+  }
+
   static func eq(_ a: XLATensor, _ b: XLATensor) -> XLATensor {
     defer { _fixLifetime(a) }
     defer { _fixLifetime(b) }
@@ -472,6 +502,12 @@ extension XLATensor {
     return indices.withArrayRef { indices in
       XLATensor(_handle: XLATensor_index(input.handle, indices, startDim))
     }
+  }
+
+  static func irText(_ a: XLATensor) -> String {
+    let str = XLATensor_ir_text(a.handle)
+    defer { DeleteString(str) }
+    return String(cString: GetStringCStr(str))
   }
 
   static func isFinite(_ input: XLATensor) -> XLATensor {
@@ -743,6 +779,10 @@ extension XLATensor {
     return XLATensor(_handle: XLATensor_relu(a.handle))
   }
 
+  static func replica_id(_ device: Device) -> XLATensor {
+    return XLATensor(_handle: XLATensor_replica_id(device.cdevice))
+  }
+
   static func resize_value(_ value: XLATensor, _ dims: [Int64]) -> XLATensor {
     defer { _fixLifetime(value) }
     return dims.withArrayRef { dims in
@@ -820,12 +860,6 @@ extension XLATensor {
     }
   }
 
-  static func irText(_ a: XLATensor) -> String {
-    let str = XLATensor_ir_text(a.handle)
-    defer { DeleteString(str) }
-    return String(cString: GetStringCStr(str))
-  }
-
   static func sub(_ a: XLATensor, _ b: XLATensor) -> XLATensor {
     defer { _fixLifetime(a) }
     defer { _fixLifetime(b) }
@@ -851,6 +885,12 @@ extension XLATensor {
   static func tanh(_ a: XLATensor) -> XLATensor {
     defer { _fixLifetime(a) }
     return XLATensor(_handle: XLATensor_tanh(a.handle))
+  }
+
+  static func topk(_ a: XLATensor, k: Int64, dim: Int64, largest: Bool) -> (XLATensor, XLATensor) {
+    defer { _fixLifetime(a) }
+    let output = XLATensor_topk(a.handle, k, dim, largest)
+    return (XLATensor(_handle: output.x), XLATensor(_handle: output.y))
   }
 
   static func tf_Conv(
