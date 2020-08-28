@@ -342,8 +342,7 @@ public struct RecurrentLayer<Cell: RecurrentLayerCell>: Layer {
     if inputs.isEmpty { return [Cell.TimeStepOutput]() }
     var currentHiddenState = initialState
     var timeStepOutputs: [Cell.TimeStepOutput] = []
-    for index in 0 ..< inputs.count {
-      let timeStepInput = inputs[index]
+    for timeStepInput in inputs {
       let output = cell(input: timeStepInput, state: currentHiddenState)
       currentHiddenState = output.state
       timeStepOutputs.append(output.output)
@@ -375,8 +374,7 @@ public struct RecurrentLayer<Cell: RecurrentLayerCell>: Layer {
     timeStepOutputs.reserveCapacity(timeStepCount)
     var backpropagators: [Cell.Backpropagator] = []
     backpropagators.reserveCapacity(timeStepCount)
-    for index in 0 ..< timeStepCount {
-      let timestep = inputs[index]
+    for timestep in inputs {
       let (output, backpropagator) = cell.appliedForBackpropagation(
         to: .init(input: timestep, state: currentHiddenState))
       currentHiddenState = output.state
@@ -406,7 +404,7 @@ public struct RecurrentLayer<Cell: RecurrentLayerCell>: Layer {
 
   @differentiable
   public func callAsFunction(_ inputs: [Cell.TimeStepInput]) -> [Cell.TimeStepOutput] {
-    let initialState = withoutDerivative(at: cell.zeroState(for: inputs.first!))
+    let initialState = withoutDerivative(at: cell.zeroState(for: inputs[0]))
     return self(inputs, initialState: initialState)
   }
 
@@ -422,7 +420,7 @@ public struct RecurrentLayer<Cell: RecurrentLayerCell>: Layer {
   @differentiable(wrt: (self, inputs))
   public func lastOutput(from inputs: [Cell.TimeStepInput]) -> Cell.TimeStepOutput {
     precondition(!inputs.isEmpty, "'inputs' must be non-empty.")
-    let initialState = withoutDerivative(at: cell.zeroState(for: inputs.first!))
+    let initialState = withoutDerivative(at: cell.zeroState(for: inputs[0]))
     return lastOutput(from: inputs, initialState: initialState)
   }
 }
