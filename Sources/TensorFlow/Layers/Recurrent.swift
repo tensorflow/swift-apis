@@ -494,13 +494,13 @@ where Cell.TimeStepOutput: Mergeable {
   @differentiable
   public func callAsFunction(
     _ inputs: Input,
-    initialStateForward: Cell.State,
-    initialStateBackward: Cell.State
+    initialForwardLayerState: Cell.State,
+    initialBackwardLayerState: Cell.State
   ) -> Output {
     let forwardOutputs = forward(
-      inputs, initialState: initialStateForward)
+      inputs, initialState: initialForwardLayerState)
     let backwardOutputs = backward(
-      inputs, initialState: initialStateBackward)
+      inputs, initialState: initialBackwardLayerState)
 
     var outputs = Output()
 
@@ -514,27 +514,27 @@ where Cell.TimeStepOutput: Mergeable {
 
   @differentiable
   public func callAsFunction(_ inputs: Input) -> Output {
-    let initialStateForward = withoutDerivative(
+    let initialForwardLayerState = withoutDerivative(
       at: forward.cell.zeroState(for: inputs.first!))
-    let initialStateBackward = withoutDerivative(
+    let initialBackwardLayerState = withoutDerivative(
       at: backward.cell.zeroState(for: inputs.last!))
     return self(
       inputs,
-      initialStateForward: initialStateForward,
-      initialStateBackward: initialStateBackward
+      initialForwardLayerState: initialForwardLayerState,
+      initialBackwardLayerState: initialBackwardLayerState
     )
   }
 
   @differentiable
   public func lastOutput(
     from inputs: Input,
-    initialStateForward: Cell.State,
-    initialStateBackward: Cell.State
+    initialForwardLayerState: Cell.State,
+    initialBackwardLayerState: Cell.State
   ) -> Cell.TimeStepOutput {
     self(
       inputs,
-      initialStateForward: initialStateForward,
-      initialStateBackward: initialStateBackward
+      initialForwardLayerState: initialForwardLayerState,
+      initialBackwardLayerState: initialBackwardLayerState
     )[withoutDerivative(at: inputs.count - 1)]
   }
 

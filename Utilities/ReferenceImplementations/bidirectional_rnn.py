@@ -65,8 +65,8 @@ initial_state = [
     tf.keras.initializers.GlorotUniform()(shape=[1, 4]),
 ]
 print(swift_tensor('x', x))
-print(swift_tensor('initialStateForward', initial_state[0]))
-print(swift_tensor('initialStateBackward', initial_state[1]))
+print(swift_tensor('initialForwardLayerState', initial_state[0]))
+print(swift_tensor('initialBackwardLayerState', initial_state[1]))
 
 # Run forwards and backwards pass and print the results.
 with tf.GradientTape() as tape:

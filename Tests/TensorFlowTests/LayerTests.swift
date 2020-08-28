@@ -1759,10 +1759,10 @@ final class LayerTests: XCTestCase {
           [-0.5058244,-0.6568735,-0.31837505,-0.7905574],
           [-0.50511885,0.50999504,0.74102694,0.12891835]]]
     )
-    let initialStateForward = Tensor<Float>(
+    let initialForwardLayerState = Tensor<Float>(
         [[-0.22500783,0.3640524,-0.76411664,1.0557337]]
     )
-    let initialStateBackward = Tensor<Float>(
+    let initialBackwardLayerState = Tensor<Float>(
         [[-0.9790854,-0.6808555,1.0346882,-1.0664041]]
     )
     let expectedSum = Tensor<Float>(
@@ -1837,13 +1837,13 @@ final class LayerTests: XCTestCase {
 
       let inputs = x.squeezingShape(at: 0).unstacked().map { $0.rankLifted() }
 
-      let initialStateForward = BasicRNNCell<Float>.State(initialStateForward)
-      let initialStateBackward = BasicRNNCell<Float>.State(initialStateBackward)
+      let initialForwardLayerState = BasicRNNCell<Float>.State(initialForwardLayerState)
+      let initialBackwardLayerState = BasicRNNCell<Float>.State(initialBackwardLayerState)
 
       let outputs = rnn(
         inputs,
-        initialStateForward: initialStateForward,
-        initialStateBackward: initialStateBackward
+        initialForwardLayerState: initialForwardLayerState,
+        initialBackwardLayerState: initialBackwardLayerState
       )
       assertEqual(
         Tensor(concatenating: outputs),
@@ -1854,8 +1854,8 @@ final class LayerTests: XCTestCase {
         valueWithGradient(at: rnn) { rnn in
           rnn.lastOutput(
             from: inputs,
-            initialStateForward: initialStateForward,
-            initialStateBackward: initialStateBackward
+            initialForwardLayerState: initialForwardLayerState,
+            initialBackwardLayerState: initialBackwardLayerState
           ).sum()
         }
       assertEqual(
@@ -1880,12 +1880,12 @@ final class LayerTests: XCTestCase {
         accuracy: 1e-6)
 
       let (gradInputs, gradInitialStateForward, gradInitialStateBackward) =
-        gradient(at: inputs, initialStateForward, initialStateBackward) {
-          inputs, initialStateForward, initialStateBackward in
+        gradient(at: inputs, initialForwardLayerState, initialBackwardLayerState) {
+          inputs, initialForwardLayerState, initialBackwardLayerState in
           rnn.lastOutput(
             from: inputs,
-            initialStateForward: initialStateForward,
-            initialStateBackward: initialStateBackward
+            initialForwardLayerState: initialForwardLayerState,
+            initialBackwardLayerState: initialBackwardLayerState
           ).sum()
         }
       assertEqual(
@@ -2498,17 +2498,17 @@ final class LayerTests: XCTestCase {
 
       let inputs = x.squeezingShape(at: 0).unstacked().map { $0.rankLifted() }
 
-      let initialStateForward = LSTMCell<Float>.State(
+      let initialForwardLayerState = LSTMCell<Float>.State(
         cell: initialStateCellForward,
         hidden: initialStateHiddenForward)
-      let initialStateBackward = LSTMCell<Float>.State(
+      let initialBackwardLayerState = LSTMCell<Float>.State(
         cell: initialStateCellBackward,
         hidden: initialStateHiddenBackward)
 
       let outputs = lstm(
         inputs,
-        initialStateForward: initialStateForward,
-        initialStateBackward: initialStateBackward
+        initialForwardLayerState: initialForwardLayerState,
+        initialBackwardLayerState: initialBackwardLayerState
       )
       assertEqual(
         Tensor(concatenating: outputs.map { $0.hidden }),
@@ -2519,8 +2519,8 @@ final class LayerTests: XCTestCase {
         valueWithGradient(at: lstm) { lstm in
           lstm.lastOutput(
             from: inputs,
-            initialStateForward: initialStateForward,
-            initialStateBackward: initialStateBackward
+            initialForwardLayerState: initialForwardLayerState,
+            initialBackwardLayerState: initialBackwardLayerState
           ).hidden.sum()
         }
       assertEqual(
@@ -2545,12 +2545,12 @@ final class LayerTests: XCTestCase {
         accuracy: 1e-6)
 
       let (gradInputs, gradInitialStateForward, gradInitialStateBackward) =
-        gradient(at: inputs, initialStateForward, initialStateBackward) {
-          inputs, initialStateForward, initialStateBackward in
+        gradient(at: inputs, initialForwardLayerState, initialBackwardLayerState) {
+          inputs, initialForwardLayerState, initialBackwardLayerState in
           lstm.lastOutput(
             from: inputs,
-            initialStateForward: initialStateForward,
-            initialStateBackward: initialStateBackward
+            initialForwardLayerState: initialForwardLayerState,
+            initialBackwardLayerState: initialBackwardLayerState
           ).hidden.sum()
         }
       assertEqual(
@@ -3190,10 +3190,10 @@ final class LayerTests: XCTestCase {
           [0.3545239,-0.14615154,-0.540749],
           [-0.70222735,-0.34035724,-0.8451414]]]
     )
-    let initialStateForward = Tensor<Float>(
+    let initialForwardLayerState = Tensor<Float>(
         [[-0.22500783,0.3640524,-0.76411664,1.0557337]]
     )
-    let initialStateBackward = Tensor<Float>(
+    let initialBackwardLayerState = Tensor<Float>(
         [[-0.9790854,-0.6808555,1.0346882,-1.0664041]]
     )
     let expectedSum = Tensor<Float>(
@@ -3388,13 +3388,13 @@ final class LayerTests: XCTestCase {
       gru.backward.cell.outputRecurrentBias = outputRecurrentBiasBackward
 
       let inputs = x.squeezingShape(at: 0).unstacked().map { $0.rankLifted() }
-      let initialStateForward = GRUCell<Float>.State(initialStateForward)
-      let initialStateBackward = GRUCell<Float>.State(initialStateBackward)
+      let initialForwardLayerState = GRUCell<Float>.State(initialForwardLayerState)
+      let initialBackwardLayerState = GRUCell<Float>.State(initialBackwardLayerState)
 
       let outputs = gru(
         inputs,
-        initialStateForward: initialStateForward,
-        initialStateBackward: initialStateBackward
+        initialForwardLayerState: initialForwardLayerState,
+        initialBackwardLayerState: initialBackwardLayerState
       )
       assertEqual(
         Tensor(concatenating: outputs),
@@ -3405,8 +3405,8 @@ final class LayerTests: XCTestCase {
         valueWithGradient(at: gru) { gru in
           gru.lastOutput(
             from: inputs,
-            initialStateForward: initialStateForward,
-            initialStateBackward: initialStateBackward
+            initialForwardLayerState: initialForwardLayerState,
+            initialBackwardLayerState: initialBackwardLayerState
           ).sum()
         }
       assertEqual(
@@ -3511,12 +3511,12 @@ final class LayerTests: XCTestCase {
         accuracy: 1e-6)
 
       let (gradInputs, gradInitialStateForward, gradInitialStateBackward) =
-        gradient(at: inputs, initialStateForward, initialStateBackward) {
-          inputs, initialStateForward, initialStateBackward in
+        gradient(at: inputs, initialForwardLayerState, initialBackwardLayerState) {
+          inputs, initialForwardLayerState, initialBackwardLayerState in
           gru.lastOutput(
             from: inputs,
-            initialStateForward: initialStateForward,
-            initialStateBackward: initialStateBackward
+            initialForwardLayerState: initialForwardLayerState,
+            initialBackwardLayerState: initialBackwardLayerState
           ).sum()
         }
       assertEqual(
