@@ -1,4 +1,4 @@
-# Computes expected results for `testLSTM()` or `testReversedLSTM()` in `Tests/TensorFlowTests/LayerTests.swift`.
+# Computes expected results for `testLSTM()` in `Tests/TensorFlowTests/LayerTests.swift`.
 # Requires 'tensorflow>=2.0.0a0' (e.g. "pip install tensorflow==2.0.0b1").
 
 import sys
