@@ -20,6 +20,7 @@ where
 {
   /// The input type of the layer.
   associatedtype Input
+
   /// The output type of the layer.
   associatedtype Output: Differentiable
 
@@ -30,11 +31,19 @@ where
   @differentiable(wrt: self)
   func callAsFunction(_ input: Input) -> Output
 
+  /// Returns the output obtained from applying the layer to the given input.
+  ///
+  /// - Parameter input: The input to the layer.
+  /// - Returns: The output.
   @differentiable(wrt: self)
   func forward(_ input: Input) -> Output
 }
 
 extension Module {
+  /// Returns the output obtained from applying the layer to the given input.
+  ///
+  /// - Parameter input: The input to the layer.
+  /// - Returns: The output.
   @differentiable(wrt: self)
   public func forward(_ input: Input) -> Output {
     return callAsFunction(input)
@@ -42,19 +51,27 @@ extension Module {
 }
 
 extension Module where Input: TensorProtocol, Output: DifferentiableTensorProtocol {
+  /// Returns the annotated output obtained from applying the layer to the
+  /// given input.
+  ///
+  /// - Parameter input: The input to the layer.
+  /// - Returns: The annotated output.
   @differentiable(wrt: self)
   public func callAsFunction(_ input: Input) -> Output {
     let activation = forward(input)
-
     return annotated(activation)
   }
 
+  /// Annotates `output`.
+  ///
+  /// Note: Returns `output` if using a backend that does not support annotations.
+  ///
+  /// - Parameter output: The output to the layer.
+  /// - Returns: The annotated output.
   @differentiable
   public func annotated(_ output: Output) -> Output {
     #if USING_X10_BACKEND
-      let selfType = String(describing: Self.self)
-      let annotation = "type=" + selfType
-      let annotated = output.annotate(annotation)
+      let annotated = output.annotate("type=\(Self.self)")
       return annotated
     #else
       return output
@@ -65,13 +82,9 @@ extension Module where Input: TensorProtocol, Output: DifferentiableTensorProtoc
   ///
   /// - Parameter input: The input to the layer.
   /// - Returns: All collected annotations from the XLA graph.
-  public func annotations(input: Input) -> String {
+  public func summary(input: Input) -> String {
     let output = self.callAsFunction(input)
     return output.annotations
-  }
-
-  public func summary(input: Input) -> String {
-    return self.annotations(input: input)
   }
 }
 
@@ -110,35 +123,6 @@ extension Layer where Input: DifferentiableTensorProtocol, Output: Differentiabl
   public func callAsFunction(_ input: Input) -> Output {
     let activation = forward(input)
     return annotated(activation)
-  }
-
-  /// Returns the annotations obtained from applying the layer to the given input.
-  ///
-  /// - Parameter input: The input to the layer.
-  /// - Returns: All collected annotations from the XLA graph.
-  public func annotations(input: Input) -> String {
-    return self.annotations(inputShape: input.shape)
-  }
-
-  /// Returns the annotations obtained from applying the layer to the given input.
-  ///
-  /// - Parameter input: The shape of the input to the layer.
-  /// - Returns: All collected annotations from the XLA graph.
-  public func annotations(inputShape: TensorShape) -> String {
-    #if USING_X10_BACKEND
-      LazyTensorBarrier()
-      let zeros = Input(repeating: 0, shape: inputShape, on: Device.defaultXLA)
-      let model = Self(copying: self, to: Device.defaultXLA)
-      let output = model(zeros)
-
-      return output.annotations
-    #else
-      return ""
-    #endif
-  }
-
-  public func summary(inputShape: TensorShape) -> String {
-    return self.annotations(inputShape: inputShape)
   }
 }
 

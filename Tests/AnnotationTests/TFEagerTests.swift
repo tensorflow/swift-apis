@@ -35,8 +35,7 @@ final class AnnotationTFEagerTests: XCTestCase {
   }
 
   lazy var model: SummaryNet = { SummaryNet() }()
-  lazy var inputShape: TensorShape = { TensorShape([1, 4, 1, 1]) }()
-  lazy var input: Tensor<Float> = { Tensor<Float>(ones: inputShape) }()
+  lazy var input: Tensor<Float> = { Tensor<Float>(ones: [1, 4, 1, 1]) }()
 
   override func setUp() {
     super.setUp()
@@ -58,27 +57,12 @@ final class AnnotationTFEagerTests: XCTestCase {
       }
     }
 
-    return contents.count == 3
-  }
-
-  func testLayerAnnotationsTensor() {
-    let annotations = model.annotations(input: input)
-    XCTAssert(validateAnnotations(annotations))
+    return contents.count == 4
   }
 
   func testLayerSummaryTensor() {
     let annotations = model.summary(input: input)
     XCTAssertEqual(annotations, Device.defaultTFEager.annotationsAvailable)
-  }
-
-  func testLayerAnnotationsTensorShape() {
-    let annotations = model.annotations(inputShape: inputShape)
-    XCTAssert(validateAnnotations(annotations))
-  }
-
-  func testLayerSummaryTensorShape() {
-    let annotations = model.summary(inputShape: inputShape)
-    XCTAssert(validateAnnotations(annotations))
   }
 
   func testTensorAnnotations() {
@@ -96,10 +80,7 @@ final class AnnotationTFEagerTests: XCTestCase {
 
 extension AnnotationTFEagerTests {
   static var allTests = [
-    ("testLayerAnnotationsTensor", testLayerAnnotationsTensor),
     ("testLayerSummaryTensor", testLayerSummaryTensor),
-    ("testLayerAnnotationsTensorShape", testLayerAnnotationsTensorShape),
-    ("testLayerSummaryTensorShape", testLayerSummaryTensorShape),
     ("testTensorAnnotations", testTensorAnnotations),
     ("testTensorAnnotationsSummary", testTensorAnnotationsSummary),
   ]
