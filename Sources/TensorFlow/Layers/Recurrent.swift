@@ -542,7 +542,8 @@ where Cell.TimeStepOutput: Mergeable {
     initialForwardLayerState: Cell.State,
     initialBackwardLayerState: Cell.State
   ) -> Cell.TimeStepOutput {
-    self(
+    precondition(!inputs.isEmpty, "'inputs' must be non-empty.")
+    return self(
       inputs,
       initialForwardLayerState: initialForwardLayerState,
       initialBackwardLayerState: initialBackwardLayerState
@@ -551,7 +552,8 @@ where Cell.TimeStepOutput: Mergeable {
 
   @differentiable
   public func lastOutput(from inputs: Input) -> Cell.TimeStepOutput {
-    self(inputs)[withoutDerivative(at: inputs.count - 1)]
+    precondition(!inputs.isEmpty, "'inputs' must be non-empty.")
+    return self(inputs)[withoutDerivative(at: inputs.count - 1)]
   }
 }
 
