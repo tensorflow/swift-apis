@@ -1518,6 +1518,17 @@ public func hardSwish<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
   x * hardSigmoid(x)
 }
 
+/// Returns a tensor by applying the mish activation function, namely
+/// `x * tanh(softplus(x))`.
+///
+/// Source: "Mish: A Self Regularized Non-Monotonic Neural Activation Function"
+/// https://arxiv.org/abs/1908.08681
+@inlinable
+@differentiable
+public func mish<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+  x * tanh(softplus(x))
+}
+
 extension Tensor where Scalar: TensorFlowFloatingPoint {
   /// Returns a boolean tensor indicating which elements of `x` are finite.
   @inlinable public var isFinite: Tensor<Bool> { _Raw.isFinite(self) }
