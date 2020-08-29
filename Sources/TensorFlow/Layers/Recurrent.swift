@@ -208,6 +208,7 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell {
       self.hidden = hidden
     }
 
+    /// Produces sum of two cells.
     @differentiable
     public static func sum(_ lhs: Self, _ rhs: Self) -> Self {
       Self(cell: lhs.cell + rhs.cell, hidden: lhs.hidden + rhs.hidden)
@@ -429,6 +430,8 @@ public struct RecurrentLayer<Cell: RecurrentLayerCell>: Layer {
 ///
 /// Used by `BidirectionalRecurrentLayer` as a generic requirement for merge functions.
 public protocol Mergeable: Differentiable, AdditiveArithmetic {
+  /// Adds two values and produces their sum.
+  ///
   /// - Note: renaming `sum` to `+` results in a compiler crash when conforming `Tensor` to
   /// `Mergeable` (SR-13229).
   @differentiable
@@ -436,12 +439,14 @@ public protocol Mergeable: Differentiable, AdditiveArithmetic {
 }
 
 extension Tensor: Mergeable where Scalar: TensorFlowFloatingPoint {
+  /// Adds two values and produces their sum.
   @differentiable
   public static func sum(_ lhs: Tensor, _ rhs: Tensor) -> Tensor {
     lhs + rhs
   }
 }
 
+/// Adds two mergeables and produces their sum.
 @differentiable
 public func sum<T: Mergeable>(
   _ first: T,
