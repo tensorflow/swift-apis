@@ -524,11 +524,11 @@ where Cell.TimeStepOutput: Mergeable {
 
   @differentiable
   public func callAsFunction(_ inputs: Input) -> Output {
+    precondition(!inputs.isEmpty, "'inputs' must be non-empty.")
     let initialForwardLayerState = withoutDerivative(
       at: forward.cell.zeroState(for: inputs.first!))
     let initialBackwardLayerState = withoutDerivative(
       at: backward.cell.zeroState(for: inputs.last!))
-    precondition(!inputs.isEmpty, "'inputs' must be non-empty.")
     return self(
       inputs,
       initialForwardLayerState: initialForwardLayerState,
