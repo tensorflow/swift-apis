@@ -1655,12 +1655,12 @@ final class LayerTests: XCTestCase {
           [0.41570857,-1.500107,-0.20221666,-0.08822429]]]
     )
     // TODO: Modify BidirectionalRecurrentLayer to return those two and test it
-    let expectedFinalStateForward = Tensor<Float>(
-        [[0.8125853,-0.5553411,0.27422628,0.73577887]]
-    )
-    let expectedFinalStateBackward = Tensor<Float>(
-        [[0.7070243,0.29404274,-0.76932997,-0.51012546]]
-    )
+    // let expectedFinalStateForward = Tensor<Float>(
+    //     [[0.8125853,-0.5553411,0.27422628,0.73577887]]
+    // )
+    // let expectedFinalStateBackward = Tensor<Float>(
+    //     [[0.7070243,0.29404274,-0.76932997,-0.51012546]]
+    // )
     let expectedGradKernelForward = Tensor<Float>(
         [[-0.25060007,0.44844362,0.017417982,-0.39773455],
         [0.08897984,1.4653344,1.0778612,0.13088357],
@@ -2088,18 +2088,18 @@ final class LayerTests: XCTestCase {
           [-0.12827212,-0.32416072,0.43230215,-0.025351819]]]
     )
     // TODO: Modify BidirectionalRecurrentLayer to return those four and test it
-    let expectedFinalStateHiddenForward = Tensor<Float>(
-        [[-0.048278596,-0.028744427,0.17434421,-0.011268792]]
-    )
-    let expectedFinalStateCellForward = Tensor<Float>(
-        [[-0.123089634,-0.049444646,0.27142566,-0.023337575]]
-    )
-    let expectedFinalStateHiddenBackward = Tensor<Float>(
-        [[0.05788272,-0.12734284,0.03379057,-0.11494892]]
-    )
-    let expectedFinalStateCellBackward = Tensor<Float>(
-        [[0.10647693,-0.207313,0.0632082,-0.31257194]]
-    )
+    // let expectedFinalStateHiddenForward = Tensor<Float>(
+    //     [[-0.048278596,-0.028744427,0.17434421,-0.011268792]]
+    // )
+    // let expectedFinalStateCellForward = Tensor<Float>(
+    //     [[-0.123089634,-0.049444646,0.27142566,-0.023337575]]
+    // )
+    // let expectedFinalStateHiddenBackward = Tensor<Float>(
+    //     [[0.05788272,-0.12734284,0.03379057,-0.11494892]]
+    // )
+    // let expectedFinalStateCellBackward = Tensor<Float>(
+    //     [[0.10647693,-0.207313,0.0632082,-0.31257194]]
+    // )
     let expectedGradKernelForward = Tensor<Float>(
         [[0.002949718,-0.05191034,0.024074148,0.00030408613,0.01421415,
           0.046752453,-0.050661147,0.03154892,-0.12825678,-0.26617724,-0.16949388,
@@ -2669,12 +2669,12 @@ final class LayerTests: XCTestCase {
           [-0.6900477,-0.26849592,0.795504,-0.9006538]]]
     )
     // TODO: Modify BidirectionalRecurrentLayer to return those two and test it
-    let expectedFinalStateForward = Tensor<Float>(
-        [[0.08708767,0.49491018,0.019275323,-0.13219076]]
-    )
-    let expectedFinalStateBackward = Tensor<Float>(
-        [[-0.328244,-0.30765843,0.35560328,-0.3700244]]
-    )
+    // let expectedFinalStateForward = Tensor<Float>(
+    //     [[0.08708767,0.49491018,0.019275323,-0.13219076]]
+    // )
+    // let expectedFinalStateBackward = Tensor<Float>(
+    //     [[-0.328244,-0.30765843,0.35560328,-0.3700244]]
+    // )
     let expectedGradX = Tensor<Float>(
         [[[0.016884286,0.031954587,-0.034630362],
           [-0.030145949,-0.032830622,-0.09927184],
