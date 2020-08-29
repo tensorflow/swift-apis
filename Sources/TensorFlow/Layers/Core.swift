@@ -41,6 +41,8 @@ public struct Flatten<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
 /// A reshape layer.
 @frozen
 public struct Reshape<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  public typealias Input = Tensor<Scalar>
+  public typealias Output = Tensor<Scalar>
   public typealias TangentVector = EmptyTangentVector
 
   /// The target shape.
@@ -69,7 +71,7 @@ public struct Reshape<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     return input.reshaped(toShape: shape)
   }
 }
