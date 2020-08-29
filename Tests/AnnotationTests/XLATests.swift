@@ -52,19 +52,14 @@ final class AnnotationXLATests: XCTestCase {
     }
 
     // Isolate layers.
-    var contents: [String] = Array()
-    for line in lines {
-      if line.contains("shape=") {
-        contents.append(line)
-      }
-    }
+    let denseLayers = lines.filter { $0.contains("Dense<Float>") }
+    let flattenLayers = lines.filter { $0.contains("Flatten<Float>") }
 
-    return contents.count == 4
+    return denseLayers.count == 3 && flattenLayers.count == 1
   }
 
   func testLayerSummaryTensor() {
     let annotations = model.summary(input: input)
-    print("annotations: \(annotations)")
     XCTAssert(validateAnnotations(annotations))
   }
 

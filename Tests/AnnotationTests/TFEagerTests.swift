@@ -42,24 +42,6 @@ final class AnnotationTFEagerTests: XCTestCase {
     LazyTensorBarrier()
   }
 
-  private func validateAnnotations(_ annotations: String) -> Bool {
-    let lines = annotations.components(separatedBy: "\n")
-
-    if lines.count < 2 {
-      return false
-    }
-
-    // Isolate layers.
-    var contents: [String] = Array()
-    for line in lines {
-      if line.contains("shape=") {
-        contents.append(line)
-      }
-    }
-
-    return contents.count == 4
-  }
-
   func testLayerSummaryTensor() {
     let annotations = model.summary(input: input)
     XCTAssertEqual(annotations, Device.defaultTFEager.annotationsAvailable)

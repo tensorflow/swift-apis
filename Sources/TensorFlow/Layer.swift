@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import Foundation
 import _Differentiation
 
 public protocol Module: EuclideanDifferentiable, KeyPathIterable
@@ -78,13 +79,66 @@ extension Module where Input: TensorProtocol, Output: DifferentiableTensorProtoc
     #endif
   }
 
+  private func formatAnnotations(from tensor: Output) -> String {
+    #if USING_X10_BACKEND
+      let rawAnnotations = tensor.annotations
+      if rawAnnotations == Device.defaultTFEager.annotationsAvailable {
+        return rawAnnotations
+      }
+
+      let lines = rawAnnotations.components(separatedBy: "\n")
+
+      if lines.count < 3 {
+        return ""
+      }
+
+      // Isolate layers.
+      let pattern = "\\s*shape=(.+)\\s+type=([^\\s]+)(\\s+.+=.+)?$"
+      let regex = try! NSRegularExpression(pattern: pattern)
+      let contents = lines.filter { $0.contains("shape=") }
+        .map { line -> String in
+        let nsrange = NSRange(line.startIndex..., in: line)
+        if let match = regex.firstMatch(in: line, range: nsrange) {
+          var content = ""
+          if let typeRange = Range(match.range(at: 2), in: line) {
+            let type = line[typeRange]
+            content += type
+          }
+          content += "\t\t\t"
+          if let shapeRange = Range(match.range(at: 1), in: line) {
+            let shape = line[shapeRange]
+            content += shape
+          }
+          content += "\t\t"
+          if let attributesRange = Range(match.range(at: 3), in: line) {
+            let type = line[attributesRange]
+            content += type
+          }
+          return content
+        } else {
+          return line
+        }
+      }
+
+      let formattedAnnotations = """
+        Layer                           Output Shape         Attributes
+        =============================== ==================== ======================
+        \(contents.joined(separator: "\n"))
+        """
+
+       return formattedAnnotations
+    #else
+      return tensor.annotations
+    #endif
+  }
+
   /// Returns the annotations obtained from applying the layer to the given input.
   ///
   /// - Parameter input: The input to the layer.
   /// - Returns: All collected annotations from the XLA graph.
   public func summary(input: Input) -> String {
     let output = self.callAsFunction(input)
-    return output.annotations
+    return formatAnnotations(from: output)
   }
 }
 
