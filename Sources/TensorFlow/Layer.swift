@@ -97,28 +97,28 @@ extension Module where Input: TensorProtocol, Output: DifferentiableTensorProtoc
       let regex = try! NSRegularExpression(pattern: pattern)
       let contents = lines.filter { $0.contains("shape=") }
         .map { line -> String in
-        let nsrange = NSRange(line.startIndex..., in: line)
-        if let match = regex.firstMatch(in: line, range: nsrange) {
-          var content = ""
-          if let typeRange = Range(match.range(at: 2), in: line) {
-            let type = line[typeRange]
-            content += type
+          let nsrange = NSRange(line.startIndex..., in: line)
+          if let match = regex.firstMatch(in: line, range: nsrange) {
+            var content = ""
+            if let typeRange = Range(match.range(at: 2), in: line) {
+              let type = line[typeRange]
+              content += type
+            }
+            content += "\t\t\t"
+            if let shapeRange = Range(match.range(at: 1), in: line) {
+              let shape = line[shapeRange]
+              content += shape
+            }
+            content += "\t\t"
+            if let attributesRange = Range(match.range(at: 3), in: line) {
+              let type = line[attributesRange]
+              content += type
+            }
+            return content
+          } else {
+            return line
           }
-          content += "\t\t\t"
-          if let shapeRange = Range(match.range(at: 1), in: line) {
-            let shape = line[shapeRange]
-            content += shape
-          }
-          content += "\t\t"
-          if let attributesRange = Range(match.range(at: 3), in: line) {
-            let type = line[attributesRange]
-            content += type
-          }
-          return content
-        } else {
-          return line
         }
-      }
 
       let formattedAnnotations = """
         Layer                           Output Shape         Attributes
@@ -126,7 +126,7 @@ extension Module where Input: TensorProtocol, Output: DifferentiableTensorProtoc
         \(contents.joined(separator: "\n"))
         """
 
-       return formattedAnnotations
+      return formattedAnnotations
     #else
       return tensor.annotations
     #endif

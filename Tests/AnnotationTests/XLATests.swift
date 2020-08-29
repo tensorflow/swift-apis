@@ -37,7 +37,9 @@ final class AnnotationXLATests: XCTestCase {
   lazy var device: Device = { Device(kind: .CPU, ordinal: 0, backend: .XLA) }()
   lazy var model0: SummaryNet = { SummaryNet() }()
   lazy var model: SummaryNet = { SummaryNet(copying: model0, to: device) }()
-  lazy var input: Tensor<Float> = { Tensor<Float>(repeating: 1, shape: [1, 4, 1, 1], on: device) }()
+  lazy var input: Tensor<Float> = {
+    Tensor<Float>(repeating: 1, shape: [1, 4, 1, 1], on: device)
+  }()
 
   override func setUp() {
     super.setUp()
