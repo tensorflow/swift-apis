@@ -426,9 +426,8 @@ public struct RecurrentLayer<Cell: RecurrentLayerCell>: Layer {
 }
 
 public protocol Mergeable: Differentiable, AdditiveArithmetic {
-  /// - Note: Trying to use `+` instead of `sum` results in compile error,
-  ///   when Tensor is extended for Mergeable comforting.
-  ///   Stack dump is stored at https://pastebin.com/PxZTir6F.
+  /// - Note: renaming `sum` to `+` results in a compiler crash when conforming `Tensor` to
+  /// `Mergeable` (SR-13229).
   @differentiable
   static func sum(_ lhs: Self, _ rhs: Self) -> Self
 }
