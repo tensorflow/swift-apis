@@ -523,6 +523,7 @@ where Cell.TimeStepOutput: Mergeable {
       at: forward.cell.zeroState(for: inputs.first!))
     let initialBackwardLayerState = withoutDerivative(
       at: backward.cell.zeroState(for: inputs.last!))
+    precondition(!inputs.isEmpty, "'inputs' must be non-empty.")
     return self(
       inputs,
       initialForwardLayerState: initialForwardLayerState,
