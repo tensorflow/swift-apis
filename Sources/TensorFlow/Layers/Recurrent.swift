@@ -425,6 +425,9 @@ public struct RecurrentLayer<Cell: RecurrentLayerCell>: Layer {
   }
 }
 
+/// A type with values that support differentiable binary operations.
+///
+/// Used by `BidirectionalRecurrentLayer` as a generic requirement for merge functions.
 public protocol Mergeable: Differentiable, AdditiveArithmetic {
   /// - Note: Trying to use `+` instead of `sum` results in compile error,
   ///   when Tensor is extended for Mergeable comforting.
