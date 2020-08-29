@@ -446,7 +446,7 @@ extension Tensor: Mergeable where Scalar: TensorFlowFloatingPoint {
   }
 }
 
-/// Adds two mergeables and produces their sum.
+/// Adds two values and produces their sum.
 @differentiable
 public func sum<T: Mergeable>(
   _ first: T,
