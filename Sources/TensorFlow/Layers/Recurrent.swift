@@ -548,20 +548,7 @@ where Cell.TimeStepOutput: Mergeable {
 }
 
 extension RecurrentLayer: Equatable where Cell: Equatable {}
-
-extension RecurrentLayer: AdditiveArithmetic where Cell: AdditiveArithmetic {
-  public static var zero: Self {
-    return Self(Cell.zero)
-  }
-
-  public static func +(lhs: Self, rhs: Self) -> Self {
-    return Self(lhs.cell + rhs.cell)
-  }
-
-  public static func -(lhs: Self, rhs: Self) -> Self {
-    return Self(lhs.cell - rhs.cell)
-  }
-}
+extension RecurrentLayer: AdditiveArithmetic where Cell: AdditiveArithmetic {}
 
 public typealias BasicRNN<Scalar: TensorFlowFloatingPoint> = RecurrentLayer<BasicRNNCell<Scalar>>
 public typealias LSTM<Scalar: TensorFlowFloatingPoint> = RecurrentLayer<LSTMCell<Scalar>>
