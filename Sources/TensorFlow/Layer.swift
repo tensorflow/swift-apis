@@ -79,6 +79,19 @@ extension Module where Input: TensorProtocol, Output: DifferentiableTensorProtoc
     #endif
   }
 
+  /// Returns the annotations obtained from applying the layer to the given input.
+  ///
+  /// - Parameter input: The input to the layer.
+  /// - Returns: All collected annotations from the XLA graph.
+  public func summary(input: Input) -> String {
+    let output = self.callAsFunction(input)
+    return formatAnnotations(from: output)
+  }
+
+  /// Returns a formatted version of `tensor.annotations`.
+  ///
+  /// - Parameter tensor: The output to the layer.
+  /// - Returns: A formatted summary of `tensor.annotations`.
   private func formatAnnotations(from tensor: Output) -> String {
     #if USING_X10_BACKEND
       let rawAnnotations = tensor.annotations
@@ -130,15 +143,6 @@ extension Module where Input: TensorProtocol, Output: DifferentiableTensorProtoc
     #else
       return tensor.annotations
     #endif
-  }
-
-  /// Returns the annotations obtained from applying the layer to the given input.
-  ///
-  /// - Parameter input: The input to the layer.
-  /// - Returns: All collected annotations from the XLA graph.
-  public func summary(input: Input) -> String {
-    let output = self.callAsFunction(input)
-    return formatAnnotations(from: output)
   }
 }
 
