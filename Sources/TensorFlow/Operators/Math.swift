@@ -1846,8 +1846,7 @@ extension Tensor where Scalar: Numeric & Comparable {
   @inlinable
   @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
   public func max(squeezingAxes axes: [Int]) -> Tensor {
-    // TODO(TF-433): Remove workaround for differentiating `map`.
-    let axes = { axes.map(Int32.init) }()
+    let axes = axes.map(Int32.init)
     return max(squeezingAxes: Tensor<Int32>(axes, on: device))
   }
 
@@ -1876,8 +1875,7 @@ extension Tensor where Scalar: Numeric & Comparable {
   @inlinable
   @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
   public func min(squeezingAxes axes: [Int]) -> Tensor {
-    // TODO(TF-433): Remove workaround for differentiating `map`.
-    let axes = { axes.map(Int32.init) }()
+    let axes = axes.map(Int32.init)
     return min(squeezingAxes: Tensor<Int32>(axes, on: device))
   }
 
@@ -1928,8 +1926,7 @@ extension Tensor where Scalar: Numeric & Comparable {
   @inlinable
   @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
   public func min(alongAxes axes: [Int]) -> Tensor {
-    // TODO(TF-433): Remove workaround for differentiating `map`.
-    let axes = { axes.map(Int32.init) }()
+    let axes = axes.map(Int32.init)
     return min(alongAxes: Tensor<Int32>(axes, on: device))
   }
 
@@ -1961,8 +1958,7 @@ extension Tensor where Scalar: Numeric & Comparable {
   @inlinable
   @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
   public func max(alongAxes axes: [Int]) -> Tensor {
-    // TODO(TF-433): Remove workaround for differentiating `map`.
-    let axes = { axes.map(Int32.init) }()
+    let axes = axes.map(Int32.init)
     return max(alongAxes: Tensor<Int32>(axes, on: device))
   }
 
@@ -2100,8 +2096,7 @@ extension Tensor where Scalar: Numeric {
   @inlinable
   @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
   public func sum(squeezingAxes axes: [Int]) -> Tensor {
-    // TODO(TF-433): Remove workaround for differentiating `map`.
-    let axes = { axes.map(Int64.init) }()
+    let axes = axes.map(Int64.init)
     return _Raw.sum(self, reductionIndices: axes, keepDims: false)
   }
 
@@ -2136,8 +2131,7 @@ extension Tensor where Scalar: Numeric {
   @inlinable
   @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
   public func sum(alongAxes axes: [Int]) -> Tensor {
-    // TODO(TF-433): Remove workaround for differentiating `map`.
-    let axes = { axes.map(Int64.init) }()
+    let axes = axes.map(Int64.init)
     return _Raw.sum(self, reductionIndices: axes, keepDims: true)
   }
 
@@ -2170,8 +2164,7 @@ extension Tensor where Scalar: Numeric {
   @inlinable
   @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
   public func product(squeezingAxes axes: [Int]) -> Tensor {
-    // TODO(TF-433): Remove workaround for differentiating `map`.
-    let axes = { axes.map(Int32.init) }()
+    let axes = axes.map(Int32.init)
     return product(squeezingAxes: Tensor<Int32>(axes, on: device))
   }
 
@@ -2207,8 +2200,7 @@ extension Tensor where Scalar: Numeric {
   /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
   @inlinable
   public func product(alongAxes axes: [Int]) -> Tensor {
-    // TODO(TF-433): Remove workaround for differentiating `map`.
-    let axes = { axes.map(Int32.init) }()
+    let axes = axes.map(Int32.init)
     return product(alongAxes: Tensor<Int32>(axes, on: device))
   }
 
@@ -2239,8 +2231,7 @@ extension Tensor where Scalar: Numeric {
   @inlinable
   @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
   public func mean(squeezingAxes axes: [Int]) -> Tensor {
-    // TODO(TF-433): Remove workaround for differentiating `map`.
-    let axes = { axes.map(Int64.init) }()
+    let axes = axes.map(Int64.init)
     return _Raw.mean(self, reductionIndices: axes, keepDims: false)
   }
 
@@ -2277,8 +2268,7 @@ extension Tensor where Scalar: Numeric {
   @inlinable
   @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
   public func mean(alongAxes axes: [Int]) -> Tensor {
-    // TODO(TF-433): Remove workaround for differentiating `map`.
-    let axes = { axes.map(Int64.init) }()
+    let axes = axes.map(Int64.init)
     return _Raw.mean(self, reductionIndices: axes, keepDims: true)
   }
 
@@ -2313,8 +2303,7 @@ extension Tensor where Scalar: Numeric {
   @inlinable
   @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
   public func variance(squeezingAxes axes: [Int]) -> Tensor {
-    // TODO(TF-433): Remove workaround for differentiating `map`.
-    let axes = { axes.map(Int32.init) }()
+    let axes = axes.map(Int32.init)
     return variance(squeezingAxes: Tensor<Int32>(axes, on: device))
   }
 
@@ -2355,8 +2344,7 @@ extension Tensor where Scalar: Numeric {
   @inlinable
   @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
   public func variance(alongAxes axes: [Int]) -> Tensor {
-    // TODO(TF-433): Remove workaround for differentiating `map`.
-    let axes = { axes.map(Int32.init) }()
+    let axes = axes.map(Int32.init)
     return variance(alongAxes: Tensor<Int32>(axes, on: device))
   }
 
@@ -2777,8 +2765,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   @inlinable
   @differentiable(wrt: self)
   public func standardDeviation(alongAxes axes: [Int]) -> Tensor {
-    // TODO(TF-433): Remove workaround for differentiating `map`.
-    let axes = { axes.map(Int32.init) }()
+    let axes = axes.map(Int32.init)
     return standardDeviation(alongAxes: Tensor<Int32>(axes, on: device))
   }
 
@@ -2828,8 +2815,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   @inlinable
   @differentiable(wrt: self)
   public func logSumExp(squeezingAxes axes: [Int]) -> Tensor {
-    // TODO(TF-433): Remove workaround for differentiating `map`.
-    let axes = withoutDerivative(at: axes) { $0.map(Int32.init) }
+    let axes = axes.map(Int32.init)
     return logSumExp(squeezingAxes: Tensor<Int32>(axes, on: device))
   }
 
@@ -2893,8 +2879,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
   @inlinable
   @differentiable(wrt: self)
   public func logSumExp(alongAxes axes: [Int]) -> Tensor {
-    // TODO(TF-433): Remove workaround for differentiating `map`.
-    let axes = withoutDerivative(at: axes) { $0.map(Int32.init) }
+    let axes = axes.map(Int32.init)
     return logSumExp(alongAxes: Tensor<Int32>(axes, on: device))
   }
 
