@@ -1,7 +1,8 @@
-# Computes expected results for `testBidirectionalBasicRNN()` in `Tests/TensorFlowTests/LayerTests.swift`.
+# Computes expected results for Bidirectional BasicRNN layers in `Tests/TensorFlowTests/LayerTests.swift`.
 # Requires 'tensorflow>=2.0.0a0' (e.g. "pip install tensorflow==2.0.0b1").
 
 import numpy
+import argparse
 import tensorflow as tf
 
 # Set random seed for repetable results
@@ -25,24 +26,31 @@ def swift_tensor(name, tensor):
         name,
         indented(numpy.array2string(tensor, separator=',', formatter=formatter)))
 
+parser = argparse.ArgumentParser()
+parser.add_argument("--input-dim", default=4)
+parser.add_argument("--input-length", default=4)
+parser.add_argument("--units", default=4)
+parser.add_argument("--merge-mode", default="concat")
+args = parser.parse_args()
+
 # Initialize the keras model with the Bidirectional RNN.
 forward = tf.keras.layers.SimpleRNN(
-    units=4, activation='tanh',
+    units=args.units, activation='tanh',
     return_sequences=True, return_state=True)
 backward = tf.keras.layers.SimpleRNN(
-    units=4, activation='tanh',
+    units=args.units, activation='tanh',
     return_sequences=True, return_state=True,
     go_backwards=True)
 bidirectional = tf.keras.layers.Bidirectional(
     forward,
     backward_layer=backward,
-    merge_mode='sum'
+    merge_mode=args.merge_mode
 )
 
-x_input = tf.keras.Input(shape=[4, 4])
+x_input = tf.keras.Input(shape=[args.input_length, args.input_dim])
 
-initial_state_forward = tf.keras.Input(shape=[4])
-initial_state_backward = tf.keras.Input(shape=[4])
+initial_state_forward = tf.keras.Input(shape=[args.units])
+initial_state_backward = tf.keras.Input(shape=[args.units])
 initial_state_input = [initial_state_forward, initial_state_backward]
 
 output = bidirectional(x_input, initial_state=initial_state_input)
@@ -59,10 +67,10 @@ print(swift_tensor('recurrentKernelBackward', recurrent_kernel_backward))
 print(swift_tensor('biasBackward', bias_backward))
 
 # Initialize input data and print it.
-x = tf.keras.initializers.GlorotUniform()(shape=[1, 4, 4])
+x = tf.keras.initializers.GlorotUniform()(shape=[1, args.input_length, args.input_dim])
 initial_state = [
-    tf.keras.initializers.GlorotUniform()(shape=[1, 4]),
-    tf.keras.initializers.GlorotUniform()(shape=[1, 4]),
+    tf.keras.initializers.GlorotUniform()(shape=[1, args.units]),
+    tf.keras.initializers.GlorotUniform()(shape=[1, args.units]),
 ]
 print(swift_tensor('x', x))
 print(swift_tensor('initialForwardLayerState', initial_state[0]))
