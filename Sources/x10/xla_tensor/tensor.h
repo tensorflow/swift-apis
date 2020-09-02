@@ -1424,6 +1424,7 @@ class XLATensor {
 
   XLATensor CopyTensorToDevice(const Device& device);
 
+ public:
   // Create a new XLA tensor with the same metadata of the input tensor (with
   // possible overrides), and the new IR value.
   XLATensor CreateFrom(ir::Value ir_value) const;
@@ -1435,6 +1436,7 @@ class XLATensor {
       c10::optional<at::ScalarType> logical_element_type_opt) const;
   XLATensor CreateFrom(ir::Value ir_value, const Device& device,
                        at::ScalarType logical_element_type) const;
+ private:
 
   // We build an XLA graph accumulating XLA operations, but at a given point we
   // need to force a rendering, otherwise the graph can grow without control.

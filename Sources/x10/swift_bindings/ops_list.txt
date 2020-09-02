@@ -1,0 +1,5 @@
+- def: "log_softmax_backward(grad_output: Tensor, output: Tensor, dim: Int64) -> Tensor"
+  extras: ["canonicalize dim grad_output"]
+  x10_enum: at::aten::_log_softmax_backward_data
+  shape_fn: grad_output
+  lower_fn: BuildLogSoftmaxGrad

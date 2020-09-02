@@ -495,12 +495,6 @@ OpaqueXLATensor* XLATensor_log1p(OpaqueXLATensor* a) {
 OpaqueXLATensor* XLATensor_log_softmax(OpaqueXLATensor* a, int64_t dim) {
   return new XLATensor(XLATensor::log_softmax(*a, dim, absl::nullopt));
 }
-OpaqueXLATensor* XLATensor_log_softmax_backward(OpaqueXLATensor* grad_output,
-                                                OpaqueXLATensor* output,
-                                                int64_t dim) {
-  return new XLATensor(
-      XLATensor::log_softmax_backward(*grad_output, *output, dim));
-}
 OpaqueXLATensor* XLATensor_logical_cast(OpaqueXLATensor* input,
                                         enum XLATensorScalarType dest_type) {
   return new XLATensor(
