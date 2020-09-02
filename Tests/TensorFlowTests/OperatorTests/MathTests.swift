@@ -284,6 +284,13 @@ final class MathOperatorTests: XCTestCase {
     let expectedY = Tensor<Float>([0.0, -0.33333334, 0.0, 1.6666666, 4.0])
     assertEqual(y, expectedY, accuracy: 1e-5)
   }
+  
+  func testMish() {
+    let x = Tensor<Float>([-4, -2, 0, 2, 4])
+    let y = mish(x)
+    let expectedY = Tensor<Float>([-0.07259174, -0.25250146, 0.0, 1.943959, 3.9974122])
+    assertEqual(y, expectedY, accuracy: 1e-5)
+  }
 
   func testIsFinite() {
     let x = Tensor<Float>([1, 2, 3, 4, -Float.infinity])
@@ -651,6 +658,7 @@ final class MathOperatorTests: XCTestCase {
     ("testSwish", testSwish),
     ("testHardSigmoid", testHardSigmoid),
     ("testHardSwish", testHardSwish),
+    ("testMish", testMish),
     ("testIsFinite", testIsFinite),
     ("testIsInfinite", testIsInfinite),
     ("testIsNaN", testIsNaN),
