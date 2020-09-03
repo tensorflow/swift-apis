@@ -56,19 +56,12 @@ where Scalar: TensorFlowFloatingPoint {
   func annotate(_ annotation: String) -> Self
 }
 
-extension Tensor: TensorProtocol & DifferentiableTensorProtocol
-where Scalar: TensorFlowFloatingPoint {
-
+extension Tensor: TensorProtocol {
   public var annotations: String {
     #if USING_X10_BACKEND
       switch handle.backend {
       case .XLA:
-        let rawAnnotations = XLATensor.annotations(xlaTensor)
-
-        // TODO(michellecasbon): Add formatting.
-
-        return rawAnnotations
-
+        return XLATensor.annotations(xlaTensor)
       case .TF_EAGER:
         return Device.defaultTFEager.annotationsAvailable
       }
@@ -78,7 +71,10 @@ where Scalar: TensorFlowFloatingPoint {
   }
 
   public var summary: String { annotations }
+}
 
+extension Tensor: DifferentiableTensorProtocol
+where Scalar: TensorFlowFloatingPoint {
   @differentiable(wrt: self)
   public func annotate(_ annotation: String) -> Tensor<Scalar> {
     #if USING_X10_BACKEND
