@@ -294,18 +294,6 @@ OpaqueXLATensor* XLATensor_acos(OpaqueXLATensor* a) {
 OpaqueXLATensor* XLATensor_acosh(OpaqueXLATensor* a) {
   return new XLATensor(XLATensor::acosh(*a));
 }
-OpaqueXLATensor* XLATensor_cumprod(OpaqueXLATensor* a, int64_t dim,
-                                   Optional_XLAScalarType dtype, bool exclusive,
-                                   bool reverse) {
-  return new XLATensor(
-      XLATensor::cumprod(*a, dim, dtype.value(), exclusive, reverse));
-}
-OpaqueXLATensor* XLATensor_cumsum(OpaqueXLATensor* a, int64_t dim,
-                                  Optional_XLAScalarType dtype, bool exclusive,
-                                  bool reverse) {
-  return new XLATensor(
-      XLATensor::cumsum(*a, dim, dtype.value(), exclusive, reverse));
-}
 OpaqueXLATensor* XLATensor_add(OpaqueXLATensor* a, OpaqueXLATensor* b) {
   return new XLATensor(XLATensor::add(*a, *b));
 }
