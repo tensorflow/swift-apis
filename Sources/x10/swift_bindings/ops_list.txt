@@ -3,13 +3,67 @@
   x10_enum: at::aten::cumprod
   shape_fn: CumOpShapeFn
   lower_fn: LowerCumProd
+
 - def: "cumsum(input: Tensor, dim: Int64, dtype: ScalarType?, exclusive: Bool, reverse: Bool) -> Tensor"
   extras: ["canonicalize dim input"]
   x10_enum: at::aten::cumsum
   shape_fn: CumOpShapeFn
   lower_fn: LowerCumSum
+
+- def: "eq(lhs: Tensor, rhs: Tensor) -> Tensor"
+  x10_enum: at::aten::eq
+  lower_fn: LowerBinaryOp<xla::Eq>
+  result_dtype: Bool
+
+- def: "ge(lhs: Tensor, rhs: Tensor) -> Tensor"
+  x10_enum: at::aten::ge
+  lower_fn: LowerBinaryOp<xla::Ge>
+  result_dtype: Bool
+
+- def: "gt(lhs: Tensor, rhs: Tensor) -> Tensor"
+  x10_enum: at::aten::gt
+  lower_fn: LowerBinaryOp<xla::Gt>
+  result_dtype: Bool
+
+- def: "le(lhs: Tensor, rhs: Tensor) -> Tensor"
+  x10_enum: at::aten::le
+  lower_fn: LowerBinaryOp<xla::Le>
+  result_dtype: Bool
+
 - def: "log_softmax_backward(grad_output: Tensor, output: Tensor, dim: Int64) -> Tensor"
   extras: ["canonicalize dim grad_output"]
   x10_enum: at::aten::_log_softmax_backward_data
   shape_fn: grad_output
   lower_fn: BuildLogSoftmaxGrad
+
+- def: "lt(lhs: Tensor, rhs: Tensor) -> Tensor"
+  x10_enum: at::aten::lt
+  lower_fn: LowerBinaryOp<xla::Lt>
+  result_dtype: Bool
+
+- def: "ne(lhs: Tensor, rhs: Tensor) -> Tensor"
+  x10_enum: at::aten::ne
+  lower_fn: LowerBinaryOp<xla::Ne>
+  result_dtype: Bool
+
+- def: "pow(input: Tensor, other: Tensor) -> Tensor"
+  x10_enum: at::aten::pow
+  lower_fn: xla::Pow
+
+- def: "relu(input: Tensor) -> Tensor"
+  x10_enum: at::aten::relu
+  lower_fn: BuildRelu
+
+- def: "rem(input: Tensor, other: Tensor) -> Tensor"
+  x10_enum: at::aten::xla_rem
+  lower_fn: xla::Rem
+
+- def: "squeeze(input: Tensor, dim: Int64) -> Tensor"
+  extras: ["canonicalize dim input"]
+  x10_enum: at::aten::squeeze
+  lower_fn: LowerSqueeze
+
+- def: "threshold(input: Tensor, output: Tensor, threshold: Float, value: Float) -> Tensor"
+  x10_enum: at::aten::threshold_backward
+  shape_fn: input
+  lower_fn: BuildThreshold

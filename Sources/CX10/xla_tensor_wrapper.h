@@ -340,8 +340,6 @@ XLA_API OpaqueXLATensor* XLATensor_physical_cast(
     OpaqueXLATensor* input, enum XLATensorScalarType dest_type);
 XLA_API OpaqueXLATensor* XLATensor_pow(OpaqueXLATensor* base,
                                        OpaqueXLATensor* exponent);
-XLA_API OpaqueXLATensor* XLATensor_pow(OpaqueXLATensor* base,
-                                       OpaqueXLATensor* exponent);
 XLA_API OpaqueXLATensor* XLATensor_prod(OpaqueXLATensor* a, Int64ArrayRef dims,
                                         bool keep_reduced_dimensions,
                                         Optional_XLAScalarType dtype);
@@ -415,6 +413,8 @@ XLATensor_tf_UnsortedSegmentSum(OpaqueXLATensor* data, OpaqueXLATensor* indices,
                                 int64_t num_segments);
 XLA_API OpaqueXLATensor* XLATensor_threshold_backward(
     OpaqueXLATensor* grad_output, OpaqueXLATensor* input, float threshold);
+XLA_API OpaqueXLATensor* XLATensor_threshold(
+    OpaqueXLATensor* input, OpaqueXLATensor* output, float threshold, float value);
 XLA_API OpaqueXLATensor* XLATensor_truncated_normal(OpaqueXLATensor* input);
 XLA_API OpaqueXLATensor*
 XLATensor_to(OpaqueXLATensor* a, const struct CDevice* device,
