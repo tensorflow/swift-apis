@@ -113,7 +113,7 @@ public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
           value: v,
           numSplit: Int64(input.shape[axis]))
         let summed = splits.map { x in x.sum(alongAxes: axis) }
-        let concatenated = Tensor<ScalarTensor<Scalar>concatenating: summed, alongAxis: axis)
+        let concatenated = Tensor<Scalar>(concatenating: summed, alongAxis: axis)
         return (.zero, concatenated)
       }
     )
