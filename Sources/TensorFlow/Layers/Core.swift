@@ -19,10 +19,6 @@ import _Differentiation
 /// A flatten layer flattens the input when applied without affecting the batch size.
 @frozen
 public struct Flatten<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
-  /// The input type of the layer.
-  public typealias Input = Tensor<Scalar>
-  /// The output type of the layer.
-  public typealias Output = Tensor<Scalar>
   public typealias TangentVector = EmptyTangentVector
 
   /// Creates a flatten layer.
@@ -33,7 +29,7 @@ public struct Flatten<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Input) -> Output {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     let batchSize = input.shape[0]
     let remaining = input.shape[1..<input.rank].contiguousSize
     return input.reshaped(to: [batchSize, remaining])
@@ -43,10 +39,6 @@ public struct Flatten<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
 /// A reshape layer.
 @frozen
 public struct Reshape<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
-  /// The input type of the layer.
-  public typealias Input = Tensor<Scalar>
-  /// The output type of the layer.
-  public typealias Output = Tensor<Scalar>
   public typealias TangentVector = EmptyTangentVector
 
   /// The target shape.
@@ -75,7 +67,7 @@ public struct Reshape<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Input) -> Output {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     return input.reshaped(toShape: shape)
   }
 }

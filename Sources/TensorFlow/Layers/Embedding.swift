@@ -19,13 +19,8 @@ import _Differentiation
 /// `Embedding` is effectively a lookup table that maps indices from a fixed vocabulary to fixed-size
 /// (dense) vector representations, e.g. `[[0], [3]] -> [[0.25, 0.1], [0.6, -0.2]]`.
 public struct Embedding<Scalar: TensorFlowFloatingPoint>: Module {
-  /// The input type of the layer.
-  public typealias Input = Tensor<Int32>
-  /// The output type of the layer.
-  public typealias Output = Tensor<Scalar>
-
   /// A learnable lookup table that maps vocabulary indices to their dense vector representations.
-  public var embeddings: Output
+  public var embeddings: Tensor<Scalar>
 
   /// Creates an `Embedding` layer with randomly initialized embeddings of shape
   /// `(vocabularySize, embeddingSize)` so that each vocabulary index is given a vector
@@ -50,7 +45,7 @@ public struct Embedding<Scalar: TensorFlowFloatingPoint>: Module {
   /// pretrained embeddings into a model.
   ///
   /// - Parameter embeddings: The pretrained embeddings table.
-  public init(embeddings: Output) {
+  public init(embeddings: Tensor<Scalar>) {
     self.embeddings = embeddings
   }
 
@@ -60,7 +55,7 @@ public struct Embedding<Scalar: TensorFlowFloatingPoint>: Module {
   ///   - input: The indices that will be mapped to their vector representations.
   /// - Returns: The tensor created by replacing input indices with their vector representations.
   @differentiable(wrt: self)
-  public func forward(_ input: Input) -> Output {
+  public func forward(_ input: Tensor<Int32>) -> Tensor<Scalar> {
     embeddings.gathering(atIndices: input)
   }
 }

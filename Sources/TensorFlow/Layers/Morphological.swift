@@ -17,11 +17,6 @@
 /// This layer returns the morphogical dilation of the input tensor with the provided filters
 @frozen
 public struct `Dilation2D`<Scalar: TensorFlowFloatingPoint>: Layer {
-  /// The input type of the layer.
-  public typealias Input = Tensor<Scalar>
-  /// The output type of the layer.
-  public typealias Output = Tensor<Scalar>
-
   /// The 4-D dilation filter.
   public var filter: Tensor<Scalar>
   /// The strides of the sliding window for spatial dimensions.
@@ -75,7 +70,7 @@ public struct `Dilation2D`<Scalar: TensorFlowFloatingPoint>: Layer {
   ///
   /// - Note: Padding size equals zero when using `.valid`.
   @differentiable
-  public func forward(_ input: Input) -> Output {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     let dilated = dilation2D(
       input,
       filter: filter,
@@ -92,11 +87,6 @@ public struct `Dilation2D`<Scalar: TensorFlowFloatingPoint>: Layer {
 /// This layer returns the morphogical erosion of the input tensor with the provided filters
 @frozen
 public struct `Erosion2D`<Scalar: TensorFlowFloatingPoint>: Layer {
-  /// The input type of the layer.
-  public typealias Input = Tensor<Scalar>
-  /// The output type of the layer.
-  public typealias Output = Tensor<Scalar>
-
   /// The 4-D dilation filter.
   public var filter: Tensor<Scalar>
   /// The strides of the sliding window for spatial dimensions.
@@ -150,7 +140,7 @@ public struct `Erosion2D`<Scalar: TensorFlowFloatingPoint>: Layer {
   ///
   /// - Note: Padding size equals zero when using `.valid`.
   @differentiable
-  public func forward(_ input: Input) -> Output {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     let eroded = erosion2D(
       input,
       filter: filter,

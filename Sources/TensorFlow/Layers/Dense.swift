@@ -26,10 +26,6 @@ import _Differentiation
 /// weight and bias for each element in input batch.
 @frozen
 public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
-  /// The input type of the layer.
-  public typealias Input = Tensor<Scalar>
-  /// The output type of the layer.
-  public typealias Output = Tensor<Scalar>
   /// The weight matrix.
   public var weight: Tensor<Scalar>
   /// The bias vector.
@@ -82,7 +78,7 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Input) -> Output {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     if batched {
       let hidden = matmul(input.expandingShape(at: 1), weight).squeezingShape(at: 1)
       return activation(useBias ? hidden + bias : hidden)

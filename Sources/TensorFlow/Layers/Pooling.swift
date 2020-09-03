@@ -17,10 +17,6 @@ import _Differentiation
 /// A max pooling layer for temporal data.
 @frozen
 public struct MaxPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
-  /// The input type of the layer.
-  public typealias Input = Tensor<Scalar>
-  /// The output type of the layer.
-  public typealias Output = Tensor<Scalar>
   public typealias TangentVector = EmptyTangentVector
 
   /// The size of the sliding reduction window for pooling.
@@ -49,7 +45,7 @@ public struct MaxPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Input) -> Output {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     maxPool2D(
       input.expandingShape(at: 1),
       filterSize: (1, 1, poolSize, 1),
@@ -62,10 +58,6 @@ public struct MaxPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
 /// A max pooling layer for spatial data.
 @frozen
 public struct MaxPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
-  /// The input type of the layer.
-  public typealias Input = Tensor<Scalar>
-  /// The output type of the layer.
-  public typealias Output = Tensor<Scalar>
   public typealias TangentVector = EmptyTangentVector
 
   /// The size of the sliding reduction window for pooling.
@@ -94,7 +86,7 @@ public struct MaxPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Input) -> Output {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     maxPool2D(input, filterSize: poolSize, strides: strides, padding: padding)
   }
 }
@@ -117,10 +109,6 @@ extension MaxPool2D {
 /// A max pooling layer for spatial or spatio-temporal data.
 @frozen
 public struct MaxPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
-  /// The input type of the layer.
-  public typealias Input = Tensor<Scalar>
-  /// The output type of the layer.
-  public typealias Output = Tensor<Scalar>
   public typealias TangentVector = EmptyTangentVector
 
   /// The size of the sliding reduction window for pooling.
@@ -155,7 +143,7 @@ public struct MaxPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Input) -> Output {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     maxPool3D(input, filterSize: poolSize, strides: strides, padding: padding)
   }
 }
@@ -189,10 +177,6 @@ extension MaxPool3D {
 /// An average pooling layer for temporal data.
 @frozen
 public struct AvgPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
-  /// The input type of the layer.
-  public typealias Input = Tensor<Scalar>
-  /// The output type of the layer.
-  public typealias Output = Tensor<Scalar>
   public typealias TangentVector = EmptyTangentVector
 
   /// The size of the sliding reduction window for pooling.
@@ -221,7 +205,7 @@ public struct AvgPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Input) -> Output {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     avgPool2D(
       input.expandingShape(at: 1),
       filterSize: (1, 1, poolSize, 1),
@@ -234,10 +218,6 @@ public struct AvgPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
 /// An average pooling layer for spatial data.
 @frozen
 public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
-  /// The input type of the layer.
-  public typealias Input = Tensor<Scalar>
-  /// The output type of the layer.
-  public typealias Output = Tensor<Scalar>
   public typealias TangentVector = EmptyTangentVector
 
   /// The size of the sliding reduction window for pooling.
@@ -266,7 +246,7 @@ public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Input) -> Output {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     avgPool2D(input, filterSize: poolSize, strides: strides, padding: padding)
   }
 }
@@ -289,10 +269,6 @@ extension AvgPool2D {
 /// An average pooling layer for spatial or spatio-temporal data.
 @frozen
 public struct AvgPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
-  /// The input type of the layer.
-  public typealias Input = Tensor<Scalar>
-  /// The output type of the layer.
-  public typealias Output = Tensor<Scalar>
   public typealias TangentVector = EmptyTangentVector
 
   /// The size of the sliding reduction window for pooling.
@@ -327,7 +303,7 @@ public struct AvgPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Input) -> Output {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     avgPool3D(input, filterSize: poolSize, strides: strides, padding: padding)
   }
 }
@@ -361,10 +337,6 @@ extension AvgPool3D {
 /// A global average pooling layer for temporal data.
 @frozen
 public struct GlobalAvgPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
-  /// The input type of the layer.
-  public typealias Input = Tensor<Scalar>
-  /// The output type of the layer.
-  public typealias Output = Tensor<Scalar>
   public typealias TangentVector = EmptyTangentVector
 
   /// Creates a global average pooling layer.
@@ -375,7 +347,7 @@ public struct GlobalAvgPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Input) -> Output {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     precondition(input.rank == 3, "The rank of the input must be 3.")
     return input.mean(squeezingAxes: 1)
   }
@@ -384,10 +356,6 @@ public struct GlobalAvgPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
 /// A global average pooling layer for spatial data.
 @frozen
 public struct GlobalAvgPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
-  /// The input type of the layer.
-  public typealias Input = Tensor<Scalar>
-  /// The output type of the layer.
-  public typealias Output = Tensor<Scalar>
   public typealias TangentVector = EmptyTangentVector
 
   /// Creates a global average pooling layer.
@@ -398,7 +366,7 @@ public struct GlobalAvgPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Input) -> Output {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     precondition(input.rank == 4, "The rank of the input must be 4.")
     return input.mean(squeezingAxes: [1, 2])
   }
@@ -407,10 +375,6 @@ public struct GlobalAvgPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
 /// A global average pooling layer for spatial and spatio-temporal data.
 @frozen
 public struct GlobalAvgPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
-  /// The input type of the layer.
-  public typealias Input = Tensor<Scalar>
-  /// The output type of the layer.
-  public typealias Output = Tensor<Scalar>
   public typealias TangentVector = EmptyTangentVector
 
   /// Creates a global average pooling layer.
@@ -421,7 +385,7 @@ public struct GlobalAvgPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Input) -> Output {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     precondition(input.rank == 5, "The rank of the input must be 5.")
     return input.mean(squeezingAxes: [1, 2, 3])
   }
@@ -430,10 +394,6 @@ public struct GlobalAvgPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
 /// A global max pooling layer for temporal data.
 @frozen
 public struct GlobalMaxPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
-  /// The input type of the layer.
-  public typealias Input = Tensor<Scalar>
-  /// The output type of the layer.
-  public typealias Output = Tensor<Scalar>
   public typealias TangentVector = EmptyTangentVector
 
   /// Creates a global max pooling layer.
@@ -447,7 +407,7 @@ public struct GlobalMaxPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
   ///     phase.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Input) -> Output {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     precondition(input.rank == 3, "The rank of the input must be 3.")
     return input.max(squeezingAxes: 1)
   }
@@ -456,10 +416,6 @@ public struct GlobalMaxPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
 /// A global max pooling layer for spatial data.
 @frozen
 public struct GlobalMaxPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
-  /// The input type of the layer.
-  public typealias Input = Tensor<Scalar>
-  /// The output type of the layer.
-  public typealias Output = Tensor<Scalar>
   public typealias TangentVector = EmptyTangentVector
 
   /// Creates a global max pooling layer.
@@ -470,7 +426,7 @@ public struct GlobalMaxPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Input) -> Output {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     precondition(input.rank == 4, "The rank of the input must be 4.")
     return input.max(squeezingAxes: [1, 2])
   }
@@ -479,10 +435,6 @@ public struct GlobalMaxPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
 /// A global max pooling layer for spatial and spatio-temporal data.
 @frozen
 public struct GlobalMaxPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
-  /// The input type of the layer.
-  public typealias Input = Tensor<Scalar>
-  /// The output type of the layer.
-  public typealias Output = Tensor<Scalar>
   public typealias TangentVector = EmptyTangentVector
 
   /// Creates a global max pooling layer.
@@ -493,7 +445,7 @@ public struct GlobalMaxPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Input) -> Output {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     precondition(input.rank == 5, "The rank of the input must be 5.")
     return input.max(squeezingAxes: [1, 2, 3])
   }
@@ -503,10 +455,6 @@ public struct GlobalMaxPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
 /// Note: `FractionalMaxPool` does not have an XLA implementation, and thus may have performance implications.
 @frozen
 public struct FractionalMaxPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
-  /// The input type of the layer.
-  public typealias Input = Tensor<Scalar>
-  /// The output type of the layer.
-  public typealias Output = Tensor<Scalar>
   public typealias TangentVector = EmptyTangentVector
 
   /// Pooling ratios for each dimension of input of shape (batch, height, width, channels).
@@ -547,7 +495,7 @@ public struct FractionalMaxPool2D<Scalar: TensorFlowFloatingPoint>: Parameterles
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Input) -> Output {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     fractionalMaxPool2D(
       input,
       poolingRatio: poolingRatio,

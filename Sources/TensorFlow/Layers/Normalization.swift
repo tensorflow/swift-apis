@@ -46,11 +46,6 @@ private func normalize<Scalar: TensorFlowFloatingPoint>(
 /// Covariate Shift](https://arxiv.org/abs/1502.03167).
 @frozen
 public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
-  /// The input type of the layer.
-  public typealias Input = Tensor<Scalar>
-  /// The output type of the layer.
-  public typealias Output = Tensor<Scalar>
-
   /// The feature dimension.
   @noDerivative public let axis: Int
   /// The momentum for the running mean and running variance.
@@ -104,7 +99,7 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Input) -> Output {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     let positiveAxis = (input.rank + axis) % input.rank
     precondition(
       input.shape[positiveAxis] == offset.shape[0],
@@ -196,11 +191,6 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
 /// Reference: [Layer Normalization](https://arxiv.org/abs/1607.06450).
 @frozen
 public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
-  /// The input type of the layer.
-  public typealias Input = Tensor<Scalar>
-  /// The output type of the layer.
-  public typealias Output = Tensor<Scalar>
-
   /// The offset value, also known as beta.
   public var offset: Tensor<Scalar>
   /// The scale value, also known as gamma.
@@ -251,7 +241,7 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Input) -> Output {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     // Note: `withoutDerivative(at:)` is currently needed in the following to prevent the resulting
     // tensor for `epsilon` from being scalarized on the backwards pass, breaking X10 traces.
     let epsilon = withoutDerivative(at: input) { Tensor(self.epsilon, deviceAndPrecisionLike: $0) }
@@ -274,11 +264,6 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
 /// Reference: [Group Normalization](https://arxiv.org/abs/1803.08494).
 @frozen
 public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
-  /// The input type of the layer.
-  public typealias Input = Tensor<Scalar>
-  /// The output type of the layer.
-  public typealias Output = Tensor<Scalar>
-
   /// The offset value, also known as beta.
   public var offset: Tensor<Scalar>
   /// The scale value, also known as gamma.
@@ -357,7 +342,7 @@ public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   /// - Precondition: The axis cannot be batch axis.
   /// - Precondition: The numbers of features of the input and the offset must be same.
   @differentiable
-  public func forward(_ input: Input) -> Output {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     let positiveAxis = (input.rank + axis) % input.rank
     precondition(positiveAxis != 0, "The axis cannot be batch axis.")
     precondition(
@@ -395,11 +380,6 @@ public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
 /// Reference: [Instance Normalization: The Missing Ingredient for Fast Stylization](https://arxiv.org/abs/1607.08022).
 @frozen
 public struct InstanceNorm<Scalar: TensorFlowFloatingPoint>: Layer {
-  /// The input type of the layer.
-  public typealias Input = Tensor<Scalar>
-  /// The output type of the layer.
-  public typealias Output = Tensor<Scalar>
-
   /// The general normalization layer of which `self` is a special case.
   var delegate: GroupNorm<Scalar>
 
@@ -468,7 +448,7 @@ public struct InstanceNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Input) -> Output {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     delegate(input)
   }
 }

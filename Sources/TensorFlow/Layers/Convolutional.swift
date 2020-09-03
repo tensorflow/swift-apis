@@ -20,11 +20,6 @@ import _Differentiation
 /// tensor of outputs.
 @frozen
 public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
-  /// The input type of the layer.
-  public typealias Input = Tensor<Scalar>
-  /// The output type of the layer.
-  public typealias Output = Tensor<Scalar>
-
   /// The 3-D convolution filter.
   public var filter: Tensor<Scalar>
   /// The bias vector.
@@ -85,7 +80,7 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
   ///
   /// - Note: Padding size equals zero when using `.valid`.
   @differentiable
-  public func forward(_ input: Input) -> Output {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     let conv = conv1D(
       input,
       filter: filter,
@@ -138,11 +133,6 @@ extension Conv1D where Scalar.RawSignificand: FixedWidthInteger {
 /// tensor of outputs.
 @frozen
 public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
-  /// The input type of the layer.
-  public typealias Input = Tensor<Scalar>
-  /// The output type of the layer.
-  public typealias Output = Tensor<Scalar>
-
   /// The 4-D convolution filter.
   public var filter: Tensor<Scalar>
   /// The bias vector.
@@ -212,7 +202,7 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
   ///
   /// - Note: Padding size equals zero when using `.valid`.
   @differentiable
-  public func forward(_ input: Input) -> Output {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     let conv = conv2D(
       input,
       filter: filter,
@@ -267,11 +257,6 @@ extension Conv2D {
 /// tensor of outputs.
 @frozen
 public struct Conv3D<Scalar: TensorFlowFloatingPoint>: Layer {
-  /// The input type of the layer.
-  public typealias Input = Tensor<Scalar>
-  /// The output type of the layer.
-  public typealias Output = Tensor<Scalar>
-
   /// The 5-D convolution filter.
   public var filter: Tensor<Scalar>
   /// The bias vector.
@@ -348,7 +333,7 @@ public struct Conv3D<Scalar: TensorFlowFloatingPoint>: Layer {
   ///
   /// - Note: Padding size equals zero when using `.valid`.
   @differentiable
-  public func forward(_ input: Input) -> Output {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     let conv = conv3D(
       input,
       filter: filter,
@@ -404,11 +389,6 @@ extension Conv3D {
 /// to produce a tensor of outputs.
 @frozen
 public struct TransposedConv1D<Scalar: TensorFlowFloatingPoint>: Layer {
-  /// The input type of the layer.
-  public typealias Input = Tensor<Scalar>
-  /// The output type of the layer.
-  public typealias Output = Tensor<Scalar>
-
   /// The 1-D convolution kernel.
   public var filter: Tensor<Scalar>
   /// The bias vector.
@@ -457,7 +437,7 @@ public struct TransposedConv1D<Scalar: TensorFlowFloatingPoint>: Layer {
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Input) -> Output {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     let batchSize = input.shape[0]
     let w = (input.shape[1] - (1 * paddingIndex)) * stride + (filter.shape[0] * paddingIndex)
     let c = filter.shape[2]
@@ -510,11 +490,6 @@ extension TransposedConv1D {
 /// to produce a tensor of outputs.
 @frozen
 public struct TransposedConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
-  /// The input type of the layer.
-  public typealias Input = Tensor<Scalar>
-  /// The output type of the layer.
-  public typealias Output = Tensor<Scalar>
-
   /// The 4-D convolution kernel.
   public var filter: Tensor<Scalar>
   /// The bias vector.
@@ -564,7 +539,7 @@ public struct TransposedConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Input) -> Output {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     let batchSize = input.shape[0]
     let h = (input.shape[1] - (1 * paddingIndex)) * strides.0 + (filter.shape[0] * paddingIndex)
     let w = (input.shape[2] - (1 * paddingIndex)) * strides.1 + (filter.shape[1] * paddingIndex)
@@ -619,11 +594,6 @@ extension TransposedConv2D {
 /// to produce a tensor of outputs.
 @frozen
 public struct TransposedConv3D<Scalar: TensorFlowFloatingPoint>: Layer {
-  /// The input type of the layer.
-  public typealias Input = Tensor<Scalar>
-  /// The output type of the layer.
-  public typealias Output = Tensor<Scalar>
-
   /// The 5-D convolution kernel.
   public var filter: Tensor<Scalar>
   /// The bias vector.
@@ -672,7 +642,7 @@ public struct TransposedConv3D<Scalar: TensorFlowFloatingPoint>: Layer {
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Input) -> Output {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     let batchSize = input.shape[0]
     let w = (input.shape[1] - (1 * paddingIndex)) * strides.0 + (filter.shape[0] * paddingIndex)
     let h = (input.shape[2] - (1 * paddingIndex)) * strides.1 + (filter.shape[1] * paddingIndex)
@@ -728,11 +698,6 @@ extension TransposedConv3D {
 /// tensor of outputs.
 @frozen
 public struct DepthwiseConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
-  /// The input type of the layer.
-  public typealias Input = Tensor<Scalar>
-  /// The output type of the layer.
-  public typealias Output = Tensor<Scalar>
-
   /// The 4-D convolution kernel.
   public var filter: Tensor<Scalar>
   /// The bias vector.
@@ -780,7 +745,7 @@ public struct DepthwiseConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
   /// - Returns: The output of shape,
   ///   [batch count, output height, output width, input channel count * channel multiplier]
   @differentiable
-  public func forward(_ input: Input) -> Output {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     let conv = depthwiseConv2D(
       input,
       filter: filter,
@@ -825,10 +790,6 @@ extension DepthwiseConv2D {
 
 /// A layer for adding zero-padding in the temporal dimension.
 public struct ZeroPadding1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
-  /// The input type of the layer.
-  public typealias Input = Tensor<Scalar>
-  /// The output type of the layer.
-  public typealias Output = Tensor<Scalar>
   public typealias TangentVector = EmptyTangentVector
 
   /// The padding values along the temporal dimension.
@@ -855,17 +816,13 @@ public struct ZeroPadding1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Input) -> Output {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     input.padded(forSizes: [(0, 0), padding, (0, 0)])
   }
 }
 
 /// A layer for adding zero-padding in the spatial dimensions.
 public struct ZeroPadding2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
-  /// The input type of the layer.
-  public typealias Input = Tensor<Scalar>
-  /// The output type of the layer.
-  public typealias Output = Tensor<Scalar>
   public typealias TangentVector = EmptyTangentVector
 
   /// The padding values along the spatial dimensions.
@@ -893,17 +850,13 @@ public struct ZeroPadding2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Input) -> Output {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     input.padded(forSizes: [(0, 0), padding.0, padding.1, (0, 0)])
   }
 }
 
 /// A layer for adding zero-padding in the spatial/spatio-temporal dimensions.
 public struct ZeroPadding3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
-  /// The input type of the layer.
-  public typealias Input = Tensor<Scalar>
-  /// The output type of the layer.
-  public typealias Output = Tensor<Scalar>
   public typealias TangentVector = EmptyTangentVector
 
   /// The padding values along the spatial/spatio-temporal dimensions.
@@ -931,7 +884,7 @@ public struct ZeroPadding3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Input) -> Output {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     input.padded(forSizes: [(0, 0), padding.0, padding.1, padding.2, (0, 0)])
   }
 }
@@ -942,11 +895,6 @@ public struct ZeroPadding3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer
 /// a pointwise convolution that mixes channels.
 @frozen
 public struct SeparableConv1D<Scalar: TensorFlowFloatingPoint>: Layer {
-  /// The input type of the layer.
-  public typealias Input = Tensor<Scalar>
-  /// The output type of the layer.
-  public typealias Output = Tensor<Scalar>
-
   /// The 3-D depthwise convolution kernel.
   public var depthwiseFilter: Tensor<Scalar>
   /// The 3-D pointwise convolution kernel.
@@ -999,7 +947,7 @@ public struct SeparableConv1D<Scalar: TensorFlowFloatingPoint>: Layer {
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Input) -> Output {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     let depthwise = depthwiseConv2D(
       input.expandingShape(at: 1),
       filter: depthwiseFilter.expandingShape(at: 1),
@@ -1060,11 +1008,6 @@ extension SeparableConv1D {
 /// a pointwise convolution that mixes channels.
 @frozen
 public struct SeparableConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
-  /// The input type of the layer.
-  public typealias Input = Tensor<Scalar>
-  /// The output type of the layer.
-  public typealias Output = Tensor<Scalar>
-
   /// The 4-D depthwise convolution kernel.
   public var depthwiseFilter: Tensor<Scalar>
   /// The 4-D pointwise convolution kernel.
@@ -1117,7 +1060,7 @@ public struct SeparableConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Input) -> Output {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     let depthwise = depthwiseConv2D(
       input,
       filter: depthwiseFilter,
