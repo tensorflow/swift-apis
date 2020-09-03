@@ -124,8 +124,8 @@ extension Module where Input: TensorProtocol, Output: DifferentiableTensorProtoc
             }
             content += "\t\t"
             if let attributesRange = Range(match.range(at: 3), in: line) {
-              let type = line[attributesRange]
-              content += type
+              let attribute = line[attributesRange]
+              content += attribute
             }
             return content
           } else {

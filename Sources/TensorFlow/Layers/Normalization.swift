@@ -54,9 +54,9 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   /// The momentum for the running mean and running variance.
   @noDerivative public let momentum: Scalar
   /// The offset value, also known as beta.
-  public var offset: Tensor<Scalar>
+  public var offset: Input
   /// The scale value, also known as gamma.
-  public var scale: Tensor<Scalar>
+  public var scale: Input
   /// The variance epsilon value.
   @noDerivative public let epsilon: Scalar
   /// The running mean.
@@ -77,11 +77,11 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   public init(
     axis: Int,
     momentum: Scalar,
-    offset: Tensor<Scalar>,
-    scale: Tensor<Scalar>,
+    offset: Input,
+    scale: Input,
     epsilon: Scalar,
-    runningMean: Tensor<Scalar>,
-    runningVariance: Tensor<Scalar>
+    runningMean: Input,
+    runningVariance: Input
   ) {
     precondition(offset.rank == 1, "The offset must have rank 1.")
     precondition(scale.rank == 1, "The scale must have rank 1.")
@@ -102,7 +102,7 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  public func forward(_ input: Input) -> Output {
     let positiveAxis = (input.rank + axis) % input.rank
     precondition(
       input.shape[positiveAxis] == offset.shape[0],
@@ -124,8 +124,8 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   }
 
   private func doTraining(
-    _ input: Tensor<Scalar>, offset: Tensor<Scalar>, scale: Tensor<Scalar>, axis: Int
-  ) -> Tensor<Scalar> {
+    _ input: Input, offset: Input, scale: Input, axis: Int
+  ) -> Output {
     var normalizedAxes = Array(0..<input.rank)
     normalizedAxes.remove(at: axis)
     let moments = input.moments(alongAxes: normalizedAxes)
@@ -150,8 +150,8 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   }
 
   private func doInference(
-    _ input: Tensor<Scalar>, offset: Tensor<Scalar>, scale: Tensor<Scalar>
-  ) -> Tensor<Scalar> {
+    _ input: Input, offset: Input, scale: Input
+  ) -> Output {
     let isReducedPrecision = withoutDerivative(at: input) { $0.isReducedPrecision }
     let runningVarianceValue =
       isReducedPrecision ? runningVariance.value.toReducedPrecision : runningVariance.value
@@ -198,9 +198,9 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   public typealias Output = Tensor<Scalar>
 
   /// The offset value, also known as beta.
-  public var offset: Tensor<Scalar>
+  public var offset: Input
   /// The scale value, also known as gamma.
-  public var scale: Tensor<Scalar>
+  public var scale: Input
   /// The axis.
   @noDerivative public let axis: Int
   /// The variance epsilon value.
@@ -208,8 +208,8 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
 
   /// Creates a layer normalization layer.
   public init(
-    offset: Tensor<Scalar>,
-    scale: Tensor<Scalar>,
+    offset: Input,
+    scale: Input,
     axis: Int,
     epsilon: Scalar
   ) {
@@ -247,7 +247,7 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  public func forward(_ input: Input) -> Output {
     // Note: `withoutDerivative(at:)` is currently needed in the following to prevent the resulting
     // tensor for `epsilon` from being scalarized on the backwards pass, breaking X10 traces.
     let epsilon = withoutDerivative(at: input) { Tensor(self.epsilon, deviceAndPrecisionLike: $0) }
@@ -274,9 +274,9 @@ public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   public typealias Output = Tensor<Scalar>
 
   /// The offset value, also known as beta.
-  public var offset: Tensor<Scalar>
+  public var offset: Input
   /// The scale value, also known as gamma.
-  public var scale: Tensor<Scalar>
+  public var scale: Input
   /// The number of groups.
   @noDerivative public let groupCount: Int
   /// The axis where the features lie.
@@ -296,8 +296,8 @@ public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   /// - Precondition: The number of elements of the offset must be divisible by groups.
   /// - Precondition: The offset and the scale must have same shape.
   public init(
-    offset: Tensor<Scalar>,
-    scale: Tensor<Scalar>,
+    offset: Input,
+    scale: Input,
     groupCount: Int,
     axis: Int,
     epsilon: Scalar
@@ -351,7 +351,7 @@ public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   /// - Precondition: The axis cannot be batch axis.
   /// - Precondition: The numbers of features of the input and the offset must be same.
   @differentiable
-  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  public func forward(_ input: Input) -> Output {
     let positiveAxis = (input.rank + axis) % input.rank
     precondition(positiveAxis != 0, "The axis cannot be batch axis.")
     precondition(
@@ -396,13 +396,13 @@ public struct InstanceNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   var delegate: GroupNorm<Scalar>
 
   /// The offset value, also known as beta.
-  public var offset: Tensor<Scalar> {
+  public var offset: Input {
     _read { yield delegate.offset }
     _modify { yield &delegate.offset }
   }
 
   /// The scale value, also known as gamma.
-  public var scale: Tensor<Scalar> {
+  public var scale: Input {
     _read { yield delegate.scale }
     _modify { yield &delegate.scale }
   }
@@ -422,8 +422,8 @@ public struct InstanceNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   /// - Precondition: The offset must have rank 1.
   /// - Precondition: The offset and the scale must have same shape.
   public init(
-    offset: Tensor<Scalar>,
-    scale: Tensor<Scalar>,
+    offset: Input,
+    scale: Input,
     axis: Int,
     epsilon: Scalar
   ) {
@@ -460,7 +460,7 @@ public struct InstanceNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  public func forward(_ input: Input) -> Output {
     delegate(input)
   }
 }

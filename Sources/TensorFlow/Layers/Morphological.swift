@@ -21,7 +21,7 @@ public struct `Dilation2D`<Scalar: TensorFlowFloatingPoint>: Layer {
   public typealias Output = Tensor<Scalar>
 
   /// The 4-D dilation filter.
-  public var filter: Tensor<Scalar>
+  public var filter: Input
   /// The strides of the sliding window for spatial dimensions.
   @noDerivative public let strides: (Int, Int)
   /// The padding algorithm for dilation.
@@ -41,7 +41,7 @@ public struct `Dilation2D`<Scalar: TensorFlowFloatingPoint>: Layer {
   ///     (dilation height, dilation width).
   ///   - padding: The padding algorithm for dilation.
   public init(
-    filter: Tensor<Scalar>,
+    filter: Input,
     strides: (Int, Int) = (1, 1),
     rates: (Int, Int) = (1, 1),
     padding: Padding = .valid
@@ -73,7 +73,7 @@ public struct `Dilation2D`<Scalar: TensorFlowFloatingPoint>: Layer {
   ///
   /// - Note: Padding size equals zero when using `.valid`.
   @differentiable
-  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  public func forward(_ input: Input) -> Output {
     let dilated = dilation2D(
       input,
       filter: filter,
@@ -94,7 +94,7 @@ public struct `Erosion2D`<Scalar: TensorFlowFloatingPoint>: Layer {
   public typealias Output = Tensor<Scalar>
 
   /// The 4-D dilation filter.
-  public var filter: Tensor<Scalar>
+  public var filter: Input
   /// The strides of the sliding window for spatial dimensions.
   @noDerivative public let strides: (Int, Int)
   /// The padding algorithm for dilation.
@@ -114,7 +114,7 @@ public struct `Erosion2D`<Scalar: TensorFlowFloatingPoint>: Layer {
   ///     (dilation height, dilation width).
   ///   - padding: The padding algorithm for dilation.
   public init(
-    filter: Tensor<Scalar>,
+    filter: Input,
     strides: (Int, Int) = (1, 1),
     rates: (Int, Int) = (1, 1),
     padding: Padding = .valid
@@ -146,7 +146,7 @@ public struct `Erosion2D`<Scalar: TensorFlowFloatingPoint>: Layer {
   ///
   /// - Note: Padding size equals zero when using `.valid`.
   @differentiable
-  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  public func forward(_ input: Input) -> Output {
     let eroded = erosion2D(
       input,
       filter: filter,

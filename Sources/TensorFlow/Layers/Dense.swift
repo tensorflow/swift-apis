@@ -29,9 +29,9 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
   public typealias Input = Tensor<Scalar>
   public typealias Output = Tensor<Scalar>
   /// The weight matrix.
-  public var weight: Tensor<Scalar>
+  public var weight: Input
   /// The bias vector.
-  public var bias: Tensor<Scalar>
+  public var bias: Input
   /// The element-wise activation function.
   @noDerivative public let activation: Activation
   /// Indicates whether this is a batched dense layer.
@@ -40,7 +40,7 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
   @noDerivative private let useBias: Bool
 
   /// The element-wise activation function type.
-  public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
+  public typealias Activation = @differentiable (Input) -> Output
 
   /// Creates an instance from the given weight, optional bias, and activation function.
   ///
@@ -49,8 +49,8 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
   ///   TF-499.
   @differentiable(wrt: weight)
   public init(
-    weight: Tensor<Scalar>,
-    bias: Tensor<Scalar>? = nil,
+    weight: Input,
+    bias: Input? = nil,
     activation: @escaping Activation
   ) {
     precondition(weight.rank <= 3, "The rank of the 'weight' tensor must be less than 4.")
@@ -67,10 +67,10 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
   @derivative(of: init, wrt: weight)
   @usableFromInline
   static func vjpInit(
-    weight: Tensor<Scalar>,
-    bias: Tensor<Scalar>? = nil,
+    weight: Input,
+    bias: Input? = nil,
     activation: @escaping Activation
-  ) -> (value: Self, pullback: (TangentVector) -> Tensor<Scalar>) {
+  ) -> (value: Self, pullback: (TangentVector) -> Output) {
     let value = Dense(weight: weight, bias: bias, activation: activation)
     return (value, { v in v.weight })
   }
@@ -80,7 +80,7 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  public func forward(_ input: Input) -> Output {
     if batched {
       let hidden = matmul(input.expandingShape(at: 1), weight).squeezingShape(at: 1)
       return activation(useBias ? hidden + bias : hidden)

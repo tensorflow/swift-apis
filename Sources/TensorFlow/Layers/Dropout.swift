@@ -57,7 +57,7 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  public func forward(_ input: Input) -> Output {
     switch Context.local.learningPhase {
     case .training:
       return input.droppingOut(probability: probability)
@@ -75,22 +75,22 @@ public struct GaussianNoise<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer
   public typealias Output = Tensor<Scalar>
   public typealias TangentVector = EmptyTangentVector
 
-  @noDerivative public let standardDeviation: Tensor<Scalar>
+  @noDerivative public let standardDeviation: Input
 
   /// Creates a Gaussian noise layer
   ///
   /// - Parameter standardDeviation: Standard deviation of the Guassian distribution
   public init(standardDeviation: Scalar) {
-    self.standardDeviation = Tensor<Scalar>(standardDeviation)
+    self.standardDeviation = Input(standardDeviation)
   }
 
   /// Returns a tensor obtained by adding noise to `input`
   @differentiable
-  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  public func forward(_ input: Input) -> Output {
     switch Context.local.learningPhase {
     case .training:
-      let noise = Tensor<Scalar>(
-        randomNormal: input.shape, mean: Tensor<Scalar>(0),
+      let noise = Input(
+        randomNormal: input.shape, mean: Input(0),
         standardDeviation: self.standardDeviation)
       return input + noise
     case .inference:
@@ -125,12 +125,12 @@ public struct GaussianDropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
 
   /// Applies multiplicative 1-centered Gaussian noise to the input during training only.
   @differentiable
-  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  public func forward(_ input: Input) -> Output {
     switch Context.local.learningPhase {
     case .training:
-      let noise = Tensor<Scalar>(
-        randomNormal: input.shape, mean: Tensor<Scalar>(1.0),
-        standardDeviation: Tensor<Scalar>(standardDeviation))
+      let noise = Input(
+        randomNormal: input.shape, mean: Input(1.0),
+        standardDeviation: Input(standardDeviation))
       return input * noise
     case .inference:
       return input
@@ -167,13 +167,13 @@ public struct AlphaDropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
 
   /// Adds noise to `input` during training, and is a no-op during inference.
   @differentiable
-  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  public func forward(_ input: Input) -> Output {
     switch Context.local.learningPhase {
     case .training:
       let alpha = 1.6732632423543772848170429916717
       let scale = 1.0507009873554804934193349852946
       let alpha_p = -alpha * scale
-      let uniform = Tensor<Scalar>(randomUniform: input.shape, on: input.device)
+      let uniform = Input(randomUniform: input.shape, on: input.device)
       let noise = uniform .>= Scalar(probability)
 
       // Get affine transformation params

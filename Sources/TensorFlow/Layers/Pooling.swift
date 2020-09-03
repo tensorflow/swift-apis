@@ -47,7 +47,7 @@ public struct MaxPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  public func forward(_ input: Input) -> Output {
     maxPool2D(
       input.expandingShape(at: 1),
       filterSize: (1, 1, poolSize, 1),
@@ -90,7 +90,7 @@ public struct MaxPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  public func forward(_ input: Input) -> Output {
     maxPool2D(input, filterSize: poolSize, strides: strides, padding: padding)
   }
 }
@@ -149,7 +149,7 @@ public struct MaxPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  public func forward(_ input: Input) -> Output {
     maxPool3D(input, filterSize: poolSize, strides: strides, padding: padding)
   }
 }
@@ -213,7 +213,7 @@ public struct AvgPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  public func forward(_ input: Input) -> Output {
     avgPool2D(
       input.expandingShape(at: 1),
       filterSize: (1, 1, poolSize, 1),
@@ -256,7 +256,7 @@ public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  public func forward(_ input: Input) -> Output {
     avgPool2D(input, filterSize: poolSize, strides: strides, padding: padding)
   }
 }
@@ -315,7 +315,7 @@ public struct AvgPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  public func forward(_ input: Input) -> Output {
     avgPool3D(input, filterSize: poolSize, strides: strides, padding: padding)
   }
 }
@@ -361,7 +361,7 @@ public struct GlobalAvgPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  public func forward(_ input: Input) -> Output {
     precondition(input.rank == 3, "The rank of the input must be 3.")
     return input.mean(squeezingAxes: 1)
   }
@@ -382,7 +382,7 @@ public struct GlobalAvgPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  public func forward(_ input: Input) -> Output {
     precondition(input.rank == 4, "The rank of the input must be 4.")
     return input.mean(squeezingAxes: [1, 2])
   }
@@ -403,7 +403,7 @@ public struct GlobalAvgPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  public func forward(_ input: Input) -> Output {
     precondition(input.rank == 5, "The rank of the input must be 5.")
     return input.mean(squeezingAxes: [1, 2, 3])
   }
@@ -427,7 +427,7 @@ public struct GlobalMaxPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
   ///     phase.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  public func forward(_ input: Input) -> Output {
     precondition(input.rank == 3, "The rank of the input must be 3.")
     return input.max(squeezingAxes: 1)
   }
@@ -448,7 +448,7 @@ public struct GlobalMaxPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  public func forward(_ input: Input) -> Output {
     precondition(input.rank == 4, "The rank of the input must be 4.")
     return input.max(squeezingAxes: [1, 2])
   }
@@ -469,7 +469,7 @@ public struct GlobalMaxPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  public func forward(_ input: Input) -> Output {
     precondition(input.rank == 5, "The rank of the input must be 5.")
     return input.max(squeezingAxes: [1, 2, 3])
   }
@@ -521,7 +521,7 @@ public struct FractionalMaxPool2D<Scalar: TensorFlowFloatingPoint>: Parameterles
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  public func forward(_ input: Input) -> Output {
     fractionalMaxPool2D(
       input,
       poolingRatio: poolingRatio,

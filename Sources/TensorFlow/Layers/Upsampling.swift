@@ -35,10 +35,10 @@ public struct UpSampling1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  public func forward(_ input: Input) -> Output {
     let shape = input.shape
     let (batchSize, timesteps, channels) = (shape[0], shape[1], shape[2])
-    let scaleOnes = Tensor<Scalar>(ones: [1, 1, size, 1], on: input.device)
+    let scaleOnes = Input(ones: [1, 1, size, 1], on: input.device)
     let upSampling = input.reshaped(to: [batchSize, timesteps, 1, channels]) * scaleOnes
     return upSampling.reshaped(to: [batchSize, timesteps * size, channels])
   }
@@ -65,11 +65,11 @@ public struct UpSampling2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  public func forward(_ input: Input) -> Output {
     let device = input.device
     let shape = input.shape
     let (batchSize, height, width, channels) = (shape[0], shape[1], shape[2], shape[3])
-    let scaleOnes = Tensor<Scalar>(ones: [1, 1, size, 1, size, 1], on: device)
+    let scaleOnes = Input(ones: [1, 1, size, 1, size, 1], on: device)
     let upSampling = input.reshaped(to: [batchSize, height, 1, width, 1, channels]) * scaleOnes
     return upSampling.reshaped(to: [batchSize, height * size, width * size, channels])
   }
@@ -96,20 +96,20 @@ public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
   /// https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/keras/backend.py
   @differentiable
   private func repeatingElements(
-    _ input: Tensor<Scalar>, alongAxis axis: Int, count: Int
-  ) -> Tensor<Scalar> {
+    _ input: Input, alongAxis axis: Int, count: Int
+  ) -> Output {
     let splits = _Raw.split(
       splitDim: Tensor<Int32>(Int32(axis), on: input.device),
       value: input,
       numSplit: Int64(input.shape[axis]))
     let repeated = splits.flatMap { x in Array(repeating: x, count: count) }
-    return Tensor<Scalar>(concatenating: repeated, alongAxis: axis)
+    return Output(concatenating: repeated, alongAxis: axis)
   }
 
   @derivative(of: repeatingElements)
   private func _vjpRepeatingElements(
-    _ input: Tensor<Scalar>, alongAxis axis: Int, count: Int
-  ) -> (value: Tensor<Scalar>, pullback: (Tensor<Scalar>) -> (TangentVector, Tensor<Scalar>)) {
+    _ input: Input, alongAxis axis: Int, count: Int
+  ) -> (value: Input, pullback: (Input) -> (TangentVector, Output)) {
     let value = repeatingElements(input, alongAxis: axis, count: count)
     return (
       value,
@@ -119,7 +119,7 @@ public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
           value: v,
           numSplit: Int64(input.shape[axis]))
         let summed = splits.map { x in x.sum(alongAxes: axis) }
-        let concatenated = Tensor<Scalar>(concatenating: summed, alongAxis: axis)
+        let concatenated = Output(concatenating: summed, alongAxis: axis)
         return (.zero, concatenated)
       }
     )
@@ -130,7 +130,7 @@ public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  public func forward(_ input: Input) -> Output {
     var result = repeatingElements(input, alongAxis: 1, count: size)
     result = repeatingElements(result, alongAxis: 2, count: size)
     result = repeatingElements(result, alongAxis: 3, count: size)
