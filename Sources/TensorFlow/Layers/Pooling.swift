@@ -170,7 +170,7 @@ extension MaxPool3D {
 }
 
 extension MaxPool3D {
-  /// Creates a max pooling layer with the specified pooling window size and stride. All pooling 
+  /// Creates a max pooling layer with the specified pooling window size and stride. All pooling
   /// sizes and strides are the same.
   public init(poolSize: Int, stride: Int, padding: Padding = .valid) {
     self.init(

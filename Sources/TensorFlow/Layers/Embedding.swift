@@ -25,8 +25,8 @@ public struct Embedding<Scalar: TensorFlowFloatingPoint>: Module {
   /// A learnable lookup table that maps vocabulary indices to their dense vector representations.
   public var embeddings: Output
 
-  /// Creates an `Embedding` layer with randomly initialized embeddings of shape 
-  /// `(vocabularySize, embeddingSize)` so that each vocabulary index is given a vector 
+  /// Creates an `Embedding` layer with randomly initialized embeddings of shape
+  /// `(vocabularySize, embeddingSize)` so that each vocabulary index is given a vector
   /// representation.
   ///
   /// - Parameters:
@@ -44,9 +44,9 @@ public struct Embedding<Scalar: TensorFlowFloatingPoint>: Module {
     self.init(embeddings: embeddingsInitializer([vocabularySize, embeddingSize]))
   }
 
-  /// Creates an `Embedding` layer from the provided embeddings. Useful for introducing 
+  /// Creates an `Embedding` layer from the provided embeddings. Useful for introducing
   /// pretrained embeddings into a model.
-  /// 
+  ///
   /// - Parameter embeddings: The pretrained embeddings table.
   public init(embeddings: Output) {
     self.embeddings = embeddings

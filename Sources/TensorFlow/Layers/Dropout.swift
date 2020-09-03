@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import _Differentiation
+
 #if os(Windows)
   import func MSVCRT.sqrt
 #endif
@@ -43,7 +44,7 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   /// Creates a dropout layer.
   ///
   /// - Parameter probability: The probability of a node dropping out.
-  /// - Precondition: probability must be a value between 0 and 1 (inclusive). 
+  /// - Precondition: probability must be a value between 0 and 1 (inclusive).
   public init(probability: Double) {
     precondition(
       0...1 ~= probability,
@@ -139,7 +140,7 @@ public struct GaussianDropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
 
 /// An Alpha dropout layer.
 ///
-/// Alpha Dropout is a `Dropout` that keeps mean and variance of inputs to their 
+/// Alpha Dropout is a `Dropout` that keeps mean and variance of inputs to their
 /// original values, in order to ensure the self-normalizing property even after this
 /// dropout. Alpha Dropout fits well to Scaled Exponential Linear Units by randomly
 /// setting activations to the negative saturation value.
@@ -156,7 +157,7 @@ public struct AlphaDropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
   /// Initializes an `AlphaDropout` layer with a configurable `probability`.
   ///
   /// - Parameter probability: The probability of a node dropping out.
-  /// - Precondition: probability must be a value between 0 and 1 (inclusive). 
+  /// - Precondition: probability must be a value between 0 and 1 (inclusive).
   public init(probability: Double) {
     precondition(
       0...1 ~= probability,
