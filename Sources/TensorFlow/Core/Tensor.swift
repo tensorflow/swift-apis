@@ -41,63 +41,6 @@ public struct Tensor<Scalar: TensorFlowScalar> {
   }
 }
 
-public protocol TensorProtocol {
-  associatedtype Scalar: TensorFlowScalar
-  init(repeating repeatedValue: Scalar, shape: TensorShape, on device: Device)
-  var annotations: String { get }
-  var shape: TensorShape { get }
-  var summary: String { get }
-}
-
-public protocol DifferentiableTensorProtocol:
-  TensorProtocol & Differentiable & EuclideanDifferentiable
-where Scalar: TensorFlowFloatingPoint {
-  @differentiable(wrt: self)
-  func annotate(_ annotation: String) -> Self
-}
-
-extension Tensor: TensorProtocol {
-  public var annotations: String {
-    #if USING_X10_BACKEND
-      switch handle.backend {
-      case .XLA:
-        return XLATensor.annotations(xlaTensor)
-      case .TF_EAGER:
-        return Device.defaultTFEager.annotationsAvailable
-      }
-    #else
-      return "Annotations not available in TF_EAGER."
-    #endif
-  }
-
-  public var summary: String { annotations }
-}
-
-extension Tensor: DifferentiableTensorProtocol
-where Scalar: TensorFlowFloatingPoint {
-  @differentiable(wrt: self)
-  public func annotate(_ annotation: String) -> Tensor<Scalar> {
-    #if USING_X10_BACKEND
-      switch handle.backend {
-      case .XLA:
-        return Tensor<Scalar>(_xla: XLATensor.annotate(xlaTensor, annotation))
-      case .TF_EAGER:
-        return self
-      }
-    #else
-      return self
-    #endif
-  }
-
-  @derivative(of: annotate)
-  @usableFromInline
-  func vjpAnnotate(_ annotation: String) -> (
-    value: Tensor<Scalar>, pullback: (Tensor<Scalar>) -> Tensor<Scalar>
-  ) {
-    (annotate(annotation), { $0 })
-  }
-}
-
 extension Tensor: AnyTensor {
   public var _rawTensorHandle: CTensorHandle { return handle._cTensorHandle }
   public var _tensorFlowDataType: TensorDataType { return Scalar.tensorFlowDataType }
@@ -831,3 +774,73 @@ extension Tensor: Differentiable & EuclideanDifferentiable where Scalar: TensorF
     }
   }
 #endif
+
+//===------------------------------------------------------------------------------------------===//
+// Annotations
+//===------------------------------------------------------------------------------------------===//
+
+public protocol TensorProtocol {
+  associatedtype Scalar: TensorFlowScalar
+  init(repeating repeatedValue: Scalar, shape: TensorShape, on device: Device)
+  var annotations: String { get }
+  var shape: TensorShape { get }
+  var summary: String { get }
+}
+
+public protocol DifferentiableTensorProtocol:
+  TensorProtocol & Differentiable & EuclideanDifferentiable
+where Scalar: TensorFlowFloatingPoint {
+  @differentiable(wrt: self)
+  func annotate(_ annotation: String) -> Self
+}
+
+extension Tensor: TensorProtocol {
+  /// The annotations describing this tensor.
+  public var annotations: String {
+    #if USING_X10_BACKEND
+      switch handle.backend {
+      case .XLA:
+        return XLATensor.annotations(xlaTensor)
+      case .TF_EAGER:
+        return Device.defaultTFEager.annotationsAvailable
+      }
+    #else
+      return "Annotations not available in TF_EAGER."
+    #endif
+  }
+
+  /// An alias for annotations.
+  public var summary: String { annotations }
+}
+
+extension Tensor: DifferentiableTensorProtocol
+where Scalar: TensorFlowFloatingPoint {
+  /// Adds an annotation.
+  ///
+  /// Note: Only X10 is supported. For other backends, umodified `self` is
+  /// returned.
+  ///
+  /// - Parameter annotation: The annotation to be added.
+  /// - Returns: The annotated tensor.
+  @differentiable(wrt: self)
+  public func annotate(_ annotation: String) -> Tensor<Scalar> {
+    #if USING_X10_BACKEND
+      switch handle.backend {
+      case .XLA:
+        return Tensor<Scalar>(_xla: XLATensor.annotate(xlaTensor, annotation))
+      case .TF_EAGER:
+        return self
+      }
+    #else
+      return self
+    #endif
+  }
+
+  @derivative(of: annotate)
+  @usableFromInline
+  func vjpAnnotate(_ annotation: String) -> (
+    value: Tensor<Scalar>, pullback: (Tensor<Scalar>) -> Tensor<Scalar>
+  ) {
+    (annotate(annotation), { $0 })
+  }
+}

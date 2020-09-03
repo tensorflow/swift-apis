@@ -20,7 +20,9 @@ import _Differentiation
 /// tensor of outputs.
 @frozen
 public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
+  /// The input type of the layer.
   public typealias Input = Tensor<Scalar>
+  /// The output type of the layer.
   public typealias Output = Tensor<Scalar>
 
   /// The 3-D convolution filter.
@@ -136,7 +138,9 @@ extension Conv1D where Scalar.RawSignificand: FixedWidthInteger {
 /// tensor of outputs.
 @frozen
 public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
+  /// The input type of the layer.
   public typealias Input = Tensor<Scalar>
+  /// The output type of the layer.
   public typealias Output = Tensor<Scalar>
 
   /// The 4-D convolution filter.
@@ -263,7 +267,9 @@ extension Conv2D {
 /// tensor of outputs.
 @frozen
 public struct Conv3D<Scalar: TensorFlowFloatingPoint>: Layer {
+  /// The input type of the layer.
   public typealias Input = Tensor<Scalar>
+  /// The output type of the layer.
   public typealias Output = Tensor<Scalar>
 
   /// The 5-D convolution filter.
@@ -398,7 +404,9 @@ extension Conv3D {
 /// to produce a tensor of outputs.
 @frozen
 public struct TransposedConv1D<Scalar: TensorFlowFloatingPoint>: Layer {
+  /// The input type of the layer.
   public typealias Input = Tensor<Scalar>
+  /// The output type of the layer.
   public typealias Output = Tensor<Scalar>
 
   /// The 1-D convolution kernel.
@@ -502,7 +510,9 @@ extension TransposedConv1D {
 /// to produce a tensor of outputs.
 @frozen
 public struct TransposedConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
+  /// The input type of the layer.
   public typealias Input = Tensor<Scalar>
+  /// The output type of the layer.
   public typealias Output = Tensor<Scalar>
 
   /// The 4-D convolution kernel.
@@ -609,7 +619,9 @@ extension TransposedConv2D {
 /// to produce a tensor of outputs.
 @frozen
 public struct TransposedConv3D<Scalar: TensorFlowFloatingPoint>: Layer {
+  /// The input type of the layer.
   public typealias Input = Tensor<Scalar>
+  /// The output type of the layer.
   public typealias Output = Tensor<Scalar>
 
   /// The 5-D convolution kernel.
@@ -716,7 +728,9 @@ extension TransposedConv3D {
 /// tensor of outputs.
 @frozen
 public struct DepthwiseConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
+  /// The input type of the layer.
   public typealias Input = Tensor<Scalar>
+  /// The output type of the layer.
   public typealias Output = Tensor<Scalar>
 
   /// The 4-D convolution kernel.
@@ -811,7 +825,9 @@ extension DepthwiseConv2D {
 
 /// A layer for adding zero-padding in the temporal dimension.
 public struct ZeroPadding1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  /// The input type of the layer.
   public typealias Input = Tensor<Scalar>
+  /// The output type of the layer.
   public typealias Output = Tensor<Scalar>
   public typealias TangentVector = EmptyTangentVector
 
@@ -846,7 +862,9 @@ public struct ZeroPadding1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer
 
 /// A layer for adding zero-padding in the spatial dimensions.
 public struct ZeroPadding2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  /// The input type of the layer.
   public typealias Input = Tensor<Scalar>
+  /// The output type of the layer.
   public typealias Output = Tensor<Scalar>
   public typealias TangentVector = EmptyTangentVector
 
@@ -882,7 +900,9 @@ public struct ZeroPadding2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer
 
 /// A layer for adding zero-padding in the spatial/spatio-temporal dimensions.
 public struct ZeroPadding3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  /// The input type of the layer.
   public typealias Input = Tensor<Scalar>
+  /// The output type of the layer.
   public typealias Output = Tensor<Scalar>
   public typealias TangentVector = EmptyTangentVector
 
@@ -922,7 +942,9 @@ public struct ZeroPadding3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer
 /// a pointwise convolution that mixes channels.
 @frozen
 public struct SeparableConv1D<Scalar: TensorFlowFloatingPoint>: Layer {
+  /// The input type of the layer.
   public typealias Input = Tensor<Scalar>
+  /// The output type of the layer.
   public typealias Output = Tensor<Scalar>
 
   /// The 3-D depthwise convolution kernel.
@@ -1038,7 +1060,9 @@ extension SeparableConv1D {
 /// a pointwise convolution that mixes channels.
 @frozen
 public struct SeparableConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
+  /// The input type of the layer.
   public typealias Input = Tensor<Scalar>
+  /// The output type of the layer.
   public typealias Output = Tensor<Scalar>
 
   /// The 4-D depthwise convolution kernel.

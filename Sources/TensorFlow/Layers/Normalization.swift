@@ -46,7 +46,9 @@ private func normalize<Scalar: TensorFlowFloatingPoint>(
 /// Covariate Shift](https://arxiv.org/abs/1502.03167).
 @frozen
 public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
+  /// The input type of the layer.
   public typealias Input = Tensor<Scalar>
+  /// The output type of the layer.
   public typealias Output = Tensor<Scalar>
 
   /// The feature dimension.
@@ -194,7 +196,9 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
 /// Reference: [Layer Normalization](https://arxiv.org/abs/1607.06450).
 @frozen
 public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
+  /// The input type of the layer.
   public typealias Input = Tensor<Scalar>
+  /// The output type of the layer.
   public typealias Output = Tensor<Scalar>
 
   /// The offset value, also known as beta.
@@ -270,7 +274,9 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
 /// Reference: [Group Normalization](https://arxiv.org/abs/1803.08494).
 @frozen
 public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
+  /// The input type of the layer.
   public typealias Input = Tensor<Scalar>
+  /// The output type of the layer.
   public typealias Output = Tensor<Scalar>
 
   /// The offset value, also known as beta.
@@ -389,7 +395,9 @@ public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
 /// Reference: [Instance Normalization: The Missing Ingredient for Fast Stylization](https://arxiv.org/abs/1607.08022).
 @frozen
 public struct InstanceNorm<Scalar: TensorFlowFloatingPoint>: Layer {
+  /// The input type of the layer.
   public typealias Input = Tensor<Scalar>
+  /// The output type of the layer.
   public typealias Output = Tensor<Scalar>
 
   /// The general normalization layer of which `self` is a special case.

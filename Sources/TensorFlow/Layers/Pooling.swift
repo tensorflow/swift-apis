@@ -17,7 +17,9 @@ import _Differentiation
 /// A max pooling layer for temporal data.
 @frozen
 public struct MaxPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  /// The input type of the layer.
   public typealias Input = Tensor<Scalar>
+  /// The output type of the layer.
   public typealias Output = Tensor<Scalar>
   public typealias TangentVector = EmptyTangentVector
 
@@ -60,7 +62,9 @@ public struct MaxPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
 /// A max pooling layer for spatial data.
 @frozen
 public struct MaxPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  /// The input type of the layer.
   public typealias Input = Tensor<Scalar>
+  /// The output type of the layer.
   public typealias Output = Tensor<Scalar>
   public typealias TangentVector = EmptyTangentVector
 
@@ -113,7 +117,9 @@ extension MaxPool2D {
 /// A max pooling layer for spatial or spatio-temporal data.
 @frozen
 public struct MaxPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  /// The input type of the layer.
   public typealias Input = Tensor<Scalar>
+  /// The output type of the layer.
   public typealias Output = Tensor<Scalar>
   public typealias TangentVector = EmptyTangentVector
 
@@ -183,7 +189,9 @@ extension MaxPool3D {
 /// An average pooling layer for temporal data.
 @frozen
 public struct AvgPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  /// The input type of the layer.
   public typealias Input = Tensor<Scalar>
+  /// The output type of the layer.
   public typealias Output = Tensor<Scalar>
   public typealias TangentVector = EmptyTangentVector
 
@@ -226,7 +234,9 @@ public struct AvgPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
 /// An average pooling layer for spatial data.
 @frozen
 public struct AvgPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  /// The input type of the layer.
   public typealias Input = Tensor<Scalar>
+  /// The output type of the layer.
   public typealias Output = Tensor<Scalar>
   public typealias TangentVector = EmptyTangentVector
 
@@ -279,7 +289,9 @@ extension AvgPool2D {
 /// An average pooling layer for spatial or spatio-temporal data.
 @frozen
 public struct AvgPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  /// The input type of the layer.
   public typealias Input = Tensor<Scalar>
+  /// The output type of the layer.
   public typealias Output = Tensor<Scalar>
   public typealias TangentVector = EmptyTangentVector
 
@@ -349,7 +361,9 @@ extension AvgPool3D {
 /// A global average pooling layer for temporal data.
 @frozen
 public struct GlobalAvgPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  /// The input type of the layer.
   public typealias Input = Tensor<Scalar>
+  /// The output type of the layer.
   public typealias Output = Tensor<Scalar>
   public typealias TangentVector = EmptyTangentVector
 
@@ -370,7 +384,9 @@ public struct GlobalAvgPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
 /// A global average pooling layer for spatial data.
 @frozen
 public struct GlobalAvgPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  /// The input type of the layer.
   public typealias Input = Tensor<Scalar>
+  /// The output type of the layer.
   public typealias Output = Tensor<Scalar>
   public typealias TangentVector = EmptyTangentVector
 
@@ -391,7 +407,9 @@ public struct GlobalAvgPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
 /// A global average pooling layer for spatial and spatio-temporal data.
 @frozen
 public struct GlobalAvgPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  /// The input type of the layer.
   public typealias Input = Tensor<Scalar>
+  /// The output type of the layer.
   public typealias Output = Tensor<Scalar>
   public typealias TangentVector = EmptyTangentVector
 
@@ -412,7 +430,9 @@ public struct GlobalAvgPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
 /// A global max pooling layer for temporal data.
 @frozen
 public struct GlobalMaxPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  /// The input type of the layer.
   public typealias Input = Tensor<Scalar>
+  /// The output type of the layer.
   public typealias Output = Tensor<Scalar>
   public typealias TangentVector = EmptyTangentVector
 
@@ -436,7 +456,9 @@ public struct GlobalMaxPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
 /// A global max pooling layer for spatial data.
 @frozen
 public struct GlobalMaxPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  /// The input type of the layer.
   public typealias Input = Tensor<Scalar>
+  /// The output type of the layer.
   public typealias Output = Tensor<Scalar>
   public typealias TangentVector = EmptyTangentVector
 
@@ -457,7 +479,9 @@ public struct GlobalMaxPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
 /// A global max pooling layer for spatial and spatio-temporal data.
 @frozen
 public struct GlobalMaxPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  /// The input type of the layer.
   public typealias Input = Tensor<Scalar>
+  /// The output type of the layer.
   public typealias Output = Tensor<Scalar>
   public typealias TangentVector = EmptyTangentVector
 
@@ -479,7 +503,9 @@ public struct GlobalMaxPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
 /// Note: `FractionalMaxPool` does not have an XLA implementation, and thus may have performance implications.
 @frozen
 public struct FractionalMaxPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  /// The input type of the layer.
   public typealias Input = Tensor<Scalar>
+  /// The output type of the layer.
   public typealias Output = Tensor<Scalar>
   public typealias TangentVector = EmptyTangentVector
 

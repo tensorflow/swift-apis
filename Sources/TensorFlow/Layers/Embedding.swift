@@ -19,7 +19,9 @@ import _Differentiation
 /// `Embedding` is effectively a lookup table that maps indices from a fixed vocabulary to fixed-size
 /// (dense) vector representations, e.g. `[[0], [3]] -> [[0.25, 0.1], [0.6, -0.2]]`.
 public struct Embedding<Scalar: TensorFlowFloatingPoint>: Module {
+  /// The input type of the layer.
   public typealias Input = Tensor<Int32>
+  /// The output type of the layer.
   public typealias Output = Tensor<Scalar>
 
   /// A learnable lookup table that maps vocabulary indices to their dense vector representations.

@@ -26,7 +26,9 @@ import _Differentiation
 /// weight and bias for each element in input batch.
 @frozen
 public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
+  /// The input type of the layer.
   public typealias Input = Tensor<Scalar>
+  /// The output type of the layer.
   public typealias Output = Tensor<Scalar>
   /// The weight matrix.
   public var weight: Input

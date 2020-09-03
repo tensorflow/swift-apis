@@ -19,7 +19,9 @@ import _Differentiation
 /// A flatten layer flattens the input when applied without affecting the batch size.
 @frozen
 public struct Flatten<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  /// The input type of the layer.
   public typealias Input = Tensor<Scalar>
+  /// The output type of the layer.
   public typealias Output = Tensor<Scalar>
   public typealias TangentVector = EmptyTangentVector
 
@@ -41,7 +43,9 @@ public struct Flatten<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
 /// A reshape layer.
 @frozen
 public struct Reshape<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+  /// The input type of the layer.
   public typealias Input = Tensor<Scalar>
+  /// The output type of the layer.
   public typealias Output = Tensor<Scalar>
   public typealias TangentVector = EmptyTangentVector
 
