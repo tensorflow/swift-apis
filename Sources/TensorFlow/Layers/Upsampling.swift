@@ -97,7 +97,7 @@ public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
       value: input,
       numSplit: Int64(input.shape[axis]))
     let repeated = splits.flatMap { x in Array(repeating: x, count: count) }
-    return Output(concatenating: repeated, alongAxis: axis)
+    return Tensor<Scalar>(concatenating: repeated, alongAxis: axis)
   }
 
   @derivative(of: repeatingElements)
@@ -113,7 +113,7 @@ public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
           value: v,
           numSplit: Int64(input.shape[axis]))
         let summed = splits.map { x in x.sum(alongAxes: axis) }
-        let concatenated = Output(concatenating: summed, alongAxis: axis)
+        let concatenated = Tensor<ScalarTensor<Scalar>concatenating: summed, alongAxis: axis)
         return (.zero, concatenated)
       }
     )

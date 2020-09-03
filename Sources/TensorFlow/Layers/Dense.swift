@@ -68,7 +68,7 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
     weight: Tensor<Scalar>,
     bias: Tensor<Scalar>? = nil,
     activation: @escaping Activation
-  ) -> (value: Self, pullback: (TangentVector) -> Output) {
+  ) -> (value: Self, pullback: (TangentVector) -> Tensor<Scalar>) {
     let value = Dense(weight: weight, bias: bias, activation: activation)
     return (value, { v in v.weight })
   }
