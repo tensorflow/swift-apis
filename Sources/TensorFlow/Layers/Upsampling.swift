@@ -38,7 +38,7 @@ public struct UpSampling1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
   public func forward(_ input: Input) -> Output {
     let shape = input.shape
     let (batchSize, timesteps, channels) = (shape[0], shape[1], shape[2])
-    let scaleOnes = Input(ones: [1, 1, size, 1], on: input.device)
+    let scaleOnes = Tensor<Scalar>(ones: [1, 1, size, 1], on: input.device)
     let upSampling = input.reshaped(to: [batchSize, timesteps, 1, channels]) * scaleOnes
     return upSampling.reshaped(to: [batchSize, timesteps * size, channels])
   }
@@ -69,7 +69,7 @@ public struct UpSampling2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
     let device = input.device
     let shape = input.shape
     let (batchSize, height, width, channels) = (shape[0], shape[1], shape[2], shape[3])
-    let scaleOnes = Input(ones: [1, 1, size, 1, size, 1], on: device)
+    let scaleOnes = Tensor<Scalar>(ones: [1, 1, size, 1, size, 1], on: device)
     let upSampling = input.reshaped(to: [batchSize, height, 1, width, 1, channels]) * scaleOnes
     return upSampling.reshaped(to: [batchSize, height * size, width * size, channels])
   }
@@ -96,8 +96,8 @@ public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
   /// https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/keras/backend.py
   @differentiable
   private func repeatingElements(
-    _ input: Input, alongAxis axis: Int, count: Int
-  ) -> Output {
+    _ input: Tensor<Scalar>, alongAxis axis: Int, count: Int
+  ) -> Tensor<Scalar> {
     let splits = _Raw.split(
       splitDim: Tensor<Int32>(Int32(axis), on: input.device),
       value: input,
@@ -108,8 +108,8 @@ public struct UpSampling3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
 
   @derivative(of: repeatingElements)
   private func _vjpRepeatingElements(
-    _ input: Input, alongAxis axis: Int, count: Int
-  ) -> (value: Input, pullback: (Input) -> (TangentVector, Output)) {
+    _ input: Tensor<Scalar>, alongAxis axis: Int, count: Int
+  ) -> (value: Tensor<Scalar>, pullback: (Tensor<Scalar>) -> (TangentVector, Tensor<Scalar>)) {
     let value = repeatingElements(input, alongAxis: axis, count: count)
     return (
       value,

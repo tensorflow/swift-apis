@@ -23,7 +23,7 @@ public struct `Dilation2D`<Scalar: TensorFlowFloatingPoint>: Layer {
   public typealias Output = Tensor<Scalar>
 
   /// The 4-D dilation filter.
-  public var filter: Input
+  public var filter: Tensor<Scalar>
   /// The strides of the sliding window for spatial dimensions.
   @noDerivative public let strides: (Int, Int)
   /// The padding algorithm for dilation.
@@ -43,7 +43,7 @@ public struct `Dilation2D`<Scalar: TensorFlowFloatingPoint>: Layer {
   ///     (dilation height, dilation width).
   ///   - padding: The padding algorithm for dilation.
   public init(
-    filter: Input,
+    filter: Tensor<Scalar>,
     strides: (Int, Int) = (1, 1),
     rates: (Int, Int) = (1, 1),
     padding: Padding = .valid
@@ -98,7 +98,7 @@ public struct `Erosion2D`<Scalar: TensorFlowFloatingPoint>: Layer {
   public typealias Output = Tensor<Scalar>
 
   /// The 4-D dilation filter.
-  public var filter: Input
+  public var filter: Tensor<Scalar>
   /// The strides of the sliding window for spatial dimensions.
   @noDerivative public let strides: (Int, Int)
   /// The padding algorithm for dilation.
@@ -118,7 +118,7 @@ public struct `Erosion2D`<Scalar: TensorFlowFloatingPoint>: Layer {
   ///     (dilation height, dilation width).
   ///   - padding: The padding algorithm for dilation.
   public init(
-    filter: Input,
+    filter: Tensor<Scalar>,
     strides: (Int, Int) = (1, 1),
     rates: (Int, Int) = (1, 1),
     padding: Padding = .valid

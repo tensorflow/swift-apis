@@ -31,9 +31,9 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
   /// The output type of the layer.
   public typealias Output = Tensor<Scalar>
   /// The weight matrix.
-  public var weight: Input
+  public var weight: Tensor<Scalar>
   /// The bias vector.
-  public var bias: Input
+  public var bias: Tensor<Scalar>
   /// The element-wise activation function.
   @noDerivative public let activation: Activation
   /// Indicates whether this is a batched dense layer.
@@ -42,7 +42,7 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
   @noDerivative private let useBias: Bool
 
   /// The element-wise activation function type.
-  public typealias Activation = @differentiable (Input) -> Output
+  public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
 
   /// Creates an instance from the given weight, optional bias, and activation function.
   ///
@@ -51,8 +51,8 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
   ///   TF-499.
   @differentiable(wrt: weight)
   public init(
-    weight: Input,
-    bias: Input? = nil,
+    weight: Tensor<Scalar>,
+    bias: Tensor<Scalar>? = nil,
     activation: @escaping Activation
   ) {
     precondition(weight.rank <= 3, "The rank of the 'weight' tensor must be less than 4.")
@@ -69,8 +69,8 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
   @derivative(of: init, wrt: weight)
   @usableFromInline
   static func vjpInit(
-    weight: Input,
-    bias: Input? = nil,
+    weight: Tensor<Scalar>,
+    bias: Tensor<Scalar>? = nil,
     activation: @escaping Activation
   ) -> (value: Self, pullback: (TangentVector) -> Output) {
     let value = Dense(weight: weight, bias: bias, activation: activation)

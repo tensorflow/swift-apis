@@ -56,9 +56,9 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   /// The momentum for the running mean and running variance.
   @noDerivative public let momentum: Scalar
   /// The offset value, also known as beta.
-  public var offset: Input
+  public var offset: Tensor<Scalar>
   /// The scale value, also known as gamma.
-  public var scale: Input
+  public var scale: Tensor<Scalar>
   /// The variance epsilon value.
   @noDerivative public let epsilon: Scalar
   /// The running mean.
@@ -79,11 +79,11 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   public init(
     axis: Int,
     momentum: Scalar,
-    offset: Input,
-    scale: Input,
+    offset: Tensor<Scalar>,
+    scale: Tensor<Scalar>,
     epsilon: Scalar,
-    runningMean: Input,
-    runningVariance: Input
+    runningMean: Tensor<Scalar>,
+    runningVariance: Tensor<Scalar>
   ) {
     precondition(offset.rank == 1, "The offset must have rank 1.")
     precondition(scale.rank == 1, "The scale must have rank 1.")
@@ -126,8 +126,8 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   }
 
   private func doTraining(
-    _ input: Input, offset: Input, scale: Input, axis: Int
-  ) -> Output {
+    _ input: Tensor<Scalar>, offset: Tensor<Scalar>, scale: Tensor<Scalar>, axis: Int
+  ) -> Tensor<Scalar> {
     var normalizedAxes = Array(0..<input.rank)
     normalizedAxes.remove(at: axis)
     let moments = input.moments(alongAxes: normalizedAxes)
@@ -152,8 +152,8 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   }
 
   private func doInference(
-    _ input: Input, offset: Input, scale: Input
-  ) -> Output {
+    _ input: Tensor<Scalar>, offset: Tensor<Scalar>, scale: Tensor<Scalar>
+  ) -> Tensor<Scalar> {
     let isReducedPrecision = withoutDerivative(at: input) { $0.isReducedPrecision }
     let runningVarianceValue =
       isReducedPrecision ? runningVariance.value.toReducedPrecision : runningVariance.value
@@ -202,9 +202,9 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   public typealias Output = Tensor<Scalar>
 
   /// The offset value, also known as beta.
-  public var offset: Input
+  public var offset: Tensor<Scalar>
   /// The scale value, also known as gamma.
-  public var scale: Input
+  public var scale: Tensor<Scalar>
   /// The axis.
   @noDerivative public let axis: Int
   /// The variance epsilon value.
@@ -212,8 +212,8 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
 
   /// Creates a layer normalization layer.
   public init(
-    offset: Input,
-    scale: Input,
+    offset: Tensor<Scalar>,
+    scale: Tensor<Scalar>,
     axis: Int,
     epsilon: Scalar
   ) {
@@ -280,9 +280,9 @@ public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   public typealias Output = Tensor<Scalar>
 
   /// The offset value, also known as beta.
-  public var offset: Input
+  public var offset: Tensor<Scalar>
   /// The scale value, also known as gamma.
-  public var scale: Input
+  public var scale: Tensor<Scalar>
   /// The number of groups.
   @noDerivative public let groupCount: Int
   /// The axis where the features lie.
@@ -302,8 +302,8 @@ public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   /// - Precondition: The number of elements of the offset must be divisible by groups.
   /// - Precondition: The offset and the scale must have same shape.
   public init(
-    offset: Input,
-    scale: Input,
+    offset: Tensor<Scalar>,
+    scale: Tensor<Scalar>,
     groupCount: Int,
     axis: Int,
     epsilon: Scalar
@@ -404,13 +404,13 @@ public struct InstanceNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   var delegate: GroupNorm<Scalar>
 
   /// The offset value, also known as beta.
-  public var offset: Input {
+  public var offset: Tensor<Scalar> {
     _read { yield delegate.offset }
     _modify { yield &delegate.offset }
   }
 
   /// The scale value, also known as gamma.
-  public var scale: Input {
+  public var scale: Tensor<Scalar> {
     _read { yield delegate.scale }
     _modify { yield &delegate.scale }
   }
@@ -430,8 +430,8 @@ public struct InstanceNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   /// - Precondition: The offset must have rank 1.
   /// - Precondition: The offset and the scale must have same shape.
   public init(
-    offset: Input,
-    scale: Input,
+    offset: Tensor<Scalar>,
+    scale: Tensor<Scalar>,
     axis: Int,
     epsilon: Scalar
   ) {
