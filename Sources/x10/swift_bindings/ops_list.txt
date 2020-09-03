@@ -1,3 +1,13 @@
+- def: "cumprod(input: Tensor, dim: Int64, dtype: ScalarType?, exclusive: Bool, reverse: Bool) -> Tensor"
+  extras: ["canonicalize dim input"]
+  x10_enum: at::aten::cumprod
+  shape_fn: CumOpShapeFn
+  lower_fn: LowerCumProd
+- def: "cumsum(input: Tensor, dim: Int64, dtype: ScalarType?, exclusive: Bool, reverse: Bool) -> Tensor"
+  extras: ["canonicalize dim input"]
+  x10_enum: at::aten::cumsum
+  shape_fn: CumOpShapeFn
+  lower_fn: LowerCumSum
 - def: "log_softmax_backward(grad_output: Tensor, output: Tensor, dim: Int64) -> Tensor"
   extras: ["canonicalize dim grad_output"]
   x10_enum: at::aten::_log_softmax_backward_data
