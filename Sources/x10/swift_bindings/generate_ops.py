@@ -26,6 +26,7 @@ def node_type_define(op):
      if stype == "Tensor": return f"const Value& {name}"
      if stype == "Int64": return f"xla::int64 {name}"
      if stype == "Bool": return f"bool {name}"
+     if stype == "Float": return f"float {name}"
      if stype == "ScalarType?": return f"c10::optional<at::ScalarType> {name}"
      raise ValueError(f"Problem: no such type: {stype}")
    lower_arg_i = 0
@@ -50,17 +51,37 @@ def node_type_define(op):
      name, stype = arg
      if stype == "Int64": return f"  xla::int64 {name}_;\n"
      if stype == "Bool": return f"  bool {name}_;\n"
+     if stype == "Float": return "  float " + name + "_;\n"
      if stype == "ScalarType?": return f"  c10::optional<at::ScalarType> {name}_;\n"
      raise ValueError(f"Problem: no such type: {stype}")
    def format_attr_init(arg):
      return f",\n        {arg[0]}_({arg[0]})"
-   shape_fn = f"""{{}}\n#error no shape function for {op["op_node_name"]}\n"""
+   shape_fn = None # f"""{{}}\n#error no shape function for {op["op_node_name"]}\n"""
    def resolve_shape_fn(shape_fn):
      for arg in tensor_args:
        if arg[0] == shape_fn: return f"{arg[0]}.shape()"
      return f"""{shape_fn}({", ".join(arg[0] for arg in op["args"])})"""
-   if op["shape_fn"]:
+   def format_shape_lower_arg(arg):
+     name, stype = arg
+     if stype == "Tensor": return f"{name}_ir"
+     return name
+   param_convert_i = 0
+   def param_convert(arg):
+     nonlocal param_convert_i
+     i = param_convert_i
+     param_convert_i += 1
+     name, stype = arg
+     return f"       auto {name}_ir = xla::Parameter(&b, {i}, {name}.shape(), \"p{i}\");\n"
+     
+   if "shape_fn" in op:
      shape_fn = resolve_shape_fn(op["shape_fn"])
+   if shape_fn == None:
+     shape_fn = f"""[&]() {{
+       xla::XlaBuilder b("InferOutputShape");
+{"".join(param_convert(arg) for arg in tensor_args)}       xla::XlaOp result = {op["lower_fn"]}(
+         {", ".join(format_shape_lower_arg(arg) for arg in op["args"])});
+       return XlaHelpers::ShapeOfXlaOp(result);
+     }}"""
    num_outputs = 1
    return f"""
 class {op["op_node_name"]} : public Node {{
@@ -98,6 +119,7 @@ def c_function_define(op):
     name, stype = arg
     if stype == "Tensor": return "OpaqueXLATensor* " + name
     if stype == "Int64": return "int64_t " + name
+    if stype == "Float": return "float " + name
     if stype == "Bool": return f"bool {name}"
     if stype == "ScalarType?": return f"Optional_XLAScalarType {name}"
     raise ValueError("problem unknown type: " + stype)
@@ -115,10 +137,20 @@ def c_function_define(op):
     return ""
   args = op["args"]
   first_tensor = args[0][0]
-  return f"""
+  node_ctor = f"""swift_xla::ir::MakeNode<swift_xla::ir::ops::{op["op_node_name"]}>({", ".join(format_arg_ref(arg) for arg in op["args"])})"""
+  prelude = f"""
 OpaqueXLATensor* XLATensor_{op["c_name"]}({", ".join(format_arg_def(arg) for arg in op["args"])}) {{
-{"".join(unpack_arg(arg) for arg in op["args"])}  return new swift_xla::XLATensor({first_tensor}->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::{op["op_node_name"]}>({", ".join(format_arg_ref(arg) for arg in op["args"])})));
+{"".join(unpack_arg(arg) for arg in op["args"])}"""
+  if "result_dtype" in op:
+    return f"""{prelude}   return new swift_xla::XLATensor(swift_xla::XLATensor::Create(
+      {node_ctor},
+      {first_tensor}->GetDevice(),
+      at::ScalarType::{op["result_dtype"]}));
+}}
+"""
+  else:
+    return f"""{prelude}   return new swift_xla::XLATensor({first_tensor}->CreateFrom(
+      {node_ctor}));
 }}
 """
 
@@ -148,7 +180,10 @@ def canonicalize_op(op):
 
   op["args"] = args
   if "op_node_name" not in op: op["op_node_name"] = snake_to_camel(op["c_name"])
-  op["extras"] = [a.split() for a in op["extras"]]
+  if "extras" in op:
+    op["extras"] = [a.split() for a in op["extras"]]
+  else:
+    op["extras"] = []
   del op["def"]
 
 def main(argv):
@@ -156,6 +191,13 @@ def main(argv):
     raise app.UsageError("Too many command-line arguments.")
   op_list = yaml.full_load(open(FLAGS.def_file).read())
   for op in op_list: canonicalize_op(op)
+
+  name_order = [op["op_node_name"] for op in op_list]
+  name_order_sorted = name_order[:]
+  if name_order != name_order_sorted:
+    for i in range(len(name_order)):
+      print(f"{name_order[i]} -> {name_order_sorted[i]}")
+    raise ValueError("op list is not sorted")
 
   open(FLAGS.cc_output, "w+").write(HEADER + """
 namespace swift_xla {
