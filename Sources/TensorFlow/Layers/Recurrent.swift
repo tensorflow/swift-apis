@@ -214,7 +214,7 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell {
       Self(cell: lhs.cell.concatenated(with: rhs.cell), hidden: lhs.hidden.concatenated(with: rhs.hidden))
     }
 
-    /// Adds two cells and produces their sum.
+    /// Adds two values and produces their sum.
     @differentiable
     public static func sum(_ lhs: Self, _ rhs: Self) -> Self {
       Self(cell: lhs.cell + rhs.cell, hidden: lhs.hidden + rhs.hidden)
