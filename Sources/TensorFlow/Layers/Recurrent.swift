@@ -436,7 +436,7 @@ public struct RecurrentLayer<Cell: RecurrentLayerCell>: Layer {
 ///
 /// Used by `BidirectionalRecurrentLayer` as a generic requirement for merge functions.
 public protocol Mergeable: Differentiable, AdditiveArithmetic {
-  /// Adds two values and produces their concatenation.
+  /// Concatenates two values.
   @differentiable
   static func concatenate(_ lhs: Self, _ rhs: Self) -> Self
 
