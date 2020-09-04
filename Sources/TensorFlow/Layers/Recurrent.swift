@@ -462,7 +462,7 @@ extension Tensor: Mergeable where Scalar: TensorFlowFloatingPoint {
   }
 }
 
-/// Adds two values and produces their concatenation.
+/// Concatenates two values.
 @differentiable
 public func concatenate<T: Mergeable>(
   _ first: T,
