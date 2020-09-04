@@ -208,7 +208,7 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell {
       self.hidden = hidden
     }
 
-    /// Adds two values and produces their concatenation.
+    /// Concatenates two values.
     @differentiable
     public static func concatenate(_ lhs: Self, _ rhs: Self) -> Self {
       Self(cell: lhs.cell.concatenated(with: rhs.cell), hidden: lhs.hidden.concatenated(with: rhs.hidden))
