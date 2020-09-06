@@ -211,7 +211,7 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell {
     /// Concatenates two values.
     @differentiable
     public static func concatenate(_ lhs: Self, _ rhs: Self) -> Self {
-      Self(cell: lhs.cell.concatenated(with: rhs.cell), hidden: lhs.hidden.concatenated(with: rhs.hidden))
+      Self(cell: lhs.cell.concatenated(with: rhs.cell, alongAxis: -1), hidden: lhs.hidden.concatenated(with: rhs.hidden, alongAxis: -1))
     }
 
     /// Adds two values and produces their sum.
@@ -449,10 +449,10 @@ public protocol Mergeable: Differentiable, AdditiveArithmetic {
 }
 
 extension Tensor: Mergeable where Scalar: TensorFlowFloatingPoint {
-  /// Adds two values and produces their concatenation.
+  /// Concatenates two tensors along last axis.
   @differentiable
   public static func concatenate(_ lhs: Tensor, _ rhs: Tensor) -> Tensor {
-    lhs.concatenated(with: rhs, alongAxis: 1)
+    lhs.concatenated(with: rhs, alongAxis: -1)
   }
 
   /// Adds two values and produces their sum.
