@@ -10,7 +10,11 @@ cc_library(
 
 cc_library(
     name = "xla_tensor_wrapper",
-    srcs = ["xla_tensor_wrapper.cc"],
+    srcs = [
+        "xla_tensor_wrapper.cc",
+        "xla_tensor_ops_wrapper.cc",
+        "xla_tensor_ops_wrapper_generated.cc.inc",
+    ],
     hdrs = ["xla_tensor_wrapper.h"],
     deps = [
         ":device_wrapper",

@@ -75,12 +75,7 @@ bool Einsum::SupportsEquation(const std::string& equation, xla::int64 x_rank,
   if (!einsum_config_numeric_or_err.ok()) {
     return false;
   }
-  auto einsum_config_numeric = einsum_config_numeric_or_err.ConsumeValueOrDie();
-  auto validation_status = xla::ValidateEinsumNumericDimensions(
-      /*x_config=*/einsum_config_numeric[0],
-      /*y_config=*/einsum_config_numeric[1],
-      /*output_config=*/einsum_config_numeric[2]);
-  return validation_status.ok();
+  return true;
 }
 
 }  // namespace ops
