@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import _Differentiation
+
 #if os(Windows)
   import func MSVCRT.sqrt
 #endif
@@ -41,7 +42,7 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   /// Creates a dropout layer.
   ///
   /// - Parameter probability: The probability of a node dropping out.
-  /// - Precondition: probability must be a value between 0 and 1 (inclusive). 
+  /// - Precondition: probability must be a value between 0 and 1 (inclusive).
   public init(probability: Double) {
     precondition(
       0...1 ~= probability,
@@ -54,7 +55,7 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     switch Context.local.learningPhase {
     case .training:
       return input.droppingOut(probability: probability)
@@ -81,7 +82,7 @@ public struct GaussianNoise<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer
 
   /// Returns a tensor obtained by adding noise to `input`
   @differentiable
-  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     switch Context.local.learningPhase {
     case .training:
       let noise = Tensor<Scalar>(
@@ -118,7 +119,7 @@ public struct GaussianDropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
 
   /// Applies multiplicative 1-centered Gaussian noise to the input during training only.
   @differentiable
-  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     switch Context.local.learningPhase {
     case .training:
       let noise = Tensor<Scalar>(
@@ -133,7 +134,7 @@ public struct GaussianDropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
 
 /// An Alpha dropout layer.
 ///
-/// Alpha Dropout is a `Dropout` that keeps mean and variance of inputs to their 
+/// Alpha Dropout is a `Dropout` that keeps mean and variance of inputs to their
 /// original values, in order to ensure the self-normalizing property even after this
 /// dropout. Alpha Dropout fits well to Scaled Exponential Linear Units by randomly
 /// setting activations to the negative saturation value.
@@ -148,7 +149,7 @@ public struct AlphaDropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
   /// Initializes an `AlphaDropout` layer with a configurable `probability`.
   ///
   /// - Parameter probability: The probability of a node dropping out.
-  /// - Precondition: probability must be a value between 0 and 1 (inclusive). 
+  /// - Precondition: probability must be a value between 0 and 1 (inclusive).
   public init(probability: Double) {
     precondition(
       0...1 ~= probability,
@@ -158,7 +159,7 @@ public struct AlphaDropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
 
   /// Adds noise to `input` during training, and is a no-op during inference.
   @differentiable
-  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     switch Context.local.learningPhase {
     case .training:
       let alpha = 1.6732632423543772848170429916717

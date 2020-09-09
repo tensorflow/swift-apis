@@ -285,33 +285,9 @@ void destroyStridedSliceSpec(StridedSliceSpec* strided_slice_spec) {
 }
 
 // Ops.
-OpaqueXLATensor* XLATensor_abs(OpaqueXLATensor* a) {
-  return new XLATensor(XLATensor::abs(*a));
-}
-OpaqueXLATensor* XLATensor_acos(OpaqueXLATensor* a) {
-  return new XLATensor(XLATensor::acos(*a));
-}
-OpaqueXLATensor* XLATensor_acosh(OpaqueXLATensor* a) {
-  return new XLATensor(XLATensor::acosh(*a));
-}
-OpaqueXLATensor* XLATensor_add(OpaqueXLATensor* a, OpaqueXLATensor* b) {
-  return new XLATensor(XLATensor::add(*a, *b));
-}
-OpaqueXLATensor* XLATensor_all(OpaqueXLATensor* input, Int64ArrayRef dimensions,
-                               bool keep_reduced_dimensions) {
-  return new XLATensor(XLATensor::all(*input,
-                                      XlaHelpers::I64List(dimensions.slice()),
-                                      keep_reduced_dimensions));
-}
 OpaqueXLATensor* XLATensor_annotate(OpaqueXLATensor* a,
                                     const char* annotation) {
   return new XLATensor(XLATensor::annotate(*a, std::string(annotation)));
-}
-OpaqueXLATensor* XLATensor_any(OpaqueXLATensor* input, Int64ArrayRef dimensions,
-                               bool keep_reduced_dimensions) {
-  return new XLATensor(XLATensor::any(*input,
-                                      XlaHelpers::I64List(dimensions.slice()),
-                                      keep_reduced_dimensions));
 }
 OpaqueXLATensor* XLATensor_arange(XLAScalar start, XLAScalar end,
                                   XLAScalar step, const CDevice device,
@@ -320,32 +296,6 @@ OpaqueXLATensor* XLATensor_arange(XLAScalar start, XLAScalar end,
   XLATensor::arange_out(out, atScalar(start), atScalar(end), atScalar(step),
                         ToScalarType(type));
   return new XLATensor(out);
-}
-OpaqueXLATensor* XLATensor_argmax(OpaqueXLATensor* a, int64_t dim,
-                                  bool keepdim) {
-  XLATensor out = MakeEmpty(a->dtype(), a->GetDevice());
-  XLATensor indices = MakeEmpty(at::ScalarType::Long, a->GetDevice());
-  XLATensor::max_out(out, indices, *a, dim, keepdim);
-  return new XLATensor(indices);
-}
-OpaqueXLATensor* XLATensor_argmin(OpaqueXLATensor* a, int64_t dim,
-                                  bool keepdim) {
-  XLATensor out = MakeEmpty(a->dtype(), a->GetDevice());
-  XLATensor indices = MakeEmpty(at::ScalarType::Long, a->GetDevice());
-  XLATensor::min_out(out, indices, *a, dim, keepdim);
-  return new XLATensor(indices);
-}
-OpaqueXLATensor* XLATensor_asin(OpaqueXLATensor* a) {
-  return new XLATensor(XLATensor::asin(*a));
-}
-OpaqueXLATensor* XLATensor_asinh(OpaqueXLATensor* a) {
-  return new XLATensor(XLATensor::asinh(*a));
-}
-OpaqueXLATensor* XLATensor_atan(OpaqueXLATensor* a) {
-  return new XLATensor(XLATensor::atan(*a));
-}
-OpaqueXLATensor* XLATensor_atanh(OpaqueXLATensor* a) {
-  return new XLATensor(XLATensor::atanh(*a));
 }
 OpaqueXLATensor_pair XLATensor_broadcast_tensors(OpaqueXLATensor* a,
                                                  OpaqueXLATensor* b) {
@@ -357,24 +307,6 @@ OpaqueXLATensor_pair XLATensor_broadcast_tensors(OpaqueXLATensor* a,
 }
 OpaqueXLATensor* XLATensor_cat(OpaqueXLATensorArrayRef tensors, int64_t dim) {
   return new XLATensor(XLATensor::cat(tensors.array(), dim));
-}
-OpaqueXLATensor* XLATensor_ceil(OpaqueXLATensor* a) {
-  return new XLATensor(XLATensor::ceil(*a));
-}
-OpaqueXLATensor* XLATensor_clamp(OpaqueXLATensor* input, OpaqueXLATensor* min,
-                                 OpaqueXLATensor* max) {
-  return new XLATensor(XLATensor::clamp(*input, *min, *max));
-}
-OpaqueXLATensor* XLATensor_constant_pad_nd(OpaqueXLATensor* input,
-                                           Int64ArrayRef pad, XLAScalar value) {
-  return new XLATensor(
-      XLATensor::constant_pad_nd(*input, pad.slice(), atScalar(value)));
-}
-OpaqueXLATensor* XLATensor_cos(OpaqueXLATensor* a) {
-  return new XLATensor(XLATensor::cos(*a));
-}
-OpaqueXLATensor* XLATensor_cosh(OpaqueXLATensor* a) {
-  return new XLATensor(XLATensor::cosh(*a));
 }
 OpaqueXLATensorArrayRef XLATensor_cross_replica_sum(
     OpaqueXLATensorArrayRef inputs, double scale) {
@@ -389,9 +321,6 @@ OpaqueXLATensor* XLATensor_diagonal_value(OpaqueXLATensor* a, int64_t offset,
                                           int64_t dim1, int64_t dim2) {
   return new XLATensor(XLATensor::diagonal_value(*a, offset, dim1, dim2));
 }
-OpaqueXLATensor* XLATensor_div(OpaqueXLATensor* a, OpaqueXLATensor* b) {
-  return new XLATensor(XLATensor::div(*a, *b));
-}
 OpaqueXLATensor* XLATensor_dynamic_slice(
     OpaqueXLATensor* base,
     OpaqueXLATensorArrayRef start_indices, Int64ArrayRef slice_shapes) {
@@ -403,22 +332,6 @@ OpaqueXLATensor* XLATensor_dynamic_update_slice(
     OpaqueXLATensorArrayRef inputs) {
   return new XLATensor(
       XLATensor::dynamic_update_slice(*base, *update, inputs.array()));
-}
-OpaqueXLATensor* XLATensor_exp(OpaqueXLATensor* a) {
-  return new XLATensor(XLATensor::exp(*a));
-}
-OpaqueXLATensor* XLATensor_expand(OpaqueXLATensor* a, Int64ArrayRef dims) {
-  return new XLATensor(
-      XLATensor::expand(*a, XlaHelpers::I64List(dims.slice())));
-}
-OpaqueXLATensor* XLATensor_expm1(OpaqueXLATensor* a) {
-  return new XLATensor(XLATensor::expm1(*a));
-}
-OpaqueXLATensor* XLATensor_flip(OpaqueXLATensor* input, Int64ArrayRef dims) {
-  return new XLATensor(XLATensor::flip(*input, dims.slice()));
-}
-OpaqueXLATensor* XLATensor_floor(OpaqueXLATensor* a) {
-  return new XLATensor(XLATensor::floor(*a));
 }
 OpaqueXLATensor* XLATensor_full(Int64ArrayRef size, XLAScalar value,
                                 const CDevice device,
@@ -442,15 +355,6 @@ OpaqueString* XLATensor_ir_text(OpaqueXLATensor* a) {
       swift_xla::ir::DumpUtil::ToText({a->GetIrValue().node.get()});
   return new std::string(ir_dag_text);
 }
-OpaqueXLATensor* XLATensor_is_finite(OpaqueXLATensor* input) {
-  return new XLATensor(XLATensor::is_finite(*input));
-}
-OpaqueXLATensor* XLATensor_is_inf(OpaqueXLATensor* input) {
-  return new XLATensor(XLATensor::is_inf(*input));
-}
-OpaqueXLATensor* XLATensor_is_nan(OpaqueXLATensor* input) {
-  return new XLATensor(XLATensor::is_nan(*input));
-}
 OpaqueXLATensor* XLATensor_linspace(XLAScalar start, XLAScalar stop,
                                     int64_t num, const CDevice device,
                                     enum XLATensorScalarType type) {
@@ -459,12 +363,6 @@ OpaqueXLATensor* XLATensor_linspace(XLAScalar start, XLAScalar stop,
                           ToScalarType(type));
   return new XLATensor(out);
 }
-OpaqueXLATensor* XLATensor_log(OpaqueXLATensor* a) {
-  return new XLATensor(XLATensor::log(*a));
-}
-OpaqueXLATensor* XLATensor_log1p(OpaqueXLATensor* a) {
-  return new XLATensor(XLATensor::log1p(*a));
-}
 OpaqueXLATensor* XLATensor_log_softmax(OpaqueXLATensor* a, int64_t dim) {
   return new XLATensor(XLATensor::log_softmax(*a, dim, absl::nullopt));
 }
@@ -472,47 +370,6 @@ OpaqueXLATensor* XLATensor_logical_cast(OpaqueXLATensor* input,
                                         enum XLATensorScalarType dest_type) {
   return new XLATensor(
       XLATensor::logical_cast(*input, ToScalarType(dest_type)));
-}
-OpaqueXLATensor* XLATensor_logicalAnd(OpaqueXLATensor* a, OpaqueXLATensor* b) {
-  return new XLATensor(XLATensor::logicalAnd(*a, *b));
-}
-OpaqueXLATensor* XLATensor_logicalNot(OpaqueXLATensor* a) {
-  return new XLATensor(XLATensor::logicalNot(*a));
-}
-OpaqueXLATensor* XLATensor_logicalOr(OpaqueXLATensor* a, OpaqueXLATensor* b) {
-  return new XLATensor(XLATensor::logicalOr(*a, *b));
-}
-OpaqueXLATensor* XLATensor_matmul(OpaqueXLATensor* a, OpaqueXLATensor* b) {
-  return new XLATensor(XLATensor::matmul(*a, *b));
-}
-OpaqueXLATensor* XLATensor_max(OpaqueXLATensor* input, int64_t dim,
-                               bool keepdim) {
-  return new XLATensor(std::get<0>(XLATensor::max(*input, dim, keepdim)));
-}
-OpaqueXLATensor* XLATensor_maximum(OpaqueXLATensor* a, OpaqueXLATensor* b) {
-  return new XLATensor(XLATensor::max(*a, *b));
-}
-OpaqueXLATensor* XLATensor_mean(OpaqueXLATensor* a, Int64ArrayRef dims,
-                                bool keep_reduced_dimensions,
-                                Optional_XLAScalarType dtype) {
-  return new XLATensor(XLATensor::mean(*a, XlaHelpers::I64List(dims.slice()),
-                                       keep_reduced_dimensions, dtype.value()));
-}
-OpaqueXLATensor* XLATensor_min(OpaqueXLATensor* input, int64_t dim,
-                               bool keepdim) {
-  return new XLATensor(std::get<0>(XLATensor::min(*input, dim, keepdim)));
-}
-OpaqueXLATensor* XLATensor_minimum(OpaqueXLATensor* a, OpaqueXLATensor* b) {
-  return new XLATensor(XLATensor::min(*a, *b));
-}
-OpaqueXLATensor* XLATensor_mul(OpaqueXLATensor* a, OpaqueXLATensor* b) {
-  return new XLATensor(XLATensor::mul(*a, *b));
-}
-OpaqueXLATensor* XLATensor_mm(OpaqueXLATensor* a, OpaqueXLATensor* b) {
-  return new XLATensor(XLATensor::mm(*a, *b));
-}
-OpaqueXLATensor* XLATensor_neg(OpaqueXLATensor* a) {
-  return new XLATensor(XLATensor::neg(*a));
 }
 OpaqueXLATensor* XLATensor_nll_loss(OpaqueXLATensor* input,
                                     OpaqueXLATensor* target, int ignore_index) {
@@ -557,28 +414,9 @@ OpaqueXLATensor* XLATensor_resize_value(OpaqueXLATensor* a, Int64ArrayRef arr) {
 OpaqueXLATensor* XLATensor_round_to_even(OpaqueXLATensor* a) {
   return new XLATensor(XLATensor::round_to_even(*a));
 }
-OpaqueXLATensor* XLATensor_rsqrt(OpaqueXLATensor* a) {
-  return new XLATensor(XLATensor::rsqrt(*a));
-}
 OpaqueXLATensor* XLATensor_select(OpaqueXLATensor* a, int64_t dim,
                                   int64_t index) {
   return new XLATensor(XLATensor::select(*a, dim, index));
-}
-OpaqueXLATensor* XLATensor_sigmoid(OpaqueXLATensor* a) {
-  return new XLATensor(XLATensor::sigmoid(*a));
-}
-OpaqueXLATensor* XLATensor_sign(OpaqueXLATensor* a) {
-  return new XLATensor(XLATensor::sign(*a));
-}
-OpaqueXLATensor* XLATensor_sin(OpaqueXLATensor* a) {
-  return new XLATensor(XLATensor::sin(*a));
-}
-OpaqueXLATensor* XLATensor_sinh(OpaqueXLATensor* a) {
-  return new XLATensor(XLATensor::sinh(*a));
-}
-OpaqueXLATensor* XLATensor_slice(OpaqueXLATensor* a, int64_t dim, int64_t start,
-                                 int64_t end, int64_t step) {
-  return new XLATensor(XLATensor::slice(*a, dim, start, end, step));
 }
 OpaqueXLATensor* XLATensor_softmax(OpaqueXLATensor* a, int64_t dim) {
   return new XLATensor(XLATensor::softmax(*a, dim, absl::nullopt));
@@ -590,26 +428,8 @@ OpaqueXLATensorArrayRef XLATensor_split_with_sizes(OpaqueXLATensor* input,
       *input, XlaHelpers::I64List(split_size.slice()), dim);
   return ConvertTensorList(chunks);
 }
-OpaqueXLATensor* XLATensor_sqrt(OpaqueXLATensor* a) {
-  return new XLATensor(XLATensor::sqrt(*a));
-}
 OpaqueXLATensor* XLATensor_stack(OpaqueXLATensorArrayRef tensors, int64_t dim) {
   return new XLATensor(XLATensor::stack(tensors.array(), dim));
-}
-OpaqueXLATensor* XLATensor_sub(OpaqueXLATensor* a, OpaqueXLATensor* b) {
-  return new XLATensor(XLATensor::sub(*a, *b));
-}
-OpaqueXLATensor* XLATensor_sum(OpaqueXLATensor* a, Int64ArrayRef dims,
-                               bool keep_reduced_dimensions,
-                               Optional_XLAScalarType dtype) {
-  return new XLATensor(XLATensor::sum(*a, XlaHelpers::I64List(dims.slice()),
-                                      keep_reduced_dimensions, dtype.value()));
-}
-OpaqueXLATensor* XLATensor_tan(OpaqueXLATensor* a) {
-  return new XLATensor(XLATensor::tan(*a));
-}
-OpaqueXLATensor* XLATensor_tanh(OpaqueXLATensor* a) {
-  return new XLATensor(XLATensor::tanh(*a));
 }
 OpaqueXLATensor_pair XLATensor_topk(OpaqueXLATensor* a, int64_t k,
                                             int64_t dim, bool largest) {

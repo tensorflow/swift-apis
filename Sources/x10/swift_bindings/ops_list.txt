@@ -1,3 +1,89 @@
+- def: "abs(input: Tensor) -> Tensor"
+  x10_enum: at::aten::abs
+  shape_fn: input
+  lower_fn: BuildAbs
+
+- def: "acos(input: Tensor) -> Tensor"
+  x10_enum: at::aten::acos
+  shape_fn: input
+  lower_fn: xla::Acos
+
+- def: "acosh(input: Tensor) -> Tensor"
+  x10_enum: at::aten::acosh
+  shape_fn: input
+  lower_fn: xla::Acosh
+
+- def: "add(lhs: Tensor, rhs: Tensor) -> Tensor"
+  x10_enum: at::aten::add
+  lower_fn: LowerBinaryOp<xla::Add>
+
+- def: "all(input: Tensor, dims: [Int64], keep_reduced_dimensions: Bool) -> Tensor"
+  x10_enum: at::aten::all
+  extras: ["canonicalize dims input"]
+  lower_fn: BuildAll
+
+- def: "any(input: Tensor, dims: [Int64], keep_reduced_dimensions: Bool) -> Tensor"
+  x10_enum: at::aten::any
+  extras: ["canonicalize dims input"]
+  lower_fn: BuildAny
+
+- def: "argmax(input: Tensor, dim: Int64, keepdim: Bool) -> Tensor"
+  x10_enum: at::aten::argmax
+  extras: ["canonicalize dim input"]
+  lower_fn: BuildArgMax
+  result_dtype: Long
+
+- def: "argmin(input: Tensor, dim: Int64, keepdim: Bool) -> Tensor"
+  x10_enum: at::aten::argmin
+  extras: ["canonicalize dim input"]
+  lower_fn: BuildArgMin
+  result_dtype: Long
+
+- def: "asin(input: Tensor) -> Tensor"
+  x10_enum: at::aten::asin
+  shape_fn: input
+  lower_fn: xla::Asin
+
+- def: "asinh(input: Tensor) -> Tensor"
+  x10_enum: at::aten::asinh
+  shape_fn: input
+  lower_fn: xla::Asinh
+
+- def: "atan(input: Tensor) -> Tensor"
+  x10_enum: at::aten::atan
+  shape_fn: input
+  lower_fn: xla::Atan
+
+- def: "atanh(input: Tensor) -> Tensor"
+  x10_enum: at::aten::atanh
+  shape_fn: input
+  lower_fn: xla::Atanh
+
+- def: "ceil(input: Tensor) -> Tensor"
+  x10_enum: at::aten::ceil
+  shape_fn: input
+  lower_fn: xla::Ceil
+
+- def: "clamp(input: Tensor, min: Tensor, max: Tensor) -> Tensor"
+  x10_enum: at::aten::clamp
+  shape_fn: input
+  lower_fn: LowerClamp
+
+- def: "constant_pad_nd(input: Tensor, pad: [Int64], value: AnyScalar) -> Tensor"
+  extras: ["canonicalize pad input CanonicalizePad"]
+  x10_enum: at::aten::constant_pad_nd
+  lower_fn: LowerPad
+
+- def: "cos(input: Tensor) -> Tensor"
+  x10_enum: at::aten::cos
+  shape_fn: input
+  lower_fn: xla::Cos
+
+- def: "cosh(input: Tensor) -> Tensor"
+  x10_enum: at::aten::cosh
+  shape_fn: input
+  lower_fn: xla::Cosh
+
 - def: "cumprod(input: Tensor, dim: Int64, dtype: ScalarType?, exclusive: Bool, reverse: Bool) -> Tensor"
   extras: ["canonicalize dim input"]
   x10_enum: at::aten::cumprod
@@ -10,10 +96,40 @@
   shape_fn: CumOpShapeFn
   lower_fn: LowerCumSum
 
+- def: "div(lhs: Tensor, rhs: Tensor) -> Tensor"
+  x10_enum: at::aten::div
+  lower_fn: LowerBinaryOp<xla::Div>
+
 - def: "eq(lhs: Tensor, rhs: Tensor) -> Tensor"
   x10_enum: at::aten::eq
   lower_fn: LowerBinaryOp<xla::Eq>
   result_dtype: Bool
+
+- def: "exp(input: Tensor) -> Tensor"
+  x10_enum: at::aten::exp
+  shape_fn: input
+  lower_fn: xla::Exp
+
+- def: "expand(input: Tensor, dims: [Int64]) -> Tensor"
+  x10_enum: at::aten::expand
+  extras: ["canonicalize dims input CanonicalizeExpand"]
+  lower_fn: BuildExpand
+
+- def: "expm1(input: Tensor) -> Tensor"
+  x10_enum: at::aten::expm1
+  shape_fn: input
+  lower_fn: xla::Expm1
+
+- def: "flip(input: Tensor, dims: [Int64]) -> Tensor"
+  x10_enum: at::aten::flip
+  extras: ["canonicalize dims input CanonicalizeFlip"]
+  shape_fn: input
+  lower_fn: xla::Rev
+
+- def: "floor(input: Tensor) -> Tensor"
+  x10_enum: at::aten::floor
+  shape_fn: input
+  lower_fn: xla::Floor
 
 - def: "ge(lhs: Tensor, rhs: Tensor) -> Tensor"
   x10_enum: at::aten::ge
@@ -25,10 +141,38 @@
   lower_fn: LowerBinaryOp<xla::Gt>
   result_dtype: Bool
 
+- def: "is_finite(input: Tensor) -> Tensor"
+  x10_enum: at::aten::xla_is_finite
+  lower_fn: xla::IsFinite
+  shape_fn: input
+  result_dtype: Bool
+
+- def: "is_inf(input: Tensor) -> Tensor"
+  x10_enum: at::aten::xla_is_inf
+  lower_fn: xla::IsInf
+  shape_fn: input
+  result_dtype: Bool
+
+- def: "is_nan(input: Tensor) -> Tensor"
+  x10_enum: at::aten::xla_is_nan
+  shape_fn: input
+  lower_fn: xla::IsNan
+  result_dtype: Bool
+
 - def: "le(lhs: Tensor, rhs: Tensor) -> Tensor"
   x10_enum: at::aten::le
   lower_fn: LowerBinaryOp<xla::Le>
   result_dtype: Bool
+
+- def: "log(input: Tensor) -> Tensor"
+  x10_enum: at::aten::log
+  shape_fn: input
+  lower_fn: xla::Log
+
+- def: "log1p(input: Tensor) -> Tensor"
+  x10_enum: at::aten::log1p
+  shape_fn: input
+  lower_fn: xla::Log1p
 
 - def: "log_softmax_backward(grad_output: Tensor, output: Tensor, dim: Int64) -> Tensor"
   extras: ["canonicalize dim grad_output"]
@@ -36,15 +180,69 @@
   shape_fn: grad_output
   lower_fn: BuildLogSoftmaxGrad
 
+- def: "logicalAnd(lhs: Tensor, rhs: Tensor) -> Tensor"
+  x10_enum: at::aten::logical_and
+  lower_fn: LowerBinaryOp<xla::And>
+
+- def: "logicalNot(input: Tensor) -> Tensor"
+  x10_enum: at::aten::bitwise_not
+  shape_fn: input
+  lower_fn: xla::Not
+
+- def: "logicalOr(lhs: Tensor, rhs: Tensor) -> Tensor"
+  x10_enum: at::aten::logical_or
+  lower_fn: LowerBinaryOp<xla::Or>
+
 - def: "lt(lhs: Tensor, rhs: Tensor) -> Tensor"
   x10_enum: at::aten::lt
   lower_fn: LowerBinaryOp<xla::Lt>
   result_dtype: Bool
 
+- def: "matmul(lhs: Tensor, rhs: Tensor) -> Tensor"
+  x10_enum: at::aten::matmul
+  lower_fn: LowerBinaryValueOp<CreateMatMul>
+
+- def: "max(input: Tensor, dim: Int64, keepdim: Bool) -> Tensor"
+  x10_enum: at::aten::max
+  extras: ["canonicalize dim input"]
+  lower_fn: BuildMaxInDim
+
+- def: "maximum(lhs: Tensor, rhs: Tensor) -> Tensor"
+  x10_enum: at::aten::max
+  lower_fn: LowerBinaryOp<xla::Max>
+
+- def: "mean(input: Tensor, dims: [Int64], keep_reduced_dimensions: Bool, dtype: ScalarType?) -> Tensor"
+  extras: ["canonicalize dims input"]
+  x10_enum: at::aten::mean
+  lower_fn: LowerMean
+  result_dtype: dtype
+
+- def: "min(input: Tensor, dim: Int64, keepdim: Bool) -> Tensor"
+  x10_enum: at::aten::min
+  extras: ["canonicalize dim input"]
+  lower_fn: BuildMinInDim
+
+- def: "minimum(lhs: Tensor, rhs: Tensor) -> Tensor"
+  x10_enum: at::aten::min
+  lower_fn: LowerBinaryOp<xla::Min>
+
+- def: "mm(lhs: Tensor, rhs: Tensor) -> Tensor"
+  x10_enum: at::aten::mm
+  lower_fn: xla::Dot
+
+- def: "mul(lhs: Tensor, rhs: Tensor) -> Tensor"
+  x10_enum: at::aten::mul
+  lower_fn: LowerBinaryOp<xla::Mul>
+
 - def: "ne(lhs: Tensor, rhs: Tensor) -> Tensor"
   x10_enum: at::aten::ne
   lower_fn: LowerBinaryOp<xla::Ne>
   result_dtype: Bool
+
+- def: "neg(input: Tensor) -> Tensor"
+  x10_enum: at::aten::neg
+  shape_fn: input
+  lower_fn: xla::Neg
 
 - def: "pow(input: Tensor, other: Tensor) -> Tensor"
   x10_enum: at::aten::pow
@@ -58,10 +256,65 @@
   x10_enum: at::aten::xla_rem
   lower_fn: xla::Rem
 
+- def: "rsqrt(input: Tensor) -> Tensor"
+  x10_enum: at::aten::rsqrt
+  shape_fn: input
+  lower_fn: xla::Rsqrt
+
+- def: "sigmoid(input: Tensor) -> Tensor"
+  x10_enum: at::aten::sigmoid
+  shape_fn: input
+  lower_fn: BuildSigmoid
+
+- def: "sign(input: Tensor) -> Tensor"
+  x10_enum: at::aten::sign
+  shape_fn: input
+  lower_fn: BuildSign
+
+- def: "sin(input: Tensor) -> Tensor"
+  x10_enum: at::aten::sin
+  shape_fn: input
+  lower_fn: xla::Sin
+
+- def: "sinh(input: Tensor) -> Tensor"
+  x10_enum: at::aten::sinh
+  shape_fn: input
+  lower_fn: xla::Sinh
+
+- def: "slice(input: Tensor, dim: Int64, start: Int64, end: Int64, stride: Int64) -> Tensor"
+  x10_enum: at::aten::slice
+  shape_fn: ShapeSlice
+  lower_fn: LowerSlice
+
+- def: "sqrt(input: Tensor) -> Tensor"
+  x10_enum: at::aten::sqrt
+  shape_fn: input
+  lower_fn: xla::Sqrt
+
 - def: "squeeze(input: Tensor, dim: Int64) -> Tensor"
   extras: ["canonicalize dim input"]
   x10_enum: at::aten::squeeze
   lower_fn: LowerSqueeze
+
+- def: "sub(lhs: Tensor, rhs: Tensor) -> Tensor"
+  x10_enum: at::aten::sub
+  lower_fn: LowerBinaryOp<xla::Sub>
+
+- def: "sum(input: Tensor, dims: [Int64], keep_reduced_dimensions: Bool, dtype: ScalarType?) -> Tensor"
+  extras: ["canonicalize dims input"]
+  x10_enum: at::aten::sum
+  lower_fn: LowerSum
+  result_dtype: dtype
+
+- def: "tan(input: Tensor) -> Tensor"
+  x10_enum: at::aten::tan
+  shape_fn: input
+  lower_fn: xla::Tan
+
+- def: "tanh(input: Tensor) -> Tensor"
+  x10_enum: at::aten::tanh
+  shape_fn: input
+  lower_fn: xla::Tanh
 
 - def: "threshold(input: Tensor, output: Tensor, threshold: Float, value: Float) -> Tensor"
   x10_enum: at::aten::threshold_backward
