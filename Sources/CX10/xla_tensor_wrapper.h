@@ -83,6 +83,7 @@ typedef struct XLAScalar {
 #ifdef __cplusplus
 at::ScalarType ToScalarType(XLATensorScalarType type);
 XLATensorScalarType FromScalarType(at::ScalarType type);
+at::Scalar atScalar(XLAScalar s);
 #endif
 
 // Tensor utilities:
