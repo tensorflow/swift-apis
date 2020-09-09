@@ -99,7 +99,7 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     let positiveAxis = (input.rank + axis) % input.rank
     precondition(
       input.shape[positiveAxis] == offset.shape[0],
@@ -241,7 +241,7 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     // Note: `withoutDerivative(at:)` is currently needed in the following to prevent the resulting
     // tensor for `epsilon` from being scalarized on the backwards pass, breaking X10 traces.
     let epsilon = withoutDerivative(at: input) { Tensor(self.epsilon, deviceAndPrecisionLike: $0) }
@@ -295,11 +295,12 @@ public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   ) {
     precondition(axis != 0, "The axis cannot be batch axis.")
     precondition(offset.rank == 1, "The offset must have rank 1.")
-    precondition(offset.shape[0].isMultiple(of: groupCount),
-                 "The number of elements of the offset must be divisible by the group count.")
     precondition(
-        offset.shape == scale.shape,
-        "The offset and the scale must have same shape.")
+      offset.shape[0].isMultiple(of: groupCount),
+      "The number of elements of the offset must be divisible by the group count.")
+    precondition(
+      offset.shape == scale.shape,
+      "The offset and the scale must have same shape.")
     self.offset = offset
     self.scale = scale
     self.groupCount = groupCount
@@ -341,11 +342,12 @@ public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   /// - Precondition: The axis cannot be batch axis.
   /// - Precondition: The numbers of features of the input and the offset must be same.
   @differentiable
-  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     let positiveAxis = (input.rank + axis) % input.rank
     precondition(positiveAxis != 0, "The axis cannot be batch axis.")
-    precondition(input.shape[positiveAxis] == offset.shape[0],
-                 "The numbers of features of the input and the offset must be same.")
+    precondition(
+      input.shape[positiveAxis] == offset.shape[0],
+      "The numbers of features of the input and the offset must be same.")
     var offset = self.offset
     var scale = self.scale
     var broadcastShape = TensorShape([Int](repeating: 1, count: input.rank + 1))
@@ -446,7 +448,7 @@ public struct InstanceNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
   @differentiable
-  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     delegate(input)
   }
 }
