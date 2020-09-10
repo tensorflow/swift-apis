@@ -20,9 +20,13 @@ def node_type_define(op):
     if arg[1] == "Tensor": tensor_args.append(arg)
     else: attr_args.append(arg)
   def format_pretty_print(arg):
+    if arg[0] == "shape":
+      return ""
     return f"    OpFieldToString(ss, \"{arg[0]}\", {arg[0]}_);\n"
   def format_ctor_arg(arg):
     name, stype = arg
+    if name == "shape":
+      return f"xla::Shape {name}"
     if stype == "Tensor": return f"const Value& {name}"
     if stype == "Int64": return f"xla::int64 {name}"
     if stype == "Bool": return f"bool {name}"
@@ -30,6 +34,8 @@ def node_type_define(op):
     if stype == "[Int64]":
       return f"std::vector<xla::int64> {name}"
     if stype == "ScalarType?": return f"c10::optional<at::ScalarType> {name}"
+    if stype == "ScalarType":
+      return f"at::ScalarType {name}"
     if stype == "AnyScalar":
       return f"at::Scalar {name}"
     raise ValueError(f"Problem: no such type: {stype}")
@@ -37,6 +43,8 @@ def node_type_define(op):
   def format_lower_arg(arg):
     nonlocal lower_arg_i
     name, stype = arg
+    if name == "shape":
+      return "shape()"
     if stype == "Tensor":
       i = lower_arg_i
       lower_arg_i += 1
@@ -46,6 +54,8 @@ def node_type_define(op):
   def format_clone_arg(arg):
     nonlocal clone_arg_i
     name, stype = arg
+    if name == "shape":
+      return "shape()"
     if stype == "Tensor":
       i = clone_arg_i
       clone_arg_i += 1
@@ -53,22 +63,29 @@ def node_type_define(op):
     return f"{name}_"
   def format_attr_define(arg):
     name, stype = arg
+    if name == "shape":
+      return ""
     if stype == "Int64": return f"  xla::int64 {name}_;\n"
     if stype == "Bool": return f"  bool {name}_;\n"
     if stype == "Float": return "  float " + name + "_;\n"
     if stype == "ScalarType?": return (f"  c10::optional<at::ScalarType> "
                                        f"{name}_;\n")
+    if stype == "ScalarType":
+      return f"  at::ScalarType {name}_;\n"
     if stype == "AnyScalar":
       return f"  at::Scalar {name}_;"
     if stype == "[Int64]":
       return f"  std::vector<xla::int64> {name}_;\n"
     raise ValueError(f"Problem: no such type: {stype}")
   def format_attr_init(arg):
-    return f",\n        {arg[0]}_({arg[0]})"
+    return f",\n        {arg[0]}_(std::move({arg[0]}))"
+
   shape_fn = None # f"""{{}}\n#error no shape function for {op["op_node_name"]}\n"""
   def resolve_shape_fn(shape_fn):
     for arg in tensor_args:
       if arg[0] == shape_fn: return f"{arg[0]}.shape()"
+    if shape_fn == "shape":
+      return "shape"
     return f"""{shape_fn}({", ".join(arg[0] for arg in op["args"])})"""
   def format_shape_lower_arg(arg):
     name, stype = arg
@@ -92,14 +109,17 @@ def node_type_define(op):
        return XlaHelpers::ShapeOfXlaOp(result);
      }}"""
   num_outputs = 1
+  ctx = []
+  if "needs_lowering_context" in [i[0] for i in op["extras"]]:
+    ctx = ["loctx"]
   return f"""
 class {op["op_node_name"]} : public Node {{
  public:
   {op["op_node_name"]}({", ".join(format_ctor_arg(arg) for arg in op["args"])})
       : Node(ir::OpKind({op["x10_enum"]}),
              {{{", ".join(arg[0] for arg in tensor_args)}}}, {shape_fn},
-             /*num_outputs=*/{str(num_outputs)}, xla::util::MHash({", ".join(arg[0] for arg in attr_args)})){
-"".join(format_attr_init(arg) for arg in attr_args)
+             /*num_outputs=*/{str(num_outputs)}, xla::util::MHash({", ".join(arg[0] for arg in attr_args if arg[0] != "shape")})){
+"".join(format_attr_init(arg) for arg in attr_args if arg[0] != "shape")
 } {{}}
 
   NodePtr Clone(OpList operands) const override {{
@@ -109,7 +129,7 @@ class {op["op_node_name"]} : public Node {{
 
   XlaOpVector Lower(LoweringContext* loctx) const override {{
     xla::XlaOp result = {op["lower_fn"]}(
-        {", ".join(format_lower_arg(arg) for arg in op["args"])});
+        {", ".join([format_lower_arg(arg) for arg in op["args"]] + ctx)});
     return ReturnOp(result, loctx);
   }}
 
@@ -124,6 +144,14 @@ class {op["op_node_name"]} : public Node {{
 """
 
 def c_function_define(op):
+  args = op["args"]
+  tensor_names = [arg[0] for arg in args if arg[1] == "Tensor"]
+  first_tensor = tensor_names[0]
+  if "result_dtype" in op and op["result_dtype"] in tensor_names:
+    first_tensor = op["result_dtype"]
+  if "shape_fn" in op and op["shape_fn"] in tensor_names:
+    first_tensor = op["shape_fn"]
+
   def format_arg_def(arg):
     name, stype = arg
     if stype == "Tensor": return "OpaqueXLATensor* " + name
@@ -131,6 +159,8 @@ def c_function_define(op):
     if stype == "Float": return "float " + name
     if stype == "Bool": return f"bool {name}"
     if stype == "ScalarType?": return f"Optional_XLAScalarType {name}"
+    if stype == "ScalarType":
+      return f"XLATensorScalarType {name}"
     if stype == "AnyScalar":
       return f"XLAScalar {name}"
     if stype == "[Int64]":
@@ -139,6 +169,10 @@ def c_function_define(op):
   def format_arg_ref(arg):
     name, stype = arg
     if stype == "Tensor": return name + "_ir_value"
+    if name == "shape":
+      return ("swift_xla::MakeArrayShapeFromDimensions(shape.slice(), {}, " +
+              f"{first_tensor}->shape().get().element_type(), "
+              f"{first_tensor}->GetDevice().hw_type)")
     for extra in op["extras"]:
       if extra[0] == "canonicalize" and extra[1] == name:
         if stype == "[Int64]":
@@ -150,6 +184,8 @@ def c_function_define(op):
         else:
           return f"swift_xla::XlaHelpers::GetCanonicalDimensionIndex({name}, {extra[2]}_ir_value.shape().rank())"
     if stype == "ScalarType?": return f"{name}.value()"
+    if stype == "ScalarType":
+      return f"ToScalarType({name})"
     if stype == "AnyScalar":
       return f"atScalar({name})"
     if stype == "[Int64]":
@@ -159,16 +195,18 @@ def c_function_define(op):
     name, stype = arg
     if stype == "Tensor": return f"  auto {name}_ir_value = {name}->GetIrValue();\n"
     return ""
-  args = op["args"]
-  first_tensor = args[0][0]
   node_ctor = f"""swift_xla::ir::MakeNode<swift_xla::ir::ops::{op["op_node_name"]}>({", ".join(format_arg_ref(arg) for arg in op["args"])})"""
   prelude = f"""
 OpaqueXLATensor* XLATensor_{op["c_name"]}({", ".join(format_arg_def(arg) for arg in op["args"])}) {{
 {"".join(unpack_arg(arg) for arg in op["args"])}"""
-  if "result_dtype" in op:
-    if op["result_dtype"] in [arg[0] for arg in args]:
+  if "result_dtype" in op and op["result_dtype"] not in tensor_names:
+    result_dtype_arg = None
+    for arg in args:
+      if arg[0] == op["result_dtype"]:
+        result_dtype_arg = arg
+    if result_dtype_arg:
       return f"""{prelude}   return new swift_xla::XLATensor({first_tensor}->CreateFrom(
-      {node_ctor}, {op["result_dtype"]}.value()));
+      {node_ctor}, {format_arg_ref(result_dtype_arg)}));
 }}
 """
 
@@ -185,7 +223,7 @@ OpaqueXLATensor* XLATensor_{op["c_name"]}({", ".join(format_arg_def(arg) for arg
 """
 
 def snake_to_camel(name):
-  return "".join(map(lambda x: x.capitalize(),name.split("_")))
+  return "".join(map(lambda x: x[0].capitalize() + x[1:],name.split("_")))
 
 def canonicalize_op(op):
   tokens = re.findall("([\w\[\]]+\??|[\(\),:]|->)", op["def"])

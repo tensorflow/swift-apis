@@ -407,8 +407,7 @@ XLA_API OpaqueXLATensor* XLATensor_tf_StatelessRandomNormal(
     enum XLATensorScalarType type);
 XLA_API OpaqueXLATensor* XLATensor_tf_StatelessRandomUniform(
     Int64ArrayRef size, OpaqueXLATensor* seeds, OpaqueXLATensor* minvalue,
-    OpaqueXLATensor* maxvalue, const struct CDevice device,
-    enum XLATensorScalarType type);
+    OpaqueXLATensor* maxvalue);
 XLA_API OpaqueXLATensor*
 XLATensor_tf_UnsortedSegmentSum(OpaqueXLATensor* data, OpaqueXLATensor* indices,
                                 int64_t num_segments);

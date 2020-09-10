@@ -994,8 +994,7 @@ extension XLATensor {
     return dims.withArrayRef { dims in
       XLATensor(
         _handle: XLATensor_tf_StatelessRandomUniform(
-          dims, seeds.handle, minvalue.handle, maxvalue.handle, cdevice,
-          dtype.xlaTensorScalarType))
+          dims, seeds.handle, minvalue.handle, maxvalue.handle))
     }
   }
 

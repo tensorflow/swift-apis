@@ -174,6 +174,12 @@
   shape_fn: input
   lower_fn: xla::Log1p
 
+- def: "log_softmax(input: Tensor, dim: Int64) -> Tensor"
+  extras: ["canonicalize dim input"]
+  x10_enum: at::aten::log_softmax
+  lower_fn: BuildLogSoftmax
+  shape_fn: input
+
 - def: "log_softmax_backward(grad_output: Tensor, output: Tensor, dim: Int64) -> Tensor"
   extras: ["canonicalize dim grad_output"]
   x10_enum: at::aten::_log_softmax_backward_data
@@ -183,6 +189,12 @@
 - def: "logicalAnd(lhs: Tensor, rhs: Tensor) -> Tensor"
   x10_enum: at::aten::logical_and
   lower_fn: LowerBinaryOp<xla::And>
+
+- def: "logical_cast(input: Tensor, dtype: ScalarType) -> Tensor"
+  x10_enum: xla_symbols::cast
+  shape_fn: ShapeLogicalCast
+  lower_fn: LowerLogicalCast
+  result_dtype: dtype
 
 - def: "logicalNot(input: Tensor) -> Tensor"
   x10_enum: at::aten::bitwise_not
@@ -286,6 +298,12 @@
   shape_fn: ShapeSlice
   lower_fn: LowerSlice
 
+- def: "softmax(input: Tensor, dim: Int64) -> Tensor"
+  extras: ["canonicalize dim input"]
+  x10_enum: at::aten::softmax
+  lower_fn: BuildSoftmax
+  shape_fn: input
+
 - def: "sqrt(input: Tensor) -> Tensor"
   x10_enum: at::aten::sqrt
   shape_fn: input
@@ -316,7 +334,40 @@
   shape_fn: input
   lower_fn: xla::Tanh
 
+- def: "tf_OneHot(indices: Tensor, on_value: Tensor, off_value: Tensor, depth: Int64, axis: Int64) -> Tensor"
+  result_dtype: on_value
+  x10_enum: at::aten::tf_one_hot
+  lower_fn: BuildOneHot
+
+- def: "tf_StatelessRandomUniform(shape: [Int64], seeds: Tensor, minvalue: Tensor, maxvalue: Tensor) -> Tensor"
+  x10_enum: at::aten::tf_stateless_random_uniform
+  extras: ["shape_fn shape", "needs_lowering_context"]
+  lower_fn: LowerTfStatelessRandomUniform
+  result_dtype: minvalue
+
+- def: "tf_UnsortedSegmentSum(data: Tensor, indicies: Tensor, num_segments: Int64) -> Tensor"
+  x10_enum: at::aten::tf_unsorted_segment_sum
+  lower_fn: LowerTfUnsortedSegmentSum
+
 - def: "threshold(input: Tensor, output: Tensor, threshold: Float, value: Float) -> Tensor"
   x10_enum: at::aten::threshold_backward
   shape_fn: input
   lower_fn: BuildThreshold
+
+- def: "truncated_normal(input: Tensor) -> Tensor"
+  x10_enum: at::aten::xla_truncated_normal
+  shape_fn: input
+  lower_fn: tensorflow::TruncatedNormal
+
+- def: "update_slice(input: Tensor, source: Tensor, base_indices: [Int64]) -> Tensor"
+  x10_enum: xla_symbols::update_slice
+  lower_fn: BuildUpdateSlice
+
+- def: "where(condition: Tensor, input: Tensor, other: Tensor) -> Tensor"
+  x10_enum: at::aten::where
+  shape_fn: input
+  lower_fn: LowerWhere
+
+- def: "xla_slice(input: Tensor, start_indices: [Int64], limit_indices: [Int64], strides: [Int64]) -> Tensor"
+  x10_enum: at::aten::xla_slice
+  lower_fn: xla::Slice
