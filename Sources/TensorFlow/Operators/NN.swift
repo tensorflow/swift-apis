@@ -103,6 +103,22 @@ public func conv1D<Scalar: TensorFlowFloatingPoint>(
   ).squeezingShape(at: 1)
 }
 
+// Note: this custom JVP function exists as a workaround for forward-mode differentiation issues.
+// Remove it when forward-mode differentiation issues (SR-13530) are fixed.
+@derivative(of: conv1D, wrt: (input, filter))
+@usableFromInline
+func _jvpConv1D<Scalar: TensorFlowFloatingPoint>(
+  _ input: Tensor<Scalar>,
+  filter: Tensor<Scalar>,
+  stride: Int,
+  padding: Padding,
+  dilation: Int
+) -> (
+  value: Tensor<Scalar>, differential: (Tensor<Scalar>, Tensor<Scalar>) -> Tensor<Scalar>
+) {
+  fatalError("Forward-mode derivative is not yet implemented")
+}
+
 /// Returns a 2-D convolution with the specified input, filter, strides, and padding.
 ///
 /// - Parameters:
@@ -131,6 +147,20 @@ public func conv2D<Scalar: TensorFlowFloatingPoint>(
     explicitPaddings: [],
     dilations: [Int32(dilations.0), Int32(dilations.1), Int32(dilations.2), Int32(dilations.3)]
   )
+}
+
+@derivative(of: conv2D, wrt: (input, filter))
+@usableFromInline
+func _jvpConv2D<Scalar: TensorFlowFloatingPoint>(
+  _ input: Tensor<Scalar>,
+  filter: Tensor<Scalar>,
+  strides: (Int, Int, Int, Int),
+  padding: Padding,
+  dilations: (Int, Int, Int, Int)
+) -> (
+  value: Tensor<Scalar>, differential: (Tensor<Scalar>, Tensor<Scalar>) -> Tensor<Scalar>
+) {
+  fatalError("Forward-mode derivative is not yet implemented")
 }
 
 @usableFromInline
@@ -183,6 +213,23 @@ public func transposedConv2D<Scalar: TensorFlowFloatingPoint>(
   return conv2DBackpropInput(
     input, shape: shape, filter: filter,
     strides: strides, padding: padding, dilations: dilations)
+}
+
+// Note: this custom JVP function exists as a workaround for forward-mode differentiation issues.
+// Remove it when forward-mode differentiation issues (SR-13530) are fixed.
+@derivative(of: transposedConv2D, wrt: (input, filter))
+@usableFromInline
+func _jvpTransposedConv2D<Scalar: TensorFlowFloatingPoint>(
+  _ input: Tensor<Scalar>,
+  shape: [Int64],
+  filter: Tensor<Scalar>,
+  strides: (Int, Int, Int, Int),
+  padding: Padding = .valid,
+  dilations: (Int, Int, Int, Int) = (1, 1, 1, 1)
+) -> (
+  value: Tensor<Scalar>, differential: (Tensor<Scalar>, Tensor<Scalar>) -> Tensor<Scalar>
+) {
+  fatalError("Forward-mode derivative is not yet implemented")
 }
 
 /// TensorFlow builtin conv2d gradient helper for the input.

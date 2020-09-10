@@ -184,6 +184,16 @@ public func trace<T: TensorFlowNumeric>(_ matrix: Tensor<T>) -> Tensor<T> {
   return matrix.diagonalPart().sum(squeezingAxes: -1)
 }
 
+// Note: this custom JVP function exists as a workaround for forward-mode differentiation issues.
+// Remove it when forward-mode differentiation issues (SR-13530) are fixed.
+@derivative(of: trace, wrt: matrix)
+@usableFromInline
+func _jvpTrace<T: TensorFlowFloatingPoint>(_ matrix: Tensor<T>) -> (
+  value: Tensor<T>, differential: (Tensor<T>) -> Tensor<T>
+) {
+  fatalError("Forward-mode derivative is not yet implemented")
+}
+
 /// Computes the determinant of an optionally batched matrix.
 /// 
 /// - Parameter matrix: A tensor of shape `[..., M, M]`.

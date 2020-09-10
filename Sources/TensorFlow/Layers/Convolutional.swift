@@ -89,6 +89,24 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
       dilation: dilation)
     return activation(useBias ? (conv + bias) : conv)
   }
+
+  @derivative(of: forward, wrt: self)
+  @usableFromInline
+  func _jvpForward(_ input: Tensor<Scalar>) -> (
+    value: Tensor<Scalar>,
+    differential: (TangentVector) -> Tensor<Scalar>
+  ) {
+    fatalError("Forward-mode derivative is not yet implemented")
+  }
+
+  @derivative(of: forward)
+  @usableFromInline
+  func _jvpForward(_ input: Tensor<Scalar>) -> (
+    value: Tensor<Scalar>,
+    differential: (TangentVector, Tensor<Scalar>) -> Tensor<Scalar>
+  ) {
+    fatalError("Forward-mode derivative is not yet implemented")
+  }
 }
 
 extension Conv1D where Scalar.RawSignificand: FixedWidthInteger {
@@ -210,6 +228,24 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
       padding: padding,
       dilations: (1, dilations.0, dilations.1, 1))
     return activation(useBias ? (conv + bias) : conv)
+  }
+
+  @derivative(of: forward, wrt: self)
+  @usableFromInline
+  func _jvpForward(_ input: Tensor<Scalar>) -> (
+    value: Tensor<Scalar>,
+    differential: (TangentVector) -> Tensor<Scalar>
+  ) {
+    fatalError("Forward-mode derivative is not yet implemented")
+  }
+
+  @derivative(of: forward)
+  @usableFromInline
+  func _jvpForward(_ input: Tensor<Scalar>) -> (
+    value: Tensor<Scalar>,
+    differential: (TangentVector, Tensor<Scalar>) -> Tensor<Scalar>
+  ) {
+    fatalError("Forward-mode derivative is not yet implemented")
   }
 }
 
@@ -342,6 +378,24 @@ public struct Conv3D<Scalar: TensorFlowFloatingPoint>: Layer {
       dilations: (1, dilations.0, dilations.1, dilations.2, 1))
     return activation(useBias ? (conv + bias) : conv)
   }
+
+  @derivative(of: forward, wrt: self)
+  @usableFromInline
+  func _jvpForward(_ input: Tensor<Scalar>) -> (
+    value: Tensor<Scalar>,
+    differential: (TangentVector) -> Tensor<Scalar>
+  ) {
+    fatalError("Forward-mode derivative is not yet implemented")
+  }
+
+  @derivative(of: forward)
+  @usableFromInline
+  func _jvpForward(_ input: Tensor<Scalar>) -> (
+    value: Tensor<Scalar>,
+    differential: (TangentVector, Tensor<Scalar>) -> Tensor<Scalar>
+  ) {
+    fatalError("Forward-mode derivative is not yet implemented")
+  }
 }
 
 extension Conv3D {
@@ -450,6 +504,24 @@ public struct TransposedConv1D<Scalar: TensorFlowFloatingPoint>: Layer {
       padding: padding)
     return activation(useBias ? (conv + bias) : conv)
   }
+
+  @derivative(of: forward, wrt: self)
+  @usableFromInline
+  func _jvpForward(_ input: Tensor<Scalar>) -> (
+    value: Tensor<Scalar>,
+    differential: (TangentVector) -> Tensor<Scalar>
+  ) {
+    fatalError("Forward-mode derivative is not yet implemented")
+  }
+
+  @derivative(of: forward)
+  @usableFromInline
+  func _jvpForward(_ input: Tensor<Scalar>) -> (
+    value: Tensor<Scalar>,
+    differential: (TangentVector, Tensor<Scalar>) -> Tensor<Scalar>
+  ) {
+    fatalError("Forward-mode derivative is not yet implemented")
+  }
 }
 
 extension TransposedConv1D {
@@ -552,6 +624,24 @@ public struct TransposedConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
       strides: (1, strides.0, strides.1, 1),
       padding: padding)
     return activation(useBias ? (conv + bias) : conv)
+  }
+
+  @derivative(of: forward, wrt: self)
+  @usableFromInline
+  func _jvpForward(_ input: Tensor<Scalar>) -> (
+    value: Tensor<Scalar>,
+    differential: (TangentVector) -> Tensor<Scalar>
+  ) {
+    fatalError("Forward-mode derivative is not yet implemented")
+  }
+
+  @derivative(of: forward)
+  @usableFromInline
+  func _jvpForward(_ input: Tensor<Scalar>) -> (
+    value: Tensor<Scalar>,
+    differential: (TangentVector, Tensor<Scalar>) -> Tensor<Scalar>
+  ) {
+    fatalError("Forward-mode derivative is not yet implemented")
   }
 }
 
@@ -658,6 +748,24 @@ public struct TransposedConv3D<Scalar: TensorFlowFloatingPoint>: Layer {
       padding: padding)
     return activation(useBias ? (conv + bias) : conv)
   }
+
+  @derivative(of: forward, wrt: self)
+  @usableFromInline
+  func _jvpForward(_ input: Tensor<Scalar>) -> (
+    value: Tensor<Scalar>,
+    differential: (TangentVector) -> Tensor<Scalar>
+  ) {
+    fatalError("Forward-mode derivative is not yet implemented")
+  }
+
+  @derivative(of: forward)
+  @usableFromInline
+  func _jvpForward(_ input: Tensor<Scalar>) -> (
+    value: Tensor<Scalar>,
+    differential: (TangentVector, Tensor<Scalar>) -> Tensor<Scalar>
+  ) {
+    fatalError("Forward-mode derivative is not yet implemented")
+  }
 }
 
 extension TransposedConv3D {
@@ -752,6 +860,24 @@ public struct DepthwiseConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
       strides: (1, strides.0, strides.1, 1),
       padding: padding)
     return activation(useBias ? (conv + bias) : conv)
+  }
+
+  @derivative(of: forward, wrt: self)
+  @usableFromInline
+  func _jvpForward(_ input: Tensor<Scalar>) -> (
+    value: Tensor<Scalar>,
+    differential: (TangentVector) -> Tensor<Scalar>
+  ) {
+    fatalError("Forward-mode derivative is not yet implemented")
+  }
+
+  @derivative(of: forward)
+  @usableFromInline
+  func _jvpForward(_ input: Tensor<Scalar>) -> (
+    value: Tensor<Scalar>,
+    differential: (TangentVector, Tensor<Scalar>) -> Tensor<Scalar>
+  ) {
+    fatalError("Forward-mode derivative is not yet implemented")
   }
 }
 
@@ -961,6 +1087,24 @@ public struct SeparableConv1D<Scalar: TensorFlowFloatingPoint>: Layer {
       dilations: (1, 1, 1, 1))
     return activation(useBias ? (x.squeezingShape(at: 1) + bias) : x.squeezingShape(at: 1))
   }
+
+  @derivative(of: forward, wrt: self)
+  @usableFromInline
+  func _jvpForward(_ input: Tensor<Scalar>) -> (
+    value: Tensor<Scalar>,
+    differential: (TangentVector) -> Tensor<Scalar>
+  ) {
+    fatalError("Forward-mode derivative is not yet implemented")
+  }
+
+  @derivative(of: forward)
+  @usableFromInline
+  func _jvpForward(_ input: Tensor<Scalar>) -> (
+    value: Tensor<Scalar>,
+    differential: (TangentVector, Tensor<Scalar>) -> Tensor<Scalar>
+  ) {
+    fatalError("Forward-mode derivative is not yet implemented")
+  }
 }
 
 extension SeparableConv1D {
@@ -1073,6 +1217,24 @@ public struct SeparableConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
       padding: padding,
       dilations: (1, 1, 1, 1))
     return activation(useBias ? (conv + bias) : conv)
+  }
+
+  @derivative(of: forward, wrt: self)
+  @usableFromInline
+  func _jvpForward(_ input: Tensor<Scalar>) -> (
+    value: Tensor<Scalar>,
+    differential: (TangentVector) -> Tensor<Scalar>
+  ) {
+    fatalError("Forward-mode derivative is not yet implemented")
+  }
+
+  @derivative(of: forward)
+  @usableFromInline
+  func _jvpForward(_ input: Tensor<Scalar>) -> (
+    value: Tensor<Scalar>,
+    differential: (TangentVector, Tensor<Scalar>) -> Tensor<Scalar>
+  ) {
+    fatalError("Forward-mode derivative is not yet implemented")
   }
 }
 

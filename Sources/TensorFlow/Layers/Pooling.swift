@@ -351,6 +351,17 @@ public struct GlobalAvgPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
     precondition(input.rank == 3, "The rank of the input must be 3.")
     return input.mean(squeezingAxes: 1)
   }
+
+  // Note: this custom JVP function exists as a workaround for forward-mode differentiation issues.
+  // Remove it when forward-mode differentiation issues (SR-13530) are fixed.
+  @derivative(of: forward)
+  @usableFromInline
+  func _jvpForward(_ input: Tensor<Scalar>) -> (
+    value: Tensor<Scalar>,
+    differential: (TangentVector, Tensor<Scalar>) -> Tensor<Scalar>
+  ) {
+    fatalError("Forward-mode derivative is not yet implemented")
+  }
 }
 
 /// A global average pooling layer for spatial data.
@@ -370,6 +381,17 @@ public struct GlobalAvgPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
     precondition(input.rank == 4, "The rank of the input must be 4.")
     return input.mean(squeezingAxes: [1, 2])
   }
+
+  // Note: this custom JVP function exists as a workaround for forward-mode differentiation issues.
+  // Remove it when forward-mode differentiation issues (SR-13530) are fixed.
+  @derivative(of: forward)
+  @usableFromInline
+  func _jvpForward(_ input: Tensor<Scalar>) -> (
+    value: Tensor<Scalar>,
+    differential: (TangentVector, Tensor<Scalar>) -> Tensor<Scalar>
+  ) {
+    fatalError("Forward-mode derivative is not yet implemented")
+  }
 }
 
 /// A global average pooling layer for spatial and spatio-temporal data.
@@ -388,6 +410,17 @@ public struct GlobalAvgPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
   public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     precondition(input.rank == 5, "The rank of the input must be 5.")
     return input.mean(squeezingAxes: [1, 2, 3])
+  }
+
+  // Note: this custom JVP function exists as a workaround for forward-mode differentiation issues.
+  // Remove it when forward-mode differentiation issues (SR-13530) are fixed.
+  @derivative(of: forward)
+  @usableFromInline
+  func _jvpForward(_ input: Tensor<Scalar>) -> (
+    value: Tensor<Scalar>,
+    differential: (TangentVector, Tensor<Scalar>) -> Tensor<Scalar>
+  ) {
+    fatalError("Forward-mode derivative is not yet implemented")
   }
 }
 
@@ -411,6 +444,17 @@ public struct GlobalMaxPool1D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
     precondition(input.rank == 3, "The rank of the input must be 3.")
     return input.max(squeezingAxes: 1)
   }
+
+  // Note: this custom JVP function exists as a workaround for forward-mode differentiation issues.
+  // Remove it when forward-mode differentiation issues (SR-13530) are fixed.
+  @derivative(of: forward)
+  @usableFromInline
+  func _jvpForward(_ input: Tensor<Scalar>) -> (
+    value: Tensor<Scalar>,
+    differential: (TangentVector, Tensor<Scalar>) -> Tensor<Scalar>
+  ) {
+    fatalError("Forward-mode derivative is not yet implemented")
+  }
 }
 
 /// A global max pooling layer for spatial data.
@@ -430,6 +474,17 @@ public struct GlobalMaxPool2D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
     precondition(input.rank == 4, "The rank of the input must be 4.")
     return input.max(squeezingAxes: [1, 2])
   }
+
+  // Note: this custom JVP function exists as a workaround for forward-mode differentiation issues.
+  // Remove it when forward-mode differentiation issues (SR-13530) are fixed.
+  @derivative(of: forward)
+  @usableFromInline
+  func _jvpForward(_ input: Tensor<Scalar>) -> (
+    value: Tensor<Scalar>,
+    differential: (TangentVector, Tensor<Scalar>) -> Tensor<Scalar>
+  ) {
+    fatalError("Forward-mode derivative is not yet implemented")
+  }
 }
 
 /// A global max pooling layer for spatial and spatio-temporal data.
@@ -448,6 +503,17 @@ public struct GlobalMaxPool3D<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
   public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     precondition(input.rank == 5, "The rank of the input must be 5.")
     return input.max(squeezingAxes: [1, 2, 3])
+  }
+
+  // Note: this custom JVP function exists as a workaround for forward-mode differentiation issues.
+  // Remove it when forward-mode differentiation issues (SR-13530) are fixed.
+  @derivative(of: forward)
+  @usableFromInline
+  func _jvpForward(_ input: Tensor<Scalar>) -> (
+    value: Tensor<Scalar>,
+    differential: (TangentVector, Tensor<Scalar>) -> Tensor<Scalar>
+  ) {
+    fatalError("Forward-mode derivative is not yet implemented")
   }
 }
 

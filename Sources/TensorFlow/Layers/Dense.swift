@@ -85,6 +85,24 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
     }
     return activation(useBias ? (matmul(input, weight) + bias) : matmul(input, weight))
   }
+
+  @derivative(of: forward, wrt: self)
+  @usableFromInline
+  func _jvpForward(_ input: Tensor<Scalar>) -> (
+    value: Tensor<Scalar>,
+    differential: (TangentVector) -> Tensor<Scalar>
+  ) {
+    fatalError("Forward-mode derivative is not yet implemented")
+  }
+
+  @derivative(of: forward)
+  @usableFromInline
+  func _jvpForward(_ input: Tensor<Scalar>) -> (
+    value: Tensor<Scalar>,
+    differential: (TangentVector, Tensor<Scalar>) -> Tensor<Scalar>
+  ) {
+    fatalError("Forward-mode derivative is not yet implemented")
+  }
 }
 
 extension Dense {

@@ -84,7 +84,20 @@ extension RecurrentLayerCell {
     self(RNNCellInput(input: input, state: state))
   }
 
-  @differentiable
+  @derivative(of: callAsFunction)
+  public func jvpCallAsFunction(
+    input: TimeStepInput,
+    state: State
+  ) -> (
+    value: RNNCellOutput<TimeStepOutput, State>,
+    differential:
+      (TangentVector, TimeStepInput.TangentVector, State.TangentVector) -> RNNCellOutput<TimeStepOutput, State>.TangentVector
+  ) {
+    fatalError()
+  }
+
+  // FIXME
+  // @differentiable
   public func call(input: TimeStepInput, state: State) -> RNNCellOutput<TimeStepOutput, State> {
     self(RNNCellInput(input: input, state: state))
   }
@@ -127,6 +140,20 @@ public struct BasicRNNCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell 
     let concatenatedInput = input.input.concatenated(with: input.state, alongAxis: 1)
     let newState = tanh(matmul(concatenatedInput, weight) + bias)
     return Output(output: newState, state: newState)
+  }
+
+  @derivative(of: callAsFunction)
+  public func jvpCallAsFunction(_ input: Input) -> (
+    value: Output, differential: (TangentVector, Input.TangentVector) -> Output.TangentVector
+  ) {
+    fatalError()
+  }
+
+  @derivative(of: callAsFunction, wrt: self)
+  public func jvpCallAsFunction(_ input: Input) -> (
+    value: Output, differential: (TangentVector) -> Output.TangentVector
+  ) {
+    fatalError()
   }
 }
 
@@ -239,6 +266,20 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell {
 
     return Output(output: newState, state: newState)
   }
+
+  @derivative(of: callAsFunction)
+  public func jvpCallAsFunction(_ input: Input) -> (
+    value: Output, differential: (TangentVector, Input.TangentVector) -> Output.TangentVector
+  ) {
+    fatalError()
+  }
+
+  @derivative(of: callAsFunction, wrt: self)
+  public func jvpCallAsFunction(_ input: Input) -> (
+    value: Output, differential: (TangentVector) -> Output.TangentVector
+  ) {
+    fatalError()
+  }
 }
 
 /// An GRU cell.
@@ -316,6 +357,20 @@ public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell {
     let newState = State(updateHidden + updateOutput)
 
     return Output(output: newState, state: newState)
+  }
+
+  @derivative(of: callAsFunction)
+  public func jvpCallAsFunction(_ input: Input) -> (
+    value: Output, differential: (TangentVector, Input.TangentVector) -> Output.TangentVector
+  ) {
+    fatalError()
+  }
+
+  @derivative(of: callAsFunction, wrt: self)
+  public func jvpCallAsFunction(_ input: Input) -> (
+    value: Output, differential: (TangentVector) -> Output.TangentVector
+  ) {
+    fatalError()
   }
 }
 
@@ -403,7 +458,7 @@ public struct RecurrentLayer<Cell: RecurrentLayerCell>: Layer {
     return self(inputs, initialState: initialState)
   }
 
-  @differentiable(wrt: (self, inputs, initialState))
+  // @differentiable(wrt: (self, inputs, initialState))
   public func lastOutput(
     from inputs: [Cell.TimeStepInput],
     initialState: Cell.State
@@ -412,7 +467,7 @@ public struct RecurrentLayer<Cell: RecurrentLayerCell>: Layer {
     return self(inputs, initialState: initialState)[withoutDerivative(at: inputs.count - 1)]
   }
 
-  @differentiable(wrt: (self, inputs))
+  // @differentiable(wrt: (self, inputs))
   public func lastOutput(from inputs: [Cell.TimeStepInput]) -> Cell.TimeStepOutput {
     precondition(!inputs.isEmpty, "'inputs' must be non-empty.")
     let initialState = withoutDerivative(at: cell.zeroState(for: inputs[0]))

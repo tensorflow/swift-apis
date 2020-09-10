@@ -426,6 +426,19 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
 
   @inlinable
   @derivative(of: init(shape:scalars:on:))
+  static func _jvpInit(
+    shape: TensorShape, scalars: [Scalar], on device: Device = .default
+  ) -> (value: Tensor, differential: (Array<Scalar>.TangentVector) -> Tensor) {
+    (
+      value: Tensor(shape: shape, scalars: scalars, on: device),
+      differential: { dscalars in
+        Tensor(shape: shape, scalars: dscalars.base, on: device)
+      }
+    )
+  }
+
+  @inlinable
+  @derivative(of: init(shape:scalars:on:))
   static func _vjpInit(
     shape: TensorShape, scalars: [Scalar], on device: Device = .default
   ) -> (value: Tensor, pullback: (Tensor) -> Array<Scalar>.TangentVector) {
@@ -696,6 +709,14 @@ extension Tensor: AdditiveArithmetic where Scalar: Numeric {
 extension Tensor where Scalar: TensorFlowFloatingPoint {
   @inlinable
   @derivative(of: +)
+  static func _jvpAdd(lhs: Tensor, rhs: Tensor) -> (
+    value: Tensor, differential: (Tensor, Tensor) -> Tensor
+  ) {
+    (lhs + rhs, { dlhs, drhs in dlhs + drhs })
+  }
+
+  @inlinable
+  @derivative(of: +)
   static func _vjpAdd(lhs: Tensor, rhs: Tensor) -> (
     value: Tensor, pullback: (Tensor) -> (Tensor, Tensor)
   ) {
@@ -705,6 +726,14 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
         return broadcastPb(v, v)
       }
     )
+  }
+
+  @inlinable
+  @derivative(of: -)
+  static func _jvpSubtract(lhs: Tensor, rhs: Tensor) -> (
+    value: Tensor, differential: (Tensor, Tensor) -> Tensor
+  ) {
+    (lhs - rhs, { dlhs, drhs in dlhs - drhs })
   }
 
   @inlinable

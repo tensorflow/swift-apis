@@ -134,6 +134,16 @@ public func resize(
   return images
 }
 
+@derivative(of: resize, wrt: images)
+public func _jvpResize(
+  images: Tensor<Float>,
+  size: (newHeight: Int, newWidth: Int),
+  method: ResizeMethod = .bilinear,
+  antialias: Bool = false
+) -> (value: Tensor<Float>, differential: (Tensor<Float>) -> Tensor<Float>) {
+  fatalError("Forward-mode derivative is not yet implemented")
+}
+
 /// Resize images to size using area interpolation.
 ///
 /// - Parameters:

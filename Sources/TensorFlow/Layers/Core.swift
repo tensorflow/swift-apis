@@ -87,4 +87,26 @@ public struct Function<Input: Differentiable, Output: Differentiable>: Parameter
   public func callAsFunction(_ input: Input) -> Output {
     body(input)
   }
+
+  // Note: this custom JVP function exists as a workaround for forward-mode differentiation issues.
+  // Remove it when forward-mode differentiation issues are fixed.
+  @derivative(of: callAsFunction, wrt: self)
+  @usableFromInline
+  func _jvpCallAsFunction(_ input: Input) -> (
+    value: Output,
+    differential: (TangentVector) -> Output.TangentVector
+  ) {
+    fatalError("Forward-mode derivative is not yet implemented")
+  }
+
+  // Note: this custom JVP function exists as a workaround for forward-mode differentiation issues.
+  // Remove it when forward-mode differentiation issues are fixed.
+  @derivative(of: callAsFunction)
+  @usableFromInline
+  func _jvpCallAsFunction(_ input: Input) -> (
+    value: Output,
+    differential: (TangentVector, Input.TangentVector) -> Output.TangentVector
+  ) {
+    fatalError("Forward-mode derivative is not yet implemented")
+  }
 }

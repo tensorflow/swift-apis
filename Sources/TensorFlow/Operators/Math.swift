@@ -3038,6 +3038,8 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
 /// Performs matrix multiplication with another tensor and produces the result.
 @inlinable
 @differentiable(where Scalar: TensorFlowFloatingPoint)
+@differentiable(wrt: lhs where Scalar: TensorFlowFloatingPoint)
+@differentiable(wrt: rhs where Scalar: TensorFlowFloatingPoint)
 public func matmul<Scalar: Numeric>(
   _ lhs: Tensor<Scalar>,
   transposed transposeLhs: Bool = false,
@@ -3051,6 +3053,96 @@ public func matmul<Scalar: Numeric>(
     return _Raw.batchMatMulV2(lhs, rhs, adjX: transposeLhs, adjY: transposeRhs)
   }
   return _Raw.matMul(lhs, rhs, transposeA: transposeLhs, transposeB: transposeRhs)
+}
+
+@inlinable
+@derivative(of: matmul)
+internal func _jvpMatmul<Scalar: TensorFlowFloatingPoint>(
+  _ lhs: Tensor<Scalar>,
+  transposed transposeLhs: Bool = false,
+  _ rhs: Tensor<Scalar>,
+  transposed transposeRhs: Bool = false
+) -> (value: Tensor<Scalar>, differential: (Tensor<Scalar>, Tensor<Scalar>) -> Tensor<Scalar>) {
+  let value = matmul(lhs, transposed: transposeLhs, rhs, transposed: transposeRhs)
+  return (
+    value,
+    { dlhs, drhs in
+      let (lhsGrad, rhsGrad): (Tensor<Scalar>, Tensor<Scalar>)
+      switch (transposeLhs, transposeRhs) {
+      case (false, false):
+        lhsGrad = matmul(dlhs, rhs)
+        rhsGrad = matmul(lhs, drhs)
+      case (false, true):
+        lhsGrad = matmul(dlhs, transposed: false, rhs, transposed: true)
+        rhsGrad = matmul(drhs, transposed: false, lhs, transposed: true)
+      case (true, false):
+        lhsGrad = matmul(dlhs, transposed: true, rhs)
+        rhsGrad = matmul(drhs, transposed: true, lhs)
+      case (true, true):
+        lhsGrad = matmul(dlhs, transposed: true, rhs, transposed: true)
+        rhsGrad = matmul(lhs, transposed: true, drhs, transposed: true)
+      }
+      assert(lhsGrad.shape == rhsGrad.shape,
+             "Shape mismatch: lhsGrad.shape \(lhsGrad.shape) vs rhsGrad.shape \(rhsGrad.shape)")
+      return lhsGrad + rhsGrad
+    }
+  )
+}
+
+@inlinable
+@derivative(of: matmul, wrt: lhs)
+internal func _jvpMatmulWrtLhs<Scalar: TensorFlowFloatingPoint>(
+  _ lhs: Tensor<Scalar>,
+  transposed transposeLhs: Bool = false,
+  _ rhs: Tensor<Scalar>,
+  transposed transposeRhs: Bool = false
+) -> (value: Tensor<Scalar>, differential: (Tensor<Scalar>) -> Tensor<Scalar>) {
+  let value = matmul(lhs, transposed: transposeLhs, rhs, transposed: transposeRhs)
+  return (
+    value,
+    { dlhs in
+      let lhsGrad: Tensor<Scalar>
+      switch (transposeLhs, transposeRhs) {
+      case (false, false):
+        lhsGrad = matmul(dlhs, transposed: false, rhs, transposed: true)
+      case (false, true):
+        lhsGrad = matmul(dlhs, rhs)
+      case (true, false):
+        lhsGrad = matmul(rhs, transposed: false, dlhs, transposed: true)
+      case (true, true):
+        lhsGrad = matmul(dlhs, transposed: true, rhs, transposed: true)
+      }
+      return lhsGrad
+    }
+  )
+}
+
+@inlinable
+@derivative(of: matmul, wrt: rhs)
+internal func _jvpMatmulWrtRhs<Scalar: TensorFlowFloatingPoint>(
+  _ lhs: Tensor<Scalar>,
+  transposed transposeLhs: Bool = false,
+  _ rhs: Tensor<Scalar>,
+  transposed transposeRhs: Bool = false
+) -> (value: Tensor<Scalar>, differential: (Tensor<Scalar>) -> Tensor<Scalar>) {
+  let value = matmul(lhs, transposed: transposeLhs, rhs, transposed: transposeRhs)
+  return (
+    value,
+    { drhs in
+      let rhsGrad: Tensor<Scalar>
+      switch (transposeLhs, transposeRhs) {
+      case (false, false):
+        rhsGrad = matmul(lhs, drhs)
+      case (false, true):
+        rhsGrad = matmul(drhs, transposed: false, lhs, transposed: true)
+      case (true, false):
+        rhsGrad = matmul(lhs, transposed: true, drhs)
+      case (true, true):
+        rhsGrad = matmul(lhs, transposed: true, drhs, transposed: true)
+      }
+      return rhsGrad
+    }
+  )
 }
 
 @inlinable
@@ -3094,6 +3186,80 @@ internal func _vjpMatmul<Scalar: TensorFlowFloatingPoint>(
           _Raw.sum(lhsGrad, reductionIndices: lhsAxes, keepDims: false), shape: lhsShape),
         _Raw.reshape(_Raw.sum(rhsGrad, reductionIndices: rhsAxes, keepDims: false), shape: rhsShape)
       )
+    }
+  )
+}
+
+@inlinable
+@derivative(of: matmul, wrt: lhs)
+internal func _vjpMatmulWrtLhs<Scalar: TensorFlowFloatingPoint>(
+  _ lhs: Tensor<Scalar>,
+  transposed transposeLhs: Bool = false,
+  _ rhs: Tensor<Scalar>,
+  transposed transposeRhs: Bool = false
+) -> (value: Tensor<Scalar>, pullback: (Tensor<Scalar>) -> Tensor<Scalar>) {
+  let value = matmul(lhs, transposed: transposeLhs, rhs, transposed: transposeRhs)
+  return (
+    value,
+    { [lhsShape = lhs.shape, rhsShape = rhs.shape] v in
+      let lhsGrad: Tensor<Scalar>
+      switch (transposeLhs, transposeRhs) {
+      case (false, false):
+        lhsGrad = matmul(v, transposed: false, rhs, transposed: true)
+      case (false, true):
+        lhsGrad = matmul(v, rhs)
+      case (true, false):
+        lhsGrad = matmul(rhs, transposed: false, v, transposed: true)
+      case (true, true):
+        lhsGrad = matmul(v, transposed: true, rhs, transposed: true)
+      }
+      let lhsRank = lhsShape.rank - 2
+      let rhsRank = rhsShape.rank - 2
+      if lhsRank == rhsRank { return lhsGrad }
+      let lhsShape = lhsShape.dimensions.map { Int64($0) }
+      let rhsShape = rhsShape.dimensions.map { Int64($0) }
+      let (lhsAxes, rhsAxes) = BroadcastingPullback.computeReductionAxes(
+        lhsShape[..<lhsRank].map { $0 },
+        rhsShape[..<rhsRank].map { $0 }
+      )
+      return _Raw.reshape(_Raw.sum(lhsGrad, reductionIndices: lhsAxes, keepDims: false), shape: lhsShape)
+    }
+  )
+}
+
+@inlinable
+@derivative(of: matmul, wrt: rhs)
+internal func _vjpMatmulWrtRhs<Scalar: TensorFlowFloatingPoint>(
+  _ lhs: Tensor<Scalar>,
+  transposed transposeLhs: Bool = false,
+  _ rhs: Tensor<Scalar>,
+  transposed transposeRhs: Bool = false
+) -> (value: Tensor<Scalar>, pullback: (Tensor<Scalar>) -> Tensor<Scalar>) {
+  let value = matmul(lhs, transposed: transposeLhs, rhs, transposed: transposeRhs)
+  return (
+    value,
+    { [lhsShape = lhs.shape, rhsShape = rhs.shape] v in
+      let rhsGrad: Tensor<Scalar>
+      switch (transposeLhs, transposeRhs) {
+      case (false, false):
+        rhsGrad = matmul(lhs, transposed: true, v, transposed: false)
+      case (false, true):
+        rhsGrad = matmul(v, transposed: true, lhs, transposed: false)
+      case (true, false):
+        rhsGrad = matmul(lhs, v)
+      case (true, true):
+        rhsGrad = matmul(lhs, transposed: true, v, transposed: true)
+      }
+      let lhsRank = lhsShape.rank - 2
+      let rhsRank = rhsShape.rank - 2
+      if lhsRank == rhsRank { return rhsGrad }
+      let lhsShape = lhsShape.dimensions.map { Int64($0) }
+      let rhsShape = rhsShape.dimensions.map { Int64($0) }
+      let (lhsAxes, rhsAxes) = BroadcastingPullback.computeReductionAxes(
+        lhsShape[..<lhsRank].map { $0 },
+        rhsShape[..<rhsRank].map { $0 }
+      )
+      return _Raw.reshape(_Raw.sum(rhsGrad, reductionIndices: rhsAxes, keepDims: false), shape: rhsShape)
     }
   )
 }

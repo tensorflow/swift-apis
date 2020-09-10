@@ -120,6 +120,24 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     }
   }
 
+  @derivative(of: forward, wrt: self)
+  @usableFromInline
+  func _jvpForward(_ input: Tensor<Scalar>) -> (
+    value: Tensor<Scalar>,
+    differential: (TangentVector) -> Tensor<Scalar>
+  ) {
+    fatalError("Forward-mode derivative is not yet implemented")
+  }
+
+  @derivative(of: forward)
+  @usableFromInline
+  func _jvpForward(_ input: Tensor<Scalar>) -> (
+    value: Tensor<Scalar>,
+    differential: (TangentVector, Tensor<Scalar>) -> Tensor<Scalar>
+  ) {
+    fatalError("Forward-mode derivative is not yet implemented")
+  }
+
   private func doTraining(
     _ input: Tensor<Scalar>, offset: Tensor<Scalar>, scale: Tensor<Scalar>, axis: Int
   ) -> Tensor<Scalar> {
@@ -146,6 +164,16 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
       varianceEpsilon: eps)
   }
 
+  @derivative(of: doTraining)
+  private func _jvpDoTraining(
+    _ input: Tensor<Scalar>, offset: Tensor<Scalar>, scale: Tensor<Scalar>, axis: Int
+  ) -> (
+    value: Tensor<Scalar>,
+    differential: (TangentVector, Tensor<Scalar>, Tensor<Scalar>, Tensor<Scalar>) -> Tensor<Scalar>
+  ) {
+    fatalError("Forward-mode derivative is not yet implemented")
+  }
+
   private func doInference(
     _ input: Tensor<Scalar>, offset: Tensor<Scalar>, scale: Tensor<Scalar>
   ) -> Tensor<Scalar> {
@@ -160,6 +188,16 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
       mean: runningMeanValue, variance: runningVarianceValue,
       offset: offset, scale: scale,
       varianceEpsilon: eps)
+  }
+
+  @derivative(of: doInference)
+  private func _jvpDoInference(
+    _ input: Tensor<Scalar>, offset: Tensor<Scalar>, scale: Tensor<Scalar>
+  ) -> (
+    value: Tensor<Scalar>,
+    differential: (TangentVector, Tensor<Scalar>, Tensor<Scalar>, Tensor<Scalar>) -> Tensor<Scalar>
+  ) {
+    fatalError("Forward-mode derivative is not yet implemented")
   }
 
   /// Creates a batch normalization layer.
@@ -256,6 +294,24 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     let moments = input.moments(alongAxes: positiveAxis)
     let inv = rsqrt(moments.variance + epsilon) * scale
     return (input - moments.mean) * inv + offset
+  }
+
+  @derivative(of: forward, wrt: self)
+  @usableFromInline
+  func _jvpForward(_ input: Tensor<Scalar>) -> (
+    value: Tensor<Scalar>,
+    differential: (TangentVector) -> Tensor<Scalar>
+  ) {
+    fatalError("Forward-mode derivative is not yet implemented")
+  }
+
+  @derivative(of: forward)
+  @usableFromInline
+  func _jvpForward(_ input: Tensor<Scalar>) -> (
+    value: Tensor<Scalar>,
+    differential: (TangentVector, Tensor<Scalar>) -> Tensor<Scalar>
+  ) {
+    fatalError("Forward-mode derivative is not yet implemented")
   }
 }
 
@@ -372,6 +428,24 @@ public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
       offset: offset, scale: scale,
       varianceEpsilon: eps)
     return normalized.reshaped(to: input.shape)
+  }
+
+  @derivative(of: forward, wrt: self)
+  @usableFromInline
+  func _jvpForward(_ input: Tensor<Scalar>) -> (
+    value: Tensor<Scalar>,
+    differential: (TangentVector) -> Tensor<Scalar>
+  ) {
+    fatalError("Forward-mode derivative is not yet implemented")
+  }
+
+  @derivative(of: forward)
+  @usableFromInline
+  func _jvpForward(_ input: Tensor<Scalar>) -> (
+    value: Tensor<Scalar>,
+    differential: (TangentVector, Tensor<Scalar>) -> Tensor<Scalar>
+  ) {
+    fatalError("Forward-mode derivative is not yet implemented")
   }
 }
 

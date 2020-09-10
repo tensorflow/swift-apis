@@ -353,9 +353,30 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
 
   @inlinable
   @derivative(of: expandingShape)
+  func _jvpExpandingShape(at axes: [Int]) -> (value: Tensor, differential: (Tensor) -> Tensor) {
+    let value = self.expandingShape(at: axes)
+    // return (value, { v in v.expandingShape(at: axes) })
+    return (value, { v in
+      assert(v.shape == shape)
+      return v.expandingShape(at: axes)
+    })
+  }
+
+  @inlinable
+  @derivative(of: expandingShape)
   func _vjpExpandingShape(at axes: [Int]) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
     let value = self.expandingShape(at: axes)
     return (value, { v in v.squeezingShape(at: axes) })
+  }
+
+  @inlinable
+  @derivative(of: squeezingShape)
+  func _jvpSqueezingShape(at axes: [Int]) -> (value: Tensor, differential: (Tensor) -> Tensor) {
+    let value = squeezingShape(at: axes)
+    return (value, { v in
+      assert(v.shape == shape)
+      return v.squeezingShape(at: axes)
+    })
   }
 
   @inlinable
@@ -638,6 +659,19 @@ extension Tensor {
     let flatTensor = reshaped(toShape: innerShape.rankLifted().concatenated(with: outerShape))
     let flatResult = flatTensor.gathering(atIndices: flatIndices)
     return flatResult.reshaped(toShape: batchIndices.shapeTensor.concatenated(with: outerShape))
+  }
+
+  @derivative(of: batchGathering, wrt: self)
+  @usableFromInline
+  func _jvpBatchGathering<Index: TensorFlowIndex>(
+    atIndices indices: Tensor<Index>,
+    alongAxis axis: Int = 1,
+    batchDimensionCount: Int = 1
+  ) -> (
+    value: Tensor<Scalar>,
+    differential: (TangentVector) -> Tensor<Scalar>
+  ) where Scalar: TensorFlowFloatingPoint {
+    fatalError("Forward-mode derivative is not yet implemented")
   }
 
   /// Returns a tensor by gathering the values after applying the provided boolean mask to the input.
