@@ -363,14 +363,6 @@ OpaqueXLATensor* XLATensor_linspace(XLAScalar start, XLAScalar stop,
                           ToScalarType(type));
   return new XLATensor(out);
 }
-OpaqueXLATensor* XLATensor_log_softmax(OpaqueXLATensor* a, int64_t dim) {
-  return new XLATensor(XLATensor::log_softmax(*a, dim, absl::nullopt));
-}
-OpaqueXLATensor* XLATensor_logical_cast(OpaqueXLATensor* input,
-                                        enum XLATensorScalarType dest_type) {
-  return new XLATensor(
-      XLATensor::logical_cast(*input, ToScalarType(dest_type)));
-}
 OpaqueXLATensor* XLATensor_nll_loss(OpaqueXLATensor* input,
                                     OpaqueXLATensor* target, int ignore_index) {
   XLATensor weight;
@@ -417,9 +409,6 @@ OpaqueXLATensor* XLATensor_round_to_even(OpaqueXLATensor* a) {
 OpaqueXLATensor* XLATensor_select(OpaqueXLATensor* a, int64_t dim,
                                   int64_t index) {
   return new XLATensor(XLATensor::select(*a, dim, index));
-}
-OpaqueXLATensor* XLATensor_softmax(OpaqueXLATensor* a, int64_t dim) {
-  return new XLATensor(XLATensor::softmax(*a, dim, absl::nullopt));
 }
 OpaqueXLATensorArrayRef XLATensor_split_with_sizes(OpaqueXLATensor* input,
                                                    Int64ArrayRef split_size,
@@ -481,61 +470,20 @@ OpaqueXLATensor* XLATensor_tf_MirrorPadGrad(OpaqueXLATensor* grad_output,
       *grad_output, XlaHelpers::I64List(input_size.slice()),
       XlaHelpers::I64List(padding.slice()), ToTFMirrorPadMode(mode)));
 }
-OpaqueXLATensor* XLATensor_tf_OneHot(OpaqueXLATensor* indices,
-                                     OpaqueXLATensor* on_value,
-                                     OpaqueXLATensor* off_value, int64_t depth,
-                                     int64_t axis) {
-  return new XLATensor(
-      XLATensor::tf_OneHot(*indices, *on_value, *off_value, depth, axis));
-}
 OpaqueXLATensor* XLATensor_tf_StatelessRandomNormal(
     Int64ArrayRef size, OpaqueXLATensor* seeds, const struct CDevice device,
     enum XLATensorScalarType type) {
   return new XLATensor(XLATensor::tf_StatelessRandomNormal(
       size.slice(), *seeds, ConvertDevice(device), ToScalarType(type)));
 }
-OpaqueXLATensor* XLATensor_tf_StatelessRandomUniform(
-    Int64ArrayRef size, OpaqueXLATensor* seeds, OpaqueXLATensor* minvalue,
-    OpaqueXLATensor* maxvalue, const CDevice device,
-    enum XLATensorScalarType type) {
-  return new XLATensor(XLATensor::tf_StatelessRandomUniform(
-      size.slice(), *seeds, *minvalue, *maxvalue, ConvertDevice(device),
-      ToScalarType(type)));
-}
-OpaqueXLATensor* XLATensor_tf_UnsortedSegmentSum(OpaqueXLATensor* data,
-                                                 OpaqueXLATensor* indices,
-                                                 int64_t num_segments) {
-  return new XLATensor(
-      XLATensor::tf_UnsortedSegmentSum(*data, *indices, num_segments));
-}
 OpaqueXLATensor* XLATensor_threshold_backward(OpaqueXLATensor* grad_output,
                                               OpaqueXLATensor* input,
                                               float threshold) {
   return XLATensor_threshold(input, grad_output, threshold, 0);
 }
-OpaqueXLATensor* XLATensor_truncated_normal(OpaqueXLATensor* input) {
-  return new XLATensor(XLATensor::xla_truncated_normal(*input));
-}
 OpaqueXLATensor* XLATensor_to(OpaqueXLATensor* a, const CDevice* device,
                               Optional_XLAScalarType dtype) {
   return new XLATensor(XLATensor::to(*a, AsOptional(device), dtype.value()));
-}
-OpaqueXLATensor* XLATensor_update_slice(OpaqueXLATensor* input,
-                                        OpaqueXLATensor* source,
-                                        Int64ArrayRef base_indices) {
-  return new XLATensor(
-      XLATensor::update_slice(*input, *source, base_indices.slice()));
-}
-OpaqueXLATensor* XLATensor_where(OpaqueXLATensor* condition,
-                                 OpaqueXLATensor* input,
-                                 OpaqueXLATensor* other) {
-  return new XLATensor(XLATensor::where(*condition, *input, *other));
-}
-OpaqueXLATensor* XLATensor_xla_slice(OpaqueXLATensor* input,
-                                     Int64ArrayRef begin, Int64ArrayRef end,
-                                     Int64ArrayRef strides) {
-  return new XLATensor(XLATensor::xla_slice(*input, begin.slice(), end.slice(),
-                                            strides.slice()));
 }
 OpaqueXLATensor* XLATensor_xla_pad(OpaqueXLATensor* input,
                                    XLAScalar padding_value,
