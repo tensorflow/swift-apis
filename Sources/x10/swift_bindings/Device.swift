@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import CTensorFlow
-import Foundation
 @_implementationOnly import x10_device_wrapper
 
 extension DeviceType {
@@ -129,8 +127,6 @@ public struct Device {
     #endif
   }
 
-  static var defaultOrdinal: Int { 0 }
-
   /// The default `Device`.
   public static var `default`: Device {
     switch defaultBackend {
@@ -150,49 +146,8 @@ public struct Device {
 
   /// The current TF Eager device.
   public static var defaultTFEager: Device {
-    // Create a dummy tensor on any TFEager device.
-    var kind: Kind = .CPU
-    var ordinal = defaultOrdinal
-    let device = Device(kind: kind, ordinal: defaultOrdinal, backend: .TF_EAGER)
-    let tensor = Tensor<Float>(zeros: [1], on: device)
-    let handle = tensor.handle._cTensorHandle
-    let status = TF_NewStatus()
-
-    // Find out what the underlying libraries think the default is.
-    if let cString = TFE_TensorHandleDeviceName(handle, status) {
-      checkOk(status)
-
-      // TODO: What's the best way to deallocate this memory?
-      // defer { DeleteString(str) }
-      let tfDeviceName = String(cString: cString)
-
-      // Parse type and ordinal from a string with the expected syntax:
-      //   /job:localhost/replica:0/task:0/device:CPU:0
-      let pattern = ".+device:(.+):(\\d+)$"
-      let regex = try! NSRegularExpression(pattern: pattern)
-      let nsrange = NSRange(tfDeviceName.startIndex..., in: tfDeviceName)
-      if let match = regex.firstMatch(in: tfDeviceName, range: nsrange) {
-        if let kindRange = Range(match.range(at: 1), in: tfDeviceName) {
-          switch String(tfDeviceName[kindRange]).uppercased() {
-          case "CPU":
-            kind = .CPU
-          case "GPU":
-            kind = .GPU
-          case "TPU":
-            kind = .TPU
-          case "REMOTE_TPU":
-            kind = .REMOTE_TPU
-          default:
-            kind = .CPU
-          }
-        }
-        if let ordinalRange = Range(match.range(at: 2), in: tfDeviceName) {
-          ordinal = Int(tfDeviceName[ordinalRange]) ?? defaultOrdinal
-        }
-      }
-    }
-
-    return Device(kind: kind, ordinal: ordinal, backend: .TF_EAGER)
+    // TODO: Pull this from withDevice() {} mechanism?
+    return Device(kind: .CPU, ordinal: 0, backend: .TF_EAGER)
   }
 
   /// An array of all devices.
