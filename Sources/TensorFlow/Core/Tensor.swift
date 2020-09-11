@@ -34,10 +34,6 @@ public struct Tensor<Scalar: TensorFlowScalar> {
   /// The underlying `TensorHandle`.
   /// - Note: `handle` is public to allow user defined ops, but should not normally be used.
   public let handle: TensorHandle<Scalar>
-
-  /// An internal marker to identify scalar zero tensors, for use in optimizations.
-  @usableFromInline
-  internal var _isScalarZero = false
   
   @inlinable
   public init(handle: TensorHandle<Scalar>) {
@@ -673,8 +669,9 @@ extension Tensor: AdditiveArithmetic where Scalar: Numeric {
       if _DeviceThreadLocalState.local.isReducedPrecision {
         zero = zero.toReducedPrecision
       }
-      zero._isScalarZero = true
-      return zero
+      var zeroHandle = zero.handle
+      zeroHandle._isScalarZero = true
+      return Tensor(handle: zeroHandle)
     }
   #else
     @inlinable
@@ -686,9 +683,9 @@ extension Tensor: AdditiveArithmetic where Scalar: Numeric {
   @inlinable
   @differentiable(where Scalar: TensorFlowFloatingPoint)
   public static func + (lhs: Tensor, rhs: Tensor) -> Tensor {
-    if lhs._isScalarZero {
+    if lhs.handle._isScalarZero {
       return rhs
-    } else if rhs._isScalarZero {
+    } else if rhs.handle._isScalarZero {
       return lhs
     }
     return _Raw.addV2(lhs, rhs)
@@ -699,7 +696,7 @@ extension Tensor: AdditiveArithmetic where Scalar: Numeric {
   @inlinable
   @differentiable(where Scalar: TensorFlowFloatingPoint)
   public static func - (lhs: Tensor, rhs: Tensor) -> Tensor {
-    if rhs._isScalarZero {
+    if rhs.handle._isScalarZero {
       return lhs
     }
     return _Raw.sub(lhs, rhs)

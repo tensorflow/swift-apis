@@ -93,6 +93,10 @@ public struct TensorHandle<Scalar> where Scalar: _TensorFlowDataTypeCompatible {
 
   public var _cTensorHandle: CTensorHandle { handle._cTensorHandle }
 
+  /// An internal marker to identify scalar zero tensors, for use in optimizations.
+  @usableFromInline
+  internal var _isScalarZero = false
+
   public init(_owning cTensorHandle: CTensorHandle) {
     self.handle = TFETensorHandle(_owning: cTensorHandle)
   }
