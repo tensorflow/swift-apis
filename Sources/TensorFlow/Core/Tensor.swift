@@ -34,7 +34,7 @@ public struct Tensor<Scalar: TensorFlowScalar> {
   /// The underlying `TensorHandle`.
   /// - Note: `handle` is public to allow user defined ops, but should not normally be used.
   public let handle: TensorHandle<Scalar>
-  
+
   @inlinable
   public init(handle: TensorHandle<Scalar>) {
     self.handle = handle
