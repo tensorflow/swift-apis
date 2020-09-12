@@ -384,6 +384,40 @@ class Atanh : public Node {
  private:
 };
 
+class Cat : public Node {
+ public:
+  Cat(absl::Span<const Value> input, xla::int64 dim)
+      : Node(
+            ir::OpKind(at::aten::cat), input,
+            [&]() {
+              xla::XlaBuilder b("InferOutputShape");
+              auto input_ir = MakeParameterList(&b, 0, input, "p0");
+              xla::XlaOp result = BuildCat(input_ir, dim);
+              return XlaHelpers::ShapeOfXlaOp(result);
+            },
+            /*num_outputs=*/1, xla::util::MHash(dim)),
+        dim_(std::move(dim)) {}
+
+  NodePtr Clone(OpList operands) const override {
+    return MakeNode<Cat>(operands.subspan(0), dim_);
+  }
+
+  XlaOpVector Lower(LoweringContext* loctx) const override {
+    xla::XlaOp result = BuildCat(GetArrayOperands(loctx, operands(), 0), dim_);
+    return ReturnOp(result, loctx);
+  }
+
+  std::string ToString() const override {
+    std::stringstream ss;
+    ss << Node::ToString();
+    OpFieldToString(ss, "dim", dim_);
+    return ss.str();
+  }
+
+ private:
+  xla::int64 dim_;
+};
+
 class Ceil : public Node {
  public:
   Ceil(const Value& input)
@@ -608,6 +642,48 @@ class Cumsum : public Node {
   bool reverse_;
 };
 
+class DiagonalValue : public Node {
+ public:
+  DiagonalValue(const Value& input, xla::int64 offset, xla::int64 dim1,
+                xla::int64 dim2)
+      : Node(
+            ir::OpKind(at::aten::diagonal), {input},
+            [&]() {
+              xla::XlaBuilder b("InferOutputShape");
+              auto input_ir = xla::Parameter(&b, 0, input.shape(), "p0");
+              xla::XlaOp result = BuildDiagonal(input_ir, offset, dim1, dim2);
+              return XlaHelpers::ShapeOfXlaOp(result);
+            },
+            /*num_outputs=*/1, xla::util::MHash(offset, dim1, dim2)),
+        offset_(std::move(offset)),
+        dim1_(std::move(dim1)),
+        dim2_(std::move(dim2)) {}
+
+  NodePtr Clone(OpList operands) const override {
+    return MakeNode<DiagonalValue>(operands.at(0), offset_, dim1_, dim2_);
+  }
+
+  XlaOpVector Lower(LoweringContext* loctx) const override {
+    xla::XlaOp result =
+        BuildDiagonal(loctx->GetOutputOp(operand(0)), offset_, dim1_, dim2_);
+    return ReturnOp(result, loctx);
+  }
+
+  std::string ToString() const override {
+    std::stringstream ss;
+    ss << Node::ToString();
+    OpFieldToString(ss, "offset", offset_);
+    OpFieldToString(ss, "dim1", dim1_);
+    OpFieldToString(ss, "dim2", dim2_);
+    return ss.str();
+  }
+
+ private:
+  xla::int64 offset_;
+  xla::int64 dim1_;
+  xla::int64 dim2_;
+};
+
 class Div : public Node {
  public:
   Div(const Value& lhs, const Value& rhs)
@@ -630,6 +706,88 @@ class Div : public Node {
   XlaOpVector Lower(LoweringContext* loctx) const override {
     xla::XlaOp result = LowerBinaryOp<xla::Div>(
         loctx->GetOutputOp(operand(0)), loctx->GetOutputOp(operand(1)));
+    return ReturnOp(result, loctx);
+  }
+
+  std::string ToString() const override {
+    std::stringstream ss;
+    ss << Node::ToString();
+    return ss.str();
+  }
+
+ private:
+};
+
+class DynamicSlice : public Node {
+ public:
+  DynamicSlice(const Value& base, absl::Span<const Value> start_indices,
+               std::vector<xla::int64> slice_shapes)
+      : Node(
+            ir::OpKind(at::aten::xla_dynamic_slice),
+            TensorArgsConcat({base}, start_indices),
+            [&]() {
+              xla::XlaBuilder b("InferOutputShape");
+              auto base_ir = xla::Parameter(&b, 0, base.shape(), "p0");
+              auto start_indices_ir =
+                  MakeParameterList(&b, 1, start_indices, "p1");
+              xla::XlaOp result =
+                  xla::DynamicSlice(base_ir, start_indices_ir, slice_shapes);
+              return XlaHelpers::ShapeOfXlaOp(result);
+            },
+            /*num_outputs=*/1, xla::util::MHash(slice_shapes)),
+        slice_shapes_(std::move(slice_shapes)) {}
+
+  NodePtr Clone(OpList operands) const override {
+    return MakeNode<DynamicSlice>(operands.at(0), operands.subspan(1),
+                                  slice_shapes_);
+  }
+
+  XlaOpVector Lower(LoweringContext* loctx) const override {
+    xla::XlaOp result = xla::DynamicSlice(
+        loctx->GetOutputOp(operand(0)), GetArrayOperands(loctx, operands(), 1),
+        slice_shapes_);
+    return ReturnOp(result, loctx);
+  }
+
+  std::string ToString() const override {
+    std::stringstream ss;
+    ss << Node::ToString();
+    OpFieldToString(ss, "slice_shapes", slice_shapes_);
+    return ss.str();
+  }
+
+ private:
+  std::vector<xla::int64> slice_shapes_;
+};
+
+class DynamicUpdateSlice : public Node {
+ public:
+  DynamicUpdateSlice(const Value& base, const Value& update,
+                     absl::Span<const Value> start_indices)
+      : Node(
+            ir::OpKind(at::aten::xla_dynamic_update_slice),
+            TensorArgsConcat({base, update}, start_indices),
+            [&]() {
+              xla::XlaBuilder b("InferOutputShape");
+              auto base_ir = xla::Parameter(&b, 0, base.shape(), "p0");
+              auto update_ir = xla::Parameter(&b, 1, update.shape(), "p1");
+              auto start_indices_ir =
+                  MakeParameterList(&b, 2, start_indices, "p2");
+              xla::XlaOp result =
+                  xla::DynamicUpdateSlice(base_ir, update_ir, start_indices_ir);
+              return XlaHelpers::ShapeOfXlaOp(result);
+            },
+            /*num_outputs=*/1, xla::util::MHash()) {}
+
+  NodePtr Clone(OpList operands) const override {
+    return MakeNode<DynamicUpdateSlice>(operands.at(0), operands.at(1),
+                                        operands.subspan(2));
+  }
+
+  XlaOpVector Lower(LoweringContext* loctx) const override {
+    xla::XlaOp result = xla::DynamicUpdateSlice(
+        loctx->GetOutputOp(operand(0)), loctx->GetOutputOp(operand(1)),
+        GetArrayOperands(loctx, operands(), 2));
     return ReturnOp(result, loctx);
   }
 
@@ -1630,6 +1788,107 @@ class Neg : public Node {
  private:
 };
 
+class NllLoss : public Node {
+ public:
+  NllLoss(const Value& logits, const Value& labels, xla::int64 ignore_index)
+      : Node(
+            ir::OpKind(at::aten::nll_loss), {logits, labels},
+            [&]() {
+              xla::XlaBuilder b("InferOutputShape");
+              auto logits_ir = xla::Parameter(&b, 0, logits.shape(), "p0");
+              auto labels_ir = xla::Parameter(&b, 1, labels.shape(), "p1");
+              xla::XlaOp result =
+                  LowerNllLoss(logits_ir, labels_ir, ignore_index);
+              return XlaHelpers::ShapeOfXlaOp(result);
+            },
+            /*num_outputs=*/1, xla::util::MHash(ignore_index)),
+        ignore_index_(std::move(ignore_index)) {}
+
+  NodePtr Clone(OpList operands) const override {
+    return MakeNode<NllLoss>(operands.at(0), operands.at(1), ignore_index_);
+  }
+
+  XlaOpVector Lower(LoweringContext* loctx) const override {
+    xla::XlaOp result =
+        LowerNllLoss(loctx->GetOutputOp(operand(0)),
+                     loctx->GetOutputOp(operand(1)), ignore_index_);
+    return ReturnOp(result, loctx);
+  }
+
+  std::string ToString() const override {
+    std::stringstream ss;
+    ss << Node::ToString();
+    OpFieldToString(ss, "ignore_index", ignore_index_);
+    return ss.str();
+  }
+
+ private:
+  xla::int64 ignore_index_;
+};
+
+class PermuteValue : public Node {
+ public:
+  PermuteValue(const Value& input, std::vector<xla::int64> dims)
+      : Node(
+            ir::OpKind(at::aten::permute), {input},
+            [&]() {
+              xla::XlaBuilder b("InferOutputShape");
+              auto input_ir = xla::Parameter(&b, 0, input.shape(), "p0");
+              xla::XlaOp result = xla::Transpose(input_ir, dims);
+              return XlaHelpers::ShapeOfXlaOp(result);
+            },
+            /*num_outputs=*/1, xla::util::MHash(dims)),
+        dims_(std::move(dims)) {}
+
+  NodePtr Clone(OpList operands) const override {
+    return MakeNode<PermuteValue>(operands.at(0), dims_);
+  }
+
+  XlaOpVector Lower(LoweringContext* loctx) const override {
+    xla::XlaOp result = xla::Transpose(loctx->GetOutputOp(operand(0)), dims_);
+    return ReturnOp(result, loctx);
+  }
+
+  std::string ToString() const override {
+    std::stringstream ss;
+    ss << Node::ToString();
+    OpFieldToString(ss, "dims", dims_);
+    return ss.str();
+  }
+
+ private:
+  std::vector<xla::int64> dims_;
+};
+
+class PhysicalCast : public Node {
+ public:
+  PhysicalCast(const Value& input, at::ScalarType dtype)
+      : Node(ir::OpKind(xla_symbols::cast), {input},
+             ShapeLogicalCast(input, dtype),
+             /*num_outputs=*/1, xla::util::MHash(dtype)),
+        dtype_(std::move(dtype)) {}
+
+  NodePtr Clone(OpList operands) const override {
+    return MakeNode<PhysicalCast>(operands.at(0), dtype_);
+  }
+
+  XlaOpVector Lower(LoweringContext* loctx) const override {
+    xla::XlaOp result =
+        LowerLogicalCast(loctx->GetOutputOp(operand(0)), dtype_);
+    return ReturnOp(result, loctx);
+  }
+
+  std::string ToString() const override {
+    std::stringstream ss;
+    ss << Node::ToString();
+    OpFieldToString(ss, "dtype", dtype_);
+    return ss.str();
+  }
+
+ private:
+  at::ScalarType dtype_;
+};
+
 class Pow : public Node {
  public:
   Pow(const Value& input, const Value& other)
@@ -1662,6 +1921,51 @@ class Pow : public Node {
   }
 
  private:
+};
+
+class Prod : public Node {
+ public:
+  Prod(const Value& input, std::vector<xla::int64> dims,
+       bool keep_reduced_dimensions, c10::optional<at::ScalarType> dtype)
+      : Node(
+            ir::OpKind(at::aten::prod), {input},
+            [&]() {
+              xla::XlaBuilder b("InferOutputShape");
+              auto input_ir = xla::Parameter(&b, 0, input.shape(), "p0");
+              xla::XlaOp result =
+                  LowerProd(input_ir, dims, keep_reduced_dimensions, dtype);
+              return XlaHelpers::ShapeOfXlaOp(result);
+            },
+            /*num_outputs=*/1,
+            xla::util::MHash(dims, keep_reduced_dimensions, dtype)),
+        dims_(std::move(dims)),
+        keep_reduced_dimensions_(std::move(keep_reduced_dimensions)),
+        dtype_(std::move(dtype)) {}
+
+  NodePtr Clone(OpList operands) const override {
+    return MakeNode<Prod>(operands.at(0), dims_, keep_reduced_dimensions_,
+                          dtype_);
+  }
+
+  XlaOpVector Lower(LoweringContext* loctx) const override {
+    xla::XlaOp result = LowerProd(loctx->GetOutputOp(operand(0)), dims_,
+                                  keep_reduced_dimensions_, dtype_);
+    return ReturnOp(result, loctx);
+  }
+
+  std::string ToString() const override {
+    std::stringstream ss;
+    ss << Node::ToString();
+    OpFieldToString(ss, "dims", dims_);
+    OpFieldToString(ss, "keep_reduced_dimensions", keep_reduced_dimensions_);
+    OpFieldToString(ss, "dtype", dtype_);
+    return ss.str();
+  }
+
+ private:
+  std::vector<xla::int64> dims_;
+  bool keep_reduced_dimensions_;
+  c10::optional<at::ScalarType> dtype_;
 };
 
 class Relu : public Node {
@@ -1731,6 +2035,98 @@ class Rem : public Node {
  private:
 };
 
+class Repeat : public Node {
+ public:
+  Repeat(const Value& input, std::vector<xla::int64> repeats)
+      : Node(
+            ir::OpKind(at::aten::repeat), {input},
+            [&]() {
+              xla::XlaBuilder b("InferOutputShape");
+              auto input_ir = xla::Parameter(&b, 0, input.shape(), "p0");
+              xla::XlaOp result = BuildRepeat(input_ir, repeats);
+              return XlaHelpers::ShapeOfXlaOp(result);
+            },
+            /*num_outputs=*/1, xla::util::MHash(repeats)),
+        repeats_(std::move(repeats)) {}
+
+  NodePtr Clone(OpList operands) const override {
+    return MakeNode<Repeat>(operands.at(0), repeats_);
+  }
+
+  XlaOpVector Lower(LoweringContext* loctx) const override {
+    xla::XlaOp result = BuildRepeat(loctx->GetOutputOp(operand(0)), repeats_);
+    return ReturnOp(result, loctx);
+  }
+
+  std::string ToString() const override {
+    std::stringstream ss;
+    ss << Node::ToString();
+    OpFieldToString(ss, "repeats", repeats_);
+    return ss.str();
+  }
+
+ private:
+  std::vector<xla::int64> repeats_;
+};
+
+class ResizeValue : public Node {
+ public:
+  ResizeValue(const Value& input, std::vector<xla::int64> repeats)
+      : Node(
+            ir::OpKind(at::aten::resize), {input},
+            [&]() {
+              xla::XlaBuilder b("InferOutputShape");
+              auto input_ir = xla::Parameter(&b, 0, input.shape(), "p0");
+              xla::XlaOp result = BuildResize(input_ir, repeats);
+              return XlaHelpers::ShapeOfXlaOp(result);
+            },
+            /*num_outputs=*/1, xla::util::MHash(repeats)),
+        repeats_(std::move(repeats)) {}
+
+  NodePtr Clone(OpList operands) const override {
+    return MakeNode<ResizeValue>(operands.at(0), repeats_);
+  }
+
+  XlaOpVector Lower(LoweringContext* loctx) const override {
+    xla::XlaOp result = BuildResize(loctx->GetOutputOp(operand(0)), repeats_);
+    return ReturnOp(result, loctx);
+  }
+
+  std::string ToString() const override {
+    std::stringstream ss;
+    ss << Node::ToString();
+    OpFieldToString(ss, "repeats", repeats_);
+    return ss.str();
+  }
+
+ private:
+  std::vector<xla::int64> repeats_;
+};
+
+class RoundToEven : public Node {
+ public:
+  RoundToEven(const Value& input)
+      : Node(ir::OpKind(at::aten::round_to_even), {input}, input.shape(),
+             /*num_outputs=*/1, xla::util::MHash()) {}
+
+  NodePtr Clone(OpList operands) const override {
+    return MakeNode<RoundToEven>(operands.at(0));
+  }
+
+  XlaOpVector Lower(LoweringContext* loctx) const override {
+    xla::XlaOp result = xla::RoundToEven(loctx->GetOutputOp(operand(0)));
+    return ReturnOp(result, loctx);
+  }
+
+  std::string ToString() const override {
+    std::stringstream ss;
+    ss << Node::ToString();
+    return ss.str();
+  }
+
+ private:
+};
+
 class Rsqrt : public Node {
  public:
   Rsqrt(const Value& input)
@@ -1756,6 +2152,44 @@ class Rsqrt : public Node {
   }
 
  private:
+};
+
+class Select : public Node {
+ public:
+  Select(const Value& input, xla::int64 dim, xla::int64 index)
+      : Node(
+            ir::OpKind(at::aten::select), {input},
+            [&]() {
+              xla::XlaBuilder b("InferOutputShape");
+              auto input_ir = xla::Parameter(&b, 0, input.shape(), "p0");
+              xla::XlaOp result = LowerSelect(input_ir, dim, index);
+              return XlaHelpers::ShapeOfXlaOp(result);
+            },
+            /*num_outputs=*/1, xla::util::MHash(dim, index)),
+        dim_(std::move(dim)),
+        index_(std::move(index)) {}
+
+  NodePtr Clone(OpList operands) const override {
+    return MakeNode<Select>(operands.at(0), dim_, index_);
+  }
+
+  XlaOpVector Lower(LoweringContext* loctx) const override {
+    xla::XlaOp result =
+        LowerSelect(loctx->GetOutputOp(operand(0)), dim_, index_);
+    return ReturnOp(result, loctx);
+  }
+
+  std::string ToString() const override {
+    std::stringstream ss;
+    ss << Node::ToString();
+    OpFieldToString(ss, "dim", dim_);
+    OpFieldToString(ss, "index", index_);
+    return ss.str();
+  }
+
+ private:
+  xla::int64 dim_;
+  xla::int64 index_;
 };
 
 class Sigmoid : public Node {
@@ -1984,6 +2418,41 @@ class Squeeze : public Node {
   XlaOpVector Lower(LoweringContext* loctx) const override {
     xla::XlaOp result = LowerSqueeze(
         loctx->GetOutputOp(operand(0)), dim_);
+    return ReturnOp(result, loctx);
+  }
+
+  std::string ToString() const override {
+    std::stringstream ss;
+    ss << Node::ToString();
+    OpFieldToString(ss, "dim", dim_);
+    return ss.str();
+  }
+
+ private:
+  xla::int64 dim_;
+};
+
+class Stack : public Node {
+ public:
+  Stack(absl::Span<const Value> input, xla::int64 dim)
+      : Node(
+            ir::OpKind(at::aten::stack), input,
+            [&]() {
+              xla::XlaBuilder b("InferOutputShape");
+              auto input_ir = MakeParameterList(&b, 0, input, "p0");
+              xla::XlaOp result = BuildStack(input_ir, dim);
+              return XlaHelpers::ShapeOfXlaOp(result);
+            },
+            /*num_outputs=*/1, xla::util::MHash(dim)),
+        dim_(std::move(dim)) {}
+
+  NodePtr Clone(OpList operands) const override {
+    return MakeNode<Stack>(operands.subspan(0), dim_);
+  }
+
+  XlaOpVector Lower(LoweringContext* loctx) const override {
+    xla::XlaOp result =
+        BuildStack(GetArrayOperands(loctx, operands(), 0), dim_);
     return ReturnOp(result, loctx);
   }
 
@@ -2489,6 +2958,14 @@ OpaqueXLATensor* XLATensor_atanh(OpaqueXLATensor* input) {
       swift_xla::ir::MakeNode<swift_xla::ir::ops::Atanh>(input_ir_value)));
 }
 
+OpaqueXLATensor* XLATensor_cat(OpaqueXLATensorArrayRef input, int64_t dim) {
+  auto input_ir_value = swift_xla::UnpackIrValues(input);
+  return new swift_xla::XLATensor(swift_xla::FirstTensor(input)->CreateFrom(
+      swift_xla::ir::MakeNode<swift_xla::ir::ops::Cat>(
+          input_ir_value,
+          swift_xla::ir::ops::CanonicalizeCat(input_ir_value, dim))));
+}
+
 OpaqueXLATensor* XLATensor_ceil(OpaqueXLATensor* input) {
   auto input_ir_value = input->GetIrValue();
    return new swift_xla::XLATensor(input->CreateFrom(
@@ -2533,11 +3010,46 @@ OpaqueXLATensor* XLATensor_cumsum(OpaqueXLATensor* input, int64_t dim, Optional_
       swift_xla::ir::MakeNode<swift_xla::ir::ops::Cumsum>(input_ir_value, swift_xla::XlaHelpers::GetCanonicalDimensionIndex(dim, input_ir_value.shape().rank()), dtype.value(), exclusive, reverse)));
 }
 
+OpaqueXLATensor* XLATensor_diagonal_value(OpaqueXLATensor* input,
+                                          int64_t offset, int64_t dim1,
+                                          int64_t dim2) {
+  auto input_ir_value = input->GetIrValue();
+  return new swift_xla::XLATensor(input->CreateFrom(
+      swift_xla::ir::MakeNode<swift_xla::ir::ops::DiagonalValue>(
+          input_ir_value, offset,
+          swift_xla::XlaHelpers::GetCanonicalDimensionIndex(
+              dim1, input_ir_value.shape().rank()),
+          swift_xla::XlaHelpers::GetCanonicalDimensionIndex(
+              dim2, input_ir_value.shape().rank()))));
+}
+
 OpaqueXLATensor* XLATensor_div(OpaqueXLATensor* lhs, OpaqueXLATensor* rhs) {
   auto lhs_ir_value = lhs->GetIrValue();
   auto rhs_ir_value = rhs->GetIrValue();
    return new swift_xla::XLATensor(lhs->CreateFrom(
       swift_xla::ir::MakeNode<swift_xla::ir::ops::Div>(lhs_ir_value, rhs_ir_value)));
+}
+
+OpaqueXLATensor* XLATensor_dynamic_slice(OpaqueXLATensor* base,
+                                         OpaqueXLATensorArrayRef start_indices,
+                                         Int64ArrayRef slice_shapes) {
+  auto base_ir_value = base->GetIrValue();
+  auto start_indices_ir_value = swift_xla::UnpackIrValues(start_indices);
+  return new swift_xla::XLATensor(base->CreateFrom(
+      swift_xla::ir::MakeNode<swift_xla::ir::ops::DynamicSlice>(
+          base_ir_value, start_indices_ir_value,
+          swift_xla::XlaHelpers::I64List(slice_shapes.slice()))));
+}
+
+OpaqueXLATensor* XLATensor_dynamic_update_slice(
+    OpaqueXLATensor* base, OpaqueXLATensor* update,
+    OpaqueXLATensorArrayRef start_indices) {
+  auto base_ir_value = base->GetIrValue();
+  auto update_ir_value = update->GetIrValue();
+  auto start_indices_ir_value = swift_xla::UnpackIrValues(start_indices);
+  return new swift_xla::XLATensor(base->CreateFrom(
+      swift_xla::ir::MakeNode<swift_xla::ir::ops::DynamicUpdateSlice>(
+          base_ir_value, update_ir_value, start_indices_ir_value)));
 }
 
 OpaqueXLATensor* XLATensor_eq(OpaqueXLATensor* lhs, OpaqueXLATensor* rhs) {
@@ -2758,11 +3270,50 @@ OpaqueXLATensor* XLATensor_neg(OpaqueXLATensor* input) {
       swift_xla::ir::MakeNode<swift_xla::ir::ops::Neg>(input_ir_value)));
 }
 
+OpaqueXLATensor* XLATensor_nll_loss(OpaqueXLATensor* logits,
+                                    OpaqueXLATensor* labels,
+                                    int64_t ignore_index) {
+  auto logits_ir_value = logits->GetIrValue();
+  auto labels_ir_value = labels->GetIrValue();
+  return new swift_xla::XLATensor(
+      logits->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::NllLoss>(
+          logits_ir_value, labels_ir_value, ignore_index)));
+}
+
+OpaqueXLATensor* XLATensor_permute_value(OpaqueXLATensor* input,
+                                         Int64ArrayRef dims) {
+  auto input_ir_value = input->GetIrValue();
+  return new swift_xla::XLATensor(input->CreateFrom(
+      swift_xla::ir::MakeNode<swift_xla::ir::ops::PermuteValue>(
+          input_ir_value, swift_xla::XlaHelpers::I64List(dims.slice()))));
+}
+
+OpaqueXLATensor* XLATensor_physical_cast(OpaqueXLATensor* input,
+                                         XLATensorScalarType dtype) {
+  auto input_ir_value = input->GetIrValue();
+  return new swift_xla::XLATensor(input->CreateFrom(
+      swift_xla::ir::MakeNode<swift_xla::ir::ops::PhysicalCast>(
+          input_ir_value, ToScalarType(dtype))));
+}
+
 OpaqueXLATensor* XLATensor_pow(OpaqueXLATensor* input, OpaqueXLATensor* other) {
   auto input_ir_value = input->GetIrValue();
   auto other_ir_value = other->GetIrValue();
    return new swift_xla::XLATensor(input->CreateFrom(
       swift_xla::ir::MakeNode<swift_xla::ir::ops::Pow>(input_ir_value, other_ir_value)));
+}
+
+OpaqueXLATensor* XLATensor_prod(OpaqueXLATensor* input, Int64ArrayRef dims,
+                                bool keep_reduced_dimensions,
+                                Optional_XLAScalarType dtype) {
+  auto input_ir_value = input->GetIrValue();
+  return new swift_xla::XLATensor(
+      input->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::Prod>(
+                            input_ir_value,
+                            swift_xla::XlaHelpers::GetCanonicalDimensionIndices(
+                                dims.slice(), input_ir_value.shape().rank()),
+                            keep_reduced_dimensions, dtype.value()),
+                        dtype.value()));
 }
 
 OpaqueXLATensor* XLATensor_relu(OpaqueXLATensor* input) {
@@ -2778,10 +3329,44 @@ OpaqueXLATensor* XLATensor_rem(OpaqueXLATensor* input, OpaqueXLATensor* other) {
       swift_xla::ir::MakeNode<swift_xla::ir::ops::Rem>(input_ir_value, other_ir_value)));
 }
 
+OpaqueXLATensor* XLATensor_repeat(OpaqueXLATensor* input,
+                                  Int64ArrayRef repeats) {
+  auto input_ir_value = input->GetIrValue();
+  return new swift_xla::XLATensor(
+      input->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::Repeat>(
+          input_ir_value, swift_xla::XlaHelpers::I64List(repeats.slice()))));
+}
+
+OpaqueXLATensor* XLATensor_resize_value(OpaqueXLATensor* input,
+                                        Int64ArrayRef repeats) {
+  auto input_ir_value = input->GetIrValue();
+  return new swift_xla::XLATensor(input->CreateFrom(
+      swift_xla::ir::MakeNode<swift_xla::ir::ops::ResizeValue>(
+          input_ir_value, swift_xla::XlaHelpers::I64List(repeats.slice()))));
+}
+
+OpaqueXLATensor* XLATensor_round_to_even(OpaqueXLATensor* input) {
+  auto input_ir_value = input->GetIrValue();
+  return new swift_xla::XLATensor(input->CreateFrom(
+      swift_xla::ir::MakeNode<swift_xla::ir::ops::RoundToEven>(
+          input_ir_value)));
+}
+
 OpaqueXLATensor* XLATensor_rsqrt(OpaqueXLATensor* input) {
   auto input_ir_value = input->GetIrValue();
    return new swift_xla::XLATensor(input->CreateFrom(
       swift_xla::ir::MakeNode<swift_xla::ir::ops::Rsqrt>(input_ir_value)));
+}
+
+OpaqueXLATensor* XLATensor_select(OpaqueXLATensor* input, int64_t dim,
+                                  int64_t index) {
+  auto input_ir_value = input->GetIrValue();
+  return new swift_xla::XLATensor(
+      input->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::Select>(
+          input_ir_value,
+          swift_xla::XlaHelpers::GetCanonicalDimensionIndex(
+              dim, input_ir_value.shape().rank()),
+          index)));
 }
 
 OpaqueXLATensor* XLATensor_sigmoid(OpaqueXLATensor* input) {
@@ -2830,6 +3415,14 @@ OpaqueXLATensor* XLATensor_squeeze(OpaqueXLATensor* input, int64_t dim) {
   auto input_ir_value = input->GetIrValue();
    return new swift_xla::XLATensor(input->CreateFrom(
       swift_xla::ir::MakeNode<swift_xla::ir::ops::Squeeze>(input_ir_value, swift_xla::XlaHelpers::GetCanonicalDimensionIndex(dim, input_ir_value.shape().rank()))));
+}
+
+OpaqueXLATensor* XLATensor_stack(OpaqueXLATensorArrayRef input, int64_t dim) {
+  auto input_ir_value = swift_xla::UnpackIrValues(input);
+  return new swift_xla::XLATensor(swift_xla::FirstTensor(input)->CreateFrom(
+      swift_xla::ir::MakeNode<swift_xla::ir::ops::Stack>(
+          input_ir_value,
+          swift_xla::ir::ops::CanonicalizeStack(input_ir_value, dim))));
 }
 
 OpaqueXLATensor* XLATensor_sub(OpaqueXLATensor* lhs, OpaqueXLATensor* rhs) {

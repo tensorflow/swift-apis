@@ -59,6 +59,11 @@
   shape_fn: input
   lower_fn: xla::Atanh
 
+- def: "cat(input: [Tensor], dim: Int64) -> Tensor"
+  extras: ["canonicalize dim input CanonicalizeCat"]
+  x10_enum: at::aten::cat
+  lower_fn: BuildCat
+
 - def: "ceil(input: Tensor) -> Tensor"
   x10_enum: at::aten::ceil
   shape_fn: input
@@ -96,9 +101,22 @@
   shape_fn: CumOpShapeFn
   lower_fn: LowerCumSum
 
+- def: "diagonal_value(input: Tensor, offset: Int64, dim1: Int64, dim2: Int64) -> Tensor"
+  extras: ["canonicalize dim1 input", "canonicalize dim2 input"]
+  x10_enum: at::aten::diagonal
+  lower_fn: BuildDiagonal
+
 - def: "div(lhs: Tensor, rhs: Tensor) -> Tensor"
   x10_enum: at::aten::div
   lower_fn: LowerBinaryOp<xla::Div>
+
+- def: "dynamic_slice(base: Tensor, start_indices: [Tensor], slice_shapes: [Int64]) -> Tensor"
+  x10_enum: at::aten::xla_dynamic_slice
+  lower_fn: xla::DynamicSlice
+
+- def: "dynamic_update_slice(base: Tensor, update: Tensor, start_indices: [Tensor]) -> Tensor"
+  x10_enum: at::aten::xla_dynamic_update_slice
+  lower_fn: xla::DynamicUpdateSlice
 
 - def: "eq(lhs: Tensor, rhs: Tensor) -> Tensor"
   x10_enum: at::aten::eq
@@ -256,9 +274,28 @@
   shape_fn: input
   lower_fn: xla::Neg
 
+- def: "nll_loss(logits: Tensor, labels: Tensor, ignore_index: Int64) -> Tensor"
+  x10_enum: at::aten::nll_loss
+  lower_fn: LowerNllLoss
+
+- def: "permute_value(input: Tensor, dims: [Int64]) -> Tensor"
+  x10_enum: at::aten::permute
+  lower_fn: xla::Transpose
+
+- def: "physical_cast(input: Tensor, dtype: ScalarType) -> Tensor"
+  x10_enum: xla_symbols::cast
+  shape_fn: ShapeLogicalCast
+  lower_fn: LowerLogicalCast
+
 - def: "pow(input: Tensor, other: Tensor) -> Tensor"
   x10_enum: at::aten::pow
   lower_fn: xla::Pow
+
+- def: "prod(input: Tensor, dims: [Int64], keep_reduced_dimensions: Bool, dtype: ScalarType?) -> Tensor"
+  extras: ["canonicalize dims input"]
+  x10_enum: at::aten::prod
+  lower_fn: LowerProd
+  result_dtype: dtype
 
 - def: "relu(input: Tensor) -> Tensor"
   x10_enum: at::aten::relu
@@ -268,10 +305,28 @@
   x10_enum: at::aten::xla_rem
   lower_fn: xla::Rem
 
+- def: "repeat(input: Tensor, repeats: [Int64]) -> Tensor"
+  x10_enum: at::aten::repeat
+  lower_fn: BuildRepeat
+
+- def: "resize_value(input: Tensor, repeats: [Int64]) -> Tensor"
+  x10_enum: at::aten::resize
+  lower_fn: BuildResize
+
+- def: "round_to_even(input: Tensor) -> Tensor"
+  x10_enum: at::aten::round_to_even
+  lower_fn: xla::RoundToEven
+  shape_fn: input
+
 - def: "rsqrt(input: Tensor) -> Tensor"
   x10_enum: at::aten::rsqrt
   shape_fn: input
   lower_fn: xla::Rsqrt
+
+- def: "select(input: Tensor, dim: Int64, index: Int64) -> Tensor"
+  extras: ["canonicalize dim input"]
+  x10_enum: at::aten::select
+  lower_fn: LowerSelect
 
 - def: "sigmoid(input: Tensor) -> Tensor"
   x10_enum: at::aten::sigmoid
@@ -313,6 +368,11 @@
   extras: ["canonicalize dim input"]
   x10_enum: at::aten::squeeze
   lower_fn: LowerSqueeze
+
+- def: "stack(input: [Tensor], dim: Int64) -> Tensor"
+  extras: ["canonicalize dim input CanonicalizeStack"]
+  x10_enum: at::aten::stack
+  lower_fn: BuildStack
 
 - def: "sub(lhs: Tensor, rhs: Tensor) -> Tensor"
   x10_enum: at::aten::sub
