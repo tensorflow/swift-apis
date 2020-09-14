@@ -93,6 +93,10 @@ public struct TensorHandle<Scalar> where Scalar: _TensorFlowDataTypeCompatible {
 
   public var _cTensorHandle: CTensorHandle { handle._cTensorHandle }
 
+  // The following is a spacer intended to temporarily work around a compiler crash induced
+  // by zero-tagging optimization below.
+  var _spacer: UInt8 = 0
+
   /// An internal marker to identify scalar zero tensors, for use in optimizations.
   @usableFromInline
   internal var _isScalarZero = false
