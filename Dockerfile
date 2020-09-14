@@ -36,7 +36,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 ARG DEBCONF_NONINTERACTIVE_SEEN=true
 RUN apt-get -yq update                                                          \
  && apt-get -yq install --no-install-recommends cmake ninja-build               \
- && apt-get -yq install --no-install-recommends python-dev python-pip           \
+ && apt-get -yq install --no-install-recommends python-dev python-pip python-setuptools \
  && apt-get -yq install --no-install-recommends bazel-$bazel_version            \
  && apt-get clean                                                               \
  && rm -rf /tmp/* /var/tmp/* /var/lib/apt/archive/* /var/lib/apt/lists/*
