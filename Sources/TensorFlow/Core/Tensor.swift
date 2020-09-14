@@ -35,6 +35,10 @@ public struct Tensor<Scalar: TensorFlowScalar> {
   /// - Note: `handle` is public to allow user defined ops, but should not normally be used.
   public let handle: TensorHandle<Scalar>
 
+  // The following is a spacer intended to temporarily work around a compiler crash induced
+  // by the zero-tagging optimization residing in TensorHandle.
+  var _spacer: UInt8 = 0
+
   @inlinable
   public init(handle: TensorHandle<Scalar>) {
     self.handle = handle
