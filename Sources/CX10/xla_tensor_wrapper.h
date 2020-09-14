@@ -332,9 +332,9 @@ XLA_API OpaqueXLATensor* XLATensor_mul(OpaqueXLATensor* a, OpaqueXLATensor* b);
 XLA_API OpaqueXLATensor* XLATensor_mm(OpaqueXLATensor* a, OpaqueXLATensor* b);
 XLA_API OpaqueXLATensor* XLATensor_ne(OpaqueXLATensor* a, OpaqueXLATensor* b);
 XLA_API OpaqueXLATensor* XLATensor_neg(OpaqueXLATensor* a);
-XLA_API OpaqueXLATensor*
-XLATensor_nll_loss(OpaqueXLATensor* input, OpaqueXLATensor* target,
-                   int ignore_index);
+XLA_API OpaqueXLATensor* XLATensor_nll_loss(OpaqueXLATensor* input,
+                                            OpaqueXLATensor* target,
+                                            int64_t ignore_index);
 XLA_API OpaqueXLATensor*
 XLATensor_permute_value(OpaqueXLATensor* a, Int64ArrayRef arr);
 XLA_API OpaqueXLATensor* XLATensor_physical_cast(

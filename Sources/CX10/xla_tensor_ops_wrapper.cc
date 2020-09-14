@@ -26,6 +26,8 @@
 #include "tensorflow/compiler/tf2xla/xla_tensor/helpers.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/layout_manager.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/lowering_context.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/matrix.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/nll_loss.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/infer_output_shape.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/reduction.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/segment_reduction_ops.h"
@@ -77,6 +79,19 @@ void OpFieldToString(std::ostream& stream, const char* field_name,
   else
     stream << value.toLong();
 }
+const XLATensor* FirstTensor(OpaqueXLATensorArrayRef array) {
+  XLA_CHECK_GE(array.size, 1);
+  return array.data[0];
+}
+std::vector<ir::Value> UnpackIrValues(OpaqueXLATensorArrayRef array) {
+  std::vector<ir::Value> out;
+  out.reserve(array.size);
+  for (size_t i = 0; i < array.size; ++i) {
+    out.push_back(array.data[i]->GetIrValue());
+  }
+  return out;
+}
+
 }  // namespace swift_xla
 
 namespace swift_xla {
@@ -323,6 +338,89 @@ xla::XlaOp LowerTfStatelessRandomUniform(xla::Shape shape, xla::XlaOp seeds,
                   << xla::primitive_util::LowercasePrimitiveTypeName(type);
     }
   }
+}
+
+xla::XlaOp LowerNllLoss(xla::XlaOp logits, xla::XlaOp labels,
+                        xla::int64 ignore_index) {
+  return BuildNllLoss(logits, labels, absl::nullopt, ignore_index,
+                      ReductionMode::kMean);
+}
+
+xla::XlaOp LowerProd(xla::XlaOp input,
+                     const std::vector<xla::int64>& dimensions,
+                     bool keep_reduced_dimensions,
+                     c10::optional<at::ScalarType> dtype) {
+  xla::XlaOp casted_input;
+  if (dtype) {
+    casted_input = ConvertTo(input, XlaHelpers::TypeOfXlaOp(input),
+                             MakeXlaPrimitiveType(*dtype, /*device=*/nullptr),
+                             /*device=*/nullptr);
+  } else {
+    casted_input = ConvertToNumeric(input, XlaHelpers::TypeOfXlaOp(input));
+  }
+  return BuildProd(casted_input, dimensions, keep_reduced_dimensions);
+}
+
+xla::XlaOp LowerSelect(xla::XlaOp input, xla::int64 dim, xla::int64 index) {
+  auto input_shape = XlaHelpers::ShapeOfXlaOp(input);
+  index =
+      XlaHelpers::GetCanonicalPosition(input_shape.dimensions(), dim, index);
+  return SqueezeTrivialDimension(
+      xla::SliceInDim(input, index, index + 1, 1, dim), dim);
+}
+
+std::vector<xla::XlaOp> GetArrayOperands(LoweringContext* loctx,
+                                         absl::Span<const Output> operands,
+                                         size_t offset) {
+  std::vector<xla::XlaOp> inputs;
+  operands = operands.subspan(offset);
+  inputs.reserve(operands.size());
+  for (auto& operand : operands) {
+    inputs.push_back(loctx->GetOutputOp(operand));
+  }
+  return inputs;
+}
+
+std::vector<xla::XlaOp> MakeParameterList(xla::XlaBuilder* b, size_t offset,
+                                          absl::Span<const Value> inputs,
+                                          const char* name) {
+  std::vector<xla::XlaOp> out;
+  out.reserve(inputs.size());
+  for (size_t i = 0; i < inputs.size(); ++i) {
+    out.push_back(xla::Parameter(b, offset + i, inputs[i].shape(),
+                                 absl::StrCat(name, "_", i)));
+  }
+  return out;
+}
+
+std::vector<Value> TensorArgsConcat(absl::Span<const Value> inputa,
+                                    absl::Span<const Value> inputb) {
+  std::vector<Value> out;
+  out.reserve(inputa.size() + inputb.size());
+  out.insert(out.end(), inputa.begin(), inputa.end());
+  out.insert(out.end(), inputb.begin(), inputb.end());
+  return out;
+}
+
+xla::int64 CanonicalizeStack(absl::Span<const Value> inputs, xla::int64 dim) {
+  XLA_CHECK_GE(inputs.size(), 1);
+  return swift_xla::XlaHelpers::GetCanonicalDimensionIndex(
+      dim, inputs[0].shape().rank() + 1);
+}
+
+xla::int64 CanonicalizeCat(absl::Span<const Value> inputs, xla::int64 dim) {
+  XLA_CHECK_GE(inputs.size(), 1);
+  xla::Shape first_shape = inputs[0].shape();
+  dim = swift_xla::XlaHelpers::GetCanonicalDimensionIndex(dim,
+                                                          first_shape.rank());
+  first_shape.DeleteDimension(dim);
+  for (size_t i = 1; i < inputs.size(); ++i) {
+    xla::Shape tensor_shape = inputs[i].shape();
+    tensor_shape.DeleteDimension(dim);
+    XLA_CHECK(xla::ShapeUtil::Compatible(first_shape, tensor_shape))
+        << first_shape << " vs. " << tensor_shape;
+  }
+  return dim;
 }
 
 }  // namespace

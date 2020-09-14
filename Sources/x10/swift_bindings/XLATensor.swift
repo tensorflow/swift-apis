@@ -727,7 +727,7 @@ extension XLATensor {
     return XLATensor(_handle: XLATensor_neg(a.handle))
   }
 
-  static func nll_loss(_ input: XLATensor, _ target: XLATensor, _ ignore_index: Int32) -> XLATensor
+  static func nll_loss(_ input: XLATensor, _ target: XLATensor, _ ignore_index: Int64) -> XLATensor
   {
     defer { _fixLifetime(input) }
     defer { _fixLifetime(target) }
@@ -990,7 +990,6 @@ extension XLATensor {
     _ device: Device
   ) -> XLATensor {
     defer { _fixLifetime(seeds) }
-    let cdevice = device.cdevice
     return dims.withArrayRef { dims in
       XLATensor(
         _handle: XLATensor_tf_StatelessRandomUniform(
