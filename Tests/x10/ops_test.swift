@@ -3375,6 +3375,31 @@ final class TensorTests: XCTestCase {
     }
   }
 
+  func testSvd() throws {
+    let dims = [4, 7]
+    for m in dims {
+      for n in dims {
+        for fullMatrices in [true, false] {
+          let x = Tensor<Float>.rand([m, n])
+          let actual = x.svd(fullMatrices: fullMatrices)
+          let expected = TF(x).svd(fullMatrices: fullMatrices)
+          var diag = _Raw.diag(diagonal: TF(actual.s))
+          let k = actual.s.shape[0]
+          diag = _Raw.pad(diag, paddings: Tensor<Int32>(shape: [2,2],
+              scalars: [0, Int32(actual.u!.shape[1] - k), 0, Int32(actual.v!.shape[1] - k)]))
+          let x2 = matmul(matmul(TF(actual.u!), diag),
+              transposed: false, TF(actual.v!), transposed: true)
+          XCTAssert(
+            allClose(actual: x2, expected: TF(x), relTolerance: 4e-3))
+          XCTAssert(
+            allClose(actual: TF(actual.s), expected: expected.s, relTolerance: 4e-3))
+          XCTAssertEqual(actual.u!.shape, expected.u!.shape)
+          XCTAssertEqual(actual.v!.shape, expected.v!.shape)
+        }
+      }
+    }
+  }
+
   func testTan() throws {
     var x = Tensor<Float>(shape: [2, 2], scalars: [1, 2, 5, 3], on: x10)
     let expected = tan(TF(x))
@@ -3683,6 +3708,7 @@ extension TensorTests {
     ("testStatelessUniformRandomInt", testStatelessUniformRandomInt),
     ("testSub", testSub),
     ("testSum", testSum),
+    ("testSvd", testSvd),
     ("testTan", testTan),
     ("testTanh", testTanh),
     ("testTile", testTile),

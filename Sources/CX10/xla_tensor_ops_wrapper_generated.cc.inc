@@ -1968,6 +1968,40 @@ class Prod : public Node {
   c10::optional<at::ScalarType> dtype_;
 };
 
+class Qr : public Node {
+ public:
+  Qr(const Value& input, bool some)
+      : Node(
+            ir::OpKind(at::aten::qr), {input},
+            [&]() {
+              xla::XlaBuilder b("InferOutputShape");
+              auto input_ir = xla::Parameter(&b, 0, input.shape(), "p0");
+              auto results = LowerQR(input_ir, some);
+              return ShapeOfXlaOpList(results);
+            },
+            /*num_outputs=*/2, xla::util::MHash(some)),
+        some_(std::move(some)) {}
+
+  NodePtr Clone(OpList operands) const override {
+    return MakeNode<Qr>(operands.at(0), some_);
+  }
+
+  XlaOpVector Lower(LoweringContext* loctx) const override {
+    auto result = LowerQR(loctx->GetOutputOp(operand(0)), some_);
+    return ReturnOps(result, loctx);
+  }
+
+  std::string ToString() const override {
+    std::stringstream ss;
+    ss << Node::ToString();
+    OpFieldToString(ss, "some", some_);
+    return ss.str();
+  }
+
+ private:
+  bool some_;
+};
+
 class Relu : public Node {
  public:
   Relu(const Value& input)
@@ -2543,6 +2577,44 @@ class Sum : public Node {
   c10::optional<at::ScalarType> dtype_;
 };
 
+class Svd : public Node {
+ public:
+  Svd(const Value& input, bool compute_uv, bool full_matrix)
+      : Node(
+            ir::OpKind(at::aten::svd), {input},
+            [&]() {
+              xla::XlaBuilder b("InferOutputShape");
+              auto input_ir = xla::Parameter(&b, 0, input.shape(), "p0");
+              auto results = LowerSVD(input_ir, compute_uv, full_matrix);
+              return ShapeOfXlaOpList(results);
+            },
+            /*num_outputs=*/3, xla::util::MHash(compute_uv, full_matrix)),
+        compute_uv_(std::move(compute_uv)),
+        full_matrix_(std::move(full_matrix)) {}
+
+  NodePtr Clone(OpList operands) const override {
+    return MakeNode<Svd>(operands.at(0), compute_uv_, full_matrix_);
+  }
+
+  XlaOpVector Lower(LoweringContext* loctx) const override {
+    auto result =
+        LowerSVD(loctx->GetOutputOp(operand(0)), compute_uv_, full_matrix_);
+    return ReturnOps(result, loctx);
+  }
+
+  std::string ToString() const override {
+    std::stringstream ss;
+    ss << Node::ToString();
+    OpFieldToString(ss, "compute_uv", compute_uv_);
+    OpFieldToString(ss, "full_matrix", full_matrix_);
+    return ss.str();
+  }
+
+ private:
+  bool compute_uv_;
+  bool full_matrix_;
+};
+
 class Tan : public Node {
  public:
   Tan(const Value& input)
@@ -2883,78 +2955,93 @@ class XlaSlice : public Node {
 
 OpaqueXLATensor* XLATensor_abs(OpaqueXLATensor* input) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
+  return new swift_xla::XLATensor(input->CreateFrom(
       swift_xla::ir::MakeNode<swift_xla::ir::ops::Abs>(input_ir_value)));
 }
 
 OpaqueXLATensor* XLATensor_acos(OpaqueXLATensor* input) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
+  return new swift_xla::XLATensor(input->CreateFrom(
       swift_xla::ir::MakeNode<swift_xla::ir::ops::Acos>(input_ir_value)));
 }
 
 OpaqueXLATensor* XLATensor_acosh(OpaqueXLATensor* input) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
+  return new swift_xla::XLATensor(input->CreateFrom(
       swift_xla::ir::MakeNode<swift_xla::ir::ops::Acosh>(input_ir_value)));
 }
 
 OpaqueXLATensor* XLATensor_add(OpaqueXLATensor* lhs, OpaqueXLATensor* rhs) {
   auto lhs_ir_value = lhs->GetIrValue();
   auto rhs_ir_value = rhs->GetIrValue();
-   return new swift_xla::XLATensor(lhs->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::Add>(lhs_ir_value, rhs_ir_value)));
+  return new swift_xla::XLATensor(
+      lhs->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::Add>(
+          lhs_ir_value, rhs_ir_value)));
 }
 
 OpaqueXLATensor* XLATensor_all(OpaqueXLATensor* input, Int64ArrayRef dims, bool keep_reduced_dimensions) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::All>(input_ir_value, swift_xla::XlaHelpers::GetCanonicalDimensionIndices(dims.slice(), input_ir_value.shape().rank()), keep_reduced_dimensions)));
+  return new swift_xla::XLATensor(
+      input->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::All>(
+          input_ir_value,
+          swift_xla::XlaHelpers::GetCanonicalDimensionIndices(
+              dims.slice(), input_ir_value.shape().rank()),
+          keep_reduced_dimensions)));
 }
 
 OpaqueXLATensor* XLATensor_any(OpaqueXLATensor* input, Int64ArrayRef dims, bool keep_reduced_dimensions) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::Any>(input_ir_value, swift_xla::XlaHelpers::GetCanonicalDimensionIndices(dims.slice(), input_ir_value.shape().rank()), keep_reduced_dimensions)));
+  return new swift_xla::XLATensor(
+      input->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::Any>(
+          input_ir_value,
+          swift_xla::XlaHelpers::GetCanonicalDimensionIndices(
+              dims.slice(), input_ir_value.shape().rank()),
+          keep_reduced_dimensions)));
 }
 
 OpaqueXLATensor* XLATensor_argmax(OpaqueXLATensor* input, int64_t dim, bool keepdim) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(swift_xla::XLATensor::Create(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::Argmax>(input_ir_value, swift_xla::XlaHelpers::GetCanonicalDimensionIndex(dim, input_ir_value.shape().rank()), keepdim),
-      input->GetDevice(),
-      at::ScalarType::Long));
+  return new swift_xla::XLATensor(swift_xla::XLATensor::Create(
+      swift_xla::ir::MakeNode<swift_xla::ir::ops::Argmax>(
+          input_ir_value,
+          swift_xla::XlaHelpers::GetCanonicalDimensionIndex(
+              dim, input_ir_value.shape().rank()),
+          keepdim),
+      input->GetDevice(), at::ScalarType::Long));
 }
 
 OpaqueXLATensor* XLATensor_argmin(OpaqueXLATensor* input, int64_t dim, bool keepdim) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(swift_xla::XLATensor::Create(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::Argmin>(input_ir_value, swift_xla::XlaHelpers::GetCanonicalDimensionIndex(dim, input_ir_value.shape().rank()), keepdim),
-      input->GetDevice(),
-      at::ScalarType::Long));
+  return new swift_xla::XLATensor(swift_xla::XLATensor::Create(
+      swift_xla::ir::MakeNode<swift_xla::ir::ops::Argmin>(
+          input_ir_value,
+          swift_xla::XlaHelpers::GetCanonicalDimensionIndex(
+              dim, input_ir_value.shape().rank()),
+          keepdim),
+      input->GetDevice(), at::ScalarType::Long));
 }
 
 OpaqueXLATensor* XLATensor_asin(OpaqueXLATensor* input) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
+  return new swift_xla::XLATensor(input->CreateFrom(
       swift_xla::ir::MakeNode<swift_xla::ir::ops::Asin>(input_ir_value)));
 }
 
 OpaqueXLATensor* XLATensor_asinh(OpaqueXLATensor* input) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
+  return new swift_xla::XLATensor(input->CreateFrom(
       swift_xla::ir::MakeNode<swift_xla::ir::ops::Asinh>(input_ir_value)));
 }
 
 OpaqueXLATensor* XLATensor_atan(OpaqueXLATensor* input) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
+  return new swift_xla::XLATensor(input->CreateFrom(
       swift_xla::ir::MakeNode<swift_xla::ir::ops::Atan>(input_ir_value)));
 }
 
 OpaqueXLATensor* XLATensor_atanh(OpaqueXLATensor* input) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
+  return new swift_xla::XLATensor(input->CreateFrom(
       swift_xla::ir::MakeNode<swift_xla::ir::ops::Atanh>(input_ir_value)));
 }
 
@@ -2968,7 +3055,7 @@ OpaqueXLATensor* XLATensor_cat(OpaqueXLATensorArrayRef input, int64_t dim) {
 
 OpaqueXLATensor* XLATensor_ceil(OpaqueXLATensor* input) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
+  return new swift_xla::XLATensor(input->CreateFrom(
       swift_xla::ir::MakeNode<swift_xla::ir::ops::Ceil>(input_ir_value)));
 }
 
@@ -2976,38 +3063,51 @@ OpaqueXLATensor* XLATensor_clamp(OpaqueXLATensor* input, OpaqueXLATensor* min, O
   auto input_ir_value = input->GetIrValue();
   auto min_ir_value = min->GetIrValue();
   auto max_ir_value = max->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::Clamp>(input_ir_value, min_ir_value, max_ir_value)));
+  return new swift_xla::XLATensor(
+      input->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::Clamp>(
+          input_ir_value, min_ir_value, max_ir_value)));
 }
 
 OpaqueXLATensor* XLATensor_constant_pad_nd(OpaqueXLATensor* input, Int64ArrayRef pad, XLAScalar value) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::ConstantPadNd>(input_ir_value, swift_xla::ir::ops::CanonicalizePad(input_ir_value.shape(), pad.slice()), atScalar(value))));
+  return new swift_xla::XLATensor(input->CreateFrom(
+      swift_xla::ir::MakeNode<swift_xla::ir::ops::ConstantPadNd>(
+          input_ir_value,
+          swift_xla::ir::ops::CanonicalizePad(input_ir_value.shape(),
+                                              pad.slice()),
+          atScalar(value))));
 }
 
 OpaqueXLATensor* XLATensor_cos(OpaqueXLATensor* input) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
+  return new swift_xla::XLATensor(input->CreateFrom(
       swift_xla::ir::MakeNode<swift_xla::ir::ops::Cos>(input_ir_value)));
 }
 
 OpaqueXLATensor* XLATensor_cosh(OpaqueXLATensor* input) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
+  return new swift_xla::XLATensor(input->CreateFrom(
       swift_xla::ir::MakeNode<swift_xla::ir::ops::Cosh>(input_ir_value)));
 }
 
 OpaqueXLATensor* XLATensor_cumprod(OpaqueXLATensor* input, int64_t dim, Optional_XLAScalarType dtype, bool exclusive, bool reverse) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::Cumprod>(input_ir_value, swift_xla::XlaHelpers::GetCanonicalDimensionIndex(dim, input_ir_value.shape().rank()), dtype.value(), exclusive, reverse)));
+  return new swift_xla::XLATensor(
+      input->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::Cumprod>(
+          input_ir_value,
+          swift_xla::XlaHelpers::GetCanonicalDimensionIndex(
+              dim, input_ir_value.shape().rank()),
+          dtype.value(), exclusive, reverse)));
 }
 
 OpaqueXLATensor* XLATensor_cumsum(OpaqueXLATensor* input, int64_t dim, Optional_XLAScalarType dtype, bool exclusive, bool reverse) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::Cumsum>(input_ir_value, swift_xla::XlaHelpers::GetCanonicalDimensionIndex(dim, input_ir_value.shape().rank()), dtype.value(), exclusive, reverse)));
+  return new swift_xla::XLATensor(
+      input->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::Cumsum>(
+          input_ir_value,
+          swift_xla::XlaHelpers::GetCanonicalDimensionIndex(
+              dim, input_ir_value.shape().rank()),
+          dtype.value(), exclusive, reverse)));
 }
 
 OpaqueXLATensor* XLATensor_diagonal_value(OpaqueXLATensor* input,
@@ -3026,8 +3126,9 @@ OpaqueXLATensor* XLATensor_diagonal_value(OpaqueXLATensor* input,
 OpaqueXLATensor* XLATensor_div(OpaqueXLATensor* lhs, OpaqueXLATensor* rhs) {
   auto lhs_ir_value = lhs->GetIrValue();
   auto rhs_ir_value = rhs->GetIrValue();
-   return new swift_xla::XLATensor(lhs->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::Div>(lhs_ir_value, rhs_ir_value)));
+  return new swift_xla::XLATensor(
+      lhs->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::Div>(
+          lhs_ir_value, rhs_ir_value)));
 }
 
 OpaqueXLATensor* XLATensor_dynamic_slice(OpaqueXLATensor* base,
@@ -3055,218 +3156,246 @@ OpaqueXLATensor* XLATensor_dynamic_update_slice(
 OpaqueXLATensor* XLATensor_eq(OpaqueXLATensor* lhs, OpaqueXLATensor* rhs) {
   auto lhs_ir_value = lhs->GetIrValue();
   auto rhs_ir_value = rhs->GetIrValue();
-   return new swift_xla::XLATensor(swift_xla::XLATensor::Create(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::Eq>(lhs_ir_value, rhs_ir_value),
-      lhs->GetDevice(),
-      at::ScalarType::Bool));
+  return new swift_xla::XLATensor(swift_xla::XLATensor::Create(
+      swift_xla::ir::MakeNode<swift_xla::ir::ops::Eq>(lhs_ir_value,
+                                                      rhs_ir_value),
+      lhs->GetDevice(), at::ScalarType::Bool));
 }
 
 OpaqueXLATensor* XLATensor_exp(OpaqueXLATensor* input) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
+  return new swift_xla::XLATensor(input->CreateFrom(
       swift_xla::ir::MakeNode<swift_xla::ir::ops::Exp>(input_ir_value)));
 }
 
 OpaqueXLATensor* XLATensor_expand(OpaqueXLATensor* input, Int64ArrayRef dims) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::Expand>(input_ir_value, swift_xla::ir::ops::CanonicalizeExpand(input_ir_value.shape(), dims.slice()))));
+  return new swift_xla::XLATensor(
+      input->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::Expand>(
+          input_ir_value, swift_xla::ir::ops::CanonicalizeExpand(
+                              input_ir_value.shape(), dims.slice()))));
 }
 
 OpaqueXLATensor* XLATensor_expm1(OpaqueXLATensor* input) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
+  return new swift_xla::XLATensor(input->CreateFrom(
       swift_xla::ir::MakeNode<swift_xla::ir::ops::Expm1>(input_ir_value)));
 }
 
 OpaqueXLATensor* XLATensor_flip(OpaqueXLATensor* input, Int64ArrayRef dims) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::Flip>(input_ir_value, swift_xla::ir::ops::CanonicalizeFlip(input_ir_value.shape(), dims.slice()))));
+  return new swift_xla::XLATensor(
+      input->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::Flip>(
+          input_ir_value, swift_xla::ir::ops::CanonicalizeFlip(
+                              input_ir_value.shape(), dims.slice()))));
 }
 
 OpaqueXLATensor* XLATensor_floor(OpaqueXLATensor* input) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
+  return new swift_xla::XLATensor(input->CreateFrom(
       swift_xla::ir::MakeNode<swift_xla::ir::ops::Floor>(input_ir_value)));
 }
 
 OpaqueXLATensor* XLATensor_ge(OpaqueXLATensor* lhs, OpaqueXLATensor* rhs) {
   auto lhs_ir_value = lhs->GetIrValue();
   auto rhs_ir_value = rhs->GetIrValue();
-   return new swift_xla::XLATensor(swift_xla::XLATensor::Create(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::Ge>(lhs_ir_value, rhs_ir_value),
-      lhs->GetDevice(),
-      at::ScalarType::Bool));
+  return new swift_xla::XLATensor(swift_xla::XLATensor::Create(
+      swift_xla::ir::MakeNode<swift_xla::ir::ops::Ge>(lhs_ir_value,
+                                                      rhs_ir_value),
+      lhs->GetDevice(), at::ScalarType::Bool));
 }
 
 OpaqueXLATensor* XLATensor_gt(OpaqueXLATensor* lhs, OpaqueXLATensor* rhs) {
   auto lhs_ir_value = lhs->GetIrValue();
   auto rhs_ir_value = rhs->GetIrValue();
-   return new swift_xla::XLATensor(swift_xla::XLATensor::Create(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::Gt>(lhs_ir_value, rhs_ir_value),
-      lhs->GetDevice(),
-      at::ScalarType::Bool));
+  return new swift_xla::XLATensor(swift_xla::XLATensor::Create(
+      swift_xla::ir::MakeNode<swift_xla::ir::ops::Gt>(lhs_ir_value,
+                                                      rhs_ir_value),
+      lhs->GetDevice(), at::ScalarType::Bool));
 }
 
 OpaqueXLATensor* XLATensor_is_finite(OpaqueXLATensor* input) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(swift_xla::XLATensor::Create(
+  return new swift_xla::XLATensor(swift_xla::XLATensor::Create(
       swift_xla::ir::MakeNode<swift_xla::ir::ops::IsFinite>(input_ir_value),
-      input->GetDevice(),
-      at::ScalarType::Bool));
+      input->GetDevice(), at::ScalarType::Bool));
 }
 
 OpaqueXLATensor* XLATensor_is_inf(OpaqueXLATensor* input) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(swift_xla::XLATensor::Create(
+  return new swift_xla::XLATensor(swift_xla::XLATensor::Create(
       swift_xla::ir::MakeNode<swift_xla::ir::ops::IsInf>(input_ir_value),
-      input->GetDevice(),
-      at::ScalarType::Bool));
+      input->GetDevice(), at::ScalarType::Bool));
 }
 
 OpaqueXLATensor* XLATensor_is_nan(OpaqueXLATensor* input) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(swift_xla::XLATensor::Create(
+  return new swift_xla::XLATensor(swift_xla::XLATensor::Create(
       swift_xla::ir::MakeNode<swift_xla::ir::ops::IsNan>(input_ir_value),
-      input->GetDevice(),
-      at::ScalarType::Bool));
+      input->GetDevice(), at::ScalarType::Bool));
 }
 
 OpaqueXLATensor* XLATensor_le(OpaqueXLATensor* lhs, OpaqueXLATensor* rhs) {
   auto lhs_ir_value = lhs->GetIrValue();
   auto rhs_ir_value = rhs->GetIrValue();
-   return new swift_xla::XLATensor(swift_xla::XLATensor::Create(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::Le>(lhs_ir_value, rhs_ir_value),
-      lhs->GetDevice(),
-      at::ScalarType::Bool));
+  return new swift_xla::XLATensor(swift_xla::XLATensor::Create(
+      swift_xla::ir::MakeNode<swift_xla::ir::ops::Le>(lhs_ir_value,
+                                                      rhs_ir_value),
+      lhs->GetDevice(), at::ScalarType::Bool));
 }
 
 OpaqueXLATensor* XLATensor_log(OpaqueXLATensor* input) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
+  return new swift_xla::XLATensor(input->CreateFrom(
       swift_xla::ir::MakeNode<swift_xla::ir::ops::Log>(input_ir_value)));
 }
 
 OpaqueXLATensor* XLATensor_log1p(OpaqueXLATensor* input) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
+  return new swift_xla::XLATensor(input->CreateFrom(
       swift_xla::ir::MakeNode<swift_xla::ir::ops::Log1p>(input_ir_value)));
 }
 
 OpaqueXLATensor* XLATensor_log_softmax(OpaqueXLATensor* input, int64_t dim) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::LogSoftmax>(input_ir_value, swift_xla::XlaHelpers::GetCanonicalDimensionIndex(dim, input_ir_value.shape().rank()))));
+  return new swift_xla::XLATensor(
+      input->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::LogSoftmax>(
+          input_ir_value, swift_xla::XlaHelpers::GetCanonicalDimensionIndex(
+                              dim, input_ir_value.shape().rank()))));
 }
 
 OpaqueXLATensor* XLATensor_log_softmax_backward(OpaqueXLATensor* grad_output, OpaqueXLATensor* output, int64_t dim) {
   auto grad_output_ir_value = grad_output->GetIrValue();
   auto output_ir_value = output->GetIrValue();
-   return new swift_xla::XLATensor(grad_output->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::LogSoftmaxBackward>(grad_output_ir_value, output_ir_value, swift_xla::XlaHelpers::GetCanonicalDimensionIndex(dim, grad_output_ir_value.shape().rank()))));
+  return new swift_xla::XLATensor(grad_output->CreateFrom(
+      swift_xla::ir::MakeNode<swift_xla::ir::ops::LogSoftmaxBackward>(
+          grad_output_ir_value, output_ir_value,
+          swift_xla::XlaHelpers::GetCanonicalDimensionIndex(
+              dim, grad_output_ir_value.shape().rank()))));
 }
 
 OpaqueXLATensor* XLATensor_logicalAnd(OpaqueXLATensor* lhs, OpaqueXLATensor* rhs) {
   auto lhs_ir_value = lhs->GetIrValue();
   auto rhs_ir_value = rhs->GetIrValue();
-   return new swift_xla::XLATensor(lhs->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::LogicalAnd>(lhs_ir_value, rhs_ir_value)));
+  return new swift_xla::XLATensor(
+      lhs->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::LogicalAnd>(
+          lhs_ir_value, rhs_ir_value)));
 }
 
 OpaqueXLATensor* XLATensor_logical_cast(OpaqueXLATensor* input, XLATensorScalarType dtype) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::LogicalCast>(input_ir_value, ToScalarType(dtype)), ToScalarType(dtype)));
+  return new swift_xla::XLATensor(input->CreateFrom(
+      swift_xla::ir::MakeNode<swift_xla::ir::ops::LogicalCast>(
+          input_ir_value, ToScalarType(dtype)),
+      ToScalarType(dtype)));
 }
 
 OpaqueXLATensor* XLATensor_logicalNot(OpaqueXLATensor* input) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
+  return new swift_xla::XLATensor(input->CreateFrom(
       swift_xla::ir::MakeNode<swift_xla::ir::ops::LogicalNot>(input_ir_value)));
 }
 
 OpaqueXLATensor* XLATensor_logicalOr(OpaqueXLATensor* lhs, OpaqueXLATensor* rhs) {
   auto lhs_ir_value = lhs->GetIrValue();
   auto rhs_ir_value = rhs->GetIrValue();
-   return new swift_xla::XLATensor(lhs->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::LogicalOr>(lhs_ir_value, rhs_ir_value)));
+  return new swift_xla::XLATensor(
+      lhs->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::LogicalOr>(
+          lhs_ir_value, rhs_ir_value)));
 }
 
 OpaqueXLATensor* XLATensor_lt(OpaqueXLATensor* lhs, OpaqueXLATensor* rhs) {
   auto lhs_ir_value = lhs->GetIrValue();
   auto rhs_ir_value = rhs->GetIrValue();
-   return new swift_xla::XLATensor(swift_xla::XLATensor::Create(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::Lt>(lhs_ir_value, rhs_ir_value),
-      lhs->GetDevice(),
-      at::ScalarType::Bool));
+  return new swift_xla::XLATensor(swift_xla::XLATensor::Create(
+      swift_xla::ir::MakeNode<swift_xla::ir::ops::Lt>(lhs_ir_value,
+                                                      rhs_ir_value),
+      lhs->GetDevice(), at::ScalarType::Bool));
 }
 
 OpaqueXLATensor* XLATensor_matmul(OpaqueXLATensor* lhs, OpaqueXLATensor* rhs) {
   auto lhs_ir_value = lhs->GetIrValue();
   auto rhs_ir_value = rhs->GetIrValue();
-   return new swift_xla::XLATensor(lhs->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::Matmul>(lhs_ir_value, rhs_ir_value)));
+  return new swift_xla::XLATensor(
+      lhs->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::Matmul>(
+          lhs_ir_value, rhs_ir_value)));
 }
 
 OpaqueXLATensor* XLATensor_max(OpaqueXLATensor* input, int64_t dim, bool keepdim) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::Max>(input_ir_value, swift_xla::XlaHelpers::GetCanonicalDimensionIndex(dim, input_ir_value.shape().rank()), keepdim)));
+  return new swift_xla::XLATensor(
+      input->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::Max>(
+          input_ir_value,
+          swift_xla::XlaHelpers::GetCanonicalDimensionIndex(
+              dim, input_ir_value.shape().rank()),
+          keepdim)));
 }
 
 OpaqueXLATensor* XLATensor_maximum(OpaqueXLATensor* lhs, OpaqueXLATensor* rhs) {
   auto lhs_ir_value = lhs->GetIrValue();
   auto rhs_ir_value = rhs->GetIrValue();
-   return new swift_xla::XLATensor(lhs->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::Maximum>(lhs_ir_value, rhs_ir_value)));
+  return new swift_xla::XLATensor(
+      lhs->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::Maximum>(
+          lhs_ir_value, rhs_ir_value)));
 }
 
 OpaqueXLATensor* XLATensor_mean(OpaqueXLATensor* input, Int64ArrayRef dims, bool keep_reduced_dimensions, Optional_XLAScalarType dtype) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::Mean>(input_ir_value, swift_xla::XlaHelpers::GetCanonicalDimensionIndices(dims.slice(), input_ir_value.shape().rank()), keep_reduced_dimensions, dtype.value()), dtype.value()));
+  return new swift_xla::XLATensor(
+      input->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::Mean>(
+                            input_ir_value,
+                            swift_xla::XlaHelpers::GetCanonicalDimensionIndices(
+                                dims.slice(), input_ir_value.shape().rank()),
+                            keep_reduced_dimensions, dtype.value()),
+                        dtype.value()));
 }
 
 OpaqueXLATensor* XLATensor_min(OpaqueXLATensor* input, int64_t dim, bool keepdim) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::Min>(input_ir_value, swift_xla::XlaHelpers::GetCanonicalDimensionIndex(dim, input_ir_value.shape().rank()), keepdim)));
+  return new swift_xla::XLATensor(
+      input->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::Min>(
+          input_ir_value,
+          swift_xla::XlaHelpers::GetCanonicalDimensionIndex(
+              dim, input_ir_value.shape().rank()),
+          keepdim)));
 }
 
 OpaqueXLATensor* XLATensor_minimum(OpaqueXLATensor* lhs, OpaqueXLATensor* rhs) {
   auto lhs_ir_value = lhs->GetIrValue();
   auto rhs_ir_value = rhs->GetIrValue();
-   return new swift_xla::XLATensor(lhs->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::Minimum>(lhs_ir_value, rhs_ir_value)));
+  return new swift_xla::XLATensor(
+      lhs->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::Minimum>(
+          lhs_ir_value, rhs_ir_value)));
 }
 
 OpaqueXLATensor* XLATensor_mm(OpaqueXLATensor* lhs, OpaqueXLATensor* rhs) {
   auto lhs_ir_value = lhs->GetIrValue();
   auto rhs_ir_value = rhs->GetIrValue();
-   return new swift_xla::XLATensor(lhs->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::Mm>(lhs_ir_value, rhs_ir_value)));
+  return new swift_xla::XLATensor(
+      lhs->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::Mm>(
+          lhs_ir_value, rhs_ir_value)));
 }
 
 OpaqueXLATensor* XLATensor_mul(OpaqueXLATensor* lhs, OpaqueXLATensor* rhs) {
   auto lhs_ir_value = lhs->GetIrValue();
   auto rhs_ir_value = rhs->GetIrValue();
-   return new swift_xla::XLATensor(lhs->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::Mul>(lhs_ir_value, rhs_ir_value)));
+  return new swift_xla::XLATensor(
+      lhs->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::Mul>(
+          lhs_ir_value, rhs_ir_value)));
 }
 
 OpaqueXLATensor* XLATensor_ne(OpaqueXLATensor* lhs, OpaqueXLATensor* rhs) {
   auto lhs_ir_value = lhs->GetIrValue();
   auto rhs_ir_value = rhs->GetIrValue();
-   return new swift_xla::XLATensor(swift_xla::XLATensor::Create(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::Ne>(lhs_ir_value, rhs_ir_value),
-      lhs->GetDevice(),
-      at::ScalarType::Bool));
+  return new swift_xla::XLATensor(swift_xla::XLATensor::Create(
+      swift_xla::ir::MakeNode<swift_xla::ir::ops::Ne>(lhs_ir_value,
+                                                      rhs_ir_value),
+      lhs->GetDevice(), at::ScalarType::Bool));
 }
 
 OpaqueXLATensor* XLATensor_neg(OpaqueXLATensor* input) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
+  return new swift_xla::XLATensor(input->CreateFrom(
       swift_xla::ir::MakeNode<swift_xla::ir::ops::Neg>(input_ir_value)));
 }
 
@@ -3299,8 +3428,9 @@ OpaqueXLATensor* XLATensor_physical_cast(OpaqueXLATensor* input,
 OpaqueXLATensor* XLATensor_pow(OpaqueXLATensor* input, OpaqueXLATensor* other) {
   auto input_ir_value = input->GetIrValue();
   auto other_ir_value = other->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::Pow>(input_ir_value, other_ir_value)));
+  return new swift_xla::XLATensor(
+      input->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::Pow>(
+          input_ir_value, other_ir_value)));
 }
 
 OpaqueXLATensor* XLATensor_prod(OpaqueXLATensor* input, Int64ArrayRef dims,
@@ -3316,17 +3446,30 @@ OpaqueXLATensor* XLATensor_prod(OpaqueXLATensor* input, Int64ArrayRef dims,
                         dtype.value()));
 }
 
+OpaqueXLATensor_pair XLATensor_qr(OpaqueXLATensor* input, bool some) {
+  auto input_ir_value = input->GetIrValue();
+  auto result_node =
+      swift_xla::ir::MakeNode<swift_xla::ir::ops::Qr>(input_ir_value, some);
+  OpaqueXLATensor_pair result;
+  result.x = new swift_xla::XLATensor(
+      input->CreateFrom(swift_xla::ir::Value(result_node, 0)));
+  result.y = new swift_xla::XLATensor(
+      input->CreateFrom(swift_xla::ir::Value(result_node, 1)));
+  return result;
+}
+
 OpaqueXLATensor* XLATensor_relu(OpaqueXLATensor* input) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
+  return new swift_xla::XLATensor(input->CreateFrom(
       swift_xla::ir::MakeNode<swift_xla::ir::ops::Relu>(input_ir_value)));
 }
 
 OpaqueXLATensor* XLATensor_rem(OpaqueXLATensor* input, OpaqueXLATensor* other) {
   auto input_ir_value = input->GetIrValue();
   auto other_ir_value = other->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::Rem>(input_ir_value, other_ir_value)));
+  return new swift_xla::XLATensor(
+      input->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::Rem>(
+          input_ir_value, other_ir_value)));
 }
 
 OpaqueXLATensor* XLATensor_repeat(OpaqueXLATensor* input,
@@ -3354,7 +3497,7 @@ OpaqueXLATensor* XLATensor_round_to_even(OpaqueXLATensor* input) {
 
 OpaqueXLATensor* XLATensor_rsqrt(OpaqueXLATensor* input) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
+  return new swift_xla::XLATensor(input->CreateFrom(
       swift_xla::ir::MakeNode<swift_xla::ir::ops::Rsqrt>(input_ir_value)));
 }
 
@@ -3371,50 +3514,55 @@ OpaqueXLATensor* XLATensor_select(OpaqueXLATensor* input, int64_t dim,
 
 OpaqueXLATensor* XLATensor_sigmoid(OpaqueXLATensor* input) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
+  return new swift_xla::XLATensor(input->CreateFrom(
       swift_xla::ir::MakeNode<swift_xla::ir::ops::Sigmoid>(input_ir_value)));
 }
 
 OpaqueXLATensor* XLATensor_sign(OpaqueXLATensor* input) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
+  return new swift_xla::XLATensor(input->CreateFrom(
       swift_xla::ir::MakeNode<swift_xla::ir::ops::Sign>(input_ir_value)));
 }
 
 OpaqueXLATensor* XLATensor_sin(OpaqueXLATensor* input) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
+  return new swift_xla::XLATensor(input->CreateFrom(
       swift_xla::ir::MakeNode<swift_xla::ir::ops::Sin>(input_ir_value)));
 }
 
 OpaqueXLATensor* XLATensor_sinh(OpaqueXLATensor* input) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
+  return new swift_xla::XLATensor(input->CreateFrom(
       swift_xla::ir::MakeNode<swift_xla::ir::ops::Sinh>(input_ir_value)));
 }
 
 OpaqueXLATensor* XLATensor_slice(OpaqueXLATensor* input, int64_t dim, int64_t start, int64_t end, int64_t stride) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::Slice>(input_ir_value, dim, start, end, stride)));
+  return new swift_xla::XLATensor(
+      input->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::Slice>(
+          input_ir_value, dim, start, end, stride)));
 }
 
 OpaqueXLATensor* XLATensor_softmax(OpaqueXLATensor* input, int64_t dim) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::Softmax>(input_ir_value, swift_xla::XlaHelpers::GetCanonicalDimensionIndex(dim, input_ir_value.shape().rank()))));
+  return new swift_xla::XLATensor(
+      input->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::Softmax>(
+          input_ir_value, swift_xla::XlaHelpers::GetCanonicalDimensionIndex(
+                              dim, input_ir_value.shape().rank()))));
 }
 
 OpaqueXLATensor* XLATensor_sqrt(OpaqueXLATensor* input) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
+  return new swift_xla::XLATensor(input->CreateFrom(
       swift_xla::ir::MakeNode<swift_xla::ir::ops::Sqrt>(input_ir_value)));
 }
 
 OpaqueXLATensor* XLATensor_squeeze(OpaqueXLATensor* input, int64_t dim) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::Squeeze>(input_ir_value, swift_xla::XlaHelpers::GetCanonicalDimensionIndex(dim, input_ir_value.shape().rank()))));
+  return new swift_xla::XLATensor(
+      input->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::Squeeze>(
+          input_ir_value, swift_xla::XlaHelpers::GetCanonicalDimensionIndex(
+                              dim, input_ir_value.shape().rank()))));
 }
 
 OpaqueXLATensor* XLATensor_stack(OpaqueXLATensorArrayRef input, int64_t dim) {
@@ -3428,25 +3576,46 @@ OpaqueXLATensor* XLATensor_stack(OpaqueXLATensorArrayRef input, int64_t dim) {
 OpaqueXLATensor* XLATensor_sub(OpaqueXLATensor* lhs, OpaqueXLATensor* rhs) {
   auto lhs_ir_value = lhs->GetIrValue();
   auto rhs_ir_value = rhs->GetIrValue();
-   return new swift_xla::XLATensor(lhs->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::Sub>(lhs_ir_value, rhs_ir_value)));
+  return new swift_xla::XLATensor(
+      lhs->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::Sub>(
+          lhs_ir_value, rhs_ir_value)));
 }
 
 OpaqueXLATensor* XLATensor_sum(OpaqueXLATensor* input, Int64ArrayRef dims, bool keep_reduced_dimensions, Optional_XLAScalarType dtype) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::Sum>(input_ir_value, swift_xla::XlaHelpers::GetCanonicalDimensionIndices(dims.slice(), input_ir_value.shape().rank()), keep_reduced_dimensions, dtype.value()), dtype.value()));
+  return new swift_xla::XLATensor(
+      input->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::Sum>(
+                            input_ir_value,
+                            swift_xla::XlaHelpers::GetCanonicalDimensionIndices(
+                                dims.slice(), input_ir_value.shape().rank()),
+                            keep_reduced_dimensions, dtype.value()),
+                        dtype.value()));
+}
+
+OpaqueXLATensor_tuple_3 XLATensor_svd(OpaqueXLATensor* input, bool compute_uv,
+                                      bool full_matrix) {
+  auto input_ir_value = input->GetIrValue();
+  auto result_node = swift_xla::ir::MakeNode<swift_xla::ir::ops::Svd>(
+      input_ir_value, compute_uv, full_matrix);
+  OpaqueXLATensor_tuple_3 result;
+  result.v0 = new swift_xla::XLATensor(
+      input->CreateFrom(swift_xla::ir::Value(result_node, 0)));
+  result.v1 = new swift_xla::XLATensor(
+      input->CreateFrom(swift_xla::ir::Value(result_node, 1)));
+  result.v2 = new swift_xla::XLATensor(
+      input->CreateFrom(swift_xla::ir::Value(result_node, 2)));
+  return result;
 }
 
 OpaqueXLATensor* XLATensor_tan(OpaqueXLATensor* input) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
+  return new swift_xla::XLATensor(input->CreateFrom(
       swift_xla::ir::MakeNode<swift_xla::ir::ops::Tan>(input_ir_value)));
 }
 
 OpaqueXLATensor* XLATensor_tanh(OpaqueXLATensor* input) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
+  return new swift_xla::XLATensor(input->CreateFrom(
       swift_xla::ir::MakeNode<swift_xla::ir::ops::Tanh>(input_ir_value)));
 }
 
@@ -3454,55 +3623,70 @@ OpaqueXLATensor* XLATensor_tf_OneHot(OpaqueXLATensor* indices, OpaqueXLATensor* 
   auto indices_ir_value = indices->GetIrValue();
   auto on_value_ir_value = on_value->GetIrValue();
   auto off_value_ir_value = off_value->GetIrValue();
-   return new swift_xla::XLATensor(on_value->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::TfOneHot>(indices_ir_value, on_value_ir_value, off_value_ir_value, depth, axis)));
+  return new swift_xla::XLATensor(on_value->CreateFrom(
+      swift_xla::ir::MakeNode<swift_xla::ir::ops::TfOneHot>(
+          indices_ir_value, on_value_ir_value, off_value_ir_value, depth,
+          axis)));
 }
 
 OpaqueXLATensor* XLATensor_tf_StatelessRandomUniform(Int64ArrayRef shape, OpaqueXLATensor* seeds, OpaqueXLATensor* minvalue, OpaqueXLATensor* maxvalue) {
   auto seeds_ir_value = seeds->GetIrValue();
   auto minvalue_ir_value = minvalue->GetIrValue();
   auto maxvalue_ir_value = maxvalue->GetIrValue();
-   return new swift_xla::XLATensor(minvalue->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::TfStatelessRandomUniform>(swift_xla::MakeArrayShapeFromDimensions(shape.slice(), {}, minvalue->shape().get().element_type(), minvalue->GetDevice().hw_type), seeds_ir_value, minvalue_ir_value, maxvalue_ir_value)));
+  return new swift_xla::XLATensor(minvalue->CreateFrom(
+      swift_xla::ir::MakeNode<swift_xla::ir::ops::TfStatelessRandomUniform>(
+          swift_xla::MakeArrayShapeFromDimensions(
+              shape.slice(), {}, minvalue->shape().get().element_type(),
+              minvalue->GetDevice().hw_type),
+          seeds_ir_value, minvalue_ir_value, maxvalue_ir_value)));
 }
 
 OpaqueXLATensor* XLATensor_tf_UnsortedSegmentSum(OpaqueXLATensor* data, OpaqueXLATensor* indicies, int64_t num_segments) {
   auto data_ir_value = data->GetIrValue();
   auto indicies_ir_value = indicies->GetIrValue();
-   return new swift_xla::XLATensor(data->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::TfUnsortedSegmentSum>(data_ir_value, indicies_ir_value, num_segments)));
+  return new swift_xla::XLATensor(data->CreateFrom(
+      swift_xla::ir::MakeNode<swift_xla::ir::ops::TfUnsortedSegmentSum>(
+          data_ir_value, indicies_ir_value, num_segments)));
 }
 
 OpaqueXLATensor* XLATensor_threshold(OpaqueXLATensor* input, OpaqueXLATensor* output, float threshold, float value) {
   auto input_ir_value = input->GetIrValue();
   auto output_ir_value = output->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::Threshold>(input_ir_value, output_ir_value, threshold, value)));
+  return new swift_xla::XLATensor(
+      input->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::Threshold>(
+          input_ir_value, output_ir_value, threshold, value)));
 }
 
 OpaqueXLATensor* XLATensor_truncated_normal(OpaqueXLATensor* input) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::TruncatedNormal>(input_ir_value)));
+  return new swift_xla::XLATensor(input->CreateFrom(
+      swift_xla::ir::MakeNode<swift_xla::ir::ops::TruncatedNormal>(
+          input_ir_value)));
 }
 
 OpaqueXLATensor* XLATensor_update_slice(OpaqueXLATensor* input, OpaqueXLATensor* source, Int64ArrayRef base_indices) {
   auto input_ir_value = input->GetIrValue();
   auto source_ir_value = source->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::UpdateSlice>(input_ir_value, source_ir_value, swift_xla::XlaHelpers::I64List(base_indices.slice()))));
+  return new swift_xla::XLATensor(input->CreateFrom(
+      swift_xla::ir::MakeNode<swift_xla::ir::ops::UpdateSlice>(
+          input_ir_value, source_ir_value,
+          swift_xla::XlaHelpers::I64List(base_indices.slice()))));
 }
 
 OpaqueXLATensor* XLATensor_where(OpaqueXLATensor* condition, OpaqueXLATensor* input, OpaqueXLATensor* other) {
   auto condition_ir_value = condition->GetIrValue();
   auto input_ir_value = input->GetIrValue();
   auto other_ir_value = other->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::Where>(condition_ir_value, input_ir_value, other_ir_value)));
+  return new swift_xla::XLATensor(
+      input->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::Where>(
+          condition_ir_value, input_ir_value, other_ir_value)));
 }
 
 OpaqueXLATensor* XLATensor_xla_slice(OpaqueXLATensor* input, Int64ArrayRef start_indices, Int64ArrayRef limit_indices, Int64ArrayRef strides) {
   auto input_ir_value = input->GetIrValue();
-   return new swift_xla::XLATensor(input->CreateFrom(
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::XlaSlice>(input_ir_value, swift_xla::XlaHelpers::I64List(start_indices.slice()), swift_xla::XlaHelpers::I64List(limit_indices.slice()), swift_xla::XlaHelpers::I64List(strides.slice()))));
+  return new swift_xla::XLATensor(
+      input->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::XlaSlice>(
+          input_ir_value, swift_xla::XlaHelpers::I64List(start_indices.slice()),
+          swift_xla::XlaHelpers::I64List(limit_indices.slice()),
+          swift_xla::XlaHelpers::I64List(strides.slice()))));
 }

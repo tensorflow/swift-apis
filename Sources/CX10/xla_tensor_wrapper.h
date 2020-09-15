@@ -196,6 +196,12 @@ typedef struct OpaqueXLATensor_pair {
   OpaqueXLATensor* y;
 } OpaqueXLATensor_pair;
 
+typedef struct OpaqueXLATensor_tuple_3 {
+  OpaqueXLATensor* v0;
+  OpaqueXLATensor* v1;
+  OpaqueXLATensor* v2;
+} OpaqueXLATensor_tuple_3;
+
 typedef struct StridedSliceSpec {
   Int64ArrayRef begin;
   Int64ArrayRef end;
@@ -373,6 +379,8 @@ XLA_API OpaqueXLATensor* XLATensor_sub(OpaqueXLATensor* a, OpaqueXLATensor* b);
 XLA_API OpaqueXLATensor* XLATensor_sum(OpaqueXLATensor* a, Int64ArrayRef dims,
                                        bool keep_reduced_dimensions,
                                        Optional_XLAScalarType dtype);
+XLA_API OpaqueXLATensor_tuple_3 XLATensor_svd(OpaqueXLATensor* input, bool compute_uv,
+                                      bool full_matrix);
 XLA_API OpaqueXLATensor* XLATensor_tan(OpaqueXLATensor* a);
 XLA_API OpaqueXLATensor* XLATensor_tanh(OpaqueXLATensor* a);
 XLA_API OpaqueXLATensor_pair XLATensor_topk(OpaqueXLATensor* a, int64_t k,

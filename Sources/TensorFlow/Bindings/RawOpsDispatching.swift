@@ -35393,7 +35393,12 @@ public typealias Raw = _Raw
       computeUv: Bool = true,
       fullMatrices: Bool = false
     ) -> (s: Tensor<T>, u: Tensor<T>, v: Tensor<T>) {
-      _RawTFEager.svd(input, computeUv: computeUv, fullMatrices: fullMatrices)
+      switch input.handle.backend {
+      case .XLA:
+        return _RawXLA.svd(input, computeUv: computeUv, fullMatrices: fullMatrices)
+      case .TF_EAGER:
+        return _RawTFEager.svd(input, computeUv: computeUv, fullMatrices: fullMatrices)
+      }
     }
 
     /// Forwards `data` to the output port determined by `pred`.

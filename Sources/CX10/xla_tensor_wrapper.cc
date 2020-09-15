@@ -344,13 +344,6 @@ OpaqueXLATensor* XLATensor_linspace(XLAScalar start, XLAScalar stop,
                           ToScalarType(type));
   return new XLATensor(out);
 }
-OpaqueXLATensor_pair XLATensor_qr(OpaqueXLATensor* input, bool some) {
-  OpaqueXLATensor_pair result;
-  auto output = XLATensor::qr(*input, some);
-  result.x = new XLATensor(std::get<0>(output));
-  result.y = new XLATensor(std::get<1>(output));
-  return result;
-}
 OpaqueXLATensor* XLATensor_replica_id(const struct CDevice device) {
   return new XLATensor(XLATensor::xla_replica_id(ConvertDevice(device)));
 }

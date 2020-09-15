@@ -38,6 +38,8 @@
 #include "tensorflow/compiler/xla/client/lib/constants.h"
 #include "tensorflow/compiler/xla/client/lib/math.h"
 #include "tensorflow/compiler/xla/client/lib/prng.h"
+#include "tensorflow/compiler/xla/client/lib/qr.h"
+#include "tensorflow/compiler/xla/client/lib/svd.h"
 #include "xla_tensor_wrapper.h"
 
 namespace at {
@@ -421,6 +423,55 @@ xla::int64 CanonicalizeCat(absl::Span<const Value> inputs, xla::int64 dim) {
         << first_shape << " vs. " << tensor_shape;
   }
   return dim;
+}
+
+std::vector<xla::XlaOp> LowerQR(xla::XlaOp input, bool some) {
+  xla::QRDecompositionResult qr_result =
+      xla::QRDecomposition(input, /*full_matrices=*/!some,
+                           /*block_size=*/128, XlaHelpers::mat_mul_precision())
+          .ValueOrDie();
+  xla::XlaOp q = qr_result.q;
+  xla::XlaOp r = qr_result.r;
+  return {q, r};
+}
+
+std::vector<xla::XlaOp> LowerSVD(xla::XlaOp input, bool compute_uv,
+                                 bool full_matrix) {
+  xla::SVDResult svd_result =
+      xla::SVD(input, /*max_iter=*/100, /*epsilon=*/1e-6,
+               XlaHelpers::mat_mul_precision());
+  const xla::Shape& input_shape = XlaHelpers::ShapeOfXlaOp(input);
+  xla::XlaOp u = svd_result.u;
+  xla::XlaOp v = svd_result.v;
+  if (!compute_uv) {
+    u = xla::Zeros(input.builder(), XlaHelpers::ShapeOfXlaOp(u));
+    v = xla::Zeros(input.builder(), XlaHelpers::ShapeOfXlaOp(v));
+  } else if (!full_matrix) {
+    xla::int64 m_dim = input_shape.dimensions(input_shape.rank() - 2);
+    xla::int64 n_dim = input_shape.dimensions(input_shape.rank() - 1);
+    std::vector<xla::int64> base_indices(input_shape.rank(), 0);
+
+    auto u_sizes = xla::util::ToVector<xla::int64>(input_shape.dimensions());
+    u_sizes[input_shape.rank() - 1] = std::min(m_dim, n_dim);
+    u = BuildSlice(u, base_indices, u_sizes);
+
+    auto v_sizes = xla::util::ToVector<xla::int64>(input_shape.dimensions());
+    v_sizes[input_shape.rank() - 2] = n_dim;
+    v_sizes[input_shape.rank() - 1] = std::min(m_dim, n_dim);
+    v = BuildSlice(v, base_indices, v_sizes);
+  }
+  return {u, svd_result.d, v};
+}
+
+xla::Shape ShapeOfXlaOpList(absl::Span<const xla::XlaOp> ops) {
+  xla::Shape result;
+  result.set_element_type(xla::TUPLE);
+  result.mutable_tuple_shapes()->reserve(ops.size());
+  for (const auto& op : ops) {
+    xla::ShapeUtil::AppendShapeToTuple(XlaHelpers::ShapeOfXlaOp(op), &result);
+  }
+  TF_DCHECK_OK(xla::ShapeUtil::ValidateShapeWithOptionalLayout(result));
+  return result;
 }
 
 }  // namespace
