@@ -297,6 +297,10 @@
   lower_fn: LowerProd
   result_dtype: dtype
 
+- def: "qr(input: Tensor, some: Bool) -> (Tensor, Tensor)"
+  x10_enum: at::aten::qr
+  lower_fn: LowerQR
+
 - def: "relu(input: Tensor) -> Tensor"
   x10_enum: at::aten::relu
   lower_fn: BuildRelu
@@ -383,6 +387,10 @@
   x10_enum: at::aten::sum
   lower_fn: LowerSum
   result_dtype: dtype
+
+- def: "svd(input: Tensor, compute_uv: Bool, full_matrix: Bool) -> (Tensor, Tensor, Tensor)"
+  x10_enum: at::aten::svd
+  lower_fn: LowerSVD
 
 - def: "tan(input: Tensor) -> Tensor"
   x10_enum: at::aten::tan

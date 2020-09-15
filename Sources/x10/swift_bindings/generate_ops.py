@@ -126,13 +126,21 @@ def node_type_define(op):
   if "shape_fn" in op:
     shape_fn = resolve_shape_fn(op["shape_fn"])
   if shape_fn == None:
-    shape_fn = f"""[&]() {{
+    if op["n_results"] == 1:
+      shape_fn = f"""[&]() {{
        xla::XlaBuilder b("InferOutputShape");
 {"".join(param_convert(arg) for arg in tensor_args)}       xla::XlaOp result = {op["lower_fn"]}(
          {", ".join(format_shape_lower_arg(arg) for arg in op["args"])});
        return XlaHelpers::ShapeOfXlaOp(result);
      }}"""
-  num_outputs = 1
+    else:
+      shape_fn = f"""[&]() {{
+       xla::XlaBuilder b("InferOutputShape");
+{"".join(param_convert(arg) for arg in tensor_args)}       auto results = {op["lower_fn"]}(
+         {", ".join(format_shape_lower_arg(arg) for arg in op["args"])});
+       return ShapeOfXlaOpList(results);
+     }}"""
+  num_outputs = op["n_results"]
   ctx = []
   if "needs_lowering_context" in [i[0] for i in op["extras"]]:
     ctx = ["loctx"]
@@ -142,6 +150,20 @@ def node_type_define(op):
       tensors_ctor = tensor_args[-1][0]
     else:
       tensors_ctor = f"""TensorArgsConcat({tensors_ctor}, {tensor_args[-1][0]})"""
+  lower_body = None
+  if num_outputs == 1:
+    lower_body = f"""
+    xla::XlaOp result = {op["lower_fn"]}(
+        {", ".join([format_lower_arg(arg) for arg in op["args"]] + ctx)});
+    return ReturnOp(result, loctx);
+  """
+  else:
+    lower_body = f"""
+    auto result = {op["lower_fn"]}(
+        {", ".join([format_lower_arg(arg) for arg in op["args"]] + ctx)});
+    return ReturnOps(result, loctx);
+  """
+
   return f"""
 class {op["op_node_name"]} : public Node {{
  public:
@@ -157,11 +179,7 @@ class {op["op_node_name"]} : public Node {{
         {", ".join(format_clone_arg(arg) for arg in op["args"])});
   }}
 
-  XlaOpVector Lower(LoweringContext* loctx) const override {{
-    xla::XlaOp result = {op["lower_fn"]}(
-        {", ".join([format_lower_arg(arg) for arg in op["args"]] + ctx)});
-    return ReturnOp(result, loctx);
-  }}
+  XlaOpVector Lower(LoweringContext* loctx) const override {{{lower_body}}}
 
   std::string ToString() const override {{
     std::stringstream ss;
@@ -243,8 +261,19 @@ def c_function_define(op):
       return f"  auto {name}_ir_value = swift_xla::UnpackIrValues({name});\n"
     return ""
   node_ctor = f"""swift_xla::ir::MakeNode<swift_xla::ir::ops::{op["op_node_name"]}>({", ".join(format_arg_ref(arg) for arg in op["args"])})"""
+  result_type = None
+  if op["n_results"] == 1:
+    result_type = "OpaqueXLATensor*"
+  elif op["n_results"] == 2:
+    result_type = "OpaqueXLATensor_pair"
+  elif op["n_results"] == 3:
+    result_type = "OpaqueXLATensor_tuple_3"
+  else:
+    raise ValueError(
+        f"""{op["c_name"]} has unsupported number of return values {op["n_results"]}"""
+    )
   prelude = f"""
-OpaqueXLATensor* XLATensor_{op["c_name"]}({", ".join(format_arg_def(arg) for arg in op["args"])}) {{
+{result_type} XLATensor_{op["c_name"]}({", ".join(format_arg_def(arg) for arg in op["args"])}) {{
 {"".join(unpack_arg(arg) for arg in op["args"])}"""
   if "result_dtype" in op and op["result_dtype"] not in tensor_names:
     result_dtype_arg = None
@@ -252,19 +281,35 @@ OpaqueXLATensor* XLATensor_{op["c_name"]}({", ".join(format_arg_def(arg) for arg
       if arg[0] == op["result_dtype"]:
         result_dtype_arg = arg
     if result_dtype_arg:
-      return f"""{prelude}   return new swift_xla::XLATensor({first_tensor}->CreateFrom(
+      return f"""{prelude}  return new swift_xla::XLATensor({first_tensor}->CreateFrom(
       {node_ctor}, {format_arg_ref(result_dtype_arg)}));
 }}
 """
 
-    return f"""{prelude}   return new swift_xla::XLATensor(swift_xla::XLATensor::Create(
+    return f"""{prelude}  return new swift_xla::XLATensor(swift_xla::XLATensor::Create(
       {node_ctor},
       {first_tensor}->GetDevice(),
       at::ScalarType::{op["result_dtype"]}));
 }}
 """
+  elif op["n_results"] != 1:
+    tuple_names = []
+    if op["n_results"] == 2:
+      tuple_names = ["x", "y"]
+    else:
+      tuple_names = [f"v{i}" for i in range(op["n_results"])]
+    out = f"""{prelude}  auto result_node = {node_ctor};
+  {result_type} result;
+"""
+    for i in range(op["n_results"]):
+      out += f"""  result.{tuple_names[i]} = new swift_xla::XLATensor({first_tensor}->CreateFrom(swift_xla::ir::Value(result_node, {i})));
+"""
+    out += """  return result;
+}
+"""
+    return out
   else:
-    return f"""{prelude}   return new swift_xla::XLATensor({first_tensor}->CreateFrom(
+    return f"""{prelude}  return new swift_xla::XLATensor({first_tensor}->CreateFrom(
       {node_ctor}));
 }}
 """
@@ -293,7 +338,25 @@ def canonicalize_op(op):
       expect(tokens[i] == ',')
       i += 1
   i += 1
+  expect(tokens[i] == "->")
+  i += 1
+  n_results = 0
+  if tokens[i] == "(":
+    i += 1
+    while True:
+      expect(tokens[i] == "Tensor")
+      n_results += 1
+      i += 1
+      if tokens[i] == ")":
+        break
+      expect(tokens[i] == ",")
+      i += 1
+  else:
+    expect(tokens[i] == "Tensor")
+    n_results = 1
+  i += 1
 
+  op["n_results"] = n_results
   op["args"] = args
   if "op_node_name" not in op: op["op_node_name"] = snake_to_camel(op["c_name"])
   if "extras" in op:

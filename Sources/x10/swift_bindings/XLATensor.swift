@@ -877,6 +877,16 @@ extension XLATensor {
     }
   }
 
+  static func svd(_ input: XLATensor, computeUv: Bool, fullMatrices: Bool) -> (
+    XLATensor, XLATensor, XLATensor
+  ) {
+    defer { _fixLifetime(input) }
+    let output = XLATensor_svd(input.handle, computeUv, fullMatrices)
+    return (
+      XLATensor(_handle: output.v0), XLATensor(_handle: output.v1), XLATensor(_handle: output.v2)
+    )
+  }
+
   static func tan(_ a: XLATensor) -> XLATensor {
     defer { _fixLifetime(a) }
     return XLATensor(_handle: XLATensor_tan(a.handle))

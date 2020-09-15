@@ -4246,6 +4246,15 @@ public enum _RawXLA {
     sum(input, reductionIndices: reductionIndices.scalars.map { Int64($0) }, keepDims: keepDims)
   }
 
+  public static func svd<T: FloatingPoint & TensorFlowScalar>(
+    _ input: Tensor<T>,
+    computeUv: Bool = true,
+    fullMatrices: Bool = false
+  ) -> (s: Tensor<T>, u: Tensor<T>, v: Tensor<T>) {
+    let (u, s, v) = XLATensor.svd(input.xlaTensor, computeUv: computeUv, fullMatrices: fullMatrices)
+    return (s: Tensor(_xla: s), u: Tensor(_xla: u), v: Tensor(_xla: v))
+  }
+
   /// Computes tan of x element-wise.
   public static func tan<T: TensorFlowNumeric>(
     _ x: Tensor<T>
