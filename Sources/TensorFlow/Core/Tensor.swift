@@ -38,6 +38,13 @@ public struct Tensor<Scalar: TensorFlowScalar> {
   /// An internal marker to identify scalar zero tensors, for use in optimizations.
   @usableFromInline
   internal var _isScalarZero = false
+
+  /// An internal workaround for SR-13263: debug info generation crash.
+  @usableFromInline
+  class SR13263Workaround {}
+
+  /// An internal workaround for SR-13263: debug info generation crash.
+  internal var _sr13263Workaround: SR13263Workaround?
   
   @inlinable
   public init(handle: TensorHandle<Scalar>) {
