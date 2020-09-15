@@ -70,6 +70,8 @@ add_library(TensorFlow SHARED
   Optimizers/MomentumBased.swift
   Optimizers/Optimizer.swift
   Optimizers/SGD.swift)
+set_source_files_properties(Core/Tensor.swift PROPERTIES
+  COMPILE_FLAGS -gnone)
 target_sources(TensorFlow PRIVATE
   ../x10/swift_bindings/apis/CrossReplicaSum.swift
   ../x10/swift_bindings/apis/DeviceScope.swift
