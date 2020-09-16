@@ -1711,7 +1711,10 @@ public enum _RawXLA {
     precondition(batchDims == 0)
     checkSameDevice(params.device, indices.device)
     let canonicalAxis = canonicalDims(axis.scalars.map { Int64($0) }, Int64(params.rank)).first!
-    return Tensor(_xla: XLATensor.index(params.xlaTensor, [indices.xlaTensor], canonicalAxis))
+    return Tensor(
+      _xla: XLATensor.gather(
+        params.xlaTensor, Tensor<Tindices>(stacking: [indices], alongAxis: indices.rank).xlaTensor,
+        canonicalAxis))
   }
 
   /// Returns the truth value of (x > y) element-wise.

@@ -29,17 +29,20 @@
 #include "tensorflow/compiler/tf2xla/xla_tensor/matrix.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/nll_loss.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/infer_output_shape.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/ops/tf_create_conv_attrs.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/reduction.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/segment_reduction_ops.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/softmax_builder.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/tensor_util.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/xla_lower_util.h"
+#include "tensorflow/compiler/tf2xla/kernels/conv_op_helpers.h"
 #include "tensorflow/compiler/tf2xla/lib/random.h"
 #include "tensorflow/compiler/xla/client/lib/constants.h"
 #include "tensorflow/compiler/xla/client/lib/math.h"
 #include "tensorflow/compiler/xla/client/lib/prng.h"
 #include "tensorflow/compiler/xla/client/lib/qr.h"
 #include "tensorflow/compiler/xla/client/lib/svd.h"
+#include "tensorflow/compiler/xla/service/hlo_instruction.h"
 #include "xla_tensor_wrapper.h"
 
 namespace at {
@@ -51,18 +54,40 @@ xla::hash_t Hash(const at::Scalar& value) {
                                  : xla::util::Hash(value.toLong());
 }
 }
+namespace tensorflow {
+xla::hash_t Hash(tensorflow::MirrorPadMode mode) {
+  return xla::util::Hash(static_cast<int>(mode));
+}
+}  // namespace tensorflow
+namespace xla {
+xla::hash_t Hash(const xla::PaddingConfig& padding_config) {
+  std::vector<xla::int64> low;
+  std::vector<xla::int64> high;
+  std::vector<xla::int64> interior;
+  for (const xla::PaddingConfig::PaddingConfigDimension& dim_padding :
+       padding_config.dimensions()) {
+    low.push_back(dim_padding.edge_padding_low());
+    high.push_back(dim_padding.edge_padding_high());
+    interior.push_back(dim_padding.interior_padding());
+  }
+  return xla::util::MHash(low, high, interior);
+}
+}  // namespace xla
 namespace swift_xla {
 void OpFieldToString(std::ostream& stream, const char* field_name, const c10::optional<at::ScalarType>& dtype) {
   if (dtype) stream << ", " << field_name << "=" << *dtype;
 }
-void OpFieldToString(std::ostream& stream, const char* field_name, bool value) {
+template <typename T>
+void OpFieldToString(std::ostream& stream, const char* field_name, T value) {
   stream << ", " << field_name << "=" << value;
 }
-void OpFieldToString(std::ostream& stream, const char* field_name, xla::int64 value) {
-  stream << ", " << field_name << "=" << value;
+void OpFieldToString(std::ostream& stream, const char* field_name,
+                     tensorflow::MirrorPadMode value) {
+  stream << ", " << field_name << "=" << static_cast<int>(value);
 }
-void OpFieldToString(std::ostream& stream, const char* field_name, float value) {
-  stream << ", " << field_name << "=" << value;
+void OpFieldToString(std::ostream& stream, const char* field_name,
+                     const xla::PaddingConfig& value) {
+  stream << ", " << field_name << "=" << xla::PaddingConfigToString(value);
 }
 void OpFieldToString(std::ostream& stream, const char* field_name,
                      const std::vector<xla::int64>& value) {
@@ -219,12 +244,18 @@ std::vector<xla::int64> CanonicalizeExpand(xla::Shape shape,
   return dimensions;
 }
 
-xla::XlaOp LowerPad(xla::XlaOp input, absl::Span<const xla::int64> pad,
-                    const at::Scalar& value) {
+xla::XlaOp LowerPad(xla::XlaOp input, const at::Scalar& value,
+                    const xla::PaddingConfig& config) {
   const xla::Shape& input_shape = XlaHelpers::ShapeOfXlaOp(input);
   return xla::Pad(input,
                   XlaHelpers::ScalarValue(value, input_shape.element_type(),
                                           input.builder()),
+                  config);
+}
+
+xla::XlaOp LowerPad(xla::XlaOp input, absl::Span<const xla::int64> pad,
+                    const at::Scalar& value) {
+  return LowerPad(input, value,
                   XlaHelpers::MakeXlaPaddingConfigFromNdPadding(pad));
 }
 
@@ -265,6 +296,11 @@ xla::XlaOp LowerWhere(xla::XlaOp condition, xla::XlaOp input,
                 xla::PrimitiveType::PRED, /*device=*/nullptr);
   std::tie(input, other) = XlaHelpers::PromoteShapes(input, other);
   return xla::Select(pred_condition, input, other);
+}
+
+std::vector<xla::XlaOp> BuildTopK(xla::XlaOp input, xla::int64 k,
+                                  xla::int64 dim, bool largest) {
+  return CreateTopK(input, k, dim, largest, true);
 }
 
 xla::XlaOp BuildOneHot(xla::XlaOp indices, xla::XlaOp on_value,
@@ -474,9 +510,120 @@ xla::Shape ShapeOfXlaOpList(absl::Span<const xla::XlaOp> ops) {
   return result;
 }
 
+xla::XlaOp BuildTfConv(xla::XlaOp input, xla::XlaOp filter, bool depthwise,
+                       absl::Span<const xla::int64> strides,
+                       tensorflow::Padding padding,
+                       absl::Span<const xla::int64> explicit_paddings,
+                       tensorflow::TensorFormat data_format,
+                       absl::Span<const xla::int64> dilations) {
+  xla::Shape input_shape = XlaHelpers::ShapeOfXlaOp(input);
+  int num_spatial_dims = input_shape.rank() - 2;
+  tensorflow::ConvOpAttrs attrs =
+      CreateConvOpAttrs(num_spatial_dims, depthwise, strides, padding,
+                        explicit_paddings, data_format, dilations);
+  xla::PrecisionConfig precision_config =
+      XlaHelpers::BuildPrecisionConfig(XlaHelpers::mat_mul_precision());
+  return ConsumeValue(tensorflow::MakeXlaForwardConvOp(
+      /*type_string=*/"TfConv", /*conv_input=*/input, /*filter=*/filter,
+      /*attrs=*/attrs, /*precision_config=*/&precision_config));
+}
+
+xla::XlaOp BuildTfConvBackpropFilter(
+    xla::XlaOp input, absl::Span<const xla::int64> filter_sizes,
+    xla::XlaOp out_backprop, bool depthwise,
+    absl::Span<const xla::int64> strides, tensorflow::Padding padding,
+    absl::Span<const xla::int64> explicit_paddings,
+    tensorflow::TensorFormat data_format,
+    absl::Span<const xla::int64> dilations) {
+  int num_spatial_dims = filter_sizes.size() - 2;
+  tensorflow::ConvOpAttrs attrs =
+      CreateConvOpAttrs(num_spatial_dims, depthwise, strides, padding,
+                        explicit_paddings, data_format, dilations);
+  xla::PrecisionConfig precision_config =
+      XlaHelpers::BuildPrecisionConfig(XlaHelpers::mat_mul_precision());
+  xla::Shape input_shape = XlaHelpers::ShapeOfXlaOp(input);
+  return ConsumeValue(tensorflow::MakeXlaBackpropFilterConvOp(
+      /*type_string=*/"TfConvBackpropFilter", /*activations=*/input,
+      /*filter_shape=*/
+      xla::ShapeUtil::MakeShape(input_shape.element_type(), filter_sizes),
+      /*gradients=*/out_backprop,
+      /*attrs=*/attrs, /*precision_config=*/&precision_config));
+}
+
+xla::XlaOp BuildTfConvBackpropInput(
+    absl::Span<const xla::int64> input_sizes, xla::XlaOp filter,
+    xla::XlaOp out_backprop, bool depthwise,
+    absl::Span<const xla::int64> strides, tensorflow::Padding padding,
+    absl::Span<const xla::int64> explicit_paddings,
+    tensorflow::TensorFormat data_format,
+    absl::Span<const xla::int64> dilations) {
+  int num_spatial_dims = input_sizes.size() - 2;
+  tensorflow::ConvOpAttrs attrs =
+      CreateConvOpAttrs(num_spatial_dims, depthwise, strides, padding,
+                        explicit_paddings, data_format, dilations);
+  xla::PrecisionConfig precision_config =
+      XlaHelpers::BuildPrecisionConfig(XlaHelpers::mat_mul_precision());
+  xla::Shape filter_shape = XlaHelpers::ShapeOfXlaOp(filter);
+  return ConsumeValue(tensorflow::MakeXlaBackpropInputConvOp(
+      /*type_string=*/"TfConvBackpropInput",
+      /*input_shape=*/
+      xla::ShapeUtil::MakeShape(filter_shape.element_type(), input_sizes),
+      /*filter=*/filter,
+      /*out_backprop=*/out_backprop,
+      /*attrs=*/attrs, /*precision_config=*/&precision_config));
+}
+
 }  // namespace
 }  // namespace ops
 }  // namespace ir
 }  // namespace swift_xla
+
+namespace {
+
+tensorflow::Padding ToTFPadding(TFPadding padding) {
+  switch (padding) {
+    case TFPadding_VALID: {
+      return tensorflow::VALID;
+    }
+    case TFPadding_SAME: {
+      return tensorflow::SAME;
+    }
+    case TFPadding_EXPLICIT: {
+      return tensorflow::EXPLICIT;
+    }
+    default: {
+      LOG(FATAL) << "Invalid padding: " << padding;
+    }
+  }
+}
+
+tensorflow::MirrorPadMode ToTFMirrorPadMode(TFMirrorPadMode mode) {
+  switch (mode) {
+    case TFMirrorPadMode_REFLECT: {
+      return tensorflow::MirrorPadMode::REFLECT;
+    }
+    case TFMirrorPadMode_SYMMETRIC: {
+      return tensorflow::MirrorPadMode::SYMMETRIC;
+    }
+    default: {
+      LOG(FATAL) << "Invalid mirror pad mode: " << mode;
+    }
+  }
+}
+
+xla::PaddingConfig ToXLAPaddingConfig(PaddingConfig padding_config) {
+  xla::PaddingConfig xla_padding_config;
+  for (size_t i = 0; i < padding_config.count; ++i) {
+    xla::PaddingConfig::PaddingConfigDimension* dims =
+        xla_padding_config.add_dimensions();
+    const PaddingConfigDimension& padding_dim = padding_config.dimensions[i];
+    dims->set_edge_padding_low(padding_dim.edge_padding_low);
+    dims->set_edge_padding_high(padding_dim.edge_padding_high);
+    dims->set_interior_padding(padding_dim.interior_padding);
+  }
+  return xla_padding_config;
+}
+
+}  // namespace
 
 #include "xla_tensor_ops_wrapper_generated.cc.inc"
