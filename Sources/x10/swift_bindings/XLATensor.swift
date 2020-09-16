@@ -485,6 +485,12 @@ extension XLATensor {
     }
   }
 
+  static func gather(_ input: XLATensor, _ indices: XLATensor, _ startDim: Int64) -> XLATensor {
+    defer { _fixLifetime(input) }
+    defer { _fixLifetime(indices) }
+    return XLATensor(_handle: XLATensor_gather(input.handle, indices.handle, startDim))
+  }
+
   static func ge(_ x: XLATensor, _ y: XLATensor) -> XLATensor {
     defer { _fixLifetime(x) }
     defer { _fixLifetime(y) }
@@ -495,13 +501,6 @@ extension XLATensor {
     defer { _fixLifetime(x) }
     defer { _fixLifetime(y) }
     return XLATensor(_handle: XLATensor_gt(x.handle, y.handle))
-  }
-
-  static func index(_ input: XLATensor, _ indices: [XLATensor], _ startDim: Int64) -> XLATensor {
-    defer { _fixLifetime(input) }
-    return indices.withArrayRef { indices in
-      XLATensor(_handle: XLATensor_index(input.handle, indices, startDim))
-    }
   }
 
   static func irText(_ a: XLATensor) -> String {

@@ -291,12 +291,12 @@ XLA_API OpaqueXLATensor* XLATensor_floor(OpaqueXLATensor* a);
 XLA_API OpaqueXLATensor*
 XLATensor_full(Int64ArrayRef size, XLAScalar value, const struct CDevice device,
                enum XLATensorScalarType type);
+XLA_API OpaqueXLATensor* XLATensor_gather(OpaqueXLATensor* x,
+                                          OpaqueXLATensor* y,
+                                          int64_t start_dim);
 XLA_API OpaqueXLATensor* XLATensor_ge(OpaqueXLATensor* x, OpaqueXLATensor* y);
 XLA_API OpaqueString* XLATensor_get_annotations(OpaqueXLATensor* a);
 XLA_API OpaqueXLATensor* XLATensor_gt(OpaqueXLATensor* x, OpaqueXLATensor* y);
-XLA_API OpaqueXLATensor* XLATensor_index(OpaqueXLATensor* input,
-                                         OpaqueXLATensorArrayRef indices,
-                                         int64_t start_dim);
 XLA_API OpaqueString* XLATensor_ir_text(OpaqueXLATensor* a);
 XLA_API OpaqueXLATensor* XLATensor_is_finite(OpaqueXLATensor* input);
 XLA_API OpaqueXLATensor* XLATensor_is_inf(OpaqueXLATensor* input);

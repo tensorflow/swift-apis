@@ -981,6 +981,42 @@ class Floor : public Node {
  private:
 };
 
+class Gather : public Node {
+ public:
+  Gather(const Value& input, const Value& indices, xla::int64 start_dim)
+      : Node(
+            ir::OpKind(at::aten::index), {input, indices},
+            [&]() {
+              xla::XlaBuilder b("InferOutputShape");
+              auto input_ir = xla::Parameter(&b, 0, input.shape(), "p0");
+              auto indices_ir = xla::Parameter(&b, 1, indices.shape(), "p1");
+              xla::XlaOp result = CreateIndex(input_ir, indices_ir, start_dim);
+              return XlaHelpers::ShapeOfXlaOp(result);
+            },
+            /*num_outputs=*/1, xla::util::MHash(start_dim)),
+        start_dim_(std::move(start_dim)) {}
+
+  NodePtr Clone(OpList operands) const override {
+    return MakeNode<Gather>(operands.at(0), operands.at(1), start_dim_);
+  }
+
+  XlaOpVector Lower(LoweringContext* loctx) const override {
+    xla::XlaOp result = CreateIndex(loctx->GetOutputOp(operand(0)),
+                                    loctx->GetOutputOp(operand(1)), start_dim_);
+    return ReturnOp(result, loctx);
+  }
+
+  std::string ToString() const override {
+    std::stringstream ss;
+    ss << Node::ToString();
+    OpFieldToString(ss, "start_dim", start_dim_);
+    return ss.str();
+  }
+
+ private:
+  xla::int64 start_dim_;
+};
+
 class Ge : public Node {
  public:
   Ge(const Value& lhs, const Value& rhs)
@@ -2669,6 +2705,294 @@ class Tanh : public Node {
  private:
 };
 
+class TfConv : public Node {
+ public:
+  TfConv(const Value& input, const Value& filter, bool depthwise,
+         std::vector<xla::int64> strides, tensorflow::Padding padding,
+         std::vector<xla::int64> explicit_paddings,
+         tensorflow::TensorFormat data_format,
+         std::vector<xla::int64> dilations)
+      : Node(
+            ir::OpKind(at::aten::tf_convolution), {input, filter},
+            [&]() {
+              xla::XlaBuilder b("InferOutputShape");
+              auto input_ir = xla::Parameter(&b, 0, input.shape(), "p0");
+              auto filter_ir = xla::Parameter(&b, 1, filter.shape(), "p1");
+              xla::XlaOp result =
+                  BuildTfConv(input_ir, filter_ir, depthwise, strides, padding,
+                              explicit_paddings, data_format, dilations);
+              return XlaHelpers::ShapeOfXlaOp(result);
+            },
+            /*num_outputs=*/1,
+            xla::util::MHash(depthwise, strides, padding, explicit_paddings,
+                             data_format, dilations)),
+        depthwise_(std::move(depthwise)),
+        strides_(std::move(strides)),
+        padding_(std::move(padding)),
+        explicit_paddings_(std::move(explicit_paddings)),
+        data_format_(std::move(data_format)),
+        dilations_(std::move(dilations)) {}
+
+  NodePtr Clone(OpList operands) const override {
+    return MakeNode<TfConv>(operands.at(0), operands.at(1), depthwise_,
+                            strides_, padding_, explicit_paddings_,
+                            data_format_, dilations_);
+  }
+
+  XlaOpVector Lower(LoweringContext* loctx) const override {
+    xla::XlaOp result =
+        BuildTfConv(loctx->GetOutputOp(operand(0)),
+                    loctx->GetOutputOp(operand(1)), depthwise_, strides_,
+                    padding_, explicit_paddings_, data_format_, dilations_);
+    return ReturnOp(result, loctx);
+  }
+
+  std::string ToString() const override {
+    std::stringstream ss;
+    ss << Node::ToString();
+    OpFieldToString(ss, "depthwise", depthwise_);
+    OpFieldToString(ss, "strides", strides_);
+    OpFieldToString(ss, "padding", padding_);
+    OpFieldToString(ss, "explicit_paddings", explicit_paddings_);
+    OpFieldToString(ss, "data_format", data_format_);
+    OpFieldToString(ss, "dilations", dilations_);
+    return ss.str();
+  }
+
+ private:
+  bool depthwise_;
+  std::vector<xla::int64> strides_;
+  tensorflow::Padding padding_;
+  std::vector<xla::int64> explicit_paddings_;
+  tensorflow::TensorFormat data_format_;
+  std::vector<xla::int64> dilations_;
+};
+
+class TfConvBackpropFilter : public Node {
+ public:
+  TfConvBackpropFilter(const Value& input, std::vector<xla::int64> filter_sizes,
+                       const Value& out_backprop, bool depthwise,
+                       std::vector<xla::int64> strides,
+                       tensorflow::Padding padding,
+                       std::vector<xla::int64> explicit_paddings,
+                       tensorflow::TensorFormat data_format,
+                       std::vector<xla::int64> dilations)
+      : Node(
+            ir::OpKind(at::aten::tf_conv_backprop_filter),
+            {input, out_backprop},
+            [&]() {
+              xla::XlaBuilder b("InferOutputShape");
+              auto input_ir = xla::Parameter(&b, 0, input.shape(), "p0");
+              auto out_backprop_ir =
+                  xla::Parameter(&b, 1, out_backprop.shape(), "p1");
+              xla::XlaOp result = BuildTfConvBackpropFilter(
+                  input_ir, filter_sizes, out_backprop_ir, depthwise, strides,
+                  padding, explicit_paddings, data_format, dilations);
+              return XlaHelpers::ShapeOfXlaOp(result);
+            },
+            /*num_outputs=*/1,
+            xla::util::MHash(filter_sizes, depthwise, strides, padding,
+                             explicit_paddings, data_format, dilations)),
+        filter_sizes_(std::move(filter_sizes)),
+        depthwise_(std::move(depthwise)),
+        strides_(std::move(strides)),
+        padding_(std::move(padding)),
+        explicit_paddings_(std::move(explicit_paddings)),
+        data_format_(std::move(data_format)),
+        dilations_(std::move(dilations)) {}
+
+  NodePtr Clone(OpList operands) const override {
+    return MakeNode<TfConvBackpropFilter>(
+        operands.at(0), filter_sizes_, operands.at(1), depthwise_, strides_,
+        padding_, explicit_paddings_, data_format_, dilations_);
+  }
+
+  XlaOpVector Lower(LoweringContext* loctx) const override {
+    xla::XlaOp result = BuildTfConvBackpropFilter(
+        loctx->GetOutputOp(operand(0)), filter_sizes_,
+        loctx->GetOutputOp(operand(1)), depthwise_, strides_, padding_,
+        explicit_paddings_, data_format_, dilations_);
+    return ReturnOp(result, loctx);
+  }
+
+  std::string ToString() const override {
+    std::stringstream ss;
+    ss << Node::ToString();
+    OpFieldToString(ss, "filter_sizes", filter_sizes_);
+    OpFieldToString(ss, "depthwise", depthwise_);
+    OpFieldToString(ss, "strides", strides_);
+    OpFieldToString(ss, "padding", padding_);
+    OpFieldToString(ss, "explicit_paddings", explicit_paddings_);
+    OpFieldToString(ss, "data_format", data_format_);
+    OpFieldToString(ss, "dilations", dilations_);
+    return ss.str();
+  }
+
+ private:
+  std::vector<xla::int64> filter_sizes_;
+  bool depthwise_;
+  std::vector<xla::int64> strides_;
+  tensorflow::Padding padding_;
+  std::vector<xla::int64> explicit_paddings_;
+  tensorflow::TensorFormat data_format_;
+  std::vector<xla::int64> dilations_;
+};
+
+class TfConvBackpropInput : public Node {
+ public:
+  TfConvBackpropInput(std::vector<xla::int64> input_sizes, const Value& filter,
+                      const Value& out_backprop, bool depthwise,
+                      std::vector<xla::int64> strides,
+                      tensorflow::Padding padding,
+                      std::vector<xla::int64> explicit_paddings,
+                      tensorflow::TensorFormat data_format,
+                      std::vector<xla::int64> dilations)
+      : Node(
+            ir::OpKind(at::aten::tf_conv_backprop_input),
+            {filter, out_backprop},
+            [&]() {
+              xla::XlaBuilder b("InferOutputShape");
+              auto filter_ir = xla::Parameter(&b, 0, filter.shape(), "p0");
+              auto out_backprop_ir =
+                  xla::Parameter(&b, 1, out_backprop.shape(), "p1");
+              xla::XlaOp result = BuildTfConvBackpropInput(
+                  input_sizes, filter_ir, out_backprop_ir, depthwise, strides,
+                  padding, explicit_paddings, data_format, dilations);
+              return XlaHelpers::ShapeOfXlaOp(result);
+            },
+            /*num_outputs=*/1,
+            xla::util::MHash(input_sizes, depthwise, strides, padding,
+                             explicit_paddings, data_format, dilations)),
+        input_sizes_(std::move(input_sizes)),
+        depthwise_(std::move(depthwise)),
+        strides_(std::move(strides)),
+        padding_(std::move(padding)),
+        explicit_paddings_(std::move(explicit_paddings)),
+        data_format_(std::move(data_format)),
+        dilations_(std::move(dilations)) {}
+
+  NodePtr Clone(OpList operands) const override {
+    return MakeNode<TfConvBackpropInput>(
+        input_sizes_, operands.at(0), operands.at(1), depthwise_, strides_,
+        padding_, explicit_paddings_, data_format_, dilations_);
+  }
+
+  XlaOpVector Lower(LoweringContext* loctx) const override {
+    xla::XlaOp result = BuildTfConvBackpropInput(
+        input_sizes_, loctx->GetOutputOp(operand(0)),
+        loctx->GetOutputOp(operand(1)), depthwise_, strides_, padding_,
+        explicit_paddings_, data_format_, dilations_);
+    return ReturnOp(result, loctx);
+  }
+
+  std::string ToString() const override {
+    std::stringstream ss;
+    ss << Node::ToString();
+    OpFieldToString(ss, "input_sizes", input_sizes_);
+    OpFieldToString(ss, "depthwise", depthwise_);
+    OpFieldToString(ss, "strides", strides_);
+    OpFieldToString(ss, "padding", padding_);
+    OpFieldToString(ss, "explicit_paddings", explicit_paddings_);
+    OpFieldToString(ss, "data_format", data_format_);
+    OpFieldToString(ss, "dilations", dilations_);
+    return ss.str();
+  }
+
+ private:
+  std::vector<xla::int64> input_sizes_;
+  bool depthwise_;
+  std::vector<xla::int64> strides_;
+  tensorflow::Padding padding_;
+  std::vector<xla::int64> explicit_paddings_;
+  tensorflow::TensorFormat data_format_;
+  std::vector<xla::int64> dilations_;
+};
+
+class TfMirrorPad : public Node {
+ public:
+  TfMirrorPad(const Value& input, std::vector<xla::int64> padding,
+              tensorflow::MirrorPadMode mode)
+      : Node(
+            ir::OpKind(at::aten::tf_mirror_pad), {input},
+            [&]() {
+              xla::XlaBuilder b("InferOutputShape");
+              auto input_ir = xla::Parameter(&b, 0, input.shape(), "p0");
+              xla::XlaOp result = BuildMirrorPad(input_ir, padding, mode);
+              return XlaHelpers::ShapeOfXlaOp(result);
+            },
+            /*num_outputs=*/1, xla::util::MHash(padding, mode)),
+        padding_(std::move(padding)),
+        mode_(std::move(mode)) {}
+
+  NodePtr Clone(OpList operands) const override {
+    return MakeNode<TfMirrorPad>(operands.at(0), padding_, mode_);
+  }
+
+  XlaOpVector Lower(LoweringContext* loctx) const override {
+    xla::XlaOp result =
+        BuildMirrorPad(loctx->GetOutputOp(operand(0)), padding_, mode_);
+    return ReturnOp(result, loctx);
+  }
+
+  std::string ToString() const override {
+    std::stringstream ss;
+    ss << Node::ToString();
+    OpFieldToString(ss, "padding", padding_);
+    OpFieldToString(ss, "mode", mode_);
+    return ss.str();
+  }
+
+ private:
+  std::vector<xla::int64> padding_;
+  tensorflow::MirrorPadMode mode_;
+};
+
+class TfMirrorPadGrad : public Node {
+ public:
+  TfMirrorPadGrad(const Value& grad_output, std::vector<xla::int64> input_size,
+                  std::vector<xla::int64> padding,
+                  tensorflow::MirrorPadMode mode)
+      : Node(
+            ir::OpKind(at::aten::tf_mirror_pad_backward), {grad_output},
+            [&]() {
+              xla::XlaBuilder b("InferOutputShape");
+              auto grad_output_ir =
+                  xla::Parameter(&b, 0, grad_output.shape(), "p0");
+              xla::XlaOp result = BuildMirrorPadBackward(
+                  grad_output_ir, input_size, padding, mode);
+              return XlaHelpers::ShapeOfXlaOp(result);
+            },
+            /*num_outputs=*/1, xla::util::MHash(input_size, padding, mode)),
+        input_size_(std::move(input_size)),
+        padding_(std::move(padding)),
+        mode_(std::move(mode)) {}
+
+  NodePtr Clone(OpList operands) const override {
+    return MakeNode<TfMirrorPadGrad>(operands.at(0), input_size_, padding_,
+                                     mode_);
+  }
+
+  XlaOpVector Lower(LoweringContext* loctx) const override {
+    xla::XlaOp result = BuildMirrorPadBackward(loctx->GetOutputOp(operand(0)),
+                                               input_size_, padding_, mode_);
+    return ReturnOp(result, loctx);
+  }
+
+  std::string ToString() const override {
+    std::stringstream ss;
+    ss << Node::ToString();
+    OpFieldToString(ss, "input_size", input_size_);
+    OpFieldToString(ss, "padding", padding_);
+    OpFieldToString(ss, "mode", mode_);
+    return ss.str();
+  }
+
+ private:
+  std::vector<xla::int64> input_size_;
+  std::vector<xla::int64> padding_;
+  tensorflow::MirrorPadMode mode_;
+};
+
 class TfOneHot : public Node {
  public:
   TfOneHot(const Value& indices, const Value& on_value, const Value& off_value, xla::int64 depth, xla::int64 axis)
@@ -2815,6 +3139,46 @@ class Threshold : public Node {
   float value_;
 };
 
+class Topk : public Node {
+ public:
+  Topk(const Value& input, xla::int64 k, xla::int64 dim, bool largest)
+      : Node(
+            ir::OpKind(at::aten::topk), {input},
+            [&]() {
+              xla::XlaBuilder b("InferOutputShape");
+              auto input_ir = xla::Parameter(&b, 0, input.shape(), "p0");
+              auto results = BuildTopK(input_ir, k, dim, largest);
+              return ShapeOfXlaOpList(results);
+            },
+            /*num_outputs=*/2, xla::util::MHash(k, dim, largest)),
+        k_(std::move(k)),
+        dim_(std::move(dim)),
+        largest_(std::move(largest)) {}
+
+  NodePtr Clone(OpList operands) const override {
+    return MakeNode<Topk>(operands.at(0), k_, dim_, largest_);
+  }
+
+  XlaOpVector Lower(LoweringContext* loctx) const override {
+    auto result = BuildTopK(loctx->GetOutputOp(operand(0)), k_, dim_, largest_);
+    return ReturnOps(result, loctx);
+  }
+
+  std::string ToString() const override {
+    std::stringstream ss;
+    ss << Node::ToString();
+    OpFieldToString(ss, "k", k_);
+    OpFieldToString(ss, "dim", dim_);
+    OpFieldToString(ss, "largest", largest_);
+    return ss.str();
+  }
+
+ private:
+  xla::int64 k_;
+  xla::int64 dim_;
+  bool largest_;
+};
+
 class TruncatedNormal : public Node {
  public:
   TruncatedNormal(const Value& input)
@@ -2904,6 +3268,46 @@ class Where : public Node {
   }
 
  private:
+};
+
+class XlaPad : public Node {
+ public:
+  XlaPad(const Value& input, at::Scalar padding_value,
+         xla::PaddingConfig padding_config)
+      : Node(
+            ir::OpKind(at::aten::xla_pad), {input},
+            [&]() {
+              xla::XlaBuilder b("InferOutputShape");
+              auto input_ir = xla::Parameter(&b, 0, input.shape(), "p0");
+              xla::XlaOp result =
+                  LowerPad(input_ir, padding_value, padding_config);
+              return XlaHelpers::ShapeOfXlaOp(result);
+            },
+            /*num_outputs=*/1, xla::util::MHash(padding_value, padding_config)),
+        padding_value_(std::move(padding_value)),
+        padding_config_(std::move(padding_config)) {}
+
+  NodePtr Clone(OpList operands) const override {
+    return MakeNode<XlaPad>(operands.at(0), padding_value_, padding_config_);
+  }
+
+  XlaOpVector Lower(LoweringContext* loctx) const override {
+    xla::XlaOp result = LowerPad(loctx->GetOutputOp(operand(0)), padding_value_,
+                                 padding_config_);
+    return ReturnOp(result, loctx);
+  }
+
+  std::string ToString() const override {
+    std::stringstream ss;
+    ss << Node::ToString();
+    OpFieldToString(ss, "padding_value", padding_value_);
+    OpFieldToString(ss, "padding_config", padding_config_);
+    return ss.str();
+  }
+
+ private:
+  at::Scalar padding_value_;
+  xla::PaddingConfig padding_config_;
 };
 
 class XlaSlice : public Node {
@@ -3194,6 +3598,15 @@ OpaqueXLATensor* XLATensor_floor(OpaqueXLATensor* input) {
   auto input_ir_value = input->GetIrValue();
   return new swift_xla::XLATensor(input->CreateFrom(
       swift_xla::ir::MakeNode<swift_xla::ir::ops::Floor>(input_ir_value)));
+}
+
+OpaqueXLATensor* XLATensor_gather(OpaqueXLATensor* input,
+                                  OpaqueXLATensor* indices, int64_t start_dim) {
+  auto input_ir_value = input->GetIrValue();
+  auto indices_ir_value = indices->GetIrValue();
+  return new swift_xla::XLATensor(
+      input->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::Gather>(
+          input_ir_value, indices_ir_value, start_dim)));
 }
 
 OpaqueXLATensor* XLATensor_ge(OpaqueXLATensor* lhs, OpaqueXLATensor* rhs) {
@@ -3619,6 +4032,81 @@ OpaqueXLATensor* XLATensor_tanh(OpaqueXLATensor* input) {
       swift_xla::ir::MakeNode<swift_xla::ir::ops::Tanh>(input_ir_value)));
 }
 
+OpaqueXLATensor* XLATensor_tf_Conv(OpaqueXLATensor* input,
+                                   OpaqueXLATensor* filter, bool depthwise,
+                                   Int64ArrayRef strides,
+                                   enum TFPadding padding,
+                                   Int64ArrayRef explicit_paddings,
+                                   enum TFDataFormat data_format,
+                                   Int64ArrayRef dilations) {
+  auto input_ir_value = input->GetIrValue();
+  auto filter_ir_value = filter->GetIrValue();
+  return new swift_xla::XLATensor(
+      input->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::TfConv>(
+          input_ir_value, filter_ir_value, depthwise,
+          swift_xla::XlaHelpers::I64List(strides.slice()), ToTFPadding(padding),
+          swift_xla::XlaHelpers::I64List(explicit_paddings.slice()),
+          x10::ToTFFormat(data_format),
+          swift_xla::XlaHelpers::I64List(dilations.slice()))));
+}
+
+OpaqueXLATensor* XLATensor_tf_ConvBackpropFilter(
+    OpaqueXLATensor* input, Int64ArrayRef filter_sizes,
+    OpaqueXLATensor* out_backprop, bool depthwise, Int64ArrayRef strides,
+    enum TFPadding padding, Int64ArrayRef explicit_paddings,
+    enum TFDataFormat data_format, Int64ArrayRef dilations) {
+  auto input_ir_value = input->GetIrValue();
+  auto out_backprop_ir_value = out_backprop->GetIrValue();
+  return new swift_xla::XLATensor(input->CreateFrom(
+      swift_xla::ir::MakeNode<swift_xla::ir::ops::TfConvBackpropFilter>(
+          input_ir_value, swift_xla::XlaHelpers::I64List(filter_sizes.slice()),
+          out_backprop_ir_value, depthwise,
+          swift_xla::XlaHelpers::I64List(strides.slice()), ToTFPadding(padding),
+          swift_xla::XlaHelpers::I64List(explicit_paddings.slice()),
+          x10::ToTFFormat(data_format),
+          swift_xla::XlaHelpers::I64List(dilations.slice()))));
+}
+
+OpaqueXLATensor* XLATensor_tf_ConvBackpropInput(
+    Int64ArrayRef input_sizes, OpaqueXLATensor* filter,
+    OpaqueXLATensor* out_backprop, bool depthwise, Int64ArrayRef strides,
+    enum TFPadding padding, Int64ArrayRef explicit_paddings,
+    enum TFDataFormat data_format, Int64ArrayRef dilations) {
+  auto filter_ir_value = filter->GetIrValue();
+  auto out_backprop_ir_value = out_backprop->GetIrValue();
+  return new swift_xla::XLATensor(filter->CreateFrom(
+      swift_xla::ir::MakeNode<swift_xla::ir::ops::TfConvBackpropInput>(
+          swift_xla::XlaHelpers::I64List(input_sizes.slice()), filter_ir_value,
+          out_backprop_ir_value, depthwise,
+          swift_xla::XlaHelpers::I64List(strides.slice()), ToTFPadding(padding),
+          swift_xla::XlaHelpers::I64List(explicit_paddings.slice()),
+          x10::ToTFFormat(data_format),
+          swift_xla::XlaHelpers::I64List(dilations.slice()))));
+}
+
+OpaqueXLATensor* XLATensor_tf_MirrorPad(OpaqueXLATensor* input,
+                                        Int64ArrayRef padding,
+                                        enum TFMirrorPadMode mode) {
+  auto input_ir_value = input->GetIrValue();
+  return new swift_xla::XLATensor(input->CreateFrom(
+      swift_xla::ir::MakeNode<swift_xla::ir::ops::TfMirrorPad>(
+          input_ir_value, swift_xla::XlaHelpers::I64List(padding.slice()),
+          ToTFMirrorPadMode(mode))));
+}
+
+OpaqueXLATensor* XLATensor_tf_MirrorPadGrad(OpaqueXLATensor* grad_output,
+                                            Int64ArrayRef input_size,
+                                            Int64ArrayRef padding,
+                                            enum TFMirrorPadMode mode) {
+  auto grad_output_ir_value = grad_output->GetIrValue();
+  return new swift_xla::XLATensor(grad_output->CreateFrom(
+      swift_xla::ir::MakeNode<swift_xla::ir::ops::TfMirrorPadGrad>(
+          grad_output_ir_value,
+          swift_xla::XlaHelpers::I64List(input_size.slice()),
+          swift_xla::XlaHelpers::I64List(padding.slice()),
+          ToTFMirrorPadMode(mode))));
+}
+
 OpaqueXLATensor* XLATensor_tf_OneHot(OpaqueXLATensor* indices, OpaqueXLATensor* on_value, OpaqueXLATensor* off_value, int64_t depth, int64_t axis) {
   auto indices_ir_value = indices->GetIrValue();
   auto on_value_ir_value = on_value->GetIrValue();
@@ -3657,6 +4145,22 @@ OpaqueXLATensor* XLATensor_threshold(OpaqueXLATensor* input, OpaqueXLATensor* ou
           input_ir_value, output_ir_value, threshold, value)));
 }
 
+OpaqueXLATensor_pair XLATensor_topk(OpaqueXLATensor* input, int64_t k,
+                                    int64_t dim, bool largest) {
+  auto input_ir_value = input->GetIrValue();
+  auto result_node = swift_xla::ir::MakeNode<swift_xla::ir::ops::Topk>(
+      input_ir_value, k,
+      swift_xla::XlaHelpers::GetCanonicalDimensionIndex(
+          dim, input_ir_value.shape().rank()),
+      largest);
+  OpaqueXLATensor_pair result;
+  result.x = new swift_xla::XLATensor(
+      input->CreateFrom(swift_xla::ir::Value(result_node, 0)));
+  result.y = new swift_xla::XLATensor(
+      input->CreateFrom(swift_xla::ir::Value(result_node, 1)));
+  return result;
+}
+
 OpaqueXLATensor* XLATensor_truncated_normal(OpaqueXLATensor* input) {
   auto input_ir_value = input->GetIrValue();
   return new swift_xla::XLATensor(input->CreateFrom(
@@ -3680,6 +4184,16 @@ OpaqueXLATensor* XLATensor_where(OpaqueXLATensor* condition, OpaqueXLATensor* in
   return new swift_xla::XLATensor(
       input->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::Where>(
           condition_ir_value, input_ir_value, other_ir_value)));
+}
+
+OpaqueXLATensor* XLATensor_xla_pad(OpaqueXLATensor* input,
+                                   XLAScalar padding_value,
+                                   PaddingConfig padding_config) {
+  auto input_ir_value = input->GetIrValue();
+  return new swift_xla::XLATensor(
+      input->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::XlaPad>(
+          input_ir_value, atScalar(padding_value),
+          ToXLAPaddingConfig(padding_config))));
 }
 
 OpaqueXLATensor* XLATensor_xla_slice(OpaqueXLATensor* input, Int64ArrayRef start_indices, Int64ArrayRef limit_indices, Int64ArrayRef strides) {

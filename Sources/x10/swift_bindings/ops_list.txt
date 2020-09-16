@@ -149,6 +149,10 @@
   shape_fn: input
   lower_fn: xla::Floor
 
+- def: "gather(input: Tensor, indices: Tensor, start_dim: Int64) -> Tensor"
+  x10_enum: at::aten::index
+  lower_fn: CreateIndex
+
 - def: "ge(lhs: Tensor, rhs: Tensor) -> Tensor"
   x10_enum: at::aten::ge
   lower_fn: LowerBinaryOp<xla::Ge>
@@ -402,6 +406,26 @@
   shape_fn: input
   lower_fn: xla::Tanh
 
+- def: "tf_Conv(input: Tensor, filter: Tensor, depthwise: Bool, strides: [Int64], padding: TFPadding, explicit_paddings: [Int64], data_format: TFDataFormat, dilations: [Int64]) -> Tensor"
+  x10_enum: at::aten::tf_convolution
+  lower_fn: BuildTfConv
+
+- def: "tf_ConvBackpropFilter(input: Tensor, filter_sizes: [Int64], out_backprop: Tensor, depthwise: Bool, strides: [Int64], padding: TFPadding, explicit_paddings: [Int64], data_format: TFDataFormat, dilations: [Int64]) -> Tensor"
+  x10_enum: at::aten::tf_conv_backprop_filter
+  lower_fn: BuildTfConvBackpropFilter
+
+- def: "tf_ConvBackpropInput(input_sizes: [Int64], filter: Tensor, out_backprop: Tensor, depthwise: Bool, strides: [Int64], padding: TFPadding, explicit_paddings: [Int64], data_format: TFDataFormat, dilations: [Int64]) -> Tensor"
+  x10_enum: at::aten::tf_conv_backprop_input
+  lower_fn: BuildTfConvBackpropInput
+
+- def: "tf_MirrorPad(input: Tensor, padding: [Int64], mode: TFMirrorPadMode) -> Tensor"
+  x10_enum: at::aten::tf_mirror_pad
+  lower_fn: BuildMirrorPad
+
+- def: "tf_MirrorPadGrad(grad_output: Tensor, input_size: [Int64], padding: [Int64], mode: TFMirrorPadMode) -> Tensor"
+  x10_enum: at::aten::tf_mirror_pad_backward
+  lower_fn: BuildMirrorPadBackward
+
 - def: "tf_OneHot(indices: Tensor, on_value: Tensor, off_value: Tensor, depth: Int64, axis: Int64) -> Tensor"
   result_dtype: on_value
   x10_enum: at::aten::tf_one_hot
@@ -422,6 +446,11 @@
   shape_fn: input
   lower_fn: BuildThreshold
 
+- def: "topk(input: Tensor, k: Int64, dim: Int64, largest: Bool) -> (Tensor, Tensor)"
+  extras: ["canonicalize dim input"]
+  x10_enum: at::aten::topk
+  lower_fn: BuildTopK
+
 - def: "truncated_normal(input: Tensor) -> Tensor"
   x10_enum: at::aten::xla_truncated_normal
   shape_fn: input
@@ -435,6 +464,10 @@
   x10_enum: at::aten::where
   shape_fn: input
   lower_fn: LowerWhere
+
+- def: "xla_pad(input: Tensor, padding_value: AnyScalar, padding_config: PaddingConfig) -> Tensor"
+  x10_enum: at::aten::xla_pad
+  lower_fn: LowerPad
 
 - def: "xla_slice(input: Tensor, start_indices: [Int64], limit_indices: [Int64], strides: [Int64]) -> Tensor"
   x10_enum: at::aten::xla_slice

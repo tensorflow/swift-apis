@@ -326,11 +326,6 @@ OpaqueString* XLATensor_get_annotations(OpaqueXLATensor* a) {
       swift_xla::ir::DumpUtil::GetAnnotations({a->GetIrValue().node.get()});
   return new std::string(ir_dag_text);
 }
-OpaqueXLATensor* XLATensor_index(OpaqueXLATensor* input,
-                                 OpaqueXLATensorArrayRef indices,
-                                 int64_t start_dim) {
-  return new XLATensor(XLATensor::index(*input, indices.array(), start_dim));
-}
 OpaqueString* XLATensor_ir_text(OpaqueXLATensor* a) {
   std::string ir_dag_text =
       swift_xla::ir::DumpUtil::ToText({a->GetIrValue().node.get()});
@@ -354,56 +349,6 @@ OpaqueXLATensorArrayRef XLATensor_split_with_sizes(OpaqueXLATensor* input,
       *input, XlaHelpers::I64List(split_size.slice()), dim);
   return ConvertTensorList(chunks);
 }
-OpaqueXLATensor_pair XLATensor_topk(OpaqueXLATensor* a, int64_t k,
-                                            int64_t dim, bool largest) {
-  auto result = XLATensor::topk(*a, k, dim, largest, false);
-  return {new XLATensor(std::get<0>(result)), new XLATensor(std::get<1>(result))};
-}
-OpaqueXLATensor* XLATensor_tf_Conv(OpaqueXLATensor* input,
-                                   OpaqueXLATensor* filter, bool depthwise,
-                                   Int64ArrayRef strides, TFPadding padding,
-                                   Int64ArrayRef explicit_paddings,
-                                   TFDataFormat data_format,
-                                   Int64ArrayRef dilations) {
-  return new XLATensor(
-      XLATensor::tf_Conv(*input, *filter, depthwise, strides.slice(),
-                         ToTFPadding(padding), explicit_paddings.slice(),
-                         x10::ToTFFormat(data_format), dilations.slice()));
-}
-OpaqueXLATensor* XLATensor_tf_ConvBackpropFilter(
-    OpaqueXLATensor* input, Int64ArrayRef filter_sizes,
-    OpaqueXLATensor* out_backprop, bool depthwise, Int64ArrayRef strides,
-    enum TFPadding padding, Int64ArrayRef explicit_paddings,
-    enum TFDataFormat data_format, Int64ArrayRef dilations) {
-  return new XLATensor(XLATensor::tf_ConvBackpropFilter(
-      *input, filter_sizes.slice(), *out_backprop, depthwise, strides.slice(),
-      ToTFPadding(padding), explicit_paddings.slice(),
-      x10::ToTFFormat(data_format), dilations.slice()));
-}
-OpaqueXLATensor* XLATensor_tf_ConvBackpropInput(
-    Int64ArrayRef input_sizes, OpaqueXLATensor* filter,
-    OpaqueXLATensor* out_backprop, bool depthwise, Int64ArrayRef strides,
-    enum TFPadding padding, Int64ArrayRef explicit_paddings,
-    enum TFDataFormat data_format, Int64ArrayRef dilations) {
-  return new XLATensor(XLATensor::tf_ConvBackpropInput(
-      input_sizes.slice(), *filter, *out_backprop, depthwise, strides.slice(),
-      ToTFPadding(padding), explicit_paddings.slice(),
-      x10::ToTFFormat(data_format), dilations.slice()));
-}
-OpaqueXLATensor* XLATensor_tf_MirrorPad(OpaqueXLATensor* input,
-                                        Int64ArrayRef padding,
-                                        enum TFMirrorPadMode mode) {
-  return new XLATensor(XLATensor::tf_MirrorPad(
-      *input, XlaHelpers::I64List(padding.slice()), ToTFMirrorPadMode(mode)));
-}
-OpaqueXLATensor* XLATensor_tf_MirrorPadGrad(OpaqueXLATensor* grad_output,
-                                            Int64ArrayRef input_size,
-                                            Int64ArrayRef padding,
-                                            enum TFMirrorPadMode mode) {
-  return new XLATensor(XLATensor::tf_MirrorPadGrad(
-      *grad_output, XlaHelpers::I64List(input_size.slice()),
-      XlaHelpers::I64List(padding.slice()), ToTFMirrorPadMode(mode)));
-}
 OpaqueXLATensor* XLATensor_tf_StatelessRandomNormal(
     Int64ArrayRef size, OpaqueXLATensor* seeds, const struct CDevice device,
     enum XLATensorScalarType type) {
@@ -418,21 +363,6 @@ OpaqueXLATensor* XLATensor_threshold_backward(OpaqueXLATensor* grad_output,
 OpaqueXLATensor* XLATensor_to(OpaqueXLATensor* a, const CDevice* device,
                               Optional_XLAScalarType dtype) {
   return new XLATensor(XLATensor::to(*a, AsOptional(device), dtype.value()));
-}
-OpaqueXLATensor* XLATensor_xla_pad(OpaqueXLATensor* input,
-                                   XLAScalar padding_value,
-                                   PaddingConfig padding_config) {
-  xla::PaddingConfig xla_padding_config;
-  for (size_t i = 0; i < padding_config.count; ++i) {
-    xla::PaddingConfig::PaddingConfigDimension* dims =
-        xla_padding_config.add_dimensions();
-    const PaddingConfigDimension& padding_dim = padding_config.dimensions[i];
-    dims->set_edge_padding_low(padding_dim.edge_padding_low);
-    dims->set_edge_padding_high(padding_dim.edge_padding_high);
-    dims->set_interior_padding(padding_dim.interior_padding);
-  }
-  return new XLATensor(
-      XLATensor::xla_pad(*input, atScalar(padding_value), xla_padding_config));
 }
 struct CDevice XLATensor_device(OpaqueXLATensor* t) {
   return ConvertDevice(t->GetDevice());
