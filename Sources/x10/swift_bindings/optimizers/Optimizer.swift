@@ -63,8 +63,8 @@ public struct OptimizerState {
     self.state = other.state.map { Tensor<Float>(copying: $0, to: device) }
   }
 
-  var state: [Tensor<Float>]
-  var stride: Int
+  public var state: [Tensor<Float>]
+  public var stride: Int
 
   public subscript(_ stateId: Int, _ weightId: Int) -> Tensor<Float> {
     get { state[stateId * stride + weightId] }
