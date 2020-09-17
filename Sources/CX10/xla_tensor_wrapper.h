@@ -288,9 +288,6 @@ XLA_API OpaqueXLATensor* XLATensor_expm1(OpaqueXLATensor* a);
 XLA_API OpaqueXLATensor*
 XLATensor_flip(OpaqueXLATensor* input, Int64ArrayRef dims);
 XLA_API OpaqueXLATensor* XLATensor_floor(OpaqueXLATensor* a);
-XLA_API OpaqueXLATensor*
-XLATensor_full(Int64ArrayRef size, XLAScalar value, const struct CDevice device,
-               enum XLATensorScalarType type);
 XLA_API OpaqueXLATensor* XLATensor_gather(OpaqueXLATensor* x,
                                           OpaqueXLATensor* y,
                                           int64_t start_dim);
@@ -369,8 +366,6 @@ XLA_API OpaqueXLATensor* XLATensor_sinh(OpaqueXLATensor* a);
 XLA_API OpaqueXLATensor* XLATensor_slice(
     OpaqueXLATensor* a, int64_t dim, int64_t start, int64_t end, int64_t step);
 XLA_API OpaqueXLATensor* XLATensor_softmax(OpaqueXLATensor* a, int64_t dim);
-XLA_API OpaqueXLATensorArrayRef XLATensor_split_with_sizes(
-    OpaqueXLATensor* input, Int64ArrayRef split_size, int64_t dim);
 XLA_API OpaqueXLATensor* XLATensor_sqrt(OpaqueXLATensor* a);
 XLA_API OpaqueXLATensor* XLATensor_squeeze(OpaqueXLATensor* a, int64_t dim);
 XLA_API OpaqueXLATensor*
