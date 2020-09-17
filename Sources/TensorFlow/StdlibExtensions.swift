@@ -294,94 +294,103 @@ where Wrapped.TangentVector: ElementaryFunctions {
   ///
   /// For real types, if `x` is negative the result is `.nan`. For complex
   /// types there is a branch cut on the negative real axis.
-  public static func sqrt(_ x: Self) -> Self { .init(x.value.map(Wrapped.TangentVector.sqrt)) }
+  public static func sqrt(_ x: Self) -> Self { Self(x.value.map(Wrapped.TangentVector.sqrt)) }
 
   /// The cosine of `x`, interpreted as an angle in radians.
-  public static func cos(_ x: Self) -> Self { .init(x.value.map(Wrapped.TangentVector.sqrt)) }
+  public static func cos(_ x: Self) -> Self { Self(x.value.map(Wrapped.TangentVector.cos)) }
 
   /// The sine of `x`, interpreted as an angle in radians.
-  public static func sin(_ x: Self) -> Self { .init(x.value.map(Wrapped.TangentVector.sqrt)) }
+  public static func sin(_ x: Self) -> Self { Self(x.value.map(Wrapped.TangentVector.sin)) }
 
   /// The tangent of `x`, interpreted as an angle in radians.
-  public static func tan(_ x: Self) -> Self { .init(x.value.map(Wrapped.TangentVector.sqrt)) }
+  public static func tan(_ x: Self) -> Self { Self(x.value.map(Wrapped.TangentVector.tan)) }
 
   /// The inverse cosine of `x` in radians.
-  public static func acos(_ x: Self) -> Self { .init(x.value.map(Wrapped.TangentVector.sqrt)) }
+  public static func acos(_ x: Self) -> Self { Self(x.value.map(Wrapped.TangentVector.acos)) }
 
   /// The inverse sine of `x` in radians.
-  public static func asin(_ x: Self) -> Self { .init(x.value.map(Wrapped.TangentVector.sqrt)) }
+  public static func asin(_ x: Self) -> Self { Self(x.value.map(Wrapped.TangentVector.asin)) }
 
   /// The inverse tangent of `x` in radians.
-  public static func atan(_ x: Self) -> Self { .init(x.value.map(Wrapped.TangentVector.sqrt)) }
+  public static func atan(_ x: Self) -> Self { Self(x.value.map(Wrapped.TangentVector.atan)) }
 
   /// The hyperbolic cosine of `x`.
-  public static func cosh(_ x: Self) -> Self { .init(x.value.map(Wrapped.TangentVector.sqrt)) }
+  public static func cosh(_ x: Self) -> Self { Self(x.value.map(Wrapped.TangentVector.cosh)) }
 
   /// The hyperbolic sine of `x`.
-  public static func sinh(_ x: Self) -> Self { .init(x.value.map(Wrapped.TangentVector.sqrt)) }
+  public static func sinh(_ x: Self) -> Self { Self(x.value.map(Wrapped.TangentVector.sinh)) }
 
   /// The hyperbolic tangent of `x`.
-  public static func tanh(_ x: Self) -> Self { .init(x.value.map(Wrapped.TangentVector.sqrt)) }
+  public static func tanh(_ x: Self) -> Self { Self(x.value.map(Wrapped.TangentVector.tanh)) }
 
   /// The inverse hyperbolic cosine of `x`.
-  public static func acosh(_ x: Self) -> Self { .init(x.value.map(Wrapped.TangentVector.sqrt)) }
+  public static func acosh(_ x: Self) -> Self { Self(x.value.map(Wrapped.TangentVector.acosh)) }
 
   /// The inverse hyperbolic sine of `x`.
-  public static func asinh(_ x: Self) -> Self { .init(x.value.map(Wrapped.TangentVector.sqrt)) }
+  public static func asinh(_ x: Self) -> Self { Self(x.value.map(Wrapped.TangentVector.asinh)) }
 
   /// The inverse hyperbolic tangent of `x`.
-  public static func atanh(_ x: Self) -> Self { .init(x.value.map(Wrapped.TangentVector.sqrt)) }
+  public static func atanh(_ x: Self) -> Self { Self(x.value.map(Wrapped.TangentVector.atanh)) }
 
   /// The exponential function applied to `x`, or `e**x`.
-  public static func exp(_ x: Self) -> Self { .init(x.value.map(Wrapped.TangentVector.sqrt)) }
+  public static func exp(_ x: Self) -> Self { Self(x.value.map(Wrapped.TangentVector.exp)) }
 
   /// Two raised to to power `x`.
-  public static func exp2(_ x: Self) -> Self { .init(x.value.map(Wrapped.TangentVector.sqrt)) }
+  public static func exp2(_ x: Self) -> Self { Self(x.value.map(Wrapped.TangentVector.exp2)) }
 
   /// Ten raised to to power `x`.
-  public static func exp10(_ x: Self) -> Self { .init(x.value.map(Wrapped.TangentVector.sqrt)) }
+  public static func exp10(_ x: Self) -> Self { Self(x.value.map(Wrapped.TangentVector.exp10)) }
 
   /// `exp(x) - 1` evaluated so as to preserve accuracy close to zero.
-  public static func expm1(_ x: Self) -> Self { .init(x.value.map(Wrapped.TangentVector.sqrt)) }
+  public static func expm1(_ x: Self) -> Self { Self(x.value.map(Wrapped.TangentVector.expm1)) }
 
   /// The natural logarithm of `x`.
-  public static func log(_ x: Self) -> Self { .init(x.value.map(Wrapped.TangentVector.sqrt)) }
+  public static func log(_ x: Self) -> Self { Self(x.value.map(Wrapped.TangentVector.log)) }
 
   /// The base-two logarithm of `x`.
-  public static func log2(_ x: Self) -> Self { .init(x.value.map(Wrapped.TangentVector.sqrt)) }
+  public static func log2(_ x: Self) -> Self { Self(x.value.map(Wrapped.TangentVector.log2)) }
 
   /// The base-ten logarithm of `x`.
-  public static func log10(_ x: Self) -> Self { .init(x.value.map(Wrapped.TangentVector.sqrt)) }
+  public static func log10(_ x: Self) -> Self { Self(x.value.map(Wrapped.TangentVector.log10)) }
 
   /// `log(1 + x)` evaluated so as to preserve accuracy close to zero.
-  public static func log1p(_ x: Self) -> Self { .init(x.value.map(Wrapped.TangentVector.sqrt)) }
+  public static func log1p(_ x: Self) -> Self { Self(x.value.map(Wrapped.TangentVector.log1p)) }
 
   /// `exp(y log(x))` computed without loss of intermediate precision.
   ///
   /// For real types, if `x` is negative the result is NaN, even if `y` has
   /// an integral value. For complex types, there is a branch cut on the
   /// negative real axis.
-  public static func pow(_ x: Self, _ y: Self) -> Self { .init(x.value.map(Wrapped.TangentVector.sqrt)) }
+  public static func pow(_ x: Self, _ y: Self) -> Self {
+    switch (x.value, y.value) {
+    case let (x?, y?): return Self(Wrapped.TangentVector.pow(x, y))
+    default: return Self(nil)
+    }
+  }
 
   /// `x` raised to the `n`th power.
   ///
   /// The product of `n` copies of `x`.
-    public static func pow(_ x: Self, _ n: Int) -> Self { .init(x.value.map({ x in Wrapped.TangentVector.pow(x, n)})) }
+  public static func pow(_ x: Self, _ n: Int) -> Self {
+    Self(x.value.map({ x in Wrapped.TangentVector.pow(x, n) }))
+  }
 
   /// The `n`th root of `x`.
   ///
   /// For real types, if `x` is negative and `n` is even, the result is NaN.
   /// For complex types, there is a branch cut along the negative real axis.
-  public static func root(_ x: Self, _ n: Int) -> Self { .init(x.value.map({ x in Wrapped.TangentVector.root(x, n)})) }
+  public static func root(_ x: Self, _ n: Int) -> Self {
+    Self(x.value.map({ x in Wrapped.TangentVector.root(x, n) }))
+  }
 }
 
 extension Optional.TangentVector: PointwiseMultiplicative
 where Wrapped.TangentVector: PointwiseMultiplicative {
   public static var one: Self {
-    .init(Wrapped.TangentVector.one)
+    Self(Wrapped.TangentVector.one)
   }
 
-  public var reciprocal: Self { .init(value.map { $0.reciprocal }) }
+  public var reciprocal: Self { Self(value.map { $0.reciprocal }) }
 
   public static func .* (lhs: Self, rhs: Self) -> Self {
     switch (lhs.value, rhs.value) {
@@ -399,15 +408,17 @@ extension Optional.TangentVector: VectorProtocol
 where Wrapped.TangentVector: VectorProtocol {
   public typealias VectorSpaceScalar = Wrapped.TangentVector.VectorSpaceScalar
 
-  public func adding(_ x: VectorSpaceScalar) -> Self { .init(value.map { $0.adding(x) }) }
+  public func adding(_ x: VectorSpaceScalar) -> Self { Self(value.map { $0.adding(x) }) }
 
   public mutating func add(_ x: VectorSpaceScalar) { value?.add(x) }
 
-  public func subtracting(_ x: VectorSpaceScalar) -> Self { .init(value.map { $0.subtracting(x) }) }
+  public func subtracting(_ x: VectorSpaceScalar) -> Self { Self(value.map { $0.subtracting(x) }) }
 
   public mutating func subtract(_ x: VectorSpaceScalar) { value?.subtract(x) }
 
-  public func scaled(by scale: VectorSpaceScalar) -> Self { .init(value.map { $0.scaled(by: scale) }) }
+  public func scaled(by scale: VectorSpaceScalar) -> Self {
+    Self(value.map { $0.scaled(by: scale) })
+  }
 
   public mutating func scale(by scale: VectorSpaceScalar) {
     value?.scale(by: scale)

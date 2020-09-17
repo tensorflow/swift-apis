@@ -51,7 +51,6 @@ final class TrivialModelTests: XCTestCase {
           return meanSquaredError(predicted: ŷ, expected: y)
         }
         optimizer.update(&classifier, along: 𝛁model)
-        dump(𝛁model)
       }
     }
     let ŷ = classifier.inferring(from: x)

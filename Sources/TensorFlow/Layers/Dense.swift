@@ -40,19 +40,20 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
 
   /// The bias vector.
   ///
-  /// - Note: returns `Tensor.zero` if the underlying `optionalBias`  does not exist.
-  //@differentiable
+  /// - Note: Returns `Tensor.zero` if the underlying `optionalBias` does not exist.
+  @differentiable
   public var bias: Tensor<Scalar> {
-    get { optionalBias ?? .zero }
+    get {
+      if let bias = optionalBias {
+        return bias
+      }
+      return .zero
+    }
     set { optionalBias = newValue }
   }
 
   /// Creates an instance from the given weight, optional bias, and activation function.
-  ///
-  /// - Note: currently, `weight` is the only differentiability parameter. `bias` can be made a
-  ///   differentiability parameter after `Optional` conditionally conforms to `Differentiable`:
-  ///   TF-499.
-  @differentiable(wrt: weight)
+  @differentiable(wrt: (weight, bias))
   public init(
     weight: Tensor<Scalar>,
     bias: Tensor<Scalar>? = nil,
@@ -65,18 +66,6 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
     self.optionalBias = bias
     self.activation = activation
     self.batched = weight.rank == 3
-  }
-
-  // TODO(TF-433): Remove custom derivative after `try_apply` differentiation is supported.
-  @derivative(of: init, wrt: weight)
-  @usableFromInline
-  static func vjpInit(
-    weight: Tensor<Scalar>,
-    bias: Tensor<Scalar>? = nil,
-    activation: @escaping Activation
-  ) -> (value: Self, pullback: (TangentVector) -> Tensor<Scalar>) {
-    let value = Dense(weight: weight, bias: bias, activation: activation)
-    return (value, { v in v.weight })
   }
 
   /// Returns the output obtained from applying the layer to the given input.
@@ -118,7 +107,6 @@ extension Dense {
     weightInitializer: ParameterInitializer<Scalar> = glorotUniform(),
     biasInitializer: ParameterInitializer<Scalar> = zeros()
   ) {
-    print("Init OLD")
     self.init(
       weight: weightInitializer([inputSize, outputSize]),
       bias: useBias ? biasInitializer([outputSize]) : nil,
@@ -142,7 +130,6 @@ extension Dense {
     weightInitializer: ParameterInitializer<Scalar> = glorotUniform(),
     biasInitializer: ParameterInitializer<Scalar>? = nil
   ) {
-    print("Init NEW")
     self.init(
       weight: weightInitializer([inputSize, outputSize]),
       bias: biasInitializer?([outputSize]),
@@ -168,18 +155,13 @@ extension Dense.TangentVector {
   }
 }
 
-/* extension Optional : KeyPathIterable {
+extension Optional: KeyPathIterable {
   public var allKeyPaths: [PartialKeyPath<Self>] {
     if self != nil {
-      return [ \Optional.unsafelyUnwrapped ]
+      return [\.!]
     }
     return []
   }
 
   public typealias AllKeyPaths = [PartialKeyPath<Self>]
 }
-
-extension Optional.TangentVector : KeyPathIterable
-{
-  
-}*/
