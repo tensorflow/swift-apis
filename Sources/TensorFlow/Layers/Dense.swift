@@ -148,20 +148,8 @@ extension Dense.TangentVector {
   /// The bias vector.
   ///
   /// - Note: returns `Tensor.zero` if the underlying `optionalBias`  does not exist.
-  //@differentiable
   public var bias: Tensor<Scalar> {
     get { optionalBias.value ?? .zero }
     set { optionalBias.value = newValue }
   }
-}
-
-extension Optional: KeyPathIterable {
-  public var allKeyPaths: [PartialKeyPath<Self>] {
-    if self != nil {
-      return [\.!]
-    }
-    return []
-  }
-
-  public typealias AllKeyPaths = [PartialKeyPath<Self>]
 }
