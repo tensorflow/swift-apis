@@ -478,11 +478,10 @@ extension XLATensor {
     _ dtype: XLAScalarType.Type,
     _ device: Device
   ) -> XLATensor {
-    let cdevice = device.cdevice
-    return dims.withArrayRef { dims in
+    return expand(
       XLATensor(
-        _handle: XLATensor_full(dims, value.xlaScalar, cdevice, dtype.xlaTensorScalarType))
-    }
+        _handle: XLATensor_makeScalar(value.xlaScalar, dtype.xlaTensorScalarType, device.cdevice)),
+      dims)
   }
 
   static func gather(_ input: XLATensor, _ indices: XLATensor, _ startDim: Int64) -> XLATensor {
@@ -832,14 +831,12 @@ extension XLATensor {
   static func splitWithSizes(_ input: XLATensor, _ splitSize: [Int64], _ dim: Int64) -> [XLATensor]
   {
     defer { _fixLifetime(input) }
-    return splitSize.withArrayRef { splitSize in
-      let tensorListHandle = XLATensor_split_with_sizes(input.handle, splitSize, dim)
-      defer {
-        destroyOpaqueXLATensorArrayRef(tensorListHandle)
-      }
-      return (0..<tensorListHandle.size).map { i in
-        XLATensor(_handle: tensorListHandle.data[i]!)
-      }
+    var offset: Int64 = 0
+    return splitSize.map { (size: Int64) -> XLATensor in
+      let nextOffset = offset + size
+      let result = slice(input, dim, offset, nextOffset, 1)
+      offset = nextOffset
+      return result
     }
   }
 

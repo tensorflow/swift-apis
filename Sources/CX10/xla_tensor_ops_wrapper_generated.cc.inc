@@ -3953,7 +3953,10 @@ OpaqueXLATensor* XLATensor_slice(OpaqueXLATensor* input, int64_t dim, int64_t st
   auto input_ir_value = input->GetIrValue();
   return new swift_xla::XLATensor(
       input->CreateFrom(swift_xla::ir::MakeNode<swift_xla::ir::ops::Slice>(
-          input_ir_value, dim, start, end, stride)));
+          input_ir_value,
+          swift_xla::XlaHelpers::GetCanonicalDimensionIndex(
+              dim, input_ir_value.shape().rank()),
+          start, end, stride)));
 }
 
 OpaqueXLATensor* XLATensor_softmax(OpaqueXLATensor* input, int64_t dim) {

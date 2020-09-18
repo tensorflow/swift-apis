@@ -314,13 +314,6 @@ OpaqueXLATensorArrayRef XLATensor_cross_replica_sum(
   const auto& result_tensors = reduced_and_token.first;
   return ConvertTensorList(result_tensors);
 }
-OpaqueXLATensor* XLATensor_full(Int64ArrayRef size, XLAScalar value,
-                                const CDevice device,
-                                enum XLATensorScalarType type) {
-  return new XLATensor(XLATensor::full(size.slice(), atScalar(value),
-                                       ConvertDevice(device),
-                                       ToScalarType(type)));
-}
 OpaqueString* XLATensor_get_annotations(OpaqueXLATensor* a) {
   std::string ir_dag_text =
       swift_xla::ir::DumpUtil::GetAnnotations({a->GetIrValue().node.get()});
@@ -341,13 +334,6 @@ OpaqueXLATensor* XLATensor_linspace(XLAScalar start, XLAScalar stop,
 }
 OpaqueXLATensor* XLATensor_replica_id(const struct CDevice device) {
   return new XLATensor(XLATensor::xla_replica_id(ConvertDevice(device)));
-}
-OpaqueXLATensorArrayRef XLATensor_split_with_sizes(OpaqueXLATensor* input,
-                                                   Int64ArrayRef split_size,
-                                                   int64_t dim) {
-  auto chunks = XLATensor::split_with_sizes(
-      *input, XlaHelpers::I64List(split_size.slice()), dim);
-  return ConvertTensorList(chunks);
 }
 OpaqueXLATensor* XLATensor_tf_StatelessRandomNormal(
     Int64ArrayRef size, OpaqueXLATensor* seeds, const struct CDevice device,
