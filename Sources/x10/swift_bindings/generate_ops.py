@@ -189,7 +189,7 @@ class {op["op_node_name"]} : public Node {{
   {op["op_node_name"]}({", ".join(format_ctor_arg(arg) for arg in op["args"])})
       : Node(ir::OpKind({op["x10_enum"]}),
              {tensors_ctor}, {shape_fn},
-             /*num_outputs=*/{str(num_outputs)}, xla::util::MHash({", ".join(arg[0] for arg in attr_args if arg[0] != "shape")})){
+             /*num_outputs=*/{str(num_outputs)}, xla::util::MHash({", ".join(arg[0] for arg in attr_args)})){
 "".join(format_attr_init(arg) for arg in attr_args if arg[0] != "shape")
 } {{}}
 

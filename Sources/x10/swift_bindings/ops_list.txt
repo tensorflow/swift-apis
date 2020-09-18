@@ -357,6 +357,7 @@
   lower_fn: xla::Sinh
 
 - def: "slice(input: Tensor, dim: Int64, start: Int64, end: Int64, stride: Int64) -> Tensor"
+  extras: ["canonicalize dim input"]
   x10_enum: at::aten::slice
   shape_fn: ShapeSlice
   lower_fn: LowerSlice

@@ -3036,18 +3036,21 @@ class TfOneHot : public Node {
 
 class TfStatelessRandomUniform : public Node {
  public:
-  TfStatelessRandomUniform(xla::Shape shape, const Value& seeds, const Value& minvalue, const Value& maxvalue)
-      : Node(ir::OpKind(at::aten::tf_stateless_random_uniform),
-             {seeds, minvalue, maxvalue}, [&]() {
-       xla::XlaBuilder b("InferOutputShape");
-       auto seeds_ir = xla::Parameter(&b, 0, seeds.shape(), "p0");
-       auto minvalue_ir = xla::Parameter(&b, 1, minvalue.shape(), "p1");
-       auto maxvalue_ir = xla::Parameter(&b, 2, maxvalue.shape(), "p2");
-       xla::XlaOp result = LowerTfStatelessRandomUniform(
-         shape, seeds_ir, minvalue_ir, maxvalue_ir);
-       return XlaHelpers::ShapeOfXlaOp(result);
-     },
-             /*num_outputs=*/1, xla::util::MHash()) {}
+  TfStatelessRandomUniform(xla::Shape shape, const Value& seeds,
+                           const Value& minvalue, const Value& maxvalue)
+      : Node(
+            ir::OpKind(at::aten::tf_stateless_random_uniform),
+            {seeds, minvalue, maxvalue},
+            [&]() {
+              xla::XlaBuilder b("InferOutputShape");
+              auto seeds_ir = xla::Parameter(&b, 0, seeds.shape(), "p0");
+              auto minvalue_ir = xla::Parameter(&b, 1, minvalue.shape(), "p1");
+              auto maxvalue_ir = xla::Parameter(&b, 2, maxvalue.shape(), "p2");
+              xla::XlaOp result = LowerTfStatelessRandomUniform(
+                  shape, seeds_ir, minvalue_ir, maxvalue_ir);
+              return XlaHelpers::ShapeOfXlaOp(result);
+            },
+            /*num_outputs=*/1, xla::util::MHash(shape)) {}
 
   NodePtr Clone(OpList operands) const override {
     return MakeNode<TfStatelessRandomUniform>(
