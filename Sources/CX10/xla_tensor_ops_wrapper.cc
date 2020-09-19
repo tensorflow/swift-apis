@@ -72,6 +72,9 @@ xla::hash_t Hash(const xla::PaddingConfig& padding_config) {
   }
   return xla::util::MHash(low, high, interior);
 }
+xla::hash_t Hash(const xla::Shape& shape) {
+  return xla::util::MHash(shape.ToString());
+}
 }  // namespace xla
 namespace swift_xla {
 void OpFieldToString(std::ostream& stream, const char* field_name, const c10::optional<at::ScalarType>& dtype) {
