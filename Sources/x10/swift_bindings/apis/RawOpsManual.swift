@@ -1711,7 +1711,10 @@ public enum _RawXLA {
     precondition(batchDims == 0)
     checkSameDevice(params.device, indices.device)
     let canonicalAxis = canonicalDims(axis.scalars.map { Int64($0) }, Int64(params.rank)).first!
-    return Tensor(_xla: XLATensor.index(params.xlaTensor, [indices.xlaTensor], canonicalAxis))
+    return Tensor(
+      _xla: XLATensor.gather(
+        params.xlaTensor, Tensor<Tindices>(stacking: [indices], alongAxis: indices.rank).xlaTensor,
+        canonicalAxis))
   }
 
   /// Returns the truth value of (x > y) element-wise.
@@ -4244,6 +4247,15 @@ public enum _RawXLA {
     keepDims: Bool = false
   ) -> Tensor<T> {
     sum(input, reductionIndices: reductionIndices.scalars.map { Int64($0) }, keepDims: keepDims)
+  }
+
+  public static func svd<T: FloatingPoint & TensorFlowScalar>(
+    _ input: Tensor<T>,
+    computeUv: Bool = true,
+    fullMatrices: Bool = false
+  ) -> (s: Tensor<T>, u: Tensor<T>, v: Tensor<T>) {
+    let (u, s, v) = XLATensor.svd(input.xlaTensor, computeUv: computeUv, fullMatrices: fullMatrices)
+    return (s: Tensor(_xla: s), u: Tensor(_xla: u), v: Tensor(_xla: v))
   }
 
   /// Computes tan of x element-wise.

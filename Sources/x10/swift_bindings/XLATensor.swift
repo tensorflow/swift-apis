@@ -478,11 +478,16 @@ extension XLATensor {
     _ dtype: XLAScalarType.Type,
     _ device: Device
   ) -> XLATensor {
-    let cdevice = device.cdevice
-    return dims.withArrayRef { dims in
+    return expand(
       XLATensor(
-        _handle: XLATensor_full(dims, value.xlaScalar, cdevice, dtype.xlaTensorScalarType))
-    }
+        _handle: XLATensor_makeScalar(value.xlaScalar, dtype.xlaTensorScalarType, device.cdevice)),
+      dims)
+  }
+
+  static func gather(_ input: XLATensor, _ indices: XLATensor, _ startDim: Int64) -> XLATensor {
+    defer { _fixLifetime(input) }
+    defer { _fixLifetime(indices) }
+    return XLATensor(_handle: XLATensor_gather(input.handle, indices.handle, startDim))
   }
 
   static func ge(_ x: XLATensor, _ y: XLATensor) -> XLATensor {
@@ -495,13 +500,6 @@ extension XLATensor {
     defer { _fixLifetime(x) }
     defer { _fixLifetime(y) }
     return XLATensor(_handle: XLATensor_gt(x.handle, y.handle))
-  }
-
-  static func index(_ input: XLATensor, _ indices: [XLATensor], _ startDim: Int64) -> XLATensor {
-    defer { _fixLifetime(input) }
-    return indices.withArrayRef { indices in
-      XLATensor(_handle: XLATensor_index(input.handle, indices, startDim))
-    }
   }
 
   static func irText(_ a: XLATensor) -> String {
@@ -727,7 +725,7 @@ extension XLATensor {
     return XLATensor(_handle: XLATensor_neg(a.handle))
   }
 
-  static func nll_loss(_ input: XLATensor, _ target: XLATensor, _ ignore_index: Int32) -> XLATensor
+  static func nll_loss(_ input: XLATensor, _ target: XLATensor, _ ignore_index: Int64) -> XLATensor
   {
     defer { _fixLifetime(input) }
     defer { _fixLifetime(target) }
@@ -833,14 +831,12 @@ extension XLATensor {
   static func splitWithSizes(_ input: XLATensor, _ splitSize: [Int64], _ dim: Int64) -> [XLATensor]
   {
     defer { _fixLifetime(input) }
-    return splitSize.withArrayRef { splitSize in
-      let tensorListHandle = XLATensor_split_with_sizes(input.handle, splitSize, dim)
-      defer {
-        destroyOpaqueXLATensorArrayRef(tensorListHandle)
-      }
-      return (0..<tensorListHandle.size).map { i in
-        XLATensor(_handle: tensorListHandle.data[i]!)
-      }
+    var offset: Int64 = 0
+    return splitSize.map { (size: Int64) -> XLATensor in
+      let nextOffset = offset + size
+      let result = slice(input, dim, offset, nextOffset, 1)
+      offset = nextOffset
+      return result
     }
   }
 
@@ -875,6 +871,16 @@ extension XLATensor {
       XLATensor(
         _handle: XLATensor_sum(a.handle, dims, keep_reduced_dimensions, dtype.xlaOptionalType))
     }
+  }
+
+  static func svd(_ input: XLATensor, computeUv: Bool, fullMatrices: Bool) -> (
+    XLATensor, XLATensor, XLATensor
+  ) {
+    defer { _fixLifetime(input) }
+    let output = XLATensor_svd(input.handle, computeUv, fullMatrices)
+    return (
+      XLATensor(_handle: output.v0), XLATensor(_handle: output.v1), XLATensor(_handle: output.v2)
+    )
   }
 
   static func tan(_ a: XLATensor) -> XLATensor {
@@ -990,12 +996,10 @@ extension XLATensor {
     _ device: Device
   ) -> XLATensor {
     defer { _fixLifetime(seeds) }
-    let cdevice = device.cdevice
     return dims.withArrayRef { dims in
       XLATensor(
         _handle: XLATensor_tf_StatelessRandomUniform(
-          dims, seeds.handle, minvalue.handle, maxvalue.handle, cdevice,
-          dtype.xlaTensorScalarType))
+          dims, seeds.handle, minvalue.handle, maxvalue.handle))
     }
   }
 

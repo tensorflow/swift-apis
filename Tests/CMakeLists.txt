@@ -24,3 +24,4 @@ set_tests_properties(SwiftAPIsTests PROPERTIES
   ENVIRONMENT LD_LIBRARY_PATH=$<TARGET_FILE_DIR:Tensor>:$<TARGET_FILE_DIR:TensorFlow>)
 
 add_subdirectory(x10)
+add_subdirectory(AnnotationTests)

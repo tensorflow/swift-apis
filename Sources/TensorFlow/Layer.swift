@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import Foundation
 import _Differentiation
 
 public protocol Module: EuclideanDifferentiable, KeyPathIterable
@@ -20,6 +21,7 @@ where
 {
   /// The input type of the layer.
   associatedtype Input
+
   /// The output type of the layer.
   associatedtype Output: Differentiable
 
@@ -29,6 +31,119 @@ where
   /// - Returns: The output.
   @differentiable(wrt: self)
   func callAsFunction(_ input: Input) -> Output
+
+  /// Returns the output obtained from applying the layer to the given input.
+  ///
+  /// - Parameter input: The input to the layer.
+  /// - Returns: The output.
+  @differentiable(wrt: self)
+  func forward(_ input: Input) -> Output
+}
+
+extension Module {
+  /// Returns the output obtained from applying the layer to the given input.
+  ///
+  /// - Parameter input: The input to the layer.
+  /// - Returns: The output.
+  @differentiable(wrt: self)
+  public func forward(_ input: Input) -> Output {
+    return callAsFunction(input)
+  }
+}
+
+extension Module where Input: TensorProtocol, Output: DifferentiableTensorProtocol {
+  /// Returns the annotated output obtained from applying the layer to the
+  /// given input.
+  ///
+  /// - Parameter input: The input to the layer.
+  /// - Returns: The annotated output.
+  @differentiable(wrt: self)
+  public func callAsFunction(_ input: Input) -> Output {
+    let activation = forward(input)
+    return annotated(activation)
+  }
+
+  /// Annotates `output`.
+  ///
+  /// Note: Returns `output` if using a backend that does not support annotations.
+  ///
+  /// - Parameter output: The output to the layer.
+  /// - Returns: The annotated output.
+  @differentiable
+  public func annotated(_ output: Output) -> Output {
+    #if USING_X10_BACKEND
+      let annotated = output.annotate("type=\(Self.self)")
+      return annotated
+    #else
+      return output
+    #endif
+  }
+
+  /// Returns the annotations obtained from applying the layer to the given input.
+  ///
+  /// - Parameter input: The input to the layer.
+  /// - Returns: All collected annotations from the XLA graph.
+  public func summary(input: Input) -> String {
+    let output = self.callAsFunction(input)
+    return formatAnnotations(from: output)
+  }
+
+  /// Returns a formatted version of `tensor.annotations`.
+  ///
+  /// - Parameter tensor: The output to the layer.
+  /// - Returns: A formatted summary of `tensor.annotations`.
+  private func formatAnnotations(from tensor: Output) -> String {
+    #if USING_X10_BACKEND
+      let rawAnnotations = tensor.annotations
+      if rawAnnotations == Device.defaultTFEager.annotationsAvailable {
+        return rawAnnotations
+      }
+
+      let lines = rawAnnotations.components(separatedBy: "\n")
+
+      if lines.count < 3 {
+        return ""
+      }
+
+      // Isolate layers.
+      let pattern = "\\s*shape=(.+)\\s+type=([^\\s]+)(\\s+.+=.+)?$"
+      let regex = try! NSRegularExpression(pattern: pattern)
+      let contents = lines.filter { $0.contains("shape=") }
+        .map { line -> String in
+          let nsrange = NSRange(line.startIndex..., in: line)
+          if let match = regex.firstMatch(in: line, range: nsrange) {
+            var content = ""
+            if let typeRange = Range(match.range(at: 2), in: line) {
+              let type = line[typeRange]
+              content += type
+            }
+            content += "\t\t\t"
+            if let shapeRange = Range(match.range(at: 1), in: line) {
+              let shape = line[shapeRange]
+              content += shape
+            }
+            content += "\t\t"
+            if let attributesRange = Range(match.range(at: 3), in: line) {
+              let attribute = line[attributesRange]
+              content += attribute
+            }
+            return content
+          } else {
+            return line
+          }
+        }
+
+      let formattedAnnotations = """
+        Layer                           Output Shape         Attributes
+        =============================== ==================== ======================
+        \(contents.joined(separator: "\n"))
+        """
+
+      return formattedAnnotations
+    #else
+      return tensor.annotations
+    #endif
+  }
 }
 
 /// A neural network layer.
@@ -45,6 +160,28 @@ public protocol Layer: Module where Input: Differentiable {
   /// - Returns: The output.
   @differentiable
   func callAsFunction(_ input: Input) -> Output
+
+  @differentiable
+  func forward(_ input: Input) -> Output
+}
+
+extension Layer {
+  // Workaround for SR-13455: autodiff undefined symbol linker error.
+  @differentiable(wrt: self)
+  @differentiable
+  public func forward(_ input: Input) -> Output {
+    return callAsFunction(input)
+  }
+}
+
+extension Layer where Input: DifferentiableTensorProtocol, Output: DifferentiableTensorProtocol {
+  // Workaround for SR-13455: autodiff undefined symbol linker error.
+  @differentiable(wrt: self)
+  @differentiable
+  public func callAsFunction(_ input: Input) -> Output {
+    let activation = forward(input)
+    return annotated(activation)
+  }
 }
 
 /// An empty struct representing empty `TangentVector`s for parameterless layers.

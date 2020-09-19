@@ -22,8 +22,8 @@ public struct Embedding<Scalar: TensorFlowFloatingPoint>: Module {
   /// A learnable lookup table that maps vocabulary indices to their dense vector representations.
   public var embeddings: Tensor<Scalar>
 
-  /// Creates an `Embedding` layer with randomly initialized embeddings of shape 
-  /// `(vocabularySize, embeddingSize)` so that each vocabulary index is given a vector 
+  /// Creates an `Embedding` layer with randomly initialized embeddings of shape
+  /// `(vocabularySize, embeddingSize)` so that each vocabulary index is given a vector
   /// representation.
   ///
   /// - Parameters:
@@ -41,9 +41,9 @@ public struct Embedding<Scalar: TensorFlowFloatingPoint>: Module {
     self.init(embeddings: embeddingsInitializer([vocabularySize, embeddingSize]))
   }
 
-  /// Creates an `Embedding` layer from the provided embeddings. Useful for introducing 
+  /// Creates an `Embedding` layer from the provided embeddings. Useful for introducing
   /// pretrained embeddings into a model.
-  /// 
+  ///
   /// - Parameter embeddings: The pretrained embeddings table.
   public init(embeddings: Tensor<Scalar>) {
     self.embeddings = embeddings
@@ -55,7 +55,7 @@ public struct Embedding<Scalar: TensorFlowFloatingPoint>: Module {
   ///   - input: The indices that will be mapped to their vector representations.
   /// - Returns: The tensor created by replacing input indices with their vector representations.
   @differentiable(wrt: self)
-  public func callAsFunction(_ input: Tensor<Int32>) -> Tensor<Scalar> {
+  public func forward(_ input: Tensor<Int32>) -> Tensor<Scalar> {
     embeddings.gathering(atIndices: input)
   }
 }

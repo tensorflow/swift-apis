@@ -195,7 +195,7 @@ X10_OPS = {
   "StatelessRandomUniform", "StatelessRandomUniformInt",
   "StatelessRandomUniformInt", "StatelessTruncatedNormal",
   "StatelessTruncatedNormal", "StridedSlice", "StridedSliceGrad", "Sub", "Sum",
-  "Sum", "Tan", "Tanh", "TensorStridedSliceUpdate", "Tile", "ToDevice",
+  "Sum", "Svd", "Tan", "Tanh", "TensorStridedSliceUpdate", "Tile", "ToDevice",
   "Transpose", "Unpack", "UnsortedSegmentSum", "Xdivy", "ZerosLike",
   "Rand",
 }

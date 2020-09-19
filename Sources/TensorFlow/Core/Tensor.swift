@@ -35,70 +35,20 @@ public struct Tensor<Scalar: TensorFlowScalar> {
   /// - Note: `handle` is public to allow user defined ops, but should not normally be used.
   public let handle: TensorHandle<Scalar>
 
+  /// An internal marker to identify scalar zero tensors, for use in optimizations.
+  @usableFromInline
+  internal var _isScalarZero = false
+
+  /// An internal workaround for SR-13263: debug info generation crash.
+  @usableFromInline
+  class SR13263Workaround {}
+
+  /// An internal workaround for SR-13263: debug info generation crash.
+  internal var _sr13263Workaround: SR13263Workaround?
+  
   @inlinable
   public init(handle: TensorHandle<Scalar>) {
     self.handle = handle
-  }
-}
-
-public protocol TensorProtocol {
-  associatedtype Scalar: TensorFlowScalar
-  init(repeating repeatedValue: Scalar, shape: TensorShape, on device: Device)
-  var annotations: String { get }
-  var shape: TensorShape { get }
-  var summary: String { get }
-}
-
-public protocol DifferentiableTensorProtocol:
-  TensorProtocol & Differentiable & EuclideanDifferentiable
-where Scalar: TensorFlowFloatingPoint {
-  @differentiable(wrt: self)
-  func annotate(_ annotation: String) -> Self
-}
-
-extension Tensor: TensorProtocol & DifferentiableTensorProtocol
-where Scalar: TensorFlowFloatingPoint {
-
-  public var annotations: String {
-    #if USING_X10_BACKEND
-      switch handle.backend {
-      case .XLA:
-        let rawAnnotations = XLATensor.annotations(xlaTensor)
-
-        // TODO(michellecasbon): Add formatting.
-
-        return rawAnnotations
-
-      case .TF_EAGER:
-        return Device.defaultTFEager.annotationsAvailable
-      }
-    #else
-      return "Annotations not available in TF_EAGER."
-    #endif
-  }
-
-  public var summary: String { annotations }
-
-  @differentiable(wrt: self)
-  public func annotate(_ annotation: String) -> Tensor<Scalar> {
-    #if USING_X10_BACKEND
-      switch handle.backend {
-      case .XLA:
-        return Tensor<Scalar>(_xla: XLATensor.annotate(xlaTensor, annotation))
-      case .TF_EAGER:
-        return self
-      }
-    #else
-      return self
-    #endif
-  }
-
-  @derivative(of: annotate)
-  @usableFromInline
-  func vjpAnnotate(_ annotation: String) -> (
-    value: Tensor<Scalar>, pullback: (Tensor<Scalar>) -> Tensor<Scalar>
-  ) {
-    (annotate(annotation), { $0 })
   }
 }
 
@@ -730,6 +680,7 @@ extension Tensor: AdditiveArithmetic where Scalar: Numeric {
       if _DeviceThreadLocalState.local.isReducedPrecision {
         zero = zero.toReducedPrecision
       }
+      zero._isScalarZero = true
       return zero
     }
   #else
@@ -742,7 +693,12 @@ extension Tensor: AdditiveArithmetic where Scalar: Numeric {
   @inlinable
   @differentiable(where Scalar: TensorFlowFloatingPoint)
   public static func + (lhs: Tensor, rhs: Tensor) -> Tensor {
-    _Raw.addV2(lhs, rhs)
+    if lhs._isScalarZero {
+      return rhs
+    } else if rhs._isScalarZero {
+      return lhs
+    }
+    return _Raw.addV2(lhs, rhs)
   }
 
   /// Subtracts one tensor from another and produces their difference.
@@ -750,7 +706,10 @@ extension Tensor: AdditiveArithmetic where Scalar: Numeric {
   @inlinable
   @differentiable(where Scalar: TensorFlowFloatingPoint)
   public static func - (lhs: Tensor, rhs: Tensor) -> Tensor {
-    _Raw.sub(lhs, rhs)
+    if rhs._isScalarZero {
+      return lhs
+    }
+    return _Raw.sub(lhs, rhs)
   }
 }
 
@@ -835,3 +794,73 @@ extension Tensor: Differentiable & EuclideanDifferentiable where Scalar: TensorF
     }
   }
 #endif
+
+//===------------------------------------------------------------------------------------------===//
+// Annotations
+//===------------------------------------------------------------------------------------------===//
+
+public protocol TensorProtocol {
+  associatedtype Scalar: TensorFlowScalar
+  init(repeating repeatedValue: Scalar, shape: TensorShape, on device: Device)
+  var annotations: String { get }
+  var shape: TensorShape { get }
+  var summary: String { get }
+}
+
+public protocol DifferentiableTensorProtocol:
+  TensorProtocol & Differentiable & EuclideanDifferentiable
+where Scalar: TensorFlowFloatingPoint {
+  @differentiable(wrt: self)
+  func annotate(_ annotation: String) -> Self
+}
+
+extension Tensor: TensorProtocol {
+  /// The annotations describing this tensor.
+  public var annotations: String {
+    #if USING_X10_BACKEND
+      switch handle.backend {
+      case .XLA:
+        return XLATensor.annotations(xlaTensor)
+      case .TF_EAGER:
+        return Device.defaultTFEager.annotationsAvailable
+      }
+    #else
+      return "Annotations not available in TF_EAGER."
+    #endif
+  }
+
+  /// An alias for annotations.
+  public var summary: String { annotations }
+}
+
+extension Tensor: DifferentiableTensorProtocol
+where Scalar: TensorFlowFloatingPoint {
+  /// Adds an annotation.
+  ///
+  /// Note: Only X10 is supported. For other backends, umodified `self` is
+  /// returned.
+  ///
+  /// - Parameter annotation: The annotation to be added.
+  /// - Returns: The annotated tensor.
+  @differentiable(wrt: self)
+  public func annotate(_ annotation: String) -> Tensor<Scalar> {
+    #if USING_X10_BACKEND
+      switch handle.backend {
+      case .XLA:
+        return Tensor<Scalar>(_xla: XLATensor.annotate(xlaTensor, annotation))
+      case .TF_EAGER:
+        return self
+      }
+    #else
+      return self
+    #endif
+  }
+
+  @derivative(of: annotate)
+  @usableFromInline
+  func vjpAnnotate(_ annotation: String) -> (
+    value: Tensor<Scalar>, pullback: (Tensor<Scalar>) -> Tensor<Scalar>
+  ) {
+    (annotate(annotation), { $0 })
+  }
+}
