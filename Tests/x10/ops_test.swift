@@ -3280,6 +3280,7 @@ final class TensorTests: XCTestCase {
     for useReducedPrecision in [false, true] {
       for (dims, onesDims) in [
         ([1, 3, 4, 1], [0, 3]), ([2, 1, 2, 3], [1]), ([3, 1, 1, 2], [2]),
+        ([2, 1, 1, 4], []),
       ] {
         var x = Tensor<Float>.rand(dims)
         let expected = TF(x).squeezingShape(at: onesDims)
@@ -3390,9 +3391,9 @@ final class TensorTests: XCTestCase {
           let x2 = matmul(matmul(TF(actual.u!), diag),
               transposed: false, TF(actual.v!), transposed: true)
           XCTAssert(
-            allClose(actual: x2, expected: TF(x), relTolerance: 4e-3))
+            allClose(actual: x2, expected: TF(x), relTolerance: 4e-2))
           XCTAssert(
-            allClose(actual: TF(actual.s), expected: expected.s, relTolerance: 4e-3))
+            allClose(actual: TF(actual.s), expected: expected.s, relTolerance: 4e-2))
           XCTAssertEqual(actual.u!.shape, expected.u!.shape)
           XCTAssertEqual(actual.v!.shape, expected.v!.shape)
         }

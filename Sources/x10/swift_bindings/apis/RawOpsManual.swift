@@ -3731,7 +3731,18 @@ public enum _RawXLA {
     squeezeDims: [Int32]
   ) -> Tensor<T> {
     var output = input
-    var dims = canonicalDims(squeezeDims.map { Int64($0) }, Int64(input.shape.rank))
+    let shape = input.shape
+    var dims = canonicalDims(squeezeDims.map { Int64($0) }, Int64(shape.rank))
+    if dims.count == 0 {
+      var total = 0
+      for dim in 0..<shape.rank {
+        if shape[dim] == 1 {
+          output = Tensor<T>(_xla: XLATensor.squeeze(output.xlaTensor, Int64(dim - total)))
+          total += 1
+        }
+      }
+      return output
+    }
     // Go through dims in reverse order.
     dims.sort(by: >)
     for dim in dims {
