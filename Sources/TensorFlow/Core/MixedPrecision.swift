@@ -92,7 +92,7 @@ import _Differentiation
         let joinedKeyPath = rootKeyPath.appending(path: kp)!
         if let valueType = type(of: joinedKeyPath).valueType as? _ReducedPrecisionConvertible.Type {
           valueType._convertToReducedPrecision(&root, joinedKeyPath)
-        } else if let nested = self[keyPath: kp] as? _KeyPathIterableBase {
+        } else if let value = self[keyPath: kp], let nested = value as? _KeyPathIterableBase {
           nested._convertToReducedPrecision(&root, joinedKeyPath)
         }
       }
@@ -107,7 +107,7 @@ import _Differentiation
         let joinedKeyPath = rootKeyPath.appending(path: kp)!
         if let valueType = type(of: joinedKeyPath).valueType as? _ReducedPrecisionConvertible.Type {
           valueType._convertToFullPrecision(&root, joinedKeyPath)
-        } else if let nested = self[keyPath: kp] as? _KeyPathIterableBase {
+        } else if let value = self[keyPath: kp], let nested = value as? _KeyPathIterableBase {
           nested._convertToFullPrecision(&root, joinedKeyPath)
         }
       }
