@@ -351,7 +351,7 @@ extension _KeyPathIterableBase {
         if let child = nested._buildWrappedVisitorPlan(kp as! PartialKeyPath<Base>) {
           plan.elements.append(.node(child))
         }
-      } else if let nested = self[keyPath: kp] as? _KeyPathIterableBase {
+      } else if let value = self[keyPath: kp], let nested = value as? _KeyPathIterableBase {
         if let child = nested._buildWrappedVisitorPlan(kp as! PartialKeyPath<Base>) {
           plan.elements.append(.node(child))
         }

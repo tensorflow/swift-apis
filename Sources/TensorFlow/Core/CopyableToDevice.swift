@@ -60,7 +60,7 @@ extension _KeyPathIterableBase {
       let joinedKeyPath = rootKeyPath.appending(path: kp)!
       if let valueType = type(of: joinedKeyPath).valueType as? _CopyableToDevice.Type {
         valueType._move(&root, joinedKeyPath, to: device)
-      } else if let nested = self[keyPath: kp] as? _KeyPathIterableBase {
+      } else if let value = self[keyPath: kp], let nested = value as? _KeyPathIterableBase {
         nested._move(&root, joinedKeyPath, to: device)
       }
     }
