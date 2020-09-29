@@ -295,45 +295,59 @@ def c_function_define(op):
     raise ValueError(
         f"""{op["c_name"]} has unsupported number of return values {op["n_results"]}"""
     )
-  prelude = f"""
-{result_type} XLATensor_{op["c_name"]}({", ".join(format_arg_def(arg) for arg in op["args"])}) {{
-{"".join(unpack_arg(arg) for arg in op["args"])}"""
-  if "result_dtype" in op and op["result_dtype"] not in tensor_names:
+
+  def listify(l):
+    if type(l) is list:
+      return l
+    return [l]
+
+  dtypes = (([None] * op["n_results"])
+            if "result_dtype" not in op else listify(op["result_dtype"]))
+
+  def format_result(result_i=0, dtype=None):
+    if not dtype:
+      dtype = dtypes[result_i]
+    if not dtype:
+      return (f"new "
+              f"swift_xla::XLATensor({first_tensor}->CreateFrom(swift_xla::ir::Value(result_node,"
+              f" {result_i})))")
+    if dtype in tensor_names:
+      return f"new swift_xla::XLATensor({dtype}->CreateFrom(swift_xla::ir::Value(result_node, {result_i})))"
     result_dtype_arg = None
     for arg in args:
-      if arg[0] == op["result_dtype"]:
+      if arg[0] == dtype:
         result_dtype_arg = arg
     if result_dtype_arg:
-      return f"""{prelude}  return new swift_xla::XLATensor({first_tensor}->CreateFrom(
-      {node_ctor}, {format_arg_ref(result_dtype_arg)}));
-}}
-"""
+      return (f"new "
+              f"swift_xla::XLATensor({first_tensor}->CreateFrom(swift_xla::ir::Value(result_node,"
+              f" {result_i}), {format_arg_ref(result_dtype_arg)}))")
+    return (f"new "
+            f"swift_xla::XLATensor({first_tensor}->CreateFrom(swift_xla::ir::Value(result_node,"
+            f" {result_i}), at::ScalarType::{dtype}))")
 
-    return f"""{prelude}  return new swift_xla::XLATensor(swift_xla::XLATensor::Create(
-      {node_ctor},
-      {first_tensor}->GetDevice(),
-      at::ScalarType::{op["result_dtype"]}));
-}}
-"""
-  elif op["n_results"] != 1:
+  prelude = f"""
+{result_type} XLATensor_{op["c_name"]}({", ".join(format_arg_def(arg) for arg in op["args"])}) {{
+{"".join(unpack_arg(arg) for arg in op["args"])}
+  auto result_node = {node_ctor};"""
+  if op["n_results"] != 1:
     tuple_names = []
     if op["n_results"] == 2:
       tuple_names = ["x", "y"]
     else:
       tuple_names = [f"v{i}" for i in range(op["n_results"])]
-    out = f"""{prelude}  auto result_node = {node_ctor};
+    out = f"""{prelude}
   {result_type} result;
 """
     for i in range(op["n_results"]):
-      out += f"""  result.{tuple_names[i]} = new swift_xla::XLATensor({first_tensor}->CreateFrom(swift_xla::ir::Value(result_node, {i})));
+      out += f"""  result.{tuple_names[i]} = {format_result(i)};
 """
     out += """  return result;
 }
 """
     return out
   else:
-    return f"""{prelude}  return new swift_xla::XLATensor({first_tensor}->CreateFrom(
-      {node_ctor}));
+    return f"""{prelude}
+  return {format_result(0)};
 }}
 """
 
