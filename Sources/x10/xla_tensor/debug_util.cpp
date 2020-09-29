@@ -19,6 +19,7 @@
 #include <sstream>
 #include <unordered_set>
 
+#include "absl/container/node_hash_set.h"
 #include "absl/strings/str_split.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ir.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ir_dump_util.h"
@@ -45,9 +46,9 @@ DebugUtil::GraphFormat DefaultGraphFormat() {
   XLA_ERROR() << "Invalid save graph format: " << fmt_str;
 }
 
-std::unordered_set<std::string>* LoadExperiments() {
-  std::unique_ptr<std::unordered_set<std::string>> xset =
-      absl::make_unique<std::unordered_set<std::string>>();
+absl::node_hash_set<std::string>* LoadExperiments() {
+  std::unique_ptr<absl::node_hash_set<std::string>> xset =
+      absl::make_unique<absl::node_hash_set<std::string>>();
   std::string experiments = xla::sys_util::GetEnvString("XLA_EXPERIMENTAL", "");
   std::vector<std::string> experiment_list = absl::StrSplit(experiments, ':');
   for (auto& name : experiment_list) {
@@ -137,7 +138,7 @@ void DebugUtil::SaveTensorsGraphInfo(const char* name,
 }
 
 bool DebugUtil::ExperimentEnabled(const std::string& name) {
-  static const std::unordered_set<std::string>* xset = LoadExperiments();
+  static const absl::node_hash_set<std::string>* xset = LoadExperiments();
   return xset->find(name) != xset->end();
 }
 
