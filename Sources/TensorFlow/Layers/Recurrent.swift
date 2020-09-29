@@ -211,7 +211,16 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell {
     /// Concatenates two values.
     @differentiable
     public static func concatenate(_ lhs: Self, _ rhs: Self) -> Self {
-      Self(cell: lhs.cell.concatenated(with: rhs.cell, alongAxis: -1), hidden: lhs.hidden.concatenated(with: rhs.hidden, alongAxis: -1))
+      // TODO: Remove workaround after https://github.com/tensorflow/swift-apis/issues/1087 is fixed.
+      let concatCell = lhs.cell.concatenated(with: rhs.cell, alongAxis: -1)
+      let concatHidden = lhs.hidden.concatenated(with: rhs.hidden, alongAxis: -1)
+      let cell = concatCell.withDerivative { [shape = concatCell.shape] in
+          if $0 == Tensor(0) { $0 = Tensor(zeros: shape) }
+      }
+      let hidden = concatHidden.withDerivative { [shape = concatHidden.shape] in
+          if $0 == Tensor(0) { $0 = Tensor(zeros: shape) }
+      }
+      return Self(cell: cell, hidden: hidden)
     }
 
     /// Adds two values and produces their sum.
@@ -452,7 +461,11 @@ extension Tensor: Mergeable where Scalar: TensorFlowFloatingPoint {
   /// Concatenates two tensors along last axis.
   @differentiable
   public static func concatenate(_ lhs: Tensor, _ rhs: Tensor) -> Tensor {
-    lhs.concatenated(with: rhs, alongAxis: -1)
+    // TODO: Remove workaround after https://github.com/tensorflow/swift-apis/issues/1087 is fixed.
+    let concat = lhs.concatenated(with: rhs, alongAxis: -1)
+    return concat.withDerivative { [shape = concat.shape] in
+        if $0 == Tensor(0) { $0 = Tensor(zeros: shape) }
+    }
   }
 
   /// Adds two values and produces their sum.
@@ -525,15 +538,15 @@ where Cell.TimeStepOutput: Mergeable {
   ) -> Output {
     let forwardOutputs = forward(
       inputs, initialState: initialForwardLayerState)
-    
+
     // TODO: Replace with inputs.reversed() after it become differentiable.
     var inputsReversed = Input()
-    
+
     for forwardIndex in 0 ..< withoutDerivative(at: inputs.count) {
         let backwardIndex = withoutDerivative(at: inputs.count - 1 - forwardIndex)
         inputsReversed.append(inputs[backwardIndex])
     }
-    
+
     let backwardOutputs = backward(
         inputsReversed, initialState: initialBackwardLayerState)
 
