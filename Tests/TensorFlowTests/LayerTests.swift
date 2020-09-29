@@ -1893,8 +1893,7 @@ final class LayerTests: XCTestCase {
     // END GENERATED CODE
     withTensorLeakChecking {
       var rnn = BidirectionalBasicRNN<Float>(
-        BasicRNNCell(inputSize: 4, hiddenSize: 4),
-        mergeFunction: BasicRNNCell<Float>.State.concatenate
+        BasicRNNCell(inputSize: 4, hiddenSize: 4)
       )
 
       rnn.forward.cell.weight = Tensor(concatenating: [kernelForward, recurrentKernelForward])
@@ -2680,8 +2679,7 @@ final class LayerTests: XCTestCase {
 
     withTensorLeakChecking {
       var lstm = BidirectionalLSTM<Float>(
-        LSTMCell(inputSize: 3, hiddenSize: 4),
-        mergeFunction: LSTMCell<Float>.State.concatenate
+        LSTMCell(inputSize: 3, hiddenSize: 4)
       )
 
       lstm.forward.cell.fusedWeight =
@@ -3732,8 +3730,7 @@ final class LayerTests: XCTestCase {
     // END GENERATED CODE
     withTensorLeakChecking {
       var gru = BidirectionalGRU<Float>(
-        GRUCell(inputSize: 3, hiddenSize: 4),
-        mergeFunction: GRUCell<Float>.State.concatenate
+        GRUCell(inputSize: 3, hiddenSize: 4)
       )
 
       XCTAssertEqual(gru.forward.cell.updateKernel.shape, updateKernelForward.shape)
@@ -4267,7 +4264,7 @@ final class LayerTests: XCTestCase {
       scalars: [18, 20, 22, 30, 32, 34])
     XCTAssertEqual(output, expected)
   }
-    
+
 func testDilation2DGradient() {
    let filter = Tensor(shape: [3, 2, 4], scalars: (0..<24).map(Float.init))
    let layer = Dilation2D<Float>(
@@ -4336,7 +4333,7 @@ func testDilation2DGradient() {
      [
         [[0, 0, 0, 0],
          [0, 0, 0, 0]],
-      
+
         [[0, 0, 0, 0],
         [0, 0, 0, 0]],
 
@@ -4346,7 +4343,7 @@ func testDilation2DGradient() {
 
     )
  }
-    
+
  func testErosion2D() {
     let filter = Tensor(shape: [2, 2, 3], scalars: (0..<12).map(Float.init))
     let layer = Erosion2D<Float>(
@@ -4358,7 +4355,7 @@ func testDilation2DGradient() {
       scalars: [-9, -9, -9, 3, 3, 3])
     XCTAssertEqual(output, expected)
   }
-    
+
 func testErosion2DGradient() {
    let filter = Tensor(shape: [3, 2, 4], scalars: (0..<24).map(Float.init))
    let layer = Erosion2D<Float>(
@@ -4425,7 +4422,7 @@ func testErosion2DGradient() {
      grads.1.filter,
      [[[0, 0, 0, 0],
        [0, 0, 0, 0]],
-      
+
         [[0, 0, 0, 0],
         [0, 0, 0, 0]],
 
