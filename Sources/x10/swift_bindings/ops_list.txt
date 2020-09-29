@@ -451,6 +451,7 @@
   extras: ["canonicalize dim input"]
   x10_enum: at::aten::topk
   lower_fn: BuildTopK
+  result_dtype: [input, Long]
 
 - def: "truncated_normal(input: Tensor) -> Tensor"
   x10_enum: at::aten::xla_truncated_normal
