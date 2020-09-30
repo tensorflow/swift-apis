@@ -74,6 +74,13 @@ extension Tensor {
         + "\(_xla.dtype) vs \(Scalar.xlaTensorScalarType)")
     handle = TensorHandle(handle: _xla.tensorHandle)
   }
+
+  init(_xlaHandle: UnsafeMutablePointer<OpaqueXLATensor>) {
+    self.init(_xla: XLATensor(_handle: _xlaHandle))
+  }
+
+  var xlaHandle: UnsafeMutablePointer<OpaqueXLATensor> { return xlaTensor.handle }
+
   var xlaTensor: XLATensor {
     guard let xlaTensor = XLATensor(handle.handle) else {
       fatalError("Must be an XLATensor to convert to XlaTensor")
@@ -654,17 +661,6 @@ extension XLATensor {
         XLATensor(
           _handle: tf_MaxPoolGrad(input.handle, grad.handle, ksize, strides, padding))
       }
-    }
-  }
-
-  static func mean(
-    _ a: XLATensor, _ dims: [Int64], _ keep_reduced_dimensions: Bool,
-    _ dtype: XLAScalarType.Type? = nil
-  ) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return dims.withArrayRef { dims in
-      XLATensor(
-        _handle: XLATensor_mean(a.handle, dims, keep_reduced_dimensions, dtype.xlaOptionalType))
     }
   }
 

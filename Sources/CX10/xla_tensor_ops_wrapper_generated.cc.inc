@@ -1582,44 +1582,42 @@ class Maximum : public Node {
 
 class Mean : public Node {
  public:
-  Mean(const Value& input, std::vector<xla::int64> dims, bool keep_reduced_dimensions, c10::optional<at::ScalarType> dtype)
-      : Node(ir::OpKind(at::aten::mean),
-             {input}, [&]() {
-       xla::XlaBuilder b("InferOutputShape");
-       auto input_ir = xla::Parameter(&b, 0, input.shape(), "p0");
-       xla::XlaOp result = LowerMean(
-         input_ir, dims, keep_reduced_dimensions, dtype);
-       return XlaHelpers::ShapeOfXlaOp(result);
-     },
-             /*num_outputs=*/1, xla::util::MHash(dims, keep_reduced_dimensions, dtype)),
-        dims_(std::move(dims)),
-        keep_reduced_dimensions_(std::move(keep_reduced_dimensions)),
-        dtype_(std::move(dtype)) {}
+  Mean(const Value& input, std::vector<xla::int64> reductionIndices,
+       bool keepDims)
+      : Node(
+            ir::OpKind(at::aten::mean), {input},
+            [&]() {
+              xla::XlaBuilder b("InferOutputShape");
+              auto input_ir = xla::Parameter(&b, 0, input.shape(), "p0");
+              xla::XlaOp result =
+                  BuildMean(input_ir, reductionIndices, keepDims);
+              return XlaHelpers::ShapeOfXlaOp(result);
+            },
+            /*num_outputs=*/1, xla::util::MHash(reductionIndices, keepDims)),
+        reductionIndices_(std::move(reductionIndices)),
+        keepDims_(std::move(keepDims)) {}
 
   NodePtr Clone(OpList operands) const override {
-    return MakeNode<Mean>(
-        operands.at(0), dims_, keep_reduced_dimensions_, dtype_);
+    return MakeNode<Mean>(operands.at(0), reductionIndices_, keepDims_);
   }
 
   XlaOpVector Lower(LoweringContext* loctx) const override {
-    xla::XlaOp result = LowerMean(
-        loctx->GetOutputOp(operand(0)), dims_, keep_reduced_dimensions_, dtype_);
+    xla::XlaOp result =
+        BuildMean(loctx->GetOutputOp(operand(0)), reductionIndices_, keepDims_);
     return ReturnOp(result, loctx);
   }
 
   std::string ToString() const override {
     std::stringstream ss;
     ss << Node::ToString();
-    OpFieldToString(ss, "dims", dims_);
-    OpFieldToString(ss, "keep_reduced_dimensions", keep_reduced_dimensions_);
-    OpFieldToString(ss, "dtype", dtype_);
+    OpFieldToString(ss, "reductionIndices", reductionIndices_);
+    OpFieldToString(ss, "keepDims", keepDims_);
     return ss.str();
   }
 
  private:
-  std::vector<xla::int64> dims_;
-  bool keep_reduced_dimensions_;
-  c10::optional<at::ScalarType> dtype_;
+  std::vector<xla::int64> reductionIndices_;
+  bool keepDims_;
 };
 
 class Min : public Node {
@@ -3861,16 +3859,17 @@ OpaqueXLATensor* XLATensor_maximum(OpaqueXLATensor* lhs, OpaqueXLATensor* rhs) {
       lhs->CreateFrom(swift_xla::ir::Value(result_node, 0)));
 }
 
-OpaqueXLATensor* XLATensor_mean(OpaqueXLATensor* input, Int64ArrayRef dims, bool keep_reduced_dimensions, Optional_XLAScalarType dtype) {
+OpaqueXLATensor* XLATensor_mean(OpaqueXLATensor* input,
+                                Int64ArrayRef reductionIndices, bool keepDims) {
   auto input_ir_value = input->GetIrValue();
 
   auto result_node = swift_xla::ir::MakeNode<swift_xla::ir::ops::Mean>(
       input_ir_value,
       swift_xla::XlaHelpers::GetCanonicalDimensionIndices(
-          dims.slice(), input_ir_value.shape().rank()),
-      keep_reduced_dimensions, dtype.value());
+          reductionIndices.slice(), input_ir_value.shape().rank()),
+      keepDims);
   return new swift_xla::XLATensor(
-      input->CreateFrom(swift_xla::ir::Value(result_node, 0), dtype.value()));
+      input->CreateFrom(swift_xla::ir::Value(result_node, 0)));
 }
 
 OpaqueXLATensor* XLATensor_min(OpaqueXLATensor* input, int64_t dim, bool keepdim) {

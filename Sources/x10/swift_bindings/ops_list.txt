@@ -245,11 +245,13 @@
   x10_enum: at::aten::max
   lower_fn: LowerBinaryOp<xla::Max>
 
-- def: "mean(input: Tensor, dims: [Int64], keep_reduced_dimensions: Bool, dtype: ScalarType?) -> Tensor"
-  extras: ["canonicalize dims input"]
+- def: "mean(_ input: Tensor<T>, reductionIndices: [Int64], keepDims: Bool) -> Tensor<T>"
+  extras: ["canonicalize reductionIndices input"]
   x10_enum: at::aten::mean
-  lower_fn: LowerMean
-  result_dtype: dtype
+  lower_fn: BuildMean
+  result_dtype: input
+  swift_generics: {T: TensorFlowNumeric}
+  swift_namespace: _RawXLA
 
 - def: "min(input: Tensor, dim: Int64, keepdim: Bool) -> Tensor"
   x10_enum: at::aten::min
