@@ -325,8 +325,7 @@ XLATensor_max(OpaqueXLATensor* input, int64_t dim, bool keepdim);
 XLA_API OpaqueXLATensor*
 XLATensor_maximum(OpaqueXLATensor* a, OpaqueXLATensor* b);
 XLA_API OpaqueXLATensor* XLATensor_mean(OpaqueXLATensor* a, Int64ArrayRef dims,
-                                        bool keep_reduced_dimensions,
-                                        Optional_XLAScalarType dtype);
+                                        bool keep_reduced_dimensions);
 XLA_API OpaqueXLATensor* XLATensor_min(OpaqueXLATensor* input, int64_t dim,
                                        bool keepdim);
 XLA_API OpaqueXLATensor*

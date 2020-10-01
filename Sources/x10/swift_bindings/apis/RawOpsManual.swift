@@ -2251,17 +2251,6 @@ public enum _RawXLA {
   ///
   /// - Output output: The reduced tensor.
   public static func mean<
-    T: TensorFlowNumeric
-  >(
-    _ input: Tensor<T>,
-    reductionIndices: [Int64],
-    keepDims: Bool = false
-  ) -> Tensor<T> {
-    Tensor(
-      _xla: XLATensor.mean(
-        input.xlaTensor, reductionIndices, keepDims, nil))
-  }
-  public static func mean<
     T: TensorFlowNumeric,
     Tidx: TensorFlowIndex
   >(

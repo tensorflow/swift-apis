@@ -74,6 +74,7 @@ target_sources(TensorFlow PRIVATE
   ../x10/swift_bindings/apis/CrossReplicaSum.swift
   ../x10/swift_bindings/apis/DeviceScope.swift
   ../x10/swift_bindings/apis/RawOpsManual.swift
+  ../x10/swift_bindings/RawOpsXLAGenerated.swift
 
   ../x10/swift_bindings/Device.swift
   ../x10/swift_bindings/XLAScalarType.swift
