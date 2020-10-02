@@ -30,7 +30,7 @@ public enum _RawXLA {
     dims.map { $0 < 0 ? $0 + rank : $0 }
   }
 
-  private static func checkSameDevice(
+  static func checkSameDevice(
     _ deviceLhs: Device, _ deviceRhs: Device, file: StaticString = #file, line: UInt = #line
   ) {
     if deviceLhs != deviceRhs {
@@ -44,7 +44,7 @@ public enum _RawXLA {
     checkSameDevice(t1.device, t2.device, file: file, line: line)
   }
 
-  private static func checkSameDevice<T>(
+  static func checkSameDevice<T>(
     _ tensors: [Tensor<T>], file: StaticString = #file, line: UInt = #line
   ) {
     guard let device = tensors.first?.device else {
@@ -74,7 +74,7 @@ public enum _RawXLA {
     }
   }
 
-  private static func checkSamePrecision<T>(
+  static func checkSamePrecision<T>(
     _ t1: Tensor<T>, _ t2: Tensor<T>, file: StaticString = #file, line: UInt = #line
   ) {
     checkSamePrecision(t1.isReducedPrecision, t2.isReducedPrecision, file: file, line: line)
@@ -89,7 +89,7 @@ public enum _RawXLA {
     checkSamePrecision(isReducedPrecision, t3.isReducedPrecision, file: file, line: line)
   }
 
-  private static func checkSamePrecision<T>(
+  static func checkSamePrecision<T>(
     _ tensors: [Tensor<T>], file: StaticString = #file, line: UInt = #line
   ) {
     guard let isReducedPrecision = tensors.first?.isReducedPrecision else {
@@ -98,44 +98,6 @@ public enum _RawXLA {
     for tensor in tensors {
       checkSamePrecision(tensor.isReducedPrecision, isReducedPrecision, file: file, line: line)
     }
-  }
-
-  /// Computes the absolute value of a tensor.
-  ///
-  /// Given a tensor `x`, this operation returns a tensor containing the absolute
-  /// value of each element in `x`. For example, if x is an input element and y is
-  /// an output element, this operation computes \\(y = |x|\\).
-  public static func abs<T: TensorFlowNumeric>(
-    _ x: Tensor<T>
-  ) -> Tensor<T> {
-    return Tensor(_xla: XLATensor.abs(x.xlaTensor))
-  }
-
-  /// Computes acos of x element-wise.
-  public static func acos<T: TensorFlowNumeric>(
-    _ x: Tensor<T>
-  ) -> Tensor<T> {
-    return Tensor(_xla: XLATensor.acos(x.xlaTensor))
-  }
-
-  /// Computes inverse hyperbolic cosine of x element-wise.
-  public static func acosh<T: FloatingPoint & TensorFlowScalar>(
-    _ x: Tensor<T>
-  ) -> Tensor<T> {
-    return Tensor(_xla: XLATensor.acosh(x.xlaTensor))
-  }
-
-  /// Returns x + y element-wise.
-  ///
-  /// *NOTE*: `Add` supports broadcasting. `AddN` does not. More about broadcasting
-  /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-  public static func addV2<T: TensorFlowNumeric>(
-    _ x: Tensor<T>,
-    _ y: Tensor<T>
-  ) -> Tensor<T> {
-    checkSameDevice(x, y)
-    checkSamePrecision(x, y)
-    return Tensor(_xla: XLATensor.add(x.xlaTensor, y.xlaTensor))
   }
 
   /// Computes the "logical and" of elements across dimensions of a tensor.
@@ -158,8 +120,8 @@ public enum _RawXLA {
     reductionIndices: Tensor<Tidx>,
     keepDims: Bool = false
   ) -> Tensor<Bool> {
-    return Tensor(
-      _xla: XLATensor.all(input.xlaTensor, reductionIndices.scalars.map { Int64($0) }, keepDims))
+    return all(
+      input, dims: reductionIndices.scalars.map { Int64($0) }, keep_reduced_dimensions: keepDims)
   }
 
   /// Computes the "logical or" of elements across dimensions of a tensor.
@@ -182,8 +144,8 @@ public enum _RawXLA {
     reductionIndices: Tensor<Tidx>,
     keepDims: Bool = false
   ) -> Tensor<Bool> {
-    return Tensor(
-      _xla: XLATensor.any(input.xlaTensor, reductionIndices.scalars.map { Int64($0) }, keepDims))
+    return any(
+      input, dims: reductionIndices.scalars.map { Int64($0) }, keep_reduced_dimensions: keepDims)
   }
 
   /// Returns the truth value of abs(x-y) < tolerance element-wise.
@@ -232,8 +194,7 @@ public enum _RawXLA {
     _ input: Tensor<T>,
     dimension: Int64
   ) -> Tensor<OutputType> {
-    return _RawXLA.cast(
-      Tensor<Int64>(_xla: XLATensor.argmax(input.xlaTensor, dimension, false)))
+    return cast(argMax(input, dim: dimension, keepdim: false))
   }
   public static func argMax<
     T: TensorFlowNumeric,
@@ -271,70 +232,7 @@ public enum _RawXLA {
     _ input: Tensor<T>,
     dimension: Tensor<Tidx>
   ) -> Tensor<OutputType> {
-    return _RawXLA.cast(
-      Tensor<Int64>(_xla: XLATensor.argmin(input.xlaTensor, Int64(dimension.scalarized()), false)))
-  }
-
-  /// Computes the trigonometric inverse sine of x element-wise.
-  ///
-  /// The `tf.math.asin` operation returns the inverse of `tf.math.sin`, such that
-  /// if `y = tf.math.sin(x)` then, `x = tf.math.asin(y)`.
-  ///
-  /// **Note**: The output of `tf.math.asin` will lie within the invertible range
-  /// of sine, i.e [-pi/2, pi/2].
-  ///
-  /// For example:
-  ///
-  /// ```python
-  /// # Note: [1.047, 0.785] ~= [(pi/3), (pi/4)]
-  /// x = tf.constant([1.047, 0.785])
-  /// y = tf.math.sin(x) # [0.8659266, 0.7068252]
-  ///
-  /// tf.math.asin(y) # [1.047, 0.785] = x
-  /// ```
-  ///
-  public static func asin<T: TensorFlowNumeric>(
-    _ x: Tensor<T>
-  ) -> Tensor<T> {
-    return Tensor(_xla: XLATensor.asin(x.xlaTensor))
-  }
-
-  /// Computes inverse hyperbolic sine of x element-wise.
-  public static func asinh<T: FloatingPoint & TensorFlowScalar>(
-    _ x: Tensor<T>
-  ) -> Tensor<T> {
-    return Tensor(_xla: XLATensor.asinh(x.xlaTensor))
-  }
-
-  /// Computes the trigonometric inverse tangent of x element-wise.
-  ///
-  /// The `tf.math.atan` operation returns the inverse of `tf.math.tan`, such that
-  /// if `y = tf.math.tan(x)` then, `x = tf.math.atan(y)`.
-  ///
-  /// **Note**: The output of `tf.math.atan` will lie within the invertible range
-  /// of tan, i.e (-pi/2, pi/2).
-  ///
-  /// For example:
-  ///
-  /// ```python
-  /// # Note: [1.047, 0.785] ~= [(pi/3), (pi/4)]
-  /// x = tf.constant([1.047, 0.785])
-  /// y = tf.math.tan(x) # [1.731261, 0.99920404]
-  ///
-  /// tf.math.atan(y) # [1.047, 0.785] = x
-  /// ```
-  ///
-  public static func atan<T: TensorFlowNumeric>(
-    _ x: Tensor<T>
-  ) -> Tensor<T> {
-    return Tensor(_xla: XLATensor.atan(x.xlaTensor))
-  }
-
-  /// Computes inverse hyperbolic tangent of x element-wise.
-  public static func atanh<T: FloatingPoint & TensorFlowScalar>(
-    _ x: Tensor<T>
-  ) -> Tensor<T> {
-    return Tensor(_xla: XLATensor.atanh(x.xlaTensor))
+    return cast(argMin(input, dim: Int64(dimension.scalarized()), keepdim: false))
   }
 
   private static func convertPadding(_ padding: Padding) -> TFPadding {
@@ -560,22 +458,15 @@ public enum _RawXLA {
     adjX: Bool = false,
     adjY: Bool = false
   ) -> Tensor<T> {
-    checkSameDevice(x, y)
-    checkSamePrecision(x, y)
     // TODO(parkers): Conjugation is unhandled, but T is never complex.
     let xrank = Int64(x.rank)
     let yrank = Int64(y.rank)
     precondition(xrank >= 2 && yrank >= 2, "Ranks must be >= 2")
-    return Tensor(
-      _xla: XLATensor.matmul(
-        (adjX
-          ? XLATensor.permute_value(
-            x.xlaTensor,
-            [Int64](0..<xrank - 2) + [xrank - 1, xrank - 2]) : x.xlaTensor),
-        (adjY
-          ? XLATensor.permute_value(
-            y.xlaTensor,
-            [Int64](0..<yrank - 2) + [yrank - 1, yrank - 2]) : y.xlaTensor)))
+    return matmul(
+      (adjX
+        ? permute(x, dims: [Int64](0..<xrank - 2) + [xrank - 1, xrank - 2]) : x),
+      (adjX
+        ? permute(y, dims: [Int64](0..<yrank - 2) + [yrank - 1, yrank - 2]) : x))
   }
 
   /// Return the reduction indices for computing gradients of s0 op s1 with broadcast.
@@ -639,7 +530,7 @@ public enum _RawXLA {
     _ input: Tensor<T>,
     shape: [Int64]
   ) -> Tensor<T> {
-    Tensor(_xla: XLATensor.expand(input.xlaTensor, shape))
+    broadcastTo(input, dims: shape)
   }
   public static func broadcastTo<
     T: TensorFlowScalar,
@@ -662,39 +553,6 @@ public enum _RawXLA {
     Tensor(_xla: XLATensor.logicalCast(x.xlaTensor, destType: Dstt.xlaTensorScalarType))
   }
 
-  /// Returns element-wise smallest integer not less than x.
-  public static func ceil<T: FloatingPoint & TensorFlowScalar>(
-    _ x: Tensor<T>
-  ) -> Tensor<T> {
-    return Tensor(_xla: XLATensor.ceil(x.xlaTensor))
-  }
-
-  /// Clips tensor values to a specified min and max.
-  ///
-  /// Given a tensor `t`, this operation returns a tensor of the same type and
-  /// shape as `t` with its values clipped to `clip_value_min` and `clip_value_max`.
-  /// Any values less than `clip_value_min` are set to `clip_value_min`. Any values
-  /// greater than `clip_value_max` are set to `clip_value_max`.
-  ///
-  /// - Parameters:
-  ///     - t: A `Tensor`.
-  ///     - clip_value_min: A 0-D (scalar) `Tensor`, or a `Tensor` with the same shape
-  ///         as `t`. The minimum value to clip by.
-  ///     - clip_value_max: A 0-D (scalar) `Tensor`, or a `Tensor` with the same shape
-  ///         as `t`. The maximum value to clip by.
-  ///
-  /// - Output output: A clipped `Tensor` with the same shape as input 't'.
-  public static func clipByValue<T: TensorFlowNumeric>(
-    t: Tensor<T>,
-    clipValueMin: Tensor<T>,
-    clipValueMax: Tensor<T>
-  ) -> Tensor<T> {
-    checkSameDevice(t, clipValueMin, clipValueMax)
-    checkSamePrecision(t, clipValueMin, clipValueMax)
-    return Tensor(
-      _xla: XLATensor.clamp(t.xlaTensor, clipValueMin.xlaTensor, clipValueMax.xlaTensor))
-  }
-
   /// Concatenates tensors along one dimension.
   ///
   /// - Parameters:
@@ -713,9 +571,7 @@ public enum _RawXLA {
     _ values: [Tensor<T>],
     axis: Tensor<Tidx>
   ) -> Tensor<T> {
-    checkSameDevice(values)
-    checkSamePrecision(values)
-    return Tensor(_xla: XLATensor.cat(values.map { $0.xlaTensor }, Int64(axis.scalarized())))
+    return concat(values, dim: Int64(axis.scalarized()))
   }
 
   /// Computes a 2-D convolution given 4-D `input` and `filter` tensors.
@@ -1072,20 +928,6 @@ public enum _RawXLA {
         dilations.map { Int64($0) }))
   }
 
-  /// Computes cos of x element-wise.
-  public static func cos<T: FloatingPoint & TensorFlowScalar>(
-    _ x: Tensor<T>
-  ) -> Tensor<T> {
-    return Tensor(_xla: XLATensor.cos(x.xlaTensor))
-  }
-
-  /// Computes hyperbolic cosine of x element-wise.
-  public static func cosh<T: FloatingPoint & TensorFlowScalar>(
-    _ x: Tensor<T>
-  ) -> Tensor<T> {
-    return Tensor(_xla: XLATensor.cosh(x.xlaTensor))
-  }
-
   /// A simplified version of cross replica sum, with scaling.
   public static func crossReplicaSum<T: TensorFlowNumeric>(
     _ inputs: [Tensor<T>],
@@ -1146,10 +988,7 @@ public enum _RawXLA {
     exclusive: Bool = false,
     reverse: Bool = false
   ) -> Tensor<T> {
-    Tensor(
-      _xla: XLATensor.cumprod(
-        x.xlaTensor, Int64(axis.scalarized()),
-        exclusive: exclusive, reverse: reverse))
+    cumprod(x, dim: Int64(axis.scalarized()), exclusive: exclusive, reverse: reverse)
   }
 
   /// Compute the cumulative sum of the tensor `x` along `axis`.
@@ -1202,10 +1041,7 @@ public enum _RawXLA {
     exclusive: Bool = false,
     reverse: Bool = false
   ) -> Tensor<T> {
-    Tensor(
-      _xla: XLATensor.cumsum(
-        x.xlaTensor, Int64(axis.scalarized()),
-        exclusive: exclusive, reverse: reverse))
+    cumsum(x, dim: Int64(axis.scalarized()), exclusive: exclusive, reverse: reverse)
   }
 
   /// Computes a 2-D depthwise convolution given 4-D `input` and `filter` tensors.
@@ -1397,48 +1233,13 @@ public enum _RawXLA {
       let outputDims = shape[0..<nOutDims]
       precondition(outputDims == shape[nOutDims..<shape.count], "Must be even rank")
       let flatDims = outputDims.reduce(1, *)
-      return Tensor<T>(
-        _xla: XLATensor.resize_value(
-          _RawXLA.diagPart(
-            Tensor<T>(_xla: XLATensor.resize_value(input.xlaTensor, [flatDims, flatDims]))
-          ).xlaTensor,
-          [Int64](outputDims)))
+      return resize_value(
+        _RawXLA.diagPart(
+          resize_value(input, dims: [flatDims, flatDims])
+        ),
+        dims: [Int64](outputDims))
     }
-    return Tensor(_xla: XLATensor.diagonal_value(input.xlaTensor, 0, 0, 1))
-  }
-
-  /// Returns x / y element-wise.
-  ///
-  /// *NOTE*: `Div` supports broadcasting. More about broadcasting
-  /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-  public static func div<T: TensorFlowNumeric>(
-    _ x: Tensor<T>,
-    _ y: Tensor<T>
-  ) -> Tensor<T> {
-    checkSameDevice(x, y)
-    checkSamePrecision(x, y)
-    return Tensor(_xla: XLATensor.div(x.xlaTensor, y.xlaTensor))
-  }
-
-  public static func dynamicSlice<T: TensorFlowNumeric>(
-    _ base: Tensor<T>,
-    _ startIndices: [Tensor<Int32>],
-    _ sliceShape: [Int64]
-  ) -> Tensor<T> {
-    return Tensor(
-      _xla: XLATensor.dynamic_slice(base.xlaTensor, startIndices.map { $0.xlaTensor }, sliceShape))
-  }
-
-  public static func dynamicUpdateSlice<T: TensorFlowNumeric>(
-    _ base: Tensor<T>,
-    _ update: Tensor<T>,
-    _ startIndices: [Tensor<Int32>]
-  ) -> Tensor<T> {
-    checkSameDevice(base, update)
-    checkSamePrecision(base, update)
-    return Tensor(
-      _xla: XLATensor.dynamic_update_slice(
-        base.xlaTensor, update.xlaTensor, startIndices.map { $0.xlaTensor }))
+    return diagonal_value(input, offset: 0, dim1: 0, dim2: 1)
   }
 
   /// Computes exponential linear: `exp(features) - 1` if < 0, `features` otherwise.
@@ -1484,16 +1285,7 @@ public enum _RawXLA {
     incompatibleShapeError: Bool = true
   ) -> Tensor<Bool> {
     precondition(incompatibleShapeError)
-    checkSameDevice(x, y)
-    checkSamePrecision(x, y)
-    return Tensor(_xla: XLATensor.eq(x.xlaTensor, y.xlaTensor))
-  }
-
-  /// Computes exponential of x element-wise.  \\(y = e^x\\).
-  public static func exp<T: FloatingPoint & TensorFlowScalar>(
-    _ x: Tensor<T>
-  ) -> Tensor<T> {
-    return Tensor(_xla: XLATensor.exp(x.xlaTensor))
+    return eq(x, y)
   }
 
   /// Inserts a dimension of 1 into a tensor's shape.
@@ -1546,16 +1338,7 @@ public enum _RawXLA {
     var dim = Int(dim.scalarized())
     if dim < 0 { dim += dims.count + 1 }
     dims.insert(1, at: dim)
-    return Tensor(_xla: XLATensor.resize_value(input.xlaTensor, dims))
-  }
-
-  /// Computes exponential of x - 1 element-wise.
-  ///
-  /// I.e., \\(y = (\exp x) - 1\\).
-  public static func expm1<T: FloatingPoint & TensorFlowScalar>(
-    _ x: Tensor<T>
-  ) -> Tensor<T> {
-    return Tensor(_xla: XLATensor.expm1(x.xlaTensor))
+    return resize_value(input, dims: dims)
   }
 
   /// Creates a tensor filled with a scalar value.
@@ -1611,13 +1394,6 @@ public enum _RawXLA {
     value: Tensor<T>
   ) -> Tensor<T> {
     return fill(dims: dims, value: value, device: value.device)
-  }
-
-  /// Returns element-wise largest integer not greater than x.
-  public static func floor<T: FloatingPoint & TensorFlowScalar>(
-    _ x: Tensor<T>
-  ) -> Tensor<T> {
-    return Tensor(_xla: XLATensor.floor(x.xlaTensor))
   }
 
   /// Gather slices from `params` according to `indices`.
@@ -1709,38 +1485,10 @@ public enum _RawXLA {
     batchDims: Int64 = 0
   ) -> Tensor<Tparams> {
     precondition(batchDims == 0)
-    checkSameDevice(params.device, indices.device)
     let canonicalAxis = canonicalDims(axis.scalars.map { Int64($0) }, Int64(params.rank)).first!
-    return Tensor(
-      _xla: XLATensor.gather(
-        params.xlaTensor, Tensor<Tindices>(stacking: [indices], alongAxis: indices.rank).xlaTensor,
-        canonicalAxis))
-  }
-
-  /// Returns the truth value of (x > y) element-wise.
-  ///
-  /// *NOTE*: `Greater` supports broadcasting. More about broadcasting
-  /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-  public static func greater<T: TensorFlowNumeric>(
-    _ x: Tensor<T>,
-    _ y: Tensor<T>
-  ) -> Tensor<Bool> {
-    checkSameDevice(x, y)
-    checkSamePrecision(x, y)
-    return Tensor(_xla: XLATensor.gt(x.xlaTensor, y.xlaTensor))
-  }
-
-  /// Returns the truth value of (x >= y) element-wise.
-  ///
-  /// *NOTE*: `GreaterEqual` supports broadcasting. More about broadcasting
-  /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-  public static func greaterEqual<T: TensorFlowNumeric>(
-    _ x: Tensor<T>,
-    _ y: Tensor<T>
-  ) -> Tensor<Bool> {
-    checkSameDevice(x, y)
-    checkSamePrecision(x, y)
-    return Tensor(_xla: XLATensor.ge(x.xlaTensor, y.xlaTensor))
+    return gather(
+      params, indices: Tensor<Tindices>(stacking: [indices], alongAxis: indices.rank),
+      start_dim: canonicalAxis)
   }
 
   /// Computes the inverse permutation of a tensor.
@@ -1773,39 +1521,6 @@ public enum _RawXLA {
     }
     let scalars = invertPermutationArray(x.scalars)
     return Tensor<T>(shape: [scalars.count], scalars: scalars, on: x.device)
-  }
-
-  /// Returns which elements of x are finite.
-  ///
-  /// @compatibility(numpy)
-  /// Equivalent to np.isfinite
-  /// @end_compatibility
-  public static func isFinite<T: FloatingPoint & TensorFlowScalar>(
-    _ x: Tensor<T>
-  ) -> Tensor<Bool> {
-    Tensor(_xla: XLATensor.isFinite(x.xlaTensor))
-  }
-
-  /// Returns which elements of x are Inf.
-  ///
-  /// @compatibility(numpy)
-  /// Equivalent to np.isinf
-  /// @end_compatibility
-  public static func isInf<T: FloatingPoint & TensorFlowScalar>(
-    _ x: Tensor<T>
-  ) -> Tensor<Bool> {
-    Tensor(_xla: XLATensor.isInf(x.xlaTensor))
-  }
-
-  /// Returns which elements of x are NaN.
-  ///
-  /// @compatibility(numpy)
-  /// Equivalent to np.isnan
-  /// @end_compatibility
-  public static func isNan<T: FloatingPoint & TensorFlowScalar>(
-    _ x: Tensor<T>
-  ) -> Tensor<Bool> {
-    Tensor(_xla: XLATensor.isNan(x.xlaTensor))
   }
 
   /// Computes rectified linear: `max(features, features * alpha)`.
@@ -1850,32 +1565,6 @@ public enum _RawXLA {
       e: _RawXLA.mul(
         gradients,
         alphaTensor))
-  }
-
-  /// Returns the truth value of (x < y) element-wise.
-  ///
-  /// *NOTE*: `Less` supports broadcasting. More about broadcasting
-  /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-  public static func less<T: TensorFlowNumeric>(
-    _ x: Tensor<T>,
-    _ y: Tensor<T>
-  ) -> Tensor<Bool> {
-    checkSameDevice(x, y)
-    checkSamePrecision(x, y)
-    return Tensor(_xla: XLATensor.lt(x.xlaTensor, y.xlaTensor))
-  }
-
-  /// Returns the truth value of (x <= y) element-wise.
-  ///
-  /// *NOTE*: `LessEqual` supports broadcasting. More about broadcasting
-  /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-  public static func lessEqual<T: TensorFlowNumeric>(
-    _ x: Tensor<T>,
-    _ y: Tensor<T>
-  ) -> Tensor<Bool> {
-    checkSameDevice(x, y)
-    checkSamePrecision(x, y)
-    return Tensor(_xla: XLATensor.le(x.xlaTensor, y.xlaTensor))
   }
 
   /// Generates values in an interval.
@@ -1934,24 +1623,6 @@ public enum _RawXLA {
     return linSpace(start: start, stop: stop, num: num, device: device)
   }
 
-  /// Computes natural logarithm of x element-wise.
-  ///
-  /// I.e., \\(y = \log_e x\\).
-  public static func log<T: FloatingPoint & TensorFlowScalar>(
-    _ x: Tensor<T>
-  ) -> Tensor<T> {
-    return Tensor(_xla: XLATensor.log(x.xlaTensor))
-  }
-
-  /// Computes natural logarithm of (1 + x) element-wise.
-  ///
-  /// I.e., \\(y = \log_e (1 + x)\\).
-  public static func log1p<T: FloatingPoint & TensorFlowScalar>(
-    _ x: Tensor<T>
-  ) -> Tensor<T> {
-    return Tensor(_xla: XLATensor.log1p(x.xlaTensor))
-  }
-
   /// Computes log softmax activations.
   ///
   /// For each batch `i` and class `j` we have
@@ -1964,38 +1635,7 @@ public enum _RawXLA {
   public static func logSoftmax<T: FloatingPoint & TensorFlowScalar>(
     logits: Tensor<T>
   ) -> Tensor<T> {
-    return Tensor(_xla: XLATensor.log_softmax(logits.xlaTensor, -1))
-  }
-
-  /// Returns the truth value of x AND y element-wise.
-  ///
-  /// *NOTE*: `LogicalAnd` supports broadcasting. More about broadcasting
-  /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-  public static func logicalAnd(
-    _ x: Tensor<Bool>,
-    _ y: Tensor<Bool>
-  ) -> Tensor<Bool> {
-    checkSameDevice(x, y)
-    return Tensor(_xla: XLATensor.logicalAnd(x.xlaTensor, y.xlaTensor))
-  }
-
-  /// Returns the truth value of NOT x element-wise.
-  public static func logicalNot(
-    _ x: Tensor<Bool>
-  ) -> Tensor<Bool> {
-    Tensor(_xla: XLATensor.logicalNot(x.xlaTensor))
-  }
-
-  /// Returns the truth value of x OR y element-wise.
-  ///
-  /// *NOTE*: `LogicalOr` supports broadcasting. More about broadcasting
-  /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-  public static func logicalOr(
-    _ x: Tensor<Bool>,
-    _ y: Tensor<Bool>
-  ) -> Tensor<Bool> {
-    checkSameDevice(x, y)
-    return Tensor(_xla: XLATensor.logicalOr(x.xlaTensor, y.xlaTensor))
+    return logSoftmax(logits, dim: -1)
   }
 
   /// Multiply the matrix "a" by the matrix "b".
@@ -2017,12 +1657,9 @@ public enum _RawXLA {
     transposeA: Bool = false,
     transposeB: Bool = false
   ) -> Tensor<T> {
-    checkSameDevice(a, b)
-    checkSamePrecision(a, b)
-    return Tensor(
-      _xla: XLATensor.mm(
-        (transposeA ? XLATensor.permute_value(a.xlaTensor, [1, 0]) : a.xlaTensor),
-        (transposeB ? XLATensor.permute_value(b.xlaTensor, [1, 0]) : b.xlaTensor)))
+    return matMul(
+      (transposeA ? permute(a, dims: [1, 0]) : a),
+      (transposeB ? permute(b, dims: [1, 0]) : b))
   }
 
   /// Computes the maximum of elements across dimensions of a tensor.
@@ -2048,14 +1685,14 @@ public enum _RawXLA {
     reductionIndices: Tensor<Tidx>,
     keepDims: Bool = false
   ) -> Tensor<T> {
-    var out = input.xlaTensor
+    var out = input
     var dims = canonicalDims(reductionIndices.scalars.map { Int64($0) }, Int64(input.rank))
     // Go through dims in reverse order.
     dims.sort(by: >)
     for dim in dims {
-      out = XLATensor.max(out, dim, keepDims)
+      out = max(out, dim: dim, keepDim: keepDims)
     }
-    return Tensor(_xla: out)
+    return out
   }
 
   /// Performs 3D max pooling on the input.
@@ -2222,19 +1859,6 @@ public enum _RawXLA {
         convertPadding(padding), convertDataFormat4(dataFormat)))
   }
 
-  /// Returns the max of x and y (i.e. x > y ? x : y) element-wise.
-  ///
-  /// *NOTE*: `Maximum` supports broadcasting. More about broadcasting
-  /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-  public static func maximum<T: TensorFlowNumeric>(
-    _ x: Tensor<T>,
-    _ y: Tensor<T>
-  ) -> Tensor<T> {
-    checkSameDevice(x, y)
-    checkSamePrecision(x, y)
-    return Tensor(_xla: XLATensor.maximum(x.xlaTensor, y.xlaTensor))
-  }
-
   /// Computes the mean of elements across dimensions of a tensor.
   ///
   /// Reduces `input` along the dimensions given in `axis`. Unless
@@ -2284,7 +1908,7 @@ public enum _RawXLA {
     reductionIndices: Tensor<Tidx>,
     keepDims: Bool = false
   ) -> Tensor<T> {
-    var out = input.xlaTensor
+    var out = input
     let rank = Int64(input.rank)
     var dims = reductionIndices.scalars.map { (originalDim: Tidx) -> Int64 in
       var dim = Int64(originalDim)
@@ -2294,22 +1918,9 @@ public enum _RawXLA {
     // Go through dims in reverse order.
     dims.sort(by: >)
     for dim in dims {
-      out = XLATensor.min(out, dim, keepDims)
+      out = min(out, dim: dim, keepDim: keepDims)
     }
-    return Tensor(_xla: out)
-  }
-
-  /// Returns the min of x and y (i.e. x < y ? x : y) element-wise.
-  ///
-  /// *NOTE*: `Minimum` supports broadcasting. More about broadcasting
-  /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-  public static func minimum<T: TensorFlowNumeric>(
-    _ x: Tensor<T>,
-    _ y: Tensor<T>
-  ) -> Tensor<T> {
-    checkSameDevice(x, y)
-    checkSamePrecision(x, y)
-    return Tensor(_xla: XLATensor.minimum(x.xlaTensor, y.xlaTensor))
+    return out
   }
 
   /// Pads a tensor with mirrored values.
@@ -2414,44 +2025,6 @@ public enum _RawXLA {
         convertMirrorPadMode(mode)))
   }
 
-  /// Returns element-wise remainder of division. This emulates C semantics in that
-  ///
-  /// the result here is consistent with a truncating divide. E.g.
-  /// `tf.truncatediv(x, y) * y + truncate_mod(x, y) = x`.
-  ///
-  /// *NOTE*: `Mod` supports broadcasting. More about broadcasting
-  /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-  public static func mod<T: TensorFlowNumeric>(
-    _ x: Tensor<T>,
-    _ y: Tensor<T>
-  ) -> Tensor<T> {
-    checkSameDevice(x, y)
-    checkSamePrecision(x, y)
-    return Tensor(_xla: XLATensor.rem(x.xlaTensor, y.xlaTensor))
-  }
-
-  /// Returns x * y element-wise.
-  ///
-  /// *NOTE*: `Multiply` supports broadcasting. More about broadcasting
-  /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-  public static func mul<T: TensorFlowNumeric>(
-    _ x: Tensor<T>,
-    _ y: Tensor<T>
-  ) -> Tensor<T> {
-    checkSameDevice(x, y)
-    checkSamePrecision(x, y)
-    return Tensor(_xla: XLATensor.mul(x.xlaTensor, y.xlaTensor))
-  }
-
-  /// Computes numerical negative value element-wise.
-  ///
-  /// I.e., \\(y = -x\\).
-  public static func neg<T: TensorFlowNumeric>(
-    _ x: Tensor<T>
-  ) -> Tensor<T> {
-    return Tensor(_xla: XLATensor.neg(x.xlaTensor))
-  }
-
   /// Returns the truth value of (x != y) element-wise.
   ///
   /// *NOTE*: `NotEqual` supports broadcasting. More about broadcasting
@@ -2459,12 +2032,10 @@ public enum _RawXLA {
   public static func notEqual<T: TensorFlowScalar>(
     _ x: Tensor<T>,
     _ y: Tensor<T>,
-    incompatibleShapeError: Bool = true
+    incompatibleShapeError: Bool
   ) -> Tensor<Bool> {
     precondition(incompatibleShapeError)
-    checkSameDevice(x, y)
-    checkSamePrecision(x, y)
-    return Tensor(_xla: XLATensor.ne(x.xlaTensor, y.xlaTensor))
+    return notEqual(x, y)
   }
 
   /// Returns a one-hot tensor.
@@ -2652,7 +2223,7 @@ public enum _RawXLA {
   ) -> Tensor<T> {
     checkSameDevice(values)
     checkSamePrecision(values)
-    return Tensor(_xla: XLATensor.stack(values.map { $0.xlaTensor }, axis))
+    return stack(values, dim: axis)
   }
 
   /// Pads a tensor with zeros.
@@ -2747,25 +2318,6 @@ public enum _RawXLA {
     Tensor(_xla: XLATensor.physicalCast(input.xlaTensor, destType: destType.xlaTensorScalarType))
   }
 
-  /// Computes the power of one value to another.
-  ///
-  /// Given a tensor `x` and a tensor `y`, this operation computes \\(x^y\\) for
-  /// corresponding elements in `x` and `y`. For example:
-  ///
-  /// ```
-  /// # tensor 'x' is [[2, 2]], [3, 3]]
-  /// # tensor 'y' is [[8, 16], [2, 3]]
-  /// tf.pow(x, y) ==> [[256, 65536], [9, 27]]
-  /// ```
-  public static func pow<T: TensorFlowNumeric>(
-    _ x: Tensor<T>,
-    _ y: Tensor<T>
-  ) -> Tensor<T> {
-    checkSameDevice(x, y)
-    checkSamePrecision(x, y)
-    return Tensor(_xla: XLATensor.pow(x.xlaTensor, y.xlaTensor))
-  }
-
   /// Computes the product of elements across dimensions of a tensor.
   ///
   /// Reduces `input` along the dimensions given in `axis`. Unless
@@ -2789,10 +2341,8 @@ public enum _RawXLA {
     reductionIndices: Tensor<Tidx>,
     keepDims: Bool = false
   ) -> Tensor<T> {
-    checkSameDevice(input.device, reductionIndices.device)
-    return Tensor(
-      _xla: XLATensor.prod(
-        input.xlaTensor, reductionIndices.scalars.map { Int64($0) }, keepDims, nil))
+    return prod(
+      input, reductionIndices: reductionIndices.scalars.map { Int64($0) }, keepDims: keepDims)
   }
 
   /// Computes the QR decompositions of one or more matrices.
@@ -2883,13 +2433,6 @@ public enum _RawXLA {
     return Tensor<Int32>(Int32(input.shape.rank), on: input.device)
   }
 
-  /// Computes rectified linear: `max(features, 0)`.
-  public static func relu<T: TensorFlowNumeric>(
-    features: Tensor<T>
-  ) -> Tensor<T> {
-    return Tensor(_xla: XLATensor.relu(features.xlaTensor))
-  }
-
   /// Computes rectified linear 6: `min(max(features, 0), 6)`.
   public static func relu6<T: TensorFlowNumeric>(
     features: Tensor<T>
@@ -2914,15 +2457,12 @@ public enum _RawXLA {
   ) -> Tensor<T> {
     checkSameDevice(gradients, features)
     checkSamePrecision(gradients, features)
-    let features_shape = features.shape.dimensions.map { Int64($0) }
     return _RawXLA.select(
       condition: _RawXLA.logicalAnd(
         _RawXLA.greater(features, Tensor<T>(0, deviceAndPrecisionLike: features)),
         _RawXLA.less(features, Tensor<T>(6, deviceAndPrecisionLike: features))),
       t: gradients,
-      e: Tensor(
-        _xla: XLATensor.expand(
-          Tensor<T>(0, deviceAndPrecisionLike: features).xlaTensor, features_shape)))
+      e: zerosLike(features))
   }
 
   /// Computes rectified linear gradients for a Relu operation.
@@ -3019,7 +2559,7 @@ public enum _RawXLA {
         dims[dynamicDim] = Int64(tensor.shape.contiguousSize) / -dimsShape
       }
     }
-    return Tensor(_xla: XLATensor.resize_value(tensor.xlaTensor, dims))
+    return resize_value(tensor, dims: dims)
   }
   public static func reshape<
     T: TensorFlowScalar,
@@ -3095,25 +2635,6 @@ public enum _RawXLA {
     axis: Tensor<Tidx>
   ) -> Tensor<T> {
     fatalError("Implement reverseV2")
-  }
-
-  /// Rounds the values of a tensor to the nearest integer, element-wise.
-  ///
-  /// Rounds half to even.  Also known as bankers rounding. If you want to round
-  /// according to the current system rounding mode use std::cint.
-  public static func round<T: TensorFlowNumeric>(
-    _ x: Tensor<T>
-  ) -> Tensor<T> {
-    return Tensor(_xla: XLATensor.round_to_even(x.xlaTensor))
-  }
-
-  /// Computes reciprocal of square root of x element-wise.
-  ///
-  /// I.e., \\(y = 1 / \sqrt{x}\\).
-  public static func rsqrt<T: FloatingPoint & TensorFlowScalar>(
-    _ x: Tensor<T>
-  ) -> Tensor<T> {
-    return Tensor(_xla: XLATensor.rsqrt(x.xlaTensor))
   }
 
   /// Computes the gradient for the rsqrt of `x` wrt its input.
@@ -3279,15 +2800,6 @@ public enum _RawXLA {
     return Tensor(shape.map { OutType($0) }, on: input.device)
   }
 
-  /// Computes sigmoid of `x` element-wise.
-  ///
-  /// Specifically, `y = 1 / (1 + exp(-x))`.
-  public static func sigmoid<T: FloatingPoint & TensorFlowScalar>(
-    _ x: Tensor<T>
-  ) -> Tensor<T> {
-    return Tensor(_xla: XLATensor.sigmoid(x.xlaTensor))
-  }
-
   /// Computes the gradient of the sigmoid of `x` wrt its input.
   ///
   /// Specifically, `grad = dy * y * (1 - y)`, where `y = sigmoid(x)`, and
@@ -3299,31 +2811,6 @@ public enum _RawXLA {
     checkSameDevice(y, dy)
     checkSamePrecision(y, dy)
     return _RawXLA.mul(_RawXLA.mul(dy, y), _RawXLA.sub(_RawXLA.onesLike(y), y))
-  }
-
-  /// Returns an element-wise indication of the sign of a number.
-  ///
-  /// `y = sign(x) = -1` if `x < 0`; 0 if `x == 0`; 1 if `x > 0`.
-  ///
-  /// For complex numbers, `y = sign(x) = x / |x|` if `x != 0`, otherwise `y = 0`.
-  public static func sign<T: TensorFlowNumeric>(
-    _ x: Tensor<T>
-  ) -> Tensor<T> {
-    return Tensor(_xla: XLATensor.sign(x.xlaTensor))
-  }
-
-  /// Computes sin of x element-wise.
-  public static func sin<T: FloatingPoint & TensorFlowScalar>(
-    _ x: Tensor<T>
-  ) -> Tensor<T> {
-    return Tensor(_xla: XLATensor.sin(x.xlaTensor))
-  }
-
-  /// Computes hyperbolic sine of x element-wise.
-  public static func sinh<T: FloatingPoint & TensorFlowScalar>(
-    _ x: Tensor<T>
-  ) -> Tensor<T> {
-    return Tensor(_xla: XLATensor.sinh(x.xlaTensor))
   }
 
   /// Returns the size of a tensor.
@@ -3382,19 +2869,21 @@ public enum _RawXLA {
   ) -> Tensor<T> {
     let inputRank = input.rank
     precondition(begin.count == inputRank && size.count == inputRank)
-    var output = input.xlaTensor
+    var output = input
     for (axis, (begin, size)) in zip(begin, size).enumerated() {
       let dimensionSize = input.shape.dimensions[axis]
       if size != -1 {
         if size < 0 || size > dimensionSize {
           fatalError("Expected size[\(axis)] in [0, \(dimensionSize)], but got \(size)")
         }
-        output = XLATensor.slice(output, Int64(axis), Int64(begin), Int64(begin + size), 1)
+        output = slice(
+          output, dim: Int64(axis), start: Int64(begin), end: Int64(begin + size), stride: 1)
       } else {
-        output = XLATensor.slice(output, Int64(axis), Int64(begin), Int64(dimensionSize), 1)
+        output = slice(
+          output, dim: Int64(axis), start: Int64(begin), end: Int64(dimensionSize), stride: 1)
       }
     }
-    return Tensor<T>(_xla: output)
+    return output
   }
 
   /// Computes softmax activations.
@@ -3409,7 +2898,7 @@ public enum _RawXLA {
   public static func softmax<T: FloatingPoint & TensorFlowScalar>(
     logits: Tensor<T>
   ) -> Tensor<T> {
-    return Tensor(_xla: XLATensor.softmax(logits.xlaTensor, -1))
+    return softmax(logits, dim: -1)
   }
 
   /// Computes softmax cross entropy cost and gradients to backpropagate.
@@ -3432,7 +2921,7 @@ public enum _RawXLA {
     checkSameDevice(features, labels)
     checkSamePrecision(features, labels)
     let logits = features
-    let logits_max = Tensor<T>(_xla: XLATensor.max(logits.xlaTensor, 1, true))
+    let logits_max = max(logits, dim: 1, keepDim: true)
     let shifted_logits = _RawXLA.sub(logits, logits_max)
     let exp = _RawXLA.exp(shifted_logits)
     let sum_exp = _RawXLA.sum(exp, reductionIndices: Tensor<Int64>([1]), keepDims: true)
@@ -3541,8 +3030,7 @@ public enum _RawXLA {
       reductionIndices: [Int64(1)])
     // one_hot stands in for the backprop gradient as it has the right shape
     // and will multiplied on the backwards pass.
-    let backprop = Tensor<T>(
-      _xla: XLATensor.log_softmax_backward(one_hot.xlaTensor, tmp_output.xlaTensor, -1))
+    let backprop = logSoftmaxBackward(gradOutput: one_hot, output: tmp_output, dim: -1)
     return (loss: loss, backprop: backprop)
   }
 
@@ -3650,18 +3138,14 @@ public enum _RawXLA {
     if inferredIndices.count == 1 {
       completeSizeSplits[inferredIndices.first!] = Int64(splitDimSize) - Int64(totalSplitSize)
     }
-    let chunkHandles = XLATensor.splitWithSizes(
-      value.xlaTensor, completeSizeSplits, Int64(splitDim))
-    return chunkHandles.map { Tensor(_xla: $0) }
-  }
-
-  /// Computes square root of x element-wise.
-  ///
-  /// I.e., \\(y = \sqrt{x} = x^{1/2}\\).
-  public static func sqrt<T: FloatingPoint & TensorFlowScalar>(
-    _ x: Tensor<T>
-  ) -> Tensor<T> {
-    return Tensor(_xla: XLATensor.sqrt(x.xlaTensor))
+    var offset: Int64 = 0
+    let dim = Int64(splitDim)
+    return completeSizeSplits.map { (size: Int64) -> Tensor<T> in
+      let nextOffset = offset + size
+      let result = slice(value, dim: dim, start: offset, end: nextOffset, stride: 1)
+      offset = nextOffset
+      return result
+    }
   }
 
   /// Computes square of x element-wise.
@@ -3726,7 +3210,7 @@ public enum _RawXLA {
       var total = 0
       for dim in 0..<shape.rank {
         if shape[dim] == 1 {
-          output = Tensor<T>(_xla: XLATensor.squeeze(output.xlaTensor, Int64(dim - total)))
+          output = squeeze(output, dim: Int64(dim - total))
           total += 1
         }
       }
@@ -3735,7 +3219,7 @@ public enum _RawXLA {
     // Go through dims in reverse order.
     dims.sort(by: >)
     for dim in dims {
-      output = Tensor<T>(_xla: XLATensor.squeeze(output.xlaTensor, dim))
+      output = squeeze(output, dim: Int64(dim))
     }
     return output
   }
@@ -4109,12 +3593,13 @@ public enum _RawXLA {
         dimensionsToReverse.append(Int64(i))
       }
     }
-    var result = input.xlaTensor
+    var result = input
     if !dimensionsToReverse.isEmpty {
-      result = XLATensor.flip(result, dims: dimensionsToReverse)
+      result = flip(result, dims: dimensionsToReverse)
     }
-    result = XLATensor.xlaSlice(result, begin: sliceBegin, end: sliceEnd, strides: sliceStrides)
-    return Tensor(_xla: XLATensor.resize_value(result, boundsAndStrides.finalSizes))
+    result = xlaSlice(
+      result, start_indices: sliceBegin, limit_indices: sliceEnd, strides: sliceStrides)
+    return resize_value(result, dims: boundsAndStrides.finalSizes)
   }
 
   /// Returns the gradient of `StridedSlice`.
@@ -4156,7 +3641,7 @@ public enum _RawXLA {
       fatalError("Input shape and processing shape must have same rank")
     }
     // Undo any new/shrink axes.
-    var grad = XLATensor.resize_value(dy.xlaTensor, boundsAndStrides.processingSizes)
+    var grad = resize_value(dy, dims: boundsAndStrides.processingSizes)
     // Pad the input gradients.
     var dimensionsToReverse: [Int64] = []
     var paddingConfig: [PaddingConfigDimension] = []
@@ -4192,22 +3677,10 @@ public enum _RawXLA {
       }
     }
     if !dimensionsToReverse.isEmpty {
-      grad = XLATensor.flip(grad, dims: dimensionsToReverse)
+      grad = flip(grad, dims: dimensionsToReverse)
     }
-    return Tensor(_xla: XLATensor.xlaPad(grad, paddingValue: 0, paddingConfig: paddingConfig))
-  }
-
-  /// Returns x - y element-wise.
-  ///
-  /// *NOTE*: `Subtract` supports broadcasting. More about broadcasting
-  /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-  public static func sub<T: TensorFlowNumeric>(
-    _ x: Tensor<T>,
-    _ y: Tensor<T>
-  ) -> Tensor<T> {
-    checkSameDevice(x, y)
-    checkSamePrecision(x, y)
-    return Tensor(_xla: XLATensor.sub(x.xlaTensor, y.xlaTensor))
+    return Tensor(
+      _xla: XLATensor.xlaPad(grad.xlaTensor, paddingValue: 0, paddingConfig: paddingConfig))
   }
 
   /// Computes the sum of elements across dimensions of a tensor.
@@ -4256,20 +3729,6 @@ public enum _RawXLA {
   ) -> (s: Tensor<T>, u: Tensor<T>, v: Tensor<T>) {
     let (u, s, v) = XLATensor.svd(input.xlaTensor, computeUv: computeUv, fullMatrices: fullMatrices)
     return (s: Tensor(_xla: s), u: Tensor(_xla: u), v: Tensor(_xla: v))
-  }
-
-  /// Computes tan of x element-wise.
-  public static func tan<T: TensorFlowNumeric>(
-    _ x: Tensor<T>
-  ) -> Tensor<T> {
-    return Tensor(_xla: XLATensor.tan(x.xlaTensor))
-  }
-
-  /// Computes hyperbolic tangent of `x` element-wise.
-  public static func tanh<T: FloatingPoint & TensorFlowScalar>(
-    _ x: Tensor<T>
-  ) -> Tensor<T> {
-    return Tensor(_xla: XLATensor.tanh(x.xlaTensor))
   }
 
   public static func topk<T: FloatingPoint & TensorFlowScalar>(
@@ -4341,13 +3800,12 @@ public enum _RawXLA {
         dimensionsToReverse.append(Int64(i))
       }
     }
-    var rhs = value.xlaTensor
+    var rhs = value
     if !dimensionsToReverse.isEmpty {
-      rhs = XLATensor.flip(rhs, dims: dimensionsToReverse)
+      rhs = flip(rhs, dims: dimensionsToReverse)
     }
-    rhs = XLATensor.resize_value(rhs, sliceDims)
-    return Tensor(
-      _xla: XLATensor.updateSlice(input: input.xlaTensor, source: rhs, baseIndices: sliceBegin))
+    rhs = resize_value(rhs, dims: sliceDims)
+    return updateSlice(input: input, source: rhs, baseIndices: sliceBegin)
   }
 
   /// Constructs a tensor by tiling a given tensor.
@@ -4391,8 +3849,7 @@ public enum _RawXLA {
         fatalError("Expected multiples[\(index)] >= 0, but got \(multiply)")
       }
     }
-    return Tensor(
-      _xla: XLATensor.tile(input.xlaTensor, repetitions: multiples.map { Int64($0) }))
+    return tile(input, multiples: multiples.map { Int64($0) })
   }
 
   /// Transfer a tensor to a different device.
@@ -4411,7 +3868,7 @@ public enum _RawXLA {
     _ x: Tensor<T>,
     perm: Tensor<Tperm>
   ) -> Tensor<T> {
-    return Tensor(_xla: XLATensor.permute_value(x.xlaTensor, perm.scalars.map(Int64.init)))
+    return permute(x, dims: perm.scalars.map(Int64.init))
   }
 
   public static func transpose<
@@ -4420,7 +3877,7 @@ public enum _RawXLA {
     _ x: Tensor<T>,
     perm: [Int]
   ) -> Tensor<T> {
-    return Tensor(_xla: XLATensor.permute_value(x.xlaTensor, perm.map(Int64.init)))
+    return permute(x, dims: perm.map(Int64.init))
   }
 
   /// Unpacks a given dimension of a rank-`R` tensor into `num` rank-`(R-1)` tensors.
@@ -4449,9 +3906,7 @@ public enum _RawXLA {
     num: Int64,
     axis: Int64 = 0
   ) -> [Tensor<T>] {
-    return (0..<num).map { (i: Int64) -> Tensor<T> in
-      Tensor(_xla: XLATensor.select(value.xlaTensor, axis, i))
-    }
+    return (0..<num).map { select(value, dim: axis, index: $0) }
   }
 
   /// Computes the sum along segments of a tensor.

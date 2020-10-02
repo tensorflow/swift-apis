@@ -5,6 +5,530 @@
 
 extension _RawXLA {
 
+  public static func abs<
+    T: TensorFlowNumeric
+  >(
+    _ input: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_abs(input.xlaHandle))
+  }
+
+  public static func acos<
+    T: TensorFlowNumeric
+  >(
+    _ input: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_acos(input.xlaHandle))
+  }
+
+  public static func acosh<
+    T: FloatingPoint & TensorFlowScalar
+  >(
+    _ input: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_acosh(input.xlaHandle))
+  }
+
+  public static func addV2<
+    T: TensorFlowNumeric
+  >(
+    _ lhs: Tensor<T>,
+    _ rhs: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(lhs) }
+    defer { _fixLifetime(rhs) }
+    checkSameDevice(lhs.device, rhs.device)
+    checkSamePrecision(lhs, rhs)
+    return Tensor(_xlaHandle: XLATensor_add(lhs.xlaHandle, rhs.xlaHandle))
+  }
+
+  public static func all(
+    _ input: Tensor<Bool>,
+    dims: [Int64],
+    keep_reduced_dimensions: Bool
+  ) -> Tensor<Bool> {
+    defer { _fixLifetime(input) }
+    return dims.withArrayRef { dims in
+      return Tensor(_xlaHandle: XLATensor_all(input.xlaHandle, dims, keep_reduced_dimensions))
+    }
+  }
+
+  public static func any(
+    _ input: Tensor<Bool>,
+    dims: [Int64],
+    keep_reduced_dimensions: Bool
+  ) -> Tensor<Bool> {
+    defer { _fixLifetime(input) }
+    return dims.withArrayRef { dims in
+      return Tensor(_xlaHandle: XLATensor_any(input.xlaHandle, dims, keep_reduced_dimensions))
+    }
+  }
+
+  public static func argMax<
+    T: TensorFlowNumeric
+  >(
+    _ input: Tensor<T>,
+    dim: Int64,
+    keepdim: Bool
+  ) -> Tensor<Int64> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_argmax(input.xlaHandle, dim, keepdim))
+  }
+
+  public static func argMin<
+    T: TensorFlowNumeric
+  >(
+    _ input: Tensor<T>,
+    dim: Int64,
+    keepdim: Bool
+  ) -> Tensor<Int64> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_argmin(input.xlaHandle, dim, keepdim))
+  }
+
+  public static func asin<
+    T: TensorFlowNumeric
+  >(
+    _ input: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_asin(input.xlaHandle))
+  }
+
+  public static func asinh<
+    T: FloatingPoint & TensorFlowScalar
+  >(
+    _ input: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_asinh(input.xlaHandle))
+  }
+
+  public static func atan<
+    T: TensorFlowNumeric
+  >(
+    _ input: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_atan(input.xlaHandle))
+  }
+
+  public static func atanh<
+    T: FloatingPoint & TensorFlowScalar
+  >(
+    _ input: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_atanh(input.xlaHandle))
+  }
+
+  public static func concat<
+    T: TensorFlowScalar
+  >(
+    _ input: [Tensor<T>],
+    dim: Int64
+  ) -> Tensor<T> {
+    return input.withArrayRef { input in
+      return Tensor(_xlaHandle: XLATensor_cat(input, dim))
+    }
+  }
+
+  public static func ceil<
+    T: FloatingPoint & TensorFlowScalar
+  >(
+    _ input: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_ceil(input.xlaHandle))
+  }
+
+  public static func clipByValue<
+    T: TensorFlowNumeric
+  >(
+    t: Tensor<T>,
+    clipValueMin: Tensor<T>,
+    clipValueMax: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(t) }
+    defer { _fixLifetime(clipValueMin) }
+    defer { _fixLifetime(clipValueMax) }
+    checkSameDevice(t.device, clipValueMin.device)
+    checkSamePrecision(t, clipValueMin)
+    checkSameDevice(t.device, clipValueMax.device)
+    checkSamePrecision(t, clipValueMax)
+    return Tensor(
+      _xlaHandle: XLATensor_clamp(t.xlaHandle, clipValueMin.xlaHandle, clipValueMax.xlaHandle))
+  }
+
+  public static func cos<
+    T: FloatingPoint & TensorFlowScalar
+  >(
+    _ input: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_cos(input.xlaHandle))
+  }
+
+  public static func cosh<
+    T: FloatingPoint & TensorFlowScalar
+  >(
+    _ input: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_cosh(input.xlaHandle))
+  }
+
+  public static func cumprod<
+    T: TensorFlowNumeric
+  >(
+    _ input: Tensor<T>,
+    dim: Int64,
+    exclusive: Bool,
+    reverse: Bool
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_cumprod(input.xlaHandle, dim, exclusive, reverse))
+  }
+
+  public static func cumsum<
+    T: TensorFlowNumeric
+  >(
+    _ input: Tensor<T>,
+    dim: Int64,
+    exclusive: Bool,
+    reverse: Bool
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_cumsum(input.xlaHandle, dim, exclusive, reverse))
+  }
+
+  public static func diagonal_value<
+    T: TensorFlowNumeric
+  >(
+    _ input: Tensor<T>,
+    offset: Int64,
+    dim1: Int64,
+    dim2: Int64
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_diagonal_value(input.xlaHandle, offset, dim1, dim2))
+  }
+
+  public static func div<
+    T: TensorFlowNumeric
+  >(
+    _ lhs: Tensor<T>,
+    _ rhs: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(lhs) }
+    defer { _fixLifetime(rhs) }
+    checkSameDevice(lhs.device, rhs.device)
+    checkSamePrecision(lhs, rhs)
+    return Tensor(_xlaHandle: XLATensor_div(lhs.xlaHandle, rhs.xlaHandle))
+  }
+
+  public static func dynamicSlice<
+    T: TensorFlowNumeric
+  >(
+    _ base: Tensor<T>,
+    _ start_indices: [Tensor<Int32>],
+    _ slice_shapes: [Int64]
+  ) -> Tensor<T> {
+    defer { _fixLifetime(base) }
+    return start_indices.withArrayRef { start_indices in
+      return slice_shapes.withArrayRef { slice_shapes in
+        return Tensor(
+          _xlaHandle: XLATensor_dynamic_slice(base.xlaHandle, start_indices, slice_shapes))
+      }
+    }
+  }
+
+  public static func dynamicUpdateSlice<
+    T: TensorFlowNumeric
+  >(
+    _ base: Tensor<T>,
+    _ update: Tensor<T>,
+    _ start_indices: [Tensor<Int32>]
+  ) -> Tensor<T> {
+    defer { _fixLifetime(base) }
+    defer { _fixLifetime(update) }
+    checkSameDevice(base.device, update.device)
+    checkSamePrecision(base, update)
+    return start_indices.withArrayRef { start_indices in
+      return Tensor(
+        _xlaHandle: XLATensor_dynamic_update_slice(base.xlaHandle, update.xlaHandle, start_indices))
+    }
+  }
+
+  public static func eq<
+    T: TensorFlowScalar
+  >(
+    _ lhs: Tensor<T>,
+    _ rhs: Tensor<T>
+  ) -> Tensor<Bool> {
+    defer { _fixLifetime(lhs) }
+    defer { _fixLifetime(rhs) }
+    checkSameDevice(lhs.device, rhs.device)
+    checkSamePrecision(lhs, rhs)
+    return Tensor(_xlaHandle: XLATensor_eq(lhs.xlaHandle, rhs.xlaHandle))
+  }
+
+  public static func exp<
+    T: FloatingPoint & TensorFlowScalar
+  >(
+    _ input: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_exp(input.xlaHandle))
+  }
+
+  public static func broadcastTo<
+    T: TensorFlowScalar
+  >(
+    _ input: Tensor<T>,
+    dims: [Int64]
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return dims.withArrayRef { dims in
+      return Tensor(_xlaHandle: XLATensor_expand(input.xlaHandle, dims))
+    }
+  }
+
+  public static func expm1<
+    T: FloatingPoint & TensorFlowScalar
+  >(
+    _ input: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_expm1(input.xlaHandle))
+  }
+
+  public static func flip<
+    T: TensorFlowScalar
+  >(
+    _ input: Tensor<T>,
+    dims: [Int64]
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return dims.withArrayRef { dims in
+      return Tensor(_xlaHandle: XLATensor_flip(input.xlaHandle, dims))
+    }
+  }
+
+  public static func floor<
+    T: FloatingPoint & TensorFlowScalar
+  >(
+    _ input: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_floor(input.xlaHandle))
+  }
+
+  public static func gather<
+    T: TensorFlowScalar,
+    Tindices: TensorFlowIndex
+  >(
+    _ input: Tensor<T>,
+    indices: Tensor<Tindices>,
+    start_dim: Int64
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    defer { _fixLifetime(indices) }
+    checkSameDevice(input.device, indices.device)
+    return Tensor(_xlaHandle: XLATensor_gather(input.xlaHandle, indices.xlaHandle, start_dim))
+  }
+
+  public static func greaterEqual<
+    T: TensorFlowNumeric
+  >(
+    _ lhs: Tensor<T>,
+    _ rhs: Tensor<T>
+  ) -> Tensor<Bool> {
+    defer { _fixLifetime(lhs) }
+    defer { _fixLifetime(rhs) }
+    checkSameDevice(lhs.device, rhs.device)
+    checkSamePrecision(lhs, rhs)
+    return Tensor(_xlaHandle: XLATensor_ge(lhs.xlaHandle, rhs.xlaHandle))
+  }
+
+  public static func greater<
+    T: TensorFlowNumeric
+  >(
+    _ lhs: Tensor<T>,
+    _ rhs: Tensor<T>
+  ) -> Tensor<Bool> {
+    defer { _fixLifetime(lhs) }
+    defer { _fixLifetime(rhs) }
+    checkSameDevice(lhs.device, rhs.device)
+    checkSamePrecision(lhs, rhs)
+    return Tensor(_xlaHandle: XLATensor_gt(lhs.xlaHandle, rhs.xlaHandle))
+  }
+
+  public static func isFinite<
+    T: FloatingPoint & TensorFlowScalar
+  >(
+    _ input: Tensor<T>
+  ) -> Tensor<Bool> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_is_finite(input.xlaHandle))
+  }
+
+  public static func isInf<
+    T: FloatingPoint & TensorFlowScalar
+  >(
+    _ input: Tensor<T>
+  ) -> Tensor<Bool> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_is_inf(input.xlaHandle))
+  }
+
+  public static func isNan<
+    T: FloatingPoint & TensorFlowScalar
+  >(
+    _ input: Tensor<T>
+  ) -> Tensor<Bool> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_is_nan(input.xlaHandle))
+  }
+
+  public static func lessEqual<
+    T: TensorFlowNumeric
+  >(
+    _ lhs: Tensor<T>,
+    _ rhs: Tensor<T>
+  ) -> Tensor<Bool> {
+    defer { _fixLifetime(lhs) }
+    defer { _fixLifetime(rhs) }
+    checkSameDevice(lhs.device, rhs.device)
+    checkSamePrecision(lhs, rhs)
+    return Tensor(_xlaHandle: XLATensor_le(lhs.xlaHandle, rhs.xlaHandle))
+  }
+
+  public static func log<
+    T: FloatingPoint & TensorFlowScalar
+  >(
+    _ input: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_log(input.xlaHandle))
+  }
+
+  public static func log1p<
+    T: FloatingPoint & TensorFlowScalar
+  >(
+    _ input: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_log1p(input.xlaHandle))
+  }
+
+  public static func logSoftmax<
+    T: FloatingPoint & TensorFlowScalar
+  >(
+    _ input: Tensor<T>,
+    dim: Int64
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_log_softmax(input.xlaHandle, dim))
+  }
+
+  public static func logSoftmaxBackward<
+    T: FloatingPoint & TensorFlowScalar
+  >(
+    gradOutput: Tensor<T>,
+    output: Tensor<T>,
+    dim: Int64
+  ) -> Tensor<T> {
+    defer { _fixLifetime(gradOutput) }
+    defer { _fixLifetime(output) }
+    checkSameDevice(gradOutput.device, output.device)
+    checkSamePrecision(gradOutput, output)
+    return Tensor(
+      _xlaHandle: XLATensor_log_softmax_backward(gradOutput.xlaHandle, output.xlaHandle, dim))
+  }
+
+  public static func logicalAnd(
+    _ lhs: Tensor<Bool>,
+    _ rhs: Tensor<Bool>
+  ) -> Tensor<Bool> {
+    defer { _fixLifetime(lhs) }
+    defer { _fixLifetime(rhs) }
+    checkSameDevice(lhs.device, rhs.device)
+    checkSamePrecision(lhs, rhs)
+    return Tensor(_xlaHandle: XLATensor_logicalAnd(lhs.xlaHandle, rhs.xlaHandle))
+  }
+
+  public static func logicalNot(
+    _ input: Tensor<Bool>
+  ) -> Tensor<Bool> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_logicalNot(input.xlaHandle))
+  }
+
+  public static func logicalOr(
+    _ lhs: Tensor<Bool>,
+    _ rhs: Tensor<Bool>
+  ) -> Tensor<Bool> {
+    defer { _fixLifetime(lhs) }
+    defer { _fixLifetime(rhs) }
+    checkSameDevice(lhs.device, rhs.device)
+    checkSamePrecision(lhs, rhs)
+    return Tensor(_xlaHandle: XLATensor_logicalOr(lhs.xlaHandle, rhs.xlaHandle))
+  }
+
+  public static func less<
+    T: TensorFlowNumeric
+  >(
+    _ lhs: Tensor<T>,
+    _ rhs: Tensor<T>
+  ) -> Tensor<Bool> {
+    defer { _fixLifetime(lhs) }
+    defer { _fixLifetime(rhs) }
+    checkSameDevice(lhs.device, rhs.device)
+    checkSamePrecision(lhs, rhs)
+    return Tensor(_xlaHandle: XLATensor_lt(lhs.xlaHandle, rhs.xlaHandle))
+  }
+
+  public static func matmul<
+    T: TensorFlowNumeric
+  >(
+    _ lhs: Tensor<T>,
+    _ rhs: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(lhs) }
+    defer { _fixLifetime(rhs) }
+    checkSameDevice(lhs.device, rhs.device)
+    checkSamePrecision(lhs, rhs)
+    return Tensor(_xlaHandle: XLATensor_matmul(lhs.xlaHandle, rhs.xlaHandle))
+  }
+
+  public static func max<
+    T: TensorFlowNumeric
+  >(
+    _ input: Tensor<T>,
+    dim: Int64,
+    keepDim: Bool
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_max(input.xlaHandle, dim, keepDim))
+  }
+
+  public static func maximum<
+    T: TensorFlowNumeric
+  >(
+    _ lhs: Tensor<T>,
+    _ rhs: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(lhs) }
+    defer { _fixLifetime(rhs) }
+    checkSameDevice(lhs.device, rhs.device)
+    checkSamePrecision(lhs, rhs)
+    return Tensor(_xlaHandle: XLATensor_maximum(lhs.xlaHandle, rhs.xlaHandle))
+  }
+
   public static func mean<
     T: TensorFlowNumeric
   >(
@@ -15,6 +539,347 @@ extension _RawXLA {
     defer { _fixLifetime(input) }
     return reductionIndices.withArrayRef { reductionIndices in
       return Tensor(_xlaHandle: XLATensor_mean(input.xlaHandle, reductionIndices, keepDims))
+    }
+  }
+
+  public static func min<
+    T: TensorFlowNumeric
+  >(
+    _ input: Tensor<T>,
+    dim: Int64,
+    keepDim: Bool
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_min(input.xlaHandle, dim, keepDim))
+  }
+
+  public static func minimum<
+    T: TensorFlowNumeric
+  >(
+    _ lhs: Tensor<T>,
+    _ rhs: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(lhs) }
+    defer { _fixLifetime(rhs) }
+    checkSameDevice(lhs.device, rhs.device)
+    checkSamePrecision(lhs, rhs)
+    return Tensor(_xlaHandle: XLATensor_minimum(lhs.xlaHandle, rhs.xlaHandle))
+  }
+
+  public static func matMul<
+    T: TensorFlowNumeric
+  >(
+    _ lhs: Tensor<T>,
+    _ rhs: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(lhs) }
+    defer { _fixLifetime(rhs) }
+    checkSameDevice(lhs.device, rhs.device)
+    checkSamePrecision(lhs, rhs)
+    return Tensor(_xlaHandle: XLATensor_mm(lhs.xlaHandle, rhs.xlaHandle))
+  }
+
+  public static func mul<
+    T: TensorFlowNumeric
+  >(
+    _ lhs: Tensor<T>,
+    _ rhs: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(lhs) }
+    defer { _fixLifetime(rhs) }
+    checkSameDevice(lhs.device, rhs.device)
+    checkSamePrecision(lhs, rhs)
+    return Tensor(_xlaHandle: XLATensor_mul(lhs.xlaHandle, rhs.xlaHandle))
+  }
+
+  public static func notEqual<
+    T: TensorFlowScalar
+  >(
+    _ lhs: Tensor<T>,
+    _ rhs: Tensor<T>
+  ) -> Tensor<Bool> {
+    defer { _fixLifetime(lhs) }
+    defer { _fixLifetime(rhs) }
+    checkSameDevice(lhs.device, rhs.device)
+    checkSamePrecision(lhs, rhs)
+    return Tensor(_xlaHandle: XLATensor_ne(lhs.xlaHandle, rhs.xlaHandle))
+  }
+
+  public static func neg<
+    T: TensorFlowNumeric
+  >(
+    _ input: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_neg(input.xlaHandle))
+  }
+
+  public static func permute<
+    T: TensorFlowScalar
+  >(
+    _ input: Tensor<T>,
+    dims: [Int64]
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return dims.withArrayRef { dims in
+      return Tensor(_xlaHandle: XLATensor_permute_value(input.xlaHandle, dims))
+    }
+  }
+
+  public static func pow<
+    T: TensorFlowNumeric
+  >(
+    _ input: Tensor<T>,
+    _ other: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    defer { _fixLifetime(other) }
+    checkSameDevice(input.device, other.device)
+    checkSamePrecision(input, other)
+    return Tensor(_xlaHandle: XLATensor_pow(input.xlaHandle, other.xlaHandle))
+  }
+
+  public static func prod<
+    T: TensorFlowNumeric
+  >(
+    _ input: Tensor<T>,
+    reductionIndices: [Int64],
+    keepDims: Bool
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return reductionIndices.withArrayRef { reductionIndices in
+      return Tensor(_xlaHandle: XLATensor_prod(input.xlaHandle, reductionIndices, keepDims))
+    }
+  }
+
+  public static func relu<
+    T: TensorFlowNumeric
+  >(
+    features: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(features) }
+    return Tensor(_xlaHandle: XLATensor_relu(features.xlaHandle))
+  }
+
+  public static func mod<
+    T: TensorFlowNumeric
+  >(
+    _ input: Tensor<T>,
+    _ other: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    defer { _fixLifetime(other) }
+    checkSameDevice(input.device, other.device)
+    checkSamePrecision(input, other)
+    return Tensor(_xlaHandle: XLATensor_rem(input.xlaHandle, other.xlaHandle))
+  }
+
+  public static func tile<
+    T: TensorFlowScalar
+  >(
+    _ input: Tensor<T>,
+    multiples: [Int64]
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return multiples.withArrayRef { multiples in
+      return Tensor(_xlaHandle: XLATensor_repeat(input.xlaHandle, multiples))
+    }
+  }
+
+  public static func resize_value<
+    T: TensorFlowScalar
+  >(
+    _ input: Tensor<T>,
+    dims: [Int64]
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return dims.withArrayRef { dims in
+      return Tensor(_xlaHandle: XLATensor_resize_value(input.xlaHandle, dims))
+    }
+  }
+
+  public static func round<
+    T: TensorFlowNumeric
+  >(
+    _ input: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_round_to_even(input.xlaHandle))
+  }
+
+  public static func rsqrt<
+    T: FloatingPoint & TensorFlowScalar
+  >(
+    _ input: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_rsqrt(input.xlaHandle))
+  }
+
+  public static func select<
+    T: TensorFlowScalar
+  >(
+    _ input: Tensor<T>,
+    dim: Int64,
+    index: Int64
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_select(input.xlaHandle, dim, index))
+  }
+
+  public static func sigmoid<
+    T: FloatingPoint & TensorFlowScalar
+  >(
+    _ input: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_sigmoid(input.xlaHandle))
+  }
+
+  public static func sign<
+    T: TensorFlowNumeric
+  >(
+    _ input: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_sign(input.xlaHandle))
+  }
+
+  public static func sin<
+    T: FloatingPoint & TensorFlowScalar
+  >(
+    _ input: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_sin(input.xlaHandle))
+  }
+
+  public static func sinh<
+    T: FloatingPoint & TensorFlowScalar
+  >(
+    _ input: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_sinh(input.xlaHandle))
+  }
+
+  public static func slice<
+    T: TensorFlowScalar
+  >(
+    _ input: Tensor<T>,
+    dim: Int64,
+    start: Int64,
+    end: Int64,
+    stride: Int64
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_slice(input.xlaHandle, dim, start, end, stride))
+  }
+
+  public static func softmax<
+    T: FloatingPoint & TensorFlowScalar
+  >(
+    _ input: Tensor<T>,
+    dim: Int64
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_softmax(input.xlaHandle, dim))
+  }
+
+  public static func sqrt<
+    T: FloatingPoint & TensorFlowScalar
+  >(
+    _ input: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_sqrt(input.xlaHandle))
+  }
+
+  public static func squeeze<
+    T: TensorFlowScalar
+  >(
+    _ input: Tensor<T>,
+    dim: Int64
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_squeeze(input.xlaHandle, dim))
+  }
+
+  public static func stack<
+    T: TensorFlowScalar
+  >(
+    _ input: [Tensor<T>],
+    dim: Int64
+  ) -> Tensor<T> {
+    return input.withArrayRef { input in
+      return Tensor(_xlaHandle: XLATensor_stack(input, dim))
+    }
+  }
+
+  public static func sub<
+    T: TensorFlowNumeric
+  >(
+    _ lhs: Tensor<T>,
+    _ rhs: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(lhs) }
+    defer { _fixLifetime(rhs) }
+    checkSameDevice(lhs.device, rhs.device)
+    checkSamePrecision(lhs, rhs)
+    return Tensor(_xlaHandle: XLATensor_sub(lhs.xlaHandle, rhs.xlaHandle))
+  }
+
+  public static func tan<
+    T: TensorFlowNumeric
+  >(
+    _ input: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_tan(input.xlaHandle))
+  }
+
+  public static func tanh<
+    T: FloatingPoint & TensorFlowScalar
+  >(
+    _ input: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_tanh(input.xlaHandle))
+  }
+
+  public static func updateSlice<
+    T: TensorFlowScalar
+  >(
+    input: Tensor<T>,
+    source: Tensor<T>,
+    baseIndices: [Int64]
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    defer { _fixLifetime(source) }
+    checkSameDevice(input.device, source.device)
+    checkSamePrecision(input, source)
+    return baseIndices.withArrayRef { baseIndices in
+      return Tensor(
+        _xlaHandle: XLATensor_update_slice(input.xlaHandle, source.xlaHandle, baseIndices))
+    }
+  }
+
+  public static func xlaSlice<
+    T: TensorFlowScalar
+  >(
+    _ input: Tensor<T>,
+    start_indices: [Int64],
+    limit_indices: [Int64],
+    strides: [Int64]
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return start_indices.withArrayRef { start_indices in
+      return limit_indices.withArrayRef { limit_indices in
+        return strides.withArrayRef { strides in
+          return Tensor(
+            _xlaHandle: XLATensor_xla_slice(input.xlaHandle, start_indices, limit_indices, strides))
+        }
+      }
     }
   }
 

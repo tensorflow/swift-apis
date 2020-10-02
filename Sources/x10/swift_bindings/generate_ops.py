@@ -374,10 +374,11 @@ def swift_wrapper_define(op):
       return f"{name}: {full_stype}"
     return f"_ {name}: {full_stype}"
 
-  generics = format_args(
-      (f"\n    {k}: {v}" for k, v in op["swift_generics"].items()),
-      comma=",",
-      ending="\n  ")
+  generics = format_args((f"\n    {k}: {v}" for k, v in op["generics"].items()),
+                         comma=",",
+                         ending="\n  ")
+  if generics:
+    generics = f"<{generics}>"
   args_gen = format_args(("\n    " + format_swift_arg(arg) for arg in args),
                          comma=",",
                          ending="\n  ")
@@ -400,6 +401,16 @@ def swift_wrapper_define(op):
     return name
 
   body = ""
+  last_tensor = None
+  for arg in args:
+    if arg[1] == "Tensor":
+      if last_tensor:
+        body += (f"    checkSameDevice({last_tensor[0]}.device, "
+                 f"{arg[0]}.device)\n")
+        if last_tensor[2][1] == arg[2][1]:
+          body += f"    checkSamePrecision({last_tensor[0]}, {arg[0]})\n"
+      else:
+        last_tensor = arg
   withCounter = 0
   for arg in args:
     if arg[1][0] == "[":  # is array type.
@@ -408,10 +419,10 @@ def swift_wrapper_define(op):
   body += f"""{"  " * withCounter}    return Tensor(_xlaHandle: XLATensor_{op["c_name"]}({format_args(format_arg_ref(arg) for arg in args)}))
 """
   for withCounter in range(withCounter, 0, -1):
-    body += f"""    }}\n"""
+    body += f"""{"  " * withCounter}  }}\n"""
 
   return f"""
-  public static func {op["swift_name"]}<{generics}>({args_gen}) -> {results_gen} {{{defers}
+  public static func {op["swift_name"]}{generics}({args_gen}) -> {results_gen} {{{defers}
 {body}  }}
 """
 
@@ -490,6 +501,14 @@ def canonicalize_op(op):
     op["extras"] = [a.split() for a in op["extras"]]
   else:
     op["extras"] = []
+  # If there are type annotations, ensure swift wrapper generation.
+  is_swift = not ([erase_generics(r[1]) for r in results
+                  ] == [r[1] for r in results])
+  if is_swift and "swift_namespace" not in op:
+    op["swift_namespace"] = "_RawXLA"
+  if is_swift and "generics" not in op:
+    op["generics"] = {}
+
   del op["def"]
 
 def main(argv):
@@ -531,6 +550,9 @@ extension _RawXLA {
     if "swift_namespace" in op and op["swift_namespace"] == "_RawXLA")) + """
 }
 """)
+  for op in op_list:
+    if not ("swift_namespace" in op and op["swift_namespace"] == "_RawXLA"):
+      print(f"""Missing swift types: {op["op_node_name"]}""")
 
 
 if __name__ == "__main__":
