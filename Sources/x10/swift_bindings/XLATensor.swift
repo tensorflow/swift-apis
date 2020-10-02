@@ -198,6 +198,17 @@ extension Array where Element == XLATensor {
   }
 }
 
+extension Array where Element: AnyTensor {
+  func withArrayRef<T, Result>(_ body: (OpaqueXLATensorArrayRef) throws -> Result) rethrows
+    -> Result
+  where Element == Tensor<T> {
+    defer { _fixLifetime(self) }
+    return try map { $0.xlaHandle }.withUnsafeBufferPointer { buf in
+      return try body(OpaqueXLATensorArrayRef(data: buf.baseAddress, size: buf.count))
+    }
+  }
+}
+
 extension Array where Element == PaddingConfigDimension {
   func withPaddingConfig<Result>(_ body: (inout PaddingConfig) -> Result) -> Result {
     defer { _fixLifetime(self) }
@@ -221,34 +232,6 @@ extension Optional where Wrapped == XLAScalarType.Type {
 
 /// Add more op wrappers here:
 extension XLATensor {
-  static func abs(_ a: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_abs(a.handle))
-  }
-
-  static func acos(_ a: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_acos(a.handle))
-  }
-
-  static func acosh(_ a: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_acosh(a.handle))
-  }
-
-  static func add(_ a: XLATensor, _ b: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    defer { _fixLifetime(b) }
-    return XLATensor(_handle: XLATensor_add(a.handle, b.handle))
-  }
-
-  static func all(_ input: XLATensor, _ reductionIndices: [Int64], _ keepDims: Bool) -> XLATensor {
-    defer { _fixLifetime(input) }
-    return reductionIndices.withArrayRef { reductionIndices in
-      XLATensor(_handle: XLATensor_all(input.handle, reductionIndices, keepDims))
-    }
-  }
-
   static func annotate(_ a: XLATensor, _ annotation: String) -> XLATensor {
     return XLATensor(_handle: XLATensor_annotate(a.handle, annotation))
   }
@@ -258,50 +241,6 @@ extension XLATensor {
     let str = XLATensor_get_annotations(a.handle)
     defer { DeleteString(str) }
     return String(cString: GetStringCStr(str))
-  }
-
-  static func any(_ input: XLATensor, _ reductionIndices: [Int64], _ keepDims: Bool) -> XLATensor {
-    defer { _fixLifetime(input) }
-    return reductionIndices.withArrayRef { reductionIndices in
-      XLATensor(_handle: XLATensor_any(input.handle, reductionIndices, keepDims))
-    }
-  }
-
-  static func argmax(_ a: XLATensor, _ dim: Int64, _ keepdim: Bool) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_argmax(a.handle, dim, keepdim))
-  }
-
-  static func argmin(_ a: XLATensor, _ dim: Int64, _ keepdim: Bool) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_argmin(a.handle, dim, keepdim))
-  }
-
-  static func asin(_ a: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_asin(a.handle))
-  }
-
-  static func asinh(_ a: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_asinh(a.handle))
-  }
-
-  static func slice(_ a: XLATensor, _ dim: Int64, _ start: Int64, _ end: Int64, _ step: Int64)
-    -> XLATensor
-  {
-    defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_slice(a.handle, dim, start, end, step))
-  }
-
-  static func atan(_ a: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_atan(a.handle))
-  }
-
-  static func atanh(_ a: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_atanh(a.handle))
   }
 
   static func avgpool(
@@ -347,39 +286,11 @@ extension XLATensor {
     return (XLATensor(_handle: output.x), XLATensor(_handle: output.y))
   }
 
-  static func cat(_ tensors: [XLATensor], _ dim: Int64) -> XLATensor {
-    tensors.withArrayRef { tensors in
-      XLATensor(_handle: XLATensor_cat(tensors, dim))
-    }
-  }
-
-  static func ceil(_ a: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_ceil(a.handle))
-  }
-
-  static func clamp(_ input: XLATensor, _ min: XLATensor, _ max: XLATensor) -> XLATensor {
-    defer { _fixLifetime(input) }
-    defer { _fixLifetime(min) }
-    defer { _fixLifetime(max) }
-    return XLATensor(_handle: XLATensor_clamp(input.handle, min.handle, max.handle))
-  }
-
   static func constantPad(_ input: XLATensor, _ pad: [Int64], _ value: XLAScalarType) -> XLATensor {
     defer { _fixLifetime(input) }
     return pad.withArrayRef { pad in
       XLATensor(_handle: XLATensor_constant_pad_nd(input.handle, pad, value.xlaScalar))
     }
-  }
-
-  static func cos(_ a: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_cos(a.handle))
-  }
-
-  static func cosh(_ a: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_cosh(a.handle))
   }
 
   static func crossReplicaSum(_ inputs: [XLATensor], _ scale: Double) -> [XLATensor] {
@@ -394,152 +305,23 @@ extension XLATensor {
     }
   }
 
-  static func cumprod(
-    _ a: XLATensor, _ dim: Int64, dtype: XLAScalarType.Type? = nil, exclusive: Bool = false,
-    reverse: Bool = false
-  ) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(
-      _handle: XLATensor_cumprod(a.handle, dim, dtype.xlaOptionalType, exclusive, reverse))
-  }
-
-  static func cumsum(
-    _ a: XLATensor, _ dim: Int64, dtype: XLAScalarType.Type? = nil, exclusive: Bool = false,
-    reverse: Bool = false
-  ) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(
-      _handle: XLATensor_cumsum(a.handle, dim, dtype.xlaOptionalType, exclusive, reverse))
-  }
-
-  static func diagonal_value(
-    _ a: XLATensor, _ offset: Int64, _ dim1: Int64, _ dim2: Int64
-  ) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_diagonal_value(a.handle, offset, dim1, dim2))
-  }
-
-  static func div(_ a: XLATensor, _ b: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    defer { _fixLifetime(b) }
-    return XLATensor(_handle: XLATensor_div(a.handle, b.handle))
-  }
-
-  static func dynamic_slice(_ base: XLATensor, _ start_indices: [XLATensor], _ slice_shape: [Int64])
-    -> XLATensor
-  {
-    start_indices.withArrayRef { start_indices in
-      slice_shape.withArrayRef { slice_shape in
-        return XLATensor(_handle: XLATensor_dynamic_slice(base.handle, start_indices, slice_shape))
-      }
-    }
-  }
-
-  static func dynamic_update_slice(
-    _ base: XLATensor, _ update: XLATensor, _ start_indices: [XLATensor]
-  ) -> XLATensor {
-    start_indices.withArrayRef { start_indices in
-      return XLATensor(
-        _handle: XLATensor_dynamic_update_slice(base.handle, update.handle, start_indices))
-    }
-  }
-
-  static func eq(_ a: XLATensor, _ b: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    defer { _fixLifetime(b) }
-    return XLATensor(_handle: XLATensor_eq(a.handle, b.handle))
-  }
-
-  static func exp(_ a: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_exp(a.handle))
-  }
-
-  static func expand(_ a: XLATensor, _ dims: [Int64]) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return dims.withArrayRef { dims in
-      XLATensor(_handle: XLATensor_expand(a.handle, dims))
-    }
-  }
-
-  static func expm1(_ a: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_expm1(a.handle))
-  }
-
-  static func floor(_ a: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_floor(a.handle))
-  }
-
-  static func flip(_ input: XLATensor, dims: [Int64]) -> XLATensor {
-    defer { _fixLifetime(input) }
-    return dims.withArrayRef { dims in
-      XLATensor(_handle: XLATensor_flip(input.handle, dims))
-    }
-  }
-
   static func full(
     _ dims: [Int64],
     _ value: XLAScalarType,
     _ dtype: XLAScalarType.Type,
     _ device: Device
   ) -> XLATensor {
-    return expand(
-      XLATensor(
-        _handle: XLATensor_makeScalar(value.xlaScalar, dtype.xlaTensorScalarType, device.cdevice)),
-      dims)
-  }
-
-  static func gather(_ input: XLATensor, _ indices: XLATensor, _ startDim: Int64) -> XLATensor {
-    defer { _fixLifetime(input) }
-    defer { _fixLifetime(indices) }
-    return XLATensor(_handle: XLATensor_gather(input.handle, indices.handle, startDim))
-  }
-
-  static func ge(_ x: XLATensor, _ y: XLATensor) -> XLATensor {
-    defer { _fixLifetime(x) }
-    defer { _fixLifetime(y) }
-    return XLATensor(_handle: XLATensor_ge(x.handle, y.handle))
-  }
-
-  static func gt(_ x: XLATensor, _ y: XLATensor) -> XLATensor {
-    defer { _fixLifetime(x) }
-    defer { _fixLifetime(y) }
-    return XLATensor(_handle: XLATensor_gt(x.handle, y.handle))
+    let tmp = XLATensor_makeScalar(value.xlaScalar, dtype.xlaTensorScalarType, device.cdevice)
+    defer { destroyTensor(tmp) }
+    return dims.withArrayRef { dims in
+      return XLATensor(_handle: XLATensor_expand(tmp, dims))
+    }
   }
 
   static func irText(_ a: XLATensor) -> String {
     let str = XLATensor_ir_text(a.handle)
     defer { DeleteString(str) }
     return String(cString: GetStringCStr(str))
-  }
-
-  static func isFinite(_ input: XLATensor) -> XLATensor {
-    defer { _fixLifetime(input) }
-    return XLATensor(_handle: XLATensor_is_finite(input.handle))
-  }
-
-  static func isInf(_ input: XLATensor) -> XLATensor {
-    defer { _fixLifetime(input) }
-    return XLATensor(_handle: XLATensor_is_inf(input.handle))
-  }
-
-  static func isNan(_ input: XLATensor) -> XLATensor {
-    defer { _fixLifetime(input) }
-    return XLATensor(_handle: XLATensor_is_nan(input.handle))
-  }
-
-  static func le(_ x: XLATensor, _ y: XLATensor) -> XLATensor {
-    defer { _fixLifetime(x) }
-    defer { _fixLifetime(y) }
-    return XLATensor(_handle: XLATensor_le(x.handle, y.handle))
-  }
-
-  static func lt(_ x: XLATensor, _ y: XLATensor) -> XLATensor {
-    defer { _fixLifetime(x) }
-    defer { _fixLifetime(y) }
-    return XLATensor(_handle: XLATensor_lt(x.handle, y.handle))
   }
 
   static func arange(
@@ -568,67 +350,9 @@ extension XLATensor {
         start.xlaScalar, stop.xlaScalar, num, cdevice, type))
   }
 
-  static func log(_ a: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_log(a.handle))
-  }
-
-  static func log1p(_ a: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_log1p(a.handle))
-  }
-
-  static func log_softmax(_ a: XLATensor, _ dim: Int64) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_log_softmax(a.handle, dim))
-  }
-
-  static func log_softmax_backward(_ grad_output: XLATensor, _ output: XLATensor, _ dim: Int64)
-    -> XLATensor
-  {
-    defer { _fixLifetime(grad_output) }
-    defer { _fixLifetime(output) }
-    return XLATensor(
-      _handle: XLATensor_log_softmax_backward(grad_output.handle, output.handle, dim))
-  }
-
-  static func logicalAnd(_ a: XLATensor, _ b: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    defer { _fixLifetime(b) }
-    return XLATensor(_handle: XLATensor_logicalAnd(a.handle, b.handle))
-  }
-
   static func logicalCast(_ input: XLATensor, destType: XLATensorScalarType) -> XLATensor {
     defer { _fixLifetime(input) }
     return XLATensor(_handle: XLATensor_logical_cast(input.handle, destType))
-  }
-
-  static func logicalNot(_ a: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_logicalNot(a.handle))
-  }
-
-  static func logicalOr(_ a: XLATensor, _ b: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    defer { _fixLifetime(b) }
-    return XLATensor(_handle: XLATensor_logicalOr(a.handle, b.handle))
-  }
-
-  static func matmul(_ a: XLATensor, _ b: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    defer { _fixLifetime(b) }
-    return XLATensor(_handle: XLATensor_matmul(a.handle, b.handle))
-  }
-
-  static func max(_ a: XLATensor, _ dim: Int64, _ keepdim: Bool) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_max(a.handle, dim, keepdim))
-  }
-
-  static func maximum(_ a: XLATensor, _ b: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    defer { _fixLifetime(b) }
-    return XLATensor(_handle: XLATensor_maximum(a.handle, b.handle))
   }
 
   static func maxpool(
@@ -664,17 +388,6 @@ extension XLATensor {
     }
   }
 
-  static func min(_ a: XLATensor, _ dim: Int64, _ keepdim: Bool) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_min(a.handle, dim, keepdim))
-  }
-
-  static func minimum(_ a: XLATensor, _ b: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    defer { _fixLifetime(b) }
-    return XLATensor(_handle: XLATensor_minimum(a.handle, b.handle))
-  }
-
   static func mirrorPad(_ input: XLATensor, _ padding: [Int64], _ mode: TFMirrorPadMode)
     -> XLATensor
   {
@@ -698,63 +411,9 @@ extension XLATensor {
     }
   }
 
-  static func mul(_ a: XLATensor, _ b: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    defer { _fixLifetime(b) }
-    return XLATensor(_handle: XLATensor_mul(a.handle, b.handle))
-  }
-
-  static func mm(_ a: XLATensor, _ b: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    defer { _fixLifetime(b) }
-    return XLATensor(_handle: XLATensor_mm(a.handle, b.handle))
-  }
-
-  static func ne(_ a: XLATensor, _ b: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    defer { _fixLifetime(b) }
-    return XLATensor(_handle: XLATensor_ne(a.handle, b.handle))
-  }
-
-  static func neg(_ a: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_neg(a.handle))
-  }
-
-  static func nll_loss(_ input: XLATensor, _ target: XLATensor, _ ignore_index: Int64) -> XLATensor
-  {
-    defer { _fixLifetime(input) }
-    defer { _fixLifetime(target) }
-    return XLATensor(_handle: XLATensor_nll_loss(input.handle, target.handle, ignore_index))
-  }
-
-  static func permute_value(_ value: XLATensor, _ dims: [Int64]) -> XLATensor {
-    defer { _fixLifetime(value) }
-    return dims.withArrayRef { dims in
-      XLATensor(_handle: XLATensor_permute_value(value.handle, dims))
-    }
-  }
-
   static func physicalCast(_ input: XLATensor, destType: XLATensorScalarType) -> XLATensor {
     defer { _fixLifetime(input) }
     return XLATensor(_handle: XLATensor_physical_cast(input.handle, destType))
-  }
-
-  static func pow(_ base: XLATensor, _ exponent: XLATensor) -> XLATensor {
-    defer { _fixLifetime(base) }
-    defer { _fixLifetime(exponent) }
-    return XLATensor(_handle: XLATensor_pow(base.handle, exponent.handle))
-  }
-
-  static func prod(
-    _ a: XLATensor, _ dims: [Int64], _ keep_reduced_dimensions: Bool,
-    _ dtype: XLAScalarType.Type? = nil
-  ) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return dims.withArrayRef { dims in
-      XLATensor(
-        _handle: XLATensor_prod(a.handle, dims, keep_reduced_dimensions, dtype.xlaOptionalType))
-    }
   }
 
   static func qr(_ input: XLATensor, fullMatrices: Bool) -> (XLATensor, XLATensor) {
@@ -763,99 +422,8 @@ extension XLATensor {
     return (XLATensor(_handle: output.x), XLATensor(_handle: output.y))
   }
 
-  static func rem(_ a: XLATensor, _ b: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_rem(a.handle, b.handle))
-  }
-
-  static func relu(_ a: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_relu(a.handle))
-  }
-
   static func replica_id(_ device: Device) -> XLATensor {
     return XLATensor(_handle: XLATensor_replica_id(device.cdevice))
-  }
-
-  static func resize_value(_ value: XLATensor, _ dims: [Int64]) -> XLATensor {
-    defer { _fixLifetime(value) }
-    return dims.withArrayRef { dims in
-      XLATensor(_handle: XLATensor_resize_value(value.handle, dims))
-    }
-  }
-
-  static func round_to_even(_ a: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_round_to_even(a.handle))
-  }
-
-  static func rsqrt(_ a: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_rsqrt(a.handle))
-  }
-
-  static func select(_ a: XLATensor, _ dim: Int64, _ index: Int64) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_select(a.handle, dim, index))
-  }
-
-  static func sigmoid(_ a: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_sigmoid(a.handle))
-  }
-
-  static func sign(_ a: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_sign(a.handle))
-  }
-
-  static func sin(_ a: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_sin(a.handle))
-  }
-
-  static func sinh(_ a: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_sinh(a.handle))
-  }
-
-  static func softmax(_ a: XLATensor, _ dim: Int64) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_softmax(a.handle, dim))
-  }
-
-  static func splitWithSizes(_ input: XLATensor, _ splitSize: [Int64], _ dim: Int64) -> [XLATensor]
-  {
-    defer { _fixLifetime(input) }
-    var offset: Int64 = 0
-    return splitSize.map { (size: Int64) -> XLATensor in
-      let nextOffset = offset + size
-      let result = slice(input, dim, offset, nextOffset, 1)
-      offset = nextOffset
-      return result
-    }
-  }
-
-  static func sqrt(_ a: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_sqrt(a.handle))
-  }
-
-  static func squeeze(_ a: XLATensor, _ dim: Int64) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_squeeze(a.handle, dim))
-  }
-
-  static func stack(_ tensors: [XLATensor], _ dim: Int64) -> XLATensor {
-    tensors.withArrayRef { tensors in
-      XLATensor(_handle: XLATensor_stack(tensors, dim))
-    }
-  }
-
-  static func sub(_ a: XLATensor, _ b: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    defer { _fixLifetime(b) }
-    return XLATensor(_handle: XLATensor_sub(a.handle, b.handle))
   }
 
   static func sum(
@@ -877,16 +445,6 @@ extension XLATensor {
     return (
       XLATensor(_handle: output.v0), XLATensor(_handle: output.v1), XLATensor(_handle: output.v2)
     )
-  }
-
-  static func tan(_ a: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_tan(a.handle))
-  }
-
-  static func tanh(_ a: XLATensor) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return XLATensor(_handle: XLATensor_tanh(a.handle))
   }
 
   static func topk(_ a: XLATensor, k: Int64, dim: Int64, largest: Bool) -> (XLATensor, XLATensor) {
@@ -1022,13 +580,6 @@ extension XLATensor {
     return XLATensor(_handle: XLATensor_truncated_normal(input.handle))
   }
 
-  static func tile(_ input: XLATensor, repetitions: [Int64]) -> XLATensor {
-    defer { _fixLifetime(input) }
-    return repetitions.withArrayRef { repetitions in
-      XLATensor(_handle: XLATensor_repeat(input.handle, repetitions))
-    }
-  }
-
   static func to(
     _ a: XLATensor, _ device: Device?, _ dtype: XLAScalarType.Type?
   ) -> XLATensor {
@@ -1037,13 +588,6 @@ extension XLATensor {
       return XLATensor(_handle: XLATensor_to(a.handle, &cdevice, dtype.xlaOptionalType))
     } else {
       return XLATensor(_handle: XLATensor_to(a.handle, nil, dtype.xlaOptionalType))
-    }
-  }
-
-  static func updateSlice(input: XLATensor, source: XLATensor, baseIndices: [Int64]) -> XLATensor {
-    defer { _fixLifetime(input) }
-    return baseIndices.withArrayRef { baseIndices in
-      XLATensor(_handle: XLATensor_update_slice(input.handle, source.handle, baseIndices))
     }
   }
 
@@ -1062,19 +606,6 @@ extension XLATensor {
     defer { _fixLifetime(input) }
     return paddingConfig.withPaddingConfig { paddingConfig in
       XLATensor(_handle: XLATensor_xla_pad(input.handle, paddingValue.xlaScalar, paddingConfig))
-    }
-  }
-
-  static func xlaSlice(_ input: XLATensor, begin: [Int64], end: [Int64], strides: [Int64])
-    -> XLATensor
-  {
-    defer { _fixLifetime(input) }
-    return begin.withArrayRef { begin in
-      end.withArrayRef { end in
-        strides.withArrayRef { strides in
-          XLATensor(_handle: XLATensor_xla_slice(input.handle, begin, end, strides))
-        }
-      }
     }
   }
 

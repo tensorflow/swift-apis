@@ -150,40 +150,25 @@ xla::XlaOp LowerSqueeze(xla::XlaOp input, int dim) {
   return SqueezeTrivialDimension(input, dim);
 }
 
-xla::XlaOp LowerCumSum(xla::XlaOp input, xla::int64 dim,
-                       c10::optional<at::ScalarType> dtype, bool exclusive,
+xla::XlaOp LowerCumSum(xla::XlaOp input, xla::int64 dim, bool exclusive,
                        bool reverse) {
-  xla::XlaOp casted_input = CastToScalarType(input, dtype);
-  const xla::Shape& input_shape = XlaHelpers::ShapeOfXlaOp(casted_input);
+  const xla::Shape& input_shape = XlaHelpers::ShapeOfXlaOp(input);
   xla::XlaOp init = XlaHelpers::ScalarValue<float>(
-      0, input_shape.element_type(), casted_input.builder());
+      0, input_shape.element_type(), input.builder());
   xla::XlaComputation reducer =
       XlaHelpers::CreateAddComputation(input_shape.element_type());
-  return BuildCumulativeComputation(casted_input, dim, reducer, init, exclusive,
+  return BuildCumulativeComputation(input, dim, reducer, init, exclusive,
                                     reverse);
 }
 
-xla::XlaOp LowerCumProd(xla::XlaOp input, xla::int64 dim,
-                        c10::optional<at::ScalarType> dtype, bool exclusive,
+xla::XlaOp LowerCumProd(xla::XlaOp input, xla::int64 dim, bool exclusive,
                         bool reverse) {
-  xla::XlaOp casted_input = CastToScalarType(input, dtype);
-  const xla::Shape& input_shape = XlaHelpers::ShapeOfXlaOp(casted_input);
-  xla::XlaOp init =
-      xla::One(casted_input.builder(), input_shape.element_type());
+  const xla::Shape& input_shape = XlaHelpers::ShapeOfXlaOp(input);
+  xla::XlaOp init = xla::One(input.builder(), input_shape.element_type());
   xla::XlaComputation reducer =
       XlaHelpers::CreateMulComputation(input_shape.element_type());
-  return BuildCumulativeComputation(casted_input, dim, reducer, init, exclusive,
+  return BuildCumulativeComputation(input, dim, reducer, init, exclusive,
                                     reverse);
-}
-
-xla::Shape CumOpShapeFn(const Value& input, xla::int64 dim,
-                        c10::optional<at::ScalarType> dtype, bool exclusive,
-                        bool reverse) {
-  if (dtype) {
-    return xla::ShapeUtil::ChangeElementType(
-        input.shape(), MakeXlaPrimitiveType(*dtype, /*device=*/nullptr));
-  }
-  return input.shape();
 }
 
 xla::XlaOp LowerClamp(xla::XlaOp xla_input, xla::XlaOp xla_min,
@@ -389,16 +374,9 @@ xla::XlaOp LowerNllLoss(xla::XlaOp logits, xla::XlaOp labels,
 
 xla::XlaOp LowerProd(xla::XlaOp input,
                      const std::vector<xla::int64>& dimensions,
-                     bool keep_reduced_dimensions,
-                     c10::optional<at::ScalarType> dtype) {
+                     bool keep_reduced_dimensions) {
   xla::XlaOp casted_input;
-  if (dtype) {
-    casted_input = ConvertTo(input, XlaHelpers::TypeOfXlaOp(input),
-                             MakeXlaPrimitiveType(*dtype, /*device=*/nullptr),
-                             /*device=*/nullptr);
-  } else {
-    casted_input = ConvertToNumeric(input, XlaHelpers::TypeOfXlaOp(input));
-  }
+  casted_input = ConvertToNumeric(input, XlaHelpers::TypeOfXlaOp(input));
   return BuildProd(casted_input, dimensions, keep_reduced_dimensions);
 }
 

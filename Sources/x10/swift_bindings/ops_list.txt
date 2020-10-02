@@ -1,291 +1,315 @@
-- def: "abs(input: Tensor) -> Tensor"
-  x10_enum: at::aten::abs
+- def: "abs(_ input: Tensor<T>) -> Tensor<T>"
   shape_fn: input
   lower_fn: BuildAbs
+  generics: {T: TensorFlowNumeric}
 
-- def: "acos(input: Tensor) -> Tensor"
-  x10_enum: at::aten::acos
+- def: "acos(_ input: Tensor<T>) -> Tensor<T>"
   shape_fn: input
   lower_fn: xla::Acos
+  generics: {T: TensorFlowNumeric}
 
-- def: "acosh(input: Tensor) -> Tensor"
-  x10_enum: at::aten::acosh
+- def: "acosh(_ input: Tensor<T>) -> Tensor<T>"
   shape_fn: input
   lower_fn: xla::Acosh
+  generics: {T: FloatingPoint & TensorFlowScalar}
 
-- def: "add(lhs: Tensor, rhs: Tensor) -> Tensor"
-  x10_enum: at::aten::add
+- def: "add(_ lhs: Tensor<T>, _ rhs: Tensor<T>) -> Tensor<T>"
   lower_fn: LowerBinaryOp<xla::Add>
+  swift_name: addV2
+  generics: {T: TensorFlowNumeric}
 
-- def: "all(input: Tensor, dims: [Int64], keep_reduced_dimensions: Bool) -> Tensor"
-  x10_enum: at::aten::all
+- def: "all(_ input: Tensor<Bool>, dims: [Int64], keep_reduced_dimensions: Bool) -> Tensor<Bool>"
   extras: ["canonicalize dims input"]
   lower_fn: BuildAll
 
-- def: "any(input: Tensor, dims: [Int64], keep_reduced_dimensions: Bool) -> Tensor"
-  x10_enum: at::aten::any
+- def: "any(_ input: Tensor<Bool>, dims: [Int64], keep_reduced_dimensions: Bool) -> Tensor<Bool>"
   extras: ["canonicalize dims input"]
   lower_fn: BuildAny
 
-- def: "argmax(input: Tensor, dim: Int64, keepdim: Bool) -> Tensor"
-  x10_enum: at::aten::argmax
+- def: "argmax(_ input: Tensor<T>, dim: Int64, keepdim: Bool) -> Tensor<Int64>"
   extras: ["canonicalize dim input"]
   lower_fn: BuildArgMax
+  swift_name: argMax
+  generics: {T: TensorFlowNumeric}
   result_dtype: Long
 
-- def: "argmin(input: Tensor, dim: Int64, keepdim: Bool) -> Tensor"
-  x10_enum: at::aten::argmin
+- def: "argmin(_ input: Tensor<T>, dim: Int64, keepdim: Bool) -> Tensor<Int64>"
   extras: ["canonicalize dim input"]
   lower_fn: BuildArgMin
+  swift_name: argMin
+  generics: {T: TensorFlowNumeric}
   result_dtype: Long
 
-- def: "asin(input: Tensor) -> Tensor"
-  x10_enum: at::aten::asin
+- def: "asin(_ input: Tensor<T>) -> Tensor<T>"
   shape_fn: input
   lower_fn: xla::Asin
+  generics: {T: TensorFlowNumeric}
 
-- def: "asinh(input: Tensor) -> Tensor"
-  x10_enum: at::aten::asinh
+- def: "asinh(_ input: Tensor<T>) -> Tensor<T>"
   shape_fn: input
   lower_fn: xla::Asinh
+  generics: {T: FloatingPoint & TensorFlowScalar}
 
-- def: "atan(input: Tensor) -> Tensor"
-  x10_enum: at::aten::atan
+- def: "atan(_ input: Tensor<T>) -> Tensor<T>"
   shape_fn: input
   lower_fn: xla::Atan
+  generics: {T: TensorFlowNumeric}
 
-- def: "atanh(input: Tensor) -> Tensor"
-  x10_enum: at::aten::atanh
+- def: "atanh(_ input: Tensor<T>) -> Tensor<T>"
   shape_fn: input
   lower_fn: xla::Atanh
+  generics: {T: FloatingPoint & TensorFlowScalar}
 
-- def: "cat(input: [Tensor], dim: Int64) -> Tensor"
+- def: "cat(_ input: [Tensor<T>], dim: Int64) -> Tensor<T>"
   extras: ["canonicalize dim input CanonicalizeCat"]
-  x10_enum: at::aten::cat
+  swift_name: concat
+  generics: {T: TensorFlowScalar}
   lower_fn: BuildCat
 
-- def: "ceil(input: Tensor) -> Tensor"
-  x10_enum: at::aten::ceil
+- def: "ceil(_ input: Tensor<T>) -> Tensor<T>"
   shape_fn: input
+  generics: {T: FloatingPoint & TensorFlowScalar}
   lower_fn: xla::Ceil
 
-- def: "clamp(input: Tensor, min: Tensor, max: Tensor) -> Tensor"
-  x10_enum: at::aten::clamp
-  shape_fn: input
+- def: "clamp(t: Tensor<T>, clipValueMin: Tensor<T>, clipValueMax: Tensor<T>) -> Tensor<T>"
+  swift_name: clipByValue
+  generics: {T: TensorFlowNumeric}
+  shape_fn: t
   lower_fn: LowerClamp
 
 - def: "constant_pad_nd(input: Tensor, pad: [Int64], value: AnyScalar) -> Tensor"
   extras: ["canonicalize pad input CanonicalizePad"]
-  x10_enum: at::aten::constant_pad_nd
   lower_fn: LowerPad
 
-- def: "cos(input: Tensor) -> Tensor"
-  x10_enum: at::aten::cos
+- def: "cos(_ input: Tensor<T>) -> Tensor<T>"
   shape_fn: input
+  generics: {T: FloatingPoint & TensorFlowScalar}
   lower_fn: xla::Cos
 
-- def: "cosh(input: Tensor) -> Tensor"
-  x10_enum: at::aten::cosh
+- def: "cosh(_ input: Tensor<T>) -> Tensor<T>"
   shape_fn: input
+  generics: {T: FloatingPoint & TensorFlowScalar}
   lower_fn: xla::Cosh
 
-- def: "cumprod(input: Tensor, dim: Int64, dtype: ScalarType?, exclusive: Bool, reverse: Bool) -> Tensor"
+- def: "cumprod(_ input: Tensor<T>, dim: Int64, exclusive: Bool, reverse: Bool) -> Tensor<T>"
   extras: ["canonicalize dim input"]
-  x10_enum: at::aten::cumprod
-  shape_fn: CumOpShapeFn
+  generics: {T: TensorFlowNumeric}
+  shape_fn: input
   lower_fn: LowerCumProd
 
-- def: "cumsum(input: Tensor, dim: Int64, dtype: ScalarType?, exclusive: Bool, reverse: Bool) -> Tensor"
+- def: "cumsum(_ input: Tensor<T>, dim: Int64, exclusive: Bool, reverse: Bool) -> Tensor<T>"
   extras: ["canonicalize dim input"]
-  x10_enum: at::aten::cumsum
-  shape_fn: CumOpShapeFn
+  generics: {T: TensorFlowNumeric}
+  shape_fn: input
   lower_fn: LowerCumSum
 
-- def: "diagonal_value(input: Tensor, offset: Int64, dim1: Int64, dim2: Int64) -> Tensor"
+- def: "diagonal_value(_ input: Tensor<T>, offset: Int64, dim1: Int64, dim2: Int64) -> Tensor<T>"
   extras: ["canonicalize dim1 input", "canonicalize dim2 input"]
+  generics: {T: TensorFlowNumeric}
   x10_enum: at::aten::diagonal
   lower_fn: BuildDiagonal
 
-- def: "div(lhs: Tensor, rhs: Tensor) -> Tensor"
-  x10_enum: at::aten::div
+- def: "div(_ lhs: Tensor<T>, _ rhs: Tensor<T>) -> Tensor<T>"
+  generics: {T: TensorFlowNumeric}
   lower_fn: LowerBinaryOp<xla::Div>
 
-- def: "dynamic_slice(base: Tensor, start_indices: [Tensor], slice_shapes: [Int64]) -> Tensor"
+- def: "dynamic_slice(_ base: Tensor<T>, _ start_indices: [Tensor<Int32>], _ slice_shapes: [Int64]) -> Tensor<T>"
   x10_enum: at::aten::xla_dynamic_slice
+  swift_name: dynamicSlice
+  generics: {T: TensorFlowNumeric}
   lower_fn: xla::DynamicSlice
 
-- def: "dynamic_update_slice(base: Tensor, update: Tensor, start_indices: [Tensor]) -> Tensor"
+- def: "dynamic_update_slice(_ base: Tensor<T>, _ update: Tensor<T>, _ start_indices: [Tensor<Int32>]) -> Tensor<T>"
   x10_enum: at::aten::xla_dynamic_update_slice
+  swift_name: dynamicUpdateSlice
+  generics: {T: TensorFlowNumeric}
   lower_fn: xla::DynamicUpdateSlice
 
-- def: "eq(lhs: Tensor, rhs: Tensor) -> Tensor"
-  x10_enum: at::aten::eq
+- def: "eq(_ lhs: Tensor<T>, _ rhs: Tensor<T>) -> Tensor<Bool>"
   lower_fn: LowerBinaryOp<xla::Eq>
+  generics: {T: TensorFlowScalar}
   result_dtype: Bool
 
-- def: "exp(input: Tensor) -> Tensor"
-  x10_enum: at::aten::exp
+- def: "exp(_ input: Tensor<T>) -> Tensor<T>"
   shape_fn: input
+  generics: {T: FloatingPoint & TensorFlowScalar}
   lower_fn: xla::Exp
 
-- def: "expand(input: Tensor, dims: [Int64]) -> Tensor"
-  x10_enum: at::aten::expand
+- def: "expand(_ input: Tensor<T>, dims: [Int64]) -> Tensor<T>"
   extras: ["canonicalize dims input CanonicalizeExpand"]
+  generics: {T: TensorFlowScalar}
+  swift_name: broadcastTo
   lower_fn: BuildExpand
 
-- def: "expm1(input: Tensor) -> Tensor"
-  x10_enum: at::aten::expm1
+- def: "expm1(_ input: Tensor<T>) -> Tensor<T>"
   shape_fn: input
+  generics: {T: FloatingPoint & TensorFlowScalar}
   lower_fn: xla::Expm1
 
-- def: "flip(input: Tensor, dims: [Int64]) -> Tensor"
-  x10_enum: at::aten::flip
+- def: "flip(_ input: Tensor<T>, dims: [Int64]) -> Tensor<T>"
   extras: ["canonicalize dims input CanonicalizeFlip"]
+  generics: {T: TensorFlowScalar}
   shape_fn: input
   lower_fn: xla::Rev
 
-- def: "floor(input: Tensor) -> Tensor"
-  x10_enum: at::aten::floor
+- def: "floor(_ input: Tensor<T>) -> Tensor<T>"
   shape_fn: input
+  generics: {T: FloatingPoint & TensorFlowScalar}
   lower_fn: xla::Floor
 
-- def: "gather(input: Tensor, indices: Tensor, start_dim: Int64) -> Tensor"
+- def: "gather(_ input: Tensor<T>, indices: Tensor<Tindices>, start_dim: Int64) -> Tensor<T>"
   x10_enum: at::aten::index
+  generics: {T: TensorFlowScalar, Tindices: TensorFlowIndex}
   lower_fn: CreateIndex
 
-- def: "ge(lhs: Tensor, rhs: Tensor) -> Tensor"
-  x10_enum: at::aten::ge
+- def: "ge(_ lhs: Tensor<T>, _ rhs: Tensor<T>) -> Tensor<Bool>"
+  swift_name: greaterEqual
+  generics: {T: TensorFlowNumeric}
   lower_fn: LowerBinaryOp<xla::Ge>
   result_dtype: Bool
 
-- def: "gt(lhs: Tensor, rhs: Tensor) -> Tensor"
-  x10_enum: at::aten::gt
+- def: "gt(_ lhs: Tensor<T>, _ rhs: Tensor<T>) -> Tensor<Bool>"
+  swift_name: greater
+  generics: {T: TensorFlowNumeric}
   lower_fn: LowerBinaryOp<xla::Gt>
   result_dtype: Bool
 
-- def: "is_finite(input: Tensor) -> Tensor"
+- def: "is_finite(_ input: Tensor<T>) -> Tensor<Bool>"
   x10_enum: at::aten::xla_is_finite
+  swift_name: isFinite
   lower_fn: xla::IsFinite
   shape_fn: input
+  generics: {T: FloatingPoint & TensorFlowScalar}
   result_dtype: Bool
 
-- def: "is_inf(input: Tensor) -> Tensor"
+- def: "is_inf(_ input: Tensor<T>) -> Tensor<Bool>"
   x10_enum: at::aten::xla_is_inf
+  swift_name: isInf
+  generics: {T: FloatingPoint & TensorFlowScalar}
   lower_fn: xla::IsInf
   shape_fn: input
   result_dtype: Bool
 
-- def: "is_nan(input: Tensor) -> Tensor"
+- def: "is_nan(_ input: Tensor<T>) -> Tensor<Bool>"
   x10_enum: at::aten::xla_is_nan
   shape_fn: input
+  generics: {T: FloatingPoint & TensorFlowScalar}
+  swift_name: isNan
   lower_fn: xla::IsNan
   result_dtype: Bool
 
-- def: "le(lhs: Tensor, rhs: Tensor) -> Tensor"
-  x10_enum: at::aten::le
+- def: "le(_ lhs: Tensor<T>, _ rhs: Tensor<T>) -> Tensor<Bool>"
+  generics: {T: TensorFlowNumeric}
+  swift_name: lessEqual
   lower_fn: LowerBinaryOp<xla::Le>
   result_dtype: Bool
 
-- def: "log(input: Tensor) -> Tensor"
-  x10_enum: at::aten::log
+- def: "log(_ input: Tensor<T>) -> Tensor<T>"
+  generics: {T: FloatingPoint & TensorFlowScalar}
   shape_fn: input
   lower_fn: xla::Log
 
-- def: "log1p(input: Tensor) -> Tensor"
-  x10_enum: at::aten::log1p
+- def: "log1p(_ input: Tensor<T>) -> Tensor<T>"
+  generics: {T: FloatingPoint & TensorFlowScalar}
   shape_fn: input
   lower_fn: xla::Log1p
 
-- def: "log_softmax(input: Tensor, dim: Int64) -> Tensor"
+- def: "log_softmax(_ input: Tensor<T>, dim: Int64) -> Tensor<T>"
   extras: ["canonicalize dim input"]
-  x10_enum: at::aten::log_softmax
+  swift_name: logSoftmax
+  generics: {T: FloatingPoint & TensorFlowScalar}
   lower_fn: BuildLogSoftmax
   shape_fn: input
 
-- def: "log_softmax_backward(grad_output: Tensor, output: Tensor, dim: Int64) -> Tensor"
-  extras: ["canonicalize dim grad_output"]
+- def: "log_softmax_backward(gradOutput: Tensor<T>, output: Tensor<T>, dim: Int64) -> Tensor<T>"
+  extras: ["canonicalize dim gradOutput"]
   x10_enum: at::aten::_log_softmax_backward_data
-  shape_fn: grad_output
+  generics: {T: FloatingPoint & TensorFlowScalar}
+  swift_name: logSoftmaxBackward
+  shape_fn: gradOutput
   lower_fn: BuildLogSoftmaxGrad
 
-- def: "logicalAnd(lhs: Tensor, rhs: Tensor) -> Tensor"
+- def: "logicalAnd(_ lhs: Tensor<Bool>, _ rhs: Tensor<Bool>) -> Tensor<Bool>"
   x10_enum: at::aten::logical_and
   lower_fn: LowerBinaryOp<xla::And>
 
-- def: "logical_cast(input: Tensor, dtype: ScalarType) -> Tensor"
+- def: "logical_cast(_ input: Tensor, dtype: ScalarType) -> Tensor"
   x10_enum: xla_symbols::cast
   shape_fn: ShapeLogicalCast
   lower_fn: LowerLogicalCast
   result_dtype: dtype
 
-- def: "logicalNot(input: Tensor) -> Tensor"
+- def: "logicalNot(_ input: Tensor<Bool>) -> Tensor<Bool>"
   x10_enum: at::aten::bitwise_not
   shape_fn: input
   lower_fn: xla::Not
 
-- def: "logicalOr(lhs: Tensor, rhs: Tensor) -> Tensor"
+- def: "logicalOr(_ lhs: Tensor<Bool>, _ rhs: Tensor<Bool>) -> Tensor<Bool>"
   x10_enum: at::aten::logical_or
   lower_fn: LowerBinaryOp<xla::Or>
 
-- def: "lt(lhs: Tensor, rhs: Tensor) -> Tensor"
-  x10_enum: at::aten::lt
+- def: "lt(_ lhs: Tensor<T>, _ rhs: Tensor<T>) -> Tensor<Bool>"
+  generics: {T: TensorFlowNumeric}
+  swift_name: less
   lower_fn: LowerBinaryOp<xla::Lt>
   result_dtype: Bool
 
-- def: "matmul(lhs: Tensor, rhs: Tensor) -> Tensor"
-  x10_enum: at::aten::matmul
+- def: "matmul(_ lhs: Tensor<T>, _ rhs: Tensor<T>) -> Tensor<T>"
+  generics: {T: TensorFlowNumeric}
   lower_fn: LowerBinaryValueOp<CreateMatMul>
 
-- def: "max(input: Tensor, dim: Int64, keepdim: Bool) -> Tensor"
-  x10_enum: at::aten::max
+- def: "max(_ input: Tensor<T>, dim: Int64, keepDim: Bool) -> Tensor<T>"
   extras: ["canonicalize dim input"]
+  generics: {T: TensorFlowNumeric}
   lower_fn: BuildMaxInDim
 
-- def: "maximum(lhs: Tensor, rhs: Tensor) -> Tensor"
+- def: "maximum(_ lhs: Tensor<T>, _ rhs: Tensor<T>) -> Tensor<T>"
   x10_enum: at::aten::max
+  generics: {T: TensorFlowNumeric}
   lower_fn: LowerBinaryOp<xla::Max>
 
 - def: "mean(_ input: Tensor<T>, reductionIndices: [Int64], keepDims: Bool) -> Tensor<T>"
   extras: ["canonicalize reductionIndices input"]
-  x10_enum: at::aten::mean
   lower_fn: BuildMean
-  result_dtype: input
-  swift_generics: {T: TensorFlowNumeric}
-  swift_namespace: _RawXLA
+  generics: {T: TensorFlowNumeric}
 
-- def: "min(input: Tensor, dim: Int64, keepdim: Bool) -> Tensor"
-  x10_enum: at::aten::min
+- def: "min(_ input: Tensor<T>, dim: Int64, keepDim: Bool) -> Tensor<T>"
   extras: ["canonicalize dim input"]
+  generics: {T: TensorFlowNumeric}
   lower_fn: BuildMinInDim
 
-- def: "minimum(lhs: Tensor, rhs: Tensor) -> Tensor"
+- def: "minimum(_ lhs: Tensor<T>, _ rhs: Tensor<T>) -> Tensor<T>"
   x10_enum: at::aten::min
+  generics: {T: TensorFlowNumeric}
   lower_fn: LowerBinaryOp<xla::Min>
 
-- def: "mm(lhs: Tensor, rhs: Tensor) -> Tensor"
-  x10_enum: at::aten::mm
+- def: "mm(_ lhs: Tensor<T>, _ rhs: Tensor<T>) -> Tensor<T>"
+  swift_name: matMul
+  generics: {T: TensorFlowNumeric}
   lower_fn: xla::Dot
 
-- def: "mul(lhs: Tensor, rhs: Tensor) -> Tensor"
-  x10_enum: at::aten::mul
+- def: "mul(_ lhs: Tensor<T>, _ rhs: Tensor<T>) -> Tensor<T>"
+  generics: {T: TensorFlowNumeric}
   lower_fn: LowerBinaryOp<xla::Mul>
 
-- def: "ne(lhs: Tensor, rhs: Tensor) -> Tensor"
-  x10_enum: at::aten::ne
+- def: "ne(_ lhs: Tensor<T>, _ rhs: Tensor<T>) -> Tensor<Bool>"
+  generics: {T: TensorFlowScalar}
+  swift_name: notEqual
   lower_fn: LowerBinaryOp<xla::Ne>
   result_dtype: Bool
 
-- def: "neg(input: Tensor) -> Tensor"
-  x10_enum: at::aten::neg
+- def: "neg(_ input: Tensor<T>) -> Tensor<T>"
+  generics: {T: TensorFlowNumeric}
   shape_fn: input
   lower_fn: xla::Neg
 
 - def: "nll_loss(logits: Tensor, labels: Tensor, ignore_index: Int64) -> Tensor"
-  x10_enum: at::aten::nll_loss
   lower_fn: LowerNllLoss
 
-- def: "permute_value(input: Tensor, dims: [Int64]) -> Tensor"
+- def: "permute_value(_ input: Tensor<T>, dims: [Int64]) -> Tensor<T>"
   x10_enum: at::aten::permute
+  swift_name: permute
+  generics: {T: TensorFlowScalar}
   lower_fn: xla::Transpose
 
 - def: "physical_cast(input: Tensor, dtype: ScalarType) -> Tensor"
@@ -293,120 +317,121 @@
   shape_fn: ShapeLogicalCast
   lower_fn: LowerLogicalCast
 
-- def: "pow(input: Tensor, other: Tensor) -> Tensor"
-  x10_enum: at::aten::pow
+- def: "pow(_ input: Tensor<T>, _ other: Tensor<T>) -> Tensor<T>"
+  generics: {T: TensorFlowNumeric}
   lower_fn: xla::Pow
 
-- def: "prod(input: Tensor, dims: [Int64], keep_reduced_dimensions: Bool, dtype: ScalarType?) -> Tensor"
-  extras: ["canonicalize dims input"]
-  x10_enum: at::aten::prod
+- def: "prod(_ input: Tensor<T>, reductionIndices: [Int64], keepDims: Bool) -> Tensor<T>"
+  extras: ["canonicalize reductionIndices input"]
+  generics: {T: TensorFlowNumeric}
   lower_fn: LowerProd
-  result_dtype: dtype
 
 - def: "qr(input: Tensor, some: Bool) -> (Tensor, Tensor)"
-  x10_enum: at::aten::qr
   lower_fn: LowerQR
 
-- def: "relu(input: Tensor) -> Tensor"
-  x10_enum: at::aten::relu
+- def: "relu(features: Tensor<T>) -> Tensor<T>"
+  generics: {T: TensorFlowNumeric}
   lower_fn: BuildRelu
 
-- def: "rem(input: Tensor, other: Tensor) -> Tensor"
+- def: "rem(_ input: Tensor<T>, _ other: Tensor<T>) -> Tensor<T>"
+  swift_name: mod
   x10_enum: at::aten::xla_rem
+  generics: {T: TensorFlowNumeric}
   lower_fn: xla::Rem
 
-- def: "repeat(input: Tensor, repeats: [Int64]) -> Tensor"
-  x10_enum: at::aten::repeat
+- def: "repeat(_ input: Tensor<T>, multiples: [Int64]) -> Tensor<T>"
+  swift_name: tile
+  generics: {T: TensorFlowScalar}
   lower_fn: BuildRepeat
 
-- def: "resize_value(input: Tensor, repeats: [Int64]) -> Tensor"
+- def: "resize_value(_ input: Tensor<T>, dims: [Int64]) -> Tensor<T>"
   x10_enum: at::aten::resize
+  generics: {T: TensorFlowScalar}
   lower_fn: BuildResize
 
-- def: "round_to_even(input: Tensor) -> Tensor"
-  x10_enum: at::aten::round_to_even
+- def: "round_to_even(_ input: Tensor<T>) -> Tensor<T>"
+  swift_name: round
+  generics: {T: TensorFlowNumeric}
   lower_fn: xla::RoundToEven
   shape_fn: input
 
-- def: "rsqrt(input: Tensor) -> Tensor"
-  x10_enum: at::aten::rsqrt
+- def: "rsqrt(_ input: Tensor<T>) -> Tensor<T>"
+  generics: {T: FloatingPoint & TensorFlowScalar}
   shape_fn: input
   lower_fn: xla::Rsqrt
 
-- def: "select(input: Tensor, dim: Int64, index: Int64) -> Tensor"
+- def: "select(_ input: Tensor<T>, dim: Int64, index: Int64) -> Tensor<T>"
+  generics: {T: TensorFlowScalar}
   extras: ["canonicalize dim input"]
-  x10_enum: at::aten::select
   lower_fn: LowerSelect
 
-- def: "sigmoid(input: Tensor) -> Tensor"
-  x10_enum: at::aten::sigmoid
+- def: "sigmoid(_ input: Tensor<T>) -> Tensor<T>"
+  generics: {T: FloatingPoint & TensorFlowScalar}
   shape_fn: input
   lower_fn: BuildSigmoid
 
-- def: "sign(input: Tensor) -> Tensor"
-  x10_enum: at::aten::sign
+- def: "sign(_ input: Tensor<T>) -> Tensor<T>"
+  generics: {T: TensorFlowNumeric}
   shape_fn: input
   lower_fn: BuildSign
 
-- def: "sin(input: Tensor) -> Tensor"
-  x10_enum: at::aten::sin
+- def: "sin(_ input: Tensor<T>) -> Tensor<T>"
+  generics: {T: FloatingPoint & TensorFlowScalar}
   shape_fn: input
   lower_fn: xla::Sin
 
-- def: "sinh(input: Tensor) -> Tensor"
-  x10_enum: at::aten::sinh
+- def: "sinh(_ input: Tensor<T>) -> Tensor<T>"
+  generics: {T: FloatingPoint & TensorFlowScalar}
   shape_fn: input
   lower_fn: xla::Sinh
 
-- def: "slice(input: Tensor, dim: Int64, start: Int64, end: Int64, stride: Int64) -> Tensor"
+- def: "slice(_ input: Tensor<T>, dim: Int64, start: Int64, end: Int64, stride: Int64) -> Tensor<T>"
   extras: ["canonicalize dim input"]
-  x10_enum: at::aten::slice
+  generics: {T: TensorFlowScalar}
   shape_fn: ShapeSlice
   lower_fn: LowerSlice
 
-- def: "softmax(input: Tensor, dim: Int64) -> Tensor"
+- def: "softmax(_ input: Tensor<T>, dim: Int64) -> Tensor<T>"
   extras: ["canonicalize dim input"]
-  x10_enum: at::aten::softmax
+  generics: {T: FloatingPoint & TensorFlowScalar}
   lower_fn: BuildSoftmax
   shape_fn: input
 
-- def: "sqrt(input: Tensor) -> Tensor"
-  x10_enum: at::aten::sqrt
+- def: "sqrt(_ input: Tensor<T>) -> Tensor<T>"
+  generics: {T: FloatingPoint & TensorFlowScalar}
   shape_fn: input
   lower_fn: xla::Sqrt
 
-- def: "squeeze(input: Tensor, dim: Int64) -> Tensor"
+- def: "squeeze(_ input: Tensor<T>, dim: Int64) -> Tensor<T>"
   extras: ["canonicalize dim input"]
-  x10_enum: at::aten::squeeze
+  generics: {T: TensorFlowScalar}
   lower_fn: LowerSqueeze
 
-- def: "stack(input: [Tensor], dim: Int64) -> Tensor"
+- def: "stack(_ input: [Tensor<T>], dim: Int64) -> Tensor<T>"
   extras: ["canonicalize dim input CanonicalizeStack"]
-  x10_enum: at::aten::stack
+  generics: {T: TensorFlowScalar}
   lower_fn: BuildStack
 
-- def: "sub(lhs: Tensor, rhs: Tensor) -> Tensor"
-  x10_enum: at::aten::sub
+- def: "sub(_ lhs: Tensor<T>, _ rhs: Tensor<T>) -> Tensor<T>"
+  generics: {T: TensorFlowNumeric}
   lower_fn: LowerBinaryOp<xla::Sub>
 
 - def: "sum(input: Tensor, dims: [Int64], keep_reduced_dimensions: Bool, dtype: ScalarType?) -> Tensor"
   extras: ["canonicalize dims input"]
-  x10_enum: at::aten::sum
   lower_fn: LowerSum
   result_dtype: dtype
 
 - def: "svd(input: Tensor, compute_uv: Bool, full_matrix: Bool) -> (Tensor, Tensor, Tensor)"
-  x10_enum: at::aten::svd
   lower_fn: LowerSVD
 
-- def: "tan(input: Tensor) -> Tensor"
-  x10_enum: at::aten::tan
+- def: "tan(_ input: Tensor<T>) -> Tensor<T>"
   shape_fn: input
+  generics: {T: TensorFlowNumeric}
   lower_fn: xla::Tan
 
-- def: "tanh(input: Tensor) -> Tensor"
-  x10_enum: at::aten::tanh
+- def: "tanh(_ input: Tensor<T>) -> Tensor<T>"
   shape_fn: input
+  generics: {T: FloatingPoint & TensorFlowScalar}
   lower_fn: xla::Tanh
 
 - def: "tf_Conv(input: Tensor, filter: Tensor, depthwise: Bool, strides: [Int64], padding: TFPadding, explicit_paddings: [Int64], data_format: TFDataFormat, dilations: [Int64]) -> Tensor"
@@ -451,7 +476,6 @@
 
 - def: "topk(input: Tensor, k: Int64, dim: Int64, largest: Bool) -> (Tensor, Tensor)"
   extras: ["canonicalize dim input"]
-  x10_enum: at::aten::topk
   lower_fn: BuildTopK
   result_dtype: [input, Long]
 
@@ -460,19 +484,20 @@
   shape_fn: input
   lower_fn: tensorflow::TruncatedNormal
 
-- def: "update_slice(input: Tensor, source: Tensor, base_indices: [Int64]) -> Tensor"
+- def: "update_slice(input: Tensor<T>, source: Tensor<T>, baseIndices: [Int64]) -> Tensor<T>"
   x10_enum: xla_symbols::update_slice
+  swift_name: updateSlice
+  generics: {T: TensorFlowScalar}
   lower_fn: BuildUpdateSlice
 
 - def: "where(condition: Tensor, input: Tensor, other: Tensor) -> Tensor"
-  x10_enum: at::aten::where
   shape_fn: input
   lower_fn: LowerWhere
 
 - def: "xla_pad(input: Tensor, padding_value: AnyScalar, padding_config: PaddingConfig) -> Tensor"
-  x10_enum: at::aten::xla_pad
   lower_fn: LowerPad
 
-- def: "xla_slice(input: Tensor, start_indices: [Int64], limit_indices: [Int64], strides: [Int64]) -> Tensor"
-  x10_enum: at::aten::xla_slice
+- def: "xla_slice(_ input: Tensor<T>, start_indices: [Int64], limit_indices: [Int64], strides: [Int64]) -> Tensor<T>"
+  swift_name: xlaSlice
+  generics: {T: TensorFlowScalar}
   lower_fn: xla::Slice

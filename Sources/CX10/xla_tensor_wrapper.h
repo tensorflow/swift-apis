@@ -265,10 +265,8 @@ XLA_API OpaqueXLATensor* XLATensor_cosh(OpaqueXLATensor* a);
 XLA_API OpaqueXLATensorArrayRef XLATensor_cross_replica_sum(
     OpaqueXLATensorArrayRef inputs, double scale);
 XLA_API OpaqueXLATensor* XLATensor_cumprod(OpaqueXLATensor* a, int64_t dim,
-                                           Optional_XLAScalarType dtype,
                                            bool exclusive, bool reverse);
 XLA_API OpaqueXLATensor* XLATensor_cumsum(OpaqueXLATensor* a, int64_t dim,
-                                          Optional_XLAScalarType dtype,
                                           bool exclusive, bool reverse);
 XLA_API OpaqueXLATensor* XLATensor_diagonal_value(OpaqueXLATensor* a,
                                                   int64_t offset, int64_t dim1,
@@ -344,8 +342,7 @@ XLA_API OpaqueXLATensor* XLATensor_physical_cast(
 XLA_API OpaqueXLATensor* XLATensor_pow(OpaqueXLATensor* base,
                                        OpaqueXLATensor* exponent);
 XLA_API OpaqueXLATensor* XLATensor_prod(OpaqueXLATensor* a, Int64ArrayRef dims,
-                                        bool keep_reduced_dimensions,
-                                        Optional_XLAScalarType dtype);
+                                        bool keep_reduced_dimensions);
 XLA_API OpaqueXLATensor_pair XLATensor_qr(OpaqueXLATensor* input, bool some);
 XLA_API OpaqueXLATensor* XLATensor_relu(OpaqueXLATensor* a);
 XLA_API OpaqueXLATensor* XLATensor_rem(OpaqueXLATensor* a, OpaqueXLATensor* b);
