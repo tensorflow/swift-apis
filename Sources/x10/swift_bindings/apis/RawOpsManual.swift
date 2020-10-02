@@ -157,17 +157,7 @@ public enum _RawXLA {
     checkSameDevice(x, y)
     checkSamePrecision(x, y)
     let absDiff: Tensor<T> = abs(x - y)
-    let dims = Tensor<Int32>(absDiff.shape.dimensions.map { Int32($0) }, on: x.device)
-    var value = Tensor<T>(Tensor(tolerance, on: x.device))
-    if absDiff.isReducedPrecision {
-      value = value.toReducedPrecision
-    }
-    return less(
-      absDiff,
-      fill(
-        dims: dims, value: value, device: x.device
-      )
-    )
+    return less(absDiff, fullLike(tolerance, absDiff))
   }
 
   /// Returns the index with the largest value across dimensions of a tensor.
@@ -1375,25 +1365,21 @@ public enum _RawXLA {
     IndexType: TensorFlowIndex
   >(
     dims: Tensor<IndexType>,
-    value: Tensor<T>,
-    device: Device
-  ) -> Tensor<T> {
-    var t = Tensor<T>(
-      _xla: XLATensor.full(dims.scalars.map { Int64($0) }, value.scalarized(), T.self, device))
-    if value.isReducedPrecision {
-      t = t.toReducedPrecision
-    }
-    return t
-  }
-
-  public static func fill<
-    T: TensorFlowScalar,
-    IndexType: TensorFlowIndex
-  >(
-    dims: Tensor<IndexType>,
     value: Tensor<T>
   ) -> Tensor<T> {
-    return fill(dims: dims, value: value, device: value.device)
+    return broadcastTo(value, dims: dims.scalars.map { Int64($0) })
+  }
+  static func fullLike<T: TensorFlowScalar>(_ value: XLAScalarType, _ x: Tensor<T>)
+    -> Tensor<T>
+  {
+    return broadcastTo(scalarLike(value, x), dims: x.shape.dimensions.map(Int64.init))
+  }
+  static func scalarLike<T: TensorFlowScalar>(_ value: XLAScalarType, _ x: Tensor<T>)
+    -> Tensor<T>
+  {
+    let result = Tensor<T>(
+      _xlaHandle: XLATensor_makeScalar(value.xlaScalar, T.xlaTensorScalarType, x.device.cdevice))
+    return x.isReducedPrecision ? result.toReducedPrecision : result
   }
 
   /// Gather slices from `params` according to `indices`.
@@ -1528,14 +1514,10 @@ public enum _RawXLA {
     features: Tensor<T>,
     alpha: Double = 0.2
   ) -> Tensor<T> {
-    var alphaTensor = Tensor<T>(Tensor<Double>(alpha, on: features.device))
-    if features.isReducedPrecision {
-      alphaTensor = alphaTensor.toReducedPrecision
-    }
     return _RawXLA.select(
       condition: _RawXLA.greater(features, _RawXLA.zerosLike(features)),
       t: features,
-      e: _RawXLA.mul(features, alphaTensor))
+      e: _RawXLA.mul(features, scalarLike(alpha, features)))
   }
 
   /// Computes rectified linear gradients for a LeakyRelu operation.
@@ -1553,18 +1535,12 @@ public enum _RawXLA {
   ) -> Tensor<T> {
     checkSameDevice(gradients, features)
     checkSamePrecision(gradients, features)
-    var alphaTensor = Tensor<T>(
-      _xla: XLATensor.full(
-        gradients.shape.dimensions.map { Int64($0) }, alpha, T.self, gradients.device))
-    if gradients.isReducedPrecision {
-      alphaTensor = alphaTensor.toReducedPrecision
-    }
     return _RawXLA.select(
       condition: _RawXLA.greater(features, _RawXLA.zerosLike(features)),
       t: gradients,
       e: _RawXLA.mul(
         gradients,
-        alphaTensor))
+        fullLike(alpha, gradients)))
   }
 
   /// Generates values in an interval.
@@ -2180,13 +2156,7 @@ public enum _RawXLA {
   public static func onesLike<T: TensorFlowScalar>(
     _ x: Tensor<T>
   ) -> Tensor<T> {
-    let t = Tensor<T>(
-      _xla: XLATensor.full(x.shape.dimensions.map { Int64($0) }, 1, T.self, x.device))
-    if x.isReducedPrecision {
-      return t.toReducedPrecision
-    } else {
-      return t
-    }
+    return fullLike(1, x)
   }
 
   /// Packs a list of `N` rank-`R` tensors into one rank-`(R+1)` tensor.
@@ -2733,21 +2703,10 @@ public enum _RawXLA {
   public static func selu<T: FloatingPoint & TensorFlowScalar>(
     features: Tensor<T>
   ) -> Tensor<T> {
-    var scale = Tensor<T>(
-      _xla: XLATensor.full(
-        features.shape.dimensions.map { Int64($0) }, seluGamma, T.self, features.device))
-    var scale_alpha = Tensor<T>(
-      _xla: XLATensor.full(
-        features.shape.dimensions.map { Int64($0) },
-        seluAlphaGamma, T.self, features.device))
-    if features.isReducedPrecision {
-      scale = scale.toReducedPrecision
-      scale_alpha = scale_alpha.toReducedPrecision
-    }
     return _RawXLA.select(
       condition: _RawXLA.greater(features, _RawXLA.zerosLike(features)),
-      t: _RawXLA.mul(scale, features),
-      e: _RawXLA.mul(scale_alpha, _RawXLA.expm1(features)))
+      t: _RawXLA.mul(fullLike(seluGamma, features), features),
+      e: _RawXLA.mul(fullLike(seluAlphaGamma, features), _RawXLA.expm1(features)))
   }
 
   /// Computes gradients for the scaled exponential linear (Selu) operation.
@@ -2764,20 +2723,10 @@ public enum _RawXLA {
   ) -> Tensor<T> {
     checkSameDevice(gradients, outputs)
     checkSamePrecision(gradients, outputs)
-    var scale = Tensor<T>(
-      _xla: XLATensor.full(
-        outputs.shape.dimensions.map { Int64($0) }, seluGamma, T.self, gradients.device))
-    var scale_alpha = Tensor<T>(
-      _xla: XLATensor.full(
-        outputs.shape.dimensions.map { Int64($0) }, seluAlphaGamma, T.self, gradients.device))
-    if gradients.isReducedPrecision {
-      scale = scale.toReducedPrecision
-      scale_alpha = scale_alpha.toReducedPrecision
-    }
     return _RawXLA.select(
       condition: _RawXLA.greater(outputs, _RawXLA.zerosLike(outputs)),
-      t: _RawXLA.mul(scale, gradients),
-      e: _RawXLA.mul(gradients, _RawXLA.addV2(outputs, scale_alpha)))
+      t: _RawXLA.mul(fullLike(seluGamma, outputs), gradients),
+      e: _RawXLA.mul(gradients, _RawXLA.addV2(outputs, fullLike(seluAlphaGamma, outputs))))
   }
 
   /// Returns the shape of a tensor.
@@ -2956,12 +2905,7 @@ public enum _RawXLA {
   ) -> Tensor<T> {
     checkSameDevice(gradients, features)
     checkSamePrecision(gradients, features)
-    var half = Tensor<T>(
-      _xla: XLATensor.full(
-        features.shape.dimensions.map { Int64($0) }, 0.5, T.self, gradients.device))
-    if gradients.isReducedPrecision {
-      half = half.toReducedPrecision
-    }
+    let half = fullLike(0.5, features)
     return _RawXLA.mul(
       gradients, _RawXLA.addV2(half, _RawXLA.mul(half, _RawXLA.tanh(_RawXLA.mul(half, features)))))
   }
@@ -4009,13 +3953,7 @@ public enum _RawXLA {
   public static func zerosLike<T: TensorFlowScalar>(
     _ x: Tensor<T>
   ) -> Tensor<T> {
-    let t = Tensor<T>(
-      _xla: XLATensor.full(x.shape.dimensions.map { Int64($0) }, 0, T.self, x.device))
-    if x.isReducedPrecision {
-      return t.toReducedPrecision
-    } else {
-      return t
-    }
+    return fullLike(0, x)
   }
 
   // Currently only used for deterministic testing.
