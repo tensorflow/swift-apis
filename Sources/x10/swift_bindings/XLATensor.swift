@@ -286,13 +286,6 @@ extension XLATensor {
     return (XLATensor(_handle: output.x), XLATensor(_handle: output.y))
   }
 
-  static func constantPad(_ input: XLATensor, _ pad: [Int64], _ value: XLAScalarType) -> XLATensor {
-    defer { _fixLifetime(input) }
-    return pad.withArrayRef { pad in
-      XLATensor(_handle: XLATensor_constant_pad_nd(input.handle, pad, value.xlaScalar))
-    }
-  }
-
   static func crossReplicaSum(_ inputs: [XLATensor], _ scale: Double) -> [XLATensor] {
     inputs.withArrayRef { inputs in
       let tensorListHandle = XLATensor_cross_replica_sum(inputs, scale)
@@ -403,102 +396,8 @@ extension XLATensor {
     return XLATensor(_handle: XLATensor_physical_cast(input.handle, destType))
   }
 
-  static func qr(_ input: XLATensor, fullMatrices: Bool) -> (XLATensor, XLATensor) {
-    defer { _fixLifetime(input) }
-    let output = XLATensor_qr(input.handle, !fullMatrices)
-    return (XLATensor(_handle: output.x), XLATensor(_handle: output.y))
-  }
-
   static func replica_id(_ device: Device) -> XLATensor {
     return XLATensor(_handle: XLATensor_replica_id(device.cdevice))
-  }
-
-  static func sum(
-    _ a: XLATensor, _ dims: [Int64], _ keep_reduced_dimensions: Bool,
-    _ dtype: XLAScalarType.Type? = nil
-  ) -> XLATensor {
-    defer { _fixLifetime(a) }
-    return dims.withArrayRef { dims in
-      XLATensor(
-        _handle: XLATensor_sum(a.handle, dims, keep_reduced_dimensions, dtype.xlaOptionalType))
-    }
-  }
-
-  static func svd(_ input: XLATensor, computeUv: Bool, fullMatrices: Bool) -> (
-    XLATensor, XLATensor, XLATensor
-  ) {
-    defer { _fixLifetime(input) }
-    let output = XLATensor_svd(input.handle, computeUv, fullMatrices)
-    return (
-      XLATensor(_handle: output.v0), XLATensor(_handle: output.v1), XLATensor(_handle: output.v2)
-    )
-  }
-
-  static func topk(_ a: XLATensor, k: Int64, dim: Int64, largest: Bool) -> (XLATensor, XLATensor) {
-    defer { _fixLifetime(a) }
-    let output = XLATensor_topk(a.handle, k, dim, largest)
-    return (XLATensor(_handle: output.x), XLATensor(_handle: output.y))
-  }
-
-  static func tf_Conv(
-    _ input: XLATensor, _ filter: XLATensor, _ depthwise: Bool, _ strides: [Int64],
-    _ padding: TFPadding, _ explicit_paddings: [Int64],
-    _ data_format: TFDataFormat, _ dilations: [Int64]
-  ) -> XLATensor {
-    defer { _fixLifetime(input) }
-    defer { _fixLifetime(filter) }
-    return strides.withArrayRef { strides in
-      explicit_paddings.withArrayRef { explicit_paddings in
-        dilations.withArrayRef { dilations in
-          XLATensor(
-            _handle: XLATensor_tf_Conv(
-              input.handle, filter.handle, depthwise, strides, padding, explicit_paddings,
-              data_format, dilations))
-        }
-      }
-    }
-  }
-
-  static func tf_ConvBackpropFilter(
-    _ input: XLATensor, _ filter_sizes: [Int64], _ out_backprop: XLATensor, _ depthwise: Bool,
-    _ strides: [Int64], _ padding: TFPadding, _ explicit_paddings: [Int64],
-    _ data_format: TFDataFormat, _ dilations: [Int64]
-  ) -> XLATensor {
-    defer { _fixLifetime(input) }
-    defer { _fixLifetime(out_backprop) }
-    return filter_sizes.withArrayRef { filter_sizes in
-      strides.withArrayRef { strides in
-        explicit_paddings.withArrayRef { explicit_paddings in
-          dilations.withArrayRef { dilations in
-            XLATensor(
-              _handle: XLATensor_tf_ConvBackpropFilter(
-                input.handle, filter_sizes, out_backprop.handle, depthwise, strides,
-                padding, explicit_paddings, data_format, dilations))
-          }
-        }
-      }
-    }
-  }
-
-  static func tf_ConvBackpropInput(
-    _ input_sizes: [Int64], _ filter: XLATensor, _ out_backprop: XLATensor, _ depthwise: Bool,
-    _ strides: [Int64], _ padding: TFPadding, _ explicit_paddings: [Int64],
-    _ data_format: TFDataFormat, _ dilations: [Int64]
-  ) -> XLATensor {
-    defer { _fixLifetime(filter) }
-    defer { _fixLifetime(out_backprop) }
-    return input_sizes.withArrayRef { input_sizes in
-      strides.withArrayRef { strides in
-        explicit_paddings.withArrayRef { explicit_paddings in
-          dilations.withArrayRef { dilations in
-            XLATensor(
-              _handle: XLATensor_tf_ConvBackpropInput(
-                input_sizes, filter.handle, out_backprop.handle, depthwise, strides,
-                padding, explicit_paddings, data_format, dilations))
-          }
-        }
-      }
-    }
   }
 
   static func tf_OneHot(
@@ -576,15 +475,6 @@ extension XLATensor {
     } else {
       return XLATensor(_handle: XLATensor_to(a.handle, nil, dtype.xlaOptionalType))
     }
-  }
-
-  static func where_(
-    _ condition: XLATensor, _ input: XLATensor, _ other: XLATensor
-  ) -> XLATensor {
-    defer { _fixLifetime(input) }
-    defer { _fixLifetime(other) }
-    defer { _fixLifetime(condition) }
-    return XLATensor(_handle: XLATensor_where(condition.handle, input.handle, other.handle))
   }
 
   static func xlaPad(

@@ -77,9 +77,11 @@
   shape_fn: t
   lower_fn: LowerClamp
 
-- def: "constant_pad_nd(input: Tensor, pad: [Int64], value: AnyScalar) -> Tensor"
+- def: "constant_pad_nd(_ input: Tensor<T>, _ pad: [Int64], _ value: AnyScalar) -> Tensor<T>"
   extras: ["canonicalize pad input CanonicalizePad"]
+  generics: {T: TensorFlowScalar}
   lower_fn: LowerPad
+  protection: internal
 
 - def: "cos(_ input: Tensor<T>) -> Tensor<T>"
   shape_fn: input
@@ -326,7 +328,8 @@
   generics: {T: TensorFlowNumeric}
   lower_fn: LowerProd
 
-- def: "qr(input: Tensor, some: Bool) -> (Tensor, Tensor)"
+- def: "qr(_ input: Tensor<T>, fullMatrices: Bool) -> (q: Tensor<T>, r: Tensor<T>)"
+  generics: {T: FloatingPoint & TensorFlowScalar}
   lower_fn: LowerQR
 
 - def: "relu(features: Tensor<T>) -> Tensor<T>"
@@ -416,12 +419,13 @@
   generics: {T: TensorFlowNumeric}
   lower_fn: LowerBinaryOp<xla::Sub>
 
-- def: "sum(input: Tensor, dims: [Int64], keep_reduced_dimensions: Bool, dtype: ScalarType?) -> Tensor"
-  extras: ["canonicalize dims input"]
-  lower_fn: LowerSum
-  result_dtype: dtype
+- def: "sum(_ input: Tensor<T>, reductionIndices: [Int64], keepDims: Bool) -> Tensor<T>"
+  extras: ["canonicalize reductionIndices input"]
+  generics: {T: TensorFlowNumeric}
+  lower_fn: BuildSum
 
-- def: "svd(input: Tensor, compute_uv: Bool, full_matrix: Bool) -> (Tensor, Tensor, Tensor)"
+- def: "svd(_ input: Tensor<T>, computeUv: Bool, fullMatrices: Bool) -> (s: Tensor<T>, u: Tensor<T>, v: Tensor<T>)"
+  generics: {T: FloatingPoint & TensorFlowScalar}
   lower_fn: LowerSVD
 
 - def: "tan(_ input: Tensor<T>) -> Tensor<T>"
@@ -434,28 +438,40 @@
   generics: {T: FloatingPoint & TensorFlowScalar}
   lower_fn: xla::Tanh
 
-- def: "tf_Conv(input: Tensor, filter: Tensor, depthwise: Bool, strides: [Int64], padding: TFPadding, explicit_paddings: [Int64], data_format: TFDataFormat, dilations: [Int64]) -> Tensor"
+- def: "tf_Conv(_ input: Tensor<T>, _ filter: Tensor<T>, _ depthwise: Bool, _ strides: [Int64], _ padding: TFPadding, _ explicit_paddings: [Int64], _ data_format: TFDataFormat, _ dilations: [Int64]) -> Tensor<T>"
   x10_enum: at::aten::tf_convolution
+  generics: {T: TensorFlowNumeric}
+  protection: internal
   lower_fn: BuildTfConv
 
-- def: "tf_ConvBackpropFilter(input: Tensor, filter_sizes: [Int64], out_backprop: Tensor, depthwise: Bool, strides: [Int64], padding: TFPadding, explicit_paddings: [Int64], data_format: TFDataFormat, dilations: [Int64]) -> Tensor"
+- def: "tf_ConvBackpropFilter(_ input: Tensor<T>, _ filter_sizes: [Int64], _ out_backprop: Tensor<T>, _ depthwise: Bool, _ strides: [Int64], _ padding: TFPadding, _ explicit_paddings: [Int64], _ data_format: TFDataFormat, _ dilations: [Int64]) -> Tensor<T>"
   x10_enum: at::aten::tf_conv_backprop_filter
+  generics: {T: TensorFlowNumeric}
+  protection: internal
   lower_fn: BuildTfConvBackpropFilter
 
-- def: "tf_ConvBackpropInput(input_sizes: [Int64], filter: Tensor, out_backprop: Tensor, depthwise: Bool, strides: [Int64], padding: TFPadding, explicit_paddings: [Int64], data_format: TFDataFormat, dilations: [Int64]) -> Tensor"
+- def: "tf_ConvBackpropInput(_ input_sizes: [Int64], _ filter: Tensor<T>, _ out_backprop: Tensor<T>, _ depthwise: Bool, _ strides: [Int64], _ padding: TFPadding, _ explicit_paddings: [Int64], _ data_format: TFDataFormat, _ dilations: [Int64]) -> Tensor<T>"
   x10_enum: at::aten::tf_conv_backprop_input
+  generics: {T: TensorFlowNumeric}
+  protection: internal
   lower_fn: BuildTfConvBackpropInput
 
-- def: "tf_MirrorPad(input: Tensor, padding: [Int64], mode: TFMirrorPadMode) -> Tensor"
+- def: "tf_MirrorPad(_ input: Tensor<T>, _ padding: [Int64], _ mode: TFMirrorPadMode) -> Tensor<T>"
   x10_enum: at::aten::tf_mirror_pad
+  generics: {T: TensorFlowNumeric}
+  protection: internal
   lower_fn: BuildMirrorPad
 
-- def: "tf_MirrorPadGrad(grad_output: Tensor, input_size: [Int64], padding: [Int64], mode: TFMirrorPadMode) -> Tensor"
+- def: "tf_MirrorPadGrad(_ grad_output: Tensor<T>, _ input_size: [Int64], _ padding: [Int64], _ mode: TFMirrorPadMode) -> Tensor<T>"
   x10_enum: at::aten::tf_mirror_pad_backward
+  generics: {T: TensorFlowScalar}
+  protection: internal
   lower_fn: BuildMirrorPadBackward
 
-- def: "tf_OneHot(indices: Tensor, on_value: Tensor, off_value: Tensor, depth: Int64, axis: Int64) -> Tensor"
+- def: "tf_OneHot(indices: Tensor<Ti>, on_value: Tensor<T>, off_value: Tensor<T>, depth: Int64, axis: Int64) -> Tensor<T>"
   result_dtype: on_value
+  generics: {Ti: TensorFlowInteger, T: TensorFlowScalar}
+  protection: internal
   x10_enum: at::aten::tf_one_hot
   lower_fn: BuildOneHot
 
@@ -474,9 +490,10 @@
   shape_fn: input
   lower_fn: BuildThreshold
 
-- def: "topk(input: Tensor, k: Int64, dim: Int64, largest: Bool) -> (Tensor, Tensor)"
+- def: "topk(input: Tensor<T>, k: Int64, dim: Int64, largest: Bool) -> (Tensor<T>, Tensor<Int64>)"
   extras: ["canonicalize dim input"]
   lower_fn: BuildTopK
+  generics: {T: FloatingPoint & TensorFlowScalar}
   result_dtype: [input, Long]
 
 - def: "truncated_normal(input: Tensor) -> Tensor"
@@ -490,8 +507,10 @@
   generics: {T: TensorFlowScalar}
   lower_fn: BuildUpdateSlice
 
-- def: "where(condition: Tensor, input: Tensor, other: Tensor) -> Tensor"
+- def: "where(condition: Tensor<Bool>, input: Tensor<T>, other: Tensor<T>) -> Tensor<T>"
   shape_fn: input
+  generics: {T: TensorFlowScalar}
+  swift_name: where_
   lower_fn: LowerWhere
 
 - def: "xla_pad(input: Tensor, padding_value: AnyScalar, padding_config: PaddingConfig) -> Tensor"

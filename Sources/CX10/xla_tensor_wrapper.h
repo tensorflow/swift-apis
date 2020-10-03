@@ -368,8 +368,7 @@ XLA_API OpaqueXLATensor*
 XLATensor_stack(OpaqueXLATensorArrayRef tensors, int64_t dim);
 XLA_API OpaqueXLATensor* XLATensor_sub(OpaqueXLATensor* a, OpaqueXLATensor* b);
 XLA_API OpaqueXLATensor* XLATensor_sum(OpaqueXLATensor* a, Int64ArrayRef dims,
-                                       bool keep_reduced_dimensions,
-                                       Optional_XLAScalarType dtype);
+                                       bool keep_reduced_dimensions);
 XLA_API OpaqueXLATensor_tuple_3 XLATensor_svd(OpaqueXLATensor* input, bool compute_uv,
                                       bool full_matrix);
 XLA_API OpaqueXLATensor* XLATensor_tan(OpaqueXLATensor* a);

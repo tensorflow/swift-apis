@@ -442,9 +442,9 @@ xla::int64 CanonicalizeCat(absl::Span<const Value> inputs, xla::int64 dim) {
   return dim;
 }
 
-std::vector<xla::XlaOp> LowerQR(xla::XlaOp input, bool some) {
+std::vector<xla::XlaOp> LowerQR(xla::XlaOp input, bool full_matrices) {
   xla::QRDecompositionResult qr_result =
-      xla::QRDecomposition(input, /*full_matrices=*/!some,
+      xla::QRDecomposition(input, /*full_matrices=*/full_matrices,
                            /*block_size=*/128, XlaHelpers::mat_mul_precision())
           .ValueOrDie();
   xla::XlaOp q = qr_result.q;
@@ -477,7 +477,7 @@ std::vector<xla::XlaOp> LowerSVD(xla::XlaOp input, bool compute_uv,
     v_sizes[input_shape.rank() - 1] = std::min(m_dim, n_dim);
     v = BuildSlice(v, base_indices, v_sizes);
   }
-  return {u, svd_result.d, v};
+  return {svd_result.d, u, v};
 }
 
 xla::Shape ShapeOfXlaOpList(absl::Span<const xla::XlaOp> ops) {
