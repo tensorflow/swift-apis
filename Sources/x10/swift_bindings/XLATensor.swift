@@ -305,19 +305,6 @@ extension XLATensor {
     }
   }
 
-  static func full(
-    _ dims: [Int64],
-    _ value: XLAScalarType,
-    _ dtype: XLAScalarType.Type,
-    _ device: Device
-  ) -> XLATensor {
-    let tmp = XLATensor_makeScalar(value.xlaScalar, dtype.xlaTensorScalarType, device.cdevice)
-    defer { destroyTensor(tmp) }
-    return dims.withArrayRef { dims in
-      return XLATensor(_handle: XLATensor_expand(tmp, dims))
-    }
-  }
-
   static func irText(_ a: XLATensor) -> String {
     let str = XLATensor_ir_text(a.handle)
     defer { DeleteString(str) }
