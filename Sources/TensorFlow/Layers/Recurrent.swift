@@ -198,7 +198,7 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell {
     self.fusedBias = Tensor(zeros: [4 * hiddenSize])
   }
 
-  public struct State: Equatable, Differentiable, VectorProtocol, KeyPathIterable {
+  public struct State: Equatable, Differentiable, VectorProtocol, KeyPathIterable, Mergeable {
     public var cell: Tensor<Scalar>
     public var hidden: Tensor<Scalar>
 
@@ -206,6 +206,27 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell {
     public init(cell: Tensor<Scalar>, hidden: Tensor<Scalar>) {
       self.cell = cell
       self.hidden = hidden
+    }
+
+    /// Concatenates two values.
+    @differentiable
+    public static func concatenate(_ lhs: Self, _ rhs: Self) -> Self {
+      // TODO: Remove workaround after https://github.com/tensorflow/swift-apis/issues/1087 is fixed.
+      let concatCell = lhs.cell.concatenated(with: rhs.cell, alongAxis: -1)
+      let concatHidden = lhs.hidden.concatenated(with: rhs.hidden, alongAxis: -1)
+      let cell = concatCell.withDerivative { [shape = concatCell.shape] in
+          if $0 == Tensor(0) { $0 = Tensor(zeros: shape) }
+      }
+      let hidden = concatHidden.withDerivative { [shape = concatHidden.shape] in
+          if $0 == Tensor(0) { $0 = Tensor(zeros: shape) }
+      }
+      return Self(cell: cell, hidden: hidden)
+    }
+
+    /// Adds two values and produces their sum.
+    @differentiable
+    public static func sum(_ lhs: Self, _ rhs: Self) -> Self {
+      Self(cell: lhs.cell + rhs.cell, hidden: lhs.hidden + rhs.hidden)
     }
   }
 
@@ -420,12 +441,166 @@ public struct RecurrentLayer<Cell: RecurrentLayerCell>: Layer {
   }
 }
 
+/// A type with values that support differentiable binary operations.
+///
+/// Used by `BidirectionalRecurrentLayer` as a generic requirement for merge functions.
+public protocol Mergeable: Differentiable, AdditiveArithmetic {
+  /// Concatenates two values.
+  @differentiable
+  static func concatenate(_ lhs: Self, _ rhs: Self) -> Self
+
+  /// Adds two values and produces their sum.
+  ///
+  /// - Note: renaming `sum` to `+` results in a compiler crash when conforming `Tensor` to
+  /// `Mergeable` (SR-13229).
+  @differentiable
+  static func sum(_ lhs: Self, _ rhs: Self) -> Self
+}
+
+extension Tensor: Mergeable where Scalar: TensorFlowFloatingPoint {
+  /// Concatenates two tensors along last axis.
+  @differentiable
+  public static func concatenate(_ lhs: Tensor, _ rhs: Tensor) -> Tensor {
+    // TODO: Remove workaround after https://github.com/tensorflow/swift-apis/issues/1087 is fixed.
+    let concat = lhs.concatenated(with: rhs, alongAxis: -1)
+    return concat.withDerivative { [shape = concat.shape] in
+        if $0 == Tensor(0) { $0 = Tensor(zeros: shape) }
+    }
+  }
+
+  /// Adds two values and produces their sum.
+  @differentiable
+  public static func sum(_ lhs: Tensor, _ rhs: Tensor) -> Tensor {
+    lhs + rhs
+  }
+}
+
+/// Concatenates two values.
+@differentiable
+public func concatenate<T: Mergeable>(
+  _ first: T,
+  _ second: T
+) -> T {
+  T.concatenate(first, second)
+}
+
+/// Adds two values and produces their sum.
+@differentiable
+public func sum<T: Mergeable>(
+  _ first: T,
+  _ second: T
+) -> T {
+  T.sum(first, second)
+}
+
+public struct BidirectionalRecurrentLayer<Cell: RecurrentLayerCell>: Layer
+where Cell.TimeStepOutput: Mergeable {
+  public typealias Input = [Cell.TimeStepInput]
+  public typealias Output = [Cell.TimeStepOutput]
+  public typealias MergeFunction = @differentiable (Cell.TimeStepOutput, Cell.TimeStepOutput) -> Cell.TimeStepOutput
+
+  /// A wrapper around a `@differentiable` merge function.
+  ///
+  /// - Note: this exists as a workaround for runtime crashes regarding `@differentiable`function
+  ///   stored properties (TF-1122).
+  private class _MergeFunction {
+    var function: MergeFunction
+    init(_ function: @escaping MergeFunction) {
+      self.function = function
+    }
+  }
+
+  @noDerivative private let _mergeFunction: _MergeFunction
+  /// The forward recurrent layer.
+  public var forward: RecurrentLayer<Cell>
+  /// The backward recurrent layer.
+  public var backward: RecurrentLayer<Cell>
+  /// The differentiable function used for merging forward and backward recurrent layer outputs.
+  @noDerivative public var mergeFunction: MergeFunction {
+    _mergeFunction.function
+  }
+
+  /// Creates an instance from the given recurrent layer cell and merge function.
+  public init(_ cell: @autoclosure () -> Cell, mergeFunction: @escaping MergeFunction = concatenate) {
+    forward = RecurrentLayer(cell())
+    backward = RecurrentLayer(cell())
+    _mergeFunction = .init(mergeFunction)
+  }
+
+  @differentiable
+  public func callAsFunction(
+    _ inputs: Input,
+    initialForwardLayerState: Cell.State,
+    initialBackwardLayerState: Cell.State
+  ) -> Output {
+    let forwardOutputs = forward(
+      inputs, initialState: initialForwardLayerState)
+
+    // TODO: Replace with inputs.reversed() after it become differentiable.
+    var inputsReversed = Input()
+
+    for forwardIndex in 0 ..< withoutDerivative(at: inputs.count) {
+        let backwardIndex = withoutDerivative(at: inputs.count - 1 - forwardIndex)
+        inputsReversed.append(inputs[backwardIndex])
+    }
+
+    let backwardOutputs = backward(
+        inputsReversed, initialState: initialBackwardLayerState)
+
+    var outputs = Output()
+
+    for forwardIndex in  0 ..< withoutDerivative(at: inputs.count) {
+        let backwardIndex = withoutDerivative(at: inputs.count - 1 - forwardIndex)
+        outputs.append(mergeFunction(forwardOutputs[forwardIndex], backwardOutputs[backwardIndex]))
+    }
+
+    return outputs
+  }
+
+  @differentiable
+  public func callAsFunction(_ inputs: Input) -> Output {
+    precondition(!inputs.isEmpty, "'inputs' must be non-empty.")
+    let initialForwardLayerState = withoutDerivative(
+      at: forward.cell.zeroState(for: inputs.first!))
+    let initialBackwardLayerState = withoutDerivative(
+      at: backward.cell.zeroState(for: inputs.last!))
+    return self(
+      inputs,
+      initialForwardLayerState: initialForwardLayerState,
+      initialBackwardLayerState: initialBackwardLayerState
+    )
+  }
+
+  @differentiable
+  public func lastOutput(
+    from inputs: Input,
+    initialForwardLayerState: Cell.State,
+    initialBackwardLayerState: Cell.State
+  ) -> Cell.TimeStepOutput {
+    precondition(!inputs.isEmpty, "'inputs' must be non-empty.")
+    return self(
+      inputs,
+      initialForwardLayerState: initialForwardLayerState,
+      initialBackwardLayerState: initialBackwardLayerState
+    )[withoutDerivative(at: inputs.count - 1)]
+  }
+
+  @differentiable
+  public func lastOutput(from inputs: Input) -> Cell.TimeStepOutput {
+    precondition(!inputs.isEmpty, "'inputs' must be non-empty.")
+    return self(inputs)[withoutDerivative(at: inputs.count - 1)]
+  }
+}
+
 extension RecurrentLayer: Equatable where Cell: Equatable {}
 extension RecurrentLayer: AdditiveArithmetic where Cell: AdditiveArithmetic {}
 
 public typealias BasicRNN<Scalar: TensorFlowFloatingPoint> = RecurrentLayer<BasicRNNCell<Scalar>>
 public typealias LSTM<Scalar: TensorFlowFloatingPoint> = RecurrentLayer<LSTMCell<Scalar>>
 public typealias GRU<Scalar: TensorFlowFloatingPoint> = RecurrentLayer<GRUCell<Scalar>>
+public typealias BidirectionalBasicRNN<Scalar: TensorFlowFloatingPoint> = BidirectionalRecurrentLayer<BasicRNNCell<Scalar>>
+public typealias BidirectionalLSTM<Scalar: TensorFlowFloatingPoint> = BidirectionalRecurrentLayer<LSTMCell<Scalar>>
+public typealias BidirectionalGRU<Scalar: TensorFlowFloatingPoint> = BidirectionalRecurrentLayer<GRUCell<Scalar>>
 
 // - MARK: Deprecated names
 

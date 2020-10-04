@@ -1,6 +1,7 @@
 # Computes expected results for `testRNN()` in `Tests/TensorFlowTests/LayerTests.swift`.
 # Requires 'tensorflow>=2.0.0a0' (e.g. "pip install tensorflow==2.2.0").
 
+import sys
 import numpy
 import tensorflow as tf
 
@@ -25,10 +26,13 @@ def swift_tensor(name, tensor):
         name,
         indented(numpy.array2string(tensor, separator=',', formatter=formatter)))
 
+go_backwards = "go_backwards" in sys.argv
+
 # Initialize the keras model with the SimpleRNN.
 rnn = tf.keras.layers.SimpleRNN(
     units=4, activation="tanh", 
-    return_sequences=True, return_state=True)
+    return_sequences=True, return_state=True,
+    go_backwards=go_backwards)
 
 x_input = tf.keras.Input(shape=[4, 4])
 
