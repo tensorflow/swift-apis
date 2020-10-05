@@ -456,8 +456,8 @@ public enum _RawXLA {
     return matmul(
       (adjX
         ? permute(x, dims: [Int64](0..<xrank - 2) + [xrank - 1, xrank - 2]) : x),
-      (adjX
-        ? permute(y, dims: [Int64](0..<yrank - 2) + [yrank - 1, yrank - 2]) : x))
+      (adjY
+        ? permute(y, dims: [Int64](0..<yrank - 2) + [yrank - 1, yrank - 2]) : y))
   }
 
   /// Return the reduction indices for computing gradients of s0 op s1 with broadcast.

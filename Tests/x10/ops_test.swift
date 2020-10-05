@@ -2140,7 +2140,10 @@ final class TensorTests: XCTestCase {
     for useReducedPrecision in [false, true] {
       for (xShape, yShape, transposeX, transposeY) in [
         ([2, 2], [2, 2], false, false),
-        ([2, 2], [2, 2], true, true),
+        ([1, 2, 3], [1, 3, 2], false, false),
+        ([1, 2, 3], [1, 2, 3], false, true),
+        ([1, 2, 3], [1, 2, 3], true, false),
+        ([1, 2, 2], [1, 2, 2], true, true),
         ([2, 2, 3, 8], [2, 9, 3], true, true),
         ([2, 2, 2, 2], [2, 2], true, true),
       ] {
