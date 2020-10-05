@@ -25,6 +25,7 @@ public enum _RawXLA {
   public typealias Padding = _RawTFEager.Padding
   public typealias Padding1 = _RawTFEager.Padding1
   public typealias Mode5 = _RawTFEager.Mode1
+  typealias AnyScalar = XLAScalarType
 
   private static func canonicalDims(_ dims: [Int64], _ rank: Int64) -> [Int64] {
     dims.map { $0 < 0 ? $0 + rank : $0 }
@@ -626,14 +627,11 @@ public enum _RawXLA {
     dataFormat: DataFormat = .nhwc,
     dilations: [Int32] = [1, 1, 1, 1]
   ) -> Tensor<T> {
-    checkSameDevice(input, filter)
-    checkSamePrecision(input, filter)
-    return Tensor(
-      _xla: XLATensor.tf_Conv(
-        input.xlaTensor, filter.xlaTensor, false, strides.map { Int64($0) },
-        convertPadding1(padding),
-        explicitPaddings.map { Int64($0) }, convertDataFormat(dataFormat),
-        dilations.map { Int64($0) }))
+    return tf_Conv(
+      input, filter, false, strides.map { Int64($0) },
+      convertPadding1(padding),
+      explicitPaddings.map { Int64($0) }, convertDataFormat(dataFormat),
+      dilations.map { Int64($0) })
   }
 
   /// Computes the gradients of convolution with respect to the filter.
@@ -680,14 +678,11 @@ public enum _RawXLA {
     dataFormat: DataFormat = .nhwc,
     dilations: [Int32] = [1, 1, 1, 1]
   ) -> Tensor<T> {
-    checkSameDevice(input, outBackprop)
-    checkSamePrecision(input, outBackprop)
-    return Tensor(
-      _xla: XLATensor.tf_ConvBackpropFilter(
-        input.xlaTensor, filterSizes,
-        outBackprop.xlaTensor, false, strides.map { Int64($0) },
-        convertPadding1(padding), explicitPaddings.map { Int64($0) },
-        convertDataFormat(dataFormat), dilations.map { Int64($0) }))
+    return tf_ConvBackpropFilter(
+      input, filterSizes,
+      outBackprop, false, strides.map { Int64($0) },
+      convertPadding1(padding), explicitPaddings.map { Int64($0) },
+      convertDataFormat(dataFormat), dilations.map { Int64($0) })
   }
   public static func conv2DBackpropFilter<T: FloatingPoint & TensorFlowScalar>(
     _ input: Tensor<T>,
@@ -700,14 +695,11 @@ public enum _RawXLA {
     dataFormat: DataFormat = .nhwc,
     dilations: [Int32] = [1, 1, 1, 1]
   ) -> Tensor<T> {
-    checkSameDevice(input, outBackprop)
-    checkSamePrecision(input, outBackprop)
-    return Tensor(
-      _xla: XLATensor.tf_ConvBackpropFilter(
-        input.xlaTensor, filterSizes.scalars.map { Int64($0) },
-        outBackprop.xlaTensor, false, strides.map { Int64($0) },
-        convertPadding1(padding), explicitPaddings.map { Int64($0) },
-        convertDataFormat(dataFormat), dilations.map { Int64($0) }))
+    return tf_ConvBackpropFilter(
+      input, filterSizes.scalars.map { Int64($0) },
+      outBackprop, false, strides.map { Int64($0) },
+      convertPadding1(padding), explicitPaddings.map { Int64($0) },
+      convertDataFormat(dataFormat), dilations.map { Int64($0) })
   }
 
   /// Computes the gradients of convolution with respect to the input.
@@ -753,14 +745,11 @@ public enum _RawXLA {
     dataFormat: DataFormat = .nhwc,
     dilations: [Int32] = [1, 1, 1, 1]
   ) -> Tensor<T> {
-    checkSameDevice(filter, outBackprop)
-    checkSamePrecision(filter, outBackprop)
-    return Tensor(
-      _xla: XLATensor.tf_ConvBackpropInput(
-        inputSizes, filter.xlaTensor,
-        outBackprop.xlaTensor, false, strides.map { Int64($0) },
-        convertPadding1(padding), explicitPaddings.map { Int64($0) },
-        convertDataFormat(dataFormat), dilations.map { Int64($0) }))
+    return tf_ConvBackpropInput(
+      inputSizes, filter,
+      outBackprop, false, strides.map { Int64($0) },
+      convertPadding1(padding), explicitPaddings.map { Int64($0) },
+      convertDataFormat(dataFormat), dilations.map { Int64($0) })
   }
   public static func conv2DBackpropInput<T: TensorFlowNumeric>(
     inputSizes: Tensor<Int32>,
@@ -773,14 +762,11 @@ public enum _RawXLA {
     dataFormat: DataFormat = .nhwc,
     dilations: [Int32] = [1, 1, 1, 1]
   ) -> Tensor<T> {
-    checkSameDevice(filter, outBackprop)
-    checkSamePrecision(filter, outBackprop)
-    return Tensor(
-      _xla: XLATensor.tf_ConvBackpropInput(
-        inputSizes.scalars.map { Int64($0) }, filter.xlaTensor,
-        outBackprop.xlaTensor, false, strides.map { Int64($0) },
-        convertPadding1(padding), explicitPaddings.map { Int64($0) },
-        convertDataFormat(dataFormat), dilations.map { Int64($0) }))
+    return tf_ConvBackpropInput(
+      inputSizes.scalars.map { Int64($0) }, filter,
+      outBackprop, false, strides.map { Int64($0) },
+      convertPadding1(padding), explicitPaddings.map { Int64($0) },
+      convertDataFormat(dataFormat), dilations.map { Int64($0) })
   }
 
   /// Computes a 3-D convolution given 5-D `input` and `filter` tensors.
@@ -818,13 +804,10 @@ public enum _RawXLA {
     dataFormat: DataFormat1 = .ndhwc,
     dilations: [Int32] = [1, 1, 1, 1, 1]
   ) -> Tensor<T> {
-    checkSameDevice(input, filter)
-    checkSamePrecision(input, filter)
-    return Tensor(
-      _xla: XLATensor.tf_Conv(
-        input.xlaTensor, filter.xlaTensor, false, strides.map { Int64($0) },
-        convertPadding(padding),
-        [], convertDataFormat1(dataFormat), dilations.map { Int64($0) }))
+    return tf_Conv(
+      input, filter, false, strides.map { Int64($0) },
+      convertPadding(padding),
+      [], convertDataFormat1(dataFormat), dilations.map { Int64($0) })
   }
 
   /// Computes the gradients of 3-D convolution with respect to the filter.
@@ -861,14 +844,11 @@ public enum _RawXLA {
     dataFormat: DataFormat1 = .ndhwc,
     dilations: [Int32] = [1, 1, 1, 1, 1]
   ) -> Tensor<T> {
-    checkSameDevice(input, outBackprop)
-    checkSamePrecision(input, outBackprop)
-    return Tensor(
-      _xla: XLATensor.tf_ConvBackpropFilter(
-        input.xlaTensor, filterSizes.scalars.map { Int64($0) },
-        outBackprop.xlaTensor, false, strides.map { Int64($0) },
-        convertPadding(padding), [], convertDataFormat1(dataFormat),
-        dilations.map { Int64($0) }))
+    return tf_ConvBackpropFilter(
+      input, filterSizes.scalars.map { Int64($0) },
+      outBackprop, false, strides.map { Int64($0) },
+      convertPadding(padding), [], convertDataFormat1(dataFormat),
+      dilations.map { Int64($0) })
   }
 
   /// Computes the gradients of 3-D convolution with respect to the input.
@@ -908,14 +888,11 @@ public enum _RawXLA {
     dataFormat: DataFormat1 = .ndhwc,
     dilations: [Int32] = [1, 1, 1, 1, 1]
   ) -> Tensor<T> {
-    checkSameDevice(filter, outBackprop)
-    checkSamePrecision(filter, outBackprop)
-    return Tensor(
-      _xla: XLATensor.tf_ConvBackpropInput(
-        inputSizes.scalars.map { Int64($0) }, filter.xlaTensor,
-        outBackprop.xlaTensor, false, strides.map { Int64($0) },
-        convertPadding(padding), [], convertDataFormat1(dataFormat),
-        dilations.map { Int64($0) }))
+    return tf_ConvBackpropInput(
+      inputSizes.scalars.map { Int64($0) }, filter,
+      outBackprop, false, strides.map { Int64($0) },
+      convertPadding(padding), [], convertDataFormat1(dataFormat),
+      dilations.map { Int64($0) })
   }
 
   /// A simplified version of cross replica sum, with scaling.
@@ -1077,13 +1054,10 @@ public enum _RawXLA {
     dataFormat: DataFormat = .nhwc,
     dilations: [Int32] = [1, 1, 1, 1]
   ) -> Tensor<T> {
-    checkSameDevice(input, filter)
-    checkSamePrecision(input, filter)
-    return Tensor(
-      _xla: XLATensor.tf_Conv(
-        input.xlaTensor, filter.xlaTensor, true, strides.map { Int64($0) }, convertPadding(padding),
-        [], convertDataFormat(dataFormat),
-        dilations.map { Int64($0) }))
+    return tf_Conv(
+      input, filter, true, strides.map { Int64($0) }, convertPadding(padding),
+      [], convertDataFormat(dataFormat),
+      dilations.map { Int64($0) })
   }
 
   /// Computes the gradients of depthwise convolution with respect to the filter.
@@ -1127,14 +1101,11 @@ public enum _RawXLA {
     dataFormat: DataFormat = .nhwc,
     dilations: [Int32] = [1, 1, 1, 1]
   ) -> Tensor<T> {
-    checkSameDevice(input, outBackprop)
-    checkSamePrecision(input, outBackprop)
-    return Tensor(
-      _xla: XLATensor.tf_ConvBackpropFilter(
-        input.xlaTensor, filterSizes.scalars.map { Int64($0) },
-        outBackprop.xlaTensor, true, strides.map { Int64($0) },
-        convertPadding(padding), [],
-        convertDataFormat(dataFormat), dilations.map { Int64($0) }))
+    return tf_ConvBackpropFilter(
+      input, filterSizes.scalars.map { Int64($0) },
+      outBackprop, true, strides.map { Int64($0) },
+      convertPadding(padding), [],
+      convertDataFormat(dataFormat), dilations.map { Int64($0) })
   }
 
   /// Computes the gradients of depthwise convolution with respect to the input.
@@ -1178,14 +1149,11 @@ public enum _RawXLA {
     dataFormat: DataFormat = .nhwc,
     dilations: [Int32] = [1, 1, 1, 1]
   ) -> Tensor<T> {
-    checkSameDevice(filter, outBackprop)
-    checkSamePrecision(filter, outBackprop)
-    return Tensor(
-      _xla: XLATensor.tf_ConvBackpropInput(
-        inputSizes.scalars.map { Int64($0) }, filter.xlaTensor,
-        outBackprop.xlaTensor, true, strides.map { Int64($0) },
-        convertPadding(padding), [],
-        convertDataFormat(dataFormat), dilations.map { Int64($0) }))
+    return tf_ConvBackpropInput(
+      inputSizes.scalars.map { Int64($0) }, filter,
+      outBackprop, true, strides.map { Int64($0) },
+      convertPadding(padding), [],
+      convertDataFormat(dataFormat), dilations.map { Int64($0) })
   }
 
   /// Returns the diagonal part of the tensor.
@@ -2237,9 +2205,7 @@ public enum _RawXLA {
     _ input: Tensor<T>,
     paddings: [Int]
   ) -> Tensor<T> {
-    Tensor(
-      _xla: XLATensor.constantPad(
-        input.xlaTensor, reversedPaddings(paddings.map { Int64($0) }), 0))
+    constant_pad_nd(input, reversedPaddings(paddings.map { Int64($0) }), 0)
   }
 
   /// Pads a tensor.
@@ -2277,9 +2243,8 @@ public enum _RawXLA {
     constantValues: Tensor<T>
   ) -> Tensor<T> {
     let linearizedPaddings = paddings.scalars.map { Int64($0) }
-    return Tensor(
-      _xla: XLATensor.constantPad(
-        input.xlaTensor, reversedPaddings(linearizedPaddings), constantValues.scalarized()))
+    return constant_pad_nd(
+      input, reversedPaddings(linearizedPaddings), constantValues.scalarized())
   }
 
   public static func physicalCast<T: TensorFlowScalar, R: TensorFlowScalar>(
@@ -2313,39 +2278,6 @@ public enum _RawXLA {
   ) -> Tensor<T> {
     return prod(
       input, reductionIndices: reductionIndices.scalars.map { Int64($0) }, keepDims: keepDims)
-  }
-
-  /// Computes the QR decompositions of one or more matrices.
-  ///
-  /// Computes the QR decomposition of each inner matrix in `tensor` such that
-  /// `tensor[..., :, :] = q[..., :, :] * r[..., :,:])`
-  ///
-  /// ```python
-  /// # a is a tensor.
-  /// # q is a tensor of orthonormal matrices.
-  /// # r is a tensor of upper triangular matrices.
-  /// q, r = qr(a)
-  /// q_full, r_full = qr(a, full_matrices=True)
-  /// ```
-  ///
-  /// - Parameter input: A tensor of shape `[..., M, N]` whose inner-most 2 dimensions
-  ///     form matrices of size `[M, N]`. Let `P` be the minimum of `M` and `N`.
-  ///
-  /// - Attr full_matrices: If true, compute full-sized `q` and `r`. If false
-  ///     (the default), compute only the leading `P` columns of `q`.
-  ///
-  /// - Outputs:
-  ///     - q: Orthonormal basis for range of `a`. If `full_matrices` is `False` then
-  ///         shape is `[..., M, P]`; if `full_matrices` is `True` then shape is
-  ///         `[..., M, M]`.
-  ///     - r: Triangular factor. If `full_matrices` is `False` then shape is
-  ///         `[..., P, N]`. If `full_matrices` is `True` then shape is `[..., M, N]`.
-  public static func qr<T: FloatingPoint & TensorFlowScalar>(
-    _ input: Tensor<T>,
-    fullMatrices: Bool = false
-  ) -> (q: Tensor<T>, r: Tensor<T>) {
-    let (q, r) = XLATensor.qr(input.xlaTensor, fullMatrices: fullMatrices)
-    return (Tensor<T>(_xla: q), Tensor<T>(_xla: r))
   }
 
   /// Creates a sequence of numbers.
@@ -2674,18 +2606,11 @@ public enum _RawXLA {
     t: Tensor<T>,
     e: Tensor<T>
   ) -> Tensor<T> {
-    checkSameDevice(t, e)
-    checkSameDevice(condition.device, t.device)
-    checkSamePrecision(t, e)
-    var broadcastedCondition = condition
-    while broadcastedCondition.rank < t.rank {
-      broadcastedCondition = expandDims(
-        broadcastedCondition, dim: Tensor(Int64(broadcastedCondition.rank), on: condition.device))
-    }
-    broadcastedCondition = broadcastTo(
-      broadcastedCondition,
-      shape: Tensor<Int32>(t.shape.dimensions.map { Int32($0) }, on: condition.device))
-    return Tensor(_xla: XLATensor.where_(broadcastedCondition.xlaTensor, t.xlaTensor, e.xlaTensor))
+    var dims = condition.shape.dimensions.map(Int64.init)
+    let tdims = t.shape.dimensions.map { Int64($0) }
+    while dims.count < t.rank { dims.append(1) }
+    let broadcastedCondition = broadcastTo(resize_value(condition, dims: dims), dims: tdims)
+    return where_(condition: broadcastedCondition, input: t, other: e)
   }
 
   private static let seluGamma = 1.0507009873554804934193349852946
@@ -2971,7 +2896,7 @@ public enum _RawXLA {
     }
     let loss = _RawXLA.sum(
       _RawXLA.mul(one_hot, tmp_output),
-      reductionIndices: [Int64(1)])
+      reductionIndices: [Int64(1)], keepDims: false)
     // one_hot stands in for the backprop gradient as it has the right shape
     // and will multiplied on the backwards pass.
     let backprop = logSoftmaxBackward(gradOutput: one_hot, output: tmp_output, dim: -1)
@@ -3643,19 +3568,6 @@ public enum _RawXLA {
   ///
   /// - Output output: The reduced tensor.
   public static func sum<
-    T: TensorFlowNumeric
-  >(
-    _ input: Tensor<T>,
-    reductionIndices: [Int64],
-    keepDims: Bool = false
-  ) -> Tensor<T> {
-    let dtype = input.isReducedPrecision ? nil : T.self
-    return Tensor(
-      _xla: XLATensor.sum(
-        input.xlaTensor, reductionIndices, keepDims, dtype))
-  }
-
-  public static func sum<
     T: TensorFlowNumeric,
     Tidx: TensorFlowIndex
   >(
@@ -3664,22 +3576,6 @@ public enum _RawXLA {
     keepDims: Bool = false
   ) -> Tensor<T> {
     sum(input, reductionIndices: reductionIndices.scalars.map { Int64($0) }, keepDims: keepDims)
-  }
-
-  public static func svd<T: FloatingPoint & TensorFlowScalar>(
-    _ input: Tensor<T>,
-    computeUv: Bool = true,
-    fullMatrices: Bool = false
-  ) -> (s: Tensor<T>, u: Tensor<T>, v: Tensor<T>) {
-    let (u, s, v) = XLATensor.svd(input.xlaTensor, computeUv: computeUv, fullMatrices: fullMatrices)
-    return (s: Tensor(_xla: s), u: Tensor(_xla: u), v: Tensor(_xla: v))
-  }
-
-  public static func topk<T: FloatingPoint & TensorFlowScalar>(
-    _ a: Tensor<T>, k: Int64, dim: Int64, largest: Bool
-  ) -> (Tensor<T>, Tensor<Int64>) {
-    let (r0, r1) = XLATensor.topk(a.xlaTensor, k: k, dim: dim, largest: largest)
-    return (Tensor(_xla: r0), Tensor(_xla: r1))
   }
 
   /// Assign `value` to the sliced l-value reference of `input`.

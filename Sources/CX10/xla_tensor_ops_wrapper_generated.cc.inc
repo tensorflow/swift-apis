@@ -1988,36 +1988,36 @@ class Prod : public Node {
 
 class Qr : public Node {
  public:
-  Qr(const Value& input, bool some)
+  Qr(const Value& input, bool fullMatrices)
       : Node(
             ir::OpKind(at::aten::qr), {input},
             [&]() {
               xla::XlaBuilder b("InferOutputShape");
               auto input_ir = xla::Parameter(&b, 0, input.shape(), "p0");
-              auto results = LowerQR(input_ir, some);
+              auto results = LowerQR(input_ir, fullMatrices);
               return ShapeOfXlaOpList(results);
             },
-            /*num_outputs=*/2, xla::util::MHash(some)),
-        some_(std::move(some)) {}
+            /*num_outputs=*/2, xla::util::MHash(fullMatrices)),
+        fullMatrices_(std::move(fullMatrices)) {}
 
   NodePtr Clone(OpList operands) const override {
-    return MakeNode<Qr>(operands.at(0), some_);
+    return MakeNode<Qr>(operands.at(0), fullMatrices_);
   }
 
   XlaOpVector Lower(LoweringContext* loctx) const override {
-    auto result = LowerQR(loctx->GetOutputOp(operand(0)), some_);
+    auto result = LowerQR(loctx->GetOutputOp(operand(0)), fullMatrices_);
     return ReturnOps(result, loctx);
   }
 
   std::string ToString() const override {
     std::stringstream ss;
     ss << Node::ToString();
-    OpFieldToString(ss, "some", some_);
+    OpFieldToString(ss, "fullMatrices", fullMatrices_);
     return ss.str();
   }
 
  private:
-  bool some_;
+  bool fullMatrices_;
 };
 
 class Relu : public Node {
@@ -2555,82 +2555,80 @@ class Sub : public Node {
 
 class Sum : public Node {
  public:
-  Sum(const Value& input, std::vector<xla::int64> dims, bool keep_reduced_dimensions, c10::optional<at::ScalarType> dtype)
-      : Node(ir::OpKind(at::aten::sum),
-             {input}, [&]() {
-       xla::XlaBuilder b("InferOutputShape");
-       auto input_ir = xla::Parameter(&b, 0, input.shape(), "p0");
-       xla::XlaOp result = LowerSum(
-         input_ir, dims, keep_reduced_dimensions, dtype);
-       return XlaHelpers::ShapeOfXlaOp(result);
-     },
-             /*num_outputs=*/1, xla::util::MHash(dims, keep_reduced_dimensions, dtype)),
-        dims_(std::move(dims)),
-        keep_reduced_dimensions_(std::move(keep_reduced_dimensions)),
-        dtype_(std::move(dtype)) {}
+  Sum(const Value& input, std::vector<xla::int64> reductionIndices,
+      bool keepDims)
+      : Node(
+            ir::OpKind(at::aten::sum), {input},
+            [&]() {
+              xla::XlaBuilder b("InferOutputShape");
+              auto input_ir = xla::Parameter(&b, 0, input.shape(), "p0");
+              xla::XlaOp result =
+                  BuildSum(input_ir, reductionIndices, keepDims);
+              return XlaHelpers::ShapeOfXlaOp(result);
+            },
+            /*num_outputs=*/1, xla::util::MHash(reductionIndices, keepDims)),
+        reductionIndices_(std::move(reductionIndices)),
+        keepDims_(std::move(keepDims)) {}
 
   NodePtr Clone(OpList operands) const override {
-    return MakeNode<Sum>(
-        operands.at(0), dims_, keep_reduced_dimensions_, dtype_);
+    return MakeNode<Sum>(operands.at(0), reductionIndices_, keepDims_);
   }
 
   XlaOpVector Lower(LoweringContext* loctx) const override {
-    xla::XlaOp result = LowerSum(
-        loctx->GetOutputOp(operand(0)), dims_, keep_reduced_dimensions_, dtype_);
+    xla::XlaOp result =
+        BuildSum(loctx->GetOutputOp(operand(0)), reductionIndices_, keepDims_);
     return ReturnOp(result, loctx);
   }
 
   std::string ToString() const override {
     std::stringstream ss;
     ss << Node::ToString();
-    OpFieldToString(ss, "dims", dims_);
-    OpFieldToString(ss, "keep_reduced_dimensions", keep_reduced_dimensions_);
-    OpFieldToString(ss, "dtype", dtype_);
+    OpFieldToString(ss, "reductionIndices", reductionIndices_);
+    OpFieldToString(ss, "keepDims", keepDims_);
     return ss.str();
   }
 
  private:
-  std::vector<xla::int64> dims_;
-  bool keep_reduced_dimensions_;
-  c10::optional<at::ScalarType> dtype_;
+  std::vector<xla::int64> reductionIndices_;
+  bool keepDims_;
 };
 
 class Svd : public Node {
  public:
-  Svd(const Value& input, bool compute_uv, bool full_matrix)
+  Svd(const Value& input, bool computeUv, bool fullMatrices)
       : Node(
             ir::OpKind(at::aten::svd), {input},
             [&]() {
               xla::XlaBuilder b("InferOutputShape");
               auto input_ir = xla::Parameter(&b, 0, input.shape(), "p0");
-              auto results = LowerSVD(input_ir, compute_uv, full_matrix);
+              auto results = LowerSVD(input_ir, computeUv, fullMatrices);
               return ShapeOfXlaOpList(results);
             },
-            /*num_outputs=*/3, xla::util::MHash(compute_uv, full_matrix)),
-        compute_uv_(std::move(compute_uv)),
-        full_matrix_(std::move(full_matrix)) {}
+            /*num_outputs=*/3, xla::util::MHash(computeUv, fullMatrices)),
+        computeUv_(std::move(computeUv)),
+        fullMatrices_(std::move(fullMatrices)) {}
 
   NodePtr Clone(OpList operands) const override {
-    return MakeNode<Svd>(operands.at(0), compute_uv_, full_matrix_);
+    return MakeNode<Svd>(operands.at(0), computeUv_, fullMatrices_);
   }
 
   XlaOpVector Lower(LoweringContext* loctx) const override {
     auto result =
-        LowerSVD(loctx->GetOutputOp(operand(0)), compute_uv_, full_matrix_);
+        LowerSVD(loctx->GetOutputOp(operand(0)), computeUv_, fullMatrices_);
     return ReturnOps(result, loctx);
   }
 
   std::string ToString() const override {
     std::stringstream ss;
     ss << Node::ToString();
-    OpFieldToString(ss, "compute_uv", compute_uv_);
-    OpFieldToString(ss, "full_matrix", full_matrix_);
+    OpFieldToString(ss, "computeUv", computeUv_);
+    OpFieldToString(ss, "fullMatrices", fullMatrices_);
     return ss.str();
   }
 
  private:
-  bool compute_uv_;
-  bool full_matrix_;
+  bool computeUv_;
+  bool fullMatrices_;
 };
 
 class Tan : public Node {
@@ -3982,11 +3980,11 @@ OpaqueXLATensor* XLATensor_prod(OpaqueXLATensor* input,
       input->CreateFrom(swift_xla::ir::Value(result_node, 0)));
 }
 
-OpaqueXLATensor_pair XLATensor_qr(OpaqueXLATensor* input, bool some) {
+OpaqueXLATensor_pair XLATensor_qr(OpaqueXLATensor* input, bool fullMatrices) {
   auto input_ir_value = input->GetIrValue();
 
-  auto result_node =
-      swift_xla::ir::MakeNode<swift_xla::ir::ops::Qr>(input_ir_value, some);
+  auto result_node = swift_xla::ir::MakeNode<swift_xla::ir::ops::Qr>(
+      input_ir_value, fullMatrices);
   OpaqueXLATensor_pair result;
   result.x = new swift_xla::XLATensor(
       input->CreateFrom(swift_xla::ir::Value(result_node, 0)));
@@ -4162,24 +4160,25 @@ OpaqueXLATensor* XLATensor_sub(OpaqueXLATensor* lhs, OpaqueXLATensor* rhs) {
       lhs->CreateFrom(swift_xla::ir::Value(result_node, 0)));
 }
 
-OpaqueXLATensor* XLATensor_sum(OpaqueXLATensor* input, Int64ArrayRef dims, bool keep_reduced_dimensions, Optional_XLAScalarType dtype) {
+OpaqueXLATensor* XLATensor_sum(OpaqueXLATensor* input,
+                               Int64ArrayRef reductionIndices, bool keepDims) {
   auto input_ir_value = input->GetIrValue();
 
   auto result_node = swift_xla::ir::MakeNode<swift_xla::ir::ops::Sum>(
       input_ir_value,
       swift_xla::XlaHelpers::GetCanonicalDimensionIndices(
-          dims.slice(), input_ir_value.shape().rank()),
-      keep_reduced_dimensions, dtype.value());
+          reductionIndices.slice(), input_ir_value.shape().rank()),
+      keepDims);
   return new swift_xla::XLATensor(
-      input->CreateFrom(swift_xla::ir::Value(result_node, 0), dtype.value()));
+      input->CreateFrom(swift_xla::ir::Value(result_node, 0)));
 }
 
-OpaqueXLATensor_tuple_3 XLATensor_svd(OpaqueXLATensor* input, bool compute_uv,
-                                      bool full_matrix) {
+OpaqueXLATensor_tuple_3 XLATensor_svd(OpaqueXLATensor* input, bool computeUv,
+                                      bool fullMatrices) {
   auto input_ir_value = input->GetIrValue();
 
   auto result_node = swift_xla::ir::MakeNode<swift_xla::ir::ops::Svd>(
-      input_ir_value, compute_uv, full_matrix);
+      input_ir_value, computeUv, fullMatrices);
   OpaqueXLATensor_tuple_3 result;
   result.v0 = new swift_xla::XLATensor(
       input->CreateFrom(swift_xla::ir::Value(result_node, 0)));

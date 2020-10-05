@@ -367,12 +367,22 @@ def format_args(items, comma=", ", ending=""):
 
 def swift_wrapper_define(op):
   args = op["args"]
+  results = op["results"]
 
   def format_swift_arg(arg):
     name, stype, (is_explicit, full_stype) = arg
     if is_explicit:
       return f"{name}: {full_stype}"
     return f"_ {name}: {full_stype}"
+
+  def format_result_type(r):
+    return f"{r[0]} {r[1]}" if r[0] else r[1]
+
+  def format_tuple_packing(ridx):
+    r = results[ridx]
+    tag = "xy"[ridx] if len(results) == 2 else f"v{ridx}"
+    value = f"Tensor(_xlaHandle: tuple_output.{tag})"
+    return f"{r[0]}: {value}" if r[0] else value
 
   generics = format_args((f"\n    {k}: {v}" for k, v in op["generics"].items()),
                          comma=",",
@@ -382,9 +392,9 @@ def swift_wrapper_define(op):
   args_gen = format_args(("\n    " + format_swift_arg(arg) for arg in args),
                          comma=",",
                          ending="\n  ")
-  results = op["results"]
   results_gen = results[0][1] if len(
-      results) == 1 else f"({format_args((format_result(r) for r in results))})"
+      results
+  ) == 1 else f"({format_args((format_result_type(r) for r in results))})"
 
   def format_defer(arg):
     name, stype, (is_explicit, full_stype) = arg
@@ -398,6 +408,8 @@ def swift_wrapper_define(op):
     name, stype, (is_explicit, full_stype) = arg
     if stype == "Tensor":
       return f"{name}.xlaHandle"
+    if stype == "AnyScalar":
+      return f"{name}.xlaScalar"
     return name
 
   body = ""
@@ -416,13 +428,23 @@ def swift_wrapper_define(op):
     if arg[1][0] == "[":  # is array type.
       withCounter += 1
       body += f"""{"  " * withCounter}  return {arg[0]}.withArrayRef {{ {arg[0]} in\n"""
-  body += f"""{"  " * withCounter}    return Tensor(_xlaHandle: XLATensor_{op["c_name"]}({format_args(format_arg_ref(arg) for arg in args)}))
+  dispatch = f"""XLATensor_{op["c_name"]}({format_args(format_arg_ref(arg) for arg in args)})"""
+  if len(results) == 1:
+    body += f"""{"  " * withCounter}    return Tensor(_xlaHandle: {dispatch})
 """
+  else:
+    body += f"""{"  " * withCounter}    let tuple_output = {dispatch}
+"""
+    body += f"""{"  " * withCounter}    return ({format_args(format_tuple_packing(ridx) for ridx in range(len(results)))})
+"""
+
   for withCounter in range(withCounter, 0, -1):
     body += f"""{"  " * withCounter}  }}\n"""
 
+  protection = "" if op[
+      "protection"] == "internal" else f"""{op["protection"]} """
   return f"""
-  public static func {op["swift_name"]}{generics}({args_gen}) -> {results_gen} {{{defers}
+  {protection}static func {op["swift_name"]}{generics}({args_gen}) -> {results_gen} {{{defers}
 {body}  }}
 """
 
@@ -472,6 +494,10 @@ def canonicalize_op(op):
   if tokens[i] == "(":
     i += 1
     while True:
+      name = ""
+      if tokens[i + 1] == ":":
+        name = tokens[i]
+        i += 2
       expect(erase_generics(tokens[i]) == "Tensor")
       results.append(("", tokens[i]))
       n_results += 1
@@ -508,6 +534,8 @@ def canonicalize_op(op):
     op["swift_namespace"] = "_RawXLA"
   if is_swift and "generics" not in op:
     op["generics"] = {}
+  if "protection" not in op:
+    op["protection"] = "public"
 
   del op["def"]
 
