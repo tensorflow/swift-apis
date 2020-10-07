@@ -100,9 +100,9 @@ NodeIdMap GenerateIdMap(absl::Span<const Node* const> post_order) {
   return id_map;
 }
 
-std::unordered_map<const Node*, size_t> GetRootsIds(
+absl::node_hash_map<const Node*, size_t> GetRootsIds(
     absl::Span<const Node* const> roots) {
-  std::unordered_map<const Node*, size_t> roots_ids;
+  absl::node_hash_map<const Node*, size_t> roots_ids;
   for (size_t i = 0; i < roots.size(); ++i) {
     roots_ids[roots[i]] = i;
   }
@@ -111,7 +111,7 @@ std::unordered_map<const Node*, size_t> GetRootsIds(
 
 absl::optional<size_t> GetRootNodeId(
     const Node* node,
-    const std::unordered_map<const Node*, size_t>& roots_ids) {
+    const absl::node_hash_map<const Node*, size_t>& roots_ids) {
   auto it = roots_ids.find(node);
   if (it == roots_ids.end()) {
     return absl::nullopt;
@@ -140,7 +140,7 @@ std::vector<AttrTag> GetNodeTags(const Node* node) {
 
 std::string GenerateDotNodeLabel(
     const Node* node,
-    const std::unordered_map<const Node*, size_t>& roots_ids) {
+    const absl::node_hash_map<const Node*, size_t>& roots_ids) {
   static const size_t kMaxValueSize = 64;
   std::stringstream ss;
   ss << node->op() << "\\n" << node->shape();
@@ -161,7 +161,7 @@ std::string GenerateDotNodeLabel(
 
 std::string GenerateDotNodeSpec(
     const Node* node,
-    const std::unordered_map<const Node*, size_t>& roots_ids) {
+    const absl::node_hash_map<const Node*, size_t>& roots_ids) {
   std::stringstream ss;
   ss << "label=\"" << GenerateDotNodeLabel(node, roots_ids) << "\"";
   return ss.str();
@@ -229,7 +229,7 @@ std::string DumpUtil::ToDot(absl::Span<const Node* const> nodes) {
 
 std::string DumpUtil::PostOrderToDot(absl::Span<const Node* const> post_order,
                                      absl::Span<const Node* const> roots) {
-  std::unordered_map<const Node*, size_t> roots_ids = GetRootsIds(roots);
+  absl::node_hash_map<const Node*, size_t> roots_ids = GetRootsIds(roots);
   NodeIdMap id_map = GenerateIdMap(post_order);
   std::stringstream ss;
   ss << "digraph G {\n";
@@ -268,7 +268,7 @@ std::string DumpUtil::ToText(absl::Span<const Node* const> nodes) {
 
 std::string DumpUtil::PostOrderToText(absl::Span<const Node* const> post_order,
                                       absl::Span<const Node* const> roots) {
-  std::unordered_map<const Node*, size_t> roots_ids = GetRootsIds(roots);
+  absl::node_hash_map<const Node*, size_t> roots_ids = GetRootsIds(roots);
   NodeIdMap id_map = GenerateIdMap(post_order);
   std::stringstream ss;
   ss << "IR {\n";
@@ -298,7 +298,7 @@ std::string DumpUtil::ToHlo(absl::Span<const Value> values,
 
 std::string DumpUtil::GetGraphChangeLog(absl::Span<const Node* const> roots) {
   auto post_order = Util::ComputePostOrder(roots);
-  std::unordered_map<const Node*, size_t> roots_ids = GetRootsIds(roots);
+  absl::node_hash_map<const Node*, size_t> roots_ids = GetRootsIds(roots);
   NodeIdMap id_map = GenerateIdMap(post_order);
   std::vector<ChangeLogNode> change_log;
   xla::hash_t h = 0x85ebca77c2b2ae63;

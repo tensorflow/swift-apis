@@ -7,6 +7,7 @@
 #include <thread>
 #include <unordered_set>
 
+#include "absl/container/node_hash_set.h"
 #include "absl/strings/str_split.h"
 #include "tensorflow/compiler/xla/xla_client/sys_util.h"
 #include "tensorflow/core/platform/stacktrace.h"
@@ -23,7 +24,7 @@ struct TrackerContext {
   std::mutex lock;
   std::string path;
   int level;
-  std::unordered_set<std::string> tags;
+  absl::node_hash_set<std::string> tags;
 };
 
 TrackerContext* LoadTrackerContext() {
