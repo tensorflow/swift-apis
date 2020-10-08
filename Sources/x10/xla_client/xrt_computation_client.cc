@@ -274,7 +274,7 @@ bool IsLocalDevice(const XrtComputationClient::Worker& worker,
   if (mp_device.empty()) {
     return true;
   }
-  XrtComputationClient::Device device(mp_device);
+  XrtComputationClient::DeviceId device(mp_device);
   std::string task_device_key =
       BuildTaskDeviceKey(parsed_device.task, device.kind);
   auto it = dev_task_map.find(task_device_key);
@@ -289,7 +289,7 @@ std::map<std::string, int> BuildDeviceTaskMap(
   // device ordinal assigned for that task+devkind couple.
   std::map<std::string, int> dev_task_map;
   for (auto& device_xrt_device : options.global_device_map) {
-    XrtComputationClient::Device global_device(device_xrt_device.first);
+    XrtComputationClient::DeviceId global_device(device_xrt_device.first);
     tensorflow::DeviceNameUtils::ParsedName parsed_device =
         ParseXrtDevice(device_xrt_device.second);
     std::string task_device_key =
@@ -318,7 +318,7 @@ void PopulateLocalDevices(XrtComputationClient::Options* options) {
     }
     options->devices.insert(device_xrt_device.first);
 
-    XrtComputationClient::Device global_device(device_xrt_device.first);
+    XrtComputationClient::DeviceId global_device(device_xrt_device.first);
     util::InsertCombined(&min_ordinals, global_device.kind,
                          global_device.ordinal,
                          [](int a, int b) { return std::min(a, b); });
@@ -413,7 +413,7 @@ bool ParseMeshConfig(
     options->workers_map.emplace(worker, config_worker.address());
 
     for (auto& device : config_worker.devices()) {
-      XrtComputationClient::Device local_device(device.local_name());
+      XrtComputationClient::DeviceId local_device(device.local_name());
       options->global_device_map.emplace(
           device.global_name(),
           GetXrtDevicePath(worker.name, worker.task_no, local_device.kind,
@@ -522,7 +522,7 @@ std::unique_ptr<ComputationClient> ComputationClient::Create() {
 
 bool ComputationClient::IsLocal() { return false; }
 
-XrtComputationClient::Device::Device(const std::string& device_str) {
+XrtComputationClient::DeviceId::DeviceId(const std::string& device_str) {
   std::vector<std::string> parts = absl::StrSplit(device_str, ':');
   XLA_CHECK_EQ(parts.size(), 2) << device_str;
   kind = std::move(parts[0]);
@@ -573,11 +573,15 @@ XrtComputationClient::XrtComputationClient(
   MaybeCreateLocalService(options_);
   InitializeDevices(std::move(topology_proto));
   StartHandleReleaser();
+
+  for (const auto& dev_target : options_.global_device_map) {
+    AddDevice(std::make_unique<Device>(dev_target.first, this));
+  }
 }
 
 ComputationClient::DataPtr XrtComputationClient::CreateDataPlaceholder(
     std::string device, Shape shape) {
-  return std::make_shared<XrtData>(std::move(device), std::move(shape));
+  return std::make_shared<XrtData>(GetDevice(device), std::move(shape));
 }
 
 std::vector<size_t> XrtComputationClient::PartitionTransferToServer(
@@ -693,8 +697,8 @@ XrtComputationClient::TransferToServerInternal(
       for (size_t i = 0; i < outputs.size(); ++i) {
         size_t li = session_work->index_mapping[i];
         results[li] = std::make_shared<XrtData>(
-            this, GetEffectiveDevice(tensors[li].device), tensors[li].shape,
-            outputs[i].scalar<int64>()());
+            GetDevice(GetEffectiveDevice(tensors[li].device)),
+            tensors[li].shape, outputs[i].scalar<int64>()());
       }
       CreateDataHandlesCounter()->AddValue(outputs.size());
     };
@@ -724,12 +728,12 @@ std::vector<Literal> XrtComputationClient::TransferFromServer(
     current_size += shape_size;
 
     XrtSession* session = GetSessionForDevice(
-        session_cache_.get(), xrt_data.device(), &session_maps.back());
+        session_cache_.get(), xrt_data.device()->name(), &session_maps.back());
     SessionWork* session_work = &session_work_map[session];
-    tensorflow::Scope device_scope =
-        session->root()->WithDevice(SwiftDeviceToXrtDevice(xrt_data.device()));
+    tensorflow::Scope device_scope = session->root()->WithDevice(
+        SwiftDeviceToXrtDevice(xrt_data.device()->name()));
     const XrtSession::CachedNode& cached_node =
-        GetReadNode(session, device_scope, xrt_data.device());
+        GetReadNode(session, device_scope, xrt_data.device()->name());
     session_work->feed_inputs.insert(
         {cached_node.holders[0], xrt_data.get_handle()});
     session_work->outputs_handles.push_back(cached_node.outputs[0]);
@@ -1063,7 +1067,7 @@ std::vector<ComputationClient::DataPtr> XrtComputationClient::ExecuteChainedXrt(
   std::vector<DataPtr> results;
   auto handles_vec = outputs[0].vec<int64>();
   for (int64 i = 0; i < handles_vec.size(); ++i) {
-    results.push_back(std::make_shared<XrtData>(this, effective_device,
+    results.push_back(std::make_shared<XrtData>(GetDevice(effective_device),
                                                 std::move(result_shapes.at(i)),
                                                 handles_vec(i)));
   }
@@ -1153,18 +1157,18 @@ XrtComputationClient::DeconstructTuple(absl::Span<const DataPtr> tuples) {
   std::vector<int64> tuple_elements_count(tuples.size());
   for (size_t i = 0; i < tuples.size(); ++i) {
     const XrtData& xrt_data = dynamic_cast<const XrtData&>(*tuples[i]);
-    XrtSession* session = GetSessionForDevice(session_cache_.get(),
-                                              xrt_data.device(), &session_map);
+    XrtSession* session = GetSessionForDevice(
+        session_cache_.get(), xrt_data.device()->name(), &session_map);
     SessionWork* session_work = &session_work_map[session];
     session_work->index_mapping.push_back(i);
 
-    tensorflow::Scope device_scope =
-        session->root()->WithDevice(SwiftDeviceToXrtDevice(xrt_data.device()));
+    tensorflow::Scope device_scope = session->root()->WithDevice(
+        SwiftDeviceToXrtDevice(xrt_data.device()->name()));
     int64 count = ShapeUtil::TupleElementCount(xrt_data.shape());
     tuple_elements_count[i] = count;
     for (int64 j = 0; j < count; ++j) {
       const XrtSession::CachedNode& cached_node =
-          GetSubTupleNode(session, device_scope, xrt_data.device());
+          GetSubTupleNode(session, device_scope, xrt_data.device()->name());
       session_work->feed_inputs.insert(
           {cached_node.holders[0], xrt_data.get_handle()});
       tensorflow::Tensor index_tensor(tensorflow::DT_INT32,
@@ -1189,7 +1193,7 @@ XrtComputationClient::DeconstructTuple(absl::Span<const DataPtr> tuples) {
       std::vector<DataPtr> tuple_results;
       for (size_t i = 0; i < tuple_elements_count[li]; ++i, ++output_index) {
         tuple_results.push_back(std::make_shared<XrtData>(
-            this, xrt_data.device(),
+            xrt_data.device(),
             ShapeUtil::GetTupleElementShape(xrt_data.shape(), i),
             outputs[output_index].scalar<int64>()()));
       }
@@ -1255,7 +1259,7 @@ std::unique_ptr<xrt::XLAComputation> XrtComputationClient::CreateXrtComputation(
     auto device_assignment = config->mutable_device_assignment();
     auto computation_device = device_assignment->add_computation_devices();
     for (int64 i = 0; i < devices.size(); ++i) {
-      Device device(devices[i]);
+      DeviceId device(devices[i]);
       auto replica_device = computation_device->add_replica_devices();
       if (device.kind == "TPU") {
         const std::string& xrt_device = SwiftDeviceToXrtDevice(devices[i]);
@@ -1294,7 +1298,7 @@ tensorflow::Tensor XrtComputationClient::GetArgumentsInputs(
       tensorflow::TensorShape({static_cast<int64_t>(arguments.size())}));
   for (size_t i = 0; i < arguments.size(); ++i) {
     const XrtData& xrt_data = dynamic_cast<const XrtData&>(*arguments[i]);
-    XLA_CHECK_EQ(device, xrt_data.device());
+    XLA_CHECK_EQ(device, xrt_data.device()->name());
     inputs_tensor.flat<tensorflow::int64>()(i) = xrt_data.get_handle();
   }
   return inputs_tensor;
@@ -1593,7 +1597,7 @@ void XrtComputationClient::InitializeDevices(
       sys_util::GetEnvString(env::kEnvMeshService, "");
   std::string mp_device = GetMultiProcessingDevice();
   if (!mesh_service_address.empty() && !mp_device.empty()) {
-    Device device(mp_device);
+    DeviceId device(mp_device);
     if (device.ordinal == 0) {
       CreateMeshService(mesh_service_address, topology_proto.get());
     }
@@ -1648,17 +1652,18 @@ void XrtComputationClient::CreateMeshService(
 std::vector<ComputationClient::DataPtr>
 XrtComputationClient::GetComputationResults(
     const tensorflow::Tensor& xrt_result, const Shape& result_shape,
-    const std::string& device) {
+    const std::string& device_name) {
   std::vector<DataPtr> results;
+  auto* device = GetDevice(device_name);
   if (xrt_result.dims() == 1) {
     auto handles_vec = xrt_result.vec<int64>();
     for (int64 i = 0; i < handles_vec.size(); ++i) {
       results.push_back(std::make_shared<XrtData>(
-          this, device, ShapeUtil::GetTupleElementShape(result_shape, i),
+          device, ShapeUtil::GetTupleElementShape(result_shape, i),
           handles_vec(i)));
     }
   } else {
-    results.push_back(std::make_shared<XrtData>(this, device, result_shape,
+    results.push_back(std::make_shared<XrtData>(device, result_shape,
                                                 xrt_result.scalar<int64>()()));
   }
   CreateDataHandlesCounter()->AddValue(results.size());
@@ -1681,14 +1686,6 @@ size_t XrtComputationClient::GetNumDevices() const {
 std::vector<std::string> XrtComputationClient::GetLocalDevices() const {
   return std::vector<std::string>(options_.devices.begin(),
                                   options_.devices.end());
-}
-
-std::vector<std::string> XrtComputationClient::GetAllDevices() const {
-  std::vector<std::string> devices;
-  for (const auto& dev_target : options_.global_device_map) {
-    devices.push_back(dev_target.first);
-  }
-  return devices;
 }
 
 void XrtComputationClient::SetReplicationDevices(

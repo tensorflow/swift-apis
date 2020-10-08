@@ -195,4 +195,29 @@ ComputationClient::DataPtr ComputationClient::TransferToServer(
   TF_LOG(FATAL) << "Only supported for LocalClient";
 }
 
+std::vector<std::string> ComputationClient::GetAllDevices() const {
+  std::vector<std::string> out;
+  auto tmp = GetAllDevicePointers();
+  out.reserve(tmp.size());
+  for (Device* device : tmp) {
+    out.push_back(device->name());
+  }
+  return out;
+}
+
+void ComputationClient::AddDevice(std::unique_ptr<Device> device) {
+  devices_.push_back(device.get());
+  LOG(INFO) << "NAME: " << device->name();
+  devices_by_name_[device->name()] = device.get();
+  devices_owned_.push_back(std::move(device));
+}
+
+ComputationClient::Device* ComputationClient::GetDevice(
+    const std::string& device_name) const {
+  auto it = devices_by_name_.find(device_name);
+  XLA_CHECK(it != devices_by_name_.end())
+      << "Unable to find device: " << device_name;
+  return it->second;
+}
+
 }  // namespace xla

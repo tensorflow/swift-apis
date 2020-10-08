@@ -69,15 +69,15 @@ class XrtComputationClient : public ComputationClient {
   using XrtHandlePtr = std::shared_ptr<XrtHandle>;
 
   struct XrtData : public Data {
-    XrtData(std::string device, Shape device_shape)
-        : Data(std::move(device), std::move(device_shape)) {}
-    XrtData(XrtComputationClient* self, std::string device, Shape device_shape,
-            int64 handle)
-        : Data(std::move(device), std::move(device_shape)),
-          handle_ptr(std::make_shared<XrtHandle>(
-              handle, [self, device = this->device(), handle]() {
-                self->ReleaseXrtData(device, handle);
-              })) {}
+    XrtData(Device* device, Shape device_shape)
+        : Data(device, std::move(device_shape)) {}
+    XrtData(Device* device, Shape device_shape, int64 handle)
+        : Data(device, std::move(device_shape)),
+          handle_ptr(std::make_shared<XrtHandle>(handle, [device, handle]() {
+            reinterpret_cast<XrtComputationClient*>(
+                device->computation_client())
+                ->ReleaseXrtData(device->name(), handle);
+          })) {}
 
     int64 get_handle() const { return handle_ptr->handle; }
 
@@ -108,9 +108,9 @@ class XrtComputationClient : public ComputationClient {
   };
 
  public:
-  struct Device {
-    Device() = default;
-    Device(const std::string& device_str);
+  struct DeviceId {
+    DeviceId() = default;
+    DeviceId(const std::string& device_str);
 
     std::string kind;
     int ordinal = 0;
@@ -198,8 +198,6 @@ class XrtComputationClient : public ComputationClient {
   size_t GetNumDevices() const override;
 
   std::vector<std::string> GetLocalDevices() const override;
-
-  std::vector<std::string> GetAllDevices() const override;
 
   void SetReplicationDevices(std::vector<std::string> devices) override;
 
