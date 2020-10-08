@@ -14,6 +14,7 @@
 
 #include "tensorflow/compiler/tf2xla/xla_tensor/ir_util.h"
 
+#include "absl/container/node_hash_map.h"
 #include "tensorflow/compiler/xla/xla_client/debug_macros.h"
 
 namespace swift_xla {
@@ -80,7 +81,7 @@ std::vector<const Node*> Util::ComputePostOrder(
 
 std::vector<Value> Util::Clone(absl::Span<const Value> values,
                                absl::Span<const Node* const> post_order) {
-  std::unordered_map<const Node*, NodePtr> clone_map;
+  absl::node_hash_map<const Node*, NodePtr> clone_map;
   for (auto node : post_order) {
     if (clone_map.count(node) > 0) {
       continue;

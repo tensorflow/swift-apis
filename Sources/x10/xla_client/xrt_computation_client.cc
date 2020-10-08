@@ -22,6 +22,7 @@
 #include <sstream>
 #include <unordered_map>
 
+#include "absl/container/node_hash_map.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
@@ -200,7 +201,7 @@ class TensorAllocator : public tensorflow::Allocator {
   std::mutex lock_;
   size_t size_ = 0;
   AllocList alloc_list_;
-  std::unordered_map<AllocKey, AllocList::iterator, AllocKey::Hash> allocs_;
+  absl::node_hash_map<AllocKey, AllocList::iterator, AllocKey::Hash> allocs_;
 };
 
 std::string StripPrefix(const std::string& value, const std::string& prefix) {

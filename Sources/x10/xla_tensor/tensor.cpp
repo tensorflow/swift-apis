@@ -1248,7 +1248,7 @@ XLATensor::PostOrderData XLATensor::RunPostOrder(
   }
   PostOrderData po_data;
   po_data.post_order = ir::Util::ComputePostOrder(roots, &po_data.emission_map);
-  std::unordered_map<xla::ComputationClient::Data::OpaqueHandle, size_t>
+  absl::node_hash_map<xla::ComputationClient::Data::OpaqueHandle, size_t>
       data_handles;
   for (auto node : po_data.post_order) {
     const ir::ops::DeviceData* device_data = ir::ops::DeviceData::Cast(node);
@@ -1484,7 +1484,7 @@ XLATensor::OpByOpAsync XLATensor::SyncTensorsGraphOpByOp(
 void XLATensor::BuildInputOutputAliases(const std::vector<XLATensor>& tensors,
                                         absl::Span<const size_t> indices,
                                         ir::LoweringContext* lowering_ctx) {
-  std::unordered_map<xla::int64, size_t> output_tensor_id_map;
+  absl::node_hash_map<xla::int64, size_t> output_tensor_id_map;
   for (size_t i = 0; i < indices.size(); ++i) {
     size_t tensor_index = indices[i];
     xla::int64 tensor_id = tensors[tensor_index].GetUniqueId();
