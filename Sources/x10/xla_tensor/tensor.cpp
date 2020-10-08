@@ -533,7 +533,8 @@ XLATensor::XLATensor(const at::Tensor& tensor, const Device& device)
 
 XLATensor::XLATensor(xla::ComputationClient::DataPtr xla_data,
                      c10::optional<at::ScalarType> logical_element_type)
-    : data_(std::make_shared<Data>(xla_data, Device(xla_data->device()),
+    : data_(std::make_shared<Data>(xla_data,
+                                   Device(xla_data->device()->device_id()),
                                    logical_element_type)) {}
 
 XLATensor::XLATensor(ir::Value ir_value, const Device& device,

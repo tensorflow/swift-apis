@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/container/node_hash_map.h"
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "tensorflow/compiler/xla/xla_client/device.h"
@@ -37,6 +38,23 @@ namespace xla {
 
 class ComputationClient {
  public:
+  class Device {
+   public:
+    virtual ~Device() {}
+
+    const std::string& name() const { return name_; }
+    ComputationClient* computation_client() const { return client_; }
+    const swift_xla::Device& device_id() const { return device_id_; }
+    explicit Device(std::string name, ComputationClient* client)
+        : name_(name), client_(client) {
+      device_id_ = swift_xla::Device(name_);
+    }
+
+   private:
+    std::string name_;
+    ComputationClient* client_;
+    swift_xla::Device device_id_;
+  };
   class Data {
    public:
     struct Info {
@@ -45,12 +63,12 @@ class ComputationClient {
 
     using OpaqueHandle = int64;
 
-    Data(std::string device, Shape shape)
+    Data(Device* device, Shape shape)
         : device_(std::move(device)), shape_(std::move(shape)) {}
 
     virtual ~Data() {}
 
-    const std::string& device() const { return device_; }
+    Device* device() const { return device_; }
 
     const Shape& shape() const { return shape_; }
 
@@ -68,7 +86,7 @@ class ComputationClient {
     virtual bool HasValue() const = 0;
 
    private:
-    std::string device_;
+    Device* device_;
     Shape shape_;
     std::shared_ptr<Info> info_;
   };
@@ -263,7 +281,11 @@ class ComputationClient {
 
   virtual std::vector<std::string> GetLocalDevices() const = 0;
 
-  virtual std::vector<std::string> GetAllDevices() const = 0;
+  std::vector<std::string> GetAllDevices() const;
+
+  const std::vector<Device*>& GetAllDevicePointers() const { return devices_; }
+
+  Device* GetDevice(const std::string& device_name) const;
 
   virtual void SetReplicationDevices(std::vector<std::string> devices) = 0;
 
@@ -315,6 +337,12 @@ class ComputationClient {
   static metrics::Metric* ReleaseCompileHandlesTimeMetric();
   static metrics::Metric* InboundDataMetric();
   static metrics::Metric* OutboundDataMetric();
+  void AddDevice(std::unique_ptr<Device> device);
+
+ private:
+  std::vector<Device*> devices_;
+  std::vector<std::unique_ptr<Device>> devices_owned_;
+  absl::node_hash_map<std::string, Device*> devices_by_name_;
 };
 
 }  // namespace xla
