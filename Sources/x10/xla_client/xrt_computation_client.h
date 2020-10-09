@@ -160,10 +160,11 @@ class XrtComputationClient : public ComputationClient {
   std::vector<DataPtr> TransferToServer(
       absl::Span<const TensorSource> tensors) override;
 
-  std::vector<Literal> TransferFromServer(
+  std::vector<Literal> TransferFromServerImpl(
       absl::Span<const DataPtr> handles) override;
 
   std::vector<ComputationPtr> Compile(
+      const std::string& device, const std::vector<std::string>& devices,
       std::vector<CompileInstance> instances) override;
 
   std::vector<DataPtr> ExecuteComputation(
@@ -198,10 +199,6 @@ class XrtComputationClient : public ComputationClient {
   size_t GetNumDevices() const override;
 
   std::vector<std::string> GetLocalDevices() const override;
-
-  void SetReplicationDevices(std::vector<std::string> devices) override;
-
-  const std::vector<std::string>& GetReplicationDevices() const override;
 
   void SetRngSeed(size_t seed) override;
 

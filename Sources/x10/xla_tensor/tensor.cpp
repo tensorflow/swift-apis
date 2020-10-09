@@ -220,7 +220,7 @@ class XlaDataCacheArena {
   explicit XlaDataCacheArena(size_t max_cache_size)
       : max_cache_size_(max_cache_size) {
     for (const std::string& device_string :
-         xla::ComputationClient::Get()->GetAllDevices()) {
+         xla::ComputationClient::AllDevices()) {
       swift_xla::Device device(device_string);
       std::unique_ptr<XlaDataCache> cache(new XlaDataCache(max_cache_size_));
       device_caches_.emplace(device, std::move(cache));
@@ -323,7 +323,7 @@ class XLATensor::DeviceContextArena {
  public:
   DeviceContextArena() {
     for (const std::string& device_string :
-         xla::ComputationClient::Get()->GetAllDevices()) {
+         xla::ComputationClient::AllDevices()) {
       swift_xla::Device device(device_string);
       device_contexts_.emplace(device, new DeviceContext);
     }
@@ -998,7 +998,7 @@ std::vector<at::Tensor> XLATensor::GetTensorsOpByOp(
   std::vector<xla::ComputationClient::DataPtr> tensors_data =
       GatherTensorsXlaData(*tensors, coll.indices, async_tensors_data);
   std::vector<xla::Literal> literals =
-      xla::ComputationClient::Get()->TransferFromServer(tensors_data);
+      xla::ComputationClient::TransferFromServer(tensors_data);
   std::vector<at::Tensor> results;
   size_t literals_index = 0;
   results.reserve(tensors->size());
@@ -1038,7 +1038,7 @@ std::vector<at::Tensor> XLATensor::GetTensorsFused(
               ? async->tensors_data
               : absl::Span<const xla::ComputationClient::DataPtr>());
   std::vector<xla::Literal> literals =
-      xla::ComputationClient::Get()->TransferFromServer(tensors_data);
+      xla::ComputationClient::TransferFromServer(tensors_data);
   std::vector<at::Tensor> results;
   size_t literals_index = 0;
   results.reserve(tensors->size());
@@ -1059,8 +1059,14 @@ std::vector<at::Tensor> XLATensor::GetTensorsFused(
 std::vector<XLATensor> XLATensor::CreateTensors(
     const std::vector<at::Tensor>& tensors,
     const std::vector<std::string>& devices) {
+  if (tensors.empty()) return {};
+  auto unique_device = devices[0];
+  for (auto& device : devices) {
+    XLA_CHECK_EQ(device, unique_device);
+  }
+
   std::vector<xla::ComputationClient::DataPtr> handles =
-      CreateTensorsData(tensors, devices);
+      CreateTensorsData(tensors, unique_device);
   std::vector<XLATensor> xla_tensors;
   for (size_t i = 0; i < handles.size(); ++i) {
     xla_tensors.push_back(
@@ -1140,7 +1146,6 @@ XLATensor::SyncTensorCollection XLATensor::CollectSyncTensors(
   }
 
   std::vector<at::Tensor> at_tensors;
-  std::vector<std::string> devices;
   std::vector<size_t> at_tensor_index;
   // The force_xla_data controls aliasing compilation, so effectively the same
   // graph with on/off force_xla_data should not match, hash wise.
@@ -1171,7 +1176,6 @@ XLATensor::SyncTensorCollection XLATensor::CollectSyncTensors(
         c10::optional<at::Tensor> tensor_data = tensors[i].CurrentTensorData();
         XLA_CHECK(tensor_data);
         at_tensors.push_back(*tensor_data);
-        devices.push_back(tensors[i].GetDevice().ToString());
         at_tensor_index.push_back(i);
       }
     }
@@ -1179,12 +1183,11 @@ XLATensor::SyncTensorCollection XLATensor::CollectSyncTensors(
   // Mix the hash with the resource domain hashes as compile handles are only
   // valid within a domain (usually a single host).
   coll.hash = xla::util::MHash(
-      coll.hash,
-      xla::ComputationClient::Get()->GetResourceDomain(coll.device.ToString()));
+      coll.hash, xla::GetX10Device(coll.device)->ResourceDomain());
   if (!at_tensors.empty()) {
     XLA_COUNTER("SyncTensorsToData", at_tensors.size());
     std::vector<xla::ComputationClient::DataPtr> handles =
-        CreateTensorsData(at_tensors, devices);
+        CreateTensorsData(at_tensors, (*unique_device).ToString());
     for (size_t i = 0; i < handles.size(); ++i) {
       // If we are here, it means that the IR Value for the tensor is not
       // present. Also, we uploaded the at::Tensor data to the device, but such
@@ -1300,8 +1303,8 @@ std::vector<xla::ComputationClient::DataPtr> XLATensor::FetchTensorData(
       const Device& tensor_device = tensor.GetDevice();
       xla::Shape shape =
           MakeShapeWithDeviceLayout(tensor.shape(), tensor_device.hw_type);
-      xla_data = xla::ComputationClient::Get()->CreateDataPlaceholder(
-          tensor_device.ToString(), std::move(shape));
+      xla_data = xla::GetX10Device(tensor_device)
+                     ->CreateDataPlaceholder(std::move(shape));
       tensor.SetXlaData(xla_data, config.sync_xla_data);
     }
     tensors_data.emplace_back(std::move(xla_data));
@@ -1323,9 +1326,10 @@ std::shared_ptr<XLATensor::Async> XLATensor::ScheduleSyncTensorsGraph(
     try {
       TF_VLOG(3) << "Executing IR graph hash " << xla::util::HexHash(hash)
                  << " on device " << async->device << " ...";
-      auto results = xla::ComputationClient::Get()->ExecuteComputation(
-          *async->cached_computation->computation, async->parameters_data,
-          async->device, options);
+      auto results =
+          xla::GetX10Device(async->device)
+              ->ExecuteComputation(*async->cached_computation->computation,
+                                   async->parameters_data, options);
       TF_VLOG(3) << "Executing IR graph hash " << xla::util::HexHash(hash)
                  << " on device " << async->device << " done!";
 
@@ -1414,7 +1418,7 @@ void XLATensor::WaitDeviceOps(absl::Span<const std::string> devices) {
       wait_devices.insert(Device(device_str));
     }
   } else {
-    for (auto& device_str : xla::ComputationClient::Get()->GetLocalDevices()) {
+    for (auto& device_str : xla::ComputationClient::LocalDevices()) {
       wait_devices.insert(Device(device_str));
     }
   }
@@ -1568,16 +1572,16 @@ XLATensor::CompilationResult XLATensor::Compile(
       MakeShapeWithDeviceLayout(program_shape.result(), coll.device.hw_type);
 
   std::vector<xla::ComputationClient::CompileInstance> instances;
-  instances.push_back({std::move(computation), coll.device.ToString(),
-                       xla::ComputationClient::Get()->GetCompilationDevices(
-                           coll.device.ToString(), devices),
-                       &shape});
+  instances.push_back({std::move(computation), &shape});
 
   TF_VLOG(3) << "Compiling IR graph hash " << xla::util::HexHash(coll.hash)
              << " on device " << coll.device << " ...";
   std::vector<std::shared_ptr<xla::ComputationClient::Computation>>
       computations =
-          xla::ComputationClient::Get()->Compile(std::move(instances));
+          xla::GetX10Device(coll.device.ToString())
+              ->Compile(xla::ComputationClient::GetCompilationDevices(
+                            coll.device.ToString(), devices),
+                        std::move(instances));
   TF_VLOG(3) << "Compiling IR graph hash " << xla::util::HexHash(coll.hash)
              << " on device " << coll.device << " done!";
   TF_VLOG(5)

@@ -41,13 +41,13 @@ std::string DeviceTypeToString(DeviceType hw_type) {
 void ParseDevice(const std::string& device_spec, Device* device) {
   if (device_spec.empty()) {
     std::string default_device_spec =
-        xla::ComputationClient::Get()->GetDefaultDevice();
+        xla::ComputationClient::DefaultDevice()->name();
     XLA_CHECK(!default_device_spec.empty());
     return ParseDevice(default_device_spec, device);
   }
   if (device_spec[0] == ':') {
     std::string default_device_spec =
-        xla::ComputationClient::Get()->GetDefaultDevice();
+        xla::ComputationClient::DefaultDevice()->name();
     auto pos = default_device_spec.find(':');
     XLA_CHECK_NE(pos, std::string::npos) << default_device_spec;
     return ParseDevice(default_device_spec.substr(0, pos) + device_spec,

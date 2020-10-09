@@ -38,6 +38,15 @@ namespace xla {
 
 class ComputationClient {
  public:
+  class Computation;
+  class CompileInstance;
+  struct TensorSource;
+  struct ExecuteChainedOp;
+  struct ExecuteComputationOptions;
+  class Data;
+  using DataPtr = std::shared_ptr<Data>;
+  using ComputationPtr = std::shared_ptr<Computation>;
+
   class Device {
    public:
     virtual ~Device() {}
@@ -49,6 +58,27 @@ class ComputationClient {
         : name_(name), client_(client) {
       device_id_ = swift_xla::Device(name_);
     }
+
+    virtual std::vector<ComputationPtr> Compile(
+        const std::vector<std::string>& devices,
+        std::vector<CompileInstance> instances);
+
+    virtual std::vector<DataPtr> TransferToServer(
+        absl::Span<const TensorSource> tensors);
+
+    virtual DataPtr TransferToServer(xla::BorrowingLiteral literal,
+                                     const xla::Shape& dest_shape);
+
+    virtual std::vector<DataPtr> ExecuteChained(
+        absl::Span<const ExecuteChainedOp> ops);
+
+    virtual std::string ResourceDomain() const;
+
+    virtual DataPtr CreateDataPlaceholder(Shape shape) const;
+
+    virtual std::vector<DataPtr> ExecuteComputation(
+        const Computation& computation, absl::Span<const DataPtr> arguments,
+        const ExecuteComputationOptions& options);
 
    private:
     std::string name_;
@@ -91,8 +121,6 @@ class ComputationClient {
     std::shared_ptr<Info> info_;
   };
 
-  using DataPtr = std::shared_ptr<Data>;
-
   class Computation {
    public:
     Computation(XlaComputation computation, ProgramShape program_shape,
@@ -115,8 +143,6 @@ class ComputationClient {
     std::vector<std::string> devices_;
   };
 
-  using ComputationPtr = std::shared_ptr<Computation>;
-
   // The TensorSource provides a way for a client to populate a buffer allocated
   // by the core computation client code.
   struct TensorSource {
@@ -138,16 +164,10 @@ class ComputationClient {
 
   struct CompileInstance {
     CompileInstance() = default;
-    CompileInstance(XlaComputation computation, std::string compilation_device,
-                    std::vector<std::string> devices, const Shape* output_shape)
-        : computation(std::move(computation)),
-          compilation_device(std::move(compilation_device)),
-          devices(std::move(devices)),
-          output_shape(output_shape) {}
+    CompileInstance(XlaComputation computation, const Shape* output_shape)
+        : computation(std::move(computation)), output_shape(output_shape) {}
 
     XlaComputation computation;
-    std::string compilation_device;
-    std::vector<std::string> devices;
     const Shape* output_shape = nullptr;
   };
 
@@ -209,12 +229,10 @@ class ComputationClient {
 
   // Reads the tensor literal values stored at TPU server sites, behind the
   // supplied handles.
-  virtual std::vector<Literal> TransferFromServer(
-      absl::Span<const DataPtr> handles) = 0;
+  static std::vector<Literal> TransferFromServer(
+      absl::Span<const DataPtr> handles);
 
-  // Compiles a set of computations.
-  virtual std::vector<ComputationPtr> Compile(
-      std::vector<CompileInstance> instances) = 0;
+  std::vector<ComputationPtr> Compile(std::vector<CompileInstance> instances);
 
   // Executes computation with arguments and returns the result.
   // The passed device must match the common device of the arguments Data.
@@ -272,28 +290,33 @@ class ComputationClient {
   virtual std::string GetResourceDomain(const std::string& device) const = 0;
 
   virtual std::string GetDefaultDevice() const = 0;
+  static Device* DefaultDevice();
 
   enum class DeviceKind { CPU, GPU, TPU };
 
   virtual swift_xla::Device GetDefaultDeviceStruct() const = 0;
+  static swift_xla::Device DefaultDeviceStruct();
 
   virtual size_t GetNumDevices() const = 0;
 
   virtual std::vector<std::string> GetLocalDevices() const = 0;
+  static std::vector<std::string> LocalDevices();
 
   std::vector<std::string> GetAllDevices() const;
+  static std::vector<std::string> AllDevices();
 
   const std::vector<Device*>& GetAllDevicePointers() const { return devices_; }
 
   Device* GetDevice(const std::string& device_name) const;
 
-  virtual void SetReplicationDevices(std::vector<std::string> devices) = 0;
+  static void SetReplicationDevices(std::vector<std::string> devices);
 
-  virtual const std::vector<std::string>& GetReplicationDevices() const = 0;
+  static const std::vector<std::string>& GetReplicationDevices();
 
   virtual void SetRngSeed(size_t seed) = 0;
 
   virtual std::map<std::string, Metric> GetMetrics() const = 0;
+  static std::map<std::string, Metric> ReadMetrics();
 
   // Utility API around the vector based Compile() API to compile a single
   // computation.
@@ -306,15 +329,12 @@ class ComputationClient {
   // Compile() API. If the devices array is empty, a vector with the single
   // device will be returned. Otherwise a vector with the devices content will
   // be returned.
-  std::vector<std::string> GetCompilationDevices(
-      const std::string& device, absl::Span<const std::string> devices) const;
+  static std::vector<std::string> GetCompilationDevices(
+      const std::string& device, absl::Span<const std::string> devices);
 
   // Retrieves the ordinal number out of a device string. This is the number
   // after the last ':' character of the device string.
   static int64 GetDeviceOrdinal(const std::string& device);
-
-  // Returns the ComputationClient singleton.
-  static ComputationClient* Get();
 
  protected:
   // Metrics common to all client intrfaces.
@@ -339,11 +359,26 @@ class ComputationClient {
   static metrics::Metric* OutboundDataMetric();
   void AddDevice(std::unique_ptr<Device> device);
 
+  // Returns the ComputationClient singleton.
+  static ComputationClient* Get();
+
  private:
+  virtual std::vector<Literal> TransferFromServerImpl(
+      absl::Span<const DataPtr> handles) = 0;
+  // Compiles a set of computations.
+  virtual std::vector<ComputationPtr> Compile(
+      const std::string& device, const std::vector<std::string>& devices,
+      std::vector<CompileInstance> instances) = 0;
+
   std::vector<Device*> devices_;
   std::vector<std::unique_ptr<Device>> devices_owned_;
   absl::node_hash_map<std::string, Device*> devices_by_name_;
+
+  friend ComputationClient::Device* GetX10Device(const std::string& device);
 };
+
+ComputationClient::Device* GetX10Device(const std::string& device);
+ComputationClient::Device* GetX10Device(swift_xla::Device device_id);
 
 }  // namespace xla
 
