@@ -104,21 +104,20 @@ std::vector<std::string> DeviceListToStrings(DeviceList* device_list) {
 void destroyDeviceList(DeviceList* device_list) { delete device_list; }
 
 DeviceList* getAllDevices() {
-  return DeviceListFromStrings(xla::ComputationClient::Get()->GetAllDevices());
+  return DeviceListFromStrings(xla::ComputationClient::AllDevices());
 }
 
 CDevice getDefaultDevice() {
-  return ConvertDevice(xla::ComputationClient::Get()->GetDefaultDeviceStruct());
+  return ConvertDevice(xla::ComputationClient::DefaultDeviceStruct());
 }
 
 void setReplicationDevices(struct DeviceList* device_list) {
   const auto device_strings = DeviceListToStrings(device_list);
-  xla::ComputationClient::Get()->SetReplicationDevices(device_strings);
+  xla::ComputationClient::SetReplicationDevices(device_strings);
 }
 
 struct DeviceList* getReplicationDevices() {
-  return DeviceListFromStrings(
-      xla::ComputationClient::Get()->GetReplicationDevices());
+  return DeviceListFromStrings(xla::ComputationClient::GetReplicationDevices());
 }
 
 void syncLiveTensorsForDevices(struct DeviceList* device_list) {

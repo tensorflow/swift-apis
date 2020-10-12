@@ -43,7 +43,7 @@ MetricFnInfo GetMetricRenderInfo(const Percentile& percentile) {
 }
 
 std::string CreateXrtMetricReport() {
-  auto xrt_metrics = ComputationClient::Get()->GetMetrics();
+  auto xrt_metrics = ComputationClient::ReadMetrics();
   std::stringstream ss;
   for (auto& name_metric : xrt_metrics) {
     if (name_metric.second.percentile) {

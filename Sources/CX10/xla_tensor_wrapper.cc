@@ -166,8 +166,8 @@ OpaqueXLATensor* copyTensorAndMakeResident(enum XLATensorScalarType type,
                                   host_shape);
 
     return new swift_xla::XLATensor(swift_xla::XLATensor::Create(
-        xla::ComputationClient::Get()->TransferToServer(
-            std::move(literal), dest_shape, device.ToString())));
+        xla::GetX10Device(device)->TransferToServer(std::move(literal),
+                                                    dest_shape)));
   }
   return copyTensor(type, value, num_entries, shape, rank, cdevice);
 }

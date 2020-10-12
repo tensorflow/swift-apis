@@ -36,23 +36,17 @@ std::shared_ptr<ComputationClient::Computation> ComputationClient::Compile(
     XlaComputation computation, std::string compilation_device,
     std::vector<std::string> devices, const Shape* output_shape) {
   std::vector<CompileInstance> instances;
-  instances.emplace_back(std::move(computation), std::move(compilation_device),
-                         std::move(devices), output_shape);
+  instances.emplace_back(std::move(computation), output_shape);
   std::vector<std::shared_ptr<Computation>> results =
-      Compile(std::move(instances));
+      Compile(compilation_device, devices, std::move(instances));
   return std::move(results[0]);
 }
 
 std::vector<std::string> ComputationClient::GetCompilationDevices(
-    const std::string& device, absl::Span<const std::string> devices) const {
+    const std::string& device, absl::Span<const std::string> devices) {
   std::vector<std::string> compilation_devices;
   if (devices.empty()) {
-    auto& replication_devices = GetReplicationDevices();
-    if (replication_devices.empty()) {
-      compilation_devices.push_back(device);
-    } else {
-      compilation_devices = replication_devices;
-    }
+    compilation_devices.push_back(device);
   } else {
     compilation_devices.insert(compilation_devices.end(), devices.begin(),
                                devices.end());
@@ -218,6 +212,95 @@ ComputationClient::Device* ComputationClient::GetDevice(
   XLA_CHECK(it != devices_by_name_.end())
       << "Unable to find device: " << device_name;
   return it->second;
+}
+
+ComputationClient::Device* GetX10Device(const std::string& device) {
+  return xla::ComputationClient::Get()->GetDevice(device);
+}
+
+ComputationClient::Device* GetX10Device(swift_xla::Device device_id) {
+  return GetX10Device(device_id.ToString());
+}
+
+std::vector<Literal> ComputationClient::TransferFromServer(
+    absl::Span<const DataPtr> handles) {
+  if (handles.empty()) return {};
+  ComputationClient* client = handles[0]->device()->computation_client();
+  for (auto& handle : handles) {
+    XLA_CHECK_EQ(client, handle->device()->computation_client());
+  }
+  return client->TransferFromServerImpl(handles);
+}
+
+std::vector<ComputationClient::ComputationPtr>
+ComputationClient::Device::Compile(const std::vector<std::string>& devices,
+                                   std::vector<CompileInstance> instances) {
+  return client_->Compile(name_, devices, std::move(instances));
+}
+
+ComputationClient::DataPtr ComputationClient::Device::TransferToServer(
+    xla::BorrowingLiteral literal, const xla::Shape& dest_shape) {
+  return client_->TransferToServer(std::move(literal), dest_shape, name_);
+}
+
+std::vector<ComputationClient::DataPtr>
+ComputationClient::Device::TransferToServer(
+    absl::Span<const TensorSource> tensors) {
+  return client_->TransferToServer(tensors);
+}
+
+std::vector<ComputationClient::DataPtr>
+ComputationClient::Device::ExecuteChained(
+    absl::Span<const ComputationClient::ExecuteChainedOp> ops) {
+  return client_->ExecuteChained(ops, name_);
+}
+
+std::string ComputationClient::Device::ResourceDomain() const {
+  return client_->GetResourceDomain(name_);
+}
+
+ComputationClient::DataPtr ComputationClient::Device::CreateDataPlaceholder(
+    Shape shape) const {
+  return client_->CreateDataPlaceholder(name_, std::move(shape));
+}
+
+std::vector<ComputationClient::DataPtr>
+ComputationClient::Device::ExecuteComputation(
+    const Computation& computation, absl::Span<const DataPtr> arguments,
+    const ExecuteComputationOptions& options) {
+  return client_->ExecuteComputation(computation, arguments, name_, options);
+}
+
+std::map<std::string, Metric> ComputationClient::ReadMetrics() {
+  return Get()->GetMetrics();
+}
+
+ComputationClient::Device* ComputationClient::DefaultDevice() {
+  auto* client = Get();
+  return client->GetDevice(client->GetDefaultDevice());
+}
+
+thread_local std::vector<std::string> g_replication_devices;  // NOLINT
+
+void ComputationClient::SetReplicationDevices(
+    std::vector<std::string> devices) {
+  g_replication_devices = std::move(devices);
+}
+
+const std::vector<std::string>& ComputationClient::GetReplicationDevices() {
+  return g_replication_devices;
+}
+
+swift_xla::Device ComputationClient::DefaultDeviceStruct() {
+  return Get()->GetDefaultDeviceStruct();
+}
+
+std::vector<std::string> ComputationClient::AllDevices() {
+  return Get()->GetAllDevices();
+}
+
+std::vector<std::string> ComputationClient::LocalDevices() {
+  return Get()->GetLocalDevices();
 }
 
 }  // namespace xla

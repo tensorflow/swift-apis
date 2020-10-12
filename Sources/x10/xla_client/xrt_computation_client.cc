@@ -56,8 +56,6 @@ struct DeviceCountDefaults {
 
 static const char* const kLocalService = "localservice";
 
-thread_local std::vector<std::string> g_replication_devices;  // NOLINT
-
 struct TensorAllocatorTraits {
   static void *allocate(size_t size, size_t alignment) {
 #if defined(_WIN32)
@@ -708,7 +706,7 @@ XrtComputationClient::TransferToServerInternal(
   return results;
 }
 
-std::vector<Literal> XrtComputationClient::TransferFromServer(
+std::vector<Literal> XrtComputationClient::TransferFromServerImpl(
     absl::Span<const DataPtr> handles) {
   metrics::TimedSection timed(TransferFromServerMetric());
 
@@ -763,6 +761,7 @@ std::vector<Literal> XrtComputationClient::TransferFromServer(
 }
 
 std::vector<ComputationClient::ComputationPtr> XrtComputationClient::Compile(
+    const std::string& device, const std::vector<std::string>& devices,
     std::vector<CompileInstance> instances) {
   metrics::TimedSection timed(CompileMetric());
 
@@ -777,19 +776,17 @@ std::vector<ComputationClient::ComputationPtr> XrtComputationClient::Compile(
     auto builder = [&, this, i]() {
       const CompileInstance& instance = instances[i];
       std::unique_ptr<xrt::XLAComputation> xrt_computation =
-          CreateXrtComputation(instance.computation, instance.devices,
+          CreateXrtComputation(instance.computation, devices,
                                instance.output_shape);
-      CompilationCacheKey cache_key(
-          GetResourceDomain(instance.compilation_device),
-          xrt_computation->SerializeAsString());
+      CompilationCacheKey cache_key(GetResourceDomain(device),
+                                    xrt_computation->SerializeAsString());
       auto computation_ptr = compilation_cache_.Get(cache_key);
       if (computation_ptr == nullptr) {
         cache_keys[i] = std::move(cache_key);
         program_shapes[i] =
             ProgramShape(xrt_computation->config().program_shape());
 
-        const std::string& xrt_device =
-            SwiftDeviceToXrtDevice(instance.compilation_device);
+        const std::string& xrt_device = SwiftDeviceToXrtDevice(device);
         {
           std::lock_guard<std::mutex> slock(lock);
           XrtSession* session = GetSessionForXrtDevice(
@@ -797,8 +794,8 @@ std::vector<ComputationClient::ComputationPtr> XrtComputationClient::Compile(
           SessionWork* session_work = &session_work_map[session];
           tensorflow::Scope device_scope =
               session->root()->WithDevice(xrt_device);
-          const XrtSession::CachedNode& cached_node = GetCompileNode(
-              session, device_scope, instance.compilation_device);
+          const XrtSession::CachedNode& cached_node =
+              GetCompileNode(session, device_scope, device);
           session_work->feed_inputs.insert(
               {cached_node.holders[0], cache_keys[i].serialized_computation});
           session_work->outputs_handles.push_back(cached_node.outputs[0]);
@@ -831,10 +828,8 @@ std::vector<ComputationClient::ComputationPtr> XrtComputationClient::Compile(
         CompileInstance* instance = &instances[li];
         MaybeSaveLongCompileHlo(compile_time, instance->computation);
         results[li] = std::make_shared<XrtComputation>(
-            this, std::move(instance->computation), program_shapes[li],
-            std::move(instance->devices),
-            outputs[output_index].scalar<int64>()(),
-            instance->compilation_device);
+            this, std::move(instance->computation), program_shapes[li], devices,
+            outputs[output_index].scalar<int64>()(), device);
         ++output_index;
 
         compilation_cache_.Add(std::move(cache_keys[li]), results[li]);
@@ -1686,16 +1681,6 @@ size_t XrtComputationClient::GetNumDevices() const {
 std::vector<std::string> XrtComputationClient::GetLocalDevices() const {
   return std::vector<std::string>(options_.devices.begin(),
                                   options_.devices.end());
-}
-
-void XrtComputationClient::SetReplicationDevices(
-    std::vector<std::string> devices) {
-  g_replication_devices = std::move(devices);
-}
-
-const std::vector<std::string>& XrtComputationClient::GetReplicationDevices()
-    const {
-  return g_replication_devices;
 }
 
 void XrtComputationClient::SetRngSeed(size_t seed) { rng_seed_ = seed; }

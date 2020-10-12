@@ -616,8 +616,7 @@ xla::ComputationClient::DataPtr TensorToXlaData(const at::Tensor& tensor,
   std::vector<xla::ComputationClient::TensorSource> source_tensors;
   source_tensors.emplace_back(shape, device.ToString(), std::move(populate_fn));
 
-  auto handles =
-      xla::ComputationClient::Get()->TransferToServer(source_tensors);
+  auto handles = xla::GetX10Device(device)->TransferToServer(source_tensors);
   XLA_CHECK_EQ(handles.size(), 1);
   return std::move(handles.front());
 }
@@ -629,23 +628,21 @@ xla::ComputationClient::DataPtr TensorToXlaData(const at::Tensor& tensor,
 }
 
 std::vector<xla::ComputationClient::DataPtr> CreateTensorsData(
-    const std::vector<at::Tensor>& tensors,
-    const std::vector<std::string>& devices) {
-  XLA_CHECK_EQ(tensors.size(), devices.size());
+    const std::vector<at::Tensor>& tensors, const std::string& device) {
   std::vector<xla::ComputationClient::TensorSource> source_tensors;
+  Device device_id(device);
   for (size_t i = 0; i < tensors.size(); ++i) {
-    Device device(devices[i]);
-    xla::Shape shape = CreateComputationShapeFromTensor(tensors[i], &device);
+    xla::Shape shape = CreateComputationShapeFromTensor(tensors[i], &device_id);
     auto populate_fn =
         [&, i](const xla::ComputationClient::TensorSource& source_tensor,
                void* dest_buffer, size_t dest_buffer_size) {
           PopulateTensorBuffer(tensors[i], source_tensor.shape, dest_buffer,
-                               dest_buffer_size, device);
+                               dest_buffer_size, device_id);
         };
-    source_tensors.emplace_back(std::move(shape), devices[i],
+    source_tensors.emplace_back(std::move(shape), device,
                                 std::move(populate_fn));
   }
-  return xla::ComputationClient::Get()->TransferToServer(source_tensors);
+  return xla::GetX10Device(device)->TransferToServer(source_tensors);
 }
 
 xla::Literal GetTensorLiteral(const at::Tensor& tensor, const xla::Shape* shape,
@@ -669,7 +666,7 @@ std::vector<at::Tensor> XlaDataToTensors(
     absl::Span<const xla::ComputationClient::DataPtr> xla_data,
     at::ScalarType dest_element_type) {
   std::vector<xla::Literal> literals =
-      xla::ComputationClient::Get()->TransferFromServer(xla_data);
+      xla::ComputationClient::TransferFromServer(xla_data);
   std::vector<at::Tensor> tensors;
   tensors.reserve(literals.size());
   for (auto& literal : literals) {

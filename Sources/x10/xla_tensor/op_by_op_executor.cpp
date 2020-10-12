@@ -116,7 +116,7 @@ std::vector<xla::ComputationClient::ExecuteChainedOp> OpByOpExecutor::BuildOps(
   }
 
   auto compilation_devices =
-      xla::ComputationClient::Get()->GetCompilationDevices(device, devices);
+      xla::ComputationClient::GetCompilationDevices(device, devices);
   xla::hash_t nodes_key_seed = GetNodesKeySeed(device, compilation_devices);
   Device exec_device(device);
   std::vector<xla::hash_t> cache_keys;
@@ -168,9 +168,8 @@ std::vector<xla::ComputationClient::ExecuteChainedOp> OpByOpExecutor::BuildOps(
               ConsumeValue(computation.GetProgramShape());
           compile_shapes.push_back(MakeShapeWithDeviceLayout(
               program_shape.result(), exec_device.hw_type));
-          compile_instances.push_back({std::move(computation), device,
-                                       compilation_devices,
-                                       &compile_shapes.back()});
+          compile_instances.push_back(
+              {std::move(computation), &compile_shapes.back()});
           ops_shapes[i] = &compile_shapes.back();
         } else {
           ops_shapes[i] =
@@ -193,8 +192,8 @@ std::vector<xla::ComputationClient::ExecuteChainedOp> OpByOpExecutor::BuildOps(
   if (!compile_instances.empty()) {
     TF_VLOG(3) << "Compiling " << compile_instances.size()
                << " computations on device " << device;
-    auto computation_ptrs =
-        xla::ComputationClient::Get()->Compile(std::move(compile_instances));
+    auto computation_ptrs = xla::GetX10Device(device)->Compile(
+        compilation_devices, std::move(compile_instances));
     TF_VLOG(3) << "Compiling " << computation_ptrs.size()
                << " computations on device " << device << " done!";
     for (size_t i = 0; i < computation_ptrs.size(); ++i) {
@@ -211,8 +210,7 @@ std::vector<xla::ComputationClient::DataPtr> OpByOpExecutor::Execute(
     absl::Span<const ir::Value> roots, const std::string& device,
     absl::Span<const std::string> devices) {
   auto chained_exec_ops = BuildOps(roots, device, devices);
-  return xla::ComputationClient::Get()->ExecuteChained(chained_exec_ops,
-                                                       device);
+  return xla::GetX10Device(device)->ExecuteChained(chained_exec_ops);
 }
 
 OpByOpExecutor::AsyncTask OpByOpExecutor::ExecuteAsync(
