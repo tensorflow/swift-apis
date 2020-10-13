@@ -587,22 +587,6 @@ at::Tensor MakeTensorFromXlaLiteral(const xla::Literal& literal,
   }
 }
 
-xla::ComputationClient::TensorSource TensorToTensorSource(
-    const at::Tensor& tensor, const Device& device) {
-  const at::Tensor* tensor_ptr = &tensor;
-  const Device* device_ptr = &device;
-  auto populate_fn =
-      [tensor_ptr, device_ptr](
-          const xla::ComputationClient::TensorSource& source_tensor,
-          void* dest_buffer, size_t dest_buffer_size) {
-        PopulateTensorBuffer(*tensor_ptr, source_tensor.shape, dest_buffer,
-                             dest_buffer_size, *device_ptr);
-      };
-
-  return {CreateComputationShapeFromTensor(tensor, &device), device.ToString(),
-          std::move(populate_fn)};
-}
-
 xla::ComputationClient::DataPtr TensorToXlaData(const at::Tensor& tensor,
                                                 const xla::Shape& shape,
                                                 const Device& device) {
@@ -614,7 +598,7 @@ xla::ComputationClient::DataPtr TensorToXlaData(const at::Tensor& tensor,
       };
 
   std::vector<xla::ComputationClient::TensorSource> source_tensors;
-  source_tensors.emplace_back(shape, device.ToString(), std::move(populate_fn));
+  source_tensors.emplace_back(shape, std::move(populate_fn));
 
   auto handles = xla::GetX10Device(device)->TransferToServer(source_tensors);
   XLA_CHECK_EQ(handles.size(), 1);
@@ -639,8 +623,7 @@ std::vector<xla::ComputationClient::DataPtr> CreateTensorsData(
           PopulateTensorBuffer(tensors[i], source_tensor.shape, dest_buffer,
                                dest_buffer_size, device_id);
         };
-    source_tensors.emplace_back(std::move(shape), device,
-                                std::move(populate_fn));
+    source_tensors.emplace_back(std::move(shape), std::move(populate_fn));
   }
   return xla::GetX10Device(device)->TransferToServer(source_tensors);
 }

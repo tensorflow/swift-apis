@@ -47,42 +47,58 @@ class ComputationClient {
   using DataPtr = std::shared_ptr<Data>;
   using ComputationPtr = std::shared_ptr<Computation>;
 
+  class TransferManager {
+   public:
+    virtual ~TransferManager() {}
+
+    virtual std::vector<Literal> TransferFromServerImpl(
+        absl::Span<const DataPtr> handles) = 0;
+  };
+
   class Device {
    public:
     virtual ~Device() {}
 
     const std::string& name() const { return name_; }
-    ComputationClient* computation_client() const { return client_; }
+    virtual int32_t mesh_id() const;
     const swift_xla::Device& device_id() const { return device_id_; }
-    explicit Device(std::string name, ComputationClient* client)
-        : name_(name), client_(client) {
+
+    virtual TransferManager* GetTransferManager() const = 0;
+    explicit Device(std::string name) : name_(name) {
       device_id_ = swift_xla::Device(name_);
     }
 
     virtual std::vector<ComputationPtr> Compile(
         const std::vector<std::string>& devices,
-        std::vector<CompileInstance> instances);
+        std::vector<CompileInstance> instances) = 0;
 
+    // Transfers local tensor values to the TPU servers and fetches the handles.
     virtual std::vector<DataPtr> TransferToServer(
-        absl::Span<const TensorSource> tensors);
+        absl::Span<const TensorSource> tensors) = 0;
 
+    // Copies a single tensor in the form of a xla::BorrowingLiteral async to
+    // the TPU. The literal is copied to a temporary buffer and then copied
+    // async as per the semantics of TransferLiteralToDeviceAsync. The next
+    // computation that is scheduled will wait for this transfer to complete
+    // before running.
     virtual DataPtr TransferToServer(xla::BorrowingLiteral literal,
                                      const xla::Shape& dest_shape);
 
     virtual std::vector<DataPtr> ExecuteChained(
-        absl::Span<const ExecuteChainedOp> ops);
+        absl::Span<const ExecuteChainedOp> ops) = 0;
 
-    virtual std::string ResourceDomain() const;
+    virtual std::string ResourceDomain() const = 0;
 
-    virtual DataPtr CreateDataPlaceholder(Shape shape) const;
+    virtual DataPtr CreateDataPlaceholder(Shape shape) = 0;
 
     virtual std::vector<DataPtr> ExecuteComputation(
         const Computation& computation, absl::Span<const DataPtr> arguments,
-        const ExecuteComputationOptions& options);
+        const ExecuteComputationOptions& options) = 0;
+
+    virtual bool IsLocal() { return false; }
 
    private:
     std::string name_;
-    ComputationClient* client_;
     swift_xla::Device device_id_;
   };
   class Data {
@@ -152,13 +168,10 @@ class ComputationClient {
     using PopulateFn = std::function<void(const TensorSource&, void*, size_t)>;
 
     TensorSource() = default;
-    TensorSource(Shape shape, std::string device, PopulateFn populate_fn)
-        : shape(std::move(shape)),
-          device(std::move(device)),
-          populate_fn(std::move(populate_fn)) {}
+    TensorSource(Shape shape, PopulateFn populate_fn)
+        : shape(std::move(shape)), populate_fn(std::move(populate_fn)) {}
 
     Shape shape;
-    std::string device;
     PopulateFn populate_fn;
   };
 
@@ -210,84 +223,12 @@ class ComputationClient {
 
   static std::unique_ptr<ComputationClient> Create();
 
-  static bool IsLocal();
-
   virtual ~ComputationClient() {}
-
-  // Creates a Data object with no actual device handle in it. The device handle
-  // will be populated in an asynchrounous fashion.
-  virtual DataPtr CreateDataPlaceholder(std::string device, Shape shape) = 0;
-
-  // Transfers local tensor values to the TPU servers and fetches the handles.
-  virtual DataPtr TransferToServer(xla::BorrowingLiteral literal,
-                                   const xla::Shape& dest_shape,
-                                   const std::string& device);
-
-  // Transfers local tensor values to the TPU servers and fetches the handles.
-  virtual std::vector<DataPtr> TransferToServer(
-      absl::Span<const TensorSource> tensors) = 0;
 
   // Reads the tensor literal values stored at TPU server sites, behind the
   // supplied handles.
   static std::vector<Literal> TransferFromServer(
       absl::Span<const DataPtr> handles);
-
-  std::vector<ComputationPtr> Compile(std::vector<CompileInstance> instances);
-
-  // Executes computation with arguments and returns the result.
-  // The passed device must match the common device of the arguments Data.
-  // If options.explode_tuple is true, the output tuple will be decomposed into
-  // its single elements.
-  virtual std::vector<DataPtr> ExecuteComputation(
-      const Computation& computation, absl::Span<const DataPtr> arguments,
-      const std::string& device, const ExecuteComputationOptions& options) = 0;
-
-  // Executes the computation in replicated mode.
-  // The size of the arguments vector is the number of replicas to execute,
-  // and it must match the size of the computation.devices() as well as the
-  // devices passed as argument. The destination devices for each replicated
-  // computation come from the devices the Data objects are stored into, which
-  // must match the devices argument. Within arguments[i], every Data
-  // object must be coming from the same device. Returns a vector (of the same
-  // size of the arguments vector) with the results of the parallel execution.
-  // The result[i], a vector itself, will be the result of the computation fed
-  // with arguments[i]. If options.explode_tuple is true, the output tuples will
-  // be decomposed into their single elements.
-  virtual std::vector<std::vector<DataPtr>> ExecuteReplicated(
-      const Computation& computation,
-      const std::vector<std::vector<DataPtr>>& arguments,
-      absl::Span<const std::string> devices,
-      const ExecuteReplicatedOptions& options) = 0;
-
-  // Executes the computations in parallel. Each computation must target a
-  // different device, and the the common device of arguments[i] must match
-  // devices[i]. The computations[i] computation is fed with arguments[i]
-  // arguments.
-  // Returns a vector of vectors of device side Data object, with result[i]
-  // being the return value of computations[i]. If options.explode_tuple is
-  // true, the output tuples will be decomposed into their single elements.
-  virtual std::vector<std::vector<DataPtr>> ExecuteParallel(
-      absl::Span<const Computation* const> computations,
-      const std::vector<std::vector<DataPtr>>& arguments,
-      absl::Span<const std::string> devices,
-      const ExecuteParallelOptions& options) = 0;
-
-  // Executes a serie of operations, whose results are input of other
-  // operations. The ops is a valid post-order for the execution, which means
-  // that the inputs of op at index I, will have to be coming from ops at index
-  // lower than I. It returns a vector of device data shared pointers, one for
-  // every ExecuteChainedOp marked with is_result=true, in the order they appear
-  // within the ops post-order.
-  virtual std::vector<DataPtr> ExecuteChained(
-      absl::Span<const ExecuteChainedOp> ops, const std::string& device) = 0;
-
-  virtual std::vector<std::vector<DataPtr>> DeconstructTuple(
-      absl::Span<const DataPtr> tuples) = 0;
-
-  // Returns a unique string which identifies the resource domain of a given
-  // device. Within a resource domain, handles to device memory or compiled
-  // computations can be used for all devices part of such domain.
-  virtual std::string GetResourceDomain(const std::string& device) const = 0;
 
   virtual std::string GetDefaultDevice() const = 0;
   static Device* DefaultDevice();
@@ -296,11 +237,6 @@ class ComputationClient {
 
   virtual swift_xla::Device GetDefaultDeviceStruct() const = 0;
   static swift_xla::Device DefaultDeviceStruct();
-
-  virtual size_t GetNumDevices() const = 0;
-
-  virtual std::vector<std::string> GetLocalDevices() const = 0;
-  static std::vector<std::string> LocalDevices();
 
   std::vector<std::string> GetAllDevices() const;
   static std::vector<std::string> AllDevices();
@@ -336,7 +272,6 @@ class ComputationClient {
   // after the last ':' character of the device string.
   static int64 GetDeviceOrdinal(const std::string& device);
 
- protected:
   // Metrics common to all client intrfaces.
   static metrics::Metric* TransferToServerMetric();
   static metrics::Metric* TransferToServerTransformMetric();
@@ -357,19 +292,14 @@ class ComputationClient {
   static metrics::Metric* ReleaseCompileHandlesTimeMetric();
   static metrics::Metric* InboundDataMetric();
   static metrics::Metric* OutboundDataMetric();
+
+ protected:
   void AddDevice(std::unique_ptr<Device> device);
 
   // Returns the ComputationClient singleton.
   static ComputationClient* Get();
 
  private:
-  virtual std::vector<Literal> TransferFromServerImpl(
-      absl::Span<const DataPtr> handles) = 0;
-  // Compiles a set of computations.
-  virtual std::vector<ComputationPtr> Compile(
-      const std::string& device, const std::vector<std::string>& devices,
-      std::vector<CompileInstance> instances) = 0;
-
   std::vector<Device*> devices_;
   std::vector<std::unique_ptr<Device>> devices_owned_;
   absl::node_hash_map<std::string, Device*> devices_by_name_;

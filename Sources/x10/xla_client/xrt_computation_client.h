@@ -50,11 +50,14 @@
 
 namespace xla {
 
-class XrtComputationClient : public ComputationClient {
+class XrtComputationClient : public ComputationClient,
+                             public ComputationClient::TransferManager {
   struct DeviceHandle {
     std::string device;
     int64 handle;
   };
+
+  class XrtDevice;
 
   struct XrtHandle {
     XrtHandle(int64 handle, std::function<void()> releaser)
@@ -71,13 +74,7 @@ class XrtComputationClient : public ComputationClient {
   struct XrtData : public Data {
     XrtData(Device* device, Shape device_shape)
         : Data(device, std::move(device_shape)) {}
-    XrtData(Device* device, Shape device_shape, int64 handle)
-        : Data(device, std::move(device_shape)),
-          handle_ptr(std::make_shared<XrtHandle>(handle, [device, handle]() {
-            reinterpret_cast<XrtComputationClient*>(
-                device->computation_client())
-                ->ReleaseXrtData(device->name(), handle);
-          })) {}
+    XrtData(XrtDevice* device, Shape device_shape, int64 handle);
 
     int64 get_handle() const { return handle_ptr->handle; }
 
@@ -155,50 +152,44 @@ class XrtComputationClient : public ComputationClient {
       Options options,
       std::unique_ptr<tensorflow::tpu::TopologyProto> topology_proto);
 
-  DataPtr CreateDataPlaceholder(std::string device, Shape shape) override;
-
-  std::vector<DataPtr> TransferToServer(
-      absl::Span<const TensorSource> tensors) override;
-
   std::vector<Literal> TransferFromServerImpl(
-      absl::Span<const DataPtr> handles) override;
+      absl::Span<const DataPtr> handles);
 
-  std::vector<ComputationPtr> Compile(
-      const std::string& device, const std::vector<std::string>& devices,
-      std::vector<CompileInstance> instances) override;
+  std::vector<ComputationPtr> Compile(const std::string& device,
+                                      const std::vector<std::string>& devices,
+                                      std::vector<CompileInstance> instances);
 
   std::vector<DataPtr> ExecuteComputation(
       const Computation& computation, absl::Span<const DataPtr> arguments,
-      const std::string& device,
-      const ExecuteComputationOptions& options) override;
+      const std::string& device, const ExecuteComputationOptions& options);
 
   std::vector<std::vector<DataPtr>> ExecuteReplicated(
       const Computation& computation,
       const std::vector<std::vector<DataPtr>>& arguments,
       absl::Span<const std::string> devices,
-      const ExecuteReplicatedOptions& options) override;
+      const ExecuteReplicatedOptions& options);
 
   std::vector<std::vector<DataPtr>> ExecuteParallel(
       absl::Span<const Computation* const> computations,
       const std::vector<std::vector<DataPtr>>& arguments,
       absl::Span<const std::string> devices,
-      const ExecuteParallelOptions& options) override;
+      const ExecuteParallelOptions& options);
 
   std::vector<DataPtr> ExecuteChained(absl::Span<const ExecuteChainedOp> ops,
-                                      const std::string& device) override;
+                                      const std::string& device);
 
   std::vector<std::vector<DataPtr>> DeconstructTuple(
-      absl::Span<const DataPtr> tuples) override;
+      absl::Span<const DataPtr> tuples);
 
-  std::string GetResourceDomain(const std::string& device) const override;
+  std::string GetResourceDomain(const std::string& device) const;
 
   std::string GetDefaultDevice() const override;
 
   swift_xla::Device GetDefaultDeviceStruct() const override;
 
-  size_t GetNumDevices() const override;
+  size_t GetNumDevices() const;
 
-  std::vector<std::string> GetLocalDevices() const override;
+  std::vector<std::string> GetLocalDevices() const;
 
   void SetRngSeed(size_t seed) override;
 
@@ -289,7 +280,7 @@ class XrtComputationClient : public ComputationClient {
       const tensorflow::ClientSession::FeedType& feed_inputs);
 
   std::vector<DataPtr> TransferToServerInternal(
-      absl::Span<const TensorSource> tensors);
+      XrtDevice* device_ptr, absl::Span<const TensorSource> tensors);
 
   // Retrieves the worker,worker_host pair for a given S4TF device (ie,
   // TPU:0).
