@@ -71,8 +71,7 @@ extension ParameterGroupOptimizerBuilder {
     mom: GlobalAccessor, lr: GlobalAccessor, velocity: StateAccessor
   ) {
     appendCallback { (state: inout OptimizerWeightStepState, optState: inout OptimizerState) in
-      optState[state, velocity] =
-        state[mom] * optState[state, velocity] - state.grad * state[lr]
+      optState[state, velocity] = state[mom] * optState[state, velocity] - state.grad * state[lr]
     }
   }
 }
@@ -120,5 +119,45 @@ public func makeSGD(
   let velocity = b[state: "velocity"]
   b.updateVelocity(mom: mom, lr: lr, velocity: velocity)
   b.sgdStep(nesterov: nesterov, mom: mom, lr: lr, velocity: velocity)
+  return b.makeOptimizer()
+}
+
+/// Builds a per-weight optimizer for Adam with weight decay.
+///
+/// Reference: ["Adam - A Method for Stochastic Optimization"](
+/// https://arxiv.org/abs/1412.6980v8)
+public func makeAdam(
+  learningRate: Float = 0.01,
+  beta1: Float = 0.9,
+  beta2: Float = 0.999,
+  weightDecayRate: Float = 0.01,
+  epsilon: Float = 1e-6
+) -> ParameterGroupOptimizer {
+  var b = ParameterGroupOptimizerBuilder()
+  let lr = b.makeParameter("learningRate", learningRate)
+  let beta1 = b.makeParameter("beta1", beta1)
+  let beta2 = b.makeParameter("beta2", beta2)
+  let wd = b.makeParameter("weightDecay", weightDecayRate)
+
+  let firstMoment = b[state: "firstMoment"]
+  let secondMoment = b[state: "secondMoment"]
+
+  b.appendCallback { (state: inout OptimizerWeightStepState, optState: inout OptimizerState) in
+    optState[state, firstMoment] = state[beta1] * optState[state, firstMoment] + state.grad * (
+      1 - state[beta1]
+    )
+  }
+
+  b.appendCallback { (state: inout OptimizerWeightStepState, optState: inout OptimizerState) in
+    optState[state, secondMoment] = state[beta2] * optState[state, secondMoment] + state.grad
+      .* state.grad * (1 - state[beta2])
+  }
+
+  b.appendCallback { (state: inout OptimizerWeightStepState, optState: inout OptimizerState) in
+    let denominator = sqrt(optState[state, secondMoment]).adding(epsilon)
+    let update = optState[state, firstMoment] ./ denominator + state.weight * state[wd]
+    state.step = -state[lr] * update
+  }
+
   return b.makeOptimizer()
 }
