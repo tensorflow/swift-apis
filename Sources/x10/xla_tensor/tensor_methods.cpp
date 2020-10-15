@@ -24,7 +24,6 @@
 #include "tensorflow/compiler/tf2xla/xla_tensor/lowering_context.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/all_reduce.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/annotate.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/einsum.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/expand.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/ops.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/tf_stateless_random_normal.h"
