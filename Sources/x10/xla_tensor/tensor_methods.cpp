@@ -26,7 +26,6 @@
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/annotate.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/expand.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/tf_stateless_random_normal.h"
-#include "third_party/swift/tensorflow_apis/Sources/x10/xla_tensor/ops/replica_id.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/xla_avg_pool.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/xla_avg_pool_grad.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/xla_max_pool.h"
