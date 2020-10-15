@@ -200,15 +200,15 @@ std::pair<std::vector<XLATensor>, ir::Value> XLATensor::all_reduce(
   return {results, ir::Value(node, inputs.size())};
 }
 
+XLATensor XLATensor::annotate(const XLATensor& input, std::string annotation) {
+  return input.CreateFrom(
+      ir::MakeNode<ir::ops::Annotate>(input.GetIrValue(), annotation));
+}
+
 void XLATensor::arange_out(XLATensor& out, at::Scalar start, at::Scalar end,
                            at::Scalar step, at::ScalarType scalar_type) {
   out.SetIrValue(ir::ops::ARange(start, end, step, scalar_type));
   out.SetScalarType(scalar_type);
-}
-
-XLATensor XLATensor::annotate(const XLATensor& input, std::string annotation) {
-  return input.CreateFrom(
-      ir::MakeNode<ir::ops::Annotate>(input.GetIrValue(), annotation));
 }
 
 std::vector<XLATensor> XLATensor::broadcast_tensors(
