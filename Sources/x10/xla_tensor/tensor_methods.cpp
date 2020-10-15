@@ -25,6 +25,8 @@
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/all_reduce.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/annotate.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/expand.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/ops/ops.h"
+#include "tensorflow/compiler/tf2xla/xla_tensor/ops/replica_id.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/tf_stateless_random_normal.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/xla_avg_pool.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/xla_avg_pool_grad.h"
@@ -108,18 +110,6 @@ std::vector<xla::int64> GetExpandDimensions(
     }
   }
   return dimensions;
-}
-
-ReductionMode GetXlaReductionMode(xla::int64 reduction) {
-  switch (reduction) {
-    case at::Reduction::Mean:
-      return ReductionMode::kMean;
-    case at::Reduction::None:
-      return ReductionMode::kNone;
-    case at::Reduction::Sum:
-      return ReductionMode::kSum;
-  }
-  XLA_ERROR() << "Unknown reduction mode: " << reduction;
 }
 
 // Resizes and / or checks whether a list is of the given size. The list is only
@@ -267,6 +257,12 @@ XLATensor XLATensor::to(XLATensor& input, c10::optional<Device> device,
     new_tensor.SetScalarType(*scalar_type);
   }
   return new_tensor;
+}
+
+void XLATensor::linspace_out(XLATensor& out, at::Scalar start, at::Scalar stop,
+                             xla::int64 num, at::ScalarType scalar_type) {
+  out.SetIrValue(ir::ops::LinSpace(start, stop, num, scalar_type));
+  out.SetScalarType(scalar_type);
 }
 
 XLATensor XLATensor::xla_avg_pool(
