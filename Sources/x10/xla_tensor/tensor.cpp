@@ -1260,23 +1260,6 @@ void XLATensor::MarkStep(const Device* device) {
   g_tls_data.Reset();
 }
 
-void XLATensor::WaitDeviceOps(absl::Span<const std::string> devices) {
-  std::set<Device> wait_devices;
-  if (!devices.empty()) {
-    for (auto& device_str : devices) {
-      wait_devices.insert(Device(device_str));
-    }
-  } else {
-    for (auto& device_str : xla::ComputationClient::LocalDevices()) {
-      wait_devices.insert(Device(device_str));
-    }
-  }
-  // The LockDevices() API returns a vector of xla::util::ExceptionCleanup
-  // object, which is going to be freed immediately, turning this operation into
-  // a lock barrier.
-  LockDevices(wait_devices);
-}
-
 XLATensor::OpByOpAsync XLATensor::SyncTensorsGraphOpByOp(
     std::vector<XLATensor>* tensors, absl::Span<const std::string> devices,
     const SyncTensorsConfig& config) {

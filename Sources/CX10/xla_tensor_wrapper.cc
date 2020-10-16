@@ -138,13 +138,13 @@ OpaqueXLATensor* copyTensorAndMakeResident(enum XLATensorScalarType type,
                                            const size_t* shape, size_t rank,
                                            const struct CDevice cdevice,
                                            bool to_reduced_precision) {
+  auto device = ConvertDevice(cdevice);
   if (to_reduced_precision && XLATensorScalarType_Float == type) {
     const float* float_buffer = reinterpret_cast<const float*>(value);
     auto non_owned_buffer =
         std::make_unique<at::NonOwnedAnyScalarBuffer<float>>(
             float_buffer, num_entries * sizeof(float));
     std::vector<int64_t> dims(shape, shape + rank);
-    auto device = ConvertDevice(cdevice);
     auto dest_shape = swift_xla::MakeArrayShapeFromDimensions(
         XlaHelpers::I64List(dims), /*dynamic_dimensions=*/{},
         xla::PrimitiveType::BF16, device.hw_type);
@@ -153,8 +153,8 @@ OpaqueXLATensor* copyTensorAndMakeResident(enum XLATensorScalarType type,
     return new swift_xla::XLATensor(
         swift_xla::XLATensor::Create(xla_data, at::ScalarType::Float));
   }
-  if (XLATensorScalarType_Float == type && xla::ComputationClient::IsLocal()) {
-    auto device = ConvertDevice(cdevice);
+  auto* device_ptr = xla::GetX10Device(device);
+  if (XLATensorScalarType_Float == type && device_ptr->IsLocal()) {
     std::vector<xla::int64> dims(shape, shape + rank);
     auto dest_shape = swift_xla::MakeArrayShapeFromDimensions(
         dims, /*dynamic_dimensions=*/{}, xla::PrimitiveType::F32,
