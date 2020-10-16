@@ -26,7 +26,6 @@
 #include "tensorflow/compiler/tf2xla/xla_tensor/helpers.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ir_dump_util.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/layout_manager.h"
-#include "tensorflow/compiler/tf2xla/xla_tensor/ops/ops.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/ops/token.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/strided_slice_helpers.h"
 #include "tensorflow/compiler/tf2xla/xla_tensor/tensor.h"
