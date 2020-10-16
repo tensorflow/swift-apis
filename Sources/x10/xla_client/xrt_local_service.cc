@@ -67,6 +67,8 @@ XrtLocalService::XrtLocalService(const std::string& cluster_spec,
                                  const std::string& job_name, int task_index) {
   tensorflow::ServerDef server_def;
   FillServerDef(cluster_spec, job_name, task_index, &server_def);
+  (*server_def.mutable_default_session_config()
+      ->mutable_device_count())["GPU"] = 0;
   TF_CHECK_OK(tensorflow::NewServer(server_def, &server_));
 }
 
