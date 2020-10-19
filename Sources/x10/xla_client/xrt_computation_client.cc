@@ -35,6 +35,7 @@
 #include "tensorflow/compiler/xla/xla_client/util.h"
 #include "tensorflow/compiler/xla/xla_client/xla_util.h"
 #include "tensorflow/compiler/xla/xla_client/xrt_local_service.h"
+#include "tensorflow/compiler/xla/xla_client/local_device.h"
 #include "tensorflow/compiler/xrt/xrt_util.h"
 #include "tensorflow/cc/ops/const_op.h"
 #include "tensorflow/compiler/xla/shape_util.h"
@@ -534,7 +535,7 @@ bool ParseEnvDeviceCounts(XrtComputationClient::Options* options) {
 }
 
 bool ParseEnvDevices(XrtComputationClient::Options* options) {
-  std::string device = GpuIsAvailable() ? "GPU" : "CPU";
+  std::string device = "CPU";
   std::string default_device_spec = absl::StrFormat(
       "%s:0;/job:localservice/replica:0/task:0/device:XLA_%s:0", device,
       device);
@@ -628,6 +629,11 @@ XrtComputationClient::XrtComputationClient(
 
   for (const auto& dev_target : options_.global_device_map) {
     AddDevice(std::make_unique<XrtDevice>(dev_target.first, this));
+  }
+
+  for (auto& device : GetAllLocalDevicesForPlatform("gpu", "GPU")) {
+    options_.default_device = "GPU:0";
+    AddDevice(std::move(device));
   }
 }
 

@@ -539,16 +539,20 @@ std::unique_ptr<ComputationClient::Device> MakeLocalDeviceFromClient(
 std::vector<std::unique_ptr<ComputationClient::Device>>
 GetAllLocalDevicesForPlatform(const char* platform_name,
                               const char* device_prefix) {
+  auto platform = xla::PlatformUtil::GetPlatform(platform_name);
+  if (!platform.ok()) return {};
   xla::LocalClientOptions options;
-  options.set_platform(
-      xla::PlatformUtil::GetPlatform(platform_name).ValueOrDie());
-  xla::LocalClient* client =
-      xla::ClientLibrary::GetOrCreateLocalClient(options).ValueOrDie();
+  options.set_platform(platform.ValueOrDie());
+  auto local_client_statusor =
+      xla::ClientLibrary::GetOrCreateLocalClient(options);
+  if (!local_client_statusor.ok()) return {};
+  xla::LocalClient* client = local_client_statusor.ValueOrDie();
   std::vector<std::unique_ptr<ComputationClient::Device>> devices;
   devices.reserve(client->device_count());
   for (int i = 0; i < client->device_count(); ++i) {
     devices.push_back(MakeLocalDeviceFromClient(
-        absl::StrCat(device_prefix, ":", i), client, i, i, true));
+        absl::StrCat(device_prefix, ":", i), client, i, i,
+            std::string(platform_name) == "cpu"));
   }
   return devices;
 }
