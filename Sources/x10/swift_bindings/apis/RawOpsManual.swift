@@ -26,6 +26,7 @@ public enum _RawXLA {
   public typealias Padding1 = _RawTFEager.Padding1
   public typealias Mode5 = _RawTFEager.Mode1
   typealias AnyScalar = XLAScalarType
+  typealias ScalarType = XLATensorScalarType
 
   private static func canonicalDims(_ dims: [Int64], _ rank: Int64) -> [Int64] {
     dims.map { $0 < 0 ? $0 + rank : $0 }
@@ -541,7 +542,7 @@ public enum _RawXLA {
     _ x: Tensor<Srct>,
     truncate: Bool = false
   ) -> Tensor<Dstt> {
-    Tensor(_xla: XLATensor.logicalCast(x.xlaTensor, destType: Dstt.xlaTensorScalarType))
+    return logicalCast(x, destType: Dstt.xlaTensorScalarType)
   }
 
   /// Concatenates tensors along one dimension.
@@ -1916,9 +1917,7 @@ public enum _RawXLA {
     mode: Mode5
   ) -> Tensor<T> {
     let linearizedPaddings = paddings.scalars.map { Int64($0) }
-    return Tensor(
-      _xla: XLATensor.mirrorPad(
-        input.xlaTensor, reversedPaddings(linearizedPaddings), convertMirrorPadMode(mode)))
+    return tf_MirrorPad(input, reversedPaddings(linearizedPaddings), convertMirrorPadMode(mode))
   }
 
   /// Gradient op for `MirrorPad` op. This op folds a mirror-padded tensor.
@@ -1963,10 +1962,9 @@ public enum _RawXLA {
       let totalPadding = linearizedPaddings[2 * dim] + linearizedPaddings[2 * dim + 1]
       return Int64(grad.shape.dimensions[dim]) - totalPadding
     }
-    return Tensor(
-      _xla: XLATensor.mirrorPadGrad(
-        grad.xlaTensor, inputDimensions, reversedPaddings(linearizedPaddings),
-        convertMirrorPadMode(mode)))
+    return tf_MirrorPadGrad(
+      grad, inputDimensions, reversedPaddings(linearizedPaddings),
+      convertMirrorPadMode(mode))
   }
 
   /// Returns the truth value of (x != y) element-wise.
@@ -2091,12 +2089,7 @@ public enum _RawXLA {
     offValue: Tensor<T>,
     axis: Int64 = -1
   ) -> Tensor<T> {
-    checkSameDevice(onValue, offValue)
-    checkSameDevice(indices.device, onValue.device)
-    checkSamePrecision(onValue, offValue)
-    return Tensor(
-      _xla: XLATensor.tf_OneHot(
-        indices.xlaTensor, onValue.xlaTensor, offValue.xlaTensor, depth, axis))
+    return tf_OneHot(indices, onValue, offValue, depth, axis)
   }
   public static func oneHot<
     T: TensorFlowScalar,
@@ -2108,12 +2101,7 @@ public enum _RawXLA {
     offValue: Tensor<T>,
     axis: Int64 = -1
   ) -> Tensor<T> {
-    checkSameDevice(onValue, offValue)
-    checkSameDevice(indices.device, onValue.device)
-    checkSamePrecision(onValue, offValue)
-    return Tensor(
-      _xla: XLATensor.tf_OneHot(
-        indices.xlaTensor, onValue.xlaTensor, offValue.xlaTensor, Int64(depth.scalarized()), axis))
+    return tf_OneHot(indices, onValue, offValue, Int64(depth.scalarized()), axis)
   }
 
   /// Returns a tensor of ones with the same shape and type as x.
@@ -2250,7 +2238,7 @@ public enum _RawXLA {
   public static func physicalCast<T: TensorFlowScalar, R: TensorFlowScalar>(
     _ input: Tensor<T>, destType: R.Type
   ) -> Tensor<T> {
-    Tensor(_xla: XLATensor.physicalCast(input.xlaTensor, destType: destType.xlaTensorScalarType))
+    physicalCast(input, destType: destType.xlaTensorScalarType)
   }
 
   /// Computes the product of elements across dimensions of a tensor.
@@ -2379,9 +2367,7 @@ public enum _RawXLA {
     gradients: Tensor<T>,
     features: Tensor<T>
   ) -> Tensor<T> {
-    checkSameDevice(gradients, features)
-    checkSamePrecision(gradients, features)
-    return Tensor(_xla: XLATensor.threshold_backward(gradients.xlaTensor, features.xlaTensor, 0))
+    return threshold(features, output: gradients, threshold: 0, value: 0)
   }
 
   public static func replicaId(_ device: Device) -> Tensor<Int32> {
@@ -3138,10 +3124,8 @@ public enum _RawXLA {
     seed: Tensor<Tseed>,
     device: Device
   ) -> Tensor<Dtype> {
-    Tensor(
-      _xla: XLATensor.tf_StatelessRandomNormal(
-        shape.scalars.map { Int64($0) },
-        seed.xlaTensor, Dtype.self, device))
+    tf_StatelessRandomNormal(
+      shape.scalars.map { Int64($0) }, seed, dtype: Dtype.xlaTensorScalarType)
   }
 
   public static func statelessRandomNormal<
@@ -3179,11 +3163,10 @@ public enum _RawXLA {
     seed: Tensor<Tseed>,
     device: Device
   ) -> Tensor<Dtype> {
-    Tensor(
-      _xla: XLATensor.tf_StatelessRandomUniform(
-        shape.scalars.map { Int64($0) },
-        seed.xlaTensor, Tensor<Dtype>(0, on: device).xlaTensor,
-        Tensor<Dtype>(1, on: device).xlaTensor, Dtype.self, device))
+    tf_StatelessRandomUniform(
+      shape.scalars.map { Int64($0) },
+      seed, Tensor<Dtype>(0, on: device),
+      Tensor<Dtype>(1, on: device))
   }
 
   public static func statelessRandomUniform<
@@ -3224,11 +3207,7 @@ public enum _RawXLA {
     maxval: Tensor<Dtype>,
     device: Device
   ) -> Tensor<Dtype> {
-    Tensor(
-      _xla: XLATensor.tf_StatelessRandomUniform(
-        shape.scalars.map { Int64($0) },
-        seed.xlaTensor, minval.xlaTensor,
-        maxval.xlaTensor, Dtype.self, device))
+    tf_StatelessRandomUniform(shape.scalars.map { Int64($0) }, seed, minval, maxval)
   }
 
   public static func statelessRandomUniformInt<
@@ -3272,11 +3251,10 @@ public enum _RawXLA {
   ) -> Tensor<Dtype> {
     let minval = Tensor<Dtype>(Dtype.leastNormalMagnitude, on: device)
     let maxval = Tensor<Dtype>(1, on: device)
-    let uniform = XLATensor.tf_StatelessRandomUniform(
+    let uniform = tf_StatelessRandomUniform(
       shape.scalars.map { Int64($0) },
-      seed.xlaTensor, minval.xlaTensor,
-      maxval.xlaTensor, Dtype.self, device)
-    return Tensor(_xla: XLATensor.truncatedNormal(uniform))
+      seed, minval, maxval)
+    return truncatedNormal(uniform)
   }
 
   public static func statelessTruncatedNormal<
@@ -3548,8 +3526,7 @@ public enum _RawXLA {
     if !dimensionsToReverse.isEmpty {
       grad = flip(grad, dims: dimensionsToReverse)
     }
-    return Tensor(
-      _xla: XLATensor.xlaPad(grad.xlaTensor, paddingValue: 0, paddingConfig: paddingConfig))
+    return xlaPad(grad, paddingValue: 0, paddingConfig: paddingConfig)
   }
 
   /// Computes the sum of elements across dimensions of a tensor.
@@ -3819,9 +3796,7 @@ public enum _RawXLA {
             + String(segmentIds.shape.dimensions[dim]))
       }
     }
-    return Tensor(
-      _xla: XLATensor.tf_UnsortedSegmentSum(
-        data.xlaTensor, segmentIds.xlaTensor, Int64(numSegments)))
+    return tf_UnsortedSegmentSum(data, indicies: segmentIds, numSegments: Int64(numSegments))
   }
 
   /// Returns 0 if x == 0, and x / y otherwise, elementwise.

@@ -23,7 +23,7 @@ builtin_types = {
     "TFMirrorPadMode":
         ("enum TFMirrorPadMode", lambda name: f"ToTFMirrorPadMode({name})",
          "tensorflow::MirrorPadMode"),
-    "PaddingConfig":
+    "[PaddingConfigDimension]":
         ("PaddingConfig", lambda name: f"ToXLAPaddingConfig({name})",
          "xla::PaddingConfig"),
 }
@@ -229,6 +229,14 @@ def c_function_define(op):
     else:
       first_tensor = tensor_args[0][0]
 
+  def listify(l):
+    if type(l) is list:
+      return l
+    return [l]
+
+  dtypes = (([None] * op["n_results"])
+            if "result_dtype" not in op else listify(op["result_dtype"]))
+
   def format_arg_def(arg):
     name, stype, _ = arg
     if stype == "Tensor": return "OpaqueXLATensor* " + name
@@ -253,8 +261,18 @@ def c_function_define(op):
     if stype == "[Tensor]":
       return name + "_ir_value"
     if name == "shape":
+      relement_type = f"{first_tensor}->shape().get().element_type()"
+      result_dtype_arg = None
+      if dtypes[0] and first_tensor != dtypes[0]:
+        for arg in args:
+          if arg[0] == dtypes[0]:
+            result_dtype_arg = arg
+      if result_dtype_arg:
+        relement_type = (
+            f"swift_xla::MakeXlaPrimitiveType({format_arg_ref(result_dtype_arg)},"
+            f" /*device=*/nullptr)")
       return ("swift_xla::MakeArrayShapeFromDimensions(shape.slice(), {}, " +
-              f"{first_tensor}->shape().get().element_type(), "
+              f"{relement_type}, "
               f"{first_tensor}->GetDevice().hw_type)")
     if stype in builtin_types:
       return builtin_types[stype][1](name)
@@ -297,14 +315,6 @@ def c_function_define(op):
     raise ValueError(
         f"""{op["c_name"]} has unsupported number of return values {op["n_results"]}"""
     )
-
-  def listify(l):
-    if type(l) is list:
-      return l
-    return [l]
-
-  dtypes = (([None] * op["n_results"])
-            if "result_dtype" not in op else listify(op["result_dtype"]))
 
   def format_result(result_i=0, dtype=None):
     if not dtype:

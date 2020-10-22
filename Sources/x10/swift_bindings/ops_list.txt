@@ -60,6 +60,10 @@
   lower_fn: xla::Atanh
   generics: {T: FloatingPoint & TensorFlowScalar}
 
+- def: "broadcast_tensors(_ lhs: Tensor<T>, _ rhs: Tensor<T>) -> (Tensor<T>, Tensor<T>)"
+  lower_fn: LowerBroadcastTensors
+  generics: {T: TensorFlowScalar}
+
 - def: "cat(_ input: [Tensor<T>], dim: Int64) -> Tensor<T>"
   extras: ["canonicalize dim input CanonicalizeCat"]
   swift_name: concat
@@ -235,11 +239,14 @@
   x10_enum: at::aten::logical_and
   lower_fn: LowerBinaryOp<xla::And>
 
-- def: "logical_cast(_ input: Tensor, dtype: ScalarType) -> Tensor"
+- def: "logical_cast(_ input: Tensor<Srct>, destType: ScalarType) -> Tensor<Dstt>"
   x10_enum: xla_symbols::cast
+  generics: {Srct: TensorFlowScalar, Dstt: TensorFlowScalar}
+  swift_name: logicalCast
+  protection: internal
   shape_fn: ShapeLogicalCast
   lower_fn: LowerLogicalCast
-  result_dtype: dtype
+  result_dtype: destType
 
 - def: "logicalNot(_ input: Tensor<Bool>) -> Tensor<Bool>"
   x10_enum: at::aten::bitwise_not
@@ -314,7 +321,10 @@
   generics: {T: TensorFlowScalar}
   lower_fn: xla::Transpose
 
-- def: "physical_cast(input: Tensor, dtype: ScalarType) -> Tensor"
+- def: "physical_cast(_ input: Tensor<T>, destType: ScalarType) -> Tensor<T>"
+  generics: {T: TensorFlowScalar}
+  swift_name: physicalCast
+  protection: internal
   x10_enum: xla_symbols::cast
   shape_fn: ShapeLogicalCast
   lower_fn: LowerLogicalCast
@@ -458,7 +468,7 @@
 
 - def: "tf_MirrorPad(_ input: Tensor<T>, _ padding: [Int64], _ mode: TFMirrorPadMode) -> Tensor<T>"
   x10_enum: at::aten::tf_mirror_pad
-  generics: {T: TensorFlowNumeric}
+  generics: {T: TensorFlowScalar}
   protection: internal
   lower_fn: BuildMirrorPad
 
@@ -468,25 +478,39 @@
   protection: internal
   lower_fn: BuildMirrorPadBackward
 
-- def: "tf_OneHot(indices: Tensor<Ti>, on_value: Tensor<T>, off_value: Tensor<T>, depth: Int64, axis: Int64) -> Tensor<T>"
-  result_dtype: on_value
+- def: "tf_OneHot(_ indices: Tensor<Ti>, _ onValue: Tensor<T>, _ offValue: Tensor<T>, _ depth: Int64, _ axis: Int64) -> Tensor<T>"
+  result_dtype: onValue
   generics: {Ti: TensorFlowInteger, T: TensorFlowScalar}
   protection: internal
   x10_enum: at::aten::tf_one_hot
   lower_fn: BuildOneHot
 
-- def: "tf_StatelessRandomUniform(shape: [Int64], seeds: Tensor, minvalue: Tensor, maxvalue: Tensor) -> Tensor"
+- def: "tf_StatelessRandomNormal(_ shape: [Int64], _ seeds: Tensor<Ti>, dtype: ScalarType) -> Tensor<T>"
+  x10_enum: at::aten::tf_stateless_random_normal
+  generics: {T: TensorFlowScalar, Ti: TensorFlowIndex}
+  extras: ["shape_fn shape", "needs_lowering_context"]
+  lower_fn: LowerTfStatelessRandomNormal
+  protection: internal
+  result_dtype: dtype
+
+- def: "tf_StatelessRandomUniform(_ shape: [Int64], _ seeds: Tensor<Ti>, _ minvalue: Tensor<T>, _ maxvalue: Tensor<T>) -> Tensor<T>"
   x10_enum: at::aten::tf_stateless_random_uniform
+  generics: {T: TensorFlowScalar, Ti: TensorFlowIndex}
   extras: ["shape_fn shape", "needs_lowering_context"]
   lower_fn: LowerTfStatelessRandomUniform
+  protection: internal
   result_dtype: minvalue
 
-- def: "tf_UnsortedSegmentSum(data: Tensor, indicies: Tensor, num_segments: Int64) -> Tensor"
+- def: "tf_UnsortedSegmentSum(_ data: Tensor<T>, indicies: Tensor<Ti>, numSegments: Int64) -> Tensor<T>"
+  generics: {T: TensorFlowNumeric, Ti: TensorFlowIndex}
   x10_enum: at::aten::tf_unsorted_segment_sum
+  protection: internal
   lower_fn: LowerTfUnsortedSegmentSum
 
-- def: "threshold(input: Tensor, output: Tensor, threshold: Float, value: Float) -> Tensor"
+- def: "threshold(_ input: Tensor<T>, output: Tensor<T>, threshold: Float, value: Float) -> Tensor<T>"
   x10_enum: at::aten::threshold_backward
+  generics: {T: TensorFlowNumeric}
+  protection: internal
   shape_fn: input
   lower_fn: BuildThreshold
 
@@ -496,8 +520,11 @@
   generics: {T: FloatingPoint & TensorFlowScalar}
   result_dtype: [input, Long]
 
-- def: "truncated_normal(input: Tensor) -> Tensor"
+- def: "truncated_normal(_ input: Tensor<T>) -> Tensor<T>"
   x10_enum: at::aten::xla_truncated_normal
+  generics: {T: FloatingPoint & TensorFlowScalar}
+  protection: internal
+  swift_name: truncatedNormal
   shape_fn: input
   lower_fn: tensorflow::TruncatedNormal
 
@@ -513,7 +540,10 @@
   swift_name: where_
   lower_fn: LowerWhere
 
-- def: "xla_pad(input: Tensor, padding_value: AnyScalar, padding_config: PaddingConfig) -> Tensor"
+- def: "xla_pad(_ input: Tensor<T>, paddingValue: AnyScalar, paddingConfig: [PaddingConfigDimension]) -> Tensor<T>"
+  generics: {T: TensorFlowScalar}
+  protection: internal
+  swift_name: xlaPad
   lower_fn: LowerPad
 
 - def: "xla_slice(_ input: Tensor<T>, start_indices: [Int64], limit_indices: [Int64], strides: [Int64]) -> Tensor<T>"

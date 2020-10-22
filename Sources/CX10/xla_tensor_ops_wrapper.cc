@@ -144,6 +144,11 @@ xla::XlaOp LowerBinaryValueOp(xla::XlaOp lhs, xla::XlaOp rhs) {
   return T(lhs, rhs);
 }
 
+std::vector<xla::XlaOp> LowerBroadcastTensors(xla::XlaOp lhs, xla::XlaOp rhs) {
+  std::tie(lhs, rhs) = XlaHelpers::PromoteValues(lhs, rhs);
+  return {lhs, rhs};
+}
+
 xla::XlaOp LowerSqueeze(xla::XlaOp input, int dim) {
   if (dim == -1) return SqueezeAllTrivialDimensions(input);
   XLA_CHECK_GE(dim, 0);
@@ -324,9 +329,7 @@ xla::XlaOp LowerTfUnsortedSegmentSum(xla::XlaOp data, xla::XlaOp indices,
                                combine);
 }
 
-xla::XlaOp LowerTfStatelessRandomUniform(xla::Shape shape, xla::XlaOp seeds,
-                                         xla::XlaOp minval, xla::XlaOp maxval,
-                                         LoweringContext* loctx = nullptr) {
+xla::BitGeneratorTy GetBestGenerator(LoweringContext* loctx = nullptr) {
   xla::BitGeneratorTy generator;
   if (!loctx || loctx->device().hw_type == swift_xla::DeviceType::TPU) {
     generator = xla::ThreeFryBitGenerator;
@@ -336,6 +339,30 @@ xla::XlaOp LowerTfStatelessRandomUniform(xla::Shape shape, xla::XlaOp seeds,
       return xla::PhiloxBitGenerator(key, state, shape);
     };
   }
+  return generator;
+}
+
+xla::XlaOp LowerTfStatelessRandomNormal(xla::Shape shape, xla::XlaOp seeds,
+                                        at::ScalarType dtype,
+                                        LoweringContext* loctx = nullptr) {
+  auto generator = GetBestGenerator(loctx);
+  xla::XlaOp seed0 = xla::Reshape(xla::Slice(seeds, {0}, {1}, {1}), {});
+  xla::XlaOp seed1 = xla::Reshape(xla::Slice(seeds, {1}, {2}, {1}), {});
+  xla::XlaOp initial_state =
+      xla::ConstantR0WithType(seeds.builder(), xla::U64, 0);
+  xla::XlaOp key = ConvertElementType(seed0, xla::U64) |
+                   ShiftLeft(ConvertElementType(seed1, xla::U64),
+                             ConstantR0WithType(seeds.builder(), xla::U64, 32));
+  xla::XlaOp normal =
+      xla::NormalFloatingPointDistribution(key, initial_state, generator, shape)
+          .value;
+  return normal;
+}
+
+xla::XlaOp LowerTfStatelessRandomUniform(xla::Shape shape, xla::XlaOp seeds,
+                                         xla::XlaOp minval, xla::XlaOp maxval,
+                                         LoweringContext* loctx = nullptr) {
+  auto generator = GetBestGenerator(loctx);
   xla::XlaOp seed0 = xla::Reshape(xla::Slice(seeds, {0}, {1}, {1}), {});
   xla::XlaOp seed1 = xla::Reshape(xla::Slice(seeds, {1}, {2}, {1}), {});
   xla::XlaOp key = ConvertElementType(seed0, xla::U64) |
