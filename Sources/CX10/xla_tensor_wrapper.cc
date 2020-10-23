@@ -296,14 +296,6 @@ OpaqueXLATensor* XLATensor_arange(XLAScalar start, XLAScalar end,
                         ToScalarType(type));
   return new XLATensor(out);
 }
-OpaqueXLATensor_pair XLATensor_broadcast_tensors(OpaqueXLATensor* a,
-                                                 OpaqueXLATensor* b) {
-  OpaqueXLATensor_pair result;
-  auto output = XLATensor::broadcast_tensors({*a, *b});
-  result.x = new XLATensor(output[0]);
-  result.y = new XLATensor(output[1]);
-  return result;
-}
 OpaqueXLATensorArrayRef XLATensor_cross_replica_sum(
     OpaqueXLATensorArrayRef inputs, double scale) {
   auto token = swift_xla::ir::MakeNode<swift_xla::ir::ops::Token>();
@@ -333,17 +325,6 @@ OpaqueXLATensor* XLATensor_linspace(XLAScalar start, XLAScalar stop,
 }
 OpaqueXLATensor* XLATensor_replica_id(const struct CDevice device) {
   return new XLATensor(XLATensor::xla_replica_id(ConvertDevice(device)));
-}
-OpaqueXLATensor* XLATensor_tf_StatelessRandomNormal(
-    Int64ArrayRef size, OpaqueXLATensor* seeds, const struct CDevice device,
-    enum XLATensorScalarType type) {
-  return new XLATensor(XLATensor::tf_StatelessRandomNormal(
-      size.slice(), *seeds, ConvertDevice(device), ToScalarType(type)));
-}
-OpaqueXLATensor* XLATensor_threshold_backward(OpaqueXLATensor* grad_output,
-                                              OpaqueXLATensor* input,
-                                              float threshold) {
-  return XLATensor_threshold(input, grad_output, threshold, 0);
 }
 OpaqueXLATensor* XLATensor_to(OpaqueXLATensor* a, const CDevice* device,
                               Optional_XLAScalarType dtype) {

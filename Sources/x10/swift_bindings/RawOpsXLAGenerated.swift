@@ -125,6 +125,20 @@ extension _RawXLA {
     return Tensor(_xlaHandle: XLATensor_atanh(input.xlaHandle))
   }
 
+  public static func broadcast_tensors<
+    T: TensorFlowScalar
+  >(
+    _ lhs: Tensor<T>,
+    _ rhs: Tensor<T>
+  ) -> (Tensor<T>, Tensor<T>) {
+    defer { _fixLifetime(lhs) }
+    defer { _fixLifetime(rhs) }
+    checkSameDevice(lhs.device, rhs.device)
+    checkSamePrecision(lhs, rhs)
+    let tuple_output = XLATensor_broadcast_tensors(lhs.xlaHandle, rhs.xlaHandle)
+    return (Tensor(_xlaHandle: tuple_output.x), Tensor(_xlaHandle: tuple_output.y))
+  }
+
   public static func concat<
     T: TensorFlowScalar
   >(
@@ -474,6 +488,17 @@ extension _RawXLA {
     return Tensor(_xlaHandle: XLATensor_logicalAnd(lhs.xlaHandle, rhs.xlaHandle))
   }
 
+  static func logicalCast<
+    Srct: TensorFlowScalar,
+    Dstt: TensorFlowScalar
+  >(
+    _ input: Tensor<Srct>,
+    destType: ScalarType
+  ) -> Tensor<Dstt> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_logical_cast(input.xlaHandle, destType))
+  }
+
   public static func logicalNot(
     _ input: Tensor<Bool>
   ) -> Tensor<Bool> {
@@ -637,6 +662,16 @@ extension _RawXLA {
     return dims.withArrayRef { dims in
       return Tensor(_xlaHandle: XLATensor_permute_value(input.xlaHandle, dims))
     }
+  }
+
+  static func physicalCast<
+    T: TensorFlowScalar
+  >(
+    _ input: Tensor<T>,
+    destType: ScalarType
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_physical_cast(input.xlaHandle, destType))
   }
 
   public static func pow<
@@ -990,7 +1025,7 @@ extension _RawXLA {
   }
 
   static func tf_MirrorPad<
-    T: TensorFlowNumeric
+    T: TensorFlowScalar
   >(
     _ input: Tensor<T>,
     _ padding: [Int64],
@@ -1023,20 +1058,86 @@ extension _RawXLA {
     Ti: TensorFlowInteger,
     T: TensorFlowScalar
   >(
-    indices: Tensor<Ti>,
-    on_value: Tensor<T>,
-    off_value: Tensor<T>,
-    depth: Int64,
-    axis: Int64
+    _ indices: Tensor<Ti>,
+    _ onValue: Tensor<T>,
+    _ offValue: Tensor<T>,
+    _ depth: Int64,
+    _ axis: Int64
   ) -> Tensor<T> {
     defer { _fixLifetime(indices) }
-    defer { _fixLifetime(on_value) }
-    defer { _fixLifetime(off_value) }
-    checkSameDevice(indices.device, on_value.device)
-    checkSameDevice(indices.device, off_value.device)
+    defer { _fixLifetime(onValue) }
+    defer { _fixLifetime(offValue) }
+    checkSameDevice(indices.device, onValue.device)
+    checkSameDevice(indices.device, offValue.device)
     return Tensor(
       _xlaHandle: XLATensor_tf_OneHot(
-        indices.xlaHandle, on_value.xlaHandle, off_value.xlaHandle, depth, axis))
+        indices.xlaHandle, onValue.xlaHandle, offValue.xlaHandle, depth, axis))
+  }
+
+  static func tf_StatelessRandomNormal<
+    T: TensorFlowScalar,
+    Ti: TensorFlowIndex
+  >(
+    _ shape: [Int64],
+    _ seeds: Tensor<Ti>,
+    dtype: ScalarType
+  ) -> Tensor<T> {
+    defer { _fixLifetime(seeds) }
+    return shape.withArrayRef { shape in
+      return Tensor(_xlaHandle: XLATensor_tf_StatelessRandomNormal(shape, seeds.xlaHandle, dtype))
+    }
+  }
+
+  static func tf_StatelessRandomUniform<
+    T: TensorFlowScalar,
+    Ti: TensorFlowIndex
+  >(
+    _ shape: [Int64],
+    _ seeds: Tensor<Ti>,
+    _ minvalue: Tensor<T>,
+    _ maxvalue: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(seeds) }
+    defer { _fixLifetime(minvalue) }
+    defer { _fixLifetime(maxvalue) }
+    checkSameDevice(seeds.device, minvalue.device)
+    checkSameDevice(seeds.device, maxvalue.device)
+    return shape.withArrayRef { shape in
+      return Tensor(
+        _xlaHandle: XLATensor_tf_StatelessRandomUniform(
+          shape, seeds.xlaHandle, minvalue.xlaHandle, maxvalue.xlaHandle))
+    }
+  }
+
+  static func tf_UnsortedSegmentSum<
+    T: TensorFlowNumeric,
+    Ti: TensorFlowIndex
+  >(
+    _ data: Tensor<T>,
+    indicies: Tensor<Ti>,
+    numSegments: Int64
+  ) -> Tensor<T> {
+    defer { _fixLifetime(data) }
+    defer { _fixLifetime(indicies) }
+    checkSameDevice(data.device, indicies.device)
+    return Tensor(
+      _xlaHandle: XLATensor_tf_UnsortedSegmentSum(data.xlaHandle, indicies.xlaHandle, numSegments))
+  }
+
+  static func threshold<
+    T: TensorFlowNumeric
+  >(
+    _ input: Tensor<T>,
+    output: Tensor<T>,
+    threshold: Float,
+    value: Float
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    defer { _fixLifetime(output) }
+    checkSameDevice(input.device, output.device)
+    checkSamePrecision(input, output)
+    return Tensor(
+      _xlaHandle: XLATensor_threshold(input.xlaHandle, output.xlaHandle, threshold, value))
   }
 
   public static func topk<
@@ -1050,6 +1151,15 @@ extension _RawXLA {
     defer { _fixLifetime(input) }
     let tuple_output = XLATensor_topk(input.xlaHandle, k, dim, largest)
     return (Tensor(_xlaHandle: tuple_output.x), Tensor(_xlaHandle: tuple_output.y))
+  }
+
+  static func truncatedNormal<
+    T: FloatingPoint & TensorFlowScalar
+  >(
+    _ input: Tensor<T>
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return Tensor(_xlaHandle: XLATensor_truncated_normal(input.xlaHandle))
   }
 
   public static func updateSlice<
@@ -1083,6 +1193,20 @@ extension _RawXLA {
     checkSameDevice(condition.device, other.device)
     return Tensor(
       _xlaHandle: XLATensor_where(condition.xlaHandle, input.xlaHandle, other.xlaHandle))
+  }
+
+  static func xlaPad<
+    T: TensorFlowScalar
+  >(
+    _ input: Tensor<T>,
+    paddingValue: AnyScalar,
+    paddingConfig: [PaddingConfigDimension]
+  ) -> Tensor<T> {
+    defer { _fixLifetime(input) }
+    return paddingConfig.withArrayRef { paddingConfig in
+      return Tensor(
+        _xlaHandle: XLATensor_xla_pad(input.xlaHandle, paddingValue.xlaScalar, paddingConfig))
+    }
   }
 
   public static func xlaSlice<

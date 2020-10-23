@@ -210,7 +210,7 @@ extension Array where Element: AnyTensor {
 }
 
 extension Array where Element == PaddingConfigDimension {
-  func withPaddingConfig<Result>(_ body: (inout PaddingConfig) -> Result) -> Result {
+  func withArrayRef<Result>(_ body: (inout PaddingConfig) -> Result) -> Result {
     defer { _fixLifetime(self) }
     return withUnsafeBufferPointer {
       (_ dimensions: UnsafeBufferPointer<PaddingConfigDimension>) -> Result in
@@ -330,11 +330,6 @@ extension XLATensor {
         start.xlaScalar, stop.xlaScalar, num, cdevice, type))
   }
 
-  static func logicalCast(_ input: XLATensor, destType: XLATensorScalarType) -> XLATensor {
-    defer { _fixLifetime(input) }
-    return XLATensor(_handle: XLATensor_logical_cast(input.handle, destType))
-  }
-
   static func maxpool(
     _ input: XLATensor,
     _ ksize: [Int64],
@@ -368,102 +363,8 @@ extension XLATensor {
     }
   }
 
-  static func mirrorPad(_ input: XLATensor, _ padding: [Int64], _ mode: TFMirrorPadMode)
-    -> XLATensor
-  {
-    defer { _fixLifetime(input) }
-    return padding.withArrayRef { padding in
-      XLATensor(_handle: XLATensor_tf_MirrorPad(input.handle, padding, mode))
-    }
-  }
-
-  static func mirrorPadGrad(
-    _ grad_output: XLATensor, _ inputSize: [Int64], _ padding: [Int64], _ mode: TFMirrorPadMode
-  )
-    -> XLATensor
-  {
-    defer { _fixLifetime(grad_output) }
-    return inputSize.withArrayRef { inputSize in
-      padding.withArrayRef { padding in
-        XLATensor(
-          _handle: XLATensor_tf_MirrorPadGrad(grad_output.handle, inputSize, padding, mode))
-      }
-    }
-  }
-
-  static func physicalCast(_ input: XLATensor, destType: XLATensorScalarType) -> XLATensor {
-    defer { _fixLifetime(input) }
-    return XLATensor(_handle: XLATensor_physical_cast(input.handle, destType))
-  }
-
   static func replica_id(_ device: Device) -> XLATensor {
     return XLATensor(_handle: XLATensor_replica_id(device.cdevice))
-  }
-
-  static func tf_OneHot(
-    _ indices: XLATensor, _ on_value: XLATensor, _ off_value: XLATensor, _ depth: Int64,
-    _ axis: Int64
-  ) -> XLATensor {
-    defer { _fixLifetime(indices) }
-    defer { _fixLifetime(on_value) }
-    defer { _fixLifetime(off_value) }
-    return XLATensor(
-      _handle: XLATensor_tf_OneHot(indices.handle, on_value.handle, off_value.handle, depth, axis))
-  }
-
-  static func tf_StatelessRandomNormal(
-    _ dims: [Int64],
-    _ seeds: XLATensor,
-    _ dtype: XLAScalarType.Type,
-    _ device: Device
-  ) -> XLATensor {
-    defer { _fixLifetime(seeds) }
-    let cdevice = device.cdevice
-    return dims.withArrayRef { dims in
-      XLATensor(
-        _handle: XLATensor_tf_StatelessRandomNormal(
-          dims, seeds.handle, cdevice,
-          dtype.xlaTensorScalarType))
-    }
-  }
-
-  static func tf_StatelessRandomUniform(
-    _ dims: [Int64],
-    _ seeds: XLATensor,
-    _ minvalue: XLATensor,
-    _ maxvalue: XLATensor,
-    _ dtype: XLAScalarType.Type,
-    _ device: Device
-  ) -> XLATensor {
-    defer { _fixLifetime(seeds) }
-    return dims.withArrayRef { dims in
-      XLATensor(
-        _handle: XLATensor_tf_StatelessRandomUniform(
-          dims, seeds.handle, minvalue.handle, maxvalue.handle))
-    }
-  }
-
-  static func tf_UnsortedSegmentSum(
-    _ data: XLATensor, _ indices: XLATensor, _ numSegments: Int64
-  ) -> XLATensor {
-    defer { _fixLifetime(data) }
-    defer { _fixLifetime(indices) }
-    return XLATensor(
-      _handle: XLATensor_tf_UnsortedSegmentSum(data.handle, indices.handle, numSegments))
-  }
-
-  static func threshold_backward(_ grad_output: XLATensor, _ input: XLATensor, _ threshold: Float)
-    -> XLATensor
-  {
-    defer { _fixLifetime(grad_output) }
-    defer { _fixLifetime(input) }
-    return XLATensor(
-      _handle: XLATensor_threshold_backward(grad_output.handle, input.handle, threshold))
-  }
-
-  static func truncatedNormal(_ input: XLATensor) -> XLATensor {
-    defer { _fixLifetime(input) }
-    return XLATensor(_handle: XLATensor_truncated_normal(input.handle))
   }
 
   static func to(
@@ -474,15 +375,6 @@ extension XLATensor {
       return XLATensor(_handle: XLATensor_to(a.handle, &cdevice, dtype.xlaOptionalType))
     } else {
       return XLATensor(_handle: XLATensor_to(a.handle, nil, dtype.xlaOptionalType))
-    }
-  }
-
-  static func xlaPad(
-    _ input: XLATensor, paddingValue: XLAScalarType, paddingConfig: [PaddingConfigDimension]
-  ) -> XLATensor {
-    defer { _fixLifetime(input) }
-    return paddingConfig.withPaddingConfig { paddingConfig in
-      XLATensor(_handle: XLATensor_xla_pad(input.handle, paddingValue.xlaScalar, paddingConfig))
     }
   }
 

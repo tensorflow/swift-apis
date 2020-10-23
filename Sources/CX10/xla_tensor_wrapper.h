@@ -401,16 +401,13 @@ XLA_API OpaqueXLATensor*
 XLATensor_tf_OneHot(OpaqueXLATensor* indices, OpaqueXLATensor* on_value,
                     OpaqueXLATensor* off_value, int64_t depth, int64_t axis);
 XLA_API OpaqueXLATensor* XLATensor_tf_StatelessRandomNormal(
-    Int64ArrayRef size, OpaqueXLATensor* seeds, const struct CDevice device,
-    enum XLATensorScalarType type);
+    Int64ArrayRef size, OpaqueXLATensor* seeds, enum XLATensorScalarType type);
 XLA_API OpaqueXLATensor* XLATensor_tf_StatelessRandomUniform(
     Int64ArrayRef size, OpaqueXLATensor* seeds, OpaqueXLATensor* minvalue,
     OpaqueXLATensor* maxvalue);
 XLA_API OpaqueXLATensor*
 XLATensor_tf_UnsortedSegmentSum(OpaqueXLATensor* data, OpaqueXLATensor* indices,
                                 int64_t num_segments);
-XLA_API OpaqueXLATensor* XLATensor_threshold_backward(
-    OpaqueXLATensor* grad_output, OpaqueXLATensor* input, float threshold);
 XLA_API OpaqueXLATensor* XLATensor_threshold(
     OpaqueXLATensor* input, OpaqueXLATensor* output, float threshold, float value);
 XLA_API OpaqueXLATensor* XLATensor_truncated_normal(OpaqueXLATensor* input);
