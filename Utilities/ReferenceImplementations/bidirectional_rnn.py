@@ -33,6 +33,9 @@ parser.add_argument("--units", default=4)
 parser.add_argument("--merge-mode", default="concat")
 args = parser.parse_args()
 
+if args.merge_mode == "none":
+    args.merge_mode = None
+
 # Initialize the keras model with the Bidirectional RNN.
 forward = tf.keras.layers.SimpleRNN(
     units=args.units, activation='tanh',
@@ -80,15 +83,28 @@ print(swift_tensor('initialBackwardLayerState', initial_state[1]))
 with tf.GradientTape() as tape:
     tape.watch(x)
     tape.watch(initial_state)
-    [[states, final_state_forward, final_state_backward]] = model([x, initial_state])
-    sum_output = tf.reduce_sum(states[0][-1])
+
+    if args.merge_mode is not None:
+        [[states, final_state_forward, final_state_backward]] = model([x, initial_state])
+        sum_output = tf.reduce_sum(states[0][-1])
+
+    else:
+        [[states_forward, states_backward, final_state_forward, final_state_backward]] = model([x, initial_state])
+        sum_output = tf.reduce_sum(tf.concat([states_forward[0][-1], states_backward[0][-1]], axis=-1))
 
 [grad_model, grad_x, grad_initial_state] = tape.gradient(sum_output, [model.variables, x, initial_state])
 [grad_kernel_forward, grad_recurrent_kernel_forward, grad_bias_forward,
  grad_kernel_backward, grad_recurrent_kernel_backward, grad_bias_backward] = grad_model
 [grad_initial_state_forward, grad_initial_state_backward] = grad_initial_state
 print(swift_tensor('expectedSum', sum_output))
-print(swift_tensor('expectedStates', states))
+
+if args.merge_mode is not None:
+    print(swift_tensor('expectedStates', states))
+
+else:
+    print(swift_tensor('expectedStatesForward', states_forward))
+    print(swift_tensor('expectedStatesBackward', states_backward))
+
 print(swift_tensor('expectedFinalStateForward', final_state_forward))
 print(swift_tensor('expectedFinalStateBackward', final_state_backward))
 print(swift_tensor('expectedGradKernelForward', grad_kernel_forward))
