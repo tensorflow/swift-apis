@@ -613,7 +613,7 @@ final class TensorAutoDiffTests: XCTestCase {
 
   func testSigmoid() {
     func f(a: Tensor<Float>) -> Tensor<Float> { sigmoid(a).sum() }
-    assertEqual(gradient(at: [-1, 0, 1], in: f), [0.1966119, 0.25, 0.1966119], accuracy: 0.0001)
+    assertEqual(Tensor<Float>(gradient(at: [-1, 0, 1], in: f)), [0.1966119, 0.25, 0.1966119], accuracy: 0.0001)
   }
 
   func testRelu() {
