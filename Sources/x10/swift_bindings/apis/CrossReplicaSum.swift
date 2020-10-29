@@ -49,7 +49,8 @@ extension _KeyPathIterableBase {
       let joinedkp = kp.appending(path: nkp)!
       if let valueType = type(of: joinedkp).valueType as? CrossReplicaSummable.Type {
         valueType._doCrossReplicaSum(&root, joinedkp, scale)
-      } else if let nested = self[keyPath: nkp] as? _KeyPathIterableBase {
+      } else {
+        let nested = self[keyPath: nkp]
         nested.crossReplicaSumChild(&root, joinedkp, scale)
       }
     }
