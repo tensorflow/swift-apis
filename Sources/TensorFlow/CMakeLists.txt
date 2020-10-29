@@ -61,7 +61,6 @@ add_library(TensorFlow SHARED
 
   Operators/Basic.swift
   Operators/Comparison.swift
-  Operators/Dataset.swift
   Operators/Image.swift
   Operators/LinearAlgebra.swift
   Operators/Math.swift
