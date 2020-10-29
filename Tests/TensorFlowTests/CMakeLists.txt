@@ -32,7 +32,6 @@ add_library(TensorFlowTests
 
   OperatorTests/BasicTests.swift
   OperatorTests/ComparisonTests.swift
-  OperatorTests/DatasetTests.swift
   OperatorTests/ImageTests.swift
   OperatorTests/LinearAlgebraTests.swift
   OperatorTests/MathTests.swift
