@@ -28,7 +28,6 @@ add_library(TensorFlow SHARED
   Core/BroadcastingPullback.swift
   Core/MixedPrecision.swift
   Core/Runtime.swift
-  Core/Serialization.swift
   Core/ShapedArray.swift
   Core/StringTensor.swift
   Core/Tensor.swift
