@@ -204,6 +204,7 @@ final class LazyTensorTraceTests: LazyTensorTestCase {
   }
 
   func testTraceWithFunctionAttributes() {
+    typealias Int32Pair = Zip2TensorGroup<Tensor<Int32>, Tensor<Int32>>
     func thenBranch(x: Tensor<Float>) -> Tensor<Float> {
       return x + 10.0
     }
