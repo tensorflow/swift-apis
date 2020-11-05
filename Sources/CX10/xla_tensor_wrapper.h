@@ -293,6 +293,7 @@ XLA_API OpaqueXLATensor* XLATensor_ge(OpaqueXLATensor* x, OpaqueXLATensor* y);
 XLA_API OpaqueString* XLATensor_get_annotations(OpaqueXLATensor* a);
 XLA_API OpaqueXLATensor* XLATensor_gt(OpaqueXLATensor* x, OpaqueXLATensor* y);
 XLA_API OpaqueString* XLATensor_ir_text(OpaqueXLATensor* a);
+XLA_API OpaqueString* XLATensor_xla_ir_text(OpaqueXLATensor* a);
 XLA_API OpaqueXLATensor* XLATensor_is_finite(OpaqueXLATensor* input);
 XLA_API OpaqueXLATensor* XLATensor_is_inf(OpaqueXLATensor* input);
 XLA_API OpaqueXLATensor* XLATensor_is_nan(OpaqueXLATensor* input);
@@ -427,6 +428,11 @@ XLA_API OpaqueXLATensor* XLATensor_xla_slice(OpaqueXLATensor* input,
                                              Int64ArrayRef begin,
                                              Int64ArrayRef end,
                                              Int64ArrayRef strides);
+XLA_API OpaqueXLATensorArrayRef XLATensor_functional_while(
+    OpaqueXLATensor* n, OpaqueXLATensorArrayRef initial,
+    OpaqueXLATensorArrayRef placeholders, OpaqueXLATensor* indexPlaceholder,
+    OpaqueXLATensorArrayRef results);
+XLA_API OpaqueXLATensor* XLATensor_makePlaceholder(OpaqueXLATensor* t, int id);
 // Retrieves the device for a given tensor.
 XLA_API struct CDevice XLATensor_device(OpaqueXLATensor* t);
 // Creates a float tensor on the current device filled with random numbers in

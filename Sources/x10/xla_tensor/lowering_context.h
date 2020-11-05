@@ -36,12 +36,11 @@ namespace ir {
 
 class LoweringContext {
  public:
-  explicit LoweringContext(const std::string& name, Device device);
-  LoweringContext(const std::string& name, Device device,
-                  absl::Span<const Node* const> post_order,
+  explicit LoweringContext(xla::XlaBuilder* builder, Device device);
+  LoweringContext(xla::XlaBuilder* builder, Device device,
                   Util::EmissionMap emit_status);
 
-  xla::XlaBuilder* builder() { return &builder_; }
+  xla::XlaBuilder* builder() { return builder_ptr_; }
 
   const Device& device() const { return device_; };
 
@@ -101,7 +100,7 @@ class LoweringContext {
   TF_ATTRIBUTE_NORETURN void ReportBuilderError(const Node* node,
                                                 const char* error_msg);
 
-  xla::XlaBuilder builder_;
+  xla::XlaBuilder* builder_ptr_;
   Device device_;
   std::vector<xla::ComputationClient::DataPtr> parameters_;
   std::unordered_map<xla::ComputationClient::Data::OpaqueHandle, Parameter>
@@ -110,6 +109,15 @@ class LoweringContext {
   std::vector<xla::XlaOp> root_tuple_;
   OutputMap<xla::XlaOp> emitted_outputs_;
   Util::EmissionMap emit_status_;
+};
+
+class RootLoweringContext : public LoweringContext {
+ public:
+  explicit RootLoweringContext(const std::string& name, Device device);
+  RootLoweringContext(const std::string& name, Device device,
+                      absl::Span<const Node* const> post_order,
+                      Util::EmissionMap emit_status);
+  xla::XlaBuilder builder_;
 };
 
 }  // namespace ir

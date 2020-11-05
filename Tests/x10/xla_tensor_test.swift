@@ -88,6 +88,16 @@ final class MultiDeviceAPITests: XCTestCase {
       }
     }
   }
+
+  func testFunctionalWhile() {
+    let res = (_RawXLA.functionalWhile(n: Tensor<Int32>(4, on: .defaultXLA),
+               initial: [Tensor<Float>(3.0, on: .defaultXLA)]) { args, i in
+      var a = args[0] as! Tensor<Float>
+      a = a * 2 + 1;
+      return [a]
+    })[0] as! Tensor<Float>
+    XCTAssertEqual(res.scalarized(), 63)
+  }
 }
 
 extension MultiDeviceAPITests {
@@ -97,6 +107,7 @@ extension MultiDeviceAPITests {
     ("testSetGetReplication", testSetGetReplication),
     ("testSyncLiveTensors", testSyncLiveTensors),
     ("testCrossReplicaSum", testCrossReplicaSum),
+    ("testFunctionalWhile", testFunctionalWhile),
   ]
 }
 

@@ -1361,9 +1361,9 @@ XLATensor::CompilationResult XLATensor::Compile(
   static const bool enable_aliasing =
       xla::sys_util::GetEnvBool("XLA_ENABLE_PARAM_ALIASING", false);
   xla::util::Unique<Device> unique_device;
-  ir::LoweringContext lowering_ctx("SyncTensorsGraph", coll.device,
-                                   po_data->post_order,
-                                   std::move(po_data->emission_map));
+  ir::RootLoweringContext lowering_ctx("SyncTensorsGraph", coll.device,
+                                       po_data->post_order,
+                                       std::move(po_data->emission_map));
   for (auto index : coll.indices) {
     ir::Value ir_value = tensors[index].CurrentIrValue();
     xla::XlaOp root = lowering_ctx.GetOutputOp(ir_value);

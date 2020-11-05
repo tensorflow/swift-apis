@@ -11,6 +11,7 @@ cc_library(
 cc_library(
     name = "xla_tensor_wrapper",
     srcs = [
+        "functional_while.cc",
         "xla_tensor_wrapper.cc",
         "xla_tensor_ops_wrapper.cc",
         "xla_tensor_ops_wrapper_generated.cc.inc",
