@@ -62,7 +62,7 @@ if(ENABLE_SWIFT_NUMERICS)
     GIT_REPOSITORY
       git://github.com/apple/swift-numerics
     GIT_TAG
-      master
+      main
     CMAKE_ARGS
       -D BUILD_SHARED_LIBS=YES
       -D BUILD_TESTING=NO
