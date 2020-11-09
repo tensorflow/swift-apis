@@ -15,7 +15,7 @@
 import _Differentiation
 
 #if os(Windows)
-  import func MSVCRT.sqrt
+  import func CRT.sqrt
 #endif
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
