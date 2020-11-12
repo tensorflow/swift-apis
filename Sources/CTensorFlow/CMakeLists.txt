@@ -1,7 +1,7 @@
 add_library(CTensorFlow INTERFACE)
 if(NOT USE_BUNDLED_CTENSORFLOW)
   target_include_directories(CTensorFlow INTERFACE
-    ${CMAKE_CURRENT_SOURCE_DIR})
+    ${CMAKE_CURRENT_SOURCE_DIR}/include)
 endif()
 target_link_directories(CTensorFlow INTERFACE
   $<TARGET_FILE_DIR:x10>)
@@ -10,7 +10,7 @@ target_link_libraries(CTensorFlow INTERFACE
 
 list(GET X10_INCLUDE_DIRS 0 X10_SOURCE_DIR)
 
-install(FILES module.modulemap CTensorFlow.h
+install(FILES include/module.modulemap include/CTensorFlow.h
   DESTINATION lib/swift/tensorflow)
 install(DIRECTORY ${X10_SOURCE_DIR}/tensorflow/c
   DESTINATION lib/swift/tensorflow
