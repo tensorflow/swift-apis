@@ -13,6 +13,9 @@
 // limitations under the License.
 
 import _Differentiation
+#if TENSORFLOW_USE_STANDARD_TOOLCHAIN
+import Numerics
+#endif
 
 /// A stochastic gradient descent (SGD) optimizer.
 ///

@@ -14,6 +14,9 @@
 
 import _Differentiation
 import TensorFlow
+#if TENSORFLOW_USE_STANDARD_TOOLCHAIN
+import Numerics
+#endif
 @_exported import x10_optimizers_tensor_visitor_plan
 
 /// State for a single step of a single weight inside an optimizer.
