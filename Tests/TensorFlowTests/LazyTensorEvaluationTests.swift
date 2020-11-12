@@ -82,32 +82,34 @@ final class LazyTensorEvaluationTests: LazyTensorTestCase {
   }
 
   func testNoOutputOperations() {
-    let elements1: Tensor<Int32> = [0, 1, 2]
-    let elements2: Tensor<Int32> = [10, 11, 12]
-    let outputTypes = [Int32.tensorFlowDataType, Int32.tensorFlowDataType]
-    let outputShapes: [TensorShape?] = [nil, nil]
-    let dataset: VariantHandle = _Raw.tensorSliceDataset(
-      components: [elements1, elements2],
-      outputShapes: outputShapes
-    )
-    let iterator: ResourceHandle = _Raw.iteratorV2(
-      sharedName: "blah",
-      container: "earth", outputTypes: outputTypes, outputShapes: outputShapes
-    )
-    // `dataset` and `iterator` should not be materialized yet.
-    XCTAssertFalse(isMaterialized(dataset.handle))
-    XCTAssertFalse(isMaterialized(iterator.handle))
-    _Raw.makeIterator(dataset: dataset, iterator: iterator)
+    withDevice(.cpu) {
+      let elements1: Tensor<Int32> = [0, 1, 2]
+      let elements2: Tensor<Int32> = [10, 11, 12]
+      let outputTypes = [Int32.tensorFlowDataType, Int32.tensorFlowDataType]
+      let outputShapes: [TensorShape?] = [nil, nil]
+      let dataset: VariantHandle = _Raw.tensorSliceDataset(
+        components: [elements1, elements2],
+        outputShapes: outputShapes
+      )
+      let iterator: ResourceHandle = _Raw.iteratorV2(
+        sharedName: "blah",
+        container: "earth", outputTypes: outputTypes, outputShapes: outputShapes
+      )
+      // `dataset` and `iterator` should not be materialized yet.
+      XCTAssertFalse(isMaterialized(dataset.handle))
+      XCTAssertFalse(isMaterialized(iterator.handle))
+      _Raw.makeIterator(dataset: dataset, iterator: iterator)
 
-    // `dataset` and `iterator` should be materialized now as
-    // makeIterator executes.
-    XCTAssertTrue(isMaterialized(dataset.handle))
-    XCTAssertTrue(isMaterialized(iterator.handle))
-    let next: SimpleOutput = _Raw.iteratorGetNext(
-      iterator: iterator, outputShapes: outputShapes
-    )
-    XCTAssertEqual(Tensor(handle: next.a).scalarized(), 0)
-    XCTAssertEqual(Tensor(handle: next.b).scalarized(), 10)
+      // `dataset` and `iterator` should be materialized now as
+      // makeIterator executes.
+      XCTAssertTrue(isMaterialized(dataset.handle))
+      XCTAssertTrue(isMaterialized(iterator.handle))
+      let next: SimpleOutput = _Raw.iteratorGetNext(
+        iterator: iterator, outputShapes: outputShapes
+      )
+      XCTAssertEqual(Tensor(handle: next.a).scalarized(), 0)
+      XCTAssertEqual(Tensor(handle: next.b).scalarized(), 10)
+    }
   }
 
   private func isMaterialized<T: TensorFlowScalar>(_ input: Tensor<T>) -> Bool {
