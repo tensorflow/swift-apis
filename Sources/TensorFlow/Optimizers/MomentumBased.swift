@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import _Differentiation
+
 /// A RMSProp optimizer.
 ///
 /// Implements the RMSProp optimization algorithm. RMSProp is a form of stochastic gradient descent

@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import _Differentiation
+
 /// A numerical optimizer.
 ///
 /// Optimizers apply an optimization algorithm to update a differentiable model.
