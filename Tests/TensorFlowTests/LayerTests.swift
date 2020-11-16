@@ -1377,7 +1377,7 @@ final class LayerTests: XCTestCase {
     let input = Tensor<Float>(ones: [1, 2]) * Tensor<Float>([0.3, 0.7])
     let output = cell(input: input, state: state).state
     let expected = Tensor<Float>([[0.9921227, 0.9999934, 0.9921227, 0.9999934, 0.9921227]])
-    XCTAssertEqual(output, expected)
+    assertEqual(output, expected, accuracy: 1e-6)
   }
 
   func testDense() {
@@ -6769,7 +6769,7 @@ final class LayerTests: XCTestCase {
     let input = Tensor(shape: [5, 1], scalars: (0..<5).map(Float.init))
     let output = tanhLayer.inferring(from: input)
     let expected = Tensor<Float>([[0.0], [0.7615942], [0.9640276], [0.9950547], [0.9993292]])
-    XCTAssertEqual(output, expected)
+    assertEqual(output, expected, accuracy: 1e-6)
   }
 
   func testBatchNorm() {

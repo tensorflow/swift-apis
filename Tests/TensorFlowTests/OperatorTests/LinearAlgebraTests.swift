@@ -136,7 +136,7 @@ final class LinearAlgebraTests: XCTestCase {
     matrix = Tensor<Float>(shape: [2, 2, 2, 2], scalars: (0..<16).map(Float.init))
     computedDet = det(matrix)
     expectedDet = Tensor<Float>([[-2.0, -2.0], [-2.0, -2.0]])
-    assertEqual(computedDet, expectedDet, accuracy: 1e-5)
+    assertEqual(computedDet, expectedDet, accuracy: 2e-5)
   }
 
   func testSlogdet() {
@@ -151,8 +151,8 @@ final class LinearAlgebraTests: XCTestCase {
     expectedSigns = Tensor<Float>([[-1.0, -1.0], [-1.0, -1.0]])
     expectedLogs = Tensor<Float>([[0.6931472, 0.6931462], [0.6931462, 0.6931435]])
     (computedSigns, computedLogs) = slogdet(input)
-    XCTAssertEqual(computedSigns, expectedSigns)
-    XCTAssertEqual(computedLogs, expectedLogs)
+    assertEqual(computedSigns, expectedSigns, accuracy: 1e-5)
+    assertEqual(computedLogs, expectedLogs, accuracy: 1e-5)
   }
 
   func testLogdet() {
