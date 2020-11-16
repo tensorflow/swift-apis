@@ -315,6 +315,11 @@ OpaqueString* XLATensor_ir_text(OpaqueXLATensor* a) {
       swift_xla::ir::DumpUtil::ToText({a->GetIrValue().node.get()});
   return new std::string(ir_dag_text);
 }
+OpaqueString* XLATensor_xla_ir_text(OpaqueXLATensor* a) {
+  std::string ir_dag_text =
+      swift_xla::ir::DumpUtil::ToHlo({a->GetIrValue()}, a->GetDevice());
+  return new std::string(ir_dag_text);
+}
 OpaqueXLATensor* XLATensor_linspace(XLAScalar start, XLAScalar stop,
                                     int64_t num, const CDevice device,
                                     enum XLATensorScalarType type) {

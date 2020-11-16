@@ -287,7 +287,7 @@ std::string DumpUtil::PostOrderToText(absl::Span<const Node* const> post_order,
 
 std::string DumpUtil::ToHlo(absl::Span<const Value> values,
                             const Device& device) {
-  ir::LoweringContext lowering_ctx("IrToHlo", device);
+  ir::RootLoweringContext lowering_ctx("IrToHlo", device);
   for (auto& ir_value : values) {
     xla::XlaOp root = lowering_ctx.GetOutputOp(ir_value);
     lowering_ctx.AddResult(root);

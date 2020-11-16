@@ -22,6 +22,7 @@ infix operator .!=: ComparisonPrecedence
 public protocol AnyTensor {
   var _rawTensorHandle: CTensorHandle { get }
   var _tensorFlowDataType: TensorDataType { get }
+  var scalarType: TensorFlowScalar.Type { get }
 }
 
 /// A multidimensional array of elements that is a generalization of vectors and matrices to
@@ -55,6 +56,7 @@ public struct Tensor<Scalar: TensorFlowScalar> {
 extension Tensor: AnyTensor {
   public var _rawTensorHandle: CTensorHandle { return handle._cTensorHandle }
   public var _tensorFlowDataType: TensorDataType { return Scalar.tensorFlowDataType }
+  public var scalarType: TensorFlowScalar.Type { return Scalar.self }
 }
 
 //===------------------------------------------------------------------------------------------===//

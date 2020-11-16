@@ -361,6 +361,7 @@
   _(aten, frobenius_norm)                                   \
   _(aten, full)                                             \
   _(aten, full_like)                                        \
+  _(aten, functional_while)                                 \
   _(aten, gather)                                           \
   _(aten, ge)                                               \
   _(aten, gelu)                                             \
@@ -551,6 +552,7 @@
   _(aten, ormqr)                                            \
   _(aten, pairwise_distance)                                \
   _(aten, pdist)                                            \
+  _(aten, placeholder)                                      \
   _(aten, cdist)                                            \
   _(aten, permute)                                          \
   _(aten, pin_memory)                                       \

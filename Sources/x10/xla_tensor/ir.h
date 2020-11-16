@@ -192,6 +192,10 @@ class Node {
     return operands_as_outputs_;
   }
 
+  const absl::InlinedVector<NodePtr, 4>& operand_nodes() const {
+    return operands_;
+  }
+
   const Output& operand(size_t i) const { return operands_as_outputs_.at(i); }
 
   xla::hash_t node_hash() const { return node_hash_; }
