@@ -178,7 +178,7 @@ final class TensorAutoDiffTests: XCTestCase {
     let grad = gradient(at: Tensor<Float>([3.0, 4.0])) { x in
       logSoftmax(x).mean().scalarized()
     }
-    XCTAssertEqual(grad, Tensor([0.23105857, -0.2310586]))
+    assertEqual(grad, Tensor([0.23105857, -0.2310586]), accuracy: 1e-6)
   }
 
   func testScalars() {

@@ -40,8 +40,8 @@ final class LossTests: XCTestCase {
       scalars: [0.1, 0.2, 0.3, 0.4, 0.4, 0.3, 0.2, 0.1])
 
     let loss = meanSquaredError(predicted: predicted, expected: expected)
-    let expectedLoss: Float = 23.324999
-    assertEqual(loss, Tensor(expectedLoss), accuracy: 1e-6)
+    let expectedLoss: Float = 23.325
+    assertEqual(loss, Tensor(expectedLoss), accuracy: 2e-6)
   }
 
   func testMeanSquaredLogarithmicError() {

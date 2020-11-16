@@ -226,7 +226,7 @@ final class MathOperatorTests: XCTestCase {
     let x = Tensor<Float>([-1.0, 2.0, 3.0])
     let y = elu(x)
     let expectedY = Tensor<Float>([-0.63212055, 2, 3])
-    XCTAssertEqual(y, expectedY)
+    assertEqual(y, expectedY, accuracy: 1e-6)
   }
 
   func testGelu() {
