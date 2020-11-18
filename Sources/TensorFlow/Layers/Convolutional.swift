@@ -561,7 +561,7 @@ extension TransposedConv2D {
   ///
   /// - Parameters:
   ///   - filterShape: A 4-D tensor of shape
-  ///     `[width, height, input channel count, output channel count]`.
+  ///     `[width, height, output channel count, input channel count]`.
   ///   - strides: The strides of the sliding window for spatial dimensions.
   ///   - padding: The padding algorithm for convolution.
   ///   - activation: The element-wise activation function.
