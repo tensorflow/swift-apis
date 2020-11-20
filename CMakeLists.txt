@@ -32,6 +32,12 @@ option(ENABLE_PYTHON_SUPPORT
 option(ENABLE_SWIFT_NUMERICS
   "Enable integrating swift-numerics" YES)
 
+include(CMakeDependentOption)
+cmake_dependent_option(TENSORFLOW_USE_STANDARD_TOOLCHAIN
+  "Experimental support to use a standard toolchain" OFF
+  "ENABLE_SWIFT_NUMERICS"
+  NO)
+
 if(ENABLE_SWIFT_NUMERICS)
   include(ExternalProject)
 

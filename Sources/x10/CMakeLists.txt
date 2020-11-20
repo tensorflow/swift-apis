@@ -13,6 +13,7 @@ add_library(x10_optimizers_optimizer SHARED
 set_target_properties(x10_optimizers_optimizer PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_Swift_MODULE_DIRECTORY})
 target_link_libraries(x10_optimizers_optimizer PUBLIC
+  $<$<AND:$<BOOL:${ENABLE_SWIFT_NUMERICS}>,$<BOOL:${TENSORFLOW_USE_STANDARD_TOOLCHAIN}>>:Numerics>
   x10_optimizers_tensor_visitor_plan
   TensorFlow)
 
