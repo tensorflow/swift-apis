@@ -79,6 +79,7 @@ if(ENABLE_SWIFT_NUMERICS)
       TRUE
     STEP_TARGETS
       build)
+  ExternalProject_Get_Property(swift-numerics SOURCE_DIR)
   ExternalProject_Get_Property(swift-numerics BINARY_DIR)
 
   import_module(Numerics ${BINARY_DIR} swift-numerics-build)
@@ -86,6 +87,16 @@ if(ENABLE_SWIFT_NUMERICS)
   import_module(RealModule ${BINARY_DIR} swift-numerics-build)
 
   file(MAKE_DIRECTORY ${BINARY_DIR}/swift)
+
+  add_library(_NumericsShims IMPORTED INTERFACE)
+  set_target_properties(_NumericsShims PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES ${SOURCE_DIR}/Sources/_NumericsShims/include)
+  add_dependencies(_NumericsShims swift-numerics-build)
+
+  target_link_libraries(Numerics INTERFACE
+    _NumericsShims)
+
+  file(MAKE_DIRECTORY ${SOURCE_DIR}/Sources/_NumericsShims/include)
 endif()
 
 if(ENABLE_PYTHON_SUPPORT)
@@ -264,9 +275,11 @@ if(ENABLE_SWIFT_NUMERICS)
         DESTINATION lib/swift/${swift_os}/${module}.swiftmodule
         RENAME ${swift_arch}.swiftmodule)
     else()
+      get_target_property(${module}_INTERFACE_INCLUDE_DIRECTORIES ${module}
+        INTERFACE_INCLUDE_DIRECTORIES)
       install(FILES
-        $<TARGET_PROPERTY:${module},INTERFACE_INCLUDE_DIRECTORIES>/${module}.swiftdoc
-        $<TARGET_PROPERTY:${module},INTERFACE_INCLUDE_DIRECTORIES>/${module}.swiftmodule
+        ${${module}_INTERFACE_INCLUDE_DIRECTORIES}/${module}.swiftdoc
+        ${${module}_INTERFACE_INCLUDE_DIRECTORIES}/${module}.swiftmodule
         DESTINATION lib/swift/${swift_os}/${swift_arch})
     endif()
   endforeach()
