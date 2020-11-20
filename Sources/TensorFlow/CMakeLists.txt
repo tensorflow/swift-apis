@@ -97,6 +97,7 @@ target_link_libraries(TensorFlow PUBLIC
   CTensorFlow
   $<$<NOT:$<PLATFORM_ID:Darwin>>:dispatch>
   $<$<NOT:$<PLATFORM_ID:Darwin>>:Foundation>
+  $<$<AND:$<BOOL:${ENABLE_SWIFT_NUMERICS}>,$<BOOL:${TENSORFLOW_USE_STANDARD_TOOLCHAIN}>>:Numerics>
   Tensor)
 if(ENABLE_PYTHON_SUPPORT)
   target_link_libraries(TensorFlow PUBLIC
