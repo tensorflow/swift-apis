@@ -708,6 +708,8 @@ public struct DepthwiseConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
   @noDerivative public let strides: (Int, Int)
   /// The padding algorithm for convolution.
   @noDerivative public let padding: Padding
+  /// The dilation factor for spatial dimensions.
+  @noDerivative public let dilations: (Int, Int)
   /// Note: `useBias` is a workaround for TF-1153: optional differentiation support.
   @noDerivative private let useBias: Bool
 
@@ -723,18 +725,21 @@ public struct DepthwiseConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
   ///   - activation: The element-wise activation function.
   ///   - strides: The strides of the sliding window for spatial dimensions.
   ///   - padding: The padding algorithm for convolution.
+  ///   - dilations: The dilation factors for spatial dimensions.
   public init(
     filter: Tensor<Scalar>,
     bias: Tensor<Scalar>? = nil,
     activation: @escaping Activation = identity,
     strides: (Int, Int) = (1, 1),
-    padding: Padding = .valid
+    padding: Padding = .valid,
+    dilations: (Int, Int) = (1, 1)
   ) {
     self.filter = filter
     self.bias = bias ?? .zero
     self.activation = activation
     self.strides = strides
     self.padding = padding
+    self.dilations = dilations
     useBias = (bias != nil)
   }
 
@@ -750,7 +755,8 @@ public struct DepthwiseConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
       input,
       filter: filter,
       strides: (1, strides.0, strides.1, 1),
-      padding: padding)
+      padding: padding,
+      dilations: (1, dilations.0, dilations.1, 1))
     return activation(useBias ? (conv + bias) : conv)
   }
 }
@@ -771,6 +777,7 @@ extension DepthwiseConv2D {
     filterShape: (Int, Int, Int, Int),
     strides: (Int, Int) = (1, 1),
     padding: Padding = .valid,
+    dilations: (Int, Int) = (1, 1),
     activation: @escaping Activation = identity,
     useBias: Bool = true,
     filterInitializer: ParameterInitializer<Scalar> = glorotUniform(),
@@ -784,7 +791,8 @@ extension DepthwiseConv2D {
       bias: useBias ? biasInitializer([filterShape.2 * filterShape.3]) : nil,
       activation: activation,
       strides: strides,
-      padding: padding)
+      padding: padding,
+      dilations: dilations)
   }
 }
 
