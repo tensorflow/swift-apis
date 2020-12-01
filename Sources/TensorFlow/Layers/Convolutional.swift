@@ -909,12 +909,15 @@ public struct SeparableConv1D<Scalar: TensorFlowFloatingPoint>: Layer {
   public var pointwiseFilter: Tensor<Scalar>
   /// The bias vector.
   public var bias: Tensor<Scalar>
+
   /// The element-wise activation function.
   @noDerivative public let activation: Activation
   /// The strides of the sliding window for spatial dimensions.
   @noDerivative public let stride: Int
   /// The padding algorithm for convolution.
   @noDerivative public let padding: Padding
+  /// The dilation factor for the temporal dimension.
+  @noDerivative public let dilation: Int
   /// Note: `useBias` is a workaround for TF-1153: optional differentiation support.
   @noDerivative private let useBias: Bool
 
@@ -933,13 +936,15 @@ public struct SeparableConv1D<Scalar: TensorFlowFloatingPoint>: Layer {
   ///   - activation: The element-wise activation function.
   ///   - strides: The strides of the sliding window for spatial dimensions.
   ///   - padding: The padding algorithm for convolution.
+  ///   - dilation: The dilation factor for the temporal dimension.
   public init(
     depthwiseFilter: Tensor<Scalar>,
     pointwiseFilter: Tensor<Scalar>,
     bias: Tensor<Scalar>? = nil,
     activation: @escaping Activation = identity,
     stride: Int = 1,
-    padding: Padding = .valid
+    padding: Padding = .valid,
+    dilation: Int = 1
   ) {
     self.depthwiseFilter = depthwiseFilter
     self.pointwiseFilter = pointwiseFilter
@@ -947,6 +952,7 @@ public struct SeparableConv1D<Scalar: TensorFlowFloatingPoint>: Layer {
     self.activation = activation
     self.stride = stride
     self.padding = padding
+    self.dilation = dilation
     useBias = (bias != nil)
   }
 
@@ -960,7 +966,8 @@ public struct SeparableConv1D<Scalar: TensorFlowFloatingPoint>: Layer {
       input.expandingShape(at: 1),
       filter: depthwiseFilter.expandingShape(at: 1),
       strides: (1, stride, stride, 1),
-      padding: padding)
+      padding: padding,
+      dilations: (1, dilation, dilation, 1))
     let x = conv2D(
       depthwise,
       filter: pointwiseFilter.expandingShape(at: 1),
@@ -978,8 +985,9 @@ extension SeparableConv1D {
   /// - Parameters:
   ///   - depthwiseFilterShape: The shape of the 3-D depthwise convolution kernel.
   ///   - pointwiseFilterShape: The shape of the 3-D pointwise convolution kernel.
-  ///   - strides: The strides of the sliding window for temporal dimensions.
+  ///   - stride: The stride of the sliding window for temporal dimensions.
   ///   - padding: The padding algorithm for convolution.
+  ///   - dilation: The dilation factor for the temporal dimension.
   ///   - activation: The element-wise activation function.
   ///   - filterInitializer: Initializer to use for the filter parameters.
   ///   - biasInitializer: Initializer to use for the bias parameters.
@@ -988,6 +996,7 @@ extension SeparableConv1D {
     pointwiseFilterShape: (Int, Int, Int),
     stride: Int = 1,
     padding: Padding = .valid,
+    dilation: Int = 1,
     activation: @escaping Activation = identity,
     useBias: Bool = true,
     depthwiseFilterInitializer: ParameterInitializer<Scalar> = glorotUniform(),
@@ -1006,7 +1015,8 @@ extension SeparableConv1D {
       bias: useBias ? biasInitializer([pointwiseFilterShape.2]) : nil,
       activation: activation,
       stride: stride,
-      padding: padding)
+      padding: padding,
+      dilation: dilation)
   }
 }
 
@@ -1028,6 +1038,8 @@ public struct SeparableConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
   @noDerivative public let strides: (Int, Int)
   /// The padding algorithm for convolution.
   @noDerivative public let padding: Padding
+  /// The dilation factor for spatial dimensions.
+  @noDerivative public let dilations: (Int, Int)
   /// Note: `useBias` is a workaround for TF-1153: optional differentiation support.
   @noDerivative private let useBias: Bool
 
@@ -1046,13 +1058,15 @@ public struct SeparableConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
   ///   - activation: The element-wise activation function.
   ///   - strides: The strides of the sliding window for spatial dimensions.
   ///   - padding: The padding algorithm for convolution.
+  ///   - dilations: The dilation factors for spatial dimensions.
   public init(
     depthwiseFilter: Tensor<Scalar>,
     pointwiseFilter: Tensor<Scalar>,
     bias: Tensor<Scalar>? = nil,
     activation: @escaping Activation = identity,
     strides: (Int, Int) = (1, 1),
-    padding: Padding = .valid
+    padding: Padding = .valid,
+    dilations: (Int, Int) = (1, 1)
   ) {
     self.depthwiseFilter = depthwiseFilter
     self.pointwiseFilter = pointwiseFilter
@@ -1060,6 +1074,7 @@ public struct SeparableConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     self.activation = activation
     self.strides = strides
     self.padding = padding
+    self.dilations = dilations
     useBias = (bias != nil)
   }
 
@@ -1073,7 +1088,8 @@ public struct SeparableConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
       input,
       filter: depthwiseFilter,
       strides: (1, strides.0, strides.1, 1),
-      padding: padding)
+      padding: padding,
+      dilations: (1, dilations.0, dilations.1, 1))
     let conv = conv2D(
       depthwise,
       filter: pointwiseFilter,
@@ -1093,6 +1109,7 @@ extension SeparableConv2D {
   ///   - pointwiseFilterShape: The shape of the 4-D pointwise convolution kernel.
   ///   - strides: The strides of the sliding window for spatial/spatio-temporal dimensions.
   ///   - padding: The padding algorithm for convolution.
+  ///   - dilations: The dilation factors for spatial dimensions.
   ///   - activation: The element-wise activation function.
   ///   - filterInitializer: Initializer to use for the filter parameters.
   ///   - biasInitializer: Initializer to use for the bias parameters.
@@ -1101,6 +1118,7 @@ extension SeparableConv2D {
     pointwiseFilterShape: (Int, Int, Int, Int),
     strides: (Int, Int) = (1, 1),
     padding: Padding = .valid,
+    dilations: (Int, Int) = (1, 1),
     activation: @escaping Activation = identity,
     useBias: Bool = true,
     depthwiseFilterInitializer: ParameterInitializer<Scalar> = glorotUniform(),
@@ -1121,6 +1139,7 @@ extension SeparableConv2D {
       bias: useBias ? biasInitializer([pointwiseFilterShape.3]) : nil,
       activation: activation,
       strides: strides,
-      padding: padding)
+      padding: padding,
+      dilations: dilations)
   }
 }
