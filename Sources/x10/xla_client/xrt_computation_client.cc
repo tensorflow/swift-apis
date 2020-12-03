@@ -1602,7 +1602,7 @@ void XrtComputationClient::InitializeDevices(
       auto it = options_.workers_map.find(worker);
       XLA_CHECK(it != options_.workers_map.end());
 
-      TF_VLOG(1) << "Configuring TPU for master worker " << worker.name << ":"
+      TF_VLOG(1) << "Configuring TPU for worker " << worker.name << ":"
                  << worker.task_no << " at " << it->second;
       tensorflow::tpu::TopologyProto worker_topology_proto =
           InitializeAndFetchTopology(worker.name, worker.task_no, it->second,

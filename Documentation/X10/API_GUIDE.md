@@ -174,7 +174,7 @@ after the optimizer step explicitly synchronizes the CPU and the X10 device.
 The internal data representation of X10 tensors is opaque to the user. This
 allows XLA to control a tensor's memory layout for better performance.
 
-[x10_lib]: https://github.com/tensorflow/swift-apis/tree/master/Sources/x10
-[copying]: https://github.com/tensorflow/swift-apis/tree/master/Sources/TensorFlow/Core/CopyableToDevice.swift
-[training]: https://github.com/tensorflow/swift-apis/tree/master/Sources/x10/swift_bindings/training_loop.swift
-[low-level]: https://github.com/tensorflow/swift-apis/blob/master/Sources/TensorFlow/Core/MixedPrecision.swift
+[x10_lib]: https://github.com/tensorflow/swift-apis/tree/main/Sources/x10
+[copying]: https://github.com/tensorflow/swift-apis/tree/main/Sources/TensorFlow/Core/CopyableToDevice.swift
+[training]: https://github.com/tensorflow/swift-apis/tree/main/Sources/x10/swift_bindings/training_loop.swift
+[low-level]: https://github.com/tensorflow/swift-apis/blob/main/Sources/TensorFlow/Core/MixedPrecision.swift
