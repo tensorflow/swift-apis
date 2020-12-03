@@ -36,6 +36,7 @@ add_library(TensorFlow SHARED
   Core/TensorShape.swift
   Core/Threading.swift
   Core/Utilities.swift
+  Core/EuclideanDifferentiable.swift
   
   Epochs/Algorithms.swift
   Epochs/Backend.swift
@@ -84,6 +85,7 @@ if(ENABLE_PYTHON_SUPPORT)
 endif()
 target_compile_definitions(TensorFlow PRIVATE
   USING_X10_BACKEND
+  $<$<BOOL:${TENSORFLOW_USE_STANDARD_TOOLCHAIN}>:TENSORFLOW_USE_STANDARD_TOOLCHAIN>
   DEFAULT_BACKEND_EAGER)
 target_link_libraries(TensorFlow PRIVATE
   CX10
