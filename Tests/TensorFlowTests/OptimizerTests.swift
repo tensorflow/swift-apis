@@ -130,9 +130,14 @@ class OptimizerTests: XCTestCase {
   }
 
   /// A `Tensor<Float>` wrapper for testing optimizer numerical correctness.
-  /// - Note: `KeyPathIterable` conformance is needed for `SGD`.
-  struct NumericalValues: Differentiable & KeyPathIterable {
+  /// - Note: `Layer` conformance is needed for `SGD`, because it makes the `TangentVector`
+  ///         conform to some required protocols.
+  struct NumericalValues: Layer {
     var value = Tensor<Float>([0, 0, 0])
+
+    func callAsFunction(_ input: Tensor<Float>) -> Tensor<Float> {
+      input
+    }
   }
 
   /// Check expected weight and bias after updating `model` with `optimizer` `stepCount` times.
