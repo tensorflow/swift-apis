@@ -51,7 +51,8 @@ if(ENABLE_SWIFT_NUMERICS)
     else()
       set_target_properties(${module_name} PROPERTIES
         IMPORTED_LOCATION ${build_dir}/lib/${CMAKE_SHARED_LIBRARY_PREFIX}${module_name}${CMAKE_SHARED_LIBRARY_SUFFIX}
-        INTERFACE_INCLUDE_DIRECTORIES ${build_dir}/swift)
+        INTERFACE_INCLUDE_DIRECTORIES ${build_dir}/swift
+        INTERFACE_LINK_DIRECTORIES ${build_dir}/lib)
     endif()
     add_dependencies(${module_name} ${build_target})
   endfunction()
