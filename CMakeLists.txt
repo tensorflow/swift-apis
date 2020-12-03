@@ -82,6 +82,8 @@ if(ENABLE_SWIFT_NUMERICS)
   import_module(Numerics ${BINARY_DIR} swift-numerics-build)
   import_module(ComplexModule ${BINARY_DIR} swift-numerics-build)
   import_module(RealModule ${BINARY_DIR} swift-numerics-build)
+
+  file(MAKE_DIRECTORY ${BINARY_DIR}/swift)
 endif()
 
 if(ENABLE_PYTHON_SUPPORT)
