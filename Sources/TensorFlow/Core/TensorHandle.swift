@@ -18,9 +18,7 @@ import CTensorFlow
 /// that conforms to this protocol can be used as a `TensorHandle` in the
 /// `TensorFlow` library, as it much provide a way to convert the underlying tensor
 /// handle into a `ConcreteTensorHandle`, which wraps a `TFE_TensorHandle *`
-/// TODO(https://bugs.swift.org/browse/TF-527): This is defined as a class-bound
-// protocol to workaround bug TF-527. When it is fixed, we should remove `: class`.
-public protocol _AnyTensorHandle: class {
+public protocol _AnyTensorHandle: AnyObject {
   var _tfeTensorHandle: TFETensorHandle { get }
   var rank: Int { get }
   var shape: TensorShape { get }
