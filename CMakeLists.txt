@@ -258,7 +258,7 @@ if(ENABLE_SWIFT_NUMERICS)
 
     if(CMAKE_SYSTEM_NAME STREQUAL Darwin)
       install(FILES $<TARGET_PROPERTY:${module},INTERFACE_INCLUDE_DIRECTORIES>/${module}.swiftdoc
-        DESTINATION lib/swift/${swift_os}/${module}.swiftmodule
+        DESTINATION lib/swift/${swift_os}/${module}.swiftdoc
         RENAME ${swift_arch}.swiftdoc)
       install(FILES $<TARGET_PROPERTY:${module},INTERFACE_INCLUDE_DIRECTORIES>/${module}.swiftmodule
         DESTINATION lib/swift/${swift_os}/${module}.swiftmodule
