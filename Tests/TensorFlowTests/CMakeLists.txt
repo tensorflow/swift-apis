@@ -42,3 +42,6 @@ target_link_libraries(TensorFlowTests PUBLIC
   TensorFlow
   Tensor
   XCTest)
+target_compile_definitions(TensorFlowTests PRIVATE
+  $<$<BOOL:${TENSORFLOW_USE_STANDARD_TOOLCHAIN}>:TENSORFLOW_USE_STANDARD_TOOLCHAIN>
+  )

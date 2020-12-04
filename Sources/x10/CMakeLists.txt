@@ -10,6 +10,9 @@ target_link_libraries(x10_optimizers_tensor_visitor_plan PUBLIC
 add_library(x10_optimizers_optimizer SHARED
   swift_bindings/optimizers/Optimizer.swift
   swift_bindings/optimizers/Optimizers.swift)
+target_compile_definitions(x10_optimizers_optimizer PRIVATE
+  $<$<BOOL:${TENSORFLOW_USE_STANDARD_TOOLCHAIN}>:TENSORFLOW_USE_STANDARD_TOOLCHAIN>
+  )
 set_target_properties(x10_optimizers_optimizer PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_Swift_MODULE_DIRECTORY})
 target_link_libraries(x10_optimizers_optimizer PUBLIC

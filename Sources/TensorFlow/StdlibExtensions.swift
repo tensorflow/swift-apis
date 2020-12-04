@@ -244,7 +244,6 @@ where Element: Differentiable {
   public init() { self.init(.init()) }
 }
 
-#if !TENSORFLOW_USE_STANDARD_TOOLCHAIN
 extension Array.DifferentiableView: VectorProtocol
 where Element: Differentiable & VectorProtocol {
   public typealias VectorSpaceScalar = Element.VectorSpaceScalar
@@ -301,7 +300,6 @@ where Element: Differentiable & PointwiseMultiplicative {
     }
   }
 }
-#endif
 
 extension Collection {
   /// Returns the `n`th position in `self`.

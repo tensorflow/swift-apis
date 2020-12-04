@@ -266,6 +266,13 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
     _Raw.expm1(x)
   }
 
+#if TENSORFLOW_USE_STANDARD_TOOLCHAIN
+  @differentiable
+  public static func expMinusOne(_ x: Self) -> Self {
+    return expm1(x)
+  }
+#endif
+
   @inlinable
   @derivative(of: expm1)
   internal static func _vjpExpm1(
@@ -282,7 +289,7 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   }
 
   @inlinable
-  @derivative(of: log)
+  @derivative(of: log(_:))
   internal static func _vjpLog(
     _ x: Tensor
   ) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
@@ -306,6 +313,13 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   public static func log1p(_ x: Self) -> Self {
     _Raw.log1p(x)
   }
+
+#if TENSORFLOW_USE_STANDARD_TOOLCHAIN
+  @differentiable
+  public static func log(onePlus x: Self) -> Self {
+    return log1p(x)
+  }
+#endif
 
   @inlinable
   @derivative(of: log1p)

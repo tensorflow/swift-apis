@@ -47,11 +47,19 @@ final class MathOperatorTests: XCTestCase {
     testElementaryFunction(name: "exp", exp, Float.exp)
     testElementaryFunction(name: "exp2", exp2, Float.exp2)
     testElementaryFunction(name: "exp10", exp10, Float.exp10)
+#if TENSORFLOW_USE_STANDARD_TOOLCHAIN
+    testElementaryFunction(name: "expm1", expm1, Float.expMinusOne)
+#else
     testElementaryFunction(name: "expm1", expm1, Float.expm1)
-    testElementaryFunction(name: "log", log, Float.log)
+#endif
+    testElementaryFunction(name: "log", log, { Float.log($0) })
     testElementaryFunction(name: "log2", log2, Float.log2)
     testElementaryFunction(name: "log10", log10, Float.log10)
+#if TENSORFLOW_USE_STANDARD_TOOLCHAIN
+    testElementaryFunction(name: "log1p", log1p, {Float.log(onePlus: $0)})
+#else
     testElementaryFunction(name: "log1p", log1p, Float.log1p)
+#endif
     testElementaryFunction(
       name: "pow",
       { x in pow(x, x) }, { x in Float.pow(x, x) })
