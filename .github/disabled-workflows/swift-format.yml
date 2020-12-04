@@ -2,7 +2,7 @@ name: swift-format
 
 on:
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   swift-format:

@@ -194,10 +194,10 @@ participating.
 [s4tf]: https://github.com/tensorflow/swift
 [integrated]: https://github.com/apple/swift/tree/tensorflow#customize-tensorflow-support
 [blank_colab]: https://colab.research.google.com/notebook#create=true&language=swift
-[usage]: https://github.com/tensorflow/swift/blob/master/Usage.md
+[usage]: https://github.com/tensorflow/swift/blob/main/Usage.md
 [gradient]: https://www.tensorflow.org/swift/api_docs/Functions#/s:10TensorFlow8gradient2at2in13TangentVectorQzx_AA0A0Vyq_GxXEtAA14DifferentiableRzAA0aB13FloatingPointR_r0_lF
 [swift-models]: https://github.com/tensorflow/swift-models
-[toolchain]: https://github.com/tensorflow/swift/blob/master/Installation.md
+[toolchain]: https://github.com/tensorflow/swift/blob/main/Installation.md
 [bazel]: https://docs.bazel.build/versions/master/install.html
 [bazelisk]: https://github.com/bazelbuild/bazelisk
 [configure.py]: https://github.com/tensorflow/tensorflow/blob/master/configure.py
