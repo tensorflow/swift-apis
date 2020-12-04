@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import _Differentiation
+@_exported import _Differentiation
 #if TENSORFLOW_USE_STANDARD_TOOLCHAIN
 import Numerics
 #endif
 
+#if !TENSORFLOW_USE_STANDARD_TOOLCHAIN
 // MARK: - Array extensions
 
 extension Array: ElementaryFunctions where Element: ElementaryFunctions {
@@ -107,6 +108,7 @@ extension Array: ElementaryFunctions where Element: ElementaryFunctions {
   /// For complex types, there is a branch cut along the negative real axis.
   public static func root(_ x: Self, _ n: Int) -> Self { x.map { Element.root($0, n) } }
 }
+#endif
 
 // MARK: - Array derivative extensions
 
@@ -116,47 +118,48 @@ where Element: Differentiable & ElementaryFunctions {
   ///
   /// For real types, if `x` is negative the result is `.nan`. For complex
   /// types there is a branch cut on the negative real axis.
-  public static func sqrt(_ x: Self) -> Self { .init(Array.sqrt(x.base)) }
+  public static func sqrt(_ x: Self) -> Self { .init(x.map(Element.sqrt)) }
 
   /// The cosine of `x`, interpreted as an angle in radians.
-  public static func cos(_ x: Self) -> Self { .init(Array.cos(x.base)) }
+  public static func cos(_ x: Self) -> Self { .init(x.map(Element.cos)) }
 
   /// The sine of `x`, interpreted as an angle in radians.
-  public static func sin(_ x: Self) -> Self { .init(Array.sin(x.base)) }
+  public static func sin(_ x: Self) -> Self { .init(x.map(Element.sin)) }
 
   /// The tangent of `x`, interpreted as an angle in radians.
-  public static func tan(_ x: Self) -> Self { .init(Array.tan(x.base)) }
+  public static func tan(_ x: Self) -> Self { .init(x.map(Element.tan)) }
 
   /// The inverse cosine of `x` in radians.
-  public static func acos(_ x: Self) -> Self { .init(Array.acos(x.base)) }
+  public static func acos(_ x: Self) -> Self { .init(x.map(Element.acos)) }
 
   /// The inverse sine of `x` in radians.
-  public static func asin(_ x: Self) -> Self { .init(Array.asin(x.base)) }
+  public static func asin(_ x: Self) -> Self { .init(x.map(Element.asin)) }
 
   /// The inverse tangent of `x` in radians.
-  public static func atan(_ x: Self) -> Self { .init(Array.atan(x.base)) }
+  public static func atan(_ x: Self) -> Self { .init(x.map(Element.atan)) }
 
   /// The hyperbolic cosine of `x`.
-  public static func cosh(_ x: Self) -> Self { .init(Array.cosh(x.base)) }
+  public static func cosh(_ x: Self) -> Self { .init(x.map(Element.cosh)) }
 
   /// The hyperbolic sine of `x`.
-  public static func sinh(_ x: Self) -> Self { .init(Array.sinh(x.base)) }
+  public static func sinh(_ x: Self) -> Self { .init(x.map(Element.sinh)) }
 
   /// The hyperbolic tangent of `x`.
-  public static func tanh(_ x: Self) -> Self { .init(Array.tanh(x.base)) }
+  public static func tanh(_ x: Self) -> Self { .init(x.map(Element.tanh)) }
 
   /// The inverse hyperbolic cosine of `x`.
-  public static func acosh(_ x: Self) -> Self { .init(Array.acosh(x.base)) }
+  public static func acosh(_ x: Self) -> Self { .init(x.map(Element.acosh)) }
 
   /// The inverse hyperbolic sine of `x`.
-  public static func asinh(_ x: Self) -> Self { .init(Array.asinh(x.base)) }
+  public static func asinh(_ x: Self) -> Self { .init(x.map(Element.asinh)) }
 
   /// The inverse hyperbolic tangent of `x`.
-  public static func atanh(_ x: Self) -> Self { .init(Array.atanh(x.base)) }
+  public static func atanh(_ x: Self) -> Self { .init(x.map(Element.atanh)) }
 
   /// The exponential function applied to `x`, or `e**x`.
-  public static func exp(_ x: Self) -> Self { .init(Array.exp(x.base)) }
+  public static func exp(_ x: Self) -> Self { .init(x.map(Element.exp)) }
 
+#if !TENSORFLOW_USE_STANDARD_TOOLCHAIN
   /// Two raised to to power `x`.
   public static func exp2(_ x: Self) -> Self { .init(Array.exp2(x.base)) }
 
@@ -165,10 +168,16 @@ where Element: Differentiable & ElementaryFunctions {
 
   /// `exp(x) - 1` evaluated so as to preserve accuracy close to zero.
   public static func expm1(_ x: Self) -> Self { .init(Array.expm1(x.base)) }
+#else
+
+  /// `exp(x) - 1` evaluated so as to preserve accuracy close to zero.
+  public static func expMinusOne(_ x: Self) -> Self { .init(x.map(Element.expMinusOne)) }
+#endif
 
   /// The natural logarithm of `x`.
-  public static func log(_ x: Self) -> Self { .init(Array.log(x.base)) }
+  public static func log(_ x: Self) -> Self { .init(x.map { Element.exp($0) }) }
 
+#if !TENSORFLOW_USE_STANDARD_TOOLCHAIN
   /// The base-two logarithm of `x`.
   public static func log2(_ x: Self) -> Self { .init(Array.log2(x.base)) }
 
@@ -176,25 +185,34 @@ where Element: Differentiable & ElementaryFunctions {
   public static func log10(_ x: Self) -> Self { .init(Array.log10(x.base)) }
 
   /// `log(1 + x)` evaluated so as to preserve accuracy close to zero.
-  public static func log1p(_ x: Self) -> Self { .init(Array.log1p(x.base)) }
+  public static func log1p(_ x: Self) -> Self {
+    .init(Array.log1p(x.base))
+  }
+#else
+
+  /// The natural logarithm of `x + 1` to preserve accuracy close to zero.
+  public static func log(onePlus x: Self) -> Self {
+    .init(x.map { Element.log(onePlus: $0) })
+  }
+#endif
 
   /// `exp(y log(x))` computed without loss of intermediate precision.
   ///
   /// For real types, if `x` is negative the result is NaN, even if `y` has
   /// an integral value. For complex types, there is a branch cut on the
   /// negative real axis.
-  public static func pow(_ x: Self, _ y: Self) -> Self { .init(Array.pow(x.base, y.base)) }
+  public static func pow(_ x: Self, _ y: Self) -> Self { .init(zip(x, y).map(Element.pow)) }
 
   /// `x` raised to the `n`th power.
   ///
   /// The product of `n` copies of `x`.
-  public static func pow(_ x: Self, _ n: Int) -> Self { .init(Array.pow(x.base, n)) }
+  public static func pow(_ x: Self, _ n: Int) -> Self { .init(x.map { Element.pow($0, n) }) }
 
   /// The `n`th root of `x`.
   ///
   /// For real types, if `x` is negative and `n` is even, the result is NaN.
   /// For complex types, there is a branch cut along the negative real axis.
-  public static func root(_ x: Self, _ n: Int) -> Self { .init(Array.root(x.base, n)) }
+  public static func root(_ x: Self, _ n: Int) -> Self { .init(x.map { Element.root($0, n) }) }
 }
 
 extension Array.DifferentiableView:
@@ -226,6 +244,7 @@ where Element: Differentiable {
   public init() { self.init(.init()) }
 }
 
+#if !TENSORFLOW_USE_STANDARD_TOOLCHAIN
 extension Array.DifferentiableView: VectorProtocol
 where Element: Differentiable & VectorProtocol {
   public typealias VectorSpaceScalar = Element.VectorSpaceScalar
@@ -282,6 +301,7 @@ where Element: Differentiable & PointwiseMultiplicative {
     }
   }
 }
+#endif
 
 extension Collection {
   /// Returns the `n`th position in `self`.
