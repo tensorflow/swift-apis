@@ -37,6 +37,8 @@ add_library(TensorFlow SHARED
   Core/Threading.swift
   Core/Utilities.swift
   Core/EuclideanDifferentiable.swift
+  Core/VectorProtocol.swift
+  Core/PointwiseMultiplicative.swift
   Core/ElementaryFunctions.swift
   
   Epochs/Algorithms.swift
