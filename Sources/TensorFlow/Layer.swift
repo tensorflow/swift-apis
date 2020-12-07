@@ -256,9 +256,15 @@ extension Layer {
   public func appliedForBackpropagation(to input: Input)
     -> (output: Output, backpropagator: Backpropagator)
   {
+#if TENSORFLOW_USE_STANDARD_TOOLCHAIN
+    let (out, pullback) = _Differentiation.valueWithPullback(at: self, input) { layer, input in
+      return layer(input)
+    }
+#else
     let (out, pullback) = Swift.valueWithPullback(at: self, input) { layer, input in
       return layer(input)
     }
+#endif
     return (out, pullback)
   }
 }

@@ -14,6 +14,7 @@
 
 import XCTest
 
+import _Differentiation
 @testable import Experimental
 
 final class ComplexTests: XCTestCase {
