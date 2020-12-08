@@ -5,6 +5,7 @@ add_library(TensorFlowTests
   FreezableTests.swift
   Helpers.swift
   InitializerTests.swift
+  KeyPathIterableTests.swift
   LayerTests.swift
   LazyTensorEvaluationTests.swift
   LazyTensorExplicitTraceTests.swift

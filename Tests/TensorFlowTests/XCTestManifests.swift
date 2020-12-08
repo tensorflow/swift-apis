@@ -24,6 +24,7 @@ import XCTest
       testCase(EpochsTests.allTests),
       testCase(ImageTests.allTests),
       testCase(InitializerTests.allTests),
+      testCase(KeyPathIterableTests.allTests),
       testCase(LayerTests.allTests),
       testCase(LazyTensorEvaluationTests.allTests),
       testCase(LazyTensorTraceTests.allTests),

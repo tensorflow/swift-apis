@@ -36,6 +36,7 @@ add_library(TensorFlow SHARED
   Core/TensorShape.swift
   Core/Threading.swift
   Core/Utilities.swift
+  Core/KeyPathIterable.swift
   Core/EuclideanDifferentiable.swift
   Core/ElementaryFunctions.swift
   
