@@ -719,7 +719,7 @@ fileprivate extension Array where Element: Differentiable {
   }
 
   @derivative(of: differentiableMerging)
-  func differentiableMerging(
+  func vjpDifferentiableMerging(
     _ other: Self, mergeFunction: @differentiable (Element, Element) -> Element
   ) -> (value: Self, pullback: (TangentVector) -> (TangentVector, TangentVector)) {
     let valuesWithPullbacks = zip(self, other).map {
@@ -729,9 +729,8 @@ fileprivate extension Array where Element: Differentiable {
     return (
       valuesWithPullbacks.map { $0.value },
       { vs in
-        let resultPairs: [(Element.TangentVector, Element.TangentVector)] = zip(vs.base, pullbacks).map {
-          let (v, pb) = $0
-          return pb(v)
+        let resultPairs = zip(vs.base, pullbacks).map { (v, pb) in
+          pb(v)
         }
         return (.init(resultPairs.map { $0.0 }), .init(resultPairs.map { $0.1 }))
       }
