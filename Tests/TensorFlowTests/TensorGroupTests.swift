@@ -27,12 +27,12 @@ struct Mixed: TensorGroup, Equatable {
   // Mutable.
   var float: Tensor<Float>
   // Immutable.
-  let int: Tensor<Int32>
+  var int: Tensor<Int32>
 }
 
 struct Nested: TensorGroup, Equatable {
   // Immutable.
-  let simple: Simple
+  var simple: Simple
   // Mutable.
   var mixed: Mixed
 }
