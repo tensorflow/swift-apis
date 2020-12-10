@@ -77,8 +77,8 @@ final class LazyTensorEvaluationTests: LazyTensorTestCase {
   }
 
   struct SimpleOutput: TensorGroup {
-    let a: TensorHandle<Int32>
-    let b: TensorHandle<Int32>
+    var a: TensorHandle<Int32>
+    var b: TensorHandle<Int32>
   }
 
   func testNoOutputOperations() {

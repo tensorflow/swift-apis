@@ -338,3 +338,65 @@ extension Array: TensorArrayProtocol where Element: TensorGroup {
     }
   }
 }
+
+#if TENSORFLOW_USE_STANDARD_TOOLCHAIN
+@_spi(Reflection) import Swift
+
+func reflectionInit<T>(type: T.Type, body: (inout T, PartialKeyPath<T>) -> Void) -> T {
+  let x = UnsafeMutablePointer<T>.allocate(capacity: 1)
+  defer { x.deallocate() }
+  if !_forEachFieldWithKeyPath(of: type) { name, kp in
+    body(&x.pointee, kp)
+    return true
+  } {
+    fatalError("Cannot initialize \(T.self) because of unknown fields.")
+  }
+  return x.move()
+}
+
+extension TensorGroup {
+  public static var _typeList: [TensorDataType] {
+    var out = [TensorDataType]()
+    if !(_forEachFieldWithKeyPath(of: Self.self) { name, kp in
+      guard let valueType = type(of: kp).valueType as? TensorGroup.Type else { return false }
+      out += valueType._typeList
+      return true
+    }) {
+      fatalError("\(Self.self) does not have children that conform to TensorGroup.")
+    }
+    return out
+  }
+  public static func initialize<Root>(
+    _ base: inout Root, _ kp: PartialKeyPath<Root>,
+    _owning tensorHandles: UnsafePointer<CTensorHandle>?
+  ) {
+    guard let kp = kp as? WritableKeyPath<Root, Self> else {
+      fatalError("\(kp) is not \(WritableKeyPath<Root, Self>.self)")
+    }
+    withUnsafeMutablePointer(to: &base[keyPath: kp]) { v in
+      v.initialize(to: .init(_owning: tensorHandles))
+    }
+  }
+  public init(_owning tensorHandles: UnsafePointer<CTensorHandle>?) {
+    var i = 0
+    self = reflectionInit(type: Self.self) { base, kp in
+      guard let valueType = type(of: kp).valueType as? TensorGroup.Type else {
+        fatalError("\(type(of: kp).valueType) does not conform to TensorGroup")
+      }
+      valueType.initialize(&base, kp, _owning: tensorHandles?.advanced(by: i))
+      i += Int(valueType._tensorHandleCount)
+    }
+  }
+  public func _unpackTensorHandles(into address: UnsafeMutablePointer<CTensorHandle>?) {
+    var i = 0
+    if !_forEachFieldWithKeyPath(of: Self.self) { name, kp in
+      guard let x = self[keyPath: kp] as? TensorGroup else { return false }
+      x._unpackTensorHandles(into: address?.advanced(by: i))
+      i += Int(type(of: x)._tensorHandleCount)
+      return true
+    } {
+      fatalError("Cannot unpack \(Self.self) because of non-TensorGroup fields.")
+    }
+  }
+}
+#endif
