@@ -295,4 +295,9 @@ if(ENABLE_SWIFT_NUMERICS)
         DESTINATION lib/swift/${swift_os}/${swift_arch})
     endif()
   endforeach()
+
+  install(FILES
+    $<TARGET_PROPERTY:_NumericsShims,INTERFACE_INCLUDE_DIRECTORIES>/_NumericsShims.h
+    $<TARGET_PROPERTY:_NumericsShims,INTERFACE_INCLUDE_DIRECTORIES>/module.modulemap
+    DESTINATION lib/swift/_NumericsShims)
 endif()
