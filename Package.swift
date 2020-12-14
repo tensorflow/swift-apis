@@ -32,14 +32,19 @@ let package = Package(
       type: .dynamic,
       targets: ["Tensor"]),
   ],
-  dependencies: [],
+  dependencies: [
+    .package(url: "https://github.com/apple/swift-numerics", .branch("main")),
+  ],
   targets: [
     .target(
       name: "Tensor",
       dependencies: []),
     .target(
       name: "TensorFlow",
-      dependencies: ["Tensor"]),
+      dependencies: [
+        "Tensor",
+        .product(name: "Numerics", package: "swift-numerics"),
+      ]),
     .target(
       name: "Experimental",
       dependencies: [],
