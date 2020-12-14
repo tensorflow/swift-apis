@@ -307,13 +307,13 @@ final class MathOperatorTests: XCTestCase {
   }
 
   func testIsInfinite() {
-    let x = Tensor<Float>([1, 2, 3, 4, log(0.0)])
+    let x = Tensor<Float>([1, 2, 3, 4, Float(log(0.0))])
     let y = x.isInfinite
     XCTAssertEqual(y, Tensor([false, false, false, false, true]))
   }
 
   func testIsNaN() {
-    let x = Tensor<Float>([1, 2, 3, 4, log(-5.0)])
+    let x = Tensor<Float>([1, 2, 3, 4, Float(log(-5.0))])
     let y = x.isNaN
     XCTAssertEqual(y, Tensor([false, false, false, false, true]))
   }
