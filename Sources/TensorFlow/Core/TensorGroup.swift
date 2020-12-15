@@ -345,10 +345,10 @@ extension Array: TensorArrayProtocol where Element: TensorGroup {
 func reflectionInit<T>(type: T.Type, body: (inout T, PartialKeyPath<T>) -> Void) -> T {
   let x = UnsafeMutablePointer<T>.allocate(capacity: 1)
   defer { x.deallocate() }
-  if !_forEachFieldWithKeyPath(of: type) { name, kp in
+  if !_forEachFieldWithKeyPath(of: type, body: { name, kp in
     body(&x.pointee, kp)
     return true
-  } {
+  }) {
     fatalError("Cannot initialize \(T.self) because of unknown fields.")
   }
   return x.move()
@@ -389,12 +389,12 @@ extension TensorGroup {
   }
   public func _unpackTensorHandles(into address: UnsafeMutablePointer<CTensorHandle>?) {
     var i = 0
-    if !_forEachFieldWithKeyPath(of: Self.self) { name, kp in
+    if !_forEachFieldWithKeyPath(of: Self.self, body: { name, kp in
       guard let x = self[keyPath: kp] as? TensorGroup else { return false }
       x._unpackTensorHandles(into: address?.advanced(by: i))
       i += Int(type(of: x)._tensorHandleCount)
       return true
-    } {
+    }) {
       fatalError("Cannot unpack \(Self.self) because of non-TensorGroup fields.")
     }
   }
