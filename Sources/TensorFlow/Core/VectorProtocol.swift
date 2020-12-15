@@ -72,8 +72,10 @@ extension _VectorProtocol {
 /// A type that represents an unranked vector space. Values of this type are
 /// elements in this vector space and have either no shape or a static shape.
 public protocol VectorProtocol: _VectorProtocol & AdditiveArithmetic {
+#if !TENSORFLOW_USE_STANDARD_TOOLCHAIN
   /// The type of scalars in the vector space.
   associatedtype VectorSpaceScalar = Float
+#endif
 
   func adding(_ x: VectorSpaceScalar) -> Self
 
