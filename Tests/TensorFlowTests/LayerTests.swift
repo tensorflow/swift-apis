@@ -6846,7 +6846,7 @@ final class LayerTests: XCTestCase {
     let epsilon: Float = 0.001
     let bnLayer = BatchNorm<Float>(featureCount: 5, axis: 1, epsilon: epsilon)
     // Test inference before any training.
-    assertEqual(bnLayer.inferring(from: x), x / TensorFlow.sqrt(1 + epsilon), accuracy: 1e-5)
+    assertEqual(bnLayer.inferring(from: x), x / TensorFlow.sqrt(Tensor<Float>(1 + epsilon)), accuracy: 1e-5)
     // Perform one training step, updating the running mean and variance.
     Context.local.learningPhase = .training
     _ = bnLayer(x)  // This line is important and cannot be removed.
