@@ -1076,7 +1076,7 @@ final class TensorTests: XCTestCase {
           var filter = Tensor<Float>.rand([kernelSize, kernelSize, inChannels, channelMultiplier])
           let outShape = depthwiseConv2D(
             TF(input), filter: TF(filter), strides: (1, stride, stride, 1),
-            padding: padSame ? Padding.same : Padding.valid
+            padding: padSame ? Padding.same : Padding.valid, dilations: (1, 1)
           )
           .shape
           var outGrad = Tensor<Float>.rand(outShape.dimensions)
@@ -1091,13 +1091,13 @@ final class TensorTests: XCTestCase {
               (_ input: Tensor<Float>, _ filter: Tensor<Float>) -> Tensor<Float> in
               depthwiseConv2D(
                 input, filter: filter, strides: (1, stride, stride, 1),
-                padding: padSame ? Padding.same : Padding.valid
+                padding: padSame ? Padding.same : Padding.valid, dilations: (1, 1)
               )
             },
             { (_ input: Tensor<Float>, _ filter: Tensor<Float>) -> Tensor<Float> in
               depthwiseConv2D(
                 input, filter: filter, strides: (1, stride, stride, 1),
-                padding: padSame ? Padding.same : Padding.valid
+                padding: padSame ? Padding.same : Padding.valid, dilations: (1, 1)
               )
             }, input, filter, outGrad, relTolerance: relTolerance, absTolerance: 1e-4)
         }
