@@ -167,7 +167,7 @@ if(NOT X10_FOUND AND NOT USE_BUNDLED_X10)
     GIT_REPOSITORY
       git://github.com/tensorflow/tensorflow
     GIT_TAG
-      r2.3
+      r2.4
     UPDATE_DISCONNECTED
       TRUE
     CONFIGURE_COMMAND
@@ -207,6 +207,7 @@ if(NOT X10_FOUND AND NOT USE_BUNDLED_X10)
   set(X10_LIBRARY ${SOURCE_DIR}/bazel-bin/tensorflow/compiler/tf2xla/xla_tensor/${CMAKE_SHARED_LIBRARY_PREFIX}x10${CMAKE_SHARED_LIBRARY_SUFFIX})
   set(X10_INCLUDE_DIRS
     ${SOURCE_DIR}
+    ${SOURCE_DIR}/tensorflow
     ${SOURCE_DIR}/bazel-bin
     ${SOURCE_DIR}/bazel-libtensorflow/external/com_google_absl
     ${SOURCE_DIR}/bazel-libtensorflow/external/com_google_protobuf/src
