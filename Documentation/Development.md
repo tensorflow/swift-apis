@@ -45,7 +45,7 @@ as it will be required in building the TensorFlow Swift APIs.
 
 #### Building
 
-The X10 implementation is distributed as part of the TensorFlow Swift APIs
+The X10 implementation is distributed as part of the Swift for TensorFlow APIs
 repository. It consists of two halves:
 
 1. [XLA Client](Sources/x10/xla_client)
@@ -68,13 +68,13 @@ The following table identifies the copied locations:
 | Sources/x10/xla_tensor | tensorflow/compiler/tf2xla/xla_tensor |
 
 We build two specific targets:
-1. //tensorflow:tensorflow
-1. //tensorflow/compiler/tf2xla/xla_tensor:x10
+1. `//tensorflow:tensorflow`
+2. `//tensorflow/compiler/tf2xla/xla_tensor:x10`
 
 On Windows, we build the additional targets to allow us to link against the
 libraries:
-1. //tensorflow:tensorflow_dll_import_lib
-1. //tensorflow/compiler/tf2xla/xla_tensor:x10_dll_import_lib 
+1. `//tensorflow:tensorflow_dll_import_lib`
+2. `//tensorflow/compiler/tf2xla/xla_tensor:x10_dll_import_lib `
 
 We must pass the `--nocheck_visibility` flag to bazel to accomodate the new
 libraries.
@@ -219,7 +219,7 @@ the necessary information to the build. We need to pass two items to the
 build:
 
 1. the location of the X10 & TensorFlow headers
-1. the location of the X10 & TensorFlow libraries
+2. the location of the X10 & TensorFlow libraries
 
 The path to these libraries is not fixed and depends on your machine setup.
 You should substitute the paths with the appropriate values. In the example
