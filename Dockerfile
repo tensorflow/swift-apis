@@ -100,4 +100,5 @@ RUN rm -f /swift-tensorflow-toolchain/usr/lib/swift/linux/libswiftTensorFlow.so
 RUN python3 Utilities/benchmark_compile.py /swift-tensorflow-toolchain/usr/bin/swift benchmark_results.xml
 
 # Run SwiftPM tests
+RUN rm -f /swift-tensorflow-toolchain/usr/lib/swift/tensorflow/module.modulemap
 RUN /swift-tensorflow-toolchain/usr/bin/swift test -Xcc -I/swift-tensorflow-toolchain/usr/lib/swift -Xlinker -L/swift-tensorflow-toolchain/usr/lib/swift/linux
