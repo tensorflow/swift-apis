@@ -77,7 +77,8 @@ RUN git clone https://github.com/deepmind/open_spiel.git
 WORKDIR /swift-models
 
 RUN /swift-tensorflow-toolchain/usr/bin/swift build
-RUN /swift-tensorflow-toolchain/usr/bin/swift build -c release
+# Swift Numerics in release mode does not currently build, which prevents the use of swift-models
+# RUN /swift-tensorflow-toolchain/usr/bin/swift build -c release
 
 WORKDIR /fastai_dev/swift/FastaiNotebook_11_imagenette
 
