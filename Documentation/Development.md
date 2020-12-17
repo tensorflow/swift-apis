@@ -4,9 +4,7 @@
 
 ### Requirements
 
-* [Swift for TensorFlow toolchain][toolchain].
-* An environment that can run the Swift for TensorFlow toolchains: Ubuntu 18.04, macOS with Xcode 10, or Windows 10.
-* CMake.  CMake 3.16 or newer is required to build with CMake.
+* The latest Swift toolchain snapshot from [swift.org](https://swift.org/download/#sanpshots).
 
 ### Building
 
@@ -34,6 +32,13 @@ The location where you extract the prebuilt library is important to remember
 as it will be required in building the TensorFlow Swift APIs.
 
 #### (Option 2) Building X10
+
+Although using the prebuilt libraries is more convenient, there may be some
+situations where you may need to build X10 yourself.  These include:
+
+1. You are targeting a platform where we do not have prebuilt binaries for X10
+2. You are attempting to make changes to the X10 implementation itself, and must
+therefore build a new version.
 
 #### Requirements
 
@@ -85,17 +90,20 @@ libraries.
 
 *Note: This must be executed in the x64 Native Developer Command Prompt*
 
+*Note: You will either need to be running with elevated privilleges, have rights to create symbolic links and junctions, or have enabled developer mode to successfully create the directory junctions.  You may alternatively copy the sources instead of creating a junction.*
+
 ```cmd
 :: clone swift-apis
 git clone git://github.com/tensorflow/swift-apis
 :: checkout tensorflow
 git clone --depth 1 --no-tags git://github.com/tensorflow/tensorflow
-git -C tensorflow checkout refs/tags/v2.4.0
+git -C tensorflow checkout refs/heads/r2.4
 
-:: copy X10
-copy swift-apis\Sources\CX10 tensorflow\swift_bindings
-copy swift-apis\Sources\x10\xla_client tensorflow\tensorflow\compiler\xla\xla_client
-copy swift-apis\Sources\x10\xla_tensor tensorflow\tensorflow\compiler\tf2xla\xla_tensor
+:: Link X10 into the source tree
+mklink /J %CD%\tensorflow\swift_bindings %CD%\swift-apis\Sources\CX10
+mklink /J %CD%\tensorflow\tensorflow\compiler\xla\xla_client %CD%\swift-apis\Sources\x10\xla_client
+mklink /J %CD%\tensorflow\tensorflow\compiler\tf2xla\xla_tensor %CD%\swift-apis\Sources\x10\xla_tensor
+
 :: configure path - we need the Git tools in the path
 path %ProgramFiles%\Git\usr\bin;%PATH%
 :: ensure that python dependencies are available
@@ -150,22 +158,25 @@ copy tensorflow\bazel-out\%VSCMD_ARG_TGT_ARCH%_windows-opt\bin\tensorflow\tensor
 
 <details>
     <summary>macOS/Linux Build Script</summary>
+    
+*Note: If you are unable to run bazel on macOS due to an error about an unverified developer due to System Integrity Protection (SIP), you can use `xattr -dr com.apple.quarantine bazel`*
 
 ```bash
 # clone swift-apis
 git clone git://github.com/tensorflow/swift-apis
 # checkout tensorflow
 git clone --depth 1 --no-tags git://github.com/tensorflow/tensorflow
-git -C tensorflow checkout refs/tags/v2.4.0
+git -C tensorflow checkout refs/heads/r2.4
 
-# copy X10
-cp -ar swift-apis/Sources/CX10 tensorflow/swift_bindings
-cp -ar swift-apis/Sources/x10/xla_client tensorflow/tensorflow/compiler/xla/xla_client
-cp -ar swift-apis/Sources/x10/xla_tensor tensorflow/tensorflow/compiler/tf2xla/xla_tensor
+# Link X10 into the source tree
+ln -sf ${PWD}/swift-apis/Sources/CX10 ${PWD}/tensorflow/swift_bindings
+ln -sf ${PWD}/swift-apis/Sources/x10/xla_client ${PWD}/tensorflow/tensorflow/compiler/xla/xla_client
+ln -sf ${PWD}/swift-apis/Sources/x10/xla_tensor ${PWD}/tensorflow/tensorflow/compiler/tf2xla/xla_tensor
+
 # ensure that python dependencies are available
-python -m pip install --user numpy six
+python3 -m pip install --user numpy six
 # configure X10/TensorFlow
-export PYTHON_BIN_PATH=$(which python)
+export PYTHON_BIN_PATH=$(which python3)
 export USE_DEFAULT_PYTHON_LIB_PATH=1
 export TF_NEED_OPENCL_SYCL=0
 export TF_DOWNLOAD_CLANG=0
@@ -176,7 +187,7 @@ export TF_NEED_ROCM=0
 export TF_NEED_CUDA=0
 export TF_CUDA_COMPUTE_CAPABILITIES=7.5
 export CC_OPT_FLAGS="-march=native"
-./tensorflow/configure.py
+python3 ./tensorflow/configure.py
 bazel --output_user_root ${PWD}/caches/bazel/tensorflow build -c opt --define framework_shared_object=false --config short_logs --nocheck_visibility //tensorflow:tensorflow //tensorflow/compiler/tf2xla/xla_tensor:x10
 # terminate bazel daemon
 bazel --output_user_root ${PWD}/caches/bazel/tensorflow shutdown
