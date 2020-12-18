@@ -53,8 +53,8 @@ therefore build a new version.
 The X10 implementation is distributed as part of the Swift for TensorFlow APIs
 repository. It consists of two halves:
 
-1. [XLA Client](Sources/x10/xla_client)
-1. [X10](Sources/x10/xla_tensor)
+1. [XLA Client](Sources/x10/xla_client): provides an abstract interface for dispatching XLA computations on devices
+2. [X10](Sources/x10/xla_tensor): Lowering rules and tracing support for Tensors
 
 The library is designed to be built as part of the
 [tensorflow](https://github.com/tensorflow/tensorflow) build. As such, in
