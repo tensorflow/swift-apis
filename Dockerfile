@@ -77,7 +77,8 @@ RUN git clone https://github.com/deepmind/open_spiel.git
 WORKDIR /swift-models
 
 RUN /swift-tensorflow-toolchain/usr/bin/swift build
-RUN /swift-tensorflow-toolchain/usr/bin/swift build -c release
+# Swift Numerics in release mode does not currently build, which prevents the use of swift-models
+# RUN /swift-tensorflow-toolchain/usr/bin/swift build -c release
 
 WORKDIR /fastai_dev/swift/FastaiNotebook_11_imagenette
 
@@ -99,4 +100,5 @@ RUN rm -f /swift-tensorflow-toolchain/usr/lib/swift/linux/libswiftTensorFlow.so
 RUN python3 Utilities/benchmark_compile.py /swift-tensorflow-toolchain/usr/bin/swift benchmark_results.xml
 
 # Run SwiftPM tests
-RUN /swift-tensorflow-toolchain/usr/bin/swift test
+RUN rm -f /swift-tensorflow-toolchain/usr/lib/swift/tensorflow/module.modulemap
+RUN /swift-tensorflow-toolchain/usr/bin/swift test -Xcc -I/swift-tensorflow-toolchain/usr/lib/swift -Xlinker -L/swift-tensorflow-toolchain/usr/lib/swift/linux

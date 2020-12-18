@@ -41,10 +41,14 @@ let package = Package(
       name: "Tensor",
       dependencies: []),
     .target(
+      name: "CTensorFlow",
+      dependencies: []),
+    .target(
       name: "TensorFlow",
       dependencies: [
         "Tensor",
         "PythonKit",
+        "CTensorFlow",
         .product(name: "Numerics", package: "swift-numerics"),
       ]),
     .target(
