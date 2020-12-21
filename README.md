@@ -125,8 +125,4 @@ participating.
 [gradient]: https://www.tensorflow.org/swift/api_docs/Functions#/s:10TensorFlow8gradient2at2in13TangentVectorQzx_AA0A0Vyq_GxXEtAA14DifferentiableRzAA0aB13FloatingPointR_r0_lF
 [swift-models]: https://github.com/tensorflow/swift-models
 [toolchain]: https://github.com/tensorflow/swift/blob/main/Installation.md
-[bazel]: https://docs.bazel.build/versions/master/install.html
-[bazelisk]: https://github.com/bazelbuild/bazelisk
-[configure.py]: https://github.com/tensorflow/tensorflow/blob/master/configure.py
-[numpy]: https://numpy.org/
 [forum]: https://groups.google.com/a/tensorflow.org/d/forum/swift
