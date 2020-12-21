@@ -15,6 +15,10 @@ tensor computation in the TensorFlow Swift APIs. This library builds atop of
 the TensorFlow library, using the XLA compiler to perform optimizations over
 the tensor computation.
 
+In the case that a prebuilt option is not available for your platform, note that
+by default the CMake based build will build a copy of X10 if it does not find
+one.
+
 #### (Option 1) Use a prebuilt version of X10
 
 You can use a prebuilt version of the X10 library for building the TensorFlow
@@ -247,21 +251,53 @@ $ swift test -Xcc -I/Library/tensorflow-2.4.0/usr/include -Xlinker -L/Library/te
 
 #### CMake
 
-*Note: CMake is required for building X10 modules.*
-
-In-tree builds are not supported.  
+*Note: In-tree builds are not supported.*
 
 *Note: To enable CUDA support, run `export TF_NEED_CUDA=1` before the steps below.*
 
 *Note: If `swiftc` is not in your `PATH`, you must specify the path to it using
 `-D CMAKE_Swift_COMPILER=`.*
 
-This will build X10 as part of the build.  Ensure that you do not have the
-x10 modules in the toolchain that you are using to develop here.
+By default, CMake will build X10 if it is not informed of where the library is
+available.  If you wish to build X10 as part of the CMake build, ensure that you
+do not have the X10 modules in the toolchain that you are using to develop here
+(more explicitly, use a stock toolchain rather than a TensorFlow toolchain).
 
 ```shell
-cmake -B out -G Ninja -S swift-apis
+cmake -B out -G Ninja -S swift-apis -D CMAKE_BUILD_TYPE=Release
 cmake --build out
+```
+
+If you have a prebuilt version of the X10 library that you wish to use (i.e. you
+are using one of the prebuilt libraries referenced above or have built it
+yourself above), you can inform CMake where to find the build time components of
+the library (SDK contents) and avoid building X10.
+
+The path to these libraries is not fixed and depends on your machine setup.
+You should substitute the paths with the appropriate values. In the example
+commands below, we assume that the library is packaged in a traditional Unix
+style layout and placed in `/Library/tensorflow-2.4.0`.
+
+Because the library name differs based on the platform, the following examples
+may help identify what the flags should look like for the target that you are
+building for.
+
+macOS:
+
+```shell
+-D X10_LIBRARY=/Library/tensorflow-2.4.0/usr/lib/libx10.dylib -D X10_INCLUDE_DIRS=/Library/tensorflow-2.4.0/usr/include
+```
+
+Windows:
+
+```shell
+-D X10_LIBRARY=/Library/tensorflow-2.4.0/usr/lib/x10.lib -D X10_INCLUDE_DIRS=/Library/tensorflow-2.4.0/usr/include
+```
+
+Other Unix systems (e.g. Linux, BSD, Android, etc):
+
+```shell
+-D X10_LIBRARY=/Library/tensorflow-2.4.0/usr/lib/libx10.so -D X10_INCLUDE_DIRS=/Library/tensorflow-2.4.0/usr/include
 ```
 
 To run tests:
