@@ -15,6 +15,7 @@
 import _Differentiation
 
 #if TENSORFLOW_USE_STANDARD_TOOLCHAIN
+
 @_spi(Reflection) import Swift
 
 /// Implementation detail for reflection.
@@ -38,6 +39,10 @@ extension VectorProtocol {
   internal static func visitChildren(
     _ body: (PartialKeyPath<Self>, _VectorProtocol.Type) -> Void
   ) {
+    guard #available(macOS 9999, *) else {
+      fatalError("\(#function) is unavailable")
+    }
+
     if !_forEachFieldWithKeyPath(
       of: Self.self,
       body: { name, kp in
@@ -127,4 +132,5 @@ extension VectorProtocol {
 extension Tensor: _VectorProtocol where Scalar: TensorFlowFloatingPoint {}
 extension Array.DifferentiableView: _VectorProtocol
 where Element: Differentiable & VectorProtocol {}
+
 #endif

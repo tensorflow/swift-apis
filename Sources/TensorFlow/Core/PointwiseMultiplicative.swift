@@ -15,6 +15,7 @@
 import _Differentiation
 
 #if TENSORFLOW_USE_STANDARD_TOOLCHAIN
+
 @_spi(Reflection) import Swift
 
 infix operator .*: MultiplicationPrecedence
@@ -114,6 +115,10 @@ extension PointwiseMultiplicative {
   internal static func visitChildren(
     _ body: (PartialKeyPath<Self>, _PointwiseMultiplicative.Type) -> Void
   ) {
+    guard #available(macOS 9999, *) else {
+      fatalError("\(#function) is unavailable")
+    }
+
     if !_forEachFieldWithKeyPath(
       of: Self.self,
       body: { name, kp in
@@ -134,4 +139,5 @@ extension PointwiseMultiplicative {
 extension Array.DifferentiableView: _PointwiseMultiplicative
 where Element: Differentiable & PointwiseMultiplicative {}
 extension Tensor: _PointwiseMultiplicative where Scalar: Numeric {}
+
 #endif

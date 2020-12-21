@@ -13,12 +13,18 @@
 // limitations under the License.
 
 #if TENSORFLOW_USE_STANDARD_TOOLCHAIN
+
 import Numerics
 @_spi(Reflection) import Swift
+
 extension ElementaryFunctions {
   internal static func visitChildren(
     _ body: (PartialKeyPath<Self>, ElementaryFunctionsVisit.Type) -> Void
   ) {
+    guard #available(macOS 9999, *) else {
+      fatalError("\(#function) is unavailable")
+    }
+
     if !_forEachFieldWithKeyPath(
       of: Self.self,
       body: { name, kp in
@@ -164,4 +170,5 @@ extension ElementaryFunctions {
   public static func root(_ x: Self, _ n: Int) -> Self { .init(mapped: Functor_root(n: n), x) }
   public static func pow(_ x: Self, _ y: Self) -> Self { .init(mapped: Functor_pow2(), x, y) }
 }
+
 #endif

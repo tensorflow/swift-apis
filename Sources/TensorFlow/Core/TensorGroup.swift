@@ -340,9 +340,14 @@ extension Array: TensorArrayProtocol where Element: TensorGroup {
 }
 
 #if TENSORFLOW_USE_STANDARD_TOOLCHAIN
+
 @_spi(Reflection) import Swift
 
 func reflectionInit<T>(type: T.Type, body: (inout T, PartialKeyPath<T>) -> Void) -> T {
+  guard #available(macOS 9999, *) else {
+    fatalError("\(#function) is unavailable")
+  }
+
   let x = UnsafeMutablePointer<T>.allocate(capacity: 1)
   defer { x.deallocate() }
   if !_forEachFieldWithKeyPath(of: type, body: { name, kp in
@@ -356,6 +361,10 @@ func reflectionInit<T>(type: T.Type, body: (inout T, PartialKeyPath<T>) -> Void)
 
 extension TensorGroup {
   public static var _typeList: [TensorDataType] {
+    guard #available(macOS 9999, *) else {
+      fatalError("\(#function) is unavailable")
+    }
+
     var out = [TensorDataType]()
     if !(_forEachFieldWithKeyPath(of: Self.self) { name, kp in
       guard let valueType = type(of: kp).valueType as? TensorGroup.Type else { return false }
@@ -366,6 +375,7 @@ extension TensorGroup {
     }
     return out
   }
+
   public static func initialize<Root>(
     _ base: inout Root, _ kp: PartialKeyPath<Root>,
     _owning tensorHandles: UnsafePointer<CTensorHandle>?
@@ -377,6 +387,7 @@ extension TensorGroup {
       v.initialize(to: .init(_owning: tensorHandles))
     }
   }
+
   public init(_owning tensorHandles: UnsafePointer<CTensorHandle>?) {
     var i = 0
     self = reflectionInit(type: Self.self) { base, kp in
@@ -387,7 +398,12 @@ extension TensorGroup {
       i += Int(valueType._tensorHandleCount)
     }
   }
+
   public func _unpackTensorHandles(into address: UnsafeMutablePointer<CTensorHandle>?) {
+    guard #available(macOS 9999, *) else {
+      fatalError("\(#function) is unavailable")
+    }
+
     var i = 0
     if !_forEachFieldWithKeyPath(of: Self.self, body: { name, kp in
       guard let x = self[keyPath: kp] as? TensorGroup else { return false }
@@ -399,4 +415,5 @@ extension TensorGroup {
     }
   }
 }
+
 #endif
