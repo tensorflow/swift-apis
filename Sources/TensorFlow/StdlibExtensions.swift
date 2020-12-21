@@ -14,7 +14,7 @@
 
 @_exported import _Differentiation
 #if TENSORFLOW_USE_STANDARD_TOOLCHAIN
-import Numerics
+@_exported import Numerics
 #endif
 
 #if !TENSORFLOW_USE_STANDARD_TOOLCHAIN
