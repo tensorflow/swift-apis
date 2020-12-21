@@ -294,7 +294,7 @@ Windows:
 -D X10_LIBRARY=/Library/tensorflow-2.4.0/usr/lib/x10.lib -D X10_INCLUDE_DIRS=/Library/tensorflow-2.4.0/usr/include
 ```
 
-Other Unices (e.g. Linux, BSD, Android, etc):
+Other Unix systems (e.g. Linux, BSD, Android, etc):
 
 ```shell
 -D X10_LIBRARY=/Library/tensorflow-2.4.0/usr/lib/libx10.so -D X10_INCLUDE_DIRS=/Library/tensorflow-2.4.0/usr/include
