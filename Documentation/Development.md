@@ -1,37 +1,103 @@
-# Swift for TensorFlow Deep Learning Library
+# Swift for TensorFlow Developer Guide
 
-## Development
+## Requirements
 
-### Requirements
+* The latest Swift toolchain snapshot from [swift.org][swift]
 
-* The latest Swift toolchain snapshot from [swift.org](https://swift.org/download/#sanpshots).
+Swift for TensorFlow APIs can be built with either:
 
-### Building
+* CMake 3.16 or later from [cmake.org][cmake]
+* Swift Package Manager (included in the above toolchain)
 
-### X10
+## Components
 
-X10 provides the underlying lazy tensor implementation that is used for the
-tensor computation in the TensorFlow Swift APIs. This library builds atop of
-the TensorFlow library, using the XLA compiler to perform optimizations over
-the tensor computation.
+Swift for TensorFlow APIs are composed of two distinct components:
 
-#### (Option 1) Use a prebuilt version of X10
+1. X10
+2. Swift APIs
 
-You can use a prebuilt version of the X10 library for building the TensorFlow
-Swift APIs package if you do not need to make changes to the X10 library
+<details>
+    <summary>What is X10?</summary>
+
+> X10 provides the underlying lazy tensor implementation that is used for
+> tensor computations in the Swift for TensorFlow APIs. This library builds on
+> top of the TensorFlow library, using the XLA compiler to perform
+> optimizations.
+
+</details>
+
+
+The two components can be built together (CMake only) or separately.
+
+Follow the instructions below based on your preferred build tool.
+
+## Building With CMake
+
+> **Note:** In-tree builds are not supported.
+
+> **Note:** To enable CUDA support, run `export TF_NEED_CUDA=1` before the
+  steps below.
+
+> **Note:** If `swiftc` is not in your `PATH`, you must specify the path to it
+  using `-D CMAKE_Swift_COMPILER=`.
+
+This will build both X10 and Swift APIs.  Ensure that you do not have the
+X10 modules in the toolchain that you are using to develop here.
+
+```shell
+cmake -B out -G Ninja -S swift-apis
+cmake --build out
+```
+
+To run tests:
+
+> **Note:** To view failure output, run `export CTEST_OUTPUT_ON_FAILURE=1`
+  before running tests.
+
+```shell
+cmake --build out --target test
+```
+
+### macOS
+
+On macOS, passing `-D BUILD_TESTING=NO` is currently necessary to skip building
+tests. This avoids an error: `cannot load underlying module for 'XCTest'`.
+
+```shell
+cmake -B out -D USE_BUNDLED_CTENSORFLOW=YES -D USE_BUNDLED_X10=YES -D BUILD_TESTING=NO -G Ninja -S swift-apis
+cmake --build out
+```
+
+## Building With Swift Package Manager
+
+Building with SwiftPM involves building X10 and Swift APIs separately.
+
+### Building X10
+
+To determine the appropriate build path, first consider whether you are
+modifying X10.
+
+* If you are modifying files in any subdirectory within **Sources/CX10** or
+  **Sources/x10**, you are modifying X10 and must follow **Option 2**.
+* Otherwise, use **Option 1**.
+
+#### Option 1: Use a prebuilt version of X10
+
+You can use a prebuilt version of the X10 library for building the Swift for
+TensorFlow APIs package if you do not need to make changes to the X10 library
 implementation.
 
 There are prebuilt versions of the X10 library for certain platforms. If a
 prebuilt library is unavailable for your desired platform, you can build X10
-from source following the instructions below.
+from source following the instructions in [Option 2](#option-2-build-x10).
 
-- [Windows 10 (x64)](https://artprodeus21.artifacts.visualstudio.com/A8fd008a0-56bc-482c-ba46-67f9425510be/3133d6ab-80a8-4996-ac4f-03df25cd3224/_apis/artifact/cGlwZWxpbmVhcnRpZmFjdDovL2NvbXBuZXJkL3Byb2plY3RJZC8zMTMzZDZhYi04MGE4LTQ5OTYtYWM0Zi0wM2RmMjVjZDMyMjQvYnVpbGRJZC80Mzc2OC9hcnRpZmFjdE5hbWUvdGVuc29yZmxvdy13aW5kb3dzLXg2NA2/content?format=zip)
-- [macOS (x64)](https://artprodeus21.artifacts.visualstudio.com/A8fd008a0-56bc-482c-ba46-67f9425510be/3133d6ab-80a8-4996-ac4f-03df25cd3224/_apis/artifact/cGlwZWxpbmVhcnRpZmFjdDovL2NvbXBuZXJkL3Byb2plY3RJZC8zMTMzZDZhYi04MGE4LTQ5OTYtYWM0Zi0wM2RmMjVjZDMyMjQvYnVpbGRJZC80Mzc2OC9hcnRpZmFjdE5hbWUvdGVuc29yZmxvdy1kYXJ3aW4teDY00/content?format=zip)
+- [Windows 10 (x64)][windows10]
+- [macOS (x64)][macOS]
 
-The location where you extract the prebuilt library is important to remember
-as it will be required in building the TensorFlow Swift APIs.
+Note the location where you extract the prebuilt library, since it is required
+for building Swift for TensorFlow APIs.
 
-#### (Option 2) Building X10
+#### Option 2: Build X10
 
 Although using the prebuilt libraries is more convenient, there may be some
 situations where you may need to build X10 yourself.  These include:
@@ -40,7 +106,7 @@ situations where you may need to build X10 yourself.  These include:
 2. You are attempting to make changes to the X10 implementation itself, and must
 therefore build a new version.
 
-#### Requirements
+##### Requirements
 
 * Bazel. This can be installed [manually][bazel] or with
 [Bazelisk][bazelisk]. You will need a version supported by TensorFlow
@@ -48,12 +114,13 @@ therefore build a new version.
 [tensorflow/configure.py][configure.py]).
 * Python3 with [numpy][numpy].
 
-#### Building
+##### Building
 
 The X10 implementation is distributed as part of the Swift for TensorFlow APIs
 repository. It consists of two halves:
 
-1. [XLA Client](Sources/x10/xla_client): provides an abstract interface for dispatching XLA computations on devices
+1. [XLA Client](Sources/x10/xla_client): provides an abstract interface for
+   dispatching XLA computations on devices
 2. [X10](Sources/x10/xla_tensor): Lowering rules and tracing support for Tensors
 
 The library is designed to be built as part of the
@@ -88,9 +155,12 @@ libraries.
     <summary>Windows Build Script</summary>
 
 
-*Note: This must be executed in the x64 Native Developer Command Prompt*
+*Note: This must be executed in the x64 Native Developer Command Prompt.*
 
-*Note: You will either need to be running with elevated privilleges, have rights to create symbolic links and junctions, or have enabled developer mode to successfully create the directory junctions.  You may alternatively copy the sources instead of creating a junction.*
+*Note: You will either need to be running with elevated privilleges, have
+rights to create symbolic links and junctions, or have enabled developer mode
+to successfully create the directory junctions. You may alternatively copy the
+sources instead of creating a junction.*
 
 ```cmd
 :: clone swift-apis
@@ -159,7 +229,9 @@ copy tensorflow\bazel-out\%VSCMD_ARG_TGT_ARCH%_windows-opt\bin\tensorflow\tensor
 <details>
     <summary>macOS/Linux Build Script</summary>
     
-*Note: If you are unable to run bazel on macOS due to an error about an unverified developer due to System Integrity Protection (SIP), you can use `xattr -dr com.apple.quarantine bazel`*
+> **Note:** If you are unable to run bazel on macOS due to an error about an
+> unverified developer due to System Integrity Protection (SIP), you can use
+> `xattr -dr com.apple.quarantine bazel` to designate it as trusted.
 
 ```bash
 # clone swift-apis
@@ -218,19 +290,15 @@ cp swift-apis/Sources/x10/swift_bindings/xla_tensor_wrapper.h ${DESTDIR}/usr/inc
 ```
 </details>
 
-### (TensorFlow) Swift APIs
+### Building Swift APIs
 
-#### SwiftPM
+> **Note:** This option requires pre-built X10 binaries. Building with SwiftPM
+> does not include changes to X10.
 
-*Note: Building with SwiftPM does not include changes to X10 modules.*
+SwiftPM requires two items:
 
-Because X10 is a required component for building the TensorFlow Swift APIs,
-and the project does not build with Swift Package Manager, we must pass along
-the necessary information to the build. We need to pass two items to the
-build:
-
-1. the location of the X10 & TensorFlow headers
-2. the location of the X10 & TensorFlow libraries
+1. The location of the X10 & TensorFlow headers.
+2. The location of the X10 & TensorFlow libraries.
 
 The path to these libraries is not fixed and depends on your machine setup.
 You should substitute the paths with the appropriate values. In the example
@@ -245,54 +313,10 @@ $ swift build -Xcc -I/Library/tensorflow-2.4.0/usr/include -Xlinker -L/Library/t
 $ swift test -Xcc -I/Library/tensorflow-2.4.0/usr/include -Xlinker -L/Library/tensorflow-2.4.0/usr/lib
 ```
 
-#### CMake
-
-*Note: CMake is required for building X10 modules.*
-
-In-tree builds are not supported.  
-
-*Note: To enable CUDA support, run `export TF_NEED_CUDA=1` before the steps below.*
-
-*Note: If `swiftc` is not in your `PATH`, you must specify the path to it using
-`-D CMAKE_Swift_COMPILER=`.*
-
-This will build X10 as part of the build.  Ensure that you do not have the
-x10 modules in the toolchain that you are using to develop here.
-
-```shell
-cmake -B out -G Ninja -S swift-apis
-cmake --build out
-```
-
-To run tests:
-
-*Note: To view failure output, run `export CTEST_OUTPUT_ON_FAILURE=1` before
-running tests.*
-
-```shell
-cmake --build out --target test
-```
-
-If you are not intending to develop X10, you can reduce the build times by
-using the bundled X10 in the toolchain using
-`-D USE_BUNDLED_X10=YES -D USE_BUNDLED_CTENSORFLOW=YES`:
-
-```shell
-cmake -B out -D USE_BUNDLED_CTENSORFLOW=YES -D USE_BUNDLED_X10=YES -G Ninja -S swift-apis
-cmake --build out
-cmake --build out --target test
-```
-
-#### macOS
-
-On macOS, passing `-D BUILD_TESTING=NO` is currently necessary to skip building
-tests. This avoids an error: `cannot load underlying module for 'XCTest'`.
-
-```shell
-cmake -B out -D USE_BUNDLED_CTENSORFLOW=YES -D USE_BUNDLED_X10=YES -D BUILD_TESTING=NO -G Ninja -S swift-apis
-cmake --build out
-```
-
+[swift]: https://swift.org/download/#snapshots
+[cmake]: https://www.cmake.org/download
+[windows10]: https://artprodeus21.artifacts.visualstudio.com/A8fd008a0-56bc-482c-ba46-67f9425510be/3133d6ab-80a8-4996-ac4f-03df25cd3224/_apis/artifact/cGlwZWxpbmVhcnRpZmFjdDovL2NvbXBuZXJkL3Byb2plY3RJZC8zMTMzZDZhYi04MGE4LTQ5OTYtYWM0Zi0wM2RmMjVjZDMyMjQvYnVpbGRJZC80Mzc2OC9hcnRpZmFjdE5hbWUvdGVuc29yZmxvdy13aW5kb3dzLXg2NA2/content?format=zip
+[macOS]: https://artprodeus21.artifacts.visualstudio.com/A8fd008a0-56bc-482c-ba46-67f9425510be/3133d6ab-80a8-4996-ac4f-03df25cd3224/_apis/artifact/cGlwZWxpbmVhcnRpZmFjdDovL2NvbXBuZXJkL3Byb2plY3RJZC8zMTMzZDZhYi04MGE4LTQ5OTYtYWM0Zi0wM2RmMjVjZDMyMjQvYnVpbGRJZC80Mzc2OC9hcnRpZmFjdE5hbWUvdGVuc29yZmxvdy1kYXJ3aW4teDY00/content?format=zip
 [bazel]: https://docs.bazel.build/versions/master/install.html
 [bazelisk]: https://github.com/bazelbuild/bazelisk
 [configure.py]: https://github.com/tensorflow/tensorflow/blob/master/configure.py
