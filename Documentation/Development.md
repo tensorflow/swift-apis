@@ -1,5 +1,23 @@
 # Swift for TensorFlow Developer Guide
 
+
+  * [Requirements](#requirements)
+  * [Components](#components)
+  * [Building With CMake](#building-with-cmake)
+    * [Option 1: Build X10 and Swift APIs together](#option-1-build-x10-and-swift-apis-together)
+    * [Running tests](#running-tests)
+      * [macOS](#macos)
+  * [Building With Swift Package Manager](#building-with-swift-package-manager)
+    * [Building X10](#building-x10)
+      * [Option 1: Build X10](#option-1-build-x10)
+        * [Requirements](#requirements-1)
+        * [Building](#building)
+      * [Option 2: Use a prebuilt version of X10](#option-2-use-a-prebuilt-version-of-x10)
+    * [Building Swift APIs](#building-swift-apis)
+      * [macOS](#macos-1)
+    * [Running tests](#running-tests-1)
+
+
 ## Requirements
 
 * The latest Swift toolchain snapshot from [swift.org][swift]
