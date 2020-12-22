@@ -11,7 +11,7 @@ Swift for TensorFlow APIs can be built with either:
 
 ## Components
 
-Swift for TensorFlow APIs are composed of two distinct components:
+Building Swift for TensorFlow APIs involves two distinct components:
 
 1. X10
 2. Swift APIs
@@ -29,9 +29,20 @@ Swift for TensorFlow APIs are composed of two distinct components:
 
 The two components can be built together (CMake only) or separately.
 
-Follow the instructions below based on your preferred build tool.
+Follow the instructions below based on your preferred build tool (CMake or
+SwiftPM).
 
 ## Building With CMake
+
+With CMake, X10 and Swift APIs can be built either together or separately.
+
+To determine the appropriate build path, first consider whether you are
+modifying X10.
+
+* If you are modifying files in any subdirectory within **Sources/CX10** or
+  **Sources/x10**, you are modifying X10 and must follow
+  [**Option 1**](#option-1-build-x10-and-swift-apis-together).
+* Otherwise, use [**Option 2**](#option-2-use-a-prebuilt-version-of-x10).
 
 > **Note:** In-tree builds are not supported.
 
@@ -41,13 +52,68 @@ Follow the instructions below based on your preferred build tool.
 > **Note:** If `swiftc` is not in your `PATH`, you must specify the path to it
   using `-D CMAKE_Swift_COMPILER=`.
 
-This will build both X10 and Swift APIs.  Ensure that you do not have the
-X10 modules in the toolchain that you are using to develop here.
+### Option 1: Build X10 and Swift APIs together
+
+This command builds both X10 and Swift APIs in sequence. Ensure that you
+do not have the X10 modules in the toolchain that you are using to develop here
+(more explicitly, use a stock toolchain rather than a TensorFlow toolchain).
 
 ```shell
-cmake -B out -G Ninja -S swift-apis
+cmake -B out -G Ninja -S swift-apis -D CMAKE_BUILD_TYPE=Release
 cmake --build out
 ```
+
+### Option 2: Use a prebuilt version of X10
+
+If you are not modifying X10 or have already built it yourself using Option 1
+above, you can inform CMake where to find the build time components of the
+library (SDK contents).
+
+There are prebuilt versions of the X10 library for certain platforms. If a
+prebuilt library is unavailable for your desired platform, you can build X10
+from source following the instructions in [Option 1](#option-2-build-x10).
+
+- [Windows 10 (x64)][windows10]
+- [macOS (x64)][macOS]
+
+Note the location where you extract the prebuilt library. The path to these
+libraries is not fixed and depends on your machine setup.
+You should substitute the paths with the appropriate values. In the example
+commands below, we assume that the library is packaged in a traditional Unix
+style layout and placed in `/Library/tensorflow-2.4.0`.
+
+Because the library name differs based on the platform, the following examples
+may help identify what the flags should look like for the target that you are
+building for.
+
+macOS:
+
+```shell
+cmake -B out -G Ninja -S swift-apis -D CMAKE_BUILD_TYPE=Release \
+  -D X10_LIBRARY=/Library/tensorflow-2.4.0/usr/lib/libx10.dylib \
+  -D X10_INCLUDE_DIRS=/Library/tensorflow-2.4.0/usr/include
+cmake --build out
+```
+
+Windows:
+
+```shell
+cmake -B out -G Ninja -S swift-apis -D CMAKE_BUILD_TYPE=Release \
+  -D X10_LIBRARY=/Library/tensorflow-2.4.0/usr/lib/x10.lib \
+  -D X10_INCLUDE_DIRS=/Library/tensorflow-2.4.0/usr/include
+cmake --build out
+```
+
+Other Unix systems (e.g. Linux, BSD, Android, etc):
+
+```shell
+cmake -B out -G Ninja -S swift-apis -D CMAKE_BUILD_TYPE=Release \
+  -D X10_LIBRARY=/Library/tensorflow-2.4.0/usr/lib/libx10.so \
+  -D X10_INCLUDE_DIRS=/Library/tensorflow-2.4.0/usr/include
+cmake --build out
+```
+
+## Running tests
 
 To run tests:
 
@@ -64,7 +130,8 @@ On macOS, passing `-D BUILD_TESTING=NO` is currently necessary to skip building
 tests. This avoids an error: `cannot load underlying module for 'XCTest'`.
 
 ```shell
-cmake -B out -D USE_BUNDLED_CTENSORFLOW=YES -D USE_BUNDLED_X10=YES -D BUILD_TESTING=NO -G Ninja -S swift-apis
+cmake -B out -G Ninja -S swift-apis -D CMAKE_BUILD_TYPE=Release \
+  -D BUILD_TESTING=NO
 cmake --build out
 ```
 
@@ -78,26 +145,11 @@ To determine the appropriate build path, first consider whether you are
 modifying X10.
 
 * If you are modifying files in any subdirectory within **Sources/CX10** or
-  **Sources/x10**, you are modifying X10 and must follow **Option 2**.
-* Otherwise, use **Option 1**.
+  **Sources/x10**, you are modifying X10 and must follow
+  [**Option 1**](#option-1-build-x10).
+* Otherwise, use [**Option 2**](#option-2-use-a-prebuilt-version-of-x10-1).
 
-#### Option 1: Use a prebuilt version of X10
-
-You can use a prebuilt version of the X10 library for building the Swift for
-TensorFlow APIs package if you do not need to make changes to the X10 library
-implementation.
-
-There are prebuilt versions of the X10 library for certain platforms. If a
-prebuilt library is unavailable for your desired platform, you can build X10
-from source following the instructions in [Option 2](#option-2-build-x10).
-
-- [Windows 10 (x64)][windows10]
-- [macOS (x64)][macOS]
-
-Note the location where you extract the prebuilt library, since it is required
-for building Swift for TensorFlow APIs.
-
-#### Option 2: Build X10
+#### Option 1: Build X10
 
 Although using the prebuilt libraries is more convenient, there may be some
 situations where you may need to build X10 yourself.  These include:
@@ -290,9 +342,25 @@ cp swift-apis/Sources/x10/swift_bindings/xla_tensor_wrapper.h ${DESTDIR}/usr/inc
 ```
 </details>
 
+#### Option 2: Use a prebuilt version of X10
+
+You can use a prebuilt version of the X10 library for building the Swift for
+TensorFlow APIs package if you do not need to make changes to the X10 library
+implementation.
+
+There are prebuilt versions of the X10 library for certain platforms. If a
+prebuilt library is unavailable for your desired platform, you can build X10
+from source following the instructions in [Option 1](#option-1-build-x10).
+
+- [Windows 10 (x64)][windows10]
+- [macOS (x64)][macOS]
+
+Note the location where you extract the prebuilt library, since it is required
+for building Swift for TensorFlow APIs.
+
 ### Building Swift APIs
 
-> **Note:** This option requires pre-built X10 binaries. Building with SwiftPM
+> **Note:** This step requires pre-built X10 binaries. Building with SwiftPM
 > does not include changes to X10.
 
 SwiftPM requires two items:
@@ -311,6 +379,23 @@ $ swift build -Xcc -I/Library/tensorflow-2.4.0/usr/include -Xlinker -L/Library/t
 
 ```shell
 $ swift test -Xcc -I/Library/tensorflow-2.4.0/usr/include -Xlinker -L/Library/tensorflow-2.4.0/usr/lib
+```
+
+#### macOS
+
+On macOS, in order to select the proper toolchain, the `TOOLCHAINS` environment
+variable can be used to modify the selected Xcode toolchain temporarily.  The
+macOS (Xcode) toolchain distributed from [swift.org][swift] has a
+bundle identifier which can uniquely identify the toolchain to the system.  The
+following attempts to determine the latest toolchain snapshot and extract the
+identifier for it.
+
+```shell
+xpath 2>/dev/null $(find /Library/Developer/Toolchains ~/Library/Developer/Toolchains -type d -depth 1 -regex '.*/swift-DEVELOPMENT-SNAPSHOT-.*.xctoolchain | sort -u | tail -n 1)/Info.plist "/plist/dict/key[. = 'CFBundleIdentifier']/following-sibling::string[1]//text()"
+```
+This allows one to build the package as:
+```shell
+TOOLCHAINS=$(xpath 2>/dev/null $(find /Library/Developer/Toolchains ~/Library/Developer/Toolchains -type d -depth 1 -regex '.*/swift-DEVELOPMENT-SNAPSHOT-.*.xctoolchain | sort -u | tail -n 1)/Info.plist "/plist/dict/key[. = 'CFBundleIdentifier']/following-sibling::string[1]//text()") swift build -Xswiftc -DTENSORFLOW_USE_STANDARD_TOOLCHAIN -Xcc -I/Library/tensorflow-2.4.0/usr/include -Xlinker -L/Library/tensorflow-2.4.0/usr/lib
 ```
 
 [swift]: https://swift.org/download/#snapshots
