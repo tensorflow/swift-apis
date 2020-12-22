@@ -15,9 +15,14 @@
 import _Differentiation
 
 #if TENSORFLOW_USE_STANDARD_TOOLCHAIN
+
 @_spi(Reflection) import Swift
 
 func listFields<Root>(of type: Root.Type) -> [(String, PartialKeyPath<Root>)] {
+  guard #available(macOS 9999, *) else {
+    fatalError("\(#function) is unavailable")
+  }
+
   var out = [(String, PartialKeyPath<Root>)]()
   _forEachFieldWithKeyPath(of: type, options: .ignoreUnknown) { name, kp in
     out.append((String(validatingUTF8: name)!, kp))
@@ -27,8 +32,11 @@ func listFields<Root>(of type: Root.Type) -> [(String, PartialKeyPath<Root>)] {
 }
 
 extension Differentiable {
-  static var differentiableFields: [(String, PartialKeyPath<Self>, PartialKeyPath<TangentVector>)]
-  {
+  static var differentiableFields: [(String, PartialKeyPath<Self>, PartialKeyPath<TangentVector>)] {
+    guard #available(macOS 9999, *) else {
+      fatalError("\(#function) is unavailable")
+    }
+
     let tangentFields = listFields(of: TangentVector.self)
     var i = 0
     var out = [(String, PartialKeyPath<Self>, PartialKeyPath<TangentVector>)]()
