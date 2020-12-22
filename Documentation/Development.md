@@ -224,7 +224,7 @@ sources instead of creating a junction.*
 git clone git://github.com/tensorflow/swift-apis
 :: checkout tensorflow
 git clone --depth 1 --no-tags git://github.com/tensorflow/tensorflow
-git -C tensorflow checkout refs/heads/r2.4
+git -C tensorflow checkout -B refs/heads/r2.4
 
 :: Link X10 into the source tree
 mklink /J %CD%\tensorflow\swift_bindings %CD%\swift-apis\Sources\CX10
@@ -244,11 +244,13 @@ set CC_OPT_FLAGS="/arch:AVX /D_USE_MATH_DEFINES"
 set TF_OVERRIDE_EIGEN_STRONG_INLINE=1
 .\tensorflow\configure.py
 :: build
+cd tensorflow
 set BAZEL_SH=%ProgramFiles%\Git\usr\bin\bash.exe
 set BAZEL_VC=%VCINSTALLDIR%
 bazel --output_user_root %CD%/caches/bazel/tensorflow build -c opt --copt /D_USE_MATH_DEFINES --define framework_shared_object=false --config short_logs --nocheck_visibility //tensorflow:tensorflow //tensorflow:tensorflow_dll_import_lib //tensorflow/compiler/tf2xla/xla_tensor:x10 //tensorflow/compiler/tf2xla/xla_tensor:x10_dll_import_lib
 :: terminate bazel daemon
 bazel --output_user_root %CD%/caches/bazel/tensorflow shutdown
+cd ..
 
 :: package
 set DESTDIR=%CD%\Library\tensorflow-windows-%VSCMD_ARG_TGT_ARCH%\tensorflow-2.4.0
@@ -295,7 +297,7 @@ copy tensorflow\bazel-out\%VSCMD_ARG_TGT_ARCH%_windows-opt\bin\tensorflow\tensor
 git clone git://github.com/tensorflow/swift-apis
 # checkout tensorflow
 git clone --depth 1 --no-tags git://github.com/tensorflow/tensorflow
-git -C tensorflow checkout refs/heads/r2.4
+git -C tensorflow checkout -B refs/heads/r2.4
 
 # Link X10 into the source tree
 ln -sf ${PWD}/swift-apis/Sources/CX10 ${PWD}/tensorflow/swift_bindings
@@ -317,16 +319,21 @@ export TF_NEED_CUDA=0
 export TF_CUDA_COMPUTE_CAPABILITIES=7.5
 export CC_OPT_FLAGS="-march=native"
 python3 ./tensorflow/configure.py
+# build
+cd tensorflow
 bazel --output_user_root ${PWD}/caches/bazel/tensorflow build -c opt --define framework_shared_object=false --config short_logs --nocheck_visibility //tensorflow:tensorflow //tensorflow/compiler/tf2xla/xla_tensor:x10
 # terminate bazel daemon
 bazel --output_user_root ${PWD}/caches/bazel/tensorflow shutdown
+cd ..
 
 # package
 DESTDIR=${PWD}/Library/tensorflow-$(echo $(uname -s) | tr 'A-Z' 'a-z')-$(uname -m)/tensorflow-2.4.0
 
 mkdir -p ${DESTDIR}/usr/lib
-cp tensorflow/bazel-bin/tensorflow/libtensorflow-2.4.0.(dylib|so) ${DESTDIR}/usr/lib/
-cp tensorflow/bazel-bin/tensorflow/compiler/tf2xla/xla_tensor/libx10.(dylib|so) ${DESTDIR}/usr/lib/
+SHARED_LIB=so
+if [ $(uname) == Darwin ] ; then SHARED_LIB=dylib ; fi
+cp tensorflow/bazel-bin/tensorflow/libtensorflow-2.4.0.$SHARED_LIB ${DESTDIR}/usr/lib/
+cp tensorflow/bazel-bin/tensorflow/compiler/tf2xla/xla_tensor/libx10.$SHARED_LIB ${DESTDIR}/usr/lib/
 
 mkdir -p ${DESTDIR}/usr/include/tensorflow/c
 cp tensorflow/tensorflow/c/c_api.h ${DESTDIR}/usr/include/tensorflow/c/
