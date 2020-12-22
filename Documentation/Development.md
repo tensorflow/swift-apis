@@ -249,7 +249,7 @@ $ swift build -Xcc -I/Library/tensorflow-2.4.0/usr/include -Xlinker -L/Library/t
 $ swift test -Xcc -I/Library/tensorflow-2.4.0/usr/include -Xlinker -L/Library/tensorflow-2.4.0/usr/lib
 ```
 
-On macOS, in order to select the proper toolchain, the `TOOLCHAINS` enviornment
+On macOS, in order to select the proper toolchain, the `TOOLCHAINS` environment
 variable can be used to modify the selected Xcode toolchain temporarily.  The
 macOS (Xcode) toolchain distributed from [swift.org](https://swift.org) has a
 bundle identifier which can uniquely identify the toolchain to the system.  The
