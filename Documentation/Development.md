@@ -54,6 +54,9 @@ therefore build a new version.
 
 #### Building
 
+<details>
+    <summary>About the Scripts</summary>
+
 The X10 implementation is distributed as part of the Swift for TensorFlow APIs
 repository. It consists of two halves:
 
@@ -87,6 +90,8 @@ libraries:
 
 We must pass the `--nocheck_visibility` flag to bazel to accomodate the new
 libraries.
+
+</details>
 
 <details>
     <summary>Windows Build Script</summary>
