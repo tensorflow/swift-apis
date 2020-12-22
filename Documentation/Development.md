@@ -180,33 +180,7 @@ therefore build a new version.
 
 ##### Building
 
-The library is designed to be built as part of the
-[tensorflow](https://github.com/tensorflow/tensorflow) build. As such, in
-order to build X10, you must build tensorflow.
-
-Currently X10 is developed against TensorFlow 2.4.0. The following build
-scripts provide commands to build on common platforms. They largely replicate
-the build instructions for TensorFlow. The instructions diverge in that we
-must copy the additional X10 library sources into the tensorflow repository.
-The following table identifies the copied locations:
-
-| swift-apis source | tensorflow destination |
-|-------------------|------------------------|
-| Sources/CX10      | swift_bindings         |
-| Sources/x10/xla_client | tensorflow/compiler/xla/xla_client |
-| Sources/x10/xla_tensor | tensorflow/compiler/tf2xla/xla_tensor |
-
-We build two specific targets:
-1. `//tensorflow:tensorflow`
-2. `//tensorflow/compiler/tf2xla/xla_tensor:x10`
-
-On Windows, we build the additional targets to allow us to link against the
-libraries:
-1. `//tensorflow:tensorflow_dll_import_lib`
-2. `//tensorflow/compiler/tf2xla/xla_tensor:x10_dll_import_lib `
-
-We must pass the `--nocheck_visibility` flag to bazel to accomodate the new
-libraries.
+Run the script for your platform in an empty directory.
 
 <details>
     <summary>Windows Build Script</summary>
@@ -352,6 +326,39 @@ cp swift-apis/Sources/x10/swift_bindings/device_wrapper.h ${DESTDIR}/usr/include
 cp swift-apis/Sources/x10/swift_bindings/xla_tensor_tf_ops.h ${DESTDIR}/usr/include/x10/
 cp swift-apis/Sources/x10/swift_bindings/xla_tensor_wrapper.h ${DESTDIR}/usr/include/x10/
 ```
+</details>
+
+<details>
+    <summary>What the scripts do.</summary>
+    
+The library is designed to be built as part of the
+[tensorflow](https://github.com/tensorflow/tensorflow) build. As such, in
+order to build X10, you must build tensorflow.
+
+Currently X10 is developed against TensorFlow 2.4.0. The following build
+scripts provide commands to build on common platforms. They largely replicate
+the build instructions for TensorFlow. The instructions diverge in that we
+must copy the additional X10 library sources into the tensorflow repository.
+The following table identifies the copied locations:
+
+| swift-apis source | tensorflow destination |
+|-------------------|------------------------|
+| Sources/CX10      | swift_bindings         |
+| Sources/x10/xla_client | tensorflow/compiler/xla/xla_client |
+| Sources/x10/xla_tensor | tensorflow/compiler/tf2xla/xla_tensor |
+
+We build two specific targets:
+1. `//tensorflow:tensorflow`
+2. `//tensorflow/compiler/tf2xla/xla_tensor:x10`
+
+On Windows, we build the additional targets to allow us to link against the
+libraries:
+1. `//tensorflow:tensorflow_dll_import_lib`
+2. `//tensorflow/compiler/tf2xla/xla_tensor:x10_dll_import_lib `
+
+We must pass the `--nocheck_visibility` flag to bazel to accomodate the new
+libraries.
+
 </details>
 
 #### Option 2: Use a prebuilt version of X10
