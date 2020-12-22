@@ -249,6 +249,23 @@ $ swift build -Xcc -I/Library/tensorflow-2.4.0/usr/include -Xlinker -L/Library/t
 $ swift test -Xcc -I/Library/tensorflow-2.4.0/usr/include -Xlinker -L/Library/tensorflow-2.4.0/usr/lib
 ```
 
+On macOS, in order to select the proper toolchain, the `TOOLCHAINS` environment
+variable can be used to modify the selected Xcode toolchain temporarily.  The
+macOS (Xcode) toolchain distributed from [swift.org](https://swift.org) has a
+bundle identifier which can uniquely identify the toolchain to the system.  The
+following attempts to determine the latest toolchain snapshot and extract the
+identifier for it.
+
+```shell
+xpath 2>/dev/null $(find /Library/Developer/Toolchains ~/Library/Developer/Toolchains -type d -depth 1 -regex '.*/swift-DEVELOPMENT-SNAPSHOT-.*.xctoolchain | sort -u | tail -n 1)/Info.plist "/plist/dict/key[. = 'CFBundleIdentifier']/following-sibling::string[1]//text()"
+```
+
+This allows one to build the package as:
+
+```shell
+TOOLCHAINS=$(xpath 2>/dev/null $(find /Library/Developer/Toolchains ~/Library/Developer/Toolchains -type d -depth 1 -regex '.*/swift-DEVELOPMENT-SNAPSHOT-.*.xctoolchain | sort -u | tail -n 1)/Info.plist "/plist/dict/key[. = 'CFBundleIdentifier']/following-sibling::string[1]//text()") swift build -Xswiftc -DTENSORFLOW_USE_STANDARD_TOOLCHAIN -Xcc -I/Library/tensorflow-2.4.0/usr/include -Xlinker -L/Library/tensorflow-2.4.0/usr/lib
+```
+
 #### CMake
 
 *Note: In-tree builds are not supported.*
