@@ -96,12 +96,14 @@ libraries.
 
 *Note: You will either need to be running with elevated privilleges, have rights to create symbolic links and junctions, or have enabled developer mode to successfully create the directory junctions.  You may alternatively copy the sources instead of creating a junction.*
 
+In an empty directory:
+
 ```cmd
 :: clone swift-apis
 git clone git://github.com/tensorflow/swift-apis
 :: checkout tensorflow
 git clone --depth 1 --no-tags git://github.com/tensorflow/tensorflow
-git -C tensorflow checkout -b refs/heads/r2.4
+git -C tensorflow checkout -B refs/heads/r2.4
 
 :: Link X10 into the source tree
 mklink /J %CD%\tensorflow\swift_bindings %CD%\swift-apis\Sources\CX10
@@ -123,9 +125,11 @@ set TF_OVERRIDE_EIGEN_STRONG_INLINE=1
 :: build
 set BAZEL_SH=%ProgramFiles%\Git\usr\bin\bash.exe
 set BAZEL_VC=%VCINSTALLDIR%
-bazel --output_user_root %CD%/caches/bazel/tensorflow build -c opt --copt /D_USE_MATH_DEFINES --define framework_shared_object=false --config short_logs --nocheck_visibility //tensorflow:tensorflow //tensorflow:tensorflow_dll_import_lib //tensorflow/compiler/tf2xla/xla_tensor:x10 //tensorflow/compiler/tf2xla/xla_tensor:x10_dll_import_lib
+cd tensorflow
+bazel --output_user_root %CD%/../caches/bazel/tensorflow build -c opt --copt /D_USE_MATH_DEFINES --define framework_shared_object=false --config short_logs --nocheck_visibility //tensorflow:tensorflow //tensorflow:tensorflow_dll_import_lib //tensorflow/compiler/tf2xla/xla_tensor:x10 //tensorflow/compiler/tf2xla/xla_tensor:x10_dll_import_lib
 :: terminate bazel daemon
-bazel --output_user_root %CD%/caches/bazel/tensorflow shutdown
+bazel --output_user_root %CD%/../caches/bazel/tensorflow shutdown
+cd ..
 
 :: package
 set DESTDIR=%CD%\Library\tensorflow-windows-%VSCMD_ARG_TGT_ARCH%\tensorflow-2.4.0
@@ -165,12 +169,14 @@ copy tensorflow\bazel-out\%VSCMD_ARG_TGT_ARCH%_windows-opt\bin\tensorflow\tensor
     
 *Note: If you are unable to run bazel on macOS due to an error about an unverified developer due to System Integrity Protection (SIP), you can use `xattr -dr com.apple.quarantine bazel`*
 
+In an empty directory:
+
 ```bash
 # clone swift-apis
 git clone git://github.com/tensorflow/swift-apis
 # checkout tensorflow
 git clone --depth 1 --no-tags git://github.com/tensorflow/tensorflow
-git -C tensorflow checkout -b refs/heads/r2.4
+git -C tensorflow checkout -B refs/heads/r2.4
 
 # Link X10 into the source tree
 ln -sf ${PWD}/swift-apis/Sources/CX10 ${PWD}/tensorflow/swift_bindings
@@ -192,9 +198,11 @@ export TF_NEED_CUDA=0
 export TF_CUDA_COMPUTE_CAPABILITIES=7.5
 export CC_OPT_FLAGS="-march=native"
 python3 ./tensorflow/configure.py
-bazel --output_user_root ${PWD}/caches/bazel/tensorflow build -c opt --define framework_shared_object=false --config short_logs --nocheck_visibility //tensorflow:tensorflow //tensorflow/compiler/tf2xla/xla_tensor:x10
+cd tensorflow
+bazel --output_user_root ${PWD}/../caches/bazel/tensorflow build -c opt --define framework_shared_object=false --config short_logs --nocheck_visibility //tensorflow:tensorflow //tensorflow/compiler/tf2xla/xla_tensor:x10
 # terminate bazel daemon
-bazel --output_user_root ${PWD}/caches/bazel/tensorflow shutdown
+bazel --output_user_root ${PWD}/../caches/bazel/tensorflow shutdown
+cd ..
 
 # package
 DESTDIR=${PWD}/Library/tensorflow-$(echo $(uname -s) | tr 'A-Z' 'a-z')-$(uname -m)/tensorflow-2.4.0
