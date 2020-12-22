@@ -101,7 +101,7 @@ libraries.
 git clone git://github.com/tensorflow/swift-apis
 :: checkout tensorflow
 git clone --depth 1 --no-tags git://github.com/tensorflow/tensorflow
-git -C tensorflow checkout refs/heads/r2.4
+git -C tensorflow checkout -b refs/heads/r2.4
 
 :: Link X10 into the source tree
 mklink /J %CD%\tensorflow\swift_bindings %CD%\swift-apis\Sources\CX10
@@ -170,7 +170,7 @@ copy tensorflow\bazel-out\%VSCMD_ARG_TGT_ARCH%_windows-opt\bin\tensorflow\tensor
 git clone git://github.com/tensorflow/swift-apis
 # checkout tensorflow
 git clone --depth 1 --no-tags git://github.com/tensorflow/tensorflow
-git -C tensorflow checkout refs/heads/r2.4
+git -C tensorflow checkout -b refs/heads/r2.4
 
 # Link X10 into the source tree
 ln -sf ${PWD}/swift-apis/Sources/CX10 ${PWD}/tensorflow/swift_bindings
