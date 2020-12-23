@@ -94,6 +94,12 @@ cmake -B out -G Ninja -S swift-apis -D CMAKE_BUILD_TYPE=Release
 cmake --build out
 ```
 
+> **Note:** expect to see this error from the first command. It's fine; we're
+> going to build X10:
+```
+-- Could NOT find X10 (missing: X10_LIBRARY) 
+```
+
 ### Option 2: Use a prebuilt version of X10
 
 If you are not modifying X10 or have already built it yourself using Option 1
