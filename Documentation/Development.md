@@ -80,6 +80,9 @@ whether you are modifying X10.
 > **Note:** If `swiftc` is not in your `PATH`, you must specify the path to it
   using `-D CMAKE_Swift_COMPILER=`.
 
+> **Note:** If the `ninja` build tool is not in your `PATH`, you must [install
+> it](https://ninja-build.org/).
+
 ### Option 1: Build X10 and Swift APIs together
 
 This command builds both X10 and Swift APIs in sequence. Ensure that you
