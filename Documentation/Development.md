@@ -99,7 +99,7 @@ library (SDK contents).
 
 There are prebuilt versions of the X10 library for certain platforms. If a
 prebuilt library is unavailable for your desired platform, you can build X10
-from source following the instructions in [Option 1](#option-2-build-x10).
+from source following the instructions in [Option 2](#option-2-build-x10).
 
 - [Windows 10 (x64)][windows10]
 - [macOS (x64)][macOS]
@@ -313,9 +313,9 @@ export CC_OPT_FLAGS="-march=native"
 python3 ./tensorflow/configure.py
 # build
 cd tensorflow
-bazel --output_user_root ${PWD}/caches/bazel/tensorflow build -c opt --define framework_shared_object=false --config short_logs --nocheck_visibility //tensorflow:tensorflow //tensorflow/compiler/tf2xla/xla_tensor:x10
+bazel --output_user_root ${PWD}/../caches/bazel/tensorflow build -c opt --define framework_shared_object=false --config short_logs --nocheck_visibility //tensorflow:tensorflow //tensorflow/compiler/tf2xla/xla_tensor:x10
 # terminate bazel daemon
-bazel --output_user_root ${PWD}/caches/bazel/tensorflow shutdown
+bazel --output_user_root ${PWD}/../caches/bazel/tensorflow shutdown
 cd ..
 
 # package
