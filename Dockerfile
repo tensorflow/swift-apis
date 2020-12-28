@@ -77,10 +77,10 @@ RUN git clone https://github.com/deepmind/open_spiel.git
 WORKDIR /swift-models
 
 RUN /swift-tensorflow-toolchain/usr/bin/swift build \
-  $([ "$TENSORFLOW_USE_STANDARD_TOOLCHAIN" = "YES" ] && echo "-Xswiftc -D -Xswiftc TENSORFLOW_USE_STANDARD_TOOLCHAIN")
+  $([ "$TENSORFLOW_USE_STANDARD_TOOLCHAIN" = "YES" ] && echo "-Xswiftc -DTENSORFLOW_USE_STANDARD_TOOLCHAIN -Xcc -I/swift-tensorflow-toolchain/usr/lib/swift -Xlinker -L/swift-tensorflow-toolchain/usr/lib/swift/linux")
 # Swift Numerics in release mode does not currently build, which prevents the use of swift-models
 # RUN /swift-tensorflow-toolchain/usr/bin/swift build -c release \
-#   $([ "$TENSORFLOW_USE_STANDARD_TOOLCHAIN" = "YES" ] && echo "-Xswiftc -D -Xswiftc TENSORFLOW_USE_STANDARD_TOOLCHAIN")
+#   $([ "$TENSORFLOW_USE_STANDARD_TOOLCHAIN" = "YES" ] && echo "-Xswiftc -DTENSORFLOW_USE_STANDARD_TOOLCHAIN -Xcc -I/swift-tensorflow-toolchain/usr/lib/swift -Xlinker -L/swift-tensorflow-toolchain/usr/lib/swift/linux")
 
 WORKDIR /fastai_dev/swift/FastaiNotebook_11_imagenette
 
