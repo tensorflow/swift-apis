@@ -203,7 +203,7 @@ where
   L8.TangentVector.VectorSpaceScalar == L9.TangentVector.VectorSpaceScalar,
   L9.TangentVector.VectorSpaceScalar == L10.TangentVector.VectorSpaceScalar
 
-@_functionBuilder
+@resultBuilder
 public struct LayerBuilder {
   public static func buildBlock<L1: Module, L2: Layer>(_ l1: L1, _ l2: L2) -> Sequential<L1, L2>
   where L1.Output == L2.Input {
