@@ -74,22 +74,26 @@ RUN git clone https://github.com/tensorflow/swift-models.git
 RUN git clone https://github.com/fastai/fastai_dev.git
 RUN git clone https://github.com/deepmind/open_spiel.git
 
+RUN if test x"$TENSORFLOW_USE_STANDARD_TOOLCHAIN" = x"YES" ; then \
+      echo "-Xswiftc -DTENSORFLOW_USE_STANDARD_TOOLCHAIN -Xcc -I/swift-tensorflow-toolchain/usr/lib/swift -Xlinker -L/swift-tensorflow-toolchain/usr/lib/swift/linux" > /.swiftflags ; \
+    else \
+      echo "-Xcc -I/swift-tensorflow-toolchain/usr/lib/swift -Xlinker -L/swift-tensorflow-toolchain/usr/lib/swift/linux" > /.swiftflags ; \
+    fi
+
 WORKDIR /swift-models
 
-RUN /swift-tensorflow-toolchain/usr/bin/swift build \
-  $([ "$TENSORFLOW_USE_STANDARD_TOOLCHAIN" = "YES" ] && echo "-Xswiftc -DTENSORFLOW_USE_STANDARD_TOOLCHAIN -Xcc -I/swift-tensorflow-toolchain/usr/lib/swift -Xlinker -L/swift-tensorflow-toolchain/usr/lib/swift/linux")
+RUN /swift-tensorflow-toolchain/usr/bin/swift build $(cat /.swiftflags)
 # Swift Numerics in release mode does not currently build, which prevents the use of swift-models
-# RUN /swift-tensorflow-toolchain/usr/bin/swift build -c release \
-#   $([ "$TENSORFLOW_USE_STANDARD_TOOLCHAIN" = "YES" ] && echo "-Xswiftc -DTENSORFLOW_USE_STANDARD_TOOLCHAIN -Xcc -I/swift-tensorflow-toolchain/usr/lib/swift -Xlinker -L/swift-tensorflow-toolchain/usr/lib/swift/linux")
+# RUN /swift-tensorflow-toolchain/usr/bin/swift build -c release $(cat /.swiftflags)
 
 WORKDIR /fastai_dev/swift/FastaiNotebook_11_imagenette
 
-RUN /swift-tensorflow-toolchain/usr/bin/swift build
-RUN /swift-tensorflow-toolchain/usr/bin/swift build -c release
+RUN /swift-tensorflow-toolchain/usr/bin/swift build $(cat /.swiftflags)
+RUN /swift-tensorflow-toolchain/usr/bin/swift build -c release $(cat /.swiftflags)
 
 WORKDIR /open_spiel
 RUN rm -f Package.resolved
-RUN /swift-tensorflow-toolchain/usr/bin/swift test
+RUN /swift-tensorflow-toolchain/usr/bin/swift test $(cat /.swiftflags)
 
 WORKDIR /swift-apis
 # TODO: move into bash scripts...
@@ -103,4 +107,4 @@ RUN python3 Utilities/benchmark_compile.py /swift-tensorflow-toolchain/usr/bin/s
 
 # Run SwiftPM tests
 RUN rm -f /swift-tensorflow-toolchain/usr/lib/swift/tensorflow/module.modulemap
-RUN /swift-tensorflow-toolchain/usr/bin/swift test -Xcc -I/swift-tensorflow-toolchain/usr/lib/swift -Xlinker -L/swift-tensorflow-toolchain/usr/lib/swift/linux
+RUN /swift-tensorflow-toolchain/usr/bin/swift test $(cat /.swiftflags)
