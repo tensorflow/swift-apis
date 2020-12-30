@@ -103,4 +103,8 @@ RUN python3 Utilities/benchmark_compile.py /swift-tensorflow-toolchain/usr/bin/s
 
 # Run SwiftPM tests
 RUN rm -f /swift-tensorflow-toolchain/usr/lib/swift/tensorflow/module.modulemap
-RUN /swift-tensorflow-toolchain/usr/bin/swift test -Xcc -I/swift-tensorflow-toolchain/usr/lib/swift -Xlinker -L/swift-tensorflow-toolchain/usr/lib/swift/linux
+RUN ls -alh /swift-tensorflow-toolchain/usr/lib
+RUN ls -alh /swift-tensorflow-toolchain/usr/lib/swift
+RUN ls -alh /swift-tensorflow-toolchain/usr/lib/swift/linux
+RUN /swift-tensorflow-toolchain/usr/bin/swift test \
+  $([ "$TENSORFLOW_USE_STANDARD_TOOLCHAIN" = "YES" ] && echo "-Xswiftc -DTENSORFLOW_USE_STANDARD_TOOLCHAIN -Xcc -I/swift-tensorflow-toolchain/usr/lib/swift -Xlinker -L/swift-tensorflow-toolchain/usr/lib/swift/linux")
