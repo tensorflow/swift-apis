@@ -74,11 +74,7 @@ _DISPATCHER_TEMPLATE = '''@available(
 )
 public typealias Raw = _Raw
 
-#if USING_X10_BACKEND
 {raw_dispatching_enum}
-#else
-public typealias _Raw = _RawTFEager
-#endif
 '''
 
 _OUTPUT_FILE = 'RawOpsGenerated.swift'

@@ -68,7 +68,6 @@ let package = Package(
         .product(name: "Numerics", package: "swift-numerics"),
       ],
       swiftSettings: [
-        .define("USING_X10_BACKEND"),
         .define("DEFAULT_BACKEND_EAGER"),
       ]),
     .target(

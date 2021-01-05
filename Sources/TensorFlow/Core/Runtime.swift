@@ -248,14 +248,6 @@ public final class _ExecutionContext {
           stringAddrs.append(currentStringAddr)
           currentStringAddr = currentStringAddr?.advanced(by: length)
         }
-
-        stringAddrs.withUnsafeMutableBufferPointer { stringAddrsBuffer in
-          #if !USING_X10_BACKEND
-            var cArgsCount = Int32(args.count)
-            var cArgs = stringAddrsBuffer.baseAddress.map(UnsafeMutablePointer.init)
-            TF_InitMain(nil, &cArgsCount, &cArgs)
-          #endif
-        }
       }
       _RuntimeConfig.tensorFlowRuntimeInitialized = true
     }
@@ -580,17 +572,6 @@ struct DeviceScopes {
     internalConsistencyCheck(deviceStack.popLast() != nil)
   }
 }
-
-#if !USING_X10_BACKEND
-  // Evaluate the pullback on a one.
-  @usableFromInline
-  func pullbackOfOneLikeY<T: TensorFlowFloatingPoint, R>(
-    y: Tensor<T>,
-    pullback: (Tensor<T>) -> R
-  ) -> R {
-    pullback(Tensor<T>(1))
-  }
-#endif
 
 @usableFromInline
 func _TFCOpSetDeviceFromScope(_ op: CTFEOp, _ status: CTFStatus) {
