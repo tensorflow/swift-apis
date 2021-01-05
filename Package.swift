@@ -50,6 +50,10 @@ let package = Package(
         "PythonKit",
         "CTensorFlow",
         .product(name: "Numerics", package: "swift-numerics"),
+      ],
+      swiftSettings: [
+        .define("USING_X10_BACKEND"),
+        .define("DEFAULT_BACKEND_EAGER"),
       ]),
     .target(
       name: "Experimental",
