@@ -44,11 +44,15 @@ let package = Package(
       name: "CTensorFlow",
       dependencies: []),
     .target(
+      name: "CX10Modules",
+      dependencies: []),
+    .target(
       name: "TensorFlow",
       dependencies: [
         "Tensor",
         "PythonKit",
         "CTensorFlow",
+        "CX10Modules",
         .product(name: "Numerics", package: "swift-numerics"),
       ],
       swiftSettings: [
