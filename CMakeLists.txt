@@ -280,16 +280,17 @@ if(ENABLE_SWIFT_NUMERICS)
         DESTINATION lib/swift/${swift_os})
     endif()
 
+    get_target_property(${module}_INTERFACE_INCLUDE_DIRECTORIES ${module}
+      INTERFACE_INCLUDE_DIRECTORIES)
+
     if(CMAKE_SYSTEM_NAME STREQUAL Darwin)
-      install(FILES $<TARGET_PROPERTY:${module},INTERFACE_INCLUDE_DIRECTORIES>/${module}.swiftdoc
-        DESTINATION lib/swift/${swift_os}/${module}.swiftmodule
+      install(FILES ${${module}_INTERFACE_INCLUDE_DIRECTORIES}/${module}.swiftdoc
+        DESTINATION lib/swift/${swift_os}/${module}.swiftmodule/
         RENAME ${swift_arch}.swiftdoc)
-      install(FILES $<TARGET_PROPERTY:${module},INTERFACE_INCLUDE_DIRECTORIES>/${module}.swiftmodule
-        DESTINATION lib/swift/${swift_os}/${module}.swiftmodule
+      install(FILES ${${module}_INTERFACE_INCLUDE_DIRECTORIES}/${module}.swiftmodule
+        DESTINATION lib/swift/${swift_os}/${module}.swiftmodule/
         RENAME ${swift_arch}.swiftmodule)
     else()
-      get_target_property(${module}_INTERFACE_INCLUDE_DIRECTORIES ${module}
-        INTERFACE_INCLUDE_DIRECTORIES)
       install(FILES
         ${${module}_INTERFACE_INCLUDE_DIRECTORIES}/${module}.swiftdoc
         ${${module}_INTERFACE_INCLUDE_DIRECTORIES}/${module}.swiftmodule
