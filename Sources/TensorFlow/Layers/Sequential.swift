@@ -74,6 +74,13 @@ extension Sequential: Layer where Layer1: Layer {
   }
 }
 
+extension Sequential.TangentVector: VectorProtocol {
+  /// - Note: this typealias declaration is necessary for building with old non-stock toolchains
+  ///   where `VectorProtocol.VectorSpaceScalar` is an associated type and not a typealias
+  ///   declaration.
+  typealias VectorSpaceScalar = Float
+}
+
 /// A layer that sequentially composes 3 layers.
 public typealias Sequential3<L1: Module, L2: Layer, L3: Layer> = Sequential<L1, Sequential<L2, L3>>
 where
