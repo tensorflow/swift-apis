@@ -33,8 +33,7 @@ import Numerics
 public class RMSProp<Model: Differentiable>: Optimizer
 where
   Model.TangentVector: VectorProtocol & PointwiseMultiplicative
-    & ElementaryFunctions & KeyPathIterable,
-  Model.TangentVector.VectorSpaceScalar == Float
+    & ElementaryFunctions & KeyPathIterable
 {
   public typealias Model = Model
   /// The learning rate.
@@ -108,8 +107,7 @@ where
 public class AdaGrad<Model: Differentiable>: Optimizer
 where
   Model.TangentVector: VectorProtocol & PointwiseMultiplicative
-    & ElementaryFunctions & KeyPathIterable,
-  Model.TangentVector.VectorSpaceScalar == Float
+    & ElementaryFunctions & KeyPathIterable
 {
   public typealias Model = Model
   /// The learning rate.
@@ -169,8 +167,7 @@ where
 public class AdaDelta<Model: Differentiable>: Optimizer
 where
   Model.TangentVector: VectorProtocol & PointwiseMultiplicative
-    & ElementaryFunctions & KeyPathIterable,
-  Model.TangentVector.VectorSpaceScalar == Float
+    & ElementaryFunctions & KeyPathIterable
 {
   public typealias Model = Model
   /// The learning rate.
@@ -319,8 +316,7 @@ where
 public class Adam<Model: Differentiable>: Optimizer
 where
   Model.TangentVector: VectorProtocol & PointwiseMultiplicative
-    & ElementaryFunctions & KeyPathIterable,
-  Model.TangentVector.VectorSpaceScalar == Float
+    & ElementaryFunctions & KeyPathIterable
 {
   public typealias Model = Model
   /// The learning rate.
@@ -403,8 +399,7 @@ where
 public class AdaMax<Model: Differentiable & KeyPathIterable>: Optimizer
 where
   Model.TangentVector: VectorProtocol & PointwiseMultiplicative & ElementaryFunctions
-    & KeyPathIterable,
-  Model.TangentVector.VectorSpaceScalar == Float
+    & KeyPathIterable
 {
   public typealias Model = Model
   /// The learning rate.
@@ -489,8 +484,7 @@ where
 public class AMSGrad<Model: Differentiable & KeyPathIterable>: Optimizer
 where
   Model.TangentVector: VectorProtocol & PointwiseMultiplicative & ElementaryFunctions
-    & KeyPathIterable,
-  Model.TangentVector.VectorSpaceScalar == Float
+    & KeyPathIterable
 {
   public typealias Model = Model
   /// The learning rate.
@@ -582,8 +576,7 @@ where
 public class RAdam<Model: Differentiable>: Optimizer
 where
   Model.TangentVector: VectorProtocol & PointwiseMultiplicative & ElementaryFunctions
-    & KeyPathIterable,
-  Model.TangentVector.VectorSpaceScalar == Float
+    & KeyPathIterable
 {
   public typealias Model = Model
   /// The learning rate.
