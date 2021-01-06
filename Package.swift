@@ -44,12 +44,20 @@ let package = Package(
       name: "CTensorFlow",
       dependencies: []),
     .target(
+      name: "CX10Modules",
+      dependencies: []),
+    .target(
       name: "TensorFlow",
       dependencies: [
         "Tensor",
         "PythonKit",
         "CTensorFlow",
+        "CX10Modules",
         .product(name: "Numerics", package: "swift-numerics"),
+      ],
+      swiftSettings: [
+        .define("USING_X10_BACKEND"),
+        .define("DEFAULT_BACKEND_EAGER"),
       ]),
     .target(
       name: "Experimental",
