@@ -307,12 +307,8 @@ extension Tensor {
       array.shape.allSatisfy { $0 <= Int(Int32.max) },
       "Conversion to TensorHandle is undefined when shape dimensions exceed `Int32.max`.")
     if let buffer = array.buffer as? CTensorTensorBuffer<Scalar> {
-      #if USING_X10_BACKEND
-        let tmp = Tensor(handle: TensorHandle(copyingFromCTensor: buffer.cTensor))
-        self = tmp.device == device ? tmp : Tensor(copying: tmp, to: device)
-      #else
-        self = Tensor(handle: TensorHandle(copyingFromCTensor: buffer.cTensor))
-      #endif
+      let tmp = Tensor(handle: TensorHandle(copyingFromCTensor: buffer.cTensor))
+      self = tmp.device == device ? tmp : Tensor(copying: tmp, to: device)
     } else {
       self = array.buffer.withUnsafeBufferPointer { buffer in
         return Tensor(shape: TensorShape(array.shape), scalars: buffer, on: device)

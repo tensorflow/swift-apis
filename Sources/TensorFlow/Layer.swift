@@ -74,12 +74,8 @@ extension Module where Input: TensorProtocol, Output: DifferentiableTensorProtoc
   /// - Returns: The annotated output.
   @differentiable
   public func annotated(_ output: Output) -> Output {
-    #if USING_X10_BACKEND
-      let annotated = output.annotate("type=\(Self.self)")
-      return annotated
-    #else
-      return output
-    #endif
+    let annotated = output.annotate("type=\(Self.self)")
+    return annotated
   }
 
   /// Returns the annotations obtained from applying the layer to the given input.
@@ -96,56 +92,52 @@ extension Module where Input: TensorProtocol, Output: DifferentiableTensorProtoc
   /// - Parameter tensor: The output to the layer.
   /// - Returns: A formatted summary of `tensor.annotations`.
   private func formatAnnotations(from tensor: Output) -> String {
-    #if USING_X10_BACKEND
-      let rawAnnotations = tensor.annotations
-      if rawAnnotations == Device.defaultTFEager.annotationsAvailable {
-        return rawAnnotations
-      }
+    let rawAnnotations = tensor.annotations
+    if rawAnnotations == Device.defaultTFEager.annotationsAvailable {
+      return rawAnnotations
+    }
 
-      let lines = rawAnnotations.components(separatedBy: "\n")
+    let lines = rawAnnotations.components(separatedBy: "\n")
 
-      if lines.count < 3 {
-        return ""
-      }
+    if lines.count < 3 {
+      return ""
+    }
 
-      // Isolate layers.
-      let pattern = "\\s*shape=(.+)\\s+type=([^\\s]+)(\\s+.+=.+)?$"
-      let regex = try! NSRegularExpression(pattern: pattern)
-      let contents = lines.filter { $0.contains("shape=") }
-        .map { line -> String in
-          let nsrange = NSRange(line.startIndex..., in: line)
-          if let match = regex.firstMatch(in: line, range: nsrange) {
-            var content = ""
-            if let typeRange = Range(match.range(at: 2), in: line) {
-              let type = line[typeRange]
-              content += type
-            }
-            content += "\t\t\t"
-            if let shapeRange = Range(match.range(at: 1), in: line) {
-              let shape = line[shapeRange]
-              content += shape
-            }
-            content += "\t\t"
-            if let attributesRange = Range(match.range(at: 3), in: line) {
-              let attribute = line[attributesRange]
-              content += attribute
-            }
-            return content
-          } else {
-            return line
+    // Isolate layers.
+    let pattern = "\\s*shape=(.+)\\s+type=([^\\s]+)(\\s+.+=.+)?$"
+    let regex = try! NSRegularExpression(pattern: pattern)
+    let contents = lines.filter { $0.contains("shape=") }
+      .map { line -> String in
+        let nsrange = NSRange(line.startIndex..., in: line)
+        if let match = regex.firstMatch(in: line, range: nsrange) {
+          var content = ""
+          if let typeRange = Range(match.range(at: 2), in: line) {
+            let type = line[typeRange]
+            content += type
           }
+          content += "\t\t\t"
+          if let shapeRange = Range(match.range(at: 1), in: line) {
+            let shape = line[shapeRange]
+            content += shape
+          }
+          content += "\t\t"
+          if let attributesRange = Range(match.range(at: 3), in: line) {
+            let attribute = line[attributesRange]
+            content += attribute
+          }
+          return content
+        } else {
+          return line
         }
+      }
 
-      let formattedAnnotations = """
-        Layer                           Output Shape         Attributes
-        =============================== ==================== ======================
-        \(contents.joined(separator: "\n"))
-        """
+    let formattedAnnotations = """
+      Layer                           Output Shape         Attributes
+      =============================== ==================== ======================
+      \(contents.joined(separator: "\n"))
+      """
 
-      return formattedAnnotations
-    #else
-      return tensor.annotations
-    #endif
+    return formattedAnnotations
   }
 }
 
