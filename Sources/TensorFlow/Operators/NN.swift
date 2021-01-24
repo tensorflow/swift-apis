@@ -460,9 +460,9 @@ func _vjpConv3DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
 public func depthwiseConv2D<Scalar: TensorFlowFloatingPoint>(
   _ input: Tensor<Scalar>,
   filter: Tensor<Scalar>,
-  strides: (Int, Int, Int, Int),
+  strides: (Int, Int, Int, Int) = (1, 1, 1, 1),
   padding: Padding,
-  dilations: (Int, Int, Int, Int)
+  dilations: (Int, Int, Int, Int) = (1, 1, 1, 1)
 ) -> Tensor<Scalar> {
   precondition(input.shape.rank == 4, "The input must have rank 4.")
   precondition(filter.shape.rank == 4, "The filter must have rank 4.")
@@ -508,9 +508,9 @@ func depthwiseConv2dBackpropInput<Scalar: TensorFlowFloatingPoint>(
   _ x: Tensor<Scalar>,
   shape: Tensor<Int32>,
   filter: Tensor<Scalar>,
-  strides: (Int, Int, Int, Int),
+  strides: (Int, Int, Int, Int) = (1, 1, 1, 1),
   padding: Padding,
-  dilations: (Int, Int, Int, Int)
+  dilations: (Int, Int, Int, Int) = (1, 1, 1, 1)
 ) -> Tensor<Scalar> {
   return _Raw.depthwiseConv2dNativeBackpropInput(
     inputSizes: shape,
@@ -555,9 +555,9 @@ func depthwiseConv2dBackpropFilter<Scalar: TensorFlowFloatingPoint>(
   _ x: Tensor<Scalar>,
   input: Tensor<Scalar>,
   filterSizes: Tensor<Int32>,
-  strides: (Int, Int, Int, Int),
+  strides: (Int, Int, Int, Int) = (1, 1, 1, 1),
   padding: Padding,
-  dilations: (Int, Int, Int, Int)
+  dilations: (Int, Int, Int, Int) = (1, 1, 1, 1)
 ) -> Tensor<Scalar> {
   return _Raw.depthwiseConv2dNativeBackpropFilter(
     input,
