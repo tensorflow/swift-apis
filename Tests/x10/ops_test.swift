@@ -1069,6 +1069,7 @@ final class TensorTests: XCTestCase {
     let kernelSize = 5
     let inputSize = 14
     let batch = 2
+    let dilation = 1
     for useReducedPrecision in [false, true] {
       for stride in 1..<4 {
         for padSame in [false, true] {
@@ -1076,7 +1077,7 @@ final class TensorTests: XCTestCase {
           var filter = Tensor<Float>.rand([kernelSize, kernelSize, inChannels, channelMultiplier])
           let outShape = depthwiseConv2D(
             TF(input), filter: TF(filter), strides: (1, stride, stride, 1),
-            padding: padSame ? Padding.same : Padding.valid
+            padding: padSame ? Padding.same : Padding.valid, dilations: (1, dilation, dilation, 1)
           )
           .shape
           var outGrad = Tensor<Float>.rand(outShape.dimensions)
@@ -1091,13 +1092,13 @@ final class TensorTests: XCTestCase {
               (_ input: Tensor<Float>, _ filter: Tensor<Float>) -> Tensor<Float> in
               depthwiseConv2D(
                 input, filter: filter, strides: (1, stride, stride, 1),
-                padding: padSame ? Padding.same : Padding.valid
+                padding: padSame ? Padding.same : Padding.valid, dilations: (1, dilation, dilation, 1)
               )
             },
             { (_ input: Tensor<Float>, _ filter: Tensor<Float>) -> Tensor<Float> in
               depthwiseConv2D(
                 input, filter: filter, strides: (1, stride, stride, 1),
-                padding: padSame ? Padding.same : Padding.valid
+                padding: padSame ? Padding.same : Padding.valid, dilations: (1, dilation, dilation, 1)
               )
             }, input, filter, outGrad, relTolerance: relTolerance, absTolerance: 1e-4)
         }
