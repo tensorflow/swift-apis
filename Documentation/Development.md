@@ -85,6 +85,8 @@ from source following the instructions in [Option 1](#option-2-build-x10).
 
 - [Windows 10 (x64)][windows10]
 - [macOS (x64)][macOS]
+- [Ubuntu 18.04 (x64, CPU)][ubuntu1804]
+- [Ubuntu 18.04 (x64, CUDA 11)][ubuntu1804cuda11]
 
 Note the location where you extract the prebuilt library. The path to these
 libraries is not fixed and depends on your machine setup.
@@ -415,3 +417,5 @@ $ swift test -Xcc -I/Library/tensorflow-2.4.0/usr/include -Xlinker -L/Library/te
 [bazelisk]: https://github.com/bazelbuild/bazelisk
 [configure.py]: https://github.com/tensorflow/tensorflow/blob/master/configure.py
 [numpy]: https://numpy.org/
+[ubuntu1804]: https://storage.googleapis.com/swift-tensorflow-artifacts/oneoff-builds/tensorflow-ubuntu1804-x86.zip
+[ubuntu1804cuda11]: https://storage.googleapis.com/swift-tensorflow-artifacts/oneoff-builds/tensorflow-ubuntu1804-cuda11-x86.zip
