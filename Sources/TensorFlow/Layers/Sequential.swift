@@ -47,8 +47,7 @@ import _Differentiation
 /// ````
 public struct Sequential<Layer1: Module, Layer2: Layer>: Module
 where
-  Layer1.Output == Layer2.Input,
-  Layer1.TangentVector.VectorSpaceScalar == Layer2.TangentVector.VectorSpaceScalar
+  Layer1.Output == Layer2.Input
 {
   public var layer1: Layer1
   public var layer2: Layer2
@@ -75,45 +74,38 @@ extension Sequential: Layer where Layer1: Layer {
   }
 }
 
+extension Sequential.TangentVector: VectorProtocol {
+  /// - Note: this typealias declaration is necessary for building with old non-stock toolchains
+  ///   where `VectorProtocol.VectorSpaceScalar` is an associated type and not a typealias
+  ///   declaration.
+  typealias VectorSpaceScalar = Float
+}
+
 /// A layer that sequentially composes 3 layers.
 public typealias Sequential3<L1: Module, L2: Layer, L3: Layer> = Sequential<L1, Sequential<L2, L3>>
 where
-  L1.Output == L2.Input, L2.Output == L3.Input,
-  L1.TangentVector.VectorSpaceScalar == L2.TangentVector.VectorSpaceScalar,
-  L2.TangentVector.VectorSpaceScalar == L3.TangentVector.VectorSpaceScalar
+  L1.Output == L2.Input, L2.Output == L3.Input
 
 /// A layer that sequentially composes 4 layers.
 public typealias Sequential4<L1: Module, L2: Layer, L3: Layer, L4: Layer> = Sequential<
   L1, Sequential<L2, Sequential<L3, L4>>
 >
 where
-  L1.Output == L2.Input, L2.Output == L3.Input, L3.Output == L4.Input,
-  L1.TangentVector.VectorSpaceScalar == L2.TangentVector.VectorSpaceScalar,
-  L2.TangentVector.VectorSpaceScalar == L3.TangentVector.VectorSpaceScalar,
-  L3.TangentVector.VectorSpaceScalar == L4.TangentVector.VectorSpaceScalar
+  L1.Output == L2.Input, L2.Output == L3.Input, L3.Output == L4.Input
 
 /// A layer that sequentially composes 5 layers.
 public typealias Sequential5<L1: Module, L2: Layer, L3: Layer, L4: Layer, L5: Layer> = Sequential<
   L1, Sequential<L2, Sequential<L3, Sequential<L4, L5>>>
 >
 where
-  L1.Output == L2.Input, L2.Output == L3.Input, L3.Output == L4.Input, L4.Output == L5.Input,
-  L1.TangentVector.VectorSpaceScalar == L2.TangentVector.VectorSpaceScalar,
-  L2.TangentVector.VectorSpaceScalar == L3.TangentVector.VectorSpaceScalar,
-  L3.TangentVector.VectorSpaceScalar == L4.TangentVector.VectorSpaceScalar,
-  L4.TangentVector.VectorSpaceScalar == L5.TangentVector.VectorSpaceScalar
+  L1.Output == L2.Input, L2.Output == L3.Input, L3.Output == L4.Input, L4.Output == L5.Input
 
 /// A layer that sequentially composes 6 layers.
 public typealias Sequential6<L1: Module, L2: Layer, L3: Layer, L4: Layer, L5: Layer, L6: Layer> =
   Sequential<L1, Sequential<L2, Sequential<L3, Sequential<L4, Sequential<L5, L6>>>>>
 where
   L1.Output == L2.Input, L2.Output == L3.Input, L3.Output == L4.Input, L4.Output == L5.Input,
-  L5.Output == L6.Input,
-  L1.TangentVector.VectorSpaceScalar == L2.TangentVector.VectorSpaceScalar,
-  L2.TangentVector.VectorSpaceScalar == L3.TangentVector.VectorSpaceScalar,
-  L3.TangentVector.VectorSpaceScalar == L4.TangentVector.VectorSpaceScalar,
-  L4.TangentVector.VectorSpaceScalar == L5.TangentVector.VectorSpaceScalar,
-  L5.TangentVector.VectorSpaceScalar == L6.TangentVector.VectorSpaceScalar
+  L5.Output == L6.Input
 
 /// A layer that sequentially composes 7 layers.
 public typealias Sequential7<
@@ -123,13 +115,7 @@ public typealias Sequential7<
 >
 where
   L1.Output == L2.Input, L2.Output == L3.Input, L3.Output == L4.Input, L4.Output == L5.Input,
-  L5.Output == L6.Input, L6.Output == L7.Input,
-  L1.TangentVector.VectorSpaceScalar == L2.TangentVector.VectorSpaceScalar,
-  L2.TangentVector.VectorSpaceScalar == L3.TangentVector.VectorSpaceScalar,
-  L3.TangentVector.VectorSpaceScalar == L4.TangentVector.VectorSpaceScalar,
-  L4.TangentVector.VectorSpaceScalar == L5.TangentVector.VectorSpaceScalar,
-  L5.TangentVector.VectorSpaceScalar == L6.TangentVector.VectorSpaceScalar,
-  L6.TangentVector.VectorSpaceScalar == L7.TangentVector.VectorSpaceScalar
+  L5.Output == L6.Input, L6.Output == L7.Input
 
 /// A layer that sequentially composes 8 layers.
 public typealias Sequential8<
@@ -140,14 +126,7 @@ public typealias Sequential8<
 >
 where
   L1.Output == L2.Input, L2.Output == L3.Input, L3.Output == L4.Input, L4.Output == L5.Input,
-  L5.Output == L6.Input, L6.Output == L7.Input, L7.Output == L8.Input,
-  L1.TangentVector.VectorSpaceScalar == L2.TangentVector.VectorSpaceScalar,
-  L2.TangentVector.VectorSpaceScalar == L3.TangentVector.VectorSpaceScalar,
-  L3.TangentVector.VectorSpaceScalar == L4.TangentVector.VectorSpaceScalar,
-  L4.TangentVector.VectorSpaceScalar == L5.TangentVector.VectorSpaceScalar,
-  L5.TangentVector.VectorSpaceScalar == L6.TangentVector.VectorSpaceScalar,
-  L6.TangentVector.VectorSpaceScalar == L7.TangentVector.VectorSpaceScalar,
-  L7.TangentVector.VectorSpaceScalar == L8.TangentVector.VectorSpaceScalar
+  L5.Output == L6.Input, L6.Output == L7.Input, L7.Output == L8.Input
 
 /// A layer that sequentially composes 9 layers.
 public typealias Sequential9<
@@ -163,15 +142,7 @@ public typealias Sequential9<
 >
 where
   L1.Output == L2.Input, L2.Output == L3.Input, L3.Output == L4.Input, L4.Output == L5.Input,
-  L5.Output == L6.Input, L6.Output == L7.Input, L7.Output == L8.Input, L8.Output == L9.Input,
-  L1.TangentVector.VectorSpaceScalar == L2.TangentVector.VectorSpaceScalar,
-  L2.TangentVector.VectorSpaceScalar == L3.TangentVector.VectorSpaceScalar,
-  L3.TangentVector.VectorSpaceScalar == L4.TangentVector.VectorSpaceScalar,
-  L4.TangentVector.VectorSpaceScalar == L5.TangentVector.VectorSpaceScalar,
-  L5.TangentVector.VectorSpaceScalar == L6.TangentVector.VectorSpaceScalar,
-  L6.TangentVector.VectorSpaceScalar == L7.TangentVector.VectorSpaceScalar,
-  L7.TangentVector.VectorSpaceScalar == L8.TangentVector.VectorSpaceScalar,
-  L8.TangentVector.VectorSpaceScalar == L9.TangentVector.VectorSpaceScalar
+  L5.Output == L6.Input, L6.Output == L7.Input, L7.Output == L8.Input, L8.Output == L9.Input
 
 /// A layer that sequentially composes 10 layers.
 public typealias Sequential10<
@@ -192,16 +163,7 @@ public typealias Sequential10<
 where
   L1.Output == L2.Input, L2.Output == L3.Input, L3.Output == L4.Input, L4.Output == L5.Input,
   L5.Output == L6.Input, L6.Output == L7.Input, L7.Output == L8.Input, L8.Output == L9.Input,
-  L9.Output == L10.Input,
-  L1.TangentVector.VectorSpaceScalar == L2.TangentVector.VectorSpaceScalar,
-  L2.TangentVector.VectorSpaceScalar == L3.TangentVector.VectorSpaceScalar,
-  L3.TangentVector.VectorSpaceScalar == L4.TangentVector.VectorSpaceScalar,
-  L4.TangentVector.VectorSpaceScalar == L5.TangentVector.VectorSpaceScalar,
-  L5.TangentVector.VectorSpaceScalar == L6.TangentVector.VectorSpaceScalar,
-  L6.TangentVector.VectorSpaceScalar == L7.TangentVector.VectorSpaceScalar,
-  L7.TangentVector.VectorSpaceScalar == L8.TangentVector.VectorSpaceScalar,
-  L8.TangentVector.VectorSpaceScalar == L9.TangentVector.VectorSpaceScalar,
-  L9.TangentVector.VectorSpaceScalar == L10.TangentVector.VectorSpaceScalar
+  L9.Output == L10.Input
 
 @resultBuilder
 public struct LayerBuilder {
@@ -218,9 +180,7 @@ public struct LayerBuilder {
     -> Sequential<L1, Sequential<L2, L3>>
   where
     L1.Output == L2.Input,
-    L2.Output == L3.Input,
-    L1.TangentVector.VectorSpaceScalar == L2.TangentVector.VectorSpaceScalar,
-    L2.TangentVector.VectorSpaceScalar == L3.TangentVector.VectorSpaceScalar
+    L2.Output == L3.Input
   {
     Sequential(l1, Sequential(l2, l3))
   }
@@ -235,10 +195,7 @@ public struct LayerBuilder {
   where
     L1.Output == L2.Input,
     L2.Output == L3.Input,
-    L3.Output == L4.Input,
-    L1.TangentVector.VectorSpaceScalar == L2.TangentVector.VectorSpaceScalar,
-    L2.TangentVector.VectorSpaceScalar == L3.TangentVector.VectorSpaceScalar,
-    L3.TangentVector.VectorSpaceScalar == L4.TangentVector.VectorSpaceScalar
+    L3.Output == L4.Input
   {
     Sequential(l1, Sequential(l2, Sequential(l3, l4)))
   }
@@ -255,11 +212,7 @@ public struct LayerBuilder {
     L1.Output == L2.Input,
     L2.Output == L3.Input,
     L3.Output == L4.Input,
-    L4.Output == L5.Input,
-    L1.TangentVector.VectorSpaceScalar == L2.TangentVector.VectorSpaceScalar,
-    L2.TangentVector.VectorSpaceScalar == L3.TangentVector.VectorSpaceScalar,
-    L3.TangentVector.VectorSpaceScalar == L4.TangentVector.VectorSpaceScalar,
-    L4.TangentVector.VectorSpaceScalar == L5.TangentVector.VectorSpaceScalar
+    L4.Output == L5.Input
   {
     Sequential(l1, Sequential(l2, Sequential(l3, Sequential(l4, l5))))
   }
@@ -278,12 +231,7 @@ public struct LayerBuilder {
     L2.Output == L3.Input,
     L3.Output == L4.Input,
     L4.Output == L5.Input,
-    L5.Output == L6.Input,
-    L1.TangentVector.VectorSpaceScalar == L2.TangentVector.VectorSpaceScalar,
-    L2.TangentVector.VectorSpaceScalar == L3.TangentVector.VectorSpaceScalar,
-    L3.TangentVector.VectorSpaceScalar == L4.TangentVector.VectorSpaceScalar,
-    L4.TangentVector.VectorSpaceScalar == L5.TangentVector.VectorSpaceScalar,
-    L5.TangentVector.VectorSpaceScalar == L6.TangentVector.VectorSpaceScalar
+    L5.Output == L6.Input
   {
     Sequential(l1, Sequential(l2, Sequential(l3, Sequential(l4, Sequential(l5, l6)))))
   }
@@ -306,13 +254,7 @@ public struct LayerBuilder {
     L3.Output == L4.Input,
     L4.Output == L5.Input,
     L5.Output == L6.Input,
-    L6.Output == L7.Input,
-    L1.TangentVector.VectorSpaceScalar == L2.TangentVector.VectorSpaceScalar,
-    L2.TangentVector.VectorSpaceScalar == L3.TangentVector.VectorSpaceScalar,
-    L3.TangentVector.VectorSpaceScalar == L4.TangentVector.VectorSpaceScalar,
-    L4.TangentVector.VectorSpaceScalar == L5.TangentVector.VectorSpaceScalar,
-    L5.TangentVector.VectorSpaceScalar == L6.TangentVector.VectorSpaceScalar,
-    L6.TangentVector.VectorSpaceScalar == L7.TangentVector.VectorSpaceScalar
+    L6.Output == L7.Input
   {
     Sequential(
       l1, Sequential(l2, Sequential(l3, Sequential(l4, Sequential(l5, Sequential(l6, l7))))))
@@ -341,14 +283,7 @@ public struct LayerBuilder {
     L4.Output == L5.Input,
     L5.Output == L6.Input,
     L6.Output == L7.Input,
-    L7.Output == L8.Input,
-    L1.TangentVector.VectorSpaceScalar == L2.TangentVector.VectorSpaceScalar,
-    L2.TangentVector.VectorSpaceScalar == L3.TangentVector.VectorSpaceScalar,
-    L3.TangentVector.VectorSpaceScalar == L4.TangentVector.VectorSpaceScalar,
-    L4.TangentVector.VectorSpaceScalar == L5.TangentVector.VectorSpaceScalar,
-    L5.TangentVector.VectorSpaceScalar == L6.TangentVector.VectorSpaceScalar,
-    L6.TangentVector.VectorSpaceScalar == L7.TangentVector.VectorSpaceScalar,
-    L7.TangentVector.VectorSpaceScalar == L8.TangentVector.VectorSpaceScalar
+    L7.Output == L8.Input
   {
     Sequential(
       l1,
@@ -384,15 +319,7 @@ public struct LayerBuilder {
     L5.Output == L6.Input,
     L6.Output == L7.Input,
     L7.Output == L8.Input,
-    L8.Output == L9.Input,
-    L1.TangentVector.VectorSpaceScalar == L2.TangentVector.VectorSpaceScalar,
-    L2.TangentVector.VectorSpaceScalar == L3.TangentVector.VectorSpaceScalar,
-    L3.TangentVector.VectorSpaceScalar == L4.TangentVector.VectorSpaceScalar,
-    L4.TangentVector.VectorSpaceScalar == L5.TangentVector.VectorSpaceScalar,
-    L5.TangentVector.VectorSpaceScalar == L6.TangentVector.VectorSpaceScalar,
-    L6.TangentVector.VectorSpaceScalar == L7.TangentVector.VectorSpaceScalar,
-    L7.TangentVector.VectorSpaceScalar == L8.TangentVector.VectorSpaceScalar,
-    L8.TangentVector.VectorSpaceScalar == L9.TangentVector.VectorSpaceScalar
+    L8.Output == L9.Input
   {
     Sequential(
       l1,
@@ -438,16 +365,7 @@ public struct LayerBuilder {
     L6.Output == L7.Input,
     L7.Output == L8.Input,
     L8.Output == L9.Input,
-    L9.Output == L10.Input,
-    L1.TangentVector.VectorSpaceScalar == L2.TangentVector.VectorSpaceScalar,
-    L2.TangentVector.VectorSpaceScalar == L3.TangentVector.VectorSpaceScalar,
-    L3.TangentVector.VectorSpaceScalar == L4.TangentVector.VectorSpaceScalar,
-    L4.TangentVector.VectorSpaceScalar == L5.TangentVector.VectorSpaceScalar,
-    L5.TangentVector.VectorSpaceScalar == L6.TangentVector.VectorSpaceScalar,
-    L6.TangentVector.VectorSpaceScalar == L7.TangentVector.VectorSpaceScalar,
-    L7.TangentVector.VectorSpaceScalar == L8.TangentVector.VectorSpaceScalar,
-    L8.TangentVector.VectorSpaceScalar == L9.TangentVector.VectorSpaceScalar,
-    L9.TangentVector.VectorSpaceScalar == L10.TangentVector.VectorSpaceScalar
+    L9.Output == L10.Input
   {
     Sequential(
       l1,

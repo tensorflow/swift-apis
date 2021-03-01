@@ -38,8 +38,7 @@ import Numerics
 /// (Nesterov, 1983)
 public class SGD<Model: Differentiable>: Optimizer
 where
-  Model.TangentVector: VectorProtocol & ElementaryFunctions & KeyPathIterable,
-  Model.TangentVector.VectorSpaceScalar == Float
+  Model.TangentVector: VectorProtocol & ElementaryFunctions & KeyPathIterable
 {
   public typealias Model = Model
   /// The learning rate.
