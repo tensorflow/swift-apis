@@ -38,14 +38,14 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
   @noDerivative private let useBias: Bool
 
   /// The element-wise activation function type.
-  public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
+  public typealias Activation = @differentiable(reverse) (Tensor<Scalar>) -> Tensor<Scalar>
 
   /// Creates an instance from the given weight, optional bias, and activation function.
   ///
   /// - Note: currently, `weight` is the only differentiability parameter. `bias` can be made a
   ///   differentiability parameter after `Optional` conditionally conforms to `Differentiable`:
   ///   TF-499.
-  @differentiable(wrt: weight)
+  @differentiable(reverse, wrt: weight)
   public init(
     weight: Tensor<Scalar>,
     bias: Tensor<Scalar>? = nil,
@@ -77,8 +77,7 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
   ///
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
-  @differentiable
-  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  @differentiable(reverse)  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     if batched {
       let hidden = matmul(input.expandingShape(at: 1), weight).squeezingShape(at: 1)
       return activation(useBias ? hidden + bias : hidden)

@@ -26,8 +26,7 @@ struct Model2: Layer {
   var multiply2: Multiply = Multiply(coefficient: 2)
   // ###sourceLocation(file: "/usr/local/google/home/marcrasi/git/swift-apis/Tests/TensorFlowTests/SequencedTests.swift.gyb", line: 25)
 
-  @differentiable
-  func callAsFunction(_ input: Float) -> Float {
+  @differentiable(reverse)  func callAsFunction(_ input: Float) -> Float {
     input.sequenced(
       through: multiply1, multiply2
     )
@@ -43,8 +42,7 @@ struct Model3: Layer {
   var multiply3: Multiply = Multiply(coefficient: 3)
   // ###sourceLocation(file: "/usr/local/google/home/marcrasi/git/swift-apis/Tests/TensorFlowTests/SequencedTests.swift.gyb", line: 25)
 
-  @differentiable
-  func callAsFunction(_ input: Float) -> Float {
+  @differentiable(reverse)  func callAsFunction(_ input: Float) -> Float {
     input.sequenced(
       through: multiply1, multiply2, multiply3
     )
@@ -62,8 +60,7 @@ struct Model4: Layer {
   var multiply4: Multiply = Multiply(coefficient: 4)
   // ###sourceLocation(file: "/usr/local/google/home/marcrasi/git/swift-apis/Tests/TensorFlowTests/SequencedTests.swift.gyb", line: 25)
 
-  @differentiable
-  func callAsFunction(_ input: Float) -> Float {
+  @differentiable(reverse)  func callAsFunction(_ input: Float) -> Float {
     input.sequenced(
       through: multiply1, multiply2, multiply3, multiply4
     )
@@ -83,8 +80,7 @@ struct Model5: Layer {
   var multiply5: Multiply = Multiply(coefficient: 5)
   // ###sourceLocation(file: "/usr/local/google/home/marcrasi/git/swift-apis/Tests/TensorFlowTests/SequencedTests.swift.gyb", line: 25)
 
-  @differentiable
-  func callAsFunction(_ input: Float) -> Float {
+  @differentiable(reverse)  func callAsFunction(_ input: Float) -> Float {
     input.sequenced(
       through: multiply1, multiply2, multiply3, multiply4, multiply5
     )
@@ -106,8 +102,7 @@ struct Model6: Layer {
   var multiply6: Multiply = Multiply(coefficient: 6)
   // ###sourceLocation(file: "/usr/local/google/home/marcrasi/git/swift-apis/Tests/TensorFlowTests/SequencedTests.swift.gyb", line: 25)
 
-  @differentiable
-  func callAsFunction(_ input: Float) -> Float {
+  @differentiable(reverse)  func callAsFunction(_ input: Float) -> Float {
     input.sequenced(
       through: multiply1, multiply2, multiply3, multiply4, multiply5, multiply6
     )

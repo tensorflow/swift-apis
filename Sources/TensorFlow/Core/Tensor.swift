@@ -40,12 +40,12 @@ public struct Tensor<Scalar: TensorFlowScalar> {
   @usableFromInline
   internal var _isScalarZero = false
 
-  /// An internal workaround for SR-13263: debug info generation crash.
-  @usableFromInline
-  class SR13263Workaround {}
+  // /// An internal workaround for SR-13263: debug info generation crash.
+  // @usableFromInline
+  // class SR13263Workaround {}
 
-  /// An internal workaround for SR-13263: debug info generation crash.
-  internal var _sr13263Workaround: SR13263Workaround?
+  // /// An internal workaround for SR-13263: debug info generation crash.
+  // internal var _sr13263Workaround: SR13263Workaround?
   
   @inlinable
   public init(handle: TensorHandle<Scalar>) {
@@ -132,7 +132,7 @@ extension Tensor {
   /// Reshape to scalar.
   /// - Precondition: The tensor has exactly one scalar.
   @inlinable
-  @differentiable(where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse where Scalar: TensorFlowFloatingPoint)
   public func scalarized() -> Scalar {
     precondition(
       shape.contiguousSize == 1,
@@ -174,7 +174,7 @@ extension Tensor {
     return handle.makeHostCopy()
   }
 
-  @differentiable(where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse where Scalar: TensorFlowFloatingPoint)
   public var scalars: [Scalar] {
     if handle.backend == .XLA {
       let (storage, _) = xlaTensor.fetchTensorValues(Scalar.self)
@@ -203,7 +203,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
 
 extension Tensor {
   /// Creates a 0-D tensor from a scalar value.
-  @differentiable(where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse where Scalar: TensorFlowFloatingPoint)
   public init(_ value: Scalar, on device: Device = .default) {
     switch device.backend {
     case .XLA:
@@ -227,7 +227,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
 extension Tensor {
   /// Creates a 1D tensor from scalars.
   @inlinable
-  @differentiable(where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse where Scalar: TensorFlowFloatingPoint)
   public init(_ scalars: [Scalar], on device: Device = .default) {
     self.init(shape: [scalars.count], scalars: scalars, on: device)
   }
@@ -247,7 +247,7 @@ extension Tensor {
   ///   - scalars: The scalar contents of the tensor.
   /// - Precondition: The product of the dimensions of the shape must equal the number of scalars.
   @inlinable
-  @differentiable(where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse where Scalar: TensorFlowFloatingPoint)
   public init(shape: TensorShape, scalars: [Scalar], on device: Device = .default) {
     precondition(
       shape.contiguousSize == scalars.count,
@@ -628,7 +628,7 @@ extension Tensor: AdditiveArithmetic where Scalar: Numeric {
   /// Adds two tensors and produces their sum.
   /// - Note: `+` supports broadcasting.
   @inlinable
-  @differentiable(where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse where Scalar: TensorFlowFloatingPoint)
   public static func + (lhs: Tensor, rhs: Tensor) -> Tensor {
     if lhs._isScalarZero {
       return rhs
@@ -641,7 +641,7 @@ extension Tensor: AdditiveArithmetic where Scalar: Numeric {
   /// Subtracts one tensor from another and produces their difference.
   /// - Note: `-` supports broadcasting.
   @inlinable
-  @differentiable(where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse where Scalar: TensorFlowFloatingPoint)
   public static func - (lhs: Tensor, rhs: Tensor) -> Tensor {
     if rhs._isScalarZero {
       return lhs
@@ -745,7 +745,7 @@ public protocol TensorProtocol {
 public protocol DifferentiableTensorProtocol:
   TensorProtocol & Differentiable & EuclideanDifferentiable
 where Scalar: TensorFlowFloatingPoint {
-  @differentiable(wrt: self)
+  @differentiable(reverse, wrt: self)
   func annotate(_ annotation: String) -> Self
 }
 
@@ -773,7 +773,7 @@ where Scalar: TensorFlowFloatingPoint {
   ///
   /// - Parameter annotation: The annotation to be added.
   /// - Returns: The annotated tensor.
-  @differentiable(wrt: self)
+  @differentiable(reverse, wrt: self)
   public func annotate(_ annotation: String) -> Tensor<Scalar> {
     switch handle.backend {
     case .XLA:

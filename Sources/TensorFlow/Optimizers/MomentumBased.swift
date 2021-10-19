@@ -80,7 +80,7 @@ where
     let learningRate = self.learningRate * 1 / (1 + decay * Float(step))
     alpha = alpha.scaled(by: rho) + (direction .* direction).scaled(by: 1 - rho)
     let denominator = Model.TangentVector.sqrt(alpha).adding(epsilon)
-    model.move(along: (direction ./ denominator).scaled(by: -learningRate))
+    model.move(by: (direction ./ denominator).scaled(by: -learningRate))
   }
 
   public required init(copying other: RMSProp, to device: Device) {
@@ -145,7 +145,7 @@ where
   public func update(_ model: inout Model, along direction: Model.TangentVector) {
     accumulator = accumulator + (direction .* direction)
     let denominator = Model.TangentVector.sqrt(accumulator).adding(epsilon)
-    model.move(along: (direction ./ denominator).scaled(by: -learningRate))
+    model.move(by: (direction ./ denominator).scaled(by: -learningRate))
   }
 
   public required init(copying other: AdaGrad, to device: Device) {
@@ -221,7 +221,7 @@ where
       averageSquared.scaled(by: rho) + (direction .* direction).scaled(by: 1 - rho)
     var stepSize = direction .* Model.TangentVector.sqrt(accumulatedDelta.adding(epsilon))
     stepSize ./= Model.TangentVector.sqrt(averageSquared.adding(epsilon))
-    model.move(along: stepSize.scaled(by: -learningRate))
+    model.move(by: stepSize.scaled(by: -learningRate))
     accumulatedDelta =
       accumulatedDelta.scaled(by: rho) + (stepSize .* stepSize).scaled(by: 1 - rho)
   }
@@ -379,7 +379,7 @@ where
     secondMoments =
       secondMoments.scaled(by: beta2) + (direction .* direction).scaled(by: 1 - beta2)
     let denominator = Model.TangentVector.sqrt(secondMoments).adding(epsilon)
-    model.move(along: (firstMoments ./ denominator).scaled(by: -stepSize))
+    model.move(by: (firstMoments ./ denominator).scaled(by: -stepSize))
   }
 
   public required init(copying other: Adam, to device: Device) {
@@ -464,7 +464,7 @@ where
     }
 
     let denominator = infinityNorm.adding(epsilon)
-    model.move(along: (firstMoments ./ denominator).scaled(by: -stepSize))
+    model.move(by: (firstMoments ./ denominator).scaled(by: -stepSize))
   }
 
   public required init(copying other: AdaMax, to device: Device) {
@@ -556,7 +556,7 @@ where
     }
 
     let denominator = Model.TangentVector.sqrt(secondMomentsMax).adding(epsilon)
-    model.move(along: (firstMoments ./ denominator).scaled(by: -stepSize))
+    model.move(by: (firstMoments ./ denominator).scaled(by: -stepSize))
   }
 
   public required init(copying other: AMSGrad, to device: Device) {
@@ -643,11 +643,11 @@ where
           (N_sma_t - 4) * (N_sma_t - 2) * N_sma_inf
             / ((N_sma_inf - 4) * (N_sma_inf - 2) * (N_sma_t))) * learningRate / (1 - beta1Power)
       model.move(
-        along: (firstMoments ./ secondMoments_h).scaled(by: -stepSize * sqrtf(1 - beta2Power)))
+        by: (firstMoments ./ secondMoments_h).scaled(by: -stepSize * sqrtf(1 - beta2Power)))
     } else {
       // Update with un-adapted momentum.
       let stepSize = learningRate / (1 - beta1Power)
-      model.move(along: firstMoments.scaled(by: -stepSize))
+      model.move(by: firstMoments.scaled(by: -stepSize))
     }
   }
 

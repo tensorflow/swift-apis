@@ -30,15 +30,15 @@ private func TF(_ range: TensorRange) -> TensorRange {
 }
 
 private func assertEqualUnaryOperationGradients(
-  _ xlaOp: @differentiable (Tensor<Float>) -> Tensor<Float>,
-  _ tensorFlowOp: @differentiable (Tensor<Float>) -> Tensor<Float>,
+  _ xlaOp: @differentiable(reverse) (Tensor<Float>) -> Tensor<Float>,
+  _ tensorFlowOp: @differentiable(reverse) (Tensor<Float>) -> Tensor<Float>,
   _ x: Tensor<Float>,
   _ outGrad: Tensor<Float>,
   relTolerance: Float = 1e-5,
   absTolerance: Float = 1e-7,
   file: StaticString = #file, line: UInt = #line
 ) {
-  var (actual, actualPullback) = valueWithPullback(at: x, in: xlaOp)
+  var (actual, actualPullback) = valueWithPullback(at: x, of: xlaOp)
   let useReducedPrecision = x.isReducedPrecision
   if useReducedPrecision {
     XCTAssert(outGrad.isReducedPrecision)
@@ -46,7 +46,7 @@ private func assertEqualUnaryOperationGradients(
     actual = actual.toFullPrecision
   }
   XCTAssert(!actual.isReducedPrecision)
-  let (expected, expectedPullback) = valueWithPullback(at: TF(x), in: tensorFlowOp)
+  let (expected, expectedPullback) = valueWithPullback(at: TF(x), of: tensorFlowOp)
   XCTAssert(
     allClose(
       actual: TF(actual), expected: expected, relTolerance: relTolerance, absTolerance: absTolerance
@@ -65,8 +65,8 @@ private func assertEqualUnaryOperationGradients(
 }
 
 private func assertEqualBinaryOperationGradients(
-  _ xlaOp: @differentiable (Tensor<Float>, Tensor<Float>) -> Tensor<Float>,
-  _ tensorFlowOp: @differentiable (Tensor<Float>, Tensor<Float>) -> Tensor<Float>,
+  _ xlaOp: @differentiable(reverse) (Tensor<Float>, Tensor<Float>) -> Tensor<Float>,
+  _ tensorFlowOp: @differentiable(reverse) (Tensor<Float>, Tensor<Float>) -> Tensor<Float>,
   _ x: Tensor<Float>,
   _ y: Tensor<Float>,
   _ outGrad: Tensor<Float>,
@@ -74,7 +74,7 @@ private func assertEqualBinaryOperationGradients(
   absTolerance: Float = 1e-7,
   file: StaticString = #file, line: UInt = #line
 ) {
-  var (actual, actualPullback) = valueWithPullback(at: x, y, in: xlaOp)
+  var (actual, actualPullback) = valueWithPullback(at: x, y, of: xlaOp)
   let useReducedPrecision = x.isReducedPrecision
   if useReducedPrecision {
     XCTAssert(y.isReducedPrecision)
@@ -83,7 +83,7 @@ private func assertEqualBinaryOperationGradients(
     actual = actual.toFullPrecision
   }
   XCTAssert(!actual.isReducedPrecision)
-  let (expected, expectedPullback) = valueWithPullback(at: TF(x), TF(y), in: tensorFlowOp)
+  let (expected, expectedPullback) = valueWithPullback(at: TF(x), TF(y), of: tensorFlowOp)
   XCTAssert(
     allClose(
       actual: TF(actual), expected: expected, relTolerance: relTolerance, absTolerance: absTolerance

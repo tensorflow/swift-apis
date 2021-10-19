@@ -16,7 +16,7 @@ import XCTest
 
 @testable import TensorFlow
 
-let cube: @differentiable (Tensor<Float>) -> Tensor<Float> = { ($0 * $0 * $0) }
+let cube: @differentiable(reverse) (Tensor<Float>) -> Tensor<Float> = { ($0 * $0 * $0) }
 
 final class TensorAutoDiffTests: XCTestCase {
   func testSimpleGrad() {
@@ -645,7 +645,7 @@ final class TensorAutoDiffTests: XCTestCase {
   }
 
   func testSideEffects() {
-    let foo: @differentiable (Tensor<Float>) -> Tensor<Float> = { x in
+    let foo: @differentiable(reverse) (Tensor<Float>) -> Tensor<Float> = { x in
       var a = x
       a = a + x
       a = a + x

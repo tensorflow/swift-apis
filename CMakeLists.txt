@@ -118,7 +118,7 @@ if(ENABLE_PYTHON_SUPPORT)
     GIT_REPOSITORY
       git://github.com/pvieito/PythonKit
     GIT_TAG
-      master
+      6a05a15
     CMAKE_ARGS
       -D BUILD_SHARED_LIBS=YES
       -D CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

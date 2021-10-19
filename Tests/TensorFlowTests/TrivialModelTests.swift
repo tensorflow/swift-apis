@@ -32,8 +32,7 @@ final class TrivialModelTests: XCTestCase {
           activation: relu,
           weightInitializer: glorotUniform(seed: (0xffeffe, 0xfffe)))
       }
-      @differentiable
-      func callAsFunction(_ input: Tensor<Float>) -> Tensor<Float> {
+      @differentiable(reverse)      func callAsFunction(_ input: Tensor<Float>) -> Tensor<Float> {
         let h1 = l1(input)
         return l2(h1)
       }

@@ -20,7 +20,7 @@ import _Differentiation
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
   /// Computes dropout given a probability.
-  @differentiable(wrt: self where Scalar: Differentiable)
+  @differentiable(reverse, wrt: self where Scalar: Differentiable)
   fileprivate func droppingOut(probability: Double) -> Tensor {
     let noise = Tensor(randomUniform: shape, on: device)
     let keepMask = noise .>= Scalar(probability)
@@ -54,8 +54,7 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   ///
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
-  @differentiable
-  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  @differentiable(reverse)  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     switch Context.local.learningPhase {
     case .training:
       return input.droppingOut(probability: probability)
@@ -81,8 +80,7 @@ public struct GaussianNoise<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer
   }
 
   /// Returns a tensor obtained by adding noise to `input`
-  @differentiable
-  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  @differentiable(reverse)  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     switch Context.local.learningPhase {
     case .training:
       let noise = Tensor<Scalar>(
@@ -118,8 +116,7 @@ public struct GaussianDropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
   }
 
   /// Applies multiplicative 1-centered Gaussian noise to the input during training only.
-  @differentiable
-  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  @differentiable(reverse)  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     switch Context.local.learningPhase {
     case .training:
       let noise = Tensor<Scalar>(
@@ -158,8 +155,7 @@ public struct AlphaDropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
   }
 
   /// Adds noise to `input` during training, and is a no-op during inference.
-  @differentiable
-  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  @differentiable(reverse)  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     switch Context.local.learningPhase {
     case .training:
       let alpha = 1.6732632423543772848170429916717

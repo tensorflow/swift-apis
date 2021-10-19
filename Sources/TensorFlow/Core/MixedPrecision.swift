@@ -153,7 +153,7 @@ extension Tensor {
 
   /// Promotes a scalar to a tensor with the same device and precision as the given tensor.
   // TODO (SR-12968): Mark `tensor` with `@noDerivative` and remove custom vjp below.
-  @differentiable(where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse where Scalar: TensorFlowFloatingPoint)
   public init(_ value: Scalar, deviceAndPrecisionLike tensor: Tensor) {
     let device = tensor.device
     let tmp = Tensor(value, on: device)

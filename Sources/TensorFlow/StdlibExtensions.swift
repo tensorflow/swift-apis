@@ -201,7 +201,7 @@ where Element: Differentiable & ElementaryFunctions {
   /// For real types, if `x` is negative the result is NaN, even if `y` has
   /// an integral value. For complex types, there is a branch cut on the
   /// negative real axis.
-  public static func pow(_ x: Self, _ y: Self) -> Self { .init(zip(x, y).map(Element.pow)) }
+  // public static func pow(_ x: Self, _ y: Self) -> Self { .init(zip(x, y).map({ (x,y) -> Element in Element.pow(x,y)})) }
 
   /// `x` raised to the `n`th power.
   ///
@@ -232,6 +232,17 @@ where Element: Differentiable {
   public subscript(position: Array<Element>.Index) -> Element {
     _read { yield base[position] }
     set { base[position] = newValue }
+  }
+
+  @inlinable
+  public subscript(bounds: Range<Array<Element>.Index>) -> Self.SubSequence {
+    _read { yield base[bounds] }
+    set { base[bounds] = newValue }
+  }
+
+  @inlinable
+  public mutating func replaceSubrange<C>(_ subrange: Range<Self.Index>, with newElements: C) where C : Collection, Self.Element == C.Element {
+    fatalError("withUnsafeBufferPointer unimplemented because TensorBuffer is abstract")
   }
 
   @inlinable
@@ -288,20 +299,56 @@ where Element: Differentiable & PointwiseMultiplicative {
 
   public var reciprocal: Self { .init(map { $0.reciprocal }) }
 
-  public static func .* (lhs: Self, rhs: Self) -> Self {
-    precondition(lhs.count == rhs.count, "Count mismatch: \(lhs.count) and \(rhs.count)")
-    return .init(zip(lhs, rhs).map(.*))
-  }
+  // public static func .* (lhs: Self, rhs: Self) -> Self {
+  //   precondition(lhs.count == rhs.count, "Count mismatch: \(lhs.count) and \(rhs.count)")
+  //   return .init(zip(lhs, rhs).map(.*))
+  // }
 
-  public static func .*= (lhs: inout Self, rhs: Self) {
-    precondition(lhs.count == rhs.count, "Count mismatch: \(lhs.count) and \(rhs.count)")
-    for (i, x) in zip(lhs.indices, rhs) {
-      lhs[i] .*= x
-    }
-  }
+  // public static func .*= (lhs: inout Self, rhs: Self) {
+  //   precondition(lhs.count == rhs.count, "Count mismatch: \(lhs.count) and \(rhs.count)")
+  //   for (i, x) in zip(lhs.indices, rhs) {
+  //     lhs[i] .*= x
+  //   }
+  // }
 }
 
 extension Collection {
   /// Returns the `n`th position in `self`.
   func index(atOffset n: Int) -> Index { index(startIndex, offsetBy: n) }
+}
+
+/// Applies the given closure `body` to `x`. When used in a context where `x` is
+/// being differentiated with respect to, this function will not produce any
+/// derivative at `x`.
+// FIXME: Support throws-rethrows.
+@inlinable
+@inline(__always)
+@_semantics("autodiff.nonvarying")
+public func withoutDerivative<T, R>(at x: T, in body: (T) -> R) -> R {
+  body(x)
+}
+
+public extension Differentiable {
+  /// Applies the given closure to the derivative of `self`.
+  ///
+  /// Returns `self` like an identity function. When the return value is used in
+  /// a context where it is differentiated with respect to, applies the given
+  /// closure to the derivative of the return value.
+  @inlinable
+  @differentiable(reverse, wrt: self)
+  func withDerivative(_ body: @escaping (inout TangentVector) -> Void) -> Self {
+    return self
+  }
+
+  @inlinable
+  @derivative(of: withDerivative)
+  internal func _vjpWithDerivative(
+    _ body: @escaping (inout TangentVector) -> Void
+  ) -> (value: Self, pullback: (TangentVector) -> TangentVector) {
+    return (self, { grad in
+      var grad = grad
+      body(&grad)
+      return grad
+    })
+  }
 }

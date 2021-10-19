@@ -21,8 +21,7 @@ class OptimizerTests: XCTestCase {
   struct Model: Layer {
     var dense = Dense<Float>(weight: [[0.8]], bias: [0.8], activation: identity)
 
-    @differentiable
-    func callAsFunction(_ input: Tensor<Float>) -> Tensor<Float> {
+    @differentiable(reverse)    func callAsFunction(_ input: Tensor<Float>) -> Tensor<Float> {
       dense(input)
     }
   }

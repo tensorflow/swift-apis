@@ -23,7 +23,7 @@ import _Differentiation
 ///   - offset: The tensor to be added to normalized tensor.
 ///   - scale: The tensor to be applied to normalized tensor.
 ///   - varianceEpsilon: The small number to avoid dividing by 0.
-@differentiable(wrt: (input, mean, variance, offset, scale))
+@differentiable(reverse, wrt: (input, mean, variance, offset, scale))
 private func normalize<Scalar: TensorFlowFloatingPoint>(
   _ input: Tensor<Scalar>,
   mean: Tensor<Scalar>,
@@ -98,18 +98,19 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   ///
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
-  @differentiable
-  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-    let positiveAxis = (input.rank + axis) % input.rank
+  @differentiable(reverse)
+  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+    let inputRank = input.rank
+    let positiveAxis = (inputRank + axis) % inputRank
     precondition(
       input.shape[positiveAxis] == offset.shape[0],
       "The number of features of the input and the offset doesn't match.")
-    var offset = self.offset
-    var scale = self.scale
+    var (offset, scale) = {x in (x.offset, x.scale) }(self)
     if positiveAxis != input.rank - 1 {
       var broadcastShape = TensorShape([Int](repeating: 1, count: input.rank))
       broadcastShape[positiveAxis] = input.shape[positiveAxis]
       offset = offset.reshaped(to: broadcastShape)
+
       scale = scale.reshaped(to: broadcastShape)
     }
     switch Context.local.learningPhase {
@@ -240,8 +241,7 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   ///
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
-  @differentiable
-  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  @differentiable(reverse)  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     // Note: `withoutDerivative(at:)` is currently needed in the following to prevent the resulting
     // tensor for `epsilon` from being scalarized on the backwards pass, breaking X10 traces.
     let epsilon = withoutDerivative(at: input) { Tensor(self.epsilon, deviceAndPrecisionLike: $0) }
@@ -341,8 +341,7 @@ public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   /// - Returns: The output.
   /// - Precondition: The axis cannot be batch axis.
   /// - Precondition: The numbers of features of the input and the offset must be same.
-  @differentiable
-  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  @differentiable(reverse)  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     let positiveAxis = (input.rank + axis) % input.rank
     precondition(positiveAxis != 0, "The axis cannot be batch axis.")
     precondition(
@@ -447,8 +446,7 @@ public struct InstanceNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   ///
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
-  @differentiable
-  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  @differentiable(reverse)  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     delegate(input)
   }
 }
