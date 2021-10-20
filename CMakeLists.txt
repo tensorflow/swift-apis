@@ -189,7 +189,7 @@ if(NOT X10_FOUND AND NOT USE_BUNDLED_X10)
       COMMAND
         rm -rf <SOURCE_DIR>/bazel-bin # ${CMAKE_COMMAND} -E rm -Rrf <SOURCE_DIR>/bazel-bin
       COMMAND
-        bazel build ${VISIBILITY_FLAGS} -c opt --define framework_shared_object=false //tensorflow/compiler/tf2xla/xla_tensor:x10 --nocheck_visibility
+        bazel build ${VISIBILITY_FLAGS} -c opt --define framework_shared_object=false //tensorflow:tensorflow //tensorflow/compiler/tf2xla/xla_tensor:x10 --nocheck_visibility
       COMMAND
         bazel shutdown
     INSTALL_COMMAND
