@@ -332,7 +332,7 @@ public struct Conv3D<Scalar: TensorFlowFloatingPoint>: Layer {
   ///   [batch count, output depth, output height, output width, output channel count].
   ///
   /// - Note: Padding size equals zero when using `.valid`.
-  @differentiable(reverse) 
+  @differentiable(reverse)
   public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     let conv = conv3D(
       input,
