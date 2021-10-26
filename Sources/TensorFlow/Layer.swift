@@ -72,7 +72,8 @@ extension Module where Input: TensorProtocol, Output: DifferentiableTensorProtoc
   ///
   /// - Parameter output: The output to the layer.
   /// - Returns: The annotated output.
-  @differentiable(reverse)  public func annotated(_ output: Output) -> Output {
+  @differentiable(reverse)
+  public func annotated(_ output: Output) -> Output {
     let annotated = output.annotate("type=\(Self.self)")
     return annotated
   }
@@ -152,7 +153,8 @@ public protocol Layer: Module where Input: Differentiable {
   ///
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
-  @differentiable(reverse)  func callAsFunction(_ input: Input) -> Output
+  @differentiable(reverse)
+  func callAsFunction(_ input: Input) -> Output
 }
 
 
@@ -254,7 +256,8 @@ extension Differentiable {
   ///   - l1: The first layer.
   ///   - l2: The second layer.
   /// - Returns: The final layer's output after sequential application.
-  @differentiable(reverse)  public func sequenced<L1: Layer, L2: Layer>(through l1: L1, _ l2: L2) -> L2.Output
+  @differentiable(reverse)
+  public func sequenced<L1: Layer, L2: Layer>(through l1: L1, _ l2: L2) -> L2.Output
   where L1.Input == Self, L1.Output == L2.Input {
     let o1 = l1(self)
     return l2(o1)
@@ -268,7 +271,8 @@ extension Differentiable {
   ///   - l2: The second layer.
   ///   - l3: The third layer.
   /// - Returns: The final layer's output after sequential application.
-  @differentiable(reverse)  public func sequenced<L1: Layer, L2: Layer, L3: Layer>(through l1: L1, _ l2: L2, _ l3: L3)
+  @differentiable(reverse)
+  public func sequenced<L1: Layer, L2: Layer, L3: Layer>(through l1: L1, _ l2: L2, _ l3: L3)
     -> L3.Output
   where L1.Input == Self, L1.Output == L2.Input, L2.Output == L3.Input {
     let o1 = l1(self)
@@ -285,7 +289,8 @@ extension Differentiable {
   ///   - l3: The third layer.
   ///   - l4: The fourth layer.
   /// - Returns: The final layer's output after sequential application.
-  @differentiable(reverse)  public func sequenced<L1: Layer, L2: Layer, L3: Layer, L4: Layer>(
+  @differentiable(reverse)
+  public func sequenced<L1: Layer, L2: Layer, L3: Layer, L4: Layer>(
     through l1: L1, _ l2: L2, _ l3: L3, _ l4: L4
   ) -> L4.Output
   where
@@ -308,7 +313,8 @@ extension Differentiable {
   ///   - l4: The third layer.
   ///   - l5: The fifth layer.
   /// - Returns: The final layer's output after sequential application.
-  @differentiable(reverse)  public func sequenced<L1: Layer, L2: Layer, L3: Layer, L4: Layer, L5: Layer>(
+  @differentiable(reverse)
+  public func sequenced<L1: Layer, L2: Layer, L3: Layer, L4: Layer, L5: Layer>(
     through l1: L1, _ l2: L2, _ l3: L3, _ l4: L4, _ l5: L5
   ) -> L5.Output
   where
@@ -333,7 +339,8 @@ extension Differentiable {
   ///   - l5: The fifth layer.
   ///   - l6: The sixth layer.
   /// - Returns: The final layer's output after sequential application.
-  @differentiable(reverse)  public func sequenced<L1: Layer, L2: Layer, L3: Layer, L4: Layer, L5: Layer, L6: Layer>(
+  @differentiable(reverse)
+  public func sequenced<L1: Layer, L2: Layer, L3: Layer, L4: Layer, L5: Layer, L6: Layer>(
     through l1: L1, _ l2: L2, _ l3: L3, _ l4: L4, _ l5: L5, _ l6: L6
   ) -> L6.Output
   where

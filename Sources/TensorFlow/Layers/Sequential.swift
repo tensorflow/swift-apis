@@ -68,7 +68,8 @@ where
 }
 
 extension Sequential: Layer where Layer1: Layer {
-  @differentiable(reverse)  public func callAsFunction(_ input: Layer1.Input) -> Layer2.Output {
+  @differentiable(reverse)
+  public func callAsFunction(_ input: Layer1.Input) -> Layer2.Output {
     layer2(layer1(input))
   }
 }

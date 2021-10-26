@@ -49,7 +49,8 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   ///
   /// For real types, if `x` is negative the result is `.nan`. For complex
   /// types there is a branch cut on the negative real axis.
-  @differentiable(reverse)  public static func sqrt(_ x: Self) -> Self {
+  @differentiable(reverse)
+  public static func sqrt(_ x: Self) -> Self {
     _Raw.sqrt(x)
   }
 
@@ -63,7 +64,8 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   }
 
   /// The cosine of `x`, interpreted as an angle in radians.
-  @differentiable(reverse)  public static func cos(_ x: Self) -> Self {
+  @differentiable(reverse)
+  public static func cos(_ x: Self) -> Self {
     _Raw.cos(x)
   }
 
@@ -76,7 +78,8 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   }
 
   /// The sine of `x`, interpreted as an angle in radians.
-  @differentiable(reverse)  public static func sin(_ x: Self) -> Self {
+  @differentiable(reverse)
+  public static func sin(_ x: Self) -> Self {
     _Raw.sin(x)
   }
 
@@ -89,7 +92,8 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   }
 
   /// The tangent of `x`, interpreted as an angle in radians.
-  @differentiable(reverse)  public static func tan(_ x: Self) -> Self {
+  @differentiable(reverse)
+  public static func tan(_ x: Self) -> Self {
     _Raw.tan(x)
   }
 
@@ -103,7 +107,8 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   }
 
   /// The inverse cosine of `x` in radians.
-  @differentiable(reverse)  public static func acos(_ x: Self) -> Self {
+  @differentiable(reverse)
+  public static func acos(_ x: Self) -> Self {
     _Raw.acos(x)
   }
 
@@ -116,7 +121,8 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   }
 
   /// The inverse sine of `x` in radians.
-  @differentiable(reverse)  public static func asin(_ x: Self) -> Self {
+  @differentiable(reverse)
+  public static func asin(_ x: Self) -> Self {
     _Raw.asin(x)
   }
 
@@ -129,7 +135,8 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   }
 
   /// The inverse tangent of `x` in radians.
-  @differentiable(reverse)  public static func atan(_ x: Self) -> Self {
+  @differentiable(reverse)
+  public static func atan(_ x: Self) -> Self {
     _Raw.atan(x)
   }
 
@@ -142,7 +149,8 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   }
 
   /// The hyperbolic cosine of `x`.
-  @differentiable(reverse)  public static func cosh(_ x: Self) -> Self {
+  @differentiable(reverse)
+  public static func cosh(_ x: Self) -> Self {
     _Raw.cosh(x)
   }
 
@@ -155,7 +163,8 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   }
 
   /// The hyperbolic sine of `x`.
-  @differentiable(reverse)  public static func sinh(_ x: Self) -> Self {
+  @differentiable(reverse)
+  public static func sinh(_ x: Self) -> Self {
     _Raw.sinh(x)
   }
 
@@ -168,7 +177,8 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   }
 
   /// The hyperbolic tangent of `x`.
-  @differentiable(reverse)  public static func tanh(_ x: Self) -> Self {
+  @differentiable(reverse)
+  public static func tanh(_ x: Self) -> Self {
     _Raw.tanh(x)
   }
 
@@ -182,7 +192,8 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   }
 
   /// The inverse hyperbolic cosine of `x`.
-  @differentiable(reverse)  public static func acosh(_ x: Self) -> Self {
+  @differentiable(reverse)
+  public static func acosh(_ x: Self) -> Self {
     _Raw.acosh(x)
   }
 
@@ -195,7 +206,8 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   }
 
   /// The inverse hyperbolic sine of `x`.
-  @differentiable(reverse)  public static func asinh(_ x: Self) -> Self {
+  @differentiable(reverse)
+  public static func asinh(_ x: Self) -> Self {
     _Raw.asinh(x)
   }
 
@@ -208,7 +220,8 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   }
 
   /// The inverse hyperbolic tangent of `x`.
-  @differentiable(reverse)  public static func atanh(_ x: Self) -> Self {
+  @differentiable(reverse)
+  public static func atanh(_ x: Self) -> Self {
     _Raw.atanh(x)
   }
 
@@ -221,7 +234,8 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   }
 
   /// The exponential function applied to `x`, or `e**x`.
-  @differentiable(reverse)  public static func exp(_ x: Self) -> Self {
+  @differentiable(reverse)
+  public static func exp(_ x: Self) -> Self {
     _Raw.exp(x)
   }
 
@@ -235,22 +249,26 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   }
 
   /// Two raised to to power `x`.
-  @differentiable(reverse)  public static func exp2(_ x: Self) -> Self {
+  @differentiable(reverse)
+  public static func exp2(_ x: Self) -> Self {
     pow(Tensor(2, on: x.device), x)
   }
 
   /// Ten raised to to power `x`.
-  @differentiable(reverse)  public static func exp10(_ x: Self) -> Self {
+  @differentiable(reverse)
+  public static func exp10(_ x: Self) -> Self {
     pow(Tensor(10, on: x.device), x)
   }
 
   /// `exp(x) - 1` evaluated so as to preserve accuracy close to zero.
-  @differentiable(reverse)  public static func expm1(_ x: Self) -> Self {
+  @differentiable(reverse)
+  public static func expm1(_ x: Self) -> Self {
     _Raw.expm1(x)
   }
 
 #if TENSORFLOW_USE_STANDARD_TOOLCHAIN
-  @differentiable(reverse)  public static func expMinusOne(_ x: Self) -> Self {
+  @differentiable(reverse)
+  public static func expMinusOne(_ x: Self) -> Self {
     return expm1(x)
   }
 #endif
@@ -265,7 +283,8 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   }
 
   /// The natural logarithm of `x`.
-  @differentiable(reverse)  public static func log(_ x: Self) -> Self {
+  @differentiable(reverse)
+  public static func log(_ x: Self) -> Self {
     _Raw.log(x)
   }
 
@@ -278,22 +297,26 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   }
 
   /// The base-two logarithm of `x`.
-  @differentiable(reverse)  public static func log2(_ x: Self) -> Self {
+  @differentiable(reverse)
+  public static func log2(_ x: Self) -> Self {
     log(x) / Scalar.log(2)
   }
 
   /// The base-ten logarithm of `x`.
-  @differentiable(reverse)  public static func log10(_ x: Self) -> Self {
+  @differentiable(reverse)
+  public static func log10(_ x: Self) -> Self {
     log(x) / Scalar.log(10)
   }
 
   /// `log(1 + x)` evaluated so as to preserve accuracy close to zero.
-  @differentiable(reverse)  public static func log1p(_ x: Self) -> Self {
+  @differentiable(reverse)
+  public static func log1p(_ x: Self) -> Self {
     _Raw.log1p(x)
   }
 
 #if TENSORFLOW_USE_STANDARD_TOOLCHAIN
-  @differentiable(reverse)  public static func log(onePlus x: Self) -> Self {
+  @differentiable(reverse)
+  public static func log(onePlus x: Self) -> Self {
     return log1p(x)
   }
 #endif
@@ -311,7 +334,8 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   /// For real types, if `x` is negative the result is NaN, even if `y` has
   /// an integral value. For complex types, there is a branch cut on the
   /// negative real axis.
-  @differentiable(reverse)  public static func pow(_ x: Self, _ y: Self) -> Self {
+  @differentiable(reverse)
+  public static func pow(_ x: Self, _ y: Self) -> Self {
     _Raw.pow(x, y)
   }
 
@@ -340,7 +364,8 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   /// `x` raised to the `n`th power.
   ///
   /// The product of `n` copies of `x`.
-  @differentiable(reverse)  public static func pow(_ x: Self, _ n: Int) -> Self {
+  @differentiable(reverse)
+  public static func pow(_ x: Self, _ n: Int) -> Self {
     pow(x, Tensor(Scalar(n), on: x.device))
   }
 
@@ -348,7 +373,8 @@ extension Tensor: ElementaryFunctions where Scalar: TensorFlowFloatingPoint {
   ///
   /// For real types, if `x` is negative and `n` is even, the result is NaN.
   /// For complex types, there is a branch cut along the negative real axis.
-  @differentiable(reverse)  public static func root(_ x: Self, _ n: Int) -> Self {
+  @differentiable(reverse)
+  public static func root(_ x: Self, _ n: Int) -> Self {
     sign(x) * pow(abs(x), Tensor(Scalar(1) / Scalar(n), on: x.device))
   }
 }
@@ -2860,7 +2886,8 @@ public struct Moments<Scalar: TensorFlowFloatingPoint>: Differentiable {
   public var mean: Tensor<Scalar>
   public var variance: Tensor<Scalar>
 
-  @differentiable(reverse)  public init(mean: Tensor<Scalar>, variance: Tensor<Scalar>) {
+  @differentiable(reverse)
+  public init(mean: Tensor<Scalar>, variance: Tensor<Scalar>) {
     self.mean = mean
     self.variance = variance
   }

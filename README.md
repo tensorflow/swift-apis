@@ -34,7 +34,8 @@ struct Model: Layer {
     var layer2 = Dense<Float>(inputSize: hiddenSize, outputSize: hiddenSize, activation: relu)
     var layer3 = Dense<Float>(inputSize: hiddenSize, outputSize: 3, activation: identity)
     
-    @differentiable(reverse)    func callAsFunction(_ input: Tensor<Float>) -> Tensor<Float> {
+    @differentiable(reverse)
+    func callAsFunction(_ input: Tensor<Float>) -> Tensor<Float> {
         return input.sequenced(through: layer1, layer2, layer3)
     }
 }

@@ -241,7 +241,8 @@ public struct LayerNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   ///
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
-  @differentiable(reverse)  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  @differentiable(reverse)
+  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     // Note: `withoutDerivative(at:)` is currently needed in the following to prevent the resulting
     // tensor for `epsilon` from being scalarized on the backwards pass, breaking X10 traces.
     let epsilon = withoutDerivative(at: input) { Tensor(self.epsilon, deviceAndPrecisionLike: $0) }
@@ -341,7 +342,8 @@ public struct GroupNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   /// - Returns: The output.
   /// - Precondition: The axis cannot be batch axis.
   /// - Precondition: The numbers of features of the input and the offset must be same.
-  @differentiable(reverse)  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  @differentiable(reverse)
+  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     let positiveAxis = (input.rank + axis) % input.rank
     precondition(positiveAxis != 0, "The axis cannot be batch axis.")
     precondition(
@@ -446,7 +448,8 @@ public struct InstanceNorm<Scalar: TensorFlowFloatingPoint>: Layer {
   ///
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
-  @differentiable(reverse)  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  @differentiable(reverse)
+  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     delegate(input)
   }
 }

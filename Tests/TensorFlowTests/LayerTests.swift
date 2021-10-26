@@ -19,7 +19,8 @@ import XCTest
 fileprivate struct Sigmoid<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   typealias TangentVector = EmptyTangentVector
 
-  @differentiable(reverse)  func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  @differentiable(reverse)
+  func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     sigmoid(input)
   }
 }

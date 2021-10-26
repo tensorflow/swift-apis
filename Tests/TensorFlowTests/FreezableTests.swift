@@ -31,7 +31,8 @@ final class FreezableTests: XCTestCase {
         self.bias = bias
       }
 
-      @differentiable(reverse)      func callAsFunction(_ input: Tensor<Float>) -> Tensor<Float> {
+      @differentiable(reverse)
+      func callAsFunction(_ input: Tensor<Float>) -> Tensor<Float> {
         return input * weight + bias
       }
     }

@@ -54,7 +54,8 @@ public struct Dropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   ///
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
-  @differentiable(reverse)  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  @differentiable(reverse)
+  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     switch Context.local.learningPhase {
     case .training:
       return input.droppingOut(probability: probability)
@@ -80,7 +81,8 @@ public struct GaussianNoise<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer
   }
 
   /// Returns a tensor obtained by adding noise to `input`
-  @differentiable(reverse)  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  @differentiable(reverse)
+  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     switch Context.local.learningPhase {
     case .training:
       let noise = Tensor<Scalar>(
@@ -116,7 +118,8 @@ public struct GaussianDropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLay
   }
 
   /// Applies multiplicative 1-centered Gaussian noise to the input during training only.
-  @differentiable(reverse)  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  @differentiable(reverse)
+  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     switch Context.local.learningPhase {
     case .training:
       let noise = Tensor<Scalar>(
@@ -155,7 +158,8 @@ public struct AlphaDropout<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer 
   }
 
   /// Adds noise to `input` during training, and is a no-op during inference.
-  @differentiable(reverse)  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  @differentiable(reverse)
+  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     switch Context.local.learningPhase {
     case .training:
       let alpha = 1.6732632423543772848170429916717

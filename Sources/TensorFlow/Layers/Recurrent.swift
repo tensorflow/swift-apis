@@ -24,7 +24,8 @@ public struct RNNCellInput<Input: Differentiable, State: Differentiable>: Differ
   /// The previous state.
   public var state: State
 
-  @differentiable(reverse)  public init(input: Input, state: State) {
+  @differentiable(reverse)
+  public init(input: Input, state: State) {
     self.input = input
     self.state = state
   }
@@ -40,7 +41,8 @@ public struct RNNCellOutput<Output: Differentiable, State: Differentiable>: Diff
   /// The current state.
   public var state: State
 
-  @differentiable(reverse)  public init(output: Output, state: State) {
+  @differentiable(reverse)
+  public init(output: Output, state: State) {
     self.output = output
     self.state = state
   }
@@ -74,14 +76,16 @@ extension RecurrentLayerCell {
   ///   - timeStepInput: The input at the current time step.
   ///   - previousState: The previous state of the recurrent layer cell.
   /// - Returns: The output.
-  @differentiable(reverse)  public func callAsFunction(
+  @differentiable(reverse)
+  public func callAsFunction(
     input: TimeStepInput,
     state: State
   ) -> RNNCellOutput<TimeStepOutput, State> {
     self(RNNCellInput(input: input, state: state))
   }
 
-  @differentiable(reverse)  public func call(input: TimeStepInput, state: State) -> RNNCellOutput<TimeStepOutput, State> {
+  @differentiable(reverse)
+  public func call(input: TimeStepInput, state: State) -> RNNCellOutput<TimeStepOutput, State> {
     self(RNNCellInput(input: input, state: state))
   }
 }
@@ -118,7 +122,8 @@ public struct BasicRNNCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell 
   ///
   /// - Parameter input: The input to the layer.
   /// - Returns: The hidden state.
-  @differentiable(reverse)  public func callAsFunction(_ input: Input) -> Output {
+  @differentiable(reverse)
+  public func callAsFunction(_ input: Input) -> Output {
     let concatenatedInput = input.input.concatenated(with: input.state, alongAxis: 1)
     let newState = tanh(matmul(concatenatedInput, weight) + bias)
     return Output(output: newState, state: newState)
@@ -197,13 +202,15 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell {
     public var cell: Tensor<Scalar>
     public var hidden: Tensor<Scalar>
 
-    @differentiable(reverse)    public init(cell: Tensor<Scalar>, hidden: Tensor<Scalar>) {
+    @differentiable(reverse)
+    public init(cell: Tensor<Scalar>, hidden: Tensor<Scalar>) {
       self.cell = cell
       self.hidden = hidden
     }
 
     /// Concatenates two values.
-    @differentiable(reverse)    public static func concatenate(_ lhs: Self, _ rhs: Self) -> Self {
+    @differentiable(reverse)
+    public static func concatenate(_ lhs: Self, _ rhs: Self) -> Self {
       // TODO(TF-1005): Remove workaround for differenting concatenated.
       let concatCell = lhs.cell.concatenated(with: rhs.cell, alongAxis: -1)
       let concatHidden = lhs.hidden.concatenated(with: rhs.hidden, alongAxis: -1)
@@ -217,22 +224,26 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell {
     }
 
     /// Adds two values and produces their sum.
-    @differentiable(reverse)    public static func sum(_ lhs: Self, _ rhs: Self) -> Self {
+    @differentiable(reverse)
+    public static func sum(_ lhs: Self, _ rhs: Self) -> Self {
       Self(cell: lhs.cell + rhs.cell, hidden: lhs.hidden + rhs.hidden)
     }
 
     /// Averages two values.
-    @differentiable(reverse)    public static func average(_ lhs: Self, _ rhs: Self) -> Self {
+    @differentiable(reverse)
+    public static func average(_ lhs: Self, _ rhs: Self) -> Self {
       Self(cell: (lhs.cell + rhs.cell) / 2, hidden: (lhs.hidden + rhs.hidden) / 2)
     }
 
     /// Multiplies two values.
-    @differentiable(reverse)    public static func multiply(_ lhs: Self, _ rhs: Self) -> Self {
+    @differentiable(reverse)
+    public static func multiply(_ lhs: Self, _ rhs: Self) -> Self {
       Self(cell: lhs.cell * rhs.cell, hidden: lhs.hidden * rhs.hidden)
     }
 
     /// Stack two values.
-    @differentiable(reverse)    public static func stack(_ lhs: Self, _ rhs: Self) -> Self {
+    @differentiable(reverse)
+    public static func stack(_ lhs: Self, _ rhs: Self) -> Self {
       // TODO(TF-1005): Remove workaround for differenting stacking.
       let stackCell = Tensor(stacking: [lhs.cell, rhs.cell])
       let stackHidden = Tensor(stacking: [lhs.hidden, rhs.hidden])
@@ -258,7 +269,8 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell {
   ///
   /// - Parameter input: The input to the layer.
   /// - Returns: The hidden state.
-  @differentiable(reverse)  public func callAsFunction(_ input: Input) -> Output {
+  @differentiable(reverse)
+  public func callAsFunction(_ input: Input) -> Output {
     let gateInput = input.input.concatenated(with: input.state.hidden, alongAxis: 1)
 
     let fused = matmul(gateInput, fusedWeight) + fusedBias
@@ -332,7 +344,8 @@ public struct GRUCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell {
   ///
   /// - Parameter input: The input to the layer.
   /// - Returns: The hidden state.
-  @differentiable(reverse)  public func callAsFunction(_ input: Input) -> Output {
+  @differentiable(reverse)
+  public func callAsFunction(_ input: Input) -> Output {
     let updateGate = sigmoid(
       (matmul(input.input, updateKernel) + updateBias)
       + (matmul(input.state, updateRecurrentKernel) + updateRecurrentBias)
@@ -432,7 +445,8 @@ public struct RecurrentLayer<Cell: RecurrentLayerCell>: Layer {
     )
   }
 
-  @differentiable(reverse)  public func callAsFunction(_ inputs: [Cell.TimeStepInput]) -> [Cell.TimeStepOutput] {
+  @differentiable(reverse)
+  public func callAsFunction(_ inputs: [Cell.TimeStepInput]) -> [Cell.TimeStepOutput] {
     let initialState = withoutDerivative(at: cell.zeroState(for: inputs[0]))
     return self(inputs, initialState: initialState)
   }
@@ -459,27 +473,33 @@ public struct RecurrentLayer<Cell: RecurrentLayerCell>: Layer {
 /// Used by `BidirectionalRecurrentLayer` as a generic requirement for merge functions.
 public protocol Mergeable: Differentiable, AdditiveArithmetic {
   /// Concatenates two values.
-  @differentiable(reverse)  static func concatenate(_ lhs: Self, _ rhs: Self) -> Self
+  @differentiable(reverse)
+  static func concatenate(_ lhs: Self, _ rhs: Self) -> Self
 
   /// Adds two values and produces their sum.
   ///
   /// - Note: renaming `sum` to `+` results in a compiler crash when conforming `Tensor` to
   /// `Mergeable` (SR-13229).
-  @differentiable(reverse)  static func sum(_ lhs: Self, _ rhs: Self) -> Self
+  @differentiable(reverse)
+  static func sum(_ lhs: Self, _ rhs: Self) -> Self
 
   /// Averages two values.
-  @differentiable(reverse)  static func average(_ lhs: Self, _ rhs: Self) -> Self
+  @differentiable(reverse)
+  static func average(_ lhs: Self, _ rhs: Self) -> Self
 
   /// Multiplies two values.
-  @differentiable(reverse)  static func multiply(_ lhs: Self, _ rhs: Self) -> Self
+  @differentiable(reverse)
+  static func multiply(_ lhs: Self, _ rhs: Self) -> Self
 
   /// Stack two values.
-  @differentiable(reverse)  static func stack(_ lhs: Self, _ rhs: Self) -> Self
+  @differentiable(reverse)
+  static func stack(_ lhs: Self, _ rhs: Self) -> Self
 }
 
 extension Tensor: Mergeable where Scalar: TensorFlowFloatingPoint {
   /// Concatenates two tensors along last axis.
-  @differentiable(reverse)  public static func concatenate(_ lhs: Tensor, _ rhs: Tensor) -> Tensor {
+  @differentiable(reverse)
+  public static func concatenate(_ lhs: Tensor, _ rhs: Tensor) -> Tensor {
     // TODO(TF-1005): Remove workaround for differenting concatenated.
     let concat = lhs.concatenated(with: rhs, alongAxis: -1)
     return concat.withDerivative { [shape = concat.shape] in
@@ -488,22 +508,26 @@ extension Tensor: Mergeable where Scalar: TensorFlowFloatingPoint {
   }
 
   /// Adds two values and produces their sum.
-  @differentiable(reverse)  public static func sum(_ lhs: Tensor, _ rhs: Tensor) -> Tensor {
+  @differentiable(reverse)
+  public static func sum(_ lhs: Tensor, _ rhs: Tensor) -> Tensor {
     lhs + rhs
   }
 
   /// Averages two values.
-  @differentiable(reverse)  public static func average(_ lhs: Tensor, _ rhs: Tensor) -> Tensor {
+  @differentiable(reverse)
+  public static func average(_ lhs: Tensor, _ rhs: Tensor) -> Tensor {
     (lhs + rhs) / 2
   }
 
   /// Multiplies two values.
-  @differentiable(reverse)  public static func multiply(_ lhs: Tensor, _ rhs: Tensor) -> Tensor {
+  @differentiable(reverse)
+  public static func multiply(_ lhs: Tensor, _ rhs: Tensor) -> Tensor {
     lhs * rhs
   }
 
   /// Stack two values.
-  @differentiable(reverse)  public static func stack(_ lhs: Tensor, _ rhs: Tensor) -> Tensor {
+  @differentiable(reverse)
+  public static func stack(_ lhs: Tensor, _ rhs: Tensor) -> Tensor {
     // TODO(TF-1005): Remove workaround for differenting stacking.
     let stack = Tensor(stacking: [lhs, rhs])
     return stack.withDerivative { [shape = stack.shape] in
@@ -586,7 +610,8 @@ where Cell.TimeStepOutput: Mergeable {
     _mergeFunction = .init(mergeFunction)
   }
 
-  @differentiable(reverse)  public func callAsFunction(
+  @differentiable(reverse)
+  public func callAsFunction(
     _ inputs: Input,
     initialForwardLayerState: Cell.State,
     initialBackwardLayerState: Cell.State
@@ -599,7 +624,8 @@ where Cell.TimeStepOutput: Mergeable {
       backwardOutputs.differentiableReversed(), mergeFunction: mergeFunction)
   }
 
-  @differentiable(reverse)  public func callAsFunction(_ inputs: Input) -> Output {
+  @differentiable(reverse)
+  public func callAsFunction(_ inputs: Input) -> Output {
     precondition(!inputs.isEmpty, "'inputs' must be non-empty.")
     let initialForwardLayerState = withoutDerivative(
       at: forward.cell.zeroState(for: inputs.first!))
@@ -612,7 +638,8 @@ where Cell.TimeStepOutput: Mergeable {
     )
   }
 
-  @differentiable(reverse)  public func lastOutput(
+  @differentiable(reverse)
+  public func lastOutput(
     from inputs: Input,
     initialForwardLayerState: Cell.State,
     initialBackwardLayerState: Cell.State
@@ -625,7 +652,8 @@ where Cell.TimeStepOutput: Mergeable {
     )[withoutDerivative(at: inputs.count - 1)]
   }
 
-  @differentiable(reverse)  public func lastOutput(from inputs: Input) -> Cell.TimeStepOutput {
+  @differentiable(reverse)
+  public func lastOutput(from inputs: Input) -> Cell.TimeStepOutput {
     precondition(!inputs.isEmpty, "'inputs' must be non-empty.")
     return self(inputs)[withoutDerivative(at: inputs.count - 1)]
   }
@@ -662,7 +690,8 @@ fileprivate extension Array where Element: Differentiable {
   ///
   /// This has a custom derivative, which works around the SR-13945 segfault that you would
   /// encounter if you tried to implement this at the callsite using a for loop.
-  @differentiable(reverse)  func differentiableReversed() -> Self {
+  @differentiable(reverse)
+  func differentiableReversed() -> Self {
     .init(self.reversed())
   }
 
@@ -677,7 +706,8 @@ fileprivate extension Array where Element: Differentiable {
   ///
   /// This has a custom derivative, which works around the SR-13945 segfault that you would
   /// encounter if you tried to implement this at the callsite using a for loop.
-  @differentiable(reverse)  func differentiableMerging(
+  @differentiable(reverse)
+  func differentiableMerging(
     _ other: Self, mergeFunction: @differentiable(reverse) (Element, Element) -> Element
   ) -> Self {
     zip(self, other).map { mergeFunction($0.0, $0.1) }

@@ -23,7 +23,8 @@ struct Model${count}: Layer {
   var multiply${i}: Multiply = Multiply(coefficient: ${i})
   % end
 
-  @differentiable(reverse)  func callAsFunction(_ input: Float) -> Float {
+  @differentiable(reverse)
+  func callAsFunction(_ input: Float) -> Float {
     input.sequenced(
       through: ${', '.join(['multiply%d' % i for i in range(1, count + 1)])}
     )

@@ -28,7 +28,8 @@ public struct Flatten<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   ///
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
-  @differentiable(reverse)  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  @differentiable(reverse)
+  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     let batchSize = input.shape[0]
     let remaining = input.shape[1..<input.rank].contiguousSize
     return input.reshaped(to: [batchSize, remaining])
@@ -65,7 +66,8 @@ public struct Reshape<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
   ///
   /// - Parameter input: The input to the layer.
   /// - Returns: The output.
-  @differentiable(reverse)  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  @differentiable(reverse)
+  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     return input.reshaped(toShape: shape)
   }
 }
@@ -81,7 +83,8 @@ public struct Function<Input: Differentiable, Output: Differentiable>: Parameter
     self.body = body
   }
 
-  @differentiable(reverse)  public func callAsFunction(_ input: Input) -> Output {
+  @differentiable(reverse)
+  public func callAsFunction(_ input: Input) -> Output {
     body(input)
   }
 }
