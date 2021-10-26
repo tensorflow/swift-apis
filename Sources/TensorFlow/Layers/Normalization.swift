@@ -24,7 +24,7 @@ import _Differentiation
 ///   - scale: The tensor to be applied to normalized tensor.
 ///   - varianceEpsilon: The small number to avoid dividing by 0.
 @differentiable(reverse, wrt: (input, mean, variance, offset, scale))
-private func normalize<Scalar: TensorFlowFloatingPoint> (
+private func normalize<Scalar: TensorFlowFloatingPoint>(
   _ input: Tensor<Scalar>,
   mean: Tensor<Scalar>,
   variance: Tensor<Scalar>,
