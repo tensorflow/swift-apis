@@ -159,7 +159,8 @@ struct Statistics {
   }
 }
 
-@differentiable(reverse)public func _defaultLossFunction(_ ŷ: Tensor<Float>, _ y: Tensor<Int32>) -> Tensor<Float> {
+@differentiable(reverse)
+public func _defaultLossFunction(_ ŷ: Tensor<Float>, _ y: Tensor<Int32>) -> Tensor<Float> {
   softmaxCrossEntropy(logits: ŷ, labels: y)
 }
 

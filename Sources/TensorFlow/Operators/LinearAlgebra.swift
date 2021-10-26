@@ -235,7 +235,8 @@ func logdet<T: TensorFlowFloatingPoint>(_ matrix: Tensor<T>) -> Tensor<T> {
 ///
 /// - Parameter input: A tensor of shape `[..., M, M]`.
 @inlinable
-@differentiable(reverse)public func cholesky<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
+@differentiable(reverse)
+public func cholesky<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
   _Raw.cholesky(x)
 }
 
@@ -325,7 +326,8 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
 /// - Precondition: `matrix` must be a tensor with shape `[..., M, M]`.
 /// - Precondition: `rhs` must be a tensor with shape `[..., M, K]`.
 @inlinable
-@differentiable(reverse)public func triangularSolve<T: TensorFlowFloatingPoint>(
+@differentiable(reverse)
+public func triangularSolve<T: TensorFlowFloatingPoint>(
   matrix: Tensor<T>,
   rhs: Tensor<T>,
   lower: Bool = true,

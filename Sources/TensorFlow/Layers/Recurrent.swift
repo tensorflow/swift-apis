@@ -537,7 +537,8 @@ extension Tensor: Mergeable where Scalar: TensorFlowFloatingPoint {
 }
 
 /// Concatenates two values.
-@differentiable(reverse)public func concatenate<T: Mergeable>(
+@differentiable(reverse)
+public func concatenate<T: Mergeable>(
   _ first: T,
   _ second: T
 ) -> T {
@@ -545,7 +546,8 @@ extension Tensor: Mergeable where Scalar: TensorFlowFloatingPoint {
 }
 
 /// Adds two values and produces their sum.
-@differentiable(reverse)public func sum<T: Mergeable>(
+@differentiable(reverse)
+public func sum<T: Mergeable>(
   _ first: T,
   _ second: T
 ) -> T {
@@ -553,7 +555,8 @@ extension Tensor: Mergeable where Scalar: TensorFlowFloatingPoint {
 }
 
 /// Averages two values.
-@differentiable(reverse)public func average<T: Mergeable>(
+@differentiable(reverse)
+public func average<T: Mergeable>(
   _ first: T,
   _ second: T
 ) -> T {
@@ -561,7 +564,8 @@ extension Tensor: Mergeable where Scalar: TensorFlowFloatingPoint {
 }
 
 /// Multiplies two values.
-@differentiable(reverse)public func multiply<T: Mergeable>(
+@differentiable(reverse)
+public func multiply<T: Mergeable>(
   _ first: T,
   _ second: T
 ) -> T {
@@ -569,7 +573,8 @@ extension Tensor: Mergeable where Scalar: TensorFlowFloatingPoint {
 }
 
 /// Stack two values.
-@differentiable(reverse)public func stack<T: Mergeable>(
+@differentiable(reverse)
+public func stack<T: Mergeable>(
   _ first: T,
   _ second: T
 ) -> T {

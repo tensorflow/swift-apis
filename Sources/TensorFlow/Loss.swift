@@ -357,7 +357,8 @@ public func huberLoss<Scalar: TensorFlowFloatingPoint>(
 /// Workaround for TF-1030 so that we can use sum as a default argument for reductions.
 /// `Tensor<Scalar>.sum()` is the preferred way to do this.
 // TODO(TF-1030): Remove this and replace with `{ $0.sum() }`.
-@differentiable(reverse)public func _sum<Scalar: TensorFlowFloatingPoint>(
+@differentiable(reverse)
+public func _sum<Scalar: TensorFlowFloatingPoint>(
   _ value: Tensor<Scalar>
 ) -> Tensor<Scalar> {
   return value.sum()
@@ -366,7 +367,8 @@ public func huberLoss<Scalar: TensorFlowFloatingPoint>(
 /// Workaround for TF-1030 so that we can use mean as a default argument for reductions.
 /// `Tensor<Scalar>.mean()` is the preferred way to do this.
 // TODO(TF-1030): Remove this and replace with `{ $0.mean() }`.
-@differentiable(reverse)public func _mean<Scalar: TensorFlowFloatingPoint>(
+@differentiable(reverse)
+public func _mean<Scalar: TensorFlowFloatingPoint>(
   _ value: Tensor<Scalar>
 ) -> Tensor<Scalar> {
   return value.mean()
