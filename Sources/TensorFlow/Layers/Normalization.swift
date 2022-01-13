@@ -105,19 +105,41 @@ public struct BatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     precondition(
       input.shape[positiveAxis] == offset.shape[0],
       "The number of features of the input and the offset doesn't match.")
-    var (offset, scale) = {x in (x.offset, x.scale) }(self)
-    if positiveAxis != input.rank - 1 {
-      var broadcastShape = TensorShape([Int](repeating: 1, count: input.rank))
-      broadcastShape[positiveAxis] = input.shape[positiveAxis]
-      offset = offset.reshaped(to: broadcastShape)
-
-      scale = scale.reshaped(to: broadcastShape)
-    }
+//     var (offset, scale) = {x in (x.offset, x.scale) }(self)
+//     if positiveAxis != input.rank - 1 {
+//       var broadcastShape = TensorShape([Int](repeating: 1, count: input.rank))
+//       broadcastShape[positiveAxis] = input.shape[positiveAxis]
+//       offset = offset.reshaped(to: broadcastShape)
+//       scale = scale.reshaped(to: broadcastShape)
+//     }
+    let offsetOriginal = self.offset
+    let scaleOriginal = self.scale
+    let (offset, scale) = Self._sr13263workaround(offset: offsetOriginal,
+                                                  scale: scaleOriginal,
+                                                  input: input,
+                                                  positiveAxis: positiveAxis)
     switch Context.local.learningPhase {
     case .training:
       return doTraining(input, offset: offset, scale: scale, axis: positiveAxis)
     case .inference:
       return doInference(input, offset: offset, scale: scale)
+    }
+  }
+  
+  @inline(never)
+  @differentiable(reverse) // if the function is `public` or `internal`, the compiler crashes
+  private static func _sr13263workaround(
+    offset: Tensor<Scalar>, 
+    scale: Tensor<Scalar>,
+    input: Tensor<Scalar>,
+    positiveAxis: Int
+  ) -> (Tensor<Scalar>, Tensor<Scalar>) {
+    if positiveAxis != input.rank - 1 {
+      var broadcastShape = TensorShape([Int](repeating: 1, count: input.rank))
+      broadcastShape[positiveAxis] = input.shape[positiveAxis]
+      return (offset.reshaped(to: broadcastShape), scale.reshaped(to: broadcastShape))
+    } else {
+      return (offset, scale)
     }
   }
 
