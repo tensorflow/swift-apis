@@ -24,7 +24,7 @@ final class AnnotationXLATests: XCTestCase {
     public var dense3 = Dense<Float>(inputSize: 4, outputSize: 4)
     public var flatten = Flatten<Float>()
 
-    @differentiable
+    @differentiable(reverse)
     public func callAsFunction(_ input: Tensor<Float>) -> Tensor<Float> {
       let layer1 = dense1(input)
       let layer2 = layer1.reshaped(to: [1, 4])

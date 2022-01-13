@@ -229,7 +229,7 @@ where
       for cb in paramGroup.callbacks { cb(&state, &optimizerState) }
       step = state.step ?? Tensor<Float>(zerosLike: step)
     }
-    model.move(along: step)
+    model.move(by: step)
   }
 
   /// Copies the optimizer to the specified device.

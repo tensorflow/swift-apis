@@ -49,7 +49,7 @@ struct Complex<T: FloatingPoint> {
   var real: T
   var imaginary: T
 
-  @differentiable(where T: Differentiable, T == T.TangentVector)
+  @differentiable(reverse where T: Differentiable, T == T.TangentVector)
   init(real: T = 0, imaginary: T = 0) {
     self.real = real
     self.imaginary = imaginary
@@ -119,7 +119,7 @@ extension Complex: AdditiveArithmetic {
     lhs.imaginary += rhs.imaginary
   }
 
-  @differentiable(where T: Differentiable)
+  @differentiable(reverse where T: Differentiable)
   static func - (lhs: Complex, rhs: Complex) -> Complex {
     var temp = lhs
     temp -= rhs
@@ -157,7 +157,7 @@ extension Complex: Numeric {
     )
   }
 
-  @differentiable(where T: Differentiable)
+  @differentiable(reverse where T: Differentiable)
   static func * (lhs: Complex, rhs: Complex) -> Complex {
     var a = lhs.real
     var b = lhs.imaginary
@@ -206,7 +206,7 @@ extension Complex: Numeric {
 }
 
 extension Complex: SignedNumeric {
-  @differentiable(where T: Differentiable)
+  @differentiable(reverse where T: Differentiable)
   static prefix func - (operand: Complex) -> Complex {
     return Complex(real: -operand.real, imaginary: -operand.imaginary)
   }
@@ -218,7 +218,7 @@ extension Complex: SignedNumeric {
 }
 
 extension Complex {
-  @differentiable(where T: Differentiable)
+  @differentiable(reverse where T: Differentiable)
   static func / (lhs: Complex, rhs: Complex) -> Complex {
     var a = lhs.real
     var b = lhs.imaginary
@@ -262,7 +262,7 @@ extension Complex {
 }
 
 extension Complex {
-  @differentiable(where T: Differentiable)
+  @differentiable(reverse where T: Differentiable)
   func complexConjugate() -> Complex {
     return Complex(real: real, imaginary: -imaginary)
   }
@@ -273,28 +273,28 @@ func abs<T>(_ z: Complex<T>) -> Complex<T> {
 }
 
 extension Complex {
-  @differentiable(where T: Differentiable, T == T.TangentVector)
+  @differentiable(reverse where T: Differentiable, T == T.TangentVector)
   func adding(real: T) -> Complex {
     var c = self
     c.real += real
     return c
   }
 
-  @differentiable(where T: Differentiable, T == T.TangentVector)
+  @differentiable(reverse where T: Differentiable, T == T.TangentVector)
   func subtracting(real: T) -> Complex {
     var c = self
     c.real -= real
     return c
   }
 
-  @differentiable(where T: Differentiable, T == T.TangentVector)
+  @differentiable(reverse where T: Differentiable, T == T.TangentVector)
   func adding(imaginary: T) -> Complex {
     var c = self
     c.imaginary += imaginary
     return c
   }
 
-  @differentiable(where T: Differentiable, T == T.TangentVector)
+  @differentiable(reverse where T: Differentiable, T == T.TangentVector)
   func subtracting(imaginary: T) -> Complex {
     var c = self
     c.imaginary -= imaginary

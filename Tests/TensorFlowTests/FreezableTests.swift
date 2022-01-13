@@ -31,7 +31,7 @@ final class FreezableTests: XCTestCase {
         self.bias = bias
       }
 
-      @differentiable
+      @differentiable(reverse)
       func callAsFunction(_ input: Tensor<Float>) -> Tensor<Float> {
         return input * weight + bias
       }
@@ -40,19 +40,19 @@ final class FreezableTests: XCTestCase {
     var dense = FreezableDense(weight: Tensor(2), bias: Tensor(3))
     let grad = FreezableDense.TangentVector(weight: Tensor(4), bias: Tensor(1))
 
-    dense.move(along: grad)
+    dense.move(by: grad)
     XCTAssertEqual(Tensor(6), dense.weight)
     XCTAssertEqual(Tensor(4), dense.bias)
 
     // Freeze `dense.weight`: its value cannot be updated.
     dense.$weight.freeze()
-    dense.move(along: grad)
+    dense.move(by: grad)
     XCTAssertEqual(Tensor(6), dense.weight)
     XCTAssertEqual(Tensor(5), dense.bias)
 
     // Unfreeze `dense.weight`: its value can be updated again.
     dense.$weight.unfreeze()
-    dense.move(along: grad)
+    dense.move(by: grad)
     XCTAssertEqual(Tensor(10), dense.weight)
     XCTAssertEqual(Tensor(6), dense.bias)
   }

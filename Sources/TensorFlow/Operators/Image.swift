@@ -41,7 +41,7 @@ public enum ResizeMethod {
 ///   - antialias: Iff `true`, use an anti-aliasing filter when downsampling an image.
 /// - Precondition: The images must have rank `3` or `4`.
 /// - Precondition: The size must be positive.
-@differentiable(wrt: images)
+@differentiable(reverse, wrt: images)
 public func resize(
   images: Tensor<Float>,
   size: (newHeight: Int, newWidth: Int),
@@ -168,7 +168,7 @@ public func resizeArea<Scalar: TensorFlowNumeric>(
 }
 
 @usableFromInline
-@differentiable(wrt: images)
+@differentiable(reverse, wrt: images)
 func scaleAndTranslate(
   images: Tensor<Float>,
   size: Tensor<Int32>,
@@ -218,7 +218,7 @@ func _vjpScaleAndTranslate(
 }
 
 @usableFromInline
-@differentiable(wrt: images where Scalar: TensorFlowFloatingPoint)
+@differentiable(reverse, wrt: images where Scalar: TensorFlowFloatingPoint)
 func resizeNearestNeighbor<Scalar: TensorFlowNumeric>(
   images: Tensor<Scalar>,
   size: Tensor<Int32>,
@@ -261,7 +261,7 @@ func _vjpResizeNearestNeighbor<Scalar: TensorFlowFloatingPoint>(
 }
 
 @usableFromInline
-@differentiable(wrt: images where Scalar: TensorFlowFloatingPoint)
+@differentiable(reverse, wrt: images where Scalar: TensorFlowFloatingPoint)
 func resizeBilinear<Scalar: TensorFlowNumeric>(
   images: Tensor<Scalar>,
   size: Tensor<Int32>,
@@ -304,7 +304,7 @@ func _vjpResizeBilinear<Scalar: TensorFlowFloatingPoint>(
 }
 
 @usableFromInline
-@differentiable(wrt: images where Scalar: TensorFlowFloatingPoint)
+@differentiable(reverse, wrt: images where Scalar: TensorFlowFloatingPoint)
 func resizeBicubic<Scalar: TensorFlowFloatingPoint>(
   images: Tensor<Scalar>,
   size: Tensor<Int32>,
@@ -356,7 +356,7 @@ func _vjpResizeBicubic<Scalar: TensorFlowFloatingPoint>(
 ///   - rates: The dilation rates for each dimension of the input.
 /// - Precondition: `input` must have rank `4`.
 /// - Precondition: `filter` must have rank `3`.
-@differentiable(wrt: (input, filter))
+@differentiable(reverse, wrt: (input, filter))
 public func dilation2D<Scalar: TensorFlowFloatingPoint>(
   _ input: Tensor<Scalar>,
   filter: Tensor<Scalar>,
@@ -401,7 +401,7 @@ func _vjpDilation2D<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// TensorFlow builtin dilation2d gradient helper for the input.
-@differentiable(wrt: (x, filter))
+@differentiable(reverse, wrt: (x, filter))
 @usableFromInline
 func dilation2DBackpropInput<Scalar: TensorFlowFloatingPoint>(
   _ x: Tensor<Scalar>,
@@ -451,7 +451,7 @@ func _vjpDilation2DBackpropInput<Scalar: TensorFlowFloatingPoint>(
 }
 
 /// TensorFlow builtin dilation2d gradient helper for the input.
-@differentiable(wrt: (x, input))
+@differentiable(reverse, wrt: (x, input))
 @usableFromInline
 func dilation2DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
   _ x: Tensor<Scalar>,
@@ -510,7 +510,7 @@ func _vjpDilation2DBackpropFilter<Scalar: TensorFlowFloatingPoint>(
 ///   - rates: The dilation rates for each dimension of the input.
 /// - Precondition: `input` must have rank `4`.
 /// - Precondition: `filter` must have rank 3.
-@differentiable(wrt: (input, filter))
+@differentiable(reverse, wrt: (input, filter))
 public func erosion2D<Scalar: TensorFlowFloatingPoint>(
   _ input: Tensor<Scalar>,
   filter: Tensor<Scalar>,

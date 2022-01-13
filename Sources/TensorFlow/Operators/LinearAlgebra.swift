@@ -32,7 +32,7 @@ extension Tensor where Scalar: TensorFlowNumeric {
   /// // [1, 2, 3, 4]
   /// ```
   @inlinable
-  @differentiable(where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse where Scalar: TensorFlowFloatingPoint)
   public func diagonalPart() -> Tensor {
     precondition(rank >= 2, "The tensor must have at least rank 2.")
     return _Raw.matrixDiagPart(self)
@@ -53,7 +53,7 @@ extension Tensor where Scalar: TensorFlowNumeric {
   /// //  [0, 0, 0, 4]]
   /// ```
   @inlinable
-  @differentiable(where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse where Scalar: TensorFlowFloatingPoint)
   public func diagonal() -> Tensor {
     _Raw.matrixDiag(diagonal: self)
   }
@@ -70,7 +70,7 @@ extension Tensor where Scalar: TensorFlowNumeric {
   }
 
   @available(*, deprecated, renamed: "bandPart(subdiagonalCount:superdiagonalCount:)")
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public func bandPart(_ subdiagonalCount: Int, _ superdiagonalCount: Int) -> Tensor {
     return bandPart(subdiagonalCount: subdiagonalCount, superdiagonalCount: superdiagonalCount)
   }
@@ -105,7 +105,7 @@ extension Tensor where Scalar: TensorFlowNumeric {
   ///   - superdiagonalCount: The number of superdiagonals to keep. If negative, keep entire upper
   ///     triangle.
   @inlinable
-  @differentiable(where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse where Scalar: TensorFlowFloatingPoint)
   public func bandPart(subdiagonalCount: Int, superdiagonalCount: Int) -> Tensor {
     precondition(rank >= 2, "The tensor must have at least rank 2.")
     let lower = Tensor<Int32>(Int32(subdiagonalCount), on: self.device)
@@ -178,7 +178,7 @@ public func eye<Scalar: Numeric>(
 /// - Parameter matrix: A tensor of shape `[..., M, N]`.
 /// - Precondition: `matrix` must be a tensor with shape `[..., M, N]`.
 @inlinable
-@differentiable(wrt: matrix where T: TensorFlowFloatingPoint)
+@differentiable(reverse, wrt: matrix where T: TensorFlowFloatingPoint)
 public func trace<T: TensorFlowNumeric>(_ matrix: Tensor<T>) -> Tensor<T> {
   precondition(matrix.rank >= 2, "The tensor must have at least rank 2.")
   return matrix.diagonalPart().sum(squeezingAxes: -1)
@@ -214,7 +214,7 @@ func slogdet<T: TensorFlowFloatingPoint>(_ matrix: Tensor<T>) -> (
 /// - Parameter matrix: A tensor of shape `[..., M, N]`.
 /// - Returns: The natural logarithm of the determinant of `matrix`.
 @inlinable
-@differentiable(wrt: matrix where T: TensorFlowFloatingPoint)
+@differentiable(reverse, wrt: matrix where T: TensorFlowFloatingPoint)
 func logdet<T: TensorFlowFloatingPoint>(_ matrix: Tensor<T>) -> Tensor<T> {
   return 2.0 * log(cholesky(matrix).diagonalPart()).sum(squeezingAxes: -1)
 }
@@ -235,7 +235,7 @@ func logdet<T: TensorFlowFloatingPoint>(_ matrix: Tensor<T>) -> Tensor<T> {
 ///
 /// - Parameter input: A tensor of shape `[..., M, M]`.
 @inlinable
-@differentiable
+@differentiable(reverse)
 public func cholesky<T: TensorFlowFloatingPoint>(_ x: Tensor<T>) -> Tensor<T> {
   _Raw.cholesky(x)
 }
@@ -326,7 +326,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
 /// - Precondition: `matrix` must be a tensor with shape `[..., M, M]`.
 /// - Precondition: `rhs` must be a tensor with shape `[..., M, K]`.
 @inlinable
-@differentiable
+@differentiable(reverse)
 public func triangularSolve<T: TensorFlowFloatingPoint>(
   matrix: Tensor<T>,
   rhs: Tensor<T>,
