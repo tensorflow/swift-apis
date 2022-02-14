@@ -18,13 +18,13 @@
 
 namespace swift_xla {
 
-ShapeBuilder& ShapeBuilder::Add(const xla::Shape& shape, xla::int64 dim) {
+ShapeBuilder& ShapeBuilder::Add(const xla::Shape& shape, int64_t dim) {
   dims_.push_back({&shape, dim});
   return *this;
 }
 
 ShapeBuilder& ShapeBuilder::Add(const xla::Shape& shape,
-                                absl::Span<const xla::int64> dimensions) {
+                                absl::Span<const int64_t> dimensions) {
   dims_.reserve(dimensions.size());
   for (auto dim : dimensions) {
     dims_.push_back({&shape, dim});
@@ -32,13 +32,13 @@ ShapeBuilder& ShapeBuilder::Add(const xla::Shape& shape,
   return *this;
 }
 
-ShapeBuilder& ShapeBuilder::Add(xla::int64 size) {
+ShapeBuilder& ShapeBuilder::Add(int64_t size) {
   dims_.push_back({nullptr, size});
   return *this;
 }
 
 xla::Shape ShapeBuilder::Build() const {
-  std::vector<xla::int64> dimensions;
+  std::vector<int64_t> dimensions;
   dimensions.reserve(dims_.size());
   for (auto& sdim : dims_) {
     if (sdim.shape != nullptr) {
@@ -48,7 +48,7 @@ xla::Shape ShapeBuilder::Build() const {
     }
   }
   xla::Shape shape = xla::ShapeUtil::MakeShape(type_, dimensions);
-  for (xla::int64 i = 0; i < shape.rank(); ++i) {
+  for (int64_t i = 0; i < shape.rank(); ++i) {
     const ShapeDim& sdim = dims_[i];
     if (sdim.shape != nullptr) {
       shape.set_dynamic_dimension(

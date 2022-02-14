@@ -66,7 +66,7 @@ class XLATensor {
 
   XLATensor alias() const { return XLATensor(data_ptr()); }
 
-  xla::int64 size(xla::int64 dim) const;
+  int64_t size(int64_t dim) const;
 
   at::Tensor ToTensor(bool detached);
 
@@ -83,7 +83,7 @@ class XLATensor {
   xla::Shape shape_with_layout() const;
 
   const Device& GetDevice() const;
-  xla::int64 GetUniqueId() const;
+  int64_t GetUniqueId() const;
 
   // Fetches the XLA data behind the tensor. If the tensor has a graph defining
   // its current value, executes the graph and fetches the XLA data result.
@@ -115,7 +115,7 @@ class XLATensor {
   static ir::Value GetIrValueForScalar(at::Scalar value, const Device& device);
   static ir::Value GetIrValueForScalar(at::Scalar value,
                                        xla::PrimitiveType type,
-                                       absl::Span<const xla::int64> dimensions,
+                                       absl::Span<const int64_t> dimensions,
                                        const Device& device);
   static ir::Value GetIrValueForScalar(at::Scalar value,
                                        const xla::Shape& shape,
@@ -190,33 +190,33 @@ class XLATensor {
   //////////////////////////////////////////////////////////////////////////////
   static std::pair<XLATensor, ir::Value> all_reduce(
       const XLATensor& input, const ir::Value& token, AllReduceType reduce_type,
-      double scale, std::vector<std::vector<xla::int64>> groups);
+      double scale, std::vector<std::vector<int64_t>> groups);
 
   static std::pair<std::vector<XLATensor>, ir::Value> all_reduce(
       const std::vector<XLATensor>& inputs, const ir::Value& token,
       AllReduceType reduce_type, double scale,
-      std::vector<std::vector<xla::int64>> groups);
+      std::vector<std::vector<int64_t>> groups);
 
   static ir::Value all_reduce_(XLATensor& input, const ir::Value& token,
                                AllReduceType reduce_type, double scale,
-                               std::vector<std::vector<xla::int64>> groups);
+                               std::vector<std::vector<int64_t>> groups);
 
   static ir::Value all_reduce_(std::vector<XLATensor>* inputs,
                                const ir::Value& token,
                                AllReduceType reduce_type, double scale,
-                               std::vector<std::vector<xla::int64>> groups);
+                               std::vector<std::vector<int64_t>> groups);
 
   static std::pair<XLATensor, ir::Value> all_to_all(
       const XLATensor& input, const ir::Value& token,
-      xla::int64 split_dimension, xla::int64 concat_dimension,
-      xla::int64 split_count, std::vector<std::vector<xla::int64>> groups);
+      int64_t split_dimension, int64_t concat_dimension,
+      int64_t split_count, std::vector<std::vector<int64_t>> groups);
 
   static std::pair<XLATensor, ir::Value> collective_permute(
       const XLATensor& input, const ir::Value& token,
-      std::vector<std::pair<xla::int64, xla::int64>> source_target_pairs);
+      std::vector<std::pair<int64_t, int64_t>> source_target_pairs);
 
   static XLATensor get_dimensions_size(const XLATensor& input,
-                                       std::vector<xla::int64> dimensions);
+                                       std::vector<int64_t> dimensions);
 
   static std::vector<XLATensor> user_computation(
       const std::string& opname, absl::Span<const XLATensor> inputs,
@@ -234,7 +234,7 @@ class XLATensor {
   static std::vector<XLATensor> broadcast_tensors(
       absl::Span<const XLATensor> tensors);
 
-  static XLATensor tf_StatelessRandomNormal(absl::Span<const xla::int64> size,
+  static XLATensor tf_StatelessRandomNormal(absl::Span<const int64_t> size,
                                             const XLATensor& seeds,
                                             const Device& device,
                                             at::ScalarType scalar_type);
@@ -243,43 +243,43 @@ class XLATensor {
                       c10::optional<at::ScalarType> scalar_type);
 
   static void linspace_out(XLATensor& out, at::Scalar start, at::Scalar stop,
-                           xla::int64 num, at::ScalarType scalar_type);
+                           int64_t num, at::ScalarType scalar_type);
 
   // XLA client operations exposed as tensor methods.
 
   static XLATensor xla_avg_pool(
-      const XLATensor& input, absl::Span<const xla::int64> kernel_size,
-      absl::Span<const xla::int64> stride,
-      absl::Span<const std::pair<xla::int64, xla::int64>> padding,
+      const XLATensor& input, absl::Span<const int64_t> kernel_size,
+      absl::Span<const int64_t> stride,
+      absl::Span<const std::pair<int64_t, int64_t>> padding,
       const xla::TensorFormat& data_format, const bool counts_include_padding);
 
   static XLATensor xla_avg_pool_grad(
       const XLATensor& out_backprop,
-      absl::Span<const xla::int64> gradients_size,
-      absl::Span<const xla::int64> kernel_size,
-      absl::Span<const xla::int64> stride,
-      absl::Span<const std::pair<xla::int64, xla::int64>> spatial_padding,
+      absl::Span<const int64_t> gradients_size,
+      absl::Span<const int64_t> kernel_size,
+      absl::Span<const int64_t> stride,
+      absl::Span<const std::pair<int64_t, int64_t>> spatial_padding,
       const xla::TensorFormat& data_format, const bool counts_include_padding);
 
   static XLATensor xla_max_pool(const XLATensor& input,
-                                absl::Span<const xla::int64> kernel_size,
-                                absl::Span<const xla::int64> stride,
+                                absl::Span<const int64_t> kernel_size,
+                                absl::Span<const int64_t> stride,
                                 xla::Padding padding,
                                 const xla::TensorFormat& data_format);
 
   static XLATensor xla_max_pool_grad(const XLATensor& input,
                                      const XLATensor& out_backprop,
-                                     absl::Span<const xla::int64> kernel_size,
-                                     absl::Span<const xla::int64> stride,
+                                     absl::Span<const int64_t> kernel_size,
+                                     absl::Span<const int64_t> stride,
                                      xla::Padding padding);
 
   static XLATensor xla_pad(const XLATensor& input, at::Scalar padding_value,
                            xla::PaddingConfig padding_config);
 
   static XLATensor xla_slice(const XLATensor& input,
-                             absl::Span<const xla::int64> start_indices,
-                             absl::Span<const xla::int64> limit_indices,
-                             absl::Span<const xla::int64> stride);
+                             absl::Span<const int64_t> start_indices,
+                             absl::Span<const int64_t> limit_indices,
+                             absl::Span<const int64_t> stride);
 
   static XLATensor xla_truncated_normal(const XLATensor& input);
 
@@ -376,7 +376,7 @@ class XLATensor {
     c10::optional<at::ScalarType> logical_element_type;
     c10::optional<at::Tensor> tensor_data;
     const Device device;
-    const xla::int64 unique_id = 0;
+    const int64_t unique_id = 0;
     size_t generation = 1;
   };
 
@@ -499,7 +499,7 @@ class XLATensor {
       std::vector<XLATensor>* tensors, absl::Span<const std::string> devices,
       const SyncTensorsConfig& config);
 
-  static xla::int64 GetNextTensorId();
+  static int64_t GetNextTensorId();
 
   // Check if the current node is a cutpoint (by hash) and apply pending graph -
   // in other words, cut the trace - and return true iff that's the case.

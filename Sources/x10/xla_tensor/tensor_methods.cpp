@@ -71,10 +71,10 @@ MinMaxValues GetMinMaxValues(const XLATensor& tensor,
                                          tensor.GetDevice())};
 }
 
-void CheckRank(const XLATensor& t, xla::int64 expected_rank,
+void CheckRank(const XLATensor& t, int64_t expected_rank,
                const std::string& tag, const std::string& arg_name,
                int arg_number) {
-  xla::int64 actual_rank = t.shape().get().rank();
+  int64_t actual_rank = t.shape().get().rank();
   XLA_CHECK_EQ(actual_rank, expected_rank)
       << "Expected " << expected_rank << "-dimensional tensor, but got "
       << actual_rank << "-dimensional tensor for "
@@ -84,15 +84,15 @@ void CheckRank(const XLATensor& t, xla::int64 expected_rank,
 
 template <typename T>
 void CheckShapeDimensions(const T& size) {
-  XLA_CHECK(std::all_of(size.begin(), size.end(), [](xla::int64 dim) {
+  XLA_CHECK(std::all_of(size.begin(), size.end(), [](int64_t dim) {
     return dim >= 0;
   })) << "Dimensions cannot be negative numbers";
 }
 
-void CheckDimensionSize(const XLATensor& t, xla::int64 dim,
-                        xla::int64 expected_size, const std::string& tag,
+void CheckDimensionSize(const XLATensor& t, int64_t dim,
+                        int64_t expected_size, const std::string& tag,
                         const std::string& arg_name, int arg_number) {
-  xla::int64 dim_size = t.size(dim);
+  int64_t dim_size = t.size(dim);
   XLA_CHECK_EQ(t.size(dim), expected_size)
       << "Expected tensor to have size " << expected_size << " at dimension "
       << dim << ", but got size " << dim_size << " for "
@@ -100,10 +100,10 @@ void CheckDimensionSize(const XLATensor& t, xla::int64 dim,
       << " (while checking arguments for " << tag << ")";
 }
 
-std::vector<xla::int64> GetExpandDimensions(
-    const xla::Shape& shape, std::vector<xla::int64> dimensions) {
+std::vector<int64_t> GetExpandDimensions(
+    const xla::Shape& shape, std::vector<int64_t> dimensions) {
   XLA_CHECK_GE(dimensions.size(), shape.rank()) << shape;
-  xla::int64 base = dimensions.size() - shape.rank();
+  int64_t base = dimensions.size() - shape.rank();
   for (size_t i = 0; i < shape.rank(); ++i) {
     if (dimensions[base + i] == -1) {
       dimensions[base + i] = shape.dimensions(i);
@@ -115,14 +115,14 @@ std::vector<xla::int64> GetExpandDimensions(
 // Resizes and / or checks whether a list is of the given size. The list is only
 // resized if its size is 1. If it's empty, it's replaced with the provided
 // default first.
-std::vector<xla::int64> CheckIntList(absl::Span<const xla::int64> list,
+std::vector<int64_t> CheckIntList(absl::Span<const int64_t> list,
                                      size_t length, const std::string& name,
-                                     std::vector<xla::int64> def = {}) {
-  std::vector<xla::int64> result;
+                                     std::vector<int64_t> def = {}) {
+  std::vector<int64_t> result;
   if (list.empty()) {
     result = std::move(def);
   } else {
-    result = xla::util::ToVector<xla::int64>(list);
+    result = xla::util::ToVector<int64_t>(list);
   }
   if (result.size() == 1 && length > 1) {
     result.resize(length, result[0]);
@@ -164,7 +164,7 @@ ir::Value MaybeExpand(const ir::Value& input, const xla::Shape& target_shape) {
     return input;
   }
   return ir::MakeNode<ir::ops::Expand>(
-      input, xla::util::ToVector<xla::int64>(target_shape.dimensions()));
+      input, xla::util::ToVector<int64_t>(target_shape.dimensions()));
 }
 
 void CheckIsIntegralOrPred(const xla::Shape& shape,
@@ -184,7 +184,7 @@ void CheckIsIntegralOrPred(const xla::Shape& shape,
 std::pair<std::vector<XLATensor>, ir::Value> XLATensor::all_reduce(
     const std::vector<XLATensor>& inputs, const ir::Value& token,
     AllReduceType reduce_type, double scale,
-    std::vector<std::vector<xla::int64>> groups) {
+    std::vector<std::vector<int64_t>> groups) {
   std::vector<ir::Value> input_values;
   input_values.reserve(inputs.size());
   for (const XLATensor& input : inputs) {
@@ -222,7 +222,7 @@ std::vector<XLATensor> XLATensor::broadcast_tensors(
   return tensors.front().MakeOutputTensors(node);
 }
 
-XLATensor XLATensor::tf_StatelessRandomNormal(absl::Span<const xla::int64> size,
+XLATensor XLATensor::tf_StatelessRandomNormal(absl::Span<const int64_t> size,
                                               const XLATensor& seeds,
                                               const Device& device,
                                               at::ScalarType scalar_type) {
@@ -260,41 +260,41 @@ XLATensor XLATensor::to(XLATensor& input, c10::optional<Device> device,
 }
 
 void XLATensor::linspace_out(XLATensor& out, at::Scalar start, at::Scalar stop,
-                             xla::int64 num, at::ScalarType scalar_type) {
+                             int64_t num, at::ScalarType scalar_type) {
   out.SetIrValue(ir::ops::LinSpace(start, stop, num, scalar_type));
   out.SetScalarType(scalar_type);
 }
 
 XLATensor XLATensor::xla_avg_pool(
-    const XLATensor& input, absl::Span<const xla::int64> kernel_size,
-    absl::Span<const xla::int64> stride,
-    absl::Span<const std::pair<xla::int64, xla::int64>> padding,
+    const XLATensor& input, absl::Span<const int64_t> kernel_size,
+    absl::Span<const int64_t> stride,
+    absl::Span<const std::pair<int64_t, int64_t>> padding,
     const xla::TensorFormat& data_format, const bool counts_include_padding) {
   return input.CreateFrom(ir::MakeNode<ir::ops::XlaAvgPool>(
       input.GetIrValue(), XlaHelpers::I64List(kernel_size),
       XlaHelpers::I64List(stride),
-      std::vector<std::pair<xla::int64, xla::int64>>(padding.begin(),
+      std::vector<std::pair<int64_t, int64_t>>(padding.begin(),
                                                      padding.end()),
       data_format, counts_include_padding));
 }
 
 XLATensor XLATensor::xla_avg_pool_grad(
-    const XLATensor& out_backprop, absl::Span<const xla::int64> gradients_size,
-    absl::Span<const xla::int64> kernel_size,
-    absl::Span<const xla::int64> stride,
-    absl::Span<const std::pair<xla::int64, xla::int64>> spatial_padding,
+    const XLATensor& out_backprop, absl::Span<const int64_t> gradients_size,
+    absl::Span<const int64_t> kernel_size,
+    absl::Span<const int64_t> stride,
+    absl::Span<const std::pair<int64_t, int64_t>> spatial_padding,
     const xla::TensorFormat& data_format, const bool counts_include_padding) {
   return out_backprop.CreateFrom(ir::MakeNode<ir::ops::XlaAvgPoolGrad>(
       out_backprop.GetIrValue(), XlaHelpers::I64List(gradients_size),
       XlaHelpers::I64List(kernel_size), XlaHelpers::I64List(stride),
-      std::vector<std::pair<xla::int64, xla::int64>>(spatial_padding.begin(),
+      std::vector<std::pair<int64_t, int64_t>>(spatial_padding.begin(),
                                                      spatial_padding.end()),
       data_format, counts_include_padding));
 }
 
 XLATensor XLATensor::xla_max_pool(const XLATensor& input,
-                                  absl::Span<const xla::int64> kernel_size,
-                                  absl::Span<const xla::int64> stride,
+                                  absl::Span<const int64_t> kernel_size,
+                                  absl::Span<const int64_t> stride,
                                   xla::Padding padding,
                                   const xla::TensorFormat& data_format) {
   return input.CreateFrom(ir::MakeNode<ir::ops::XlaMaxPool>(
@@ -304,8 +304,8 @@ XLATensor XLATensor::xla_max_pool(const XLATensor& input,
 
 XLATensor XLATensor::xla_max_pool_grad(const XLATensor& input,
                                        const XLATensor& out_backprop,
-                                       absl::Span<const xla::int64> kernel_size,
-                                       absl::Span<const xla::int64> stride,
+                                       absl::Span<const int64_t> kernel_size,
+                                       absl::Span<const int64_t> stride,
                                        xla::Padding padding) {
   return out_backprop.CreateFrom(ir::MakeNode<ir::ops::XlaMaxPoolGrad>(
       input.GetIrValue(), out_backprop.GetIrValue(),

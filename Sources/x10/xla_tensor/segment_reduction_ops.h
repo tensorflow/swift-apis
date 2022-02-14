@@ -23,7 +23,7 @@ namespace swift_xla {
 
 xla::XlaOp UnsortedSegmentReduce(
     xla::XlaOp data, xla::XlaOp indices, xla::XlaOp init_value,
-    xla::int64 num_segments,
+    int64_t num_segments,
     const std::function<xla::XlaOp(xla::XlaOp, xla::XlaOp)>& combine);
 
 }  // namespace swift_xla

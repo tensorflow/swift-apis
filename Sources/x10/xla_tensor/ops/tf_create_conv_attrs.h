@@ -23,10 +23,10 @@ namespace ir {
 namespace ops {
 
 tensorflow::ConvOpAttrs CreateConvOpAttrs(
-    int num_spatial_dims, bool depthwise, absl::Span<const xla::int64> strides,
-    tensorflow::Padding padding, absl::Span<const xla::int64> explicit_paddings,
+    int num_spatial_dims, bool depthwise, absl::Span<const int64_t> strides,
+    tensorflow::Padding padding, absl::Span<const int64_t> explicit_paddings,
     tensorflow::TensorFormat data_format,
-    absl::Span<const xla::int64> dilations);
+    absl::Span<const int64_t> dilations);
 
 }  // namespace ops
 }  // namespace ir

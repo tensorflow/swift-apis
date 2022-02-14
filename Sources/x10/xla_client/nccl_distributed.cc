@@ -52,13 +52,13 @@ std::string NcclUidManager::GetNcclUniqueUid(absl::Span<const int64> replicas) {
 
 }  // namespace
 
-std::string GetNcclUniqueUid(absl::Span<const int64> replicas) {
+std::string GetNcclUniqueUid(absl::Span<const int64_t> replicas) {
   return NcclUidManager::Get()->GetNcclUniqueUid(replicas);
 }
 
 #else  // XLA_CUDA
 
-std::string GetNcclUniqueUid(absl::Span<const int64> replicas) {
+std::string GetNcclUniqueUid(absl::Span<const int64_t> replicas) {
   XLA_ERROR() << "Calling GetNcclUniqueUid() without NCCL configuration";
 }
 

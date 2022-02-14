@@ -28,8 +28,8 @@ namespace ops {
 namespace {
 
 xla::XlaOp BuildXlaMaxPoolGrad(xla::XlaOp input, xla::XlaOp out_backprop,
-                               absl::Span<const xla::int64> kernel_size,
-                               absl::Span<const xla::int64> strides,
+                               absl::Span<const int64_t> kernel_size,
+                               absl::Span<const int64_t> strides,
                                xla::Padding padding) {
   xla::Shape out_backprop_shape = XlaHelpers::ShapeOfXlaOp(out_backprop);
   xla::PrimitiveType element_type = out_backprop_shape.element_type();
@@ -43,8 +43,8 @@ xla::XlaOp BuildXlaMaxPoolGrad(xla::XlaOp input, xla::XlaOp out_backprop,
 
 // Infers the output shape of the max pooling gradient operation.
 xla::Shape NodeOutputShape(const Value& input, const Value& out_backprop,
-                           absl::Span<const xla::int64> kernel_size,
-                           std::vector<xla::int64> strides,
+                           absl::Span<const int64_t> kernel_size,
+                           std::vector<int64_t> strides,
                            xla::Padding padding) {
   auto lower_for_shape_fn =
       [&](absl::Span<const xla::XlaOp> operands) -> xla::XlaOp {
@@ -60,8 +60,8 @@ xla::Shape NodeOutputShape(const Value& input, const Value& out_backprop,
 }  // namespace
 
 XlaMaxPoolGrad::XlaMaxPoolGrad(const Value& input, const Value& out_backprop,
-                               std::vector<xla::int64> kernel_size,
-                               std::vector<xla::int64> strides,
+                               std::vector<int64_t> kernel_size,
+                               std::vector<int64_t> strides,
                                xla::Padding padding)
     : Node(ir::OpKind(at::aten::xla_max_pool_grad), {input, out_backprop},
            [&]() {

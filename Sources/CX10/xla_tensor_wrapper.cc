@@ -155,7 +155,7 @@ OpaqueXLATensor* copyTensorAndMakeResident(enum XLATensorScalarType type,
   }
   auto* device_ptr = xla::GetX10Device(device);
   if (XLATensorScalarType_Float == type && device_ptr->IsLocal()) {
-    std::vector<xla::int64> dims(shape, shape + rank);
+    std::vector<int64_t> dims(shape, shape + rank);
     auto dest_shape = swift_xla::MakeArrayShapeFromDimensions(
         dims, /*dynamic_dimensions=*/{}, xla::PrimitiveType::F32,
         device.hw_type);
@@ -232,7 +232,7 @@ size_t XLAShape_getRank(xla::util::MaybeRef<xla::Shape>* shape) {
 }
 
 const int64_t* XLAShape_getDimensions(OpaqueXLAShape* shape) {
-  static_assert(sizeof(int64_t) == sizeof(xla::int64), "Sanity");
+  static_assert(sizeof(int64_t) == sizeof(int64_t), "Sanity");
   return reinterpret_cast<const int64_t*>(shape->get().dimensions().data());
 }
 

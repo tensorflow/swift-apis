@@ -27,6 +27,7 @@
 #include "tensorflow/compiler/tf2xla/xla_tensor/aten_compat.h"
 #include "tensorflow/compiler/xla/client/xla_builder.h"
 #include "tensorflow/compiler/xla/literal_util.h"
+#include "tensorflow/compiler/xla/permutation_util.h"
 #include "tensorflow/compiler/xla/types.h"
 #include "tensorflow/core/lib/bfloat16/bfloat16.h"
 
@@ -42,12 +43,12 @@ class XlaHelpers {
 
   struct DynamicSize {
     xla::XlaOp size;
-    absl::optional<xla::int64> scalar_size;
+    absl::optional<int64_t> scalar_size;
   };
 
   struct DynamicReshapeInfo {
     xla::Shape output_shape;
-    xla::int64 dynamic_dimension = -1;
+    int64_t dynamic_dimension = -1;
   };
 
   template <class T>
@@ -65,7 +66,7 @@ class XlaHelpers {
         return xla::LiteralUtil::CreateR0<xla::half>(
             static_cast<xla::half>(static_cast<float>(scalar_value)));
       case xla::PrimitiveType::S64:
-        return xla::LiteralUtil::CreateR0<xla::int64>(scalar_value);
+        return xla::LiteralUtil::CreateR0<int64_t>(scalar_value);
       case xla::PrimitiveType::U64:
         return xla::LiteralUtil::CreateR0<xla::uint64>(scalar_value);
       case xla::PrimitiveType::S32:
@@ -111,7 +112,7 @@ class XlaHelpers {
       return ScalarValue(scalar_value.toDouble(), type, builder);
     }
     XLA_CHECK(scalar_value.isIntegral()) << "Scalar type not supported";
-    return ScalarValue(static_cast<xla::int64>(scalar_value.toLong()), type,
+    return ScalarValue(static_cast<int64_t>(scalar_value.toLong()), type,
                        builder);
   }
 
@@ -124,22 +125,22 @@ class XlaHelpers {
   static const xla::Shape& ShapeOfXlaOp(xla::XlaOp op);
 
   // Returns the list of dimension sizes for the given XLA operation.
-  static std::vector<xla::int64> SizesOfXlaOp(xla::XlaOp op);
+  static std::vector<int64_t> SizesOfXlaOp(xla::XlaOp op);
 
   // Returns the value type of given XLA operation.
   static xla::PrimitiveType TypeOfXlaOp(xla::XlaOp op);
 
-  static std::vector<xla::int64> GetAllDimensions(size_t rank) {
-    return xla::util::Iota<xla::int64>(rank);
+  static std::vector<int64_t> GetAllDimensions(size_t rank) {
+    return xla::util::Iota<int64_t>(rank);
   }
 
-  static std::vector<xla::int64> GetAllDimensions(const xla::Shape& shape) {
-    return xla::util::Iota<xla::int64>(shape.rank());
+  static std::vector<int64_t> GetAllDimensions(const xla::Shape& shape) {
+    return xla::util::Iota<int64_t>(shape.rank());
   }
 
   static xla::XlaOp BroadcastDimensions(xla::XlaOp input,
-                                        absl::Span<const xla::int64> dimensions,
-                                        absl::Span<const xla::int64> sizes);
+                                        absl::Span<const int64_t> dimensions,
+                                        absl::Span<const int64_t> sizes);
 
   static xla::XlaOp CreateReturnValue(xla::XlaBuilder* builder,
                                       const std::vector<xla::XlaOp>& outputs);
@@ -147,7 +148,7 @@ class XlaHelpers {
   // Creates a scalar broadcasted to a given shape.
   template <class T>
   static xla::XlaOp ScalarBroadcast(T scalar_value, xla::PrimitiveType type,
-                                    absl::Span<const xla::int64> dimensions,
+                                    absl::Span<const int64_t> dimensions,
                                     xla::XlaBuilder* builder) {
     xla::XlaOp scalar_op = ScalarValue<T>(scalar_value, type, builder);
     return xla::Broadcast(scalar_op, dimensions);
@@ -161,13 +162,13 @@ class XlaHelpers {
   }
 
   static absl::optional<DynamicReshapeInfo> GetDynamicReshapeInfo(
-      const xla::Shape& input_shape, absl::Span<const xla::int64> output_sizes);
+      const xla::Shape& input_shape, absl::Span<const int64_t> output_sizes);
 
   static xla::Shape GetDynamicReshape(
-      const xla::Shape& input_shape, absl::Span<const xla::int64> output_sizes);
+      const xla::Shape& input_shape, absl::Span<const int64_t> output_sizes);
 
   static xla::XlaOp DynamicReshape(xla::XlaOp input,
-                                   absl::Span<const xla::int64> output_sizes);
+                                   absl::Span<const int64_t> output_sizes);
 
   static xla::XlaOp DynamicReshapeAs(xla::XlaOp input, const xla::Shape& shape);
 
@@ -180,41 +181,41 @@ class XlaHelpers {
 
   // Converts an iterable container to a vector XLA int64's.
   template <typename S>
-  static std::vector<xla::int64> I64List(const S& input) {
-    return xla::util::ToVector<xla::int64>(input);
+  static std::vector<int64_t> I64List(const S& input) {
+    return xla::util::ToVector<int64_t>(input);
   }
 
-  static c10::optional<xla::int64> I64Optional(c10::optional<int64_t> opt) {
-    return opt ? c10::optional<xla::int64>(*opt) : absl::nullopt;
+  static c10::optional<int64_t> I64Optional(c10::optional<int64_t> opt) {
+    return opt ? c10::optional<int64_t>(*opt) : absl::nullopt;
   }
 
   // Creates an XLA padding configuration from a n-dimensional padding list.
   static xla::PaddingConfig MakeXlaPaddingConfigFromNdPadding(
-      absl::Span<const xla::int64> padding);
+      absl::Span<const int64_t> padding);
 
   // Creates a set of dimension by dropping the drop_dims ones.
-  static std::vector<xla::int64> DropDimensions(
-      absl::Span<const xla::int64> sizes,
-      absl::Span<const xla::int64> drop_dims);
+  static std::vector<int64_t> DropDimensions(
+      absl::Span<const int64_t> sizes,
+      absl::Span<const int64_t> drop_dims);
 
   // Get the canonical dimension index in the [0, rank) interval. Negative
   // indices are interpreted as follows: -1 is rank-1, -2 is rank-2 etc.
-  static xla::int64 GetCanonicalDimensionIndex(xla::int64 dim, xla::int64 rank);
+  static int64_t GetCanonicalDimensionIndex(int64_t dim, int64_t rank);
 
   // Same as above, for multiple dimensions.
-  static std::vector<xla::int64> GetCanonicalDimensionIndices(
-      absl::Span<const xla::int64> dimensions, xla::int64 rank);
+  static std::vector<int64_t> GetCanonicalDimensionIndices(
+      absl::Span<const int64_t> dimensions, int64_t rank);
 
   // Returns the canonical position in the dim dimension, handling negative
   // values for the position.
-  static xla::int64 GetCanonicalPosition(
-      absl::Span<const xla::int64> dimensions, xla::int64 dim, xla::int64 pos);
+  static int64_t GetCanonicalPosition(
+      absl::Span<const int64_t> dimensions, int64_t dim, int64_t pos);
 
   // Retrieves the dynamic dimension of an input shape, or returns -1 if none.
-  static xla::int64 GetDynamicDimension(const xla::Shape& shape);
+  static int64_t GetDynamicDimension(const xla::Shape& shape);
 
   static DynamicSize GetDimensionsSize(absl::Span<const xla::XlaOp> inputs,
-                                       absl::Span<const xla::int64> dimensions);
+                                       absl::Span<const int64_t> dimensions);
 
   // Retrieves type's minimum and maximum values.
   static MinMax MinMaxValues(xla::PrimitiveType type);
@@ -237,14 +238,14 @@ class XlaHelpers {
   // appending 1s to the major dimension. If offset is greater than zero, 1s
   // will be prepened to the minor dimension as well.
   // Expected condition: rank(input) + offset <= expected_rank
-  static xla::XlaOp ReshapeToRank(xla::XlaOp input, xla::int64 expected_rank,
-                                  xla::int64 offset = 0);
+  static xla::XlaOp ReshapeToRank(xla::XlaOp input, int64_t expected_rank,
+                                  int64_t offset = 0);
 
   static xla::XlaOp Flatten(xla::XlaOp input,
                             xla::Shape* input_shape = nullptr);
 
-  static xla::XlaOp FlattenDimRange(xla::XlaOp input, xla::int64 start,
-                                    xla::int64 range,
+  static xla::XlaOp FlattenDimRange(xla::XlaOp input, int64_t start,
+                                    int64_t range,
                                     xla::Shape* input_shape = nullptr);
 
   // Gathers the input using the order specified by the permutation. For each i,
@@ -252,7 +253,7 @@ class XlaHelpers {
   // size as the input.
   template <typename Container>
   static std::vector<typename Container::value_type> Permute(
-      absl::Span<const xla::int64> permutation, const Container& input) {
+      absl::Span<const int64_t> permutation, const Container& input) {
     using T = typename Container::value_type;
     XLA_CHECK(xla::IsPermutation(permutation, input.size()))
         << "Invalid permutation specified";
@@ -264,9 +265,9 @@ class XlaHelpers {
   }
 
   // Creates a transposition from the given input and dimensions.
-  static std::vector<xla::int64> MakeTransposePermutation(xla::int64 dim0,
-                                                          xla::int64 dim1,
-                                                          xla::int64 rank);
+  static std::vector<int64_t> MakeTransposePermutation(int64_t dim0,
+                                                          int64_t dim1,
+                                                          int64_t rank);
 
   static xla::PrimitiveType PromoteType(xla::PrimitiveType type1,
                                         xla::PrimitiveType type2);
@@ -308,9 +309,9 @@ class XlaHelpers {
   //   shape1       = [9, 7, 6, 1, 2]
   //   shape2       =       [6, 5, 2]
   //   result_shape = [9, 7, 6, 5, 2]
-  static std::vector<xla::int64> GetPromotedShape(
-      absl::Span<const xla::int64> shape1_dims,
-      absl::Span<const xla::int64> shape2_dims);
+  static std::vector<int64_t> GetPromotedShape(
+      absl::Span<const int64_t> shape1_dims,
+      absl::Span<const int64_t> shape2_dims);
 
   static xla::Shape GetPromotedShape(const xla::Shape& shape1,
                                      const xla::Shape& shape2);
@@ -359,7 +360,7 @@ class XlaHelpers {
   }
 
   template <typename T>
-  static xla::Literal LinSpace(T start, T stop, xla::int64 num) {
+  static xla::Literal LinSpace(T start, T stop, int64_t num) {
     return xla::LiteralUtil::CreateR1<T>(
         xla::util::LinSpace<T>(start, stop, num));
   }

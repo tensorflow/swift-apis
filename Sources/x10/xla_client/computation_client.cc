@@ -54,7 +54,7 @@ std::vector<std::string> ComputationClient::GetCompilationDevices(
   return compilation_devices;
 }
 
-int64 ComputationClient::GetDeviceOrdinal(const std::string& device) {
+int64_t ComputationClient::GetDeviceOrdinal(const std::string& device) {
   auto pos = device.rfind(':');
   XLA_CHECK_NE(pos, std::string::npos) << device;
   return std::stoi(device.substr(pos + 1));

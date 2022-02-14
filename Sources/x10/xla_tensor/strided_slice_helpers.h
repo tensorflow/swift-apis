@@ -25,19 +25,19 @@ namespace swift_xla {
 
 // XLA slice parameters and output size for indexing operations.
 struct StridedSliceSpec {
-  absl::InlinedVector<xla::int64, 4> begin;
-  absl::InlinedVector<xla::int64, 4> end;
-  absl::InlinedVector<xla::int64, 4> strides;
-  absl::InlinedVector<xla::int64, 4> processing_sizes;
-  absl::InlinedVector<xla::int64, 4> final_sizes;
+  absl::InlinedVector<int64_t, 4> begin;
+  absl::InlinedVector<int64_t, 4> end;
+  absl::InlinedVector<int64_t, 4> strides;
+  absl::InlinedVector<int64_t, 4> processing_sizes;
+  absl::InlinedVector<int64_t, 4> final_sizes;
 };
 
 // Compute the slice parameters and output size to be used when lowering an
 // indexing operation.
 StridedSliceSpec ComputeIndexingBoundsAndStrides(
-    absl::Span<const xla::int64> input_sizes,
-    absl::Span<const xla::int64> begin, absl::Span<const xla::int64> end,
-    absl::Span<const xla::int64> strides, xla::int32 begin_mask,
+    absl::Span<const int64_t> input_sizes,
+    absl::Span<const int64_t> begin, absl::Span<const int64_t> end,
+    absl::Span<const int64_t> strides, xla::int32 begin_mask,
     xla::int32 end_mask, xla::int32 ellipsis_mask, xla::int32 new_axis_mask,
     xla::int32 shrink_axis_mask);
 

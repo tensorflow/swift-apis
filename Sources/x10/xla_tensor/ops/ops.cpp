@@ -87,7 +87,7 @@ NodePtr ARange(at::Scalar start, at::Scalar end, at::Scalar step,
                                               step.toLong());
       break;
     case xla::PrimitiveType::S64:
-      values = XlaHelpers::Range<xla::int64>(start.toLong(), end.toLong(),
+      values = XlaHelpers::Range<int64_t>(start.toLong(), end.toLong(),
                                              step.toLong());
       break;
     case xla::PrimitiveType::U64:
@@ -100,7 +100,7 @@ NodePtr ARange(at::Scalar start, at::Scalar end, at::Scalar step,
   return MakeNode<Constant>(std::move(values));
 }
 
-NodePtr LinSpace(at::Scalar start, at::Scalar stop, xla::int64 num,
+NodePtr LinSpace(at::Scalar start, at::Scalar stop, int64_t num,
                  at::ScalarType scalar_type) {
   XLA_CHECK_GT(num, 0) << "Requires num > 0: " << num;
   xla::PrimitiveType type = MakeXlaPrimitiveType(scalar_type,
@@ -141,7 +141,7 @@ NodePtr LinSpace(at::Scalar start, at::Scalar stop, xla::int64 num,
       break;
     case xla::PrimitiveType::S64:
       values =
-          XlaHelpers::LinSpace<xla::int64>(start.toLong(), stop.toLong(), num);
+          XlaHelpers::LinSpace<int64_t>(start.toLong(), stop.toLong(), num);
       break;
     case xla::PrimitiveType::U64:
       values =

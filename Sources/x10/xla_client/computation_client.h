@@ -107,7 +107,7 @@ class ComputationClient {
       virtual ~Info() {}
     };
 
-    using OpaqueHandle = int64;
+    using OpaqueHandle = int64_t;
 
     Data(Device* device, Shape shape)
         : device_(std::move(device)), shape_(std::move(shape)) {}
@@ -270,7 +270,7 @@ class ComputationClient {
 
   // Retrieves the ordinal number out of a device string. This is the number
   // after the last ':' character of the device string.
-  static int64 GetDeviceOrdinal(const std::string& device);
+  static int64_t GetDeviceOrdinal(const std::string& device);
 
   // Metrics common to all client intrfaces.
   static metrics::Metric* TransferToServerMetric();
