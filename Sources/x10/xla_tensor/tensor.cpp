@@ -81,7 +81,7 @@ thread_local TlsData g_tls_data;
 struct TraceletState {
   absl::node_hash_map<xla::hash_t, std::vector<xla::hash_t>> tracelet_by_prefix;
   absl::node_hash_set<xla::hash_t> cutpoints;
-  xla::int64 prev_uncached_compile = 0;
+  int64_t prev_uncached_compile = 0;
 };
 
 thread_local TraceletState g_tracelet_state;
@@ -324,7 +324,7 @@ bool ShouldSyncIrValue(const ir::Value& ir_value) {
 class XLATensor::DeviceContextArena {
   struct DeviceContext {
     std::mutex lock;
-    absl::flat_hash_map<xla::int64, std::weak_ptr<Data>> tensors_data;
+    absl::flat_hash_map<int64_t, std::weak_ptr<Data>> tensors_data;
     xla::uint64 seed = 101;
     xla::uint64 running_seed = 101;
     ir::Value seed_ir_value;
@@ -435,10 +435,10 @@ class XLATensor::DeviceContextArena {
 };
 
 struct DeviceDataInfo : public xla::ComputationClient::Data::Info {
-  DeviceDataInfo(xla::int64 tensor_id, bool read_only)
+  DeviceDataInfo(int64_t tensor_id, bool read_only)
       : tensor_id(tensor_id), read_only(read_only) {}
 
-  xla::int64 tensor_id = 0;
+  int64_t tensor_id = 0;
   bool read_only = false;
 };
 
@@ -530,7 +530,7 @@ XLATensor::Data* XLATensor::data() const {
   return data_.get();
 }
 
-xla::int64 XLATensor::size(xla::int64 dim) const {
+int64_t XLATensor::size(int64_t dim) const {
   auto xla_shape = shape();
   int rank = xla_shape.get().rank();
   int dim_index = XlaHelpers::GetCanonicalDimensionIndex(dim, rank);
@@ -569,7 +569,7 @@ xla::Shape XLATensor::shape_with_layout() const {
 
 const Device& XLATensor::GetDevice() const { return data()->device; }
 
-xla::int64 XLATensor::GetUniqueId() const { return data()->unique_id; }
+int64_t XLATensor::GetUniqueId() const { return data()->unique_id; }
 
 xla::ComputationClient::DataPtr XLATensor::GetXlaData() {
   bool up_to_date = true;
@@ -740,11 +740,11 @@ ir::Value XLATensor::GetIrValueForScalar(at::Scalar value,
 
 ir::Value XLATensor::GetIrValueForScalar(
     at::Scalar value, xla::PrimitiveType type,
-    absl::Span<const xla::int64> dimensions, const Device& device) {
+    absl::Span<const int64_t> dimensions, const Device& device) {
   ir::Value ir_value = GetIrValueForScalar(value, type, device);
   if (!dimensions.empty()) {
     ir_value = ir::MakeNode<ir::ops::Expand>(
-        ir_value, xla::util::ToVector<xla::int64>(dimensions));
+        ir_value, xla::util::ToVector<int64_t>(dimensions));
   }
   return ir_value;
 }
@@ -1321,10 +1321,10 @@ XLATensor::OpByOpAsync XLATensor::SyncTensorsGraphOpByOp(
 void XLATensor::BuildInputOutputAliases(const std::vector<XLATensor>& tensors,
                                         absl::Span<const size_t> indices,
                                         ir::LoweringContext* lowering_ctx) {
-  absl::node_hash_map<xla::int64, size_t> output_tensor_id_map;
+  absl::node_hash_map<int64_t, size_t> output_tensor_id_map;
   for (size_t i = 0; i < indices.size(); ++i) {
     size_t tensor_index = indices[i];
-    xla::int64 tensor_id = tensors[tensor_index].GetUniqueId();
+    int64_t tensor_id = tensors[tensor_index].GetUniqueId();
     output_tensor_id_map[tensor_id] = i;
   }
   const std::vector<xla::ComputationClient::DataPtr>& parameters_data =
@@ -1342,7 +1342,7 @@ void XLATensor::BuildInputOutputAliases(const std::vector<XLATensor>& tensors,
         if (parameters_data[i]->shape() == root_shape &&
             alias_map[output_index] < 0) {
           lowering_ctx->builder()->SetUpAlias(
-              {static_cast<xla::int64>(output_index)}, i, {});
+              {static_cast<int64_t>(output_index)}, i, {});
           alias_map[output_index] = i;
 
           TF_VLOG(6) << "Aliased paramter " << i << " with output "
@@ -1465,8 +1465,8 @@ std::shared_ptr<XLATensor::Async> XLATensor::SyncTensorsGraphInternal(
       compile_result.device.ToString(), std::move(cached_computation));
 }
 
-xla::int64 XLATensor::GetNextTensorId() {
-  static std::atomic<xla::int64>* id_generator = new std::atomic<xla::int64>(1);
+int64_t XLATensor::GetNextTensorId() {
+  static std::atomic<int64_t>* id_generator = new std::atomic<int64_t>(1);
   return id_generator->fetch_add(1);
 }
 
@@ -1499,14 +1499,14 @@ bool XLATensor::ApplyTraceletCutpoint() {
 void XLATensor::InsertTraceletCutpoint(const PostOrderData& po_data) {
   // Wait for steady state: don't trigger any tracelet detection for the first
   // two steps.
-  static const xla::int64 kSteadyStateStep = 3;
+  static const int64_t kSteadyStateStep = 3;
   static const bool tracelets =
       xla::sys_util::GetEnvBool("XLA_TRACELETS", false);
   if (!tracelets) {
     return;
   }
   xla::metrics::CounterData* mark_step = xla::metrics::GetCounter("MarkStep");
-  xla::int64 steps = mark_step ? mark_step->Value() : 0;
+  int64_t steps = mark_step ? mark_step->Value() : 0;
   if (steps < kSteadyStateStep) {
     return;
   }

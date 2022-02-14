@@ -215,12 +215,12 @@ std::vector<T> Iota(size_t size, T init = 0, T incr = 1) {
 }
 
 template <typename T>
-std::vector<T> LinSpace(T start, T stop, xla::int64 num) {
+std::vector<T> LinSpace(T start, T stop, int64_t num) {
   std::vector<T> result(num);
   result[0] = start;
   if (num > 1) {
     const T step = (stop - start) / (num - 1);
-    for (xla::int64 i = 1; i < num - 1; ++i) {
+    for (int64_t i = 1; i < num - 1; ++i) {
       result[i] = start + step * i;
     }
     // Ensure final value == stop; float arithmetic won't guarantee this.

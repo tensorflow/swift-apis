@@ -50,7 +50,7 @@ struct ConcurrentCompileDedupping {
     const xla::LocalClient* client;
     std::string result_layout;
     std::string computation;
-    int64 num_replicas;
+    int64_t num_replicas;
     size_t hash = ComputeHash();
     size_t ComputeHash() const {
       util::PartialHasher<std::string, 4096> hasher;
@@ -156,14 +156,14 @@ class LocalDevice : public ComputationClient::Device {
   }
   virtual bool IsLocal() { return true; }
 
-  int64 RunAsyncStart() {
+  int64_t RunAsyncStart() {
     mutex_.Lock();
     XLA_CHECK(mutex_.AwaitWithTimeout(
         absl::Condition(this, &LocalDevice::HasAvailableComputationSlots),
         absl::Hours(2)))
         << "TPU DEADLOCKED or very slow computation...";
     --available_computation_slots_;
-    int64 result = next_computation_id_;
+    int64_t result = next_computation_id_;
     ++next_computation_id_;
     mutex_.Unlock();
     return result;
@@ -175,7 +175,7 @@ class LocalDevice : public ComputationClient::Device {
     mutex_.Unlock();
   }
 
-  void WaitUntilComputationFinished(int64 computation_id) {
+  void WaitUntilComputationFinished(int64_t computation_id) {
     mutex_.Lock();
     auto cond = [&]() ABSL_EXCLUSIVE_LOCKS_REQUIRED(mutex_) {
       return computation_id < done_computation_id_;
@@ -218,13 +218,13 @@ class LocalDevice : public ComputationClient::Device {
   absl::Mutex mutex_;
   // This starts out as the number of allowable concurrent executions
   // on this particular device.
-  int64 available_computation_slots_ ABSL_GUARDED_BY(mutex_) = 64;
+  int64_t available_computation_slots_ ABSL_GUARDED_BY(mutex_) = 64;
   // computation id assigned to the next computation executed on stream_.
-  int64 next_computation_id_ ABSL_GUARDED_BY(mutex_) = 0;
+  int64_t next_computation_id_ ABSL_GUARDED_BY(mutex_) = 0;
   // Incremented when computations finish.
   // `computation_id < done_computation_id_` checks if a particular computation
   // is complete.
-  int64 done_computation_id_ ABSL_GUARDED_BY(mutex_) = 0;
+  int64_t done_computation_id_ ABSL_GUARDED_BY(mutex_) = 0;
   xla::LocalClient* client_;
   int device_ordinal_;
   int32_t mesh_id_;
@@ -236,7 +236,7 @@ class LocalDevice : public ComputationClient::Device {
 class LocalData : public Data {
  public:
   LocalData(Device* device, Shape shape) : Data(device, std::move(shape)) {}
-  LocalData(Device* device, ScopedShapedBuffer buffer, int64 computation_id)
+  LocalData(Device* device, ScopedShapedBuffer buffer, int64_t computation_id)
       : Data(device, buffer.on_host_shape()),
         buffer_(std::make_shared<ScopedShapedBuffer>(std::move(buffer))),
         computation_id_(computation_id) {}
@@ -257,12 +257,12 @@ class LocalData : public Data {
 
   const ShapedBuffer& buffer() const { return *buffer_; }
 
-  int64 computation_id() const { return computation_id_; }
+  int64_t computation_id() const { return computation_id_; }
 
  private:
   // TODO(parkers): Remove Assign() and allow buffer_ to be by value.
   std::shared_ptr<ScopedShapedBuffer> buffer_;
-  int64 computation_id_;
+  int64_t computation_id_;
 };
 
 struct LocalComputation : public Computation {
@@ -499,7 +499,7 @@ std::vector<DataPtr> LocalDevice::ExecuteComputation(
   run_options.set_device_assignment(local_computation.assignment.get());
 
   bool is_cpu = this->is_cpu();
-  int64 computation_id = -1;
+  int64_t computation_id = -1;
   if (!is_cpu) {
     tensorflow::profiler::TraceMe trace("Acquire Async slot");
     computation_id = RunAsyncStart();
@@ -511,7 +511,7 @@ std::vector<DataPtr> LocalDevice::ExecuteComputation(
   out.reserve(num_tuples);
   for (size_t i = 0; i < num_tuples; ++i) {
     out.push_back(std::make_shared<LocalData>(
-        this, tmp.TakeSubTree(ShapeIndex({static_cast<xla::int64>(i)})),
+        this, tmp.TakeSubTree(ShapeIndex({static_cast<int64_t>(i)})),
         computation_id));
   }
 

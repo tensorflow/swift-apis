@@ -21,15 +21,15 @@
 namespace swift_xla {
 
 // Computes log(softmax(logits)) along the dimension specified by "dim".
-xla::XlaOp BuildLogSoftmax(xla::XlaOp logits, xla::int64 dim);
+xla::XlaOp BuildLogSoftmax(xla::XlaOp logits, int64_t dim);
 
 // Computes the gradient of the input of the LogSoftmax function.
 xla::XlaOp BuildLogSoftmaxGrad(xla::XlaOp grad_output, xla::XlaOp output,
-                               xla::int64 dim);
+                               int64_t dim);
 
-xla::XlaOp BuildSoftmax(xla::XlaOp logits, xla::int64 dim);
+xla::XlaOp BuildSoftmax(xla::XlaOp logits, int64_t dim);
 
 xla::XlaOp BuildSoftmaxGrad(xla::XlaOp grad_output, xla::XlaOp output,
-                            xla::int64 dim);
+                            int64_t dim);
 
 }  // namespace swift_xla

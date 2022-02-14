@@ -61,9 +61,9 @@ xla::hash_t Hash(tensorflow::MirrorPadMode mode) {
 }  // namespace tensorflow
 namespace xla {
 xla::hash_t Hash(const xla::PaddingConfig& padding_config) {
-  std::vector<xla::int64> low;
-  std::vector<xla::int64> high;
-  std::vector<xla::int64> interior;
+  std::vector<int64_t> low;
+  std::vector<int64_t> high;
+  std::vector<int64_t> interior;
   for (const xla::PaddingConfig::PaddingConfigDimension& dim_padding :
        padding_config.dimensions()) {
     low.push_back(dim_padding.edge_padding_low());
@@ -93,7 +93,7 @@ void OpFieldToString(std::ostream& stream, const char* field_name,
   stream << ", " << field_name << "=" << xla::PaddingConfigToString(value);
 }
 void OpFieldToString(std::ostream& stream, const char* field_name,
-                     const std::vector<xla::int64>& value) {
+                     const std::vector<int64_t>& value) {
   stream << ", " << field_name << "=[";
   for (size_t i = 0; i < value.size(); ++i) {
     if (i != 0) stream << ", ";
@@ -130,7 +130,7 @@ namespace ops {
 namespace {
 
 using BinaryOpBuilderWithDim = xla::XlaOp (*)(xla::XlaOp, xla::XlaOp,
-                                              absl::Span<const xla::int64>);
+                                              absl::Span<const int64_t>);
 template <BinaryOpBuilderWithDim T>
 xla::XlaOp LowerBinaryOp(xla::XlaOp lhs, xla::XlaOp rhs) {
   std::tie(lhs, rhs) = XlaHelpers::Promote(lhs, rhs);
@@ -155,7 +155,7 @@ xla::XlaOp LowerSqueeze(xla::XlaOp input, int dim) {
   return SqueezeTrivialDimension(input, dim);
 }
 
-xla::XlaOp LowerCumSum(xla::XlaOp input, xla::int64 dim, bool exclusive,
+xla::XlaOp LowerCumSum(xla::XlaOp input, int64_t dim, bool exclusive,
                        bool reverse) {
   const xla::Shape& input_shape = XlaHelpers::ShapeOfXlaOp(input);
   xla::XlaOp init = XlaHelpers::ScalarValue<float>(
@@ -166,7 +166,7 @@ xla::XlaOp LowerCumSum(xla::XlaOp input, xla::int64 dim, bool exclusive,
                                     reverse);
 }
 
-xla::XlaOp LowerCumProd(xla::XlaOp input, xla::int64 dim, bool exclusive,
+xla::XlaOp LowerCumProd(xla::XlaOp input, int64_t dim, bool exclusive,
                         bool reverse) {
   const xla::Shape& input_shape = XlaHelpers::ShapeOfXlaOp(input);
   xla::XlaOp init = xla::One(input.builder(), input_shape.element_type());
@@ -187,7 +187,7 @@ xla::XlaOp LowerClamp(xla::XlaOp xla_input, xla::XlaOp xla_min,
 }
 
 xla::XlaOp LowerMean(xla::XlaOp input,
-                     const std::vector<xla::int64>& dimensions,
+                     const std::vector<int64_t>& dimensions,
                      bool keep_reduced_dimensions,
                      const c10::optional<at::ScalarType>& dtype) {
   xla::XlaOp result = BuildMean(input, dimensions, keep_reduced_dimensions);
@@ -208,27 +208,27 @@ xla::Shape ShapeLogicalCast(const Value& input, at::ScalarType dtype) {
   return result;
 }
 
-xla::XlaOp LowerSum(xla::XlaOp input, absl::Span<const xla::int64> dimensions,
+xla::XlaOp LowerSum(xla::XlaOp input, absl::Span<const int64_t> dimensions,
                     bool keep_reduced_dimensions,
                     c10::optional<at::ScalarType> dtype) {
   return BuildSum(CastToScalarType(input, dtype), dimensions,
                   keep_reduced_dimensions);
 }
 
-std::vector<xla::int64> CanonicalizeFlip(xla::Shape shape,
-                                         absl::Span<const xla::int64> dims) {
+std::vector<int64_t> CanonicalizeFlip(xla::Shape shape,
+                                         absl::Span<const int64_t> dims) {
   auto dimensions =
       XlaHelpers::GetCanonicalDimensionIndices(dims, shape.rank());
-  std::set<xla::int64> unique_dims(dimensions.begin(), dimensions.end());
+  std::set<int64_t> unique_dims(dimensions.begin(), dimensions.end());
   XLA_CHECK_EQ(unique_dims.size(), dimensions.size());
   return dimensions;
 }
 
-std::vector<xla::int64> CanonicalizeExpand(xla::Shape shape,
-                                           absl::Span<const xla::int64> dims) {
-  std::vector<xla::int64> dimensions(dims.begin(), dims.end());
+std::vector<int64_t> CanonicalizeExpand(xla::Shape shape,
+                                           absl::Span<const int64_t> dims) {
+  std::vector<int64_t> dimensions(dims.begin(), dims.end());
   XLA_CHECK_GE(dimensions.size(), shape.rank()) << shape;
-  xla::int64 base = dimensions.size() - shape.rank();
+  int64_t base = dimensions.size() - shape.rank();
   for (size_t i = 0; i < shape.rank(); ++i) {
     if (dimensions[base + i] == -1) {
       dimensions[base + i] = shape.dimensions(i);
@@ -246,20 +246,20 @@ xla::XlaOp LowerPad(xla::XlaOp input, const at::Scalar& value,
                   config);
 }
 
-xla::XlaOp LowerPad(xla::XlaOp input, absl::Span<const xla::int64> pad,
+xla::XlaOp LowerPad(xla::XlaOp input, absl::Span<const int64_t> pad,
                     const at::Scalar& value) {
   return LowerPad(input, value,
                   XlaHelpers::MakeXlaPaddingConfigFromNdPadding(pad));
 }
 
-std::vector<xla::int64> CanonicalizePad(xla::Shape shape,
-                                        absl::Span<const xla::int64> pad) {
-  std::vector<xla::int64> complete_pad(pad.begin(), pad.end());
+std::vector<int64_t> CanonicalizePad(xla::Shape shape,
+                                        absl::Span<const int64_t> pad) {
+  std::vector<int64_t> complete_pad(pad.begin(), pad.end());
   complete_pad.resize(2 * shape.rank());
   return complete_pad;
 }
 
-xla::int64 SliceGetStride(xla::int64 start, xla::int64 end, xla::int64 stride) {
+int64_t SliceGetStride(int64_t start, int64_t end, int64_t stride) {
   if (stride == 0) {
     XLA_CHECK_EQ(start, end);
     stride = 1;
@@ -267,15 +267,15 @@ xla::int64 SliceGetStride(xla::int64 start, xla::int64 end, xla::int64 stride) {
   return stride;
 }
 
-xla::XlaOp LowerSlice(xla::XlaOp input, xla::int64 dim, xla::int64 start,
-                      xla::int64 end, xla::int64 stride) {
+xla::XlaOp LowerSlice(xla::XlaOp input, int64_t dim, int64_t start,
+                      int64_t end, int64_t stride) {
   return xla::SliceInDim(input, start, end, SliceGetStride(start, end, stride),
                          dim);
 }
 
-xla::Shape ShapeSlice(const Value& input, xla::int64 dim, xla::int64 start,
-                      xla::int64 end, xla::int64 stride) {
-  xla::int64 effective_stride = SliceGetStride(start, end, stride);
+xla::Shape ShapeSlice(const Value& input, int64_t dim, int64_t start,
+                      int64_t end, int64_t stride) {
+  int64_t effective_stride = SliceGetStride(start, end, stride);
   xla::Shape select_shape(input.shape());
   select_shape.set_dimensions(
       dim, (end - start + effective_stride - 1) / effective_stride);
@@ -291,22 +291,22 @@ xla::XlaOp LowerWhere(xla::XlaOp condition, xla::XlaOp input,
   return xla::Select(pred_condition, input, other);
 }
 
-std::vector<xla::XlaOp> BuildTopK(xla::XlaOp input, xla::int64 k,
-                                  xla::int64 dim, bool largest) {
+std::vector<xla::XlaOp> BuildTopK(xla::XlaOp input, int64_t k,
+                                  int64_t dim, bool largest) {
   return CreateTopK(input, k, dim, largest, true);
 }
 
 xla::XlaOp BuildOneHot(xla::XlaOp indices, xla::XlaOp on_value,
-                       xla::XlaOp off_value, xla::int64 depth,
-                       xla::int64 axis) {
+                       xla::XlaOp off_value, int64_t depth,
+                       int64_t axis) {
   xla::XlaBuilder* builder = indices.builder();
   xla::Shape indices_shape = XlaHelpers::ShapeOfXlaOp(indices);
-  std::vector<xla::int64> broadcast_dims(indices_shape.dimensions().size());
+  std::vector<int64_t> broadcast_dims(indices_shape.dimensions().size());
   if (axis < 0) axis = axis + broadcast_dims.size() + 1;
   std::iota(broadcast_dims.begin(), broadcast_dims.begin() + axis, 0);
   std::iota(broadcast_dims.begin() + axis, broadcast_dims.end(), axis + 1);
 
-  std::vector<xla::int64> output_dimensions(indices_shape.dimensions().size() +
+  std::vector<int64_t> output_dimensions(indices_shape.dimensions().size() +
                                             1);
   output_dimensions.assign(indices_shape.dimensions().begin(),
                            indices_shape.dimensions().end());
@@ -321,7 +321,7 @@ xla::XlaOp BuildOneHot(xla::XlaOp indices, xla::XlaOp on_value,
 }
 
 xla::XlaOp LowerTfUnsortedSegmentSum(xla::XlaOp data, xla::XlaOp indices,
-                                     xla::int64 num_segments) {
+                                     int64_t num_segments) {
   const xla::Shape& data_shape = XlaHelpers::ShapeOfXlaOp(data);
   xla::XlaOp init_value = xla::Zero(data.builder(), data_shape.element_type());
   auto combine = [](xla::XlaOp a, xla::XlaOp b) { return a + b; };
@@ -394,20 +394,20 @@ xla::XlaOp LowerTfStatelessRandomUniform(xla::Shape shape, xla::XlaOp seeds,
 }
 
 xla::XlaOp LowerNllLoss(xla::XlaOp logits, xla::XlaOp labels,
-                        xla::int64 ignore_index) {
+                        int64_t ignore_index) {
   return BuildNllLoss(logits, labels, absl::nullopt, ignore_index,
                       ReductionMode::kMean);
 }
 
 xla::XlaOp LowerProd(xla::XlaOp input,
-                     const std::vector<xla::int64>& dimensions,
+                     const std::vector<int64_t>& dimensions,
                      bool keep_reduced_dimensions) {
   xla::XlaOp casted_input;
   casted_input = ConvertToNumeric(input, XlaHelpers::TypeOfXlaOp(input));
   return BuildProd(casted_input, dimensions, keep_reduced_dimensions);
 }
 
-xla::XlaOp LowerSelect(xla::XlaOp input, xla::int64 dim, xla::int64 index) {
+xla::XlaOp LowerSelect(xla::XlaOp input, int64_t dim, int64_t index) {
   auto input_shape = XlaHelpers::ShapeOfXlaOp(input);
   index =
       XlaHelpers::GetCanonicalPosition(input_shape.dimensions(), dim, index);
@@ -448,13 +448,13 @@ std::vector<Value> TensorArgsConcat(absl::Span<const Value> inputa,
   return out;
 }
 
-xla::int64 CanonicalizeStack(absl::Span<const Value> inputs, xla::int64 dim) {
+int64_t CanonicalizeStack(absl::Span<const Value> inputs, int64_t dim) {
   XLA_CHECK_GE(inputs.size(), 1);
   return swift_xla::XlaHelpers::GetCanonicalDimensionIndex(
       dim, inputs[0].shape().rank() + 1);
 }
 
-xla::int64 CanonicalizeCat(absl::Span<const Value> inputs, xla::int64 dim) {
+int64_t CanonicalizeCat(absl::Span<const Value> inputs, int64_t dim) {
   XLA_CHECK_GE(inputs.size(), 1);
   xla::Shape first_shape = inputs[0].shape();
   dim = swift_xla::XlaHelpers::GetCanonicalDimensionIndex(dim,
@@ -470,12 +470,8 @@ xla::int64 CanonicalizeCat(absl::Span<const Value> inputs, xla::int64 dim) {
 }
 
 std::vector<xla::XlaOp> LowerQR(xla::XlaOp input, bool full_matrices) {
-  xla::QRDecompositionResult qr_result =
-      xla::QRDecomposition(input, /*full_matrices=*/full_matrices,
-                           /*block_size=*/128, XlaHelpers::mat_mul_precision())
-          .ValueOrDie();
-  xla::XlaOp q = qr_result.q;
-  xla::XlaOp r = qr_result.r;
+  xla::XlaOp q, r;
+  xla::QrExplicit(input, /*full_matrices=*/full_matrices, q, r);
   return {q, r};
 }
 
@@ -491,15 +487,15 @@ std::vector<xla::XlaOp> LowerSVD(xla::XlaOp input, bool compute_uv,
     u = xla::Zeros(input.builder(), XlaHelpers::ShapeOfXlaOp(u));
     v = xla::Zeros(input.builder(), XlaHelpers::ShapeOfXlaOp(v));
   } else if (!full_matrix) {
-    xla::int64 m_dim = input_shape.dimensions(input_shape.rank() - 2);
-    xla::int64 n_dim = input_shape.dimensions(input_shape.rank() - 1);
-    std::vector<xla::int64> base_indices(input_shape.rank(), 0);
+    int64_t m_dim = input_shape.dimensions(input_shape.rank() - 2);
+    int64_t n_dim = input_shape.dimensions(input_shape.rank() - 1);
+    std::vector<int64_t> base_indices(input_shape.rank(), 0);
 
-    auto u_sizes = xla::util::ToVector<xla::int64>(input_shape.dimensions());
+    auto u_sizes = xla::util::ToVector<int64_t>(input_shape.dimensions());
     u_sizes[input_shape.rank() - 1] = std::min(m_dim, n_dim);
     u = BuildSlice(u, base_indices, u_sizes);
 
-    auto v_sizes = xla::util::ToVector<xla::int64>(input_shape.dimensions());
+    auto v_sizes = xla::util::ToVector<int64_t>(input_shape.dimensions());
     v_sizes[input_shape.rank() - 2] = n_dim;
     v_sizes[input_shape.rank() - 1] = std::min(m_dim, n_dim);
     v = BuildSlice(v, base_indices, v_sizes);
@@ -519,11 +515,11 @@ xla::Shape ShapeOfXlaOpList(absl::Span<const xla::XlaOp> ops) {
 }
 
 xla::XlaOp BuildTfConv(xla::XlaOp input, xla::XlaOp filter, bool depthwise,
-                       absl::Span<const xla::int64> strides,
+                       absl::Span<const int64_t> strides,
                        tensorflow::Padding padding,
-                       absl::Span<const xla::int64> explicit_paddings,
+                       absl::Span<const int64_t> explicit_paddings,
                        tensorflow::TensorFormat data_format,
-                       absl::Span<const xla::int64> dilations) {
+                       absl::Span<const int64_t> dilations) {
   xla::Shape input_shape = XlaHelpers::ShapeOfXlaOp(input);
   int num_spatial_dims = input_shape.rank() - 2;
   tensorflow::ConvOpAttrs attrs =
@@ -537,12 +533,12 @@ xla::XlaOp BuildTfConv(xla::XlaOp input, xla::XlaOp filter, bool depthwise,
 }
 
 xla::XlaOp BuildTfConvBackpropFilter(
-    xla::XlaOp input, absl::Span<const xla::int64> filter_sizes,
+    xla::XlaOp input, absl::Span<const int64_t> filter_sizes,
     xla::XlaOp out_backprop, bool depthwise,
-    absl::Span<const xla::int64> strides, tensorflow::Padding padding,
-    absl::Span<const xla::int64> explicit_paddings,
+    absl::Span<const int64_t> strides, tensorflow::Padding padding,
+    absl::Span<const int64_t> explicit_paddings,
     tensorflow::TensorFormat data_format,
-    absl::Span<const xla::int64> dilations) {
+    absl::Span<const int64_t> dilations) {
   int num_spatial_dims = filter_sizes.size() - 2;
   tensorflow::ConvOpAttrs attrs =
       CreateConvOpAttrs(num_spatial_dims, depthwise, strides, padding,
@@ -559,12 +555,12 @@ xla::XlaOp BuildTfConvBackpropFilter(
 }
 
 xla::XlaOp BuildTfConvBackpropInput(
-    absl::Span<const xla::int64> input_sizes, xla::XlaOp filter,
+    absl::Span<const int64_t> input_sizes, xla::XlaOp filter,
     xla::XlaOp out_backprop, bool depthwise,
-    absl::Span<const xla::int64> strides, tensorflow::Padding padding,
-    absl::Span<const xla::int64> explicit_paddings,
+    absl::Span<const int64_t> strides, tensorflow::Padding padding,
+    absl::Span<const int64_t> explicit_paddings,
     tensorflow::TensorFormat data_format,
-    absl::Span<const xla::int64> dilations) {
+    absl::Span<const int64_t> dilations) {
   int num_spatial_dims = input_sizes.size() - 2;
   tensorflow::ConvOpAttrs attrs =
       CreateConvOpAttrs(num_spatial_dims, depthwise, strides, padding,

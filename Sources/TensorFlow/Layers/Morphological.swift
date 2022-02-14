@@ -69,8 +69,8 @@ public struct `Dilation2D`<Scalar: TensorFlowFloatingPoint>: Layer {
   ///   [batch count, output height, output width, output channel count].
   ///
   /// - Note: Padding size equals zero when using `.valid`.
-  @differentiable
-  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  @differentiable(reverse)
+  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     let dilated = dilation2D(
       input,
       filter: filter,
@@ -139,8 +139,8 @@ public struct `Erosion2D`<Scalar: TensorFlowFloatingPoint>: Layer {
   ///   [batch count, output height, output width, output channel count].
   ///
   /// - Note: Padding size equals zero when using `.valid`.
-  @differentiable
-  public func forward(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+  @differentiable(reverse)
+  public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
     let eroded = erosion2D(
       input,
       filter: filter,

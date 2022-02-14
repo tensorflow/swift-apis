@@ -25,7 +25,7 @@ namespace swift_xla {
 
 // Creates a minor-to-major layout from given dimensions. The dynamic_dimensions
 // slice should be either empty, or of the same size as dimensions.
-xla::Shape MakeSwiftTensorLayout(absl::Span<const xla::int64> dimensions,
+xla::Shape MakeSwiftTensorLayout(absl::Span<const int64_t> dimensions,
                                  absl::Span<const bool> dynamic_dimensions,
                                  xla::PrimitiveType type);
 
@@ -34,7 +34,7 @@ xla::Shape MakeSwiftTensorLayout(absl::Span<const xla::int64> dimensions,
 // XLA layout. The dynamic_dimensions slice should be either empty, or of the
 // same size as dimensions.
 xla::Shape MakeArrayShapeFromDimensions(
-    absl::Span<const xla::int64> dimensions,
+    absl::Span<const int64_t> dimensions,
     absl::Span<const bool> dynamic_dimensions, xla::PrimitiveType type,
     DeviceType device_type);
 

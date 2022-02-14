@@ -16,7 +16,7 @@ import XCTest
 
 @testable import TensorFlow
 
-let cube: @differentiable (Tensor<Float>) -> Tensor<Float> = { ($0 * $0 * $0) }
+let cube: @differentiable(reverse) (Tensor<Float>) -> Tensor<Float> = { ($0 * $0 * $0) }
 
 final class TensorAutoDiffTests: XCTestCase {
   func testSimpleGrad() {
@@ -207,7 +207,7 @@ final class TensorAutoDiffTests: XCTestCase {
     XCTAssertTrue(
       (Tensor<Float>(1), Tensor<Float>(1))
         == gradient(at: Tensor<Float>(0), Tensor<Float>(0), in: f))
-    XCTAssertTrue(([1], [1]) == pullback(at: [1], [10], in: f)([1]))
+    XCTAssertTrue(([1], [1]) == pullback(at: [1], [10], of: f)([1]))
   }
 
   func testSubtract() {
@@ -215,7 +215,7 @@ final class TensorAutoDiffTests: XCTestCase {
     XCTAssertTrue(
       (Tensor<Float>(1), Tensor<Float>(-1))
         == gradient(at: Tensor<Float>(0), Tensor<Float>(0), in: f))
-    XCTAssertTrue(([1], [-1]) == pullback(at: [1], [10], in: f)([1]))
+    XCTAssertTrue(([1], [-1]) == pullback(at: [1], [10], of: f)([1]))
   }
 
   func testMultiply() {
@@ -226,21 +226,21 @@ final class TensorAutoDiffTests: XCTestCase {
 
   func testDivide() {
     func f(a: Tensor<Float>, b: Tensor<Float>) -> Tensor<Float> { a / b }
-    XCTAssertTrue(([0.1], [-0.01]) == pullback(at: [1], [10], in: f)([1]))
+    XCTAssertTrue(([0.1], [-0.01]) == pullback(at: [1], [10], of: f)([1]))
   }
 
   func testMatmul() {
     func f(a: Tensor<Float>, b: Tensor<Float>) -> Tensor<Float> { matmul(a, b) }
     let v = Tensor<Float>(ones: [1, 1])
-    XCTAssertTrue(([[0]], [[0]]) == pullback(at: [[0]], [[0]], in: f)(v))
-    XCTAssertTrue(([[10]], [[1]]) == pullback(at: [[1]], [[10]], in: f)(v))
+    XCTAssertTrue(([[0]], [[0]]) == pullback(at: [[0]], [[0]], of: f)(v))
+    XCTAssertTrue(([[10]], [[1]]) == pullback(at: [[1]], [[10]], of: f)(v))
   }
 
   func testDot() {
     func f(a: Tensor<Float>, b: Tensor<Float>) -> Tensor<Float> { a • b }
     let v = Tensor<Float>(ones: [1, 1])
-    XCTAssertTrue(([[0]], [[0]]) == pullback(at: [[0]], [[0]], in: f)(v))
-    XCTAssertTrue(([[10]], [[1]]) == pullback(at: [[1]], [[10]], in: f)(v))
+    XCTAssertTrue(([[0]], [[0]]) == pullback(at: [[0]], [[0]], of: f)(v))
+    XCTAssertTrue(([[10]], [[1]]) == pullback(at: [[1]], [[10]], of: f)(v))
   }
 
   func testNegate() {
@@ -509,15 +509,15 @@ final class TensorAutoDiffTests: XCTestCase {
   func testExpandingShape() {
     func f1(a: Tensor<Float>) -> Tensor<Float> { a.expandingShape(at: 0).squared() }
     func f2(a: Tensor<Float>) -> Tensor<Float> { a.squared().expandingShape(at: 0) }
-    XCTAssertEqual(pullback(at: [3, 5], in: f1)([[1, 1]]), [6, 10])
-    XCTAssertEqual(pullback(at: [3, 5], in: f2)([[1, 1]]), [6, 10])
+    XCTAssertEqual(pullback(at: [3, 5], of: f1)([[1, 1]]), [6, 10])
+    XCTAssertEqual(pullback(at: [3, 5], of: f2)([[1, 1]]), [6, 10])
   }
 
   func testSqueezingShape() {
     func f1(a: Tensor<Float>) -> Tensor<Float> { a.squeezingShape(at: 0).squared() }
     func f2(a: Tensor<Float>) -> Tensor<Float> { a.squared().squeezingShape(at: 0) }
-    XCTAssertEqual(pullback(at: [[3, 5]], in: f1)([1, 1]), [[6, 10]])
-    XCTAssertEqual(pullback(at: [[3, 5]], in: f2)([1, 1]), [[6, 10]])
+    XCTAssertEqual(pullback(at: [[3, 5]], of: f1)([1, 1]), [[6, 10]])
+    XCTAssertEqual(pullback(at: [[3, 5]], of: f2)([1, 1]), [[6, 10]])
   }
 
   func testTiled() {
@@ -536,8 +536,8 @@ final class TensorAutoDiffTests: XCTestCase {
     func f2(a: Tensor<Float>) -> Tensor<Float> {
       a.squared().reshaped(toShape: Tensor<Int32>([2, 1]))
     }
-    XCTAssertEqual(pullback(at: [[3, 5]], in: f1)([[1], [1]]), [[6, 10]])
-    XCTAssertEqual(pullback(at: [[3, 5]], in: f2)([[1], [1]]), [[6, 10]])
+    XCTAssertEqual(pullback(at: [[3, 5]], of: f1)([[1], [1]]), [[6, 10]])
+    XCTAssertEqual(pullback(at: [[3, 5]], of: f2)([[1], [1]]), [[6, 10]])
   }
 
   func testReshaped() {
@@ -645,13 +645,13 @@ final class TensorAutoDiffTests: XCTestCase {
   }
 
   func testSideEffects() {
-    let foo: @differentiable (Tensor<Float>) -> Tensor<Float> = { x in
+    let foo: @differentiable(reverse) (Tensor<Float>) -> Tensor<Float> = { x in
       var a = x
       a = a + x
       a = a + x
       return a + x
     }
-    XCTAssertEqual(Tensor([4, 4]), pullback(at: Tensor([4, 5]), in: foo)([1, 1]))
+    XCTAssertEqual(Tensor([4, 4]), pullback(at: Tensor([4, 5]), of: foo)([1, 1]))
 
     func bar(x: Tensor<Float>) -> Tensor<Float> {
       var a = x

@@ -68,7 +68,7 @@ inline NodePtr GenericOp(OpKind op, xla::Shape shape, Generic::LowerFn lower_fn,
 NodePtr ARange(at::Scalar start, at::Scalar end, at::Scalar step,
                at::ScalarType scalar_type);
 
-NodePtr LinSpace(at::Scalar start, at::Scalar stop, xla::int64 num,
+NodePtr LinSpace(at::Scalar start, at::Scalar stop, int64_t num,
                  at::ScalarType scalar_type);
 
 NodePtr BroadcastTensors(absl::Span<const Value> tensors);

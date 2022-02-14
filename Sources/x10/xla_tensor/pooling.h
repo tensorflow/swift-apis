@@ -29,46 +29,46 @@ struct MaxPoolResult {
 };
 
 // Computes max pooling for the given input.
-MaxPoolResult BuildMaxPoolNd(xla::XlaOp input, xla::int64 spatial_dim_count,
-                             absl::Span<const xla::int64> kernel_size,
-                             absl::Span<const xla::int64> stride,
-                             absl::Span<const xla::int64> padding,
+MaxPoolResult BuildMaxPoolNd(xla::XlaOp input, int64_t spatial_dim_count,
+                             absl::Span<const int64_t> kernel_size,
+                             absl::Span<const int64_t> stride,
+                             absl::Span<const int64_t> padding,
                              bool ceil_mode);
 
 // Computes the gradient for max pooling.
 xla::XlaOp BuildMaxPoolNdBackward(xla::XlaOp out_backprop, xla::XlaOp input,
-                                  xla::int64 spatial_dim_count,
-                                  absl::Span<const xla::int64> kernel_size,
-                                  absl::Span<const xla::int64> stride,
-                                  absl::Span<const xla::int64> padding,
+                                  int64_t spatial_dim_count,
+                                  absl::Span<const int64_t> kernel_size,
+                                  absl::Span<const int64_t> stride,
+                                  absl::Span<const int64_t> padding,
                                   bool ceil_mode);
 
 // Computes average pooling for the given input.
-xla::XlaOp BuildAvgPoolNd(xla::XlaOp input, xla::int64 spatial_dim_count,
-                          absl::Span<const xla::int64> kernel_size,
-                          absl::Span<const xla::int64> stride,
-                          absl::Span<const xla::int64> padding, bool ceil_mode,
+xla::XlaOp BuildAvgPoolNd(xla::XlaOp input, int64_t spatial_dim_count,
+                          absl::Span<const int64_t> kernel_size,
+                          absl::Span<const int64_t> stride,
+                          absl::Span<const int64_t> padding, bool ceil_mode,
                           bool count_include_pad);
 
 // Computes the gradient for average pooling.
 xla::XlaOp BuildAvgPoolNdBackward(xla::XlaOp out_backprop, xla::XlaOp input,
-                                  xla::int64 spatial_dim_count,
-                                  absl::Span<const xla::int64> kernel_size,
-                                  absl::Span<const xla::int64> stride,
-                                  absl::Span<const xla::int64> padding,
+                                  int64_t spatial_dim_count,
+                                  absl::Span<const int64_t> kernel_size,
+                                  absl::Span<const int64_t> stride,
+                                  absl::Span<const int64_t> padding,
                                   bool ceil_mode, bool count_include_pad);
 
 xla::XlaOp BuildMaxUnpoolNd(const Device& device, xla::XlaOp input,
                             xla::XlaOp indices,
-                            absl::Span<const xla::int64> output_size);
+                            absl::Span<const int64_t> output_size);
 
 xla::XlaOp BuildMaxUnpoolNdBackward(xla::XlaOp grad_output, xla::XlaOp input,
                                     xla::XlaOp indices,
-                                    absl::Span<const xla::int64> output_size);
+                                    absl::Span<const int64_t> output_size);
 
 // Computes adaptive average pooling for the given input and output size.
 xla::XlaOp BuildAdaptiveAvgPool2d(xla::XlaOp input,
-                                  absl::Span<const xla::int64> output_size);
+                                  absl::Span<const int64_t> output_size);
 
 // Computes the gradient for adaptive average pooling.
 xla::XlaOp BuildAdaptiveAvgPool2dBackward(xla::XlaOp out_backprop,
@@ -76,14 +76,14 @@ xla::XlaOp BuildAdaptiveAvgPool2dBackward(xla::XlaOp out_backprop,
 
 // Returns true if XLA lowering is supported for the given input and output size
 // combination.
-bool IsSupportedAdaptiveAvgPool2d(absl::Span<const xla::int64> input_size,
-                                  absl::Span<const xla::int64> output_size);
+bool IsSupportedAdaptiveAvgPool2d(absl::Span<const int64_t> input_size,
+                                  absl::Span<const int64_t> output_size);
 
 // Convert padding to list.
-std::vector<xla::int64> PaddingToList(
-    absl::Span<const std::pair<xla::int64, xla::int64>> padding);
+std::vector<int64_t> PaddingToList(
+    absl::Span<const std::pair<int64_t, int64_t>> padding);
 
 // Convert data format to list.
-std::vector<xla::int64> DataFormatToList(const xla::TensorFormat& data_format);
+std::vector<int64_t> DataFormatToList(const xla::TensorFormat& data_format);
 
 }  // namespace swift_xla

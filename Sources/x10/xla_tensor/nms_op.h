@@ -11,6 +11,6 @@ struct NmsResult {
 
 NmsResult BuildNms(xla::XlaOp boxes, xla::XlaOp scores,
                    xla::XlaOp score_threshold, xla::XlaOp iou_threshold,
-                   xla::int64 output_size);
+                   int64_t output_size);
 
 }  // namespace swift_xla

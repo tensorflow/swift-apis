@@ -96,7 +96,7 @@ class XrtComputationClient::XrtDevice : public ComputationClient::Device {
 };
 
 XrtComputationClient::XrtData::XrtData(XrtDevice* device, Shape device_shape,
-                                       int64 handle)
+                                       int64_t handle)
     : Data(device, std::move(device_shape)),
       handle_ptr(std::make_shared<XrtHandle>(handle, [device, handle]() {
         reinterpret_cast<XrtComputationClient*>(device->computation_client())
@@ -177,7 +177,7 @@ class TensorAllocator : public tensorflow::Allocator {
     // to store a pointer to its AllocBlocks.
     alignment = std::max<size_t>(alignment, sizeof(void*));
     // To call aligned_alloc(), num_bytes must be multiple of alignment.
-    num_bytes = RoundUpToNearest(num_bytes, alignment);
+    num_bytes = RoundUpTo(num_bytes, alignment);
 
     AllocKey alloc_key = {alignment, num_bytes};
     void* block = nullptr;
@@ -284,7 +284,7 @@ void MaybeSaveLongCompileHlo(double compile_time,
     static std::atomic<size_t> hlo_count(0);
     std::stringstream ss;
     ss << *hlo_folder << "/hlo_module-" << hlo_count.fetch_add(1) << "-"
-       << static_cast<int64>(compile_time) << "s.txt";
+       << static_cast<int64_t>(compile_time) << "s.txt";
     std::string hlo_text =
         ConsumeValue(util::GetComputationHloText(computation));
     std::ofstream graph_file(ss.str());
@@ -497,11 +497,11 @@ T ParseProto(const tensorflow::Tensor& tensor) {
   return proto;
 }
 
-int64 GetMaxTensorsPartitionSize() {
+int64_t GetMaxTensorsPartitionSize() {
   // We need to limit the amount of data we send to the XRT backend since
   // Protocol Buffers does not allow sizes greater than 2GB. We keep some margin
   // to avoid extra metadata pushing us over the limit.
-  static int64 max_partition_size =
+  static int64_t max_partition_size =
       sys_util::GetEnvInt("XRT_MAX_TENSORS_PARTITION", 1800000000);
   return max_partition_size;
 }
@@ -639,11 +639,11 @@ XrtComputationClient::XrtComputationClient(
 
 std::vector<size_t> XrtComputationClient::PartitionTransferToServer(
     absl::Span<const TensorSource> tensors) {
-  int64 max_partition_size = GetMaxTensorsPartitionSize();
+  int64_t max_partition_size = GetMaxTensorsPartitionSize();
   uint64 current_size = 0;
   std::vector<size_t> partitions;
   for (size_t i = 0; i < tensors.size(); ++i) {
-    int64 tensor_size = ShapeUtil::ByteSizeOfElements(tensors[i].shape);
+    int64_t tensor_size = ShapeUtil::ByteSizeOfElements(tensors[i].shape);
     if (current_size + tensor_size > max_partition_size) {
       if (partitions.empty() && i > 0) {
         partitions.push_back(0);
@@ -697,7 +697,7 @@ XrtComputationClient::TransferToServerInternal(
 
   std::mutex lock;
   XrtSessionCache::SessionMap session_map;
-  int64 total_size = 0;
+  int64_t total_size = 0;
   util::MultiWait mwait(tensors.size());
   std::map<XrtSession*, SessionWork> session_work_map;
   std::string device = GetEffectiveDevice(device_ptr->name());
@@ -751,7 +751,7 @@ XrtComputationClient::TransferToServerInternal(
       for (size_t i = 0; i < outputs.size(); ++i) {
         size_t li = session_work->index_mapping[i];
         results[li] = std::make_shared<XrtData>(device_ptr, tensors[li].shape,
-                                                outputs[i].scalar<int64>()());
+                                                outputs[i].scalar<int64_t>()());
       }
       CreateDataHandlesCounter()->AddValue(outputs.size());
     };
@@ -765,15 +765,15 @@ std::vector<Literal> XrtComputationClient::TransferFromServerImpl(
     absl::Span<const DataPtr> handles) {
   metrics::TimedSection timed(TransferFromServerMetric());
 
-  int64 max_partition_size = GetMaxTensorsPartitionSize();
+  int64_t max_partition_size = GetMaxTensorsPartitionSize();
   std::list<XrtSessionCache::SessionMap> session_maps;
-  int64 current_size = 0;
+  int64_t current_size = 0;
   session_maps.emplace_back();
   std::map<XrtSession*, SessionWork> session_work_map;
   for (size_t i = 0; i < handles.size(); ++i) {
     const XrtData& xrt_data = dynamic_cast<const XrtData&>(*handles[i]);
 
-    int64 shape_size = ShapeUtil::ByteSizeOfElements(xrt_data.shape());
+    int64_t shape_size = ShapeUtil::ByteSizeOfElements(xrt_data.shape());
     if (current_size + shape_size >= max_partition_size) {
       session_maps.emplace_back();
       current_size = 0;
@@ -793,7 +793,7 @@ std::vector<Literal> XrtComputationClient::TransferFromServerImpl(
     session_work->index_mapping.push_back(i);
   }
 
-  int64 total_size = 0;
+  int64_t total_size = 0;
   std::vector<Literal> results(handles.size());
   for (auto& session_work : session_work_map) {
     std::vector<tensorflow::Tensor> outputs;
@@ -884,7 +884,7 @@ std::vector<ComputationClient::ComputationPtr> XrtComputationClient::Compile(
         MaybeSaveLongCompileHlo(compile_time, instance->computation);
         results[li] = std::make_shared<XrtComputation>(
             this, std::move(instance->computation), program_shapes[li], devices,
-            outputs[output_index].scalar<int64>()(), device);
+            outputs[output_index].scalar<int64_t>()(), device);
         ++output_index;
 
         compilation_cache_.Add(std::move(cache_keys[li]), results[li]);
@@ -1039,7 +1039,7 @@ XrtComputationClient::ExecuteParallel(
 
 std::vector<ComputationClient::DataPtr> XrtComputationClient::ExecuteChained(
     absl::Span<const ExecuteChainedOp> ops, const std::string& device) {
-  static int64 split_mode = sys_util::GetEnvInt("XRT_SPLIT_CHAINED_EXEC", 0);
+  static int64_t split_mode = sys_util::GetEnvInt("XRT_SPLIT_CHAINED_EXEC", 0);
   return split_mode ? ExecuteChainedSplit(ops, device)
                     : ExecuteChainedXrt(ops, device);
 }
@@ -1115,8 +1115,8 @@ std::vector<ComputationClient::DataPtr> XrtComputationClient::ExecuteChainedXrt(
   XLA_CHECK_EQ(outputs.size(), 1);
 
   std::vector<DataPtr> results;
-  auto handles_vec = outputs[0].vec<int64>();
-  for (int64 i = 0; i < handles_vec.size(); ++i) {
+  auto handles_vec = outputs[0].vec<int64_t>();
+  for (int64_t i = 0; i < handles_vec.size(); ++i) {
     results.push_back(std::make_shared<XrtData>(
         dynamic_cast<XrtDevice*>(GetDevice(effective_device)),
         std::move(result_shapes.at(i)), handles_vec(i)));
@@ -1130,7 +1130,7 @@ XrtComputationClient::ExecuteChainedSplit(
     absl::Span<const ExecuteChainedOp> ops, const std::string& device) {
   metrics::TimedSection timed(ExecuteChainedMetric());
 
-  std::vector<int64> uses(ops.size(), 0);
+  std::vector<int64_t> uses(ops.size(), 0);
   for (auto& op : ops) {
     for (auto& input : op.inputs) {
       uses[input.op_index] += 1;
@@ -1204,7 +1204,7 @@ XrtComputationClient::DeconstructTuple(absl::Span<const DataPtr> tuples) {
 
   XrtSessionCache::SessionMap session_map;
   std::map<XrtSession*, SessionWork> session_work_map;
-  std::vector<int64> tuple_elements_count(tuples.size());
+  std::vector<int64_t> tuple_elements_count(tuples.size());
   for (size_t i = 0; i < tuples.size(); ++i) {
     const XrtData& xrt_data = dynamic_cast<const XrtData&>(*tuples[i]);
     XrtSession* session = GetSessionForDevice(
@@ -1214,9 +1214,9 @@ XrtComputationClient::DeconstructTuple(absl::Span<const DataPtr> tuples) {
 
     tensorflow::Scope device_scope = session->root()->WithDevice(
         SwiftDeviceToXrtDevice(xrt_data.device()->name()));
-    int64 count = ShapeUtil::TupleElementCount(xrt_data.shape());
+    int64_t count = ShapeUtil::TupleElementCount(xrt_data.shape());
     tuple_elements_count[i] = count;
-    for (int64 j = 0; j < count; ++j) {
+    for (int64_t j = 0; j < count; ++j) {
       const XrtSession::CachedNode& cached_node =
           GetSubTupleNode(session, device_scope, xrt_data.device()->name());
       session_work->feed_inputs.insert(
@@ -1245,7 +1245,7 @@ XrtComputationClient::DeconstructTuple(absl::Span<const DataPtr> tuples) {
         tuple_results.push_back(std::make_shared<XrtData>(
             dynamic_cast<XrtDevice*>(xrt_data.device()),
             ShapeUtil::GetTupleElementShape(xrt_data.shape(), i),
-            outputs[output_index].scalar<int64>()()));
+            outputs[output_index].scalar<int64_t>()()));
       }
       results[li] = std::move(tuple_results);
       CreateDataHandlesCounter()->AddValue(tuple_elements_count[li]);
@@ -1308,7 +1308,7 @@ std::unique_ptr<xrt::XLAComputation> XrtComputationClient::CreateXrtComputation(
   if (devices.size() > 1) {
     auto device_assignment = config->mutable_device_assignment();
     auto computation_device = device_assignment->add_computation_devices();
-    for (int64 i = 0; i < devices.size(); ++i) {
+    for (int64_t i = 0; i < devices.size(); ++i) {
       DeviceId device(devices[i]);
       auto replica_device = computation_device->add_replica_devices();
       if (device.kind == "TPU") {
@@ -1469,7 +1469,7 @@ void XrtComputationClient::ReleaseHandles(
 
 void XrtComputationClient::StartHandleReleaser() {
   static const size_t kMinReleaserThreads = 8;
-  int64 num_threads = sys_util::GetEnvInt(
+  int64_t num_threads = sys_util::GetEnvInt(
       "XLA_HANDLE_RELEASE_THREADS",
       std::max<size_t>(options_.devices.size(), kMinReleaserThreads));
   triggered_task_ = absl::make_unique<util::TriggeredTask>(
@@ -1495,7 +1495,7 @@ void XrtComputationClient::HandleReleaser() {
                  DestroyCompileHandlesCounter());
 }
 
-void XrtComputationClient::ReleaseHandle(int64 handle,
+void XrtComputationClient::ReleaseHandle(int64_t handle,
                                          const std::string& device,
                                          std::vector<DeviceHandle>* handles) {
   {
@@ -1506,13 +1506,13 @@ void XrtComputationClient::ReleaseHandle(int64 handle,
 }
 
 void XrtComputationClient::ReleaseXrtData(const std::string& device,
-                                          int64 handle) {
+                                          int64_t handle) {
   ReleaseHandle(handle, device, &released_data_handles_);
   ReleaseDataHandlesCounter()->AddValue(1);
 }
 
 void XrtComputationClient::ReleaseXrtComputation(
-    const std::string& compilation_device, int64 handle) {
+    const std::string& compilation_device, int64_t handle) {
   ReleaseHandle(handle, compilation_device, &released_compile_handles_);
   ReleaseCompileHandlesCounter()->AddValue(1);
 }
@@ -1628,7 +1628,7 @@ void XrtComputationClient::InitializeDevices(
     // [num_tasks][devices_per_task][mesh_shape_size] coordinates, where the
     // mesh coordinates are usually [x, y, z, c] ('x', 'y' and 'z' being the
     // spatial chip coordinated and 'c' the core number).
-    int64 base_index = parsed_device.task *
+    int64_t base_index = parsed_device.task *
                            topology_proto->num_tpu_devices_per_task() *
                            topology_proto->mesh_shape_size() +
                        parsed_device.id * topology_proto->mesh_shape_size();
@@ -1706,15 +1706,15 @@ XrtComputationClient::GetComputationResults(
   std::vector<DataPtr> results;
   auto* device = dynamic_cast<XrtDevice*>(GetDevice(device_name));
   if (xrt_result.dims() == 1) {
-    auto handles_vec = xrt_result.vec<int64>();
-    for (int64 i = 0; i < handles_vec.size(); ++i) {
+    auto handles_vec = xrt_result.vec<int64_t>();
+    for (int64_t i = 0; i < handles_vec.size(); ++i) {
       results.push_back(std::make_shared<XrtData>(
           device, ShapeUtil::GetTupleElementShape(result_shape, i),
           handles_vec(i)));
     }
   } else {
     results.push_back(std::make_shared<XrtData>(device, result_shape,
-                                                xrt_result.scalar<int64>()()));
+                                                xrt_result.scalar<int64_t>()()));
   }
   CreateDataHandlesCounter()->AddValue(results.size());
   return results;

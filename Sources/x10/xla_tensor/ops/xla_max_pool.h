@@ -26,8 +26,8 @@ namespace ops {
 
 class XlaMaxPool : public Node {
  public:
-  XlaMaxPool(const Value& input, std::vector<xla::int64> kernel_size,
-             std::vector<xla::int64> strides, xla::Padding padding,
+  XlaMaxPool(const Value& input, std::vector<int64_t> kernel_size,
+             std::vector<int64_t> strides, xla::Padding padding,
              xla::TensorFormat data_format);
 
   NodePtr Clone(OpList operands) const override;
@@ -36,9 +36,9 @@ class XlaMaxPool : public Node {
 
   std::string ToString() const override;
 
-  const std::vector<xla::int64>& kernel_size() const { return kernel_size_; }
+  const std::vector<int64_t>& kernel_size() const { return kernel_size_; }
 
-  const std::vector<xla::int64>& strides() const { return strides_; }
+  const std::vector<int64_t>& strides() const { return strides_; }
 
   xla::Padding padding() const { return padding_; }
 
@@ -46,8 +46,8 @@ class XlaMaxPool : public Node {
 
  private:
   // The parameters of the pooling.
-  std::vector<xla::int64> kernel_size_;
-  std::vector<xla::int64> strides_;
+  std::vector<int64_t> kernel_size_;
+  std::vector<int64_t> strides_;
   xla::Padding padding_;
   xla::TensorFormat data_format_;
 };

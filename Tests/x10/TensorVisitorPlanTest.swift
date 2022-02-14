@@ -20,7 +20,7 @@ struct Classifier: Layer {
   var layers = [Dense<Float>(inputSize: 784, outputSize: 30, activation: relu)]
   var final_layer = Dense<Float>(inputSize: 30, outputSize: 10)
 
-  @differentiable
+  @differentiable(reverse)
   func callAsFunction(_ input: Tensor<Float>) -> Tensor<Float> {
     return final_layer(layers.differentiableReduce(input) { last, layer in layer(last) })
   }

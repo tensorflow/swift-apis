@@ -157,10 +157,10 @@ typedef struct Int64ArrayRef {
   const int64_t* data;
   size_t size;
 #ifdef __cplusplus
-  tensorflow::gtl::ArraySlice<const xla::int64> slice() {
-    static_assert(sizeof(int64_t) == sizeof(xla::int64), "Sanity");
-    return tensorflow::gtl::ArraySlice<const xla::int64>(
-        reinterpret_cast<const xla::int64*>(data), size);
+  tensorflow::gtl::ArraySlice<const int64_t> slice() {
+    static_assert(sizeof(int64_t) == sizeof(int64_t), "Sanity");
+    return tensorflow::gtl::ArraySlice<const int64_t>(
+        reinterpret_cast<const int64_t*>(data), size);
   }
 #endif
 } Int64ArrayRef;

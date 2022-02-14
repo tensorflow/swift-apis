@@ -24,9 +24,9 @@ namespace ops {
 namespace {
 
 xla::Shape NodeOutputShape(const Value& operand,
-                           absl::Span<const xla::int64> start_indices,
-                           absl::Span<const xla::int64> limit_indices,
-                           absl::Span<const xla::int64> strides) {
+                           absl::Span<const int64_t> start_indices,
+                           absl::Span<const int64_t> limit_indices,
+                           absl::Span<const int64_t> strides) {
   auto lower_for_shape_fn =
       [&](absl::Span<const xla::XlaOp> operands) -> xla::XlaOp {
     CHECK_EQ(operands.size(), 1)
@@ -38,9 +38,9 @@ xla::Shape NodeOutputShape(const Value& operand,
 
 }  // namespace
 
-XlaSlice::XlaSlice(const Value& operand, std::vector<xla::int64> start_indices,
-                   std::vector<xla::int64> limit_indices,
-                   std::vector<xla::int64> strides)
+XlaSlice::XlaSlice(const Value& operand, std::vector<int64_t> start_indices,
+                   std::vector<int64_t> limit_indices,
+                   std::vector<int64_t> strides)
     : Node(ir::OpKind(at::aten::xla_slice), {operand},
            [&]() {
              return NodeOutputShape(operand, start_indices, limit_indices,

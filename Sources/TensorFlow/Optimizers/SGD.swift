@@ -86,9 +86,9 @@ where
     let learningRate = self.learningRate * 1 / (1 + decay * Float(step))
     velocity = velocity.scaled(by: momentum) - direction.scaled(by: learningRate)
     if nesterov {
-      model.move(along: velocity.scaled(by: momentum) - direction.scaled(by: learningRate))
+      model.move(by: velocity.scaled(by: momentum) - direction.scaled(by: learningRate))
     } else {
-      model.move(along: velocity)
+      model.move(by: velocity)
     }
   }
 

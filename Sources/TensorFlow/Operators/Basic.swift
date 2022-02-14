@@ -18,7 +18,7 @@ infix operator .!=: ComparisonPrecedence
 
 /// Returns a tensor with the same shape and scalars as the specified tensor.
 @inlinable
-@differentiable(where Scalar: TensorFlowFloatingPoint)
+@differentiable(reverse where Scalar: TensorFlowFloatingPoint)
 public func identity<Scalar>(_ x: Tensor<Scalar>) -> Tensor<Scalar> {
   x
 }
@@ -59,7 +59,7 @@ extension Tensor {
   ///
   /// - Returns: Array containing the unstacked tensors.
   @inlinable
-  @differentiable(where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse where Scalar: TensorFlowFloatingPoint)
   public func unstacked(alongAxis axis: Int = 0) -> [Tensor] {
     ensureValid(axis: axis)
     let posAxis = axis < 0 ? axis + rank : axis
@@ -89,7 +89,7 @@ extension Tensor {
   ///
   /// - Returns: An array containing the tensors part.
   @inlinable
-  @differentiable(where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse where Scalar: TensorFlowFloatingPoint)
   public func split(count: Int, alongAxis axis: Int = 0) -> [Tensor] {
     ensureValid(axis: axis)
     let canonicalAxis = axis < 0 ? axis + rank : axis
@@ -123,7 +123,7 @@ extension Tensor {
   ///
   /// - Returns: Array containing the tensors parts.
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public func split(sizes: Tensor<Int32>, alongAxis axis: Int = 0) -> [Tensor] {
     ensureValid(axis: axis)
     precondition(
@@ -137,7 +137,7 @@ extension Tensor {
   }
 
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public func split(sizes: [Int], alongAxis axis: Int = 0) -> [Tensor] {
     ensureValid(axis: axis)
     let canonicalAxis = axis < 0 ? axis + rank : axis
@@ -161,7 +161,7 @@ extension Tensor {
   /// - Precondition: The shape of `multiples` must be `[tensor.rank]`.
   /// - Precondition: All scalars in `multiples` must be non-negative.
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public func tiled(multiples: [Int]) -> Tensor {
     precondition(
       multiples.allSatisfy { $0 >= 0 },
@@ -179,7 +179,7 @@ extension Tensor {
   /// - Precondition: The expected `rank` of multiples must be `1`.
   /// - Precondition: The shape of `multiples` must be `[tensor.rank]`.
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public func tiled(multiples: Tensor<Int32>) -> Tensor {
     precondition(multiples.rank == 1, "The expected rank of multiples must be 1.")
     precondition(
@@ -191,7 +191,7 @@ extension Tensor {
   /// Reshape to the shape of the specified `Tensor`.
   /// - Precondition: The number of scalars matches the new shape.
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public func reshaped<T>(like other: Tensor<T>) -> Tensor {
     reshaped(toShape: other.shapeTensor)
   }
@@ -199,7 +199,7 @@ extension Tensor {
   /// Reshape to the specified shape.
   /// - Precondition: The number of scalars matches the new shape.
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public func reshaped(to newShape: TensorShape) -> Tensor {
     _Raw.reshape(self, shape: newShape.dimensions.map(Int64.init))
   }
@@ -207,14 +207,14 @@ extension Tensor {
   /// Reshape to the specified `Tensor` representing a shape.
   /// - Precondition: The number of scalars matches the new shape.
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public func reshaped(toShape newShape: Tensor<Int32>) -> Tensor {
     return _Raw.reshape(self, shape: newShape)
   }
 
   /// Return a copy of the tensor collapsed into a 1-D `Tensor`, in row-major order.
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public func flattened() -> Tensor {
     reshaped(to: [-1])
   }
@@ -222,7 +222,7 @@ extension Tensor {
   /// Returns a shape-expanded `Tensor`, with a dimension of 1 inserted at the specified shape
   /// indices.
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public func expandingShape(at axes: Int...) -> Tensor {
     expandingShape(at: axes)
   }
@@ -230,7 +230,7 @@ extension Tensor {
   /// Returns a shape-expanded `Tensor`, with a dimension of 1 inserted at the
   /// specified shape indices.
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public func expandingShape(at axes: [Int]) -> Tensor {
     var resultShape = self.shape.dimensions.map { Int64($0) }
     for i in axes {
@@ -243,7 +243,7 @@ extension Tensor {
 
   /// Returns a rank-lifted `Tensor` with a leading dimension of 1.
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public func rankLifted() -> Tensor {
     expandingShape(at: 0)
   }
@@ -251,7 +251,7 @@ extension Tensor {
   /// Removes the specified dimensions of size 1 from the shape of a tensor. If no dimensions are
   /// specified, then all dimensions of size 1 will be removed.
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public func squeezingShape(at axes: Int...) -> Tensor {
     squeezingShape(at: axes)
   }
@@ -259,7 +259,7 @@ extension Tensor {
   /// Removes the specified dimensions of size 1 from the shape of a tensor. If no dimensions are
   /// specified, then all dimensions of size 1 will be removed.
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public func squeezingShape(at axes: [Int]) -> Tensor {
     _Raw.squeeze(self, squeezeDims: axes.map(Int32.init))
   }
@@ -375,7 +375,7 @@ infix operator ++: AdditionPrecedence
 extension Tensor {
   /// Returns a transposed tensor, with dimensions permuted in the specified order.
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public func transposed(permutation: Tensor<Int32>) -> Tensor {
     _Raw.transpose(self, perm: permutation)
   }
@@ -383,14 +383,14 @@ extension Tensor {
   /// Returns a transposed tensor, with dimensions permuted in the specified order.
   @available(*, deprecated, renamed: "transposed(permutation:)")
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public func transposed(withPermutations permutations: Tensor<Int32>) -> Tensor {
     transposed(permutation: permutations)
   }
 
   /// Returns a transposed tensor, with dimensions permuted in the specified order.
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public func transposed(permutation: [Int]) -> Tensor {
     _Raw.transpose(self, perm: permutation)
   }
@@ -398,14 +398,14 @@ extension Tensor {
   /// Returns a transposed tensor, with dimensions permuted in the specified order.
   @available(*, deprecated, renamed: "transposed(permutation:)")
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public func transposed(withPermutations permutations: [Int]) -> Tensor {
     transposed(permutation: permutations)
   }
 
   /// Returns a transposed tensor, with dimensions permuted in the specified order.
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public func transposed(permutation: Int...) -> Tensor {
     transposed(permutation: permutation)
   }
@@ -413,14 +413,14 @@ extension Tensor {
   /// Returns a transposed tensor, with dimensions permuted in the specified order.
   @available(*, deprecated, renamed: "transposed(permutation:)")
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public func transposed(withPermutations permutations: Int...) -> Tensor {
     transposed(permutation: permutations)
   }
 
   /// Returns a transposed tensor, with dimensions permuted in reverse order.
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public func transposed() -> Tensor {
     return transposed(permutation: Array(stride(from: Int(rank - 1), to: -1, by: -1)))
   }
@@ -429,7 +429,7 @@ extension Tensor {
   /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
   /// - Precondition: There must be no duplication in `axes`.
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public func reversed(inAxes axes: Tensor<Int32>) -> Tensor {
     ensureValid(axes: axes)
     return _Raw.reverseV2(self, axis: axes)
@@ -439,7 +439,7 @@ extension Tensor {
   /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
   /// - Precondition: There must be no duplication in `axes`.
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public func reversed(inAxes axes: [Int]) -> Tensor {
     precondition(
       axes.count == Set(axes.map { $0 < 0 ? $0 + rank : $0 }).count,
@@ -452,7 +452,7 @@ extension Tensor {
   /// - Precondition: Each value in `axes` must be in the range `-rank..<rank`.
   /// - Precondition: There must be no duplication in `axes`.
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public func reversed(inAxes axes: Int...) -> Tensor {
     reversed(inAxes: axes)
   }
@@ -462,7 +462,7 @@ extension Tensor {
   ///   specified axis.
   /// - Precondition: The axis must be in the range `-rank..<rank`.
   @inlinable
-  @differentiable(where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse where Scalar: TensorFlowFloatingPoint)
   public func concatenated(with other: Tensor, alongAxis axis: Int = 0) -> Tensor {
     return Tensor(concatenating: [self, other], alongAxis: axis)
   }
@@ -473,7 +473,7 @@ extension Tensor {
   ///   and may be controversial. The existence/naming of `++` will be discussed
   ///   during a later API design phase.
   @inlinable
-  @differentiable(where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse where Scalar: TensorFlowFloatingPoint)
   public static func ++ (lhs: Tensor, rhs: Tensor) -> Tensor {
     return lhs.concatenated(with: rhs)
   }
@@ -524,7 +524,7 @@ extension Tensor {
   ///
   /// - Returns: The gathered tensor.
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public func gathering<Index: TensorFlowIndex>(
     atIndices indices: Tensor<Index>,
     alongAxis axis: Int = 0
@@ -552,7 +552,7 @@ extension Tensor {
   ///
   /// - Returns: The gathered tensor.
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public func batchGathering<Index: TensorFlowIndex>(
     atIndices indices: Tensor<Index>,
     alongAxis axis: Int = 1,
@@ -674,7 +674,7 @@ extension Tensor {
   /// - Returns: `(self.rank - K + 1)`-dimensional tensor populated by entries in this tensor
   ///   corresponding to `true` values in `mask`.
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public func gathering(where mask: Tensor<Bool>, alongAxis axis: Int = 0) -> Tensor {
     precondition(mask.rank != 0, "The boolean mask cannot be a scalar.")
     let posAxis = withoutDerivative(at: self.rank) { r in axis < 0 ? axis + r : axis }
@@ -913,13 +913,13 @@ infix operator .=
 
 extension Tensor {
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public func broadcasted(toShape shape: Tensor<Int32>) -> Tensor {
     return _Raw.broadcastTo(self, shape: shape)
   }
 
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public func broadcasted(to shape: TensorShape) -> Tensor {
     return broadcasted(toShape: Tensor<Int32>({ shape.dimensions.map(Int32.init) }(), on: device))
   }
@@ -927,7 +927,7 @@ extension Tensor {
   /// Broadcast to the same shape as the specified `Tensor`.
   /// - Precondition: The specified shape must be compatible for broadcasting.
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public func broadcasted<OtherScalar>(like other: Tensor<OtherScalar>) -> Tensor {
     return broadcasted(toShape: other.shapeTensor)
   }
@@ -940,7 +940,7 @@ extension Tensor {
 
 extension Tensor where Scalar: Numeric {
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public func unbroadcasted(toShape otherShape: Tensor<Int32>) -> Tensor {
     // TODO: Simplify this once differentiating control flow is supported.
     return unbroadcasted(
@@ -951,13 +951,13 @@ extension Tensor where Scalar: Numeric {
   }
 
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public func unbroadcasted<OtherScalar>(like other: Tensor<OtherScalar>) -> Tensor {
     return unbroadcasted(toShape: other.shapeTensor)
   }
 
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public func unbroadcasted(to shape: TensorShape) -> Tensor {
     let dimensions = self.shape.dimensions
     var otherDimensions = shape.dimensions
@@ -1031,7 +1031,7 @@ extension Tensor where Scalar: Numeric {
 
   /// Returns a tensor padded with constant according to the specified padding sizes.
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public func padded(forSizes sizes: [(before: Int, after: Int)], with value: Scalar = 0)
     -> Tensor
   {
@@ -1040,7 +1040,7 @@ extension Tensor where Scalar: Numeric {
 
   /// Returns a padded tensor according to the specified padding sizes and mode.
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public func padded(forSizes sizes: [(before: Int, after: Int)], mode: PaddingMode) -> Tensor {
     let paddings = Tensor<Int32>(
       shape: [sizes.count, 2],
@@ -1102,7 +1102,7 @@ extension Tensor {
   /// - Parameter lowerBounds: The lower bounds at each dimension.
   /// - Parameter upperBounds: The upper bounds at each dimension.
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public func slice(lowerBounds: [Int], upperBounds: [Int]) -> Tensor {
     // TODO: Precondition `lowerBounds.count == upperBounds.count`,
     // preferably in graph.
@@ -1113,13 +1113,13 @@ extension Tensor {
   }
 
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public func slice(lowerBounds: Tensor<Int32>, sizes: Tensor<Int32>) -> Tensor {
     return _Raw.slice(self, begin: lowerBounds, size: sizes)
   }
 
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public func slice(lowerBounds: [Int], sizes: [Int]) -> Tensor {
     return _Raw.slice(self, begin: lowerBounds, size: sizes)
   }
@@ -1297,7 +1297,7 @@ extension Tensor {
   }
 
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  // @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   internal subscript(_ indexPath: IndexPath) -> Tensor {
     get {
       let device = self.device
@@ -1323,7 +1323,7 @@ extension Tensor {
   }
 
   @inlinable
-  @differentiable(wrt: self where Scalar: TensorFlowFloatingPoint)
+  // @differentiable(reverse, wrt: self where Scalar: TensorFlowFloatingPoint)
   public subscript(_ ranges: TensorRangeExpression...) -> Tensor {
     get {
       return self[{ IndexPath({ ranges.map { $0.tensorRange } }()) }()]
@@ -1334,27 +1334,27 @@ extension Tensor {
   }
 }
 
-extension Tensor where Scalar: TensorFlowFloatingPoint {
-  @usableFromInline
-  @derivative(of: subscript)
-  internal func _vjpSubscript(
-    _ indexPath: IndexPath
-  ) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
-    return (
-      self[indexPath],
-      { [shape = shapeTensor] v in
-        _Raw.stridedSliceGrad(
-          shape: shape, begin: Tensor<Int32>(indexPath.begin, on: device),
-          end: Tensor<Int32>(indexPath.end, on: device),
-          strides: Tensor<Int32>(indexPath.strides, on: device), dy: v,
-          beginMask: indexPath.beginMask,
-          endMask: indexPath.endMask, ellipsisMask: indexPath.ellipsisMask,
-          newAxisMask: indexPath.newAxisMask,
-          shrinkAxisMask: indexPath.squeezeAxisMask)
-      }
-    )
-  }
-}
+// extension Tensor {
+//   @usableFromInline
+//   @derivative(of: subscript)
+//   internal func _vjpSubscript(
+//     _ indexPath: IndexPath
+//   ) -> (value: Tensor, pullback: (Tensor) -> Tensor) {
+//     return (
+//       self[indexPath],
+//       { [shape = shapeTensor] v in
+//         _Raw.stridedSliceGrad(
+//           shape: shape, begin: Tensor<Int32>(indexPath.begin, on: device),
+//           end: Tensor<Int32>(indexPath.end, on: device),
+//           strides: Tensor<Int32>(indexPath.strides, on: device), dy: v,
+//           beginMask: indexPath.beginMask,
+//           endMask: indexPath.endMask, ellipsisMask: indexPath.ellipsisMask,
+//           newAxisMask: indexPath.newAxisMask,
+//           shrinkAxisMask: indexPath.squeezeAxisMask)
+//       }
+//     )
+//   }
+// }
 
 extension Tensor.IndexPath {
   @inlinable

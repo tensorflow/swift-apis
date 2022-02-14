@@ -74,7 +74,7 @@ std::string GetCurrentScope() {
 }
 
 ShapeCache* GetShapeCache() {
-  static xla::int64 shape_cache_size =
+  static int64_t shape_cache_size =
       xla::sys_util::GetEnvInt("XLA_IR_SHAPE_CACHE_SIZE", 131072);
   thread_local ShapeCache* cache = new ShapeCache(shape_cache_size);
   return cache;

@@ -159,7 +159,7 @@ struct Statistics {
   }
 }
 
-@differentiable
+@differentiable(reverse)
 public func _defaultLossFunction(_ ŷ: Tensor<Float>, _ y: Tensor<Int32>) -> Tensor<Float> {
   softmaxCrossEntropy(logits: ŷ, labels: y)
 }
@@ -190,7 +190,7 @@ where
   public func run<Dataset: Sequence>(
     train: Dataset, test: Dataset, crossReplicaSumDevices: [Device]? = nil,
     scheduleLearningRate: (Opt) -> Void = { _ in },
-    lossFunction: @differentiable (Tensor<Float>, @noDerivative Tensor<Int32>) -> Tensor<Float> =
+    lossFunction: @differentiable(reverse) (Tensor<Float>, @noDerivative Tensor<Int32>) -> Tensor<Float> =
       _defaultLossFunction
   )
     -> () -> (train: HostStatistics, test: HostStatistics)

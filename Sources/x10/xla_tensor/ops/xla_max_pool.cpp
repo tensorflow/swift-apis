@@ -27,8 +27,8 @@ namespace {
 
 // Infers the output shape of the max pooling operation.
 xla::Shape NodeOutputShape(const Value& input,
-                           absl::Span<const xla::int64> kernel_size,
-                           std::vector<xla::int64> strides,
+                           absl::Span<const int64_t> kernel_size,
+                           std::vector<int64_t> strides,
                            xla::Padding padding,
                            const xla::TensorFormat& data_format) {
   auto lower_for_shape_fn =
@@ -43,8 +43,8 @@ xla::Shape NodeOutputShape(const Value& input,
 
 }  // namespace
 
-XlaMaxPool::XlaMaxPool(const Value& input, std::vector<xla::int64> kernel_size,
-                       std::vector<xla::int64> strides, xla::Padding padding,
+XlaMaxPool::XlaMaxPool(const Value& input, std::vector<int64_t> kernel_size,
+                       std::vector<int64_t> strides, xla::Padding padding,
                        xla::TensorFormat data_format)
     : Node(ir::OpKind(at::aten::xla_max_pool), {input},
            [&]() {

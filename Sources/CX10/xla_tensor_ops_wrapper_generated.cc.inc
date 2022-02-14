@@ -122,7 +122,7 @@ class Add : public Node {
 
 class All : public Node {
  public:
-  All(const Value& input, std::vector<xla::int64> dims, bool keep_reduced_dimensions)
+  All(const Value& input, std::vector<int64_t> dims, bool keep_reduced_dimensions)
       : Node(ir::OpKind(at::aten::all),
              {input}, [&]() {
        xla::XlaBuilder b("InferOutputShape");
@@ -155,13 +155,13 @@ class All : public Node {
   }
 
  private:
-  std::vector<xla::int64> dims_;
+  std::vector<int64_t> dims_;
   bool keep_reduced_dimensions_;
 };
 
 class Any : public Node {
  public:
-  Any(const Value& input, std::vector<xla::int64> dims, bool keep_reduced_dimensions)
+  Any(const Value& input, std::vector<int64_t> dims, bool keep_reduced_dimensions)
       : Node(ir::OpKind(at::aten::any),
              {input}, [&]() {
        xla::XlaBuilder b("InferOutputShape");
@@ -194,13 +194,13 @@ class Any : public Node {
   }
 
  private:
-  std::vector<xla::int64> dims_;
+  std::vector<int64_t> dims_;
   bool keep_reduced_dimensions_;
 };
 
 class Argmax : public Node {
  public:
-  Argmax(const Value& input, xla::int64 dim, bool keepdim)
+  Argmax(const Value& input, int64_t dim, bool keepdim)
       : Node(ir::OpKind(at::aten::argmax),
              {input}, [&]() {
        xla::XlaBuilder b("InferOutputShape");
@@ -233,13 +233,13 @@ class Argmax : public Node {
   }
 
  private:
-  xla::int64 dim_;
+  int64_t dim_;
   bool keepdim_;
 };
 
 class Argmin : public Node {
  public:
-  Argmin(const Value& input, xla::int64 dim, bool keepdim)
+  Argmin(const Value& input, int64_t dim, bool keepdim)
       : Node(ir::OpKind(at::aten::argmin),
              {input}, [&]() {
        xla::XlaBuilder b("InferOutputShape");
@@ -272,7 +272,7 @@ class Argmin : public Node {
   }
 
  private:
-  xla::int64 dim_;
+  int64_t dim_;
   bool keepdim_;
 };
 
@@ -419,7 +419,7 @@ class BroadcastTensors : public Node {
 
 class Cat : public Node {
  public:
-  Cat(absl::Span<const Value> input, xla::int64 dim)
+  Cat(absl::Span<const Value> input, int64_t dim)
       : Node(
             ir::OpKind(at::aten::cat), input,
             [&]() {
@@ -448,7 +448,7 @@ class Cat : public Node {
   }
 
  private:
-  xla::int64 dim_;
+  int64_t dim_;
 };
 
 class Ceil : public Node {
@@ -507,7 +507,7 @@ class Clamp : public Node {
 
 class ConstantPadNd : public Node {
  public:
-  ConstantPadNd(const Value& input, std::vector<xla::int64> pad, at::Scalar value)
+  ConstantPadNd(const Value& input, std::vector<int64_t> pad, at::Scalar value)
       : Node(ir::OpKind(at::aten::constant_pad_nd),
              {input}, [&]() {
        xla::XlaBuilder b("InferOutputShape");
@@ -540,7 +540,7 @@ class ConstantPadNd : public Node {
   }
 
  private:
-  std::vector<xla::int64> pad_;
+  std::vector<int64_t> pad_;
   at::Scalar value_;};
 
 class Cos : public Node {
@@ -599,7 +599,7 @@ class Cosh : public Node {
 
 class Cumprod : public Node {
  public:
-  Cumprod(const Value& input, xla::int64 dim, bool exclusive, bool reverse)
+  Cumprod(const Value& input, int64_t dim, bool exclusive, bool reverse)
       : Node(ir::OpKind(at::aten::cumprod), {input}, input.shape(),
              /*num_outputs=*/1, xla::util::MHash(dim, exclusive, reverse)),
         dim_(std::move(dim)),
@@ -626,14 +626,14 @@ class Cumprod : public Node {
   }
 
  private:
-  xla::int64 dim_;
+  int64_t dim_;
   bool exclusive_;
   bool reverse_;
 };
 
 class Cumsum : public Node {
  public:
-  Cumsum(const Value& input, xla::int64 dim, bool exclusive, bool reverse)
+  Cumsum(const Value& input, int64_t dim, bool exclusive, bool reverse)
       : Node(ir::OpKind(at::aten::cumsum), {input}, input.shape(),
              /*num_outputs=*/1, xla::util::MHash(dim, exclusive, reverse)),
         dim_(std::move(dim)),
@@ -660,15 +660,15 @@ class Cumsum : public Node {
   }
 
  private:
-  xla::int64 dim_;
+  int64_t dim_;
   bool exclusive_;
   bool reverse_;
 };
 
 class DiagonalValue : public Node {
  public:
-  DiagonalValue(const Value& input, xla::int64 offset, xla::int64 dim1,
-                xla::int64 dim2)
+  DiagonalValue(const Value& input, int64_t offset, int64_t dim1,
+                int64_t dim2)
       : Node(
             ir::OpKind(at::aten::diagonal), {input},
             [&]() {
@@ -702,9 +702,9 @@ class DiagonalValue : public Node {
   }
 
  private:
-  xla::int64 offset_;
-  xla::int64 dim1_;
-  xla::int64 dim2_;
+  int64_t offset_;
+  int64_t dim1_;
+  int64_t dim2_;
 };
 
 class Div : public Node {
@@ -744,7 +744,7 @@ class Div : public Node {
 class DynamicSlice : public Node {
  public:
   DynamicSlice(const Value& base, absl::Span<const Value> start_indices,
-               std::vector<xla::int64> slice_shapes)
+               std::vector<int64_t> slice_shapes)
       : Node(
             ir::OpKind(at::aten::xla_dynamic_slice),
             TensorArgsConcat({base}, start_indices),
@@ -780,7 +780,7 @@ class DynamicSlice : public Node {
   }
 
  private:
-  std::vector<xla::int64> slice_shapes_;
+  std::vector<int64_t> slice_shapes_;
 };
 
 class DynamicUpdateSlice : public Node {
@@ -886,7 +886,7 @@ class Exp : public Node {
 
 class Expand : public Node {
  public:
-  Expand(const Value& input, std::vector<xla::int64> dims)
+  Expand(const Value& input, std::vector<int64_t> dims)
       : Node(ir::OpKind(at::aten::expand),
              {input}, [&]() {
        xla::XlaBuilder b("InferOutputShape");
@@ -917,7 +917,7 @@ class Expand : public Node {
   }
 
  private:
-  std::vector<xla::int64> dims_;
+  std::vector<int64_t> dims_;
 };
 
 class Expm1 : public Node {
@@ -949,7 +949,7 @@ class Expm1 : public Node {
 
 class Flip : public Node {
  public:
-  Flip(const Value& input, std::vector<xla::int64> dims)
+  Flip(const Value& input, std::vector<int64_t> dims)
       : Node(ir::OpKind(at::aten::flip),
              {input}, input.shape(),
              /*num_outputs=*/1, xla::util::MHash(dims)),
@@ -974,7 +974,7 @@ class Flip : public Node {
   }
 
  private:
-  std::vector<xla::int64> dims_;
+  std::vector<int64_t> dims_;
 };
 
 class Floor : public Node {
@@ -1006,7 +1006,7 @@ class Floor : public Node {
 
 class Gather : public Node {
  public:
-  Gather(const Value& input, const Value& indices, xla::int64 start_dim)
+  Gather(const Value& input, const Value& indices, int64_t start_dim)
       : Node(
             ir::OpKind(at::aten::index), {input, indices},
             [&]() {
@@ -1037,7 +1037,7 @@ class Gather : public Node {
   }
 
  private:
-  xla::int64 start_dim_;
+  int64_t start_dim_;
 };
 
 class Ge : public Node {
@@ -1279,7 +1279,7 @@ class Log1p : public Node {
 
 class LogSoftmax : public Node {
  public:
-  LogSoftmax(const Value& input, xla::int64 dim)
+  LogSoftmax(const Value& input, int64_t dim)
       : Node(ir::OpKind(at::aten::log_softmax),
              {input}, input.shape(),
              /*num_outputs=*/1, xla::util::MHash(dim)),
@@ -1304,13 +1304,13 @@ class LogSoftmax : public Node {
   }
 
  private:
-  xla::int64 dim_;
+  int64_t dim_;
 };
 
 class LogSoftmaxBackward : public Node {
  public:
   LogSoftmaxBackward(const Value& gradOutput, const Value& output,
-                     xla::int64 dim)
+                     int64_t dim)
       : Node(ir::OpKind(at::aten::_log_softmax_backward_data),
              {gradOutput, output}, gradOutput.shape(),
              /*num_outputs=*/1, xla::util::MHash(dim)),
@@ -1335,7 +1335,7 @@ class LogSoftmaxBackward : public Node {
   }
 
  private:
-  xla::int64 dim_;
+  int64_t dim_;
 };
 
 class LogicalAnd : public Node {
@@ -1532,7 +1532,7 @@ class Matmul : public Node {
 
 class Max : public Node {
  public:
-  Max(const Value& input, xla::int64 dim, bool keepDim)
+  Max(const Value& input, int64_t dim, bool keepDim)
       : Node(
             ir::OpKind(at::aten::max), {input},
             [&]() {
@@ -1564,7 +1564,7 @@ class Max : public Node {
   }
 
  private:
-  xla::int64 dim_;
+  int64_t dim_;
   bool keepDim_;
 };
 
@@ -1604,7 +1604,7 @@ class Maximum : public Node {
 
 class Mean : public Node {
  public:
-  Mean(const Value& input, std::vector<xla::int64> reductionIndices,
+  Mean(const Value& input, std::vector<int64_t> reductionIndices,
        bool keepDims)
       : Node(
             ir::OpKind(at::aten::mean), {input},
@@ -1638,13 +1638,13 @@ class Mean : public Node {
   }
 
  private:
-  std::vector<xla::int64> reductionIndices_;
+  std::vector<int64_t> reductionIndices_;
   bool keepDims_;
 };
 
 class Min : public Node {
  public:
-  Min(const Value& input, xla::int64 dim, bool keepDim)
+  Min(const Value& input, int64_t dim, bool keepDim)
       : Node(
             ir::OpKind(at::aten::min), {input},
             [&]() {
@@ -1676,7 +1676,7 @@ class Min : public Node {
   }
 
  private:
-  xla::int64 dim_;
+  int64_t dim_;
   bool keepDim_;
 };
 
@@ -1845,7 +1845,7 @@ class Neg : public Node {
 
 class NllLoss : public Node {
  public:
-  NllLoss(const Value& logits, const Value& labels, xla::int64 ignore_index)
+  NllLoss(const Value& logits, const Value& labels, int64_t ignore_index)
       : Node(
             ir::OpKind(at::aten::nll_loss), {logits, labels},
             [&]() {
@@ -1878,12 +1878,12 @@ class NllLoss : public Node {
   }
 
  private:
-  xla::int64 ignore_index_;
+  int64_t ignore_index_;
 };
 
 class PermuteValue : public Node {
  public:
-  PermuteValue(const Value& input, std::vector<xla::int64> dims)
+  PermuteValue(const Value& input, std::vector<int64_t> dims)
       : Node(
             ir::OpKind(at::aten::permute), {input},
             [&]() {
@@ -1912,7 +1912,7 @@ class PermuteValue : public Node {
   }
 
  private:
-  std::vector<xla::int64> dims_;
+  std::vector<int64_t> dims_;
 };
 
 class PhysicalCast : public Node {
@@ -1980,7 +1980,7 @@ class Pow : public Node {
 
 class Prod : public Node {
  public:
-  Prod(const Value& input, std::vector<xla::int64> reductionIndices,
+  Prod(const Value& input, std::vector<int64_t> reductionIndices,
        bool keepDims)
       : Node(
             ir::OpKind(at::aten::prod), {input},
@@ -2014,7 +2014,7 @@ class Prod : public Node {
   }
 
  private:
-  std::vector<xla::int64> reductionIndices_;
+  std::vector<int64_t> reductionIndices_;
   bool keepDims_;
 };
 
@@ -2121,7 +2121,7 @@ class Rem : public Node {
 
 class Repeat : public Node {
  public:
-  Repeat(const Value& input, std::vector<xla::int64> multiples)
+  Repeat(const Value& input, std::vector<int64_t> multiples)
       : Node(
             ir::OpKind(at::aten::repeat), {input},
             [&]() {
@@ -2150,12 +2150,12 @@ class Repeat : public Node {
   }
 
  private:
-  std::vector<xla::int64> multiples_;
+  std::vector<int64_t> multiples_;
 };
 
 class ResizeValue : public Node {
  public:
-  ResizeValue(const Value& input, std::vector<xla::int64> dims)
+  ResizeValue(const Value& input, std::vector<int64_t> dims)
       : Node(
             ir::OpKind(at::aten::resize), {input},
             [&]() {
@@ -2184,7 +2184,7 @@ class ResizeValue : public Node {
   }
 
  private:
-  std::vector<xla::int64> dims_;
+  std::vector<int64_t> dims_;
 };
 
 class RoundToEven : public Node {
@@ -2240,7 +2240,7 @@ class Rsqrt : public Node {
 
 class Select : public Node {
  public:
-  Select(const Value& input, xla::int64 dim, xla::int64 index)
+  Select(const Value& input, int64_t dim, int64_t index)
       : Node(
             ir::OpKind(at::aten::select), {input},
             [&]() {
@@ -2272,8 +2272,8 @@ class Select : public Node {
   }
 
  private:
-  xla::int64 dim_;
-  xla::int64 index_;
+  int64_t dim_;
+  int64_t index_;
 };
 
 class Sigmoid : public Node {
@@ -2386,7 +2386,7 @@ class Sinh : public Node {
 
 class Slice : public Node {
  public:
-  Slice(const Value& input, xla::int64 dim, xla::int64 start, xla::int64 end, xla::int64 stride)
+  Slice(const Value& input, int64_t dim, int64_t start, int64_t end, int64_t stride)
       : Node(ir::OpKind(at::aten::slice),
              {input}, ShapeSlice(input, dim, start, end, stride),
              /*num_outputs=*/1, xla::util::MHash(dim, start, end, stride)),
@@ -2417,15 +2417,15 @@ class Slice : public Node {
   }
 
  private:
-  xla::int64 dim_;
-  xla::int64 start_;
-  xla::int64 end_;
-  xla::int64 stride_;
+  int64_t dim_;
+  int64_t start_;
+  int64_t end_;
+  int64_t stride_;
 };
 
 class Softmax : public Node {
  public:
-  Softmax(const Value& input, xla::int64 dim)
+  Softmax(const Value& input, int64_t dim)
       : Node(ir::OpKind(at::aten::softmax),
              {input}, input.shape(),
              /*num_outputs=*/1, xla::util::MHash(dim)),
@@ -2450,7 +2450,7 @@ class Softmax : public Node {
   }
 
  private:
-  xla::int64 dim_;
+  int64_t dim_;
 };
 
 class Sqrt : public Node {
@@ -2482,7 +2482,7 @@ class Sqrt : public Node {
 
 class Squeeze : public Node {
  public:
-  Squeeze(const Value& input, xla::int64 dim)
+  Squeeze(const Value& input, int64_t dim)
       : Node(ir::OpKind(at::aten::squeeze),
              {input}, [&]() {
        xla::XlaBuilder b("InferOutputShape");
@@ -2513,12 +2513,12 @@ class Squeeze : public Node {
   }
 
  private:
-  xla::int64 dim_;
+  int64_t dim_;
 };
 
 class Stack : public Node {
  public:
-  Stack(absl::Span<const Value> input, xla::int64 dim)
+  Stack(absl::Span<const Value> input, int64_t dim)
       : Node(
             ir::OpKind(at::aten::stack), input,
             [&]() {
@@ -2548,7 +2548,7 @@ class Stack : public Node {
   }
 
  private:
-  xla::int64 dim_;
+  int64_t dim_;
 };
 
 class Sub : public Node {
@@ -2587,7 +2587,7 @@ class Sub : public Node {
 
 class Sum : public Node {
  public:
-  Sum(const Value& input, std::vector<xla::int64> reductionIndices,
+  Sum(const Value& input, std::vector<int64_t> reductionIndices,
       bool keepDims)
       : Node(
             ir::OpKind(at::aten::sum), {input},
@@ -2621,7 +2621,7 @@ class Sum : public Node {
   }
 
  private:
-  std::vector<xla::int64> reductionIndices_;
+  std::vector<int64_t> reductionIndices_;
   bool keepDims_;
 };
 
@@ -2720,10 +2720,10 @@ class Tanh : public Node {
 class TfConv : public Node {
  public:
   TfConv(const Value& input, const Value& filter, bool depthwise,
-         std::vector<xla::int64> strides, tensorflow::Padding padding,
-         std::vector<xla::int64> explicit_paddings,
+         std::vector<int64_t> strides, tensorflow::Padding padding,
+         std::vector<int64_t> explicit_paddings,
          tensorflow::TensorFormat data_format,
-         std::vector<xla::int64> dilations)
+         std::vector<int64_t> dilations)
       : Node(
             ir::OpKind(at::aten::tf_convolution), {input, filter},
             [&]() {
@@ -2773,22 +2773,22 @@ class TfConv : public Node {
 
  private:
   bool depthwise_;
-  std::vector<xla::int64> strides_;
+  std::vector<int64_t> strides_;
   tensorflow::Padding padding_;
-  std::vector<xla::int64> explicit_paddings_;
+  std::vector<int64_t> explicit_paddings_;
   tensorflow::TensorFormat data_format_;
-  std::vector<xla::int64> dilations_;
+  std::vector<int64_t> dilations_;
 };
 
 class TfConvBackpropFilter : public Node {
  public:
-  TfConvBackpropFilter(const Value& input, std::vector<xla::int64> filter_sizes,
+  TfConvBackpropFilter(const Value& input, std::vector<int64_t> filter_sizes,
                        const Value& out_backprop, bool depthwise,
-                       std::vector<xla::int64> strides,
+                       std::vector<int64_t> strides,
                        tensorflow::Padding padding,
-                       std::vector<xla::int64> explicit_paddings,
+                       std::vector<int64_t> explicit_paddings,
                        tensorflow::TensorFormat data_format,
-                       std::vector<xla::int64> dilations)
+                       std::vector<int64_t> dilations)
       : Node(
             ir::OpKind(at::aten::tf_conv_backprop_filter),
             {input, out_backprop},
@@ -2841,24 +2841,24 @@ class TfConvBackpropFilter : public Node {
   }
 
  private:
-  std::vector<xla::int64> filter_sizes_;
+  std::vector<int64_t> filter_sizes_;
   bool depthwise_;
-  std::vector<xla::int64> strides_;
+  std::vector<int64_t> strides_;
   tensorflow::Padding padding_;
-  std::vector<xla::int64> explicit_paddings_;
+  std::vector<int64_t> explicit_paddings_;
   tensorflow::TensorFormat data_format_;
-  std::vector<xla::int64> dilations_;
+  std::vector<int64_t> dilations_;
 };
 
 class TfConvBackpropInput : public Node {
  public:
-  TfConvBackpropInput(std::vector<xla::int64> input_sizes, const Value& filter,
+  TfConvBackpropInput(std::vector<int64_t> input_sizes, const Value& filter,
                       const Value& out_backprop, bool depthwise,
-                      std::vector<xla::int64> strides,
+                      std::vector<int64_t> strides,
                       tensorflow::Padding padding,
-                      std::vector<xla::int64> explicit_paddings,
+                      std::vector<int64_t> explicit_paddings,
                       tensorflow::TensorFormat data_format,
-                      std::vector<xla::int64> dilations)
+                      std::vector<int64_t> dilations)
       : Node(
             ir::OpKind(at::aten::tf_conv_backprop_input),
             {filter, out_backprop},
@@ -2911,18 +2911,18 @@ class TfConvBackpropInput : public Node {
   }
 
  private:
-  std::vector<xla::int64> input_sizes_;
+  std::vector<int64_t> input_sizes_;
   bool depthwise_;
-  std::vector<xla::int64> strides_;
+  std::vector<int64_t> strides_;
   tensorflow::Padding padding_;
-  std::vector<xla::int64> explicit_paddings_;
+  std::vector<int64_t> explicit_paddings_;
   tensorflow::TensorFormat data_format_;
-  std::vector<xla::int64> dilations_;
+  std::vector<int64_t> dilations_;
 };
 
 class TfMirrorPad : public Node {
  public:
-  TfMirrorPad(const Value& input, std::vector<xla::int64> padding,
+  TfMirrorPad(const Value& input, std::vector<int64_t> padding,
               tensorflow::MirrorPadMode mode)
       : Node(
             ir::OpKind(at::aten::tf_mirror_pad), {input},
@@ -2955,14 +2955,14 @@ class TfMirrorPad : public Node {
   }
 
  private:
-  std::vector<xla::int64> padding_;
+  std::vector<int64_t> padding_;
   tensorflow::MirrorPadMode mode_;
 };
 
 class TfMirrorPadGrad : public Node {
  public:
-  TfMirrorPadGrad(const Value& grad_output, std::vector<xla::int64> input_size,
-                  std::vector<xla::int64> padding,
+  TfMirrorPadGrad(const Value& grad_output, std::vector<int64_t> input_size,
+                  std::vector<int64_t> padding,
                   tensorflow::MirrorPadMode mode)
       : Node(
             ir::OpKind(at::aten::tf_mirror_pad_backward), {grad_output},
@@ -3000,15 +3000,15 @@ class TfMirrorPadGrad : public Node {
   }
 
  private:
-  std::vector<xla::int64> input_size_;
-  std::vector<xla::int64> padding_;
+  std::vector<int64_t> input_size_;
+  std::vector<int64_t> padding_;
   tensorflow::MirrorPadMode mode_;
 };
 
 class TfOneHot : public Node {
  public:
   TfOneHot(const Value& indices, const Value& onValue, const Value& offValue,
-           xla::int64 depth, xla::int64 axis)
+           int64_t depth, int64_t axis)
       : Node(
             ir::OpKind(at::aten::tf_one_hot), {indices, onValue, offValue},
             [&]() {
@@ -3044,8 +3044,8 @@ class TfOneHot : public Node {
   }
 
  private:
-  xla::int64 depth_;
-  xla::int64 axis_;
+  int64_t depth_;
+  int64_t axis_;
 };
 
 class TfStatelessRandomNormal : public Node {
@@ -3126,7 +3126,7 @@ class TfStatelessRandomUniform : public Node {
 class TfUnsortedSegmentSum : public Node {
  public:
   TfUnsortedSegmentSum(const Value& data, const Value& indicies,
-                       xla::int64 numSegments)
+                       int64_t numSegments)
       : Node(
             ir::OpKind(at::aten::tf_unsorted_segment_sum), {data, indicies},
             [&]() {
@@ -3160,7 +3160,7 @@ class TfUnsortedSegmentSum : public Node {
   }
 
  private:
-  xla::int64 numSegments_;
+  int64_t numSegments_;
 };
 
 class Threshold : public Node {
@@ -3198,7 +3198,7 @@ class Threshold : public Node {
 
 class Topk : public Node {
  public:
-  Topk(const Value& input, xla::int64 k, xla::int64 dim, bool largest)
+  Topk(const Value& input, int64_t k, int64_t dim, bool largest)
       : Node(
             ir::OpKind(at::aten::topk), {input},
             [&]() {
@@ -3231,8 +3231,8 @@ class Topk : public Node {
   }
 
  private:
-  xla::int64 k_;
-  xla::int64 dim_;
+  int64_t k_;
+  int64_t dim_;
   bool largest_;
 };
 
@@ -3266,7 +3266,7 @@ class TruncatedNormal : public Node {
 class UpdateSlice : public Node {
  public:
   UpdateSlice(const Value& input, const Value& source,
-              std::vector<xla::int64> baseIndices)
+              std::vector<int64_t> baseIndices)
       : Node(
             ir::OpKind(xla_symbols::update_slice), {input, source},
             [&]() {
@@ -3299,7 +3299,7 @@ class UpdateSlice : public Node {
   }
 
  private:
-  std::vector<xla::int64> baseIndices_;
+  std::vector<int64_t> baseIndices_;
 };
 
 class Where : public Node {
@@ -3371,7 +3371,7 @@ class XlaPad : public Node {
 
 class XlaSlice : public Node {
  public:
-  XlaSlice(const Value& input, std::vector<xla::int64> start_indices, std::vector<xla::int64> limit_indices, std::vector<xla::int64> strides)
+  XlaSlice(const Value& input, std::vector<int64_t> start_indices, std::vector<int64_t> limit_indices, std::vector<int64_t> strides)
       : Node(ir::OpKind(at::aten::xla_slice),
              {input}, [&]() {
        xla::XlaBuilder b("InferOutputShape");
@@ -3406,9 +3406,9 @@ class XlaSlice : public Node {
   }
 
  private:
-  std::vector<xla::int64> start_indices_;
-  std::vector<xla::int64> limit_indices_;
-  std::vector<xla::int64> strides_;
+  std::vector<int64_t> start_indices_;
+  std::vector<int64_t> limit_indices_;
+  std::vector<int64_t> strides_;
 };
 
 }  // namespace

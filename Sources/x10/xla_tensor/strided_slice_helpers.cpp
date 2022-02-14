@@ -25,9 +25,9 @@ namespace swift_xla {
 namespace {
 
 // Create a rank 1 tensor from a sequence of values.
-tensorflow::Tensor MakeRank1Tensor(absl::Span<const xla::int64> values) {
+tensorflow::Tensor MakeRank1Tensor(absl::Span<const int64_t> values) {
   tensorflow::TensorShape tensor_shape;
-  std::vector<xla::int64> tensor_size;
+  std::vector<int64_t> tensor_size;
   tensor_size.push_back(values.size());
   tensorflow::Status status =
       tensorflow::TensorShapeUtils::MakeShape(tensor_size, &tensor_shape);
@@ -41,18 +41,18 @@ tensorflow::Tensor MakeRank1Tensor(absl::Span<const xla::int64> values) {
 }  // namespace
 
 StridedSliceSpec ComputeIndexingBoundsAndStrides(
-    absl::Span<const xla::int64> input_sizes,
-    absl::Span<const xla::int64> begin, absl::Span<const xla::int64> end,
-    absl::Span<const xla::int64> strides, xla::int32 begin_mask,
+    absl::Span<const int64_t> input_sizes,
+    absl::Span<const int64_t> begin, absl::Span<const int64_t> end,
+    absl::Span<const int64_t> strides, xla::int32 begin_mask,
     xla::int32 end_mask, xla::int32 ellipsis_mask, xla::int32 new_axis_mask,
     xla::int32 shrink_axis_mask) {
   tensorflow::Tensor begin_tensor = MakeRank1Tensor(begin);
   tensorflow::Tensor end_tensor = MakeRank1Tensor(end);
   tensorflow::Tensor strides_tensor = MakeRank1Tensor(strides);
   tensorflow::TensorShape tf_input_shape(input_sizes);
-  absl::InlinedVector<xla::int64, 4> begin_spec;
-  absl::InlinedVector<xla::int64, 4> end_spec;
-  absl::InlinedVector<xla::int64, 4> strides_spec;
+  absl::InlinedVector<int64_t, 4> begin_spec;
+  absl::InlinedVector<int64_t, 4> end_spec;
+  absl::InlinedVector<int64_t, 4> strides_spec;
   tensorflow::PartialTensorShape partial_processing_shape, partial_final_shape;
   bool dummy;
   tensorflow::Status status = tensorflow::ValidateStridedSliceOp(

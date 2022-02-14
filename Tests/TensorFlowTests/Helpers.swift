@@ -59,7 +59,7 @@ extension Float: PointwiseMultiplicative {
 struct Multiply: Layer {
   var coefficient: Float
 
-  @differentiable
+  @differentiable(reverse)
   func callAsFunction(_ input: Float) -> Float {
     return coefficient * input
   }

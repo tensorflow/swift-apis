@@ -36,7 +36,7 @@ extension Tensor {
   ///   - repeatedValue: The scalar value to repeat.
   ///   - shape: The dimensions of the tensor.
   @inlinable
-  @differentiable(where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse where Scalar: TensorFlowFloatingPoint)
   public init(
     repeating repeatedValue: Scalar, shape: TensorShape,
     on device: Device = .default
@@ -49,7 +49,7 @@ extension Tensor {
   /// Creates a tensor by broadcasting the given scalar to a given rank with
   /// all dimensions being 1.
   @inlinable
-  // @differentiable(where Scalar: TensorFlowFloatingPoint)
+  // @differentiable(reverse where Scalar: TensorFlowFloatingPoint)
   public init(broadcasting scalar: Scalar, rank: Int, on device: Device = .default) {
     self = Tensor(scalar, on: device).reshaped(to: TensorShape(repeating: 1, count: rank))
   }
@@ -93,7 +93,7 @@ extension Tensor where Scalar: Numeric {
 
   /// Perform an element-wise conversion from another `Tensor`.
   @inlinable
-  @differentiable(where Scalar: TensorFlowFloatingPoint, OtherScalar: TensorFlowFloatingPoint)
+  @differentiable(reverse where Scalar: TensorFlowFloatingPoint, OtherScalar: TensorFlowFloatingPoint)
   public init<OtherScalar: Numeric>(_ other: Tensor<OtherScalar>) {
     self = _Raw.cast(other)
   }
@@ -116,7 +116,7 @@ extension Tensor where Scalar: TensorFlowFloatingPoint {
 extension Tensor {
   /// Creates a tensor from an array of tensors (which may themselves be scalars).
   @inlinable
-  @differentiable(where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse where Scalar: TensorFlowFloatingPoint)
   public init(_ elements: [Tensor]) {
     self = _Raw.pack(elements)
   }
@@ -150,7 +150,7 @@ extension Tensor {
   ///
   /// - Returns: The stacked tensor.
   @inlinable
-  @differentiable(where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse where Scalar: TensorFlowFloatingPoint)
   public init(stacking tensors: [Tensor], alongAxis axis: Int = 0) {
     self = _Raw.pack(tensors, axis: Int64(axis))
   }
@@ -188,7 +188,7 @@ extension Tensor {
   ///
   /// - Returns: The concatenated tensor.
   @inlinable
-  @differentiable(where Scalar: TensorFlowFloatingPoint)
+  @differentiable(reverse where Scalar: TensorFlowFloatingPoint)
   public init(concatenating tensors: [Tensor], alongAxis axis: Int = 0) {
     precondition(tensors.count > 0)
     self = _Raw.concatV2(tensors, axis: Tensor<Int32>(Int32(axis), on: tensors.first!.device))
