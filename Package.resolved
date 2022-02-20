@@ -1,0 +1,25 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "PythonKit",
+        "repositoryURL": "https://github.com/pvieito/PythonKit.git",
+        "state": {
+          "branch": "master",
+          "revision": "933624f73d0907d5a50243590b916a911aca312a",
+          "version": null
+        }
+      },
+      {
+        "package": "swift-numerics",
+        "repositoryURL": "https://github.com/apple/swift-numerics",
+        "state": {
+          "branch": "main",
+          "revision": "4ce74b4235825033cc74ce194a4cf602de2ce2ce",
+          "version": null
+        }
+      }
+    ]
+  },
+  "version": 1
+}

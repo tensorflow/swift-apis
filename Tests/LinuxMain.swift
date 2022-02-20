@@ -22,3 +22,4 @@ tests += TensorFlowTests.allTests()
 tests += TensorTests.allTests()
 tests += ExperimentalTests.allTests()
 XCTMain(tests)
+

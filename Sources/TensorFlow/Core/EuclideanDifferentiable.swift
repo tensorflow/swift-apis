@@ -118,10 +118,10 @@ where Element: EuclideanDifferentiable {
     out = Array.DifferentiableView.TangentVector(self.base.map { $0.differentiableVectorView })
   }
 }
-extension RNNCellInput: _EuclideanDifferentiable
- where Input: EuclideanDifferentiable, State: EuclideanDifferentiable {}
-extension RNNCellOutput: _EuclideanDifferentiable
- where Output: EuclideanDifferentiable, State: EuclideanDifferentiable {}
+//extension RNNCellInput: _EuclideanDifferentiable
+// where Input: EuclideanDifferentiable, State: EuclideanDifferentiable {}
+//extension RNNCellOutput: _EuclideanDifferentiable
+// where Output: EuclideanDifferentiable, State: EuclideanDifferentiable {}
 extension Tensor: _EuclideanDifferentiable where Scalar: TensorFlowFloatingPoint {}
 
 #endif
