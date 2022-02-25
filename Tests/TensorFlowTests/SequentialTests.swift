@@ -448,5 +448,11 @@ final class SequentialTests: XCTestCase {
     ("testSequential10", testSequential10),
     // ###sourceLocation(file: "/usr/local/google/home/marcrasi/git/swift-apis/Tests/TensorFlowTests/SequentialTests.swift.gyb", line: 47)
   ]
+#else
+  func emptyTest() {}
+  
+  static var allTests = [
+    ("emptyTest", emptyTest)
+  ]
 #endif
 }

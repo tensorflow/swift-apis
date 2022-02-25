@@ -46,5 +46,11 @@ final class SequentialTests: XCTestCase {
     ("testSequential${count}", testSequential${count}),
     % end
   ]
+#else
+  func emptyTest() {}
+  
+  static var allTests = [
+    ("emptyTest", emptyTest)
+  ]
 #endif
 }
