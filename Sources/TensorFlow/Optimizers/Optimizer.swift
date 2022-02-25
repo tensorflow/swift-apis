@@ -17,7 +17,7 @@ import _Differentiation
 /// A numerical optimizer.
 ///
 /// Optimizers apply an optimization algorithm to update a differentiable model.
-public protocol Optimizer: CopyableToDevice {
+public protocol Optimizer/*: CopyableToDevice*/ {
   /// The type of the model to optimize.
   associatedtype Model: Differentiable
   /// The scalar parameter type.

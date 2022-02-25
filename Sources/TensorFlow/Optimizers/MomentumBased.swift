@@ -33,7 +33,7 @@ import Numerics
 public class RMSProp<Model: Differentiable>: Optimizer
 where
   Model.TangentVector: VectorProtocol & PointwiseMultiplicative
-    & ElementaryFunctions & KeyPathIterable,
+    & ElementaryFunctions/* & KeyPathIterable*/,
   Model.TangentVector.VectorSpaceScalar == Float
 {
   public typealias Model = Model
@@ -83,14 +83,14 @@ where
     model.move(by: (direction ./ denominator).scaled(by: -learningRate))
   }
 
-  public required init(copying other: RMSProp, to device: Device) {
-    learningRate = other.learningRate
-    rho = other.rho
-    epsilon = other.epsilon
-    decay = other.decay
-    step = other.step
-    alpha = .init(copying: other.alpha, to: device)
-  }
+//  public required init(copying other: RMSProp, to device: Device) {
+//    learningRate = other.learningRate
+//    rho = other.rho
+//    epsilon = other.epsilon
+//    decay = other.decay
+//    step = other.step
+//    alpha = .init(copying: other.alpha, to: device)
+//  }
 }
 
 /// An AdaGrad optimizer.
@@ -108,7 +108,7 @@ where
 public class AdaGrad<Model: Differentiable>: Optimizer
 where
   Model.TangentVector: VectorProtocol & PointwiseMultiplicative
-    & ElementaryFunctions & KeyPathIterable,
+    & ElementaryFunctions/* & KeyPathIterable*/,
   Model.TangentVector.VectorSpaceScalar == Float
 {
   public typealias Model = Model
@@ -148,11 +148,11 @@ where
     model.move(by: (direction ./ denominator).scaled(by: -learningRate))
   }
 
-  public required init(copying other: AdaGrad, to device: Device) {
-    learningRate = other.learningRate
-    epsilon = other.epsilon
-    accumulator = .init(copying: other.accumulator, to: device)
-  }
+//  public required init(copying other: AdaGrad, to device: Device) {
+//    learningRate = other.learningRate
+//    epsilon = other.epsilon
+//    accumulator = .init(copying: other.accumulator, to: device)
+//  }
 }
 
 /// An AdaDelta optimizer.
@@ -169,7 +169,7 @@ where
 public class AdaDelta<Model: Differentiable>: Optimizer
 where
   Model.TangentVector: VectorProtocol & PointwiseMultiplicative
-    & ElementaryFunctions & KeyPathIterable,
+    & ElementaryFunctions/* & KeyPathIterable*/,
   Model.TangentVector.VectorSpaceScalar == Float
 {
   public typealias Model = Model
@@ -226,15 +226,15 @@ where
       accumulatedDelta.scaled(by: rho) + (stepSize .* stepSize).scaled(by: 1 - rho)
   }
 
-  public required init(copying other: AdaDelta, to device: Device) {
-    learningRate = other.learningRate
-    rho = other.rho
-    epsilon = other.epsilon
-    decay = other.decay
-    step = other.step
-    averageSquared = .init(copying: other.averageSquared, to: device)
-    accumulatedDelta = .init(copying: other.accumulatedDelta, to: device)
-  }
+//  public required init(copying other: AdaDelta, to device: Device) {
+//    learningRate = other.learningRate
+//    rho = other.rho
+//    epsilon = other.epsilon
+//    decay = other.decay
+//    step = other.step
+//    averageSquared = .init(copying: other.averageSquared, to: device)
+//    accumulatedDelta = .init(copying: other.accumulatedDelta, to: device)
+//  }
 }
 
 /// Adam optimizer.
@@ -319,7 +319,7 @@ where
 public class Adam<Model: Differentiable>: Optimizer
 where
   Model.TangentVector: VectorProtocol & PointwiseMultiplicative
-    & ElementaryFunctions & KeyPathIterable,
+    & ElementaryFunctions/* & KeyPathIterable*/,
   Model.TangentVector.VectorSpaceScalar == Float
 {
   public typealias Model = Model
@@ -382,16 +382,16 @@ where
     model.move(by: (firstMoments ./ denominator).scaled(by: -stepSize))
   }
 
-  public required init(copying other: Adam, to device: Device) {
-    learningRate = other.learningRate
-    beta1 = other.beta1
-    beta2 = other.beta2
-    epsilon = other.epsilon
-    decay = other.decay
-    step = other.step
-    firstMoments = .init(copying: other.firstMoments, to: device)
-    secondMoments = .init(copying: other.secondMoments, to: device)
-  }
+//  public required init(copying other: Adam, to device: Device) {
+//    learningRate = other.learningRate
+//    beta1 = other.beta1
+//    beta2 = other.beta2
+//    epsilon = other.epsilon
+//    decay = other.decay
+//    step = other.step
+//    firstMoments = .init(copying: other.firstMoments, to: device)
+//    secondMoments = .init(copying: other.secondMoments, to: device)
+//  }
 }
 
 /// AdaMax optimizer.
@@ -400,84 +400,84 @@ where
 ///
 /// Reference: Section 7 of ["Adam - A Method for Stochastic Optimization"](
 /// https://arxiv.org/abs/1412.6980v8)
-public class AdaMax<Model: Differentiable & KeyPathIterable>: Optimizer
-where
-  Model.TangentVector: VectorProtocol & PointwiseMultiplicative & ElementaryFunctions
-    & KeyPathIterable,
-  Model.TangentVector.VectorSpaceScalar == Float
-{
-  public typealias Model = Model
-  /// The learning rate.
-  public var learningRate: Float
-  /// Decay rate used to estimate the first moment (mean) of gradients.
-  public var beta1: Float
-  /// Decay rate used to estimate the exponentially weighted infinity norm.
-  public var beta2: Float
-  /// A small scalar added to the denominator to improve numerical stability.
-  public var epsilon: Float
-  /// The learning rate decay.
-  public var decay: Float
-  /// The step count.
-  public var step: Int = 0
-  /// The first moments of the weights.
-  public var firstMoments: Model.TangentVector = .zero
-  /// The exponentially weighted infinity norm of the weights.
-  public var infinityNorm: Model.TangentVector = .zero
-
-  /// Note: The default parameters follow those provided in the paper.
-  public init(
-    for model: __shared Model,
-    learningRate: Float = 0.002,
-    beta1: Float = 0.9,
-    beta2: Float = 0.999,
-    epsilon: Float = 1e-8,
-    decay: Float = 0
-  ) {
-    precondition(learningRate >= 0, "Learning rate must be non-negative.")
-    precondition(0 <= beta1 && beta1 <= 1, "Beta parameter must be between 0 and 1.")
-    precondition(0 <= beta2 && beta2 <= 1, "Beta parameter must be between 0 and 1.")
-    precondition(decay >= 0, "Learning rate decay must be non-negative.")
-
-    self.learningRate = learningRate
-    self.beta1 = beta1
-    self.beta2 = beta2
-    self.epsilon = epsilon
-    self.decay = decay
-  }
-
-  public func update(_ model: inout Model, along direction: Model.TangentVector) {
-    step += 1
-    let step = Float(self.step)
-    let learningRate = self.learningRate * 1 / (1 + decay * step)
-    let stepSize = learningRate / (1 - powf(beta1, step))
-    firstMoments = firstMoments.scaled(by: beta1) + direction.scaled(by: 1 - beta1)
-
-    // Update `infinityNorm` using a key path approach because `max(_:_:)` cannot be 
-    // currently applied in a simpler manner.
-    for kp in infinityNorm.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
-      infinityNorm[keyPath: kp] = max(
-        beta2 * infinityNorm[keyPath: kp], abs(direction[keyPath: kp]))
-    }
-    for kp in infinityNorm.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
-      infinityNorm[keyPath: kp] = max(
-        Double(beta2) * infinityNorm[keyPath: kp], abs(direction[keyPath: kp]))
-    }
-
-    let denominator = infinityNorm.adding(epsilon)
-    model.move(by: (firstMoments ./ denominator).scaled(by: -stepSize))
-  }
-
-  public required init(copying other: AdaMax, to device: Device) {
-    learningRate = other.learningRate
-    beta1 = other.beta1
-    beta2 = other.beta2
-    epsilon = other.epsilon
-    decay = other.decay
-    step = other.step
-    firstMoments = .init(copying: other.firstMoments, to: device)
-    infinityNorm = .init(copying: other.infinityNorm, to: device)
-  }
-}
+//public class AdaMax<Model: Differentiable & KeyPathIterable>: Optimizer
+//where
+//  Model.TangentVector: VectorProtocol & PointwiseMultiplicative & ElementaryFunctions
+//    & KeyPathIterable,
+//  Model.TangentVector.VectorSpaceScalar == Float
+//{
+//  public typealias Model = Model
+//  /// The learning rate.
+//  public var learningRate: Float
+//  /// Decay rate used to estimate the first moment (mean) of gradients.
+//  public var beta1: Float
+//  /// Decay rate used to estimate the exponentially weighted infinity norm.
+//  public var beta2: Float
+//  /// A small scalar added to the denominator to improve numerical stability.
+//  public var epsilon: Float
+//  /// The learning rate decay.
+//  public var decay: Float
+//  /// The step count.
+//  public var step: Int = 0
+//  /// The first moments of the weights.
+//  public var firstMoments: Model.TangentVector = .zero
+//  /// The exponentially weighted infinity norm of the weights.
+//  public var infinityNorm: Model.TangentVector = .zero
+//
+//  /// Note: The default parameters follow those provided in the paper.
+//  public init(
+//    for model: __shared Model,
+//    learningRate: Float = 0.002,
+//    beta1: Float = 0.9,
+//    beta2: Float = 0.999,
+//    epsilon: Float = 1e-8,
+//    decay: Float = 0
+//  ) {
+//    precondition(learningRate >= 0, "Learning rate must be non-negative.")
+//    precondition(0 <= beta1 && beta1 <= 1, "Beta parameter must be between 0 and 1.")
+//    precondition(0 <= beta2 && beta2 <= 1, "Beta parameter must be between 0 and 1.")
+//    precondition(decay >= 0, "Learning rate decay must be non-negative.")
+//
+//    self.learningRate = learningRate
+//    self.beta1 = beta1
+//    self.beta2 = beta2
+//    self.epsilon = epsilon
+//    self.decay = decay
+//  }
+//
+//  public func update(_ model: inout Model, along direction: Model.TangentVector) {
+//    step += 1
+//    let step = Float(self.step)
+//    let learningRate = self.learningRate * 1 / (1 + decay * step)
+//    let stepSize = learningRate / (1 - powf(beta1, step))
+//    firstMoments = firstMoments.scaled(by: beta1) + direction.scaled(by: 1 - beta1)
+//
+//    // Update `infinityNorm` using a key path approach because `max(_:_:)` cannot be
+//    // currently applied in a simpler manner.
+//    for kp in infinityNorm.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
+//      infinityNorm[keyPath: kp] = max(
+//        beta2 * infinityNorm[keyPath: kp], abs(direction[keyPath: kp]))
+//    }
+//    for kp in infinityNorm.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
+//      infinityNorm[keyPath: kp] = max(
+//        Double(beta2) * infinityNorm[keyPath: kp], abs(direction[keyPath: kp]))
+//    }
+//
+//    let denominator = infinityNorm.adding(epsilon)
+//    model.move(by: (firstMoments ./ denominator).scaled(by: -stepSize))
+//  }
+//
+//  public required init(copying other: AdaMax, to device: Device) {
+//    learningRate = other.learningRate
+//    beta1 = other.beta1
+//    beta2 = other.beta2
+//    epsilon = other.epsilon
+//    decay = other.decay
+//    step = other.step
+//    firstMoments = .init(copying: other.firstMoments, to: device)
+//    infinityNorm = .init(copying: other.infinityNorm, to: device)
+//  }
+//}
 
 /// AMSGrad optimizer.
 ///
@@ -486,91 +486,91 @@ where
 ///
 /// Reference: ["On the Convergence of Adam and Beyond"](
 /// https://openreview.net/pdf?id=ryQu7f-RZ)
-public class AMSGrad<Model: Differentiable & KeyPathIterable>: Optimizer
-where
-  Model.TangentVector: VectorProtocol & PointwiseMultiplicative & ElementaryFunctions
-    & KeyPathIterable,
-  Model.TangentVector.VectorSpaceScalar == Float
-{
-  public typealias Model = Model
-  /// The learning rate.
-  public var learningRate: Float
-  /// A coefficient used to calculate the first and second moments of the gradients.
-  public var beta1: Float
-  /// A coefficient used to calculate the first and second moments of the gradients.
-  public var beta2: Float
-  /// A small scalar added to the denominator to improve numerical stability.
-  public var epsilon: Float
-  /// The learning rate decay.
-  public var decay: Float
-  /// The current step.
-  public var step: Int = 0
-  /// The first moments of the weights.
-  public var firstMoments: Model.TangentVector = .zero
-  /// The second moments of the weights.
-  public var secondMoments: Model.TangentVector = .zero
-  /// The maximum of the second moments of the weights.
-  public var secondMomentsMax: Model.TangentVector = .zero
-
-  public init(
-    for model: __shared Model,
-    learningRate: Float = 1e-3,
-    beta1: Float = 0.9,
-    beta2: Float = 0.999,
-    epsilon: Float = 1e-8,
-    decay: Float = 0
-  ) {
-    precondition(learningRate >= 0, "Learning rate must be non-negative")
-    precondition(0 <= beta1 && beta1 <= 1, "Beta parameter must be between 0 and 1")
-    precondition(0 <= beta2 && beta2 <= 1, "Beta parameter must be between 0 and 1")
-    precondition(decay >= 0, "Learning rate decay must be non-negative")
-
-    self.learningRate = learningRate
-    self.beta1 = beta1
-    self.beta2 = beta2
-    self.epsilon = epsilon
-    self.decay = decay
-  }
-
-  public func update(_ model: inout Model, along direction: Model.TangentVector) {
-    step += 1
-    let step = Float(self.step)
-    let learningRate = self.learningRate * 1 / (1 + decay * step)
-    // Note: `stepSize` is split into two lines to avoid the "compiler is unable to type-check
-    // this expression in reasonable time" error.
-    var stepSize = learningRate * sqrtf(1 - powf(beta2, step))
-    stepSize = stepSize / (1 - powf(beta1, step))
-    firstMoments = firstMoments.scaled(by: beta1) + direction.scaled(by: 1 - beta1)
-    secondMoments =
-      secondMoments.scaled(by: beta2) + (direction .* direction).scaled(by: 1 - beta2)
-
-    // Update `secondMomentsMax` using a key path approach because `max(_:_:)` cannot be 
-    // currently applied in a simpler manner.
-    for kp in secondMomentsMax.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
-      secondMomentsMax[keyPath: kp] = max(
-        secondMomentsMax[keyPath: kp], secondMoments[keyPath: kp])
-    }
-    for kp in secondMomentsMax.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
-      secondMomentsMax[keyPath: kp] = max(
-        secondMomentsMax[keyPath: kp], secondMoments[keyPath: kp])
-    }
-
-    let denominator = Model.TangentVector.sqrt(secondMomentsMax).adding(epsilon)
-    model.move(by: (firstMoments ./ denominator).scaled(by: -stepSize))
-  }
-
-  public required init(copying other: AMSGrad, to device: Device) {
-    learningRate = other.learningRate
-    beta1 = other.beta1
-    beta2 = other.beta2
-    epsilon = other.epsilon
-    decay = other.decay
-    step = other.step
-    firstMoments = .init(copying: other.firstMoments, to: device)
-    secondMoments = .init(copying: other.secondMoments, to: device)
-    secondMomentsMax = .init(copying: other.secondMomentsMax, to: device)
-  }
-}
+//public class AMSGrad<Model: Differentiable & KeyPathIterable>: Optimizer
+//where
+//  Model.TangentVector: VectorProtocol & PointwiseMultiplicative & ElementaryFunctions
+//    & KeyPathIterable,
+//  Model.TangentVector.VectorSpaceScalar == Float
+//{
+//  public typealias Model = Model
+//  /// The learning rate.
+//  public var learningRate: Float
+//  /// A coefficient used to calculate the first and second moments of the gradients.
+//  public var beta1: Float
+//  /// A coefficient used to calculate the first and second moments of the gradients.
+//  public var beta2: Float
+//  /// A small scalar added to the denominator to improve numerical stability.
+//  public var epsilon: Float
+//  /// The learning rate decay.
+//  public var decay: Float
+//  /// The current step.
+//  public var step: Int = 0
+//  /// The first moments of the weights.
+//  public var firstMoments: Model.TangentVector = .zero
+//  /// The second moments of the weights.
+//  public var secondMoments: Model.TangentVector = .zero
+//  /// The maximum of the second moments of the weights.
+//  public var secondMomentsMax: Model.TangentVector = .zero
+//
+//  public init(
+//    for model: __shared Model,
+//    learningRate: Float = 1e-3,
+//    beta1: Float = 0.9,
+//    beta2: Float = 0.999,
+//    epsilon: Float = 1e-8,
+//    decay: Float = 0
+//  ) {
+//    precondition(learningRate >= 0, "Learning rate must be non-negative")
+//    precondition(0 <= beta1 && beta1 <= 1, "Beta parameter must be between 0 and 1")
+//    precondition(0 <= beta2 && beta2 <= 1, "Beta parameter must be between 0 and 1")
+//    precondition(decay >= 0, "Learning rate decay must be non-negative")
+//
+//    self.learningRate = learningRate
+//    self.beta1 = beta1
+//    self.beta2 = beta2
+//    self.epsilon = epsilon
+//    self.decay = decay
+//  }
+//
+//  public func update(_ model: inout Model, along direction: Model.TangentVector) {
+//    step += 1
+//    let step = Float(self.step)
+//    let learningRate = self.learningRate * 1 / (1 + decay * step)
+//    // Note: `stepSize` is split into two lines to avoid the "compiler is unable to type-check
+//    // this expression in reasonable time" error.
+//    var stepSize = learningRate * sqrtf(1 - powf(beta2, step))
+//    stepSize = stepSize / (1 - powf(beta1, step))
+//    firstMoments = firstMoments.scaled(by: beta1) + direction.scaled(by: 1 - beta1)
+//    secondMoments =
+//      secondMoments.scaled(by: beta2) + (direction .* direction).scaled(by: 1 - beta2)
+//
+//    // Update `secondMomentsMax` using a key path approach because `max(_:_:)` cannot be
+//    // currently applied in a simpler manner.
+//    for kp in secondMomentsMax.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
+//      secondMomentsMax[keyPath: kp] = max(
+//        secondMomentsMax[keyPath: kp], secondMoments[keyPath: kp])
+//    }
+//    for kp in secondMomentsMax.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
+//      secondMomentsMax[keyPath: kp] = max(
+//        secondMomentsMax[keyPath: kp], secondMoments[keyPath: kp])
+//    }
+//
+//    let denominator = Model.TangentVector.sqrt(secondMomentsMax).adding(epsilon)
+//    model.move(by: (firstMoments ./ denominator).scaled(by: -stepSize))
+//  }
+//
+//  public required init(copying other: AMSGrad, to device: Device) {
+//    learningRate = other.learningRate
+//    beta1 = other.beta1
+//    beta2 = other.beta2
+//    epsilon = other.epsilon
+//    decay = other.decay
+//    step = other.step
+//    firstMoments = .init(copying: other.firstMoments, to: device)
+//    secondMoments = .init(copying: other.secondMoments, to: device)
+//    secondMomentsMax = .init(copying: other.secondMomentsMax, to: device)
+//  }
+//}
 
 /// RAdam optimizer.
 /// 
@@ -582,7 +582,7 @@ where
 public class RAdam<Model: Differentiable>: Optimizer
 where
   Model.TangentVector: VectorProtocol & PointwiseMultiplicative & ElementaryFunctions
-    & KeyPathIterable,
+    /* & KeyPathIterable*/,
   Model.TangentVector.VectorSpaceScalar == Float
 {
   public typealias Model = Model
@@ -651,14 +651,14 @@ where
     }
   }
 
-  public required init(copying other: RAdam, to device: Device) {
-    learningRate = other.learningRate
-    beta1 = other.beta1
-    beta2 = other.beta2
-    epsilon = other.epsilon
-    decay = other.decay
-    step = other.step
-    firstMoments = .init(copying: other.firstMoments, to: device)
-    secondMoments = .init(copying: other.secondMoments, to: device)
-  }
+//  public required init(copying other: RAdam, to device: Device) {
+//    learningRate = other.learningRate
+//    beta1 = other.beta1
+//    beta2 = other.beta2
+//    epsilon = other.epsilon
+//    decay = other.decay
+//    step = other.step
+//    firstMoments = .init(copying: other.firstMoments, to: device)
+//    secondMoments = .init(copying: other.secondMoments, to: device)
+//  }
 }

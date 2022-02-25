@@ -36,9 +36,9 @@ import Numerics
 /// - ["A method for unconstrained convex minimization problem with the rate of
 /// convergence"](http://mpawankumar.info/teaching/cdt-big-data/nesterov83.pdf)
 /// (Nesterov, 1983)
-public class SGD<Model: Differentiable>: Optimizer
+public final class SGD<Model: Differentiable>: Optimizer
 where
-  Model.TangentVector: VectorProtocol & ElementaryFunctions & KeyPathIterable,
+  Model.TangentVector: VectorProtocol & ElementaryFunctions/* & KeyPathIterable*/,
   Model.TangentVector.VectorSpaceScalar == Float
 {
   public typealias Model = Model
@@ -92,12 +92,12 @@ where
     }
   }
 
-  public required init(copying other: SGD, to device: Device) {
-    learningRate = other.learningRate
-    momentum = other.momentum
-    decay = other.decay
-    nesterov = other.nesterov
-    velocity = .init(copying: other.velocity, to: device)
-    step = other.step
-  }
+//  public required init(copying other: SGD, to device: Device) {
+//    learningRate = other.learningRate
+//    momentum = other.momentum
+//    decay = other.decay
+//    nesterov = other.nesterov
+//    velocity = .init(copying: other.velocity, to: device)
+//    step = other.step
+//  }
 }
