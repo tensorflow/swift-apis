@@ -45,6 +45,7 @@ import _Differentiation
 ///     Dense<Float>(inputSize: 128, outputSize: imageHeight * imageWidth, activation: tanh)
 /// }
 /// ````
+#if !SR15884_WORKAROUND_1
 public struct Sequential<Layer1: Module, Layer2: Layer>: Module
 where
   Layer1.Output == Layer2.Input
@@ -372,3 +373,4 @@ public struct LayerBuilder {
   }
 
 }
+#endif

@@ -18,6 +18,7 @@ import XCTest
 import TensorFlow
 
 final class SequentialTests: XCTestCase {
+#if !SR15884_WORKAROUND_1
   % for count in counts:
   func testSequential${count}() {
     let input = Float(1)
@@ -45,4 +46,11 @@ final class SequentialTests: XCTestCase {
     ("testSequential${count}", testSequential${count}),
     % end
   ]
+#else
+  func emptyTest() {}
+  
+  static var allTests = [
+    ("emptyTest", emptyTest)
+  ]
+#endif
 }

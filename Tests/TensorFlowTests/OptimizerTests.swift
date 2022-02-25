@@ -112,15 +112,19 @@ class OptimizerTests: XCTestCase {
   }
 
   func testAdaMax() {
+#if !SR15884_WORKAROUND_2
     let model = Model()
     let optimizer = AdaMax(for: model)
     testConvergence(optimizer: optimizer, model: model)
+#endif
   }
 
   func testAMSGrad() {
+#if !SR15884_WORKAROUND_2
     let model = Model()
     let optimizer = AMSGrad(for: model)
     testConvergence(optimizer: optimizer, model: model)
+#endif
   }
 
   func testRAdam() {
@@ -198,6 +202,7 @@ class OptimizerTests: XCTestCase {
   }
 
   func testAMSGradNumerical() {
+#if !SR15884_WORKAROUND_2
     let values = NumericalValues()
     let optimizer = AMSGrad(for: values, learningRate: 1e-3, epsilon: 1e-7)
     // FIXME(TF-759): Investigate small differences with Python reference implementation results:
@@ -205,9 +210,11 @@ class OptimizerTests: XCTestCase {
     testNumericalCorrectness(
       optimizer: optimizer, startingValues: values,
       expectedValues: [0.99999064, -0.9999898, -0.9999905])
+#endif
   }
 
   func testAdaMaxNumerical() {
+#if !SR15884_WORKAROUND_2
     let values = NumericalValues()
     let optimizer = AdaMax(for: values, learningRate: 1e-3, epsilon: 1e-7)
     // FIXME(TF-759): Investigate small differences with Python reference implementation results:
@@ -215,6 +222,7 @@ class OptimizerTests: XCTestCase {
     testNumericalCorrectness(
       optimizer: optimizer, startingValues: values,
       expectedValues: [0.9999907, -0.99999064, -0.99999064])
+#endif
   }
 
   func testAdaGradNumerical() {

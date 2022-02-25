@@ -33,7 +33,7 @@ import Numerics
 public class RMSProp<Model: Differentiable>: Optimizer
 where
   Model.TangentVector: VectorProtocol & PointwiseMultiplicative
-    & ElementaryFunctions & KeyPathIterable,
+    & ElementaryFunctions & KeyPathIterable_SR15884_Workaround,
   Model.TangentVector.VectorSpaceScalar == Float
 {
   public typealias Model = Model
@@ -83,6 +83,7 @@ where
     model.move(by: (direction ./ denominator).scaled(by: -learningRate))
   }
 
+#if !SR15884_WORKAROUND_2
   public required init(copying other: RMSProp, to device: Device) {
     learningRate = other.learningRate
     rho = other.rho
@@ -91,6 +92,7 @@ where
     step = other.step
     alpha = .init(copying: other.alpha, to: device)
   }
+#endif
 }
 
 /// An AdaGrad optimizer.
@@ -108,7 +110,7 @@ where
 public class AdaGrad<Model: Differentiable>: Optimizer
 where
   Model.TangentVector: VectorProtocol & PointwiseMultiplicative
-    & ElementaryFunctions & KeyPathIterable,
+    & ElementaryFunctions & KeyPathIterable_SR15884_Workaround,
   Model.TangentVector.VectorSpaceScalar == Float
 {
   public typealias Model = Model
@@ -148,11 +150,13 @@ where
     model.move(by: (direction ./ denominator).scaled(by: -learningRate))
   }
 
+#if !SR15884_WORKAROUND_2
   public required init(copying other: AdaGrad, to device: Device) {
     learningRate = other.learningRate
     epsilon = other.epsilon
     accumulator = .init(copying: other.accumulator, to: device)
   }
+#endif
 }
 
 /// An AdaDelta optimizer.
@@ -169,7 +173,7 @@ where
 public class AdaDelta<Model: Differentiable>: Optimizer
 where
   Model.TangentVector: VectorProtocol & PointwiseMultiplicative
-    & ElementaryFunctions & KeyPathIterable,
+    & ElementaryFunctions & KeyPathIterable_SR15884_Workaround,
   Model.TangentVector.VectorSpaceScalar == Float
 {
   public typealias Model = Model
@@ -226,6 +230,7 @@ where
       accumulatedDelta.scaled(by: rho) + (stepSize .* stepSize).scaled(by: 1 - rho)
   }
 
+#if !SR15884_WORKAROUND_2
   public required init(copying other: AdaDelta, to device: Device) {
     learningRate = other.learningRate
     rho = other.rho
@@ -235,6 +240,7 @@ where
     averageSquared = .init(copying: other.averageSquared, to: device)
     accumulatedDelta = .init(copying: other.accumulatedDelta, to: device)
   }
+#endif
 }
 
 /// Adam optimizer.
@@ -319,7 +325,7 @@ where
 public class Adam<Model: Differentiable>: Optimizer
 where
   Model.TangentVector: VectorProtocol & PointwiseMultiplicative
-    & ElementaryFunctions & KeyPathIterable,
+    & ElementaryFunctions & KeyPathIterable_SR15884_Workaround,
   Model.TangentVector.VectorSpaceScalar == Float
 {
   public typealias Model = Model
@@ -382,6 +388,7 @@ where
     model.move(by: (firstMoments ./ denominator).scaled(by: -stepSize))
   }
 
+#if !SR15884_WORKAROUND_2
   public required init(copying other: Adam, to device: Device) {
     learningRate = other.learningRate
     beta1 = other.beta1
@@ -392,6 +399,7 @@ where
     firstMoments = .init(copying: other.firstMoments, to: device)
     secondMoments = .init(copying: other.secondMoments, to: device)
   }
+#endif
 }
 
 /// AdaMax optimizer.
@@ -400,10 +408,11 @@ where
 ///
 /// Reference: Section 7 of ["Adam - A Method for Stochastic Optimization"](
 /// https://arxiv.org/abs/1412.6980v8)
+#if !SR15884_WORKAROUND_2
 public class AdaMax<Model: Differentiable & KeyPathIterable>: Optimizer
 where
-  Model.TangentVector: VectorProtocol & PointwiseMultiplicative & ElementaryFunctions
-    & KeyPathIterable,
+  Model.TangentVector: VectorProtocol & PointwiseMultiplicative
+    & ElementaryFunctions & KeyPathIterable_SR15884_Workaround,
   Model.TangentVector.VectorSpaceScalar == Float
 {
   public typealias Model = Model
@@ -452,7 +461,7 @@ where
     let stepSize = learningRate / (1 - powf(beta1, step))
     firstMoments = firstMoments.scaled(by: beta1) + direction.scaled(by: 1 - beta1)
 
-    // Update `infinityNorm` using a key path approach because `max(_:_:)` cannot be 
+    // Update `infinityNorm` using a key path approach because `max(_:_:)` cannot be
     // currently applied in a simpler manner.
     for kp in infinityNorm.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
       infinityNorm[keyPath: kp] = max(
@@ -478,6 +487,7 @@ where
     infinityNorm = .init(copying: other.infinityNorm, to: device)
   }
 }
+#endif
 
 /// AMSGrad optimizer.
 ///
@@ -486,10 +496,11 @@ where
 ///
 /// Reference: ["On the Convergence of Adam and Beyond"](
 /// https://openreview.net/pdf?id=ryQu7f-RZ)
+#if !SR15884_WORKAROUND_2
 public class AMSGrad<Model: Differentiable & KeyPathIterable>: Optimizer
 where
-  Model.TangentVector: VectorProtocol & PointwiseMultiplicative & ElementaryFunctions
-    & KeyPathIterable,
+  Model.TangentVector: VectorProtocol & PointwiseMultiplicative
+    & ElementaryFunctions & KeyPathIterable_SR15884_Workaround,
   Model.TangentVector.VectorSpaceScalar == Float
 {
   public typealias Model = Model
@@ -544,7 +555,7 @@ where
     secondMoments =
       secondMoments.scaled(by: beta2) + (direction .* direction).scaled(by: 1 - beta2)
 
-    // Update `secondMomentsMax` using a key path approach because `max(_:_:)` cannot be 
+    // Update `secondMomentsMax` using a key path approach because `max(_:_:)` cannot be
     // currently applied in a simpler manner.
     for kp in secondMomentsMax.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
       secondMomentsMax[keyPath: kp] = max(
@@ -571,6 +582,7 @@ where
     secondMomentsMax = .init(copying: other.secondMomentsMax, to: device)
   }
 }
+#endif
 
 /// RAdam optimizer.
 /// 
@@ -581,8 +593,8 @@ where
 /// https://arxiv.org/pdf/1908.03265.pdf)
 public class RAdam<Model: Differentiable>: Optimizer
 where
-  Model.TangentVector: VectorProtocol & PointwiseMultiplicative & ElementaryFunctions
-    & KeyPathIterable,
+  Model.TangentVector: VectorProtocol & PointwiseMultiplicative
+    & ElementaryFunctions & KeyPathIterable_SR15884_Workaround,
   Model.TangentVector.VectorSpaceScalar == Float
 {
   public typealias Model = Model
@@ -651,6 +663,7 @@ where
     }
   }
 
+#if !SR15884_WORKAROUND_2
   public required init(copying other: RAdam, to device: Device) {
     learningRate = other.learningRate
     beta1 = other.beta1
@@ -661,4 +674,5 @@ where
     firstMoments = .init(copying: other.firstMoments, to: device)
     secondMoments = .init(copying: other.secondMoments, to: device)
   }
+#endif
 }

@@ -19,6 +19,7 @@ import TensorFlow
 import XCTest
 
 final class SequentialTests: XCTestCase {
+#if !SR15884_WORKAROUND_1
   // ###sourceLocation(file: "/usr/local/google/home/marcrasi/git/swift-apis/Tests/TensorFlowTests/SequentialTests.swift.gyb", line: 22)
   func testSequential2() {
     let input = Float(1)
@@ -447,4 +448,11 @@ final class SequentialTests: XCTestCase {
     ("testSequential10", testSequential10),
     // ###sourceLocation(file: "/usr/local/google/home/marcrasi/git/swift-apis/Tests/TensorFlowTests/SequentialTests.swift.gyb", line: 47)
   ]
+#else
+  func emptyTest() {}
+  
+  static var allTests = [
+    ("emptyTest", emptyTest)
+  ]
+#endif
 }

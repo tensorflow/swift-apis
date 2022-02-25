@@ -95,3 +95,9 @@ extension Parameter: CopyableToDevice {
     self.init(.init(copying: other.value, to: device))
   }
 }
+
+#if SR15884_WORKAROUND_2
+public typealias CopyableToDevice_SR15884_Workaround = Any
+#else
+public typealias CopyableToDevice_SR15884_Workaround = CopyableToDevice
+#endif
