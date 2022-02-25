@@ -36,7 +36,7 @@ import Numerics
 /// - ["A method for unconstrained convex minimization problem with the rate of
 /// convergence"](http://mpawankumar.info/teaching/cdt-big-data/nesterov83.pdf)
 /// (Nesterov, 1983)
-public final class SGD<Model: Differentiable>: Optimizer
+public class SGD<Model: Differentiable>: Optimizer
 where
   Model.TangentVector: VectorProtocol & ElementaryFunctions
     & KeyPathIterable_SR15884_Workaround,
