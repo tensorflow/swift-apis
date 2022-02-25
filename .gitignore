@@ -9,5 +9,8 @@ DerivedData/
 *.idea
 .*.sw?
 
+.swiftpm/
+Package.resolved
+
 ### MacOS ###
 .DS_Store
