@@ -38,7 +38,8 @@ import Numerics
 /// (Nesterov, 1983)
 public final class SGD<Model: Differentiable>: Optimizer
 where
-  Model.TangentVector: VectorProtocol & ElementaryFunctions/* & KeyPathIterable*/,
+  Model.TangentVector: VectorProtocol & ElementaryFunctions
+    & KeyPathIterable_SR15884_Workaround,
   Model.TangentVector.VectorSpaceScalar == Float
 {
   public typealias Model = Model
@@ -92,12 +93,14 @@ where
     }
   }
 
-//  public required init(copying other: SGD, to device: Device) {
-//    learningRate = other.learningRate
-//    momentum = other.momentum
-//    decay = other.decay
-//    nesterov = other.nesterov
-//    velocity = .init(copying: other.velocity, to: device)
-//    step = other.step
-//  }
+#if !SR15884_WORKAROUND_2
+  public required init(copying other: SGD, to device: Device) {
+    learningRate = other.learningRate
+    momentum = other.momentum
+    decay = other.decay
+    nesterov = other.nesterov
+    velocity = .init(copying: other.velocity, to: device)
+    step = other.step
+  }
+#endif
 }

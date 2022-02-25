@@ -119,10 +119,12 @@ where Element: EuclideanDifferentiable {
   }
 }
 
+#if !SR15884_WORKAROUND_1
 extension RNNCellInput: _EuclideanDifferentiable
  where Input: EuclideanDifferentiable, State: EuclideanDifferentiable {}
 extension RNNCellOutput: _EuclideanDifferentiable
  where Output: EuclideanDifferentiable, State: EuclideanDifferentiable {}
+#endif
 extension Tensor: _EuclideanDifferentiable where Scalar: TensorFlowFloatingPoint {}
 
 #endif
