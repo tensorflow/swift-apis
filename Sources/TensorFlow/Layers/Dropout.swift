@@ -20,7 +20,7 @@ import _Differentiation
 
 extension Tensor where Scalar: TensorFlowFloatingPoint {
   /// Computes dropout given a probability.
-  @differentiable(reverse, wrt: self where Scalar: Differentiable)
+  @differentiable(reverse, wrt: self)
   fileprivate func droppingOut(probability: Double) -> Tensor {
     let noise = Tensor(randomUniform: shape, on: device)
     let keepMask = noise .>= Scalar(probability)

@@ -592,7 +592,7 @@ extension Collection {
 }
 
 extension LazyCollectionProtocol
-where Element == Elements.Element, Elements: Collection {
+where Element == Elements.Element {
   func stablyPartitioned(
     isSuffixElement p: (Element) -> Bool
   ) -> LazyCollection<[Element]> {

@@ -118,8 +118,7 @@ public struct ParameterGroupOptimizer {
 /// This is for efficiency to prevent multiple inefficient iterations over the gradient.
 public class GeneralOptimizer<Model: EuclideanDifferentiable>: Optimizer
 where
-  Model.TangentVector: VectorProtocol & ElementaryFunctions & KeyPathIterable,
-  Model.TangentVector.VectorSpaceScalar == Float
+  Model.TangentVector: VectorProtocol & ElementaryFunctions & KeyPathIterable
 {
   public typealias Model = Model
   /// The set of steps taken.

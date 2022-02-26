@@ -203,11 +203,12 @@ extension Layer {
   ///
   /// - Parameter input: The input to the layer.
   /// - Returns: The inference output.
+  @differentiable(reverse)
   public func inferring(from input: Input) -> Output {
     withLearningPhase(LearningPhase.inference) { self(input) }
   }
 
-  // TODO(TF-433, SR-11882): Remove this custom derivative when
+  // TODO(SR-11882): Remove this custom derivative when
   // differentiation supports `rethrows` functions and currying.
   @usableFromInline
   @derivative(of: inferring(from:))

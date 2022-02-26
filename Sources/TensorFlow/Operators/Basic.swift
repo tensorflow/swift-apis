@@ -576,9 +576,10 @@ extension Tensor {
     // non-batch dimension, recursively calling `batchGathering` with `axis = 0`, and then
     // transposing the result to put the pre-axis dimensions before the indices dimensions.
     if axis != batchDimensionCount {
-      // TODO: precondition(axis >= 0 && axis < rank, "'axis' is out of range.")
-      // TODO: precondition(batchDimensionCount <= axis,
-      //                    "'batchDimensionCount' must be less than or equal to 'axis'.")
+       precondition(axis >= 0 && axis < rank, "'axis' is out of range.")
+       precondition(
+         batchDimensionCount <= axis,
+         "'batchDimensionCount' must be less than or equal to 'axis'.")
 
       // Move self[axis] up to self[batchDimensionCount].
       let permutation = Tensor<Int32>(concatenating: [
