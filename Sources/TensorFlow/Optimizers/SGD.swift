@@ -39,8 +39,7 @@ import Numerics
 public class SGD<Model: Differentiable>: Optimizer
 where
   Model.TangentVector: VectorProtocol & ElementaryFunctions
-    & KeyPathIterable_SR15884_Workaround,
-  Model.TangentVector.VectorSpaceScalar == Float
+    & KeyPathIterable_SR15884_Workaround
 {
   public typealias Model = Model
   /// The learning rate.

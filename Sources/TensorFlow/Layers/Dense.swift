@@ -61,18 +61,6 @@ public struct Dense<Scalar: TensorFlowFloatingPoint>: Layer {
     useBias = (bias != nil)
   }
 
-  // TODO(TF-433): Remove custom derivative after `try_apply` differentiation is supported.
-  @derivative(of: init, wrt: weight)
-  @usableFromInline
-  static func vjpInit(
-    weight: Tensor<Scalar>,
-    bias: Tensor<Scalar>? = nil,
-    activation: @escaping Activation
-  ) -> (value: Self, pullback: (TangentVector) -> Tensor<Scalar>) {
-    let value = Dense(weight: weight, bias: bias, activation: activation)
-    return (value, { v in v.weight })
-  }
-
   /// Returns the output obtained from applying the layer to the given input.
   ///
   /// - Parameter input: The input to the layer.
