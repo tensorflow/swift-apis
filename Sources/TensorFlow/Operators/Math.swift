@@ -1570,14 +1570,14 @@ public func pow<T: TensorFlowFloatingPoint>(_ lhs: Tensor<T>, _ rhs: Tensor<T>) 
 
 /// Returns the power of the scalar to the tensor, broadcasting the scalar.
 @inlinable
-@differentiable(reverse, wrt: rhs where T: TensorFlowFloatingPoint)
+@differentiable(reverse, wrt: rhs)
 public func pow<T: TensorFlowFloatingPoint>(_ lhs: T, _ rhs: Tensor<T>) -> Tensor<T> {
   pow(Tensor(lhs, deviceAndPrecisionLike: rhs), rhs)
 }
 
 /// Returns the power of the tensor to the scalar, broadcasting the scalar.
 @inlinable
-@differentiable(reverse, wrt: lhs where T: TensorFlowFloatingPoint)
+@differentiable(reverse, wrt: lhs)
 public func pow<T: TensorFlowFloatingPoint>(_ lhs: Tensor<T>, _ rhs: T) -> Tensor<T> {
   pow(lhs, Tensor(rhs, deviceAndPrecisionLike: lhs))
 }

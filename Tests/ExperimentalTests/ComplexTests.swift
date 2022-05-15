@@ -271,7 +271,7 @@ final class ComplexTests: XCTestCase {
     XCTAssertEqual(pb(Complex(real: 1, imaginary: 1)), Complex<Float>(real: 1, imaginary: 1))
   }
 
-  func testJvpDotProduct() {
+  func testVjpDotProduct() {
     struct ComplexVector: Differentiable & AdditiveArithmetic {
       var w: Complex<Float>
       var x: Complex<Float>
@@ -359,7 +359,7 @@ final class ComplexTests: XCTestCase {
     ("testVjpAddingImaginary", testVjpAddingImaginary),
     ("testVjpSubtractingReal", testVjpSubtractingReal),
     ("testVjpSubtractingImaginary", testVjpSubtractingImaginary),
-    ("testJvpDotProduct", testJvpDotProduct),
+    ("testVjpDotProduct", testVjpDotProduct),
     ("testImplicitDifferentiation", testImplicitDifferentiation),
   ]
 }

@@ -304,7 +304,7 @@ func _vjpResizeBilinear<Scalar: TensorFlowFloatingPoint>(
 }
 
 @usableFromInline
-@differentiable(reverse, wrt: images where Scalar: TensorFlowFloatingPoint)
+@differentiable(reverse, wrt: images)
 func resizeBicubic<Scalar: TensorFlowFloatingPoint>(
   images: Tensor<Scalar>,
   size: Tensor<Int32>,

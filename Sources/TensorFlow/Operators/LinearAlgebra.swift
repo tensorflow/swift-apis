@@ -214,7 +214,7 @@ func slogdet<T: TensorFlowFloatingPoint>(_ matrix: Tensor<T>) -> (
 /// - Parameter matrix: A tensor of shape `[..., M, N]`.
 /// - Returns: The natural logarithm of the determinant of `matrix`.
 @inlinable
-@differentiable(reverse, wrt: matrix where T: TensorFlowFloatingPoint)
+@differentiable(reverse, wrt: matrix)
 func logdet<T: TensorFlowFloatingPoint>(_ matrix: Tensor<T>) -> Tensor<T> {
   return 2.0 * log(cholesky(matrix).diagonalPart()).sum(squeezingAxes: -1)
 }

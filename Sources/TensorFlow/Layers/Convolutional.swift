@@ -91,7 +91,7 @@ public struct Conv1D<Scalar: TensorFlowFloatingPoint>: Layer {
   }
 }
 
-extension Conv1D where Scalar.RawSignificand: FixedWidthInteger {
+extension Conv1D {
   /// Creates a `Conv1D` layer with the specified filter shape, stride, padding, dilation and
   /// element-wise activation function.
   ///
