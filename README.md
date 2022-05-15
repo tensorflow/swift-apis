@@ -93,11 +93,11 @@ Documentation covering development can be found in the [Developer Guide](Documen
 
 Please report bugs and feature requests using GitHub issues in this repository.
 
-## Community
+<!-- ## Community
 
 Discussion about Swift for TensorFlow happens on the
 [swift@tensorflow.org][forum]
-mailing list.
+mailing list. -->
 
 ## Contributing
 
