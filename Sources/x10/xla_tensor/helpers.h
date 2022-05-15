@@ -68,19 +68,19 @@ class XlaHelpers {
       case xla::PrimitiveType::S64:
         return xla::LiteralUtil::CreateR0<int64_t>(scalar_value);
       case xla::PrimitiveType::U64:
-        return xla::LiteralUtil::CreateR0<xla::uint64>(scalar_value);
+        return xla::LiteralUtil::CreateR0<uint64_t>(scalar_value);
       case xla::PrimitiveType::S32:
-        return xla::LiteralUtil::CreateR0<xla::int32>(scalar_value);
+        return xla::LiteralUtil::CreateR0<int32_t>(scalar_value);
       case xla::PrimitiveType::U32:
-        return xla::LiteralUtil::CreateR0<xla::uint32>(scalar_value);
+        return xla::LiteralUtil::CreateR0<uint32_t>(scalar_value);
       case xla::PrimitiveType::S16:
-        return xla::LiteralUtil::CreateR0<xla::int16>(scalar_value);
+        return xla::LiteralUtil::CreateR0<int16_t>(scalar_value);
       case xla::PrimitiveType::U16:
-        return xla::LiteralUtil::CreateR0<xla::uint16>(scalar_value);
+        return xla::LiteralUtil::CreateR0<uint16_t>(scalar_value);
       case xla::PrimitiveType::S8:
-        return xla::LiteralUtil::CreateR0<xla::int8>(scalar_value);
+        return xla::LiteralUtil::CreateR0<int8_t>(scalar_value);
       case xla::PrimitiveType::U8:
-        return xla::LiteralUtil::CreateR0<xla::uint8>(scalar_value);
+        return xla::LiteralUtil::CreateR0<uint8_t>(scalar_value);
       case xla::PrimitiveType::PRED:
         return xla::LiteralUtil::CreateR0<bool>(scalar_value);
       case xla::PrimitiveType::C64:

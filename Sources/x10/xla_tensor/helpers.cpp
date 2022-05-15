@@ -192,29 +192,29 @@ XlaHelpers::DynamicSize XlaHelpers::GetDimensionsSize(
 XlaHelpers::MinMax XlaHelpers::MinMaxValues(xla::PrimitiveType type) {
   switch (type) {
     case xla::PrimitiveType::S8:
-      return {std::numeric_limits<xla::int8>::lowest(),
-              std::numeric_limits<xla::int8>::max()};
+      return {std::numeric_limits<int8_t>::lowest(),
+              std::numeric_limits<int8_t>::max()};
     case xla::PrimitiveType::U8:
-      return {std::numeric_limits<xla::uint8>::lowest(),
-              std::numeric_limits<xla::uint8>::max()};
+      return {std::numeric_limits<uint8_t>::lowest(),
+              std::numeric_limits<uint8_t>::max()};
     case xla::PrimitiveType::S16:
-      return {std::numeric_limits<xla::int16>::lowest(),
-              std::numeric_limits<xla::int16>::max()};
+      return {std::numeric_limits<int16_t>::lowest(),
+              std::numeric_limits<int16_t>::max()};
     case xla::PrimitiveType::U16:
-      return {std::numeric_limits<xla::uint16>::lowest(),
-              std::numeric_limits<xla::uint16>::max()};
+      return {std::numeric_limits<uint16_t>::lowest(),
+              std::numeric_limits<uint16_t>::max()};
     case xla::PrimitiveType::S32:
-      return {static_cast<int64_t>(std::numeric_limits<xla::int32>::lowest()),
-              static_cast<int64_t>(std::numeric_limits<xla::int32>::max())};
+      return {static_cast<int64_t>(std::numeric_limits<int32_t>::lowest()),
+              static_cast<int64_t>(std::numeric_limits<int32_t>::max())};
     case xla::PrimitiveType::U32:
-      return {static_cast<int64_t>(std::numeric_limits<xla::uint32>::lowest()),
-              static_cast<int64_t>(std::numeric_limits<xla::uint32>::max())};
+      return {static_cast<int64_t>(std::numeric_limits<uint32_t>::lowest()),
+              static_cast<int64_t>(std::numeric_limits<uint32_t>::max())};
     case xla::PrimitiveType::S64:
       return {static_cast<int64_t>(std::numeric_limits<int64_t>::lowest()),
               static_cast<int64_t>(std::numeric_limits<int64_t>::max())};
     case xla::PrimitiveType::U64:
-      return {static_cast<int64_t>(std::numeric_limits<xla::uint64>::lowest()),
-              static_cast<int64_t>(std::numeric_limits<xla::uint64>::max())};
+      return {static_cast<int64_t>(std::numeric_limits<uint64_t>::lowest()),
+              static_cast<int64_t>(std::numeric_limits<uint64_t>::max())};
     case xla::PrimitiveType::BF16:
     case xla::PrimitiveType::F32:
       return {std::numeric_limits<float>::lowest(),

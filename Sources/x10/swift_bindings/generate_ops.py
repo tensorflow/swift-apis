@@ -56,11 +56,11 @@ def node_type_define(op):
     if stype == "Tensor": return f"const Value& {name}"
     if stype == "[Tensor]":
       return f"absl::Span<const Value> {name}"
-    if stype == "Int64": return f"xla::int64 {name}"
+    if stype == "Int64": return f"int64_t {name}"
     if stype == "Bool": return f"bool {name}"
     if stype == "Float": return f"float {name}"
     if stype == "[Int64]":
-      return f"std::vector<xla::int64> {name}"
+      return f"std::vector<int64_t> {name}"
     if stype == "ScalarType?": return f"c10::optional<at::ScalarType> {name}"
     if stype == "ScalarType":
       return f"at::ScalarType {name}"
@@ -103,7 +103,7 @@ def node_type_define(op):
     name, stype, _ = arg
     if name == "shape":
       return ""
-    if stype == "Int64": return f"  xla::int64 {name}_;\n"
+    if stype == "Int64": return f"  int64_t {name}_;\n"
     if stype == "Bool": return f"  bool {name}_;\n"
     if stype == "Float": return "  float " + name + "_;\n"
     if stype == "ScalarType?": return (f"  c10::optional<at::ScalarType> "
@@ -113,7 +113,7 @@ def node_type_define(op):
     if stype == "AnyScalar":
       return f"  at::Scalar {name}_;"
     if stype == "[Int64]":
-      return f"  std::vector<xla::int64> {name}_;\n"
+      return f"  std::vector<int64_t> {name}_;\n"
     if stype in builtin_types:
       return f"  {builtin_types[stype][2]} {name}_;\n"
     raise ValueError(f"Problem: no such type: {stype}")

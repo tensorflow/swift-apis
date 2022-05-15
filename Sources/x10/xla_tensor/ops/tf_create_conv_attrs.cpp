@@ -30,8 +30,8 @@ tensorflow::ConvOpAttrs CreateConvOpAttrs(
   tensorflow::ConvOpAttrs attrs;
   attrs.depthwise = depthwise;
   attrs.num_spatial_dims = num_spatial_dims;
-  attrs.dilations = xla::util::ToVector<xla::int32>(dilations);
-  attrs.strides = xla::util::ToVector<xla::int32>(strides);
+  attrs.dilations = xla::util::ToVector<int32_t>(dilations);
+  attrs.strides = xla::util::ToVector<int32_t>(strides);
   attrs.padding = padding;
   attrs.explicit_paddings = XlaHelpers::I64List(explicit_paddings);
   attrs.data_format = data_format;

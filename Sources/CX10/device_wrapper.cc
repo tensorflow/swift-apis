@@ -88,7 +88,7 @@ DeviceList* DeviceListFromStrings(
 }
 
 std::vector<std::string> DeviceListToStrings(DeviceList* device_list) {
-  std::vector<xla::string> device_strings;
+  std::vector<std::string> device_strings;
   for (size_t device_index = 0; device_index < device_list->count;
        ++device_index) {
     const CDevice& device = device_list->devices[device_index];

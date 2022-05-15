@@ -37,9 +37,9 @@ struct StridedSliceSpec {
 StridedSliceSpec ComputeIndexingBoundsAndStrides(
     absl::Span<const int64_t> input_sizes,
     absl::Span<const int64_t> begin, absl::Span<const int64_t> end,
-    absl::Span<const int64_t> strides, xla::int32 begin_mask,
-    xla::int32 end_mask, xla::int32 ellipsis_mask, xla::int32 new_axis_mask,
-    xla::int32 shrink_axis_mask);
+    absl::Span<const int64_t> strides, int32_t begin_mask,
+    int32_t end_mask, int32_t ellipsis_mask, int32_t new_axis_mask,
+    int32_t shrink_axis_mask);
 
 }  // namespace swift_xla
 

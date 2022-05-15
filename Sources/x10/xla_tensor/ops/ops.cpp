@@ -63,36 +63,36 @@ NodePtr ARange(at::Scalar start, at::Scalar end, at::Scalar step,
                                          step.toDouble());
       break;
     case xla::PrimitiveType::U8:
-      values = XlaHelpers::Range<xla::uint8>(start.toByte(), end.toByte(),
-                                             step.toByte());
+      values = XlaHelpers::Range<uint8_t>(start.toByte(), end.toByte(),
+                                          step.toByte());
       break;
     case xla::PrimitiveType::S8:
-      values = XlaHelpers::Range<xla::int8>(start.toChar(), end.toChar(),
-                                            step.toChar());
+      values = XlaHelpers::Range<int8_t>(start.toChar(), end.toChar(),
+                                         step.toChar());
       break;
     case xla::PrimitiveType::S16:
-      values = XlaHelpers::Range<xla::int16>(start.toShort(), end.toShort(),
-                                             step.toShort());
+      values = XlaHelpers::Range<int16_t>(start.toShort(), end.toShort(),
+                                          step.toShort());
       break;
     case xla::PrimitiveType::U16:
-      values = XlaHelpers::Range<xla::uint16>(start.toInt(), end.toInt(),
-                                              step.toInt());
+      values = XlaHelpers::Range<uint16_t>(start.toInt(), end.toInt(),
+                                           step.toInt());
       break;
     case xla::PrimitiveType::S32:
-      values = XlaHelpers::Range<xla::int32>(start.toInt(), end.toInt(),
-                                             step.toInt());
+      values = XlaHelpers::Range<int32_t>(start.toInt(), end.toInt(),
+                                          step.toInt());
       break;
     case xla::PrimitiveType::U32:
-      values = XlaHelpers::Range<xla::uint32>(start.toLong(), end.toLong(),
-                                              step.toLong());
+      values = XlaHelpers::Range<uint32_t>(start.toLong(), end.toLong(),
+                                           step.toLong());
       break;
     case xla::PrimitiveType::S64:
       values = XlaHelpers::Range<int64_t>(start.toLong(), end.toLong(),
-                                             step.toLong());
+                                          step.toLong());
       break;
     case xla::PrimitiveType::U64:
-      values = XlaHelpers::Range<xla::uint64>(start.toLong(), end.toLong(),
-                                              step.toLong());
+      values = XlaHelpers::Range<uint64_t>(start.toLong(), end.toLong(),
+                                           step.toLong());
       break;
     default:
       XLA_ERROR() << "XLA type not supported: " << type;
@@ -117,27 +117,27 @@ NodePtr LinSpace(at::Scalar start, at::Scalar stop, int64_t num,
       break;
     case xla::PrimitiveType::U8:
       values =
-          XlaHelpers::LinSpace<xla::uint8>(start.toByte(), stop.toByte(), num);
+          XlaHelpers::LinSpace<uint8_t>(start.toByte(), stop.toByte(), num);
       break;
     case xla::PrimitiveType::S8:
       values =
-          XlaHelpers::LinSpace<xla::int8>(start.toChar(), stop.toChar(), num);
+          XlaHelpers::LinSpace<int8_t>(start.toChar(), stop.toChar(), num);
       break;
     case xla::PrimitiveType::S16:
-      values = XlaHelpers::LinSpace<xla::int16>(start.toShort(), stop.toShort(),
+      values = XlaHelpers::LinSpace<int16_t>(start.toShort(), stop.toShort(),
                                                 num);
       break;
     case xla::PrimitiveType::U16:
       values =
-          XlaHelpers::LinSpace<xla::uint16>(start.toInt(), stop.toInt(), num);
+          XlaHelpers::LinSpace<uint16_t>(start.toInt(), stop.toInt(), num);
       break;
     case xla::PrimitiveType::S32:
       values =
-          XlaHelpers::LinSpace<xla::int32>(start.toInt(), stop.toInt(), num);
+          XlaHelpers::LinSpace<int32_t>(start.toInt(), stop.toInt(), num);
       break;
     case xla::PrimitiveType::U32:
       values =
-          XlaHelpers::LinSpace<xla::uint32>(start.toLong(), stop.toLong(), num);
+          XlaHelpers::LinSpace<uint32_t>(start.toLong(), stop.toLong(), num);
       break;
     case xla::PrimitiveType::S64:
       values =
@@ -145,7 +145,7 @@ NodePtr LinSpace(at::Scalar start, at::Scalar stop, int64_t num,
       break;
     case xla::PrimitiveType::U64:
       values =
-          XlaHelpers::LinSpace<xla::uint64>(start.toLong(), stop.toLong(), num);
+          XlaHelpers::LinSpace<uint64_t>(start.toLong(), stop.toLong(), num);
       break;
     default:
       XLA_ERROR() << "XLA type not supported: " << type;

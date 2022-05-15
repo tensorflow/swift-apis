@@ -34,12 +34,12 @@ xla::XlaOp ExplicitBooleanConvert(xla::XlaOp op, xla::PrimitiveType from) {
 
 xla::XlaOp CreateRawMask(xla::XlaOp op, xla::PrimitiveType type,
                          int64_t to_size, int64_t raw_to_size) {
-  xla::uint64 mask_value =
-      (static_cast<xla::uint64>(1) << raw_to_size * CHAR_BIT) - 1;
+  uint64_t mask_value =
+      (static_cast<uint64_t>(1) << raw_to_size * CHAR_BIT) - 1;
   xla::XlaOp mask = XlaHelpers::ScalarValue(mask_value, type, op.builder());
   if (xla::primitive_util::IsSignedIntegralType(type)) {
     // Sign extend the truncation.
-    xla::XlaOp shift = XlaHelpers::ScalarValue<xla::int32>(
+    xla::XlaOp shift = XlaHelpers::ScalarValue<int32_t>(
         (to_size - raw_to_size) * CHAR_BIT, op.builder());
     mask = (mask << shift) >> shift;
   }
