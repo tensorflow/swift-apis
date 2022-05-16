@@ -28,10 +28,6 @@ let package = Package(
       type: .dynamic,
       targets: ["TensorFlow"]),
     .library(
-      name: "Tensor",
-      type: .dynamic,
-      targets: ["Tensor"]),
-    .library(
       name: "x10_optimizers_optimizer",
       type: .dynamic,
       targets: ["x10_optimizers_optimizer"]),
@@ -50,9 +46,6 @@ let package = Package(
   ],
   targets: [
     .target(
-      name: "Tensor",
-      dependencies: []),
-    .target(
       name: "CTensorFlow",
       dependencies: []),
     .target(
@@ -61,7 +54,6 @@ let package = Package(
     .target(
       name: "TensorFlow",
       dependencies: [
-        "Tensor",
         "PythonKit",
         "CTensorFlow",
         "CX10Modules",
@@ -102,9 +94,6 @@ let package = Package(
     .testTarget(
       name: "ExperimentalTests",
       dependencies: ["Experimental"]),
-    .testTarget(
-      name: "TensorTests",
-      dependencies: ["Tensor"]),
     .testTarget(
       name: "TensorFlowTests",
       dependencies: ["TensorFlow"]),

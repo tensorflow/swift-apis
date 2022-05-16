@@ -14,11 +14,9 @@
 
 import ExperimentalTests
 import TensorFlowTests
-import TensorTests
 import XCTest
 
 var tests = [XCTestCaseEntry]()
 tests += TensorFlowTests.allTests()
-tests += TensorTests.allTests()
 tests += ExperimentalTests.allTests()
 XCTMain(tests)

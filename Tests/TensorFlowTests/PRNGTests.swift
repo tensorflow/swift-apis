@@ -14,7 +14,7 @@
 
 import XCTest
 
-@testable import Tensor
+@testable import TensorFlow
 
 final class PRNGTests: XCTestCase {
   func testARC4() {

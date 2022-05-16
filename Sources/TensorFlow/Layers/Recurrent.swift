@@ -13,9 +13,6 @@
 // limitations under the License.
 
 import _Differentiation
-#if !COMPILING_TENSORFLOW_STDLIB_MODULE
-  import Tensor
-#endif
 
 #if !SR15884_WORKAROUND_1
 /// An input to a recurrent neural network.

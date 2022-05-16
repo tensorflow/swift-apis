@@ -14,10 +14,6 @@
 
 import _Differentiation
 
-#if !COMPILING_TENSORFLOW_STDLIB_MODULE
-  import Tensor
-#endif
-
 extension Tensor {
   /// Creates a tensor with the specified shape and a single, repeated scalar value.
   ///

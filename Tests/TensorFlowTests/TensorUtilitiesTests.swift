@@ -14,9 +14,9 @@
 
 import XCTest
 
-@testable import Tensor
+@testable import TensorFlow
 
-final class UtilitiesTests: XCTestCase {
+final class TensorUtilitiesTests: XCTestCase {
   func testSHA1() {
     XCTAssertEqual(
       [UInt8](repeating: 0x61, count: 1000).sha1(),

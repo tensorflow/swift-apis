@@ -15,8 +15,6 @@
 import TensorFlow
 import XCTest
 
-@testable import Tensor
-
 final class AnnotationTFEagerTests: XCTestCase {
   public struct SummaryNet: Layer {
     public var dense1 = Dense<Float>(inputSize: 1, outputSize: 1)
