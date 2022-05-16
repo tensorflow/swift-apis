@@ -31978,13 +31978,7 @@ public enum _Raw {
     _ tensor: Tensor<T>,
     axis: Tensor<Tidx>
   ) -> Tensor<T> {
-    switch commonBackend(tensor.handle.backend, axis.handle.backend) {
-    case .XLA:
-      return _RawXLA.reverseV2(tensor, axis: axis)
-    case .TF_EAGER:
-      return _RawTFEager.reverseV2(tensor, axis: axis)
-    }
-
+    _RawTFEager.reverseV2(tensor, axis: axis)
   }
 
   /// Reverses specific dimensions of a tensor.
@@ -39395,15 +39389,7 @@ public enum _Raw {
     numSamples: Tensor<Int32>,
     seed: Tensor<Tseed>
   ) -> Tensor<OutputDtype> {
-    switch commonBackend(
-      commonBackend(logits.handle.backend, numSamples.handle.backend), seed.handle.backend)
-    {
-    case .XLA:
-      return _RawXLA.statelessMultinomial(logits: logits, numSamples: numSamples, seed: seed)
-    case .TF_EAGER:
-      return _RawTFEager.statelessMultinomial(logits: logits, numSamples: numSamples, seed: seed)
-    }
-
+    _RawTFEager.statelessMultinomial(logits: logits, numSamples: numSamples, seed: seed)
   }
 
   ///

@@ -165,17 +165,16 @@ X10_OPS = {
   "Mean", "Min", "Minimum", "MirrorPad", "MirrorPadGrad", "Mod", "Mul", "Neg",
   "NotEqual", "OneHot", "OnesLike", "Pack", "Pad", "PadV2", "PhysicalCast",
   "Pow", "Prod", "Qr", "Rand", "Range", "Rank", "Relu", "Relu6", "Relu6Grad",
-  "ReluGrad", "Reshape", "ReverseV2", "ReversedPaddings", "Round", "Rsqrt",
-  "RsqrtGrad", "Select", "Selu", "SeluGrad", "Shape", "Sigmoid", "SigmoidGrad",
-  "Sign", "Sin", "Sinh", "Size", "Slice", "Softmax",
-  "SoftmaxCrossEntropyWithLogits", "Softplus", "SoftplusGrad", "Softsign",
-  "SoftsignGrad", "SparseSoftmaxCrossEntropyWithLogits", "Split", "SplitV",
-  "Sqrt", "Square", "SquaredDifference", "Squeeze", "StatelessMultinomial",
-  "StatelessRandomNormal", "StatelessRandomUniform",
-  "StatelessRandomUniformInt", "StatelessTruncatedNormal", "StridedSlice",
-  "StridedSliceGrad", "Sub", "Sum", "Svd", "Tan", "Tanh",
-  "TensorStridedSliceUpdate", "Tile", "ToDevice", "Transpose", "Unpack",
-  "UnsortedSegmentSum", "Xdivy", "ZerosLike"
+  "ReluGrad", "Reshape", "ReversedPaddings", "Round", "Rsqrt", "RsqrtGrad",
+  "Select", "Selu", "SeluGrad", "Shape", "Sigmoid", "SigmoidGrad", "Sign",
+  "Sin", "Sinh", "Size", "Slice", "Softmax", "SoftmaxCrossEntropyWithLogits",
+  "Softplus", "SoftplusGrad", "Softsign", "SoftsignGrad",
+  "SparseSoftmaxCrossEntropyWithLogits", "Split", "SplitV", "Sqrt", "Square",
+  "SquaredDifference", "Squeeze", "StatelessRandomNormal",
+  "StatelessRandomUniform", "StatelessRandomUniformInt",
+  "StatelessTruncatedNormal", "StridedSlice", "StridedSliceGrad", "Sub", "Sum",
+  "Svd", "Tan", "Tanh", "TensorStridedSliceUpdate", "Tile", "ToDevice",
+  "Transpose", "Unpack", "UnsortedSegmentSum", "Xdivy", "ZerosLike"
 }
 
 class UnableToGenerateCodeError(Exception):

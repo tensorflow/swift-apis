@@ -176,7 +176,7 @@ public enum _RawXLA {
   ///   # here a[4] = 166.32 which is the largest element of a across axis 0
   ///   ```
   ///
-  /// - Parameter dimension: int32 or int64, must be in the range `[-rank(input), rank(input))`.
+  /// - Parameter dimension: int16, int32 or int64, must be in the range `[-rank(input), rank(input))`.
   ///     Describes which dimension of the input Tensor to reduce across. For vectors,
   ///     use dimension = 0.
   public static func argMax<
@@ -271,8 +271,8 @@ public enum _RawXLA {
     }
   }
 
-  // Given low and high paddings for a list of dimensions, reverse the dimensions. This is required
-  // because x10 and TensorFlow use opposite dimension ordering for pad specification.
+  /// Given low and high paddings for a list of dimensions, reverse the dimensions. This is required
+  /// because x10 and TensorFlow use opposite dimension ordering for pad specification.
   private static func reversedPaddings(_ paddings: [Int64]) -> [Int64] {
     var reversedPaddings: [Int64] = paddings.reversed()
     for i in stride(from: 0, to: reversedPaddings.count, by: 2) {
@@ -313,6 +313,9 @@ public enum _RawXLA {
   }
 
   /// Performs 3D average pooling on the input.
+  ///
+  /// Each entry in `output` is the mean of the corresponding size `ksize` window in
+  /// `value`.
   ///
   /// - Parameter input: Shape `[batch, depth, rows, cols, channels]` tensor to pool over.
   ///
@@ -500,16 +503,26 @@ public enum _RawXLA {
   /// and works its way forward.
   ///
   /// For example,
-  /// ```
+  ///
   /// >>> x = tf.constant([1, 2, 3])
   /// >>> y = tf.broadcast_to(x, [3, 3])
-  /// >>> sess.run(y)
-  /// array([[1, 2, 3],
-  ///        [1, 2, 3],
-  ///        [1, 2, 3]], dtype=int32)
-  /// ```
+  /// >>> print(y)
+  /// tf.Tensor(
+  ///     [[1 2 3]
+  ///      [1 2 3]
+  ///      [1 2 3]], shape=(3, 3), dtype=int32)
+  ///
   /// In the above example, the input Tensor with the shape of `[1, 3]`
   /// is broadcasted to output Tensor with shape of `[3, 3]`.
+  ///
+  /// When doing broadcasted operations such as multiplying a tensor
+  /// by a scalar, broadcasting (usually) confers some time or space
+  /// benefit, as the broadcasted tensor is never materialized.
+  ///
+  /// However, `broadcast_to` does not carry with it any such benefits.
+  /// The newly-created tensor takes the full memory of the broadcasted
+  /// shape. (In a graph context, `broadcast_to` might be fused to
+  /// subsequent operation and then be optimized away, however.)
   ///
   /// - Parameters:
   ///     - input: A Tensor to broadcast.
@@ -1204,7 +1217,21 @@ public enum _RawXLA {
     return diagonal_value(input, offset: 0, dim1: 0, dim2: 1)
   }
 
-  /// Computes exponential linear: `exp(features) - 1` if < 0, `features` otherwise.
+  /// Computes the exponential linear function.
+  ///
+  /// The ELU function is defined as:
+  ///
+  ///  * $ e ^ x - 1 $ if $ x < 0 $
+  ///  * $ x $ if $ x >= 0 $
+  ///
+  /// Examples:
+  ///
+  /// >>> tf.nn.elu(1.0)
+  /// <tf.Tensor: shape=(), dtype=float32, numpy=1.0>
+  /// >>> tf.nn.elu(0.0)
+  /// <tf.Tensor: shape=(), dtype=float32, numpy=0.0>
+  /// >>> tf.nn.elu(-1000.0)
+  /// <tf.Tensor: shape=(), dtype=float32, numpy=-1.0>
   ///
   /// See [Fast and Accurate Deep Network Learning by Exponential Linear Units (ELUs)
   /// ](http://arxiv.org/abs/1511.07289)
@@ -1241,6 +1268,16 @@ public enum _RawXLA {
   ///
   /// *NOTE*: `Equal` supports broadcasting. More about broadcasting
   /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
+  ///
+  /// ```python
+  /// x = tf.constant([2, 4])
+  /// y = tf.constant(2)
+  /// tf.math.equal(x, y) ==> array([True, False])
+  ///
+  /// x = tf.constant([2, 4])
+  /// y = tf.constant([2, 4])
+  /// tf.math.equal(x, y) ==> array([True,  True])
+  /// ```
   public static func equal<T: TensorFlowScalar>(
     _ x: Tensor<T>,
     _ y: Tensor<T>,
@@ -1396,8 +1433,8 @@ public enum _RawXLA {
   /// Gather slices from `params` axis `axis` according to `indices`.
   ///
   /// `indices` must be an integer tensor of any dimension (usually 0-D or 1-D).
-  /// Produces an output tensor with shape `params.shape[:axis] + indices.shape +
-  /// params.shape[axis + 1:]` where:
+  /// Produces an output tensor with shape `params.shape[:axis] +
+  /// indices.shape[batch_dims:] + params.shape[axis + 1:]` where:
   ///
   /// ```python
   ///     # Scalar indices (output is rank(params) - 1).
@@ -1499,7 +1536,7 @@ public enum _RawXLA {
   ///     - features: The features passed as input to the corresponding LeakyRelu operation,
   ///         OR the outputs of that operation (both work equivalently).
   ///
-  /// - Output backprops: `gradients * (features > 0) + alpha * gradients * (featurs <= 0)`.
+  /// - Output backprops: `gradients * (features > 0) + alpha * gradients * (features <= 0)`.
   public static func leakyReluGrad<T: FloatingPoint & TensorFlowScalar>(
     gradients: Tensor<T>,
     features: Tensor<T>,
@@ -1673,7 +1710,7 @@ public enum _RawXLA {
         convertPadding(padding), convertDataFormat1(dataFormat)))
   }
 
-  /// Computes gradients of max pooling function.
+  /// Computes gradients of 3D max pooling function.
   ///
   /// - Parameters:
   ///     - orig_input: The original input tensor.
@@ -2076,8 +2113,8 @@ public enum _RawXLA {
   /// - Parameters:
   ///     - indices: A tensor of indices.
   ///     - depth: A scalar defining the depth of the one hot dimension.
-  ///     - on_xla: A scalar defining the value to fill in output when `indices[j] = i`.
-  ///     - off_xla: A scalar defining the value to fill in output when `indices[j] != i`.
+  ///     - on_value: A scalar defining the value to fill in output when `indices[j] = i`.
+  ///     - off_value: A scalar defining the value to fill in output when `indices[j] != i`.
   ///
   /// - Attr axis: The axis to fill (default: -1, a new inner-most axis).
   ///
@@ -2382,13 +2419,16 @@ public enum _RawXLA {
   /// Given `tensor`, this operation returns a tensor that has the same values
   /// as `tensor` with shape `shape`.
   ///
-  /// If one component of `shape` is the special value -1, the size of that dimension
-  /// is computed so that the total size remains constant.  In particular, a `shape`
-  /// of `[-1]` flattens into 1-D.  At most one component of `shape` can be -1.
+  /// If one component of 1-D tensor `shape` is the special value -1, the size of that
+  /// dimension is computed so that the total size remains constant.  In particular, a
+  /// `shape` of `[-1]` flattens into 1-D.  At most one component of `shape` may be
+  /// unknown.
   ///
-  /// If `shape` is 1-D or higher, then the operation returns a tensor with shape
+  /// The `shape` must be 1-D and the operation returns a tensor with shape
   /// `shape` filled with the values of `tensor`. In this case, the number of elements
   /// implied by `shape` must be the same as the number of elements in `tensor`.
+  ///
+  /// It is an error if `shape` is not 1-D.
   ///
   /// For example:
   ///
@@ -2460,72 +2500,6 @@ public enum _RawXLA {
     shape: Tensor<Tshape>
   ) -> Tensor<T> {
     return reshape(tensor, shape: shape.scalars.map(Int64.init))
-  }
-
-  /// Reverses specific dimensions of a tensor.
-  ///
-  /// NOTE `tf.reverse` has now changed behavior in preparation for 1.0.
-  /// `tf.reverse_v2` is currently an alias that will be deprecated before TF 1.0.
-  ///
-  /// Given a `tensor`, and a `int32` tensor `axis` representing the set of
-  /// dimensions of `tensor` to reverse. This operation reverses each dimension
-  /// `i` for which there exists `j` s.t. `axis[j] == i`.
-  ///
-  /// `tensor` can have up to 8 dimensions. The number of dimensions specified
-  /// in `axis` may be 0 or more entries. If an index is specified more than
-  /// once, a InvalidArgument error is raised.
-  ///
-  /// For example:
-  ///
-  /// ```
-  /// # tensor 't' is [[[[ 0,  1,  2,  3],
-  /// #                  [ 4,  5,  6,  7],
-  /// #                  [ 8,  9, 10, 11]],
-  /// #                 [[12, 13, 14, 15],
-  /// #                  [16, 17, 18, 19],
-  /// #                  [20, 21, 22, 23]]]]
-  /// # tensor 't' shape is [1, 2, 3, 4]
-  ///
-  /// # 'dims' is [3] or 'dims' is [-1]
-  /// reverse(t, dims) ==> [[[[ 3,  2,  1,  0],
-  ///                         [ 7,  6,  5,  4],
-  ///                         [ 11, 10, 9, 8]],
-  ///                        [[15, 14, 13, 12],
-  ///                         [19, 18, 17, 16],
-  ///                         [23, 22, 21, 20]]]]
-  ///
-  /// # 'dims' is '[1]' (or 'dims' is '[-3]')
-  /// reverse(t, dims) ==> [[[[12, 13, 14, 15],
-  ///                         [16, 17, 18, 19],
-  ///                         [20, 21, 22, 23]
-  ///                        [[ 0,  1,  2,  3],
-  ///                         [ 4,  5,  6,  7],
-  ///                         [ 8,  9, 10, 11]]]]
-  ///
-  /// # 'dims' is '[2]' (or 'dims' is '[-2]')
-  /// reverse(t, dims) ==> [[[[8, 9, 10, 11],
-  ///                         [4, 5, 6, 7],
-  ///                         [0, 1, 2, 3]]
-  ///                        [[20, 21, 22, 23],
-  ///                         [16, 17, 18, 19],
-  ///                         [12, 13, 14, 15]]]]
-  /// ```
-  ///
-  /// - Parameters:
-  ///     - tensor: Up to 8-D.
-  ///     - axis: 1-D. The indices of the dimensions to reverse. Must be in the range
-  ///         `[-rank(tensor), rank(tensor))`.
-  ///
-  /// - Output output: The same shape as `tensor`.
-  @inlinable @inline(__always)
-  public static func reverseV2<
-    Tidx: TensorFlowIndex,
-    T: TensorFlowScalar
-  >(
-    _ tensor: Tensor<T>,
-    axis: Tensor<Tidx>
-  ) -> Tensor<T> {
-    fatalError("Implement reverseV2")
   }
 
   /// Computes the gradient for the rsqrt of `x` wrt its input.
@@ -3015,7 +2989,7 @@ public enum _RawXLA {
     _RawXLA.mul(x, x)
   }
 
-  /// Returns (x - y)(x - y) element-wise.
+  /// Returns conj(x - y)(x - y) element-wise.
   ///
   /// *NOTE*: `SquaredDifference` supports broadcasting. More about broadcasting
   /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
@@ -3080,29 +3054,6 @@ public enum _RawXLA {
       output = squeeze(output, dim: Int64(dim))
     }
     return output
-  }
-
-  /// Draws samples from a multinomial distribution.
-  ///
-  /// - Parameters:
-  ///     - logits: 2-D Tensor with shape `[batch_size, num_classes]`.  Each slice `[i, :]`
-  ///         represents the unnormalized log probabilities for all classes.
-  ///     - num_samples: 0-D.  Number of independent samples to draw for each row slice.
-  ///     - seed: 2 seeds (shape [2]).
-  ///
-  /// - Output output: 2-D Tensor with shape `[batch_size, num_samples]`.  Each slice `[i, :]`
-  ///     contains the drawn class labels with range `[0, num_classes)`.
-  @inlinable @inline(__always)
-  public static func statelessMultinomial<
-    T: TensorFlowNumeric,
-    Tseed: TensorFlowIndex,
-    OutputDtype: TensorFlowIndex
-  >(
-    logits: Tensor<T>,
-    numSamples: Tensor<Int32>,
-    seed: Tensor<Tseed>
-  ) -> Tensor<OutputDtype> {
-    fatalError("Implement statelessMultinomial")
   }
 
   /// Outputs deterministic pseudorandom values from a normal distribution.
@@ -3323,11 +3274,11 @@ public enum _RawXLA {
   /// begin = [1, 2, x, x, 0, x] # x denotes don't care (usually 0)
   /// end = [2, 4, x, x, -3, x]
   /// strides = [1, 1, x, x, -1, 1]
-  /// begin_mask = 1<<4 | 1 << 5 = 48
+  /// begin_mask = 1<<4 | 1<<5 = 48
   /// end_mask = 1<<5 = 32
   /// ellipsis_mask = 1<<3 = 8
-  /// new_axis_mask = 1<<2 4
-  /// shrink_axis_mask = 1<<0
+  /// new_axis_mask = 1<<2 = 4
+  /// shrink_axis_mask = 1<<0 = 1
   /// ```
   ///
   /// In this case if `foo.shape` is (5, 5, 5, 5, 5, 5) the final shape of
@@ -3636,6 +3587,27 @@ public enum _RawXLA {
   /// dimension. For example, tiling `[a b c d]` by `[2]` produces
   /// `[a b c d a b c d]`.
   ///
+  /// >>> a = tf.constant([[1,2,3],[4,5,6]], tf.int32)
+  /// >>> b = tf.constant([1,2], tf.int32)
+  /// >>> tf.tile(a, b)
+  /// <tf.Tensor: shape=(2, 6), dtype=int32, numpy=
+  /// array([[1, 2, 3, 1, 2, 3],
+  ///        [4, 5, 6, 4, 5, 6]], dtype=int32)>
+  /// >>> c = tf.constant([2,1], tf.int32)
+  /// >>> tf.tile(a, c)
+  /// <tf.Tensor: shape=(4, 3), dtype=int32, numpy=
+  /// array([[1, 2, 3],
+  ///        [4, 5, 6],
+  ///        [1, 2, 3],
+  ///        [4, 5, 6]], dtype=int32)>
+  /// >>> d = tf.constant([2,2], tf.int32)
+  /// >>> tf.tile(a, d)
+  /// <tf.Tensor: shape=(4, 6), dtype=int32, numpy=
+  /// array([[1, 2, 3, 1, 2, 3],
+  ///        [4, 5, 6, 4, 5, 6],
+  ///        [1, 2, 3, 1, 2, 3],
+  ///        [4, 5, 6, 4, 5, 6]], dtype=int32)>
+  ///
   /// - Parameters:
   ///     - input: 1-D or higher.
   ///     - multiples: 1-D. Length must be the same as the number of dimensions in `input`
@@ -3747,19 +3719,29 @@ public enum _RawXLA {
   ///
   /// `num_segments` should equal the number of distinct segment IDs.
   ///
+  /// Caution: On CPU, values in `segment_ids` are always validated to be less than
+  /// `num_segments`, and an error is thrown for out-of-bound indices. On GPU, this
+  /// does not throw an error for out-of-bound indices. On Gpu, out-of-bound indices
+  /// result in safe but unspecified behavior, which may include ignoring
+  /// out-of-bound indices or outputting a tensor with a 0 stored in the first
+  /// dimension of its shape if `num_segments` is 0.
+  ///
   /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
   /// <img style="width:100%" src="https://www.tensorflow.org/images/UnsortedSegmentSum.png" alt>
   /// </div>
   ///
-  /// ``` python
-  /// c = tf.constant([[1,2,3,4], [5,6,7,8], [4,3,2,1]])
-  /// tf.unsorted_segment_sum(c, tf.constant([0, 1, 0]), num_segments=2)
-  /// # ==> [[ 5,  5, 5, 5],
-  /// #       [5,  6, 7, 8]]
-  /// ```
+  /// >>> c = [[1,2,3,4], [5,6,7,8], [4,3,2,1]]
+  /// >>> tf.math.unsorted_segment_sum(c, [0, 1, 0], num_segments=2).numpy()
+  /// array([[5, 5, 5, 5],
+  ///        [5, 6, 7, 8]], dtype=int32)
+  ///
   ///
   ///
   /// - Parameter segment_ids: A tensor whose shape is a prefix of `data.shape`.
+  ///     The values must be less than `num_segments`.
+  ///
+  ///     Caution: The values are always validated to be in range on CPU, never validated
+  ///     on GPU.
   ///
   /// - Output output: Has same shape as data, except for the first `segment_ids.rank`
   ///     dimensions, which are replaced with a single dimension which has size
@@ -3830,7 +3812,7 @@ public enum _RawXLA {
     return fullLike(0, x)
   }
 
-  // Currently only used for deterministic testing.
+  /// Currently only used for deterministic testing.
   public static func rand(_ dims: [Int], _ seed: Int) -> Tensor<Float> {
     Tensor(_xla: XLATensor.rand(dims.map { Int64($0) }, Int64(seed)))
   }
